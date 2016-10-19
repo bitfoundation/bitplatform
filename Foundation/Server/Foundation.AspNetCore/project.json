@@ -1,0 +1,39 @@
+{
+  "version": "1.0.0-*",
+
+  "dependencies": {
+    "Autofac": "4.1.1",
+    "Autofac.Extensions.DependencyInjection": "4.0.0",
+    "Autofac.Owin": "4.0.0",
+    "Microsoft.AspNetCore.Hosting": "1.0.0",
+    "Microsoft.AspNetCore.Mvc.Core": "1.0.1",
+    "Microsoft.AspNetCore.Mvc.Formatters.Json": "1.0.1",
+    "Microsoft.AspNetCore.Owin": "1.0.0",
+    "Microsoft.Owin": "3.0.1"
+  },
+
+  "buildOptions": {
+    "xmlDoc": true
+  
+  },
+
+  "frameworks": {
+    "net462": {
+      "dependencies": {
+        "Foundation.Api": {
+          "target": "project"
+        },
+        "Foundation.Core": {
+          "target": "project"
+        },
+        "Foundation.DataAccess": {
+          "target": "project"
+        },
+        "Foundation.Model": {
+          "target": "project"
+        }
+      }
+    }
+  }
+
+}

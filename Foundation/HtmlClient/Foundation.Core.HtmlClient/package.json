@@ -1,0 +1,13 @@
+{
+  "name": "bit-framework",
+  "version": "1.0.0",
+  "description": "Bit Framework",
+  "author": "Bit Foundation",
+  "devDependencies": {
+    "babel-preset-es2015": "^6.16.0",
+    "gulp": "^3.9.1",
+    "gulp-babel": "^6.1.2",
+    "gulp-sourcemaps": "^2.1.1",
+    "typings": "^1.4.0"
+  }
+}

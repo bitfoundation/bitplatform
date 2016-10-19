@@ -1,0 +1,29 @@
+﻿<view id="formValidationView">
+    <dto-form name="validationSampleDtoForm" ng-model="vm.validationSampleDto">
+        <label for="RequiredByAttributeMember">Required by attribute member</label>
+        <input class="k-textbox" placeholder="..." name="RequiredByAttributeMember" ng-model="vm.validationSampleDto.RequiredByAttributeMember">
+        <hr />
+        <label for="RequiredByMetadataMember">Required by metadata member</label>
+        <input class="k-textbox" placeholder="..." name="RequiredByMetadataMember" ng-model="vm.validationSampleDto.RequiredByMetadataMember">
+        <hr />
+        <label for="NotRequiredMember">Not required member</label>
+        <input class="k-textbox" placeholder="..." name="NotRequiredMember" ng-model="vm.validationSampleDto.NotRequiredMember">
+        <hr />
+        <md-button id="submitFirstPart" ng-click="vm.submitFirstPart(validationSampleDtoForm,this)">Submit first part</md-button>
+    </dto-form>
+    <br />
+    requiredByAttributeMemberIsValid >> <span id="requiredByAttributeMemberIsValid">{{validationSampleDtoForm.RequiredByAttributeMember.$valid}}</span>
+    <br />
+    requiredByAttributeMemberErrors >> <span id="requiredByAttributeMemberErrors">{{validationSampleDtoForm.RequiredByAttributeMember.$error}}</span>
+    <br />
+    requiredByMetadataMemberIsValid >> <span id="requiredByMetadataMemberIsValid">{{validationSampleDtoForm.RequiredByMetadataMember.$valid}}</span>
+    <br />
+    requiredByMetadataMemberErrors >> <span id="requiredByMetadataMemberErrors">{{validationSampleDtoForm.RequiredByMetadataMember.$error}}</span>
+    <br />
+    notRequiredIsValid >> <span id="notRequiredIsValid">{{validationSampleDtoForm.NotRequiredMember.$valid}}</span>
+    <br />
+    notRequiredErrors >> <span id="notRequiredErrors">{{validationSampleDtoForm.NotRequiredMember.$error}}</span>
+    <br />
+    firstPartIsValid >> <span id="firstPartIsValid">{{validationSampleDtoForm.$valid}}</span>
+    <br />
+</view>

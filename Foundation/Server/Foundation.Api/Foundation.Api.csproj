@@ -1,0 +1,624 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="14.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{469D5D14-B564-4AF4-A36C-B93C823156B9}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>Foundation.Api</RootNamespace>
+    <AssemblyName>Foundation.Api</AssemblyName>
+    <TargetFrameworkVersion>v4.6.2</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <TargetFrameworkProfile />
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <RunCodeAnalysis>false</RunCodeAnalysis>
+    <DocumentationFile>bin\Debug\Foundation.Api.XML</DocumentationFile>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup>
+    <SignAssembly>false</SignAssembly>
+  </PropertyGroup>
+  <PropertyGroup>
+    <AssemblyOriginatorKeyFile>
+    </AssemblyOriginatorKeyFile>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'">
+    <PlatformTarget>x64</PlatformTarget>
+    <OutputPath>bin\x64\Debug\</OutputPath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x64'">
+    <PlatformTarget>x64</PlatformTarget>
+    <OutputPath>bin\x64\Release\</OutputPath>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="Autofac, Version=4.1.1.0, Culture=neutral, PublicKeyToken=17863af14b0044da, processorArchitecture=MSIL">
+      <HintPath>..\..\..\packages\Autofac.4.1.1\lib\net45\Autofac.dll</HintPath>
+      <SpecificVersion>False</SpecificVersion>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Autofac.Integration.Owin, Version=4.0.0.0, Culture=neutral, PublicKeyToken=17863af14b0044da, processorArchitecture=MSIL">
+      <HintPath>..\..\..\packages\Autofac.Owin.4.0.0\lib\net45\Autofac.Integration.Owin.dll</HintPath>
+      <SpecificVersion>False</SpecificVersion>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Autofac.Integration.SignalR, Version=4.0.0.0, Culture=neutral, PublicKeyToken=17863af14b0044da, processorArchitecture=MSIL">
+      <HintPath>..\..\..\packages\Autofac.SignalR2.4.0.0\lib\net45\Autofac.Integration.SignalR.dll</HintPath>
+      <SpecificVersion>False</SpecificVersion>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Autofac.Integration.WebApi, Version=4.0.0.0, Culture=neutral, PublicKeyToken=17863af14b0044da, processorArchitecture=MSIL">
+      <HintPath>..\..\..\packages\Autofac.WebApi2.4.0.0\lib\net45\Autofac.Integration.WebApi.dll</HintPath>
+      <SpecificVersion>False</SpecificVersion>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Autofac.Integration.WebApi.Owin, Version=4.0.0.0, Culture=neutral, PublicKeyToken=17863af14b0044da, processorArchitecture=MSIL">
+      <HintPath>..\..\..\packages\Autofac.WebApi2.Owin.4.0.0\lib\net45\Autofac.Integration.WebApi.Owin.dll</HintPath>
+      <SpecificVersion>False</SpecificVersion>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="AutoMapper, Version=5.1.1.0, Culture=neutral, PublicKeyToken=be96cd2c38ef1005, processorArchitecture=MSIL">
+      <HintPath>..\..\..\packages\AutoMapper.5.1.1\lib\net45\AutoMapper.dll</HintPath>
+      <SpecificVersion>False</SpecificVersion>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Hangfire.Autofac, Version=2.2.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\..\packages\Hangfire.Autofac.2.2.0\lib\net45\Hangfire.Autofac.dll</HintPath>
+      <SpecificVersion>False</SpecificVersion>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Hangfire.Azure.ServiceBusQueue, Version=0.1.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\..\packages\Hangfire.Azure.ServiceBusQueue.2.1.1\lib\net45\Hangfire.Azure.ServiceBusQueue.dll</HintPath>
+      <SpecificVersion>False</SpecificVersion>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Hangfire.Core, Version=1.6.4.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\..\packages\Hangfire.Core.1.6.4\lib\net45\Hangfire.Core.dll</HintPath>
+      <SpecificVersion>False</SpecificVersion>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Hangfire.SqlServer, Version=1.6.4.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\..\packages\Hangfire.SqlServer.1.6.4\lib\net45\Hangfire.SqlServer.dll</HintPath>
+      <SpecificVersion>False</SpecificVersion>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Humanizer, Version=2.1.0.0, Culture=neutral, PublicKeyToken=979442b78dfc278e, processorArchitecture=MSIL">
+      <HintPath>..\..\..\packages\Humanizer.Core.2.1.0\lib\netstandard1.0\Humanizer.dll</HintPath>
+      <SpecificVersion>False</SpecificVersion>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="IdentityModel, Version=2.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\..\packages\IdentityModel.2.0.0\lib\net45\IdentityModel.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="IdentityServer3, Version=2.5.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\..\packages\IdentityServer3.2.5.4\lib\net45\IdentityServer3.dll</HintPath>
+      <SpecificVersion>False</SpecificVersion>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="IdentityServer3.AccessTokenValidation, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\..\packages\IdentityServer3.AccessTokenValidation.2.11.0\lib\net45\IdentityServer3.AccessTokenValidation.dll</HintPath>
+      <SpecificVersion>False</SpecificVersion>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Microsoft.AspNet.SignalR.Core, Version=2.2.1.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\..\..\packages\Microsoft.AspNet.SignalR.Core.2.2.1\lib\net45\Microsoft.AspNet.SignalR.Core.dll</HintPath>
+      <SpecificVersion>False</SpecificVersion>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Microsoft.AspNet.SignalR.ServiceBus, Version=2.2.1.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\..\..\packages\Microsoft.AspNet.SignalR.ServiceBus.2.2.1\lib\net45\Microsoft.AspNet.SignalR.ServiceBus.dll</HintPath>
+      <SpecificVersion>False</SpecificVersion>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Microsoft.EntityFrameworkCore, Version=1.0.1.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
+      <HintPath>..\..\..\packages\Microsoft.EntityFrameworkCore.1.0.1\lib\net451\Microsoft.EntityFrameworkCore.dll</HintPath>
+      <SpecificVersion>False</SpecificVersion>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Microsoft.EntityFrameworkCore.Relational, Version=1.0.1.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
+      <HintPath>..\..\..\packages\Microsoft.EntityFrameworkCore.Relational.1.0.1\lib\net451\Microsoft.EntityFrameworkCore.Relational.dll</HintPath>
+      <SpecificVersion>False</SpecificVersion>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Microsoft.EntityFrameworkCore.SqlServer, Version=1.0.1.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
+      <HintPath>..\..\..\packages\Microsoft.EntityFrameworkCore.SqlServer.1.0.1\lib\net451\Microsoft.EntityFrameworkCore.SqlServer.dll</HintPath>
+      <SpecificVersion>False</SpecificVersion>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Microsoft.Extensions.Caching.Abstractions, Version=1.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
+      <HintPath>..\..\..\packages\Microsoft.Extensions.Caching.Abstractions.1.0.0\lib\netstandard1.0\Microsoft.Extensions.Caching.Abstractions.dll</HintPath>
+      <SpecificVersion>False</SpecificVersion>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Microsoft.Extensions.Caching.Memory, Version=1.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
+      <HintPath>..\..\..\packages\Microsoft.Extensions.Caching.Memory.1.0.0\lib\net451\Microsoft.Extensions.Caching.Memory.dll</HintPath>
+      <SpecificVersion>False</SpecificVersion>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Microsoft.Extensions.Configuration, Version=1.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
+      <HintPath>..\..\..\packages\Microsoft.Extensions.Configuration.1.0.0\lib\netstandard1.1\Microsoft.Extensions.Configuration.dll</HintPath>
+      <SpecificVersion>False</SpecificVersion>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Microsoft.Extensions.Configuration.Abstractions, Version=1.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
+      <HintPath>..\..\..\packages\Microsoft.Extensions.Configuration.Abstractions.1.0.0\lib\netstandard1.0\Microsoft.Extensions.Configuration.Abstractions.dll</HintPath>
+      <SpecificVersion>False</SpecificVersion>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Microsoft.Extensions.Configuration.Binder, Version=1.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
+      <HintPath>..\..\..\packages\Microsoft.Extensions.Configuration.Binder.1.0.0\lib\netstandard1.1\Microsoft.Extensions.Configuration.Binder.dll</HintPath>
+      <SpecificVersion>False</SpecificVersion>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Microsoft.Extensions.DependencyInjection, Version=1.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
+      <HintPath>..\..\..\packages\Microsoft.Extensions.DependencyInjection.1.0.0\lib\netstandard1.1\Microsoft.Extensions.DependencyInjection.dll</HintPath>
+      <SpecificVersion>False</SpecificVersion>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Microsoft.Extensions.DependencyInjection.Abstractions, Version=1.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
+      <HintPath>..\..\..\packages\Microsoft.Extensions.DependencyInjection.Abstractions.1.0.0\lib\netstandard1.0\Microsoft.Extensions.DependencyInjection.Abstractions.dll</HintPath>
+      <SpecificVersion>False</SpecificVersion>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Microsoft.Extensions.Logging, Version=1.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
+      <HintPath>..\..\..\packages\Microsoft.Extensions.Logging.1.0.0\lib\netstandard1.1\Microsoft.Extensions.Logging.dll</HintPath>
+      <SpecificVersion>False</SpecificVersion>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Microsoft.Extensions.Logging.Abstractions, Version=1.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
+      <HintPath>..\..\..\packages\Microsoft.Extensions.Logging.Abstractions.1.0.0\lib\netstandard1.1\Microsoft.Extensions.Logging.Abstractions.dll</HintPath>
+      <SpecificVersion>False</SpecificVersion>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Microsoft.Extensions.Logging.Debug, Version=1.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
+      <HintPath>..\..\..\packages\Microsoft.Extensions.Logging.Debug.1.0.0\lib\net451\Microsoft.Extensions.Logging.Debug.dll</HintPath>
+      <SpecificVersion>False</SpecificVersion>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Microsoft.Extensions.Options, Version=1.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
+      <HintPath>..\..\..\packages\Microsoft.Extensions.Options.1.0.0\lib\netstandard1.0\Microsoft.Extensions.Options.dll</HintPath>
+      <SpecificVersion>False</SpecificVersion>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Microsoft.Extensions.Primitives, Version=1.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
+      <HintPath>..\..\..\packages\Microsoft.Extensions.Primitives.1.0.0\lib\netstandard1.0\Microsoft.Extensions.Primitives.dll</HintPath>
+      <SpecificVersion>False</SpecificVersion>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Microsoft.IdentityModel.Logging, Version=1.0.0.127, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\..\..\packages\Microsoft.IdentityModel.Logging.1.0.0\lib\net451\Microsoft.IdentityModel.Logging.dll</HintPath>
+      <SpecificVersion>False</SpecificVersion>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Microsoft.IdentityModel.Protocol.Extensions, Version=1.0.3.42, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\..\..\packages\Microsoft.IdentityModel.Protocol.Extensions.1.0.3.308261200\lib\net45\Microsoft.IdentityModel.Protocol.Extensions.dll</HintPath>
+      <SpecificVersion>False</SpecificVersion>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Microsoft.IdentityModel.Tokens, Version=5.0.0.127, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\..\..\packages\Microsoft.IdentityModel.Tokens.5.0.0\lib\net451\Microsoft.IdentityModel.Tokens.dll</HintPath>
+      <SpecificVersion>False</SpecificVersion>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Microsoft.OData.Core, Version=7.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\..\..\packages\Microsoft.OData.Core.7.0.0\lib\portable-net45+win8+wpa81\Microsoft.OData.Core.dll</HintPath>
+      <SpecificVersion>False</SpecificVersion>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Microsoft.OData.Edm, Version=7.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\..\..\packages\Microsoft.OData.Edm.7.0.0\lib\portable-net45+win8+wpa81\Microsoft.OData.Edm.dll</HintPath>
+      <SpecificVersion>False</SpecificVersion>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Microsoft.Owin, Version=3.0.1.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\..\..\packages\Microsoft.Owin.3.0.1\lib\net45\Microsoft.Owin.dll</HintPath>
+      <SpecificVersion>False</SpecificVersion>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Microsoft.Owin.FileSystems, Version=3.0.1.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\..\..\packages\Microsoft.Owin.FileSystems.3.0.1\lib\net45\Microsoft.Owin.FileSystems.dll</HintPath>
+      <SpecificVersion>False</SpecificVersion>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Microsoft.Owin.Security, Version=3.0.1.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\..\..\packages\Microsoft.Owin.Security.3.0.1\lib\net45\Microsoft.Owin.Security.dll</HintPath>
+      <SpecificVersion>False</SpecificVersion>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Microsoft.Owin.Security.Jwt, Version=3.0.1.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\..\..\packages\Microsoft.Owin.Security.Jwt.3.0.1\lib\net45\Microsoft.Owin.Security.Jwt.dll</HintPath>
+      <SpecificVersion>False</SpecificVersion>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Microsoft.Owin.Security.OAuth, Version=3.0.1.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\..\..\packages\Microsoft.Owin.Security.OAuth.3.0.1\lib\net45\Microsoft.Owin.Security.OAuth.dll</HintPath>
+      <SpecificVersion>False</SpecificVersion>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Microsoft.Owin.StaticFiles, Version=3.0.1.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\..\..\packages\Microsoft.Owin.StaticFiles.3.0.1\lib\net45\Microsoft.Owin.StaticFiles.dll</HintPath>
+      <SpecificVersion>False</SpecificVersion>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Microsoft.ServiceBus, Version=2.7.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\..\..\packages\WindowsAzure.ServiceBus.2.7.5\lib\net40-full\Microsoft.ServiceBus.dll</HintPath>
+      <SpecificVersion>False</SpecificVersion>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Microsoft.Spatial, Version=7.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\..\..\packages\Microsoft.Spatial.7.0.0\lib\portable-net45+win8+wpa81\Microsoft.Spatial.dll</HintPath>
+      <SpecificVersion>False</SpecificVersion>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Microsoft.WindowsAzure.Configuration, Version=2.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\..\..\packages\Microsoft.WindowsAzure.ConfigurationManager.2.0.0.0\lib\net40\Microsoft.WindowsAzure.Configuration.dll</HintPath>
+      <SpecificVersion>False</SpecificVersion>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Newtonsoft.Json, Version=9.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>..\..\..\packages\Newtonsoft.Json.9.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
+      <SpecificVersion>False</SpecificVersion>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="NWebsec.Core, Version=1.5.0.0, Culture=neutral, PublicKeyToken=3613da5f958908a1, processorArchitecture=MSIL">
+      <HintPath>..\..\..\packages\NWebsec.Core.1.5.0\lib\45\NWebsec.Core.dll</HintPath>
+      <SpecificVersion>False</SpecificVersion>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="NWebsec.Owin, Version=2.2.0.0, Culture=neutral, PublicKeyToken=3613da5f958908a1, processorArchitecture=MSIL">
+      <HintPath>..\..\..\packages\NWebsec.Owin.2.2.0\lib\45\NWebsec.Owin.dll</HintPath>
+      <SpecificVersion>False</SpecificVersion>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Owin, Version=1.0.0.0, Culture=neutral, PublicKeyToken=f0ebd12fd5e55cc5, processorArchitecture=MSIL">
+      <HintPath>..\..\..\packages\Owin.1.0\lib\net40\Owin.dll</HintPath>
+      <SpecificVersion>False</SpecificVersion>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="RazorEngine, Version=3.9.0.0, Culture=neutral, PublicKeyToken=9ee697374c7e744a, processorArchitecture=MSIL">
+      <HintPath>..\..\..\packages\RazorEngine.3.9.0\lib\net45\RazorEngine.dll</HintPath>
+      <SpecificVersion>False</SpecificVersion>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Remotion.Linq, Version=2.1.0.0, Culture=neutral, PublicKeyToken=fee00910d6e5f53b, processorArchitecture=MSIL">
+      <HintPath>..\..\..\packages\Remotion.Linq.2.1.1\lib\net45\Remotion.Linq.dll</HintPath>
+      <SpecificVersion>False</SpecificVersion>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System">
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System.Collections.Concurrent">
+      <HintPath>..\..\..\packages\System.Collections.Concurrent.4.0.12\lib\netcore50\System.Collections.Concurrent.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System.Collections.Immutable, Version=1.2.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\..\..\packages\System.Collections.Immutable.1.2.0\lib\portable-net45+win8+wp8+wpa81\System.Collections.Immutable.dll</HintPath>
+      <SpecificVersion>False</SpecificVersion>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System.Collections.NonGeneric, Version=4.0.1.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\..\..\packages\System.Collections.NonGeneric.4.0.1\lib\net46\System.Collections.NonGeneric.dll</HintPath>
+      <SpecificVersion>False</SpecificVersion>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System.ComponentModel.Composition">
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System.ComponentModel.DataAnnotations">
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System.ComponentModel.Primitives, Version=4.1.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\..\..\packages\System.ComponentModel.Primitives.4.1.0\lib\net45\System.ComponentModel.Primitives.dll</HintPath>
+      <SpecificVersion>False</SpecificVersion>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System.ComponentModel.TypeConverter, Version=4.1.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\..\..\packages\System.ComponentModel.TypeConverter.4.1.0\lib\net462\System.ComponentModel.TypeConverter.dll</HintPath>
+      <SpecificVersion>False</SpecificVersion>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System.Configuration">
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System.Core">
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="System.Diagnostics.DiagnosticSource, Version=4.0.0.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+      <HintPath>..\..\..\packages\System.Diagnostics.DiagnosticSource.4.0.0\lib\net46\System.Diagnostics.DiagnosticSource.dll</HintPath>
+      <SpecificVersion>False</SpecificVersion>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System.Diagnostics.Tracing, Version=4.1.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\..\..\packages\System.Diagnostics.Tracing.4.1.0\lib\net462\System.Diagnostics.Tracing.dll</HintPath>
+      <SpecificVersion>False</SpecificVersion>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System.IdentityModel">
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System.IdentityModel.Tokens.Jwt, Version=5.0.0.127, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\..\..\packages\System.IdentityModel.Tokens.Jwt.5.0.0\lib\net451\System.IdentityModel.Tokens.Jwt.dll</HintPath>
+      <SpecificVersion>False</SpecificVersion>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System.Interactive.Async, Version=3.0.0.0, Culture=neutral, PublicKeyToken=94bc3704cddfc263, processorArchitecture=MSIL">
+      <HintPath>..\..\..\packages\System.Interactive.Async.3.0.0\lib\net45\System.Interactive.Async.dll</HintPath>
+      <SpecificVersion>False</SpecificVersion>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System.IO, Version=4.1.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\..\..\packages\System.IO.4.1.0\lib\net462\System.IO.dll</HintPath>
+      <SpecificVersion>False</SpecificVersion>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System.Linq.Dynamic.Core, Version=1.0.0.0, Culture=neutral, PublicKeyToken=0f07ec44de6ac832, processorArchitecture=MSIL">
+      <HintPath>..\..\..\packages\System.Linq.Dynamic.Core.1.0.6.5\lib\net461\System.Linq.Dynamic.Core.dll</HintPath>
+      <SpecificVersion>False</SpecificVersion>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System.Net.Http, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="System.Net.Http.Formatting, Version=5.2.3.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\..\..\packages\Microsoft.AspNet.WebApi.Client.5.2.3\lib\net45\System.Net.Http.Formatting.dll</HintPath>
+      <SpecificVersion>False</SpecificVersion>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System.Reflection, Version=4.1.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\..\..\packages\System.Reflection.4.1.0\lib\net462\System.Reflection.dll</HintPath>
+      <SpecificVersion>False</SpecificVersion>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System.Runtime, Version=4.1.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\..\..\packages\System.Runtime.4.1.0\lib\net462\System.Runtime.dll</HintPath>
+      <SpecificVersion>False</SpecificVersion>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System.Runtime.Caching">
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System.Runtime.Extensions, Version=4.1.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\..\..\packages\System.Runtime.Extensions.4.1.0\lib\net462\System.Runtime.Extensions.dll</HintPath>
+      <SpecificVersion>False</SpecificVersion>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System.Runtime.InteropServices, Version=4.1.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\..\..\packages\System.Runtime.InteropServices.4.1.0\lib\net462\System.Runtime.InteropServices.dll</HintPath>
+      <SpecificVersion>False</SpecificVersion>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System.Runtime.Serialization">
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System.ServiceModel">
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System.Transactions">
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System.Web.Http, Version=5.2.3.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\..\..\packages\Microsoft.AspNet.WebApi.Core.5.2.3\lib\net45\System.Web.Http.dll</HintPath>
+      <SpecificVersion>False</SpecificVersion>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System.Web.Http.Owin, Version=5.2.3.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\..\..\packages\Microsoft.AspNet.WebApi.Owin.5.2.3\lib\net45\System.Web.Http.Owin.dll</HintPath>
+      <SpecificVersion>False</SpecificVersion>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System.Web.OData, Version=6.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\..\..\packages\Microsoft.AspNet.OData.6.0.0\lib\net45\System.Web.OData.dll</HintPath>
+      <SpecificVersion>False</SpecificVersion>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System.Web.Razor, Version=3.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\..\..\packages\Microsoft.AspNet.Razor.3.2.3\lib\net45\System.Web.Razor.dll</HintPath>
+      <SpecificVersion>False</SpecificVersion>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System.Xml.Linq">
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Microsoft.CSharp">
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System.Data">
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System.Xml">
+      <Private>True</Private>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="ApiControllers\DtoController.cs" />
+    <Compile Include="ApiControllers\ClientsLogsController.cs" />
+    <Compile Include="ApiControllers\DtoSetController.cs" />
+    <Compile Include="ApiControllers\JobsInfoController.cs" />
+    <Compile Include="ApiControllers\UsersSettingsController.cs" />
+    <Compile Include="Contracts\IAutofacDependencyManager.cs" />
+    <Compile Include="Contracts\Project\IApiAssembliesProvider.cs" />
+    <Compile Include="Contracts\Project\IEdmModelProvider.cs" />
+    <Compile Include="Extensions\IDependencyManangerExtensions.cs" />
+    <Compile Include="Extensions\IOwinContextExtensions.cs" />
+    <Compile Include="Implementations\AutofacDependencyManager.cs" />
+    <Compile Include="Implementations\Project\DefaultApiAssembliesProvider.cs" />
+    <Compile Include="Middlewares\DelegateOwinMiddlewareConfiguration.cs" />
+    <Compile Include="Middlewares\SignalR\Contracts\IMessagesHubEvents.cs" />
+    <Compile Include="Middlewares\SignalR\Implementations\DefaultMessageHubEvents.cs" />
+    <Compile Include="Middlewares\SignalR\Implementations\SignalRAuthroizeConfiguration.cs" />
+    <Compile Include="Middlewares\WebApi\Implementations\DefaultWebApiAssembliesResolver.cs" />
+    <Compile Include="Middlewares\WebApi\Implementations\DefaultWebApiOwinPipelineInjector.cs" />
+    <Compile Include="Middlewares\WebApi\Implementations\DelegateGlobalActionFiltersProvider.cs" />
+    <Compile Include="Middlewares\WebApi\OData\ActionFilters\DefaultODataAuthorizeAttribute.cs" />
+    <Compile Include="Middlewares\WebApi\OData\ActionFilters\GlobalEnableQueryActionFilterProviderBase.cs" />
+    <Compile Include="Middlewares\WebApi\OData\ActionFilters\ODataEnableQueryAttribute.cs" />
+    <Compile Include="Middlewares\WebApi\OData\Contracts\IODataContainerBuilderCustomizer.cs" />
+    <Compile Include="Middlewares\WebApi\Contracts\IWebApiOwinPipelineInjector.cs" />
+    <Compile Include="Middlewares\WebApi\OData\Implementations\DefaultODataContainerBuilderCustomizer.cs" />
+    <Compile Include="Middlewares\WebApi\OData\Contracts\IAutoEdmBuilder.cs" />
+    <Compile Include="Middlewares\WebApi\OData\Implementations\DefaultAutoEdmBuilder.cs" />
+    <Compile Include="Middlewares\WebApi\OData\Implementations\DefaultWebApiODataGlobalActionFilterProviders.cs" />
+    <Compile Include="Middlewares\WebApi\OData\Implementations\DefaultWebApiODataOwinPipelineInjector.cs" />
+    <Compile Include="Middlewares\WebApi\WebApiMiddlewareConfiguration.cs" />
+    <Compile Include="OwinAppStartup.cs" />
+    <Compile Include="Contracts\IBackgroundJobWorker.cs" />
+    <Compile Include="Contracts\IDefaultPageModelProvider.cs" />
+    <Compile Include="Contracts\IDefaultHtmlPageProvider.cs" />
+    <Compile Include="Contracts\IPageRequestDetector.cs" />
+    <Compile Include="Contracts\ITimeZoneManager.cs" />
+    <Compile Include="Contracts\Metadata\IAppMetadataProvider.cs" />
+    <Compile Include="Contracts\Metadata\IDtoMetadataBuilder`TDto.cs" />
+    <Compile Include="Contracts\Metadata\IMetadataBuilder.cs" />
+    <Compile Include="Contracts\Metadata\IProjectMetadataBuilder.cs" />
+    <Compile Include="Contracts\Metadata\IViewMetadataBuilder.cs" />
+    <Compile Include="Exceptions\AppException.cs" />
+    <Compile Include="Exceptions\DomainLogicException.cs" />
+    <Compile Include="Exceptions\BadRequestException.cs" />
+    <Compile Include="Exceptions\ResourceNotFoundaException.cs" />
+    <Compile Include="Implementations\AutofacScopeBasedDependencyResolver.cs" />
+    <Compile Include="Implementations\DefaultDependencyManager.cs" />
+    <Compile Include="Implementations\DefaultTimeZoneManager.cs" />
+    <Compile Include="Implementations\DefaultPageRequestDetector.cs" />
+    <Compile Include="Middlewares\InvokeLoginMiddleware.cs" />
+    <Compile Include="Middlewares\InvokeLoginMiddlewareConfiguration.cs" />
+    <Compile Include="Middlewares\WebApi\OData\ActionFilters\RequestQSTimeZoneApplierActionFilterAttribute.cs" />
+    <Compile Include="Contracts\IExceptionToHttpErrorMapper.cs" />
+    <Compile Include="Middlewares\WebApi\OData\Contracts\IODataModelBuilderProvider.cs" />
+    <Compile Include="Middlewares\WebApi\OData\Extensions\DeltaExtensions.cs" />
+    <Compile Include="Implementations\DefaultNameService.cs" />
+    <Compile Include="Implementations\Project\FoundationInitialNameServiceConfiguration.cs" />
+    <Compile Include="Implementations\Metadata\DefaultAppMetadataProvider.cs" />
+    <Compile Include="Implementations\Metadata\DefaultDtoMetadataBuilder`TDto.cs" />
+    <Compile Include="Implementations\Metadata\DefaultMetadataBuilder.cs" />
+    <Compile Include="Implementations\Metadata\DefaultProjectMetadataBuilder.cs" />
+    <Compile Include="Implementations\Metadata\DefaultViewMetadataBuilder.cs" />
+    <Compile Include="Metadata\FoundationMetadataBuilder.cs" />
+    <Compile Include="Metadata\Dtos\UserSettingMetadataBuilder.cs" />
+    <Compile Include="Middlewares\MetadataMiddlewareConfiguration.cs" />
+    <Compile Include="Middlewares\MetadatMiddlware.cs" />
+    <Compile Include="Middlewares\WebApi\ActionFilters\ExceptionHandlerFilterAttribute.cs" />
+    <Compile Include="Middlewares\WebApi\OData\ActionFilters\RequestQSStringCorrectorsApplierActionFilterAttribute.cs" />
+    <Compile Include="Middlewares\WebApi\Contracts\IWebApiGlobalActionFiltersProvider.cs" />
+    <Compile Include="Contracts\IUserSettingProvider.cs" />
+    <Compile Include="Implementations\DefaultBackgroundJobWorker.cs" />
+    <Compile Include="Implementations\DefaultCertificateProvider.cs" />
+    <Compile Include="Implementations\DefaultPageModelProvider.cs" />
+    <Compile Include="Implementations\DefaultHtmlPageRazorTemplateConfiguration.cs" />
+    <Compile Include="Implementations\DefaultRequestInformationProvider.cs" />
+    <Compile Include="Implementations\DefaultScopeStatusManager.cs" />
+    <Compile Include="Middlewares\SignalR\Implementations\SignalRMessageContentFormatter.cs" />
+    <Compile Include="Implementations\DefaultXmlContentFormatter.cs" />
+    <Compile Include="Implementations\RazorDefaultHtmlPageProvider.cs" />
+    <Compile Include="Implementations\RazorViewEngineConfiguration.cs" />
+    <Compile Include="Implementations\RazorViewTemplate.cs" />
+    <Compile Include="Implementations\DefaultLogStore.cs" />
+    <Compile Include="Middlewares\DefaultPageMiddlewareConfiguration.cs" />
+    <Compile Include="Middlewares\OwinExceptionHandlerMiddlewareConfiguration.cs" />
+    <Compile Include="Contracts\IOwinMiddlewareConfiguration.cs" />
+    <Compile Include="Middlewares\JobScheduler\JobSchedulerMiddlewareConfiguration.cs" />
+    <Compile Include="Middlewares\JobScheduler\Implementations\SqlAndAzureServiceBusBackendJobServerConfiguration.cs" />
+    <Compile Include="Middlewares\JobScheduler\Implementations\DefaultJobsDashboardAuthorizationFilter.cs" />
+    <Compile Include="Middlewares\LogRequestInformationMiddleware.cs" />
+    <Compile Include="Middlewares\LogRequestInformationMiddlewareConfiguration.cs" />
+    <Compile Include="Middlewares\LogUserInformationMiddleware.cs" />
+    <Compile Include="Middlewares\LogUserInformationMiddlewareConfiguration.cs" />
+    <Compile Include="Middlewares\OwinNoCacheResponseMiddleware.cs" />
+    <Compile Include="Middlewares\ReadAuthTokenFromCookieMiddlewareConfiguration.cs" />
+    <Compile Include="Middlewares\RedirectToSsoIfNotLoggedInMiddlewareConfiguration.cs" />
+    <Compile Include="Middlewares\SignalR\Contracts\ISignalRConfiguration.cs" />
+    <Compile Include="Middlewares\SignalR\Implementations\SignalRAzureServiceBusScaleoutConfiguration.cs" />
+    <Compile Include="Middlewares\SignalR\Implementations\SignalRMessageSender.cs" />
+    <Compile Include="Implementations\DefaultLogger.cs" />
+    <Compile Include="Implementations\DefaultRandomStringProvider.cs" />
+    <Compile Include="Implementations\DefaultUserInformationProvider.cs" />
+    <Compile Include="Implementations\DefaultJsonContentFormatter.cs" />
+    <Compile Include="Implementations\DefaultAppEnvironmentProvider.cs" />
+    <Compile Include="Implementations\DefaultPathProvider.cs" />
+    <Compile Include="Implementations\DefaultDependenciesManagerProvider.cs" />
+    <Compile Include="Implementations\Project\FoundationEdmModelProvider.cs" />
+    <Compile Include="Middlewares\DefaultPageMiddleware.cs" />
+    <Compile Include="Middlewares\AutofacDependencyInjectionMiddlewareConfiguration.cs" />
+    <Compile Include="Middlewares\OwinExceptionHandlerMiddleware.cs" />
+    <Compile Include="Middlewares\RedirectToSsoIfNotLoggedInMiddleware.cs" />
+    <Compile Include="Middlewares\SignalR\MessagesHub.cs" />
+    <Compile Include="Middlewares\SignalR\Implementations\DefaultSignalRAssemblyLocator.cs" />
+    <Compile Include="Middlewares\SignalR\SignalRMiddlewareConfiguration.cs" />
+    <Compile Include="Middlewares\SignInPageMiddleware.cs" />
+    <Compile Include="Middlewares\SignInPageMiddlewareConfiguration.cs" />
+    <Compile Include="Middlewares\SingleSignOnMiddlewareConfiguration.cs" />
+    <Compile Include="Middlewares\ReadAuthTokenFromCookieMiddleware.cs" />
+    <Compile Include="Middlewares\OwinCacheResponseMiddleware.cs" />
+    <Compile Include="Middlewares\StaticFilesMiddlewareConfiguration.cs" />
+    <Compile Include="Middlewares\WebApi\ActionFilters\LogActionArgsFilterAttribute.cs" />
+    <Compile Include="Middlewares\WebApi\ActionFilters\RequestModelStateValidatorActionFilterAttribute.cs" />
+    <Compile Include="Implementations\DefaultExceptionToHttpErrorMapper.cs" />
+    <Compile Include="Middlewares\WebApi\OData\Implementations\DefaultODataModelBuilderProvider.cs" />
+    <Compile Include="Middlewares\WebApi\Implementations\DefaultWebApiGlobalActionFilterProviders.cs" />
+    <Compile Include="Middlewares\WebApi\OData\Implementations\DefaultWebApiODataControllerActionSelector.cs" />
+    <Compile Include="Middlewares\WebApi\OData\DefaultODataActionPayloadDeserializer.cs" />
+    <Compile Include="Middlewares\WebApi\OData\DefaultODataResourceDeserializer.cs" />
+    <Compile Include="Middlewares\WebApi\OData\DefaultODataPrimitiveSerializerX.cs" />
+    <Compile Include="Middlewares\WebApi\OData\DefaultODataUriResolver.cs" />
+    <Compile Include="Middlewares\WebApi\OData\Visitors\EmptyQueryNodeVisitor.cs" />
+    <Compile Include="Middlewares\WebApi\OData\Visitors\TraverserQueryNodeVisitor.cs" />
+    <Compile Include="Middlewares\WebApi\OData\WebApiODataMiddlewareConfiguration.cs" />
+    <Compile Include="Middlewares\WebApi\Implementations\DefaultWebApiTraceWritter.cs" />
+    <Compile Include="Models\DefaultPageModel.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="App.config">
+      <SubType>Designer</SubType>
+    </None>
+    <None Include="packages.config">
+      <SubType>Designer</SubType>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Foundation.Core\Foundation.Core.csproj">
+      <Project>{9a2ed9c1-2249-4f0a-a524-c46cb011bc74}</Project>
+      <Name>Foundation.Core</Name>
+      <Private>True</Private>
+    </ProjectReference>
+    <ProjectReference Include="..\Foundation.DataAccess\Foundation.DataAccess.csproj">
+      <Project>{022f3e55-04c4-4541-82fb-488bbd1cbad3}</Project>
+      <Name>Foundation.DataAccess</Name>
+      <Private>True</Private>
+    </ProjectReference>
+    <ProjectReference Include="..\Foundation.Model\Foundation.Model.csproj">
+      <Project>{95fe741e-25f3-4f94-990e-6e06ef983573}</Project>
+      <Name>Foundation.Model</Name>
+      <Private>True</Private>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Metadata\Views\" />
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>

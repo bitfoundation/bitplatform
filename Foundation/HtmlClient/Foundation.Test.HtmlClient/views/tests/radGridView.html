@@ -1,0 +1,36 @@
+﻿<view id="radGridView">
+
+    <rad-grid id="gridView" rad-datasource="vm.parentEntitiesDataSource">
+        <script type="toolbar/template">
+            <rad-grid-add-button id="gridAddButton">Add new Parent entity</rad-grid-add-button>
+        </script>
+        <script type="edit/template">
+            <dto-form name="dataItemForm" ng-model="dataItem">
+                <input class="k-textbox" placeholder="..." name="Name" ng-model="dataItem.Name" />
+            </dto-form>
+            <rad-grid-save-button>Save</rad-grid-save-button>
+            <rad-grid-cancel-button>Cancel</rad-grid-cancel-button>
+        </script>
+        <script type="view/template">
+            <tr>
+                <td name="Id" title="{{::'Id' | translate}}">
+                    {{::dataItem.Id}}
+                </td>
+                <td name="Name" title="{{::'Name' | translate}}" filter-data-source="vm.parentEntitiesDataSource" filter-text-field="Name" filter-value-field="Name">
+                    {{::dataItem.Name}}
+                </td>
+                <td name="Version" title="{{::'Version' | translate}}">
+                    {{::dataItem.Version == 1 ? '(-:' : ')-:'}}
+                </td>
+                <td>
+                    <rad-grid-edit-button>Update</rad-grid-edit-button>
+                    <rad-grid-delete-button>Delete</rad-grid-delete-button>
+                    <md-button id="doSomethingWithCurrentEntity" ng-click="vm.doSomethingWithCurrentEntity(this)">Do something with current entity</md-button>
+                </td>
+            </tr>
+        </script>
+    </rad-grid>
+
+    {{vm.parentEntitiesDataSource.current.Name}}
+
+</view>

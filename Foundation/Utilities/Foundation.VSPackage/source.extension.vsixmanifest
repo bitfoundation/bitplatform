@@ -1,0 +1,25 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<PackageManifest Version="2.0.0" xmlns="http://schemas.microsoft.com/developer/vsx-schema/2011" xmlns:d="http://schemas.microsoft.com/developer/vsx-schema-design/2011">
+  <Metadata>
+    <Identity Id="Foundation.VSPackage.Yasser Moradi.cdbff2cd-70df-4a4a-85c0-060502b9cd43" Version="3.5.6" Language="en-US" Publisher="Bit Foundation" />
+    <DisplayName>Foundation.VSPackage</DisplayName>
+    <Description xml:space="preserve">Foundation VSPackage</Description>
+    <Icon>Resources\FoundationVSPackage.ico</Icon>
+    <PreviewImage>Resources\FoundationVSPackage.ico</PreviewImage>
+  </Metadata>
+  <Installation>
+    <InstallationTarget Id="Microsoft.VisualStudio.Community" Version="[12.0,15.0)" />
+    <InstallationTarget Version="[12.0,15.0)" Id="Microsoft.VisualStudio.Pro" />
+    <InstallationTarget Version="[12.0,15.0)" Id="Microsoft.VisualStudio.Enterprise" />
+  </Installation>
+  <Dependencies>
+    <Dependency Id="Microsoft.Framework.NDP" DisplayName="Microsoft .NET Framework" d:Source="Manual" Version="[4.5,)" />
+    <Dependency Id="Microsoft.VisualStudio.MPF.14.0" DisplayName="Visual Studio MPF 14.0" d:Source="Installed" Version="[12.0,15.0)" />
+  </Dependencies>
+  <Assets>
+    <Asset Type="Microsoft.VisualStudio.VsPackage" d:Source="Project" d:ProjectName="%CurrentProject%" Path="|%CurrentProject%;PkgdefProjectOutputGroup|" />
+    <Asset Type="Microsoft.VisualStudio.Analyzer" d:Source="Project" d:ProjectName="Foundation.CSharpAnalyzers" Path="|Foundation.CSharpAnalyzers|" />
+    <Asset Type="Microsoft.VisualStudio.MefComponent" d:Source="Project" d:ProjectName="%CurrentProject%" Path="|%CurrentProject%|" />
+    <Asset Type="Microsoft.VisualStudio.MefComponent" d:Source="Project" d:ProjectName="Foundation.CodeGenerators" Path="|Foundation.CodeGenerators|" />
+  </Assets>
+</PackageManifest>

@@ -1,0 +1,42 @@
+﻿<#@ template language="C#" #>
+<#@ import namespace="Foundation.CodeGenerators.Model" #>
+<#@ import namespace="Microsoft.CodeAnalysis" #>
+<#@ import namespace="System.Collections.Generic" #>
+<#@ import namespace="System.Linq" #>
+<#@ parameter type="System.Collections.Generic.IList<Dto>" name="Dtos" #>
+<# foreach (Dto dto in Dtos)
+{#>
+
+<# List<string> namepsaces = new List<string>(); #>
+
+<# foreach (SymbolDisplayPart nsPart in dto.DtoSymbol.ContainingNamespace.ToDisplayParts().Where(n => n.Kind ==  SymbolDisplayPartKind.NamespaceName )) { #>
+	<# namepsaces.Add((nsPart.ToString())); #>
+	<# if(namepsaces.Count==1) { #> var  <#}#> <#= string.Join(".", namepsaces) #> = <#= string.Join(".", namepsaces) #> || {};
+<# } #>
+
+<#= dto.DtoSymbol.ToDisplayString() #> = $data.Entity.extend("<#= dto.DtoSymbol.ToDisplayString() #>", {
+	<# foreach (IPropertySymbol prp in dto.Properties)
+	{ #> 
+		<#= prp.Name #>: {
+			"type": "<#= prp.Type.GetEdmTypeName(useArrayForIEnumerableTypes:true) #>" , nullable: <#= prp.Type.IsNullable().ToString().ToLowerInvariant() #>
+			<# if (!prp.IsKey() && (prp.Type.IsCollectionType() || prp.Type.IsNullable()))
+								{
+									#>  , defaultValue: <#= prp.Type.GetJavaScriptDefaultValue() #>
+			<# } #>
+			<# if (prp.Type.IsCollectionType())
+								{
+									#> , "elementType": "<#= ((INamedTypeSymbol)prp.Type).GetEdmElementTypeName() #>"
+			<# } #>
+			<# if (prp.GetAttributes().Any(att => att.AttributeClass.Name == "InversePropertyAttribute"))
+			{
+				#> , "inverseProperty": "<#= prp.GetAttributes().Single(att => att.AttributeClass.Name == "InversePropertyAttribute").ConstructorArguments.Single().Value.ToString() #>"
+			<# } #>
+			<# if (prp.IsKey()) { #>
+			, "key": true
+			, "required" : true
+			, "computed": true
+			<# } #>
+	},
+	<#}#>
+	});
+<#}#>

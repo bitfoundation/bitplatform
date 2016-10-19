@@ -1,0 +1,14 @@
+{
+  "name": "bit-framework",
+  "version": "1.0.0",
+  "description": "Bit Framework",
+  "author": "Bit Foundation",
+  "devDependencies": {
+    "bower": "^1.7.9",
+    "gulp": "^3.9.1",
+    "gulp-bower": "^0.0.13",
+    "gulp-babel": "^6.1.2",
+    "gulp-sourcemaps": "^2.1.1",
+    "babel-preset-es2015": "^6.16.0"
+  }
+}
