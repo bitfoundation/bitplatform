@@ -41,8 +41,8 @@ public class SamplesController : DtoController<SampleDto>
 
             Dto dto = dtosProvider.GetProjectDtos(CreateProjectFromSourceCodes(dtoCode)).Single();
 
-            Assert.IsTrue(dto.Properties.ElementAt(0).IsKey());
-            Assert.IsTrue(dto.Properties.ElementAt(1).IsKey());
+            Assert.IsFalse(dto.Properties.ElementAt(0).IsKey());
+            Assert.IsFalse(dto.Properties.ElementAt(1).IsKey());
             Assert.IsTrue(dto.Properties.ElementAt(2).IsKey());
             Assert.IsFalse(dto.Properties.ElementAt(3).IsKey());
         }
