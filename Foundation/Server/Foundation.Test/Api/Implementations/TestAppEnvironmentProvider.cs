@@ -79,8 +79,8 @@ namespace Foundation.Test.Api.Implementations
                         new EnvironmentConfig { Key = "FoundationReadDbConnectionString", Value = @"TestDbConnectionString" + Guid.NewGuid().ToString() },
                         new EnvironmentConfig { Key = "IdentityCertificatePassword" , Value = "P@ssw0rd" },
                         new EnvironmentConfig { Key = "ClientSideAccessibleConfigTest", Value = true, AccessibleInClientSide = true},
-                        new EnvironmentConfig { Key = "ClientHostBaseUri", Value = "http://127.0.0.1" , AccessibleInClientSide=true },
-                        new EnvironmentConfig { Key = "ClientHostVirtualPath", Value = "/" , AccessibleInClientSide=true }
+                        new EnvironmentConfig { Key = "ClientHostBaseUri", Value = "http://127.0.0.1" , AccessibleInClientSide = true },
+                        new EnvironmentConfig { Key = "ClientHostVirtualPath", Value = "/" , AccessibleInClientSide = true }
                     }
                 };
             }
