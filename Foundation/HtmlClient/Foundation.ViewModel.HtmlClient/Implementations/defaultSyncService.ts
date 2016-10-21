@@ -17,10 +17,10 @@
             this.onlineContextFactory = onlineContextFactory;
         }
 
-        private entitySetConfigs: Array<{ entitySetName: string, getMethod?: (context: $data.EntityContext) => $data.Queryable<Foundation.Model.Contracts.ISyncableDto>, syncConfig?: { fromServerSync?: boolean, toServerSync?: boolean } }> = [];
+        private entitySetConfigs: Array<{ entitySetName: string, getMethod?: (context: $data.EntityContext) => $data.Queryable<Foundation.Model.Contracts.ISyncableDto>, syncConfig?: { fromServerSync?: boolean | (() => boolean), toServerSync?: boolean | (() => boolean) } }> = [];
 
         @Foundation.Core.Log()
-        public addEntitySetConfig<TEntityContext extends $data.EntityContext>(entitySet: $data.EntitySet<Foundation.Model.Contracts.ISyncableDto>, getMethod?: (context: TEntityContext) => $data.Queryable<Foundation.Model.Contracts.ISyncableDto>, syncConfig?: { fromServerSync?: boolean, toServerSync?: boolean }) {
+        public addEntitySetConfig<TEntityContext extends $data.EntityContext>(entitySet: $data.EntitySet<Foundation.Model.Contracts.ISyncableDto>, getMethod?: (context: TEntityContext) => $data.Queryable<Foundation.Model.Contracts.ISyncableDto>, syncConfig?: { fromServerSync?: boolean | (() => boolean), toServerSync?: boolean | (() => boolean) }) {
 
             if (entitySet == null)
                 throw new Error("entitySetName may not be null");
@@ -68,7 +68,7 @@
 
             let modifiedOfflineEntities = await offlineEntitySet.filter(e => e.ISV != true).toArray();
 
-            if (entitySetConfig.syncConfig.toServerSync == true) {
+            if (entitySetConfig.syncConfig.toServerSync == true || (typeof entitySetConfig.syncConfig.toServerSync == "function" && entitySetConfig.syncConfig.toServerSync() == true)) {
 
                 for (let modifiedOfflineEntity of modifiedOfflineEntities) {
                     let clonedEntityToBeSavedInOnlineContext = onlineEntitySet.elementType['create'](modifiedOfflineEntity['initData']) as Foundation.Model.Contracts.ISyncableDto;
@@ -84,7 +84,7 @@
                 await this.onlineContext.saveChanges();
             }
 
-            if (entitySetConfig.syncConfig.fromServerSync == true) {
+            if (entitySetConfig.syncConfig.fromServerSync == true || (typeof entitySetConfig.syncConfig.fromServerSync == "function" && entitySetConfig.syncConfig.fromServerSync() == true)) {
 
                 let offlineEntites = (await offlineEntitySet.map(e => { return { Id: e.Id, Version: e.Version }; })
                     .orderByDescending(e => e.Version)
