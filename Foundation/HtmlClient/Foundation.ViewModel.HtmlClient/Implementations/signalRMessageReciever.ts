@@ -17,7 +17,7 @@
             const listenerToCall = this.listeners.find(l => l.name.toLowerCase() == messageKey.toLowerCase());
             if (listenerToCall != null) {
                 try {
-                    for (let callbackIndex = 0; callbackIndex < listenerToCall.callbacks.length; callbackIndex++) {
+                    for (let callbackIndex = listenerToCall.callbacks.length - 1; callbackIndex >= 0; callbackIndex--) {
                         const callback = listenerToCall.callbacks[callbackIndex];
                         await callback(messageArgs);
                     }
@@ -131,7 +131,7 @@
         }
 
         private makeProxyCallback(hub, callback) {
-            return () => {
+            return function () {
                 callback.apply(hub, $.makeArray(arguments));
             };
         }
