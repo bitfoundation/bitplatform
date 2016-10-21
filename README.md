@@ -11,7 +11,7 @@ Requirements:
   
   3- .NET Core 1.0.1 - VS 2015 Tooling Preview 2 (Optional Requirement)
   
-  4- Node JS - NPM - Gulp - Less - Bower - Typings installed globally
+  4- Node JS - NPM - Gulp - Bower - Typings installed globally
   
 Steps:
 
@@ -25,12 +25,12 @@ Steps:
   
   5- Run typings install for Foundation\HtmlClient\Foundation.Core.HtmlClient
   
-  6- Build solution. Note that due the lack of TypeScript Project System, you might have to build the solution several times.
+  6- Build the solution. Note that due the lack of TypeScript Project System, you might have to build the solution more than once.
  
-To run the app:
+To run the samples:
 
   1- Run Visual Studio as Administrator
   
   2- Make sure that 80 port is free
   
-  3- Set Foundation.Test as startup project and run the app
+  3- Set Foundation.Test as startup project and run the samples.
