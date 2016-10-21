@@ -40,7 +40,7 @@ namespace Foundation.Api.Middlewares
                 var key = keyValue[0];
                 var value = keyValue[1];
                 if (key == 'access_token' || key == 'token_type'){{
-                    document.cookie = partStr + ';expires=' + nowAsGMTString + ';path=/';
+                    document.cookie = partStr + ';expires=' + nowAsGMTString + ';path={defaultPath}';
                 }}
                 localStorage[key] = value;
             }}
