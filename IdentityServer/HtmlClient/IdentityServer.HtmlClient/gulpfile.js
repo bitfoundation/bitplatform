@@ -1,4 +1,5 @@
-﻿var gulp = require("gulp");
+﻿/// <binding AfterBuild='less' />
+var gulp = require("gulp");
 var sourcemaps = require("gulp-sourcemaps");
 var babel = require("gulp-babel");
 var less = require("gulp-less");
