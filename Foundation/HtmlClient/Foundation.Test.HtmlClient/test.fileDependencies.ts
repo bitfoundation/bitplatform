@@ -222,6 +222,11 @@
     });
 
     dependencyManager.registerFileDependency({
+        name: "jayData-inmemroy-module",
+        path: "bit-framework/Foundation/HtmlClient/Foundation.Test.HtmlClient/bower_components/jaydata/dist/jaydatamodules/inmemory"
+    });
+
+    dependencyManager.registerFileDependency({
         name: "ng-component-router",
         path: "bit-framework/Foundation/HtmlClient/Foundation.Test.HtmlClient/bower_components/ngComponentRouter/angular_1_router"
     });
