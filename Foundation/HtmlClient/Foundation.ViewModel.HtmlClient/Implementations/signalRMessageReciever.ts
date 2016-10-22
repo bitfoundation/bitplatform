@@ -94,7 +94,7 @@
         }
 
         @Core.Log()
-        public async onMessageRecieved(messageKey: string, callback: (args?: any) => Promise<void>): Promise<void> {
+        public async onMessageRecieved(messageKey: string, callback: (args?: any) => Promise<void>): Promise<() => void> {
 
             if (messageKey == null)
                 throw new Error('messageKey is null');
@@ -109,24 +109,14 @@
             }
 
             listener.callbacks.push(callback);
-        }
 
-        @Core.Log()
-        public removeCallback(messageKey: string, callbackToRemove: (args?: any) => Promise<void>): void {
+            return () => {
 
-            if (this.isInited == false)
-                return;
-
-            if (messageKey == null)
-                throw new Error('messageKey is null');
-
-            let listener = this.listeners.find(l => l.name.toLowerCase() == messageKey.toLowerCase());
-
-            if (listener != null) {
-                let index = listener.callbacks.indexOf(callbackToRemove);
+                let index = listener.callbacks.indexOf(callback);
                 if (index !== -1) {
                     listener.callbacks.splice(index, 1);
                 }
+
             }
         }
 
