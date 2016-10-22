@@ -1,18 +1,19 @@
-﻿using System;
-using Foundation.Core.Contracts;
+﻿using Foundation.Core.Contracts;
 using Foundation.Core.Models;
+using Foundation.Test;
+using System;
 using System.Collections.Generic;
 
-namespace Foundation.Test.Api.Implementations
+namespace Foundation.AspNetCore.Test.Api.Implementations
 {
-    public class TestAppEnvironmentProvider : IAppEnvironmentProvider
+    public class FoundationAspNetCoreAppEnvironmentPrvider : IAppEnvironmentProvider
     {
-        protected TestAppEnvironmentProvider()
+        protected FoundationAspNetCoreAppEnvironmentPrvider()
         {
 
         }
 
-        public TestAppEnvironmentProvider(TestEnvironmentArgs args)
+        public FoundationAspNetCoreAppEnvironmentPrvider(TestEnvironmentArgs args)
         {
             _args = args;
         }

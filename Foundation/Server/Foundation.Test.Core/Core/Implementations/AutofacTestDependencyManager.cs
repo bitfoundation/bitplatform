@@ -75,24 +75,28 @@ namespace Foundation.Test.Core.Implementations
             return this;
         }
 
+        public List<Func<TypeInfo, bool>> AutoProxyCreationIncludeRules = new List<Func<TypeInfo, bool>>
+        {
+            serviceType => typeof(IDateTimeProvider).GetTypeInfo().Assembly == serviceType.Assembly,
+            serviceType => typeof(IOwinMiddlewareConfiguration).GetTypeInfo().Assembly == serviceType.Assembly,
+            serviceType => typeof(IRepository<>).GetTypeInfo().Assembly == serviceType.Assembly,
+            serviceType => typeof(IEntity).GetTypeInfo().Assembly == serviceType.Assembly,
+            serviceType => typeof(AutofacTestDependencyManager).GetTypeInfo().Assembly == serviceType.Assembly
+        };
+
+        public List<Func<TypeInfo, bool>> AutoProxyCreationIgnoreRules = new List<Func<TypeInfo, bool>>
+        {
+            serviceType => typeof(DbContext).GetTypeInfo().IsAssignableFrom(serviceType),
+            serviceType => typeof(Hub).GetTypeInfo().IsAssignableFrom(serviceType),
+            serviceType => serviceType.IsArray,
+            serviceType => serviceType.IsInterface
+        };
+
         public virtual bool IsGoingToCreateProxyForService(TypeInfo serviceType)
         {
-            return !serviceType.IsArray &&
-                !serviceType.IsInterface &&
-                AutoProxyCreateForTypesFromAssembliesInThisList.Any(asm => asm == serviceType.Assembly) &&
-                !typeof(DbContext).GetTypeInfo().IsAssignableFrom(serviceType) &&
-                !typeof(Hub).GetTypeInfo().IsAssignableFrom(serviceType);
+            return AutoProxyCreationIncludeRules.Any(rule => rule(serviceType) == true)
+                && AutoProxyCreationIgnoreRules.All(rule => rule(serviceType) == false);
         }
-
-        public List<Assembly> AutoProxyCreateForTypesFromAssembliesInThisList = new List<Assembly>
-        {
-            typeof(IDateTimeProvider).GetTypeInfo().Assembly,
-            typeof(IOwinMiddlewareConfiguration).GetTypeInfo().Assembly,
-            typeof(IRepository<>).GetTypeInfo().Assembly,
-            typeof(IEntity).GetTypeInfo().Assembly,
-            typeof(AutofacTestDependencyManager).GetTypeInfo().Assembly,
-            Assembly.GetCallingAssembly()
-        };
 
         public virtual void ComponentRegistration_Activating(object sender, Autofac.Core.ActivatingEventArgs<object> e)
         {

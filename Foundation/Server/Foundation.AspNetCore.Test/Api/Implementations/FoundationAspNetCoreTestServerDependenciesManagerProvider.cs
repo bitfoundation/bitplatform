@@ -2,7 +2,6 @@
 using Foundation.Core.Contracts;
 using Foundation.Core.Contracts.Project;
 using Foundation.Test;
-using System;
 using System.Collections.Generic;
 
 namespace Foundation.AspNetCore.Test.Api.Implementations
@@ -14,6 +13,11 @@ namespace Foundation.AspNetCore.Test.Api.Implementations
         public FoundationAspNetCoreTestServerDependenciesManagerProvider(TestEnvironmentArgs args)
         {
             _args = args;
+        }
+
+        protected FoundationAspNetCoreTestServerDependenciesManagerProvider()
+        {
+
         }
 
         public virtual IEnumerable<IDependenciesManager> GetDependenciesManagers()

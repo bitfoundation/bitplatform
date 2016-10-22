@@ -15,10 +15,8 @@ using Foundation.Core.Contracts;
 using Foundation.Core.Implementations;
 using Foundation.Test;
 using Foundation.Test.Api.Implementations;
-using Foundation.Test.Api.Implementations.Project;
 using Foundation.Test.Api.Middlewares;
 using Foundation.Test.Api.Middlewares.JobScheduler.Implementations;
-using Foundation.Test.Model.Implemenations;
 using Microsoft.Extensions.DependencyInjection;
 using System.Reflection;
 
@@ -62,7 +60,6 @@ namespace Foundation.AspNetCore.Test.Api.Implementations.Project
             dependencyManager.Register<ITestUserService, TestUserService>(lifeCycle: DepepdencyLifeCycle.SingleInstance);
 
             dependencyManager.RegisterAppEvents<FoundationInitialNameServiceConfiguration>();
-            dependencyManager.RegisterAppEvents<TestInitialNameServiceConfiguration>();
 
             dependencyManager.RegisterAspNetCoreMiddleware<AspNetCoreExceptionHandlerMiddlewareConfiguration>(); //@Important
             dependencyManager.RegisterAspNetCoreMiddleware<TestWebApiCoreMvcMiddlewareConfiguration>(); //@Important
@@ -81,7 +78,7 @@ namespace Foundation.AspNetCore.Test.Api.Implementations.Project
             dependencyManager.RegisterOwinMiddleware<LogUserInformationMiddlewareConfiguration>();
             dependencyManager.RegisterOwinMiddleware<MetadataMiddlewareConfiguration>();
 
-            dependencyManager.RegisterDefaultWebApiConfiguration(typeof(FoundationEdmModelProvider).GetTypeInfo().Assembly, typeof(TestEdmModelProvider).GetTypeInfo().Assembly, typeof(FoundationAspNetCoreTestEdmModelProvider).GetTypeInfo().Assembly);
+            dependencyManager.RegisterDefaultWebApiConfiguration(typeof(FoundationEdmModelProvider).GetTypeInfo().Assembly, typeof(FoundationAspNetCoreTestEdmModelProvider).GetTypeInfo().Assembly);
 
             dependencyManager.RegisterGlobalWebApiActionFiltersUsing(httpConfiguration =>
             {
@@ -94,7 +91,6 @@ namespace Foundation.AspNetCore.Test.Api.Implementations.Project
                 {
                     childDependencyManager.RegisterWebApiODataMiddlewareUsingDefaultConfiguration();
                     childDependencyManager.RegisterEdmModelProvider<FoundationEdmModelProvider>();
-                    childDependencyManager.RegisterEdmModelProvider<TestEdmModelProvider>();
 
                 }).Resolve<WebApiODataMiddlewareConfiguration>();
 
@@ -106,11 +102,7 @@ namespace Foundation.AspNetCore.Test.Api.Implementations.Project
             dependencyManager.RegisterBackgroundJobWorkerUsingDefaultConfiguration<JobSchedulerInMemoryBackendConfiguration>();
 
             dependencyManager.Register<IAppMetadataProvider, DefaultAppMetadataProvider>(lifeCycle: DepepdencyLifeCycle.SingleInstance);
-            dependencyManager.RegisterMetadata(typeof(FoundationEdmModelProvider).GetTypeInfo().Assembly, typeof(TestEdmModelProvider).GetTypeInfo().Assembly, typeof(FoundationAspNetCoreTestEdmModelProvider).GetTypeInfo().Assembly);
-
-            dependencyManager.RegisterEfCoreAutoMapper();
-
-            dependencyManager.RegisterDtoModelMapperConfiguration<TestDtoModelMapperConfiguration>();
+            dependencyManager.RegisterMetadata(typeof(FoundationEdmModelProvider).GetTypeInfo().Assembly, typeof(FoundationAspNetCoreTestEdmModelProvider).GetTypeInfo().Assembly);
 
             if (_args?.AdditionalDependencies != null)
                 _args?.AdditionalDependencies(dependencyManager);

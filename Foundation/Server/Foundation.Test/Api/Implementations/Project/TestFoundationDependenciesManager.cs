@@ -17,7 +17,6 @@ using Foundation.Test.Api.Middlewares;
 using Foundation.Test.Api.Middlewares.JobScheduler.Implementations;
 using Foundation.Test.DataAccess.Implementations;
 using Foundation.Test.Model.Implemenations;
-using System;
 using System.Reflection;
 using System.Web.Http;
 
@@ -25,15 +24,12 @@ namespace Foundation.Test.Api.Implementations.Project
 {
     public class TestFoundationDependenciesManager : IDependenciesManager
     {
-        private readonly bool _useSso;
+        private readonly TestEnvironmentArgs _args;
 
-        public TestFoundationDependenciesManager(bool useSso, Action<IDependencyManager> additionalDependencies = null)
+        public TestFoundationDependenciesManager(TestEnvironmentArgs args)
         {
-            _useSso = useSso;
-            _additionalDependencies = additionalDependencies;
+            _args = args;
         }
-
-        private readonly Action<IDependencyManager> _additionalDependencies;
 
         public virtual void ConfigureDependencies(IDependencyManager dependencyManager)
         {
@@ -69,7 +65,7 @@ namespace Foundation.Test.Api.Implementations.Project
             dependencyManager.RegisterOwinMiddleware<LogRequestInformationMiddlewareConfiguration>();
             dependencyManager.RegisterOwinMiddleware<SignInPageMiddlewareConfiguration>();
             dependencyManager.RegisterOwinMiddleware<ReadAuthTokenFromCookieMiddlewareConfiguration>();
-            if (_useSso)
+            if (_args?.UseSso == true)
                 dependencyManager.RegisterOwinMiddleware<SingleSignOnMiddlewareConfiguration>();
             else
                 dependencyManager.RegisterOwinMiddleware<EmbeddedOAuthMiddlewareConfiguration>();
@@ -131,8 +127,8 @@ namespace Foundation.Test.Api.Implementations.Project
 
             dependencyManager.RegisterDtoModelMapperConfiguration<TestDtoModelMapperConfiguration>();
 
-            if (_additionalDependencies != null)
-                _additionalDependencies(dependencyManager);
+            if (_args?.AdditionalDependencies != null)
+                _args?.AdditionalDependencies(dependencyManager);
         }
     }
 }

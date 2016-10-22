@@ -42,9 +42,6 @@
         "Foundation.Model": {
           "target": "project"
         },
-        "Foundation.Test": {
-          "target": "project"
-        },
         "Foundation.Test.Core": {
           "target": "project"
         }

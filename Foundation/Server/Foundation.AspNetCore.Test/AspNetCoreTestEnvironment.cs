@@ -5,8 +5,14 @@ using Foundation.Test.Server;
 
 namespace Foundation.AspNetCore.Test
 {
-    public class AspNetCoreTestEnvironment : TestEnvironment
+    public class AspNetCoreTestEnvironment : TestEnvironmentBase
     {
+        public AspNetCoreTestEnvironment(TestEnvironmentArgs args = null)
+            : base(args)
+        {
+
+        }
+
         static AspNetCoreTestEnvironment()
         {
             TestServerFactory.GetSelfHostTestServer = () =>
@@ -18,25 +24,9 @@ namespace Foundation.AspNetCore.Test
             {
                 return new AspNetCoreEmbeddedTestServer();
             };
-        }
 
-        public AspNetCoreTestEnvironment(TestEnvironmentArgs args = null)
-            : base(ApplyDefaults(args))
-        {
-
-        }
-
-        private static TestEnvironmentArgs ApplyDefaults(TestEnvironmentArgs args)
-        {
-            if (args == null)
-                args = new TestEnvironmentArgs();
-
-            args.UseSso = false;
-
-            if (args.CustomDependenciesManagerProvider == null)
-                args.CustomDependenciesManagerProvider = new FoundationAspNetCoreTestServerDependenciesManagerProvider(args);
-
-            return args;
+            DependenciesManagerProviderBuilder = (args) => new FoundationAspNetCoreTestServerDependenciesManagerProvider(args);
+            AppEnvironmentProviderBuilder = (args) => new FoundationAspNetCoreAppEnvironmentPrvider(args);
         }
     }
 }

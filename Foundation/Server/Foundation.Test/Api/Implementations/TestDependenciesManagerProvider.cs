@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using Foundation.Core.Contracts;
 using Foundation.Core.Contracts.Project;
 using Foundation.Test.Api.Implementations.Project;
@@ -13,18 +12,16 @@ namespace Foundation.Test.Api.Implementations
 
         }
 
-        private readonly Action<IDependencyManager> _additionalDependencies;
-        private readonly bool _useSso;
+        private readonly TestEnvironmentArgs _args;
 
-        public TestDependenciesManagerProvider(Action<IDependencyManager> additionalDependencies = null, bool useSso = false)
+        public TestDependenciesManagerProvider(TestEnvironmentArgs args)
         {
-            _useSso = useSso;
-            _additionalDependencies = additionalDependencies;
+            _args = args;
         }
 
         public virtual IEnumerable<IDependenciesManager> GetDependenciesManagers()
         {
-            return new IDependenciesManager[] { new TestFoundationDependenciesManager(_useSso, _additionalDependencies) };
+            return new IDependenciesManager[] { new TestFoundationDependenciesManager(_args) };
         }
     }
 }
