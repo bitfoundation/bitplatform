@@ -53,7 +53,10 @@ namespace Foundation.Api.Middlewares.SignalR
                     cnfg.Configure(SignalRConfig);
                 });
 
-            owinApp.MapSignalR("/SignalR", SignalRConfig);
+            owinApp.Map("/signalr", innerOwinApp =>
+            {
+                innerOwinApp.RunSignalR(SignalRConfig);
+            });
         }
     }
 }
