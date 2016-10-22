@@ -505,11 +505,6 @@
       <Project>{b0ccc9c9-822d-480b-ad8e-2c9b0a892c64}</Project>
       <Name>Foundation.Test.Core</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\..\..\bit-framework\Foundation\Server\Foundation.Test\Foundation.Test.csproj">
-      <Project>{94b6ac28-3fe0-4126-9397-b7158c92d35c}</Project>
-      <Name>Foundation.Test</Name>
-      <Private>True</Private>
-    </ProjectReference>
     <ProjectReference Include="..\IdentityServer.Api\IdentityServer.Api.csproj">
       <Project>{8fbf33c3-7394-4090-bc9a-8675a47b3202}</Project>
       <Name>IdentityServer.Api</Name>

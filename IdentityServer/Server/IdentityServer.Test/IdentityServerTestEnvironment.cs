@@ -1,10 +1,13 @@
 ﻿using Foundation.Test;
 using IdentityServer.Api.Contracts;
 using IdentityServer.Test.Api.Implementations;
+using System;
+using System.Collections.Generic;
+using System.Reflection;
 
 namespace IdentityServer.Test
 {
-    public class IdentityServerTestEnvironment : TestEnvironment
+    public class IdentityServerTestEnvironment : TestEnvironmentBase
     {
         public IdentityServerTestEnvironment(TestEnvironmentArgs args)
             : base(args)
@@ -21,7 +24,11 @@ namespace IdentityServer.Test
                 Port = 8080,
                 CustomDependenciesManagerProvider = new IdentityServerTestDependenciesManagerProvider(),
                 CustomAppEnvironmentProvider = new IdentityServerTestAppEnvironmentProvider(),
-                AutoCreateProxyForAssembliesInThisList = new[] { typeof(IdentityServerTestEnvironment).Assembly, typeof(IClientProvider).Assembly }
+                AutoProxyCreationIncludeRules = new List<Func<TypeInfo, bool>>
+                {
+                    serviceType => serviceType.Assembly == typeof(IdentityServerTestEnvironment).Assembly,
+                    serviceType => serviceType.Assembly == typeof(IClientProvider).Assembly
+                }
             })
         {
 
