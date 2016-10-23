@@ -20,6 +20,12 @@
     "xmlDoc": true
   },
 
+  "scripts": {
+    "postcompile": [
+      "dotnet pack --no-build --configuration %compile:Configuration%"
+    ]
+  },
+
   "frameworks": {
     "net462": {
       "dependencies": {
