@@ -1,8 +1,11 @@
 {
-  "version": "1.0.0-*",
+  "version": "0.0.0-1",
+
+  "compilationOptions": {
+    "keyFile": "Bit-Foundation.snk"
+  },
 
   "dependencies": {
-    "Foundation.AspNetCore": "1.0.0-*",
     "Microsoft.AspNetCore.Server.Kestrel": "1.0.1",
     "dotnet-test-mstest": "1.1.1-preview",
     "MSTest.TestFramework": "1.0.4-preview",
@@ -17,12 +20,12 @@
     "Microsoft.Owin.Security": "3.0.1",
     "Microsoft.AspNetCore.Mvc.ViewFeatures": "1.0.1",
     "Microsoft.AspNetCore.Routing": "1.0.1",
-    "Microsoft.AspNetCore.Mvc": "1.0.1"
+    "Microsoft.AspNetCore.Mvc": "1.0.1",
+    "Foundation.AspNetCore": "0.0.0-1"
   },
 
   "buildOptions": {
     "xmlDoc": true
-  
   },
 
   "testRunner": "mstest",

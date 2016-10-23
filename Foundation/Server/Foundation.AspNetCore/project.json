@@ -1,5 +1,9 @@
 {
-  "version": "1.0.0-*",
+  "version": "0.0.0-1",
+
+  "compilationOptions": {
+    "keyFile": "Bit-Foundation.snk"
+  },
 
   "dependencies": {
     "Autofac": "4.1.1",
@@ -14,7 +18,6 @@
 
   "buildOptions": {
     "xmlDoc": true
-  
   },
 
   "frameworks": {
