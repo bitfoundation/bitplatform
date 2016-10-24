@@ -49,6 +49,12 @@
   <PropertyGroup>
     <StartupObject>IdentityServer.Test.Program</StartupObject>
   </PropertyGroup>
+  <PropertyGroup>
+    <SignAssembly>true</SignAssembly>
+  </PropertyGroup>
+  <PropertyGroup>
+    <AssemblyOriginatorKeyFile>Bit-Foundation.snk</AssemblyOriginatorKeyFile>
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="AntiXssLibrary">
       <HintPath>..\..\..\packages\AntiXSS.4.3.0\lib\net40\AntiXssLibrary.dll</HintPath>
@@ -515,6 +521,7 @@
     <None Include="app.config">
       <SubType>Designer</SubType>
     </None>
+    <None Include="Bit-Foundation.snk" />
     <None Include="packages.config">
       <SubType>Designer</SubType>
     </None>
