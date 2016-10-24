@@ -1,5 +1,4 @@
-﻿using Foundation.Api.Middlewares.WebApi.OData.Contracts;
-using Owin;
+﻿using Owin;
 using System.Web.Http;
 using NWebsec.Owin;
 using System;
@@ -21,6 +20,7 @@ namespace Foundation.Api.Middlewares.WebApi.OData.Implementations
             {
                 innerApp.Use<OwinNoCacheResponseMiddleware>();
                 innerApp.UseXContentTypeOptions();
+                innerApp.Use<AddAcceptCharsetToRequestHeadersIfNotAnyMiddleware>();
                 innerApp.UseWebApi(server);
             });
         }

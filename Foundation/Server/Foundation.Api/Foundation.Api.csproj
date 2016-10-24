@@ -460,6 +460,7 @@
     <Compile Include="Extensions\IOwinContextExtensions.cs" />
     <Compile Include="Implementations\AutofacDependencyManager.cs" />
     <Compile Include="Implementations\Project\DefaultApiAssembliesProvider.cs" />
+    <Compile Include="Middlewares\AddAcceptCharsetToRequestHeadersIfNotAnyMiddleware.cs" />
     <Compile Include="Middlewares\DelegateOwinMiddlewareConfiguration.cs" />
     <Compile Include="Middlewares\SignalR\Contracts\IMessagesHubEvents.cs" />
     <Compile Include="Middlewares\SignalR\Implementations\DefaultMessageHubEvents.cs" />
