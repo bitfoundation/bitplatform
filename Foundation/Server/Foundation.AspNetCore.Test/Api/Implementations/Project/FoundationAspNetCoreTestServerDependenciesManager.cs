@@ -85,9 +85,9 @@ namespace Foundation.AspNetCore.Test.Api.Implementations.Project
                 httpConfiguration.Filters.Add(new DefaultODataAuthorizeAttribute());
             });
 
-            dependencyManager.RegisterUsing<IOwinMiddlewareConfiguration>(resolver =>
+            dependencyManager.RegisterUsing<IOwinMiddlewareConfiguration>(() =>
             {
-                return dependencyManager.CreateChildDependencyManager(childDependencyManager =>
+                return dependencyManager.CreateChildDependencyResolver(childDependencyManager =>
                 {
                     childDependencyManager.RegisterWebApiODataMiddlewareUsingDefaultConfiguration();
                     childDependencyManager.RegisterEdmModelProvider<FoundationEdmModelProvider>();

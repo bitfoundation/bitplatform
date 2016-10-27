@@ -17,18 +17,18 @@ namespace Foundation.Api.Middlewares
     /// </summary>
     public class AutofacDependencyInjectionMiddlewareConfiguration : IOwinMiddlewareConfiguration
     {
-        private readonly ILifetimeScope _container;
+        private readonly ILifetimeScope _lifetimeScope;
 
         protected AutofacDependencyInjectionMiddlewareConfiguration()
         {
         }
 
-        public AutofacDependencyInjectionMiddlewareConfiguration(ILifetimeScope container)
+        public AutofacDependencyInjectionMiddlewareConfiguration(IAutofacDependencyManager dependencyManager)
         {
-            if (container == null)
-                throw new ArgumentNullException();
+            if (dependencyManager == null)
+                throw new ArgumentNullException(nameof(dependencyManager));
 
-            _container = container;
+            _lifetimeScope = dependencyManager.GetContainer();
         }
 
         public virtual void Configure(IAppBuilder owinApp)
@@ -36,7 +36,7 @@ namespace Foundation.Api.Middlewares
             if (owinApp == null)
                 throw new ArgumentNullException(nameof(owinApp));
 
-            owinApp.UseAutofacLifetimeScopeInjector(_container);
+            owinApp.UseAutofacLifetimeScopeInjector(_lifetimeScope);
 
             owinApp.Use<AutofacScopeBasedDependencyResolverMiddleware>();
         }
@@ -54,7 +54,10 @@ namespace Foundation.Api.Middlewares
 
         public override async Task Invoke(IOwinContext context)
         {
-            context.Set<IDependencyResolver>("DependencyResolver", new AutofacScopeBasedDependencyResolver(context.GetAutofacLifetimeScope()));
+            IAutofacDependencyManager childDependencyManager = new AutofacDependencyManager();
+            childDependencyManager.UseContainer(context.GetAutofacLifetimeScope());
+
+            context.Set<IDependencyResolver>("DependencyResolver", (IDependencyResolver)childDependencyManager);
 
             await Next.Invoke(context);
         }

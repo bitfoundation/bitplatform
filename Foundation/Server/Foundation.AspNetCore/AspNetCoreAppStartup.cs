@@ -41,9 +41,9 @@ namespace Foundation.AspNetCore
                 projectDependenciesManager.ConfigureDependencies(DefaultDependencyManager.Current);
             }
 
-            DefaultDependencyManager.Current.RegisterUsing(dr =>
+            DefaultDependencyManager.Current.RegisterUsing(() =>
             {
-                HttpContext context = dr.Resolve<IHttpContextAccessor>().HttpContext;
+                HttpContext context = DefaultDependencyManager.Current.Resolve<IHttpContextAccessor>().HttpContext;
                 return (IOwinContext)context.Items["OwinContext"];
             }, lifeCycle: DepepdencyLifeCycle.InstancePerLifetimeScope);
         }

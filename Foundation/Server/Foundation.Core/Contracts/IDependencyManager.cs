@@ -28,8 +28,6 @@ namespace Foundation.Core.Contracts
         bool IsRegistered<TContract>();
 
         bool IsRegistered(TypeInfo contractType);
-
-        IDependencyResolver CreateScope();
     }
 
     public interface IDependencyManager : IDependencyResolver
@@ -58,9 +56,9 @@ namespace Foundation.Core.Contracts
 
         IDependencyManager RegisterGeneric(TypeInfo contractType, TypeInfo serviceType, DepepdencyLifeCycle lifeCycle);
 
-        IDependencyManager RegisterUsing<TContract>(Func<IDependencyResolver, TContract> factory, string name = null,
+        IDependencyManager RegisterUsing<TContract>(Func<TContract> factory, string name = null,
             DepepdencyLifeCycle lifeCycle = DepepdencyLifeCycle.InstancePerLifetimeScope, bool overwriteExciting = true);
 
-        IDependencyResolver CreateChildDependencyManager(Action<IDependencyManager> childDependencyManager);
+        IDependencyResolver CreateChildDependencyResolver(Action<IDependencyManager> childDependencyManager = null);
     }
 }

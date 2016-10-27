@@ -22,7 +22,7 @@ namespace Foundation.Test.Api
 
             }
 
-            DefaultDependencyManager.Current.Resolve<IDependencyResolver>();
+            DefaultDependencyManager.Current.Resolve<IDependencyManager>();
         }
 
         [TestMethod]
