@@ -1,12 +1,17 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Web.Http;
+﻿using Foundation.Api.Middlewares.WebApi.ActionFilters;
 using Foundation.Api.Middlewares.WebApi.Contracts;
-using Foundation.Api.Middlewares.WebApi.ActionFilters;
-using Foundation.Core.Contracts;
+using System.Web.Http;
 
 namespace Foundation.Api.Middlewares.WebApi.Implementations
 {
+    public class GlobalHostAuthenticationFilterProvider : IWebApiGlobalActionFiltersProvider
+    {
+        public virtual void ConfigureGlobalActionFilter(HttpConfiguration webApiConfiguration)
+        {
+            webApiConfiguration.Filters.Add(new HostAuthenticationFilter("Bearer"));
+        }
+    }
+
     public class GlobalDefaultExceptionHandlerActionFilterProvider : IWebApiGlobalActionFiltersProvider
     {
         public virtual void ConfigureGlobalActionFilter(HttpConfiguration webApiConfiguration)

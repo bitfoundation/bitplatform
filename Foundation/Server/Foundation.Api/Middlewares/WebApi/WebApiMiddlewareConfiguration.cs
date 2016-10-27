@@ -17,6 +17,7 @@ namespace Foundation.Api.Middlewares.WebApi
         private readonly IEnumerable<IWebApiGlobalActionFiltersProvider> _globalActionFilterProviders;
         private readonly System.Web.Http.Dependencies.IDependencyResolver _webApiDependencyResolver;
         private readonly IWebApiOwinPipelineInjector _webApiOwinPipelineInjector;
+        private HttpConfiguration _webApiConfig;
 
         protected WebApiMiddlewareConfiguration()
         {
@@ -49,36 +50,37 @@ namespace Foundation.Api.Middlewares.WebApi
             if (owinApp == null)
                 throw new ArgumentNullException(nameof(owinApp));
 
-            HttpConfiguration webApiConfig = new HttpConfiguration();
+            _webApiConfig = new HttpConfiguration();
+            _webApiConfig.SuppressHostPrincipal();
 
             _globalActionFilterProviders.ToList()
                 .ForEach(actionFilterProvider =>
                 {
-                    actionFilterProvider.ConfigureGlobalActionFilter(webApiConfig);
+                    actionFilterProvider.ConfigureGlobalActionFilter(_webApiConfig);
                 });
 
-            webApiConfig.SetTimeZoneInfo(TimeZoneInfo.Utc);
+            _webApiConfig.SetTimeZoneInfo(TimeZoneInfo.Utc);
 
-            webApiConfig.IncludeErrorDetailPolicy = _activeAppEnvironment.DebugMode ? IncludeErrorDetailPolicy.LocalOnly : IncludeErrorDetailPolicy.Never;
+            _webApiConfig.IncludeErrorDetailPolicy = _activeAppEnvironment.DebugMode ? IncludeErrorDetailPolicy.LocalOnly : IncludeErrorDetailPolicy.Never;
 
-            webApiConfig.DependencyResolver = _webApiDependencyResolver;
+            _webApiConfig.DependencyResolver = _webApiDependencyResolver;
 
-            HttpServer server = new HttpServer(webApiConfig);
+            HttpServer server = new HttpServer(_webApiConfig);
 
-            webApiConfig.MapHttpAttributeRoutes();
+            _webApiConfig.MapHttpAttributeRoutes();
 
-            webApiConfig.Routes.MapHttpRoute(name: "default", routeTemplate: "api/{controller}/{action}", defaults: new { action = RouteParameter.Optional });
+            _webApiConfig.Routes.MapHttpRoute(name: "default", routeTemplate: "api/{controller}/{action}", defaults: new { action = RouteParameter.Optional });
 
-            owinApp.UseAutofacWebApi(webApiConfig);
+            owinApp.UseAutofacWebApi(_webApiConfig);
 
             _webApiOwinPipelineInjector.UseWebApiOData(owinApp, server);
 
-            webApiConfig.EnsureInitialized();
+            _webApiConfig.EnsureInitialized();
         }
 
         public virtual void Dispose()
         {
-
+            _webApiConfig.Dispose();
         }
     }
 }

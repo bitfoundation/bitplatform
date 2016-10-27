@@ -75,6 +75,7 @@ namespace Foundation.Api.Middlewares.WebApi.OData
                 throw new ArgumentNullException(nameof(owinApp));
 
             _webApiConfig = new HttpConfiguration();
+            _webApiConfig.SuppressHostPrincipal();
 
             _globalActionFilterProviders.ToList()
                 .ForEach(actionFilterProvider =>
