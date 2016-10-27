@@ -17,5 +17,7 @@
         public virtual string DesiredTimeZoneValue { get; set; }
 
         public virtual string EnvironmentConfigsJSON { get; set; }
+
+        public virtual string BaseHref { get; set; }
     }
 }
