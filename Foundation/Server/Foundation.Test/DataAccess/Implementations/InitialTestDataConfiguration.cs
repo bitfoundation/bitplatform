@@ -8,14 +8,14 @@ namespace Foundation.Test.DataAccess.Implementations
 {
     public class InitialTestDataConfiguration : IAppEvents
     {
-        private readonly IDependencyResolver _dependencyResolver;
+        private readonly IDependencyManager _dependencyManager;
 
-        public InitialTestDataConfiguration(IDependencyResolver dependencyResolver)
+        public InitialTestDataConfiguration(IDependencyManager dependencyManager)
         {
-            if (dependencyResolver == null)
-                throw new ArgumentNullException(nameof(dependencyResolver));
+            if (dependencyManager == null)
+                throw new ArgumentNullException(nameof(dependencyManager));
 
-            _dependencyResolver = dependencyResolver;
+            _dependencyManager = dependencyManager;
         }
 
         protected InitialTestDataConfiguration()
@@ -68,7 +68,7 @@ namespace Foundation.Test.DataAccess.Implementations
 
         public virtual void OnAppStartup()
         {
-            using (IDependencyResolver childDependencyResolver = _dependencyResolver.CreateScope())
+            using (IDependencyResolver childDependencyResolver = _dependencyManager.CreateChildDependencyResolver())
             {
                 TestDbContext dbContext = childDependencyResolver.Resolve<TestDbContext>();
 
@@ -86,7 +86,7 @@ namespace Foundation.Test.DataAccess.Implementations
                 dbContext.SaveChanges();
             }
 
-            using (IDependencyResolver childDependencyResolver = _dependencyResolver.CreateScope()) /* It might be a problem in EntityFramework.Core 1 In Memory Provider */
+            using (IDependencyResolver childDependencyResolver = _dependencyManager.CreateChildDependencyResolver()) /* It might be a problem in EntityFramework.Core 1 In Memory Provider */
             {
                 TestDbContext dbContext = childDependencyResolver.Resolve<TestDbContext>();
 
@@ -98,7 +98,7 @@ namespace Foundation.Test.DataAccess.Implementations
 
         public virtual void OnAppEnd()
         {
-            using (IDependencyResolver childDependencyResolver = _dependencyResolver.CreateScope())
+            using (IDependencyResolver childDependencyResolver = _dependencyManager.CreateChildDependencyResolver())
             {
                 TestDbContext dbContext = childDependencyResolver.Resolve<TestDbContext>();
 
