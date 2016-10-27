@@ -6,14 +6,14 @@ namespace IdentityServer.Api.Implementations
 {
     public class DefaultIdentityServerLogProvider : ILogProvider, IDisposable
     {
-        private readonly IDependencyResolver _resolver;
+        private readonly IDependencyManager _dependencyManager;
 
-        public DefaultIdentityServerLogProvider(IDependencyResolver resolver)
+        public DefaultIdentityServerLogProvider(IDependencyManager dependencyManager)
         {
-            if (resolver == null)
-                throw new ArgumentNullException(nameof(resolver));
+            if (dependencyManager == null)
+                throw new ArgumentNullException(nameof(dependencyManager));
 
-            _resolver = resolver;
+            _dependencyManager = dependencyManager;
 
             _logger = (level, func, exception, parameters) =>
              {
@@ -25,7 +25,7 @@ namespace IdentityServer.Api.Implementations
 
                          try
                          {
-                             scope = _resolver.CreateScope();
+                             scope = _dependencyManager.CreateChildDependencyResolver();
                          }
                          catch (ObjectDisposedException)
                          { }
