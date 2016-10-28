@@ -26,6 +26,7 @@
         "../../../packages/Microsoft.AspNet.Razor.3.2.3/lib/net45/System.Web.Razor.dll": {},
         "../../../packages/Microsoft.AspNet.SignalR.Core.2.2.1/lib/net45/Microsoft.AspNet.SignalR.Core.dll": {},
         "../../../packages/Microsoft.AspNet.SignalR.ServiceBus.2.2.1/lib/net45/Microsoft.AspNet.SignalR.ServiceBus.dll": {},
+        "../../../packages/Microsoft.AspNet.SignalR.SqlServer.2.2.1/lib/net45/Microsoft.AspNet.SignalR.SqlServer.dll": {},
         "../../../packages/Microsoft.AspNet.WebApi.Client.5.2.3/lib/net45/System.Net.Http.Formatting.dll": {},
         "../../../packages/Microsoft.AspNet.WebApi.Core.5.2.3/lib/net45/System.Web.Http.dll": {},
         "../../../packages/Microsoft.AspNet.WebApi.Owin.5.2.3/lib/net45/System.Web.Http.Owin.dll": {},

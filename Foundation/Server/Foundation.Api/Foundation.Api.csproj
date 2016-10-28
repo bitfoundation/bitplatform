@@ -499,7 +499,6 @@
     <Compile Include="Exceptions\DomainLogicException.cs" />
     <Compile Include="Exceptions\BadRequestException.cs" />
     <Compile Include="Exceptions\ResourceNotFoundaException.cs" />
-    <Compile Include="Implementations\AutofacScopeBasedDependencyResolver.cs" />
     <Compile Include="Implementations\DefaultDependencyManager.cs" />
     <Compile Include="Implementations\DefaultTimeZoneManager.cs" />
     <Compile Include="Implementations\DefaultPageRequestDetector.cs" />
