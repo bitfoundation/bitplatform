@@ -13,15 +13,15 @@ namespace Foundation.Core.Models
 
         public virtual bool DebugMode { get; set; }
 
-        public virtual EnvironmentAppInfo AppInfo { get; set; }
+        public virtual EnvironmentAppInfo AppInfo { get; set; } = new EnvironmentAppInfo { };
 
-        public virtual EnvironmentSecurity Security { get; set; }
+        public virtual EnvironmentSecurity Security { get; set; } = new EnvironmentSecurity { };
 
-        public virtual EnvironmentCulture[] Cultures { get; set; }
+        public virtual EnvironmentCulture[] Cultures { get; set; } = new EnvironmentCulture[] { };
 
-        public virtual EnvironmentTheme[] Themes { get; set; }
+        public virtual EnvironmentTheme[] Themes { get; set; } = new EnvironmentTheme[] { };
 
-        public virtual List<EnvironmentConfig> Configs { get; set; }
+        public virtual List<EnvironmentConfig> Configs { get; set; } = new List<EnvironmentConfig>();
 
         public virtual T GetConfig<T>(string configKey)
         {
