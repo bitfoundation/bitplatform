@@ -5,7 +5,6 @@ using Foundation.Api.Contracts;
 using Foundation.Api.Contracts.Metadata;
 using Foundation.Api.Contracts.Project;
 using Foundation.Api.Implementations;
-using Foundation.Api.Implementations.Metadata;
 using Foundation.Api.Implementations.Project;
 using Foundation.Api.Middlewares;
 using Foundation.Api.Middlewares.JobScheduler;
@@ -37,13 +36,13 @@ namespace Foundation.Core.Contracts
 {
     public static class IDependencyManangerExtensions
     {
-        public static IDependencyManager RegisterOwinMiddleware<TMiddleware>(this IDependencyManager dependencyManager)
+        public static IDependencyManager RegisterOwinMiddleware<TMiddleware>(this IDependencyManager dependencyManager, string name = null)
             where TMiddleware : class, IOwinMiddlewareConfiguration
         {
             if (dependencyManager == null)
                 throw new ArgumentNullException(nameof(dependencyManager));
 
-            dependencyManager.Register<IOwinMiddlewareConfiguration, TMiddleware>(lifeCycle: DepepdencyLifeCycle.SingleInstance, overwriteExciting: false);
+            dependencyManager.Register<IOwinMiddlewareConfiguration, TMiddleware>(lifeCycle: DepepdencyLifeCycle.SingleInstance, overwriteExciting: false, name: name);
 
             return dependencyManager;
         }
@@ -138,7 +137,7 @@ namespace Foundation.Core.Contracts
             if (dependencyManager == null)
                 throw new ArgumentNullException(nameof(dependencyManager));
 
-            controllersAssemblies = (controllersAssemblies.Any() ? controllersAssemblies : new[] { Assembly.GetCallingAssembly() }).Union(new[] { typeof(MetadataController).GetTypeInfo().Assembly }).ToArray();
+            controllersAssemblies = (controllersAssemblies.Any() ? controllersAssemblies : new[] { Assembly.GetCallingAssembly(), typeof(FoundationEdmModelProvider).GetTypeInfo().Assembly }).Union(new[] { typeof(MetadataController).GetTypeInfo().Assembly }).ToArray();
 
             dependencyManager.RegisterInstance<IApiAssembliesProvider>(new DefaultApiAssembliesProvider(controllersAssemblies), overwriteExciting: false);
 
@@ -188,14 +187,14 @@ namespace Foundation.Core.Contracts
             return dependencyManager;
         }
 
-        public static IDependencyManager RegisterWebApiMiddlewareUsingDefaultConfiguration(this IDependencyManager dependencyManager)
+        public static IDependencyManager RegisterWebApiMiddlewareUsingDefaultConfiguration(this IDependencyManager dependencyManager, string name)
         {
             if (dependencyManager == null)
                 throw new ArgumentNullException(nameof(dependencyManager));
 
             dependencyManager.Register<System.Web.Http.Dependencies.IDependencyResolver, AutofacWebApiDependencyResolver>(lifeCycle: DepepdencyLifeCycle.SingleInstance);
             dependencyManager.Register<IWebApiOwinPipelineInjector, DefaultWebApiOwinPipelineInjector>(lifeCycle: DepepdencyLifeCycle.SingleInstance);
-            dependencyManager.Register<WebApiMiddlewareConfiguration, WebApiMiddlewareConfiguration>(lifeCycle: DepepdencyLifeCycle.SingleInstance, overwriteExciting: false);
+            dependencyManager.RegisterOwinMiddleware<WebApiMiddlewareConfiguration>(name);
 
             return dependencyManager;
         }
@@ -211,7 +210,7 @@ namespace Foundation.Core.Contracts
             return dependencyManager;
         }
 
-        public static IDependencyManager RegisterWebApiODataMiddlewareUsingDefaultConfiguration(this IDependencyManager dependencyManager)
+        public static IDependencyManager RegisterWebApiODataMiddlewareUsingDefaultConfiguration(this IDependencyManager dependencyManager, string name)
         {
             if (dependencyManager == null)
                 throw new ArgumentNullException(nameof(dependencyManager));
@@ -225,7 +224,7 @@ namespace Foundation.Core.Contracts
             dependencyManager.Register<IODataModelBuilderProvider, DefaultODataModelBuilderProvider>(lifeCycle: DepepdencyLifeCycle.SingleInstance);
             dependencyManager.Register<IODataContainerBuilderCustomizer, DefaultODataContainerBuilderCustomizer>(lifeCycle: DepepdencyLifeCycle.SingleInstance);
             dependencyManager.Register<System.Web.Http.Controllers.IHttpActionSelector, DefaultWebApiODataControllerActionSelector>(lifeCycle: DepepdencyLifeCycle.SingleInstance);
-            dependencyManager.Register<WebApiODataMiddlewareConfiguration, WebApiODataMiddlewareConfiguration>(lifeCycle: DepepdencyLifeCycle.SingleInstance, overwriteExciting: false);
+            dependencyManager.RegisterOwinMiddleware<WebApiODataMiddlewareConfiguration>(name);
 
             return dependencyManager;
         }
