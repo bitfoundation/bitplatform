@@ -2,7 +2,7 @@
   "version": "0.0.0-1",
 
   "compilationOptions": {
-    "keyFile": "Bit-Foundation.snk"
+    /*"keyFile": "Bit-Foundation.snk"*/
   },
 
   "dependencies": {
