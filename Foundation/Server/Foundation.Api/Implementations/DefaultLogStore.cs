@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.Threading.Tasks;
 using Foundation.Core.Contracts;
 using Foundation.Core.Models;
+using System.Linq;
 
 namespace Foundation.Api.Implementations
 {
@@ -51,8 +52,14 @@ namespace Foundation.Api.Implementations
             if (logContents.Length >= 30000)
                 logContents = logContents.Substring(0, 29999);
 
-            appLog.WriteEntry(logContents, eventLogsSeverity,
-            Convert.ToInt32(_activeAppEnvironment.GetConfig<long>("EventLogId")));
+            if (_activeAppEnvironment.Configs.Any(c => string.Equals(c.Key, "EventLogId", StringComparison.CurrentCultureIgnoreCase)))
+            {
+                appLog.WriteEntry(logContents, eventLogsSeverity, Convert.ToInt32(_activeAppEnvironment.GetConfig<long>("EventLogId")));
+            }
+            else
+            {
+                appLog.WriteEntry(logContents, eventLogsSeverity);
+            }
 
             return Task.FromResult<object>(null);
         }
@@ -81,7 +88,14 @@ namespace Foundation.Api.Implementations
             if (logContents.Length >= 30000)
                 logContents = logContents.Substring(0, 29999);
 
-            appLog.WriteEntry(logContents, eventLogsSeverity, Convert.ToInt32(_activeAppEnvironment.GetConfig<long>("EventLogId")));
+            if (_activeAppEnvironment.Configs.Any(c => string.Equals(c.Key, "EventLogId", StringComparison.CurrentCultureIgnoreCase)))
+            {
+                appLog.WriteEntry(logContents, eventLogsSeverity, Convert.ToInt32(_activeAppEnvironment.GetConfig<long>("EventLogId")));
+            }
+            else
+            {
+                appLog.WriteEntry(logContents, eventLogsSeverity);
+            }
         }
     }
 }
