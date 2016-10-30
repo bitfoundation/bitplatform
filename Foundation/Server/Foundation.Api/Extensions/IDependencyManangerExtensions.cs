@@ -187,7 +187,7 @@ namespace Foundation.Core.Contracts
             return dependencyManager;
         }
 
-        public static IDependencyManager RegisterWebApiMiddlewareUsingDefaultConfiguration(this IDependencyManager dependencyManager, string name)
+        public static IDependencyManager RegisterWebApiMiddlewareUsingDefaultConfiguration(this IDependencyManager dependencyManager, string name = null)
         {
             if (dependencyManager == null)
                 throw new ArgumentNullException(nameof(dependencyManager));
@@ -210,7 +210,7 @@ namespace Foundation.Core.Contracts
             return dependencyManager;
         }
 
-        public static IDependencyManager RegisterWebApiODataMiddlewareUsingDefaultConfiguration(this IDependencyManager dependencyManager, string name)
+        public static IDependencyManager RegisterWebApiODataMiddlewareUsingDefaultConfiguration(this IDependencyManager dependencyManager, string name = null)
         {
             if (dependencyManager == null)
                 throw new ArgumentNullException(nameof(dependencyManager));

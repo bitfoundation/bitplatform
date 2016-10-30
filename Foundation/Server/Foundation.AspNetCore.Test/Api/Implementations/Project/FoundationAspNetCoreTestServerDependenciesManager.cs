@@ -6,7 +6,6 @@ using Foundation.Api.Implementations.Project;
 using Foundation.Api.Middlewares;
 using Foundation.Api.Middlewares.SignalR;
 using Foundation.Api.Middlewares.SignalR.Implementations;
-using Foundation.Api.Middlewares.WebApi.OData;
 using Foundation.Api.Middlewares.WebApi.OData.ActionFilters;
 using Foundation.AspNetCore.Contracts;
 using Foundation.AspNetCore.Middlewares;
@@ -85,14 +84,14 @@ namespace Foundation.AspNetCore.Test.Api.Implementations.Project
                 httpConfiguration.Filters.Add(new DefaultODataAuthorizeAttribute());
             });
 
-            dependencyManager.RegisterUsing<IOwinMiddlewareConfiguration>(resolver =>
+            dependencyManager.RegisterUsing(resolver =>
             {
                 return dependencyManager.CreateChildDependencyManager(childDependencyManager =>
                 {
-                    childDependencyManager.RegisterWebApiODataMiddlewareUsingDefaultConfiguration();
+                    childDependencyManager.RegisterWebApiODataMiddlewareUsingDefaultConfiguration("WebApiOData");
                     childDependencyManager.RegisterEdmModelProvider<FoundationEdmModelProvider>();
 
-                }).Resolve<WebApiODataMiddlewareConfiguration>();
+                }).Resolve<IOwinMiddlewareConfiguration>("WebApiOData");
 
             }, lifeCycle: DepepdencyLifeCycle.SingleInstance, overwriteExciting: false);
 

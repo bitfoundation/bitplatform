@@ -84,9 +84,9 @@ namespace Foundation.Test.Api.Implementations.Project
                         httpConfiguration.Filters.Add(new AuthorizeAttribute());
                     });
 
-                    childDependencyManager.RegisterWebApiMiddlewareUsingDefaultConfiguration();
+                    childDependencyManager.RegisterWebApiMiddlewareUsingDefaultConfiguration("WebApi");
 
-                }).Resolve<WebApiMiddlewareConfiguration>();
+                }).Resolve<IOwinMiddlewareConfiguration>("WebApi");
 
             }, lifeCycle: DepepdencyLifeCycle.SingleInstance, overwriteExciting: false);
 
@@ -99,11 +99,11 @@ namespace Foundation.Test.Api.Implementations.Project
                         httpConfiguration.Filters.Add(new DefaultODataAuthorizeAttribute());
                     });
 
-                    childDependencyManager.RegisterWebApiODataMiddlewareUsingDefaultConfiguration();
+                    childDependencyManager.RegisterWebApiODataMiddlewareUsingDefaultConfiguration("WebApiOData");
                     childDependencyManager.RegisterEdmModelProvider<FoundationEdmModelProvider>();
                     childDependencyManager.RegisterEdmModelProvider<TestEdmModelProvider>();
 
-                }).Resolve<WebApiODataMiddlewareConfiguration>();
+                }).Resolve<IOwinMiddlewareConfiguration>("WebApiOData");
 
             }, lifeCycle: DepepdencyLifeCycle.SingleInstance, overwriteExciting: false);
 
