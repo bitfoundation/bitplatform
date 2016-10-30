@@ -33,7 +33,7 @@
 			<# } #>
 			<# if (prp.IsKey()) { #>
 			, "key": true
-			, "required" : true
+			, "required" : <#= (!prp.Type.IsNullable()).ToString().ToLowerInvariant() #>
 			, "computed": true
 			<# } #>
 	},

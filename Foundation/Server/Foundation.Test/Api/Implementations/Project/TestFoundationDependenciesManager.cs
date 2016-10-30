@@ -75,9 +75,9 @@ namespace Foundation.Test.Api.Implementations.Project
 
             dependencyManager.RegisterDefaultWebApiConfiguration(typeof(FoundationEdmModelProvider).GetTypeInfo().Assembly, typeof(TestEdmModelProvider).GetTypeInfo().Assembly);
 
-            dependencyManager.RegisterUsing<IOwinMiddlewareConfiguration>(resolver =>
+            dependencyManager.RegisterUsing<IOwinMiddlewareConfiguration>(() =>
             {
-                return dependencyManager.CreateChildDependencyManager(childDependencyManager =>
+                return dependencyManager.CreateChildDependencyResolver(childDependencyManager =>
                 {
                     childDependencyManager.RegisterGlobalWebApiActionFiltersUsing(httpConfiguration =>
                     {
@@ -90,9 +90,9 @@ namespace Foundation.Test.Api.Implementations.Project
 
             }, lifeCycle: DepepdencyLifeCycle.SingleInstance, overwriteExciting: false);
 
-            dependencyManager.RegisterUsing<IOwinMiddlewareConfiguration>(resolver =>
+            dependencyManager.RegisterUsing<IOwinMiddlewareConfiguration>(() =>
             {
-                return dependencyManager.CreateChildDependencyManager(childDependencyManager =>
+                return dependencyManager.CreateChildDependencyResolver(childDependencyManager =>
                 {
                     childDependencyManager.RegisterGlobalWebApiActionFiltersUsing(httpConfiguration =>
                     {

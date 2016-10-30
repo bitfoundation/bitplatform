@@ -86,7 +86,7 @@ namespace Foundation.AspNetCore.Test.Api.Implementations.Project
 
             dependencyManager.RegisterUsing(resolver =>
             {
-                return dependencyManager.CreateChildDependencyManager(childDependencyManager =>
+                return dependencyManager.CreateChildDependencyResolver(childDependencyManager =>
                 {
                     childDependencyManager.RegisterWebApiODataMiddlewareUsingDefaultConfiguration("WebApiOData");
                     childDependencyManager.RegisterEdmModelProvider<FoundationEdmModelProvider>();

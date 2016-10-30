@@ -9,7 +9,7 @@
 
         private isInited = false;
 
-        private listeners: Array<{ name: string, callbacks: Array<(args?: any) => Promise<void>> }>;
+        private listeners: Array<{ name: string, callbacks: Array<(args?: any) => Promise<void>> }> = [];
 
         protected async callListeners(messageKey: string, messageArgs: any) {
             if (messageKey == null)
@@ -17,7 +17,7 @@
             const listenerToCall = this.listeners.find(l => l.name.toLowerCase() == messageKey.toLowerCase());
             if (listenerToCall != null) {
                 try {
-                    for (let callbackIndex = listenerToCall.callbacks.length - 1; callbackIndex >= 0; callbackIndex--) {
+                    for (let callbackIndex = 0; callbackIndex < listenerToCall.callbacks.length; callbackIndex++) {
                         const callback = listenerToCall.callbacks[callbackIndex];
                         await callback(messageArgs);
                     }
@@ -34,8 +34,6 @@
                 return;
 
             this.isInited = true;
-
-            this.listeners = [];
 
             await Core.DependencyManager.getCurrent().resolveFile("signalR");
 
@@ -99,8 +97,6 @@
             if (messageKey == null)
                 throw new Error('messageKey is null');
 
-            await this.ensureInited();
-
             let listener = this.listeners.find(l => l.name.toLowerCase() == messageKey.toLowerCase());
 
             if (listener == null) {
@@ -109,6 +105,8 @@
             }
 
             listener.callbacks.push(callback);
+
+            await this.ensureInited();
 
             return () => {
 

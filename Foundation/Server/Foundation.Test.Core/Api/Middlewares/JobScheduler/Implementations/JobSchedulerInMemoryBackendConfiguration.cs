@@ -3,6 +3,7 @@ using Foundation.Core.Contracts;
 using Hangfire;
 using Hangfire.MemoryStorage;
 using Autofac;
+using Foundation.Api.Contracts;
 
 namespace Foundation.Test.Api.Middlewares.JobScheduler.Implementations
 {
@@ -16,17 +17,17 @@ namespace Foundation.Test.Api.Middlewares.JobScheduler.Implementations
         {
         }
 
-        public JobSchedulerInMemoryBackendConfiguration(JobActivator jobActivator, ILifetimeScope container)
+        public JobSchedulerInMemoryBackendConfiguration(JobActivator jobActivator, IAutofacDependencyManager dependencyManager)
         {
             if (jobActivator == null)
                 throw new ArgumentNullException(nameof(jobActivator));
 
             _jobActivator = jobActivator;
 
-            if (container == null)
-                throw new ArgumentNullException(nameof(container));
+            if (dependencyManager == null)
+                throw new ArgumentNullException(nameof(dependencyManager));
 
-            _container = container;
+            _container = dependencyManager.GetContainer();
         }
 
         public virtual void OnAppStartup()

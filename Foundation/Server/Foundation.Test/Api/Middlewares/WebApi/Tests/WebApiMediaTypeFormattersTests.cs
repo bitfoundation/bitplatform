@@ -18,7 +18,7 @@ namespace Foundation.Test.Api.Middlewares.WebApi.Tests
                 HttpResponseMessage getTestModelsResponse = await testEnvironment.Server.GetHttpClient(token)
                     .GetAsync("/odata/Test/TestModels");
 
-                Assert.AreEqual("application/json; odata.metadata=minimal; odata.streaming=true", getTestModelsResponse.Content.Headers.ContentType.ToString());
+                Assert.AreEqual("application/json; odata.metadata=minimal; odata.streaming=true; charset=utf-8", getTestModelsResponse.Content.Headers.ContentType.ToString());
             }
         }
 
@@ -34,7 +34,7 @@ namespace Foundation.Test.Api.Middlewares.WebApi.Tests
                     .AddHeader("Accept", "application/json, text/javascript, */*; q=0.01")
                     .GetAsync("/odata/Test/TestModels");
 
-                Assert.AreEqual("application/json; odata.metadata=minimal", getTestModelsResponse.Content.Headers.ContentType.ToString());
+                Assert.AreEqual("application/json; charset=utf-8; odata.metadata=minimal", getTestModelsResponse.Content.Headers.ContentType.ToString());
             }
         }
 
@@ -50,7 +50,7 @@ namespace Foundation.Test.Api.Middlewares.WebApi.Tests
                     .AddHeader("Accept", "*/*; q=0.01")
                     .GetAsync("/odata/Test/TestModels");
 
-                Assert.AreEqual("application/json; odata.metadata=minimal", getTestModelsResponse.Content.Headers.ContentType.ToString());
+                Assert.AreEqual("application/json; charset=utf-8; odata.metadata=minimal", getTestModelsResponse.Content.Headers.ContentType.ToString());
             }
         }
 
@@ -66,7 +66,7 @@ namespace Foundation.Test.Api.Middlewares.WebApi.Tests
                     .AddHeader("Accept", "text/html; q=0.01")
                     .GetAsync("/odata/Test/TestModels");
 
-                Assert.AreEqual("application/json; odata.metadata=minimal; odata.streaming=true", getTestModelsResponse.Content.Headers.ContentType.ToString());
+                Assert.AreEqual("application/json; odata.metadata=minimal; odata.streaming=true; charset=utf-8", getTestModelsResponse.Content.Headers.ContentType.ToString());
             }
         }
     }

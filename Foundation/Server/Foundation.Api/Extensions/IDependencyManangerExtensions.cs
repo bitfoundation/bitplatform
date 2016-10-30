@@ -146,6 +146,7 @@ namespace Foundation.Core.Contracts
             dependencyManager.Register<System.Web.Http.Dispatcher.IAssembliesResolver, DefaultWebApiAssembliesResolver>(lifeCycle: DepepdencyLifeCycle.SingleInstance);
             dependencyManager.Register<System.Web.Http.Tracing.ITraceWriter, DefaultWebApiTraceWritter>(lifeCycle: DepepdencyLifeCycle.SingleInstance);
 
+            dependencyManager.RegisterGlobalWebApiActionFilter<GlobalHostAuthenticationFilterProvider>();
             dependencyManager.RegisterGlobalWebApiActionFilter<GlobalDefaultExceptionHandlerActionFilterProvider>();
             dependencyManager.RegisterGlobalWebApiActionFilter<GlobalDefaultLogActionArgsActionFilterProvider>();
 
@@ -258,9 +259,9 @@ namespace Foundation.Core.Contracts
 
             dependencyManager.RegisterGeneric(typeof(IDtoModelMapper<,,>).GetTypeInfo(), typeof(EfCoreDtoModelMapper<,,>).GetTypeInfo(), DepepdencyLifeCycle.SingleInstance);
 
-            dependencyManager.RegisterUsing(dr =>
+            dependencyManager.RegisterUsing(() =>
             {
-                IEnumerable<IDtoModelMapperConfiguration> configs = dr.Resolve<IEnumerable<IDtoModelMapperConfiguration>>();
+                IEnumerable<IDtoModelMapperConfiguration> configs = dependencyManager.Resolve<IEnumerable<IDtoModelMapperConfiguration>>();
 
                 MapperConfiguration mapperConfig = new MapperConfiguration(cfg =>
                 {

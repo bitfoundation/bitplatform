@@ -7,5 +7,9 @@ namespace Foundation.Api.Contracts
         ILifetimeScope GetContainer();
 
         ContainerBuilder GetContainerBuidler();
+
+        void UseContainer(ILifetimeScope lifetimeScope);
+
+        void UseContainerBuilder(ContainerBuilder containerBuilder);
     }
 }

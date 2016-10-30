@@ -6,6 +6,8 @@ using Hangfire.SqlServer;
 using Foundation.Core.Models;
 using Hangfire.Azure.ServiceBusQueue;
 using Autofac;
+using Foundation.Api.Implementations;
+using Foundation.Api.Contracts;
 
 namespace Foundation.Api.Middlewares.JobScheduler.Implementations
 {
@@ -14,13 +16,13 @@ namespace Foundation.Api.Middlewares.JobScheduler.Implementations
         private readonly IAppEnvironmentProvider _appEnvironmentProvider;
         private BackgroundJobServer _backgroundJobServer;
         private readonly JobActivator _jobActivator;
-        private readonly ILifetimeScope _container;
+        private readonly ILifetimeScope _lifetimeScope;
 
         protected SqlAndAzureServiceBusBackendJobServerConfiguration()
         {
         }
 
-        public SqlAndAzureServiceBusBackendJobServerConfiguration(IAppEnvironmentProvider appEnvironmentProvider, JobActivator jobActivator, ILifetimeScope container)
+        public SqlAndAzureServiceBusBackendJobServerConfiguration(IAppEnvironmentProvider appEnvironmentProvider, JobActivator jobActivator, IAutofacDependencyManager dependencyManager)
         {
             if (appEnvironmentProvider == null)
                 throw new ArgumentNullException(nameof(appEnvironmentProvider));
@@ -28,12 +30,12 @@ namespace Foundation.Api.Middlewares.JobScheduler.Implementations
             if (jobActivator == null)
                 throw new ArgumentNullException(nameof(jobActivator));
 
-            if (container == null)
-                throw new ArgumentNullException(nameof(container));
+            if (dependencyManager == null)
+                throw new ArgumentNullException(nameof(dependencyManager));
 
             _appEnvironmentProvider = appEnvironmentProvider;
             _jobActivator = jobActivator;
-            _container = container;
+            _lifetimeScope = dependencyManager.GetContainer();
         }
 
         public virtual void OnAppStartup()
@@ -57,7 +59,7 @@ namespace Foundation.Api.Middlewares.JobScheduler.Implementations
             }
 
             GlobalConfiguration.Configuration.UseStorage(storage);
-            GlobalConfiguration.Configuration.UseAutofacActivator(_container);
+            GlobalConfiguration.Configuration.UseAutofacActivator(_lifetimeScope);
 
             _backgroundJobServer = new BackgroundJobServer(new BackgroundJobServerOptions
             {
