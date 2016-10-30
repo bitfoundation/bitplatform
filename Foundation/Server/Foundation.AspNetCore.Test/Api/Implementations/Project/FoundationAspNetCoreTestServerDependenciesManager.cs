@@ -84,16 +84,16 @@ namespace Foundation.AspNetCore.Test.Api.Implementations.Project
                 httpConfiguration.Filters.Add(new DefaultODataAuthorizeAttribute());
             });
 
-            dependencyManager.RegisterUsing(resolver =>
-            {
-                return dependencyManager.CreateChildDependencyResolver(childDependencyManager =>
-                {
-                    childDependencyManager.RegisterWebApiODataMiddlewareUsingDefaultConfiguration("WebApiOData");
-                    childDependencyManager.RegisterEdmModelProvider<FoundationEdmModelProvider>();
+            dependencyManager.RegisterUsing(() =>
+           {
+               return dependencyManager.CreateChildDependencyResolver(childDependencyManager =>
+               {
+                   childDependencyManager.RegisterWebApiODataMiddlewareUsingDefaultConfiguration("WebApiOData");
+                   childDependencyManager.RegisterEdmModelProvider<FoundationEdmModelProvider>();
 
-                }).Resolve<IOwinMiddlewareConfiguration>("WebApiOData");
+               }).Resolve<IOwinMiddlewareConfiguration>("WebApiOData");
 
-            }, lifeCycle: DepepdencyLifeCycle.SingleInstance, overwriteExciting: false);
+           }, lifeCycle: DepepdencyLifeCycle.SingleInstance, overwriteExciting: false);
 
             dependencyManager.RegisterSignalRConfiguration<SignalRAuthroizeConfiguration>();
             dependencyManager.RegisterSignalRMiddlewareUsingDefaultConfiguration(typeof(MessagesHub).GetTypeInfo().Assembly);
