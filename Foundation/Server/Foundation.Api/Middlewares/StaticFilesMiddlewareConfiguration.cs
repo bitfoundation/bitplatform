@@ -36,7 +36,7 @@ namespace Foundation.Api.Middlewares
         {
             AppEnvironment appEnvironment = _appEnvironmentProvider.GetActiveAppEnvironment();
 
-            string rootFolder = _pathProvider.MapPath(appEnvironment.GetConfig<string>("StaticFilesRelativePath"));
+            string rootFolder = _pathProvider.MapPath(appEnvironment.GetConfig("StaticFilesRelativePath", "."));
 
             PhysicalFileSystem fileSystem = new PhysicalFileSystem(rootFolder);
 
