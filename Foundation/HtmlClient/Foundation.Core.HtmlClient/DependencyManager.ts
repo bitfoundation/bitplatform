@@ -485,6 +485,8 @@ module Foundation.Core {
 
         return (targetService: IObjectDependency & Function) => {
 
+            targetService = Injectable()(targetService) as IObjectDependency & Function;
+
             objectDependency.classCtor = targetService;
 
             DependencyManager.getCurrent()
@@ -527,6 +529,8 @@ module Foundation.Core {
     export function DirectiveDependency(directiveDependency: IDirectiveDependency): ClassDecorator {
 
         return (targetDirective: IDirectiveDependency & Function): Function => {
+
+            targetDirective = Injectable()(targetDirective) as IDirectiveDependency & Function;
 
             directiveDependency.classCtor = targetDirective;
 
