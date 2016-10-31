@@ -1,4 +1,5 @@
 ﻿using Foundation.DataAccess.Implementations;
+using Foundation.DataAccess.Implementations.EntityFrameworkCore;
 using Foundation.Model.Contracts;
 
 namespace Foundation.Test.DataAccess.Implementations

@@ -1,9 +1,9 @@
-﻿using Foundation.DataAccess.Contracts.EntityFramework;
+﻿using Foundation.DataAccess.Contracts.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 
-namespace Foundation.DataAccess.Implementations.EntityFramework
+namespace Foundation.DataAccess.Implementations.EntityFrameworkCore
 {
     public class InMemoryDbContextObjectsProvider : IDbContextObjectsProvider
     {

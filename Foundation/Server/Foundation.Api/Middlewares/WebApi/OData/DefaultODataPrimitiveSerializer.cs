@@ -9,7 +9,7 @@ using Microsoft.Owin;
 
 namespace Foundation.Api.Middlewares.WebApi.OData
 {
-    public class DefaultODataPrimitiveSerializerX : ODataPrimitiveSerializer
+    public class DefaultODataPrimitiveSerializer : ODataPrimitiveSerializer
     {
         public override ODataPrimitiveValue CreateODataPrimitiveValue(object graph,
             IEdmPrimitiveTypeReference primitiveType, ODataSerializerContext writeContext)

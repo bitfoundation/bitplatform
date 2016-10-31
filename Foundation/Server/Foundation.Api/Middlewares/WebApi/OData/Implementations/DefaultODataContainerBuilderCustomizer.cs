@@ -13,7 +13,7 @@ namespace Foundation.Api.Middlewares.WebApi.OData.Implementations
         public virtual void Customize(IContainerBuilder container)
         {
             container.AddService<ODataUriResolver, DefaultODataUriResolver>(ServiceLifetime.Singleton);
-            container.AddService<ODataPrimitiveSerializer, DefaultODataPrimitiveSerializerX>(ServiceLifetime.Singleton);
+            container.AddService<ODataPrimitiveSerializer, DefaultODataPrimitiveSerializer>(ServiceLifetime.Singleton);
             container.AddService<ODataResourceDeserializer, DefaultODataResourceDeserializer>(ServiceLifetime.Singleton);
             container.AddService<ODataActionPayloadDeserializer, DefaultODataActionPayloadDeserializer>(ServiceLifetime.Singleton);
         }

@@ -41,11 +41,11 @@ namespace Foundation.Api.Implementations
 
         public class NullCompatibleEncodedStringFactory : IEncodedStringFactory
         {
-            public class EncodedStringX : IEncodedString
+            public class DefaultEncodedString : IEncodedString
             {
                 private readonly object _obj;
 
-                public EncodedStringX(object obj)
+                public DefaultEncodedString(object obj)
                 {
                     _obj = obj;
                 }
@@ -63,12 +63,12 @@ namespace Foundation.Api.Implementations
 
             public virtual IEncodedString CreateEncodedString(object value)
             {
-                return new EncodedStringX(value);
+                return new DefaultEncodedString(value);
             }
 
             public virtual IEncodedString CreateEncodedString(string value)
             {
-                return new EncodedStringX(value);
+                return new DefaultEncodedString(value);
             }
         }
 

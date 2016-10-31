@@ -1,14 +1,13 @@
 ﻿using Foundation.Core.Contracts;
-using Foundation.DataAccess.Contracts;
-using Foundation.DataAccess.Contracts.EntityFramework;
-using Foundation.DataAccess.Implementations.EntityFramework;
+using Foundation.DataAccess.Contracts.EntityFrameworkCore;
+using Foundation.DataAccess.Implementations.EntityFrameworkCore;
 using Foundation.Model.DomainModels;
 using Foundation.Test.Model.DomainModels;
 using Microsoft.EntityFrameworkCore;
 
 namespace Foundation.Test.DataAccess.Implementations
 {
-    public class TestDbContext : DbContextBase
+    public class TestDbContext : DefaultDbContext
     {
         protected TestDbContext()
             : base()

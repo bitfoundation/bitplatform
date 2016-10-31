@@ -242,19 +242,19 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Contracts\IDbConnectionProvider.cs" />
-    <Compile Include="Contracts\EntityFramework\IDbContextObjectsProvider.cs" />
+    <Compile Include="Contracts\EntityFrameworkCore\IDbContextObjectsProvider.cs" />
     <Compile Include="Contracts\IEntityWithDefaultGuidKeyRepository.cs" />
     <Compile Include="Contracts\IEntityWithDefaultKeyRepository.cs" />
     <Compile Include="Contracts\IRepository.cs" />
     <Compile Include="Implementations\BaseDtoModelMapper.cs" />
-    <Compile Include="Implementations\EfEntityWithDefaultGuidKeyRepository.cs" />
-    <Compile Include="Implementations\EfEntityWithDefaultKeyRepository.cs" />
-    <Compile Include="Implementations\EntityFramework\EfCoreDtoModelMapper.cs" />
-    <Compile Include="Implementations\EntityFramework\InMemoryDbContextObjectsProvider.cs" />
-    <Compile Include="Implementations\EntityFramework\SqlDbContextObjectsProvider.cs" />
+    <Compile Include="Implementations\EntityFrameworkCore\EfEntityWithDefaultGuidKeyRepository.cs" />
+    <Compile Include="Implementations\EntityFrameworkCore\EfEntityWithDefaultKeyRepository.cs" />
+    <Compile Include="Implementations\EntityFrameworkCore\EfCoreDtoModelMapper.cs" />
+    <Compile Include="Implementations\EntityFrameworkCore\InMemoryDbContextObjectsProvider.cs" />
+    <Compile Include="Implementations\EntityFrameworkCore\SqlDbContextObjectsProvider.cs" />
     <Compile Include="Implementations\DefaultSqlDbConnectionProvider.cs" />
-    <Compile Include="Implementations\EfRepository.cs" />
-    <Compile Include="Implementations\EntityFramework\DbContextBase.cs" />
+    <Compile Include="Implementations\EntityFrameworkCore\EfRepository.cs" />
+    <Compile Include="Implementations\EntityFrameworkCore\DefaultDbContext.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

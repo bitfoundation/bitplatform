@@ -480,7 +480,7 @@
     <Compile Include="Middlewares\WebApi\Implementations\DefaultWebApiOwinPipelineInjector.cs" />
     <Compile Include="Middlewares\WebApi\Implementations\DelegateGlobalActionFiltersProvider.cs" />
     <Compile Include="Middlewares\WebApi\OData\ActionFilters\DefaultODataAuthorizeAttribute.cs" />
-    <Compile Include="Middlewares\WebApi\OData\ActionFilters\GlobalEnableQueryActionFilterProviderBase.cs" />
+    <Compile Include="Middlewares\WebApi\OData\ActionFilters\DefaultGlobalEnableQueryActionFilterProvider.cs" />
     <Compile Include="Middlewares\WebApi\OData\ActionFilters\ODataEnableQueryAttribute.cs" />
     <Compile Include="Middlewares\WebApi\OData\Contracts\IODataContainerBuilderCustomizer.cs" />
     <Compile Include="Middlewares\WebApi\Contracts\IWebApiOwinPipelineInjector.cs" />
@@ -586,7 +586,7 @@
     <Compile Include="Middlewares\WebApi\OData\Implementations\DefaultWebApiODataControllerActionSelector.cs" />
     <Compile Include="Middlewares\WebApi\OData\DefaultODataActionPayloadDeserializer.cs" />
     <Compile Include="Middlewares\WebApi\OData\DefaultODataResourceDeserializer.cs" />
-    <Compile Include="Middlewares\WebApi\OData\DefaultODataPrimitiveSerializerX.cs" />
+    <Compile Include="Middlewares\WebApi\OData\DefaultODataPrimitiveSerializer.cs" />
     <Compile Include="Middlewares\WebApi\OData\DefaultODataUriResolver.cs" />
     <Compile Include="Middlewares\WebApi\OData\Visitors\EmptyQueryNodeVisitor.cs" />
     <Compile Include="Middlewares\WebApi\OData\Visitors\TraverserQueryNodeVisitor.cs" />

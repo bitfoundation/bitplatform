@@ -1,9 +1,8 @@
 ﻿using Foundation.DataAccess.Contracts;
-using Foundation.DataAccess.Implementations.EntityFramework;
 using Foundation.Model.Contracts;
 using System;
 
-namespace Foundation.DataAccess.Implementations
+namespace Foundation.DataAccess.Implementations.EntityFrameworkCore
 {
     public class EfEntityWithDefaultGuidKeyRepository<TEntity> : EfEntityWithDefaultKeyRepository<TEntity, Guid>, IEntityWithDefaultGuidKeyRepository<TEntity>
         where TEntity : class, IEntityWithDefaultGuidKey
@@ -13,7 +12,7 @@ namespace Foundation.DataAccess.Implementations
         {
         }
 
-        protected EfEntityWithDefaultGuidKeyRepository(DbContextBase dbContext)
+        protected EfEntityWithDefaultGuidKeyRepository(DefaultDbContext dbContext)
             : base(dbContext)
         {
         }

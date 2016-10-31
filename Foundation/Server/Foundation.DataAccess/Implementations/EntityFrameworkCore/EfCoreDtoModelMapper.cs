@@ -6,7 +6,7 @@ using System.Linq.Dynamic.Core;
 using Microsoft.EntityFrameworkCore;
 using AutoMapper;
 
-namespace Foundation.DataAccess.Implementations.EntityFramework
+namespace Foundation.DataAccess.Implementations.EntityFrameworkCore
 {
     public class EfCoreDtoModelMapper<TDto, TModel, TKey> : BaseDtoModelMapper<TDto, TModel, TKey>
         where TDto : class, IDto

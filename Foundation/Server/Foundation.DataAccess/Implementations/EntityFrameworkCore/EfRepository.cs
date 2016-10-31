@@ -5,23 +5,22 @@ using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Foundation.DataAccess.Contracts;
-using Foundation.DataAccess.Implementations.EntityFramework;
 using Foundation.Model.Contracts;
 using Microsoft.EntityFrameworkCore;
 
-namespace Foundation.DataAccess.Implementations
+namespace Foundation.DataAccess.Implementations.EntityFrameworkCore
 {
     public class EfRepository<TEntity> : IRepository<TEntity>
         where TEntity : class, IEntity
     {
-        private readonly DbContextBase _dbContext;
+        private readonly DefaultDbContext _dbContext;
         private readonly DbSet<TEntity> _set;
 
         protected EfRepository()
         {
         }
 
-        protected EfRepository(DbContextBase dbContext)
+        protected EfRepository(DefaultDbContext dbContext)
         {
             if (dbContext == null)
                 throw new ArgumentNullException(nameof(dbContext));

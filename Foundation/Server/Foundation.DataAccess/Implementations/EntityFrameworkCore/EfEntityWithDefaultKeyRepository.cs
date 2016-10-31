@@ -7,9 +7,8 @@ using System.Threading;
 using Microsoft.EntityFrameworkCore;
 using System.Linq.Dynamic.Core;
 using System.Collections.Generic;
-using Foundation.DataAccess.Implementations.EntityFramework;
 
-namespace Foundation.DataAccess.Implementations
+namespace Foundation.DataAccess.Implementations.EntityFrameworkCore
 {
     public class EfEntityWithDefaultKeyRepository<TEntity, TKey> : EfRepository<TEntity>, IEntityWithDefaultKeyRepository<TEntity, TKey>
         where TEntity : class, IEntityWithDefaultKey<TKey>
@@ -20,7 +19,7 @@ namespace Foundation.DataAccess.Implementations
         {
         }
 
-        protected EfEntityWithDefaultKeyRepository(DbContextBase dbContext)
+        protected EfEntityWithDefaultKeyRepository(DefaultDbContext dbContext)
             : base(dbContext)
         {
         }

@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.Data.Common;
 using Foundation.DataAccess.Contracts;
 using Microsoft.EntityFrameworkCore;
-using Foundation.DataAccess.Contracts.EntityFramework;
+using Foundation.DataAccess.Contracts.EntityFrameworkCore;
 
-namespace Foundation.DataAccess.Implementations.EntityFramework
+namespace Foundation.DataAccess.Implementations.EntityFrameworkCore
 {
     public class SqlDbContextObjectsProvider : IDbContextObjectsProvider
     {

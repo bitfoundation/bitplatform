@@ -1,22 +1,21 @@
 ﻿using System;
-using Foundation.DataAccess.Contracts;
 using Microsoft.EntityFrameworkCore;
-using Foundation.DataAccess.Contracts.EntityFramework;
+using Foundation.DataAccess.Contracts.EntityFrameworkCore;
 
-namespace Foundation.DataAccess.Implementations.EntityFramework
+namespace Foundation.DataAccess.Implementations.EntityFrameworkCore
 {
-    public class DbContextBase : DbContext
+    public class DefaultDbContext : DbContext
     {
-        protected DbContextBase()
+        protected DefaultDbContext()
         {
         }
 
-        protected DbContextBase(DbContextOptions options)
+        protected DefaultDbContext(DbContextOptions options)
             : base(options)
         {
         }
 
-        protected DbContextBase(string connectionString, IDbContextObjectsProvider dbContextCreationOptionsProvider)
+        protected DefaultDbContext(string connectionString, IDbContextObjectsProvider dbContextCreationOptionsProvider)
             : this(dbContextCreationOptionsProvider.GetDbContextOptions(connectionString).Options)
         {
             if (dbContextCreationOptionsProvider == null)

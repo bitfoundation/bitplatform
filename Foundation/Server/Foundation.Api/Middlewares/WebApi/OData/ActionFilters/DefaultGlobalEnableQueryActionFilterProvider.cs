@@ -15,7 +15,7 @@ using System.Web.OData.Query;
 
 namespace Foundation.Api.Middlewares.WebApi.OData.ActionFilters
 {
-    public class GlobalEnableQueryActionFilterProviderBase : IWebApiGlobalActionFiltersProvider
+    public class DefaultGlobalEnableQueryActionFilterProvider : IWebApiGlobalActionFiltersProvider
     {
         public virtual void ConfigureGlobalActionFilter(HttpConfiguration webApiConfiguration)
         {
