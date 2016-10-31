@@ -4,6 +4,7 @@ using Foundation.Api.Implementations;
 using Foundation.Api.Implementations.Metadata;
 using Foundation.Api.Implementations.Project;
 using Foundation.Api.Middlewares;
+using Foundation.Api.Middlewares.JobScheduler.Implementations;
 using Foundation.Api.Middlewares.SignalR;
 using Foundation.Api.Middlewares.SignalR.Implementations;
 using Foundation.Api.Middlewares.WebApi.OData.ActionFilters;
@@ -15,7 +16,6 @@ using Foundation.Core.Implementations;
 using Foundation.Test;
 using Foundation.Test.Api.Implementations;
 using Foundation.Test.Api.Middlewares;
-using Foundation.Test.Api.Middlewares.JobScheduler.Implementations;
 using Microsoft.Extensions.DependencyInjection;
 using System.Reflection;
 

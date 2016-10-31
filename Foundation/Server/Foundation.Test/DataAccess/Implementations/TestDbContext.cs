@@ -1,5 +1,6 @@
 ﻿using Foundation.Core.Contracts;
 using Foundation.DataAccess.Contracts;
+using Foundation.DataAccess.Contracts.EntityFramework;
 using Foundation.DataAccess.Implementations.EntityFramework;
 using Foundation.Model.DomainModels;
 using Foundation.Test.Model.DomainModels;

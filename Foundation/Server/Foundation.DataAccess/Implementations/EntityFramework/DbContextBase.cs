@@ -1,6 +1,7 @@
 ﻿using System;
 using Foundation.DataAccess.Contracts;
 using Microsoft.EntityFrameworkCore;
+using Foundation.DataAccess.Contracts.EntityFramework;
 
 namespace Foundation.DataAccess.Implementations.EntityFramework
 {

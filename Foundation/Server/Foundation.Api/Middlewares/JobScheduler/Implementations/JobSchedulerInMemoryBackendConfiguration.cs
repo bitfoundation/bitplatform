@@ -1,11 +1,11 @@
-﻿using System;
+﻿using Autofac;
+using Foundation.Api.Contracts;
 using Foundation.Core.Contracts;
 using Hangfire;
 using Hangfire.MemoryStorage;
-using Autofac;
-using Foundation.Api.Contracts;
+using System;
 
-namespace Foundation.Test.Api.Middlewares.JobScheduler.Implementations
+namespace Foundation.Api.Middlewares.JobScheduler.Implementations
 {
     public class JobSchedulerInMemoryBackendConfiguration : IAppEvents
     {

@@ -410,12 +410,10 @@
   <ItemGroup>
     <Compile Include="Api\Implementations\TestLogStore.cs" />
     <Compile Include="Api\Middlewares\EmbeddedOAuthMiddlewareConfiguration.cs" />
-    <Compile Include="Api\Middlewares\JobScheduler\Implementations\JobSchedulerInMemoryBackendConfiguration.cs" />
     <Compile Include="Api\Middlewares\OwinCompressionMiddlewareConfiguration.cs" />
     <Compile Include="Api\Middlewares\SignalR\SignalRHttpClient.cs" />
     <Compile Include="Core\Implementations\AutofacTestDependencyManager.cs" />
     <Compile Include="Core\Implementations\TestDependencyManager.cs" />
-    <Compile Include="DataAccess\Implementations\InMemoryDbContextObjectsProvider.cs" />
     <Compile Include="Extensions\HttpClientExtensions.cs" />
     <Compile Include="Extensions\ODataClientExtensions.cs" />
     <Compile Include="Extensions\WebElementExtensions.cs" />
@@ -452,6 +450,9 @@
     </None>
     <None Include="Bit-Foundation.snk" />
     <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Api\Middlewares\JobScheduler\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="..\..\..\packages\Microsoft.Bcl.Build.1.0.21\build\Microsoft.Bcl.Build.targets" Condition="Exists('..\..\..\packages\Microsoft.Bcl.Build.1.0.21\build\Microsoft.Bcl.Build.targets')" />

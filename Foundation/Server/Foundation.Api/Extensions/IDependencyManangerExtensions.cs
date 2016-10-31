@@ -20,6 +20,7 @@ using Foundation.Api.Middlewares.WebApi.OData.ActionFilters;
 using Foundation.Api.Middlewares.WebApi.OData.Contracts;
 using Foundation.Api.Middlewares.WebApi.OData.Implementations;
 using Foundation.DataAccess.Contracts;
+using Foundation.DataAccess.Contracts.EntityFramework;
 using Foundation.DataAccess.Implementations.EntityFramework;
 using Foundation.Model.Contracts;
 using Hangfire;

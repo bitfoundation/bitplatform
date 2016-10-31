@@ -1,7 +1,7 @@
 ﻿using System.Data.Common;
 using Microsoft.EntityFrameworkCore;
 
-namespace Foundation.DataAccess.Contracts
+namespace Foundation.DataAccess.Contracts.EntityFramework
 {
     public interface IDbContextObjectsProvider
     {
