@@ -14,13 +14,13 @@ namespace Foundation.Api.Implementations
     {
         private readonly AppEnvironment _activeAppEnvironment;
         private readonly IDateTimeProvider _dateTimeProvider;
-        private readonly ILogStore _logStore;
+        private readonly IEnumerable<ILogStore> _logStores;
 
         protected DefaultLogger()
         {
         }
 
-        public DefaultLogger(ILogStore logStore, IAppEnvironmentProvider appEnvironmentProvider,
+        public DefaultLogger(IEnumerable<ILogStore> logStores, IAppEnvironmentProvider appEnvironmentProvider,
             IDateTimeProvider dateTimeProvider)
         {
             if (appEnvironmentProvider == null)
@@ -29,11 +29,11 @@ namespace Foundation.Api.Implementations
             if (dateTimeProvider == null)
                 throw new ArgumentNullException(nameof(dateTimeProvider));
 
-            if (logStore == null)
-                throw new ArgumentNullException(nameof(logStore));
+            if (logStores == null)
+                throw new ArgumentNullException(nameof(logStores));
 
             _dateTimeProvider = dateTimeProvider;
-            _logStore = logStore;
+            _logStores = logStores;
             _activeAppEnvironment = appEnvironmentProvider.GetActiveAppEnvironment();
         }
 
@@ -45,8 +45,46 @@ namespace Foundation.Api.Implementations
             string severity = "Warning";
 
             LogEntry logEntry = CreateLogEntry(message, severity);
+        }
 
-            _logStore.SaveLog(logEntry);
+        private void SaveLogEntryUsingAllLogStores(LogEntry logEntry)
+        {
+            List<Exception> logExceptions = new List<Exception>();
+
+            foreach (ILogStore logStore in _logStores)
+            {
+                try
+                {
+                    logStore.SaveLog(logEntry);
+                }
+                catch (Exception exp)
+                {
+                    logExceptions.Add(exp);
+                }
+            }
+
+            if (logExceptions.Any())
+                throw new AggregateException(logExceptions);
+        }
+
+        private async Task SaveLogEntryUsingAllLogStoresAsync(LogEntry logEntry)
+        {
+            List<Exception> logExceptions = new List<Exception>();
+
+            foreach (ILogStore logStore in _logStores)
+            {
+                try
+                {
+                    await logStore.SaveLogAsync(logEntry);
+                }
+                catch (Exception exp)
+                {
+                    logExceptions.Add(exp);
+                }
+            }
+
+            if (logExceptions.Any())
+                throw new AggregateException(logExceptions);
         }
 
         public virtual IEnumerable<LogData> LogData { get; set; } = new Collection<LogData>();
@@ -75,7 +113,7 @@ namespace Foundation.Api.Implementations
 
             LogEntry logEntry = CreateLogEntry(message, severity);
 
-            _logStore.SaveLog(logEntry);
+            SaveLogEntryUsingAllLogStores(logEntry);
         }
 
         public virtual async Task LogWarningAsync(string message)
@@ -87,7 +125,7 @@ namespace Foundation.Api.Implementations
 
             LogEntry logEntry = CreateLogEntry(message, severity);
 
-            await _logStore.SaveLogAsync(logEntry);
+            await SaveLogEntryUsingAllLogStoresAsync(logEntry);
         }
 
         public virtual void LogInformation(string message)
@@ -99,7 +137,7 @@ namespace Foundation.Api.Implementations
 
             LogEntry logEntry = CreateLogEntry(message, severity);
 
-            _logStore.SaveLog(logEntry);
+            SaveLogEntryUsingAllLogStores(logEntry);
         }
 
         public virtual async Task LogFatalAsync(string message)
@@ -111,7 +149,7 @@ namespace Foundation.Api.Implementations
 
             LogEntry logEntry = CreateLogEntry(message, severity);
 
-            await _logStore.SaveLogAsync(logEntry);
+            await SaveLogEntryUsingAllLogStoresAsync(logEntry);
         }
 
         public virtual void LogException(Exception exp, string message)
@@ -132,7 +170,7 @@ namespace Foundation.Api.Implementations
             AddLogData("Exception", exp);
             AddLogData("ExceptionType", exp.GetType().FullName);
 
-            _logStore.SaveLog(logEntry);
+            SaveLogEntryUsingAllLogStores(logEntry);
         }
 
         public virtual async Task LogInformationAsync(string message)
@@ -144,7 +182,7 @@ namespace Foundation.Api.Implementations
 
             LogEntry logEntry = CreateLogEntry(message, severity);
 
-            await _logStore.SaveLogAsync(logEntry);
+            await SaveLogEntryUsingAllLogStoresAsync(logEntry);
         }
 
         public virtual async Task LogExceptionAsync(Exception exp, string message)
@@ -165,7 +203,7 @@ namespace Foundation.Api.Implementations
             AddLogData("Exception", exp);
             AddLogData("ExceptionType", exp.GetType().FullName);
 
-            await _logStore.SaveLogAsync(logEntry);
+            await SaveLogEntryUsingAllLogStoresAsync(logEntry);
         }
 
         private LogEntry CreateLogEntry(string message, string severity)

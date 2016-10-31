@@ -45,7 +45,7 @@ namespace Foundation.Test.Api.Implementations.Project
             dependencyManager.Register<IRequestInformationProvider, DefaultRequestInformationProvider>();
             dependencyManager.Register<ILogger, DefaultLogger>();
             dependencyManager.Register<IUserInformationProvider, DefaultUserInformationProvider>();
-            dependencyManager.Register<ILogStore, TestLogStore>();
+            dependencyManager.Register<ILogStore, ConsoleLogStore>();
 
             dependencyManager.Register<IDateTimeProvider, DefaultDateTimeProvider>(lifeCycle: DepepdencyLifeCycle.SingleInstance);
             dependencyManager.Register<IRandomStringProvider, DefaultRandomStringProvider>(lifeCycle: DepepdencyLifeCycle.SingleInstance);

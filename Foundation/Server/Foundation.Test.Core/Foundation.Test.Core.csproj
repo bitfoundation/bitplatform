@@ -408,7 +408,6 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Api\Implementations\TestLogStore.cs" />
     <Compile Include="Api\Middlewares\EmbeddedOAuthMiddlewareConfiguration.cs" />
     <Compile Include="Api\Middlewares\OwinCompressionMiddlewareConfiguration.cs" />
     <Compile Include="Api\Middlewares\SignalR\SignalRHttpClient.cs" />

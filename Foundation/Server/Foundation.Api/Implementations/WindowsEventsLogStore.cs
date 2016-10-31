@@ -7,16 +7,16 @@ using System.Linq;
 
 namespace Foundation.Api.Implementations
 {
-    public class DefaultLogStore : ILogStore
+    public class WindowsEventsLogStore : ILogStore
     {
         private readonly AppEnvironment _activeAppEnvironment;
         private readonly IContentFormatter _contentFormatter;
 
-        protected DefaultLogStore()
+        protected WindowsEventsLogStore()
         {
         }
 
-        public DefaultLogStore(IContentFormatter contentFormatter, IAppEnvironmentProvider appEnvironmentProvider)
+        public WindowsEventsLogStore(IContentFormatter contentFormatter, IAppEnvironmentProvider appEnvironmentProvider)
         {
             if (contentFormatter == null)
                 throw new ArgumentNullException(nameof(contentFormatter));

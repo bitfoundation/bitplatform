@@ -467,6 +467,7 @@
     <Compile Include="Extensions\IDependencyManangerExtensions.cs" />
     <Compile Include="Extensions\IOwinContextExtensions.cs" />
     <Compile Include="Implementations\AutofacDependencyManager.cs" />
+    <Compile Include="Implementations\ConsoleLogStore.cs" />
     <Compile Include="Implementations\Project\DefaultApiAssembliesProvider.cs" />
     <Compile Include="Middlewares\AddAcceptCharsetToRequestHeadersIfNotAnyMiddleware.cs" />
     <Compile Include="Middlewares\DelegateOwinMiddlewareConfiguration.cs" />
@@ -539,7 +540,7 @@
     <Compile Include="Implementations\RazorDefaultHtmlPageProvider.cs" />
     <Compile Include="Implementations\RazorViewEngineConfiguration.cs" />
     <Compile Include="Implementations\RazorViewTemplate.cs" />
-    <Compile Include="Implementations\DefaultLogStore.cs" />
+    <Compile Include="Implementations\WindowsEventsLogStore.cs" />
     <Compile Include="Middlewares\DefaultPageMiddlewareConfiguration.cs" />
     <Compile Include="Middlewares\OwinExceptionHandlerMiddlewareConfiguration.cs" />
     <Compile Include="Contracts\IOwinMiddlewareConfiguration.cs" />
