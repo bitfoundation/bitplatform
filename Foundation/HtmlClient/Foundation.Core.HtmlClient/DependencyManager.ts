@@ -319,7 +319,8 @@ module Foundation.Core {
                 loadInitialFileDependecy(files.shift());
             }
             else {
-                throw new Error('no file dependency was found');
+                const app = DependencyManager.getCurrent().resolveObject<Contracts.IAppStartup>("AppStartup");
+                app.configuration();
             }
         }
 
