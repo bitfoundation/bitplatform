@@ -62,9 +62,9 @@ namespace Foundation.Api.Implementations
                 !string.Equals(desiredTimeZone, "Auto", StringComparison.CurrentCulture))
                 desiredTimeZoneValue = desiredTimeZone;
 
-            string appTitle = activeAppEnvironment.Cultures
+            string appTitle = activeAppEnvironment.Cultures.Any() ? activeAppEnvironment.Cultures
                 .Single(c => c.Name == culture).Values.Single(v =>
-                    string.Equals(v.Name, "AppTitle", StringComparison.OrdinalIgnoreCase)).Title;
+                    string.Equals(v.Name, "AppTitle", StringComparison.OrdinalIgnoreCase)).Title : string.Empty;
 
             defaultPageModel.AppTitle = appTitle;
             defaultPageModel.Culture = culture;
@@ -109,9 +109,9 @@ namespace Foundation.Api.Implementations
                 !string.Equals(desiredTimeZone, "Auto", StringComparison.CurrentCulture))
                 desiredTimeZoneValue = desiredTimeZone;
 
-            string appTitle = activeAppEnvironment.Cultures
+            string appTitle = activeAppEnvironment.Cultures.Any() ? activeAppEnvironment.Cultures
                 .Single(c => c.Name == culture).Values.Single(v =>
-                    string.Equals(v.Name, "AppTitle", StringComparison.OrdinalIgnoreCase)).Title;
+                    string.Equals(v.Name, "AppTitle", StringComparison.OrdinalIgnoreCase)).Title : string.Empty;
 
             defaultPageModel.AppTitle = appTitle;
             defaultPageModel.Culture = culture;
