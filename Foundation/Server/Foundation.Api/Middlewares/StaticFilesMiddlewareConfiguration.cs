@@ -2,7 +2,6 @@
 using Foundation.Api.Contracts;
 using Foundation.Core.Contracts;
 using Foundation.Core.Models;
-using Microsoft.Owin;
 using Microsoft.Owin.FileSystems;
 using Microsoft.Owin.StaticFiles;
 using NWebsec.Owin;
@@ -36,7 +35,7 @@ namespace Foundation.Api.Middlewares
         {
             AppEnvironment appEnvironment = _appEnvironmentProvider.GetActiveAppEnvironment();
 
-            string rootFolder = _pathProvider.MapPath(appEnvironment.GetConfig("StaticFilesRelativePath", "."));
+            string rootFolder = _pathProvider.GetCurrentStaticFilesPath();
 
             PhysicalFileSystem fileSystem = new PhysicalFileSystem(rootFolder);
 

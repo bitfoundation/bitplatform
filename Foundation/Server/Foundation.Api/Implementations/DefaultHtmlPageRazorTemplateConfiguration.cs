@@ -32,8 +32,7 @@ namespace Foundation.Api.Implementations
 
         public virtual void OnAppStartup()
         {
-            string templateFilePath =
-                _pathProvider.MapPath(_activeAppEnvironment.GetConfig<string>("DefaultPageTemplatePath"));
+            string templateFilePath = _pathProvider.StaticFileMapPath(_activeAppEnvironment.GetConfig("DefaultPageTemplatePath", "defaultPageTemplate.cshtml"));
 
             string template = File.ReadAllText(templateFilePath);
 
