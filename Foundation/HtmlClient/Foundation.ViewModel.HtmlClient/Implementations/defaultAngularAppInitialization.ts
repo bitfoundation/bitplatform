@@ -102,11 +102,23 @@ module Foundation.ViewModel.Implementations {
                     return result;
                 });
 
-            app.component("app", {
-                templateUrl: pathProvider.getFullPath(Core.ClientAppProfileManager.getCurrent().clientAppProfile.clientAppTemplateUrl),
+            let appTemplate = `<main ng-model-options="{ updateOn : 'default blur' , allowInvalid : true , debounce: { 'default': 250, 'blur': 0 } }">
+                                    <ng-outlet></ng-outlet>
+                               </main>`;
+
+            let appTemplateUrl = Core.ClientAppProfileManager.getCurrent().clientAppProfile.clientAppTemplateUrl;
+
+            let appComponentOptions: ng.IComponentOptions = {
                 $routeConfig: routes,
                 bindings: { $router: '<' }
-            });
+            };
+
+            if (appTemplateUrl != null)
+                appComponentOptions.templateUrl = pathProvider.getFullPath(appTemplateUrl);
+            else
+                appComponentOptions.template = appTemplate;
+
+            app.component("app", appComponentOptions);
 
         }
 
@@ -138,29 +150,33 @@ module Foundation.ViewModel.Implementations {
                     ["$delegate", extendExceptionHandler]);
             }]);
 
-            app.decorator('mdSwitchDirective', ['$delegate', function mdSwitchDecorator($delegate: ng.ISCEDelegateService) {
+            if (window['ngMaterial'] != null) {
 
-                let directive = ($delegate[0] as ng.IDirective);
+                app.decorator('mdSwitchDirective', ['$delegate', function mdSwitchDecorator($delegate: ng.ISCEDelegateService) {
 
-                let originalCompile = directive.compile;
+                    let directive = ($delegate[0] as ng.IDirective);
 
-                directive.compile = function (element, attr) {
+                    let originalCompile = directive.compile;
 
-                    let result = originalCompile.apply(this, arguments);
+                    directive.compile = function (element, attr) {
 
-                    let mdInputContainerParent = element.parent('md-input-container')
+                        let result = originalCompile.apply(this, arguments);
 
-                    if (mdInputContainerParent.length != 0) {
+                        let mdInputContainerParent = element.parent('md-input-container')
 
-                        mdInputContainerParent.addClass('md-input-has-value');
+                        if (mdInputContainerParent.length != 0) {
 
+                            mdInputContainerParent.addClass('md-input-has-value');
+
+                        }
+
+                        return result;
                     }
 
-                    return result;
-                }
+                    return $delegate;
+                }]);
 
-                return $delegate;
-            }]);
+            }
 
             let angularConfigs = dependencyManager.resolveAllObjects<Contracts.IAngularConfiguration>("AngularConfiguration");
 
