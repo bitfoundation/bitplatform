@@ -35,5 +35,18 @@ namespace Foundation.Api.Implementations
 
             return Path.Combine(GetCurrentAppPath(), path);
         }
+
+        public string GetCurrentStaticFilesPath()
+        {
+            return MapPath(DefaultAppEnvironmentProvider.Current.GetActiveAppEnvironment().GetConfig("StaticFilesRelativePath", "."));
+        }
+
+        public string StaticFileMapPath(string path)
+        {
+            if (path == null)
+                throw new ArgumentNullException(nameof(path));
+
+            return Path.Combine(GetCurrentStaticFilesPath(), path);
+        }
     }
 }
