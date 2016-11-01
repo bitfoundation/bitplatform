@@ -2,7 +2,7 @@
 
 namespace Foundation.Api.Middlewares.WebApi.OData
 {
-    public class DefaultODataUriResolver : ODataUriResolver
+    public class DefaultODataUriResolver : UnqualifiedODataUriResolver
     {
         public DefaultODataUriResolver()
         {
