@@ -10,9 +10,9 @@
         public sumResult: number = null;
         private context: TestContainer;
 
-        public async $routerOnActivate(route): Promise<void> {
+        @Foundation.ViewModel.Command()
+        public async $onInit(): Promise<void> {
             this.context = await this.entityContextProvider.getReadContext<TestContainer>("Test");
-            return await super.$routerOnActivate(route);
         }
 
         @ViewModel.Command()

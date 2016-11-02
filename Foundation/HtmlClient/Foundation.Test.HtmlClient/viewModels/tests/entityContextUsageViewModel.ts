@@ -8,10 +8,10 @@
 
         public num = 0;
 
-        public async $routerOnActivate(route): Promise<void> {
+        @Foundation.ViewModel.Command()
+        public async $onInit(): Promise<void> {
             const context = await this.entityContextProvider.getReadContext<TestContainer>("Test");
             this.num = await context.testModels.sum(10, 20);
-            return await super.$routerOnActivate(route);
         }
     }
 }

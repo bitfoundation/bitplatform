@@ -6,9 +6,9 @@
             super();
         }
 
-        public async $routerOnActivate(route): Promise<void> {
+        @Foundation.ViewModel.Command()
+        public async $onInit(): Promise<void> {
             this.$document.attr("title", "done");
-            return await super.$routerOnActivate(route);
         }
     }
 }

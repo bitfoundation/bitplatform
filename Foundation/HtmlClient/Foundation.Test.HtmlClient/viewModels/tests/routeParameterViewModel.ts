@@ -6,10 +6,9 @@
             super();
         }
 
-        public async $routerOnActivate(route: any): Promise<void> {
-            const to: string = route.params.to;
+        public async $onInit(): Promise<void> {
+            const to: string = this.route.params['to'];
             this.$document.attr("title", to);
-            return await super.$routerOnActivate(route);
         }
     }
 }

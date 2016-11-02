@@ -8,10 +8,10 @@
 
         public validationSampleDto: Test.Model.Dto.ValidationSampleDto = null;
 
-        public async $routerOnActivate(route): Promise<void> {
+        @Foundation.ViewModel.Command()
+        public async $onInit(): Promise<void> {
             const context = await this.entityContextProvider.getReadContext<TestContainer>("Test");
             this.validationSampleDto = new Test.Model.Dto.ValidationSampleDto();
-            return await super.$routerOnActivate(route);
         }
 
         @ViewModel.Command()

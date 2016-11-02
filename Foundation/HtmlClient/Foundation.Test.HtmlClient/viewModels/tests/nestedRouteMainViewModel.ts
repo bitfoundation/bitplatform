@@ -17,21 +17,20 @@
     @Core.FormViewModelDependency({ name: "FirstPartFormViewModel", templateUrl: "|Foundation|/Foundation.Test.HtmlClient/views/tests/firstPartview.html" })
     export class FirstPartFormViewModel extends Foundation.ViewModel.ViewModels.SecureFormViewModel {
 
-        public $router;
-
         public goToNextPart(): void {
             this.$router.navigate(['SecondPartFormViewModel', { parameter: 1 }]);
         }
     }
 
-    @Core.FormViewModelDependency({ name: "SecondPartFormViewModel", templateUrl: "|Foundation|/Foundation.Test.HtmlClient/views/tests/secondPartview.html" })
+    @Core.FormViewModelDependency({
+        name: "SecondPartFormViewModel", templateUrl: "|Foundation|/Foundation.Test.HtmlClient/views/tests/secondPartview.html"
+    })
     export class SecondPartFormViewModel extends Foundation.ViewModel.ViewModels.SecureFormViewModel {
 
         public parameter: number;
 
-        public async $routerOnActivate(route: any): Promise<void> {
-            this.parameter = route.params.parameter;
-            return await super.$routerOnActivate(route);
+        public async $onInit(): Promise<void> {
+            this.parameter = this.route.params['parameter'];
         }
     }
 }

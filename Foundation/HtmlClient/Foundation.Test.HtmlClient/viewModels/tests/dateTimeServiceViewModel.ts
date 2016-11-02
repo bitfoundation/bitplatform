@@ -8,9 +8,9 @@
 
         public date: Date;
 
-        public async $routerOnActivate(route): Promise<void> {
+        @Foundation.ViewModel.Command()
+        public async $onInit(): Promise<void> {
             this.date = new Date(2016, 1, 1, 10, 10);
-            return await super.$routerOnActivate(route);
         }
     }
 }

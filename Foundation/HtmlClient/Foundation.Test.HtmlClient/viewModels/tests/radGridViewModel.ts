@@ -8,12 +8,13 @@
 
         public parentEntitiesDataSource: kendo.data.DataSource = null;
 
-        public async $routerOnActivate(route): Promise<void> {
+        @Foundation.ViewModel.Command()
+        public async $onInit(): Promise<void> {
             const context = await this.entityContextProvider.getReadContext<TestContainer>("Test");
             this.parentEntitiesDataSource = context.parentEntities.asKendoDataSource({ pageSize: 5 });
-            return await super.$routerOnActivate(route);
         }
 
+        @Foundation.ViewModel.Command()
         public doSomethingWithCurrentEntity() {
             let parentEntity = this.parentEntitiesDataSource.current as Model.DomainModels.ParentEntity;
             parentEntity.Name += "?";

@@ -10,10 +10,10 @@
             super();
         }
 
-        public async $routerOnActivate(route): Promise<void> {
+        @Foundation.ViewModel.Command()
+        public async $onInit(): Promise<void> {
             const context = await this.entityContextProvider.getReadContext<TestContainer>("Test");
             this.testModels = await context.testModels.getTestModelsByStringPropertyValue('1').toArray();
-            return await super.$routerOnActivate(route);
         }
     }
 }

@@ -10,11 +10,11 @@
             super();
         }
 
-        public async $routerOnActivate(route): Promise<void> {
+        @Foundation.ViewModel.Command()
+        public async $onInit(): Promise<void> {
             const context = await this.entityContextProvider.getReadContext<TestContainer>("Test");
             this.testModelsDataSource = context.testModels.getTestModelsByStringPropertyValue('1').asKendoDataSource();
             this.model = await context.parentEntities.getTestData().map(p => { return { Id: p.Id, TestModel: { Id: p.TestModel.Id } } }).single();
-            return await super.$routerOnActivate(route);
         }
 
         @ViewModel.Command()
