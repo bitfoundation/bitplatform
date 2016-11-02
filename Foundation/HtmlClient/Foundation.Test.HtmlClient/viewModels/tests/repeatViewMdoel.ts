@@ -1,5 +1,5 @@
 ﻿module Foundation.Test.ViewModels {
-    @Core.FormViewModelDependency({ name: "RepeatFormViewModel", routeTemplate: "/repeat-page", templateUrl: "|Foundation|/Foundation.Test.HtmlClient/views/tests/repeatview.html" })
+    @Core.FormViewModelDependency({ name: "RepeatFormViewModel", templateUrl: "|Foundation|/Foundation.Test.HtmlClient/views/tests/repeatview.html" })
     export class RepeatFormViewModel extends Foundation.ViewModel.ViewModels.SecureFormViewModel {
 
         public testModels: Array<Model.DomainModels.TestModel> = null;

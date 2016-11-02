@@ -1,6 +1,6 @@
 ﻿module Foundation.Test.ViewModels {
 
-    @Core.FormViewModelDependency({ name: "AsyncFormViewModel", routeTemplate: "/async-page", templateUrl: "|Foundation|/Foundation.Test.HtmlClient/views/tests/asyncview.html" })
+    @Core.FormViewModelDependency({ name: "AsyncFormViewModel", templateUrl: "|Foundation|/Foundation.Test.HtmlClient/views/tests/asyncview.html" })
     export class AsyncFormViewModel extends Foundation.ViewModel.ViewModels.SecureFormViewModel {
 
         public constructor( @Core.Inject("EntityContextProvider") public entityContextProvider: ViewModel.Contracts.IEntityContextProvider) {

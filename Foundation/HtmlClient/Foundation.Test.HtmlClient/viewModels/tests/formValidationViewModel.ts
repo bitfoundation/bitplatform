@@ -1,5 +1,5 @@
 ﻿module Foundation.Test.ViewModels {
-    @Core.FormViewModelDependency({ name: "FormValidationFormViewModel", routeTemplate: "/form-validation-page", templateUrl: "|Foundation|/Foundation.Test.HtmlClient/views/tests/formValidationview.html" })
+    @Core.FormViewModelDependency({ name: "FormValidationFormViewModel", templateUrl: "|Foundation|/Foundation.Test.HtmlClient/views/tests/formValidationview.html" })
     export class FormValidationFormViewModel extends Foundation.ViewModel.ViewModels.SecureFormViewModel {
 
         public constructor( @Core.Inject("EntityContextProvider") public entityContextProvider: ViewModel.Contracts.IEntityContextProvider) {

@@ -1,9 +1,9 @@
 ﻿module Foundation.Test.ViewModels {
     @Core.FormViewModelDependency({
-        name: "NestedRouteMainFormViewModel", routeTemplate: "/nested-route-page/...", templateUrl: "|Foundation|/Foundation.Test.HtmlClient/views/tests/nestedRouteMainview.html", useAsDefault: true,
+        name: "NestedRouteMainFormViewModel", templateUrl: "|Foundation|/Foundation.Test.HtmlClient/views/tests/nestedRouteMainview.html",
         $routeConfig: [
-            { path: '/first-part-page', name: 'FirstPartFormViewModel', useAsDefault: true },
-            { path: '/second-part-page', name: 'SecondPartFormViewModel' },
+            { path: '/first-part-page/', name: 'FirstPartFormViewModel', useAsDefault: true },
+            { path: '/second-part-page/:parameter', name: 'SecondPartFormViewModel' },
             { path: '/**', redirectTo: ['NestedRouteMainFormViewModel'] }
         ]
     })
@@ -14,7 +14,7 @@
         }
     }
 
-    @Core.FormViewModelDependency({ name: "FirstPartFormViewModel", routeTemplate: "/first-part-page", templateUrl: "|Foundation|/Foundation.Test.HtmlClient/views/tests/firstPartview.html", locatedInMainRoute: false })
+    @Core.FormViewModelDependency({ name: "FirstPartFormViewModel", templateUrl: "|Foundation|/Foundation.Test.HtmlClient/views/tests/firstPartview.html" })
     export class FirstPartFormViewModel extends Foundation.ViewModel.ViewModels.SecureFormViewModel {
 
         public $router;
@@ -24,7 +24,7 @@
         }
     }
 
-    @Core.FormViewModelDependency({ name: "SecondPartFormViewModel", routeTemplate: "/second-part-page/:parameter", templateUrl: "|Foundation|/Foundation.Test.HtmlClient/views/tests/secondPartview.html", locatedInMainRoute: false })
+    @Core.FormViewModelDependency({ name: "SecondPartFormViewModel", templateUrl: "|Foundation|/Foundation.Test.HtmlClient/views/tests/secondPartview.html" })
     export class SecondPartFormViewModel extends Foundation.ViewModel.ViewModels.SecureFormViewModel {
 
         public parameter: number;

@@ -62,7 +62,6 @@
     <TypeScriptCompile Include="directives\defaultRadTreeViewDirective.ts" />
     <TypeScriptCompile Include="directives\defaultRadGridRowDirective.ts" />
     <Content Include="gulpfile.js" />
-    <Content Include="views\defaultAppMarkup.html" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="contents\styles\theme.common.less" />

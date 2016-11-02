@@ -1,5 +1,5 @@
 ﻿module Foundation.Test.ViewModels {
-    @Core.FormViewModelDependency({ name: "AngularServiceUsageFormViewModel", routeTemplate: "/angular-service-usage-page", templateUrl: "|Foundation|/Foundation.Test.HtmlClient/views/tests/angularServiceUsageview.html" })
+    @Core.FormViewModelDependency({ name: "AngularServiceUsageFormViewModel", templateUrl: "|Foundation|/Foundation.Test.HtmlClient/views/tests/angularServiceUsageview.html" })
     export class AngularServiceUsageFormViewModel extends Foundation.ViewModel.ViewModels.SecureFormViewModel {
 
         public constructor( @Core.Inject("$document") public $document: ng.IDocumentService) {

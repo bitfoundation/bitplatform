@@ -22,7 +22,6 @@ module Foundation.Core {
         routeTemplate?: string;
         classCtor?: Function;
         overwriteExisting?: boolean;
-        locatedInMainRoute?: boolean;
         useAsDefault?: boolean;
         componentName?: string;
     }
@@ -229,9 +228,6 @@ module Foundation.Core {
                 return;
 
             formViewModelDependency.componentName = camelize(formViewModelDependency.name);
-
-            if (formViewModelDependency.locatedInMainRoute == null)
-                formViewModelDependency.locatedInMainRoute = true;
 
             if (formViewModelDependency.$routeConfig != null) {
                 formViewModelDependency.$routeConfig.filter(r => r.name != null).forEach(r => {

@@ -18,7 +18,6 @@
         appName: string;
         currentTimeZone: string;
         desiredTimeZone: string;
-        clientAppTemplateUrl: string;
         environmentConfigs: Array<EnvironmentConfig>;
         getConfig<T>(configKey: string, defaultValueOnNotFound?: T): T;
     }

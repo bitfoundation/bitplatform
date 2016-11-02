@@ -63,24 +63,25 @@ module Foundation.ViewModel.Implementations {
 
             formViewModelDependencies.forEach(vm => {
 
-                let component: any = {
+                let vmComponent: any = {
                     name: vm.name,
                     controller: vm.classCtor,
                     require: vm.require,
                     template: vm.template,
                     transclude: vm.transclude,
                     $canActivate: vm.$canActivate,
-                    $routeConfig: vm.$routeConfig
+                    $routeConfig: vm.$routeConfig,
+                    componentName: vm.componentName
                 };
 
                 if (vm.templateUrl != null)
-                    component.templateUrl = pathProvider.getFullPath(vm.templateUrl);
+                    vmComponent.templateUrl = pathProvider.getFullPath(vm.templateUrl);
 
-                component.controllerAs = vm.controllerAs || "vm";
+                vmComponent.controllerAs = vm.controllerAs || "vm";
 
-                component.bindings = angular.extend(vm.bindings || {}, { $router: '<' });
+                vmComponent.bindings = angular.extend(vm.bindings || {}, { $router: '<' });
 
-                app.component(vm.componentName, component);
+                app.component(vmComponent.componentName, vmComponent);
 
             });
 
@@ -94,32 +95,6 @@ module Foundation.ViewModel.Implementations {
                 app.component(component.name, component);
 
             });
-
-            const routes = formViewModelDependencies
-                .filter(vm => vm.locatedInMainRoute == true)
-                .map(vm => {
-                    let result: any = { path: vm.routeTemplate, component: vm.componentName, name: vm.name, useAsDefault: vm.useAsDefault };
-                    return result;
-                });
-
-            let appTemplate = `<main ng-model-options="{ updateOn : 'default blur' , allowInvalid : true , debounce: { 'default': 250, 'blur': 0 } }">
-                                    <ng-outlet></ng-outlet>
-                               </main>`;
-
-            let appTemplateUrl = Core.ClientAppProfileManager.getCurrent().clientAppProfile.clientAppTemplateUrl;
-
-            let appComponentOptions: ng.IComponentOptions = {
-                $routeConfig: routes,
-                bindings: { $router: '<' }
-            };
-
-            if (appTemplateUrl != null)
-                appComponentOptions.templateUrl = pathProvider.getFullPath(appTemplateUrl);
-            else
-                appComponentOptions.template = appTemplate;
-
-            app.component("app", appComponentOptions);
-
         }
 
         protected async buildAppModule(): Promise<angular.IModule> {

@@ -51,6 +51,7 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="gulpfile.js" />
+    <Content Include="views\tests\app.html" />
     <Content Include="views\tests\dateTimeServiceView.html" />
     <Content Include="views\tests\firstPartView.html" />
     <Content Include="views\tests\radGridView.html" />
@@ -84,6 +85,7 @@
     <TypeScriptCompile Include="Implementations\Tests\loggerTests.ts" />
     <TypeScriptCompile Include="Implementations\Tests\signalRTests.ts" />
     <TypeScriptCompile Include="viewModels\tests\angularTranslateViewModel.ts" />
+    <TypeScriptCompile Include="viewModels\tests\app.ts" />
     <TypeScriptCompile Include="viewModels\tests\asyncViewModel.ts" />
     <TypeScriptCompile Include="viewModels\tests\dateTimeServiceViewModel.ts" />
     <TypeScriptCompile Include="viewModels\tests\entityContextUsageViewModel.ts" />

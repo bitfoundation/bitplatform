@@ -1,5 +1,5 @@
 ﻿module Foundation.Test.ViewModels {
-    @Core.FormViewModelDependency({ name: "RadGridFormViewModel", routeTemplate: "/rad-grid-page", templateUrl: "|Foundation|/Foundation.Test.HtmlClient/views/tests/radGridview.html" })
+    @Core.FormViewModelDependency({ name: "RadGridFormViewModel", templateUrl: "|Foundation|/Foundation.Test.HtmlClient/views/tests/radGridview.html" })
     export class RadGridFormViewModel extends Foundation.ViewModel.ViewModels.SecureFormViewModel {
 
         public constructor( @Core.Inject("EntityContextProvider") public entityContextProvider: ViewModel.Contracts.IEntityContextProvider, @Core.Inject("$document") public $document: angular.IDocumentService) {

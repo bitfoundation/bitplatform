@@ -1,5 +1,5 @@
 ﻿module Foundation.Test.ViewModels {
-    @Core.FormViewModelDependency({ name: "EntityContextUsageFormViewModel", routeTemplate: "/entity-context-usage-page", templateUrl: "|Foundation|/Foundation.Test.HtmlClient/views/tests/entityContextUsageview.html" })
+    @Core.FormViewModelDependency({ name: "EntityContextUsageFormViewModel", templateUrl: "|Foundation|/Foundation.Test.HtmlClient/views/tests/entityContextUsageview.html" })
     export class EntityContextUsageFormViewModel extends Foundation.ViewModel.ViewModels.SecureFormViewModel {
 
         public constructor( @Core.Inject("EntityContextProvider") public entityContextProvider: ViewModel.Contracts.IEntityContextProvider) {
