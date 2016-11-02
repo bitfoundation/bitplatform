@@ -7,7 +7,6 @@ using Foundation.Api.Middlewares;
 using Foundation.Core.Contracts;
 using Foundation.Core.Contracts.Project;
 using Foundation.Core.Implementations;
-using Foundation.Test.Api.Implementations;
 using Foundation.Test.Api.Middlewares;
 using IdentityServer.Api.Contracts;
 using IdentityServer.Api.Implementations;
@@ -31,7 +30,7 @@ namespace IdentityServer.Test.Api.Implementations.Project
             dependencyManager.RegisterInstance(DefaultPathProvider.Current);
 
             dependencyManager.Register<ILogger, DefaultLogger>();
-            dependencyManager.Register<ILogStore, TestLogStore>();
+            dependencyManager.Register<ILogStore, ConsoleLogStore>();
             dependencyManager.Register<IScopeStatusManager, DefaultScopeStatusManager>();
             dependencyManager.Register<IRequestInformationProvider, DefaultRequestInformationProvider>();
 
