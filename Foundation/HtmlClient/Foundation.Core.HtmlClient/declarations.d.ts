@@ -4,6 +4,12 @@
         editable(propName: string, isEditable?: boolean): boolean;
         visible(propName: string, isVisible?: boolean): boolean;
     }
+
+    export interface RouterOutlet {
+        $$outlet: {
+            currentInstruction: ng.ComponentInstruction
+        }
+    }
 }
 
 declare module kendo {

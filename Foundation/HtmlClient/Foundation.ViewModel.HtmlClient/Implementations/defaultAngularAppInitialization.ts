@@ -71,15 +71,17 @@ module Foundation.ViewModel.Implementations {
                     transclude: vm.transclude,
                     $canActivate: vm.$canActivate,
                     $routeConfig: vm.$routeConfig,
-                    componentName: vm.componentName
+                    componentName: vm.componentName,
+                    controllerAs: vm.controllerAs || "vm"
                 };
 
                 if (vm.templateUrl != null)
                     vmComponent.templateUrl = pathProvider.getFullPath(vm.templateUrl);
 
-                vmComponent.controllerAs = vm.controllerAs || "vm";
-
                 vmComponent.bindings = angular.extend(vm.bindings || {}, { $router: '<' });
+
+                if (vmComponent.name != "App")
+                    vmComponent.require = angular.extend(vm.require || {}, { ngOutlet: '^ngOutlet' });
 
                 app.component(vmComponent.componentName, vmComponent);
 

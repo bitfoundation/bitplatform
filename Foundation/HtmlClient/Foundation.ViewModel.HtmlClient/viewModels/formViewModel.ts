@@ -1,6 +1,14 @@
 ﻿module Foundation.ViewModel.ViewModels {
     export class FormViewModel {
 
+        public $router: ng.Router;
+
+        private ngOutlet: ng.RouterOutlet;
+
+        public get route(): ng.ComponentInstruction {
+            return this.ngOutlet.$$outlet.currentInstruction;
+        }
+
         public async $routerCanActivate(route: any): Promise<boolean> {
             return true;
         }
