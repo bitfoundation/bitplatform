@@ -71,7 +71,7 @@ namespace Foundation.Test.Api.Implementations
                     },
                     Configs = new List<EnvironmentConfig>
                     {
-                        new EnvironmentConfig { Key = "DefaultPageTemplatePath", Value = @"..\..\defaultPageTemplate.cshtml" },
+                        new EnvironmentConfig { Key = "DefaultPageTemplatePath", Value = @".\bit-framework\Foundation\Server\Foundation.Test\defaultPageTemplate.cshtml" },
                         new EnvironmentConfig { Key = "IdentityServerCertificatePath", Value = @"..\..\IdentityServerCertificate.pfx" },
                         new EnvironmentConfig { Key = "StaticFilesRelativePath", Value = @"..\..\..\..\..\..\" },
                         new EnvironmentConfig { Key = "TestDbConnectionString", Value = @"TestDbConnectionString" + Guid.NewGuid().ToString() },

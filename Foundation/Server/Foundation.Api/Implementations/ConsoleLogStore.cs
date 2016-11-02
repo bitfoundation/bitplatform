@@ -14,6 +14,11 @@ namespace Foundation.Api.Implementations
             _formatter = formatter;
         }
 
+        protected ConsoleLogStore()
+        {
+
+        }
+
         public void SaveLog(LogEntry logEntry)
         {
             ConsoleColor originalColor = Console.ForegroundColor;
