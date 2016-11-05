@@ -5,7 +5,7 @@ module Foundation.Test.Implementations {
 
         public view: JQuery;
 
-        constructor(view: JQuery) {
+        public constructor(view: JQuery) {
 
             if (view == null)
                 throw new Error('view is null');

@@ -8,7 +8,7 @@ module Foundation.ViewModel.Implementations {
 
         private clientAppProfile: Core.Contracts.IClientAppProfile;
 
-        constructor() {
+        public constructor() {
             this.clientAppProfile = Core.ClientAppProfileManager.getCurrent().getClientAppProfile();
         }
 

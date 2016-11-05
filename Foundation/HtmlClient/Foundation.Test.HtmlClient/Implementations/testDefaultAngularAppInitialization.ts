@@ -2,7 +2,7 @@
 module Foundation.Test.Implementations {
     export class TestDefaultAngularAppInitialization extends Foundation.ViewModel.Implementations.DefaultAngularAppInitialization {
 
-        constructor() {
+        public constructor() {
             super();
         }
 

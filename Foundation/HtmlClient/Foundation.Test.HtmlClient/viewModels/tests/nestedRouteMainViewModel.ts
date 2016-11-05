@@ -8,7 +8,7 @@
         ]
     })
     export class NestedRouteMainFormViewModel extends Foundation.ViewModel.ViewModels.SecureFormViewModel {
-        constructor( @Core.Inject("$document") public $document: ng.IDocumentService) {
+        public constructor( @Core.Inject("$document") public $document: ng.IDocumentService) {
             super();
             this.$document.attr('title', 'Nested View');
         }
