@@ -8,21 +8,6 @@ namespace Foundation.Api.Middlewares
 {
     public class RedirectToSsoIfNotLoggedInMiddlewareConfiguration : IOwinMiddlewareConfiguration
     {
-        private readonly IPageRequestDetector _pageRequestDetector;
-
-        public RedirectToSsoIfNotLoggedInMiddlewareConfiguration(IPageRequestDetector pageRequestDetector)
-        {
-            if (pageRequestDetector == null)
-                throw new ArgumentNullException(nameof(pageRequestDetector));
-
-            _pageRequestDetector = pageRequestDetector;
-        }
-
-        protected RedirectToSsoIfNotLoggedInMiddlewareConfiguration()
-        {
-
-        }
-
         public virtual void Configure(IAppBuilder owinApp)
         {
             if (owinApp == null)
@@ -34,8 +19,7 @@ namespace Foundation.Api.Middlewares
 
         public virtual bool IsDefaultPageAndNotLoggedIn(IOwinContext cntx)
         {
-            return _pageRequestDetector.IsAuthorizeRequiredPageRequest(cntx) &&
-                   cntx.GetDependencyResolver().Resolve<IUserInformationProvider>().IsAuthenticated() == false;
+            return cntx.GetDependencyResolver().Resolve<IUserInformationProvider>().IsAuthenticated() == false;
         }
     }
 }

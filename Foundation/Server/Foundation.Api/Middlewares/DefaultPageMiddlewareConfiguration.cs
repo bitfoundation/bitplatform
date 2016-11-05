@@ -11,23 +11,17 @@ namespace Foundation.Api.Middlewares
     public class DefaultPageMiddlewareConfiguration : IOwinMiddlewareConfiguration
     {
         private readonly AppEnvironment _activeAppEnvironment;
-        private readonly IPageRequestDetector _pageRequestDetector;
 
         protected DefaultPageMiddlewareConfiguration()
         {
         }
 
-        public DefaultPageMiddlewareConfiguration(IAppEnvironmentProvider appEnvironmentProvider, IPageRequestDetector pageRequestDetector)
+        public DefaultPageMiddlewareConfiguration(IAppEnvironmentProvider appEnvironmentProvider)
         {
             if (appEnvironmentProvider == null)
                 throw new ArgumentNullException(nameof(appEnvironmentProvider));
 
-            if (pageRequestDetector == null)
-                throw new ArgumentNullException(nameof(pageRequestDetector));
-
             _activeAppEnvironment = appEnvironmentProvider.GetActiveAppEnvironment();
-
-            _pageRequestDetector = pageRequestDetector;
         }
 
         public virtual void Configure(IAppBuilder owinApp)
@@ -35,28 +29,20 @@ namespace Foundation.Api.Middlewares
             if (owinApp == null)
                 throw new ArgumentNullException(nameof(owinApp));
 
-            owinApp.MapWhen(IsDefaultPageRequest, innerApp =>
+            if (_activeAppEnvironment.GetConfig("RequireSsl", defaultValueOnNotFound: false))
             {
-                if (_activeAppEnvironment.GetConfig("RequireSsl", defaultValueOnNotFound: false))
-                {
-                    innerApp.UseHsts(TimeSpan.FromDays(1));
-                }
+                owinApp.UseHsts(TimeSpan.FromDays(1));
+            }
 
-                innerApp.UseXContentTypeOptions();
+            owinApp.UseXContentTypeOptions();
 
-                innerApp.UseXDownloadOptions();
+            owinApp.UseXDownloadOptions();
 
-                innerApp.UseXXssProtection(xssProtectionOptions => { xssProtectionOptions.EnabledWithBlockMode(); });
+            owinApp.UseXXssProtection(xssProtectionOptions => { xssProtectionOptions.EnabledWithBlockMode(); });
 
-                innerApp.Use<OwinNoCacheResponseMiddleware>();
+            owinApp.Use<OwinNoCacheResponseMiddleware>();
 
-                innerApp.Use<DefaultPageMiddleware>();
-            });
-        }
-
-        public virtual bool IsDefaultPageRequest(IOwinContext cntx)
-        {
-            return _pageRequestDetector.IsPageRequest(cntx);
+            owinApp.Use<DefaultPageMiddleware>();
         }
     }
 }

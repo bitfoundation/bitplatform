@@ -68,7 +68,6 @@ namespace Foundation.Test.Api.Implementations.Project
                 dependencyManager.RegisterOwinMiddleware<SingleSignOnMiddlewareConfiguration>();
             else
                 dependencyManager.RegisterOwinMiddleware<EmbeddedOAuthMiddlewareConfiguration>();
-            dependencyManager.RegisterOwinMiddleware<RedirectToSsoIfNotLoggedInMiddlewareConfiguration>();
             dependencyManager.RegisterOwinMiddleware<LogUserInformationMiddlewareConfiguration>();
             dependencyManager.RegisterOwinMiddleware<MetadataMiddlewareConfiguration>();
 
@@ -106,8 +105,6 @@ namespace Foundation.Test.Api.Implementations.Project
 
             }, lifeCycle: DepepdencyLifeCycle.SingleInstance, overwriteExciting: false);
 
-            dependencyManager.RegisterDefaultPageMiddlewareUsingDefaultConfiguration();
-
             dependencyManager.RegisterSignalRConfiguration<SignalRAuthroizeConfiguration>();
             dependencyManager.RegisterSignalRMiddlewareUsingDefaultConfiguration(typeof(MessagesHub).GetTypeInfo().Assembly);
 
@@ -125,6 +122,10 @@ namespace Foundation.Test.Api.Implementations.Project
             dependencyManager.RegisterEfCoreAutoMapper();
 
             dependencyManager.RegisterDtoModelMapperConfiguration<TestDtoModelMapperConfiguration>();
+
+            dependencyManager.RegisterOwinMiddleware<RedirectToSsoIfNotLoggedInMiddlewareConfiguration>();
+
+            dependencyManager.RegisterDefaultPageMiddlewareUsingDefaultConfiguration();
 
             if (_args?.AdditionalDependencies != null)
                 _args?.AdditionalDependencies(dependencyManager);

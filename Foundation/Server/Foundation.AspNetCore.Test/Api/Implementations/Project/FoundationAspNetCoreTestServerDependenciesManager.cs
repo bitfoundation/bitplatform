@@ -52,7 +52,6 @@ namespace Foundation.AspNetCore.Test.Api.Implementations.Project
             dependencyManager.Register<IDateTimeProvider, DefaultDateTimeProvider>(lifeCycle: DepepdencyLifeCycle.SingleInstance);
             dependencyManager.Register<IRandomStringProvider, DefaultRandomStringProvider>(lifeCycle: DepepdencyLifeCycle.SingleInstance);
             dependencyManager.Register<ICertificateProvider, DefaultCertificateProvider>(lifeCycle: DepepdencyLifeCycle.SingleInstance);
-            dependencyManager.Register<IPageRequestDetector, DefaultPageRequestDetector>(lifeCycle: DepepdencyLifeCycle.SingleInstance); //@Important
             dependencyManager.Register<IExceptionToHttpErrorMapper, DefaultExceptionToHttpErrorMapper>(lifeCycle: DepepdencyLifeCycle.SingleInstance);
             dependencyManager.Register<INameService, DefaultNameService>(lifeCycle: DepepdencyLifeCycle.SingleInstance);
             dependencyManager.Register<ITestUserService, TestUserService>(lifeCycle: DepepdencyLifeCycle.SingleInstance);

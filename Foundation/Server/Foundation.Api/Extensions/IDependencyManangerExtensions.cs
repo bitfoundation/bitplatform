@@ -89,7 +89,6 @@ namespace Foundation.Core.Contracts
 
             dependencyManager.Register<IDefaultHtmlPageProvider, RazorDefaultHtmlPageProvider>();
             dependencyManager.Register<IDefaultPageModelProvider, DefaultPageModelProvider>();
-            dependencyManager.Register<IPageRequestDetector, DefaultPageRequestDetector>(lifeCycle: DepepdencyLifeCycle.SingleInstance);
 
             dependencyManager.RegisterAppEvents<DefaultHtmlPageRazorTemplateConfiguration>();
             dependencyManager.RegisterOwinMiddleware<DefaultPageMiddlewareConfiguration>();

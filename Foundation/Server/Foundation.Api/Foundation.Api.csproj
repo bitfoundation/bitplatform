@@ -494,7 +494,6 @@
     <Compile Include="Contracts\IBackgroundJobWorker.cs" />
     <Compile Include="Contracts\IDefaultPageModelProvider.cs" />
     <Compile Include="Contracts\IDefaultHtmlPageProvider.cs" />
-    <Compile Include="Contracts\IPageRequestDetector.cs" />
     <Compile Include="Contracts\ITimeZoneManager.cs" />
     <Compile Include="Contracts\Metadata\IAppMetadataProvider.cs" />
     <Compile Include="Contracts\Metadata\IDtoMetadataBuilder`TDto.cs" />
@@ -507,7 +506,6 @@
     <Compile Include="Exceptions\ResourceNotFoundaException.cs" />
     <Compile Include="Implementations\DefaultDependencyManager.cs" />
     <Compile Include="Implementations\DefaultTimeZoneManager.cs" />
-    <Compile Include="Implementations\DefaultPageRequestDetector.cs" />
     <Compile Include="Middlewares\InvokeLoginMiddleware.cs" />
     <Compile Include="Middlewares\InvokeLoginMiddlewareConfiguration.cs" />
     <Compile Include="Middlewares\WebApi\OData\ActionFilters\RequestQSTimeZoneApplierActionFilterAttribute.cs" />
