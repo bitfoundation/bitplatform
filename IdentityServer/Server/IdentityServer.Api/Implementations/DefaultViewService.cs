@@ -104,8 +104,6 @@ namespace IdentityServer.Api.Implementations
             }, Formatting.None, jsonSerSettings);
 
             string loginPageHtml = (await _ssoHtmlPageProvider.GetSsoPageAsync(CancellationToken.None))
-                .Replace("{ViewModelName}", _ssoHtmlPageProvider.GetLoginViewModelName())
-                .Replace("{ViewPath}", _ssoHtmlPageProvider.GetLoginViewPath())
                 .Replace("{model}", Microsoft.Security.Application.Encoder.HtmlEncode(json));
 
             return await ReturnHtmlAsync(model, loginPageHtml, CancellationToken.None);

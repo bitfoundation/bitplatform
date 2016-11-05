@@ -4,17 +4,12 @@
 module IdentityServer.ViewModel.Implementations {
     export class IdentityServerDefaultAngularAppInitialization extends Foundation.ViewModel.Implementations.DefaultAngularAppInitialization {
 
-        constructor() {
+        public constructor() {
             super();
         }
 
         protected getBaseModuleDependencies(): Array<string> {
             return ["pascalprecht.translate", "ngMessages", "ngMaterial", "ngAria", "ngAnimate"];
-        }
-
-        protected async registerComponents(app: angular.IModule): Promise<void> {
-            await super.registerComponents(app);
-            app.controller("LoginViewModel", IdentityServer.ViewModel.ViewModels.LoginViewModel);
         }
 
         protected async onAppRun(app: angular.IModule): Promise<void> {

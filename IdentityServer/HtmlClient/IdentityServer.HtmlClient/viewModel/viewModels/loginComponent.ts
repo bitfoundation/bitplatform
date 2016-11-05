@@ -4,13 +4,12 @@
         loginModel: Core.Models.ISsoModel;
     }
 
-    @Foundation.Core.Injectable()
-    export class LoginViewModel extends Foundation.ViewModel.ViewModels.FormViewModel {
+    @Foundation.Core.ComponentDependency({ name: 'login', templateUrl: '|IdentityServer|/view/views/loginView.html' })
+    export class LoginComponent {
 
         public loginModel: IdentityServer.Core.Models.ISsoModel;
 
         public constructor( @Foundation.Core.Inject("ModelProvider") public modelProvider: Core.Contracts.IModelProvider) {
-            super();
             this.loginModel = this.modelProvider.getModel();
         }
 

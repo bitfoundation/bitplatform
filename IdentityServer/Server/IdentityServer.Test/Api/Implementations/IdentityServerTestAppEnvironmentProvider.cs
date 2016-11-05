@@ -59,9 +59,7 @@ namespace IdentityServer.Test.Api.Implementations
                         new EnvironmentConfig { Key = "IdentityCertificatePassword" , Value = "P@ssw0rd" },
                         new EnvironmentConfig { Key = "IdentityServerSiteName" , Value = "Identity Server" },
                         new EnvironmentConfig { Key = "IdentityServerCertificatePath", Value = @"..\..\IdentityServerCertificate.pfx" },
-                        new EnvironmentConfig { Key = "SsoPageTemplatePath" , Value = @"..\..\ssoPageTemplate.cshtml" },
-                        new EnvironmentConfig { Key = "LoginViewModel" , Value = "LoginViewModel" },
-                        new EnvironmentConfig { Key = "LoginView", Value = $"Files/V{version}/bit-identity-server/IdentityServer/HtmlClient/IdentityServer.HtmlClient/view/views/loginView.html" }
+                        new EnvironmentConfig { Key = "SsoPageTemplatePath" , Value = @"..\..\ssoPageTemplate.cshtml" }
                     }
                 };
             }

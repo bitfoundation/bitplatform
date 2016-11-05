@@ -55,15 +55,5 @@ namespace IdentityServer.Api.Implementations
 
             return _result;
         }
-
-        public virtual string GetLoginViewModelName()
-        {
-            return _activeAppEnvironment.GetConfig<string>("LoginViewModel");
-        }
-
-        public virtual string GetLoginViewPath()
-        {
-            return _activeAppEnvironment.GetConfig<string>("LoginView");
-        }
     }
 }
