@@ -5,6 +5,10 @@
         visible(propName: string, isVisible?: boolean): boolean;
     }
 
+    export interface Router {
+        root: ng.Router;
+    }
+
     export interface RouterOutlet {
         $$outlet: {
             currentInstruction: ng.ComponentInstruction
