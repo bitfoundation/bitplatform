@@ -19,7 +19,7 @@ namespace Foundation.Api.Implementations
 
         }
 
-        public void SaveLog(LogEntry logEntry)
+        public virtual void SaveLog(LogEntry logEntry)
         {
             ConsoleColor originalColor = Console.ForegroundColor;
 
@@ -46,7 +46,7 @@ namespace Foundation.Api.Implementations
             }
         }
 
-        public async Task SaveLogAsync(LogEntry logEntry)
+        public virtual async Task SaveLogAsync(LogEntry logEntry)
         {
             ConsoleColor originalColor = Console.ForegroundColor;
 
