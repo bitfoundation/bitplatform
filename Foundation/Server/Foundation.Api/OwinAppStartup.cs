@@ -36,7 +36,7 @@ namespace Foundation.Api
             else
                 owinApp.Properties["host.AppMode"] = "production";
 
-            owinAppProps.AppName = activeEnvironment.AppInfo.Name;
+            owinAppProps.AppName = Console.Title = activeEnvironment.AppInfo.Name;
 
             owinApp.SetLoggerFactory(new DiagnosticsLoggerFactory());
 
