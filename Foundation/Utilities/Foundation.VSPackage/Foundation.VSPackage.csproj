@@ -94,7 +94,7 @@
       <EmbedInteropTypes>False</EmbedInteropTypes>
     </Reference>
     <Reference Include="Microsoft.Build.Framework">
-      <Private>True</Private>
+      <Private>False</Private>
     </Reference>
     <Reference Include="Microsoft.CodeAnalysis, Version=1.3.1.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\..\..\packages\Microsoft.CodeAnalysis.Common.1.3.2\lib\net45\Microsoft.CodeAnalysis.dll</HintPath>
@@ -125,7 +125,7 @@
       <Private>True</Private>
     </Reference>
     <Reference Include="Microsoft.CSharp">
-      <Private>True</Private>
+      <Private>False</Private>
     </Reference>
     <Reference Include="Microsoft.VisualStudio.CommandBars, Version=8.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
       <EmbedInteropTypes>False</EmbedInteropTypes>
@@ -218,7 +218,7 @@
       <EmbedInteropTypes>False</EmbedInteropTypes>
     </Reference>
     <Reference Include="System">
-      <Private>True</Private>
+      <Private>False</Private>
     </Reference>
     <Reference Include="System.AppContext, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
       <HintPath>..\..\..\packages\System.AppContext.4.1.0\lib\net46\System.AppContext.dll</HintPath>
@@ -229,7 +229,7 @@
       <Private>True</Private>
     </Reference>
     <Reference Include="System.ComponentModel.Composition">
-      <Private>True</Private>
+      <Private>False</Private>
     </Reference>
     <Reference Include="System.Composition.AttributedModel, Version=1.0.30.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
       <HintPath>..\..\..\packages\Microsoft.Composition.1.0.30\lib\portable-net45+win8+wp8+wpa81\System.Composition.AttributedModel.dll</HintPath>
@@ -256,10 +256,10 @@
       <Private>True</Private>
     </Reference>
     <Reference Include="System.Data">
-      <Private>True</Private>
+      <Private>False</Private>
     </Reference>
     <Reference Include="System.Design">
-      <Private>True</Private>
+      <Private>False</Private>
     </Reference>
     <Reference Include="System.Diagnostics.FileVersionInfo, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
       <HintPath>..\..\..\packages\System.Diagnostics.FileVersionInfo.4.0.0\lib\net46\System.Diagnostics.FileVersionInfo.dll</HintPath>
@@ -270,7 +270,7 @@
       <Private>True</Private>
     </Reference>
     <Reference Include="System.Drawing">
-      <Private>True</Private>
+      <Private>False</Private>
     </Reference>
     <Reference Include="System.IO, Version=4.1.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
       <HintPath>..\..\..\packages\System.IO.4.1.0\lib\net462\System.IO.dll</HintPath>
@@ -285,7 +285,7 @@
       <Private>True</Private>
     </Reference>
     <Reference Include="System.Numerics">
-      <Private>True</Private>
+      <Private>False</Private>
     </Reference>
     <Reference Include="System.Reflection, Version=4.1.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
       <HintPath>..\..\..\packages\System.Reflection.4.1.0\lib\net462\System.Reflection.dll</HintPath>
@@ -332,13 +332,13 @@
       <Private>True</Private>
     </Reference>
     <Reference Include="System.Windows.Forms">
-      <Private>True</Private>
+      <Private>False</Private>
     </Reference>
     <Reference Include="System.Xml">
-      <Private>True</Private>
+      <Private>False</Private>
     </Reference>
     <Reference Include="System.Xml.Linq">
-      <Private>True</Private>
+      <Private>False</Private>
     </Reference>
     <Reference Include="System.Xml.XmlDocument, Version=4.0.1.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
       <HintPath>..\..\..\packages\System.Xml.XmlDocument.4.0.1\lib\net46\System.Xml.XmlDocument.dll</HintPath>
