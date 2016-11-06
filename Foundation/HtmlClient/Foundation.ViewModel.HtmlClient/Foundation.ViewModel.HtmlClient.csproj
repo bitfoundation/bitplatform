@@ -78,6 +78,7 @@
     <TypeScriptCompile Include="Implementations\defaultMetadataProvider.ts" />
     <TypeScriptCompile Include="Implementations\defaultSecurityService.ts" />
     <TypeScriptCompile Include="Implementations\defaultSyncService.ts" />
+    <TypeScriptCompile Include="Implementations\guidUtils.ts" />
     <TypeScriptCompile Include="Implementations\scopeManager.ts" />
     <TypeScriptCompile Include="Implementations\signalRMessageReciever.ts" />
     <TypeScriptCompile Include="viewModels\dtoRules.ts" />
