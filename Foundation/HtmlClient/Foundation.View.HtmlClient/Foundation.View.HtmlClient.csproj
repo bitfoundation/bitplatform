@@ -93,7 +93,6 @@
     <TypeScriptCompile Include="directives\defaultRadGridDeleteButtonDirective.ts" />
     <TypeScriptCompile Include="directives\defaultRadGridDirective.ts" />
     <TypeScriptCompile Include="directives\defaultDtoFormServiceDirective.ts" />
-    <TypeScriptCompile Include="directives\defaultViewDirective.ts" />
     <TypeScriptCompile Include="directives\iranianPeopleNationalCodeValidator.ts" />
   </ItemGroup>
   <ItemGroup>
