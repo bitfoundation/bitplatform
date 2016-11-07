@@ -71,7 +71,6 @@ namespace Foundation.AspNetCore.Test.Api.Implementations.Project
                 dependencyManager.RegisterOwinMiddleware<SingleSignOnMiddlewareConfiguration>();
             else
                 dependencyManager.RegisterOwinMiddleware<EmbeddedOAuthMiddlewareConfiguration>();
-            dependencyManager.RegisterOwinMiddleware<RedirectToSsoIfNotLoggedInMiddlewareConfiguration>();
             dependencyManager.RegisterOwinMiddleware<LogUserInformationMiddlewareConfiguration>();
             dependencyManager.RegisterOwinMiddleware<MetadataMiddlewareConfiguration>();
 
