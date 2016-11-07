@@ -24,15 +24,5 @@
         public async $routerOnDeactivate(): Promise<void> {
 
         }
-
-        private _bindingContext: ng.IScope;
-
-        public get bindingContext(): ng.IScope {
-            return this._bindingContext;
-        }
-
-        public set bindingContext(value: ng.IScope) {
-            this._bindingContext = value;
-        }
     }
 }
