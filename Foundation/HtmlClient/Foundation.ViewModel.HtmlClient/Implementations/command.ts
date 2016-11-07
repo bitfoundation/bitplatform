@@ -9,7 +9,7 @@
             const originalMethod = descriptor.value;
 
             let isPromise = false;
-            let $scope: ng.IScope = null;
+            let $rootScope: ng.IScope = null;
 
             descriptor.value = function (...args: any[]) {
 
@@ -21,7 +21,7 @@
                         console.time(propertyKey);
                     }
 
-                    $scope = Foundation.Core.DependencyManager.getCurrent().resolveObject<ng.IRootScopeService>("$rootScope");
+                    $rootScope = Foundation.Core.DependencyManager.getCurrent().resolveObject<ng.IRootScopeService>("$rootScope");
 
                     result = originalMethod.apply(this, args);
 
@@ -36,13 +36,13 @@
                             if (clientAppProfile.isDebugMode == true)
                                 console.timeEnd(propertyKey);
 
-                            ScopeManager.update$scope($scope);
+                            ScopeManager.update$scope($rootScope);
 
                         });
 
                         rPromise.catch((e) => {
 
-                            ScopeManager.update$scope($scope);
+                            ScopeManager.update$scope($rootScope);
 
                             const iLogger = Foundation.Core.DependencyManager.getCurrent().resolveObject<Foundation.Core.Contracts.ILogger>("Logger");
                             iLogger.logDetailedError(this, propertyKey, args, e);
@@ -62,7 +62,7 @@
 
                     if (isPromise == false) {
 
-                        ScopeManager.update$scope($scope);
+                        ScopeManager.update$scope($rootScope);
 
                         if (clientAppProfile.isDebugMode == true)
                             console.timeEnd(propertyKey);
