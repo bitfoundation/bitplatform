@@ -27,7 +27,7 @@ namespace Foundation.Test.Api.Middlewares.Tests
                 HttpResponseMessage getMetadataForV1 = await testEnvironment.Server.GetHttpClient()
                     .GetAsync("Metadata/V1");
 
-                Assert.AreEqual(HttpStatusCode.NotFound, getMetadataForV1.StatusCode);
+                Assert.AreNotEqual(HttpStatusCode.OK, getMetadataForV1.StatusCode);
 
                 HttpResponseMessage getMetadataForV2 = await testEnvironment.Server.GetHttpClient()
                     .GetAsync("Metadata/V2");

@@ -86,7 +86,7 @@ namespace Foundation.Test.Api.Middlewares.Tests
                 HttpResponseMessage getVirtualPathUrlV1 = await testEnvironment.Server.GetHttpClient()
                     .GetAsync("/Files/V1");
 
-                Assert.AreEqual(HttpStatusCode.NotFound, getVirtualPathUrlV1.StatusCode);
+                Assert.AreNotEqual(HttpStatusCode.OK, getVirtualPathUrlV1.StatusCode);
 
                 HttpResponseMessage getVirtualPathUrlV2 = await testEnvironment.Server.GetHttpClient()
                     .GetAsync("/Files/V2");

@@ -123,12 +123,12 @@ namespace Foundation.Test.Api.Implementations.Project
 
             dependencyManager.RegisterDtoModelMapperConfiguration<TestDtoModelMapperConfiguration>();
 
+            if (_args?.AdditionalDependencies != null)
+                _args?.AdditionalDependencies(dependencyManager);
+
             dependencyManager.RegisterOwinMiddleware<RedirectToSsoIfNotLoggedInMiddlewareConfiguration>();
 
             dependencyManager.RegisterDefaultPageMiddlewareUsingDefaultConfiguration();
-
-            if (_args?.AdditionalDependencies != null)
-                _args?.AdditionalDependencies(dependencyManager);
         }
     }
 }

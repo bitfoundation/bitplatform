@@ -23,7 +23,7 @@ namespace Foundation.Test.HtmlClient.Caching
                     driver.Navigate().Refresh();
                 }
 
-                Assert.AreEqual(2, TestDependencyManager.CurrentTestDependencyManager.Objects.OfType<IDefaultHtmlPageProvider>().Count());
+                Assert.AreNotEqual(1, TestDependencyManager.CurrentTestDependencyManager.Objects.OfType<IDefaultHtmlPageProvider>().Count());
             }
         }
 
