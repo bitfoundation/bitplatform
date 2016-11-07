@@ -50,12 +50,12 @@ module Foundation.Test.Implementations {
             return false;
         }
 
-        public getFormViewModel(element: JQuery): TFormViewModel {
+        public getFormViewModel(element: JQuery, name = "vm"): TFormViewModel {
 
             if (element == null)
                 throw new Error('element is null');
 
-            return this.getBindingContext<TFormViewModel>(element, "vm");
+            return this.getBindingContext<TFormViewModel>(element, name);
 
         }
 
