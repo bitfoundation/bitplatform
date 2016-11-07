@@ -11,17 +11,5 @@ module IdentityServer.ViewModel.Implementations {
         protected getBaseModuleDependencies(): Array<string> {
             return ["pascalprecht.translate", "ngMessages", "ngMaterial", "ngAria", "ngAnimate"];
         }
-
-        protected async onAppRun(app: angular.IModule): Promise<void> {
-
-            const dependencyManager = Foundation.Core.DependencyManager.getCurrent();
-
-            app.run(['$mdToast', '$translate', ($mdToast: angular.material.IToastService, $translate: angular.translate.ITranslateService) => {
-                dependencyManager.registerInstanceDependency({ instance: $mdToast, name: "$mdToast" });
-                dependencyManager.registerInstanceDependency({ instance: $translate, name: "$translate" });
-            }]);
-
-            await super.onAppRun(app);
-        }
     }
 }

@@ -10,8 +10,6 @@ module IdentityServerTests {
 
     dependencyManager.registerObjectDependency({ name: "AppEvent", classCtor: IdentityServer.ViewModel.Implementations.IdentityServerDefaultAngularAppInitialization });
 
-    dependencyManager.registerObjectDependency({ name: "PathProvider", classCtor: IdentityServerTest.Implementations.IdentityServerTestPathProvider });
-
     dependencyManager.registerObjectDependency({ name: "Logger", classCtor: Foundation.ViewModel.Implementations.DefaultLogger });
 
     dependencyManager.registerObjectDependency({ name: "AppStartup", classCtor: Foundation.ViewModel.Implementations.DefaultAppStartup });
@@ -19,4 +17,10 @@ module IdentityServerTests {
     dependencyManager.registerObjectDependency({ name: "MetadataProvider", classCtor: Foundation.ViewModel.Implementations.DefaultMetadataProvider });
 
     dependencyManager.registerObjectDependency({ name: "AngularConfiguration", classCtor: Foundation.ViewModel.Implementations.DefaultAngularTranslateConfiguration });
+
+    dependencyManager.registerInstanceDependency({ name: 'ClientAppProfileManager', instance: Foundation.Core.ClientAppProfileManager.getCurrent() });
+
+    dependencyManager.registerObjectDependency({ name: "DateTimeService", classCtor: Foundation.ViewModel.Implementations.DefaultDateTimeService });
+
+    dependencyManager.registerObjectDependency({ name: "EntityContextProvider", classCtor: Foundation.ViewModel.Implementations.DefaultEntityContextProvider });
 }
