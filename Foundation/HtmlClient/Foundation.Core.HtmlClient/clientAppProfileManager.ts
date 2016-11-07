@@ -4,7 +4,7 @@
 
         private static current = new ClientAppProfileManager();
 
-        public clientAppProfile: Contracts.IClientAppProfile;
+        protected clientAppProfile: Contracts.IClientAppProfile;
 
         public static getCurrent() {
             return ClientAppProfileManager.current;
@@ -28,8 +28,8 @@
                 }
             }*/
 
-            if (ClientAppProfileManager.getCurrent().clientAppProfile.screenSize == null || ClientAppProfileManager.getCurrent().clientAppProfile.screenSize == "")
-                ClientAppProfileManager.getCurrent().clientAppProfile.screenSize = "DesktopAndTablet";
+            if (this.clientAppProfile.screenSize == null || this.clientAppProfile.screenSize == "")
+                this.clientAppProfile.screenSize = "DesktopAndTablet";
 
         }
 
@@ -37,28 +37,28 @@
 
             /* Must be extensible without overriding entire clientAppProfileManager or even this method */
 
-            if (ClientAppProfileManager.getCurrent().clientAppProfile.culture == "FaIr") {
-                ClientAppProfileManager.getCurrent().clientAppProfile.calendar = "Jalali";
-                ClientAppProfileManager.getCurrent().clientAppProfile.direction = "Rtl";
+            if (this.clientAppProfile.culture == "FaIr") {
+                this.clientAppProfile.calendar = "Jalali";
+                this.clientAppProfile.direction = "Rtl";
             } else {
-                ClientAppProfileManager.getCurrent().clientAppProfile.calendar = "Gregorian";
-                ClientAppProfileManager.getCurrent().clientAppProfile.direction = "Ltr";
+                this.clientAppProfile.calendar = "Gregorian";
+                this.clientAppProfile.direction = "Ltr";
             }
         }
 
         public determinateTimeZones(): void {
-            if (ClientAppProfileManager.getCurrent().clientAppProfile.currentTimeZone == null || ClientAppProfileManager.getCurrent().clientAppProfile.currentTimeZone == "") {
-                ClientAppProfileManager.getCurrent().clientAppProfile.currentTimeZone = String(String(new Date()).split("(")[1]).split(")")[0];
+            if (this.clientAppProfile.currentTimeZone == null || this.clientAppProfile.currentTimeZone == "") {
+                this.clientAppProfile.currentTimeZone = String(String(new Date()).split("(")[1]).split(")")[0];
             }
-            if (ClientAppProfileManager.getCurrent().clientAppProfile.desiredTimeZone == null || ClientAppProfileManager.getCurrent().clientAppProfile.desiredTimeZone == "") {
-                ClientAppProfileManager.getCurrent().clientAppProfile.desiredTimeZone = ClientAppProfileManager.getCurrent().clientAppProfile.currentTimeZone;
+            if (this.clientAppProfile.desiredTimeZone == null || this.clientAppProfile.desiredTimeZone == "") {
+                this.clientAppProfile.desiredTimeZone = this.clientAppProfile.currentTimeZone;
             }
         }
 
         public determinateClientType(): void {
 
-            if (ClientAppProfileManager.getCurrent().clientAppProfile.clientType == null || ClientAppProfileManager.getCurrent().clientAppProfile.clientType == "") {
-                ClientAppProfileManager.getCurrent().clientAppProfile.clientType = "Web";
+            if (this.clientAppProfile.clientType == null || this.clientAppProfile.clientType == "") {
+                this.clientAppProfile.clientType = "Web";
             }
         }
 

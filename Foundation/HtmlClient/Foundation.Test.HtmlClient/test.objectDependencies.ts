@@ -4,11 +4,7 @@ module Foundation.Test {
 
     let dependencyManager = Core.DependencyManager.getCurrent();
 
-    dependencyManager.registerObjectDependency({ name: "AppEvent", classCtor: Test.Implementations.TestDefaultAngularAppInitialization });
-
     dependencyManager.registerObjectDependency({ name: "AppEvent", classCtor: Foundation.ViewModel.Implementations.DefaultDataSourceExtender });
-
-    dependencyManager.registerObjectDependency({ name: "PathProvider", classCtor: Test.Implementations.FoundationTestPathProvider });
 
     dependencyManager.registerObjectDependency({ name: "Logger", classCtor: Foundation.ViewModel.Implementations.DefaultLogger });
 
@@ -23,4 +19,6 @@ module Foundation.Test {
     dependencyManager.registerObjectDependency({ name: "AngularConfiguration", classCtor: Foundation.ViewModel.Implementations.DefaultAngularTranslateConfiguration });
 
     dependencyManager.registerObjectDependency({ name: "DateTimeService", classCtor: Foundation.ViewModel.Implementations.DefaultDateTimeService });
+
+    dependencyManager.registerInstanceDependency({ name: 'ClientAppProfileManager', instance: Foundation.Core.ClientAppProfileManager.getCurrent() });
 }
