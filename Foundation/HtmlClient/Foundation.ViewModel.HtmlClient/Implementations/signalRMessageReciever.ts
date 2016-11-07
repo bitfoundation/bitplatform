@@ -35,7 +35,8 @@
 
             this.isInited = true;
 
-            await Core.DependencyManager.getCurrent().resolveFile("signalR");
+            if ($.signalR == null)
+                await Core.DependencyManager.getCurrent().resolveFile("signalR");
 
             const signalRAppPushReciever = this;
 
