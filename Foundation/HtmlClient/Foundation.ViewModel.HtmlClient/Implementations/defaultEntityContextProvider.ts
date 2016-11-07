@@ -1,5 +1,10 @@
 ﻿module Foundation.ViewModel.Implementations {
+    @Core.Injectable()
     export class DefaultEntityContextProvider implements Contracts.IEntityContextProvider {
+
+        public constructor( @Core.Inject("GuidUtils") public guidUtils: GuidUtils, @Core.Inject("MetadataProvider") public metadataProvider: Contracts.IMetadataProvider, @Core.Inject("ClientAppProfileManager") public clientAppProfileManager: Core.ClientAppProfileManager) {
+
+        }
 
         private oDataJSInitPromise: Promise<void> = null;
 
@@ -34,9 +39,7 @@
 
                     try {
 
-                        let dependencyManager = Core.DependencyManager.getCurrent();
-
-                        let metadata = await dependencyManager.resolveObject<Contracts.IMetadataProvider>("MetadataProvider").getMetadata();
+                        let metadata = await this.metadataProvider.getMetadata();
 
                         metadata.Dtos
                             .forEach(dto => {
@@ -71,17 +74,19 @@
 
                         let originalPrepareRequest = window['odatajs'].oData.utils.prepareRequest;
 
+                        let clientAppProfile = this.clientAppProfileManager.getClientAppProfile();
+
                         window['odatajs'].oData.utils.prepareRequest = function (request, handler, context) {
                             request.headers = request.headers || {};
-                            request.headers['current-time-zone'] = Core.ClientAppProfileManager.getCurrent().clientAppProfile.currentTimeZone;
-                            request.headers['desired-time-zone'] = Core.ClientAppProfileManager.getCurrent().clientAppProfile.desiredTimeZone;
-                            request.headers['client-app-version'] = Core.ClientAppProfileManager.getCurrent().clientAppProfile.version;
-                            request.headers['client-type'] = Core.ClientAppProfileManager.getCurrent().clientAppProfile.clientType;
-                            request.headers['client-culture'] = Core.ClientAppProfileManager.getCurrent().clientAppProfile.culture;
-                            request.headers['client-screen-size'] = Core.ClientAppProfileManager.getCurrent().clientAppProfile.screenSize;
+                            request.headers['current-time-zone'] = clientAppProfile.currentTimeZone;
+                            request.headers['desired-time-zone'] = clientAppProfile.desiredTimeZone;
+                            request.headers['client-app-version'] = clientAppProfile.version;
+                            request.headers['client-type'] = clientAppProfile.clientType;
+                            request.headers['client-culture'] = clientAppProfile.culture;
+                            request.headers['client-screen-size'] = clientAppProfile.screenSize;
                             request.headers['client-route'] = location.pathname;
-                            request.headers['client-theme'] = Core.ClientAppProfileManager.getCurrent().clientAppProfile.theme;
-                            request.headers['client-debug-mode'] = Core.ClientAppProfileManager.getCurrent().clientAppProfile.isDebugMode;
+                            request.headers['client-theme'] = clientAppProfile.theme;
+                            request.headers['client-debug-mode'] = clientAppProfile.isDebugMode;
                             request.headers['client-date-time'] = new Date().toISOString();
                             if (navigator.language != null)
                                 request.headers['system-language'] = navigator.language;
@@ -163,7 +168,7 @@
             }
             else {
                 cfg = {
-                    provider: 'indexedDb', databaseName: contextName + "V" + Foundation.Core.ClientAppProfileManager.getCurrent().clientAppProfile.version
+                    provider: 'indexedDb', databaseName: contextName + "V" + this.clientAppProfileManager.getClientAppProfile().version
                 }
             }
 
@@ -188,7 +193,7 @@
                             let eType = e.getType();
                             let members = eType.memberDefinitions;
                             if (members['$Id'] != null && e.Id == null)
-                                e.Id = $data.Guid['NewGuid']().value.toLowerCase();
+                                e.Id = this.guidUtils.newGuid();
                             if (members['$IsArchived'] != null && e.IsArchived == null)
                                 e.IsArchived = false;
                             if (members['$Version'] != null && e.Version == null)

@@ -1,11 +1,17 @@
 ﻿module Foundation.ViewModel.Implementations {
+
+    let dependencyManager = Foundation.Core.DependencyManager.getCurrent();
+
     export class DefaultAngularTranslateConfiguration implements Contracts.IAngularConfiguration {
+
+        public constructor(public metadataProvider = dependencyManager.resolveObject<Contracts.IMetadataProvider>("MetadataProvider"), public clientAppProfileManager = dependencyManager.resolveObject<Core.ClientAppProfileManager>("ClientAppProfileManager")) {
+
+        }
+
         @Core.Log()
         public async configure(app: angular.IModule): Promise<void> {
 
-            let dependencyManager = Core.DependencyManager.getCurrent();
-
-            let metadata = await dependencyManager.resolveObject<Contracts.IMetadataProvider>("MetadataProvider").getMetadata();
+            let metadata = await this.metadataProvider.getMetadata();
 
             let translates = {};
 
@@ -51,7 +57,7 @@
                     }
                 }
 
-                $translateProvider.preferredLanguage(Core.ClientAppProfileManager.getCurrent().clientAppProfile.culture);
+                $translateProvider.preferredLanguage(this.clientAppProfileManager.getClientAppProfile().culture);
 
                 $translateProvider.useSanitizeValueStrategy('escape');
 

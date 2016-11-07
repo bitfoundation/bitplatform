@@ -1,6 +1,10 @@
 ﻿module Foundation.ViewModel.Implementations {
     export abstract class DefaultPathProvider implements Contracts.IPathProvider {
 
+        public constructor(public clientAppProfileManager = Foundation.Core.DependencyManager.getCurrent().resolveObject<Core.ClientAppProfileManager>("ClientAppProfileManager")) {
+
+        }
+
         public abstract getProjectsPath(): Array<{ name: string, path: string }>;
 
         public getFullPath(relativePath: string | Function | (string | Function)[]): string {
@@ -21,7 +25,7 @@
                     absolutePath = absolutePath.replace(`|${p.name}|`, p.path);
                 });
 
-            return `Files/V${Foundation.Core.ClientAppProfileManager.getCurrent().clientAppProfile.version}/${absolutePath}`;
+            return `Files/V${this.clientAppProfileManager.getClientAppProfile().version}/${absolutePath}`;
 
         }
     }

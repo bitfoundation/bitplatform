@@ -1,6 +1,6 @@
 ﻿module Foundation.ViewModel.Implementations {
 
-    @Foundation.Core.ObjectDependency({ name: "securityService" })
+    @Foundation.Core.ObjectDependency({ name: "SecurityService" })
     export class DefaultSecurityService implements Core.Contracts.ISecurityService {
 
         @Foundation.Core.Log()

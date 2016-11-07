@@ -1,14 +1,20 @@
 ﻿/// <reference path="../../foundation.core.htmlclient/foundation.core.d.ts" />
 module Foundation.ViewModel.Implementations {
+
+    @Core.Injectable()
     export class DefaultAppStartup implements Core.Contracts.IAppStartup {
+
+        public constructor( @Core.InjectAll("AppEvent") public appEvents: Core.Contracts.IAppEvents[]) {
+
+        }
+
         @Core.Log()
         public async configuration(): Promise<void> {
 
-            const appEvents = Core.DependencyManager.getCurrent().resolveAllObjects<Core.Contracts.IAppEvents>("AppEvent");
-
-            for (let i = 0; i < appEvents.length; i++) {
-                await appEvents[i].onAppStartup();
+            for (let appEvent of this.appEvents) {
+                await appEvent.onAppStartup();
             }
+
         }
     }
 }

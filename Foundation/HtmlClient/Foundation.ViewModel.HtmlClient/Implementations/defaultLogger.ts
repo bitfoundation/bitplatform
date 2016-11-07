@@ -4,12 +4,13 @@
 /// <reference path="../../foundation.core.htmlclient/declarations.d.ts" />
 
 module Foundation.ViewModel.Implementations {
+    @Core.Injectable()
     export class DefaultLogger implements Core.Contracts.ILogger {
 
         private clientAppProfile: Core.Contracts.IClientAppProfile;
 
-        public constructor() {
-            this.clientAppProfile = Core.ClientAppProfileManager.getCurrent().getClientAppProfile();
+        public constructor( @Core.Inject("EntityContextProvider") public entityContextProvider: Contracts.IEntityContextProvider, @Core.Inject("ClientAppProfileManager") public clientAppProfileManager: Core.ClientAppProfileManager) {
+            this.clientAppProfile = clientAppProfileManager.getClientAppProfile();
         }
 
         public logInfo(message: string, additionalInfo?: string, err?: Error): void {
@@ -81,10 +82,9 @@ module Foundation.ViewModel.Implementations {
         private async saveLogsToServer(logs: Array<Model.Dtos.ClientLogDto>): Promise<void> {
             if (navigator.onLine) {
                 try {
-                    const contextProvider = Core.DependencyManager.getCurrent().resolveObject<ViewModel.Contracts.IEntityContextProvider>("EntityContextProvider");
-                    const context = await contextProvider.getContext<FoundationContainer>("Foundation");
-                    for (let i = 0; i < logs.length; i++) {
-                        context.clientsLogs.add(logs[i]);
+                    const context = await this.entityContextProvider.getContext<FoundationContainer>("Foundation");
+                    for (let log of logs) {
+                        context.clientsLogs.add(log);
                     }
                     await context.saveChanges();
                     sessionStorage.removeItem("logs");
