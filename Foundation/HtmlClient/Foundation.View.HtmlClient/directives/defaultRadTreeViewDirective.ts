@@ -12,12 +12,14 @@ module Foundation.View.Directives {
                 required: 'ngModel',
                 template: (element: JQuery, attrs: ng.IAttributes) => {
 
+                    let guidUtils = Core.DependencyManager.getCurrent().resolveObject<ViewModel.Implementations.GuidUtils>("GuidUtils");
+
                     let itemTemplate = element
                         .children("item-template");
 
                     if (itemTemplate.length != 0) {
 
-                        let itemTemplateId = $data.Guid['NewGuid']();
+                        let itemTemplateId = guidUtils.newGuid();
 
                         itemTemplate.attr('id', itemTemplateId);
 
@@ -30,7 +32,7 @@ module Foundation.View.Directives {
                         return text.replace(new RegExp(search, 'g'), replacement);
                     };
 
-                    let isolatedOptionsKey = 'options' + replaceAll($data.Guid['NewGuid']().value, '-', '');
+                    let isolatedOptionsKey = 'options' + replaceAll(guidUtils.newGuid(), '-', '');
 
                     attrs['isolatedOptionsKey'] = isolatedOptionsKey;
 

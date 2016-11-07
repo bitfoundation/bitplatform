@@ -14,9 +14,11 @@ module Foundation.View.Directives {
                     let itemTemplate = element
                         .children("item-template");
 
+                    let guidUtils = Core.DependencyManager.getCurrent().resolveObject<ViewModel.Implementations.GuidUtils>("GuidUtils");
+
                     if (itemTemplate.length != 0) {
 
-                        let itemTemplateId = $data.Guid['NewGuid']();
+                        let itemTemplateId = guidUtils.newGuid();
 
                         angular.element(document.body).append(itemTemplate.attr('id', itemTemplateId));
 
@@ -28,7 +30,7 @@ module Foundation.View.Directives {
 
                     if (headerTemplate.length != 0) {
 
-                        let headerTemplateId = $data.Guid['NewGuid']();
+                        let headerTemplateId = guidUtils.newGuid();
 
                         headerTemplate.attr('id', headerTemplateId);
 
@@ -41,7 +43,7 @@ module Foundation.View.Directives {
                         return text.replace(new RegExp(search, 'g'), replacement);
                     };
 
-                    let isolatedOptionsKey = 'options' + replaceAll($data.Guid['NewGuid']().value, '-', '');
+                    let isolatedOptionsKey = 'options' + replaceAll(guidUtils.newGuid(), '-', '');
 
                     attrs['isolatedOptionsKey'] = isolatedOptionsKey;
 

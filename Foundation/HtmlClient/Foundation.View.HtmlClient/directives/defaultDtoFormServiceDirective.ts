@@ -15,6 +15,7 @@
 
                     let $timeout = dependencyManager.resolveObject<angular.ITimeoutService>("$timeout");
                     let $parse = dependencyManager.resolveObject<angular.IParseService>("$parse");
+                    const clientAppProfile = dependencyManager.resolveObject<Core.ClientAppProfileManager>("ClientAppProfileManager").getClientAppProfile();
 
                     $timeout(() => {
 
@@ -201,7 +202,7 @@
                                         if (propModelCtrl != null)
                                             propModelCtrl.$setValidity(errorKey, isValid);
                                         else {
-                                            if (Foundation.Core.ClientAppProfileManager.getCurrent().clientAppProfile.isDebugMode == true)
+                                            if (clientAppProfile.isDebugMode == true)
                                                 console.warn(`No Prop named ${memberName} is in dto form`);
                                         }
                                     };

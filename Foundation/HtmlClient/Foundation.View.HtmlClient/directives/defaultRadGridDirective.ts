@@ -21,17 +21,19 @@ module Foundation.View.Directives {
                 terminal: true,
                 template: (element: JQuery, attrs: ng.IAttributes) => {
 
+                    let guidUtils = Core.DependencyManager.getCurrent().resolveObject<ViewModel.Implementations.GuidUtils>("GuidUtils");
+
                     let replaceAll = (text: string, search: string, replacement: string) => {
                         return text.replace(new RegExp(search, 'g'), replacement);
                     };
 
-                    let isolatedOptionsKey = 'options' + replaceAll($data.Guid['NewGuid']().value, '-', '');
+                    let isolatedOptionsKey = 'options' + replaceAll(guidUtils.newGuid(), '-', '');
 
                     attrs['isolatedOptionsKey'] = isolatedOptionsKey;
 
                     const gridTemplate = `<fake-element kendo-grid k-options="::${isolatedOptionsKey}" k-ng-delay="::${isolatedOptionsKey}" />`;
 
-                    let editRowTemplateId = $data.Guid['NewGuid']();
+                    let editRowTemplateId = guidUtils.newGuid();
 
                     angular.element(element)
                         .children("[type='edit/template']")
@@ -40,7 +42,7 @@ module Foundation.View.Directives {
 
                     attrs['editTemplateId'] = editRowTemplateId;
 
-                    let viewRowTemplateId = $data.Guid['NewGuid']();
+                    let viewRowTemplateId = guidUtils.newGuid();
 
                     angular.element(element)
                         .children("[type='view/template']")
@@ -54,7 +56,7 @@ module Foundation.View.Directives {
 
                     if (toolbarTemplate.length != 0) {
 
-                        let toolbarTemplateId = $data.Guid['NewGuid']();
+                        let toolbarTemplateId = guidUtils.newGuid();
 
                         toolbarTemplate.attr('id', toolbarTemplateId)
                             .insertAfter(element);
