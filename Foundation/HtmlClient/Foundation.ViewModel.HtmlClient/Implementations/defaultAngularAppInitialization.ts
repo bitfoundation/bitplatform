@@ -1,29 +1,21 @@
 ﻿/// <reference path="../../foundation.core.htmlclient/foundation.core.d.ts" />
 module Foundation.ViewModel.Implementations {
+
+    let dependencyManager = Foundation.Core.DependencyManager.getCurrent();
+
     export class DefaultAngularAppInitialization implements Core.Contracts.IAppEvents {
+
+        public constructor(public pathProvider = dependencyManager.resolveObject<Contracts.IPathProvider>("PathProvider"), public dateTimeService = dependencyManager.resolveObject<Contracts.IDateTimeService>("DateTimeService"), public angularConfigs = dependencyManager.resolveAllObjects<Contracts.IAngularConfiguration>("AngularConfiguration"), public securityService = dependencyManager.resolveObject<Core.Contracts.ISecurityService>("SecurityService"), public logger = dependencyManager.resolveObject<Core.Contracts.ILogger>("Logger"), public clientAppProfileManager = dependencyManager.resolveObject<Core.ClientAppProfileManager>("ClientAppProfileManager")) {
+            this.clientAppProfile = clientAppProfileManager.getClientAppProfile();
+        }
+
+        private clientAppProfile: Core.Contracts.IClientAppProfile;
 
         protected getBaseModuleDependencies(): Array<string> {
             return [];
         }
 
         protected async onAppRun(app: angular.IModule): Promise<void> {
-
-            const dependencyManager = Core.DependencyManager.getCurrent();
-
-            app.run(['$compile', '$document', '$location', '$rootScope', '$exceptionHandler', '$timeout', '$interval', '$parse', '$filter', '$http', '$cacheFactory', ($compile: angular.ICompileService, $document: ng.IDocumentService, $location: ng.ILocationService, $rootScope: ng.IRootScopeService, $exceptionHandler: ng.IExceptionHandlerService, $timeout: ng.ITimeoutService, $interval: ng.IIntervalService, $parse: angular.IParseService, $filter: ng.IFilterService, $http: ng.IHttpService, $cacheFactory: ng.ICacheFactoryService) => {
-                dependencyManager.registerInstanceDependency({ instance: $exceptionHandler, name: "$exceptionHandler" });
-                dependencyManager.registerInstanceDependency({ instance: $rootScope, name: "$rootScope" });
-                dependencyManager.registerInstanceDependency({ instance: $document, name: "$document" });
-                dependencyManager.registerInstanceDependency({ instance: $location, name: "$location" });
-                dependencyManager.registerInstanceDependency({ instance: $timeout, name: "$timeout" });
-                dependencyManager.registerInstanceDependency({ instance: $interval, name: "$interval" });
-                dependencyManager.registerInstanceDependency({ instance: $parse, name: "$parse" });
-                dependencyManager.registerInstanceDependency({ instance: $compile, name: "$compile" });
-                dependencyManager.registerInstanceDependency({ instance: app, name: "app" });
-                dependencyManager.registerInstanceDependency({ instance: $filter, name: "$filter" });
-                dependencyManager.registerInstanceDependency({ instance: $http, name: "$http" });
-                dependencyManager.registerInstanceDependency({ instance: $cacheFactory, name: '$cacheFactory' });
-            }]);
 
         }
 
@@ -35,11 +27,7 @@ module Foundation.ViewModel.Implementations {
 
             const dependencyManager = Core.DependencyManager.getCurrent();
 
-            const pathProvider = dependencyManager.resolveObject<Contracts.IPathProvider>("PathProvider");
-
             const formViewModelDependencies = dependencyManager.getAllFormViewModelsDependencies();
-
-            const securityService = dependencyManager.resolveObject<Foundation.Core.Contracts.ISecurityService>("securityService");
 
             formViewModelDependencies.forEach(vm => {
 
@@ -76,7 +64,7 @@ module Foundation.ViewModel.Implementations {
                 };
 
                 if (vm.templateUrl != null)
-                    vmComponent.templateUrl = pathProvider.getFullPath(vm.templateUrl);
+                    vmComponent.templateUrl = this.pathProvider.getFullPath(vm.templateUrl);
 
                 vmComponent.bindings = angular.extend(vm.bindings || {}, { $router: '<' });
 
@@ -92,7 +80,7 @@ module Foundation.ViewModel.Implementations {
                 component.controllerAs = component.controllerAs || "vm";
 
                 if (component.templateUrl != null)
-                    component.templateUrl = pathProvider.getFullPath(component.templateUrl)
+                    component.templateUrl = this.pathProvider.getFullPath(component.templateUrl)
 
                 app.component(component.name, component);
 
@@ -103,21 +91,21 @@ module Foundation.ViewModel.Implementations {
 
             const baseModuleDependencies = this.getBaseModuleDependencies();
 
-            const app = angular.module(Core.ClientAppProfileManager.getCurrent().clientAppProfile.appName, baseModuleDependencies);
+            const app = angular.module(this.clientAppProfile.appName, baseModuleDependencies);
 
             return app;
         }
 
         protected async configureAppModule(app: angular.IModule): Promise<void> {
 
-            const dependencyManager = Core.DependencyManager.getCurrent();
+            let logger = this.logger;
 
             function extendExceptionHandler($delegate) {
 
                 return (exception, cause) => {
 
                     $delegate(exception, cause);
-                    const logger = dependencyManager.resolveObject<Core.Contracts.ILogger>("Logger");
+
                     logger.logError(exception.message || exception, cause, exception);
                 };
             }
@@ -125,6 +113,14 @@ module Foundation.ViewModel.Implementations {
             app.config(["$provide", $provide => {
                 $provide.decorator("$exceptionHandler",
                     ["$delegate", extendExceptionHandler]);
+            }]);
+
+            app.config(['$compileProvider', ($compileProvider: ng.ICompileProvider) => {
+                $compileProvider.debugInfoEnabled(this.clientAppProfile.isDebugMode);
+            }]);
+
+            app.config(['$logProvider', ($logProvider: ng.ILogProvider) => {
+                $logProvider.debugEnabled(this.clientAppProfile.isDebugMode);
             }]);
 
             if (window['ngMaterial'] != null) {
@@ -155,17 +151,16 @@ module Foundation.ViewModel.Implementations {
 
             }
 
-            let angularConfigs = dependencyManager.resolveAllObjects<Contracts.IAngularConfiguration>("AngularConfiguration");
-
-            for (let i = 0; i < angularConfigs.length; i++) {
-                await angularConfigs[i].configure(app);
+            for (let angularConfig of this.angularConfigs) {
+                await angularConfig.configure(app);
             }
         }
 
         protected async registerDirectives(app: angular.IModule): Promise<void> {
 
             const dependencyManager = Core.DependencyManager.getCurrent();
-            const pathProvider = dependencyManager.resolveObject<Contracts.IPathProvider>("PathProvider");
+
+            let pathProvider = this.pathProvider;
 
             dependencyManager.getAllDirectivesDependencies()
                 .map(d => { return { name: d.name, instance: Reflect.construct(d.classCtor as Function, []) as Contracts.IDirective }; })
@@ -191,13 +186,10 @@ module Foundation.ViewModel.Implementations {
 
         protected async registerFilters(app: angular.IModule): Promise<void> {
 
-            const dependencyManager = Core.DependencyManager.getCurrent();
-
-            const pathProvider = dependencyManager.resolveObject<Contracts.IPathProvider>("PathProvider");
+            let dateTimeService = this.dateTimeService;
+            let pathProvider = this.pathProvider;
 
             app.filter('date', () => {
-
-                let dateTimeService = dependencyManager.resolveObject<Contracts.IDateTimeService>("DateTimeService");
 
                 return function (date: Date): string {
 
@@ -207,8 +199,6 @@ module Foundation.ViewModel.Implementations {
             });
 
             app.filter('dateTime', () => {
-
-                let dateTimeService = dependencyManager.resolveObject<Contracts.IDateTimeService>("DateTimeService");
 
                 return function (date: Date): string {
 
@@ -243,9 +233,12 @@ module Foundation.ViewModel.Implementations {
 
                     try {
 
-                        const dependencyManager = Core.DependencyManager.getCurrent();
-
                         let app = await this.buildAppModule();
+
+                        Foundation.Core.DependencyManager.getCurrent().registerCustomObjectResolver({
+                            canResolve: (name) => angular.element(document.body).injector().has(name),
+                            resolve: <T>(name) => angular.element(document.body).injector().get<T>(name)
+                        });
 
                         await this.registerValues(app);
 
@@ -259,7 +252,7 @@ module Foundation.ViewModel.Implementations {
 
                         await this.onAppRun(app);
 
-                        angular.bootstrap(document.body, [Core.ClientAppProfileManager.getCurrent().clientAppProfile.appName], {
+                        angular.bootstrap(document.body, [this.clientAppProfile.appName], {
                             strictDi: true
                         });
 
