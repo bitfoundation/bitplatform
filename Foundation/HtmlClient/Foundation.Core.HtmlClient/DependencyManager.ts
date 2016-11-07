@@ -47,6 +47,11 @@ module Foundation.Core {
         overwriteExisting?: boolean;
     }
 
+    export interface ICustomObjectResolver {
+        canResolve: (name: string) => boolean;
+        resolve: <T>(name: string) => T;
+    }
+
     export class DependencyManager {
 
         private fileDependencies = new Array<IFileDependency>();
@@ -61,10 +66,20 @@ module Foundation.Core {
 
         private directiveDependencies = new Array<IDirectiveDependency>();
 
+        private customObjectResolvers = new Array<ICustomObjectResolver>();
+
         private clientAppProfile = ClientAppProfileManager.getCurrent().getClientAppProfile();
 
         private dependencyShouldBeConsidered(dependency: IDependency): boolean {
             return dependency.predicate == null || dependency.predicate(this.clientAppProfile) == true;
+        }
+
+        public registerCustomObjectResolver(customObjectResolver: ICustomObjectResolver) {
+            if (customObjectResolver == null)
+                throw new Error('custom object resolver may not be null');
+            if (customObjectResolver.resolve == null)
+                throw new Error('custom object resolver`s resolve method may not be null');
+            this.customObjectResolvers.push(customObjectResolver);
         }
 
         public registerFileDependency(fileDependency: IFileDependency): void {
@@ -272,7 +287,7 @@ module Foundation.Core {
                     if (nextFile != null) {
                         loadInitialFileDependecy(nextFile);
                     } else {
-                        const app = DependencyManager.getCurrent().resolveObject<Contracts.IAppStartup>("AppStartup");
+                        const app = this.resolveObject<Contracts.IAppStartup>("AppStartup");
                         app.configuration();
                     }
 
@@ -302,7 +317,7 @@ module Foundation.Core {
                     if (nextFile != null) {
                         loadInitialFileDependecy(nextFile);
                     } else {
-                        const app = DependencyManager.getCurrent().resolveObject<Contracts.IAppStartup>("AppStartup");
+                        const app = this.resolveObject<Contracts.IAppStartup>("AppStartup");
                         app.configuration();
                     }
 
@@ -315,7 +330,7 @@ module Foundation.Core {
                 loadInitialFileDependecy(files.shift());
             }
             else {
-                const app = DependencyManager.getCurrent().resolveObject<Contracts.IAppStartup>("AppStartup");
+                const app = this.resolveObject<Contracts.IAppStartup>("AppStartup");
                 app.configuration();
             }
         }
@@ -425,13 +440,27 @@ module Foundation.Core {
             if (objectDependencyName == null || objectDependencyName == "")
                 throw new Error('argument exception: objectDependencyName');
 
-            const result = this.resolveAllObjects<TContract>(objectDependencyName);
+            let result = this.resolveAllObjects<TContract>(objectDependencyName)[0];
 
-            if (result.length == 0) {
+            if (result == null) {
+                for (let customObjectResolver of this.customObjectResolvers) {
+                    let canResolve = false;
+                    try {
+                        canResolve = customObjectResolver.canResolve == null || customObjectResolver.canResolve(objectDependencyName);
+                    } catch (e) { }
+                    if (canResolve == true) {
+                        result = customObjectResolver.resolve<TContract>(objectDependencyName);
+                        if (result != null)
+                            break;
+                    }
+                }
+            }
+
+            if (result == null) {
                 throw new Error(`object dependency ${objectDependencyName} could not be found`);
             }
 
-            return result[0];
+            return result;
         }
 
         public resolveAllObjects<TContract>(objectDependencyName: string): Array<TContract> {
@@ -540,8 +569,16 @@ module Foundation.Core {
 
     export function Inject(name: string): ParameterDecorator {
         return (target: Function, propertyKey: string | symbol): Function => {
-            target.inject = target.inject || [];
-            target.inject.push(name);
+            target.injects = target.injects || [];
+            target.injects.push({ name: name, kind: 'Single' });
+            return target;
+        }
+    }
+
+    export function InjectAll(name: string): ParameterDecorator {
+        return (target: Function, propertyKey: string | symbol): Function => {
+            target.injects = target.injects || [];
+            target.injects.push({ name: name, kind: 'All' });
             return target;
         }
     }
@@ -550,11 +587,11 @@ module Foundation.Core {
 
         return (target: Function): Function => {
 
-            if (target.inject != null && target.inject.length != 0) {
+            let injects = target.injects;
+
+            if (injects != null && injects.length != 0) {
 
                 let originalTarget = target;
-
-                let names = target.inject;
 
                 target = function () {
 
@@ -562,16 +599,20 @@ module Foundation.Core {
 
                     let args = Array.from(arguments);
 
-                    for (let name of names.slice(0).reverse()) {
-                        args.push(dependencyManager.resolveObject<any>(name));
+                    for (let inject of injects.slice(0).reverse()) {
+                        if (inject.kind == 'All')
+                            args.push(dependencyManager.resolveAllObjects<any[]>(inject.name));
+                        else
+                            args.push(dependencyManager.resolveObject<any>(inject.name));
                     }
 
                     return Reflect.construct(originalTarget, args);
                 };
-            }
+
+            };
 
             return target;
-        };
+        }
     }
 
     function camelize(str: string): string {

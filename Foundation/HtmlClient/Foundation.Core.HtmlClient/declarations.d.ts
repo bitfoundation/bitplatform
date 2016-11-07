@@ -110,5 +110,5 @@ declare namespace decimal {
 }
 
 interface Function {
-    inject?: string[];
+    injects?: { name: string, kind: "Single" | "All" }[];
 }
