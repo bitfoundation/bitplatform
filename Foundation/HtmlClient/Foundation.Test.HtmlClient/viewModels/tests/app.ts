@@ -1,7 +1,7 @@
 ﻿module Foundation.Test.ViewModels {
 
     @Core.FormViewModelDependency({
-        name: "App", routeTemplate: "/...",
+        name: "App",
         templateUrl: "|Foundation|/Foundation.Test.HtmlClient/views/tests/app.html",
         $routeConfig: [
             { path: "/rad-combo-page", name: 'RadComboFormViewModel', useAsDefault: true },

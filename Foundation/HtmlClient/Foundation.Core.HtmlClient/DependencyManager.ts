@@ -5,8 +5,9 @@
 module Foundation.Core {
 
     export interface IDependency {
-        name?: string;
+        name: string;
         predicate?: (clientAppInfo: Contracts.IClientAppProfile) => boolean;
+        overwriteExisting?: boolean;
     }
 
     export interface IFileDependency extends IDependency {
@@ -15,36 +16,27 @@ module Foundation.Core {
         fileDependecyType?: "Script" | "Style";
         loadStatus?: "IsBeingLoaded" | "NotLoaded" | "Loaded";
         promise?: Promise<void>;
-        overwriteExisting?: boolean;
-    }
-
-    export interface IFormViewModelDependency extends IDependency, ng.IComponentOptions {
-        routeTemplate?: string;
-        classCtor?: Function;
-        overwriteExisting?: boolean;
-        useAsDefault?: boolean;
-        componentName?: string;
     }
 
     export interface IComponentDependency extends IDependency, ng.IComponentOptions {
-        classCtor?: Function;
-        overwriteExisting?: boolean;
+        class?: Function;
+    }
+
+    export interface IFormViewModelDependency extends IComponentDependency {
+        
     }
 
     export interface IDirectiveDependency extends IDependency {
-        classCtor?: Function;
-        overwriteExisting?: boolean;
+        class?: Function;
     }
 
     export interface IObjectDependency extends IDependency {
-        classCtor?: Function;
+        class?: Function;
         lifeCycle?: "SingleInstance" | "PerRoute" | "Transient";
-        overwriteExisting?: boolean;
     }
 
     export interface IInstanceDependency extends IDependency {
         instance: Object;
-        overwriteExisting?: boolean;
     }
 
     export interface ICustomObjectResolver {
@@ -141,11 +133,11 @@ module Foundation.Core {
             if (objectDependency == null)
                 throw new Error("objectDependency is null");
 
+            if (objectDependency.class == null)
+                throw new Error("class of object dependency may not be null");
+
             if (objectDependency.name == null)
                 throw new Error("objectDependency.name is null");
-
-            if (objectDependency.classCtor == null)
-                throw new Error("classCtor of object dependency may not be null");
 
             if (!this.dependencyShouldBeConsidered(objectDependency))
                 return;
@@ -172,11 +164,11 @@ module Foundation.Core {
             if (directiveDependency == null)
                 throw new Error("directiveDependency is null");
 
+            if (directiveDependency.class == null)
+                throw new Error("class of directive dependency may not be null");
+
             if (directiveDependency.name == null)
                 throw new Error("directiveDependency.name is null");
-
-            if (directiveDependency.classCtor == null)
-                throw new Error("classCtor of directive dependency may not be null");
 
             if (!this.dependencyShouldBeConsidered(directiveDependency))
                 return;
@@ -205,14 +197,17 @@ module Foundation.Core {
             if (componentDependency == null)
                 throw new Error("componentDependency is null");
 
-            if (componentDependency.classCtor == null)
-                throw new Error("classCtor of component dependency may not be null");
+            if (componentDependency.class == null)
+                throw new Error("class of component dependency may not be null");
+
+            if (componentDependency.name == null)
+                throw new Error("name of component dependency may not be null");
 
             if (!this.dependencyShouldBeConsidered(componentDependency))
                 return;
 
             componentDependency.name = camelize(componentDependency.name);
-            componentDependency.controller = componentDependency.classCtor as any;
+            componentDependency.controller = componentDependency.class as any;
 
             const dependenciesWithThisName = this.componentDependencies.filter(d => d.name.toLowerCase() == componentDependency.name.toLowerCase());
             let dependenciesWithThisNameIndex = -1;
@@ -236,22 +231,23 @@ module Foundation.Core {
             if (formViewModelDependency == null)
                 throw new Error("formViewModelDependency is null");
 
-            if (formViewModelDependency.classCtor == null)
-                throw new Error("classCtor of viewModel dependency may not be null");
+            if (formViewModelDependency.class == null)
+                throw new Error("class of viewModel dependency may not be null");
+
+            if (formViewModelDependency.name == null)
+                throw new Error("name of viewModel dependency may not be null");
 
             if (!this.dependencyShouldBeConsidered(formViewModelDependency))
                 return;
 
-            formViewModelDependency.componentName = camelize(formViewModelDependency.name);
+            formViewModelDependency.name = camelize(formViewModelDependency.name);
+            formViewModelDependency.controller = formViewModelDependency.class as any;
 
             if (formViewModelDependency.$routeConfig != null) {
-                formViewModelDependency.$routeConfig.filter(r => r.name != null).forEach(r => {
+                formViewModelDependency.$routeConfig.filter(r => r.name != null && r.component == null).forEach(r => {
                     r.component = camelize(r.name);
-                })
+                });
             }
-
-            if (formViewModelDependency.useAsDefault == null)
-                formViewModelDependency.useAsDefault = false;
 
             const dependenciesWithThisName = this.formViewModelDependencies.filter(d => d.name.toLowerCase() == formViewModelDependency.name.toLowerCase());
             let dependenciesWithThisNameIndex = -1;
@@ -479,7 +475,7 @@ module Foundation.Core {
                         .filter(depInstanceKeyValue => depInstanceKeyValue.objectDep == objectDep)[0];
 
                     if (result == null) {
-                        result = { objectDep: objectDep, objectDepInstance: Reflect.construct(objectDep.classCtor as Function, []) };
+                        result = { objectDep: objectDep, objectDepInstance: Reflect.construct(objectDep.class as Function, []) };
                         this.registerInstanceDependency({ instance: result.objectDepInstance, name: result.objectDep.name, overwriteExisting: false });
                     }
 
@@ -513,7 +509,7 @@ module Foundation.Core {
 
             targetService = Injectable()(targetService) as IObjectDependency & Function;
 
-            objectDependency.classCtor = targetService;
+            objectDependency.class = targetService;
 
             DependencyManager.getCurrent()
                 .registerObjectDependency(objectDependency);
@@ -528,7 +524,7 @@ module Foundation.Core {
 
             targetFormViewModel = Injectable()(targetFormViewModel) as IFormViewModelDependency & Function;
 
-            formViewModelDependency.classCtor = targetFormViewModel;
+            formViewModelDependency.class = targetFormViewModel;
 
             DependencyManager.getCurrent()
                 .registerFormViewModelDependency(formViewModelDependency);
@@ -543,7 +539,7 @@ module Foundation.Core {
 
             targetComponent = Injectable()(targetComponent) as IComponentDependency & Function;
 
-            componentDependency.classCtor = targetComponent;
+            componentDependency.class = targetComponent;
 
             DependencyManager.getCurrent()
                 .registerComponentDependency(componentDependency);
@@ -558,7 +554,7 @@ module Foundation.Core {
 
             targetDirective = Injectable()(targetDirective) as IDirectiveDependency & Function;
 
-            directiveDependency.classCtor = targetDirective;
+            directiveDependency.class = targetDirective;
 
             DependencyManager.getCurrent()
                 .registerDirectiveDependency(directiveDependency);
