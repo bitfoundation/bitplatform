@@ -68,7 +68,7 @@
     <TypeScriptCompile Include="Implementations\defaultAngularTranslateConfiguration.ts" />
     <TypeScriptCompile Include="Implementations\defaultAngularAppInitialization.ts" />
     <TypeScriptCompile Include="Implementations\defaultAppStartup.ts" />
-    <TypeScriptCompile Include="Implementations\defaultDataSourceExtender.ts" />
+    <TypeScriptCompile Include="Implementations\defaultKendoExtender.ts" />
     <TypeScriptCompile Include="Implementations\defaultMath.ts" />
     <TypeScriptCompile Include="Implementations\defaultPathProvider.ts" />
     <TypeScriptCompile Include="Implementations\defaultEntityContextProvider.ts" />

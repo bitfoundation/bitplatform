@@ -26,7 +26,7 @@
 
         @Foundation.Core.Log()
         public logout(): void {
-            throw new Error('Logout not implemented yet');
+            throw new Error('Logout is not implemented yet');
         }
 
     }

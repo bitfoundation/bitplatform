@@ -4,7 +4,7 @@ module Foundation.Test {
 
     let dependencyManager = Core.DependencyManager.getCurrent();
 
-    dependencyManager.registerObjectDependency({ name: "AppEvent", class: Foundation.ViewModel.Implementations.DefaultDataSourceExtender });
+    dependencyManager.registerObjectDependency({ name: "AppEvent", class: Foundation.ViewModel.Implementations.DefaultKendoExtender });
 
     dependencyManager.registerObjectDependency({ name: "Logger", class: Foundation.ViewModel.Implementations.DefaultLogger });
 
