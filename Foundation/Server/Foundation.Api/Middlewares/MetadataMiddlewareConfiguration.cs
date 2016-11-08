@@ -32,7 +32,10 @@ namespace Foundation.Api.Middlewares
 
             owinApp.Map(path, innerApp =>
             {
-                innerApp.Use<OwinCacheResponseMiddleware>();
+                if (appEnvironment.DebugMode == true)
+                    innerApp.Use<OwinNoCacheResponseMiddleware>();
+                else
+                    innerApp.Use<OwinCacheResponseMiddleware>();
                 innerApp.UseXContentTypeOptions();
                 innerApp.UseXDownloadOptions();
                 innerApp.Use<MetadatMiddlware>();
