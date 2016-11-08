@@ -56,8 +56,9 @@ module Foundation.ViewModel.Implementations {
 
                 vm.controllerAs = vm.controllerAs || "vm";
 
+                vm.bindings = angular.extend(vm.bindings || {}, { $router: '<' });
+
                 if (vm.name != "app") {
-                    vm.bindings = angular.extend(vm.bindings || {}, { $router: '<' });
                     vm.require = angular.extend(vm.require || {}, { ngOutlet: '^ngOutlet' });
                 }
 
