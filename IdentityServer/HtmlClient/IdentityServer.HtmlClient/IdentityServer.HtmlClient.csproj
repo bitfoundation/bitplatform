@@ -75,8 +75,8 @@
     <TypeScriptCompile Include="core\models\iSsoModel.ts" />
     <TypeScriptCompile Include="viewModel\Implementations\defaultModelProvider.ts" />
     <TypeScriptCompile Include="viewModel\Implementations\identityserverdefaultangularappinitialization.ts" />
-    <TypeScriptCompile Include="viewModel\viewModels\loginComponent.ts" />
-    <TypeScriptCompile Include="view\directives\antiForgeryTokenDirective.ts" />
+    <TypeScriptCompile Include="viewModel\components\loginComponent.ts" />
+    <TypeScriptCompile Include="viewModel\components\antiForgeryTokenDirective.ts" />
   </ItemGroup>
   <ItemGroup>
     <Service Include="{4A0DDDB5-7A95-4FBF-97CC-616D07737A77}" />
