@@ -31,11 +31,11 @@ module Foundation.ViewModel.Implementations {
 
             formViewModelDependencies.forEach(vm => {
 
-                let original$routerOnActivate = vm.classCtor.prototype.$routerOnActivate;
+                let original$routerOnActivate = vm.class.prototype.$routerOnActivate;
 
-                let original$routerCanActivate = vm.classCtor.prototype.$routerCanActivate;
+                let original$routerCanActivate = vm.class.prototype.$routerCanActivate;
 
-                vm.classCtor.prototype.$routerOnActivate = async function () {
+                vm.class.prototype.$routerOnActivate = async function () {
 
                     let canActivate = original$routerCanActivate == null || await original$routerCanActivate.apply(this, arguments);
 
@@ -51,27 +51,17 @@ module Foundation.ViewModel.Implementations {
 
             formViewModelDependencies.forEach(vm => {
 
-                let vmComponent: any = {
-                    name: vm.name,
-                    controller: vm.classCtor,
-                    require: vm.require,
-                    template: vm.template,
-                    transclude: vm.transclude,
-                    $canActivate: vm.$canActivate,
-                    $routeConfig: vm.$routeConfig,
-                    componentName: vm.componentName,
-                    controllerAs: vm.controllerAs || "vm"
-                };
-
                 if (vm.templateUrl != null)
-                    vmComponent.templateUrl = this.pathProvider.getFullPath(vm.templateUrl);
+                    vm.templateUrl = this.pathProvider.getFullPath(vm.templateUrl);
 
-                vmComponent.bindings = angular.extend(vm.bindings || {}, { $router: '<' });
+                vm.controllerAs = vm.controllerAs || "vm";
 
-                if (vmComponent.name != "App")
-                    vmComponent.require = angular.extend(vm.require || {}, { ngOutlet: '^ngOutlet' });
+                if (vm.name != "app") {
+                    vm.bindings = angular.extend(vm.bindings || {}, { $router: '<' });
+                    vm.require = angular.extend(vm.require || {}, { ngOutlet: '^ngOutlet' });
+                }
 
-                app.component(vmComponent.componentName, vmComponent);
+                app.component(vm.name, vm);
 
             });
 
@@ -80,7 +70,7 @@ module Foundation.ViewModel.Implementations {
                 component.controllerAs = component.controllerAs || "vm";
 
                 if (component.templateUrl != null)
-                    component.templateUrl = this.pathProvider.getFullPath(component.templateUrl)
+                    component.templateUrl = this.pathProvider.getFullPath(component.templateUrl);
 
                 app.component(component.name, component);
 
@@ -163,7 +153,7 @@ module Foundation.ViewModel.Implementations {
             let pathProvider = this.pathProvider;
 
             dependencyManager.getAllDirectivesDependencies()
-                .map(d => { return { name: d.name, instance: Reflect.construct(d.classCtor as Function, []) as Contracts.IDirective }; })
+                .map(d => { return { name: d.name, instance: Reflect.construct(d.class as Function, []) as Contracts.IDirective }; })
                 .forEach(directive => {
 
                     let originalGetDirectiveFactory = directive.instance.getDirectiveFactory();
