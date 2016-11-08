@@ -1,8 +1,19 @@
 ﻿/// <reference path="../../foundation.core.htmlclient/foundation.core.d.ts" />
 module Foundation.ViewModel.Implementations {
-    export class DefaultDataSourceExtender implements Core.Contracts.IAppEvents {
+    export class DefaultKendoExtender implements Core.Contracts.IAppEvents {
         @Core.Log()
         public async onAppStartup(): Promise<void> {
+
+            let originalParseDate = kendo.parseDate;
+
+            kendo.parseDate = function (value: string, format?: string, culture?: string): Date {
+                if (value != null) {
+                    let _date = new Date(value);
+                    if (_date.toString() != 'Invalid Date')
+                        return _date;
+                }
+                return originalParseDate.apply(this, arguments);
+            };
 
             kendo.data.DataSource.prototype.dataView = function () {
                 return (this as kendo.data.DataSource)
