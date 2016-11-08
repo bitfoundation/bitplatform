@@ -58,7 +58,7 @@ module Foundation.ViewModel.Implementations {
             return false;
         }
 
-        private sendLogToServer(logInfo: Model.Dtos.ClientLogDto) {
+        private saveLog(logInfo: Model.Dtos.ClientLogDto) {
 
             if (logInfo == null)
                 throw new Error("logInfo is null");
@@ -105,7 +105,7 @@ module Foundation.ViewModel.Implementations {
             if (this.clientAppProfile.isDebugMode == true)
                 console.warn(logInfo);
 
-            this.sendLogToServer(logInfo);
+            this.saveLog(logInfo);
         }
 
         public logError(message: string, additionalInfo?: string, err?: any): void {
@@ -117,17 +117,22 @@ module Foundation.ViewModel.Implementations {
             if (this.clientAppProfile.isDebugMode == true)
                 console.error(logInfo);
 
-            this.sendLogToServer(logInfo);
+            this.saveLog(logInfo);
+        }
+
+        public logFatal(message: string, additionalInfo?: string, err?: Error): void {
+
+            const logInfo = this.createLogInfo(message, additionalInfo, err);
+
+            logInfo.LogLevel = "Fatal";
+
+            if (this.clientAppProfile.isDebugMode == true)
+                console.error(logInfo);
+
+            this.saveLog(logInfo);
         }
 
         public logDetailedError(instance: any, methodName: string, args: any, err: Error) {
-
-            if (err != null) {
-                if (err["isLogged"] == true)
-                    return;
-                else
-                    err["isLogged"] = true;
-            }
 
             let className = "Unknown";
 
@@ -145,18 +150,6 @@ module Foundation.ViewModel.Implementations {
                 });
 
             this.logError(`Error at: ${className}:${methodName}`, ` args: ${JSON.stringify(simplifiedArgs)}`, err);
-        }
-
-        public logFatal(message: string, additionalInfo?: string, err?: Error): void {
-
-            const logInfo = this.createLogInfo(message, additionalInfo, err);
-
-            logInfo.LogLevel = "Fatal";
-
-            if (this.clientAppProfile.isDebugMode == true)
-                console.error(logInfo);
-
-            this.sendLogToServer(logInfo);
         }
     }
 }
