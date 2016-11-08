@@ -65,6 +65,7 @@
 
             let offlineEntitySet = this.offlineContext[entitySetName] as $data.EntitySet<Foundation.Model.Contracts.ISyncableDto>;
             let onlineEntitySet = this.onlineContext[entitySetName] as $data.EntitySet<Foundation.Model.Contracts.ISyncableDto>;
+            let keyMembers: any[] = (offlineEntitySet.elementType.memberDefinitions as any).getKeyProperties();
 
             let modifiedOfflineEntities = await offlineEntitySet.filter(e => e.ISV != true).toArray();
 
@@ -86,9 +87,7 @@
 
             if (entitySetConfig.syncConfig.fromServerSync == true || (typeof entitySetConfig.syncConfig.fromServerSync == "function" && entitySetConfig.syncConfig.fromServerSync() == true)) {
 
-                let offlineEntites = (await offlineEntitySet.map(e => { return { Id: e.Id, Version: e.Version }; })
-                    .orderByDescending(e => e.Version)
-                    .toArray()) as Foundation.Model.Contracts.ISyncableDto[];
+                let offlineEntites = await offlineEntitySet.orderByDescending(e => e.Version).toArray();
 
                 let maxVersion = "0";
                 if (offlineEntites[0] != null)
@@ -104,7 +103,7 @@
 
                     this.offlineContext.attach(clonedEntity, $data.EntityAttachMode.AllChanged);
 
-                    if (offlineEntites.some(e => e.Id == clonedEntity.Id)) {
+                    if (offlineEntites.some(e => keyMembers.every(key => e[key.name] == clonedEntity[key.name]))) {
                         if (clonedEntity.IsArchived == true) {
                             clonedEntity.entityState = $data.EntityState.Deleted;
                         }

@@ -191,9 +191,12 @@
                     memberDefenition.elementType['addEventListener']('beforeCreate', (sender: any, e: Foundation.Model.Contracts.ISyncableDto) => {
                         if ((e['context'] != null && e['context']['ignoreEntityEvents'] != true && e['context']['storageProvider'].name == 'indexedDb') || (e['storeToken'] != null && e['storeToken'].args.provider == 'indexedDb')) {
                             let eType = e.getType();
-                            let members = eType.memberDefinitions;
-                            if (members['$Id'] != null && e.Id == null)
-                                e.Id = this.guidUtils.newGuid();
+                            let members = eType.memberDefinitions as any;
+                            for (let keyMember of members.getKeyProperties()) {
+                                if (keyMember.originalType == 'Edm.Guid' && e[keyMember.name] == null) {
+                                    e[keyMember.name] = this.guidUtils.newGuid();
+                                }
+                            }
                             if (members['$IsArchived'] != null && e.IsArchived == null)
                                 e.IsArchived = false;
                             if (members['$Version'] != null && e.Version == null)
