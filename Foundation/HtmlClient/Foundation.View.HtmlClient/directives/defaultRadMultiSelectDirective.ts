@@ -116,11 +116,13 @@ module Foundation.View.Directives {
                                     radValueFieldName = "Id";
                             }
 
-                            $scope.$on("kendoWidgetCreated", (event, multiSelect: kendo.ui.MultiSelect) => {
+                            let kendoWidgetCreatedDisposal = $scope.$on("kendoWidgetCreated", (event, multiSelect: kendo.ui.MultiSelect) => {
 
                                 if (multiSelect.element[0] != element[0]) {
                                     return;
                                 }
+
+                                kendoWidgetCreatedDisposal();
 
                                 if (window['ngMaterial'] != null) {
 
@@ -150,9 +152,10 @@ module Foundation.View.Directives {
                                         });
 
 
-                                        $scope.$on('$destroy', () => {
+                                        let $destroyDisposal = $scope.$on('$destroy', () => {
                                             multiSelect.wrapper.unbind('focusin');
                                             multiSelect.wrapper.unbind('focusout');
+                                            $destroyDisposal();
                                         });
                                     }
                                 }

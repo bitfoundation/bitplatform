@@ -65,11 +65,13 @@ module Foundation.View.Directives {
 
                             watchForDataSourceUnRegisterHandler();
 
-                            $scope.$on("kendoWidgetCreated", (event, tree: kendo.ui.TreeView) => {
+                            let kendoWidgetCreatedDisposal = $scope.$on("kendoWidgetCreated", (event, tree: kendo.ui.TreeView) => {
 
                                 if (tree.element[0] != element[0]) {
                                     return;
                                 }
+
+                                kendoWidgetCreatedDisposal();
 
                                 if (window['ngMaterial'] != null) {
 
@@ -91,9 +93,10 @@ module Foundation.View.Directives {
 
                                         mdInputContainerParent.addClass('md-input-has-value');
 
-                                        $scope.$on('$destroy', () => {
+                                        let $destroyDisposal = $scope.$on('$destroy', () => {
                                             tree.wrapper.unbind('focusin');
                                             tree.wrapper.unbind('focusout');
+                                            $destroyDisposal();
                                         });
                                     }
                                 }

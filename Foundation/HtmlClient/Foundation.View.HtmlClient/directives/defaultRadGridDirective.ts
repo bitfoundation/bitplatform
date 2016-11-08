@@ -87,11 +87,13 @@ module Foundation.View.Directives {
 
                             watchForDatasourceToCreateDataGridWidgetUnRegisterHandler();
 
-                            $scope.$on("kendoWidgetCreated", (event, grid: kendo.ui.Grid) => {
+                            let kendoWidgetCreatedDisposal = $scope.$on("kendoWidgetCreated", (event, grid: kendo.ui.Grid) => {
 
                                 if (grid.element[0] != element[0]) {
                                     return;
                                 }
+
+                                kendoWidgetCreatedDisposal();
 
                                 $scope[attributes['isolatedOptionsKey'] + "Add"] = () => {
                                     grid.addRow();

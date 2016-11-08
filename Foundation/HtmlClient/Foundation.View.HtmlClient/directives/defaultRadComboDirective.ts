@@ -101,11 +101,13 @@ module Foundation.View.Directives {
                             if (attributes.ngModel != null)
                                 ngModelAssign = $parse(attributes.ngModel).assign;
 
-                            $scope.$on("kendoWidgetCreated", (event, combo: kendo.ui.ComboBox) => {
+                            let kendoWidgetCreatedDisposal = $scope.$on("kendoWidgetCreated", (event, combo: kendo.ui.ComboBox) => {
 
                                 if (combo.element[0] != element[0]) {
                                     return;
                                 }
+
+                                kendoWidgetCreatedDisposal();
 
                                 if (window['ngMaterial'] != null) {
 
@@ -120,8 +122,9 @@ module Foundation.View.Directives {
                                             });
                                     }
 
-                                    $scope.$on('$destroy', () => {
+                                    let $destroyDisposal = $scope.$on('$destroy', () => {
                                         combo.wrapper.unbind('focusin');
+                                        $destroyDisposal();
                                     });
                                 }
 
