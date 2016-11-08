@@ -44,7 +44,12 @@
                         metadata.Dtos
                             .forEach(dto => {
 
-                                let jayDataDtoType = eval(dto.DtoType);
+                                let parts = dto.DtoType.split('.');
+                                let jayDataDtoType: any = window;
+
+                                for (let part of parts) {
+                                    jayDataDtoType = jayDataDtoType[part];
+                                }
 
                                 let memberDefenitions = jayDataDtoType != null ? jayDataDtoType.memberDefinitions : null;
 
