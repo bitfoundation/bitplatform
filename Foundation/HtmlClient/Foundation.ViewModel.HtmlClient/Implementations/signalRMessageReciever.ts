@@ -7,14 +7,28 @@
 
         }
 
-        private isInited = false;
+        private _isInited = false;
+        private _isConnected = false;
+        private _stayConnected = false;
+        private _listeners: Array<{ name: string, callbacks: Array<(args?: any) => Promise<void>> }> = [];
 
-        private listeners: Array<{ name: string, callbacks: Array<(args?: any) => Promise<void>> }> = [];
+        public async stop(): Promise<void> {
+            this._stayConnected = false;
+            await $.connection.hub.stop(true, true);
+        }
+
+        public async start(config: { preferWebSockets: boolean } = { preferWebSockets: false }): Promise<void> {
+            this._stayConnected = true;
+            await this.ensureInited();
+            await $.connection.hub.start({
+                transport: config.preferWebSockets == true ? ['webSockets', 'serverSentEvents', 'longPolling', 'foreverFrame'] : ['serverSentEvents', 'webSockets', 'longPolling', 'foreverFrame']
+            });
+        }
 
         protected async callListeners(messageKey: string, messageArgs: any) {
             if (messageKey == null)
                 throw new Error('messageKey is null');
-            const listenerToCall = this.listeners.find(l => l.name.toLowerCase() == messageKey.toLowerCase());
+            const listenerToCall = this._listeners.find(l => l.name.toLowerCase() == messageKey.toLowerCase());
             if (listenerToCall != null) {
                 try {
                     for (let callbackIndex = 0; callbackIndex < listenerToCall.callbacks.length; callbackIndex++) {
@@ -30,10 +44,10 @@
 
         private async ensureInited(): Promise<void> {
 
-            if (this.isInited == true)
+            if (this._isInited == true)
                 return;
 
-            this.isInited = true;
+            this._isInited = true;
 
             if ($.signalR == null)
                 await Core.DependencyManager.getCurrent().resolveFile("signalR");
@@ -73,41 +87,35 @@
                 await this.callListeners(messageKey, (messageArgs == null || messageArgs == "") ? null : JSON.parse(messageArgs));
             };
 
-            await $.connection.hub.start({
-                transport: ['serverSentEvents', 'webSockets', 'longPolling', 'foreverFrame']
-            });
-
-            let isConnected = true;
-
             $.connection.hub.disconnected(async () => {
-                if (isConnected == true) {
-                    isConnected = false;
+                if (this._isConnected == true) {
+                    this._isConnected = false;
                     await this.callListeners("On-Disconnected", null);
                 }
-                setTimeout(async () => {
-                    await $.connection.hub.start();
-                    isConnected = true;
-                    await this.callListeners("On-ReNew", null);
-                }, 5000);
+                if (this._stayConnected == true) {
+                    setTimeout(async () => {
+                        await $.connection.hub.start();
+                        this._isConnected = true;
+                        await this.callListeners("On-ReNew", null);
+                    }, 5000);
+                }
             });
         }
 
         @Core.Log()
-        public async onMessageRecieved(messageKey: string, callback: (args?: any) => Promise<void>): Promise<() => void> {
+        public onMessageRecieved(messageKey: string, callback: (args?: any) => Promise<void>): () => void {
 
             if (messageKey == null)
                 throw new Error('messageKey is null');
 
-            let listener = this.listeners.find(l => l.name.toLowerCase() == messageKey.toLowerCase());
+            let listener = this._listeners.find(l => l.name.toLowerCase() == messageKey.toLowerCase());
 
             if (listener == null) {
                 listener = { name: messageKey, callbacks: [] };
-                this.listeners.push(listener);
+                this._listeners.push(listener);
             }
 
             listener.callbacks.push(callback);
-
-            await this.ensureInited();
 
             return () => {
 
