@@ -11,22 +11,6 @@
         }
 
         public determinateClientScreenSize(): void {
-            /* TODO: Following code is not working properly, should be fixed */
-            /*if (clientAppProfile.screenSize == null) {
-                const elementToDetectInchScale = document.createElement("div");
-                elementToDetectInchScale.style.height = "10in";
-                document.body.appendChild(elementToDetectInchScale);
-                const pixelPer1In = elementToDetectInchScale.offsetHeight;
-                document.body.removeChild(elementToDetectInchScale);
-                const inPerPixel = 10 / pixelPer1In;
-                const screenHeightInIn = screen.height * inPerPixel;
-
-                if (screenHeightInIn > 7.7) {
-                    clientAppProfile.screenSize = "DesktopAndTablet";
-                } else {
-                    clientAppProfile.screenSize = "Mobile";
-                }
-            }*/
 
             if (this.clientAppProfile.screenSize == null || this.clientAppProfile.screenSize == "")
                 this.clientAppProfile.screenSize = "DesktopAndTablet";

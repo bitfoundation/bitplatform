@@ -6,7 +6,7 @@
     }
 
     export interface IClientAppProfile {
-        screenSize: "DesktopAndTablet" | "Mobile" | "";
+        screenSize: "DesktopAndTablet" | "MobileAndPhablet" | "";
         theme: string;
         culture: string;
         version: string;

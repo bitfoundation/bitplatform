@@ -168,7 +168,7 @@
         name: "kendo-core",
         path: "bit-framework/Foundation/HtmlClient/Foundation.Test.HtmlClient/bower_components/kendo-ui/src/js/kendo.Core",
         predicate: (appInfo) => {
-            return appInfo.screenSize == "Mobile";
+            return appInfo.screenSize == "MobileAndPhablet";
         }
     });
 
@@ -176,7 +176,7 @@
         name: "kendo-data",
         path: "bit-framework/Foundation/HtmlClient/Foundation.Test.HtmlClient/bower_components/kendo-ui/src/js/kendo.data",
         predicate: (appInfo) => {
-            return appInfo.screenSize == "Mobile";
+            return appInfo.screenSize == "MobileAndPhablet";
         }
     });
 
@@ -184,7 +184,7 @@
         name: "kendo-binder",
         path: "bit-framework/Foundation/HtmlClient/Foundation.Test.HtmlClient/bower_components/kendo-ui/src/js/kendo.binder",
         predicate: (appInfo) => {
-            return appInfo.screenSize == "Mobile";
+            return appInfo.screenSize == "MobileAndPhablet";
         }
     });
 
