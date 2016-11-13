@@ -1,4 +1,6 @@
-﻿using Microsoft.Owin;
+﻿using Foundation.Api.Implementations;
+using Microsoft.Owin;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Foundation.Api.Middlewares
@@ -6,20 +8,25 @@ namespace Foundation.Api.Middlewares
     /// <summary>
     /// See https://github.com/odata/odata.net/issues/165
     /// </summary>
-    public class AddAcceptCharsetToRequestHeadersIfNotAnyMiddleware : OwinMiddleware
+    public class AddAcceptCharsetToRequestHeadersIfNotAnyMiddleware : DefaultOwinActionFilterMiddleware
     {
+        public AddAcceptCharsetToRequestHeadersIfNotAnyMiddleware()
+        {
+
+        }
+
         public AddAcceptCharsetToRequestHeadersIfNotAnyMiddleware(OwinMiddleware next)
             : base(next)
         {
 
         }
 
-        public override async Task Invoke(IOwinContext context)
+        public override async Task OnActionExecutingAsync(IOwinContext owinContext, CancellationToken cancellationToken)
         {
-            if (!context.Request.Headers.ContainsKey("Accept-Charset"))
-                context.Request.Headers.Add("Accept-Charset", new[] { "utf-8" });
+            if (!owinContext.Request.Headers.ContainsKey("Accept-Charset"))
+                owinContext.Request.Headers.Add("Accept-Charset", new[] { "utf-8" });
 
-            await Next.Invoke(context);
+            await base.OnActionExecutingAsync(owinContext, cancellationToken);
         }
     }
 }
