@@ -19,7 +19,6 @@ namespace Foundation.Api.Middlewares.WebApi.Implementations
 
             owinApp.Map($"/api", innerApp =>
             {
-                innerApp.Use<OwinNoCacheResponseMiddleware>();
                 innerApp.UseXContentTypeOptions();
                 innerApp.UseWebApi(server);
             });

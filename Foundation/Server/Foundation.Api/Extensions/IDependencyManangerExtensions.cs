@@ -13,6 +13,7 @@ using Foundation.Api.Middlewares.SignalR;
 using Foundation.Api.Middlewares.SignalR.Contracts;
 using Foundation.Api.Middlewares.SignalR.Implementations;
 using Foundation.Api.Middlewares.WebApi;
+using Foundation.Api.Middlewares.WebApi.ActionFilters;
 using Foundation.Api.Middlewares.WebApi.Contracts;
 using Foundation.Api.Middlewares.WebApi.Implementations;
 using Foundation.Api.Middlewares.WebApi.OData;
@@ -145,6 +146,8 @@ namespace Foundation.Core.Contracts
             dependencyManager.Register<System.Web.Http.Dispatcher.IAssembliesResolver, DefaultWebApiAssembliesResolver>(lifeCycle: DepepdencyLifeCycle.SingleInstance);
             dependencyManager.Register<System.Web.Http.Tracing.ITraceWriter, DefaultWebApiTraceWritter>(lifeCycle: DepepdencyLifeCycle.SingleInstance);
 
+            dependencyManager.RegisterGlobalWebApiActionFiltersUsing(webApiConfig => webApiConfig.Filters.Add(new OwinActionFilterAttribute(typeof(OwinNoCacheResponseMiddleware))));
+            dependencyManager.RegisterGlobalWebApiActionFiltersUsing(webApiConfig => webApiConfig.Filters.Add(new OwinActionFilterAttribute(typeof(AddAcceptCharsetToRequestHeadersIfNotAnyMiddleware))));
             dependencyManager.RegisterGlobalWebApiActionFilter<GlobalHostAuthenticationFilterProvider>();
             dependencyManager.RegisterGlobalWebApiActionFilter<GlobalDefaultExceptionHandlerActionFilterProvider>();
             dependencyManager.RegisterGlobalWebApiActionFilter<GlobalDefaultLogActionArgsActionFilterProvider>();

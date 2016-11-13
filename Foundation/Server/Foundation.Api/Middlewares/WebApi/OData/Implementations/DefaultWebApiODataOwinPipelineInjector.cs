@@ -18,9 +18,7 @@ namespace Foundation.Api.Middlewares.WebApi.OData.Implementations
 
             owinApp.Map($"/odata", innerApp =>
             {
-                innerApp.Use<OwinNoCacheResponseMiddleware>();
                 innerApp.UseXContentTypeOptions();
-                innerApp.Use<AddAcceptCharsetToRequestHeadersIfNotAnyMiddleware>();
                 innerApp.UseWebApi(server);
             });
         }
