@@ -462,12 +462,14 @@
     <Compile Include="ApiControllers\JobsInfoController.cs" />
     <Compile Include="ApiControllers\UsersSettingsController.cs" />
     <Compile Include="Contracts\IAutofacDependencyManager.cs" />
+    <Compile Include="Contracts\IOwinActionFilter.cs" />
     <Compile Include="Contracts\Project\IApiAssembliesProvider.cs" />
     <Compile Include="Contracts\Project\IEdmModelProvider.cs" />
     <Compile Include="Extensions\IDependencyManangerExtensions.cs" />
     <Compile Include="Extensions\IOwinContextExtensions.cs" />
     <Compile Include="Implementations\AutofacDependencyManager.cs" />
     <Compile Include="Implementations\ConsoleLogStore.cs" />
+    <Compile Include="Implementations\DefaultOwinActionFilterMiddleware.cs" />
     <Compile Include="Implementations\Project\DefaultApiAssembliesProvider.cs" />
     <Compile Include="Middlewares\AddAcceptCharsetToRequestHeadersIfNotAnyMiddleware.cs" />
     <Compile Include="Middlewares\DelegateOwinMiddlewareConfiguration.cs" />
@@ -476,6 +478,7 @@
     <Compile Include="Middlewares\SignalR\Implementations\DefaultMessageHubEvents.cs" />
     <Compile Include="Middlewares\SignalR\Implementations\SignalRAuthroizeConfiguration.cs" />
     <Compile Include="Middlewares\SignalR\Implementations\SignalRSqlServerScaleoutConfiguration.cs" />
+    <Compile Include="Middlewares\WebApi\ActionFilters\OwinActionFilterAttribute.cs" />
     <Compile Include="Middlewares\WebApi\Implementations\DefaultWebApiAssembliesResolver.cs" />
     <Compile Include="Middlewares\WebApi\Implementations\DefaultWebApiOwinPipelineInjector.cs" />
     <Compile Include="Middlewares\WebApi\Implementations\DelegateGlobalActionFiltersProvider.cs" />
