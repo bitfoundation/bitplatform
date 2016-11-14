@@ -21,6 +21,15 @@
     })
     export class App extends Foundation.ViewModel.ViewModels.SecureFormViewModel {
 
+        public constructor( @Core.Inject("MessageReciever") public messageReciever: Core.Contracts.IMessageReciever) {
+            super();
+        }
+
+        @ViewModel.Command()
+        public async $onInit(): Promise<void> {
+            await this.messageReciever.start();
+        }
+
     }
 
 }

@@ -82,7 +82,7 @@ module Foundation.ViewModel.Implementations {
         private async saveLogsToServer(logs: Array<Model.Dtos.ClientLogDto>): Promise<void> {
             if (navigator.onLine) {
                 try {
-                    const context = await this.entityContextProvider.getContext<FoundationContainer>("Foundation");
+                    const context = await this.entityContextProvider.getContext<FoundationContext>("Foundation");
                     for (let log of logs) {
                         context.clientsLogs.add(log);
                     }

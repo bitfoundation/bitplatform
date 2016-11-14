@@ -8,11 +8,11 @@
         }
 
         public sumResult: number = null;
-        private context: TestContainer;
+        private context: TestContext;
 
         @Foundation.ViewModel.Command()
         public async $onInit(): Promise<void> {
-            this.context = await this.entityContextProvider.getReadContext<TestContainer>("Test");
+            this.context = await this.entityContextProvider.getReadContext<TestContext>("Test");
         }
 
         @ViewModel.Command()

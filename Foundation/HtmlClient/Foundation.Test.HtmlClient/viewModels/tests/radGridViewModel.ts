@@ -10,7 +10,7 @@
 
         @Foundation.ViewModel.Command()
         public async $onInit(): Promise<void> {
-            const context = await this.entityContextProvider.getReadContext<TestContainer>("Test");
+            const context = await this.entityContextProvider.getReadContext<TestContext>("Test");
             this.parentEntitiesDataSource = context.parentEntities.asKendoDataSource({ pageSize: 5 });
         }
 

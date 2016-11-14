@@ -10,7 +10,7 @@
 
         @Foundation.ViewModel.Command()
         public async $onInit(): Promise<void> {
-            const context = await this.entityContextProvider.getReadContext<TestContainer>("Test");
+            const context = await this.entityContextProvider.getReadContext<TestContext>("Test");
             this.validationSampleDto = new Test.Model.Dto.ValidationSampleDto();
         }
 
