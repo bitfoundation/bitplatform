@@ -59,9 +59,12 @@ namespace Foundation.Test.Api.Middlewares.Tests
 
         [TestMethod]
         [TestCategory("Metadata"), TestCategory("Caching")]
-        public async Task MetadataMiddlewareResultMustBeCacheable()
+        public async Task MetadataMiddlewareResultMustBeCacheableInNonDebugMode()
         {
-            using (TestEnvironment testEnvironment = new TestEnvironment())
+            using (TestEnvironment testEnvironment = new TestEnvironment(new TestEnvironmentArgs
+            {
+                ActiveAppEnvironmentCustomizer = appEnvironment => appEnvironment.DebugMode = false
+            }))
             {
                 HttpResponseMessage getMetadataForV1 = await testEnvironment.Server.GetHttpClient()
                     .GetAsync("Metadata/V1");
@@ -75,6 +78,27 @@ namespace Foundation.Test.Api.Middlewares.Tests
                 Assert.AreEqual(false, getMetadataForV1.Headers.CacheControl.NoStore);
 
                 Assert.AreEqual(false, getMetadataForV1.Headers.CacheControl.MustRevalidate);
+            }
+        }
+
+        [TestMethod]
+        [TestCategory("Metadata"), TestCategory("Caching")]
+        public async Task MetadataMiddlewareResultMustNotBeCacheableInDebugMode()
+        {
+            using (TestEnvironment testEnvironment = new TestEnvironment())
+            {
+                HttpResponseMessage getMetadataForV1 = await testEnvironment.Server.GetHttpClient()
+                    .GetAsync("Metadata/V1");
+
+                Assert.AreEqual(false, getMetadataForV1.Headers.CacheControl.Public);
+
+                Assert.AreEqual(null, getMetadataForV1.Headers.CacheControl.MaxAge);
+
+                Assert.AreEqual(true, getMetadataForV1.Headers.CacheControl.NoCache);
+
+                Assert.AreEqual(true, getMetadataForV1.Headers.CacheControl.NoStore);
+
+                Assert.AreEqual(true, getMetadataForV1.Headers.CacheControl.MustRevalidate);
             }
         }
 
