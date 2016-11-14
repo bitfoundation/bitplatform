@@ -95,7 +95,7 @@ namespace Foundation.Api.Middlewares.WebApi.OData
 
             foreach (IGrouping<string, IEdmModelProvider> edmModelProviders in _emdEdmModelProviders.GroupBy(mp => mp.GetEdmName()))
             {
-                ODataModelBuilder modelBuilder = _oDataModelBuilderProvider.GetODataModelBuilder(_webApiConfig, containerName: $"{edmModelProviders.Key}Container", @namespace: edmModelProviders.Key);
+                ODataModelBuilder modelBuilder = _oDataModelBuilderProvider.GetODataModelBuilder(_webApiConfig, containerName: $"{edmModelProviders.Key}Context", @namespace: edmModelProviders.Key);
 
                 foreach (IEdmModelProvider edmModelProvider in edmModelProviders)
                 {
