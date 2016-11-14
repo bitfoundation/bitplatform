@@ -18,6 +18,7 @@ namespace Foundation.Api.Middlewares.WebApi.OData.Implementations
 
             owinApp.Map($"/odata", innerApp =>
             {
+                innerApp.Use<AddAcceptCharsetToRequestHeadersIfNotAnyMiddleware>();
                 innerApp.UseXContentTypeOptions();
                 innerApp.UseWebApi(server);
             });

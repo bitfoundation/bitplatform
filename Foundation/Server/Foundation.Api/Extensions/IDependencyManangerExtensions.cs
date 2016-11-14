@@ -147,7 +147,6 @@ namespace Foundation.Core.Contracts
             dependencyManager.Register<System.Web.Http.Tracing.ITraceWriter, DefaultWebApiTraceWritter>(lifeCycle: DepepdencyLifeCycle.SingleInstance);
 
             dependencyManager.RegisterGlobalWebApiActionFiltersUsing(webApiConfig => webApiConfig.Filters.Add(new OwinActionFilterAttribute(typeof(OwinNoCacheResponseMiddleware))));
-            dependencyManager.RegisterGlobalWebApiActionFiltersUsing(webApiConfig => webApiConfig.Filters.Add(new OwinActionFilterAttribute(typeof(AddAcceptCharsetToRequestHeadersIfNotAnyMiddleware))));
             dependencyManager.RegisterGlobalWebApiActionFilter<GlobalHostAuthenticationFilterProvider>();
             dependencyManager.RegisterGlobalWebApiActionFilter<GlobalDefaultExceptionHandlerActionFilterProvider>();
             dependencyManager.RegisterGlobalWebApiActionFilter<GlobalDefaultLogActionArgsActionFilterProvider>();
