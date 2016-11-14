@@ -179,16 +179,16 @@
 
             cfg = angular.extend(cfg, config.jayDataConfig || {});
 
-            let containerType = window[`${contextName}Container`];
+            let contextType = window[`${contextName}Context`];
 
-            if (containerType == null)
-                throw new Error('No entity context container could be found named ' + contextName);
+            if (contextType == null)
+                throw new Error('No entity context could be found named ' + contextName);
 
-            if (containerType['isEventsListenersAreAdded'] != true && config.isOffline == true) {
+            if (contextType['isEventsListenersAreAdded'] != true && config.isOffline == true) {
 
-                for (let memberDefenitionKey in containerType.memberDefinitions) {
+                for (let memberDefenitionKey in contextType.memberDefinitions) {
 
-                    let memberDefenition = containerType.memberDefinitions[memberDefenitionKey];
+                    let memberDefenition = contextType.memberDefinitions[memberDefenitionKey];
 
                     if (memberDefenition == null || memberDefenition.kind != 'property' || memberDefenition.elementType == null)
                         continue;
@@ -235,10 +235,10 @@
 
                 }
 
-                containerType['isEventsListenersAreAdded'] = true;
+                contextType['isEventsListenersAreAdded'] = true;
             }
 
-            const context: TContext = new containerType(cfg);
+            const context: TContext = new contextType(cfg);
             context.trackChanges = isReadonly == false;
             await context.onReady();
 
