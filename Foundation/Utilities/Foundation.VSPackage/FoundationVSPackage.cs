@@ -155,7 +155,7 @@ namespace Foundation.VSPackage
 
                     new DefaultHtmlClientProxyGenerator(new DefaultHtmlClientProxyGeneratorSolutionProjectsSelector(),
                         new DefaultHtmlClientProxyGeneratorMappingsProvider(new DefaultFoundationVSPackageConfigurationProvider()),
-                        new DefaultProjectDtosProvider(new DefaultProjectDtoControllersProvider()), new DefaultHtmlClientProxyDtoGenerator(), new DefaultHtmlClientContainerGenerator(), new DefaultProjectDtoControllersProvider())
+                        new DefaultProjectDtosProvider(new DefaultProjectDtoControllersProvider()), new DefaultHtmlClientProxyDtoGenerator(), new DefaultHtmlClientContextGenerator(), new DefaultProjectDtoControllersProvider())
                             .GenerateCodes(_workspace, solution, _isBeingBuiltProjects);
 
                     watch.Stop();

@@ -197,7 +197,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Contracts\HtmlClientProxyGenerator\IHtmlClientContainerGenerator.cs" />
+    <Compile Include="Contracts\HtmlClientProxyGenerator\IHtmlClientContextGenerator.cs" />
     <Compile Include="Contracts\HtmlClientProxyGenerator\IHtmlClientProxyGeneratorMappingsProvider.cs" />
     <Compile Include="Contracts\HtmlClientProxyGenerator\IHtmlClientProxyGeneratorOrderedProjectsProvider.cs" />
     <Compile Include="Contracts\IDtoRulesValidator.cs" />
@@ -211,7 +211,7 @@
     <Compile Include="Implementations\DefaultDtoRulesValidator.cs" />
     <Compile Include="Implementations\DefaultProjectDtoRulesProvider.cs" />
     <Compile Include="Implementations\DefaultProjectDtoControllersProvider.cs" />
-    <Compile Include="Implementations\HtmlClientProxyGenerator\DefaultHtmlClientContainerGenerator.cs" />
+    <Compile Include="Implementations\HtmlClientProxyGenerator\DefaultHtmlClientContextGenerator.cs" />
     <Compile Include="Implementations\HtmlClientProxyGenerator\DefaultHtmlClientProxyCleaner.cs" />
     <Compile Include="Implementations\HtmlClientProxyGenerator\DefaultHtmlClientProxyGeneratorMappingsProvider.cs" />
     <Compile Include="Implementations\DefaultFoundationVSPackageConfigurationProvider.cs" />
@@ -226,15 +226,15 @@
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
     </Compile>
-    <Compile Include="Implementations\HtmlClientProxyGenerator\Templates\JavaScriptContainerGeneratorTemplate.cs">
-      <DependentUpon>JavaScriptContainerGeneratorTemplate.tt</DependentUpon>
+    <Compile Include="Implementations\HtmlClientProxyGenerator\Templates\JavaScriptContextGeneratorTemplate.cs">
+      <DependentUpon>JavaScriptContextGeneratorTemplate.tt</DependentUpon>
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
     </Compile>
-    <Compile Include="Implementations\HtmlClientProxyGenerator\Templates\TypeScriptContainerGeneratorTemplate.cs">
+    <Compile Include="Implementations\HtmlClientProxyGenerator\Templates\TypeScriptContextGeneratorTemplate.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
-      <DependentUpon>TypeScriptContainerGeneratorTemplate.tt</DependentUpon>
+      <DependentUpon>TypeScriptContextGeneratorTemplate.tt</DependentUpon>
     </Compile>
     <Compile Include="Implementations\HtmlClientProxyGenerator\Templates\TypeScriptDtosGeneratorTemplate.cs">
       <AutoGen>True</AutoGen>
@@ -256,13 +256,13 @@
       <Generator>TextTemplatingFilePreprocessor</Generator>
       <LastGenOutput>JavaScriptDtosGeneratorTemplate.cs</LastGenOutput>
     </Content>
-    <Content Include="Implementations\HtmlClientProxyGenerator\Templates\JavaScriptContainerGeneratorTemplate.tt">
+    <Content Include="Implementations\HtmlClientProxyGenerator\Templates\JavaScriptContextGeneratorTemplate.tt">
       <Generator>TextTemplatingFilePreprocessor</Generator>
-      <LastGenOutput>JavaScriptContainerGeneratorTemplate.cs</LastGenOutput>
+      <LastGenOutput>JavaScriptContextGeneratorTemplate.cs</LastGenOutput>
     </Content>
-    <Content Include="Implementations\HtmlClientProxyGenerator\Templates\TypeScriptContainerGeneratorTemplate.tt">
+    <Content Include="Implementations\HtmlClientProxyGenerator\Templates\TypeScriptContextGeneratorTemplate.tt">
       <Generator>TextTemplatingFilePreprocessor</Generator>
-      <LastGenOutput>TypeScriptContainerGeneratorTemplate.cs</LastGenOutput>
+      <LastGenOutput>TypeScriptContextGeneratorTemplate.cs</LastGenOutput>
     </Content>
     <Content Include="Implementations\HtmlClientProxyGenerator\Templates\TypeScriptDtosGeneratorTemplate.tt">
       <Generator>TextTemplatingFilePreprocessor</Generator>

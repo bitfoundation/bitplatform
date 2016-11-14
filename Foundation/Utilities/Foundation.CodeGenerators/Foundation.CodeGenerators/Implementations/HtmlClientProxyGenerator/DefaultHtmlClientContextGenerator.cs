@@ -6,9 +6,9 @@ using Foundation.CodeGenerators.Model;
 
 namespace Foundation.CodeGenerators.Implementations.HtmlClientProxyGenerator
 {
-    public class DefaultHtmlClientContainerGenerator : IHtmlClientContainerGenerator
+    public class DefaultHtmlClientContextGenerator : IHtmlClientContextGenerator
     {
-        public virtual string GenerateTypeScriptContainer(IList<DtoController> controllers, HtmlClientProxyGeneratorMapping mapping)
+        public virtual string GenerateTypeScriptContext(IList<DtoController> controllers, HtmlClientProxyGeneratorMapping mapping)
         {
             if (controllers == null)
                 throw new ArgumentNullException(nameof(controllers));
@@ -16,7 +16,7 @@ namespace Foundation.CodeGenerators.Implementations.HtmlClientProxyGenerator
             if (mapping == null)
                 throw new ArgumentNullException(nameof(mapping));
 
-            TypeScriptContainerGeneratorTemplate template = new TypeScriptContainerGeneratorTemplate
+            TypeScriptContextGeneratorTemplate template = new TypeScriptContextGeneratorTemplate
             {
                 Session = new Dictionary<string, object>
                 {
@@ -30,7 +30,7 @@ namespace Foundation.CodeGenerators.Implementations.HtmlClientProxyGenerator
             return template.TransformText();
         }
 
-        public virtual string GenerateJavaScriptContainer(IList<DtoController> controllers, HtmlClientProxyGeneratorMapping mapping)
+        public virtual string GenerateJavaScriptContext(IList<DtoController> controllers, HtmlClientProxyGeneratorMapping mapping)
         {
             if (controllers == null)
                 throw new ArgumentNullException(nameof(controllers));
@@ -38,7 +38,7 @@ namespace Foundation.CodeGenerators.Implementations.HtmlClientProxyGenerator
             if (mapping == null)
                 throw new ArgumentNullException(nameof(mapping));
 
-            JavaScriptContainerGeneratorTemplate template = new JavaScriptContainerGeneratorTemplate
+            JavaScriptContextGeneratorTemplate template = new JavaScriptContextGeneratorTemplate
             {
                 Session = new Dictionary<string, object>
                 {

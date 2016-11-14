@@ -17,9 +17,9 @@ namespace Foundation.CodeGenerators.Implementations.HtmlClientProxyGenerator
         private readonly IProjectDtosProvider _dtosProvider;
         private readonly IProjectDtoControllersProvider _dtoControllersProvider;
         private readonly IHtmlClientProxyDtosGenerator _dtoGenerator;
-        private readonly IHtmlClientContainerGenerator _containerGenerator;
+        private readonly IHtmlClientContextGenerator _contextGenerator;
 
-        public DefaultHtmlClientProxyGenerator(IHtmlClientProxyGeneratorSolutionProjectsSelector solutionProjectsSelector, IHtmlClientProxyGeneratorMappingsProvider contextMappingsProvider, IProjectDtosProvider dtosProvider, IHtmlClientProxyDtosGenerator dtoGenerator, IHtmlClientContainerGenerator containerGenerator, IProjectDtoControllersProvider dtoControllersProvider)
+        public DefaultHtmlClientProxyGenerator(IHtmlClientProxyGeneratorSolutionProjectsSelector solutionProjectsSelector, IHtmlClientProxyGeneratorMappingsProvider contextMappingsProvider, IProjectDtosProvider dtosProvider, IHtmlClientProxyDtosGenerator dtoGenerator, IHtmlClientContextGenerator contextGenerator, IProjectDtoControllersProvider dtoControllersProvider)
         {
             if (solutionProjectsSelector == null)
                 throw new ArgumentNullException(nameof(solutionProjectsSelector));
@@ -33,8 +33,8 @@ namespace Foundation.CodeGenerators.Implementations.HtmlClientProxyGenerator
             if (dtoGenerator == null)
                 throw new ArgumentNullException(nameof(dtoGenerator));
 
-            if (containerGenerator == null)
-                throw new ArgumentNullException(nameof(containerGenerator));
+            if (contextGenerator == null)
+                throw new ArgumentNullException(nameof(contextGenerator));
 
             if (dtoControllersProvider == null)
                 throw new ArgumentNullException(nameof(dtoControllersProvider));
@@ -43,7 +43,7 @@ namespace Foundation.CodeGenerators.Implementations.HtmlClientProxyGenerator
             _contextMappingsProvider = contextMappingsProvider;
             _dtosProvider = dtosProvider;
             _dtoGenerator = dtoGenerator;
-            _containerGenerator = containerGenerator;
+            _contextGenerator = contextGenerator;
             _dtoControllersProvider = dtoControllersProvider;
         }
 
@@ -81,9 +81,9 @@ namespace Foundation.CodeGenerators.Implementations.HtmlClientProxyGenerator
                     .SelectMany(p => _dtoControllersProvider.GetProjectDtoControllersWithTheirOperations(p)).ToList();
 
                 generatedJs.AppendLine(_dtoGenerator.GenerateJavaScriptDtos(dtos));
-                generatedJs.AppendLine(_containerGenerator.GenerateJavaScriptContainer(controllers, proxyGeneratorMapping));
+                generatedJs.AppendLine(_contextGenerator.GenerateJavaScriptContext(controllers, proxyGeneratorMapping));
                 generatedTs.AppendLine(_dtoGenerator.GenerateTypeScriptDtos(dtos, proxyGeneratorMapping.TypingsPath));
-                generatedTs.AppendLine(_containerGenerator.GenerateTypeScriptContainer(controllers, proxyGeneratorMapping));
+                generatedTs.AppendLine(_contextGenerator.GenerateTypeScriptContext(controllers, proxyGeneratorMapping));
 
                 WriteResults(solution, generatedJs.ToString(), generatedContextName, generatedJsContextExtension, destProject);
 
