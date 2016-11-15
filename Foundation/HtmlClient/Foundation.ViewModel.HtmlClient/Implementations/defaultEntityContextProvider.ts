@@ -132,19 +132,7 @@
         }
 
         @Core.Log()
-        public async getReadContext<TContext extends $data.EntityContext>(contextName: string, config?: { isOffline?: boolean, jayDataConfig?: any }): Promise<TContext> {
-
-            return await this.getContextInternal<TContext>(contextName, config, true);
-        }
-
-        @Core.Log()
         public async getContext<TContext extends $data.EntityContext>(contextName: string, config?: { isOffline?: boolean, jayDataConfig?: any }): Promise<TContext> {
-
-            return await this.getContextInternal<TContext>(contextName, config, false);
-
-        }
-
-        private async getContextInternal<TContext extends $data.EntityContext>(contextName: string, config?: { isOffline?: boolean, jayDataConfig?: any }, isReadonly: boolean = false): Promise<TContext> {
 
             if (config == null)
                 config = {};
@@ -239,10 +227,11 @@
             }
 
             const context: TContext = new contextType(cfg);
-            context.trackChanges = isReadonly == false;
+            context.trackChanges = true;
             await context.onReady();
 
             return context;
+
         }
     }
 }
