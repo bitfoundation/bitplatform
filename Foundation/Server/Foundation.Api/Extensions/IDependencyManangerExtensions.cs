@@ -266,6 +266,7 @@ namespace Foundation.Core.Contracts
 
                 MapperConfiguration mapperConfig = new MapperConfiguration(cfg =>
                 {
+                    cfg.CreateMissingTypeMaps = true;
                     configs.ToList().ForEach(c => c.Configure(cfg));
                 });
 
