@@ -12,7 +12,7 @@
 
         @Foundation.ViewModel.Command()
         public async $onInit(): Promise<void> {
-            this.context = await this.entityContextProvider.getReadContext<TestContext>("Test");
+            this.context = await this.entityContextProvider.getContext<TestContext>("Test");
         }
 
         @ViewModel.Command()

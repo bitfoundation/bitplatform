@@ -1,7 +1,7 @@
 ﻿/// <reference path="../../../foundation.core.htmlclient/declarations.d.ts" />
 let testKendoDataSourceCreationFromJayDataEntitySet = async (): Promise<void> => {
     const contextProvider = Foundation.Core.DependencyManager.getCurrent().resolveObject<Foundation.ViewModel.Contracts.IEntityContextProvider>("EntityContextProvider");
-    const context = await contextProvider.getReadContext<TestContext>("Test");
+    const context = await contextProvider.getContext<TestContext>("Test");
     const dataSource = context.testModels.asKendoDataSource();
     await dataSource.query({
         filter: { field: "StringProperty", operator: "eq", value: "Test" }
@@ -14,7 +14,7 @@ let testKendoDataSourceCreationFromJayDataEntitySet = async (): Promise<void> =>
 
 let testKendoDataSourceCreationFromJayDataODataFunctionCall = async (): Promise<void> => {
     const contextProvider = Foundation.Core.DependencyManager.getCurrent().resolveObject<Foundation.ViewModel.Contracts.IEntityContextProvider>("EntityContextProvider");
-    const context = await contextProvider.getReadContext<TestContext>("Test");
+    const context = await contextProvider.getContext<TestContext>("Test");
     const dataSource = context.testModels.getTestModelsByStringPropertyValue('1').asKendoDataSource();
     await dataSource.query({
         filter: { field: "StringProperty", operator: "eq", value: "String1" }

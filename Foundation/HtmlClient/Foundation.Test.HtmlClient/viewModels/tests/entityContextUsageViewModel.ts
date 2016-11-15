@@ -10,7 +10,7 @@
 
         @Foundation.ViewModel.Command()
         public async $onInit(): Promise<void> {
-            const context = await this.entityContextProvider.getReadContext<TestContext>("Test");
+            const context = await this.entityContextProvider.getContext<TestContext>("Test");
             this.num = await context.testModels.sum(10, 20);
         }
     }

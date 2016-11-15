@@ -1,6 +1,6 @@
 ﻿let testFunctionCallAndTakeMethodAfterThat = async (): Promise<void> => {
     const contextProvider = Foundation.Core.DependencyManager.getCurrent().resolveObject<Foundation.ViewModel.Contracts.IEntityContextProvider>("EntityContextProvider");
-    const context = await contextProvider.getReadContext<TestContext>("Test");
+    const context = await contextProvider.getContext<TestContext>("Test");
     const testModels = await context.testModels.getTestModelsByStringPropertyValue('1').take(1).toArray();
     if (testModels.length != 1)
         throw new Error("test models are not loaded correctly");
@@ -8,7 +8,7 @@
 
 let testActionCall = async (): Promise<void> => {
     const contextProvider = Foundation.Core.DependencyManager.getCurrent().resolveObject<Foundation.ViewModel.Contracts.IEntityContextProvider>("EntityContextProvider");
-    const context = await contextProvider.getReadContext<TestContext>("Test");
+    const context = await contextProvider.getContext<TestContext>("Test");
     const areEqual = await context.testModels.areEqual(10, 10);
     if (areEqual != true)
         throw new Error("are equal result is not valid");
@@ -16,7 +16,7 @@ let testActionCall = async (): Promise<void> => {
 
 let testBatchCallODataFunctions = async (): Promise<void> => {
     const contextProvider = Foundation.Core.DependencyManager.getCurrent().resolveObject<Foundation.ViewModel.Contracts.IEntityContextProvider>("EntityContextProvider");
-    const context = await contextProvider.getReadContext<TestContext>("Test");
+    const context = await contextProvider.getContext<TestContext>("Test");
     const results = await context.batchExecuteQuery([context.testModels.getTestModelsByStringPropertyValue('1').take(1), context.testModels.getTestModelsByStringPropertyValue('2').take(1)]);
     if (results[0].length != 1) {
         throw new Error("There is a problem in batch read");
@@ -30,7 +30,7 @@ let testBatchCallODataFunctions = async (): Promise<void> => {
 let testPassingArrayOfEntitiesToController = async (): Promise<void> => {
 
     const contextProvider = Foundation.Core.DependencyManager.getCurrent().resolveObject<Foundation.ViewModel.Contracts.IEntityContextProvider>("EntityContextProvider");
-    const context = await contextProvider.getReadContext<TestContext>("Test");
+    const context = await contextProvider.getContext<TestContext>("Test");
     let validations = [
         new Foundation.Test.Model.Dto.ValidationSampleDto({ Id: 1, RequiredByAttributeMember: 'A', RequiredByMetadataMember: 'B' }),
         new Foundation.Test.Model.Dto.ValidationSampleDto({ Id: 2, RequiredByAttributeMember: 'B', RequiredByMetadataMember: 'C' })
@@ -50,7 +50,7 @@ let testPassingArrayOfEntitiesToController = async (): Promise<void> => {
 let testIEEE754Compatibility = async (): Promise<void> => {
 
     const contextProvider = Foundation.Core.DependencyManager.getCurrent().resolveObject<Foundation.ViewModel.Contracts.IEntityContextProvider>("EntityContextProvider");
-    const context = await contextProvider.getReadContext<TestContext>("Test");
+    const context = await contextProvider.getContext<TestContext>("Test");
 
     let result = await context.testModels.testIEEE754Compatibility("79228162514264337593543950335");
 
