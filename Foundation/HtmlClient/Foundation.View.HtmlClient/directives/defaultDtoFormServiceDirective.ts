@@ -9,7 +9,9 @@
                 scope: false,
                 link($scope: angular.IScope, element: JQuery, attributes: any, ctrl: any, ngModel) {
 
-                    let dtoViewModel: Foundation.ViewModel.ViewModels.DtoViewModel<Foundation.Model.Contracts.IDto, ViewModel.ViewModels.DtoRules<Model.Contracts.IDto>> = null;
+                    let defaultDtoViewModel: Foundation.ViewModel.Implementations.DefaultDtoViewModel<Foundation.Model.Contracts.IDto, ViewModel.Implementations.DtoRules<Model.Contracts.IDto>> = null;
+                    let dtoViewModel: Foundation.ViewModel.Contracts.IDtoViewModel = null;
+                    let dtoRules: Foundation.ViewModel.Implementations.DtoRules<Foundation.Model.Contracts.IDto> = null;
 
                     let dependencyManager = Core.DependencyManager.getCurrent();
 
@@ -41,8 +43,8 @@
                             ctrl.$$parentForm.isValid = (): boolean => {
                                 let isValid = true;
                                 propModelControllers.forEach(p => {
-                                    if (dtoViewModel != null && dtoViewModel.rules != null)
-                                        dtoViewModel.rules.validateMember(p.$name, model[p.$name], model[p.$name]);
+                                    if (dtoRules != null)
+                                        dtoRules.validateMember(p.$name, model[p.$name], model[p.$name]);
                                     p.$validate();
                                     isValid = isValid && p.$valid;
                                 });
@@ -167,55 +169,72 @@
                                 }
                             }
 
-
                             if (attributes.dtoViewModel != null) {
                                 dtoViewModel = $parse(attributes.dtoViewModel)($scope);
+                                if (dtoViewModel instanceof Foundation.ViewModel.Implementations.DefaultDtoViewModel) {
+                                    defaultDtoViewModel = dtoViewModel as Foundation.ViewModel.Implementations.DefaultDtoViewModel<Foundation.Model.Contracts.IDto, ViewModel.Implementations.DtoRules<Model.Contracts.IDto>>;
+                                }
                             }
 
-                            if (dtoViewModel != null) {
+                            if (defaultDtoViewModel != null)
+                                dtoRules = defaultDtoViewModel.rules;
+                            else if (attributes.dtoRules != null)
+                                dtoRules = $parse(attributes.dtoRules)($scope);
 
-                                if (dtoViewModel.model == null)
-                                    dtoViewModel.model = model;
+                            if (dtoRules != null)
+                                dtoRules.model = model;
 
-                                if (dtoViewModel.form == null)
-                                    dtoViewModel.form = ctrl.$$parentForm;
+                            if (defaultDtoViewModel != null) {
 
-                                dtoViewModel.model.propertyChanged.attach((sender, e) => {
-                                    if (e.oldValue != e.newValue) {
-                                        dtoViewModel.onMemberChanged(e.propertyName, e.newValue, e.oldValue);
-                                        if (dtoViewModel.rules != null && propModelControllers.find(p => p.$name == e.propertyName) != null)
-                                            dtoViewModel.rules.validateMember(e.propertyName, e.newValue, e.oldValue);
-                                    }
-                                });
+                                if (defaultDtoViewModel.model == null)
+                                    defaultDtoViewModel.model = model;
 
-                                dtoViewModel.model.propertyChanging.attach((sender, e) => {
-                                    if (e.oldValue != e.newValue) {
-                                        dtoViewModel.onMemberChanging(e.propertyName, e.oldValue, e.newValue);
-                                    }
-                                });
-
-                                if (dtoViewModel.rules != null) {
-                                    if (dtoViewModel.rules.model == null)
-                                        dtoViewModel.rules.model = model;
-                                    dtoViewModel.rules.setMemberValidaty = (memberName: string, errorKey: string, isValid: boolean): void => {
-                                        let propModelCtrl = propModelControllers.find(p => p.$name == memberName);
-                                        if (propModelCtrl != null)
-                                            propModelCtrl.$setValidity(errorKey, isValid);
-                                        else {
-                                            if (clientAppProfile.isDebugMode == true)
-                                                console.warn(`No Prop named ${memberName} is in dto form`);
-                                        }
-                                    };
-                                }
+                                if (defaultDtoViewModel.form == null)
+                                    defaultDtoViewModel.form = ctrl.$$parentForm;
 
                                 (async function () {
                                     try {
-                                        await dtoViewModel.onActivated();
+                                        await defaultDtoViewModel.onActivated();
                                     }
                                     finally {
                                         Foundation.ViewModel.ScopeManager.update$scope($scope);
                                     }
                                 })();
+                            }
+
+                            if (dtoViewModel != null) {
+
+                                model.propertyChanged.attach((sender, e) => {
+                                    if (e.oldValue != e.newValue) {
+                                        dtoViewModel.onMemberChanged(e.propertyName, e.newValue, e.oldValue);
+                                    }
+                                });
+
+                                model.propertyChanging.attach((sender, e) => {
+                                    if (e.oldValue != e.newValue) {
+                                        dtoViewModel.onMemberChanging(e.propertyName, e.oldValue, e.newValue);
+                                    }
+                                });
+                            }
+
+                            if (dtoRules != null) {
+
+                                model.propertyChanged.attach((sender, e) => {
+                                    if (e.oldValue != e.newValue) {
+                                        if (propModelControllers.find(p => p.$name == e.propertyName) != null)
+                                            dtoRules.validateMember(e.propertyName, e.newValue, e.oldValue);
+                                    }
+                                });
+
+                                dtoRules.setMemberValidaty = (memberName: string, errorKey: string, isValid: boolean): void => {
+                                    let propModelCtrl = propModelControllers.find(p => p.$name == memberName);
+                                    if (propModelCtrl != null)
+                                        propModelCtrl.$setValidity(errorKey, isValid);
+                                    else {
+                                        if (clientAppProfile.isDebugMode == true)
+                                            console.warn(`No Prop named ${memberName} is in dto form`);
+                                    }
+                                };
                             }
 
                         });

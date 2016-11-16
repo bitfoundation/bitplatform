@@ -1,5 +1,6 @@
-﻿module Foundation.ViewModel.ViewModels {
-    export class DtoViewModel<TDto extends Foundation.Model.Contracts.IDto, TRules extends DtoRules<TDto>>{
+﻿module Foundation.ViewModel.Implementations {
+
+    export class DefaultDtoViewModel<TDto extends Foundation.Model.Contracts.IDto, TRules extends DtoRules<TDto>> implements Contracts.IDtoViewModel {
 
         private _model: TDto;
 
@@ -31,11 +32,11 @@
             this._form = value;
         }
 
-        public onMemberChanged(memberName: string, newValue: any, oldValue: any): void {
+        public async onMemberChanged(memberName: string, newValue: any, oldValue: any): Promise<void> {
 
         }
 
-        public onMemberChanging(memberName: string, newValue: any, oldValue: any): void {
+        public async onMemberChanging(memberName: string, newValue: any, oldValue: any): Promise<void> {
 
         }
 

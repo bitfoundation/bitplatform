@@ -68,6 +68,7 @@
     <TypeScriptCompile Include="Implementations\defaultAngularTranslateConfiguration.ts" />
     <TypeScriptCompile Include="Implementations\defaultAngularAppInitialization.ts" />
     <TypeScriptCompile Include="Implementations\defaultAppStartup.ts" />
+    <TypeScriptCompile Include="Implementations\defaultDtoViewModel.ts" />
     <TypeScriptCompile Include="Implementations\defaultKendoExtender.ts" />
     <TypeScriptCompile Include="Implementations\defaultMath.ts" />
     <TypeScriptCompile Include="Implementations\defaultPathProvider.ts" />
@@ -81,8 +82,8 @@
     <TypeScriptCompile Include="Implementations\guidUtils.ts" />
     <TypeScriptCompile Include="Implementations\scopeManager.ts" />
     <TypeScriptCompile Include="Implementations\signalRMessageReciever.ts" />
-    <TypeScriptCompile Include="viewModels\dtoRules.ts" />
-    <TypeScriptCompile Include="viewModels\dtoViewModel.ts" />
+    <TypeScriptCompile Include="Implementations\dtoRules.ts" />
+    <TypeScriptCompile Include="Contracts\iDtoViewModel.ts" />
     <TypeScriptCompile Include="viewModels\secureFormViewModel.ts" />
     <TypeScriptCompile Include="viewModels\formViewModel.ts" />
   </ItemGroup>

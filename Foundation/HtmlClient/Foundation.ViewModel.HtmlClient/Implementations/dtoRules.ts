@@ -1,4 +1,4 @@
-﻿module Foundation.ViewModel.ViewModels {
+﻿module Foundation.ViewModel.Implementations {
 
     export class DtoRules<TDto extends Foundation.Model.Contracts.IDto> {
 
@@ -18,4 +18,5 @@
 
         public setMemberValidaty: (memberName: string, errorKey: string, isValid: boolean) => void;
     }
+
 }
