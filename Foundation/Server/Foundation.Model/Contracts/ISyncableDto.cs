@@ -1,11 +1,7 @@
-﻿using System;
-
-namespace Foundation.Model.Contracts
+﻿namespace Foundation.Model.Contracts
 {
-    public interface ISyncableDto : IsArchivableDto
+    public interface ISyncableDto : IsArchivableDto , IVersionableDto
     {
-        long Version { get; set; }
-
         bool ISV { get; set; }
     }
 }

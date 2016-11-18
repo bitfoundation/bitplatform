@@ -87,6 +87,7 @@
     <Compile Include="Contracts\IsArchivableEntity.cs" />
     <Compile Include="Contracts\IsArchivableDto.cs" />
     <Compile Include="Contracts\ISyncableDto.cs" />
+    <Compile Include="Contracts\IVersionableDto.cs" />
     <Compile Include="DomainModels\JobInfo.cs" />
     <Compile Include="Dtos\ClientLogDto.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
