@@ -86,7 +86,6 @@
     <Compile Include="Contracts\IEntityWithDefaultKey.cs" />
     <Compile Include="Contracts\IsArchivableEntity.cs" />
     <Compile Include="Contracts\IsArchivableDto.cs" />
-    <Compile Include="Contracts\ISyncableEntity.cs" />
     <Compile Include="Contracts\ISyncableDto.cs" />
     <Compile Include="DomainModels\JobInfo.cs" />
     <Compile Include="Dtos\ClientLogDto.cs" />
