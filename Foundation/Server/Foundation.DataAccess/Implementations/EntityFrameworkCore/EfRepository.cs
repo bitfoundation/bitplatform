@@ -35,7 +35,7 @@ namespace Foundation.DataAccess.Implementations.EntityFrameworkCore
 
             _dbContext.Add(entityToAdd);
 
-            await _dbContext.SaveChangesAsync(cancellationToken);
+            await SaveChangesAsync(cancellationToken);
 
             return entityToAdd;
         }
@@ -47,7 +47,7 @@ namespace Foundation.DataAccess.Implementations.EntityFrameworkCore
 
             _dbContext.AddRange(entitiesToAdd);
 
-            await _dbContext.SaveChangesAsync(cancellationToken);
+            await SaveChangesAsync(cancellationToken);
 
             return entitiesToAdd;
         }
@@ -59,7 +59,7 @@ namespace Foundation.DataAccess.Implementations.EntityFrameworkCore
 
             _dbContext.Update(entityToUpdate);
 
-            await _dbContext.SaveChangesAsync(cancellationToken);
+            await SaveChangesAsync(cancellationToken);
 
             return entityToUpdate;
         }
@@ -77,7 +77,7 @@ namespace Foundation.DataAccess.Implementations.EntityFrameworkCore
             else
             {
                 _dbContext.Remove(entityToDelete);
-                await _dbContext.SaveChangesAsync(cancellationToken);
+                await SaveChangesAsync(cancellationToken);
                 return entityToDelete;
             }
         }
@@ -145,7 +145,7 @@ namespace Foundation.DataAccess.Implementations.EntityFrameworkCore
 
             _dbContext.Add(entityToAdd);
 
-            _dbContext.SaveChanges();
+            SaveChanges();
 
             return entityToAdd;
         }
@@ -157,7 +157,7 @@ namespace Foundation.DataAccess.Implementations.EntityFrameworkCore
 
             _dbContext.AddRange(entitiesToAdd);
 
-            _dbContext.SaveChanges();
+            SaveChanges();
 
             return entitiesToAdd;
         }
@@ -169,7 +169,7 @@ namespace Foundation.DataAccess.Implementations.EntityFrameworkCore
 
             _dbContext.Update(entityToUpdate);
 
-            _dbContext.SaveChanges();
+            SaveChanges();
 
             return entityToUpdate;
         }
@@ -187,7 +187,7 @@ namespace Foundation.DataAccess.Implementations.EntityFrameworkCore
             else
             {
                 _dbContext.Remove(entityToDelete);
-                _dbContext.SaveChanges();
+                SaveChanges();
                 return entityToDelete;
             }
         }
@@ -220,6 +220,18 @@ namespace Foundation.DataAccess.Implementations.EntityFrameworkCore
         public virtual bool AnyChild<TChild>(TEntity entity, Expression<Func<TEntity, ICollection<TChild>>> childs, Expression<Func<TChild, bool>> predicate, bool checkDatabase) where TChild : class
         {
             throw new NotImplementedException();
+        }
+
+        public virtual async Task SaveChangesAsync(CancellationToken cancellationToken)
+        {
+            _dbContext.ChangeTracker.DetectChanges();
+            await _dbContext.SaveChangesAsync(cancellationToken);
+        }
+
+        public virtual void SaveChanges()
+        {
+            _dbContext.ChangeTracker.DetectChanges();
+            _dbContext.SaveChanges();
         }
     }
 }

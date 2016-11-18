@@ -61,5 +61,9 @@ namespace Foundation.DataAccess.Contracts
         bool AnyChild<TChild>(TEntity entity, Expression<Func<TEntity, ICollection<TChild>>> childs,
             Expression<Func<TChild, bool>> predicate, bool checkDatabase)
             where TChild : class;
+
+        Task SaveChangesAsync(CancellationToken cancellationToken);
+
+        void SaveChanges();
     }
 }
