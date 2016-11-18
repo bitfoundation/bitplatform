@@ -28,6 +28,9 @@ namespace Foundation.DataAccess.Implementations.EntityFrameworkCore
 
             if (dbContextObjects.Transaction != null /* We're going to use a relational database */)
                 UseTransactionForRelatinalDatabases(dbContextObjects);
+
+            ChangeTracker.AutoDetectChangesEnabled = false;
+            ChangeTracker.QueryTrackingBehavior = QueryTrackingBehavior.NoTracking;
         }
 
         private void UseTransactionForRelatinalDatabases(DbContextObjects dbContextObjects)
