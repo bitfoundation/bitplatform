@@ -203,6 +203,13 @@ module Foundation.View.Directives {
                                 change: (e) => {
                                     dataSource.onCurrentChanged();
                                 },
+                                open: (e) => {
+                                    if (e.sender.options.autoBind == false && attributes.radText != null) {
+                                        e.sender.options.autoBind = true;
+                                        if (e.sender.options.dataSource.view().length == 0)
+                                            (e.sender.options.dataSource as kendo.data.DataSource).fetch();
+                                    }
+                                },
                                 delay: 300,
                                 popup: {
                                     appendTo: "md-dialog"
