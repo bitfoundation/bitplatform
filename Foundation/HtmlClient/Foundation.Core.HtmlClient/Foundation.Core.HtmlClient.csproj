@@ -66,6 +66,7 @@
     <TypeScriptCompile Include="Model\iEntityWithDefaultGuidKey.ts" />
     <TypeScriptCompile Include="Model\iEntityWithDefaultKey.ts" />
     <TypeScriptCompile Include="Model\isArchivableDto.ts" />
+    <TypeScriptCompile Include="Model\iVersionableDto.ts" />
     <TypeScriptCompile Include="Model\iSyncableDto.ts" />
     <TypeScriptCompile Include="typings.d.ts" />
   </ItemGroup>

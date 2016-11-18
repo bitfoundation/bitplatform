@@ -1,6 +1,5 @@
 ﻿module Foundation.Model.Contracts {
-    export interface ISyncableDto extends IsArchivableDto {
-        Version: string;
+    export interface ISyncableDto extends IsArchivableDto, IVersionableDto {
         ISV: boolean;
     }
 }
