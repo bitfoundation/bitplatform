@@ -30,12 +30,12 @@ namespace Foundation.DataAccess.Implementations
 
         }
 
-        public virtual TModel FromDtoToModel(TDto dto)
+        public virtual TModel FromDtoToModel(TDto dto, TModel existingModel)
         {
             if (_modelAndDtoAreSame == true)
                 return dto as TModel;
 
-            return _mapper.Map<TDto, TModel>(dto);
+            return existingModel == null ? _mapper.Map<TDto, TModel>(dto) : _mapper.Map(dto, existingModel);
         }
 
         public virtual IQueryable<TDto> FromModelQueryToDtoQuery(IQueryable<TModel> modelQuery)

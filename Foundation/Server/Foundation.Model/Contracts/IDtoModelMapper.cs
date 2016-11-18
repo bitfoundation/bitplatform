@@ -9,7 +9,7 @@ namespace Foundation.Model.Contracts
         where TModel : class, IEntityWithDefaultKey<TKey>
         where TKey : struct
     {
-        TModel FromDtoToModel(TDto dto);
+        TModel FromDtoToModel(TDto dto, TModel existingModel = null);
 
         TDto FromModelToDto(TModel model);
 
