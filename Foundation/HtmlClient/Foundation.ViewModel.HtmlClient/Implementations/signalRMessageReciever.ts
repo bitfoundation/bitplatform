@@ -14,14 +14,17 @@
 
         public async stop(): Promise<void> {
             this._stayConnected = false;
-            await $.connection.hub.stop(true, true);
+            if ($.signalR != null && $.connection != null && this._isInited == true)
+                $.connection.hub.stop(true, true);
         }
 
         public async start(config: { preferWebSockets: boolean } = { preferWebSockets: false }): Promise<void> {
             this._stayConnected = true;
             await this.ensureInited();
-            await $.connection.hub.start({
-                transport: config.preferWebSockets == true ? ['webSockets', 'serverSentEvents', 'longPolling', 'foreverFrame'] : ['serverSentEvents', 'webSockets', 'longPolling', 'foreverFrame']
+            await new Promise<void>((res, rej) => {
+                return $.connection.hub.start({
+                    transport: config.preferWebSockets == true ? ['webSockets', 'serverSentEvents', 'longPolling', 'foreverFrame'] : ['serverSentEvents', 'webSockets', 'longPolling', 'foreverFrame']
+                }).then(() => res()).fail((e) => rej(e));
             });
         }
 
@@ -46,6 +49,9 @@
 
             if (this._isInited == true)
                 return;
+
+            if (typeof ($) == undefined)
+                throw new Error('jQuery is not present');
 
             this._isInited = true;
 
@@ -94,7 +100,7 @@
                 }
                 if (this._stayConnected == true) {
                     setTimeout(async () => {
-                        await $.connection.hub.start();
+                        await this.start();
                         this._isConnected = true;
                         await this.callListeners("On-ReNew", null);
                     }, 5000);
