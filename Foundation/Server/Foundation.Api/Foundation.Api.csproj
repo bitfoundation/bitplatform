@@ -473,11 +473,15 @@
     <Compile Include="Implementations\Project\DefaultApiAssembliesProvider.cs" />
     <Compile Include="Middlewares\AddAcceptCharsetToRequestHeadersIfNotAnyMiddleware.cs" />
     <Compile Include="Middlewares\DelegateOwinMiddlewareConfiguration.cs" />
+    <Compile Include="Middlewares\InvokeLogOutMiddleware.cs" />
+    <Compile Include="Middlewares\InvokeLogOutMiddlewareConfiguration.cs" />
     <Compile Include="Middlewares\JobScheduler\Implementations\JobSchedulerInMemoryBackendConfiguration.cs" />
     <Compile Include="Middlewares\SignalR\Contracts\IMessagesHubEvents.cs" />
     <Compile Include="Middlewares\SignalR\Implementations\DefaultMessageHubEvents.cs" />
     <Compile Include="Middlewares\SignalR\Implementations\SignalRAuthroizeConfiguration.cs" />
     <Compile Include="Middlewares\SignalR\Implementations\SignalRSqlServerScaleoutConfiguration.cs" />
+    <Compile Include="Middlewares\SignOutPageMiddleware.cs" />
+    <Compile Include="Middlewares\SignOutPageMiddlewareConfiguration.cs" />
     <Compile Include="Middlewares\WebApi\ActionFilters\OwinActionFilterAttribute.cs" />
     <Compile Include="Middlewares\WebApi\Implementations\DefaultWebApiAssembliesResolver.cs" />
     <Compile Include="Middlewares\WebApi\Implementations\DefaultWebApiOwinPipelineInjector.cs" />
