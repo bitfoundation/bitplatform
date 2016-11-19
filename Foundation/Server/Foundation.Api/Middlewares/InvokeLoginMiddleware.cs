@@ -15,7 +15,7 @@ namespace Foundation.Api.Middlewares
 
         private string _baseRedirectUri = null;
 
-        public override Task Invoke(IOwinContext context)
+        public override async Task Invoke(IOwinContext context)
         {
             IDependencyResolver dependencyResolver = context.GetDependencyResolver();
 
@@ -40,8 +40,6 @@ namespace Foundation.Api.Middlewares
             string redirectUrl = $"{_baseRedirectUri}&state={stateArgs}&nonce={nonce}";
 
             context.Response.Redirect(redirectUrl);
-
-            return Task.CompletedTask;
         }
     }
 }
