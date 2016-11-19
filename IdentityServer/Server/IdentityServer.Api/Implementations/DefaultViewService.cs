@@ -126,7 +126,21 @@ namespace IdentityServer.Api.Implementations
 
         public virtual async Task<Stream> Logout(LogoutViewModel model, SignOutMessage message)
         {
-            throw new NotImplementedException();
+            // Based on current InvokeLogOut Middleware, this method will not be called, because of context.Authentication.SignOut("custom", "Barear"); code.
+
+            string content = $@"<!DOCTYPE html>
+                            <html>
+                                <body>
+                                    <form id='logoutForm' method='post' action='{model.LogoutUrl}'>
+                                        <input type='hidden' name='{model.AntiForgery.Name}' value='{model.AntiForgery.Value}'>
+                                    </form>
+                                    <script>
+                                        document.getElementById('logoutForm').submit();
+                                    </script>
+                                </body>
+                            </html>";
+
+            return await ReturnHtmlAsync(model, content, CancellationToken.None);
         }
     }
 }
