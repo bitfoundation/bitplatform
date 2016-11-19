@@ -21,12 +21,12 @@
             if (loginCustomArgs == null)
                 loginCustomArgs = {};
             loginCustomArgs['pathname'] = location.pathname;
-            location.pathname = encodeURI("InvokeLogin/" + (JSON.stringify(loginCustomArgs)));
+            location.assign(encodeURI("InvokeLogin/" + (JSON.stringify(loginCustomArgs))));
         }
 
         @Foundation.Core.Log()
         public logout(): void {
-            throw new Error('Logout is not implemented yet');
+            location.assign(encodeURI('InvokeLogout?id_token=' + localStorage['id_token']));
         }
 
     }
