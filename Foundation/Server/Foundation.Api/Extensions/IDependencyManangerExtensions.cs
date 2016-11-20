@@ -97,7 +97,8 @@ namespace Foundation.Core.Contracts
             return dependencyManager;
         }
 
-        public static IDependencyManager RegisterSignalRMiddlewareUsingDefaultConfiguration(this IDependencyManager dependencyManager, params Assembly[] hubsAssemblies)
+        public static IDependencyManager RegisterSignalRMiddlewareUsingDefaultConfiguration<TMessagesHubEvents>(this IDependencyManager dependencyManager, params Assembly[] hubsAssemblies)
+            where TMessagesHubEvents : class, IMessagesHubEvents
         {
             if (dependencyManager == null)
                 throw new ArgumentNullException(nameof(dependencyManager));
@@ -105,7 +106,7 @@ namespace Foundation.Core.Contracts
             hubsAssemblies = hubsAssemblies.Any() ? hubsAssemblies : new[] { Assembly.GetCallingAssembly(), typeof(MessagesHub).GetTypeInfo().Assembly };
 
             dependencyManager.RegisterHubs(hubsAssemblies);
-            dependencyManager.Register<IMessagesHubEvents, DefaultMessageHubEvents>();
+            dependencyManager.Register<IMessagesHubEvents, TMessagesHubEvents>();
             dependencyManager.Register<IMessageSender, SignalRMessageSender>(lifeCycle: DepepdencyLifeCycle.SingleInstance);
             dependencyManager.Register<IMessageContentFormatter, SignalRMessageContentFormatter>(lifeCycle: DepepdencyLifeCycle.SingleInstance);
             dependencyManager.Register<Microsoft.AspNet.SignalR.IDependencyResolver, AutofacDependencyResolver>(lifeCycle: DepepdencyLifeCycle.SingleInstance);
@@ -114,6 +115,11 @@ namespace Foundation.Core.Contracts
             dependencyManager.RegisterOwinMiddleware<SignalRMiddlewareConfiguration>();
 
             return dependencyManager;
+        }
+
+        public static IDependencyManager RegisterSignalRMiddlewareUsingDefaultConfiguration(this IDependencyManager dependencyManager, params Assembly[] hubsAssemblies)
+        {
+            return RegisterSignalRMiddlewareUsingDefaultConfiguration<DefaultMessageHubEvents>(dependencyManager, hubsAssemblies);
         }
 
         public static IDependencyManager RegisterBackgroundJobWorkerUsingDefaultConfiguration<TJobSchedulerInMemoryBackendConfiguration>(this IDependencyManager dependencyManager)
