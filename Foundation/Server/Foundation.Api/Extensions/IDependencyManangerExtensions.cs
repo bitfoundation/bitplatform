@@ -308,5 +308,15 @@ namespace Foundation.Core.Contracts
 
             return dependencyManager;
         }
+
+        public static IDependencyManager RegisterSingleSignOnServer(this IDependencyManager dependencyManager)
+        {
+            dependencyManager.RegisterOwinMiddleware<SingleSignOnMiddlewareConfiguration>();
+            dependencyManager.RegisterOwinMiddleware<SignOutPageMiddlewareConfiguration>();
+            dependencyManager.RegisterOwinMiddleware<InvokeLogOutMiddlewareConfiguration>();
+            dependencyManager.RegisterOwinMiddleware<SignInPageMiddlewareConfiguration>();
+            dependencyManager.RegisterOwinMiddleware<InvokeLoginMiddlewareConfiguration>();
+            return dependencyManager;
+        }
     }
 }
