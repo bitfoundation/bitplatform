@@ -2,6 +2,6 @@
 {
     public interface ISyncableDto : IsArchivableDto , IVersionableDto
     {
-        bool ISV { get; set; }
+
     }
 }
