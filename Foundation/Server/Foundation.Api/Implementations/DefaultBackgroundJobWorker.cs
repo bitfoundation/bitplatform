@@ -51,7 +51,7 @@ namespace Foundation.Api.Implementations
             return Task.FromResult(BackgroundJob.Schedule(methodCall, when));
         }
 
-        public virtual Task PerformRecurringBackgroundJobAsync<TService>(string jobId, Expression<Action<TService>> methodCall, string cronExpression)
+        public virtual Task PerformRecurringBackgroundJobAsync<TService>(Expression<Action<TService>> methodCall, string cronExpression)
         {
             if (methodCall == null)
                 throw new ArgumentNullException(nameof(methodCall));
@@ -59,10 +59,7 @@ namespace Foundation.Api.Implementations
             if (cronExpression == null)
                 throw new ArgumentNullException(nameof(cronExpression));
 
-            if (jobId == null)
-                throw new ArgumentNullException(nameof(jobId));
-
-            RecurringJob.AddOrUpdate(jobId, methodCall, cronExpression);
+            RecurringJob.AddOrUpdate(methodCall, cronExpression);
 
             return Task.CompletedTask;
         }
@@ -171,7 +168,7 @@ namespace Foundation.Api.Implementations
             }
         }
 
-        public virtual void PerformRecurringBackgroundJob<TService>(string jobId, Expression<Action<TService>> methodCall, string cronExpression)
+        public virtual void PerformRecurringBackgroundJob<TService>(Expression<Action<TService>> methodCall, string cronExpression)
         {
             if (methodCall == null)
                 throw new ArgumentNullException(nameof(methodCall));
@@ -179,10 +176,7 @@ namespace Foundation.Api.Implementations
             if (cronExpression == null)
                 throw new ArgumentNullException(nameof(cronExpression));
 
-            if (jobId == null)
-                throw new ArgumentNullException(nameof(jobId));
-
-            RecurringJob.AddOrUpdate(jobId, methodCall, cronExpression);
+            RecurringJob.AddOrUpdate(methodCall, cronExpression);
         }
 
         public virtual void StopRecurringBackgroundJob(string jobId)

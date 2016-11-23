@@ -28,9 +28,9 @@ namespace Foundation.Api.Contracts
 
         JobInfo GetJobInfo(string key, CancellationToken cancellationToken);
 
-        Task PerformRecurringBackgroundJobAsync<TService>(string jobId, Expression<Action<TService>> methodCall, string cronExpression);
+        Task PerformRecurringBackgroundJobAsync<TService>(Expression<Action<TService>> methodCall, string cronExpression);
 
-        void PerformRecurringBackgroundJob<TService>(string jobId, Expression<Action<TService>> methodCall, string cronExpression);
+        void PerformRecurringBackgroundJob<TService>(Expression<Action<TService>> methodCall, string cronExpression);
 
         Task StopRecurringBackgroundJobAsync(string jobId);
 
