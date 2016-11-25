@@ -27,5 +27,99 @@ namespace Foundation.CodeGenerators.Test
                 Assert.IsTrue(dtos.Select(d => d.DtoSymbol.Name).SequenceEqual(new[] { "ClientLogDto", "JobInfo", "UserSetting" }));
             }
         }
+
+        [TestMethod]
+        public virtual async Task ISyncableDtoShouldHaveISVPropertyEvenWhenThereIsNoDeclaredISVProperty()
+        {
+            const string sourceCodeOfDtoControllerWithActionAndParameter = @"
+
+public interface IDto {
+}
+
+public interface ISyncableDto : IDto {
+}
+
+public class TestDto : ISyncableDto {
+}
+
+public class DtoController<TDto>
+    where TDto : IDto
+{
+
+}
+
+public class TestController : DtoController<TestDto>
+{
+
+}
+";
+
+            IProjectDtosProvider dtosProvider = new DefaultProjectDtosProvider(new DefaultProjectDtoControllersProvider());
+
+            Assert.AreEqual(1, dtosProvider.GetProjectDtos(CreateProjectFromSourceCodes(sourceCodeOfDtoControllerWithActionAndParameter)).Single().Properties.Count);
+        }
+
+        [TestMethod]
+        public virtual async Task ISyncableDtoShouldHaveISVProperty()
+        {
+            const string sourceCodeOfDtoControllerWithActionAndParameter = @"
+
+public interface IDto {
+}
+
+public interface ISyncableDto : IDto {
+}
+
+public class TestDto : ISyncableDto {
+    public bool ISV { get; set; }
+}
+
+public class DtoController<TDto>
+    where TDto : IDto
+{
+
+}
+
+public class TestController : DtoController<TestDto>
+{
+
+}
+";
+
+            IProjectDtosProvider dtosProvider = new DefaultProjectDtosProvider(new DefaultProjectDtoControllersProvider());
+
+            Assert.AreEqual(1, dtosProvider.GetProjectDtos(CreateProjectFromSourceCodes(sourceCodeOfDtoControllerWithActionAndParameter)).Single().Properties.Count);
+        }
+
+        [TestMethod]
+        public virtual async Task IDtoShouldNotHaveISVPropertyWhenItIsNotISyncable()
+        {
+            const string sourceCodeOfDtoControllerWithActionAndParameter = @"
+
+public interface IDto {
+}
+
+public interface ISyncableDto : IDto {
+}
+
+public class TestDto : IDto {
+}
+
+public class DtoController<TDto>
+    where TDto : IDto
+{
+
+}
+
+public class TestController : DtoController<TestDto>
+{
+
+}
+";
+
+            IProjectDtosProvider dtosProvider = new DefaultProjectDtosProvider(new DefaultProjectDtoControllersProvider());
+
+            Assert.AreEqual(0, dtosProvider.GetProjectDtos(CreateProjectFromSourceCodes(sourceCodeOfDtoControllerWithActionAndParameter)).Single().Properties.Count);
+        }
     }
 }
