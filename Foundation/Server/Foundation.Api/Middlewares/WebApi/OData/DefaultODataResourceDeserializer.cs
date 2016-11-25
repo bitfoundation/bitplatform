@@ -54,7 +54,15 @@ namespace Foundation.Api.Middlewares.WebApi.OData
                 }
             }
 
-            base.ApplyStructuralProperty(resource, structuralProperty, structuredType, readContext);
+            try
+            {
+                base.ApplyStructuralProperty(resource, structuralProperty, structuredType, readContext);
+            }
+            catch (ODataException ex)
+            {
+                if (ex.Message != "Does not support untyped value in non-open type.")
+                    throw;
+            }
         }
     }
 }
