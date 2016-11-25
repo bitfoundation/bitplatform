@@ -9,35 +9,50 @@ namespace Foundation.Api.Middlewares.SignalR
     {
         public override async Task OnConnected()
         {
-            IOwinContext context = new OwinContext(Context.Request.Environment);
+            try
+            {
+                IOwinContext context = new OwinContext(Context.Request.Environment);
 
-            Core.Contracts.IDependencyResolver dependencyResolver = context.Get<Core.Contracts.IDependencyResolver>("DependencyResolver");
+                Core.Contracts.IDependencyResolver dependencyResolver = context.Get<Core.Contracts.IDependencyResolver>("DependencyResolver");
 
-            await dependencyResolver.Resolve<IMessagesHubEvents>().OnConnected(this);
-
-            await base.OnConnected();
+                await dependencyResolver.Resolve<IMessagesHubEvents>().OnConnected(this);
+            }
+            finally
+            {
+                await base.OnConnected();
+            }
         }
 
         public override async Task OnDisconnected(bool stopCalled)
         {
-            IOwinContext context = new OwinContext(Context.Request.Environment);
+            try
+            {
+                IOwinContext context = new OwinContext(Context.Request.Environment);
 
-            Core.Contracts.IDependencyResolver dependencyResolver = context.Get<Core.Contracts.IDependencyResolver>("DependencyResolver");
+                Core.Contracts.IDependencyResolver dependencyResolver = context.Get<Core.Contracts.IDependencyResolver>("DependencyResolver");
 
-            await dependencyResolver.Resolve<IMessagesHubEvents>().OnDisconnected(this, stopCalled);
-
-            await base.OnDisconnected(stopCalled);
+                await dependencyResolver.Resolve<IMessagesHubEvents>().OnDisconnected(this, stopCalled);
+            }
+            finally
+            {
+                await base.OnDisconnected(stopCalled);
+            }
         }
 
         public override async Task OnReconnected()
         {
-            IOwinContext context = new OwinContext(Context.Request.Environment);
+            try
+            {
+                IOwinContext context = new OwinContext(Context.Request.Environment);
 
-            Core.Contracts.IDependencyResolver dependencyResolver = context.Get<Core.Contracts.IDependencyResolver>("DependencyResolver");
+                Core.Contracts.IDependencyResolver dependencyResolver = context.Get<Core.Contracts.IDependencyResolver>("DependencyResolver");
 
-            await dependencyResolver.Resolve<IMessagesHubEvents>().OnReconnected(this);
-
-            await base.OnReconnected();
+                await dependencyResolver.Resolve<IMessagesHubEvents>().OnReconnected(this);
+            }
+            finally
+            {
+                await base.OnReconnected();
+            }
         }
     }
 }
