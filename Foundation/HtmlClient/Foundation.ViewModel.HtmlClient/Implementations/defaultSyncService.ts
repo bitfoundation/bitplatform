@@ -146,6 +146,7 @@
                     for (let recentlyChangedOnlineEntity of recentlyChangedOnlineEntities) {
 
                         let clonedEntity = entitySetSyncMaterial.offlineEntitySet.elementType['create'](recentlyChangedOnlineEntity['initData']) as Foundation.Model.Contracts.ISyncableDto;
+                        clonedEntity.ISV = true;
 
                         this.offlineContext.attach(clonedEntity, $data.EntityAttachMode.AllChanged);
 
