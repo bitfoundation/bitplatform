@@ -1,14 +1,14 @@
-﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 
 namespace Foundation.AspNetCore.Test.Api.WebApiCoreControllers
 {
-    public class PeopleController : Controller
+    [Controller]
+    public class PeopleController
     {
         [HttpGet]
-        public virtual ActionResult GetData()
+        public virtual JsonResult GetData()
         {
-            return Json(new { FirstName = "Test" });
+            return new JsonResult(new { FirstName = "Test" });
         }
     }
 }
