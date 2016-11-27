@@ -10,8 +10,8 @@
     "dotnet-test-mstest": "1.1.1-preview",
     "MSTest.TestFramework": "1.0.4-preview",
     "Microsoft.AspNetCore.TestHost": "1.0.0",
+    "Autofac": "4.2.1",
     "Autofac.SignalR2": "4.0.0",
-    "Autofac.WebApi2": "4.0.0",
     "HangFire.Autofac": "2.2.0",
     "Autofac.Owin": "4.0.0",
     "Microsoft.AspNet.OData": "6.0.0",
@@ -21,7 +21,8 @@
     "Microsoft.AspNetCore.Routing": "1.0.1",
     "Microsoft.AspNetCore.Mvc.Core": "1.0.1",
     "Microsoft.AspNetCore.Mvc.Formatters.Json": "1.0.1",
-    "Foundation.AspNetCore": "0.0.0-1"
+    "Foundation.AspNetCore": "0.0.0-1",
+    "Autofac.WebApi2": "4.0.1"
   },
 
   "buildOptions": {
