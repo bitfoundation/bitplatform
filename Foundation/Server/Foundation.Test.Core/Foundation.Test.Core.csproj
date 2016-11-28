@@ -288,15 +288,15 @@
       <Private>True</Private>
     </Reference>
     <Reference Include="Simple.OData.Client.Core, Version=4.24.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\..\packages\Simple.OData.V4.Client.4.24.0\lib\portable-net45+win8+wp8+wpa81\Simple.OData.Client.Core.dll</HintPath>
+      <HintPath>..\..\..\packages\Simple.OData.V4.Client.4.24.0.1\lib\portable-net45+win8+wp8+wpa81\Simple.OData.Client.Core.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="Simple.OData.Client.Dynamic, Version=4.24.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\..\packages\Simple.OData.V4.Client.4.24.0\lib\portable-net45+win8+wp8+wpa81\Simple.OData.Client.Dynamic.dll</HintPath>
+      <HintPath>..\..\..\packages\Simple.OData.V4.Client.4.24.0.1\lib\portable-net45+win8+wp8+wpa81\Simple.OData.Client.Dynamic.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="Simple.OData.Client.V4.Adapter, Version=4.24.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\..\packages\Simple.OData.V4.Client.4.24.0\lib\portable-net45+win8+wp8+wpa81\Simple.OData.Client.V4.Adapter.dll</HintPath>
+      <HintPath>..\..\..\packages\Simple.OData.V4.Client.4.24.0.1\lib\portable-net45+win8+wp8+wpa81\Simple.OData.Client.V4.Adapter.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="System" />
