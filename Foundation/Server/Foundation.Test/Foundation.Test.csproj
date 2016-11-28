@@ -476,8 +476,7 @@
       <Private>True</Private>
     </Reference>
     <Reference Include="System.Linq.Dynamic.Core, Version=1.0.0.0, Culture=neutral, PublicKeyToken=0f07ec44de6ac832, processorArchitecture=MSIL">
-      <HintPath>..\..\..\packages\System.Linq.Dynamic.Core.1.0.6.5\lib\net461\System.Linq.Dynamic.Core.dll</HintPath>
-      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\packages\System.Linq.Dynamic.Core.1.0.6.8\lib\net461\System.Linq.Dynamic.Core.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="System.Net">
