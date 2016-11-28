@@ -63,7 +63,7 @@
         "../../../packages/NWebsec.Owin.2.2.0/lib/45/NWebsec.Owin.dll": {},
         "../../../packages/Newtonsoft.Json.9.0.1/lib/net45/Newtonsoft.Json.dll": {},
         "../../../packages/Owin.1.0/lib/net40/Owin.dll": {},
-        "../../../packages/RazorEngine.3.9.0/lib/net45/RazorEngine.dll": {},
+        "../../../packages/RazorEngine.3.9.3/lib/net45/RazorEngine.dll": {},
         "../../../packages/Remotion.Linq.2.1.1/lib/net45/Remotion.Linq.dll": {},
         "../../../packages/System.Collections.Concurrent.4.0.12/lib/netcore50/System.Collections.Concurrent.dll": {},
         "../../../packages/System.Collections.Immutable.1.2.0/lib/portable-net45+win8+wp8+wpa81/System.Collections.Immutable.dll": {},
