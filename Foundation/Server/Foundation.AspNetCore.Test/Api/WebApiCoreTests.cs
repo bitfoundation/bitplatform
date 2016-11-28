@@ -1,16 +1,14 @@
 ﻿using Foundation.Test;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
+using Xunit;
 
 namespace Foundation.AspNetCore.Test.Api
 {
-    [TestClass]
     public class WebApiCoreTests
     {
-        [TestMethod]
-        [TestCategory("WebApiCore")]
+        [Fact]
         public virtual async Task WebApiCoreControllerShouldReturnOkStatusCode()
         {
             using (AspNetCoreTestEnvironment testEnvironment = new AspNetCoreTestEnvironment(new TestEnvironmentArgs { UseRealServer = false }))
@@ -20,7 +18,7 @@ namespace Foundation.AspNetCore.Test.Api
 
                 response.EnsureSuccessStatusCode();
 
-                Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
+                Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             }
         }
     }

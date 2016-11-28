@@ -6,8 +6,8 @@
   },
 
   "dependencies": {
-    "dotnet-test-mstest": "1.1.1-preview",
-    "MSTest.TestFramework": "1.0.4-preview",
+    "dotnet-test-xunit": "2.2.0-preview2-build1029",
+    "xunit": "2.1.0",
     "Autofac": "4.2.1",
     "Autofac.SignalR2": "4.0.0",
     "HangFire.Autofac": "2.2.0",
@@ -29,7 +29,7 @@
     "xmlDoc": true
   },
 
-  "testRunner": "mstest",
+  "testRunner": "xunit",
 
   "frameworks": {
     "net462": {
