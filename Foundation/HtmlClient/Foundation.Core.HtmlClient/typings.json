@@ -1,14 +1,14 @@
 {
   "globalDependencies": {
-    "angular": "registry:dt/angular#1.5.0+20161016133926",
-    "angular-component-router": "registry:dt/angular-component-router#1.5.0+20160815132122",
-    "angular-material": "registry:dt/angular-material#1.1.0-rc5.0+20160923175937",
-    "angular-translate": "registry:dt/angular-translate#2.4.0+20160729132354",
-    "decimal.js": "registry:dt/decimal.js#0.0.0+20160317120654",
-    "jasmine": "registry:dt/jasmine#2.5.0+20161003201800",
-    "jasmine-jquery": "registry:dt/jasmine-jquery#0.0.0+20160317120654",
-    "jquery": "registry:dt/jquery#1.10.0+20160929162922",
-    "kendo-ui": "registry:dt/kendo-ui#2016.3.914+20161003184154",
-    "signalr": "registry:dt/signalr#2.2.0+20160509082439"
+    "angular": "registry:dt/angular",
+    "angular-component-router": "registry:dt/angular-component-router",
+    "angular-material": "registry:dt/angular-material",
+    "angular-translate": "registry:dt/angular-translate",
+    "decimal.js": "registry:dt/decimal.js",
+    "jasmine": "registry:dt/jasmine",
+    "jasmine-jquery": "registry:dt/jasmine-jquery",
+    "jquery": "registry:dt/jquery",
+    "kendo-ui": "registry:dt/kendo-ui",
+    "signalr": "registry:dt/signalr"
   }
 }
