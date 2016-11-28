@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using System.Net.Http;
 using Microsoft.AspNetCore.Hosting;
 using System.IO;
+using Foundation.AspNetCore.Implementations.Servers;
 
 namespace Foundation.AspNetCore.Test.Server
 {
@@ -18,7 +19,7 @@ namespace Foundation.AspNetCore.Test.Server
             base.Initialize(uri);
 
             _host = new WebHostBuilder()
-                .UseKestrel()
+                .UseHttpListener()
                 .UseUrls(uri.ToString())
                 .UseContentRoot(Directory.GetCurrentDirectory())
                 .UseStartup<AutofacAspNetCoreAppStartup>()
