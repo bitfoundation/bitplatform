@@ -46,7 +46,7 @@
         "../../../packages/Microsoft.Extensions.Logging.Debug.1.1.0/lib/net451/Microsoft.Extensions.Logging.Debug.dll": {},
         "../../../packages/Microsoft.Extensions.Options.1.1.0/lib/netstandard1.0/Microsoft.Extensions.Options.dll": {},
         "../../../packages/Microsoft.Extensions.Primitives.1.1.0/lib/netstandard1.0/Microsoft.Extensions.Primitives.dll": {},
-        "../../../packages/Microsoft.IdentityModel.Logging.1.0.0/lib/net451/Microsoft.IdentityModel.Logging.dll": {},
+        "../../../packages/Microsoft.IdentityModel.Logging.1.1.0/lib/net451/Microsoft.IdentityModel.Logging.dll": {},
         "../../../packages/Microsoft.IdentityModel.Protocol.Extensions.1.0.3.308261200/lib/net45/Microsoft.IdentityModel.Protocol.Extensions.dll": {},
         "../../../packages/Microsoft.IdentityModel.Tokens.5.0.0/lib/net451/Microsoft.IdentityModel.Tokens.dll": {},
         "../../../packages/Microsoft.OData.Core.7.0.0/lib/portable-net45+win8+wpa81/Microsoft.OData.Core.dll": {},

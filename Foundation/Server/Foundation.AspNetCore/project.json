@@ -9,14 +9,14 @@
     "Autofac": "4.2.1",
     "Autofac.Extensions.DependencyInjection": "4.0.0",
     "Autofac.Owin": "4.0.0",
-    "Microsoft.AspNetCore.Hosting": "1.0.0",
-    "Microsoft.AspNetCore.Mvc.Core": "1.0.1",
-    "Microsoft.AspNetCore.Mvc.Formatters.Json": "1.0.1",
-    "Microsoft.AspNetCore.Owin": "1.0.0",
+    "Microsoft.AspNetCore.Hosting": "1.1.0",
+    "Microsoft.AspNetCore.Mvc.Core": "1.1.0",
+    "Microsoft.AspNetCore.Mvc.Formatters.Json": "1.1.0",
+    "Microsoft.AspNetCore.Owin": "1.1.0",
     "Microsoft.Owin": "3.0.1",
     "Microsoft.Owin.Host.HttpListener": "3.0.1",
     "Microsoft.Owin.Hosting": "3.0.1",
-    "System.Diagnostics.DiagnosticSource": "4.3.0" 
+    "System.Diagnostics.DiagnosticSource": "4.3.0"
   },
 
   "buildOptions": {
