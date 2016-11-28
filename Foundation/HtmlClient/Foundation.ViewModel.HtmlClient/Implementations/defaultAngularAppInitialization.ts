@@ -180,7 +180,7 @@ module Foundation.ViewModel.Implementations {
             let dateTimeService = this.dateTimeService;
             let pathProvider = this.pathProvider;
 
-            app.filter('date', () => {
+            app.filter('bitDate', () => {
 
                 return function (date: Date): string {
 
@@ -189,7 +189,7 @@ module Foundation.ViewModel.Implementations {
                 }
             });
 
-            app.filter('dateTime', () => {
+            app.filter('bitDateTime', () => {
 
                 return function (date: Date): string {
 
@@ -198,7 +198,7 @@ module Foundation.ViewModel.Implementations {
                 }
             });
 
-            app.filter('trusted', ['$sce', function ($sce) {
+            app.filter('trusted', ['$sce', function ($sce: ng.ISCEService) {
                 return function (url) {
                     return $sce.trustAsResourceUrl(url);
                 };
