@@ -24,6 +24,6 @@ namespace Foundation.Test.Model.DomainModels
         [InverseProperty(nameof(ChildEntity.ParentEntity))]
         public virtual List<ChildEntity> ChildEntities { get; set; } = new List<ChildEntity>();
 
-        public virtual TestModel TestModel { get; set; } = new TestModel();
+        public virtual TestModel TestModel { get; set; }
     }
 }

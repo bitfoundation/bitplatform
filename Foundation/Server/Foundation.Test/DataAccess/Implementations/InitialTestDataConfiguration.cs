@@ -85,15 +85,6 @@ namespace Foundation.Test.DataAccess.Implementations
 
                 dbContext.SaveChanges();
             }
-
-            using (IDependencyResolver childDependencyResolver = _dependencyManager.CreateChildDependencyResolver()) /* It might be a problem in EntityFramework.Core 1 In Memory Provider */
-            {
-                TestDbContext dbContext = childDependencyResolver.Resolve<TestDbContext>();
-
-                dbContext.TestModels.RemoveRange(dbContext.TestModels.Where(t => t.StringProperty == null).ToList());
-
-                dbContext.SaveChanges();
-            }
         }
 
         public virtual void OnAppEnd()
