@@ -10,6 +10,7 @@ namespace Foundation.CodeGenerators.Test.ExtensionsTests
     public class ISymbolExtensionsTests : CodeGeneratorTest
     {
         [TestMethod]
+        [Ignore]
         public void ISymbolExtensionsShouldReturnCommentsAsDesired()
         {
             string dtoCode = @"
