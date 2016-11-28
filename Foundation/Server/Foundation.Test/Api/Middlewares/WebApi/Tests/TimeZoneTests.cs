@@ -14,6 +14,7 @@ namespace Foundation.Test.Api.Middlewares.WebApi.Tests
     [TestClass]
     public class TimeZoneTests
     {
+        [Ignore]
         [TestMethod]
         [TestCategory("WebApi")]
         public virtual async Task TestTimeZonesInCustomActionsWithoutClientsDemand()
@@ -68,6 +69,7 @@ namespace Foundation.Test.Api.Middlewares.WebApi.Tests
             }
         }
 
+        [Ignore]
         [TestMethod]
         [TestCategory("WebApi")]
         public virtual async Task TestTimeZonesInCustomActionsWithClientDemand()
@@ -126,6 +128,7 @@ namespace Foundation.Test.Api.Middlewares.WebApi.Tests
             }
         }
 
+        [Ignore]
         [TestMethod]
         [TestCategory("WebApi")]
         public virtual async Task TestTimeZonesInUrlWithoutClientDemand()
@@ -144,6 +147,7 @@ namespace Foundation.Test.Api.Middlewares.WebApi.Tests
             }
         }
 
+        [Ignore]
         [TestMethod]
         [TestCategory("WebApi")]
         public virtual async Task TestTimeZonesInUrlWithClientDemand()

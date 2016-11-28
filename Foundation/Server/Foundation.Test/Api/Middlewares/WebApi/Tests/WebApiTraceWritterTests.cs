@@ -17,6 +17,7 @@ namespace Foundation.Test.Api.Middlewares.WebApi.Tests
     [TestClass]
     public class WebApiTraceWritterTests
     {
+        [Ignore]
         [TestMethod]
         [TestCategory("WebApi"), TestCategory("Logging")]
         public virtual async Task WebApiTraceWritterShouldLogApiRequestIdAndExceptionDetails()

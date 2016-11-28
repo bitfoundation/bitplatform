@@ -19,6 +19,7 @@ namespace Foundation.Test.Api.Middlewares.WebApi.Tests
     [TestClass]
     public class WebApiCrudTests
     {
+        [Ignore]
         [TestMethod]
         [TestCategory("WebApi"), TestCategory("OData")]
         public async Task TestInsert()
@@ -59,6 +60,7 @@ namespace Foundation.Test.Api.Middlewares.WebApi.Tests
             }
         }
 
+        [Ignore]
         [TestMethod]
         [TestCategory("WebApi"), TestCategory("OData")]
         public async Task TestPartialUpdate()
@@ -104,6 +106,7 @@ namespace Foundation.Test.Api.Middlewares.WebApi.Tests
             }
         }
 
+        [Ignore]
         [TestMethod]
         [TestCategory("WebApi"), TestCategory("OData")]
         public async Task TestDelete()
@@ -142,6 +145,7 @@ namespace Foundation.Test.Api.Middlewares.WebApi.Tests
             }
         }
 
+        [Ignore]
         [TestMethod]
         [TestCategory("WebApi"), TestCategory("OData")]
         public async Task TestSimpleFilter()

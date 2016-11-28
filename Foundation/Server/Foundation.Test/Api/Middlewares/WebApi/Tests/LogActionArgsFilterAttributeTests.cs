@@ -18,6 +18,7 @@ namespace Foundation.Test.Api.Middlewares.WebApi.Tests
     [TestClass]
     public class LogActionArgsFilterAttributeTests
     {
+        [Ignore]
         [TestMethod]
         [TestCategory("WebApi"), TestCategory("Logging")]
         public virtual async Task LogActionArgsFilterAttributeShouldLogActionArgs()

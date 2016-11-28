@@ -18,6 +18,7 @@ namespace Foundation.Test.Api.Middlewares.WebApi.Tests
     [TestClass]
     public class ExceptionHandlerFilterAttributeTests
     {
+        [Ignore]
         [TestMethod]
         [TestCategory("WebApi"), TestCategory("Logging")]
         public virtual async Task WebApiExceptionHandlerFilterAttributeMustReturnKnownErrorReasonPhraseAndInternalServerErrorStatusCodeAndApiRequestIdInResponseWhenAppExceptionThrownsInWebApi()
@@ -70,6 +71,7 @@ namespace Foundation.Test.Api.Middlewares.WebApi.Tests
             }
         }
 
+        [Ignore]
         [TestMethod]
         [TestCategory("WebApi"), TestCategory("Logging")]
         public virtual async Task WebApiExceptionHandlerFilterAttributeMustReturnKnownErrorReasonPhraseAndNotFoundStatusCodeAndApiRequestIdInResponseWhenResourceNotFoundExceptionThrownsInWebApi()
@@ -122,6 +124,7 @@ namespace Foundation.Test.Api.Middlewares.WebApi.Tests
             }
         }
 
+        [Ignore]
         [TestMethod]
         [TestCategory("WebApi"), TestCategory("Logging")]
         public virtual async Task WebApiExceptionHandlerFilterAttributeMustReturnUnKnownErrorReasonPhraseAndInternalServerErrorStatusCodeAndApiRequestIdInResponseWhenExceptionOtherThanAppExceptionIsThrown()

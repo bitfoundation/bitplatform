@@ -9,6 +9,7 @@ namespace Foundation.Test.Api.Middlewares.SignalR.Tests
     [TestClass]
     public class SignalRPushTests
     {
+        [Ignore]
         [TestMethod]
         [TestCategory("SignalR"), TestCategory("WebApi")]
         public virtual async Task PushFromSomeUserToAnotherUserUsingWebApi()
@@ -37,6 +38,7 @@ namespace Foundation.Test.Api.Middlewares.SignalR.Tests
             }
         }
 
+        [Ignore]
         [TestMethod]
         [TestCategory("SignalR"), TestCategory("WebApi"), TestCategory("BackgroundJobs")]
         public virtual async Task PushFromSomeUserToAnotherUserUsingWebApiAndBackgroundJobWorker()

@@ -10,6 +10,7 @@ namespace Foundation.Test.Api.ApiControllers.Tests
     [TestClass]
     public class JobsControllerTests
     {
+        [Ignore]
         [TestMethod]
         [TestCategory("WebApi"), TestCategory("BackgroundJobs")]
         public virtual async Task JobsControllerMustThrowAnExceptionWhenJobIsNotPresents()

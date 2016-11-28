@@ -19,6 +19,7 @@ namespace Foundation.Test.Api.Middlewares.WebApi.Tests
     [TestClass]
     public class BatchRequestsTests
     {
+        [Ignore]
         [TestMethod]
         [TestCategory("WebApi")]
         public virtual async Task InsertAndUpdateToghether()
@@ -68,6 +69,7 @@ namespace Foundation.Test.Api.Middlewares.WebApi.Tests
             }
         }
 
+        [Ignore]
         [TestMethod]
         [TestCategory("WebApi")]
         public virtual async Task ServerMustStopRequestExecutionOfFirstException()

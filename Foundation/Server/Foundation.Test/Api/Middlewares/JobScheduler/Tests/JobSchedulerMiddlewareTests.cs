@@ -45,6 +45,7 @@ namespace Foundation.Test.Api.Middlewares.JobScheduler.Tests
             }
         }
 
+        [Ignore]
         [TestMethod]
         [TestCategory("BackgroundJobs"), TestCategory("WebApi")]
         public async Task SendEmailUsingBackgroundJobWorkerAndWebApi()
@@ -96,6 +97,7 @@ namespace Foundation.Test.Api.Middlewares.JobScheduler.Tests
             }
         }
 
+        [Ignore]
         [TestMethod]
         [TestCategory("BackgroundJobs"), TestCategory("WebApi")]
         public async Task SendEmailUsingBackgroundJobWorkerAndWebApiAndThenPushToReciever()
@@ -156,6 +158,7 @@ namespace Foundation.Test.Api.Middlewares.JobScheduler.Tests
             }
         }
 
+        [Ignore]
         [TestMethod]
         [TestCategory("BackgroundJobs"), TestCategory("Logging")]
         public async Task LogExceptionWhenEmailSendFailedAndTryForTheSecondTime()

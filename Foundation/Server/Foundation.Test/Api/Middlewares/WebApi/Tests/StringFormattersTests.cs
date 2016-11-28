@@ -14,6 +14,7 @@ namespace Foundation.Test.Api.Middlewares.WebApi.Tests
     [TestClass]
     public class StringFormattersTests
     {
+        [Ignore]
         [TestMethod]
         [TestCategory("WebApi")]
         public virtual async Task TestStringFormattersInCustomActions()
@@ -95,6 +96,7 @@ namespace Foundation.Test.Api.Middlewares.WebApi.Tests
             }
         }
 
+        [Ignore]
         [TestMethod]
         [TestCategory("WebApi")]
         public virtual async Task TestStringFormattersInUrl()

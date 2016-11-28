@@ -35,6 +35,7 @@ namespace Foundation.Test.Api.Middlewares.WebApi.Tests
                     9- No return value: TestModelsController.PushSomethingWithDateTimeOffset
         */
 
+        [Ignore]
         [TestMethod]
         [TestCategory("OData"), TestCategory("WebApi")]
         public virtual async Task CustomActionMethodWithSingleDtoReturnValueTest()
@@ -51,6 +52,7 @@ namespace Foundation.Test.Api.Middlewares.WebApi.Tests
             }
         }
 
+        [Ignore]
         [TestMethod]
         [TestCategory("OData"), TestCategory("WebApi")]
         public virtual async Task CustomActionMethodWithArrayOfEntitiesReturnValueTest()
@@ -67,6 +69,7 @@ namespace Foundation.Test.Api.Middlewares.WebApi.Tests
             }
         }
 
+        [Ignore]
         [TestMethod]
         [TestCategory("OData"), TestCategory("WebApi")]
         public virtual async Task CustomActionMethodWithQueryableOfEntitiesReturnValueTest()

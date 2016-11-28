@@ -15,6 +15,7 @@ namespace Foundation.Test.Api.Middlewares.SignalR.Tests
     [TestClass]
     public class MessageContentFormatterTests
     {
+        [Ignore]
         [TestMethod]
         [TestCategory("SignalR")]
         public virtual async Task SignalRMessageContentFormatterMustThrowAnExceptionIfMessageArgsContainsDateTimeOffset()

@@ -14,6 +14,7 @@ namespace Foundation.Test.Api.ApiControllers.Tests
     [TestClass]
     public class ClientsLogsControllerTests
     {
+        [Ignore]
         [TestMethod]
         [TestCategory("WebApi"), TestCategory("Logging")]
         public virtual async Task ClientsLogsControllerMustSaveLogsUsingLogger()
