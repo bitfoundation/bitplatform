@@ -29,10 +29,20 @@
 
                 $data['defaults'].parameterResolutionCompatibility = false;
 
-                let originalRequired = $data['Validation'].EntityValidation.prototype.supportedValidations["$data.Array"].required;
+                let originalArrayRequired = $data['Validation'].EntityValidation.prototype.supportedValidations["$data.Array"].required;
 
                 $data['Validation'].EntityValidation.prototype.supportedValidations["$data.Array"].required = function required(value, definedValue) {
-                    return originalRequired.apply(this, arguments) && value.length != 0;
+                    return originalArrayRequired.apply(this, arguments) && value.length != 0;
+                }
+
+                for (let typeName of ['Boolean', 'DateTimeOffset', 'Decimal', 'Float', 'Guid', 'Int16', 'Int32', 'Int64', 'String']) {
+
+                    let originalRequired = $data['Validation'].EntityValidation.prototype.supportedValidations[`$data.${typeName}`].required;
+
+                    $data['Validation'].EntityValidation.prototype.supportedValidations[`$data.${typeName}`].required = function required(value, definedValue) {
+                        return originalRequired.apply(this, arguments) && value != "";
+                    }
+
                 }
 
                 this.oDataJSInitPromise = new Promise<void>(async (resolve, reject) => {
