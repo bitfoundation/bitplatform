@@ -5,7 +5,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Threading;
 using Microsoft.EntityFrameworkCore;
-using System.Linq.Dynamic.Core;
 using System.Collections.Generic;
 
 namespace Foundation.DataAccess.Implementations.EntityFrameworkCore
@@ -27,14 +26,14 @@ namespace Foundation.DataAccess.Implementations.EntityFrameworkCore
         public virtual TEntity GetById(TKey key)
         {
             return GetAll()
-               .Where($@"{nameof(IEntityWithDefaultGuidKey.Id)}.ToString()=""{key.ToString()}""")
+               .Where(e => e.Id.Equals(key))
                .SingleOrDefault();
         }
 
         public virtual async Task<TEntity> GetByIdAsync(TKey key, CancellationToken cancellationToken)
         {
             return await GetAll()
-               .Where($@"{nameof(IEntityWithDefaultGuidKey.Id)}.ToString()=""{key.ToString()}""")
+               .Where(e => e.Id.Equals(key))
                .SingleOrDefaultAsync(cancellationToken);
         }
 
