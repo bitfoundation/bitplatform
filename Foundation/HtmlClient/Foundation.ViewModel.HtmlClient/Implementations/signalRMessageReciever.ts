@@ -26,6 +26,7 @@
                     transport: config.preferWebSockets == true ? ['webSockets', 'serverSentEvents', 'longPolling', 'foreverFrame'] : ['serverSentEvents', 'webSockets', 'longPolling', 'foreverFrame']
                 }).then(() => res()).fail((e) => rej(e));
             });
+            this._isConnected = true;
         }
 
         protected async callListeners(messageKey: string, messageArgs: any) {
