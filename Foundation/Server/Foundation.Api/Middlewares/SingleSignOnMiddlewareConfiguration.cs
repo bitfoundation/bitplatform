@@ -41,6 +41,7 @@ namespace Foundation.Api.Middlewares
             {
                 ClientId = activeAppEnvironment.Security.ClientName,
                 Authority = activeAppEnvironment.Security.SSOServerUrl,
+                DelayLoadMetadata = true,
                 RequiredScopes = activeAppEnvironment.Security.Scopes,
                 ClientSecret = activeAppEnvironment.Security.ClientSecret.Sha512(),
                 EnableValidationResultCache = true,
