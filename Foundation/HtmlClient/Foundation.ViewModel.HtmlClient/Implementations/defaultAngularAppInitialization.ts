@@ -106,6 +106,12 @@ module Foundation.ViewModel.Implementations {
                     ["$delegate", extendExceptionHandler]);
             }]);
 
+            app.config(['$httpProvider', ($httpProvider: ng.IHttpProvider) => {
+
+                $httpProvider.useApplyAsync(true);
+
+            }]);
+
             app.config(['$compileProvider', ($compileProvider: ng.ICompileProvider) => {
                 $compileProvider.debugInfoEnabled(this.clientAppProfile.isDebugMode);
                 ($compileProvider as any).commentDirectivesEnabled(false);
