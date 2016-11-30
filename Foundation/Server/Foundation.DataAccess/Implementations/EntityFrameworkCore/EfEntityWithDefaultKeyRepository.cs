@@ -11,7 +11,6 @@ namespace Foundation.DataAccess.Implementations.EntityFrameworkCore
 {
     public class EfEntityWithDefaultKeyRepository<TEntity, TKey> : EfRepository<TEntity>, IEntityWithDefaultKeyRepository<TEntity, TKey>
         where TEntity : class, IEntityWithDefaultKey<TKey>
-        where TKey : struct
     {
         protected EfEntityWithDefaultKeyRepository()
             : base()
@@ -25,16 +24,14 @@ namespace Foundation.DataAccess.Implementations.EntityFrameworkCore
 
         public virtual TEntity GetById(TKey key)
         {
-            return GetAll()
-               .Where(e => e.Id.Equals(key))
-               .SingleOrDefault();
+            return KeyWhereBuilder<TEntity, TKey>.ApplyKeyWhere(GetAll(), key)
+               .FirstOrDefault();
         }
 
         public virtual async Task<TEntity> GetByIdAsync(TKey key, CancellationToken cancellationToken)
         {
-            return await GetAll()
-               .Where(e => e.Id.Equals(key))
-               .SingleOrDefaultAsync(cancellationToken);
+            return await KeyWhereBuilder<TEntity, TKey>.ApplyKeyWhere(GetAll(), key)
+               .FirstOrDefaultAsync(cancellationToken);
         }
 
         public override TEntity Add(TEntity entityToAdd)
