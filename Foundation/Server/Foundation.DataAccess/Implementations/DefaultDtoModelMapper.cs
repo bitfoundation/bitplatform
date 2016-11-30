@@ -4,20 +4,17 @@ using Foundation.Model.Contracts;
 using System;
 using System.Linq;
 using System.Reflection;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace Foundation.DataAccess.Implementations
 {
-    public abstract class BaseDtoModelMapper<TDto, TModel, TKey> : IDtoModelMapper<TDto, TModel, TKey>
+    public class DefaultDtoModelMapper<TDto, TModel> : IDtoModelMapper<TDto, TModel>
         where TDto : class, IDto
-        where TModel : class, IEntityWithDefaultKey<TKey>
-        where TKey : struct
+        where TModel : class, IEntity
     {
         private static readonly bool _modelAndDtoAreSame = typeof(TModel).GetTypeInfo() == typeof(TDto).GetTypeInfo();
         private readonly IMapper _mapper;
 
-        public BaseDtoModelMapper(IMapper mapper)
+        public DefaultDtoModelMapper(IMapper mapper)
         {
             if (mapper == null)
                 throw new ArgumentNullException(nameof(mapper));
@@ -25,7 +22,7 @@ namespace Foundation.DataAccess.Implementations
             _mapper = mapper;
         }
 
-        protected BaseDtoModelMapper()
+        protected DefaultDtoModelMapper()
         {
 
         }
@@ -49,16 +46,12 @@ namespace Foundation.DataAccess.Implementations
             return modelQuery.ProjectTo<TDto>(configuration: _mapper.ConfigurationProvider);
         }
 
-        public abstract Task<TDto> GetDtoByKeyFromQueryAsync(IQueryable<TDto> query, TKey key, CancellationToken cancellationToken);
-
-        public abstract TDto GetDtoByKeyFromQuery(IQueryable<TDto> query, TKey key);
-
-        public virtual TDto FromModelToDto(TModel model)
+        public virtual TDto FromModelToDto(TModel model, TDto existingDto)
         {
             if (_modelAndDtoAreSame == true)
                 return model as TDto;
 
-            return _mapper.Map<TModel, TDto>(model);
+            return existingDto == null ? _mapper.Map<TModel, TDto>(model) : _mapper.Map(model, existingDto);
         }
     }
 }

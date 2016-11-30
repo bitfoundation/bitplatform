@@ -4,19 +4,14 @@ using System.Threading.Tasks;
 
 namespace Foundation.Model.Contracts
 {
-    public interface IDtoModelMapper<TDto, TModel, TKey>
+    public interface IDtoModelMapper<TDto, TModel>
         where TDto : class, IDto
-        where TModel : class, IEntityWithDefaultKey<TKey>
-        where TKey : struct
+        where TModel : class, IEntity
     {
         TModel FromDtoToModel(TDto dto, TModel existingModel = null);
 
-        TDto FromModelToDto(TModel model);
+        TDto FromModelToDto(TModel model, TDto existingDto = null);
 
         IQueryable<TDto> FromModelQueryToDtoQuery(IQueryable<TModel> modelQuery);
-
-        Task<TDto> GetDtoByKeyFromQueryAsync(IQueryable<TDto> query, TKey key, CancellationToken cancellationToken);
-
-        TDto GetDtoByKeyFromQuery(IQueryable<TDto> query, TKey key);
     }
 }
