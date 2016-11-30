@@ -1,5 +1,6 @@
 ﻿using Foundation.Api.Exceptions;
 using Foundation.DataAccess.Contracts;
+using Foundation.DataAccess.Implementations;
 using Foundation.Model.Contracts;
 using System;
 using System.Collections.Generic;
@@ -11,8 +12,7 @@ using System.Web.OData;
 namespace Foundation.Api.ApiControllers
 {
     public class DtoSetController<TModel, TDto, TKey> : DtoController<TDto>
-        where TKey : struct
-        where TDto : class, IDto
+        where TDto : class, IDtoWithDefaultKey<TKey>
         where TModel : class, IEntityWithDefaultKey<TKey>
     {
         protected DtoSetController()
@@ -30,7 +30,11 @@ namespace Foundation.Api.ApiControllers
 
         private readonly IEntityWithDefaultKeyRepository<TModel, TKey> _repository;
 
-        public virtual IDtoModelMapper<TDto, TModel, TKey> DtoModelMapper { get; set; }
+
+        /// <summary>
+        /// Optional Dependency. You can override FromDtoToModel and GetAll.
+        /// </summary>
+        public virtual IDtoModelMapper<TDto, TModel> DtoModelMapper { get; set; }
 
         protected virtual TModel FromDtoToModel(TDto dto)
         {
@@ -51,7 +55,14 @@ namespace Foundation.Api.ApiControllers
         [Get]
         public virtual async Task<TDto> Get([FromODataUri]TKey key, CancellationToken cancellationToken)
         {
-            return await DtoModelMapper.GetDtoByKeyFromQueryAsync(GetAll(), key, cancellationToken);
+            IQueryable<TDto> baseQuery = KeyWhereBuilder<TDto, TKey>.ApplyKeyWhere(GetAll(), key);
+
+            TDto dtoResult = baseQuery.FirstOrDefault();
+
+            if (dtoResult == null)
+                throw new ResourceNotFoundaException();
+
+            return dtoResult;
         }
 
         [Delete]
