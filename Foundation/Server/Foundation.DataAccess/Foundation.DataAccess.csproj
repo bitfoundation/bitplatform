@@ -55,10 +55,6 @@
       <HintPath>..\..\..\packages\Microsoft.EntityFrameworkCore.1.1.0\lib\net451\Microsoft.EntityFrameworkCore.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="Microsoft.EntityFrameworkCore.DynamicLinq, Version=1.0.0.0, Culture=neutral, PublicKeyToken=974e7e1b462f3693, processorArchitecture=MSIL">
-      <HintPath>..\..\..\packages\Microsoft.EntityFrameworkCore.DynamicLinq.1.0.3.3\lib\net461\Microsoft.EntityFrameworkCore.DynamicLinq.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
     <Reference Include="Microsoft.EntityFrameworkCore.InMemory, Version=1.1.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
       <HintPath>..\..\..\packages\Microsoft.EntityFrameworkCore.InMemory.1.1.0\lib\net451\Microsoft.EntityFrameworkCore.InMemory.dll</HintPath>
       <Private>True</Private>
@@ -172,10 +168,6 @@
       <HintPath>..\..\..\packages\System.IO.4.3.0\lib\net462\System.IO.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="System.Linq.Dynamic.Core, Version=1.0.0.0, Culture=neutral, PublicKeyToken=0f07ec44de6ac832, processorArchitecture=MSIL">
-      <HintPath>..\..\..\packages\System.Linq.Dynamic.Core.1.0.6.8\lib\net461\System.Linq.Dynamic.Core.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
     <Reference Include="System.Reflection, Version=4.1.1.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
       <HintPath>..\..\..\packages\System.Reflection.4.3.0\lib\net462\System.Reflection.dll</HintPath>
       <Private>True</Private>
@@ -217,15 +209,15 @@
     <Compile Include="Contracts\IEntityWithDefaultGuidKeyRepository.cs" />
     <Compile Include="Contracts\IEntityWithDefaultKeyRepository.cs" />
     <Compile Include="Contracts\IRepository.cs" />
-    <Compile Include="Implementations\BaseDtoModelMapper.cs" />
+    <Compile Include="Implementations\DefaultDtoModelMapper.cs" />
     <Compile Include="Implementations\EntityFrameworkCore\EfEntityWithDefaultGuidKeyRepository.cs" />
     <Compile Include="Implementations\EntityFrameworkCore\EfEntityWithDefaultKeyRepository.cs" />
-    <Compile Include="Implementations\EntityFrameworkCore\EfCoreDtoModelMapper.cs" />
     <Compile Include="Implementations\EntityFrameworkCore\InMemoryDbContextObjectsProvider.cs" />
     <Compile Include="Implementations\EntityFrameworkCore\SqlDbContextObjectsProvider.cs" />
     <Compile Include="Implementations\DefaultSqlDbConnectionProvider.cs" />
     <Compile Include="Implementations\EntityFrameworkCore\EfRepository.cs" />
     <Compile Include="Implementations\EntityFrameworkCore\DefaultDbContext.cs" />
+    <Compile Include="Implementations\KeyWhereBuilder.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

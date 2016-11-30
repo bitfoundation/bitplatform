@@ -131,7 +131,6 @@
     <Compile Include="Contracts\IIraninCodeValidator.cs" />
     <Compile Include="Contracts\ILogger.cs" />
     <Compile Include="Contracts\ILogStore.cs" />
-    <Compile Include="Contracts\INameService.cs" />
     <Compile Include="Implementations\DefaultIraninCodeValidator.cs" />
     <Compile Include="Models\AppEnvironment.cs" />
     <Compile Include="Contracts\ICertificateProvider.cs" />

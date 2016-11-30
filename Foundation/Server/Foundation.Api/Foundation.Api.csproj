@@ -98,11 +98,6 @@
       <SpecificVersion>False</SpecificVersion>
       <Private>True</Private>
     </Reference>
-    <Reference Include="Humanizer, Version=2.1.0.0, Culture=neutral, PublicKeyToken=979442b78dfc278e, processorArchitecture=MSIL">
-      <HintPath>..\..\..\packages\Humanizer.Core.2.1.0\lib\netstandard1.0\Humanizer.dll</HintPath>
-      <SpecificVersion>False</SpecificVersion>
-      <Private>True</Private>
-    </Reference>
     <Reference Include="IdentityModel, Version=2.1.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\..\..\packages\IdentityModel.2.1.0\lib\net45\IdentityModel.dll</HintPath>
       <Private>True</Private>
@@ -345,10 +340,6 @@
       <HintPath>..\..\..\packages\System.IO.4.3.0\lib\net462\System.IO.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="System.Linq.Dynamic.Core, Version=1.0.0.0, Culture=neutral, PublicKeyToken=0f07ec44de6ac832, processorArchitecture=MSIL">
-      <HintPath>..\..\..\packages\System.Linq.Dynamic.Core.1.0.6.8\lib\net461\System.Linq.Dynamic.Core.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
     <Reference Include="System.Net.Http, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <Private>False</Private>
@@ -483,8 +474,6 @@
     <Compile Include="Contracts\IExceptionToHttpErrorMapper.cs" />
     <Compile Include="Middlewares\WebApi\OData\Contracts\IODataModelBuilderProvider.cs" />
     <Compile Include="Middlewares\WebApi\OData\Extensions\DeltaExtensions.cs" />
-    <Compile Include="Implementations\DefaultNameService.cs" />
-    <Compile Include="Implementations\Project\FoundationInitialNameServiceConfiguration.cs" />
     <Compile Include="Implementations\Metadata\DefaultAppMetadataProvider.cs" />
     <Compile Include="Implementations\Metadata\DefaultDtoMetadataBuilder`TDto.cs" />
     <Compile Include="Implementations\Metadata\DefaultMetadataBuilder.cs" />

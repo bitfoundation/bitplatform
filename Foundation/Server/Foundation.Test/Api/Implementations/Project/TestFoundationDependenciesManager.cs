@@ -49,13 +49,10 @@ namespace Foundation.Test.Api.Implementations.Project
             dependencyManager.Register<IRandomStringProvider, DefaultRandomStringProvider>(lifeCycle: DepepdencyLifeCycle.SingleInstance);
             dependencyManager.Register<ICertificateProvider, DefaultCertificateProvider>(lifeCycle: DepepdencyLifeCycle.SingleInstance);
             dependencyManager.Register<IExceptionToHttpErrorMapper, DefaultExceptionToHttpErrorMapper>(lifeCycle: DepepdencyLifeCycle.SingleInstance);
-            dependencyManager.Register<INameService, DefaultNameService>(lifeCycle: DepepdencyLifeCycle.SingleInstance);
             dependencyManager.Register<ITestUserService, TestUserService>(lifeCycle: DepepdencyLifeCycle.SingleInstance);
 
             dependencyManager.RegisterAppEvents<RazorViewEngineConfiguration>();
             dependencyManager.RegisterAppEvents<InitialTestDataConfiguration>();
-            dependencyManager.RegisterAppEvents<FoundationInitialNameServiceConfiguration>();
-            dependencyManager.RegisterAppEvents<TestInitialNameServiceConfiguration>();
 
             dependencyManager.RegisterOwinMiddleware<OwinCompressionMiddlewareConfiguration>();
             dependencyManager.RegisterOwinMiddleware<StaticFilesMiddlewareConfiguration>();
@@ -119,7 +116,7 @@ namespace Foundation.Test.Api.Implementations.Project
 
             dependencyManager.RegisterDbContext<TestDbContext, InMemoryDbContextObjectsProvider>();
 
-            dependencyManager.RegisterEfCoreAutoMapper();
+            dependencyManager.RegisterDtoModelMapper();
 
             dependencyManager.RegisterDtoModelMapperConfiguration<TestDtoModelMapperConfiguration>();
 

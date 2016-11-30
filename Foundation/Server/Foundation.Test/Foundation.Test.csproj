@@ -134,11 +134,6 @@
       <SpecificVersion>False</SpecificVersion>
       <Private>True</Private>
     </Reference>
-    <Reference Include="Humanizer, Version=2.1.0.0, Culture=neutral, PublicKeyToken=979442b78dfc278e, processorArchitecture=MSIL">
-      <HintPath>..\..\..\packages\Humanizer.Core.2.1.0\lib\netstandard1.0\Humanizer.dll</HintPath>
-      <SpecificVersion>False</SpecificVersion>
-      <Private>True</Private>
-    </Reference>
     <Reference Include="IdentityModel, Version=2.1.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\..\..\packages\IdentityModel.2.1.0\lib\net45\IdentityModel.dll</HintPath>
       <Private>True</Private>
@@ -167,10 +162,6 @@
     </Reference>
     <Reference Include="Microsoft.EntityFrameworkCore, Version=1.1.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
       <HintPath>..\..\..\packages\Microsoft.EntityFrameworkCore.1.1.0\lib\net451\Microsoft.EntityFrameworkCore.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="Microsoft.EntityFrameworkCore.DynamicLinq, Version=1.0.0.0, Culture=neutral, PublicKeyToken=974e7e1b462f3693, processorArchitecture=MSIL">
-      <HintPath>..\..\..\packages\Microsoft.EntityFrameworkCore.DynamicLinq.1.0.3.3\lib\net461\Microsoft.EntityFrameworkCore.DynamicLinq.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="Microsoft.EntityFrameworkCore.InMemory, Version=1.1.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
@@ -445,10 +436,6 @@
       <HintPath>..\..\..\packages\System.IO.4.3.0\lib\net462\System.IO.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="System.Linq.Dynamic.Core, Version=1.0.0.0, Culture=neutral, PublicKeyToken=0f07ec44de6ac832, processorArchitecture=MSIL">
-      <HintPath>..\..\..\packages\System.Linq.Dynamic.Core.1.0.6.8\lib\net461\System.Linq.Dynamic.Core.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
     <Reference Include="System.Net">
       <Private>True</Private>
     </Reference>
@@ -567,7 +554,6 @@
     <Compile Include="Api\AppStartupTests.cs" />
     <Compile Include="Api\Implementations\Project\TestEdmModelProvider.cs" />
     <Compile Include="Api\Implementations\Project\TestFoundationDependenciesManager.cs" />
-    <Compile Include="Api\Implementations\Project\TestInitialNameServiceConfiguration.cs" />
     <Compile Include="Api\Implementations\TestAppEnvironmentProvider.cs" />
     <Compile Include="Api\Implementations\TestDependenciesManagerProvider.cs" />
     <Compile Include="Api\Middlewares\ExceptionThrownMiddleware.cs" />

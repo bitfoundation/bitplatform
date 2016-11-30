@@ -81,12 +81,15 @@
     <Compile Include="Contracts\IDtoModelMapper.cs" />
     <Compile Include="Contracts\IDtoModelMapperConfiguration.cs" />
     <Compile Include="Contracts\IEntity.cs" />
+    <Compile Include="Contracts\IDtoWithDefaultGuidKey.cs" />
     <Compile Include="Contracts\IEntityWithDefaultGuidKey.cs" />
+    <Compile Include="Contracts\IDtoWithDefaultKey.cs" />
     <Compile Include="Contracts\IEntityWithDefaultKey.cs" />
     <Compile Include="Contracts\IsArchivableEntity.cs" />
     <Compile Include="Contracts\IsArchivableDto.cs" />
     <Compile Include="Contracts\ISyncableDto.cs" />
     <Compile Include="Contracts\IVersionableDto.cs" />
+    <Compile Include="Contracts\IWithDefaultKey.cs" />
     <Compile Include="DomainModels\JobInfo.cs" />
     <Compile Include="Dtos\ClientLogDto.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
