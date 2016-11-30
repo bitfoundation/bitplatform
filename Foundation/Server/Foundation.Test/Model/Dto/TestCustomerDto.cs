@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Foundation.Test.Model.Dto
 {
-    public class TestCustomerDto : IDto
+    public class TestCustomerDto : IDtoWithDefaultGuidKey
     {
         [Key]
         public virtual Guid Id { get; set; }
