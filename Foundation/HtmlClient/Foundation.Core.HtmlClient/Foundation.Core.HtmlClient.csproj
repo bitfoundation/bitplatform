@@ -63,7 +63,7 @@
     <Content Include="package.json" />
     <TypeScriptCompile Include="Model\iDto.ts" />
     <TypeScriptCompile Include="Model\iDtoWithDefaultGuidKey.ts" />
-    <TypeScriptCompile Include="Model\iWithKey.ts" />
+    <TypeScriptCompile Include="Model\iWithDefaultKey.ts" />
     <TypeScriptCompile Include="Model\iDtoWithDefaultKey.ts" />
     <TypeScriptCompile Include="Model\isArchivableDto.ts" />
     <TypeScriptCompile Include="Model\iVersionableDto.ts" />

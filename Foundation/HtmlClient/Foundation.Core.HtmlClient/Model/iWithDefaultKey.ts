@@ -1,5 +1,5 @@
 ﻿module Foundation.Model.Contracts {
-    export interface IWithKey<TKey> {
+    export interface IWithDefaultKey<TKey> {
         Id: TKey;
     }
 }

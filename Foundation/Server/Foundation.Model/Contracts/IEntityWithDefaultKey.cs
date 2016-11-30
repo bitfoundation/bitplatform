@@ -1,8 +1,7 @@
 ﻿namespace Foundation.Model.Contracts
 {
-    public interface IEntityWithDefaultKey<TKey> : IEntity
-        where TKey : struct
+    public interface IEntityWithDefaultKey<TKey> : IWithDefaultKey<TKey>, IEntity
     {
-        TKey Id { get; set; }
+
     }
 }
