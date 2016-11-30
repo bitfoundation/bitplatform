@@ -20,10 +20,10 @@ namespace Foundation.Test.Server
             _server.Dispose();
         }
 
-        public override void Initialize(Uri uri)
+        public override void Initialize(string uri)
         {
             base.Initialize(uri);
-            _server = WebApp.Start<OwinAppStartup>(uri.ToString());
+            _server = WebApp.Start<OwinAppStartup>(uri);
         }
 
         protected override HttpMessageHandler GetHttpMessageHandler()

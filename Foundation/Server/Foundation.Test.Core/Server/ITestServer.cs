@@ -43,8 +43,8 @@ namespace Foundation.Test
 
         IHubProxy BuildSignalRClient(OAuthToken token = null, Action<string, dynamic> onMessageRecieved = null);
 
-        void Initialize(Uri uri);
+        void Initialize(string uri);
 
-        Uri Uri { get; }
+        string Uri { get; }
     }
 }

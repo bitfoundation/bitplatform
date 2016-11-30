@@ -11,12 +11,12 @@ namespace Foundation.AspNetCore.Test.Server
     {
         private TestServer _server;
 
-        public override void Initialize(Uri uri)
+        public override void Initialize(string uri)
         {
             base.Initialize(uri);
 
             _server = new TestServer(new WebHostBuilder()
-                .UseUrls(uri.ToString())
+                .UseUrls(uri)
                 .UseContentRoot(Directory.GetCurrentDirectory())
                 .UseStartup<AutofacAspNetCoreAppStartup>());
         }

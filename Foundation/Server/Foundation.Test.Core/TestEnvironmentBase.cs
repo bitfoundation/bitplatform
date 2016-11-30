@@ -14,7 +14,7 @@ namespace Foundation.Test
     {
         public bool UseSso { get; set; } = false;
 
-        public Uri FullUri { get; set; } = null;
+        public string FullUri { get; set; } = null;
 
         public string HostName { get; set; } = null;
 
@@ -49,7 +49,7 @@ namespace Foundation.Test
             if (args.FullUri == null && args.HostName == null)
                 args.HostName = "127.0.0.1";
 
-            Uri uri = args.FullUri != null ? args.FullUri : new Uri($"{(args.UseHttps ? "https" : "http")}://{args.HostName}:{args.Port}/");
+            string uri = args.FullUri != null ? args.FullUri : new Uri($"{(args.UseHttps ? "https" : "http")}://{args.HostName}:{args.Port}/").ToString();
 
             if (args.UseProxyBasedDependencyManager == true)
             {

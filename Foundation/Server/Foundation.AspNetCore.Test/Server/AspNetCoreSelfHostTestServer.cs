@@ -14,13 +14,13 @@ namespace Foundation.AspNetCore.Test.Server
     {
         private IWebHost _host;
 
-        public override void Initialize(Uri uri)
+        public override void Initialize(string uri)
         {
             base.Initialize(uri);
 
             _host = new WebHostBuilder()
                 .UseHttpListener()
-                .UseUrls(uri.ToString())
+                .UseUrls(uri)
                 .UseContentRoot(Directory.GetCurrentDirectory())
                 .UseStartup<AutofacAspNetCoreAppStartup>()
                 .Build();

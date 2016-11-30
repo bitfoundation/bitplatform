@@ -14,7 +14,7 @@ namespace Foundation.Test.Server
 {
     public abstract class TestServerBase : ITestServer
     {
-        public virtual Uri Uri { get; protected set; }
+        public virtual string Uri { get; protected set; }
 
         public virtual ODataBatch BuildODataBatchClient(Action<HttpRequestMessage> beforeRequest = null,
                   Action<HttpResponseMessage> afterResponse = null, OAuthToken token = null, string route = null)
@@ -148,7 +148,7 @@ namespace Foundation.Test.Server
 
             return driver;
         }
-        public virtual void Initialize(Uri uri)
+        public virtual void Initialize(string uri)
         {
             Uri = uri;
         }
@@ -177,7 +177,7 @@ namespace Foundation.Test.Server
                 client.DefaultRequestHeaders.Add("Authorization", $"{token.token_type} {token.access_token}");
             }
 
-            client.BaseAddress = Uri;
+            client.BaseAddress = new Uri(Uri);
 
             return client;
         }
