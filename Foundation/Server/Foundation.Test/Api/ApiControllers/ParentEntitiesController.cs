@@ -44,9 +44,14 @@ namespace Foundation.Test.Api.ApiControllers
         [Get]
         public virtual async Task<ParentEntity> Get([FromODataUri]long key, CancellationToken cancellationToken)
         {
-            return await _parentModelsRepository
+            ParentEntity parentEntity = await _parentModelsRepository
                 .GetAll()
-                .SingleAsync(t => t.Id == key, cancellationToken);
+                .FirstOrDefaultAsync(t => t.Id == key, cancellationToken);
+
+            if (parentEntity == null)
+                throw new ResourceNotFoundaException();
+
+            return parentEntity;
         }
 
         [Create]

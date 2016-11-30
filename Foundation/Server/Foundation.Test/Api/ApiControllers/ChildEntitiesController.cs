@@ -8,6 +8,7 @@ using Foundation.Test.Model.DomainModels;
 using Microsoft.EntityFrameworkCore;
 using System;
 using Foundation.DataAccess.Contracts;
+using Foundation.Api.Exceptions;
 
 namespace Foundation.Test.Api.ApiControllers
 {
@@ -42,9 +43,14 @@ namespace Foundation.Test.Api.ApiControllers
         [Get]
         public virtual async Task<ChildEntity> Get([FromODataUri]long key, CancellationToken cancellationToken)
         {
-            return await _testRepository
+            ChildEntity childEntity = await _testRepository
                 .GetAll()
-                .SingleAsync(t => t.Id == key, cancellationToken);
+                .FirstOrDefaultAsync(t => t.Id == key, cancellationToken);
+
+            if (childEntity == null)
+                throw new ResourceNotFoundaException();
+
+            return childEntity;
         }
 
         [Create]

@@ -64,9 +64,14 @@ namespace Foundation.Test.Api.ApiControllers
         [Get]
         public virtual async Task<TestModel> Get([FromODataUri]long key, CancellationToken cancellationToken)
         {
-            return await _testModelsRepository.Value
+            TestModel testModel = await _testModelsRepository.Value
                 .GetAll()
-                .SingleAsync(t => t.Id == key, cancellationToken);
+                .FirstOrDefaultAsync(t => t.Id == key, cancellationToken);
+
+            if (testModel == null)
+                throw new ResourceNotFoundaException();
+
+            return testModel;
         }
 
         [Create]
@@ -82,7 +87,7 @@ namespace Foundation.Test.Api.ApiControllers
             CancellationToken cancellationToken)
         {
             TestModel model = await _testModelsRepository.Value.GetAll()
-                .SingleOrDefaultAsync(m => m.Id == key, cancellationToken);
+                .FirstOrDefaultAsync(m => m.Id == key, cancellationToken);
 
             if (model == null)
                 throw new ResourceNotFoundaException();
@@ -110,7 +115,7 @@ namespace Foundation.Test.Api.ApiControllers
         public virtual async Task Delete([FromODataUri] long key, CancellationToken cancellationToken)
         {
             TestModel model = await _testModelsRepository.Value.GetAll()
-                .SingleOrDefaultAsync(m => m.Id == key, cancellationToken);
+                .FirstOrDefaultAsync(m => m.Id == key, cancellationToken);
 
             if (model == null)
                 throw new ResourceNotFoundaException();
