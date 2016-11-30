@@ -21,7 +21,7 @@ using Foundation.Api.Middlewares.WebApi.OData.ActionFilters;
 using Foundation.Api.Middlewares.WebApi.OData.Contracts;
 using Foundation.Api.Middlewares.WebApi.OData.Implementations;
 using Foundation.DataAccess.Contracts.EntityFrameworkCore;
-using Foundation.DataAccess.Implementations.EntityFrameworkCore;
+using Foundation.DataAccess.Implementations;
 using Foundation.Model.Contracts;
 using Hangfire;
 using Hangfire.Dashboard;
@@ -259,12 +259,12 @@ namespace Foundation.Core.Contracts
             return dependencyManager;
         }
 
-        public static IDependencyManager RegisterEfCoreAutoMapper(this IDependencyManager dependencyManager)
+        public static IDependencyManager RegisterDtoModelMapper(this IDependencyManager dependencyManager)
         {
             if (dependencyManager == null)
                 throw new ArgumentNullException(nameof(dependencyManager));
 
-            dependencyManager.RegisterGeneric(typeof(IDtoModelMapper<,,>).GetTypeInfo(), typeof(EfCoreDtoModelMapper<,,>).GetTypeInfo(), DepepdencyLifeCycle.SingleInstance);
+            dependencyManager.RegisterGeneric(typeof(IDtoModelMapper<,>).GetTypeInfo(), typeof(DefaultDtoModelMapper<,>).GetTypeInfo(), DepepdencyLifeCycle.SingleInstance);
 
             dependencyManager.RegisterUsing(() =>
             {
