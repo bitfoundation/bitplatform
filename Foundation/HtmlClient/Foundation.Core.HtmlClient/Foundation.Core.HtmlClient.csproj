@@ -62,9 +62,9 @@
     <Content Include="gulpfile.js" />
     <Content Include="package.json" />
     <TypeScriptCompile Include="Model\iDto.ts" />
-    <TypeScriptCompile Include="Model\iEntity.ts" />
-    <TypeScriptCompile Include="Model\iEntityWithDefaultGuidKey.ts" />
-    <TypeScriptCompile Include="Model\iEntityWithDefaultKey.ts" />
+    <TypeScriptCompile Include="Model\iDtoWithDefaultGuidKey.ts" />
+    <TypeScriptCompile Include="Model\iWithKey.ts" />
+    <TypeScriptCompile Include="Model\iDtoWithDefaultKey.ts" />
     <TypeScriptCompile Include="Model\isArchivableDto.ts" />
     <TypeScriptCompile Include="Model\iVersionableDto.ts" />
     <TypeScriptCompile Include="Model\iSyncableDto.ts" />
