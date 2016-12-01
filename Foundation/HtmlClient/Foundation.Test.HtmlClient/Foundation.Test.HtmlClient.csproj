@@ -78,6 +78,7 @@
     <TypeScriptCompile Include="Implementations\Tests\validationTests.ts" />
     <TypeScriptCompile Include="test.fileDependencies.ts" />
     <TypeScriptCompile Include="test.objectDependencies.ts" />
+    <TypeScriptCompile Include="thirdPartyLibrariesTests\JayDataContextTests\complexTypeTests.ts" />
     <TypeScriptCompile Include="thirdPartyLibrariesTests\JayDataContextTests\crudTests.ts" />
     <TypeScriptCompile Include="thirdPartyLibrariesTests\JayDataContextTests\functionsAndActions.ts" />
     <TypeScriptCompile Include="thirdPartyLibrariesTests\JayDataContextTests\jayDataAndDtoSetControllerTests.ts" />
