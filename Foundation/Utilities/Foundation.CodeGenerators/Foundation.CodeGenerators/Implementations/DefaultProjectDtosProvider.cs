@@ -74,6 +74,19 @@ public class ISVClass
                 })
                 .ToList();
 
+            dtos.SelectMany(d => d.Properties)
+                .Where(p => p.Type.GetAttributes().Any(att => att.AttributeClass.Name == "ComplexTypeAttribute"))
+                .GroupBy(p => p.Type)
+                .ToList()
+                .ForEach(pGroup =>
+                {
+                    dtos.Add(new Dto
+                    {
+                        DtoSymbol = (INamedTypeSymbol)pGroup.Key,
+                        Properties = pGroup.Key.GetMembers().OfType<IPropertySymbol>().ToList()
+                    });
+                });
+
             return dtos;
         }
     }
