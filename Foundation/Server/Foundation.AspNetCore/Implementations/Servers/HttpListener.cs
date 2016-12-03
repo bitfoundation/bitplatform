@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Hosting;
+﻿using Foundation.AspNetCore.Implementations.Servers;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Hosting.Server.Features;
 using Microsoft.AspNetCore.Http.Features;
@@ -62,7 +62,10 @@ namespace Foundation.AspNetCore.Implementations.Servers
             _HttpListenerServer?.Dispose();
         }
     }
+}
 
+namespace Microsoft.AspNetCore.Hosting
+{
     public static class HttpListenerWebHostBuilderExtensions
     {
         public static IWebHostBuilder UseHttpListener(this IWebHostBuilder builder)
