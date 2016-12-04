@@ -124,15 +124,12 @@ namespace Foundation.VSPackage
 
         private void _buildEvents_OnBuildProjConfigDone(string project, string projectConfig, string platform, string solutionConfig, bool success)
         {
-            if (success)
-            {
-                Project proj = _workspace.CurrentSolution.Projects
-                    .Single(prj => prj.Language == "C#" && new FileInfo(prj.FilePath).Name == project.Split('\\').Last());
+            Project proj = _workspace.CurrentSolution.Projects
+                .Single(prj => prj.Language == "C#" && new FileInfo(prj.FilePath).Name == project.Split('\\').Last());
 
-                if (proj != null)
-                {
-                    _isBeingBuiltProjects.Add(proj);
-                }
+            if (proj != null)
+            {
+                _isBeingBuiltProjects.Add(proj);
             }
         }
 
