@@ -13,7 +13,7 @@ module Foundation.ViewModel.Implementations {
         public async getMetadata(): Promise<Contracts.AppMetadata> {
 
             if (this.appMetadata == null)
-                this.appMetadata = JSON.parse(await (await fetch(`Metadata/V${this.clientAppProfileManager.getClientAppProfile().version}`)).text());
+                this.appMetadata = (await (await fetch(`Metadata/V${this.clientAppProfileManager.getClientAppProfile().version}`, { credentials: 'include' })).json()) as any;
 
             return this.appMetadata;
         }
