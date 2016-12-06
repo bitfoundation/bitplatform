@@ -75,7 +75,7 @@ namespace Foundation.CodeGenerators.Implementations.HtmlClientProxyGenerator
                 IList<Project> involveableProjects = _solutionProjectsSelector.GetInvolveableProjects(worksapce, solution, solution.Projects.ToList(), proxyGeneratorMapping);
 
                 IList<Dto> dtos = involveableProjects
-                    .SelectMany(p => _dtosProvider.GetProjectDtos(p)).ToList();
+                    .SelectMany(p => _dtosProvider.GetProjectDtos(p, involveableProjects)).ToList();
 
                 IList<DtoController> controllers = involveableProjects
                     .SelectMany(p => _dtoControllersProvider.GetProjectDtoControllersWithTheirOperations(p)).ToList();

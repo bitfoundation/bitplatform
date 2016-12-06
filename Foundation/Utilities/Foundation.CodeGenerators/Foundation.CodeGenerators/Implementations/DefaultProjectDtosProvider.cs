@@ -50,10 +50,13 @@ public class ISVClass
 
         private static Lazy<IPropertySymbol> _isvPropertyForISyncableDtos;
 
-        public virtual IList<Dto> GetProjectDtos(Project project)
+        public virtual IList<Dto> GetProjectDtos(Project project, IList<Project> allSourceProjects = null)
         {
             if (project == null)
                 throw new ArgumentNullException(nameof(project));
+
+            if (allSourceProjects == null)
+                allSourceProjects = new List<Project> { project };
 
             IList<Dto> dtos = _projectDtoControllersProvider
                 .GetProjectDtoControllersWithTheirOperations(project)
@@ -74,9 +77,12 @@ public class ISVClass
                 })
                 .ToList();
 
+            List<Compilation> sourceProjectsCompilations = allSourceProjects.Select(p => p.GetCompilationAsync().Result).ToList();
+
             dtos.SelectMany(d => d.Properties)
                 .Where(p => p.Type.GetAttributes().Any(att => att.AttributeClass.Name == "ComplexTypeAttribute"))
                 .GroupBy(p => p.Type)
+                .Where(tGroup => sourceProjectsCompilations.Any(c => c.Assembly.TypeNames.Any(tName => tName == tGroup.Key.Name)))
                 .ToList()
                 .ForEach(pGroup =>
                 {

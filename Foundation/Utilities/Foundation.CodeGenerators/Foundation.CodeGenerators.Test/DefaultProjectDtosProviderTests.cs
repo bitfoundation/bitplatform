@@ -121,5 +121,68 @@ public class TestController : DtoController<TestDto>
 
             Assert.AreEqual(0, dtosProvider.GetProjectDtos(CreateProjectFromSourceCodes(sourceCodeOfDtoControllerWithActionAndParameter)).Single().Properties.Count);
         }
+
+        [TestMethod]
+        public virtual void DefaultDtosProviderShouldReturnComplexTypesOfSourceProjectsOnly()
+        {
+            string sourceProjectCodes = @"
+
+public interface IDto {
+
+}
+
+public class DtoController<TDto>
+    where TDto : IDto
+{
+
+}
+
+public class TestComplexController : DtoController<TestComplexDto>
+{
+
+}
+
+public class TestComplexDto : IDto
+{
+    public virtual int EntityId { get; set; }
+
+    public virtual ComplexObj ComplexObj { get; set; }
+
+    public virtual ComplexObj2 ComplexObj2 { get; set; }
+}
+
+[System.ComponentModel.DataAnnotations.Schema.ComplexType]
+public class ComplexObj
+{
+    public virtual string Name { get; set; }
+}";
+
+            string otherProjectCodes = @"
+
+namespace System.ComponentModel.DataAnnotations.Schema
+{
+    public class ComplexTypeAttribute : Attribute
+    {
+    }
+}
+
+[System.ComponentModel.DataAnnotations.Schema.ComplexType]
+public class ComplexObj2
+{
+    public virtual string Name { get; set; }
+}
+
+";
+
+            Project otherProject = CreateProjectFromSourceCodes(otherProjectCodes);
+            Project sourceProject = CreateProjectFromSourceCodesWithExistingSolution(otherProject.Solution, sourceProjectCodes);
+            sourceProject = sourceProject.AddProjectReference(new ProjectReference(otherProject.Id));
+
+            DefaultProjectDtosProvider dtosProvider = new DefaultProjectDtosProvider(new DefaultProjectDtoControllersProvider());
+
+            Dto[] dtos = dtosProvider.GetProjectDtos(sourceProject).ToArray();
+
+            Assert.IsTrue(dtos.Select(d => d.DtoSymbol.Name).SequenceEqual(new[] { "TestComplexDto", "ComplexObj" }));
+        }
     }
 }

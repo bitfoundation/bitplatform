@@ -6,6 +6,6 @@ namespace Foundation.CodeGenerators.Contracts
 {
     public interface IProjectDtosProvider
     {
-        IList<Dto> GetProjectDtos(Project project);
+        IList<Dto> GetProjectDtos(Project project, IList<Project> sourceProjects = null);
     }
 }

@@ -10,30 +10,36 @@ namespace Foundation.CodeGenerators.Test
 {
     public class CodeGeneratorTest
     {
-        public virtual Project CreateProjectFromSourceCodes(params string[] sourceCodes)
+        public virtual Project CreateProjectFromSourceCodesWithExistingSolution(Solution existingSolution, params string[] sourceCodes)
         {
             ProjectId projectId = ProjectId.CreateNewId(debugName: "TestProjectName");
 
-            Solution solution = new AdhocWorkspace()
-                .CurrentSolution
-                .AddProject(projectId, "TestProjectName", "TestProjectName", LanguageNames.CSharp);
+            existingSolution = existingSolution.AddProject(projectId, "TestProjectName", "TestProjectName", LanguageNames.CSharp);
 
             AppDomain.CurrentDomain.GetAssemblies()
                 .Where(asm => !asm.IsDynamic)
                 .ToList()
                 .ForEach(asm =>
                 {
-                    solution = solution.AddMetadataReference(projectId, MetadataReference.CreateFromFile(asm.Location));
+                    existingSolution = existingSolution.AddMetadataReference(projectId, MetadataReference.CreateFromFile(asm.Location));
                 });
 
             for (int i = 0; i < sourceCodes.Length; i++)
             {
                 DocumentId fileDocId = DocumentId.CreateNewId(projectId, debugName: $"File{i}.cs");
 
-                solution = solution.AddDocument(fileDocId, $"File{i}.cs", SourceText.From(sourceCodes[i]));
+                existingSolution = existingSolution.AddDocument(fileDocId, $"File{i}.cs", SourceText.From(sourceCodes[i]));
             }
 
-            return solution.GetProject(projectId);
+            return existingSolution.GetProject(projectId);
+        }
+
+        public virtual Project CreateProjectFromSourceCodes(params string[] sourceCodes)
+        {
+            Solution solution = new AdhocWorkspace()
+                .CurrentSolution;
+
+            return CreateProjectFromSourceCodesWithExistingSolution(solution, sourceCodes);
         }
 
         public virtual Workspace GetWorkspace()
