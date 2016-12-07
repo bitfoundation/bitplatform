@@ -93,7 +93,34 @@ public class ISVClass
                     });
                 });
 
-            return dtos;
+            dtos.ToList()
+                .ForEach(dto =>
+                {
+                    if (dto.DtoSymbol.BaseType.IsDto())
+                    {
+                        dto.BaseDtoSymbol = dto.DtoSymbol.BaseType;
+                    }
+                });
+
+            List<Dto> orderedDtos = new List<Dto>();
+
+            dtos.ToList()
+                .ForEach(dto =>
+                {
+                    int insertIndex = 0;
+
+                    var orderedDtosWithIndex = orderedDtos.Select((d, i) => new { Dto = d, Index = i }).ToList();
+
+                    foreach (var dWithIndex in orderedDtosWithIndex)
+                    {
+                        if (dto.BaseDtoSymbol == dWithIndex.Dto.DtoSymbol)
+                            insertIndex = dWithIndex.Index + 1;
+                    }
+
+                    orderedDtos.Insert(insertIndex, dto);
+                });
+
+            return orderedDtos;
         }
     }
 }
