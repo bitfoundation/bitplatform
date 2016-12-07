@@ -7,6 +7,15 @@ namespace Foundation.CodeGenerators.Model
     {
         public virtual INamedTypeSymbol DtoSymbol { get; set; }
 
+        public virtual INamedTypeSymbol BaseDtoSymbol { get; set; }
+
         public virtual IList<IPropertySymbol> Properties { get; set; }
+
+        public override string ToString()
+        {
+            if (DtoSymbol != null)
+                return DtoSymbol.Name;
+            return base.ToString();
+        }
     }
 }
