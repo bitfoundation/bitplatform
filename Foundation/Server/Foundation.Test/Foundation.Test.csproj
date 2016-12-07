@@ -544,6 +544,7 @@
   <ItemGroup>
     <Compile Include="Api\ApiControllers\ChildEntitiesController.cs" />
     <Compile Include="Api\ApiControllers\ParentEntitiesController.cs" />
+    <Compile Include="Api\ApiControllers\SampleBaseController.cs" />
     <Compile Include="Api\ApiControllers\SimpleApiController.cs" />
     <Compile Include="Api\ApiControllers\TestComplexController.cs" />
     <Compile Include="Api\ApiControllers\TestCustomersController.cs" />
@@ -573,6 +574,8 @@
     <Compile Include="Api\Middlewares\WebApi\Tests\BatchRequestsTests.cs" />
     <Compile Include="DataAccess\Implementations\TestEfEntityWithDefaultGuidKeyRepository.cs" />
     <Compile Include="DataAccess\Implementations\TestEfRepository.cs" />
+    <Compile Include="HtmlClient\ThirdPartyLibrariesTests\JayDataContextTests\InheritanceTests.cs" />
+    <Compile Include="Model\Dto\SampleBaseDto.cs" />
     <Compile Include="Model\Dto\TestComplexDto.cs" />
     <Compile Include="TestFakeItEasyLoadNothingBootstrapper.cs" />
     <Compile Include="HtmlClient\BrowserTests\Caching\HtmlClientCachingTests.cs" />

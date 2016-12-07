@@ -1,12 +1,13 @@
 ﻿using Foundation.Api.ApiControllers;
 using Foundation.DataAccess.Contracts;
+using Foundation.Model.Contracts;
 using Foundation.Test.Model.DomainModels;
 using Foundation.Test.Model.Dto;
 using System;
 
 namespace Foundation.Test.Api.ApiControllers
 {
-    public class TestCustomersController : DtoSetController<TestCustomer, TestCustomerDto, Guid>
+    public class TestCustomersController : DefaultDtoSetController<TestCustomer, TestCustomerDto>
     {
         protected TestCustomersController()
             : base()

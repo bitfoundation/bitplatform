@@ -24,7 +24,7 @@ namespace Foundation.CodeGenerators.Test
                 IList<Dto> dtos = dtosProvider.GetProjectDtos(solution.Projects.Single(p => p.Name == "Foundation.Model"))
                     .Union(dtosProvider.GetProjectDtos(solution.Projects.Single(p => p.Name == "Foundation.Api"))).ToList();
 
-                Assert.IsTrue(dtos.Select(d => d.DtoSymbol.Name).SequenceEqual(new[] { "ClientLogDto", "JobInfo", "UserSetting" }));
+                Assert.IsTrue(dtos.Select(d => d.DtoSymbol.Name).SequenceEqual(new[] { "UserSetting", "JobInfo", "ClientLogDto" }));
             }
         }
 
@@ -182,7 +182,116 @@ public class ComplexObj2
 
             Dto[] dtos = dtosProvider.GetProjectDtos(sourceProject).ToArray();
 
-            Assert.IsTrue(dtos.Select(d => d.DtoSymbol.Name).SequenceEqual(new[] { "TestComplexDto", "ComplexObj" }));
+            Assert.IsTrue(dtos.Select(d => d.DtoSymbol.Name).SequenceEqual(new[] { "ComplexObj", "TestComplexDto" }));
+        }
+
+        [TestMethod]
+        public virtual async Task DefaultDtosProviderShouldReturnDtosInOrdered()
+        {
+            const string sourceCodes = @"
+
+public interface IDto {
+}
+
+public class DtoController<TDto>
+    where TDto : IDto
+{
+
+}
+
+public class XDto : CityDto
+{
+    public CustomerDto Customer { get; set; }
+}
+
+public class PersonDto : IDto
+{
+    public int Id { get; set; }
+}
+
+public class CustomerDto : PersonDto
+{
+    public CityDto City { get; set; }
+}
+
+public class CityDto : IDto
+{
+    public int Id { get; set; }
+}
+
+public class PeopleController : DtoController<PersonDto>
+{
+}
+
+public class CustomersController : DtoController<CustomerDto>
+{
+}
+
+public class CitiesController : DtoController<CityDto>
+{
+}
+
+public class XController : DtoController<XDto>
+{
+}
+
+";
+
+            IProjectDtosProvider dtosProvider = new DefaultProjectDtosProvider(new DefaultProjectDtoControllersProvider());
+
+            IList<Dto> result = dtosProvider.GetProjectDtos(CreateProjectFromSourceCodes(sourceCodes));
+
+            Assert.IsTrue(result.Select(dto => dto.DtoSymbol.Name).SequenceEqual(new[] { "CityDto", "XDto", "PersonDto", "CustomerDto" }));
+        }
+
+        [TestMethod]
+        public virtual async Task DefaultDtosProviderShouldReturnDtosOfGenericDesign()
+        {
+            const string sourceCodes = @"
+
+public interface IDto {
+}
+
+public class DtoController<TDto>
+    where TDto : IDto
+{
+
+}
+
+public class PersonDto : IDto
+{
+    public int Id { get; set; }
+}
+
+public class CustomerDto : PersonDto
+{
+    
+}
+
+public class EmployeeDto : PersonDto
+{
+    
+}
+
+public class PeopleController<TPersonDto> : DtoController<TPersonDto>
+    where TPersonDto : PersonDto
+{
+}
+
+public class CustomersController : PeopleController<CustomerDto>
+{
+}
+
+public class EmployeesController : PeopleController<EmployeeDto>
+{
+}
+
+";
+            IProjectDtosProvider dtosProvider = new DefaultProjectDtosProvider(new DefaultProjectDtoControllersProvider());
+
+            IList<Dto> result = dtosProvider.GetProjectDtos(CreateProjectFromSourceCodes(sourceCodes));
+
+            Assert.IsTrue(result.Select(dto => dto.DtoSymbol.Name).SequenceEqual(new[] { "PersonDto", "EmployeeDto", "CustomerDto" }));
         }
     }
 }

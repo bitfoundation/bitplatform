@@ -27,6 +27,20 @@ namespace Foundation.CodeGenerators.Test
         }
 
         [TestMethod]
+        public virtual async Task DefaultProjectDtoControllersProviderShouldReturnODataControllersOfTestProjectAsDesired()
+        {
+            using (Workspace workspace = GetWorkspace())
+            {
+                Solution solution = workspace.CurrentSolution;
+
+                IList<DtoController> controllers = new DefaultProjectDtoControllersProvider()
+                    .GetProjectDtoControllersWithTheirOperations(solution.Projects.Single(p => p.Name == "Foundation.Test"));
+
+                Assert.AreEqual(8, controllers.Count);
+            }
+        }
+
+        [TestMethod]
         public virtual async Task DefaultProjectDtoControllersProviderShouldFindODataOperationParametersCorrectly()
         {
             const string sourceCodeOfDtoControllerWithActionAndParameter = @"
@@ -72,6 +86,12 @@ public interface IDto {
 }
 
 public class TestModel : IDto {
+}
+
+public class DtoController<TDto>
+    where TDto : IDto
+{
+
 }
 
 namespace Foundation.Test.Api.ApiControllers

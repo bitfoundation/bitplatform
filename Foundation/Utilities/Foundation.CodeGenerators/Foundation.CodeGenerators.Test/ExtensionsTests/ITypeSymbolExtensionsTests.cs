@@ -434,7 +434,7 @@ public class People3Controller : DtoController<Person3>
 
             Dto[] dtos = dtosProvider.GetProjectDtos(CreateProjectFromSourceCodes(dtoCode)).ToArray();
 
-            Assert.IsTrue(new string[] { "Person", "Person2", "Person3" }.SequenceEqual(dtos.Select(d => d.DtoSymbol.Name).ToArray()));
+            Assert.IsTrue(new string[] { "Person3", "Person2", "Person" }.SequenceEqual(dtos.Select(d => d.DtoSymbol.Name).ToArray()));
         }
     }
 }

@@ -411,6 +411,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ApiControllers\DefaultDtoSetController.cs" />
     <Compile Include="ApiControllers\DtoController.cs" />
     <Compile Include="ApiControllers\ClientsLogsController.cs" />
     <Compile Include="ApiControllers\DtoSetController.cs" />

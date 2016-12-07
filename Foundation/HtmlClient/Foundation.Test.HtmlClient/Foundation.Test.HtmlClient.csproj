@@ -81,6 +81,7 @@
     <TypeScriptCompile Include="thirdPartyLibrariesTests\JayDataContextTests\complexTypeTests.ts" />
     <TypeScriptCompile Include="thirdPartyLibrariesTests\JayDataContextTests\crudTests.ts" />
     <TypeScriptCompile Include="thirdPartyLibrariesTests\JayDataContextTests\functionsAndActions.ts" />
+    <TypeScriptCompile Include="thirdPartyLibrariesTests\JayDataContextTests\inheritanceTests.ts" />
     <TypeScriptCompile Include="thirdPartyLibrariesTests\JayDataContextTests\jayDataAndDtoSetControllerTests.ts" />
     <TypeScriptCompile Include="thirdPartyLibrariesTests\KendoDataSourceTests\testKendoDataSourceCreationFromJayData.ts" />
     <TypeScriptCompile Include="Implementations\Tests\loggerTests.ts" />
