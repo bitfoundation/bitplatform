@@ -24,6 +24,8 @@ namespace Foundation.CodeGenerators.Implementations
                 if (!doc.SupportsSemanticModel)
                     continue;
 
+                SemanticModel semanticModel = doc.GetSemanticModelAsync().Result;
+
                 SyntaxNode root = doc.GetSyntaxRootAsync(CancellationToken.None).Result;
 
                 List<ClassDeclarationSyntax> dtoControllersClassDecs = new List<ClassDeclarationSyntax>();
@@ -34,12 +36,21 @@ namespace Foundation.CodeGenerators.Implementations
                     if (classDeclarationSyntax.BaseList == null)
                         continue;
 
-                    bool isController = classDeclarationSyntax.Identifier.ValueText != "DtoSetController" && classDeclarationSyntax.BaseList.Types.OfType<SimpleBaseTypeSyntax>()
-                                        .Any(t =>
-                                        {
-                                            string baseName = (t.Type as GenericNameSyntax)?.Identifier.ValueText;
-                                            return baseName == "DtoController" || baseName == "DtoSetController";
-                                        });
+                    INamedTypeSymbol controllerSymbol = (INamedTypeSymbol)semanticModel.GetDeclaredSymbol(classDeclarationSyntax);
+
+                    INamedTypeSymbol type = controllerSymbol;
+
+                    bool isController = false;
+
+                    while (type != null)
+                    {
+                        isController = type.BaseType?.Name == "DtoController";
+
+                        if (isController == true)
+                            break;
+
+                        type = type.BaseType;
+                    }
 
                     if (isController == true)
                         dtoControllersClassDecs.Add(classDeclarationSyntax);
@@ -47,8 +58,6 @@ namespace Foundation.CodeGenerators.Implementations
 
                 if (!dtoControllersClassDecs.Any())
                     continue;
-
-                SemanticModel semanticModel = doc.GetSemanticModelAsync().Result;
 
                 foreach (ClassDeclarationSyntax dtoControllerClassDec in dtoControllersClassDecs)
                 {
@@ -59,10 +68,21 @@ namespace Foundation.CodeGenerators.Implementations
                         ControllerSymbol = controllerSymbol,
                         Name = controllerSymbol.Name.Replace("Controller", string.Empty),
                         Operations = new List<ODataOperation>(),
-                        ModelSymbol = controllerSymbol.BaseType.TypeArguments.Single(t => t.IsDto())
+                        ModelSymbol = controllerSymbol.BaseType.TypeArguments.SingleOrDefault(t => t.IsDto())
                     };
 
+                    if (dtoController.ModelSymbol != null && dtoController.ModelSymbol is ITypeParameterSymbol)
+                    {
+                        dtoController.ModelSymbol = ((ITypeParameterSymbol)dtoController.ModelSymbol).ConstraintTypes.SingleOrDefault(t => t.IsDto());
+                    }
+
+                    if (dtoController.ModelSymbol == null)
+                        continue;
+
                     dtoControllers.Add(dtoController);
+
+                    if (dtoController.ControllerSymbol.IsGenericType)
+                        continue;
 
                     foreach (MethodDeclarationSyntax methodDecSyntax in dtoControllerClassDec.DescendantNodes().OfType<MethodDeclarationSyntax>())
                     {
