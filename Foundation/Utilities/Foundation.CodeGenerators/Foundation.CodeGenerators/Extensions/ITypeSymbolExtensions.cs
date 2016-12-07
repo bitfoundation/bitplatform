@@ -185,7 +185,10 @@ namespace Microsoft.CodeAnalysis
             if (symbol == null)
                 throw new ArgumentNullException(nameof(symbol));
 
-            return IsDto(symbol.AllInterfaces);
+            if (symbol is ITypeParameterSymbol)
+                return ((ITypeParameterSymbol)symbol).ConstraintTypes.Any(t => t.IsDto());
+
+            return symbol.TypeKind == TypeKind.Class && IsDto(symbol.AllInterfaces);
         }
 
         private static bool IsDto(ImmutableArray<INamedTypeSymbol> typeInterfaces)
