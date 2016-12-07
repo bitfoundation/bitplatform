@@ -14,7 +14,7 @@
 	<# if(namepsaces.Count==1) { #> var  <#}#> <#= string.Join(".", namepsaces) #> = <#= string.Join(".", namepsaces) #> || {};
 <# } #>
 
-<#= dto.DtoSymbol.ToDisplayString() #> = $data.Entity.extend("<#= dto.DtoSymbol.ToDisplayString() #>", {
+<#= dto.DtoSymbol.ToDisplayString() #> = <#= dto.BaseDtoSymbol != null ? dto.BaseDtoSymbol.GetTypescriptTypeName(useArrayForIEnumerableTypes : true) : "$data.Entity" #>.extend("<#= dto.DtoSymbol.ToDisplayString() #>", {
 	<# foreach (IPropertySymbol prp in dto.Properties)
 	{ #> 
 		<#= prp.Name #>: {
