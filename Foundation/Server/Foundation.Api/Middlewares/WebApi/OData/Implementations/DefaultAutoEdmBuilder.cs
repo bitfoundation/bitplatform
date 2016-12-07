@@ -38,7 +38,7 @@ namespace Foundation.Api.Middlewares.WebApi.OData.Implementations
 
                     while (baseGenericType != null)
                     {
-                        if (baseGenericType == typeof(DtoController<>).GetTypeInfo() || baseGenericType == typeof(DtoSetController<,,>).GetTypeInfo())
+                        if (typeof(DtoController<>).GetTypeInfo().IsAssignableFrom(baseGenericType))
                             return true;
 
                         baseGenericType = (baseGenericType.BaseType?.GetTypeInfo()?.IsGenericType == true ? baseGenericType.BaseType?.GetTypeInfo()?.GetGenericTypeDefinition() : null)?.GetTypeInfo();
@@ -53,16 +53,25 @@ namespace Foundation.Api.Middlewares.WebApi.OData.Implementations
 
         public virtual void AutoBuildEdmFromTypes(IEnumerable<TypeInfo> controllers, ODataModelBuilder modelBuilder)
         {
-            foreach (TypeInfo controller in controllers)
+            var controllersWithDto = controllers
+                .Select(c => new
+                {
+                    DtoType = GetFinalDtoType(c.BaseType.GetGenericArguments().SingleOrDefault(t => IsDto(t.GetTypeInfo())).GetTypeInfo()),
+                    Controller = c
+                })
+                .Where(c => c.DtoType != null)
+                .ToList();
+
+            foreach (var controllerWithDto in controllersWithDto)
             {
-                TypeInfo dtoType = controller.BaseType.GetGenericArguments().Single(t => t.GetInterfaces().Any(i => i.Name == nameof(IDto))).GetTypeInfo();
-                _buildDto.MakeGenericMethod(dtoType).Invoke(this, new object[] { modelBuilder, controller });
+                _buildDto.MakeGenericMethod(controllerWithDto.DtoType).Invoke(this, new object[] { modelBuilder, controllerWithDto.Controller });
             }
 
-            foreach (TypeInfo controller in controllers)
+            foreach (var controllerWithDto in controllersWithDto)
             {
-                TypeInfo dtoType = controller.BaseType.GetGenericArguments().Single(t => t.GetInterfaces().Any(i => i.Name == nameof(IDto))).GetTypeInfo();
-                _buildControllerOperations.MakeGenericMethod(dtoType).Invoke(this, new object[] { modelBuilder, controller });
+                if (controllerWithDto.Controller.IsGenericType)
+                    continue;
+                _buildControllerOperations.MakeGenericMethod(controllerWithDto.DtoType).Invoke(this, new object[] { modelBuilder, controllerWithDto.Controller });
             }
         }
 
@@ -70,16 +79,17 @@ namespace Foundation.Api.Middlewares.WebApi.OData.Implementations
              where TDto : class
         {
             TypeInfo dtoType = typeof(TDto).GetTypeInfo();
-            string controllerName = apiController.Name.Replace("Controller", string.Empty);
+            string controllerName = GetControllerName(apiController);
             EntitySetConfiguration<TDto> entitySet = modelBuilder.EntitySet<TDto>(controllerName);
-            entitySet.EntityType.DerivesFromNothing();
+            if (GetBaseType(dtoType) == null)
+                entitySet.EntityType.DerivesFromNothing();
         }
 
         private void BuildControllerOperations<TDto>(ODataModelBuilder modelBuilder, TypeInfo apiController)
             where TDto : class
         {
             TypeInfo dtoType = typeof(TDto).GetTypeInfo();
-            string controllerName = apiController.Name.Replace("Controller", string.Empty);
+            string controllerName = GetControllerName(apiController);
             EntitySetConfiguration<TDto> entitySet = modelBuilder.EntitySet<TDto>(controllerName);
 
             foreach (MethodInfo method in apiController.GetMethods(BindingFlags.Instance | BindingFlags.Public | BindingFlags.DeclaredOnly))
@@ -149,8 +159,10 @@ namespace Foundation.Api.Middlewares.WebApi.OData.Implementations
                             isCollection = true;
                         }
 
-                        if (type.GetInterface(nameof(IDto)) != null)
+                        if (IsDto(type))
                         {
+                            type = GetFinalDtoType(type);
+
                             if (isCollection == true)
                             {
                                 if (isAction)
@@ -183,6 +195,42 @@ namespace Foundation.Api.Middlewares.WebApi.OData.Implementations
                     }
                 }
             }
+        }
+
+        public virtual bool IsDto(TypeInfo type)
+        {
+            return type.IsClass && type.GetInterface(nameof(IDto)) != null;
+        }
+
+        public virtual TypeInfo GetFinalDtoType(TypeInfo type)
+        {
+            if (type.IsGenericParameter && type.GetGenericParameterConstraints().Any())
+            {
+                Type finalDtoType = type.GetGenericParameterConstraints().SingleOrDefault(t => IsDto(t.GetTypeInfo()));
+                if (finalDtoType != null)
+                    return finalDtoType.GetTypeInfo();
+                return null;
+            }
+            else
+                return type;
+        }
+
+        public virtual TypeInfo GetBaseType(TypeInfo dtoType)
+        {
+            if (dtoType == null)
+                throw new ArgumentNullException(nameof(dtoType));
+
+            if (IsDto(dtoType.BaseType.GetTypeInfo()))
+                return dtoType.BaseType.GetTypeInfo();
+            else
+                return null;
+        }
+
+        public virtual string GetControllerName(TypeInfo type)
+        {
+            string name = type.Name;
+            int index = name.IndexOf('`');
+            return (index == -1 ? name : name.Substring(0, index)).Replace("Controller", string.Empty);
         }
     }
 }
