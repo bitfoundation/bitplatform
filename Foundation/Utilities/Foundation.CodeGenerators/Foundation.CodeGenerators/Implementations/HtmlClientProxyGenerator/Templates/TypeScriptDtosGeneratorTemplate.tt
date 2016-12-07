@@ -11,7 +11,7 @@
 
 declare module <#= dto.DtoSymbol.ContainingNamespace #> {
 	<#= dto.DtoSymbol.GetDocumentationSummary() #>
-	class <#= dto.DtoSymbol.Name #> extends $data.Entity {
+	class <#= dto.DtoSymbol.Name #> extends <#= dto.BaseDtoSymbol != null ? dto.BaseDtoSymbol.GetTypescriptTypeName(useArrayForIEnumerableTypes : true) : "$data.Entity" #> {
 		<# foreach (IPropertySymbol prp in dto.Properties)
 		{ #>
 		    <#= prp.GetDocumentationSummary() #>
