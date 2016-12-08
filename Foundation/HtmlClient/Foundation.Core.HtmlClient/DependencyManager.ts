@@ -23,7 +23,7 @@ module Foundation.Core {
     }
 
     export interface IFormViewModelDependency extends IComponentDependency {
-        
+
     }
 
     export interface IDirectiveDependency extends IDependency {
@@ -118,7 +118,12 @@ module Foundation.Core {
             if (!this.dependencyShouldBeConsidered(instanceDependency))
                 return;
 
-            let singletoneObjDep = this.singletoneObjectDependenciesInstances.find(d => d.objectDep.name.toLowerCase() == instanceDependency.name.toLowerCase());
+            let singletoneObjDep = null;
+
+            for (let d of this.singletoneObjectDependenciesInstances) {
+                if (d.objectDep.name.toLowerCase() == instanceDependency.name.toLowerCase())
+                    singletoneObjDep = d;
+            }
 
             if (singletoneObjDep != null && instanceDependency.overwriteExisting == true) {
                 singletoneObjDep.objectDepInstance = instanceDependency.instance;
