@@ -15,8 +15,8 @@
         }
 
         @ViewModel.Command()
-        public submitFirstPart(form: { validationSampleDtoForm: angular.INgModelController }): void {
-            let isValid = form.validationSampleDtoForm['$$parentForm'].isValid();
+        public submitFirstPart(form: ViewModel.Implementations.DtoFormController<Test.Model.Dto.ValidationSampleDto>): void {
+            let isValid = form.isValid();
         }
     }
 }

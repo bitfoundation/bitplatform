@@ -12,11 +12,11 @@
             this._model = value;
         }
 
-        public validateMember(memberName: string, newValue: any, oldValue: any): void {
+        public validateMember(memberName: keyof TDto, newValue: any, oldValue: any): void {
 
         }
 
-        public setMemberValidaty: (memberName: string, errorKey: string, isValid: boolean) => void;
+        public setMemberValidaty: (memberName: keyof TDto, errorKey: string, isValid: boolean) => void;
     }
 
 }

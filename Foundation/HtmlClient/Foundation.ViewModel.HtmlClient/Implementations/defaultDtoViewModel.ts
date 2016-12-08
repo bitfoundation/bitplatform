@@ -1,5 +1,15 @@
 ﻿module Foundation.ViewModel.Implementations {
 
+    export type DtoFormController<TDto extends Model.Contracts.IDto> = {
+        readonly[Prop in keyof TDto]: ng.INgModelController;
+    } & IDtoFormController<TDto>;
+
+    export interface IDtoFormController<TDto extends Model.Contracts.IDto> extends ng.IFormController {
+        isValid(): boolean;
+        editable(propName: keyof TDto, isEditable?: boolean): boolean;
+        visible(propName: keyof TDto, isVisible?: boolean): boolean;
+    }
+
     export class DefaultDtoViewModel<TDto extends Foundation.Model.Contracts.IDto, TRules extends DtoRules<TDto>> implements Contracts.IDtoViewModel {
 
         private _model: TDto;
@@ -22,13 +32,13 @@
             this._rules = value;
         }
 
-        private _form: any;
+        private _form: DtoFormController<TDto>;
 
-        public get form(): any {
+        public get form(): DtoFormController<TDto> {
             return this._form;
         }
 
-        public set form(value: any) {
+        public set form(value: DtoFormController<TDto>) {
             this._form = value;
         }
 

@@ -1,9 +1,4 @@
 ﻿declare module angular {
-    export interface IFormController {
-        isValid(): boolean;
-        editable(propName: string, isEditable?: boolean): boolean;
-        visible(propName: string, isVisible?: boolean): boolean;
-    }
 
     export interface Router {
         root: ng.Router;
