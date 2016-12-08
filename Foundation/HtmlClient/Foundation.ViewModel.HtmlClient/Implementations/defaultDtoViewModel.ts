@@ -1,13 +1,16 @@
 ﻿module Foundation.ViewModel.Implementations {
 
     export type DtoFormController<TDto extends Model.Contracts.IDto> = {
-        readonly[Prop in keyof TDto]: ng.INgModelController;
-    } & IDtoFormController<TDto>;
+        readonly[Prop in keyof TDto]: IDtoModelController;
+    } & IDtoFormController;
 
-    export interface IDtoFormController<TDto extends Model.Contracts.IDto> extends ng.IFormController {
+    export interface IDtoModelController extends ng.INgModelController {
+        editable: boolean;
+        visible: boolean;
+    }
+
+    export interface IDtoFormController extends ng.IFormController {
         isValid(): boolean;
-        editable(propName: keyof TDto, isEditable?: boolean): boolean;
-        visible(propName: keyof TDto, isVisible?: boolean): boolean;
     }
 
     export class DefaultDtoViewModel<TDto extends Foundation.Model.Contracts.IDto, TRules extends DtoRules<TDto>> implements Contracts.IDtoViewModel {

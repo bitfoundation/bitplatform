@@ -51,48 +51,6 @@
                                 return isValid;
                             };
 
-                            ctrl.$$parentForm.visible = (propName: string, isVisible?: boolean): boolean => {
-
-                                if (isVisible == null)
-                                    throw new Error("Return prop is visible or not is not implemented yet");
-
-                                let currentForm = element;
-                                let currentItem = angular.element(element).find(`[name='${propName}']`);
-                                let data = currentItem.data();
-                                if (data != null && data["handler"] != null && data["handler"].wrapper != null)
-                                    currentItem = data["handler"].wrapper;
-
-                                if (isVisible == true) {
-                                    currentItem.show();
-                                    currentItem.parents('md-input-container').show();
-                                }
-                                else {
-                                    currentItem.hide();
-                                    currentItem.parents('md-input-container').hide();
-                                }
-
-                                return true;
-                            };
-
-                            ctrl.$$parentForm.editable = (propName: string, isEditable?: boolean): boolean => {
-
-                                if (isEditable == null)
-                                    throw new Error("Return prop is editable or not is not implemented yet");
-
-                                let currentForm = element;
-                                let currentItem = angular.element(element).find(`[name='${propName}']`);
-                                let data = currentItem.data();
-                                if (data != null && data["handler"] != null && data["handler"].wrapper != null) {
-                                    currentItem = data["handler"].wrapper;
-                                    if (data["handler"]["readonly"] != null)
-                                        data["handler"]["readonly"](!isEditable);
-                                }
-
-                                currentItem.prop('readonly', !isEditable);
-
-                                return true;
-                            };
-
                             let propModelControllers = [];
 
                             for (let prp in ctrl.$$parentForm) {
@@ -104,6 +62,48 @@
                                     if (propDefenition != null && propDefenition.kind == 'property') {
 
                                         let propModelController = ctrl.$$parentForm[prp];
+
+                                        Object.defineProperty(propModelController, 'visible', {
+                                            configurable: true,
+                                            set: (isVisible: boolean) => {
+                                                let currentForm = element;
+                                                let currentItem = angular.element(element).find(`[name='${propDefenition.name}']`);
+                                                let data = currentItem.data();
+                                                if (data != null && data["handler"] != null && data["handler"].wrapper != null)
+                                                    currentItem = data["handler"].wrapper;
+
+                                                if (isVisible == true) {
+                                                    currentItem.show();
+                                                    currentItem.parents('md-input-container').show();
+                                                }
+                                                else {
+                                                    currentItem.hide();
+                                                    currentItem.parents('md-input-container').hide();
+                                                }
+                                            },
+                                            get: () => {
+                                                throw new Error("Return prop is visible or not is not implemented yet");
+                                            }
+                                        });
+
+                                        Object.defineProperty(propModelController, 'editable', {
+                                            configurable: true,
+                                            set: (isEditable: boolean) => {
+                                                let currentForm = element;
+                                                let currentItem = angular.element(element).find(`[name='${propDefenition.name}']`);
+                                                let data = currentItem.data();
+                                                if (data != null && data["handler"] != null && data["handler"].wrapper != null) {
+                                                    currentItem = data["handler"].wrapper;
+                                                    if (data["handler"]["readonly"] != null)
+                                                        data["handler"]["readonly"](!isEditable);
+                                                }
+
+                                                currentItem.prop('readonly', !isEditable);
+                                            },
+                                            get: () => {
+                                                throw new Error("Return prop is editable or not is not implemented yet");
+                                            }
+                                        });
 
                                         let original$setValidity = propModelController.$setValidity;
 
