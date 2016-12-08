@@ -1,0 +1,15 @@
+﻿{
+  "compileOnSave": true,
+  "compilerOptions": {
+    "allowUnreachableCode": true,
+    "declaration": true,
+    "emitDecoratorMetadata": false,
+    "experimentalDecorators": true,
+    "module": "none",
+    "outFile": "foundation.view.js",
+    "target": "es5",
+    "sourceMap": true,
+    "lib": [ "dom", "es2015" ]
+  },
+  "exclude": [ "foundation.view.d.ts", "node_modules", "bower_components", "bin", "obj" ]
+}

@@ -1,0 +1,15 @@
+﻿{
+  "compileOnSave": true,
+  "compilerOptions": {
+    "allowUnreachableCode": true,
+    "declaration": true,
+    "emitDecoratorMetadata": false,
+    "experimentalDecorators": true,
+    "module": "none",
+    "outFile": "foundation.test.core.js",
+    "target": "es5",
+    "sourceMap": true,
+    "lib": [ "dom", "es2015" ]
+  },
+  "exclude": [ "foundation.test.core.d.ts", "node_modules", "bower_components", "bin", "obj" ]
+}

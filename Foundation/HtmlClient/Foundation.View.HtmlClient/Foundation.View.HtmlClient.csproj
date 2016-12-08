@@ -109,50 +109,17 @@
     <Reference Include="System.Web.Extensions" />
     <Reference Include="System.Xml.Linq" />
   </ItemGroup>
+  <ItemGroup>
+    <Content Include="tsconfig.json" />
+  </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>
     <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>
   </PropertyGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|AnyCPU'">
-    <TypeScriptTarget>ES6</TypeScriptTarget>
-    <TypeScriptJSXEmit>None</TypeScriptJSXEmit>
-    <TypeScriptCompileOnSaveEnabled>True</TypeScriptCompileOnSaveEnabled>
-    <TypeScriptNoImplicitAny>False</TypeScriptNoImplicitAny>
-    <TypeScriptModuleKind>
-    </TypeScriptModuleKind>
-    <TypescriptuppressImplicitAnyIndexErrors>True</TypescriptuppressImplicitAnyIndexErrors>
-    <TypeScriptEmitDecoratorMetadata>False</TypeScriptEmitDecoratorMetadata>
-    <TypeScriptExperimentalDecorators>True</TypeScriptExperimentalDecorators>
-    <TypeScriptRemoveComments>True</TypeScriptRemoveComments>
-    <TypeScriptOutFile>foundation.view.js</TypeScriptOutFile>
-    <TypeScriptOutDir />
-    <TypeScriptGeneratesDeclarations>True</TypeScriptGeneratesDeclarations>
-    <TypeScriptNoEmitOnError>True</TypeScriptNoEmitOnError>
-    <TypeScriptSourceMap>True</TypeScriptSourceMap>
-    <TypeScriptNoResolve>False</TypeScriptNoResolve>
-    <TypeScriptMapRoot />
-    <TypeScriptSourceRoot />
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|AnyCPU'">
-    <TypeScriptTarget>ES6</TypeScriptTarget>
-    <TypeScriptJSXEmit>None</TypeScriptJSXEmit>
-    <TypeScriptCompileOnSaveEnabled>True</TypeScriptCompileOnSaveEnabled>
-    <TypeScriptNoImplicitAny>False</TypeScriptNoImplicitAny>
-    <TypeScriptModuleKind>
-    </TypeScriptModuleKind>
-    <TypescriptuppressImplicitAnyIndexErrors>True</TypescriptuppressImplicitAnyIndexErrors>
-    <TypeScriptEmitDecoratorMetadata>False</TypeScriptEmitDecoratorMetadata>
-    <TypeScriptExperimentalDecorators>True</TypeScriptExperimentalDecorators>
-    <TypeScriptRemoveComments>True</TypeScriptRemoveComments>
-    <TypeScriptOutFile>foundation.view.js</TypeScriptOutFile>
-    <TypeScriptOutDir />
-    <TypeScriptGeneratesDeclarations>True</TypeScriptGeneratesDeclarations>
-    <TypeScriptNoEmitOnError>True</TypeScriptNoEmitOnError>
-    <TypeScriptSourceMap>True</TypeScriptSourceMap>
-    <TypeScriptNoResolve>False</TypeScriptNoResolve>
-    <TypeScriptMapRoot />
-    <TypeScriptSourceRoot />
   </PropertyGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\TypeScript\Microsoft.TypeScript.targets" Condition="Exists('$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\TypeScript\Microsoft.TypeScript.targets')" />
   <Import Project="$(VSToolsPath)\WebApplications\Microsoft.WebApplication.targets" Condition="'$(VSToolsPath)' != ''" />
