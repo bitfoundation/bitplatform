@@ -69,10 +69,6 @@
     <TypeScriptCompile Include="testClient.ts" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="gulpfile.js" />
-    <Content Include="package.json" />
-  </ItemGroup>
-  <ItemGroup>
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="System.Web.ApplicationServices" />
     <Reference Include="System.Web.DynamicData" />

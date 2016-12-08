@@ -59,8 +59,6 @@
     <TypeScriptCompile Include="dependencyManager.ts" />
     <TypeScriptCompile Include="clientAppProfileManager.ts" />
     <TypeScriptCompile Include="Contracts\iClientAppProfile.ts" />
-    <Content Include="gulpfile.js" />
-    <Content Include="package.json" />
     <TypeScriptCompile Include="Model\iDto.ts" />
     <TypeScriptCompile Include="Model\iDtoWithDefaultGuidKey.ts" />
     <TypeScriptCompile Include="Model\iWithDefaultKey.ts" />

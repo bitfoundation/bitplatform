@@ -51,10 +51,6 @@
   </ItemGroup>
   <ItemGroup>
     <TypeScriptCompile Include="Contracts\iMath.ts" />
-    <Content Include="gulpfile.js" />
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="package.json" />
   </ItemGroup>
   <ItemGroup>
     <TypeScriptCompile Include="Contracts\iAngularConfiguration.ts" />

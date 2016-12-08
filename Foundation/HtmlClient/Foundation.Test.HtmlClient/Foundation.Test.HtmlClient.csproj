@@ -50,7 +50,6 @@
     <Service Include="{4A0DDDB5-7A95-4FBF-97CC-616D07737A77}" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="gulpfile.js" />
     <Content Include="views\tests\app.html" />
     <Content Include="views\tests\dateTimeServiceView.html" />
     <Content Include="views\tests\firstPartView.html" />
@@ -100,9 +99,6 @@
     <TypeScriptCompile Include="viewModels\tests\simpleViewModel.ts" />
     <TypeScriptCompile Include="viewModels\tests\angularServiceUsageViewModel.ts" />
     <TypeScriptCompile Include="views\directives\testDirective.ts" />
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="package.json" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Foundation.Core.HtmlClient\Foundation.Core.HtmlClient.csproj">
