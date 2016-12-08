@@ -10,7 +10,7 @@
                 link($scope: angular.IScope, element: JQuery, attributes: any, ctrl: any, ngModel) {
 
                     let defaultDtoViewModel: Foundation.ViewModel.Implementations.DefaultDtoViewModel<Foundation.Model.Contracts.IDto, ViewModel.Implementations.DtoRules<Model.Contracts.IDto>> = null;
-                    let dtoViewModel: Foundation.ViewModel.Contracts.IDtoViewModel = null;
+                    let dtoViewModel: Foundation.ViewModel.Contracts.IDtoViewModel<Foundation.Model.Contracts.IDto> = null;
                     let dtoRules: Foundation.ViewModel.Implementations.DtoRules<Foundation.Model.Contracts.IDto> = null;
 
                     let dependencyManager = Core.DependencyManager.getCurrent();

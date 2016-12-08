@@ -40,13 +40,13 @@
 
         @Foundation.Core.Log()
         public async syncContext(): Promise<void> {
-            await this.syncEntitySets(this.entitySetConfigs.map(entitySetConfig => { return entitySetConfig.entitySetName; }));
+            await this.syncEntitySets(this.entitySetConfigs.map(entitySetConfig => { return entitySetConfig.entitySetName as any; }));
         }
 
         @Foundation.Core.Log()
         public async syncEntitySet<TEntityContext extends $data.EntityContext>(entitySetName: keyof TEntityContext): Promise<void> {
 
-            await this.syncEntitySets([entitySetName]);
+            await this.syncEntitySets<TEntityContext>([entitySetName]);
 
         }
 
