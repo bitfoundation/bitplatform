@@ -70,8 +70,6 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="bower.json" />
-    <Content Include="gulpfile.js" />
-    <Content Include="package.json" />
   </ItemGroup>
   <ItemGroup>
     <TypeScriptCompile Include="identityServer.tests.fileDependencies.ts" />
