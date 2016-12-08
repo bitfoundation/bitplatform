@@ -44,13 +44,13 @@
         }
 
         @Foundation.Core.Log()
-        public async syncEntitySet(entitySetName: string): Promise<void> {
+        public async syncEntitySet<TEntityContext extends $data.EntityContext>(entitySetName: keyof TEntityContext): Promise<void> {
 
             await this.syncEntitySets([entitySetName]);
 
         }
 
-        public async syncEntitySets(entitySetNames: string[]): Promise<void> {
+        public async syncEntitySets<TEntityContext extends $data.EntityContext>(entitySetNames: Array<keyof TEntityContext>): Promise<void> {
 
             if (entitySetNames == null)
                 throw new Error('entitySetNames may not be null');

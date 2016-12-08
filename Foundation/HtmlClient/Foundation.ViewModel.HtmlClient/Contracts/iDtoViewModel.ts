@@ -1,10 +1,10 @@
 ﻿module Foundation.ViewModel.Contracts {
 
-    export interface IDtoViewModel {
+    export interface IDtoViewModel<TDto extends Model.Contracts.IDto> {
 
-        onMemberChanged(memberName: string, newValue: any, oldValue: any): Promise<void>;
+        onMemberChanged(memberName: keyof TDto, newValue: any, oldValue: any): Promise<void>;
 
-        onMemberChanging(memberName: string, newValue: any, oldValue: any): Promise<void>;
+        onMemberChanging(memberName: keyof TDto, newValue: any, oldValue: any): Promise<void>;
 
     }
 

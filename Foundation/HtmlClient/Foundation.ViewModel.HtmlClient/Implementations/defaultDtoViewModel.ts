@@ -13,7 +13,7 @@
         isValid(): boolean;
     }
 
-    export class DefaultDtoViewModel<TDto extends Foundation.Model.Contracts.IDto, TRules extends DtoRules<TDto>> implements Contracts.IDtoViewModel {
+    export class DefaultDtoViewModel<TDto extends Foundation.Model.Contracts.IDto, TRules extends DtoRules<TDto>> implements Contracts.IDtoViewModel<TDto> {
 
         private _model: TDto;
 
@@ -45,11 +45,11 @@
             this._form = value;
         }
 
-        public async onMemberChanged(memberName: string, newValue: any, oldValue: any): Promise<void> {
+        public async onMemberChanged(memberName: keyof TDto, newValue: any, oldValue: any): Promise<void> {
 
         }
 
-        public async onMemberChanging(memberName: string, newValue: any, oldValue: any): Promise<void> {
+        public async onMemberChanging(memberName: keyof TDto, newValue: any, oldValue: any): Promise<void> {
 
         }
 
