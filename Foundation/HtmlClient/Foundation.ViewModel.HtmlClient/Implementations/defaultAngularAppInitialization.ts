@@ -35,15 +35,15 @@ module Foundation.ViewModel.Implementations {
 
                 let original$routerCanActivate = vm.class.prototype.$routerCanActivate;
 
-                vm.class.prototype.$routerOnActivate = async function () {
+                vm.class.prototype.$routerOnActivate = async function (prev, next) {
 
-                    let canActivate = original$routerCanActivate == null || await original$routerCanActivate.apply(this, arguments);
+                    let canActivate = original$routerCanActivate == null || await original$routerCanActivate.call(this, [next, prev])
 
                     if (canActivate == false)
                         throw new Error("Can't activate view model");
 
                     if (original$routerOnActivate != null) {
-                        return await original$routerOnActivate.apply(this, arguments);
+                        return await original$routerOnActivate.call(this, [next, prev]);
                     }
                 };
 
