@@ -279,12 +279,12 @@
       <HintPath>..\..\..\packages\Newtonsoft.Json.9.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="NWebsec.Core">
-      <HintPath>..\..\..\packages\NWebsec.Core.1.5.0\lib\45\NWebsec.Core.dll</HintPath>
+    <Reference Include="NWebsec.Core, Version=1.6.0.0, Culture=neutral, PublicKeyToken=3613da5f958908a1, processorArchitecture=MSIL">
+      <HintPath>..\..\..\packages\NWebsec.Core.1.6.0\lib\45\NWebsec.Core.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="NWebsec.Owin">
-      <HintPath>..\..\..\packages\NWebsec.Owin.2.2.0\lib\45\NWebsec.Owin.dll</HintPath>
+    <Reference Include="NWebsec.Owin, Version=2.3.1.0, Culture=neutral, PublicKeyToken=3613da5f958908a1, processorArchitecture=MSIL">
+      <HintPath>..\..\..\packages\NWebsec.Owin.2.3.1\lib\45\NWebsec.Owin.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="Owin">
