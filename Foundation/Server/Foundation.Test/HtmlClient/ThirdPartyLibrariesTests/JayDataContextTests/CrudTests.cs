@@ -74,6 +74,28 @@ namespace Foundation.Test.HtmlClient.ThirdPartyLibrariesTests.JayDataContextTest
 
         [TestMethod]
         [TestCategory("HtmlClient"), TestCategory("JayDataContextOData")]
+        public virtual void SimpleArrayValuesTest()
+        {
+            using (TestEnvironment testEnvironment = new TestEnvironment(new TestEnvironmentArgs { UseRealServer = true }))
+            {
+                OAuthToken token = testEnvironment.Server.Login("ValidUserName", "ValidPassword");
+
+                using (RemoteWebDriver driver = testEnvironment.Server.GetWebDriver(new RemoteWebDriverOptions { Token = token }))
+                {
+                    driver.ExecuteTest("simpleArrayValuesTest");
+                }
+
+                TestComplexController controllerForSimpleValuesArray = TestDependencyManager.CurrentTestDependencyManager.Objects
+                    .OfType<TestComplexController>()
+                    .Single();
+
+                A.CallTo(() => controllerForSimpleValuesArray.GetValues(A<ODataActionParameters>.That.Matches(parameters => parameters.ContainsKey("values")), A<CancellationToken>.Ignored))
+                    .MustHaveHappened(Repeated.Exactly.Once);
+            }
+        }
+
+        [TestMethod]
+        [TestCategory("HtmlClient"), TestCategory("JayDataContextOData")]
         public virtual void TestComplexTypeWithOfflineDb()
         {
             using (TestEnvironment testEnvironment = new TestEnvironment(new TestEnvironmentArgs { UseRealServer = true }))

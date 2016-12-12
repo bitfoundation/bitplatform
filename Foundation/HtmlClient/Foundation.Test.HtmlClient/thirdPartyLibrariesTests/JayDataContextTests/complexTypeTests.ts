@@ -22,6 +22,8 @@
     complexDtoLoadedFromServer = await context.testComplex.doSomeThingWithComplexObj(complexDtoLoadedFromServer);
 
     expect(complexDtoLoadedFromServer.ComplexObj.Name).toBe("Test??");
+
+    expect((await context.testComplex.getComplexObjects().first()).Name).toBe("Test");
 };
 
 let testComplexTypeWithOfflineDb = async (): Promise<void> => {
@@ -48,4 +50,14 @@ let testComplexTypeWithOfflineDb = async (): Promise<void> => {
     complexDto = await readContext.testComplex.find(1);
 
     expect(complexDto.ComplexObj.Name).toBe("Test2");
+};
+
+let simpleArrayValuesTest = async (): Promise<void> => {
+
+    const contextProvider = Foundation.Core.DependencyManager.getCurrent().resolveObject<Foundation.ViewModel.Contracts.IEntityContextProvider>("EntityContextProvider");
+    const context = await contextProvider.getContext<TestContext>("Test");
+
+    let values = await context.testComplex.getValues([1, 2]).toArray();
+
+    expect(values.map(v => v)).toEqual([2, 1]);
 };

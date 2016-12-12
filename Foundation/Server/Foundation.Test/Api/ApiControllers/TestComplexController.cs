@@ -1,5 +1,6 @@
 ﻿using Foundation.Api.ApiControllers;
 using Foundation.Test.Model.Dto;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -65,6 +66,21 @@ namespace Foundation.Test.Api.ApiControllers
             complexDto.ComplexObj.Name += "?";
 
             return complexDto;
+        }
+
+        [Function]
+        public virtual async Task<ComplexObj2[]> GetComplexObjects()
+        {
+            return new[] { new ComplexObj2 { Name = "Test" } };
+        }
+
+        [Action]
+        [Parameter("values", typeof(IEnumerable<int>))]
+        public virtual async Task<int[]> GetValues(ODataActionParameters parameters, CancellationToken cancellationToken)
+        {
+            IEnumerable<int> values = (IEnumerable<int>)parameters["values"];
+
+            return values.Reverse().ToArray();
         }
     }
 }

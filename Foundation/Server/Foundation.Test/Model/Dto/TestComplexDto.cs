@@ -17,4 +17,10 @@ namespace Foundation.Test.Model.Dto
     {
         public virtual string Name { get; set; }
     }
+
+    [ComplexType]
+    public class ComplexObj2
+    {
+        public virtual string Name { get; set; }
+    }
 }
