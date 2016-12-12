@@ -22,7 +22,7 @@
 								"returnType": <# if(!operation.Method.ReturnType.IsVoid()) { #> "<#= operation.Method.ReturnType.GetEdmTypeName(useArrayForIEnumerableTypes:false) #>" <# } else { #> null <# } #>,
 								<# if (operation.Method.ReturnType.IsCollectionType() || operation.Method.ReturnType.IsQueryableType())
 								{
-									#> "elementType": "<#= ((INamedTypeSymbol)operation.Method.ReturnType).GetEdmElementTypeName() #>", 
+									#> "elementType": "<#= (operation.Method.ReturnType).GetEdmElementTypeName() #>", 
 								<# } #>
 									"params": [
 										<# foreach (ODataOperationParameter parameter in operation.Parameters)
@@ -30,7 +30,7 @@
 											{
 												"name": "<#= parameter.Name #>",
 												"type": "<#= parameter.Type.GetEdmTypeName(useArrayForIEnumerableTypes:true) #>",
-												<# if(parameter.Type.IsCollectionType()) { #> "elementType": "<#= ((INamedTypeSymbol)parameter.Type).GetEdmElementTypeName() #>" <# } #>
+												<# if(parameter.Type.IsCollectionType()) { #> "elementType": "<#= (parameter.Type).GetEdmElementTypeName() #>" <# } #>
 											},									
 										<# } #>
 									]

@@ -159,7 +159,7 @@ namespace Foundation.CodeGenerators.Implementations
 
         public override void VisitCatchDeclaration(CatchDeclarationSyntax node)
         {
-            INamedTypeSymbol exceptionSymbol = _semanticModel.GetSymbolInfo(node.Type).Symbol as INamedTypeSymbol;
+            ISymbol exceptionSymbol = _semanticModel.GetSymbolInfo(node.Type).Symbol;
 
             if (exceptionSymbol.ToString() != "System.Exception")
                 throw new NotSupportedException("Catch block for inherited exception types is not supported");

@@ -34,7 +34,7 @@ namespace Foundation.CSharpAnalyzers.System
 
             root = (IdentifierNameSyntax)context.Node;
 
-            INamedTypeSymbol dateSymbol = context.SemanticModel.GetSymbolInfo(root).Symbol as INamedTypeSymbol;
+            ISymbol dateSymbol = context.SemanticModel.GetSymbolInfo(root).Symbol;
 
             if (dateSymbol == null)
                 return;

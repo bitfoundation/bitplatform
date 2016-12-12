@@ -109,7 +109,7 @@ namespace Foundation.CodeGenerators.Implementations
                             .Select(parameterAttribute => new ODataOperationParameter
                             {
                                 Name = parameterAttribute.ConstructorArguments[0].Value.ToString(),
-                                Type = ((INamedTypeSymbol)parameterAttribute.ConstructorArguments[1].Value),
+                                Type = ((ITypeSymbol)parameterAttribute.ConstructorArguments[1].Value),
                                 IsOptional = parameterAttribute.ConstructorArguments.Count() == 3 && object.Equals(parameterAttribute.ConstructorArguments[2].Value, true)
                             }).ToList();
 
