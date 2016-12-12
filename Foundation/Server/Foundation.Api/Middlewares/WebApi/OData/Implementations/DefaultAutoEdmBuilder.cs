@@ -122,11 +122,17 @@ namespace Foundation.Api.Middlewares.WebApi.OData.Implementations
                         if (actionParameter.Type.GetTypeInfo() != typeof(string).GetTypeInfo() &&
                             typeof(IEnumerable).GetTypeInfo().IsAssignableFrom(actionParameter.Type.GetTypeInfo()))
                         {
-                            ParameterConfiguration parameter =
-                                (ParameterConfiguration)
-                                    _collectionParamterMethodInfo.MakeGenericMethod(
-                                        actionParameter.Type.GetGenericArguments().Single())
-                                        .Invoke(operationConfiguration, new object[] { actionParameter.Name });
+                            TypeInfo parameterType = actionParameter.Type.GetTypeInfo();
+
+                            if (parameterType.IsArray)
+                                throw new InvalidOperationException($"Use IEnumerable<{parameterType.GetElementType().GetTypeInfo().Name}> instead of {parameterType.GetElementType().GetTypeInfo().Name}[] for parameter {actionParameter.Name} of {actionParameter.Name} in {controllerName} controller");
+
+                            if (parameterType.IsGenericType)
+                                parameterType = parameterType.GetGenericArguments().Single().GetTypeInfo();
+
+                            ParameterConfiguration parameter = (ParameterConfiguration)_collectionParamterMethodInfo
+                                                                                            .MakeGenericMethod(parameterType)
+                                                                                            .Invoke(operationConfiguration, new object[] { actionParameter.Name });
 
                             parameter.OptionalParameter = actionParameter.IsOptional;
                         }
@@ -156,6 +162,8 @@ namespace Foundation.Api.Middlewares.WebApi.OData.Implementations
                         {
                             if (type.IsGenericType)
                                 type = type.GetGenericArguments().Single().GetTypeInfo();
+                            else if (type.IsArray)
+                                type = type.GetElementType().GetTypeInfo();
                             isCollection = true;
                         }
 
@@ -180,10 +188,21 @@ namespace Foundation.Api.Middlewares.WebApi.OData.Implementations
                         }
                         else
                         {
-                            if (isAction)
-                                ((ActionConfiguration)operationConfiguration).Returns(type);
-                            else if (isFunction)
-                                ((FunctionConfiguration)operationConfiguration).Returns(type);
+                            if (isCollection == false)
+                            {
+                                if (isAction)
+                                    ((ActionConfiguration)operationConfiguration).Returns(type);
+                                else if (isFunction)
+                                    ((FunctionConfiguration)operationConfiguration).Returns(type);
+                            }
+                            else
+                            {
+                                operationConfiguration.GetType()
+                                    .GetTypeInfo()
+                                    .GetMethod("ReturnsCollection")
+                                    .MakeGenericMethod(type)
+                                    .Invoke(operationConfiguration, new object[] { });
+                            }
                         }
                     }
                     else
