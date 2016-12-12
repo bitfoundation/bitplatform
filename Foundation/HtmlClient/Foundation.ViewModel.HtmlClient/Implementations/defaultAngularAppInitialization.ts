@@ -114,8 +114,8 @@ module Foundation.ViewModel.Implementations {
 
             app.config(['$compileProvider', ($compileProvider: ng.ICompileProvider) => {
                 $compileProvider.debugInfoEnabled(this.clientAppProfile.isDebugMode);
-                ($compileProvider as any).commentDirectivesEnabled(false);
-                ($compileProvider as any).cssClassDirectivesEnabled(false);
+                $compileProvider.commentDirectivesEnabled(false);
+                $compileProvider.cssClassDirectivesEnabled(false);
             }]);
 
             app.config(['$logProvider', ($logProvider: ng.ILogProvider) => {
