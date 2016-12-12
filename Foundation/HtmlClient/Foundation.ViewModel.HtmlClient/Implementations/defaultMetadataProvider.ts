@@ -12,8 +12,15 @@ module Foundation.ViewModel.Implementations {
         @Core.Log()
         public async getMetadata(): Promise<Contracts.AppMetadata> {
 
-            if (this.appMetadata == null)
-                this.appMetadata = (await (await fetch(`Metadata/V${this.clientAppProfileManager.getClientAppProfile().version}`, { credentials: 'include' })).json()) as any;
+            if (this.appMetadata == null) {
+                let response = await fetch(`Metadata/V${this.clientAppProfileManager.getClientAppProfile().version}`, { credentials: 'include' });
+                if (response.ok) {
+                    this.appMetadata = await response.json() as any;
+                }
+                else {
+                    throw new Error("Error retriving metadata");
+                }
+            }
 
             return this.appMetadata;
         }
