@@ -48,7 +48,7 @@ namespace Microsoft.CodeAnalysis
 
             type = type.GetUnderlyingTypeSymbol();
 
-            return type.Name != nameof(String) && (type.Name == "IEnumerable" || type.AllInterfaces.Any(i => i.Name == "IEnumerable"));
+            return type.Name != nameof(String) && ((type is IArrayTypeSymbol) || type.Name == "IEnumerable" || type.AllInterfaces.Any(i => i.Name == "IEnumerable"));
         }
 
         public static bool IsQueryableType(this ITypeSymbol type)
@@ -73,15 +73,12 @@ namespace Microsoft.CodeAnalysis
 
         /* useArrayForIEnumerableTypes >> For Dto props & method parameters >> True , for return values of methods >> False */
 
-        public static string GetEdmElementTypeName(this INamedTypeSymbol type)
+        public static string GetEdmElementTypeName(this ITypeSymbol type)
         {
             if (type == null)
                 throw new ArgumentNullException(nameof(type));
 
-            ITypeSymbol elementType = type.TypeArguments.Single();
-
-            if (elementType is INamedTypeSymbol && ((INamedTypeSymbol)elementType).TypeArguments.Any())
-                elementType = ((INamedTypeSymbol)elementType).TypeArguments.Single();
+            ITypeSymbol elementType = type.GetElementType();
 
             return elementType.GetEdmTypeName(useArrayForIEnumerableTypes: true);
         }
@@ -121,15 +118,12 @@ namespace Microsoft.CodeAnalysis
             }
         }
 
-        public static string GetTypeScriptElementTypeName(this INamedTypeSymbol type)
+        public static string GetTypeScriptElementTypeName(this ITypeSymbol type)
         {
             if (type == null)
                 throw new ArgumentNullException(nameof(type));
 
-            ITypeSymbol elementType = type.TypeArguments.Single();
-
-            if (elementType is INamedTypeSymbol && ((INamedTypeSymbol)elementType).TypeArguments.Any())
-                elementType = ((INamedTypeSymbol)elementType).TypeArguments.Single();
+            ITypeSymbol elementType = type.GetElementType();
 
             return elementType.GetTypescriptTypeName(useArrayForIEnumerableTypes: true);
         }
@@ -164,7 +158,7 @@ namespace Microsoft.CodeAnalysis
             else
             {
                 if (type.IsQueryableType() || type.IsCollectionType())
-                    return (useArrayForIEnumerableTypes ? "Array" : "$data.Queryable") + $"<{((INamedTypeSymbol)type).GetTypeScriptElementTypeName()}>";
+                    return (useArrayForIEnumerableTypes ? "Array" : "$data.Queryable") + $"<{type.GetTypeScriptElementTypeName()}>";
                 return type.ToDisplayString();
             }
         }
@@ -180,6 +174,31 @@ namespace Microsoft.CodeAnalysis
             return "null";
         }
 
+        public static ITypeSymbol GetUnderlyingComplexType(this ITypeSymbol symbol)
+        {
+            if (symbol == null)
+                throw new ArgumentNullException(nameof(symbol));
+
+            symbol = symbol.GetUnderlyingTypeSymbol();
+
+            if (symbol.IsCollectionType())
+            {
+                symbol = symbol.GetElementType();
+            }
+
+            return symbol;
+        }
+
+        public static bool IsComplexType(this ITypeSymbol symbol)
+        {
+            if (symbol == null)
+                throw new ArgumentNullException(nameof(symbol));
+
+            symbol = symbol.GetUnderlyingComplexType();
+
+            return symbol.GetAttributes().Any(att => att.AttributeClass.Name == "ComplexTypeAttribute");
+        }
+
         public static bool IsDto(this ITypeSymbol symbol)
         {
             if (symbol == null)
@@ -193,7 +212,7 @@ namespace Microsoft.CodeAnalysis
 
         private static bool IsDto(ImmutableArray<INamedTypeSymbol> typeInterfaces)
         {
-            foreach (INamedTypeSymbol tInterface in typeInterfaces)
+            foreach (ITypeSymbol tInterface in typeInterfaces)
             {
                 if (tInterface.Name == "IDto")
                     return true;
@@ -205,6 +224,25 @@ namespace Microsoft.CodeAnalysis
             }
 
             return false;
+        }
+
+        public static ITypeSymbol GetElementType(this ITypeSymbol type)
+        {
+            if (type == null)
+                throw new ArgumentNullException(nameof(type));
+
+            ITypeSymbol elementType = type.GetUnderlyingTypeSymbol();
+
+            if (!elementType.IsCollectionType())
+                throw new InvalidOperationException("type is not a collection type");
+
+            if (elementType is IArrayTypeSymbol)
+                return ((IArrayTypeSymbol)elementType).ElementType;
+
+            if (elementType is INamedTypeSymbol && ((INamedTypeSymbol)elementType).TypeArguments.Any())
+                elementType = ((INamedTypeSymbol)elementType).TypeArguments.Single();
+
+            return elementType;
         }
     }
 }
