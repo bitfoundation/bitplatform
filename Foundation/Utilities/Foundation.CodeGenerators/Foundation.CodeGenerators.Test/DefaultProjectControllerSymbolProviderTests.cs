@@ -94,6 +94,12 @@ public class DtoController<TDto>
 
 }
 
+[System.ComponentModel.DataAnnotations.Schema.ComplexType]
+public class ComplexObj3
+{
+    public virtual string Name { get; set; }
+}
+
 namespace Foundation.Test.Api.ApiControllers
 {
     public class TestController : DtoController<TestModel>
@@ -107,6 +113,17 @@ namespace Foundation.Test.Api.ApiControllers
         {
 
         }
+
+        [Action]
+        public virtual async System.Threading.Tasks.Task<int[]> Do1()
+        {
+        }
+
+        [Action]
+        [Parameter(""values"", typeof(int[]))]
+        public virtual async System.Threading.Tasks.Task<ComplexObj3[]> Do3()
+        {
+        }
     }
 }
 ";
@@ -115,13 +132,25 @@ namespace Foundation.Test.Api.ApiControllers
                     .GetProjectDtoControllersWithTheirOperations(CreateProjectFromSourceCodes(sourceCodeOfDtoControllerWithActionAndParameter));
 
             Assert.AreEqual(true, controllers.Single()
-                .Operations.Single()
+                .Operations.ElementAt(0)
                 .Parameters.First().IsOptional);
 
             Assert.IsTrue(controllers.Single()
-                .Operations.Single()
+                .Operations.ElementAt(0)
                 .Parameters.Skip(1)
                 .All(p => p.IsOptional == false));
+
+            Assert.AreEqual("Edm.Int32", controllers.Single()
+                .Operations.ElementAt(1)
+                .ReturnType.GetEdmElementTypeName());
+
+            Assert.AreEqual("ComplexObj3", controllers.Single()
+                .Operations.ElementAt(2)
+                .ReturnType.GetEdmElementTypeName());
+
+            Assert.AreEqual("Edm.Int32", controllers.Single()
+                .Operations.ElementAt(2)
+                .Parameters.Single().Type.GetEdmElementTypeName());
         }
     }
 }

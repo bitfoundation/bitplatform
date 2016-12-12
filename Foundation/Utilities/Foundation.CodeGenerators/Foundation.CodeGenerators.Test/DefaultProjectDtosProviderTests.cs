@@ -139,7 +139,11 @@ public class DtoController<TDto>
 
 public class TestComplexController : DtoController<TestComplexDto>
 {
-
+    [FunctionAttribute]
+    public System.Threading.Tasks.Task<ComplexObj3[]> GetComplexObjects()
+    {
+        return null;
+    }
 }
 
 public class TestComplexDto : IDto
@@ -155,7 +159,15 @@ public class TestComplexDto : IDto
 public class ComplexObj
 {
     public virtual string Name { get; set; }
-}";
+}
+
+[System.ComponentModel.DataAnnotations.Schema.ComplexType]
+public class ComplexObj3
+{
+    public virtual string Name { get; set; }
+}
+
+";
 
             string otherProjectCodes = @"
 
@@ -182,7 +194,7 @@ public class ComplexObj2
 
             Dto[] dtos = dtosProvider.GetProjectDtos(sourceProject).ToArray();
 
-            Assert.IsTrue(dtos.Select(d => d.DtoSymbol.Name).SequenceEqual(new[] { "ComplexObj", "TestComplexDto" }));
+            Assert.IsTrue(dtos.Select(d => d.DtoSymbol.Name).SequenceEqual(new[] { "ComplexObj3" , "ComplexObj", "TestComplexDto" }));
         }
 
         [TestMethod]

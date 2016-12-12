@@ -58,8 +58,10 @@ public class ISVClass
             if (allSourceProjects == null)
                 allSourceProjects = new List<Project> { project };
 
-            IList<Dto> dtos = _projectDtoControllersProvider
-                .GetProjectDtoControllersWithTheirOperations(project)
+            List<DtoController> dtoControllers = _projectDtoControllersProvider
+                .GetProjectDtoControllersWithTheirOperations(project).ToList();
+
+            IList<Dto> dtos = dtoControllers
                 .Select(dtoController =>
                 {
                     Dto dto = new Dto
@@ -80,16 +82,18 @@ public class ISVClass
             List<Compilation> sourceProjectsCompilations = allSourceProjects.Select(p => p.GetCompilationAsync().Result).ToList();
 
             dtos.SelectMany(d => d.Properties)
-                .Where(p => p.Type.GetAttributes().Any(att => att.AttributeClass.Name == "ComplexTypeAttribute"))
-                .GroupBy(p => p.Type)
-                .Where(tGroup => sourceProjectsCompilations.Any(c => c.Assembly.TypeNames.Any(tName => tName == tGroup.Key.Name)))
+                .Where(p => p.Type.IsComplexType())
+                .Select(p => p.Type.GetUnderlyingComplexType())
+                .Union(dtoControllers.SelectMany(dtoController => dtoController.Operations.SelectMany(operation => operation.Parameters.Select(p => p.Type).Union(new[] { operation.ReturnType }))).Where(t => t.IsComplexType()).Select(t => t.GetUnderlyingComplexType()))
+                .Where(complexType => sourceProjectsCompilations.Any(c => c.Assembly.TypeNames.Any(tName => tName == complexType.Name)))
+                .Distinct()
                 .ToList()
-                .ForEach(pGroup =>
+                .ForEach(complexType =>
                 {
                     dtos.Add(new Dto
                     {
-                        DtoSymbol = (INamedTypeSymbol)pGroup.Key,
-                        Properties = pGroup.Key.GetMembers().OfType<IPropertySymbol>().ToList()
+                        DtoSymbol = (INamedTypeSymbol)complexType,
+                        Properties = complexType.GetMembers().OfType<IPropertySymbol>().ToList()
                     });
                 });
 
