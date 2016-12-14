@@ -244,5 +244,13 @@ namespace Microsoft.CodeAnalysis
 
             return elementType;
         }
+
+        public static bool IsEnum(this ITypeSymbol symbol)
+        {
+            if (symbol == null)
+                throw new ArgumentNullException(nameof(symbol));
+
+            return symbol.GetUnderlyingTypeSymbol()?.BaseType?.Name == "Enum";
+        }
     }
 }
