@@ -36,7 +36,7 @@ namespace Foundation.CodeGenerators.Test
                 IList<DtoController> controllers = new DefaultProjectDtoControllersProvider()
                     .GetProjectDtoControllersWithTheirOperations(solution.Projects.Single(p => p.Name == "Foundation.Test"));
 
-                Assert.AreEqual(8, controllers.Count);
+                Assert.AreEqual(9, controllers.Count);
             }
         }
 

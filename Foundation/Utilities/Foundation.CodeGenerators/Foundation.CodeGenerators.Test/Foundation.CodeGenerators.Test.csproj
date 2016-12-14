@@ -205,6 +205,7 @@
   <ItemGroup>
     <Compile Include="CodeGeneratorTest.cs" />
     <Compile Include="DefaultProjectControllerSymbolProviderTests.cs" />
+    <Compile Include="DefaultProjectEnumTypesProviderTests.cs" />
     <Compile Include="ExtensionsTests\IPropertySymbolExtensionsTests.cs" />
     <Compile Include="ExtensionsTests\ISymbolExtensionsTests.cs" />
     <Compile Include="ExtensionsTests\ITypeSymbolExtensionsTests.cs" />
