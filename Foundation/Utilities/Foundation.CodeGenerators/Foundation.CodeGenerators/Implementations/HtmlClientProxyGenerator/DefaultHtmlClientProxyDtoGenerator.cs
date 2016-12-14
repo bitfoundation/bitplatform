@@ -8,7 +8,7 @@ namespace Foundation.CodeGenerators.Implementations.HtmlClientProxyGenerator
 {
     public class DefaultHtmlClientProxyDtoGenerator : IHtmlClientProxyDtosGenerator
     {
-        public virtual string GenerateTypeScriptDtos(IList<Dto> dtos, string typingsPath)
+        public virtual string GenerateTypeScriptDtos(IList<Dto> dtos, IList<EnumType> enumTypes, string typingsPath)
         {
             if (dtos == null)
                 throw new ArgumentNullException(nameof(dtos));
@@ -21,7 +21,8 @@ namespace Foundation.CodeGenerators.Implementations.HtmlClientProxyGenerator
                 Session = new Dictionary<string, object>
                 {
                     { "Dtos", dtos },
-                    { "TypingsPath" , typingsPath }
+                    { "EnumTypes" , enumTypes },
+                    { "TypingsPath" , typingsPath },
                 }
             };
 
@@ -30,7 +31,7 @@ namespace Foundation.CodeGenerators.Implementations.HtmlClientProxyGenerator
             return template.TransformText();
         }
 
-        public virtual string GenerateJavaScriptDtos(IList<Dto> dtos)
+        public virtual string GenerateJavaScriptDtos(IList<Dto> dtos, IList<EnumType> enumTypes)
         {
             if (dtos == null)
                 throw new ArgumentNullException(nameof(dtos));
@@ -39,7 +40,8 @@ namespace Foundation.CodeGenerators.Implementations.HtmlClientProxyGenerator
             {
                 Session = new Dictionary<string, object>
                 {
-                    { "Dtos", dtos }
+                    { "Dtos", dtos },
+                    { "EnumTypes" , enumTypes }
                 }
             };
 

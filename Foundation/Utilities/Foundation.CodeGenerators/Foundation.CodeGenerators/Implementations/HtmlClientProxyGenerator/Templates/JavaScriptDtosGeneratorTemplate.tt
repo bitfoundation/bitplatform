@@ -4,6 +4,7 @@
 <#@ import namespace="System.Collections.Generic" #>
 <#@ import namespace="System.Linq" #>
 <#@ parameter type="System.Collections.Generic.IList<Dto>" name="Dtos" #>
+<#@ parameter type="System.Collections.Generic.IList<EnumType>" name="EnumTypes" #>
 <# foreach (Dto dto in Dtos)
 {#>
 
@@ -39,4 +40,22 @@
 	},
 	<#}#>
 	});
+<#}#>
+
+<# foreach (EnumType enumType in EnumTypes)
+{#>
+
+<# List<string> namepsaces = new List<string>(); #>
+
+<# foreach (SymbolDisplayPart nsPart in enumType.EnumTypeSymbol.ContainingNamespace.ToDisplayParts().Where(n => n.Kind ==  SymbolDisplayPartKind.NamespaceName )) { #>
+	<# namepsaces.Add((nsPart.ToString())); #>
+	<# if(namepsaces.Count==1) { #> var  <#}#> <#= string.Join(".", namepsaces) #> = <#= string.Join(".", namepsaces) #> || {};
+<# } #>
+
+<#= enumType.EnumTypeSymbol.ToDisplayString() #> = $data.createEnum("<#= enumType.EnumTypeSymbol.ToDisplayString() #>", [
+	<# foreach (EnumMember enumMember in enumType.Members)
+	{ #> 
+		{ name : '<#= enumMember.Name #>' , value : <#= enumMember.Value #> },
+	<#}#>
+	]);
 <#}#>

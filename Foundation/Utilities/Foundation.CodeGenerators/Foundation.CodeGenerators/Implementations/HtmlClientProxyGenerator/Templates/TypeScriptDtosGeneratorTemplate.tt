@@ -4,6 +4,7 @@
 <#@ import namespace="System.Collections.Generic" #>
 <#@ import namespace="System.Linq" #>
 <#@ parameter type="System.Collections.Generic.IList<Dto>" name="Dtos" #>
+<#@ parameter type="System.Collections.Generic.IList<EnumType>" name="EnumTypes" #>
 <#@ parameter type="System.String" name="TypingsPath" #>
 /// <reference path="<#= TypingsPath #>" />
 <# foreach (Dto dto in Dtos)
@@ -16,6 +17,22 @@ declare module <#= dto.DtoSymbol.ContainingNamespace #> {
 		{ #>
 		    <#= prp.GetDocumentationSummary() #>
 			<#= prp.Name #> : <#= prp.Type.GetTypescriptTypeName(useArrayForIEnumerableTypes : true) #>;
+		<# } #>
+	}
+}
+
+<#}#>
+
+<# foreach (EnumType enumType in EnumTypes)
+{ #>
+
+declare module <#= enumType.EnumTypeSymbol.ContainingNamespace #> {
+	<#= enumType.EnumTypeSymbol.GetDocumentationSummary() #>
+	enum <#= enumType.EnumTypeSymbol.Name #> {
+		<# foreach (EnumMember enumMember in enumType.Members)
+		{ #>
+		    <#= enumMember.Symbol.GetDocumentationSummary() #>
+			<#= enumMember.Name #>,
 		<# } #>
 	}
 }

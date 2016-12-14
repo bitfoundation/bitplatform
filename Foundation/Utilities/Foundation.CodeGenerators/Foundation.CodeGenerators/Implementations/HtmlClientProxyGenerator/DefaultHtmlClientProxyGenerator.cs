@@ -15,11 +15,12 @@ namespace Foundation.CodeGenerators.Implementations.HtmlClientProxyGenerator
         private readonly IHtmlClientProxyGeneratorSolutionProjectsSelector _solutionProjectsSelector;
         private readonly IHtmlClientProxyGeneratorMappingsProvider _contextMappingsProvider;
         private readonly IProjectDtosProvider _dtosProvider;
+        private readonly IProjectEnumTypesProvider _enumTypesProvider;
         private readonly IProjectDtoControllersProvider _dtoControllersProvider;
         private readonly IHtmlClientProxyDtosGenerator _dtoGenerator;
         private readonly IHtmlClientContextGenerator _contextGenerator;
 
-        public DefaultHtmlClientProxyGenerator(IHtmlClientProxyGeneratorSolutionProjectsSelector solutionProjectsSelector, IHtmlClientProxyGeneratorMappingsProvider contextMappingsProvider, IProjectDtosProvider dtosProvider, IHtmlClientProxyDtosGenerator dtoGenerator, IHtmlClientContextGenerator contextGenerator, IProjectDtoControllersProvider dtoControllersProvider)
+        public DefaultHtmlClientProxyGenerator(IHtmlClientProxyGeneratorSolutionProjectsSelector solutionProjectsSelector, IHtmlClientProxyGeneratorMappingsProvider contextMappingsProvider, IProjectDtosProvider dtosProvider, IHtmlClientProxyDtosGenerator dtoGenerator, IHtmlClientContextGenerator contextGenerator, IProjectDtoControllersProvider dtoControllersProvider, IProjectEnumTypesProvider enumTypesProvider)
         {
             if (solutionProjectsSelector == null)
                 throw new ArgumentNullException(nameof(solutionProjectsSelector));
@@ -30,8 +31,11 @@ namespace Foundation.CodeGenerators.Implementations.HtmlClientProxyGenerator
             if (dtosProvider == null)
                 throw new ArgumentNullException(nameof(dtosProvider));
 
-            if (dtoGenerator == null)
-                throw new ArgumentNullException(nameof(dtoGenerator));
+            if (dtosProvider == null)
+                throw new ArgumentNullException(nameof(dtosProvider));
+
+            if (enumTypesProvider == null)
+                throw new ArgumentNullException(nameof(enumTypesProvider));
 
             if (contextGenerator == null)
                 throw new ArgumentNullException(nameof(contextGenerator));
@@ -45,6 +49,7 @@ namespace Foundation.CodeGenerators.Implementations.HtmlClientProxyGenerator
             _dtoGenerator = dtoGenerator;
             _contextGenerator = contextGenerator;
             _dtoControllersProvider = dtoControllersProvider;
+            _enumTypesProvider = enumTypesProvider;
         }
 
         public virtual void GenerateCodes(Workspace worksapce, Solution solution,
@@ -77,12 +82,15 @@ namespace Foundation.CodeGenerators.Implementations.HtmlClientProxyGenerator
                 IList<Dto> dtos = involveableProjects
                     .SelectMany(p => _dtosProvider.GetProjectDtos(p, involveableProjects)).ToList();
 
+                IList<EnumType> enumTypes = involveableProjects
+                    .SelectMany(p => _enumTypesProvider.GetProjectEnumTypes(p, involveableProjects)).ToList();
+
                 IList<DtoController> controllers = involveableProjects
                     .SelectMany(p => _dtoControllersProvider.GetProjectDtoControllersWithTheirOperations(p)).ToList();
 
-                generatedJs.AppendLine(_dtoGenerator.GenerateJavaScriptDtos(dtos));
+                generatedJs.AppendLine(_dtoGenerator.GenerateJavaScriptDtos(dtos, enumTypes));
                 generatedJs.AppendLine(_contextGenerator.GenerateJavaScriptContext(controllers, proxyGeneratorMapping));
-                generatedTs.AppendLine(_dtoGenerator.GenerateTypeScriptDtos(dtos, proxyGeneratorMapping.TypingsPath));
+                generatedTs.AppendLine(_dtoGenerator.GenerateTypeScriptDtos(dtos, enumTypes, proxyGeneratorMapping.TypingsPath));
                 generatedTs.AppendLine(_contextGenerator.GenerateTypeScriptContext(controllers, proxyGeneratorMapping));
 
                 WriteResults(solution, generatedJs.ToString(), generatedContextName, generatedJsContextExtension, destProject);
