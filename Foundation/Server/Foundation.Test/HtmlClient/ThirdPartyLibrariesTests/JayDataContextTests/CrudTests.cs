@@ -96,6 +96,35 @@ namespace Foundation.Test.HtmlClient.ThirdPartyLibrariesTests.JayDataContextTest
 
         [TestMethod]
         [TestCategory("HtmlClient"), TestCategory("JayDataContextOData")]
+        public virtual void EnumTest()
+        {
+            using (TestEnvironment testEnvironment = new TestEnvironment(new TestEnvironmentArgs { UseRealServer = true }))
+            {
+                OAuthToken token = testEnvironment.Server.Login("ValidUserName", "ValidPassword");
+
+                using (RemoteWebDriver driver = testEnvironment.Server.GetWebDriver(new RemoteWebDriverOptions { Token = token }))
+                {
+                    driver.ExecuteTest("enumTest");
+                }
+
+                DtoWithEnumController firstCallController = TestDependencyManager.CurrentTestDependencyManager.Objects
+                    .OfType<DtoWithEnumController>()
+                    .First();
+
+                DtoWithEnumController secondCallController = TestDependencyManager.CurrentTestDependencyManager.Objects
+                    .OfType<DtoWithEnumController>()
+                    .ElementAt(1);
+
+                A.CallTo(() => firstCallController.GetDtoWithEnumsByGender(TestGender.Man))
+                    .MustHaveHappened(Repeated.Exactly.Once);
+
+                A.CallTo(() => secondCallController.GetDtoWithEnumsByGender2(TestGender2.Man))
+                    .MustHaveHappened(Repeated.Exactly.Once);
+            }
+        }
+
+        [TestMethod]
+        [TestCategory("HtmlClient"), TestCategory("JayDataContextOData")]
         public virtual void TestComplexTypeWithOfflineDb()
         {
             using (TestEnvironment testEnvironment = new TestEnvironment(new TestEnvironmentArgs { UseRealServer = true }))

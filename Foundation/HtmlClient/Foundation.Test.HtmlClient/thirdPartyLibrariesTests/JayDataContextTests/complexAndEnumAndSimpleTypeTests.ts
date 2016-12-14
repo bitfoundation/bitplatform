@@ -61,3 +61,18 @@ let simpleArrayValuesTest = async (): Promise<void> => {
 
     expect(values.map(v => v)).toEqual([2, 1]);
 };
+
+let enumTest = async (): Promise<void> => {
+
+    const contextProvider = Foundation.Core.DependencyManager.getCurrent().resolveObject<Foundation.ViewModel.Contracts.IEntityContextProvider>("EntityContextProvider");
+    const context = await contextProvider.getContext<TestContext>("Test");
+
+    let dtoWithEnum = await context.dtoWithEnum.getDtoWithEnumsByGender(Foundation.Test.Model.Dto.TestGender.Man).first();
+
+    expect(dtoWithEnum.Gender).toBe(Foundation.Test.Model.Dto.TestGender.Man);
+
+    let dtoWithEnum2 = await context.dtoWithEnum.getDtoWithEnumsByGender2(Foundation.Test.Model.Dto.TestGender2.Man).first();
+
+    expect(dtoWithEnum2.Test).toBe("Man");
+
+};
