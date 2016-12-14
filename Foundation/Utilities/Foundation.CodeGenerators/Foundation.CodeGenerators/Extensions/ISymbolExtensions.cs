@@ -12,15 +12,29 @@ namespace Microsoft.CodeAnalysis
                 throw new ArgumentNullException(nameof(symbol));
 
             string docXml = symbol.GetDocumentationCommentXml();
+            string summary = null;
 
-            if (string.IsNullOrEmpty(docXml))
-                return string.Empty;
+            if (!string.IsNullOrEmpty(docXml))
+            {
+                XElement element = XElement.Parse(docXml);
 
-            XElement element = XElement.Parse(docXml);
+                summary = element.Descendants().SingleOrDefault(e => e.Name.LocalName == "summary")?.Value;
+            }
 
-            string summary = element.Descendants().SingleOrDefault(e => e.Name.LocalName == "summary")?.Value;
+            if (symbol is IFieldSymbol)
+            {
+                IFieldSymbol field = (IFieldSymbol)symbol;
+                if (field.HasConstantValue)
+                {
+                    if (summary == null)
+                        summary = string.Empty;
+                    else
+                        summary += Environment.NewLine;
+                    summary += $"Value: {field.ConstantValue}";
+                }
+            }
 
-            return summary != null ? "/**" + summary + "*/" : string.Empty;
+            return !string.IsNullOrEmpty(summary) ? "/**" + summary + "*/" : string.Empty;
         }
     }
 }
