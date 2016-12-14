@@ -16,6 +16,7 @@ using System;
 using System.IO;
 using EnvDTE80;
 using System.Diagnostics;
+using Foundation.CodeGenerators.Contracts;
 
 namespace Foundation.VSPackage
 {
@@ -150,9 +151,12 @@ namespace Foundation.VSPackage
                 {
                     Stopwatch watch = Stopwatch.StartNew();
 
+                    IProjectDtoControllersProvider controllersProvider = new DefaultProjectDtoControllersProvider();
+                    IProjectDtosProvider dtosProvider = new DefaultProjectDtosProvider(controllersProvider);
+
                     new DefaultHtmlClientProxyGenerator(new DefaultHtmlClientProxyGeneratorSolutionProjectsSelector(),
-                        new DefaultHtmlClientProxyGeneratorMappingsProvider(new DefaultFoundationVSPackageConfigurationProvider()),
-                        new DefaultProjectDtosProvider(new DefaultProjectDtoControllersProvider()), new DefaultHtmlClientProxyDtoGenerator(), new DefaultHtmlClientContextGenerator(), new DefaultProjectDtoControllersProvider())
+                        new DefaultHtmlClientProxyGeneratorMappingsProvider(new DefaultFoundationVSPackageConfigurationProvider()), dtosProvider
+                        , new DefaultHtmlClientProxyDtoGenerator(), new DefaultHtmlClientContextGenerator(), controllersProvider, new DefaultProjectEnumTypesProvider(controllersProvider, dtosProvider))
                             .GenerateCodes(_workspace, solution, _isBeingBuiltProjects);
 
                     watch.Stop();

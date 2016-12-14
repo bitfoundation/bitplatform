@@ -208,6 +208,7 @@
     <Compile Include="Contracts\IProjectDtoRulesProvider.cs" />
     <Compile Include="Contracts\IProjectDtoControllersProvider.cs" />
     <Compile Include="Contracts\IProjectDtosProvider.cs" />
+    <Compile Include="Contracts\IProjectEnumTypesProvider.cs" />
     <Compile Include="Extensions\IPropertySymbolExtensions.cs" />
     <Compile Include="Extensions\ISymbolExtensions.cs" />
     <Compile Include="Extensions\ITypeSymbolExtensions.cs" />
@@ -215,6 +216,7 @@
     <Compile Include="Implementations\DefaultDtoRulesValidator.cs" />
     <Compile Include="Implementations\DefaultProjectDtoRulesProvider.cs" />
     <Compile Include="Implementations\DefaultProjectDtoControllersProvider.cs" />
+    <Compile Include="Implementations\DefaultProjectEnumTypesProvider.cs" />
     <Compile Include="Implementations\HtmlClientProxyGenerator\DefaultHtmlClientContextGenerator.cs" />
     <Compile Include="Implementations\HtmlClientProxyGenerator\DefaultHtmlClientProxyCleaner.cs" />
     <Compile Include="Implementations\HtmlClientProxyGenerator\DefaultHtmlClientProxyGeneratorMappingsProvider.cs" />
@@ -247,6 +249,7 @@
     </Compile>
     <Compile Include="Model\Dto.cs" />
     <Compile Include="Model\DtoRules.cs" />
+    <Compile Include="Model\EnumType.cs" />
     <Compile Include="Model\FoundationVSPackageConfiguration.cs" />
     <Compile Include="Contracts\IFoundationVSPackageConfigurationProvider.cs" />
     <Compile Include="Model\NamespaceAlias.cs" />
