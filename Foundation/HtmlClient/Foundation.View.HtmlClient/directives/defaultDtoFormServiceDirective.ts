@@ -17,6 +17,7 @@
 
                     let $timeout = dependencyManager.resolveObject<angular.ITimeoutService>("$timeout");
                     let $parse = dependencyManager.resolveObject<angular.IParseService>("$parse");
+                    let dateTimeService = dependencyManager.resolveObject<Foundation.ViewModel.Contracts.IDateTimeService>("DateTimeService");
                     const clientAppProfile = dependencyManager.resolveObject<Core.ClientAppProfileManager>("ClientAppProfileManager").getClientAppProfile();
 
                     $timeout(() => {
@@ -128,7 +129,7 @@
                                         if (propDefenition.dataType == "Edm.DateTimeOffset" || propDefenition.dataType == $data['DateTimeOffset']) {
                                             propModelController.$parsers.push((viewValue) => {
                                                 if (viewValue != null && !(viewValue instanceof Date)) {
-                                                    viewValue = kendo.parseDate(viewValue);
+                                                    viewValue = dateTimeService.parseDate(viewValue);
                                                 }
                                                 return viewValue;
                                             });
