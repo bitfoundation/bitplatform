@@ -4,6 +4,38 @@ module Foundation.ViewModel.Implementations {
         @Core.Log()
         public async onAppStartup(): Promise<void> {
 
+            function flattenGroups(data) {
+
+                let idx, result = [], length, items, itemIndex;
+
+                for (idx = 0, length = data.length; idx < length; idx++) {
+                    let group = data[idx] /* instead of data.at(idx) */;
+                    if (group.hasSubgroups) {
+                        result = result.concat(flattenGroups(group.items));
+                    } else {
+                        items = group.items;
+                        for (itemIndex = 0; itemIndex < items.length; itemIndex++) {
+                            result.push(items[itemIndex] /* instead of items.at(itemIndex) */);
+                        }
+                    }
+                }
+
+                return result;
+
+            }
+
+            kendo.data.DataSource.prototype['flatView'] = function () {
+
+                let groups = this.group() || [];
+
+                if (groups.length) {
+                    return flattenGroups(this._view);
+                } else {
+                    return this._view;
+                }
+
+            }
+
             let originalParseDate = kendo.parseDate;
 
             kendo.parseDate = function (value: string, format?: string, culture?: string): Date {
