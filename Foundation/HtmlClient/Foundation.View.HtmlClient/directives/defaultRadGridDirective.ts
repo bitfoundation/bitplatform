@@ -13,6 +13,7 @@ module Foundation.View.Directives {
         public static filterable = true;
         public static columnMenu = true;
         public static pageable = true;
+        public static groupable = false;
 
         public getDirectiveFactory(): angular.IDirectiveFactory {
             return () => ({
@@ -117,7 +118,7 @@ module Foundation.View.Directives {
 
                                 $scope[attributes['isolatedOptionsKey'] + "Cancel"] = ($event) => {
                                     let uid = angular.element($event.target).parents('.k-popup-edit-form').attr('data-uid');
-                                    grid.trigger('cancel', { container: angular.element($event.target).parents('.k-window'), sender: grid, model: grid.dataSource.view().find(i => i['uid'] == uid) });
+                                    grid.trigger('cancel', { container: angular.element($event.target).parents('.k-window'), sender: grid, model: grid.dataSource.flatView().find(i => i['uid'] == uid) });
                                     grid.cancelRow();
                                 };
 
@@ -135,7 +136,7 @@ module Foundation.View.Directives {
                                         let current = null;
 
                                         let itemBeingInserted = grid.dataSource
-                                            .view().find(i => i['isNew']() == true);
+                                            .flatView().find(i => i['isNew']() == true);
 
                                         if (itemBeingInserted != null)
                                             current = itemBeingInserted.innerInstance != null ? itemBeingInserted.innerInstance() : itemBeingInserted;
@@ -229,7 +230,8 @@ module Foundation.View.Directives {
                                 mobile: DefaultRadGridDirective.mobile,
                                 filterable: DefaultRadGridDirective.filterable,
                                 columnMenu: DefaultRadGridDirective.columnMenu,
-                                pageable: DefaultRadGridDirective.pageable
+                                pageable: DefaultRadGridDirective.pageable,
+                                groupable: attributes.groupable == true || DefaultRadGridDirective.groupable
                             };
 
                             if (attributes['toolbarTemplateId'] != null) {
