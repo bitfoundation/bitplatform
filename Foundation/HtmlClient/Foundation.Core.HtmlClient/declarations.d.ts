@@ -17,6 +17,7 @@ declare module kendo {
             innerInstance(): $data.Entity;
         }
         export interface DataSource extends Observable {
+            flatView(): kendo.data.ObservableArray;
             dataView<TEntity>(): Array<TEntity>;
             onCurrentChanged(action?): void;
             asChildOf(parentDataSource: kendo.data.DataSource, childKeys: string[], parentKeys: string[]);
