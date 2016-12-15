@@ -79,6 +79,8 @@ module Foundation.View.Directives {
 
                     let $parse = dependencyManager.resolveObject<angular.IParseService>("$parse");
 
+                    let clientAppProfileManager = dependencyManager.resolveObject<Foundation.Core.ClientAppProfileManager>("ClientAppProfileManager");
+
                     $timeout(() => {
 
                         let watchForDatasourceToCreateDataGridWidgetUnRegisterHandler = $scope.$watch(attributes.radDatasource, (datasource: kendo.data.DataSource) => {
@@ -268,6 +270,49 @@ module Foundation.View.Directives {
                                         };
 
                                         if (DefaultRadGridDirective.filterable == true) {
+
+                                            let field = datasource.options.schema.model.fields[gridColumn.field];
+
+                                            if (field.type == "date") {
+
+                                                let currentCulture = clientAppProfileManager.getClientAppProfile().culture;
+
+                                                if (currentCulture == 'FaIr') {
+
+                                                    gridColumn.filterable = {
+
+                                                        ui: (element: JQuery) => {
+
+                                                            let dateTimePickerScope: ng.IScope & { isDateTime: boolean, ngModel?: Date } = angular.extend($scope.$new(true, $scope), {
+                                                                isDateTime: field.dateType == "DateTime"
+                                                            });
+
+                                                            let $html = `<persian-date-picker ng-model="date" is-date-time='isDateTime' ></persian-date-picker>`;
+
+                                                            let $element = $compile($html)(dateTimePickerScope);
+
+                                                            element.after($element);
+
+                                                            $element.find('#alt').on('change', (e) => {
+                                                                element[0].kendoBindingTarget.source.filters[Number(element.data().bind.replace(/(^.*\[|\].*$)/g, ''))].value = new Date($(e.target).val());
+                                                            });
+
+                                                            element.hide();
+                                                        }
+
+                                                    }
+
+                                                }
+                                                else {
+                                                    if (field.dateType == "DateTime") {
+                                                        gridColumn.filterable = {
+                                                            ui: (element: JQuery) => {
+                                                                element.kendoDateTimePicker();
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            }
 
                                             let filterDataSourceAttributeValue = wrappedItem.attr('filter-data-source');
 
