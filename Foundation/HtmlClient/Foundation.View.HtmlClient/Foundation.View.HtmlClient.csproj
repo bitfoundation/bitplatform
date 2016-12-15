@@ -62,6 +62,7 @@
     <TypeScriptCompile Include="directives\defaultRadTreeViewDirective.ts" />
     <TypeScriptCompile Include="directives\defaultRadGridRowDirective.ts" />
     <Content Include="gulpfile.js" />
+    <TypeScriptCompile Include="directives\persianDatePicker.ts" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="contents\styles\theme.common.less" />
