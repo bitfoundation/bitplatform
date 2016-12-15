@@ -26,9 +26,11 @@ namespace Foundation.Api.Middlewares.WebApi.OData.ActionFilters
 
                 const string isoDateRegExp = "(\\d{4}-[01]\\d-[0-3]\\dT[0-2]\\d:[0-5]\\d:[0-5]\\d\\.\\d+([+-][0-2]\\d:[0-5]\\d|Z))|(\\d{4}-[01]\\d-[0-3]\\dT[0-2]\\d:[0-5]\\d:[0-5]\\d([+-][0-2]\\d:[0-5]\\d|Z))|(\\d{4}-[01]\\d-[0-3]\\dT[0-2]\\d:[0-5]\\d([+-][0-2]\\d:[0-5]\\d|Z))";
 
-                urlAsTextToFix = Regex.Replace(urlAsTextToFix, "datetime\'(.*?)\'", (match) =>
+                urlAsTextToFix = Regex.Replace(urlAsTextToFix, "\'date\"(.*?)\"\'", (match) =>
                 {
-                    return Regex.Replace(match.Value, isoDateRegExp, (innerMatch) =>
+                    string result = null;
+
+                    Regex.Replace(match.Value, isoDateRegExp, (innerMatch) =>
                     {
                         DateTimeOffset baseDate = DateTimeOffset.Parse(innerMatch.Value);
 
@@ -36,9 +38,13 @@ namespace Foundation.Api.Middlewares.WebApi.OData.ActionFilters
 
                         date = timeZoneManager.MapFromClientToServer(date);
 
-                        return date.ToString("yyyy-MM-dd");
+                        result = date.ToString("yyyy-MM-dd");
+
+                        return result;
 
                     }, RegexOptions.Compiled | RegexOptions.CultureInvariant | RegexOptions.IgnoreCase);
+
+                    return result;
 
                 }, RegexOptions.Compiled | RegexOptions.CultureInvariant | RegexOptions.IgnoreCase);
 
