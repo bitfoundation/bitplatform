@@ -43,7 +43,34 @@ module Foundation.ViewModel.Implementations {
 
             kendo.data.DataSource.prototype.asChildOf = function (parentDataSource, childKeys, parentKeys) {
 
+                if (parentDataSource == null)
+                    throw new Error("parentDataSource is null");
+
+                if (childKeys == null || childKeys.length == 0) {
+                    throw new Error('childs keys is null or empty');
+                }
+
+                if (parentKeys == null || parentKeys.length == 0) {
+                    throw new Error('parent keys is null or empty');
+                }
+
+                if (childKeys.length != parentKeys.length) {
+                    throw new Error("Child keys and parent keys must have the same length");
+                }
+
                 let childDataSource: kendo.data.DataSource = this;
+
+                for (let key of childKeys) {
+                    if (childDataSource.options.schema.model.fields[key] == null) {
+                        throw new Error(`child data source schema has no property named ${key}`);
+                    }
+                }
+
+                for (let key of parentKeys) {
+                    if (parentDataSource.options.schema.model.fields[key] == null) {
+                        throw new Error(`parent data source schema has no property named ${key}`);
+                    }
+                }
 
                 parentDataSource.onCurrentChanged(async () => {
 
