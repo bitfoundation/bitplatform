@@ -24,7 +24,7 @@ module Foundation.ViewModel.Implementations {
 
             }
 
-            kendo.data.DataSource.prototype['flatView'] = function () {
+            kendo.data.DataSource.prototype.flatView = function () {
 
                 let groups = this.group() || [];
 
@@ -49,7 +49,7 @@ module Foundation.ViewModel.Implementations {
 
             kendo.data.DataSource.prototype.dataView = function () {
                 return (this as kendo.data.DataSource)
-                    .view()
+                    .flatView()
                     .map(vi => {
                         let viItem = (vi as any);
                         return viItem.innerInstance != null ? viItem.innerInstance() : viItem;

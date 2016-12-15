@@ -191,7 +191,7 @@ module Foundation.View.Directives {
 
                             const comboOptions: kendo.ui.ComboBoxOptions = {
                                 dataSource: dataSource,
-                                autoBind: dataSource.view().length != 0 || (attributes.radText == null ? true : false),
+                                autoBind: dataSource.flatView().length != 0 || (attributes.radText == null ? true : false),
                                 dataTextField: attributes.radTextFieldName,
                                 dataValueField: radValueFieldName,
                                 filter: "contains",
@@ -206,7 +206,7 @@ module Foundation.View.Directives {
                                 open: (e) => {
                                     if (e.sender.options.autoBind == false && attributes.radText != null) {
                                         e.sender.options.autoBind = true;
-                                        if (e.sender.options.dataSource.view().length == 0)
+                                        if (e.sender.options.dataSource.flatView().length == 0)
                                             (e.sender.options.dataSource as kendo.data.DataSource).fetch();
                                     }
                                 },
