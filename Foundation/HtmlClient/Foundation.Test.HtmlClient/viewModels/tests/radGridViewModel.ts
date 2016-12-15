@@ -7,11 +7,13 @@
         }
 
         public parentEntitiesDataSource: kendo.data.DataSource = null;
+        public parentEntitiesDataSourceForFilter: kendo.data.DataSource = null;
 
         @Foundation.ViewModel.Command()
         public async $onInit(): Promise<void> {
             const context = await this.entityContextProvider.getContext<TestContext>("Test");
             this.parentEntitiesDataSource = context.parentEntities.asKendoDataSource({ pageSize: 5 });
+            this.parentEntitiesDataSourceForFilter = context.parentEntities.asKendoDataSource();
         }
 
         @Foundation.ViewModel.Command()

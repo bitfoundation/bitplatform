@@ -281,15 +281,25 @@ module Foundation.View.Directives {
                                                 gridColumn.filterable = {
                                                     ui: (element: JQuery) => {
                                                         element.kendoComboBox({
-                                                            autoBind: true,
+                                                            autoBind: filterDataSource.flatView().length != 0,
+                                                            open: (e) => {
+                                                                if (e.sender.options.autoBind == false) {
+                                                                    e.sender.options.autoBind = true;
+                                                                    if (e.sender.options.dataSource.flatView().length == 0)
+                                                                        (e.sender.options.dataSource as kendo.data.DataSource).fetch();
+                                                                }
+                                                            },
                                                             valuePrimitive: true,
                                                             dataSource: filterDataSource,
                                                             dataTextField: filterTextFieldName,
-                                                            dataValueField: filterValueFieldName || datasource.options.schema.model.idField,
-                                                            delay: 250,
+                                                            dataValueField: filterValueFieldName || filterDataSource.options.schema.model.idField,
+                                                            delay: 300,
                                                             ignoreCase: true,
                                                             minLength: 3,
-                                                            placeholder: '...'
+                                                            placeholder: '...',
+                                                            filter: 'contains',
+                                                            suggest: true,
+                                                            highlightFirst: true
                                                         });
                                                     },
                                                     ignoreCase: true
