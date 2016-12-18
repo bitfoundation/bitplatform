@@ -29,6 +29,21 @@ namespace Foundation.CodeGenerators.Test
         }
 
         [TestMethod]
+        public virtual async Task DefaultProjectDtosProviderShouldReturnDtosOfTestProjectAsDesired()
+        {
+            using (Workspace workspace = GetWorkspace())
+            {
+                Solution solution = workspace.CurrentSolution;
+
+                IProjectDtosProvider dtosProvider = new DefaultProjectDtosProvider(new DefaultProjectDtoControllersProvider());
+
+                IList<Dto> dtos = dtosProvider.GetProjectDtos(solution.Projects.Single(p => p.Name == "Foundation.Test")).ToList();
+
+                Assert.AreEqual(11, dtos.Count);
+            }
+        }
+
+        [TestMethod]
         public virtual async Task ISyncableDtoShouldHaveISVPropertyEvenWhenThereIsNoDeclaredISVProperty()
         {
             const string sourceCodeOfDtoControllerWithActionAndParameter = @"
@@ -194,7 +209,7 @@ public class ComplexObj2
 
             Dto[] dtos = dtosProvider.GetProjectDtos(sourceProject).ToArray();
 
-            Assert.IsTrue(dtos.Select(d => d.DtoSymbol.Name).SequenceEqual(new[] { "ComplexObj3" , "ComplexObj", "TestComplexDto" }));
+            Assert.IsTrue(dtos.Select(d => d.DtoSymbol.Name).SequenceEqual(new[] { "ComplexObj3", "ComplexObj", "TestComplexDto" }));
         }
 
         [TestMethod]
