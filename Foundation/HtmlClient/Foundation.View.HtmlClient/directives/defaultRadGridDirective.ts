@@ -293,7 +293,7 @@ module Foundation.View.Directives {
 
                                                             datePickerButton.pDatepicker({
                                                                 position: ['0px', '0px'],
-                                                                autoClose: field.dateType == "Date",
+                                                                autoClose: field.viewType == "Date",
                                                                 altField: element,
                                                                 altFieldFormatter: (e) => {
                                                                     let result = new Date(e);
@@ -338,7 +338,7 @@ module Foundation.View.Directives {
                                                     }
                                                 }
                                                 else {
-                                                    if (field.dateType == "DateTime") {
+                                                    if (field.viewType == "DateTime") {
                                                         gridColumn.filterable = {
                                                             ui: (element: JQuery) => {
                                                                 element.kendoDateTimePicker();
