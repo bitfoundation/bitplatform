@@ -37,6 +37,9 @@
 			, "required" : <#= (!prp.Type.IsNullable()).ToString().ToLowerInvariant() #>
 			, "computed": true
 			<# } #>
+			<# if (prp.GetViewType() != null) { #>
+			, $ViewType : "<#= prp.GetViewType() #>"
+			<# } #>
 	},
 	<#}#>
 	});
