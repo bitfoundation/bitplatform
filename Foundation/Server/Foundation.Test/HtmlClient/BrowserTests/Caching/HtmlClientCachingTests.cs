@@ -31,7 +31,7 @@ namespace Foundation.Test.HtmlClient.Caching
         [TestCategory("HtmlClient"), TestCategory("Caching")]
         public virtual void ResourceLikeMetadataWhichAreCachableMustNotBeRertivedEverytimeByHtmlClient()
         {
-            using (TestEnvironment testEnvironment = new TestEnvironment(new TestEnvironmentArgs { UseRealServer = true }))
+            using (TestEnvironment testEnvironment = new TestEnvironment(new TestEnvironmentArgs { UseRealServer = true, ActiveAppEnvironmentCustomizer = activeAppEnv => activeAppEnv.DebugMode = false }))
             {
                 OAuthToken token = testEnvironment.Server.Login("ValidUserName", "ValidPassword");
 
