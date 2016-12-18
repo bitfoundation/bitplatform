@@ -17,6 +17,9 @@ namespace Foundation.Test.Model.DomainModels
         [MaxLength(50)]
         public virtual string Name { get; set; }
 
+        [DataType(DataType.Date)]
+        public virtual DateTimeOffset? Date { get; set; }
+
         [ConcurrencyCheck]
         [DatabaseGenerated(DatabaseGeneratedOption.Computed)]
         public virtual long Version { get; set; }

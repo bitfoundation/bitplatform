@@ -36,9 +36,7 @@ namespace Foundation.Test.Api.ApiControllers
         {
             return _parentModelsRepository
                 .GetAll()
-                .Include(p => p.ChildEntities)
-                .ToList()
-                .AsQueryable();
+                .Include(p => p.ChildEntities);
         }
 
         [Get]

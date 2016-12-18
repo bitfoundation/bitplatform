@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using Foundation.Core.Contracts;
 using Foundation.Test.Model.DomainModels;
 
@@ -9,13 +8,58 @@ namespace Foundation.Test.DataAccess.Implementations
     public class InitialTestDataConfiguration : IAppEvents
     {
         private readonly IDependencyManager _dependencyManager;
+        private readonly IDateTimeProvider _dateTimeProvider;
 
-        public InitialTestDataConfiguration(IDependencyManager dependencyManager)
+        public InitialTestDataConfiguration(IDependencyManager dependencyManager, IDateTimeProvider dateTimeProvider)
         {
             if (dependencyManager == null)
                 throw new ArgumentNullException(nameof(dependencyManager));
 
+            if (dateTimeProvider == null)
+                throw new ArgumentNullException(nameof(dateTimeProvider));
+
             _dependencyManager = dependencyManager;
+            _dateTimeProvider = dateTimeProvider;
+
+            _parentEntities = new List<ParentEntity>
+            {
+                new ParentEntity
+                {
+                    Name = "A",
+                    Version = 1 ,
+                    Date = _dateTimeProvider.GetCurrentUtcDateTime(),
+                    ChildEntities = new List<ChildEntity>
+                    {
+                        new ChildEntity { Name = "a1"  },
+                        new ChildEntity { Name = "a2"  },
+                        new ChildEntity { Name = "a3"  }
+                    }
+                },
+                new ParentEntity
+                {
+                    Name = "B",
+                    Version = 2,
+                    Date = _dateTimeProvider.GetCurrentUtcDateTime(),
+                    ChildEntities = new List<ChildEntity>
+                    {
+                        new ChildEntity { Name = "b1"  },
+                        new ChildEntity { Name = "b2"  },
+                        new ChildEntity { Name = "b3"  }
+                    }
+                },
+                new ParentEntity
+                {
+                    Name = "C",
+                    Version = 3,
+                    Date = _dateTimeProvider.GetCurrentUtcDateTime(),
+                    ChildEntities = new List<ChildEntity>
+                    {
+                        new ChildEntity { Name = "c1"  },
+                        new ChildEntity { Name = "c2"  },
+                        new ChildEntity { Name = "c3"  }
+                    }
+                }
+            };
         }
 
         protected InitialTestDataConfiguration()
@@ -23,40 +67,7 @@ namespace Foundation.Test.DataAccess.Implementations
 
         }
 
-        private readonly List<ParentEntity> _parentEntities = new List<ParentEntity>
-        {
-            new ParentEntity
-            {
-                Name = "A",
-                Version = 1 ,
-                ChildEntities = new List<ChildEntity>
-                {
-                    new ChildEntity { Name = "a1"  },
-                    new ChildEntity { Name = "a2"  },
-                    new ChildEntity { Name = "a3"  }
-                }
-            },
-            new ParentEntity
-            {
-                Name = "B",
-                ChildEntities = new List<ChildEntity>
-                {
-                    new ChildEntity { Name = "b1"  },
-                    new ChildEntity { Name = "b2"  },
-                    new ChildEntity { Name = "b3"  }
-                }
-            },
-            new ParentEntity
-            {
-                Name = "C",
-                ChildEntities = new List<ChildEntity>
-                {
-                    new ChildEntity { Name = "c1"  },
-                    new ChildEntity { Name = "c2"  },
-                    new ChildEntity { Name = "c3"  }
-                }
-            }
-        };
+        private readonly List<ParentEntity> _parentEntities;
 
         private readonly TestModel _testModel = new TestModel
         {
@@ -64,7 +75,6 @@ namespace Foundation.Test.DataAccess.Implementations
             DateProperty = new DateTimeOffset(2016, 1, 1, 10, 30, 0, TimeSpan.Zero),
             Version = 1
         };
-
 
         public virtual void OnAppStartup()
         {

@@ -1,6 +1,6 @@
 ﻿<view id="radGridView">
 
-    <rad-grid id="gridView" rad-datasource="vm.parentEntitiesDataSource">
+    <rad-grid id="gridView" rad-datasource="vm.parentEntitiesDataSource" groupable="true">
         <script type="toolbar/template">
             <rad-grid-add-button id="gridAddButton">Add new Parent entity</rad-grid-add-button>
         </script>
@@ -21,6 +21,9 @@
                 </td>
                 <td name="Version" title="{{::'Version' | translate}}">
                     {{::dataItem.Version == 1 ? '(-:' : ')-:'}}
+                </td>
+                <td name="Date" title="{{::'Date' | translate}}">
+                    {{::dataItem.Date | bitDate}}
                 </td>
                 <td>
                     <rad-grid-edit-button>Update</rad-grid-edit-button>
