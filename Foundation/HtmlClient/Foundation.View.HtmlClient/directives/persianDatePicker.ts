@@ -62,6 +62,9 @@
             this.$main = this.$element.find('#main');
             this.$alt = this.$element.find('#alt');
 
+            let isDateTime = this.isDateTime;
+            let dateTimeService = this.dateTimeService;
+
             this.$main.pDatepicker({
                 autoClose: this.isDateTime == false,
                 altField: this.$alt,
@@ -71,10 +74,10 @@
                 },
                 formatter: (e) => {
                     let result = new Date(e);
-                    if (this.isDateTime == true)
-                        return this.dateTimeService.getFormattedDateTime(result, "FaIr");
+                    if (isDateTime == true)
+                        return dateTimeService.getFormattedDateTime(result, "FaIr");
                     else
-                        return this.dateTimeService.getFormattedDate(result, "FaIr");
+                        return dateTimeService.getFormattedDate(result, "FaIr");
                 },
                 timePicker: {
                     enabled: this.isDateTime == true
