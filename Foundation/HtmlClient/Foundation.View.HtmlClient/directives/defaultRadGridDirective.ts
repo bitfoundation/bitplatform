@@ -79,6 +79,8 @@ module Foundation.View.Directives {
 
                     let $parse = dependencyManager.resolveObject<angular.IParseService>("$parse");
 
+                    let dateTimeService = Foundation.Core.DependencyManager.getCurrent().resolveObject<Foundation.ViewModel.Contracts.IDateTimeService>("DateTimeService");
+
                     let clientAppProfileManager = dependencyManager.resolveObject<Foundation.Core.ClientAppProfileManager>("ClientAppProfileManager");
 
                     $timeout(() => {
@@ -283,25 +285,57 @@ module Foundation.View.Directives {
 
                                                         ui: (element: JQuery) => {
 
-                                                            let dateTimePickerScope: ng.IScope & { isDateTime: boolean, ngModel?: Date } = angular.extend($scope.$new(true, $scope), {
-                                                                isDateTime: field.dateType == "DateTime"
-                                                            });
+                                                            element.after('<input type="button" class="k-button" style="width:100%" />');
 
-                                                            let $html = `<persian-date-picker ng-model="date" is-date-time='isDateTime' ></persian-date-picker>`;
+                                                            let datePickerButton = element.next();
 
-                                                            let $element = $compile($html)(dateTimePickerScope);
+                                                            datePickerButton.val(element.val());
 
-                                                            element.after($element);
+                                                            datePickerButton.pDatepicker({
+                                                                position: ['0px', '0px'],
+                                                                autoClose: field.dateType == "Date",
+                                                                altField: element,
+                                                                altFieldFormatter: (e) => {
+                                                                    let result = new Date(e);
+                                                                    return result;
+                                                                },
+                                                                formatter: (e) => {
+                                                                    let result = new Date(e);
+                                                                    if (field.dateType == "DateTime")
+                                                                        return dateTimeService.getFormattedDateTime(result);
+                                                                    else
+                                                                        return dateTimeService.getFormattedDate(result);
+                                                                },
+                                                                timePicker: {
+                                                                    enabled: field.dateType == "DateTime"
+                                                                },
+                                                                onShow: () => {
 
-                                                            $element.find('#alt').on('change', (e) => {
-                                                                element[0].kendoBindingTarget.source.filters[Number(element.data().bind.replace(/(^.*\[|\].*$)/g, ''))].value = new Date($(e.target).val());
+                                                                    let thisPDatePickerElementToBePopupedUsingKendoPopup = angular.element('.datepicker-plot-area')
+                                                                        .filter((eId, el) => angular.element(el).is(":visible"));
+
+                                                                    let parentMenu = element.parents('div.k-column-menu').first();
+
+                                                                    let kendoPopupElement = thisPDatePickerElementToBePopupedUsingKendoPopup.kendoPopup({
+                                                                        anchor: parentMenu
+                                                                    });
+
+                                                                    let kendoPopup = kendoPopupElement.data('kendoPopup');
+
+                                                                    kendoPopup.open();
+
+                                                                    thisPDatePickerElementToBePopupedUsingKendoPopup.css('top', '-25px');
+
+                                                                    this['kendoPopuo'] = kendoPopup;
+                                                                },
+                                                                onHide: () => {
+                                                                    this['kendoPopuo'].destroy();
+                                                                }
                                                             });
 
                                                             element.hide();
                                                         }
-
                                                     }
-
                                                 }
                                                 else {
                                                     if (field.dateType == "DateTime") {
