@@ -79,8 +79,8 @@ module Foundation.Core {
             if (fileDependency == null)
                 throw new Error("fileDependency is null");
 
-            if (fileDependency.name == null)
-                throw new Error("fileDependency.name is null");
+            if (fileDependency.name == null || fileDependency.name == '')
+                throw new Error("fileDependency.name is null or empty");
 
             const dependenciesWithThisName = this.fileDependencies.filter(d => d.name.toLowerCase() == fileDependency.name.toLowerCase());
             let dependenciesWithThisNameIndex = -1;
@@ -107,13 +107,16 @@ module Foundation.Core {
             }
         }
 
-        public registerInstanceDependency(instanceDependency: IInstanceDependency): void {
+        public registerInstanceDependency(instanceDependency: IInstanceDependency, objectDep?: IObjectDependency): void {
 
             if (instanceDependency == null)
                 throw new Error("instanceDependency is null");
 
-            if (instanceDependency.name == null)
-                throw new Error('instanceDependency.name is null');
+            if (instanceDependency.name == null || instanceDependency.name == '')
+                throw new Error('instanceDependency.name is null or empty');
+
+            if (objectDep != null && objectDep.name.toLowerCase() != instanceDependency.name.toLowerCase())
+                throw new Error(`objectDep's name must be equal to instanceDependency.name`);
 
             if (!this.dependencyShouldBeConsidered(instanceDependency))
                 return;
@@ -121,7 +124,7 @@ module Foundation.Core {
             let singletoneObjDep = null;
 
             for (let d of this.singletoneObjectDependenciesInstances) {
-                if (d.objectDep.name.toLowerCase() == instanceDependency.name.toLowerCase())
+                if ((objectDep != null && d.objectDep == objectDep) || d.objectDep.name.toLowerCase() == instanceDependency.name.toLowerCase())
                     singletoneObjDep = d;
             }
 
@@ -129,7 +132,7 @@ module Foundation.Core {
                 singletoneObjDep.objectDepInstance = instanceDependency.instance;
             }
             else {
-                this.singletoneObjectDependenciesInstances.push({ objectDep: instanceDependency, objectDepInstance: instanceDependency.instance });
+                this.singletoneObjectDependenciesInstances.push({ objectDep: objectDep != null ? objectDep : instanceDependency, objectDepInstance: instanceDependency.instance });
             }
         }
 
@@ -141,8 +144,8 @@ module Foundation.Core {
             if (objectDependency.class == null)
                 throw new Error("class of object dependency may not be null");
 
-            if (objectDependency.name == null)
-                throw new Error("objectDependency.name is null");
+            if (objectDependency.name == null || objectDependency.name == '')
+                throw new Error("objectDependency.name is null or empty");
 
             if (!this.dependencyShouldBeConsidered(objectDependency))
                 return;
@@ -172,8 +175,8 @@ module Foundation.Core {
             if (directiveDependency.class == null)
                 throw new Error("class of directive dependency may not be null");
 
-            if (directiveDependency.name == null)
-                throw new Error("directiveDependency.name is null");
+            if (directiveDependency.name == null || directiveDependency.name == '')
+                throw new Error("directiveDependency.name is null or empty");
 
             if (!this.dependencyShouldBeConsidered(directiveDependency))
                 return;
@@ -480,8 +483,7 @@ module Foundation.Core {
                         .filter(depInstanceKeyValue => depInstanceKeyValue.objectDep == objectDep)[0];
 
                     if (result == null) {
-                        result = { objectDep: objectDep, objectDepInstance: Reflect.construct(objectDep.class as Function, []) };
-                        this.registerInstanceDependency({ instance: result.objectDepInstance, name: result.objectDep.name, overwriteExisting: false });
+                        this.registerInstanceDependency({ instance: Reflect.construct(objectDep.class as Function, []), name: objectDep.name, overwriteExisting: false }, objectDep);
                     }
 
                 } else {
@@ -569,6 +571,10 @@ module Foundation.Core {
     }
 
     export function Inject(name: string): ParameterDecorator {
+
+        if (name == null || name == "")
+            throw new Error('name may not be null or empty');
+
         return (target: Function, propertyKey: string | symbol): Function => {
             target.injects = target.injects || [];
             target.injects.push({ name: name, kind: 'Single' });
@@ -577,6 +583,10 @@ module Foundation.Core {
     }
 
     export function InjectAll(name: string): ParameterDecorator {
+
+        if (name == null || name == "")
+            throw new Error('name may not be null or empty');
+
         return (target: Function, propertyKey: string | symbol): Function => {
             target.injects = target.injects || [];
             target.injects.push({ name: name, kind: 'All' });
