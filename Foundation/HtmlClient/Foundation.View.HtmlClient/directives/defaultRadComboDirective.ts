@@ -245,6 +245,12 @@ module Foundation.View.Directives {
                                 comboOptions.headerTemplate = headerTemplate;
                             }
 
+                            if (dataSource.options.schema.model.fields[comboOptions.dataTextField] == null)
+                                throw new Error(`Model has no property named ${comboOptions.dataTextField} to be used as text field`);
+
+                            if (dataSource.options.schema.model.fields[comboOptions.dataValueField] == null)
+                                throw new Error(`Model has no property named ${comboOptions.dataValueField} to be used as value field`);
+
                             $scope[attributes['isolatedOptionsKey']] = comboOptions;
 
                         });

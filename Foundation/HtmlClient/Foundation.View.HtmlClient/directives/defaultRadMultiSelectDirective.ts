@@ -225,6 +225,12 @@ module Foundation.View.Directives {
                                 multiSelectOptions.headerTemplate = headerTemplate;
                             }
 
+                            if (dataSource.options.schema.model.fields[multiSelectOptions.dataTextField] == null)
+                                throw new Error(`Model has no property named ${multiSelectOptions.dataTextField} to be used as text field`);
+
+                            if (dataSource.options.schema.model.fields[multiSelectOptions.dataValueField] == null)
+                                throw new Error(`Model has no property named ${multiSelectOptions.dataValueField} to be used as value field`);
+
                             $scope[attributes['isolatedOptionsKey']] = multiSelectOptions;
 
                         });

@@ -275,6 +275,9 @@ module Foundation.View.Directives {
 
                                             let field = datasource.options.schema.model.fields[gridColumn.field];
 
+                                            if (field == null)
+                                                throw new Error(`Model has no field named ${gridColumn.field} to be used`);
+
                                             if (field.type == "date") {
 
                                                 let currentCulture = clientAppProfileManager.getClientAppProfile().culture;
@@ -356,6 +359,12 @@ module Foundation.View.Directives {
 
                                                 let filterTextFieldName = wrappedItem.attr('filter-text-field');
                                                 let filterValueFieldName = wrappedItem.attr('filter-value-field');
+
+                                                if (filterDataSource.options.schema.model.fields[filterTextFieldName] == null)
+                                                    throw new Error(`Model has no property named ${filterTextFieldName} to be used as text field`);
+
+                                                if (filterDataSource.options.schema.model.fields[filterValueFieldName] == null)
+                                                    throw new Error(`Model has no property named ${filterValueFieldName} to be used as value field`);
 
                                                 gridColumn.filterable = {
                                                     ui: (element: JQuery) => {
