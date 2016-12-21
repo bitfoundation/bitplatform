@@ -45,6 +45,8 @@
         }
 
         public parseDate(date: any): Date {
+            if (date == null)
+                return null;
             return kendo.parseDate(date);
         }
 
