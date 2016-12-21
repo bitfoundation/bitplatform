@@ -14,6 +14,9 @@ let objectResolver = (key, value) => {
 
 let executeTest = async (testFunc: Function, args: string | any): Promise<void> => {
 
+    if (testFunc == null)
+        throw new Error('testFunc is null');
+
     try {
 
         Foundation.ViewModel.ScopeManager.Use$ApplyAsync = false;
