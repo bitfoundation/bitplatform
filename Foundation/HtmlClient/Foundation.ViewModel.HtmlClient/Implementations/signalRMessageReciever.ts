@@ -12,15 +12,17 @@
         private _stayConnected = false;
         private _listeners: Array<{ name: string, callbacks: Array<(args?: any) => Promise<void>> }> = [];
 
+        @Foundation.Core.Log()
         public async stop(): Promise<void> {
             this._stayConnected = false;
             if ($.signalR != null && $.connection != null && this._isInited == true)
                 $.connection.hub.stop(true, true);
         }
 
+        @Foundation.Core.Log()
         public async start(config: { preferWebSockets: boolean } = { preferWebSockets: false }): Promise<void> {
             this._stayConnected = true;
-            await this.ensureInited();
+            await this.getInitPromise();
             await new Promise<void>((res, rej) => {
                 return $.connection.hub.start({
                     transport: config.preferWebSockets == true ? ['webSockets', 'serverSentEvents', 'longPolling', 'foreverFrame'] : ['serverSentEvents', 'webSockets', 'longPolling', 'foreverFrame']
@@ -46,67 +48,86 @@
             }
         }
 
-        private async ensureInited(): Promise<void> {
+        private initPromise = null;
 
-            if (this._isInited == true)
-                return;
+        private getInitPromise(): Promise<void> {
 
-            if (typeof ($) == undefined)
-                throw new Error('jQuery is not present');
+            if (this.initPromise == null) {
 
-            this._isInited = true;
+                this.initPromise = new Promise<void>(async (resolve, reject) => {
 
-            if ($.signalR == null)
-                await Core.DependencyManager.getCurrent().resolveFile("signalR");
+                    try {
+                        if (this._isInited == true)
+                            return;
 
-            const signalRAppPushReciever = this;
+                        if (typeof ($) == undefined)
+                            reject('jQuery is not present');
 
-            if ($.hubConnection.prototype.createHubProxies == null) {
+                        this._isInited = true;
 
-                $.hubConnection.prototype.createHubProxies = function () {
-                    var proxies = {};
-                    this.starting(function () {
-                        signalRAppPushReciever.registerHubProxies(proxies, true);
-                        this._registerSubscribedHubs();
-                    }).disconnected(function () {
-                        signalRAppPushReciever.registerHubProxies(proxies, false);
-                    });
+                        if ($.signalR == null)
+                            await Core.DependencyManager.getCurrent().resolveFile("signalR");
 
-                    proxies["messagesHub"] = this.createHubProxy("messagesHub");
-                    proxies["messagesHub"].client = {};
-                    proxies["messagesHub"].server = {};
+                        const signalRAppPushReciever = this;
 
-                    return proxies;
-                };
+                        if ($.hubConnection.prototype.createHubProxies == null) {
 
-                $.signalR.hub = $.hubConnection("signalr", { useDefaultPath: false });
+                            $.hubConnection.prototype.createHubProxies = function () {
+                                var proxies = {};
+                                this.starting(function () {
+                                    signalRAppPushReciever.registerHubProxies(proxies, true);
+                                    this._registerSubscribedHubs();
+                                }).disconnected(function () {
+                                    signalRAppPushReciever.registerHubProxies(proxies, false);
+                                });
 
-                $.extend($.signalR, $.signalR.hub["createHubProxies"]());
+                                proxies["messagesHub"] = this.createHubProxy("messagesHub");
+                                proxies["messagesHub"].client = {};
+                                proxies["messagesHub"].server = {};
 
+                                return proxies;
+                            };
+
+                            $.signalR.hub = $.hubConnection("signalr", { useDefaultPath: false });
+
+                            $.extend($.signalR, $.signalR.hub["createHubProxies"]());
+
+                        }
+
+                        const messagesHub: any = $.connection["messagesHub"];
+
+                        if (messagesHub == null)
+                            reject('messagesHub is null');
+
+                        messagesHub["client"].OnMessageRecieved = async (messageKey: string, messageArgs?: string) => {
+                            await this.callListeners(messageKey, (messageArgs == null || messageArgs == "") ? null : JSON.parse(messageArgs));
+                        };
+
+                        $.connection.hub.disconnected(async () => {
+                            if (this._isConnected == true) {
+                                this._isConnected = false;
+                                await this.callListeners("On-Disconnected", null);
+                            }
+                            if (this._stayConnected == true) {
+                                setTimeout(async () => {
+                                    await this.start();
+                                    this._isConnected = true;
+                                    await this.callListeners("On-ReNew", null);
+                                }, 5000);
+                            }
+                        });
+                    }
+                    catch (e) {
+                        reject(e);
+                        throw e;
+                    }
+
+                    resolve();
+                });
             }
 
-            const messagesHub: any = $.connection["messagesHub"];
+            return this.initPromise;
 
-            if (messagesHub == null)
-                throw new Error('messagesHub is null');
-
-            messagesHub["client"].OnMessageRecieved = async (messageKey: string, messageArgs?: string) => {
-                await this.callListeners(messageKey, (messageArgs == null || messageArgs == "") ? null : JSON.parse(messageArgs));
-            };
-
-            $.connection.hub.disconnected(async () => {
-                if (this._isConnected == true) {
-                    this._isConnected = false;
-                    await this.callListeners("On-Disconnected", null);
-                }
-                if (this._stayConnected == true) {
-                    setTimeout(async () => {
-                        await this.start();
-                        this._isConnected = true;
-                        await this.callListeners("On-ReNew", null);
-                    }, 5000);
-                }
-            });
         }
 
         @Core.Log()
