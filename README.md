@@ -11,7 +11,7 @@ Requirements:
   
   3- .NET Core VS 2015 Update 3 Tooling Preview 2 (Optional Requirement)
   
-  4- Node JS - NPM - Gulp - Bower - Typings installed globally
+  4- Node JS - NPM - Gulp - Bower installed globally
   
 Steps:
 
@@ -23,9 +23,7 @@ Steps:
   
   4- Run bower install for Foundation\HtmlClient\Foundation.Test.HtmlClient\bower.json
   
-  5- Run typings install for Foundation\HtmlClient\Foundation.Core.HtmlClient
-  
-  6- Build the solution. Note that due the lack of TypeScript Project System, you might have to build the solution more than once.
+  5- Build the solution. Note that due the lack of TypeScript Project System, you might have to build the solution more than once.
  
 To run the samples:
 
