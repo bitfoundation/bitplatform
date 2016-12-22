@@ -1,13 +1,13 @@
 ﻿module Foundation.ViewModel.Implementations {
 
-    export class DefaultSyncService implements Foundation.ViewModel.Contracts.ISyncService {
+    export class DefaultSyncService implements ViewModel.Contracts.ISyncService {
 
         private onlineContext: $data.EntityContext;
         private offlineContext: $data.EntityContext;
         private onlineContextFactory: () => Promise<$data.EntityContext>;
         private offlineContextFactory: () => Promise<$data.EntityContext>;
 
-        @Foundation.Core.Log()
+        @Core.Log()
         public init(onlineContextFactory: () => Promise<$data.EntityContext>, offlineContextFactory: () => Promise<$data.EntityContext>): void {
             if (onlineContextFactory == null)
                 throw new Error("onlineContextFactory may not be null");
@@ -17,10 +17,10 @@
             this.onlineContextFactory = onlineContextFactory;
         }
 
-        private entitySetConfigs: Array<{ entitySetName: string, getMethod?: (context: $data.EntityContext) => $data.Queryable<Foundation.Model.Contracts.ISyncableDto>, syncConfig?: { fromServerSync?: boolean | (() => boolean), toServerSync?: boolean | (() => boolean) } }> = [];
+        private entitySetConfigs: Array<{ entitySetName: string, getMethod?: (context: $data.EntityContext) => $data.Queryable<Model.Contracts.ISyncableDto>, syncConfig?: { fromServerSync?: boolean | (() => boolean), toServerSync?: boolean | (() => boolean) } }> = [];
 
-        @Foundation.Core.Log()
-        public addEntitySetConfig<TEntityContext extends $data.EntityContext>(entitySet: $data.EntitySet<Foundation.Model.Contracts.ISyncableDto>, getMethod?: (context: TEntityContext) => $data.Queryable<Foundation.Model.Contracts.ISyncableDto>, syncConfig?: { fromServerSync?: boolean | (() => boolean), toServerSync?: boolean | (() => boolean) }) {
+        @Core.Log()
+        public addEntitySetConfig<TEntityContext extends $data.EntityContext>(entitySet: $data.EntitySet<Model.Contracts.ISyncableDto>, getMethod?: (context: TEntityContext) => $data.Queryable<Model.Contracts.ISyncableDto>, syncConfig?: { fromServerSync?: boolean | (() => boolean), toServerSync?: boolean | (() => boolean) }) {
 
             if (entitySet == null)
                 throw new Error("entitySetName may not be null");
@@ -38,12 +38,12 @@
             this.entitySetConfigs.push({ entitySetName: entitySet.collectionName, getMethod: getMethod, syncConfig: syncConfig });
         }
 
-        @Foundation.Core.Log()
+        @Core.Log()
         public async syncContext(): Promise<void> {
             await this.syncEntitySets(this.entitySetConfigs.map(entitySetConfig => { return entitySetConfig.entitySetName as any; }));
         }
 
-        @Foundation.Core.Log()
+        @Core.Log()
         public async syncEntitySet<TEntityContext extends $data.EntityContext>(entitySetName: keyof TEntityContext): Promise<void> {
 
             await this.syncEntitySets<TEntityContext>([entitySetName]);
@@ -53,7 +53,7 @@
         public async syncEntitySets<TEntityContext extends $data.EntityContext>(entitySetNames: Array<keyof TEntityContext>): Promise<void> {
 
             if (entitySetNames == null)
-                throw new Error('entitySetNames may not be null');
+                throw new Error("entitySetNames may not be null");
 
             if (entitySetNames.length == 0)
                 throw new Error("entitySetNames may not be empty");
@@ -72,14 +72,14 @@
 
             this.onlineContext = await this.onlineContextFactory();
             this.offlineContext = await this.offlineContextFactory();
-            this.offlineContext['ignoreEntityEvents'] = true;
+            this.offlineContext["ignoreEntityEvents"] = true;
 
             let entitySetSyncMaterials = entitySetConfigs.map(entitySetConfig => {
                 return {
                     entitySetConfig: entitySetConfig,
-                    offlineEntitySet: this.offlineContext[entitySetConfig.entitySetName] as $data.EntitySet<Foundation.Model.Contracts.ISyncableDto>,
-                    onlineEntitySet: this.onlineContext[entitySetConfig.entitySetName] as $data.EntitySet<Foundation.Model.Contracts.ISyncableDto>,
-                    keyMembers: ((this.offlineContext[entitySetConfig.entitySetName] as $data.EntitySet<Foundation.Model.Contracts.ISyncableDto>).elementType.memberDefinitions as any).getKeyProperties() as any[]
+                    offlineEntitySet: this.offlineContext[entitySetConfig.entitySetName] as $data.EntitySet<Model.Contracts.ISyncableDto>,
+                    onlineEntitySet: this.onlineContext[entitySetConfig.entitySetName] as $data.EntitySet<Model.Contracts.ISyncableDto>,
+                    keyMembers: ((this.offlineContext[entitySetConfig.entitySetName] as $data.EntitySet<Model.Contracts.ISyncableDto>).elementType.memberDefinitions as any).getKeyProperties() as any[]
                 };
             });
 
@@ -98,7 +98,7 @@
                     let recentlyChangedOfflineEntities = allRecentlyChangedOfflineEntities[i];
 
                     for (let modifiedOfflineEntity of recentlyChangedOfflineEntities) {
-                        let clonedEntityToBeSavedInOnlineContext = entitySetSyncMaterial.onlineEntitySet.elementType['create'](modifiedOfflineEntity['initData']) as Foundation.Model.Contracts.ISyncableDto;
+                        let clonedEntityToBeSavedInOnlineContext = entitySetSyncMaterial.onlineEntitySet.elementType["create"](modifiedOfflineEntity["initData"]) as Model.Contracts.ISyncableDto;
                         this.onlineContext.attach(clonedEntityToBeSavedInOnlineContext, $data.EntityAttachMode.AllChanged);
                         if (clonedEntityToBeSavedInOnlineContext.IsArchived == true)
                             clonedEntityToBeSavedInOnlineContext.entityState = $data.EntityState.Deleted;
@@ -120,22 +120,22 @@
 
                 let loadRecentlyChangedOnlineEntitiesQueries = fromServerEntitySetSyncMaterials.map((entitySetSyncMaterial, i) => {
 
-                    let offlineEntitiesOrderedByVersion = allOfflineEntitiesOrderedByVersion[i];
+                    const offlineEntitiesOrderedByVersion = allOfflineEntitiesOrderedByVersion[i];
 
                     let maxVersion = "0";
 
                     if (offlineEntitiesOrderedByVersion[0] != null)
                         maxVersion = offlineEntitiesOrderedByVersion[0].Version;
 
-                    let baseQuery = entitySetSyncMaterial.entitySetConfig.getMethod(this.onlineContext).filter((e, ver) => e.Version > ver, { ver: maxVersion });
+                    const baseQuery = entitySetSyncMaterial.entitySetConfig.getMethod(this.onlineContext).filter((e, ver) => e.Version > ver, { ver: maxVersion });
 
-                    let recentlyChangedOnlineEntitiesQuery = baseQuery.take(1000);
+                    const recentlyChangedOnlineEntitiesQuery = baseQuery.take(1000);
 
                     return recentlyChangedOnlineEntitiesQuery;
 
                 });
 
-                let allRecentlyChangedOnlineEntities: Foundation.Model.Contracts.ISyncableDto[][] = await this.onlineContext.batchExecuteQuery(loadRecentlyChangedOnlineEntitiesQueries);
+                let allRecentlyChangedOnlineEntities: Model.Contracts.ISyncableDto[][] = await this.onlineContext.batchExecuteQuery(loadRecentlyChangedOnlineEntitiesQueries);
 
                 for (let i = 0; i < allRecentlyChangedOnlineEntities.length; i++) {
 
@@ -145,7 +145,7 @@
 
                     for (let recentlyChangedOnlineEntity of recentlyChangedOnlineEntities) {
 
-                        let clonedEntity = entitySetSyncMaterial.offlineEntitySet.elementType['create'](recentlyChangedOnlineEntity['initData']) as Foundation.Model.Contracts.ISyncableDto;
+                        let clonedEntity = entitySetSyncMaterial.offlineEntitySet.elementType["create"](recentlyChangedOnlineEntity["initData"]) as Model.Contracts.ISyncableDto;
                         clonedEntity.ISV = true;
 
                         this.offlineContext.attach(clonedEntity, $data.EntityAttachMode.AllChanged);

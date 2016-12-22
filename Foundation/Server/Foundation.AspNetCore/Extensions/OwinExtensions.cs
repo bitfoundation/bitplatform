@@ -20,11 +20,11 @@ namespace Foundation.AspNetCore.Extensions
 
                 IApplicationLifetime aspNetCoreAppLifetime = (IApplicationLifetime)aspNetCoreApp.ApplicationServices.GetService(typeof(IApplicationLifetime));
 
-                AppProperties owinAppProps = new AppProperties(owinAppBuilder.Properties);
-
-                owinAppProps.OnAppDisposing = aspNetCoreAppLifetime?.ApplicationStopping ?? CancellationToken.None;
-
-                owinAppProps.DefaultApp = aspNetCoreOwinPipeline;
+                AppProperties owinAppProps = new AppProperties(owinAppBuilder.Properties)
+                {
+                    OnAppDisposing = aspNetCoreAppLifetime?.ApplicationStopping ?? CancellationToken.None,
+                    DefaultApp = aspNetCoreOwinPipeline
+                };
 
                 owinAppConfiguration(owinAppBuilder);
 

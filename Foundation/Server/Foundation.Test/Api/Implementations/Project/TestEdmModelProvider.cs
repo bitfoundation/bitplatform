@@ -1,7 +1,5 @@
 ﻿using System;
 using System.Web.OData.Builder;
-using Foundation.Api.Middlewares.WebApi.Contracts;
-using Foundation.Core.Contracts.Project;
 using Foundation.Api.Contracts.Project;
 using Foundation.Api.Middlewares.WebApi.OData.Contracts;
 

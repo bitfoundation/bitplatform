@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Net;
 using System.Runtime.Serialization;
 using Foundation.Api.Metadata;
 

@@ -2,8 +2,8 @@
 
 module Foundation.View.Directives {
 
-    @Foundation.Core.DirectiveDependency({ name: 'radGrid' })
-    export class DefaultRadGridDirective implements Foundation.ViewModel.Contracts.IDirective {
+    @Core.DirectiveDependency({ name: "radGrid" })
+    export class DefaultRadGridDirective implements ViewModel.Contracts.IDirective {
 
         public static scrollable = false;
         public static resizable = true;
@@ -22,77 +22,77 @@ module Foundation.View.Directives {
                 terminal: true,
                 template: (element: JQuery, attrs: ng.IAttributes) => {
 
-                    let guidUtils = Core.DependencyManager.getCurrent().resolveObject<ViewModel.Implementations.GuidUtils>("GuidUtils");
+                    const guidUtils = Core.DependencyManager.getCurrent().resolveObject<ViewModel.Implementations.GuidUtils>("GuidUtils");
 
-                    let replaceAll = (text: string, search: string, replacement: string) => {
-                        return text.replace(new RegExp(search, 'g'), replacement);
+                    const replaceAll = (text: string, search: string, replacement: string) => {
+                        return text.replace(new RegExp(search, "g"), replacement);
                     };
 
-                    let isolatedOptionsKey = 'options' + replaceAll(guidUtils.newGuid(), '-', '');
+                    const isolatedOptionsKey = "options" + replaceAll(guidUtils.newGuid(), "-", "");
 
-                    attrs['isolatedOptionsKey'] = isolatedOptionsKey;
+                    attrs["isolatedOptionsKey"] = isolatedOptionsKey;
 
                     const gridTemplate = `<fake-element kendo-grid k-options="::${isolatedOptionsKey}" k-ng-delay="::${isolatedOptionsKey}" />`;
 
-                    let editRowTemplateId = guidUtils.newGuid();
+                    const editRowTemplateId = guidUtils.newGuid();
 
                     angular.element(element)
                         .children("[type='edit/template']")
-                        .attr('id', editRowTemplateId)
+                        .attr("id", editRowTemplateId)
                         .insertAfter(element);
 
-                    attrs['editTemplateId'] = editRowTemplateId;
+                    attrs["editTemplateId"] = editRowTemplateId;
 
-                    let viewRowTemplateId = guidUtils.newGuid();
+                    const viewRowTemplateId = guidUtils.newGuid();
 
                     angular.element(element)
                         .children("[type='view/template']")
-                        .attr('id', viewRowTemplateId)
+                        .attr("id", viewRowTemplateId)
                         .insertAfter(element);
 
-                    attrs['viewTemplateId'] = viewRowTemplateId;
+                    attrs["viewTemplateId"] = viewRowTemplateId;
 
-                    let toolbarTemplate = angular.element(element)
+                    const toolbarTemplate = angular.element(element)
                         .children("[type='toolbar/template']");
 
                     if (toolbarTemplate.length != 0) {
 
-                        let toolbarTemplateId = guidUtils.newGuid();
+                        const toolbarTemplateId = guidUtils.newGuid();
 
-                        toolbarTemplate.attr('id', toolbarTemplateId)
+                        toolbarTemplate.attr("id", toolbarTemplateId)
                             .insertAfter(element);
 
-                        attrs['toolbarTemplateId'] = toolbarTemplateId;
+                        attrs["toolbarTemplateId"] = toolbarTemplateId;
                     }
 
                     return gridTemplate;
                 },
                 link($scope: angular.IScope, element: JQuery, attributes: any) {
 
-                    let dependencyManager = Core.DependencyManager.getCurrent();
+                    const dependencyManager = Core.DependencyManager.getCurrent();
 
-                    let $timeout = dependencyManager.resolveObject<angular.ITimeoutService>("$timeout");
+                    const $timeout = dependencyManager.resolveObject<angular.ITimeoutService>("$timeout");
 
-                    let $translate = dependencyManager.resolveObject<angular.translate.ITranslateService>("$translate");
+                    const $translate = dependencyManager.resolveObject<angular.translate.ITranslateService>("$translate");
 
-                    let $compile = dependencyManager.resolveObject<angular.ICompileService>("$compile");
+                    const $compile = dependencyManager.resolveObject<angular.ICompileService>("$compile");
 
-                    let $parse = dependencyManager.resolveObject<angular.IParseService>("$parse");
+                    const $parse = dependencyManager.resolveObject<angular.IParseService>("$parse");
 
-                    let dateTimeService = Foundation.Core.DependencyManager.getCurrent().resolveObject<Foundation.ViewModel.Contracts.IDateTimeService>("DateTimeService");
+                    const dateTimeService = Core.DependencyManager.getCurrent().resolveObject<ViewModel.Contracts.IDateTimeService>("DateTimeService");
 
-                    let clientAppProfileManager = dependencyManager.resolveObject<Foundation.Core.ClientAppProfileManager>("ClientAppProfileManager");
+                    const clientAppProfileManager = dependencyManager.resolveObject<Core.ClientAppProfileManager>("ClientAppProfileManager");
 
                     $timeout(() => {
 
-                        let watchForDatasourceToCreateDataGridWidgetUnRegisterHandler = $scope.$watch(attributes.radDatasource, (datasource: kendo.data.DataSource) => {
+                        const watchForDatasourceToCreateDataGridWidgetUnRegisterHandler = $scope.$watch(attributes.radDatasource, (datasource: kendo.data.DataSource) => {
 
                             if (datasource == null)
                                 return;
 
                             watchForDatasourceToCreateDataGridWidgetUnRegisterHandler();
 
-                            let kendoWidgetCreatedDisposal = $scope.$on("kendoWidgetCreated", (event, grid: kendo.ui.Grid) => {
+                            const kendoWidgetCreatedDisposal = $scope.$on("kendoWidgetCreated", (event, grid: kendo.ui.Grid) => {
 
                                 if (grid.element[0] != element[0]) {
                                     return;
@@ -100,33 +100,33 @@ module Foundation.View.Directives {
 
                                 kendoWidgetCreatedDisposal();
 
-                                $scope[attributes['isolatedOptionsKey'] + "Add"] = () => {
+                                $scope[attributes["isolatedOptionsKey"] + "Add"] = () => {
                                     grid.addRow();
                                 };
 
-                                $scope[attributes['isolatedOptionsKey'] + "Delete"] = ($event) => {
+                                $scope[attributes["isolatedOptionsKey"] + "Delete"] = ($event) => {
 
-                                    let row = angular.element($event.currentTarget).parents('tr');
+                                    const row = angular.element($event.currentTarget).parents("tr");
 
                                     grid.removeRow(row);
 
                                 };
 
-                                $scope[attributes['isolatedOptionsKey'] + "Update"] = ($event) => {
+                                $scope[attributes["isolatedOptionsKey"] + "Update"] = ($event) => {
 
-                                    let row = angular.element($event.currentTarget).parents('tr');
+                                    const row = angular.element($event.currentTarget).parents("tr");
 
                                     grid.editRow(row);
 
                                 };
 
-                                $scope[attributes['isolatedOptionsKey'] + "Cancel"] = ($event) => {
-                                    let uid = angular.element($event.target).parents('.k-popup-edit-form').attr('data-uid');
-                                    grid.trigger('cancel', { container: angular.element($event.target).parents('.k-window'), sender: grid, model: grid.dataSource.flatView().find(i => i['uid'] == uid) });
+                                $scope[attributes["isolatedOptionsKey"] + "Cancel"] = ($event) => {
+                                    const uid = angular.element($event.target).parents(".k-popup-edit-form").attr("data-uid");
+                                    grid.trigger("cancel", { container: angular.element($event.target).parents(".k-window"), sender: grid, model: grid.dataSource.flatView().find(i => i["uid"] == uid) });
                                     grid.cancelRow();
                                 };
 
-                                $scope[attributes['isolatedOptionsKey'] + "Save"] = ($event) => {
+                                $scope[attributes["isolatedOptionsKey"] + "Save"] = ($event) => {
 
                                     grid.saveRow();
 
@@ -139,15 +139,15 @@ module Foundation.View.Directives {
 
                                         let current = null;
 
-                                        let itemBeingInserted = grid.dataSource
-                                            .flatView().find(i => i['isNew']() == true);
+                                        const itemBeingInserted = grid.dataSource
+                                            .flatView().find(i => i["isNew"]() == true);
 
                                         if (itemBeingInserted != null)
                                             current = itemBeingInserted.innerInstance != null ? itemBeingInserted.innerInstance() : itemBeingInserted;
 
                                         if (current == null) {
 
-                                            let selectedDataItem = grid.dataItem(grid.select());
+                                            const selectedDataItem = grid.dataItem(grid.select());
 
                                             if (selectedDataItem == null)
                                                 current = null;
@@ -168,39 +168,39 @@ module Foundation.View.Directives {
                                     }
                                 });
 
-                                datasource.bind('error', function (e) {
-                                    if (datasource['destroyed']().length != 0) {
+                                datasource.bind("error", function (e) {
+                                    if (datasource["destroyed"]().length != 0) {
                                         datasource.cancelChanges();
                                     }
                                 });
                             });
 
-                            let viewTemplateElement = angular.element("#" + attributes['viewTemplateId']);
+                            const viewTemplateElement = angular.element("#" + attributes["viewTemplateId"]);
 
                             let viewTemplateHtml = viewTemplateElement.html();
 
-                            viewTemplateHtml = viewTemplateHtml.replace("<tr", `<tr data-uid='#: uid #' rad-grid-row ng-model='::dataItem' isolatedOptionsKey='${attributes['isolatedOptionsKey']}'`)
+                            viewTemplateHtml = viewTemplateHtml.replace("<tr", `<tr data-uid='#: uid #' rad-grid-row ng-model='::dataItem' isolatedOptionsKey='${attributes["isolatedOptionsKey"]}'`)
 
                             viewTemplateElement.remove();
 
-                            let editTemplateElement = angular.element("#" + attributes['editTemplateId']);
+                            const editTemplateElement = angular.element("#" + attributes["editTemplateId"]);
 
-                            let editPopupTitle = editTemplateElement.attr('title');
+                            const editPopupTitle = editTemplateElement.attr("title");
 
-                            let editTemplateHtml = angular.element(`<fake>${editTemplateElement.html()}</fake>`);
+                            const editTemplateHtml = angular.element(`<fake>${editTemplateElement.html()}</fake>`);
 
-                            editTemplateHtml.first().attr('isolatedOptionsKey', attributes['isolatedOptionsKey']);
+                            editTemplateHtml.first().attr("isolatedOptionsKey", attributes["isolatedOptionsKey"]);
 
-                            let editTemplateHtmlString = editTemplateHtml.first()[0].outerHTML;
+                            const editTemplateHtmlString = editTemplateHtml.first()[0].outerHTML;
 
                             editTemplateElement.remove();
 
                             editTemplateHtml.remove();
 
-                            let gridOptions: kendo.ui.GridOptions = {
+                            const gridOptions: kendo.ui.GridOptions = {
                                 dataSource: datasource,
                                 editable: {
-                                    mode: 'popup',
+                                    mode: "popup",
                                     confirmation: true,
                                     template: kendo.template(editTemplateHtmlString),
                                     window: {
@@ -212,20 +212,20 @@ module Foundation.View.Directives {
                                 },
                                 change: function onChange(e) {
                                     datasource.onCurrentChanged();
-                                    Foundation.ViewModel.ScopeManager.update$scope($scope);
+                                    ViewModel.ScopeManager.update$scope($scope);
                                 },
                                 autoBind: true,
                                 cancel: async (e): Promise<void> => {
                                     if (e.model.isNew() == false && e.model.dirty == true && e.model.innerInstance != null) {
-                                        let entity = e.model.innerInstance();
+                                        const entity = e.model.innerInstance();
                                         entity.resetChanges();
                                         await entity.refresh();
                                     }
                                 },
                                 rowTemplate: kendo.template(viewTemplateHtml),
-                                selectable: 'row',
+                                selectable: "row",
                                 sortable: {
-                                    mode: 'multiple'
+                                    mode: "multiple"
                                 },
                                 scrollable: DefaultRadGridDirective.scrollable,
                                 resizable: DefaultRadGridDirective.resizable,
@@ -238,51 +238,51 @@ module Foundation.View.Directives {
                                 groupable: attributes.groupable == true || DefaultRadGridDirective.groupable
                             };
 
-                            if (attributes['toolbarTemplateId'] != null) {
+                            if (attributes["toolbarTemplateId"] != null) {
 
-                                let toolbarTemplateElement = angular.element("#" + attributes['toolbarTemplateId']);
+                                const toolbarTemplateElement = angular.element("#" + attributes["toolbarTemplateId"]);
 
-                                let toolbarTemplateHtml = toolbarTemplateElement.html();
+                                const toolbarTemplateHtml = toolbarTemplateElement.html();
 
                                 toolbarTemplateElement.remove();
 
-                                let toolbar: any = kendo.template(toolbarTemplateHtml);
+                                const toolbar: any = kendo.template(toolbarTemplateHtml);
 
                                 gridOptions.toolbar = toolbar;
                             }
 
-                            let compiledViewTemplate = angular.element(viewTemplateHtml);
+                            const compiledViewTemplate = angular.element(viewTemplateHtml);
 
                             angular.element(element)
                                 .after($compile(compiledViewTemplate)($scope));
 
-                            let columns: Array<kendo.ui.GridColumn> = [];
+                            const columns: Array<kendo.ui.GridColumn> = [];
 
-                            compiledViewTemplate.find('td')
+                            compiledViewTemplate.find("td")
                                 .each((index, item) => {
 
-                                    let wrappedItem = angular.element(item);
+                                    const wrappedItem = angular.element(item);
 
-                                    if (wrappedItem.attr('name') != null) {
+                                    if (wrappedItem.attr("name") != null) {
 
-                                        let gridColumn: kendo.ui.GridColumn = {
-                                            field: wrappedItem.attr('name'),
-                                            title: wrappedItem.attr('title'),
-                                            width: wrappedItem.attr('width') || 'auto'
+                                        const gridColumn: kendo.ui.GridColumn = {
+                                            field: wrappedItem.attr("name"),
+                                            title: wrappedItem.attr("title"),
+                                            width: wrappedItem.attr("width") || "auto"
                                         };
 
                                         if (DefaultRadGridDirective.filterable == true) {
 
-                                            let field = datasource.options.schema.model.fields[gridColumn.field];
+                                            const field = datasource.options.schema.model.fields[gridColumn.field];
 
                                             if (field == null)
                                                 throw new Error(`Model has no field named ${gridColumn.field} to be used`);
 
                                             if (field.type == "date") {
 
-                                                let currentCulture = clientAppProfileManager.getClientAppProfile().culture;
+                                                const currentCulture = clientAppProfileManager.getClientAppProfile().culture;
 
-                                                if (currentCulture == 'FaIr') {
+                                                if (currentCulture == "FaIr") {
 
                                                     gridColumn.filterable = {
 
@@ -290,20 +290,20 @@ module Foundation.View.Directives {
 
                                                             element.after('<input type="button" class="k-button" style="width:100%" />');
 
-                                                            let datePickerButton = element.next();
+                                                            const datePickerButton = element.next();
 
                                                             datePickerButton.val(element.val());
 
                                                             datePickerButton.pDatepicker({
-                                                                position: ['0px', '0px'],
+                                                                position: ["0px", "0px"],
                                                                 autoClose: field.viewType == "Date",
                                                                 altField: element,
                                                                 altFieldFormatter: (e) => {
-                                                                    let result = new Date(e);
+                                                                    const result = new Date(e);
                                                                     return result;
                                                                 },
                                                                 formatter: (e) => {
-                                                                    let result = new Date(e);
+                                                                    const result = new Date(e);
                                                                     if (field.dateType == "DateTime")
                                                                         return dateTimeService.getFormattedDateTime(result);
                                                                     else
@@ -314,25 +314,25 @@ module Foundation.View.Directives {
                                                                 },
                                                                 onShow: () => {
 
-                                                                    let thisPDatePickerElementToBePopupedUsingKendoPopup = angular.element('.datepicker-plot-area')
+                                                                    const thisPDatePickerElementToBePopupedUsingKendoPopup = angular.element(".datepicker-plot-area")
                                                                         .filter((eId, el) => angular.element(el).is(":visible"));
 
-                                                                    let parentMenu = element.parents('div.k-column-menu').first();
+                                                                    const parentMenu = element.parents("div.k-column-menu").first();
 
-                                                                    let kendoPopupElement = thisPDatePickerElementToBePopupedUsingKendoPopup.kendoPopup({
+                                                                    const kendoPopupElement = thisPDatePickerElementToBePopupedUsingKendoPopup.kendoPopup({
                                                                         anchor: parentMenu
                                                                     });
 
-                                                                    let kendoPopup = kendoPopupElement.data('kendoPopup');
+                                                                    const kendoPopup = kendoPopupElement.data("kendoPopup");
 
                                                                     kendoPopup.open();
 
-                                                                    thisPDatePickerElementToBePopupedUsingKendoPopup.css('top', '-25px');
+                                                                    thisPDatePickerElementToBePopupedUsingKendoPopup.css("top", "-25px");
 
-                                                                    this['kendoPopuo'] = kendoPopup;
+                                                                    this["kendoPopuo"] = kendoPopup;
                                                                 },
                                                                 onHide: () => {
-                                                                    this['kendoPopuo'].destroy();
+                                                                    this["kendoPopuo"].destroy();
                                                                 }
                                                             });
 
@@ -351,14 +351,14 @@ module Foundation.View.Directives {
                                                 }
                                             }
 
-                                            let filterDataSourceAttributeValue = wrappedItem.attr('filter-data-source');
+                                            const filterDataSourceAttributeValue = wrappedItem.attr("filter-data-source");
 
                                             if (filterDataSourceAttributeValue != null) {
 
-                                                let filterDataSource: kendo.data.DataSource = $parse(filterDataSourceAttributeValue)($scope);
+                                                const filterDataSource: kendo.data.DataSource = $parse(filterDataSourceAttributeValue)($scope);
 
-                                                let filterTextFieldName = wrappedItem.attr('filter-text-field');
-                                                let filterValueFieldName = wrappedItem.attr('filter-value-field');
+                                                const filterTextFieldName = wrappedItem.attr("filter-text-field");
+                                                const filterValueFieldName = wrappedItem.attr("filter-value-field");
 
                                                 if (filterDataSource.options.schema.model.fields[filterTextFieldName] == null)
                                                     throw new Error(`Model has no property named ${filterTextFieldName} to be used as text field`);
@@ -384,8 +384,8 @@ module Foundation.View.Directives {
                                                             delay: 300,
                                                             ignoreCase: true,
                                                             minLength: 3,
-                                                            placeholder: '...',
-                                                            filter: 'contains',
+                                                            placeholder: "...",
+                                                            filter: "contains",
                                                             suggest: true,
                                                             highlightFirst: true
                                                         });
@@ -405,7 +405,7 @@ module Foundation.View.Directives {
 
                             gridOptions.columns = columns;
 
-                            $scope[attributes['isolatedOptionsKey']] = gridOptions;
+                            $scope[attributes["isolatedOptionsKey"]] = gridOptions;
                         });
                     });
                 }

@@ -29,7 +29,7 @@ namespace Foundation.Api.Middlewares
                 _baseRedirectUri = $"{activEnvironment.Security.SSOServerUrl}connect/authorize?scope={string.Join(" ", activEnvironment.Security.Scopes)}&client_id={activEnvironment.Security.ClientName}&redirect_uri={activEnvironment.GetConfig("ClientHostBaseUri", context.Request.Host.Value)}{activEnvironment.GetConfig("ClientHostVirtualPath", "/")}SignIn&response_type=id_token token";
             }
 
-            string pathname = activEnvironment.GetConfig("ClientHostVirtualPath", "/") + (context.Request.Path.HasValue ? context.Request.Path.Value.ToString().Substring(1) : string.Empty);
+            string pathname = activEnvironment.GetConfig("ClientHostVirtualPath", "/") + (context.Request.Path.HasValue ? context.Request.Path.Value.Substring(1) : string.Empty);
 
             string state = $@"{{""pathname"":""{pathname}""}}";
 

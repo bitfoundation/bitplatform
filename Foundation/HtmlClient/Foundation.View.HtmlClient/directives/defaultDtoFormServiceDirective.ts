@@ -1,28 +1,28 @@
 ﻿module Foundation.View.Directives {
 
-    @Foundation.Core.DirectiveDependency({ name: 'dtoFormService' })
-    export class DefaultDtoFormServiceDirective implements Foundation.ViewModel.Contracts.IDirective {
+    @Core.DirectiveDependency({ name: "dtoFormService" })
+    export class DefaultDtoFormServiceDirective implements ViewModel.Contracts.IDirective {
         public getDirectiveFactory(): angular.IDirectiveFactory {
             return () => ({
-                restrict: 'A',
-                require: 'ngModel',
+                restrict: "A",
+                require: "ngModel",
                 scope: false,
                 link($scope: angular.IScope, element: JQuery, attributes: any, ctrl: any, ngModel) {
 
-                    let defaultDtoViewModel: Foundation.ViewModel.Implementations.DefaultDtoViewModel<Foundation.Model.Contracts.IDto, ViewModel.Implementations.DtoRules<Model.Contracts.IDto>> = null;
-                    let dtoViewModel: Foundation.ViewModel.Contracts.IDtoViewModel<Foundation.Model.Contracts.IDto> = null;
-                    let dtoRules: Foundation.ViewModel.Implementations.DtoRules<Foundation.Model.Contracts.IDto> = null;
+                    let defaultDtoViewModel: ViewModel.Implementations.DefaultDtoViewModel<Model.Contracts.IDto, ViewModel.Implementations.DtoRules<Model.Contracts.IDto>> = null;
+                    let dtoViewModel: ViewModel.Contracts.IDtoViewModel<Model.Contracts.IDto> = null;
+                    let dtoRules: ViewModel.Implementations.DtoRules<Model.Contracts.IDto> = null;
 
-                    let dependencyManager = Core.DependencyManager.getCurrent();
+                    const dependencyManager = Core.DependencyManager.getCurrent();
 
-                    let $timeout = dependencyManager.resolveObject<angular.ITimeoutService>("$timeout");
-                    let $parse = dependencyManager.resolveObject<angular.IParseService>("$parse");
-                    let dateTimeService = dependencyManager.resolveObject<Foundation.ViewModel.Contracts.IDateTimeService>("DateTimeService");
+                    const $timeout = dependencyManager.resolveObject<angular.ITimeoutService>("$timeout");
+                    const $parse = dependencyManager.resolveObject<angular.IParseService>("$parse");
+                    const dateTimeService = dependencyManager.resolveObject<ViewModel.Contracts.IDateTimeService>("DateTimeService");
                     const clientAppProfile = dependencyManager.resolveObject<Core.ClientAppProfileManager>("ClientAppProfileManager").getClientAppProfile();
 
                     $timeout(() => {
 
-                        let unRegister = $scope.$watch(attributes.ngModel, (model: any) => {
+                        const unRegister = $scope.$watch(attributes.ngModel, (model: any) => {
 
                             if (model == null)
                                 return;
@@ -60,26 +60,26 @@
 
                                     let propDefenition = memberDefenitions[`$${prp}`];
 
-                                    if (propDefenition != null && propDefenition.kind == 'property') {
+                                    if (propDefenition != null && propDefenition.kind == "property") {
 
                                         let propModelController = ctrl.$$parentForm[prp];
 
-                                        Object.defineProperty(propModelController, 'visible', {
+                                        Object.defineProperty(propModelController, "visible", {
                                             configurable: true,
                                             set: (isVisible: boolean) => {
-                                                let currentForm = element;
+                                                const currentForm = element;
                                                 let currentItem = angular.element(element).find(`[name='${propDefenition.name}']`);
-                                                let data = currentItem.data();
+                                                const data = currentItem.data();
                                                 if (data != null && data["handler"] != null && data["handler"].wrapper != null)
                                                     currentItem = data["handler"].wrapper;
 
                                                 if (isVisible == true) {
                                                     currentItem.show();
-                                                    currentItem.parents('md-input-container').show();
+                                                    currentItem.parents("md-input-container").show();
                                                 }
                                                 else {
                                                     currentItem.hide();
-                                                    currentItem.parents('md-input-container').hide();
+                                                    currentItem.parents("md-input-container").hide();
                                                 }
                                             },
                                             get: () => {
@@ -87,19 +87,19 @@
                                             }
                                         });
 
-                                        Object.defineProperty(propModelController, 'editable', {
+                                        Object.defineProperty(propModelController, "editable", {
                                             configurable: true,
                                             set: (isEditable: boolean) => {
-                                                let currentForm = element;
+                                                const currentForm = element;
                                                 let currentItem = angular.element(element).find(`[name='${propDefenition.name}']`);
-                                                let data = currentItem.data();
+                                                const data = currentItem.data();
                                                 if (data != null && data["handler"] != null && data["handler"].wrapper != null) {
                                                     currentItem = data["handler"].wrapper;
                                                     if (data["handler"]["readonly"] != null)
                                                         data["handler"]["readonly"](!isEditable);
                                                 }
 
-                                                currentItem.prop('readonly', !isEditable);
+                                                currentItem.prop("readonly", !isEditable);
                                             },
                                             get: () => {
                                                 throw new Error("Return prop is editable or not is not implemented yet");
@@ -126,7 +126,7 @@
                                             });
                                         }
 
-                                        if (propDefenition.dataType == "Edm.DateTimeOffset" || propDefenition.dataType == $data['DateTimeOffset']) {
+                                        if (propDefenition.dataType == "Edm.DateTimeOffset" || propDefenition.dataType == $data["DateTimeOffset"]) {
                                             propModelController.$parsers.push((viewValue) => {
                                                 if (viewValue != null && !(viewValue instanceof Date)) {
                                                     viewValue = dateTimeService.parseDate(viewValue);
@@ -172,8 +172,8 @@
 
                             if (attributes.dtoViewModel != null) {
                                 dtoViewModel = $parse(attributes.dtoViewModel)($scope);
-                                if (dtoViewModel instanceof Foundation.ViewModel.Implementations.DefaultDtoViewModel) {
-                                    defaultDtoViewModel = dtoViewModel as Foundation.ViewModel.Implementations.DefaultDtoViewModel<Foundation.Model.Contracts.IDto, ViewModel.Implementations.DtoRules<Model.Contracts.IDto>>;
+                                if (dtoViewModel instanceof ViewModel.Implementations.DefaultDtoViewModel) {
+                                    defaultDtoViewModel = dtoViewModel as ViewModel.Implementations.DefaultDtoViewModel<Model.Contracts.IDto, ViewModel.Implementations.DtoRules<Model.Contracts.IDto>>;
                                 }
                             }
 
@@ -198,7 +198,7 @@
                                         await defaultDtoViewModel.onActivated();
                                     }
                                     finally {
-                                        Foundation.ViewModel.ScopeManager.update$scope($scope);
+                                        ViewModel.ScopeManager.update$scope($scope);
                                     }
                                 })();
                             }
@@ -228,7 +228,7 @@
                                 });
 
                                 dtoRules.setMemberValidaty = (memberName: string, errorKey: string, isValid: boolean): void => {
-                                    let propModelCtrl = propModelControllers.find(p => p.$name == memberName);
+                                    const propModelCtrl = propModelControllers.find(p => p.$name == memberName);
                                     if (propModelCtrl != null)
                                         propModelCtrl.$setValidity(errorKey, isValid);
                                     else {

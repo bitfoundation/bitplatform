@@ -15,7 +15,7 @@
             culture = culture == null ? this.clientAppProfileManager.getClientAppProfile().culture : culture;
 
             if (culture == "FaIr") {
-                return persianDate(date).format('YYYY/MM/DD') as string;
+                return persianDate(date).format("YYYY/MM/DD") as string;
             }
             else {
                 return kendo.toString(date, "yyyy/dd/MM");
@@ -33,7 +33,7 @@
             culture = culture == null ? this.clientAppProfileManager.getClientAppProfile().culture : culture;
 
             if (culture == "FaIr") {
-                return persianDate(date).format('DD MMMM YYYY, hh:mm a') as string;
+                return persianDate(date).format("DD MMMM YYYY, hh:mm a") as string;
             }
             else {
                 return kendo.toString(date, "yyyy/dd/MM, hh:mm tt");

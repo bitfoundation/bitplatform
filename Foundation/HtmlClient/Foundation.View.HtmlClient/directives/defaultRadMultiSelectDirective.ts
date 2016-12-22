@@ -2,70 +2,70 @@
 
 module Foundation.View.Directives {
 
-    @Foundation.Core.DirectiveDependency({ name: 'radMultiSelect' })
-    export class DefaultRadMultiSelectDirective implements Foundation.ViewModel.Contracts.IDirective {
+    @Core.DirectiveDependency({ name: "radMultiSelect" })
+    export class DefaultRadMultiSelectDirective implements ViewModel.Contracts.IDirective {
         public getDirectiveFactory(): angular.IDirectiveFactory {
             return () => ({
                 scope: false,
                 replace: true,
                 terminal: true,
-                required: 'ngModel',
+                required: "ngModel",
                 template: (element: JQuery, attrs: ng.IAttributes) => {
 
-                    let guidUtils = Core.DependencyManager.getCurrent().resolveObject<ViewModel.Implementations.GuidUtils>("GuidUtils");
+                    const guidUtils = Core.DependencyManager.getCurrent().resolveObject<ViewModel.Implementations.GuidUtils>("GuidUtils");
 
-                    let itemTemplate = element
+                    const itemTemplate = element
                         .children("item-template");
 
                     if (itemTemplate.length != 0) {
 
-                        let itemTemplateId = guidUtils.newGuid();
+                        const itemTemplateId = guidUtils.newGuid();
 
-                        itemTemplate.attr('id', itemTemplateId);
+                        itemTemplate.attr("id", itemTemplateId);
 
                         angular.element(document.body).append(itemTemplate);
 
-                        attrs['itemTemplateId'] = itemTemplateId;
+                        attrs["itemTemplateId"] = itemTemplateId;
                     }
 
-                    let tagTemplate = element
+                    const tagTemplate = element
                         .children("tag-template");
 
                     if (tagTemplate.length != 0) {
 
-                        let tagTemplateId = guidUtils.newGuid();
+                        const tagTemplateId = guidUtils.newGuid();
 
-                        tagTemplate.attr('id', tagTemplateId);
+                        tagTemplate.attr("id", tagTemplateId);
 
                         angular.element(document.body).append(tagTemplate);
 
-                        attrs['tagTemplateId'] = tagTemplateId;
+                        attrs["tagTemplateId"] = tagTemplateId;
                     }
 
-                    let headerTemplate = element
+                    const headerTemplate = element
                         .children("header-template");
 
                     if (headerTemplate.length != 0) {
 
-                        let headerTemplateId = guidUtils.newGuid();
+                        const headerTemplateId = guidUtils.newGuid();
 
-                        headerTemplate.attr('id', headerTemplateId);
+                        headerTemplate.attr("id", headerTemplateId);
 
                         angular.element(document.body).append(headerTemplate);
 
-                        attrs['headerTemplateId'] = headerTemplateId;
+                        attrs["headerTemplateId"] = headerTemplateId;
                     }
 
-                    let replaceAll = (text: string, search: string, replacement: string) => {
-                        return text.replace(new RegExp(search, 'g'), replacement);
+                    const replaceAll = (text: string, search: string, replacement: string) => {
+                        return text.replace(new RegExp(search, "g"), replacement);
                     };
 
-                    let isolatedOptionsKey = 'options' + replaceAll(guidUtils.newGuid(), '-', '');
+                    const isolatedOptionsKey = "options" + replaceAll(guidUtils.newGuid(), "-", "");
 
-                    attrs['isolatedOptionsKey'] = isolatedOptionsKey;
+                    attrs["isolatedOptionsKey"] = isolatedOptionsKey;
 
-                    let ngModelOptions = '';
-                    if (attrs['ngModel'] != null && attrs['ngModelOptions'] == null) {
+                    let ngModelOptions = "";
+                    if (attrs["ngModel"] != null && attrs["ngModelOptions"] == null) {
                         ngModelOptions = `ng-model-options="{ updateOn : 'change' , allowInvalid : true }"`;
                     }
 
@@ -75,26 +75,26 @@ module Foundation.View.Directives {
                 },
                 link($scope: angular.IScope, element: JQuery, attributes: any) {
 
-                    let dependencyManager = Core.DependencyManager.getCurrent();
+                    const dependencyManager = Core.DependencyManager.getCurrent();
 
-                    let $timeout = dependencyManager.resolveObject<angular.ITimeoutService>("$timeout");
-                    let $parse = dependencyManager.resolveObject<angular.IParseService>("$parse");
+                    const $timeout = dependencyManager.resolveObject<angular.ITimeoutService>("$timeout");
+                    const $parse = dependencyManager.resolveObject<angular.IParseService>("$parse");
                     let ngModelAssign = null;
                     if (attributes.ngModel != null)
                         ngModelAssign = $parse(attributes.ngModel).assign;
 
                     $timeout(() => {
 
-                        let watches = attributes.radText != null ? [attributes.radDatasource, (() => {
-                            let modelParts = attributes.radText.split('.');
+                        const watches = attributes.radText != null ? [attributes.radDatasource, (() => {
+                            const modelParts = attributes.radText.split(".");
                             modelParts.pop();
-                            let modelParentProp = modelParts.join('.');
+                            const modelParentProp = modelParts.join(".");
                             return modelParentProp;
                         })()] : [attributes.radDatasource];
 
                         let model = null;
 
-                        let watchForDatasourceAndNgModelIfAnyToCreateComboWidgetUnRegisterHandler = $scope.$watchGroup(watches, (values: Array<any>) => {
+                        const watchForDatasourceAndNgModelIfAnyToCreateComboWidgetUnRegisterHandler = $scope.$watchGroup(watches, (values: Array<any>) => {
 
                             if (values == null || values.length == 0 || values.some(v => v == null))
                                 return;
@@ -124,37 +124,37 @@ module Foundation.View.Directives {
 
                                 kendoWidgetCreatedDisposal();
 
-                                if (window['ngMaterial'] != null) {
+                                if (window["ngMaterial"] != null) {
 
-                                    let mdInputContainerParent = multiSelect.wrapper.parents('md-input-container');
+                                    const mdInputContainerParent = multiSelect.wrapper.parents("md-input-container");
 
                                     if (mdInputContainerParent.length != 0) {
 
                                         multiSelect.wrapper
                                             .focusin(() => {
 
-                                                if (angular.element(element).is(':disabled'))
+                                                if (angular.element(element).is(":disabled"))
                                                     return;
 
-                                                mdInputContainerParent.addClass('md-input-focused');
+                                                mdInputContainerParent.addClass("md-input-focused");
 
                                                 multiSelect.open(); // Should be removed
                                             })
                                             .focusout(() => {
-                                                mdInputContainerParent.removeClass('md-input-focused')
+                                                mdInputContainerParent.removeClass("md-input-focused")
                                             });
 
                                         $scope.$watchCollection<Array<any>>(attributes.ngModel, (newVal, oldVal) => {
                                             if (newVal != null && newVal.length != 0)
-                                                mdInputContainerParent.addClass('md-input-has-value');
+                                                mdInputContainerParent.addClass("md-input-has-value");
                                             else
-                                                mdInputContainerParent.removeClass('md-input-has-value');
+                                                mdInputContainerParent.removeClass("md-input-has-value");
                                         });
 
 
-                                        let $destroyDisposal = $scope.$on('$destroy', () => {
-                                            multiSelect.wrapper.unbind('focusin');
-                                            multiSelect.wrapper.unbind('focusout');
+                                        const $destroyDisposal = $scope.$on("$destroy", () => {
+                                            multiSelect.wrapper.unbind("focusin");
+                                            multiSelect.wrapper.unbind("focusout");
                                             $destroyDisposal();
                                         });
                                     }
@@ -186,9 +186,9 @@ module Foundation.View.Directives {
                                 autoClose: false // Should be removed
                             };
 
-                            if (attributes['itemTemplateId'] != null) {
+                            if (attributes["itemTemplateId"] != null) {
 
-                                let itemTemplateElement = angular.element("#" + attributes['itemTemplateId']);
+                                let itemTemplateElement = angular.element("#" + attributes["itemTemplateId"]);
 
                                 let itemTemplateElementHtml = itemTemplateElement.html();
 
@@ -199,9 +199,9 @@ module Foundation.View.Directives {
                                 multiSelectOptions.itemTemplate = itemTemplate;
                             }
 
-                            if (attributes['tagTemplateId'] != null) {
+                            if (attributes["tagTemplateId"] != null) {
 
-                                let tagTemplateElement = angular.element("#" + attributes['tagTemplateId']);
+                                let tagTemplateElement = angular.element("#" + attributes["tagTemplateId"]);
 
                                 let tagTemplateElementHtml = tagTemplateElement.html();
 
@@ -212,9 +212,9 @@ module Foundation.View.Directives {
                                 multiSelectOptions.tagTemplate = tagTemplate;
                             }
 
-                            if (attributes['headerTemplateId'] != null) {
+                            if (attributes["headerTemplateId"] != null) {
 
-                                let headerTemplateElement = angular.element("#" + attributes['headerTemplateId']);
+                                let headerTemplateElement = angular.element("#" + attributes["headerTemplateId"]);
 
                                 let headerTemplateElementHtml = headerTemplateElement.html();
 
@@ -231,7 +231,7 @@ module Foundation.View.Directives {
                             if (dataSource.options.schema.model.fields[multiSelectOptions.dataValueField] == null)
                                 throw new Error(`Model has no property named ${multiSelectOptions.dataValueField} to be used as value field`);
 
-                            $scope[attributes['isolatedOptionsKey']] = multiSelectOptions;
+                            $scope[attributes["isolatedOptionsKey"]] = multiSelectOptions;
 
                         });
                     });

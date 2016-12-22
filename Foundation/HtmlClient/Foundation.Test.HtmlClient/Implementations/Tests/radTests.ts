@@ -5,15 +5,15 @@
 
             const uiAutomation = new UIAutomation<ViewModels.RadGridFormViewModel>(angular.element("#radGridView"));
 
-            let vm = uiAutomation.formViewModel;
+            const vm = uiAutomation.formViewModel;
 
-            let grid = uiAutomation.view.find("#gridView").data('kendoGrid');
+            const grid = uiAutomation.view.find("#gridView").data("kendoGrid");
 
             await uiAutomation.delay();
 
             await grid.addRow();
 
-            let parentEntity = vm.parentEntitiesDataSource.current as Model.DomainModels.ParentEntity;
+            const parentEntity = vm.parentEntitiesDataSource.current as Model.DomainModels.ParentEntity;
 
             parentEntity.Name = "!";
 
@@ -21,7 +21,7 @@
 
             await uiAutomation.delay();
 
-            if (parentEntity.Id != '999') {
+            if (parentEntity.Id != "999") {
                 throw new Error("rad grid add problem");
             }
 
@@ -29,7 +29,7 @@
                 throw new Error("rad grid add problem");
             }
 
-            if ($("[name='Id']").filter((tdIndex: number, tdElement: HTMLTableRowElement) => tdElement.innerText == '999').length == 0) {
+            if ($("[name='Id']").filter((tdIndex: number, tdElement: HTMLTableRowElement) => tdElement.innerText == "999").length == 0) {
                 throw new Error("rad grid add problem");
             }
         }
@@ -38,13 +38,13 @@
 
             const uiAutomation = new UIAutomation<ViewModels.RadComboFormViewModel>(angular.element("#radComboView"));
 
-            uiAutomation.formViewModel.testModelsDataSource.current = uiAutomation.formViewModel.testModelsDataSource.dataView<Foundation.Test.Model.DomainModels.TestModel>().find(i => i['StringProperty'] == "String2");
+            uiAutomation.formViewModel.testModelsDataSource.current = uiAutomation.formViewModel.testModelsDataSource.dataView<Test.Model.DomainModels.TestModel>().find(i => i["StringProperty"] == "String2");
 
-            let vm = uiAutomation.formViewModel;
+            const vm = uiAutomation.formViewModel;
 
             uiAutomation.updateUI();
 
-            if (vm.model.TestModel.Id != '2')
+            if (vm.model.TestModel.Id != "2")
                 throw new Error("rad combo problem");
 
             if (uiAutomation.view.find("#test2").text() != "2")
@@ -55,7 +55,7 @@
 
             await uiAutomation.formViewModel.setCurrent();
 
-            if (vm.model.TestModel.Id as any /* see https://github.com/Microsoft/TypeScript/issues/12761#issuecomment-265834364 */ != '1')
+            if (vm.model.TestModel.Id as any /* see https://github.com/Microsoft/TypeScript/issues/12761#issuecomment-265834364 */ != "1")
                 throw new Error("rad combo problem");
 
             if (uiAutomation.view.find("#test2").text() != "1")

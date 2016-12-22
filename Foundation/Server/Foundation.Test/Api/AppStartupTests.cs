@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Linq;
-using System.Threading.Tasks;
 using FakeItEasy;
 using Foundation.Core.Contracts;
 using Foundation.Test.Core.Implementations;

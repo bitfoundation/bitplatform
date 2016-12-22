@@ -33,7 +33,7 @@ namespace Foundation.Test.Api.Middlewares.Tests
 
                 Assert.AreEqual(HttpStatusCode.Redirect, getDefaultPageResponse.StatusCode);
 
-                Assert.AreEqual(new Uri($@"http://127.0.0.1:8080/core/connect/authorize?scope=openid profile user_info&client_id=Test&redirect_uri=http://127.0.0.1/SignIn&response_type=id_token token&state={{""pathname"":""/some-page""}}&nonce=RandomString"),
+                Assert.AreEqual(new Uri(@"http://127.0.0.1:8080/core/connect/authorize?scope=openid profile user_info&client_id=Test&redirect_uri=http://127.0.0.1/SignIn&response_type=id_token token&state={""pathname"":""/some-page""}&nonce=RandomString"),
                     getDefaultPageResponse.Headers.Location);
             }
         }

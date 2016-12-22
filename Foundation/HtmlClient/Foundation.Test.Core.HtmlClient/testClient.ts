@@ -15,40 +15,40 @@ let objectResolver = (key, value) => {
 let executeTest = async (testFunc: Function, args: string | any): Promise<void> => {
 
     if (testFunc == null)
-        throw new Error('testFunc is null');
+        throw new Error("testFunc is null");
 
     try {
 
         Foundation.ViewModel.ScopeManager.Use$ApplyAsync = false;
 
-        let jasmineReq = window['jasmineRequire'];
+        const jasmineReq = window["jasmineRequire"];
 
-        window['jasmine'] = jasmineReq.core(jasmineReq);
+        window["jasmine"] = jasmineReq.core(jasmineReq);
 
-        let env = jasmine.getEnv();
+        const env = jasmine.getEnv();
 
-        let jasmineInterface = jasmineReq.interface(jasmine, env);
+        const jasmineInterface = jasmineReq.interface(jasmine, env);
 
-        let extend = (destination, source) => {
+        const extend = (destination, source) => {
             for (let property in source)
                 destination[property] = source[property];
             return destination;
-        }
+        };
 
         extend(window, jasmineInterface);
 
         jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
 
-        await Foundation.Core.DependencyManager.getCurrent().resolveFile('jasmine-jquery');
+        await Foundation.Core.DependencyManager.getCurrent().resolveFile("jasmine-jquery");
 
         let itResult = null;
 
-        let waitHandle = new Promise<void>((resolve, reject) => {
+        const waitHandle = new Promise<void>((resolve, reject) => {
 
-            describe('Describe', () => {
-                itResult = it('It', async (done) => {
+            describe("Describe", () => {
+                itResult = it("It", async (done) => {
                     try {
-                        await testFunc.apply(this, typeof args == 'string' ? JSON.parse(args, objectResolver) : args);
+                        await testFunc.apply(this, typeof args == "string" ? JSON.parse(args, objectResolver) : args);
                         angular.element("#testsConsole").val("Success");
                         resolve();
                     }
@@ -68,9 +68,9 @@ let executeTest = async (testFunc: Function, args: string | any): Promise<void> 
         await waitHandle;
 
         if (itResult.result.failedExpectations.length != 0) {
-            let errorMessage = '';
+            let errorMessage = "";
             for (let failedExpIndex = 0; failedExpIndex < itResult.result.failedExpectations.length; failedExpIndex++) {
-                errorMessage += '\n' + itResult.result.failedExpectations[failedExpIndex].message;
+                errorMessage += "\n" + itResult.result.failedExpectations[failedExpIndex].message;
             }
             throw new Error(errorMessage);
         }

@@ -3,11 +3,11 @@
     const contextProvider = Foundation.Core.DependencyManager.getCurrent().resolveObject<Foundation.ViewModel.Contracts.IEntityContextProvider>("EntityContextProvider");
     const context = await contextProvider.getContext<TestContext>("Test");
 
-    let complexDto = context.testComplex.add({ EntityId: 0, ComplexObj: { Name: 'Test' } });
+    const complexDto = context.testComplex.add({ EntityId: 0, ComplexObj: { Name: "Test" } });
 
     await context.saveChanges();
 
-    expect(complexDto.ComplexObj.Name).toBe('Test?');
+    expect(complexDto.ComplexObj.Name).toBe("Test?");
 
     let complexDtoLoadedFromServer = await context.testComplex.find(1);
 
@@ -31,11 +31,11 @@ let testComplexTypeWithOfflineDb = async (): Promise<void> => {
     const contextProvider = Foundation.Core.DependencyManager.getCurrent().resolveObject<Foundation.ViewModel.Contracts.IEntityContextProvider>("EntityContextProvider");
     const insertContext = await contextProvider.getContext<TestContext>("Test", { isOffline: true });
 
-    let complexDto = insertContext.testComplex.add({ EntityId: 1, ComplexObj: { Name: 'Test' } });
+    let complexDto = insertContext.testComplex.add({ EntityId: 1, ComplexObj: { Name: "Test" } });
 
     await insertContext.saveChanges();
 
-    let updateContext = await contextProvider.getContext<TestContext>("Test", { isOffline: true })
+    const updateContext = await contextProvider.getContext<TestContext>("Test", { isOffline: true });
 
     complexDto = await updateContext.testComplex.find(1);
 
@@ -45,7 +45,7 @@ let testComplexTypeWithOfflineDb = async (): Promise<void> => {
 
     await updateContext.saveChanges();
 
-    let readContext = await contextProvider.getContext<TestContext>("Test", { isOffline: true })
+    const readContext = await contextProvider.getContext<TestContext>("Test", { isOffline: true });
 
     complexDto = await readContext.testComplex.find(1);
 
@@ -57,7 +57,7 @@ let simpleArrayValuesTest = async (): Promise<void> => {
     const contextProvider = Foundation.Core.DependencyManager.getCurrent().resolveObject<Foundation.ViewModel.Contracts.IEntityContextProvider>("EntityContextProvider");
     const context = await contextProvider.getContext<TestContext>("Test");
 
-    let values = await context.testComplex.getValues([1, 2]).toArray();
+    const values = await context.testComplex.getValues([1, 2]).toArray();
 
     expect(values.map(v => v)).toEqual([2, 1]);
 };
@@ -67,11 +67,11 @@ let enumTest = async (): Promise<void> => {
     const contextProvider = Foundation.Core.DependencyManager.getCurrent().resolveObject<Foundation.ViewModel.Contracts.IEntityContextProvider>("EntityContextProvider");
     const context = await contextProvider.getContext<TestContext>("Test");
 
-    let dtoWithEnum = await context.dtoWithEnum.getDtoWithEnumsByGender(Foundation.Test.Model.Dto.TestGender.Man).first();
+    const dtoWithEnum = await context.dtoWithEnum.getDtoWithEnumsByGender(Foundation.Test.Model.Dto.TestGender.Man).first();
 
     expect(dtoWithEnum.Gender).toBe(Foundation.Test.Model.Dto.TestGender.Man);
 
-    let dtoWithEnum2 = await context.dtoWithEnum.getDtoWithEnumsByGender2(Foundation.Test.Model.Dto.TestGender2.Man).first();
+    const dtoWithEnum2 = await context.dtoWithEnum.getDtoWithEnumsByGender2(Foundation.Test.Model.Dto.TestGender2.Man).first();
 
     expect(dtoWithEnum2.Test).toBe("Man");
 

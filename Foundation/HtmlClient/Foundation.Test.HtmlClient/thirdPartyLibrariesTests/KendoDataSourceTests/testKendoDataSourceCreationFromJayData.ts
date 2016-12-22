@@ -15,7 +15,7 @@ let testKendoDataSourceCreationFromJayDataEntitySet = async (): Promise<void> =>
 let testKendoDataSourceCreationFromJayDataODataFunctionCall = async (): Promise<void> => {
     const contextProvider = Foundation.Core.DependencyManager.getCurrent().resolveObject<Foundation.ViewModel.Contracts.IEntityContextProvider>("EntityContextProvider");
     const context = await contextProvider.getContext<TestContext>("Test");
-    const dataSource = context.testModels.getTestModelsByStringPropertyValue('1').asKendoDataSource();
+    const dataSource = context.testModels.getTestModelsByStringPropertyValue("1").asKendoDataSource();
     await dataSource.query({
         filter: { field: "StringProperty", operator: "eq", value: "String1" }
     });

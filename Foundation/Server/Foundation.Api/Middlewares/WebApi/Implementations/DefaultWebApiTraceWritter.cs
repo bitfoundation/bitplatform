@@ -34,7 +34,7 @@ namespace Foundation.Api.Middlewares.WebApi.Implementations
                 {
                     Exception exception = traceRecord.Exception;
 
-                    if (exception is TargetInvocationException)
+                    if (exception is TargetInvocationException && exception.InnerException != null)
                         exception = exception.InnerException;
 
                     logger.AddLogData("WebExceptionType", exception.GetType().FullName);

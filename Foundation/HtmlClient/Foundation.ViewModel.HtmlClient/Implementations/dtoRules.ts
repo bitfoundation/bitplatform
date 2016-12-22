@@ -1,6 +1,6 @@
 ﻿module Foundation.ViewModel.Implementations {
 
-    export class DtoRules<TDto extends Foundation.Model.Contracts.IDto> {
+    export class DtoRules<TDto extends Model.Contracts.IDto> {
 
         private _model: TDto;
 

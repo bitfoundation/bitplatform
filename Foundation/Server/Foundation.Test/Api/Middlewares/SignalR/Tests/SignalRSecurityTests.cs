@@ -1,5 +1,4 @@
 ﻿using System.Net;
-using System.Threading.Tasks;
 using Microsoft.AspNet.SignalR.Client;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
@@ -34,7 +33,7 @@ namespace Foundation.Test.Api.Middlewares.SignalR.Tests
                 }
                 catch (AggregateException ex)
                 {
-                    Assert.AreEqual(HttpStatusCode.Unauthorized, ((HttpClientException)ex.InnerException).Response.StatusCode);
+                    Assert.AreEqual(HttpStatusCode.Unauthorized, ((HttpClientException)ex.InnerException)?.Response?.StatusCode);
                 }
             }
         }

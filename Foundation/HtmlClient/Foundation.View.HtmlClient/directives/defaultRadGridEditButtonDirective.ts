@@ -2,8 +2,8 @@
 
 module Foundation.View.Directives {
 
-    @Foundation.Core.DirectiveDependency({ name: 'radGridEditButton' })
-    export class DefaultRadGridEditButtonDirective implements Foundation.ViewModel.Contracts.IDirective {
+    @Core.DirectiveDependency({ name: "radGridEditButton" })
+    export class DefaultRadGridEditButtonDirective implements ViewModel.Contracts.IDirective {
         public static defaultClasses: string[] = ["md-raised"];
         public getDirectiveFactory(): angular.IDirectiveFactory {
             return () => ({
@@ -12,27 +12,27 @@ module Foundation.View.Directives {
                     return {
                         pre: function ($scope, element, attributes: ng.IAttributes, controller, transcludeFn) {
 
-                            let replaceAll = (text: string, search: string, replacement: string) => {
-                                return text.replace(new RegExp(search, 'g'), replacement);
+                            const replaceAll = (text: string, search: string, replacement: string) => {
+                                return text.replace(new RegExp(search, "g"), replacement);
                             };
 
-                            let gridIsolatedKey = angular.element(element).parents('tr').attr('isolatedoptionskey')
+                            const gridIsolatedKey = angular.element(element).parents("tr").attr("isolatedoptionskey");
 
-                            let newElementHtml = replaceAll(element[0].outerHTML, 'rad-grid-edit-button', 'md-button');
+                            const newElementHtml = replaceAll(element[0].outerHTML, "rad-grid-edit-button", "md-button");
 
-                            let newElement = angular.element(newElementHtml).insertAfter(element);
+                            const newElement = angular.element(newElementHtml).insertAfter(element);
 
                             angular.element(element).remove();
 
-                            newElement.attr('ng-click', `${attributes['ngClick'] || ''};${gridIsolatedKey}Update($event)`);
+                            newElement.attr("ng-click", `${attributes["ngClick"] || ""};${gridIsolatedKey}Update($event)`);
 
                             if (DefaultRadGridEditButtonDirective.defaultClasses != null && DefaultRadGridEditButtonDirective.defaultClasses.length != 0) {
-                                DefaultRadGridEditButtonDirective.defaultClasses.filter(cls => cls != null && cls != '').forEach(cls => {
+                                DefaultRadGridEditButtonDirective.defaultClasses.filter(cls => cls != null && cls != "").forEach(cls => {
                                     newElement.addClass(cls);
                                 });
                             }
 
-                            let dependencyManager = Core.DependencyManager.getCurrent();
+                            const dependencyManager = Core.DependencyManager.getCurrent();
 
                             dependencyManager.resolveObject<ng.ICompileService>("$compile")(newElement)($scope);
                         }

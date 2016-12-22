@@ -1,7 +1,7 @@
 ﻿module Foundation.ViewModel.Implementations {
     export abstract class DefaultPathProvider implements Contracts.IPathProvider {
 
-        public constructor(public clientAppProfileManager = Foundation.Core.DependencyManager.getCurrent().resolveObject<Core.ClientAppProfileManager>("ClientAppProfileManager")) {
+        public constructor(public clientAppProfileManager = Core.DependencyManager.getCurrent().resolveObject<Core.ClientAppProfileManager>("ClientAppProfileManager")) {
 
         }
 
@@ -10,7 +10,7 @@
         public getFullPath(relativePath: string | Function | (string | Function)[]): string {
 
             if (relativePath == null)
-                return '';
+                return "";
 
             let rPath: string = null;
 

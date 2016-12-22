@@ -15,7 +15,7 @@ namespace Foundation.Test.Api.Middlewares.WebApi.Tests
             using (TestEnvironment testEnvironment = new TestEnvironment())
             {
                 HttpResponseMessage getTestModels = await testEnvironment.Server.GetHttpClient()
-                        .GetAsync($"/odata/Test/TestModels");
+                        .GetAsync("/odata/Test/TestModels");
 
                 Assert.AreEqual(HttpStatusCode.OK, getTestModels.StatusCode);
 

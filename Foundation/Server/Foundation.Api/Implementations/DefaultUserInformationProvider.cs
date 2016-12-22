@@ -37,7 +37,7 @@ namespace Foundation.Api.Implementations
         {
             return GetClaims()
                 .Single(claim => string.Equals(claim.Type, "primary_sid", StringComparison.OrdinalIgnoreCase))
-                .Value; ;
+                .Value;
         }
 
         public virtual string GetAuthenticationType()

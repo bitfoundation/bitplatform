@@ -16,7 +16,7 @@ namespace Foundation.Api.Middlewares.WebApi.OData.Implementations
             if (server == null)
                 throw new ArgumentNullException(nameof(server));
 
-            owinApp.Map($"/odata", innerApp =>
+            owinApp.Map("/odata", innerApp =>
             {
                 innerApp.Use<AddAcceptCharsetToRequestHeadersIfNotAnyMiddleware>();
                 innerApp.UseXContentTypeOptions();

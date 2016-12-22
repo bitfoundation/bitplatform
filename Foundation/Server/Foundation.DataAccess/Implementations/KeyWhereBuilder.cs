@@ -31,19 +31,16 @@ namespace Foundation.DataAccess.Implementations
 
         private static TypeInfo KeyType = typeof(TKey).GetTypeInfo();
 
-        private static bool IsGuid = typeof(TKey).GetTypeInfo() == typeof(Guid).GetTypeInfo();
-        private static bool IsShort = typeof(TKey).GetTypeInfo() == typeof(short).GetTypeInfo();
-        private static bool IsInt = typeof(TKey).GetTypeInfo() == typeof(int).GetTypeInfo();
-        private static bool IsLong = typeof(TKey).GetTypeInfo() == typeof(long).GetTypeInfo();
-        private static bool IsString = typeof(TKey).GetTypeInfo() == typeof(string).GetTypeInfo();
+        private static readonly bool IsGuid = typeof(TKey).GetTypeInfo() == typeof(Guid).GetTypeInfo();
+        private static readonly bool IsShort = typeof(TKey).GetTypeInfo() == typeof(short).GetTypeInfo();
+        private static readonly bool IsInt = typeof(TKey).GetTypeInfo() == typeof(int).GetTypeInfo();
+        private static readonly bool IsLong = typeof(TKey).GetTypeInfo() == typeof(long).GetTypeInfo();
+        private static readonly bool IsString = typeof(TKey).GetTypeInfo() == typeof(string).GetTypeInfo();
 
-        private static Lazy<MethodInfo> CreateIdWhereForShortMethod = new Lazy<MethodInfo>(() =>
-        {
-            return typeof(KeyWhereBuilder<TSource, TKey>)
-                .GetTypeInfo()
-                .GetMethod(nameof(CreateIdWhereForShort), BindingFlags.NonPublic | BindingFlags.Static)
-                .MakeGenericMethod(typeof(TSource).GetTypeInfo());
-        });
+        private static readonly Lazy<MethodInfo> CreateIdWhereForShortMethod = new Lazy<MethodInfo>(() => typeof(KeyWhereBuilder<TSource, TKey>)
+            .GetTypeInfo()
+            .GetMethod(nameof(CreateIdWhereForShort), BindingFlags.NonPublic | BindingFlags.Static)
+            .MakeGenericMethod(typeof(TSource).GetTypeInfo()));
 
         private static IQueryable<TDtoWithIntKey> CreateIdWhereForShort<TDtoWithIntKey>(IQueryable<TDtoWithIntKey> query, short id)
             where TDtoWithIntKey : IWithDefaultKey<short>
@@ -51,13 +48,10 @@ namespace Foundation.DataAccess.Implementations
             return query.Where(dto => dto.Id == id);
         }
 
-        private static Lazy<MethodInfo> CreateIdWhereForIntMethod = new Lazy<MethodInfo>(() =>
-        {
-            return typeof(KeyWhereBuilder<TSource, TKey>)
-                .GetTypeInfo()
-                .GetMethod(nameof(CreateIdWhereForInt), BindingFlags.NonPublic | BindingFlags.Static)
-                .MakeGenericMethod(typeof(TSource).GetTypeInfo());
-        });
+        private static readonly Lazy<MethodInfo> CreateIdWhereForIntMethod = new Lazy<MethodInfo>(() => typeof(KeyWhereBuilder<TSource, TKey>)
+            .GetTypeInfo()
+            .GetMethod(nameof(CreateIdWhereForInt), BindingFlags.NonPublic | BindingFlags.Static)
+            .MakeGenericMethod(typeof(TSource).GetTypeInfo()));
 
         private static IQueryable<TDtoWithIntKey> CreateIdWhereForInt<TDtoWithIntKey>(IQueryable<TDtoWithIntKey> query, int id)
             where TDtoWithIntKey : IWithDefaultKey<int>
@@ -65,13 +59,10 @@ namespace Foundation.DataAccess.Implementations
             return query.Where(dto => dto.Id == id);
         }
 
-        private static Lazy<MethodInfo> CreateIdWhereForLongMethod = new Lazy<MethodInfo>(() =>
-        {
-            return typeof(KeyWhereBuilder<TSource, TKey>)
-                .GetTypeInfo()
-                .GetMethod(nameof(CreateIdWhereForLong), BindingFlags.NonPublic | BindingFlags.Static)
-                .MakeGenericMethod(typeof(TSource).GetTypeInfo());
-        });
+        private static readonly Lazy<MethodInfo> CreateIdWhereForLongMethod = new Lazy<MethodInfo>(() => typeof(KeyWhereBuilder<TSource, TKey>)
+            .GetTypeInfo()
+            .GetMethod(nameof(CreateIdWhereForLong), BindingFlags.NonPublic | BindingFlags.Static)
+            .MakeGenericMethod(typeof(TSource).GetTypeInfo()));
 
         private static IQueryable<TDtoWithIntKey> CreateIdWhereForLong<TDtoWithIntKey>(IQueryable<TDtoWithIntKey> query, long id)
             where TDtoWithIntKey : IWithDefaultKey<int>
@@ -79,13 +70,10 @@ namespace Foundation.DataAccess.Implementations
             return query.Where(dto => dto.Id == id);
         }
 
-        private static Lazy<MethodInfo> CreateIdWhereForGuidMethod = new Lazy<MethodInfo>(() =>
-        {
-            return typeof(KeyWhereBuilder<TSource, TKey>)
-              .GetTypeInfo()
-              .GetMethod(nameof(CreateIdWhereForGuid), BindingFlags.NonPublic | BindingFlags.Static)
-              .MakeGenericMethod(typeof(TSource).GetTypeInfo());
-        });
+        private static readonly Lazy<MethodInfo> CreateIdWhereForGuidMethod = new Lazy<MethodInfo>(() => typeof(KeyWhereBuilder<TSource, TKey>)
+            .GetTypeInfo()
+            .GetMethod(nameof(CreateIdWhereForGuid), BindingFlags.NonPublic | BindingFlags.Static)
+            .MakeGenericMethod(typeof(TSource).GetTypeInfo()));
 
         private static IQueryable<TDtoWithIntKey> CreateIdWhereForGuid<TDtoWithIntKey>(IQueryable<TDtoWithIntKey> query, Guid id)
             where TDtoWithIntKey : IWithDefaultKey<Guid>
@@ -93,13 +81,10 @@ namespace Foundation.DataAccess.Implementations
             return query.Where(dto => dto.Id == id);
         }
 
-        private static Lazy<MethodInfo> CreateIdWhereForStringMethod = new Lazy<MethodInfo>(() =>
-        {
-            return typeof(KeyWhereBuilder<TSource, TKey>)
-              .GetTypeInfo()
-              .GetMethod(nameof(CreateIdWhereForString), BindingFlags.NonPublic | BindingFlags.Static)
-              .MakeGenericMethod(typeof(TSource).GetTypeInfo());
-        });
+        private static readonly Lazy<MethodInfo> CreateIdWhereForStringMethod = new Lazy<MethodInfo>(() => typeof(KeyWhereBuilder<TSource, TKey>)
+            .GetTypeInfo()
+            .GetMethod(nameof(CreateIdWhereForString), BindingFlags.NonPublic | BindingFlags.Static)
+            .MakeGenericMethod(typeof(TSource).GetTypeInfo()));
 
         private static IQueryable<TDtoWithIntKey> CreateIdWhereForString<TDtoWithIntKey>(IQueryable<TDtoWithIntKey> query, string id)
             where TDtoWithIntKey : IWithDefaultKey<string>

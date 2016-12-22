@@ -3,7 +3,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Owin;
 using Microsoft.AspNetCore.Http;
 using Autofac;
-using System;
 using Autofac.Integration.Owin;
 using System.Reflection;
 using Foundation.Api.Contracts;

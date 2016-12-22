@@ -1,5 +1,4 @@
 ﻿using Foundation.Api.Contracts.Project;
-using Foundation.Api.Middlewares.WebApi.Contracts;
 using Foundation.Api.Middlewares.WebApi.OData.Contracts;
 using System;
 using System.Reflection;

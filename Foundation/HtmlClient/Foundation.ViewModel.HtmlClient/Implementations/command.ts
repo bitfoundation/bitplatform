@@ -4,7 +4,7 @@
 
         return (target: Object, propertyKey: string, descriptor: TypedPropertyDescriptor<any>) => {
 
-            const clientAppProfile = Foundation.Core.ClientAppProfileManager.getCurrent().getClientAppProfile();
+            const clientAppProfile = Core.ClientAppProfileManager.getCurrent().getClientAppProfile();
 
             const originalMethod = descriptor.value;
 
@@ -21,7 +21,7 @@
                         console.time(propertyKey);
                     }
 
-                    $rootScope = Foundation.Core.DependencyManager.getCurrent().resolveObject<ng.IRootScopeService>("$rootScope");
+                    $rootScope = Core.DependencyManager.getCurrent().resolveObject<ng.IRootScopeService>("$rootScope");
 
                     result = originalMethod.apply(this, args);
 
@@ -29,7 +29,7 @@
 
                         isPromise = true;
 
-                        let rPromise = result as Promise<void>;
+                        const rPromise = result as Promise<void>;
 
                         rPromise.then(() => {
 
@@ -44,7 +44,7 @@
 
                             ScopeManager.update$scope($rootScope);
 
-                            const iLogger = Foundation.Core.DependencyManager.getCurrent().resolveObject<Foundation.Core.Contracts.ILogger>("Logger");
+                            const iLogger = Core.DependencyManager.getCurrent().resolveObject<Core.Contracts.ILogger>("Logger");
                             iLogger.logDetailedError(this, propertyKey, args, e);
 
                         });
@@ -53,7 +53,7 @@
                 }
                 catch (e) {
 
-                    const iLogger = Foundation.Core.DependencyManager.getCurrent().resolveObject<Foundation.Core.Contracts.ILogger>("Logger");
+                    const iLogger = Core.DependencyManager.getCurrent().resolveObject<Core.Contracts.ILogger>("Logger");
                     iLogger.logDetailedError(this, propertyKey, args, e);
 
                     throw e;

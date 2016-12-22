@@ -1,7 +1,6 @@
 ﻿using Foundation.Api.Contracts;
 using System;
 using Owin;
-using Microsoft.Owin;
 
 namespace Foundation.Api.Middlewares
 {

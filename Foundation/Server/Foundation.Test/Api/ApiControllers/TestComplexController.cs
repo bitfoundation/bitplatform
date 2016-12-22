@@ -13,7 +13,7 @@ namespace Foundation.Test.Api.ApiControllers
         [Get]
         public virtual IQueryable<TestComplexDto> Get()
         {
-            return new TestComplexDto[]
+            return new[]
             {
                 new TestComplexDto
                 {

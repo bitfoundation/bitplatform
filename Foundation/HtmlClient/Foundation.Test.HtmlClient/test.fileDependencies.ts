@@ -207,7 +207,7 @@
 
     dependencyManager.registerFileDependency({
         name: "jayData-odata-provider",
-        path: "bit-framework/Foundation/HtmlClient/Foundation.Test.HtmlClient/bower_components/jaydata/dist/jaydataproviders/oDataProvider",
+        path: "bit-framework/Foundation/HtmlClient/Foundation.Test.HtmlClient/bower_components/jaydata/dist/jaydataproviders/oDataProvider"
     });
 
     dependencyManager.registerFileDependency({

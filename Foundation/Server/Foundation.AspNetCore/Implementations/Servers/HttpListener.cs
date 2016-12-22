@@ -48,9 +48,15 @@ namespace Foundation.AspNetCore.Implementations.Servers
 
             appFunc = OwinWebSocketAcceptAdapter.AdaptWebSockets(appFunc);
 
-            Dictionary<string, object> props = new Dictionary<string, object>();
+            Dictionary<string, object> props = new Dictionary<string, object>
+            {
+                ["host.Addresses"] =
+                Features.Get<IServerAddressesFeature>()
+                    .Addresses.Select(add => new Uri(add))
+                    .Select(add => new Address(add.Scheme, add.Host, add.Port.ToString(), add.LocalPath).Dictionary)
+                    .ToList()
+            };
 
-            props["host.Addresses"] = Features.Get<IServerAddressesFeature>().Addresses.Select(add => new Uri(add)).Select(add => new Address(add.Scheme, add.Host, add.Port.ToString(), add.LocalPath).Dictionary).ToList();
 
             OwinServerFactory.Initialize(props);
 

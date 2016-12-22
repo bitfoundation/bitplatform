@@ -1,9 +1,9 @@
 ﻿module Foundation.ViewModel.Implementations {
 
-    @Foundation.Core.Injectable()
+    @Core.Injectable()
     export class SignalRMessageReciever implements Core.Contracts.IMessageReciever {
 
-        public constructor( @Foundation.Core.Inject("$rootScope") public $rootScope: ng.IRootScopeService) {
+        public constructor( @Core.Inject("$rootScope") public $rootScope: ng.IRootScopeService) {
 
         }
 
@@ -12,20 +12,20 @@
         private _stayConnected = false;
         private _listeners: Array<{ name: string, callbacks: Array<(args?: any) => Promise<void>> }> = [];
 
-        @Foundation.Core.Log()
+        @Core.Log()
         public async stop(): Promise<void> {
             this._stayConnected = false;
             if ($.signalR != null && $.connection != null && this._isInited == true)
                 $.connection.hub.stop(true, true);
         }
 
-        @Foundation.Core.Log()
+        @Core.Log()
         public async start(config: { preferWebSockets: boolean } = { preferWebSockets: false }): Promise<void> {
             this._stayConnected = true;
             await this.getInitPromise();
             await new Promise<void>((res, rej) => {
                 return $.connection.hub.start({
-                    transport: config.preferWebSockets == true ? ['webSockets', 'serverSentEvents', 'longPolling', 'foreverFrame'] : ['serverSentEvents', 'webSockets', 'longPolling', 'foreverFrame']
+                    transport: config.preferWebSockets == true ? ["webSockets", "serverSentEvents", "longPolling", "foreverFrame"] : ["serverSentEvents", "webSockets", "longPolling", "foreverFrame"]
                 }).then(() => res()).fail((e) => rej(e));
             });
             this._isConnected = true;
@@ -33,7 +33,7 @@
 
         protected async callListeners(messageKey: string, messageArgs: any) {
             if (messageKey == null)
-                throw new Error('messageKey is null');
+                throw new Error("messageKey is null");
             const listenerToCall = this._listeners.find(l => l.name.toLowerCase() == messageKey.toLowerCase());
             if (listenerToCall != null) {
                 try {
@@ -43,7 +43,7 @@
                     }
                 }
                 finally {
-                    Foundation.ViewModel.ScopeManager.update$scope(this.$rootScope);
+                    ViewModel.ScopeManager.update$scope(this.$rootScope);
                 }
             }
         }
@@ -60,8 +60,8 @@
                         if (this._isInited == true)
                             return;
 
-                        if (typeof ($) == undefined)
-                            reject('jQuery is not present');
+                        if (typeof ($) == 'undefined')
+                            reject("jQuery is not present");
 
                         this._isInited = true;
 
@@ -97,7 +97,7 @@
                         const messagesHub: any = $.connection["messagesHub"];
 
                         if (messagesHub == null)
-                            reject('messagesHub is null');
+                            reject("messagesHub is null");
 
                         messagesHub["client"].OnMessageRecieved = async (messageKey: string, messageArgs?: string) => {
                             await this.callListeners(messageKey, (messageArgs == null || messageArgs == "") ? null : JSON.parse(messageArgs));
@@ -134,7 +134,7 @@
         public onMessageRecieved(messageKey: string, callback: (args?: any) => Promise<void>): () => void {
 
             if (messageKey == null)
-                throw new Error('messageKey is null');
+                throw new Error("messageKey is null");
 
             let listener = this._listeners.find(l => l.name.toLowerCase() == messageKey.toLowerCase());
 
@@ -147,7 +147,7 @@
 
             return () => {
 
-                let index = listener.callbacks.indexOf(callback);
+                const index = listener.callbacks.indexOf(callback);
                 if (index !== -1) {
                     listener.callbacks.splice(index, 1);
                 }

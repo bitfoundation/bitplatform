@@ -2,7 +2,7 @@
     export class ValidationTests {
         public static async testValidationFormViewModelWithValidBehavior(): Promise<void> {
 
-            let uiAutomation = new UIAutomation<ViewModels.FormValidationFormViewModel>(angular.element("#formValidationView"));
+            const uiAutomation = new UIAutomation<ViewModels.FormValidationFormViewModel>(angular.element("#formValidationView"));
 
             uiAutomation.formViewModel.validationSampleDto.RequiredByAttributeMember = "value1";
 
@@ -10,7 +10,7 @@
 
             uiAutomation.formViewModel.validationSampleDto.NotRequiredMember = "value3";
 
-            let form = uiAutomation.getForm(angular.element("[name='validationSampleDtoForm']"));
+            const form = uiAutomation.getForm(angular.element("[name='validationSampleDtoForm']"));
 
             await uiAutomation.formViewModel.submitFirstPart(form);
 

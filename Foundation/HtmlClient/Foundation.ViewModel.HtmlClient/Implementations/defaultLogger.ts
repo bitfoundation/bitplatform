@@ -139,7 +139,7 @@ module Foundation.ViewModel.Implementations {
             if (instance && instance.constructor && instance.constructor.name)
                 className = instance.constructor.name;
 
-            let simplifiedArgs = args
+            const simplifiedArgs = args
                 .map(a => {
                     try {
                         return JSON.parse(JSON.stringify(a));

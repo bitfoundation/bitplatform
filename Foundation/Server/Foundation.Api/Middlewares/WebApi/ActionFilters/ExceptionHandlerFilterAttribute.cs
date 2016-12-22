@@ -7,7 +7,6 @@ using System.Web.Http.Filters;
 using System.Web.OData.Extensions;
 using Foundation.Core.Contracts;
 using Foundation.Core.Models;
-using Foundation.Api.Middlewares.WebApi.Contracts;
 using Microsoft.OData;
 using Foundation.Api.Contracts;
 using Microsoft.Owin;

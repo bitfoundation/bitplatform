@@ -9,7 +9,7 @@ module Foundation.ViewModel.Implementations {
                 let idx, result = [], length, items, itemIndex;
 
                 for (idx = 0, length = data.length; idx < length; idx++) {
-                    let group = data[idx] /* instead of data.at(idx) */;
+                    const group = data[idx];
                     if (group.hasSubgroups) {
                         result = result.concat(flattenGroups(group.items));
                     } else {
@@ -26,7 +26,7 @@ module Foundation.ViewModel.Implementations {
 
             kendo.data.DataSource.prototype.flatView = function () {
 
-                let groups = this.group() || [];
+                const groups = this.group() || [];
 
                 if (groups.length) {
                     return flattenGroups(this._view);
@@ -36,12 +36,12 @@ module Foundation.ViewModel.Implementations {
 
             }
 
-            let originalParseDate = kendo.parseDate;
+            const originalParseDate = kendo.parseDate;
 
             kendo.parseDate = function (value: string, format?: string, culture?: string): Date {
                 if (value != null) {
-                    let _date = new Date(value);
-                    if (_date.toString() != 'Invalid Date')
+                    const _date = new Date(value);
+                    if (_date.toString() != "Invalid Date")
                         return _date;
                 }
                 return originalParseDate.apply(this, arguments);
@@ -51,14 +51,14 @@ module Foundation.ViewModel.Implementations {
                 return (this as kendo.data.DataSource)
                     .flatView()
                     .map(vi => {
-                        let viItem = (vi as any);
+                        const viItem = (vi as any);
                         return viItem.innerInstance != null ? viItem.innerInstance() : viItem;
                     });
             };
 
             kendo.data.DataSource.prototype.onCurrentChanged = function (action) {
 
-                let dataSource = this;
+                const dataSource = this;
 
                 dataSource.onCurrentChangedHandlers = dataSource.onCurrentChangedHandlers || [];
 
@@ -79,18 +79,18 @@ module Foundation.ViewModel.Implementations {
                     throw new Error("parentDataSource is null");
 
                 if (childKeys == null || childKeys.length == 0) {
-                    throw new Error('childs keys is null or empty');
+                    throw new Error("childs keys is null or empty");
                 }
 
                 if (parentKeys == null || parentKeys.length == 0) {
-                    throw new Error('parent keys is null or empty');
+                    throw new Error("parent keys is null or empty");
                 }
 
                 if (childKeys.length != parentKeys.length) {
                     throw new Error("Child keys and parent keys must have the same length");
                 }
 
-                let childDataSource: kendo.data.DataSource = this;
+                const childDataSource: kendo.data.DataSource = this;
 
                 for (let key of childKeys) {
                     if (childDataSource.options.schema.model.fields[key] == null) {
@@ -110,7 +110,7 @@ module Foundation.ViewModel.Implementations {
                         childDataSource.current = null;
 
                     let parentKeyCurrentValues: any[] = null;
-                    let currentParent = parentDataSource.current;
+                    const currentParent = parentDataSource.current;
 
                     await new Promise<void>((resolve) => {
                         window.setTimeout(() => resolve(), 350);
@@ -127,28 +127,28 @@ module Foundation.ViewModel.Implementations {
                         parentKeyCurrentValues = parentKeys.map(pk => { return currentParent[pk]; });;
                     }
 
-                    let parentChildFilters: kendo.data.DataSourceFilters = {
+                    const parentChildFilters: kendo.data.DataSourceFilters = {
                         logic: "and", filters: childKeys.map((ck, ckI) => {
-                            return { field: ck, value: parentKeyCurrentValues[ckI], operator: 'eq', isParentChildFilter: true, parentField: parentKeys[ckI] }
+                            return { field: ck, value: parentKeyCurrentValues[ckI], operator: "eq", isParentChildFilter: true, parentField: parentKeys[ckI] }
                         })
                     };
 
-                    let currentChildFilters = childDataSource.filter();
+                    const currentChildFilters = childDataSource.filter();
 
                     if (currentChildFilters == null || ((currentChildFilters instanceof Array) && currentChildFilters.length == 0) || (currentChildFilters.filters != null && (currentChildFilters.filters instanceof Array) && currentChildFilters.filters.length == 0)) {
                         childDataSource.filter(parentChildFilters);
                     }
                     else {
-                        let checkFilters = (filtersToBeChecked) => {
+                        const checkFilters = (filtersToBeChecked) => {
                             for (let flt of filtersToBeChecked as any) {
-                                let childKeyI = childKeys.findIndex(ck => ck == flt.field);
+                                const childKeyI = childKeys.findIndex(ck => ck == flt.field);
                                 if (childKeyI != -1) {
                                     flt.value = parentKeyCurrentValues[childKeyI];
                                     flt.isParentChildFilter = true;
                                 }
                             }
                         };
-                        let filters = currentChildFilters.filters as any;
+                        const filters = currentChildFilters.filters as any;
                         checkFilters(filters);
                         if (filters != null) {
                             filters.filter(innerFilters => innerFilters.filters != null).forEach(innerFilters => checkFilters(innerFilters.filters));
@@ -157,15 +157,15 @@ module Foundation.ViewModel.Implementations {
                     }
                 });
 
-                let originalChildTransportRead = childDataSource['transport'].read;
+                const originalChildTransportRead = childDataSource["transport"].read;
 
-                childDataSource['transport'].read = function (options) {
+                childDataSource["transport"].read = function (options) {
 
-                    let currentParent = parentDataSource.current;
+                    const currentParent = parentDataSource.current;
 
                     let parentChildFilterIsValid = options.data.filter != null && options.data.filter.filters != null;
 
-                    let checkFilters = (filtersToBeChecked) => {
+                    const checkFilters = (filtersToBeChecked) => {
                         for (let flt of filtersToBeChecked as any) {
                             if (flt.isParentChildFilter == true && (currentParent != null && flt.value != currentParent[flt.parentField]))
                                 parentChildFilterIsValid = false;
@@ -173,7 +173,7 @@ module Foundation.ViewModel.Implementations {
                     };
 
                     if (parentChildFilterIsValid == true) {
-                        let filters = options.data.filter.filters;
+                        const filters = options.data.filter.filters;
                         checkFilters(filters);
                         if (filters != null) {
                             filters.filter(innerFilters => innerFilters.filters != null).forEach(innerFilters => checkFilters(innerFilters.filters));
@@ -188,11 +188,11 @@ module Foundation.ViewModel.Implementations {
                     }
                 }
 
-                let originalChildTransportCreate = childDataSource['transport'].create;
+                const originalChildTransportCreate = childDataSource["transport"].create;
 
-                childDataSource['transport'].create = function (options, models): void {
+                childDataSource["transport"].create = function (options, models): void {
 
-                    let currentParent = parentDataSource.current;
+                    const currentParent = parentDataSource.current;
 
                     if (currentParent == null || parentKeys.some(pk => currentParent[pk] == null)) {
                         throw new Error("Parent data source's current item is null or new");

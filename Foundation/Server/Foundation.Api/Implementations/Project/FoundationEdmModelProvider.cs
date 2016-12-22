@@ -1,11 +1,8 @@
 ﻿using System;
-using Foundation.Core.Contracts.Project;
 using System.Web.OData.Builder;
-using Foundation.Api.Middlewares.WebApi.Contracts;
 using Foundation.Api.ApiControllers;
 using Foundation.Api.Contracts.Project;
 using Foundation.Api.Middlewares.WebApi.OData.Contracts;
-using System.Linq;
 using System.Reflection;
 
 namespace Foundation.Api.Implementations.Project

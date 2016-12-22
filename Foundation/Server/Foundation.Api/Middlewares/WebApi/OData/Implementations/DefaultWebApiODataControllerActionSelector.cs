@@ -43,19 +43,19 @@ namespace Foundation.Api.Middlewares.WebApi.OData.Implementations
                         {
                             actionName = "Patch";
                             if (httpActionDescriptor.ReturnType.GetTypeInfo() == typeof(void).GetTypeInfo() || httpActionDescriptor.ReturnType.GetTypeInfo() == typeof(Task).GetTypeInfo())
-                                throw new InvalidOperationException($"Patch | PartialUpdate must have a return type other than Task or void");
+                                throw new InvalidOperationException("Patch | PartialUpdate must have a return type other than Task or void");
                         }
                         else if (actionHttpMethodProvider is CreateAttribute)
                         {
                             actionName = "Post";
                             if (httpActionDescriptor.ReturnType.GetTypeInfo() == typeof(void).GetTypeInfo() || httpActionDescriptor.ReturnType == typeof(Task).GetTypeInfo())
-                                throw new InvalidOperationException($"Post | Create must have a return type other than Task or void");
+                                throw new InvalidOperationException("Post | Create must have a return type other than Task or void");
                         }
                         else if (actionHttpMethodProvider is UpdateAttribute)
                         {
                             actionName = "Put";
                             if (httpActionDescriptor.ReturnType.GetTypeInfo() == typeof(void).GetTypeInfo() || httpActionDescriptor.ReturnType == typeof(Task).GetTypeInfo())
-                                throw new InvalidOperationException($"Put | Update must have a return type other than Task or void");
+                                throw new InvalidOperationException("Put | Update must have a return type other than Task or void");
                         }
                         else if (actionHttpMethodProvider is DeleteAttribute)
                             actionName = "Delete";

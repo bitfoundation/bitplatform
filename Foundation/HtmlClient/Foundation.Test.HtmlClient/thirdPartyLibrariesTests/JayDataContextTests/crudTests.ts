@@ -6,7 +6,7 @@ let testInsert = async (): Promise<void> => {
     const model = context.testModels.add({ StringProperty: "Test", DateProperty: new Date() });
     await context.saveChanges();
 
-    if (model.Id == '0') {
+    if (model.Id == "0") {
         throw new Error("Id may not be zero");
     };
 };

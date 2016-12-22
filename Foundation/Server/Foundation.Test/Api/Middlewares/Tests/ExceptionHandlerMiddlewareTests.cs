@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using FakeItEasy;
-using Foundation.Api.Contracts;
 using Foundation.Core.Contracts;
 using Foundation.Core.Models;
 using Foundation.Test.Core.Implementations;

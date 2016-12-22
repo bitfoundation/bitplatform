@@ -1,7 +1,4 @@
 ﻿using System;
-using Foundation.Core.Contracts;
-using Foundation.Api.Implementations;
-using System.Web.Http;
 using Foundation.Model.Contracts;
 using Foundation.Api.ApiControllers;
 using System.Reflection;

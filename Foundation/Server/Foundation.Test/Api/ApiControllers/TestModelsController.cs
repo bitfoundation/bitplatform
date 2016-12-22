@@ -265,7 +265,7 @@ namespace Foundation.Test.Api.ApiControllers
         [Parameter("val", typeof(long))]
         public virtual IQueryable<TestModel> GetTestModelsByStringPropertyValue([FromODataUri]long val)
         {
-            return new TestModel[]
+            return new[]
             {
                 new TestModel { Id = 1, DateProperty = DateTimeOffset.Now, StringProperty = "String1", Version = 1 },
                 new TestModel { Id = 2, DateProperty = DateTimeOffset.Now, StringProperty = "String2", Version = 2 }

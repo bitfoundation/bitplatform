@@ -6,7 +6,6 @@ using Hangfire.SqlServer;
 using Foundation.Core.Models;
 using Hangfire.Azure.ServiceBusQueue;
 using Autofac;
-using Foundation.Api.Implementations;
 using Foundation.Api.Contracts;
 
 namespace Foundation.Api.Middlewares.JobScheduler.Implementations

@@ -1,5 +1,4 @@
 ﻿using Foundation.Test.Server;
-using System;
 using System.Net.Http;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.AspNetCore.Hosting;

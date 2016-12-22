@@ -26,7 +26,7 @@
 
                         isPromise = true;
 
-                        let rPromise = result as Promise<void>;
+                        const rPromise = result as Promise<void>;
 
                         rPromise.then(() => {
                             if (clientAppProfile.isDebugMode == true)

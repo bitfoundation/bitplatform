@@ -79,7 +79,7 @@ namespace Foundation.Test.Server
 
         public virtual IHubProxy BuildSignalRClient(OAuthToken token = null, Action<string, dynamic> onMessageRecieved = null)
         {
-            HubConnection hubConnection = new HubConnection(Uri.ToString());
+            HubConnection hubConnection = new HubConnection(Uri);
 
             if (token != null)
                 hubConnection.Headers.Add("Authorization", $"{token.token_type} {token.access_token}");

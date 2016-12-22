@@ -12,7 +12,7 @@ namespace Foundation.Api.Implementations.Metadata
         private readonly IEnumerable<IMetadataBuilder> _metadataBuilders;
 
         private AppMetadata _appMetadata;
-        private IAppEnvironmentProvider _appEnvironmentProvider;
+        private readonly IAppEnvironmentProvider _appEnvironmentProvider;
 
         protected DefaultAppMetadataProvider()
         {

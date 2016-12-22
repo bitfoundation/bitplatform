@@ -22,7 +22,7 @@ namespace System.Web.OData
                         return;
                     object obj = null;
                     source.TryGetPropertyValue(changedPropName, out obj);
-                    if (obj != null && !prop.PropertyType.IsAssignableFrom(obj.GetType()))
+                    if (obj != null && !prop.PropertyType.IsInstanceOfType(obj))
                         return;
                     prop.SetValue(dest, obj);
                 });

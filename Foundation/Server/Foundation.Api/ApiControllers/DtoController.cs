@@ -32,7 +32,7 @@ namespace Foundation.Api.ApiControllers
     [AttributeUsage(AttributeTargets.Method, AllowMultiple = false, Inherited = true)]
     public sealed class ActionAttribute : Attribute, IActionHttpMethodProvider
     {
-        private static readonly Collection<HttpMethod> SupportedMethods = new Collection<HttpMethod>(new HttpMethod[1]
+        private static readonly Collection<HttpMethod> SupportedMethods = new Collection<HttpMethod>(new[]
         {
             HttpMethod.Post
         });
@@ -43,7 +43,7 @@ namespace Foundation.Api.ApiControllers
     [AttributeUsage(AttributeTargets.Method, AllowMultiple = false, Inherited = true)]
     public sealed class FunctionAttribute : Attribute, IActionHttpMethodProvider
     {
-        private static readonly Collection<HttpMethod> SupportedMethods = new Collection<HttpMethod>(new HttpMethod[1]
+        private static readonly Collection<HttpMethod> SupportedMethods = new Collection<HttpMethod>(new[]
         {
             HttpMethod.Get
         });
@@ -54,7 +54,7 @@ namespace Foundation.Api.ApiControllers
     [AttributeUsage(AttributeTargets.Method, AllowMultiple = false, Inherited = true)]
     public sealed class GetAttribute : Attribute, IActionHttpMethodProvider
     {
-        private static readonly Collection<HttpMethod> SupportedMethods = new Collection<HttpMethod>(new HttpMethod[1]
+        private static readonly Collection<HttpMethod> SupportedMethods = new Collection<HttpMethod>(new[]
         {
             HttpMethod.Get
         });
@@ -65,7 +65,7 @@ namespace Foundation.Api.ApiControllers
     [AttributeUsage(AttributeTargets.Method, AllowMultiple = false, Inherited = true)]
     public sealed class PartialUpdateAttribute : Attribute, IActionHttpMethodProvider
     {
-        private static readonly Collection<HttpMethod> SupportedMethods = new Collection<HttpMethod>(new HttpMethod[1]
+        private static readonly Collection<HttpMethod> SupportedMethods = new Collection<HttpMethod>(new[]
         {
             new HttpMethod("PATCH")
         });
@@ -76,7 +76,7 @@ namespace Foundation.Api.ApiControllers
     [AttributeUsage(AttributeTargets.Method, AllowMultiple = false, Inherited = true)]
     public sealed class CreateAttribute : Attribute, IActionHttpMethodProvider
     {
-        private static readonly Collection<HttpMethod> SupportedMethods = new Collection<HttpMethod>(new HttpMethod[1]
+        private static readonly Collection<HttpMethod> SupportedMethods = new Collection<HttpMethod>(new[]
         {
             HttpMethod.Post
         });
@@ -87,7 +87,7 @@ namespace Foundation.Api.ApiControllers
     [AttributeUsage(AttributeTargets.Method, AllowMultiple = false, Inherited = true)]
     public sealed class UpdateAttribute : Attribute, IActionHttpMethodProvider
     {
-        private static readonly Collection<HttpMethod> SupportedMethods = new Collection<HttpMethod>(new HttpMethod[1]
+        private static readonly Collection<HttpMethod> SupportedMethods = new Collection<HttpMethod>(new[]
         {
             HttpMethod.Put
         });
@@ -98,7 +98,7 @@ namespace Foundation.Api.ApiControllers
     [AttributeUsage(AttributeTargets.Method, AllowMultiple = false, Inherited = true)]
     public sealed class DeleteAttribute : Attribute, IActionHttpMethodProvider
     {
-        private static readonly Collection<HttpMethod> SupportedMethods = new Collection<HttpMethod>(new HttpMethod[1]
+        private static readonly Collection<HttpMethod> SupportedMethods = new Collection<HttpMethod>(new[]
         {
             HttpMethod.Delete
         });

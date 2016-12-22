@@ -1,54 +1,54 @@
 ﻿/// <reference path="../../foundation.viewmodel.htmlclient/foundation.viewmodel.d.ts" />
 
 module Foundation.View.Directives {
-    @Foundation.Core.DirectiveDependency({ name: 'radCombo' })
-    export class DefaultRadComboDirective implements Foundation.ViewModel.Contracts.IDirective {
+    @Core.DirectiveDependency({ name: "radCombo" })
+    export class DefaultRadComboDirective implements ViewModel.Contracts.IDirective {
         public getDirectiveFactory(): angular.IDirectiveFactory {
             return () => ({
                 scope: false,
                 replace: true,
                 terminal: true,
-                required: 'ngModel',
+                required: "ngModel",
                 template: (element: JQuery, attrs: ng.IAttributes) => {
 
-                    let itemTemplate = element
+                    const itemTemplate = element
                         .children("item-template");
 
-                    let guidUtils = Core.DependencyManager.getCurrent().resolveObject<ViewModel.Implementations.GuidUtils>("GuidUtils");
+                    const guidUtils = Core.DependencyManager.getCurrent().resolveObject<ViewModel.Implementations.GuidUtils>("GuidUtils");
 
                     if (itemTemplate.length != 0) {
 
-                        let itemTemplateId = guidUtils.newGuid();
+                        const itemTemplateId = guidUtils.newGuid();
 
-                        angular.element(document.body).append(itemTemplate.attr('id', itemTemplateId));
+                        angular.element(document.body).append(itemTemplate.attr("id", itemTemplateId));
 
-                        attrs['itemTemplateId'] = itemTemplateId;
+                        attrs["itemTemplateId"] = itemTemplateId;
                     }
 
-                    let headerTemplate = angular.element(element)
+                    const headerTemplate = angular.element(element)
                         .children("header-template");
 
                     if (headerTemplate.length != 0) {
 
-                        let headerTemplateId = guidUtils.newGuid();
+                        const headerTemplateId = guidUtils.newGuid();
 
-                        headerTemplate.attr('id', headerTemplateId);
+                        headerTemplate.attr("id", headerTemplateId);
 
                         angular.element(document.body).append(headerTemplate);
 
-                        attrs['headerTemplateId'] = headerTemplateId;
+                        attrs["headerTemplateId"] = headerTemplateId;
                     }
 
-                    let replaceAll = (text: string, search: string, replacement: string) => {
-                        return text.replace(new RegExp(search, 'g'), replacement);
+                    const replaceAll = (text: string, search: string, replacement: string) => {
+                        return text.replace(new RegExp(search, "g"), replacement);
                     };
 
-                    let isolatedOptionsKey = 'options' + replaceAll(guidUtils.newGuid(), '-', '');
+                    const isolatedOptionsKey = "options" + replaceAll(guidUtils.newGuid(), "-", "");
 
-                    attrs['isolatedOptionsKey'] = isolatedOptionsKey;
+                    attrs["isolatedOptionsKey"] = isolatedOptionsKey;
 
-                    let ngModelOptions = '';
-                    if (attrs['ngModel'] != null && attrs['ngModelOptions'] == null) {
+                    let ngModelOptions = "";
+                    if (attrs["ngModel"] != null && attrs["ngModelOptions"] == null) {
                         ngModelOptions = `ng-model-options="{ updateOn : 'change' , allowInvalid : true }"`;
                     }
 
@@ -58,23 +58,23 @@ module Foundation.View.Directives {
                 },
                 link($scope: angular.IScope, element: JQuery, attributes: any) {
 
-                    let dependencyManager = Core.DependencyManager.getCurrent();
+                    const dependencyManager = Core.DependencyManager.getCurrent();
 
-                    let $timeout = dependencyManager.resolveObject<angular.ITimeoutService>("$timeout");
-                    let $parse = dependencyManager.resolveObject<angular.IParseService>("$parse");
+                    const $timeout = dependencyManager.resolveObject<angular.ITimeoutService>("$timeout");
+                    const $parse = dependencyManager.resolveObject<angular.IParseService>("$parse");
 
                     $timeout(() => {
 
-                        let watches = attributes.radText != null ? [attributes.radDatasource, (() => {
-                            let modelParts = attributes.radText.split('.');
+                        const watches = attributes.radText != null ? [attributes.radDatasource, (() => {
+                            const modelParts = attributes.radText.split(".");
                             modelParts.pop();
-                            let modelParentProp = modelParts.join('.');
+                            const modelParentProp = modelParts.join(".");
                             return modelParentProp;
                         })()] : [attributes.radDatasource];
 
                         let model = null;
 
-                        let watchForDatasourceAndNgModelIfAnyToCreateComboWidgetUnRegisterHandler = $scope.$watchGroup(watches, (values: Array<any>) => {
+                        const watchForDatasourceAndNgModelIfAnyToCreateComboWidgetUnRegisterHandler = $scope.$watchGroup(watches, (values: Array<any>) => {
 
                             if (values == null || values.length == 0 || values.some(v => v == null))
                                 return;
@@ -109,21 +109,21 @@ module Foundation.View.Directives {
 
                                 kendoWidgetCreatedDisposal();
 
-                                if (window['ngMaterial'] != null) {
+                                if (window["ngMaterial"] != null) {
 
-                                    let mdInputContainerParent = combo.wrapper.parents('md-input-container');
+                                    const mdInputContainerParent = combo.wrapper.parents("md-input-container");
 
                                     if (mdInputContainerParent.length != 0) {
                                         combo.wrapper
                                             .focusin(() => {
-                                                if (angular.element(element).is(':disabled'))
+                                                if (angular.element(element).is(":disabled"))
                                                     return;
-                                                mdInputContainerParent.addClass('md-input-focused');
+                                                mdInputContainerParent.addClass("md-input-focused");
                                             });
                                     }
 
-                                    let $destroyDisposal = $scope.$on('$destroy', () => {
-                                        combo.wrapper.unbind('focusin');
+                                    const $destroyDisposal = $scope.$on("$destroy", () => {
+                                        combo.wrapper.unbind("focusin");
                                         $destroyDisposal();
                                     });
                                 }
@@ -135,7 +135,7 @@ module Foundation.View.Directives {
 
                                         let newCurrent = null;
 
-                                        let dataItem = combo.dataItem();
+                                        const dataItem = combo.dataItem();
 
                                         if (dataItem == null)
                                             newCurrent = null;
@@ -177,12 +177,12 @@ module Foundation.View.Directives {
 
                                 text = parsedText($scope);
 
-                                if (text == '')
+                                if (text == "")
                                     text = null;
 
                                 if (attributes.ngModel != null) {
                                     $scope.$watch(attributes.ngModel, () => {
-                                        let current = dataSource.current;
+                                        const current = dataSource.current;
                                         if (current != null)
                                             parsedText.assign($scope, current[attributes.radTextFieldName]);
                                     });
@@ -191,7 +191,7 @@ module Foundation.View.Directives {
 
                             const comboOptions: kendo.ui.ComboBoxOptions = {
                                 dataSource: dataSource,
-                                autoBind: dataSource.flatView().length != 0 || (attributes.radText == null ? true : false),
+                                autoBind: dataSource.flatView().length != 0 || attributes.radText == null,
                                 dataTextField: attributes.radTextFieldName,
                                 dataValueField: radValueFieldName,
                                 filter: "contains",
@@ -219,9 +219,9 @@ module Foundation.View.Directives {
                             if (text != null)
                                 comboOptions.text = text;
 
-                            if (attributes['itemTemplateId'] != null) {
+                            if (attributes["itemTemplateId"] != null) {
 
-                                let itemTemplateElement = angular.element("#" + attributes['itemTemplateId']);
+                                let itemTemplateElement = angular.element("#" + attributes["itemTemplateId"]);
 
                                 let itemTemplateElementHtml = itemTemplateElement.html();
 
@@ -232,9 +232,9 @@ module Foundation.View.Directives {
                                 comboOptions.template = itemTemplate;
                             }
 
-                            if (attributes['headerTemplateId'] != null) {
+                            if (attributes["headerTemplateId"] != null) {
 
-                                let headerTemplateElement = angular.element("#" + attributes['headerTemplateId']);
+                                let headerTemplateElement = angular.element("#" + attributes["headerTemplateId"]);
 
                                 let headerTemplateElementHtml = headerTemplateElement.html();
 
@@ -251,7 +251,7 @@ module Foundation.View.Directives {
                             if (dataSource.options.schema.model.fields[comboOptions.dataValueField] == null)
                                 throw new Error(`Model has no property named ${comboOptions.dataValueField} to be used as value field`);
 
-                            $scope[attributes['isolatedOptionsKey']] = comboOptions;
+                            $scope[attributes["isolatedOptionsKey"]] = comboOptions;
 
                         });
                     });

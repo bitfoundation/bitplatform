@@ -9,7 +9,7 @@ namespace Foundation.Api.Middlewares.JobScheduler
 {
     public class JobSchedulerMiddlewareConfiguration : IOwinMiddlewareConfiguration
     {
-        private IEnumerable<IDashboardAuthorizationFilter> _authFilters;
+        private readonly IEnumerable<IDashboardAuthorizationFilter> _authFilters;
 
         public JobSchedulerMiddlewareConfiguration(IEnumerable<IDashboardAuthorizationFilter> authFilters)
         {

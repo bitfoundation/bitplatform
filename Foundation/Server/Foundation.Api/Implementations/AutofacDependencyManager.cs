@@ -217,10 +217,7 @@ namespace Foundation.Api.Implementations
         public virtual IDependencyManager RegisterUsing<T>(Func<T> factory, string name = null,
             DepepdencyLifeCycle lifeCycle = DepepdencyLifeCycle.InstancePerLifetimeScope, bool overwriteExciting = true)
         {
-            IRegistrationBuilder<T, SimpleActivatorData, SingleRegistrationStyle> registration = _containerBuilder.Register((context, parameter) =>
-            {
-                return factory();
-            });
+            IRegistrationBuilder<T, SimpleActivatorData, SingleRegistrationStyle> registration = _containerBuilder.Register((context, parameter) => factory());
 
             if (overwriteExciting == false)
                 registration = registration.PreserveExistingDefaults();

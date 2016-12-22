@@ -3,8 +3,8 @@ module Foundation.ViewModel.ViewModels {
     export class SecureFormViewModel extends FormViewModel {
 
         public async $routerCanActivate(route: any): Promise<boolean> {
-            let dependencyManager = Foundation.Core.DependencyManager.getCurrent();
-            let securityService = dependencyManager.resolveObject<Core.Contracts.ISecurityService>("securityService");
+            const dependencyManager = Core.DependencyManager.getCurrent();
+            const securityService = dependencyManager.resolveObject<Core.Contracts.ISecurityService>("securityService");
             if (!securityService.isLoggedIn()) {
                 securityService.login(await this.getPreLoginState());
                 return false;
@@ -17,7 +17,7 @@ module Foundation.ViewModel.ViewModels {
         }
 
         protected async getPostLoginState(): Promise<any> {
-            return JSON.parse(localStorage['state']);
+            return JSON.parse(localStorage["state"]);
         }
 
     }

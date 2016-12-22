@@ -48,15 +48,15 @@
 
         public init(): void {
 
-            this.clientAppProfile = window['clientAppProfile'];
+            this.clientAppProfile = window["clientAppProfile"];
 
             if (this.clientAppProfile == null)
-                throw new Error('client app profile is null');
+                throw new Error("client app profile is null");
 
             this.clientAppProfile.getConfig = <T>(configKey: string, defaultValueOnNotFound?: T): T => {
 
                 if (configKey == null)
-                    throw new Error('config key is null');
+                    throw new Error("config key is null");
 
                 let value: T = null;
 

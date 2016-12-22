@@ -3,7 +3,6 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
-using System;
 using OpenQA.Selenium.Remote;
 using Foundation.Core.Models;
 

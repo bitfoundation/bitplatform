@@ -19,7 +19,7 @@ module Foundation.Core {
     }
 
     export interface IComponentDependency extends IDependency, ng.IComponentOptions {
-        class?: Function;
+        type?: Function;
     }
 
     export interface IFormViewModelDependency extends IComponentDependency {
@@ -27,11 +27,11 @@ module Foundation.Core {
     }
 
     export interface IDirectiveDependency extends IDependency {
-        class?: Function;
+        type?: Function;
     }
 
     export interface IObjectDependency extends IDependency {
-        class?: Function;
+        type?: Function;
         lifeCycle?: "SingleInstance" | "PerRoute" | "Transient";
     }
 
@@ -68,9 +68,9 @@ module Foundation.Core {
 
         public registerCustomObjectResolver(customObjectResolver: ICustomObjectResolver) {
             if (customObjectResolver == null)
-                throw new Error('custom object resolver may not be null');
+                throw new Error("custom object resolver may not be null");
             if (customObjectResolver.resolve == null)
-                throw new Error('custom object resolver`s resolve method may not be null');
+                throw new Error("custom object resolver`s resolve method may not be null");
             this.customObjectResolvers.push(customObjectResolver);
         }
 
@@ -79,7 +79,7 @@ module Foundation.Core {
             if (fileDependency == null)
                 throw new Error("fileDependency is null");
 
-            if (fileDependency.name == null || fileDependency.name == '')
+            if (fileDependency.name == null || fileDependency.name == "")
                 throw new Error("fileDependency.name is null or empty");
 
             const dependenciesWithThisName = this.fileDependencies.filter(d => d.name.toLowerCase() == fileDependency.name.toLowerCase());
@@ -112,8 +112,8 @@ module Foundation.Core {
             if (instanceDependency == null)
                 throw new Error("instanceDependency is null");
 
-            if (instanceDependency.name == null || instanceDependency.name == '')
-                throw new Error('instanceDependency.name is null or empty');
+            if (instanceDependency.name == null || instanceDependency.name == "")
+                throw new Error("instanceDependency.name is null or empty");
 
             if (objectDep != null && objectDep.name.toLowerCase() != instanceDependency.name.toLowerCase())
                 throw new Error(`objectDep's name must be equal to instanceDependency.name`);
@@ -141,10 +141,10 @@ module Foundation.Core {
             if (objectDependency == null)
                 throw new Error("objectDependency is null");
 
-            if (objectDependency.class == null)
+            if (objectDependency.type == null)
                 throw new Error("class of object dependency may not be null");
 
-            if (objectDependency.name == null || objectDependency.name == '')
+            if (objectDependency.name == null || objectDependency.name == "")
                 throw new Error("objectDependency.name is null or empty");
 
             if (!this.dependencyShouldBeConsidered(objectDependency))
@@ -172,10 +172,10 @@ module Foundation.Core {
             if (directiveDependency == null)
                 throw new Error("directiveDependency is null");
 
-            if (directiveDependency.class == null)
+            if (directiveDependency.type == null)
                 throw new Error("class of directive dependency may not be null");
 
-            if (directiveDependency.name == null || directiveDependency.name == '')
+            if (directiveDependency.name == null || directiveDependency.name == "")
                 throw new Error("directiveDependency.name is null or empty");
 
             if (!this.dependencyShouldBeConsidered(directiveDependency))
@@ -205,7 +205,7 @@ module Foundation.Core {
             if (componentDependency == null)
                 throw new Error("componentDependency is null");
 
-            if (componentDependency.class == null)
+            if (componentDependency.type == null)
                 throw new Error("class of component dependency may not be null");
 
             if (componentDependency.name == null)
@@ -215,7 +215,7 @@ module Foundation.Core {
                 return;
 
             componentDependency.name = camelize(componentDependency.name);
-            componentDependency.controller = componentDependency.class as any;
+            componentDependency.controller = componentDependency.type as any;
 
             const dependenciesWithThisName = this.componentDependencies.filter(d => d.name.toLowerCase() == componentDependency.name.toLowerCase());
             let dependenciesWithThisNameIndex = -1;
@@ -239,7 +239,7 @@ module Foundation.Core {
             if (formViewModelDependency == null)
                 throw new Error("formViewModelDependency is null");
 
-            if (formViewModelDependency.class == null)
+            if (formViewModelDependency.type == null)
                 throw new Error("class of viewModel dependency may not be null");
 
             if (formViewModelDependency.name == null)
@@ -249,7 +249,7 @@ module Foundation.Core {
                 return;
 
             formViewModelDependency.name = camelize(formViewModelDependency.name);
-            formViewModelDependency.controller = formViewModelDependency.class as any;
+            formViewModelDependency.controller = formViewModelDependency.type as any;
 
             if (formViewModelDependency.$routeConfig != null) {
                 formViewModelDependency.$routeConfig.filter(r => r.name != null && r.component == null).forEach(r => {
@@ -353,7 +353,7 @@ module Foundation.Core {
 
                 path += `.${ext}`;
 
-                if (path.indexOf('http') != 0)
+                if (path.indexOf("http") != 0)
                     path = `Files/V${this.clientAppProfile.version}/${path}`;
 
                 fileDependency.path = path;
@@ -442,7 +442,7 @@ module Foundation.Core {
         public resolveObject<TContract>(objectDependencyName: string): TContract {
 
             if (objectDependencyName == null || objectDependencyName == "")
-                throw new Error('argument exception: objectDependencyName');
+                throw new Error("argument exception: objectDependencyName");
 
             let result = this.resolveAllObjects<TContract>(objectDependencyName)[0];
 
@@ -479,11 +479,11 @@ module Foundation.Core {
 
                 if (objectDep.lifeCycle == "SingleInstance") {
 
-                    let result = this.singletoneObjectDependenciesInstances
+                    const result = this.singletoneObjectDependenciesInstances
                         .filter(depInstanceKeyValue => depInstanceKeyValue.objectDep == objectDep)[0];
 
                     if (result == null) {
-                        this.registerInstanceDependency({ instance: Reflect.construct(objectDep.class as Function, []), name: objectDep.name, overwriteExisting: false }, objectDep);
+                        this.registerInstanceDependency({ instance: Reflect.construct(objectDep.type as Function, []), name: objectDep.name, overwriteExisting: false }, objectDep);
                     }
 
                 } else {
@@ -516,7 +516,7 @@ module Foundation.Core {
 
             targetService = Injectable()(targetService) as IObjectDependency & Function;
 
-            objectDependency.class = targetService;
+            objectDependency.type = targetService;
 
             DependencyManager.getCurrent()
                 .registerObjectDependency(objectDependency);
@@ -531,7 +531,7 @@ module Foundation.Core {
 
             targetFormViewModel = Injectable()(targetFormViewModel) as IFormViewModelDependency & Function;
 
-            formViewModelDependency.class = targetFormViewModel;
+            formViewModelDependency.type = targetFormViewModel;
 
             DependencyManager.getCurrent()
                 .registerFormViewModelDependency(formViewModelDependency);
@@ -546,7 +546,7 @@ module Foundation.Core {
 
             targetComponent = Injectable()(targetComponent) as IComponentDependency & Function;
 
-            componentDependency.class = targetComponent;
+            componentDependency.type = targetComponent;
 
             DependencyManager.getCurrent()
                 .registerComponentDependency(componentDependency);
@@ -561,7 +561,7 @@ module Foundation.Core {
 
             targetDirective = Injectable()(targetDirective) as IDirectiveDependency & Function;
 
-            directiveDependency.class = targetDirective;
+            directiveDependency.type = targetDirective;
 
             DependencyManager.getCurrent()
                 .registerDirectiveDependency(directiveDependency);
@@ -573,11 +573,11 @@ module Foundation.Core {
     export function Inject(name: string): ParameterDecorator {
 
         if (name == null || name == "")
-            throw new Error('name may not be null or empty');
+            throw new Error("name may not be null or empty");
 
         return (target: Function, propertyKey: string | symbol): Function => {
             target.injects = target.injects || [];
-            target.injects.push({ name: name, kind: 'Single' });
+            target.injects.push({ name: name, kind: "Single" });
             return target;
         }
     }
@@ -585,11 +585,11 @@ module Foundation.Core {
     export function InjectAll(name: string): ParameterDecorator {
 
         if (name == null || name == "")
-            throw new Error('name may not be null or empty');
+            throw new Error("name may not be null or empty");
 
         return (target: Function, propertyKey: string | symbol): Function => {
             target.injects = target.injects || [];
-            target.injects.push({ name: name, kind: 'All' });
+            target.injects.push({ name: name, kind: "All" });
             return target;
         }
     }
@@ -598,20 +598,20 @@ module Foundation.Core {
 
         return (target: Function): Function => {
 
-            let injects = target.injects;
+            const injects = target.injects;
 
             if (injects != null && injects.length != 0) {
 
-                let originalTarget = target;
+                const originalTarget = target;
 
                 target = function () {
 
-                    let dependencyManager = DependencyManager.getCurrent();
+                    const dependencyManager = DependencyManager.getCurrent();
 
-                    let args = Array.from(arguments);
+                    const args = Array.from(arguments);
 
                     for (let inject of injects.slice(0).reverse()) {
-                        if (inject.kind == 'All')
+                        if (inject.kind == "All")
                             args.push(dependencyManager.resolveAllObjects<any[]>(inject.name));
                         else
                             args.push(dependencyManager.resolveObject<any>(inject.name));

@@ -1,15 +1,15 @@
 ﻿module Foundation.View.Directives {
 
-    @Foundation.Core.ComponentDependency({
-        name: 'persianDatePicker',
+    @Core.ComponentDependency({
+        name: "persianDatePicker",
         require: {
-            'ngModelController': 'ngModel'
+            'ngModelController': "ngModel"
         },
         bindings: {
-            'ngModel': '=',
-            'isDateTime': '<'
+            'ngModel': "=",
+            'isDateTime': "<"
         },
-        template: ['$element', '$attrs', ($element: JQuery, $attrs: ng.IAttributes) => {
+        template: ["$element", "$attrs", ($element: JQuery, $attrs: ng.IAttributes) => {
 
             return `<persian-date-element>
                         <input id='main' type='text' />
@@ -20,7 +20,7 @@
     })
     export class PersianDateComponent {
 
-        public constructor(public $scope: ng.IScope, public $element: JQuery, @Foundation.Core.Inject("DateTimeService") public dateTimeService: Foundation.ViewModel.Contracts.IDateTimeService) {
+        public constructor(public $scope: ng.IScope, public $element: JQuery, @Core.Inject("DateTimeService") public dateTimeService: ViewModel.Contracts.IDateTimeService) {
         }
 
         public isDateTime: boolean;
@@ -37,7 +37,7 @@
 
             this.ngModelController.$formatters.push((value: Date): string => {
 
-                let result = new Date(value);
+                const result = new Date(value);
 
                 let formattedResult: string;
 
@@ -59,21 +59,21 @@
 
         public async $postLink(): Promise<void> {
 
-            this.$main = this.$element.find('#main');
-            this.$alt = this.$element.find('#alt');
+            this.$main = this.$element.find("#main");
+            this.$alt = this.$element.find("#alt");
 
-            let isDateTime = this.isDateTime;
-            let dateTimeService = this.dateTimeService;
+            const isDateTime = this.isDateTime;
+            const dateTimeService = this.dateTimeService;
 
             this.$main.pDatepicker({
                 autoClose: this.isDateTime == false,
                 altField: this.$alt,
                 altFieldFormatter: (e) => {
-                    let result = new Date(e);
+                    const result = new Date(e);
                     return result
                 },
                 formatter: (e) => {
-                    let result = new Date(e);
+                    const result = new Date(e);
                     if (isDateTime == true)
                         return dateTimeService.getFormattedDateTime(result, "FaIr");
                     else
@@ -86,5 +86,5 @@
         }
     }
 
-    PersianDateComponent.$inject = ['$scope', '$element'];
+    PersianDateComponent.$inject = ["$scope", "$element"];
 }

@@ -1,9 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System.Collections.Generic;
 using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
 using System.Web.OData.Builder;
 
 namespace Foundation.Api.Middlewares.WebApi.OData.Contracts

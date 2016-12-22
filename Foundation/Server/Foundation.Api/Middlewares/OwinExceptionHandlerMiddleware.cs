@@ -3,7 +3,6 @@ using System.Threading.Tasks;
 using Foundation.Api.Metadata;
 using Foundation.Core.Contracts;
 using Microsoft.Owin;
-using Foundation.Api.Middlewares.WebApi.Contracts;
 using Foundation.Api.Contracts;
 
 namespace Foundation.Api.Middlewares

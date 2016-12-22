@@ -7,17 +7,17 @@ module Foundation.View.Directives {
         elementSelector: string;
     }
 
-    @Foundation.Core.DirectiveDependency({ name: 'elementMover' })
-    export class DefaultElementMoverDirective implements Foundation.ViewModel.Contracts.IDirective {
+    @Core.DirectiveDependency({ name: "elementMover" })
+    export class DefaultElementMoverDirective implements ViewModel.Contracts.IDirective {
         public getDirectiveFactory(): angular.IDirectiveFactory {
             return () => ({
                 scope: {
-                    predicate: '=',
-                    elementSelector: '@'
+                    predicate: "=",
+                    elementSelector: "@"
                 },
                 link($scope: IDefaultElementMoverDirectiveScope, element: JQuery, attributes: any) {
 
-                    $scope.$watch('predicate', ((isOkToBeMoved: boolean) => {
+                    $scope.$watch("predicate", ((isOkToBeMoved: boolean) => {
 
                         if (isOkToBeMoved == true) {
 

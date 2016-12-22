@@ -1,5 +1,4 @@
-﻿using Foundation.Api.Middlewares.WebApi.OData.Contracts;
-using Owin;
+﻿using Owin;
 using System.Web.Http;
 using NWebsec.Owin;
 using System;
@@ -17,7 +16,7 @@ namespace Foundation.Api.Middlewares.WebApi.Implementations
             if (server == null)
                 throw new ArgumentNullException(nameof(server));
 
-            owinApp.Map($"/api", innerApp =>
+            owinApp.Map("/api", innerApp =>
             {
                 innerApp.Use<AddAcceptCharsetToRequestHeadersIfNotAnyMiddleware>();
                 innerApp.UseXContentTypeOptions();

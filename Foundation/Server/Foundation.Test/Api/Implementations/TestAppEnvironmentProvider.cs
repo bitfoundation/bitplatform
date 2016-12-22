@@ -37,7 +37,7 @@ namespace Foundation.Test.Api.Implementations
                     },
                     Security = new EnvironmentSecurity
                     {
-                        SSOServerUrl = $"http://127.0.0.1:8080/core/",
+                        SSOServerUrl = "http://127.0.0.1:8080/core/",
                         Scopes = new[] { "openid", "profile", "user_info" },
                         ClientName = "Test",
                         ClientSecret = "secret"
@@ -74,8 +74,8 @@ namespace Foundation.Test.Api.Implementations
                         new EnvironmentConfig { Key = "DefaultPageTemplatePath", Value = @".\bit-framework\Foundation\Server\Foundation.Test\defaultPageTemplate.cshtml" },
                         new EnvironmentConfig { Key = "IdentityServerCertificatePath", Value = @"..\..\IdentityServerCertificate.pfx" },
                         new EnvironmentConfig { Key = "StaticFilesRelativePath", Value = @"..\..\..\..\..\..\" },
-                        new EnvironmentConfig { Key = "TestDbConnectionString", Value = @"TestDbConnectionString" + Guid.NewGuid().ToString() },
-                        new EnvironmentConfig { Key = "FoundationReadDbConnectionString", Value = @"TestDbConnectionString" + Guid.NewGuid().ToString() },
+                        new EnvironmentConfig { Key = "TestDbConnectionString", Value = @"TestDbConnectionString" + Guid.NewGuid() },
+                        new EnvironmentConfig { Key = "FoundationReadDbConnectionString", Value = @"TestDbConnectionString" + Guid.NewGuid() },
                         new EnvironmentConfig { Key = "IdentityCertificatePassword" , Value = "P@ssw0rd" },
                         new EnvironmentConfig { Key = "ClientSideAccessibleConfigTest", Value = true, AccessibleInClientSide = true},
                         new EnvironmentConfig { Key = "ClientHostBaseUri", Value = "http://127.0.0.1" , AccessibleInClientSide = true },

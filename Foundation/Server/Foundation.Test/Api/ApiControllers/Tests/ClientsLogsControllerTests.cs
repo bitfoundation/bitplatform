@@ -37,7 +37,8 @@ namespace Foundation.Test.Api.ApiControllers.Tests
                 A.CallTo(() => logger.LogWarningAsync("Client-Log"))
                     .MustHaveHappened(Repeated.Exactly.Once);
 
-                A.CallTo(() => logger.AddLogData("ClientLogs", A<IEnumerable<ClientLogDto>>.That.Matches(logs => logs.Single().Message == "1")));
+                A.CallTo(() => logger.AddLogData("ClientLogs", A<IEnumerable<ClientLogDto>>.That.Matches(logs => logs.Single().Message == "1")))
+                    .MustHaveHappened(Repeated.Exactly.Once);
             }
         }
     }

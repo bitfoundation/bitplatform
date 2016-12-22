@@ -17,7 +17,7 @@ namespace Foundation.Test.Api.Middlewares.WebApi.Tests
                 OAuthToken token = testEnvironment.Server.Login("ValidUserName", "ValidPassword");
 
                 HttpResponseMessage getMetadataResponse = await testEnvironment.Server.GetHttpClient(token)
-                        .GetAsync($"/odata/Foundation/$metadata");
+                        .GetAsync("/odata/Foundation/$metadata");
 
                 Assert.AreEqual(HttpStatusCode.OK, getMetadataResponse.StatusCode);
             }
@@ -32,7 +32,7 @@ namespace Foundation.Test.Api.Middlewares.WebApi.Tests
                 OAuthToken token = testEnvironment.Server.Login("ValidUserName", "ValidPassword");
 
                 HttpResponseMessage getMetadataResponse = await testEnvironment.Server.GetHttpClient(token)
-                        .GetAsync($"/odata/Foundation/$metadata");
+                        .GetAsync("/odata/Foundation/$metadata");
 
                 Assert.AreEqual(true, getMetadataResponse.Headers.Contains("X-Content-Type-Options"));
             }
@@ -45,7 +45,7 @@ namespace Foundation.Test.Api.Middlewares.WebApi.Tests
             using (TestEnvironment testEnvironment = new TestEnvironment())
             {
                 HttpResponseMessage getMetadataResponse = await testEnvironment.Server.GetHttpClient()
-                        .GetAsync($"/odata/Test/$metadata");
+                        .GetAsync("/odata/Test/$metadata");
 
                 Assert.AreEqual(HttpStatusCode.OK, getMetadataResponse.StatusCode);
             }
@@ -58,7 +58,7 @@ namespace Foundation.Test.Api.Middlewares.WebApi.Tests
             using (TestEnvironment testEnvironment = new TestEnvironment())
             {
                 HttpResponseMessage getMetadataResponse = await testEnvironment.Server.GetHttpClient()
-                        .GetAsync($"/odata/Test/ValidationSamples/");
+                        .GetAsync("/odata/Test/ValidationSamples/");
 
                 Assert.AreEqual(HttpStatusCode.Unauthorized, getMetadataResponse.StatusCode);
             }
@@ -71,7 +71,7 @@ namespace Foundation.Test.Api.Middlewares.WebApi.Tests
             using (TestEnvironment testEnvironment = new TestEnvironment())
             {
                 HttpResponseMessage getTestModels = await testEnvironment.Server.GetHttpClient()
-                        .GetAsync($"/odata/Test/TestModels");
+                        .GetAsync("/odata/Test/TestModels");
 
                 Assert.AreEqual(HttpStatusCode.OK, getTestModels.StatusCode);
             }

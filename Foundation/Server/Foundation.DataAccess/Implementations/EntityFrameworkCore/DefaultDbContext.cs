@@ -40,5 +40,12 @@ namespace Foundation.DataAccess.Implementations.EntityFrameworkCore
             // So this property has been used in separated method call stack.
             Database.UseTransaction(dbContextObjects.Transaction);
         }
+
+        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+        {
+            optionsBuilder.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking);
+
+            base.OnConfiguring(optionsBuilder);
+        }
     }
 }

@@ -55,10 +55,7 @@ namespace Foundation.AspNetCore
                 .ToList()
                 .ForEach(aspNetCoreMiddleware => aspNetCoreMiddleware.Configure(aspNetCoreApp));
 
-            aspNetCoreApp.UseOwinApp(owinApp =>
-            {
-                owinAppStartup.Configuration(owinApp);
-            });
+            aspNetCoreApp.UseOwinApp(owinAppStartup.Configuration);
 
             aspNetCoreMiddlewares
                 .Where(m => m.GetRegisterKind() == RegisterKind.AfterOwinPipeline)

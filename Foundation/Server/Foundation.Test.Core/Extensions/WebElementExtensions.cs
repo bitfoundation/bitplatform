@@ -54,15 +54,13 @@ namespace OpenQA.Selenium.Remote
         [DebuggerNonUserCode]
         public static IWebElement GetElementById(this RemoteWebDriver driver, string id)
         {
-            IWebElement result = null;
-
             int triesCount = 0;
 
             do
             {
                 try
                 {
-                    result = driver.FindElementById(id);
+                    IWebElement result = driver.FindElementById(id);
 
                     if (result != null)
                         return result;

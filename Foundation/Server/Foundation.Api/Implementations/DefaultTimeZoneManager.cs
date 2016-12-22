@@ -108,7 +108,7 @@ namespace Foundation.Api.Implementations
                 return dateTime;
             else
             {
-                return dateTime - (currentTimeZoneInfo.BaseUtcOffset - desiredTimeZoneInfo.BaseUtcOffset); ;
+                return dateTime - (currentTimeZoneInfo.BaseUtcOffset - desiredTimeZoneInfo.BaseUtcOffset);
             }
         }
     }

@@ -1,7 +1,6 @@
 ﻿using Foundation.Core.Contracts;
 using Foundation.Core.Models;
 using Microsoft.Owin;
-using System.Linq;
 using System.Threading.Tasks;
 
 namespace Foundation.Api.Middlewares

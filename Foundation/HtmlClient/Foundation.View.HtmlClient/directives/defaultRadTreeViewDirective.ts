@@ -2,70 +2,70 @@
 
 module Foundation.View.Directives {
 
-    @Foundation.Core.DirectiveDependency({ name: 'radTreeView' })
-    export class DefaultRadTreeViewDirective implements Foundation.ViewModel.Contracts.IDirective {
+    @Core.DirectiveDependency({ name: "radTreeView" })
+    export class DefaultRadTreeViewDirective implements ViewModel.Contracts.IDirective {
         public getDirectiveFactory(): angular.IDirectiveFactory {
             return () => ({
                 scope: false,
                 replace: true,
                 terminal: true,
-                required: 'ngModel',
+                required: "ngModel",
                 template: (element: JQuery, attrs: ng.IAttributes) => {
 
-                    let guidUtils = Core.DependencyManager.getCurrent().resolveObject<ViewModel.Implementations.GuidUtils>("GuidUtils");
+                    const guidUtils = Core.DependencyManager.getCurrent().resolveObject<ViewModel.Implementations.GuidUtils>("GuidUtils");
 
-                    let itemTemplate = element
+                    const itemTemplate = element
                         .children("item-template");
 
                     if (itemTemplate.length != 0) {
 
-                        let itemTemplateId = guidUtils.newGuid();
+                        const itemTemplateId = guidUtils.newGuid();
 
-                        itemTemplate.attr('id', itemTemplateId);
+                        itemTemplate.attr("id", itemTemplateId);
 
                         angular.element(document.body).append(itemTemplate);
 
-                        attrs['itemTemplateId'] = itemTemplateId;
+                        attrs["itemTemplateId"] = itemTemplateId;
                     }
 
-                    let replaceAll = (text: string, search: string, replacement: string) => {
-                        return text.replace(new RegExp(search, 'g'), replacement);
+                    const replaceAll = (text: string, search: string, replacement: string) => {
+                        return text.replace(new RegExp(search, "g"), replacement);
                     };
 
-                    let isolatedOptionsKey = 'options' + replaceAll(guidUtils.newGuid(), '-', '');
+                    const isolatedOptionsKey = "options" + replaceAll(guidUtils.newGuid(), "-", "");
 
-                    attrs['isolatedOptionsKey'] = isolatedOptionsKey;
+                    attrs["isolatedOptionsKey"] = isolatedOptionsKey;
 
-                    const template = `<div kendo-tree-view=${attrs['name']} k-options="::${isolatedOptionsKey}" k-ng-delay="::${isolatedOptionsKey}" />`;
+                    const template = `<div kendo-tree-view=${attrs["name"]} k-options="::${isolatedOptionsKey}" k-ng-delay="::${isolatedOptionsKey}" />`;
 
                     return template;
                 },
                 link($scope: angular.IScope, element: JQuery, attributes: any) {
 
-                    let dependencyManager = Core.DependencyManager.getCurrent();
+                    const dependencyManager = Core.DependencyManager.getCurrent();
 
-                    let $timeout = dependencyManager.resolveObject<angular.ITimeoutService>("$timeout");
-                    let $parse = dependencyManager.resolveObject<angular.IParseService>("$parse");
+                    const $timeout = dependencyManager.resolveObject<angular.ITimeoutService>("$timeout");
+                    const $parse = dependencyManager.resolveObject<angular.IParseService>("$parse");
 
                     $timeout(() => {
 
-                        let watches = attributes.radText != null ? [attributes.radDatasource, (() => {
-                            let modelParts = attributes.radText.split('.');
+                        const watches = attributes.radText != null ? [attributes.radDatasource, (() => {
+                            const modelParts = attributes.radText.split(".");
                             modelParts.pop();
-                            let modelParentProp = modelParts.join('.');
+                            const modelParentProp = modelParts.join(".");
                             return modelParentProp;
                         })()] : [attributes.radDatasource];
 
-                        let watchForDataSourceUnRegisterHandler = $scope.$watchGroup(watches, (values: Array<any>) => {
+                        const watchForDataSourceUnRegisterHandler = $scope.$watchGroup(watches, (values: Array<any>) => {
 
                             if (values == null || values.length == 0 || values.some(v => v == null))
                                 return;
 
-                            let dataSource: kendo.data.DataSource = values[0];
+                            const dataSource: kendo.data.DataSource = values[0];
 
                             watchForDataSourceUnRegisterHandler();
 
-                            let kendoWidgetCreatedDisposal = $scope.$on("kendoWidgetCreated", (event, tree: kendo.ui.TreeView) => {
+                            const kendoWidgetCreatedDisposal = $scope.$on("kendoWidgetCreated", (event, tree: kendo.ui.TreeView) => {
 
                                 if (tree.element[0] != element[0]) {
                                     return;
@@ -73,29 +73,29 @@ module Foundation.View.Directives {
 
                                 kendoWidgetCreatedDisposal();
 
-                                if (window['ngMaterial'] != null) {
+                                if (window["ngMaterial"] != null) {
 
-                                    let mdInputContainerParent = tree.wrapper.parents('md-input-container');
+                                    const mdInputContainerParent = tree.wrapper.parents("md-input-container");
 
                                     if (mdInputContainerParent.length != 0) {
 
                                         tree.wrapper
                                             .focusin(() => {
 
-                                                if (angular.element(element).is(':disabled'))
+                                                if (angular.element(element).is(":disabled"))
                                                     return;
 
-                                                mdInputContainerParent.addClass('md-input-focused');
+                                                mdInputContainerParent.addClass("md-input-focused");
                                             })
                                             .focusout(() => {
-                                                mdInputContainerParent.removeClass('md-input-focused')
+                                                mdInputContainerParent.removeClass("md-input-focused")
                                             });
 
-                                        mdInputContainerParent.addClass('md-input-has-value');
+                                        mdInputContainerParent.addClass("md-input-has-value");
 
-                                        let $destroyDisposal = $scope.$on('$destroy', () => {
-                                            tree.wrapper.unbind('focusin');
-                                            tree.wrapper.unbind('focusout');
+                                        const $destroyDisposal = $scope.$on("$destroy", () => {
+                                            tree.wrapper.unbind("focusin");
+                                            tree.wrapper.unbind("focusout");
                                             $destroyDisposal();
                                         });
                                     }
@@ -117,20 +117,20 @@ module Foundation.View.Directives {
                                 loadOnDemand: true
                             };
 
-                            if (attributes['itemTemplateId'] != null) {
+                            if (attributes["itemTemplateId"] != null) {
 
-                                let itemTemplateElement = angular.element("#" + attributes['itemTemplateId']);
+                                const itemTemplateElement = angular.element("#" + attributes["itemTemplateId"]);
 
-                                let itemTemplateElementHtml = itemTemplateElement.html();
+                                const itemTemplateElementHtml = itemTemplateElement.html();
 
                                 itemTemplateElement.remove();
 
-                                let itemTemplate: any = kendo.template(itemTemplateElementHtml);
+                                const itemTemplate: any = kendo.template(itemTemplateElementHtml);
 
                                 treeViewOptions.template = itemTemplate;
                             }
 
-                            $scope[attributes['isolatedOptionsKey']] = treeViewOptions;
+                            $scope[attributes["isolatedOptionsKey"]] = treeViewOptions;
 
                         });
                     });

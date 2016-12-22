@@ -20,15 +20,14 @@ module Foundation.ViewModel.Implementations {
 
                     try {
 
-                        let response = await fetch(`Metadata/V${this.clientAppProfileManager.getClientAppProfile().version}`, { credentials: 'include' });
+                        const response = await fetch(`Metadata/V${this.clientAppProfileManager.getClientAppProfile().version}`, { credentials: "include" });
                         if (response.ok) {
                             appMetadata = await response.json() as any;
                         }
                         else {
                             reject("Error retriving metadata");
                         }
-                    }
-                    catch (e) {
+                    } catch (e) {
                         reject(e);
                         throw e;
                     }

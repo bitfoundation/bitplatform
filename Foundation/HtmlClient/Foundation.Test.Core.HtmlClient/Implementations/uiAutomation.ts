@@ -8,7 +8,7 @@ module Foundation.Test.Implementations {
         public constructor(view: JQuery) {
 
             if (view == null)
-                throw new Error('view is null');
+                throw new Error("view is null");
 
             this.view = view;
         }
@@ -38,10 +38,10 @@ module Foundation.Test.Implementations {
         public async waitForPredicate(predicate: () => boolean | Promise<boolean>, time: number = 10000): Promise<boolean> {
 
             if (predicate == null)
-                throw new Error('predicate is null');
+                throw new Error("predicate is null");
 
             for (let i = 0; i < 10; i++) {
-                let result = await predicate();
+                const result = await predicate();
                 if (result == true)
                     return true;
                 await this.delay(time / 10);
@@ -53,7 +53,7 @@ module Foundation.Test.Implementations {
         public getFormViewModel(element: JQuery, name = "vm"): TFormViewModel {
 
             if (element == null)
-                throw new Error('element is null');
+                throw new Error("element is null");
 
             return this.getBindingContext<TFormViewModel>(element, name);
 
@@ -62,7 +62,7 @@ module Foundation.Test.Implementations {
         public getBindingContext<TBindingContext>(element: JQuery, name?: string): TBindingContext {
 
             if (element == null)
-                throw new Error('element is null');
+                throw new Error("element is null");
 
             const $scope: any = angular.element(element[0]).scope();
 
@@ -74,12 +74,12 @@ module Foundation.Test.Implementations {
 
         public getForm(element: JQuery): any {
             if (element == null)
-                throw new Error('element is null');
-            return this.getBindingContext(element, element.attr('name'));
+                throw new Error("element is null");
+            return this.getBindingContext(element, element.attr("name"));
         }
 
         public updateUI(): void {
-            Foundation.ViewModel.ScopeManager.update$scope(this.$scope);
+            ViewModel.ScopeManager.update$scope(this.$scope);
         }
     }
 }

@@ -2,7 +2,6 @@
 using Foundation.Api.Contracts;
 using Foundation.Core.Contracts;
 using Foundation.Core.Models;
-using Microsoft.Owin;
 using NWebsec.Owin;
 using Owin;
 

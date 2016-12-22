@@ -139,7 +139,7 @@ namespace Foundation.Test.HtmlClient.ViewModel.Implementation
 
                     Assert.AreEqual("Nested View", driver.Title);
 
-                    Assert.IsTrue(driver.Url.ToString().ToLowerInvariant().EndsWith("nested-route-page/first-part-page"));
+                    Assert.IsTrue(driver.Url.ToLowerInvariant().EndsWith("nested-route-page/first-part-page"));
                 }
             }
         }

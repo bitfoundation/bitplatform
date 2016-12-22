@@ -1,12 +1,12 @@
 ﻿declare module angular {
 
     export interface Router {
-        root: ng.Router;
+        root: Router;
     }
 
     export interface RouterOutlet {
         $$outlet: {
-            currentInstruction: ng.ComponentInstruction
+            currentInstruction: ComponentInstruction;
         }
     }
 }
@@ -17,11 +17,11 @@ declare module kendo {
             innerInstance(): $data.Entity;
         }
         export interface DataSource extends Observable {
-            flatView(): kendo.data.ObservableArray;
+            flatView(): ObservableArray;
             dataView<TEntity>(): Array<TEntity>;
             onCurrentChanged(action?): void;
-            asChildOf(parentDataSource: kendo.data.DataSource, childKeys: string[], parentKeys: string[]);
-            current: $data.Entity | kendo.data.Model;
+            asChildOf(parentDataSource: DataSource, childKeys: string[], parentKeys: string[]);
+            current: $data.Entity | Model;
         }
         export interface Model extends ObservableObject {
             innerInstance(): $data.Entity;
@@ -98,7 +98,7 @@ declare namespace angular.material {
         placeholder(placeholder: string): IPromptDialog;
     }
     interface IDialogService {
-        show(dialog: IDialogOptions | IAlertDialog | IConfirmDialog | IPromptDialog): angular.IPromise<any>;
+        show(dialog: IDialogOptions | IAlertDialog | IConfirmDialog | IPromptDialog): IPromise<any>;
         prompt(): IPromptDialog;
     }
 }

@@ -6,7 +6,6 @@ using Microsoft.AspNetCore.Http;
 using Foundation.Core.Contracts;
 using Microsoft.Extensions.DependencyInjection;
 using Foundation.Api.Metadata;
-using Foundation.Api.Middlewares.WebApi.Contracts;
 using Microsoft.AspNetCore.Http.Features;
 using Foundation.Api.Contracts;
 

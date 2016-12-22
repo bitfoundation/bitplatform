@@ -14,9 +14,9 @@ namespace Foundation.Api.Middlewares.WebApi.OData.Implementations
 {
     public class DefaultAutoEdmBuilder : IAutoEdmBuilder
     {
-        private MethodInfo _buildControllerOperations = null;
-        private MethodInfo _buildDto = null;
-        private MethodInfo _collectionParamterMethodInfo = null;
+        private readonly MethodInfo _buildControllerOperations = null;
+        private readonly MethodInfo _buildDto = null;
+        private readonly MethodInfo _collectionParamterMethodInfo = null;
 
         public DefaultAutoEdmBuilder()
         {
@@ -56,7 +56,7 @@ namespace Foundation.Api.Middlewares.WebApi.OData.Implementations
             var controllersWithDto = controllers
                 .Select(c => new
                 {
-                    DtoType = GetFinalDtoType(c.BaseType.GetGenericArguments().SingleOrDefault(t => IsDto(t.GetTypeInfo())).GetTypeInfo()),
+                    DtoType = GetFinalDtoType(c.BaseType?.GetGenericArguments().SingleOrDefault(t => IsDto(t.GetTypeInfo())).GetTypeInfo()),
                     Controller = c
                 })
                 .Where(c => c.DtoType != null)

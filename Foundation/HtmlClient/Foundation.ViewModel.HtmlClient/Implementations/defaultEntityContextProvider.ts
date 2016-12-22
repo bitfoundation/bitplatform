@@ -12,34 +12,34 @@
 
             if (this.oDataJSInitPromise == null) {
 
-                let originalJsonHandlerWrite = window['odatajs'].oData.json.jsonHandler.write;
+                const originalJsonHandlerWrite = window["odatajs"].oData.json.jsonHandler.write;
 
-                window['odatajs'].oData.json.jsonHandler.write = function (request, context) {
+                window["odatajs"].oData.json.jsonHandler.write = function (request, context) {
 
-                    if (request.headers['Content-Type'] == null)
-                        request.headers['Content-Type'] = "application/json";
+                    if (request.headers["Content-Type"] == null)
+                        request.headers["Content-Type"] = "application/json";
 
-                    request.headers['Content-Type'] += ';IEEE754Compatible=true';
+                    request.headers["Content-Type"] += ";IEEE754Compatible=true";
 
                     return originalJsonHandlerWrite.apply(this, arguments);
 
                 };
 
-                $data['defaults'].oDataWebApi = true;
+                $data["defaults"].oDataWebApi = true;
 
-                $data['defaults'].parameterResolutionCompatibility = false;
+                $data["defaults"].parameterResolutionCompatibility = false;
 
-                let originalArrayRequired = $data['Validation'].EntityValidation.prototype.supportedValidations["$data.Array"].required;
+                const originalArrayRequired = $data["Validation"].EntityValidation.prototype.supportedValidations["$data.Array"].required;
 
-                $data['Validation'].EntityValidation.prototype.supportedValidations["$data.Array"].required = function required(value, definedValue) {
+                $data["Validation"].EntityValidation.prototype.supportedValidations["$data.Array"].required = function required(value, definedValue) {
                     return originalArrayRequired.apply(this, arguments) && value.length != 0;
                 }
 
-                for (let typeName of ['Boolean', 'DateTimeOffset', 'Decimal', 'Float', 'Guid', 'Int16', 'Int32', 'Int64', 'String']) {
+                for (let typeName of ["Boolean", "DateTimeOffset", "Decimal", "Float", "Guid", "Int16", "Int32", "Int64", "String"]) {
 
-                    let originalRequired = $data['Validation'].EntityValidation.prototype.supportedValidations[`$data.${typeName}`].required;
+                    const originalRequired = $data["Validation"].EntityValidation.prototype.supportedValidations[`$data.${typeName}`].required;
 
-                    $data['Validation'].EntityValidation.prototype.supportedValidations[`$data.${typeName}`].required = function required(value, definedValue) {
+                    $data["Validation"].EntityValidation.prototype.supportedValidations[`$data.${typeName}`].required = function required(value, definedValue) {
                         return originalRequired.apply(this, arguments) && value != "";
                     }
 
@@ -49,19 +49,19 @@
 
                     try {
 
-                        let metadata = await this.metadataProvider.getMetadata();
+                        const metadata = await this.metadataProvider.getMetadata();
 
                         metadata.Dtos
                             .forEach(dto => {
 
-                                let parts = dto.DtoType.split('.');
+                                const parts = dto.DtoType.split(".");
                                 let jayDataDtoType: any = window;
 
                                 for (let part of parts) {
                                     jayDataDtoType = jayDataDtoType[part];
                                 }
 
-                                let memberDefenitions = jayDataDtoType != null ? jayDataDtoType.memberDefinitions : null;
+                                const memberDefenitions = jayDataDtoType != null ? jayDataDtoType.memberDefinitions : null;
 
                                 if (memberDefenitions != null) {
 
@@ -69,9 +69,9 @@
                                         .forEach(dto => {
 
                                             for (let memberName in memberDefenitions) {
-                                                if (memberName.startsWith('$') && memberDefenitions.hasOwnProperty(memberName)) {
-                                                    let memberDefenition = memberDefenitions[memberName];
-                                                    let mem = dto.MembersMetadata.find(m => `$${m.DtoMemberName}` == memberName);
+                                                if (memberName.startsWith("$") && memberDefenitions.hasOwnProperty(memberName)) {
+                                                    const memberDefenition = memberDefenitions[memberName];
+                                                    const mem = dto.MembersMetadata.find(m => `$${m.DtoMemberName}` == memberName);
                                                     if (mem != null) {
                                                         memberDefenition.required = mem.IsRequired == true;
                                                         if (mem.Pattern != null) {
@@ -87,38 +87,38 @@
 
                             });
 
-                        let originalPrepareRequest = window['odatajs'].oData.utils.prepareRequest;
+                        const originalPrepareRequest = window["odatajs"].oData.utils.prepareRequest;
 
-                        let clientAppProfile = this.clientAppProfileManager.getClientAppProfile();
+                        const clientAppProfile = this.clientAppProfileManager.getClientAppProfile();
 
-                        window['odatajs'].oData.utils.prepareRequest = function (request, handler, context) {
+                        window["odatajs"].oData.utils.prepareRequest = function (request, handler, context) {
                             request.headers = request.headers || {};
-                            request.headers['current-time-zone'] = clientAppProfile.currentTimeZone;
-                            request.headers['desired-time-zone'] = clientAppProfile.desiredTimeZone;
-                            request.headers['client-app-version'] = clientAppProfile.version;
-                            request.headers['client-type'] = clientAppProfile.clientType;
-                            request.headers['client-culture'] = clientAppProfile.culture;
-                            request.headers['client-screen-size'] = clientAppProfile.screenSize;
-                            request.headers['client-route'] = location.pathname;
-                            request.headers['client-theme'] = clientAppProfile.theme;
-                            request.headers['client-debug-mode'] = clientAppProfile.isDebugMode;
-                            request.headers['client-date-time'] = new Date().toISOString();
+                            request.headers["current-time-zone"] = clientAppProfile.currentTimeZone;
+                            request.headers["desired-time-zone"] = clientAppProfile.desiredTimeZone;
+                            request.headers["client-app-version"] = clientAppProfile.version;
+                            request.headers["client-type"] = clientAppProfile.clientType;
+                            request.headers["client-culture"] = clientAppProfile.culture;
+                            request.headers["client-screen-size"] = clientAppProfile.screenSize;
+                            request.headers["client-route"] = location.pathname;
+                            request.headers["client-theme"] = clientAppProfile.theme;
+                            request.headers["client-debug-mode"] = clientAppProfile.isDebugMode;
+                            request.headers["client-date-time"] = new Date().toISOString();
                             if (navigator.language != null)
-                                request.headers['system-language'] = navigator.language;
-                            if (navigator['systemLanguage'] != null)
-                                request.headers['client-sys-language'] = navigator['systemLanguage'];
-                            request.headers['client-platform'] = navigator.platform;
-                            let results = originalPrepareRequest.apply(this, arguments);
-                            if (request.headers['Content-Type'] == null)
-                                request.headers['Content-Type'] = "application/json";
-                            if (request.headers['Content-Type'].indexOf(";IEEE754Compatible=true") == -1)
-                                request.headers['Content-Type'] += ';IEEE754Compatible=true';
+                                request.headers["system-language"] = navigator.language;
+                            if (navigator["systemLanguage"] != null)
+                                request.headers["client-sys-language"] = navigator["systemLanguage"];
+                            request.headers["client-platform"] = navigator.platform;
+                            const results = originalPrepareRequest.apply(this, arguments);
+                            if (request.headers["Content-Type"] == null)
+                                request.headers["Content-Type"] = "application/json";
+                            if (request.headers["Content-Type"].indexOf(";IEEE754Compatible=true") == -1)
+                                request.headers["Content-Type"] += ";IEEE754Compatible=true";
                             return results;
                         };
 
-                        let originalRead = window['odatajs'].oData.json.jsonHandler.read;
+                        const originalRead = window["odatajs"].oData.json.jsonHandler.read;
 
-                        window['odatajs'].oData.json.jsonHandler.read = function (response, context) {
+                        window["odatajs"].oData.json.jsonHandler.read = function (response, context) {
 
                             if (response.body != null && typeof response.body === "string") {
                                 response.body = (response.body as string).replace(/:\s*(\d{14,}.\d{2,})\s*([,\}])/g, ':"$1"$2');
@@ -157,9 +157,9 @@
 
             let cfg = null;
 
-            let baseVal = document.getElementsByTagName('base')[0];
+            const baseVal = document.getElementsByTagName("base")[0];
 
-            let oDataServiceHost = `${baseVal != null ? angular.element(baseVal).attr('href') : '/'}odata/${contextName}`;
+            const oDataServiceHost = `${baseVal != null ? angular.element(baseVal).attr("href") : "/"}odata/${contextName}`;
 
             if (config.isOffline == false) {
                 cfg = {
@@ -171,60 +171,60 @@
             }
             else {
                 cfg = {
-                    provider: 'indexedDb', databaseName: contextName + "V" + this.clientAppProfileManager.getClientAppProfile().version
+                    provider: "indexedDb", databaseName: contextName + "V" + this.clientAppProfileManager.getClientAppProfile().version
                 }
             }
 
             cfg = angular.extend(cfg, config.jayDataConfig || {});
 
-            let contextType = window[`${contextName}Context`];
+            const contextType = window[`${contextName}Context`];
 
             if (contextType == null)
-                throw new Error('No entity context could be found named ' + contextName);
+                throw new Error("No entity context could be found named " + contextName);
 
-            if (contextType['isEventsListenersAreAdded'] != true && config.isOffline == true) {
+            if (contextType["isEventsListenersAreAdded"] != true && config.isOffline == true) {
 
                 for (let memberDefenitionKey in contextType.memberDefinitions) {
 
-                    let memberDefenition = contextType.memberDefinitions[memberDefenitionKey];
+                    const memberDefenition = contextType.memberDefinitions[memberDefenitionKey];
 
-                    if (memberDefenition == null || memberDefenition.kind != 'property' || memberDefenition.elementType == null)
+                    if (memberDefenition == null || memberDefenition.kind != "property" || memberDefenition.elementType == null)
                         continue;
 
-                    memberDefenition.elementType['addEventListener']('beforeCreate', (sender: any, e: Foundation.Model.Contracts.ISyncableDto) => {
-                        if ((e['context'] != null && e['context']['ignoreEntityEvents'] != true && e['context']['storageProvider'].name == 'indexedDb') || (e['storeToken'] != null && e['storeToken'].args.provider == 'indexedDb')) {
-                            let eType = e.getType();
-                            let members = eType.memberDefinitions as any;
+                    memberDefenition.elementType["addEventListener"]("beforeCreate", (sender: any, e: Model.Contracts.ISyncableDto) => {
+                        if ((e["context"] != null && e["context"]["ignoreEntityEvents"] != true && e["context"]["storageProvider"].name == "indexedDb") || (e["storeToken"] != null && e["storeToken"].args.provider == "indexedDb")) {
+                            const eType = e.getType();
+                            const members = eType.memberDefinitions as any;
                             for (let keyMember of members.getKeyProperties()) {
-                                if (keyMember.originalType == 'Edm.Guid' && e[keyMember.name] == null) {
+                                if (keyMember.originalType == "Edm.Guid" && e[keyMember.name] == null) {
                                     e[keyMember.name] = this.guidUtils.newGuid();
                                 }
                             }
-                            if (members['$IsArchived'] != null && e.IsArchived == null)
+                            if (members["$IsArchived"] != null && e.IsArchived == null)
                                 e.IsArchived = false;
-                            if (members['$Version'] != null && e.Version == null)
+                            if (members["$Version"] != null && e.Version == null)
                                 e.Version = "0";
-                            if (members['$ISV'] != null)
+                            if (members["$ISV"] != null)
                                 e.ISV = false;
                         }
                     });
 
-                    memberDefenition.elementType['addEventListener']('beforeUpdate', (sender: any, e: Foundation.Model.Contracts.ISyncableDto) => {
-                        if ((e['context'] != null && e['context']['ignoreEntityEvents'] != true && e['context']['storageProvider'].name == 'indexedDb') || (e['storeToken'] != null && e['storeToken'].args.provider == 'indexedDb')) {
-                            let eType = e.getType();
-                            let members = eType.memberDefinitions;
-                            if (members['$ISV'] != null)
+                    memberDefenition.elementType["addEventListener"]("beforeUpdate", (sender: any, e: Model.Contracts.ISyncableDto) => {
+                        if ((e["context"] != null && e["context"]["ignoreEntityEvents"] != true && e["context"]["storageProvider"].name == "indexedDb") || (e["storeToken"] != null && e["storeToken"].args.provider == "indexedDb")) {
+                            const eType = e.getType();
+                            const members = eType.memberDefinitions;
+                            if (members["$ISV"] != null)
                                 e.ISV = false;
                         }
                     });
 
-                    memberDefenition.elementType['addEventListener']('beforeDelete', (sender: any, e: Foundation.Model.Contracts.ISyncableDto) => {
-                        if (((e['context'] != null && e['context']['ignoreEntityEvents'] != true && e['context']['storageProvider'].name == 'indexedDb') || (e['storeToken'] != null && e['storeToken'].args.provider == 'indexedDb') && (e.Version != null && e.Version != "0"))) {
-                            let eType = e.getType();
-                            let members = eType.memberDefinitions;
-                            if (members['$ISV'] != null)
+                    memberDefenition.elementType["addEventListener"]("beforeDelete", (sender: any, e: Model.Contracts.ISyncableDto) => {
+                        if (((e["context"] != null && e["context"]["ignoreEntityEvents"] != true && e["context"]["storageProvider"].name == "indexedDb") || (e["storeToken"] != null && e["storeToken"].args.provider == "indexedDb") && (e.Version != null && e.Version != "0"))) {
+                            const eType = e.getType();
+                            const members = eType.memberDefinitions;
+                            if (members["$ISV"] != null)
                                 e.ISV = false;
-                            if (members['$IsArchived'] != null) {
+                            if (members["$IsArchived"] != null) {
                                 e.IsArchived = true;
                                 e.entityState = $data.EntityState.Modified;
                             }
@@ -233,7 +233,7 @@
 
                 }
 
-                contextType['isEventsListenersAreAdded'] = true;
+                contextType["isEventsListenersAreAdded"] = true;
             }
 
             const context: TContext = new contextType(cfg);

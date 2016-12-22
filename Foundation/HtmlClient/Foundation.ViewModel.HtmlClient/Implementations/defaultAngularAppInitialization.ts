@@ -1,7 +1,7 @@
 ﻿/// <reference path="../../foundation.core.htmlclient/foundation.core.d.ts" />
 module Foundation.ViewModel.Implementations {
 
-    let dependencyManager = Foundation.Core.DependencyManager.getCurrent();
+    let dependencyManager = Core.DependencyManager.getCurrent();
 
     export class DefaultAngularAppInitialization implements Core.Contracts.IAppEvents {
 
@@ -31,13 +31,13 @@ module Foundation.ViewModel.Implementations {
 
             formViewModelDependencies.forEach(vm => {
 
-                let original$routerOnActivate = vm.class.prototype.$routerOnActivate;
+                const original$routerOnActivate = vm.type.prototype.$routerOnActivate;
 
-                let original$routerCanActivate = vm.class.prototype.$routerCanActivate;
+                const original$routerCanActivate = vm.type.prototype.$routerCanActivate;
 
-                vm.class.prototype.$routerOnActivate = async function (prev, next) {
+                vm.type.prototype.$routerOnActivate = async function (prev, next) {
 
-                    let canActivate = original$routerCanActivate == null || await original$routerCanActivate.call(this, [next, prev])
+                    const canActivate = original$routerCanActivate == null || await original$routerCanActivate.call(this, [next, prev]);
 
                     if (canActivate == false)
                         throw new Error("Can't activate view model");
@@ -56,10 +56,10 @@ module Foundation.ViewModel.Implementations {
 
                 vm.controllerAs = vm.controllerAs || "vm";
 
-                vm.bindings = angular.extend(vm.bindings || {}, { $router: '<' });
+                vm.bindings = angular.extend(vm.bindings || {}, { $router: "<" });
 
                 if (vm.name != "app") {
-                    vm.require = angular.extend(vm.require || {}, { ngOutlet: '^ngOutlet' });
+                    vm.require = angular.extend(vm.require || {}, { ngOutlet: "^ngOutlet" });
                 }
 
                 app.component(vm.name, vm);
@@ -89,7 +89,7 @@ module Foundation.ViewModel.Implementations {
 
         protected async configureAppModule(app: angular.IModule): Promise<void> {
 
-            let logger = this.logger;
+            const logger = this.logger;
 
             function extendExceptionHandler($delegate) {
 
@@ -106,39 +106,39 @@ module Foundation.ViewModel.Implementations {
                     ["$delegate", extendExceptionHandler]);
             }]);
 
-            app.config(['$httpProvider', ($httpProvider: ng.IHttpProvider) => {
+            app.config(["$httpProvider", ($httpProvider: ng.IHttpProvider) => {
 
                 $httpProvider.useApplyAsync(true);
 
             }]);
 
-            app.config(['$compileProvider', ($compileProvider: ng.ICompileProvider) => {
+            app.config(["$compileProvider", ($compileProvider: ng.ICompileProvider) => {
                 $compileProvider.debugInfoEnabled(this.clientAppProfile.isDebugMode);
                 $compileProvider.commentDirectivesEnabled(false);
                 $compileProvider.cssClassDirectivesEnabled(false);
             }]);
 
-            app.config(['$logProvider', ($logProvider: ng.ILogProvider) => {
+            app.config(["$logProvider", ($logProvider: ng.ILogProvider) => {
                 $logProvider.debugEnabled(this.clientAppProfile.isDebugMode);
             }]);
 
-            if (window['ngMaterial'] != null) {
+            if (window["ngMaterial"] != null) {
 
-                app.decorator('mdSwitchDirective', ['$delegate', function mdSwitchDecorator($delegate: ng.ISCEDelegateService) {
+                app.decorator("mdSwitchDirective", ["$delegate", function mdSwitchDecorator($delegate: ng.ISCEDelegateService) {
 
-                    let directive = ($delegate[0] as ng.IDirective);
+                    const directive = ($delegate[0] as ng.IDirective);
 
-                    let originalCompile = directive.compile;
+                    const originalCompile = directive.compile;
 
                     directive.compile = function (element, attr) {
 
-                        let result = originalCompile.apply(this, arguments);
+                        const result = originalCompile.apply(this, arguments);
 
-                        let mdInputContainerParent = element.parent('md-input-container')
+                        const mdInputContainerParent = element.parent("md-input-container");
 
                         if (mdInputContainerParent.length != 0) {
 
-                            mdInputContainerParent.addClass('md-input-has-value');
+                            mdInputContainerParent.addClass("md-input-has-value");
 
                         }
 
@@ -159,17 +159,17 @@ module Foundation.ViewModel.Implementations {
 
             const dependencyManager = Core.DependencyManager.getCurrent();
 
-            let pathProvider = this.pathProvider;
+            const pathProvider = this.pathProvider;
 
             dependencyManager.getAllDirectivesDependencies()
-                .map(d => { return { name: d.name, instance: Reflect.construct(d.class as Function, []) as Contracts.IDirective }; })
+                .map(d => { return { name: d.name, instance: Reflect.construct(d.type as Function, []) as Contracts.IDirective }; })
                 .forEach(directive => {
 
-                    let originalGetDirectiveFactory = directive.instance.getDirectiveFactory();
+                    const originalGetDirectiveFactory = directive.instance.getDirectiveFactory();
 
-                    let modifiedGetDirectiveFactory = function () {
+                    const modifiedGetDirectiveFactory = function () {
 
-                        let directiveResult: ng.IDirective = originalGetDirectiveFactory.apply(this, arguments);
+                        const directiveResult: ng.IDirective = originalGetDirectiveFactory.apply(this, arguments);
 
                         if (directiveResult.templateUrl != null) {
                             directiveResult.templateUrl = pathProvider.getFullPath(directiveResult.templateUrl)
@@ -177,7 +177,7 @@ module Foundation.ViewModel.Implementations {
 
                         return directiveResult;
 
-                    }
+                    };
 
                     app.directive(directive.name, modifiedGetDirectiveFactory);
                 });
@@ -185,10 +185,10 @@ module Foundation.ViewModel.Implementations {
 
         protected async registerFilters(app: angular.IModule): Promise<void> {
 
-            let dateTimeService = this.dateTimeService;
-            let pathProvider = this.pathProvider;
+            const dateTimeService = this.dateTimeService;
+            const pathProvider = this.pathProvider;
 
-            app.filter('bitDate', () => {
+            app.filter("bitDate", () => {
 
                 return function (date: Date): string {
 
@@ -197,7 +197,7 @@ module Foundation.ViewModel.Implementations {
                 }
             });
 
-            app.filter('bitDateTime', () => {
+            app.filter("bitDateTime", () => {
 
                 return function (date: Date): string {
 
@@ -206,13 +206,13 @@ module Foundation.ViewModel.Implementations {
                 }
             });
 
-            app.filter('trusted', ['$sce', function ($sce: ng.ISCEService) {
+            app.filter("trusted", ["$sce", function ($sce: ng.ISCEService) {
                 return function (url) {
                     return $sce.trustAsResourceUrl(url);
                 };
             }]);
 
-            app.filter('files', () => {
+            app.filter("files", () => {
 
                 return (path: string): string => {
 
@@ -232,9 +232,9 @@ module Foundation.ViewModel.Implementations {
 
                     try {
 
-                        let app = await this.buildAppModule();
+                        const app = await this.buildAppModule();
 
-                        Foundation.Core.DependencyManager.getCurrent().registerCustomObjectResolver({
+                        Core.DependencyManager.getCurrent().registerCustomObjectResolver({
                             canResolve: (name) => angular.element(document.body).injector().has(name),
                             resolve: <T>(name) => angular.element(document.body).injector().get<T>(name)
                         });

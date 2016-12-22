@@ -1,5 +1,4 @@
-﻿using System;
-using Foundation.AspNetCore.Contracts;
+﻿using Foundation.AspNetCore.Contracts;
 using Foundation.AspNetCore.Middlewares;
 using Microsoft.AspNetCore.Builder;
 

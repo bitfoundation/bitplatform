@@ -1,12 +1,7 @@
 ﻿using Foundation.Test.Server;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using System.Net.Http;
 using Microsoft.AspNetCore.Hosting;
 using System.IO;
-using Foundation.AspNetCore.Implementations.Servers;
 
 namespace Foundation.AspNetCore.Test.Server
 {

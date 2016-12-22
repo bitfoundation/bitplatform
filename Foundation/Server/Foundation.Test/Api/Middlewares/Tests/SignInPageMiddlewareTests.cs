@@ -3,7 +3,6 @@ using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System;
 using Foundation.Core.Models;
 
 namespace Foundation.Test.Api.Middlewares.Tests

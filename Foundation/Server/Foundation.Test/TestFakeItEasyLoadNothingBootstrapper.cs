@@ -4,14 +4,9 @@ namespace Foundation.Test
 {
     public class TestFakeItEasyLoadNothingBootstrapper : FakeItEasyLoadNothingBootstrapperBase
     {
-        public TestFakeItEasyLoadNothingBootstrapper()
+        public override IEnumerable<string> GetAssemblyFileNamesToScanForExtensions()
         {
-
-        }
-
-        public virtual IEnumerable<string> GetAssemblyFileNamesToScanForExtensions()
-        {
-            return new string[] { };
+            return base.GetAssemblyFileNamesToScanForExtensions();
         }
     }
 }

@@ -1,8 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Foundation.Test.Server
 {
@@ -10,15 +6,9 @@ namespace Foundation.Test.Server
     {
         static TestServerFactory()
         {
-            GetEmbeddedTestServer = () =>
-            {
-                return new OwinEmbeddedTestServer();
-            };
+            GetEmbeddedTestServer = () => new OwinEmbeddedTestServer();
 
-            GetSelfHostTestServer = () =>
-            {
-                return new OwinSelfHostTestServer();
-            };
+            GetSelfHostTestServer = () => new OwinSelfHostTestServer();
         }
 
         public static Func<ITestServer> GetEmbeddedTestServer { get; set; }

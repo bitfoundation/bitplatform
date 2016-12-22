@@ -1,22 +1,22 @@
 ﻿module Foundation.View.Directives {
 
-    @Foundation.Core.DirectiveDependency({ name: 'radGridRow' })
-    export class DefaultRadGridRowDirective implements Foundation.ViewModel.Contracts.IDirective {
+    @Core.DirectiveDependency({ name: "radGridRow" })
+    export class DefaultRadGridRowDirective implements ViewModel.Contracts.IDirective {
         public getDirectiveFactory(): angular.IDirectiveFactory {
             return () => ({
-                require: 'ngModel',
-                restrict: 'A',
+                require: "ngModel",
+                restrict: "A",
                 scope: false,
                 link($scope: angular.IScope, element: JQuery, attributes: any, ctrl: any, ngModel) {
 
-                    let dependencyManager = Core.DependencyManager.getCurrent();
+                    const dependencyManager = Core.DependencyManager.getCurrent();
 
-                    let $timeout = dependencyManager.resolveObject<angular.ITimeoutService>("$timeout");
-                    let $parse = dependencyManager.resolveObject<angular.IParseService>("$parse");
+                    const $timeout = dependencyManager.resolveObject<angular.ITimeoutService>("$timeout");
+                    const $parse = dependencyManager.resolveObject<angular.IParseService>("$parse");
 
                     $timeout(() => {
 
-                        let unRegister = $scope.$watch(attributes.ngModel, (model: any) => {
+                        const unRegister = $scope.$watch(attributes.ngModel, (model: any) => {
 
                             if (model == null)
                                 return;

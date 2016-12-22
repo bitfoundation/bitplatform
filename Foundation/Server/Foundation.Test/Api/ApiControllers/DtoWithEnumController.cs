@@ -1,6 +1,5 @@
 ﻿using Foundation.Api.ApiControllers;
 using Foundation.Test.Model.Dto;
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Web.OData;

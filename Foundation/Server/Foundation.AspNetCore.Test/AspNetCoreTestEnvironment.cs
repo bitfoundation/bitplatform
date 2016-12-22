@@ -15,15 +15,9 @@ namespace Foundation.AspNetCore.Test
 
         static AspNetCoreTestEnvironment()
         {
-            TestServerFactory.GetSelfHostTestServer = () =>
-            {
-                return new AspNetCoreSelfHostTestServer();
-            };
+            TestServerFactory.GetSelfHostTestServer = () => new AspNetCoreSelfHostTestServer();
 
-            TestServerFactory.GetEmbeddedTestServer = () =>
-            {
-                return new AspNetCoreEmbeddedTestServer();
-            };
+            TestServerFactory.GetEmbeddedTestServer = () => new AspNetCoreEmbeddedTestServer();
 
             DependenciesManagerProviderBuilder = (args) => new FoundationAspNetCoreTestServerDependenciesManagerProvider(args);
             AppEnvironmentProviderBuilder = (args) => new FoundationAspNetCoreAppEnvironmentPrvider(args);

@@ -12,18 +12,18 @@
         public testProperty = 1;
     }
 
-    TestDirectiveController.$inject = ['$scope', '$http'];
+    TestDirectiveController.$inject = ["$scope", "$http"];
 
-    @Foundation.Core.DirectiveDependency({ name: 'test' })
+    @Foundation.Core.DirectiveDependency({ name: "test" })
     export class DefaultElementMoverDirective implements Foundation.ViewModel.Contracts.IDirective {
         public getDirectiveFactory(): angular.IDirectiveFactory {
             return () => ({
                 controller: TestDirectiveController,
-                controllerAs: 'ctrl',
+                controllerAs: "ctrl",
                 bindToController: {
-                    testProperty: '@?'
+                    testProperty: "@?"
                 },
-                template: '<div>{{::ctrl.testProperty}}</div>',
+                template: "<div>{{::ctrl.testProperty}}</div>",
                 link($scope: ng.IScope, element: JQuery, attributes: ng.IAttributes, controller: TestDirectiveController) {
                     controller.testProperty = 2;
                 }

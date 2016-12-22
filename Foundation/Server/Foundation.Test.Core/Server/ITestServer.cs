@@ -1,13 +1,8 @@
 ﻿using Microsoft.AspNet.SignalR.Client;
-using Microsoft.Owin.Testing;
 using OpenQA.Selenium.Remote;
 using Simple.OData.Client;
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Net.Http;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Foundation.Test
 {
