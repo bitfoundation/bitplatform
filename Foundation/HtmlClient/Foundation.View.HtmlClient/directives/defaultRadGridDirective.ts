@@ -15,7 +15,7 @@ module Foundation.View.Directives {
         public static pageable = true;
         public static groupable = false;
 
-        public getDirectiveFactory(): angular.IDirectiveFactory {
+        public getDirectiveFactory(): ng.IDirectiveFactory {
             return () => ({
                 scope: false,
                 replace: true,
@@ -67,17 +67,17 @@ module Foundation.View.Directives {
 
                     return gridTemplate;
                 },
-                link($scope: angular.IScope, element: JQuery, attributes: any) {
+                link($scope: ng.IScope, element: JQuery, attributes: any) {
 
                     const dependencyManager = Core.DependencyManager.getCurrent();
 
-                    const $timeout = dependencyManager.resolveObject<angular.ITimeoutService>("$timeout");
+                    const $timeout = dependencyManager.resolveObject<ng.ITimeoutService>("$timeout");
 
-                    const $translate = dependencyManager.resolveObject<angular.translate.ITranslateService>("$translate");
+                    const $translate = dependencyManager.resolveObject<ng.translate.ITranslateService>("$translate");
 
-                    const $compile = dependencyManager.resolveObject<angular.ICompileService>("$compile");
+                    const $compile = dependencyManager.resolveObject<ng.ICompileService>("$compile");
 
-                    const $parse = dependencyManager.resolveObject<angular.IParseService>("$parse");
+                    const $parse = dependencyManager.resolveObject<ng.IParseService>("$parse");
 
                     const dateTimeService = Core.DependencyManager.getCurrent().resolveObject<ViewModel.Contracts.IDateTimeService>("DateTimeService");
 

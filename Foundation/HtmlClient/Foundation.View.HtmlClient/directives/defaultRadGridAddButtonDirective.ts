@@ -4,7 +4,7 @@ module Foundation.View.Directives {
     @Core.DirectiveDependency({ name: "radGridAddButton" })
     export class DefaultRadGridAddButtonDirective implements ViewModel.Contracts.IDirective {
         public static defaultClasses: string[] = ["md-raised", "md-primary"];
-        public getDirectiveFactory(): angular.IDirectiveFactory {
+        public getDirectiveFactory(): ng.IDirectiveFactory {
             return () => ({
                 scope: false,
                 compile: function (element, attributes) {

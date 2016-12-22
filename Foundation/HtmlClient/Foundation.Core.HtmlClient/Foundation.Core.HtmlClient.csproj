@@ -67,6 +67,7 @@
     <TypeScriptCompile Include="Model\iVersionableDto.ts" />
     <TypeScriptCompile Include="Model\iSyncableDto.ts" />
     <TypeScriptCompile Include="typings.d.ts" />
+    <TypeScriptCompile Include="typings\angular-component-router.d.ts" />
   </ItemGroup>
   <ItemGroup>
     <TypeScriptCompile Include="log.ts" />
@@ -86,10 +87,10 @@
     <Reference Include="System.Xml.Linq" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="typings.json" />
+    <Content Include="tsconfig.json" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="tsconfig.json" />
+    <Content Include="package.json" />
   </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>

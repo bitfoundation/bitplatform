@@ -1,17 +1,4 @@
-﻿declare module angular {
-
-    export interface Router {
-        root: Router;
-    }
-
-    export interface RouterOutlet {
-        $$outlet: {
-            currentInstruction: ComponentInstruction;
-        }
-    }
-}
-
-declare module kendo {
+﻿declare module kendo {
     export module data {
         export interface ObservableObject extends Observable {
             innerInstance(): $data.Entity;
@@ -93,12 +80,12 @@ interface Array<T> {
 }
 
 declare namespace angular.material {
-    interface IPromptDialog extends IPresetDialog<IPromptDialog> {
+    interface IPromptDialog extends ng.material.IPresetDialog<IPromptDialog> {
         cancel(cancel: string): IPromptDialog;
         placeholder(placeholder: string): IPromptDialog;
     }
     interface IDialogService {
-        show(dialog: IDialogOptions | IAlertDialog | IConfirmDialog | IPromptDialog): IPromise<any>;
+        show(dialog: ng.material.IDialogOptions | ng.material.IAlertDialog | ng.material.IConfirmDialog | IPromptDialog): ng.IPromise<any>;
         prompt(): IPromptDialog;
     }
 }

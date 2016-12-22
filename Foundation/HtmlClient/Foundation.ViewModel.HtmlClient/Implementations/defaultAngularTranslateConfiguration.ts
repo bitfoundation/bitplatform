@@ -9,7 +9,7 @@
         }
 
         @Core.Log()
-        public async configure(app: angular.IModule): Promise<void> {
+        public async configure(app: ng.IModule): Promise<void> {
 
             const metadata = await this.metadataProvider.getMetadata();
 
@@ -49,7 +49,7 @@
                     });
                 });
 
-            app.config(["$translateProvider", ($translateProvider: angular.translate.ITranslateProvider) => {
+            app.config(["$translateProvider", ($translateProvider: ng.translate.ITranslateProvider) => {
 
                 for (let translate in translates) {
                     if (translates.hasOwnProperty(translate)) {

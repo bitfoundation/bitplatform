@@ -9,7 +9,8 @@
     "outFile": "foundation.core.js",
     "target": "es5",
     "sourceMap": true,
-    "lib": [ "dom", "es2015" ]
+    "lib": [ "dom", "es2015" ],
+    "typeRoots": [ "..\\foundation.core.htmlclient\\node_modules\\@types" ]
   },
   "exclude": [ "foundation.core.d.ts", "node_modules", "bower_components", "bin", "obj" ]
 }

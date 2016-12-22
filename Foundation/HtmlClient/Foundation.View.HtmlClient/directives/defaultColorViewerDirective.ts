@@ -4,12 +4,12 @@
 module Foundation.View.Directives {
     @Core.DirectiveDependency({ name: "colorViewer" })
     export class DefaultColorViewerDirective implements ViewModel.Contracts.IDirective {
-        public getDirectiveFactory(): angular.IDirectiveFactory {
+        public getDirectiveFactory(): ng.IDirectiveFactory {
             return () => ({
                 scope: false,
                 replace: true,
                 terminal: true,
-                template: (element: JQuery, attrs: angular.IAttributes) => {
+                template: (element: JQuery, attrs: ng.IAttributes) => {
                     return `<div style='background-color:${attrs["color"]}; color:transparent;'>color</div>`;
                 }
             });

@@ -5,7 +5,7 @@ module Foundation.View.Directives {
     @Core.DirectiveDependency({ name: "radGridCancelButton" })
     export class DefaultRadGridCancelButtonDirective implements ViewModel.Contracts.IDirective {
         public static defaultClasses: string[] = ["md-raised"];
-        public getDirectiveFactory(): angular.IDirectiveFactory {
+        public getDirectiveFactory(): ng.IDirectiveFactory {
             return () => ({
                 scope: false,
                 compile: function (element, attributes) {

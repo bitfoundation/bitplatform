@@ -9,7 +9,7 @@ module Foundation.View.Directives {
 
     @Core.DirectiveDependency({ name: "elementMover" })
     export class DefaultElementMoverDirective implements ViewModel.Contracts.IDirective {
-        public getDirectiveFactory(): angular.IDirectiveFactory {
+        public getDirectiveFactory(): ng.IDirectiveFactory {
             return () => ({
                 scope: {
                     predicate: "=",

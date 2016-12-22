@@ -2,11 +2,11 @@
 
     @Core.DirectiveDependency({ name: "iranianPeopleNationalCode" })
     export class IranianPeopleNationalCodeValidator implements ViewModel.Contracts.IDirective {
-        public getDirectiveFactory(): angular.IDirectiveFactory {
-            return (): angular.IDirective => {
+        public getDirectiveFactory(): ng.IDirectiveFactory {
+            return (): ng.IDirective => {
                 return {
                     require: "ngModel",
-                    link: function ($scope: angular.IScope, elm: JQuery, attrs: angular.IAttributes, ctrl: angular.INgModelController) {
+                    link: function ($scope: ng.IScope, elm: JQuery, attrs: ng.IAttributes, ctrl: ng.INgModelController) {
 
                         const dependencyManager = Core.DependencyManager.getCurrent();
 

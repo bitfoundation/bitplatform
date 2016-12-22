@@ -2,17 +2,17 @@
 
     @Core.DirectiveDependency({ name: "radGridRow" })
     export class DefaultRadGridRowDirective implements ViewModel.Contracts.IDirective {
-        public getDirectiveFactory(): angular.IDirectiveFactory {
+        public getDirectiveFactory(): ng.IDirectiveFactory {
             return () => ({
                 require: "ngModel",
                 restrict: "A",
                 scope: false,
-                link($scope: angular.IScope, element: JQuery, attributes: any, ctrl: any, ngModel) {
+                link($scope: ng.IScope, element: JQuery, attributes: any, ctrl: any, ngModel) {
 
                     const dependencyManager = Core.DependencyManager.getCurrent();
 
-                    const $timeout = dependencyManager.resolveObject<angular.ITimeoutService>("$timeout");
-                    const $parse = dependencyManager.resolveObject<angular.IParseService>("$parse");
+                    const $timeout = dependencyManager.resolveObject<ng.ITimeoutService>("$timeout");
+                    const $parse = dependencyManager.resolveObject<ng.IParseService>("$parse");
 
                     $timeout(() => {
 

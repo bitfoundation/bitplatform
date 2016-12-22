@@ -15,15 +15,15 @@ module Foundation.ViewModel.Implementations {
             return [];
         }
 
-        protected async onAppRun(app: angular.IModule): Promise<void> {
+        protected async onAppRun(app: ng.IModule): Promise<void> {
 
         }
 
-        protected async registerValues(app: angular.IModule): Promise<void> {
+        protected async registerValues(app: ng.IModule): Promise<void> {
             app.value("$routerRootComponent", "app");
         }
 
-        protected async registerComponents(app: any): Promise<void> {
+        protected async registerComponents(app: ng.IModule): Promise<void> {
 
             const dependencyManager = Core.DependencyManager.getCurrent();
 
@@ -78,7 +78,7 @@ module Foundation.ViewModel.Implementations {
             });
         }
 
-        protected async buildAppModule(): Promise<angular.IModule> {
+        protected async buildAppModule(): Promise<ng.IModule> {
 
             const baseModuleDependencies = this.getBaseModuleDependencies();
 
@@ -87,7 +87,7 @@ module Foundation.ViewModel.Implementations {
             return app;
         }
 
-        protected async configureAppModule(app: angular.IModule): Promise<void> {
+        protected async configureAppModule(app: ng.IModule): Promise<void> {
 
             const logger = this.logger;
 
@@ -155,7 +155,7 @@ module Foundation.ViewModel.Implementations {
             }
         }
 
-        protected async registerDirectives(app: angular.IModule): Promise<void> {
+        protected async registerDirectives(app: ng.IModule): Promise<void> {
 
             const dependencyManager = Core.DependencyManager.getCurrent();
 
@@ -183,7 +183,7 @@ module Foundation.ViewModel.Implementations {
                 });
         }
 
-        protected async registerFilters(app: angular.IModule): Promise<void> {
+        protected async registerFilters(app: ng.IModule): Promise<void> {
 
             const dateTimeService = this.dateTimeService;
             const pathProvider = this.pathProvider;

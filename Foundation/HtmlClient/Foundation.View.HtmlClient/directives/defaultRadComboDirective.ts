@@ -3,7 +3,7 @@
 module Foundation.View.Directives {
     @Core.DirectiveDependency({ name: "radCombo" })
     export class DefaultRadComboDirective implements ViewModel.Contracts.IDirective {
-        public getDirectiveFactory(): angular.IDirectiveFactory {
+        public getDirectiveFactory(): ng.IDirectiveFactory {
             return () => ({
                 scope: false,
                 replace: true,
@@ -56,12 +56,12 @@ module Foundation.View.Directives {
 
                     return template;
                 },
-                link($scope: angular.IScope, element: JQuery, attributes: any) {
+                link($scope: ng.IScope, element: JQuery, attributes: any) {
 
                     const dependencyManager = Core.DependencyManager.getCurrent();
 
-                    const $timeout = dependencyManager.resolveObject<angular.ITimeoutService>("$timeout");
-                    const $parse = dependencyManager.resolveObject<angular.IParseService>("$parse");
+                    const $timeout = dependencyManager.resolveObject<ng.ITimeoutService>("$timeout");
+                    const $parse = dependencyManager.resolveObject<ng.IParseService>("$parse");
 
                     $timeout(() => {
 

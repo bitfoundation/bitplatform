@@ -2,12 +2,12 @@
 
     @Core.DirectiveDependency({ name: "dtoFormService" })
     export class DefaultDtoFormServiceDirective implements ViewModel.Contracts.IDirective {
-        public getDirectiveFactory(): angular.IDirectiveFactory {
+        public getDirectiveFactory(): ng.IDirectiveFactory {
             return () => ({
                 restrict: "A",
                 require: "ngModel",
                 scope: false,
-                link($scope: angular.IScope, element: JQuery, attributes: any, ctrl: any, ngModel) {
+                link($scope: ng.IScope, element: JQuery, attributes: any, ctrl: any, ngModel) {
 
                     let defaultDtoViewModel: ViewModel.Implementations.DefaultDtoViewModel<Model.Contracts.IDto, ViewModel.Implementations.DtoRules<Model.Contracts.IDto>> = null;
                     let dtoViewModel: ViewModel.Contracts.IDtoViewModel<Model.Contracts.IDto> = null;
@@ -15,8 +15,8 @@
 
                     const dependencyManager = Core.DependencyManager.getCurrent();
 
-                    const $timeout = dependencyManager.resolveObject<angular.ITimeoutService>("$timeout");
-                    const $parse = dependencyManager.resolveObject<angular.IParseService>("$parse");
+                    const $timeout = dependencyManager.resolveObject<ng.ITimeoutService>("$timeout");
+                    const $parse = dependencyManager.resolveObject<ng.IParseService>("$parse");
                     const dateTimeService = dependencyManager.resolveObject<ViewModel.Contracts.IDateTimeService>("DateTimeService");
                     const clientAppProfile = dependencyManager.resolveObject<Core.ClientAppProfileManager>("ClientAppProfileManager").getClientAppProfile();
 

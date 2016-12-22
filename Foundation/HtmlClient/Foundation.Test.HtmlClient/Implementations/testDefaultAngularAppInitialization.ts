@@ -9,8 +9,8 @@ module Foundation.Test.Implementations {
             return ["pascalprecht.translate", "ngComponentRouter", "kendo.directives", "ngMessages", "ngMaterial", "ngAria", "ngAnimate"];
         }
 
-        protected async configureAppModule(app: angular.IModule): Promise<void> {
-            app.config(["$locationProvider", ($locationProvider: angular.ILocationProvider) => {
+        protected async configureAppModule(app: ng.IModule): Promise<void> {
+            app.config(["$locationProvider", ($locationProvider: ng.ILocationProvider) => {
                 $locationProvider.html5Mode(true);
             }]);
             await super.configureAppModule(app);

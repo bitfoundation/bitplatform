@@ -4,7 +4,7 @@
 module Foundation.View.Directives {
     @Core.DirectiveDependency({ name: "layoutChild" })
     export class DefaultLayoutChildDirective implements ViewModel.Contracts.IDirective {
-        public getDirectiveFactory(): angular.IDirectiveFactory {
+        public getDirectiveFactory(): ng.IDirectiveFactory {
             return () => ({
                 scope: false,
                 replace: false,

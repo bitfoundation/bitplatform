@@ -3,7 +3,7 @@
 
         public static Use$ApplyAsync = true;
 
-        public static update$scope = ($scope: ng.IScope): void => {
+        public static update$scope($scope: ng.IScope): void {
 
             if (ScopeManager.Use$ApplyAsync == true) {
                 window.setTimeout(() => {

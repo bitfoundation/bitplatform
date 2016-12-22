@@ -213,7 +213,6 @@ ModelManifest.xml
 # Bit Foundation
 **/bower_components/*
 *.map
-**/typings/*
 /Foundation/Server/Foundation.Test/Test.Model.Context.js
 /Foundation/Server/Foundation.Test/Test.Model.Context.d.ts
 /Foundation/HtmlClient/Foundation.ViewModel.HtmlClient/foundation.viewmodel.js
