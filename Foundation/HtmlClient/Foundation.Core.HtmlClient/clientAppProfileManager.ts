@@ -48,7 +48,7 @@
 
         public init(): void {
 
-            this.clientAppProfile = window["clientAppProfile"];
+            this.clientAppProfile = clientAppProfile;
 
             if (this.clientAppProfile == null)
                 throw new Error("client app profile is null");

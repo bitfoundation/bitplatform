@@ -6,7 +6,7 @@
         public static update$scope($scope: ng.IScope): void {
 
             if (ScopeManager.Use$ApplyAsync == true) {
-                window.setTimeout(() => {
+                setTimeout(() => {
                     $scope.$applyAsync();
                 }, 0);
             }

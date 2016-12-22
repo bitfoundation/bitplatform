@@ -113,7 +113,7 @@ module Foundation.ViewModel.Implementations {
                     const currentParent = parentDataSource.current;
 
                     await new Promise<void>((resolve) => {
-                        window.setTimeout(() => resolve(), 350);
+                        setTimeout(() => resolve(), 350);
                     });
 
                     if (currentParent != parentDataSource.current)

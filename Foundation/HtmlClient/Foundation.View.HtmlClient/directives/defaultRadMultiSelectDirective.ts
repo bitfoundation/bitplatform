@@ -124,7 +124,7 @@ module Foundation.View.Directives {
 
                                 kendoWidgetCreatedDisposal();
 
-                                if (window["ngMaterial"] != null) {
+                                if (typeof ngMaterial != "undefined") {
 
                                     const mdInputContainerParent = multiSelect.wrapper.parents("md-input-container");
 

@@ -102,3 +102,8 @@ declare namespace decimal {
 interface Function {
     injects?: { name: string, kind: "Single" | "All" }[];
 }
+
+declare var clientAppProfile: Foundation.Core.Contracts.IClientAppProfile;
+declare var ngMaterial: { version: string };
+declare var odatajs: any;
+declare var jasmineRequire: any;

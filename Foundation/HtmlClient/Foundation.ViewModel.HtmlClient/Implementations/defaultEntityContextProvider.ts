@@ -12,9 +12,9 @@
 
             if (this.oDataJSInitPromise == null) {
 
-                const originalJsonHandlerWrite = window["odatajs"].oData.json.jsonHandler.write;
+                const originalJsonHandlerWrite = odatajs.oData.json.jsonHandler.write;
 
-                window["odatajs"].oData.json.jsonHandler.write = function (request, context) {
+                odatajs.oData.json.jsonHandler.write = function (request, context) {
 
                     if (request.headers["Content-Type"] == null)
                         request.headers["Content-Type"] = "application/json";
@@ -87,11 +87,11 @@
 
                             });
 
-                        const originalPrepareRequest = window["odatajs"].oData.utils.prepareRequest;
+                        const originalPrepareRequest = odatajs.oData.utils.prepareRequest;
 
                         const clientAppProfile = this.clientAppProfileManager.getClientAppProfile();
 
-                        window["odatajs"].oData.utils.prepareRequest = function (request, handler, context) {
+                        odatajs.oData.utils.prepareRequest = function (request, handler, context) {
                             request.headers = request.headers || {};
                             request.headers["current-time-zone"] = clientAppProfile.currentTimeZone;
                             request.headers["desired-time-zone"] = clientAppProfile.desiredTimeZone;
@@ -116,9 +116,9 @@
                             return results;
                         };
 
-                        const originalRead = window["odatajs"].oData.json.jsonHandler.read;
+                        const originalRead = odatajs.oData.json.jsonHandler.read;
 
-                        window["odatajs"].oData.json.jsonHandler.read = function (response, context) {
+                        odatajs.oData.json.jsonHandler.read = function (response, context) {
 
                             if (response.body != null && typeof response.body === "string") {
                                 response.body = (response.body as string).replace(/:\s*(\d{14,}.\d{2,})\s*([,\}])/g, ':"$1"$2');

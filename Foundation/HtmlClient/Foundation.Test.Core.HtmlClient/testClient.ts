@@ -21,7 +21,7 @@ let executeTest = async (testFunc: Function, args: string | any): Promise<void> 
 
         Foundation.ViewModel.ScopeManager.Use$ApplyAsync = false;
 
-        const jasmineReq = window["jasmineRequire"];
+        const jasmineReq = jasmineRequire;
 
         window["jasmine"] = jasmineReq.core(jasmineReq);
 

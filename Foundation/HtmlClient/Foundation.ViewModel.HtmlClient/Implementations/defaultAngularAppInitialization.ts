@@ -122,7 +122,7 @@ module Foundation.ViewModel.Implementations {
                 $logProvider.debugEnabled(this.clientAppProfile.isDebugMode);
             }]);
 
-            if (window["ngMaterial"] != null) {
+            if (typeof ngMaterial != "undefined") {
 
                 app.decorator("mdSwitchDirective", ["$delegate", function mdSwitchDecorator($delegate: ng.ISCEDelegateService) {
 
