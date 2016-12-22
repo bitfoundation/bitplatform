@@ -7,29 +7,30 @@
     "bower_components"
   ],
   "dependencies": {
-    "jquery": "^3.1.1",
-    "angular": "^1.5.9",
+    "jquery": "3.1.1",
+    "angular": "1.5.9",
     "angular-material": "https://github.com/angular/bower-material.git/#v1.1.1-master-342ee53",
     "regenerator": "https://github.com/facebook/regenerator.git#v0.8.46",
     "olingo-odatajs": "~4.0.0",
     "jaydata": "https://github.com/bit-foundation/jaydata-releases.git/#1.5.11.3",
     "persian-date": "https://github.com/bit-foundation/PersianDate.git#0.1.9",
-    "angular-translate": "^2.13.0",
-    "signalr": "^2.2.1",
+    "angular-translate": "2.13.0",
+    "signalr": "2.2.1",
     "persian-datepicker": "https://github.com/bit-foundation/pwt.datepicker.git#0.4.9",
     "normalize-css": "5.0.0",
-    "angular-messages": "^1.5.9",
-    "angular-animate": "^1.5.9",
-    "core.js": "^2.4.1",
+    "angular-messages": "1.5.9",
+    "angular-animate": "1.5.9",
+    "angular-aria": "1.5.9",
+    "core.js": "2.4.1",
     "ngComponentRouter": "https://github.com/excellalabs/ngComponentRouter.git#1d01d7a6902f0be2688693f14cb40576b718ab39",
-    "fetch": "^0.11.1",
-    "jasmine-core": "^2.5.2",
-    "jasmine-jquery": "^2.1.1",
+    "fetch": "0.11.1",
+    "jasmine-core": "2.5.2",
+    "jasmine-jquery": "2.1.1",
     "decimal.js": "https://github.com/MikeMcl/decimal.js.git#v7.0.1",
-    "kendo-ui": "kendo-ui-core#^2016.3.1118"
+    "kendo-ui": "kendo-ui-core#2016.3.1118"
   },
   "resolutions": {
-    "jquery": "^3.1.1",
-    "angular": "^1.5.9"
+    "jquery": "3.1.1",
+    "angular": "1.5.9"
   }
 }
