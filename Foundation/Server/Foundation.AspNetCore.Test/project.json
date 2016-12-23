@@ -22,7 +22,8 @@
     "Microsoft.AspNetCore.Mvc.Core": "1.1.0",
     "Microsoft.AspNetCore.Mvc.Formatters.Json": "1.1.0",
     "Microsoft.AspNetCore.Routing": "1.1.0",
-    "Microsoft.AspNetCore.TestHost": "1.1.0"
+    "Microsoft.AspNetCore.TestHost": "1.1.0",
+    "Suave": "2.0.0-rc3"
   },
 
   "buildOptions": {

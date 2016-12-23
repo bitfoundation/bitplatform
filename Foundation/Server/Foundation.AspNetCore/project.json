@@ -16,7 +16,8 @@
     "Microsoft.Owin": "3.0.1",
     "Microsoft.Owin.Host.HttpListener": "3.0.1",
     "Microsoft.Owin.Hosting": "3.0.1",
-    "System.Diagnostics.DiagnosticSource": "4.3.0"
+    "System.Diagnostics.DiagnosticSource": "4.3.0",
+    "Suave": "2.0.0-rc3"
   },
 
   "buildOptions": {
