@@ -7,18 +7,20 @@
     "bower_components"
   ],
   "dependencies": {
-    "jquery": "^3.1.1",
-    "angular": "^1.5.9",
+    "jquery": "3.1.1",
+    "angular": "1.5.9",
     "angular-material": "https://github.com/angular/bower-material.git/#v1.1.1-master-342ee53",
     "regenerator": "https://github.com/facebook/regenerator.git#v0.8.46",
-    "angular-translate": "^2.13.0",
+    "angular-translate": "2.13.0",
     "normalize-css": "5.0.0",
-    "angular-messages": "^1.5.9",
-    "core.js": "^2.4.1",
-    "fetch": "^0.11.1",
-    "encoderjs": "^0.0.1"
+    "angular-messages": "1.5.9",
+    "angular-animate": "1.5.9",
+    "angular-aria": "1.5.9",
+    "core.js": "2.4.1",
+    "fetch": "0.11.1",
+    "encoderjs": "0.0.1"
   },
   "resolutions": {
-    "angular": "^1.5.9"
+    "angular": "1.5.9"
   }
 }
