@@ -9,7 +9,8 @@
     "outFile": "identityServer.HtmlClient.js",
     "target": "es5",
     "sourceMap": true,
-    "lib": [ "dom", "es2015" ]
+    "lib": [ "dom", "es2015" ],
+    "typeRoots": [ "..\\..\\..\\..\\bit-framework\\Foundation\\HtmlClient\\foundation.core.htmlclient\\node_modules\\@types" ]
   },
   "exclude": [ "identityServer.HtmlClient.d.ts", "node_modules", "bower_components", "bin", "obj" ]
 }
