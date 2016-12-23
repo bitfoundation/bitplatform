@@ -5,7 +5,6 @@ using Foundation.CodeGenerators.Contracts;
 using Foundation.CodeGenerators.Contracts.HtmlClientProxyGenerator;
 using Foundation.CodeGenerators.Model;
 using Microsoft.CodeAnalysis;
-using System.Collections.ObjectModel;
 
 namespace Foundation.CodeGenerators.Implementations.HtmlClientProxyGenerator
 {
@@ -21,10 +20,10 @@ namespace Foundation.CodeGenerators.Implementations.HtmlClientProxyGenerator
             _configurationProvider = configurationProvider;
         }
 
-        public virtual IList<HtmlClientProxyGeneratorMapping> GetHtmlClientProxyGeneratorMappings(Workspace worksapce, Solution solution, IList<Project> projects)
+        public virtual IList<HtmlClientProxyGeneratorMapping> GetHtmlClientProxyGeneratorMappings(Workspace workspace, Solution solution, IList<Project> projects)
         {
-            if (worksapce == null)
-                throw new ArgumentNullException(nameof(worksapce));
+            if (workspace == null)
+                throw new ArgumentNullException(nameof(workspace));
 
             if (solution == null)
                 throw new ArgumentNullException(nameof(solution));
@@ -34,7 +33,7 @@ namespace Foundation.CodeGenerators.Implementations.HtmlClientProxyGenerator
 
             HashSet<HtmlClientProxyGeneratorMapping> affectedClientProxyGeneratorMappings = new HashSet<HtmlClientProxyGeneratorMapping>();
 
-            FoundationVSPackageConfiguration foundationVsPackageConfiguration = _configurationProvider.GetConfiguration(worksapce, solution, projects);
+            FoundationVSPackageConfiguration foundationVsPackageConfiguration = _configurationProvider.GetConfiguration(workspace, solution, projects);
 
             foreach (Project vsProject in projects)
             {

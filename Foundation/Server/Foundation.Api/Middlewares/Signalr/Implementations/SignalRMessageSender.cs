@@ -16,16 +16,16 @@ namespace Foundation.Api.Middlewares.SignalR.Implementations
         {
         }
 
-        public SignalRMessageSender(IMessageContentFormatter formatter, Microsoft.AspNet.SignalR.IDependencyResolver SignalRDependencyResolver)
+        public SignalRMessageSender(IMessageContentFormatter formatter, Microsoft.AspNet.SignalR.IDependencyResolver signalRDependencyResolver)
         {
             if (formatter == null)
                 throw new ArgumentNullException(nameof(formatter));
 
-            if (SignalRDependencyResolver == null)
-                throw new ArgumentNullException(nameof(SignalRDependencyResolver));
+            if (signalRDependencyResolver == null)
+                throw new ArgumentNullException(nameof(signalRDependencyResolver));
 
             _formatter = formatter;
-            _connectionManager = SignalRDependencyResolver.Resolve<IConnectionManager>();
+            _connectionManager = signalRDependencyResolver.Resolve<IConnectionManager>();
         }
 
         public virtual async Task SendMessageToUsersAsync<T>(string messageKey, T messageArgs, params string[] userIds)
@@ -44,7 +44,7 @@ namespace Foundation.Api.Middlewares.SignalR.Implementations
             userIds.ToList()
                 .ForEach(async u =>
                 {
-                    await hubContext.Clients.Group(u).OnMessageRecieved(messageKey, objectArgsAsString);
+                    await hubContext.Clients.Group(u).OnMessageReceived(messageKey, objectArgsAsString);
                 });
         }
 
@@ -64,7 +64,7 @@ namespace Foundation.Api.Middlewares.SignalR.Implementations
             userIds.ToList()
                 .ForEach(u =>
                 {
-                    hubContext.Clients.Group(u).OnMessageRecieved(messageKey, objectArgsAsString);
+                    hubContext.Clients.Group(u).OnMessageReceived(messageKey, objectArgsAsString);
                 });
         }
 
@@ -78,7 +78,7 @@ namespace Foundation.Api.Middlewares.SignalR.Implementations
 
             string objectArgsAsString = messageArgs == null ? string.Empty : _formatter.Serialize(messageArgs);
 
-            await hubContext.Clients.All.OnMessageRecieved(messageKey, objectArgsAsString);
+            await hubContext.Clients.All.OnMessageReceived(messageKey, objectArgsAsString);
         }
 
         public void SendMessageToAll<T>(string messageKey, T messageArgs)
@@ -91,7 +91,7 @@ namespace Foundation.Api.Middlewares.SignalR.Implementations
 
             string objectArgsAsString = messageArgs == null ? string.Empty : _formatter.Serialize(messageArgs);
 
-            hubContext.Clients.All.OnMessageRecieved(messageKey, objectArgsAsString);
+            hubContext.Clients.All.OnMessageReceived(messageKey, objectArgsAsString);
         }
 
         public async Task SendMessageToGroupsAsync<T>(string messageKey, T messageArgs, params string[] groupNames) where T : class

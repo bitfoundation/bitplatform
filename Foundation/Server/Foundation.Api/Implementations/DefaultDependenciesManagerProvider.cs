@@ -26,7 +26,7 @@ namespace Foundation.Api.Implementations
         private static IDependenciesManagerProvider _current;
 
         private IDependenciesManager[] _result;
-        private object[] _args;
+        private readonly object[] _args;
 
         protected DefaultDependenciesManagerProvider()
         {

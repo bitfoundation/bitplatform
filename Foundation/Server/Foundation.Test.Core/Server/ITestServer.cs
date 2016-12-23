@@ -36,7 +36,7 @@ namespace Foundation.Test
 
         HttpClient GetHttpClient(OAuthToken token = null);
 
-        IHubProxy BuildSignalRClient(OAuthToken token = null, Action<string, dynamic> onMessageRecieved = null);
+        IHubProxy BuildSignalRClient(OAuthToken token = null, Action<string, dynamic> onMessageReceived = null);
 
         void Initialize(string uri);
 

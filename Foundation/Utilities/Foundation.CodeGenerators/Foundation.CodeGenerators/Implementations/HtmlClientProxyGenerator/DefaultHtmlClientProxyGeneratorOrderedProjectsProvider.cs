@@ -9,10 +9,10 @@ namespace Foundation.CodeGenerators.Implementations.HtmlClientProxyGenerator
 {
     public class DefaultHtmlClientProxyGeneratorSolutionProjectsSelector : IHtmlClientProxyGeneratorSolutionProjectsSelector
     {
-        public virtual IList<Project> GetInvolveableProjects(Workspace worksapce, Solution solution, IList<Project> projects, HtmlClientProxyGeneratorMapping htmlClientProxyGeneratorMapping)
+        public virtual IList<Project> GetInvolveableProjects(Workspace workspace, Solution solution, IList<Project> projects, HtmlClientProxyGeneratorMapping htmlClientProxyGeneratorMapping)
         {
-            if (worksapce == null)
-                throw new ArgumentNullException(nameof(worksapce));
+            if (workspace == null)
+                throw new ArgumentNullException(nameof(workspace));
 
             if (solution == null)
                 throw new ArgumentNullException(nameof(solution));

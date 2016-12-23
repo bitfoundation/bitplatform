@@ -52,11 +52,11 @@ namespace Foundation.CodeGenerators.Implementations.HtmlClientProxyGenerator
             _enumTypesProvider = enumTypesProvider;
         }
 
-        public virtual void GenerateCodes(Workspace worksapce, Solution solution,
+        public virtual void GenerateCodes(Workspace workspace, Solution solution,
             IList<Project> projects)
         {
-            if (worksapce == null)
-                throw new ArgumentNullException(nameof(worksapce));
+            if (workspace == null)
+                throw new ArgumentNullException(nameof(workspace));
 
             if (solution == null)
                 throw new ArgumentNullException(nameof(solution));
@@ -64,7 +64,7 @@ namespace Foundation.CodeGenerators.Implementations.HtmlClientProxyGenerator
             if (projects == null)
                 throw new ArgumentNullException(nameof(projects));
 
-            foreach (HtmlClientProxyGeneratorMapping proxyGeneratorMapping in _contextMappingsProvider.GetHtmlClientProxyGeneratorMappings(worksapce, solution, projects))
+            foreach (HtmlClientProxyGeneratorMapping proxyGeneratorMapping in _contextMappingsProvider.GetHtmlClientProxyGeneratorMappings(workspace, solution, projects))
             {
                 string generatedContextName = proxyGeneratorMapping.DestinationFileName;
 
@@ -77,7 +77,7 @@ namespace Foundation.CodeGenerators.Implementations.HtmlClientProxyGenerator
                 Project destProject = solution.Projects
                         .Last(p => p.Name == proxyGeneratorMapping.DestinationProject.Name);
 
-                IList<Project> involveableProjects = _solutionProjectsSelector.GetInvolveableProjects(worksapce, solution, solution.Projects.ToList(), proxyGeneratorMapping);
+                IList<Project> involveableProjects = _solutionProjectsSelector.GetInvolveableProjects(workspace, solution, solution.Projects.ToList(), proxyGeneratorMapping);
 
                 IList<Dto> dtos = involveableProjects
                     .SelectMany(p => _dtosProvider.GetProjectDtos(p, involveableProjects)).ToList();

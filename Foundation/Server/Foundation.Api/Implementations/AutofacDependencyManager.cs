@@ -178,7 +178,7 @@ namespace Foundation.Api.Implementations
         }
 
         public virtual IDependencyManager Register<TContract, TService>(string name = null,
-            DepepdencyLifeCycle lifeCycle = DepepdencyLifeCycle.InstancePerLifetimeScope, bool overwriteExciting = true)
+            DependencyLifeCycle lifeCycle = DependencyLifeCycle.InstancePerLifetimeScope, bool overwriteExciting = true)
             where TService : class, TContract
         {
             return Register(typeof(TContract).GetTypeInfo(), typeof(TService).GetTypeInfo(), name, lifeCycle, overwriteExciting);
@@ -202,11 +202,11 @@ namespace Foundation.Api.Implementations
             return this;
         }
 
-        public IDependencyManager RegisterGeneric(TypeInfo contractType, TypeInfo serviceType, DepepdencyLifeCycle lifeCycle)
+        public IDependencyManager RegisterGeneric(TypeInfo contractType, TypeInfo serviceType, DependencyLifeCycle lifeCycle)
         {
             IRegistrationBuilder<object, ReflectionActivatorData, DynamicRegistrationStyle> registration = GetContainerBuidler().RegisterGeneric(serviceType).As(contractType);
 
-            if (lifeCycle == DepepdencyLifeCycle.SingleInstance)
+            if (lifeCycle == DependencyLifeCycle.SingleInstance)
                 registration = registration.SingleInstance();
             else
                 registration = registration.InstancePerLifetimeScope();
@@ -215,7 +215,7 @@ namespace Foundation.Api.Implementations
         }
 
         public virtual IDependencyManager RegisterUsing<T>(Func<T> factory, string name = null,
-            DepepdencyLifeCycle lifeCycle = DepepdencyLifeCycle.InstancePerLifetimeScope, bool overwriteExciting = true)
+            DependencyLifeCycle lifeCycle = DependencyLifeCycle.InstancePerLifetimeScope, bool overwriteExciting = true)
         {
             IRegistrationBuilder<T, SimpleActivatorData, SingleRegistrationStyle> registration = _containerBuilder.Register((context, parameter) => factory());
 
@@ -225,7 +225,7 @@ namespace Foundation.Api.Implementations
             if (name != null)
                 registration = registration.Named<T>(name);
 
-            if (lifeCycle == DepepdencyLifeCycle.SingleInstance)
+            if (lifeCycle == DependencyLifeCycle.SingleInstance)
                 registration = registration.SingleInstance();
             else
                 registration = registration.InstancePerLifetimeScope();
@@ -233,7 +233,7 @@ namespace Foundation.Api.Implementations
             return this;
         }
 
-        public virtual IDependencyManager Register(TypeInfo contractType, TypeInfo serviceType, string name = null, DepepdencyLifeCycle lifeCycle = DepepdencyLifeCycle.InstancePerLifetimeScope, bool overwriteExciting = true)
+        public virtual IDependencyManager Register(TypeInfo contractType, TypeInfo serviceType, string name = null, DependencyLifeCycle lifeCycle = DependencyLifeCycle.InstancePerLifetimeScope, bool overwriteExciting = true)
         {
             if (serviceType == null)
                 throw new ArgumentNullException(nameof(serviceType));
@@ -250,7 +250,7 @@ namespace Foundation.Api.Implementations
             if (name != null)
                 registration = registration.Named(name, contractType);
 
-            if (lifeCycle == DepepdencyLifeCycle.SingleInstance)
+            if (lifeCycle == DependencyLifeCycle.SingleInstance)
                 registration = registration.SingleInstance();
             else
                 registration = registration.InstancePerLifetimeScope();

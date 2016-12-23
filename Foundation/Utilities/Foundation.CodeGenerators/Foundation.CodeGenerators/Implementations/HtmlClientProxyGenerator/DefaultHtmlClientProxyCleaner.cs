@@ -1,5 +1,4 @@
-﻿using Foundation.CodeGenerators.Contracts;
-using Foundation.CodeGenerators.Contracts.HtmlClientProxyGenerator;
+﻿using Foundation.CodeGenerators.Contracts.HtmlClientProxyGenerator;
 using Foundation.CodeGenerators.Model;
 using Microsoft.CodeAnalysis;
 using System;
@@ -21,11 +20,11 @@ namespace Foundation.CodeGenerators.Implementations.HtmlClientProxyGenerator
             _contextMappingsProvider = contextMappingsProvider;
         }
 
-        public virtual void DeleteCodes(Workspace worksapce, Solution solution,
+        public virtual void DeleteCodes(Workspace workspace, Solution solution,
             IList<Project> projects)
         {
-            if (worksapce == null)
-                throw new ArgumentNullException(nameof(worksapce));
+            if (workspace == null)
+                throw new ArgumentNullException(nameof(workspace));
 
             if (solution == null)
                 throw new ArgumentNullException(nameof(solution));
@@ -33,7 +32,7 @@ namespace Foundation.CodeGenerators.Implementations.HtmlClientProxyGenerator
             if (projects == null)
                 throw new ArgumentNullException(nameof(projects));
 
-            foreach (HtmlClientProxyGeneratorMapping proxyGeneratorMapping in _contextMappingsProvider.GetHtmlClientProxyGeneratorMappings(worksapce, solution, projects))
+            foreach (HtmlClientProxyGeneratorMapping proxyGeneratorMapping in _contextMappingsProvider.GetHtmlClientProxyGeneratorMappings(workspace, solution, projects))
             {
                 string contextName = proxyGeneratorMapping.DestinationFileName;
 

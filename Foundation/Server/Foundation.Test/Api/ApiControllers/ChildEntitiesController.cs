@@ -48,7 +48,7 @@ namespace Foundation.Test.Api.ApiControllers
                 .FirstOrDefaultAsync(t => t.Id == key, cancellationToken);
 
             if (childEntity == null)
-                throw new ResourceNotFoundaException();
+                throw new ResourceNotFoundException();
 
             return childEntity;
         }

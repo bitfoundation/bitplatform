@@ -1,11 +1,11 @@
-﻿using Foundation.Api.Contracts;
+﻿using System.Linq;
+using Foundation.Api.Contracts;
 using Foundation.Core.Contracts;
 using Foundation.Test.Core.Implementations;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using OpenQA.Selenium.Remote;
-using System.Linq;
 
-namespace Foundation.Test.HtmlClient.Caching
+namespace Foundation.Test.HtmlClient.BrowserTests.Caching
 {
     [TestClass]
     public class HtmlClientCachingTests

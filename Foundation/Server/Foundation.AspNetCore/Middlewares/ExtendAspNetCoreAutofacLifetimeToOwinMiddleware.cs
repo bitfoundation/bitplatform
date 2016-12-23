@@ -35,12 +35,12 @@ namespace Foundation.AspNetCore.Middlewares
 
             FieldInfo owinLifetimeScopeKeyField = autofacConstantsType.GetField("OwinLifetimeScopeKey", BindingFlags.Static | BindingFlags.NonPublic);
 
-            owinLifetimeScopeKey = (string)owinLifetimeScopeKeyField.GetValue(null);
+            OwinLifetimeScopeKey = (string)owinLifetimeScopeKeyField.GetValue(null);
         }
 
-        private static readonly string owinLifetimeScopeKey;
+        private static readonly string OwinLifetimeScopeKey;
 
-        public async override Task Invoke(IOwinContext context)
+        public override async Task Invoke(IOwinContext context)
         {
             HttpContext aspNetCoreContext = (HttpContext)context.Environment["Microsoft.AspNetCore.Http.HttpContext"];
 
@@ -48,7 +48,7 @@ namespace Foundation.AspNetCore.Middlewares
 
             ILifetimeScope autofacScope = aspNetCoreContext.RequestServices.GetService<ILifetimeScope>();
 
-            context.Set(owinLifetimeScopeKey, autofacScope);
+            context.Set(OwinLifetimeScopeKey, autofacScope);
 
             await Next.Invoke(context);
         }

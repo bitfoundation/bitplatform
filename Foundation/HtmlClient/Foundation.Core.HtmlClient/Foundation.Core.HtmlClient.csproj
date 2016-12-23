@@ -54,7 +54,7 @@
     <TypeScriptCompile Include="Contracts\iAppStartup.ts" />
     <TypeScriptCompile Include="Contracts\iIranianCodeValidator.ts" />
     <TypeScriptCompile Include="Contracts\iSecurityService.ts" />
-    <TypeScriptCompile Include="Contracts\iMessageReciever.ts" />
+    <TypeScriptCompile Include="Contracts\iMessageReceiver.ts" />
     <TypeScriptCompile Include="declarations.d.ts" />
     <TypeScriptCompile Include="dependencyManager.ts" />
     <TypeScriptCompile Include="clientAppProfileManager.ts" />

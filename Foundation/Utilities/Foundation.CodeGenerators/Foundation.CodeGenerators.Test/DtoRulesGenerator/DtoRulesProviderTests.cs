@@ -1,11 +1,11 @@
-﻿using Foundation.CodeGenerators.Implementations;
+﻿using System.Collections.Generic;
+using System.Linq;
+using Foundation.CodeGenerators.Implementations;
 using Foundation.CodeGenerators.Model;
 using Microsoft.CodeAnalysis;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System.Collections.Generic;
-using System.Linq;
 
-namespace Foundation.CodeGenerators.Test.TSDtoRulesGenerator
+namespace Foundation.CodeGenerators.Test.DtoRulesGenerator
 {
     [TestClass]
     public class DtoRulesProviderTests : CodeGeneratorTest
@@ -68,15 +68,15 @@ namespace Foundation.CodeGenerators.Test.TSDtoRulesGenerator
 ";
             Project proj = CreateProjectFromSourceCodes(Codes.FoundationDtoRules, testCode);
 
-            IList<DtoRules> AllDtoRules = new DefaultProjectDtoRulesProvider().GetProjectAllDtoRules(proj);
+            IList<DtoRules> allDtoRules = new DefaultProjectDtoRulesProvider().GetProjectAllDtoRules(proj);
 
-            Assert.AreEqual(2, AllDtoRules.Count);
-            Assert.AreEqual("ProductDtoRules", AllDtoRules.ElementAt(0).Name);
-            Assert.AreEqual("CategoryDtoRules", AllDtoRules.ElementAt(1).Name);
-            Assert.AreEqual("ProductDto", AllDtoRules.ElementAt(0).DtoSymbol.Name);
-            Assert.AreEqual("CategoryDto", AllDtoRules.ElementAt(1).DtoSymbol.Name);
-            Assert.AreEqual("ProductDtoRules", AllDtoRules.ElementAt(0).DtoRulesSymbol.Name);
-            Assert.AreEqual("CategoryDtoRules", AllDtoRules.ElementAt(1).DtoRulesSymbol.Name);
+            Assert.AreEqual(2, allDtoRules.Count);
+            Assert.AreEqual("ProductDtoRules", allDtoRules.ElementAt(0).Name);
+            Assert.AreEqual("CategoryDtoRules", allDtoRules.ElementAt(1).Name);
+            Assert.AreEqual("ProductDto", allDtoRules.ElementAt(0).DtoSymbol.Name);
+            Assert.AreEqual("CategoryDto", allDtoRules.ElementAt(1).DtoSymbol.Name);
+            Assert.AreEqual("ProductDtoRules", allDtoRules.ElementAt(0).DtoRulesSymbol.Name);
+            Assert.AreEqual("CategoryDtoRules", allDtoRules.ElementAt(1).DtoRulesSymbol.Name);
         }
     }
 }

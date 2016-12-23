@@ -1,7 +1,7 @@
 ﻿module Foundation.ViewModel.Implementations {
 
     @Core.Injectable()
-    export class SignalRMessageReciever implements Core.Contracts.IMessageReciever {
+    export class SignalRMessageReceiver implements Core.Contracts.IMessageReceiver {
 
         public constructor( @Core.Inject("$rootScope") public $rootScope: ng.IRootScopeService) {
 
@@ -60,7 +60,7 @@
                         if (this._isInited == true)
                             return;
 
-                        if (typeof ($) == 'undefined')
+                        if (typeof ($) == "undefined")
                             reject("jQuery is not present");
 
                         this._isInited = true;
@@ -68,17 +68,17 @@
                         if ($.signalR == null)
                             await Core.DependencyManager.getCurrent().resolveFile("signalR");
 
-                        const signalRAppPushReciever = this;
+                        const signalRAppPushReceiver = this;
 
                         if ($.hubConnection.prototype.createHubProxies == null) {
 
                             $.hubConnection.prototype.createHubProxies = function () {
                                 var proxies = {};
                                 this.starting(function () {
-                                    signalRAppPushReciever.registerHubProxies(proxies, true);
+                                    signalRAppPushReceiver.registerHubProxies(proxies, true);
                                     this._registerSubscribedHubs();
                                 }).disconnected(function () {
-                                    signalRAppPushReciever.registerHubProxies(proxies, false);
+                                    signalRAppPushReceiver.registerHubProxies(proxies, false);
                                 });
 
                                 proxies["messagesHub"] = this.createHubProxy("messagesHub");
@@ -99,7 +99,7 @@
                         if (messagesHub == null)
                             reject("messagesHub is null");
 
-                        messagesHub["client"].OnMessageRecieved = async (messageKey: string, messageArgs?: string) => {
+                        messagesHub["client"].OnMessageReceived = async (messageKey: string, messageArgs?: string) => {
                             await this.callListeners(messageKey, (messageArgs == null || messageArgs == "") ? null : JSON.parse(messageArgs));
                         };
 
@@ -131,7 +131,7 @@
         }
 
         @Core.Log()
-        public onMessageRecieved(messageKey: string, callback: (args?: any) => Promise<void>): () => void {
+        public onMessageReceived(messageKey: string, callback: (args?: any) => Promise<void>): () => void {
 
             if (messageKey == null)
                 throw new Error("messageKey is null");

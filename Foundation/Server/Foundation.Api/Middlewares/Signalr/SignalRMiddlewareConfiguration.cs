@@ -12,7 +12,7 @@ namespace Foundation.Api.Middlewares.SignalR
     public class SignalRMiddlewareConfiguration : IOwinMiddlewareConfiguration
     {
         private readonly IAppEnvironmentProvider _appEnvironmentProvider;
-        private readonly IEnumerable<ISignalRConfiguration> _SignalRScaleoutConfigurations;
+        private readonly IEnumerable<ISignalRConfiguration> _signalRScaleoutConfigurations;
         private readonly Microsoft.AspNet.SignalR.IDependencyResolver _dependencyResolver;
 
         protected SignalRMiddlewareConfiguration()
@@ -20,7 +20,7 @@ namespace Foundation.Api.Middlewares.SignalR
         }
 
         public SignalRMiddlewareConfiguration(Microsoft.AspNet.SignalR.IDependencyResolver dependencyResolver, IAppEnvironmentProvider appEnvironmentProvider,
-            IEnumerable<ISignalRConfiguration> SignalRScaleoutConfigurations = null)
+            IEnumerable<ISignalRConfiguration> signalRScaleoutConfigurations = null)
         {
             if (appEnvironmentProvider == null)
                 throw new ArgumentNullException(nameof(appEnvironmentProvider));
@@ -30,7 +30,7 @@ namespace Foundation.Api.Middlewares.SignalR
 
             _appEnvironmentProvider = appEnvironmentProvider;
             _dependencyResolver = dependencyResolver;
-            _SignalRScaleoutConfigurations = SignalRScaleoutConfigurations;
+            _signalRScaleoutConfigurations = signalRScaleoutConfigurations;
 
         }
 
@@ -39,7 +39,7 @@ namespace Foundation.Api.Middlewares.SignalR
             if (owinApp == null)
                 throw new ArgumentNullException(nameof(owinApp));
 
-            HubConfiguration SignalRConfig = new HubConfiguration
+            HubConfiguration signalRConfig = new HubConfiguration
             {
                 EnableDetailedErrors = _appEnvironmentProvider.GetActiveAppEnvironment().DebugMode == true,
                 EnableJavaScriptProxies = true,
@@ -47,15 +47,15 @@ namespace Foundation.Api.Middlewares.SignalR
                 Resolver = _dependencyResolver
             };
 
-            _SignalRScaleoutConfigurations.ToList()
+            _signalRScaleoutConfigurations.ToList()
                 .ForEach(cnfg =>
                 {
-                    cnfg.Configure(SignalRConfig);
+                    cnfg.Configure(signalRConfig);
                 });
 
             owinApp.Map("/signalr", innerOwinApp =>
             {
-                innerOwinApp.RunSignalR(SignalRConfig);
+                innerOwinApp.RunSignalR(signalRConfig);
             });
         }
     }

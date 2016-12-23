@@ -52,7 +52,7 @@ module Foundation.ViewModel.Implementations {
                     let r = n - (Math.floor((n / 11)) * 11);
 
                     if (r === 10)
-                        r = 0
+                        r = 0;
 
                     if (r === c)
                         result = true;

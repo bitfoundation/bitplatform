@@ -45,7 +45,7 @@ namespace Foundation.AspNetCore
             {
                 HttpContext context = DefaultDependencyManager.Current.Resolve<IHttpContextAccessor>().HttpContext;
                 return (IOwinContext)context.Items["OwinContext"];
-            }, lifeCycle: DepepdencyLifeCycle.InstancePerLifetimeScope);
+            }, lifeCycle: DependencyLifeCycle.InstancePerLifetimeScope);
         }
 
         public virtual void Configure(IApplicationBuilder aspNetCoreApp, OwinAppStartup owinAppStartup, IEnumerable<IAspNetCoreMiddlewareConfiguration> aspNetCoreMiddlewares)

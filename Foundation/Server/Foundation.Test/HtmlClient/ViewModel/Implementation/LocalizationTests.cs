@@ -4,7 +4,7 @@ using OpenQA.Selenium.Remote;
 namespace Foundation.Test.HtmlClient.ViewModel.Implementation
 {
     [TestClass]
-    public class LocalizitionTests
+    public class LocalizationTests
     {
         [TestMethod]
         [TestCategory("HtmlClient"), TestCategory("Angular")]

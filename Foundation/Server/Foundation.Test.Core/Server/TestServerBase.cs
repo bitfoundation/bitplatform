@@ -7,8 +7,8 @@ using OpenQA.Selenium.Chrome;
 using Microsoft.AspNet.SignalR.Client;
 using Foundation.Api.Middlewares.SignalR;
 using Microsoft.AspNet.SignalR.Client.Transports;
-using Foundation.Test.Api.Middlewares.SignalR;
 using Foundation.Api.Middlewares.SignalR.Implementations;
+using Foundation.Test.Api.Middlewares.SignalR;
 
 namespace Foundation.Test.Server
 {
@@ -77,7 +77,7 @@ namespace Foundation.Test.Server
 
         protected abstract HttpMessageHandler GetHttpMessageHandler();
 
-        public virtual IHubProxy BuildSignalRClient(OAuthToken token = null, Action<string, dynamic> onMessageRecieved = null)
+        public virtual IHubProxy BuildSignalRClient(OAuthToken token = null, Action<string, dynamic> onMessageReceived = null)
         {
             HubConnection hubConnection = new HubConnection(Uri);
 
@@ -86,11 +86,11 @@ namespace Foundation.Test.Server
 
             IHubProxy hubProxy = hubConnection.CreateHubProxy(nameof(MessagesHub));
 
-            if (onMessageRecieved != null)
+            if (onMessageReceived != null)
             {
-                hubProxy.On("OnMessageRecieved", (dataAsJson) =>
+                hubProxy.On("OnMessageReceived", (dataAsJson) =>
                 {
-                    onMessageRecieved("OnMessageRecieved", new SignalRMessageContentFormatter().DeSerialize<dynamic>(dataAsJson));
+                    onMessageReceived("OnMessageReceived", new SignalRMessageContentFormatter().DeSerialize<dynamic>(dataAsJson));
                 });
             }
 

@@ -4,7 +4,7 @@ using System;
 
 namespace Foundation.Core.Contracts
 {
-    public enum DepepdencyLifeCycle
+    public enum DependencyLifeCycle
     {
         SingleInstance,
         InstancePerLifetimeScope
@@ -43,21 +43,21 @@ namespace Foundation.Core.Contracts
         bool IsInited();
 
         IDependencyManager Register<TContract, TService>(string name = null,
-            DepepdencyLifeCycle lifeCycle = DepepdencyLifeCycle.InstancePerLifetimeScope, bool overwriteExciting = true)
+            DependencyLifeCycle lifeCycle = DependencyLifeCycle.InstancePerLifetimeScope, bool overwriteExciting = true)
             where TService : class, TContract;
 
         IDependencyManager Register(TypeInfo contractType, TypeInfo serviceType, string name = null,
-    DepepdencyLifeCycle lifeCycle = DepepdencyLifeCycle.InstancePerLifetimeScope, bool overwriteExciting = true);
+    DependencyLifeCycle lifeCycle = DependencyLifeCycle.InstancePerLifetimeScope, bool overwriteExciting = true);
 
         IDependencyManager RegisterInstance<TContract>(TContract implementationInstance, bool overwriteExciting = true, string name = null)
             where TContract : class;
 
         IDependencyManager RegisterInstance(object obj, TypeInfo contractType, bool overwriteExciting = true, string name = null);
 
-        IDependencyManager RegisterGeneric(TypeInfo contractType, TypeInfo serviceType, DepepdencyLifeCycle lifeCycle);
+        IDependencyManager RegisterGeneric(TypeInfo contractType, TypeInfo serviceType, DependencyLifeCycle lifeCycle);
 
         IDependencyManager RegisterUsing<TContract>(Func<TContract> factory, string name = null,
-            DepepdencyLifeCycle lifeCycle = DepepdencyLifeCycle.InstancePerLifetimeScope, bool overwriteExciting = true);
+            DependencyLifeCycle lifeCycle = DependencyLifeCycle.InstancePerLifetimeScope, bool overwriteExciting = true);
 
         IDependencyResolver CreateChildDependencyResolver(Action<IDependencyManager> childDependencyManager = null);
     }

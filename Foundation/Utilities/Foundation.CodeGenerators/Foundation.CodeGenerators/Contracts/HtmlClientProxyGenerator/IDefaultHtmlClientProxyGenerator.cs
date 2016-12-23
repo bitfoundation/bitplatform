@@ -5,6 +5,6 @@ namespace Foundation.CodeGenerators.Contracts.HtmlClientProxyGenerator
 {
     public interface IDefaultHtmlClientProxyGenerator
     {
-        void GenerateCodes(Workspace worksapce, Solution solution, IList<Project> projects);
+        void GenerateCodes(Workspace workspace, Solution solution, IList<Project> projects);
     }
 }

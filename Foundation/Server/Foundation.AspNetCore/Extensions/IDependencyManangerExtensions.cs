@@ -13,7 +13,7 @@ namespace Foundation.Core.Contracts
             if (dependencyManager == null)
                 throw new ArgumentNullException(nameof(dependencyManager));
 
-            dependencyManager.Register<IAspNetCoreMiddlewareConfiguration, TMiddleware>(lifeCycle: DepepdencyLifeCycle.SingleInstance, overwriteExciting: false);
+            dependencyManager.Register<IAspNetCoreMiddlewareConfiguration, TMiddleware>(lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExciting: false);
 
             return dependencyManager;
         }

@@ -5,6 +5,6 @@ namespace Foundation.CodeGenerators.Contracts.HtmlClientProxyGenerator
 {
     public interface IDefaultHtmlClientProxyCleaner
     {
-        void DeleteCodes(Workspace worksapce, Solution solution, IList<Project> projects);
+        void DeleteCodes(Workspace workspace, Solution solution, IList<Project> projects);
     }
 }

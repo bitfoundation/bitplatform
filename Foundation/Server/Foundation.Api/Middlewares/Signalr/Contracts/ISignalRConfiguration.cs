@@ -4,6 +4,6 @@ namespace Foundation.Api.Middlewares.SignalR.Contracts
 {
     public interface ISignalRConfiguration
     {
-        void Configure(HubConfiguration SignalRConfig);
+        void Configure(HubConfiguration signalRConfig);
     }
 }

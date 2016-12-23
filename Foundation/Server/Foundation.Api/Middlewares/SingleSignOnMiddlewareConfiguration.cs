@@ -49,7 +49,7 @@ namespace Foundation.Api.Middlewares
                 // ValidationMode = ValidationMode.ValidationEndpoint,
                 ValidationMode = ValidationMode.Local,
                 PreserveAccessToken = true,
-                SigningCertificate = _certificateProvider.GetSignelSignOnCertificate()
+                SigningCertificate = _certificateProvider.GetSingleSignOnCertificate()
             };
 
             owinApp.UseIdentityServerBearerTokenAuthentication(authOptions);

@@ -3,7 +3,7 @@ using AutoMapper;
 using Foundation.Test.Model.DomainModels;
 using Foundation.Test.Model.Dto;
 
-namespace Foundation.Test.Model.Implemenations
+namespace Foundation.Test.Model.Implementations
 {
     public class TestDtoModelMapperConfiguration : IDtoModelMapperConfiguration
     {

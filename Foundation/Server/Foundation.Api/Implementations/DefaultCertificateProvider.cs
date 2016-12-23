@@ -28,7 +28,7 @@ namespace Foundation.Api.Implementations
             _pathProvider = pathProvider;
         }
 
-        public virtual X509Certificate2 GetSignelSignOnCertificate()
+        public virtual X509Certificate2 GetSingleSignOnCertificate()
         {
             if (_certificate == null)
             {

@@ -179,7 +179,10 @@ module Foundation.View.Directives {
 
                             let viewTemplateHtml = viewTemplateElement.html();
 
-                            viewTemplateHtml = viewTemplateHtml.replace("<tr", `<tr data-uid='#: uid #' rad-grid-row ng-model='::dataItem' isolatedOptionsKey='${attributes["isolatedOptionsKey"]}'`)
+                            viewTemplateHtml = viewTemplateHtml
+                                .replace("<tr",
+                                    `<tr data-uid='#: uid #' rad-grid-row ng-model='::dataItem' isolatedOptionsKey='${
+                                    attributes["isolatedOptionsKey"]}'`);
 
                             viewTemplateElement.remove();
 

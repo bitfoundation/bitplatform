@@ -5,6 +5,6 @@ namespace Foundation.Core.Contracts
 {
     public interface ICertificateProvider : IDisposable
     {
-        X509Certificate2 GetSignelSignOnCertificate();
+        X509Certificate2 GetSingleSignOnCertificate();
     }
 }

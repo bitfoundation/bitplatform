@@ -20,7 +20,7 @@ namespace Foundation.Api.Middlewares.WebApi.ActionFilters
             OwinActionFilter = (IOwinActionFilter)Activator.CreateInstance(owinMiddlewareActionFilter);
         }
 
-        public virtual bool AllowMultiple => true;
+        public override bool AllowMultiple => true;
 
         public virtual async Task ExecuteExceptionFilterAsync(HttpActionExecutedContext actionExecutedContext, CancellationToken cancellationToken)
         {

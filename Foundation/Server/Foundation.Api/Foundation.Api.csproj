@@ -432,7 +432,7 @@
     <Compile Include="Middlewares\JobScheduler\Implementations\JobSchedulerInMemoryBackendConfiguration.cs" />
     <Compile Include="Middlewares\SignalR\Contracts\IMessagesHubEvents.cs" />
     <Compile Include="Middlewares\SignalR\Implementations\DefaultMessageHubEvents.cs" />
-    <Compile Include="Middlewares\SignalR\Implementations\SignalRAuthroizeConfiguration.cs" />
+    <Compile Include="Middlewares\SignalR\Implementations\SignalRAuthorizeConfiguration.cs" />
     <Compile Include="Middlewares\SignalR\Implementations\SignalRSqlServerScaleoutConfiguration.cs" />
     <Compile Include="Middlewares\SignOutPageMiddleware.cs" />
     <Compile Include="Middlewares\SignOutPageMiddlewareConfiguration.cs" />
@@ -464,7 +464,7 @@
     <Compile Include="Exceptions\AppException.cs" />
     <Compile Include="Exceptions\DomainLogicException.cs" />
     <Compile Include="Exceptions\BadRequestException.cs" />
-    <Compile Include="Exceptions\ResourceNotFoundaException.cs" />
+    <Compile Include="Exceptions\ResourceNotFoundException.cs" />
     <Compile Include="Implementations\DefaultDependencyManager.cs" />
     <Compile Include="Implementations\DefaultTimeZoneManager.cs" />
     <Compile Include="Middlewares\InvokeLoginMiddleware.cs" />
@@ -481,7 +481,7 @@
     <Compile Include="Metadata\FoundationMetadataBuilder.cs" />
     <Compile Include="Metadata\Dtos\UserSettingMetadataBuilder.cs" />
     <Compile Include="Middlewares\MetadataMiddlewareConfiguration.cs" />
-    <Compile Include="Middlewares\MetadatMiddlware.cs" />
+    <Compile Include="Middlewares\MetadatMiddleware.cs" />
     <Compile Include="Middlewares\WebApi\ActionFilters\ExceptionHandlerFilterAttribute.cs" />
     <Compile Include="Middlewares\WebApi\OData\ActionFilters\RequestQSStringCorrectorsApplierActionFilterAttribute.cs" />
     <Compile Include="Middlewares\WebApi\Contracts\IWebApiGlobalActionFiltersProvider.cs" />

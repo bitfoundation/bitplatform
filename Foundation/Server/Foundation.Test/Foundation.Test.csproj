@@ -599,7 +599,7 @@
     <Compile Include="HtmlClient\ThirdPartyLibrariesTests\JayDataContextTests\JayDataAndDtoSetControllerTests.cs" />
     <Compile Include="HtmlClient\ThirdPartyLibrariesTests\KendoDataSourceTests\TestKendoDataSourceCreationFromJayData.cs" />
     <Compile Include="HtmlClient\ViewModel\Implementation\AngularAppInitializationTests.cs" />
-    <Compile Include="HtmlClient\ViewModel\Implementation\LocalizitionTests.cs" />
+    <Compile Include="HtmlClient\ViewModel\Implementation\LocalizationTests.cs" />
     <Compile Include="HtmlClient\ViewModel\Implementation\LoggerTests.cs" />
     <Compile Include="HtmlClient\ViewModel\Implementation\RadTests.cs" />
     <Compile Include="HtmlClient\ViewModel\Implementation\SignalRTests.cs" />
@@ -614,7 +614,7 @@
     <Compile Include="Model\Dto\TestCityDto.cs" />
     <Compile Include="Model\Dto\TestCustomerDto.cs" />
     <Compile Include="Model\Dto\ValidationSampleDto.cs" />
-    <Compile Include="Model\Implemenations\TestDtoModelMapperConfiguration.cs" />
+    <Compile Include="Model\Implementations\TestDtoModelMapperConfiguration.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Model\DomainModels\ChildEntity.cs" />
     <Compile Include="Model\DomainModels\ParentEntity.cs" />

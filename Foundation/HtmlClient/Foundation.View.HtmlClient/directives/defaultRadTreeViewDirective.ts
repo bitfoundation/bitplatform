@@ -88,7 +88,7 @@ module Foundation.View.Directives {
                                                 mdInputContainerParent.addClass("md-input-focused");
                                             })
                                             .focusout(() => {
-                                                mdInputContainerParent.removeClass("md-input-focused")
+                                                mdInputContainerParent.removeClass("md-input-focused");
                                             });
 
                                         mdInputContainerParent.addClass("md-input-has-value");

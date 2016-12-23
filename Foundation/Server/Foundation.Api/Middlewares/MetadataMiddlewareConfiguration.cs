@@ -37,7 +37,7 @@ namespace Foundation.Api.Middlewares
                     innerApp.Use<OwinCacheResponseMiddleware>();
                 innerApp.UseXContentTypeOptions();
                 innerApp.UseXDownloadOptions();
-                innerApp.Use<MetadatMiddlware>();
+                innerApp.Use<MetadatMiddleware>();
             });
         }
     }

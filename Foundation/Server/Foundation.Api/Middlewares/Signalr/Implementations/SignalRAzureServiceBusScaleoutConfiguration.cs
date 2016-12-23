@@ -18,14 +18,14 @@ namespace Foundation.Api.Middlewares.SignalR.Implementations
             _appEnvironmentProvider = appEnvironmentProvider;
         }
 
-        public virtual void Configure(HubConfiguration SignalRConfig)
+        public virtual void Configure(HubConfiguration signalRConfig)
         {
             AppEnvironment activeAppEnvironment = _appEnvironmentProvider.GetActiveAppEnvironment();
 
-            string SignalRAzureServiceBusConnectionString =
+            string signalRAzureServiceBusConnectionString =
                 activeAppEnvironment.GetConfig<string>("SignalRAzureServiceBusConnectionString");
 
-            SignalRConfig.Resolver.UseServiceBus(SignalRAzureServiceBusConnectionString, "SignalR");
+            signalRConfig.Resolver.UseServiceBus(signalRAzureServiceBusConnectionString, "SignalR");
         }
     }
 }

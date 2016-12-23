@@ -7,7 +7,7 @@ namespace Foundation.CodeGenerators.Model
     {
         public virtual ClassDeclarationSyntax ClassDeclaration { get; set; }
 
-        public virtual SyntaxTree ClassSynatxTree { get; set; }
+        public virtual SyntaxTree ClassSyntaxTree { get; set; }
 
         public virtual CompilationUnitSyntax ClassRootNode { get; set; }
 

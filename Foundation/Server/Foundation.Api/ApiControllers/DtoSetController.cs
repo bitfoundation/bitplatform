@@ -60,7 +60,7 @@ namespace Foundation.Api.ApiControllers
             TDto dtoResult = baseQuery.FirstOrDefault();
 
             if (dtoResult == null)
-                throw new ResourceNotFoundaException();
+                throw new ResourceNotFoundException();
 
             return dtoResult;
         }
@@ -81,7 +81,7 @@ namespace Foundation.Api.ApiControllers
             TDto originalDto = await Get(key, cancellationToken);
 
             if (originalDto == null)
-                throw new ResourceNotFoundaException();
+                throw new ResourceNotFoundException();
 
             modifiedDtoDelta.Patch(originalDto);
 

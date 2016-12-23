@@ -1,5 +1,5 @@
 ﻿/// <reference path="../foundation.viewmodel.htmlclient/foundation.viewmodel.d.ts" />
-let dateRegex = /(\d{4})-(\d{2})-(\d{2})T(\d{2})\:(\d{2})\:(\d{2})[+-](\d{2})\:(\d{2})/
+let dateRegex = /(\d{4})-(\d{2})-(\d{2})T(\d{2})\:(\d{2})\:(\d{2})[+-](\d{2})\:(\d{2})/;
 
 let isDate = (value) => {
     return value instanceof Date || dateRegex.test(value);

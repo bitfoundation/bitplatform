@@ -29,7 +29,7 @@ namespace Foundation.DataAccess.Implementations
             return query;
         }
 
-        private static TypeInfo KeyType = typeof(TKey).GetTypeInfo();
+        private static TypeInfo _keyType = typeof(TKey).GetTypeInfo();
 
         private static readonly bool IsGuid = typeof(TKey).GetTypeInfo() == typeof(Guid).GetTypeInfo();
         private static readonly bool IsShort = typeof(TKey).GetTypeInfo() == typeof(short).GetTypeInfo();

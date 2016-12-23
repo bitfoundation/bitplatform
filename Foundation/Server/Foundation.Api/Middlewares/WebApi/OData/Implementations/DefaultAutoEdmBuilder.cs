@@ -16,7 +16,7 @@ namespace Foundation.Api.Middlewares.WebApi.OData.Implementations
     {
         private readonly MethodInfo _buildControllerOperations = null;
         private readonly MethodInfo _buildDto = null;
-        private readonly MethodInfo _collectionParamterMethodInfo = null;
+        private readonly MethodInfo _collectionParameterMethodInfo = null;
 
         public DefaultAutoEdmBuilder()
         {
@@ -24,7 +24,7 @@ namespace Foundation.Api.Middlewares.WebApi.OData.Implementations
 
             _buildDto = GetType().GetTypeInfo().GetMethod(nameof(BuildDto), BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.DeclaredOnly);
 
-            _collectionParamterMethodInfo = typeof(ActionConfiguration).GetTypeInfo().GetMethod(nameof(ActionConfiguration.CollectionParameter));
+            _collectionParameterMethodInfo = typeof(ActionConfiguration).GetTypeInfo().GetMethod(nameof(ActionConfiguration.CollectionParameter));
         }
 
         public virtual void AutoBuildEdmFromAssembly(Assembly assembly, ODataModelBuilder modelBuilder)
@@ -130,7 +130,7 @@ namespace Foundation.Api.Middlewares.WebApi.OData.Implementations
                             if (parameterType.IsGenericType)
                                 parameterType = parameterType.GetGenericArguments().Single().GetTypeInfo();
 
-                            ParameterConfiguration parameter = (ParameterConfiguration)_collectionParamterMethodInfo
+                            ParameterConfiguration parameter = (ParameterConfiguration)_collectionParameterMethodInfo
                                                                                             .MakeGenericMethod(parameterType)
                                                                                             .Invoke(operationConfiguration, new object[] { actionParameter.Name });
 

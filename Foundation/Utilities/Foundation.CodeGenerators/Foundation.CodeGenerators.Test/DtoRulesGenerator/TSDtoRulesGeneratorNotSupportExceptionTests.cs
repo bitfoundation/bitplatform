@@ -1,11 +1,11 @@
-﻿using Foundation.CodeGenerators.Implementations;
+﻿using System;
+using System.Linq;
+using Foundation.CodeGenerators.Implementations;
 using Foundation.CodeGenerators.Model;
 using Microsoft.CodeAnalysis;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System;
-using System.Linq;
 
-namespace Foundation.CodeGenerators.Test.TSDtoRulesGenerator
+namespace Foundation.CodeGenerators.Test.DtoRulesGenerator
 {
     [TestClass]
     public class TSDtoRulesGeneratorNotSupportExceptionTests : CodeGeneratorTest

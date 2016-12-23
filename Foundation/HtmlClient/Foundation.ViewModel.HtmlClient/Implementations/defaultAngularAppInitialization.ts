@@ -172,7 +172,7 @@ module Foundation.ViewModel.Implementations {
                         const directiveResult: ng.IDirective = originalGetDirectiveFactory.apply(this, arguments);
 
                         if (directiveResult.templateUrl != null) {
-                            directiveResult.templateUrl = pathProvider.getFullPath(directiveResult.templateUrl)
+                            directiveResult.templateUrl = pathProvider.getFullPath(directiveResult.templateUrl);
                         }
 
                         return directiveResult;

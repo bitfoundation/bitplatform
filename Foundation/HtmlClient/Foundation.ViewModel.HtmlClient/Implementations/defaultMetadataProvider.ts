@@ -16,7 +16,7 @@ module Foundation.ViewModel.Implementations {
 
                 this.getMetadataPromise = new Promise<Contracts.AppMetadata>(async (resolve, reject) => {
 
-                    let appMetadata: Contracts.AppMetadata = null
+                    let appMetadata: Contracts.AppMetadata = null;
 
                     try {
 

@@ -17,13 +17,11 @@ namespace Foundation.VSPackage
 
         public static DTE2 GetDTE()
         {
-            DTE2 dte = null;
-
             for (int version = m_MaxVersion; version >= m_MinVersion; version--)
             {
-                string versionString = string.Format("VisualStudio.DTE.{0}.0", version);
+                string versionString = $"VisualStudio.DTE.{version}.0";
 
-                dte = GetCurrent(versionString);
+                DTE2 dte = GetCurrent(versionString);
 
                 if (dte != null)
                 {
@@ -31,7 +29,7 @@ namespace Foundation.VSPackage
                 }
             }
 
-            throw new Exception(string.Format("Can not get DTE object tried versions {0} through {1}", m_MaxVersion, m_MinVersion));
+            throw new Exception($"Can not get DTE object tried versions {m_MaxVersion} through {m_MinVersion}");
         }
 
         /// <summary>
@@ -44,7 +42,7 @@ namespace Foundation.VSPackage
         public static DTE2 GetCurrent(string versionString)
         {
             //rot entry for visual studio running under current process.
-            string rotEntry = String.Format("!{0}:{1}", versionString, System.Diagnostics.Process.GetCurrentProcess().Id);
+            string rotEntry = $"!{versionString}:{System.Diagnostics.Process.GetCurrentProcess().Id}";
 
             IRunningObjectTable rot;
             GetRunningObjectTable(0, out rot);

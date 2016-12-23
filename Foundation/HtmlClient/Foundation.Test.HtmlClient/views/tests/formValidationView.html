@@ -1,13 +1,13 @@
 ﻿<view id="formValidationView">
     <dto-form name="validationSampleDtoForm" ng-model="vm.validationSampleDto">
         <label for="RequiredByAttributeMember">Required by attribute member</label>
-        <input class="k-textbox" placeholder="..." name="RequiredByAttributeMember" ng-model="vm.validationSampleDto.RequiredByAttributeMember">
+        <input id="RequiredByAttributeMember" class="k-textbox" placeholder="..." name="RequiredByAttributeMember" ng-model="vm.validationSampleDto.RequiredByAttributeMember">
         <hr />
         <label for="RequiredByMetadataMember">Required by metadata member</label>
-        <input class="k-textbox" placeholder="..." name="RequiredByMetadataMember" ng-model="vm.validationSampleDto.RequiredByMetadataMember">
+        <input id="RequiredByMetadataMember" class="k-textbox" placeholder="..." name="RequiredByMetadataMember" ng-model="vm.validationSampleDto.RequiredByMetadataMember">
         <hr />
         <label for="NotRequiredMember">Not required member</label>
-        <input class="k-textbox" placeholder="..." name="NotRequiredMember" ng-model="vm.validationSampleDto.NotRequiredMember">
+        <input id="NotRequiredMember" class="k-textbox" placeholder="..." name="NotRequiredMember" ng-model="vm.validationSampleDto.NotRequiredMember">
         <hr />
         <md-button id="submitFirstPart" ng-click="vm.submitFirstPart(validationSampleDtoForm,this)">Submit first part</md-button>
     </dto-form>

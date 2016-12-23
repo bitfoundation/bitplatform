@@ -1,10 +1,10 @@
-﻿using Foundation.Core.Contracts;
+﻿using System.Linq;
+using Foundation.Core.Contracts;
 using Foundation.Test.Core.Implementations;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using OpenQA.Selenium.Remote;
-using System.Linq;
 
-namespace Foundation.Test.HtmlClient.BrowserTests.Caching
+namespace Foundation.Test.HtmlClient.ViewModel.Implementation
 {
     [TestClass]
     public class SignalRTests

@@ -5,9 +5,9 @@ using Microsoft.Owin;
 
 namespace Foundation.Api.Middlewares
 {
-    public class MetadatMiddlware : OwinMiddleware
+    public class MetadatMiddleware : OwinMiddleware
     {
-        public MetadatMiddlware(OwinMiddleware next)
+        public MetadatMiddleware(OwinMiddleware next)
             : base(next)
         {
         }

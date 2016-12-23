@@ -70,7 +70,7 @@ namespace Foundation.Api.Implementations
 
             if (exp is BadRequestException)
                 return HttpStatusCode.BadRequest;
-            else if (exp is ResourceNotFoundaException)
+            else if (exp is ResourceNotFoundException)
                 return HttpStatusCode.NotFound;
 
             return HttpStatusCode.InternalServerError;

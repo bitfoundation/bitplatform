@@ -27,13 +27,13 @@ namespace Foundation.DataAccess.Implementations.EntityFrameworkCore
             DbContextObjects dbContextObjects = dbContextCreationOptionsProvider.GetDbContextOptions(connectionString);
 
             if (dbContextObjects.Transaction != null /* We're going to use a relational database */)
-                UseTransactionForRelatinalDatabases(dbContextObjects);
+                UseTransactionForRelationalDatabases(dbContextObjects);
 
             ChangeTracker.AutoDetectChangesEnabled = false;
             ChangeTracker.QueryTrackingBehavior = QueryTrackingBehavior.NoTracking;
         }
 
-        private void UseTransactionForRelatinalDatabases(DbContextObjects dbContextObjects)
+        private void UseTransactionForRelationalDatabases(DbContextObjects dbContextObjects)
         {
             // Although Database in in EntityFramework.Core.dll, but it has a dependency on EntityFramework.Relational.dll
             // We're going to call this method, only in case of relation database usage.

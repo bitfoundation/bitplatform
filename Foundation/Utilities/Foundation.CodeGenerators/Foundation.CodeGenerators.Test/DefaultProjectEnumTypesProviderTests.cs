@@ -6,7 +6,6 @@ using Foundation.CodeGenerators.Model;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Foundation.CodeGenerators.Contracts;
 using Microsoft.CodeAnalysis;
-using System;
 
 namespace Foundation.CodeGenerators.Test
 {
@@ -66,7 +65,7 @@ public class DtoWithEnumController : DtoController<DtoWithEnum>
     [ParameterAttribute(""gender"", typeof(TestGender2))]
     public virtual int GetDtoWithEnumsByGender2()
     {
-        retrun 1;
+        return 1;
     }
 }
 

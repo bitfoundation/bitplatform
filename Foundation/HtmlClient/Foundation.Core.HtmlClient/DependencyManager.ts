@@ -160,7 +160,7 @@ module Foundation.Core {
                 objectDependency.lifeCycle = "SingleInstance";
 
             if (dependenciesWithThisNameIndex != -1 && objectDependency.overwriteExisting == true) {
-                this.objectDependencies[dependenciesWithThisNameIndex] = objectDependency
+                this.objectDependencies[dependenciesWithThisNameIndex] = objectDependency;
             }
             else {
                 this.objectDependencies.push(objectDependency);

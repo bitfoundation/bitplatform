@@ -77,7 +77,7 @@
     <TypeScriptCompile Include="Implementations\defaultSyncService.ts" />
     <TypeScriptCompile Include="Implementations\guidUtils.ts" />
     <TypeScriptCompile Include="Implementations\scopeManager.ts" />
-    <TypeScriptCompile Include="Implementations\signalRMessageReciever.ts" />
+    <TypeScriptCompile Include="Implementations\signalRMessageReceiver.ts" />
     <TypeScriptCompile Include="Implementations\dtoRules.ts" />
     <TypeScriptCompile Include="Contracts\iDtoViewModel.ts" />
     <TypeScriptCompile Include="viewModels\secureFormViewModel.ts" />

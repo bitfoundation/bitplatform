@@ -100,7 +100,7 @@ namespace Foundation.Test.Api.Middlewares.JobScheduler.Tests
         [Ignore]
         [TestMethod]
         [TestCategory("BackgroundJobs"), TestCategory("WebApi")]
-        public async Task SendEmailUsingBackgroundJobWorkerAndWebApiAndThenPushToReciever()
+        public async Task SendEmailUsingBackgroundJobWorkerAndWebApiAndThenPushToReceiver()
         {
             IEmailService emailService = A.Fake<IEmailService>();
 
@@ -122,11 +122,11 @@ namespace Foundation.Test.Api.Middlewares.JobScheduler.Tests
             {
                 OAuthToken someoneToken = testEnvironment.Server.Login("SomeOne", "ValidPassword");
 
-                TaskCompletionSource<bool> onMessageRecievedCalled = new TaskCompletionSource<bool>();
+                TaskCompletionSource<bool> onMessageReceivedCalled = new TaskCompletionSource<bool>();
 
                 testEnvironment.Server.BuildSignalRClient(someoneToken, (messageKey, messageArgs) =>
                 {
-                    onMessageRecievedCalled.SetResult(true);
+                    onMessageReceivedCalled.SetResult(true);
                 });
 
                 OAuthToken token = testEnvironment.Server.Login("ValidUserName", "ValidPassword");

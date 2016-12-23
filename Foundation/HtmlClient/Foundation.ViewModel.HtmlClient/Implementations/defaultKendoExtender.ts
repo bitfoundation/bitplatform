@@ -40,9 +40,9 @@ module Foundation.ViewModel.Implementations {
 
             kendo.parseDate = function (value: string, format?: string, culture?: string): Date {
                 if (value != null) {
-                    const _date = new Date(value);
-                    if (_date.toString() != "Invalid Date")
-                        return _date;
+                    const date = new Date(value);
+                    if (date.toString() != "Invalid Date")
+                        return date;
                 }
                 return originalParseDate.apply(this, arguments);
             };

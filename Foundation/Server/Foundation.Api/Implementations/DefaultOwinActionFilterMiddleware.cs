@@ -25,7 +25,8 @@ namespace Foundation.Api.Implementations
             try
             {
                 await OnActionExecutingAsync(context, CancellationToken.None /*Get cancellation token from context*/);
-                await Next?.Invoke(context);
+                if (Next != null)
+                    await Next.Invoke(context);
             }
             catch (Exception ex)
             {

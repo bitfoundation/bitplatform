@@ -6,6 +6,6 @@ namespace Foundation.CodeGenerators.Contracts.HtmlClientProxyGenerator
 {
     public interface IHtmlClientProxyGeneratorMappingsProvider
     {
-        IList<HtmlClientProxyGeneratorMapping> GetHtmlClientProxyGeneratorMappings(Workspace worksapce, Solution solution, IList<Project> projects);
+        IList<HtmlClientProxyGeneratorMapping> GetHtmlClientProxyGeneratorMappings(Workspace workspace, Solution solution, IList<Project> projects);
     }
 }

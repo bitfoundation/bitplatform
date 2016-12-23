@@ -24,6 +24,9 @@ namespace Foundation.CodeGenerators.Implementations
 
             DirectoryInfo directoryInfo = new FileInfo(solution.FilePath).Directory;
 
+            if(directoryInfo == null)
+                throw new InvalidOperationException($"Could not find directory of {solution.FilePath}");
+
             FileInfo foundationVsPackageConfigurationFileInfo =
                 directoryInfo?.GetFiles("FoundationVSPackageConfiguration.json")
                     .SingleOrDefault();

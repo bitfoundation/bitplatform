@@ -1,8 +1,8 @@
 ﻿using Foundation.CodeGenerators.Implementations;
 using Foundation.CodeGenerators.Model;
-using Microsoft.CodeAnalysis;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Linq;
+using Microsoft.CodeAnalysis;
 
 namespace Foundation.CodeGenerators.Test.ExtensionsTests
 {

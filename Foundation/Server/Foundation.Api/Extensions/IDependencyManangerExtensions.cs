@@ -43,7 +43,7 @@ namespace Foundation.Core.Contracts
             if (dependencyManager == null)
                 throw new ArgumentNullException(nameof(dependencyManager));
 
-            dependencyManager.Register<IOwinMiddlewareConfiguration, TMiddleware>(lifeCycle: DepepdencyLifeCycle.SingleInstance, overwriteExciting: false, name: name);
+            dependencyManager.Register<IOwinMiddlewareConfiguration, TMiddleware>(lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExciting: false, name: name);
 
             return dependencyManager;
         }
@@ -54,7 +54,7 @@ namespace Foundation.Core.Contracts
             if (dependencyManager == null)
                 throw new ArgumentNullException(nameof(dependencyManager));
 
-            dependencyManager.Register<IAppEvents, TAppEvents>(lifeCycle: DepepdencyLifeCycle.SingleInstance, overwriteExciting: false);
+            dependencyManager.Register<IAppEvents, TAppEvents>(lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExciting: false);
 
             return dependencyManager;
         }
@@ -107,9 +107,9 @@ namespace Foundation.Core.Contracts
 
             dependencyManager.RegisterHubs(hubsAssemblies);
             dependencyManager.Register<IMessagesHubEvents, TMessagesHubEvents>();
-            dependencyManager.Register<IMessageSender, SignalRMessageSender>(lifeCycle: DepepdencyLifeCycle.SingleInstance);
-            dependencyManager.Register<IMessageContentFormatter, SignalRMessageContentFormatter>(lifeCycle: DepepdencyLifeCycle.SingleInstance);
-            dependencyManager.Register<Microsoft.AspNet.SignalR.IDependencyResolver, AutofacDependencyResolver>(lifeCycle: DepepdencyLifeCycle.SingleInstance);
+            dependencyManager.Register<IMessageSender, SignalRMessageSender>(lifeCycle: DependencyLifeCycle.SingleInstance);
+            dependencyManager.Register<IMessageContentFormatter, SignalRMessageContentFormatter>(lifeCycle: DependencyLifeCycle.SingleInstance);
+            dependencyManager.Register<Microsoft.AspNet.SignalR.IDependencyResolver, AutofacDependencyResolver>(lifeCycle: DependencyLifeCycle.SingleInstance);
             dependencyManager.RegisterInstance<Microsoft.AspNet.SignalR.Hubs.IAssemblyLocator>(new DefaultSignalRAssemblyLocator(hubsAssemblies));
 
             dependencyManager.RegisterOwinMiddleware<SignalRMiddlewareConfiguration>();
@@ -128,11 +128,11 @@ namespace Foundation.Core.Contracts
             if (dependencyManager == null)
                 throw new ArgumentNullException(nameof(dependencyManager));
 
-            dependencyManager.Register<IDashboardAuthorizationFilter, DefaultJobsDashboardAuthorizationFilter>(lifeCycle: DepepdencyLifeCycle.SingleInstance, overwriteExciting: false);
+            dependencyManager.Register<IDashboardAuthorizationFilter, DefaultJobsDashboardAuthorizationFilter>(lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExciting: false);
             dependencyManager.RegisterOwinMiddleware<JobSchedulerMiddlewareConfiguration>();
             dependencyManager.RegisterAppEvents<TJobSchedulerInMemoryBackendConfiguration>();
-            dependencyManager.Register<IBackgroundJobWorker, DefaultBackgroundJobWorker>(lifeCycle: DepepdencyLifeCycle.SingleInstance);
-            dependencyManager.Register<JobActivator, AutofacJobActivator>(lifeCycle: DepepdencyLifeCycle.SingleInstance);
+            dependencyManager.Register<IBackgroundJobWorker, DefaultBackgroundJobWorker>(lifeCycle: DependencyLifeCycle.SingleInstance);
+            dependencyManager.Register<JobActivator, AutofacJobActivator>(lifeCycle: DependencyLifeCycle.SingleInstance);
 
 
             return dependencyManager;
@@ -149,8 +149,8 @@ namespace Foundation.Core.Contracts
 
             dependencyManager.RegisterApiControllers(controllersAssemblies);
 
-            dependencyManager.Register<System.Web.Http.Dispatcher.IAssembliesResolver, DefaultWebApiAssembliesResolver>(lifeCycle: DepepdencyLifeCycle.SingleInstance);
-            dependencyManager.Register<System.Web.Http.Tracing.ITraceWriter, DefaultWebApiTraceWritter>(lifeCycle: DepepdencyLifeCycle.SingleInstance);
+            dependencyManager.Register<System.Web.Http.Dispatcher.IAssembliesResolver, DefaultWebApiAssembliesResolver>(lifeCycle: DependencyLifeCycle.SingleInstance);
+            dependencyManager.Register<System.Web.Http.Tracing.ITraceWriter, DefaultWebApiTraceWritter>(lifeCycle: DependencyLifeCycle.SingleInstance);
 
             dependencyManager.RegisterGlobalWebApiActionFiltersUsing(webApiConfig => webApiConfig.Filters.Add(new OwinActionFilterAttribute(typeof(OwinNoCacheResponseMiddleware))));
             dependencyManager.RegisterGlobalWebApiActionFilter<GlobalHostAuthenticationFilterProvider>();
@@ -166,7 +166,7 @@ namespace Foundation.Core.Contracts
             if (dependencyManager == null)
                 throw new ArgumentNullException(nameof(dependencyManager));
 
-            dependencyManager.Register<IWebApiGlobalActionFiltersProvider, TActionFilter>(lifeCycle: DepepdencyLifeCycle.SingleInstance, overwriteExciting: false);
+            dependencyManager.Register<IWebApiGlobalActionFiltersProvider, TActionFilter>(lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExciting: false);
 
             return dependencyManager;
         }
@@ -190,7 +190,7 @@ namespace Foundation.Core.Contracts
             if (dependencyManager == null)
                 throw new ArgumentNullException(nameof(dependencyManager));
 
-            dependencyManager.Register<IEdmModelProvider, TEdmModelProvider>(lifeCycle: DepepdencyLifeCycle.SingleInstance, overwriteExciting: false);
+            dependencyManager.Register<IEdmModelProvider, TEdmModelProvider>(lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExciting: false);
 
             return dependencyManager;
         }
@@ -200,8 +200,8 @@ namespace Foundation.Core.Contracts
             if (dependencyManager == null)
                 throw new ArgumentNullException(nameof(dependencyManager));
 
-            dependencyManager.Register<System.Web.Http.Dependencies.IDependencyResolver, AutofacWebApiDependencyResolver>(lifeCycle: DepepdencyLifeCycle.SingleInstance);
-            dependencyManager.Register<IWebApiOwinPipelineInjector, DefaultWebApiOwinPipelineInjector>(lifeCycle: DepepdencyLifeCycle.SingleInstance);
+            dependencyManager.Register<System.Web.Http.Dependencies.IDependencyResolver, AutofacWebApiDependencyResolver>(lifeCycle: DependencyLifeCycle.SingleInstance);
+            dependencyManager.Register<IWebApiOwinPipelineInjector, DefaultWebApiOwinPipelineInjector>(lifeCycle: DependencyLifeCycle.SingleInstance);
             dependencyManager.RegisterOwinMiddleware<WebApiMiddlewareConfiguration>(name);
 
             return dependencyManager;
@@ -213,7 +213,7 @@ namespace Foundation.Core.Contracts
             if (dependencyManager == null)
                 throw new ArgumentNullException(nameof(dependencyManager));
 
-            dependencyManager.Register<ISignalRConfiguration, TSignalRConfiguration>(lifeCycle: DepepdencyLifeCycle.SingleInstance, overwriteExciting: false);
+            dependencyManager.Register<ISignalRConfiguration, TSignalRConfiguration>(lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExciting: false);
 
             return dependencyManager;
         }
@@ -223,15 +223,15 @@ namespace Foundation.Core.Contracts
             if (dependencyManager == null)
                 throw new ArgumentNullException(nameof(dependencyManager));
 
-            dependencyManager.Register<System.Web.Http.Dependencies.IDependencyResolver, AutofacWebApiDependencyResolver>(lifeCycle: DepepdencyLifeCycle.SingleInstance);
-            dependencyManager.Register<IWebApiOwinPipelineInjector, DefaultWebApiODataOwinPipelineInjector>(lifeCycle: DepepdencyLifeCycle.SingleInstance);
+            dependencyManager.Register<System.Web.Http.Dependencies.IDependencyResolver, AutofacWebApiDependencyResolver>(lifeCycle: DependencyLifeCycle.SingleInstance);
+            dependencyManager.Register<IWebApiOwinPipelineInjector, DefaultWebApiODataOwinPipelineInjector>(lifeCycle: DependencyLifeCycle.SingleInstance);
             dependencyManager.RegisterGlobalWebApiActionFilter<GlobalDefaultRequestQSStringCorrectorsApplierActionFilterProvider>();
             dependencyManager.RegisterGlobalWebApiActionFilter<GlobalDefaultRequestQSTimeZoneApplierActionFilterProvider>();
             dependencyManager.RegisterGlobalWebApiActionFilter<DefaultGlobalEnableQueryActionFilterProvider>();
-            dependencyManager.Register<IAutoEdmBuilder, DefaultAutoEdmBuilder>(lifeCycle: DepepdencyLifeCycle.SingleInstance);
-            dependencyManager.Register<IODataModelBuilderProvider, DefaultODataModelBuilderProvider>(lifeCycle: DepepdencyLifeCycle.SingleInstance);
-            dependencyManager.Register<IODataContainerBuilderCustomizer, DefaultODataContainerBuilderCustomizer>(lifeCycle: DepepdencyLifeCycle.SingleInstance);
-            dependencyManager.Register<System.Web.Http.Controllers.IHttpActionSelector, DefaultWebApiODataControllerActionSelector>(lifeCycle: DepepdencyLifeCycle.SingleInstance);
+            dependencyManager.Register<IAutoEdmBuilder, DefaultAutoEdmBuilder>(lifeCycle: DependencyLifeCycle.SingleInstance);
+            dependencyManager.Register<IODataModelBuilderProvider, DefaultODataModelBuilderProvider>(lifeCycle: DependencyLifeCycle.SingleInstance);
+            dependencyManager.Register<IODataContainerBuilderCustomizer, DefaultODataContainerBuilderCustomizer>(lifeCycle: DependencyLifeCycle.SingleInstance);
+            dependencyManager.Register<System.Web.Http.Controllers.IHttpActionSelector, DefaultWebApiODataControllerActionSelector>(lifeCycle: DependencyLifeCycle.SingleInstance);
             dependencyManager.RegisterOwinMiddleware<WebApiODataMiddlewareConfiguration>(name);
 
             return dependencyManager;
@@ -253,7 +253,7 @@ namespace Foundation.Core.Contracts
                 .ToList()
                 .ForEach(t =>
                 {
-                    dependencyManager.Register(typeof(IMetadataBuilder).GetTypeInfo(), t.GetTypeInfo(), lifeCycle: DepepdencyLifeCycle.SingleInstance, overwriteExciting: false);
+                    dependencyManager.Register(typeof(IMetadataBuilder).GetTypeInfo(), t.GetTypeInfo(), lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExciting: false);
                 });
 
             return dependencyManager;
@@ -264,7 +264,7 @@ namespace Foundation.Core.Contracts
             if (dependencyManager == null)
                 throw new ArgumentNullException(nameof(dependencyManager));
 
-            dependencyManager.RegisterGeneric(typeof(IDtoModelMapper<,>).GetTypeInfo(), typeof(DefaultDtoModelMapper<,>).GetTypeInfo(), DepepdencyLifeCycle.SingleInstance);
+            dependencyManager.RegisterGeneric(typeof(IDtoModelMapper<,>).GetTypeInfo(), typeof(DefaultDtoModelMapper<,>).GetTypeInfo(), DependencyLifeCycle.SingleInstance);
 
             dependencyManager.RegisterUsing(() =>
             {
@@ -280,7 +280,7 @@ namespace Foundation.Core.Contracts
 
                 return mapper;
 
-            }, lifeCycle: DepepdencyLifeCycle.SingleInstance);
+            }, lifeCycle: DependencyLifeCycle.SingleInstance);
 
             return dependencyManager;
         }
@@ -291,7 +291,7 @@ namespace Foundation.Core.Contracts
             if (dependencyManager == null)
                 throw new ArgumentNullException(nameof(dependencyManager));
 
-            dependencyManager.Register<IDtoModelMapperConfiguration, TDtoModelMapperConfiguration>(lifeCycle: DepepdencyLifeCycle.SingleInstance, overwriteExciting: false);
+            dependencyManager.Register<IDtoModelMapperConfiguration, TDtoModelMapperConfiguration>(lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExciting: false);
 
             return dependencyManager;
         }

@@ -141,7 +141,7 @@ module Foundation.View.Directives {
                                                 multiSelect.open(); // Should be removed
                                             })
                                             .focusout(() => {
-                                                mdInputContainerParent.removeClass("md-input-focused")
+                                                mdInputContainerParent.removeClass("md-input-focused");
                                             });
 
                                         $scope.$watchCollection<Array<any>>(attributes.ngModel, (newVal, oldVal) => {

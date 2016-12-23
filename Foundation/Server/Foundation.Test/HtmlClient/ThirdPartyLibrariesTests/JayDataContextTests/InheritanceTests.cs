@@ -4,7 +4,7 @@ using OpenQA.Selenium.Remote;
 namespace Foundation.Test.HtmlClient.ThirdPartyLibrariesTests.JayDataContextTests
 {
     [TestClass]
-    public class InhertianceTests
+    public class InheritanceTests
     {
         [TestMethod]
         [TestCategory("HtmlClient"), TestCategory("JayDataContextOData")]

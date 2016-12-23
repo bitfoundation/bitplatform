@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Net.Http;
-using Microsoft.Owin.Testing;
 using Foundation.Api;
+using Microsoft.Owin.Testing;
 using OpenQA.Selenium.Remote;
 
 namespace Foundation.Test.Server

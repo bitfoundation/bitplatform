@@ -75,7 +75,7 @@ namespace Foundation.Test.Core.Implementations
             return this;
         }
 
-        public List<Func<TypeInfo, bool>> AutoProxyCreationIncludeRules = new List<Func<TypeInfo, bool>>
+        public readonly List<Func<TypeInfo, bool>> AutoProxyCreationIncludeRules = new List<Func<TypeInfo, bool>>
         {
             serviceType => typeof(IDateTimeProvider).GetTypeInfo().Assembly == serviceType.Assembly,
             serviceType => typeof(IOwinMiddlewareConfiguration).GetTypeInfo().Assembly == serviceType.Assembly,
@@ -84,7 +84,7 @@ namespace Foundation.Test.Core.Implementations
             serviceType => typeof(AutofacTestDependencyManager).GetTypeInfo().Assembly == serviceType.Assembly
         };
 
-        public List<Func<TypeInfo, bool>> AutoProxyCreationIgnoreRules = new List<Func<TypeInfo, bool>>
+        public readonly List<Func<TypeInfo, bool>> AutoProxyCreationIgnoreRules = new List<Func<TypeInfo, bool>>
         {
             serviceType => typeof(DbContext).GetTypeInfo().IsAssignableFrom(serviceType),
             serviceType => typeof(Hub).GetTypeInfo().IsAssignableFrom(serviceType),

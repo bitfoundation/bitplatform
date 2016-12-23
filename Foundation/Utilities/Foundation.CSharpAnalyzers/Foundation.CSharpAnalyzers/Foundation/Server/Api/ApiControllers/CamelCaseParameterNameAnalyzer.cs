@@ -37,7 +37,7 @@ namespace Foundation.CSharpAnalyzers.Foundation.Server.Api.ApiControllers
 
             ISymbol attributeUsage = context.SemanticModel.GetSymbolInfo(context.Node).Symbol;
 
-            if ((attributeUsage?.ContainingType as INamedTypeSymbol)?.ToString() == "Foundation.Api.ApiControllers.ParameterAttribute")
+            if (attributeUsage?.ContainingType?.ToString() == "Foundation.Api.ApiControllers.ParameterAttribute")
             {
                 LiteralExpressionSyntax expression = (LiteralExpressionSyntax)(attributeSyntax.DescendantNodes().OfType<AttributeArgumentSyntax>().First()).Expression;
 

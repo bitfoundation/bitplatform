@@ -22,11 +22,11 @@ namespace Foundation.Test.Api.Middlewares.SignalR.Tests
 
                 ODataClient odataClientOfUser1 = testEnvironment.Server.BuildODataClient(token: tokenOfUser1);
 
-                TaskCompletionSource<bool> onMessageRecievedCalled = new TaskCompletionSource<bool>();
+                TaskCompletionSource<bool> onMessageReceivedCalled = new TaskCompletionSource<bool>();
 
                 testEnvironment.Server.BuildSignalRClient(tokenOfUser2, (messageKey, messageArgs) =>
                 {
-                    onMessageRecievedCalled.SetResult(true);
+                    onMessageReceivedCalled.SetResult(true);
                 });
 
                 await odataClientOfUser1.Controller<TestModelsController, TestModel>()
@@ -34,7 +34,7 @@ namespace Foundation.Test.Api.Middlewares.SignalR.Tests
                     .Set(new { to = "User2", word = "Some word" })
                     .ExecuteAsync();
 
-                Assert.AreEqual(true, await onMessageRecievedCalled.Task);
+                Assert.AreEqual(true, await onMessageReceivedCalled.Task);
             }
         }
 
@@ -51,11 +51,11 @@ namespace Foundation.Test.Api.Middlewares.SignalR.Tests
 
                 ODataClient odataClientOfUser1 = testEnvironment.Server.BuildODataClient(token: tokenOfUser1);
 
-                TaskCompletionSource<bool> onMessageRecievedCalled = new TaskCompletionSource<bool>();
+                TaskCompletionSource<bool> onMessageReceivedCalled = new TaskCompletionSource<bool>();
 
                 testEnvironment.Server.BuildSignalRClient(tokenOfUser2, (messageKey, messageArgs) =>
                 {
-                    onMessageRecievedCalled.SetResult(true);
+                    onMessageReceivedCalled.SetResult(true);
                 });
 
                 await odataClientOfUser1.Controller<TestModelsController, TestModel>()
@@ -63,7 +63,7 @@ namespace Foundation.Test.Api.Middlewares.SignalR.Tests
                     .Set(new { to = "User2", word = "Some word" })
                     .ExecuteAsync();
 
-                Assert.AreEqual(true, await onMessageRecievedCalled.Task);
+                Assert.AreEqual(true, await onMessageReceivedCalled.Task);
             }
         }
     }

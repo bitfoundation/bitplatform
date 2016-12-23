@@ -52,9 +52,9 @@ namespace Foundation.Api.Middlewares.JobScheduler.Implementations
 
             if (activeAppEnvironment.DebugMode == false)
             {
-                string SignalRAzureServiceBusConnectionString = activeAppEnvironment.GetConfig<string>("JobSchedulerAzureServiceBusConnectionString");
+                string signalRAzureServiceBusConnectionString = activeAppEnvironment.GetConfig<string>("JobSchedulerAzureServiceBusConnectionString");
 
-                storage.UseServiceBusQueues(SignalRAzureServiceBusConnectionString);
+                storage.UseServiceBusQueues(signalRAzureServiceBusConnectionString);
             }
 
             GlobalConfiguration.Configuration.UseStorage(storage);

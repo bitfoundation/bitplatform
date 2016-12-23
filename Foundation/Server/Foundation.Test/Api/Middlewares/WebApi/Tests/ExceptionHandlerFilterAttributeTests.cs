@@ -79,7 +79,7 @@ namespace Foundation.Test.Api.Middlewares.WebApi.Tests
             IEmailService emailService = A.Fake<IEmailService>();
 
             A.CallTo(() => emailService.SendEmail(A<string>.Ignored, A<string>.Ignored, A<string>.Ignored))
-                .Throws(new ResourceNotFoundaException("Test"));
+                .Throws(new ResourceNotFoundException("Test"));
 
             using (TestEnvironment testEnvironment = new TestEnvironment(new TestEnvironmentArgs
             {

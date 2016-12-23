@@ -15,7 +15,7 @@ using Foundation.DataAccess.Contracts;
 using Foundation.DataAccess.Implementations.EntityFrameworkCore;
 using Foundation.Test.Api.Middlewares;
 using Foundation.Test.DataAccess.Implementations;
-using Foundation.Test.Model.Implemenations;
+using Foundation.Test.Model.Implementations;
 using System.Reflection;
 using System.Web.Http;
 
@@ -45,11 +45,11 @@ namespace Foundation.Test.Api.Implementations.Project
             dependencyManager.Register<IUserInformationProvider, DefaultUserInformationProvider>();
             dependencyManager.Register<ILogStore, ConsoleLogStore>();
 
-            dependencyManager.Register<IDateTimeProvider, DefaultDateTimeProvider>(lifeCycle: DepepdencyLifeCycle.SingleInstance);
-            dependencyManager.Register<IRandomStringProvider, DefaultRandomStringProvider>(lifeCycle: DepepdencyLifeCycle.SingleInstance);
-            dependencyManager.Register<ICertificateProvider, DefaultCertificateProvider>(lifeCycle: DepepdencyLifeCycle.SingleInstance);
-            dependencyManager.Register<IExceptionToHttpErrorMapper, DefaultExceptionToHttpErrorMapper>(lifeCycle: DepepdencyLifeCycle.SingleInstance);
-            dependencyManager.Register<ITestUserService, TestUserService>(lifeCycle: DepepdencyLifeCycle.SingleInstance);
+            dependencyManager.Register<IDateTimeProvider, DefaultDateTimeProvider>(lifeCycle: DependencyLifeCycle.SingleInstance);
+            dependencyManager.Register<IRandomStringProvider, DefaultRandomStringProvider>(lifeCycle: DependencyLifeCycle.SingleInstance);
+            dependencyManager.Register<ICertificateProvider, DefaultCertificateProvider>(lifeCycle: DependencyLifeCycle.SingleInstance);
+            dependencyManager.Register<IExceptionToHttpErrorMapper, DefaultExceptionToHttpErrorMapper>(lifeCycle: DependencyLifeCycle.SingleInstance);
+            dependencyManager.Register<ITestUserService, TestUserService>(lifeCycle: DependencyLifeCycle.SingleInstance);
 
             dependencyManager.RegisterAppEvents<RazorViewEngineConfiguration>();
             dependencyManager.RegisterAppEvents<InitialTestDataConfiguration>();
@@ -83,7 +83,7 @@ namespace Foundation.Test.Api.Implementations.Project
 
                 }).Resolve<IOwinMiddlewareConfiguration>("WebApi");
 
-            }, lifeCycle: DepepdencyLifeCycle.SingleInstance, overwriteExciting: false);
+            }, lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExciting: false);
 
             dependencyManager.RegisterUsing<IOwinMiddlewareConfiguration>(() =>
             {
@@ -100,19 +100,19 @@ namespace Foundation.Test.Api.Implementations.Project
 
                 }).Resolve<IOwinMiddlewareConfiguration>("WebApiOData");
 
-            }, lifeCycle: DepepdencyLifeCycle.SingleInstance, overwriteExciting: false);
+            }, lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExciting: false);
 
-            dependencyManager.RegisterSignalRConfiguration<SignalRAuthroizeConfiguration>();
+            dependencyManager.RegisterSignalRConfiguration<SignalRAuthorizeConfiguration>();
             dependencyManager.RegisterSignalRMiddlewareUsingDefaultConfiguration(typeof(MessagesHub).GetTypeInfo().Assembly);
 
             dependencyManager.RegisterBackgroundJobWorkerUsingDefaultConfiguration<JobSchedulerInMemoryBackendConfiguration>();
 
-            dependencyManager.Register<IAppMetadataProvider, DefaultAppMetadataProvider>(lifeCycle: DepepdencyLifeCycle.SingleInstance);
+            dependencyManager.Register<IAppMetadataProvider, DefaultAppMetadataProvider>(lifeCycle: DependencyLifeCycle.SingleInstance);
             dependencyManager.RegisterMetadata(typeof(FoundationEdmModelProvider).GetTypeInfo().Assembly, typeof(TestEdmModelProvider).GetTypeInfo().Assembly);
 
-            dependencyManager.RegisterGeneric(typeof(IRepository<>).GetTypeInfo(), typeof(TestEfRepository<>).GetTypeInfo(), DepepdencyLifeCycle.InstancePerLifetimeScope);
+            dependencyManager.RegisterGeneric(typeof(IRepository<>).GetTypeInfo(), typeof(TestEfRepository<>).GetTypeInfo(), DependencyLifeCycle.InstancePerLifetimeScope);
 
-            dependencyManager.RegisterGeneric(typeof(IEntityWithDefaultGuidKeyRepository<>).GetTypeInfo(), typeof(TestEfEntityWithDefaultGuidKeyRepository<>).GetTypeInfo(), DepepdencyLifeCycle.InstancePerLifetimeScope);
+            dependencyManager.RegisterGeneric(typeof(IEntityWithDefaultGuidKeyRepository<>).GetTypeInfo(), typeof(TestEfEntityWithDefaultGuidKeyRepository<>).GetTypeInfo(), DependencyLifeCycle.InstancePerLifetimeScope);
 
             dependencyManager.RegisterDbContext<TestDbContext, InMemoryDbContextObjectsProvider>();
 

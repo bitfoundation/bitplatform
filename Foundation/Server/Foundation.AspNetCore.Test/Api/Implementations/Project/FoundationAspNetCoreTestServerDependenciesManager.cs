@@ -29,9 +29,9 @@ namespace Foundation.AspNetCore.Test.Api.Implementations.Project
         }
 
 
-        public FoundationAspNetCoreTestServerDependenciesManager(TestEnvironmentArgs _args)
+        public FoundationAspNetCoreTestServerDependenciesManager(TestEnvironmentArgs args)
         {
-            this._args = _args;
+            this._args = args;
         }
 
         public virtual void ConfigureDependencies(IDependencyManager dependencyManager)
@@ -49,11 +49,11 @@ namespace Foundation.AspNetCore.Test.Api.Implementations.Project
             dependencyManager.Register<IUserInformationProvider, DefaultUserInformationProvider>();
             dependencyManager.Register<ILogStore, ConsoleLogStore>();
 
-            dependencyManager.Register<IDateTimeProvider, DefaultDateTimeProvider>(lifeCycle: DepepdencyLifeCycle.SingleInstance);
-            dependencyManager.Register<IRandomStringProvider, DefaultRandomStringProvider>(lifeCycle: DepepdencyLifeCycle.SingleInstance);
-            dependencyManager.Register<ICertificateProvider, DefaultCertificateProvider>(lifeCycle: DepepdencyLifeCycle.SingleInstance);
-            dependencyManager.Register<IExceptionToHttpErrorMapper, DefaultExceptionToHttpErrorMapper>(lifeCycle: DepepdencyLifeCycle.SingleInstance);
-            dependencyManager.Register<ITestUserService, TestUserService>(lifeCycle: DepepdencyLifeCycle.SingleInstance);
+            dependencyManager.Register<IDateTimeProvider, DefaultDateTimeProvider>(lifeCycle: DependencyLifeCycle.SingleInstance);
+            dependencyManager.Register<IRandomStringProvider, DefaultRandomStringProvider>(lifeCycle: DependencyLifeCycle.SingleInstance);
+            dependencyManager.Register<ICertificateProvider, DefaultCertificateProvider>(lifeCycle: DependencyLifeCycle.SingleInstance);
+            dependencyManager.Register<IExceptionToHttpErrorMapper, DefaultExceptionToHttpErrorMapper>(lifeCycle: DependencyLifeCycle.SingleInstance);
+            dependencyManager.Register<ITestUserService, TestUserService>(lifeCycle: DependencyLifeCycle.SingleInstance);
 
             dependencyManager.RegisterAspNetCoreMiddleware<AspNetCoreExceptionHandlerMiddlewareConfiguration>(); //@Important
             dependencyManager.RegisterAspNetCoreMiddleware<TestWebApiCoreMvcMiddlewareConfiguration>(); //@Important
@@ -87,14 +87,14 @@ namespace Foundation.AspNetCore.Test.Api.Implementations.Project
 
                }).Resolve<IOwinMiddlewareConfiguration>("WebApiOData");
 
-           }, lifeCycle: DepepdencyLifeCycle.SingleInstance, overwriteExciting: false);
+           }, lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExciting: false);
 
-            dependencyManager.RegisterSignalRConfiguration<SignalRAuthroizeConfiguration>();
+            dependencyManager.RegisterSignalRConfiguration<SignalRAuthorizeConfiguration>();
             dependencyManager.RegisterSignalRMiddlewareUsingDefaultConfiguration(typeof(MessagesHub).GetTypeInfo().Assembly);
 
             dependencyManager.RegisterBackgroundJobWorkerUsingDefaultConfiguration<JobSchedulerInMemoryBackendConfiguration>();
 
-            dependencyManager.Register<IAppMetadataProvider, DefaultAppMetadataProvider>(lifeCycle: DepepdencyLifeCycle.SingleInstance);
+            dependencyManager.Register<IAppMetadataProvider, DefaultAppMetadataProvider>(lifeCycle: DependencyLifeCycle.SingleInstance);
             dependencyManager.RegisterMetadata(typeof(FoundationEdmModelProvider).GetTypeInfo().Assembly, typeof(FoundationAspNetCoreTestEdmModelProvider).GetTypeInfo().Assembly);
 
             if (_args?.AdditionalDependencies != null)

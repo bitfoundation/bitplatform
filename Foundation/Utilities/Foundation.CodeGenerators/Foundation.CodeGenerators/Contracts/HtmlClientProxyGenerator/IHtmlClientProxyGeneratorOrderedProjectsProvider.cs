@@ -6,7 +6,7 @@ namespace Foundation.CodeGenerators.Contracts.HtmlClientProxyGenerator
 {
     public interface IHtmlClientProxyGeneratorSolutionProjectsSelector
     {
-        IList<Project> GetInvolveableProjects(Workspace worksapce, Solution solution, IList<Project> projects,
+        IList<Project> GetInvolveableProjects(Workspace workspace, Solution solution, IList<Project> projects,
             HtmlClientProxyGeneratorMapping htmlClientProxyGeneratorMapping);
     }
 }

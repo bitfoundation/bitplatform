@@ -41,6 +41,8 @@
 
                             let memberDefenitions = modelType.memberDefinitions;
 
+                            let propModelControllers = [];
+
                             ctrl.$$parentForm.isValid = (): boolean => {
                                 let isValid = true;
                                 propModelControllers.forEach(p => {
@@ -51,8 +53,6 @@
                                 });
                                 return isValid;
                             };
-
-                            let propModelControllers = [];
 
                             for (let prp in ctrl.$$parentForm) {
 

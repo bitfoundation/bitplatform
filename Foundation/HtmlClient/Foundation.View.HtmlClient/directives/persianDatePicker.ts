@@ -70,7 +70,7 @@
                 altField: this.$alt,
                 altFieldFormatter: (e) => {
                     const result = new Date(e);
-                    return result
+                    return result;
                 },
                 formatter: (e) => {
                     const result = new Date(e);

@@ -27,13 +27,13 @@ namespace Foundation.CodeGenerators.Implementations
             _isvPropertyForISyncableDtos = new Lazy<IPropertySymbol>(() =>
             {
                 ProjectId projectId = ProjectId.CreateNewId(debugName: "ISVPropertyProject");
-                DocumentId isvPropDocId = DocumentId.CreateNewId(projectId, debugName: $"ISVProp.cs");
+                DocumentId isvPropDocId = DocumentId.CreateNewId(projectId, debugName: "ISVProp.cs");
 
                 Solution solution = new AdhocWorkspace()
                     .CurrentSolution
                     .AddProject(projectId, "ISVPropertyProject", "ISVPropertyProject", LanguageNames.CSharp)
                     .AddMetadataReference(projectId, MetadataReference.CreateFromFile(typeof(bool).Assembly.Location))
-                    .AddDocument(isvPropDocId, $"ISVProp.cs", SourceText.From(@"
+                    .AddDocument(isvPropDocId, "ISVProp.cs", SourceText.From(@"
 public class ISVClass
 {
     public bool ISV { get; set; }
@@ -42,13 +42,13 @@ public class ISVClass
 
                 Document isvPropDoc = solution.Projects.Single().Documents.Single();
                 ClassDeclarationSyntax isvPropClassDec = isvPropDoc.GetSyntaxRootAsync().Result.DescendantNodes().OfType<ClassDeclarationSyntax>().Single();
-                ITypeSymbol isvPropTypeSymbol = (ITypeSymbol)isvPropDoc.GetSemanticModelAsync().Result.GetDeclaredSymbol(isvPropClassDec);
+                ITypeSymbol isvPropTypeSymbol = isvPropDoc.GetSemanticModelAsync().Result.GetDeclaredSymbol(isvPropClassDec);
                 return isvPropTypeSymbol.GetMembers().OfType<IPropertySymbol>().Single();
 
             });
         }
 
-        private static Lazy<IPropertySymbol> _isvPropertyForISyncableDtos;
+        private static readonly Lazy<IPropertySymbol> _isvPropertyForISyncableDtos;
 
         public virtual IList<Dto> GetProjectDtos(Project project, IList<Project> allSourceProjects = null)
         {

@@ -5,27 +5,27 @@ using Foundation.Api.Metadata;
 namespace Foundation.Api.Exceptions
 {
     [Serializable]
-    public class ResourceNotFoundaException : AppException
+    public class ResourceNotFoundException : AppException
     {
-        public ResourceNotFoundaException()
+        public ResourceNotFoundException()
             : this(FoundationMetadataBuilder.ResourceNotFoundaException)
         {
 
         }
 
-        public ResourceNotFoundaException(string message)
+        public ResourceNotFoundException(string message)
             : base(message)
         {
 
         }
 
-        public ResourceNotFoundaException(string message, Exception innerException)
+        public ResourceNotFoundException(string message, Exception innerException)
             : base(message, innerException)
         {
 
         }
 
-        protected ResourceNotFoundaException(SerializationInfo info, StreamingContext context)
+        protected ResourceNotFoundException(SerializationInfo info, StreamingContext context)
             : base(info, context)
         {
 

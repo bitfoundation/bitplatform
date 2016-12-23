@@ -215,7 +215,7 @@ namespace Foundation.CSharpAnalyzers.Test.Helpers
             StringBuilder builder = new StringBuilder();
             for (int i = 0; i < diagnostics.Length; ++i)
             {
-                builder.AppendLine("// " + diagnostics[i].ToString());
+                builder.AppendLine("// " + diagnostics[i]);
 
                 Type analyzerType = analyzer.GetType();
                 ImmutableArray<DiagnosticDescriptor> rules = analyzer.SupportedDiagnostics;
@@ -311,9 +311,8 @@ namespace Foundation.CSharpAnalyzers.Test.Helpers
                     }
                     else
                     {
-                        for (int i = 0; i < documents.Length; i++)
+                        foreach (Document document in documents)
                         {
-                            Document document = documents[i];
                             SyntaxTree tree = document.GetSyntaxTreeAsync().Result;
                             if (tree == diag.Location.SourceTree)
                             {

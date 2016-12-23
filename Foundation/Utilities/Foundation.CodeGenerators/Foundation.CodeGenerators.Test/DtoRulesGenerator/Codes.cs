@@ -1,4 +1,4 @@
-﻿namespace Foundation.CodeGenerators.Test.TSDtoRulesGenerator
+﻿namespace Foundation.CodeGenerators.Test.DtoRulesGenerator
 {
     public class Codes : CodeGeneratorTest
     {

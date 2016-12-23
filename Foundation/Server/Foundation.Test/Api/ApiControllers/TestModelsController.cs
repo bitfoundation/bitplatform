@@ -69,7 +69,7 @@ namespace Foundation.Test.Api.ApiControllers
                 .FirstOrDefaultAsync(t => t.Id == key, cancellationToken);
 
             if (testModel == null)
-                throw new ResourceNotFoundaException();
+                throw new ResourceNotFoundException();
 
             return testModel;
         }
@@ -90,7 +90,7 @@ namespace Foundation.Test.Api.ApiControllers
                 .FirstOrDefaultAsync(m => m.Id == key, cancellationToken);
 
             if (model == null)
-                throw new ResourceNotFoundaException();
+                throw new ResourceNotFoundException();
 
             modelDelta.Patch(model);
 
@@ -118,7 +118,7 @@ namespace Foundation.Test.Api.ApiControllers
                 .FirstOrDefaultAsync(m => m.Id == key, cancellationToken);
 
             if (model == null)
-                throw new ResourceNotFoundaException();
+                throw new ResourceNotFoundException();
 
             await _testModelsRepository.Value.DeleteAsync(model, cancellationToken);
         }

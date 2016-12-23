@@ -22,7 +22,7 @@ namespace Foundation.Test.Api.Middlewares.WebApi.Tests
         [Ignore]
         [TestMethod]
         [TestCategory("WebApi")]
-        public virtual async Task InsertAndUpdateToghether()
+        public virtual async Task InsertAndUpdateTogether()
         {
             using (TestEnvironment testEnvironment = new TestEnvironment())
             {

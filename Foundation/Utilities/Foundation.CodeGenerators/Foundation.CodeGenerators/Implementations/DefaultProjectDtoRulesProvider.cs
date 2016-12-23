@@ -41,7 +41,7 @@ namespace Foundation.CodeGenerators.Implementations
 
                     if (isDtoRules == true)
                     {
-                        isDtoRules = (semanticModel.GetDeclaredSymbol(classDeclarationSyntax) as ITypeSymbol)
+                        isDtoRules = semanticModel.GetDeclaredSymbol(classDeclarationSyntax)
                             .GetAttributes()
                             .Any(att => att.AttributeClass.Name == "AutoGenerateAttribute");
                     }
@@ -64,11 +64,11 @@ namespace Foundation.CodeGenerators.Implementations
                         ClassDeclaration = dtoRulesClassDec,
                         DtoSymbol = (dtoRuleSymbol.BaseType.TypeArguments).Single(),
                         DtoRulesDocument = doc,
-                        SemanticModel = semanticModel
+                        SemanticModel = semanticModel,
+                        ClassSyntaxTree = dtoRulesClassDec.SyntaxTree
                     };
 
-                    dtoRules.ClassSynatxTree = dtoRulesClassDec.SyntaxTree;
-                    dtoRules.ClassRootNode = (CompilationUnitSyntax)dtoRules.ClassSynatxTree.GetRoot();
+                    dtoRules.ClassRootNode = (CompilationUnitSyntax)dtoRules.ClassSyntaxTree.GetRoot();
 
                     allDtoRules.Add(dtoRules);
                 }

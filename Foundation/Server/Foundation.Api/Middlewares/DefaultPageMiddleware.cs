@@ -16,9 +16,9 @@ namespace Foundation.Api.Middlewares
 
         public override async Task Invoke(IOwinContext context)
         {
-            IDependencyResolver dependecyResolver = context.GetDependencyResolver();
+            IDependencyResolver dependencyResolver = context.GetDependencyResolver();
 
-            string defaultPage = await dependecyResolver.Resolve<IDefaultHtmlPageProvider>().GetDefaultPageAsync(CancellationToken.None);
+            string defaultPage = await dependencyResolver.Resolve<IDefaultHtmlPageProvider>().GetDefaultPageAsync(CancellationToken.None);
 
             context.Response.ContentType = "text/html; charset=utf-8";
 

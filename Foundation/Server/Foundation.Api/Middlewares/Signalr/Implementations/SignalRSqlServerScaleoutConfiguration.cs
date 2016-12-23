@@ -18,13 +18,13 @@ namespace Foundation.Api.Middlewares.SignalR.Implementations
             _appEnvironmentProvider = appEnvironmentProvider;
         }
 
-        public virtual void Configure(HubConfiguration SignalRConfig)
+        public virtual void Configure(HubConfiguration signalRConfig)
         {
             AppEnvironment activeAppEnvironment = _appEnvironmentProvider.GetActiveAppEnvironment();
 
             string sqlServerConnectionString = activeAppEnvironment.GetConfig<string>("SignalRSqlServerConnectionString");
 
-            SignalRConfig.Resolver.UseSqlServer(new SqlScaleoutConfiguration(sqlServerConnectionString)
+            signalRConfig.Resolver.UseSqlServer(new SqlScaleoutConfiguration(sqlServerConnectionString)
             {
                 TableCount = activeAppEnvironment.GetConfig("SignalRSqlServerTableCount", 3)
             });

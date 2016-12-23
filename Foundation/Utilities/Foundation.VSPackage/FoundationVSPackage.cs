@@ -182,7 +182,7 @@ namespace Foundation.VSPackage
             }
             else
             {
-                outputPane.OutputString(string.Format("{0}\n", text));
+                outputPane.OutputString($"{text}\n");
             }
         }
 
