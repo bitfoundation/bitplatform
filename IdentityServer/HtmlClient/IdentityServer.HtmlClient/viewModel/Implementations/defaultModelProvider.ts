@@ -11,15 +11,15 @@ module IdentityServer.ViewModel.Implementations {
 
                 let loginModelJson = document.getElementById("modelJson");
 
-                let encodedJson = '';
+                let encodedJson = "";
 
-                if (typeof (loginModelJson.textContent) !== undefined) {
+                if (typeof (loginModelJson.textContent) !== "undefined") {
                     encodedJson = loginModelJson.textContent;
                 } else {
                     encodedJson = loginModelJson.innerHTML;
                 }
 
-                let json = window['Encoder'].htmlDecode(encodedJson);
+                let json = window["Encoder"].htmlDecode(encodedJson);
 
                 this.model = JSON.parse(json);
 
@@ -28,7 +28,7 @@ module IdentityServer.ViewModel.Implementations {
                         this.model.autoRedirectDelay = 0;
                     }
                     setTimeout(() => {
-                        location = this.model.redirectUrl;
+                        location.assign(this.model.redirectUrl);
                     }, this.model.autoRedirectDelay * 1000);
                 }
             }

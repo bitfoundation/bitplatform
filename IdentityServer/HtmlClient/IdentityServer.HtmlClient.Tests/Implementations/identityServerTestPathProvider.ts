@@ -1,6 +1,6 @@
 ﻿module IdentityServerTest.Implementations {
     @Foundation.Core.ObjectDependency({
-        name: 'PathProvider'
+        name: "PathProvider"
     })
     export class IdentityServerTestPathProvider extends Foundation.ViewModel.Implementations.DefaultPathProvider {
 

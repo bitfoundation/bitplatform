@@ -51,11 +51,11 @@ namespace IdentityServer.Test.Api.Implementations
                     RequireConsent = false,
                     RedirectUris = new List<string>
                     {
-                        $"http://127.0.0.1/SignIn"
+                        "http://127.0.0.1/SignIn"
                     },
                     PostLogoutRedirectUris = new List<string>
                     {
-                        $"http://127.0.0.1/SignOut"
+                        "http://127.0.0.1/SignOut"
                     },
                     AllowAccessToAllScopes = true,
                     AlwaysSendClientClaims = true,

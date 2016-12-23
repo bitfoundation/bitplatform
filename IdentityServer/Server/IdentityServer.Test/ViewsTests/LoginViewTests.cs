@@ -17,7 +17,7 @@ namespace IdentityServer.Test.ViewsTests
         {
             using (IdentityServerTestEnvironment testEnvironment = new IdentityServerTestEnvironment())
             {
-                using (RemoteWebDriver driver = testEnvironment.Server.GetWebDriver(new RemoteWebDriverOptions { Uri = $@"core/connect/authorize?scope=openid profile user_info&client_id=Test&redirect_uri=http://127.0.0.1/SignIn&response_type=id_token token&state={{}}&nonce=SgPoeilE1Tub", ClientSideTest = false }))
+                using (RemoteWebDriver driver = testEnvironment.Server.GetWebDriver(new RemoteWebDriverOptions { Uri = @"core/connect/authorize?scope=openid profile user_info&client_id=Test&redirect_uri=http://127.0.0.1/SignIn&response_type=id_token token&state={}&nonce=SgPoeilE1Tub", ClientSideTest = false }))
                 {
                     driver.GetElementById("username").SendKeys("ValidUser1");
 
@@ -45,7 +45,7 @@ namespace IdentityServer.Test.ViewsTests
         {
             using (IdentityServerTestEnvironment testEnvironment = new IdentityServerTestEnvironment())
             {
-                using (RemoteWebDriver driver = testEnvironment.Server.GetWebDriver(new RemoteWebDriverOptions { Uri = $@"core/connect/authorize?scope=openid profile user_info&client_id=Test&redirect_uri=http://127.0.0.1/SignIn&response_type=id_token token&state={{}}&nonce=SgPoeilE1Tub", ClientSideTest = false }))
+                using (RemoteWebDriver driver = testEnvironment.Server.GetWebDriver(new RemoteWebDriverOptions { Uri = @"core/connect/authorize?scope=openid profile user_info&client_id=Test&redirect_uri=http://127.0.0.1/SignIn&response_type=id_token token&state={}&nonce=SgPoeilE1Tub", ClientSideTest = false }))
                 {
                     driver.GetElementById("username").SendKeys("InValidUser1");
                     driver.GetElementById("password").SendKeys("InValidUser1");

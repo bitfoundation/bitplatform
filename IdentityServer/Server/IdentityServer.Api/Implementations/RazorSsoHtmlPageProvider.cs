@@ -12,7 +12,7 @@ namespace IdentityServer.Api.Implementations
 {
     public class RazorSsoHtmlPageProvider : ISsoPageHtmlProvider
     {
-        private IDependencyManager _dependencyManager;
+        private readonly IDependencyManager _dependencyManager;
 
         public RazorSsoHtmlPageProvider(IAppEnvironmentProvider appEnvironmentProvider, IPathProvider pathProvider, IDependencyManager dependencyManager)
         {

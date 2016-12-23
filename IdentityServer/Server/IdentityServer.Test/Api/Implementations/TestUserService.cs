@@ -30,7 +30,7 @@ namespace IdentityServer.Test.Api.Implementations
             try
             {
                 if (user == null)
-                    throw new InvalidOperationException($"LoginFailed");
+                    throw new InvalidOperationException("LoginFailed");
 
                 List<Claim> claims = new List<Claim>
                 {
@@ -51,7 +51,7 @@ namespace IdentityServer.Test.Api.Implementations
             }
             catch
             {
-                AuthenticateResult result = new AuthenticateResult($"LoginFailed");
+                AuthenticateResult result = new AuthenticateResult("LoginFailed");
 
                 context.AuthenticateResult = result;
             }

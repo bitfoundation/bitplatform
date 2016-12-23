@@ -11,7 +11,7 @@ namespace IdentityServer.Api.Implementations
 {
     public class ActiveDirectoryUserServiceProvider : UserServiceBase
     {
-        private string _activeDirectoryName;
+        private readonly string _activeDirectoryName;
 
         public ActiveDirectoryUserServiceProvider(IAppEnvironmentProvider appEnvironmentProvider)
         {
@@ -47,7 +47,7 @@ namespace IdentityServer.Api.Implementations
                                 IdentityType.SamAccountName, userNameAsWinUserName))
                         {
                             if (user == null)
-                                throw new InvalidOperationException($"LoginFailed");
+                                throw new InvalidOperationException("LoginFailed");
 
                             List<Claim> claims = new List<Claim>
                             {
@@ -67,7 +67,7 @@ namespace IdentityServer.Api.Implementations
                     }
                     else
                     {
-                        throw new InvalidOperationException($"LoginFailed");
+                        throw new InvalidOperationException("LoginFailed");
                     }
                 }
 
@@ -75,7 +75,7 @@ namespace IdentityServer.Api.Implementations
             }
             catch
             {
-                AuthenticateResult result = new AuthenticateResult($"LoginFailed");
+                AuthenticateResult result = new AuthenticateResult("LoginFailed");
 
                 context.AuthenticateResult = result;
             }

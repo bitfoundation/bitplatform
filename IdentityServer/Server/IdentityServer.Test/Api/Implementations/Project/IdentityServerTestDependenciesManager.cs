@@ -34,9 +34,9 @@ namespace IdentityServer.Test.Api.Implementations.Project
             dependencyManager.Register<IScopeStatusManager, DefaultScopeStatusManager>();
             dependencyManager.Register<IRequestInformationProvider, DefaultRequestInformationProvider>();
 
-            dependencyManager.Register<IDateTimeProvider, DefaultDateTimeProvider>(lifeCycle: DepepdencyLifeCycle.SingleInstance);
-            dependencyManager.Register<ICertificateProvider, DefaultCertificateProvider>(lifeCycle: DepepdencyLifeCycle.SingleInstance);
-            dependencyManager.Register<IExceptionToHttpErrorMapper, DefaultExceptionToHttpErrorMapper>(lifeCycle: DepepdencyLifeCycle.SingleInstance);
+            dependencyManager.Register<IDateTimeProvider, DefaultDateTimeProvider>(lifeCycle: DependencyLifeCycle.SingleInstance);
+            dependencyManager.Register<ICertificateProvider, DefaultCertificateProvider>(lifeCycle: DependencyLifeCycle.SingleInstance);
+            dependencyManager.Register<IExceptionToHttpErrorMapper, DefaultExceptionToHttpErrorMapper>(lifeCycle: DependencyLifeCycle.SingleInstance);
 
             dependencyManager.RegisterAppEvents<RazorViewEngineConfiguration>();
 
@@ -47,27 +47,27 @@ namespace IdentityServer.Test.Api.Implementations.Project
             dependencyManager.RegisterOwinMiddleware<LogRequestInformationMiddlewareConfiguration>();
             dependencyManager.RegisterOwinMiddleware<MetadataMiddlewareConfiguration>();
 
-            dependencyManager.Register<IAppMetadataProvider, DefaultAppMetadataProvider>(lifeCycle: DepepdencyLifeCycle.SingleInstance);
+            dependencyManager.Register<IAppMetadataProvider, DefaultAppMetadataProvider>(lifeCycle: DependencyLifeCycle.SingleInstance);
             dependencyManager.RegisterMetadata(typeof(FoundationEdmModelProvider).GetTypeInfo().Assembly, typeof(LoginViewMetadataBuilder).GetTypeInfo().Assembly);
 
             #endregion
 
             #region IdentityServer
 
-            dependencyManager.Register<IScopesProvider, DefaultScopesProvider>(lifeCycle: DepepdencyLifeCycle.SingleInstance);
-            dependencyManager.Register<IdentityServer3.Core.Logging.ILogProvider, DefaultIdentityServerLogProvider>(lifeCycle: DepepdencyLifeCycle.SingleInstance);
+            dependencyManager.Register<IScopesProvider, DefaultScopesProvider>(lifeCycle: DependencyLifeCycle.SingleInstance);
+            dependencyManager.Register<IdentityServer3.Core.Logging.ILogProvider, DefaultIdentityServerLogProvider>(lifeCycle: DependencyLifeCycle.SingleInstance);
             dependencyManager.RegisterOwinMiddleware<IdentityServerMiddlewareConfiguration>();
-            dependencyManager.Register<IViewService, DefaultViewService>(lifeCycle: DepepdencyLifeCycle.SingleInstance);
-            dependencyManager.Register<ISsoPageHtmlProvider, RazorSsoHtmlPageProvider>(lifeCycle: DepepdencyLifeCycle.SingleInstance);
-            dependencyManager.Register<ISSOPageModelProvider, DefaultSSOPageModelProvider>(lifeCycle: DepepdencyLifeCycle.SingleInstance);
+            dependencyManager.Register<IViewService, DefaultViewService>(lifeCycle: DependencyLifeCycle.SingleInstance);
+            dependencyManager.Register<ISsoPageHtmlProvider, RazorSsoHtmlPageProvider>(lifeCycle: DependencyLifeCycle.SingleInstance);
+            dependencyManager.Register<ISSOPageModelProvider, DefaultSSOPageModelProvider>(lifeCycle: DependencyLifeCycle.SingleInstance);
 
             #endregion
 
             #region IdentityServer.Test
 
-            dependencyManager.Register<IClientProvider, TestClientProvider>(lifeCycle: DepepdencyLifeCycle.SingleInstance);
+            dependencyManager.Register<IClientProvider, TestClientProvider>(lifeCycle: DependencyLifeCycle.SingleInstance);
 
-            dependencyManager.Register<IUserService, TestUserService>(lifeCycle: DepepdencyLifeCycle.SingleInstance);
+            dependencyManager.Register<IUserService, TestUserService>(lifeCycle: DependencyLifeCycle.SingleInstance);
 
             #endregion
         }

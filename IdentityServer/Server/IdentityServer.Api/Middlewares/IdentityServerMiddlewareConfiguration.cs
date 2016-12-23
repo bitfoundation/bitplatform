@@ -71,7 +71,7 @@ namespace IdentityServer.Api.Middlewares
                 IdentityServerOptions identityServerOptions = new IdentityServerOptions
                 {
                     SiteName = identityServerSiteName,
-                    SigningCertificate = _certificateProvider.GetSignelSignOnCertificate(),
+                    SigningCertificate = _certificateProvider.GetSingleSignOnCertificate(),
                     Factory = factory,
                     RequireSsl = requireSslConfigValue,
                     EnableWelcomePage = activeAppEnvironment.DebugMode == true,
