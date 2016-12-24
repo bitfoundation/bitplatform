@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNet.SignalR.Client;
+﻿using IdentityModel.Client;
+using Microsoft.AspNet.SignalR.Client;
 using OpenQA.Selenium.Remote;
 using Simple.OData.Client;
 using System;
@@ -37,6 +38,8 @@ namespace Foundation.Test
         HttpClient GetHttpClient(OAuthToken token = null);
 
         IHubProxy BuildSignalRClient(OAuthToken token = null, Action<string, dynamic> onMessageReceived = null);
+
+        TokenClient BuildTokenClient(string clientName, string secret);
 
         void Initialize(string uri);
 

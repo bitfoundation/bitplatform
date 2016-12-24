@@ -9,6 +9,7 @@ using Foundation.Api.Middlewares.SignalR;
 using Microsoft.AspNet.SignalR.Client.Transports;
 using Foundation.Api.Middlewares.SignalR.Implementations;
 using Foundation.Test.Api.Middlewares.SignalR;
+using IdentityModel.Client;
 
 namespace Foundation.Test.Server
 {
@@ -180,6 +181,13 @@ namespace Foundation.Test.Server
             client.BaseAddress = new Uri(Uri);
 
             return client;
+        }
+
+        public virtual TokenClient BuildTokenClient(string clientName, string secret)
+        {
+            TokenClient tokenClient = new TokenClient($@"{Uri}core/connect/token", clientName, secret, innerHttpMessageHandler: GetHttpMessageHandler());
+
+            return tokenClient;
         }
     }
 }
