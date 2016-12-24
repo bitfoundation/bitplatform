@@ -15,11 +15,11 @@ namespace IdentityServer.Test
 
         }
 
-        public IdentityServerTestEnvironment(bool useProxyBasedDependencyManager = true) :
+        public IdentityServerTestEnvironment(bool useProxyBasedDependencyManager = true, bool useRealServer = true) :
             this(new TestEnvironmentArgs
             {
                 UseHttps = false,
-                UseRealServer = true,
+                UseRealServer = useRealServer,
                 UseProxyBasedDependencyManager = useProxyBasedDependencyManager,
                 Port = 8080,
                 CustomDependenciesManagerProvider = new IdentityServerTestDependenciesManagerProvider(),
