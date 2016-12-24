@@ -65,6 +65,41 @@ namespace IdentityServer.Test.Api.Implementations
                     AuthorizationCodeLifetime = 86400 /*1 Day*/,
                     AccessTokenType = AccessTokenType.Jwt,
                     AllowAccessToAllCustomGrantTypes = true
+                },
+                new Client
+                {
+                    ClientName = "Test2",
+                    Enabled = true,
+                    ClientId = "Test2",
+                    ClientSecrets = new List<Secret>
+                    {
+                        new Secret("secret".Sha512())
+                    },
+                    Flow = Flows.ResourceOwner,
+                    AllowedScopes = new List<string>
+                    {
+                        Constants.StandardScopes.OpenId,
+                        Constants.StandardScopes.Profile,
+                        "user_info"
+                    },
+                    ClientUri = "http://test.com/",
+                    RequireConsent = false,
+                    RedirectUris = new List<string>
+                    {
+                        "http://127.0.0.1/SignIn"
+                    },
+                    PostLogoutRedirectUris = new List<string>
+                    {
+                        "http://127.0.0.1/SignOut"
+                    },
+                    AllowAccessToAllScopes = true,
+                    AlwaysSendClientClaims = true,
+                    IncludeJwtId = true,
+                    IdentityTokenLifetime = 86400 /*1 Day*/,
+                    AccessTokenLifetime = 86400 /*1 Day*/,
+                    AuthorizationCodeLifetime = 86400 /*1 Day*/,
+                    AccessTokenType = AccessTokenType.Jwt,
+                    AllowAccessToAllCustomGrantTypes = true
                 }
             };
         }

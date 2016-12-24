@@ -13,7 +13,7 @@ namespace IdentityServer.Test.Api.Implementations
         public virtual string UserId { get; set; }
     }
 
-    public class TestUserService: UserServiceBase
+    public class TestUserService : UserServiceBase
     {
         private readonly List<LocalUser> _localUsers = new List<LocalUser>
         {
