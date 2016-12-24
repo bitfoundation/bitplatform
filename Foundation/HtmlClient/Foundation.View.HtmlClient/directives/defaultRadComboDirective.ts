@@ -251,6 +251,13 @@ module Foundation.View.Directives {
                             if (dataSource.options.schema.model.fields[comboOptions.dataValueField] == null)
                                 throw new Error(`Model has no property named ${comboOptions.dataValueField} to be used as value field`);
 
+                            if (attributes.onInit != null) {
+                                let onInitFN = $parse(attributes.onInit);
+                                if (typeof onInitFN == 'function') {
+                                    onInitFN($scope, { comboOptions: comboOptions });
+                                }
+                            }
+
                             $scope[attributes["isolatedOptionsKey"]] = comboOptions;
 
                         });

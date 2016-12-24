@@ -130,6 +130,13 @@ module Foundation.View.Directives {
                                 treeViewOptions.template = itemTemplate;
                             }
 
+                            if (attributes.onInit != null) {
+                                let onInitFN = $parse(attributes.onInit);
+                                if (typeof onInitFN == 'function') {
+                                    onInitFN($scope, { treeViewOptions: treeViewOptions });
+                                }
+                            }
+
                             $scope[attributes["isolatedOptionsKey"]] = treeViewOptions;
 
                         });

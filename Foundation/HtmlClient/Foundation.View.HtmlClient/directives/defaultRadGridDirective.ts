@@ -434,6 +434,13 @@ module Foundation.View.Directives {
 
                             gridOptions.columns = columns;
 
+                            if (attributes.onInit != null) {
+                                let onInitFN = $parse(attributes.onInit);
+                                if (typeof onInitFN == 'function') {
+                                    onInitFN($scope, { gridOptions: gridOptions });
+                                }
+                            }
+
                             $scope[attributes["isolatedOptionsKey"]] = gridOptions;
                         });
                     });

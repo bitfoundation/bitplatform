@@ -231,6 +231,13 @@ module Foundation.View.Directives {
                             if (dataSource.options.schema.model.fields[multiSelectOptions.dataValueField] == null)
                                 throw new Error(`Model has no property named ${multiSelectOptions.dataValueField} to be used as value field`);
 
+                            if (attributes.onInit != null) {
+                                let onInitFN = $parse(attributes.onInit);
+                                if (typeof onInitFN == 'function') {
+                                    onInitFN($scope, { multiSelectOptions: multiSelectOptions });
+                                }
+                            }
+
                             $scope[attributes["isolatedOptionsKey"]] = multiSelectOptions;
 
                         });
