@@ -36,7 +36,17 @@ namespace IdentityServer.Api.Implementations
                              {
                                  ILogger logger = scope.Resolve<ILogger>();
 
-                                 string message = string.Format(func(), parameters);
+                                 string message = null;
+
+                                 try
+                                 {
+                                     message = string.Format(func(), parameters);
+                                 }
+                                 catch
+                                 {
+                                     message = func();
+                                 }
+
                                  if (exception != null)
                                      logger.LogException(exception, message);
                                  else if (level == LogLevel.Warn)
