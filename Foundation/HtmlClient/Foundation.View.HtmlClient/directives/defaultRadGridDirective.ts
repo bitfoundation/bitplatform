@@ -65,6 +65,19 @@ module Foundation.View.Directives {
                         attrs["toolbarTemplateId"] = toolbarTemplateId;
                     }
 
+                    const detailTemplate = angular.element(element)
+                        .children("[type='detail/template']");
+
+                    if (detailTemplate.length != 0) {
+
+                        const detailTemplateId = guidUtils.newGuid();
+
+                        detailTemplate.attr("id", detailTemplateId)
+                            .insertAfter(element);
+
+                        attrs["detailTemplateId"] = detailTemplateId;
+                    }
+
                     return gridTemplate;
                 },
                 link($scope: ng.IScope, element: JQuery, attributes: any) {
@@ -181,8 +194,8 @@ module Foundation.View.Directives {
 
                             viewTemplateHtml = viewTemplateHtml
                                 .replace("<tr",
-                                    `<tr data-uid='#: uid #' rad-grid-row ng-model='::dataItem' isolatedOptionsKey='${
-                                    attributes["isolatedOptionsKey"]}'`);
+                                `<tr class="k-master-row" data-uid='#: uid #' rad-grid-row ng-model='::dataItem' isolatedOptionsKey='${
+                                attributes["isolatedOptionsKey"]}'`);
 
                             viewTemplateElement.remove();
 
@@ -252,6 +265,19 @@ module Foundation.View.Directives {
                                 const toolbar: any = kendo.template(toolbarTemplateHtml);
 
                                 gridOptions.toolbar = toolbar;
+                            }
+
+                            if (attributes["detailTemplateId"] != null) {
+
+                                const detailTemplateElement = angular.element("#" + attributes["detailTemplateId"]);
+
+                                const detailTemplateHtml = detailTemplateElement.html();
+
+                                detailTemplateElement.remove();
+
+                                const detail: any = kendo.template(detailTemplateHtml);
+
+                                gridOptions.detailTemplate = detail;
                             }
 
                             const compiledViewTemplate = angular.element(viewTemplateHtml);

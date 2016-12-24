@@ -11,8 +11,14 @@
             <rad-grid-save-button>Save</rad-grid-save-button>
             <rad-grid-cancel-button>Cancel</rad-grid-cancel-button>
         </script>
+        <script type="detail/template">
+            <div ng-init="vm.onDetailInit(dataItem)">
+                {{::dataItem.Name}}
+            </div>
+        </script>
         <script type="view/template">
             <tr>
+                <td detail-button></td>
                 <td name="Id" title="{{::'Id' | translate}}">
                     {{::dataItem.Id}}
                 </td>

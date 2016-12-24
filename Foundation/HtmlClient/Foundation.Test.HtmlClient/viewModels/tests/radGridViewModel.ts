@@ -22,5 +22,12 @@
             parentEntity.Name += "?";
             this.$document.attr("title", parentEntity.Name);
         }
+
+        @ViewModel.Command()
+        public async onDetailInit(data: Model.DomainModels.ParentEntity): Promise<void> {
+
+            console.warn(data.Id);
+
+        }
     }
 }
