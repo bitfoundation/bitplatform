@@ -34,10 +34,7 @@ namespace Foundation.Test.Api.ApiControllers
         public virtual IQueryable<ChildEntity> Get()
         {
             return _testRepository
-                .GetAll()
-                .Include(c => c.ParentEntity)
-                .ToList()
-                .AsQueryable();
+                .GetAll();
         }
 
         [Get]
