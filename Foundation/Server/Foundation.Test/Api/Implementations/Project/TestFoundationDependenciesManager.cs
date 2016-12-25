@@ -12,10 +12,12 @@ using Foundation.Core.Contracts;
 using Foundation.Core.Contracts.Project;
 using Foundation.Core.Implementations;
 using Foundation.DataAccess.Contracts;
+using Foundation.DataAccess.Implementations;
 using Foundation.DataAccess.Implementations.EntityFrameworkCore;
 using Foundation.Test.Api.Middlewares;
 using Foundation.Test.DataAccess.Implementations;
 using Foundation.Test.Model.Implementations;
+using Foundation.Test.Properties;
 using System.Reflection;
 using System.Web.Http;
 
@@ -44,6 +46,7 @@ namespace Foundation.Test.Api.Implementations.Project
             dependencyManager.Register<ILogger, DefaultLogger>();
             dependencyManager.Register<IUserInformationProvider, DefaultUserInformationProvider>();
             dependencyManager.Register<ILogStore, ConsoleLogStore>();
+            dependencyManager.Register<IDbConnectionProvider, DefaultSqlDbConnectionProvider>();
 
             dependencyManager.Register<IDateTimeProvider, DefaultDateTimeProvider>(lifeCycle: DependencyLifeCycle.SingleInstance);
             dependencyManager.Register<IRandomStringProvider, DefaultRandomStringProvider>(lifeCycle: DependencyLifeCycle.SingleInstance);
@@ -114,7 +117,10 @@ namespace Foundation.Test.Api.Implementations.Project
 
             dependencyManager.RegisterGeneric(typeof(IEntityWithDefaultGuidKeyRepository<>).GetTypeInfo(), typeof(TestEfEntityWithDefaultGuidKeyRepository<>).GetTypeInfo(), DependencyLifeCycle.InstancePerLifetimeScope);
 
-            dependencyManager.RegisterDbContext<TestDbContext, InMemoryDbContextObjectsProvider>();
+            if (Settings.Default.UseInMemoryDatabase)
+                dependencyManager.RegisterDbContext<TestDbContext, InMemoryDbContextObjectsProvider>();
+            else
+                dependencyManager.RegisterDbContext<TestDbContext, SqlDbContextObjectsProvider>();
 
             dependencyManager.RegisterDtoModelMapper();
 

@@ -1,6 +1,7 @@
 ﻿using System;
 using Foundation.Core.Contracts;
 using Foundation.Core.Models;
+using Foundation.Test.Properties;
 using System.Collections.Generic;
 
 namespace Foundation.Test.Api.Implementations
@@ -74,8 +75,8 @@ namespace Foundation.Test.Api.Implementations
                         new EnvironmentConfig { Key = "DefaultPageTemplatePath", Value = @".\bit-framework\Foundation\Server\Foundation.Test\defaultPageTemplate.cshtml" },
                         new EnvironmentConfig { Key = "IdentityServerCertificatePath", Value = @"..\..\IdentityServerCertificate.pfx" },
                         new EnvironmentConfig { Key = "StaticFilesRelativePath", Value = @"..\..\..\..\..\..\" },
-                        new EnvironmentConfig { Key = "TestDbConnectionString", Value = @"TestDbConnectionString" + Guid.NewGuid() },
-                        new EnvironmentConfig { Key = "FoundationReadDbConnectionString", Value = @"TestDbConnectionString" + Guid.NewGuid() },
+                        new EnvironmentConfig { Key = "TestDbConnectionString", Value = Settings.Default.UseInMemoryDatabase ? (@"TestDbConnectionString" + Guid.NewGuid()) : Settings.Default.TestDbConnectionString  },
+                        new EnvironmentConfig { Key = "FoundationReadDbConnectionString", Value = Settings.Default.UseInMemoryDatabase ? (@"FoundationReadDbConnectionString" + Guid.NewGuid()) : Settings.Default.FoundationReadDbConnectionString },
                         new EnvironmentConfig { Key = "IdentityCertificatePassword" , Value = "P@ssw0rd" },
                         new EnvironmentConfig { Key = "ClientSideAccessibleConfigTest", Value = true, AccessibleInClientSide = true},
                         new EnvironmentConfig { Key = "ClientHostBaseUri", Value = "http://127.0.0.1" , AccessibleInClientSide = true },

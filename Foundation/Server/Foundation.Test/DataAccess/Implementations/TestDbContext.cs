@@ -15,6 +15,11 @@ namespace Foundation.Test.DataAccess.Implementations
 
         }
 
+        public TestDbContext(DbContextOptions options)
+            : base(options)
+        {
+        }
+
         public TestDbContext(IAppEnvironmentProvider appEnvironmentProvider, IDbContextObjectsProvider dbContextCreationOptionsProvider)
               : base(appEnvironmentProvider.GetActiveAppEnvironment().GetConfig<string>("TestDbConnectionString"), dbContextCreationOptionsProvider)
         {
