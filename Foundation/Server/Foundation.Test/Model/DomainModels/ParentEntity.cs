@@ -21,7 +21,6 @@ namespace Foundation.Test.Model.DomainModels
         public virtual DateTimeOffset? Date { get; set; }
 
         [ConcurrencyCheck]
-        [DatabaseGenerated(DatabaseGeneratedOption.Computed)]
         public virtual long Version { get; set; }
 
         [InverseProperty(nameof(ChildEntity.ParentEntity))]

@@ -17,7 +17,6 @@ namespace Foundation.Test.Model.DomainModels
         public virtual string Name { get; set; }
 
         [ConcurrencyCheck]
-        [DatabaseGenerated(DatabaseGeneratedOption.Computed)]
         public virtual long Version { get; set; }
 
         [ForeignKey(nameof(ParentEntityId))]

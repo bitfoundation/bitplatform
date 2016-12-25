@@ -25,7 +25,6 @@ namespace Foundation.Model.DomainModels
         public virtual string UserId { get; set; }
 
         [ConcurrencyCheck]
-        [DatabaseGenerated(DatabaseGeneratedOption.Computed)]
         public virtual long Version { get; set; }
     }
 }
