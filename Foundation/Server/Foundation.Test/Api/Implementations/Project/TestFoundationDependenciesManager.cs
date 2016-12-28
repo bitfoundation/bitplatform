@@ -118,9 +118,9 @@ namespace Foundation.Test.Api.Implementations.Project
             dependencyManager.RegisterGeneric(typeof(IEntityWithDefaultGuidKeyRepository<>).GetTypeInfo(), typeof(TestEfEntityWithDefaultGuidKeyRepository<>).GetTypeInfo(), DependencyLifeCycle.InstancePerLifetimeScope);
 
             if (Settings.Default.UseInMemoryDatabase)
-                dependencyManager.RegisterDbContext<TestDbContext, InMemoryDbContextObjectsProvider>();
+                dependencyManager.RegisterEfCoreDbContext<TestDbContext, InMemoryDbContextObjectsProvider>();
             else
-                dependencyManager.RegisterDbContext<TestDbContext, SqlDbContextObjectsProvider>();
+                dependencyManager.RegisterEfCoreDbContext<TestDbContext, SqlDbContextObjectsProvider>();
 
             dependencyManager.RegisterDtoModelMapper();
 
