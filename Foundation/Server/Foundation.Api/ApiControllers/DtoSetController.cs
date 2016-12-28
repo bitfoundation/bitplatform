@@ -36,6 +36,8 @@ namespace Foundation.Api.ApiControllers
         /// </summary>
         public virtual IDtoModelMapper<TDto, TModel> DtoModelMapper { get; set; }
 
+        public virtual IEnumerable<IAsyncQueryableExecuter> AsyncQueryableExecuters { get; set; }
+
         protected virtual TModel FromDtoToModel(TDto dto)
         {
             return DtoModelMapper.FromDtoToModel(dto);
@@ -57,7 +59,17 @@ namespace Foundation.Api.ApiControllers
         {
             IQueryable<TDto> baseQuery = KeyWhereBuilder<TDto, TKey>.ApplyKeyWhere(GetAll(), key);
 
-            TDto dtoResult = baseQuery.FirstOrDefault();
+            IAsyncQueryableExecuter asyncQueryableExecuterToUser = null;
+
+            if (AsyncQueryableExecuters != null)
+                asyncQueryableExecuterToUser = AsyncQueryableExecuters.FirstOrDefault(asyncQueryableExecuter => asyncQueryableExecuter.SupportsAsyncExecution<TDto>(baseQuery));
+
+            TDto dtoResult = default(TDto);
+
+            if (asyncQueryableExecuterToUser != null)
+                dtoResult = await asyncQueryableExecuterToUser.FirstOrDefaultAsync(baseQuery, cancellationToken);
+            else
+                dtoResult = baseQuery.FirstOrDefault();
 
             if (dtoResult == null)
                 throw new ResourceNotFoundException();
