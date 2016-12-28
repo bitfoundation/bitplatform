@@ -11,7 +11,7 @@ namespace Foundation.Test.Api.ApiControllers
     public class TestComplexController : DtoController<TestComplexDto>
     {
         [Get]
-        public virtual IQueryable<TestComplexDto> Get()
+        public virtual TestComplexDto[] Get()
         {
             return new[]
             {
@@ -29,7 +29,7 @@ namespace Foundation.Test.Api.ApiControllers
                         Name = "Test2"
                     }
                 }
-            }.AsQueryable();
+            };
         }
 
         [Get]

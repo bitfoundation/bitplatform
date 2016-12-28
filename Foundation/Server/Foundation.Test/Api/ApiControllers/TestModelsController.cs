@@ -263,13 +263,13 @@ namespace Foundation.Test.Api.ApiControllers
 
         [Function]
         [Parameter("val", typeof(long))]
-        public virtual IQueryable<TestModel> GetTestModelsByStringPropertyValue([FromODataUri]long val)
+        public virtual TestModel[] GetTestModelsByStringPropertyValue([FromODataUri]long val)
         {
             return new[]
             {
                 new TestModel { Id = 1, DateProperty = DateTimeOffset.Now, StringProperty = "String1", Version = 1 },
                 new TestModel { Id = 2, DateProperty = DateTimeOffset.Now, StringProperty = "String2", Version = 2 }
-            }.AsQueryable();
+            };
         }
 
         [Action]
@@ -289,7 +289,7 @@ namespace Foundation.Test.Api.ApiControllers
         }
 
         [Function]
-        public virtual IQueryable<TestModel> GetSomeTestModelsForTest()
+        public virtual TestModel[] GetSomeTestModelsForTest()
         {
             return new[] {
                 new TestModel
@@ -298,7 +298,7 @@ namespace Foundation.Test.Api.ApiControllers
                     DateProperty = new DateTimeOffset(2016, 1, 1, 10, 30, 0, TimeSpan.Zero),
                     Version = 1
                 }
-            }.AsQueryable();
+            };
         }
 
         [Action]

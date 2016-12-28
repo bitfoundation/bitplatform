@@ -24,9 +24,9 @@ namespace Foundation.Test.Api.ApiControllers
         }
 
         [Get]
-        public virtual IQueryable<ValidationSampleDto> Get()
+        public virtual ValidationSampleDto[] Get()
         {
-            return new ValidationSampleDto[] { }.AsQueryable();
+            return new ValidationSampleDto[] { };
         }
     }
 }

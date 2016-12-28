@@ -67,12 +67,12 @@ namespace Foundation.Test.Api.ApiControllers
         }
 
         [Function]
-        public virtual IQueryable<ParentEntity> GetTestData()
+        public virtual ParentEntity[] GetTestData()
         {
             return new[]
             {
                 new ParentEntity { Id = 1, Name = "Test", TestModel = new TestModel { Id = 1, StringProperty = "String1" } }
-            }.AsQueryable();
+            };
         }
     }
 }
