@@ -204,12 +204,14 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Contracts\IAsyncQueryableExecuter.cs" />
     <Compile Include="Contracts\IDbConnectionProvider.cs" />
     <Compile Include="Contracts\EntityFrameworkCore\IDbContextObjectsProvider.cs" />
     <Compile Include="Contracts\IEntityWithDefaultGuidKeyRepository.cs" />
     <Compile Include="Contracts\IEntityWithDefaultKeyRepository.cs" />
     <Compile Include="Contracts\IRepository.cs" />
     <Compile Include="Implementations\DefaultDtoModelMapper.cs" />
+    <Compile Include="Implementations\EntityFrameworkCore\EfCoreAsyncQueryableExecuter.cs" />
     <Compile Include="Implementations\EntityFrameworkCore\EfEntityWithDefaultGuidKeyRepository.cs" />
     <Compile Include="Implementations\EntityFrameworkCore\EfEntityWithDefaultKeyRepository.cs" />
     <Compile Include="Implementations\EntityFrameworkCore\InMemoryDbContextObjectsProvider.cs" />
