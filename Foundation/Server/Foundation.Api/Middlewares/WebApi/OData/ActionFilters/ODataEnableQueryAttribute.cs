@@ -78,13 +78,13 @@ namespace Foundation.Api.Middlewares.WebApi.OData.ActionFilters
 
                             globalODataQuerySettings.PageSize = null; // ApplyTo will enumerates the query for values other than null
 
+                            if (currentOdataQueryOptions.Filter != null)
+                            {
+                                objContent.Value = currentOdataQueryOptions.Filter.ApplyTo(query: (IQueryable)objContent.Value, querySettings: globalODataQuerySettings);
+                            }
+
                             if (currentOdataQueryOptions.Count?.RawValue == "true" && pageSize.HasValue == true)
                             {
-                                if (currentOdataQueryOptions.Filter != null)
-                                {
-                                    objContent.Value = currentOdataQueryOptions.Filter.ApplyTo(query: (IQueryable)objContent.Value, querySettings: globalODataQuerySettings);
-                                }
-
                                 long count = await (Task<long>)typeof(ODataEnableQueryAttribute).GetMethod(nameof(GetCountAsync)).MakeGenericMethod(queryElementType).Invoke(this, new object[] { objContent.Value, asyncQueryableExecuterToUse, cancellationToken });
 
                                 actionExecutedContext.Request.Properties["System.Web.OData.TotalCountFunc"] = new Func<long>(() => count);
