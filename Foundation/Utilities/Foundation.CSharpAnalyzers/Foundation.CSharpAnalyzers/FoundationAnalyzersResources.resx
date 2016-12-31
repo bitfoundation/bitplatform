@@ -144,4 +144,13 @@
   <data name="DateTimeOffsetInsteadOfDateTimeAnalyzerTitle" xml:space="preserve">
     <value>Replace DateTime usage with DateTimeOffset</value>
   </data>
+  <data name="PropertyAccessorsInternalModifierAnalyzerDescription" xml:space="preserve">
+    <value>Analyzer which deny you from using internal on your properties accessors</value>
+  </data>
+  <data name="PropertyAccessorsInternalModifierAnalyzerMessage" xml:space="preserve">
+    <value>Property's accessors may not be internal</value>
+  </data>
+  <data name="PropertyAccessorsInternalModifierAnalyzerTitle" xml:space="preserve">
+    <value>Remove internal from modifiers of your property's accessors</value>
+  </data>
 </root>

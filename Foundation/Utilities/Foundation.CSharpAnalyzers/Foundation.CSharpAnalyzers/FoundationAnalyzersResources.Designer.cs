@@ -141,5 +141,32 @@ namespace Foundation.CSharpAnalyzers {
                 return ResourceManager.GetString("DateTimeOffsetInsteadOfDateTimeAnalyzerTitle", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Analyzer which deny you from using internal on your properties accessors.
+        /// </summary>
+        public static string PropertyAccessorsInternalModifierAnalyzerDescription {
+            get {
+                return ResourceManager.GetString("PropertyAccessorsInternalModifierAnalyzerDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Property&apos;s accessors may not be internal.
+        /// </summary>
+        public static string PropertyAccessorsInternalModifierAnalyzerMessage {
+            get {
+                return ResourceManager.GetString("PropertyAccessorsInternalModifierAnalyzerMessage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Remove internal from modifiers of your property&apos;s accessors.
+        /// </summary>
+        public static string PropertyAccessorsInternalModifierAnalyzerTitle {
+            get {
+                return ResourceManager.GetString("PropertyAccessorsInternalModifierAnalyzerTitle", resourceCulture);
+            }
+        }
     }
 }

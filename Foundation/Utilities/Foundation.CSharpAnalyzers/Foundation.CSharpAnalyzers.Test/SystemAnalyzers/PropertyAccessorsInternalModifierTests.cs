@@ -9,34 +9,30 @@ using System;
 namespace Foundation.CSharpAnalyzers.Test.SystemAnalyzers
 {
     [TestClass]
-    public class ClassWithoutModifierAnalyzerTest : CodeFixVerifier
+    public class PropertyAccessorsInternalModifierTests : CodeFixVerifier
     {
         [TestMethod]
         [TestCategory("Analyzer")]
-        public void FindClassesWithoutModifier()
+        public void FindPropertiesWithInternalModifiersOnTheirAccessors()
         {
-            const string sourceCodeWithClassWithoutModifier = @"
+            const string sourceCodeOfPropertiesWithInternalModifiersOnTheirAccessors = @"
     namespace MyNamespace
     {
         public class MyClass
         {   
-
-        }
-
-        class MyClass
-        {   
-
+            public int Id2 { get; set; }
+            public int Id { get; internal set; }
         }
     }";
             DiagnosticResult classWithoutModifier = new DiagnosticResult
             {
-                Id = nameof(ClassWithoutModifierAnalyzer),
-                Message = FoundationAnalyzersResources.ClassWithoutModifierAnalyzerMessage,
+                Id = nameof(PropertyAccessorsInternalModifierAnalyzer),
+                Message = FoundationAnalyzersResources.PropertyAccessorsInternalModifierAnalyzerMessage,
                 Severity = DiagnosticSeverity.Error,
-                Locations = new[] { new DiagnosticResultLocation("Test0.cs", 9, 9) }
+                Locations = new[] { new DiagnosticResultLocation("Test0.cs", 7, 13) }
             };
 
-            VerifyCSharpDiagnostic(sourceCodeWithClassWithoutModifier, classWithoutModifier);
+            VerifyCSharpDiagnostic(sourceCodeOfPropertiesWithInternalModifiersOnTheirAccessors, classWithoutModifier);
         }
 
         protected override CodeFixProvider GetCSharpCodeFixProvider()
@@ -46,7 +42,7 @@ namespace Foundation.CSharpAnalyzers.Test.SystemAnalyzers
 
         protected override DiagnosticAnalyzer GetCSharpDiagnosticAnalyzer()
         {
-            return new ClassWithoutModifierAnalyzer();
+            return new PropertyAccessorsInternalModifierAnalyzer();
         }
     }
 }
