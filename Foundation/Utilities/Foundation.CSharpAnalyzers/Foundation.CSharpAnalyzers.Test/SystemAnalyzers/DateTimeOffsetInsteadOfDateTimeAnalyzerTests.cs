@@ -1,11 +1,11 @@
-﻿using Foundation.CSharpAnalyzers.System;
+﻿using Foundation.CSharpAnalyzers.SystemAnalyzers;
 using Foundation.CSharpAnalyzers.Test.Helpers;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CodeFixes;
 using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace Foundation.CSharpAnalyzers.Test.System
+namespace Foundation.CSharpAnalyzers.Test.SystemAnalyzers
 {
     [TestClass]
     public class DateTimeOffsetInsteadOfDateTimeAnalyzerTests : CodeFixVerifier

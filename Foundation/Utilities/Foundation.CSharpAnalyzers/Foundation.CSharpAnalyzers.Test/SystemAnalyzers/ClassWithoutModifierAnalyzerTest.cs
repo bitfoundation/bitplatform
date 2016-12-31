@@ -6,7 +6,7 @@ using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 
-namespace Foundation.CSharpAnalyzers.Test.System
+namespace Foundation.CSharpAnalyzers.Test.SystemAnalyzers
 {
     [TestClass]
     public class ClassWithoutModifierAnalyzerTest : CodeFixVerifier

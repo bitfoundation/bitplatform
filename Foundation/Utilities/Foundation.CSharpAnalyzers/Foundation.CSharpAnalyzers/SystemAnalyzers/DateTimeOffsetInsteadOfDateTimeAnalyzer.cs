@@ -4,7 +4,7 @@ using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Diagnostics;
 
-namespace Foundation.CSharpAnalyzers.System
+namespace Foundation.CSharpAnalyzers.SystemAnalyzers
 {
     [DiagnosticAnalyzer(LanguageNames.CSharp)]
     public class DateTimeOffsetInsteadOfDateTimeAnalyzer : DiagnosticAnalyzer
