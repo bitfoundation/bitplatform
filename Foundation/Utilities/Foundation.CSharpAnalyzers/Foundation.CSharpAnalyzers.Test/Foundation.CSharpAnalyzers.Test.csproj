@@ -112,6 +112,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Foundation\Server\Api\ApiControllers\CamelCaseParameterNameAnalyzerTests.cs" />
+    <Compile Include="System\ClassWithoutModifierAnalyzerTest.cs" />
     <Compile Include="System\DateTimeOffsetInsteadOfDateTimeAnalyzerTests.cs" />
     <Compile Include="Helpers\DiagnosticResult.cs" />
     <Compile Include="Helpers\DiagnosticVerifier.cs" />

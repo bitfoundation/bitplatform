@@ -8,10 +8,9 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-using System.Reflection;
-
 namespace Foundation.CSharpAnalyzers {
     using System;
+    using System.Reflection;
     
     
     /// <summary>
@@ -90,6 +89,33 @@ namespace Foundation.CSharpAnalyzers {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Analzyer which enforces usage modifiers in classes.
+        /// </summary>
+        public static string ClassWithoutModifierAnalyzerDescription {
+            get {
+                return ResourceManager.GetString("ClassWithoutModifierAnalyzerDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Add modifier to your class.
+        /// </summary>
+        public static string ClassWithoutModifierAnalyzerMessage {
+            get {
+                return ResourceManager.GetString("ClassWithoutModifierAnalyzerMessage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Add modifier to your class.
+        /// </summary>
+        public static string ClassWithoutModifierAnalyzerTitle {
+            get {
+                return ResourceManager.GetString("ClassWithoutModifierAnalyzerTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Analzyer which enforces usage of DateTimeOffset instead of DateTime.
         /// </summary>
         public static string DateTimeOffsetInsteadOfDateTimeAnalyzerDescription {
@@ -108,7 +134,7 @@ namespace Foundation.CSharpAnalyzers {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Remove DateTime usage with DateTimeOffset.
+        ///   Looks up a localized string similar to Replace DateTime usage with DateTimeOffset.
         /// </summary>
         public static string DateTimeOffsetInsteadOfDateTimeAnalyzerTitle {
             get {

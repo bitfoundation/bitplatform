@@ -126,6 +126,15 @@
   <data name="CamelCaseParameterNameAnalyzerTitle" xml:space="preserve">
     <value>Use caml case parameter name</value>
   </data>
+  <data name="ClassWithoutModifierAnalyzerDescription" xml:space="preserve">
+    <value>Analzyer which enforces usage modifiers in classes</value>
+  </data>
+  <data name="ClassWithoutModifierAnalyzerMessage" xml:space="preserve">
+    <value>Add modifier to your class</value>
+  </data>
+  <data name="ClassWithoutModifierAnalyzerTitle" xml:space="preserve">
+    <value>Add modifier to your class</value>
+  </data>
   <data name="DateTimeOffsetInsteadOfDateTimeAnalyzerDescription" xml:space="preserve">
     <value>Analzyer which enforces usage of DateTimeOffset instead of DateTime</value>
   </data>
@@ -133,6 +142,6 @@
     <value>Use DateTimeOffset instead of DateTime</value>
   </data>
   <data name="DateTimeOffsetInsteadOfDateTimeAnalyzerTitle" xml:space="preserve">
-    <value>Remove DateTime usage with DateTimeOffset</value>
+    <value>Replace DateTime usage with DateTimeOffset</value>
   </data>
 </root>

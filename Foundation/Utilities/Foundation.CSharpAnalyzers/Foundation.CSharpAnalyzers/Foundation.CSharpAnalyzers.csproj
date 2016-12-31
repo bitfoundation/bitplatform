@@ -33,8 +33,9 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="Foundation\Server\Api\ApiControllers\CamelCaseParameterNameAnalyzer.cs" />
-    <Compile Include="System\DateTimeOffsetInsteadOfDateTimeCodeFixProvider.cs" />
-    <Compile Include="System\DateTimeOffsetInsteadOfDateTimeAnalyzer.cs" />
+    <Compile Include="SystemAnalyzers\ClassWithoutModifierAnalyzer.cs" />
+    <Compile Include="SystemAnalyzers\DateTimeOffsetInsteadOfDateTimeCodeFixProvider.cs" />
+    <Compile Include="SystemAnalyzers\DateTimeOffsetInsteadOfDateTimeAnalyzer.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="FoundationAnalyzersResources.Designer.cs">
       <AutoGen>True</AutoGen>
