@@ -202,8 +202,13 @@
                             }
                             if (members["$IsArchived"] != null && e.IsArchived == null)
                                 e.IsArchived = false;
-                            if (members["$Version"] != null && e.Version == null)
-                                e.Version = "0";
+                            if (members["$Version"] != null) {
+                                if (e.Version == null) {
+                                    e.Version = "0";
+                                }
+                                if (e.Version != "0")
+                                    throw new Error('Recently an entity has created with version that is not equal zero!')
+                            }
                             if (members["$ISV"] != null)
                                 e.ISV = false;
                         }
