@@ -35,7 +35,7 @@ namespace Foundation.Test.HtmlClient.ThirdPartyLibrariesTests.KendoDataSourceTes
                     .OfType<ILogger>()
                     .Last();
 
-                Assert.IsTrue(((string)logger.LogData.Single(ld => ld.Key == nameof(IRequestInformationProvider.RequestUri)).Value).Contains("?$count=true&$filter=(StringProperty eq 'Test')"));
+                Assert.IsTrue(((string)logger.LogData.Single(ld => ld.Key == nameof(IRequestInformationProvider.RequestUri)).Value).Contains("?$filter=(StringProperty eq 'Test')"));
             }
         }
 
@@ -63,7 +63,7 @@ namespace Foundation.Test.HtmlClient.ThirdPartyLibrariesTests.KendoDataSourceTes
                     .OfType<ILogger>()
                     .Last();
 
-                Assert.IsTrue(((string)logger.LogData.Single(ld => ld.Key == nameof(IRequestInformationProvider.RequestUri)).Value).Contains("?$count=true&$filter=(StringProperty eq 'String1')"));
+                Assert.IsTrue(((string)logger.LogData.Single(ld => ld.Key == nameof(IRequestInformationProvider.RequestUri)).Value).Contains("?$filter=(StringProperty eq 'String1')"));
             }
         }
     }
