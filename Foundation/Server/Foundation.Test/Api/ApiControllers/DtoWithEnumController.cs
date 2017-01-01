@@ -15,6 +15,13 @@ namespace Foundation.Test.Api.ApiControllers
             return new List<DtoWithEnum> { new DtoWithEnum { Id = 1, Gender = gender } };
         }
 
+        [Action]
+        [Parameter("dto" , typeof(DtoWithEnum))]
+        public virtual bool PostDtoWithEnum(ODataActionParameters actionParameters)
+        {
+            return ((DtoWithEnum)actionParameters["dto"]).Gender == TestGender.Man;
+        }
+
         [Function]
         [Parameter("gender", typeof(TestGender2))]
         public virtual List<DtoWithEnum> GetDtoWithEnumsByGender2([FromODataUri]TestGender2 gender)

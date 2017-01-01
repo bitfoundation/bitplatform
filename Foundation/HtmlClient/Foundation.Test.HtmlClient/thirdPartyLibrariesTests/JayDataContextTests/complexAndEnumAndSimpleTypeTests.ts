@@ -75,4 +75,5 @@ let enumTest = async (): Promise<void> => {
 
     expect(dtoWithEnum2.Test).toBe("Man");
 
+    expect((await context.dtoWithEnum.postDtoWithEnum(dtoWithEnum))).toBe(true);
 };
