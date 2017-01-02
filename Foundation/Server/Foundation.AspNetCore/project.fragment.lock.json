@@ -73,7 +73,7 @@
         "../../../packages/System.Diagnostics.DiagnosticSource.4.3.0/lib/net46/System.Diagnostics.DiagnosticSource.dll": {},
         "../../../packages/System.Diagnostics.Tracing.4.3.0/lib/net462/System.Diagnostics.Tracing.dll": {},
         "../../../packages/System.IO.4.3.0/lib/net462/System.IO.dll": {},
-        "../../../packages/System.IdentityModel.Tokens.Jwt.5.1.0/lib/net451/System.IdentityModel.Tokens.Jwt.dll": {},
+        "../../../packages/System.IdentityModel.Tokens.Jwt.4.0.3.308261200/lib/net45/System.IdentityModel.Tokens.Jwt.dll": {},
         "../../../packages/System.Interactive.Async.3.1.1/lib/net46/System.Interactive.Async.dll": {},
         "../../../packages/System.Net.Http.4.3.0/lib/net46/System.Net.Http.dll": {},
         "../../../packages/System.Reflection.4.3.0/lib/net462/System.Reflection.dll": {},
