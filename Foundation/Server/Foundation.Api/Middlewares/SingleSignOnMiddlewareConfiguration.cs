@@ -5,6 +5,7 @@ using Foundation.Core.Models;
 using IdentityServer3.AccessTokenValidation;
 using IdentityServer3.Core.Models;
 using Owin;
+using System.Net.Http;
 
 namespace Foundation.Api.Middlewares
 {
@@ -49,10 +50,18 @@ namespace Foundation.Api.Middlewares
                 // ValidationMode = ValidationMode.ValidationEndpoint,
                 ValidationMode = ValidationMode.Local,
                 PreserveAccessToken = true,
-                SigningCertificate = _certificateProvider.GetSingleSignOnCertificate()
+                SigningCertificate = _certificateProvider.GetSingleSignOnCertificate(),
+                BackchannelHttpHandler = GetHttpClientHandler(nameof(IdentityServerBearerTokenAuthenticationOptions.BackchannelHttpHandler)),
+                IntrospectionHttpHandler = GetHttpClientHandler(nameof(IdentityServerBearerTokenAuthenticationOptions.IntrospectionHttpHandler)),
+                IssuerName = activeAppEnvironment.Security.SSOServerUrl
             };
 
             owinApp.UseIdentityServerBearerTokenAuthentication(authOptions);
+        }
+
+        protected virtual HttpMessageHandler GetHttpClientHandler(string usage)
+        {
+            return new HttpClientHandler();
         }
     }
 }

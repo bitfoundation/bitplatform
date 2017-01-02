@@ -30,7 +30,7 @@ namespace Foundation.Api.Middlewares
 
                 AppEnvironment activEnvironment = appEnvironmentProvider.GetActiveAppEnvironment();
 
-                _baseRedirectUri = $"{activEnvironment.Security.SSOServerUrl}connect/authorize?scope={string.Join(" ", activEnvironment.Security.Scopes)}&client_id={activEnvironment.Security.ClientName}&redirect_uri={activEnvironment.GetConfig("ClientHostBaseUri", context.Request.Host.Value)}{activEnvironment.GetConfig("ClientHostVirtualPath", "/")}SignIn&response_type=id_token token";
+                _baseRedirectUri = $"{activEnvironment.Security.SSOServerUrl}/connect/authorize?scope={string.Join(" ", activEnvironment.Security.Scopes)}&client_id={activEnvironment.Security.ClientName}&redirect_uri={activEnvironment.GetConfig("ClientHostBaseUri", context.Request.Host.Value)}{activEnvironment.GetConfig("ClientHostVirtualPath", "/")}SignIn&response_type=id_token token";
             }
 
             string nonce = randomStringProvider.GetRandomNonSecureString(12);

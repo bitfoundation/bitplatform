@@ -25,7 +25,7 @@ namespace Foundation.Api.Middlewares
 
                 AppEnvironment activEnvironment = appEnvironmentProvider.GetActiveAppEnvironment();
 
-                _baseRedirectUri = $"{activEnvironment.Security.SSOServerUrl}connect/endsession?post_logout_redirect_uri={activEnvironment.GetConfig("ClientHostBaseUri", context.Request.Host.Value)}{activEnvironment.GetConfig("ClientHostVirtualPath", "/")}SignOut";
+                _baseRedirectUri = $"{activEnvironment.Security.SSOServerUrl}/connect/endsession?post_logout_redirect_uri={activEnvironment.GetConfig("ClientHostBaseUri", context.Request.Host.Value)}{activEnvironment.GetConfig("ClientHostVirtualPath", "/")}SignOut";
             }
 
             context.Response.Redirect(_baseRedirectUri + "&id_token_hint=" + context.Request.Query["id_token"]);

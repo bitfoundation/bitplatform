@@ -38,7 +38,7 @@ namespace Foundation.AspNetCore.Test.Api.Implementations
                     },
                     Security = new EnvironmentSecurity
                     {
-                        SSOServerUrl = "http://127.0.0.1:8080/core/",
+                        SSOServerUrl = "http://127.0.0.1:8080/core",
                         Scopes = new[] { "openid", "profile", "user_info" },
                         ClientName = "Test",
                         ClientSecret = "secret"
