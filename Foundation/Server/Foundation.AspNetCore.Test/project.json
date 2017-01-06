@@ -23,10 +23,10 @@
     "Microsoft.AspNetCore.Mvc.Formatters.Json": "1.1.0",
     "Microsoft.AspNetCore.Routing": "1.1.0",
     "Microsoft.AspNetCore.TestHost": "1.1.0",
-    "Suave": "2.0.0-rc3",
     "Microsoft.CSharp": "4.3.0",
     "System.ComponentModel.Annotations": "4.3.0",
-    "System.Net.Http": "4.3.0"
+    "System.Net.Http": "4.3.0",
+    "Suave": "2.0.0"
   },
 
   "buildOptions": {
