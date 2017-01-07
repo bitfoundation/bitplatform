@@ -11,8 +11,6 @@ namespace Foundation.Test.Model.Dto
 
         public virtual TestGender? Gender { get; set; }
 
-        public virtual TestGender2? Gender2 { get; set; }
-
         public virtual string Test { get; set; }
     }
 
