@@ -6,7 +6,7 @@ module Foundation.Test.Implementations {
     export class FoundationTestPathProvider extends ViewModel.Implementations.DefaultPathProvider {
 
         public getProjectsPath(): Array<{ name: string, path: string }> {
-            return [{ name: "Foundation", path: "/bit-framework/Foundation/HtmlClient" }];
+            return [{ name: "Foundation", path: "bit-framework/Foundation/HtmlClient" }];
         }
 
     }
