@@ -141,6 +141,8 @@
             return this.oDataJSInitPromise;
         }
 
+        public static defaultOfflineDbProvider: "indexedDb" | "webSql" = "indexedDb";
+
         @Core.Log()
         public async getContext<TContext extends $data.EntityContext>(contextName: string, config?: { isOffline?: boolean, jayDataConfig?: any }): Promise<TContext> {
 
@@ -171,7 +173,7 @@
             }
             else {
                 cfg = {
-                    provider: "indexedDb", databaseName: contextName + "V" + this.clientAppProfileManager.getClientAppProfile().version
+                    provider: DefaultEntityContextProvider.defaultOfflineDbProvider, databaseName: contextName + "V" + this.clientAppProfileManager.getClientAppProfile().version
                 }
             }
 
@@ -192,7 +194,7 @@
                         continue;
 
                     memberDefenition.elementType["addEventListener"]("beforeCreate", (sender: any, e: Model.Contracts.ISyncableDto) => {
-                        if ((e["context"] != null && e["context"]["ignoreEntityEvents"] != true && e["context"]["storageProvider"].name == "indexedDb") || (e["storeToken"] != null && e["storeToken"].args.provider == "indexedDb")) {
+                        if ((e["context"] != null && e["context"]["ignoreEntityEvents"] != true && e["context"]["storageProvider"].name == DefaultEntityContextProvider.defaultOfflineDbProvider) || (e["storeToken"] != null && e["storeToken"].args.provider == DefaultEntityContextProvider.defaultOfflineDbProvider)) {
                             const eType = e.getType();
                             const members = eType.memberDefinitions as any;
                             for (let keyMember of members.getKeyProperties()) {
@@ -210,7 +212,7 @@
                     });
 
                     memberDefenition.elementType["addEventListener"]("beforeUpdate", (sender: any, e: Model.Contracts.ISyncableDto) => {
-                        if ((e["context"] != null && e["context"]["ignoreEntityEvents"] != true && e["context"]["storageProvider"].name == "indexedDb") || (e["storeToken"] != null && e["storeToken"].args.provider == "indexedDb")) {
+                        if ((e["context"] != null && e["context"]["ignoreEntityEvents"] != true && e["context"]["storageProvider"].name == DefaultEntityContextProvider.defaultOfflineDbProvider) || (e["storeToken"] != null && e["storeToken"].args.provider == DefaultEntityContextProvider.defaultOfflineDbProvider)) {
                             const eType = e.getType();
                             const members = eType.memberDefinitions;
                             if (members["$ISV"] != null)
@@ -219,7 +221,7 @@
                     });
 
                     memberDefenition.elementType["addEventListener"]("beforeDelete", (sender: any, e: Model.Contracts.ISyncableDto) => {
-                        if (((e["context"] != null && e["context"]["ignoreEntityEvents"] != true && e["context"]["storageProvider"].name == "indexedDb") || (e["storeToken"] != null && e["storeToken"].args.provider == "indexedDb") && (e.Version != null && e.Version != "0"))) {
+                        if (((e["context"] != null && e["context"]["ignoreEntityEvents"] != true && e["context"]["storageProvider"].name == DefaultEntityContextProvider.defaultOfflineDbProvider) || (e["storeToken"] != null && e["storeToken"].args.provider == DefaultEntityContextProvider.defaultOfflineDbProvider) && (e.Version != null && e.Version != "0"))) {
                             const eType = e.getType();
                             const members = eType.memberDefinitions;
                             if (members["$ISV"] != null)
