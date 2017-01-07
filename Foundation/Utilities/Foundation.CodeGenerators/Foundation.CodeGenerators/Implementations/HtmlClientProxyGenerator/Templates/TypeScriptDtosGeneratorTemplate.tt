@@ -17,6 +17,7 @@ declare module <#= dto.DtoSymbol.ContainingNamespace #> {
 		{ #>
 		    <#= prp.GetDocumentationSummary() #>
 			<#= prp.Name #> : <#= prp.Type.GetTypescriptTypeName(useArrayForIEnumerableTypes : true) #>;
+			static <#= prp.Name #> : any;
 		<# } #>
 	}
 }

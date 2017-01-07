@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <PackageManifest Version="2.0.0" xmlns="http://schemas.microsoft.com/developer/vsx-schema/2011" xmlns:d="http://schemas.microsoft.com/developer/vsx-schema-design/2011">
   <Metadata>
-    <Identity Id="Bit.Framework.VSPackage.cdbff2cd-70df-4a4a-85c0-060502b9cd43" Version="0.3.9" Language="en-US" Publisher="Bit Foundation" />
+    <Identity Id="Bit.Framework.VSPackage.cdbff2cd-70df-4a4a-85c0-060502b9cd43" Version="0.4.0" Language="en-US" Publisher="Bit Foundation" />
     <DisplayName>Bit-Framework-VSPackage</DisplayName>
     <Description xml:space="preserve">Bit Framework VSPackage</Description>
     <MoreInfo>https://bit-foundation.com/</MoreInfo>
