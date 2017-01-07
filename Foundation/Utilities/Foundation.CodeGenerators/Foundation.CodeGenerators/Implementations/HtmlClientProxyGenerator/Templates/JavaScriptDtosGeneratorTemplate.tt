@@ -55,10 +55,10 @@
 	<# if(namepsaces.Count==1) { #> var  <#}#> <#= string.Join(".", namepsaces) #> = <#= string.Join(".", namepsaces) #> || {};
 <# } #>
 
-<#= enumType.EnumTypeSymbol.ToDisplayString() #> = $data.createEnum("<#= enumType.EnumTypeSymbol.ToDisplayString() #>", [
+<#= enumType.EnumTypeSymbol.ToDisplayString() #> = $data.createEnum("<#= enumType.EnumTypeSymbol.ToDisplayString() #>", null, $data.String, [
 	<# foreach (EnumMember enumMember in enumType.Members)
 	{ #> 
-		{ name : '<#= enumMember.Name #>' , value : "<#= enumMember.Value #>" },
+		{ name : '<#= enumMember.Name #>' , value : "'<#= enumMember.Value #>'" },
 	<#}#>
 	]);
 <#}#>
