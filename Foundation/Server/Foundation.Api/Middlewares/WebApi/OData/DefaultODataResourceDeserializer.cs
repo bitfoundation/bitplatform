@@ -63,15 +63,6 @@ namespace Foundation.Api.Middlewares.WebApi.OData
                 if (ex.Message != "Does not support untyped value in non-open type.")
                     throw;
             }
-            catch (ArgumentException ex) when (structuralProperty.Value is ODataEnumValue)
-            {
-                if (!string.IsNullOrEmpty(((ODataEnumValue)structuralProperty.Value).Value))
-                {
-                    ODataEnumValue odataEnumValue = ((ODataEnumValue)structuralProperty.Value);
-                    structuralProperty.Value = new ODataEnumValue(odataEnumValue.Value.Replace("'", ""), odataEnumValue.TypeName);
-                    base.ApplyStructuralProperty(resource, structuralProperty, structuredType, readContext);
-                }
-            }
         }
     }
 }

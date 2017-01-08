@@ -78,4 +78,8 @@ let enumTest = async (): Promise<void> => {
     expect((await context.dtoWithEnum.postDtoWithEnum(dtoWithEnum))).toBe(true);
 
     await context.batchExecuteQuery([context.dtoWithEnum.getDtoWithEnumsByGender2(Foundation.Test.Model.Dto.TestGender2.Man), context.dtoWithEnum.getDtoWithEnumsByGender(Foundation.Test.Model.Dto.TestGender.Man)]);
+
+    let enumsArrayTest = await context.dtoWithEnum.testEnumsArray([Foundation.Test.Model.Dto.TestGender2.Man, Foundation.Test.Model.Dto.TestGender2.Man]);
+
+    expect(enumsArrayTest).toBe(true);
 };

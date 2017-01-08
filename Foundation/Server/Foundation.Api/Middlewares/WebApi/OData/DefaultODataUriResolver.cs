@@ -10,7 +10,10 @@ namespace Foundation.Api.Middlewares.WebApi.OData
     /// </summary>
     public class DefaultODataUriResolver : UnqualifiedODataUriResolver
     {
-        private readonly StringAsEnumResolver _stringAsEnumResolver = new StringAsEnumResolver();
+        private readonly StringAsEnumResolver _stringAsEnumResolver = new StringAsEnumResolver
+        {
+            EnableCaseInsensitive = true
+        };
 
         public override bool EnableCaseInsensitive
         {

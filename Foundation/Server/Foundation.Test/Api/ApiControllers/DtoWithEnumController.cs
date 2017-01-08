@@ -16,7 +16,7 @@ namespace Foundation.Test.Api.ApiControllers
         }
 
         [Action]
-        [Parameter("dto" , typeof(DtoWithEnum))]
+        [Parameter("dto", typeof(DtoWithEnum))]
         public virtual bool PostDtoWithEnum(ODataActionParameters actionParameters)
         {
             return ((DtoWithEnum)actionParameters["dto"]).Gender == TestGender.Man;
@@ -27,6 +27,13 @@ namespace Foundation.Test.Api.ApiControllers
         public virtual List<DtoWithEnum> GetDtoWithEnumsByGender2([FromODataUri]TestGender2 gender)
         {
             return new List<DtoWithEnum> { new DtoWithEnum { Id = 1, Test = gender.ToString() } };
+        }
+
+        [Action]
+        [Parameter("enums", typeof(IEnumerable<TestGender2>))]
+        public virtual bool TestEnumsArray(ODataActionParameters parameters)
+        {
+            return ((IEnumerable<TestGender2>)parameters["enums"]).Count() == 2;
         }
     }
 }
