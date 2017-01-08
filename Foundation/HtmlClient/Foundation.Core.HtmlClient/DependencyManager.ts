@@ -620,6 +620,13 @@ module Foundation.Core {
                     return Reflect.construct(originalTarget, args);
                 };
 
+                for (let prp in originalTarget) {
+                    if (originalTarget.hasOwnProperty(prp)) {
+                        target[prp] = originalTarget[prp];
+                    }
+                }
+
+                target.prototype = originalTarget.prototype;
             };
 
             return target;
