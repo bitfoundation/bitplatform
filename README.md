@@ -11,7 +11,7 @@ Requirements:
   
   3- .NET Core VS 2015 Update 3 Tooling Preview 2 (Optional Requirement)
   
-  4- Node JS - NPM - Gulp - Bower installed globally
+  4- Gulp & Bowser installed globally using Node-JS & NPM
   
 Steps:
 
@@ -30,3 +30,37 @@ To run the samples:
   1- Run Visual Studio as Administrator
     
   2- Set Foundation.Test as startup project and run the samples.
+
+Special thanks to:
+
+https://github.com/bit-foundation/TypeScript
+
+https://github.com/bit-foundation/Xamarin.Forms
+
+https://github.com/bit-foundation/jaydata
+
+https://github.com/angular/angular.js/
+
+https://github.com/angular/material
+
+https://github.com/apache/olingo-odata4-js
+
+https://github.com/SignalR/SignalR
+
+https://github.com/telerik/kendo-ui-core
+
+https://github.com/SeleniumHQ/selenium
+
+https://github.com/HangfireIO/Hangfire
+
+https://github.com/IdentityServer/IdentityServer3
+
+https://github.com/OData/WebApi
+
+https://github.com/aspnet/EntityFramework
+
+https://github.com/owin
+
+https://github.com/aspnet/Home
+
+https://github.com/aspnet/KestrelHttpServer
