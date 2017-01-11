@@ -6,27 +6,27 @@
   },
 
   "dependencies": {
-    "dotnet-test-xunit": "2.2.0-preview2-build1029",
-    "xunit": "2.1.0",
     "Autofac": "4.2.1",
-    "Autofac.SignalR2": "4.0.0",
-    "HangFire.Autofac": "2.2.0",
     "Autofac.Owin": "4.0.0",
-    "Microsoft.AspNet.OData": "6.0.0",
-    "Microsoft.AspNet.WebApi": "5.2.3",
-    "Microsoft.AspNet.SignalR": "2.2.1",
-    "Microsoft.Owin.Security": "3.0.1",
-    "Foundation.AspNetCore": "0.0.0-1",
+    "Autofac.SignalR2": "4.0.0",
     "Autofac.WebApi2": "4.0.1",
-    "System.Diagnostics.DiagnosticSource": "4.3.0",
+    "dotnet-test-xunit": "2.2.0-preview2-build1029",
+    "Foundation.AspNetCore": "0.0.1",
+    "HangFire.Autofac": "2.2.0",
+    "Microsoft.AspNet.OData": "6.0.0",
+    "Microsoft.AspNet.SignalR": "2.2.1",
+    "Microsoft.AspNet.WebApi": "5.2.3",
     "Microsoft.AspNetCore.Mvc.Core": "1.1.0",
     "Microsoft.AspNetCore.Mvc.Formatters.Json": "1.1.0",
     "Microsoft.AspNetCore.Routing": "1.1.0",
     "Microsoft.AspNetCore.TestHost": "1.1.0",
     "Microsoft.CSharp": "4.3.0",
+    "Microsoft.Owin.Security": "3.0.1",
+    "Suave": "2.0.0",
     "System.ComponentModel.Annotations": "4.3.0",
+    "System.Diagnostics.DiagnosticSource": "4.3.0",
     "System.Net.Http": "4.3.0",
-    "Suave": "2.0.0"
+    "xunit": "2.1.0"
   },
 
   "buildOptions": {
