@@ -33,11 +33,11 @@ To run the samples:
 
 Special thanks to:
 
-https://github.com/bit-foundation/TypeScript
+https://github.com/Microsoft/TypeScript
 
-https://github.com/bit-foundation/Xamarin.Forms
+https://github.com/xamarin/Xamarin.Forms
 
-https://github.com/bit-foundation/jaydata
+https://github.com/jaystack/jaydata
 
 https://github.com/angular/angular.js/
 
