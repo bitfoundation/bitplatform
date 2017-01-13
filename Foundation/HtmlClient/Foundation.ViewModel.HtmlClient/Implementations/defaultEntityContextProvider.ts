@@ -207,7 +207,7 @@
                                     e.Version = "0";
                                 }
                                 if (e.Version != "0")
-                                    throw new Error('Recently an entity has created with version that is not equal zero!')
+                                    throw new Error('An entity has been created with version other than null or zero.')
                             }
                             if (members["$ISV"] != null)
                                 e.ISV = false;
