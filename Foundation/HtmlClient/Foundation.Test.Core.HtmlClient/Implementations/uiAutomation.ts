@@ -78,6 +78,12 @@ module Foundation.Test.Implementations {
             return this.getBindingContext(element, element.attr("name"));
         }
 
+        public getDtoForm<TDto extends Foundation.Model.Contracts.IDto>(element: JQuery): Foundation.ViewModel.Implementations.DtoFormController<TDto> {
+            if (element == null)
+                throw new Error("element is null");
+            return this.getForm(element) as Foundation.ViewModel.Implementations.DtoFormController<TDto>;
+        }
+
         public updateUI(): void {
             ViewModel.ScopeManager.update$scope(this.$scope);
         }
