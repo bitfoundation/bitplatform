@@ -26,7 +26,7 @@ namespace Foundation.Api.Implementations
 
         }
 
-        protected virtual Exception GetRealException(Exception exp)
+        protected virtual Exception UnWrapException(Exception exp)
         {
             if (exp == null)
                 throw new ArgumentNullException(nameof(exp));
@@ -39,7 +39,7 @@ namespace Foundation.Api.Implementations
 
         public virtual string GetMessage(Exception exp)
         {
-            exp = GetRealException(exp);
+            exp = UnWrapException(exp);
 
             string message = FoundationMetadataBuilder.UnKnownError;
 
@@ -54,7 +54,7 @@ namespace Foundation.Api.Implementations
 
         public virtual string GetReasonPhrase(Exception exp)
         {
-            exp = GetRealException(exp);
+            exp = UnWrapException(exp);
 
             string reasonPhrase = FoundationMetadataBuilder.UnKnownError;
 
@@ -66,7 +66,7 @@ namespace Foundation.Api.Implementations
 
         public virtual HttpStatusCode GetStatusCode(Exception exp)
         {
-            exp = GetRealException(exp);
+            exp = UnWrapException(exp);
 
             if (exp is BadRequestException)
                 return HttpStatusCode.BadRequest;
@@ -78,7 +78,7 @@ namespace Foundation.Api.Implementations
 
         public virtual bool IsKnownError(Exception exp)
         {
-            exp = GetRealException(exp);
+            exp = UnWrapException(exp);
 
             if (exp is AppException)
                 return true;
