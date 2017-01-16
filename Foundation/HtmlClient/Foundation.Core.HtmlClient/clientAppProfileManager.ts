@@ -42,7 +42,7 @@
         public determinateClientType(): void {
 
             if (this.clientAppProfile.clientType == null || this.clientAppProfile.clientType == "") {
-                this.clientAppProfile.clientType = "Web";
+                this.clientAppProfile.clientType = "Browser";
             }
         }
 

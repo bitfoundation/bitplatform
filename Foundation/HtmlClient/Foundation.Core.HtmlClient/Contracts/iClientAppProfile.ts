@@ -11,7 +11,7 @@
         culture: string;
         version: string;
         isDebugMode: boolean;
-        clientType: "Device" | "Web" | "";
+        clientType: "Cordova" | "Browser" | "Electron" | "";
         calendar: string;
         direction: "Ltr" | "Rtl";
         appTitle: string;
