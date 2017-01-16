@@ -14,8 +14,9 @@ module Foundation.Core {
         path: string;
         loadTime?: "Defered" | "Early";
         fileDependecyType?: "Script" | "Style";
-        loadStatus?: "IsBeingLoaded" | "NotLoaded" | "Loaded";
+        loadStatus?: "IsBeingLoaded" | "NotLoaded" | "Loaded" | "LoadError";
         promise?: Promise<void>;
+        failOnError?: boolean;
     }
 
     export interface IComponentDependency extends IDependency, ng.IComponentOptions {
@@ -50,7 +51,7 @@ module Foundation.Core {
 
         private objectDependencies = new Array<IObjectDependency>();
 
-        private singletoneObjectDependenciesInstances = new Array<{ objectDep: IDependency, objectDepInstance: Object }>();
+        private singletoneObjectDependenciesInstances = new Array<{ objectDep: IObjectDependency, objectDepInstance: Object }>();
 
         private formViewModelDependencies = new Array<IFormViewModelDependency>();
 
@@ -70,7 +71,7 @@ module Foundation.Core {
             if (customObjectResolver == null)
                 throw new Error("custom object resolver may not be null");
             if (customObjectResolver.resolve == null)
-                throw new Error("custom object resolver`s resolve method may not be null");
+                throw new Error("custom object resolver's resolve method may not be null");
             this.customObjectResolvers.push(customObjectResolver);
         }
 
@@ -80,7 +81,7 @@ module Foundation.Core {
                 throw new Error("fileDependency is null");
 
             if (fileDependency.name == null || fileDependency.name == "")
-                throw new Error("fileDependency.name is null or empty");
+                throw new Error("fileDependency's name is null or empty");
 
             const dependenciesWithThisName = this.fileDependencies.filter(d => d.name.toLowerCase() == fileDependency.name.toLowerCase());
             let dependenciesWithThisNameIndex = -1;
@@ -93,6 +94,9 @@ module Foundation.Core {
 
             if (fileDependency.fileDependecyType == null)
                 fileDependency.fileDependecyType = "Script";
+
+            if (fileDependency.failOnError == null)
+                fileDependency.failOnError = false;
 
             fileDependency.loadStatus = "NotLoaded";
 
@@ -113,7 +117,7 @@ module Foundation.Core {
                 throw new Error("instanceDependency is null");
 
             if (instanceDependency.name == null || instanceDependency.name == "")
-                throw new Error("instanceDependency.name is null or empty");
+                throw new Error("instanceDependency's name is null or empty");
 
             if (objectDep != null && objectDep.name.toLowerCase() != instanceDependency.name.toLowerCase())
                 throw new Error(`objectDep's name must be equal to instanceDependency.name`);
@@ -142,10 +146,10 @@ module Foundation.Core {
                 throw new Error("objectDependency is null");
 
             if (objectDependency.type == null)
-                throw new Error("class of object dependency may not be null");
+                throw new Error("object dependency's type may not be null");
 
             if (objectDependency.name == null || objectDependency.name == "")
-                throw new Error("objectDependency.name is null or empty");
+                throw new Error("objectDependency's name is null or empty");
 
             if (!this.dependencyShouldBeConsidered(objectDependency))
                 return;
@@ -173,10 +177,10 @@ module Foundation.Core {
                 throw new Error("directiveDependency is null");
 
             if (directiveDependency.type == null)
-                throw new Error("class of directive dependency may not be null");
+                throw new Error("directive dependency's type may not be null");
 
             if (directiveDependency.name == null || directiveDependency.name == "")
-                throw new Error("directiveDependency.name is null or empty");
+                throw new Error("directiveDependency's name is null or empty");
 
             if (!this.dependencyShouldBeConsidered(directiveDependency))
                 return;
@@ -206,10 +210,10 @@ module Foundation.Core {
                 throw new Error("componentDependency is null");
 
             if (componentDependency.type == null)
-                throw new Error("class of component dependency may not be null");
+                throw new Error("component dependency's type may not be null");
 
             if (componentDependency.name == null)
-                throw new Error("name of component dependency may not be null");
+                throw new Error("component dependency's name may not be null");
 
             if (!this.dependencyShouldBeConsidered(componentDependency))
                 return;
@@ -240,10 +244,10 @@ module Foundation.Core {
                 throw new Error("formViewModelDependency is null");
 
             if (formViewModelDependency.type == null)
-                throw new Error("class of viewModel dependency may not be null");
+                throw new Error("viewModel dependency's type may not be null");
 
             if (formViewModelDependency.name == null)
-                throw new Error("name of viewModel dependency may not be null");
+                throw new Error("viewModel dependency's name may not be null");
 
             if (!this.dependencyShouldBeConsidered(formViewModelDependency))
                 return;
@@ -298,7 +302,7 @@ module Foundation.Core {
                     return;
                 }
 
-                let element = null;
+                let element: HTMLScriptElement | HTMLLinkElement = null;
 
                 if (nextFile.fileDependecyType == "Script") {
                     element = document.createElement("script");
@@ -316,6 +320,24 @@ module Foundation.Core {
                 element.onload = (): void => {
 
                     nextFile.loadStatus = "Loaded";
+                    nextFile = files.shift();
+
+                    if (nextFile != null) {
+                        loadInitialFileDependecy(nextFile);
+                    } else {
+                        const app = this.resolveObject<Contracts.IAppStartup>("AppStartup");
+                        app.configuration();
+                    }
+
+                };
+
+                element.onerror = (e): void => {
+
+                    nextFile.loadStatus = "LoadError";
+
+                    if (nextFile.failOnError == true)
+                        throw e;
+
                     nextFile = files.shift();
 
                     if (nextFile != null) {
@@ -423,6 +445,7 @@ module Foundation.Core {
                     };
 
                     element.onerror = (err): void => {
+                        fileDependency.loadStatus = "LoadError";
                         reject(err);
                     }
 
@@ -430,6 +453,7 @@ module Foundation.Core {
 
                 }
                 catch (e) {
+                    fileDependency.loadStatus = "LoadError";
                     reject(e);
                     throw e;
                 }
