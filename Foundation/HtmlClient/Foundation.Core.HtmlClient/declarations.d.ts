@@ -10,9 +10,6 @@
             asChildOf(parentDataSource: DataSource, childKeys: string[], parentKeys: string[]);
             current: $data.Entity | Model;
         }
-        export interface Model extends ObservableObject {
-            innerInstance(): $data.Entity;
-        }
     }
 }
 
