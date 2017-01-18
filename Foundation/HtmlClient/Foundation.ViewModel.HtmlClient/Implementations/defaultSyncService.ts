@@ -127,9 +127,7 @@
                     if (offlineEntitiesOrderedByVersion[0] != null)
                         maxVersion = offlineEntitiesOrderedByVersion[0].Version;
 
-                    const baseQuery = entitySetSyncMaterial.entitySetConfig.getMethod(this.onlineContext).filter((e, ver) => e.Version > ver, { ver: maxVersion });
-
-                    const recentlyChangedOnlineEntitiesQuery = baseQuery.take(1000);
+                    const recentlyChangedOnlineEntitiesQuery = entitySetSyncMaterial.entitySetConfig.getMethod(this.onlineContext).filter((e, ver) => e.Version > ver, { ver: maxVersion });
 
                     return recentlyChangedOnlineEntitiesQuery;
 
