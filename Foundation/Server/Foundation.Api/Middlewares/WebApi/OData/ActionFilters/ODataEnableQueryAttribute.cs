@@ -18,6 +18,19 @@ namespace Foundation.Api.Middlewares.WebApi.OData.ActionFilters
 {
     public class ODataEnableQueryAttribute : EnableQueryAttribute
     {
+        private int? _defaultPageSize = null;
+
+        public virtual int? DefaultPageSize
+        {
+            get { return _defaultPageSize; }
+            set
+            {
+                _defaultPageSize = value;
+                if (value.HasValue)
+                    PageSize = value.Value;
+            }
+        }
+
         public override async Task OnActionExecutedAsync(HttpActionExecutedContext actionExecutedContext, CancellationToken cancellationToken)
         {
             if (actionExecutedContext?.Response?.Content is ObjectContent &&
@@ -48,7 +61,7 @@ namespace Foundation.Api.Middlewares.WebApi.OData.ActionFilters
                             asyncQueryableExecuterToUse = typeof(ODataEnableQueryAttribute).GetMethod(nameof(FindAsyncQueryableExecuter)).MakeGenericMethod(queryElementType).Invoke(this, new object[] { objContent.Value, asyncQueryableExecuters }) as IAsyncQueryableExecuter;
                         }
 
-                        if (isIQueryable && asyncQueryableExecuterToUse != null)
+                        if (asyncQueryableExecuterToUse != null)
                         {
                             HttpRequestMessageProperties requestODataProps = actionExecutedContext.Request.ODataProperties();
                             ODataQueryContext currentOdataQueryContext = new ODataQueryContext(actionExecutedContext.Request.GetModel(), queryElementType, requestODataProps.Path);
@@ -58,7 +71,7 @@ namespace Foundation.Api.Middlewares.WebApi.OData.ActionFilters
                                 EnableConstantParameterization = this.EnableConstantParameterization,
                                 EnsureStableOrdering = this.EnsureStableOrdering,
                                 HandleNullPropagation = this.HandleNullPropagation,
-                                PageSize = this.PageSize
+                                PageSize = this.DefaultPageSize
                             };
 
                             ValidateQuery(actionExecutedContext.Request, currentOdataQueryOptions);
@@ -67,12 +80,10 @@ namespace Foundation.Api.Middlewares.WebApi.OData.ActionFilters
                             int? globalQuerypageSize = globalODataQuerySettings.PageSize;
                             int? pageSize = null;
 
-                            if (currentQueryPageSize.HasValue && globalQuerypageSize.HasValue)
-                                pageSize = currentQueryPageSize.Value < globalQuerypageSize.Value ? currentQueryPageSize.Value : globalQuerypageSize.Value;
-                            else if (globalQuerypageSize.HasValue == true && currentQueryPageSize.HasValue == false)
-                                pageSize = globalQuerypageSize.Value;
-                            else if (globalQuerypageSize.HasValue == false && currentQueryPageSize.HasValue == true)
+                            if (currentQueryPageSize.HasValue)
                                 pageSize = currentQueryPageSize.Value;
+                            else if (globalQuerypageSize.HasValue == true)
+                                pageSize = globalQuerypageSize.Value;
                             else
                                 pageSize = null;
 
@@ -83,7 +94,7 @@ namespace Foundation.Api.Middlewares.WebApi.OData.ActionFilters
                                 objContent.Value = currentOdataQueryOptions.Filter.ApplyTo(query: (IQueryable)objContent.Value, querySettings: globalODataQuerySettings);
                             }
 
-                            if (currentOdataQueryOptions.Count?.RawValue == "true" && pageSize.HasValue == true)
+                            if (currentOdataQueryOptions.Count?.Value == true && pageSize.HasValue == true)
                             {
                                 long count = await (Task<long>)typeof(ODataEnableQueryAttribute).GetMethod(nameof(GetCountAsync)).MakeGenericMethod(queryElementType).Invoke(this, new object[] { objContent.Value, asyncQueryableExecuterToUse, cancellationToken });
 
@@ -97,7 +108,7 @@ namespace Foundation.Api.Middlewares.WebApi.OData.ActionFilters
 
                             objContent.Value = await (Task<object>)typeof(ODataEnableQueryAttribute).GetMethod(nameof(ToListAsync)).MakeGenericMethod(queryElementType).Invoke(this, new object[] { objContent.Value, asyncQueryableExecuterToUse, pageSize, cancellationToken });
 
-                            if (currentOdataQueryOptions.Count?.RawValue == "true" && pageSize.HasValue == false)
+                            if (currentOdataQueryOptions.Count?.Value == true && pageSize.HasValue == false)
                             {
                                 // We've no paging becuase there is no global config for max top and there is no top specified by the client's request, so the retured result of query's length is equivalent to total count of the query
                                 long count = ((IList)objContent.Value).Count;
