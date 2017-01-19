@@ -70,6 +70,9 @@ namespace Foundation.Api.Middlewares
             if (requestInformationProvider.UserAgent != null)
                 logger.AddLogData(nameof(IRequestInformationProvider.UserAgent), requestInformationProvider.UserAgent);
 
+            if (requestInformationProvider.CorrelationId != null)
+                logger.AddLogData(nameof(IRequestInformationProvider.CorrelationId), requestInformationProvider.CorrelationId);
+
             await Next.Invoke(context);
         }
     }
