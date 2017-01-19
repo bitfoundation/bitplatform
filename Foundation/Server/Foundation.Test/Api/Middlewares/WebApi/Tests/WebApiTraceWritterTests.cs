@@ -12,7 +12,6 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Simple.OData.Client;
 using Foundation.Test.Api.ApiControllers;
 using System.Net.Http;
-using Correlator.Extensions;
 
 namespace Foundation.Test.Api.Middlewares.WebApi.Tests
 {
@@ -31,7 +30,7 @@ namespace Foundation.Test.Api.Middlewares.WebApi.Tests
 
                 Guid correlationId = Guid.NewGuid();
 
-                client.EnsureCorrelationId(correlationId);
+                client.DefaultRequestHeaders.Add("X-CorrelationId", correlationId.ToString());
 
                 HttpResponseMessage response = await client.GetAsync($"/odata/Test/$metadata");
 
