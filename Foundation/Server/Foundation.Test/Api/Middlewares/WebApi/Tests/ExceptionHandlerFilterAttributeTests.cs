@@ -21,7 +21,7 @@ namespace Foundation.Test.Api.Middlewares.WebApi.Tests
         [Ignore]
         [TestMethod]
         [TestCategory("WebApi"), TestCategory("Logging")]
-        public virtual async Task WebApiExceptionHandlerFilterAttributeMustReturnKnownErrorReasonPhraseAndInternalServerErrorStatusCodeAndApiRequestIdInResponseWhenAppExceptionThrownsInWebApi()
+        public virtual async Task WebApiExceptionHandlerFilterAttributeMustReturnKnownErrorReasonPhraseAndInternalServerErrorStatusCodeAndCorrelationIdInResponseWhenAppExceptionThrownsInWebApi()
         {
             IEmailService emailService = A.Fake<IEmailService>();
 
@@ -47,9 +47,9 @@ namespace Foundation.Test.Api.Middlewares.WebApi.Tests
                         ILogger logger = TestDependencyManager.CurrentTestDependencyManager.Objects
                             .OfType<ILogger>().Last();
 
-                        Guid apiRequestId = (Guid)logger.LogData.Single(logData => logData.Key == "ApiRequestId").Value;
+                        Guid correlationId = (Guid)logger.LogData.Single(logData => logData.Key == "CorrelationId").Value;
 
-                        Assert.AreEqual(apiRequestId.ToString(), message.Headers.Single(h => h.Key == "ApiRequestId").Value.Single());
+                        Assert.AreEqual(correlationId.ToString(), message.Headers.Single(h => h.Key == "CorrelationId").Value.Single());
                     }
                 });
 
@@ -74,7 +74,7 @@ namespace Foundation.Test.Api.Middlewares.WebApi.Tests
         [Ignore]
         [TestMethod]
         [TestCategory("WebApi"), TestCategory("Logging")]
-        public virtual async Task WebApiExceptionHandlerFilterAttributeMustReturnKnownErrorReasonPhraseAndNotFoundStatusCodeAndApiRequestIdInResponseWhenResourceNotFoundExceptionThrownsInWebApi()
+        public virtual async Task WebApiExceptionHandlerFilterAttributeMustReturnKnownErrorReasonPhraseAndNotFoundStatusCodeAndCorrelationIdInResponseWhenResourceNotFoundExceptionThrownsInWebApi()
         {
             IEmailService emailService = A.Fake<IEmailService>();
 
@@ -100,9 +100,9 @@ namespace Foundation.Test.Api.Middlewares.WebApi.Tests
                         ILogger logger = TestDependencyManager.CurrentTestDependencyManager.Objects
                             .OfType<ILogger>().Last();
 
-                        Guid apiRequestId = (Guid)logger.LogData.Single(logData => logData.Key == "ApiRequestId").Value;
+                        Guid correlationId = (Guid)logger.LogData.Single(logData => logData.Key == "CorrelationId").Value;
 
-                        Assert.AreEqual(apiRequestId.ToString(), message.Headers.Single(h => h.Key == "ApiRequestId").Value.Single());
+                        Assert.AreEqual(correlationId.ToString(), message.Headers.Single(h => h.Key == "CorrelationId").Value.Single());
                     }
                 });
 
@@ -127,7 +127,7 @@ namespace Foundation.Test.Api.Middlewares.WebApi.Tests
         [Ignore]
         [TestMethod]
         [TestCategory("WebApi"), TestCategory("Logging")]
-        public virtual async Task WebApiExceptionHandlerFilterAttributeMustReturnUnKnownErrorReasonPhraseAndInternalServerErrorStatusCodeAndApiRequestIdInResponseWhenExceptionOtherThanAppExceptionIsThrown()
+        public virtual async Task WebApiExceptionHandlerFilterAttributeMustReturnUnKnownErrorReasonPhraseAndInternalServerErrorStatusCodeAndCorrelationIdInResponseWhenExceptionOtherThanAppExceptionIsThrown()
         {
             IEmailService emailService = A.Fake<IEmailService>();
 
@@ -157,9 +157,9 @@ namespace Foundation.Test.Api.Middlewares.WebApi.Tests
                         ILogger logger = TestDependencyManager.CurrentTestDependencyManager.Objects
                             .OfType<ILogger>().Last();
 
-                        Guid apiRequestId = (Guid)logger.LogData.Single(logData => logData.Key == "ApiRequestId").Value;
+                        Guid correlationId = (Guid)logger.LogData.Single(logData => logData.Key == "CorrelationId").Value;
 
-                        Assert.AreEqual(apiRequestId.ToString(), message.Headers.Single(h => h.Key == "ApiRequestId").Value.Single());
+                        Assert.AreEqual(correlationId.ToString(), message.Headers.Single(h => h.Key == "CorrelationId").Value.Single());
                     }
                 });
 

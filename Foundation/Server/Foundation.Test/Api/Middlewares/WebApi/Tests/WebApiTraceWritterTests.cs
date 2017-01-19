@@ -11,16 +11,38 @@ using Foundation.Test.Model.DomainModels;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Simple.OData.Client;
 using Foundation.Test.Api.ApiControllers;
+using System.Net.Http;
+using Correlator.Extensions;
 
 namespace Foundation.Test.Api.Middlewares.WebApi.Tests
 {
     [TestClass]
     public class WebApiTraceWritterTests
     {
+        [TestMethod]
+        [TestCategory("WebApi"), TestCategory("Logging")]
+        public virtual async Task WebApiShouldReturnTheSameCorrelationIdInResponses()
+        {
+            using (TestEnvironment testEnvironment = new TestEnvironment())
+            {
+                OAuthToken token = testEnvironment.Server.Login("ValidUserName", "ValidPassword");
+
+                HttpClient client = testEnvironment.Server.GetHttpClient(token);
+
+                Guid correlationId = Guid.NewGuid();
+
+                client.EnsureCorrelationId(correlationId);
+
+                HttpResponseMessage response = await client.GetAsync($"/odata/Test/$metadata");
+
+                Assert.AreEqual(correlationId, Guid.Parse(response.Headers.GetValues("X-CorrelationId").Single()));
+            }
+        }
+
         [Ignore]
         [TestMethod]
         [TestCategory("WebApi"), TestCategory("Logging")]
-        public virtual async Task WebApiTraceWritterShouldLogApiRequestIdAndExceptionDetails()
+        public virtual async Task WebApiTraceWritterShouldLogCorrelationIdAndExceptionDetails()
         {
             IEmailService emailService = A.Fake<IEmailService>();
 
@@ -53,7 +75,7 @@ namespace Foundation.Test.Api.Middlewares.WebApi.Tests
                     ILogger logger = TestDependencyManager.CurrentTestDependencyManager.Objects
                             .OfType<ILogger>().Last();
 
-                    Assert.IsTrue(logger.LogData.Single(ld => ld.Key == "ApiRequestId").Value is Guid);
+                    Assert.IsTrue(logger.LogData.Single(ld => ld.Key == "CorrelationId").Value is Guid);
                     Assert.AreEqual(typeof(AppException).GetTypeInfo().FullName, logger.LogData.Single(ld => ld.Key == "WebExceptionType").Value);
                     Assert.AreEqual("Test", ((AppException)logger.LogData.Single(ld => ld.Key == "WebException").Value).Message);
                 }
