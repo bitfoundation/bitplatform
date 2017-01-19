@@ -74,6 +74,10 @@
       <HintPath>..\..\..\packages\AutoMapper.5.2.0\lib\net45\AutoMapper.dll</HintPath>
       <Private>True</Private>
     </Reference>
+    <Reference Include="Correlator, Version=1.1.0.0, Culture=neutral, PublicKeyToken=ad71b95c30d52163, processorArchitecture=MSIL">
+      <HintPath>..\..\..\packages\WebApiCorrelator.1.1.0.0\lib\net452\Correlator.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="Hangfire.Autofac, Version=2.2.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\..\..\packages\Hangfire.Autofac.2.2.0\lib\net45\Hangfire.Autofac.dll</HintPath>
       <SpecificVersion>False</SpecificVersion>
