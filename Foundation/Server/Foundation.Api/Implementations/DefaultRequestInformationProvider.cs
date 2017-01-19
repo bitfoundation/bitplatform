@@ -219,5 +219,18 @@ namespace Foundation.Api.Implementations
             }
             set { throw new InvalidOperationException(); }
         }
+
+        public virtual Guid? CorrelationId
+        {
+            get
+            {
+                string correlationId = _context.Request?.Headers?.Get("X-CorrelationId");
+                if (correlationId != null)
+                    return Guid.Parse(correlationId);
+                else
+                    return null;
+            }
+            set { throw new InvalidOperationException(); }
+        }
     }
 }

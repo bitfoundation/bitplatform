@@ -46,5 +46,7 @@ namespace Foundation.Core.Contracts
         string Origin { get; set; }
 
         string Referer { get; set; }
+
+        Guid? CorrelationId { get; set; }
     }
 }
