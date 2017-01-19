@@ -91,6 +91,8 @@
 
                         const clientAppProfile = this.clientAppProfileManager.getClientAppProfile();
 
+                        const guidUtils = this.guidUtils;
+
                         odatajs.oData.utils.prepareRequest = function (request, handler, context) {
                             request.headers = request.headers || {};
                             request.headers["Current-Time-Zone"] = clientAppProfile.currentTimeZone;
@@ -113,6 +115,8 @@
                                 request.headers["Content-Type"] = "application/json";
                             if (request.headers["Content-Type"].indexOf(";IEEE754Compatible=true") == -1)
                                 request.headers["Content-Type"] += ";IEEE754Compatible=true";
+                            if (request.headers["X-CorrelationId"] == null)
+                                request.headers["X-CorrelationId"] = guidUtils.newGuid();
                             return results;
                         };
 
