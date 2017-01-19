@@ -88,8 +88,8 @@ namespace Foundation.Test.Api.Middlewares.WebApi.Tests
 
                 ODataClient client = testEnvironment.Server.BuildODataClient(token: token, beforeRequest: message =>
                 {
-                    message.Headers.Add("desired-time-zone", "Iran Standard Time");
-                    message.Headers.Add("current-time-zone", "Afghanistan Standard Time");
+                    message.Headers.Add("Desired-Time-Zone", "Iran Standard Time");
+                    message.Headers.Add("Current-Time-Zone", "Afghanistan Standard Time");
                 });
 
                 DateTimeOffset date = new DateTimeOffset(2016, 1, 1, 10, 30, 0, TimeSpan.Zero);
@@ -158,8 +158,8 @@ namespace Foundation.Test.Api.Middlewares.WebApi.Tests
 
                 ODataClient client = testEnvironment.Server.BuildODataClient(token: token, beforeRequest: message =>
                 {
-                    message.Headers.Add("desired-time-zone", "Iran Standard Time");
-                    message.Headers.Add("current-time-zone", "Afghanistan Standard Time");
+                    message.Headers.Add("Desired-Time-Zone", "Iran Standard Time");
+                    message.Headers.Add("Current-Time-Zone", "Afghanistan Standard Time");
                 });
 
                 IEnumerable<TestModel> testModels = await client.Controller<TestModelsController, TestModel>()

@@ -93,21 +93,21 @@
 
                         odatajs.oData.utils.prepareRequest = function (request, handler, context) {
                             request.headers = request.headers || {};
-                            request.headers["current-time-zone"] = clientAppProfile.currentTimeZone;
-                            request.headers["desired-time-zone"] = clientAppProfile.desiredTimeZone;
-                            request.headers["client-app-version"] = clientAppProfile.version;
-                            request.headers["client-type"] = clientAppProfile.clientType;
-                            request.headers["client-culture"] = clientAppProfile.culture;
-                            request.headers["client-screen-size"] = clientAppProfile.screenSize;
-                            request.headers["client-route"] = location.pathname;
-                            request.headers["client-theme"] = clientAppProfile.theme;
-                            request.headers["client-debug-mode"] = clientAppProfile.isDebugMode;
-                            request.headers["client-date-time"] = new Date().toISOString();
+                            request.headers["Current-Time-Zone"] = clientAppProfile.currentTimeZone;
+                            request.headers["Desired-Time-Zone"] = clientAppProfile.desiredTimeZone;
+                            request.headers["Client-App-Version"] = clientAppProfile.version;
+                            request.headers["Client-Type"] = clientAppProfile.clientType;
+                            request.headers["Client-Culture"] = clientAppProfile.culture;
+                            request.headers["Client-Screen-Size"] = clientAppProfile.screenSize;
+                            request.headers["Client-Route"] = location.pathname;
+                            request.headers["Client-Theme"] = clientAppProfile.theme;
+                            request.headers["Client-Debug-Mode"] = clientAppProfile.isDebugMode;
+                            request.headers["Client-Date-Time"] = new Date().toISOString();
                             if (navigator.language != null)
-                                request.headers["system-language"] = navigator.language;
+                                request.headers["System-Language"] = navigator.language;
                             if (navigator["systemLanguage"] != null)
-                                request.headers["client-sys-language"] = navigator["systemLanguage"];
-                            request.headers["client-platform"] = navigator.platform;
+                                request.headers["Client-Sys-Language"] = navigator["systemLanguage"];
+                            request.headers["Client-Platform"] = navigator.platform;
                             const results = originalPrepareRequest.apply(this, arguments);
                             if (request.headers["Content-Type"] == null)
                                 request.headers["Content-Type"] = "application/json";
