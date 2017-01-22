@@ -86,7 +86,7 @@ namespace Foundation.Test.DataAccess.Implementations
             {
                 TestDbContext dbContext = null;
 
-                if (Settings.Default.UseInMemoryDatabase)
+                if (Settings.Default.UseInMemoryProviderByDefault)
                     dbContext = childDependencyResolver.Resolve<TestDbContext>();
                 else
                 {
