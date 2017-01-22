@@ -35,7 +35,7 @@ namespace Foundation.DataAccess.Implementations.EntityFrameworkCore
 
         private void UseTransactionForRelationalDatabases(DbContextObjects dbContextObjects)
         {
-            // Although Database in in EntityFramework.Core.dll, but it has a dependency on EntityFramework.Relational.dll
+            // Although Database is in EntityFramework.Core.dll, but it has a dependency on EntityFramework.Relational.dll
             // We're going to call this method, only in case of relation database usage.
             // So this property has been used in separated method call stack.
             Database.UseTransaction(dbContextObjects.Transaction);
