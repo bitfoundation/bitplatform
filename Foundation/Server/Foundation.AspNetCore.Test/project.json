@@ -6,7 +6,7 @@
   },
 
   "dependencies": {
-    "Autofac": "4.2.1",
+    "Autofac": "4.3.0",
     "Autofac.Owin": "4.0.0",
     "Autofac.SignalR2": "4.0.0",
     "Autofac.WebApi2": "4.0.1",

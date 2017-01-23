@@ -6,7 +6,7 @@
   },
 
   "dependencies": {
-    "Autofac": "4.2.1",
+    "Autofac": "4.3.0",
     "Autofac.Extensions.DependencyInjection": "4.0.0",
     "Autofac.Owin": "4.0.0",
     "Microsoft.AspNetCore.Hosting": "1.1.0",
