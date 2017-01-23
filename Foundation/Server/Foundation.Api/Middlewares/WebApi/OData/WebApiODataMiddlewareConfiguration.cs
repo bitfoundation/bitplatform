@@ -1,4 +1,5 @@
-﻿using Foundation.Api.Contracts;
+﻿using Correlator.Handlers;
+using Foundation.Api.Contracts;
 using Foundation.Api.Contracts.Project;
 using Foundation.Api.Middlewares.WebApi.Contracts;
 using Foundation.Api.Middlewares.WebApi.OData.Contracts;
@@ -126,6 +127,8 @@ namespace Foundation.Api.Middlewares.WebApi.OData
                     _oDataContainerBuilderCustomizer.Customize(builder);
                 });
             }
+
+            _webApiConfig.MessageHandlers.Add(new ClientCorrelationHandler { Propagate = true, InitializeIfEmpty = true });
 
             owinApp.UseAutofacWebApi(_webApiConfig);
 

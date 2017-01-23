@@ -36,9 +36,9 @@ namespace Foundation.Test.Properties {
         [global::System.Configuration.ApplicationScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("True")]
-        public bool UseInMemoryDatabase {
+        public bool UseInMemoryProviderByDefault {
             get {
-                return ((bool)(this["UseInMemoryDatabase"]));
+                return ((bool)(this["UseInMemoryProviderByDefault"]));
             }
         }
         

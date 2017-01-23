@@ -10,7 +10,7 @@
 &lt;/SerializableConnectionString&gt;</DesignTimeValue>
       <Value Profile="(Default)">Data Source=.;Initial Catalog=Test;Integrated Security=True</Value>
     </Setting>
-    <Setting Name="UseInMemoryDatabase" Type="System.Boolean" Scope="Application">
+    <Setting Name="UseInMemoryProviderByDefault" Type="System.Boolean" Scope="Application">
       <Value Profile="(Default)">True</Value>
     </Setting>
     <Setting Name="FoundationReadDbConnectionString" Type="(Connection string)" Scope="Application">

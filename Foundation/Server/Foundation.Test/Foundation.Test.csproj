@@ -109,6 +109,10 @@
       <SpecificVersion>False</SpecificVersion>
       <Private>True</Private>
     </Reference>
+    <Reference Include="Correlator, Version=1.1.0.0, Culture=neutral, PublicKeyToken=ad71b95c30d52163, processorArchitecture=MSIL">
+      <HintPath>..\..\..\packages\WebApiCorrelator.1.1.0.0\lib\net452\Correlator.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="FakeItEasy, Version=2.3.2.0, Culture=neutral, PublicKeyToken=eff28e2146d5fd2c, processorArchitecture=MSIL">
       <HintPath>..\..\..\packages\FakeItEasy.2.3.2\lib\net40\FakeItEasy.dll</HintPath>
       <Private>True</Private>

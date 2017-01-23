@@ -42,13 +42,13 @@ namespace Foundation.Api.Implementations
 
         public virtual string ClientAppVersion
         {
-            get { return _context.Request?.Headers?.Get("client-app-version"); }
+            get { return _context.Request?.Headers?.Get("Client-App-Version"); }
             set { throw new InvalidOperationException(); }
         }
 
         public virtual string SystemLanguage
         {
-            get { return _context.Request?.Headers?.Get("system-language"); }
+            get { return _context.Request?.Headers?.Get("System-Language"); }
             set { throw new InvalidOperationException(); }
         }
 
@@ -56,7 +56,7 @@ namespace Foundation.Api.Implementations
         {
             get
             {
-                string clientDateTime = _context.Request?.Headers?.Get("client-date-time");
+                string clientDateTime = _context.Request?.Headers?.Get("Client-Date-Time");
                 if (clientDateTime == null)
                     return null;
                 return DateTimeOffset.Parse(clientDateTime);
@@ -66,43 +66,43 @@ namespace Foundation.Api.Implementations
 
         public virtual string ClientType
         {
-            get { return _context.Request?.Headers?.Get("client-type"); }
+            get { return _context.Request?.Headers?.Get("Client-Type"); }
             set { throw new InvalidOperationException(); }
         }
 
         public virtual string ClientCulture
         {
-            get { return _context.Request?.Headers?.Get("client-culture"); }
+            get { return _context.Request?.Headers?.Get("Client-Culture"); }
             set { throw new InvalidOperationException(); }
         }
 
         public virtual string ClientScreenSize
         {
-            get { return _context.Request?.Headers?.Get("client-screen-size"); }
+            get { return _context.Request?.Headers?.Get("Client-Screen-Size"); }
             set { throw new InvalidOperationException(); }
         }
 
         public virtual string ClientPlatform
         {
-            get { return _context.Request?.Headers?.Get("client-platform"); }
+            get { return _context.Request?.Headers?.Get("Client-Platform"); }
             set { throw new InvalidOperationException(); }
         }
 
         public virtual string ClientRoute
         {
-            get { return _context.Request?.Headers?.Get("client-route"); }
+            get { return _context.Request?.Headers?.Get("Client-Route"); }
             set { throw new InvalidOperationException(); }
         }
 
         public virtual string ClientSysLanguage
         {
-            get { return _context.Request?.Headers?.Get("client-sys-language"); }
+            get { return _context.Request?.Headers?.Get("Client-Sys-Language"); }
             set { throw new InvalidOperationException(); }
         }
 
         public virtual string ClientTheme
         {
-            get { return _context.Request?.Headers?.Get("client-theme"); }
+            get { return _context.Request?.Headers?.Get("Client-Theme"); }
             set { throw new InvalidOperationException(); }
         }
 
@@ -110,7 +110,7 @@ namespace Foundation.Api.Implementations
         {
             get
             {
-                string clientDebugMode = _context.Request?.Headers?.Get("client-debug-mode");
+                string clientDebugMode = _context.Request?.Headers?.Get("Client-Debug-Mode");
                 if (clientDebugMode == null)
                     return null;
                 return bool.Parse(clientDebugMode);
@@ -147,9 +147,9 @@ namespace Foundation.Api.Implementations
 
                 IHeaderDictionary headers = _context.Request.Headers;
 
-                if (headers.ContainsKey("current-time-zone"))
+                if (headers.ContainsKey("Current-Time-Zone"))
                 {
-                    _currentTimeZone = headers.GetValues("current-time-zone").Single();
+                    _currentTimeZone = headers.GetValues("Current-Time-Zone").Single();
 
                     return _currentTimeZone;
                 }
@@ -178,10 +178,10 @@ namespace Foundation.Api.Implementations
 
                 IHeaderDictionary headers = _context.Request.Headers;
 
-                if (headers.ContainsKey("desired-time-zone"))
+                if (headers.ContainsKey("Desired-Time-Zone"))
                 {
                     _desiredTimeZone =
-                        headers.GetValues("desired-time-zone").Single();
+                        headers.GetValues("Desired-Time-Zone").Single();
 
                     return _desiredTimeZone;
                 }
@@ -216,6 +216,19 @@ namespace Foundation.Api.Implementations
             get
             {
                 return _context.Request?.Headers?.Get("Referer");
+            }
+            set { throw new InvalidOperationException(); }
+        }
+
+        public virtual Guid? CorrelationId
+        {
+            get
+            {
+                string correlationId = _context.Request?.Headers?.Get("X-CorrelationId");
+                if (correlationId != null)
+                    return Guid.Parse(correlationId);
+                else
+                    return null;
             }
             set { throw new InvalidOperationException(); }
         }

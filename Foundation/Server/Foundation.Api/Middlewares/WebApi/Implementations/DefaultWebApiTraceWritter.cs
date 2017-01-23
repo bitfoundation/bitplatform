@@ -28,8 +28,6 @@ namespace Foundation.Api.Middlewares.WebApi.Implementations
                 if (scopeStatusManager.WasSucceeded())
                     scopeStatusManager.MarkAsFailed();
 
-                logger.AddLogData("ApiRequestId", traceRecord.RequestId);
-
                 if (traceRecord.Exception != null)
                 {
                     Exception exception = traceRecord.Exception;

@@ -1,4 +1,5 @@
-﻿using Foundation.Api.Contracts;
+﻿using Correlator.Handlers;
+using Foundation.Api.Contracts;
 using Foundation.Api.Middlewares.WebApi.Contracts;
 using Foundation.Core.Contracts;
 using Foundation.Core.Models;
@@ -70,6 +71,8 @@ namespace Foundation.Api.Middlewares.WebApi
             _webApiConfig.MapHttpAttributeRoutes();
 
             _webApiConfig.Routes.MapHttpRoute(name: "default", routeTemplate: "api/{controller}/{action}", defaults: new { action = RouteParameter.Optional });
+
+            _webApiConfig.MessageHandlers.Add(new ClientCorrelationHandler { Propagate = true, InitializeIfEmpty = true });
 
             owinApp.UseAutofacWebApi(_webApiConfig);
 
