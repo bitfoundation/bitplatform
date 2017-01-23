@@ -54,6 +54,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Foundation.Test.Core.HtmlCl
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Foundation.Test.Core", "..\bit-framework\Foundation\Server\Foundation.Test.Core\Foundation.Test.Core.csproj", "{B0CCC9C9-822D-480B-AD8E-2C9B0A892C64}"
 EndProject
+Project("{FF286327-C783-4F7A-AB73-9BCBAD0D4460}") = "IdentityServer.NugetPackage", "IdentityServer\Server\IdentityServer.NugetPackage\IdentityServer.NugetPackage.nuproj", "{927164F7-057F-4CBE-B4C2-F62B9513B2F4}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -120,6 +122,10 @@ Global
 		{B0CCC9C9-822D-480B-AD8E-2C9B0A892C64}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B0CCC9C9-822D-480B-AD8E-2C9B0A892C64}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B0CCC9C9-822D-480B-AD8E-2C9B0A892C64}.Release|Any CPU.Build.0 = Release|Any CPU
+		{927164F7-057F-4CBE-B4C2-F62B9513B2F4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{927164F7-057F-4CBE-B4C2-F62B9513B2F4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{927164F7-057F-4CBE-B4C2-F62B9513B2F4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{927164F7-057F-4CBE-B4C2-F62B9513B2F4}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -146,5 +152,6 @@ Global
 		{E710AF9C-6DE6-4ADE-8B11-4B793880BFA9} = {DD94957E-051E-43E5-9494-4A483E176D80}
 		{7DF0F6FB-4D09-49DE-B821-E67EEE985476} = {1612364C-FF01-4346-9EB3-2950773204B0}
 		{B0CCC9C9-822D-480B-AD8E-2C9B0A892C64} = {E99BE32B-E72B-47B5-8046-25860B051AE2}
+		{927164F7-057F-4CBE-B4C2-F62B9513B2F4} = {D98F7590-0C1E-41A8-AAB0-432D5B4A0B64}
 	EndGlobalSection
 EndGlobal
