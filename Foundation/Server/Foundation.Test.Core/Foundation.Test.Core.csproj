@@ -38,8 +38,8 @@
     <AssemblyOriginatorKeyFile>Bit-Foundation.snk</AssemblyOriginatorKeyFile>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="appium-dotnet-driver, Version=2.0.1.1, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\..\packages\Appium.WebDriver.2.0.1.1\lib\net45\appium-dotnet-driver.dll</HintPath>
+    <Reference Include="appium-dotnet-driver, Version=3.0.0.1, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\..\packages\Appium.WebDriver.3.0.0.1\lib\net45\appium-dotnet-driver.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="Autofac, Version=4.3.0.0, Culture=neutral, PublicKeyToken=17863af14b0044da, processorArchitecture=MSIL">
