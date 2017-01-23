@@ -295,7 +295,7 @@
         "../../../packages/Simple.OData.V4.Client.4.25.0/lib/portable-net45+win8+wp8+wpa81/Simple.OData.Client.Core.dll": {},
         "../../../packages/Simple.OData.V4.Client.4.25.0/lib/portable-net45+win8+wp8+wpa81/Simple.OData.Client.Dynamic.dll": {},
         "../../../packages/Simple.OData.V4.Client.4.25.0/lib/portable-net45+win8+wp8+wpa81/Simple.OData.Client.V4.Adapter.dll": {},
-        "../../../packages/Suave.2.0.0/lib/net40/Suave.dll": {},
+        "../../../packages/Suave.2.0.2/lib/net40/Suave.dll": {},
         "../../../packages/System.Collections.Immutable.1.3.1/lib/portable-net45+win8+wp8+wpa81/System.Collections.Immutable.dll": {},
         "../../../packages/System.Collections.NonGeneric.4.3.0/lib/net46/System.Collections.NonGeneric.dll": {},
         "../../../packages/System.ComponentModel.Annotations.4.3.0/lib/net461/System.ComponentModel.Annotations.dll": {},

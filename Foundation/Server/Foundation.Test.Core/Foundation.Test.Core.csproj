@@ -288,8 +288,8 @@
       <HintPath>..\..\..\packages\Simple.OData.V4.Client.4.25.0\lib\portable-net45+win8+wp8+wpa81\Simple.OData.Client.V4.Adapter.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="Suave, Version=2.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\..\packages\Suave.2.0.0\lib\net40\Suave.dll</HintPath>
+    <Reference Include="Suave, Version=2.0.2.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\..\packages\Suave.2.0.2\lib\net40\Suave.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="System" />
