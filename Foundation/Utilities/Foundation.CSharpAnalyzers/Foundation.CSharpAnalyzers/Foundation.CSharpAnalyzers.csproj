@@ -33,6 +33,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="Foundation\Server\Api\ApiControllers\CamelCaseParameterNameAnalyzer.cs" />
+    <Compile Include="SystemAnalyzers\DtoAndComplexTypeClassessPublicDefaultCtorAnalyzer.cs" />
     <Compile Include="SystemAnalyzers\PropertyAccessorsInternalModifierAnalyzer.cs" />
     <Compile Include="SystemAnalyzers\ClassWithoutModifierAnalyzer.cs" />
     <Compile Include="SystemAnalyzers\DateTimeOffsetInsteadOfDateTimeCodeFixProvider.cs" />

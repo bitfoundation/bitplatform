@@ -144,6 +144,15 @@
   <data name="DateTimeOffsetInsteadOfDateTimeAnalyzerTitle" xml:space="preserve">
     <value>Replace DateTime usage with DateTimeOffset</value>
   </data>
+  <data name="DtoAndComplexTypeClassessPublicDefaultCtorAnalyzerDescription" xml:space="preserve">
+    <value>Complex Type | Dtos must have a default public constructor. See https://github.com/bit-foundation/bit-framework/issues/17</value>
+  </data>
+  <data name="DtoAndComplexTypeClassessPublicDefaultCtorAnalyzerMessage" xml:space="preserve">
+    <value>Complex Type | Dtos must have a default public constructor.</value>
+  </data>
+  <data name="DtoAndComplexTypeClassessPublicDefaultCtorAnalyzerTitle" xml:space="preserve">
+    <value>Complex Type | Dtos must have a default public constructor.</value>
+  </data>
   <data name="PropertyAccessorsInternalModifierAnalyzerDescription" xml:space="preserve">
     <value>Analyzer which deny you from using internal on your properties accessors</value>
   </data>

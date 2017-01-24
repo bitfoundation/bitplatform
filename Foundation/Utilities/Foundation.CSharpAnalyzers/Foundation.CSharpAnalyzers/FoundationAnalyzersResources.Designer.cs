@@ -143,6 +143,33 @@ namespace Foundation.CSharpAnalyzers {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Complex Type | Dtos must have a default public constructor. See https://github.com/bit-foundation/bit-framework/issues/17.
+        /// </summary>
+        public static string DtoAndComplexTypeClassessPublicDefaultCtorAnalyzerDescription {
+            get {
+                return ResourceManager.GetString("DtoAndComplexTypeClassessPublicDefaultCtorAnalyzerDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Complex Type | Dtos must have a default public constructor..
+        /// </summary>
+        public static string DtoAndComplexTypeClassessPublicDefaultCtorAnalyzerMessage {
+            get {
+                return ResourceManager.GetString("DtoAndComplexTypeClassessPublicDefaultCtorAnalyzerMessage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Complex Type | Dtos must have a default public constructor..
+        /// </summary>
+        public static string DtoAndComplexTypeClassessPublicDefaultCtorAnalyzerTitle {
+            get {
+                return ResourceManager.GetString("DtoAndComplexTypeClassessPublicDefaultCtorAnalyzerTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Analyzer which deny you from using internal on your properties accessors.
         /// </summary>
         public static string PropertyAccessorsInternalModifierAnalyzerDescription {
