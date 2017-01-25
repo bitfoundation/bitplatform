@@ -1,0 +1,26 @@
+﻿<?xml version="1.0"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd">
+  <metadata>
+    <id>BitCodeAnalyzer</id>
+    <version>0.0.0.9</version>
+    <title>Bit Code Analyzer</title>
+    <authors>Bit Foundation</authors>
+    <owners>Bit Foundation</owners>
+    <licenseUrl>https://github.com/bit-foundation/bit-framework/blob/master/LICENSE</licenseUrl>
+    <projectUrl>https://github.com/bit-foundation/bit-framework</projectUrl>
+    <iconUrl>https://avatars.githubusercontent.com/u/22663390</iconUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>BitCodeAnalyzer</description>
+    <releaseNotes>Summary of changes made in this release of the package.</releaseNotes>
+    <copyright>Copyright © Bit Foundation 2017</copyright>
+    <tags>BitCodeAnalyzer, analyzers, Bit</tags>
+    <frameworkAssemblies>
+      <frameworkAssembly assemblyName="System" targetFramework="" />
+    </frameworkAssemblies>
+  </metadata>
+  <files>
+    <file src="BitCodeAnalyzer.dll" target="analyzers\dotnet\cs" />
+    <file src="BitTools.Core.dll" target="analyzers\dotnet\cs" />
+    <file src="tools\*.ps1" target="tools\" />
+  </files>
+</package>

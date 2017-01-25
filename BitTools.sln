@@ -1,0 +1,34 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 14
+VisualStudioVersion = 14.0.25420.1
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BitTools.Core", "BitTools\BitTools.Core\BitTools.Core.csproj", "{BC781EBA-8BC0-4D99-AE8F-DEFD81CDBD83}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BitCodeAnalyzer", "BitTools\BitCodeAnalyzer\BitCodeAnalyzer.csproj", "{D3606CAF-481E-4632-9060-A9367A5D4F6A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BitCodeAnalyzer.Test", "BitTools\BitCodeAnalyzer.Test\BitCodeAnalyzer.Test.csproj", "{A55080FD-856C-4F04-9308-A6C71C8510B7}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{BC781EBA-8BC0-4D99-AE8F-DEFD81CDBD83}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BC781EBA-8BC0-4D99-AE8F-DEFD81CDBD83}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BC781EBA-8BC0-4D99-AE8F-DEFD81CDBD83}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BC781EBA-8BC0-4D99-AE8F-DEFD81CDBD83}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D3606CAF-481E-4632-9060-A9367A5D4F6A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D3606CAF-481E-4632-9060-A9367A5D4F6A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D3606CAF-481E-4632-9060-A9367A5D4F6A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D3606CAF-481E-4632-9060-A9367A5D4F6A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A55080FD-856C-4F04-9308-A6C71C8510B7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A55080FD-856C-4F04-9308-A6C71C8510B7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A55080FD-856C-4F04-9308-A6C71C8510B7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A55080FD-856C-4F04-9308-A6C71C8510B7}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
