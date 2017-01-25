@@ -21,9 +21,11 @@ Steps:
   
   3- Install Bit-Foundation-VSPackage and restart the visual studio.
   
-  4- Run bower install for Foundation\HtmlClient\Foundation.Test.HtmlClient\bower.json
+  4- Add https://www.myget.org/F/bit-foundation/api/v3/index.json as nuget package source and install BitCodeAnalyzer nuget package.
   
-  5- Build the solution. Note that due the lack of TypeScript Project System, you might have to build the solution more than once.
+  5- Run bower install for Foundation\HtmlClient\Foundation.Test.HtmlClient\bower.json
+  
+  6- Build the solution. Note that due the lack of TypeScript Project System, you might have to build the solution more than once.
  
 To run the samples:
 
