@@ -1,21 +1,21 @@
-﻿using System.Collections.Immutable;
-using System.Linq;
-using Microsoft.CodeAnalysis;
+﻿using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Diagnostics;
+using System.Collections.Immutable;
+using System.Linq;
 
-namespace Foundation.CSharpAnalyzers.Foundation.Server.Api.ApiControllers
+namespace BitCodeAnalyzer.BitAnalyzers.WebApi.OData
 {
     [DiagnosticAnalyzer(LanguageNames.CSharp)]
     public class CamelCaseParameterNameAnalyzer : DiagnosticAnalyzer
     {
         public const string DiagnosticId = nameof(CamelCaseParameterNameAnalyzer);
 
-        private static readonly LocalizableString Title = new LocalizableResourceString(nameof(FoundationAnalyzersResources.CamelCaseParameterNameAnalyzerTitle), FoundationAnalyzersResources.ResourceManager, typeof(FoundationAnalyzersResources));
-        private static readonly LocalizableString Message = new LocalizableResourceString(nameof(FoundationAnalyzersResources.CamelCaseParameterNameAnalyzerMessage), FoundationAnalyzersResources.ResourceManager, typeof(FoundationAnalyzersResources));
-        private static readonly LocalizableString Description = new LocalizableResourceString(nameof(FoundationAnalyzersResources.CamelCaseParameterNameAnalyzerDescription), FoundationAnalyzersResources.ResourceManager, typeof(FoundationAnalyzersResources));
-        private const string Category = "Foundation";
+        public const string Title = "Use camel case naming for your parameter name";
+        public const string Message = "Web API OData Action | Function parameter names must be camel case";
+        public const string Description = Message;
+        private const string Category = "Bit";
 
         private static readonly DiagnosticDescriptor Rule = new DiagnosticDescriptor(DiagnosticId, Title, Message, Category, DiagnosticSeverity.Error, isEnabledByDefault: true, description: Description);
 

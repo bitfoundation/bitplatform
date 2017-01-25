@@ -1,12 +1,12 @@
-﻿using Foundation.CSharpAnalyzers.SystemAnalyzers;
-using Foundation.CSharpAnalyzers.Test.Helpers;
+﻿using BitCodeAnalyzer.SystemAnalyzers;
+using BitCodeAnalyzer.Test.Helpers;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CodeFixes;
 using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 
-namespace Foundation.CSharpAnalyzers.Test.SystemAnalyzers
+namespace BitCodeAnalyzer.Test.SystemAnalyzers
 {
     [TestClass]
     public class PropertyAccessorsInternalModifierTests : CodeFixVerifier
@@ -27,9 +27,9 @@ namespace Foundation.CSharpAnalyzers.Test.SystemAnalyzers
             DiagnosticResult classWithoutModifier = new DiagnosticResult
             {
                 Id = nameof(PropertyAccessorsInternalModifierAnalyzer),
-                Message = FoundationAnalyzersResources.PropertyAccessorsInternalModifierAnalyzerMessage,
+                Message = PropertyAccessorsInternalModifierAnalyzer.Message,
                 Severity = DiagnosticSeverity.Error,
-                Locations = new[] { new DiagnosticResultLocation("Test0.cs", 7, 13) }
+                Locations = new[] { new DiagnosticResultLocation(7, 13) }
             };
 
             VerifyCSharpDiagnostic(sourceCodeOfPropertiesWithInternalModifiersOnTheirAccessors, classWithoutModifier);

@@ -10,7 +10,7 @@ using System.Linq;
 using System.Threading;
 using Microsoft.CodeAnalysis.Simplification;
 
-namespace Foundation.CSharpAnalyzers.Test.Helpers
+namespace BitCodeAnalyzer.Test.Helpers
 {
     public abstract class CodeFixVerifier : DiagnosticVerifier
     {

@@ -1,13 +1,19 @@
 ﻿using Microsoft.CodeAnalysis;
 using System;
 
-namespace Foundation.CSharpAnalyzers.Test.Helpers
+namespace BitCodeAnalyzer.Test.Helpers
 {
     /// <summary>
     /// Location where the diagnostic appears, as determined by path, line number, and column number.
     /// </summary>
     public struct DiagnosticResultLocation
     {
+        public DiagnosticResultLocation(int line, int column)
+            : this("Test0.cs", line, column)
+        {
+
+        }
+
         public DiagnosticResultLocation(string path, int line, int column)
         {
             if (line < -1)

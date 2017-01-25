@@ -9,8 +9,9 @@ using Microsoft.CodeAnalysis.CodeFixes;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Text;
+using BitCodeAnalyzer.SystemAnalyzers;
 
-namespace Foundation.CSharpAnalyzers.SystemAnalyzers
+namespace BitCodeAnalyzer.SystemCodeFixes
 {
     [ExportCodeFixProvider(LanguageNames.CSharp, Name = nameof(DateTimeOffsetInsteadOfDateTimeCodeFixProvider)), Shared]
     public class DateTimeOffsetInsteadOfDateTimeCodeFixProvider : CodeFixProvider

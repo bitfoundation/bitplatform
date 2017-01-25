@@ -1,12 +1,12 @@
-﻿using Foundation.CSharpAnalyzers.SystemAnalyzers;
-using Foundation.CSharpAnalyzers.Test.Helpers;
+﻿using BitCodeAnalyzer.SystemAnalyzers;
+using BitCodeAnalyzer.Test.Helpers;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CodeFixes;
 using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 
-namespace Foundation.CSharpAnalyzers.Test.SystemAnalyzers
+namespace BitCodeAnalyzer.Test.SystemAnalyzers
 {
     [TestClass]
     public class ClassWithoutModifierAnalyzerTests : CodeFixVerifier
@@ -31,9 +31,9 @@ namespace Foundation.CSharpAnalyzers.Test.SystemAnalyzers
             DiagnosticResult classWithoutModifier = new DiagnosticResult
             {
                 Id = nameof(ClassWithoutModifierAnalyzer),
-                Message = FoundationAnalyzersResources.ClassWithoutModifierAnalyzerMessage,
+                Message = ClassWithoutModifierAnalyzer.Message,
                 Severity = DiagnosticSeverity.Error,
-                Locations = new[] { new DiagnosticResultLocation("Test0.cs", 9, 9) }
+                Locations = new[] { new DiagnosticResultLocation(9, 9) }
             };
 
             VerifyCSharpDiagnostic(sourceCodeWithClassWithoutModifier, classWithoutModifier);

@@ -1,11 +1,12 @@
-﻿using Foundation.CSharpAnalyzers.SystemAnalyzers;
-using Foundation.CSharpAnalyzers.Test.Helpers;
+﻿using BitCodeAnalyzer.SystemAnalyzers;
+using BitCodeAnalyzer.SystemCodeFixes;
+using BitCodeAnalyzer.Test.Helpers;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CodeFixes;
 using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace Foundation.CSharpAnalyzers.Test.SystemAnalyzers
+namespace BitCodeAnalyzer.Test.SystemAnalyzers
 {
     [TestClass]
     public class DateTimeOffsetInsteadOfDateTimeAnalyzerTests : CodeFixVerifier
@@ -35,17 +36,17 @@ namespace Foundation.CSharpAnalyzers.Test.SystemAnalyzers
             DiagnosticResult firstDateTimeUsage = new DiagnosticResult
             {
                 Id = nameof(DateTimeOffsetInsteadOfDateTimeAnalyzer),
-                Message = FoundationAnalyzersResources.DateTimeOffsetInsteadOfDateTimeAnalyzerMessage,
+                Message = DateTimeOffsetInsteadOfDateTimeAnalyzer.Message,
                 Severity = DiagnosticSeverity.Error,
-                Locations = new[] { new DiagnosticResultLocation("Test0.cs", 15, 17) }
+                Locations = new[] { new DiagnosticResultLocation(15, 17) }
             };
 
             DiagnosticResult secondDateTimeUsage = new DiagnosticResult
             {
                 Id = nameof(DateTimeOffsetInsteadOfDateTimeAnalyzer),
-                Message = FoundationAnalyzersResources.DateTimeOffsetInsteadOfDateTimeAnalyzerMessage,
+                Message = DateTimeOffsetInsteadOfDateTimeAnalyzer.Message,
                 Severity = DiagnosticSeverity.Error,
-                Locations = new[] { new DiagnosticResultLocation("Test0.cs", 15, 30) }
+                Locations = new[] { new DiagnosticResultLocation(15, 30) }
             };
 
             VerifyCSharpDiagnostic(sourceCodeWithDateTimeUsage, firstDateTimeUsage, secondDateTimeUsage);

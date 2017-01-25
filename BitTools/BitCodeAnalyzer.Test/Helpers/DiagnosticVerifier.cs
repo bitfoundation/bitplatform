@@ -9,7 +9,7 @@ using System.Linq;
 using System.Text;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace Foundation.CSharpAnalyzers.Test.Helpers
+namespace BitCodeAnalyzer.Test.Helpers
 {
     public abstract class DiagnosticVerifier
     {
@@ -264,10 +264,10 @@ namespace Foundation.CSharpAnalyzers.Test.Helpers
         private static readonly MetadataReference CSharpSymbolsReference = MetadataReference.CreateFromFile(typeof(CSharpCompilation).Assembly.Location);
         private static readonly MetadataReference CodeAnalysisReference = MetadataReference.CreateFromFile(typeof(Compilation).Assembly.Location);
 
-        private static readonly string DefaultFilePathPrefix = "Test";
-        private static readonly string CSharpDefaultFileExt = "cs";
-        private static readonly string VisualBasicDefaultExt = "vb";
-        private static readonly string TestProjectName = "TestProject";
+        public const string DefaultFilePathPrefix = "Test";
+        public const string CSharpDefaultFileExt = "cs";
+        public const string VisualBasicDefaultExt = "vb";
+        public const string TestProjectName = "TestProject";
 
         #region  Get Diagnostics
 

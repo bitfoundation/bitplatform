@@ -1,10 +1,10 @@
-﻿using Foundation.CSharpAnalyzers.Foundation.Server.Api.ApiControllers;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Foundation.CSharpAnalyzers.Test.Helpers;
+﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+using BitCodeAnalyzer.Test.Helpers;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Diagnostics;
+using BitCodeAnalyzer.BitAnalyzers.WebApi.OData;
 
-namespace Foundation.CSharpAnalyzers.Test.Foundation.Server.Api.ApiControllers
+namespace BitCodeAnalyzer.Test.BitAnalyzers.WebApi.OData
 {
     [TestClass]
     public class CamelCaseParameterNameAnalyzerTests : CodeFixVerifier
@@ -65,33 +65,33 @@ namespace Foundation.Test.Api.ApiControllers
             DiagnosticResult nonCamelCaseParameterName1 = new DiagnosticResult
             {
                 Id = nameof(CamelCaseParameterNameAnalyzer),
-                Message = FoundationAnalyzersResources.CamelCaseParameterNameAnalyzerMessage,
+                Message = CamelCaseParameterNameAnalyzer.Message,
                 Severity = DiagnosticSeverity.Error,
-                Locations = new[] { new DiagnosticResultLocation("Test0.cs", 39, 10) }
+                Locations = new[] { new DiagnosticResultLocation(39, 10) }
             };
 
             DiagnosticResult nonCamelCaseParameterName2 = new DiagnosticResult
             {
                 Id = nameof(CamelCaseParameterNameAnalyzer),
-                Message = FoundationAnalyzersResources.CamelCaseParameterNameAnalyzerMessage,
+                Message = CamelCaseParameterNameAnalyzer.Message,
                 Severity = DiagnosticSeverity.Error,
-                Locations = new[] { new DiagnosticResultLocation("Test0.cs", 40, 10) }
+                Locations = new[] { new DiagnosticResultLocation(40, 10) }
             };
 
             DiagnosticResult nonCamelCaseParameterName3 = new DiagnosticResult
             {
                 Id = nameof(CamelCaseParameterNameAnalyzer),
-                Message = FoundationAnalyzersResources.CamelCaseParameterNameAnalyzerMessage,
+                Message = CamelCaseParameterNameAnalyzer.Message,
                 Severity = DiagnosticSeverity.Error,
-                Locations = new[] { new DiagnosticResultLocation("Test0.cs", 41, 10) }
+                Locations = new[] { new DiagnosticResultLocation(41, 10) }
             };
 
             DiagnosticResult nonCamelCaseParameterName4 = new DiagnosticResult
             {
                 Id = nameof(CamelCaseParameterNameAnalyzer),
-                Message = FoundationAnalyzersResources.CamelCaseParameterNameAnalyzerMessage,
+                Message = CamelCaseParameterNameAnalyzer.Message,
                 Severity = DiagnosticSeverity.Error,
-                Locations = new[] { new DiagnosticResultLocation("Test0.cs", 42, 10) }
+                Locations = new[] { new DiagnosticResultLocation(42, 10) }
             };
 
             VerifyCSharpDiagnostic(sourceCodeOfDtoControllerWithActionAndParameter, nonCamelCaseParameterName1, nonCamelCaseParameterName2, nonCamelCaseParameterName3, nonCamelCaseParameterName4);

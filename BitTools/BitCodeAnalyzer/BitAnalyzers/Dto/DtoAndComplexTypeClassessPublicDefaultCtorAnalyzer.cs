@@ -6,18 +6,17 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 
-namespace Foundation.CSharpAnalyzers.SystemAnalyzers
+namespace BitCodeAnalyzer.BitAnalyzers.Dto
 {
-
     [DiagnosticAnalyzer(LanguageNames.CSharp)]
     public class DtoAndComplexTypeClassessPublicDefaultCtorAnalyzer : DiagnosticAnalyzer
     {
         public const string DiagnosticId = nameof(DtoAndComplexTypeClassessPublicDefaultCtorAnalyzer);
 
-        private static readonly LocalizableString Title = new LocalizableResourceString(nameof(FoundationAnalyzersResources.DtoAndComplexTypeClassessPublicDefaultCtorAnalyzerTitle), FoundationAnalyzersResources.ResourceManager, typeof(FoundationAnalyzersResources));
-        private static readonly LocalizableString Message = new LocalizableResourceString(nameof(FoundationAnalyzersResources.DtoAndComplexTypeClassessPublicDefaultCtorAnalyzerMessage), FoundationAnalyzersResources.ResourceManager, typeof(FoundationAnalyzersResources));
-        private static readonly LocalizableString Description = new LocalizableResourceString(nameof(FoundationAnalyzersResources.DtoAndComplexTypeClassessPublicDefaultCtorAnalyzerDescription), FoundationAnalyzersResources.ResourceManager, typeof(FoundationAnalyzersResources));
-        private const string Category = "Foundation";
+        public const string Title = "Complex Type | Dtos must have a default public constructor.";
+        public const string Message = Title;
+        public const string Description = "Complex Type | Dtos must have a default public constructor. See https://github.com/bit-foundation/bit-framework/issues/17";
+        private const string Category = "Bit";
 
         private static readonly DiagnosticDescriptor Rule = new DiagnosticDescriptor(DiagnosticId, Title, Message, Category, DiagnosticSeverity.Error, isEnabledByDefault: true, description: Description);
 
@@ -46,8 +45,13 @@ namespace Foundation.CSharpAnalyzers.SystemAnalyzers
 
             if (!constructors.Any(ctor => ctor.Modifiers.Any(modifier => modifier.ValueText == "public") && ctor.ParameterList.Parameters.Count == 0))
             {
-                Diagnostic diagn = Diagnostic.Create(Rule, root.GetLocation(), Message);
-                context.ReportDiagnostic(diagn);
+                ITypeSymbol classSymbol = context.SemanticModel.GetDeclaredSymbol(classDec);
+
+                if (classSymbol.IsDto() || classSymbol.IsComplexType())
+                {
+                    Diagnostic diagn = Diagnostic.Create(Rule, root.GetLocation(), Message);
+                    context.ReportDiagnostic(diagn);
+                }
             };
         }
     }

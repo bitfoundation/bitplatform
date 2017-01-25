@@ -1,21 +1,21 @@
-using System.Collections.Immutable;
+﻿using System.Collections.Immutable;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Diagnostics;
 using System.Linq;
 
-namespace Foundation.CSharpAnalyzers.SystemAnalyzers
+namespace BitCodeAnalyzer.SystemAnalyzers
 {
     [DiagnosticAnalyzer(LanguageNames.CSharp)]
     public class PropertyAccessorsInternalModifierAnalyzer : DiagnosticAnalyzer
     {
         public const string DiagnosticId = nameof(PropertyAccessorsInternalModifierAnalyzer);
 
-        private static readonly LocalizableString Title = new LocalizableResourceString(nameof(FoundationAnalyzersResources.PropertyAccessorsInternalModifierAnalyzerTitle), FoundationAnalyzersResources.ResourceManager, typeof(FoundationAnalyzersResources));
-        private static readonly LocalizableString Message = new LocalizableResourceString(nameof(FoundationAnalyzersResources.PropertyAccessorsInternalModifierAnalyzerMessage), FoundationAnalyzersResources.ResourceManager, typeof(FoundationAnalyzersResources));
-        private static readonly LocalizableString Description = new LocalizableResourceString(nameof(FoundationAnalyzersResources.PropertyAccessorsInternalModifierAnalyzerDescription), FoundationAnalyzersResources.ResourceManager, typeof(FoundationAnalyzersResources));
-        private const string Category = "Foundation";
+        public const string Title = "Remove internal from modifiers of your property's accessors";
+        public const string Message = "Property's accessors may not be internal";
+        public const string Description = "Analyzer which deny you from using internal on your properties accessors";
+        private const string Category = "System";
 
         private static readonly DiagnosticDescriptor Rule = new DiagnosticDescriptor(DiagnosticId, Title, Message, Category, DiagnosticSeverity.Error, isEnabledByDefault: true, description: Description);
 
