@@ -1,10 +1,10 @@
 ﻿using BitCodeAnalyzer.SystemAnalyzers;
+using BitCodeAnalyzer.SystemCodeFixes;
 using BitCodeAnalyzer.Test.Helpers;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CodeFixes;
 using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System;
 
 namespace BitCodeAnalyzer.Test.SystemAnalyzers
 {
@@ -39,9 +39,44 @@ namespace BitCodeAnalyzer.Test.SystemAnalyzers
             VerifyCSharpDiagnostic(sourceCodeWithClassWithoutModifier, classWithoutModifier);
         }
 
+        [TestMethod]
+        [TestCategory("CodeFixeProvider")]
+        public void AddPublicModifierTest()
+        {
+            const string sourceCodeWithClassWithoutModifier = @"
+    namespace MyNamespace
+    {
+        public class MyClass
+        {   
+
+        }
+
+        class MyClass
+        {   
+
+        }
+    }";
+
+            const string fixedSourceCode = @"
+    namespace MyNamespace
+    {
+        public class MyClass
+        {   
+
+        }
+
+    public class MyClass
+        {   
+
+        }
+    }";
+
+            VerifyCSharpFix(sourceCodeWithClassWithoutModifier, fixedSourceCode);
+        }
+
         protected override CodeFixProvider GetCSharpCodeFixProvider()
         {
-            throw new NotImplementedException();
+            return new ClassWithoutModifierCodeFixProvider();
         }
 
         protected override DiagnosticAnalyzer GetCSharpDiagnosticAnalyzer()
