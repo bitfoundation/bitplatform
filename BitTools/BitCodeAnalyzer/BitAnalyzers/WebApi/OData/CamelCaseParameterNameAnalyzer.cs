@@ -23,6 +23,7 @@ namespace BitCodeAnalyzer.BitAnalyzers.WebApi.OData
 
         public override void Initialize(AnalysisContext context)
         {
+            context.EnableConcurrentExecution();
             context.RegisterSyntaxNodeAction(AnalyzeSyntax, SyntaxKind.Attribute);
         }
 
