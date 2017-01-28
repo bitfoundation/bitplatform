@@ -34,14 +34,35 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="Contracts\HtmlClientProxyGenerator\IDefaultHtmlClientProxyCleaner.cs" />
+    <Compile Include="Contracts\HtmlClientProxyGenerator\IDefaultHtmlClientProxyGenerator.cs" />
+    <Compile Include="Contracts\HtmlClientProxyGenerator\IHtmlClientContextGenerator.cs" />
+    <Compile Include="Contracts\HtmlClientProxyGenerator\IHtmlClientProxyDtosGenerator.cs" />
+    <Compile Include="Contracts\IBitCodeGeneratorMappingsProvider.cs" />
+    <Compile Include="Contracts\IBitCodeGeneratorOrderedProjectsProvider.cs" />
+    <Compile Include="Contracts\IBitConfigProvider.cs" />
+    <Compile Include="Contracts\IDtoRulesValidator.cs" />
+    <Compile Include="Contracts\IProjectDtoControllersProvider.cs" />
+    <Compile Include="Contracts\IProjectDtoRulesProvider.cs" />
+    <Compile Include="Contracts\IProjectDtosProvider.cs" />
+    <Compile Include="Contracts\IProjectEnumTypesProvider.cs" />
     <Compile Include="Extensions\IPropertySymbolExtensions.cs" />
     <Compile Include="Extensions\ISymbolExtensions.cs" />
     <Compile Include="Extensions\ITypeSymbolExtensions.cs" />
     <Compile Include="Extensions\StringExtensions.cs" />
+    <Compile Include="Model\BitConfig.cs" />
+    <Compile Include="Model\Dto.cs" />
+    <Compile Include="Model\DtoController.cs" />
+    <Compile Include="Model\DtoRules.cs" />
+    <Compile Include="Model\EnumType.cs" />
+    <Compile Include="Model\NamespaceAlias.cs" />
+    <Compile Include="Model\ODataOperation.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="app.config" />
+    <None Include="app.config">
+      <SubType>Designer</SubType>
+    </None>
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>

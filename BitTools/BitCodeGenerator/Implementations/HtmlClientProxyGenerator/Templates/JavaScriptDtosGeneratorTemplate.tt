@@ -1,0 +1,64 @@
+﻿<#@ template language="C#" #>
+<#@ import namespace="BitTools.Core.Model" #>
+<#@ import namespace="Microsoft.CodeAnalysis" #>
+<#@ import namespace="System.Collections.Generic" #>
+<#@ import namespace="System.Linq" #>
+<#@ parameter type="System.Collections.Generic.IList<Dto>" name="Dtos" #>
+<#@ parameter type="System.Collections.Generic.IList<EnumType>" name="EnumTypes" #>
+<# foreach (Dto dto in Dtos)
+{#>
+
+<# List<string> namepsaces = new List<string>(); #>
+
+<# foreach (SymbolDisplayPart nsPart in dto.DtoSymbol.ContainingNamespace.ToDisplayParts().Where(n => n.Kind ==  SymbolDisplayPartKind.NamespaceName )) { #>
+	<# namepsaces.Add((nsPart.ToString())); #>
+	<# if(namepsaces.Count==1) { #> var  <#}#> <#= string.Join(".", namepsaces) #> = <#= string.Join(".", namepsaces) #> || {};
+<# } #>
+
+<#= dto.DtoSymbol.ToDisplayString() #> = <#= dto.BaseDtoSymbol != null ? dto.BaseDtoSymbol.GetTypescriptTypeName(useArrayForIEnumerableTypes : true) : "$data.Entity" #>.extend("<#= dto.DtoSymbol.ToDisplayString() #>", {
+	<# foreach (IPropertySymbol prp in dto.Properties)
+	{ #> 
+		<#= prp.Name #>: {
+			"type": "<#= prp.Type.GetEdmTypeName(useArrayForIEnumerableTypes:true) #>" , nullable: <#= prp.Type.IsNullable().ToString().ToLowerInvariant() #>
+			<# if (!prp.IsKey() && (prp.Type.IsCollectionType() || prp.Type.IsNullable()))
+								{
+									#>  , defaultValue: <#= prp.Type.GetJavaScriptDefaultValue() #>
+			<# } #>
+			<# if (prp.Type.IsCollectionType())
+								{
+									#> , "elementType": "<#= (prp.Type).GetEdmElementTypeName() #>"
+			<# } #>
+			<# if (prp.GetAttributes().Any(att => att.AttributeClass.Name == "InversePropertyAttribute"))
+			{
+				#> , "inverseProperty": "<#= prp.GetAttributes().Single(att => att.AttributeClass.Name == "InversePropertyAttribute").ConstructorArguments.Single().Value.ToString() #>"
+			<# } #>
+			<# if (prp.IsKey()) { #>
+			, "key": true
+			, "required" : <#= (!prp.Type.IsNullable()).ToString().ToLowerInvariant() #>
+			, "computed": true
+			<# } #>
+			<# if (prp.GetViewType() != null) { #>
+			, $ViewType : "<#= prp.GetViewType() #>"
+			<# } #>
+	},
+	<#}#>
+	});
+<#}#>
+
+<# foreach (EnumType enumType in EnumTypes)
+{#>
+
+<# List<string> namepsaces = new List<string>(); #>
+
+<# foreach (SymbolDisplayPart nsPart in enumType.EnumTypeSymbol.ContainingNamespace.ToDisplayParts().Where(n => n.Kind ==  SymbolDisplayPartKind.NamespaceName )) { #>
+	<# namepsaces.Add((nsPart.ToString())); #>
+	<# if(namepsaces.Count==1) { #> var  <#}#> <#= string.Join(".", namepsaces) #> = <#= string.Join(".", namepsaces) #> || {};
+<# } #>
+
+<#= enumType.EnumTypeSymbol.ToDisplayString() #> = $data.createEnum("<#= enumType.EnumTypeSymbol.ToDisplayString() #>", null, $data.String, [
+	<# foreach (EnumMember enumMember in enumType.Members)
+	{ #> 
+		{ name : '<#= enumMember.Name #>' , value : "'<#= enumMember.Value #>'" },
+	<#}#>
+	]);
+<#}#>

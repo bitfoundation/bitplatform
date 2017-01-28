@@ -239,3 +239,7 @@ ModelManifest.xml
 /Foundation/HtmlClient/Foundation.ViewModel.HtmlClient/Foundation.Model.Context.js
 /Foundation/HtmlClient/Foundation.ViewModel.HtmlClient/Foundation.Model.Context.d.ts
 /Foundation/Utilities/Foundation.CodeGenerators/Foundation.CodeGenerators/Implementations/HtmlClientProxyGenerator/Templates/*.cs
+/BitTools/BitCodeGenerator/Implementations/HtmlClientProxyGenerator/Templates/TypeScriptDtosGeneratorTemplate1.cs
+/BitTools/BitCodeGenerator/Implementations/HtmlClientProxyGenerator/Templates/TypeScriptContextGeneratorTemplate1.cs
+/BitTools/BitCodeGenerator/Implementations/HtmlClientProxyGenerator/Templates/JavaScriptDtosGeneratorTemplate1.cs
+/BitTools/BitCodeGenerator/Implementations/HtmlClientProxyGenerator/Templates/JavaScriptContextGeneratorTemplate1.cs

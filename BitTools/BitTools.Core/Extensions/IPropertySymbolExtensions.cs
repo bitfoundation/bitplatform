@@ -50,7 +50,7 @@ namespace Microsoft.CodeAnalysis
 
             return dataTypeAtt.ConstructorArguments.Single().Type.GetMembers()
                 .OfType<IFieldSymbol>()
-                .Single(f => Convert.ToInt32(f.ConstantValue) == value).Name;
+                .Single(fld => Convert.ToInt32(fld.ConstantValue) == value).Name;
         }
     }
 }

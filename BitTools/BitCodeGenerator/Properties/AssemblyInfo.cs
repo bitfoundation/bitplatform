@@ -1,20 +1,26 @@
-﻿using System.Resources;
-using System.Reflection;
+﻿using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("BitTools.Core")]
+[assembly: AssemblyTitle("BitCodeGenerator")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("Bit Foundation")]
-[assembly: AssemblyProduct("BitTools.Core")]
-[assembly: AssemblyCopyright("Copyright © Bit Foundation 2017")]
+[assembly: AssemblyCompany("")]
+[assembly: AssemblyProduct("BitCodeGenerator")]
+[assembly: AssemblyCopyright("Copyright ©  2017")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
-[assembly: NeutralResourcesLanguage("en")]
+
+// Setting ComVisible to false makes the types in this assembly not visible 
+// to COM components.  If you need to access a type in this assembly from 
+// COM, set the ComVisible attribute to true on that type.
+[assembly: ComVisible(false)]
+
+// The following GUID is for the ID of the typelib if this project is exposed to COM
+[assembly: Guid("afe4642a-22a7-4766-873c-80a69bf8545a")]
 
 // Version information for an assembly consists of the following four values:
 //
