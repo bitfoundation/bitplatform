@@ -1,6 +1,6 @@
 {
-  "HtmlClientProxyGeneratorConfiguration": {
-    "HtmlClientProxyGeneratorMappings": [
+  "BitCodeGeneratorConfigs": {
+    "BitCodeGeneratorMappings": [
       {
         "EdmName": "Foundation",
         "Namespace": "Foundation",
