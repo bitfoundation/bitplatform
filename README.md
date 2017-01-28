@@ -13,15 +13,17 @@ Requirements:
   
   4- Gulp & Bowser installed globally using Node-JS & NPM
   
+  5- Git
+  
 Steps:
 
   1- Clone the repository using git clone https://github.com/bit-foundation/bit-framework.git
   
   2- Open Tools > Options > Environment > Extensions and updates and add https://myget.org/F/bit-foundation/vsix as additional extension gallery.
   
-  3- Install Bit-Foundation-VSPackage and restart the visual studio.
+  3- Install Bit VS Extension V1 and restart the visual studio.
   
-  4- Add https://www.myget.org/F/bit-foundation/api/v3/index.json as nuget package source and install BitCodeAnalyzer nuget package.
+  4- Add https://www.myget.org/F/bit-foundation/api/v3/index.json as nuget package source.
   
   5- Run bower install for Foundation\HtmlClient\Foundation.Test.HtmlClient\bower.json
   
