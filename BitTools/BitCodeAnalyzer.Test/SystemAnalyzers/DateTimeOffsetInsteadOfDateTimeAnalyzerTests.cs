@@ -53,7 +53,7 @@ namespace BitCodeAnalyzer.Test.SystemAnalyzers
         }
 
         [TestMethod]
-        [TestCategory("Analyzer")]
+        [TestCategory("CodeFixeProvider")]
         public void FixDateTimeUsageTest()
         {
             const string sourceCodeWithDateTimeUsage = @"

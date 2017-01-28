@@ -38,6 +38,7 @@
     <Compile Include="SystemAnalyzers\ClassWithoutModifierAnalyzer.cs" />
     <Compile Include="SystemAnalyzers\DateTimeOffsetInsteadOfDateTimeAnalyzer.cs" />
     <Compile Include="SystemAnalyzers\PropertyAccessorsInternalModifierAnalyzer.cs" />
+    <Compile Include="SystemCodeFixes\ClassWithoutModifierCodeFixProvider.cs" />
     <Compile Include="SystemCodeFixes\DateTimeOffsetInsteadOfDateTimeCodeFixProvider.cs" />
   </ItemGroup>
   <ItemGroup>
