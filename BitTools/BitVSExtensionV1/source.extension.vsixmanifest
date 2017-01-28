@@ -1,9 +1,9 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <PackageManifest Version="2.0.0" xmlns="http://schemas.microsoft.com/developer/vsx-schema/2011" xmlns:d="http://schemas.microsoft.com/developer/vsx-schema-design/2011">
   <Metadata>
-    <Identity Id="Bit.Framework.VSPackage.cdbff2cd-70df-4a4a-85c0-060502b9cd43" Version="0.4.5" Language="en-US" Publisher="Bit Foundation" />
-    <DisplayName>Bit-Framework-VSPackage</DisplayName>
-    <Description xml:space="preserve">Bit Framework VSPackage</Description>
+    <Identity Id="BitVSExtensionV1.3BA081F8-34B0-4614-8E80-03F9B3A5BBF0" Version="0.1.0" Language="en-US" Publisher="Bit Foundation" />
+    <DisplayName>Bit VS Extension V1</DisplayName>
+    <Description xml:space="preserve">Bit Framework - Visual Studio Extension - V1</Description>
     <MoreInfo>https://bit-foundation.com/</MoreInfo>
     <License>LICENSE.txt</License>
     <Icon>Bit-Foundation.png</Icon>
@@ -16,11 +16,12 @@
   </Installation>
   <Dependencies>
     <Dependency Id="Microsoft.Framework.NDP" DisplayName="Microsoft .NET Framework" d:Source="Manual" Version="[4.5,)" />
-    <Dependency Id="Microsoft.VisualStudio.MPF.14.0" DisplayName="Visual Studio MPF 14.0" d:Source="Installed" Version="[12.0,15.0)" />
+    <Dependency d:Source="Installed" Id="Microsoft.VisualStudio.MPF.14.0" DisplayName="Visual Studio MPF 14.0" Version="[12.0,15.0)" />
   </Dependencies>
   <Assets>
     <Asset Type="Microsoft.VisualStudio.VsPackage" d:Source="Project" d:ProjectName="%CurrentProject%" Path="|%CurrentProject%;PkgdefProjectOutputGroup|" />
     <Asset Type="Microsoft.VisualStudio.MefComponent" d:Source="Project" d:ProjectName="%CurrentProject%" Path="|%CurrentProject%|" />
-    <Asset Type="Microsoft.VisualStudio.MefComponent" d:Source="Project" d:ProjectName="Foundation.CodeGenerators" Path="|Foundation.CodeGenerators|" />
+    <Asset Type="Microsoft.VisualStudio.MefComponent" d:Source="Project" d:ProjectName="BitTools.Core" Path="|BitTools.Core|" />
+    <Asset Type="Microsoft.VisualStudio.MefComponent" d:Source="Project" d:ProjectName="BitCodeGenerator" Path="|BitCodeGenerator|" />
   </Assets>
 </PackageManifest>

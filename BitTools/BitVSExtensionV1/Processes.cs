@@ -3,7 +3,7 @@ using Microsoft.VisualStudio.OLE.Interop;
 using System;
 using System.Runtime.InteropServices;
 
-namespace Foundation.VSPackage
+namespace BitVSExtensionV1
 {
     public static class Processes
     {

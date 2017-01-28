@@ -7,8 +7,6 @@ using System.ComponentModel.Design;
 using System.Linq;
 using System.Runtime.InteropServices;
 using EnvDTE;
-using Foundation.CodeGenerators.Implementations;
-using Foundation.CodeGenerators.Implementations.HtmlClientProxyGenerator;
 using Project = Microsoft.CodeAnalysis.Project;
 using Solution = Microsoft.CodeAnalysis.Solution;
 using System.Windows.Forms;
@@ -16,20 +14,22 @@ using System;
 using System.IO;
 using EnvDTE80;
 using System.Diagnostics;
-using Foundation.CodeGenerators.Contracts;
+using BitTools.Core.Contracts;
+using BitCodeGenerator.Implementations;
+using BitCodeGenerator.Implementations.HtmlClientProxyGenerator;
 
-namespace Foundation.VSPackage
+namespace BitVSExtensionV1
 {
     [PackageRegistration(UseManagedResourcesOnly = true)]
     [InstalledProductRegistration("#110", "#112", "1.0", IconResourceID = 400)]
     [Guid(PackageGuidString)]
     [ProvideAutoLoad(UIContextGuids80.SolutionExists)]
-    public sealed class FoundationVSPackage : Package
+    public sealed class BitPacakge : Package
     {
-        private const string PackageGuidString = "702e7670-2ceb-4ec6-9dfb-d441251f3983";
-        private const string FoundationVSPackageName = "Foundation.VSPackage";
+        private const string PackageGuidString = "F5222FDA-2C19-434B-9343-B0E942816E4C";
+        private const string BitVSExtensionName = "Bit VS Extension V1";
 
-        public FoundationVSPackage()
+        public BitPacakge()
         {
 
         }
@@ -38,7 +38,7 @@ namespace Foundation.VSPackage
         {
             base.Initialize();
 
-            IComponentModel componentModel = (IComponentModel)this.GetService(typeof(SComponentModel));
+            IComponentModel componentModel = (IComponentModel)GetService(typeof(SComponentModel));
 
             if (componentModel == null)
             {
@@ -66,7 +66,6 @@ namespace Foundation.VSPackage
 
             if (!File.Exists(_workspace.CurrentSolution.FilePath))
             {
-                ShowInitialLoadProblem($"Your solution can not be used by {FoundationVSPackageName}");
                 return;
             }
 
@@ -112,9 +111,9 @@ namespace Foundation.VSPackage
 
             _outputWindow = (OutputWindow)outputWindow.Object;
 
-            if (!_outputWindow.OutputWindowPanes.Cast<OutputWindowPane>().Any(x => x.Name == FoundationVSPackageName))
+            if (!_outputWindow.OutputWindowPanes.Cast<OutputWindowPane>().Any(x => x.Name == BitVSExtensionName))
             {
-                _outputWindow.OutputWindowPanes.Add(FoundationVSPackageName);
+                _outputWindow.OutputWindowPanes.Add(BitVSExtensionName);
             }
         }
 
@@ -142,7 +141,7 @@ namespace Foundation.VSPackage
 
                 if (action == vsBuildAction.vsBuildActionClean)
                 {
-                    new DefaultHtmlClientProxyCleaner(new DefaultHtmlClientProxyGeneratorMappingsProvider(new DefaultFoundationVSPackageConfigurationProvider()))
+                    new DefaultHtmlClientProxyCleaner(new DefaultBitCodeGeneratorMappingsProvider(new DefaultBitConfigProvider()))
                             .DeleteCodes(_workspace, solution, _isBeingBuiltProjects);
 
                     Log("Generated codes were deleted");
@@ -154,8 +153,8 @@ namespace Foundation.VSPackage
                     IProjectDtoControllersProvider controllersProvider = new DefaultProjectDtoControllersProvider();
                     IProjectDtosProvider dtosProvider = new DefaultProjectDtosProvider(controllersProvider);
 
-                    new DefaultHtmlClientProxyGenerator(new DefaultHtmlClientProxyGeneratorSolutionProjectsSelector(),
-                        new DefaultHtmlClientProxyGeneratorMappingsProvider(new DefaultFoundationVSPackageConfigurationProvider()), dtosProvider
+                    new DefaultHtmlClientProxyGenerator(new DefaultBitCodeGeneratorOrderedProjectsProvider(),
+                        new DefaultBitCodeGeneratorMappingsProvider(new DefaultBitConfigProvider()), dtosProvider
                         , new DefaultHtmlClientProxyDtoGenerator(), new DefaultHtmlClientContextGenerator(), controllersProvider, new DefaultProjectEnumTypesProvider(controllersProvider, dtosProvider))
                             .GenerateCodes(_workspace, solution, _isBeingBuiltProjects);
 
@@ -174,11 +173,11 @@ namespace Foundation.VSPackage
         public void Log(string text)
         {
             OutputWindowPane outputPane = _outputWindow.OutputWindowPanes.Cast<OutputWindowPane>()
-                .SingleOrDefault(x => x.Name == FoundationVSPackageName);
+                .SingleOrDefault(x => x.Name == BitVSExtensionName);
 
             if (outputPane == null)
             {
-                MessageBox.Show(text, FoundationVSPackageName, MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
+                MessageBox.Show(text, BitVSExtensionName, MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
             }
             else
             {
@@ -194,7 +193,7 @@ namespace Foundation.VSPackage
             if (string.IsNullOrEmpty(errorMessage))
                 throw new ArgumentException(nameof(errorMessage));
 
-            MessageBox.Show(errorMessage, FoundationVSPackageName, MessageBoxButtons.OK, MessageBoxIcon.Error);
+            MessageBox.Show(errorMessage, BitVSExtensionName, MessageBoxButtons.OK, MessageBoxIcon.Error);
         }
 
         protected override void Dispose(bool disposing)

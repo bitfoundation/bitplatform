@@ -9,6 +9,12 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BitCodeAnalyzer", "BitTools
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BitCodeAnalyzer.Test", "BitTools\BitCodeAnalyzer.Test\BitCodeAnalyzer.Test.csproj", "{A55080FD-856C-4F04-9308-A6C71C8510B7}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BitCodeGenerator", "BitTools\BitCodeGenerator\BitCodeGenerator.csproj", "{AFE4642A-22A7-4766-873C-80A69BF8545A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BitCodeGenerator.Test", "BitTools\BitCodeGenerator.Test\BitCodeGenerator.Test.csproj", "{68E603AF-2472-4B68-9BC6-9772AFCA9579}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BitVSExtensionV1", "BitTools\BitVSExtensionV1\BitVSExtensionV1.csproj", "{F22F2025-9D98-48EA-B5CC-FFB0E90F3AE7}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -27,6 +33,18 @@ Global
 		{A55080FD-856C-4F04-9308-A6C71C8510B7}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A55080FD-856C-4F04-9308-A6C71C8510B7}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A55080FD-856C-4F04-9308-A6C71C8510B7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AFE4642A-22A7-4766-873C-80A69BF8545A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AFE4642A-22A7-4766-873C-80A69BF8545A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AFE4642A-22A7-4766-873C-80A69BF8545A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AFE4642A-22A7-4766-873C-80A69BF8545A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{68E603AF-2472-4B68-9BC6-9772AFCA9579}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{68E603AF-2472-4B68-9BC6-9772AFCA9579}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{68E603AF-2472-4B68-9BC6-9772AFCA9579}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{68E603AF-2472-4B68-9BC6-9772AFCA9579}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F22F2025-9D98-48EA-B5CC-FFB0E90F3AE7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F22F2025-9D98-48EA-B5CC-FFB0E90F3AE7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F22F2025-9D98-48EA-B5CC-FFB0E90F3AE7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F22F2025-9D98-48EA-B5CC-FFB0E90F3AE7}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
