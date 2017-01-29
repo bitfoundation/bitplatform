@@ -1,5 +1,32 @@
 ﻿module Foundation.View.Directives {
 
+    @Core.DirectiveDependency({ name: "ngUpdateHidden" }) // http://stackoverflow.com/a/24241282
+    export class NgUpdateHidden implements ViewModel.Contracts.IDirective {
+        public getDirectiveFactory(): ng.IDirectiveFactory {
+            return (): ng.IDirective => {
+                return {
+                    restrict: 'A',
+                    scope: {},
+                    replace: true,
+                    require: 'ngModel',
+                    link: function ($scope: ng.IScope, elem: JQuery, attr: ng.IAttributes, ngModel: ng.INgModelController & string) {
+
+                        let dateTimeService = Foundation.Core.DependencyManager.getCurrent().resolveObject<Foundation.ViewModel.Contracts.IDateTimeService>("DateTimeService");
+
+                        elem.change(() => {
+                            $scope.$applyAsync(() => {
+                                let val = elem.val();
+                                if (val == null || (dateTimeService.parseDate(val) instanceof Date) == true) {
+                                    ngModel.$setViewValue(val);
+                                }
+                            });
+                        });
+                    }
+                };
+            };
+        }
+    }
+
     @Core.ComponentDependency({
         name: "persianDatePicker",
         require: {
@@ -13,7 +40,7 @@
 
             return `<persian-date-element>
                         <input id='main' type='text' />
-                        <input type='text' id='alt' ng-model='vm.ngModel' style='display: none; '></input>
+                        <input id='alt' ng-model='vm.ngModel' type='hidden' ng-update-hidden ></input>
                     <persian-date-element>`;
 
         }]
