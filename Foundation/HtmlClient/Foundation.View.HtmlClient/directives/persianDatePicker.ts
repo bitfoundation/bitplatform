@@ -89,6 +89,17 @@
             this.$main = this.$element.find("#main");
             this.$alt = this.$element.find("#alt");
 
+            this.$main.change(e => { // Clears ngModel when user clears text box
+                if (this.$main.val() == null || this.$main.val() == "")
+                    this.ngModel = undefined;
+            });
+
+            this.$main.focus(e => {
+                if (this.ngModelController.$isEmpty(this.ngModel)) {
+                    this.$main.val("");
+                }
+            });
+
             const isDateTime = this.isDateTime;
             const dateTimeService = this.dateTimeService;
 
@@ -110,6 +121,23 @@
                     enabled: this.isDateTime == true
                 }
             });
+
+            if (typeof ngMaterial != "undefined") {
+
+                const mdInputContainerParent = this.$main.parents("md-input-container");
+
+                if (mdInputContainerParent.length != 0) {
+
+                    if (!this.ngModelController.$isEmpty(this.ngModel)) {
+                        mdInputContainerParent.addClass("md-input-has-value");
+                    }
+
+                }
+            }
+
+            if (this.ngModelController.$isEmpty(this.ngModel)) {
+                this.ngModel = undefined;
+            }
         }
     }
 
