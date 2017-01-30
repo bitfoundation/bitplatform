@@ -58,7 +58,7 @@
 <#= enumType.EnumTypeSymbol.ToDisplayString() #> = $data.createEnum("<#= enumType.EnumTypeSymbol.ToDisplayString() #>", null, $data.String, [
 	<# foreach (EnumMember enumMember in enumType.Members)
 	{ #> 
-		{ name : '<#= enumMember.Name #>' , value : "'<#= enumMember.Value #>'" },
+		{ name : '<#= enumMember.Name #>' , value : "<#= enumType.EnumTypeSymbol.ToDisplayString() #>'<#= enumMember.Name #>'" },
 	<#}#>
 	]);
 <#}#>
