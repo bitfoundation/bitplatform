@@ -1,32 +1,5 @@
 ﻿module Foundation.View.Directives {
 
-    @Core.DirectiveDependency({ name: "ngUpdateHidden" }) // http://stackoverflow.com/a/24241282
-    export class NgUpdateHidden implements ViewModel.Contracts.IDirective {
-        public getDirectiveFactory(): ng.IDirectiveFactory {
-            return (): ng.IDirective => {
-                return {
-                    restrict: 'A',
-                    scope: {},
-                    replace: true,
-                    require: 'ngModel',
-                    link: function ($scope: ng.IScope, elem: JQuery, attr: ng.IAttributes, ngModel: ng.INgModelController & string) {
-
-                        let dateTimeService = Foundation.Core.DependencyManager.getCurrent().resolveObject<Foundation.ViewModel.Contracts.IDateTimeService>("DateTimeService");
-
-                        elem.change(() => {
-                            $scope.$applyAsync(() => {
-                                let val = elem.val();
-                                if (val == null || (dateTimeService.parseDate(val) instanceof Date) == true) {
-                                    ngModel.$setViewValue(val);
-                                }
-                            });
-                        });
-                    }
-                };
-            };
-        }
-    }
-
     @Core.ComponentDependency({
         name: "persianDatePicker",
         require: {
@@ -39,8 +12,8 @@
         template: ["$element", "$attrs", ($element: JQuery, $attrs: ng.IAttributes) => {
 
             return `<persian-date-element>
-                        <input id='main' type='text' />
-                        <input id='alt' ng-model='vm.ngModel' type='hidden' ng-update-hidden ></input>
+                        <input id='display' type='text'></input>
+                        <input id='value' ng-model='vm.ngModel' type='hidden'></input>
                     <persian-date-element>`;
 
         }]
@@ -53,8 +26,9 @@
         public isDateTime: boolean;
         public ngModel: Date;
         public ngModelController: ng.INgModelController;
-        public $main: JQuery;
-        public $alt: JQuery;
+        public $display: JQuery;
+        public $value: JQuery;
+        public mdInputContainerParent: JQuery;
 
         public async $onInit(): Promise<void> {
 
@@ -64,48 +38,44 @@
 
             this.ngModelController.$formatters.push((value: Date): string => {
 
-                const result = new Date(value);
+                if (this.ngModelController.$isEmpty(value)) {
+                    if (this.$display != null)
+                        this.$display.val(null);
+                    if (this.mdInputContainerParent != null)
+                        this.mdInputContainerParent.removeClass("md-input-has-value");
+                    return null;
+                }
+                else {
+                    const result = new Date(value);
 
-                let formattedResult: string;
+                    let formattedResult: string;
 
-                if (this.isDateTime == true)
-                    formattedResult = this.dateTimeService.getFormattedDateTime(result, "FaIr");
-                else
-                    formattedResult = this.dateTimeService.getFormattedDate(result, "FaIr");
+                    if (this.isDateTime == true)
+                        formattedResult = this.dateTimeService.getFormattedDateTime(result, "FaIr");
+                    else
+                        formattedResult = this.dateTimeService.getFormattedDate(result, "FaIr");
 
-                if (this.$alt != null)
-                    this.$alt.val(result.toString());
+                    if (this.$display != null)
+                        this.$display.val(formattedResult);
+                    if (this.mdInputContainerParent != null)
+                        this.mdInputContainerParent.addClass("md-input-has-value");
 
-                if (this.$main != null)
-                    this.$main.val(formattedResult);
-
-                return formattedResult;
-
+                    return formattedResult;
+                }
             });
         }
 
         public async $postLink(): Promise<void> {
 
-            this.$main = this.$element.find("#main");
-            this.$alt = this.$element.find("#alt");
-
-            this.$main.change(e => { // Clears ngModel when user clears text box
-                if (this.$main.val() == null || this.$main.val() == "")
-                    this.ngModel = undefined;
-            });
-
-            this.$main.focus(e => {
-                if (this.ngModelController.$isEmpty(this.ngModel)) {
-                    this.$main.val("");
-                }
-            });
+            this.$display = this.$element.find("#display");
+            this.$value = this.$element.find("#value");
 
             const isDateTime = this.isDateTime;
             const dateTimeService = this.dateTimeService;
 
-            this.$main.pDatepicker({
+            this.$display.pDatepicker({
                 autoClose: this.isDateTime == false,
-                altField: this.$alt,
+                altField: this.$value,
                 altFieldFormatter: (e) => {
                     const result = new Date(e);
                     return result;
@@ -122,21 +92,22 @@
                 }
             });
 
+            this.$value.val(null); // at first date time picker will initialized with current system date
+
+            this.$display.change(e => { // Clears ngModel when user clears text box
+                if (this.$display.val() == null || this.$display.val() == "")
+                    this.ngModelController.$setViewValue(null);
+            });
+
+            this.$value.change((e) => {  // because this input's type is hidden
+                this.$scope.$applyAsync(() => {
+                    let val = this.$value.val();
+                    this.ngModelController.$setViewValue(this.ngModelController.$isEmpty(val) ? null : this.dateTimeService.parseDate(val));
+                });
+            });
+
             if (typeof ngMaterial != "undefined") {
-
-                const mdInputContainerParent = this.$main.parents("md-input-container");
-
-                if (mdInputContainerParent.length != 0) {
-
-                    if (!this.ngModelController.$isEmpty(this.ngModel)) {
-                        mdInputContainerParent.addClass("md-input-has-value");
-                    }
-
-                }
-            }
-
-            if (this.ngModelController.$isEmpty(this.ngModel)) {
-                this.ngModel = undefined;
+                this.mdInputContainerParent = this.$display.parents("md-input-container");
             }
         }
     }
