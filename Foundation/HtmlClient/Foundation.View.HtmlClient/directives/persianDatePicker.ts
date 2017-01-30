@@ -7,7 +7,7 @@
         },
         bindings: {
             'ngModel': "=",
-            'isDateTime': "<"
+            'isDateTime': "="
         },
         template: ["$element", "$attrs", ($element: JQuery, $attrs: ng.IAttributes) => {
 
