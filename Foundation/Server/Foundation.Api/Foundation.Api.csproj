@@ -449,6 +449,7 @@
     <Compile Include="Middlewares\WebApi\OData\Contracts\IODataContainerBuilderCustomizer.cs" />
     <Compile Include="Middlewares\WebApi\Contracts\IWebApiOwinPipelineInjector.cs" />
     <Compile Include="Middlewares\WebApi\OData\DefaultODataEnumDeserializer.cs" />
+    <Compile Include="Middlewares\WebApi\OData\DefaultODataEnumSerializer.cs" />
     <Compile Include="Middlewares\WebApi\OData\Implementations\DefaultODataContainerBuilderCustomizer.cs" />
     <Compile Include="Middlewares\WebApi\OData\Contracts\IAutoEdmBuilder.cs" />
     <Compile Include="Middlewares\WebApi\OData\Implementations\DefaultAutoEdmBuilder.cs" />
