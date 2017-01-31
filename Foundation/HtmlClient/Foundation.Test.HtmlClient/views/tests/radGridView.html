@@ -31,7 +31,7 @@
                 <td name="Date" title="{{::'Date' | translate}}">
                     {{::dataItem.Date | bitDate}}
                 </td>
-                <td>
+                <td command title="{{::'Commands' | translate}}">
                     <rad-grid-edit-button>Update</rad-grid-edit-button>
                     <rad-grid-delete-button>Delete</rad-grid-delete-button>
                     <md-button id="doSomethingWithCurrentEntity" ng-click="vm.doSomethingWithCurrentEntity(this)">Do something with current entity</md-button>
