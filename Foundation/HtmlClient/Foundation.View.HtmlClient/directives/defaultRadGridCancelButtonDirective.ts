@@ -16,7 +16,7 @@ module Foundation.View.Directives {
                                 return text.replace(new RegExp(search, "g"), replacement);
                             };
 
-                            const gridIsolatedKey = angular.element(element).parents("fake").attr("isolatedoptionskey");
+                            const gridIsolatedKey = angular.element(element).parents("rad-grid-editor").attr("isolatedoptionskey");
 
                             const newElementHtml = replaceAll(element[0].outerHTML, "rad-grid-cancel-button", "md-button");
 
