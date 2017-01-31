@@ -16,72 +16,45 @@
 
     dependencyManager.registerFileDependency({
         name: "kendo-common-styles",
-        path: "bit-framework/Foundation/HtmlClient/Foundation.Test.HtmlClient/bower_components/kendo/kendo",
+        path: "bit-framework/Foundation/HtmlClient/Foundation.Test.HtmlClient/bower_components/kendo-ui/styles/kendo.common.min",
         predicate: (appInfo) => {
-            return appInfo.screenSize == "DesktopAndTablet" && appInfo.getConfig<string>("KendoUILoadMode") == "Web";
+            return appInfo.screenSize == "DesktopAndTablet";
+        },
+        fileDependecyType: "Style"
+    });
+
+    dependencyManager.registerFileDependency({
+        name: "kendo-light-green-theme-styles",
+        path: "bit-framework/Foundation/HtmlClient/Foundation.Test.HtmlClient/bower_components/kendo-ui/styles/kendo.metro.min",
+        predicate: (appInfo) => {
+            return appInfo.screenSize == "DesktopAndTablet" && appInfo.theme == "LightGreen";
         },
         fileDependecyType: "Style"
     });
 
     dependencyManager.registerFileDependency({
         name: "kendo-light-blue-theme-styles",
-        path: "bit-framework/Foundation/HtmlClient/Foundation.Test.HtmlClient/bower_components/kendo/kendo-blue",
+        path: "bit-framework/Foundation/HtmlClient/Foundation.Test.HtmlClient/bower_components/kendo-ui/styles/kendo.material.min",
         predicate: (appInfo) => {
-            return appInfo.screenSize == "DesktopAndTablet" && appInfo.theme == "LightBlue" && appInfo.getConfig<string>("KendoUILoadMode") == "Web";
+            return appInfo.screenSize == "DesktopAndTablet" && appInfo.theme == "LightBlue";
+        },
+        fileDependecyType: "Style"
+    });
+
+    dependencyManager.registerFileDependency({
+        name: "kendo-dark-amber-theme-styles",
+        path: "bit-framework/Foundation/HtmlClient/Foundation.Test.HtmlClient/bower_components/kendo-ui/styles/kendo.materialblack.min",
+        predicate: (appInfo) => {
+            return appInfo.screenSize == "DesktopAndTablet" && appInfo.theme == "DarkAmber";
         },
         fileDependecyType: "Style"
     });
 
     dependencyManager.registerFileDependency({
         name: "kendo-rtl-styles",
-        path: "bit-framework/Foundation/HtmlClient/Foundation.Test.HtmlClient/bower_components/kendo/kendo-rtl",
-        predicate: (appInfo) => {
-            return appInfo.screenSize == "DesktopAndTablet" && appInfo.culture == "FaIr" && appInfo.getConfig<string>("KendoUILoadMode") == "Web";
-        },
-        fileDependecyType: "Style"
-    });
-
-    dependencyManager.registerFileDependency({
-        name: "kendo-common-styles-core",
-        path: "bit-framework/Foundation/HtmlClient/Foundation.Test.HtmlClient/bower_components/kendo-ui/styles/kendo.common.min",
-        predicate: (appInfo) => {
-            return appInfo.screenSize == "DesktopAndTablet" && appInfo.getConfig<string>("KendoUILoadMode") == "Core";
-        },
-        fileDependecyType: "Style"
-    });
-
-    dependencyManager.registerFileDependency({
-        name: "kendo-light-green-theme-styles-core",
-        path: "bit-framework/Foundation/HtmlClient/Foundation.Test.HtmlClient/bower_components/kendo-ui/styles/kendo.metro.min",
-        predicate: (appInfo) => {
-            return appInfo.screenSize == "DesktopAndTablet" && appInfo.theme == "LightGreen" && appInfo.getConfig<string>("KendoUILoadMode") == "Core";
-        },
-        fileDependecyType: "Style"
-    });
-
-    dependencyManager.registerFileDependency({
-        name: "kendo-light-blue-theme-styles-core",
-        path: "bit-framework/Foundation/HtmlClient/Foundation.Test.HtmlClient/bower_components/kendo-ui/styles/kendo.material.min",
-        predicate: (appInfo) => {
-            return appInfo.screenSize == "DesktopAndTablet" && appInfo.theme == "LightBlue" && appInfo.getConfig<string>("KendoUILoadMode") == "Core";
-        },
-        fileDependecyType: "Style"
-    });
-
-    dependencyManager.registerFileDependency({
-        name: "kendo-dark-amber-theme-styles-core",
-        path: "bit-framework/Foundation/HtmlClient/Foundation.Test.HtmlClient/bower_components/kendo-ui/styles/kendo.materialblack.min",
-        predicate: (appInfo) => {
-            return appInfo.screenSize == "DesktopAndTablet" && appInfo.theme == "DarkAmber" && appInfo.getConfig<string>("KendoUILoadMode") == "Core";
-        },
-        fileDependecyType: "Style"
-    });
-
-    dependencyManager.registerFileDependency({
-        name: "kendo-rtl-styles-core",
         path: "bit-framework/Foundation/HtmlClient/Foundation.Test.HtmlClient/bower_components/kendo-ui/styles/kendo.rtl.min",
         predicate: (appInfo) => {
-            return appInfo.screenSize == "DesktopAndTablet" && appInfo.culture == "FaIr" && appInfo.getConfig<string>("KendoUILoadMode") == "Core";
+            return appInfo.screenSize == "DesktopAndTablet" && appInfo.culture == "FaIr";
         },
         fileDependecyType: "Style"
     });
@@ -221,7 +194,15 @@
         name: "kendo-culture-fa-IR",
         path: "bit-framework/Foundation/HtmlClient/Foundation.Test.HtmlClient/bower_components/kendo-ui/src/js/cultures/kendo.culture.fa-IR",
         predicate: (appInfo) => {
-            return appInfo.screenSize == "DesktopAndTablet" && appInfo.culture == "FaIr" && appInfo.getConfig<string>("KendoUILoadMode") == "Core";
+            return appInfo.screenSize == "DesktopAndTablet" && appInfo.culture == "FaIr";
+        }
+    });
+
+    dependencyManager.registerFileDependency({
+        name: "kendo-messages-fa-IR",
+        path: "bit-framework/Foundation/HtmlClient/Foundation.Test.HtmlClient/bower_components/kendo/kendo.messages.fa-IR",
+        predicate: (appInfo) => {
+            return appInfo.screenSize == "DesktopAndTablet" && appInfo.culture == "FaIr" && appInfo.getConfig<string>("KendoUILoadMode") == "Web";
         }
     });
 
