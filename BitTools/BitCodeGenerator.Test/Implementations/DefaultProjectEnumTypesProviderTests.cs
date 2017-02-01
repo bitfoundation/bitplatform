@@ -86,9 +86,9 @@ public class DtoWithEnumController : DtoController<DtoWithEnum>
 
             Assert.IsTrue(result.First().Members.SequenceEqual(new[]
             {
-                new EnumMember { Name = "Man", Value = 3 },
-                new EnumMember { Name = "Woman", Value = 12 },
-                new EnumMember { Name = "Other", Value = 13 }
+                new EnumMember { Name = "Man", Value = 3,Index = 0},
+                new EnumMember { Name = "Woman", Value = 12,Index = 1},
+                new EnumMember { Name = "Other", Value = 13,Index = 2}
             }, new EnumMemberEqualityComparer()));
         }
 
@@ -96,7 +96,7 @@ public class DtoWithEnumController : DtoController<DtoWithEnum>
         {
             public bool Equals(EnumMember x, EnumMember y)
             {
-                return x.Name == y.Name && x.Value == y.Value;
+                return x.Name == y.Name && x.Value == y.Value && x.Index == y.Index;
             }
 
             public int GetHashCode(EnumMember obj)

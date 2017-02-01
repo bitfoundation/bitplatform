@@ -14,8 +14,10 @@ namespace BitTools.Core.Model
     {
         public virtual string Name { get; set; }
 
-        public ISymbol Symbol { get; set; }
+        public virtual ISymbol Symbol { get; set; }
 
+        public virtual int Index { get; set; }
+    
         public virtual int Value { get; set; }
     }
 }
