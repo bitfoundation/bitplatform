@@ -3,6 +3,9 @@
 module Foundation.View.Directives {
     @Core.DirectiveDependency({ name: "radCombo" })
     export class DefaultRadComboDirective implements ViewModel.Contracts.IDirective {
+
+        public static defaultRadComboDirectiveCustomizers: Array<($scope: ng.IScope, attribues: ng.IAttributes, element: JQuery, comboBoxOptions: kendo.ui.ComboBoxOptions) => void> = [];
+
         public getDirectiveFactory(): ng.IDirectiveFactory {
             return () => ({
                 scope: false,
@@ -250,6 +253,10 @@ module Foundation.View.Directives {
 
                             if (dataSource.options.schema.model.fields[comboOptions.dataValueField] == null)
                                 throw new Error(`Model has no property named ${comboOptions.dataValueField} to be used as value field`);
+
+                            DefaultRadComboDirective.defaultRadComboDirectiveCustomizers.forEach(radComboCustomizer => {
+                                radComboCustomizer($scope, attributes, element, comboOptions);
+                            });
 
                             if (attributes.onInit != null) {
                                 let onInitFN = $parse(attributes.onInit);

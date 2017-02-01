@@ -1,6 +1,6 @@
 ﻿namespace Foundation.Model.Contracts
 {
-    public interface IsArchivableEntity : IEntity
+    public interface IArchivableEntity : IEntity
     {
         bool IsArchived { get; set; }
     }

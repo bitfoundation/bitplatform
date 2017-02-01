@@ -4,6 +4,9 @@ module Foundation.View.Directives {
 
     @Core.DirectiveDependency({ name: "radMultiSelect" })
     export class DefaultRadMultiSelectDirective implements ViewModel.Contracts.IDirective {
+
+        public static defaultRadMultiSelectDirectiveCustomizers: Array<($scope: ng.IScope, attribues: ng.IAttributes, element: JQuery, multiSelectOptions: kendo.ui.MultiSelectOptions) => void> = [];
+
         public getDirectiveFactory(): ng.IDirectiveFactory {
             return () => ({
                 scope: false,
@@ -230,6 +233,10 @@ module Foundation.View.Directives {
 
                             if (dataSource.options.schema.model.fields[multiSelectOptions.dataValueField] == null)
                                 throw new Error(`Model has no property named ${multiSelectOptions.dataValueField} to be used as value field`);
+
+                            DefaultRadMultiSelectDirective.defaultRadMultiSelectDirectiveCustomizers.forEach(multiSelectCustomizer => {
+                                multiSelectCustomizer($scope, attributes, element, multiSelectOptions);
+                            });
 
                             if (attributes.onInit != null) {
                                 let onInitFN = $parse(attributes.onInit);

@@ -1,5 +1,5 @@
 ﻿module Foundation.Model.Contracts {
-    export interface IsArchivableDto extends IDto {
+    export interface IArchivableDto extends IDto {
         IsArchived: boolean;
     }
 }
