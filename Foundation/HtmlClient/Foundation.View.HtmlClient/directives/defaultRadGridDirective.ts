@@ -5,15 +5,8 @@ module Foundation.View.Directives {
     @Core.DirectiveDependency({ name: "radGrid" })
     export class DefaultRadGridDirective implements ViewModel.Contracts.IDirective {
 
-        public static scrollable: boolean | kendo.ui.GridScrollable = false;
-        public static resizable: boolean = true;
-        public static reorderable: boolean = true;
-        public static navigatable: boolean = true;
-        public static mobile: boolean = false;
-        public static filterable: boolean | kendo.ui.GridFilterable = true;
-        public static columnMenu: boolean | kendo.ui.GridColumnMenu = true;
-        public static pageable: boolean | kendo.ui.GridPageable = true;
-        public static groupable: | kendo.ui.GridGroupable = false;
+        public static defaultRadGridDirectiveCustomizers: Array<($scope: ng.IScope, attribues: ng.IAttributes, element: JQuery, gridOptions: kendo.ui.GridOptions) => void> = [];
+        public static defaultRadGridDirectiveColumnCustomizers: Array<($scope: ng.IScope, attribues: ng.IAttributes, element: JQuery, gridOptions: kendo.ui.GridOptions, columnElement: JQuery, gridColumn: kendo.ui.GridColumn) => void> = [];
 
         public getDirectiveFactory(): ng.IDirectiveFactory {
             return () => ({
@@ -250,20 +243,19 @@ module Foundation.View.Directives {
                                 sortable: {
                                     mode: "multiple"
                                 },
-                                scrollable: DefaultRadGridDirective.scrollable,
-                                resizable: DefaultRadGridDirective.resizable,
-                                reorderable: DefaultRadGridDirective.reorderable,
-                                navigatable: DefaultRadGridDirective.navigatable,
-                                mobile: DefaultRadGridDirective.mobile,
-                                filterable: DefaultRadGridDirective.filterable,
-                                columnMenu: DefaultRadGridDirective.columnMenu,
-                                pageable: {
+                                pageable: datasource.options.pageSize != null ? {
                                     buttonCount: 3,
                                     input: true,
                                     pageSizes: [5, 10, 15, 25, 100],
                                     refresh: true
-                                },
-                                groupable: attributes.groupable == true || DefaultRadGridDirective.groupable
+                                } : false,
+                                scrollable: false,
+                                resizable: true,
+                                navigatable: true,
+                                mobile: false,
+                                filterable: true,
+                                columnMenu: true,
+                                groupable: false
                             };
 
                             if (attributes["toolbarTemplateId"] != null) {
@@ -325,6 +317,8 @@ module Foundation.View.Directives {
                                         template: template
                                     };
 
+                                    gridColumn["element"] = wrappedItem;
+
                                     if (item.hasAttribute("command")) {
                                         columns.push(gridColumn);
                                         return;
@@ -338,134 +332,130 @@ module Foundation.View.Directives {
                                     if (field == null)
                                         throw new Error(`Model has no field named ${gridColumn.field} to be used`);
 
-                                    if (DefaultRadGridDirective.filterable == true) {
+                                    if (field.type == "date") {
 
-                                        if (field.type == "date") {
+                                        const currentCulture = clientAppProfileManager.getClientAppProfile().culture;
 
-                                            const currentCulture = clientAppProfileManager.getClientAppProfile().culture;
+                                        if (currentCulture == "FaIr") {
 
-                                            if (currentCulture == "FaIr") {
+                                            gridColumn.filterable = {
 
-                                                gridColumn.filterable = {
+                                                ui: (element: JQuery) => {
 
-                                                    ui: (element: JQuery) => {
+                                                    let val = element.val();
 
-                                                        let val = element.val();
+                                                    element.after('<input type="button" class="k-button" style="width:100%" />');
 
-                                                        element.after('<input type="button" class="k-button" style="width:100%" />');
+                                                    const datePickerButton = element.next();
 
-                                                        const datePickerButton = element.next();
+                                                    let persianDatePickerOptions: PDatePickerOptions = {
+                                                        position: ["0px", "0px"],
+                                                        autoClose: field.viewType == "Date",
+                                                        altField: element,
+                                                        altFieldFormatter: (e) => {
+                                                            const result = new Date(e);
+                                                            return result;
+                                                        },
+                                                        formatter: (e) => {
+                                                            const result = new Date(e);
+                                                            if (field.dateType == "DateTime")
+                                                                return dateTimeService.getFormattedDateTime(result);
+                                                            else
+                                                                return dateTimeService.getFormattedDate(result);
+                                                        },
+                                                        timePicker: {
+                                                            enabled: field.dateType == "DateTime"
+                                                        },
+                                                        onShow: () => {
 
-                                                        let persianDatePickerOptions: PDatePickerOptions = {
-                                                            position: ["0px", "0px"],
-                                                            autoClose: field.viewType == "Date",
-                                                            altField: element,
-                                                            altFieldFormatter: (e) => {
-                                                                const result = new Date(e);
-                                                                return result;
-                                                            },
-                                                            formatter: (e) => {
-                                                                const result = new Date(e);
-                                                                if (field.dateType == "DateTime")
-                                                                    return dateTimeService.getFormattedDateTime(result);
-                                                                else
-                                                                    return dateTimeService.getFormattedDate(result);
-                                                            },
-                                                            timePicker: {
-                                                                enabled: field.dateType == "DateTime"
-                                                            },
-                                                            onShow: () => {
+                                                            const thisPDatePickerElementToBePopupedUsingKendoPopup = angular.element(".datepicker-plot-area")
+                                                                .filter((eId, el) => angular.element(el).is(":visible"));
 
-                                                                const thisPDatePickerElementToBePopupedUsingKendoPopup = angular.element(".datepicker-plot-area")
-                                                                    .filter((eId, el) => angular.element(el).is(":visible"));
+                                                            const parentMenu = element.parents("div.k-column-menu").first();
 
-                                                                const parentMenu = element.parents("div.k-column-menu").first();
+                                                            const kendoPopupElement = thisPDatePickerElementToBePopupedUsingKendoPopup.kendoPopup({
+                                                                anchor: parentMenu
+                                                            });
 
-                                                                const kendoPopupElement = thisPDatePickerElementToBePopupedUsingKendoPopup.kendoPopup({
-                                                                    anchor: parentMenu
-                                                                });
+                                                            const kendoPopup = kendoPopupElement.data("kendoPopup");
 
-                                                                const kendoPopup = kendoPopupElement.data("kendoPopup");
+                                                            kendoPopup.open();
 
-                                                                kendoPopup.open();
+                                                            thisPDatePickerElementToBePopupedUsingKendoPopup.css("top", "-25px");
 
-                                                                thisPDatePickerElementToBePopupedUsingKendoPopup.css("top", "-25px");
+                                                            this["kendoPopuo"] = kendoPopup;
+                                                        },
+                                                        onHide: () => {
+                                                            this["kendoPopuo"].destroy();
+                                                        }
+                                                    };
 
-                                                                this["kendoPopuo"] = kendoPopup;
-                                                            },
-                                                            onHide: () => {
-                                                                this["kendoPopuo"].destroy();
-                                                            }
-                                                        };
+                                                    datePickerButton.pDatepicker(persianDatePickerOptions);
 
-                                                        datePickerButton.pDatepicker(persianDatePickerOptions);
+                                                    if (val == null || val == "")
+                                                        datePickerButton.val(null);
+                                                    else
+                                                        datePickerButton.val(persianDatePickerOptions.formatter(val));
 
-                                                        if (val == null || val == "")
-                                                            datePickerButton.val(null);
-                                                        else
-                                                            datePickerButton.val(persianDatePickerOptions.formatter(val));
+                                                    element.val(val);
 
-                                                        element.val(val);
-
-                                                        element.hide();
-                                                    }
+                                                    element.hide();
                                                 }
                                             }
-                                            else {
-                                                if (field.viewType == "DateTime") {
-                                                    gridColumn.filterable = {
-                                                        ui: (element: JQuery) => {
-                                                            element.kendoDateTimePicker();
-                                                        }
+                                        }
+                                        else {
+                                            if (field.viewType == "DateTime") {
+                                                gridColumn.filterable = {
+                                                    ui: (element: JQuery) => {
+                                                        element.kendoDateTimePicker();
                                                     }
                                                 }
                                             }
                                         }
-
-                                        const filterDataSourceAttributeValue = wrappedItem.attr("filter-data-source");
-
-                                        if (filterDataSourceAttributeValue != null) {
-
-                                            const filterDataSource: kendo.data.DataSource = $parse(filterDataSourceAttributeValue)($scope);
-
-                                            const filterTextFieldName = wrappedItem.attr("filter-text-field");
-                                            const filterValueFieldName = wrappedItem.attr("filter-value-field");
-
-                                            if (filterDataSource.options.schema.model.fields[filterTextFieldName] == null)
-                                                throw new Error(`Model has no property named ${filterTextFieldName} to be used as text field`);
-
-                                            if (filterDataSource.options.schema.model.fields[filterValueFieldName] == null)
-                                                throw new Error(`Model has no property named ${filterValueFieldName} to be used as value field`);
-
-                                            gridColumn.filterable = {
-                                                ui: (element: JQuery) => {
-                                                    element.kendoComboBox({
-                                                        autoBind: filterDataSource.flatView().length != 0,
-                                                        open: (e) => {
-                                                            if (e.sender.options.autoBind == false) {
-                                                                e.sender.options.autoBind = true;
-                                                                if (e.sender.options.dataSource.flatView().length == 0)
-                                                                    (e.sender.options.dataSource as kendo.data.DataSource).fetch();
-                                                            }
-                                                        },
-                                                        valuePrimitive: true,
-                                                        dataSource: filterDataSource,
-                                                        dataTextField: filterTextFieldName,
-                                                        dataValueField: filterValueFieldName || filterDataSource.options.schema.model.idField,
-                                                        delay: 300,
-                                                        ignoreCase: true,
-                                                        minLength: 3,
-                                                        placeholder: "...",
-                                                        filter: "contains",
-                                                        suggest: true,
-                                                        highlightFirst: true
-                                                    });
-                                                },
-                                                ignoreCase: true
-                                            }
-                                        };
-
                                     }
+
+                                    const filterDataSourceAttributeValue = wrappedItem.attr("filter-data-source");
+
+                                    if (filterDataSourceAttributeValue != null) {
+
+                                        const filterDataSource: kendo.data.DataSource = $parse(filterDataSourceAttributeValue)($scope);
+
+                                        const filterTextFieldName = wrappedItem.attr("filter-text-field");
+                                        const filterValueFieldName = wrappedItem.attr("filter-value-field");
+
+                                        if (filterDataSource.options.schema.model.fields[filterTextFieldName] == null)
+                                            throw new Error(`Model has no property named ${filterTextFieldName} to be used as text field`);
+
+                                        if (filterDataSource.options.schema.model.fields[filterValueFieldName] == null)
+                                            throw new Error(`Model has no property named ${filterValueFieldName} to be used as value field`);
+
+                                        gridColumn.filterable = {
+                                            ui: (element: JQuery) => {
+                                                element.kendoComboBox({
+                                                    autoBind: filterDataSource.flatView().length != 0,
+                                                    open: (e) => {
+                                                        if (e.sender.options.autoBind == false) {
+                                                            e.sender.options.autoBind = true;
+                                                            if (e.sender.options.dataSource.flatView().length == 0)
+                                                                (e.sender.options.dataSource as kendo.data.DataSource).fetch();
+                                                        }
+                                                    },
+                                                    valuePrimitive: true,
+                                                    dataSource: filterDataSource,
+                                                    dataTextField: filterTextFieldName,
+                                                    dataValueField: filterValueFieldName || filterDataSource.options.schema.model.idField,
+                                                    delay: 300,
+                                                    ignoreCase: true,
+                                                    minLength: 3,
+                                                    placeholder: "...",
+                                                    filter: "contains",
+                                                    suggest: true,
+                                                    highlightFirst: true
+                                                });
+                                            },
+                                            ignoreCase: true
+                                        }
+                                    };
 
                                     columns.push(gridColumn);
 
@@ -473,7 +463,17 @@ module Foundation.View.Directives {
 
                             compiledViewTemplate.remove();
 
+                            columns.forEach(col => {
+                                DefaultRadGridDirective.defaultRadGridDirectiveColumnCustomizers.forEach(colCustomizer => {
+                                    colCustomizer($scope, attributes, element, gridOptions, col["element"], col);
+                                });
+                            });
+
                             gridOptions.columns = columns;
+
+                            DefaultRadGridDirective.defaultRadGridDirectiveCustomizers.forEach(gridCustomizer => {
+                                gridCustomizer($scope, attributes, element, gridOptions);
+                            });
 
                             if (attributes.onInit != null) {
                                 let onInitFN = $parse(attributes.onInit);

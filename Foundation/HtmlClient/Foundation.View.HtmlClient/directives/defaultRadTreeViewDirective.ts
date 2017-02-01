@@ -4,6 +4,9 @@ module Foundation.View.Directives {
 
     @Core.DirectiveDependency({ name: "radTreeView" })
     export class DefaultRadTreeViewDirective implements ViewModel.Contracts.IDirective {
+
+        public static defaultRadTreeViewDirectiveCustomizers: Array<($scope: ng.IScope, attribues: ng.IAttributes, element: JQuery, treeViewOptions: kendo.ui.TreeViewOptions) => void> = [];
+
         public getDirectiveFactory(): ng.IDirectiveFactory {
             return () => ({
                 scope: false,
@@ -129,6 +132,10 @@ module Foundation.View.Directives {
 
                                 treeViewOptions.template = itemTemplate;
                             }
+
+                            DefaultRadTreeViewDirective.defaultRadTreeViewDirectiveCustomizers.forEach(treeViewCustomizer => {
+                                treeViewCustomizer($scope, attributes, element, treeViewOptions);
+                            });
 
                             if (attributes.onInit != null) {
                                 let onInitFN = $parse(attributes.onInit);
