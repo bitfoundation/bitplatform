@@ -1,6 +1,6 @@
 ﻿namespace Foundation.Model.Contracts
 {
-    public interface IsArchivableDto : IDto
+    public interface IArchivableDto : IDto
     {
         bool IsArchived { get; set; }
     }

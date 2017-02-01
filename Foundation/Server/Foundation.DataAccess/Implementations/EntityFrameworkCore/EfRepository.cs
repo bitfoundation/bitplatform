@@ -69,9 +69,9 @@ namespace Foundation.DataAccess.Implementations.EntityFrameworkCore
             if (entityToDelete == null)
                 throw new ArgumentNullException(nameof(entityToDelete));
 
-            if (entityToDelete is IsArchivableEntity)
+            if (entityToDelete is IArchivableEntity)
             {
-                ((IsArchivableEntity)entityToDelete).IsArchived = true;
+                ((IArchivableEntity)entityToDelete).IsArchived = true;
                 return await UpdateAsync(entityToDelete, cancellationToken);
             }
             else
@@ -179,9 +179,9 @@ namespace Foundation.DataAccess.Implementations.EntityFrameworkCore
             if (entityToDelete == null)
                 throw new ArgumentNullException(nameof(entityToDelete));
 
-            if (entityToDelete is IsArchivableEntity)
+            if (entityToDelete is IArchivableEntity)
             {
-                ((IsArchivableEntity)entityToDelete).IsArchived = true;
+                ((IArchivableEntity)entityToDelete).IsArchived = true;
                 return Update(entityToDelete);
             }
             else
