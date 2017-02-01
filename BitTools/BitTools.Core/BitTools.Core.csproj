@@ -55,7 +55,6 @@
     <Compile Include="Model\DtoController.cs" />
     <Compile Include="Model\DtoRules.cs" />
     <Compile Include="Model\EnumType.cs" />
-    <Compile Include="Model\NamespaceAlias.cs" />
     <Compile Include="Model\ODataOperation.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
