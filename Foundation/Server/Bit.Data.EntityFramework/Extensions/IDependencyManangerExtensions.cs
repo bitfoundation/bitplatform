@@ -6,7 +6,7 @@ namespace Foundation.Core.Contracts
 {
     public static class IDependencyManangerExtensions
     {
-        public static IDependencyManager RegisterEfCoreDbContext<TDbContext, TDbContextObjectsProvider>(this IDependencyManager dependencyManager)
+        public static IDependencyManager RegisterEfDbContext<TDbContext, TDbContextObjectsProvider>(this IDependencyManager dependencyManager)
             where TDbContext : class
             where TDbContextObjectsProvider : class
         {

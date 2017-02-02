@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using System.Threading;
 using System;
 using System.Data.Entity;
+using System.Data.Entity.Infrastructure;
 
 namespace Bit.Data.EntityFramework.Implementations
 {
@@ -32,7 +33,7 @@ namespace Bit.Data.EntityFramework.Implementations
             if (source == null)
                 throw new ArgumentNullException(nameof(source));
 
-            return source is System.Data.Entity.Infrastructure.DbQuery;
+            return source is IDbAsyncQueryProvider;
         }
 
         public virtual Task<List<T>> ToListAsync<T>(IQueryable<T> source, CancellationToken cancellationToken)
