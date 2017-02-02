@@ -630,14 +630,13 @@
     </None>
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Bit.Core\Bit.Core.csproj">
+      <Project>{fcda72a2-d377-4aa1-a8c5-e6c6805bcb64}</Project>
+      <Name>Bit.Core</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Foundation.Api\Foundation.Api.csproj">
       <Project>{469d5d14-b564-4af4-a36c-b93c823156b9}</Project>
       <Name>Foundation.Api</Name>
-      <Private>True</Private>
-    </ProjectReference>
-    <ProjectReference Include="..\Foundation.Core\Foundation.Core.csproj">
-      <Project>{9a2ed9c1-2249-4f0a-a524-c46cb011bc74}</Project>
-      <Name>Foundation.Core</Name>
       <Private>True</Private>
     </ProjectReference>
     <ProjectReference Include="..\Foundation.DataAccess\Foundation.DataAccess.csproj">

@@ -567,10 +567,9 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Foundation.Core\Foundation.Core.csproj">
-      <Project>{9a2ed9c1-2249-4f0a-a524-c46cb011bc74}</Project>
-      <Name>Foundation.Core</Name>
-      <Private>True</Private>
+    <ProjectReference Include="..\Bit.Core\Bit.Core.csproj">
+      <Project>{fcda72a2-d377-4aa1-a8c5-e6c6805bcb64}</Project>
+      <Name>Bit.Core</Name>
     </ProjectReference>
     <ProjectReference Include="..\Foundation.DataAccess\Foundation.DataAccess.csproj">
       <Project>{022f3e55-04c4-4541-82fb-488bbd1cbad3}</Project>

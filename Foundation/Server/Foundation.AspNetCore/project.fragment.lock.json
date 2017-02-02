@@ -103,40 +103,6 @@
         }
       }
     },
-    "Foundation.Core/1.0.0": {
-      "type": "project",
-      "framework": ".NETFramework,Version=v4.6.2",
-      "compile": {
-        "bin/Debug/Foundation.Core.dll": {}
-      },
-      "runtime": {
-        "../../../packages/Microsoft.AspNet.OData.6.0.0/lib/net45/System.Web.OData.dll": {},
-        "../../../packages/Microsoft.AspNet.WebApi.Client.5.2.3/lib/net45/System.Net.Http.Formatting.dll": {},
-        "../../../packages/Microsoft.AspNet.WebApi.Core.5.2.3/lib/net45/System.Web.Http.dll": {},
-        "../../../packages/Microsoft.Extensions.DependencyInjection.1.1.0/lib/netstandard1.1/Microsoft.Extensions.DependencyInjection.dll": {},
-        "../../../packages/Microsoft.Extensions.DependencyInjection.Abstractions.1.1.0/lib/netstandard1.0/Microsoft.Extensions.DependencyInjection.Abstractions.dll": {},
-        "../../../packages/Microsoft.OData.Core.7.0.0/lib/portable-net45+win8+wpa81/Microsoft.OData.Core.dll": {},
-        "../../../packages/Microsoft.OData.Edm.7.0.0/lib/portable-net45+win8+wpa81/Microsoft.OData.Edm.dll": {},
-        "../../../packages/Microsoft.Spatial.7.0.0/lib/portable-net45+win8+wpa81/Microsoft.Spatial.dll": {},
-        "../../../packages/Newtonsoft.Json.9.0.1/lib/net45/Newtonsoft.Json.dll": {},
-        "../../../packages/System.ComponentModel.Annotations.4.3.0/lib/net461/System.ComponentModel.Annotations.dll": {},
-        "../../../packages/System.Net.Http.4.3.0/lib/net46/System.Net.Http.dll": {},
-        "../../../packages/System.Reflection.4.3.0/lib/net462/System.Reflection.dll": {},
-        "../../../packages/System.Runtime.Extensions.4.3.0/lib/net462/System.Runtime.Extensions.dll": {},
-        "bin/Debug/Foundation.Core.dll": {},
-        "bin/Debug/system.data.dll": {},
-        "bin/Debug/system.dll": {},
-        "bin/Debug/system.xml.dll": {},
-        "bin/Debug/system.xml.linq.dll": {}
-      },
-      "contentFiles": {
-        "bin/Debug/Foundation.Core.pdb": {
-          "buildAction": "None",
-          "codeLanguage": "any",
-          "copyToOutput": true
-        }
-      }
-    },
     "Foundation.DataAccess/1.0.0": {
       "type": "project",
       "framework": ".NETFramework,Version=v4.6.2",
@@ -211,6 +177,36 @@
       },
       "contentFiles": {
         "bin/Debug/Foundation.Model.pdb": {
+          "buildAction": "None",
+          "codeLanguage": "any",
+          "copyToOutput": true
+        }
+      }
+    },
+    "Bit.Core/1.0.0": {
+      "type": "project",
+      "framework": ".NETFramework,Version=v4.6.2",
+      "compile": {
+        "bin/Debug/Bit.Core.dll": {}
+      },
+      "runtime": {
+        "../../../packages/Microsoft.AspNet.OData.6.0.0/lib/net45/System.Web.OData.dll": {},
+        "../../../packages/Microsoft.AspNet.WebApi.Client.5.2.3/lib/net45/System.Net.Http.Formatting.dll": {},
+        "../../../packages/Microsoft.AspNet.WebApi.Core.5.2.3/lib/net45/System.Web.Http.dll": {},
+        "../../../packages/Microsoft.Extensions.DependencyInjection.1.1.0/lib/netstandard1.1/Microsoft.Extensions.DependencyInjection.dll": {},
+        "../../../packages/Microsoft.Extensions.DependencyInjection.Abstractions.1.1.0/lib/netstandard1.0/Microsoft.Extensions.DependencyInjection.Abstractions.dll": {},
+        "../../../packages/Microsoft.OData.Core.7.0.0/lib/portable-net45+win8+wpa81/Microsoft.OData.Core.dll": {},
+        "../../../packages/Microsoft.OData.Edm.7.0.0/lib/portable-net45+win8+wpa81/Microsoft.OData.Edm.dll": {},
+        "../../../packages/Microsoft.Spatial.7.0.0/lib/portable-net45+win8+wpa81/Microsoft.Spatial.dll": {},
+        "../../../packages/Newtonsoft.Json.9.0.1/lib/net45/Newtonsoft.Json.dll": {},
+        "../../../packages/System.ComponentModel.Annotations.4.3.0/lib/net461/System.ComponentModel.Annotations.dll": {},
+        "../../../packages/System.Net.Http.4.3.0/lib/net46/System.Net.Http.dll": {},
+        "../../../packages/System.Reflection.4.3.0/lib/net462/System.Reflection.dll": {},
+        "../../../packages/System.Runtime.Extensions.4.3.0/lib/net462/System.Runtime.Extensions.dll": {},
+        "bin/Debug/Bit.Core.dll": {}
+      },
+      "contentFiles": {
+        "bin/Debug/Bit.Core.pdb": {
           "buildAction": "None",
           "codeLanguage": "any",
           "copyToOutput": true

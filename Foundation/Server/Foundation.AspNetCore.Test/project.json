@@ -41,7 +41,7 @@
         "Foundation.Api": {
           "target": "project"
         },
-        "Foundation.Core": {
+        "Bit.Core": {
           "target": "project"
         },
         "Foundation.DataAccess": {

@@ -17,7 +17,6 @@
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\Foundation.Api\Foundation.Api.csproj" />
-    <ProjectReference Include="..\Foundation.Core\Foundation.Core.csproj" />
     <ProjectReference Include="..\Foundation.DataAccess\Foundation.DataAccess.csproj" />
     <ProjectReference Include="..\Foundation.Model\Foundation.Model.csproj" />
     <ProjectReference Include="..\Foundation.Test.Core\Foundation.Test.Core.csproj" />
