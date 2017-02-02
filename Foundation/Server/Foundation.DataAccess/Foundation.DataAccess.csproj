@@ -235,10 +235,9 @@
       <Project>{fcda72a2-d377-4aa1-a8c5-e6c6805bcb64}</Project>
       <Name>Bit.Core</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Foundation.Model\Foundation.Model.csproj">
-      <Project>{95fe741e-25f3-4f94-990e-6e06ef983573}</Project>
-      <Name>Foundation.Model</Name>
-      <Private>True</Private>
+    <ProjectReference Include="..\Bit.Model\Bit.Model.csproj">
+      <Project>{5fac42f7-1179-440d-8be0-ffd364639943}</Project>
+      <Name>Bit.Model</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

@@ -4,14 +4,13 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{95FE741E-25F3-4F94-990E-6E06EF983573}</ProjectGuid>
+    <ProjectGuid>{5FAC42F7-1179-440D-8BE0-FFD364639943}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Foundation.Model</RootNamespace>
-    <AssemblyName>Foundation.Model</AssemblyName>
+    <RootNamespace>Bit.Model</RootNamespace>
+    <AssemblyName>Bit.Model</AssemblyName>
     <TargetFrameworkVersion>v4.6.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
-    <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -21,8 +20,6 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <RunCodeAnalysis>false</RunCodeAnalysis>
-    <DocumentationFile>bin\Debug\Foundation.Model.XML</DocumentationFile>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -32,80 +29,49 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
-  <PropertyGroup>
-    <SignAssembly>false</SignAssembly>
-  </PropertyGroup>
-  <PropertyGroup>
-    <AssemblyOriginatorKeyFile>Bit-Foundation.snk</AssemblyOriginatorKeyFile>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'">
-    <PlatformTarget>x64</PlatformTarget>
-    <OutputPath>bin\x64\Debug\</OutputPath>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x64'">
-    <PlatformTarget>x64</PlatformTarget>
-    <OutputPath>bin\x64\Release\</OutputPath>
-  </PropertyGroup>
   <ItemGroup>
     <Reference Include="AutoMapper, Version=5.2.0.0, Culture=neutral, PublicKeyToken=be96cd2c38ef1005, processorArchitecture=MSIL">
       <HintPath>..\..\..\packages\AutoMapper.5.2.0\lib\net45\AutoMapper.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="Microsoft.CSharp" />
-    <Reference Include="System">
-      <Private>True</Private>
-    </Reference>
+    <Reference Include="System" />
     <Reference Include="System.ComponentModel.Annotations, Version=4.1.1.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
       <HintPath>..\..\..\packages\System.ComponentModel.Annotations.4.3.0\lib\net461\System.ComponentModel.Annotations.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="System.ComponentModel.DataAnnotations" />
-    <Reference Include="System.Core">
-      <Private>False</Private>
-    </Reference>
+    <Reference Include="System.Core" />
     <Reference Include="System.Net.Http, Version=4.1.1.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
       <HintPath>..\..\..\packages\System.Net.Http.4.3.0\lib\net46\System.Net.Http.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="System.Xml.Linq">
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="System.Data">
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="System.Xml">
-      <Private>True</Private>
-    </Reference>
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Contracts\IArchivableDto.cs" />
+    <Compile Include="Contracts\IArchivableEntity.cs" />
     <Compile Include="Contracts\IDto.cs" />
     <Compile Include="Contracts\IDtoModelMapper.cs" />
     <Compile Include="Contracts\IDtoModelMapperConfiguration.cs" />
-    <Compile Include="Contracts\IEntity.cs" />
     <Compile Include="Contracts\IDtoWithDefaultGuidKey.cs" />
-    <Compile Include="Contracts\IEntityWithDefaultGuidKey.cs" />
     <Compile Include="Contracts\IDtoWithDefaultKey.cs" />
+    <Compile Include="Contracts\IEntity.cs" />
+    <Compile Include="Contracts\IEntityWithDefaultGuidKey.cs" />
     <Compile Include="Contracts\IEntityWithDefaultKey.cs" />
-    <Compile Include="Contracts\IArchivableEntity.cs" />
-    <Compile Include="Contracts\IArchivableDto.cs" />
     <Compile Include="Contracts\ISyncableDto.cs" />
     <Compile Include="Contracts\IVersionableDto.cs" />
     <Compile Include="Contracts\IWithDefaultKey.cs" />
     <Compile Include="DomainModels\JobInfo.cs" />
+    <Compile Include="DomainModels\UserSetting.cs" />
     <Compile Include="Dtos\ClientLogDto.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="DomainModels\UserSetting.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
-    <None Include="Bit-Foundation.snk" />
     <None Include="packages.config" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\Bit.Core\Bit.Core.csproj">
-      <Project>{fcda72a2-d377-4aa1-a8c5-e6c6805bcb64}</Project>
-      <Name>Bit.Core</Name>
-    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

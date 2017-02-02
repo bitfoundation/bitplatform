@@ -47,7 +47,7 @@
         "Foundation.DataAccess": {
           "target": "project"
         },
-        "Foundation.Model": {
+        "Bit.Model": {
           "target": "project"
         },
         "Foundation.Test.Core": {

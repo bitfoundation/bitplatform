@@ -159,30 +159,6 @@
         }
       }
     },
-    "Foundation.Model/1.0.0": {
-      "type": "project",
-      "framework": ".NETFramework,Version=v4.6.2",
-      "compile": {
-        "bin/Debug/Foundation.Model.dll": {}
-      },
-      "runtime": {
-        "../../../packages/AutoMapper.5.2.0/lib/net45/AutoMapper.dll": {},
-        "../../../packages/System.ComponentModel.Annotations.4.3.0/lib/net461/System.ComponentModel.Annotations.dll": {},
-        "../../../packages/System.Net.Http.4.3.0/lib/net46/System.Net.Http.dll": {},
-        "bin/Debug/Foundation.Model.dll": {},
-        "bin/Debug/system.data.dll": {},
-        "bin/Debug/system.dll": {},
-        "bin/Debug/system.xml.dll": {},
-        "bin/Debug/system.xml.linq.dll": {}
-      },
-      "contentFiles": {
-        "bin/Debug/Foundation.Model.pdb": {
-          "buildAction": "None",
-          "codeLanguage": "any",
-          "copyToOutput": true
-        }
-      }
-    },
     "Bit.Core/1.0.0": {
       "type": "project",
       "framework": ".NETFramework,Version=v4.6.2",
@@ -207,6 +183,26 @@
       },
       "contentFiles": {
         "bin/Debug/Bit.Core.pdb": {
+          "buildAction": "None",
+          "codeLanguage": "any",
+          "copyToOutput": true
+        }
+      }
+    },
+    "Bit.Model/1.0.0": {
+      "type": "project",
+      "framework": ".NETFramework,Version=v4.6.2",
+      "compile": {
+        "bin/Debug/Bit.Model.dll": {}
+      },
+      "runtime": {
+        "../../../packages/AutoMapper.5.2.0/lib/net45/AutoMapper.dll": {},
+        "../../../packages/System.ComponentModel.Annotations.4.3.0/lib/net461/System.ComponentModel.Annotations.dll": {},
+        "../../../packages/System.Net.Http.4.3.0/lib/net46/System.Net.Http.dll": {},
+        "bin/Debug/Bit.Model.dll": {}
+      },
+      "contentFiles": {
+        "bin/Debug/Bit.Model.pdb": {
           "buildAction": "None",
           "codeLanguage": "any",
           "copyToOutput": true

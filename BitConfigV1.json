@@ -8,7 +8,7 @@
         "TypingsPath": "../../../../bit-framework/Foundation/HtmlClient/foundation.core.htmlclient/typings.d.ts",
         "SourceProjects": [
           {
-            "Name": "Foundation.Model"
+            "Name": "Bit.Model"
           },
           {
             "Name": "Foundation.Api"

@@ -425,6 +425,10 @@
       <Project>{fcda72a2-d377-4aa1-a8c5-e6c6805bcb64}</Project>
       <Name>Bit.Core</Name>
     </ProjectReference>
+    <ProjectReference Include="..\Bit.Model\Bit.Model.csproj">
+      <Project>{5fac42f7-1179-440d-8be0-ffd364639943}</Project>
+      <Name>Bit.Model</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Foundation.Api\Foundation.Api.csproj">
       <Project>{469d5d14-b564-4af4-a36c-b93c823156b9}</Project>
       <Name>Foundation.Api</Name>
@@ -432,10 +436,6 @@
     <ProjectReference Include="..\Foundation.DataAccess\Foundation.DataAccess.csproj">
       <Project>{022f3e55-04c4-4541-82fb-488bbd1cbad3}</Project>
       <Name>Foundation.DataAccess</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Foundation.Model\Foundation.Model.csproj">
-      <Project>{95fe741e-25f3-4f94-990e-6e06ef983573}</Project>
-      <Name>Foundation.Model</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
