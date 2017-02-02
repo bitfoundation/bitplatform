@@ -4,7 +4,6 @@ using System.Linq;
 using System.Reflection;
 using Autofac;
 using FakeItEasy;
-using Microsoft.EntityFrameworkCore;
 using Foundation.Core.Contracts;
 using Foundation.Api.Contracts;
 using Foundation.DataAccess.Contracts;
@@ -16,6 +15,17 @@ namespace Foundation.Test.Core.Implementations
 {
     public class AutofacTestDependencyManager : AutofacDependencyManager
     {
+        public AutofacTestDependencyManager()
+        {
+            AutoProxyCreationIgnoreRules = new List<Func<TypeInfo, bool>>
+            {
+                serviceType => GetBaseTypes(serviceType).Any(t => t.Name == "DbContext"),
+                serviceType => typeof(Hub).GetTypeInfo().IsAssignableFrom(serviceType),
+                serviceType => serviceType.IsArray,
+                serviceType => serviceType.IsInterface
+            };
+        }
+
         public override IDependencyManager Init()
         {
             base.Init();
@@ -84,13 +94,17 @@ namespace Foundation.Test.Core.Implementations
             serviceType => typeof(AutofacTestDependencyManager).GetTypeInfo().Assembly == serviceType.Assembly
         };
 
-        public readonly List<Func<TypeInfo, bool>> AutoProxyCreationIgnoreRules = new List<Func<TypeInfo, bool>>
+        public readonly List<Func<TypeInfo, bool>> AutoProxyCreationIgnoreRules;
+
+        private IEnumerable<Type> GetBaseTypes(Type type)
         {
-            serviceType => typeof(DbContext).GetTypeInfo().IsAssignableFrom(serviceType),
-            serviceType => typeof(Hub).GetTypeInfo().IsAssignableFrom(serviceType),
-            serviceType => serviceType.IsArray,
-            serviceType => serviceType.IsInterface
-        };
+            Type baseType = type.BaseType;
+            while (baseType != null)
+            {
+                yield return baseType;
+                baseType = baseType.BaseType;
+            }
+        }
 
         public virtual bool IsGoingToCreateProxyForService(TypeInfo serviceType)
         {
