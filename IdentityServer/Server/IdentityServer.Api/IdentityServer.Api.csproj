@@ -159,24 +159,21 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\..\..\bit-framework\Foundation\Server\Bit.Core\Bit.Core.csproj">
+      <Project>{fcda72a2-d377-4aa1-a8c5-e6c6805bcb64}</Project>
+      <Name>Bit.Core</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\..\..\bit-framework\Foundation\Server\Bit.Data\Bit.Data.csproj">
+      <Project>{722d443e-450d-4c7b-94cf-ac8c553dd8ff}</Project>
+      <Name>Bit.Data</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\..\..\bit-framework\Foundation\Server\Bit.Model\Bit.Model.csproj">
+      <Project>{5fac42f7-1179-440d-8be0-ffd364639943}</Project>
+      <Name>Bit.Model</Name>
+    </ProjectReference>
     <ProjectReference Include="..\..\..\..\bit-framework\Foundation\Server\Foundation.Api\Foundation.Api.csproj">
       <Project>{469d5d14-b564-4af4-a36c-b93c823156b9}</Project>
       <Name>Foundation.Api</Name>
-      <Private>False</Private>
-    </ProjectReference>
-    <ProjectReference Include="..\..\..\..\bit-framework\Foundation\Server\Foundation.Core\Foundation.Core.csproj">
-      <Project>{9a2ed9c1-2249-4f0a-a524-c46cb011bc74}</Project>
-      <Name>Foundation.Core</Name>
-      <Private>False</Private>
-    </ProjectReference>
-    <ProjectReference Include="..\..\..\..\bit-framework\Foundation\Server\Foundation.DataAccess\Foundation.DataAccess.csproj">
-      <Project>{022f3e55-04c4-4541-82fb-488bbd1cbad3}</Project>
-      <Name>Foundation.DataAccess</Name>
-      <Private>False</Private>
-    </ProjectReference>
-    <ProjectReference Include="..\..\..\..\bit-framework\Foundation\Server\Foundation.Model\Foundation.Model.csproj">
-      <Project>{95fe741e-25f3-4f94-990e-6e06ef983573}</Project>
-      <Name>Foundation.Model</Name>
       <Private>False</Private>
     </ProjectReference>
   </ItemGroup>
