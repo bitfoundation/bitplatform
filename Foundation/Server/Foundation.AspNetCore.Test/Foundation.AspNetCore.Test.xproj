@@ -16,9 +16,9 @@
     <SchemaVersion>2.0</SchemaVersion>
   </PropertyGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Bit.Data.EntityFrameworkCore\Bit.Data.EntityFrameworkCore.csproj" />
     <ProjectReference Include="..\Bit.Data\Bit.Data.csproj" />
     <ProjectReference Include="..\Foundation.Api\Foundation.Api.csproj" />
-    <ProjectReference Include="..\Foundation.DataAccess\Foundation.DataAccess.csproj" />
     <ProjectReference Include="..\Foundation.Test.Core\Foundation.Test.Core.csproj" />
   </ItemGroup>
   <ItemGroup>

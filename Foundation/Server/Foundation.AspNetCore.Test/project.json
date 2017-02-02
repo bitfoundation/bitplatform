@@ -44,9 +44,6 @@
         "Bit.Core": {
           "target": "project"
         },
-        "Foundation.DataAccess": {
-          "target": "project"
-        },
         "Bit.Model": {
           "target": "project"
         },
@@ -54,6 +51,9 @@
           "target": "project"
         },
         "Bit.Data": {
+          "target": "project"
+        },
+        "Bit.Data.EntityFrameworkCore": {
           "target": "project"
         }
       }
