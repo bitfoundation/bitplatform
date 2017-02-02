@@ -211,7 +211,7 @@
         "../../../packages/Autofac.SignalR2.4.0.0/lib/net45/Autofac.Integration.SignalR.dll": {},
         "../../../packages/Autofac.WebApi2.4.0.1/lib/net45/Autofac.Integration.WebApi.dll": {},
         "../../../packages/Autofac.WebApi2.Owin.4.0.0/lib/net45/Autofac.Integration.WebApi.Owin.dll": {},
-        "../../../packages/Castle.Core.3.3.3/lib/net45/Castle.Core.dll": {},
+        "../../../packages/Castle.Core.4.0.0/lib/net45/Castle.Core.dll": {},
         "../../../packages/FSharp.Core.4.0.0.1/lib/net40/FSharp.Core.dll": {},
         "../../../packages/FakeItEasy.2.3.3/lib/net40/FakeItEasy.dll": {},
         "../../../packages/Hangfire.Autofac.2.2.0/lib/net45/Hangfire.Autofac.dll": {},
