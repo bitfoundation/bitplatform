@@ -52,6 +52,9 @@
         },
         "Foundation.Test.Core": {
           "target": "project"
+        },
+        "Bit.Data": {
+          "target": "project"
         }
       }
     }

@@ -16,8 +16,8 @@
     <SchemaVersion>2.0</SchemaVersion>
   </PropertyGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Bit.Data\Bit.Data.csproj" />
     <ProjectReference Include="..\Foundation.Api\Foundation.Api.csproj" />
-    <ProjectReference Include="..\Foundation.DataAccess\Foundation.DataAccess.csproj" />
   </ItemGroup>
   <Import Project="$(VSToolsPath)\DotNet\Microsoft.DotNet.targets" Condition="'$(VSToolsPath)' != ''" />
 </Project>

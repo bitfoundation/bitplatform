@@ -36,10 +36,10 @@
         "Bit.Core": {
           "target": "project"
         },
-        "Foundation.DataAccess": {
+        "Bit.Model": {
           "target": "project"
         },
-        "Bit.Model": {
+        "Bit.Data": {
           "target": "project"
         }
       }

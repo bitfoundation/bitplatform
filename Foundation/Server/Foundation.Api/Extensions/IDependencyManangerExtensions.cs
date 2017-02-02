@@ -21,9 +21,7 @@ using Foundation.Api.Middlewares.WebApi.OData.ActionFilters;
 using Foundation.Api.Middlewares.WebApi.OData.Contracts;
 using Foundation.Api.Middlewares.WebApi.OData.Implementations;
 using Foundation.DataAccess.Contracts;
-using Foundation.DataAccess.Contracts.EntityFrameworkCore;
 using Foundation.DataAccess.Implementations;
-using Foundation.DataAccess.Implementations.EntityFrameworkCore;
 using Foundation.Model.Contracts;
 using Hangfire;
 using Hangfire.Dashboard;
@@ -294,20 +292,6 @@ namespace Foundation.Core.Contracts
                 throw new ArgumentNullException(nameof(dependencyManager));
 
             dependencyManager.Register<IDtoModelMapperConfiguration, TDtoModelMapperConfiguration>(lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExciting: false);
-
-            return dependencyManager;
-        }
-
-        public static IDependencyManager RegisterEfCoreDbContext<TDbContext, TDbContextObjectsProvider>(this IDependencyManager dependencyManager)
-            where TDbContext : class
-            where TDbContextObjectsProvider : class
-        {
-            if (dependencyManager == null)
-                throw new ArgumentNullException(nameof(dependencyManager));
-
-            dependencyManager.Register(typeof(IDbContextObjectsProvider).GetTypeInfo(), typeof(TDbContextObjectsProvider).GetTypeInfo());
-            dependencyManager.Register<TDbContext, TDbContext>();
-            dependencyManager.Register<IAsyncQueryableExecuter, EfCoreAsyncQueryableExecuter>(overwriteExciting: false, lifeCycle: DependencyLifeCycle.SingleInstance);
 
             return dependencyManager;
         }
