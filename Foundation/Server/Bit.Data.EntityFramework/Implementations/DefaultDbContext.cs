@@ -1,4 +1,5 @@
 ﻿using Foundation.DataAccess.Contracts;
+using System.Data.Common;
 using System.Data.Entity;
 
 namespace Bit.Data.EntityFramework.Implementations
@@ -9,6 +10,12 @@ namespace Bit.Data.EntityFramework.Implementations
 
         protected DefaultDbContext()
         {
+        }
+
+        public DefaultDbContext(DbConnection existingConnection, bool contextOwnsConnection)
+            : base(existingConnection, contextOwnsConnection)
+        {
+
         }
 
         public DefaultDbContext(string connectionString, IDbConnectionProvider dbConnectionProvider)
