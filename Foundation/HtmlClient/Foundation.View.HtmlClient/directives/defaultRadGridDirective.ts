@@ -81,8 +81,6 @@ module Foundation.View.Directives {
 
                     const $translate = dependencyManager.resolveObject<ng.translate.ITranslateService>("$translate");
 
-                    const $compile = dependencyManager.resolveObject<ng.ICompileService>("$compile");
-
                     const $parse = dependencyManager.resolveObject<ng.IParseService>("$parse");
 
                     const dateTimeService = Core.DependencyManager.getCurrent().resolveObject<ViewModel.Contracts.IDateTimeService>("DateTimeService");
@@ -284,31 +282,15 @@ module Foundation.View.Directives {
                                 gridOptions.detailTemplate = detail;
                             }
 
-                            const compiledViewTemplate = angular.element(viewTemplateHtml);
-                            compiledViewTemplate.find("td")
-                                .each((index, item) => {
-                                    const unique = "unique" + replaceAll(guidUtils.newGuid(), "-", "");
-                                    item.setAttribute("unique", unique);
-                                });
-                            const originalViewTemplate = compiledViewTemplate.clone(false, false);
-
-                            angular.element(element)
-                                .after($compile(compiledViewTemplate)($scope));
-
                             const columns: Array<kendo.ui.GridColumn> = [];
 
-                            compiledViewTemplate.find("td")
+                            angular.element(viewTemplateHtml).find("td")
                                 .filter((index, item) => item.hasAttribute("detail-button") == false)
                                 .each((index, item) => {
 
                                     const wrappedItem = angular.element(item);
 
-                                    const foundedOriginalItem = originalViewTemplate.find("td")
-                                        .filter((originalIndex, originalItem, ) => {
-                                            return originalItem.getAttribute("unique") == item.getAttribute("unique");
-                                        }).first()[0];
-
-                                    let template = foundedOriginalItem.innerHTML;
+                                    let template = item.innerHTML;
 
                                     const gridColumn: kendo.ui.GridColumn = {
                                         field: wrappedItem.attr("name"),
@@ -461,15 +443,13 @@ module Foundation.View.Directives {
 
                                 });
 
-                            compiledViewTemplate.remove();
+                            gridOptions.columns = columns;
 
                             columns.forEach(col => {
                                 DefaultRadGridDirective.defaultRadGridDirectiveColumnCustomizers.forEach(colCustomizer => {
                                     colCustomizer($scope, attributes, element, gridOptions, col["element"], col);
                                 });
                             });
-
-                            gridOptions.columns = columns;
 
                             DefaultRadGridDirective.defaultRadGridDirectiveCustomizers.forEach(gridCustomizer => {
                                 gridCustomizer($scope, attributes, element, gridOptions);
