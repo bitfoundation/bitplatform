@@ -68,6 +68,8 @@ namespace Foundation.Api.Implementations
         {
             exp = UnWrapException(exp);
 
+            if (exp is IHttpStatusCodeAwareException)
+                return ((IHttpStatusCodeAwareException)exp).StatusCode;
             if (exp is BadRequestException)
                 return HttpStatusCode.BadRequest;
             else if (exp is ResourceNotFoundException)
@@ -80,7 +82,7 @@ namespace Foundation.Api.Implementations
         {
             exp = UnWrapException(exp);
 
-            if (exp is AppException)
+            if (exp is IKnwoException)
                 return true;
 
             return false;

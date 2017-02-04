@@ -4,7 +4,7 @@ using System.Runtime.Serialization;
 namespace Foundation.Api.Exceptions
 {
     [Serializable]
-    public class AppException : Exception
+    public class AppException : Exception, IKnwoException
     {
         public AppException()
         {

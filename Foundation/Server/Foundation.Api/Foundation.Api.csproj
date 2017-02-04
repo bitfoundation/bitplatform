@@ -414,6 +414,8 @@
     <Compile Include="Contracts\IOwinActionFilter.cs" />
     <Compile Include="Contracts\Project\IApiAssembliesProvider.cs" />
     <Compile Include="Contracts\Project\IEdmModelProvider.cs" />
+    <Compile Include="Exceptions\IHttpStatusCodeAwareException.cs" />
+    <Compile Include="Exceptions\IKnwoException.cs" />
     <Compile Include="Extensions\IDependencyManangerExtensions.cs" />
     <Compile Include="Extensions\IOwinContextExtensions.cs" />
     <Compile Include="Implementations\AutofacDependencyManager.cs" />
