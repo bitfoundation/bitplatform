@@ -1,6 +1,5 @@
 ﻿using Foundation.Api.Exceptions;
 using Foundation.DataAccess.Contracts;
-using Foundation.DataAccess.Implementations;
 using Foundation.Model.Contracts;
 using System;
 using System.Collections.Generic;
@@ -36,6 +35,8 @@ namespace Foundation.Api.ApiControllers
         /// </summary>
         public virtual IDtoModelMapper<TDto, TModel> DtoModelMapper { get; set; }
 
+        public virtual IEnumerable<IWhereByKeyBuilder<TDto, TKey>> WhereByKeyBuilders { get; set; }
+
         public virtual IEnumerable<IAsyncQueryableExecuter> AsyncQueryableExecuters { get; set; }
 
         protected virtual TModel FromDtoToModel(TDto dto)
@@ -57,7 +58,7 @@ namespace Foundation.Api.ApiControllers
         [Get]
         public virtual async Task<TDto> Get([FromODataUri]TKey key, CancellationToken cancellationToken)
         {
-            IQueryable<TDto> baseQuery = KeyWhereBuilder<TDto, TKey>.ApplyKeyWhere(GetAll(), key);
+            IQueryable<TDto> baseQuery = WhereByKeyBuilders.WhereByKey(GetAll(), key);
 
             IAsyncQueryableExecuter asyncQueryableExecuterToUser = null;
 
