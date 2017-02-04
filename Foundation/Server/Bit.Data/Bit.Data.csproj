@@ -126,6 +126,10 @@
       <HintPath>..\..\..\packages\System.IO.4.3.0\lib\net462\System.IO.dll</HintPath>
       <Private>True</Private>
     </Reference>
+    <Reference Include="System.Linq.Dynamic, Version=1.0.6132.35681, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\..\packages\System.Linq.Dynamic.1.0.7\lib\net40\System.Linq.Dynamic.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="System.Net.Http, Version=4.1.1.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
       <HintPath>..\..\..\packages\System.Net.Http.4.3.0\lib\net46\System.Net.Http.dll</HintPath>
       <Private>True</Private>
@@ -154,12 +158,14 @@
   <ItemGroup>
     <Compile Include="Contracts\IAsyncQueryableExecuter.cs" />
     <Compile Include="Contracts\IDbConnectionProvider.cs" />
+    <Compile Include="Contracts\IWhereByKeyBuilder.cs" />
     <Compile Include="Contracts\IEntityWithDefaultGuidKeyRepository.cs" />
     <Compile Include="Contracts\IEntityWithDefaultKeyRepository.cs" />
     <Compile Include="Contracts\IRepository.cs" />
     <Compile Include="DefaultDtoModelMapper.cs" />
     <Compile Include="DefaultSqlDbConnectionProvider.cs" />
-    <Compile Include="KeyWhereBuilder.cs" />
+    <Compile Include="Extensions\IQueryableExtensions.cs" />
+    <Compile Include="Extensions\IWhereByKeyBuildersExtensions.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
