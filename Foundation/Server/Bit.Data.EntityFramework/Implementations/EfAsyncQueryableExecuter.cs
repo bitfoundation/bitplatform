@@ -33,7 +33,7 @@ namespace Bit.Data.EntityFramework.Implementations
             if (source == null)
                 throw new ArgumentNullException(nameof(source));
 
-            return source is IDbAsyncQueryProvider;
+            return source is DbQuery<T>;
         }
 
         public virtual Task<List<T>> ToListAsync<T>(IQueryable<T> source, CancellationToken cancellationToken)
