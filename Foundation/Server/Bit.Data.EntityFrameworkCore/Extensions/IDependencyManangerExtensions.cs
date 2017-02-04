@@ -9,8 +9,8 @@ namespace Foundation.Core.Contracts
     public static class IDependencyManangerExtensions
     {
         public static IDependencyManager RegisterEfCoreDbContext<TDbContext, TDbContextObjectsProvider>(this IDependencyManager dependencyManager)
-    where TDbContext : class
-    where TDbContextObjectsProvider : class
+            where TDbContext : class
+            where TDbContextObjectsProvider : class
         {
             if (dependencyManager == null)
                 throw new ArgumentNullException(nameof(dependencyManager));
@@ -18,6 +18,7 @@ namespace Foundation.Core.Contracts
             dependencyManager.Register(typeof(IDbContextObjectsProvider).GetTypeInfo(), typeof(TDbContextObjectsProvider).GetTypeInfo());
             dependencyManager.Register<TDbContext, TDbContext>();
             dependencyManager.Register<IAsyncQueryableExecuter, EfCoreAsyncQueryableExecuter>(overwriteExciting: false, lifeCycle: DependencyLifeCycle.SingleInstance);
+            dependencyManager.RegisterGeneric(typeof(IWhereByKeyBuilder<,>).GetTypeInfo(), typeof(EfCoreWhereByKeyBuilder<,>).GetTypeInfo(), lifeCycle: DependencyLifeCycle.SingleInstance);
 
             return dependencyManager;
         }

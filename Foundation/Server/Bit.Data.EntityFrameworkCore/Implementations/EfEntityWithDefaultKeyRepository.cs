@@ -6,11 +6,12 @@ using System.Threading.Tasks;
 using System.Threading;
 using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
+using System.Linq.Dynamic.Core;
 
 namespace Foundation.DataAccess.Implementations.EntityFrameworkCore
 {
     public class EfEntityWithDefaultKeyRepository<TEntity, TKey> : EfRepository<TEntity>, IEntityWithDefaultKeyRepository<TEntity, TKey>
-        where TEntity : class, IEntityWithDefaultKey<TKey>
+            where TEntity : class, IEntityWithDefaultKey<TKey>
     {
         protected EfEntityWithDefaultKeyRepository()
             : base()
@@ -24,13 +25,13 @@ namespace Foundation.DataAccess.Implementations.EntityFrameworkCore
 
         public virtual TEntity GetById(TKey key)
         {
-            return KeyWhereBuilder<TEntity, TKey>.ApplyKeyWhere(GetAll(), key)
+            return GetAll().Where("Id = @0", key)
                .FirstOrDefault();
         }
 
         public virtual async Task<TEntity> GetByIdAsync(TKey key, CancellationToken cancellationToken)
         {
-            return await KeyWhereBuilder<TEntity, TKey>.ApplyKeyWhere(GetAll(), key)
+            return await GetAll().Where("Id = @0", key)
                .FirstOrDefaultAsync(cancellationToken);
         }
 
