@@ -5,7 +5,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Threading;
 using System.Collections.Generic;
-using Foundation.DataAccess.Implementations;
 using System.Data.Entity;
 
 namespace Bit.Data.EntityFramework.Implementations
@@ -25,13 +24,13 @@ namespace Bit.Data.EntityFramework.Implementations
 
         public virtual TEntity GetById(TKey key)
         {
-            return KeyWhereBuilder<TEntity, TKey>.ApplyKeyWhere(GetAll(), key)
-               .FirstOrDefault();
+            return GetAll().WhereByKey(key)
+                .FirstOrDefault();
         }
 
         public virtual async Task<TEntity> GetByIdAsync(TKey key, CancellationToken cancellationToken)
         {
-            return await KeyWhereBuilder<TEntity, TKey>.ApplyKeyWhere(GetAll(), key)
+            return await GetAll().WhereByKey(key)
                .FirstOrDefaultAsync(cancellationToken);
         }
 
