@@ -67,6 +67,7 @@
     <Compile Include="DomainModels\JobInfo.cs" />
     <Compile Include="DomainModels\UserSetting.cs" />
     <Compile Include="Dtos\ClientLogDto.cs" />
+    <Compile Include="Implementations\DefaultDtoModelMapperConfiguration.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
