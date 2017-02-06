@@ -24,11 +24,10 @@ namespace Foundation.Api.ApiControllers
             if (repository == null)
                 throw new ArgumentNullException(nameof(repository));
 
-            _repository = repository;
+            Repository = repository;
         }
 
-        private readonly IEntityWithDefaultKeyRepository<TModel, TKey> _repository;
-
+        public virtual IEntityWithDefaultKeyRepository<TModel, TKey> Repository { get; set; }
 
         /// <summary>
         /// Optional Dependency. You can override FromDtoToModel and GetAll.
@@ -50,7 +49,7 @@ namespace Foundation.Api.ApiControllers
             if (dto == null)
                 throw new ArgumentNullException(nameof(dto));
 
-            TModel model = await _repository.AddAsync(FromDtoToModel(dto), cancellationToken);
+            TModel model = await Repository.AddAsync(FromDtoToModel(dto), cancellationToken);
 
             return await Get(model.Id, cancellationToken);
         }
@@ -81,8 +80,8 @@ namespace Foundation.Api.ApiControllers
         [Delete]
         public virtual async Task Delete([FromODataUri]TKey key, CancellationToken cancellationToken)
         {
-            TModel model = await _repository.GetByIdAsync(key, cancellationToken);
-            await _repository.DeleteAsync(model, cancellationToken);
+            TModel model = await Repository.GetByIdAsync(key, cancellationToken);
+            await Repository.DeleteAsync(model, cancellationToken);
         }
 
         [PartialUpdate]
@@ -112,7 +111,7 @@ namespace Foundation.Api.ApiControllers
             if (!EqualityComparer<TKey>.Default.Equals(key, model.Id))
                 throw new BadRequestException();
 
-            model = await _repository.UpdateAsync(model, cancellationToken);
+            model = await Repository.UpdateAsync(model, cancellationToken);
 
             return await Get(key, cancellationToken);
         }
@@ -120,7 +119,7 @@ namespace Foundation.Api.ApiControllers
         [Get]
         public virtual IQueryable<TDto> GetAll()
         {
-            return DtoModelMapper.FromModelQueryToDtoQuery(_repository.GetAll());
+            return DtoModelMapper.FromModelQueryToDtoQuery(Repository.GetAll());
         }
     }
 }
