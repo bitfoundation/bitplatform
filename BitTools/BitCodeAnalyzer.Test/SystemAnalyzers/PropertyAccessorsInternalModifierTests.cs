@@ -1,15 +1,13 @@
 ﻿using BitCodeAnalyzer.SystemAnalyzers;
 using BitCodeAnalyzer.Test.Helpers;
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CodeFixes;
 using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System;
 
 namespace BitCodeAnalyzer.Test.SystemAnalyzers
 {
     [TestClass]
-    public class PropertyAccessorsInternalModifierTests : CodeFixVerifier
+    public class PropertyAccessorsInternalModifierTests : DiagnosticVerifier
     {
         [TestMethod]
         [TestCategory("Analyzer")]
@@ -33,11 +31,6 @@ namespace BitCodeAnalyzer.Test.SystemAnalyzers
             };
 
             VerifyCSharpDiagnostic(sourceCodeOfPropertiesWithInternalModifiersOnTheirAccessors, classWithoutModifier);
-        }
-
-        protected override CodeFixProvider GetCSharpCodeFixProvider()
-        {
-            throw new NotImplementedException();
         }
 
         protected override DiagnosticAnalyzer GetCSharpDiagnosticAnalyzer()

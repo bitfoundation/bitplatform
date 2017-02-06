@@ -7,7 +7,7 @@ using BitCodeAnalyzer.BitAnalyzers.WebApi.OData;
 namespace BitCodeAnalyzer.Test.BitAnalyzers.WebApi.OData
 {
     [TestClass]
-    public class CamelCaseParameterNameAnalyzerTests : CodeFixVerifier
+    public class CamelCaseParameterNameAnalyzerTests : DiagnosticVerifier
     {
         [TestMethod]
         [TestCategory("Analyzer")]

@@ -1,15 +1,13 @@
 ﻿using BitCodeAnalyzer.BitAnalyzers.Dto;
 using BitCodeAnalyzer.Test.Helpers;
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CodeFixes;
 using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System;
 
 namespace BitCodeAnalyzer.Test.BitAnalyzers.Dto
 {
     [TestClass]
-    public class DtoAndComplexTypeClassessPublicDefaultCtorAnalyzerTest : CodeFixVerifier
+    public class DtoAndComplexTypeClassessPublicDefaultCtorAnalyzerTest : DiagnosticVerifier
     {
         [TestMethod]
         [TestCategory("Analyzer")]
@@ -121,12 +119,6 @@ namespace BitCodeAnalyzer.Test.BitAnalyzers.Dto
             };
 
             VerifyCSharpDiagnostic(sourceCodeWithDtoAndComplexClassPublicDefaultCtor, errors);
-        }
-
-
-        protected override CodeFixProvider GetCSharpCodeFixProvider()
-        {
-            throw new NotImplementedException();
         }
 
         protected override DiagnosticAnalyzer GetCSharpDiagnosticAnalyzer()
