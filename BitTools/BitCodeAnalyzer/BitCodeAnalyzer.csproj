@@ -32,6 +32,7 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="BitAnalyzers\Data\EntityFramework\AsNoTrackingAnalyzer.cs" />
     <Compile Include="BitAnalyzers\Dto\DtoAndComplexTypeClassessPublicDefaultCtorAnalyzer.cs" />
     <Compile Include="BitAnalyzers\WebApi\OData\CamelCaseParameterNameAnalyzer.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
