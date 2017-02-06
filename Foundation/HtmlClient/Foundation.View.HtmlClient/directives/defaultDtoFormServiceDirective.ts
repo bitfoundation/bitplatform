@@ -22,22 +22,23 @@
 
                     $timeout(() => {
 
-                        const unRegister = $scope.$watch(attributes.ngModel, (model: any) => {
+                        $scope.$watch(attributes.ngModel, (newModel: any, oldModel: any) => {
 
-                            if (model == null)
+                            if (newModel == null && oldModel == null)
                                 return;
 
-                            unRegister();
+                            if (newModel == oldModel)
+                                oldModel = null;
 
-                            if (model.innerInstance != null) {
-                                model = model.innerInstance();
-                                $parse(attributes.ngModel).assign($scope, model);
+                            if (newModel != null && newModel.innerInstance != null) {
+                                newModel = newModel.innerInstance();
+                                $parse(attributes.ngModel).assign($scope, newModel);
                             }
 
-                            if (!(model instanceof $data.Entity))
+                            if (newModel != null && !(newModel instanceof $data.Entity))
                                 throw new Error("Can't validate non-entity | non-dto models");
 
-                            let modelType = model.getType();
+                            let modelType = newModel != null ? newModel.getType() : oldModel.getType();
 
                             let memberDefenitions = modelType.memberDefinitions;
 
@@ -46,13 +47,16 @@
                             ctrl.$$parentForm.isValid = (): boolean => {
                                 let isValid = true;
                                 propModelControllers.forEach(p => {
-                                    if (dtoRules != null)
-                                        dtoRules.validateMember(p.$name, model[p.$name], model[p.$name]);
+                                    if (dtoRules != null && newModel != null)
+                                        dtoRules.validateMember(p.$name, newModel[p.$name], newModel[p.$name]);
                                     p.$validate();
                                     isValid = isValid && p.$valid;
                                 });
                                 return isValid;
                             };
+
+                            ctrl.$$parentForm.$setPristine();
+                            ctrl.$$parentForm.$setUntouched();
 
                             for (let prp in ctrl.$$parentForm) {
 
@@ -106,66 +110,85 @@
                                             }
                                         });
 
-                                        let original$setValidity = propModelController.$setValidity;
+                                        if (propModelController['isFirstTimeIndicator'] == null) {
+
+                                            propModelController['isFirstTimeIndicator'] = {};
+
+                                            let original$setValidity = propModelController.$setValidity;
+
+                                            propModelController.$setValidity = function () {
+                                                propModelController.validityEvaludated = true;
+                                                return original$setValidity.apply(propModelController, arguments);
+                                            }
+
+                                            if (propDefenition.nullable == true) {
+                                                propModelController.$parsers.push((viewValue) => {
+                                                    if (viewValue == "") {
+                                                        viewValue = null;
+                                                    }
+                                                    return viewValue;
+                                                });
+                                            }
+
+                                            if (propDefenition.dataType == "Edm.DateTimeOffset" || propDefenition.dataType == $data["DateTimeOffset"]) {
+                                                propModelController.$parsers.push((viewValue) => {
+                                                    if (viewValue != null && !(viewValue instanceof Date)) {
+                                                        viewValue = dateTimeService.parseDate(viewValue);
+                                                    }
+                                                    return viewValue;
+                                                });
+                                            }
+
+                                            propModelController['hadRequired'] = propModelController.$validators.required != null;
+                                            propModelController['hadPattern'] = propModelController.$validators.regex != null;
+                                        }
+
+                                        if (propDefenition.required == true && propModelController['hadRequired'] == false) {
+
+                                            if (newModel != null) {
+                                                propModelController.$validators.required = (modelValue, viewValue) => {
+
+                                                    let modelIsValid = newModel.isValid();
+
+                                                    if (modelIsValid == true)
+                                                        return true;
+
+                                                    modelIsValid = newModel.ValidationErrors
+                                                        .find(vErr => vErr.Type == "required" && vErr.PropertyDefinition == propDefenition) == null;
+
+                                                    return modelIsValid;
+                                                };
+                                            }
+                                            else {
+                                                delete propModelController.$validators.required;
+                                            }
+
+                                        }
+
+                                        if (propDefenition.regex != null && propModelController['hadPattern'] == false) {
+
+                                            if (newModel != null) {
+                                                propModelController.$validators.pattern = (modelValue, viewValue) => {
+
+                                                    let modelIsValid = newModel.isValid();
+
+                                                    if (modelIsValid == true)
+                                                        return true;
+
+                                                    modelIsValid = newModel.ValidationErrors
+                                                        .find(vErr => vErr.Type == "regex" && vErr.PropertyDefinition == propDefenition) == null;
+
+                                                    return modelIsValid;
+                                                };
+                                            }
+                                            else {
+                                                delete propModelController.$validators.pattern;
+                                            }
+                                        }
 
                                         propModelController.validityEvaludated = false;
 
-                                        propModelController.$setValidity = function () {
-                                            propModelController.validityEvaludated = true;
-                                            return original$setValidity.apply(propModelController, arguments);
-                                        }
-
                                         propModelControllers.push(propModelController);
-
-                                        if (propDefenition.nullable == true) {
-                                            propModelController.$parsers.push((viewValue) => {
-                                                if (viewValue == "") {
-                                                    viewValue = null;
-                                                }
-                                                return viewValue;
-                                            });
-                                        }
-
-                                        if (propDefenition.dataType == "Edm.DateTimeOffset" || propDefenition.dataType == $data["DateTimeOffset"]) {
-                                            propModelController.$parsers.push((viewValue) => {
-                                                if (viewValue != null && !(viewValue instanceof Date)) {
-                                                    viewValue = dateTimeService.parseDate(viewValue);
-                                                }
-                                                return viewValue;
-                                            });
-                                        }
-
-                                        if (propDefenition.required == true && propModelController.$validators.required == null) {
-
-                                            propModelController.$validators.required = (modelValue, viewValue) => {
-
-                                                let modelIsValid = model.isValid();
-
-                                                if (modelIsValid == true)
-                                                    return true;
-
-                                                modelIsValid = model.ValidationErrors
-                                                    .find(vErr => vErr.Type == "required" && vErr.PropertyDefinition == propDefenition) == null;
-
-                                                return modelIsValid;
-                                            };
-                                        }
-
-                                        if (propDefenition.regex != null && propModelController.$validators.pattern == null) {
-
-                                            propModelController.$validators.pattern = (modelValue, viewValue) => {
-
-                                                let modelIsValid = model.isValid();
-
-                                                if (modelIsValid == true)
-                                                    return true;
-
-                                                modelIsValid = model.ValidationErrors
-                                                    .find(vErr => vErr.Type == "regex" && vErr.PropertyDefinition == propDefenition) == null;
-
-                                                return modelIsValid;
-                                            };
-                                        }
                                     }
                                 }
                             }
@@ -182,13 +205,13 @@
                             else if (attributes.dtoRules != null)
                                 dtoRules = $parse(attributes.dtoRules)($scope);
 
-                            if (dtoRules != null)
-                                dtoRules.model = model;
+                            if (dtoRules != null && (dtoRules.model == null || dtoRules.model == oldModel))
+                                dtoRules.model = newModel;
 
                             if (defaultDtoViewModel != null) {
 
-                                if (defaultDtoViewModel.model == null)
-                                    defaultDtoViewModel.model = model;
+                                if (defaultDtoViewModel.model == null || defaultDtoViewModel.model == oldModel)
+                                    defaultDtoViewModel.model = newModel;
 
                                 if (defaultDtoViewModel.form == null)
                                     defaultDtoViewModel.form = ctrl.$$parentForm;
@@ -205,32 +228,75 @@
 
                             if (dtoViewModel != null) {
 
-                                model.propertyChanged.attach((sender, e) => {
-                                    if (e.oldValue != e.newValue) {
-                                        dtoViewModel.onMemberChanged(e.propertyName, e.newValue, e.oldValue);
-                                    }
-                                });
+                                if (dtoViewModel['propertyChangedFunction'] == null) {
+                                    dtoViewModel['propertyChangedFunction'] = function propertyChangedFunction(sender, e) {
+                                        if (e.oldValue != e.newValue) {
+                                            dtoViewModel.onMemberChanged(e.propertyName, e.newValue, e.oldValue);
+                                        }
+                                    };
+                                }
 
-                                model.propertyChanging.attach((sender, e) => {
-                                    if (e.oldValue != e.newValue) {
-                                        dtoViewModel.onMemberChanging(e.propertyName, e.oldValue, e.newValue);
-                                    }
-                                });
+                                if (dtoViewModel['propertyChangingFunction'] == null) {
+                                    dtoViewModel['propertyChangingFunction'] = function propertyChangingFunction(sender, e) {
+                                        if (e.oldValue != e.newValue) {
+                                            dtoViewModel.onMemberChanging(e.propertyName, e.newValue, e.oldValue);
+                                        }
+                                    };
+                                }
+
+                                if (newModel != null) {
+                                    newModel.propertyChanged.attach(dtoViewModel['propertyChangedFunction']);
+                                    newModel.propertyChanging.attach(dtoViewModel['propertyChangingFunction']);
+                                }
+
+                                if (oldModel != null) {
+                                    oldModel.propertyChanged.detach(dtoViewModel['propertyChangedFunction']);
+                                    oldModel.propertyChanging.detach(dtoViewModel['propertyChangingFunction']);
+                                }
                             }
 
                             if (dtoRules != null) {
 
-                                model.propertyChanged.attach((sender, e) => {
-                                    if (e.oldValue != e.newValue) {
-                                        if (propModelControllers.find(p => p.$name == e.propertyName) != null)
+                                if (dtoRules['propertyChangedFunction'] == null) {
+                                    dtoRules['propertyChangedFunction'] = function propertyChangedFunction(sender, e) {
+                                        if (e.oldValue != e.newValue) {
                                             dtoRules.validateMember(e.propertyName, e.newValue, e.oldValue);
+                                        }
+                                    };
+                                }
+
+                                if (newModel != null)
+                                    newModel.propertyChanged.attach(dtoRules['propertyChangedFunction']);
+
+                                if (oldModel != null)
+                                    oldModel.propertyChanged.detach(dtoRules['propertyChangedFunction']);
+
+                                if (dtoRules['prevValidationsRollbackHandlers'] != null) {
+                                    for (let prevValidationsRollbackHandler of dtoRules['prevValidationsRollbackHandlers']) {
+                                        prevValidationsRollbackHandler.handler();
                                     }
-                                });
+                                }
+
+                                dtoRules['prevValidationsRollbackHandlers'] = [];
 
                                 dtoRules.setMemberValidaty = (memberName: string, errorKey: string, isValid: boolean): void => {
                                     const propModelCtrl = propModelControllers.find(p => p.$name == memberName);
-                                    if (propModelCtrl != null)
+                                    if (propModelCtrl != null) {
                                         propModelCtrl.$setValidity(errorKey, isValid);
+                                        if (isValid == false) {
+                                            if (!dtoRules['prevValidationsRollbackHandlers'].some(h => h.memberName == memberName && h.errorKey == errorKey)) {
+                                                dtoRules['prevValidationsRollbackHandlers'].push({
+                                                    memberName: memberName, errorKey: errorKey, handler: () => {
+                                                        propModelCtrl.$setValidity(errorKey, true);
+                                                        propModelCtrl.validityEvaludated = false;
+                                                    }
+                                                });
+                                            }
+                                        }
+                                        else {
+                                            dtoRules['prevValidationsRollbackHandlers'] = dtoRules['prevValidationsRollbackHandlers'].filter(h => h.memberName != memberName && h.errorKey != errorKey);
+                                        }
+                                    }
                                     else {
                                         if (clientAppProfile.isDebugMode == true)
                                             console.warn(`No Prop named ${memberName} is in dto form`);
