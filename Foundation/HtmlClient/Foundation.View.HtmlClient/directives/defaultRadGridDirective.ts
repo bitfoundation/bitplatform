@@ -285,7 +285,6 @@ module Foundation.View.Directives {
                             const columns: Array<kendo.ui.GridColumn> = [];
 
                             angular.element(viewTemplateHtml).find("td")
-                                .filter((index, item) => item.hasAttribute("detail-button") == false)
                                 .each((index, item) => {
 
                                     const wrappedItem = angular.element(item);
