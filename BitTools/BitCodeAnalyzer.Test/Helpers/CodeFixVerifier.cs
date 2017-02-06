@@ -128,7 +128,7 @@ namespace BitCodeAnalyzer.Test.Helpers
         /// <param name="document">The Document to apply the fix on</param>
         /// <param name="codeAction">A CodeAction that will be applied to the Document.</param>
         /// <returns>A Document with the changes from the CodeAction</returns>
-        private static Document ApplyFix(Document document, CodeAction codeAction)
+        private Document ApplyFix(Document document, CodeAction codeAction)
         {
             ImmutableArray<CodeActionOperation> operations = codeAction.GetOperationsAsync(CancellationToken.None).Result;
             Solution solution = operations.OfType<ApplyChangesOperation>().Single().ChangedSolution;
@@ -143,7 +143,7 @@ namespace BitCodeAnalyzer.Test.Helpers
         /// <param name="diagnostics">The Diagnostics that existed in the code before the CodeFix was applied</param>
         /// <param name="newDiagnostics">The Diagnostics that exist in the code after the CodeFix was applied</param>
         /// <returns>A list of Diagnostics that only surfaced in the code after the CodeFix was applied</returns>
-        private static IEnumerable<Diagnostic> GetNewDiagnostics(IEnumerable<Diagnostic> diagnostics, IEnumerable<Diagnostic> newDiagnostics)
+        private IEnumerable<Diagnostic> GetNewDiagnostics(IEnumerable<Diagnostic> diagnostics, IEnumerable<Diagnostic> newDiagnostics)
         {
             Diagnostic[] oldArray = diagnostics.OrderBy(d => d.Location.SourceSpan.Start).ToArray();
             Diagnostic[] newArray = newDiagnostics.OrderBy(d => d.Location.SourceSpan.Start).ToArray();
@@ -170,7 +170,7 @@ namespace BitCodeAnalyzer.Test.Helpers
         /// </summary>
         /// <param name="document">The Document to run the compiler diagnostic analyzers on</param>
         /// <returns>The compiler diagnostics that were found in the code</returns>
-        private static IEnumerable<Diagnostic> GetCompilerDiagnostics(Document document)
+        private IEnumerable<Diagnostic> GetCompilerDiagnostics(Document document)
         {
             return document.GetSemanticModelAsync().Result.GetDiagnostics();
         }
@@ -180,7 +180,7 @@ namespace BitCodeAnalyzer.Test.Helpers
         /// </summary>
         /// <param name="document">The Document to be converted to a string</param>
         /// <returns>A string containing the syntax of the Document after formatting</returns>
-        private static string GetStringFromDocument(Document document)
+        private string GetStringFromDocument(Document document)
         {
             Document simplifiedDoc = Simplifier.ReduceAsync(document, Simplifier.Annotation).Result;
             SyntaxNode root = simplifiedDoc.GetSyntaxRootAsync().Result;
