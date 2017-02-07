@@ -1,0 +1,26 @@
+{
+  "name": "bit-identity-server",
+  "version": "1.0.0",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components"
+  ],
+  "dependencies": {
+    "jquery": "3.1.1",
+    "angular": "1.6.1",
+    "angular-material": "https://github.com/angular/bower-material.git/#v1.1.1-master-2c9a5cc",
+    "regenerator": "https://github.com/facebook/regenerator.git#v0.9.5",
+    "angular-translate": "2.13.1",
+    "normalize-css": "5.0.0",
+    "angular-messages": "1.6.1",
+    "angular-animate": "1.6.1",
+    "angular-aria": "1.6.1",
+    "core.js": "2.4.1",
+    "fetch": "2.0.1",
+    "encoderjs": "0.0.1"
+  },
+  "resolutions": {
+    "angular": "1.6.1"
+  }
+}
