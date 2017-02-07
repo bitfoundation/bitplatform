@@ -33,8 +33,11 @@ namespace BitCodeAnalyzer.BitAnalyzers.Data.EntityFramework
             if (!(root is InvocationExpressionSyntax))
                 return;
 
-            // when context.SemanticModel.GetSymbolInfo(invoke).Symbol.ContainingType is either "System.Linq.Queryable" or "System.Linq.Enumerable"
-            // and its first argument is instanceof System.Data.Entity.Infrastructure.DbSqlQuery or System.Data.Entity.Infrastructure.DbQuery
+            InvocationExpressionSyntax invoke = (InvocationExpressionSyntax)root;
+            IMethodSymbol symbol = (IMethodSymbol)context.SemanticModel.GetSymbolInfo(invoke).Symbol;
+
+            // when symbol.ContainingType is either "System.Linq.Queryable" or "System.Linq.Enumerable" or "System.Data.Entity.QueryableExtensions"
+            // and its called on instanceof System.Data.Entity.Infrastructure.DbSqlQuery
             // and there is no AsNoTracking called before.
         }
     }

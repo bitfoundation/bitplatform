@@ -1,6 +1,5 @@
-﻿using System.Data.Entity;
-using System.Data.Entity.Infrastructure;
-using System.Data.SqlClient;
+﻿using System.Collections.Generic;
+using System.Data.Entity;
 using System.Linq;
 
 namespace EntityFrameworkFullAsNoTrackingCallTests
@@ -11,43 +10,37 @@ namespace EntityFrameworkFullAsNoTrackingCallTests
         {
             using (AppDbContext context = new AppDbContext())
             {
-                //bool test1 = context.Set<Product>().Any();
+                bool problem1 = context.Set<Product>().Any();
 
-                //bool test2 = context.Products.AnyAsync().Result;
+                bool problem2 = context.Products.AnyAsync().Result;
 
-                //Product test3 = context.Products.Find(1);
+                List<Product> problem3 = context.Products.ToList();
 
-                //Product test4 = context.Products.FindAsync(1).Result;
+                // Any call of methods of following classes
+                // System.Data.Entity.QueryableExtensions
+                // System.Linq.Queryable
+                // System.Linq.Enumerable
 
+                // On Any instance of
                 // System.Data.Entity.Infrastructure.DbQuery
-                // System.Data.Entity.Infrastructure.DbSqlQuery
 
-                context.Products.Any();
+                bool ok1 = context.Set<Product>().AsNoTracking().Any();
 
-                context.Products.Add(new Product { });
+                bool ok2 = context.Products.AsNoTracking().AnyAsync().Result;
 
-                bool test5 = context.Products.SqlQuery("select * from Products").Any();
+                List<Product> ok3 = context.Products.AsNoTracking().ToList();
+
+                bool ok4 = new int[] { }.Any();
             }
         }
     }
 
     public class AppDbContext : DbContext
     {
-        static AppDbContext()
-        {
-            //Database.SetInitializer(new DropCreateDatabaseAlways<AppDbContext>());
-            Database.SetInitializer<AppDbContext>(null);
-        }
-
         public AppDbContext()
-            : base(new SqlConnection(@"Data Source=.;Initial Catalog=Test;Integrated Security=True"), contextOwnsConnection: true)
+            : base("AppDbConnectionString")
         {
-            Configuration.AutoDetectChangesEnabled = false;
-            Configuration.EnsureTransactionsForFunctionsAndCommands = true;
-            Configuration.LazyLoadingEnabled = false;
-            Configuration.ProxyCreationEnabled = false;
-            Configuration.UseDatabaseNullSemantics = false;
-            Configuration.ValidateOnSaveEnabled = true;
+
         }
 
         public virtual DbSet<Product> Products { get; set; }
