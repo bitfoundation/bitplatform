@@ -27,46 +27,54 @@ module Foundation.View.Directives {
 
                     const gridTemplate = `<rad-grid-element kendo-grid k-options="::${isolatedOptionsKey}" k-ng-delay="::${isolatedOptionsKey}" />`;
 
-                    const editRowTemplateId = guidUtils.newGuid();
+                    const viewRowTemplateId = replaceAll(guidUtils.newGuid(), "-", "");
 
-                    angular.element(element)
-                        .children("[type='edit/template']")
-                        .attr("id", editRowTemplateId)
-                        .insertAfter(element);
-
-                    attrs["editTemplateId"] = editRowTemplateId;
-
-                    const viewRowTemplateId = guidUtils.newGuid();
-
-                    angular.element(element)
+                    const viewTemplate = angular.element(element)
                         .children("[type='view/template']")
-                        .attr("id", viewRowTemplateId)
-                        .insertAfter(element);
+                        .attr("id", viewRowTemplateId);
+
+                    angular.element(document.body).append(viewTemplate);
 
                     attrs["viewTemplateId"] = viewRowTemplateId;
 
+                    const editTemplate = angular.element(element)
+                        .children("edit-template")
+
+                    if (editTemplate.length != 0) {
+
+                        const editRowTemplateId = replaceAll(guidUtils.newGuid(), "-", "");
+
+                        editTemplate.attr("id", editRowTemplateId);
+
+                        angular.element(document.body).append(editTemplate);
+
+                        attrs["editTemplateId"] = editRowTemplateId;
+                    }
+
                     const toolbarTemplate = angular.element(element)
-                        .children("[type='toolbar/template']");
+                        .children("toolbar-template");
 
                     if (toolbarTemplate.length != 0) {
 
-                        const toolbarTemplateId = guidUtils.newGuid();
+                        const toolbarTemplateId = replaceAll(guidUtils.newGuid(), "-", "");
 
-                        toolbarTemplate.attr("id", toolbarTemplateId)
-                            .insertAfter(element);
+                        toolbarTemplate.attr("id", toolbarTemplateId);
+
+                        angular.element(document.body).append(toolbarTemplate);
 
                         attrs["toolbarTemplateId"] = toolbarTemplateId;
                     }
 
                     const detailTemplate = angular.element(element)
-                        .children("[type='detail/template']");
+                        .children("detail-template");
 
                     if (detailTemplate.length != 0) {
 
-                        const detailTemplateId = guidUtils.newGuid();
+                        const detailTemplateId = replaceAll(guidUtils.newGuid(), "-", "");
 
-                        detailTemplate.attr("id", detailTemplateId)
-                            .insertAfter(element);
+                        detailTemplate.attr("id", detailTemplateId);
+
+                        angular.element(document.body).append(detailTemplate);
 
                         attrs["detailTemplateId"] = detailTemplateId;
                     }
@@ -110,10 +118,6 @@ module Foundation.View.Directives {
 
                                 kendoWidgetCreatedDisposal();
 
-                                $scope[attributes["isolatedOptionsKey"] + "Add"] = () => {
-                                    grid.addRow();
-                                };
-
                                 $scope[attributes["isolatedOptionsKey"] + "Delete"] = ($event) => {
 
                                     const row = angular.element($event.currentTarget).parents("tr");
@@ -122,25 +126,32 @@ module Foundation.View.Directives {
 
                                 };
 
-                                $scope[attributes["isolatedOptionsKey"] + "Update"] = ($event) => {
+                                if (attributes["editTemplateId"] != null) {
 
-                                    const row = angular.element($event.currentTarget).parents("tr");
+                                    $scope[attributes["isolatedOptionsKey"] + "Add"] = () => {
+                                        grid.addRow();
+                                    };
 
-                                    grid.editRow(row);
+                                    $scope[attributes["isolatedOptionsKey"] + "Update"] = ($event) => {
 
-                                };
+                                        const row = angular.element($event.currentTarget).parents("tr");
 
-                                $scope[attributes["isolatedOptionsKey"] + "Cancel"] = ($event) => {
-                                    const uid = angular.element($event.target).parents(".k-popup-edit-form").attr("data-uid");
-                                    grid.trigger("cancel", { container: angular.element($event.target).parents(".k-window"), sender: grid, model: grid.dataSource.flatView().find(i => i["uid"] == uid) });
-                                    grid.cancelRow();
-                                };
+                                        grid.editRow(row);
 
-                                $scope[attributes["isolatedOptionsKey"] + "Save"] = ($event) => {
+                                    };
 
-                                    grid.saveRow();
+                                    $scope[attributes["isolatedOptionsKey"] + "Cancel"] = ($event) => {
+                                        const uid = angular.element($event.target).parents(".k-popup-edit-form").attr("data-uid");
+                                        grid.trigger("cancel", { container: angular.element($event.target).parents(".k-window"), sender: grid, model: grid.dataSource.flatView().find(i => i["uid"] == uid) });
+                                        grid.cancelRow();
+                                    };
 
-                                };
+                                    $scope[attributes["isolatedOptionsKey"] + "Save"] = ($event) => {
+
+                                        grid.saveRow();
+
+                                    };
+                                }
 
                                 Object.defineProperty(datasource, "current", {
                                     configurable: true,
@@ -185,34 +196,30 @@ module Foundation.View.Directives {
                                 });
                             });
 
-                            const viewTemplateElement = angular.element("#" + attributes["viewTemplateId"]);
+                            let editTemplateElement: JQuery = null;
+                            let editTemplateHtmlString: string = null;
+                            let editPopupTitle: string = null;
 
-                            let viewTemplateHtml = viewTemplateElement.html();
+                            if (attributes["editTemplateId"] != null) {
 
-                            viewTemplateHtml = viewTemplateHtml
-                                .replace("<tr",
-                                `<tr class="k-master-row" data-uid='#: uid #' rad-grid-row ng-model='::dataItem' isolatedOptionsKey='${
-                                attributes["isolatedOptionsKey"]}'`);
+                                editTemplateElement = angular.element("#" + attributes["editTemplateId"]);
 
-                            viewTemplateElement.remove();
+                                editPopupTitle = editTemplateElement.attr("title");
 
-                            const editTemplateElement = angular.element("#" + attributes["editTemplateId"]);
+                                const editTemplateHtml = angular.element(`<rad-grid-editor>${editTemplateElement.html()}</rad-grid-editor>`);
 
-                            const editPopupTitle = editTemplateElement.attr("title");
+                                editTemplateHtml.first().attr("isolatedOptionsKey", attributes["isolatedOptionsKey"]);
 
-                            const editTemplateHtml = angular.element(`<rad-grid-editor>${editTemplateElement.html()}</rad-grid-editor>`);
+                                editTemplateHtmlString = editTemplateHtml.first()[0].outerHTML;
 
-                            editTemplateHtml.first().attr("isolatedOptionsKey", attributes["isolatedOptionsKey"]);
+                                editTemplateElement.remove();
 
-                            const editTemplateHtmlString = editTemplateHtml.first()[0].outerHTML;
-
-                            editTemplateElement.remove();
-
-                            editTemplateHtml.remove();
+                                editTemplateHtml.remove();
+                            }
 
                             const gridOptions: kendo.ui.GridOptions = {
                                 dataSource: datasource,
-                                editable: {
+                                editable: attributes["editTemplateId"] == null ? { confirmation: true } : {
                                     mode: "popup",
                                     confirmation: true,
                                     template: kendo.template(editTemplateHtmlString),
@@ -283,6 +290,12 @@ module Foundation.View.Directives {
                             }
 
                             const columns: Array<kendo.ui.GridColumn> = [];
+
+                            const viewTemplateElement = angular.element("#" + attributes["viewTemplateId"]);
+
+                            let viewTemplateHtml = viewTemplateElement.html();
+
+                            viewTemplateElement.remove();
 
                             angular.element(viewTemplateHtml).find("td")
                                 .each((index, item) => {
