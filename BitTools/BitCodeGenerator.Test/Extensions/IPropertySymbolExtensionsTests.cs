@@ -47,5 +47,40 @@ public class SamplesController : DtoController<SampleDto>
             Assert.IsTrue(dto.Properties.ElementAt(2).IsKey());
             Assert.IsFalse(dto.Properties.ElementAt(3).IsKey());
         }
+
+        [TestMethod]
+        public void IPropertySymbolExtensionsShouldDeterminateConcurrencyCheckPropertiesAsDesired()
+        {
+            string dtoCode = @"
+
+public interface IDto {
+}
+
+public class SampleDto : IDto {
+    [ConcurrencyCheckAttribute]
+    public virtual int Concurrency{get;set;}
+    public virtual int NonConcurrency{get;set;}
+
+}
+
+public class DtoController<TDto>
+    where TDto : IDto
+{
+
+}
+
+public class SamplesController : DtoController<SampleDto>
+{
+
+}
+
+";
+            DefaultProjectDtosProvider dtosProvider = new DefaultProjectDtosProvider(new DefaultProjectDtoControllersProvider());
+
+            Dto dto = dtosProvider.GetProjectDtos(CreateProjectFromSourceCodes(dtoCode)).Single();
+
+            Assert.IsTrue(dto.Properties.ElementAt(0).HasConcurrencyCheck());
+            Assert.AreEqual(1, dto.Properties.Count(p => p.HasConcurrencyCheck()));
+        }
     }
 }
