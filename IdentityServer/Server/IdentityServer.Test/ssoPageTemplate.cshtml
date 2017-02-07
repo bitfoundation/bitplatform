@@ -1,0 +1,55 @@
+﻿@using Foundation.Api.Implementations
+@inherits RazorViewTemplate
+
+@{
+    IdentityServer.Api.Model.SSOPageModel ssoPageModel = Resolve<IdentityServer.Api.Contracts.ISSOPageModelProvider>().GetSSOPageModel();
+}
+
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>@(ssoPageModel.AppTitle)</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+    <meta http-equiv="Pragma" content="no-cache" />
+    <meta http-equiv="Expires" content="0" />
+    <base href="/" />
+
+    <script type="text/javascript">
+        clientAppProfile = {
+            theme: "@(ssoPageModel.Theme)",
+            culture: "@(ssoPageModel.Culture)",
+            version: "@(ssoPageModel.AppVersion)",
+            isDebugMode: @(ssoPageModel.DebugMode.ToString().ToLowerInvariant()),
+            appTitle: "@(ssoPageModel.AppTitle)",
+            appName: "@(ssoPageModel.AppName)",
+            desiredTimeZone: "@(ssoPageModel.DesiredTimeZoneValue)",
+            environmentConfigs: @(ssoPageModel.EnvironmentConfigsJSON)
+            };
+    </script>
+
+    <script src="Files/V@(ssoPageModel.AppVersion)/bit-framework/Foundation/HtmlClient/Foundation.Core.HtmlClient/foundation.core.js"></script>
+    <script src="Files/V@(ssoPageModel.AppVersion)/bit-framework/Foundation/HtmlClient/Foundation.ViewModel.HtmlClient/foundation.viewmodel.js"></script>
+    <script src="Files/V@(ssoPageModel.AppVersion)/bit-framework/Foundation/HtmlClient/Foundation.View.HtmlClient/foundation.view.js"></script>
+    <script src="Files/V@(ssoPageModel.AppVersion)/bit-identity-server/IdentityServer/HtmlClient/IdentityServer.HtmlClient/identityServer.HtmlClient.js"></script>
+    <script src="Files/V@(ssoPageModel.AppVersion)/bit-identity-server/IdentityServer/HtmlClient/IdentityServer.HtmlClient.Tests/identityServer.HtmlClient.Tests.js"></script>
+    <script type="text/javascript">
+        Foundation.Core.DependencyManager.getCurrent().init();
+    </script>
+
+</head>
+
+<body>
+
+    <login></login>
+
+    <script id='modelJson' type='application/json'>
+        {model}
+    </script>
+
+</body>
+
+</html>

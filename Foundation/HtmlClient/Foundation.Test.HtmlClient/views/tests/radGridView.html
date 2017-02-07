@@ -1,21 +1,21 @@
 ﻿<view id="radGridView">
 
     <rad-grid id="gridView" rad-datasource="vm.parentEntitiesDataSource" groupable="true">
-        <script type="toolbar/template">
+        <toolbar-template>
             <rad-grid-add-button id="gridAddButton">Add new Parent entity</rad-grid-add-button>
-        </script>
-        <script type="edit/template">
+        </toolbar-template>
+        <edit-template>
             <dto-form name="dataItemForm" ng-model="dataItem">
                 <input class="k-textbox" placeholder="..." name="Name" ng-model="dataItem.Name" />
             </dto-form>
             <rad-grid-save-button>Save</rad-grid-save-button>
             <rad-grid-cancel-button>Cancel</rad-grid-cancel-button>
-        </script>
-        <script type="detail/template">
+        </edit-template>
+        <detail-template>
             <div ng-init="vm.onDetailInit(dataItem)">
                 {{::dataItem.Name}}
             </div>
-        </script>
+        </detail-template>
         <script type="view/template">
             <tr>
                 <td name="Id" title="{{::'Id' | translate}}">

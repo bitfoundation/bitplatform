@@ -244,3 +244,9 @@ ModelManifest.xml
 /BitTools/BitCodeGenerator/Implementations/HtmlClientProxyGenerator/Templates/JavaScriptDtosGeneratorTemplate1.cs
 /BitTools/BitCodeGenerator/Implementations/HtmlClientProxyGenerator/Templates/JavaScriptContextGeneratorTemplate1.cs
 /Foundation/HtmlClient/Foundation.View.HtmlClient/contents/fonts/IRAN-Sans.ttf
+/IdentityServer/HtmlClient/IdentityServer.HtmlClient/identityServer.HtmlClient.js
+/IdentityServer/HtmlClient/IdentityServer.HtmlClient/identityServer.HtmlClient.d.ts
+/IdentityServer/HtmlClient/IdentityServer.HtmlClient.Tests/identityServer.HtmlClient.Tests.js
+/IdentityServer/HtmlClient/IdentityServer.HtmlClient.Tests/identityServer.HtmlClient.Tests.d.ts
+/IdentityServer/HtmlClient/IdentityServer.HtmlClient/view/contents/styles/identityServerStyles.css
+/IdentityServer/HtmlClient/IdentityServer.HtmlClient/bit-identityserver.d.ts

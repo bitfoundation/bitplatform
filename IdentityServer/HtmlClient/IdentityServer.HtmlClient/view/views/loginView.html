@@ -1,0 +1,37 @@
+﻿<view>
+    <md-content class="content" layout="row" layout-align="center center">
+        <form name="loginForm" method="post" action="{{::vm.loginModel.loginUrl}}">
+            <anti-forgery-token token="::vm.loginModel.antiForgery"></anti-forgery-token>
+            <md-input-container class="md-block">
+                <label>{{:: "UserName" | translate }}</label>
+                <input style="direction:ltr" required name="username" autofocus id="username" type="text" ng-model="::vm.loginModel.username">
+                <div ng-messages="loginForm.username.$error"
+                     ng-show="loginForm.username.$dirty && loginForm.username.$invalid ">
+                    <div ng-message="required">{{:: "UserNameIsRequired" | translate}}</div>
+                </div>
+            </md-input-container>
+            <md-input-container class="md-block">
+                <label>{{:: "Password" | translate }}</label>
+                <input style="direction:ltr" required id="password" name="password" type="password" ng-model="::vm.loginModel.password" autocomplete="off">
+                <div ng-messages="loginForm.password.$error"
+                     ng-show="loginForm.password.$dirty && loginForm.password.$invalid">
+                    <div ng-message="required">{{:: "PasswordIsRequired" | translate }}</div>
+                </div>
+            </md-input-container>
+            <md-input-container ng-if="::vm.loginModel.allowRememberMe" class="md-block">
+                <md-checkbox class="md-primary" ng-model="::vm.loginModel.rememberMe">
+                    {{:: "RememberMe" | translate }}
+                </md-checkbox>
+            </md-input-container>
+            <div layout="column" layout-align="center center" class="md-block">
+                <md-button id="login" type="submit" class="md-raised md-primary"
+                           ng-disabled="loginForm.$invalid" style="width: 100%">
+                    {{:: "Login" | translate }}
+                </md-button>
+                <div id="error" ng-if="::vm.loginModel.errorMessage!=null && vm.loginModel.errorMessage != ''">
+                    {{:: vm.loginModel.errorMessage | translate}}
+                </div>
+            </div>
+        </form>
+    </md-content>
+</view>
