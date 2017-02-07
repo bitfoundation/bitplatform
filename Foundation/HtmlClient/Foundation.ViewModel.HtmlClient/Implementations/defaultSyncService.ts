@@ -2,8 +2,6 @@
 
     export class DefaultSyncService implements ViewModel.Contracts.ISyncService {
 
-        private onlineContext: $data.EntityContext;
-        private offlineContext: $data.EntityContext;
         private onlineContextFactory: () => Promise<$data.EntityContext>;
         private offlineContextFactory: () => Promise<$data.EntityContext>;
 
@@ -70,16 +68,16 @@
             if (navigator.onLine == false)
                 return;
 
-            this.onlineContext = await this.onlineContextFactory();
-            this.offlineContext = await this.offlineContextFactory();
-            this.offlineContext["ignoreEntityEvents"] = true;
+            let onlineContext = await this.onlineContextFactory();
+            let offlineContext = await this.offlineContextFactory();
+            offlineContext["ignoreEntityEvents"] = true;
 
             let entitySetSyncMaterials = entitySetConfigs.map(entitySetConfig => {
                 return {
                     entitySetConfig: entitySetConfig,
-                    offlineEntitySet: this.offlineContext[entitySetConfig.entitySetName] as $data.EntitySet<Model.Contracts.ISyncableDto>,
-                    onlineEntitySet: this.onlineContext[entitySetConfig.entitySetName] as $data.EntitySet<Model.Contracts.ISyncableDto>,
-                    keyMembers: ((this.offlineContext[entitySetConfig.entitySetName] as $data.EntitySet<Model.Contracts.ISyncableDto>).elementType.memberDefinitions as any).getKeyProperties() as any[]
+                    offlineEntitySet: offlineContext[entitySetConfig.entitySetName] as $data.EntitySet<Model.Contracts.ISyncableDto>,
+                    onlineEntitySet: onlineContext[entitySetConfig.entitySetName] as $data.EntitySet<Model.Contracts.ISyncableDto>,
+                    keyMembers: ((offlineContext[entitySetConfig.entitySetName] as $data.EntitySet<Model.Contracts.ISyncableDto>).elementType.memberDefinitions as any).getKeyProperties() as any[]
                 };
             });
 
@@ -88,7 +86,7 @@
 
             if (toServerEntitySetSyncMaterials.length > 0) {
 
-                let allRecentlyChangedOfflineEntities = await this.offlineContext.batchExecuteQuery(toServerEntitySetSyncMaterials.map(entitySetSyncMaterial => {
+                let allRecentlyChangedOfflineEntities = await offlineContext.batchExecuteQuery(toServerEntitySetSyncMaterials.map(entitySetSyncMaterial => {
                     return entitySetSyncMaterial.offlineEntitySet.filter(e => e.ISV != true);
                 }));
 
@@ -99,7 +97,7 @@
 
                     for (let modifiedOfflineEntity of recentlyChangedOfflineEntities) {
                         let clonedEntityToBeSavedInOnlineContext = entitySetSyncMaterial.onlineEntitySet.elementType["create"](modifiedOfflineEntity["initData"]) as Model.Contracts.ISyncableDto;
-                        this.onlineContext.attach(clonedEntityToBeSavedInOnlineContext, $data.EntityAttachMode.AllChanged);
+                        onlineContext.attach(clonedEntityToBeSavedInOnlineContext, $data.EntityAttachMode.AllChanged);
                         if (clonedEntityToBeSavedInOnlineContext.IsArchived == true)
                             clonedEntityToBeSavedInOnlineContext.entityState = $data.EntityState.Deleted;
                         else if (clonedEntityToBeSavedInOnlineContext.Version == null || clonedEntityToBeSavedInOnlineContext.Version == "0")
@@ -109,12 +107,12 @@
                     }
                 }
 
-                await this.onlineContext.saveChanges();
+                await onlineContext.saveChanges();
             }
 
             if (fromServerEntitySetSyncMaterials.length > 0) {
 
-                let allOfflineEntitiesOrderedByVersion = await this.offlineContext.batchExecuteQuery(fromServerEntitySetSyncMaterials.map(entitySetSyncMaterial => {
+                let allOfflineEntitiesOrderedByVersion = await offlineContext.batchExecuteQuery(fromServerEntitySetSyncMaterials.map(entitySetSyncMaterial => {
                     return entitySetSyncMaterial.offlineEntitySet.orderByDescending(e => e.Version);
                 }));
 
@@ -127,13 +125,13 @@
                     if (offlineEntitiesOrderedByVersion[0] != null)
                         maxVersion = offlineEntitiesOrderedByVersion[0].Version;
 
-                    const recentlyChangedOnlineEntitiesQuery = entitySetSyncMaterial.entitySetConfig.getMethod(this.onlineContext).filter((e, ver) => e.Version > ver, { ver: maxVersion });
+                    const recentlyChangedOnlineEntitiesQuery = entitySetSyncMaterial.entitySetConfig.getMethod(onlineContext).filter((e, ver) => e.Version > ver, { ver: maxVersion });
 
                     return recentlyChangedOnlineEntitiesQuery;
 
                 });
 
-                let allRecentlyChangedOnlineEntities: Model.Contracts.ISyncableDto[][] = await this.onlineContext.batchExecuteQuery(loadRecentlyChangedOnlineEntitiesQueries);
+                let allRecentlyChangedOnlineEntities: Model.Contracts.ISyncableDto[][] = await onlineContext.batchExecuteQuery(loadRecentlyChangedOnlineEntitiesQueries);
 
                 for (let i = 0; i < allRecentlyChangedOnlineEntities.length; i++) {
 
@@ -146,7 +144,7 @@
                         let clonedEntity = entitySetSyncMaterial.offlineEntitySet.elementType["create"](recentlyChangedOnlineEntity["initData"]) as Model.Contracts.ISyncableDto;
                         clonedEntity.ISV = true;
 
-                        this.offlineContext.attach(clonedEntity, $data.EntityAttachMode.AllChanged);
+                        offlineContext.attach(clonedEntity, $data.EntityAttachMode.AllChanged);
 
                         if (offlineEntitiesOrderedByVersion.some(e => entitySetSyncMaterial.keyMembers.every(key => e[key.name] == clonedEntity[key.name]))) {
                             if (clonedEntity.IsArchived == true) {
@@ -161,7 +159,7 @@
                     }
                 }
 
-                await this.offlineContext.saveChanges();
+                await offlineContext.saveChanges();
 
             }
         }
