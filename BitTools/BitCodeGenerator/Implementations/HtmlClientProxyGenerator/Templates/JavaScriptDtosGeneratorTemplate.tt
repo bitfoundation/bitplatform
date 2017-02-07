@@ -40,6 +40,9 @@
 			<# if (prp.GetViewType() != null) { #>
 			, $ViewType : "<#= prp.GetViewType() #>"
 			<# } #>
+			<# if (prp.HasConcurrencyCheck()){ #>
+			, "concurrencyMode": $data.ConcurrencyMode.Fixed
+			<#}#>
 	},
 	<#}#>
 	});

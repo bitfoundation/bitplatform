@@ -35,6 +35,14 @@ namespace Microsoft.CodeAnalysis
             return prop.GetAttributes().Any(att => att.AttributeClass.Name == "KeyAttribute");
         }
 
+        public static bool HasConcurrencyCheck(this IPropertySymbol prop)
+        {
+            if (prop == null)
+                throw new ArgumentNullException(nameof(prop));
+
+            return prop.GetAttributes().Any(att => att.AttributeClass.Name == "ConcurrencyCheckAttribute");
+        }
+
         public static string GetViewType(this IPropertySymbol prop)
         {
             if (prop == null)
