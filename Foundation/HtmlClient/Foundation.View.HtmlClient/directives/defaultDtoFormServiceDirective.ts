@@ -20,6 +20,31 @@
                     const dateTimeService = dependencyManager.resolveObject<ViewModel.Contracts.IDateTimeService>("DateTimeService");
                     const clientAppProfile = dependencyManager.resolveObject<Core.ClientAppProfileManager>("ClientAppProfileManager").getClientAppProfile();
 
+                    $scope.$on("$destroy", () => {
+
+                        if (defaultDtoViewModel != null) {
+
+                            if (defaultDtoViewModel.model != null) {
+                                if (defaultDtoViewModel['propertyChangedFunction'] != null) {
+                                    defaultDtoViewModel.model.propertyChanged.detach(dtoViewModel['propertyChangedFunction']);
+                                    defaultDtoViewModel.model.propertyChanging.detach(dtoViewModel['propertyChangingFunction']);
+                                }
+                                defaultDtoViewModel.model = null;
+                            }
+
+                            defaultDtoViewModel.form = null;
+
+                        }
+
+                        if (dtoRules != null && dtoRules.model != null) {
+                            if (dtoRules['propertyChangedFunction'] != null) {
+                                dtoRules.model.propertyChanged.detach(dtoRules['propertyChangedFunction']);
+                            }
+                            dtoRules.model = null;
+                        }
+
+                    });
+
                     $timeout(() => {
 
                         $scope.$watch(attributes.ngModel, (newModel: any, oldModel: any) => {
