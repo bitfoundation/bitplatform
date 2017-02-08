@@ -1,4 +1,4 @@
-﻿using BitCodeAnalyzer.BitAnalyzers.Data.EntityFramework;
+using BitCodeAnalyzer.BitAnalyzers.Data.EntityFramework;
 using BitCodeAnalyzer.SystemAnalyzers;
 using BitCodeAnalyzer.Test.Helpers;
 using Microsoft.CodeAnalysis;
@@ -19,15 +19,31 @@ namespace BitCodeAnalyzer.Test.BitAnalyzers.Data.EntityFramework
         [TestCategory("Analyzer")]
         public void AsNoTrackingMustBeCalledBeforeAllOtherMethodCallsOfDbQueryAndDbSqlQuery()
         {
-            DiagnosticResult notCalledAsNoTracking = new DiagnosticResult
+            DiagnosticResult notCalledAsNoTracking1 = new DiagnosticResult
             {
-                Id = nameof(ClassWithoutModifierAnalyzer),
-                Message = ClassWithoutModifierAnalyzer.Message,
+                Id = nameof(AsNoTrackingAnalyzer),
+                Message = AsNoTrackingAnalyzer.Message,
                 Severity = DiagnosticSeverity.Error,
-                Locations = new[] { new DiagnosticResultLocation(Path.Combine(basePath, @"EntityFrameworkFullAsNoTrackingCallTests\Program.cs"), 25, 12) }
+                Locations = new[] { new DiagnosticResultLocation(Path.Combine(basePath, @"EntityFrameworkFullAsNoTrackingCallTests\Program.cs"), 13, 33) }
             };
 
-            VerifyCSharpDiagnostic(notCalledAsNoTracking);
+            DiagnosticResult notCalledAsNoTracking2 = new DiagnosticResult
+            {
+                Id = nameof(AsNoTrackingAnalyzer),
+                Message = AsNoTrackingAnalyzer.Message,
+                Severity = DiagnosticSeverity.Error,
+                Locations = new[] { new DiagnosticResultLocation(Path.Combine(basePath, @"EntityFrameworkFullAsNoTrackingCallTests\Program.cs"), 15, 33) }
+            };
+
+            DiagnosticResult notCalledAsNoTracking3 = new DiagnosticResult
+            {
+                Id = nameof(AsNoTrackingAnalyzer),
+                Message = AsNoTrackingAnalyzer.Message,
+                Severity = DiagnosticSeverity.Error,
+                Locations = new[] { new DiagnosticResultLocation(Path.Combine(basePath, @"EntityFrameworkFullAsNoTrackingCallTests\Program.cs"), 17, 42) }
+            };
+
+            VerifyCSharpDiagnostic(notCalledAsNoTracking1, notCalledAsNoTracking2, notCalledAsNoTracking3);
         }
 
         private readonly string basePath = new DirectoryInfo(Path.Combine(Environment.CurrentDirectory, @"..\..\BitAnalyzers\Data\EntityFramework\EntityFrameworkFullAsNoTrackingCallTests")).FullName;
