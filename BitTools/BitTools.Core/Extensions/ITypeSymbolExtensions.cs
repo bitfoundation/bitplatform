@@ -109,6 +109,10 @@ namespace Microsoft.CodeAnalysis
                 return "Edm.Decimal";
             if (typeName == nameof(Single))
                 return "Edm.Single";
+            if (typeName == nameof(Byte))
+                return "Edm.Byte";
+            if (typeName == nameof(Double))
+                return "Edm.Double";
             else
             {
                 if (type.IsQueryableType() || type.IsCollectionType())
@@ -136,24 +140,28 @@ namespace Microsoft.CodeAnalysis
 
             string typeName = type.Name;
 
-            if (typeName == nameof(String))
+            if (typeName == nameof(String)) // string
                 return "string";
             else if (typeName == nameof(DateTimeOffset))
                 return "Date";
-            else if (typeName == nameof(Boolean))
+            else if (typeName == nameof(Boolean)) // bool
                 return "boolean";
-            if (typeName == nameof(Int16))
+            if (typeName == nameof(Int16)) // short
                 return "number";
-            if (typeName == nameof(Int32))
+            if (typeName == nameof(Int32)) // int
                 return "number";
-            if (typeName == nameof(Int64))
+            if (typeName == nameof(Int64)) // long
                 return "string";
             if (typeName == nameof(Guid))
                 return "string";
-            if (typeName == nameof(Decimal))
+            if (typeName == nameof(Decimal)) // decimal
                 return "string";
-            if (typeName == nameof(Single))
-                return "string";
+            if (typeName == nameof(Single)) // float
+                return "number";
+            if (typeName == nameof(Byte)) // byte
+                return "number";
+            if (typeName == nameof(Double)) // double
+                return "number";
             else
             {
                 if (type.IsQueryableType() || type.IsCollectionType())
