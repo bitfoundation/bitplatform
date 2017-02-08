@@ -1,8 +1,9 @@
-﻿using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Diagnostics;
 using System.Collections.Immutable;
+using System.Linq;
 
 namespace BitCodeAnalyzer.BitAnalyzers.Data.EntityFramework
 {
@@ -33,11 +34,39 @@ namespace BitCodeAnalyzer.BitAnalyzers.Data.EntityFramework
             if (!(root is InvocationExpressionSyntax))
                 return;
 
-            InvocationExpressionSyntax invoke = (InvocationExpressionSyntax)root;
-            IMethodSymbol symbol = (IMethodSymbol)context.SemanticModel.GetSymbolInfo(invoke).Symbol;
+            InvocationExpressionSyntax invocation = (InvocationExpressionSyntax)root;
+            IMethodSymbol symbol = (IMethodSymbol)context.SemanticModel.GetSymbolInfo(invocation).Symbol;
+
+            string symbolName = symbol.ContainingType.ToDisplayString();
+            if (symbolName == "System.Linq.Queryable" || symbolName == "System.Linq.Enumerable" ||
+                symbolName == "System.Data.Entity.QueryableExtensions")
+            {
+                MemberAccessExpressionSyntax memberAccess = invocation.Expression as MemberAccessExpressionSyntax;
+
+                if (memberAccess != null && memberAccess.Expression != null)
+                {
+                    INamedTypeSymbol instanceType = (context.SemanticModel.GetTypeInfo(memberAccess.Expression).Type as INamedTypeSymbol)?.ConstructedFrom;
+
+                    if (instanceType != null &&
+                        (instanceType.ToString() == "System.Data.Entity.DbSet<TEntity>" ||
+                         instanceType.BaseType?.ToString() == "System.Data.Entity.Infrastructure.DbQuery<TEntity>"))
+                    {
+                        if (!invocation.Expression.DescendantNodes()
+                            .OfType<InvocationExpressionSyntax>()
+                            .Any(innerInvocation => innerInvocation.DescendantNodes()
+                                .OfType<IdentifierNameSyntax>()
+                                .Any(identifier => identifier.Identifier.ValueText == "AsNoTracking")))
+                        {
+                            Diagnostic diagn = Diagnostic.Create(Rule, root.GetLocation(), Message);
+
+                            context.ReportDiagnostic(diagn);
+                        }
+                    }
+                }
+            }
 
             // when symbol.ContainingType is either "System.Linq.Queryable" or "System.Linq.Enumerable" or "System.Data.Entity.QueryableExtensions"
-            // and its called on instanceof System.Data.Entity.Infrastructure.DbSqlQuery
+            // and its called on instanceof System.Data.Entity.Infrastructure.DbQuery
             // and there is no AsNoTracking called before.
         }
     }
