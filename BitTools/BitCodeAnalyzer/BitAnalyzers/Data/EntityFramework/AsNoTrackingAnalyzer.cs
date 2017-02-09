@@ -48,7 +48,7 @@ namespace BitCodeAnalyzer.BitAnalyzers.Data.EntityFramework
                     INamedTypeSymbol instanceType = (context.SemanticModel.GetTypeInfo(memberAccess.Expression).Type as INamedTypeSymbol)?.ConstructedFrom;
 
                     if (instanceType != null &&
-                        (instanceType.ToString() == "System.Data.Entity.DbSet<TEntity>" ||
+                        (instanceType.ToString() == "System.Data.Entity.Infrastructure.DbQuery<TEntity>" ||
                          instanceType.BaseType?.ToString() == "System.Data.Entity.Infrastructure.DbQuery<TEntity>"))
                     {
                         if (!invocation.Expression.DescendantNodes()
