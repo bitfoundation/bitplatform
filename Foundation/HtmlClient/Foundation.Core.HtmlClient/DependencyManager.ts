@@ -33,11 +33,8 @@ module Foundation.Core {
 
     export interface IObjectDependency extends IDependency {
         type?: Function;
-        lifeCycle?: "SingleInstance" | "PerRoute" | "Transient";
-    }
-
-    export interface IInstanceDependency extends IDependency {
-        instance: Object;
+        lifeCycle?: "SingleInstance" | "Transient";
+        resolver?: () => any;
     }
 
     export interface ICustomObjectResolver {
@@ -50,8 +47,6 @@ module Foundation.Core {
         private fileDependencies = new Array<IFileDependency>();
 
         private objectDependencies = new Array<IObjectDependency>();
-
-        private singletoneObjectDependenciesInstances = new Array<{ objectDep: IObjectDependency, objectDepInstance: Object }>();
 
         private formViewModelDependencies = new Array<IFormViewModelDependency>();
 
@@ -111,33 +106,25 @@ module Foundation.Core {
             }
         }
 
-        public registerInstanceDependency(instanceDependency: IInstanceDependency, objectDep?: IObjectDependency): void {
+        public registerInstanceDependency(objectDep: IObjectDependency, instance: any): void {
 
-            if (instanceDependency == null)
-                throw new Error("instanceDependency is null");
+            if (objectDep == null)
+                throw new Error("objectDep is null");
 
-            if (instanceDependency.name == null || instanceDependency.name == "")
-                throw new Error("instanceDependency's name is null or empty");
+            if (objectDep.name == null)
+                throw new Error("objectDep's name is null or empty");
 
-            if (objectDep != null && objectDep.name.toLowerCase() != instanceDependency.name.toLowerCase())
-                throw new Error(`objectDep's name must be equal to instanceDependency.name`);
+            if (instance == null)
+                throw new Error('instance may not be null');
 
-            if (!this.dependencyShouldBeConsidered(instanceDependency))
+            if (!this.dependencyShouldBeConsidered(objectDep))
                 return;
 
-            let singletoneObjDep = null;
-
-            for (let d of this.singletoneObjectDependenciesInstances) {
-                if ((objectDep != null && d.objectDep == objectDep) || d.objectDep.name.toLowerCase() == instanceDependency.name.toLowerCase())
-                    singletoneObjDep = d;
+            objectDep.resolver = () => {
+                return instance;
             }
 
-            if (singletoneObjDep != null && instanceDependency.overwriteExisting == true) {
-                singletoneObjDep.objectDepInstance = instanceDependency.instance;
-            }
-            else {
-                this.singletoneObjectDependenciesInstances.push({ objectDep: objectDep != null ? objectDep : instanceDependency, objectDepInstance: instanceDependency.instance });
-            }
+            this.registerObjectDependency(objectDep);
         }
 
         public registerObjectDependency(objectDependency: IObjectDependency): void {
@@ -145,8 +132,8 @@ module Foundation.Core {
             if (objectDependency == null)
                 throw new Error("objectDependency is null");
 
-            if (objectDependency.type == null)
-                throw new Error("object dependency's type may not be null");
+            if (objectDependency.type == null && objectDependency.resolver == null)
+                throw new Error("Either provide type or resolver for your object dependency");
 
             if (objectDependency.name == null || objectDependency.name == "")
                 throw new Error("objectDependency's name is null or empty");
@@ -162,6 +149,23 @@ module Foundation.Core {
 
             if (objectDependency.lifeCycle == null)
                 objectDependency.lifeCycle = "SingleInstance";
+
+            if (objectDependency.resolver == null) {
+                if (objectDependency.lifeCycle == "SingleInstance") {
+                    objectDependency.resolver = () => {
+                        if (objectDependency['instance'] == null)
+                            objectDependency['instance'] = Reflect.construct(objectDependency.type as Function, []);
+                        return objectDependency['instance'];
+                    };
+                }
+                else if (objectDependency.lifeCycle == "Transient") {
+                    objectDependency.resolver = () => {
+                        return Reflect.construct(objectDependency.type as Function, []);
+                    };
+                }
+                else
+                    throw new Error(`Lifecycle ${objectDependency.lifeCycle} is not supported for ${objectDependency.name}`);
+            }
 
             if (dependenciesWithThisNameIndex != -1 && objectDependency.overwriteExisting == true) {
                 this.objectDependencies[dependenciesWithThisNameIndex] = objectDependency;
@@ -499,26 +503,9 @@ module Foundation.Core {
             const objectDepsWithThisName = this.objectDependencies
                 .filter(dep => dep.name.toLowerCase() == objectDependencyName.toLowerCase());
 
-            objectDepsWithThisName.forEach(objectDep => {
-
-                if (objectDep.lifeCycle == "SingleInstance") {
-
-                    const result = this.singletoneObjectDependenciesInstances
-                        .filter(depInstanceKeyValue => depInstanceKeyValue.objectDep == objectDep)[0];
-
-                    if (result == null) {
-                        this.registerInstanceDependency({ instance: Reflect.construct(objectDep.type as Function, []), name: objectDep.name, overwriteExisting: false }, objectDep);
-                    }
-
-                } else {
-                    throw new Error("lifeCycle not supported yet");
-                }
-
+            return objectDepsWithThisName.map(objDep => {
+                return objDep.resolver();
             });
-
-            return this.singletoneObjectDependenciesInstances
-                .filter(singletoneObjDepInstance => singletoneObjDepInstance.objectDep.name.toLowerCase() == objectDependencyName.toLowerCase())
-                .map(singletoneObjDepInstance => singletoneObjDepInstance.objectDepInstance) as TContract[];
         }
 
         public getAllDirectivesDependencies(): Array<IDirectiveDependency> {
@@ -549,6 +536,23 @@ module Foundation.Core {
         };
     }
 
+    export function DtoRules(dtoRules: IObjectDependency): ClassDecorator {
+
+        return (targetDtoRules: IObjectDependency & Function) => {
+
+            targetDtoRules = Injectable()(targetDtoRules) as IObjectDependency & Function;
+
+            dtoRules.type = targetDtoRules;
+
+            dtoRules.lifeCycle = "Transient";
+
+            DependencyManager.getCurrent()
+                .registerObjectDependency(dtoRules);
+
+            return targetDtoRules;
+        };
+    }
+
     export function FormViewModelDependency(formViewModelDependency: IFormViewModelDependency): ClassDecorator {
 
         return (targetFormViewModel: IFormViewModelDependency & Function): Function => {
@@ -576,6 +580,21 @@ module Foundation.Core {
                 .registerComponentDependency(componentDependency);
 
             return targetComponent;
+        };
+    }
+
+    export function DtoViewModel(dtoViewModel: IComponentDependency): ClassDecorator {
+
+        return (targetDtoViewModel: IComponentDependency & Function): Function => {
+
+            targetDtoViewModel = Injectable()(targetDtoViewModel) as IComponentDependency & Function;
+
+            dtoViewModel.type = targetDtoViewModel;
+
+            DependencyManager.getCurrent()
+                .registerComponentDependency(dtoViewModel);
+
+            return targetDtoViewModel;
         };
     }
 
