@@ -15,7 +15,7 @@
         }
 
         @ViewModel.Command()
-        public submitFirstPart(form: ViewModel.Implementations.DtoFormController<Test.Model.Dto.ValidationSampleDto>): void {
+        public submitFirstPart(form: ViewModel.ViewModels.DtoFormController<Test.Model.Dto.ValidationSampleDto>): void {
             const isValid = form.isValid();
         }
     }

@@ -18,7 +18,7 @@ module IdentityServerTests {
 
     dependencyManager.registerObjectDependency({ name: "AngularConfiguration", type: Foundation.ViewModel.Implementations.DefaultAngularTranslateConfiguration });
 
-    dependencyManager.registerInstanceDependency({ name: "ClientAppProfileManager", instance: Foundation.Core.ClientAppProfileManager.getCurrent() });
+    dependencyManager.registerInstanceDependency({ name: "ClientAppProfileManager" }, Foundation.Core.ClientAppProfileManager.getCurrent());
 
     dependencyManager.registerObjectDependency({ name: "DateTimeService", type: Foundation.ViewModel.Implementations.DefaultDateTimeService });
 

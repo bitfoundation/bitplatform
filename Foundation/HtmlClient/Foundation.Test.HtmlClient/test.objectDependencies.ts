@@ -20,5 +20,5 @@ module Foundation.Test {
 
     dependencyManager.registerObjectDependency({ name: "DateTimeService", type: ViewModel.Implementations.DefaultDateTimeService });
 
-    dependencyManager.registerInstanceDependency({ name: "ClientAppProfileManager", instance: Core.ClientAppProfileManager.getCurrent() });
+    dependencyManager.registerInstanceDependency({ name: "ClientAppProfileManager" }, Core.ClientAppProfileManager.getCurrent());
 }

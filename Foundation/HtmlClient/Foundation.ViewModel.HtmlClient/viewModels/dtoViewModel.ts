@@ -1,4 +1,4 @@
-﻿module Foundation.ViewModel.Implementations {
+﻿module Foundation.ViewModel.ViewModels {
 
     export type DtoFormController<TDto extends Model.Contracts.IDto> = {
         readonly[Prop in keyof TDto]: IDtoModelController;
@@ -13,7 +13,7 @@
         isValid(): boolean;
     }
 
-    export class DefaultDtoViewModel<TDto extends Foundation.Model.Contracts.IDto, TRules extends DtoRules<TDto>> implements Contracts.IDtoViewModel<TDto> {
+    export class DtoViewModel<TDto extends Foundation.Model.Contracts.IDto, TRules extends Implementations.DtoRules<TDto>> implements Contracts.IDtoViewModel<TDto> {
 
         private _model: TDto;
 
