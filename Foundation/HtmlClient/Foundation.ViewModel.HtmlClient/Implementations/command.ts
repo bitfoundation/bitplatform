@@ -1,6 +1,10 @@
 ﻿module Foundation.ViewModel {
 
-    export function Command() {
+    export function Command(configuration: { callUpdate$scope: "IfAsync" | "Always" | "Never", $appyMode: "$applyAsync" | "$apply" }
+        = { callUpdate$scope: "IfAsync", $appyMode: "$applyAsync" }) {
+
+        if (configuration == null)
+            throw new Error("configuration may not be null");
 
         return (target: Object, propertyKey: string, descriptor: TypedPropertyDescriptor<any>) => {
 
@@ -36,13 +40,17 @@
                             if (clientAppProfile.isDebugMode == true)
                                 console.timeEnd(propertyKey);
 
-                            ScopeManager.update$scope($rootScope);
+                            if (configuration.callUpdate$scope != "Never") {
+                                ScopeManager.update$scope($rootScope, configuration.$appyMode == "$applyAsync");
+                            }
 
                         });
 
                         rPromise.catch((e) => {
 
-                            ScopeManager.update$scope($rootScope);
+                            if (configuration.callUpdate$scope != "Never") {
+                                ScopeManager.update$scope($rootScope, configuration.$appyMode == "$applyAsync");
+                            }
 
                             const iLogger = Core.DependencyManager.getCurrent().resolveObject<Core.Contracts.ILogger>("Logger");
                             iLogger.logDetailedError(this, propertyKey, args, e);
@@ -51,18 +59,13 @@
 
                     }
                 }
-                catch (e) {
-
-                    const iLogger = Core.DependencyManager.getCurrent().resolveObject<Core.Contracts.ILogger>("Logger");
-                    iLogger.logDetailedError(this, propertyKey, args, e);
-
-                    throw e;
-                }
                 finally {
 
                     if (isPromise == false) {
 
-                        ScopeManager.update$scope($rootScope);
+                        if (configuration.callUpdate$scope == "Always") {
+                            ScopeManager.update$scope($rootScope, configuration.$appyMode == "$applyAsync");
+                        }
 
                         if (clientAppProfile.isDebugMode == true)
                             console.timeEnd(propertyKey);
