@@ -9,7 +9,7 @@
         public date: Date;
 
         @ViewModel.Command()
-        public async $onInit(): Promise<void> {
+        public $onInit(): void {
             this.date = new Date(2016, 1, 1, 10, 10);
         }
     }

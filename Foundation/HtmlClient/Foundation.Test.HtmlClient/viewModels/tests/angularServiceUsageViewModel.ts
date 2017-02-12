@@ -7,7 +7,7 @@
         }
 
         @ViewModel.Command()
-        public async $onInit(): Promise<void> {
+        public $onInit(): void {
             this.$document.attr("title", "done");
         }
     }

@@ -24,7 +24,7 @@
         }
 
         @ViewModel.Command()
-        public async onDetailInit(data: Model.DomainModels.ParentEntity): Promise<void> {
+        public onDetailInit(data: Model.DomainModels.ParentEntity): void {
 
             console.warn(data.Id);
 
