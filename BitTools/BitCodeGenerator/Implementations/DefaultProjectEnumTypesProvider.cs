@@ -53,11 +53,11 @@ namespace BitCodeGenerator.Implementations
                     enumTypes.Add(new EnumType
                     {
                         EnumTypeSymbol = enumType,
-                        Members = enumType.GetMembers().OfType<IFieldSymbol>().Select((m,i) => new EnumMember
+                        Members = enumType.GetMembers().OfType<IFieldSymbol>().Select((m, i) => new EnumMember
                         {
                             Name = m.Name,
                             Symbol = m,
-                            Index=i,
+                            Index = i,
                             Value = Convert.ToInt32(m.ConstantValue)
                         }).ToList()
                     });
