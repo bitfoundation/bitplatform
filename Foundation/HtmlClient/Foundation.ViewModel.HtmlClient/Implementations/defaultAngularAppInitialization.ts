@@ -206,12 +206,6 @@ module Foundation.ViewModel.Implementations {
                 }
             });
 
-            app.filter("trusted", ["$sce", function ($sce: ng.ISCEService) {
-                return function (url) {
-                    return $sce.trustAsResourceUrl(url);
-                };
-            }]);
-
             app.filter("files", () => {
 
                 return (path: string): string => {
