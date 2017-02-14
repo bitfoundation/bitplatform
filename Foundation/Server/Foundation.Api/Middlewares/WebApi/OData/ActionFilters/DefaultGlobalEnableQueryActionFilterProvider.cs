@@ -11,7 +11,7 @@ namespace Foundation.Api.Middlewares.WebApi.OData.ActionFilters
         {
             ODataEnableQueryAttribute enableQueryOptions = new ODataEnableQueryAttribute
             {
-                DefaultPageSize = 25,
+                DefaultPageSize = null,
                 MaxTop = int.MaxValue,
                 MaxSkip = int.MaxValue,
                 AllowedArithmeticOperators = AllowedArithmeticOperators.All,
