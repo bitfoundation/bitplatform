@@ -187,10 +187,25 @@
                                                 });
                                             }
 
-                                            if (propDefenition.dataType == "Edm.DateTimeOffset" || propDefenition.dataType == $data["DateTimeOffset"]) {
+                                            if (propDefenition.originalType == "Edm.DateTimeOffset") {
                                                 propModelController.$parsers.push((viewValue) => {
                                                     if (viewValue != null && !(viewValue instanceof Date)) {
                                                         viewValue = dateTimeService.parseDate(viewValue);
+                                                    }
+                                                    return viewValue;
+                                                });
+                                            }
+                                            if (propDefenition.originalType == "Edm.Decimal" || propDefenition.originalType == "Edm.Double" || propDefenition.originalType == "Edm.Single") {
+                                                propModelController.$parsers.push((viewValue) => {
+                                                    if (viewValue != null && typeof viewValue == "string") {
+                                                        let viewValueAsString = viewValue as string;
+                                                        if (viewValueAsString.startsWith('.')) {
+                                                            viewValueAsString = '0' + viewValueAsString;
+                                                        }
+                                                        if (viewValueAsString.endsWith('.')) {
+                                                            viewValueAsString = viewValueAsString + '0';
+                                                        }
+                                                        viewValue = viewValueAsString;
                                                     }
                                                     return viewValue;
                                                 });
