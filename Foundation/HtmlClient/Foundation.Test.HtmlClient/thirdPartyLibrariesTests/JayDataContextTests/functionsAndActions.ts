@@ -17,12 +17,12 @@ let testActionCall = async (): Promise<void> => {
 let testBatchCallODataFunctions = async (): Promise<void> => {
     const contextProvider = Foundation.Core.DependencyManager.getCurrent().resolveObject<Foundation.ViewModel.Contracts.IEntityContextProvider>("EntityContextProvider");
     const context = await contextProvider.getContext<TestContext>("Test");
-    const results = await context.batchExecuteQuery([context.testModels.getTestModelsByStringPropertyValue("1").take(1), context.testModels.getTestModelsByStringPropertyValue("2").take(1)]);
-    if (results[0].length != 1) {
+    const [res1, res2] = await context.batchExecuteQuery([context.testModels.getTestModelsByStringPropertyValue("1").take(1), context.testModels.getTestModelsByStringPropertyValue("2").take(1)]);
+    if (res1.length != 1) {
         throw new Error("There is a problem in batch read");
     }
 
-    if (results[1].length != 1) {
+    if (res2.length != 1) {
         throw new Error("There is a problem in batch read");
     }
 };
