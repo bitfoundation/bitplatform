@@ -36,7 +36,7 @@ namespace Foundation.Api.ApiControllers
 
         public virtual IEnumerable<IWhereByKeyBuilder<TDto, TKey>> WhereByKeyBuilders { get; set; }
 
-        public virtual IEnumerable<IAsyncQueryableExecuter> AsyncQueryableExecuters { get; set; }
+        public virtual IEnumerable<IDataProviderSpecificMethodsProvider> DataProviderSpecificMethodsProviders { get; set; }
 
         protected virtual TModel FromDtoToModel(TDto dto)
         {
@@ -59,15 +59,15 @@ namespace Foundation.Api.ApiControllers
         {
             IQueryable<TDto> baseQuery = WhereByKeyBuilders.WhereByKey(GetAll(), key);
 
-            IAsyncQueryableExecuter asyncQueryableExecuterToUser = null;
+            IDataProviderSpecificMethodsProvider dataProviderSpecificMethodsProvider = null;
 
-            if (AsyncQueryableExecuters != null)
-                asyncQueryableExecuterToUser = AsyncQueryableExecuters.FirstOrDefault(asyncQueryableExecuter => asyncQueryableExecuter.SupportsAsyncExecution<TDto>(baseQuery));
+            if (DataProviderSpecificMethodsProviders != null)
+                dataProviderSpecificMethodsProvider = DataProviderSpecificMethodsProviders.FirstOrDefault(asyncQueryableExecuter => asyncQueryableExecuter.SupportsQueryable<TDto>(baseQuery));
 
             TDto dtoResult = default(TDto);
 
-            if (asyncQueryableExecuterToUser != null)
-                dtoResult = await asyncQueryableExecuterToUser.FirstOrDefaultAsync(baseQuery, cancellationToken);
+            if (dataProviderSpecificMethodsProvider != null)
+                dtoResult = await dataProviderSpecificMethodsProvider.FirstOrDefaultAsync(baseQuery, cancellationToken);
             else
                 dtoResult = baseQuery.FirstOrDefault();
 

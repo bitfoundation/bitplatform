@@ -13,7 +13,7 @@ namespace Foundation.Core.Contracts
                 throw new ArgumentNullException(nameof(dependencyManager));
 
             dependencyManager.Register<TDbContext, TDbContext>();
-            dependencyManager.Register<IAsyncQueryableExecuter, EfAsyncQueryableExecuter>(overwriteExciting: false, lifeCycle: DependencyLifeCycle.SingleInstance);
+            dependencyManager.Register<IDataProviderSpecificMethodsProvider, EfDataProviderSpecificMethodsProvider>(overwriteExciting: false, lifeCycle: DependencyLifeCycle.SingleInstance);
 
             return dependencyManager;
         }

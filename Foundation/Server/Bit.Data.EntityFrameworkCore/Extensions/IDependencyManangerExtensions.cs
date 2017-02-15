@@ -17,7 +17,7 @@ namespace Foundation.Core.Contracts
 
             dependencyManager.Register(typeof(IDbContextObjectsProvider).GetTypeInfo(), typeof(TDbContextObjectsProvider).GetTypeInfo());
             dependencyManager.Register<TDbContext, TDbContext>();
-            dependencyManager.Register<IAsyncQueryableExecuter, EfCoreAsyncQueryableExecuter>(overwriteExciting: false, lifeCycle: DependencyLifeCycle.SingleInstance);
+            dependencyManager.Register<IDataProviderSpecificMethodsProvider, EfCoreDataProviderSpecificMethodsProvider>(overwriteExciting: false, lifeCycle: DependencyLifeCycle.SingleInstance);
             dependencyManager.RegisterGeneric(typeof(IWhereByKeyBuilder<,>).GetTypeInfo(), typeof(EfCoreWhereByKeyBuilder<,>).GetTypeInfo(), lifeCycle: DependencyLifeCycle.SingleInstance);
 
             return dependencyManager;

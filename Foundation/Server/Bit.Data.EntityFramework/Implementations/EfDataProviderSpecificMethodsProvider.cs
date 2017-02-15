@@ -9,7 +9,7 @@ using System.Data.Entity.Infrastructure;
 
 namespace Bit.Data.EntityFramework.Implementations
 {
-    public class EfAsyncQueryableExecuter : IAsyncQueryableExecuter
+    public class EfDataProviderSpecificMethodsProvider : IDataProviderSpecificMethodsProvider
     {
         public Task<T> FirstOrDefaultAsync<T>(IQueryable<T> source, CancellationToken cancellationToken)
         {
@@ -28,7 +28,7 @@ namespace Bit.Data.EntityFramework.Implementations
                 .LongCountAsync(cancellationToken);
         }
 
-        public bool SupportsAsyncExecution<T>(IQueryable source)
+        public bool SupportsQueryable<T>(IQueryable source)
         {
             if (source == null)
                 throw new ArgumentNullException(nameof(source));

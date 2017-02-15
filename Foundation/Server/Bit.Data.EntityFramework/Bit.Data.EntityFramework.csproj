@@ -166,7 +166,7 @@
   <ItemGroup>
     <Compile Include="Extensions\IDependencyManangerExtensions.cs" />
     <Compile Include="Implementations\DefaultDbContext.cs" />
-    <Compile Include="Implementations\EfAsyncQueryableExecuter.cs" />
+    <Compile Include="Implementations\EfDataProviderSpecificMethodsProvider.cs" />
     <Compile Include="Implementations\EfEntityWithDefaultGuidKeyRepository.cs" />
     <Compile Include="Implementations\EfEntityWithDefaultKeyRepository.cs" />
     <Compile Include="Implementations\EfRepository.cs" />

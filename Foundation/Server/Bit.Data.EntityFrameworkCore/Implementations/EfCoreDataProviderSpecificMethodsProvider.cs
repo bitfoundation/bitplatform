@@ -9,7 +9,7 @@ using Microsoft.EntityFrameworkCore.Query.Internal;
 
 namespace Foundation.DataAccess.Implementations.EntityFrameworkCore
 {
-    public class EfCoreAsyncQueryableExecuter : IAsyncQueryableExecuter
+    public class EfCoreDataProviderSpecificMethodsProvider : IDataProviderSpecificMethodsProvider
     {
         public Task<T> FirstOrDefaultAsync<T>(IQueryable<T> source, CancellationToken cancellationToken)
         {
@@ -28,7 +28,7 @@ namespace Foundation.DataAccess.Implementations.EntityFrameworkCore
                 .LongCountAsync(cancellationToken);
         }
 
-        public bool SupportsAsyncExecution<T>(IQueryable source)
+        public bool SupportsQueryable<T>(IQueryable source)
         {
             // https://github.com/aspnet/EntityFramework/issues/6534
             return false;

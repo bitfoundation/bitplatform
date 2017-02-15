@@ -52,12 +52,12 @@ namespace Foundation.Api.Middlewares.WebApi.OData.ActionFilters
                         bool isIQueryable = typeof(IQueryable).GetTypeInfo().IsAssignableFrom(actionReturnType);
 
                         TypeInfo queryElementType = actionReturnType.HasElementType ? actionReturnType.GetElementType().GetTypeInfo() : actionReturnType.GetGenericArguments().First() /* Why not calling Single() ? http://stackoverflow.com/questions/41718323/why-variable-of-type-ienumerablesomething-gettype-getgenericargsuments-c */.GetTypeInfo();
-                        IAsyncQueryableExecuter asyncQueryableExecuterToUse = null;
+                        IDataProviderSpecificMethodsProvider dataProviderSpecificMethodsProvider = null;
 
                         if (isIQueryable == true)
                         {
-                            IEnumerable<IAsyncQueryableExecuter> asyncQueryableExecuters = actionExecutedContext.Request.GetOwinContext().GetDependencyResolver().ResolveAll<IAsyncQueryableExecuter>();
-                            asyncQueryableExecuterToUse = (IAsyncQueryableExecuter)typeof(ODataEnableQueryAttribute).GetMethod(nameof(FindAsyncQueryableExecuter)).MakeGenericMethod(queryElementType).Invoke(this, new object[] { objContent.Value, asyncQueryableExecuters });
+                            IEnumerable<IDataProviderSpecificMethodsProvider> dataProviderSpecificMethodsProviders = actionExecutedContext.Request.GetOwinContext().GetDependencyResolver().ResolveAll<IDataProviderSpecificMethodsProvider>();
+                            dataProviderSpecificMethodsProvider = (IDataProviderSpecificMethodsProvider)typeof(ODataEnableQueryAttribute).GetMethod(nameof(FindDataProviderSpecificMethodsProvider)).MakeGenericMethod(queryElementType).Invoke(this, new object[] { objContent.Value, dataProviderSpecificMethodsProviders });
                         }
                         else
                         {
@@ -98,8 +98,8 @@ namespace Foundation.Api.Middlewares.WebApi.OData.ActionFilters
                         if (currentOdataQueryOptions.Count?.Value == true && pageSize.HasValue == true)
                         {
                             long count = default(long);
-                            if (asyncQueryableExecuterToUse != null)
-                                count = await (Task<long>)typeof(ODataEnableQueryAttribute).GetMethod(nameof(GetCountAsync)).MakeGenericMethod(queryElementType).Invoke(this, new object[] { objContent.Value, asyncQueryableExecuterToUse, cancellationToken });
+                            if (dataProviderSpecificMethodsProvider != null)
+                                count = await (Task<long>)typeof(ODataEnableQueryAttribute).GetMethod(nameof(GetCountAsync)).MakeGenericMethod(queryElementType).Invoke(this, new object[] { objContent.Value, dataProviderSpecificMethodsProvider, cancellationToken });
                             else
                                 count = (long)typeof(ODataEnableQueryAttribute).GetMethod(nameof(GetCount)).MakeGenericMethod(queryElementType).Invoke(this, new object[] { objContent.Value });
 
@@ -111,8 +111,8 @@ namespace Foundation.Api.Middlewares.WebApi.OData.ActionFilters
                         if (currentOdataQueryOptions.SelectExpand != null)
                             queryElementType = objContent.Value.GetType().GetTypeInfo().GetGenericArguments().Single().GetTypeInfo();
 
-                        if (asyncQueryableExecuterToUse != null)
-                            objContent.Value = await (Task<object>)typeof(ODataEnableQueryAttribute).GetMethod(nameof(ToListAsync)).MakeGenericMethod(queryElementType).Invoke(this, new object[] { objContent.Value, asyncQueryableExecuterToUse, pageSize, cancellationToken });
+                        if (dataProviderSpecificMethodsProvider != null)
+                            objContent.Value = await (Task<object>)typeof(ODataEnableQueryAttribute).GetMethod(nameof(ToListAsync)).MakeGenericMethod(queryElementType).Invoke(this, new object[] { objContent.Value, dataProviderSpecificMethodsProvider, pageSize, cancellationToken });
                         else
                             objContent.Value = typeof(ODataEnableQueryAttribute).GetMethod(nameof(ToList)).MakeGenericMethod(queryElementType).Invoke(this, new object[] { objContent.Value, pageSize });
 
@@ -127,17 +127,17 @@ namespace Foundation.Api.Middlewares.WebApi.OData.ActionFilters
             }
         }
 
-        public virtual IAsyncQueryableExecuter FindAsyncQueryableExecuter<T>(IQueryable<T> query, IEnumerable<IAsyncQueryableExecuter> asyncQueryableExecuters)
+        public virtual IDataProviderSpecificMethodsProvider FindDataProviderSpecificMethodsProvider<T>(IQueryable<T> query, IEnumerable<IDataProviderSpecificMethodsProvider> dataProviderSpecificMethodsProviders)
             where T : class
         {
             if (query == null)
                 throw new ArgumentNullException(nameof(query));
 
-            if (asyncQueryableExecuters == null)
-                throw new ArgumentNullException(nameof(asyncQueryableExecuters));
+            if (dataProviderSpecificMethodsProviders == null)
+                throw new ArgumentNullException(nameof(dataProviderSpecificMethodsProviders));
 
-            return asyncQueryableExecuters
-                .FirstOrDefault(asyncQueryableExecuter => asyncQueryableExecuter.SupportsAsyncExecution<T>(query));
+            return dataProviderSpecificMethodsProviders
+                .FirstOrDefault(dataProviderSpecificMethodsProvider => dataProviderSpecificMethodsProvider.SupportsQueryable<T>(query));
         }
 
         public virtual long GetCount<T>(IQueryable<T> query)
@@ -161,33 +161,33 @@ namespace Foundation.Api.Middlewares.WebApi.OData.ActionFilters
             return query.ToList();
         }
 
-        public virtual async Task<long> GetCountAsync<T>(IQueryable<T> query, IAsyncQueryableExecuter asyncQueryableExecuter, CancellationToken cancellationToken)
+        public virtual async Task<long> GetCountAsync<T>(IQueryable<T> query, IDataProviderSpecificMethodsProvider dataProviderSpecificMethodsProvider, CancellationToken cancellationToken)
             where T : class
         {
             if (query == null)
                 throw new ArgumentNullException(nameof(query));
 
-            if (asyncQueryableExecuter == null)
-                throw new ArgumentNullException(nameof(asyncQueryableExecuter));
+            if (dataProviderSpecificMethodsProvider == null)
+                throw new ArgumentNullException(nameof(dataProviderSpecificMethodsProvider));
 
-            return await asyncQueryableExecuter.LongCountAsync(query, cancellationToken);
+            return await dataProviderSpecificMethodsProvider.LongCountAsync(query, cancellationToken);
         }
 
-        public virtual async Task<object> ToListAsync<T>(IQueryable<T> query, IAsyncQueryableExecuter asyncQueryableExecuter, int? pageSize, CancellationToken cancellationToken)
+        public virtual async Task<object> ToListAsync<T>(IQueryable<T> query, IDataProviderSpecificMethodsProvider dataProviderSpecificMethodsProvider, int? pageSize, CancellationToken cancellationToken)
             where T : class
         {
             if (query == null)
                 throw new ArgumentNullException(nameof(query));
 
-            if (asyncQueryableExecuter == null)
-                throw new ArgumentNullException(nameof(asyncQueryableExecuter));
+            if (dataProviderSpecificMethodsProvider == null)
+                throw new ArgumentNullException(nameof(dataProviderSpecificMethodsProvider));
 
             if (pageSize.HasValue == true)
             {
                 query = query.Take(pageSize.Value);
             }
 
-            return await asyncQueryableExecuter.ToListAsync(query, cancellationToken);
+            return await dataProviderSpecificMethodsProvider.ToListAsync(query, cancellationToken);
         }
 
         public virtual IQueryable<T> ToQueryable<T>(IEnumerable<T> source)

@@ -5,9 +5,9 @@ using System.Threading.Tasks;
 
 namespace Foundation.DataAccess.Contracts
 {
-    public interface IAsyncQueryableExecuter
+    public interface IDataProviderSpecificMethodsProvider
     {
-        bool SupportsAsyncExecution<T>(IQueryable source);
+        bool SupportsQueryable<T>(IQueryable source);
 
         Task<List<T>> ToListAsync<T>(IQueryable<T> source, CancellationToken cancellationToken);
 
