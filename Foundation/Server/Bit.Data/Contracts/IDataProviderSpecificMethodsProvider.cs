@@ -14,5 +14,9 @@ namespace Foundation.DataAccess.Contracts
         Task<long> LongCountAsync<T>(IQueryable<T> source, CancellationToken cancellationToken);
 
         Task<T> FirstOrDefaultAsync<T>(IQueryable<T> source, CancellationToken cancellationToken);
+
+        IQueryable<T> Take<T>(IQueryable<T> source, int count);
+
+        IQueryable<T> Skip<T>(IQueryable<T> source, int count);
     }
 }

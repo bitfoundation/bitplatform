@@ -11,7 +11,7 @@ namespace Bit.Data.EntityFramework.Implementations
 {
     public class EfDataProviderSpecificMethodsProvider : IDataProviderSpecificMethodsProvider
     {
-        public Task<T> FirstOrDefaultAsync<T>(IQueryable<T> source, CancellationToken cancellationToken)
+        public virtual Task<T> FirstOrDefaultAsync<T>(IQueryable<T> source, CancellationToken cancellationToken)
         {
             if (source == null)
                 throw new ArgumentNullException(nameof(source));
@@ -28,12 +28,28 @@ namespace Bit.Data.EntityFramework.Implementations
                 .LongCountAsync(cancellationToken);
         }
 
-        public bool SupportsQueryable<T>(IQueryable source)
+        public virtual IQueryable<T> Skip<T>(IQueryable<T> source, int count)
+        {
+            if (source == null)
+                throw new ArgumentNullException(nameof(source));
+
+            return source.Skip(() => count);
+        }
+
+        public virtual bool SupportsQueryable<T>(IQueryable source)
         {
             if (source == null)
                 throw new ArgumentNullException(nameof(source));
 
             return source is DbQuery<T>;
+        }
+
+        public virtual IQueryable<T> Take<T>(IQueryable<T> source, int count)
+        {
+            if (source == null)
+                throw new ArgumentNullException(nameof(source));
+
+            return source.Take(() => count);
         }
 
         public virtual Task<List<T>> ToListAsync<T>(IQueryable<T> source, CancellationToken cancellationToken)

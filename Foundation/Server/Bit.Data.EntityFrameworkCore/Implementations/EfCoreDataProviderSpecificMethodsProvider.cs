@@ -28,6 +28,14 @@ namespace Foundation.DataAccess.Implementations.EntityFrameworkCore
                 .LongCountAsync(cancellationToken);
         }
 
+        public virtual IQueryable<T> Skip<T>(IQueryable<T> source, int count)
+        {
+            if (source == null)
+                throw new ArgumentNullException(nameof(source));
+
+            return source.Skip(count);
+        }
+
         public bool SupportsQueryable<T>(IQueryable source)
         {
             // https://github.com/aspnet/EntityFramework/issues/6534
@@ -37,6 +45,14 @@ namespace Foundation.DataAccess.Implementations.EntityFrameworkCore
                 throw new ArgumentNullException(nameof(source));
 
             return source is EntityQueryable<T>;
+        }
+
+        public virtual IQueryable<T> Take<T>(IQueryable<T> source, int count)
+        {
+            if (source == null)
+                throw new ArgumentNullException(nameof(source));
+
+            return source.Take(count);
         }
 
         public virtual Task<List<T>> ToListAsync<T>(IQueryable<T> source, CancellationToken cancellationToken)
