@@ -79,14 +79,15 @@ namespace Foundation.Api.Middlewares.WebApi.OData.ActionFilters
 
                         int? currentQueryPageSize = currentOdataQueryOptions?.Top?.Value;
                         int? globalQuerypageSize = globalODataQuerySettings.PageSize;
-                        int? pageSize = null;
+                        int? takeCount = null;
+                        int? skipCount = currentOdataQueryOptions?.Skip?.Value;
 
                         if (currentQueryPageSize.HasValue)
-                            pageSize = currentQueryPageSize.Value;
+                            takeCount = currentQueryPageSize.Value;
                         else if (globalQuerypageSize.HasValue == true)
-                            pageSize = globalQuerypageSize.Value;
+                            takeCount = globalQuerypageSize.Value;
                         else
-                            pageSize = null;
+                            takeCount = null;
 
                         globalODataQuerySettings.PageSize = null; // ApplyTo will enumerates the query for values other than null. We are gonna apply take in ToList & ToListAsync methods.
 
@@ -95,7 +96,7 @@ namespace Foundation.Api.Middlewares.WebApi.OData.ActionFilters
                             objContent.Value = currentOdataQueryOptions.Filter.ApplyTo(query: (IQueryable)objContent.Value, querySettings: globalODataQuerySettings);
                         }
 
-                        if (currentOdataQueryOptions.Count?.Value == true && pageSize.HasValue == true)
+                        if (currentOdataQueryOptions.Count?.Value == true && takeCount.HasValue == true)
                         {
                             long count = default(long);
                             if (dataProviderSpecificMethodsProvider != null)
@@ -106,17 +107,17 @@ namespace Foundation.Api.Middlewares.WebApi.OData.ActionFilters
                             actionExecutedContext.Request.Properties["System.Web.OData.TotalCountFunc"] = new Func<long>(() => count);
                         }
 
-                        objContent.Value = currentOdataQueryOptions.ApplyTo(query: (IQueryable)objContent.Value, querySettings: globalODataQuerySettings, ignoreQueryOptions: AllowedQueryOptions.Filter);
+                        objContent.Value = currentOdataQueryOptions.ApplyTo(query: (IQueryable)objContent.Value, querySettings: globalODataQuerySettings, ignoreQueryOptions: AllowedQueryOptions.Filter | AllowedQueryOptions.Skip | AllowedQueryOptions.Top);
 
                         if (currentOdataQueryOptions.SelectExpand != null)
                             queryElementType = objContent.Value.GetType().GetTypeInfo().GetGenericArguments().Single().GetTypeInfo();
 
                         if (dataProviderSpecificMethodsProvider != null)
-                            objContent.Value = await (Task<object>)typeof(ODataEnableQueryAttribute).GetMethod(nameof(ToListAsync)).MakeGenericMethod(queryElementType).Invoke(this, new object[] { objContent.Value, dataProviderSpecificMethodsProvider, pageSize, cancellationToken });
+                            objContent.Value = await (Task<object>)typeof(ODataEnableQueryAttribute).GetMethod(nameof(ToListAsync)).MakeGenericMethod(queryElementType).Invoke(this, new object[] { objContent.Value, dataProviderSpecificMethodsProvider, takeCount, skipCount, cancellationToken });
                         else
-                            objContent.Value = typeof(ODataEnableQueryAttribute).GetMethod(nameof(ToList)).MakeGenericMethod(queryElementType).Invoke(this, new object[] { objContent.Value, pageSize });
+                            objContent.Value = typeof(ODataEnableQueryAttribute).GetMethod(nameof(ToList)).MakeGenericMethod(queryElementType).Invoke(this, new object[] { objContent.Value, takeCount, skipCount });
 
-                        if (currentOdataQueryOptions.Count?.Value == true && pageSize.HasValue == false)
+                        if (currentOdataQueryOptions.Count?.Value == true && takeCount.HasValue == false)
                         {
                             // We've no paging becuase there is no global config for max top and there is no top specified by the client's request, so the retured result of query's length is equivalent to total count of the query
                             long count = ((IList)objContent.Value).Count;
@@ -148,14 +149,19 @@ namespace Foundation.Api.Middlewares.WebApi.OData.ActionFilters
             return query.Count();
         }
 
-        public virtual List<T> ToList<T>(IQueryable<T> query, int? pageSize)
+        public virtual List<T> ToList<T>(IQueryable<T> query, int? takeCount, int? skipCount)
         {
             if (query == null)
                 throw new ArgumentNullException(nameof(query));
 
-            if (pageSize.HasValue == true)
+            if (takeCount.HasValue == true)
             {
-                query = query.Take(pageSize.Value);
+                query = query.Take(takeCount.Value);
+            }
+
+            if (skipCount.HasValue == true)
+            {
+                query = query.Take(skipCount.Value);
             }
 
             return query.ToList();
@@ -173,7 +179,7 @@ namespace Foundation.Api.Middlewares.WebApi.OData.ActionFilters
             return await dataProviderSpecificMethodsProvider.LongCountAsync(query, cancellationToken);
         }
 
-        public virtual async Task<object> ToListAsync<T>(IQueryable<T> query, IDataProviderSpecificMethodsProvider dataProviderSpecificMethodsProvider, int? pageSize, CancellationToken cancellationToken)
+        public virtual async Task<object> ToListAsync<T>(IQueryable<T> query, IDataProviderSpecificMethodsProvider dataProviderSpecificMethodsProvider, int? takeCount, int? skipCount, CancellationToken cancellationToken)
             where T : class
         {
             if (query == null)
@@ -182,9 +188,14 @@ namespace Foundation.Api.Middlewares.WebApi.OData.ActionFilters
             if (dataProviderSpecificMethodsProvider == null)
                 throw new ArgumentNullException(nameof(dataProviderSpecificMethodsProvider));
 
-            if (pageSize.HasValue == true)
+            if (takeCount.HasValue == true)
             {
-                query = query.Take(pageSize.Value);
+                query = dataProviderSpecificMethodsProvider.Take(query, takeCount.Value);
+            }
+
+            if (skipCount.HasValue == true)
+            {
+                query = dataProviderSpecificMethodsProvider.Skip(query, skipCount.Value);
             }
 
             return await dataProviderSpecificMethodsProvider.ToListAsync(query, cancellationToken);
