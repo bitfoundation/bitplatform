@@ -27,20 +27,20 @@ namespace Foundation.Api.Middlewares.WebApi.ActionFilters
 
         }
 
-        public virtual async Task OnExceptionAsync(HttpActionExecutedContext actionExecutedContext, CancellationToken cancellationToken)
+        public virtual async Task OnExceptionAsync(HttpActionExecutedContext actionExecutedContext)
         {
-            await OwinActionFilter.OnExceptionAsync(actionExecutedContext.Request.GetOwinContext(), actionExecutedContext.Exception, cancellationToken);
+            await OwinActionFilter.OnExceptionAsync(actionExecutedContext.Request.GetOwinContext(), actionExecutedContext.Exception);
         }
 
         public override async Task OnActionExecutingAsync(HttpActionContext actionContext, CancellationToken cancellationToken)
         {
-            await OwinActionFilter.OnActionExecutingAsync(actionContext.Request.GetOwinContext(), cancellationToken);
+            await OwinActionFilter.OnActionExecutingAsync(actionContext.Request.GetOwinContext());
             await base.OnActionExecutingAsync(actionContext, cancellationToken);
         }
 
         public override async Task OnActionExecutedAsync(HttpActionExecutedContext actionExecutedContext, CancellationToken cancellationToken)
         {
-            await OwinActionFilter.OnActionExecutedAsync(actionExecutedContext.Request.GetOwinContext(), cancellationToken);
+            await OwinActionFilter.OnActionExecutedAsync(actionExecutedContext.Request.GetOwinContext());
             await base.OnActionExecutedAsync(actionExecutedContext, cancellationToken);
         }
     }

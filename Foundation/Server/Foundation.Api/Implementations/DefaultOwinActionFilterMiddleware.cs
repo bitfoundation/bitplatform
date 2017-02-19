@@ -24,32 +24,32 @@ namespace Foundation.Api.Implementations
         {
             try
             {
-                await OnActionExecutingAsync(context, CancellationToken.None /*Get cancellation token from context*/);
+                await OnActionExecutingAsync(context);
                 if (Next != null)
                     await Next.Invoke(context);
             }
             catch (Exception ex)
             {
-                await OnExceptionAsync(context, ex, CancellationToken.None /*Get cancellation token from context*/);
+                await OnExceptionAsync(context, ex);
                 throw;
             }
             finally
             {
-                await OnActionExecutedAsync(context, CancellationToken.None /*Get cancellation token from context*/);
+                await OnActionExecutedAsync(context);
             }
         }
 
-        public virtual async Task OnActionExecutedAsync(IOwinContext owinContext, CancellationToken cancellationToken)
+        public virtual async Task OnActionExecutedAsync(IOwinContext owinContext)
         {
 
         }
 
-        public virtual async Task OnActionExecutingAsync(IOwinContext owinContext, CancellationToken cancellationToken)
+        public virtual async Task OnActionExecutingAsync(IOwinContext owinContext)
         {
 
         }
 
-        public virtual async Task OnExceptionAsync(IOwinContext owinContext, Exception ex, CancellationToken cancellationToken)
+        public virtual async Task OnExceptionAsync(IOwinContext owinContext, Exception ex)
         {
 
         }

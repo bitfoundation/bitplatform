@@ -20,7 +20,7 @@ namespace Foundation.Api.Middlewares
 
         }
 
-        public override async Task OnActionExecutingAsync(IOwinContext owinContext, CancellationToken cancellationToken)
+        public override async Task OnActionExecutingAsync(IOwinContext owinContext)
         {
             if (owinContext.Response.Headers.Any(h => string.Equals(h.Key, "Cache-Control", StringComparison.InvariantCultureIgnoreCase)))
                 owinContext.Response.Headers.Remove("Cache-Control");
@@ -34,7 +34,7 @@ namespace Foundation.Api.Middlewares
                 owinContext.Response.Headers.Remove("Expires");
             owinContext.Response.Headers.Add("Expires", new[] { "31536000" });
 
-            await base.OnActionExecutingAsync(owinContext, cancellationToken);
+            await base.OnActionExecutingAsync(owinContext);
         }
     }
 }

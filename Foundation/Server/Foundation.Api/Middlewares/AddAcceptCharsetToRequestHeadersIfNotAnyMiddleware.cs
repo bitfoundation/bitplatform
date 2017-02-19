@@ -21,12 +21,12 @@ namespace Foundation.Api.Middlewares
 
         }
 
-        public override async Task OnActionExecutingAsync(IOwinContext owinContext, CancellationToken cancellationToken)
+        public override async Task OnActionExecutingAsync(IOwinContext owinContext)
         {
             if (!owinContext.Request.Headers.ContainsKey("Accept-Charset"))
                 owinContext.Request.Headers.Add("Accept-Charset", new[] { "utf-8" });
 
-            await base.OnActionExecutingAsync(owinContext, cancellationToken);
+            await base.OnActionExecutingAsync(owinContext);
         }
     }
 }
