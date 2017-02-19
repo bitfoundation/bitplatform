@@ -268,7 +268,7 @@
                                             }
                                         }
                                         else {
-                                            perDtoFormStorage.prevValidationsRollbackHandlers = perDtoFormStorage.prevValidationsRollbackHandlers.filter(h => h.memberName != memberName && h.errorKey != errorKey);
+                                            perDtoFormStorage.prevValidationsRollbackHandlers = perDtoFormStorage.prevValidationsRollbackHandlers.filter(h => h.memberName != memberName || h.errorKey != errorKey);
                                         }
                                     }
                                     else {

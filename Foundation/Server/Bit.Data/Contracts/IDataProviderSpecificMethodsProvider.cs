@@ -5,14 +5,18 @@ using System.Threading.Tasks;
 
 namespace Foundation.DataAccess.Contracts
 {
-    public interface IAsyncQueryableExecuter
+    public interface IDataProviderSpecificMethodsProvider
     {
-        bool SupportsAsyncExecution<T>(IQueryable source);
+        bool SupportsQueryable<T>(IQueryable source);
 
         Task<List<T>> ToListAsync<T>(IQueryable<T> source, CancellationToken cancellationToken);
 
         Task<long> LongCountAsync<T>(IQueryable<T> source, CancellationToken cancellationToken);
 
         Task<T> FirstOrDefaultAsync<T>(IQueryable<T> source, CancellationToken cancellationToken);
+
+        IQueryable<T> Take<T>(IQueryable<T> source, int count);
+
+        IQueryable<T> Skip<T>(IQueryable<T> source, int count);
     }
 }

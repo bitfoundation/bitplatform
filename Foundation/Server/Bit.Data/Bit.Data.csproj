@@ -156,7 +156,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Contracts\IAsyncQueryableExecuter.cs" />
+    <Compile Include="Contracts\IDataProviderSpecificMethodsProvider.cs" />
     <Compile Include="Contracts\IDbConnectionProvider.cs" />
     <Compile Include="Contracts\IWhereByKeyBuilder.cs" />
     <Compile Include="Contracts\IEntityWithDefaultGuidKeyRepository.cs" />
