@@ -16,5 +16,7 @@ namespace Foundation.Test.Model.Dto
         public virtual string RequiredByMetadataMember { get; set; }
 
         public virtual string NotRequiredMember { get; set; }
+
+        public virtual string RequiredByDtoRulesMember { get; set; }
     }
 }
