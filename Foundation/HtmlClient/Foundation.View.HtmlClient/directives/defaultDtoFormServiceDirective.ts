@@ -222,6 +222,11 @@
                             if (attributes.dtoViewModel != null) {
                                 dtoViewModel = $parse(attributes.dtoViewModel)($scope);
                             }
+                            else {
+                                let tryToGetDtoViewModel = $parse("vm")($scope);
+                                if (tryToGetDtoViewModel instanceof Foundation.ViewModel.ViewModels.DtoViewModel)
+                                    dtoViewModel = tryToGetDtoViewModel as ViewModel.ViewModels.DtoViewModel<Model.Contracts.IDto, ViewModel.Implementations.DtoRules<Model.Contracts.IDto>>;
+                            }
 
                             if (attributes.dtoRules != null)
                                 dtoRules = $parse(attributes.dtoRules)($scope);
