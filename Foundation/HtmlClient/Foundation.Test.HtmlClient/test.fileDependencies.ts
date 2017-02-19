@@ -62,13 +62,15 @@
     dependencyManager.registerFileDependency({
         name: "persian-datePicker-styles",
         path: "bit-framework/Foundation/HtmlClient/Foundation.Test.HtmlClient/bower_components/persian-datepicker/dist/css/persian-datepicker-0.4.9",
-        fileDependecyType: "Style"
+        fileDependecyType: "Style",
+        predicate: (appInfo) => appInfo.culture == "FaIr"
     });
 
     dependencyManager.registerFileDependency({
         name: "persian-datePicker-blue-styles",
         path: "bit-framework/Foundation/HtmlClient/Foundation.Test.HtmlClient/bower_components/persian-datepicker/dist/css/theme/persian-datepicker-blue",
-        fileDependecyType: "Style"
+        fileDependecyType: "Style",
+        predicate: (appInfo) => appInfo.culture == "FaIr"
     });
 
     dependencyManager.registerFileDependency({
@@ -268,12 +270,14 @@
 
     dependencyManager.registerFileDependency({
         name: "persian-date",
-        path: "bit-framework/Foundation/HtmlClient/Foundation.Test.HtmlClient/bower_components/persian-date/dist/0.1.8/persian-date-0.1.8"
+        path: "bit-framework/Foundation/HtmlClient/Foundation.Test.HtmlClient/bower_components/persian-date/dist/0.1.8/persian-date-0.1.8",
+        predicate: (appInfo) => appInfo.culture == "FaIr"
     });
 
     dependencyManager.registerFileDependency({
         name: "persian-date-picker",
-        path: "bit-framework/Foundation/HtmlClient/Foundation.Test.HtmlClient/bower_components/persian-datepicker/dist/js/persian-datepicker-0.4.9"
+        path: "bit-framework/Foundation/HtmlClient/Foundation.Test.HtmlClient/bower_components/persian-datepicker/dist/js/persian-datepicker-0.4.9",
+        predicate: (appInfo) => appInfo.culture == "FaIr"
     });
 
     dependencyManager.registerFileDependency({
