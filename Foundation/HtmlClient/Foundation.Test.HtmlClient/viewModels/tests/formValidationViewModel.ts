@@ -1,17 +1,28 @@
 ﻿module Foundation.Test.ViewModels {
-    @Core.FormViewModelDependency({ name: "FormValidationFormViewModel", templateUrl: "|Foundation|/Foundation.Test.HtmlClient/views/tests/formValidationview.html" })
-    export class FormValidationFormViewModel extends ViewModel.ViewModels.SecureFormViewModel {
 
-        public constructor( @Core.Inject("EntityContextProvider") public entityContextProvider: ViewModel.Contracts.IEntityContextProvider) {
-            super();
+    @Core.DtoRules({ name: "ValidationSampleRules" })
+    export class ValidationSampleRules extends ViewModel.Implementations.DtoRules<Test.Model.Dto.ValidationSampleDto>{
+
+        public validateMember(memberName: keyof Test.Model.Dto.ValidationSampleDto, newValue: any, oldValue: any): void {
+            if (memberName == "RequiredByDtoRulesMember") {
+                this.setMemberValidaty("RequiredByDtoRulesMember", "required", newValue != null);
+            }
+            super.validateMember(memberName, newValue, oldValue);
         }
 
-        public validationSampleDto: Test.Model.Dto.ValidationSampleDto = null;
+    }
+
+    @Core.DtoViewModel({ name: "FormValidationFormViewModel", templateUrl: "|Foundation|/Foundation.Test.HtmlClient/views/tests/formValidationview.html" })
+    export class FormValidationFormViewModel extends ViewModel.ViewModels.DtoViewModel<Test.Model.Dto.ValidationSampleDto, ValidationSampleRules> {
+
+        public constructor( @Core.Inject("ValidationSampleRules") public validationSampleRules: ValidationSampleRules) {
+            super();
+            this.rules = validationSampleRules;
+        }
 
         @ViewModel.Command()
         public async $onInit(): Promise<void> {
-            const context = await this.entityContextProvider.getContext<TestContext>("Test");
-            this.validationSampleDto = new Test.Model.Dto.ValidationSampleDto();
+            this.model = new Test.Model.Dto.ValidationSampleDto();
         }
 
         @ViewModel.Command()
