@@ -19,7 +19,8 @@ let executeTest = async (testFunc: Function, args: string | any): Promise<void> 
 
     try {
 
-        Foundation.ViewModel.ScopeManager.Use$ApplyAsync = false;
+        Foundation.ViewModel.Default$scopeConfiguration.currentConfig.$appyMode = "$apply";
+        Foundation.ViewModel.Default$scopeConfiguration.currentConfig.callUpdate$scope = "Always";
 
         const jasmineReq = jasmineRequire;
 

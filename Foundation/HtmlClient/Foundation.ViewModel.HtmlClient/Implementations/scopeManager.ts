@@ -1,11 +1,9 @@
 ﻿module Foundation.ViewModel {
     export class ScopeManager {
 
-        public static Use$ApplyAsync = true;
+        public static update$scope($scope: ng.IScope, $applyMode: "$applyAsync" | "$apply" = Default$scopeConfiguration.currentConfig.$appyMode): void {
 
-        public static update$scope($scope: ng.IScope, use$ApplyAsync: boolean = ScopeManager.Use$ApplyAsync): void {
-
-            if (use$ApplyAsync == true) {
+            if ($applyMode == "$applyAsync") {
                 setTimeout(() => {
                     $scope.$applyAsync();
                 }, 0);

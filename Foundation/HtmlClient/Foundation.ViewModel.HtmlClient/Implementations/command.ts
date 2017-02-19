@@ -1,7 +1,10 @@
 ﻿module Foundation.ViewModel {
 
-    export function Command(configuration: { callUpdate$scope: "IfAsync" | "Always" | "Never", $appyMode: "$applyAsync" | "$apply" }
-        = { callUpdate$scope: "IfAsync", $appyMode: "$applyAsync" }) {
+    export class Default$scopeConfiguration {
+        public static currentConfig: { callUpdate$scope: "IfAsync" | "Always" | "Never", $appyMode: "$applyAsync" | "$apply" } = { callUpdate$scope: "IfAsync", $appyMode: "$applyAsync" };
+    }
+
+    export function Command(configuration = Default$scopeConfiguration.currentConfig) {
 
         if (configuration == null)
             throw new Error("configuration may not be null");
@@ -41,7 +44,7 @@
                                 console.timeEnd(propertyKey);
 
                             if (configuration.callUpdate$scope != "Never") {
-                                ScopeManager.update$scope($rootScope, configuration.$appyMode == "$applyAsync");
+                                ScopeManager.update$scope($rootScope, configuration.$appyMode);
                             }
 
                         });
@@ -49,7 +52,7 @@
                         rPromise.catch((e) => {
 
                             if (configuration.callUpdate$scope != "Never") {
-                                ScopeManager.update$scope($rootScope, configuration.$appyMode == "$applyAsync");
+                                ScopeManager.update$scope($rootScope, configuration.$appyMode);
                             }
 
                             const iLogger = Core.DependencyManager.getCurrent().resolveObject<Core.Contracts.ILogger>("Logger");
@@ -64,7 +67,7 @@
                     if (isPromise == false) {
 
                         if (configuration.callUpdate$scope == "Always") {
-                            ScopeManager.update$scope($rootScope, configuration.$appyMode == "$applyAsync");
+                            ScopeManager.update$scope($rootScope, configuration.$appyMode);
                         }
 
                         if (clientAppProfile.isDebugMode == true)
