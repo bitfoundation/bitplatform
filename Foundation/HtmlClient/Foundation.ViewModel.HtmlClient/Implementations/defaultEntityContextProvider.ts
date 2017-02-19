@@ -8,7 +8,7 @@
 
         private oDataJSInitPromise: Promise<void> = null;
 
-        private async oDataJSInit(): Promise<void> {
+        public async oDataJSInit(): Promise<void> {
 
             if (this.oDataJSInitPromise == null) {
 

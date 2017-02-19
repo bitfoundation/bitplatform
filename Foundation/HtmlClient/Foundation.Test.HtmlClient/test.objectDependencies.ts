@@ -12,6 +12,8 @@ module Foundation.Test {
 
     dependencyManager.registerObjectDependency({ name: "EntityContextProvider", type: ViewModel.Implementations.DefaultEntityContextProvider });
 
+    dependencyManager.registerObjectDependency({ name: "AppEvent", type: ViewModel.Implementations.DefaultEntityContextProviderAppEvent });
+
     dependencyManager.registerObjectDependency({ name: "MessageReceiver", type: ViewModel.Implementations.SignalRMessageReceiver });
 
     dependencyManager.registerObjectDependency({ name: "MetadataProvider", type: ViewModel.Implementations.DefaultMetadataProvider });
