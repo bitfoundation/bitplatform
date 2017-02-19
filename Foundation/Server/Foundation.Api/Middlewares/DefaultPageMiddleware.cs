@@ -18,7 +18,7 @@ namespace Foundation.Api.Middlewares
         {
             IDependencyResolver dependencyResolver = context.GetDependencyResolver();
 
-            string defaultPage = await dependencyResolver.Resolve<IDefaultHtmlPageProvider>().GetDefaultPageAsync(CancellationToken.None);
+            string defaultPage = await dependencyResolver.Resolve<IDefaultHtmlPageProvider>().GetDefaultPageAsync(context.Request.CallCancelled);
 
             context.Response.ContentType = "text/html; charset=utf-8";
 
