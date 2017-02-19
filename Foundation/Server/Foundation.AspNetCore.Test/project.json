@@ -22,7 +22,7 @@
     "Microsoft.AspNetCore.TestHost": "1.1.0",
     "Microsoft.CSharp": "4.3.0",
     "Microsoft.Owin.Security": "3.0.1",
-    "Suave": "2.0.2",
+    "Suave": "2.0.3",
     "System.ComponentModel.Annotations": "4.3.0",
     "System.Diagnostics.DiagnosticSource": "4.3.0",
     "System.Net.Http": "4.3.0",

@@ -17,7 +17,7 @@
     "Microsoft.Owin": "3.0.1",
     "Microsoft.Owin.Host.HttpListener": "3.0.1",
     "Microsoft.Owin.Hosting": "3.0.1",
-    "Suave": "2.0.2",
+    "Suave": "2.0.3",
     "System.ComponentModel.Annotations": "4.3.0",
     "System.Diagnostics.DiagnosticSource": "4.3.0",
     "System.Net.Http": "4.3.0"
