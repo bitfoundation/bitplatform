@@ -8,19 +8,27 @@ namespace Foundation.Test
         static void Main(string[] args)
         {
             Console.Title = "Foundation Test";
+            bool useSso = false;
 
             using (TestEnvironment testEnvironment = new TestEnvironment(new TestEnvironmentArgs
             {
                 UseRealServer = true,
                 UseProxyBasedDependencyManager = false,
-                UseSso = false
+                UseSso = useSso
             }))
             {
                 string url = null;
 
-                OAuthToken token = testEnvironment.Server.Login("ValidUserName", "ValidPassword");
+                if (useSso == false)
+                {
+                    OAuthToken token = testEnvironment.Server.Login("ValidUserName", "ValidPassword");
 
-                url = $@"{testEnvironment.Server.Uri}SignIn#id_token=0&access_token={token.access_token}&token_type={token.token_type}&expires_in=86400&scope=openid%20profile%20user_info&state={{}}&session_state=0";
+                    url = $@"{testEnvironment.Server.Uri}SignIn#id_token=0&access_token={token.access_token}&token_type={token.token_type}&expires_in=86400&scope=openid%20profile%20user_info&state={{}}&session_state=0";
+                }
+                else
+                {
+                    url = testEnvironment.Server.Uri;
+                }
 
                 Process.Start(url);
 
