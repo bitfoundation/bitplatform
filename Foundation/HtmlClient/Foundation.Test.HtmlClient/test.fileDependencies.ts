@@ -229,6 +229,11 @@
     });
 
     dependencyManager.registerFileDependency({
+        name: "jayData-indexedDb-provider",
+        path: "bit-framework/Foundation/HtmlClient/Foundation.Test.HtmlClient/bower_components/jaydata/dist/jaydataproviders/indexedDbProvider"
+    });
+
+    dependencyManager.registerFileDependency({
         name: "jayData-kendo-module",
         path: "bit-framework/Foundation/HtmlClient/Foundation.Test.HtmlClient/bower_components/jaydata/dist/jaydatamodules/kendo"
     });
