@@ -5,8 +5,15 @@ module Foundation.Test.Implementations {
     })
     export class TestDefaultAngularAppInitialization extends ViewModel.Implementations.DefaultAngularAppInitialization {
 
+        public constructor( @Core.Inject("ClientAppProfileManager") public clientAppProfileManager: Core.ClientAppProfileManager) {
+            super();
+        }
+
         protected getBaseModuleDependencies(): Array<string> {
-            return ["pascalprecht.translate", "ngComponentRouter", "kendo.directives", "ngMessages", "ngMaterial", "ngAria", "ngAnimate"];
+            let modules = ["pascalprecht.translate", "ngComponentRouter", "ngMessages", "ngMaterial", "ngAria", "ngAnimate"];
+            if (this.clientAppProfileManager.getClientAppProfile().screenSize == "DesktopAndTablet")
+                modules.push("kendo.directives");
+            return modules;
         }
 
         protected async configureAppModule(app: ng.IModule): Promise<void> {
