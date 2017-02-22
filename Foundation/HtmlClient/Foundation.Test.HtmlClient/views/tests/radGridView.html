@@ -16,27 +16,27 @@
                 {{::dataItem.Name}}
             </div>
         </detail-template>
-        <script type="view/template">
-            <tr>
-                <td name="Id" title="{{::'Id' | translate}}">
+        <view-template>
+            <columns>
+                <column name="Id" title="{{::'Id' | translate}}">
                     {{::dataItem.Id}}
-                </td>
-                <td name="Name" title="{{::'Name' | translate}}" filter-data-source="vm.parentEntitiesDataSourceForFilter" filter-text-field="Name" filter-value-field="Name">
+                </column>
+                <column name="Name" title="{{::'Name' | translate}}" filter-data-source="vm.parentEntitiesDataSourceForFilter" filter-text-field="Name" filter-value-field="Name">
                     {{::dataItem.Name}}
-                </td>
-                <td name="Version" title="{{::'Version' | translate}}">
+                </column>
+                <column name="Version" title="{{::'Version' | translate}}">
                     {{::dataItem.Version == 1 ? '(-:' : ')-:'}}
-                </td>
-                <td name="Date" title="{{::'Date' | translate}}">
+                </column>
+                <column name="Date" title="{{::'Date' | translate}}">
                     {{::dataItem.Date | bitDate}}
-                </td>
-                <td command title="{{::'Commands' | translate}}">
+                </column>
+                <column command title="{{::'Commands' | translate}}">
                     <rad-grid-edit-button>Update</rad-grid-edit-button>
                     <rad-grid-delete-button>Delete</rad-grid-delete-button>
                     <md-button id="doSomethingWithCurrentEntity" ng-click="vm.doSomethingWithCurrentEntity(this)">Do something with current entity</md-button>
-                </td>
-            </tr>
-        </script>
+                </column>
+            </columns>
+        </view-template>
     </rad-grid>
 
     {{vm.parentEntitiesDataSource.current.Name}}

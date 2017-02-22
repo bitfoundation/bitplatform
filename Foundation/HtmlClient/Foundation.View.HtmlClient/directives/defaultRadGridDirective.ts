@@ -30,7 +30,7 @@ module Foundation.View.Directives {
                     const viewRowTemplateId = replaceAll(guidUtils.newGuid(), "-", "");
 
                     const viewTemplate = angular.element(element)
-                        .children("[type='view/template']")
+                        .children("view-template")
                         .attr("id", viewRowTemplateId);
 
                     angular.element(document.body).append(viewTemplate);
@@ -297,7 +297,7 @@ module Foundation.View.Directives {
 
                             viewTemplateElement.remove();
 
-                            angular.element(viewTemplateHtml).find("td")
+                            angular.element(viewTemplateHtml).find("column")
                                 .each((index, item) => {
 
                                     const wrappedItem = angular.element(item);
@@ -319,7 +319,7 @@ module Foundation.View.Directives {
                                     }
 
                                     if (wrappedItem.attr("name") == null)
-                                        throw new Error('td column must have a name attribute');
+                                        throw new Error('column must have a name attribute');
 
                                     const field = datasource.options.schema.model.fields[gridColumn.field];
 
