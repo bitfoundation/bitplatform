@@ -219,7 +219,7 @@ module Foundation.View.Directives {
 
                             const gridOptions: kendo.ui.GridOptions = {
                                 dataSource: datasource,
-                                editable: attributes["editTemplateId"] == null ? { confirmation: true } : {
+                                editable: attributes["editTemplateId"] == null ? { confirmation: true, update: false } : {
                                     mode: "popup",
                                     confirmation: true,
                                     template: kendo.template(editTemplateHtmlString),
