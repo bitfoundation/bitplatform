@@ -22,5 +22,11 @@ module Foundation.Test.Implementations {
             }]);
             await super.configureAppModule(app);
         }
+
+        protected async onAppRun(app: ng.IModule): Promise<void> {
+            if (this.clientAppProfileManager.getClientAppProfile().culture == "FaIr")
+                angular.element(document.body).addClass("k-rtl");
+            await super.onAppRun(app);
+        }
     }
 }
