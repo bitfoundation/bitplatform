@@ -1,6 +1,6 @@
 ﻿<view id="radGridView">
 
-    <rad-grid id="gridView" rad-datasource="vm.parentEntitiesDataSource" groupable="true">
+    <rad-grid id="gridView" rad-datasource="vm.parentEntitiesDataSource" groupable="true" k-on-sort="vm.onSort(kendoEvent)">
         <toolbar-template>
             <rad-grid-add-button id="gridAddButton">Add new Parent entity</rad-grid-add-button>
         </toolbar-template>

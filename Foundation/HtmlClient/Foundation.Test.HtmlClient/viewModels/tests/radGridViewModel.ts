@@ -29,5 +29,10 @@
             console.warn(data.Id);
 
         }
+
+        @ViewModel.Command()
+        public onSort(kendoEvent: kendo.ui.GridSortEvent) {
+
+        }
     }
 }
