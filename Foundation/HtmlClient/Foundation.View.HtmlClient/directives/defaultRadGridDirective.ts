@@ -293,14 +293,25 @@ module Foundation.View.Directives {
 
                             const viewTemplateElement = angular.element("#" + attributes["viewTemplateId"]);
 
-                            let viewTemplateHtml = viewTemplateElement.html();
+                            let extras = viewTemplateElement.find("extras");
 
-                            viewTemplateElement.remove();
+                            if (extras.length == 0)
+                                extras = $("<extras></extras");
 
-                            angular.element(viewTemplateHtml).find("column")
+                            extras.attr("rad-grid-row", "");
+                            extras.attr("ng-model", "::dataItem");
+
+                            let isFirstColumn = true;
+
+                            viewTemplateElement.find("column")
                                 .each((index, item) => {
 
                                     const wrappedItem = angular.element(item);
+
+                                    if (isFirstColumn == true) {
+                                        isFirstColumn = false;
+                                        wrappedItem.append(extras);
+                                    }
 
                                     let template = item.innerHTML;
 
@@ -454,6 +465,8 @@ module Foundation.View.Directives {
                                     columns.push(gridColumn);
 
                                 });
+
+                            viewTemplateElement.remove();
 
                             gridOptions.columns = columns;
 
