@@ -1,4 +1,4 @@
-﻿using Foundation.Api.Contracts;
+using Foundation.Api.Contracts;
 using Foundation.Api.Contracts.Metadata;
 using Foundation.Api.Implementations;
 using Foundation.Api.Implementations.Metadata;
@@ -14,6 +14,7 @@ using Foundation.Core.Implementations;
 using Foundation.DataAccess.Contracts;
 using Foundation.DataAccess.Implementations;
 using Foundation.DataAccess.Implementations.EntityFrameworkCore;
+using Foundation.Model.Implementations;
 using Foundation.Test.Api.Middlewares;
 using Foundation.Test.DataAccess.Implementations;
 using Foundation.Test.Model.Implementations;
@@ -124,6 +125,7 @@ namespace Foundation.Test.Api.Implementations.Project
 
             dependencyManager.RegisterDtoModelMapper();
 
+            dependencyManager.RegisterDtoModelMapperConfiguration<DefaultDtoModelMapperConfiguration>();
             dependencyManager.RegisterDtoModelMapperConfiguration<TestDtoModelMapperConfiguration>();
 
             if (_args?.AdditionalDependencies != null)
