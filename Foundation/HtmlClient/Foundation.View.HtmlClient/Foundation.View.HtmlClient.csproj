@@ -60,7 +60,7 @@
     <TypeScriptCompile Include="directives\defaultLayoutChildDirective.ts" />
     <TypeScriptCompile Include="directives\defaultRadMultiSelectDirective.ts" />
     <TypeScriptCompile Include="directives\defaultRadTreeViewDirective.ts" />
-    <TypeScriptCompile Include="directives\defaultRadGridRowDirective.ts" />
+    <TypeScriptCompile Include="directives\defaultRadModelItemTemplateDirective.ts" />
     <Content Include="gulpfile.js" />
     <TypeScriptCompile Include="directives\persianDatePicker.ts" />
   </ItemGroup>

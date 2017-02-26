@@ -298,7 +298,7 @@ module Foundation.View.Directives {
                             if (extras.length == 0)
                                 extras = $("<extras></extras");
 
-                            extras.attr("rad-grid-row", "");
+                            extras.attr("rad-model-item-template", "");
                             extras.attr("ng-model", "::dataItem");
 
                             let isFirstColumn = true;
