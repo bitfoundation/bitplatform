@@ -11,6 +11,7 @@ using Foundation.Core.Implementations;
 using Foundation.DataAccess.Contracts;
 using Foundation.DataAccess.Implementations;
 using Foundation.DataAccess.Implementations.EntityFrameworkCore;
+using Foundation.Model.Implementations;
 using Owin;
 using System.Collections.Generic;
 using System.Reflection;
@@ -81,6 +82,7 @@ namespace BitChangeSetManager
 
             dependencyManager.RegisterDtoModelMapper();
 
+            dependencyManager.RegisterDtoModelMapperConfiguration<DefaultDtoModelMapperConfiguration>();
             dependencyManager.RegisterDtoModelMapperConfiguration<BitChangeSetManagerDtoModelMapperConfiguration>();
 
             dependencyManager.RegisterDefaultPageMiddlewareUsingDefaultConfiguration();
