@@ -1,7 +1,7 @@
 ﻿module Foundation.View.Directives {
 
     @Core.DirectiveDependency({ name: "radModelItemTemplate" })
-    export class DefaultRadGridRowDirective implements ViewModel.Contracts.IDirective {
+    export class DefaultRadModelItemTemplateDirective implements ViewModel.Contracts.IDirective {
         public getDirectiveFactory(): ng.IDirectiveFactory {
             return () => ({
                 require: "ngModel",
