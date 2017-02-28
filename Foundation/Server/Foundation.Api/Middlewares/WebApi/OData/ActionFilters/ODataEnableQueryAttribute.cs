@@ -154,14 +154,14 @@ namespace Foundation.Api.Middlewares.WebApi.OData.ActionFilters
             if (query == null)
                 throw new ArgumentNullException(nameof(query));
 
+            if (skipCount.HasValue == true)
+            {
+                query = query.Skip(skipCount.Value);
+            }
+
             if (takeCount.HasValue == true)
             {
                 query = query.Take(takeCount.Value);
-            }
-
-            if (skipCount.HasValue == true)
-            {
-                query = query.Take(skipCount.Value);
             }
 
             return query.ToList();
@@ -188,14 +188,14 @@ namespace Foundation.Api.Middlewares.WebApi.OData.ActionFilters
             if (dataProviderSpecificMethodsProvider == null)
                 throw new ArgumentNullException(nameof(dataProviderSpecificMethodsProvider));
 
-            if (takeCount.HasValue == true)
-            {
-                query = dataProviderSpecificMethodsProvider.Take(query, takeCount.Value);
-            }
-
             if (skipCount.HasValue == true)
             {
                 query = dataProviderSpecificMethodsProvider.Skip(query, skipCount.Value);
+            }
+
+            if (takeCount.HasValue == true)
+            {
+                query = dataProviderSpecificMethodsProvider.Take(query, takeCount.Value);
             }
 
             return await dataProviderSpecificMethodsProvider.ToListAsync(query, cancellationToken);
