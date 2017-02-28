@@ -78,6 +78,28 @@ module Foundation.View.Directives {
 
                                 kendoWidgetCreatedDisposal();
 
+                                $scope.$on("$destroy", () => {
+
+                                    if (tree.wrapper != null) {
+
+                                        tree.wrapper.each(function (id, kElement) {
+                                            let dataObj = angular.element(kElement).data();
+                                            for (let mData in dataObj) {
+                                                if (angular.isObject(dataObj[mData])) {
+                                                    if (typeof dataObj[mData]["destroy"] == "function") {
+                                                        dataObj[mData].destroy();
+                                                    }
+                                                }
+                                            }
+                                        });
+
+                                        tree.wrapper.remove();
+                                    }
+
+                                    tree.destroy();
+
+                                });
+
                                 if (typeof ngMaterial != "undefined") {
 
                                     const mdInputContainerParent = tree.wrapper.parents("md-input-container");
@@ -127,8 +149,6 @@ module Foundation.View.Directives {
                                 const itemTemplateElement = angular.element("#" + attributes["itemTemplateId"]);
 
                                 const itemTemplateElementHtml = itemTemplateElement.html();
-
-                                itemTemplateElement.remove();
 
                                 const itemTemplate: any = kendo.template(itemTemplateElementHtml);
 

@@ -39,7 +39,7 @@ module Foundation.View.Directives {
                     attrs["viewTemplateId"] = viewRowTemplateId;
 
                     const editTemplate = angular.element(element)
-                        .children("edit-template")
+                        .children("edit-template");
 
                     if (editTemplate.length != 0) {
 
@@ -108,11 +108,17 @@ module Foundation.View.Directives {
                         return text.replace(new RegExp(search, "g"), replacement);
                     };
 
+                    function dsError(e: { sender: kendo.data.DataSource }) {
+                        if (e.sender["destroyed"]().length != 0) {
+                            e.sender.cancelChanges();
+                        }
+                    }
+
                     $timeout(() => {
 
-                        const watchForDatasourceToCreateDataGridWidgetUnRegisterHandler = $scope.$watch(attributes.radDatasource, (datasource: kendo.data.DataSource) => {
+                        const watchForDatasourceToCreateDataGridWidgetUnRegisterHandler = $scope.$watch(attributes.radDatasource, (dataSource: kendo.data.DataSource) => {
 
-                            if (datasource == null)
+                            if (dataSource == null)
                                 return;
 
                             watchForDatasourceToCreateDataGridWidgetUnRegisterHandler();
@@ -124,6 +130,31 @@ module Foundation.View.Directives {
                                 }
 
                                 kendoWidgetCreatedDisposal();
+
+                                $scope.$on("$destroy", () => {
+
+                                    delete dataSource.current;
+                                    dataSource.unbind("error", dsError);
+
+                                    if (grid.wrapper != null) {
+
+                                        grid.wrapper.each(function (id, kElement) {
+                                            let dataObj = angular.element(kElement).data();
+                                            for (let mData in dataObj) {
+                                                if (angular.isObject(dataObj[mData])) {
+                                                    if (typeof dataObj[mData]["destroy"] == "function") {
+                                                        dataObj[mData].destroy();
+                                                    }
+                                                }
+                                            }
+                                        });
+
+                                        grid.wrapper.remove();
+                                    }
+
+                                    grid.destroy();
+
+                                });
 
                                 $scope[attributes["isolatedOptionsKey"] + "Delete"] = ($event) => {
 
@@ -160,7 +191,7 @@ module Foundation.View.Directives {
                                     };
                                 }
 
-                                Object.defineProperty(datasource, "current", {
+                                Object.defineProperty(dataSource, "current", {
                                     configurable: true,
                                     enumerable: false,
                                     get: () => {
@@ -188,7 +219,7 @@ module Foundation.View.Directives {
                                     set: (entity: $data.Entity) => {
                                         if (entity == null) {
                                             grid.clearSelection();
-                                            datasource.onCurrentChanged();
+                                            dataSource.onCurrentChanged();
                                         }
                                         else {
                                             throw new Error("Not implemented");
@@ -196,11 +227,8 @@ module Foundation.View.Directives {
                                     }
                                 });
 
-                                datasource.bind("error", function (e) {
-                                    if (datasource["destroyed"]().length != 0) {
-                                        datasource.cancelChanges();
-                                    }
-                                });
+                                dataSource.bind("error", dsError);
+
                             });
 
                             let editTemplateElement: JQuery = null;
@@ -219,13 +247,11 @@ module Foundation.View.Directives {
 
                                 editTemplateHtmlString = editTemplateHtml.first()[0].outerHTML;
 
-                                editTemplateElement.remove();
-
                                 editTemplateHtml.remove();
                             }
 
                             const gridOptions: kendo.ui.GridOptions = {
-                                dataSource: datasource,
+                                dataSource: dataSource,
                                 editable: attributes["editTemplateId"] == null ? { confirmation: true, update: false } : {
                                     mode: "popup",
                                     confirmation: true,
@@ -240,7 +266,7 @@ module Foundation.View.Directives {
                                     angular.element(".k-edit-buttons").remove();
                                 },
                                 change: function onChange(e) {
-                                    datasource.onCurrentChanged();
+                                    dataSource.onCurrentChanged();
                                     ViewModel.ScopeManager.update$scope($scope);
                                 },
                                 autoBind: true,
@@ -255,7 +281,7 @@ module Foundation.View.Directives {
                                 sortable: {
                                     mode: "multiple"
                                 },
-                                pageable: datasource.options.pageSize != null ? {
+                                pageable: dataSource.options.pageSize != null ? {
                                     buttonCount: 3,
                                     input: true,
                                     pageSizes: [5, 10, 15, 25, 100],
@@ -276,8 +302,6 @@ module Foundation.View.Directives {
 
                                 const toolbarTemplateHtml = toolbarTemplateElement.html();
 
-                                toolbarTemplateElement.remove();
-
                                 const toolbar: any = kendo.template(toolbarTemplateHtml);
 
                                 gridOptions.toolbar = toolbar;
@@ -288,8 +312,6 @@ module Foundation.View.Directives {
                                 const detailTemplateElement = angular.element("#" + attributes["detailTemplateId"]);
 
                                 const detailTemplateHtml = detailTemplateElement.html();
-
-                                detailTemplateElement.remove();
 
                                 const detail: any = kendo.template(detailTemplateHtml);
 
@@ -339,7 +361,7 @@ module Foundation.View.Directives {
                                     if (wrappedItem.attr("name") == null)
                                         throw new Error('column must have a name attribute');
 
-                                    const field = datasource.options.schema.model.fields[gridColumn.field];
+                                    const field = dataSource.options.schema.model.fields[gridColumn.field];
 
                                     if (field == null)
                                         throw new Error(`Model has no field named ${gridColumn.field} to be used`);
@@ -472,8 +494,6 @@ module Foundation.View.Directives {
                                     columns.push(gridColumn);
 
                                 });
-
-                            viewTemplateElement.remove();
 
                             gridOptions.columns = columns;
 

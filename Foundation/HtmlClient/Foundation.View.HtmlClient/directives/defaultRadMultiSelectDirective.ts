@@ -133,6 +133,28 @@ module Foundation.View.Directives {
 
                                 kendoWidgetCreatedDisposal();
 
+                                $scope.$on("$destroy", () => {
+
+                                    if (multiSelect.wrapper != null) {
+
+                                        multiSelect.wrapper.each(function (id, kElement) {
+                                            let dataObj = angular.element(kElement).data();
+                                            for (let mData in dataObj) {
+                                                if (angular.isObject(dataObj[mData])) {
+                                                    if (typeof dataObj[mData]["destroy"] == "function") {
+                                                        dataObj[mData].destroy();
+                                                    }
+                                                }
+                                            }
+                                        });
+
+                                        multiSelect.wrapper.remove();
+                                    }
+
+                                    multiSelect.destroy();
+
+                                });
+
                                 if (typeof ngMaterial != "undefined") {
 
                                     const mdInputContainerParent = multiSelect.wrapper.parents("md-input-container");
@@ -201,8 +223,6 @@ module Foundation.View.Directives {
 
                                 let itemTemplateElementHtml = itemTemplateElement.html();
 
-                                itemTemplateElement.remove();
-
                                 let itemTemplate: any = kendo.template(itemTemplateElementHtml);
 
                                 multiSelectOptions.itemTemplate = itemTemplate;
@@ -214,8 +234,6 @@ module Foundation.View.Directives {
 
                                 let tagTemplateElementHtml = tagTemplateElement.html();
 
-                                tagTemplateElement.remove();
-
                                 let tagTemplate: any = kendo.template(tagTemplateElementHtml);
 
                                 multiSelectOptions.tagTemplate = tagTemplate;
@@ -226,8 +244,6 @@ module Foundation.View.Directives {
                                 let headerTemplateElement = angular.element("#" + attributes["headerTemplateId"]);
 
                                 let headerTemplateElementHtml = headerTemplateElement.html();
-
-                                headerTemplateElement.remove();
 
                                 let headerTemplate: any = kendo.template(headerTemplateElementHtml);
 

@@ -114,6 +114,30 @@ module Foundation.View.Directives {
 
                                 kendoWidgetCreatedDisposal();
 
+                                $scope.$on("$destroy", () => {
+
+                                    delete dataSource.current;
+
+                                    if (combo.wrapper != null) {
+
+                                        combo.wrapper.each(function (id, kElement) {
+                                            let dataObj = angular.element(kElement).data();
+                                            for (let mData in dataObj) {
+                                                if (angular.isObject(dataObj[mData])) {
+                                                    if (typeof dataObj[mData]["destroy"] == "function") {
+                                                        dataObj[mData].destroy();
+                                                    }
+                                                }
+                                            }
+                                        });
+
+                                        combo.wrapper.remove();
+                                    }
+
+                                    combo.destroy();
+
+                                });
+
                                 if (typeof ngMaterial != "undefined") {
 
                                     const mdInputContainerParent = combo.wrapper.parents("md-input-container");
@@ -230,8 +254,6 @@ module Foundation.View.Directives {
 
                                 let itemTemplateElementHtml = itemTemplateElement.html();
 
-                                itemTemplateElement.remove();
-
                                 let itemTemplate: any = kendo.template(itemTemplateElementHtml);
 
                                 comboOptions.template = itemTemplate;
@@ -242,8 +264,6 @@ module Foundation.View.Directives {
                                 let headerTemplateElement = angular.element("#" + attributes["headerTemplateId"]);
 
                                 let headerTemplateElementHtml = headerTemplateElement.html();
-
-                                headerTemplateElement.remove();
 
                                 let headerTemplate: any = kendo.template(headerTemplateElementHtml);
 
