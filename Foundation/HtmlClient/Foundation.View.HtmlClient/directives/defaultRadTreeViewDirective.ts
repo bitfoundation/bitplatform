@@ -128,9 +128,6 @@ module Foundation.View.Directives {
                                     }
                                 }
 
-                                if (attributes.onInit != null)
-                                    $parse(attributes.onInit)($scope);
-
                             });
 
                             const treeViewOptions: kendo.ui.TreeViewOptions = {
