@@ -218,7 +218,7 @@ module Foundation.View.Directives {
                                 }
                             }
 
-                            const comboOptions: kendo.ui.ComboBoxOptions = {
+                            const comboBoxOptions: kendo.ui.ComboBoxOptions = {
                                 dataSource: dataSource,
                                 autoBind: dataSource.flatView().length != 0 || attributes.radText == null,
                                 dataTextField: attributes.radTextFieldName,
@@ -246,7 +246,7 @@ module Foundation.View.Directives {
                             };
 
                             if (text != null)
-                                comboOptions.text = text;
+                                comboBoxOptions.text = text;
 
                             if (attributes["itemTemplateId"] != null) {
 
@@ -256,7 +256,7 @@ module Foundation.View.Directives {
 
                                 let itemTemplate: any = kendo.template(itemTemplateElementHtml);
 
-                                comboOptions.template = itemTemplate;
+                                comboBoxOptions.template = itemTemplate;
                             }
 
                             if (attributes["headerTemplateId"] != null) {
@@ -267,27 +267,27 @@ module Foundation.View.Directives {
 
                                 let headerTemplate: any = kendo.template(headerTemplateElementHtml);
 
-                                comboOptions.headerTemplate = headerTemplate;
+                                comboBoxOptions.headerTemplate = headerTemplate;
                             }
 
-                            if (dataSource.options.schema.model.fields[comboOptions.dataTextField] == null)
-                                throw new Error(`Model has no property named ${comboOptions.dataTextField} to be used as text field`);
+                            if (dataSource.options.schema.model.fields[comboBoxOptions.dataTextField] == null)
+                                throw new Error(`Model has no property named ${comboBoxOptions.dataTextField} to be used as text field`);
 
-                            if (dataSource.options.schema.model.fields[comboOptions.dataValueField] == null)
-                                throw new Error(`Model has no property named ${comboOptions.dataValueField} to be used as value field`);
+                            if (dataSource.options.schema.model.fields[comboBoxOptions.dataValueField] == null)
+                                throw new Error(`Model has no property named ${comboBoxOptions.dataValueField} to be used as value field`);
 
                             DefaultRadComboDirective.defaultRadComboDirectiveCustomizers.forEach(radComboCustomizer => {
-                                radComboCustomizer($scope, attributes, element, comboOptions);
+                                radComboCustomizer($scope, attributes, element, comboBoxOptions);
                             });
 
                             if (attributes.onInit != null) {
                                 let onInitFN = $parse(attributes.onInit);
                                 if (typeof onInitFN == 'function') {
-                                    onInitFN($scope, { comboOptions: comboOptions });
+                                    onInitFN($scope, { comboBoxOptions: comboBoxOptions });
                                 }
                             }
 
-                            $scope[attributes["isolatedOptionsKey"]] = comboOptions;
+                            $scope[attributes["isolatedOptionsKey"]] = comboBoxOptions;
 
                         });
                     });
