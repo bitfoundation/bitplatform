@@ -24,7 +24,9 @@ module Foundation.View.Directives {
 
                         const itemTemplateId = guidUtils.newGuid();
 
-                        itemTemplate.attr("id", itemTemplateId);
+                        itemTemplate
+                            .attr("id", itemTemplateId)
+                            .attr('ng-cloak', '');
 
                         angular.element(document.body).append(itemTemplate);
 

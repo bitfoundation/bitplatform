@@ -24,7 +24,9 @@ module Foundation.View.Directives {
 
                         const itemTemplateId = guidUtils.newGuid();
 
-                        itemTemplate.attr("id", itemTemplateId);
+                        itemTemplate
+                            .attr("id", itemTemplateId)
+                            .attr('ng-cloak', '');
 
                         angular.element(document.body).append(itemTemplate);
 
@@ -38,7 +40,9 @@ module Foundation.View.Directives {
 
                         const tagTemplateId = guidUtils.newGuid();
 
-                        tagTemplate.attr("id", tagTemplateId);
+                        tagTemplate
+                            .attr("id", tagTemplateId)
+                            .attr('ng-cloak', '');
 
                         angular.element(document.body).append(tagTemplate);
 
@@ -52,7 +56,9 @@ module Foundation.View.Directives {
 
                         const headerTemplateId = guidUtils.newGuid();
 
-                        headerTemplate.attr("id", headerTemplateId);
+                        headerTemplate
+                            .attr("id", headerTemplateId)
+                            .attr('ng-cloak', '');
 
                         angular.element(document.body).append(headerTemplate);
 

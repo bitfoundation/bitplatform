@@ -31,7 +31,8 @@ module Foundation.View.Directives {
 
                     const viewTemplate = angular.element(element)
                         .children("view-template")
-                        .attr("id", viewRowTemplateId);
+                        .attr("id", viewRowTemplateId)
+                        .attr('ng-cloak', '');
 
                     angular.element(document.body).append(viewTemplate);
 
@@ -44,7 +45,9 @@ module Foundation.View.Directives {
 
                         const editRowTemplateId = replaceAll(guidUtils.newGuid(), "-", "");
 
-                        editTemplate.attr("id", editRowTemplateId);
+                        editTemplate
+                            .attr("id", editRowTemplateId)
+                            .attr('ng-cloak', '');
 
                         angular.element(document.body).append(editTemplate);
 
@@ -58,7 +61,9 @@ module Foundation.View.Directives {
 
                         const toolbarTemplateId = replaceAll(guidUtils.newGuid(), "-", "");
 
-                        toolbarTemplate.attr("id", toolbarTemplateId);
+                        toolbarTemplate
+                            .attr("id", toolbarTemplateId)
+                            .attr('ng-cloak', '');
 
                         angular.element(document.body).append(toolbarTemplate);
 
@@ -72,7 +77,9 @@ module Foundation.View.Directives {
 
                         const detailTemplateId = replaceAll(guidUtils.newGuid(), "-", "");
 
-                        detailTemplate.attr("id", detailTemplateId);
+                        detailTemplate
+                            .attr("id", detailTemplateId)
+                            .attr('ng-cloak', '');
 
                         angular.element(document.body).append(detailTemplate);
 
