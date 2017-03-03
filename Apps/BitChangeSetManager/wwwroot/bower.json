@@ -25,7 +25,8 @@
     "ngComponentRouter": "https://github.com/excellalabs/ngComponentRouter.git#1d01d7a6902f0be2688693f14cb40576b718ab39",
     "fetch": "2.0.2",
     "decimal.js": "https://github.com/MikeMcl/decimal.js.git#v7.0.1",
-    "kendo-ui": "kendo-ui-core#2017.1.118"
+    "kendo-ui": "kendo-ui-core#2017.1.118",
+    "bit-html-client": "https://github.com/bit-foundation/bit-html-client.git#0.0.1"
   },
   "resolutions": {
     "jquery": "3.1.1",

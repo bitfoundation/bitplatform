@@ -1,6 +1,6 @@
-﻿/// <reference path="bower_components/bit/foundation.core/foundation.core.d.ts" />
-/// <reference path="bower_components/bit/foundation.view/foundation.view.d.ts" />
-/// <reference path="bower_components/bit/foundation.viewmodel/foundation.viewmodel.d.ts" />
+﻿/// <reference path="bower_components/bit-html-client/foundation.core/foundation.core.d.ts" />
+/// <reference path="bower_components/bit-html-client/foundation.view/foundation.view.d.ts" />
+/// <reference path="bower_components/bit-html-client/foundation.viewmodel/foundation.viewmodel.d.ts" />
 /// <reference path="imports.ts" />
 
 module BitChangeSetManager {
@@ -33,19 +33,19 @@ module BitChangeSetManager {
 
     dependencyManager.registerFileDependency({
         name: "controls-styles",
-        path: "bower_components/bit/foundation.view/contents/styles/controls",
+        path: "bower_components/bit-html-client/foundation.view/contents/styles/controls",
         fileDependecyType: "Style"
     });
 
     dependencyManager.registerFileDependency({
         name: "light-blue-theme-custom-styles",
-        path: "bower_components/bit/foundation.view/contents/styles/theme.light.blue",
+        path: "bower_components/bit-html-client/foundation.view/contents/styles/theme.light.blue",
         fileDependecyType: "Style"
     });
 
     dependencyManager.registerFileDependency({
         name: "en-US-styles",
-        path: "bower_components/bit/foundation.view/contents/styles/en-US",
+        path: "bower_components/bit-html-client/foundation.view/contents/styles/en-US",
         fileDependecyType: "Style"
     });
 
@@ -165,7 +165,7 @@ module BitChangeSetManager {
 
     dependencyManager.registerFileDependency({
         name: "foundation-model-context",
-        path: "bower_components/bit/foundation.viewmodel/Foundation.Model.Context"
+        path: "bower_components/bit-html-client/foundation.viewmodel/Foundation.Model.Context"
     });
 
     dependencyManager.registerFileDependency({
