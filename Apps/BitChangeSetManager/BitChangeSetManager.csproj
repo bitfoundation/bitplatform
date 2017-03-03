@@ -362,7 +362,7 @@
   <ItemGroup>
     <Content Include="packages.config" />
     <Content Include="environments.json" />
-    <Content Include="defaultPageTemplate.cshtml" />
+    <Content Include="wwwroot\defaultPageTemplate.cshtml" />
     <None Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
     </None>
@@ -408,7 +408,6 @@
   <ItemGroup>
     <Folder Include="Dto\" />
     <Folder Include="Model\" />
-    <Folder Include="wwwroot\" />
   </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>

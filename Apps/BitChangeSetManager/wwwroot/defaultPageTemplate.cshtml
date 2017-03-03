@@ -1,0 +1,41 @@
+﻿@using Foundation.Api.Implementations
+@using Foundation.Api.Contracts
+@using Foundation.Api.Models
+@inherits RazorViewTemplate
+
+@{
+    DefaultPageModel model = Resolve<IDefaultPageModelProvider>().GetDefaultPageModel();
+}
+
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>@(model.AppTitle)</title>
+    <link href="data:image/x-icon;base64" rel="icon" type="image/x-icon" />
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+    <meta http-equiv="Pragma" content="no-cache" />
+    <meta http-equiv="Expires" content="0" />
+    <base href="@(model.BaseHref)" />
+    <script type="text/javascript">
+        clientAppProfile = {
+            theme: "@(model.Theme)",
+            culture: "@(model.Culture)",
+            version: "@(model.AppVersion)",
+            isDebugMode: @(model.DebugMode.ToString().ToLowerInvariant()),
+            appTitle: "@(model.AppTitle)",
+            appName: "@(model.AppName)",
+            desiredTimeZone: "@(model.DesiredTimeZoneValue)",
+            environmentConfigs: @(model.EnvironmentConfigsJSON)
+        };
+    </script>
+</head>
+
+<body>
+    <app></app>
+</body>
+
+</html>
