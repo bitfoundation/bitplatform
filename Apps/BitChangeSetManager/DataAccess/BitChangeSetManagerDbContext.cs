@@ -6,7 +6,8 @@ namespace BitChangeSetManager
 {
     public class BitChangeSetManagerDbContext : DefaultDbContext
     {
-        public BitChangeSetManagerDbContext(DbContextOptions options) : base(options)
+        public BitChangeSetManagerDbContext(DbContextOptions options) 
+            : base(options)
         {
 
         }

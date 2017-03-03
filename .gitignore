@@ -250,3 +250,5 @@ ModelManifest.xml
 /IdentityServer/HtmlClient/IdentityServer.HtmlClient.Tests/identityServer.HtmlClient.Tests.d.ts
 /IdentityServer/HtmlClient/IdentityServer.HtmlClient/view/contents/styles/identityServerStyles.css
 /IdentityServer/HtmlClient/IdentityServer.HtmlClient/bit-identityserver.d.ts
+/Apps/BitChangeSetManager/wwwroot/BitChangeSetManager.Model.Context.js
+/Apps/BitChangeSetManager/wwwroot/BitChangeSetManager.Model.Context.d.ts
