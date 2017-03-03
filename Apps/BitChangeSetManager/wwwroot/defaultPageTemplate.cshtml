@@ -32,6 +32,13 @@
             environmentConfigs: @(model.EnvironmentConfigsJSON)
         };
     </script>
+    <script src="Files/V@(model.AppVersion)/bower_components/bit/foundation.core/foundation.core.js"></script>
+    <script src="Files/V@(model.AppVersion)/bower_components/bit/foundation.viewmodel/foundation.viewmodel.js"></script>
+    <script src="Files/V@(model.AppVersion)/bower_components/bit/foundation.view/foundation.view.js"></script>
+    <script src="Files/V@(model.AppVersion)/bitChangeSetManager.js"></script>
+    <script type="text/javascript">
+        Foundation.Core.DependencyManager.getCurrent().init();
+    </script>
 </head>
 
 <body>
