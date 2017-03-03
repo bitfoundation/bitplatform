@@ -8,6 +8,7 @@
 
         public parentEntitiesDataSource: kendo.data.DataSource = null;
         public parentEntitiesDataSourceForFilter: kendo.data.DataSource = null;
+        public parentEntityMetadata = Model.DomainModels.ParentEntity;
 
         @ViewModel.Command()
         public async $onInit(): Promise<void> {

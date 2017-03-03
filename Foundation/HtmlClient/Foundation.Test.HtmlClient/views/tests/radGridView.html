@@ -18,16 +18,16 @@
         </detail-template>
         <view-template>
             <columns>
-                <column name="Id" title="{{::'Id' | translate}}">
+                <column name="Id" title="{{::vm.parentEntityMetadata.Id.Label}}">
                     {{::dataItem.Id}}
                 </column>
-                <column name="Name" title="{{::'Name' | translate}}" filter-data-source="vm.parentEntitiesDataSourceForFilter" filter-text-field="Name" filter-value-field="Name">
+                <column name="Name" title="{{::vm.parentEntityMetadata.Name.Label}}" filter-data-source="vm.parentEntitiesDataSourceForFilter" filter-text-field="Name" filter-value-field="Name">
                     {{::dataItem.Name}}
                 </column>
-                <column name="Version" title="{{::'Version' | translate}}">
+                <column name="Version" title="{{::vm.parentEntityMetadata.Version.Label}}">
                     {{::dataItem.Version == 1 ? '(-:' : ')-:'}}
                 </column>
-                <column name="Date" title="{{::'Date' | translate}}">
+                <column name="Date" title="{{::vm.parentEntityMetadata.Date.Label}}">
                     {{::dataItem.Date | bitDate}}
                 </column>
                 <column command title="{{::'Commands' | translate}}">
