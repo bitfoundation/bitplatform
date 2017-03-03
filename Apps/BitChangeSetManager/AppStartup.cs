@@ -1,4 +1,6 @@
-﻿using Foundation.Api;
+﻿using BitChangeSetManager.Api;
+using BitChangeSetManager.DataAccess;
+using Foundation.Api;
 using Foundation.Api.Contracts;
 using Foundation.Api.Contracts.Metadata;
 using Foundation.Api.Implementations;
@@ -76,7 +78,7 @@ namespace BitChangeSetManager
             dependencyManager.Register<IAppMetadataProvider, DefaultAppMetadataProvider>(lifeCycle: DependencyLifeCycle.SingleInstance);
             dependencyManager.RegisterMetadata(typeof(FoundationEdmModelProvider).GetTypeInfo().Assembly, typeof(BitChangeSetManagerEdmModelProvider).GetTypeInfo().Assembly);
 
-            dependencyManager.RegisterGeneric(typeof(IEntityWithDefaultGuidKeyRepository<>).GetTypeInfo(), typeof(BitChangeSetManagerEfRepository<>).GetTypeInfo(), DependencyLifeCycle.InstancePerLifetimeScope);
+            dependencyManager.RegisterGeneric(typeof(IBitChangeSetManagerRepository<>).GetTypeInfo(), typeof(BitChangeSetManagerEfRepository<>).GetTypeInfo(), DependencyLifeCycle.InstancePerLifetimeScope);
 
             dependencyManager.RegisterEfCoreDbContext<BitChangeSetManagerDbContext, InMemoryDbContextObjectsProvider>();
 

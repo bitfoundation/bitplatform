@@ -2,7 +2,7 @@
 using AutoMapper;
 using Foundation.Model.Contracts;
 
-namespace BitChangeSetManager
+namespace BitChangeSetManager.DataAccess
 {
     public class BitChangeSetManagerDtoModelMapperConfiguration : IDtoModelMapperConfiguration
     {

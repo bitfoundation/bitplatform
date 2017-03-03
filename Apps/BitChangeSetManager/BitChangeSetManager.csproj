@@ -386,6 +386,7 @@
     <Compile Include="DataAccess\BitChangeSetManagerDtoModelMapperConfiguration.cs" />
     <Compile Include="Api\BitChangeSetManagerEdmModelProvider.cs" />
     <Compile Include="DataAccess\BitChangeSetManagerEfRepository.cs" />
+    <Compile Include="DataAccess\IBitChangeSetManagerRepository.cs" />
     <Compile Include="Dto\TestDto.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="AppStartup.cs" />

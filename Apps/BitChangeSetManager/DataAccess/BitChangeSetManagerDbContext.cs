@@ -2,7 +2,7 @@
 using Foundation.DataAccess.Implementations.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
-namespace BitChangeSetManager
+namespace BitChangeSetManager.DataAccess
 {
     public class BitChangeSetManagerDbContext : DefaultDbContext
     {

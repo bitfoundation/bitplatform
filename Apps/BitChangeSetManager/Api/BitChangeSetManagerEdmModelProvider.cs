@@ -4,7 +4,7 @@ using System;
 using System.Reflection;
 using System.Web.OData.Builder;
 
-namespace BitChangeSetManager
+namespace BitChangeSetManager.Api
 {
     public class BitChangeSetManagerEdmModelProvider : IEdmModelProvider
     {
