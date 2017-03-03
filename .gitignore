@@ -252,3 +252,5 @@ ModelManifest.xml
 /IdentityServer/HtmlClient/IdentityServer.HtmlClient/bit-identityserver.d.ts
 /Apps/BitChangeSetManager/wwwroot/BitChangeSetManager.Model.Context.js
 /Apps/BitChangeSetManager/wwwroot/BitChangeSetManager.Model.Context.d.ts
+/Apps/BitChangeSetManager/wwwroot/bitChangeSetManager.ts
+/Apps/BitChangeSetManager/wwwroot/bitChangeSetManager.js
