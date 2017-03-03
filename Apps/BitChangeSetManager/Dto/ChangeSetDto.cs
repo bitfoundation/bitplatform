@@ -22,5 +22,7 @@ namespace BitChangeSetManager.Dto
         [MaxLength(200)]
         [DataType(DataType.MultilineText)]
         public virtual string Description { get; set; }
+
+        public virtual bool IsDeliveredToAll { get; set; }
     }
 }

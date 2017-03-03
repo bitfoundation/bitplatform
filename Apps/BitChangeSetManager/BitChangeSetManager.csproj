@@ -386,7 +386,6 @@
     <Compile Include="Api\ChangeSetsController.cs" />
     <Compile Include="Api\CustomersController.cs" />
     <Compile Include="DataAccess\BitChangeSetManagerDbContext.cs" />
-    <Compile Include="DataAccess\BitChangeSetManagerDtoModelMapperConfiguration.cs" />
     <Compile Include="Api\BitChangeSetManagerEdmModelProvider.cs" />
     <Compile Include="DataAccess\BitChangeSetManagerEfRepository.cs" />
     <Compile Include="DataAccess\IBitChangeSetManagerRepository.cs" />
@@ -397,6 +396,7 @@
     <Compile Include="Model\ChangeSet.cs" />
     <Compile Include="Model\Delivery.cs" />
     <Compile Include="Model\Customer.cs" />
+    <Compile Include="DataAccess\BitChangeSetManagerDtoModelMapperConfiguration.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="AppStartup.cs" />
   </ItemGroup>
@@ -422,7 +422,9 @@
       <Name>Foundation.Api</Name>
     </ProjectReference>
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Folder Include="Model\Implementations\" />
+  </ItemGroup>
   <ItemGroup>
     <Service Include="{4A0DDDB5-7A95-4FBF-97CC-616D07737A77}" />
   </ItemGroup>
