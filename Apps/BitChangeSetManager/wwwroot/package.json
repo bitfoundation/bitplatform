@@ -1,0 +1,17 @@
+{
+  "name": "bit-framework",
+  "version": "1.0.0",
+  "description": "Bit Framework",
+  "author": "Bit Foundation",
+  "devDependencies": {
+    "@types/angular": "^1.5.22",
+    "@types/angular-material": "0.0.0",
+    "@types/angular-translate": "^2.4.34",
+    "@types/decimal.js": "0.0.29",
+    "@types/jasmine": "^2.5.40",
+    "@types/jasmine-jquery": "^1.5.28",
+    "@types/jquery": "^2.0.39",
+    "@types/kendo-ui": "^2016.3.39",
+    "@types/signalr": "^2.2.33"
+  }
+}
