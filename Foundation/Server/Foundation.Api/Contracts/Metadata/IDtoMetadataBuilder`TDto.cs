@@ -13,8 +13,6 @@ namespace Foundation.Api.Contracts.Metadata
         public virtual bool IsRequired { get; set; } = false;
 
         public virtual string Pattern { get; set; } = null;
-
-        public virtual List<DtoMemberCultureTitle> EntityMemberCultureTitles { get; set; } = new List<DtoMemberCultureTitle>();
     }
 
     public class DtoMemberCultureTitle

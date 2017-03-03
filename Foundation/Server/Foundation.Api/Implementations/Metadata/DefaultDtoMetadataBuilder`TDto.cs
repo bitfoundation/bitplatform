@@ -56,15 +56,6 @@ namespace Foundation.Api.Implementations.Metadata
             if (metadata.Pattern == null)
                 metadata.Pattern = member.GetCustomAttribute<RegularExpressionAttribute>()?.Pattern;
 
-            foreach (DtoMemberCultureTitle memberCultureTitle in metadata.EntityMemberCultureTitles)
-            {
-                if (!metadata.Messages.Any(m => m.Name == memberCultureTitle.CultureName))
-                    metadata.Messages.Add(new EnvironmentCulture { Name = memberCultureTitle.CultureName });
-
-                metadata.Messages.Single(m => m.Name == memberCultureTitle.CultureName)
-                    .Values.Add(new EnvironmentCultureValue { Name = member.Name, Title = memberCultureTitle.Title });
-            }
-
             _dtoMetadata.MembersMetadata.Add(metadata);
 
             return this;
