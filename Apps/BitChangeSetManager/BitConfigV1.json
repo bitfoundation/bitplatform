@@ -2,33 +2,10 @@
   "BitCodeGeneratorConfigs": {
     "BitCodeGeneratorMappings": [
       {
-        "EdmName": "Foundation",
-        "Namespace": "Foundation",
-        "DestinationFileName": "Foundation.Model.Context",
-        "TypingsPath": "../../../../bit-framework/Foundation/HtmlClient/foundation.core.htmlclient/typings.d.ts",
-        "SourceProjects": [
-          {
-            "Name": "Bit.Model"
-          },
-          {
-            "Name": "Foundation.Api"
-          }
-        ],
-        "DestinationProject": {
-          "Name": "Foundation.ViewModel.HtmlClient"
-        },
-        "NamespaceAliases": [
-          {
-            "Namespace": "Foundation.Model.Dtos",
-            "Alias": "FoundationModel"
-          }
-        ]
-      },
-      {
         "EdmName": "BitChangeSetManager",
         "Namespace": "BitChangeSetManager",
         "DestinationFileName": "wwwroot/BitChangeSetManager.Model.Context",
-        "TypingsPath": "../../../../bit-framework/Foundation/HtmlClient/foundation.core.htmlclient/typings.d.ts",
+        "TypingsPath": "bower_components/bit/foundation.core/typings.d.ts",
         "SourceProjects": [
           {
             "Name": "BitChangeSetManager"
