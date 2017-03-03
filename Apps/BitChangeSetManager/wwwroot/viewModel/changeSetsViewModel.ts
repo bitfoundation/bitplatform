@@ -2,17 +2,21 @@
 
     @FormViewModelDependency({
         name: "ChangeSetsViewModel",
-        template: `<rad-combo rad-datasource="vm.testsDataSource" rad-text-field-name="Id" />`
+        template: `<rad-combo rad-datasource="vm.changeSetsDataSource" rad-text-field-name="Title" />`
     })
     export class ChangeSetsViewModel extends FormViewModel {
 
-        public testsDataSource: kendo.data.DataSource;
+        public changeSetsDataSource: kendo.data.DataSource;
+
+        public constructor( @Inject("EntityContextProvider") public entityContextProvider: IEntityContextProvider) {
+            super();
+        }
 
         public async $onInit(): Promise<void> {
 
-            this.testsDataSource = [new BitChangeSetManagerModel.TestDto({ Id: 1 }), new BitChangeSetManagerModel.TestDto({ Id: 2 })]
-                .toQueryable(BitChangeSetManagerModel.TestDto)
-                .asKendoDataSource();
+            let context = await this.entityContextProvider.getContext<BitChangeSetManagerContext>("BitChangeSetManager");
+
+            this.changeSetsDataSource = context.changeSets.asKendoDataSource();
 
         }
 

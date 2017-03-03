@@ -10,3 +10,4 @@ import ClientAppProfileManager = FoundationCore.ClientAppProfileManager;
 
 import FormViewModel = FoundationVM.ViewModels.FormViewModel;
 import Command = FoundationVM.Command;
+import IEntityContextProvider = FoundationVM.Contracts.IEntityContextProvider;
