@@ -23,8 +23,11 @@
     "Configs": [
       {
         "Key": "DefaultPageTemplatePath",
-        "Value": "defaultPageTemplate.cshtml",
-        "AccessibleInClientSide": false
+        "Value": "defaultPageTemplate.cshtml"
+      },
+      {
+        "Key": "StaticFilesRelativePath",
+        "Value": ".\\wwwroot\\"
       }
     ]
   }
