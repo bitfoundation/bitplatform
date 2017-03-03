@@ -6,7 +6,7 @@ namespace BitChangeSetManager.DataAccess
     public class BitChangeSetManagerEfRepository<TEntity> : EfEntityWithDefaultGuidKeyRepository<TEntity>, IBitChangeSetManagerRepository<TEntity>
         where TEntity : class, IEntityWithDefaultGuidKey
     {
-        protected BitChangeSetManagerEfRepository(BitChangeSetManagerDbContext dbContext)
+        public BitChangeSetManagerEfRepository(BitChangeSetManagerDbContext dbContext)
             : base(dbContext)
         {
         }
