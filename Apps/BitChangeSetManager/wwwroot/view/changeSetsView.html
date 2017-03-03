@@ -1,0 +1,25 @@
+﻿<view>
+
+    <rad-grid rad-datasource="::vm.changeSetsDataSource">
+        <view-template>
+            <columns>
+                <column name="Id" title="{{::vm.changeSetMetadata.Id.Label}}">
+                    {{::dataItem.Id}}
+                </column>
+                <column name="Title" title="{{::vm.changeSetMetadata.Title.Label}}">
+                    {{::dataItem.Title}}
+                </column>
+                <column name="AssociatedCommitUrl" title="{{::vm.changeSetMetadata.AssociatedCommitUrl.Label}}">
+                    {{::dataItem.AssociatedCommitUrl}}
+                </column>
+                <column name="CreatedOn" title="{{::vm.changeSetMetadata.CreatedOn.Label}}">
+                    {{::dataItem.CreatedOn | bitDate}}
+                </column>
+                <column name="Description" title="{{::vm.changeSetMetadata.Description.Label}}">
+                    {{::dataItem.Description}}
+                </column>
+            </columns>
+        </view-template>
+    </rad-grid>
+
+</view>

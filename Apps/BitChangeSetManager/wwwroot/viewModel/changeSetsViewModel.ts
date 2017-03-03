@@ -2,7 +2,7 @@
 
     @FormViewModelDependency({
         name: "ChangeSetsViewModel",
-        template: `<rad-combo rad-datasource="vm.changeSetsDataSource" rad-text-field-name="Title" />`
+        templateUrl: `view/changeSetsView.html`
     })
     export class ChangeSetsViewModel extends FormViewModel {
 
@@ -11,6 +11,8 @@
         public constructor( @Inject("EntityContextProvider") public entityContextProvider: IEntityContextProvider) {
             super();
         }
+
+        public changeSetMetadata = BitChangeSetManagerModel.ChangeSetDto;
 
         public async $onInit(): Promise<void> {
 

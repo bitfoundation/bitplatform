@@ -365,6 +365,7 @@
     <Content Include="packages.config" />
     <Content Include="environments.json" />
     <Content Include="wwwroot\defaultPageTemplate.cshtml" />
+    <Content Include="wwwroot\view\changeSetsView.html" />
     <None Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
     </None>
@@ -392,6 +393,7 @@
     <Compile Include="Dto\ChangeSetDto.cs" />
     <Compile Include="Dto\CustomerDto.cs" />
     <Compile Include="Dto\DeliveryDto.cs" />
+    <Compile Include="Metadata\ChangeSetDtoMetadata.cs" />
     <Compile Include="Model\ChangeSet.cs" />
     <Compile Include="Model\Delivery.cs" />
     <Compile Include="Model\Customer.cs" />
@@ -420,9 +422,7 @@
       <Name>Foundation.Api</Name>
     </ProjectReference>
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="wwwroot\view\" />
-  </ItemGroup>
+  <ItemGroup />
   <ItemGroup>
     <Service Include="{4A0DDDB5-7A95-4FBF-97CC-616D07737A77}" />
   </ItemGroup>
