@@ -154,7 +154,7 @@
 
     dependencyManager.registerFileDependency({
         name: "kendo-ui-web",
-        path: "bit-framework/Foundation/HtmlClient/Foundation.Test.HtmlClient/bower_components/kendo/kendo.web",
+        path: "bit-framework/Foundation/HtmlClient/Foundation.Test.HtmlClient/bower_components/kendo-ui/js/kendo.web.min",
         predicate: (appInfo) => {
             return appInfo.screenSize == "DesktopAndTablet" && appInfo.getConfig<string>("KendoUILoadMode") == "Web";
         }
@@ -162,7 +162,7 @@
 
     dependencyManager.registerFileDependency({
         name: "kendo-ui-core",
-        path: "bit-framework/Foundation/HtmlClient/Foundation.Test.HtmlClient/bower_components/kendo-ui/src/js/kendo.ui.core",
+        path: "bit-framework/Foundation/HtmlClient/Foundation.Test.HtmlClient/bower_components/kendo-ui/js/kendo.ui.core.min",
         predicate: (appInfo) => {
             return appInfo.screenSize == "DesktopAndTablet" && appInfo.getConfig<string>("KendoUILoadMode") == "Core";
         }
@@ -170,7 +170,7 @@
 
     dependencyManager.registerFileDependency({
         name: "kendo-core",
-        path: "bit-framework/Foundation/HtmlClient/Foundation.Test.HtmlClient/bower_components/kendo-ui/src/js/kendo.Core",
+        path: "bit-framework/Foundation/HtmlClient/Foundation.Test.HtmlClient/bower_components/kendo-ui/js/kendo.Core.min",
         predicate: (appInfo) => {
             return appInfo.screenSize == "MobileAndPhablet" && appInfo.getConfig<string>("KendoUILoadMode") == "Core";
         }
@@ -178,7 +178,7 @@
 
     dependencyManager.registerFileDependency({
         name: "kendo-data",
-        path: "bit-framework/Foundation/HtmlClient/Foundation.Test.HtmlClient/bower_components/kendo-ui/src/js/kendo.data",
+        path: "bit-framework/Foundation/HtmlClient/Foundation.Test.HtmlClient/bower_components/kendo-ui/js/kendo.data.min",
         predicate: (appInfo) => {
             return appInfo.screenSize == "MobileAndPhablet" && appInfo.getConfig<string>("KendoUILoadMode") == "Core";
         }
@@ -186,7 +186,7 @@
 
     dependencyManager.registerFileDependency({
         name: "kendo-binder",
-        path: "bit-framework/Foundation/HtmlClient/Foundation.Test.HtmlClient/bower_components/kendo-ui/src/js/kendo.binder",
+        path: "bit-framework/Foundation/HtmlClient/Foundation.Test.HtmlClient/bower_components/kendo-ui/js/kendo.binder.min",
         predicate: (appInfo) => {
             return appInfo.screenSize == "MobileAndPhablet" && appInfo.getConfig<string>("KendoUILoadMode") == "Core";
         }
@@ -194,7 +194,7 @@
 
     dependencyManager.registerFileDependency({
         name: "kendo-culture-fa-IR",
-        path: "bit-framework/Foundation/HtmlClient/Foundation.Test.HtmlClient/bower_components/kendo-ui/src/js/cultures/kendo.culture.fa-IR",
+        path: "bit-framework/Foundation/HtmlClient/Foundation.Test.HtmlClient/bower_components/kendo-ui/js/cultures/kendo.culture.fa-IR.min",
         predicate: (appInfo) => {
             return appInfo.screenSize == "DesktopAndTablet" && appInfo.culture == "FaIr";
         }
@@ -202,7 +202,7 @@
 
     dependencyManager.registerFileDependency({
         name: "kendo-messages-fa-IR",
-        path: "bit-framework/Foundation/HtmlClient/Foundation.Test.HtmlClient/bower_components/kendo/kendo.messages.fa-IR",
+        path: "bit-framework/Foundation/HtmlClient/Foundation.Test.HtmlClient/bower_components/kendo-ui/js/messages/kendo.messages.fa-IR.min",
         predicate: (appInfo) => {
             return appInfo.screenSize == "DesktopAndTablet" && appInfo.culture == "FaIr" && appInfo.getConfig<string>("KendoUILoadMode") == "Web";
         }
