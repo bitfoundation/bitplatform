@@ -79,18 +79,7 @@ module BitChangeSetManager {
 
     dependencyManager.registerFileDependency({
         name: "kendo-ui-web",
-        path: "bower_components/kendo-ui/src/js/kendo.web",
-        predicate: (appInfo) => {
-            return appInfo.screenSize == "DesktopAndTablet" && appInfo.getConfig<string>("KendoUILoadMode" , "Core") == "Web";
-        }
-    });
-
-    dependencyManager.registerFileDependency({
-        name: "kendo-ui-core",
-        path: "bower_components/kendo-ui/src/js/kendo.ui.core",
-        predicate: (appInfo) => {
-            return appInfo.screenSize == "DesktopAndTablet" && appInfo.getConfig<string>("KendoUILoadMode" , "Core") == "Core";
-        }
+        path: "bower_components/kendo-ui/js/kendo.web.min"
     });
 
     dependencyManager.registerFileDependency({

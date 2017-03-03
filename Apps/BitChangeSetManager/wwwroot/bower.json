@@ -14,7 +14,7 @@
     "olingo-odatajs": "4.0.0",
     "jaydata": "https://github.com/bit-foundation/jaydata-releases.git/#1.5.11.91",
     "persian-date": "https://github.com/bit-foundation/PersianDate.git#0.1.9",
-    "angular-translate": "2.14.0",
+    "angular-translate": "2.15.0",
     "signalr": "2.2.1",
     "persian-datepicker": "https://github.com/bit-foundation/pwt.datepicker.git#0.4.9",
     "normalize-css": "5.0.0",
@@ -25,7 +25,7 @@
     "ngComponentRouter": "https://github.com/excellalabs/ngComponentRouter.git#1d01d7a6902f0be2688693f14cb40576b718ab39",
     "fetch": "2.0.2",
     "decimal.js": "https://github.com/MikeMcl/decimal.js.git#v7.0.1",
-    "kendo-ui": "kendo-ui-core#2017.1.118",
+    "kendo-ui": "kendo-ui-core#2017.1.223",
     "bit-html-client": "https://github.com/bit-foundation/bit-html-client.git#0.0.1"
   },
   "resolutions": {
