@@ -32,7 +32,7 @@
         "../../../packages/System.IO.4.3.0/lib/net462/System.IO.dll": {},
         "../../../packages/System.Interactive.Async.3.1.1/lib/net46/System.Interactive.Async.dll": {},
         "../../../packages/System.Linq.Dynamic.1.0.7/lib/net40/System.Linq.Dynamic.dll": {},
-        "../../../packages/System.Net.Http.4.3.0/lib/net46/System.Net.Http.dll": {},
+        "../../../packages/System.Net.Http.4.3.1/lib/net46/System.Net.Http.dll": {},
         "../../../packages/System.Reflection.4.3.0/lib/net462/System.Reflection.dll": {},
         "../../../packages/System.Runtime.4.3.0/lib/net462/System.Runtime.dll": {},
         "../../../packages/System.Runtime.Extensions.4.3.0/lib/net462/System.Runtime.Extensions.dll": {},
@@ -55,7 +55,7 @@
       },
       "runtime": {
         "../../../packages/AutoMapper.5.2.0/lib/net45/AutoMapper.dll": {},
-        "../../../packages/Autofac.4.3.0/lib/net45/Autofac.dll": {},
+        "../../../packages/Autofac.4.4.0/lib/net45/Autofac.dll": {},
         "../../../packages/Autofac.Owin.4.0.0/lib/net45/Autofac.Integration.Owin.dll": {},
         "../../../packages/Autofac.SignalR2.4.0.0/lib/net45/Autofac.Integration.SignalR.dll": {},
         "../../../packages/Autofac.WebApi2.4.0.1/lib/net45/Autofac.Integration.WebApi.dll": {},
@@ -89,9 +89,9 @@
         "../../../packages/Microsoft.Extensions.Logging.Debug.1.1.0/lib/net451/Microsoft.Extensions.Logging.Debug.dll": {},
         "../../../packages/Microsoft.Extensions.Options.1.1.0/lib/netstandard1.0/Microsoft.Extensions.Options.dll": {},
         "../../../packages/Microsoft.Extensions.Primitives.1.1.0/lib/netstandard1.0/Microsoft.Extensions.Primitives.dll": {},
-        "../../../packages/Microsoft.IdentityModel.Logging.1.1.2/lib/net451/Microsoft.IdentityModel.Logging.dll": {},
+        "../../../packages/Microsoft.IdentityModel.Logging.1.1.3/lib/net451/Microsoft.IdentityModel.Logging.dll": {},
         "../../../packages/Microsoft.IdentityModel.Protocol.Extensions.1.0.4.402070948/lib/net45/Microsoft.IdentityModel.Protocol.Extensions.dll": {},
-        "../../../packages/Microsoft.IdentityModel.Tokens.5.1.2/lib/net451/Microsoft.IdentityModel.Tokens.dll": {},
+        "../../../packages/Microsoft.IdentityModel.Tokens.5.1.3/lib/net451/Microsoft.IdentityModel.Tokens.dll": {},
         "../../../packages/Microsoft.OData.Core.7.0.0/lib/portable-net45+win8+wpa81/Microsoft.OData.Core.dll": {},
         "../../../packages/Microsoft.OData.Edm.7.0.0/lib/portable-net45+win8+wpa81/Microsoft.OData.Edm.dll": {},
         "../../../packages/Microsoft.Owin.3.0.1/lib/net45/Microsoft.Owin.dll": {},
@@ -119,7 +119,7 @@
         "../../../packages/System.IO.4.3.0/lib/net462/System.IO.dll": {},
         "../../../packages/System.IdentityModel.Tokens.Jwt.4.0.3.308261200/lib/net45/System.IdentityModel.Tokens.Jwt.dll": {},
         "../../../packages/System.Interactive.Async.3.1.1/lib/net46/System.Interactive.Async.dll": {},
-        "../../../packages/System.Net.Http.4.3.0/lib/net46/System.Net.Http.dll": {},
+        "../../../packages/System.Net.Http.4.3.1/lib/net46/System.Net.Http.dll": {},
         "../../../packages/System.Reflection.4.3.0/lib/net462/System.Reflection.dll": {},
         "../../../packages/System.Runtime.4.3.0/lib/net462/System.Runtime.dll": {},
         "../../../packages/System.Runtime.Extensions.4.3.0/lib/net462/System.Runtime.Extensions.dll": {},
@@ -163,7 +163,7 @@
         "../../../packages/Microsoft.Spatial.7.0.0/lib/portable-net45+win8+wpa81/Microsoft.Spatial.dll": {},
         "../../../packages/Newtonsoft.Json.9.0.1/lib/net45/Newtonsoft.Json.dll": {},
         "../../../packages/System.ComponentModel.Annotations.4.3.0/lib/net461/System.ComponentModel.Annotations.dll": {},
-        "../../../packages/System.Net.Http.4.3.0/lib/net46/System.Net.Http.dll": {},
+        "../../../packages/System.Net.Http.4.3.1/lib/net46/System.Net.Http.dll": {},
         "../../../packages/System.Reflection.4.3.0/lib/net462/System.Reflection.dll": {},
         "../../../packages/System.Runtime.Extensions.4.3.0/lib/net462/System.Runtime.Extensions.dll": {},
         "bin/Debug/Bit.Core.dll": {}
@@ -185,7 +185,7 @@
       "runtime": {
         "../../../packages/AutoMapper.5.2.0/lib/net45/AutoMapper.dll": {},
         "../../../packages/System.ComponentModel.Annotations.4.3.0/lib/net461/System.ComponentModel.Annotations.dll": {},
-        "../../../packages/System.Net.Http.4.3.0/lib/net46/System.Net.Http.dll": {},
+        "../../../packages/System.Net.Http.4.3.1/lib/net46/System.Net.Http.dll": {},
         "bin/Debug/Bit.Model.dll": {}
       },
       "contentFiles": {

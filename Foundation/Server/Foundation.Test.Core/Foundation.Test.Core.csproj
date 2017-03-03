@@ -42,8 +42,8 @@
       <HintPath>..\..\..\packages\Appium.WebDriver.3.0.0.2\lib\net45\appium-dotnet-driver.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="Autofac, Version=4.3.0.0, Culture=neutral, PublicKeyToken=17863af14b0044da, processorArchitecture=MSIL">
-      <HintPath>..\..\..\packages\Autofac.4.3.0\lib\net45\Autofac.dll</HintPath>
+    <Reference Include="Autofac, Version=4.4.0.0, Culture=neutral, PublicKeyToken=17863af14b0044da, processorArchitecture=MSIL">
+      <HintPath>..\..\..\packages\Autofac.4.4.0\lib\net45\Autofac.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="Autofac.Integration.Owin, Version=4.0.0.0, Culture=neutral, PublicKeyToken=17863af14b0044da, processorArchitecture=MSIL">
@@ -70,8 +70,8 @@
       <HintPath>..\..\..\packages\Castle.Core.4.0.0\lib\net45\Castle.Core.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="FakeItEasy, Version=2.3.3.0, Culture=neutral, PublicKeyToken=eff28e2146d5fd2c, processorArchitecture=MSIL">
-      <HintPath>..\..\..\packages\FakeItEasy.2.3.3\lib\net40\FakeItEasy.dll</HintPath>
+    <Reference Include="FakeItEasy, Version=3.0.0.0, Culture=neutral, PublicKeyToken=eff28e2146d5fd2c, processorArchitecture=MSIL">
+      <HintPath>..\..\..\packages\FakeItEasy.3.0.0\lib\net40\FakeItEasy.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="FSharp.Core, Version=4.4.1.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
@@ -159,16 +159,16 @@
       <HintPath>..\..\..\packages\Microsoft.Extensions.Primitives.1.1.0\lib\netstandard1.0\Microsoft.Extensions.Primitives.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="Microsoft.IdentityModel.Logging, Version=1.1.2.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>..\..\..\packages\Microsoft.IdentityModel.Logging.1.1.2\lib\net451\Microsoft.IdentityModel.Logging.dll</HintPath>
+    <Reference Include="Microsoft.IdentityModel.Logging, Version=1.1.3.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\..\..\packages\Microsoft.IdentityModel.Logging.1.1.3\lib\net451\Microsoft.IdentityModel.Logging.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="Microsoft.IdentityModel.Protocol.Extensions, Version=1.0.4.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\..\..\packages\Microsoft.IdentityModel.Protocol.Extensions.1.0.4.402070948\lib\net45\Microsoft.IdentityModel.Protocol.Extensions.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="Microsoft.IdentityModel.Tokens, Version=5.1.2.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>..\..\..\packages\Microsoft.IdentityModel.Tokens.5.1.2\lib\net451\Microsoft.IdentityModel.Tokens.dll</HintPath>
+    <Reference Include="Microsoft.IdentityModel.Tokens, Version=5.1.3.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\..\..\packages\Microsoft.IdentityModel.Tokens.5.1.3\lib\net451\Microsoft.IdentityModel.Tokens.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="Microsoft.OData.Core, Version=7.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
@@ -264,20 +264,20 @@
       <HintPath>..\..\..\packages\Remotion.Linq.2.1.1\lib\net45\Remotion.Linq.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="Simple.OData.Client.Core, Version=4.25.4.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\..\packages\Simple.OData.V4.Client.4.25.4\lib\portable-net45+win8+wp8+wpa81\Simple.OData.Client.Core.dll</HintPath>
+    <Reference Include="Simple.OData.Client.Core, Version=4.25.5.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\..\packages\Simple.OData.V4.Client.4.25.5\lib\portable-net45+win8+wp8+wpa81\Simple.OData.Client.Core.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="Simple.OData.Client.Dynamic, Version=4.25.4.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\..\packages\Simple.OData.V4.Client.4.25.4\lib\portable-net45+win8+wp8+wpa81\Simple.OData.Client.Dynamic.dll</HintPath>
+    <Reference Include="Simple.OData.Client.Dynamic, Version=4.25.5.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\..\packages\Simple.OData.V4.Client.4.25.5\lib\portable-net45+win8+wp8+wpa81\Simple.OData.Client.Dynamic.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="Simple.OData.Client.V4.Adapter, Version=4.25.4.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\..\packages\Simple.OData.V4.Client.4.25.4\lib\portable-net45+win8+wp8+wpa81\Simple.OData.Client.V4.Adapter.dll</HintPath>
+    <Reference Include="Simple.OData.Client.V4.Adapter, Version=4.25.5.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\..\packages\Simple.OData.V4.Client.4.25.5\lib\portable-net45+win8+wp8+wpa81\Simple.OData.Client.V4.Adapter.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="Suave, Version=2.0.3.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\..\packages\Suave.2.0.3\lib\net40\Suave.dll</HintPath>
+    <Reference Include="Suave, Version=2.0.4.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\..\packages\Suave.2.0.4\lib\net40\Suave.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="System" />
@@ -328,7 +328,7 @@
     </Reference>
     <Reference Include="System.Net" />
     <Reference Include="System.Net.Http, Version=4.1.1.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
-      <HintPath>..\..\..\packages\System.Net.Http.4.3.0\lib\net46\System.Net.Http.dll</HintPath>
+      <HintPath>..\..\..\packages\System.Net.Http.4.3.1\lib\net46\System.Net.Http.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="System.Net.Http.Extensions, Version=2.2.29.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
@@ -381,12 +381,12 @@
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
-    <Reference Include="WebDriver, Version=3.1.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\..\packages\Selenium.WebDriver.3.1.0\lib\net40\WebDriver.dll</HintPath>
+    <Reference Include="WebDriver, Version=3.2.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\..\packages\Selenium.WebDriver.3.2.0\lib\net40\WebDriver.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="WebDriver.Support, Version=3.1.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\..\packages\Selenium.Support.3.1.0\lib\net40\WebDriver.Support.dll</HintPath>
+    <Reference Include="WebDriver.Support, Version=3.2.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\..\packages\Selenium.Support.3.2.0\lib\net40\WebDriver.Support.dll</HintPath>
       <Private>True</Private>
     </Reference>
   </ItemGroup>

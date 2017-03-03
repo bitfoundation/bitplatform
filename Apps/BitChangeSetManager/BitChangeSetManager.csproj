@@ -45,8 +45,8 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Autofac, Version=4.3.0.0, Culture=neutral, PublicKeyToken=17863af14b0044da, processorArchitecture=MSIL">
-      <HintPath>packages\Autofac.4.3.0\lib\net45\Autofac.dll</HintPath>
+    <Reference Include="Autofac, Version=4.4.0.0, Culture=neutral, PublicKeyToken=17863af14b0044da, processorArchitecture=MSIL">
+      <HintPath>packages\Autofac.4.4.0\lib\net45\Autofac.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="Autofac.Integration.WebApi, Version=4.0.0.0, Culture=neutral, PublicKeyToken=17863af14b0044da, processorArchitecture=MSIL">
@@ -146,16 +146,16 @@
       <HintPath>packages\Microsoft.Extensions.Primitives.1.1.0\lib\netstandard1.0\Microsoft.Extensions.Primitives.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="Microsoft.IdentityModel.Logging, Version=1.1.2.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>packages\Microsoft.IdentityModel.Logging.1.1.2\lib\net451\Microsoft.IdentityModel.Logging.dll</HintPath>
+    <Reference Include="Microsoft.IdentityModel.Logging, Version=1.1.3.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>packages\Microsoft.IdentityModel.Logging.1.1.3\lib\net451\Microsoft.IdentityModel.Logging.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="Microsoft.IdentityModel.Protocol.Extensions, Version=1.0.4.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>packages\Microsoft.IdentityModel.Protocol.Extensions.1.0.4.402070948\lib\net45\Microsoft.IdentityModel.Protocol.Extensions.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="Microsoft.IdentityModel.Tokens, Version=5.1.2.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>packages\Microsoft.IdentityModel.Tokens.5.1.2\lib\net451\Microsoft.IdentityModel.Tokens.dll</HintPath>
+    <Reference Include="Microsoft.IdentityModel.Tokens, Version=5.1.3.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>packages\Microsoft.IdentityModel.Tokens.5.1.3\lib\net451\Microsoft.IdentityModel.Tokens.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="Microsoft.OData.Core, Version=7.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
@@ -294,7 +294,7 @@
     </Reference>
     <Reference Include="System.Net" />
     <Reference Include="System.Net.Http, Version=4.1.1.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
-      <HintPath>packages\System.Net.Http.4.3.0\lib\net46\System.Net.Http.dll</HintPath>
+      <HintPath>packages\System.Net.Http.4.3.1\lib\net46\System.Net.Http.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="System.Net.Http.Extensions, Version=2.2.29.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
