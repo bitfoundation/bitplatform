@@ -3,8 +3,6 @@ using BitChangeSetManager.DataAccess;
 using BitChangeSetManager.Dto;
 using BitChangeSetManager.Model;
 using Foundation.Api.ApiControllers;
-using AutoMapper;
-using AutoMapper.QueryableExtensions;
 
 namespace BitChangeSetManager.Api
 {
@@ -18,17 +16,13 @@ namespace BitChangeSetManager.Api
             _changeSetsRepository = changeSetsRepository;
         }
 
-        public IMapper Mapper { get; set; }
-
         public IBitChangeSetManagerRepository<Customer> CustomersRepository { get; set; }
 
         public override IQueryable<ChangeSetDto> GetAll()
         {
             IQueryable<Customer> customersQuery = CustomersRepository.GetAll();
 
-            return _changeSetsRepository
-                .GetAll()
-                .ProjectTo<ChangeSetDto>(configuration: Mapper.ConfigurationProvider, parameters: new { customersQuery = customersQuery });
+            return DtoModelMapper.FromModelQueryToDtoQuery(_changeSetsRepository.GetAll(), parameters: new { customersQuery = customersQuery });
         }
     }
 }
