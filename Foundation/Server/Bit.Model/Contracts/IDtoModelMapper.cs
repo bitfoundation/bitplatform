@@ -11,5 +11,7 @@ namespace Foundation.Model.Contracts
         TDto FromModelToDto(TModel model, TDto existingDto = null);
 
         IQueryable<TDto> FromModelQueryToDtoQuery(IQueryable<TModel> modelQuery);
+
+        IQueryable<TDto> FromModelQueryToDtoQuery(IQueryable<TModel> modelQuery, object parameters);
     }
 }

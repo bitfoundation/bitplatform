@@ -46,6 +46,20 @@ namespace Foundation.DataAccess.Implementations
             return modelQuery.ProjectTo<TDto>(configuration: _mapper.ConfigurationProvider);
         }
 
+        public IQueryable<TDto> FromModelQueryToDtoQuery(IQueryable<TModel> modelQuery, object parameters)
+        {
+            if (modelQuery == null)
+                throw new ArgumentNullException(nameof(modelQuery));
+
+            if (parameters == null)
+                throw new ArgumentNullException(nameof(parameters));
+
+            if (_modelAndDtoAreSame == true)
+                return modelQuery as IQueryable<TDto>;
+
+            return modelQuery.ProjectTo<TDto>(configuration: _mapper.ConfigurationProvider, parameters: parameters);
+        }
+
         public virtual TDto FromModelToDto(TModel model, TDto existingDto)
         {
             if (_modelAndDtoAreSame == true)
