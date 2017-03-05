@@ -1,6 +1,6 @@
 ﻿module Foundation.Test.ViewModels {
 
-    @Core.DtoRules({ name: "ValidationSampleRules" })
+    @Core.DtoRulesDependency({ name: "ValidationSampleRules" })
     export class ValidationSampleRules extends ViewModel.Implementations.DtoRules<Test.Model.Dto.ValidationSampleDto>{
 
         public validateMember(memberName: keyof Test.Model.Dto.ValidationSampleDto, newValue: any, oldValue: any): void {
@@ -12,7 +12,7 @@
 
     }
 
-    @Core.DtoViewModel({ name: "FormValidationFormViewModel", templateUrl: "|Foundation|/Foundation.Test.HtmlClient/views/tests/formValidationview.html" })
+    @Core.DtoViewModelDependency({ name: "FormValidationFormViewModel", templateUrl: "|Foundation|/Foundation.Test.HtmlClient/views/tests/formValidationview.html" })
     export class FormValidationFormViewModel extends ViewModel.ViewModels.DtoViewModel<Test.Model.Dto.ValidationSampleDto, ValidationSampleRules> {
 
         public constructor( @Core.Inject("ValidationSampleRules") public validationSampleRules: ValidationSampleRules) {

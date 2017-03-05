@@ -536,7 +536,7 @@ module Foundation.Core {
         };
     }
 
-    export function DtoRules(dtoRules: IObjectDependency): ClassDecorator {
+    export function DtoRulesDependency(dtoRules: IObjectDependency): ClassDecorator {
 
         return (targetDtoRules: IObjectDependency & Function) => {
 
@@ -583,7 +583,7 @@ module Foundation.Core {
         };
     }
 
-    export function DtoViewModel(dtoViewModel: IComponentDependency): ClassDecorator {
+    export function DtoViewModelDependency(dtoViewModel: IComponentDependency): ClassDecorator {
 
         return (targetDtoViewModel: IComponentDependency & Function): Function => {
 
