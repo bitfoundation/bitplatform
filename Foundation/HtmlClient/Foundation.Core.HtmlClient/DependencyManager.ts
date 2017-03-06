@@ -589,6 +589,11 @@ module Foundation.Core {
 
             targetDtoViewModel = Injectable()(targetDtoViewModel) as IComponentDependency & Function;
 
+            targetDtoViewModel.bindings = targetDtoViewModel.bindings || {};
+
+            if (targetDtoViewModel.bindings['model'] == null)
+                targetDtoViewModel.bindings['model'] = '<?';
+
             dtoViewModel.type = targetDtoViewModel;
 
             DependencyManager.getCurrent()
