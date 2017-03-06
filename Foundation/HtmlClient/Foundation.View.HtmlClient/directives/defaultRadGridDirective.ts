@@ -98,6 +98,8 @@ module Foundation.View.Directives {
 
                     const $parse = dependencyManager.resolveObject<ng.IParseService>("$parse");
 
+                    const $interpolate = dependencyManager.resolveObject<ng.IInterpolateService>("$interpolate");
+
                     const dateTimeService = Core.DependencyManager.getCurrent().resolveObject<ViewModel.Contracts.IDateTimeService>("DateTimeService");
 
                     const clientAppProfileManager = dependencyManager.resolveObject<Core.ClientAppProfileManager>("ClientAppProfileManager");
@@ -239,9 +241,12 @@ module Foundation.View.Directives {
 
                                 editTemplateElement = angular.element("#" + attributes["editTemplateId"]);
 
-                                editPopupTitle = editTemplateElement.attr("title");
+                                let titleAttrValue = editTemplateElement.attr("title");
 
-                                const editTemplateHtml = angular.element(`<rad-grid-editor>${editTemplateElement.html()}</rad-grid-editor>`);
+                                if (titleAttrValue != null)
+                                    editPopupTitle = $interpolate(titleAttrValue)($scope);
+
+                                const editTemplateHtml = angular.element(`<rad-grid-editor rad-model-item-template ng-model='::dataItem'>${editTemplateElement.html()}</rad-grid-editor>`);
 
                                 editTemplateHtml.first().attr("isolatedOptionsKey", attributes["isolatedOptionsKey"]);
 
@@ -311,11 +316,13 @@ module Foundation.View.Directives {
 
                                 const detailTemplateElement = angular.element("#" + attributes["detailTemplateId"]);
 
-                                const detailTemplateHtml = detailTemplateElement.html();
+                                const detailTemplateHtml = angular.element(`<rad-grid-detail-template rad-model-item-template ng-model='::dataItem'>${detailTemplateElement.html()}</rad-grid-detail-template>`);
 
-                                const detail: any = kendo.template(detailTemplateHtml);
+                                const detail: any = kendo.template(detailTemplateHtml.first()[0].outerHTML);
 
                                 gridOptions.detailTemplate = detail;
+
+                                detailTemplateHtml.remove();
                             }
 
                             const columns: Array<kendo.ui.GridColumn> = [];
