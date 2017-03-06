@@ -365,6 +365,7 @@
     <Content Include="packages.config" />
     <Content Include="environments.json" />
     <Content Include="wwwroot\defaultPageTemplate.cshtml" />
+    <Content Include="wwwroot\view\changeSetView.html" />
     <Content Include="wwwroot\view\changeSetsView.html" />
     <None Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
@@ -393,6 +394,7 @@
     <Compile Include="Dto\CustomerDto.cs" />
     <Compile Include="Dto\DeliveryDto.cs" />
     <Compile Include="Metadata\ChangeSetDtoMetadata.cs" />
+    <Compile Include="Metadata\ChangeSetsViewMetadata.cs" />
     <Compile Include="Model\ChangeSet.cs" />
     <Compile Include="Model\Delivery.cs" />
     <Compile Include="Model\Customer.cs" />
@@ -435,6 +437,7 @@
     <TypeScriptCompile Include="wwwroot\bitChangeSetManagerPathProvider.ts" />
     <TypeScriptCompile Include="wwwroot\imports.ts" />
     <TypeScriptCompile Include="wwwroot\viewModel\app.ts" />
+    <TypeScriptCompile Include="wwwroot\viewModel\changeSetViewModel.ts" />
     <TypeScriptCompile Include="wwwroot\viewModel\changeSetsViewModel.ts" />
   </ItemGroup>
   <PropertyGroup>
