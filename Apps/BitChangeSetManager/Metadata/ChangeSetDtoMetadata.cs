@@ -87,6 +87,21 @@ namespace BitChangeSetManager.Metadata
                 }
             });
 
+            AddMemberMetadata(nameof(ChangeSetDto.IsDeliveredToAll), new DtoMemberMetadata
+            {
+                Messages = new List<EnvironmentCulture>
+                {
+                    new EnvironmentCulture
+                    {
+                        Name = "EnUs",
+                        Values = new List<EnvironmentCultureValue>
+                        {
+                            new EnvironmentCultureValue { Name = "Label" , Title = "Is delivered to all" }
+                        }
+                    }
+                }
+            });
+
             return base.BuildMetadata();
         }
     }
