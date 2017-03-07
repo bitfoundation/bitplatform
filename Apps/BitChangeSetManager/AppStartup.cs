@@ -10,8 +10,6 @@ using Foundation.Api.Middlewares;
 using Foundation.Core.Contracts;
 using Foundation.Core.Contracts.Project;
 using Foundation.Core.Implementations;
-using Foundation.DataAccess.Contracts;
-using Foundation.DataAccess.Implementations;
 using Foundation.DataAccess.Implementations.EntityFrameworkCore;
 using Foundation.Model.Implementations;
 using Owin;
@@ -47,8 +45,6 @@ namespace BitChangeSetManager
             dependencyManager.Register<IRequestInformationProvider, DefaultRequestInformationProvider>();
             dependencyManager.Register<ILogger, DefaultLogger>();
             dependencyManager.Register<IUserInformationProvider, DefaultUserInformationProvider>();
-            dependencyManager.Register<ILogStore, ConsoleLogStore>();
-            dependencyManager.Register<IDbConnectionProvider, DefaultSqlDbConnectionProvider>();
 
             dependencyManager.Register<IDateTimeProvider, DefaultDateTimeProvider>(lifeCycle: DependencyLifeCycle.SingleInstance);
             dependencyManager.Register<IExceptionToHttpErrorMapper, DefaultExceptionToHttpErrorMapper>(lifeCycle: DependencyLifeCycle.SingleInstance);

@@ -14,8 +14,6 @@ module BitChangeSetManager {
 
     dependencyManager.registerObjectDependency({ name: "AppEvent", type: FoundationVM.Implementations.DefaultEntityContextProviderAppEvent });
 
-    dependencyManager.registerObjectDependency({ name: "MessageReceiver", type: FoundationVM.Implementations.SignalRMessageReceiver });
-
     dependencyManager.registerObjectDependency({ name: "MetadataProvider", type: FoundationVM.Implementations.DefaultMetadataProvider });
 
     dependencyManager.registerObjectDependency({ name: "AngularConfiguration", type: FoundationVM.Implementations.DefaultAngularTranslateConfiguration });
