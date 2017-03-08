@@ -10,5 +10,5 @@
     "sourceMap": true,
     "lib": [ "dom", "es2015" ]
   },
-  "exclude": [ "node_modules", "bower_components", "bin", "obj" ]
+  "exclude": [ "node_modules", "bower_components", "bin", "obj", "security" ]
 }
