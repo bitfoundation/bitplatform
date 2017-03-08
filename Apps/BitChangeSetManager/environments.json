@@ -2,12 +2,18 @@
   {
     "Name": "Dev",
     "IsActive": true,
-    "DebugMode": true,
+    "DebugMode": false,
     "AppInfo": {
       "Name": "BitChangeSetManager",
       "Version": "1",
       "DefaultTheme": "LightBlue",
       "DefaultCulture": "EnUs"
+    },
+    "Security": {
+      "SSOServerUrl": "http://localhost/core",
+      "Scopes": [ "openid", "profile", "user_info" ],
+      "ClientName": "BitChangeSetManager",
+      "ClientSecret": "secret"
     },
     "Cultures": [
       {
@@ -28,6 +34,32 @@
       {
         "Key": "StaticFilesRelativePath",
         "Value": ".\\wwwroot\\"
+      },
+      {
+        "Key": "ClientHostBaseUri",
+        "Value": "http://localhost",
+        "AccessibleInClientSide": true
+      },
+      {
+        "Key": "ClientHostVirtualPath",
+        "Value": "/",
+        "AccessibleInClientSide": true
+      },
+      {
+        "Key": "IdentityCertificatePassword",
+        "Value": "P@ssw0rd"
+      },
+      {
+        "Key": "IdentityServerCertificatePath",
+        "Value": "IdentityServerCertificate.pfx"
+      },
+      {
+        "Key": "SsoPageTemplatePath",
+        "Value": "ssoPageTemplate.cshtml"
+      },
+      {
+        "Key": "BitChangeSetManagerDbConnectionString",
+        "Value": "Data Source=.;Initial Catalog=BitChangeSetManagerDb;Integrated Security=True;"
       }
     ]
   }
