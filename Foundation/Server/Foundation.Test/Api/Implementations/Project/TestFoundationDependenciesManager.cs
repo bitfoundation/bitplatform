@@ -63,7 +63,10 @@ namespace Foundation.Test.Api.Implementations.Project
             dependencyManager.RegisterOwinMiddleware<AutofacDependencyInjectionMiddlewareConfiguration>();
             dependencyManager.RegisterOwinMiddleware<OwinExceptionHandlerMiddlewareConfiguration>();
             dependencyManager.RegisterOwinMiddleware<LogRequestInformationMiddlewareConfiguration>();
+            dependencyManager.RegisterOwinMiddleware<SignOutPageMiddlewareConfiguration>();
+            dependencyManager.RegisterOwinMiddleware<InvokeLogOutMiddlewareConfiguration>();
             dependencyManager.RegisterOwinMiddleware<SignInPageMiddlewareConfiguration>();
+            dependencyManager.RegisterOwinMiddleware<InvokeLoginMiddlewareConfiguration>();
             dependencyManager.RegisterOwinMiddleware<ReadAuthTokenFromCookieMiddlewareConfiguration>();
             if (_args?.UseSso == true)
                 dependencyManager.RegisterOwinMiddleware<SingleSignOnMiddlewareConfiguration>();

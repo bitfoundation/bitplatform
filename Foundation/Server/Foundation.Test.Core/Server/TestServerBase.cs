@@ -134,7 +134,7 @@ namespace Foundation.Test.Server
                 if (options.Uri != null)
                     driver.Navigate().GoToUrl($@"{Uri}{options.Uri}");
                 else if (options.Token != null)
-                    driver.Navigate().GoToUrl($@"{Uri}SignIn#id_token=0&access_token={options.Token.access_token}&token_type={options.Token.token_type}&expires_in=86400&scope=openid%20profile%20user_info&state={{""pathname"":""/""}}&session_state=0");
+                    driver.Navigate().GoToUrl($@"{Uri}SignIn#id_token=0&access_token={options.Token.access_token}&token_type={options.Token.token_type}&expires_in=86400&scope=openid profile user_info&state={{""pathname"":""/""}}&session_state=0");
                 else
                     driver.Navigate().GoToUrl(Uri);
 

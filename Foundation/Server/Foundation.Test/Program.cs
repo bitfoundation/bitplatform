@@ -23,7 +23,7 @@ namespace Foundation.Test
                 {
                     OAuthToken token = testEnvironment.Server.Login("ValidUserName", "ValidPassword");
 
-                    url = $@"{testEnvironment.Server.Uri}SignIn#id_token=0&access_token={token.access_token}&token_type={token.token_type}&expires_in=86400&scope=openid%20profile%20user_info&state={{}}&session_state=0";
+                    url = $@"{testEnvironment.Server.Uri}SignIn#id_token=0&access_token={token.access_token}&token_type={token.token_type}&expires_in=86400&scope=openid profile user_info&state={{}}&session_state=0";
                 }
                 else
                 {
