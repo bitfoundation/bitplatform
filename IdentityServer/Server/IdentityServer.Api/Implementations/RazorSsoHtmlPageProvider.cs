@@ -43,7 +43,7 @@ namespace IdentityServer.Api.Implementations
         {
             if (_result == null)
             {
-                string templateFilePath = _pathProvider.MapPath(_activeAppEnvironment.GetConfig<string>("SsoPageTemplatePath"));
+                string templateFilePath = _pathProvider.StaticFileMapPath(_activeAppEnvironment.GetConfig<string>("SsoPageTemplatePath"));
 
                 string template = File.ReadAllText(templateFilePath);
 
