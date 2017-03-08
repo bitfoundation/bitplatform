@@ -66,7 +66,7 @@ namespace IdentityServer.Api.Middlewares
 
                 bool requireSslConfigValue = activeAppEnvironment.GetConfig("RequireSsl", defaultValueOnNotFound: false);
 
-                string identityServerSiteName = activeAppEnvironment.GetConfig<string>("IdentityServerSiteName");
+                string identityServerSiteName = activeAppEnvironment.GetConfig("IdentityServerSiteName", "Identity Server");
 
                 IdentityServerOptions identityServerOptions = new IdentityServerOptions
                 {
