@@ -254,3 +254,4 @@ ModelManifest.xml
 /Apps/BitChangeSetManager/wwwroot/BitChangeSetManager.Model.Context.d.ts
 /Apps/BitChangeSetManager/wwwroot/bitChangeSetManager.ts
 /Apps/BitChangeSetManager/wwwroot/bitChangeSetManager.js
+/Apps/BitChangeSetManager/wwwroot/security/bitChangeSetManager-security.js
