@@ -59,7 +59,7 @@ namespace IdentityServer.Test.Api.Implementations
                         new EnvironmentConfig { Key = "IdentityCertificatePassword" , Value = "P@ssw0rd" },
                         new EnvironmentConfig { Key = "IdentityServerSiteName" , Value = "Identity Server" },
                         new EnvironmentConfig { Key = "IdentityServerCertificatePath", Value = @"..\..\IdentityServerCertificate.pfx" },
-                        new EnvironmentConfig { Key = "SsoPageTemplatePath" , Value = @"..\..\ssoPageTemplate.cshtml" }
+                        new EnvironmentConfig { Key = "SsoPageTemplatePath" , Value = @"bit-framework\\IdentityServer\\Server\\IdentityServer.Test\\ssoPageTemplate.cshtml" }
                     }
                 };
             }
