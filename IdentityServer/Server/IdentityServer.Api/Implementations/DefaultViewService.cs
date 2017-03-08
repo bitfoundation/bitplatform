@@ -77,7 +77,7 @@ namespace IdentityServer.Api.Implementations
 
             if (model.Custom == null && message.ReturnUrl != null)
             {
-                string state = new Uri(message.ReturnUrl).ParseQueryString()["state"];
+                string state = new Uri(message.ReturnUrl).ParseQueryString()["state"] ?? "{}";
                 model.Custom = JsonConvert.DeserializeObject<dynamic>(state, jsonSerSettings);
             }
 
