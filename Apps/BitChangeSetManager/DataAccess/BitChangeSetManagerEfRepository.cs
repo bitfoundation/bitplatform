@@ -1,4 +1,4 @@
-﻿using Foundation.DataAccess.Implementations.EntityFrameworkCore;
+﻿using Bit.Data.EntityFramework.Implementations;
 using Foundation.Model.Contracts;
 
 namespace BitChangeSetManager.DataAccess
