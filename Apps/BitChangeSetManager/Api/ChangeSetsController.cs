@@ -16,13 +16,13 @@ namespace BitChangeSetManager.Api
             _changeSetsRepository = changeSetsRepository;
         }
 
-        public IBitChangeSetManagerRepository<Customer> CustomersRepository { get; set; }
+        public IBitChangeSetManagerRepository<Delivery> DeliveriesRepository { get; set; }
 
         public override IQueryable<ChangeSetDto> GetAll()
         {
-            IQueryable<Customer> customersQuery = CustomersRepository.GetAll();
+            IQueryable<Delivery> deliveriesQuery = DeliveriesRepository.GetAll();
 
-            return DtoModelMapper.FromModelQueryToDtoQuery(_changeSetsRepository.GetAll(), parameters: new { customersQuery = customersQuery });
+            return DtoModelMapper.FromModelQueryToDtoQuery(_changeSetsRepository.GetAll(), parameters: new { deliveriesQuery = deliveriesQuery });
         }
     }
 }
