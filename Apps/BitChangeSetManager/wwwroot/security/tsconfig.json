@@ -1,0 +1,14 @@
+﻿{
+  "compileOnSave": true,
+  "compilerOptions": {
+    "allowUnreachableCode": true,
+    "emitDecoratorMetadata": false,
+    "experimentalDecorators": true,
+    "module": "none",
+    "outFile": "bitChangeSetManager-security.js",
+    "target": "es5",
+    "sourceMap": true,
+    "lib": [ "dom", "es2015" ]
+  },
+  "exclude": [ "node_modules", "bower_components", "bin", "obj" ]
+}
