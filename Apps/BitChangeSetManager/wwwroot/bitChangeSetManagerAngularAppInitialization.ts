@@ -24,6 +24,9 @@ module BitChangeSetManager {
         }
 
         protected async onAppRun(app: ng.IModule): Promise<void> {
+            FoundationView.Directives.DefaultRadGridDirective.defaultRadGridDirectiveCustomizers.push(($scope: ng.IScope, attribues: ng.IAttributes, element: JQuery, gridOptions: kendo.ui.GridOptions): void => {
+                gridOptions.groupable = true;
+            });
             await super.onAppRun(app);
         }
     }

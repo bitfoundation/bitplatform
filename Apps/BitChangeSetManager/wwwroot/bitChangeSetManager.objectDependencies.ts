@@ -2,7 +2,7 @@
 
 module BitChangeSetManager {
 
-    let dependencyManager = FoundationCore.DependencyManager.getCurrent();
+    let dependencyManager = DependencyManager.getCurrent();
 
     dependencyManager.registerObjectDependency({ name: "AppEvent", type: FoundationVM.Implementations.DefaultKendoExtender });
 

@@ -4,7 +4,7 @@
         name: "ChangeSetsViewModel",
         templateUrl: `view/changeSetsView.html`
     })
-    export class ChangeSetsViewModel extends FormViewModel {
+    export class ChangeSetsViewModel extends SecureViewModel {
 
         public changeSetsDataSource: kendo.data.DataSource;
 
@@ -18,7 +18,7 @@
 
             let context = await this.entityContextProvider.getContext<BitChangeSetManagerContext>("BitChangeSetManager");
 
-            this.changeSetsDataSource = context.changeSets.asKendoDataSource();
+            this.changeSetsDataSource = context.changeSets.asKendoDataSource({ serverPaging: true, pageSize: 5 });
 
         }
 

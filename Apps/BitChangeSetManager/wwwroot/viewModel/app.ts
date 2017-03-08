@@ -9,7 +9,7 @@
             { path: "/change-sets-page", name: "ChangeSetsViewModel", useAsDefault: true }
         ]
     })
-    export class App extends FormViewModel {
+    export class App extends SecureViewModel {
 
     }
 

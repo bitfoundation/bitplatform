@@ -1,11 +1,8 @@
-﻿/// <reference path="bower_components/bit-html-client/foundation.core/foundation.core.d.ts" />
-/// <reference path="bower_components/bit-html-client/foundation.view/foundation.view.d.ts" />
-/// <reference path="bower_components/bit-html-client/foundation.viewmodel/foundation.viewmodel.d.ts" />
-/// <reference path="imports.ts" />
+﻿/// <reference path="imports.ts" />
 
 module BitChangeSetManager {
 
-    let dependencyManager = FoundationCore.DependencyManager.getCurrent();
+    let dependencyManager = DependencyManager.getCurrent();
 
     dependencyManager.registerFileDependency({
         name: "normalize",
