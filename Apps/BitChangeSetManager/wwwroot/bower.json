@@ -26,7 +26,7 @@
     "fetch": "2.0.2",
     "decimal.js": "https://github.com/MikeMcl/decimal.js.git#v7.0.1",
     "kendo-ui": "kendo-ui-core#2017.1.223",
-    "bit-html-client": "https://github.com/bit-foundation/bit-html-client.git#0.0.3",
+    "bit-releases": "https://github.com/bit-foundation/bit-releases.git#0.0.4",
     "encoderjs": "0.0.1"
   },
   "resolutions": {

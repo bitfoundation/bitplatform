@@ -7,7 +7,7 @@ module BitChangeSetManagerSecurity {
 
         public getProjectsPath(): Array<{ name: string, path: string }> {
             return [{
-                name: "IdentityServer", path: "bower_components/bit-html-client/foundation.identity/"
+                name: "IdentityServer", path: "bower_components/bit-releases/foundation.identity/"
             }];
         }
 

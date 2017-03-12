@@ -12,7 +12,7 @@ module BitChangeSetManagerSecurity {
 
     dependencyManager.registerFileDependency({
         name: "identityServerStyles",
-        path: "bower_components/bit-html-client/foundation.identity/view/contents/styles/identityServerStyles",
+        path: "bower_components/bit-releases/foundation.identity/view/contents/styles/identityServerStyles",
         fileDependecyType: "Style"
     });
 
@@ -24,13 +24,13 @@ module BitChangeSetManagerSecurity {
 
     dependencyManager.registerFileDependency({
         name: "controls-styles",
-        path: "bower_components/bit-html-client/foundation.view/contents/styles/controls",
+        path: "bower_components/bit-releases/foundation.view/contents/styles/controls",
         fileDependecyType: "Style"
     });
 
     dependencyManager.registerFileDependency({
         name: "en-US-styles",
-        path: "bower_components/bit-html-client/foundation.view/contents/styles/en-US",
+        path: "bower_components/bit-releases/foundation.view/contents/styles/en-US",
         fileDependecyType: "Style"
     });
 
@@ -109,6 +109,6 @@ module BitChangeSetManagerSecurity {
 
     dependencyManager.registerFileDependency({
         name: "foundation-model-context",
-        path: "bower_components/bit-html-client/foundation.viewmodel/Foundation.Model.Context"
+        path: "bower_components/bit-releases/foundation.viewmodel/Foundation.Model.Context"
     });
 }

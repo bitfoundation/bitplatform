@@ -5,7 +5,7 @@
         "EdmName": "BitChangeSetManager",
         "Namespace": "BitChangeSetManager",
         "DestinationFileName": "wwwroot/BitChangeSetManager.Model.Context",
-        "TypingsPath": "bower_components/bit-html-client/foundation.core/typings.d.ts",
+        "TypingsPath": "bower_components/bit-releases/foundation.core/typings.d.ts",
         "SourceProjects": [
           {
             "Name": "BitChangeSetManager"

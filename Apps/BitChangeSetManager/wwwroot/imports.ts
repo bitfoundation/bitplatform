@@ -1,6 +1,6 @@
-﻿/// <reference path="bower_components/bit-html-client/foundation.core/foundation.core.d.ts" />
-/// <reference path="bower_components/bit-html-client/foundation.view/foundation.view.d.ts" />
-/// <reference path="bower_components/bit-html-client/foundation.viewmodel/foundation.viewmodel.d.ts" />
+﻿/// <reference path="bower_components/bit-releases/foundation.core/foundation.core.d.ts" />
+/// <reference path="bower_components/bit-releases/foundation.view/foundation.view.d.ts" />
+/// <reference path="bower_components/bit-releases/foundation.viewmodel/foundation.viewmodel.d.ts" />
 
 import FoundationCore = Foundation.Core;
 import FoundationVM = Foundation.ViewModel;
