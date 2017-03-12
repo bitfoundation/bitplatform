@@ -4,13 +4,13 @@
   "description": "Bit Framework",
   "author": "Bit Foundation",
   "devDependencies": {
-    "@types/angular": "^1.6.7",
+    "@types/angular": "^1.6.9",
     "@types/angular-material": "0.0.0",
     "@types/angular-translate": "^2.4.35",
     "@types/decimal.js": "0.0.29",
-    "@types/jasmine": "^2.5.43",
+    "@types/jasmine": "^2.5.45",
     "@types/jasmine-jquery": "^1.5.29",
-    "@types/jquery": "^2.0.40",
+    "@types/jquery": "^2.0.41",
     "@types/kendo-ui": "^2016.3.41",
     "@types/signalr": "^2.2.33"
   }
