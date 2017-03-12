@@ -7,7 +7,7 @@ Requirements:
 
   1- Visual Studio 2015 Update 3
   
-  2- TypeScript 2.1.4
+  2- TypeScript 2.2
   
   3- .NET Core VS 2015 Update 3 Tooling Preview 2 (Optional Requirement)
   
