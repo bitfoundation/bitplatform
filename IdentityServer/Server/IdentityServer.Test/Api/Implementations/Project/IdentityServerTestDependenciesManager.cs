@@ -40,7 +40,6 @@ namespace IdentityServer.Test.Api.Implementations.Project
 
             dependencyManager.RegisterAppEvents<RazorViewEngineConfiguration>();
 
-            dependencyManager.RegisterOwinMiddleware<OwinCompressionMiddlewareConfiguration>();
             dependencyManager.RegisterOwinMiddleware<StaticFilesMiddlewareConfiguration>();
             dependencyManager.RegisterOwinMiddleware<AutofacDependencyInjectionMiddlewareConfiguration>();
             dependencyManager.RegisterOwinMiddleware<OwinExceptionHandlerMiddlewareConfiguration>();
