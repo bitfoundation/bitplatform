@@ -22,6 +22,7 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Other", "Other", "{3B9BD8FE-95D6-4720-9FA9-ACBED0C6363F}"
 	ProjectSection(SolutionItems) = preProject
 		BitConfigV1.json = BitConfigV1.json
+		global.json = global.json
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Foundation.Test.HtmlClient", "Foundation\HtmlClient\Foundation.Test.HtmlClient\Foundation.Test.HtmlClient.csproj", "{374B1FA9-E2F6-4393-9926-89E6D6AEC0FD}"
