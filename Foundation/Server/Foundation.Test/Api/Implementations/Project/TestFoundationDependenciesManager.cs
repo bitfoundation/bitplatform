@@ -58,7 +58,6 @@ namespace Foundation.Test.Api.Implementations.Project
             dependencyManager.RegisterAppEvents<RazorViewEngineConfiguration>();
             dependencyManager.RegisterAppEvents<InitialTestDataConfiguration>();
 
-            dependencyManager.RegisterOwinMiddleware<OwinCompressionMiddlewareConfiguration>();
             dependencyManager.RegisterOwinMiddleware<StaticFilesMiddlewareConfiguration>();
             dependencyManager.RegisterOwinMiddleware<AutofacDependencyInjectionMiddlewareConfiguration>();
             dependencyManager.RegisterOwinMiddleware<OwinExceptionHandlerMiddlewareConfiguration>();

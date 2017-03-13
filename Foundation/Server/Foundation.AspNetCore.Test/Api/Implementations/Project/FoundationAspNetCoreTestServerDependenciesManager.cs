@@ -58,7 +58,6 @@ namespace Foundation.AspNetCore.Test.Api.Implementations.Project
             dependencyManager.RegisterAspNetCoreMiddleware<AspNetCoreExceptionHandlerMiddlewareConfiguration>(); //@Important
             dependencyManager.RegisterAspNetCoreMiddleware<TestWebApiCoreMvcMiddlewareConfiguration>(); //@Important
 
-            dependencyManager.RegisterOwinMiddleware<OwinCompressionMiddlewareConfiguration>();
             dependencyManager.RegisterOwinMiddleware<StaticFilesMiddlewareConfiguration>();
             dependencyManager.RegisterOwinMiddleware<ExtendAspNetCoreAutofacLifetimeToOwinMiddlewareConfiguration>(); //@Important
             dependencyManager.RegisterOwinMiddleware<LogRequestInformationMiddlewareConfiguration>();

@@ -1,4 +1,4 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿/*using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Threading.Tasks;
 using Foundation.Test.Model.DomainModels;
 using Simple.OData.Client;
@@ -9,7 +9,6 @@ namespace Foundation.Test.Api.Middlewares.WebApi.Tests
     [TestClass]
     public class AutoEdmBuilderCustomODataActionsTests
     {
-        /*
         It's all about action arguments and methods in custom odata actions
         Arguments:
                     1- Single primitive type: TestModelsController.SendEmailUsingBackgroundJobService
@@ -33,7 +32,6 @@ namespace Foundation.Test.Api.Middlewares.WebApi.Tests
                     7- Queryable of entities: See tests
                     8- Queryable of complex values: We're not going to support that for now
                     9- No return value: TestModelsController.PushSomethingWithDateTimeOffset
-        */
 
         [Ignore]
         [TestMethod]
@@ -87,3 +85,4 @@ namespace Foundation.Test.Api.Middlewares.WebApi.Tests
         }
     }
 }
+*/

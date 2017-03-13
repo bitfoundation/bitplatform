@@ -20,7 +20,7 @@ namespace Foundation.Test.Core.Implementations
             AutoProxyCreationIgnoreRules = new List<Func<TypeInfo, bool>>
             {
                 serviceType => GetBaseTypes(serviceType).Any(t => t.Name == "DbContext"),
-                serviceType => typeof(Hub).GetTypeInfo().IsAssignableFrom(serviceType),
+                serviceType => GetBaseTypes(serviceType).Any(t => t.Name == "Hub"),
                 serviceType => serviceType.IsArray,
                 serviceType => serviceType.IsInterface
             };

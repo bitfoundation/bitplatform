@@ -45,7 +45,7 @@ namespace Foundation.Test.Api.Middlewares.JobScheduler.Tests
             }
         }
 
-        [Ignore]
+        /*[Ignore]
         [TestMethod]
         [TestCategory("BackgroundJobs"), TestCategory("WebApi")]
         public async Task SendEmailUsingBackgroundJobWorkerAndWebApi()
@@ -207,6 +207,6 @@ namespace Foundation.Test.Api.Middlewares.JobScheduler.Tests
 
                 Assert.AreEqual(2, tryCount);
             }
-        }
+        }*/
     }
 }

@@ -38,7 +38,7 @@ namespace Foundation.Test.Api.Middlewares.WebApi.Tests
             }
         }
 
-        [Ignore]
+        /*[Ignore]
         [TestMethod]
         [TestCategory("WebApi"), TestCategory("Logging")]
         public virtual async Task WebApiTraceWritterShouldLogCorrelationIdAndExceptionDetails()
@@ -79,6 +79,6 @@ namespace Foundation.Test.Api.Middlewares.WebApi.Tests
                     Assert.AreEqual("Test", ((AppException)logger.LogData.Single(ld => ld.Key == "WebException").Value).Message);
                 }
             }
-        }
+        }*/
     }
 }

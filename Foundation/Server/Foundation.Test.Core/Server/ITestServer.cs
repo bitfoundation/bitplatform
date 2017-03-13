@@ -29,11 +29,11 @@ namespace Foundation.Test
 
         OAuthToken Login(string userName, string password);
 
-        ODataClient BuildODataClient(Action<HttpRequestMessage> beforeRequest = null,
-            Action<HttpResponseMessage> afterResponse = null, OAuthToken token = null, string route = null);
+        /*ODataClient BuildODataClient(Action<HttpRequestMessage> beforeRequest = null,
+            Action<HttpResponseMessage> afterResponse = null, OAuthToken token = null, string route = null);*/
 
-        ODataBatch BuildODataBatchClient(Action<HttpRequestMessage> beforeRequest = null,
-           Action<HttpResponseMessage> afterResponse = null, OAuthToken token = null, string route = null);
+        /*ODataBatch BuildODataBatchClient(Action<HttpRequestMessage> beforeRequest = null,
+           Action<HttpResponseMessage> afterResponse = null, OAuthToken token = null, string route = null);*/
 
         HttpClient GetHttpClient(OAuthToken token = null);
 

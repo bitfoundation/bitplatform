@@ -17,7 +17,7 @@ namespace Foundation.Test.Server
     {
         public virtual string Uri { get; protected set; }
 
-        public virtual ODataBatch BuildODataBatchClient(Action<HttpRequestMessage> beforeRequest = null,
+        /*public virtual ODataBatch BuildODataBatchClient(Action<HttpRequestMessage> beforeRequest = null,
                   Action<HttpResponseMessage> afterResponse = null, OAuthToken token = null, string route = null)
         {
             if (route == null)
@@ -45,8 +45,9 @@ namespace Foundation.Test.Server
             });
 
             return client;
-        }
-        public virtual ODataClient BuildODataClient(Action<HttpRequestMessage> beforeRequest = null,
+        }*/
+
+        /*public virtual ODataClient BuildODataClient(Action<HttpRequestMessage> beforeRequest = null,
             Action<HttpResponseMessage> afterResponse = null, OAuthToken token = null, string route = null)
         {
             if (route == null)
@@ -74,7 +75,7 @@ namespace Foundation.Test.Server
             });
 
             return client;
-        }
+        }*/
 
         protected abstract HttpMessageHandler GetHttpMessageHandler();
 

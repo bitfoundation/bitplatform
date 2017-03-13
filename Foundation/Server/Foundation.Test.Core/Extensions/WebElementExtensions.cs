@@ -1,5 +1,4 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 using System;
 using System.Diagnostics;
 using System.Threading;
@@ -120,7 +119,8 @@ namespace OpenQA.Selenium.Remote
             Console.WriteLine("Url: " + driver.Url);
             Console.WriteLine("Final test script: " + finalTestScript);
 
-            Assert.IsTrue(testIsPassed, consoleValue);
+            if (testIsPassed != true)
+                throw new InvalidOperationException(consoleValue);
         }
 
         [DebuggerNonUserCode]

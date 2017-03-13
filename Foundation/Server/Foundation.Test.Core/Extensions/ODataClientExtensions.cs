@@ -7,7 +7,7 @@ namespace Simple.OData.Client
 {
     public static class ODataClientExtensions
     {
-        public static IBoundClient<TDto> Controller<TController, TDto>(this IODataClient client)
+        /*public static IBoundClient<TDto> Controller<TController, TDto>(this IODataClient client)
             where TDto : class, IDto
             where TController : DtoController<TDto>
         {
@@ -15,6 +15,6 @@ namespace Simple.OData.Client
                 throw new ArgumentNullException(nameof(client));
 
             return client.For<TDto>(typeof(TController).GetTypeInfo().Name.Replace("Controller", string.Empty));
-        }
+        }*/
     }
 }

@@ -1,4 +1,4 @@
-﻿using System.Threading.Tasks;
+﻿/*using System.Threading.Tasks;
 using Foundation.Test.Model.DomainModels;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Simple.OData.Client;
@@ -68,3 +68,4 @@ namespace Foundation.Test.Api.Middlewares.SignalR.Tests
         }
     }
 }
+*/

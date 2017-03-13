@@ -13,14 +13,9 @@
     "Microsoft.AspNetCore.Mvc.Core": "1.1.2",
     "Microsoft.AspNetCore.Mvc.Formatters.Json": "1.1.2",
     "Microsoft.AspNetCore.Owin": "1.1.1",
-    "Microsoft.CSharp": "4.3.0",
     "Microsoft.Owin": "3.0.1",
     "Microsoft.Owin.Host.HttpListener": "3.0.1",
-    "Microsoft.Owin.Hosting": "3.0.1",
-    "Suave": "2.0.4",
-    "System.ComponentModel.Annotations": "4.3.0",
-    "System.Diagnostics.DiagnosticSource": "4.3.0",
-    "System.Net.Http": "4.3.1"
+    "Suave": "2.0.4"
   },
 
   "buildOptions": {

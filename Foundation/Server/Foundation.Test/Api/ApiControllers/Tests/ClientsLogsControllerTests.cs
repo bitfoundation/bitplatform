@@ -1,4 +1,4 @@
-﻿using FakeItEasy;
+﻿/*using FakeItEasy;
 using Foundation.Api.ApiControllers;
 using Foundation.Core.Contracts;
 using Foundation.Model.Dtos;
@@ -43,3 +43,4 @@ namespace Foundation.Test.Api.ApiControllers.Tests
         }
     }
 }
+*/

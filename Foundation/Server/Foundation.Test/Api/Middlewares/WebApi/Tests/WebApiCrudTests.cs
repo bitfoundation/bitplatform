@@ -19,7 +19,7 @@ namespace Foundation.Test.Api.Middlewares.WebApi.Tests
     [TestClass]
     public class WebApiCrudTests
     {
-        [Ignore]
+        /*[Ignore]
         [TestMethod]
         [TestCategory("WebApi"), TestCategory("OData")]
         public async Task TestInsert()
@@ -170,7 +170,7 @@ namespace Foundation.Test.Api.Middlewares.WebApi.Tests
                 A.CallTo(() => requestValidator.ValidateRequestByUri(A<Uri>.That.Matches(uri => uri.ToString().Contains("$filter=Name eq 'A'"))))
                     .MustHaveHappened(Repeated.Exactly.Once);
             }
-        }
+        }*/
 
         [TestMethod]
         [TestCategory("WebApi"), TestCategory("OData")]
