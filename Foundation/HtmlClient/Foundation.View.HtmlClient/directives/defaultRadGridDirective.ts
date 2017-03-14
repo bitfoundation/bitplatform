@@ -332,7 +332,7 @@ module Foundation.View.Directives {
                             let extras = viewTemplateElement.find("extras");
 
                             if (extras.length == 0)
-                                extras = $("<extras></extras");
+                                extras = angular.element("<extras></extras");
 
                             extras.attr("rad-model-item-template", "");
                             extras.attr("ng-model", "::dataItem");
