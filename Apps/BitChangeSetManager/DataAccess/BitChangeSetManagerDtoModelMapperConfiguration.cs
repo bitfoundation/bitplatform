@@ -10,10 +10,10 @@ namespace BitChangeSetManager.DataAccess
     {
         public virtual void Configure(IMapperConfigurationExpression mapperConfigExpression)
         {
-            IQueryable<Delivery> deliveriesQuery = null;
+            int customersCount = 0;
 
             mapperConfigExpression.CreateMap<ChangeSet, ChangeSetDto>()
-                .ForMember(changeSetMember => changeSetMember.IsDeliveredToAll, config => config.MapFrom(changeSet => changeSet.Deliveries.Count() == deliveriesQuery.GroupBy(d => d.CustomerId).Count()));
+                .ForMember(changeSetMember => changeSetMember.IsDeliveredToAll, config => config.MapFrom(changeSet => changeSet.Deliveries.Count() == customersCount));
         }
     }
 }

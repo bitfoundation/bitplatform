@@ -18,7 +18,7 @@
 
             let context = await this.entityContextProvider.getContext<BitChangeSetManagerContext>("BitChangeSetManager");
 
-            this.changeSetsDataSource = context.changeSets.asKendoDataSource({ serverPaging: true, pageSize: 5 });
+            this.changeSetsDataSource = context.changeSets.getAllChangeSets().asKendoDataSource({ serverPaging: true, pageSize: 5 });
 
         }
 
