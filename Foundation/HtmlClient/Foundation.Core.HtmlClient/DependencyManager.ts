@@ -589,10 +589,10 @@ module Foundation.Core {
 
             targetDtoViewModel = Injectable()(targetDtoViewModel) as IComponentDependency & Function;
 
-            targetDtoViewModel.bindings = targetDtoViewModel.bindings || {};
+            dtoViewModel.bindings = dtoViewModel.bindings || {};
 
-            if (targetDtoViewModel.bindings['model'] == null)
-                targetDtoViewModel.bindings['model'] = '<?';
+            if (dtoViewModel.bindings['model'] == null)
+                dtoViewModel.bindings['model'] = '<?';
 
             dtoViewModel.type = targetDtoViewModel;
 
