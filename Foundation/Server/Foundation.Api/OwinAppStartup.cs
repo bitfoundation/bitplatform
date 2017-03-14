@@ -10,6 +10,7 @@ using Owin;
 using Foundation.Api.Contracts;
 using Microsoft.Owin.Logging;
 using Microsoft.Owin.BuilderProperties;
+using System.Web.Hosting;
 
 namespace Foundation.Api
 {
@@ -36,7 +37,10 @@ namespace Foundation.Api
             else
                 owinApp.Properties["host.AppMode"] = "production";
 
-            owinAppProps.AppName = Console.Title = activeEnvironment.AppInfo.Name;
+            if (HostingEnvironment.IsHosted == false)
+                Console.Title = activeEnvironment.Name;
+
+            owinAppProps.AppName = activeEnvironment.AppInfo.Name;
 
             owinApp.SetLoggerFactory(new DiagnosticsLoggerFactory());
 
