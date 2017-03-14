@@ -10,7 +10,7 @@
       "DefaultCulture": "EnUs"
     },
     "Security": {
-      "SSOServerUrl": "http://localhost/core",
+      "SSOServerUrl": "http://localhost:9090/bit-change-set-manager/core",
       "Scopes": [ "openid", "profile", "user_info" ],
       "ClientName": "BitChangeSetManager",
       "ClientSecret": "secret"
@@ -37,12 +37,12 @@
       },
       {
         "Key": "ClientHostBaseUri",
-        "Value": "http://localhost",
+        "Value": "http://localhost:9090",
         "AccessibleInClientSide": true
       },
       {
         "Key": "ClientHostVirtualPath",
-        "Value": "/",
+        "Value": "/bit-change-set-manager/",
         "AccessibleInClientSide": true
       },
       {

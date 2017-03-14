@@ -348,21 +348,22 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="environments.json" />
-    <Content Include="ToDo.txt" />
+    <None Include="ToDo.txt" />
     <Content Include="wwwroot\defaultPageTemplate.cshtml" />
     <Content Include="wwwroot\view\changeSetView.html" />
     <Content Include="wwwroot\view\changeSetsView.html" />
     <Content Include="IdentityServerCertificate.pfx" />
-    <Content Include="packages.config" />
+    <None Include="packages.config" />
+    <None Include="Properties\PublishProfiles\PublishProfile.pubxml" />
     <None Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
     </None>
     <None Include="Web.Release.config">
       <DependentUpon>Web.config</DependentUpon>
     </None>
-    <Content Include="wwwroot\bower.json" />
+    <None Include="wwwroot\bower.json" />
     <Content Include="wwwroot\tsconfig.json" />
-    <Content Include="wwwroot\package.json" />
+    <None Include="wwwroot\package.json" />
     <Content Include="wwwroot\ssoPageTemplate.cshtml" />
     <Content Include="wwwroot\security\tsconfig.json" />
   </ItemGroup>
@@ -429,7 +430,7 @@
           <AutoAssignPort>True</AutoAssignPort>
           <DevelopmentServerPort>30098</DevelopmentServerPort>
           <DevelopmentServerVPath>/</DevelopmentServerVPath>
-          <IISUrl>http://localhost</IISUrl>
+          <IISUrl>http://localhost:9090/bit-change-set-manager/</IISUrl>
           <NTLMAuthentication>False</NTLMAuthentication>
           <UseCustomServer>False</UseCustomServer>
           <CustomServerUrl>
