@@ -12,7 +12,7 @@ module Foundation.View.Directives {
                 scope: false,
                 replace: true,
                 terminal: true,
-                required: "ngModel",
+                require: "ngModel",
                 template: (element: JQuery, attrs: ng.IAttributes) => {
 
                     const guidUtils = Core.DependencyManager.getCurrent().resolveObject<ViewModel.Implementations.GuidUtils>("GuidUtils");

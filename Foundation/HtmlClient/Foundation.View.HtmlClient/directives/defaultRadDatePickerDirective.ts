@@ -9,7 +9,7 @@ module Foundation.View.Directives {
                 scope: false,
                 replace: true,
                 terminal: true,
-                required: "ngModel",
+                require: "ngModel",
                 template: (element: JQuery, attrs: ng.IAttributes) => {
 
                     const template = `<input kendo-date-picker />`;
