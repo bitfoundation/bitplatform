@@ -31,7 +31,7 @@ namespace Foundation.Test.HtmlClient.ThirdPartyLibrariesTests.JayDataContextTest
                     .OfType<TestCustomersController>()
                     .Single();
 
-                A.CallTo(() => testCustomersController.GetAll())
+                A.CallTo(() => testCustomersController.GetAll(A<CancellationToken>.Ignored))
                     .MustHaveHappened(Repeated.Exactly.Once);
             }
         }

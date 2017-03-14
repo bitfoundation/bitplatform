@@ -57,7 +57,7 @@ namespace Foundation.Api.ApiControllers
         [Get]
         public virtual async Task<TDto> Get([FromODataUri]TKey key, CancellationToken cancellationToken)
         {
-            IQueryable<TDto> baseQuery = WhereByKeyBuilders.WhereByKey(GetAll(), key);
+            IQueryable<TDto> baseQuery = WhereByKeyBuilders.WhereByKey(await GetAll(cancellationToken), key);
 
             IDataProviderSpecificMethodsProvider dataProviderSpecificMethodsProvider = null;
 
@@ -117,7 +117,7 @@ namespace Foundation.Api.ApiControllers
         }
 
         [Get]
-        public virtual IQueryable<TDto> GetAll()
+        public virtual async Task<IQueryable<TDto>> GetAll(CancellationToken cancellationToken)
         {
             return DtoModelMapper.FromModelQueryToDtoQuery(Repository.GetAll());
         }
