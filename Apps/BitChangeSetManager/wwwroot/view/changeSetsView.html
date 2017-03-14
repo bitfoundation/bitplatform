@@ -4,7 +4,7 @@
         <toolbar-template>
             <rad-grid-add-button>{{::'AddNewChangeSet' | translate}}</rad-grid-add-button>
         </toolbar-template>
-        <edit-template title="{{::'AddEditChangeSet' | translate}}">
+        <edit-template title="{{::'AddEditChangeSet' | translate}}" style="width:600px">
             <change-set-view-model model="::dataItem"></change-set-view-model>
         </edit-template>
         <view-template>
@@ -22,10 +22,13 @@
                     {{::dataItem.CreatedOn | bitDate}}
                 </column>
                 <column name="Description" title="{{::vm.changeSetMetadata.Description.Label}}">
-                    {{::dataItem.Description}}
+                    <div ng-bind-html="::dataItem.Description | html"></div>
                 </column>
                 <column name="IsDeliveredToAll" title="{{::vm.changeSetMetadata.IsDeliveredToAll.Label}}">
-                    {{::dataItem.IsDeliveredToAll ? 'Yes' : 'No'}}
+                    {{::dataItem.IsDeliveredToAll ? 'Yes' : 'No' | translate}}
+                </column>
+                <column command title="{{'Commands' | translate}}">
+                    <rad-grid-edit-button>{{'EditChangeSet' | translate}}</rad-grid-edit-button>
                 </column>
             </columns>
         </view-template>

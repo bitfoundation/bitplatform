@@ -36,7 +36,9 @@ namespace BitChangeSetManager.Metadata
                         Name = "EnUs",
                         Values = new List<EnvironmentCultureValue>
                         {
-                            new EnvironmentCultureValue { Name = "Label" , Title = "Title" }
+                            new EnvironmentCultureValue { Name = "Label" , Title = "Title" },
+                            new EnvironmentCultureValue { Name = "RequiredMessage" , Title = "Title is required" },
+                            new EnvironmentCultureValue { Name = "MaxLengthMessage" , Title = "Title's length is too big" }
                         }
                     }
                 }
@@ -66,7 +68,8 @@ namespace BitChangeSetManager.Metadata
                         Name = "EnUs",
                         Values = new List<EnvironmentCultureValue>
                         {
-                            new EnvironmentCultureValue { Name = "Label" , Title = "Description" }
+                            new EnvironmentCultureValue { Name = "Label" , Title = "Description" },
+                            new EnvironmentCultureValue { Name = "MaxLengthMessage" , Title = "Description's length is too big" }
                         }
                     }
                 }

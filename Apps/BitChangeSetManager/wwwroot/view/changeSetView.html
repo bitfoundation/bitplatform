@@ -1,6 +1,33 @@
 ﻿<view>
 
-    <dto-form ng-model="::vm.model">
+    <dto-form ng-model="::vm.model" name="changeSetForm">
+
+        <md-input-container>
+            <label>{{::vm.changeSetMetadata.Title.Label}}</label>
+            <input type="text" name="Title" ng-model="::vm.model.Title" />
+            <error-messages field="changeSetForm.Title">
+                <error ng-message="required">{{::vm.changeSetMetadata.Title.RequiredMessage}}</error>
+                <error ng-message="max-length">{{::vm.changeSetMetadata.Title.MaxLengthMessage}}</error>
+            </error-messages>
+        </md-input-container>
+
+        <md-input-container style="width:100%;">
+            <label>{{::vm.changeSetMetadata.AssociatedCommitUrl.Label}}</label>
+            <input type="text" name="AssociatedCommitUrl" ng-model="::vm.model.AssociatedCommitUrl" />
+        </md-input-container>
+
+        <md-input-container style="width:100%;">
+            <label>{{::vm.changeSetMetadata.Description.Label}}</label>
+            <rad-editor name="Description" ng-model="::vm.model.Description" k-ng-model="::vm.model.Description" />
+            <error-messages field="changeSetForm.Description">
+                <error ng-message="max-length">{{::vm.changeSetMetadata.Description.MaxLengthMessage}}</error>
+            </error-messages>
+        </md-input-container>
+
+        <div>
+            <rad-grid-save-button ng-click="vm.onSave()" ng-disabled="changeSetForm.$invalid">{{::'Save' | translate}}</rad-grid-save-button>
+            <rad-grid-cancel-button>{{::'Cancel' | translate}}</rad-grid-cancel-button>
+        </div>
 
     </dto-form>
 

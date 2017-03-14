@@ -158,4 +158,10 @@ module BitChangeSetManager {
         name: "bit-change-set-manager-context",
         path: "bitChangeSetManager.Model.Context"
     });
+
+    dependencyManager.registerFileDependency({
+        name: "bit-change-set-manager-styles",
+        path: "view/bitChangeSetManagerStyles",
+        fileDependecyType: "Style"
+    });
 }

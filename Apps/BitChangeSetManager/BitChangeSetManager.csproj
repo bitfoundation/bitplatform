@@ -350,6 +350,7 @@
     <Content Include="environments.json" />
     <None Include="ToDo.txt" />
     <Content Include="wwwroot\defaultPageTemplate.cshtml" />
+    <Content Include="wwwroot\view\bitChangeSetManagerStyles.css" />
     <Content Include="wwwroot\view\changeSetView.html" />
     <Content Include="wwwroot\view\changeSetsView.html" />
     <Content Include="IdentityServerCertificate.pfx" />
@@ -384,6 +385,7 @@
     <Compile Include="Dto\ChangeSetDto.cs" />
     <Compile Include="Dto\CustomerDto.cs" />
     <Compile Include="Dto\DeliveryDto.cs" />
+    <Compile Include="Metadata\BitChangeSetManagerMetadata.cs" />
     <Compile Include="Metadata\ChangeSetDtoMetadata.cs" />
     <Compile Include="Metadata\ChangeSetsViewMetadata.cs" />
     <Compile Include="Model\ChangeSet.cs" />

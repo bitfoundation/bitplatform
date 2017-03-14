@@ -18,6 +18,7 @@ import DependencyManager = FoundationCore.DependencyManager;
 import FormViewModel = FoundationVM.ViewModels.FormViewModel;
 import SecureViewModel = FoundationVM.ViewModels.SecureFormViewModel;
 import DtoViewModel = FoundationVM.ViewModels.DtoViewModel;
+import DtoFormController = FoundationVM.ViewModels.DtoFormController;
 import DtoRules = FoundationVM.Implementations.DtoRules;
 import Command = FoundationVM.Command;
 import IEntityContextProvider = FoundationVM.Contracts.IEntityContextProvider;

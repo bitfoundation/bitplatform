@@ -17,7 +17,7 @@ namespace BitChangeSetManager.Dto
         [MaxLength(100)]
         public virtual string AssociatedCommitUrl { get; set; }
 
-        public virtual DateTimeOffset CreatedOn { get; set; }
+        public virtual DateTimeOffset? CreatedOn { get; set; }
 
         [MaxLength(200)]
         [DataType(DataType.MultilineText)]

@@ -20,7 +20,9 @@ namespace BitChangeSetManager.Metadata
                         Values = new List<EnvironmentCultureValue>
                         {
                             new EnvironmentCultureValue { Name = "AddNewChangeSet" , Title = "Add new change set" },
-                            new EnvironmentCultureValue { Name = "AddEditChangeSet" , Title = "Add/Edit change set" }
+                            new EnvironmentCultureValue { Name = "AddEditChangeSet" , Title = "Add/Edit change set" },
+                            new EnvironmentCultureValue { Name = "ChangeSetDataIsInvalid" , Title = "Your change set's data is invalid" },
+                            new EnvironmentCultureValue { Name = "EditChangeSet" , Title = "Edit change set" }
                         }
                     }
                 }

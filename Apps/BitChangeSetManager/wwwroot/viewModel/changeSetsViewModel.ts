@@ -7,18 +7,17 @@
     export class ChangeSetsViewModel extends SecureViewModel {
 
         public changeSetsDataSource: kendo.data.DataSource;
+        public changeSetMetadata = BitChangeSetManagerModel.ChangeSetDto;
 
         public constructor( @Inject("EntityContextProvider") public entityContextProvider: IEntityContextProvider) {
             super();
         }
 
-        public changeSetMetadata = BitChangeSetManagerModel.ChangeSetDto;
-
         public async $onInit(): Promise<void> {
 
             let context = await this.entityContextProvider.getContext<BitChangeSetManagerContext>("BitChangeSetManager");
 
-            this.changeSetsDataSource = context.changeSets.getAllChangeSets().asKendoDataSource({ serverPaging: true, pageSize: 5 });
+            this.changeSetsDataSource = context.changeSets.asKendoDataSource({ serverPaging: true, pageSize: 5 });
 
         }
 

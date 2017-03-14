@@ -29,5 +29,17 @@ module BitChangeSetManager {
             });
             await super.onAppRun(app);
         }
+
+        protected async registerFilters(app: ng.IModule): Promise<void> {
+            await super.registerFilters(app);
+
+            app.filter("html", ["$sce", ($sce: ng.ISCEService) => {
+
+                return (html: string): string => {
+                    return $sce.trustAsHtml(html);
+                }
+
+            }]);
+        }
     }
 }
