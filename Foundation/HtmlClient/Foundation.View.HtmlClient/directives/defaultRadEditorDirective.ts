@@ -1,0 +1,73 @@
+﻿module Foundation.View.Directives {
+    @Foundation.Core.DirectiveDependency({ name: "radEditor" })
+    export class DefaultRadEditor implements Foundation.ViewModel.Contracts.IDirective {
+        public getDirectiveFactory(): ng.IDirectiveFactory {
+            return () => ({
+                scope: false,
+                replace: true,
+                terminal: true,
+                require: "^?mdInputContainer",
+                template: (element: JQuery, attrs: ng.IAttributes) => {
+
+                    const guidUtils = Foundation.Core.DependencyManager.getCurrent().resolveObject<Foundation.ViewModel.Implementations.GuidUtils>("GuidUtils");
+
+                    const replaceAll = (text: string, search: string, replacement: string) => {
+                        return text.replace(new RegExp(search, "g"), replacement);
+                    };
+
+                    const delayKey = "delay" + replaceAll(guidUtils.newGuid(), "-", "");
+
+                    attrs["delayKey"] = delayKey;
+
+                    const template = `<textarea kendo-editor k-ng-delay="::${delayKey}"></textarea>`;
+
+                    return template;
+
+                },
+                link($scope: ng.IScope, element: JQuery, attributes: ng.IAttributes, mdInputContainerInstance: any) {
+
+                    const dependencyManager = Foundation.Core.DependencyManager.getCurrent();
+
+                    const $timeout = dependencyManager.resolveObject<ng.ITimeoutService>("$timeout");
+
+                    $timeout(() => {
+
+                        let kendoWidgetCreatedDisposal = $scope.$on("kendoWidgetCreated", (event, editor: kendo.ui.Editor) => {
+
+                            if (editor.element[0] != element[0]) {
+                                return;
+                            }
+
+                            kendoWidgetCreatedDisposal();
+
+                            if (typeof ngMaterial != "undefined" && mdInputContainerInstance != null) {
+
+                                const mdInputContainerParent = mdInputContainerInstance.element;
+
+                                angular.element(editor.body).focusin(() => {
+                                    if (angular.element(element).is(":disabled"))
+                                        return;
+                                    mdInputContainerParent.addClass("md-input-focused");
+                                });
+
+                                mdInputContainerParent.addClass("md-input-has-value");
+
+                                mdInputContainerInstance.setHasValue = function () {
+
+                                };
+
+                                const $destroyDisposal = $scope.$on("$destroy", () => {
+                                    angular.element(editor.body).unbind("focusin");
+                                    $destroyDisposal();
+                                });
+
+                            }
+                        });
+                    });
+
+                    $scope[attributes["delayKey"]] = {};
+                }
+            })
+        }
+    }
+}
