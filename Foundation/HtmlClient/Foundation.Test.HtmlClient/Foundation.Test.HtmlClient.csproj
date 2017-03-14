@@ -101,29 +101,7 @@
     <TypeScriptCompile Include="views\directives\testDirective.ts" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Foundation.Core.HtmlClient\Foundation.Core.HtmlClient.csproj">
-      <Project>{d20b6c94-ec2f-411e-a9c9-94edbe707386}</Project>
-      <Name>Foundation.Core.HtmlClient</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Foundation.View.HtmlClient\Foundation.View.HtmlClient.csproj">
-      <Project>{ae47809d-e3cd-4d41-95ca-21013dfa26d5}</Project>
-      <Name>Foundation.View.HtmlClient</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Foundation.ViewModel.HtmlClient\Foundation.ViewModel.HtmlClient.csproj">
-      <Project>{01a5615c-93c5-4f3e-9dcb-00145970b0f8}</Project>
-      <Name>Foundation.ViewModel.HtmlClient</Name>
-    </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
     <Content Include="bower.json" />
-  </ItemGroup>
-  <ItemGroup>
-    <Reference Include="System.Data.DataSetExtensions" />
-    <Reference Include="System.Web.ApplicationServices" />
-    <Reference Include="System.Web.DynamicData" />
-    <Reference Include="System.Web.Entity" />
-    <Reference Include="System.Web.Extensions" />
-    <Reference Include="System.Xml.Linq" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="tsconfig.json" />
