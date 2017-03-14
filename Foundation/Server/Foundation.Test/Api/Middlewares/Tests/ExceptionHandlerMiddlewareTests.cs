@@ -16,7 +16,7 @@ namespace Foundation.Test.Api.Middlewares.Tests
     {
         [TestMethod]
         [TestCategory("ExceptionHandler"), TestCategory("Logging")]
-        public async void ExceptionHandlerMustNotSaveAnyThingToLogStoreBecauseOfSuccessfulRequests()
+        public async Task ExceptionHandlerMustNotSaveAnyThingToLogStoreBecauseOfSuccessfulRequests()
         {
             using (TestEnvironment testEnvironment = new TestEnvironment())
             {
