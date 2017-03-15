@@ -5,14 +5,13 @@
     @Foundation.Core.Injectable()
     export class TestDirectiveController {
 
-        public constructor(public $scope: ng.IScope, public $http: ng.IHttpService, @Foundation.Core.Inject("$document") public $document: ng.IDocumentService) {
+        public constructor(@Foundation.Core.Inject("$scope") public $scope: ng.IScope, @Foundation.Core.Inject("$http") public $http: ng.IHttpService, @Foundation.Core.Inject("$document") public $document: ng.IDocumentService) {
 
         }
 
         public testProperty = 1;
     }
 
-    TestDirectiveController.$inject = ["$scope", "$http"];
 
     @Foundation.Core.DirectiveDependency({ name: "test" })
     export class DefaultElementMoverDirective implements Foundation.ViewModel.Contracts.IDirective {

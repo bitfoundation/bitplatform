@@ -21,7 +21,8 @@
     })
     export class ChangeSetViewModel extends DtoViewModel<BitChangeSetManagerModel.ChangeSetDto, ChangeSetRules> {
 
-        public constructor(public $element: JQuery,
+        public constructor(
+            @Inject("$element") public $element: JQuery,
             @Inject("ChangeSetRules") public rules: ChangeSetRules,
             @Inject("$mdDialog") public $mdDialog: ng.material.IDialogService,
             @Inject("$translate") public $translate: ng.translate.ITranslateService) {
@@ -51,7 +52,5 @@
         }
 
     }
-
-    ChangeSetViewModel.$inject = ["$element"];
 
 }

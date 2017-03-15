@@ -16,7 +16,7 @@ module Foundation.Core {
         fileDependecyType?: "Script" | "Style";
         loadStatus?: "IsBeingLoaded" | "NotLoaded" | "Loaded" | "LoadError";
         promise?: Promise<void>;
-        failOnError?: boolean;
+        continueOnError?: boolean;
     }
 
     export interface IComponentDependency extends IDependency, ng.IComponentOptions {
@@ -90,8 +90,8 @@ module Foundation.Core {
             if (fileDependency.fileDependecyType == null)
                 fileDependency.fileDependecyType = "Script";
 
-            if (fileDependency.failOnError == null)
-                fileDependency.failOnError = false;
+            if (fileDependency.continueOnError == null)
+                fileDependency.continueOnError = true;
 
             fileDependency.loadStatus = "NotLoaded";
 
@@ -339,7 +339,7 @@ module Foundation.Core {
 
                     nextFile.loadStatus = "LoadError";
 
-                    if (nextFile.failOnError == true)
+                    if (nextFile.continueOnError == false)
                         throw e;
 
                     nextFile = files.shift();
@@ -625,7 +625,13 @@ module Foundation.Core {
 
         return (target: Function, propertyKey: string | symbol): Function => {
             target.injects = target.injects || [];
-            target.injects.push({ name: name, kind: "Single" });
+            target.$inject = target.$inject || [];
+            if (name != "$element" && name != "$scope") {
+                target.injects.push({ name: name, kind: "Single" });
+            }
+            else {
+                (target.$inject as Array<string>).push(name);
+            }
             return target;
         }
     }
