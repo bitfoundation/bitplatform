@@ -2,6 +2,7 @@
 using Foundation.Api.Contracts.Metadata;
 using Foundation.Api.Implementations.Metadata;
 using Foundation.Core.Models;
+using System.Threading.Tasks;
 
 namespace Foundation.Api.Metadata
 {
@@ -19,7 +20,7 @@ namespace Foundation.Api.Metadata
 
         public static readonly string BadRequestException = nameof(BadRequestException);
 
-        public override IEnumerable<ObjectMetadata> BuildMetadata()
+        public override async Task<IEnumerable<ObjectMetadata>> BuildMetadata()
         {
             AddProjectMetadata(new ProjectMetadata
             {
@@ -55,7 +56,7 @@ namespace Foundation.Api.Metadata
                 }
             });
 
-            return base.BuildMetadata();
+            return await base.BuildMetadata();
         }
     }
 }

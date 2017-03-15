@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace Foundation.Api.Contracts.Metadata
 {
@@ -9,6 +10,6 @@ namespace Foundation.Api.Contracts.Metadata
 
     public interface IMetadataBuilder
     {
-        IEnumerable<ObjectMetadata> BuildMetadata();
+        Task<IEnumerable<ObjectMetadata>> BuildMetadata();
     }
 }

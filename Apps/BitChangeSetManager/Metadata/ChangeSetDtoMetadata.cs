@@ -3,12 +3,13 @@ using Foundation.Api.Contracts.Metadata;
 using Foundation.Api.Implementations.Metadata;
 using Foundation.Core.Models;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace BitChangeSetManager.Metadata
 {
     public class ChangeSetDtoMetadata : DefaultDtoMetadataBuilder<ChangeSetDto>
     {
-        public override IEnumerable<ObjectMetadata> BuildMetadata()
+        public override async Task<IEnumerable<ObjectMetadata>> BuildMetadata()
         {
             AddDtoMetadata(new DtoMetadata { });
 
@@ -105,7 +106,7 @@ namespace BitChangeSetManager.Metadata
                 }
             });
 
-            return base.BuildMetadata();
+            return await base.BuildMetadata();
         }
     }
 }

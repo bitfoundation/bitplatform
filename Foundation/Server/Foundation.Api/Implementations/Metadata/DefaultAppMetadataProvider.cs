@@ -4,6 +4,7 @@ using System.Linq;
 using Foundation.Api.Contracts.Metadata;
 using Foundation.Core.Contracts;
 using Foundation.Core.Models;
+using System.Threading.Tasks;
 
 namespace Foundation.Api.Implementations.Metadata
 {
@@ -31,13 +32,16 @@ namespace Foundation.Api.Implementations.Metadata
             _appEnvironmentProvider = appEnvironmentProvider;
         }
 
-        public virtual AppMetadata GetAppMetadata()
+        public async virtual Task<AppMetadata> GetAppMetadata()
         {
             if (_appMetadata == null)
             {
-                List<ObjectMetadata> allMetadata = _metadataBuilders
-                    .SelectMany(mb => mb.BuildMetadata())
-                    .ToList();
+                List<ObjectMetadata> allMetadata = new List<ObjectMetadata>();
+
+                foreach (IMetadataBuilder metadataBuilder in _metadataBuilders)
+                {
+                    allMetadata.AddRange(await metadataBuilder.BuildMetadata());
+                }
 
                 AppEnvironment activeAppEnvironment = _appEnvironmentProvider.GetActiveAppEnvironment();
 

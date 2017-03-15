@@ -2,12 +2,13 @@
 using Foundation.Api.Implementations.Metadata;
 using Foundation.Test.Model.DomainModels;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace Foundation.Test.Metadata.Model
 {
     public class TestModelMetadata : DefaultDtoMetadataBuilder<TestModel>
     {
-        public override IEnumerable<ObjectMetadata> BuildMetadata()
+        public override async Task<IEnumerable<ObjectMetadata>> BuildMetadata()
         {
             AddDtoMetadata(new DtoMetadata { });
 
@@ -31,7 +32,7 @@ namespace Foundation.Test.Metadata.Model
 
             });
 
-            return base.BuildMetadata();
+            return await base.BuildMetadata();
         }
     }
 }

@@ -2,12 +2,13 @@
 using Foundation.Api.Contracts.Metadata;
 using Foundation.Api.Implementations.Metadata;
 using Foundation.Model.DomainModels;
+using System.Threading.Tasks;
 
 namespace Foundation.Api.Metadata.Dtos
 {
     public class UserSettingMetadataBuilder : DefaultDtoMetadataBuilder<UserSetting>
     {
-        public override IEnumerable<ObjectMetadata> BuildMetadata()
+        public override async Task<IEnumerable<ObjectMetadata>> BuildMetadata()
         {
             AddDtoMetadata(new DtoMetadata { });
 
@@ -41,7 +42,7 @@ namespace Foundation.Api.Metadata.Dtos
 
             });
 
-            return base.BuildMetadata();
+            return await base.BuildMetadata();
         }
     }
 }

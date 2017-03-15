@@ -1,5 +1,6 @@
 ﻿using Foundation.Core.Models;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace Foundation.Api.Contracts.Metadata
 {
@@ -16,6 +17,6 @@ namespace Foundation.Api.Contracts.Metadata
 
     public interface IAppMetadataProvider
     {
-        AppMetadata GetAppMetadata();
+        Task<AppMetadata> GetAppMetadata();
     }
 }
