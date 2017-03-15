@@ -11,12 +11,6 @@ namespace Foundation.Api.Middlewares.JobScheduler.Implementations
         {
             IOwinContext owinContext = new OwinContext(context.GetOwinEnvironment());
             bool isAuthenticated = owinContext.GetDependencyResolver().Resolve<IUserInformationProvider>().IsAuthenticated();
-            if (isAuthenticated == false && owinContext.Authentication?.User == null)
-            {
-                // https://github.com/HangfireIO/Hangfire/issues/833
-                owinContext.Authentication.User = new System.Security.Claims.ClaimsPrincipal { };
-                owinContext.Authentication.User.AddIdentity(new System.Security.Claims.ClaimsIdentity { });
-            };
             return isAuthenticated;
         }
     }

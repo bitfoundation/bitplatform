@@ -94,8 +94,8 @@
     <Reference Include="Foundation.Api">
       <HintPath>wwwroot\bower_components\bit-releases\foundation.api\Foundation.Api.dll</HintPath>
     </Reference>
-    <Reference Include="Hangfire.Core, Version=1.6.10.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>packages\Hangfire.Core.1.6.10\lib\net45\Hangfire.Core.dll</HintPath>
+    <Reference Include="Hangfire.Core, Version=1.6.11.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>packages\Hangfire.Core.1.6.11\lib\net45\Hangfire.Core.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="HtmlSanitizationLibrary, Version=4.3.0.0, Culture=neutral, PublicKeyToken=d127efab8a9c114f, processorArchitecture=MSIL">

@@ -34,7 +34,7 @@ namespace Foundation.Test.Api.Middlewares.JobScheduler.Tests
 
         [TestMethod]
         [TestCategory("BackgroundJobs"), TestCategory("Security")]
-        public async Task NotLoggedInUserMustHaveAccessToJobsDashboard()
+        public async Task NotLoggedInUserMustNotHaveAccessToJobsDashboard()
         {
             using (TestEnvironment testEnvironment = new TestEnvironment())
             {
