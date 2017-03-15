@@ -17,7 +17,7 @@
         }
 
         @Core.Log()
-        public login(loginCustomArgs: any): void {
+        public login(loginCustomArgs?: any): void {
             if (loginCustomArgs == null)
                 loginCustomArgs = {};
             loginCustomArgs["pathname"] = location.pathname;
