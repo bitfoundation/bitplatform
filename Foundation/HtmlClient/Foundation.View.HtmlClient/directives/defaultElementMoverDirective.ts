@@ -15,7 +15,7 @@ module Foundation.View.Directives {
                     predicate: "=",
                     elementSelector: "@"
                 },
-                link($scope: IDefaultElementMoverDirectiveScope, element: JQuery, attributes: any) {
+                link($scope: IDefaultElementMoverDirectiveScope, element: JQuery, attributes: ng.IAttributes) {
 
                     $scope.$watch("predicate", ((isOkToBeMoved: boolean) => {
 

@@ -88,7 +88,7 @@ module Foundation.View.Directives {
 
                     return gridTemplate;
                 },
-                link($scope: ng.IScope, element: JQuery, attributes: any) {
+                link($scope: ng.IScope, element: JQuery, attributes: ng.IAttributes) {
 
                     const dependencyManager = Core.DependencyManager.getCurrent();
 
