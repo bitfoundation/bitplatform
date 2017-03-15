@@ -70,7 +70,7 @@
                 }
 
                 if (valueWasFound == false) {
-                    if (typeof defaultValueOnNotFound != "undefined")
+                    if (defaultValueOnNotFound != null)
                         value = defaultValueOnNotFound;
                     else
                         throw new Error(`Config named ${configKey} not found`);
