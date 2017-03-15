@@ -20,7 +20,7 @@
         }
 
         @Core.Log()
-        public async start(config: { preferWebSockets: boolean } = { preferWebSockets: false }): Promise<void> {
+        public async start(config: { preferWebSockets?: boolean } = { preferWebSockets: false }): Promise<void> {
             this._stayConnected = true;
             await this.getInitPromise();
             await new Promise<void>((res, rej) => {
