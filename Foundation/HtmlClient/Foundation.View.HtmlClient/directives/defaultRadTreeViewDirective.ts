@@ -12,7 +12,10 @@ module Foundation.View.Directives {
                 scope: false,
                 replace: true,
                 terminal: true,
-                require: "ngModel",
+                require: {
+                    mdInputContainer: "^?mdInputContainer",
+                    ngModel: "ngModel"
+                },
                 template: (element: JQuery, attrs: ng.IAttributes) => {
 
                     const guidUtils = Core.DependencyManager.getCurrent().resolveObject<ViewModel.Implementations.GuidUtils>("GuidUtils");
@@ -45,7 +48,7 @@ module Foundation.View.Directives {
 
                     return template;
                 },
-                link($scope: ng.IScope, element: JQuery, attributes: any) {
+                link($scope: ng.IScope, element: JQuery, attributes: ng.IAttributes, requireArgs: { mdInputContainer: { element: JQuery } }) {
 
                     const dependencyManager = Core.DependencyManager.getCurrent();
 
@@ -100,32 +103,29 @@ module Foundation.View.Directives {
 
                                 });
 
-                                if (typeof ngMaterial != "undefined") {
+                                if (requireArgs.mdInputContainer != null) {
 
-                                    const mdInputContainerParent = tree.wrapper.parents("md-input-container");
+                                    const mdInputContainerParent = requireArgs.mdInputContainer.element;
 
-                                    if (mdInputContainerParent.length != 0) {
+                                    tree.wrapper
+                                        .focusin(() => {
 
-                                        tree.wrapper
-                                            .focusin(() => {
+                                            if (angular.element(element).is(":disabled"))
+                                                return;
 
-                                                if (angular.element(element).is(":disabled"))
-                                                    return;
-
-                                                mdInputContainerParent.addClass("md-input-focused");
-                                            })
-                                            .focusout(() => {
-                                                mdInputContainerParent.removeClass("md-input-focused");
-                                            });
-
-                                        mdInputContainerParent.addClass("md-input-has-value");
-
-                                        const $destroyDisposal = $scope.$on("$destroy", () => {
-                                            tree.wrapper.unbind("focusin");
-                                            tree.wrapper.unbind("focusout");
-                                            $destroyDisposal();
+                                            mdInputContainerParent.addClass("md-input-focused");
+                                        })
+                                        .focusout(() => {
+                                            mdInputContainerParent.removeClass("md-input-focused");
                                         });
-                                    }
+
+                                    mdInputContainerParent.addClass("md-input-has-value");
+
+                                    const $destroyDisposal = $scope.$on("$destroy", () => {
+                                        tree.wrapper.unbind("focusin");
+                                        tree.wrapper.unbind("focusout");
+                                        $destroyDisposal();
+                                    });
                                 }
 
                             });

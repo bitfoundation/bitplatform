@@ -6,7 +6,10 @@
                 scope: false,
                 replace: true,
                 terminal: true,
-                require: "^?mdInputContainer",
+                require: {
+                    mdInputContainer: "^?mdInputContainer",
+                    ngModel: "ngModel"
+                },
                 template: (element: JQuery, attrs: ng.IAttributes) => {
 
                     const guidUtils = Foundation.Core.DependencyManager.getCurrent().resolveObject<Foundation.ViewModel.Implementations.GuidUtils>("GuidUtils");
@@ -24,7 +27,7 @@
                     return template;
 
                 },
-                link($scope: ng.IScope, element: JQuery, attributes: ng.IAttributes, mdInputContainerInstance: any) {
+                link($scope: ng.IScope, element: JQuery, attributes: ng.IAttributes, requireArgs: { mdInputContainer: { element: JQuery, setHasValue: () => void } }) {
 
                     const dependencyManager = Foundation.Core.DependencyManager.getCurrent();
 
@@ -40,9 +43,9 @@
 
                             kendoWidgetCreatedDisposal();
 
-                            if (typeof ngMaterial != "undefined" && mdInputContainerInstance != null) {
+                            if (requireArgs.mdInputContainer != null) {
 
-                                const mdInputContainerParent = mdInputContainerInstance.element;
+                                const mdInputContainerParent = requireArgs.mdInputContainer.element;
 
                                 angular.element(editor.body).focusin(() => {
                                     if (angular.element(element).is(":disabled"))
@@ -52,7 +55,7 @@
 
                                 mdInputContainerParent.addClass("md-input-has-value");
 
-                                mdInputContainerInstance.setHasValue = function () {
+                                requireArgs.mdInputContainer.setHasValue = function () {
 
                                 };
 

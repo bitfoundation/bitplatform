@@ -12,7 +12,10 @@ module Foundation.View.Directives {
                 scope: false,
                 replace: true,
                 terminal: true,
-                require: "ngModel",
+                require: {
+                    mdInputContainer: "^?mdInputContainer",
+                    ngModel: "ngModel"
+                },
                 template: (element: JQuery, attrs: ng.IAttributes) => {
 
                     const guidUtils = Core.DependencyManager.getCurrent().resolveObject<ViewModel.Implementations.GuidUtils>("GuidUtils");
@@ -82,7 +85,7 @@ module Foundation.View.Directives {
 
                     return template;
                 },
-                link($scope: ng.IScope, element: JQuery, attributes: any) {
+                link($scope: ng.IScope, element: JQuery, attributes: ng.IAttributes, requireArgs: { mdInputContainer: { element: JQuery } }) {
 
                     const dependencyManager = Core.DependencyManager.getCurrent();
 
@@ -155,43 +158,40 @@ module Foundation.View.Directives {
 
                                 });
 
-                                if (typeof ngMaterial != "undefined") {
+                                if (requireArgs.mdInputContainer != null) {
 
-                                    const mdInputContainerParent = multiSelect.wrapper.parents("md-input-container");
+                                    const mdInputContainerParent = requireArgs.mdInputContainer.element;
 
-                                    if (mdInputContainerParent.length != 0) {
+                                    multiSelect.wrapper
+                                        .focusin(() => {
 
-                                        multiSelect.wrapper
-                                            .focusin(() => {
+                                            if (angular.element(element).is(":disabled"))
+                                                return;
 
-                                                if (angular.element(element).is(":disabled"))
-                                                    return;
+                                            mdInputContainerParent.addClass("md-input-focused");
 
-                                                mdInputContainerParent.addClass("md-input-focused");
-
-                                                multiSelect.open(); // Should be removed
-                                            })
-                                            .focusout(() => {
-                                                mdInputContainerParent.removeClass("md-input-focused");
-                                            });
-
-                                        $scope.$watchCollection<Array<any>>(attributes.ngModel, (newVal, oldVal) => {
-                                            if (newVal != null && newVal.length != 0)
-                                                mdInputContainerParent.addClass("md-input-has-value");
-                                            else
-                                                mdInputContainerParent.removeClass("md-input-has-value");
+                                            multiSelect.open(); // Should be removed
+                                        })
+                                        .focusout(() => {
+                                            mdInputContainerParent.removeClass("md-input-focused");
                                         });
 
+                                    $scope.$watchCollection<Array<any>>(attributes.ngModel.replace('::', ''), (newVal, oldVal) => {
+                                        if (newVal != null && newVal.length != 0)
+                                            mdInputContainerParent.addClass("md-input-has-value");
+                                        else
+                                            mdInputContainerParent.removeClass("md-input-has-value");
+                                    });
 
-                                        const $destroyDisposal = $scope.$on("$destroy", () => {
-                                            multiSelect.wrapper.unbind("focusin");
-                                            multiSelect.wrapper.unbind("focusout");
-                                            $destroyDisposal();
-                                        });
-                                    }
+
+                                    const $destroyDisposal = $scope.$on("$destroy", () => {
+                                        multiSelect.wrapper.unbind("focusin");
+                                        multiSelect.wrapper.unbind("focusout");
+                                        $destroyDisposal();
+                                    });
                                 }
 
-                                $scope.$watchCollection(attributes.ngModel, (newValue, oldVal) => {
+                                $scope.$watchCollection(attributes.ngModel.replace('::', ''), (newValue, oldVal) => {
                                     multiSelect.value(newValue);
                                 });
                             });

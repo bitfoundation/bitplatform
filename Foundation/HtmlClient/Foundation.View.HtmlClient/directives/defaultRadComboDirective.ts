@@ -11,7 +11,10 @@ module Foundation.View.Directives {
                 scope: false,
                 replace: true,
                 terminal: true,
-                require: "ngModel",
+                require: {
+                    mdInputContainer: "^?mdInputContainer",
+                    ngModel: "ngModel"
+                },
                 template: (element: JQuery, attrs: ng.IAttributes) => {
 
                     const itemTemplate = element
@@ -61,7 +64,7 @@ module Foundation.View.Directives {
 
                     return template;
                 },
-                link($scope: ng.IScope, element: JQuery, attributes: any) {
+                link($scope: ng.IScope, element: JQuery, attributes: ng.IAttributes, requireArgs: { mdInputContainer: { element: JQuery } }) {
 
                     const dependencyManager = Core.DependencyManager.getCurrent();
 
@@ -138,18 +141,16 @@ module Foundation.View.Directives {
 
                                 });
 
-                                if (typeof ngMaterial != "undefined") {
+                                if (requireArgs.mdInputContainer != null) {
 
-                                    const mdInputContainerParent = combo.wrapper.parents("md-input-container");
+                                    const mdInputContainerParent = requireArgs.mdInputContainer.element;
 
-                                    if (mdInputContainerParent.length != 0) {
                                         combo.wrapper
                                             .focusin(() => {
                                                 if (angular.element(element).is(":disabled"))
                                                     return;
                                                 mdInputContainerParent.addClass("md-input-focused");
                                             });
-                                    }
 
                                     const $destroyDisposal = $scope.$on("$destroy", () => {
                                         combo.wrapper.unbind("focusin");
@@ -210,7 +211,7 @@ module Foundation.View.Directives {
                                     text = null;
 
                                 if (attributes.ngModel != null) {
-                                    $scope.$watch(attributes.ngModel, () => {
+                                    $scope.$watch(attributes.ngModel.replace('::', ''), () => {
                                         const current = dataSource.current;
                                         if (current != null)
                                             parsedText.assign($scope, current[attributes.radTextFieldName]);

@@ -3,7 +3,8 @@
     @Core.ComponentDependency({
         name: "persianDatePicker",
         require: {
-            'ngModelController': "ngModel"
+            'ngModelController': "ngModel",
+            'mdInputContainer' : "^?mdInputContainer"
         },
         bindings: {
             'ngModel': "=",
@@ -20,7 +21,7 @@
     })
     export class PersianDateComponent {
 
-        public constructor(public $scope: ng.IScope, public $element: JQuery, @Core.Inject("DateTimeService") public dateTimeService: ViewModel.Contracts.IDateTimeService) {
+        public constructor( @Core.Inject("$scope") public $scope: ng.IScope, @Core.Inject("$element") public $element: JQuery, @Core.Inject("DateTimeService") public dateTimeService: ViewModel.Contracts.IDateTimeService) {
         }
 
         public isDateTime: boolean;
@@ -28,7 +29,9 @@
         public ngModelController: ng.INgModelController;
         public $display: JQuery;
         public $value: JQuery;
-        public mdInputContainerParent: JQuery;
+        public mdInputContainer: {
+            element: JQuery
+        };
 
         public async $onInit(): Promise<void> {
 
@@ -41,8 +44,8 @@
                 if (this.ngModelController.$isEmpty(value)) {
                     if (this.$display != null)
                         this.$display.val(null);
-                    if (this.mdInputContainerParent != null)
-                        this.mdInputContainerParent.removeClass("md-input-has-value");
+                    if (this.mdInputContainer != null)
+                        this.mdInputContainer.element.removeClass("md-input-has-value");
                     return null;
                 }
                 else {
@@ -57,8 +60,8 @@
 
                     if (this.$display != null)
                         this.$display.val(formattedResult);
-                    if (this.mdInputContainerParent != null)
-                        this.mdInputContainerParent.addClass("md-input-has-value");
+                    if (this.mdInputContainer != null)
+                        this.mdInputContainer.element.addClass("md-input-has-value");
 
                     return formattedResult;
                 }
@@ -105,12 +108,6 @@
                     this.ngModelController.$setViewValue(this.ngModelController.$isEmpty(val) ? null : this.dateTimeService.parseDate(val));
                 });
             });
-
-            if (typeof ngMaterial != "undefined") {
-                this.mdInputContainerParent = this.$display.parents("md-input-container");
-            }
         }
     }
-
-    PersianDateComponent.$inject = ["$scope", "$element"];
 }
