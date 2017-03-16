@@ -260,7 +260,7 @@ module Foundation.View.Directives {
                                 editable: attributes["editTemplateId"] == null ? { confirmation: true, update: false } : {
                                     mode: "popup",
                                     confirmation: true,
-                                    template: kendo.template(editTemplateHtmlString),
+                                    template: kendo.template(editTemplateHtmlString, { useWithBlock: false }),
                                     window: {
                                         title: editPopupTitle || $translate.instant("GridEditPopupTitle"),
                                         width: editTemplateElement.width() || "auto",
@@ -307,7 +307,7 @@ module Foundation.View.Directives {
 
                                 const toolbarTemplateHtml = toolbarTemplateElement.html();
 
-                                const toolbar: any = kendo.template(toolbarTemplateHtml);
+                                const toolbar: any = kendo.template(toolbarTemplateHtml, { useWithBlock: false });
 
                                 gridOptions.toolbar = toolbar;
                             }
@@ -318,7 +318,7 @@ module Foundation.View.Directives {
 
                                 const detailTemplateHtml = angular.element(`<rad-grid-detail-template rad-model-item-template ng-model='::dataItem'>${detailTemplateElement.html()}</rad-grid-detail-template>`);
 
-                                const detail: any = kendo.template(detailTemplateHtml.first()[0].outerHTML);
+                                const detail: any = kendo.template(detailTemplateHtml.first()[0].outerHTML, { useWithBlock: false });
 
                                 gridOptions.detailTemplate = detail;
 

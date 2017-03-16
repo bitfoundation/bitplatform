@@ -223,7 +223,7 @@ module Foundation.View.Directives {
 
                                 let itemTemplateElementHtml = itemTemplateElement.html();
 
-                                let itemTemplate: any = kendo.template(itemTemplateElementHtml);
+                                let itemTemplate: any = kendo.template(itemTemplateElementHtml, { useWithBlock: false });
 
                                 multiSelectOptions.itemTemplate = itemTemplate;
                             }
@@ -234,7 +234,7 @@ module Foundation.View.Directives {
 
                                 let tagTemplateElementHtml = tagTemplateElement.html();
 
-                                let tagTemplate: any = kendo.template(tagTemplateElementHtml);
+                                let tagTemplate: any = kendo.template(tagTemplateElementHtml, { useWithBlock: false });
 
                                 multiSelectOptions.tagTemplate = tagTemplate;
                             }
@@ -245,7 +245,7 @@ module Foundation.View.Directives {
 
                                 let headerTemplateElementHtml = headerTemplateElement.html();
 
-                                let headerTemplate: any = kendo.template(headerTemplateElementHtml);
+                                let headerTemplate: any = kendo.template(headerTemplateElementHtml, { useWithBlock: false });
 
                                 multiSelectOptions.headerTemplate = headerTemplate;
                             }

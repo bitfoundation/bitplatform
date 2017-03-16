@@ -147,7 +147,7 @@ module Foundation.View.Directives {
 
                                 const itemTemplateElementHtml = itemTemplateElement.html();
 
-                                const itemTemplate: any = kendo.template(itemTemplateElementHtml);
+                                const itemTemplate: any = kendo.template(itemTemplateElementHtml, { useWithBlock: false });
 
                                 treeViewOptions.template = itemTemplate;
                             }

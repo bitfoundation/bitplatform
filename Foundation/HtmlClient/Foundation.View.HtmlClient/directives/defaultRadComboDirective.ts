@@ -145,12 +145,12 @@ module Foundation.View.Directives {
 
                                     const mdInputContainerParent = requireArgs.mdInputContainer.element;
 
-                                        combo.wrapper
-                                            .focusin(() => {
-                                                if (angular.element(element).is(":disabled"))
-                                                    return;
-                                                mdInputContainerParent.addClass("md-input-focused");
-                                            });
+                                    combo.wrapper
+                                        .focusin(() => {
+                                            if (angular.element(element).is(":disabled"))
+                                                return;
+                                            mdInputContainerParent.addClass("md-input-focused");
+                                        });
 
                                     const $destroyDisposal = $scope.$on("$destroy", () => {
                                         combo.wrapper.unbind("focusin");
@@ -255,7 +255,7 @@ module Foundation.View.Directives {
 
                                 let itemTemplateElementHtml = itemTemplateElement.html();
 
-                                let itemTemplate: any = kendo.template(itemTemplateElementHtml);
+                                let itemTemplate: any = kendo.template(itemTemplateElementHtml, { useWithBlock: false });
 
                                 comboBoxOptions.template = itemTemplate;
                             }
@@ -266,7 +266,7 @@ module Foundation.View.Directives {
 
                                 let headerTemplateElementHtml = headerTemplateElement.html();
 
-                                let headerTemplate: any = kendo.template(headerTemplateElementHtml);
+                                let headerTemplate: any = kendo.template(headerTemplateElementHtml, { useWithBlock: false });
 
                                 comboBoxOptions.headerTemplate = headerTemplate;
                             }
