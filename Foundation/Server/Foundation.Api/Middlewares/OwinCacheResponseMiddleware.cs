@@ -3,7 +3,6 @@ using Microsoft.Owin;
 using System.Linq;
 using System;
 using Foundation.Api.Implementations;
-using System.Threading;
 
 namespace Foundation.Api.Middlewares
 {
@@ -32,7 +31,7 @@ namespace Foundation.Api.Middlewares
 
             if (owinContext.Response.Headers.Any(h => string.Equals(h.Key, "Expires", StringComparison.InvariantCultureIgnoreCase)))
                 owinContext.Response.Headers.Remove("Expires");
-            owinContext.Response.Headers.Add("Expires", new[] { "31536000" });
+            owinContext.Response.Headers.Add("Expires", new[] { "max" });
 
             await base.OnActionExecutingAsync(owinContext);
         }
