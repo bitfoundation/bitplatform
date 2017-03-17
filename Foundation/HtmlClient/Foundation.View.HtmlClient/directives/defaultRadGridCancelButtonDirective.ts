@@ -24,7 +24,14 @@ module Foundation.View.Directives {
 
                             angular.element(element).remove();
 
-                            newElement.attr("ng-click", `${attributes["ngClick"] || ""};${gridIsolatedKey}Cancel($event)`);
+                            let $scopeOfGrid = $scope;
+                            let $gridScopeName = 'this.';
+                            while ($scopeOfGrid[gridIsolatedKey] == null || $scopeOfGrid.$parent == null) {
+                                $scopeOfGrid = $scopeOfGrid.$parent;
+                                $gridScopeName += '$parent.';
+                            }
+
+                            newElement.attr("ng-click", `${attributes["ngClick"] || ""};${$gridScopeName}${gridIsolatedKey}Cancel($event)`);
 
                             if (DefaultRadGridCancelButtonDirective.defaultClasses != null && DefaultRadGridCancelButtonDirective.defaultClasses.length != 0) {
                                 DefaultRadGridCancelButtonDirective.defaultClasses.filter(cls => cls != null && cls != "").forEach(cls => {
