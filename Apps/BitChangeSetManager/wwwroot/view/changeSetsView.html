@@ -27,8 +27,8 @@
                 <column name="IsDeliveredToAll" title="{{::vm.changeSetMetadata.IsDeliveredToAll.Label}}">
                     {{::dataItem.IsDeliveredToAll ? 'Yes' : 'No' | translate}}
                 </column>
-                <column command title="{{'Commands' | translate}}">
-                    <rad-grid-edit-button>{{'EditChangeSet' | translate}}</rad-grid-edit-button>
+                <column command title="{{::'Commands' | translate}}">
+                    <rad-grid-edit-button>{{::'EditChangeSet' | translate}}</rad-grid-edit-button>
                 </column>
             </columns>
         </view-template>
