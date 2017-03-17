@@ -1,5 +1,7 @@
 ﻿<view>
 
+    <h4>Change sets:</h4>
+
     <rad-grid rad-datasource="::vm.changeSetsDataSource">
         <toolbar-template>
             <rad-grid-add-button>{{::'AddNewChangeSet' | translate}}</rad-grid-add-button>
@@ -9,9 +11,6 @@
         </edit-template>
         <view-template>
             <columns>
-                <column name="Id" title="{{::vm.changeSetMetadata.Id.Label}}">
-                    {{::dataItem.Id}}
-                </column>
                 <column name="Title" title="{{::vm.changeSetMetadata.Title.Label}}">
                     {{::dataItem.Title}}
                 </column>
@@ -33,5 +32,24 @@
             </columns>
         </view-template>
     </rad-grid>
+
+    <div ng-if="vm.changeSetsDataSource.current != null">
+
+        <h4>Deliveries of {{vm.changeSetsDataSource.current.Title}}:</h4>
+
+        <rad-grid rad-datasource="::vm.deliveriesDataSource" groupable="false">
+            <view-template>
+                <columns>
+                    <column name="CustomerName" title="{{::vm.deliveryMetadata.CustomerName.Label}}" filter-data-source="::vm.customersDataSource" filter-text-field="Name" filter-value-field="Name">
+                        {{::dataItem.CustomerName}}
+                    </column>
+                    <column name="DeliveredOn" title="{{::vm.deliveryMetadata.DeliveredOn.Label}}">
+                        {{::dataItem.DeliveredOn | bitDateTime}}
+                    </column>
+                </columns>
+            </view-template>
+        </rad-grid>
+
+    </div>
 
 </view>

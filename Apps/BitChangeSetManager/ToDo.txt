@@ -1,7 +1,6 @@
 ﻿Data Entry Forms: DTO Form - DTO Rules - DTO View Model
 Actions & Functions
 BatchExecuteQuery
-Cascade rad combo & rad grid
 rad on init
 rad grid detail template
 Parent/Child based routing

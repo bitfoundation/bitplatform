@@ -16,5 +16,7 @@ namespace BitChangeSetManager.Dto
         public virtual Guid ChangeSetId { get; set; }
 
         public virtual string ChangeSetTitle { get; set; }
+
+        public virtual DateTimeOffset DeliveredOn { get; set; }
     }
 }

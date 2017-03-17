@@ -388,6 +388,7 @@
     <Compile Include="Metadata\BitChangeSetManagerMetadata.cs" />
     <Compile Include="Metadata\ChangeSetDtoMetadata.cs" />
     <Compile Include="Metadata\ChangeSetsViewMetadata.cs" />
+    <Compile Include="Metadata\DeliveryDtoMetadata.cs" />
     <Compile Include="Model\ChangeSet.cs" />
     <Compile Include="Model\Delivery.cs" />
     <Compile Include="Model\Customer.cs" />
