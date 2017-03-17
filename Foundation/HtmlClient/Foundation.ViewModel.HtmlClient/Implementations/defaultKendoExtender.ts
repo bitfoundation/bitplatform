@@ -4,6 +4,18 @@ module Foundation.ViewModel.Implementations {
         @Core.Log()
         public async onAppStartup(): Promise<void> {
 
+            DefaultDateTimeService.getFormattedDateDelegate = (date: any) => {
+                return kendo.toString(date, "yyyy/dd/MM");
+            };
+
+            DefaultDateTimeService.getFormattedDateTimeDelegate = (date: any) => {
+                return kendo.toString(date, "yyyy/dd/MM, hh:mm tt");
+            };
+
+            DefaultDateTimeService.parseDateDelegate = (date: any) => {
+                return kendo.parseDate(date);
+            };
+
             function flattenGroups(data) {
 
                 let idx, result = [], length, items, itemIndex;

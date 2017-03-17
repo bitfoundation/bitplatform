@@ -7,6 +7,9 @@
 
         public getFormattedDate(date?: Date, culture?: string): string {
 
+            if (DefaultDateTimeService.getFormattedDateDelegate == null)
+                throw new Error("There is no implementation specified for getFormattedDate");
+
             if (date == null)
                 return null;
 
@@ -18,12 +21,15 @@
                 return persianDate(date).format("YYYY/MM/DD") as string;
             }
             else {
-                return kendo.toString(date, "yyyy/dd/MM");
+                return DefaultDateTimeService.getFormattedDateDelegate(date);
             }
 
         }
 
         public getFormattedDateTime(date?: Date, culture?: string): string {
+
+            if (DefaultDateTimeService.getFormattedDateTimeDelegate == null)
+                throw new Error("There is no implementation specified for getFormattedDateTime");
 
             if (date == null)
                 return null;
@@ -36,7 +42,7 @@
                 return persianDate(date).format("DD MMMM YYYY, hh:mm a") as string;
             }
             else {
-                return kendo.toString(date, "yyyy/dd/MM, hh:mm tt");
+                return DefaultDateTimeService.getFormattedDateTimeDelegate(date);
             }
         }
 
@@ -45,10 +51,19 @@
         }
 
         public parseDate(date: any): Date {
+
+            if (DefaultDateTimeService.parseDateDelegate == null)
+                throw new Error("There is no implementation specified for parseDate");
+
             if (date == null)
                 return null;
-            return kendo.parseDate(date);
+
+            return DefaultDateTimeService.parseDateDelegate(date);
         }
+
+        public static parseDateDelegate: (date: any) => Date;
+        public static getFormattedDateTimeDelegate: (date: any) => string;
+        public static getFormattedDateDelegate: (date: any) => string;
 
     }
 }
