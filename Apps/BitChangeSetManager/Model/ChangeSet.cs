@@ -27,5 +27,15 @@ namespace BitChangeSetManager.Model
 
         [InverseProperty(nameof(Delivery.ChangeSet))]
         public virtual List<Delivery> Deliveries { get; set; }
+
+        public virtual Guid SeverityId { get; set; }
+
+        [ForeignKey(nameof(SeverityId))]
+        public virtual ChangeSetSeverity Severity { get; set; }
+
+        public virtual Guid DeliveryRequirementId { get; set; }
+
+        [ForeignKey(nameof(DeliveryRequirementId))]
+        public virtual ChangeSetDeliveryRequirement DeliveryRequirement { get; set; }
     }
 }

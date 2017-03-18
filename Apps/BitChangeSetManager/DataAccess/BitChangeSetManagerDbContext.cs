@@ -4,6 +4,7 @@ using Foundation.Core.Contracts;
 using Foundation.DataAccess.Contracts;
 using System.Data.Common;
 using System.Data.Entity;
+using System.Data.Entity.ModelConfiguration.Conventions;
 
 namespace BitChangeSetManager.DataAccess
 {
@@ -28,5 +29,19 @@ namespace BitChangeSetManager.DataAccess
         public virtual DbSet<Delivery> Deliveries { get; set; }
 
         public virtual DbSet<User> Users { get; set; }
+
+        public virtual DbSet<ChangeSetSeverity> ChangeSetSeverities { get; set; }
+
+        public virtual DbSet<ChangeSetDeliveryRequirement> ChangeSetDeliveryRequirements { get; set; }
+
+        protected override void OnModelCreating(DbModelBuilder modelBuilder)
+        {
+            modelBuilder.Conventions.Remove<ManyToManyCascadeDeleteConvention>();
+            modelBuilder.Conventions.Remove<OneToManyCascadeDeleteConvention>();
+
+            modelBuilder.HasDefaultSchema("bit");
+
+            base.OnModelCreating(modelBuilder);
+        }
     }
 }

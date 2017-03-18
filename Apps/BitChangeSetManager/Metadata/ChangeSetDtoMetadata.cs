@@ -106,6 +106,40 @@ namespace BitChangeSetManager.Metadata
                 }
             });
 
+            AddMemberMetadata(nameof(ChangeSetDto.SeverityId), new DtoMemberMetadata
+            {
+                IsRequired = true,
+                Messages = new List<EnvironmentCulture>
+                {
+                    new EnvironmentCulture
+                    {
+                        Name = "EnUs",
+                        Values = new List<EnvironmentCultureValue>
+                        {
+                            new EnvironmentCultureValue { Name = "Label" , Title = "Severity" },
+                            new EnvironmentCultureValue { Name = "RequiredMessage" , Title = "Severity is required" }
+                        }
+                    }
+                }
+            });
+
+            AddMemberMetadata(nameof(ChangeSetDto.DeliveryRequirementId), new DtoMemberMetadata
+            {
+                IsRequired = true,
+                Messages = new List<EnvironmentCulture>
+                {
+                    new EnvironmentCulture
+                    {
+                        Name = "EnUs",
+                        Values = new List<EnvironmentCultureValue>
+                        {
+                            new EnvironmentCultureValue { Name = "Label" , Title = "Delivery requirement" },
+                            new EnvironmentCultureValue { Name = "RequiredMessage" , Title = "Delivery requirement is required" }
+                        }
+                    }
+                }
+            });
+
             return await base.BuildMetadata();
         }
     }

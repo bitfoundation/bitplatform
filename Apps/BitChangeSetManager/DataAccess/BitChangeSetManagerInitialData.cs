@@ -66,19 +66,31 @@ namespace BitChangeSetManager.DataAccess
 
                 IBitChangeSetManagerRepository<Customer> customersRepository = childResolver.Resolve<IBitChangeSetManagerRepository<Customer>>();
                 IBitChangeSetManagerRepository<Delivery> deliveriesRepository = childResolver.Resolve<IBitChangeSetManagerRepository<Delivery>>();
-                IBitChangeSetManagerRepository<ChangeSet> changeSetsRepository = childResolver.Resolve<IBitChangeSetManagerRepository<ChangeSet>>();
+                IChangeSetRepository changeSetsRepository = childResolver.Resolve<IChangeSetRepository>();
+                IBitChangeSetManagerRepository<ChangeSetSeverity> changeSetSeverities = childResolver.Resolve<IBitChangeSetManagerRepository<ChangeSetSeverity>>();
+                IBitChangeSetManagerRepository<ChangeSetDeliveryRequirement> changeSetDeliveryRequirements = childResolver.Resolve<IBitChangeSetManagerRepository<ChangeSetDeliveryRequirement>>();
 
                 Customer customer1 = new Customer { Id = Guid.NewGuid(), Name = "Customer1" };
                 Customer customer2 = new Customer { Id = Guid.NewGuid(), Name = "Customer2" };
 
-                ChangeSet changeSet1 = new ChangeSet { Id = Guid.NewGuid(), AssociatedCommitUrl = "http://github.com/bit-foundation/bit-framework", CreatedOn = _dateTimeProvider.GetCurrentUtcDateTime(), Description = "Desc1", Title = "ChangeSet1" };
-                ChangeSet changeSet2 = new ChangeSet { Id = Guid.NewGuid(), AssociatedCommitUrl = "http://github.com/bit-foundation/bit-framework", CreatedOn = _dateTimeProvider.GetCurrentUtcDateTime(), Description = "Desc2", Title = "ChangeSet2" };
+                ChangeSetSeverity changeSetSeverity1 = new ChangeSetSeverity { Id = Guid.NewGuid(), Name = "Low", Title = "Low" };
+                ChangeSetSeverity changeSetSeverity2 = new ChangeSetSeverity { Id = Guid.NewGuid(), Name = "Medium", Title = "Medium" };
+                ChangeSetSeverity changeSetSeverity3 = new ChangeSetSeverity { Id = Guid.NewGuid(), Name = "High", Title = "High" };
+
+                ChangeSetDeliveryRequirement changeSetDeliveryRequirement1 = new ChangeSetDeliveryRequirement { Id = Guid.NewGuid(), Name = "DeliverToAllDevelopers", Title = "Deliver to all developers" };
+                ChangeSetDeliveryRequirement changeSetDeliveryRequirement2 = new ChangeSetDeliveryRequirement { Id = Guid.NewGuid(), Name = "DeliverToTechnicalManager", Title = "Deliver to technical manager" };
+                ChangeSetDeliveryRequirement changeSetDeliveryRequirement3 = new ChangeSetDeliveryRequirement { Id = Guid.NewGuid(), Name = "NoSpecificDeliveryIsRequired", Title = "No specific delivery is required" };
+
+                ChangeSet changeSet1 = new ChangeSet { Id = Guid.NewGuid(), AssociatedCommitUrl = "http://github.com/bit-foundation/bit-framework", Description = "Desc1", Title = "ChangeSet1", DeliveryRequirementId = changeSetDeliveryRequirement1.Id, SeverityId = changeSetSeverity3.Id };
+                ChangeSet changeSet2 = new ChangeSet { Id = Guid.NewGuid(), AssociatedCommitUrl = "http://github.com/bit-foundation/bit-framework", Description = "Desc2", Title = "ChangeSet2", DeliveryRequirementId = changeSetDeliveryRequirement1.Id, SeverityId = changeSetSeverity3.Id };
 
                 Delivery delivery1 = new Delivery { ChangeSetId = changeSet1.Id, Id = Guid.NewGuid(), CustomerId = customer1.Id, DeliveredOn = _dateTimeProvider.GetCurrentUtcDateTime() };
                 Delivery delivery2 = new Delivery { ChangeSetId = changeSet1.Id, Id = Guid.NewGuid(), CustomerId = customer2.Id, DeliveredOn = _dateTimeProvider.GetCurrentUtcDateTime() };
                 Delivery delivery3 = new Delivery { ChangeSetId = changeSet2.Id, Id = Guid.NewGuid(), CustomerId = customer1.Id, DeliveredOn = _dateTimeProvider.GetCurrentUtcDateTime() };
 
                 customersRepository.AddRange(new[] { customer1, customer2 });
+                changeSetSeverities.AddRange(new[] { changeSetSeverity1, changeSetSeverity2, changeSetSeverity3 });
+                changeSetDeliveryRequirements.AddRange(new[] { changeSetDeliveryRequirement1, changeSetDeliveryRequirement2, changeSetDeliveryRequirement3 });
                 changeSetsRepository.AddRange(new[] { changeSet1, changeSet2 });
                 deliveriesRepository.AddRange(new[] { delivery1, delivery2, delivery3 });
             }
