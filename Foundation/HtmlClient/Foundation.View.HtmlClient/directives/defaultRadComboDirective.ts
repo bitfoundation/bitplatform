@@ -64,7 +64,7 @@ module Foundation.View.Directives {
 
                     return template;
                 },
-                link($scope: ng.IScope, element: JQuery, attributes: ng.IAttributes, requireArgs: { mdInputContainer: { element: JQuery } }) {
+                link($scope: ng.IScope, element: JQuery, attributes: ng.IAttributes, requireArgs: { mdInputContainer: { element: JQuery }, ngModel: ng.INgModelController }) {
 
                     const dependencyManager = Core.DependencyManager.getCurrent();
 
@@ -211,10 +211,12 @@ module Foundation.View.Directives {
                                     text = null;
 
                                 if (attributes.ngModel != null) {
-                                    $scope.$watch(attributes.ngModel.replace('::', ''), () => {
+                                    $scope.$watch(attributes.ngModel.replace('::', ''), (newValue) => {
                                         const current = dataSource.current;
                                         if (current != null)
                                             parsedText.assign($scope, current[attributes.radTextFieldName]);
+                                        else if (requireArgs.ngModel.$isEmpty(newValue))
+                                            parsedText.assign($scope, "");
                                     });
                                 }
                             }
