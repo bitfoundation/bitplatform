@@ -2,7 +2,6 @@
 using BitChangeSetManager.Dto;
 using BitChangeSetManager.Model;
 using Foundation.Api.ApiControllers;
-using Foundation.Core.Contracts;
 using System.Data.Entity;
 using System.Linq;
 using System.Threading;
@@ -12,24 +11,15 @@ namespace BitChangeSetManager.Api
 {
     public class ChangeSetsController : DefaultDtoSetController<ChangeSet, ChangeSetDto>
     {
-        private readonly IBitChangeSetManagerRepository<ChangeSet> _changeSetsRepository;
+        private readonly IChangeSetRepository _changeSetsRepository;
 
-        public ChangeSetsController(IBitChangeSetManagerRepository<ChangeSet> changeSetsRepository)
+        public ChangeSetsController(IChangeSetRepository changeSetsRepository)
             : base(changeSetsRepository)
         {
             _changeSetsRepository = changeSetsRepository;
         }
 
-        public override Task<ChangeSetDto> Insert(ChangeSetDto dto, CancellationToken cancellationToken)
-        {
-            dto.CreatedOn = DateTimeProvider.GetCurrentUtcDateTime();
-
-            return base.Insert(dto, cancellationToken);
-        }
-
         public IBitChangeSetManagerRepository<Customer> CustomersRepository { get; set; }
-
-        public IDateTimeProvider DateTimeProvider { get; set; }
 
         public override async Task<IQueryable<ChangeSetDto>> GetAll(CancellationToken cancellationToken)
         {

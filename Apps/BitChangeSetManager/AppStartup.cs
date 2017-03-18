@@ -1,5 +1,6 @@
 ﻿using BitChangeSetManager.Api;
 using BitChangeSetManager.DataAccess;
+using BitChangeSetManager.Model;
 using BitChangeSetManager.Security;
 using Foundation.Api;
 using Foundation.Api.Contracts;
@@ -120,6 +121,8 @@ namespace BitChangeSetManager
 
             dependencyManager.RegisterOwinMiddleware<RedirectToSsoIfNotLoggedInMiddlewareConfiguration>();
             dependencyManager.RegisterDefaultPageMiddlewareUsingDefaultConfiguration();
+
+            dependencyManager.Register<IChangeSetRepository, ChangeSetRepository>();
         }
     }
 }

@@ -16,10 +16,10 @@
     <AssemblyName>BitChangeSetManager</AssemblyName>
     <TargetFrameworkVersion>v4.6.2</TargetFrameworkVersion>
     <UseIISExpress>true</UseIISExpress>
-    <IISExpressSSLPort />
-    <IISExpressAnonymousAuthentication />
-    <IISExpressWindowsAuthentication />
-    <IISExpressUseClassicPipelineMode />
+    <IISExpressSSLPort>9090</IISExpressSSLPort>
+    <IISExpressAnonymousAuthentication>enabled</IISExpressAnonymousAuthentication>
+    <IISExpressWindowsAuthentication>disabled</IISExpressWindowsAuthentication>
+    <IISExpressUseClassicPipelineMode>false</IISExpressUseClassicPipelineMode>
     <UseGlobalApplicationHostFile />
     <NuGetPackageImportStamp>
     </NuGetPackageImportStamp>
@@ -374,6 +374,9 @@
     </Content>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Api\ChangeSetDeliveryRequirementsController.cs" />
+    <Compile Include="Api\ChangeSetSeveritiesController.cs" />
+    <Compile Include="Api\DefaultReadOnlyDtoSetController.cs" />
     <Compile Include="Api\DeliveriesController.cs" />
     <Compile Include="Api\ChangeSetsController.cs" />
     <Compile Include="Api\CustomersController.cs" />
@@ -381,8 +384,11 @@
     <Compile Include="Api\BitChangeSetManagerEdmModelProvider.cs" />
     <Compile Include="DataAccess\BitChangeSetManagerEfRepository.cs" />
     <Compile Include="DataAccess\BitChangeSetManagerInitialData.cs" />
+    <Compile Include="DataAccess\ChangeSetRepository.cs" />
     <Compile Include="DataAccess\IBitChangeSetManagerRepository.cs" />
     <Compile Include="Dto\ChangeSetDto.cs" />
+    <Compile Include="Dto\ChangeSetDeliveryRequirementDto.cs" />
+    <Compile Include="Dto\ChangeSetSeverityDto.cs" />
     <Compile Include="Dto\CustomerDto.cs" />
     <Compile Include="Dto\DeliveryDto.cs" />
     <Compile Include="Metadata\BitChangeSetManagerMetadata.cs" />
@@ -390,6 +396,8 @@
     <Compile Include="Metadata\ChangeSetsViewMetadata.cs" />
     <Compile Include="Metadata\DeliveryDtoMetadata.cs" />
     <Compile Include="Model\ChangeSet.cs" />
+    <Compile Include="Model\ChangeSetDeliveryRequirement.cs" />
+    <Compile Include="Model\ChangeSetSeverity.cs" />
     <Compile Include="Model\Delivery.cs" />
     <Compile Include="Model\Customer.cs" />
     <Compile Include="DataAccess\BitChangeSetManagerDtoModelMapperConfiguration.cs" />
