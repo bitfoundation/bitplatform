@@ -7,7 +7,7 @@
             <rad-grid-add-button>{{::'AddNewChangeSet' | translate}}</rad-grid-add-button>
         </toolbar-template>
         <edit-template title="{{::'AddEditChangeSet' | translate}}" style="width:600px">
-            <change-set-view-model model="::dataItem"></change-set-view-model>
+            <change-set-view-model model="::dataItem" change-set-severities-data-source="::vm.changeSetSeveritiesDataSource" change-set-delivery-requirements-data-source="::vm.changeSetDeliveryRequirementsDataSource" ></change-set-view-model>
         </edit-template>
         <view-template>
             <columns>
@@ -25,6 +25,12 @@
                 </column>
                 <column name="IsDeliveredToAll" title="{{::vm.changeSetMetadata.IsDeliveredToAll.Label}}">
                     {{::dataItem.IsDeliveredToAll ? 'Yes' : 'No' | translate}}
+                </column>
+                <column name="SeverityTitle" title="{{::vm.changeSetMetadata.SeverityId.Label}}" filter-data-source="::vm.changeSetSeveritiesDataSource" filter-text-field="Title" filter-value-field="Title">
+                    {{::dataItem.SeverityTitle}}
+                </column>
+                <column name="DeliveryRequirementTitle" title="{{::vm.changeSetMetadata.DeliveryRequirementId.Label}}" filter-data-source="::vm.changeSetDeliveryRequirementsDataSource" filter-text-field="Title" filter-value-field="Title">
+                    {{::dataItem.DeliveryRequirementTitle}}
                 </column>
                 <column command title="{{::'Commands' | translate}}">
                     <rad-grid-edit-button>{{::'EditChangeSet' | translate}}</rad-grid-edit-button>

@@ -9,6 +9,8 @@
         public changeSetsDataSource: kendo.data.DataSource;
         public deliveriesDataSource: kendo.data.DataSource;
         public customersDataSource: kendo.data.DataSource;
+        public changeSetSeveritiesDataSource: kendo.data.DataSource;
+        public changeSetDeliveryRequirementsDataSource: kendo.data.DataSource;
 
         public changeSetMetadata = BitChangeSetManagerModel.ChangeSetDto;
         public deliveryMetadata = BitChangeSetManagerModel.DeliveryDto;
@@ -21,6 +23,10 @@
         public async $onInit(): Promise<void> {
 
             let context = await this.entityContextProvider.getContext<BitChangeSetManagerContext>("BitChangeSetManager");
+
+            let [changeSetDeliveryRequirements, changeSetSeverities] = await context.batchExecuteQuery([context.changeSetDeliveryRequirements, context.changeSetSeverities]);
+            this.changeSetSeveritiesDataSource = changeSetSeverities.toQueryable(BitChangeSetManagerModel.ChangeSetSeverityDto).asKendoDataSource();
+            this.changeSetDeliveryRequirementsDataSource = changeSetDeliveryRequirements.toQueryable(BitChangeSetManagerModel.ChangeSetDeliveryRequirementDto).asKendoDataSource();
 
             this.changeSetsDataSource = context.changeSets.asKendoDataSource({ serverPaging: true, pageSize: 5 });
 

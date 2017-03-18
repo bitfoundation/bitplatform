@@ -17,7 +17,11 @@
 
     @DtoViewModelDependency({
         name: "ChangeSetViewModel",
-        templateUrl: `view/changeSetView.html`
+        templateUrl: `view/changeSetView.html`,
+        bindings: {
+            changeSetSeveritiesDataSource: '<',
+            changeSetDeliveryRequirementsDataSource: '<'
+        }
     })
     export class ChangeSetViewModel extends DtoViewModel<BitChangeSetManagerModel.ChangeSetDto, ChangeSetRules> {
 
@@ -28,6 +32,9 @@
             @Inject("$translate") public $translate: ng.translate.ITranslateService) {
             super();
         }
+
+        public changeSetSeveritiesDataSource: kendo.data.DataSource;
+        public changeSetDeliveryRequirementsDataSource: kendo.data.DataSource;
 
         public changeSetMetadata = BitChangeSetManagerModel.ChangeSetDto;
 

@@ -24,6 +24,30 @@
             </error-messages>
         </md-input-container>
 
+        <md-input-container>
+            <label>{{::vm.changeSetMetadata.SeverityId.Label}}</label>
+            <rad-combo name="SeverityId"
+                       rad-datasource="::vm.changeSetSeveritiesDataSource"
+                       rad-text-field-name="Title"
+                       rad-text="::vm.model.SeverityTitle"
+                       ng-model="::vm.model.SeverityId" />
+            <error-messages field="changeSetForm.SeverityId">
+                <error ng-message="required">{{::vm.changeSetMetadata.SeverityId.RequiredMessage}}</error>
+            </error-messages>
+        </md-input-container>
+
+        <md-input-container>
+            <label>{{::vm.changeSetMetadata.DeliveryRequirementId.Label}}</label>
+            <rad-combo name="DeliveryRequirementId"
+                       rad-datasource="::vm.changeSetDeliveryRequirementsDataSource"
+                       rad-text-field-name="Title"
+                       rad-text="vm.model.DeliveryRequirementTitle"
+                       ng-model="::vm.model.DeliveryRequirementId" />
+            <error-messages field="changeSetForm.DeliveryRequirementId">
+                <error ng-message="required">{{::vm.changeSetMetadata.DeliveryRequirementId.RequiredMessage}}</error>
+            </error-messages>
+        </md-input-container>
+
         <div>
             <rad-grid-save-button ng-click="vm.onSave()" ng-disabled="changeSetForm.$invalid">{{::'Save' | translate}}</rad-grid-save-button>
             <rad-grid-cancel-button>{{::'Cancel' | translate}}</rad-grid-cancel-button>
