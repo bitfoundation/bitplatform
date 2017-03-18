@@ -114,7 +114,7 @@
 
                 let allOfflineEntitiesOrderedByVersion = await offlineContext.batchExecuteQuery(fromServerEntitySetSyncMaterials.map(entitySetSyncMaterial => {
                     return entitySetSyncMaterial.offlineEntitySet.orderByDescending(e => e.Version);
-                }));
+                })) as Model.Contracts.ISyncableDto[][];
 
                 let loadRecentlyChangedOnlineEntitiesQueries = fromServerEntitySetSyncMaterials.map((entitySetSyncMaterial, i) => {
 
@@ -131,7 +131,7 @@
 
                 });
 
-                let allRecentlyChangedOnlineEntities: Model.Contracts.ISyncableDto[][] = await onlineContext.batchExecuteQuery(loadRecentlyChangedOnlineEntitiesQueries);
+                let allRecentlyChangedOnlineEntities = (await onlineContext.batchExecuteQuery(loadRecentlyChangedOnlineEntitiesQueries)) as Model.Contracts.ISyncableDto[][];
 
                 for (let i = 0; i < allRecentlyChangedOnlineEntities.length; i++) {
 
