@@ -16,7 +16,8 @@
     <AssemblyName>BitChangeSetManager</AssemblyName>
     <TargetFrameworkVersion>v4.6.2</TargetFrameworkVersion>
     <UseIISExpress>true</UseIISExpress>
-    <IISExpressSSLPort>9090</IISExpressSSLPort>
+    <IISExpressSSLPort>
+    </IISExpressSSLPort>
     <IISExpressAnonymousAuthentication>enabled</IISExpressAnonymousAuthentication>
     <IISExpressWindowsAuthentication>disabled</IISExpressWindowsAuthentication>
     <IISExpressUseClassicPipelineMode>false</IISExpressUseClassicPipelineMode>
@@ -407,7 +408,10 @@
     <Compile Include="Security\BitChangeSetManagerClientProvider.cs" />
     <Compile Include="Security\BitChangeSetManagerUserService.cs" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Analyzer Include="packages\BitCodeAnalyzer.0.1.0\analyzers\dotnet\cs\BitCodeAnalyzer.dll" />
+    <Analyzer Include="packages\BitCodeAnalyzer.0.1.0\analyzers\dotnet\cs\BitTools.Core.dll" />
+  </ItemGroup>
   <ItemGroup>
     <Service Include="{4A0DDDB5-7A95-4FBF-97CC-616D07737A77}" />
   </ItemGroup>
