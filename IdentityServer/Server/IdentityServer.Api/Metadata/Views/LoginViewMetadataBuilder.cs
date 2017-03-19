@@ -2,12 +2,13 @@
 using Foundation.Api.Implementations.Metadata;
 using Foundation.Core.Models;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace IdentityServer.Api.Metadata.Views
 {
     public class LoginViewMetadataBuilder : DefaultViewMetadataBuilder
     {
-        public override IEnumerable<ObjectMetadata> BuildMetadata()
+        public override async Task<IEnumerable<ObjectMetadata>> BuildMetadata()
         {
             AddViewMetadata(new ViewMetadata
             {
@@ -47,7 +48,7 @@ namespace IdentityServer.Api.Metadata.Views
                 }
             });
 
-            return base.BuildMetadata();
+            return await base.BuildMetadata();
         }
     }
 }
