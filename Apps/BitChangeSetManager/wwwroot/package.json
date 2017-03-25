@@ -4,7 +4,7 @@
   "description": "Bit Framework",
   "author": "Bit Foundation",
   "devDependencies": {
-    "@types/angular": "^1.6.9",
+    "@types/angular": "^1.6.10",
     "@types/angular-material": "0.0.0",
     "@types/angular-translate": "^2.4.35",
     "@types/decimal.js": "0.0.29",
