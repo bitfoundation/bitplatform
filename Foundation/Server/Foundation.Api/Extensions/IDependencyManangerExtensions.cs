@@ -20,7 +20,6 @@ using Foundation.Api.Middlewares.WebApi.OData;
 using Foundation.Api.Middlewares.WebApi.OData.ActionFilters;
 using Foundation.Api.Middlewares.WebApi.OData.Contracts;
 using Foundation.Api.Middlewares.WebApi.OData.Implementations;
-using Foundation.DataAccess.Contracts;
 using Foundation.DataAccess.Implementations;
 using Foundation.Model.Contracts;
 using Hangfire;
@@ -153,20 +152,21 @@ namespace Foundation.Core.Contracts
             dependencyManager.Register<System.Web.Http.Tracing.ITraceWriter, DefaultWebApiTraceWritter>(lifeCycle: DependencyLifeCycle.SingleInstance);
 
             dependencyManager.RegisterGlobalWebApiActionFiltersUsing(webApiConfig => webApiConfig.Filters.Add(new OwinActionFilterAttribute(typeof(OwinNoCacheResponseMiddleware))));
-            dependencyManager.RegisterGlobalWebApiActionFilter<GlobalHostAuthenticationFilterProvider>();
-            dependencyManager.RegisterGlobalWebApiActionFilter<GlobalDefaultExceptionHandlerActionFilterProvider>();
-            dependencyManager.RegisterGlobalWebApiActionFilter<GlobalDefaultLogActionArgsActionFilterProvider>();
+            dependencyManager.RegisterWebApiConfigurationCustomizer<GlobalHostAuthenticationFilterProvider>();
+            dependencyManager.RegisterWebApiConfigurationCustomizer<GlobalDefaultExceptionHandlerActionFilterProvider>();
+            dependencyManager.RegisterWebApiConfigurationCustomizer<GlobalDefaultLogActionArgsActionFilterProvider>();
+            dependencyManager.RegisterWebApiConfigurationCustomizer<ClientCorrelationWebApiConfigurationCustomizer>();
 
             return dependencyManager;
         }
 
-        public static IDependencyManager RegisterGlobalWebApiActionFilter<TActionFilter>(this IDependencyManager dependencyManager)
-    where TActionFilter : class, IWebApiGlobalActionFiltersProvider
+        public static IDependencyManager RegisterWebApiConfigurationCustomizer<TActionFilter>(this IDependencyManager dependencyManager)
+    where TActionFilter : class, IWebApiConfigurationCustomizer
         {
             if (dependencyManager == null)
                 throw new ArgumentNullException(nameof(dependencyManager));
 
-            dependencyManager.Register<IWebApiGlobalActionFiltersProvider, TActionFilter>(lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExciting: false);
+            dependencyManager.Register<IWebApiConfigurationCustomizer, TActionFilter>(lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExciting: false);
 
             return dependencyManager;
         }
@@ -179,7 +179,7 @@ namespace Foundation.Core.Contracts
             if (addGlobalActionFilters == null)
                 throw new ArgumentNullException(nameof(addGlobalActionFilters));
 
-            dependencyManager.RegisterInstance<IWebApiGlobalActionFiltersProvider>(new DelegateGlobalActionFiltersProvider(addGlobalActionFilters), overwriteExciting: false);
+            dependencyManager.RegisterInstance<IWebApiConfigurationCustomizer>(new DelegateGlobalActionFiltersProvider(addGlobalActionFilters), overwriteExciting: false);
 
             return dependencyManager;
         }
@@ -225,9 +225,9 @@ namespace Foundation.Core.Contracts
 
             dependencyManager.Register<System.Web.Http.Dependencies.IDependencyResolver, AutofacWebApiDependencyResolver>(lifeCycle: DependencyLifeCycle.SingleInstance);
             dependencyManager.Register<IWebApiOwinPipelineInjector, DefaultWebApiODataOwinPipelineInjector>(lifeCycle: DependencyLifeCycle.SingleInstance);
-            dependencyManager.RegisterGlobalWebApiActionFilter<GlobalDefaultRequestQSStringCorrectorsApplierActionFilterProvider>();
-            dependencyManager.RegisterGlobalWebApiActionFilter<GlobalDefaultRequestQSTimeZoneApplierActionFilterProvider>();
-            dependencyManager.RegisterGlobalWebApiActionFilter<DefaultGlobalEnableQueryActionFilterProvider>();
+            dependencyManager.RegisterWebApiConfigurationCustomizer<GlobalDefaultRequestQSStringCorrectorsApplierActionFilterProvider>();
+            dependencyManager.RegisterWebApiConfigurationCustomizer<GlobalDefaultRequestQSTimeZoneApplierActionFilterProvider>();
+            dependencyManager.RegisterWebApiConfigurationCustomizer<DefaultGlobalEnableQueryActionFilterProvider>();
             dependencyManager.Register<IAutoEdmBuilder, DefaultAutoEdmBuilder>(lifeCycle: DependencyLifeCycle.SingleInstance);
             dependencyManager.Register<IODataModelBuilderProvider, DefaultODataModelBuilderProvider>(lifeCycle: DependencyLifeCycle.SingleInstance);
             dependencyManager.Register<IODataContainerBuilderCustomizer, DefaultODataContainerBuilderCustomizer>(lifeCycle: DependencyLifeCycle.SingleInstance);

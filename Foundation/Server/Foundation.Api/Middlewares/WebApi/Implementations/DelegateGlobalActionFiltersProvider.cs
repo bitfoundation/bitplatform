@@ -4,7 +4,7 @@ using System.Web.Http;
 
 namespace Foundation.Api.Middlewares.WebApi.Implementations
 {
-    public class DelegateGlobalActionFiltersProvider : IWebApiGlobalActionFiltersProvider
+    public class DelegateGlobalActionFiltersProvider : IWebApiConfigurationCustomizer
     {
         private readonly Action<HttpConfiguration> _addGlobalActionFilters;
 
@@ -21,7 +21,7 @@ namespace Foundation.Api.Middlewares.WebApi.Implementations
             _addGlobalActionFilters = addGlobalActionFilters;
         }
 
-        public virtual void ConfigureGlobalActionFilter(HttpConfiguration webApiConfiguration)
+        public virtual void CustomizeWebApiConfiguration(HttpConfiguration webApiConfiguration)
         {
             if (webApiConfiguration == null)
                 throw new ArgumentNullException(nameof(webApiConfiguration));

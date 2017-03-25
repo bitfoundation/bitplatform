@@ -7,7 +7,7 @@ using System.Web.Http;
 
 namespace Foundation.Api.Middlewares.WebApi.OData.Implementations
 {
-    public class GlobalDefaultRequestQSStringCorrectorsApplierActionFilterProvider : IWebApiGlobalActionFiltersProvider
+    public class GlobalDefaultRequestQSStringCorrectorsApplierActionFilterProvider : IWebApiConfigurationCustomizer
     {
         private readonly IEnumerable<IStringCorrector> _stringCorrectors;
 
@@ -24,15 +24,15 @@ namespace Foundation.Api.Middlewares.WebApi.OData.Implementations
 
         }
 
-        public virtual void ConfigureGlobalActionFilter(HttpConfiguration webApiConfiguration)
+        public virtual void CustomizeWebApiConfiguration(HttpConfiguration webApiConfiguration)
         {
             webApiConfiguration.Filters.Add(new RequestQSStringCorrectorsApplierActionFilterAttribute(_stringCorrectors));
         }
     }
 
-    public class GlobalDefaultRequestQSTimeZoneApplierActionFilterProvider : IWebApiGlobalActionFiltersProvider
+    public class GlobalDefaultRequestQSTimeZoneApplierActionFilterProvider : IWebApiConfigurationCustomizer
     {
-        public virtual void ConfigureGlobalActionFilter(HttpConfiguration webApiConfiguration)
+        public virtual void CustomizeWebApiConfiguration(HttpConfiguration webApiConfiguration)
         {
             webApiConfiguration.Filters.Add(new RequestQSTimeZoneApplierActionFilterAttribute());
         }

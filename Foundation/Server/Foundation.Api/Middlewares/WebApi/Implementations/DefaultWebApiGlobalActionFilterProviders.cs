@@ -4,33 +4,33 @@ using System.Web.Http;
 
 namespace Foundation.Api.Middlewares.WebApi.Implementations
 {
-    public class GlobalHostAuthenticationFilterProvider : IWebApiGlobalActionFiltersProvider
+    public class GlobalHostAuthenticationFilterProvider : IWebApiConfigurationCustomizer
     {
-        public virtual void ConfigureGlobalActionFilter(HttpConfiguration webApiConfiguration)
+        public virtual void CustomizeWebApiConfiguration(HttpConfiguration webApiConfiguration)
         {
             webApiConfiguration.Filters.Add(new HostAuthenticationFilter("Bearer"));
         }
     }
 
-    public class GlobalDefaultExceptionHandlerActionFilterProvider : IWebApiGlobalActionFiltersProvider
+    public class GlobalDefaultExceptionHandlerActionFilterProvider : IWebApiConfigurationCustomizer
     {
-        public virtual void ConfigureGlobalActionFilter(HttpConfiguration webApiConfiguration)
+        public virtual void CustomizeWebApiConfiguration(HttpConfiguration webApiConfiguration)
         {
             webApiConfiguration.Filters.Add(new ExceptionHandlerFilterAttribute());
         }
     }
 
-    public class GlobalDefaultLogActionArgsActionFilterProvider : IWebApiGlobalActionFiltersProvider
+    public class GlobalDefaultLogActionArgsActionFilterProvider : IWebApiConfigurationCustomizer
     {
-        public virtual void ConfigureGlobalActionFilter(HttpConfiguration webApiConfiguration)
+        public virtual void CustomizeWebApiConfiguration(HttpConfiguration webApiConfiguration)
         {
             webApiConfiguration.Filters.Add(new LogActionArgsFilterAttribute());
         }
     }
 
-    public class GlobalDefaultRequestModelStateValidatorActionFilterProvider : IWebApiGlobalActionFiltersProvider
+    public class GlobalDefaultRequestModelStateValidatorActionFilterProvider : IWebApiConfigurationCustomizer
     {
-        public virtual void ConfigureGlobalActionFilter(HttpConfiguration webApiConfiguration)
+        public virtual void CustomizeWebApiConfiguration(HttpConfiguration webApiConfiguration)
         {
             webApiConfiguration.Filters.Add(new RequestModelStateValidatorActionFilterAttribute());
         }

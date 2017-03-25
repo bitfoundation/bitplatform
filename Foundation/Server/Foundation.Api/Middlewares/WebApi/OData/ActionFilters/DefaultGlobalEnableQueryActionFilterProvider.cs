@@ -5,9 +5,9 @@ using System.Web.OData.Query;
 
 namespace Foundation.Api.Middlewares.WebApi.OData.ActionFilters
 {
-    public class DefaultGlobalEnableQueryActionFilterProvider : IWebApiGlobalActionFiltersProvider
+    public class DefaultGlobalEnableQueryActionFilterProvider : IWebApiConfigurationCustomizer
     {
-        public virtual void ConfigureGlobalActionFilter(HttpConfiguration webApiConfiguration)
+        public virtual void CustomizeWebApiConfiguration(HttpConfiguration webApiConfiguration)
         {
             ODataEnableQueryAttribute enableQueryOptions = new ODataEnableQueryAttribute
             {

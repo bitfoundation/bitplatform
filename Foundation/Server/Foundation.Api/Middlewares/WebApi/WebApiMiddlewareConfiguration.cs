@@ -15,7 +15,7 @@ namespace Foundation.Api.Middlewares.WebApi
     public class WebApiMiddlewareConfiguration : IOwinMiddlewareConfiguration, IDisposable
     {
         private readonly AppEnvironment _activeAppEnvironment;
-        private readonly IEnumerable<IWebApiGlobalActionFiltersProvider> _globalActionFilterProviders;
+        private readonly IEnumerable<IWebApiConfigurationCustomizer> _webApiConfgurationCustomizers;
         private readonly System.Web.Http.Dependencies.IDependencyResolver _webApiDependencyResolver;
         private readonly IWebApiOwinPipelineInjector _webApiOwinPipelineInjector;
         private HttpConfiguration _webApiConfig;
@@ -26,13 +26,13 @@ namespace Foundation.Api.Middlewares.WebApi
         }
 
         public WebApiMiddlewareConfiguration(IAppEnvironmentProvider appEnvironmentProvider,
-            IEnumerable<IWebApiGlobalActionFiltersProvider> globalActionFilterProviders, System.Web.Http.Dependencies.IDependencyResolver webApiDependencyResolver, IWebApiOwinPipelineInjector webApiOwinPipelineInjector)
+            IEnumerable<IWebApiConfigurationCustomizer> webApiConfgurationCustomizers, System.Web.Http.Dependencies.IDependencyResolver webApiDependencyResolver, IWebApiOwinPipelineInjector webApiOwinPipelineInjector)
         {
             if (appEnvironmentProvider == null)
                 throw new ArgumentNullException(nameof(appEnvironmentProvider));
 
-            if (globalActionFilterProviders == null)
-                throw new ArgumentNullException(nameof(globalActionFilterProviders));
+            if (webApiConfgurationCustomizers == null)
+                throw new ArgumentNullException(nameof(webApiConfgurationCustomizers));
 
             if (webApiDependencyResolver == null)
                 throw new ArgumentNullException(nameof(webApiDependencyResolver));
@@ -41,7 +41,7 @@ namespace Foundation.Api.Middlewares.WebApi
                 throw new ArgumentNullException(nameof(webApiOwinPipelineInjector));
 
             _activeAppEnvironment = appEnvironmentProvider.GetActiveAppEnvironment();
-            _globalActionFilterProviders = globalActionFilterProviders;
+            _webApiConfgurationCustomizers = webApiConfgurationCustomizers;
             _webApiDependencyResolver = webApiDependencyResolver;
             _webApiOwinPipelineInjector = webApiOwinPipelineInjector;
         }
@@ -54,15 +54,15 @@ namespace Foundation.Api.Middlewares.WebApi
             _webApiConfig = new HttpConfiguration();
             _webApiConfig.SuppressHostPrincipal();
 
-            _globalActionFilterProviders.ToList()
-                .ForEach(actionFilterProvider =>
-                {
-                    actionFilterProvider.ConfigureGlobalActionFilter(_webApiConfig);
-                });
-
             _webApiConfig.SetTimeZoneInfo(TimeZoneInfo.Utc);
 
             _webApiConfig.IncludeErrorDetailPolicy = _activeAppEnvironment.DebugMode ? IncludeErrorDetailPolicy.LocalOnly : IncludeErrorDetailPolicy.Never;
+
+            _webApiConfgurationCustomizers.ToList()
+                .ForEach(webApiConfigurationCustomizer =>
+                {
+                    webApiConfigurationCustomizer.CustomizeWebApiConfiguration(_webApiConfig);
+                });
 
             _webApiConfig.DependencyResolver = _webApiDependencyResolver;
 
@@ -71,8 +71,6 @@ namespace Foundation.Api.Middlewares.WebApi
             _webApiConfig.MapHttpAttributeRoutes();
 
             _webApiConfig.Routes.MapHttpRoute(name: "default", routeTemplate: "api/{controller}/{action}", defaults: new { action = RouteParameter.Optional });
-
-            _webApiConfig.MessageHandlers.Add(new ClientCorrelationHandler { Propagate = true, InitializeIfEmpty = true });
 
             owinApp.UseAutofacWebApi(_webApiConfig);
 

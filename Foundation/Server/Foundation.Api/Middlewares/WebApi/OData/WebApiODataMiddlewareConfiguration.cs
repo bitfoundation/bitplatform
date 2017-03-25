@@ -23,7 +23,7 @@ namespace Foundation.Api.Middlewares.WebApi.OData
     {
         private readonly AppEnvironment _activeAppEnvironment;
         private readonly IEnumerable<IEdmModelProvider> _emdEdmModelProviders;
-        private readonly IEnumerable<IWebApiGlobalActionFiltersProvider> _globalActionFilterProviders;
+        private readonly IEnumerable<IWebApiConfigurationCustomizer> _webApiConfgurationCustomizers;
         private readonly System.Web.Http.Dependencies.IDependencyResolver _webApiDependencyResolver;
         private readonly IODataModelBuilderProvider _oDataModelBuilderProvider;
         private HttpConfiguration _webApiConfig;
@@ -36,7 +36,7 @@ namespace Foundation.Api.Middlewares.WebApi.OData
         }
 
         public WebApiODataMiddlewareConfiguration(IAppEnvironmentProvider appEnvironmentProvider,
-            IEnumerable<IEdmModelProvider> emdEdmModelProviders, IEnumerable<IWebApiGlobalActionFiltersProvider> globalActionFilterProviders, System.Web.Http.Dependencies.IDependencyResolver webApiDependencyResolver, IODataModelBuilderProvider oDataModelBuilderProvider, IODataContainerBuilderCustomizer oDataContainerBuilderCustomizer, IWebApiOwinPipelineInjector webApiOwinPipelineInjector)
+            IEnumerable<IEdmModelProvider> emdEdmModelProviders, IEnumerable<IWebApiConfigurationCustomizer> webApiConfgurationCustomizers, System.Web.Http.Dependencies.IDependencyResolver webApiDependencyResolver, IODataModelBuilderProvider oDataModelBuilderProvider, IODataContainerBuilderCustomizer oDataContainerBuilderCustomizer, IWebApiOwinPipelineInjector webApiOwinPipelineInjector)
         {
             if (emdEdmModelProviders == null)
                 throw new ArgumentNullException(nameof(emdEdmModelProviders));
@@ -44,8 +44,8 @@ namespace Foundation.Api.Middlewares.WebApi.OData
             if (appEnvironmentProvider == null)
                 throw new ArgumentNullException(nameof(appEnvironmentProvider));
 
-            if (globalActionFilterProviders == null)
-                throw new ArgumentNullException(nameof(globalActionFilterProviders));
+            if (webApiConfgurationCustomizers == null)
+                throw new ArgumentNullException(nameof(webApiConfgurationCustomizers));
 
             if (webApiDependencyResolver == null)
                 throw new ArgumentNullException(nameof(webApiDependencyResolver));
@@ -61,7 +61,7 @@ namespace Foundation.Api.Middlewares.WebApi.OData
 
             _activeAppEnvironment = appEnvironmentProvider.GetActiveAppEnvironment();
             _emdEdmModelProviders = emdEdmModelProviders;
-            _globalActionFilterProviders = globalActionFilterProviders;
+            _webApiConfgurationCustomizers = webApiConfgurationCustomizers;
             _webApiDependencyResolver = webApiDependencyResolver;
             _oDataModelBuilderProvider = oDataModelBuilderProvider;
             _oDataContainerBuilderCustomizer = oDataContainerBuilderCustomizer;
@@ -76,17 +76,17 @@ namespace Foundation.Api.Middlewares.WebApi.OData
             _webApiConfig = new HttpConfiguration();
             _webApiConfig.SuppressHostPrincipal();
 
-            _globalActionFilterProviders.ToList()
-                .ForEach(actionFilterProvider =>
-                {
-                    actionFilterProvider.ConfigureGlobalActionFilter(_webApiConfig);
-                });
-
             _webApiConfig.SetTimeZoneInfo(TimeZoneInfo.Utc);
 
             _webApiConfig.Formatters.Clear();
 
             _webApiConfig.IncludeErrorDetailPolicy = _activeAppEnvironment.DebugMode ? IncludeErrorDetailPolicy.LocalOnly : IncludeErrorDetailPolicy.Never;
+
+            _webApiConfgurationCustomizers.ToList()
+                .ForEach(webApiConfigurationCustomizer =>
+                {
+                    webApiConfigurationCustomizer.CustomizeWebApiConfiguration(_webApiConfig);
+                });
 
             _webApiConfig.DependencyResolver = _webApiDependencyResolver;
 
@@ -127,8 +127,6 @@ namespace Foundation.Api.Middlewares.WebApi.OData
                     _oDataContainerBuilderCustomizer.Customize(builder);
                 });
             }
-
-            _webApiConfig.MessageHandlers.Add(new ClientCorrelationHandler { Propagate = true, InitializeIfEmpty = true });
 
             owinApp.UseAutofacWebApi(_webApiConfig);
 

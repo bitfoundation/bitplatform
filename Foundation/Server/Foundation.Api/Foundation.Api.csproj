@@ -392,6 +392,7 @@
     <Compile Include="Middlewares\SignOutPageMiddleware.cs" />
     <Compile Include="Middlewares\SignOutPageMiddlewareConfiguration.cs" />
     <Compile Include="Middlewares\WebApi\ActionFilters\OwinActionFilterAttribute.cs" />
+    <Compile Include="Middlewares\WebApi\Implementations\ClientCorrelationWebApiConfigurationCustomizer.cs" />
     <Compile Include="Middlewares\WebApi\Implementations\DefaultWebApiAssembliesResolver.cs" />
     <Compile Include="Middlewares\WebApi\Implementations\DefaultWebApiOwinPipelineInjector.cs" />
     <Compile Include="Middlewares\WebApi\Implementations\DelegateGlobalActionFiltersProvider.cs" />
@@ -441,7 +442,7 @@
     <Compile Include="Middlewares\MetadatMiddleware.cs" />
     <Compile Include="Middlewares\WebApi\ActionFilters\ExceptionHandlerFilterAttribute.cs" />
     <Compile Include="Middlewares\WebApi\OData\ActionFilters\RequestQSStringCorrectorsApplierActionFilterAttribute.cs" />
-    <Compile Include="Middlewares\WebApi\Contracts\IWebApiGlobalActionFiltersProvider.cs" />
+    <Compile Include="Middlewares\WebApi\Contracts\IWebApiConfigurationCustomizer.cs" />
     <Compile Include="Contracts\IUserSettingProvider.cs" />
     <Compile Include="Implementations\DefaultBackgroundJobWorker.cs" />
     <Compile Include="Implementations\DefaultCertificateProvider.cs" />
