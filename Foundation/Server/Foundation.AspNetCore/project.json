@@ -15,7 +15,7 @@
     "Microsoft.AspNetCore.Owin": "1.1.1",
     "Microsoft.Owin": "3.0.1",
     "Microsoft.Owin.Host.HttpListener": "3.0.1",
-    "Suave": "2.0.4"
+    "Suave": "2.0.5"
   },
 
   "buildOptions": {
