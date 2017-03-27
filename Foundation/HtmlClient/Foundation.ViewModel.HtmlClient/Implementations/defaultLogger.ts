@@ -149,7 +149,7 @@ module Foundation.ViewModel.Implementations {
                     }
                 });
 
-            this.logError(`Error at: ${className}:${methodName}`, ` args: ${JSON.stringify(simplifiedArgs)}`, err);
+            this.logError(`Error at: ${className}.${methodName}`, ` args: ${JSON.stringify(simplifiedArgs)}`, err);
         }
     }
 }
