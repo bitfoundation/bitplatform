@@ -1,13 +1,19 @@
 ﻿module Foundation.ViewModel {
 
     export class Default$scopeConfiguration {
-        public static currentConfig: { callUpdate$scope: "IfAsync" | "Always" | "Never", $appyMode: "$applyAsync" | "$apply" } = { callUpdate$scope: "IfAsync", $appyMode: "$applyAsync" };
+        public static currentConfig: { callUpdate$scope?: "IfAsync" | "Always" | "Never", $appyMode?: "$applyAsync" | "$apply" } = { callUpdate$scope: "IfAsync", $appyMode: "$applyAsync" };
     }
 
     export function Command(configuration = Default$scopeConfiguration.currentConfig) {
 
         if (configuration == null)
             throw new Error("configuration may not be null");
+
+        if (configuration.$appyMode == null)
+            configuration.$appyMode = Default$scopeConfiguration.currentConfig.$appyMode;
+
+        if (configuration.callUpdate$scope == null)
+            configuration.callUpdate$scope = Default$scopeConfiguration.currentConfig.callUpdate$scope;
 
         return (target: Object, propertyKey: string, descriptor: TypedPropertyDescriptor<any>) => {
 
