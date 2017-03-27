@@ -78,7 +78,7 @@ namespace IdentityServer.Api.Middlewares
                     CspOptions = new CspOptions
                     {
                         // Content security policy
-                        Enabled = false,
+                        Enabled = false
                     },
                     Endpoints = new EndpointOptions
                     {

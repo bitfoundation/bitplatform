@@ -27,8 +27,6 @@ namespace IdentityServer.Test.Api.Implementations
 
         public virtual IEnumerable<Client> GetClients()
         {
-            AppEnvironment activeAppEnvironment = _appEnvironmentProvider.GetActiveAppEnvironment();
-
             return new[]
             {
                 new Client

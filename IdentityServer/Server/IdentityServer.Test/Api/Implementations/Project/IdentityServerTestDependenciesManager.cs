@@ -7,7 +7,6 @@ using Foundation.Api.Middlewares;
 using Foundation.Core.Contracts;
 using Foundation.Core.Contracts.Project;
 using Foundation.Core.Implementations;
-using Foundation.Test.Api.Middlewares;
 using IdentityServer.Api.Contracts;
 using IdentityServer.Api.Implementations;
 using IdentityServer.Api.Metadata.Views;

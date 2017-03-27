@@ -29,7 +29,7 @@ module Foundation.View.Directives {
 
                         itemTemplate
                             .attr("id", itemTemplateId)
-                            .attr('ng-cloak', '');
+                            .attr("ng-cloak", "");
 
                         angular.element(document.body).append(itemTemplate);
 
@@ -40,7 +40,7 @@ module Foundation.View.Directives {
                         return text.replace(new RegExp(search, "g"), replacement);
                     };
 
-                    const isolatedOptionsKey = "options" + replaceAll(guidUtils.newGuid(), "-", "");
+                    const isolatedOptionsKey = `options${replaceAll(guidUtils.newGuid(), "-", "")}`;
 
                     attrs["isolatedOptionsKey"] = isolatedOptionsKey;
 
@@ -86,7 +86,7 @@ module Foundation.View.Directives {
                                     if (tree.wrapper != null) {
 
                                         tree.wrapper.each(function (id, kElement) {
-                                            let dataObj = angular.element(kElement).data();
+                                            const dataObj = angular.element(kElement).data();
                                             for (let mData in dataObj) {
                                                 if (angular.isObject(dataObj[mData])) {
                                                     if (typeof dataObj[mData]["destroy"] == "function") {
@@ -143,7 +143,7 @@ module Foundation.View.Directives {
 
                             if (attributes["itemTemplateId"] != null) {
 
-                                const itemTemplateElement = angular.element("#" + attributes["itemTemplateId"]);
+                                const itemTemplateElement = angular.element(`#${attributes["itemTemplateId"]}`);
 
                                 const itemTemplateElementHtml = itemTemplateElement.html();
 
@@ -157,8 +157,8 @@ module Foundation.View.Directives {
                             });
 
                             if (attributes.onInit != null) {
-                                let onInitFN = $parse(attributes.onInit);
-                                if (typeof onInitFN == 'function') {
+                                const onInitFN = $parse(attributes.onInit);
+                                if (typeof onInitFN == "function") {
                                     onInitFN($scope, { treeViewOptions: treeViewOptions });
                                 }
                             }

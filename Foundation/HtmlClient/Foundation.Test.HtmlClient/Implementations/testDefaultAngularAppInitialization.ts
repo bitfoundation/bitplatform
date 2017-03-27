@@ -10,7 +10,7 @@ module Foundation.Test.Implementations {
         }
 
         protected getBaseModuleDependencies(): Array<string> {
-            let modules = ["pascalprecht.translate", "ngComponentRouter", "ngMessages", "ngMaterial", "ngAria", "ngAnimate"];
+            const modules = ["pascalprecht.translate", "ngComponentRouter", "ngMessages", "ngMaterial", "ngAria", "ngAnimate"];
             if (this.clientAppProfileManager.getClientAppProfile().screenSize == "DesktopAndTablet")
                 modules.push("kendo.directives");
             return modules;

@@ -186,7 +186,7 @@
             const ContextType = window[`${contextName}Context`];
 
             if (ContextType == null)
-                throw new Error("No entity context could be found named " + contextName);
+                throw new Error(`No entity context could be found named ${contextName}`);
 
             if (ContextType["isEventsListenersAreAdded"] != true && config.isOffline == true) {
 
@@ -213,7 +213,7 @@
                                     e.Version = "0";
                                 }
                                 if (e.Version != "0")
-                                    throw new Error('An entity has been created with version other than null or zero.')
+                                    throw new Error("An entity has been created with version other than null or zero.")
                             }
                             if (members["$ISV"] != null)
                                 e.ISV = false;

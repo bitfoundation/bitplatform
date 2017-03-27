@@ -17,7 +17,6 @@ namespace Foundation.Api.Middlewares.WebApi.ActionFilters
         {
             IDependencyResolver scopeDependencyResolver = actionExecutedContext.Request.GetOwinContext().GetDependencyResolver();
 
-            ILogger logger = scopeDependencyResolver.Resolve<ILogger>();
             IScopeStatusManager scopeStatusManager = scopeDependencyResolver.Resolve<IScopeStatusManager>();
             IExceptionToHttpErrorMapper exceptionToHttpErrorMapper = scopeDependencyResolver.Resolve<IExceptionToHttpErrorMapper>();
 

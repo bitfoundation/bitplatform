@@ -1,5 +1,4 @@
-﻿using Correlator.Handlers;
-using Foundation.Api.Contracts;
+﻿using Foundation.Api.Contracts;
 using Foundation.Api.Middlewares.WebApi.Contracts;
 using Foundation.Core.Contracts;
 using Foundation.Core.Models;

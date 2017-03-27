@@ -25,10 +25,10 @@ module Foundation.View.Directives {
                             angular.element(element).remove();
 
                             let $scopeOfGrid = $scope;
-                            let $gridScopeName = 'this.';
+                            let $gridScopeName = "this.";
                             while ($scopeOfGrid[gridIsolatedKey] == null || $scopeOfGrid.$parent == null) {
                                 $scopeOfGrid = $scopeOfGrid.$parent;
-                                $gridScopeName += '$parent.';
+                                $gridScopeName += "$parent.";
                             }
 
                             newElement.attr("ng-click", `${attributes["ngClick"] || ""};${$gridScopeName}${gridIsolatedKey}Save($event)`);

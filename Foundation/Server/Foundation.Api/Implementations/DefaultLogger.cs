@@ -42,7 +42,7 @@ namespace Foundation.Api.Implementations
             if (message == null)
                 throw new ArgumentNullException(nameof(message));
 
-            string severity = "Warning";
+            const string severity = "Warning";
 
             LogEntry logEntry = CreateLogEntry(message, severity);
         }
@@ -109,7 +109,7 @@ namespace Foundation.Api.Implementations
             if (message == null)
                 throw new ArgumentNullException(nameof(message));
 
-            string severity = "Fatal";
+            const string severity = "Fatal";
 
             LogEntry logEntry = CreateLogEntry(message, severity);
 
@@ -121,7 +121,7 @@ namespace Foundation.Api.Implementations
             if (message == null)
                 throw new ArgumentNullException(nameof(message));
 
-            string severity = "Warning";
+            const string severity = "Warning";
 
             LogEntry logEntry = CreateLogEntry(message, severity);
 
@@ -133,7 +133,7 @@ namespace Foundation.Api.Implementations
             if (message == null)
                 throw new ArgumentNullException(nameof(message));
 
-            string severity = "Information";
+            const string severity = "Information";
 
             LogEntry logEntry = CreateLogEntry(message, severity);
 

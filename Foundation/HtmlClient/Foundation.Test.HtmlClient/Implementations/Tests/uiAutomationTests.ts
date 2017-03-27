@@ -1,5 +1,5 @@
 ﻿module Foundation.Test.Implementations.Tests {
-    export class UIAutomationTests {
+    export class UiAutomationTests {
         public static async testGetBindingContextAndGetFormViewModel(): Promise<void> {
 
             const uiAutomation = new UIAutomation<ViewModels.RepeatFormViewModel>(angular.element("#repeatView"));
@@ -16,7 +16,7 @@
 
             repeatFormViewModel.testModels.forEach((tm, i) => {
 
-                const tmFromView = uiAutomation.getBindingContext<Model.DomainModels.TestModel>(uiAutomation.view.find("#testModel" + i), "tm");
+                const tmFromView = uiAutomation.getBindingContext<Model.DomainModels.TestModel>(uiAutomation.view.find(`#testModel${i}`), "tm");
 
                 if (tmFromView.Id != tm.Id)
                     throw new Error("problem in testGetBindingContextAndGetFormViewModel");

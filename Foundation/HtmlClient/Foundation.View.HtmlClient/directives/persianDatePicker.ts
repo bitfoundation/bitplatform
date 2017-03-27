@@ -104,7 +104,7 @@
 
             this.$value.change((e) => {  // because this input's type is hidden
                 this.$scope.$applyAsync(() => {
-                    let val = this.$value.val();
+                    const val = this.$value.val();
                     this.ngModelController.$setViewValue(this.ngModelController.$isEmpty(val) ? null : this.dateTimeService.parseDate(val));
                 });
             });

@@ -3,7 +3,6 @@ using Microsoft.Owin;
 using System.Linq;
 using System;
 using Foundation.Api.Implementations;
-using System.Threading;
 
 namespace Foundation.Api.Middlewares
 {

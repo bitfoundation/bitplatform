@@ -21,12 +21,12 @@
             if (loginCustomArgs == null)
                 loginCustomArgs = {};
             loginCustomArgs["pathname"] = location.pathname;
-            location.assign(encodeURI("InvokeLogin/" + (JSON.stringify(loginCustomArgs))));
+            location.assign(encodeURI(`InvokeLogin/${JSON.stringify(loginCustomArgs)}`));
         }
 
         @Core.Log()
         public logout(): void {
-            location.assign(encodeURI("InvokeLogout?id_token=" + localStorage["id_token"]));
+            location.assign(encodeURI(`InvokeLogout?id_token=${localStorage["id_token"]}`));
         }
 
     }

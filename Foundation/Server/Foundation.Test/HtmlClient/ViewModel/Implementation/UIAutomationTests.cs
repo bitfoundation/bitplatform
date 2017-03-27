@@ -24,7 +24,7 @@ namespace Foundation.Test.HtmlClient.ViewModel.Implementation
                 {
                     driver.NavigateToRoute("repeat-page");
 
-                    driver.ExecuteTest("Foundation.Test.Implementations.Tests.UIAutomationTests.testGetBindingContextAndGetFormViewModel");
+                    driver.ExecuteTest("Foundation.Test.Implementations.Tests.UiAutomationTests.testGetBindingContextAndGetFormViewModel");
                 }
 
                 TestModelsController testModelsController = TestDependencyManager.CurrentTestDependencyManager.Objects
@@ -46,7 +46,7 @@ namespace Foundation.Test.HtmlClient.ViewModel.Implementation
 
                 using (RemoteWebDriver driver = testEnvironment.Server.GetWebDriver(new RemoteWebDriverOptions { Token = token }))
                 {
-                    driver.ExecuteTest("Foundation.Test.Implementations.Tests.UIAutomationTests.testGettingSomeVariables", 5, 5, "Hi", new DateTimeOffset(2016, 1, 1, 1, 1, 1, TimeSpan.Zero), new { firstNum = 5, secondNum = 5, message = "Hi", date = new DateTimeOffset(2016, 1, 1, 1, 1, 1, TimeSpan.Zero) });
+                    driver.ExecuteTest("Foundation.Test.Implementations.Tests.UiAutomationTests.testGettingSomeVariables", 5, 5, "Hi", new DateTimeOffset(2016, 1, 1, 1, 1, 1, TimeSpan.Zero), new { firstNum = 5, secondNum = 5, message = "Hi", date = new DateTimeOffset(2016, 1, 1, 1, 1, 1, TimeSpan.Zero) });
                 }
             }
         }

@@ -32,7 +32,7 @@ namespace Foundation.Api.Implementations.Metadata
             _appEnvironmentProvider = appEnvironmentProvider;
         }
 
-        public async virtual Task<AppMetadata> GetAppMetadata()
+        public virtual async Task<AppMetadata> GetAppMetadata()
         {
             if (_appMetadata == null)
             {

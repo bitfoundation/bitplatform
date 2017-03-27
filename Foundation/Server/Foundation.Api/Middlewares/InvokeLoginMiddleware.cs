@@ -21,8 +21,6 @@ namespace Foundation.Api.Middlewares
 
             IRandomStringProvider randomStringProvider = dependencyResolver.Resolve<IRandomStringProvider>();
 
-            IContentFormatter contentFormatter = dependencyResolver.Resolve<IContentFormatter>();
-
             if (_baseRedirectUri == null)
             {
                 IAppEnvironmentProvider appEnvironmentProvider = dependencyResolver

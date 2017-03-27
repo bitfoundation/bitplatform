@@ -3,12 +3,12 @@ using System.Diagnostics;
 
 namespace Foundation.Test
 {
-    class Program
+    public class Program
     {
-        static void Main(string[] args)
+        public static void Main(string[] args)
         {
             Console.Title = "Foundation Test";
-            bool useSso = false;
+            const bool useSso = false;
 
             using (TestEnvironment testEnvironment = new TestEnvironment(new TestEnvironmentArgs
             {

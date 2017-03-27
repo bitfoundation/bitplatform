@@ -1,16 +1,7 @@
 ﻿using System;
 using System.Linq;
-using System.Reflection;
 using System.Threading.Tasks;
-using FakeItEasy;
-using Foundation.Api.Exceptions;
-using Foundation.Core.Contracts;
-using Foundation.Test.Core.Contracts;
-using Foundation.Test.Core.Implementations;
-using Foundation.Test.Model.DomainModels;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Simple.OData.Client;
-using Foundation.Test.Api.ApiControllers;
 using System.Net.Http;
 
 namespace Foundation.Test.Api.Middlewares.WebApi.Tests
@@ -32,7 +23,7 @@ namespace Foundation.Test.Api.Middlewares.WebApi.Tests
 
                 client.DefaultRequestHeaders.Add("X-CorrelationId", correlationId.ToString());
 
-                HttpResponseMessage response = await client.GetAsync($"/odata/Test/$metadata");
+                HttpResponseMessage response = await client.GetAsync("/odata/Test/$metadata");
 
                 Assert.AreEqual(correlationId, Guid.Parse(response.Headers.GetValues("X-CorrelationId").Single()));
             }

@@ -71,7 +71,7 @@ let executeTest = async (testFunc: Function, args: string | any): Promise<void> 
         if (itResult.result.failedExpectations.length != 0) {
             let errorMessage = "";
             for (let failedExpIndex = 0; failedExpIndex < itResult.result.failedExpectations.length; failedExpIndex++) {
-                errorMessage += "\n" + itResult.result.failedExpectations[failedExpIndex].message;
+                errorMessage += `\n${itResult.result.failedExpectations[failedExpIndex].message}`;
             }
             throw new Error(errorMessage);
         }

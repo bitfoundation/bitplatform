@@ -12,14 +12,10 @@ namespace Foundation.Model.Implementations
         {
             mapperConfigExpression.CreateMissingTypeMaps = true;
 
-            mapperConfigExpression.ForAllPropertyMaps(
-                (p) =>
-                {
-                    return p.DestinationProperty.GetCustomAttribute<ForeignKeyAttribute>() != null
-                            && p.DestinationProperty.GetCustomAttribute<InversePropertyAttribute>() != null
-                            && !typeof(IEnumerable).IsAssignableFrom(p.DestinationProperty.ReflectedType)
-                            && typeof(IDto).IsAssignableFrom(p.DestinationProperty.ReflectedType);
-                },
+            mapperConfigExpression.ForAllPropertyMaps(p => p.DestinationProperty.GetCustomAttribute<ForeignKeyAttribute>() != null
+                       && p.DestinationProperty.GetCustomAttribute<InversePropertyAttribute>() != null
+                       && !typeof(IEnumerable).IsAssignableFrom(p.DestinationProperty.ReflectedType)
+                       && typeof(IDto).IsAssignableFrom(p.DestinationProperty.ReflectedType),
                 (pConfig, member) =>
                 {
                     pConfig.Ignored = true;

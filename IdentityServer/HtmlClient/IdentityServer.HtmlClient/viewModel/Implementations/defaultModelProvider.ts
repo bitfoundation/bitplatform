@@ -2,14 +2,14 @@
 module IdentityServer.ViewModel.Implementations {
     export class DefaultModelProvider implements Core.Contracts.IModelProvider {
 
-        private model: IdentityServer.Core.Models.ISsoModel;
+        private model: Core.Models.ISsoModel;
 
         @Foundation.Core.Log()
-        public getModel(): IdentityServer.Core.Models.ISsoModel {
+        public getModel(): Core.Models.ISsoModel {
 
             if (this.model == null) {
 
-                let loginModelJson = document.getElementById("modelJson");
+                const loginModelJson = document.getElementById("modelJson");
 
                 let encodedJson = "";
 
@@ -19,7 +19,7 @@ module IdentityServer.ViewModel.Implementations {
                     encodedJson = loginModelJson.innerHTML;
                 }
 
-                let json = window["Encoder"].htmlDecode(encodedJson);
+                const json = window["Encoder"].htmlDecode(encodedJson);
 
                 this.model = JSON.parse(json);
 

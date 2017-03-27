@@ -26,7 +26,7 @@ module Foundation.View.Directives {
 
                         const itemTemplateId = guidUtils.newGuid();
 
-                        angular.element(document.body).append(itemTemplate.attr("id", itemTemplateId).attr('ng-cloak', ''));
+                        angular.element(document.body).append(itemTemplate.attr("id", itemTemplateId).attr("ng-cloak", ""));
 
                         attrs["itemTemplateId"] = itemTemplateId;
                     }
@@ -40,7 +40,7 @@ module Foundation.View.Directives {
 
                         headerTemplate
                             .attr("id", headerTemplateId)
-                            .attr('ng-cloak', '');
+                            .attr("ng-cloak", "");
 
                         angular.element(document.body).append(headerTemplate);
 
@@ -51,7 +51,7 @@ module Foundation.View.Directives {
                         return text.replace(new RegExp(search, "g"), replacement);
                     };
 
-                    const isolatedOptionsKey = "options" + replaceAll(guidUtils.newGuid(), "-", "");
+                    const isolatedOptionsKey = `options${replaceAll(guidUtils.newGuid(), "-", "")}`;
 
                     attrs["isolatedOptionsKey"] = isolatedOptionsKey;
 
@@ -124,7 +124,7 @@ module Foundation.View.Directives {
                                     if (combo.wrapper != null) {
 
                                         combo.wrapper.each(function (id, kElement) {
-                                            let dataObj = angular.element(kElement).data();
+                                            const dataObj = angular.element(kElement).data();
                                             for (let mData in dataObj) {
                                                 if (angular.isObject(dataObj[mData])) {
                                                     if (typeof dataObj[mData]["destroy"] == "function") {
@@ -211,7 +211,7 @@ module Foundation.View.Directives {
                                     text = null;
 
                                 if (attributes.ngModel != null) {
-                                    $scope.$watch(attributes.ngModel.replace('::', ''), (newValue) => {
+                                    $scope.$watch(attributes.ngModel.replace("::", ""), (newValue) => {
                                         const current = dataSource.current;
                                         if (current != null)
                                             parsedText.assign($scope, current[attributes.radTextFieldName]);
@@ -253,7 +253,7 @@ module Foundation.View.Directives {
 
                             if (attributes["itemTemplateId"] != null) {
 
-                                let itemTemplateElement = angular.element("#" + attributes["itemTemplateId"]);
+                                let itemTemplateElement = angular.element(`#${attributes["itemTemplateId"]}`);
 
                                 let itemTemplateElementHtml = itemTemplateElement.html();
 
@@ -264,7 +264,7 @@ module Foundation.View.Directives {
 
                             if (attributes["headerTemplateId"] != null) {
 
-                                let headerTemplateElement = angular.element("#" + attributes["headerTemplateId"]);
+                                let headerTemplateElement = angular.element(`#${attributes["headerTemplateId"]}`);
 
                                 let headerTemplateElementHtml = headerTemplateElement.html();
 
@@ -285,7 +285,7 @@ module Foundation.View.Directives {
 
                             if (attributes.onInit != null) {
                                 let onInitFN = $parse(attributes.onInit);
-                                if (typeof onInitFN == 'function') {
+                                if (typeof onInitFN == "function") {
                                     onInitFN($scope, { comboBoxOptions: comboBoxOptions });
                                 }
                             }

@@ -85,9 +85,9 @@ namespace OpenQA.Selenium.Remote
 
             IWebElement testsConsole = driver.GetElementById("testsConsole");
 
-            string success = "Success";
+            const string success = "Success";
 
-            string consoleValue = (string)testsConsole.GetAttribute("value");
+            string consoleValue = testsConsole.GetAttribute("value");
 
             string arguments = JsonConvert.SerializeObject(args, new JsonSerializerSettings
             {
@@ -111,7 +111,7 @@ namespace OpenQA.Selenium.Remote
                 triesCount++;
             } while (triesCount < 50);
 
-            consoleValue = (string)testsConsole.GetAttribute("value");
+            consoleValue = testsConsole.GetAttribute("value");
 
             bool testIsPassed = consoleValue == success;
 

@@ -1,6 +1,5 @@
 ﻿using Foundation.Api.Implementations;
 using Microsoft.Owin;
-using System.Threading;
 using System.Threading.Tasks;
 
 namespace Foundation.Api.Middlewares

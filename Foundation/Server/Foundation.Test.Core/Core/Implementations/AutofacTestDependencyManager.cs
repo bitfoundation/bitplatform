@@ -8,7 +8,6 @@ using Foundation.Core.Contracts;
 using Foundation.Api.Contracts;
 using Foundation.DataAccess.Contracts;
 using Foundation.Model.Contracts;
-using Microsoft.AspNet.SignalR;
 using Foundation.Api.Implementations;
 
 namespace Foundation.Test.Core.Implementations

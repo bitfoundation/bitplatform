@@ -1,7 +1,6 @@
 ﻿using Foundation.Api.Contracts;
 using Microsoft.Owin;
 using System;
-using System.Threading;
 using System.Threading.Tasks;
 
 namespace Foundation.Api.Implementations

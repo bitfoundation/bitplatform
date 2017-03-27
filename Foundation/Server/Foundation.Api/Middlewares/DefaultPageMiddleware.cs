@@ -1,5 +1,4 @@
-﻿using System.Threading;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using Microsoft.Owin;
 using Foundation.Api.Contracts;
 using Foundation.Core.Contracts;

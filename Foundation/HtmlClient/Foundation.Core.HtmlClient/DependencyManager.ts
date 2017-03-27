@@ -99,7 +99,7 @@ module Foundation.Core {
                 if (fileDependency.overwriteExisting == true)
                     this.fileDependencies[dependenciesWithThisNameIndex] = fileDependency;
                 else
-                    throw new Error("Duplicated file dependency " + fileDependency.name);
+                    throw new Error(`Duplicated file dependency ${fileDependency.name}`);
             }
             else {
                 this.fileDependencies.push(fileDependency);
@@ -115,7 +115,7 @@ module Foundation.Core {
                 throw new Error("objectDep's name is null or empty");
 
             if (instance == null)
-                throw new Error('instance may not be null');
+                throw new Error("instance may not be null");
 
             if (!this.dependencyShouldBeConsidered(objectDep))
                 return;
@@ -153,9 +153,9 @@ module Foundation.Core {
             if (objectDependency.resolver == null) {
                 if (objectDependency.lifeCycle == "SingleInstance") {
                     objectDependency.resolver = () => {
-                        if (objectDependency['instance'] == null)
-                            objectDependency['instance'] = Reflect.construct(objectDependency.type as Function, []);
-                        return objectDependency['instance'];
+                        if (objectDependency["instance"] == null)
+                            objectDependency["instance"] = Reflect.construct(objectDependency.type as Function, []);
+                        return objectDependency["instance"];
                     };
                 }
                 else if (objectDependency.lifeCycle == "Transient") {
@@ -201,7 +201,7 @@ module Foundation.Core {
                 if (directiveDependency.overwriteExisting == true)
                     this.directiveDependencies[dependenciesWithThisNameIndex] = directiveDependency;
                 else
-                    throw new Error("Duplicated directive dependency " + directiveDependency.name);
+                    throw new Error(`Duplicated directive dependency ${directiveDependency.name}`);
             }
             else {
                 this.directiveDependencies.push(directiveDependency);
@@ -275,7 +275,7 @@ module Foundation.Core {
                 if (formViewModelDependency.overwriteExisting == true)
                     this.formViewModelDependencies[dependenciesWithThisNameIndex] = formViewModelDependency;
                 else
-                    throw new Error("Duplicated viewModel dependency " + formViewModelDependency.name);
+                    throw new Error(`Duplicated viewModel dependency ${formViewModelDependency.name}`);
             }
             else {
                 this.formViewModelDependencies.push(formViewModelDependency);
@@ -591,8 +591,8 @@ module Foundation.Core {
 
             dtoViewModel.bindings = dtoViewModel.bindings || {};
 
-            if (dtoViewModel.bindings['model'] == null)
-                dtoViewModel.bindings['model'] = '<?';
+            if (dtoViewModel.bindings["model"] == null)
+                dtoViewModel.bindings["model"] = "<?";
 
             dtoViewModel.type = targetDtoViewModel;
 

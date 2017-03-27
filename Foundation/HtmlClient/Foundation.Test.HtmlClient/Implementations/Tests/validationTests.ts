@@ -46,9 +46,9 @@
 
         static async testValidationFormViewModelWithInValidBehavior(): Promise<void> {
 
-            let uiAutomation = new UIAutomation<ViewModels.FormValidationFormViewModel>(angular.element("#formValidationView"));
+            const uiAutomation = new UIAutomation<ViewModels.FormValidationFormViewModel>(angular.element("#formValidationView"));
 
-            let form = uiAutomation.getForm(angular.element("[name='validationSampleDtoForm']"));
+            const form = uiAutomation.getForm(angular.element("[name='validationSampleDtoForm']"));
 
             await uiAutomation.formViewModel.submitFirstPart(form);
 

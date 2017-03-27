@@ -123,7 +123,7 @@ declare module "angular" {
         routerCanReuse(nextInstruction: ComponentInstruction): IPromise<boolean>;
 
         $$outlet: {
-            currentInstruction: ng.ComponentInstruction;
+            currentInstruction: ComponentInstruction;
         }
     }
 

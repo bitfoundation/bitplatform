@@ -25,7 +25,7 @@
                     const dateTimeService = dependencyManager.resolveObject<ViewModel.Contracts.IDateTimeService>("DateTimeService");
                     const clientAppProfile = dependencyManager.resolveObject<Core.ClientAppProfileManager>("ClientAppProfileManager").getClientAppProfile();
 
-                    let cleanUp = () => {
+                    const cleanUp = () => {
 
                         if (dtoViewModel != null) {
 
@@ -167,9 +167,9 @@
                                             }
                                         });
 
-                                        if (propModelController['isFirstTimeIndicator'] == null) {
+                                        if (propModelController["isFirstTimeIndicator"] == null) {
 
-                                            propModelController['isFirstTimeIndicator'] = {};
+                                            propModelController["isFirstTimeIndicator"] = {};
 
                                             let original$setValidity = propModelController.$setValidity;
 
@@ -199,11 +199,11 @@
                                                 propModelController.$parsers.push((viewValue) => {
                                                     if (viewValue != null && typeof viewValue == "string") {
                                                         let viewValueAsString = viewValue as string;
-                                                        if (viewValueAsString.startsWith('.')) {
-                                                            viewValueAsString = '0' + viewValueAsString;
+                                                        if (viewValueAsString.startsWith(".")) {
+                                                            viewValueAsString = `0${viewValueAsString}`;
                                                         }
-                                                        if (viewValueAsString.endsWith('.')) {
-                                                            viewValueAsString = viewValueAsString + '0';
+                                                        if (viewValueAsString.endsWith(".")) {
+                                                            viewValueAsString = viewValueAsString + "0";
                                                         }
                                                         viewValue = viewValueAsString;
                                                     }
@@ -224,7 +224,7 @@
                             }
                             else {
                                 let tryToGetDtoViewModel = $parse("vm")($scope);
-                                if (tryToGetDtoViewModel instanceof Foundation.ViewModel.ViewModels.DtoViewModel)
+                                if (tryToGetDtoViewModel instanceof ViewModel.ViewModels.DtoViewModel)
                                     dtoViewModel = tryToGetDtoViewModel as ViewModel.ViewModels.DtoViewModel<Model.Contracts.IDto, ViewModel.Implementations.DtoRules<Model.Contracts.IDto>>;
                             }
 

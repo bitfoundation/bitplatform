@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Net.Http;
 using OpenQA.Selenium.Remote;
-using Simple.OData.Client;
 using OpenQA.Selenium.Chrome;
 using Microsoft.AspNet.SignalR.Client;
 using Foundation.Api.Middlewares.SignalR;

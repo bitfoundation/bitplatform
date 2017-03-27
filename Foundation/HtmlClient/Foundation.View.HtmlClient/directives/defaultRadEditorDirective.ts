@@ -1,6 +1,6 @@
 ﻿module Foundation.View.Directives {
-    @Foundation.Core.DirectiveDependency({ name: "radEditor" })
-    export class DefaultRadEditor implements Foundation.ViewModel.Contracts.IDirective {
+    @Core.DirectiveDependency({ name: "radEditor" })
+    export class DefaultRadEditor implements ViewModel.Contracts.IDirective {
         public getDirectiveFactory(): ng.IDirectiveFactory {
             return () => ({
                 scope: false,
@@ -12,13 +12,13 @@
                 },
                 template: (element: JQuery, attrs: ng.IAttributes) => {
 
-                    const guidUtils = Foundation.Core.DependencyManager.getCurrent().resolveObject<Foundation.ViewModel.Implementations.GuidUtils>("GuidUtils");
+                    const guidUtils = Core.DependencyManager.getCurrent().resolveObject<ViewModel.Implementations.GuidUtils>("GuidUtils");
 
                     const replaceAll = (text: string, search: string, replacement: string) => {
                         return text.replace(new RegExp(search, "g"), replacement);
                     };
 
-                    const delayKey = "delay" + replaceAll(guidUtils.newGuid(), "-", "");
+                    const delayKey = `delay${replaceAll(guidUtils.newGuid(), "-", "")}`;
 
                     attrs["delayKey"] = delayKey;
 
@@ -29,13 +29,13 @@
                 },
                 link($scope: ng.IScope, element: JQuery, attributes: ng.IAttributes, requireArgs: { mdInputContainer: { element: JQuery, setHasValue: () => void } }) {
 
-                    const dependencyManager = Foundation.Core.DependencyManager.getCurrent();
+                    const dependencyManager = Core.DependencyManager.getCurrent();
 
                     const $timeout = dependencyManager.resolveObject<ng.ITimeoutService>("$timeout");
 
                     $timeout(() => {
 
-                        let kendoWidgetCreatedDisposal = $scope.$on("kendoWidgetCreated", (event, editor: kendo.ui.Editor) => {
+                        const kendoWidgetCreatedDisposal = $scope.$on("kendoWidgetCreated", (event, editor: kendo.ui.Editor) => {
 
                             if (editor.element[0] != element[0]) {
                                 return;

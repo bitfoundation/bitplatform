@@ -21,7 +21,7 @@ module Foundation.View.Directives {
                         return text.replace(new RegExp(search, "g"), replacement);
                     };
 
-                    const isolatedOptionsKey = "options" + replaceAll(guidUtils.newGuid(), "-", "");
+                    const isolatedOptionsKey = `options${replaceAll(guidUtils.newGuid(), "-", "")}`;
 
                     attrs["isolatedOptionsKey"] = isolatedOptionsKey;
 
@@ -32,7 +32,7 @@ module Foundation.View.Directives {
                     const viewTemplate = angular.element(element)
                         .children("view-template")
                         .attr("id", viewRowTemplateId)
-                        .attr('ng-cloak', '');
+                        .attr("ng-cloak", "");
 
                     angular.element(document.body).append(viewTemplate);
 
@@ -47,7 +47,7 @@ module Foundation.View.Directives {
 
                         editTemplate
                             .attr("id", editRowTemplateId)
-                            .attr('ng-cloak', '');
+                            .attr("ng-cloak", "");
 
                         angular.element(document.body).append(editTemplate);
 
@@ -63,7 +63,7 @@ module Foundation.View.Directives {
 
                         toolbarTemplate
                             .attr("id", toolbarTemplateId)
-                            .attr('ng-cloak', '');
+                            .attr("ng-cloak", "");
 
                         angular.element(document.body).append(toolbarTemplate);
 
@@ -79,7 +79,7 @@ module Foundation.View.Directives {
 
                         detailTemplate
                             .attr("id", detailTemplateId)
-                            .attr('ng-cloak', '');
+                            .attr("ng-cloak", "");
 
                         angular.element(document.body).append(detailTemplate);
 
@@ -141,7 +141,7 @@ module Foundation.View.Directives {
                                     if (grid.wrapper != null) {
 
                                         grid.wrapper.each(function (id, kElement) {
-                                            let dataObj = angular.element(kElement).data();
+                                            const dataObj = angular.element(kElement).data();
                                             for (let mData in dataObj) {
                                                 if (angular.isObject(dataObj[mData])) {
                                                     if (typeof dataObj[mData]["destroy"] == "function") {
@@ -239,7 +239,7 @@ module Foundation.View.Directives {
 
                             if (attributes["editTemplateId"] != null) {
 
-                                editTemplateElement = angular.element("#" + attributes["editTemplateId"]);
+                                editTemplateElement = angular.element(`#${attributes["editTemplateId"]}`);
 
                                 let titleAttrValue = editTemplateElement.attr("title");
 
@@ -303,7 +303,7 @@ module Foundation.View.Directives {
 
                             if (attributes["toolbarTemplateId"] != null) {
 
-                                const toolbarTemplateElement = angular.element("#" + attributes["toolbarTemplateId"]);
+                                const toolbarTemplateElement = angular.element(`#${attributes["toolbarTemplateId"]}`);
 
                                 const toolbarTemplateHtml = toolbarTemplateElement.html();
 
@@ -314,7 +314,7 @@ module Foundation.View.Directives {
 
                             if (attributes["detailTemplateId"] != null) {
 
-                                const detailTemplateElement = angular.element("#" + attributes["detailTemplateId"]);
+                                const detailTemplateElement = angular.element(`#${attributes["detailTemplateId"]}`);
 
                                 const detailTemplateHtml = angular.element(`<rad-grid-detail-template rad-model-item-template ng-model='::dataItem'>${detailTemplateElement.html()}</rad-grid-detail-template>`);
 
@@ -327,7 +327,7 @@ module Foundation.View.Directives {
 
                             const columns: Array<kendo.ui.GridColumn> = [];
 
-                            const viewTemplateElement = angular.element("#" + attributes["viewTemplateId"]);
+                            const viewTemplateElement = angular.element(`#${attributes["viewTemplateId"]}`);
 
                             let extras = viewTemplateElement.find("extras");
 
@@ -349,7 +349,7 @@ module Foundation.View.Directives {
                                         wrappedItem.append(extras);
                                     }
 
-                                    let template = item.innerHTML;
+                                    const template = item.innerHTML;
 
                                     const gridColumn: kendo.ui.GridColumn = {
                                         field: wrappedItem.attr("name"),
@@ -366,7 +366,7 @@ module Foundation.View.Directives {
                                     }
 
                                     if (wrappedItem.attr("name") == null)
-                                        throw new Error('column must have a name attribute');
+                                        throw new Error("column must have a name attribute");
 
                                     const field = dataSource.options.schema.model.fields[gridColumn.field];
 
@@ -383,13 +383,13 @@ module Foundation.View.Directives {
 
                                                 ui: (element: JQuery) => {
 
-                                                    let val = element.val();
+                                                    const val = element.val();
 
                                                     element.after('<input type="button" class="k-button" style="width:100%" />');
 
                                                     const datePickerButton = element.next();
 
-                                                    let persianDatePickerOptions: PDatePickerOptions = {
+                                                    const persianDatePickerOptions: PDatePickerOptions = {
                                                         position: ["0px", "0px"],
                                                         autoClose: field.viewType == "Date",
                                                         altField: element,
@@ -516,7 +516,7 @@ module Foundation.View.Directives {
 
                             if (attributes.onInit != null) {
                                 let onInitFN = $parse(attributes.onInit);
-                                if (typeof onInitFN == 'function') {
+                                if (typeof onInitFN == "function") {
                                     onInitFN($scope, { gridOptions: gridOptions });
                                 }
                             }

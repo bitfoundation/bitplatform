@@ -7,7 +7,7 @@
                 require: "ngModel",
                 restrict: "A",
                 scope: false,
-                compile: function () {
+                compile() {
                     return {
                         pre: function ($scope: ng.IScope, element: JQuery, attributes: ng.IAttributes, ctrl: ng.INgModelController) {
 

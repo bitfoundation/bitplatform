@@ -2,8 +2,6 @@
 using System.Reflection;
 using Foundation.Api.Contracts.Metadata;
 using System.ComponentModel.DataAnnotations;
-using System.Linq;
-using Foundation.Core.Models;
 
 namespace Foundation.Api.Implementations.Metadata
 {

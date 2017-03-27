@@ -1,15 +1,7 @@
-﻿using System;
-using System.Net;
+﻿using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
-using FakeItEasy;
-using Foundation.Model.DomainModels;
-using Foundation.Test.Core.Contracts;
-using Foundation.Test.Model.DomainModels;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Simple.OData.Client;
-using Foundation.Test.Api.ApiControllers;
-using Foundation.Api.ApiControllers;
 
 namespace Foundation.Test.Api.Middlewares.JobScheduler.Tests
 {

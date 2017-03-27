@@ -1,9 +1,4 @@
-﻿using System;
-using Foundation.Model.Contracts;
-using Foundation.Api.ApiControllers;
-using System.Reflection;
-
-namespace Simple.OData.Client
+﻿namespace Simple.OData.Client
 {
     public static class ODataClientExtensions
     {
