@@ -279,6 +279,43 @@ module Foundation.View.Directives {
                             if (dataSource.options.schema.model.fields[comboBoxOptions.dataValueField] == null)
                                 throw new Error(`Model has no property named ${comboBoxOptions.dataValueField} to be used as value field`);
 
+                            if (attributes.radVirtual != null) {
+
+                                let radVirtualEntityLoader = $parse(attributes.radVirtualEntityLoader);
+
+                                comboBoxOptions.virtual = {
+                                    mapValueTo: 'dataItem',
+                                    valueMapper: async (options: { value: string, success: (e: Array<any>) => void }): Promise<void> => {
+
+                                        try {
+
+                                            if (requireArgs.ngModel.$isEmpty(options.value)) {
+                                                options.success([]);
+                                                return;
+                                            }
+
+                                            let items = $.makeArray(dataSource.data())
+                                                .filter(t => t[comboBoxOptions.dataValueField] == options.value);
+
+                                            if (items.length == 0) {
+                                                items = [(await radVirtualEntityLoader($scope, { id: options.value }))]
+                                            }
+
+                                            options.success(items);
+
+                                            setTimeout(() => {
+                                                element.data("kendoComboBox").wrapper.find("input").val(items[0][comboBoxOptions.dataTextField]);
+                                            }, 0);
+
+                                        }
+                                        finally {
+                                            Foundation.ViewModel.ScopeManager.update$scope($scope);
+                                        }
+
+                                    }
+                                }
+                            }
+
                             DefaultRadComboDirective.defaultRadComboDirectiveCustomizers.forEach(radComboCustomizer => {
                                 radComboCustomizer($scope, attributes, element, comboBoxOptions);
                             });
