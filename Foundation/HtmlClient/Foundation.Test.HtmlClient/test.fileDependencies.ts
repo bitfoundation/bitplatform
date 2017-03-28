@@ -162,7 +162,7 @@
 
     dependencyManager.registerFileDependency({
         name: "kendo-ui-core",
-        path: "bit-framework/Foundation/HtmlClient/Foundation.Test.HtmlClient/bower_components/kendo-ui/js/kendo.ui.core.min",
+        path: "bit-framework/Foundation/HtmlClient/Foundation.Test.HtmlClient/bower_components/kendo-ui/src/js/kendo.ui.core",
         predicate: (appInfo) => {
             return appInfo.screenSize == "DesktopAndTablet" && appInfo.getConfig<string>("KendoUILoadMode") == "Core";
         }
@@ -170,7 +170,7 @@
 
     dependencyManager.registerFileDependency({
         name: "kendo-core",
-        path: "bit-framework/Foundation/HtmlClient/Foundation.Test.HtmlClient/bower_components/kendo-ui/js/kendo.Core.min",
+        path: "bit-framework/Foundation/HtmlClient/Foundation.Test.HtmlClient/bower_components/kendo-ui/src/js/kendo.Core",
         predicate: (appInfo) => {
             return appInfo.screenSize == "MobileAndPhablet" && appInfo.getConfig<string>("KendoUILoadMode") == "Core";
         }
@@ -178,7 +178,7 @@
 
     dependencyManager.registerFileDependency({
         name: "kendo-data",
-        path: "bit-framework/Foundation/HtmlClient/Foundation.Test.HtmlClient/bower_components/kendo-ui/js/kendo.data.min",
+        path: "bit-framework/Foundation/HtmlClient/Foundation.Test.HtmlClient/bower_components/kendo-ui/src/js/kendo.data",
         predicate: (appInfo) => {
             return appInfo.screenSize == "MobileAndPhablet" && appInfo.getConfig<string>("KendoUILoadMode") == "Core";
         }
@@ -186,7 +186,7 @@
 
     dependencyManager.registerFileDependency({
         name: "kendo-binder",
-        path: "bit-framework/Foundation/HtmlClient/Foundation.Test.HtmlClient/bower_components/kendo-ui/js/kendo.binder.min",
+        path: "bit-framework/Foundation/HtmlClient/Foundation.Test.HtmlClient/bower_components/kendo-ui/src/js/kendo.binder",
         predicate: (appInfo) => {
             return appInfo.screenSize == "MobileAndPhablet" && appInfo.getConfig<string>("KendoUILoadMode") == "Core";
         }
