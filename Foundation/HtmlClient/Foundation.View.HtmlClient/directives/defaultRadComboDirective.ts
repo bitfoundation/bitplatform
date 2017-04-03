@@ -304,7 +304,10 @@ module Foundation.View.Directives {
                                             options.success(items);
 
                                             setTimeout(() => {
-                                                element.data("kendoComboBox").wrapper.find("input").val(items[0][comboBoxOptions.dataTextField]);
+                                                let input = element.data("kendoComboBox").wrapper.find("input");
+                                                let item = items[0];
+                                                input.text(item[comboBoxOptions.dataTextField]);
+                                                input.val(item[comboBoxOptions.dataValueField]);
                                             }, 0);
 
                                         }
