@@ -1,0 +1,39 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <VersionPrefix>0.0.1</VersionPrefix>
+    <TargetFramework>net462</TargetFramework>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <AssemblyName>Foundation.AspNetCore</AssemblyName>
+    <PackageId>Foundation.AspNetCore</PackageId>
+    <GenerateAssemblyConfigurationAttribute>false</GenerateAssemblyConfigurationAttribute>
+    <GenerateAssemblyCompanyAttribute>false</GenerateAssemblyCompanyAttribute>
+    <GenerateAssemblyProductAttribute>false</GenerateAssemblyProductAttribute>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Bit.Data\Bit.Data.csproj" />
+    <ProjectReference Include="..\Foundation.Api\Foundation.Api.csproj" />
+  </ItemGroup>
+
+  <ItemGroup Condition=" '$(TargetFramework)' == 'net462' ">
+    <ProjectReference Include="..\Bit.Core\Bit.Core.csproj" />
+    <ProjectReference Include="..\Bit.Model\Bit.Model.csproj" />
+    <Reference Include="System" />
+    <Reference Include="Microsoft.CSharp" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Autofac" Version="4.4.0" />
+    <PackageReference Include="Autofac.Extensions.DependencyInjection" Version="4.0.0" />
+    <PackageReference Include="Autofac.Owin" Version="4.0.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Hosting" Version="1.1.1" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.Core" Version="1.1.2" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.Formatters.Json" Version="1.1.2" />
+    <PackageReference Include="Microsoft.AspNetCore.Owin" Version="1.1.1" />
+    <PackageReference Include="Microsoft.Owin" Version="3.0.1" />
+    <PackageReference Include="Microsoft.Owin.Host.HttpListener" Version="3.0.1" />
+    <PackageReference Include="Suave" Version="2.0.5" />
+  </ItemGroup>
+
+</Project>

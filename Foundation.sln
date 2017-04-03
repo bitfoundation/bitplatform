@@ -1,11 +1,24 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 14
-VisualStudioVersion = 14.0.25420.1
+# Visual Studio 15
+VisualStudioVersion = 15.0.26323.1
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "HtmlClient", "HtmlClient", "{49DAF47E-EB5F-46D9-B242-B4BB6E88458A}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Server", "Server", "{C4390E9A-3483-45A8-9A3F-D8DBFF3A38DB}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Foundation", "Foundation", "{9F894310-8457-4102-9757-5D87B5D28568}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Other", "Other", "{3B9BD8FE-95D6-4720-9FA9-ACBED0C6363F}"
+	ProjectSection(SolutionItems) = preProject
+		BitConfigV1.json = BitConfigV1.json
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "IdentityServer", "IdentityServer", "{9B4F2346-8010-48FE-BC0E-90EC484B6785}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "HtmlClient", "HtmlClient", "{D5D8F19D-195F-4542-B622-F8095EFFE7EA}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Server", "Server", "{94DC7011-6213-47E9-9B71-F6E02D3FEF8D}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Foundation.Core.HtmlClient", "Foundation\HtmlClient\Foundation.Core.HtmlClient\Foundation.Core.HtmlClient.csproj", "{D20B6C94-EC2F-411E-A9C9-94EDBE707386}"
 EndProject
@@ -15,23 +28,15 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Foundation.ViewModel.HtmlCl
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Foundation.Api", "Foundation\Server\Foundation.Api\Foundation.Api.csproj", "{469D5D14-B564-4AF4-A36C-B93C823156B9}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Foundation", "Foundation", "{9F894310-8457-4102-9757-5D87B5D28568}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Foundation.Test", "Foundation\Server\Foundation.Test\Foundation.Test.csproj", "{94B6AC28-3FE0-4126-9397-B7158C92D35C}"
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Other", "Other", "{3B9BD8FE-95D6-4720-9FA9-ACBED0C6363F}"
-	ProjectSection(SolutionItems) = preProject
-		BitConfigV1.json = BitConfigV1.json
-		global.json = global.json
-	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Foundation.Test.HtmlClient", "Foundation\HtmlClient\Foundation.Test.HtmlClient\Foundation.Test.HtmlClient.csproj", "{374B1FA9-E2F6-4393-9926-89E6D6AEC0FD}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Foundation.Test.Core.HtmlClient", "Foundation\HtmlClient\Foundation.Test.Core.HtmlClient\Foundation.Test.Core.HtmlClient.csproj", "{7DF0F6FB-4D09-49DE-B821-E67EEE985476}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Foundation.AspNetCore", "Foundation\Server\Foundation.AspNetCore\Foundation.AspNetCore.xproj", "{C6C8104A-3C44-4812-BACC-E8C32B6B7F10}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Foundation.AspNetCore", "Foundation\Server\Foundation.AspNetCore\Foundation.AspNetCore.csproj", "{C6C8104A-3C44-4812-BACC-E8C32B6B7F10}"
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Foundation.AspNetCore.Test", "Foundation\Server\Foundation.AspNetCore.Test\Foundation.AspNetCore.Test.xproj", "{CF58298B-7A2C-4F88-9FC4-F97B13EA150C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Foundation.AspNetCore.Test", "Foundation\Server\Foundation.AspNetCore.Test\Foundation.AspNetCore.Test.csproj", "{CF58298B-7A2C-4F88-9FC4-F97B13EA150C}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Foundation.Test.Core", "Foundation\Server\Foundation.Test.Core\Foundation.Test.Core.csproj", "{B0CCC9C9-822D-480B-AD8E-2C9B0A892C64}"
 EndProject
@@ -44,12 +49,6 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Bit.Data.EntityFrameworkCore", "Foundation\Server\Bit.Data.EntityFrameworkCore\Bit.Data.EntityFrameworkCore.csproj", "{795411D0-0471-47EA-B461-5A5235752C5A}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Bit.Data.EntityFramework", "Foundation\Server\Bit.Data.EntityFramework\Bit.Data.EntityFramework.csproj", "{86A1F761-36F3-4038-977D-1EA0ACE29D7C}"
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "IdentityServer", "IdentityServer", "{9B4F2346-8010-48FE-BC0E-90EC484B6785}"
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "HtmlClient", "HtmlClient", "{D5D8F19D-195F-4542-B622-F8095EFFE7EA}"
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Server", "Server", "{94DC7011-6213-47E9-9B71-F6E02D3FEF8D}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IdentityServer.HtmlClient", "IdentityServer\HtmlClient\IdentityServer.HtmlClient\IdentityServer.HtmlClient.csproj", "{E710AF9C-6DE6-4ADE-8B11-4B793880BFA9}"
 EndProject
@@ -226,6 +225,8 @@ Global
 	GlobalSection(NestedProjects) = preSolution
 		{49DAF47E-EB5F-46D9-B242-B4BB6E88458A} = {9F894310-8457-4102-9757-5D87B5D28568}
 		{C4390E9A-3483-45A8-9A3F-D8DBFF3A38DB} = {9F894310-8457-4102-9757-5D87B5D28568}
+		{D5D8F19D-195F-4542-B622-F8095EFFE7EA} = {9B4F2346-8010-48FE-BC0E-90EC484B6785}
+		{94DC7011-6213-47E9-9B71-F6E02D3FEF8D} = {9B4F2346-8010-48FE-BC0E-90EC484B6785}
 		{D20B6C94-EC2F-411E-A9C9-94EDBE707386} = {49DAF47E-EB5F-46D9-B242-B4BB6E88458A}
 		{AE47809D-E3CD-4D41-95CA-21013DFA26D5} = {49DAF47E-EB5F-46D9-B242-B4BB6E88458A}
 		{01A5615C-93C5-4F3E-9DCB-00145970B0F8} = {49DAF47E-EB5F-46D9-B242-B4BB6E88458A}
@@ -241,8 +242,6 @@ Global
 		{722D443E-450D-4C7B-94CF-AC8C553DD8FF} = {C4390E9A-3483-45A8-9A3F-D8DBFF3A38DB}
 		{795411D0-0471-47EA-B461-5A5235752C5A} = {C4390E9A-3483-45A8-9A3F-D8DBFF3A38DB}
 		{86A1F761-36F3-4038-977D-1EA0ACE29D7C} = {C4390E9A-3483-45A8-9A3F-D8DBFF3A38DB}
-		{D5D8F19D-195F-4542-B622-F8095EFFE7EA} = {9B4F2346-8010-48FE-BC0E-90EC484B6785}
-		{94DC7011-6213-47E9-9B71-F6E02D3FEF8D} = {9B4F2346-8010-48FE-BC0E-90EC484B6785}
 		{E710AF9C-6DE6-4ADE-8B11-4B793880BFA9} = {D5D8F19D-195F-4542-B622-F8095EFFE7EA}
 		{37D069D0-CB84-46FE-928C-900AB533E35D} = {D5D8F19D-195F-4542-B622-F8095EFFE7EA}
 		{8FBF33C3-7394-4090-BC9A-8675A47B3202} = {94DC7011-6213-47E9-9B71-F6E02D3FEF8D}
