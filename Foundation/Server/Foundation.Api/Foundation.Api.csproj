@@ -80,7 +80,7 @@
       <Private>True</Private>
     </Reference>
     <Reference Include="Hangfire.Azure.ServiceBusQueue, Version=0.1.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\..\packages\Hangfire.Azure.ServiceBusQueue.2.1.1\lib\net45\Hangfire.Azure.ServiceBusQueue.dll</HintPath>
+      <HintPath>..\..\..\packages\Hangfire.Azure.ServiceBusQueue.2.2.0\lib\net45\Hangfire.Azure.ServiceBusQueue.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="Hangfire.Core, Version=1.6.12.0, Culture=neutral, processorArchitecture=MSIL">
@@ -181,7 +181,7 @@
       <Private>True</Private>
     </Reference>
     <Reference Include="Newtonsoft.Json, Version=10.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
-      <HintPath>..\..\..\packages\Newtonsoft.Json.10.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
+      <HintPath>..\..\..\packages\Newtonsoft.Json.10.0.2\lib\net45\Newtonsoft.Json.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="NWebsec.Core, Version=1.6.0.0, Culture=neutral, PublicKeyToken=3613da5f958908a1, processorArchitecture=MSIL">
