@@ -25,7 +25,7 @@ namespace BitCodeGenerator.Implementations
                 throw new ArgumentNullException(nameof(htmlClientProxyGeneratorMapping));
 
             return htmlClientProxyGeneratorMapping.SourceProjects
-                .Select(projInfo => projects.SingleOrDefault(p => p.Name == projInfo.Name))
+                .Select(projInfo => projects.SingleOrDefault(p => p.Name == projInfo.Name && p.Language == LanguageNames.CSharp))
                 .Where(p => p != null)
                 .ToList();
         }
