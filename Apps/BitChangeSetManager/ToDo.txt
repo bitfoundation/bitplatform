@@ -8,3 +8,5 @@ Signalr Messaging
 Background Job Worker
 Sync
 Globalization
+Bundle scripts
+ASP.NET Core version
