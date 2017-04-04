@@ -17,6 +17,8 @@ using System.Diagnostics;
 using BitTools.Core.Contracts;
 using BitCodeGenerator.Implementations;
 using BitCodeGenerator.Implementations.HtmlClientProxyGenerator;
+using System.Reflection;
+using System.Globalization;
 
 namespace BitVSExtensionV1
 {
@@ -71,35 +73,17 @@ namespace BitVSExtensionV1
 
             _serviceContainer = this;
 
-            _dte = (DTE)_serviceContainer.GetService(typeof(SDTE));
-
-            if (_dte == null)
-            {
-                ShowInitialLoadProblem("dte is null");
-                return;
-            }
-
-            _buildEvents = _dte.Events.BuildEvents;
-
-            if (_buildEvents == null)
-            {
-                ShowInitialLoadProblem("buildEvents is null");
-                return;
-            }
-
-            _buildEvents.OnBuildProjConfigDone += _buildEvents_OnBuildProjConfigDone;
-
-            _buildEvents.OnBuildBegin += _buildEvents_OnBuildBegin;
-
-            _buildEvents.OnBuildDone += _buildEvents_OnBuildDone;
-
-            _applicationObject = Processes.GetDTE();
+            _applicationObject = (DTE2)GetGlobalService(typeof(DTE));
 
             if (_applicationObject == null)
             {
                 ShowInitialLoadProblem("applicationObject is null");
                 return;
             }
+
+            _applicationObject.Events.BuildEvents.OnBuildProjConfigDone += _buildEvents_OnBuildProjConfigDone;
+            _applicationObject.Events.BuildEvents.OnBuildDone += _buildEvents_OnBuildDone;
+            _applicationObject.Events.BuildEvents.OnBuildBegin += _buildEvents_OnBuildBegin;
 
             Window outputWindow = _applicationObject.DTE.Windows.Item(EnvDTE.Constants.vsWindowKindOutput);
 
@@ -115,6 +99,42 @@ namespace BitVSExtensionV1
             {
                 _outputWindow.OutputWindowPanes.Add(BitVSExtensionName);
             }
+
+            string version = _applicationObject.Version;
+
+            if (version == "14.0" /*VS 2015*/)
+            {
+                new[] { "Microsoft.CodeAnalysis", "Microsoft.CodeAnalysis.Common", "Microsoft.CodeAnalysis.CSharp", "Microsoft.CodeAnalysis.CSharp.Workspaces", "Microsoft.CodeAnalysis.VisualBasic", "Microsoft.CodeAnalysis.VisualBasic.Workspaces", "Microsoft.CodeAnalysis.Workspaces", "Microsoft.VisualStudio.LanguageServices", }.ToList()
+                    .ForEach(needsRuntimeAssemblyRedirectInVS2015 =>
+                    {
+                        RedirectAssembly(needsRuntimeAssemblyRedirectInVS2015, new Version("1.3.1.0"), "31bf3856ad364e35");
+                    });
+
+                RedirectAssembly("System.Collections.Immutable", new Version("1.1.37"), "b03f5f7f11d50a3a");
+            }
+        }
+
+        public void RedirectAssembly(string shortName, Version targetVersion, string publicKeyToken)
+        {
+            ResolveEventHandler handler = null;
+
+            handler = (sender, args) =>
+            {
+                AssemblyName requestedAssembly = new AssemblyName(args.Name);
+
+                if (requestedAssembly.Name != shortName)
+                    return null;
+
+                requestedAssembly.Version = targetVersion;
+                requestedAssembly.SetPublicKeyToken(new AssemblyName("x, PublicKeyToken=" + publicKeyToken).GetPublicKeyToken());
+                requestedAssembly.CultureInfo = CultureInfo.InvariantCulture;
+
+                AppDomain.CurrentDomain.AssemblyResolve -= handler;
+
+                return Assembly.Load(requestedAssembly);
+            };
+
+            AppDomain.CurrentDomain.AssemblyResolve += handler;
         }
 
         private void _buildEvents_OnBuildBegin(vsBuildScope scope, vsBuildAction action)
@@ -137,37 +157,46 @@ namespace BitVSExtensionV1
         {
             try
             {
-                Solution solution = _workspace.CurrentSolution;
-
-                if (action == vsBuildAction.vsBuildActionClean)
-                {
-                    new DefaultHtmlClientProxyCleaner(new DefaultBitCodeGeneratorMappingsProvider(new DefaultBitConfigProvider()))
-                            .DeleteCodes(_workspace, solution, _isBeingBuiltProjects);
-
-                    Log("Generated codes were deleted");
-                }
-                else
-                {
-                    Stopwatch watch = Stopwatch.StartNew();
-
-                    IProjectDtoControllersProvider controllersProvider = new DefaultProjectDtoControllersProvider();
-                    IProjectDtosProvider dtosProvider = new DefaultProjectDtosProvider(controllersProvider);
-
-                    new DefaultHtmlClientProxyGenerator(new DefaultBitCodeGeneratorOrderedProjectsProvider(),
-                        new DefaultBitCodeGeneratorMappingsProvider(new DefaultBitConfigProvider()), dtosProvider
-                        , new DefaultHtmlClientProxyDtoGenerator(), new DefaultHtmlClientContextGenerator(), controllersProvider, new DefaultProjectEnumTypesProvider(controllersProvider, dtosProvider))
-                            .GenerateCodes(_workspace, solution, _isBeingBuiltProjects);
-
-                    watch.Stop();
-
-                    Log($"Code Generation Completed in {watch.ElapsedMilliseconds} milli seconds");
-                }
+                _buildEvents_OnBuildDone_Internal(scope, action);
             }
             catch (Exception ex)
             {
                 Log(ex.ToString());
                 throw;
             }
+        }
+
+        private void _buildEvents_OnBuildDone_Internal(vsBuildScope scope, vsBuildAction action)
+        {
+            Solution solution = _workspace.CurrentSolution;
+
+            if (action == vsBuildAction.vsBuildActionClean)
+            {
+                DefaultHtmlClientProxyCleaner cleaner = new DefaultHtmlClientProxyCleaner(new DefaultBitCodeGeneratorMappingsProvider(new DefaultBitConfigProvider()));
+                cleaner.GetType().GetTypeInfo().GetMethod(nameof(DefaultHtmlClientProxyCleaner.DeleteCodes))
+                    .Invoke(cleaner, new object[] { _workspace, solution, _isBeingBuiltProjects });
+
+                Log("Generated codes were deleted");
+            }
+            else
+            {
+                Stopwatch watch = Stopwatch.StartNew();
+
+                IProjectDtoControllersProvider controllersProvider = new DefaultProjectDtoControllersProvider();
+                IProjectDtosProvider dtosProvider = new DefaultProjectDtosProvider(controllersProvider);
+
+                DefaultHtmlClientProxyGenerator generator = new DefaultHtmlClientProxyGenerator(new DefaultBitCodeGeneratorOrderedProjectsProvider(),
+                    new DefaultBitCodeGeneratorMappingsProvider(new DefaultBitConfigProvider()), dtosProvider
+                    , new DefaultHtmlClientProxyDtoGenerator(), new DefaultHtmlClientContextGenerator(), controllersProvider, new DefaultProjectEnumTypesProvider(controllersProvider, dtosProvider));
+
+                generator.GetType().GetTypeInfo().GetMethod(nameof(DefaultHtmlClientProxyGenerator.GenerateCodes))
+                    .Invoke(generator, new object[] { _workspace, solution, _isBeingBuiltProjects });
+
+                watch.Stop();
+
+                Log($"Code Generation Completed in {watch.ElapsedMilliseconds} milli seconds");
+            }
+
         }
 
         public void Log(string text)
@@ -198,23 +227,19 @@ namespace BitVSExtensionV1
 
         protected override void Dispose(bool disposing)
         {
-            if (_buildEvents != null)
+            if (_applicationObject?.Events?.BuildEvents != null)
             {
-                _buildEvents.OnBuildProjConfigDone -= _buildEvents_OnBuildProjConfigDone;
+                _applicationObject.Events.BuildEvents.OnBuildProjConfigDone -= _buildEvents_OnBuildProjConfigDone;
 
-                _buildEvents.OnBuildBegin -= _buildEvents_OnBuildBegin;
+                _applicationObject.Events.BuildEvents.OnBuildBegin -= _buildEvents_OnBuildBegin;
 
-                _buildEvents.OnBuildDone -= _buildEvents_OnBuildDone;
+                _applicationObject.Events.BuildEvents.OnBuildDone -= _buildEvents_OnBuildDone;
             }
 
             base.Dispose(disposing);
         }
 
         private readonly List<Project> _isBeingBuiltProjects = new List<Project>();
-
-        private BuildEvents _buildEvents;
-
-        private DTE _dte;
 
         private VisualStudioWorkspace _workspace;
 
