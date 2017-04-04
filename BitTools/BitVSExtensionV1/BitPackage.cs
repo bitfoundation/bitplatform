@@ -198,11 +198,14 @@ namespace BitVSExtensionV1
 
         protected override void Dispose(bool disposing)
         {
-            _buildEvents.OnBuildProjConfigDone -= _buildEvents_OnBuildProjConfigDone;
+            if (_buildEvents != null)
+            {
+                _buildEvents.OnBuildProjConfigDone -= _buildEvents_OnBuildProjConfigDone;
 
-            _buildEvents.OnBuildBegin -= _buildEvents_OnBuildBegin;
+                _buildEvents.OnBuildBegin -= _buildEvents_OnBuildBegin;
 
-            _buildEvents.OnBuildDone -= _buildEvents_OnBuildDone;
+                _buildEvents.OnBuildDone -= _buildEvents_OnBuildDone;
+            }
 
             base.Dispose(disposing);
         }
