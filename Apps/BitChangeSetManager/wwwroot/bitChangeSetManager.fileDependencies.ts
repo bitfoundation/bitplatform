@@ -29,6 +29,29 @@ module BitChangeSetManager {
     });
 
     dependencyManager.registerFileDependency({
+        name: "kendo-rtl-styles",
+        path: "bower_components/kendo-ui/styles/kendo.rtl.min",
+        predicate: (appInfo) => {
+            return appInfo.screenSize == "DesktopAndTablet" && appInfo.culture == "FaIr";
+        },
+        fileDependecyType: "Style"
+    });
+
+    dependencyManager.registerFileDependency({
+        name: "persian-datePicker-styles",
+        path: "bower_components/persian-datepicker/dist/css/persian-datepicker-0.4.9",
+        fileDependecyType: "Style",
+        predicate: (appInfo) => appInfo.culture == "FaIr"
+    });
+
+    dependencyManager.registerFileDependency({
+        name: "persian-datePicker-blue-styles",
+        path: "bower_components/persian-datepicker/dist/css/theme/persian-datepicker-blue",
+        fileDependecyType: "Style",
+        predicate: (appInfo) => appInfo.culture == "FaIr"
+    });
+
+    dependencyManager.registerFileDependency({
         name: "controls-styles",
         path: "bower_components/bit-releases/foundation.view/contents/styles/controls",
         fileDependecyType: "Style"
@@ -43,7 +66,15 @@ module BitChangeSetManager {
     dependencyManager.registerFileDependency({
         name: "en-US-styles",
         path: "bower_components/bit-releases/foundation.view/contents/styles/en-US",
-        fileDependecyType: "Style"
+        fileDependecyType: "Style",
+        predicate: appEnvProvider => appEnvProvider.culture == "EnUs"
+    });
+
+    dependencyManager.registerFileDependency({
+        name: "fa-IR-styles",
+        path: "bower_components/bit-releases/foundation.view/contents/styles/fa-IR",
+        fileDependecyType: "Style",
+        predicate: appEnvProvider => appEnvProvider.culture == "FaIr"
     });
 
     dependencyManager.registerFileDependency({
@@ -77,6 +108,24 @@ module BitChangeSetManager {
     dependencyManager.registerFileDependency({
         name: "kendo-ui-web",
         path: "bower_components/kendo-ui/js/kendo.web.min"
+    });
+
+    dependencyManager.registerFileDependency({
+        name: "kendo-culture-fa-IR",
+        path: "bower_components/kendo-ui/js/cultures/kendo.culture.fa-IR.min",
+        predicate: (appInfo) => {
+            return appInfo.screenSize == "DesktopAndTablet" && appInfo.culture == "FaIr";
+        }
+    });
+
+    dependencyManager.registerFileDependency({
+        // https://raw.githubusercontent.com/bit-foundation/kendo-ui-core/master/src/messages/kendo.messages.fa-IR.js
+        name: "kendo-messages-fa-IR",
+        path: "bower_components/kendo-ui/js/messages/kendo.messages.fa-IR",
+        continueOnError: true,
+        predicate: (appInfo) => {
+            return appInfo.screenSize == "DesktopAndTablet" && appInfo.culture == "FaIr";
+        }
     });
 
     dependencyManager.registerFileDependency({
@@ -142,6 +191,18 @@ module BitChangeSetManager {
     dependencyManager.registerFileDependency({
         name: "angular-translate",
         path: "bower_components/angular-translate/angular-translate"
+    });
+
+    dependencyManager.registerFileDependency({
+        name: "persian-date",
+        path: "bower_components/persian-date/dist/0.1.8/persian-date-0.1.8",
+        predicate: (appInfo) => appInfo.culture == "FaIr"
+    });
+
+    dependencyManager.registerFileDependency({
+        name: "persian-date-picker",
+        path: "bower_components/persian-datepicker/dist/js/persian-datepicker-0.4.9",
+        predicate: (appInfo) => appInfo.culture == "FaIr"
     });
 
     dependencyManager.registerFileDependency({

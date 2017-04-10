@@ -24,6 +24,14 @@ namespace BitChangeSetManager.Metadata
                         {
                             new EnvironmentCultureValue { Name = "Label" , Title = "Id" }
                         }
+                    },
+                    new EnvironmentCulture
+                    {
+                        Name = "FaIr",
+                        Values = new List<EnvironmentCultureValue>
+                        {
+                            new EnvironmentCultureValue { Name = "Label" , Title = "شناسه" }
+                        }
                     }
                 }
             });
@@ -39,6 +47,14 @@ namespace BitChangeSetManager.Metadata
                         {
                             new EnvironmentCultureValue { Name = "Label" , Title = "Customer name" }
                         }
+                    },
+                    new EnvironmentCulture
+                    {
+                        Name = "FaIr",
+                        Values = new List<EnvironmentCultureValue>
+                        {
+                            new EnvironmentCultureValue { Name = "Label" , Title = "نام مشتری" }
+                        }
                     }
                 }
             });
@@ -53,6 +69,14 @@ namespace BitChangeSetManager.Metadata
                         Values = new List<EnvironmentCultureValue>
                         {
                             new EnvironmentCultureValue { Name = "Label" , Title = "Delivered on" }
+                        }
+                    },
+                    new EnvironmentCulture
+                    {
+                        Name = "FaIr",
+                        Values = new List<EnvironmentCultureValue>
+                        {
+                            new EnvironmentCultureValue { Name = "Label" , Title = "ارائه شده در" }
                         }
                     }
                 }

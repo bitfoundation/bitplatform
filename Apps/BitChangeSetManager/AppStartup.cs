@@ -123,6 +123,7 @@ namespace BitChangeSetManager
             dependencyManager.RegisterDefaultPageMiddlewareUsingDefaultConfiguration();
 
             dependencyManager.Register<IChangeSetRepository, ChangeSetRepository>();
+            dependencyManager.Register<IUserSettingProvider, BitUserSettingProvider>();
         }
     }
 }

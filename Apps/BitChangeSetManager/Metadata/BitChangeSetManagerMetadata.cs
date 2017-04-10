@@ -30,7 +30,25 @@ namespace BitChangeSetManager.Metadata
                             new EnvironmentCultureValue { Name = "Commands", Title = "Commands" },
                             new EnvironmentCultureValue { Name = nameof(InsertIsDeined), Title = "Insert is denied" },
                             new EnvironmentCultureValue { Name = nameof(UpdateIsDeined), Title = "Update is denied" },
-                            new EnvironmentCultureValue { Name = nameof(DeleteIsDeined), Title = "Delete is denied" }
+                            new EnvironmentCultureValue { Name = nameof(DeleteIsDeined), Title = "Delete is denied" },
+                            new EnvironmentCultureValue { Name = "Save", Title = "Save" },
+                            new EnvironmentCultureValue { Name = "Cancel", Title = "Cancel" }
+                        }
+                    },
+                    new EnvironmentCulture
+                    {
+                        Name = "FaIr",
+                        Values = new List<EnvironmentCultureValue>
+                        {
+                            new EnvironmentCultureValue { Name = "Yes", Title = "بلی" },
+                            new EnvironmentCultureValue { Name = "No", Title = "خیر" },
+                            new EnvironmentCultureValue { Name = "Ok", Title = "باشه" },
+                            new EnvironmentCultureValue { Name = "Commands", Title = "فرامین" },
+                            new EnvironmentCultureValue { Name = nameof(InsertIsDeined), Title = "درج مجاز نیست" },
+                            new EnvironmentCultureValue { Name = nameof(UpdateIsDeined), Title = "ویرایش مجاز نیست" },
+                            new EnvironmentCultureValue { Name = nameof(DeleteIsDeined), Title = "حذف مجاز نیست" },
+                            new EnvironmentCultureValue { Name = "Save", Title = "ذخیره" },
+                            new EnvironmentCultureValue { Name = "Cancel", Title = "انصراف" }
                         }
                     }
                 }

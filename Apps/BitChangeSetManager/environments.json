@@ -24,6 +24,15 @@
             "Title": "Bit Change Set Manager"
           }
         ]
+      },
+      {
+        "Name": "FaIr",
+        "Values": [
+          {
+            "Name": "AppTitle",
+            "Title": "مدیریت تغییرات Bit"
+          }
+        ]
       }
     ],
     "Configs": [

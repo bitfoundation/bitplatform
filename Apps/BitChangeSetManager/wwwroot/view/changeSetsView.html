@@ -1,6 +1,6 @@
 ﻿<view>
 
-    <h4>Change sets:</h4>
+    <h4>{{'ChangeSets' | translate}}:</h4>
 
     <rad-grid rad-datasource="::vm.changeSetsDataSource">
         <toolbar-template>
@@ -41,7 +41,7 @@
 
     <div ng-if="vm.changeSetsDataSource.current != null">
 
-        <h4>Deliveries of {{vm.changeSetsDataSource.current.Title}}:</h4>
+        <h4>{{'DeliveriesOf' | translate}} {{vm.changeSetsDataSource.current.Title}}:</h4>
 
         <rad-grid rad-datasource="::vm.deliveriesDataSource" groupable="false">
             <view-template>
