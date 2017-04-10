@@ -91,10 +91,10 @@
     <Content Include="contents\styles\loader.less" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="contents\fonts\IRAN-Sans.ttf" />
+    <Content Include="tsconfig.json" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="tsconfig.json" />
+    <Folder Include="contents\fonts\" />
   </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>
