@@ -462,7 +462,12 @@ module Foundation.View.Directives {
                                         const filterDataSource: kendo.data.DataSource = $parse(filterDataSourceAttributeValue)($scope);
 
                                         const filterTextFieldName = wrappedItem.attr("filter-text-field");
-                                        const filterValueFieldName = wrappedItem.attr("filter-value-field");
+                                        let filterValueFieldName = wrappedItem.attr("filter-value-field");
+
+                                        if (filterValueFieldName == null) {
+                                            if (filterDataSource.options.schema != null && filterDataSource.options.schema.model != null && filterDataSource.options.schema.model.idField != null)
+                                                filterValueFieldName = filterDataSource.options.schema.model.idField;
+                                        }
 
                                         if (filterDataSource.options.schema.model.fields[filterTextFieldName] == null)
                                             throw new Error(`Model has no property named ${filterTextFieldName} to be used as text field`);

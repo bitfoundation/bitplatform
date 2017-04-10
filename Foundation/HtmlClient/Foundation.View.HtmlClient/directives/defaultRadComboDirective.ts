@@ -100,8 +100,6 @@ module Foundation.View.Directives {
                             if (radValueFieldName == null) {
                                 if (dataSource.options.schema != null && dataSource.options.schema.model != null && dataSource.options.schema.model.idField != null)
                                     radValueFieldName = dataSource.options.schema.model.idField;
-                                else
-                                    radValueFieldName = "Id";
                             }
 
                             let ngModelAssign = null;
@@ -307,7 +305,6 @@ module Foundation.View.Directives {
                                                 let input = element.data("kendoComboBox").wrapper.find("input");
                                                 let item = items[0];
                                                 input.text(item[comboBoxOptions.dataTextField]);
-                                                input.val(item[comboBoxOptions.dataValueField]);
                                             }, 0);
 
                                         }
