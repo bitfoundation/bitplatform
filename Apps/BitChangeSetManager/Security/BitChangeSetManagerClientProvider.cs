@@ -60,6 +60,48 @@ namespace BitChangeSetManager.Security
                     AuthorizationCodeLifetime = 86400 /*1 Day*/,
                     AccessTokenType = AccessTokenType.Jwt,
                     AllowAccessToAllCustomGrantTypes = true
+                },
+                new Client
+                {
+                    /*  Required nuget package: IdentityModel
+                        TokenClient client = new TokenClient("http://localhost:9090/bit-change-set-manager/core/connect/token", "BitChangeSetManager-ResOwner", "secret");
+
+                        TokenResponse tokenResponse = client.RequestResourceOwnerPasswordAsync("test1", "test", "openid profile user_info").Result;
+
+                        string access_token = tokenResponse.AccessToken;
+                     */
+                    ClientName = "BitChangeSetManager",
+                    Enabled = true,
+                    ClientId = "BitChangeSetManager-ResOwner",
+                    ClientSecrets = new List<Secret>
+                    {
+                        new Secret("secret".Sha512())
+                    },
+                    Flow = Flows.ResourceOwner,
+                    AllowedScopes = new List<string>
+                    {
+                        Constants.StandardScopes.OpenId,
+                        Constants.StandardScopes.Profile,
+                        "user_info"
+                    },
+                    ClientUri = "https://github.com/bit-foundation/bit-framework/",
+                    RequireConsent = false,
+                    RedirectUris = new List<string>
+                    {
+                        $@"{activeAppEnvironment.GetConfig<string>("ClientHostBaseUri")}{activeAppEnvironment.GetConfig<string>("ClientHostVirtualPath")}SignIn"
+                    },
+                    PostLogoutRedirectUris = new List<string>
+                    {
+                        $@"{activeAppEnvironment.GetConfig<string>("ClientHostBaseUri")}{activeAppEnvironment.GetConfig<string>("ClientHostVirtualPath")}SignOut"
+                    },
+                    AllowAccessToAllScopes = true,
+                    AlwaysSendClientClaims = true,
+                    IncludeJwtId = true,
+                    IdentityTokenLifetime = 86400 /*1 Day*/,
+                    AccessTokenLifetime = 86400 /*1 Day*/,
+                    AuthorizationCodeLifetime = 86400 /*1 Day*/,
+                    AccessTokenType = AccessTokenType.Jwt,
+                    AllowAccessToAllCustomGrantTypes = true
                 }
             };
         }
