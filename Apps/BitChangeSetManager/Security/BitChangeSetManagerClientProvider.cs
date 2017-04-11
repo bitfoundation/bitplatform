@@ -63,12 +63,27 @@ namespace BitChangeSetManager.Security
                 },
                 new Client
                 {
-                    /*  Required nuget package: IdentityModel
-                        TokenClient client = new TokenClient("http://localhost:9090/bit-change-set-manager/core/connect/token", "BitChangeSetManager-ResOwner", "secret");
+                    /*  Required nuget package: IdentityModel + Microsoft.Net.Http
+                     
+                        public async Task<string> CallSecureApiSample()
+                        {
+                            string baseAddress = "http://localhost:9090/bit-change-set-manager";
 
-                        TokenResponse tokenResponse = client.RequestResourceOwnerPasswordAsync("test1", "test", "openid profile user_info").Result;
+                            using (TokenClient identityClient = new TokenClient($"{baseAddress}/core/connect/token", "BitChangeSetManager-ResOwner", "secret"))
+                            {
+                                TokenResponse tokenResponse = await identityClient.RequestResourceOwnerPasswordAsync("test1", "test", "openid profile user_info");
 
-                        string access_token = tokenResponse.AccessToken;
+                                using (HttpClient httpClient = new HttpClient { })
+                                {
+                                    httpClient.SetBearerToken(tokenResponse.AccessToken);
+
+                                    string response = await httpClient.GetStringAsync($"{baseAddress}/odata/BitChangeSetManager/changeSets");
+
+                                    return response;
+                                }
+                            }
+                        }
+
                      */
                     ClientName = "BitChangeSetManager",
                     Enabled = true,
