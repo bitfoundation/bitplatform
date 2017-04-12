@@ -14,7 +14,11 @@ namespace Foundation.Api.Middlewares
                 throw new ArgumentNullException(nameof(owinApp));
 
             owinApp.MapWhen(IsDefaultPageAndNotLoggedIn,
-                innerApp => { innerApp.Use<RedirectToSsoIfNotLoggedInMiddleware>(); });
+                innerApp =>
+                {
+                    innerApp.Use<OwinNoCacheResponseMiddleware>();
+                    innerApp.Use<RedirectToSsoIfNotLoggedInMiddleware>();
+                });
         }
 
         public virtual bool IsDefaultPageAndNotLoggedIn(IOwinContext cntx)

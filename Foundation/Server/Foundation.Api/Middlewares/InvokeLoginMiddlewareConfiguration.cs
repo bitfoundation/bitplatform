@@ -13,6 +13,7 @@ namespace Foundation.Api.Middlewares
 
             owinApp.Map("/InvokeLogin", innerApp =>
             {
+                innerApp.Use<OwinNoCacheResponseMiddleware>();
                 innerApp.Use<InvokeLoginMiddleware>();
             });
         }
