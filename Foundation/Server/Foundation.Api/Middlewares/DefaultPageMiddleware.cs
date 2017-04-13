@@ -21,7 +21,7 @@ namespace Foundation.Api.Middlewares
 
             context.Response.ContentType = "text/html; charset=utf-8";
 
-            await context.Response.WriteAsync(defaultPage);
+            await context.Response.WriteAsync(defaultPage, context.Request.CallCancelled);
         }
     }
 }

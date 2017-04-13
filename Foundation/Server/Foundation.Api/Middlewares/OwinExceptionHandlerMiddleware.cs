@@ -66,7 +66,7 @@ namespace Foundation.Api.Middlewares
                 {
                     IExceptionToHttpErrorMapper exceptionToHttpErrorMapper = dependencyResolver.Resolve<IExceptionToHttpErrorMapper>();
                     context.Response.StatusCode = Convert.ToInt32(exceptionToHttpErrorMapper.GetStatusCode(exp));
-                    await context.Response.WriteAsync(exceptionToHttpErrorMapper.GetMessage(exp));
+                    await context.Response.WriteAsync(exceptionToHttpErrorMapper.GetMessage(exp), context.Request.CallCancelled);
                     context.Response.ReasonPhrase = exceptionToHttpErrorMapper.GetReasonPhrase(exp);
                 }
                 throw;

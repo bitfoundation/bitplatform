@@ -22,7 +22,7 @@ namespace Foundation.Api.Middlewares
 
             context.Response.ContentType = "application/json; charset=utf-8";
 
-            await context.Response.WriteAsync(contentFormatter.Serialize(await appMetadataProvider.GetAppMetadata()));
+            await context.Response.WriteAsync(contentFormatter.Serialize(await appMetadataProvider.GetAppMetadata()), context.Request.CallCancelled);
         }
     }
 }

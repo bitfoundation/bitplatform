@@ -85,7 +85,7 @@ namespace Foundation.AspNetCore.Middlewares
                 {
                     IExceptionToHttpErrorMapper exceptionToHttpErrorMapper = context.RequestServices.GetService<IExceptionToHttpErrorMapper>();
                     context.Response.StatusCode = Convert.ToInt32(exceptionToHttpErrorMapper.GetStatusCode(exp));
-                    await context.Response.WriteAsync(exceptionToHttpErrorMapper.GetMessage(exp));
+                    await context.Response.WriteAsync(exceptionToHttpErrorMapper.GetMessage(exp) , context.RequestAborted);
                     context.Features.Get<IHttpResponseFeature>().ReasonPhrase = exceptionToHttpErrorMapper.GetReasonPhrase(exp);
                 }
                 throw;
