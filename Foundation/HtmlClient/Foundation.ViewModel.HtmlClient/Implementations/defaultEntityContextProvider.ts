@@ -59,6 +59,8 @@
 
                                 for (let part of parts) {
                                     jayDataDtoType = jayDataDtoType[part];
+                                    if (jayDataDtoType == null)
+                                        return;
                                 }
 
                                 const memberDefenitions = jayDataDtoType != null ? jayDataDtoType.memberDefinitions : null;
