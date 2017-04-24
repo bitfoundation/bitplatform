@@ -14,8 +14,9 @@
 
         public changeSetMetadata = BitChangeSetManagerModel.ChangeSetDto;
         public deliveryMetadata = BitChangeSetManagerModel.DeliveryDto;
+        public messageRecieverDisposer: () => void;
 
-        public constructor( @Inject("EntityContextProvider") public entityContextProvider: IEntityContextProvider) {
+        public constructor( @Inject("EntityContextProvider") public entityContextProvider: IEntityContextProvider, @Inject("MessageReceiver") public messageReceiver: IMessageReceiver, @Inject("$mdToast") public $mdToast: ng.material.IToastService) {
             super();
         }
 
@@ -41,6 +42,18 @@
                 .customers
                 .map(c => { return { Id: c.Id, Name: c.Name } })
                 .asKendoDataSource();
+
+            this.messageRecieverDisposer = this.messageReceiver.onMessageReceived("ChangeSetInserted", async (args: { userName: string, title: string }) => {
+                await this.$mdToast.show(this.$mdToast.simple()
+                    .textContent(`Change set ${args.title} has been inserted by ${args.userName}`)
+                    .hideDelay(3000)
+                );
+            });
+        }
+
+        public async $onDestroy() {
+            if (this.messageRecieverDisposer != null)
+                this.messageRecieverDisposer();
         }
     }
 }

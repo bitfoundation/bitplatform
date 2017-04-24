@@ -64,6 +64,8 @@ namespace BitChangeSetManager.DataAccess
 
                 usersRepository.Add(new User { Id = Guid.NewGuid(), UserName = "Test1", Password = password, Culture = BitCulture.EnUs });
                 usersRepository.Add(new User { Id = Guid.NewGuid(), UserName = "Test2", Password = password, Culture = BitCulture.FaIr });
+                usersRepository.Add(new User { Id = Guid.NewGuid(), UserName = "Test3", Password = password, Culture = BitCulture.EnUs });
+                usersRepository.Add(new User { Id = Guid.NewGuid(), UserName = "Test4", Password = password, Culture = BitCulture.FaIr });
 
                 IBitChangeSetManagerRepository<Customer> customersRepository = childResolver.Resolve<IBitChangeSetManagerRepository<Customer>>();
                 IBitChangeSetManagerRepository<Delivery> deliveriesRepository = childResolver.Resolve<IBitChangeSetManagerRepository<Delivery>>();

@@ -382,6 +382,7 @@
     </Content>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Api\BitChangeSetManagerAppMessageHubEvents.cs" />
     <Compile Include="Api\ChangeSetDeliveryRequirementsController.cs" />
     <Compile Include="Api\ChangeSetSeveritiesController.cs" />
     <Compile Include="Api\BitUserSettingProvider.cs" />

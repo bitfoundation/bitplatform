@@ -100,7 +100,7 @@ namespace BitChangeSetManager
 
             dependencyManager.RegisterSignalRConfiguration<SignalRSqlServerScaleoutConfiguration>();
             dependencyManager.RegisterSignalRConfiguration<SignalRAuthorizeConfiguration>();
-            dependencyManager.RegisterSignalRMiddlewareUsingDefaultConfiguration(typeof(MessagesHub).GetTypeInfo().Assembly);
+            dependencyManager.RegisterSignalRMiddlewareUsingDefaultConfiguration<BitChangeSetManagerAppMessageHubEvents>(typeof(MessagesHub).GetTypeInfo().Assembly);
 
             dependencyManager.Register<IAppMetadataProvider, DefaultAppMetadataProvider>(lifeCycle: DependencyLifeCycle.SingleInstance);
             dependencyManager.RegisterMetadata(typeof(FoundationEdmModelProvider).GetTypeInfo().Assembly, typeof(BitChangeSetManagerEdmModelProvider).GetTypeInfo().Assembly);

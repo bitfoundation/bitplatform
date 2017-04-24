@@ -2,6 +2,8 @@
 using BitChangeSetManager.Dto;
 using BitChangeSetManager.Model;
 using Foundation.Api.ApiControllers;
+using Foundation.Core.Contracts;
+using System;
 using System.Data.Entity;
 using System.Linq;
 using System.Threading;
@@ -12,11 +14,17 @@ namespace BitChangeSetManager.Api
     public class ChangeSetsController : DefaultDtoSetController<ChangeSet, ChangeSetDto>
     {
         private readonly IChangeSetRepository _changeSetsRepository;
+        private readonly IMessageSender _messageSender;
+        private readonly IUserInformationProvider _userInformationProvider;
+        private readonly IBitChangeSetManagerRepository<User> _usersRepository;
 
-        public ChangeSetsController(IChangeSetRepository changeSetsRepository)
+        public ChangeSetsController(IChangeSetRepository changeSetsRepository, IMessageSender messageSender, IUserInformationProvider userInformationProvider, IBitChangeSetManagerRepository<Model.User> usersRepository)
             : base(changeSetsRepository)
         {
             _changeSetsRepository = changeSetsRepository;
+            _messageSender = messageSender;
+            _userInformationProvider = userInformationProvider;
+            _usersRepository = usersRepository;
         }
 
         public IBitChangeSetManagerRepository<Customer> CustomersRepository { get; set; }
@@ -33,6 +41,17 @@ namespace BitChangeSetManager.Api
             int customersCount = await CustomersRepository.GetAll().CountAsync(cancellationToken);
 
             return DtoModelMapper.FromModelQueryToDtoQuery(_changeSetsRepository.GetAll(), parameters: new { customersCount = customersCount });
+        }
+
+        public override async Task<ChangeSetDto> Insert(ChangeSetDto dto, CancellationToken cancellationToken)
+        {
+            ChangeSetDto insertedChangeSet = await base.Insert(dto, cancellationToken);
+
+            User user = await _usersRepository.GetByIdAsync(Guid.Parse(_userInformationProvider.GetCurrentUserId()), cancellationToken);
+
+            _messageSender.SendMessageToGroups("ChangeSetInserted", new { userName = user.UserName, title = insertedChangeSet.Title }, user.Culture.ToString());
+
+            return insertedChangeSet;
         }
     }
 }

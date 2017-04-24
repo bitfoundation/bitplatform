@@ -12,7 +12,7 @@
     export class App extends SecureViewModel {
 
 
-        public constructor( @Inject("MessageReceiver") public messageReceiver: FoundationCore.Contracts.IMessageReceiver) {
+        public constructor( @Inject("MessageReceiver") public messageReceiver: IMessageReceiver) {
             super();
         }
 
