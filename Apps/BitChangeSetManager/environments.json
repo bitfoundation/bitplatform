@@ -68,7 +68,11 @@
       },
       {
         "Key": "BitChangeSetManagerDbConnectionString",
-        "Value": "Data Source=.;Initial Catalog=BitChangeSetManagerDb;Integrated Security=True;"
+        "Value": "Data Source=.;Initial Catalog=BitChangeSetManagerDb;Integrated Security=True;Application Name=BitChangeSetManager;"
+      },
+      {
+        "Key": "SignalRSqlServerConnectionString",
+        "Value": "Data Source=.;Initial Catalog=BitChangeSetManagerDb;Integrated Security=True;Application Name=BitChangeSetManager-Signalr;"
       }
     ]
   }

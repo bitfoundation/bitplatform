@@ -206,6 +206,11 @@ module BitChangeSetManager {
     });
 
     dependencyManager.registerFileDependency({
+        name: "signalR",
+        path: "bower_components/signalr/jquery.signalR"
+    });
+
+    dependencyManager.registerFileDependency({
         name: "decimaljs",
         path: "bower_components/decimal.js/decimal"
     });

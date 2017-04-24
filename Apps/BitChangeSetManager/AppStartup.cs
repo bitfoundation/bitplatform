@@ -1,6 +1,5 @@
 ﻿using BitChangeSetManager.Api;
 using BitChangeSetManager.DataAccess;
-using BitChangeSetManager.Model;
 using BitChangeSetManager.Security;
 using Foundation.Api;
 using Foundation.Api.Contracts;
@@ -9,6 +8,8 @@ using Foundation.Api.Implementations;
 using Foundation.Api.Implementations.Metadata;
 using Foundation.Api.Implementations.Project;
 using Foundation.Api.Middlewares;
+using Foundation.Api.Middlewares.SignalR;
+using Foundation.Api.Middlewares.SignalR.Implementations;
 using Foundation.Api.Middlewares.WebApi.OData.ActionFilters;
 using Foundation.Core.Contracts;
 using Foundation.Core.Contracts.Project;
@@ -96,6 +97,10 @@ namespace BitChangeSetManager
                 }).Resolve<IOwinMiddlewareConfiguration>("WebApiOData");
 
             }, lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExciting: false);
+
+            dependencyManager.RegisterSignalRConfiguration<SignalRSqlServerScaleoutConfiguration>();
+            dependencyManager.RegisterSignalRConfiguration<SignalRAuthorizeConfiguration>();
+            dependencyManager.RegisterSignalRMiddlewareUsingDefaultConfiguration(typeof(MessagesHub).GetTypeInfo().Assembly);
 
             dependencyManager.Register<IAppMetadataProvider, DefaultAppMetadataProvider>(lifeCycle: DependencyLifeCycle.SingleInstance);
             dependencyManager.RegisterMetadata(typeof(FoundationEdmModelProvider).GetTypeInfo().Assembly, typeof(BitChangeSetManagerEdmModelProvider).GetTypeInfo().Assembly);
