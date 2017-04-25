@@ -30,6 +30,8 @@ using System.Reflection;
 using Foundation.Api;
 using Foundation.AspNetCore.Contracts;
 using Microsoft.AspNetCore.Builder;
+using Foundation.Api.Middlewares.SignalR.Implementations;
+using Foundation.Api.Middlewares.SignalR;
 
 namespace BitChangeSetManager.Core
 {
@@ -119,6 +121,10 @@ namespace BitChangeSetManager.Core
                 }).Resolve<IOwinMiddlewareConfiguration>("WebApiOData");
 
             }, lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExciting: false);
+
+            dependencyManager.RegisterSignalRConfiguration<SignalRSqlServerScaleoutConfiguration>();
+            dependencyManager.RegisterSignalRConfiguration<SignalRAuthorizeConfiguration>();
+            dependencyManager.RegisterSignalRMiddlewareUsingDefaultConfiguration(typeof(MessagesHub).GetTypeInfo().Assembly);
 
             dependencyManager.Register<IAppMetadataProvider, DefaultAppMetadataProvider>(lifeCycle: DependencyLifeCycle.SingleInstance);
             dependencyManager.RegisterMetadata(typeof(FoundationEdmModelProvider).GetTypeInfo().Assembly, typeof(BitChangeSetManagerEdmModelProvider).GetTypeInfo().Assembly);
