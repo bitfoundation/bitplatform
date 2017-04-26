@@ -32,17 +32,17 @@ namespace Foundation.Test.Api.ApiControllers
 
         [Get]
         [AllowAnonymous]
-        public virtual IQueryable<ParentEntity> Get()
+        public virtual async Task<IQueryable<ParentEntity>> Get(CancellationToken cancellationToken)
         {
-            return _parentModelsRepository
-                .GetAll();
+            return await _parentModelsRepository
+                .GetAllAsync(cancellationToken);
         }
 
         [Get]
         public virtual async Task<ParentEntity> Get([FromODataUri]long key, CancellationToken cancellationToken)
         {
-            ParentEntity parentEntity = await _parentModelsRepository
-                .GetAll()
+            ParentEntity parentEntity = await (await _parentModelsRepository
+                .GetAllAsync(cancellationToken))
                 .FirstOrDefaultAsync(t => t.Id == key, cancellationToken);
 
             if (parentEntity == null)

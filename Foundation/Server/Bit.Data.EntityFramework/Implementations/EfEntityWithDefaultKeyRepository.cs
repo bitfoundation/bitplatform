@@ -30,7 +30,7 @@ namespace Bit.Data.EntityFramework.Implementations
 
         public virtual async Task<TEntity> GetByIdAsync(TKey key, CancellationToken cancellationToken)
         {
-            return await GetAll().WhereByKey(key)
+            return await (await GetAllAsync(cancellationToken)).WhereByKey(key)
                .FirstOrDefaultAsync(cancellationToken);
         }
 

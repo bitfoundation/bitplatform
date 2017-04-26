@@ -3,6 +3,8 @@ using Foundation.Core.Contracts;
 using Foundation.DataAccess.Contracts;
 using Foundation.Model.DomainModels;
 using System;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace Foundation.Api.ApiControllers
 {
@@ -29,12 +31,12 @@ namespace Foundation.Api.ApiControllers
         }
 
         [Get]
-        public virtual IQueryable<UserSetting> Get()
+        public virtual async Task<IQueryable<UserSetting>> Get(CancellationToken cancellationToken)
         {
             string userId = _userInformationProvider.GetCurrentUserId();
 
-            return _usersSettingsRepository
-                .GetAll()
+            return (await _usersSettingsRepository
+                .GetAllAsync(cancellationToken))
                 .Where(userSetting => userSetting.UserId == userId);
         }
     }

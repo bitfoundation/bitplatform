@@ -55,17 +55,17 @@ namespace Foundation.Test.Api.ApiControllers
 
         [Get]
         [AllowAnonymous]
-        public virtual IQueryable<TestModel> Get()
+        public virtual async Task<IQueryable<TestModel>> Get(CancellationToken cancellationToken)
         {
-            return _testModelsRepository.Value
-                .GetAll();
+            return await _testModelsRepository.Value
+                .GetAllAsync(cancellationToken);
         }
 
         [Get]
         public virtual async Task<TestModel> Get([FromODataUri]long key, CancellationToken cancellationToken)
         {
-            TestModel testModel = await _testModelsRepository.Value
-                .GetAll()
+            TestModel testModel = await (await _testModelsRepository.Value
+                .GetAllAsync(cancellationToken))
                 .FirstOrDefaultAsync(t => t.Id == key, cancellationToken);
 
             if (testModel == null)
@@ -86,7 +86,7 @@ namespace Foundation.Test.Api.ApiControllers
         public virtual async Task<TestModel> PartialUpdate([FromODataUri] long key, Delta<TestModel> modelDelta,
             CancellationToken cancellationToken)
         {
-            TestModel model = await _testModelsRepository.Value.GetAll()
+            TestModel model = await (await _testModelsRepository.Value.GetAllAsync(cancellationToken))
                 .FirstOrDefaultAsync(m => m.Id == key, cancellationToken);
 
             if (model == null)
@@ -114,7 +114,7 @@ namespace Foundation.Test.Api.ApiControllers
         [Delete]
         public virtual async Task Delete([FromODataUri] long key, CancellationToken cancellationToken)
         {
-            TestModel model = await _testModelsRepository.Value.GetAll()
+            TestModel model = await (await _testModelsRepository.Value.GetAllAsync(cancellationToken))
                 .FirstOrDefaultAsync(m => m.Id == key, cancellationToken);
 
             if (model == null)
@@ -241,24 +241,24 @@ namespace Foundation.Test.Api.ApiControllers
         [Function]
         public virtual async Task<TestModel> CustomActionMethodWithSingleDtoReturnValueTest(CancellationToken cancellationToken)
         {
-            return await _testModelsRepository.Value
-                .GetAll()
+            return await (await _testModelsRepository.Value
+                .GetAllAsync(cancellationToken))
                 .FirstAsync(cancellationToken);
         }
 
         [Function]
         public virtual async Task<IEnumerable<TestModel>> CustomActionMethodWithArrayOfEntitiesReturnValueTest(CancellationToken cancellationToken)
         {
-            return await _testModelsRepository.Value
-                .GetAll()
+            return await (await _testModelsRepository.Value
+                .GetAllAsync(cancellationToken))
                 .ToListAsync(cancellationToken);
         }
 
         [Function]
-        public virtual IQueryable<TestModel> CustomActionMethodWithQueryableOfEntitiesReturnValueTest()
+        public virtual async Task<IQueryable<TestModel>> CustomActionMethodWithQueryableOfEntitiesReturnValueTest(CancellationToken cancellationToken)
         {
-            return _testModelsRepository.Value
-                .GetAll();
+            return await _testModelsRepository.Value
+                .GetAllAsync(cancellationToken);
         }
 
         [Function]

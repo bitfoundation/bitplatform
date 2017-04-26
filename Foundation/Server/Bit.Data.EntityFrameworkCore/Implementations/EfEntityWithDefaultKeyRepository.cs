@@ -31,7 +31,7 @@ namespace Foundation.DataAccess.Implementations.EntityFrameworkCore
 
         public virtual async Task<TEntity> GetByIdAsync(TKey key, CancellationToken cancellationToken)
         {
-            return await GetAll().Where("Id = @0", key)
+            return await (await GetAllAsync(cancellationToken)).Where("Id = @0", key)
                .FirstOrDefaultAsync(cancellationToken);
         }
 

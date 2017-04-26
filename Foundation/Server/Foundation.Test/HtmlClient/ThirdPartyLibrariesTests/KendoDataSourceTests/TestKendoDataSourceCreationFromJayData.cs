@@ -5,6 +5,7 @@ using Foundation.Test.Core.Implementations;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using OpenQA.Selenium.Remote;
 using System.Linq;
+using System.Threading;
 
 namespace Foundation.Test.HtmlClient.ThirdPartyLibrariesTests.KendoDataSourceTests
 {
@@ -28,7 +29,7 @@ namespace Foundation.Test.HtmlClient.ThirdPartyLibrariesTests.KendoDataSourceTes
                     .OfType<TestModelsController>()
                     .Single();
 
-                A.CallTo(() => testModelsController.Get())
+                A.CallTo(() => testModelsController.Get(A<CancellationToken>.Ignored))
                     .MustHaveHappened(Repeated.Exactly.Once);
 
                 ILogger logger = TestDependencyManager.CurrentTestDependencyManager.Objects

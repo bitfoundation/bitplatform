@@ -119,7 +119,7 @@ namespace Foundation.Api.ApiControllers
         [Get]
         public virtual async Task<IQueryable<TDto>> GetAll(CancellationToken cancellationToken)
         {
-            return DtoModelMapper.FromModelQueryToDtoQuery(Repository.GetAll());
+            return DtoModelMapper.FromModelQueryToDtoQuery(await Repository.GetAllAsync(cancellationToken));
         }
     }
 }

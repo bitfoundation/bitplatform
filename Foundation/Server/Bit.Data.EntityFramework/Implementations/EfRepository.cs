@@ -201,6 +201,11 @@ namespace Bit.Data.EntityFramework.Implementations
             return _set.AsNoTracking();
         }
 
+        public virtual async Task<IQueryable<TEntity>> GetAllAsync(CancellationToken cancellationToken)
+        {
+            return _set.AsNoTracking();
+        }
+
         public virtual IQueryable<TChild> GetChildsQuery<TChild>(TEntity entity, Expression<Func<TEntity, ICollection<TChild>>> childs) where TChild : class
         {
             throw new NotImplementedException();

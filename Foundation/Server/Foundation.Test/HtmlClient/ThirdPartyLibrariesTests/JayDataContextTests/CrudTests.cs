@@ -155,7 +155,7 @@ namespace Foundation.Test.HtmlClient.ThirdPartyLibrariesTests.JayDataContextTest
                     .OfType<ParentEntitiesController>()
                     .Single();
 
-                A.CallTo(() => parentEntitiesController.Get())
+                A.CallTo(() => parentEntitiesController.Get(A<CancellationToken>.Ignored))
                     .MustHaveHappened(Repeated.Exactly.Once);
             }
         }
@@ -177,14 +177,14 @@ namespace Foundation.Test.HtmlClient.ThirdPartyLibrariesTests.JayDataContextTest
                     .OfType<ParentEntitiesController>()
                     .Single();
 
-                A.CallTo(() => parentEntitiesController.Get())
+                A.CallTo(() => parentEntitiesController.Get(A<CancellationToken>.Ignored))
                     .MustHaveHappened(Repeated.Exactly.Once);
 
                 TestModelsController testModelsController = TestDependencyManager.CurrentTestDependencyManager.Objects
                     .OfType<TestModelsController>()
                     .Single();
 
-                A.CallTo(() => testModelsController.Get())
+                A.CallTo(() => testModelsController.Get(A<CancellationToken>.Ignored))
                     .MustHaveHappened(Repeated.Exactly.Once);
             }
         }

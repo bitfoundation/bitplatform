@@ -43,6 +43,8 @@ namespace Foundation.DataAccess.Contracts
 
         IQueryable<TEntity> GetAll();
 
+        Task<IQueryable<TEntity>> GetAllAsync(CancellationToken cancellationToken);
+
         IQueryable<TChild> GetChildsQuery<TChild>(TEntity entity, Expression<Func<TEntity, ICollection<TChild>>> childs)
             where TChild : class;
 
