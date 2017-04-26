@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 14
-VisualStudioVersion = 14.0.25420.1
+# Visual Studio 15
+VisualStudioVersion = 15.0.26403.7
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BitTools.Core", "BitTools\BitTools.Core\BitTools.Core.csproj", "{BC781EBA-8BC0-4D99-AE8F-DEFD81CDBD83}"
 EndProject
@@ -14,6 +14,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BitCodeGenerator.Test", "BitTools\BitCodeGenerator.Test\BitCodeGenerator.Test.csproj", "{68E603AF-2472-4B68-9BC6-9772AFCA9579}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BitVSExtensionV1", "BitTools\BitVSExtensionV1\BitVSExtensionV1.csproj", "{F22F2025-9D98-48EA-B5CC-FFB0E90F3AE7}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BitODataCSProxyGeneratorItemTemplate", "BitTools\BitODataCSProxyGeneratorItemTemplate\BitODataCSProxyGeneratorItemTemplate.csproj", "{B7C505DA-20FD-4453-91A2-8DBD6D920F54}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -45,6 +47,10 @@ Global
 		{F22F2025-9D98-48EA-B5CC-FFB0E90F3AE7}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F22F2025-9D98-48EA-B5CC-FFB0E90F3AE7}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F22F2025-9D98-48EA-B5CC-FFB0E90F3AE7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B7C505DA-20FD-4453-91A2-8DBD6D920F54}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B7C505DA-20FD-4453-91A2-8DBD6D920F54}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B7C505DA-20FD-4453-91A2-8DBD6D920F54}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B7C505DA-20FD-4453-91A2-8DBD6D920F54}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
