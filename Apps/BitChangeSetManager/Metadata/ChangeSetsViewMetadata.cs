@@ -25,7 +25,8 @@ namespace BitChangeSetManager.Metadata
                             new EnvironmentCultureValue { Name = "ChangeSetDataIsInvalid" , Title = "Your change set's data is invalid" },
                             new EnvironmentCultureValue { Name = "EditChangeSet" , Title = "Edit change set" },
                             new EnvironmentCultureValue { Name = "ChangeSets" , Title = "ChangeSets" },
-                            new EnvironmentCultureValue { Name = "DeliveriesOf" , Title = "Deliveries of" }
+                            new EnvironmentCultureValue { Name = "DeliveriesOf" , Title = "Deliveries of" },
+                            new EnvironmentCultureValue { Name = "ChangeSetHasBeenInsertedByUser" , Title = "Change set {{title}} has been inserted by {{userName}}" }
                         }
                     },
                     new EnvironmentCulture
@@ -38,7 +39,8 @@ namespace BitChangeSetManager.Metadata
                             new EnvironmentCultureValue { Name = "ChangeSetDataIsInvalid" , Title = "اطلاعات ChangeSet شما اشتباه است" },
                             new EnvironmentCultureValue { Name = "EditChangeSet" , Title = "ویرایش ChangeSet" },
                             new EnvironmentCultureValue { Name = "ChangeSets" , Title = "Change Set ها" },
-                            new EnvironmentCultureValue { Name = "DeliveriesOf" , Title = "ارائه های" }
+                            new EnvironmentCultureValue { Name = "DeliveriesOf" , Title = "ارائه های" },
+                            new EnvironmentCultureValue { Name = "ChangeSetHasBeenInsertedByUser" , Title = "Change set {{title}} به وسیله {{userName}} درج شد" }
                         }
                     }
                 }
