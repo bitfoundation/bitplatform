@@ -1,7 +1,7 @@
 ﻿module Foundation.Test.ViewModels {
 
-    @Core.FormViewModelDependency({ name: "AngularTranslateFormViewModel", templateUrl: "|Foundation|/Foundation.Test.HtmlClient/views/tests/angularTranslateview.html" })
-    export class AngularTranslateFormViewModel extends ViewModel.ViewModels.SecureFormViewModel {
+    @Core.SecureFormViewModelDependency({ name: "AngularTranslateFormViewModel", templateUrl: "|Foundation|/Foundation.Test.HtmlClient/views/tests/angularTranslateview.html" })
+    export class AngularTranslateFormViewModel extends ViewModel.ViewModels.FormViewModel {
 
         public constructor( @Core.Inject("$translate") public $translate: ng.translate.ITranslateService) {
             super();

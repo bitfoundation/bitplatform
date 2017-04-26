@@ -1,6 +1,6 @@
 ﻿module Foundation.Test.ViewModels {
-    @Core.FormViewModelDependency({ name: "DateTimeServiceFormViewModel",  templateUrl: "|Foundation|/Foundation.Test.HtmlClient/views/tests/dateTimeServiceView.html" })
-    export class DateTimeServiceFormViewModel extends ViewModel.ViewModels.SecureFormViewModel {
+    @Core.SecureFormViewModelDependency({ name: "DateTimeServiceFormViewModel",  templateUrl: "|Foundation|/Foundation.Test.HtmlClient/views/tests/dateTimeServiceView.html" })
+    export class DateTimeServiceFormViewModel extends ViewModel.ViewModels.FormViewModel {
 
         public constructor( @Core.Inject("DateTimeService") public dateTimeService: ViewModel.Contracts.IDateTimeService) {
             super();

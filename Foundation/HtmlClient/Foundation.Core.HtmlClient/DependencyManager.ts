@@ -568,6 +568,32 @@ module Foundation.Core {
         };
     }
 
+    export function SecureFormViewModelDependency(formViewModelDependency: IFormViewModelDependency): ClassDecorator {
+
+        return (targetFormViewModel: IFormViewModelDependency & Function): Function => {
+
+            targetFormViewModel = Injectable()(targetFormViewModel) as IFormViewModelDependency & Function;
+
+            let original$canActivate = formViewModelDependency.$canActivate as Function;
+
+            formViewModelDependency.$canActivate = ["$nextInstruction", "$prevInstruction", function (next: ng.ComponentInstruction, prev: ng.ComponentInstruction) {
+                const securityService = Core.DependencyManager.getCurrent().resolveObject<Core.Contracts.ISecurityService>("securityService");
+                if (!securityService.isLoggedIn()) {
+                    securityService.login();
+                    return false;
+                }
+                return original$canActivate == null ? true : original$canActivate.apply(this, arguments);
+            }];
+
+            formViewModelDependency.type = targetFormViewModel;
+
+            DependencyManager.getCurrent()
+                .registerFormViewModelDependency(formViewModelDependency);
+
+            return targetFormViewModel;
+        };
+    }
+
     export function ComponentDependency(componentDependency: IComponentDependency): ClassDecorator {
 
         return (targetComponent: IComponentDependency & Function): Function => {

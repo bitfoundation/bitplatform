@@ -81,7 +81,6 @@
     <TypeScriptCompile Include="Implementations\signalRMessageReceiver.ts" />
     <TypeScriptCompile Include="Implementations\dtoRules.ts" />
     <TypeScriptCompile Include="Contracts\iDtoViewModel.ts" />
-    <TypeScriptCompile Include="viewModels\secureFormViewModel.ts" />
     <TypeScriptCompile Include="viewModels\formViewModel.ts" />
   </ItemGroup>
   <ItemGroup>

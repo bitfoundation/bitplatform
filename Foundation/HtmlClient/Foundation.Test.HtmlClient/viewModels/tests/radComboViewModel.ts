@@ -1,6 +1,6 @@
 ﻿module Foundation.Test.ViewModels {
-    @Core.FormViewModelDependency({ name: "RadComboFormViewModel", templateUrl: "|Foundation|/Foundation.Test.HtmlClient/views/tests/radComboview.html" })
-    export class RadComboFormViewModel extends ViewModel.ViewModels.SecureFormViewModel {
+    @Core.SecureFormViewModelDependency({ name: "RadComboFormViewModel", templateUrl: "|Foundation|/Foundation.Test.HtmlClient/views/tests/radComboview.html" })
+    export class RadComboFormViewModel extends ViewModel.ViewModels.FormViewModel {
 
         public testModelsDataSource: kendo.data.DataSource = null;
 

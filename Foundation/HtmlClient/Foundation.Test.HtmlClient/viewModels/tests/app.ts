@@ -1,6 +1,6 @@
 ﻿module Foundation.Test.ViewModels {
 
-    @Core.FormViewModelDependency({
+    @Core.SecureFormViewModelDependency({
         name: "App",
         templateUrl: "|Foundation|/Foundation.Test.HtmlClient/views/tests/app.html",
         $routeConfig: [
@@ -19,7 +19,7 @@
             { path: "/**", redirectTo: ["NestedRouteMainFormViewModel"] }
         ]
     })
-    export class App extends ViewModel.ViewModels.SecureFormViewModel {
+    export class App extends ViewModel.ViewModels.FormViewModel {
 
         public constructor( @Core.Inject("MessageReceiver") public messageReceiver: Core.Contracts.IMessageReceiver) {
             super();

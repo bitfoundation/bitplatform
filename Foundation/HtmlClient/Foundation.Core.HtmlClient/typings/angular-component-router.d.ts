@@ -479,7 +479,7 @@ declare module "angular" {
     // Supplement IComponentOptions from angular.d.ts with router-specific
     // fields.
     interface IComponentOptions {
-        $canActivate?: (...args: any[]) => boolean | angular.IPromise<boolean>;
+        $canActivate?: Injectable<(...args: any[]) => boolean | Promise<boolean>>;
         $routeConfig?: RouteDefinition[];
     }
 }

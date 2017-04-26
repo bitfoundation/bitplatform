@@ -9,10 +9,6 @@
             return this.ngOutlet.$$outlet.currentInstruction;
         }
 
-        public async $routerCanActivate(route: any): Promise<boolean> {
-            return true;
-        }
-
         public async $routerOnActivate(route: any): Promise<void> {
 
         }

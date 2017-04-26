@@ -31,26 +31,6 @@ module Foundation.ViewModel.Implementations {
 
             formViewModelDependencies.forEach(vm => {
 
-                const original$routerOnActivate = vm.type.prototype.$routerOnActivate;
-
-                const original$routerCanActivate = vm.type.prototype.$routerCanActivate;
-
-                vm.type.prototype.$routerOnActivate = async function (prev, next) {
-
-                    const canActivate = original$routerCanActivate == null || await original$routerCanActivate.call(this, [next, prev]);
-
-                    if (canActivate == false)
-                        throw new Error("Can't activate view model");
-
-                    if (original$routerOnActivate != null) {
-                        return await original$routerOnActivate.call(this, [next, prev]);
-                    }
-                };
-
-            });
-
-            formViewModelDependencies.forEach(vm => {
-
                 if (vm.templateUrl != null)
                     vm.templateUrl = this.pathProvider.getFullPath(vm.templateUrl);
 
