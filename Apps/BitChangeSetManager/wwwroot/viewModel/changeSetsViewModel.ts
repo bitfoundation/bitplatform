@@ -1,10 +1,10 @@
 ﻿module BitChangeSetManager.ViewModels {
 
-    @FormViewModelDependency({
+    @SecureFormViewModelDependency({
         name: "ChangeSetsViewModel",
         templateUrl: `view/changeSetsView.html`
     })
-    export class ChangeSetsViewModel extends SecureViewModel {
+    export class ChangeSetsViewModel extends FormViewModel {
 
         public changeSetsDataSource: kendo.data.DataSource;
         public deliveriesDataSource: kendo.data.DataSource;

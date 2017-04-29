@@ -7,6 +7,7 @@ import FoundationVM = Foundation.ViewModel;
 import FoundationView = Foundation.View;
 
 import FormViewModelDependency = FoundationCore.FormViewModelDependency;
+import SecureFormViewModelDependency = FoundationCore.FormViewModelDependency;
 import DtoViewModelDependency = FoundationCore.DtoViewModelDependency;
 import DtoRulesDependency = FoundationCore.DtoRulesDependency;
 import Inject = FoundationCore.Inject;
@@ -16,7 +17,6 @@ import ClientAppProfileManager = FoundationCore.ClientAppProfileManager;
 import DependencyManager = FoundationCore.DependencyManager;
 
 import FormViewModel = FoundationVM.ViewModels.FormViewModel;
-import SecureViewModel = FoundationVM.ViewModels.SecureFormViewModel;
 import DtoViewModel = FoundationVM.ViewModels.DtoViewModel;
 import DtoFormController = FoundationVM.ViewModels.DtoFormController;
 import DtoRules = FoundationVM.Implementations.DtoRules;
