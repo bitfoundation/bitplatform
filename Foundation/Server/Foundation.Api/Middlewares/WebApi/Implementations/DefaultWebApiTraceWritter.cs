@@ -22,9 +22,6 @@ namespace Foundation.Api.Middlewares.WebApi.Implementations
                 ILogger logger = scopeDependencyResolver.Resolve<ILogger>();
                 IScopeStatusManager scopeStatusManager = scopeDependencyResolver.Resolve<IScopeStatusManager>();
 
-                if (logger.LogData.Select(ld => ld.Value).OfType<Guid>().Any(d => d == traceRecord.RequestId))
-                    return;
-
                 if (scopeStatusManager.WasSucceeded())
                     scopeStatusManager.MarkAsFailed();
 
