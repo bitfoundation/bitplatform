@@ -38,20 +38,20 @@ namespace Foundation.Api.Middlewares.WebApi.OData.ActionFilters
             {
                 ObjectContent objContent = ((ObjectContent)(actionExecutedContext.Response.Content));
 
-                if (objContent.Value == null)
-                {
-                    actionExecutedContext.Response.StatusCode = HttpStatusCode.NoContent;
-                    actionExecutedContext.Response.Content = null;
-                }
-                else
-                {
-                    TypeInfo actionReturnType = objContent.Value.GetType().GetTypeInfo();
+                TypeInfo actionReturnType = objContent.ObjectType.GetTypeInfo();
 
-                    if (typeof(string) != actionReturnType && typeof(IEnumerable).GetTypeInfo().IsAssignableFrom(actionReturnType))
+                if (typeof(string) != actionReturnType && typeof(IEnumerable).GetTypeInfo().IsAssignableFrom(actionReturnType))
+                {
+                    TypeInfo queryElementType = actionReturnType.HasElementType ? actionReturnType.GetElementType().GetTypeInfo() : actionReturnType.GetGenericArguments().First() /* Why not calling Single() ? http://stackoverflow.com/questions/41718323/why-variable-of-type-ienumerablesomething-gettype-getgenericargsuments-c */.GetTypeInfo();
+
+                    if (objContent.Value == null)
+                    {
+                        objContent.Value = Array.CreateInstance(queryElementType, 0);
+                    }
+                    else
                     {
                         bool isIQueryable = typeof(IQueryable).GetTypeInfo().IsAssignableFrom(actionReturnType);
 
-                        TypeInfo queryElementType = actionReturnType.HasElementType ? actionReturnType.GetElementType().GetTypeInfo() : actionReturnType.GetGenericArguments().First() /* Why not calling Single() ? http://stackoverflow.com/questions/41718323/why-variable-of-type-ienumerablesomething-gettype-getgenericargsuments-c */.GetTypeInfo();
                         IDataProviderSpecificMethodsProvider dataProviderSpecificMethodsProvider = null;
 
                         if (isIQueryable == true)
