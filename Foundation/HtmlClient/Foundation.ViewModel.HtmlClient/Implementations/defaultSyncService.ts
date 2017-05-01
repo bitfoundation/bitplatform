@@ -59,7 +59,7 @@
             if (entitySetNames.some(entitySetName => entitySetName == null))
                 throw new Error("entitySetName may not be null");
 
-            let entitySetConfigs = entitySetNames
+            const entitySetConfigs = entitySetNames
                 .map(entitySetName => { return this.entitySetConfigs.find(ec => ec.entitySetName.toLowerCase() == entitySetName.toLowerCase()); });
 
             if (entitySetConfigs.some(entitySetConfig => entitySetConfig == null))
@@ -68,11 +68,11 @@
             if (navigator.onLine == false)
                 return;
 
-            let onlineContext = await this.onlineContextFactory();
-            let offlineContext = await this.offlineContextFactory();
+            const onlineContext = await this.onlineContextFactory();
+            const offlineContext = await this.offlineContextFactory();
             offlineContext["ignoreEntityEvents"] = true;
 
-            let entitySetSyncMaterials = entitySetConfigs.map(entitySetConfig => {
+            const entitySetSyncMaterials = entitySetConfigs.map(entitySetConfig => {
                 return {
                     entitySetConfig: entitySetConfig,
                     offlineEntitySet: offlineContext[entitySetConfig.entitySetName] as $data.EntitySet<Model.Contracts.ISyncableDto>,
@@ -81,22 +81,22 @@
                 };
             });
 
-            let toServerEntitySetSyncMaterials = entitySetSyncMaterials.filter(entitySetSyncMaterial => entitySetSyncMaterial.entitySetConfig.syncConfig.toServerSync == true || (typeof entitySetSyncMaterial.entitySetConfig.syncConfig.toServerSync == "function" && entitySetSyncMaterial.entitySetConfig.syncConfig.toServerSync() == true));
-            let fromServerEntitySetSyncMaterials = entitySetSyncMaterials.filter(entitySetSyncMaterial => entitySetSyncMaterial.entitySetConfig.syncConfig.fromServerSync == true || (typeof entitySetSyncMaterial.entitySetConfig.syncConfig.fromServerSync == "function" && entitySetSyncMaterial.entitySetConfig.syncConfig.fromServerSync() == true));
+            const toServerEntitySetSyncMaterials = entitySetSyncMaterials.filter(entitySetSyncMaterial => entitySetSyncMaterial.entitySetConfig.syncConfig.toServerSync == true || (typeof entitySetSyncMaterial.entitySetConfig.syncConfig.toServerSync == "function" && entitySetSyncMaterial.entitySetConfig.syncConfig.toServerSync() == true));
+            const fromServerEntitySetSyncMaterials = entitySetSyncMaterials.filter(entitySetSyncMaterial => entitySetSyncMaterial.entitySetConfig.syncConfig.fromServerSync == true || (typeof entitySetSyncMaterial.entitySetConfig.syncConfig.fromServerSync == "function" && entitySetSyncMaterial.entitySetConfig.syncConfig.fromServerSync() == true));
 
             if (toServerEntitySetSyncMaterials.length > 0) {
 
-                let allRecentlyChangedOfflineEntities = await offlineContext.batchExecuteQuery(toServerEntitySetSyncMaterials.map(entitySetSyncMaterial => {
+                const allRecentlyChangedOfflineEntities = await offlineContext.batchExecuteQuery(toServerEntitySetSyncMaterials.map(entitySetSyncMaterial => {
                     return entitySetSyncMaterial.offlineEntitySet.filter(e => e.ISV != true);
                 }));
 
                 for (let i = 0; i < toServerEntitySetSyncMaterials.length; i++) {
 
-                    let entitySetSyncMaterial = toServerEntitySetSyncMaterials[i];
-                    let recentlyChangedOfflineEntities = allRecentlyChangedOfflineEntities[i];
+                    const entitySetSyncMaterial = toServerEntitySetSyncMaterials[i];
+                    const recentlyChangedOfflineEntities = allRecentlyChangedOfflineEntities[i];
 
-                    for (let modifiedOfflineEntity of recentlyChangedOfflineEntities) {
-                        let clonedEntityToBeSavedInOnlineContext = entitySetSyncMaterial.onlineEntitySet.elementType["create"](modifiedOfflineEntity["initData"]) as Model.Contracts.ISyncableDto;
+                    for (const modifiedOfflineEntity of recentlyChangedOfflineEntities) {
+                        const clonedEntityToBeSavedInOnlineContext = entitySetSyncMaterial.onlineEntitySet.elementType["create"](modifiedOfflineEntity["initData"]) as Model.Contracts.ISyncableDto;
                         onlineContext.attach(clonedEntityToBeSavedInOnlineContext, $data.EntityAttachMode.AllChanged);
                         if (clonedEntityToBeSavedInOnlineContext.IsArchived == true)
                             clonedEntityToBeSavedInOnlineContext.entityState = $data.EntityState.Deleted;
@@ -112,11 +112,11 @@
 
             if (fromServerEntitySetSyncMaterials.length > 0) {
 
-                let allOfflineEntitiesOrderedByVersion = await offlineContext.batchExecuteQuery(fromServerEntitySetSyncMaterials.map(entitySetSyncMaterial => {
+                const allOfflineEntitiesOrderedByVersion = await offlineContext.batchExecuteQuery(fromServerEntitySetSyncMaterials.map(entitySetSyncMaterial => {
                     return entitySetSyncMaterial.offlineEntitySet.orderByDescending(e => e.Version);
                 })) as Model.Contracts.ISyncableDto[][];
 
-                let loadRecentlyChangedOnlineEntitiesQueries = fromServerEntitySetSyncMaterials.map((entitySetSyncMaterial, i) => {
+                const loadRecentlyChangedOnlineEntitiesQueries = fromServerEntitySetSyncMaterials.map((entitySetSyncMaterial, i) => {
 
                     const offlineEntitiesOrderedByVersion = allOfflineEntitiesOrderedByVersion[i];
 
@@ -131,31 +131,34 @@
 
                 });
 
-                let allRecentlyChangedOnlineEntities = (await onlineContext.batchExecuteQuery(loadRecentlyChangedOnlineEntitiesQueries)) as Model.Contracts.ISyncableDto[][];
+                const allRecentlyChangedOnlineEntities = (await onlineContext.batchExecuteQuery(loadRecentlyChangedOnlineEntitiesQueries)) as Model.Contracts.ISyncableDto[][];
 
                 for (let i = 0; i < allRecentlyChangedOnlineEntities.length; i++) {
 
-                    let entitySetSyncMaterial = fromServerEntitySetSyncMaterials[i];
-                    let recentlyChangedOnlineEntities = allRecentlyChangedOnlineEntities[i];
-                    let offlineEntitiesOrderedByVersion = allOfflineEntitiesOrderedByVersion[i];
+                    const entitySetSyncMaterial = fromServerEntitySetSyncMaterials[i];
+                    const recentlyChangedOnlineEntities = allRecentlyChangedOnlineEntities[i];
+                    const offlineEntitiesOrderedByVersion = allOfflineEntitiesOrderedByVersion[i];
 
-                    for (let recentlyChangedOnlineEntity of recentlyChangedOnlineEntities) {
+                    for (const recentlyChangedOnlineEntity of recentlyChangedOnlineEntities) {
 
-                        let clonedEntity = entitySetSyncMaterial.offlineEntitySet.elementType["create"](recentlyChangedOnlineEntity["initData"]) as Model.Contracts.ISyncableDto;
-                        clonedEntity.ISV = true;
+                        const hasEquivalentInOfflineContext = offlineEntitiesOrderedByVersion.some(e => entitySetSyncMaterial.keyMembers.every(key => e[key.name] == recentlyChangedOnlineEntity[key.name]));
 
-                        offlineContext.attach(clonedEntity, $data.EntityAttachMode.AllChanged);
+                        if (recentlyChangedOnlineEntity.IsArchived == false || hasEquivalentInOfflineContext == true) {
 
-                        if (offlineEntitiesOrderedByVersion.some(e => entitySetSyncMaterial.keyMembers.every(key => e[key.name] == clonedEntity[key.name]))) {
+                            const clonedEntity = entitySetSyncMaterial.offlineEntitySet.elementType["create"](recentlyChangedOnlineEntity["initData"]) as Model.Contracts.ISyncableDto;
+                            clonedEntity.ISV = true;
+                            offlineContext.attach(clonedEntity, $data.EntityAttachMode.AllChanged);
+
                             if (clonedEntity.IsArchived == true) {
                                 clonedEntity.entityState = $data.EntityState.Deleted;
                             }
-                            else {
+                            else if (hasEquivalentInOfflineContext == true) {
                                 clonedEntity.entityState = $data.EntityState.Modified;
                             }
+                            else if (hasEquivalentInOfflineContext == false) {
+                                clonedEntity.entityState = $data.EntityState.Added;
+                            }
                         }
-                        else
-                            clonedEntity.entityState = $data.EntityState.Added;
                     }
                 }
 
