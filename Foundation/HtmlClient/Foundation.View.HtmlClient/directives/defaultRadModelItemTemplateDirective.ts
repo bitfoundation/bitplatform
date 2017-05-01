@@ -9,7 +9,7 @@
                 scope: false,
                 compile() {
                     return {
-                        pre: function ($scope: ng.IScope, element: JQuery, attributes: ng.IAttributes, ctrl: ng.INgModelController) {
+                        pre($scope: ng.IScope, element: JQuery, attributes: ng.IAttributes & { ngModel: string }, ctrl: ng.INgModelController) {
 
                             const dependencyManager = Core.DependencyManager.getCurrent();
                             const $parse = dependencyManager.resolveObject<ng.IParseService>("$parse");

@@ -48,7 +48,7 @@ module Foundation.View.Directives {
 
                     return template;
                 },
-                link($scope: ng.IScope, element: JQuery, attributes: ng.IAttributes, requireArgs: { mdInputContainer: { element: JQuery } }) {
+                link($scope: ng.IScope, element: JQuery, attributes: ng.IAttributes & { radText: string, radDatasource: string, radTextFieldName: string, onInit: string }, requireArgs: { mdInputContainer: { element: JQuery } }) {
 
                     const dependencyManager = Core.DependencyManager.getCurrent();
 
@@ -88,9 +88,11 @@ module Foundation.View.Directives {
                                         tree.wrapper.each(function (id, kElement) {
                                             const dataObj = angular.element(kElement).data();
                                             for (let mData in dataObj) {
-                                                if (angular.isObject(dataObj[mData])) {
-                                                    if (typeof dataObj[mData]["destroy"] == "function") {
-                                                        dataObj[mData].destroy();
+                                                if (dataObj.hasOwnProperty(mData)) {
+                                                    if (angular.isObject(dataObj[mData])) {
+                                                        if (typeof dataObj[mData]["destroy"] == "function") {
+                                                            dataObj[mData].destroy();
+                                                        }
                                                     }
                                                 }
                                             }

@@ -8,7 +8,7 @@ module Foundation.View.Directives {
         public getDirectiveFactory(): ng.IDirectiveFactory {
             return () => ({
                 scope: false,
-                compile: function (element: JQuery, attributes: ng.IAttributes) {
+                compile(element: JQuery, attributes: ng.IAttributes) {
                     return {
                         pre: function ($scope: ng.IScope, element, attributes: ng.IAttributes, controller: ng.INgModelController, transcludeFn: ng.ITranscludeFunction) {
 

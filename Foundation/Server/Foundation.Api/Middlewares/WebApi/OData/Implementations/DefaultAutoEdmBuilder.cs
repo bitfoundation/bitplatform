@@ -88,7 +88,6 @@ namespace Foundation.Api.Middlewares.WebApi.OData.Implementations
         private void BuildControllerOperations<TDto>(ODataModelBuilder modelBuilder, TypeInfo apiController)
             where TDto : class
         {
-            TypeInfo dtoType = typeof(TDto).GetTypeInfo();
             string controllerName = GetControllerName(apiController);
             EntitySetConfiguration<TDto> entitySet = modelBuilder.EntitySet<TDto>(controllerName);
 

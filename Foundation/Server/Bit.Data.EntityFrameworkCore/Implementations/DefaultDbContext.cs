@@ -1,6 +1,7 @@
 ﻿using System;
 using Microsoft.EntityFrameworkCore;
 using Foundation.DataAccess.Contracts.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
 
 namespace Foundation.DataAccess.Implementations.EntityFrameworkCore
 {

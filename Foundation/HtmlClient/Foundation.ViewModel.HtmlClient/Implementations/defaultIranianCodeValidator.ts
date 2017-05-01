@@ -23,8 +23,6 @@ module Foundation.ViewModel.Implementations {
         @Core.Log()
         public companyCodeIsValid(companyCode: string): boolean {
 
-            const num = 0;
-
             let result = (/^\d{11}$/).test(companyCode);
 
             if (result) {

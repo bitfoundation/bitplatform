@@ -306,14 +306,14 @@ module Foundation.Core {
                     return;
                 }
 
-                let element: HTMLScriptElement | HTMLLinkElement = null;
+                let element: HTMLScriptElement & HTMLLinkElement = null;
 
                 if (nextFile.fileDependecyType == "Script") {
-                    element = document.createElement("script");
+                    element = document.createElement("script") as HTMLScriptElement & HTMLLinkElement;
                     element.type = "text/javascript";
                     element.src = nextFile.path;
                 } else {
-                    element = document.createElement("link");
+                    element = document.createElement("link") as HTMLScriptElement & HTMLLinkElement;
                     element.rel = "stylesheet";
                     element.type = "text/css";
                     element.href = nextFile.path;
@@ -577,7 +577,7 @@ module Foundation.Core {
             let original$canActivate = formViewModelDependency.$canActivate as Function;
 
             formViewModelDependency.$canActivate = ["$nextInstruction", "$prevInstruction", function (next: ng.ComponentInstruction, prev: ng.ComponentInstruction) {
-                const securityService = Core.DependencyManager.getCurrent().resolveObject<Core.Contracts.ISecurityService>("securityService");
+                const securityService = DependencyManager.getCurrent().resolveObject<Core.Contracts.ISecurityService>("securityService");
                 if (!securityService.isLoggedIn()) {
                     securityService.login();
                     return false;

@@ -37,7 +37,7 @@ namespace Foundation.Test.HtmlClient.ViewModel.Implementation
             {
                 OAuthToken token = testEnvironment.Server.Login("ValidUserName", "ValidPassword");
 
-                using (RemoteWebDriver driver = testEnvironment.Server.GetWebDriver(new RemoteWebDriverOptions { Token = token }))
+                using (testEnvironment.Server.GetWebDriver(new RemoteWebDriverOptions { Token = token }))
                 {
 
                 }

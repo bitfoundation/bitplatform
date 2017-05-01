@@ -70,7 +70,7 @@
 
                     $scope[attributes["delayKey"]] = {};
                 }
-            })
+            });
         }
     }
 }

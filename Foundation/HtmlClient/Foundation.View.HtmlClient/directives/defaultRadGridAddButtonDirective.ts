@@ -7,9 +7,9 @@ module Foundation.View.Directives {
         public getDirectiveFactory(): ng.IDirectiveFactory {
             return () => ({
                 scope: false,
-                compile: function (element: JQuery, attributes: ng.IAttributes) {
+                compile(element: JQuery, attributes: ng.IAttributes) {
                     return {
-                        pre: function ($scope: ng.IScope, element: JQuery, attributes: ng.IAttributes, controller: ng.INgModelController, transcludeFn: ng.ITranscludeFunction) {
+                        pre($scope: ng.IScope, element: JQuery, attributes: ng.IAttributes, controller: ng.INgModelController, transcludeFn: ng.ITranscludeFunction) {
 
                             const replaceAll = (text: string, search: string, replacement: string) => {
                                 return text.replace(new RegExp(search, "g"), replacement);

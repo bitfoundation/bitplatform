@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using Foundation.Core.Contracts;
-using Foundation.Core.Models;
 using IdentityServer3.Core;
 using IdentityServer3.Core.Models;
 using IdentityServer.Api.Contracts;

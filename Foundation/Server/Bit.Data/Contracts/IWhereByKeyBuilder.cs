@@ -3,7 +3,7 @@ using System.Linq;
 
 namespace Foundation.DataAccess.Contracts
 {
-    public interface IWhereByKeyBuilder<TSource, TKey>
+    public interface IWhereByKeyBuilder<TSource, in TKey>
         where TSource : class, IWithDefaultKey<TKey>
     {
         bool CanBuildWhereByKeyQuery(IQueryable<TSource> query);

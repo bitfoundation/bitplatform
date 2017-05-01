@@ -7,7 +7,7 @@
                 restrict: "A",
                 require: "ngModel",
                 scope: false,
-                link($scope: ng.IScope, element: JQuery, attributes: ng.IAttributes, ctrl: ng.IFormController) {
+                link($scope: ng.IScope, element: JQuery, attributes: ng.IAttributes & { ngModel: string }, ctrl: ng.IFormController & { $$parentForm: ViewModel.ViewModels.IDtoFormController }) {
 
                     let dtoViewModel: ViewModel.ViewModels.DtoViewModel<Model.Contracts.IDto, ViewModel.Implementations.DtoRules<Model.Contracts.IDto>> = null;
                     let dtoRules: ViewModel.Implementations.DtoRules<Model.Contracts.IDto> = null;
@@ -128,7 +128,6 @@
                                         Object.defineProperty(propModelController, "visible", {
                                             configurable: true,
                                             set: (isVisible: boolean) => {
-                                                const currentForm = element;
                                                 let currentItem = angular.element(element).find(`[name='${propDefenition.name}']`);
                                                 const data = currentItem.data();
                                                 if (data != null && data["handler"] != null && data["handler"].wrapper != null)
@@ -151,7 +150,6 @@
                                         Object.defineProperty(propModelController, "editable", {
                                             configurable: true,
                                             set: (isEditable: boolean) => {
-                                                const currentForm = element;
                                                 let currentItem = angular.element(element).find(`[name='${propDefenition.name}']`);
                                                 const data = currentItem.data();
                                                 if (data != null && data["handler"] != null && data["handler"].wrapper != null) {
@@ -198,7 +196,7 @@
                                             if (propDefenition.originalType == "Edm.Decimal" || propDefenition.originalType == "Edm.Double" || propDefenition.originalType == "Edm.Single") {
                                                 propModelController.$parsers.push((viewValue) => {
                                                     if (viewValue != null && typeof viewValue == "string") {
-                                                        let viewValueAsString = viewValue as string;
+                                                        let viewValueAsString: string = viewValue;
                                                         if (viewValueAsString.startsWith(".")) {
                                                             viewValueAsString = `0${viewValueAsString}`;
                                                         }
@@ -301,7 +299,7 @@
                                 if (dtoViewModel.model == null || dtoViewModel.model == oldModel)
                                     dtoViewModel.model = newModel;
 
-                                dtoViewModel.form = ctrl.$$parentForm;
+                                dtoViewModel.form = ctrl.$$parentForm as ViewModel.ViewModels.DtoFormController<Model.Contracts.IDto>;
 
                                 if (perDtoFormStorage.dtoViewModelPropertyChangedFunction == null) {
                                     perDtoFormStorage.dtoViewModelPropertyChangedFunction = function propertyChangedFunction(sender, e) {

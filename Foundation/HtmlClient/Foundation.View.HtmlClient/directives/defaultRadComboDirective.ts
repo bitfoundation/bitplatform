@@ -64,7 +64,7 @@ module Foundation.View.Directives {
 
                     return template;
                 },
-                link($scope: ng.IScope, element: JQuery, attributes: ng.IAttributes, requireArgs: { mdInputContainer: { element: JQuery }, ngModel: ng.INgModelController }) {
+                link($scope: ng.IScope, element: JQuery, attributes: ng.IAttributes & { ngModel: string, radText: string, radDatasource: string, radValueFieldName: string, radTextFieldName: string, radVirtual: string, radVirtualEntityLoader: string, onInit: string }, requireArgs: { mdInputContainer: { element: JQuery }, ngModel: ng.INgModelController }) {
 
                     const dependencyManager = Core.DependencyManager.getCurrent();
 
@@ -124,9 +124,11 @@ module Foundation.View.Directives {
                                         combo.wrapper.each(function (id, kElement) {
                                             const dataObj = angular.element(kElement).data();
                                             for (let mData in dataObj) {
-                                                if (angular.isObject(dataObj[mData])) {
-                                                    if (typeof dataObj[mData]["destroy"] == "function") {
-                                                        dataObj[mData].destroy();
+                                                if (dataObj.hasOwnProperty(mData)) {
+                                                    if (angular.isObject(dataObj[mData])) {
+                                                        if (typeof dataObj[mData]["destroy"] == "function") {
+                                                            dataObj[mData].destroy();
+                                                        }
                                                     }
                                                 }
                                             }
@@ -296,7 +298,7 @@ module Foundation.View.Directives {
                                                 .filter(t => t[comboBoxOptions.dataValueField] == options.value);
 
                                             if (items.length == 0) {
-                                                items = [(await radVirtualEntityLoader($scope, { id: options.value }))]
+                                                items = [(await radVirtualEntityLoader($scope, { id: options.value }))];
                                             }
 
                                             options.success(items);
@@ -309,7 +311,7 @@ module Foundation.View.Directives {
 
                                         }
                                         finally {
-                                            Foundation.ViewModel.ScopeManager.update$scope($scope);
+                                            ViewModel.ScopeManager.update$scope($scope);
                                         }
 
                                     }

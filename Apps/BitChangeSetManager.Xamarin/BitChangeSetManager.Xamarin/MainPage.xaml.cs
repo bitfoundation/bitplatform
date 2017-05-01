@@ -15,13 +15,13 @@ namespace BitChangeSetManager.Xamarin
             InitializeComponent();
         }
 
-        public const string baseAddress = "http://192.168.21.42/BitChangeSetManager";
+        public const string BaseAddress = "http://192.168.21.42/BitChangeSetManager";
 
         private TokenResponse _tokenResponse = null;
 
         private async void Login_Clicked(object sender, EventArgs e)
         {
-            using (TokenClient identityClient = new TokenClient($"{baseAddress}/core/connect/token", "BitChangeSetManager-ResOwner", "secret"))
+            using (TokenClient identityClient = new TokenClient($"{BaseAddress}/core/connect/token", "BitChangeSetManager-ResOwner", "secret"))
             {
                 _tokenResponse = await identityClient.RequestResourceOwnerPasswordAsync(UserName.Text, Password.Text, "openid profile user_info");
 
@@ -38,7 +38,7 @@ namespace BitChangeSetManager.Xamarin
 
         private async void LoadData_Clicked(object sender, EventArgs e)
         {
-            BitChangeSetManagerContext context = new BitChangeSetManagerContext(new Uri($"{baseAddress}/odata/BitChangeSetManager/"));
+            BitChangeSetManagerContext context = new BitChangeSetManagerContext(new Uri($"{BaseAddress}/odata/BitChangeSetManager/"));
 
             context.SetBearerToken(_tokenResponse);
 
@@ -67,7 +67,7 @@ namespace BitChangeSetManager.Xamarin
 
             EventHandler<LoadCompletedEventArgs> onCompleted = null;
 
-            onCompleted = new EventHandler<LoadCompletedEventArgs>((e, sender) =>
+            onCompleted = (e, sender) =>
             {
                 collection.LoadCompleted -= onCompleted;
 
@@ -77,7 +77,7 @@ namespace BitChangeSetManager.Xamarin
                     taskCompletationSource.SetException(sender.Error);
                 else
                     taskCompletationSource.SetResult(null);
-            });
+            };
 
             collection.LoadCompleted += onCompleted;
 

@@ -1,7 +1,7 @@
 ﻿module Foundation.ViewModel.ViewModels {
 
     export type DtoFormController<TDto extends Model.Contracts.IDto> = {
-        readonly[Prop in keyof TDto]: IDtoModelController;
+        readonly [Prop in keyof TDto]: IDtoModelController;
     } & IDtoFormController;
 
     export interface IDtoModelController extends ng.INgModelController {
@@ -10,10 +10,10 @@
     }
 
     export interface IDtoFormController extends ng.IFormController {
-        isValid(): boolean;
+        isValid: () => boolean;
     }
 
-    export class DtoViewModel<TDto extends Foundation.Model.Contracts.IDto, TRules extends Implementations.DtoRules<TDto>> implements Contracts.IDtoViewModel<TDto> {
+    export class DtoViewModel<TDto extends Model.Contracts.IDto, TRules extends Implementations.DtoRules<TDto>> implements Contracts.IDtoViewModel<TDto> {
 
         private _model: TDto;
 

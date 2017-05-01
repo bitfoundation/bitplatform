@@ -27,7 +27,7 @@ namespace Foundation.Api.ApiControllers
             Repository = repository;
         }
 
-        public virtual IEntityWithDefaultKeyRepository<TModel, TKey> Repository { get; set; }
+        protected IEntityWithDefaultKeyRepository<TModel, TKey> Repository { get; set; }
 
         /// <summary>
         /// Optional Dependency. You can override FromDtoToModel and GetAll.

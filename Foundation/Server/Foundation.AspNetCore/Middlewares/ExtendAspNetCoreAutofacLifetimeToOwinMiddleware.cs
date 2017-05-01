@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Owin;
 using Microsoft.AspNetCore.Http;
@@ -34,6 +35,9 @@ namespace Foundation.AspNetCore.Middlewares
             TypeInfo autofacConstantsType = typeof(OwinContextExtensions).GetTypeInfo().Assembly.GetType("Autofac.Integration.Owin.Constants").GetTypeInfo();
 
             FieldInfo owinLifetimeScopeKeyField = autofacConstantsType.GetField("OwinLifetimeScopeKey", BindingFlags.Static | BindingFlags.NonPublic);
+
+            if (owinLifetimeScopeKeyField == null)
+                throw new InvalidOperationException($"OwinLifetimeScopeKey field could not be found in {nameof(OwinContextExtensions)} ");
 
             OwinLifetimeScopeKey = (string)owinLifetimeScopeKeyField.GetValue(null);
         }

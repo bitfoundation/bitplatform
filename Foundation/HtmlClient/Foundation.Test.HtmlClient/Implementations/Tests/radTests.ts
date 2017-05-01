@@ -29,7 +29,7 @@
                 throw new Error("rad grid add problem");
             }
 
-            if (angular.element("[name='Id']").filter((tdIndex: number, tdElement: HTMLTableRowElement) => tdElement.innerText == "999").length == 0) {
+            if (angular.element("#gridView").find("td").filter((tdIndex: number, tdElement: HTMLTableDataCellElement) => tdElement.innerText.trim() == "999").length == 0) {
                 throw new Error("rad grid add problem");
             }
         }

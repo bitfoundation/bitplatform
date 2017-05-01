@@ -88,7 +88,7 @@ module Foundation.View.Directives {
 
                     return gridTemplate;
                 },
-                link($scope: ng.IScope, element: JQuery, attributes: ng.IAttributes) {
+                link($scope: ng.IScope, element: JQuery, attributes: ng.IAttributes & { radDatasource: string, onInit: string }) {
 
                     const dependencyManager = Core.DependencyManager.getCurrent();
 
@@ -103,12 +103,6 @@ module Foundation.View.Directives {
                     const dateTimeService = Core.DependencyManager.getCurrent().resolveObject<ViewModel.Contracts.IDateTimeService>("DateTimeService");
 
                     const clientAppProfileManager = dependencyManager.resolveObject<Core.ClientAppProfileManager>("ClientAppProfileManager");
-
-                    const guidUtils = Core.DependencyManager.getCurrent().resolveObject<ViewModel.Implementations.GuidUtils>("GuidUtils");
-
-                    const replaceAll = (text: string, search: string, replacement: string) => {
-                        return text.replace(new RegExp(search, "g"), replacement);
-                    };
 
                     function dsError(e: { sender: kendo.data.DataSource }) {
                         if (e.sender["destroyed"]().length != 0) {
@@ -143,9 +137,11 @@ module Foundation.View.Directives {
                                         grid.wrapper.each(function (id, kElement) {
                                             const dataObj = angular.element(kElement).data();
                                             for (let mData in dataObj) {
-                                                if (angular.isObject(dataObj[mData])) {
-                                                    if (typeof dataObj[mData]["destroy"] == "function") {
-                                                        dataObj[mData].destroy();
+                                                if (dataObj.hasOwnProperty(mData)) {
+                                                    if (angular.isObject(dataObj[mData])) {
+                                                        if (typeof dataObj[mData]["destroy"] == "function") {
+                                                            dataObj[mData].destroy();
+                                                        }
                                                     }
                                                 }
                                             }
@@ -270,7 +266,7 @@ module Foundation.View.Directives {
                                 edit: (e) => {
                                     angular.element(".k-edit-buttons").remove();
                                 },
-                                change: function onChange(e) {
+                                change(e) {
                                     dataSource.onCurrentChanged();
                                     ViewModel.ScopeManager.update$scope($scope);
                                 },

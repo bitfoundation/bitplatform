@@ -32,7 +32,8 @@ let executeTest = async (testFunc: Function, args: string | any): Promise<void> 
 
         const extend = (destination, source) => {
             for (let property in source)
-                destination[property] = source[property];
+                if (source.hasOwnProperty(property))
+                    destination[property] = source[property];
             return destination;
         };
 

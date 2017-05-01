@@ -35,7 +35,7 @@ namespace BitChangeSetManager.DataAccess
             return base.AddRange(entitiesToAdd);
         }
 
-        public async override Task<IEnumerable<TEntity>> AddRangeAsync(IEnumerable<TEntity> entitiesToAdd, CancellationToken cancellationToken)
+        public override async Task<IEnumerable<TEntity>> AddRangeAsync(IEnumerable<TEntity> entitiesToAdd, CancellationToken cancellationToken)
         {
             await OnAddingAsync(entitiesToAdd);
 

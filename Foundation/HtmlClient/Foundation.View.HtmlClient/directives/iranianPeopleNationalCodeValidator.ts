@@ -6,7 +6,7 @@
             return (): ng.IDirective => {
                 return {
                     require: "ngModel",
-                    link: function ($scope: ng.IScope, elm: JQuery, attrs: ng.IAttributes, ctrl: ng.INgModelController) {
+                    link($scope: ng.IScope, elm: JQuery, attrs: ng.IAttributes, ctrl: ng.INgModelController) {
 
                         const dependencyManager = Core.DependencyManager.getCurrent();
 
