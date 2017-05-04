@@ -7,7 +7,7 @@
                 restrict: "A",
                 require: "ngModel",
                 scope: false,
-                link($scope: ng.IScope, element: JQuery, attributes: ng.IAttributes & { ngModel: string }, ctrl: ng.IFormController & { $$parentForm: ViewModel.ViewModels.IDtoFormController }) {
+                link($scope: ng.IScope, element: JQuery, attributes: ng.IAttributes & { ngModel: string, dtoRules: string, dtoViewModel: string }, ctrl: ng.IFormController & { $$parentForm: ViewModel.ViewModels.IDtoFormController }) {
 
                     let dtoViewModel: ViewModel.ViewModels.DtoViewModel<Model.Contracts.IDto, ViewModel.Implementations.DtoRules<Model.Contracts.IDto>> = null;
                     let dtoRules: ViewModel.Implementations.DtoRules<Model.Contracts.IDto> = null;
