@@ -19,6 +19,7 @@ using BitCodeGenerator.Implementations;
 using BitCodeGenerator.Implementations.HtmlClientProxyGenerator;
 using System.Reflection;
 using System.Globalization;
+using BitTools.Core.Model;
 
 namespace BitVSExtensionV1
 {
@@ -112,6 +113,31 @@ namespace BitVSExtensionV1
 
                 RedirectAssembly("System.Collections.Immutable", new Version("1.1.37"), "b03f5f7f11d50a3a");
             }
+
+            try
+            {
+                CheckAssemblyVersions();
+            }
+            catch (Exception ex)
+            {
+                ShowInitialLoadProblem($"Check version failed {ex}");
+            }
+        }
+
+        private void CheckAssemblyVersions()
+        {
+            string bitCoreVersion = typeof(BitConfig).GetTypeInfo().Assembly.GetName().Version.ToString();
+            string bitCodeGeneratorVersion = typeof(DefaultBitConfigProvider).GetTypeInfo().Assembly.GetName().Version.ToString();
+            string bitVSExtensionVersion = typeof(BitPacakge).GetTypeInfo().Assembly.GetName().Version.ToString();
+
+            bool allVersionsAreEqual = (bitCoreVersion == bitVSExtensionVersion) && (bitCodeGeneratorVersion == bitVSExtensionVersion);
+
+            Log($"BitToolsCoreVersion: {bitCoreVersion} at {typeof(BitConfig).GetTypeInfo().Assembly.Location}");
+            Log($"BitCodeGeneratorVersion: {bitCodeGeneratorVersion} at {typeof(DefaultBitConfigProvider).GetTypeInfo().Assembly.Location}");
+            Log($"BitVSExtensionV1Version: {bitVSExtensionVersion} at {typeof(BitPacakge).GetTypeInfo().Assembly.Location}");
+
+            if (allVersionsAreEqual == false)
+                throw new InvalidOperationException("Version mismathch");
         }
 
         public void RedirectAssembly(string shortName, Version targetVersion, string publicKeyToken)
