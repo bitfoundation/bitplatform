@@ -299,8 +299,12 @@
 
     dependencyManager.registerFileDependency({
         name: "signalR",
-        path: "bit-framework/Foundation/HtmlClient/Foundation.Test.HtmlClient/bower_components/signalr/jquery.signalR",
-        loadTime: "Defered"
+        path: "bit-framework/Foundation/HtmlClient/Foundation.Test.HtmlClient/bower_components/signalr/jquery.signalR"
+    });
+
+    dependencyManager.registerFileDependency({
+        name: "pubsub-js",
+        path: "bit-framework/Foundation/HtmlClient/Foundation.Test.HtmlClient/bower_components/pubsub-js/src/pubsub"
     });
 
     dependencyManager.registerFileDependency({

@@ -216,6 +216,11 @@ module BitChangeSetManager {
     });
 
     dependencyManager.registerFileDependency({
+        name: "pubsub-js",
+        path: "bower_components/pubsub-js/src/pubsub"
+    });
+
+    dependencyManager.registerFileDependency({
         name: "foundation-model-context",
         path: "bower_components/bit-releases/foundation.viewmodel/Foundation.Model.Context"
     });

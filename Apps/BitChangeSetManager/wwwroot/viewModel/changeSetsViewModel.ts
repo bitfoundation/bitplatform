@@ -14,7 +14,6 @@
 
         public changeSetMetadata = BitChangeSetManagerModel.ChangeSetDto;
         public deliveryMetadata = BitChangeSetManagerModel.DeliveryDto;
-        public messageRecieverDisposer: () => void;
 
         public constructor( @Inject("EntityContextProvider") public entityContextProvider: IEntityContextProvider, @Inject("MessageReceiver") public messageReceiver: IMessageReceiver, @Inject("$mdToast") public $mdToast: ng.material.IToastService, @Inject("$translate") public $translate: ng.translate.ITranslateService) {
             super();
@@ -43,17 +42,19 @@
                 .map(c => { return { Id: c.Id, Name: c.Name } })
                 .asKendoDataSource();
 
-            this.messageRecieverDisposer = this.messageReceiver.onMessageReceived("ChangeSetHasBeenInsertedByUser", async (args: { userName: string, title: string }) => {
-                await this.$mdToast.show(this.$mdToast.simple()
-                    .textContent(this.$translate.instant("ChangeSetHasBeenInsertedByUser", args))
-                    .hideDelay(3000)
-                );
-            });
+            PubSub.subscribe("ChangeSetHasBeenInsertedByUser", this.onChangeSetHasBeenInsertedByUser.bind(this));
+        }
+
+        @Command()
+        public async onChangeSetHasBeenInsertedByUser(args: { userName: string, title: string }) {
+            await this.$mdToast.show(this.$mdToast.simple()
+                .textContent(this.$translate.instant("ChangeSetHasBeenInsertedByUser", args))
+                .hideDelay(3000)
+            );
         }
 
         public async $onDestroy() {
-            if (this.messageRecieverDisposer != null)
-                this.messageRecieverDisposer();
+            PubSub.unsubscribe(this.onChangeSetHasBeenInsertedByUser);
         }
     }
 }

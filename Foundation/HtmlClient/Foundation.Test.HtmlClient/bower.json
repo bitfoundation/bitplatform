@@ -27,7 +27,8 @@
     "jasmine-core": "2.5.2",
     "jasmine-jquery": "2.1.1",
     "decimal.js": "https://github.com/MikeMcl/decimal.js.git#v7.0.1",
-    "kendo-ui": "kendo-ui-core#2017.1.223"
+    "kendo-ui": "kendo-ui-core#2017.1.223",
+    "pubsub-js": "1.5.4"
   },
   "resolutions": {
     "jquery": "3.2.1",

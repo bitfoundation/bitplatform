@@ -10,6 +10,7 @@
     "@types/decimal.js": "0.0.29",
     "@types/jquery": "^2.0.41",
     "@types/kendo-ui": "^2016.3.41",
-    "@types/signalr": "^2.2.33"
+    "@types/signalr": "^2.2.33",
+    "@types/pubsub-js": "1.5.17"
   }
 }

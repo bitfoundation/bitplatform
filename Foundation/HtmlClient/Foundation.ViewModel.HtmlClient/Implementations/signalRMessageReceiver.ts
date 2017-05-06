@@ -10,7 +10,6 @@
         private _isInited = false;
         private _isConnected = false;
         private _stayConnected = false;
-        private _listeners: Array<{ name: string, callbacks: Array<(args?: any) => Promise<void>> }> = [];
 
         @Core.Log()
         public async stop(): Promise<void> {
@@ -19,7 +18,6 @@
                 $.connection.hub.stop(true, true);
         }
 
-        @Core.Log()
         public async start(config: { preferWebSockets?: boolean } = { preferWebSockets: false }): Promise<void> {
             this._stayConnected = true;
             await this.getInitPromise();
@@ -32,20 +30,11 @@
         }
 
         protected async callListeners(messageKey: string, messageArgs: any) {
+
             if (messageKey == null)
                 throw new Error("messageKey is null");
-            const listenerToCall = this._listeners.find(l => l.name.toLowerCase() == messageKey.toLowerCase());
-            if (listenerToCall != null) {
-                try {
-                    for (let callbackIndex = 0; callbackIndex < listenerToCall.callbacks.length; callbackIndex++) {
-                        const callback = listenerToCall.callbacks[callbackIndex];
-                        await callback(messageArgs);
-                    }
-                }
-                finally {
-                    ViewModel.ScopeManager.update$scope(this.$rootScope);
-                }
-            }
+
+            PubSub.publish(messageKey, messageArgs);
         }
 
         private initPromise = null;
@@ -63,10 +52,13 @@
                         if (typeof ($) == "undefined")
                             reject("jQuery is not present");
 
-                        this._isInited = true;
-
                         if ($.signalR == null)
-                            await Core.DependencyManager.getCurrent().resolveFile("signalR");
+                            reject("SignalR is not present");
+
+                        if (typeof (PubSub) == "undefined")
+                            reject("PubSub is not present");
+
+                        this._isInited = true;
 
                         const signalRAppPushReceiver = this;
 
@@ -128,31 +120,6 @@
 
             return this.initPromise;
 
-        }
-
-        @Core.Log()
-        public onMessageReceived(messageKey: string, callback: (args?: any) => Promise<void>): () => void {
-
-            if (messageKey == null)
-                throw new Error("messageKey is null");
-
-            let listener = this._listeners.find(l => l.name.toLowerCase() == messageKey.toLowerCase());
-
-            if (listener == null) {
-                listener = { name: messageKey, callbacks: [] };
-                this._listeners.push(listener);
-            }
-
-            listener.callbacks.push(callback);
-
-            return () => {
-
-                const index = listener.callbacks.indexOf(callback);
-                if (index !== -1) {
-                    listener.callbacks.splice(index, 1);
-                }
-
-            }
         }
 
         private makeProxyCallback(hub, callback) {
