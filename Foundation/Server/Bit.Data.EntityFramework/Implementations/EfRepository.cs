@@ -208,27 +208,27 @@ namespace Bit.Data.EntityFramework.Implementations
 
         public virtual IQueryable<TChild> GetChildsQuery<TChild>(TEntity entity, Expression<Func<TEntity, ICollection<TChild>>> childs) where TChild : class
         {
-            throw new NotImplementedException();
+            return _dbContext.Entry(entity).Collection(childs).Query();
         }
 
-        public virtual Task LoadChildsAsync<TProperty>(TEntity entity, Expression<Func<TEntity, ICollection<TProperty>>> member, CancellationToken cancellationToken, bool forceReload = false) where TProperty : class
+        public virtual async Task LoadChildsAsync<TProperty>(TEntity entity, Expression<Func<TEntity, ICollection<TProperty>>> childs, CancellationToken cancellationToken, bool forceReload = false) where TProperty : class
         {
-            throw new NotImplementedException();
+            await _dbContext.Entry(entity).Collection(childs).LoadAsync(cancellationToken);
         }
 
-        public virtual Task LoadMemberAsync<TProperty>(TEntity entity, Expression<Func<TEntity, TProperty>> member, CancellationToken cancellationToken, bool forceReload = false) where TProperty : class
+        public virtual async Task LoadMemberAsync<TProperty>(TEntity entity, Expression<Func<TEntity, TProperty>> member, CancellationToken cancellationToken, bool forceReload = false) where TProperty : class
         {
-            throw new NotImplementedException();
+            await _dbContext.Entry(entity).Reference(member).LoadAsync(cancellationToken);
         }
 
-        public virtual Task<bool> AnyChildAsync<TChild>(TEntity entity, Expression<Func<TEntity, ICollection<TChild>>> childs, Expression<Func<TChild, bool>> predicate, bool checkDatabase, CancellationToken cancellationToken) where TChild : class
+        public virtual async Task<bool> AnyChildAsync<TChild>(TEntity entity, Expression<Func<TEntity, ICollection<TChild>>> childs, Expression<Func<TChild, bool>> predicate, bool checkDatabase, CancellationToken cancellationToken) where TChild : class
         {
-            throw new NotImplementedException();
+            return await _dbContext.Entry(entity).Collection(childs).Query().AnyAsync(predicate, cancellationToken);
         }
 
         public virtual bool AnyChild<TChild>(TEntity entity, Expression<Func<TEntity, ICollection<TChild>>> childs, Expression<Func<TChild, bool>> predicate, bool checkDatabase) where TChild : class
         {
-            throw new NotImplementedException();
+            return _dbContext.Entry(entity).Collection(childs).Query().Any(predicate);
         }
 
         public virtual async Task SaveChangesAsync(CancellationToken cancellationToken)

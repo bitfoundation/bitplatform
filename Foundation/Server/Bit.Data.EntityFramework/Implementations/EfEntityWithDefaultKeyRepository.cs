@@ -52,7 +52,7 @@ namespace Bit.Data.EntityFramework.Implementations
 
         public virtual TKey GetNewKey()
         {
-            throw new NotImplementedException();
+            return default(TKey);
         }
     }
 }

@@ -53,7 +53,7 @@ namespace Foundation.DataAccess.Implementations.EntityFrameworkCore
 
         public virtual TKey GetNewKey()
         {
-            throw new NotImplementedException();
+            return default(TKey);
         }
     }
 }

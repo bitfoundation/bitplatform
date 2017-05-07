@@ -207,7 +207,7 @@ namespace Foundation.DataAccess.Implementations.EntityFrameworkCore
             throw new NotImplementedException();
         }
 
-        public virtual Task LoadChildsAsync<TProperty>(TEntity entity, Expression<Func<TEntity, ICollection<TProperty>>> member, CancellationToken cancellationToken, bool forceReload = false) where TProperty : class
+        public virtual Task LoadChildsAsync<TProperty>(TEntity entity, Expression<Func<TEntity, ICollection<TProperty>>> childs, CancellationToken cancellationToken, bool forceReload = false) where TProperty : class
         {
             throw new NotImplementedException();
         }

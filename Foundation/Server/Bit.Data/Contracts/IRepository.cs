@@ -48,7 +48,7 @@ namespace Foundation.DataAccess.Contracts
         IQueryable<TChild> GetChildsQuery<TChild>(TEntity entity, Expression<Func<TEntity, ICollection<TChild>>> childs)
             where TChild : class;
 
-        Task LoadChildsAsync<TProperty>(TEntity entity, Expression<Func<TEntity, ICollection<TProperty>>> member,
+        Task LoadChildsAsync<TProperty>(TEntity entity, Expression<Func<TEntity, ICollection<TProperty>>> childs,
             CancellationToken cancellationToken, bool forceReload = false)
             where TProperty : class;
 
