@@ -107,7 +107,7 @@
       <Private>True</Private>
     </Reference>
     <Reference Include="IdentityModel, Version=2.8.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\BitChangeSetManager.Core\packages\IdentityModel.2.8.0\lib\net452\IdentityModel.dll</HintPath>
+      <HintPath>..\packages\IdentityModel.2.8.0\lib\net452\IdentityModel.dll</HintPath>
     </Reference>
     <Reference Include="IdentityServer.Api">
       <HintPath>wwwroot\bower_components\bit-releases\identityServer.Api\IdentityServer.Api.dll</HintPath>
@@ -117,7 +117,7 @@
       <Private>True</Private>
     </Reference>
     <Reference Include="IdentityServer3.AccessTokenValidation, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\BitChangeSetManager.Core\packages\IdentityServer3.AccessTokenValidation.2.15.0\lib\net45\IdentityServer3.AccessTokenValidation.dll</HintPath>
+      <HintPath>..\packages\IdentityServer3.AccessTokenValidation.2.15.0\lib\net45\IdentityServer3.AccessTokenValidation.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.AspNet.SignalR.Core, Version=2.2.1.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>packages\Microsoft.AspNet.SignalR.Core.2.2.1\lib\net45\Microsoft.AspNet.SignalR.Core.dll</HintPath>
