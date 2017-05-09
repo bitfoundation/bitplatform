@@ -13,9 +13,11 @@ namespace Foundation.Api.Middlewares.WebApi.OData.Implementations
             container.AddService<ODataUriResolver, DefaultODataUriResolver>(ServiceLifetime.Singleton);
             container.AddService<ODataPrimitiveSerializer, DefaultODataPrimitiveSerializer>(ServiceLifetime.Singleton);
             container.AddService<ODataEnumDeserializer, DefaultODataEnumDeserializer>(ServiceLifetime.Singleton);
+            container.AddService<ODataDeserializerProvider, ExtendedODataDeserializerProvider>(ServiceLifetime.Singleton);
             container.AddService<ODataEnumSerializer, DefaultODataEnumSerializer>(ServiceLifetime.Singleton);
             container.AddService<ODataResourceDeserializer, DefaultODataResourceDeserializer>(ServiceLifetime.Singleton);
             container.AddService<ODataActionPayloadDeserializer, DefaultODataActionPayloadDeserializer>(ServiceLifetime.Singleton);
+            container.AddService<DefaultODataParameterDeserializer>(ServiceLifetime.Singleton);
         }
     }
 }

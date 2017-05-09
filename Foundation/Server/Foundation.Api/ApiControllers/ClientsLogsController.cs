@@ -26,11 +26,16 @@ namespace Foundation.Api.ApiControllers
 
         }
 
+        public class StoreClientLogsParameters
+        {
+            public IEnumerable<ClientLogDto> clientLogs { get; set; }
+        }
+
         [Action]
         [Parameter("clientLogs", typeof(IEnumerable<ClientLogDto>))]
-        public virtual async Task StoreClientLogs(ODataActionParameters actionParameters)
+        public virtual async Task StoreClientLogs(StoreClientLogsParameters actionParameters)
         {
-            _logger.AddLogData("ClientLogs", actionParameters["clientLogs"]);
+            _logger.AddLogData("ClientLogs", actionParameters.clientLogs);
 
             await _logger.LogWarningAsync("Client-Log");
         }

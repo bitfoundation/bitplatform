@@ -2,7 +2,6 @@
 using Foundation.Test.Model.Dto;
 using System.Collections.Generic;
 using System.Linq;
-using System.Web.OData;
 
 namespace Foundation.Test.Api.ApiControllers
 {
@@ -15,11 +14,16 @@ namespace Foundation.Test.Api.ApiControllers
             return new List<DtoWithEnum> { new DtoWithEnum { Id = 1, Gender = gender } };
         }
 
+        public class PostDtoWithEnumParameters
+        {
+            public DtoWithEnum dto { get; set; }
+        }
+
         [Action]
         [Parameter("dto", typeof(DtoWithEnum))]
-        public virtual bool PostDtoWithEnum(ODataActionParameters actionParameters)
+        public virtual bool PostDtoWithEnum(PostDtoWithEnumParameters actionParameters)
         {
-            return ((DtoWithEnum)actionParameters["dto"]).Gender == TestGender.Man;
+            return actionParameters.dto.Gender == TestGender.Man;
         }
 
         [Function]
@@ -29,11 +33,16 @@ namespace Foundation.Test.Api.ApiControllers
             return new List<DtoWithEnum> { new DtoWithEnum { Id = 1, Test = gender.ToString() } };
         }
 
+        public class TestEnumsArrayParameters
+        {
+            public IEnumerable<TestGender2> enums { get; set; }
+        }
+
         [Action]
         [Parameter("enums", typeof(IEnumerable<TestGender2>))]
-        public virtual bool TestEnumsArray(ODataActionParameters parameters)
+        public virtual bool TestEnumsArray(TestEnumsArrayParameters parameters)
         {
-            return ((IEnumerable<TestGender2>)parameters["enums"]).Count() == 2;
+            return parameters.enums.Count() == 2;
         }
     }
 }

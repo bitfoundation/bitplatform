@@ -52,7 +52,7 @@ namespace Foundation.Test.HtmlClient.ThirdPartyLibrariesTests.JayDataContextTest
                     .OfType<TestModelsController>()
                     .Single();
 
-                A.CallTo(() => testModelsController.AreEqual(A<ODataActionParameters>.That.Matches(parameters => (int)parameters["firstValue"] == 10 && (int)parameters["secondValue"] == 10)))
+                A.CallTo(() => testModelsController.AreEqual(A<TestModelsController.FirstSecondParameters>.That.Matches(parameters => parameters.firstValue == 10 && parameters.secondValue == 10)))
                     .MustHaveHappened(Repeated.Exactly.Once);
             }
         }
@@ -102,31 +102,31 @@ namespace Foundation.Test.HtmlClient.ThirdPartyLibrariesTests.JayDataContextTest
                 }
 
                 A.CallTo(() => TestDependencyManager.CurrentTestDependencyManager.Objects
-                    .OfType<TestModelsController>().ElementAt(0).TestIEEE754Compatibility(A<ODataActionParameters>.That.Matches(p => (decimal)p["val"] == decimal.MaxValue)))
+                    .OfType<TestModelsController>().ElementAt(0).TestIEEE754Compatibility(A<TestModelsController.TestIEEE754CompatibilityParameters>.That.Matches(p => p.val == decimal.MaxValue)))
                     .MustHaveHappened(Repeated.Exactly.Once);
 
                 A.CallTo(() => TestDependencyManager.CurrentTestDependencyManager.Objects
-                    .OfType<TestModelsController>().ElementAt(1).TestIEEE754Compatibility2(A<ODataActionParameters>.That.Matches(p => (int)p["val"] == int.MaxValue)))
+                    .OfType<TestModelsController>().ElementAt(1).TestIEEE754Compatibility2(A<TestModelsController.TestIEEE754Compatibility2Parameters>.That.Matches(p => p.val == int.MaxValue)))
                     .MustHaveHappened(Repeated.Exactly.Once);
 
                 A.CallTo(() => TestDependencyManager.CurrentTestDependencyManager.Objects
-                    .OfType<TestModelsController>().ElementAt(2).TestIEEE754Compatibility3(A<ODataActionParameters>.That.Matches(p => (long)p["val"] == long.MaxValue)))
+                    .OfType<TestModelsController>().ElementAt(2).TestIEEE754Compatibility3(A<TestModelsController.TestIEEE754Compatibility3Parameters>.That.Matches(p => p.val == long.MaxValue)))
                     .MustHaveHappened(Repeated.Exactly.Once);
 
                 A.CallTo(() => TestDependencyManager.CurrentTestDependencyManager.Objects
-                    .OfType<TestModelsController>().ElementAt(3).TestIEEE754Compatibility(A<ODataActionParameters>.That.Matches(p => (decimal)p["val"] == 12.2M)))
+                    .OfType<TestModelsController>().ElementAt(3).TestIEEE754Compatibility(A<TestModelsController.TestIEEE754CompatibilityParameters>.That.Matches(p => p.val == 12.2M)))
                     .MustHaveHappened(Repeated.Exactly.Once);
 
                 A.CallTo(() => TestDependencyManager.CurrentTestDependencyManager.Objects
-                    .OfType<TestModelsController>().ElementAt(4).TestIEEE754Compatibility(A<ODataActionParameters>.That.Matches(p => (decimal)p["val"] == 214748364711111.2M)))
+                    .OfType<TestModelsController>().ElementAt(4).TestIEEE754Compatibility(A<TestModelsController.TestIEEE754CompatibilityParameters>.That.Matches(p => p.val == 214748364711111.2M)))
                     .MustHaveHappened(Repeated.Exactly.Once);
 
                 A.CallTo(() => TestDependencyManager.CurrentTestDependencyManager.Objects
-                    .OfType<TestModelsController>().ElementAt(5).TestIEEE754Compatibility(A<ODataActionParameters>.That.Matches(p => (decimal)p["val"] == 214748364711111M)))
+                    .OfType<TestModelsController>().ElementAt(5).TestIEEE754Compatibility(A<TestModelsController.TestIEEE754CompatibilityParameters>.That.Matches(p => p.val == 214748364711111M)))
                     .MustHaveHappened(Repeated.Exactly.Once);
 
                 A.CallTo(() => TestDependencyManager.CurrentTestDependencyManager.Objects
-                    .OfType<TestModelsController>().ElementAt(6).TestDecimalSum(A<ODataActionParameters>.That.Matches(p => (decimal)p["firstValue"] == 123456789123456789m && (decimal)p["secondValue"] == 123456789123456789m)))
+                    .OfType<TestModelsController>().ElementAt(6).TestDecimalSum(A<TestModelsController.FirstSecondValueDecimalParameters>.That.Matches(p => p.firstValue == 123456789123456789M && p.secondValue == 123456789123456789M)))
                     .MustHaveHappened(Repeated.Exactly.Once);
             }
         }
@@ -145,10 +145,10 @@ namespace Foundation.Test.HtmlClient.ThirdPartyLibrariesTests.JayDataContextTest
                 }
 
                 A.CallTo(() => TestDependencyManager.CurrentTestDependencyManager.Objects
-                    .OfType<ValidationSamplesController>().ElementAt(0).SubmitValidations(A<ODataActionParameters>.That.Matches(parameters => ((IEnumerable<ValidationSampleDto>)parameters["validations"]).Count() == 2))).MustHaveHappened(Repeated.Exactly.Once);
+                    .OfType<ValidationSamplesController>().ElementAt(0).SubmitValidations(A<ValidationSamplesController.SubmitValidationsParameters>.That.Matches(parameters => parameters.validations.Count() == 2))).MustHaveHappened(Repeated.Exactly.Once);
 
                 A.CallTo(() => TestDependencyManager.CurrentTestDependencyManager.Objects
-                    .OfType<ValidationSamplesController>().ElementAt(1).SubmitValidations(A<ODataActionParameters>.That.Matches(parameters => ((string)parameters["arg"] == "A")))).MustHaveHappened(Repeated.Exactly.Once);
+                    .OfType<ValidationSamplesController>().ElementAt(1).SubmitValidations(A<ValidationSamplesController.SubmitValidationsParameters>.That.Matches(parameters => (parameters.arg == "A")))).MustHaveHappened(Repeated.Exactly.Once);
             }
         }
     }

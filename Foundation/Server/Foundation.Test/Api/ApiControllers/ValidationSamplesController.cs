@@ -8,17 +8,24 @@ namespace Foundation.Test.Api.ApiControllers
 {
     public class ValidationSamplesController : DtoController<ValidationSampleDto>
     {
+        public class SubmitValidationsParameters
+        {
+            public IEnumerable<ValidationSampleDto> validations { get; set; }
+
+            public string arg { get; set; }
+        }
+
         [Action]
         [Parameter("validations", typeof(IEnumerable<ValidationSampleDto>))]
         [Parameter("arg", typeof(string), isOptional: true)]
-        public virtual IEnumerable<ValidationSampleDto> SubmitValidations(ODataActionParameters parameters)
+        public virtual IEnumerable<ValidationSampleDto> SubmitValidations(SubmitValidationsParameters parameters)
         {
-            return ((IEnumerable<ValidationSampleDto>)parameters["validations"])
+            return parameters.validations
                 .Select(v =>
                 {
                     v.Id++;
-                    v.RequiredByAttributeMember += v.RequiredByAttributeMember + (parameters.ContainsKey("arg") ? parameters["arg"] : "");
-                    v.RequiredByMetadataMember += v.RequiredByMetadataMember + (parameters.ContainsKey("arg") ? parameters["arg"] : "");
+                    v.RequiredByAttributeMember += v.RequiredByAttributeMember + parameters.arg ?? "";
+                    v.RequiredByMetadataMember += v.RequiredByMetadataMember + parameters.arg ?? "";
                     return v;
                 });
         }

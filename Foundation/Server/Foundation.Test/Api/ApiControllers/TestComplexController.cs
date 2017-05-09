@@ -56,12 +56,16 @@ namespace Foundation.Test.Api.ApiControllers
 
             return model;
         }
+        public class DoSomeThingWithComplexObjParameters
+        {
+            public TestComplexDto complexDto { get; set; }
+        }
 
         [Action]
         [Parameter("complexDto", typeof(TestComplexDto))]
-        public virtual TestComplexDto DoSomeThingWithComplexObj(ODataActionParameters parameters)
+        public virtual TestComplexDto DoSomeThingWithComplexObj(DoSomeThingWithComplexObjParameters parameters)
         {
-            TestComplexDto complexDto = (TestComplexDto)parameters["complexDto"];
+            TestComplexDto complexDto = parameters.complexDto;
 
             complexDto.ComplexObj.Name += "?";
 
@@ -74,11 +78,16 @@ namespace Foundation.Test.Api.ApiControllers
             return new[] { new ComplexObj2 { Name = "Test" } };
         }
 
+        public class GetValuesParameters
+        {
+            public IEnumerable<int> values { get; set; }
+        }
+
         [Action]
         [Parameter("values", typeof(IEnumerable<int>))]
-        public virtual async Task<int[]> GetValues(ODataActionParameters parameters, CancellationToken cancellationToken)
+        public virtual async Task<int[]> GetValues(GetValuesParameters parameters, CancellationToken cancellationToken)
         {
-            IEnumerable<int> values = (IEnumerable<int>)parameters["values"];
+            IEnumerable<int> values = parameters.values;
 
             return values.Reverse().ToArray();
         }

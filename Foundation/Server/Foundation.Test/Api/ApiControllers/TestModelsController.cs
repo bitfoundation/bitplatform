@@ -123,15 +123,24 @@ namespace Foundation.Test.Api.ApiControllers
             await _testModelsRepository.Value.DeleteAsync(model, cancellationToken);
         }
 
+        public class EmailParameters
+        {
+            public string title { get; set; }
+
+            public string message { get; set; }
+
+            public string to { get; set; }
+        }
+
         [Action]
         [Parameter("title", typeof(string))]
         [Parameter("message", typeof(string))]
         [Parameter("to", typeof(string))]
-        public virtual async Task<Guid> SendEmailUsingBackgroundJobService(ODataActionParameters actionParameters)
+        public virtual async Task<Guid> SendEmailUsingBackgroundJobService(EmailParameters actionParameters)
         {
-            string title = (string)actionParameters["title"];
-            string message = (string)actionParameters["message"];
-            string to = (string)actionParameters["to"];
+            string title = actionParameters.title;
+            string message = actionParameters.message;
+            string to = actionParameters.to;
 
             string jobId = await _backgroundJobWorker.Value
                 .PerformBackgroundJobAsync<IEmailService>(emailService => emailService.SendEmail(to, title, message));
@@ -143,11 +152,11 @@ namespace Foundation.Test.Api.ApiControllers
         [Parameter("title", typeof(string))]
         [Parameter("message", typeof(string))]
         [Parameter("to", typeof(string))]
-        public virtual async Task<Guid> SendEmailUsingBackgroundJobServiceAndPushAfterThat(ODataActionParameters actionParameters)
+        public virtual async Task<Guid> SendEmailUsingBackgroundJobServiceAndPushAfterThat(EmailParameters actionParameters)
         {
-            string title = (string)actionParameters["title"];
-            string message = (string)actionParameters["message"];
-            string to = (string)actionParameters["to"];
+            string title = actionParameters.title;
+            string message = actionParameters.message;
+            string to = actionParameters.to;
 
             string jobId = await _backgroundJobWorker.Value
                 .PerformBackgroundJobAsync<IEmailService>(emailService => emailService.SendEmail(to, title, message));
@@ -163,11 +172,11 @@ namespace Foundation.Test.Api.ApiControllers
         [Parameter("title", typeof(string))]
         [Parameter("message", typeof(string))]
         [Parameter("to", typeof(string))]
-        public virtual void SendEmail(ODataActionParameters actionParameters)
+        public virtual void SendEmail(EmailParameters actionParameters)
         {
-            string title = (string)actionParameters["title"];
-            string message = (string)actionParameters["message"];
-            string to = (string)actionParameters["to"];
+            string title = actionParameters.title;
+            string message = actionParameters.message;
+            string to = actionParameters.to;
 
             Request.GetOwinContext().GetDependencyResolver().Resolve<IEmailService>().SendEmail(to, title, message);
         }
@@ -178,13 +187,20 @@ namespace Foundation.Test.Api.ApiControllers
             await _messageSender.Value.SendMessageToUsersAsync("TestTask", new { Date = _dateTimeProvider.Value.GetCurrentUtcDateTime() }, "SomeUser");
         }
 
+        public class WordParameters
+        {
+            public string to { get; set; }
+
+            public string word { get; set; }
+        }
+
         [Action]
         [Parameter("to", typeof(string))]
         [Parameter("word", typeof(string))]
-        public virtual async Task PushSomeWordToAnotherUser(ODataActionParameters parameters, CancellationToken cancellationToken)
+        public virtual async Task PushSomeWordToAnotherUser(WordParameters parameters, CancellationToken cancellationToken)
         {
-            string to = (string)parameters["to"];
-            string word = (string)parameters["word"];
+            string to = parameters.to;
+            string word = parameters.word;
 
             await _messageSender.Value.SendMessageToUsersAsync("NewWord", new { Word = word }, to);
         }
@@ -192,13 +208,26 @@ namespace Foundation.Test.Api.ApiControllers
         [Action]
         [Parameter("to", typeof(string))]
         [Parameter("word", typeof(string))]
-        public virtual async Task PushSomeWordToAnotherUsingBackgroundJobWorker(ODataActionParameters parameters, CancellationToken cancellationToken)
+        public virtual async Task PushSomeWordToAnotherUsingBackgroundJobWorker(WordParameters parameters, CancellationToken cancellationToken)
         {
-            string to = (string)parameters["to"];
-            string word = (string)parameters["word"];
+            string to = parameters.to;
+            string word = parameters.word;
 
             await _backgroundJobWorker.Value.PerformBackgroundJobAsync<IMessageSender>(messageSender =>
                         messageSender.SendMessageToUsers("NewWord", new { Word = word }, to));
+        }
+
+        public class StringFormattersTestsParameters
+        {
+            public string simpleString { get; set; }
+
+            public IEnumerable<string> stringsArray { get; set; }
+
+            public IEnumerable<string> stringsArray2 { get; set; }
+
+            public TestModel simpleDto { get; set; }
+
+            public IEnumerable<TestModel> entitiesArray { get; set; }
         }
 
         [Action]
@@ -207,12 +236,12 @@ namespace Foundation.Test.Api.ApiControllers
         [Parameter("stringsArray2", typeof(IEnumerable<string>))]
         [Parameter("simpleDto", typeof(TestModel))]
         [Parameter("entitiesArray", typeof(IEnumerable<TestModel>))]
-        public virtual void StringFormattersTests(ODataActionParameters actionParameters)
+        public virtual void StringFormattersTests(StringFormattersTestsParameters actionParameters)
         {
-            string simpleString = (string)actionParameters["simpleString"];
-            List<string> stringsArray = ((IEnumerable<string>)actionParameters["stringsArray"]).ToList();
-            TestModel simpleDto = (TestModel)actionParameters["simpleDto"];
-            List<TestModel> entitiesArray = ((IEnumerable<TestModel>)actionParameters["entitiesArray"]).ToList();
+            string simpleString = actionParameters.simpleString;
+            List<string> stringsArray = actionParameters.stringsArray.ToList();
+            TestModel simpleDto = actionParameters.simpleDto;
+            List<TestModel> entitiesArray = actionParameters.entitiesArray.ToList();
             IValueChecker valueChecker = Request.GetOwinContext().GetDependencyResolver().Resolve<IValueChecker>();
             valueChecker.CheckValue(simpleString);
             valueChecker.CheckValue(stringsArray);
@@ -220,17 +249,28 @@ namespace Foundation.Test.Api.ApiControllers
             valueChecker.CheckValue(entitiesArray);
         }
 
+        public class TimeZoneTestsParameters
+        {
+            public DateTimeOffset simpleDate { get; set; }
+
+            public IEnumerable<DateTimeOffset> datesArray { get; set; }
+
+            public TestModel simpleDto { get; set; }
+
+            public IEnumerable<TestModel> entitiesArray { get; set; }
+        }
+
         [Action]
         [Parameter("simpleDate", typeof(DateTimeOffset))]
         [Parameter("datesArray", typeof(IEnumerable<DateTimeOffset>))]
         [Parameter("simpleDto", typeof(TestModel))]
         [Parameter("entitiesArray", typeof(IEnumerable<TestModel>))]
-        public virtual void TimeZoneTests(ODataActionParameters actionParameters)
+        public virtual void TimeZoneTests(TimeZoneTestsParameters actionParameters)
         {
-            DateTimeOffset simpleDate = (DateTimeOffset)actionParameters["simpleDate"];
-            List<DateTimeOffset> datesArray = ((IEnumerable<DateTimeOffset>)actionParameters["datesArray"]).ToList();
-            TestModel simpleDto = (TestModel)actionParameters["simpleDto"];
-            List<TestModel> entitiesArray = ((IEnumerable<TestModel>)actionParameters["entitiesArray"]).ToList();
+            DateTimeOffset simpleDate = actionParameters.simpleDate;
+            List<DateTimeOffset> datesArray = actionParameters.datesArray.ToList();
+            TestModel simpleDto = actionParameters.simpleDto;
+            List<TestModel> entitiesArray = actionParameters.entitiesArray.ToList();
             IValueChecker valueChecker = Request.GetOwinContext().GetDependencyResolver().Resolve<IValueChecker>();
             valueChecker.CheckValue(simpleDate);
             valueChecker.CheckValue(datesArray);
@@ -272,20 +312,27 @@ namespace Foundation.Test.Api.ApiControllers
             };
         }
 
-        [Action]
-        [Parameter("firstValue", typeof(int))]
-        [Parameter("secondValue", typeof(int))]
-        public virtual bool AreEqual(ODataActionParameters parameters)
+        public class FirstSecondParameters
         {
-            return (int)parameters["firstValue"] == (int)parameters["secondValue"];
+            public int firstValue { get; set; }
+
+            public int secondValue { get; set; }
         }
 
         [Action]
         [Parameter("firstValue", typeof(int))]
         [Parameter("secondValue", typeof(int))]
-        public virtual int Sum(ODataActionParameters parameters)
+        public virtual bool AreEqual(FirstSecondParameters parameters)
         {
-            return (int)parameters["firstValue"] + (int)parameters["secondValue"];
+            return parameters.firstValue == parameters.secondValue;
+        }
+
+        [Action]
+        [Parameter("firstValue", typeof(int))]
+        [Parameter("secondValue", typeof(int))]
+        public virtual int Sum(FirstSecondParameters parameters)
+        {
+            return parameters.firstValue + parameters.secondValue;
         }
 
         [Function]
@@ -301,36 +348,58 @@ namespace Foundation.Test.Api.ApiControllers
             };
         }
 
+        public class TestIEEE754CompatibilityParameters
+        {
+            public decimal val { get; set; }
+        }
+
         [Action]
         [Parameter("val", typeof(decimal))]
-        public virtual decimal TestIEEE754Compatibility(ODataActionParameters parameters)
+        public virtual decimal TestIEEE754Compatibility(TestIEEE754CompatibilityParameters parameters)
         {
-            decimal val = (decimal)parameters["val"];
+            decimal val = parameters.val;
             return val;
+        }
+
+        public class TestIEEE754Compatibility2Parameters
+        {
+            public int val { get; set; }
         }
 
         [Action]
         [Parameter("val", typeof(int))]
-        public virtual int TestIEEE754Compatibility2(ODataActionParameters parameters)
+        public virtual int TestIEEE754Compatibility2(TestIEEE754Compatibility2Parameters parameters)
         {
-            int val = (int)parameters["val"];
+            int val = parameters.val;
             return val;
+        }
+
+        public class TestIEEE754Compatibility3Parameters
+        {
+            public long val { get; set; }
         }
 
         [Action]
         [Parameter("val", typeof(long))]
-        public virtual long TestIEEE754Compatibility3(ODataActionParameters parameters)
+        public virtual long TestIEEE754Compatibility3(TestIEEE754Compatibility3Parameters parameters)
         {
-            long val = (long)parameters["val"];
+            long val = parameters.val;
             return val;
+        }
+
+        public class FirstSecondValueDecimalParameters
+        {
+            public decimal firstValue { get; set; }
+
+            public decimal secondValue { get; set; }
         }
 
         [Action]
         [Parameter("firstValue", typeof(decimal))]
         [Parameter("secondValue", typeof(decimal))]
-        public virtual decimal TestDecimalSum(ODataActionParameters parameters)
+        public virtual decimal TestDecimalSum(FirstSecondValueDecimalParameters parameters)
         {
-            return (decimal)parameters["firstValue"] + (decimal)parameters["secondValue"];
+            return parameters.firstValue + parameters.secondValue;
         }
     }
 }

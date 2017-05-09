@@ -67,7 +67,7 @@ namespace Foundation.Test.HtmlClient.ThirdPartyLibrariesTests.JayDataContextTest
                 A.CallTo(() => controllerForUpdate.PartialUpdate(1, A<Delta<TestComplexDto>>.That.Matches(dto => dto.GetInstance().ComplexObj.Name == "Test?"), A<CancellationToken>.Ignored))
                     .MustHaveHappened(Repeated.Exactly.Once);
 
-                A.CallTo(() => controllerForAction.DoSomeThingWithComplexObj(A<ODataActionParameters>.That.Matches(parameters => ((TestComplexDto)parameters["complexDto"]).ComplexObj.Name == "Test??")))
+                A.CallTo(() => controllerForAction.DoSomeThingWithComplexObj(A<TestComplexController.DoSomeThingWithComplexObjParameters>.That.Matches(parameters => parameters.complexDto.ComplexObj.Name == "Test??")))
                     .MustHaveHappened(Repeated.Exactly.Once);
             }
         }
@@ -89,7 +89,7 @@ namespace Foundation.Test.HtmlClient.ThirdPartyLibrariesTests.JayDataContextTest
                     .OfType<TestComplexController>()
                     .Single();
 
-                A.CallTo(() => controllerForSimpleValuesArray.GetValues(A<ODataActionParameters>.That.Matches(parameters => parameters.ContainsKey("values")), A<CancellationToken>.Ignored))
+                A.CallTo(() => controllerForSimpleValuesArray.GetValues(A<TestComplexController.GetValuesParameters>.That.Matches(parameters => parameters.values != null), A<CancellationToken>.Ignored))
                     .MustHaveHappened(Repeated.Exactly.Once);
             }
         }

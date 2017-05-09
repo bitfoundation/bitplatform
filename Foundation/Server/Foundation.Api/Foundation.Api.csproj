@@ -388,6 +388,8 @@
     <Compile Include="Middlewares\WebApi\OData\ActionFilters\ODataEnableQueryAttribute.cs" />
     <Compile Include="Middlewares\WebApi\OData\Contracts\IODataContainerBuilderCustomizer.cs" />
     <Compile Include="Middlewares\WebApi\Contracts\IWebApiOwinPipelineInjector.cs" />
+    <Compile Include="Middlewares\WebApi\OData\DefaultODataParameterDeserializer.cs" />
+    <Compile Include="Middlewares\WebApi\OData\ExtendedODataDeserializerProvider.cs" />
     <Compile Include="Middlewares\WebApi\OData\DefaultODataEnumDeserializer.cs" />
     <Compile Include="Middlewares\WebApi\OData\DefaultODataEnumSerializer.cs" />
     <Compile Include="Middlewares\WebApi\OData\Implementations\DefaultODataContainerBuilderCustomizer.cs" />

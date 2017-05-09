@@ -6,12 +6,26 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Web.Http.Controllers;
 using System.Web.OData.Builder;
+using System.Web.OData.Query;
 
 namespace Foundation.Api.Middlewares.WebApi.OData.Implementations
 {
+    public class DefaultAutoEdmBuilderParameterInfo
+    {
+        public string Name { get; set; }
+
+        public TypeInfo Type { get; set; }
+
+        public bool IsOptional
+        {
+            get { return Type.IsClass || (Type.IsGenericType && Type.GetGenericTypeDefinition().GetTypeInfo() == typeof(Nullable<>).GetTypeInfo()); }
+        }
+    }
+
     public class DefaultAutoEdmBuilder : IAutoEdmBuilder
     {
         private readonly MethodInfo _buildControllerOperations = null;
@@ -106,8 +120,29 @@ namespace Foundation.Api.Middlewares.WebApi.OData.Implementations
                     if (!isFunction && !isAction)
                         continue;
 
-                    List<ParameterAttribute> actionParameters =
-                        method.GetCustomAttributes<ParameterAttribute>().ToList();
+                    List<DefaultAutoEdmBuilderParameterInfo> operationParameters = new List<DefaultAutoEdmBuilderParameterInfo>();
+
+                    if (isFunction)
+                    {
+                        foreach (ParameterInfo parameter in method.GetParameters())
+                        {
+                            if (parameter.ParameterType.GetTypeInfo() == typeof(CancellationToken).GetTypeInfo() || typeof(ODataQueryOptions).IsAssignableFrom(parameter.ParameterType.GetTypeInfo()))
+                                continue;
+                            operationParameters.Add(new DefaultAutoEdmBuilderParameterInfo { Name = parameter.Name, Type = parameter.ParameterType.GetTypeInfo() });
+                        }
+                    }
+                    else if (isAction)
+                    {
+                        ParameterInfo parameter = method
+                            .GetParameters()
+                            .SingleOrDefault(p => p.ParameterType.GetTypeInfo() != typeof(CancellationToken).GetTypeInfo() && !typeof(ODataQueryOptions).IsAssignableFrom(p.ParameterType.GetTypeInfo()));
+
+                        if (parameter != null)
+                        {
+                            foreach (PropertyInfo prop in parameter.ParameterType.GetProperties(BindingFlags.Public | BindingFlags.Instance))
+                                operationParameters.Add(new DefaultAutoEdmBuilderParameterInfo { Name = prop.Name, Type = prop.PropertyType.GetTypeInfo() });
+                        }
+                    }
 
                     OperationConfiguration operationConfiguration = null;
 
@@ -116,30 +151,28 @@ namespace Foundation.Api.Middlewares.WebApi.OData.Implementations
                     else if (isFunction)
                         operationConfiguration = entitySet.EntityType.Collection.Function(method.Name);
 
-                    foreach (ParameterAttribute actionParameter in actionParameters)
+                    foreach (DefaultAutoEdmBuilderParameterInfo operationParameter in operationParameters)
                     {
-                        if (actionParameter.Type.GetTypeInfo() != typeof(string).GetTypeInfo() &&
-                            typeof(IEnumerable).GetTypeInfo().IsAssignableFrom(actionParameter.Type.GetTypeInfo()))
-                        {
-                            TypeInfo parameterType = actionParameter.Type.GetTypeInfo();
+                        TypeInfo parameterType = operationParameter.Type;
 
+                        if (operationParameter.Type.GetTypeInfo() != typeof(string).GetTypeInfo() &&
+                            typeof(IEnumerable).GetTypeInfo().IsAssignableFrom(operationParameter.Type))
+                        {
                             if (parameterType.IsArray)
-                                throw new InvalidOperationException($"Use IEnumerable<{parameterType.GetElementType().GetTypeInfo().Name}> instead of {parameterType.GetElementType().GetTypeInfo().Name}[] for parameter {actionParameter.Name} of {actionParameter.Name} in {controllerName} controller");
+                                throw new InvalidOperationException($"Use IEnumerable<{parameterType.GetElementType().GetTypeInfo().Name}> instead of {parameterType.GetElementType().GetTypeInfo().Name}[] for parameter {operationParameter.Name} of {operationParameter.Name} in {controllerName} controller");
 
                             if (parameterType.IsGenericType)
                                 parameterType = parameterType.GetGenericArguments().Single().GetTypeInfo();
 
                             ParameterConfiguration parameter = (ParameterConfiguration)_collectionParameterMethodInfo
                                                                                             .MakeGenericMethod(parameterType)
-                                                                                            .Invoke(operationConfiguration, new object[] { actionParameter.Name });
+                                                                                            .Invoke(operationConfiguration, new object[] { operationParameter.Name });
 
-                            parameter.OptionalParameter = actionParameter.IsOptional;
+                            parameter.OptionalParameter = operationParameter.IsOptional;
                         }
                         else
                         {
-                            operationConfiguration.Parameter(actionParameter.Type, actionParameter.Name)
-                                .OptionalParameter =
-                                actionParameter.IsOptional;
+                            operationConfiguration.Parameter(parameterType, operationParameter.Name).OptionalParameter = operationParameter.IsOptional;
                         }
                     }
 
