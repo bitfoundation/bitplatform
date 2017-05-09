@@ -2,6 +2,7 @@
 using Microsoft.AspNet.SignalR;
 using Microsoft.Owin;
 using Foundation.Api.Middlewares.SignalR.Contracts;
+using System;
 
 namespace Foundation.Api.Middlewares.SignalR
 {
@@ -33,6 +34,7 @@ namespace Foundation.Api.Middlewares.SignalR
 
                 await dependencyResolver.Resolve<IMessagesHubEvents>().OnDisconnected(this, stopCalled);
             }
+            catch (ObjectDisposedException ex) { /* https://github.com/SignalR/SignalR/issues/2972 */ }
             finally
             {
                 await base.OnDisconnected(stopCalled);
