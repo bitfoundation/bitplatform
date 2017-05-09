@@ -24,7 +24,7 @@ namespace BitChangeSetManager.Metadata
                             new EnvironmentCultureValue { Name = "AddEditChangeSet" , Title = "Add/Edit change set" },
                             new EnvironmentCultureValue { Name = "ChangeSetDataIsInvalid" , Title = "Your change set's data is invalid" },
                             new EnvironmentCultureValue { Name = "EditChangeSet" , Title = "Edit change set" },
-                            new EnvironmentCultureValue { Name = "ChangeSets" , Title = "ChangeSets" },
+                            new EnvironmentCultureValue { Name = "ChangeSets" , Title = "Change Sets" },
                             new EnvironmentCultureValue { Name = "DeliveriesOf" , Title = "Deliveries of" },
                             new EnvironmentCultureValue { Name = "ChangeSetHasBeenInsertedByUser" , Title = "Change set {{title}} has been inserted by {{userName}}" }
                         }
