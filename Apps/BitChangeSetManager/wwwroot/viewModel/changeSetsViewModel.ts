@@ -46,7 +46,7 @@
         }
 
         @Command()
-        public async onChangeSetHasBeenInsertedByUser(args: { userName: string, title: string }) {
+        public async onChangeSetHasBeenInsertedByUser(key: string, args: { userName: string, title: string }) {
             await this.$mdToast.show(this.$mdToast.simple()
                 .textContent(this.$translate.instant("ChangeSetHasBeenInsertedByUser", args))
                 .hideDelay(3000)
