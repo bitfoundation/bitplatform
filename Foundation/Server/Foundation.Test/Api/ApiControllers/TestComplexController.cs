@@ -33,7 +33,7 @@ namespace Foundation.Test.Api.ApiControllers
         }
 
         [Get]
-        public virtual async Task<TestComplexDto> Get([FromODataUri]int key, CancellationToken cancellationToken)
+        public virtual async Task<TestComplexDto> Get(int key, CancellationToken cancellationToken)
         {
             return Get()
                 .Single(t => t.EntityId == key);
@@ -47,7 +47,7 @@ namespace Foundation.Test.Api.ApiControllers
         }
 
         [PartialUpdate]
-        public virtual async Task<TestComplexDto> PartialUpdate([FromODataUri] int key, Delta<TestComplexDto> modelDelta,
+        public virtual async Task<TestComplexDto> PartialUpdate(int key, Delta<TestComplexDto> modelDelta,
             CancellationToken cancellationToken)
         {
             TestComplexDto model = modelDelta.GetInstance();

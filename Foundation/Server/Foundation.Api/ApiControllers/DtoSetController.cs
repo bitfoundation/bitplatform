@@ -55,7 +55,7 @@ namespace Foundation.Api.ApiControllers
         }
 
         [Get]
-        public virtual async Task<TDto> Get([FromODataUri]TKey key, CancellationToken cancellationToken)
+        public virtual async Task<TDto> Get(TKey key, CancellationToken cancellationToken)
         {
             IQueryable<TDto> baseQuery = WhereByKeyBuilders.WhereByKey(await GetAll(cancellationToken), key);
 
@@ -78,14 +78,14 @@ namespace Foundation.Api.ApiControllers
         }
 
         [Delete]
-        public virtual async Task Delete([FromODataUri]TKey key, CancellationToken cancellationToken)
+        public virtual async Task Delete(TKey key, CancellationToken cancellationToken)
         {
             TModel model = await Repository.GetByIdAsync(key, cancellationToken);
             await Repository.DeleteAsync(model, cancellationToken);
         }
 
         [PartialUpdate]
-        public virtual async Task<TDto> Update([FromODataUri]TKey key, Delta<TDto> modifiedDtoDelta, CancellationToken cancellationToken)
+        public virtual async Task<TDto> Update(TKey key, Delta<TDto> modifiedDtoDelta, CancellationToken cancellationToken)
         {
             if (modifiedDtoDelta == null)
                 throw new ArgumentNullException(nameof(modifiedDtoDelta));
@@ -101,7 +101,7 @@ namespace Foundation.Api.ApiControllers
         }
 
         [Update]
-        public virtual async Task<TDto> Update([FromODataUri] TKey key, TDto dto, CancellationToken cancellationToken)
+        public virtual async Task<TDto> Update(TKey key, TDto dto, CancellationToken cancellationToken)
         {
             if (dto == null)
                 throw new ArgumentNullException(nameof(dto));

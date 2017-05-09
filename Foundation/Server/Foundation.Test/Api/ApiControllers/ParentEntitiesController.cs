@@ -39,7 +39,7 @@ namespace Foundation.Test.Api.ApiControllers
         }
 
         [Get]
-        public virtual async Task<ParentEntity> Get([FromODataUri]long key, CancellationToken cancellationToken)
+        public virtual async Task<ParentEntity> Get(long key, CancellationToken cancellationToken)
         {
             ParentEntity parentEntity = await (await _parentModelsRepository
                 .GetAllAsync(cancellationToken))

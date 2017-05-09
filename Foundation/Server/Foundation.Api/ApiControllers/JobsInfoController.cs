@@ -25,7 +25,7 @@ namespace Foundation.Api.ApiControllers
         }
 
         [Get]
-        public virtual async Task<JobInfo> Get([FromODataUri]string key, CancellationToken cancellationToken)
+        public virtual async Task<JobInfo> Get(string key, CancellationToken cancellationToken)
         {
             if (key == null)
                 throw new ArgumentNullException(nameof(key));

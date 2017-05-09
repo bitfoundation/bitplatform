@@ -10,7 +10,7 @@ namespace Foundation.Test.Api.ApiControllers
     {
         [Function]
         [Parameter("gender", typeof(TestGender))]
-        public virtual List<DtoWithEnum> GetDtoWithEnumsByGender([FromODataUri]TestGender gender)
+        public virtual List<DtoWithEnum> GetDtoWithEnumsByGender(TestGender gender)
         {
             return new List<DtoWithEnum> { new DtoWithEnum { Id = 1, Gender = gender } };
         }
@@ -24,7 +24,7 @@ namespace Foundation.Test.Api.ApiControllers
 
         [Function]
         [Parameter("gender", typeof(TestGender2))]
-        public virtual List<DtoWithEnum> GetDtoWithEnumsByGender2([FromODataUri]TestGender2 gender)
+        public virtual List<DtoWithEnum> GetDtoWithEnumsByGender2(TestGender2 gender)
         {
             return new List<DtoWithEnum> { new DtoWithEnum { Id = 1, Test = gender.ToString() } };
         }

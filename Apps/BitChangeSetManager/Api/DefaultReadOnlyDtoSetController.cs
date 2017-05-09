@@ -27,12 +27,12 @@ namespace BitChangeSetManager.Api
             throw new AppException(BitChangeSetManagerMetadata.InsertIsDeined);
         }
 
-        public override Task<TDto> Update([FromODataUri] Guid key, Delta<TDto> modifiedDtoDelta, CancellationToken cancellationToken)
+        public override Task<TDto> Update(Guid key, Delta<TDto> modifiedDtoDelta, CancellationToken cancellationToken)
         {
             throw new AppException(BitChangeSetManagerMetadata.UpdateIsDeined);
         }
 
-        public override Task Delete([FromODataUri] Guid key, CancellationToken cancellationToken)
+        public override Task Delete(Guid key, CancellationToken cancellationToken)
         {
             throw new AppException(BitChangeSetManagerMetadata.DeleteIsDeined);
         }

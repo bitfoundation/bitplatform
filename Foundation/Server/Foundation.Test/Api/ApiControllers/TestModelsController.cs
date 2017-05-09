@@ -62,7 +62,7 @@ namespace Foundation.Test.Api.ApiControllers
         }
 
         [Get]
-        public virtual async Task<TestModel> Get([FromODataUri]long key, CancellationToken cancellationToken)
+        public virtual async Task<TestModel> Get(long key, CancellationToken cancellationToken)
         {
             TestModel testModel = await (await _testModelsRepository.Value
                 .GetAllAsync(cancellationToken))
@@ -83,7 +83,7 @@ namespace Foundation.Test.Api.ApiControllers
         }
 
         [PartialUpdate]
-        public virtual async Task<TestModel> PartialUpdate([FromODataUri] long key, Delta<TestModel> modelDelta,
+        public virtual async Task<TestModel> PartialUpdate(long key, Delta<TestModel> modelDelta,
             CancellationToken cancellationToken)
         {
             TestModel model = await (await _testModelsRepository.Value.GetAllAsync(cancellationToken))
@@ -100,7 +100,7 @@ namespace Foundation.Test.Api.ApiControllers
         }
 
         [Update]
-        public virtual async Task<TestModel> Update([FromODataUri] long key, TestModel model,
+        public virtual async Task<TestModel> Update(long key, TestModel model,
             CancellationToken cancellationToken)
         {
             model = await _testModelsRepository.Value.UpdateAsync(model, cancellationToken);
@@ -112,7 +112,7 @@ namespace Foundation.Test.Api.ApiControllers
         }
 
         [Delete]
-        public virtual async Task Delete([FromODataUri] long key, CancellationToken cancellationToken)
+        public virtual async Task Delete(long key, CancellationToken cancellationToken)
         {
             TestModel model = await (await _testModelsRepository.Value.GetAllAsync(cancellationToken))
                 .FirstOrDefaultAsync(m => m.Id == key, cancellationToken);
@@ -263,7 +263,7 @@ namespace Foundation.Test.Api.ApiControllers
 
         [Function]
         [Parameter("val", typeof(long))]
-        public virtual TestModel[] GetTestModelsByStringPropertyValue([FromODataUri]long val)
+        public virtual TestModel[] GetTestModelsByStringPropertyValue(long val)
         {
             return new[]
             {
