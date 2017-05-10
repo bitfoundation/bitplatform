@@ -38,9 +38,6 @@ namespace Foundation.DataAccess.Implementations.EntityFrameworkCore
 
         public bool SupportsQueryable<T>(IQueryable source)
         {
-            // https://github.com/aspnet/EntityFramework/issues/6534
-            return false;
-
             if (source == null)
                 throw new ArgumentNullException(nameof(source));
 
