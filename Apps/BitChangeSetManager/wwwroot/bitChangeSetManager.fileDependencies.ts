@@ -119,9 +119,8 @@ module BitChangeSetManager {
     });
 
     dependencyManager.registerFileDependency({
-        // https://raw.githubusercontent.com/bit-foundation/kendo-ui-core/master/src/messages/kendo.messages.fa-IR.js
         name: "kendo-messages-fa-IR",
-        path: "bower_components/kendo-ui/js/messages/kendo.messages.fa-IR",
+        path: "bower_components/kendo-ui/js/messages/kendo.messages.fa-IR.min",
         continueOnError: true,
         predicate: (appInfo) => {
             return appInfo.screenSize == "DesktopAndTablet" && appInfo.culture == "FaIr";

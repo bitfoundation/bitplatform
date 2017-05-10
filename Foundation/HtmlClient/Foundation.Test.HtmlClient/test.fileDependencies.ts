@@ -202,7 +202,7 @@
 
     dependencyManager.registerFileDependency({
         name: "kendo-messages-fa-IR",
-        path: "bit-framework/Foundation/HtmlClient/Foundation.Test.HtmlClient/bower_components/kendo-ui/js/messages/kendo.messages.fa-IR",
+        path: "bit-framework/Foundation/HtmlClient/Foundation.Test.HtmlClient/bower_components/kendo-ui/js/messages/kendo.messages.fa-IR.min",
         continueOnError: true,
         predicate: (appInfo) => {
             return appInfo.screenSize == "DesktopAndTablet" && appInfo.culture == "FaIr";
