@@ -202,27 +202,27 @@ namespace Foundation.DataAccess.Implementations.EntityFrameworkCore
             return _set.AsNoTracking();
         }
 
-        public virtual IQueryable<TChild> GetChildsQuery<TChild>(TEntity entity, Expression<Func<TEntity, ICollection<TChild>>> childs) where TChild : class
+        public virtual IQueryable<TChild> GetCollectionQuery<TChild>(TEntity entity, Expression<Func<TEntity, ICollection<TChild>>> childs) where TChild : class
         {
             throw new NotImplementedException();
         }
 
-        public virtual Task LoadChildsAsync<TProperty>(TEntity entity, Expression<Func<TEntity, ICollection<TProperty>>> childs, CancellationToken cancellationToken, bool forceReload = false) where TProperty : class
+        public virtual Task LoadCollectionAsync<TProperty>(TEntity entity, Expression<Func<TEntity, ICollection<TProperty>>> childs, CancellationToken cancellationToken, bool forceReload = false) where TProperty : class
         {
             throw new NotImplementedException();
         }
 
-        public virtual Task LoadMemberAsync<TProperty>(TEntity entity, Expression<Func<TEntity, TProperty>> member, CancellationToken cancellationToken, bool forceReload = false) where TProperty : class
+        public virtual void LoadCollection<TProperty>(TEntity entity, Expression<Func<TEntity, ICollection<TProperty>>> childs, bool forceReload = false) where TProperty : class
         {
             throw new NotImplementedException();
         }
 
-        public virtual Task<bool> AnyChildAsync<TChild>(TEntity entity, Expression<Func<TEntity, ICollection<TChild>>> childs, Expression<Func<TChild, bool>> predicate, bool checkDatabase, CancellationToken cancellationToken) where TChild : class
+        public virtual Task LoadReferenceAsync<TProperty>(TEntity entity, Expression<Func<TEntity, TProperty>> member, CancellationToken cancellationToken, bool forceReload = false) where TProperty : class
         {
             throw new NotImplementedException();
         }
 
-        public virtual bool AnyChild<TChild>(TEntity entity, Expression<Func<TEntity, ICollection<TChild>>> childs, Expression<Func<TChild, bool>> predicate, bool checkDatabase) where TChild : class
+        public virtual void LoadReference<TProperty>(TEntity entity, Expression<Func<TEntity, TProperty>> member, bool forceReload = false) where TProperty : class
         {
             throw new NotImplementedException();
         }
