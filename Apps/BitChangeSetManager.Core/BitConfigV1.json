@@ -1,0 +1,31 @@
+{
+  "Schema": {
+    "HtmlSchemaFiles": [
+      "..\\BitChangeSetManager\\wwwroot\\bower_components\\bit-releases\\foundation.view\\html-elements-schema.json"
+    ]
+  },
+  "BitCodeGeneratorConfigs": {
+    "BitCodeGeneratorMappings": [
+      {
+        "EdmName": "BitChangeSetManager",
+        "Namespace": "BitChangeSetManager",
+        "DestinationFileName": "wwwroot/BitChangeSetManager.Model.Context",
+        "TypingsPath": "bower_components/bit-releases/foundation.core/typings.d.ts",
+        "SourceProjects": [
+          {
+            "Name": "BitChangeSetManager"
+          }
+        ],
+        "DestinationProject": {
+          "Name": "BitChangeSetManager"
+        },
+        "NamespaceAliases": [
+          {
+            "Namespace": "BitChangeSetManager.Dto",
+            "Alias": "BitChangeSetManagerModel"
+          }
+        ]
+      }
+    ]
+  }
+}
