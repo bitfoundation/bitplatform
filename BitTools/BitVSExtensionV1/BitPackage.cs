@@ -20,6 +20,8 @@ using BitCodeGenerator.Implementations.HtmlClientProxyGenerator;
 using System.Reflection;
 using System.Globalization;
 using BitTools.Core.Model;
+using BitVSEditorUtils.Html;
+using Newtonsoft.Json;
 
 namespace BitVSExtensionV1
 {
@@ -112,6 +114,12 @@ namespace BitVSExtensionV1
                     });
 
                 RedirectAssembly("System.Collections.Immutable", new Version("1.1.37"), "b03f5f7f11d50a3a");
+
+                new[] { "Microsoft.Html.Core", "Microsoft.Html.Editor", "Microsoft.Web.Editor" }.ToList()
+                    .ForEach(needsRuntimeAssemblyRedirectInVS2015 =>
+                    {
+                        RedirectAssembly(needsRuntimeAssemblyRedirectInVS2015, new Version("14.0.0.0"), "b03f5f7f11d50a3a");
+                    });
             }
 
             try
@@ -121,19 +129,48 @@ namespace BitVSExtensionV1
             catch (Exception ex)
             {
                 ShowInitialLoadProblem($"Check version failed {ex}");
+                return;
             }
+
+            try
+            {
+                InitHtmlElements();
+            }
+            catch (Exception ex)
+            {
+                ShowInitialLoadProblem($"Init html elements failed {ex}");
+                return;
+            }
+        }
+
+        private void InitHtmlElements()
+        {
+            dynamic configProvider = new DefaultBitConfigProvider();
+
+            BitConfig config = configProvider.GetConfiguration(_workspace, _workspace.CurrentSolution, Enumerable.Empty<Project>().ToList());
+
+            List<BitVSEditorUtils.Html.HtmlElement> elements = new List<BitVSEditorUtils.Html.HtmlElement>();
+
+            foreach (string path in config.Schema.HtmlSchemaFiles)
+            {
+                elements.AddRange(JsonConvert.DeserializeObject<List<BitVSEditorUtils.Html.HtmlElement>>(File.ReadAllText(path)));
+            }
+
+            HtmlElementsContainer.Elements = elements;
         }
 
         private void CheckAssemblyVersions()
         {
             string bitCoreVersion = typeof(BitConfig).GetTypeInfo().Assembly.GetName().Version.ToString();
             string bitCodeGeneratorVersion = typeof(DefaultBitConfigProvider).GetTypeInfo().Assembly.GetName().Version.ToString();
+            string bitVSEditorVersion = typeof(AttributeCompletion).GetTypeInfo().Assembly.GetName().Version.ToString();
             string bitVSExtensionVersion = typeof(BitPacakge).GetTypeInfo().Assembly.GetName().Version.ToString();
 
-            bool allVersionsAreEqual = (bitCoreVersion == bitVSExtensionVersion) && (bitCodeGeneratorVersion == bitVSExtensionVersion);
+            bool allVersionsAreEqual = (bitCoreVersion == bitVSExtensionVersion) && (bitCodeGeneratorVersion == bitVSExtensionVersion) && (bitVSEditorVersion == bitVSExtensionVersion);
 
             Log($"BitToolsCoreVersion: {bitCoreVersion} at {typeof(BitConfig).GetTypeInfo().Assembly.Location}");
             Log($"BitCodeGeneratorVersion: {bitCodeGeneratorVersion} at {typeof(DefaultBitConfigProvider).GetTypeInfo().Assembly.Location}");
+            Log($"BitVSEditor: {bitVSEditorVersion} at {typeof(AttributeCompletion).GetTypeInfo().Assembly.Location}");
             Log($"BitVSExtensionV1Version: {bitVSExtensionVersion} at {typeof(BitPacakge).GetTypeInfo().Assembly.Location}");
 
             if (allVersionsAreEqual == false)

@@ -51,6 +51,14 @@ namespace BitCodeGenerator.Implementations
                 .DeserializeObject<BitConfig>(
                     File.ReadAllText(bitConfigFileInfo.FullName));
 
+            bitConfig.Schema = bitConfig.Schema ?? new Schema { };
+            bitConfig.Schema.HtmlSchemaFiles = bitConfig.Schema.HtmlSchemaFiles ?? new string[] { };
+
+            for (int index = 0; index < bitConfig.Schema.HtmlSchemaFiles.Length; index++)
+            {
+                bitConfig.Schema.HtmlSchemaFiles[index] = Path.Combine(directoryInfo.FullName, bitConfig.Schema.HtmlSchemaFiles[index]);
+            }
+
             foreach (BitCodeGeneratorMapping mapping in bitConfig.BitCodeGeneratorConfigs.BitCodeGeneratorMappings)
             {
                 if (string.IsNullOrEmpty(mapping.DestinationFileName))

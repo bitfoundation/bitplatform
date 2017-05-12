@@ -1,0 +1,1 @@
+[Microsoft.Html.Core, Microsoft.Html.Editor, Microsoft.Web.Editor] >> These dlls are referenced for strongly typed development. But we don't include them in final vsix file, because these are loaded at runtime by visual studio. See Common7\IDE\Extensions\Microsoft\Web Tools\Editors\

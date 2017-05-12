@@ -3,6 +3,13 @@
     public class BitConfig
     {
         public virtual BitCodeGeneratorConfig BitCodeGeneratorConfigs { get; set; }
+
+        public virtual Schema Schema { get; set; } = new Schema { };
+    }
+
+    public class Schema
+    {
+        public virtual string[] HtmlSchemaFiles { get; set; } = new string[] { };
     }
 
     public class BitCodeGeneratorConfig

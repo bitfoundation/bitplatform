@@ -17,6 +17,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BitVSExtensionV1", "BitTool
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BitODataCSProxyGeneratorItemTemplate", "BitTools\BitODataCSProxyGeneratorItemTemplate\BitODataCSProxyGeneratorItemTemplate.csproj", "{B7C505DA-20FD-4453-91A2-8DBD6D920F54}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BitVSEditorUtils", "BitTools\BitVSEditorUtils\BitVSEditorUtils.csproj", "{BD380C7D-90FB-4A55-BFEE-D3FFD3A94A3B}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -51,6 +53,10 @@ Global
 		{B7C505DA-20FD-4453-91A2-8DBD6D920F54}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B7C505DA-20FD-4453-91A2-8DBD6D920F54}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B7C505DA-20FD-4453-91A2-8DBD6D920F54}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BD380C7D-90FB-4A55-BFEE-D3FFD3A94A3B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BD380C7D-90FB-4A55-BFEE-D3FFD3A94A3B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BD380C7D-90FB-4A55-BFEE-D3FFD3A94A3B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BD380C7D-90FB-4A55-BFEE-D3FFD3A94A3B}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
