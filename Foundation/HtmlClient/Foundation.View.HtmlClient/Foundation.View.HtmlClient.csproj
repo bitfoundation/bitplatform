@@ -96,6 +96,9 @@
   <ItemGroup>
     <Folder Include="contents\fonts\" />
   </ItemGroup>
+  <ItemGroup>
+    <Content Include="html-elements-schema.json" />
+  </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>
     <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>

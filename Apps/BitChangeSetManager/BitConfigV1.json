@@ -1,4 +1,9 @@
 {
+  "Schema": {
+    "HtmlSchemaFiles": [
+      "wwwroot\\bower_components\\bit-releases\\foundation.view\\html-elements-schema.json"
+    ]
+  },
   "BitCodeGeneratorConfigs": {
     "BitCodeGeneratorMappings": [
       {
