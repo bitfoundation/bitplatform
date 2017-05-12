@@ -9,6 +9,7 @@ using System.Runtime.InteropServices;
 using EnvDTE;
 using Project = Microsoft.CodeAnalysis.Project;
 using Solution = Microsoft.CodeAnalysis.Solution;
+using BitHtmlElement = BitVSEditorUtils.Html.HtmlElement;
 using System.Windows.Forms;
 using System;
 using System.IO;
@@ -149,14 +150,35 @@ namespace BitVSExtensionV1
 
             BitConfig config = configProvider.GetConfiguration(_workspace, _workspace.CurrentSolution, Enumerable.Empty<Project>().ToList());
 
-            List<BitVSEditorUtils.Html.HtmlElement> elements = new List<BitVSEditorUtils.Html.HtmlElement>();
+            List<BitHtmlElement> allElements = new List<BitHtmlElement>();
 
             foreach (string path in config.Schema.HtmlSchemaFiles)
             {
-                elements.AddRange(JsonConvert.DeserializeObject<List<BitVSEditorUtils.Html.HtmlElement>>(File.ReadAllText(path)));
+                List<BitHtmlElement> newElements = JsonConvert.DeserializeObject<List<BitHtmlElement>>(File.ReadAllText(path));
+
+                foreach (BitHtmlElement newElement in newElements)
+                {
+                    newElement.Attributes = newElement.Attributes ?? new List<HtmlAttribute> { };
+                    newElement.Description = newElement.Description ?? "";
+
+                    if (string.IsNullOrEmpty(newElement.Name))
+                        throw new InvalidOperationException("Element must have a name");
+
+                    newElement.Type = newElement.Type ?? "";
+
+                    BitHtmlElement equivalentHtmlElement = allElements.FirstOrDefault(e => e.Name == newElement.Name);
+
+                    if (equivalentHtmlElement != null)
+                        equivalentHtmlElement.Attributes.AddRange(newElement.Attributes);
+                    else
+                        allElements.Add(newElement);
+                }
             }
 
-            HtmlElementsContainer.Elements = elements;
+            if (!allElements.Any(element => element.Name == "*"))
+                allElements.Add(new BitHtmlElement { Name = "*", Attributes = new List<HtmlAttribute> { }, Description = "", Type = "existing" });
+
+            HtmlElementsContainer.Elements = allElements;
         }
 
         private void CheckAssemblyVersions()

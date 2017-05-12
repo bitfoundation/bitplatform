@@ -10,6 +10,6 @@ namespace BitVSEditorUtils.Html
 
         public string Type { get; set; }
 
-        public IEnumerable<HtmlAttribute> Attributes { get; set; }
+        public List<HtmlAttribute> Attributes { get; set; } = new List<HtmlAttribute> { };
     }
 }

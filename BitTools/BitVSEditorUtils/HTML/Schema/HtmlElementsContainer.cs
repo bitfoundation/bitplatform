@@ -4,6 +4,6 @@ namespace BitVSEditorUtils.Html
 {
     public class HtmlElementsContainer
     {
-        public static List<HtmlElement> Elements { get; set; }
+        public static List<HtmlElement> Elements { get; set; } = new List<HtmlElement>();
     }
 }
