@@ -160,6 +160,10 @@ module Foundation.View.Directives {
 
                                     grid.removeRow(row);
 
+                                    if (grid.options.editable != null && (grid.options.editable == false || (grid.options.editable as kendo.ui.GridEditable).update == false)) {
+                                        grid.dataSource.sync();
+                                    }
+
                                 };
 
                                 if (attributes["editTemplateId"] != null) {
