@@ -88,7 +88,7 @@ module Foundation.View.Directives {
 
                     return gridTemplate;
                 },
-                link($scope: ng.IScope, element: JQuery, attributes: ng.IAttributes & { radDatasource: string, onInit: string }) {
+                link($scope: ng.IScope, element: JQuery, attributes: ng.IAttributes & { radDatasource: string, radOnInit: string }) {
 
                     const dependencyManager = Core.DependencyManager.getCurrent();
 
@@ -519,10 +519,10 @@ module Foundation.View.Directives {
                                 gridCustomizer($scope, attributes, element, gridOptions);
                             });
 
-                            if (attributes.onInit != null) {
-                                let onInitFN = $parse(attributes.onInit);
-                                if (typeof onInitFN == "function") {
-                                    onInitFN($scope, { gridOptions: gridOptions });
+                            if (attributes.radOnInit != null) {
+                                let radOnInitFN = $parse(attributes.radOnInit);
+                                if (typeof radOnInitFN == "function") {
+                                    radOnInitFN($scope, { gridOptions: gridOptions });
                                 }
                             }
 

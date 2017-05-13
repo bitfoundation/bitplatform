@@ -64,7 +64,7 @@ module Foundation.View.Directives {
 
                     return template;
                 },
-                link($scope: ng.IScope, element: JQuery, attributes: ng.IAttributes & { ngModel: string, radText: string, radDatasource: string, radValueFieldName: string, radTextFieldName: string, radVirtual: string, radVirtualEntityLoader: string, onInit: string }, requireArgs: { mdInputContainer: { element: JQuery }, ngModel: ng.INgModelController }) {
+                link($scope: ng.IScope, element: JQuery, attributes: ng.IAttributes & { ngModel: string, radText: string, radDatasource: string, radValueFieldName: string, radTextFieldName: string, radVirtualEntityLoader: string, radOnInit: string }, requireArgs: { mdInputContainer: { element: JQuery }, ngModel: ng.INgModelController }) {
 
                     const dependencyManager = Core.DependencyManager.getCurrent();
 
@@ -279,7 +279,7 @@ module Foundation.View.Directives {
                             if (dataSource.options.schema.model.fields[comboBoxOptions.dataValueField] == null)
                                 throw new Error(`Model has no property named ${comboBoxOptions.dataValueField} to be used as value field`);
 
-                            if (attributes.radVirtual != null) {
+                            if (attributes.radVirtualEntityLoader != null) {
 
                                 let radVirtualEntityLoader = $parse(attributes.radVirtualEntityLoader);
 
@@ -322,10 +322,10 @@ module Foundation.View.Directives {
                                 radComboCustomizer($scope, attributes, element, comboBoxOptions);
                             });
 
-                            if (attributes.onInit != null) {
-                                let onInitFN = $parse(attributes.onInit);
-                                if (typeof onInitFN == "function") {
-                                    onInitFN($scope, { comboBoxOptions: comboBoxOptions });
+                            if (attributes.radOnInit != null) {
+                                let radOnInitFN = $parse(attributes.radOnInit);
+                                if (typeof radOnInitFN == "function") {
+                                    radOnInitFN($scope, { comboBoxOptions: comboBoxOptions });
                                 }
                             }
 

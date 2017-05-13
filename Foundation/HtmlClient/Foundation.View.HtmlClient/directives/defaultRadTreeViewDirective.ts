@@ -48,7 +48,7 @@ module Foundation.View.Directives {
 
                     return template;
                 },
-                link($scope: ng.IScope, element: JQuery, attributes: ng.IAttributes & { radText: string, radDatasource: string, radTextFieldName: string, onInit: string }, requireArgs: { mdInputContainer: { element: JQuery } }) {
+                link($scope: ng.IScope, element: JQuery, attributes: ng.IAttributes & { radText: string, radDatasource: string, radTextFieldName: string, radOnInit: string }, requireArgs: { mdInputContainer: { element: JQuery } }) {
 
                     const dependencyManager = Core.DependencyManager.getCurrent();
 
@@ -158,10 +158,10 @@ module Foundation.View.Directives {
                                 treeViewCustomizer($scope, attributes, element, treeViewOptions);
                             });
 
-                            if (attributes.onInit != null) {
-                                const onInitFN = $parse(attributes.onInit);
-                                if (typeof onInitFN == "function") {
-                                    onInitFN($scope, { treeViewOptions: treeViewOptions });
+                            if (attributes.radOnInit != null) {
+                                const radOnInitFN = $parse(attributes.radOnInit);
+                                if (typeof radOnInitFN == "function") {
+                                    radOnInitFN($scope, { treeViewOptions: treeViewOptions });
                                 }
                             }
 

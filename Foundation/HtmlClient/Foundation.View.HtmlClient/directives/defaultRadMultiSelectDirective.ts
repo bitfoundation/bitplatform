@@ -85,7 +85,7 @@ module Foundation.View.Directives {
 
                     return template;
                 },
-                link($scope: ng.IScope, element: JQuery, attributes: ng.IAttributes & { ngModel: string, radText: string, radDatasource: string, radValueFieldName: string, radTextFieldName: string, onInit: string }, requireArgs: { mdInputContainer: { element: JQuery } }) {
+                link($scope: ng.IScope, element: JQuery, attributes: ng.IAttributes & { ngModel: string, radText: string, radDatasource: string, radValueFieldName: string, radTextFieldName: string, radOnInit: string }, requireArgs: { mdInputContainer: { element: JQuery } }) {
 
                     const dependencyManager = Core.DependencyManager.getCurrent();
 
@@ -262,10 +262,10 @@ module Foundation.View.Directives {
                                 multiSelectCustomizer($scope, attributes, element, multiSelectOptions);
                             });
 
-                            if (attributes.onInit != null) {
-                                let onInitFN = $parse(attributes.onInit);
-                                if (typeof onInitFN == "function") {
-                                    onInitFN($scope, { multiSelectOptions: multiSelectOptions });
+                            if (attributes.radOnInit != null) {
+                                let radOnInitFN = $parse(attributes.radOnInit);
+                                if (typeof radOnInitFN == "function") {
+                                    radOnInitFN($scope, { multiSelectOptions: multiSelectOptions });
                                 }
                             }
 
