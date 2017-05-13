@@ -1,4 +1,9 @@
 {
+  "Schema": {
+    "HtmlSchemaFiles": [
+      "Foundation\\HtmlClient\\Foundation.View.HtmlClient\\html-elements-schema.json"
+    ]
+  },
   "BitCodeGeneratorConfigs": {
     "BitCodeGeneratorMappings": [
       {

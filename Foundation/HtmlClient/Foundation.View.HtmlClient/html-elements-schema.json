@@ -8,7 +8,7 @@
       },
       {
         "name": "rad-datasource",
-        "description": "Bind this to kendo data source you've in view model"
+        "description": "Bind this to kendo data source you've in view model."
       },
       {
         "name": "rad-value-field-name",
@@ -19,17 +19,20 @@
         "description": "Property of dto to be displayed to user. It can be overrided using item-template. Note that this field will be used for filtering when user searchs in combo box."
       },
       {
-        "name": "rad-virtual",
-        "description": "Whenver you declare this attribute on rad combo, it loads/render data virtually which is suitable for large sets of data.",
-        "require": "rad-virtual-entity-loader"
-      },
-      {
         "name": "rad-virtual-entity-loader",
         "description": "Bind this to a method which accepts args : { id : any }. At that function you should return a promise, which resolves into an entity with that id."
       },
       {
-        "name": "on-init",
+        "name": "rad-on-init",
         "description": "Bind this to a method which accepts args : { comboBoxOptions: comboBoxOptions }. You can customize all aspects of your combo box there."
+      },
+      {
+        "name": "k-placeholder",
+        "description": "The hint displayed by the widget when it is empty."
+      },
+      {
+        "name": "k-min-length",
+        "description": "The minimum number of characters the user must type before a search is performed. Set to higher value than 1 if the search could match a lot of items."
       }
     ]
   }
