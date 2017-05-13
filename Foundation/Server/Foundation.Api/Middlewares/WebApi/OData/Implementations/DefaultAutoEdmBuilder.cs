@@ -22,7 +22,7 @@ namespace Foundation.Api.Middlewares.WebApi.OData.Implementations
 
         public bool IsOptional
         {
-            get { return Type.IsClass || (Type.IsGenericType && Type.GetGenericTypeDefinition().GetTypeInfo() == typeof(Nullable<>).GetTypeInfo()); }
+            get { return false; }
         }
     }
 
