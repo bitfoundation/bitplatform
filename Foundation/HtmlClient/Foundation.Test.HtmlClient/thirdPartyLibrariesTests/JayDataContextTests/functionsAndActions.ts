@@ -12,6 +12,13 @@ let testActionCall = async (): Promise<void> => {
     const areEqual = await context.testModels.areEqual(10, 10);
     if (areEqual != true)
         throw new Error("are equal result is not valid");
+}; 
+
+let passNullTests = async (): Promise<void> => {
+    const contextProvider = Foundation.Core.DependencyManager.getCurrent().resolveObject<Foundation.ViewModel.Contracts.IEntityContextProvider>("EntityContextProvider");
+    const context = await contextProvider.getContext<TestContext>("Test");
+    await context.testModels.actionForNullArg(null);
+    await context.testModels.functionForNullArg(null);
 };
 
 let testBatchCallODataFunctions = async (): Promise<void> => {

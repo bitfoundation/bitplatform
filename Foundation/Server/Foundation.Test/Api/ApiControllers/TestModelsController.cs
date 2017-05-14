@@ -401,5 +401,24 @@ namespace Foundation.Test.Api.ApiControllers
         {
             return parameters.firstValue + parameters.secondValue;
         }
+
+        public class ActionForNullArgParameters
+        {
+            public string name { get; set; }
+        }
+
+        [Action]
+        [Parameter("name", typeof(string))]
+        public virtual string ActionForNullArg(ActionForNullArgParameters parameters)
+        {
+            return "Ok";
+        }
+
+        [Function]
+        [Parameter("name", typeof(string))]
+        public virtual string FunctionForNullArg(string name)
+        {
+            return "Ok";
+        }
     }
 }

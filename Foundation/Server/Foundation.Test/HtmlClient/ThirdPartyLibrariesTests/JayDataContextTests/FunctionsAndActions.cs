@@ -59,6 +59,35 @@ namespace Foundation.Test.HtmlClient.ThirdPartyLibrariesTests.JayDataContextTest
 
         [TestMethod]
         [TestCategory("HtmlClient"), TestCategory("JayDataContextOData")]
+        public virtual void PassNullTests()
+        {
+            using (TestEnvironment testEnvironment = new TestEnvironment(new TestEnvironmentArgs { UseRealServer = true }))
+            {
+                OAuthToken token = testEnvironment.Server.Login("ValidUserName", "ValidPassword");
+
+                using (RemoteWebDriver driver = testEnvironment.Server.GetWebDriver(new RemoteWebDriverOptions { Token = token }))
+                {
+                    driver.ExecuteTest(@"passNullTests");
+                }
+
+                TestModelsController actionCallTest = TestDependencyManager.CurrentTestDependencyManager.Objects
+                    .OfType<TestModelsController>()
+                    .First();
+
+                A.CallTo(() => actionCallTest.ActionForNullArg(A<TestModelsController.ActionForNullArgParameters>.That.Matches(parameters => parameters.name == null)))
+                    .MustHaveHappened(Repeated.Exactly.Once);
+
+                TestModelsController functionCallTest = TestDependencyManager.CurrentTestDependencyManager.Objects
+                    .OfType<TestModelsController>()
+                    .Last();
+
+                A.CallTo(() => functionCallTest.FunctionForNullArg(null))
+                    .MustHaveHappened(Repeated.Exactly.Once);
+            }
+        }
+
+        [TestMethod]
+        [TestCategory("HtmlClient"), TestCategory("JayDataContextOData")]
         public virtual void TestBatchCallODataFunctions()
         {
             using (TestEnvironment testEnvironment = new TestEnvironment(new TestEnvironmentArgs { UseRealServer = true }))
