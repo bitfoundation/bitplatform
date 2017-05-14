@@ -36,6 +36,11 @@ namespace Bit.Data.EntityFramework.Implementations
             return source.Skip(() => count);
         }
 
+        public virtual bool SupportsConstantParameterization()
+        {
+            return true;
+        }
+
         public virtual bool SupportsQueryable<T>(IQueryable source)
         {
             if (source == null)

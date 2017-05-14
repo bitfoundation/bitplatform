@@ -9,6 +9,8 @@ namespace Foundation.DataAccess.Contracts
     {
         bool SupportsQueryable<T>(IQueryable source);
 
+        bool SupportsConstantParameterization();
+
         Task<List<T>> ToListAsync<T>(IQueryable<T> source, CancellationToken cancellationToken);
 
         Task<long> LongCountAsync<T>(IQueryable<T> source, CancellationToken cancellationToken);

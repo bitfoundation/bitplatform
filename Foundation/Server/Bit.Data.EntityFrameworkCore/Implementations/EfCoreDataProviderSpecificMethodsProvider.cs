@@ -36,6 +36,11 @@ namespace Foundation.DataAccess.Implementations.EntityFrameworkCore
             return source.Skip(count);
         }
 
+        public virtual bool SupportsConstantParameterization()
+        {
+            return true;
+        }
+
         public bool SupportsQueryable<T>(IQueryable source)
         {
             if (source == null)
