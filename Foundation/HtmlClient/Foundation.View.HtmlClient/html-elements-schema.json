@@ -48,5 +48,17 @@
         "description": "<a ng-link=\"[ 'ViewModelName' , { arg1 : 'value' }]\">Title</a> for binding a clickable HTML element to a route, via a Link Parameters Array."
       }
     ]
+  },
+  {
+    "name": "persian-date-picker",
+    "description": "This Date picker work with solar based calendar. It accepts ng-model. To configure date or date/time see is-date-time attribute.",
+    "attributes": [
+      {
+        "name": "is-date-time",
+        "values": [ "true", "false" ],
+        "type": "boolean",
+        "description": "Show/accept date or date time. default: false >> date only."
+      }
+    ]
   }
 ]
