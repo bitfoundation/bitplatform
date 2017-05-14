@@ -20,7 +20,7 @@
       },
       {
         "name": "rad-virtual-entity-loader",
-        "description": "Bind this to a method which accepts args : { id : any }. At that function you should return a promise, which resolves into an entity with that id."
+        "description": "Bind this to a method which accepts args : { id : any } to enable Data|UI virtualiztion whenever you've large sets of data. At that function you should return a promise, which resolves into an entity with that id."
       },
       {
         "name": "rad-on-init",
@@ -58,6 +58,34 @@
         "values": [ "true", "false" ],
         "type": "boolean",
         "description": "Show/accept date or date time. default: false >> date only."
+      }
+    ]
+  },
+  {
+    "name": "dto-form",
+    "description": "Use dto-form instead of ng-form when you're working wit dto. It requires ng-model. <dto-form name='customerForm' ng-model='...'></dto-form>"
+  },
+  {
+    "name": "error-messages",
+    "description": "Shows errors to user. <error-messages field='customerForm.LastName'><div ng-message='required'>Last name is required</div><error-messages>",
+    "attributes": [
+      {
+        "name": "field",
+        "description": "Set this to formName.fieldName you're going to show its errors. for example customerForm.LastName"
+      }
+    ]
+  },
+  {
+    "name": "element-mover",
+    "description": "Set element-selector and predicate. Whenever predicate resolves into true, it will move element into this element-mover",
+    "attributes": [
+      {
+        "name": "predicate",
+        "description": "For example vm.x == true"
+      },
+      {
+        "name": "element-selector",
+        "description": "For example #someElement"
       }
     ]
   }
