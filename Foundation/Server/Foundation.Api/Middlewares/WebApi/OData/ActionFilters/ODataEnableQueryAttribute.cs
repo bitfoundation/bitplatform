@@ -74,6 +74,14 @@ namespace Foundation.Api.Middlewares.WebApi.OData.ActionFilters
                             PageSize = this.DefaultPageSize
                         };
 
+                        if (dataProviderSpecificMethodsProvider != null)
+                        {
+                            if (dataProviderSpecificMethodsProvider.SupportsConstantParameterization() == true)
+                                globalODataQuerySettings.EnableConstantParameterization = true;
+                            else
+                                globalODataQuerySettings.EnableConstantParameterization = false;
+                        }
+
                         ValidateQuery(actionExecutedContext.Request, currentOdataQueryOptions);
 
                         int? currentQueryPageSize = currentOdataQueryOptions?.Top?.Value;
