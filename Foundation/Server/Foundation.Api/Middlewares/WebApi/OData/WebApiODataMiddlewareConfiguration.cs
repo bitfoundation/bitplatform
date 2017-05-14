@@ -26,6 +26,8 @@ namespace Foundation.Api.Middlewares.WebApi.OData
         private readonly System.Web.Http.Dependencies.IDependencyResolver _webApiDependencyResolver;
         private readonly IODataModelBuilderProvider _oDataModelBuilderProvider;
         private HttpConfiguration _webApiConfig;
+        private HttpServer _server;
+        private ODataBatchHandler _odataBatchHandler;
         private readonly IODataContainerBuilderCustomizer _oDataContainerBuilderCustomizer;
         private readonly IWebApiOwinPipelineInjector _webApiOwinPipelineInjector;
 
@@ -89,7 +91,7 @@ namespace Foundation.Api.Middlewares.WebApi.OData
 
             _webApiConfig.DependencyResolver = _webApiDependencyResolver;
 
-            HttpServer server = new HttpServer(_webApiConfig);
+            _server = new HttpServer(_webApiConfig);
 
             foreach (IGrouping<string, IEdmModelProvider> edmModelProviders in _emdEdmModelProviders.GroupBy(mp => mp.GetEdmName()))
             {
@@ -102,17 +104,17 @@ namespace Foundation.Api.Middlewares.WebApi.OData
 
                 string routeName = $"{edmModelProviders.Key}-odata";
 
-                ODataBatchHandler odataBatchHandler = new DefaultODataBatchHandler(server);
+                _odataBatchHandler = new DefaultODataBatchHandler(_server);
 
-                odataBatchHandler.MessageQuotas.MaxOperationsPerChangeset = int.MaxValue;
+                _odataBatchHandler.MessageQuotas.MaxOperationsPerChangeset = int.MaxValue;
 
-                odataBatchHandler.MessageQuotas.MaxPartsPerBatch = int.MaxValue;
+                _odataBatchHandler.MessageQuotas.MaxPartsPerBatch = int.MaxValue;
 
-                odataBatchHandler.MessageQuotas.MaxNestingDepth = int.MaxValue;
+                _odataBatchHandler.MessageQuotas.MaxNestingDepth = int.MaxValue;
 
-                odataBatchHandler.MessageQuotas.MaxReceivedMessageSize = long.MaxValue;
+                _odataBatchHandler.MessageQuotas.MaxReceivedMessageSize = long.MaxValue;
 
-                odataBatchHandler.ODataRouteName = routeName;
+                _odataBatchHandler.ODataRouteName = routeName;
 
                 IEnumerable<IODataRoutingConvention> conventions = ODataRoutingConventions.CreateDefault();
 
@@ -122,21 +124,23 @@ namespace Foundation.Api.Middlewares.WebApi.OData
                 {
                     builder.AddService(ServiceLifetime.Singleton, sp => conventions);
                     builder.AddService(ServiceLifetime.Singleton, sp => edmModel);
-                    builder.AddService(ServiceLifetime.Singleton, sp => odataBatchHandler);
+                    builder.AddService(ServiceLifetime.Singleton, sp => _odataBatchHandler);
                     _oDataContainerBuilderCustomizer.Customize(builder);
                 });
             }
 
             owinApp.UseAutofacWebApi(_webApiConfig);
 
-            _webApiOwinPipelineInjector.UseWebApiOData(owinApp, server);
+            _webApiOwinPipelineInjector.UseWebApiOData(owinApp, _server);
 
             _webApiConfig.EnsureInitialized();
         }
 
         public virtual void Dispose()
         {
-            _webApiConfig.Dispose();
+            _odataBatchHandler?.Dispose();
+            _webApiConfig?.Dispose();
+            _server?.Dispose();
         }
     }
 }

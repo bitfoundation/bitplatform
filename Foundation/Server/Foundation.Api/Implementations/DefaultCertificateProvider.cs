@@ -46,8 +46,7 @@ namespace Foundation.Api.Implementations
 
         public virtual void Dispose()
         {
-            if (_certificate != null)
-                _certificate.Dispose();
+            _certificate?.Dispose();
         }
     }
 }

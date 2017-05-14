@@ -45,7 +45,7 @@ namespace Foundation.Api.Middlewares.JobScheduler.Implementations
 
         public virtual void OnAppEnd()
         {
-            _backgroundJobServer.Dispose();
+            _backgroundJobServer?.Dispose();
         }
     }
 }

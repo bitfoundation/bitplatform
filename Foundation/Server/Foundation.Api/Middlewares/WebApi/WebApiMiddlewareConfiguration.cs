@@ -18,6 +18,7 @@ namespace Foundation.Api.Middlewares.WebApi
         private readonly System.Web.Http.Dependencies.IDependencyResolver _webApiDependencyResolver;
         private readonly IWebApiOwinPipelineInjector _webApiOwinPipelineInjector;
         private HttpConfiguration _webApiConfig;
+        private HttpServer _server;
 
         protected WebApiMiddlewareConfiguration()
         {
@@ -65,7 +66,7 @@ namespace Foundation.Api.Middlewares.WebApi
 
             _webApiConfig.DependencyResolver = _webApiDependencyResolver;
 
-            HttpServer server = new HttpServer(_webApiConfig);
+            _server = new HttpServer(_webApiConfig);
 
             _webApiConfig.MapHttpAttributeRoutes();
 
@@ -73,14 +74,15 @@ namespace Foundation.Api.Middlewares.WebApi
 
             owinApp.UseAutofacWebApi(_webApiConfig);
 
-            _webApiOwinPipelineInjector.UseWebApiOData(owinApp, server);
+            _webApiOwinPipelineInjector.UseWebApiOData(owinApp, _server);
 
             _webApiConfig.EnsureInitialized();
         }
 
         public virtual void Dispose()
         {
-            _webApiConfig.Dispose();
+            _webApiConfig?.Dispose();
+            _server?.Dispose();
         }
     }
 }
