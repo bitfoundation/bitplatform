@@ -35,5 +35,18 @@
         "description": "The minimum number of characters the user must type before a search is performed. Set to higher value than 1 if the search could match a lot of items."
       }
     ]
+  },
+  {
+    "name": "ng-outlet",
+    "description": "The directive that identifies where the Router should render its Components."
+  },
+  {
+    "name": "a",
+    "attributes": [
+      {
+        "name": "ng-link",
+        "description": "<a ng-link=\"[ 'ViewModelName' , { arg1 : 'value' }]\">Title</a> for binding a clickable HTML element to a route, via a Link Parameters Array."
+      }
+    ]
   }
 ]
