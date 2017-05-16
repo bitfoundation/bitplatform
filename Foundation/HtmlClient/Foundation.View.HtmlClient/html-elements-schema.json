@@ -33,6 +33,24 @@
       {
         "name": "k-min-length",
         "description": "The minimum number of characters the user must type before a search is performed. Set to higher value than 1 if the search could match a lot of items."
+      },
+      {
+        "name": "k-clear-button",
+        "description": "Unless this options is set to false, a button will appear when hovering the widget."
+      },
+      {
+        "name": "k-enable",
+        "description": "If set to false the widget will be disabled and will not allow user input."
+      },
+      {
+        "name": "k-filter",
+        "description": "The filtering method used to determine the suggestions for the current value.",
+        "type": "enum",
+        "values": [ "'contains'", "'startswith'", "'endswith'" ]
+      },
+      {
+        "name": "k-ignore-case",
+        "description": "If set to false case-sensitive search will be performed to find suggestions. The widget performs case-insensitive searching by default."
       }
     ]
   },
