@@ -53,29 +53,6 @@ using Foundation.Test.Model.DomainModels;
 
 namespace Foundation.Api.ApiControllers
 {
-    [AttributeUsage(AttributeTargets.Method, AllowMultiple = true)]
-    public sealed class ParameterAttribute : Attribute
-    {
-        public string Name { get; private set; }
-
-        public Type Type { get; private set; }
-
-        public bool IsOptional { get; private set; }
-
-        public ParameterAttribute(string name, Type type, bool isOptional = false)
-        {
-            if (name == null)
-                throw new ArgumentNullException(nameof(name));
-
-            if (type == null)
-                throw new ArgumentNullException(nameof(type));
-
-            Name = name;
-            Type = type;
-            IsOptional = isOptional;
-        }
-    }
-
     [AttributeUsage(AttributeTargets.Method, AllowMultiple = false)]
     public sealed class ActionAttribute : Attribute
     {
@@ -105,12 +82,15 @@ namespace Foundation.Test.Api.ApiControllers
 {
     public class TestController : DtoController<TestModel>
     {
+
+        public class DoParameters
+        {
+            public virtual string Parameter1 { get; set; }
+            public virtual string Parameter1 { get; set; }
+        }
+
         [Action]
-        [Parameter(""Parameter1"", typeof(string), isOptional : true )]
-        [ParameterAttribute(""Parameter1"", typeof(string) , isOptional : false )]
-        [Foundation.Api.ApiControllers.Parameter(""Parameter1"", typeof(string))]
-        [Foundation.Api.ApiControllers.ParameterAttribute(""Parameter1"", typeof(string))]
-        public virtual async Task Do(ODataActionParameters actionParameters)
+        public virtual async Task Do(DoParameters parameters)
         {
 
         }
@@ -120,9 +100,13 @@ namespace Foundation.Test.Api.ApiControllers
         {
         }
 
+        public class Do3Parameters
+        {
+            public virtual int[] values { get; set; }
+        }
+
         [Action]
-        [Parameter(""values"", typeof(int[]))]
-        public virtual async System.Threading.Tasks.Task<ComplexObj3[]> Do3()
+        public virtual async System.Threading.Tasks.Task<ComplexObj3[]> Do3(Do3Parameters parameters)
         {
         }
     }
@@ -131,15 +115,6 @@ namespace Foundation.Test.Api.ApiControllers
 
             IList<DtoController> controllers = new DefaultProjectDtoControllersProvider()
                     .GetProjectDtoControllersWithTheirOperations(CreateProjectFromSourceCodes(sourceCodeOfDtoControllerWithActionAndParameter));
-
-            Assert.AreEqual(true, controllers.Single()
-                .Operations.ElementAt(0)
-                .Parameters.First().IsOptional);
-
-            Assert.IsTrue(controllers.Single()
-                .Operations.ElementAt(0)
-                .Parameters.Skip(1)
-                .All(p => p.IsOptional == false));
 
             Assert.AreEqual("Edm.Int32", controllers.Single()
                 .Operations.ElementAt(1)

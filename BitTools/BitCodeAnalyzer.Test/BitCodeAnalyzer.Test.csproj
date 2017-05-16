@@ -193,7 +193,6 @@
   </Choose>
   <ItemGroup>
     <Compile Include="BitAnalyzers\Data\EntityFramework\AsNoTrackingAnalyzerTests.cs" />
-    <Compile Include="BitAnalyzers\WebApi\OData\CamelCaseParameterNameAnalyzerTests.cs" />
     <Compile Include="Helpers\CodeFixVerifier.cs" />
     <Compile Include="Helpers\DiagnosticResult.cs" />
     <Compile Include="Helpers\DiagnosticVerifier.cs" />

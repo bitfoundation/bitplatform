@@ -48,25 +48,26 @@ public enum TestGender2
     Man = 3, Woman = 12, Other
 }
 
-public sealed class ParameterAttribute : System.Attribute
-{
-    public ParameterAttribute(string name, System.Type type, bool isOptional = false)
-    {
-    }
-}
-
 public class DtoWithEnumController : DtoController<DtoWithEnum>
 {
+    public class GetDtoWithEnumsByGenderParameters
+    {
+        public virtual TestGender gender { get; set; }
+    }
+
     [ActionAttribute]
-    [ParameterAttribute(""gender"", typeof(TestGender))]
-    public virtual int GetDtoWithEnumsByGender()
+    public virtual int GetDtoWithEnumsByGender(GetDtoWithEnumsByGenderParameters parameters)
     {
         return 1;
     }
 
+    public class GetDtoWithEnumsByGender2Parameters
+    {
+        public virtual TestGender2 gender { get; set; }
+    }
+
     [ActionAttribute]
-    [ParameterAttribute(""gender"", typeof(TestGender2))]
-    public virtual int GetDtoWithEnumsByGender2()
+    public virtual int GetDtoWithEnumsByGender2(GetDtoWithEnumsByGender2Parameters parameters)
     {
         return 1;
     }

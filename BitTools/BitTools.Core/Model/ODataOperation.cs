@@ -1,12 +1,11 @@
 ﻿using Microsoft.CodeAnalysis;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 
 namespace BitTools.Core.Model
 {
     public class ODataOperationParameter
     {
-        public bool IsOptional { get; set; }
-
         public string Name { get; set; }
 
         public ITypeSymbol Type { get; set; }
@@ -25,6 +24,6 @@ namespace BitTools.Core.Model
 
         public virtual ITypeSymbol ReturnType { get; set; }
 
-        public virtual ICollection<ODataOperationParameter> Parameters { get; set; }
+        public virtual ICollection<ODataOperationParameter> Parameters { get; set; } = new Collection<ODataOperationParameter>();
     }
 }

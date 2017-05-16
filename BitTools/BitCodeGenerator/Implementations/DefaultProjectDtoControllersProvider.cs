@@ -104,14 +104,30 @@ namespace BitCodeGenerator.Implementations
                             ReturnType = methodSymbol.ReturnType
                         };
 
-                        operation.Parameters = operation.Method.GetAttributes()
-                            .Where(att => att.AttributeClass.Name == "ParameterAttribute")
-                            .Select(parameterAttribute => new ODataOperationParameter
-                            {
-                                Name = parameterAttribute.ConstructorArguments[0].Value.ToString(),
-                                Type = ((ITypeSymbol)parameterAttribute.ConstructorArguments[1].Value),
-                                IsOptional = parameterAttribute.ConstructorArguments.Count() == 3 && object.Equals(parameterAttribute.ConstructorArguments[2].Value, true)
-                            }).ToList();
+                        if (operation.Kind == ODataOperationKind.Function)
+                        {
+                            operation.Parameters = operation.Method.Parameters
+                                .Where(p => p.Type.Name != "CancellationToken" && p.Type.Name != "ODataQueryOptions")
+                                .Select(parameter => new ODataOperationParameter
+                                {
+                                    Name = parameter.Name,
+                                    Type = parameter.Type
+                                }).ToList();
+                        }
+                        else if (operation.Kind == ODataOperationKind.Action && operation.Method.Parameters.Any())
+                        {
+                            operation.Parameters = operation.Method.Parameters
+                                .Where(p => p.Type.Name != "CancellationToken" && p.Type.Name != "ODataQueryOptions")
+                                .Single()
+                                .Type
+                                .GetMembers()
+                                .OfType<IPropertySymbol>()
+                                .Select(prop => new ODataOperationParameter
+                                {
+                                    Name = prop.Name,
+                                    Type = prop.Type
+                                }).ToList();
+                        }
 
                         dtoController.Operations.Add(operation);
                     }
