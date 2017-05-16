@@ -6,29 +6,6 @@ using System.Web.Http.Controllers;
 
 namespace Foundation.Api.ApiControllers
 {
-    [AttributeUsage(AttributeTargets.Method, AllowMultiple = true)]
-    public sealed class ParameterAttribute : Attribute
-    {
-        public string Name { get; }
-
-        public Type Type { get; }
-
-        public bool IsOptional { get; }
-
-        public ParameterAttribute(string name, Type type, bool isOptional = false)
-        {
-            if (name == null)
-                throw new ArgumentNullException(nameof(name));
-
-            if (type == null)
-                throw new ArgumentNullException(nameof(type));
-
-            Name = name;
-            Type = type;
-            IsOptional = isOptional;
-        }
-    }
-
     [AttributeUsage(AttributeTargets.Method, AllowMultiple = false, Inherited = true)]
     public sealed class ActionAttribute : Attribute, IActionHttpMethodProvider
     {

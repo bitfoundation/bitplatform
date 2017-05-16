@@ -12,7 +12,7 @@ let testActionCall = async (): Promise<void> => {
     const areEqual = await context.testModels.areEqual(10, 10);
     if (areEqual != true)
         throw new Error("are equal result is not valid");
-}; 
+};
 
 let passNullTests = async (): Promise<void> => {
     const contextProvider = Foundation.Core.DependencyManager.getCurrent().resolveObject<Foundation.ViewModel.Contracts.IEntityContextProvider>("EntityContextProvider");
@@ -43,7 +43,7 @@ let testPassingArrayOfEntitiesToController = async (): Promise<void> => {
         new Foundation.Test.Model.Dto.ValidationSampleDto({ Id: 2, RequiredByAttributeMember: "B", RequiredByMetadataMember: "C" })
     ];
 
-    let result = await context.validationSamples.submitValidations(validations).first();
+    let result = await context.validationSamples.submitValidations(validations, null).first();
 
     if (result.Id != "2" || result.RequiredByAttributeMember != "AA" || result.RequiredByMetadataMember != "BB")
         throw new Error("IEEE754Compatibility problem");

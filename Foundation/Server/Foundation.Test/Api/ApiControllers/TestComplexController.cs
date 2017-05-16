@@ -62,7 +62,6 @@ namespace Foundation.Test.Api.ApiControllers
         }
 
         [Action]
-        [Parameter("complexDto", typeof(TestComplexDto))]
         public virtual TestComplexDto DoSomeThingWithComplexObj(DoSomeThingWithComplexObjParameters parameters)
         {
             TestComplexDto complexDto = parameters.complexDto;
@@ -84,7 +83,6 @@ namespace Foundation.Test.Api.ApiControllers
         }
 
         [Action]
-        [Parameter("values", typeof(IEnumerable<int>))]
         public virtual async Task<int[]> GetValues(GetValuesParameters parameters, CancellationToken cancellationToken)
         {
             IEnumerable<int> values = parameters.values;

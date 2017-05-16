@@ -133,9 +133,6 @@ namespace Foundation.Test.Api.ApiControllers
         }
 
         [Action]
-        [Parameter("title", typeof(string))]
-        [Parameter("message", typeof(string))]
-        [Parameter("to", typeof(string))]
         public virtual async Task<Guid> SendEmailUsingBackgroundJobService(EmailParameters actionParameters)
         {
             string title = actionParameters.title;
@@ -149,9 +146,6 @@ namespace Foundation.Test.Api.ApiControllers
         }
 
         [Action]
-        [Parameter("title", typeof(string))]
-        [Parameter("message", typeof(string))]
-        [Parameter("to", typeof(string))]
         public virtual async Task<Guid> SendEmailUsingBackgroundJobServiceAndPushAfterThat(EmailParameters actionParameters)
         {
             string title = actionParameters.title;
@@ -169,9 +163,6 @@ namespace Foundation.Test.Api.ApiControllers
         }
 
         [Action]
-        [Parameter("title", typeof(string))]
-        [Parameter("message", typeof(string))]
-        [Parameter("to", typeof(string))]
         public virtual void SendEmail(EmailParameters actionParameters)
         {
             string title = actionParameters.title;
@@ -195,8 +186,6 @@ namespace Foundation.Test.Api.ApiControllers
         }
 
         [Action]
-        [Parameter("to", typeof(string))]
-        [Parameter("word", typeof(string))]
         public virtual async Task PushSomeWordToAnotherUser(WordParameters parameters, CancellationToken cancellationToken)
         {
             string to = parameters.to;
@@ -206,8 +195,6 @@ namespace Foundation.Test.Api.ApiControllers
         }
 
         [Action]
-        [Parameter("to", typeof(string))]
-        [Parameter("word", typeof(string))]
         public virtual async Task PushSomeWordToAnotherUsingBackgroundJobWorker(WordParameters parameters, CancellationToken cancellationToken)
         {
             string to = parameters.to;
@@ -231,11 +218,6 @@ namespace Foundation.Test.Api.ApiControllers
         }
 
         [Action]
-        [Parameter("simpleString", typeof(string))]
-        [Parameter("stringsArray", typeof(IEnumerable<string>))]
-        [Parameter("stringsArray2", typeof(IEnumerable<string>))]
-        [Parameter("simpleDto", typeof(TestModel))]
-        [Parameter("entitiesArray", typeof(IEnumerable<TestModel>))]
         public virtual void StringFormattersTests(StringFormattersTestsParameters actionParameters)
         {
             string simpleString = actionParameters.simpleString;
@@ -261,10 +243,6 @@ namespace Foundation.Test.Api.ApiControllers
         }
 
         [Action]
-        [Parameter("simpleDate", typeof(DateTimeOffset))]
-        [Parameter("datesArray", typeof(IEnumerable<DateTimeOffset>))]
-        [Parameter("simpleDto", typeof(TestModel))]
-        [Parameter("entitiesArray", typeof(IEnumerable<TestModel>))]
         public virtual void TimeZoneTests(TimeZoneTestsParameters actionParameters)
         {
             DateTimeOffset simpleDate = actionParameters.simpleDate;
@@ -302,7 +280,6 @@ namespace Foundation.Test.Api.ApiControllers
         }
 
         [Function]
-        [Parameter("val", typeof(long))]
         public virtual TestModel[] GetTestModelsByStringPropertyValue(long val)
         {
             return new[]
@@ -320,16 +297,12 @@ namespace Foundation.Test.Api.ApiControllers
         }
 
         [Action]
-        [Parameter("firstValue", typeof(int))]
-        [Parameter("secondValue", typeof(int))]
         public virtual bool AreEqual(FirstSecondParameters parameters)
         {
             return parameters.firstValue == parameters.secondValue;
         }
 
         [Action]
-        [Parameter("firstValue", typeof(int))]
-        [Parameter("secondValue", typeof(int))]
         public virtual int Sum(FirstSecondParameters parameters)
         {
             return parameters.firstValue + parameters.secondValue;
@@ -354,7 +327,6 @@ namespace Foundation.Test.Api.ApiControllers
         }
 
         [Action]
-        [Parameter("val", typeof(decimal))]
         public virtual decimal TestIEEE754Compatibility(TestIEEE754CompatibilityParameters parameters)
         {
             decimal val = parameters.val;
@@ -367,7 +339,6 @@ namespace Foundation.Test.Api.ApiControllers
         }
 
         [Action]
-        [Parameter("val", typeof(int))]
         public virtual int TestIEEE754Compatibility2(TestIEEE754Compatibility2Parameters parameters)
         {
             int val = parameters.val;
@@ -380,7 +351,6 @@ namespace Foundation.Test.Api.ApiControllers
         }
 
         [Action]
-        [Parameter("val", typeof(long))]
         public virtual long TestIEEE754Compatibility3(TestIEEE754Compatibility3Parameters parameters)
         {
             long val = parameters.val;
@@ -395,8 +365,6 @@ namespace Foundation.Test.Api.ApiControllers
         }
 
         [Action]
-        [Parameter("firstValue", typeof(decimal))]
-        [Parameter("secondValue", typeof(decimal))]
         public virtual decimal TestDecimalSum(FirstSecondValueDecimalParameters parameters)
         {
             return parameters.firstValue + parameters.secondValue;
@@ -408,14 +376,12 @@ namespace Foundation.Test.Api.ApiControllers
         }
 
         [Action]
-        [Parameter("name", typeof(string))]
         public virtual string ActionForNullArg(ActionForNullArgParameters parameters)
         {
             return "Ok";
         }
 
         [Function]
-        [Parameter("name", typeof(string))]
         public virtual string FunctionForNullArg(string name)
         {
             return "Ok";

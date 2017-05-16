@@ -32,7 +32,6 @@ namespace Foundation.Api.ApiControllers
         }
 
         [Action]
-        [Parameter("clientLogs", typeof(IEnumerable<ClientLogDto>))]
         public virtual async Task StoreClientLogs(StoreClientLogsParameters actionParameters)
         {
             _logger.AddLogData("ClientLogs", actionParameters.clientLogs);

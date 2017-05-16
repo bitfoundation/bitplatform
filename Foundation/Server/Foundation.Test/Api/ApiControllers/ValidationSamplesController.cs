@@ -16,8 +16,6 @@ namespace Foundation.Test.Api.ApiControllers
         }
 
         [Action]
-        [Parameter("validations", typeof(IEnumerable<ValidationSampleDto>))]
-        [Parameter("arg", typeof(string), isOptional: true)]
         public virtual IEnumerable<ValidationSampleDto> SubmitValidations(SubmitValidationsParameters parameters)
         {
             return parameters.validations
