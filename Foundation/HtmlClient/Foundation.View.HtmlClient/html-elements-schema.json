@@ -55,6 +55,35 @@
     ]
   },
   {
+    "name": "rad-grid",
+    "attributes": [
+      {
+        "name": "rad-datasource",
+        "description": "Bind this to kendo data source you've in view model."
+      },
+      {
+        "name": "rad-on-init",
+        "description": "Bind this to a method which accepts args : { gridOptions: gridOptions }. You can customize all aspects of your data grid there."
+      },
+      {
+        "name": "k-navigatable",
+        "description": "If set to true the use could navigate the widget using the keyboard navigation."
+      },
+      {
+        "name": "k-reorderable",
+        "description": "If set to true the user could reorder the columns by dragging their header cells. Multi-level headers allow reordering only in same level."
+      },
+      {
+        "name": "k-resizable",
+        "description": "If set to true, users can resize columns by dragging the edges (resize handles) of their header cells. Users can also auto-fit a column by double-clicking its resize handle. In this case the column will assume the smallest possible width, which allows the column content to fit without wrapping."
+      },
+      {
+        "name": "k-sortable",
+        "description": "If set to true the user could sort the grid by clicking the column header cells."
+      }
+    ]
+  },
+  {
     "name": "ng-outlet",
     "description": "The directive that identifies where the Router should render its Components."
   },
