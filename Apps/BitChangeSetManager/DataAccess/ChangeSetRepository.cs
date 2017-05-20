@@ -1,6 +1,9 @@
 ﻿using BitChangeSetManager.Model;
 using Foundation.Core.Contracts;
-using System.Collections.Generic;
+using System.Data.Entity;
+using System.Data.Entity.Infrastructure;
+using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace BitChangeSetManager.DataAccess
@@ -13,21 +16,37 @@ namespace BitChangeSetManager.DataAccess
     public class ChangeSetRepository : BitChangeSetManagerEfRepository<ChangeSet>, IChangeSetRepository
     {
         private readonly IDateTimeProvider _dateTimeProvider;
+        private readonly BitChangeSetManagerDbContext _dbContext;
 
         public ChangeSetRepository(IDateTimeProvider dateTimeProvider, BitChangeSetManagerDbContext dbContext)
             : base(dbContext)
         {
             _dateTimeProvider = dateTimeProvider;
+            _dbContext = dbContext;
         }
 
-        protected override async Task OnAddingAsync(IEnumerable<ChangeSet> entities)
+        public override void SaveChanges()
         {
-            foreach (ChangeSet changeSet in entities)
-            {
-                changeSet.CreatedOn = _dateTimeProvider.GetCurrentUtcDateTime();
-            }
+            SetCreatedOnValue();
 
-            await base.OnAddingAsync(entities);
+            base.SaveChanges();
+        }
+
+        public override async Task SaveChangesAsync(CancellationToken cancellationToken)
+        {
+            SetCreatedOnValue();
+
+            await base.SaveChangesAsync(cancellationToken);
+        }
+
+        private void SetCreatedOnValue()
+        {
+            _dbContext.ChangeTracker.DetectChanges();
+
+            foreach (DbEntityEntry<ChangeSet> changeSet in _dbContext.ChangeTracker.Entries<ChangeSet>().Where(e => e.State == EntityState.Added))
+            {
+                changeSet.Entity.CreatedOn = _dateTimeProvider.GetCurrentUtcDateTime();
+            }
         }
     }
 }
