@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-// Generation date: 4/26/2017 15:46:52
+// Generation date: 5/20/2017 14:38:12
 namespace BitChangeSetManager.Xamarin.BitChangeSetManager.Dto
 {
     /// <summary>
@@ -103,29 +103,6 @@ namespace BitChangeSetManager.Xamarin.BitChangeSetManager.Dto
         private string _Title;
         partial void OnTitleChanging(string value);
         partial void OnTitleChanged();
-        /// <summary>
-        /// There are no comments for Property Name in the schema.
-        /// </summary>
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "2.4.0")]
-        [global::Microsoft.OData.Client.OriginalNameAttribute("Name")]
-        public string Name
-        {
-            get
-            {
-                return this._Name;
-            }
-            set
-            {
-                this.OnNameChanging(value);
-                this._Name = value;
-                this.OnNameChanged();
-                this.OnPropertyChanged("Name");
-            }
-        }
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "2.4.0")]
-        private string _Name;
-        partial void OnNameChanging(string value);
-        partial void OnNameChanged();
         /// <summary>
         /// This event is raised when the value of the property is changed
         /// </summary>
@@ -236,29 +213,6 @@ namespace BitChangeSetManager.Xamarin.BitChangeSetManager.Dto
         private string _Title;
         partial void OnTitleChanging(string value);
         partial void OnTitleChanged();
-        /// <summary>
-        /// There are no comments for Property Name in the schema.
-        /// </summary>
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "2.4.0")]
-        [global::Microsoft.OData.Client.OriginalNameAttribute("Name")]
-        public string Name
-        {
-            get
-            {
-                return this._Name;
-            }
-            set
-            {
-                this.OnNameChanging(value);
-                this._Name = value;
-                this.OnNameChanged();
-                this.OnPropertyChanged("Name");
-            }
-        }
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "2.4.0")]
-        private string _Name;
-        partial void OnNameChanging(string value);
-        partial void OnNameChanged();
         /// <summary>
         /// This event is raised when the value of the property is changed
         /// </summary>
@@ -701,29 +655,6 @@ namespace BitChangeSetManager.Xamarin.BitChangeSetManager.Dto
         partial void OnSeverityIdChanging(global::System.Guid value);
         partial void OnSeverityIdChanged();
         /// <summary>
-        /// There are no comments for Property SeverityName in the schema.
-        /// </summary>
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "2.4.0")]
-        [global::Microsoft.OData.Client.OriginalNameAttribute("SeverityName")]
-        public string SeverityName
-        {
-            get
-            {
-                return this._SeverityName;
-            }
-            set
-            {
-                this.OnSeverityNameChanging(value);
-                this._SeverityName = value;
-                this.OnSeverityNameChanged();
-                this.OnPropertyChanged("SeverityName");
-            }
-        }
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "2.4.0")]
-        private string _SeverityName;
-        partial void OnSeverityNameChanging(string value);
-        partial void OnSeverityNameChanged();
-        /// <summary>
         /// There are no comments for Property SeverityTitle in the schema.
         /// </summary>
         [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "2.4.0")]
@@ -769,29 +700,6 @@ namespace BitChangeSetManager.Xamarin.BitChangeSetManager.Dto
         private global::System.Guid _DeliveryRequirementId;
         partial void OnDeliveryRequirementIdChanging(global::System.Guid value);
         partial void OnDeliveryRequirementIdChanged();
-        /// <summary>
-        /// There are no comments for Property DeliveryRequirementName in the schema.
-        /// </summary>
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "2.4.0")]
-        [global::Microsoft.OData.Client.OriginalNameAttribute("DeliveryRequirementName")]
-        public string DeliveryRequirementName
-        {
-            get
-            {
-                return this._DeliveryRequirementName;
-            }
-            set
-            {
-                this.OnDeliveryRequirementNameChanging(value);
-                this._DeliveryRequirementName = value;
-                this.OnDeliveryRequirementNameChanged();
-                this.OnPropertyChanged("DeliveryRequirementName");
-            }
-        }
-        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "2.4.0")]
-        private string _DeliveryRequirementName;
-        partial void OnDeliveryRequirementNameChanging(string value);
-        partial void OnDeliveryRequirementNameChanged();
         /// <summary>
         /// There are no comments for Property DeliveryRequirementTitle in the schema.
         /// </summary>
@@ -1281,7 +1189,6 @@ namespace BitChangeSetManager.Xamarin.BitChangeSetManager
         </Key>
         <Property Name=""Id"" Type=""Edm.Guid"" Nullable=""false"" />
         <Property Name=""Title"" Type=""Edm.String"" />
-        <Property Name=""Name"" Type=""Edm.String"" />
       </EntityType>
       <EntityType Name=""ChangeSetSeverityDto"">
         <Key>
@@ -1289,7 +1196,6 @@ namespace BitChangeSetManager.Xamarin.BitChangeSetManager
         </Key>
         <Property Name=""Id"" Type=""Edm.Guid"" Nullable=""false"" />
         <Property Name=""Title"" Type=""Edm.String"" />
-        <Property Name=""Name"" Type=""Edm.String"" />
       </EntityType>
       <EntityType Name=""DeliveryDto"">
         <Key>
@@ -1313,10 +1219,8 @@ namespace BitChangeSetManager.Xamarin.BitChangeSetManager
         <Property Name=""Description"" Type=""Edm.String"" />
         <Property Name=""IsDeliveredToAll"" Type=""Edm.Boolean"" Nullable=""false"" />
         <Property Name=""SeverityId"" Type=""Edm.Guid"" Nullable=""false"" />
-        <Property Name=""SeverityName"" Type=""Edm.String"" />
         <Property Name=""SeverityTitle"" Type=""Edm.String"" />
         <Property Name=""DeliveryRequirementId"" Type=""Edm.Guid"" Nullable=""false"" />
-        <Property Name=""DeliveryRequirementName"" Type=""Edm.String"" />
         <Property Name=""DeliveryRequirementTitle"" Type=""Edm.String"" />
       </EntityType>
       <EntityType Name=""CustomerDto"">

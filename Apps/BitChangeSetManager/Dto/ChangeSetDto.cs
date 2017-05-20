@@ -27,13 +27,9 @@ namespace BitChangeSetManager.Dto
 
         public virtual Guid SeverityId { get; set; }
 
-        public virtual string SeverityName { get; set; }
-
         public virtual string SeverityTitle { get; set; }
 
         public virtual Guid DeliveryRequirementId { get; set; }
-
-        public virtual string DeliveryRequirementName { get; set; }
 
         public virtual string DeliveryRequirementTitle { get; set; }
     }
