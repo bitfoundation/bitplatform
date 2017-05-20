@@ -24,6 +24,11 @@
             </error-messages>
         </md-input-container>
 
+        <div ng-if="vm.templates != null && vm.templates.length != 0">
+            <h4 style="display:inline">{{'Templates' | translate}}:</h4>
+            <md-button ng-click="vm.applyTemplate(template)" ng-repeat="template in ::vm.templates">{{::template.Title}}</md-button>
+        </div>
+
         <md-input-container>
             <label>{{::vm.changeSetMetadata.SeverityId.Label}}</label>
             <rad-combo name="SeverityId"

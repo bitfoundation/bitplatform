@@ -26,7 +26,8 @@ namespace BitChangeSetManager.Metadata
                             new EnvironmentCultureValue { Name = "EditChangeSet" , Title = "Edit change set" },
                             new EnvironmentCultureValue { Name = "ChangeSets" , Title = "Change Sets" },
                             new EnvironmentCultureValue { Name = "DeliveriesOf" , Title = "Deliveries of" },
-                            new EnvironmentCultureValue { Name = "ChangeSetHasBeenInsertedByUser" , Title = "Change set {{title}} has been inserted by {{userName}}" }
+                            new EnvironmentCultureValue { Name = "ChangeSetHasBeenInsertedByUser" , Title = "Change set {{title}} has been inserted by {{userName}}" },
+                            new EnvironmentCultureValue { Name = "Templates", Title = "Templates"}
                         }
                     },
                     new EnvironmentCulture
@@ -40,7 +41,8 @@ namespace BitChangeSetManager.Metadata
                             new EnvironmentCultureValue { Name = "EditChangeSet" , Title = "ویرایش ChangeSet" },
                             new EnvironmentCultureValue { Name = "ChangeSets" , Title = "Change Set ها" },
                             new EnvironmentCultureValue { Name = "DeliveriesOf" , Title = "ارائه های" },
-                            new EnvironmentCultureValue { Name = "ChangeSetHasBeenInsertedByUser" , Title = "Change set {{title}} به وسیله {{userName}} درج شد" }
+                            new EnvironmentCultureValue { Name = "ChangeSetHasBeenInsertedByUser" , Title = "Change set {{title}} به وسیله {{userName}} درج شد" },
+                            new EnvironmentCultureValue { Name = "Templates", Title = "الگوها"}
                         }
                     }
                 }

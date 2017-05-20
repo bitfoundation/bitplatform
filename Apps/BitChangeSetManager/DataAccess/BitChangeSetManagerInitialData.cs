@@ -76,13 +76,13 @@ namespace BitChangeSetManager.DataAccess
                 Customer customer1 = new Customer { Id = Guid.NewGuid(), Name = "Customer1" };
                 Customer customer2 = new Customer { Id = Guid.NewGuid(), Name = "Customer2" };
 
-                ChangeSetSeverity changeSetSeverity1 = new ChangeSetSeverity { Id = Guid.NewGuid(), Name = "Low", Title = "Low" };
-                ChangeSetSeverity changeSetSeverity2 = new ChangeSetSeverity { Id = Guid.NewGuid(), Name = "Medium", Title = "Medium" };
-                ChangeSetSeverity changeSetSeverity3 = new ChangeSetSeverity { Id = Guid.NewGuid(), Name = "High", Title = "High" };
+                ChangeSetDeliveryRequirement changeSetDeliveryRequirement1 = new ChangeSetDeliveryRequirement { Id = Guid.NewGuid(), Title = "Deliver to all developers" };
+                ChangeSetDeliveryRequirement changeSetDeliveryRequirement2 = new ChangeSetDeliveryRequirement { Id = Guid.NewGuid(), Title = "Deliver to technical manager" };
+                ChangeSetDeliveryRequirement changeSetDeliveryRequirement3 = new ChangeSetDeliveryRequirement { Id = Guid.NewGuid(), Title = "No specific delivery is required" };
 
-                ChangeSetDeliveryRequirement changeSetDeliveryRequirement1 = new ChangeSetDeliveryRequirement { Id = Guid.NewGuid(), Name = "DeliverToAllDevelopers", Title = "Deliver to all developers" };
-                ChangeSetDeliveryRequirement changeSetDeliveryRequirement2 = new ChangeSetDeliveryRequirement { Id = Guid.NewGuid(), Name = "DeliverToTechnicalManager", Title = "Deliver to technical manager" };
-                ChangeSetDeliveryRequirement changeSetDeliveryRequirement3 = new ChangeSetDeliveryRequirement { Id = Guid.NewGuid(), Name = "NoSpecificDeliveryIsRequired", Title = "No specific delivery is required" };
+                ChangeSetSeverity changeSetSeverity1 = new ChangeSetSeverity { Id = Guid.NewGuid(), Title = "Low" };
+                ChangeSetSeverity changeSetSeverity2 = new ChangeSetSeverity { Id = Guid.NewGuid(), Title = "Medium" };
+                ChangeSetSeverity changeSetSeverity3 = new ChangeSetSeverity { Id = Guid.NewGuid(), Title = "High" };
 
                 ChangeSet changeSet1 = new ChangeSet { Id = Guid.NewGuid(), AssociatedCommitUrl = "http://github.com/bit-foundation/bit-framework", Description = "Desc1", Title = "ChangeSet1", DeliveryRequirementId = changeSetDeliveryRequirement1.Id, SeverityId = changeSetSeverity3.Id };
                 ChangeSet changeSet2 = new ChangeSet { Id = Guid.NewGuid(), AssociatedCommitUrl = "http://github.com/bit-foundation/bit-framework", Description = "Desc2", Title = "ChangeSet2", DeliveryRequirementId = changeSetDeliveryRequirement1.Id, SeverityId = changeSetSeverity3.Id };

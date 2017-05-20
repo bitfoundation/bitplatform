@@ -27,6 +27,7 @@
 
         public constructor(
             @Inject("$element") public $element: JQuery,
+            @Inject("EntityContextProvider") public entityContextProvider: IEntityContextProvider,
             @Inject("ChangeSetRules") public rules: ChangeSetRules,
             @Inject("$mdDialog") public $mdDialog: ng.material.IDialogService,
             @Inject("$translate") public $translate: ng.translate.ITranslateService) {
@@ -35,12 +36,19 @@
 
         public changeSetSeveritiesDataSource: kendo.data.DataSource;
         public changeSetDeliveryRequirementsDataSource: kendo.data.DataSource;
+        public templates: BitChangeSetManagerModel.ChangeSetDescriptionTemplateDto[];
 
         public changeSetMetadata = BitChangeSetManagerModel.ChangeSetDto;
 
         @Command()
         public async $onInit(): Promise<void> {
+            let context = await this.entityContextProvider.getContext<BitChangeSetManagerContext>("BitChangeSetManager");
+            this.templates = await context.changeSetDescriptionTemplate.getAllTemplates().toArray();
+        }
 
+        @Command()
+        public async applyTemplate(template: BitChangeSetManagerModel.ChangeSetDescriptionTemplateDto) {
+            this.model.Description = template.Content;
         }
 
         public onSave() {

@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-// Generation date: 5/20/2017 14:38:12
+// Generation date: 5/20/2017 15:21:18
 namespace BitChangeSetManager.Xamarin.BitChangeSetManager.Dto
 {
     /// <summary>
@@ -103,6 +103,116 @@ namespace BitChangeSetManager.Xamarin.BitChangeSetManager.Dto
         private string _Title;
         partial void OnTitleChanging(string value);
         partial void OnTitleChanged();
+        /// <summary>
+        /// This event is raised when the value of the property is changed
+        /// </summary>
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "2.4.0")]
+        public event global::System.ComponentModel.PropertyChangedEventHandler PropertyChanged;
+        /// <summary>
+        /// The value of the property is changed
+        /// </summary>
+        /// <param name="property">property name</param>
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "2.4.0")]
+        protected virtual void OnPropertyChanged(string property)
+        {
+            if ((this.PropertyChanged != null))
+            {
+                this.PropertyChanged(this, new global::System.ComponentModel.PropertyChangedEventArgs(property));
+            }
+        }
+    }
+    /// <summary>
+    /// There are no comments for ChangeSetDescriptionTemplateDtoSingle in the schema.
+    /// </summary>
+    [global::Microsoft.OData.Client.OriginalNameAttribute("ChangeSetDescriptionTemplateDtoSingle")]
+    public partial class ChangeSetDescriptionTemplateDtoSingle : global::Microsoft.OData.Client.DataServiceQuerySingle<ChangeSetDescriptionTemplateDto>
+    {
+        /// <summary>
+        /// Initialize a new ChangeSetDescriptionTemplateDtoSingle object.
+        /// </summary>
+        public ChangeSetDescriptionTemplateDtoSingle(global::Microsoft.OData.Client.DataServiceContext context, string path)
+            : base(context, path) {}
+
+        /// <summary>
+        /// Initialize a new ChangeSetDescriptionTemplateDtoSingle object.
+        /// </summary>
+        public ChangeSetDescriptionTemplateDtoSingle(global::Microsoft.OData.Client.DataServiceContext context, string path, bool isComposable)
+            : base(context, path, isComposable) {}
+
+        /// <summary>
+        /// Initialize a new ChangeSetDescriptionTemplateDtoSingle object.
+        /// </summary>
+        public ChangeSetDescriptionTemplateDtoSingle(global::Microsoft.OData.Client.DataServiceQuerySingle<ChangeSetDescriptionTemplateDto> query)
+            : base(query) {}
+
+    }
+    /// <summary>
+    /// There are no comments for ChangeSetDescriptionTemplateDto in the schema.
+    /// </summary>
+    /// <KeyProperties>
+    /// Title
+    /// </KeyProperties>
+    [global::Microsoft.OData.Client.Key("Title")]
+    [global::Microsoft.OData.Client.OriginalNameAttribute("ChangeSetDescriptionTemplateDto")]
+    public partial class ChangeSetDescriptionTemplateDto : global::Microsoft.OData.Client.BaseEntityType, global::System.ComponentModel.INotifyPropertyChanged
+    {
+        /// <summary>
+        /// Create a new ChangeSetDescriptionTemplateDto object.
+        /// </summary>
+        /// <param name="title">Initial value of Title.</param>
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "2.4.0")]
+        public static ChangeSetDescriptionTemplateDto CreateChangeSetDescriptionTemplateDto(string title)
+        {
+            ChangeSetDescriptionTemplateDto changeSetDescriptionTemplateDto = new ChangeSetDescriptionTemplateDto();
+            changeSetDescriptionTemplateDto.Title = title;
+            return changeSetDescriptionTemplateDto;
+        }
+        /// <summary>
+        /// There are no comments for Property Title in the schema.
+        /// </summary>
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "2.4.0")]
+        [global::Microsoft.OData.Client.OriginalNameAttribute("Title")]
+        public string Title
+        {
+            get
+            {
+                return this._Title;
+            }
+            set
+            {
+                this.OnTitleChanging(value);
+                this._Title = value;
+                this.OnTitleChanged();
+                this.OnPropertyChanged("Title");
+            }
+        }
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "2.4.0")]
+        private string _Title;
+        partial void OnTitleChanging(string value);
+        partial void OnTitleChanged();
+        /// <summary>
+        /// There are no comments for Property Content in the schema.
+        /// </summary>
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "2.4.0")]
+        [global::Microsoft.OData.Client.OriginalNameAttribute("Content")]
+        public string Content
+        {
+            get
+            {
+                return this._Content;
+            }
+            set
+            {
+                this.OnContentChanging(value);
+                this._Content = value;
+                this.OnContentChanged();
+                this.OnPropertyChanged("Content");
+            }
+        }
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "2.4.0")]
+        private string _Content;
+        partial void OnContentChanging(string value);
+        partial void OnContentChanged();
         /// <summary>
         /// This event is raised when the value of the property is changed
         /// </summary>
@@ -882,6 +992,29 @@ namespace BitChangeSetManager.Xamarin.BitChangeSetManager.Dto
             return new global::BitChangeSetManager.Xamarin.BitChangeSetManager.Dto.ChangeSetDeliveryRequirementDtoSingle(source.Context, source.GetKeyPath(global::Microsoft.OData.Client.Serializer.GetKeyString(source.Context, keys)));
         }
         /// <summary>
+        /// Get an entity of type global::BitChangeSetManager.Xamarin.BitChangeSetManager.Dto.ChangeSetDescriptionTemplateDto as global::BitChangeSetManager.Xamarin.BitChangeSetManager.Dto.ChangeSetDescriptionTemplateDtoSingle specified by key from an entity set
+        /// </summary>
+        /// <param name="source">source entity set</param>
+        /// <param name="keys">dictionary with the names and values of keys</param>
+        public static global::BitChangeSetManager.Xamarin.BitChangeSetManager.Dto.ChangeSetDescriptionTemplateDtoSingle ByKey(this global::Microsoft.OData.Client.DataServiceQuery<global::BitChangeSetManager.Xamarin.BitChangeSetManager.Dto.ChangeSetDescriptionTemplateDto> source, global::System.Collections.Generic.Dictionary<string, object> keys)
+        {
+            return new global::BitChangeSetManager.Xamarin.BitChangeSetManager.Dto.ChangeSetDescriptionTemplateDtoSingle(source.Context, source.GetKeyPath(global::Microsoft.OData.Client.Serializer.GetKeyString(source.Context, keys)));
+        }
+        /// <summary>
+        /// Get an entity of type global::BitChangeSetManager.Xamarin.BitChangeSetManager.Dto.ChangeSetDescriptionTemplateDto as global::BitChangeSetManager.Xamarin.BitChangeSetManager.Dto.ChangeSetDescriptionTemplateDtoSingle specified by key from an entity set
+        /// </summary>
+        /// <param name="source">source entity set</param>
+        /// <param name="title">The value of title</param>
+        public static global::BitChangeSetManager.Xamarin.BitChangeSetManager.Dto.ChangeSetDescriptionTemplateDtoSingle ByKey(this global::Microsoft.OData.Client.DataServiceQuery<global::BitChangeSetManager.Xamarin.BitChangeSetManager.Dto.ChangeSetDescriptionTemplateDto> source,
+            string title)
+        {
+            global::System.Collections.Generic.Dictionary<string, object> keys = new global::System.Collections.Generic.Dictionary<string, object>
+            {
+                { "Title", title }
+            };
+            return new global::BitChangeSetManager.Xamarin.BitChangeSetManager.Dto.ChangeSetDescriptionTemplateDtoSingle(source.Context, source.GetKeyPath(global::Microsoft.OData.Client.Serializer.GetKeyString(source.Context, keys)));
+        }
+        /// <summary>
         /// Get an entity of type global::BitChangeSetManager.Xamarin.BitChangeSetManager.Dto.ChangeSetSeverityDto as global::BitChangeSetManager.Xamarin.BitChangeSetManager.Dto.ChangeSetSeverityDtoSingle specified by key from an entity set
         /// </summary>
         /// <param name="source">source entity set</param>
@@ -1063,6 +1196,24 @@ namespace BitChangeSetManager.Xamarin.BitChangeSetManager
         [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "2.4.0")]
         private global::Microsoft.OData.Client.DataServiceQuery<global::BitChangeSetManager.Xamarin.BitChangeSetManager.Dto.ChangeSetDeliveryRequirementDto> _ChangeSetDeliveryRequirements;
         /// <summary>
+        /// There are no comments for ChangeSetDescriptionTemplate in the schema.
+        /// </summary>
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "2.4.0")]
+        [global::Microsoft.OData.Client.OriginalNameAttribute("ChangeSetDescriptionTemplate")]
+        public global::Microsoft.OData.Client.DataServiceQuery<global::BitChangeSetManager.Xamarin.BitChangeSetManager.Dto.ChangeSetDescriptionTemplateDto> ChangeSetDescriptionTemplate
+        {
+            get
+            {
+                if ((this._ChangeSetDescriptionTemplate == null))
+                {
+                    this._ChangeSetDescriptionTemplate = base.CreateQuery<global::BitChangeSetManager.Xamarin.BitChangeSetManager.Dto.ChangeSetDescriptionTemplateDto>("ChangeSetDescriptionTemplate");
+                }
+                return this._ChangeSetDescriptionTemplate;
+            }
+        }
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "2.4.0")]
+        private global::Microsoft.OData.Client.DataServiceQuery<global::BitChangeSetManager.Xamarin.BitChangeSetManager.Dto.ChangeSetDescriptionTemplateDto> _ChangeSetDescriptionTemplate;
+        /// <summary>
         /// There are no comments for ChangeSetSeverities in the schema.
         /// </summary>
         [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "2.4.0")]
@@ -1143,6 +1294,14 @@ namespace BitChangeSetManager.Xamarin.BitChangeSetManager
             base.AddObject("ChangeSetDeliveryRequirements", changeSetDeliveryRequirementDto);
         }
         /// <summary>
+        /// There are no comments for ChangeSetDescriptionTemplate in the schema.
+        /// </summary>
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "2.4.0")]
+        public void AddToChangeSetDescriptionTemplate(global::BitChangeSetManager.Xamarin.BitChangeSetManager.Dto.ChangeSetDescriptionTemplateDto changeSetDescriptionTemplateDto)
+        {
+            base.AddObject("ChangeSetDescriptionTemplate", changeSetDescriptionTemplateDto);
+        }
+        /// <summary>
         /// There are no comments for ChangeSetSeverities in the schema.
         /// </summary>
         [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "2.4.0")]
@@ -1190,6 +1349,13 @@ namespace BitChangeSetManager.Xamarin.BitChangeSetManager
         <Property Name=""Id"" Type=""Edm.Guid"" Nullable=""false"" />
         <Property Name=""Title"" Type=""Edm.String"" />
       </EntityType>
+      <EntityType Name=""ChangeSetDescriptionTemplateDto"">
+        <Key>
+          <PropertyRef Name=""Title"" />
+        </Key>
+        <Property Name=""Title"" Type=""Edm.String"" Nullable=""false"" />
+        <Property Name=""Content"" Type=""Edm.String"" />
+      </EntityType>
       <EntityType Name=""ChangeSetSeverityDto"">
         <Key>
           <PropertyRef Name=""Id"" />
@@ -1232,8 +1398,13 @@ namespace BitChangeSetManager.Xamarin.BitChangeSetManager
       </EntityType>
     </Schema>
     <Schema Namespace=""BitChangeSetManager"" xmlns=""http://docs.oasis-open.org/odata/ns/edm"">
+      <Function Name=""GetAllTemplates"" IsBound=""true"">
+        <Parameter Name=""bindingParameter"" Type=""Collection(BitChangeSetManager.Dto.ChangeSetDescriptionTemplateDto)"" />
+        <ReturnType Type=""Collection(BitChangeSetManager.Dto.ChangeSetDescriptionTemplateDto)"" />
+      </Function>
       <EntityContainer Name=""BitChangeSetManagerContext"">
         <EntitySet Name=""ChangeSetDeliveryRequirements"" EntityType=""BitChangeSetManager.Dto.ChangeSetDeliveryRequirementDto"" />
+        <EntitySet Name=""ChangeSetDescriptionTemplate"" EntityType=""BitChangeSetManager.Dto.ChangeSetDescriptionTemplateDto"" />
         <EntitySet Name=""ChangeSetSeverities"" EntityType=""BitChangeSetManager.Dto.ChangeSetSeverityDto"" />
         <EntitySet Name=""Deliveries"" EntityType=""BitChangeSetManager.Dto.DeliveryDto"" />
         <EntitySet Name=""ChangeSets"" EntityType=""BitChangeSetManager.Dto.ChangeSetDto"" />
@@ -1265,6 +1436,25 @@ namespace BitChangeSetManager.Xamarin.BitChangeSetManager
             {
                 return global::System.Xml.XmlReader.Create(new global::System.IO.StringReader(edmxToParse));
             }
+        }
+    }
+    /// <summary>
+    /// Class containing all extension methods
+    /// </summary>
+    public static class ExtensionMethods
+    {
+        /// <summary>
+        /// There are no comments for GetAllTemplates in the schema.
+        /// </summary>
+        [global::Microsoft.OData.Client.OriginalNameAttribute("GetAllTemplates")]
+        public static global::Microsoft.OData.Client.DataServiceQuery<global::BitChangeSetManager.Xamarin.BitChangeSetManager.Dto.ChangeSetDescriptionTemplateDto> GetAllTemplates(this global::Microsoft.OData.Client.DataServiceQuery<global::BitChangeSetManager.Xamarin.BitChangeSetManager.Dto.ChangeSetDescriptionTemplateDto> source)
+        {
+            if (!source.IsComposable)
+            {
+                throw new global::System.NotSupportedException("The previous function is not composable.");
+            }
+
+            return source.CreateFunctionQuery<global::BitChangeSetManager.Xamarin.BitChangeSetManager.Dto.ChangeSetDescriptionTemplateDto>("BitChangeSetManager.GetAllTemplates", false);
         }
     }
 }

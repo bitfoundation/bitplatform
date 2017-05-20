@@ -393,6 +393,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <None Include="App_Data\templates.json" />
     <Content Include="environments.json" />
     <Content Include="packages.config">
       <SubType>Designer</SubType>
@@ -424,6 +425,7 @@
   <ItemGroup>
     <Compile Include="Api\BitChangeSetManagerAppMessageHubEvents.cs" />
     <Compile Include="Api\ChangeSetDeliveryRequirementsController.cs" />
+    <Compile Include="Api\ChangeSetDescriptionTemplateController.cs" />
     <Compile Include="Api\ChangeSetSeveritiesController.cs" />
     <Compile Include="Api\BitUserSettingProvider.cs" />
     <Compile Include="Api\DefaultReadOnlyDtoSetController.cs" />
@@ -436,6 +438,7 @@
     <Compile Include="DataAccess\BitChangeSetManagerInitialData.cs" />
     <Compile Include="DataAccess\ChangeSetRepository.cs" />
     <Compile Include="DataAccess\IBitChangeSetManagerRepository.cs" />
+    <Compile Include="Dto\ChangeSetDescriptionTemplateDto.cs" />
     <Compile Include="Dto\ChangeSetDto.cs" />
     <Compile Include="Dto\ChangeSetDeliveryRequirementDto.cs" />
     <Compile Include="Dto\ChangeSetSeverityDto.cs" />
