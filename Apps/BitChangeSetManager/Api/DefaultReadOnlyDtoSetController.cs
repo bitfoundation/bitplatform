@@ -7,6 +7,8 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Web.OData;
+using System.Web.Http.Controllers;
+using System.Net.Http;
 
 namespace BitChangeSetManager.Api
 {
@@ -35,6 +37,14 @@ namespace BitChangeSetManager.Api
         public override Task Delete(Guid key, CancellationToken cancellationToken)
         {
             throw new AppException(BitChangeSetManagerMetadata.DeleteIsDeined);
+        }
+
+        protected override void Initialize(HttpControllerContext controllerContext)
+        {
+            base.Initialize(controllerContext);
+
+            if (Request.Method != HttpMethod.Get)
+                throw new AppException(BitChangeSetManagerMetadata.OnlyGetIsAllowed);
         }
     }
 }

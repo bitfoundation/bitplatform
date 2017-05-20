@@ -11,6 +11,7 @@ namespace BitChangeSetManager.Metadata
         public const string InsertIsDeined = nameof(InsertIsDeined);
         public const string UpdateIsDeined = nameof(UpdateIsDeined);
         public const string DeleteIsDeined = nameof(DeleteIsDeined);
+        public const string OnlyGetIsAllowed = nameof(OnlyGetIsAllowed);
 
         public override async Task<IEnumerable<ObjectMetadata>> BuildMetadata()
         {
@@ -31,6 +32,7 @@ namespace BitChangeSetManager.Metadata
                             new EnvironmentCultureValue { Name = nameof(InsertIsDeined), Title = "Insert is denied" },
                             new EnvironmentCultureValue { Name = nameof(UpdateIsDeined), Title = "Update is denied" },
                             new EnvironmentCultureValue { Name = nameof(DeleteIsDeined), Title = "Delete is denied" },
+                            new EnvironmentCultureValue { Name = nameof(OnlyGetIsAllowed), Title = "Only Get is allowed" },
                             new EnvironmentCultureValue { Name = "Save", Title = "Save" },
                             new EnvironmentCultureValue { Name = "Cancel", Title = "Cancel" }
                         }
@@ -47,6 +49,7 @@ namespace BitChangeSetManager.Metadata
                             new EnvironmentCultureValue { Name = nameof(InsertIsDeined), Title = "درج مجاز نیست" },
                             new EnvironmentCultureValue { Name = nameof(UpdateIsDeined), Title = "ویرایش مجاز نیست" },
                             new EnvironmentCultureValue { Name = nameof(DeleteIsDeined), Title = "حذف مجاز نیست" },
+                            new EnvironmentCultureValue { Name = nameof(OnlyGetIsAllowed), Title = "فقط دریافت مجاز است" },
                             new EnvironmentCultureValue { Name = "Save", Title = "ذخیره" },
                             new EnvironmentCultureValue { Name = "Cancel", Title = "انصراف" }
                         }
