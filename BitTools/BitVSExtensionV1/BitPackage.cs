@@ -23,6 +23,7 @@ using System.Globalization;
 using BitTools.Core.Model;
 using BitVSEditorUtils.Html;
 using Newtonsoft.Json;
+using Microsoft.CodeAnalysis;
 
 namespace BitVSExtensionV1
 {
@@ -44,15 +45,15 @@ namespace BitVSExtensionV1
         {
             base.Initialize();
 
-            IComponentModel componentModel = (IComponentModel)GetService(typeof(SComponentModel));
+            _componentModel = (IComponentModel)GetService(typeof(SComponentModel));
 
-            if (componentModel == null)
+            if (_componentModel == null)
             {
                 ShowInitialLoadProblem("Component model is null");
                 return;
             }
 
-            _workspace = componentModel.GetService<VisualStudioWorkspace>();
+            _workspace = _componentModel.GetService<VisualStudioWorkspace>();
 
             if (_workspace == null)
             {
@@ -70,7 +71,7 @@ namespace BitVSExtensionV1
                 await System.Threading.Tasks.Task.Delay(1000);
             }
 
-            if (!File.Exists(_workspace.CurrentSolution.FilePath))
+            if (!File.Exists(_workspace.CurrentSolution.FilePath) || !File.Exists(Path.Combine(Path.GetDirectoryName(_workspace.CurrentSolution.FilePath) + "\\BitConfigV1.json")))
             {
                 return;
             }
@@ -84,10 +85,6 @@ namespace BitVSExtensionV1
                 ShowInitialLoadProblem("applicationObject is null");
                 return;
             }
-
-            _applicationObject.Events.BuildEvents.OnBuildProjConfigDone += _buildEvents_OnBuildProjConfigDone;
-            _applicationObject.Events.BuildEvents.OnBuildDone += _buildEvents_OnBuildDone;
-            _applicationObject.Events.BuildEvents.OnBuildBegin += _buildEvents_OnBuildBegin;
 
             Window outputWindow = _applicationObject.DTE.Windows.Item(EnvDTE.Constants.vsWindowKindOutput);
 
@@ -104,11 +101,11 @@ namespace BitVSExtensionV1
                 _outputWindow.OutputWindowPanes.Add(BitVSExtensionName);
             }
 
-            string version = _applicationObject.Version;
+            string vsVersion = _applicationObject.Version;
 
-            if (version == "14.0" /*VS 2015*/)
+            if (vsVersion == "14.0" /*VS 2015*/)
             {
-                new[] { "Microsoft.CodeAnalysis", "Microsoft.CodeAnalysis.Common", "Microsoft.CodeAnalysis.CSharp", "Microsoft.CodeAnalysis.CSharp.Workspaces", "Microsoft.CodeAnalysis.VisualBasic", "Microsoft.CodeAnalysis.VisualBasic.Workspaces", "Microsoft.CodeAnalysis.Workspaces", "Microsoft.VisualStudio.LanguageServices", }.ToList()
+                new[] { "Microsoft.CodeAnalysis", "Microsoft.CodeAnalysis.Common", "Microsoft.CodeAnalysis.CSharp", "Microsoft.CodeAnalysis.CSharp.Workspaces", "Microsoft.CodeAnalysis.VisualBasic", "Microsoft.CodeAnalysis.VisualBasic.Workspaces", "Microsoft.CodeAnalysis.Workspaces", "Microsoft.VisualStudio.LanguageServices", "Microsoft.CodeAnalysis.Features" }.ToList()
                     .ForEach(needsRuntimeAssemblyRedirectInVS2015 =>
                     {
                         RedirectAssembly(needsRuntimeAssemblyRedirectInVS2015, new Version("1.3.1.0"), "31bf3856ad364e35");
@@ -132,6 +129,10 @@ namespace BitVSExtensionV1
                 ShowInitialLoadProblem($"Check version failed {ex}");
                 return;
             }
+
+            _applicationObject.Events.BuildEvents.OnBuildProjConfigDone += _buildEvents_OnBuildProjConfigDone;
+            _applicationObject.Events.BuildEvents.OnBuildDone += _buildEvents_OnBuildDone;
+            _applicationObject.Events.BuildEvents.OnBuildBegin += _buildEvents_OnBuildBegin;
 
             try
             {
@@ -327,6 +328,8 @@ namespace BitVSExtensionV1
         private readonly List<Project> _isBeingBuiltProjects = new List<Project>();
 
         private VisualStudioWorkspace _workspace;
+
+        private IComponentModel _componentModel;
 
         private IServiceContainer _serviceContainer;
 
