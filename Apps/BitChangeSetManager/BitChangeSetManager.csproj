@@ -479,8 +479,8 @@
     <TypeScriptCompile Include="wwwroot\viewModel\changeSetsViewModel.ts" />
   </ItemGroup>
   <ItemGroup>
-    <Analyzer Include="packages\BitCodeAnalyzer.0.1.0\analyzers\dotnet\cs\BitCodeAnalyzer.dll" />
-    <Analyzer Include="packages\BitCodeAnalyzer.0.1.0\analyzers\dotnet\cs\BitTools.Core.dll" />
+    <Analyzer Include="packages\BitCodeAnalyzer.1.1.4.1\analyzers\dotnet\cs\BitCodeAnalyzer.dll" />
+    <Analyzer Include="packages\BitCodeAnalyzer.1.1.4.1\analyzers\dotnet\cs\BitTools.Core.dll" />
   </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>
