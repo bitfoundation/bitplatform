@@ -19,7 +19,7 @@ namespace Microsoft.CodeAnalysis
                 INamedTypeSymbol namedTypeSymbol = type as INamedTypeSymbol;
 
                 if (namedTypeSymbol != null && namedTypeSymbol.TypeArguments.Any())
-                    return namedTypeSymbol.TypeArguments.Single();
+                    return namedTypeSymbol.TypeArguments.ExtendedSingle($"Looking for type arguments of {type.Name}");
             }
 
             return type;
@@ -247,7 +247,7 @@ namespace Microsoft.CodeAnalysis
                 return ((IArrayTypeSymbol)elementType).ElementType;
 
             if (elementType is INamedTypeSymbol && ((INamedTypeSymbol)elementType).TypeArguments.Any())
-                elementType = ((INamedTypeSymbol)elementType).TypeArguments.Single();
+                elementType = ((INamedTypeSymbol)elementType).TypeArguments.ExtendedSingle($"Looking for type arguments of {elementType.Name}");
 
             return elementType;
         }

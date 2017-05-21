@@ -46,6 +46,7 @@
     <Compile Include="Contracts\IProjectDtoRulesProvider.cs" />
     <Compile Include="Contracts\IProjectDtosProvider.cs" />
     <Compile Include="Contracts\IProjectEnumTypesProvider.cs" />
+    <Compile Include="Extensions\IEnumerableExtensions.cs" />
     <Compile Include="Extensions\IPropertySymbolExtensions.cs" />
     <Compile Include="Extensions\ISymbolExtensions.cs" />
     <Compile Include="Extensions\ITypeSymbolExtensions.cs" />

@@ -231,7 +231,7 @@ namespace BitVSExtensionV1
         private void _buildEvents_OnBuildProjConfigDone(string project, string projectConfig, string platform, string solutionConfig, bool success)
         {
             Project proj = _workspace.CurrentSolution.Projects
-                .Single(prj => prj.Language == "C#" && new FileInfo(prj.FilePath).Name == project.Split('\\').Last());
+                .ExtendedSingle($"Lookin for {project} in [ {(string.Join(",", _workspace.CurrentSolution.Projects.Select(prj => prj.Name)))} ]", prj => prj.Language == "C#" && new FileInfo(prj.FilePath).Name == project.Split('\\').Last());
 
             if (proj != null)
             {

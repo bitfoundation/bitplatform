@@ -18,7 +18,7 @@ namespace Microsoft.CodeAnalysis
             {
                 XElement element = XElement.Parse(docXml);
 
-                summary = element.Descendants().SingleOrDefault(e => e.Name.LocalName == "summary")?.Value;
+                summary = element.Descendants().ExtendedSingleOrDefault($"Looking for summary of {symbol.Name}", e => e.Name.LocalName == "summary")?.Value;
             }
 
             if (symbol is IFieldSymbol)

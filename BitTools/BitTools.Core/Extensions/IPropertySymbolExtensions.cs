@@ -49,16 +49,18 @@ namespace Microsoft.CodeAnalysis
                 throw new ArgumentNullException(nameof(prop));
 
             AttributeData dataTypeAtt = prop.GetAttributes()
-                .SingleOrDefault(att => att.AttributeClass.Name == "DataTypeAttribute");
+                .ExtendedSingleOrDefault($"Looking for DataTypeAttribute on {prop.Name}", att => att.AttributeClass.Name == "DataTypeAttribute");
 
             if (dataTypeAtt == null)
                 return null;
 
-            int value = Convert.ToInt32(dataTypeAtt.ConstructorArguments.Single().Value);
+            TypedConstant dataTypeAttributeValue = dataTypeAtt.ConstructorArguments.ExtendedSingle($"Getting parameter of DataTypeAttribute");
 
-            return dataTypeAtt.ConstructorArguments.Single().Type.GetMembers()
+            int value = Convert.ToInt32(dataTypeAttributeValue.Value);
+
+            return dataTypeAttributeValue.Type.GetMembers()
                 .OfType<IFieldSymbol>()
-                .Single(fld => Convert.ToInt32(fld.ConstantValue) == value).Name;
+                .ExtendedSingle($"Looking for {value} in DataTypeAttribute field members", fld => Convert.ToInt32(fld.ConstantValue) == value).Name;
         }
     }
 }

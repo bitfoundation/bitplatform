@@ -68,12 +68,12 @@ namespace BitCodeGenerator.Implementations
                         ControllerSymbol = controllerSymbol,
                         Name = controllerSymbol.Name.Replace("Controller", string.Empty),
                         Operations = new List<ODataOperation>(),
-                        ModelSymbol = controllerSymbol.BaseType.TypeArguments.SingleOrDefault(t => t.IsDto())
+                        ModelSymbol = controllerSymbol.BaseType.TypeArguments.ExtendedSingleOrDefault($"Looking for model of ${controllerSymbol.Name}", t => t.IsDto())
                     };
 
                     if (dtoController.ModelSymbol != null && dtoController.ModelSymbol is ITypeParameterSymbol)
                     {
-                        dtoController.ModelSymbol = ((ITypeParameterSymbol)dtoController.ModelSymbol).ConstraintTypes.SingleOrDefault(t => t.IsDto());
+                        dtoController.ModelSymbol = ((ITypeParameterSymbol)dtoController.ModelSymbol).ConstraintTypes.ExtendedSingleOrDefault($"Looking for model on generic model {dtoController.ModelSymbol.Name}", t => t.IsDto());
                     }
 
                     if (dtoController.ModelSymbol == null)
@@ -90,9 +90,9 @@ namespace BitCodeGenerator.Implementations
 
                         ImmutableArray<AttributeData> attrs = methodSymbol.GetAttributes();
 
-                        AttributeData actionAttribute = attrs.SingleOrDefault(att => att.AttributeClass.Name == "ActionAttribute");
+                        AttributeData actionAttribute = attrs.ExtendedSingleOrDefault($"Looking for action attribute on {methodSymbol.Name}", att => att.AttributeClass.Name == "ActionAttribute");
 
-                        AttributeData functionAttribute = attrs.SingleOrDefault(att => att.AttributeClass.Name == "FunctionAttribute");
+                        AttributeData functionAttribute = attrs.ExtendedSingleOrDefault($"Looking for function attribute on {methodSymbol.Name}", att => att.AttributeClass.Name == "FunctionAttribute");
 
                         if (actionAttribute == null && functionAttribute == null)
                             continue;
@@ -116,17 +116,20 @@ namespace BitCodeGenerator.Implementations
                         }
                         else if (operation.Kind == ODataOperationKind.Action && operation.Method.Parameters.Any())
                         {
-                            operation.Parameters = operation.Method.Parameters
-                                .Where(p => p.Type.Name != "CancellationToken" && p.Type.Name != "ODataQueryOptions")
-                                .Single()
-                                .Type
-                                .GetMembers()
-                                .OfType<IPropertySymbol>()
-                                .Select(prop => new ODataOperationParameter
-                                {
-                                    Name = prop.Name,
-                                    Type = prop.Type
-                                }).ToList();
+                            IParameterSymbol actionParameterContainer = operation.Method.Parameters
+                                   .Where(p => p.Type.Name != "CancellationToken" && p.Type.Name != "ODataQueryOptions")
+                                   .ExtendedSingleOrDefault($"Looking for one parameter other than cancellation token or odata query options on {operation.Method.Name}");
+
+                            if (actionParameterContainer != null)
+                            {
+                                operation.Parameters = actionParameterContainer.Type.GetMembers()
+                                       .OfType<IPropertySymbol>()
+                                       .Select(prop => new ODataOperationParameter
+                                       {
+                                           Name = prop.Name,
+                                           Type = prop.Type
+                                       }).ToList();
+                            }
                         }
 
                         dtoController.Operations.Add(operation);

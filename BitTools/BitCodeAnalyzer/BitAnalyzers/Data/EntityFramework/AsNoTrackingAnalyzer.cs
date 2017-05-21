@@ -37,6 +37,9 @@ namespace BitCodeAnalyzer.BitAnalyzers.Data.EntityFramework
             InvocationExpressionSyntax invocation = (InvocationExpressionSyntax)root;
             IMethodSymbol symbol = (IMethodSymbol)context.SemanticModel.GetSymbolInfo(invocation).Symbol;
 
+            if (symbol == null)
+                return;
+
             string symbolName = symbol.ContainingType.ToDisplayString();
             if (symbolName == "System.Linq.Queryable" || symbolName == "System.Linq.Enumerable" ||
                 symbolName == "System.Data.Entity.QueryableExtensions")

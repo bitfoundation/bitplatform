@@ -21,9 +21,9 @@ namespace BitVSEditorUtils.Html
             string tagName = context.Element.Name.ToLowerInvariant();
             string attrName = context.Attribute.Name.ToLowerInvariant();
 
-            List<HtmlAttribute> all = HtmlElementsContainer.Elements.Single(e => e.Name == "*").Attributes.ToList();
+            List<HtmlAttribute> all = HtmlElementsContainer.Elements.ExtendedSingle("Looking for * tag", e => e.Name == "*").Attributes.ToList();
 
-            HtmlElement element = HtmlElementsContainer.Elements.SingleOrDefault(e => e.Name == tagName);
+            HtmlElement element = HtmlElementsContainer.Elements.ExtendedSingleOrDefault($"Looking for {tagName} tag", e => e.Name == tagName);
 
             if (element != null && element.Attributes != null)
                 all.AddRange(element.Attributes);
@@ -43,7 +43,7 @@ namespace BitVSEditorUtils.Html
                 }
             }
 
-            HtmlAttribute attr = attributes.SingleOrDefault(a => a.Name == attrName);
+            HtmlAttribute attr = attributes.ExtendedSingleOrDefault($"Looking for attribute {attrName}", a => a.Name == attrName);
 
             return AddAttributeValues(context, attr?.Values);
         }

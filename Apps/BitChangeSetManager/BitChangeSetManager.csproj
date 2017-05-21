@@ -16,8 +16,7 @@
     <AssemblyName>BitChangeSetManager</AssemblyName>
     <TargetFrameworkVersion>v4.6.2</TargetFrameworkVersion>
     <UseIISExpress>true</UseIISExpress>
-    <IISExpressSSLPort>
-    </IISExpressSSLPort>
+    <IISExpressSSLPort>44340</IISExpressSSLPort>
     <IISExpressAnonymousAuthentication>enabled</IISExpressAnonymousAuthentication>
     <IISExpressWindowsAuthentication>disabled</IISExpressWindowsAuthentication>
     <IISExpressUseClassicPipelineMode>false</IISExpressUseClassicPipelineMode>
@@ -480,8 +479,8 @@
     <TypeScriptCompile Include="wwwroot\viewModel\changeSetsViewModel.ts" />
   </ItemGroup>
   <ItemGroup>
-    <Analyzer Include="packages\BitCodeAnalyzer.1.1.4.1\analyzers\dotnet\cs\BitCodeAnalyzer.dll" />
-    <Analyzer Include="packages\BitCodeAnalyzer.1.1.4.1\analyzers\dotnet\cs\BitTools.Core.dll" />
+    <Analyzer Include="..\BitChangeSetManager.Core\packages\BitCodeAnalyzer.1.1.4.3\analyzers\dotnet\cs\BitCodeAnalyzer.dll" />
+    <Analyzer Include="..\BitChangeSetManager.Core\packages\BitCodeAnalyzer.1.1.4.3\analyzers\dotnet\cs\BitTools.Core.dll" />
   </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>

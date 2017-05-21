@@ -42,7 +42,7 @@ namespace BitCodeGenerator.Implementations
 
             FileInfo bitConfigFileInfo =
                 directoryInfo?.GetFiles(bitConfigFileName)
-                    .SingleOrDefault();
+                    .ExtendedSingleOrDefault($"Looking for {bitConfigFileName}");
 
             if (bitConfigFileInfo == null)
                 throw new BitConfigNotFoundException($"No {bitConfigFileName} found in {directoryInfo.FullName}");

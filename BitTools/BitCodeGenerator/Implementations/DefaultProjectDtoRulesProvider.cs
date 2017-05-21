@@ -62,7 +62,7 @@ namespace BitCodeGenerator.Implementations
                         DtoRulesSymbol = dtoRuleSymbol,
                         Name = dtoRuleSymbol.Name,
                         ClassDeclaration = dtoRulesClassDec,
-                        DtoSymbol = (dtoRuleSymbol.BaseType.TypeArguments).Single(),
+                        DtoSymbol = (dtoRuleSymbol.BaseType.TypeArguments).ExtendedSingle($"Looking for dto of {dtoRuleSymbol.Name}"),
                         DtoRulesDocument = doc,
                         SemanticModel = semanticModel,
                         ClassSyntaxTree = dtoRulesClassDec.SyntaxTree

@@ -17,14 +17,14 @@ namespace BitVSEditorUtils.Html
 
     public class AttributeValidator : BaseValidator
     {
-        private static readonly HtmlElement _global = HtmlElementsContainer.Elements.Single(e => e.Name == "*");
+        private static readonly HtmlElement _global = HtmlElementsContainer.Elements.ExtendedSingle("Looking for * tag", e => e.Name == "*");
 
         public override IList<IHtmlValidationError> ValidateElement(ElementNode element)
         {
             ValidationErrorCollection results = new ValidationErrorCollection();
             List<HtmlAttribute> attributes = _global.Attributes.ToList();
 
-            HtmlElement match = HtmlElementsContainer.Elements.SingleOrDefault(e => e.Name.Equals(element.Name, StringComparison.OrdinalIgnoreCase));
+            HtmlElement match = HtmlElementsContainer.Elements.ExtendedSingleOrDefault($"Looking for tag {element.Name}", e => e.Name.Equals(element.Name, StringComparison.OrdinalIgnoreCase));
 
             if (match != null && match.Attributes != null)
                 attributes.AddRange(match.Attributes);
