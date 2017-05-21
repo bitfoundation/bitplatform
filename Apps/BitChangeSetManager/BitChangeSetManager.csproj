@@ -400,6 +400,7 @@
     </Content>
     <None Include="ToDo.txt" />
     <Content Include="wwwroot\defaultPageTemplate.cshtml" />
+    <Content Include="wwwroot\view\app.html" />
     <Content Include="wwwroot\view\bitChangeSetManagerStyles.css" />
     <Content Include="wwwroot\view\changeSetView.html" />
     <Content Include="wwwroot\view\changeSetsView.html" />
