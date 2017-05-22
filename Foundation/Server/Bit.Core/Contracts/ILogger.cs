@@ -23,7 +23,7 @@ namespace Foundation.Core.Contracts
 
         void LogWarning(string message);
 
-        IEnumerable<LogData> LogData { get; set; }
+        IEnumerable<LogData> LogData { get; }
 
         void AddLogData(string key, object value);
     }

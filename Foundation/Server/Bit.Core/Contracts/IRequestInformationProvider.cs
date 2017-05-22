@@ -5,48 +5,48 @@ namespace Foundation.Core.Contracts
 {
     public interface IRequestInformationProvider
     {
-        string UserAgent { get; set; }
+        string UserAgent { get; }
 
-        string HttpMethod { get; set; }
+        string HttpMethod { get; }
 
-        string ClientIp { get; set; }
+        string ClientIp { get; }
 
-        string ClientAppVersion { get; set; }
+        string ClientAppVersion { get; }
 
-        string SystemLanguage { get; set; }
+        string SystemLanguage { get; }
 
-        DateTimeOffset? ClientDateTime { get; set; }
+        DateTimeOffset? ClientDateTime { get; }
 
-        string ClientType { get; set; }
+        string ClientType { get; }
 
-        string ClientCulture { get; set; }
+        string ClientCulture { get; }
 
-        string ClientScreenSize { get; set; }
+        string ClientScreenSize { get; }
 
-        string ClientPlatform { get; set; }
+        string ClientPlatform { get; }
 
-        string ClientRoute { get; set; }
+        string ClientRoute { get; }
 
-        string ClientSysLanguage { get; set; }
+        string ClientSysLanguage { get; }
 
-        string ClientTheme { get; set; }
+        string ClientTheme { get; }
 
-        bool? ClientDebugMode { get; set; }
+        bool? ClientDebugMode { get; }
 
-        string RequestUri { get; set; }
+        string RequestUri { get; }
 
-        ClaimsIdentity Identity { get; set; }
+        ClaimsIdentity Identity { get; }
 
-        string CurrentTimeZone { get; set; }
+        string CurrentTimeZone { get; }
 
-        string DesiredTimeZone { get; set; }
+        string DesiredTimeZone { get; }
 
-        string ContentType { get; set; }
+        string ContentType { get; }
 
-        string Origin { get; set; }
+        string Origin { get; }
 
-        string Referer { get; set; }
+        string Referer { get; }
 
-        Guid? CorrelationId { get; set; }
+        Guid? CorrelationId { get; }
     }
 }
