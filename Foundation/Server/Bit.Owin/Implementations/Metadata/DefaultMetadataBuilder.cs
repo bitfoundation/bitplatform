@@ -7,7 +7,7 @@ namespace Foundation.Api.Implementations.Metadata
 {
     public class DefaultMetadataBuilder : IMetadataBuilder
     {
-        public virtual ICollection<ObjectMetadata> AllMetadata { get; set; } = new Collection<ObjectMetadata>();
+        public virtual ICollection<ObjectMetadata> AllMetadata { get; protected set; } = new Collection<ObjectMetadata>();
 
         public virtual async Task<IEnumerable<ObjectMetadata>> BuildMetadata()
         {

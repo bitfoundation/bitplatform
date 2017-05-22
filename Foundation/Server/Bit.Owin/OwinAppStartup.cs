@@ -10,7 +10,6 @@ using Owin;
 using Foundation.Api.Contracts;
 using Microsoft.Owin.Logging;
 using Microsoft.Owin.BuilderProperties;
-using System.Web.Hosting;
 
 namespace Foundation.Api
 {
@@ -36,9 +35,6 @@ namespace Foundation.Api
                 owinApp.Properties["host.AppMode"] = "development";
             else
                 owinApp.Properties["host.AppMode"] = "production";
-
-            if (HostingEnvironment.IsHosted == false)
-                Console.Title = activeEnvironment.Name;
 
             owinAppProps.AppName = activeEnvironment.AppInfo.Name;
 

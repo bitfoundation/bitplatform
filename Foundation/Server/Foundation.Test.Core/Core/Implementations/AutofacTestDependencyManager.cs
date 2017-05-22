@@ -9,6 +9,8 @@ using Foundation.Api.Contracts;
 using Foundation.DataAccess.Contracts;
 using Foundation.Model.Contracts;
 using Foundation.Api.Implementations;
+using Foundation.Api.Metadata;
+using Foundation.Api.ApiControllers;
 
 namespace Foundation.Test.Core.Implementations
 {
@@ -90,7 +92,8 @@ namespace Foundation.Test.Core.Implementations
             serviceType => typeof(IOwinMiddlewareConfiguration).GetTypeInfo().Assembly == serviceType.Assembly,
             serviceType => typeof(IRepository<>).GetTypeInfo().Assembly == serviceType.Assembly,
             serviceType => typeof(IEntity).GetTypeInfo().Assembly == serviceType.Assembly,
-            serviceType => typeof(AutofacTestDependencyManager).GetTypeInfo().Assembly == serviceType.Assembly
+            serviceType => typeof(AutofacTestDependencyManager).GetTypeInfo().Assembly == serviceType.Assembly,
+            serviceType => typeof(DtoController<>).GetTypeInfo().Assembly == serviceType.Assembly
         };
 
         public readonly List<Func<TypeInfo, bool>> AutoProxyCreationIgnoreRules;

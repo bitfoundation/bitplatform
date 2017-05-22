@@ -255,6 +255,10 @@
       <Project>{b0ccc9c9-822d-480b-ad8e-2c9b0a892c64}</Project>
       <Name>Foundation.Test.Core</Name>
     </ProjectReference>
+    <ProjectReference Include="..\..\..\Foundation\Server\Bit.Owin\Bit.Owin.csproj">
+      <Project>{3556c2a2-58bb-4bf6-938b-cad6a8f053f7}</Project>
+      <Name>Bit.Owin</Name>
+    </ProjectReference>
     <ProjectReference Include="..\IdentityServer.Api\IdentityServer.Api.csproj">
       <Project>{8fbf33c3-7394-4090-bc9a-8675a47b3202}</Project>
       <Name>IdentityServer.Api</Name>

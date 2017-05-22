@@ -3,6 +3,7 @@ using Foundation.Api.Contracts.Metadata;
 using Foundation.Api.Implementations;
 using Foundation.Api.Implementations.Metadata;
 using Foundation.Api.Implementations.Project;
+using Foundation.Api.Metadata;
 using Foundation.Api.Middlewares;
 using Foundation.Core.Contracts;
 using Foundation.Core.Contracts.Project;
@@ -46,7 +47,7 @@ namespace IdentityServer.Test.Api.Implementations.Project
             dependencyManager.RegisterOwinMiddleware<MetadataMiddlewareConfiguration>();
 
             dependencyManager.Register<IAppMetadataProvider, DefaultAppMetadataProvider>(lifeCycle: DependencyLifeCycle.SingleInstance);
-            dependencyManager.RegisterMetadata(typeof(FoundationEdmModelProvider).GetTypeInfo().Assembly, typeof(LoginViewMetadataBuilder).GetTypeInfo().Assembly);
+            dependencyManager.RegisterMetadata(typeof(FoundationMetadataBuilder).GetTypeInfo().Assembly, typeof(LoginViewMetadataBuilder).GetTypeInfo().Assembly);
 
             #endregion
 

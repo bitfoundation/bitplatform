@@ -87,7 +87,7 @@ namespace Foundation.Api.Implementations
                 throw new AggregateException(logExceptions);
         }
 
-        public virtual IEnumerable<LogData> LogData { get; set; } = new Collection<LogData>();
+        public virtual IEnumerable<LogData> LogData { get; protected set; } = new Collection<LogData>();
 
         public virtual void AddLogData(string key, object value)
         {

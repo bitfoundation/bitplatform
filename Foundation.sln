@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.26403.7
+VisualStudioVersion = 15.0.26430.6
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "HtmlClient", "HtmlClient", "{49DAF47E-EB5F-46D9-B242-B4BB6E88458A}"
 EndProject
@@ -57,6 +57,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IdentityServer.Api", "IdentityServer\Server\IdentityServer.Api\IdentityServer.Api.csproj", "{8FBF33C3-7394-4090-BC9A-8675A47B3202}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IdentityServer.Test", "IdentityServer\Server\IdentityServer.Test\IdentityServer.Test.csproj", "{1F25DB73-28D3-4493-BEC1-DF69813B224A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Bit.Owin", "Foundation\Server\Bit.Owin\Bit.Owin.csproj", "{3556C2A2-58BB-4BF6-938B-CAD6A8F053F7}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -218,6 +220,14 @@ Global
 		{1F25DB73-28D3-4493-BEC1-DF69813B224A}.Release|Any CPU.Build.0 = Release|Any CPU
 		{1F25DB73-28D3-4493-BEC1-DF69813B224A}.Release|x64.ActiveCfg = Release|x64
 		{1F25DB73-28D3-4493-BEC1-DF69813B224A}.Release|x64.Build.0 = Release|x64
+		{3556C2A2-58BB-4BF6-938B-CAD6A8F053F7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3556C2A2-58BB-4BF6-938B-CAD6A8F053F7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3556C2A2-58BB-4BF6-938B-CAD6A8F053F7}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{3556C2A2-58BB-4BF6-938B-CAD6A8F053F7}.Debug|x64.Build.0 = Debug|Any CPU
+		{3556C2A2-58BB-4BF6-938B-CAD6A8F053F7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3556C2A2-58BB-4BF6-938B-CAD6A8F053F7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3556C2A2-58BB-4BF6-938B-CAD6A8F053F7}.Release|x64.ActiveCfg = Release|Any CPU
+		{3556C2A2-58BB-4BF6-938B-CAD6A8F053F7}.Release|x64.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -246,5 +256,6 @@ Global
 		{37D069D0-CB84-46FE-928C-900AB533E35D} = {D5D8F19D-195F-4542-B622-F8095EFFE7EA}
 		{8FBF33C3-7394-4090-BC9A-8675A47B3202} = {94DC7011-6213-47E9-9B71-F6E02D3FEF8D}
 		{1F25DB73-28D3-4493-BEC1-DF69813B224A} = {94DC7011-6213-47E9-9B71-F6E02D3FEF8D}
+		{3556C2A2-58BB-4BF6-938B-CAD6A8F053F7} = {C4390E9A-3483-45A8-9A3F-D8DBFF3A38DB}
 	EndGlobalSection
 EndGlobal

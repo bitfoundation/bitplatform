@@ -348,29 +348,16 @@
     <Compile Include="ApiControllers\DtoSetController.cs" />
     <Compile Include="ApiControllers\JobsInfoController.cs" />
     <Compile Include="ApiControllers\UsersSettingsController.cs" />
-    <Compile Include="Contracts\IAutofacDependencyManager.cs" />
-    <Compile Include="Contracts\IOwinActionFilter.cs" />
     <Compile Include="Contracts\Project\IApiAssembliesProvider.cs" />
     <Compile Include="Contracts\Project\IEdmModelProvider.cs" />
-    <Compile Include="Exceptions\IHttpStatusCodeAwareException.cs" />
-    <Compile Include="Exceptions\IKnwoException.cs" />
     <Compile Include="Extensions\IDependencyManangerExtensions.cs" />
-    <Compile Include="Extensions\IOwinContextExtensions.cs" />
-    <Compile Include="Implementations\AutofacDependencyManager.cs" />
-    <Compile Include="Implementations\ConsoleLogStore.cs" />
-    <Compile Include="Implementations\DefaultOwinActionFilterMiddleware.cs" />
+    <Compile Include="Implementations\DefaultBackgroundJobWorker.cs" />
     <Compile Include="Implementations\Project\DefaultApiAssembliesProvider.cs" />
-    <Compile Include="Middlewares\AddAcceptCharsetToRequestHeadersIfNotAnyMiddleware.cs" />
-    <Compile Include="Middlewares\DelegateOwinMiddlewareConfiguration.cs" />
-    <Compile Include="Middlewares\InvokeLogOutMiddleware.cs" />
-    <Compile Include="Middlewares\InvokeLogOutMiddlewareConfiguration.cs" />
     <Compile Include="Middlewares\JobScheduler\Implementations\JobSchedulerInMemoryBackendConfiguration.cs" />
     <Compile Include="Middlewares\SignalR\Contracts\IMessagesHubEvents.cs" />
     <Compile Include="Middlewares\SignalR\Implementations\DefaultMessageHubEvents.cs" />
     <Compile Include="Middlewares\SignalR\Implementations\SignalRAuthorizeConfiguration.cs" />
     <Compile Include="Middlewares\SignalR\Implementations\SignalRSqlServerScaleoutConfiguration.cs" />
-    <Compile Include="Middlewares\SignOutPageMiddleware.cs" />
-    <Compile Include="Middlewares\SignOutPageMiddlewareConfiguration.cs" />
     <Compile Include="Middlewares\WebApi\ActionFilters\OwinActionFilterAttribute.cs" />
     <Compile Include="Middlewares\WebApi\Implementations\ClientCorrelationWebApiConfigurationCustomizer.cs" />
     <Compile Include="Middlewares\WebApi\Implementations\DefaultWebApiAssembliesResolver.cs" />
@@ -391,93 +378,26 @@
     <Compile Include="Middlewares\WebApi\OData\Implementations\DefaultWebApiODataGlobalActionFilterProviders.cs" />
     <Compile Include="Middlewares\WebApi\OData\Implementations\DefaultWebApiODataOwinPipelineInjector.cs" />
     <Compile Include="Middlewares\WebApi\WebApiMiddlewareConfiguration.cs" />
-    <Compile Include="OwinAppStartup.cs" />
     <Compile Include="Contracts\IBackgroundJobWorker.cs" />
-    <Compile Include="Contracts\IDefaultPageModelProvider.cs" />
-    <Compile Include="Contracts\IDefaultHtmlPageProvider.cs" />
-    <Compile Include="Contracts\ITimeZoneManager.cs" />
-    <Compile Include="Contracts\Metadata\IAppMetadataProvider.cs" />
-    <Compile Include="Contracts\Metadata\IDtoMetadataBuilder`TDto.cs" />
-    <Compile Include="Contracts\Metadata\IMetadataBuilder.cs" />
-    <Compile Include="Contracts\Metadata\IProjectMetadataBuilder.cs" />
-    <Compile Include="Contracts\Metadata\IViewMetadataBuilder.cs" />
-    <Compile Include="Exceptions\AppException.cs" />
-    <Compile Include="Exceptions\DomainLogicException.cs" />
-    <Compile Include="Exceptions\BadRequestException.cs" />
-    <Compile Include="Exceptions\ResourceNotFoundException.cs" />
-    <Compile Include="Implementations\DefaultDependencyManager.cs" />
-    <Compile Include="Implementations\DefaultTimeZoneManager.cs" />
-    <Compile Include="Middlewares\InvokeLoginMiddleware.cs" />
-    <Compile Include="Middlewares\InvokeLoginMiddlewareConfiguration.cs" />
     <Compile Include="Middlewares\WebApi\OData\ActionFilters\RequestQSTimeZoneApplierActionFilterAttribute.cs" />
-    <Compile Include="Contracts\IExceptionToHttpErrorMapper.cs" />
     <Compile Include="Middlewares\WebApi\OData\Contracts\IODataModelBuilderProvider.cs" />
     <Compile Include="Middlewares\WebApi\OData\Extensions\DeltaExtensions.cs" />
-    <Compile Include="Implementations\Metadata\DefaultAppMetadataProvider.cs" />
-    <Compile Include="Implementations\Metadata\DefaultDtoMetadataBuilder`TDto.cs" />
-    <Compile Include="Implementations\Metadata\DefaultMetadataBuilder.cs" />
-    <Compile Include="Implementations\Metadata\DefaultProjectMetadataBuilder.cs" />
-    <Compile Include="Implementations\Metadata\DefaultViewMetadataBuilder.cs" />
-    <Compile Include="Metadata\FoundationMetadataBuilder.cs" />
-    <Compile Include="Metadata\Dtos\UserSettingMetadataBuilder.cs" />
-    <Compile Include="Middlewares\MetadataMiddlewareConfiguration.cs" />
-    <Compile Include="Middlewares\MetadatMiddleware.cs" />
     <Compile Include="Middlewares\WebApi\ActionFilters\ExceptionHandlerFilterAttribute.cs" />
     <Compile Include="Middlewares\WebApi\OData\ActionFilters\RequestQSStringCorrectorsApplierActionFilterAttribute.cs" />
     <Compile Include="Middlewares\WebApi\Contracts\IWebApiConfigurationCustomizer.cs" />
-    <Compile Include="Contracts\IUserSettingProvider.cs" />
-    <Compile Include="Implementations\DefaultBackgroundJobWorker.cs" />
-    <Compile Include="Implementations\DefaultCertificateProvider.cs" />
-    <Compile Include="Implementations\DefaultPageModelProvider.cs" />
-    <Compile Include="Implementations\DefaultHtmlPageRazorTemplateConfiguration.cs" />
-    <Compile Include="Implementations\DefaultRequestInformationProvider.cs" />
-    <Compile Include="Implementations\DefaultScopeStatusManager.cs" />
     <Compile Include="Middlewares\SignalR\Implementations\SignalRMessageContentFormatter.cs" />
-    <Compile Include="Implementations\DefaultXmlContentFormatter.cs" />
-    <Compile Include="Implementations\RazorDefaultHtmlPageProvider.cs" />
-    <Compile Include="Implementations\RazorViewEngineConfiguration.cs" />
-    <Compile Include="Implementations\RazorViewTemplate.cs" />
-    <Compile Include="Implementations\WindowsEventsLogStore.cs" />
-    <Compile Include="Middlewares\DefaultPageMiddlewareConfiguration.cs" />
-    <Compile Include="Middlewares\OwinExceptionHandlerMiddlewareConfiguration.cs" />
-    <Compile Include="Contracts\IOwinMiddlewareConfiguration.cs" />
     <Compile Include="Middlewares\JobScheduler\JobSchedulerMiddlewareConfiguration.cs" />
     <Compile Include="Middlewares\JobScheduler\Implementations\SqlAndAzureServiceBusBackendJobServerConfiguration.cs" />
     <Compile Include="Middlewares\JobScheduler\Implementations\DefaultJobsDashboardAuthorizationFilter.cs" />
-    <Compile Include="Middlewares\LogRequestInformationMiddleware.cs" />
-    <Compile Include="Middlewares\LogRequestInformationMiddlewareConfiguration.cs" />
-    <Compile Include="Middlewares\LogUserInformationMiddleware.cs" />
-    <Compile Include="Middlewares\LogUserInformationMiddlewareConfiguration.cs" />
-    <Compile Include="Middlewares\OwinNoCacheResponseMiddleware.cs" />
-    <Compile Include="Middlewares\ReadAuthTokenFromCookieMiddlewareConfiguration.cs" />
-    <Compile Include="Middlewares\RedirectToSsoIfNotLoggedInMiddlewareConfiguration.cs" />
     <Compile Include="Middlewares\SignalR\Contracts\ISignalRConfiguration.cs" />
     <Compile Include="Middlewares\SignalR\Implementations\SignalRAzureServiceBusScaleoutConfiguration.cs" />
     <Compile Include="Middlewares\SignalR\Implementations\SignalRMessageSender.cs" />
-    <Compile Include="Implementations\DefaultLogger.cs" />
-    <Compile Include="Implementations\DefaultRandomStringProvider.cs" />
-    <Compile Include="Implementations\DefaultUserInformationProvider.cs" />
-    <Compile Include="Implementations\DefaultJsonContentFormatter.cs" />
-    <Compile Include="Implementations\DefaultAppEnvironmentProvider.cs" />
-    <Compile Include="Implementations\DefaultPathProvider.cs" />
-    <Compile Include="Implementations\DefaultDependenciesManagerProvider.cs" />
     <Compile Include="Implementations\Project\FoundationEdmModelProvider.cs" />
-    <Compile Include="Middlewares\DefaultPageMiddleware.cs" />
-    <Compile Include="Middlewares\AutofacDependencyInjectionMiddlewareConfiguration.cs" />
-    <Compile Include="Middlewares\OwinExceptionHandlerMiddleware.cs" />
-    <Compile Include="Middlewares\RedirectToSsoIfNotLoggedInMiddleware.cs" />
     <Compile Include="Middlewares\SignalR\MessagesHub.cs" />
     <Compile Include="Middlewares\SignalR\Implementations\DefaultSignalRAssemblyLocator.cs" />
     <Compile Include="Middlewares\SignalR\SignalRMiddlewareConfiguration.cs" />
-    <Compile Include="Middlewares\SignInPageMiddleware.cs" />
-    <Compile Include="Middlewares\SignInPageMiddlewareConfiguration.cs" />
-    <Compile Include="Middlewares\SingleSignOnMiddlewareConfiguration.cs" />
-    <Compile Include="Middlewares\ReadAuthTokenFromCookieMiddleware.cs" />
-    <Compile Include="Middlewares\OwinCacheResponseMiddleware.cs" />
-    <Compile Include="Middlewares\StaticFilesMiddlewareConfiguration.cs" />
     <Compile Include="Middlewares\WebApi\ActionFilters\LogActionArgsFilterAttribute.cs" />
     <Compile Include="Middlewares\WebApi\ActionFilters\RequestModelStateValidatorActionFilterAttribute.cs" />
-    <Compile Include="Implementations\DefaultExceptionToHttpErrorMapper.cs" />
     <Compile Include="Middlewares\WebApi\OData\Implementations\DefaultODataModelBuilderProvider.cs" />
     <Compile Include="Middlewares\WebApi\Implementations\DefaultWebApiGlobalActionFilterProviders.cs" />
     <Compile Include="Middlewares\WebApi\OData\Implementations\DefaultWebApiODataControllerActionSelector.cs" />
@@ -489,7 +409,6 @@
     <Compile Include="Middlewares\WebApi\OData\Visitors\TraverserQueryNodeVisitor.cs" />
     <Compile Include="Middlewares\WebApi\OData\WebApiODataMiddlewareConfiguration.cs" />
     <Compile Include="Middlewares\WebApi\Implementations\DefaultWebApiTraceWritter.cs" />
-    <Compile Include="Models\DefaultPageModel.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -511,10 +430,12 @@
       <Project>{5fac42f7-1179-440d-8be0-ffd364639943}</Project>
       <Name>Bit.Model</Name>
     </ProjectReference>
+    <ProjectReference Include="..\Bit.Owin\Bit.Owin.csproj">
+      <Project>{3556c2a2-58bb-4bf6-938b-cad6a8f053f7}</Project>
+      <Name>Bit.Owin</Name>
+    </ProjectReference>
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Metadata\Views\" />
-  </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

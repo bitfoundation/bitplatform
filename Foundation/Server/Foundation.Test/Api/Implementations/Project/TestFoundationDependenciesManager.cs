@@ -3,6 +3,7 @@ using Foundation.Api.Contracts.Metadata;
 using Foundation.Api.Implementations;
 using Foundation.Api.Implementations.Metadata;
 using Foundation.Api.Implementations.Project;
+using Foundation.Api.Metadata;
 using Foundation.Api.Middlewares;
 using Foundation.Api.Middlewares.JobScheduler.Implementations;
 using Foundation.Api.Middlewares.SignalR;
@@ -114,7 +115,7 @@ namespace Foundation.Test.Api.Implementations.Project
             dependencyManager.RegisterBackgroundJobWorkerUsingDefaultConfiguration<JobSchedulerInMemoryBackendConfiguration>();
 
             dependencyManager.Register<IAppMetadataProvider, DefaultAppMetadataProvider>(lifeCycle: DependencyLifeCycle.SingleInstance);
-            dependencyManager.RegisterMetadata(typeof(FoundationEdmModelProvider).GetTypeInfo().Assembly, typeof(TestEdmModelProvider).GetTypeInfo().Assembly);
+            dependencyManager.RegisterMetadata(typeof(FoundationMetadataBuilder).GetTypeInfo().Assembly, typeof(TestEdmModelProvider).GetTypeInfo().Assembly);
 
             dependencyManager.RegisterGeneric(typeof(IRepository<>).GetTypeInfo(), typeof(TestEfRepository<>).GetTypeInfo(), DependencyLifeCycle.InstancePerLifetimeScope);
 

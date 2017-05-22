@@ -161,6 +161,10 @@
       <Name>Foundation.Api</Name>
       <Private>False</Private>
     </ProjectReference>
+    <ProjectReference Include="..\..\..\Foundation\Server\Bit.Owin\Bit.Owin.csproj">
+      <Project>{3556c2a2-58bb-4bf6-938b-cad6a8f053f7}</Project>
+      <Name>Bit.Owin</Name>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <None Include="Bit-Foundation.snk" />

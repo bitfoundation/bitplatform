@@ -4,9 +4,9 @@ using System.Reflection;
 using Autofac;
 using Autofac.Builder;
 using Foundation.Core.Contracts;
+using Foundation.Api.Contracts;
 using Autofac.Integration.SignalR;
 using Autofac.Integration.WebApi;
-using Foundation.Api.Contracts;
 
 namespace Foundation.Api.Implementations
 {
@@ -193,18 +193,20 @@ namespace Foundation.Api.Implementations
         public virtual IDependencyManager RegisterHubs(params Assembly[] assemblies)
         {
             GetContainerBuidler().RegisterHubs(assemblies).SingleInstance();
+
             return this;
         }
 
         public virtual IDependencyManager RegisterApiControllers(params Assembly[] assemblies)
         {
-            _containerBuilder.RegisterApiControllers(assemblies).PropertiesAutowired();
+            GetContainerBuidler().RegisterApiControllers(assemblies).PropertiesAutowired();
+
             return this;
         }
 
         public IDependencyManager RegisterGeneric(TypeInfo contractType, TypeInfo serviceType, DependencyLifeCycle lifeCycle)
         {
-            IRegistrationBuilder<object, ReflectionActivatorData, DynamicRegistrationStyle> registration = GetContainerBuidler().RegisterGeneric(serviceType).As(contractType);
+            IRegistrationBuilder<object, ReflectionActivatorData, DynamicRegistrationStyle> registration = GetContainerBuidler().RegisterGeneric(serviceType).PropertiesAutowired().As(contractType);
 
             if (lifeCycle == DependencyLifeCycle.SingleInstance)
                 registration = registration.SingleInstance();
@@ -217,7 +219,7 @@ namespace Foundation.Api.Implementations
         public virtual IDependencyManager RegisterUsing<T>(Func<T> factory, string name = null,
             DependencyLifeCycle lifeCycle = DependencyLifeCycle.InstancePerLifetimeScope, bool overwriteExciting = true)
         {
-            IRegistrationBuilder<T, SimpleActivatorData, SingleRegistrationStyle> registration = _containerBuilder.Register((context, parameter) => factory());
+            IRegistrationBuilder<T, SimpleActivatorData, SingleRegistrationStyle> registration = GetContainerBuidler().Register((context, parameter) => factory());
 
             if (overwriteExciting == false)
                 registration = registration.PreserveExistingDefaults();
@@ -242,6 +244,7 @@ namespace Foundation.Api.Implementations
                 throw new ArgumentNullException(nameof(contractType));
 
             var registration = GetContainerBuidler().RegisterType(serviceType)
+                    .PropertiesAutowired()
                     .As(contractType);
 
             if (overwriteExciting == false)
