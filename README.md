@@ -5,15 +5,13 @@ Build Instructions:
 
 Requirements: 
 
-  1- Visual Studio 2015 Update 3
+  1- Visual Studio 2015 Update 3 or Visual Studio 2017 Update 2 (ASP.NET Core is supported on Visual Studio 2017 only)
   
-  2- TypeScript 2.2
+  2- TypeScript 2.2 for Visual Studio
   
-  3- .NET Core VS 2015 Update 3 Tooling Preview 2 (Optional Requirement)
+  3- Gulp & Bowser installed globally using npm
   
-  4- Gulp & Bowser installed globally using Node-JS & NPM
-  
-  5- Git
+  4- Git
   
 Steps:
 
