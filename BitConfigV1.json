@@ -16,7 +16,7 @@
             "Name": "Bit.Model"
           },
           {
-            "Name": "Foundation.Api"
+            "Name": "Bit.Api"
           }
         ],
         "DestinationProject": {

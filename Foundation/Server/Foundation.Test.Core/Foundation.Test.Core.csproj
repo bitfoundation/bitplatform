@@ -146,6 +146,10 @@
     <Compile Include="TestEnvironmentBase.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Bit.Api\Bit.Api.csproj">
+      <Project>{05a90af8-a22c-480c-865f-db46b3a65699}</Project>
+      <Name>Bit.Api</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Bit.Core\Bit.Core.csproj">
       <Project>{fcda72a2-d377-4aa1-a8c5-e6c6805bcb64}</Project>
       <Name>Bit.Core</Name>

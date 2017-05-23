@@ -329,62 +329,12 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="ApiControllers\DefaultDtoSetController.cs" />
-    <Compile Include="ApiControllers\DtoController.cs" />
-    <Compile Include="ApiControllers\ClientsLogsController.cs" />
-    <Compile Include="ApiControllers\DtoSetController.cs" />
-    <Compile Include="ApiControllers\JobsInfoController.cs" />
-    <Compile Include="ApiControllers\UsersSettingsController.cs" />
-    <Compile Include="Contracts\Project\IApiAssembliesProvider.cs" />
-    <Compile Include="Contracts\Project\IEdmModelProvider.cs" />
     <Compile Include="Extensions\IDependencyManangerExtensions.cs" />
     <Compile Include="Implementations\DefaultBackgroundJobWorker.cs" />
-    <Compile Include="Implementations\Project\DefaultApiAssembliesProvider.cs" />
     <Compile Include="Middlewares\JobScheduler\Implementations\JobSchedulerInMemoryBackendConfiguration.cs" />
-    <Compile Include="Middlewares\WebApi\ActionFilters\OwinActionFilterAttribute.cs" />
-    <Compile Include="Middlewares\WebApi\Implementations\ClientCorrelationWebApiConfigurationCustomizer.cs" />
-    <Compile Include="Middlewares\WebApi\Implementations\DefaultWebApiAssembliesResolver.cs" />
-    <Compile Include="Middlewares\WebApi\Implementations\DefaultWebApiOwinPipelineInjector.cs" />
-    <Compile Include="Middlewares\WebApi\Implementations\DelegateGlobalActionFiltersProvider.cs" />
-    <Compile Include="Middlewares\WebApi\OData\ActionFilters\DefaultODataAuthorizeAttribute.cs" />
-    <Compile Include="Middlewares\WebApi\OData\ActionFilters\DefaultGlobalEnableQueryActionFilterProvider.cs" />
-    <Compile Include="Middlewares\WebApi\OData\ActionFilters\ODataEnableQueryAttribute.cs" />
-    <Compile Include="Middlewares\WebApi\OData\Contracts\IODataContainerBuilderCustomizer.cs" />
-    <Compile Include="Middlewares\WebApi\Contracts\IWebApiOwinPipelineInjector.cs" />
-    <Compile Include="Middlewares\WebApi\OData\DefaultODataParameterDeserializer.cs" />
-    <Compile Include="Middlewares\WebApi\OData\ExtendedODataDeserializerProvider.cs" />
-    <Compile Include="Middlewares\WebApi\OData\DefaultODataEnumDeserializer.cs" />
-    <Compile Include="Middlewares\WebApi\OData\DefaultODataEnumSerializer.cs" />
-    <Compile Include="Middlewares\WebApi\OData\Implementations\DefaultODataContainerBuilderCustomizer.cs" />
-    <Compile Include="Middlewares\WebApi\OData\Contracts\IAutoEdmBuilder.cs" />
-    <Compile Include="Middlewares\WebApi\OData\Implementations\DefaultAutoEdmBuilder.cs" />
-    <Compile Include="Middlewares\WebApi\OData\Implementations\DefaultWebApiODataGlobalActionFilterProviders.cs" />
-    <Compile Include="Middlewares\WebApi\OData\Implementations\DefaultWebApiODataOwinPipelineInjector.cs" />
-    <Compile Include="Middlewares\WebApi\WebApiMiddlewareConfiguration.cs" />
-    <Compile Include="Contracts\IBackgroundJobWorker.cs" />
-    <Compile Include="Middlewares\WebApi\OData\ActionFilters\RequestQSTimeZoneApplierActionFilterAttribute.cs" />
-    <Compile Include="Middlewares\WebApi\OData\Contracts\IODataModelBuilderProvider.cs" />
-    <Compile Include="Middlewares\WebApi\OData\Extensions\DeltaExtensions.cs" />
-    <Compile Include="Middlewares\WebApi\ActionFilters\ExceptionHandlerFilterAttribute.cs" />
-    <Compile Include="Middlewares\WebApi\OData\ActionFilters\RequestQSStringCorrectorsApplierActionFilterAttribute.cs" />
-    <Compile Include="Middlewares\WebApi\Contracts\IWebApiConfigurationCustomizer.cs" />
     <Compile Include="Middlewares\JobScheduler\JobSchedulerMiddlewareConfiguration.cs" />
     <Compile Include="Middlewares\JobScheduler\Implementations\SqlAndAzureServiceBusBackendJobServerConfiguration.cs" />
     <Compile Include="Middlewares\JobScheduler\Implementations\DefaultJobsDashboardAuthorizationFilter.cs" />
-    <Compile Include="Implementations\Project\FoundationEdmModelProvider.cs" />
-    <Compile Include="Middlewares\WebApi\ActionFilters\LogActionArgsFilterAttribute.cs" />
-    <Compile Include="Middlewares\WebApi\ActionFilters\RequestModelStateValidatorActionFilterAttribute.cs" />
-    <Compile Include="Middlewares\WebApi\OData\Implementations\DefaultODataModelBuilderProvider.cs" />
-    <Compile Include="Middlewares\WebApi\Implementations\DefaultWebApiGlobalActionFilterProviders.cs" />
-    <Compile Include="Middlewares\WebApi\OData\Implementations\DefaultWebApiODataControllerActionSelector.cs" />
-    <Compile Include="Middlewares\WebApi\OData\DefaultODataActionPayloadDeserializer.cs" />
-    <Compile Include="Middlewares\WebApi\OData\DefaultODataResourceDeserializer.cs" />
-    <Compile Include="Middlewares\WebApi\OData\DefaultODataPrimitiveSerializer.cs" />
-    <Compile Include="Middlewares\WebApi\OData\DefaultODataUriResolver.cs" />
-    <Compile Include="Middlewares\WebApi\OData\Visitors\EmptyQueryNodeVisitor.cs" />
-    <Compile Include="Middlewares\WebApi\OData\Visitors\TraverserQueryNodeVisitor.cs" />
-    <Compile Include="Middlewares\WebApi\OData\WebApiODataMiddlewareConfiguration.cs" />
-    <Compile Include="Middlewares\WebApi\Implementations\DefaultWebApiTraceWritter.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

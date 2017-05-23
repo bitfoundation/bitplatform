@@ -7,7 +7,7 @@ using Foundation.Model.DomainModels;
 
 namespace Foundation.Api.ApiControllers
 {
-    public class JobsInfoController : DtoController<JobInfo>
+    public class JobsInfoController : DtoController<JobInfoDto>
     {
         private readonly IBackgroundJobWorker _backgroundJobWorker;
 
@@ -25,12 +25,19 @@ namespace Foundation.Api.ApiControllers
         }
 
         [Get]
-        public virtual async Task<JobInfo> Get(string key, CancellationToken cancellationToken)
+        public virtual async Task<JobInfoDto> Get(string key, CancellationToken cancellationToken)
         {
             if (key == null)
                 throw new ArgumentNullException(nameof(key));
 
-            return await _backgroundJobWorker.GetJobInfoAsync(key, cancellationToken);
+            JobInfo jobInfo = await _backgroundJobWorker.GetJobInfoAsync(key, cancellationToken);
+
+            return new JobInfoDto
+            {
+                Id = jobInfo.Id,
+                CreatedAt = jobInfo.CreatedAt,
+                State = jobInfo.State
+            };
         }
     }
 }

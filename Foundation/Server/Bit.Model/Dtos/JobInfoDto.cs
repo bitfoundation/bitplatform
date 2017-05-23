@@ -5,7 +5,7 @@ using Foundation.Model.Contracts;
 namespace Foundation.Model.DomainModels
 {
     [Serializable]
-    public class JobInfo : IDto, IEntity
+    public class JobInfoDto : IDto
     {
         [Key]
         public virtual string Id { get; set; }

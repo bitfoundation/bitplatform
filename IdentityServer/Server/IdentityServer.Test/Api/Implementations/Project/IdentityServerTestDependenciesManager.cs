@@ -2,7 +2,6 @@
 using Foundation.Api.Contracts.Metadata;
 using Foundation.Api.Implementations;
 using Foundation.Api.Implementations.Metadata;
-using Foundation.Api.Implementations.Project;
 using Foundation.Api.Metadata;
 using Foundation.Api.Middlewares;
 using Foundation.Core.Contracts;

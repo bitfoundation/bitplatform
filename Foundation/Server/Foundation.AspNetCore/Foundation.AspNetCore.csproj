@@ -12,6 +12,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Bit.Api\Bit.Api.csproj" />
     <ProjectReference Include="..\Bit.Data\Bit.Data.csproj" />
     <ProjectReference Include="..\Bit.Owin\Bit.Owin.csproj" />
     <ProjectReference Include="..\Foundation.Api\Foundation.Api.csproj" />
