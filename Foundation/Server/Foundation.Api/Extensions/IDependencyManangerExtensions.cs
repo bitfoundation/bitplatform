@@ -1,17 +1,11 @@
-﻿using Autofac.Integration.SignalR;
-using Autofac.Integration.WebApi;
-using AutoMapper;
+﻿using Autofac.Integration.WebApi;
 using Foundation.Api.Contracts;
-using Foundation.Api.Contracts.Metadata;
 using Foundation.Api.Contracts.Project;
 using Foundation.Api.Implementations;
 using Foundation.Api.Implementations.Project;
 using Foundation.Api.Middlewares;
 using Foundation.Api.Middlewares.JobScheduler;
 using Foundation.Api.Middlewares.JobScheduler.Implementations;
-using Foundation.Api.Middlewares.SignalR;
-using Foundation.Api.Middlewares.SignalR.Contracts;
-using Foundation.Api.Middlewares.SignalR.Implementations;
 using Foundation.Api.Middlewares.WebApi;
 using Foundation.Api.Middlewares.WebApi.ActionFilters;
 using Foundation.Api.Middlewares.WebApi.Contracts;
@@ -20,13 +14,9 @@ using Foundation.Api.Middlewares.WebApi.OData;
 using Foundation.Api.Middlewares.WebApi.OData.ActionFilters;
 using Foundation.Api.Middlewares.WebApi.OData.Contracts;
 using Foundation.Api.Middlewares.WebApi.OData.Implementations;
-using Foundation.DataAccess.Implementations;
-using Foundation.Model.Contracts;
 using Hangfire;
 using Hangfire.Dashboard;
-using Owin;
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Web.Http;
@@ -36,31 +26,6 @@ namespace Foundation.Core.Contracts
 {
     public static class IDependencyManangerExtensions
     {
-        public static IDependencyManager RegisterSignalRMiddlewareUsingDefaultConfiguration<TMessagesHubEvents>(this IDependencyManager dependencyManager, params Assembly[] hubsAssemblies)
-            where TMessagesHubEvents : class, IMessagesHubEvents
-        {
-            if (dependencyManager == null)
-                throw new ArgumentNullException(nameof(dependencyManager));
-
-            hubsAssemblies = hubsAssemblies.Any() ? hubsAssemblies : new[] { Assembly.GetCallingAssembly(), typeof(MessagesHub).GetTypeInfo().Assembly };
-
-            dependencyManager.RegisterHubs(hubsAssemblies);
-            dependencyManager.Register<IMessagesHubEvents, TMessagesHubEvents>();
-            dependencyManager.Register<IMessageSender, SignalRMessageSender>(lifeCycle: DependencyLifeCycle.SingleInstance);
-            dependencyManager.Register<IMessageContentFormatter, SignalRMessageContentFormatter>(lifeCycle: DependencyLifeCycle.SingleInstance);
-            dependencyManager.Register<Microsoft.AspNet.SignalR.IDependencyResolver, AutofacDependencyResolver>(lifeCycle: DependencyLifeCycle.SingleInstance);
-            dependencyManager.RegisterInstance<Microsoft.AspNet.SignalR.Hubs.IAssemblyLocator>(new DefaultSignalRAssemblyLocator(hubsAssemblies));
-
-            dependencyManager.RegisterOwinMiddleware<SignalRMiddlewareConfiguration>();
-
-            return dependencyManager;
-        }
-
-        public static IDependencyManager RegisterSignalRMiddlewareUsingDefaultConfiguration(this IDependencyManager dependencyManager, params Assembly[] hubsAssemblies)
-        {
-            return RegisterSignalRMiddlewareUsingDefaultConfiguration<DefaultMessageHubEvents>(dependencyManager, hubsAssemblies);
-        }
-
         public static IDependencyManager RegisterBackgroundJobWorkerUsingDefaultConfiguration<TJobSchedulerInMemoryBackendConfiguration>(this IDependencyManager dependencyManager)
             where TJobSchedulerInMemoryBackendConfiguration : class, IAppEvents
         {
@@ -143,17 +108,6 @@ namespace Foundation.Core.Contracts
             dependencyManager.Register<System.Web.Http.Dependencies.IDependencyResolver, AutofacWebApiDependencyResolver>(lifeCycle: DependencyLifeCycle.SingleInstance);
             dependencyManager.Register<IWebApiOwinPipelineInjector, DefaultWebApiOwinPipelineInjector>(lifeCycle: DependencyLifeCycle.SingleInstance);
             dependencyManager.RegisterOwinMiddleware<WebApiMiddlewareConfiguration>(name);
-
-            return dependencyManager;
-        }
-
-        public static IDependencyManager RegisterSignalRConfiguration<TSignalRConfiguration>(this IDependencyManager dependencyManager)
-            where TSignalRConfiguration : class, ISignalRConfiguration
-        {
-            if (dependencyManager == null)
-                throw new ArgumentNullException(nameof(dependencyManager));
-
-            dependencyManager.Register<ISignalRConfiguration, TSignalRConfiguration>(lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExciting: false);
 
             return dependencyManager;
         }

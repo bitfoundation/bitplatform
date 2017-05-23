@@ -162,6 +162,10 @@
       <Project>{3556c2a2-58bb-4bf6-938b-cad6a8f053f7}</Project>
       <Name>Bit.Owin</Name>
     </ProjectReference>
+    <ProjectReference Include="..\Bit.Signalr\Bit.Signalr.csproj">
+      <Project>{6f4ea6b3-bcc9-4137-8abe-2b4847c530be}</Project>
+      <Name>Bit.Signalr</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Foundation.Api\Foundation.Api.csproj">
       <Project>{469d5d14-b564-4af4-a36c-b93c823156b9}</Project>
       <Name>Foundation.Api</Name>

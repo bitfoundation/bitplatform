@@ -54,10 +54,6 @@
       <HintPath>..\..\..\packages\Autofac.Owin.4.0.0\lib\net45\Autofac.Integration.Owin.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="Autofac.Integration.SignalR, Version=4.0.0.0, Culture=neutral, PublicKeyToken=17863af14b0044da, processorArchitecture=MSIL">
-      <HintPath>..\..\..\packages\Autofac.SignalR2.4.0.0\lib\net45\Autofac.Integration.SignalR.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
     <Reference Include="Autofac.Integration.WebApi, Version=4.0.0.0, Culture=neutral, PublicKeyToken=17863af14b0044da, processorArchitecture=MSIL">
       <HintPath>..\..\..\packages\Autofac.WebApi2.4.0.1\lib\net45\Autofac.Integration.WebApi.dll</HintPath>
       <Private>True</Private>
@@ -103,15 +99,6 @@
     </Reference>
     <Reference Include="IdentityServer3.AccessTokenValidation, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\..\..\packages\IdentityServer3.AccessTokenValidation.2.15.0\lib\net45\IdentityServer3.AccessTokenValidation.dll</HintPath>
-    </Reference>
-    <Reference Include="Microsoft.AspNet.SignalR.Core, Version=2.2.2.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>..\..\..\packages\Microsoft.AspNet.SignalR.Core.2.2.2\lib\net45\Microsoft.AspNet.SignalR.Core.dll</HintPath>
-    </Reference>
-    <Reference Include="Microsoft.AspNet.SignalR.ServiceBus, Version=2.2.2.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>..\..\..\packages\Microsoft.AspNet.SignalR.ServiceBus.2.2.2\lib\net45\Microsoft.AspNet.SignalR.ServiceBus.dll</HintPath>
-    </Reference>
-    <Reference Include="Microsoft.AspNet.SignalR.SqlServer, Version=2.2.2.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>..\..\..\packages\Microsoft.AspNet.SignalR.SqlServer.2.2.2\lib\net45\Microsoft.AspNet.SignalR.SqlServer.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="Microsoft.Extensions.DependencyInjection, Version=1.1.1.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
@@ -354,10 +341,6 @@
     <Compile Include="Implementations\DefaultBackgroundJobWorker.cs" />
     <Compile Include="Implementations\Project\DefaultApiAssembliesProvider.cs" />
     <Compile Include="Middlewares\JobScheduler\Implementations\JobSchedulerInMemoryBackendConfiguration.cs" />
-    <Compile Include="Middlewares\SignalR\Contracts\IMessagesHubEvents.cs" />
-    <Compile Include="Middlewares\SignalR\Implementations\DefaultMessageHubEvents.cs" />
-    <Compile Include="Middlewares\SignalR\Implementations\SignalRAuthorizeConfiguration.cs" />
-    <Compile Include="Middlewares\SignalR\Implementations\SignalRSqlServerScaleoutConfiguration.cs" />
     <Compile Include="Middlewares\WebApi\ActionFilters\OwinActionFilterAttribute.cs" />
     <Compile Include="Middlewares\WebApi\Implementations\ClientCorrelationWebApiConfigurationCustomizer.cs" />
     <Compile Include="Middlewares\WebApi\Implementations\DefaultWebApiAssembliesResolver.cs" />
@@ -385,17 +368,10 @@
     <Compile Include="Middlewares\WebApi\ActionFilters\ExceptionHandlerFilterAttribute.cs" />
     <Compile Include="Middlewares\WebApi\OData\ActionFilters\RequestQSStringCorrectorsApplierActionFilterAttribute.cs" />
     <Compile Include="Middlewares\WebApi\Contracts\IWebApiConfigurationCustomizer.cs" />
-    <Compile Include="Middlewares\SignalR\Implementations\SignalRMessageContentFormatter.cs" />
     <Compile Include="Middlewares\JobScheduler\JobSchedulerMiddlewareConfiguration.cs" />
     <Compile Include="Middlewares\JobScheduler\Implementations\SqlAndAzureServiceBusBackendJobServerConfiguration.cs" />
     <Compile Include="Middlewares\JobScheduler\Implementations\DefaultJobsDashboardAuthorizationFilter.cs" />
-    <Compile Include="Middlewares\SignalR\Contracts\ISignalRConfiguration.cs" />
-    <Compile Include="Middlewares\SignalR\Implementations\SignalRAzureServiceBusScaleoutConfiguration.cs" />
-    <Compile Include="Middlewares\SignalR\Implementations\SignalRMessageSender.cs" />
     <Compile Include="Implementations\Project\FoundationEdmModelProvider.cs" />
-    <Compile Include="Middlewares\SignalR\MessagesHub.cs" />
-    <Compile Include="Middlewares\SignalR\Implementations\DefaultSignalRAssemblyLocator.cs" />
-    <Compile Include="Middlewares\SignalR\SignalRMiddlewareConfiguration.cs" />
     <Compile Include="Middlewares\WebApi\ActionFilters\LogActionArgsFilterAttribute.cs" />
     <Compile Include="Middlewares\WebApi\ActionFilters\RequestModelStateValidatorActionFilterAttribute.cs" />
     <Compile Include="Middlewares\WebApi\OData\Implementations\DefaultODataModelBuilderProvider.cs" />
