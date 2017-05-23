@@ -380,5 +380,92 @@
   {
     "name": "md-chip",
     "description": "<md-chip> is a component used within <md-chips> and is responsible for rendering individual chips."
+  },
+  {
+    "name": "md-chips",
+    "description": "<md-chips> is an input component for building lists of strings or objects. The list items are displayed as 'chips'. This component can make use of an <input> element or an <md-autocomplete> element.",
+    "attributes": [
+      {
+        "name": "md-transform-chip",
+        "description": "An expression of form myFunction($chip) that when called expects one of the following return values:an object representing the $chip input string undefined to simply add the $chip input string, or null to prevent the chip from being appended."
+      },
+      {
+        "name": "md-require-match",
+        "description": "If true, and the chips template contains an autocomplete, only allow selection of pre-defined chips (i.e. you cannot add new ones).",
+        "type": "boolean",
+        "values": [
+          "true",
+          "false"
+        ]
+      },
+      {
+        "name": "md-removable",
+        "description": "Enables or disables the deletion of chips through the removal icon or the Delete/Backspace key. Defaults to true.",
+        "type": "boolean",
+        "values": [
+          "true",
+          "false"
+        ]
+      },
+      {
+        "name": "readonly",
+        "description": "Disables list manipulation (deleting or adding list items), hiding the input and delete buttons. If no ng-model is provided, the chips will automatically be marked as readonly.When md-removable is not defined, the md-remove behavior will be overwritten and disabled.",
+        "type": "boolean",
+        "values": [
+          "true",
+          "false"
+        ]
+      },
+      {
+        "name": "md-enable-chip-edit",
+        "description": "Set this to true to enable editing of chip contents. The user can go into edit mode with pressing space, enter, or double clicking on the chip. Chip edit is only supported for chips with basic template."
+      },
+      {
+        "name": "md-max-chips",
+        "description": "The maximum number of chips allowed to add through user input.The validation property md-max-chips can be used when the max chips amount is reached.",
+        "type": "number"
+      },
+      {
+        "name": "md-add-on-blur",
+        "description": "When set to true, remaining text inside of the input will be converted into a new chip on blur.",
+        "type": "boolean",
+        "values": [
+          "true",
+          "false"
+        ]
+      },
+      {
+        "name": "md-on-add",
+        "description": "An expression which will be called when a chip has been added."
+      },
+      {
+        "name": "md-on-remove",
+        "description": "An expression which will be called when a chip has been removed."
+      },
+      {
+        "name": "md-on-select",
+        "description": "An expression which will be called when a chip is selected."
+      },
+      {
+        "name": "input-aria-label",
+        "description": "A string read by screen readers to identify the input."
+      },
+      {
+        "name": "container-hint",
+        "description": "A string read by screen readers informing users of how to navigate the chips. Used in readonly mode."
+      },
+      {
+        "name": "delete-button-label",
+        "description": "A label for the delete button. Also hidden and read by screen readers."
+      },
+      {
+        "name": "md-separator-keys",
+        "description": "An array of key codes used to separate chips."
+      },
+      {
+        "name": "md-chip-append-delay",
+        "description": "The number of milliseconds that the component will select a newly appended chip before allowing a user to type into the input. This is necessary for keyboard accessibility for screen readers. It defaults to 300ms and any number less than 300 can cause issues with screen readers (particularly JAWS and sometimes NVDA)."
+      }
+    ]
   }
 ]
