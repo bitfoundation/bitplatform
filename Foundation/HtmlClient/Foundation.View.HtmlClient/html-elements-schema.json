@@ -1,4 +1,4 @@
-﻿[
+[
   {
     "name": "rad-combo",
     "attributes": [
@@ -46,7 +46,11 @@
         "name": "k-filter",
         "description": "The filtering method used to determine the suggestions for the current value.",
         "type": "enum",
-        "values": [ "'contains'", "'startswith'", "'endswith'" ]
+        "values": [
+          "'contains'",
+          "'startswith'",
+          "'endswith'"
+        ]
       },
       {
         "name": "k-ignore-case",
@@ -102,7 +106,10 @@
     "attributes": [
       {
         "name": "is-date-time",
-        "values": [ "true", "false" ],
+        "values": [
+          "true",
+          "false"
+        ],
         "type": "boolean",
         "description": "Show/accept date or date time. default: false >> date only."
       }
@@ -133,6 +140,196 @@
       {
         "name": "element-selector",
         "description": "For example #someElement"
+      }
+    ]
+  },
+  {
+    "name": "md-button",
+    "description": "<md-button> is a button directive with optional ink ripples (default enabled). If you supply a href or ng-href attribute, it will become an <a> element. Otherwise, it will become a <button> element.",
+    "attributes": [
+      {
+        "name": "md-no-ink",
+        "type": "boolean",
+        "description": "If present, disable ripple ink effects.",
+        "values": [
+          "true",
+          "false"
+        ]
+      },
+      {
+        "name": "md-ripple-size",
+        "description": "Overrides the default ripple size logic.",
+        "type": "enum",
+        "values": [
+          "full",
+          "partial",
+          "auto"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "md-autocomplete",
+    "description": "<md-autocomplete> is a special input component with a drop-down of all possible matches to a custom query.",
+    "attributes": [
+      {
+        "name": "md-items",
+        "description": "An expression in the format of item in results to iterate over matches for your search.The results expression can be also a function, which returns the results synchronously or asynchronously (per Promise)."
+      },
+      {
+        "name": "md-selected-item-change",
+        "description": "An expression to be run each time a new item is selected."
+      },
+      {
+        "name": "md-search-text-change",
+        "description": "An expression to be run each time the search text updates."
+      },
+      {
+        "name": "md-search-text",
+        "description": "A model to bind the search query text to."
+      },
+      {
+        "name": "md-selected-item",
+        "description": "A model to bind the selected item to."
+      },
+      {
+        "name": "md-item-text",
+        "description": "An expression that will convert your object to a single string."
+      },
+      {
+        "name": "md-no-cache",
+        "type": "boolean",
+        "description": "Disables the internal caching that happens in autocomplete.",
+        "values": [
+          "true",
+          "false"
+        ]
+      },
+      {
+        "name": "md-require-match",
+        "type": "boolean",
+        "description": "When set to true, the autocomplete will add a validator, which will evaluate to false, when no item is currently selected.",
+        "values": [
+          "true",
+          "false"
+        ]
+      },
+      {
+        "name": "md-min-length",
+        "type": "number",
+        "description": "Specifies the minimum length of text before autocomplete will make suggestions."
+      },
+      {
+        "name": "md-delay",
+        "type": "number",
+        "description": "Specifies the amount of time (in milliseconds) to wait before looking for results."
+      },
+      {
+        "name": "md-clear-button",
+        "type": "boolean",
+        "description": "Whether the clear button for the autocomplete input should show up or not.",
+        "values": [
+          "true",
+          "false"
+        ]
+      },
+      {
+        "name": "md-autofocus",
+        "type": "boolean",
+        "description": "If true, the autocomplete will be automatically focused when a $mdDialog, $mdBottomsheet or $mdSidenav, which contains the autocomplete, is opening.Also the autocomplete will immediately focus the input element.",
+        "values": [
+          "true",
+          "false"
+        ]
+      },
+      {
+        "name": "md-no-asterisk",
+        "type": "boolean",
+        "description": "When present, asterisk will not be appended to the floating label.",
+        "values": [
+          "true",
+          "false"
+        ]
+      },
+      {
+        "name": "md-autoselect",
+        "type": "boolean",
+        "description": "If set to true, the first item will be automatically selected in the dropdown upon open.",
+        "values": [
+          "true",
+          "false"
+        ]
+      },
+      {
+        "name": "md-menu-class",
+        "description": "This will be applied to the dropdown menu for styling."
+      },
+      {
+        "name": "md-floating-label",
+        "description": "This will add a floating label to autocomplete and wrap it in md-input-container."
+      },
+      {
+        "name": "md-input-name",
+        "description": "The name attribute given to the input element to be used with FormController."
+      },
+      {
+        "name": "md-select-on-focus",
+        "description": "When present the inputs text will be automatically selected on focus."
+      },
+      {
+        "name": "md-input-id",
+        "description": "An ID to be added to the input element."
+      },
+      {
+        "name": "md-input-minlength",
+        "type": "number",
+        "description": "The minimum length for the input's value for validation."
+      },
+      {
+        "name": "md-input-maxlength",
+        "type": "number",
+        "description": "The maximum length for the input's value for validation."
+      },
+      {
+        "name": "md-select-on-match",
+        "type": "boolean",
+        "description": "When set, autocomplete will automatically select exact the item if the search text is an exact match.Exact match means that there is only one match showing up.",
+        "values": [
+          "true",
+          "false"
+        ]
+      },
+      {
+        "name": "md-match-case-insensitive",
+        "type": "boolean",
+        "description": "When set and using md-select-on-match, autocomplete will select on case-insensitive match.",
+        "values": [
+          "true",
+          "false"
+        ]
+      },
+      {
+        "name": "md-escape-options",
+        "type": "enum",
+        "description": "Override escape key logic. Default is blur clear.",
+        "values": [
+          "blur",
+          "clear",
+          "none"
+        ]
+      },
+      {
+        "name": "md-dropdown-items",
+        "description": "Specifies the maximum amount of items to be shown in the dropdown.When the dropdown doesn't fit into the viewport, the dropdown will shrink as less as possible.."
+      },
+      {
+        "name": "md-dropdown-position",
+        "type": "enum",
+        "description": "Overrides the default dropdown position",
+        "values": [
+          "bottom",
+          "top"
+        ]
       }
     ]
   }
