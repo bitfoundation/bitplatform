@@ -1,4 +1,5 @@
-﻿using Foundation.Test;
+﻿using Bit.Core;
+using Foundation.Test;
 using IdentityServer.Api.Contracts;
 using IdentityServer.Test.Api.Implementations;
 using System;
@@ -23,15 +24,23 @@ namespace IdentityServer.Test
                 UseProxyBasedDependencyManager = useProxyBasedDependencyManager,
                 Port = 8080,
                 CustomDependenciesManagerProvider = new IdentityServerTestDependenciesManagerProvider(),
-                CustomAppEnvironmentProvider = new IdentityServerTestAppEnvironmentProvider(),
-                AutoProxyCreationIncludeRules = new List<Func<TypeInfo, bool>>
-                {
-                    serviceType => serviceType.Assembly == typeof(IdentityServerTestEnvironment).Assembly,
-                    serviceType => serviceType.Assembly == typeof(IClientProvider).Assembly
-                }
+                CustomAppEnvironmentProvider = new IdentityServerTestAppEnvironmentProvider()
             })
         {
 
+        }
+
+        protected override List<Func<TypeInfo, bool>> GetAutoProxyCreationIncludeRules()
+        {
+            List<Func<TypeInfo, bool>> baseIncludeRulesList = base.GetAutoProxyCreationIncludeRules();
+
+            baseIncludeRulesList.AddRange(new List<Func<TypeInfo, bool>>
+            {
+                serviceType => serviceType.Assembly == AssemblyContainer.Current.GetBitIdentityServerAssembly(),
+                serviceType => serviceType.Assembly == AssemblyContainer.Current.GetBitIdentityServerTestsAssembly()}
+            );
+
+            return baseIncludeRulesList;
         }
     }
 }

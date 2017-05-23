@@ -11,21 +11,14 @@ using Foundation.Model.Contracts;
 using Foundation.Api.Implementations;
 using Foundation.Api.Metadata;
 using Foundation.Api.ApiControllers;
+using Foundation.Api.Middlewares.JobScheduler;
+using Foundation.Api.Middlewares.SignalR;
+using Bit.Core;
 
 namespace Foundation.Test.Core.Implementations
 {
     public class AutofacTestDependencyManager : AutofacDependencyManager
     {
-        public AutofacTestDependencyManager()
-        {
-            AutoProxyCreationIgnoreRules = new List<Func<TypeInfo, bool>>
-            {
-                serviceType => GetBaseTypes(serviceType).Any(t => t.Name == "DbContext"),
-                serviceType => GetBaseTypes(serviceType).Any(t => t.Name == "Hub"),
-                serviceType => serviceType.IsArray,
-                serviceType => serviceType.IsInterface
-            };
-        }
 
         public override IDependencyManager Init()
         {
@@ -86,27 +79,9 @@ namespace Foundation.Test.Core.Implementations
             return this;
         }
 
-        public readonly List<Func<TypeInfo, bool>> AutoProxyCreationIncludeRules = new List<Func<TypeInfo, bool>>
-        {
-            serviceType => typeof(IDateTimeProvider).GetTypeInfo().Assembly == serviceType.Assembly,
-            serviceType => typeof(IOwinMiddlewareConfiguration).GetTypeInfo().Assembly == serviceType.Assembly,
-            serviceType => typeof(IRepository<>).GetTypeInfo().Assembly == serviceType.Assembly,
-            serviceType => typeof(IEntity).GetTypeInfo().Assembly == serviceType.Assembly,
-            serviceType => typeof(AutofacTestDependencyManager).GetTypeInfo().Assembly == serviceType.Assembly,
-            serviceType => typeof(DtoController<>).GetTypeInfo().Assembly == serviceType.Assembly
-        };
+        public virtual List<Func<TypeInfo, bool>> AutoProxyCreationIncludeRules { get; set; } = new List<Func<TypeInfo, bool>> { };
 
-        public readonly List<Func<TypeInfo, bool>> AutoProxyCreationIgnoreRules;
-
-        private IEnumerable<Type> GetBaseTypes(Type type)
-        {
-            Type baseType = type.BaseType;
-            while (baseType != null)
-            {
-                yield return baseType;
-                baseType = baseType.BaseType;
-            }
-        }
+        public virtual List<Func<TypeInfo, bool>> AutoProxyCreationIgnoreRules { get; set; } = new List<Func<TypeInfo, bool>> { };
 
         public virtual bool IsGoingToCreateProxyForService(TypeInfo serviceType)
         {

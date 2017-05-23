@@ -7,6 +7,7 @@ using System;
 using System.Linq;
 using System.Reflection;
 using System.Collections.Generic;
+using Bit.Core;
 
 namespace Foundation.Test
 {
@@ -33,10 +34,6 @@ namespace Foundation.Test
         public bool UseProxyBasedDependencyManager { get; set; } = true;
 
         public int? Port { get; set; } = null;
-
-        public List<Func<TypeInfo, bool>> AutoProxyCreationIncludeRules { get; set; } = new List<Func<TypeInfo, bool>>();
-
-        public List<Func<TypeInfo, bool>> AutoProxyCreationIgnoreRules { get; set; } = new List<Func<TypeInfo, bool>>();
     }
 
     public class TestEnvironmentBase : IDisposable
@@ -55,12 +52,8 @@ namespace Foundation.Test
             {
                 DefaultDependencyManager.Current = new AutofacTestDependencyManager();
 
-                TestDependencyManager.CurrentTestDependencyManager.AutoProxyCreationIncludeRules.AddRange(args.AutoProxyCreationIncludeRules.Union(new Func<TypeInfo, bool>[]
-                {
-                    serviceType => GetType().GetTypeInfo().Assembly == serviceType.Assembly
-                }));
-
-                TestDependencyManager.CurrentTestDependencyManager.AutoProxyCreationIgnoreRules.AddRange(args.AutoProxyCreationIgnoreRules);
+                TestDependencyManager.CurrentTestDependencyManager.AutoProxyCreationIgnoreRules.AddRange(GetAutoProxyCreationIgnoreRules());
+                TestDependencyManager.CurrentTestDependencyManager.AutoProxyCreationIncludeRules.AddRange(GetAutoProxyCreationIncludeRules());
             }
 
             DefaultDependenciesManagerProvider.Current = args.CustomDependenciesManagerProvider ?? DependenciesManagerProviderBuilder(args);
@@ -72,6 +65,42 @@ namespace Foundation.Test
                 Server = TestServerFactory.GetEmbeddedTestServer();
 
             Server.Initialize(uri);
+        }
+
+        protected virtual List<Func<TypeInfo, bool>> GetAutoProxyCreationIgnoreRules()
+        {
+            return new List<Func<TypeInfo, bool>>
+            {
+                serviceType => GetBaseTypes(serviceType).Any(t => t.Name == "DbContext"),
+                serviceType => GetBaseTypes(serviceType).Any(t => t.Name == "Hub"),
+                serviceType => serviceType.IsArray,
+                serviceType => serviceType.IsInterface
+            };
+        }
+
+        protected virtual List<Func<TypeInfo, bool>> GetAutoProxyCreationIncludeRules()
+        {
+            return new List<Func<TypeInfo, bool>>
+            {
+                serviceType => AssemblyContainer.Current.GetBitCoreAssembly() == serviceType.Assembly,
+                serviceType => AssemblyContainer.Current.GetBitOwinAssembly() == serviceType.Assembly,
+                serviceType => AssemblyContainer.Current.GetBitDataAssembly() == serviceType.Assembly,
+                serviceType => AssemblyContainer.Current.GetBitModelAssembly() == serviceType.Assembly,
+                serviceType => AssemblyContainer.Current.GetBitTestAssembly() == serviceType.Assembly,
+                serviceType => AssemblyContainer.Current.GetBitApiAssembly() == serviceType.Assembly,
+                serviceType => AssemblyContainer.Current.GetBitHangfireAssembly() == serviceType.Assembly,
+                serviceType => AssemblyContainer.Current.GetBitSignalRAssembly() == serviceType.Assembly
+            };
+        }
+
+        protected virtual IEnumerable<Type> GetBaseTypes(Type type)
+        {
+            Type baseType = type.BaseType;
+            while (baseType != null)
+            {
+                yield return baseType;
+                baseType = baseType.BaseType;
+            }
         }
 
         public static Func<TestEnvironmentArgs, IAppEnvironmentProvider> AppEnvironmentProviderBuilder { get; set; } = args => DefaultAppEnvironmentProvider.Current;

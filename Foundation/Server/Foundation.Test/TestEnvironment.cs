@@ -1,4 +1,8 @@
-﻿using Foundation.Test.Api.Implementations;
+﻿using Bit.Core;
+using Foundation.Test.Api.Implementations;
+using System;
+using System.Collections.Generic;
+using System.Reflection;
 
 namespace Foundation.Test
 {
@@ -13,6 +17,18 @@ namespace Foundation.Test
         public TestEnvironment(TestEnvironmentArgs args = null)
             : base(args)
         {
+        }
+
+        protected override List<Func<TypeInfo, bool>> GetAutoProxyCreationIncludeRules()
+        {
+            List<Func<TypeInfo, bool>> baseList = base.GetAutoProxyCreationIncludeRules();
+
+            baseList.AddRange(new List<Func<TypeInfo, bool>>
+            {
+                serviceType => serviceType.Assembly == AssemblyContainer.Current.GetBitTestsAssembly()
+            });
+
+            return baseList;
         }
     }
 }
