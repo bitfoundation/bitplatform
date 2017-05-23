@@ -467,5 +467,35 @@
         "description": "The number of milliseconds that the component will select a newly appended chip before allowing a user to type into the input. This is necessary for keyboard accessibility for screen readers. It defaults to 300ms and any number less than 300 can cause issues with screen readers (particularly JAWS and sometimes NVDA)."
       }
     ]
-  }
+  },
+  {
+    "name": "md-contact-chips",
+    "description": "<md-contact-chips> is an input component based on md-chips and makes use of an md-autocomplete element. The component allows the caller to supply a query expression which returns a list of possible contacts.",
+    "attributes": [
+      {
+        "name": "md-contacts",
+        "description": "An expression expected to return contacts matching the search test, $query. If this expression involves a promise, a loading bar is displayed while waiting for it to resolve."
+      },
+      {
+        "name": "md-contact-name",
+        "description": "The field name of the contact object representing the contact's name."
+      },
+      {
+        "name": "md-contact-email",
+        "description": "The field name of the contact object representing the contact's email address."
+      },
+      {
+        "name": "md-contact-image",
+        "description": "The field name of the contact object representing the contact's image."
+      },
+      {
+        "name": "md-min-length",
+        "description": "Specifies the minimum length of text before autocomplete will make suggestions.",
+        "type": "number"
+      },
+      {
+        "name": "filter-selected",
+        "description": "Whether to filter selected contacts from the list of suggestions shown in the autocomplete."
+      }
+    ]}
 ]
