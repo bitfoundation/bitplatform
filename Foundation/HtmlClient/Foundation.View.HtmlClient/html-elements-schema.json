@@ -332,5 +332,170 @@
         ]
       }
     ]
-  }
+  },
+  {
+    "name": "md-calendar",
+    "description": "<md-calendar> is a component that renders a calendar that can be used to select a date. It is a part of the <md-datepicker> pane, however it can also be used on it's own.",
+    "attributes": [
+      {
+        "name": "md-min-date",
+        "description": "Expression representing the minimum date."
+      },
+      {
+        "name": "md-max-date",
+        "description": "Expression representing the maximum date."
+      },
+      {
+        "name": "md-date-filter",
+        "description": "Function expecting a date and returning a boolean whether it can be selected or not."
+      }
+    ]
+  },
+  {
+    "name": "md-checkbox",
+    "attributes": [
+      {
+        "name": "name",
+        "description": "Property name of the form under which the control is published."
+      },
+      {
+        "name": "md-no-ink ",
+        "description": "Use of attribute indicates use of ripple ink effects.",
+        "type": "boolean",
+        "values": [
+          "true",
+          "false"
+        ]
+      },
+      {
+        "name": "aria-label",
+        "description": "Adds label to checkbox for accessibility. Defaults to checkbox's text. If no default text is found, a warning will be logged."
+      },
+      {
+        "name": "md-indeterminate",
+        "description": "This determines when the checkbox should be rendered as 'indeterminate'. If a truthy expression or no value is passed in the checkbox renders in the md-indeterminate state. If falsy expression is passed in it just looks like a normal unchecked checkbox. The indeterminate, checked, and unchecked states are mutually exclusive. A box cannot be in any two states at the same time. Adding the 'md-indeterminate' attribute overrides any checked/unchecked rendering logic. When using the 'md-indeterminate' attribute use 'ng-checked' to define rendering logic instead of using 'ng-model'."
+      }
+    ]
+  },
+  {
+    "name": "md-chip",
+    "description": "<md-chip> is a component used within <md-chips> and is responsible for rendering individual chips."
+  },
+  {
+    "name": "md-chips",
+    "description": "<md-chips> is an input component for building lists of strings or objects. The list items are displayed as 'chips'. This component can make use of an <input> element or an <md-autocomplete> element.",
+    "attributes": [
+      {
+        "name": "md-transform-chip",
+        "description": "An expression of form myFunction($chip) that when called expects one of the following return values:an object representing the $chip input string undefined to simply add the $chip input string, or null to prevent the chip from being appended."
+      },
+      {
+        "name": "md-require-match",
+        "description": "If true, and the chips template contains an autocomplete, only allow selection of pre-defined chips (i.e. you cannot add new ones).",
+        "type": "boolean",
+        "values": [
+          "true",
+          "false"
+        ]
+      },
+      {
+        "name": "md-removable",
+        "description": "Enables or disables the deletion of chips through the removal icon or the Delete/Backspace key. Defaults to true.",
+        "type": "boolean",
+        "values": [
+          "true",
+          "false"
+        ]
+      },
+      {
+        "name": "readonly",
+        "description": "Disables list manipulation (deleting or adding list items), hiding the input and delete buttons. If no ng-model is provided, the chips will automatically be marked as readonly.When md-removable is not defined, the md-remove behavior will be overwritten and disabled.",
+        "type": "boolean",
+        "values": [
+          "true",
+          "false"
+        ]
+      },
+      {
+        "name": "md-enable-chip-edit",
+        "description": "Set this to true to enable editing of chip contents. The user can go into edit mode with pressing space, enter, or double clicking on the chip. Chip edit is only supported for chips with basic template."
+      },
+      {
+        "name": "md-max-chips",
+        "description": "The maximum number of chips allowed to add through user input.The validation property md-max-chips can be used when the max chips amount is reached.",
+        "type": "number"
+      },
+      {
+        "name": "md-add-on-blur",
+        "description": "When set to true, remaining text inside of the input will be converted into a new chip on blur.",
+        "type": "boolean",
+        "values": [
+          "true",
+          "false"
+        ]
+      },
+      {
+        "name": "md-on-add",
+        "description": "An expression which will be called when a chip has been added."
+      },
+      {
+        "name": "md-on-remove",
+        "description": "An expression which will be called when a chip has been removed."
+      },
+      {
+        "name": "md-on-select",
+        "description": "An expression which will be called when a chip is selected."
+      },
+      {
+        "name": "input-aria-label",
+        "description": "A string read by screen readers to identify the input."
+      },
+      {
+        "name": "container-hint",
+        "description": "A string read by screen readers informing users of how to navigate the chips. Used in readonly mode."
+      },
+      {
+        "name": "delete-button-label",
+        "description": "A label for the delete button. Also hidden and read by screen readers."
+      },
+      {
+        "name": "md-separator-keys",
+        "description": "An array of key codes used to separate chips."
+      },
+      {
+        "name": "md-chip-append-delay",
+        "description": "The number of milliseconds that the component will select a newly appended chip before allowing a user to type into the input. This is necessary for keyboard accessibility for screen readers. It defaults to 300ms and any number less than 300 can cause issues with screen readers (particularly JAWS and sometimes NVDA)."
+      }
+    ]
+  },
+  {
+    "name": "md-contact-chips",
+    "description": "<md-contact-chips> is an input component based on md-chips and makes use of an md-autocomplete element. The component allows the caller to supply a query expression which returns a list of possible contacts.",
+    "attributes": [
+      {
+        "name": "md-contacts",
+        "description": "An expression expected to return contacts matching the search test, $query. If this expression involves a promise, a loading bar is displayed while waiting for it to resolve."
+      },
+      {
+        "name": "md-contact-name",
+        "description": "The field name of the contact object representing the contact's name."
+      },
+      {
+        "name": "md-contact-email",
+        "description": "The field name of the contact object representing the contact's email address."
+      },
+      {
+        "name": "md-contact-image",
+        "description": "The field name of the contact object representing the contact's image."
+      },
+      {
+        "name": "md-min-length",
+        "description": "Specifies the minimum length of text before autocomplete will make suggestions.",
+        "type": "number"
+      },
+      {
+        "name": "filter-selected",
+        "description": "Whether to filter selected contacts from the list of suggestions shown in the autocomplete."
+      }
+    ]}
 ]
