@@ -332,5 +332,23 @@
         ]
       }
     ]
+  },
+  {
+    "name": "md-calendar",
+    "description": "<md-calendar> is a component that renders a calendar that can be used to select a date. It is a part of the <md-datepicker> pane, however it can also be used on it's own.",
+    "attributes": [
+      {
+        "name": "md-min-date",
+        "description": "Expression representing the minimum date."
+      },
+      {
+        "name": "md-max-date",
+        "description": "Expression representing the maximum date."
+      },
+      {
+        "name": "md-date-filter",
+        "description": "Function expecting a date and returning a boolean whether it can be selected or not."
+      }
+    ]
   }
 ]
