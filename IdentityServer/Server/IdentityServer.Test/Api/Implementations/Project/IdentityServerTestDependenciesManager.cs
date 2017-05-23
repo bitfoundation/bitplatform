@@ -1,4 +1,5 @@
-﻿using Foundation.Api.Contracts;
+﻿using Bit.Core;
+using Foundation.Api.Contracts;
 using Foundation.Api.Contracts.Metadata;
 using Foundation.Api.Implementations;
 using Foundation.Api.Implementations.Metadata;
@@ -46,7 +47,7 @@ namespace IdentityServer.Test.Api.Implementations.Project
             dependencyManager.RegisterOwinMiddleware<MetadataMiddlewareConfiguration>();
 
             dependencyManager.Register<IAppMetadataProvider, DefaultAppMetadataProvider>(lifeCycle: DependencyLifeCycle.SingleInstance);
-            dependencyManager.RegisterMetadata(typeof(FoundationMetadataBuilder).GetTypeInfo().Assembly, typeof(LoginViewMetadataBuilder).GetTypeInfo().Assembly);
+            dependencyManager.RegisterMetadata(AssemblyContainer.Current.GetBitOwinAssembly(), AssemblyContainer.Current.GetBitIdentityServerAssembly());
 
             #endregion
 

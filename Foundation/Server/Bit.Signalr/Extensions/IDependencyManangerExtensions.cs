@@ -1,4 +1,5 @@
 ﻿using Autofac.Integration.SignalR;
+using Bit.Core;
 using Foundation.Api.Middlewares.SignalR;
 using Foundation.Api.Middlewares.SignalR.Contracts;
 using Foundation.Api.Middlewares.SignalR.Implementations;
@@ -16,7 +17,7 @@ namespace Foundation.Core.Contracts
             if (dependencyManager == null)
                 throw new ArgumentNullException(nameof(dependencyManager));
 
-            hubsAssemblies = hubsAssemblies.Any() ? hubsAssemblies : new[] { Assembly.GetCallingAssembly(), typeof(MessagesHub).GetTypeInfo().Assembly };
+            hubsAssemblies = hubsAssemblies.Any() ? hubsAssemblies : new[] { Assembly.GetCallingAssembly(), AssemblyContainer.Current.GetBitSignalRAssembly() };
 
             dependencyManager.RegisterHubs(hubsAssemblies);
             dependencyManager.Register<IMessagesHubEvents, TMessagesHubEvents>();

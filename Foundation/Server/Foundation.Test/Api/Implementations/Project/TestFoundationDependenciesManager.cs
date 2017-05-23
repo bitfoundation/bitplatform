@@ -1,3 +1,4 @@
+using Bit.Core;
 using Foundation.Api.Contracts;
 using Foundation.Api.Contracts.Metadata;
 using Foundation.Api.Implementations;
@@ -75,7 +76,7 @@ namespace Foundation.Test.Api.Implementations.Project
             dependencyManager.RegisterOwinMiddleware<LogUserInformationMiddlewareConfiguration>();
             dependencyManager.RegisterOwinMiddleware<MetadataMiddlewareConfiguration>();
 
-            dependencyManager.RegisterDefaultWebApiConfiguration(typeof(FoundationEdmModelProvider).GetTypeInfo().Assembly, typeof(TestEdmModelProvider).GetTypeInfo().Assembly);
+            dependencyManager.RegisterDefaultWebApiConfiguration(AssemblyContainer.Current.GetBitApiAssembly(), AssemblyContainer.Current.GetBitTestsAssembly());
 
             dependencyManager.RegisterUsing<IOwinMiddlewareConfiguration>(() =>
             {
@@ -110,12 +111,12 @@ namespace Foundation.Test.Api.Implementations.Project
             }, lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExciting: false);
 
             dependencyManager.RegisterSignalRConfiguration<SignalRAuthorizeConfiguration>();
-            dependencyManager.RegisterSignalRMiddlewareUsingDefaultConfiguration(typeof(MessagesHub).GetTypeInfo().Assembly);
+            dependencyManager.RegisterSignalRMiddlewareUsingDefaultConfiguration(AssemblyContainer.Current.GetBitSignalRAssembly());
 
             dependencyManager.RegisterBackgroundJobWorkerUsingDefaultConfiguration<JobSchedulerInMemoryBackendConfiguration>();
 
             dependencyManager.Register<IAppMetadataProvider, DefaultAppMetadataProvider>(lifeCycle: DependencyLifeCycle.SingleInstance);
-            dependencyManager.RegisterMetadata(typeof(FoundationMetadataBuilder).GetTypeInfo().Assembly, typeof(TestEdmModelProvider).GetTypeInfo().Assembly);
+            dependencyManager.RegisterMetadata(AssemblyContainer.Current.GetBitOwinAssembly(), AssemblyContainer.Current.GetBitTestsAssembly());
 
             dependencyManager.RegisterGeneric(typeof(IRepository<>).GetTypeInfo(), typeof(TestEfRepository<>).GetTypeInfo(), DependencyLifeCycle.InstancePerLifetimeScope);
 

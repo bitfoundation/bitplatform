@@ -2,6 +2,7 @@
 using System.Web.OData.Builder;
 using Foundation.Api.Contracts.Project;
 using Foundation.Api.Middlewares.WebApi.OData.Contracts;
+using Bit.Core;
 
 namespace Foundation.Test.Api.Implementations.Project
 {
@@ -24,7 +25,7 @@ namespace Foundation.Test.Api.Implementations.Project
 
         public virtual void BuildEdmModel(ODataModelBuilder edmModelBuilder)
         {
-            _autoEdmBuilder.AutoBuildEdmFromAssembly(typeof(TestEdmModelProvider).Assembly, edmModelBuilder);
+            _autoEdmBuilder.AutoBuildEdmFromAssembly(AssemblyContainer.Current.GetBitTestsAssembly(), edmModelBuilder);
         }
 
         public virtual string GetEdmName()

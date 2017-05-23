@@ -137,6 +137,7 @@
     <Compile Include="Extensions\ODataClientExtensions.cs" />
     <Compile Include="Extensions\WebElementExtensions.cs" />
     <Compile Include="FakeItEasyLoadNothingBootstrapperBase.cs" />
+    <Compile Include="Properties\AssemblyContainer.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Server\ITestServer.cs" />
     <Compile Include="Server\OwinEmbeddedTestServer.cs" />

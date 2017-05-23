@@ -52,6 +52,7 @@
     <Compile Include="DefaultSqlDbConnectionProvider.cs" />
     <Compile Include="Extensions\IQueryableExtensions.cs" />
     <Compile Include="Extensions\IWhereByKeyBuildersExtensions.cs" />
+    <Compile Include="Properties\AssemblyContainer.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

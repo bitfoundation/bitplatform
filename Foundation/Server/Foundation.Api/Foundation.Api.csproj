@@ -335,6 +335,7 @@
     <Compile Include="Middlewares\JobScheduler\JobSchedulerMiddlewareConfiguration.cs" />
     <Compile Include="Middlewares\JobScheduler\Implementations\SqlAndAzureServiceBusBackendJobServerConfiguration.cs" />
     <Compile Include="Middlewares\JobScheduler\Implementations\DefaultJobsDashboardAuthorizationFilter.cs" />
+    <Compile Include="Properties\AssemblyContainer.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

@@ -196,6 +196,7 @@
     <Compile Include="Implementations\InMemoryDbContextObjectsProvider.cs" />
     <Compile Include="Implementations\SqlDbContextObjectsProvider.cs" />
     <Compile Include="Implementations\EfCoreWhereByKeyBuilder.cs" />
+    <Compile Include="Properties\AssemblyContainer.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

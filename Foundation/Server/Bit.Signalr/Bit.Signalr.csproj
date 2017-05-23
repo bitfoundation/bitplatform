@@ -73,6 +73,7 @@
     <Compile Include="Middlewares\Signalr\Implementations\SignalRSqlServerScaleoutConfiguration.cs" />
     <Compile Include="Middlewares\Signalr\MessagesHub.cs" />
     <Compile Include="Middlewares\Signalr\SignalRMiddlewareConfiguration.cs" />
+    <Compile Include="Properties\AssemblyContainer.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

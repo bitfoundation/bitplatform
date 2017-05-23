@@ -141,6 +141,7 @@
     <Compile Include="Metadata\Views\LoginViewMetadataBuilder.cs" />
     <Compile Include="Middlewares\IdentityServerMiddlewareConfiguration.cs" />
     <Compile Include="Model\SSOPageModel.cs" />
+    <Compile Include="Properties\AssemblyContainer.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

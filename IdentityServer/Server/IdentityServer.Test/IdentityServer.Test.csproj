@@ -230,6 +230,7 @@
     <Compile Include="FakeItEasyLoadNothingBootstrapper.cs" />
     <Compile Include="IdentityServerTestEnvironment.cs" />
     <Compile Include="Program.cs" />
+    <Compile Include="Properties\AssemblyContainer.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ViewsTests\LoginViewTests.cs" />
   </ItemGroup>

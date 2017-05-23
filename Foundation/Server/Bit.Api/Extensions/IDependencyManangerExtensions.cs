@@ -1,4 +1,5 @@
 ﻿using Autofac.Integration.WebApi;
+using Bit.Core;
 using Foundation.Api.Contracts;
 using Foundation.Api.Contracts.Project;
 using Foundation.Api.Implementations;
@@ -27,7 +28,7 @@ namespace Foundation.Core.Contracts
             if (dependencyManager == null)
                 throw new ArgumentNullException(nameof(dependencyManager));
 
-            controllersAssemblies = (controllersAssemblies.Any() ? controllersAssemblies : new[] { Assembly.GetCallingAssembly(), typeof(FoundationEdmModelProvider).GetTypeInfo().Assembly }).Union(new[] { typeof(MetadataController).GetTypeInfo().Assembly }).ToArray();
+            controllersAssemblies = (controllersAssemblies.Any() ? controllersAssemblies : new[] { Assembly.GetCallingAssembly(), AssemblyContainer.Current.GetBitApiAssembly() }).Union(new[] { typeof(MetadataController).GetTypeInfo().Assembly }).ToArray();
 
             dependencyManager.RegisterInstance<IApiAssembliesProvider>(new DefaultApiAssembliesProvider(controllersAssemblies), overwriteExciting: false);
 

@@ -49,6 +49,7 @@
     <Compile Include="Implementations\EfEntityWithDefaultGuidKeyRepository.cs" />
     <Compile Include="Implementations\EfEntityWithDefaultKeyRepository.cs" />
     <Compile Include="Implementations\EfRepository.cs" />
+    <Compile Include="Properties\AssemblyContainer.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

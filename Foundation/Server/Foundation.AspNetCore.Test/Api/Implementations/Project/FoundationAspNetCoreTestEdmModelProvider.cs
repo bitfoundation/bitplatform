@@ -1,4 +1,5 @@
-﻿using Foundation.Api.Contracts.Project;
+﻿using Bit.Core;
+using Foundation.Api.Contracts.Project;
 using Foundation.Api.Middlewares.WebApi.OData.Contracts;
 using System;
 using System.Reflection;
@@ -25,7 +26,7 @@ namespace Foundation.AspNetCore.Test.Api.Implementations.Project
 
         public virtual void BuildEdmModel(ODataModelBuilder edmModelBuilder)
         {
-            _autoEdmBuilder.AutoBuildEdmFromAssembly(typeof(FoundationAspNetCoreTestEdmModelProvider).GetTypeInfo().Assembly, edmModelBuilder);
+            _autoEdmBuilder.AutoBuildEdmFromAssembly(AssemblyContainer.Current.GetBitTestCoreAssembly(), edmModelBuilder);
         }
 
         public virtual string GetEdmName()

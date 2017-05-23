@@ -418,6 +418,7 @@
     <Compile Include="Model\Dto\DtoWithEnum.cs" />
     <Compile Include="Model\Dto\SampleBaseDto.cs" />
     <Compile Include="Model\Dto\TestComplexDto.cs" />
+    <Compile Include="Properties\AssemblyContainer.cs" />
     <Compile Include="Properties\Settings.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTimeSharedInput>True</DesignTimeSharedInput>

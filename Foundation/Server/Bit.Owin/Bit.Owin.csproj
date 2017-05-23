@@ -173,6 +173,7 @@
     <Compile Include="Middlewares\StaticFilesMiddlewareConfiguration.cs" />
     <Compile Include="Models\DefaultPageModel.cs" />
     <Compile Include="OwinAppStartup.cs" />
+    <Compile Include="Properties\AssemblyContainer.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

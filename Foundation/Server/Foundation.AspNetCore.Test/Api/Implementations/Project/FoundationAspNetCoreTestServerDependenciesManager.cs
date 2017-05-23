@@ -1,4 +1,5 @@
-﻿using Foundation.Api.Contracts;
+﻿using Bit.Core;
+using Foundation.Api.Contracts;
 using Foundation.Api.Contracts.Metadata;
 using Foundation.Api.Implementations;
 using Foundation.Api.Implementations.Metadata;
@@ -71,7 +72,7 @@ namespace Foundation.AspNetCore.Test.Api.Implementations.Project
             dependencyManager.RegisterOwinMiddleware<LogUserInformationMiddlewareConfiguration>();
             dependencyManager.RegisterOwinMiddleware<MetadataMiddlewareConfiguration>();
 
-            dependencyManager.RegisterDefaultWebApiConfiguration(typeof(FoundationEdmModelProvider).GetTypeInfo().Assembly, typeof(FoundationAspNetCoreTestEdmModelProvider).GetTypeInfo().Assembly);
+            dependencyManager.RegisterDefaultWebApiConfiguration(AssemblyContainer.Current.GetBitApiAssembly(), AssemblyContainer.Current.GetBitTestCoreAssembly());
 
             dependencyManager.RegisterGlobalWebApiActionFiltersUsing(httpConfiguration =>
             {
@@ -90,7 +91,7 @@ namespace Foundation.AspNetCore.Test.Api.Implementations.Project
            }, lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExciting: false);
 
             dependencyManager.RegisterSignalRConfiguration<SignalRAuthorizeConfiguration>();
-            dependencyManager.RegisterSignalRMiddlewareUsingDefaultConfiguration(typeof(MessagesHub).GetTypeInfo().Assembly);
+            dependencyManager.RegisterSignalRMiddlewareUsingDefaultConfiguration(AssemblyContainer.Current.GetBitSignalRAssembly());
 
             dependencyManager.RegisterBackgroundJobWorkerUsingDefaultConfiguration<JobSchedulerInMemoryBackendConfiguration>();
 

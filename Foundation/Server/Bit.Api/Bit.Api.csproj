@@ -149,6 +149,7 @@
     <Compile Include="Middlewares\WebApi\OData\Visitors\TraverserQueryNodeVisitor.cs" />
     <Compile Include="Middlewares\WebApi\OData\WebApiODataMiddlewareConfiguration.cs" />
     <Compile Include="Middlewares\WebApi\WebApiMiddlewareConfiguration.cs" />
+    <Compile Include="Properties\AssemblyContainer.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

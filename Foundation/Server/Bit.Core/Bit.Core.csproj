@@ -58,6 +58,7 @@
     <Compile Include="Models\AppEnvironment.cs" />
     <Compile Include="Models\LogData.cs" />
     <Compile Include="Models\LogEntry.cs" />
+    <Compile Include="Properties\AssemblyContainer.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

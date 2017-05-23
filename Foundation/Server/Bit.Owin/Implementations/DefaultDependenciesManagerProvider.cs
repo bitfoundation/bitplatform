@@ -4,6 +4,7 @@ using System.Linq;
 using System.Reflection;
 using Foundation.Core.Contracts;
 using Foundation.Core.Contracts.Project;
+using Bit.Core;
 
 namespace Foundation.Api.Implementations
 {
@@ -53,10 +54,12 @@ namespace Foundation.Api.Implementations
         {
             if (_result == null)
             {
+                string bitOwinAssemblyName = AssemblyContainer.Current.GetBitOwinAssembly().GetName().Name;
+
                 _result = AppDomain.CurrentDomain
                     .GetAssemblies()
                     .Where(asm => !asm.IsDynamic && !asm.GlobalAssemblyCache)
-                    .Where(asm => asm.GetReferencedAssemblies().Any(asmRef => asmRef.Name == typeof(DefaultDependenciesManagerProvider).GetTypeInfo().Assembly.GetName().Name))
+                    .Where(asm => asm.GetReferencedAssemblies().Any(asmRef => asmRef.Name == bitOwinAssemblyName))
                     .SelectMany(asm => asm.GetCustomAttributes<DependenciesManagerAttribute>())
                     .Select(depManagerAtt => (_args != null && _args.Any()) ? Activator.CreateInstance(depManagerAtt.Type, _args) : Activator.CreateInstance(depManagerAtt.Type))
                     .Cast<IDependenciesManager>()
