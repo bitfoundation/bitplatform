@@ -135,5 +135,23 @@
         "description": "For example #someElement"
       }
     ]
+  },
+  {
+    "name": "md-button",
+    "description": "<md-button> is a button directive with optional ink ripples (default enabled). If you supply a href or ng-href attribute, it will become an <a> element. Otherwise, it will become a <button> element.",
+    "attributes": [
+      {
+        "name": "md-no-ink",
+        "type": "boolean",
+        "description": "If present, disable ripple ink effects.",
+        "values": [ "true", "false" ]
+      },
+      {
+        "name": "md-ripple-size",
+        "description": "Overrides the default ripple size logic.",
+        "type": "enum",
+        "values": [ "full", "partial", "auto" ]
+      }
+    ]
   }
 ]
