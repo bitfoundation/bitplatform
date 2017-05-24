@@ -77,8 +77,8 @@
       <HintPath>..\..\..\packages\Appium.WebDriver.3.0.0.2\lib\net45\appium-dotnet-driver.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="Autofac, Version=4.5.0.0, Culture=neutral, PublicKeyToken=17863af14b0044da, processorArchitecture=MSIL">
-      <HintPath>..\..\..\packages\Autofac.4.5.0\lib\net45\Autofac.dll</HintPath>
+    <Reference Include="Autofac, Version=4.6.0.0, Culture=neutral, PublicKeyToken=17863af14b0044da, processorArchitecture=MSIL">
+      <HintPath>..\..\..\packages\Autofac.4.6.0\lib\net45\Autofac.dll</HintPath>
     </Reference>
     <Reference Include="AutoMapper, Version=6.0.2.0, Culture=neutral, PublicKeyToken=be96cd2c38ef1005, processorArchitecture=MSIL">
       <HintPath>..\..\..\packages\AutoMapper.6.0.2\lib\net45\AutoMapper.dll</HintPath>
@@ -91,8 +91,8 @@
     <Reference Include="FakeItEasy, Version=3.3.2.0, Culture=neutral, PublicKeyToken=eff28e2146d5fd2c, processorArchitecture=MSIL">
       <HintPath>..\..\..\packages\FakeItEasy.3.3.2\lib\net40\FakeItEasy.dll</HintPath>
     </Reference>
-    <Reference Include="IdentityModel, Version=2.8.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\..\packages\IdentityModel.2.8.0\lib\net452\IdentityModel.dll</HintPath>
+    <Reference Include="IdentityModel, Version=2.8.1.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\..\packages\IdentityModel.2.8.1\lib\net452\IdentityModel.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.AspNet.SignalR.Client, Version=2.2.2.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\..\..\packages\Microsoft.AspNet.SignalR.Client.2.2.2\lib\net45\Microsoft.AspNet.SignalR.Client.dll</HintPath>
@@ -503,6 +503,10 @@
       <Project>{722d443e-450d-4c7b-94cf-ac8c553dd8ff}</Project>
       <Name>Bit.Data</Name>
     </ProjectReference>
+    <ProjectReference Include="..\Bit.Hangfire\Bit.Hangfire.csproj">
+      <Project>{91908a6f-d4f7-4ac0-b7dd-81546f421d16}</Project>
+      <Name>Bit.Hangfire</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Bit.Model\Bit.Model.csproj">
       <Project>{5fac42f7-1179-440d-8be0-ffd364639943}</Project>
       <Name>Bit.Model</Name>
@@ -514,11 +518,6 @@
     <ProjectReference Include="..\Bit.Signalr\Bit.Signalr.csproj">
       <Project>{6f4ea6b3-bcc9-4137-8abe-2b4847c530be}</Project>
       <Name>Bit.Signalr</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Foundation.Api\Foundation.Api.csproj">
-      <Project>{469d5d14-b564-4af4-a36c-b93c823156b9}</Project>
-      <Name>Foundation.Api</Name>
-      <Private>True</Private>
     </ProjectReference>
     <ProjectReference Include="..\Foundation.Test.Core\Foundation.Test.Core.csproj">
       <Project>{b0ccc9c9-822d-480b-ad8e-2c9b0a892c64}</Project>

@@ -17,9 +17,9 @@
     <ProjectReference Include="..\Bit.Api\Bit.Api.csproj" />
     <ProjectReference Include="..\Bit.Data.EntityFrameworkCore\Bit.Data.EntityFrameworkCore.csproj" />
     <ProjectReference Include="..\Bit.Data\Bit.Data.csproj" />
+    <ProjectReference Include="..\Bit.Hangfire\Bit.Hangfire.csproj" />
     <ProjectReference Include="..\Bit.Owin\Bit.Owin.csproj" />
     <ProjectReference Include="..\Bit.Signalr\Bit.Signalr.csproj" />
-    <ProjectReference Include="..\Foundation.Api\Foundation.Api.csproj" />
     <ProjectReference Include="..\Foundation.Test.Core\Foundation.Test.Core.csproj" />
   </ItemGroup>
 

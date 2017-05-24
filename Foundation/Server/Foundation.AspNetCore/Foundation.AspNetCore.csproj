@@ -15,7 +15,6 @@
     <ProjectReference Include="..\Bit.Api\Bit.Api.csproj" />
     <ProjectReference Include="..\Bit.Data\Bit.Data.csproj" />
     <ProjectReference Include="..\Bit.Owin\Bit.Owin.csproj" />
-    <ProjectReference Include="..\Foundation.Api\Foundation.Api.csproj" />
   </ItemGroup>
 
   <ItemGroup Condition=" '$(TargetFramework)' == 'net462' ">
@@ -26,7 +25,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Autofac" Version="4.5.0" />
+    <PackageReference Include="Autofac" Version="4.6.0" />
     <PackageReference Include="Autofac.Extensions.DependencyInjection" Version="4.1.0" />
     <PackageReference Include="Autofac.Owin" Version="4.0.0" />
     <PackageReference Include="Microsoft.AspNetCore" Version="1.1.2" />
