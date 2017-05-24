@@ -18,13 +18,10 @@
     <ProjectReference Include="..\Bit.Data.EntityFrameworkCore\Bit.Data.EntityFrameworkCore.csproj" />
     <ProjectReference Include="..\Bit.Data\Bit.Data.csproj" />
     <ProjectReference Include="..\Bit.Hangfire\Bit.Hangfire.csproj" />
+    <ProjectReference Include="..\Bit.OwinCore\Bit.OwinCore.csproj" />
     <ProjectReference Include="..\Bit.Owin\Bit.Owin.csproj" />
     <ProjectReference Include="..\Bit.Signalr\Bit.Signalr.csproj" />
     <ProjectReference Include="..\Foundation.Test.Core\Foundation.Test.Core.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="..\Foundation.AspNetCore\Foundation.AspNetCore.csproj" />
   </ItemGroup>
 
   <ItemGroup Condition=" '$(TargetFramework)' == 'net462' ">
@@ -36,6 +33,7 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Mvc.Core" Version="1.1.3" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.Formatters.Json" Version="1.1.3" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.0.0" />
     <PackageReference Include="System.Net.Http" Version="4.3.2" />
     <PackageReference Include="xunit.runner.visualstudio" Version="2.2.0" />
