@@ -36,7 +36,7 @@
         "TypingsPath": "../../../../bit-framework/Foundation/HtmlClient/foundation.core.htmlclient/typings.d.ts",
         "SourceProjects": [
           {
-            "Name": "Foundation.Test"
+            "Name": "Bit.Tests"
           }
         ],
         "DestinationProject": {

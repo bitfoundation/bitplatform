@@ -225,8 +225,6 @@
     <Compile Include="Api\Implementations\IdentityServerTestAppEnvironmentProvider.cs" />
     <Compile Include="Api\Implementations\IdentityServerTestDependenciesManagerProvider.cs" />
     <Compile Include="Api\Implementations\Project\IdentityServerTestDependenciesManager.cs" />
-    <Compile Include="Api\Implementations\TestClientProvider.cs" />
-    <Compile Include="Api\Implementations\TestUserService.cs" />
     <Compile Include="FakeItEasyLoadNothingBootstrapper.cs" />
     <Compile Include="IdentityServerTestEnvironment.cs" />
     <Compile Include="Program.cs" />
