@@ -584,5 +584,33 @@
   {
     "name": "md-fab-actions",
     "description": "The <md-fab-actions> directive is used inside of a <md-fab-speed-dial> or <md-fab-toolbar> directive to mark an element (or elements) as the actions and setup the proper event listeners."
-  }
+  },
+   {
+        "name": "md-fab-speed-dial",
+        "description": "The <md-fab-speed-dial> directive is used to present a series of popup elements (usually <md-button>s) for quick access to common actions.",
+        "attributes": [
+            {
+                "name": "md-direction",
+                "description": "From which direction you would like the speed dial to appear relative to the trigger element."
+            },
+            {
+                "name": "md-open",
+                "description": "Programmatically control whether or not the speed-dial is visible."
+            }
+        ]
+    },
+    {
+        "name": "md-fab-toolbar",
+        "description": "The <md-fab-toolbar> directive is used to present a toolbar of elements (usually <md-button>s) for quick access to common actions when a floating action button is activated (via click or keyboard navigation).",
+        "attributes": [
+            {
+                "name": "md-direction",
+                "description": "From which direction you would like the toolbar items to appear relative to the trigger element. Supports left and right directions."
+            },
+            {
+                "name": "md-open",
+                "description": "Programmatically control whether or not the toolbar is visible."
+            }
+        ]
+    }
 ]
