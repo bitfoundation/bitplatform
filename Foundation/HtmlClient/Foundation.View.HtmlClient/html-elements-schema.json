@@ -704,5 +704,9 @@
   {
     "name": "md-list",
     "description": "The <md-list> directive is a list container for 1..n <md-list-item> tags."
+  },
+  {
+    "name": "md-list-item",
+    "description": "A md-list-item element can be used to represent some information in a row."
   }
 ]
