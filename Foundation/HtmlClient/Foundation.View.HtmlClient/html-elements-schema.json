@@ -971,5 +971,32 @@
   {
     "name": "md-subheader",
     "description": "The md-subheader directive creates a sticky subheader for a section."
+  },
+  {
+    "name": "md-switch",
+    "attributes": [
+      {
+        "name": "name",
+        "description": "Property name of the form under which the control is published."
+      },
+      {
+        "name": "md-no-ink",
+        "description": "Use of attribute indicates use of ripple ink effects.",
+        "type": "boolean",
+        "values": [
+          "true",
+          "false"
+        ]
+      },
+      {
+        "name": "md-invert",
+        "description": "When set to true, the switch will be inverted.",
+        "type": "boolean",
+        "values": [
+          "true",
+          "false"
+        ]
+      }
+    ]
   }
 ]
