@@ -998,5 +998,32 @@
         ]
       }
     ]
+  },
+  {
+    "name": "md-tab",
+    "description": "The <md-tab> is a nested directive used within <md-tabs> to specify a tab with a label and optional view content.",
+    "attributes": [
+      {
+        "name": "label",
+        "description": "Optional attribute to specify a simple string as the tab label"
+      },
+      {
+        "name": "md-on-deselect",
+        "description": "Expression to be evaluated after the tab has been de-selected."
+      },
+      {
+        "name": "md-on-select",
+        "description": "Expression to be evaluated after the tab has been selected."
+      },
+      {
+        "name": "md-active",
+        "description": "When true, sets the active tab. Note: There can only be one active tab at a time.",
+        "type": "boolean",
+        "values": [
+          "true",
+          "false"
+        ]
+      }
+    ]
   }
 ]
