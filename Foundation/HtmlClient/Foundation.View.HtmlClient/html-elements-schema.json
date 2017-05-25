@@ -749,5 +749,31 @@
         "description": "An aria-label for the nav-bar"
       }
     ]
-  }
+  },
+   {
+        "name": "md-nav-item",
+        "description": "<md-nav-item> describes a page navigation link within the <md-nav-bar> component. It renders an md-button as the actual link.",
+        "attributes": [
+            {
+                "name": "mdNavClick",
+                "description": "Function which will be called when the link is clicked to change the page. Renders as an ng-click."
+            },
+            {
+                "name": "mdNavHref",
+                "description": "url to transition to when this link is clicked. Renders as an ng-href."
+            },
+            {
+                "name": "mdNavSref",
+                "description": "Ui-router state to transition to when this link is clicked. Renders as a ui-sref."
+            },
+            {
+                "name": "srefOpts",
+                "description": "Ui-router options that are passed to the $state.go() function. "
+            },
+            {
+                "name": "name",
+                "description": "The name of this link. Used by the nav bar to know which link is currently selected."
+            }
+        ]
+    }
 ]
