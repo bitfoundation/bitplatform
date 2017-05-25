@@ -6,7 +6,6 @@ using System.Threading.Tasks;
 using Foundation.Api.Contracts;
 using Foundation.Api.Exceptions;
 using Foundation.Api.Metadata;
-using Foundation.Model.DomainModels;
 using Hangfire.Storage;
 
 namespace Foundation.Api.Implementations

@@ -6,8 +6,8 @@ namespace Foundation.Test.Core.Implementations
     {
         public static AutofacTestDependencyManager CurrentTestDependencyManager
         {
-            get { return (AutofacTestDependencyManager)DefaultDependencyManager.Current; }
-            set { DefaultDependencyManager.Current = value; }
+            get => (AutofacTestDependencyManager)DefaultDependencyManager.Current;
+            set => DefaultDependencyManager.Current = value;
         }
     }
 }

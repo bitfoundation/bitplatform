@@ -15,7 +15,7 @@ namespace Foundation.Api.Implementations
 
                 return _current;
             }
-            set { _current = value; }
+            set => _current = value;
         }
     }
 }

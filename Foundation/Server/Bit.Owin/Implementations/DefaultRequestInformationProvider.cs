@@ -24,32 +24,32 @@ namespace Foundation.Api.Implementations
 
         public virtual string UserAgent
         {
-            get { return _context.Request?.Headers?.Get("user-agent"); }
-            protected set { throw new InvalidOperationException(); }
+            get => _context.Request?.Headers?.Get("user-agent");
+            protected set => throw new InvalidOperationException();
         }
 
         public virtual string HttpMethod
         {
-            get { return _context.Request?.Method; }
-            protected set { throw new InvalidOperationException(); }
+            get => _context.Request?.Method;
+            protected set => throw new InvalidOperationException();
         }
 
         public virtual string ClientIp
         {
-            get { return _context.Request?.RemoteIpAddress; }
-            protected set { throw new InvalidOperationException(); }
+            get => _context.Request?.RemoteIpAddress;
+            protected set => throw new InvalidOperationException();
         }
 
         public virtual string ClientAppVersion
         {
-            get { return _context.Request?.Headers?.Get("Client-App-Version"); }
-            protected set { throw new InvalidOperationException(); }
+            get => _context.Request?.Headers?.Get("Client-App-Version");
+            protected set => throw new InvalidOperationException();
         }
 
         public virtual string SystemLanguage
         {
-            get { return _context.Request?.Headers?.Get("System-Language"); }
-            protected set { throw new InvalidOperationException(); }
+            get => _context.Request?.Headers?.Get("System-Language");
+            protected set => throw new InvalidOperationException();
         }
 
         public virtual DateTimeOffset? ClientDateTime
@@ -61,49 +61,49 @@ namespace Foundation.Api.Implementations
                     return null;
                 return DateTimeOffset.Parse(clientDateTime);
             }
-            protected set { throw new InvalidOperationException(); }
+            protected set => throw new InvalidOperationException();
         }
 
         public virtual string ClientType
         {
-            get { return _context.Request?.Headers?.Get("Client-Type"); }
-            protected set { throw new InvalidOperationException(); }
+            get => _context.Request?.Headers?.Get("Client-Type");
+            protected set => throw new InvalidOperationException();
         }
 
         public virtual string ClientCulture
         {
-            get { return _context.Request?.Headers?.Get("Client-Culture"); }
-            protected set { throw new InvalidOperationException(); }
+            get => _context.Request?.Headers?.Get("Client-Culture");
+            protected set => throw new InvalidOperationException();
         }
 
         public virtual string ClientScreenSize
         {
-            get { return _context.Request?.Headers?.Get("Client-Screen-Size"); }
-            protected set { throw new InvalidOperationException(); }
+            get => _context.Request?.Headers?.Get("Client-Screen-Size");
+            protected set => throw new InvalidOperationException();
         }
 
         public virtual string ClientPlatform
         {
-            get { return _context.Request?.Headers?.Get("Client-Platform"); }
-            protected set { throw new InvalidOperationException(); }
+            get => _context.Request?.Headers?.Get("Client-Platform");
+            protected set => throw new InvalidOperationException();
         }
 
         public virtual string ClientRoute
         {
-            get { return _context.Request?.Headers?.Get("Client-Route"); }
-            protected set { throw new InvalidOperationException(); }
+            get => _context.Request?.Headers?.Get("Client-Route");
+            protected set => throw new InvalidOperationException();
         }
 
         public virtual string ClientSysLanguage
         {
-            get { return _context.Request?.Headers?.Get("Client-Sys-Language"); }
-            protected set { throw new InvalidOperationException(); }
+            get => _context.Request?.Headers?.Get("Client-Sys-Language");
+            protected set => throw new InvalidOperationException();
         }
 
         public virtual string ClientTheme
         {
-            get { return _context.Request?.Headers?.Get("Client-Theme"); }
-            protected set { throw new InvalidOperationException(); }
+            get => _context.Request?.Headers?.Get("Client-Theme");
+            protected set => throw new InvalidOperationException();
         }
 
         public virtual bool? ClientDebugMode
@@ -115,19 +115,19 @@ namespace Foundation.Api.Implementations
                     return null;
                 return bool.Parse(clientDebugMode);
             }
-            protected set { throw new InvalidOperationException(); }
+            protected set => throw new InvalidOperationException();
         }
 
         public virtual string RequestUri
         {
-            get { return _context.Request?.Uri?.ToString(); }
-            protected set { throw new InvalidOperationException(); }
+            get => _context.Request?.Uri?.ToString();
+            protected set => throw new InvalidOperationException();
         }
 
         public virtual ClaimsIdentity Identity
         {
-            get { return _context.Authentication?.User?.Identity as ClaimsIdentity; }
-            protected set { throw new InvalidOperationException(); }
+            get => _context.Authentication?.User?.Identity as ClaimsIdentity;
+            protected set => throw new InvalidOperationException();
         }
 
         private string _currentTimeZone;
@@ -158,7 +158,7 @@ namespace Foundation.Api.Implementations
                     return null;
                 }
             }
-            protected set { throw new InvalidOperationException(); }
+            protected set => throw new InvalidOperationException();
         }
 
         private string _desiredTimeZone;
@@ -190,34 +190,25 @@ namespace Foundation.Api.Implementations
                     return null;
                 }
             }
-            protected set { throw new InvalidOperationException(); }
+            protected set => throw new InvalidOperationException();
         }
 
         public virtual string ContentType
         {
-            get
-            {
-                return _context.Request?.Headers?.Get("Content-Type");
-            }
-            protected set { throw new InvalidOperationException(); }
+            get => _context.Request?.Headers?.Get("Content-Type");
+            protected set => throw new InvalidOperationException();
         }
 
         public virtual string Origin
         {
-            get
-            {
-                return _context.Request?.Headers?.Get("Origin");
-            }
-            protected set { throw new InvalidOperationException(); }
+            get => _context.Request?.Headers?.Get("Origin");
+            protected set => throw new InvalidOperationException();
         }
 
         public virtual string Referer
         {
-            get
-            {
-                return _context.Request?.Headers?.Get("Referer");
-            }
-            protected set { throw new InvalidOperationException(); }
+            get => _context.Request?.Headers?.Get("Referer");
+            protected set => throw new InvalidOperationException();
         }
 
         public virtual Guid? CorrelationId
@@ -230,7 +221,7 @@ namespace Foundation.Api.Implementations
                 else
                     return null;
             }
-            protected set { throw new InvalidOperationException(); }
+            protected set => throw new InvalidOperationException();
         }
     }
 }

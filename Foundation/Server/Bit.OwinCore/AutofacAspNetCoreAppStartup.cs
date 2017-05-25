@@ -18,7 +18,7 @@ namespace Foundation.AspNetCore
 
         public virtual IServiceProvider ConfigureServices(IServiceCollection services)
         {
-            base.InitServices(services);
+            InitServices(services);
 
             ContainerBuilder builder = ((IAutofacDependencyManager)DefaultDependencyManager.Current).GetContainerBuidler();
 

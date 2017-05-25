@@ -34,7 +34,7 @@ namespace Foundation.Api.Middlewares.SignalR
 
                 await dependencyResolver.Resolve<IMessagesHubEvents>().OnDisconnected(this, stopCalled);
             }
-            catch (ObjectDisposedException ex) { /* https://github.com/SignalR/SignalR/issues/2972 */ }
+            catch (ObjectDisposedException) { /* https://github.com/SignalR/SignalR/issues/2972 */ }
             finally
             {
                 await base.OnDisconnected(stopCalled);

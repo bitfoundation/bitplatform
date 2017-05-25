@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Web.OData;
 using Foundation.Api.Contracts;
 using Foundation.Model.DomainModels;
 

@@ -20,10 +20,7 @@ namespace Foundation.Api.Middlewares.WebApi.OData.Implementations
 
         public TypeInfo Type { get; set; }
 
-        public bool IsOptional
-        {
-            get { return Type.IsClass || (Type.IsGenericType && Type.GetGenericTypeDefinition().GetTypeInfo() == typeof(Nullable<>).GetTypeInfo()); }
-        }
+        public bool IsOptional => Type.IsClass || (Type.IsGenericType && Type.GetGenericTypeDefinition().GetTypeInfo() == typeof(Nullable<>).GetTypeInfo());
     }
 
     public class DefaultAutoEdmBuilder : IAutoEdmBuilder

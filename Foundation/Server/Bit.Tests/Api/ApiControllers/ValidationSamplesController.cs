@@ -2,7 +2,6 @@
 using Foundation.Test.Model.Dto;
 using System.Collections.Generic;
 using System.Linq;
-using System.Web.OData;
 
 namespace Foundation.Test.Api.ApiControllers
 {

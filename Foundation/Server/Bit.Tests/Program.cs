@@ -1,5 +1,4 @@
-﻿using IdentityModel.Client;
-using System;
+﻿using System;
 using System.Diagnostics;
 
 namespace Foundation.Test

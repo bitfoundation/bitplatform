@@ -6,7 +6,6 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Remote;
 using System.Linq;
-using System.Web.OData;
 
 namespace Foundation.Test.HtmlClient.ViewModel.Implementation
 {

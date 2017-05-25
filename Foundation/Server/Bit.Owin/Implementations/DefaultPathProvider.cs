@@ -20,7 +20,7 @@ namespace Foundation.Api.Implementations
                     _current = new DefaultPathProvider();
                 return _current;
             }
-            set { _current = value; }
+            set => _current = value;
         }
 
         public virtual string GetCurrentAppPath()

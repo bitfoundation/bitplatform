@@ -1,7 +1,6 @@
 ﻿let testInheritance = async (): Promise<void> => {
 
     const dependencyManager = Foundation.Core.DependencyManager.getCurrent();
-    const guidUtils = dependencyManager.resolveObject<Foundation.ViewModel.Implementations.GuidUtils>("GuidUtils");
     const contextProvider = dependencyManager.resolveObject<Foundation.ViewModel.Contracts.IEntityContextProvider>("EntityContextProvider");
     const odataContext = await contextProvider.getContext<TestContext>("Test");
 

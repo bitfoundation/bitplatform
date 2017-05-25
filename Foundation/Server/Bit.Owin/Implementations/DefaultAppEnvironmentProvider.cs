@@ -38,7 +38,7 @@ namespace Foundation.Api.Implementations
                     _current = new DefaultAppEnvironmentProvider(DefaultPathProvider.Current, DefaultJsonContentFormatter.Current);
                 return _current;
             }
-            set { _current = value; }
+            set => _current = value;
         }
 
         public virtual AppEnvironment GetActiveAppEnvironment()

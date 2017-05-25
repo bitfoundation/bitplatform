@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using Foundation.Core.Contracts;
+﻿using System.Collections.Generic;
 using IdentityServer3.Core;
 using IdentityServer3.Core.Models;
 using IdentityServer.Api.Contracts;
@@ -9,21 +7,6 @@ namespace IdentityServer.Test.Api.Implementations
 {
     public class TestClientProvider : IClientProvider
     {
-        private readonly IAppEnvironmentProvider _appEnvironmentProvider;
-
-        public TestClientProvider(IAppEnvironmentProvider appEnvironmentProvider)
-        {
-            if (appEnvironmentProvider == null)
-                throw new ArgumentNullException(nameof(appEnvironmentProvider));
-
-            _appEnvironmentProvider = appEnvironmentProvider;
-        }
-
-        protected TestClientProvider()
-        {
-
-        }
-
         public virtual IEnumerable<Client> GetClients()
         {
             return new[]

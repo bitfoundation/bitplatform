@@ -20,7 +20,7 @@ namespace Foundation.Api.Implementations
 
                 return _current;
             }
-            set { _current = value; }
+            set => _current = value;
         }
 
         public virtual T DeSerialize<T>(string objAsStr)

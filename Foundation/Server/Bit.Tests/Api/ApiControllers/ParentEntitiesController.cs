@@ -2,7 +2,6 @@
 using System.Threading;
 using System.Threading.Tasks;
 using System.Web.Http;
-using System.Web.OData;
 using Foundation.Api.ApiControllers;
 using Foundation.Test.Model.DomainModels;
 using Microsoft.EntityFrameworkCore;

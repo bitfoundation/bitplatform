@@ -21,7 +21,7 @@ namespace Foundation.Api.Middlewares.WebApi.OData.ActionFilters
 
         public virtual int? DefaultPageSize
         {
-            get { return _defaultPageSize; }
+            get => _defaultPageSize;
             set
             {
                 _defaultPageSize = value;
@@ -33,7 +33,7 @@ namespace Foundation.Api.Middlewares.WebApi.OData.ActionFilters
         public override async Task OnActionExecutedAsync(HttpActionExecutedContext actionExecutedContext, CancellationToken cancellationToken)
         {
             if (actionExecutedContext?.Response?.Content is ObjectContent &&
-                actionExecutedContext?.Response?.IsSuccessStatusCode == true)
+                actionExecutedContext.Response?.IsSuccessStatusCode == true)
             {
                 ObjectContent objContent = ((ObjectContent)(actionExecutedContext.Response.Content));
 
@@ -84,10 +84,10 @@ namespace Foundation.Api.Middlewares.WebApi.OData.ActionFilters
 
                         ValidateQuery(actionExecutedContext.Request, currentOdataQueryOptions);
 
-                        int? currentQueryPageSize = currentOdataQueryOptions?.Top?.Value;
+                        int? currentQueryPageSize = currentOdataQueryOptions.Top?.Value;
                         int? globalQuerypageSize = globalODataQuerySettings.PageSize;
                         int? takeCount = null;
-                        int? skipCount = currentOdataQueryOptions?.Skip?.Value;
+                        int? skipCount = currentOdataQueryOptions.Skip?.Value;
 
                         if (currentQueryPageSize.HasValue)
                             takeCount = currentQueryPageSize.Value;

@@ -44,7 +44,7 @@ namespace Foundation.AspNetCore.Test.Api.Implementations.Project
 
         public FoundationAspNetCoreTestServerDependenciesManager(TestEnvironmentArgs args)
         {
-            this._args = args;
+            _args = args;
         }
 
         public virtual void ConfigureDependencies(IDependencyManager dependencyManager)

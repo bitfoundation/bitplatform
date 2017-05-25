@@ -2,7 +2,6 @@
 using Foundation.AspNetCore.Test.Server;
 using Foundation.Core.Contracts;
 using Foundation.Test;
-using Foundation.Test.Server;
 
 namespace Foundation.AspNetCore.Test
 {

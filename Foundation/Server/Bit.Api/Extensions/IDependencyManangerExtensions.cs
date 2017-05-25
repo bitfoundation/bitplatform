@@ -1,8 +1,6 @@
 ﻿using Autofac.Integration.WebApi;
 using Bit.Core;
-using Foundation.Api.Contracts;
 using Foundation.Api.Contracts.Project;
-using Foundation.Api.Implementations;
 using Foundation.Api.Implementations.Project;
 using Foundation.Api.Middlewares;
 using Foundation.Api.Middlewares.WebApi;

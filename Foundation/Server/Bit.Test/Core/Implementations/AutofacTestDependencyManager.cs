@@ -5,15 +5,7 @@ using System.Reflection;
 using Autofac;
 using FakeItEasy;
 using Foundation.Core.Contracts;
-using Foundation.Api.Contracts;
-using Foundation.DataAccess.Contracts;
-using Foundation.Model.Contracts;
 using Foundation.Api.Implementations;
-using Foundation.Api.Metadata;
-using Foundation.Api.ApiControllers;
-using Foundation.Api.Middlewares.JobScheduler;
-using Foundation.Api.Middlewares.SignalR;
-using Bit.Core;
 
 namespace Foundation.Test.Core.Implementations
 {

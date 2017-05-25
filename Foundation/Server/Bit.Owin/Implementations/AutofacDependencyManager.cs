@@ -15,10 +15,6 @@ namespace Foundation.Api.Implementations
         private ContainerBuilder _containerBuilder;
         private ILifetimeScope _container;
 
-        public AutofacDependencyManager()
-        {
-        }
-
         public virtual IDependencyManager Init()
         {
             UseContainerBuilder(new ContainerBuilder());
