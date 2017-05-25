@@ -681,5 +681,24 @@
         "description": "Labels icon for accessibility. If an empty string is provided, icon will be hidden from accessibility layer with aria-hidden='true'. If there's no alt on the icon nor a label on the parent element, a warning will be logged to the console."
       }
     ]
+  },
+  {
+    "name": "md-input-container",
+    "description": "<md-input-container> is the parent of any input or textarea element.",
+    "attributes": [
+      {
+        "name": "md-is-error",
+        "description": "When the given expression evaluates to true, the input container will go into error state. Defaults to erroring if the input has been touched and is invalid."
+      },
+      {
+        "name": "md-no-float",
+        "description": "When present, placeholder attributes on the input will not be converted to floating labels.",
+        "type": "boolean",
+        "values": [
+          "true",
+          "false"
+        ]
+      }
+    ]
   }
 ]
