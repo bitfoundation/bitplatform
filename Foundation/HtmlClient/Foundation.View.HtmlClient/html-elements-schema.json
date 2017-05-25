@@ -817,17 +817,447 @@
     ]
   },
   {
-        "name": "md-radio-button",
-        "description": "The <md-radio-button>directive is the child directive required to be used within <md-radio-group> elements.",
-        "attributes": [
-            {
-                "name": "value",
-                "description": "The value to which the expression should be set when selected."
-            },
-            {
-                "name": "name",
-                "description": "Property name of the form under which the control is published."
-            }
+    "name": "md-radio-button",
+    "description": "The <md-radio-button>directive is the child directive required to be used within <md-radio-group> elements.",
+    "attributes": [
+      {
+        "name": "value",
+        "description": "The value to which the expression should be set when selected."
+      },
+      {
+        "name": "name",
+        "description": "Property name of the form under which the control is published."
+      }
+    ]
+  },
+  {
+    "name": "md-radio-group",
+    "description": "The <md-radio-group> directive identifies a grouping container for the 1..n grouped radio buttons; specified using nested <md-radio-button> tags.",
+    "attributes": [
+      {
+        "name": "md-no-ink",
+        "description": "Use of attribute indicates flag to disable ink ripple effects.",
+        "type": "boolean",
+        "values": [
+          "true",
+          "false"
         ]
-    }
+      }
+    ]
+  },
+  {
+    "name": "md-select",
+    "description": "Displays a select box, bound to an ng-model.",
+    "attributes": [
+      {
+        "name": "multiple",
+        "description": "When set to true, allows for more than one option to be selected. The model is an array with the selected choices.",
+        "type": "boolean",
+        "values": [
+          "true",
+          "false"
+        ]
+      },
+      {
+        "name": "md-on-close",
+        "description": "Expression to be evaluated when the select is closed."
+      },
+      {
+        "name": "md-on-open",
+        "description": "Expression to be evaluated when opening the select. Will hide the select options and show a spinner until the evaluated promise resolves."
+      },
+      {
+        "name": "md-selected-text",
+        "description": "Expression to be evaluated that will return a string to be displayed as a placeholder in the select input box when it is closed."
+      },
+      {
+        "name": "md-selected-html",
+        "description": "Expression to be evaluated that will return a string to be displayed as a placeholder in the select input box when it is closed. The value will be treated as html. The value must either be explicitly marked as trustedHtml or the ngSanitize module must be loaded."
+      },
+      {
+        "name": "md-no-asterisk",
+        "description": "When set to true, an asterisk will not be appended to the floating label. Note: This attribute is only evaluated once; it is not watched.",
+        "type": "boolean",
+        "values": [
+          "true",
+          "false"
+        ]
+      },
+      {
+        "name": "md-container-class",
+        "description": "Class list to get applied to the .md-select-menu-container element (for custom styling)."
+      }
+    ]
+  },
+  {
+    "name": "md-sidenav",
+    "description": "A Sidenav component that can be opened and closed programatically.",
+    "attributes": [
+      {
+        "name": "md-is-open",
+        "description": "A model bound to whether the sidenav is opened."
+      },
+      {
+        "name": "md-disable-backdrop",
+        "description": "When present in the markup, the sidenav will not show a backdrop.",
+        "type": "boolean",
+        "values": [
+          "true",
+          "false"
+        ]
+      },
+      {
+        "name": "md-component-id",
+        "description": "componentId to use with $mdSidenav service."
+      },
+      {
+        "name": "md-is-locked-open",
+        "description": "When this expression evaluates to true, the sidenav 'locks open': it falls into the content's flow instead of appearing over it."
+      },
+      {
+        "name": "md-disable-scroll-target",
+        "description": "Selector, pointing to an element, whose scrolling will be disabled when the sidenav is opened. By default this is the sidenav's direct parent."
+      }
+    ]
+  },
+  {
+    "name": "md-slider",
+    "description": "The <md-slider> component allows the user to choose from a range of values.",
+    "attributes": [
+      {
+        "name": "md-discrete",
+        "description": "Whether to enable discrete mode.",
+        "type": "boolean",
+        "values": [
+          "true",
+          "false"
+        ]
+      },
+      {
+        "name": "md-invert",
+        "description": "Whether to enable invert mode.",
+        "type": "boolean",
+        "values": [
+          "true",
+          "false"
+        ]
+      },
+      {
+        "name": "step",
+        "description": "The distance between values the user is allowed to pick. Default 1.",
+        "type": "number"
+      },
+      {
+        "name": "min",
+        "description": "The minimum value the user is allowed to pick. Default 0.",
+        "type": "number"
+      },
+      {
+        "name": "max",
+        "description": "The maximum value the user is allowed to pick. Default 100.",
+        "type": "number"
+      },
+      {
+        "name": "round",
+        "description": "The amount of numbers after the decimal point, maximum is 6 to prevent scientific notation. Default 3.",
+        "type": "number"
+      }
+    ]
+  },
+  {
+    "name": "md-slider-container",
+    "description": "The <md-slider-container> contains slider with two other elements."
+  },
+  {
+    "name": "md-subheader",
+    "description": "The md-subheader directive creates a sticky subheader for a section."
+  },
+  {
+    "name": "md-switch",
+    "attributes": [
+      {
+        "name": "name",
+        "description": "Property name of the form under which the control is published."
+      },
+      {
+        "name": "md-no-ink",
+        "description": "Use of attribute indicates use of ripple ink effects.",
+        "type": "boolean",
+        "values": [
+          "true",
+          "false"
+        ]
+      },
+      {
+        "name": "md-invert",
+        "description": "When set to true, the switch will be inverted.",
+        "type": "boolean",
+        "values": [
+          "true",
+          "false"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "md-tab",
+    "description": "The <md-tab> is a nested directive used within <md-tabs> to specify a tab with a label and optional view content.",
+    "attributes": [
+      {
+        "name": "label",
+        "description": "Optional attribute to specify a simple string as the tab label"
+      },
+      {
+        "name": "md-on-deselect",
+        "description": "Expression to be evaluated after the tab has been de-selected."
+      },
+      {
+        "name": "md-on-select",
+        "description": "Expression to be evaluated after the tab has been selected."
+      },
+      {
+        "name": "md-active",
+        "description": "When true, sets the active tab. Note: There can only be one active tab at a time.",
+        "type": "boolean",
+        "values": [
+          "true",
+          "false"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "md-tabs",
+    "description": "The <md-tabs> directive serves as the container for 1..n <md-tab> child directives to produces a Tabs components. In turn, the nested <md-tab> directive is used to specify a tab label for the header button and a [optional] tab view content that will be associated with each tab button.",
+    "attributes": [
+      {
+        "name": "md-selected",
+        "description": "Index of the active/selected tab"
+      },
+      {
+        "name": "md-no-ink",
+        "description": "f present, disables ink ripple effects.",
+        "type": "boolean",
+        "values": [
+          "true",
+          "false"
+        ]
+      },
+      {
+        "name": "md-no-ink-bar",
+        "description": "If present, disables the selection ink bar.",
+        "type": "boolean",
+        "values": [
+          "true",
+          "false"
+        ]
+      },
+      {
+        "name": "md-align-tabs",
+        "description": "Attribute to indicate position of tab buttons.default is top.",
+        "type": "enum",
+        "values": [
+          "top",
+          "bottom "
+        ]
+      },
+      {
+        "name": "md-stretch-tabs",
+        "description": "Attribute to indicate whether or not to stretch tabs: auto, always, or never; default is auto",
+        "type": "enum",
+        "values": [
+          "auto",
+          "always",
+          "never"
+        ]
+      },
+      {
+        "name": "md-dynamic-height",
+        "description": "When enabled, the tab wrapper will resize based on the contents of the selected tab",
+        "type": "boolean",
+        "values": [
+          "true",
+          "false"
+        ]
+      },
+      {
+        "name": "md-border-bottom",
+        "description": "If present, shows a solid 1px border between the tabs and their content",
+        "type": "boolean",
+        "values": [
+          "true",
+          "false"
+        ]
+      },
+      {
+        "name": "md-center-tabs",
+        "description": "When enabled, tabs will be centered provided there is no need for pagination",
+        "type": "boolean",
+        "values": [
+          "true",
+          "false"
+        ]
+      },
+      {
+        "name": "md-no-pagination",
+        "description": "When enabled, pagination will remain off",
+        "type": "boolean",
+        "values": [
+          "true",
+          "false"
+        ]
+      },
+      {
+        "name": "md-swipe-content",
+        "description": "When enabled, swipe gestures will be enabled for the content area to jump between tabs",
+        "type": "boolean",
+        "values": [
+          "true",
+          "false"
+        ]
+      },
+      {
+        "name": "md-enable-disconnect",
+        "description": "When enabled, scopes will be disconnected for tabs that are not being displayed. This provides a performance boost, but may also cause unexpected issues and is not recommended for most users.",
+        "type": "boolean",
+        "values": [
+          "true",
+          "false"
+        ]
+      },
+      {
+        "name": "md-autoselect",
+        "description": "When present, any tabs added after the initial load will be automatically selected",
+        "type": "boolean",
+        "values": [
+          "true",
+          "false"
+        ]
+      },
+      {
+        "name": "md-no-select-click",
+        "description": "When enabled, click events will not be fired when selecting tabs",
+        "type": "boolean",
+        "values": [
+          "true",
+          "false"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "md-toolbar",
+    "description": "md-toolbar is used to place a toolbar in your app.Toolbars are usually used above a content area to display the title of the current page, and show relevant action buttons for that page.",
+    "attributes": [
+      {
+        "name": "md-scroll-shrink",
+        "description": "Whether the header should shrink away as the user scrolls down, and reveal itself as the user scrolls up.for scrollShrink to work, the toolbar must be a sibling of a md-content element, placed before it. ",
+        "type": "boolean",
+        "values": [
+          "true",
+          "false"
+        ]
+      },
+      {
+        "name": "md-shrink-speed-factor",
+        "description": "how much to change the speed of the toolbar's shrinking by.",
+        "type": "number"
+      }
+    ]
+  },
+  {
+    "name": "md-tooltip",
+    "description": "Tooltips are used to describe elements that are interactive and primarily graphical (not textual).Place a <md-tooltip> as a child of the element it describes.A tooltip will activate when the user hovers over, focuses, or touches the parent element.",
+    "attributes": [
+      {
+        "name": "md-z-index",
+        "description": "The visual level that the tooltip will appear in comparison with the rest of the elements of the application",
+        "type": "number"
+      },
+      {
+        "name": "md-visible",
+        "description": "Boolean bound to whether the tooltip is currently visible."
+      },
+      {
+        "name": "md-delay",
+        "description": "How many milliseconds to wait to show the tooltip after the user hovers over, focuses, or touches the parent element. Defaults to 0ms on non-touch devices and 75ms on touch.",
+        "type": "number"
+      },
+      {
+        "name": "md-autohide",
+        "description": "If present or provided with a boolean value, the tooltip will hide on mouse leave, regardless of focus.",
+        "type": "boolean",
+        "values": [
+          "true",
+          "false"
+        ]
+      },
+      {
+        "name": "md-direction",
+        "description": "The direction that the tooltip is shown, relative to the parent element. Supports top, right, bottom, and left. Defaults to bottom."
+      }
+    ]
+  },
+  {
+    "name": "md-truncate",
+    "description": "The md-truncate component displays a label that will automatically clip text which is wider than the component. "
+  },
+  {
+    "name": "md-virtual-repeat",
+    "description": "md-virtual-repeat specifies an element to repeat using virtual scrolling.",
+    "attributes": [
+      {
+        "name": "md-item-size",
+        "description": "The height or width of the repeated elements (which must be identical for each element). Optional. Will attempt to read the size from the dom if missing, but still assumes that all repeated nodes have same height or width.",
+        "type": "number"
+      },
+      {
+        "name": "md-extra-name",
+        "description": "Evaluates to an additional name to which the current iterated item can be assigned on the repeated scope"
+      },
+      {
+        "name": "md-on-demand",
+        "description": "When present, treats the md-virtual-repeat argument as an object that can fetch rows rather than an array.",
+        "type": "boolean",
+        "values": [
+          "true",
+          "false"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "md-virtual-repeat-container",
+    "description": "md-virtual-repeat-container provides the scroll container for md-virtual-repeat.",
+    "attributes": [
+      {
+        "name": "md-top-index",
+        "description": "Binds the index of the item that is at the top of the scroll container to $scope. It can both read and set the scroll position.",
+        "type": "number"
+      },
+      {
+        "name": "md-orient-horizontal",
+        "description": "Whether the container should scroll horizontally (defaults to orientation and scrolling vertically).",
+        "type": "boolean",
+        "values": [
+          "true",
+          "false"
+        ]
+      },
+      {
+        "name": "md-auto-shrink",
+        "description": "When present, the container will shrink to fit the number of items when that number is less than its original size.",
+        "type": "boolean",
+        "values": [
+          "true",
+          "false"
+        ]
+      },
+      {
+        "name": "md-auto-shrink-min",
+        "description": "Minimum number of items that md-auto-shrink will shrink to (default: 0).",
+        "type": "number"
+      }
+    ]
+  }
 ]
