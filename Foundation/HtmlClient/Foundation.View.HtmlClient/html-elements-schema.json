@@ -795,5 +795,25 @@
         "type": "number"
       }
     ]
+  },
+  {
+    "name": "md-progress-linear",
+    "description": "The linear progress directive is used to make loading content in your app as delightful and painless as possible by minimizing the amount of visual change a user sees before they can view and interact with content.",
+    "attributes": [
+      {
+        "name": "md-mode",
+        "description": "Select from one of four modes: determinate, indeterminate, buffer or query."
+      },
+      {
+        "name": "value",
+        "description": "In determinate and buffer modes, this number represents the percentage of the primary progress bar. Default: 0",
+        "type": "number"
+      },
+      {
+        "name": "md-buffer-value",
+        "description": "In the buffer mode, this number represents the percentage of the secondary progress bar. Default: 0",
+        "type": "number"
+      }
+    ]
   }
 ]
