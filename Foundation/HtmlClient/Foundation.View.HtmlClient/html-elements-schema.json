@@ -1144,5 +1144,25 @@
         ]
       }
     ]
+  },
+  {
+    "name": "md-toolbar",
+    "description": "md-toolbar is used to place a toolbar in your app.Toolbars are usually used above a content area to display the title of the current page, and show relevant action buttons for that page.",
+    "attributes": [
+      {
+        "name": "md-scroll-shrink",
+        "description": "Whether the header should shrink away as the user scrolls down, and reveal itself as the user scrolls up.for scrollShrink to work, the toolbar must be a sibling of a md-content element, placed before it. ",
+        "type": "boolean",
+        "values": [
+          "true",
+          "false"
+        ]
+      },
+      {
+        "name": "md-shrink-speed-factor",
+        "description": "how much to change the speed of the toolbar's shrinking by.",
+        "type": "number"
+      }
+    ]
   }
 ]
