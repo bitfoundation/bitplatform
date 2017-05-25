@@ -722,5 +722,9 @@
         "description": "An offset to apply to the dropdown after positioning x, y. Default value is 0,0."
       }
     ]
-  }
+  },
+  {
+        "name": "md-menu-bar",
+        "description": "Menu bars are containers that hold multiple menus. They change the behavior and appearence of the md-menu directive to behave similar to an operating system provided menu."
+    }
 ]
