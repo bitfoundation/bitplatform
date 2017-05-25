@@ -54,15 +54,20 @@ namespace Foundation.Test
                 TestDependencyManager.CurrentTestDependencyManager.AutoProxyCreationIncludeRules.AddRange(GetAutoProxyCreationIncludeRules());
             }
 
-            DefaultDependenciesManagerProvider.Current = args.CustomDependenciesManagerProvider ?? DependenciesManagerProviderBuilder(args);
-            DefaultAppEnvironmentProvider.Current = args.CustomAppEnvironmentProvider ?? AppEnvironmentProviderBuilder(args);
+            DefaultDependenciesManagerProvider.Current = GetDependenciesManagerProvider(args);
+            DefaultAppEnvironmentProvider.Current = GetAppEnvironmentProvider(args);
 
-            if (args.UseRealServer == true)
-                Server = TestServerFactory.GetSelfHostTestServer();
-            else
-                Server = TestServerFactory.GetEmbeddedTestServer();
+            Server = GetTestServer(args);
 
             Server.Initialize(uri);
+        }
+
+        protected virtual ITestServer GetTestServer(TestEnvironmentArgs args)
+        {
+            if (args.UseRealServer == true)
+                return new OwinSelfHostTestServer();
+            else
+                return new OwinEmbeddedTestServer();
         }
 
         protected virtual List<Func<TypeInfo, bool>> GetAutoProxyCreationIgnoreRules()
@@ -101,9 +106,15 @@ namespace Foundation.Test
             }
         }
 
-        public static Func<TestEnvironmentArgs, IAppEnvironmentProvider> AppEnvironmentProviderBuilder { get; set; } = args => DefaultAppEnvironmentProvider.Current;
+        protected virtual IAppEnvironmentProvider GetAppEnvironmentProvider(TestEnvironmentArgs args)
+        {
+            return args.CustomAppEnvironmentProvider ?? DefaultAppEnvironmentProvider.Current;
+        }
 
-        public static Func<TestEnvironmentArgs, IDependenciesManagerProvider> DependenciesManagerProviderBuilder { get; set; } = args => DefaultDependenciesManagerProvider.Current;
+        protected virtual IDependenciesManagerProvider GetDependenciesManagerProvider(TestEnvironmentArgs args)
+        {
+            return args.CustomDependenciesManagerProvider ?? DefaultDependenciesManagerProvider.Current;
+        }
 
         public ITestServer Server { get; }
 

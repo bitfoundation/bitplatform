@@ -14,6 +14,7 @@ namespace Foundation.Test.HtmlClient.ViewModel.Implementation
     {
         [TestMethod]
         [TestCategory("HtmlClient"), TestCategory("Logging")]
+        [Ignore]
         public virtual void LogException()
         {
             using (TestEnvironment testEnvironment = new TestEnvironment(new TestEnvironmentArgs { UseRealServer = true }))

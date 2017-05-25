@@ -221,7 +221,6 @@
     <Compile Include="Server\OwinEmbeddedTestServer.cs" />
     <Compile Include="Server\OwinSelfHostTestServer.cs" />
     <Compile Include="Server\TestServerBase.cs" />
-    <Compile Include="Server\TestServerFactory.cs" />
     <Compile Include="TestEnvironmentBase.cs" />
   </ItemGroup>
   <ItemGroup>
