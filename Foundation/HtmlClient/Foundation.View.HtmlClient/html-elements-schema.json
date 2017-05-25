@@ -919,5 +919,49 @@
         "description": "Selector, pointing to an element, whose scrolling will be disabled when the sidenav is opened. By default this is the sidenav's direct parent."
       }
     ]
+  },
+  {
+    "name": "md-slider",
+    "description": "The <md-slider> component allows the user to choose from a range of values.",
+    "attributes": [
+      {
+        "name": "md-discrete",
+        "description": "Whether to enable discrete mode.",
+        "type": "boolean",
+        "values": [
+          "true",
+          "false"
+        ]
+      },
+      {
+        "name": "md-invert",
+        "description": "Whether to enable invert mode.",
+        "type": "boolean",
+        "values": [
+          "true",
+          "false"
+        ]
+      },
+      {
+        "name": "step",
+        "description": "The distance between values the user is allowed to pick. Default 1.",
+        "type": "number"
+      },
+      {
+        "name": "min",
+        "description": "The minimum value the user is allowed to pick. Default 0.",
+        "type": "number"
+      },
+      {
+        "name": "max",
+        "description": "The maximum value the user is allowed to pick. Default 100.",
+        "type": "number"
+      },
+      {
+        "name": "round",
+        "description": "The amount of numbers after the decimal point, maximum is 6 to prevent scientific notation. Default 3.",
+        "type": "number"
+      }
+    ]
   }
 ]
