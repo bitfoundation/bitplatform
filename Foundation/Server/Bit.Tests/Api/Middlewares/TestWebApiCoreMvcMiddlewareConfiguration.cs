@@ -8,7 +8,7 @@ namespace Foundation.AspNetCore.Test.Api.Middlewares
     {
         public virtual void Configure(IApplicationBuilder aspNetCoreApp)
         {
-            aspNetCoreApp.Map("/api", innerAspNetCoreApp =>
+            aspNetCoreApp.Map("/api-core", innerAspNetCoreApp =>
             {
                 innerAspNetCoreApp.UseMvcWithDefaultRoute();
 
