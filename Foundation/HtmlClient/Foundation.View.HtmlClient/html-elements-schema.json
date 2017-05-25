@@ -500,13 +500,66 @@
     ]
   },
   {
-        "name": "md-content",
-        "description": "The <md-content> directive is a container element useful for scrollable content. It achieves this by setting the CSS overflow property to auto so that content can properly scroll.",
-        "attributes": [
-            {
-                "name": "layout-padding",
-                "description": "Add the [layout-padding] attribute to make the content padded."
-            }
+    "name": "md-content",
+    "description": "The <md-content> directive is a container element useful for scrollable content. It achieves this by setting the CSS overflow property to auto so that content can properly scroll.",
+    "attributes": [
+      {
+        "name": "layout-padding",
+        "description": "Add the [layout-padding] attribute to make the content padded."
+      }
+    ]
+  },
+  {
+    "name": "md-datepicker",
+    "description": "md-datepicker> is a component used to select a single date. For information on how to configure internationalization for the date picker, see $mdDateLocaleProvider.",
+    "attributes": [
+      {
+        "name": "md-min-date",
+        "description": "Expression representing a min date (inclusive)."
+      },
+      {
+        "name": "md-max-date",
+        "description": "Expression representing a max date (inclusive)."
+      },
+      {
+        "name": "md-date-filter",
+        "description": "Function expecting a date and returning a boolean whether it can be selected or not."
+      },
+      {
+        "name": "md-placeholder",
+        "description": "The date input placeholder value."
+      },
+      {
+        "name": "md-open-on-focus",
+        "description": "When present, the calendar will be opened when the input is focused."
+      },
+      {
+        "name": "md-is-open",
+        "description": "Expression that can be used to open the datepicker's calendar on-demand.",
+        "type": "boolean",
+        "values": [
+          "true",
+          "false"
         ]
-    }
+      },
+      {
+        "name": "md-current-view",
+        "description": "Default open view of the calendar pane. Can be either month or year."
+      },
+      {
+        "name": "md-hide-icons",
+        "description": "Determines which datepicker icons should be hidden. Note that this may cause the datepicker to not align properly with other components.",
+        "type": "enum",
+        "values": [
+          "all",
+          "calendar",
+          "triangle"
+        ]
+      },
+      {
+        "name": "md-date-locale",
+        "description": "Allows for the values from the $mdDateLocaleProvider to be ovewritten on a per-element basis."
+      }
+    ]
+  }
 ]
