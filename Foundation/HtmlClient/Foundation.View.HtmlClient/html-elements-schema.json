@@ -1166,36 +1166,40 @@
     ]
   },
   {
-        "name": "md-tooltip",
-        "description": "Tooltips are used to describe elements that are interactive and primarily graphical (not textual).Place a <md-tooltip> as a child of the element it describes.A tooltip will activate when the user hovers over, focuses, or touches the parent element.",
-        "attributes": [
-            {
-                "name": "md-z-index",
-                "description": "The visual level that the tooltip will appear in comparison with the rest of the elements of the application",
-                "type": "number"
-            },
-            {
-                "name": "md-visible",
-                "description": "Boolean bound to whether the tooltip is currently visible."
-            },
-            {
-                "name": "md-delay",
-                "description": "How many milliseconds to wait to show the tooltip after the user hovers over, focuses, or touches the parent element. Defaults to 0ms on non-touch devices and 75ms on touch.",
-                "type": "number"
-            },
-            {
-                "name": "md-autohide",
-                "description": "If present or provided with a boolean value, the tooltip will hide on mouse leave, regardless of focus.",
-                "type": "boolean",
-                "values": [
-                    "true",
-                    "false"
-                ]
-            },
-            {
-                "name": "md-direction",
-                "description": "The direction that the tooltip is shown, relative to the parent element. Supports top, right, bottom, and left. Defaults to bottom."
-            }
+    "name": "md-tooltip",
+    "description": "Tooltips are used to describe elements that are interactive and primarily graphical (not textual).Place a <md-tooltip> as a child of the element it describes.A tooltip will activate when the user hovers over, focuses, or touches the parent element.",
+    "attributes": [
+      {
+        "name": "md-z-index",
+        "description": "The visual level that the tooltip will appear in comparison with the rest of the elements of the application",
+        "type": "number"
+      },
+      {
+        "name": "md-visible",
+        "description": "Boolean bound to whether the tooltip is currently visible."
+      },
+      {
+        "name": "md-delay",
+        "description": "How many milliseconds to wait to show the tooltip after the user hovers over, focuses, or touches the parent element. Defaults to 0ms on non-touch devices and 75ms on touch.",
+        "type": "number"
+      },
+      {
+        "name": "md-autohide",
+        "description": "If present or provided with a boolean value, the tooltip will hide on mouse leave, regardless of focus.",
+        "type": "boolean",
+        "values": [
+          "true",
+          "false"
         ]
-    }
+      },
+      {
+        "name": "md-direction",
+        "description": "The direction that the tooltip is shown, relative to the parent element. Supports top, right, bottom, and left. Defaults to bottom."
+      }
+    ]
+  },
+  {
+    "name": "md-truncate",
+    "description": "The md-truncate component displays a label that will automatically clip text which is wider than the component. "
+  }
 ]
