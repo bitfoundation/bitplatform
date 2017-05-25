@@ -651,5 +651,35 @@
         "type": "number"
       }
     ]
+  },
+  {
+    "name": "md-icon",
+    "description": "The md-icon directive makes it easier to use vector-based icons in your app (as opposed to raster-based icons types like PNG). The directive supports both icon fonts and SVG icons.",
+    "attributes": [
+      {
+        "name": "md-font-icon",
+        "description": "String name of CSS icon associated with the font-face will be used to render the icon. Requires the fonts and the named CSS styles to be preloaded."
+      },
+      {
+        "name": "md-font-set",
+        "description": "CSS style name associated with the font library; which will be assigned as the class for the font-icon ligature. This value may also be an alias that is used to lookup the classname; internally use $mdIconProvider.fontSet(<alias>) to determine the style name."
+      },
+      {
+        "name": "md-svg-src",
+        "description": "String URL (or expression) used to load, cache, and display an external SVG."
+      },
+      {
+        "name": "md-svg-icon",
+        "description": "md-svg-icon String name used for lookup of the icon from the internal cache; interpolated strings or expressions may also be used. Specific set names can be used with the syntax <set name>:<icon name>."
+      },
+      {
+        "name": "aria-label",
+        "description": "Labels icon for accessibility. If an empty string is provided, icon will be hidden from accessibility layer with aria-hidden='true'. If there's no aria-label on the icon nor a label on the parent element, a warning will be logged to the console."
+      },
+      {
+        "name": "alt",
+        "description": "Labels icon for accessibility. If an empty string is provided, icon will be hidden from accessibility layer with aria-hidden='true'. If there's no alt on the icon nor a label on the parent element, a warning will be logged to the console."
+      }
+    ]
   }
 ]
