@@ -967,5 +967,9 @@
   {
     "name": "md-slider-container",
     "description": "The <md-slider-container> contains slider with two other elements."
+  },
+  {
+    "name": "md-subheader",
+    "description": "The md-subheader directive creates a sticky subheader for a section."
   }
 ]
