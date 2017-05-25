@@ -1,4 +1,7 @@
-﻿using Foundation.AspNetCore.Implementations.Servers;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Hosting.Server.Features;
 using Microsoft.AspNetCore.Http.Features;
@@ -6,12 +9,8 @@ using Microsoft.AspNetCore.Owin;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Owin.BuilderProperties;
 using Microsoft.Owin.Host.HttpListener;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
-namespace Foundation.AspNetCore.Implementations.Servers
+namespace Microsoft.AspNetCore.Hosting
 {
     public class HttpListenerServer : IServer
     {
@@ -68,10 +67,7 @@ namespace Foundation.AspNetCore.Implementations.Servers
             _HttpListenerServer?.Dispose();
         }
     }
-}
 
-namespace Microsoft.AspNetCore.Hosting
-{
     public static class HttpListenerWebHostBuilderExtensions
     {
         public static IWebHostBuilder UseHttpListener(this IWebHostBuilder builder)

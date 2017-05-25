@@ -1,7 +1,7 @@
-﻿using Foundation.Api.Contracts.Metadata;
-using System;
+﻿using System;
+using Bit.Owin.Contracts.Metadata;
 
-namespace Foundation.Api.Implementations.Metadata
+namespace Bit.Owin.Implementations.Metadata
 {
     public class DefaultProjectMetadataBuilder : DefaultMetadataBuilder, IProjectMetadataBuilder
     {

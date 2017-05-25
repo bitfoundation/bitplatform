@@ -7,8 +7,8 @@
   "BitCodeGeneratorConfigs": {
     "BitCodeGeneratorMappings": [
       {
-        "EdmName": "Foundation",
-        "Namespace": "Foundation",
+        "EdmName": "Bit",
+        "Namespace": "Bit",
         "DestinationFileName": "Foundation.Model.Context",
         "TypingsPath": "../../../../bit-framework/Foundation/HtmlClient/foundation.core.htmlclient/typings.d.ts",
         "SourceProjects": [
@@ -24,8 +24,8 @@
         },
         "NamespaceAliases": [
           {
-            "Namespace": "Foundation.Model.Dtos",
-            "Alias": "FoundationModel"
+            "Namespace": "Bit.Model.Dtos",
+            "Alias": "BitModel"
           }
         ]
       },
@@ -44,8 +44,8 @@
         },
         "NamespaceAliases": [
           {
-            "Namespace": "Foundation.Test.Model.Dto",
-            "Alias": "TestModel"
+            "Namespace": "Bit.Tests.Model.Dto",
+            "Alias": "BitTestsModel"
           }
         ]
       }

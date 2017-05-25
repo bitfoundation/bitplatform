@@ -1,16 +1,16 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Web.Http;
-using Foundation.Api.ApiControllers;
-using Foundation.Test.Model.DomainModels;
+using Bit.Api.ApiControllers;
+using Bit.Data.Contracts;
+using Bit.Owin.Exceptions;
+using Bit.Tests.Model.DomainModels;
+using Bit.Tests.Owin.Metadata;
 using Microsoft.EntityFrameworkCore;
-using Foundation.Api.Exceptions;
-using Foundation.Test.Metadata;
-using System;
-using Foundation.DataAccess.Contracts;
 
-namespace Foundation.Test.Api.ApiControllers
+namespace Bit.Tests.Api.ApiControllers
 {
     public class ParentEntitiesController : DtoController<ParentEntity>
     {

@@ -1,12 +1,14 @@
 ﻿using System.Linq;
-using Foundation.Api.Contracts;
-using Foundation.Core.Contracts;
-using Foundation.Test.Core.Implementations;
+using Bit.Core.Contracts;
+using Bit.Owin.Contracts;
+using Bit.Test;
+using Bit.Test.Core.Implementations;
+using Bit.Test.Server;
+using IdentityModel.Client;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using OpenQA.Selenium.Remote;
-using IdentityModel.Client;
 
-namespace Foundation.Test.HtmlClient.BrowserTests.Caching
+namespace Bit.Tests.HtmlClient.BrowserTests.Caching
 {
     [TestClass]
     public class HtmlClientCachingTests

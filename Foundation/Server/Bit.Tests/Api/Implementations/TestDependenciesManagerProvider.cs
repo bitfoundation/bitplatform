@@ -1,9 +1,10 @@
 ﻿using System.Collections.Generic;
-using Foundation.Core.Contracts;
-using Foundation.Core.Contracts.Project;
-using Foundation.Test.Api.Implementations.Project;
+using Bit.Core.Contracts;
+using Bit.Core.Contracts.Project;
+using Bit.Test;
+using Bit.Tests.Api.Implementations.Project;
 
-namespace Foundation.Test.Api.Implementations
+namespace Bit.Tests.Api.Implementations
 {
     public class TestDependenciesManagerProvider : IDependenciesManagerProvider
     {

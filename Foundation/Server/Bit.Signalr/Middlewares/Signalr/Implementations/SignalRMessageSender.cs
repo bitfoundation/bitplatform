@@ -1,11 +1,11 @@
 ﻿using System;
+using System.Linq;
 using System.Threading.Tasks;
-using Foundation.Core.Contracts;
+using Bit.Core.Contracts;
 using Microsoft.AspNet.SignalR;
 using Microsoft.AspNet.SignalR.Infrastructure;
-using System.Linq;
 
-namespace Foundation.Api.Middlewares.SignalR.Implementations
+namespace Bit.Signalr.Middlewares.Signalr.Implementations
 {
     public class SignalRMessageSender : IMessageSender
     {

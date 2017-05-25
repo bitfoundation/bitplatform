@@ -1,14 +1,14 @@
-﻿using Hangfire;
-using System;
+﻿using System;
 using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
-using Foundation.Api.Contracts;
-using Foundation.Api.Exceptions;
-using Foundation.Api.Metadata;
+using Bit.Core.Contracts;
+using Bit.Owin.Exceptions;
+using Bit.Owin.Metadata;
+using Hangfire;
 using Hangfire.Storage;
 
-namespace Foundation.Api.Implementations
+namespace Bit.Hangfire.Implementations
 {
     public class DefaultBackgroundJobWorker : IBackgroundJobWorker
     {

@@ -1,12 +1,14 @@
-﻿using FakeItEasy;
-using Foundation.Test;
-using Foundation.Test.Core.Implementations;
+﻿using System.Linq;
+using Bit.Test;
+using Bit.Test.Core.Implementations;
+using Bit.Test.Server;
+using FakeItEasy;
 using IdentityServer3.Core.Models;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using OpenQA.Selenium;
 using OpenQA.Selenium.Remote;
-using System.Linq;
 
-namespace IdentityServer.Test.ViewsTests
+namespace Bit.Tests.IdentityServer
 {
     [TestClass]
     public class LoginViewTests

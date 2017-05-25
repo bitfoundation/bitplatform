@@ -1,4 +1,4 @@
-﻿namespace IdentityServer.Api.Model
+﻿namespace Bit.IdentityServer.Model
 {
     public class SSOPageModel
     {

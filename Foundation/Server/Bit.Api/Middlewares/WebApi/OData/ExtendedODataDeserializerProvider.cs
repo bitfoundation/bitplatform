@@ -1,11 +1,11 @@
-﻿using Foundation.Api.ApiControllers;
-using System;
+﻿using System;
 using System.Linq;
 using System.Net.Http;
 using System.Reflection;
 using System.Web.OData.Formatter.Deserialization;
+using Bit.Api.ApiControllers;
 
-namespace Foundation.Api.Middlewares.WebApi.OData
+namespace Bit.Api.Middlewares.WebApi.OData
 {
     public class ExtendedODataDeserializerProvider : DefaultODataDeserializerProvider
     {

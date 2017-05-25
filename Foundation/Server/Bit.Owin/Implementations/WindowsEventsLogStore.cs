@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Diagnostics;
-using System.Threading.Tasks;
-using Foundation.Core.Contracts;
-using Foundation.Core.Models;
 using System.Linq;
+using System.Threading.Tasks;
+using Bit.Core.Contracts;
+using Bit.Core.Models;
 
-namespace Foundation.Api.Implementations
+namespace Bit.Owin.Implementations
 {
     public class WindowsEventsLogStore : ILogStore
     {

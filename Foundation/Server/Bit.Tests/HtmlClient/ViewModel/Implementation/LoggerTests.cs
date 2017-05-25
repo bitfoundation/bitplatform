@@ -1,13 +1,16 @@
-﻿using FakeItEasy;
-using Foundation.Api.ApiControllers;
-using Foundation.Model.Dtos;
-using Foundation.Test.Core.Implementations;
+﻿using System.Linq;
+using Bit.Api.ApiControllers;
+using Bit.Model.Dtos;
+using Bit.Test;
+using Bit.Test.Core.Implementations;
+using Bit.Test.Server;
+using FakeItEasy;
 using IdentityModel.Client;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using OpenQA.Selenium;
 using OpenQA.Selenium.Remote;
-using System.Linq;
 
-namespace Foundation.Test.HtmlClient.ViewModel.Implementation
+namespace Bit.Tests.HtmlClient.ViewModel.Implementation
 {
     [TestClass]
     public class LoggerTests

@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Threading.Tasks;
-using Foundation.Api.Metadata;
-using Foundation.Core.Contracts;
+using Bit.Core.Contracts;
+using Bit.Owin.Contracts;
+using Bit.Owin.Metadata;
 using Microsoft.Owin;
-using Foundation.Api.Contracts;
 
-namespace Foundation.Api.Middlewares
+namespace Bit.Owin.Middlewares
 {
     public class OwinExceptionHandlerMiddleware : OwinMiddleware
     {

@@ -3,7 +3,7 @@ using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Foundation.Api.Contracts
+namespace Bit.Core.Contracts
 {
     public class JobInfo
     {

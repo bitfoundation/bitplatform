@@ -1,13 +1,13 @@
 ﻿using System;
-using Foundation.Api.Contracts;
-using Foundation.Core.Contracts;
-using Foundation.Core.Models;
+using Bit.Core.Contracts;
+using Bit.Core.Models;
+using Bit.Owin.Contracts;
 using Microsoft.Owin.FileSystems;
 using Microsoft.Owin.StaticFiles;
 using NWebsec.Owin;
 using Owin;
 
-namespace Foundation.Api.Middlewares
+namespace Bit.Owin.Middlewares
 {
     public class StaticFilesMiddlewareConfiguration : IOwinMiddlewareConfiguration
     {

@@ -1,10 +1,10 @@
-﻿using System.Net;
+﻿using System;
+using System.Net;
+using IdentityModel.Client;
 using Microsoft.AspNet.SignalR.Client;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System;
-using IdentityModel.Client;
 
-namespace Foundation.Test.Api.Middlewares.SignalR.Tests
+namespace Bit.Tests.Api.Middlewares.SignalR.Tests
 {
     [TestClass]
     public class SignalRSecurityTests

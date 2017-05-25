@@ -1,9 +1,9 @@
 ﻿using System.IO;
 using System.Xml;
 using System.Xml.Serialization;
-using Foundation.Core.Contracts;
+using Bit.Core.Contracts;
 
-namespace Foundation.Api.Implementations
+namespace Bit.Owin.Implementations
 {
     public class DefaultXmlContentFormatter : IContentFormatter
     {

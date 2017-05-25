@@ -1,15 +1,15 @@
-﻿using Foundation.Api.Contracts;
-using Foundation.Api.Middlewares.WebApi.Contracts;
-using Foundation.Core.Contracts;
-using Foundation.Core.Models;
-using Owin;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Web.Http;
 using System.Web.OData.Extensions;
+using Bit.Api.Middlewares.WebApi.Contracts;
+using Bit.Core.Contracts;
+using Bit.Core.Models;
+using Bit.Owin.Contracts;
+using Owin;
 
-namespace Foundation.Api.Middlewares.WebApi
+namespace Bit.Api.Middlewares.WebApi
 {
     public class WebApiMiddlewareConfiguration : IOwinMiddlewareConfiguration, IDisposable
     {

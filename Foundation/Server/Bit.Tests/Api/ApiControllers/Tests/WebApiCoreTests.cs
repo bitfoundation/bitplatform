@@ -1,10 +1,10 @@
-﻿using Foundation.Test;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System.Net;
+﻿using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
+using Bit.Test;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace Foundation.AspNetCore.Test.Api
+namespace Bit.Tests.Api.ApiControllers.Tests
 {
     [TestClass]
     public class WebApiCoreTests

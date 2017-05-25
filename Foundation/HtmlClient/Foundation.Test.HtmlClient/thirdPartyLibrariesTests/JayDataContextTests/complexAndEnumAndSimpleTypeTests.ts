@@ -67,19 +67,19 @@ let enumTest = async (): Promise<void> => {
     const contextProvider = Foundation.Core.DependencyManager.getCurrent().resolveObject<Foundation.ViewModel.Contracts.IEntityContextProvider>("EntityContextProvider");
     const context = await contextProvider.getContext<TestContext>("Test");
 
-    const dtoWithEnum = await context.dtoWithEnum.getDtoWithEnumsByGender(Foundation.Test.Model.Dto.TestGender.Man).first();
+    const dtoWithEnum = await context.dtoWithEnum.getDtoWithEnumsByGender(Bit.Tests.Model.Dto.TestGender.Man).first();
 
-    expect(dtoWithEnum.Gender).toBe(Foundation.Test.Model.Dto.TestGender.Man);
+    expect(dtoWithEnum.Gender).toBe(Bit.Tests.Model.Dto.TestGender.Man);
 
-    const dtoWithEnum2 = await context.dtoWithEnum.getDtoWithEnumsByGender2(Foundation.Test.Model.Dto.TestGender2.Man).first();
+    const dtoWithEnum2 = await context.dtoWithEnum.getDtoWithEnumsByGender2(Bit.Tests.Model.Dto.TestGender2.Man).first();
 
     expect(dtoWithEnum2.Test).toBe("Man");
 
     expect((await context.dtoWithEnum.postDtoWithEnum(dtoWithEnum))).toBe(true);
 
-    await context.batchExecuteQuery([context.dtoWithEnum.getDtoWithEnumsByGender2(Foundation.Test.Model.Dto.TestGender2.Man), context.dtoWithEnum.getDtoWithEnumsByGender(Foundation.Test.Model.Dto.TestGender.Man)]);
+    await context.batchExecuteQuery([context.dtoWithEnum.getDtoWithEnumsByGender2(Bit.Tests.Model.Dto.TestGender2.Man), context.dtoWithEnum.getDtoWithEnumsByGender(Bit.Tests.Model.Dto.TestGender.Man)]);
 
-    const enumsArrayTest = await context.dtoWithEnum.testEnumsArray([Foundation.Test.Model.Dto.TestGender2.Man, Foundation.Test.Model.Dto.TestGender2.Man]);
+    const enumsArrayTest = await context.dtoWithEnum.testEnumsArray([Bit.Tests.Model.Dto.TestGender2.Man, Bit.Tests.Model.Dto.TestGender2.Man]);
 
     expect(enumsArrayTest).toBe(true);
 };

@@ -3,7 +3,7 @@ using System.Net.Http;
 using System.Web.Http.Controllers;
 using System.Web.Http.Filters;
 
-namespace Foundation.Api.Middlewares.WebApi.ActionFilters
+namespace Bit.Api.Middlewares.WebApi.ActionFilters
 {
     public class RequestModelStateValidatorActionFilterAttribute : ActionFilterAttribute
     {

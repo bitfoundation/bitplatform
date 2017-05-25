@@ -1,5 +1,5 @@
-﻿using Foundation.Test;
-using System.Reflection;
+﻿using System.Reflection;
+using Bit.Tests;
 
 namespace Bit.Core
 {

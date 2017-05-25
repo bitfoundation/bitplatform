@@ -1,10 +1,10 @@
-﻿using IdentityModel.Client;
+﻿using System;
+using System.Net.Http;
+using IdentityModel.Client;
 using Microsoft.AspNet.SignalR.Client;
 using OpenQA.Selenium.Remote;
-using System;
-using System.Net.Http;
 
-namespace Foundation.Test
+namespace Bit.Test.Server
 {
     public class RemoteWebDriverOptions
     {

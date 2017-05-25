@@ -1,10 +1,10 @@
-﻿using Foundation.Api.Contracts.Metadata;
-using Foundation.Api.Implementations.Metadata;
-using Foundation.Test.Model.Dto;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Threading.Tasks;
+using Bit.Owin.Contracts.Metadata;
+using Bit.Owin.Implementations.Metadata;
+using Bit.Tests.Model.Dto;
 
-namespace Foundation.Test.Metadata.Dtos
+namespace Bit.Tests.Owin.Metadata.Dtos
 {
     public class ValidationSampleDtoMetadata : DefaultDtoMetadataBuilder<ValidationSampleDto>
     {

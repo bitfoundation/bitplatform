@@ -1,6 +1,6 @@
 ﻿using AutoMapper;
 
-namespace Foundation.Model.Contracts
+namespace Bit.Model.Contracts
 {
     public interface IDtoModelMapperConfiguration
     {

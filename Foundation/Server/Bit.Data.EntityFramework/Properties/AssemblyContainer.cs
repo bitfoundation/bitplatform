@@ -1,5 +1,5 @@
-﻿using Bit.Data.EntityFramework.Implementations;
-using System.Reflection;
+﻿using System.Reflection;
+using Bit.Data.EntityFramework.Implementations;
 
 namespace Bit.Core
 {

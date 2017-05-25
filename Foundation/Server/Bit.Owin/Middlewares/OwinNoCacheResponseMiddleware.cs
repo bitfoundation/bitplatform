@@ -1,10 +1,10 @@
-﻿using System.Threading.Tasks;
-using Microsoft.Owin;
+﻿using System;
 using System.Linq;
-using System;
-using Foundation.Api.Implementations;
+using System.Threading.Tasks;
+using Bit.Owin.Implementations;
+using Microsoft.Owin;
 
-namespace Foundation.Api.Middlewares
+namespace Bit.Owin.Middlewares
 {
     public class OwinNoCacheResponseMiddleware : DefaultOwinActionFilterMiddleware
     {

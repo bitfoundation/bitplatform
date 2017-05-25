@@ -2,10 +2,11 @@
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
+using Bit.Core.Models;
+using Bit.Test;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Foundation.Core.Models;
 
-namespace Foundation.Test.Api.Middlewares.Tests
+namespace Bit.Tests.Api.Middlewares.Tests
 {
     [TestClass]
     public class SignInPageMiddlewareTests

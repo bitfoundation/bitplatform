@@ -1,7 +1,7 @@
-﻿using Foundation.Model.Contracts;
-using System.Linq;
+﻿using System.Linq;
+using Bit.Model.Contracts;
 
-namespace Foundation.DataAccess.Contracts
+namespace Bit.Data.Contracts
 {
     public interface IWhereByKeyBuilder<TSource, in TKey>
         where TSource : class, IWithDefaultKey<TKey>

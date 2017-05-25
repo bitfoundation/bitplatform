@@ -5,10 +5,10 @@ using System.Data.Common;
 using System.Data.SqlClient;
 using System.Threading;
 using System.Threading.Tasks;
-using Foundation.Core.Contracts;
-using Foundation.DataAccess.Contracts;
+using Bit.Core.Contracts;
+using Bit.Data.Contracts;
 
-namespace Foundation.DataAccess.Implementations
+namespace Bit.Data
 {
     public class DefaultSqlDbConnectionProvider : IDbConnectionProvider
     {

@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Builder;
 
-namespace Foundation.AspNetCore.Contracts
+namespace Bit.OwinCore.Contracts
 {
     public interface IAspNetCoreMiddlewareConfiguration
     {

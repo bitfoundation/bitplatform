@@ -1,12 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using Foundation.Api.Contracts.Metadata;
-using Foundation.Core.Contracts;
-using Foundation.Core.Models;
 using System.Threading.Tasks;
+using Bit.Core.Contracts;
+using Bit.Core.Models;
+using Bit.Owin.Contracts.Metadata;
 
-namespace Foundation.Api.Implementations.Metadata
+namespace Bit.Owin.Implementations.Metadata
 {
     public class DefaultAppMetadataProvider : IAppMetadataProvider
     {

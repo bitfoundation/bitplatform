@@ -1,6 +1,6 @@
 ﻿using Microsoft.OData.UriParser;
 
-namespace Foundation.Api.Middlewares.WebApi.OData
+namespace Bit.Api.Middlewares.WebApi.OData
 {
     public class DefaultODataUriResolver : UnqualifiedODataUriResolver
     {

@@ -1,8 +1,8 @@
-﻿using Foundation.Api.Middlewares.SignalR.Contracts;
+﻿using Bit.Signalr.Middlewares.Signalr.Contracts;
 using Microsoft.AspNet.SignalR;
 using Microsoft.AspNet.SignalR.Hubs;
 
-namespace Foundation.Api.Middlewares.SignalR.Implementations
+namespace Bit.Signalr.Middlewares.Signalr.Implementations
 {
     public class SignalRAuthorizeConfiguration : ISignalRConfiguration
     {

@@ -1,9 +1,9 @@
-﻿using Foundation.AspNetCore.Test.Api.Implementations;
-using Foundation.AspNetCore.Test.Server;
-using Foundation.Core.Contracts;
-using Foundation.Test;
+﻿using Bit.Core.Contracts;
+using Bit.Test;
+using Bit.Test.Server;
+using Bit.Tests.Api.Implementations;
 
-namespace Foundation.AspNetCore.Test
+namespace Bit.Tests
 {
     public class AspNetCoreTestEnvironment : TestEnvironment
     {

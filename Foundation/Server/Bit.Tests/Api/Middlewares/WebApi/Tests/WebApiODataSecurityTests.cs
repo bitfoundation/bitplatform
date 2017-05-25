@@ -1,10 +1,10 @@
 ﻿using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 using IdentityModel.Client;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace Foundation.Test.Api.Middlewares.WebApi.Tests
+namespace Bit.Tests.Api.Middlewares.WebApi.Tests
 {
     [TestClass]
     public class WebApiODataSecurityTests
@@ -18,7 +18,7 @@ namespace Foundation.Test.Api.Middlewares.WebApi.Tests
                 TokenResponse token = testEnvironment.Server.Login("ValidUserName", "ValidPassword", clientName: "TestResOwner");
 
                 HttpResponseMessage getMetadataResponse = await testEnvironment.Server.GetHttpClient(token)
-                        .GetAsync("/odata/Foundation/$metadata");
+                        .GetAsync("/odata/Bit/$metadata");
 
                 Assert.AreEqual(HttpStatusCode.OK, getMetadataResponse.StatusCode);
             }
@@ -33,7 +33,7 @@ namespace Foundation.Test.Api.Middlewares.WebApi.Tests
                 TokenResponse token = testEnvironment.Server.Login("ValidUserName", "ValidPassword", clientName: "TestResOwner");
 
                 HttpResponseMessage getMetadataResponse = await testEnvironment.Server.GetHttpClient(token)
-                        .GetAsync("/odata/Foundation/$metadata");
+                        .GetAsync("/odata/Bit/$metadata");
 
                 Assert.AreEqual(true, getMetadataResponse.Headers.Contains("X-Content-Type-Options"));
             }

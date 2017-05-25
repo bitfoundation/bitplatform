@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Foundation.Test.Core.Contracts
+namespace Bit.Tests.Core.Contracts
 {
     public interface IRequestValidator
     {

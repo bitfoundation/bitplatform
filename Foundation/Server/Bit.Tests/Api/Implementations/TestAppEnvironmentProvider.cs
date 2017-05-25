@@ -1,10 +1,11 @@
 ﻿using System;
-using Foundation.Core.Contracts;
-using Foundation.Core.Models;
 using System.Collections.Generic;
+using Bit.Core.Contracts;
+using Bit.Core.Models;
+using Bit.Test;
 using Bit.Tests.Properties;
 
-namespace Foundation.Test.Api.Implementations
+namespace Bit.Tests.Api.Implementations
 {
     public class TestAppEnvironmentProvider : IAppEnvironmentProvider
     {

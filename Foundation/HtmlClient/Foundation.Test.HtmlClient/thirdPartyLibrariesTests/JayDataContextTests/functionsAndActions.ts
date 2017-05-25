@@ -39,8 +39,8 @@ let testPassingArrayOfEntitiesToController = async (): Promise<void> => {
     const contextProvider = Foundation.Core.DependencyManager.getCurrent().resolveObject<Foundation.ViewModel.Contracts.IEntityContextProvider>("EntityContextProvider");
     const context = await contextProvider.getContext<TestContext>("Test");
     const validations = [
-        new Foundation.Test.Model.Dto.ValidationSampleDto({ Id: 1, RequiredByAttributeMember: "A", RequiredByMetadataMember: "B" }),
-        new Foundation.Test.Model.Dto.ValidationSampleDto({ Id: 2, RequiredByAttributeMember: "B", RequiredByMetadataMember: "C" })
+        new Bit.Tests.Model.Dto.ValidationSampleDto({ Id: 1, RequiredByAttributeMember: "A", RequiredByMetadataMember: "B" }),
+        new Bit.Tests.Model.Dto.ValidationSampleDto({ Id: 2, RequiredByAttributeMember: "B", RequiredByMetadataMember: "C" })
     ];
 
     let result = await context.validationSamples.submitValidations(validations, null).first();

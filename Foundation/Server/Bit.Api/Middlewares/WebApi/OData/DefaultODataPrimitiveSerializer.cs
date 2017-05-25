@@ -1,13 +1,13 @@
 ﻿using System;
 using System.Net.Http;
 using System.Web.OData.Formatter.Serialization;
-using Foundation.Core.Contracts;
-using Microsoft.OData.Edm;
-using Foundation.Api.Contracts;
+using Bit.Core.Contracts;
+using Bit.Owin.Contracts;
 using Microsoft.OData;
+using Microsoft.OData.Edm;
 using Microsoft.Owin;
 
-namespace Foundation.Api.Middlewares.WebApi.OData
+namespace Bit.Api.Middlewares.WebApi.OData
 {
     public class DefaultODataPrimitiveSerializer : ODataPrimitiveSerializer
     {

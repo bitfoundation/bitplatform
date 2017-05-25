@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNet.SignalR;
 
-namespace Foundation.Api.Middlewares.SignalR.Contracts
+namespace Bit.Signalr.Middlewares.Signalr.Contracts
 {
     public interface ISignalRConfiguration
     {

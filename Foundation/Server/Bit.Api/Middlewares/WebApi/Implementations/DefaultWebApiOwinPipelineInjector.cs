@@ -1,10 +1,11 @@
-﻿using Owin;
+﻿using System;
 using System.Web.Http;
+using Bit.Api.Middlewares.WebApi.Contracts;
+using Bit.Owin.Middlewares;
 using NWebsec.Owin;
-using System;
-using Foundation.Api.Middlewares.WebApi.Contracts;
+using Owin;
 
-namespace Foundation.Api.Middlewares.WebApi.Implementations
+namespace Bit.Api.Middlewares.WebApi.Implementations
 {
     public class DefaultWebApiOwinPipelineInjector : IWebApiOwinPipelineInjector
     {

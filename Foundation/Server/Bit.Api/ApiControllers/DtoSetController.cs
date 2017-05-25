@@ -1,14 +1,14 @@
-﻿using Foundation.Api.Exceptions;
-using Foundation.DataAccess.Contracts;
-using Foundation.Model.Contracts;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Web.OData;
+using Bit.Data.Contracts;
+using Bit.Model.Contracts;
+using Bit.Owin.Exceptions;
 
-namespace Foundation.Api.ApiControllers
+namespace Bit.Api.ApiControllers
 {
     public class DtoSetController<TModel, TDto, TKey> : DtoController<TDto>
         where TDto : class, IDtoWithDefaultKey<TKey>

@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace Foundation.Core.Models
+namespace Bit.Core.Models
 {
     [Serializable]
     public class LogEntry

@@ -1,14 +1,14 @@
-﻿using Foundation.Core.Contracts;
-using IdentityServer.Api.Contracts;
-using RazorEngine;
-using RazorEngine.Templating;
-using System;
+﻿using System;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
-using Foundation.Core.Models;
+using Bit.Core.Contracts;
+using Bit.Core.Models;
+using Bit.IdentityServer.Contracts;
+using RazorEngine;
+using RazorEngine.Templating;
 
-namespace IdentityServer.Api.Implementations
+namespace Bit.IdentityServer.Implementations
 {
     public class RazorSsoHtmlPageProvider : ISsoPageHtmlProvider
     {

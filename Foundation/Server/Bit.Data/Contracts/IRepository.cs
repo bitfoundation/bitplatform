@@ -1,12 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
-using Foundation.Model.Contracts;
-using System.Linq;
+using Bit.Model.Contracts;
 
-namespace Foundation.DataAccess.Contracts
+namespace Bit.Data.Contracts
 {
     public interface IRepository<TEntity>
         where TEntity : class, IEntity

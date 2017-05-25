@@ -1,8 +1,8 @@
-﻿using Foundation.Core.Models;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Threading.Tasks;
+using Bit.Core.Models;
 
-namespace Foundation.Api.Contracts.Metadata
+namespace Bit.Owin.Contracts.Metadata
 {
     public class AppMetadata
     {

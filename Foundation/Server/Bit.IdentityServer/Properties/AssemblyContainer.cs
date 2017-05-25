@@ -1,5 +1,5 @@
-﻿using IdentityServer.Api.Implementations;
-using System.Reflection;
+﻿using System.Reflection;
+using Bit.IdentityServer.Implementations;
 
 namespace Bit.Core
 {

@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Security.Cryptography.X509Certificates;
 
-namespace Foundation.Core.Contracts
+namespace Bit.Core.Contracts
 {
     public interface ICertificateProvider : IDisposable
     {

@@ -1,9 +1,9 @@
-﻿using Foundation.AspNetCore.Contracts;
-using Foundation.AspNetCore.Middlewares;
+﻿using System;
+using Bit.OwinCore.Contracts;
+using Bit.OwinCore.Middlewares;
 using Microsoft.AspNetCore.Builder;
-using System;
 
-namespace Foundation.Core.Contracts
+namespace Bit.Core.Contracts
 {
     public static class IDependencyManangerExtensions
     {

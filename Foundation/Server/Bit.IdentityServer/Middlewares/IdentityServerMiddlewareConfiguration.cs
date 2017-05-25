@@ -1,15 +1,15 @@
 ﻿using System;
-using Foundation.Api.Contracts;
-using Foundation.Core.Contracts;
-using Foundation.Core.Models;
+using System.Linq;
+using Bit.Core.Contracts;
+using Bit.Core.Models;
+using Bit.IdentityServer.Contracts;
+using Bit.Owin.Contracts;
 using IdentityServer3.Core.Configuration;
 using IdentityServer3.Core.Logging;
 using IdentityServer3.Core.Services;
 using Owin;
-using IdentityServer.Api.Contracts;
-using System.Linq;
 
-namespace IdentityServer.Api.Middlewares
+namespace Bit.IdentityServer.Middlewares
 {
     public class IdentityServerMiddlewareConfiguration : IOwinMiddlewareConfiguration
     {

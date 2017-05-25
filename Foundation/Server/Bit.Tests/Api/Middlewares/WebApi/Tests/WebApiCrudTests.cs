@@ -1,9 +1,9 @@
 ﻿using System.Net.Http;
 using System.Threading.Tasks;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 using IdentityModel.Client;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace Foundation.Test.Api.Middlewares.WebApi.Tests
+namespace Bit.Tests.Api.Middlewares.WebApi.Tests
 {
     [TestClass]
     public class WebApiCrudTests

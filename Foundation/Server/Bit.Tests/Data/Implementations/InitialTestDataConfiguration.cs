@@ -1,13 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
-using Foundation.Core.Contracts;
-using Foundation.Test.Model.DomainModels;
 using System.Data.SqlClient;
-using Microsoft.EntityFrameworkCore;
-using Foundation.Api.Implementations;
+using Bit.Core.Contracts;
+using Bit.Owin.Implementations;
+using Bit.Tests.Model.DomainModels;
 using Bit.Tests.Properties;
+using Microsoft.EntityFrameworkCore;
 
-namespace Foundation.Test.DataAccess.Implementations
+namespace Bit.Tests.Data.Implementations
 {
     public class InitialTestDataConfiguration : IAppEvents
     {

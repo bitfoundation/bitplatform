@@ -1,5 +1,5 @@
-﻿using Foundation.DataAccess.Implementations.EntityFrameworkCore;
-using System.Reflection;
+﻿using System.Reflection;
+using Bit.Data.EntityFrameworkCore.Implementations;
 
 namespace Bit.Core
 {

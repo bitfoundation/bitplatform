@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Net;
 
-namespace Foundation.Api.Contracts
+namespace Bit.Owin.Contracts
 {
     public interface IExceptionToHttpErrorMapper
     {

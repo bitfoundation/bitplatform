@@ -1,10 +1,10 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
+using Bit.Signalr.Middlewares.Signalr.Contracts;
 using Microsoft.AspNet.SignalR;
 using Microsoft.Owin;
-using Foundation.Api.Middlewares.SignalR.Contracts;
-using System;
 
-namespace Foundation.Api.Middlewares.SignalR
+namespace Bit.Signalr.Middlewares.Signalr
 {
     public class MessagesHub : Hub
     {

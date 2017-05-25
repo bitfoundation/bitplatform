@@ -1,7 +1,8 @@
-﻿using Newtonsoft.Json;
-using System;
+﻿using System;
 using System.Diagnostics;
 using System.Threading;
+using Newtonsoft.Json;
+using OpenQA.Selenium.Remote;
 
 namespace OpenQA.Selenium
 {
@@ -30,10 +31,6 @@ namespace OpenQA.Selenium
         }
     }
 
-}
-
-namespace OpenQA.Selenium.Remote
-{
     public static class IRemoteWebDriverExtensions
     {
         public static void NavigateToRoute(this RemoteWebDriver driver, string route)

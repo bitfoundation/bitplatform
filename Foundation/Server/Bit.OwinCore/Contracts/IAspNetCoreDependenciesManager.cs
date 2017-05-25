@@ -1,8 +1,8 @@
-﻿using Foundation.Core.Contracts;
-using Foundation.Core.Contracts.Project;
+﻿using Bit.Core.Contracts;
+using Bit.Core.Contracts.Project;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Foundation.AspNetCore.Contracts
+namespace Bit.OwinCore.Contracts
 {
     public interface IAspNetCoreDependenciesManager : IDependenciesManager
     {

@@ -1,8 +1,8 @@
-﻿using Foundation.Api.Contracts;
-using System;
+﻿using System;
+using Bit.Owin.Contracts;
 using Owin;
 
-namespace Foundation.Api.Middlewares
+namespace Bit.Owin.Middlewares
 {
     public class InvokeLogOutMiddlewareConfiguration : IOwinMiddlewareConfiguration
     {

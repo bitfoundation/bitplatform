@@ -1,11 +1,11 @@
 ﻿using System;
-using Foundation.Api.Contracts;
-using Foundation.Core.Contracts;
-using Foundation.Core.Models;
+using Bit.Core.Contracts;
+using Bit.Core.Models;
+using Bit.Owin.Contracts;
 using NWebsec.Owin;
 using Owin;
 
-namespace Foundation.Api.Middlewares
+namespace Bit.Owin.Middlewares
 {
     public class SignInPageMiddlewareConfiguration : IOwinMiddlewareConfiguration
     {

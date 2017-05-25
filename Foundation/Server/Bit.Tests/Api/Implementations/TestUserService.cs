@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using IdentityServer3.Core.Models;
 using IdentityServer3.Core.Services.Default;
 
-namespace IdentityServer.Test.Api.Implementations
+namespace Bit.Tests.Api.Implementations
 {
     public class LocalUser
     {

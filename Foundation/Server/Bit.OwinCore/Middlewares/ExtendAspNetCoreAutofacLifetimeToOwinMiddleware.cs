@@ -1,16 +1,16 @@
 ﻿using System;
+using System.Reflection;
 using System.Threading.Tasks;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Owin;
-using Microsoft.AspNetCore.Http;
 using Autofac;
 using Autofac.Integration.Owin;
-using System.Reflection;
-using Foundation.Api.Contracts;
+using Bit.Owin.Contracts;
+using Bit.Owin.Middlewares;
+using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Owin;
 using Owin;
-using Foundation.Api.Middlewares;
 
-namespace Foundation.AspNetCore.Middlewares
+namespace Bit.OwinCore.Middlewares
 {
     public class ExtendAspNetCoreAutofacLifetimeToOwinMiddlewareConfiguration : IOwinMiddlewareConfiguration
     {

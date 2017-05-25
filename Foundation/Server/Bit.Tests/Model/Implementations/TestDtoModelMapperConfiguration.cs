@@ -1,9 +1,9 @@
-﻿using Foundation.Model.Contracts;
-using AutoMapper;
-using Foundation.Test.Model.DomainModels;
-using Foundation.Test.Model.Dto;
+﻿using AutoMapper;
+using Bit.Model.Contracts;
+using Bit.Tests.Model.DomainModels;
+using Bit.Tests.Model.Dto;
 
-namespace Foundation.Test.Model.Implementations
+namespace Bit.Tests.Model.Implementations
 {
     public class TestDtoModelMapperConfiguration : IDtoModelMapperConfiguration
     {

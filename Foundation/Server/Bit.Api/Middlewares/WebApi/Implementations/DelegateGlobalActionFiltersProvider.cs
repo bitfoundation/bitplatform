@@ -1,8 +1,8 @@
-﻿using Foundation.Api.Middlewares.WebApi.Contracts;
-using System;
+﻿using System;
 using System.Web.Http;
+using Bit.Api.Middlewares.WebApi.Contracts;
 
-namespace Foundation.Api.Middlewares.WebApi.Implementations
+namespace Bit.Api.Middlewares.WebApi.Implementations
 {
     public class DelegateGlobalActionFiltersProvider : IWebApiConfigurationCustomizer
     {

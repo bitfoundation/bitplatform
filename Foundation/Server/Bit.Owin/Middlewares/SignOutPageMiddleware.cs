@@ -1,9 +1,9 @@
 ﻿using System.Threading.Tasks;
+using Bit.Core.Contracts;
+using Bit.Core.Models;
 using Microsoft.Owin;
-using Foundation.Core.Contracts;
-using Foundation.Core.Models;
 
-namespace Foundation.Api.Middlewares
+namespace Bit.Owin.Middlewares
 {
     public class SignOutPageMiddleware : OwinMiddleware
     {

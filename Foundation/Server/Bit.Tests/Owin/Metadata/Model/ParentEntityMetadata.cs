@@ -1,11 +1,11 @@
-﻿using Foundation.Api.Contracts.Metadata;
-using Foundation.Api.Implementations.Metadata;
-using Foundation.Core.Models;
-using Foundation.Test.Model.DomainModels;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Threading.Tasks;
+using Bit.Core.Models;
+using Bit.Owin.Contracts.Metadata;
+using Bit.Owin.Implementations.Metadata;
+using Bit.Tests.Model.DomainModels;
 
-namespace Foundation.Test.Metadata.Model
+namespace Bit.Tests.Owin.Metadata.Model
 {
     public class ParentEntityMetadata : DefaultDtoMetadataBuilder<ParentEntity>
     {

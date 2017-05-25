@@ -1,6 +1,6 @@
 ﻿using System.Net;
 
-namespace Foundation.Api.Exceptions
+namespace Bit.Owin.Exceptions
 {
     public interface IHttpStatusCodeAwareException
     {

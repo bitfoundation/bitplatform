@@ -1,14 +1,13 @@
-﻿using Microsoft.AspNetCore.Builder;
+﻿using System;
+using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Owin.Builder;
 using Microsoft.Owin.BuilderProperties;
 using Owin;
-using System;
-using System.Collections.Generic;
-using System.Threading;
-using System.Threading.Tasks;
 
-namespace Foundation.AspNetCore.Extensions
+namespace Microsoft.AspNetCore.Builder
 {
     public static class OwinExtensions
     {

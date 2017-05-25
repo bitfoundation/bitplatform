@@ -1,8 +1,8 @@
-﻿using Microsoft.OData;
+﻿using System.Web.OData.Formatter.Deserialization;
+using Microsoft.OData;
 using Microsoft.OData.Edm;
-using System.Web.OData.Formatter.Deserialization;
 
-namespace Foundation.Api.Middlewares.WebApi.OData
+namespace Bit.Api.Middlewares.WebApi.OData
 {
     public class DefaultODataEnumDeserializer : ODataEnumDeserializer
     {

@@ -3,7 +3,7 @@ using System.Web.Http;
 using System.Web.Http.Controllers;
 using System.Web.OData;
 
-namespace Foundation.Api.Middlewares.WebApi.OData.ActionFilters
+namespace Bit.Api.Middlewares.WebApi.OData.ActionFilters
 {
     public class DefaultODataAuthorizeAttribute : AuthorizeAttribute
     {

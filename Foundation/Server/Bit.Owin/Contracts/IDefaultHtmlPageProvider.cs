@@ -1,7 +1,7 @@
 ﻿using System.Threading;
 using System.Threading.Tasks;
 
-namespace Foundation.Api.Contracts
+namespace Bit.Owin.Contracts
 {
     public interface IDefaultHtmlPageProvider
     {

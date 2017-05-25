@@ -1,10 +1,10 @@
 ﻿using System.Collections.Generic;
-using Foundation.Api.Contracts.Metadata;
-using Foundation.Api.Implementations.Metadata;
-using Foundation.Core.Models;
 using System.Threading.Tasks;
+using Bit.Core.Models;
+using Bit.Owin.Contracts.Metadata;
+using Bit.Owin.Implementations.Metadata;
 
-namespace Foundation.Api.Metadata
+namespace Bit.Owin.Metadata
 {
     public class FoundationMetadataBuilder : DefaultProjectMetadataBuilder
     {
@@ -24,7 +24,7 @@ namespace Foundation.Api.Metadata
         {
             AddProjectMetadata(new ProjectMetadata
             {
-                ProjectName = "Foundation",
+                ProjectName = "Bit",
                 Messages = new List<EnvironmentCulture>
                 {
                     new EnvironmentCulture

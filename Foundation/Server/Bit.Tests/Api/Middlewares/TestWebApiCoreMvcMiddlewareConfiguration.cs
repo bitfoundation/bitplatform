@@ -1,8 +1,8 @@
-﻿using Foundation.AspNetCore.Contracts;
-using Foundation.AspNetCore.Middlewares;
+﻿using Bit.OwinCore.Contracts;
+using Bit.OwinCore.Middlewares;
 using Microsoft.AspNetCore.Builder;
 
-namespace Foundation.AspNetCore.Test.Api.Middlewares
+namespace Bit.Tests.Api.Middlewares
 {
     public class TestWebApiCoreMvcMiddlewareConfiguration : IAspNetCoreMiddlewareConfiguration
     {

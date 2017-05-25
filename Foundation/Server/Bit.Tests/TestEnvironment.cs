@@ -1,11 +1,12 @@
-﻿using Bit.Core;
-using Foundation.Test.Api.Implementations;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Reflection;
-using Foundation.Core.Contracts;
+using Bit.Core;
+using Bit.Core.Contracts;
+using Bit.Test;
+using Bit.Tests.Api.Implementations;
 
-namespace Foundation.Test
+namespace Bit.Tests
 {
     public class TestEnvironment : TestEnvironmentBase
     {

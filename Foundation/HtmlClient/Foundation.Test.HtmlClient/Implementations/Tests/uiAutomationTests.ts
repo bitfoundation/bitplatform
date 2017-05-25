@@ -16,7 +16,7 @@
 
             repeatFormViewModel.testModels.forEach((tm, i) => {
 
-                const tmFromView = uiAutomation.getBindingContext<Model.DomainModels.TestModel>(uiAutomation.view.find(`#testModel${i}`), "tm");
+                const tmFromView = uiAutomation.getBindingContext<Bit.Tests.Model.DomainModels.TestModel>(uiAutomation.view.find(`#testModel${i}`), "tm");
 
                 if (tmFromView.Id != tm.Id)
                     throw new Error("problem in testGetBindingContextAndGetFormViewModel");

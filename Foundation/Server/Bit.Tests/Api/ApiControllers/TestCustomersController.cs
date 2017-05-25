@@ -1,9 +1,9 @@
-﻿using Foundation.Api.ApiControllers;
-using Foundation.DataAccess.Contracts;
-using Foundation.Test.Model.DomainModels;
-using Foundation.Test.Model.Dto;
+﻿using Bit.Api.ApiControllers;
+using Bit.Data.Contracts;
+using Bit.Tests.Model.DomainModels;
+using Bit.Tests.Model.Dto;
 
-namespace Foundation.Test.Api.ApiControllers
+namespace Bit.Tests.Api.ApiControllers
 {
     public class TestCustomersController : DefaultDtoSetController<TestCustomer, TestCustomerDto>
     {

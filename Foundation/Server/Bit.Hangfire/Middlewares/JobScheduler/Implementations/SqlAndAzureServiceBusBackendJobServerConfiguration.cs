@@ -1,14 +1,14 @@
 using System;
 using System.Transactions;
-using Foundation.Core.Contracts;
-using Hangfire;
-using Hangfire.SqlServer;
-using Foundation.Core.Models;
-using Hangfire.Azure.ServiceBusQueue;
 using Autofac;
-using Foundation.Api.Contracts;
+using Bit.Core.Contracts;
+using Bit.Core.Models;
+using Bit.Owin.Contracts;
+using Hangfire;
+using Hangfire.Azure.ServiceBusQueue;
+using Hangfire.SqlServer;
 
-namespace Foundation.Api.Middlewares.JobScheduler.Implementations
+namespace Bit.Hangfire.Middlewares.JobScheduler.Implementations
 {
     public class SqlAndAzureServiceBusBackendJobServerConfiguration : IAppEvents
     {

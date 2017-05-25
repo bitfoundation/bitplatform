@@ -1,5 +1,5 @@
-﻿using Foundation.DataAccess.Implementations;
-using System.Reflection;
+﻿using System.Reflection;
+using Bit.Data;
 
 namespace Bit.Core
 {

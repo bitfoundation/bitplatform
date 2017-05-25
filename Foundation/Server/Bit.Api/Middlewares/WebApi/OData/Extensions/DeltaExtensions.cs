@@ -1,6 +1,6 @@
-﻿using Foundation.Model.Contracts;
-using System.Linq;
+﻿using System.Linq;
 using System.Reflection;
+using Bit.Model.Contracts;
 
 namespace System.Web.OData
 {

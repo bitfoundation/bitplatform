@@ -1,9 +1,9 @@
-using Foundation.Core.Contracts;
+using Bit.Core.Contracts;
 using Hangfire.Annotations;
 using Hangfire.Dashboard;
 using Microsoft.Owin;
 
-namespace Foundation.Api.Middlewares.JobScheduler.Implementations
+namespace Bit.Hangfire.Middlewares.JobScheduler.Implementations
 {
     public class DefaultJobsDashboardAuthorizationFilter : IDashboardAuthorizationFilter
     {

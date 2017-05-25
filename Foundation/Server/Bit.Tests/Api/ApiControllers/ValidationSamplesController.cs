@@ -1,9 +1,9 @@
-﻿using Foundation.Api.ApiControllers;
-using Foundation.Test.Model.Dto;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
+using Bit.Api.ApiControllers;
+using Bit.Tests.Model.Dto;
 
-namespace Foundation.Test.Api.ApiControllers
+namespace Bit.Tests.Api.ApiControllers
 {
     public class ValidationSamplesController : DtoController<ValidationSampleDto>
     {

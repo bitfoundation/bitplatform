@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using Foundation.Model.Contracts;
+using Bit.Model.Contracts;
 
-namespace Foundation.Test.Model.DomainModels
+namespace Bit.Tests.Model.DomainModels
 {
     [Table("ParentEntities", Schema = "Test")]
     [Serializable]

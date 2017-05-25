@@ -1,14 +1,17 @@
-﻿using FakeItEasy;
-using Foundation.Core.Contracts;
-using Foundation.Test.Api.ApiControllers;
-using Foundation.Test.Core.Implementations;
+﻿using System.Linq;
+using System.Threading;
+using Bit.Core.Contracts;
+using Bit.Test;
+using Bit.Test.Core.Implementations;
+using Bit.Test.Server;
+using Bit.Tests.Api.ApiControllers;
+using FakeItEasy;
 using IdentityModel.Client;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using OpenQA.Selenium;
 using OpenQA.Selenium.Remote;
-using System.Linq;
-using System.Threading;
 
-namespace Foundation.Test.HtmlClient.ThirdPartyLibrariesTests.KendoDataSourceTests
+namespace Bit.Tests.HtmlClient.ThirdPartyLibrariesTests.KendoDataSourceTests
 {
     [TestClass]
     public class TestKendoDataSourceCreationFromJayData

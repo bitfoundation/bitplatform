@@ -1,11 +1,11 @@
-﻿using Foundation.DataAccess.Contracts;
-using Foundation.Model.Contracts;
-using Microsoft.EntityFrameworkCore.Query.Internal;
-using System;
+﻿using System;
 using System.Linq;
 using System.Linq.Dynamic.Core;
+using Bit.Data.Contracts;
+using Bit.Model.Contracts;
+using Microsoft.EntityFrameworkCore.Query.Internal;
 
-namespace Foundation.DataAccess.Implementations.EntityFrameworkCore
+namespace Bit.Data.EntityFrameworkCore.Implementations
 {
     public class EfCoreWhereByKeyBuilder<TSource, TKey> : IWhereByKeyBuilder<TSource, TKey>
         where TSource : class, IWithDefaultKey<TKey>

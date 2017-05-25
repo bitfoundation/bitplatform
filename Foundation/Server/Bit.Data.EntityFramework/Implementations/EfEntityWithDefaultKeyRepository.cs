@@ -1,10 +1,10 @@
-﻿using Foundation.DataAccess.Contracts;
-using Foundation.Model.Contracts;
-using System.Linq;
+﻿using System.Linq;
 using System.Threading.Tasks;
 using System.Threading;
 using System.Collections.Generic;
 using System.Data.Entity;
+using Bit.Data.Contracts;
+using Bit.Model.Contracts;
 
 namespace Bit.Data.EntityFramework.Implementations
 {

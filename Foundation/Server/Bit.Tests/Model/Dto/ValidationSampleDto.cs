@@ -1,8 +1,8 @@
-﻿using Foundation.Model.Contracts;
-using System;
+﻿using System;
 using System.ComponentModel.DataAnnotations;
+using Bit.Model.Contracts;
 
-namespace Foundation.Test.Model.Dto
+namespace Bit.Tests.Model.Dto
 {
     [Serializable]
     public class ValidationSampleDto : IDto

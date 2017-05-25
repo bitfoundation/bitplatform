@@ -1,4 +1,4 @@
-﻿namespace Foundation.Core.Contracts
+﻿namespace Bit.Core.Contracts
 {
     public interface IScopeStatusManager
     {

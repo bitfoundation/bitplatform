@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
+using Bit.Test;
 
-namespace Foundation.Test
+namespace Bit.Tests
 {
     public class TestFakeItEasyLoadNothingBootstrapper : FakeItEasyLoadNothingBootstrapperBase
     {

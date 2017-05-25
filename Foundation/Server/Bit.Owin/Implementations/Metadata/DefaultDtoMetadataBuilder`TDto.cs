@@ -1,9 +1,9 @@
 ﻿using System;
-using System.Reflection;
-using Foundation.Api.Contracts.Metadata;
 using System.ComponentModel.DataAnnotations;
+using System.Reflection;
+using Bit.Owin.Contracts.Metadata;
 
-namespace Foundation.Api.Implementations.Metadata
+namespace Bit.Owin.Implementations.Metadata
 {
     public class DefaultDtoMetadataBuilder<TDto> : DefaultMetadataBuilder, IDtoMetadataBuilder<TDto>
         where TDto : class

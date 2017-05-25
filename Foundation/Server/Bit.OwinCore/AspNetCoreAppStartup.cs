@@ -1,19 +1,18 @@
-﻿using Foundation.Api;
-using Foundation.Api.Implementations;
-using Foundation.AspNetCore.Contracts;
-using Foundation.AspNetCore.Extensions;
-using Foundation.AspNetCore.Implementations;
-using Foundation.Core.Contracts;
-using Foundation.Core.Contracts.Project;
+﻿using System.Collections.Generic;
+using System.Linq;
+using Bit.Core.Contracts;
+using Bit.Core.Contracts.Project;
+using Bit.Owin;
+using Bit.Owin.Implementations;
+using Bit.OwinCore.Contracts;
+using Bit.OwinCore.Implementations;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Owin;
-using System.Collections.Generic;
-using System.Linq;
 
-namespace Foundation.AspNetCore
+namespace Bit.OwinCore
 {
     public class AspNetCoreAppStartup
     {

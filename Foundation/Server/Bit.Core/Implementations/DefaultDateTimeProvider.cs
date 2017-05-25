@@ -1,7 +1,7 @@
 ﻿using System;
-using Foundation.Core.Contracts;
+using Bit.Core.Contracts;
 
-namespace Foundation.Core.Implementations
+namespace Bit.Core.Implementations
 {
     public class DefaultDateTimeProvider : IDateTimeProvider
     {

@@ -1,8 +1,8 @@
-﻿using Foundation.Test;
+﻿using Bit.Test;
 using IdentityModel.Client;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace IdentityServer.Test.Api
+namespace Bit.Tests.IdentityServer
 {
     [TestClass]
     public class CodeBasedLoginTests

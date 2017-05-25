@@ -1,12 +1,12 @@
-﻿using Autofac;
+﻿using System;
+using Autofac;
 using Autofac.Extensions.DependencyInjection;
-using Foundation.Api.Contracts;
-using Foundation.Api.Implementations;
+using Bit.Owin.Contracts;
+using Bit.Owin.Implementations;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
-using System;
 
-namespace Foundation.AspNetCore
+namespace Bit.OwinCore
 {
     public class AutofacAspNetCoreAppStartup : AspNetCoreAppStartup
     {

@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
-using Foundation.Api.Contracts;
-using Foundation.Model.DomainModels;
+using Bit.Core.Contracts;
+using Bit.Model.Dtos;
 
-namespace Foundation.Api.ApiControllers
+namespace Bit.Api.ApiControllers
 {
     public class JobsInfoController : DtoController<JobInfoDto>
     {

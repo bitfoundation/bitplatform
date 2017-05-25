@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Security.Claims;
 
-namespace Foundation.Core.Contracts
+namespace Bit.Core.Contracts
 {
     public interface IUserInformationProvider
     {

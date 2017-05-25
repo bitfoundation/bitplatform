@@ -1,9 +1,9 @@
 ﻿using System.Threading.Tasks;
+using Bit.Core.Contracts;
+using Bit.Owin.Contracts;
 using Microsoft.Owin;
-using Foundation.Api.Contracts;
-using Foundation.Core.Contracts;
 
-namespace Foundation.Api.Middlewares
+namespace Bit.Owin.Middlewares
 {
     public class DefaultPageMiddleware : OwinMiddleware
     {

@@ -1,8 +1,8 @@
 ﻿using System.Collections.Generic;
+using Bit.IdentityServer.Contracts;
 using IdentityServer3.Core.Models;
-using IdentityServer.Api.Contracts;
 
-namespace IdentityServer.Api.Implementations
+namespace Bit.IdentityServer.Implementations
 {
     public class DefaultScopesProvider : IScopesProvider
     {

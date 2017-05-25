@@ -18,7 +18,7 @@ module Foundation.ViewModel.Implementations {
                 console.trace({ message: message, additionalInfo: additionalInfo, err: err });
         }
 
-        private createLogInfo(message: string, additionalInfo?: string, err?: Error): Model.Dtos.ClientLogDto {
+        private createLogInfo(message: string, additionalInfo?: string, err?: Error): Bit.Model.Dtos.ClientLogDto {
 
             const logInfo: any = {
                 Message: message,
@@ -49,7 +49,7 @@ module Foundation.ViewModel.Implementations {
 
         private lastLoggedError: string = null;
 
-        protected ingoreLog(logInfo: Model.Dtos.ClientLogDto): boolean {
+        protected ingoreLog(logInfo: Bit.Model.Dtos.ClientLogDto): boolean {
             if (logInfo.ErrorName == "HTTP request failed" /*This type of error is handled at server side*/)
                 return true;
             if (logInfo.Error == this.lastLoggedError)
@@ -58,7 +58,7 @@ module Foundation.ViewModel.Implementations {
             return false;
         }
 
-        private saveLog(logInfo: Model.Dtos.ClientLogDto) {
+        private saveLog(logInfo: Bit.Model.Dtos.ClientLogDto) {
 
             if (logInfo == null)
                 throw new Error("logInfo is null");
@@ -68,7 +68,7 @@ module Foundation.ViewModel.Implementations {
 
             const logsJson = sessionStorage["logs"];
 
-            let logs = new Array<Model.Dtos.ClientLogDto>();
+            let logs = new Array<Bit.Model.Dtos.ClientLogDto>();
 
             if (logsJson != null) {
                 logs = JSON.parse(logsJson);
@@ -79,10 +79,10 @@ module Foundation.ViewModel.Implementations {
             this.saveLogsToServer(logs);
         }
 
-        private async saveLogsToServer(logs: Array<Model.Dtos.ClientLogDto>): Promise<void> {
+        private async saveLogsToServer(logs: Array<Bit.Model.Dtos.ClientLogDto>): Promise<void> {
             if (navigator.onLine) {
                 try {
-                    const context = await this.entityContextProvider.getContext<FoundationContext>("Foundation");
+                    const context = await this.entityContextProvider.getContext<BitContext>("Bit");
                     for (let log of logs) {
                         context.clientsLogs.add(log);
                     }

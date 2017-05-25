@@ -1,11 +1,11 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
-using Foundation.Model.Contracts;
 using System.ComponentModel.DataAnnotations.Schema;
+using Bit.Model.Contracts;
 
-namespace Foundation.Model.DomainModels
+namespace Bit.Model.DomainModels
 {
-    [Table("UsersSettingsView", Schema = "Foundation")]
+    [Table("UsersSettingsView", Schema = "Bit")]
     [Serializable]
     public class UserSetting : IEntity, IDto
     {

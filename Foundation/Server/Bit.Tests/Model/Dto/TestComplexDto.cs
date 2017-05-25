@@ -1,8 +1,8 @@
-﻿using Foundation.Model.Contracts;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using Bit.Model.Contracts;
 
-namespace Foundation.Test.Model.Dto
+namespace Bit.Tests.Model.Dto
 {
     public class TestComplexDto : IDto
     {

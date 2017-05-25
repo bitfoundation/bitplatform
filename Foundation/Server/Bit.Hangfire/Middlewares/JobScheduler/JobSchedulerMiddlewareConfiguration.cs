@@ -1,11 +1,11 @@
-﻿using Foundation.Api.Contracts;
+﻿using System;
+using System.Collections.Generic;
+using Bit.Owin.Contracts;
 using Hangfire;
 using Hangfire.Dashboard;
 using Owin;
-using System;
-using System.Collections.Generic;
 
-namespace Foundation.Api.Middlewares.JobScheduler
+namespace Bit.Hangfire.Middlewares.JobScheduler
 {
     public class JobSchedulerMiddlewareConfiguration : IOwinMiddlewareConfiguration
     {

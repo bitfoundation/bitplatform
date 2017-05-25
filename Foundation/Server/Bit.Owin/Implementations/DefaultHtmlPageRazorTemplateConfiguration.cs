@@ -1,11 +1,11 @@
 ﻿using System;
 using System.IO;
-using Foundation.Core.Contracts;
-using Foundation.Core.Models;
+using Bit.Core.Contracts;
+using Bit.Core.Models;
 using RazorEngine;
 using RazorEngine.Templating;
 
-namespace Foundation.Api.Implementations
+namespace Bit.Owin.Implementations
 {
     public class DefaultHtmlPageRazorTemplateConfiguration : IAppEvents
     {

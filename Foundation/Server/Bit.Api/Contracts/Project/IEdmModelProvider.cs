@@ -1,6 +1,6 @@
 ﻿using System.Web.OData.Builder;
 
-namespace Foundation.Api.Contracts.Project
+namespace Bit.Api.Contracts.Project
 {
     public interface IEdmModelProvider
     {

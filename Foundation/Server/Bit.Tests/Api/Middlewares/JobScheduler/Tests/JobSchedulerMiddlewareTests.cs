@@ -1,10 +1,10 @@
 ﻿using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 using IdentityModel.Client;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace Foundation.Test.Api.Middlewares.JobScheduler.Tests
+namespace Bit.Tests.Api.Middlewares.JobScheduler.Tests
 {
     [TestClass]
     public class JobSchedulerMiddlewareTests

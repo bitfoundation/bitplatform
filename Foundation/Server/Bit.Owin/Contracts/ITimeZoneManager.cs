@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Foundation.Api.Contracts
+namespace Bit.Owin.Contracts
 {
     public interface ITimeZoneManager
     {

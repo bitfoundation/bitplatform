@@ -1,13 +1,13 @@
-﻿using Foundation.DataAccess.Contracts;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 using System.Threading;
+using System.Threading.Tasks;
+using Bit.Data.Contracts;
 using Microsoft.EntityFrameworkCore;
-using System;
 using Microsoft.EntityFrameworkCore.Query.Internal;
 
-namespace Foundation.DataAccess.Implementations.EntityFrameworkCore
+namespace Bit.Data.EntityFrameworkCore.Implementations
 {
     public class EfCoreDataProviderSpecificMethodsProvider : IDataProviderSpecificMethodsProvider
     {

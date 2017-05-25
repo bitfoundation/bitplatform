@@ -1,11 +1,11 @@
-﻿using Foundation.Api.Contracts;
-using Foundation.Core.Contracts;
-using System;
+﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using Bit.Core.Contracts;
+using Bit.Owin.Contracts;
 
-namespace Foundation.Api.Implementations
+namespace Bit.Owin.Implementations
 {
     public class DefaultTimeZoneManager : ITimeZoneManager
     {

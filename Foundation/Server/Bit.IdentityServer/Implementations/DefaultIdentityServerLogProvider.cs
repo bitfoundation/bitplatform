@@ -1,8 +1,8 @@
 ﻿using System;
-using Foundation.Core.Contracts;
+using Bit.Core.Contracts;
 using IdentityServer3.Core.Logging;
 
-namespace IdentityServer.Api.Implementations
+namespace Bit.IdentityServer.Implementations
 {
     public class DefaultIdentityServerLogProvider : ILogProvider, IDisposable
     {

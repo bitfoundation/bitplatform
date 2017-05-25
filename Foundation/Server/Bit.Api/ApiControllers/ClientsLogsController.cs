@@ -1,11 +1,11 @@
-﻿using Foundation.Core.Contracts;
-using Foundation.Model.Dtos;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using System.Web.Http;
+using Bit.Core.Contracts;
+using Bit.Model.Dtos;
 
-namespace Foundation.Api.ApiControllers
+namespace Bit.Api.ApiControllers
 {
     [AllowAnonymous]
     public class ClientsLogsController : DtoController<ClientLogDto>

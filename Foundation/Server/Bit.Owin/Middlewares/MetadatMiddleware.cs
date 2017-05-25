@@ -1,9 +1,9 @@
 ﻿using System.Threading.Tasks;
-using Foundation.Api.Contracts.Metadata;
-using Foundation.Core.Contracts;
+using Bit.Core.Contracts;
+using Bit.Owin.Contracts.Metadata;
 using Microsoft.Owin;
 
-namespace Foundation.Api.Middlewares
+namespace Bit.Owin.Middlewares
 {
     public class MetadatMiddleware : OwinMiddleware
     {

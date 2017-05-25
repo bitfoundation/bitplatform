@@ -1,15 +1,15 @@
-﻿using Foundation.AspNetCore.Contracts;
-using System;
+﻿using System;
 using System.Threading.Tasks;
+using Bit.Core.Contracts;
+using Bit.Owin.Contracts;
+using Bit.Owin.Metadata;
+using Bit.OwinCore.Contracts;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
-using Foundation.Core.Contracts;
-using Microsoft.Extensions.DependencyInjection;
-using Foundation.Api.Metadata;
 using Microsoft.AspNetCore.Http.Features;
-using Foundation.Api.Contracts;
+using Microsoft.Extensions.DependencyInjection;
 
-namespace Foundation.AspNetCore.Middlewares
+namespace Bit.OwinCore.Middlewares
 {
     public class AspNetCoreExceptionHandlerMiddlewareConfiguration : IAspNetCoreMiddlewareConfiguration
     {

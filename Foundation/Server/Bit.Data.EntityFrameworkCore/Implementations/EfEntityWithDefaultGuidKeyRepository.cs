@@ -1,8 +1,8 @@
-﻿using Foundation.DataAccess.Contracts;
-using Foundation.Model.Contracts;
-using System;
+﻿using System;
+using Bit.Data.Contracts;
+using Bit.Model.Contracts;
 
-namespace Foundation.DataAccess.Implementations.EntityFrameworkCore
+namespace Bit.Data.EntityFrameworkCore.Implementations
 {
     public class EfEntityWithDefaultGuidKeyRepository<TEntity> : EfEntityWithDefaultKeyRepository<TEntity, Guid>, IEntityWithDefaultGuidKeyRepository<TEntity>
         where TEntity : class, IEntityWithDefaultGuidKey

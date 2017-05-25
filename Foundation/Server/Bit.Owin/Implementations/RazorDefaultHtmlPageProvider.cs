@@ -1,13 +1,13 @@
 ﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
-using Foundation.Api.Contracts;
-using Foundation.Core.Contracts;
+using Bit.Core.Contracts;
+using Bit.Owin.Contracts;
 using Microsoft.Owin;
 using RazorEngine;
 using RazorEngine.Templating;
 
-namespace Foundation.Api.Implementations
+namespace Bit.Owin.Implementations
 {
     public class RazorDefaultHtmlPageProvider : IDefaultHtmlPageProvider
     {

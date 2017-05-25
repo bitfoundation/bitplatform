@@ -1,9 +1,9 @@
-﻿using RazorEngine.Templating;
-using System;
+﻿using System;
 using System.Collections.Generic;
-using Foundation.Core.Contracts;
+using Bit.Core.Contracts;
+using RazorEngine.Templating;
 
-namespace Foundation.Api.Implementations
+namespace Bit.Owin.Implementations
 {
     public class RazorViewTemplate : TemplateBase<IDependencyResolver>
     {

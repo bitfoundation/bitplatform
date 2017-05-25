@@ -1,8 +1,8 @@
-﻿using Foundation.Model.Contracts;
-using System;
+﻿using System;
 using System.ComponentModel.DataAnnotations;
+using Bit.Model.Contracts;
 
-namespace Foundation.Model.Dtos
+namespace Bit.Model.Dtos
 {
     [Serializable]
     public class ClientLogDto : IDto

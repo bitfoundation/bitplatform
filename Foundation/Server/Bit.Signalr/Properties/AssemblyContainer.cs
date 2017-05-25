@@ -1,5 +1,5 @@
-﻿using Foundation.Api.Middlewares.SignalR;
-using System.Reflection;
+﻿using System.Reflection;
+using Bit.Signalr.Middlewares.Signalr;
 
 namespace Bit.Core
 {

@@ -1,12 +1,12 @@
-﻿using System.Linq;
-using Foundation.Core.Contracts;
-using Foundation.DataAccess.Contracts;
-using Foundation.Model.DomainModels;
-using System;
+﻿using System;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Bit.Core.Contracts;
+using Bit.Data.Contracts;
+using Bit.Model.DomainModels;
 
-namespace Foundation.Api.ApiControllers
+namespace Bit.Api.ApiControllers
 {
     public class UsersSettingsController : DtoController<UserSetting>
     {

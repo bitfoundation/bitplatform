@@ -1,10 +1,10 @@
 ﻿using System.Collections.Generic;
-using Foundation.Api.Contracts.Metadata;
-using Foundation.Api.Implementations.Metadata;
-using Foundation.Model.DomainModels;
 using System.Threading.Tasks;
+using Bit.Model.DomainModels;
+using Bit.Owin.Contracts.Metadata;
+using Bit.Owin.Implementations.Metadata;
 
-namespace Foundation.Api.Metadata.Dtos
+namespace Bit.Owin.Metadata.Dtos
 {
     public class UserSettingMetadataBuilder : DefaultDtoMetadataBuilder<UserSetting>
     {

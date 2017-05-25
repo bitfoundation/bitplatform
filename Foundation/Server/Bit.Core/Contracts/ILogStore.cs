@@ -1,7 +1,7 @@
 ﻿using System.Threading.Tasks;
-using Foundation.Core.Models;
+using Bit.Core.Models;
 
-namespace Foundation.Core.Contracts
+namespace Bit.Core.Contracts
 {
     public interface ILogStore
     {

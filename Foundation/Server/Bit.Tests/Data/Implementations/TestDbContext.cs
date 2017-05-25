@@ -1,11 +1,11 @@
-﻿using Foundation.Core.Contracts;
-using Foundation.DataAccess.Contracts.EntityFrameworkCore;
-using Foundation.DataAccess.Implementations.EntityFrameworkCore;
-using Foundation.Model.DomainModels;
-using Foundation.Test.Model.DomainModels;
+﻿using Bit.Core.Contracts;
+using Bit.Data.EntityFrameworkCore.Contracts;
+using Bit.Data.EntityFrameworkCore.Implementations;
+using Bit.Model.DomainModels;
+using Bit.Tests.Model.DomainModels;
 using Microsoft.EntityFrameworkCore;
 
-namespace Foundation.Test.DataAccess.Implementations
+namespace Bit.Tests.Data.Implementations
 {
     public class TestDbContext : DefaultDbContext
     {

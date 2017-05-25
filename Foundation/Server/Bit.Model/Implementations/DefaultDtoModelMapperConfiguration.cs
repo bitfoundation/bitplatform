@@ -1,10 +1,10 @@
-﻿using AutoMapper;
-using Foundation.Model.Contracts;
-using System.Collections;
+﻿using System.Collections;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Reflection;
+using AutoMapper;
+using Bit.Model.Contracts;
 
-namespace Foundation.Model.Implementations
+namespace Bit.Model.Implementations
 {
     public class DefaultDtoModelMapperConfiguration : IDtoModelMapperConfiguration
     {

@@ -1,8 +1,8 @@
-﻿using Correlator.Handlers;
-using Foundation.Api.Middlewares.WebApi.Contracts;
-using System.Web.Http;
+﻿using System.Web.Http;
+using Bit.Api.Middlewares.WebApi.Contracts;
+using Correlator.Handlers;
 
-namespace Foundation.Api.Middlewares.WebApi.Implementations
+namespace Bit.Api.Middlewares.WebApi.Implementations
 {
     public class ClientCorrelationWebApiConfigurationCustomizer : IWebApiConfigurationCustomizer
     {

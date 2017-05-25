@@ -1,9 +1,9 @@
-﻿using Foundation.Api.Contracts.Project;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Reflection;
+using Bit.Api.Contracts.Project;
 
-namespace Foundation.Api.Implementations.Project
+namespace Bit.Api.Implementations.Project
 {
     public class DefaultApiAssembliesProvider : IApiAssembliesProvider
     {

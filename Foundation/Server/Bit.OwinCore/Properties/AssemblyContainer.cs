@@ -1,5 +1,5 @@
-﻿using Foundation.AspNetCore;
-using System.Reflection;
+﻿using System.Reflection;
+using Bit.OwinCore;
 
 namespace Bit.Core
 {

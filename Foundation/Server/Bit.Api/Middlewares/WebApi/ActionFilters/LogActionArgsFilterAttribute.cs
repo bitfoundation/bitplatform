@@ -1,13 +1,13 @@
-﻿using System.Net.Http;
+﻿using System.Linq;
+using System.Net.Http;
+using System.Threading;
 using System.Web.Http.Controllers;
 using System.Web.Http.Filters;
-using Foundation.Core.Contracts;
-using System.Linq;
 using System.Web.OData.Query;
-using System.Threading;
+using Bit.Core.Contracts;
 using Microsoft.Owin;
 
-namespace Foundation.Api.Middlewares.WebApi.ActionFilters
+namespace Bit.Api.Middlewares.WebApi.ActionFilters
 {
     public class LogActionArgsFilterAttribute : ActionFilterAttribute
     {

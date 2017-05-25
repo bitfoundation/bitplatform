@@ -1,7 +1,7 @@
-﻿using Foundation.DataAccess.Implementations.EntityFrameworkCore;
-using Foundation.Model.Contracts;
+﻿using Bit.Data.EntityFrameworkCore.Implementations;
+using Bit.Model.Contracts;
 
-namespace Foundation.Test.DataAccess.Implementations
+namespace Bit.Tests.Data.Implementations
 {
     public class TestEfEntityWithDefaultGuidKeyRepository<TEntity> : EfEntityWithDefaultGuidKeyRepository<TEntity>
         where TEntity : class, IEntityWithDefaultGuidKey

@@ -1,9 +1,9 @@
 ﻿using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using Foundation.Api.Contracts.Metadata;
 using System.Threading.Tasks;
+using Bit.Owin.Contracts.Metadata;
 
-namespace Foundation.Api.Implementations.Metadata
+namespace Bit.Owin.Implementations.Metadata
 {
     public class DefaultMetadataBuilder : IMetadataBuilder
     {

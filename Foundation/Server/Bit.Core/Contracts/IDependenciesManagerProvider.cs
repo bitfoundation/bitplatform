@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
-using Foundation.Core.Contracts.Project;
+using Bit.Core.Contracts.Project;
 
-namespace Foundation.Core.Contracts
+namespace Bit.Core.Contracts
 {
     public interface IDependenciesManagerProvider
     {

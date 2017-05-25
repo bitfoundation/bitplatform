@@ -3,7 +3,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Foundation.DataAccess.Contracts
+namespace Bit.Data.Contracts
 {
     public interface IDataProviderSpecificMethodsProvider
     {

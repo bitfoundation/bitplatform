@@ -1,11 +1,11 @@
-﻿using Autofac;
-using Foundation.Api.Contracts;
-using Foundation.Core.Contracts;
+﻿using System;
+using Autofac;
+using Bit.Core.Contracts;
+using Bit.Owin.Contracts;
 using Hangfire;
 using Hangfire.MemoryStorage;
-using System;
 
-namespace Foundation.Api.Middlewares.JobScheduler.Implementations
+namespace Bit.Hangfire.Middlewares.JobScheduler.Implementations
 {
     public class JobSchedulerInMemoryBackendConfiguration : IAppEvents
     {

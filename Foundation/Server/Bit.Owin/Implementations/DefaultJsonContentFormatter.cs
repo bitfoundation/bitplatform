@@ -1,7 +1,7 @@
-﻿using Foundation.Core.Contracts;
+﻿using Bit.Core.Contracts;
 using Newtonsoft.Json;
 
-namespace Foundation.Api.Implementations
+namespace Bit.Owin.Implementations
 {
     public class DefaultJsonContentFormatter : IContentFormatter
     {

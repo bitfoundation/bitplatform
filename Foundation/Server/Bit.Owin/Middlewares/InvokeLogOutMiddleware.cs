@@ -1,9 +1,9 @@
-﻿using Foundation.Core.Contracts;
-using Foundation.Core.Models;
+﻿using System.Threading.Tasks;
+using Bit.Core.Contracts;
+using Bit.Core.Models;
 using Microsoft.Owin;
-using System.Threading.Tasks;
 
-namespace Foundation.Api.Middlewares
+namespace Bit.Owin.Middlewares
 {
     public class InvokeLogOutMiddleware : OwinMiddleware
     {

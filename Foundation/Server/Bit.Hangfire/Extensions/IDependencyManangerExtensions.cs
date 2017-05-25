@@ -1,12 +1,11 @@
-﻿using Foundation.Api.Contracts;
-using Foundation.Api.Implementations;
-using Foundation.Api.Middlewares.JobScheduler;
-using Foundation.Api.Middlewares.JobScheduler.Implementations;
+﻿using System;
+using Bit.Hangfire.Implementations;
+using Bit.Hangfire.Middlewares.JobScheduler;
+using Bit.Hangfire.Middlewares.JobScheduler.Implementations;
 using Hangfire;
 using Hangfire.Dashboard;
-using System;
 
-namespace Foundation.Core.Contracts
+namespace Bit.Core.Contracts
 {
     public static class IDependencyManangerExtensions
     {

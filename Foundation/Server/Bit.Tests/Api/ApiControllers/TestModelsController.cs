@@ -1,22 +1,21 @@
 ﻿using System;
-using System.Linq;
-using System.Threading;
-using System.Web.Http;
-using Foundation.Api.ApiControllers;
-using Foundation.Test.Model.DomainModels;
-using System.Threading.Tasks;
-using System.Web.OData;
-using Foundation.Api.Contracts;
-using Foundation.Core.Contracts;
-using Foundation.Test.Core.Contracts;
-using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
-using Foundation.Api.Exceptions;
+using System.Linq;
 using System.Net.Http;
-using Foundation.DataAccess.Contracts;
+using System.Threading;
+using System.Threading.Tasks;
+using System.Web.Http;
+using System.Web.OData;
+using Bit.Api.ApiControllers;
+using Bit.Core.Contracts;
+using Bit.Data.Contracts;
+using Bit.Owin.Exceptions;
+using Bit.Tests.Core.Contracts;
+using Bit.Tests.Model.DomainModels;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Owin;
 
-namespace Foundation.Test.Api.ApiControllers
+namespace Bit.Tests.Api.ApiControllers
 {
     public class TestModelsController : DtoController<TestModel>
     {

@@ -2,10 +2,10 @@
 using System.Net.Http;
 using System.Reflection;
 using System.Web.Http.Tracing;
-using Foundation.Core.Contracts;
+using Bit.Core.Contracts;
 using Microsoft.Owin;
 
-namespace Foundation.Api.Middlewares.WebApi.Implementations
+namespace Bit.Api.Middlewares.WebApi.Implementations
 {
     public class DefaultWebApiTraceWritter : ITraceWriter
     {

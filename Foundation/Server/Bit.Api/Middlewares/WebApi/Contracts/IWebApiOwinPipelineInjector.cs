@@ -1,7 +1,7 @@
-﻿using Owin;
-using System.Web.Http;
+﻿using System.Web.Http;
+using Owin;
 
-namespace Foundation.Api.Middlewares.WebApi.Contracts
+namespace Bit.Api.Middlewares.WebApi.Contracts
 {
     public interface IWebApiOwinPipelineInjector
     {

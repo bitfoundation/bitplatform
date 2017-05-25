@@ -4,7 +4,7 @@
 
         public testModelsDataSource: kendo.data.DataSource = null;
 
-        public model: Test.Model.DomainModels.ParentEntity = null;
+        public model: Bit.Tests.Model.DomainModels.ParentEntity = null;
 
         public constructor( @Core.Inject("EntityContextProvider") public entityContextProvider: ViewModel.Contracts.IEntityContextProvider) {
             super();
@@ -19,7 +19,7 @@
 
         @ViewModel.Command()
         public setCurrent(): void {
-            const entityToBeCurrent = this.testModelsDataSource.dataView<Test.Model.DomainModels.TestModel>()[0];
+            const entityToBeCurrent = this.testModelsDataSource.dataView<Bit.Tests.Model.DomainModels.TestModel>()[0];
             this.testModelsDataSource.current = entityToBeCurrent;
         }
     }

@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 
-namespace Foundation.AspNetCore.Test.Api.WebApiCoreControllers
+namespace Bit.Tests.Api.ApiControllers
 {
     [Controller]
     public class PeopleController

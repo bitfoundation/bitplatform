@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Linq;
 using System.Security.Claims;
-using Foundation.Core.Contracts;
+using Bit.Core.Contracts;
 using Microsoft.Owin;
 
-namespace Foundation.Api.Implementations
+namespace Bit.Owin.Implementations
 {
     public class DefaultRequestInformationProvider : IRequestInformationProvider
     {

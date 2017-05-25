@@ -1,8 +1,8 @@
-﻿using IdentityServer.Api.Model;
-using System.Threading;
+﻿using System.Threading;
 using System.Threading.Tasks;
+using Bit.IdentityServer.Model;
 
-namespace IdentityServer.Api.Contracts
+namespace Bit.IdentityServer.Contracts
 {
     public interface ISSOPageModelProvider
     {

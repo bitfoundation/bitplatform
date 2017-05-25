@@ -1,6 +1,6 @@
-﻿using Foundation.Model.Contracts;
+﻿using Bit.Model.Contracts;
 
-namespace Foundation.Test.Model.Dto
+namespace Bit.Tests.Model.Dto
 {
     /// <summary>
     /// Test

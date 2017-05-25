@@ -1,9 +1,9 @@
-﻿using Foundation.Core.Contracts;
-using System;
-using System.Text.RegularExpressions;
+﻿using System;
 using System.Linq;
+using System.Text.RegularExpressions;
+using Bit.Core.Contracts;
 
-namespace Foundation.Core.Implementations
+namespace Bit.Core.Implementations
 {
     public class DefaultIraninCodeValidator : IIraninCodeValidator
     {

@@ -1,5 +1,5 @@
-﻿using Foundation.Api.ApiControllers;
-using System.Reflection;
+﻿using System.Reflection;
+using Bit.Api.ApiControllers;
 
 namespace Bit.Core
 {

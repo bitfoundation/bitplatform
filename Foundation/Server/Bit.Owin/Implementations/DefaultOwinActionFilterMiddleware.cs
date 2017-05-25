@@ -1,9 +1,9 @@
-﻿using Foundation.Api.Contracts;
-using Microsoft.Owin;
-using System;
+﻿using System;
 using System.Threading.Tasks;
+using Bit.Owin.Contracts;
+using Microsoft.Owin;
 
-namespace Foundation.Api.Implementations
+namespace Bit.Owin.Implementations
 {
     public class DefaultOwinActionFilterMiddleware : OwinMiddleware, IOwinActionFilter
     {

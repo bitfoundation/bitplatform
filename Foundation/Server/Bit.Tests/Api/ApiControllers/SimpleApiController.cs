@@ -1,6 +1,6 @@
 ﻿using System.Web.Http;
 
-namespace Foundation.Test.Api.ApiControllers
+namespace Bit.Tests.Api.ApiControllers
 {
     public class SimpleApiController : ApiController
     {

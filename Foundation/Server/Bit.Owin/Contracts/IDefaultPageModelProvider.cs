@@ -1,8 +1,8 @@
-﻿using Foundation.Api.Models;
-using System.Threading;
+﻿using System.Threading;
 using System.Threading.Tasks;
+using Bit.Owin.Models;
 
-namespace Foundation.Api.Contracts
+namespace Bit.Owin.Contracts
 {
     public interface IDefaultPageModelProvider
     {

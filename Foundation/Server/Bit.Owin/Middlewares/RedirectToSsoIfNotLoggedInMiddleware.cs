@@ -1,9 +1,9 @@
 ﻿using System.Threading.Tasks;
-using Foundation.Core.Contracts;
-using Foundation.Core.Models;
+using Bit.Core.Contracts;
+using Bit.Core.Models;
 using Microsoft.Owin;
 
-namespace Foundation.Api.Middlewares
+namespace Bit.Owin.Middlewares
 {
     public class RedirectToSsoIfNotLoggedInMiddleware : OwinMiddleware
     {

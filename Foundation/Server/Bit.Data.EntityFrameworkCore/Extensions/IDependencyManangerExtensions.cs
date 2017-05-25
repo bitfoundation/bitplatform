@@ -1,10 +1,10 @@
-﻿using Foundation.DataAccess.Contracts;
-using Foundation.DataAccess.Contracts.EntityFrameworkCore;
-using Foundation.DataAccess.Implementations.EntityFrameworkCore;
-using System;
+﻿using System;
 using System.Reflection;
+using Bit.Data.Contracts;
+using Bit.Data.EntityFrameworkCore.Contracts;
+using Bit.Data.EntityFrameworkCore.Implementations;
 
-namespace Foundation.Core.Contracts
+namespace Bit.Core.Contracts
 {
     public static class IDependencyManangerExtensions
     {

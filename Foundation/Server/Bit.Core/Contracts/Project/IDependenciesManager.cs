@@ -1,4 +1,4 @@
-﻿namespace Foundation.Core.Contracts.Project
+﻿namespace Bit.Core.Contracts.Project
 {
     public interface IDependenciesManager
     {

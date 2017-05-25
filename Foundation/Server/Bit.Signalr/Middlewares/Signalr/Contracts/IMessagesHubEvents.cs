@@ -1,6 +1,6 @@
 ﻿using System.Threading.Tasks;
 
-namespace Foundation.Api.Middlewares.SignalR.Contracts
+namespace Bit.Signalr.Middlewares.Signalr.Contracts
 {
     public interface IMessagesHubEvents
     {

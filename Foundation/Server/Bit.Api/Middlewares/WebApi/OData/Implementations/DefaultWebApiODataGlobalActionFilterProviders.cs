@@ -1,11 +1,11 @@
-﻿using Foundation.Api.Middlewares.WebApi.Contracts;
-using Foundation.Api.Middlewares.WebApi.OData.ActionFilters;
-using Foundation.Core.Contracts;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Web.Http;
+using Bit.Api.Middlewares.WebApi.Contracts;
+using Bit.Api.Middlewares.WebApi.OData.ActionFilters;
+using Bit.Core.Contracts;
 
-namespace Foundation.Api.Middlewares.WebApi.OData.Implementations
+namespace Bit.Api.Middlewares.WebApi.OData.Implementations
 {
     public class GlobalDefaultRequestQSStringCorrectorsApplierActionFilterProvider : IWebApiConfigurationCustomizer
     {

@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace Foundation.Api.Contracts.Metadata
+namespace Bit.Owin.Contracts.Metadata
 {
     public class ObjectMetadata
     {

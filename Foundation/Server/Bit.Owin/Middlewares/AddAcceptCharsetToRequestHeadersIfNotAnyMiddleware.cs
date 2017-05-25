@@ -1,8 +1,8 @@
-﻿using Foundation.Api.Implementations;
+﻿using System.Threading.Tasks;
+using Bit.Owin.Implementations;
 using Microsoft.Owin;
-using System.Threading.Tasks;
 
-namespace Foundation.Api.Middlewares
+namespace Bit.Owin.Middlewares
 {
     /// <summary>
     /// See https://github.com/odata/odata.net/issues/165

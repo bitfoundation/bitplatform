@@ -1,6 +1,6 @@
 ﻿using System.Linq;
 
-namespace Foundation.Model.Contracts
+namespace Bit.Model.Contracts
 {
     public interface IDtoModelMapper<TDto, TModel>
         where TDto : class, IDto

@@ -1,6 +1,6 @@
-﻿using Foundation.DataAccess.Contracts;
-using System.Data.Common;
+﻿using System.Data.Common;
 using System.Data.Entity;
+using Bit.Data.Contracts;
 
 namespace Bit.Data.EntityFramework.Implementations
 {

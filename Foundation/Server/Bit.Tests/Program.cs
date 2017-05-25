@@ -1,13 +1,14 @@
 ﻿using System;
 using System.Diagnostics;
+using Bit.Test;
 
-namespace Foundation.Test
+namespace Bit.Tests
 {
     public class Program
     {
         public static void Main(string[] args)
         {
-            Console.Title = "Foundation Test";
+            Console.Title = "Bit Tests";
 
             using (TestEnvironment testEnvironment = new TestEnvironment(new TestEnvironmentArgs
             {

@@ -3,12 +3,12 @@ using System.Collections.Generic;
 using System.Reflection;
 using Autofac;
 using Autofac.Builder;
-using Foundation.Core.Contracts;
-using Foundation.Api.Contracts;
 using Autofac.Integration.SignalR;
 using Autofac.Integration.WebApi;
+using Bit.Core.Contracts;
+using Bit.Owin.Contracts;
 
-namespace Foundation.Api.Implementations
+namespace Bit.Owin.Implementations
 {
     public class AutofacDependencyManager : IDependencyManager, IAutofacDependencyManager
     {

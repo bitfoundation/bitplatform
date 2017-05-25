@@ -1,8 +1,8 @@
 ﻿using System.Threading.Tasks;
-using Foundation.Core.Contracts;
+using Bit.Core.Contracts;
 using Microsoft.Owin;
 
-namespace Foundation.Api.Middlewares
+namespace Bit.Owin.Middlewares
 {
     public class LogUserInformationMiddleware : OwinMiddleware
     {

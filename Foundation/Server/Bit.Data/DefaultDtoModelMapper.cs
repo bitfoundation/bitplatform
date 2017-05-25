@@ -1,11 +1,11 @@
-﻿using AutoMapper;
-using AutoMapper.QueryableExtensions;
-using Foundation.Model.Contracts;
-using System;
+﻿using System;
 using System.Linq;
 using System.Reflection;
+using AutoMapper;
+using AutoMapper.QueryableExtensions;
+using Bit.Model.Contracts;
 
-namespace Foundation.DataAccess.Implementations
+namespace Bit.Data
 {
     public class DefaultDtoModelMapper<TDto, TModel> : IDtoModelMapper<TDto, TModel>
         where TDto : class, IDto

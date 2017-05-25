@@ -2,11 +2,10 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using Foundation.Core.Contracts;
-using Foundation.Core.Contracts.Project;
 using Bit.Core;
-
-namespace Foundation.Api.Implementations
+using Bit.Core.Contracts;
+using Bit.Core.Contracts.Project;
+namespace Bit.Owin.Implementations
 {
     [AttributeUsage(AttributeTargets.Assembly, AllowMultiple = true)]
     public sealed class DependenciesManagerAttribute : Attribute

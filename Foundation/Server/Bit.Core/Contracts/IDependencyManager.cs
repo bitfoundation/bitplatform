@@ -1,8 +1,8 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Reflection;
-using System;
 
-namespace Foundation.Core.Contracts
+namespace Bit.Core.Contracts
 {
     public enum DependencyLifeCycle
     {

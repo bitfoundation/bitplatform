@@ -1,6 +1,4 @@
-﻿using Foundation.DataAccess.Contracts;
-using Microsoft.Owin;
-using System;
+﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,8 +10,10 @@ using System.Web.Http.Filters;
 using System.Web.OData;
 using System.Web.OData.Extensions;
 using System.Web.OData.Query;
+using Bit.Data.Contracts;
+using Microsoft.Owin;
 
-namespace Foundation.Api.Middlewares.WebApi.OData.ActionFilters
+namespace Bit.Api.Middlewares.WebApi.OData.ActionFilters
 {
     public class ODataEnableQueryAttribute : EnableQueryAttribute
     {

@@ -1,7 +1,4 @@
-﻿using Foundation.Api.ApiControllers;
-using Foundation.Api.Middlewares.WebApi.OData.Contracts;
-using Foundation.Model.Contracts;
-using System;
+﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,8 +8,11 @@ using System.Threading.Tasks;
 using System.Web.Http.Controllers;
 using System.Web.OData.Builder;
 using System.Web.OData.Query;
+using Bit.Api.ApiControllers;
+using Bit.Api.Middlewares.WebApi.OData.Contracts;
+using Bit.Model.Contracts;
 
-namespace Foundation.Api.Middlewares.WebApi.OData.Implementations
+namespace Bit.Api.Middlewares.WebApi.OData.Implementations
 {
     public class DefaultAutoEdmBuilderParameterInfo
     {
@@ -42,7 +42,7 @@ namespace Foundation.Api.Middlewares.WebApi.OData.Implementations
         {
             List<TypeInfo> controllers = assembly
                 .GetTypes()
-                .Select(t => t.GetTypeInfo())
+                .Select(t => IntrospectionExtensions.GetTypeInfo(t))
                 .Where(t =>
                 {
                     TypeInfo baseGenericType = (t.BaseType?.GetTypeInfo()?.IsGenericType == true ? t.BaseType?.GetTypeInfo()?.GetGenericTypeDefinition() : null)?.GetTypeInfo();

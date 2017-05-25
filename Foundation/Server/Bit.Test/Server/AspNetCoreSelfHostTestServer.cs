@@ -1,9 +1,9 @@
-﻿using Foundation.Test.Server;
+﻿using System.IO;
 using System.Net.Http;
+using Bit.OwinCore;
 using Microsoft.AspNetCore.Hosting;
-using System.IO;
 
-namespace Foundation.AspNetCore.Test.Server
+namespace Bit.Test.Server
 {
     public class AspNetCoreSelfHostTestServer : TestServerBase
     {

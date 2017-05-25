@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Foundation.Api.Models
+namespace Bit.Owin.Models
 {
     [Serializable]
     public class DefaultPageModel

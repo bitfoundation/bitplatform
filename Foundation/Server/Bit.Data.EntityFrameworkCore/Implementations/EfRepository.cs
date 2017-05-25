@@ -4,11 +4,11 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
-using Foundation.DataAccess.Contracts;
-using Foundation.Model.Contracts;
+using Bit.Data.Contracts;
+using Bit.Model.Contracts;
 using Microsoft.EntityFrameworkCore;
 
-namespace Foundation.DataAccess.Implementations.EntityFrameworkCore
+namespace Bit.Data.EntityFrameworkCore.Implementations
 {
     public class EfRepository<TEntity> : IRepository<TEntity>
         where TEntity : class, IEntity

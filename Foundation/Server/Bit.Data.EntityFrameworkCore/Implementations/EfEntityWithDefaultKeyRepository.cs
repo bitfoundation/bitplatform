@@ -1,13 +1,13 @@
-﻿using Foundation.DataAccess.Contracts;
-using Foundation.Model.Contracts;
+﻿using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
-using System.Threading;
-using Microsoft.EntityFrameworkCore;
-using System.Collections.Generic;
 using System.Linq.Dynamic.Core;
+using System.Threading;
+using System.Threading.Tasks;
+using Bit.Data.Contracts;
+using Bit.Model.Contracts;
+using Microsoft.EntityFrameworkCore;
 
-namespace Foundation.DataAccess.Implementations.EntityFrameworkCore
+namespace Bit.Data.EntityFrameworkCore.Implementations
 {
     public class EfEntityWithDefaultKeyRepository<TEntity, TKey> : EfRepository<TEntity>, IEntityWithDefaultKeyRepository<TEntity, TKey>
             where TEntity : class, IEntityWithDefaultKey<TKey>

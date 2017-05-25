@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Foundation.Core.Models
+namespace Bit.Core.Models
 {
     [Serializable]
     public class AppEnvironment

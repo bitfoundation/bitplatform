@@ -1,11 +1,11 @@
-﻿using IdentityServer.Api.Contracts;
+﻿using System;
+using System.Net.Http;
+using Bit.IdentityServer.Contracts;
 using IdentityServer3.Core.Models;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
-using System;
-using System.Net.Http;
 
-namespace IdentityServer.Api.Implementations
+namespace Bit.IdentityServer.Implementations
 {
     public class DefaultCustomLoginDataProvider : ICustomLoginDataProvider
     {

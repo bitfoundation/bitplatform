@@ -1,8 +1,8 @@
-﻿using Foundation.AspNetCore.Contracts;
+﻿using System;
+using Bit.OwinCore.Contracts;
 using Microsoft.AspNetCore.Builder;
-using System;
 
-namespace Foundation.AspNetCore.Middlewares
+namespace Bit.OwinCore.Middlewares
 {
     public class DelegateAspNetCoreMiddlewareConfiguration : IAspNetCoreMiddlewareConfiguration
     {

@@ -1,13 +1,13 @@
 ﻿using System;
-using Foundation.Api.Contracts;
-using Foundation.Api.Middlewares.SignalR.Contracts;
-using Foundation.Core.Contracts;
-using Microsoft.AspNet.SignalR;
-using Owin;
 using System.Collections.Generic;
 using System.Linq;
+using Bit.Core.Contracts;
+using Bit.Owin.Contracts;
+using Bit.Signalr.Middlewares.Signalr.Contracts;
+using Microsoft.AspNet.SignalR;
+using Owin;
 
-namespace Foundation.Api.Middlewares.SignalR
+namespace Bit.Signalr.Middlewares.Signalr
 {
     public class SignalRMiddlewareConfiguration : IOwinMiddlewareConfiguration
     {

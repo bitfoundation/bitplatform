@@ -1,8 +1,11 @@
-﻿using IdentityModel.Client;
+﻿using Bit.Test;
+using Bit.Test.Server;
+using IdentityModel.Client;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using OpenQA.Selenium;
 using OpenQA.Selenium.Remote;
 
-namespace Foundation.Test.HtmlClient.ViewModel.Implementation
+namespace Bit.Tests.HtmlClient.ViewModel.Implementation
 {
     [TestClass]
     public class LocalizationTests

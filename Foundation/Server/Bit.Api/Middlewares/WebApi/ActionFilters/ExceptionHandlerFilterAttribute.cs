@@ -4,12 +4,12 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Web.Http.Filters;
 using System.Web.OData.Extensions;
-using Foundation.Core.Contracts;
+using Bit.Core.Contracts;
+using Bit.Owin.Contracts;
 using Microsoft.OData;
-using Foundation.Api.Contracts;
 using Microsoft.Owin;
 
-namespace Foundation.Api.Middlewares.WebApi.ActionFilters
+namespace Bit.Api.Middlewares.WebApi.ActionFilters
 {
     public class ExceptionHandlerFilterAttribute : ExceptionFilterAttribute
     {

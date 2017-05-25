@@ -1,15 +1,16 @@
 ﻿using System;
 using System.Net.Http;
-using OpenQA.Selenium.Remote;
-using OpenQA.Selenium.Chrome;
-using Microsoft.AspNet.SignalR.Client;
-using Foundation.Api.Middlewares.SignalR;
-using Microsoft.AspNet.SignalR.Client.Transports;
-using Foundation.Api.Middlewares.SignalR.Implementations;
-using Foundation.Test.Api.Middlewares.SignalR;
+using Bit.Signalr.Middlewares.Signalr;
+using Bit.Signalr.Middlewares.Signalr.Implementations;
+using Bit.Test.Api.Middlewares.SignalR;
 using IdentityModel.Client;
+using Microsoft.AspNet.SignalR.Client;
+using Microsoft.AspNet.SignalR.Client.Transports;
+using OpenQA.Selenium;
+using OpenQA.Selenium.Chrome;
+using OpenQA.Selenium.Remote;
 
-namespace Foundation.Test.Server
+namespace Bit.Test.Server
 {
     public abstract class TestServerBase : ITestServer
     {

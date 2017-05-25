@@ -1,8 +1,8 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
-using Foundation.Model.Contracts;
+using Bit.Model.Contracts;
 
-namespace Foundation.Model.DomainModels
+namespace Bit.Model.Dtos
 {
     [Serializable]
     public class JobInfoDto : IDto

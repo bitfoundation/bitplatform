@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Collections.ObjectModel;
 using System.Net.Http;
-using System.Web.OData;
 using System.Web.Http.Controllers;
+using System.Web.OData;
 
-namespace Foundation.Api.ApiControllers
+namespace Bit.Api.ApiControllers
 {
     [AttributeUsage(AttributeTargets.Method, AllowMultiple = false, Inherited = true)]
     public sealed class ActionAttribute : Attribute, IActionHttpMethodProvider

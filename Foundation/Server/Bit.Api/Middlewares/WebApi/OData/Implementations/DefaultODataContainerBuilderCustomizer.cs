@@ -1,10 +1,10 @@
-﻿using Foundation.Api.Middlewares.WebApi.OData.Contracts;
+﻿using System.Web.OData.Formatter.Deserialization;
+using System.Web.OData.Formatter.Serialization;
+using Bit.Api.Middlewares.WebApi.OData.Contracts;
 using Microsoft.OData;
 using Microsoft.OData.UriParser;
-using System.Web.OData.Formatter.Deserialization;
-using System.Web.OData.Formatter.Serialization;
 
-namespace Foundation.Api.Middlewares.WebApi.OData.Implementations
+namespace Bit.Api.Middlewares.WebApi.OData.Implementations
 {
     public class DefaultODataContainerBuilderCustomizer : IODataContainerBuilderCustomizer
     {

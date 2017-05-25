@@ -1,7 +1,7 @@
-﻿using IdentityServer3.Core.Models;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+using IdentityServer3.Core.Models;
 
-namespace IdentityServer.Api.Contracts
+namespace Bit.IdentityServer.Contracts
 {
     public interface IClientProvider
     {

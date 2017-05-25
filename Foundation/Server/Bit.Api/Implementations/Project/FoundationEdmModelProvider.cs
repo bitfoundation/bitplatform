@@ -1,11 +1,11 @@
 ﻿using System;
-using System.Web.OData.Builder;
-using Foundation.Api.ApiControllers;
-using Foundation.Api.Contracts.Project;
-using Foundation.Api.Middlewares.WebApi.OData.Contracts;
 using System.Reflection;
+using System.Web.OData.Builder;
+using Bit.Api.ApiControllers;
+using Bit.Api.Contracts.Project;
+using Bit.Api.Middlewares.WebApi.OData.Contracts;
 
-namespace Foundation.Api.Implementations.Project
+namespace Bit.Api.Implementations.Project
 {
     public class FoundationEdmModelProvider : IEdmModelProvider
     {
@@ -31,7 +31,7 @@ namespace Foundation.Api.Implementations.Project
 
         public virtual string GetEdmName()
         {
-            return "Foundation";
+            return "Bit";
         }
     }
 }

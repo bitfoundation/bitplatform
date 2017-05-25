@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Runtime.Serialization;
 
-namespace Foundation.Api.Exceptions
+namespace Bit.Owin.Exceptions
 {
     [Serializable]
     public class AppException : Exception, IKnwoException

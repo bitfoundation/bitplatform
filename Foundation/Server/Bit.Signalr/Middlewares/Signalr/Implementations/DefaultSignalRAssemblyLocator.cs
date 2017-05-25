@@ -1,9 +1,9 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Reflection;
 using Microsoft.AspNet.SignalR.Hubs;
-using System;
 
-namespace Foundation.Api.Middlewares.SignalR.Implementations
+namespace Bit.Signalr.Middlewares.Signalr.Implementations
 {
     public class DefaultSignalRAssemblyLocator : IAssemblyLocator
     {

@@ -1,12 +1,12 @@
 ﻿using System;
-using Foundation.Core.Contracts;
-using Foundation.Core.Models;
+using Bit.Core.Contracts;
+using Bit.Core.Models;
 using RazorEngine;
 using RazorEngine.Configuration;
 using RazorEngine.Templating;
 using RazorEngine.Text;
 
-namespace Foundation.Api.Implementations
+namespace Bit.Owin.Implementations
 {
     public class RazorViewEngineConfiguration : IAppEvents
     {

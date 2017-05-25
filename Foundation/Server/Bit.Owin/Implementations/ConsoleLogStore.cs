@@ -1,9 +1,9 @@
-﻿using Foundation.Core.Contracts;
-using Foundation.Core.Models;
-using System;
+﻿using System;
 using System.Threading.Tasks;
+using Bit.Core.Contracts;
+using Bit.Core.Models;
 
-namespace Foundation.Api.Implementations
+namespace Bit.Owin.Implementations
 {
     public class ConsoleLogStore : ILogStore
     {

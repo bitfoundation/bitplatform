@@ -1,11 +1,14 @@
 ﻿using System.Linq;
-using Foundation.Core.Contracts;
-using Foundation.Test.Core.Implementations;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using OpenQA.Selenium.Remote;
+using Bit.Core.Contracts;
+using Bit.Test;
+using Bit.Test.Core.Implementations;
+using Bit.Test.Server;
 using IdentityModel.Client;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+using OpenQA.Selenium;
+using OpenQA.Selenium.Remote;
 
-namespace Foundation.Test.HtmlClient.ViewModel.Implementation
+namespace Bit.Tests.HtmlClient.ViewModel.Implementation
 {
     [TestClass]
     public class SignalRTests

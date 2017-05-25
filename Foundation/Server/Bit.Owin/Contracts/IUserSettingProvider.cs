@@ -1,8 +1,8 @@
 ﻿using System.Threading;
 using System.Threading.Tasks;
-using Foundation.Model.DomainModels;
+using Bit.Model.DomainModels;
 
-namespace Foundation.Api.Contracts
+namespace Bit.Owin.Contracts
 {
     public interface IUserSettingProvider
     {

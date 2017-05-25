@@ -1,13 +1,4 @@
-﻿using Foundation.Api.Contracts;
-using Foundation.Api.Contracts.Project;
-using Foundation.Api.Middlewares.WebApi.Contracts;
-using Foundation.Api.Middlewares.WebApi.OData.Contracts;
-using Foundation.Core.Contracts;
-using Foundation.Core.Models;
-using Microsoft.OData;
-using Microsoft.OData.Edm;
-using Owin;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Web.Http;
@@ -15,8 +6,17 @@ using System.Web.OData.Batch;
 using System.Web.OData.Builder;
 using System.Web.OData.Extensions;
 using System.Web.OData.Routing.Conventions;
+using Bit.Api.Contracts.Project;
+using Bit.Api.Middlewares.WebApi.Contracts;
+using Bit.Api.Middlewares.WebApi.OData.Contracts;
+using Bit.Core.Contracts;
+using Bit.Core.Models;
+using Bit.Owin.Contracts;
+using Microsoft.OData;
+using Microsoft.OData.Edm;
+using Owin;
 
-namespace Foundation.Api.Middlewares.WebApi.OData
+namespace Bit.Api.Middlewares.WebApi.OData
 {
     public class WebApiODataMiddlewareConfiguration : IOwinMiddlewareConfiguration, IDisposable
     {

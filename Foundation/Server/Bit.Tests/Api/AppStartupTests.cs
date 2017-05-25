@@ -1,12 +1,12 @@
 ﻿using System;
 using System.Linq;
+using Bit.Core.Contracts;
+using Bit.Owin.Implementations;
+using Bit.Test.Core.Implementations;
 using FakeItEasy;
-using Foundation.Core.Contracts;
-using Foundation.Test.Core.Implementations;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Foundation.Api.Implementations;
 
-namespace Foundation.Test.Api
+namespace Bit.Tests.Api
 {
     [TestClass]
     public class AppStartupTests

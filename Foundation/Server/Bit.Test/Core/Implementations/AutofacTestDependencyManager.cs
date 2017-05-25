@@ -3,11 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using Autofac;
+using Bit.Core.Contracts;
+using Bit.Owin.Implementations;
 using FakeItEasy;
-using Foundation.Core.Contracts;
-using Foundation.Api.Implementations;
 
-namespace Foundation.Test.Core.Implementations
+namespace Bit.Test.Core.Implementations
 {
     public class AutofacTestDependencyManager : AutofacDependencyManager
     {

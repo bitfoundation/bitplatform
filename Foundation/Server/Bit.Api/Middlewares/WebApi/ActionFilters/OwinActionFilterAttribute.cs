@@ -1,12 +1,12 @@
-﻿using Foundation.Api.Contracts;
-using System;
+﻿using System;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Web.Http.Controllers;
 using System.Web.Http.Filters;
+using Bit.Owin.Contracts;
 
-namespace Foundation.Api.Middlewares.WebApi.ActionFilters
+namespace Bit.Api.Middlewares.WebApi.ActionFilters
 {
     public class OwinActionFilterAttribute : ActionFilterAttribute, IExceptionFilter, IFilter
     {

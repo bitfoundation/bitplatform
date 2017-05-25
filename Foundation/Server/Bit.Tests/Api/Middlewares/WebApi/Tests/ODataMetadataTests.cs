@@ -1,10 +1,10 @@
-﻿using IdentityModel.Client;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System.Net;
+﻿using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
+using IdentityModel.Client;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace Foundation.Test.Api.Middlewares.WebApi.Tests
+namespace Bit.Tests.Api.Middlewares.WebApi.Tests
 {
     [TestClass]
     public class ODataMetadataTests
@@ -17,7 +17,7 @@ namespace Foundation.Test.Api.Middlewares.WebApi.Tests
             {
                 TokenResponse token = testEnvironment.Server.Login("ValidUserName", "ValidPassword", clientName: "TestResOwner");
 
-                string[] edmModelProviders = new string[] { "Foundation", "Test" };
+                string[] edmModelProviders = new string[] { "Bit", "Test" };
 
                 foreach (string edmModelProvider in edmModelProviders)
                 {

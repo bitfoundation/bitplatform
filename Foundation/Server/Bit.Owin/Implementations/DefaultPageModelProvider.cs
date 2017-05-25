@@ -1,14 +1,14 @@
 ﻿using System;
 using System.Linq;
-using System.Threading.Tasks;
-using Foundation.Api.Contracts;
-using Foundation.Api.Models;
-using Foundation.Core.Contracts;
-using Foundation.Core.Models;
-using Foundation.Model.DomainModels;
 using System.Threading;
+using System.Threading.Tasks;
+using Bit.Core.Contracts;
+using Bit.Core.Models;
+using Bit.Model.DomainModels;
+using Bit.Owin.Contracts;
+using Bit.Owin.Models;
 
-namespace Foundation.Api.Implementations
+namespace Bit.Owin.Implementations
 {
     public class DefaultPageModelProvider : IDefaultPageModelProvider
     {

@@ -1,8 +1,8 @@
-﻿using Bit.Data.EntityFramework.Implementations;
-using Foundation.DataAccess.Contracts;
-using System;
+﻿using System;
+using Bit.Data.Contracts;
+using Bit.Data.EntityFramework.Implementations;
 
-namespace Foundation.Core.Contracts
+namespace Bit.Core.Contracts
 {
     public static class IDependencyManangerExtensions
     {

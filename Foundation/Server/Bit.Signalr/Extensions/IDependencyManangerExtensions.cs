@@ -1,13 +1,12 @@
-﻿using Autofac.Integration.SignalR;
-using Bit.Core;
-using Foundation.Api.Middlewares.SignalR;
-using Foundation.Api.Middlewares.SignalR.Contracts;
-using Foundation.Api.Middlewares.SignalR.Implementations;
-using System;
+﻿using System;
 using System.Linq;
 using System.Reflection;
+using Autofac.Integration.SignalR;
+using Bit.Signalr.Middlewares.Signalr;
+using Bit.Signalr.Middlewares.Signalr.Contracts;
+using Bit.Signalr.Middlewares.Signalr.Implementations;
 
-namespace Foundation.Core.Contracts
+namespace Bit.Core.Contracts
 {
     public static class IDependencyManangerExtensions
     {

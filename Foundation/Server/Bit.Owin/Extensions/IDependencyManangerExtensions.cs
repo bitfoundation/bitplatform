@@ -1,17 +1,17 @@
-﻿using AutoMapper;
-using Foundation.Api.Contracts;
-using Foundation.Api.Contracts.Metadata;
-using Foundation.Api.Implementations;
-using Foundation.Api.Middlewares;
-using Foundation.DataAccess.Implementations;
-using Foundation.Model.Contracts;
-using Owin;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using AutoMapper;
+using Bit.Data;
+using Bit.Model.Contracts;
+using Bit.Owin.Contracts;
+using Bit.Owin.Contracts.Metadata;
+using Bit.Owin.Implementations;
+using Bit.Owin.Middlewares;
+using Owin;
 
-namespace Foundation.Core.Contracts
+namespace Bit.Core.Contracts
 {
     public static class IDependencyManangerExtensions
     {

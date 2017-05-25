@@ -1,9 +1,9 @@
-﻿using Foundation.Api.Middlewares.SignalR.Contracts;
-using Foundation.Core.Contracts;
-using System;
+﻿using System;
 using System.Threading.Tasks;
+using Bit.Core.Contracts;
+using Bit.Signalr.Middlewares.Signalr.Contracts;
 
-namespace Foundation.Api.Middlewares.SignalR.Implementations
+namespace Bit.Signalr.Middlewares.Signalr.Implementations
 {
     public class DefaultMessageHubEvents : IMessagesHubEvents
     {

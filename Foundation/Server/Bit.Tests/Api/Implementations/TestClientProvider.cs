@@ -1,9 +1,9 @@
 ﻿using System.Collections.Generic;
+using Bit.IdentityServer.Contracts;
 using IdentityServer3.Core;
 using IdentityServer3.Core.Models;
-using IdentityServer.Api.Contracts;
 
-namespace IdentityServer.Test.Api.Implementations
+namespace Bit.Tests.Api.Implementations
 {
     public class TestClientProvider : IClientProvider
     {

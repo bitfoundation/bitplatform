@@ -1,13 +1,13 @@
 ﻿using System;
-using Foundation.Api.Contracts;
-using Foundation.Core.Contracts;
-using Foundation.Core.Models;
+using System.Net.Http;
+using Bit.Core.Contracts;
+using Bit.Core.Models;
+using Bit.Owin.Contracts;
 using IdentityServer3.AccessTokenValidation;
 using IdentityServer3.Core.Models;
 using Owin;
-using System.Net.Http;
 
-namespace Foundation.Api.Middlewares
+namespace Bit.Owin.Middlewares
 {
     public class SingleSignOnMiddlewareConfiguration : IOwinMiddlewareConfiguration
     {

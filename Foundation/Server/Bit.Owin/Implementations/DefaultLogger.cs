@@ -2,13 +2,13 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
-using System.Threading.Tasks;
-using Foundation.Api.Exceptions;
-using Foundation.Core.Contracts;
-using Foundation.Core.Models;
 using System.Linq;
+using System.Threading.Tasks;
+using Bit.Core.Contracts;
+using Bit.Core.Models;
+using Bit.Owin.Exceptions;
 
-namespace Foundation.Api.Implementations
+namespace Bit.Owin.Implementations
 {
     public class DefaultLogger : ILogger
     {

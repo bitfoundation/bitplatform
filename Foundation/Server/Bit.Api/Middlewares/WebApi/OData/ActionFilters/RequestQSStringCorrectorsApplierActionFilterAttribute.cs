@@ -1,10 +1,10 @@
-﻿using Foundation.Core.Contracts;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Web.Http.Controllers;
 using System.Web.Http.Filters;
+using Bit.Core.Contracts;
 
-namespace Foundation.Api.Middlewares.WebApi.OData.ActionFilters
+namespace Bit.Api.Middlewares.WebApi.OData.ActionFilters
 {
     public class RequestQSStringCorrectorsApplierActionFilterAttribute : ActionFilterAttribute
     {

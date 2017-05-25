@@ -2,16 +2,16 @@
 using System.Globalization;
 using System.Linq;
 using System.Threading;
-using Foundation.Api.Implementations;
-using Foundation.Core.Contracts;
-using Foundation.Core.Contracts.Project;
-using Foundation.Core.Models;
-using Owin;
-using Foundation.Api.Contracts;
-using Microsoft.Owin.Logging;
+using Bit.Core.Contracts;
+using Bit.Core.Contracts.Project;
+using Bit.Core.Models;
+using Bit.Owin.Contracts;
+using Bit.Owin.Implementations;
 using Microsoft.Owin.BuilderProperties;
+using Microsoft.Owin.Logging;
+using Owin;
 
-namespace Foundation.Api
+namespace Bit.Owin
 {
     public class OwinAppStartup
     {

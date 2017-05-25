@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Reflection;
 
-namespace Foundation.Api.Contracts.Project
+namespace Bit.Api.Contracts.Project
 {
     public interface IApiAssembliesProvider
     {

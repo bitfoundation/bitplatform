@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data.Common;
-using Foundation.DataAccess.Contracts;
+using Bit.Data.Contracts;
+using Bit.Data.EntityFrameworkCore.Contracts;
 using Microsoft.EntityFrameworkCore;
-using Foundation.DataAccess.Contracts.EntityFrameworkCore;
 
-namespace Foundation.DataAccess.Implementations.EntityFrameworkCore
+namespace Bit.Data.EntityFrameworkCore.Implementations
 {
     public class SqlDbContextObjectsProvider : IDbContextObjectsProvider
     {

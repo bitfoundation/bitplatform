@@ -1,6 +1,6 @@
 ﻿using Microsoft.OData;
 
-namespace Foundation.Api.Middlewares.WebApi.OData.Contracts
+namespace Bit.Api.Middlewares.WebApi.OData.Contracts
 {
     public interface IODataContainerBuilderCustomizer
     {

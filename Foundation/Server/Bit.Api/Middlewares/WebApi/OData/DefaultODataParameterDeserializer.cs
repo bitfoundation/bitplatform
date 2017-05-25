@@ -1,11 +1,11 @@
-﻿using Microsoft.OData;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Web.OData;
 using System.Web.OData.Formatter.Deserialization;
+using Microsoft.OData;
 
-namespace Foundation.Api.Middlewares.WebApi.OData
+namespace Bit.Api.Middlewares.WebApi.OData
 {
     public class DefaultODataParameterDeserializer : ODataDeserializer
     {

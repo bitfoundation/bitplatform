@@ -1,6 +1,6 @@
-﻿using Foundation.Api.Middlewares;
-using Foundation.Core.Contracts;
-using System;
+﻿using System;
+using Bit.Core.Contracts;
+using Bit.Owin.Middlewares;
 
 namespace Microsoft.Owin
 {

@@ -1,4 +1,4 @@
-﻿namespace Foundation.Core.Models
+﻿namespace Bit.Core.Models
 {
     public class LogData
     {

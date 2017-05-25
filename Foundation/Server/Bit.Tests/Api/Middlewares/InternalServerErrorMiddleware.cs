@@ -1,7 +1,7 @@
 ﻿using System.Threading.Tasks;
 using Microsoft.Owin;
 
-namespace Foundation.Test.Api.Middlewares
+namespace Bit.Tests.Api.Middlewares
 {
     public class InternalServerErrorMiddleware : OwinMiddleware
     {

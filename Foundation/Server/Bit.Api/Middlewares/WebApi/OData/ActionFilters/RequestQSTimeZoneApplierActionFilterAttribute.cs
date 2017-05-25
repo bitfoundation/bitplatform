@@ -1,13 +1,13 @@
-﻿using Foundation.Api.Contracts;
-using Foundation.Core.Contracts;
-using Microsoft.Owin;
-using System;
+﻿using System;
 using System.Net.Http;
 using System.Text.RegularExpressions;
 using System.Web.Http.Controllers;
 using System.Web.Http.Filters;
+using Bit.Core.Contracts;
+using Bit.Owin.Contracts;
+using Microsoft.Owin;
 
-namespace Foundation.Api.Middlewares.WebApi.OData.ActionFilters
+namespace Bit.Api.Middlewares.WebApi.OData.ActionFilters
 {
     public class RequestQSTimeZoneApplierActionFilterAttribute : ActionFilterAttribute
     {

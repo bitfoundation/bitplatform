@@ -1,8 +1,8 @@
 ﻿using System;
+using Bit.Data.EntityFrameworkCore.Contracts;
 using Microsoft.EntityFrameworkCore;
-using Foundation.DataAccess.Contracts.EntityFrameworkCore;
 
-namespace Foundation.DataAccess.Implementations.EntityFrameworkCore
+namespace Bit.Data.EntityFrameworkCore.Implementations
 {
     public class DefaultDbContext : DbContext
     {

@@ -4,10 +4,10 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
-using Foundation.DataAccess.Contracts;
-using Foundation.Model.Contracts;
 using System.Data.Entity;
 using System.Data.Entity.Infrastructure;
+using Bit.Data.Contracts;
+using Bit.Model.Contracts;
 
 namespace Bit.Data.EntityFramework.Implementations
 {

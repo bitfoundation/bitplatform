@@ -1,9 +1,9 @@
-﻿using Microsoft.AspNetCore.Http;
-using System;
+﻿using System;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
 
-namespace Foundation.AspNetCore.Middlewares
+namespace Bit.OwinCore.Middlewares
 {
     public class AspNetCoreCacheResponseMiddleware
     {

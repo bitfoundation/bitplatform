@@ -1,13 +1,13 @@
-﻿using Foundation.Core.Contracts;
-using Foundation.Core.Models;
-using IdentityServer.Api.Contracts;
-using IdentityServer.Api.Model;
-using System;
+﻿using System;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Bit.Core.Contracts;
+using Bit.Core.Models;
+using Bit.IdentityServer.Contracts;
+using Bit.IdentityServer.Model;
 
-namespace IdentityServer.Api.Implementations
+namespace Bit.IdentityServer.Implementations
 {
     public class DefaultSSOPageModelProvider : ISSOPageModelProvider
     {

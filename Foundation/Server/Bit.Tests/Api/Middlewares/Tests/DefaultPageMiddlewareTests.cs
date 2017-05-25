@@ -1,13 +1,16 @@
 ﻿using System.Linq;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
-using OpenQA.Selenium.Remote;
-using Foundation.Core.Models;
+using Bit.Core.Models;
+using Bit.Test;
+using Bit.Test.Server;
 using IdentityModel.Client;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+using OpenQA.Selenium;
+using OpenQA.Selenium.Remote;
 
-namespace Foundation.Test.Api.Middlewares.Tests
+namespace Bit.Tests.Api.Middlewares.Tests
 {
     [TestClass]
     public class DefaultPageMiddlewareTests

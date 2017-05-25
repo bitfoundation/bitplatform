@@ -1,10 +1,10 @@
-﻿using Foundation.Core.Contracts;
-using Foundation.Core.Models;
-using Microsoft.Owin;
-using System.Linq;
+﻿using System.Linq;
 using System.Threading.Tasks;
+using Bit.Core.Contracts;
+using Bit.Core.Models;
+using Microsoft.Owin;
 
-namespace Foundation.Api.Middlewares
+namespace Bit.Owin.Middlewares
 {
     public class InvokeLoginMiddleware : OwinMiddleware
     {

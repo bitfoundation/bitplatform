@@ -1,6 +1,6 @@
-﻿using Foundation.Api.Implementations;
+﻿using Bit.Owin.Implementations;
 
-namespace Foundation.Test.Core.Implementations
+namespace Bit.Test.Core.Implementations
 {
     public class TestDependencyManager
     {

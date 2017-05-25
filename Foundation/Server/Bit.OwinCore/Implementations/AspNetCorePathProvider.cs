@@ -1,8 +1,8 @@
-﻿using Foundation.Api.Implementations;
-using Foundation.Core.Contracts;
+﻿using Bit.Core.Contracts;
+using Bit.Owin.Implementations;
 using Microsoft.AspNetCore.Hosting;
 
-namespace Foundation.AspNetCore.Implementations
+namespace Bit.OwinCore.Implementations
 {
     public class AspNetCorePathProvider : DefaultPathProvider, IPathProvider
     {

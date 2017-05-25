@@ -1,6 +1,6 @@
 ﻿using Microsoft.OData.UriParser;
 
-namespace Foundation.Api.Middlewares.WebApi.OData.Visitors
+namespace Bit.Api.Middlewares.WebApi.OData.Visitors
 {
     public class TraverserQueryNodeVisitor : EmptyQueryNodeVisitor
     {

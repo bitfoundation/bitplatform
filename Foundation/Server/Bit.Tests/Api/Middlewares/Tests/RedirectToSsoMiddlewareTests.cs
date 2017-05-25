@@ -2,12 +2,13 @@
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
+using Bit.Core.Contracts;
+using Bit.Test;
 using FakeItEasy;
-using Foundation.Core.Contracts;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 using IdentityModel.Client;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace Foundation.Test.Api.Middlewares.Tests
+namespace Bit.Tests.Api.Middlewares.Tests
 {
     [TestClass]
     public class RedirectToSsoMiddlewareTests

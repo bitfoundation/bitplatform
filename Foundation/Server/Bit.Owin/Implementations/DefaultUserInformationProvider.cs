@@ -1,10 +1,10 @@
 ﻿using System;
-using System.Security.Claims;
-using Foundation.Core.Contracts;
-using System.Linq;
 using System.Collections.Generic;
+using System.Linq;
+using System.Security.Claims;
+using Bit.Core.Contracts;
 
-namespace Foundation.Api.Implementations
+namespace Bit.Owin.Implementations
 {
     public class DefaultUserInformationProvider : IUserInformationProvider
     {

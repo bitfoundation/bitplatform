@@ -1,8 +1,8 @@
 using System;
+using Bit.Owin.Contracts;
 using Owin;
-using Foundation.Api.Contracts;
 
-namespace Foundation.Api.Middlewares
+namespace Bit.Owin.Middlewares
 {
     public class OwinExceptionHandlerMiddlewareConfiguration : IOwinMiddlewareConfiguration
     {

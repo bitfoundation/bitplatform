@@ -1,5 +1,5 @@
-﻿using Foundation.Api.Contracts;
-using System.Reflection;
+﻿using System.Reflection;
+using Bit.Owin.Contracts;
 
 namespace Bit.Core
 {

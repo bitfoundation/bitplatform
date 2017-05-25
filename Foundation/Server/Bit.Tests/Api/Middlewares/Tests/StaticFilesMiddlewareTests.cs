@@ -3,11 +3,12 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
-using Foundation.Core.Contracts;
-using Foundation.Test.Core.Implementations;
+using Bit.Core.Contracts;
+using Bit.Test;
+using Bit.Test.Core.Implementations;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace Foundation.Test.Api.Middlewares.Tests
+namespace Bit.Tests.Api.Middlewares.Tests
 {
     [TestClass]
     public class StaticFilesMiddlewareTests

@@ -1,7 +1,7 @@
 ﻿using System;
-using Foundation.Core.Contracts;
+using Bit.Core.Contracts;
 
-namespace Foundation.Api.Implementations
+namespace Bit.Owin.Implementations
 {
     public class DefaultRandomStringProvider : IRandomStringProvider
     {

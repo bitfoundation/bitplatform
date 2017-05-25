@@ -3,7 +3,7 @@ using System.Data.Common;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Foundation.DataAccess.Contracts
+namespace Bit.Data.Contracts
 {
     public interface IDbConnectionProvider : IDisposable
     {

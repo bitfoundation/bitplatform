@@ -1,23 +1,22 @@
-﻿using Autofac.Integration.WebApi;
-using Bit.Core;
-using Foundation.Api.Contracts.Project;
-using Foundation.Api.Implementations.Project;
-using Foundation.Api.Middlewares;
-using Foundation.Api.Middlewares.WebApi;
-using Foundation.Api.Middlewares.WebApi.ActionFilters;
-using Foundation.Api.Middlewares.WebApi.Contracts;
-using Foundation.Api.Middlewares.WebApi.Implementations;
-using Foundation.Api.Middlewares.WebApi.OData;
-using Foundation.Api.Middlewares.WebApi.OData.ActionFilters;
-using Foundation.Api.Middlewares.WebApi.OData.Contracts;
-using Foundation.Api.Middlewares.WebApi.OData.Implementations;
-using System;
+﻿using System;
 using System.Linq;
 using System.Reflection;
 using System.Web.Http;
 using System.Web.OData;
+using Autofac.Integration.WebApi;
+using Bit.Api.Contracts.Project;
+using Bit.Api.Implementations.Project;
+using Bit.Api.Middlewares.WebApi;
+using Bit.Api.Middlewares.WebApi.ActionFilters;
+using Bit.Api.Middlewares.WebApi.Contracts;
+using Bit.Api.Middlewares.WebApi.Implementations;
+using Bit.Api.Middlewares.WebApi.OData;
+using Bit.Api.Middlewares.WebApi.OData.ActionFilters;
+using Bit.Api.Middlewares.WebApi.OData.Contracts;
+using Bit.Api.Middlewares.WebApi.OData.Implementations;
+using Bit.Owin.Middlewares;
 
-namespace Foundation.Core.Contracts
+namespace Bit.Core.Contracts
 {
     public static class IDependencyManangerExtensions
     {

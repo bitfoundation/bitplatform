@@ -2,7 +2,7 @@
     @Core.SecureFormViewModelDependency({ name: "RepeatFormViewModel", templateUrl: "|Foundation|/Foundation.Test.HtmlClient/views/tests/repeatview.html" })
     export class RepeatFormViewModel extends ViewModel.ViewModels.FormViewModel {
 
-        public testModels: Array<Model.DomainModels.TestModel> = null;
+        public testModels: Array<Bit.Tests.Model.DomainModels.TestModel> = null;
 
         public someProperty = "This is a view model";
 

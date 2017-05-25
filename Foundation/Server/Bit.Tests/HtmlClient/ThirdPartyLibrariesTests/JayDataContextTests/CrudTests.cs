@@ -1,16 +1,19 @@
-﻿using FakeItEasy;
-using Foundation.Test.Api.ApiControllers;
-using Foundation.Test.Core.Implementations;
-using Foundation.Test.Model.DomainModels;
-using Foundation.Test.Model.Dto;
-using IdentityModel.Client;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using OpenQA.Selenium.Remote;
-using System.Linq;
+﻿using System.Linq;
 using System.Threading;
 using System.Web.OData;
+using Bit.Test;
+using Bit.Test.Core.Implementations;
+using Bit.Test.Server;
+using Bit.Tests.Api.ApiControllers;
+using Bit.Tests.Model.DomainModels;
+using Bit.Tests.Model.Dto;
+using FakeItEasy;
+using IdentityModel.Client;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+using OpenQA.Selenium;
+using OpenQA.Selenium.Remote;
 
-namespace Foundation.Test.HtmlClient.ThirdPartyLibrariesTests.JayDataContextTests
+namespace Bit.Tests.HtmlClient.ThirdPartyLibrariesTests.JayDataContextTests
 {
     [TestClass]
     public class CrudTests

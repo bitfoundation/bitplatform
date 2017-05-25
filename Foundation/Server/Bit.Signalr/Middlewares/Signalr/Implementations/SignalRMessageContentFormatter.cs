@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-using Foundation.Core.Contracts;
-using Newtonsoft.Json;
 using System.Reflection;
+using Bit.Core.Contracts;
+using Newtonsoft.Json;
 
-namespace Foundation.Api.Middlewares.SignalR.Implementations
+namespace Bit.Signalr.Middlewares.Signalr.Implementations
 {
     public class SignalRMessageContentFormatter : IMessageContentFormatter
     {

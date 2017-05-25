@@ -1,7 +1,6 @@
-﻿@using Foundation.Api.Implementations
-@using Foundation.Api.Contracts
-@using Foundation.Api.Models
-@inherits RazorViewTemplate
+﻿@using Bit.Owin.Contracts
+@using Bit.Owin.Models
+@inherits Bit.Owin.Implementations.RazorViewTemplate
 
 @{
     DefaultPageModel model = Resolve<IDefaultPageModelProvider>().GetDefaultPageModel();

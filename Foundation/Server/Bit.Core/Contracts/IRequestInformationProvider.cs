@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Security.Claims;
 
-namespace Foundation.Core.Contracts
+namespace Bit.Core.Contracts
 {
     public interface IRequestInformationProvider
     {

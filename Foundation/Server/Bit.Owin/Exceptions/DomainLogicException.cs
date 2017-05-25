@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Runtime.Serialization;
-using Foundation.Api.Metadata;
+using Bit.Owin.Metadata;
 
-namespace Foundation.Api.Exceptions
+namespace Bit.Owin.Exceptions
 {
     [Serializable]
     public class DomainLogicException : AppException

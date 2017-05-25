@@ -1,9 +1,9 @@
-﻿using Foundation.Api.Middlewares.SignalR.Contracts;
-using Foundation.Core.Contracts;
-using Foundation.Core.Models;
+﻿using Bit.Core.Contracts;
+using Bit.Core.Models;
+using Bit.Signalr.Middlewares.Signalr.Contracts;
 using Microsoft.AspNet.SignalR;
 
-namespace Foundation.Api.Middlewares.SignalR.Implementations
+namespace Bit.Signalr.Middlewares.Signalr.Implementations
 {
     public class SignalRAzureServiceBusScaleoutConfiguration : ISignalRConfiguration
     {

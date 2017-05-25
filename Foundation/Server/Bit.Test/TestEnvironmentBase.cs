@@ -1,15 +1,15 @@
-﻿using Foundation.Api.Implementations;
-using Foundation.Core.Contracts;
-using Foundation.Core.Models;
-using Foundation.Test.Core.Implementations;
-using Foundation.Test.Server;
-using System;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using System.Collections.Generic;
 using Bit.Core;
+using Bit.Core.Contracts;
+using Bit.Core.Models;
+using Bit.Owin.Implementations;
+using Bit.Test.Core.Implementations;
+using Bit.Test.Server;
 
-namespace Foundation.Test
+namespace Bit.Test
 {
     public class TestEnvironmentArgs
     {

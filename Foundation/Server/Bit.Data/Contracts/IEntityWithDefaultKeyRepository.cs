@@ -1,8 +1,8 @@
-﻿using Foundation.Model.Contracts;
-using System.Threading;
+﻿using System.Threading;
 using System.Threading.Tasks;
+using Bit.Model.Contracts;
 
-namespace Foundation.DataAccess.Contracts
+namespace Bit.Data.Contracts
 {
     public interface IEntityWithDefaultKeyRepository<TEntity, TKey> : IRepository<TEntity>
         where TEntity : class, IEntityWithDefaultKey<TKey>

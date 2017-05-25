@@ -1,8 +1,8 @@
-﻿using Foundation.Api.ApiControllers;
-using Foundation.Test.Model.Dto;
-using System;
+﻿using System;
+using Bit.Api.ApiControllers;
+using Bit.Tests.Model.Dto;
 
-namespace Foundation.Test.Api.ApiControllers
+namespace Bit.Tests.Api.ApiControllers
 {
     public class SampleBaseController<TSampleBaseDto> : DtoController<TSampleBaseDto>
         where TSampleBaseDto : SampleBaseDto, new()

@@ -1,13 +1,13 @@
-﻿using Foundation.Api.Contracts;
-using Foundation.Api.Exceptions;
-using Foundation.Api.Metadata;
-using Foundation.Core.Contracts;
-using Foundation.Core.Models;
-using System;
+﻿using System;
 using System.Net;
 using System.Reflection;
+using Bit.Core.Contracts;
+using Bit.Core.Models;
+using Bit.Owin.Contracts;
+using Bit.Owin.Exceptions;
+using Bit.Owin.Metadata;
 
-namespace Foundation.Api.Implementations
+namespace Bit.Owin.Implementations
 {
     public class DefaultExceptionToHttpErrorMapper : IExceptionToHttpErrorMapper
     {

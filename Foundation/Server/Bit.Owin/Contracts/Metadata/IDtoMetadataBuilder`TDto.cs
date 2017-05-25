@@ -1,8 +1,8 @@
 ﻿using System.Collections.Generic;
 using System.Reflection;
-using Foundation.Core.Models;
+using Bit.Core.Models;
 
-namespace Foundation.Api.Contracts.Metadata
+namespace Bit.Owin.Contracts.Metadata
 {
     public class DtoMemberMetadata : ObjectMetadata
     {

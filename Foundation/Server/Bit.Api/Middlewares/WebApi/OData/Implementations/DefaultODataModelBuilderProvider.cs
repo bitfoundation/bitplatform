@@ -1,8 +1,8 @@
-﻿using Foundation.Api.Middlewares.WebApi.OData.Contracts;
-using System.Web.Http;
+﻿using System.Web.Http;
 using System.Web.OData.Builder;
+using Bit.Api.Middlewares.WebApi.OData.Contracts;
 
-namespace Foundation.Api.Middlewares.WebApi.OData.Implementations
+namespace Bit.Api.Middlewares.WebApi.OData.Implementations
 {
     public class DefaultODataModelBuilderProvider : IODataModelBuilderProvider
     {

@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Net.Http;
-using Foundation.Api;
+using Bit.Owin;
 using Microsoft.Owin.Testing;
 using OpenQA.Selenium.Remote;
 
-namespace Foundation.Test.Server
+namespace Bit.Test.Server
 {
     public class OwinEmbeddedTestServer : TestServerBase
     {

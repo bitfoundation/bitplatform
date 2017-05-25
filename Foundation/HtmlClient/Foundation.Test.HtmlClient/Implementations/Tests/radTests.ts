@@ -13,7 +13,7 @@
 
             await grid.addRow();
 
-            const parentEntity = vm.parentEntitiesDataSource.current as Model.DomainModels.ParentEntity;
+            const parentEntity = vm.parentEntitiesDataSource.current as Bit.Tests.Model.DomainModels.ParentEntity;
 
             parentEntity.Name = "!";
 
@@ -38,7 +38,7 @@
 
             const uiAutomation = new UIAutomation<ViewModels.RadComboFormViewModel>(angular.element("#radComboView"));
 
-            uiAutomation.formViewModel.testModelsDataSource.current = uiAutomation.formViewModel.testModelsDataSource.dataView<Test.Model.DomainModels.TestModel>().find(i => i["StringProperty"] == "String2");
+            uiAutomation.formViewModel.testModelsDataSource.current = uiAutomation.formViewModel.testModelsDataSource.dataView<Bit.Tests.Model.DomainModels.TestModel>().find(i => i["StringProperty"] == "String2");
 
             const vm = uiAutomation.formViewModel;
 

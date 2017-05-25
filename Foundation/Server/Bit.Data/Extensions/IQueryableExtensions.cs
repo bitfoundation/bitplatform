@@ -1,5 +1,5 @@
-﻿using Foundation.Model.Contracts;
-using System.Linq.Dynamic;
+﻿using System.Linq.Dynamic;
+using Bit.Model.Contracts;
 
 namespace System.Linq
 {

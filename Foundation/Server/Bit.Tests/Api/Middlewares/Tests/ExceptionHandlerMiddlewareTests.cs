@@ -1,16 +1,17 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Bit.Core.Contracts;
+using Bit.Core.Models;
+using Bit.Test;
+using Bit.Test.Core.Implementations;
 using FakeItEasy;
-using Foundation.Core.Contracts;
-using Foundation.Core.Models;
-using Foundation.Test.Core.Implementations;
-using Owin;
 using IdentityModel.Client;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Owin;
 
-namespace Foundation.Test.Api.Middlewares.Tests
+namespace Bit.Tests.Api.Middlewares.Tests
 {
     [TestClass]
     public class ExceptionHandlerMiddlewareTests
@@ -42,9 +43,9 @@ namespace Foundation.Test.Api.Middlewares.Tests
                 {
                     manager.RegisterOwinMiddlewareUsing(owinApp =>
                     {
-                        owinApp.Map("/Exception", innerApp =>
+                        MapExtensions.Map((IAppBuilder) owinApp, (string) "/Exception", innerApp =>
                         {
-                            innerApp.Use<ExceptionThrownMiddleware>();
+                            AppBuilderUseExtensions.Use<ExceptionThrownMiddleware>(innerApp);
                         });
                     });
                 }

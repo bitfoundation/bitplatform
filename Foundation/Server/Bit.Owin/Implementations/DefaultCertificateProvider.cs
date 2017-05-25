@@ -1,10 +1,10 @@
 ﻿using System;
 using System.IO;
 using System.Security.Cryptography.X509Certificates;
-using Foundation.Core.Contracts;
-using Foundation.Core.Models;
+using Bit.Core.Contracts;
+using Bit.Core.Models;
 
-namespace Foundation.Api.Implementations
+namespace Bit.Owin.Implementations
 {
     public class DefaultCertificateProvider : ICertificateProvider
     {

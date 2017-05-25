@@ -1,14 +1,17 @@
-﻿using FakeItEasy;
-using Foundation.Test.Api.ApiControllers;
-using Foundation.Test.Core.Implementations;
-using Foundation.Test.Model.DomainModels;
+﻿using System.Linq;
+using System.Threading;
+using Bit.Test;
+using Bit.Test.Core.Implementations;
+using Bit.Test.Server;
+using Bit.Tests.Api.ApiControllers;
+using Bit.Tests.Model.DomainModels;
+using FakeItEasy;
 using IdentityModel.Client;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using OpenQA.Selenium;
 using OpenQA.Selenium.Remote;
-using System.Linq;
-using System.Threading;
 
-namespace Foundation.Test.HtmlClient.ViewModel.Implementation
+namespace Bit.Tests.HtmlClient.ViewModel.Implementation
 {
     [TestClass]
     public class RadTests

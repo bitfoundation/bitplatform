@@ -1,8 +1,8 @@
-﻿using Microsoft.Owin;
-using System;
+﻿using System;
 using System.Threading.Tasks;
+using Microsoft.Owin;
 
-namespace Foundation.Api.Contracts
+namespace Bit.Owin.Contracts
 {
     public interface IOwinActionFilter
     {

@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Web.OData.Builder;
-using Foundation.Api.Contracts.Project;
-using Foundation.Api.Middlewares.WebApi.OData.Contracts;
+using Bit.Api.Contracts.Project;
+using Bit.Api.Middlewares.WebApi.OData.Contracts;
 using Bit.Core;
 
-namespace Foundation.Test.Api.Implementations.Project
+namespace Bit.Tests.Api.Implementations.Project
 {
     public class TestEdmModelProvider : IEdmModelProvider
     {

@@ -1,7 +1,7 @@
 ﻿using System.Threading;
 using System.Threading.Tasks;
 
-namespace IdentityServer.Api.Contracts
+namespace Bit.IdentityServer.Contracts
 {
     public interface ISsoPageHtmlProvider
     {

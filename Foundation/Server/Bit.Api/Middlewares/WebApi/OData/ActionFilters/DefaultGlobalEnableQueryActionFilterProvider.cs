@@ -1,9 +1,9 @@
-﻿using Foundation.Api.Middlewares.WebApi.Contracts;
-using System.Web.Http;
+﻿using System.Web.Http;
 using System.Web.OData.Extensions;
 using System.Web.OData.Query;
+using Bit.Api.Middlewares.WebApi.Contracts;
 
-namespace Foundation.Api.Middlewares.WebApi.OData.ActionFilters
+namespace Bit.Api.Middlewares.WebApi.OData.ActionFilters
 {
     public class DefaultGlobalEnableQueryActionFilterProvider : IWebApiConfigurationCustomizer
     {

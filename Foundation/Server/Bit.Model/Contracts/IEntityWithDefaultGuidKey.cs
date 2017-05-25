@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Foundation.Model.Contracts
+namespace Bit.Model.Contracts
 {
     public interface IEntityWithDefaultGuidKey : IEntityWithDefaultKey<Guid>
     {

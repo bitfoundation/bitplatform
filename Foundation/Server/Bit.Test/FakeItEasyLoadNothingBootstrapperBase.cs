@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace Foundation.Test
+namespace Bit.Test
 {
     public class FakeItEasyLoadNothingBootstrapperBase : FakeItEasy.IBootstrapper
     {

@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Web.Http.Dispatcher;
-using Foundation.Api.Contracts.Project;
+using Bit.Api.Contracts.Project;
 
-namespace Foundation.Api.Middlewares.WebApi.Implementations
+namespace Bit.Api.Middlewares.WebApi.Implementations
 {
     public class DefaultWebApiAssembliesResolver : IAssembliesResolver
     {

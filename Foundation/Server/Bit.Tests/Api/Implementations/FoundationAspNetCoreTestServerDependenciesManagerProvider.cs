@@ -1,10 +1,10 @@
-﻿using Foundation.AspNetCore.Test.Api.Implementations.Project;
-using Foundation.Core.Contracts;
-using Foundation.Core.Contracts.Project;
-using Foundation.Test;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+using Bit.Core.Contracts;
+using Bit.Core.Contracts.Project;
+using Bit.Test;
+using Bit.Tests.Api.Implementations.Project;
 
-namespace Foundation.AspNetCore.Test.Api.Implementations
+namespace Bit.Tests.Api.Implementations
 {
     public class FoundationAspNetCoreTestServerDependenciesManagerProvider : IDependenciesManagerProvider
     {

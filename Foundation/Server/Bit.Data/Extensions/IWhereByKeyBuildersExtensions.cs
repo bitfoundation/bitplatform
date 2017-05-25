@@ -1,9 +1,8 @@
-﻿using Foundation.Model.Contracts;
-using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System.Collections.Generic;
+using Bit.Data.Contracts;
+using Bit.Model.Contracts;
 
-namespace Foundation.DataAccess.Contracts
+namespace System.Linq
 {
     public static class IWhereByKeyBuildersExtensions
     {

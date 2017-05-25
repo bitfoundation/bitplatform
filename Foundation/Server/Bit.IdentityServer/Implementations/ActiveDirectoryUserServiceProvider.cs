@@ -3,11 +3,11 @@ using System.Collections.Generic;
 using System.DirectoryServices.AccountManagement;
 using System.Security.Claims;
 using System.Threading.Tasks;
+using Bit.Core.Contracts;
 using IdentityServer3.Core.Models;
 using IdentityServer3.Core.Services.Default;
-using Foundation.Core.Contracts;
 
-namespace IdentityServer.Api.Implementations
+namespace Bit.IdentityServer.Implementations
 {
     public class ActiveDirectoryUserServiceProvider : UserServiceBase
     {

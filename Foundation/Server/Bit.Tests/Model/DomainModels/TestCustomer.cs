@@ -1,9 +1,9 @@
-﻿using Foundation.Model.Contracts;
-using System;
+﻿using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using Bit.Model.Contracts;
 
-namespace Foundation.Test.Model.DomainModels
+namespace Bit.Tests.Model.DomainModels
 {
     [Table("TestCustomers", Schema = "Test")]
     [Serializable]
