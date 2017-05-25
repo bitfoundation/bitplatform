@@ -700,5 +700,9 @@
         ]
       }
     ]
+  },
+  {
+    "name": "md-list",
+    "description": "The <md-list> directive is a list container for 1..n <md-list-item> tags."
   }
 ]
