@@ -963,5 +963,9 @@
         "type": "number"
       }
     ]
+  },
+  {
+    "name": "md-slider-container",
+    "description": "The <md-slider-container> contains slider with two other elements."
   }
 ]
