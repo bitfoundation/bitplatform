@@ -1025,5 +1025,124 @@
         ]
       }
     ]
+  },
+  {
+    "name": "md-tabs",
+    "description": "The <md-tabs> directive serves as the container for 1..n <md-tab> child directives to produces a Tabs components. In turn, the nested <md-tab> directive is used to specify a tab label for the header button and a [optional] tab view content that will be associated with each tab button.",
+    "attributes": [
+      {
+        "name": "md-selected",
+        "description": "Index of the active/selected tab"
+      },
+      {
+        "name": "md-no-ink",
+        "description": "f present, disables ink ripple effects.",
+        "type": "boolean",
+        "values": [
+          "true",
+          "false"
+        ]
+      },
+      {
+        "name": "md-no-ink-bar",
+        "description": "If present, disables the selection ink bar.",
+        "type": "boolean",
+        "values": [
+          "true",
+          "false"
+        ]
+      },
+      {
+        "name": "md-align-tabs",
+        "description": "Attribute to indicate position of tab buttons.default is top.",
+        "type": "enum",
+        "values": [
+          "top",
+          "bottom "
+        ]
+      },
+      {
+        "name": "md-stretch-tabs",
+        "description": "Attribute to indicate whether or not to stretch tabs: auto, always, or never; default is auto",
+        "type": "enum",
+        "values": [
+          "auto",
+          "always",
+          "never"
+        ]
+      },
+      {
+        "name": "md-dynamic-height",
+        "description": "When enabled, the tab wrapper will resize based on the contents of the selected tab",
+        "type": "boolean",
+        "values": [
+          "true",
+          "false"
+        ]
+      },
+      {
+        "name": "md-border-bottom",
+        "description": "If present, shows a solid 1px border between the tabs and their content",
+        "type": "boolean",
+        "values": [
+          "true",
+          "false"
+        ]
+      },
+      {
+        "name": "md-center-tabs",
+        "description": "When enabled, tabs will be centered provided there is no need for pagination",
+        "type": "boolean",
+        "values": [
+          "true",
+          "false"
+        ]
+      },
+      {
+        "name": "md-no-pagination",
+        "description": "When enabled, pagination will remain off",
+        "type": "boolean",
+        "values": [
+          "true",
+          "false"
+        ]
+      },
+      {
+        "name": "md-swipe-content",
+        "description": "When enabled, swipe gestures will be enabled for the content area to jump between tabs",
+        "type": "boolean",
+        "values": [
+          "true",
+          "false"
+        ]
+      },
+      {
+        "name": "md-enable-disconnect",
+        "description": "When enabled, scopes will be disconnected for tabs that are not being displayed. This provides a performance boost, but may also cause unexpected issues and is not recommended for most users.",
+        "type": "boolean",
+        "values": [
+          "true",
+          "false"
+        ]
+      },
+      {
+        "name": "md-autoselect",
+        "description": "When present, any tabs added after the initial load will be automatically selected",
+        "type": "boolean",
+        "values": [
+          "true",
+          "false"
+        ]
+      },
+      {
+        "name": "md-no-select-click",
+        "description": "When enabled, click events will not be fired when selecting tabs",
+        "type": "boolean",
+        "values": [
+          "true",
+          "false"
+        ]
+      }
+    ]
   }
 ]
