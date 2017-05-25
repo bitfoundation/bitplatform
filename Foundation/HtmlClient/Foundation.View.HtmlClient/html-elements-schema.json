@@ -750,30 +750,50 @@
       }
     ]
   },
-   {
-        "name": "md-nav-item",
-        "description": "<md-nav-item> describes a page navigation link within the <md-nav-bar> component. It renders an md-button as the actual link.",
-        "attributes": [
-            {
-                "name": "mdNavClick",
-                "description": "Function which will be called when the link is clicked to change the page. Renders as an ng-click."
-            },
-            {
-                "name": "mdNavHref",
-                "description": "url to transition to when this link is clicked. Renders as an ng-href."
-            },
-            {
-                "name": "mdNavSref",
-                "description": "Ui-router state to transition to when this link is clicked. Renders as a ui-sref."
-            },
-            {
-                "name": "srefOpts",
-                "description": "Ui-router options that are passed to the $state.go() function. "
-            },
-            {
-                "name": "name",
-                "description": "The name of this link. Used by the nav bar to know which link is currently selected."
-            }
-        ]
-    }
+  {
+    "name": "md-nav-item",
+    "description": "<md-nav-item> describes a page navigation link within the <md-nav-bar> component. It renders an md-button as the actual link.",
+    "attributes": [
+      {
+        "name": "mdNavClick",
+        "description": "Function which will be called when the link is clicked to change the page. Renders as an ng-click."
+      },
+      {
+        "name": "mdNavHref",
+        "description": "url to transition to when this link is clicked. Renders as an ng-href."
+      },
+      {
+        "name": "mdNavSref",
+        "description": "Ui-router state to transition to when this link is clicked. Renders as a ui-sref."
+      },
+      {
+        "name": "srefOpts",
+        "description": "Ui-router options that are passed to the $state.go() function. "
+      },
+      {
+        "name": "name",
+        "description": "The name of this link. Used by the nav bar to know which link is currently selected."
+      }
+    ]
+  },
+  {
+    "name": "md-progress-circular",
+    "description": "The circular progress directive is used to make loading content in your app as delightful and painless as possible by minimizing the amount of visual change a user sees before they can view and interact with content.",
+    "attributes": [
+      {
+        "name": "md-mode",
+        "description": "Select from one of two modes: 'determinate' and 'indeterminate'."
+      },
+      {
+        "name": "value",
+        "description": "In determinate mode, this number represents the percentage of the circular progress. Default: 0",
+        "type": "number"
+      },
+      {
+        "name": "md-diameter",
+        "description": "This specifies the diameter of the circular progress. The value should be a pixel-size value (eg '100'). If this attribute is not present then a default value of '50px' is assumed.",
+        "type": "number"
+      }
+    ]
+  }
 ]
