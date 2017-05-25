@@ -844,5 +844,49 @@
         ]
       }
     ]
+  },
+  {
+    "name": "md-select",
+    "description": "Displays a select box, bound to an ng-model.",
+    "attributes": [
+      {
+        "name": "multiple",
+        "description": "When set to true, allows for more than one option to be selected. The model is an array with the selected choices.",
+        "type": "boolean",
+        "values": [
+          "true",
+          "false"
+        ]
+      },
+      {
+        "name": "md-on-close",
+        "description": "Expression to be evaluated when the select is closed."
+      },
+      {
+        "name": "md-on-open",
+        "description": "Expression to be evaluated when opening the select. Will hide the select options and show a spinner until the evaluated promise resolves."
+      },
+      {
+        "name": "md-selected-text",
+        "description": "Expression to be evaluated that will return a string to be displayed as a placeholder in the select input box when it is closed."
+      },
+      {
+        "name": "md-selected-html",
+        "description": "Expression to be evaluated that will return a string to be displayed as a placeholder in the select input box when it is closed. The value will be treated as html. The value must either be explicitly marked as trustedHtml or the ngSanitize module must be loaded."
+      },
+      {
+        "name": "md-no-asterisk",
+        "description": "When set to true, an asterisk will not be appended to the floating label. Note: This attribute is only evaluated once; it is not watched.",
+        "type": "boolean",
+        "values": [
+          "true",
+          "false"
+        ]
+      },
+      {
+        "name": "md-container-class",
+        "description": "Class list to get applied to the .md-select-menu-container element (for custom styling)."
+      }
+    ]
   }
 ]
