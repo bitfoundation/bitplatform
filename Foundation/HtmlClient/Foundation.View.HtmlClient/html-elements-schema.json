@@ -563,8 +563,22 @@
     ]
   },
   {
-        "name": "md-dialog",
-        "description": "<md-dialog> - The dialog's template must be inside this element."
-    }
-
+    "name": "md-dialog",
+    "description": "<md-dialog> - The dialog's template must be inside this element."
+  },
+  {
+    "name": "md-divider",
+    "description": "Dividers group and separate content within lists and page layouts using strong visual and spatial distinctions. This divider is a thin rule, lightweight enough to not distract the user from content.",
+    "attributes": [
+      {
+        "name": "md-inset",
+        "description": "Add this attribute to activate the inset divider style.",
+        "type": "boolean",
+        "values": [
+          "true",
+          "false"
+        ]
+      }
+    ]
+  }
 ]
