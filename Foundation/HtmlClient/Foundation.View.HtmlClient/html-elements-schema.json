@@ -497,5 +497,16 @@
         "name": "filter-selected",
         "description": "Whether to filter selected contacts from the list of suggestions shown in the autocomplete."
       }
-    ]}
+    ]
+  },
+  {
+        "name": "md-content",
+        "description": "The <md-content> directive is a container element useful for scrollable content. It achieves this by setting the CSS overflow property to auto so that content can properly scroll.",
+        "attributes": [
+            {
+                "name": "layout-padding",
+                "description": "Add the [layout-padding] attribute to make the content padded."
+            }
+        ]
+    }
 ]
