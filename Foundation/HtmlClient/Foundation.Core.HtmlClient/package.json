@@ -10,7 +10,7 @@
     "@types/decimal.js": "0.0.29",
     "@types/jasmine": "^2.5.46",
     "@types/jasmine-jquery": "^1.5.30",
-    "@types/jquery": "^2.0.43",
+    "@types/jquery": "^2.0.45",
     "@types/kendo-ui": "^2016.3.41",
     "@types/pubsub-js": "1.5.17",
     "@types/signalr": "^2.2.33"
