@@ -888,5 +888,36 @@
         "description": "Class list to get applied to the .md-select-menu-container element (for custom styling)."
       }
     ]
+  },
+  {
+    "name": "md-sidenav",
+    "description": "A Sidenav component that can be opened and closed programatically.",
+    "attributes": [
+      {
+        "name": "md-is-open",
+        "description": "A model bound to whether the sidenav is opened."
+      },
+      {
+        "name": "md-disable-backdrop",
+        "description": "When present in the markup, the sidenav will not show a backdrop.",
+        "type": "boolean",
+        "values": [
+          "true",
+          "false"
+        ]
+      },
+      {
+        "name": "md-component-id",
+        "description": "componentId to use with $mdSidenav service."
+      },
+      {
+        "name": "md-is-locked-open",
+        "description": "When this expression evaluates to true, the sidenav 'locks open': it falls into the content's flow instead of appearing over it."
+      },
+      {
+        "name": "md-disable-scroll-target",
+        "description": "Selector, pointing to an element, whose scrolling will be disabled when the sidenav is opened. By default this is the sidenav's direct parent."
+      }
+    ]
   }
 ]
