@@ -561,5 +561,10 @@
         "description": "Allows for the values from the $mdDateLocaleProvider to be ovewritten on a per-element basis."
       }
     ]
-  }
+  },
+  {
+        "name": "md-dialog",
+        "description": "<md-dialog> - The dialog's template must be inside this element."
+    }
+
 ]
