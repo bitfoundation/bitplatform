@@ -635,5 +635,21 @@
         "description": "Expression to evaluate after layout. Event object is available as $event, and contains performance information."
       }
     ]
+  },
+  {
+    "name": "md-grid-tile",
+    "description": "Tiles contain the content of an md-grid-list. They span one or more grid cells vertically or horizontally, and use md-grid-tile-{footer,header} to display secondary content.",
+    "attributes": [
+      {
+        "name": "md-colspan",
+        "description": "The number of columns to span (default 1). Cannot exceed the number of columns in the grid. Supports interpolation.",
+        "type": "number"
+      },
+      {
+        "name": "md-rowspan",
+        "description": "The number of rows to span (default 1). Supports interpolation.",
+        "type": "number"
+      }
+    ]
   }
 ]
