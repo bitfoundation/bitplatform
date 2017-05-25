@@ -1201,5 +1201,29 @@
   {
     "name": "md-truncate",
     "description": "The md-truncate component displays a label that will automatically clip text which is wider than the component. "
+  },
+  {
+    "name": "md-virtual-repeat",
+    "description": "md-virtual-repeat specifies an element to repeat using virtual scrolling.",
+    "attributes": [
+      {
+        "name": "md-item-size",
+        "description": "The height or width of the repeated elements (which must be identical for each element). Optional. Will attempt to read the size from the dom if missing, but still assumes that all repeated nodes have same height or width.",
+        "type": "number"
+      },
+      {
+        "name": "md-extra-name",
+        "description": "Evaluates to an additional name to which the current iterated item can be assigned on the repeated scope"
+      },
+      {
+        "name": "md-on-demand",
+        "description": "When present, treats the md-virtual-repeat argument as an object that can fetch rows rather than an array.",
+        "type": "boolean",
+        "values": [
+          "true",
+          "false"
+        ]
+      }
+    ]
   }
 ]
