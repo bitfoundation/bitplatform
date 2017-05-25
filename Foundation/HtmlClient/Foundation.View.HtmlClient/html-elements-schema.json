@@ -1225,5 +1225,39 @@
         ]
       }
     ]
+  },
+  {
+    "name": "md-virtual-repeat-container",
+    "description": "md-virtual-repeat-container provides the scroll container for md-virtual-repeat.",
+    "attributes": [
+      {
+        "name": "md-top-index",
+        "description": "Binds the index of the item that is at the top of the scroll container to $scope. It can both read and set the scroll position.",
+        "type": "number"
+      },
+      {
+        "name": "md-orient-horizontal",
+        "description": "Whether the container should scroll horizontally (defaults to orientation and scrolling vertically).",
+        "type": "boolean",
+        "values": [
+          "true",
+          "false"
+        ]
+      },
+      {
+        "name": "md-auto-shrink",
+        "description": "When present, the container will shrink to fit the number of items when that number is less than its original size.",
+        "type": "boolean",
+        "values": [
+          "true",
+          "false"
+        ]
+      },
+      {
+        "name": "md-auto-shrink-min",
+        "description": "Minimum number of items that md-auto-shrink will shrink to (default: 0).",
+        "type": "number"
+      }
+    ]
   }
 ]
