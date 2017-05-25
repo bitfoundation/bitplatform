@@ -817,17 +817,32 @@
     ]
   },
   {
-        "name": "md-radio-button",
-        "description": "The <md-radio-button>directive is the child directive required to be used within <md-radio-group> elements.",
-        "attributes": [
-            {
-                "name": "value",
-                "description": "The value to which the expression should be set when selected."
-            },
-            {
-                "name": "name",
-                "description": "Property name of the form under which the control is published."
-            }
+    "name": "md-radio-button",
+    "description": "The <md-radio-button>directive is the child directive required to be used within <md-radio-group> elements.",
+    "attributes": [
+      {
+        "name": "value",
+        "description": "The value to which the expression should be set when selected."
+      },
+      {
+        "name": "name",
+        "description": "Property name of the form under which the control is published."
+      }
+    ]
+  },
+  {
+    "name": "md-radio-group",
+    "description": "The <md-radio-group> directive identifies a grouping container for the 1..n grouped radio buttons; specified using nested <md-radio-button> tags.",
+    "attributes": [
+      {
+        "name": "md-no-ink",
+        "description": "Use of attribute indicates flag to disable ink ripple effects.",
+        "type": "boolean",
+        "values": [
+          "true",
+          "false"
         ]
-    }
+      }
+    ]
+  }
 ]
