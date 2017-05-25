@@ -16,15 +16,9 @@ namespace Foundation.Test
                 UseProxyBasedDependencyManager = false
             }))
             {
-                string url = null;
+                Process.Start(testEnvironment.Server.Uri);
 
-                TokenResponse token = testEnvironment.Server.Login("ValidUserName", "ValidPassword", clientName: "TestResOwner");
-
-                url = $@"{testEnvironment.Server.Uri}SignIn#id_token=0&access_token={token.AccessToken}&token_type={token.TokenType}&expires_in=86400&scope=openid profile user_info&state={{}}&session_state=0";
-
-                Process.Start(url);
-
-                Console.WriteLine(url);
+                Console.WriteLine(testEnvironment.Server.Uri);
 
                 Console.WriteLine("Press any key to stop...");
 

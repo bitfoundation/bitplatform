@@ -413,6 +413,8 @@
     <Compile Include="HtmlClient\ViewModel\Implementation\SignalRTests.cs" />
     <Compile Include="HtmlClient\ViewModel\Implementation\UIAutomationTests.cs" />
     <Compile Include="HtmlClient\ViewModel\Implementation\ValidationTests.cs" />
+    <Compile Include="IdentityServer\CodeBasedLoginTests.cs" />
+    <Compile Include="IdentityServer\LoginViewTests.cs" />
     <Compile Include="Owin\Metadata\Dtos\ValidationSampleDtoMetadata.cs" />
     <Compile Include="Owin\Metadata\Model\ParentEntityMetadata.cs" />
     <Compile Include="Owin\Metadata\Model\TestModelMetadata.cs" />
@@ -453,6 +455,7 @@
       <Generator>PublicSettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
     </None>
+    <None Include="ssoPageTemplate.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Api\Middlewares\WebApi\Implementations\" />

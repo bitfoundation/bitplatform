@@ -85,6 +85,7 @@ namespace Foundation.Test
         {
             return new List<Func<TypeInfo, bool>>
             {
+                serviceType => AssemblyContainer.Current.GetBitIdentityServerAssembly() == serviceType.Assembly,
                 serviceType => AssemblyContainer.Current.GetBitCoreAssembly() == serviceType.Assembly,
                 serviceType => AssemblyContainer.Current.GetBitOwinAssembly() == serviceType.Assembly,
                 serviceType => AssemblyContainer.Current.GetBitDataAssembly() == serviceType.Assembly,

@@ -121,7 +121,7 @@ namespace Foundation.AspNetCore.Test.Api.Implementations.Project
             dependencyManager.RegisterBackgroundJobWorkerUsingDefaultConfiguration<JobSchedulerInMemoryBackendConfiguration>();
 
             dependencyManager.Register<IAppMetadataProvider, DefaultAppMetadataProvider>(lifeCycle: DependencyLifeCycle.SingleInstance);
-            dependencyManager.RegisterMetadata(AssemblyContainer.Current.GetBitOwinAssembly(), AssemblyContainer.Current.GetBitTestsAssembly());
+            dependencyManager.RegisterMetadata(AssemblyContainer.Current.GetBitOwinAssembly(), AssemblyContainer.Current.GetBitTestsAssembly(), AssemblyContainer.Current.GetBitIdentityServerAssembly());
 
             dependencyManager.RegisterGeneric(typeof(IRepository<>).GetTypeInfo(), typeof(TestEfRepository<>).GetTypeInfo(), DependencyLifeCycle.InstancePerLifetimeScope);
 

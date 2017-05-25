@@ -34,7 +34,8 @@ namespace Foundation.Test.Api.Implementations
                     {
                         Name = "Test",
                         Version = "1",
-                        DefaultTheme = "LightBlue"
+                        DefaultTheme = "LightBlue",
+                        DefaultCulture = "EnUs"
                     },
                     Security = new EnvironmentSecurity
                     {
@@ -81,7 +82,9 @@ namespace Foundation.Test.Api.Implementations
                         new EnvironmentConfig { Key = "ClientSideAccessibleConfigTest", Value = true, AccessibleInClientSide = true},
                         new EnvironmentConfig { Key = "ClientHostBaseUri", Value = "http://127.0.0.1" , AccessibleInClientSide = true },
                         new EnvironmentConfig { Key = "ClientHostVirtualPath", Value = "/" , AccessibleInClientSide = true },
-                        new EnvironmentConfig { Key = "KendoUILoadMode" , Value = "Web" /*Web|Core*/ , AccessibleInClientSide = true }
+                        new EnvironmentConfig { Key = "KendoUILoadMode" , Value = "Web" /*Web|Core*/ , AccessibleInClientSide = true },
+                        new EnvironmentConfig { Key = "IdentityServerSiteName" , Value = "Identity Server" },
+                        new EnvironmentConfig { Key = "SsoPageTemplatePath" , Value = @"bit-framework\Foundation\Server\Bit.Tests\ssoPageTemplate.cshtml" }
                     }
                 };
             }
