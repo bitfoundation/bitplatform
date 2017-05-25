@@ -18,7 +18,7 @@ namespace Bit.Tests.HtmlClient.ViewModel.Implementation
         [TestCategory("HtmlClient"), TestCategory("Angular")]
         public virtual void SimpleFormViewModelTest()
         {
-            using (TestEnvironment testEnvironment = new TestEnvironment(new TestEnvironmentArgs { UseRealServer = true }))
+            using (BitOwinTestEnvironment testEnvironment = new BitOwinTestEnvironment(new TestEnvironmentArgs { UseRealServer = true }))
             {
                 TokenResponse token = testEnvironment.Server.Login("ValidUserName", "ValidPassword", clientName: "TestResOwner");
 
@@ -35,7 +35,7 @@ namespace Bit.Tests.HtmlClient.ViewModel.Implementation
         [TestCategory("HtmlClient"), TestCategory("Angular")]
         public virtual void RouteParameterFormViewModelTest()
         {
-            using (TestEnvironment testEnvironment = new TestEnvironment(new TestEnvironmentArgs { UseRealServer = true }))
+            using (BitOwinTestEnvironment testEnvironment = new BitOwinTestEnvironment(new TestEnvironmentArgs { UseRealServer = true }))
             {
                 TokenResponse token = testEnvironment.Server.Login("ValidUserName", "ValidPassword", clientName: "TestResOwner");
 
@@ -52,7 +52,7 @@ namespace Bit.Tests.HtmlClient.ViewModel.Implementation
         [TestCategory("HtmlClient"), TestCategory("Angular")]
         public virtual void TestNestedRoute()
         {
-            using (TestEnvironment testEnvironment = new TestEnvironment(new TestEnvironmentArgs { UseRealServer = true }))
+            using (BitOwinTestEnvironment testEnvironment = new BitOwinTestEnvironment(new TestEnvironmentArgs { UseRealServer = true }))
             {
                 TokenResponse token = testEnvironment.Server.Login("ValidUserName", "ValidPassword", clientName: "TestResOwner");
 
@@ -71,7 +71,7 @@ namespace Bit.Tests.HtmlClient.ViewModel.Implementation
         [TestCategory("HtmlClient"), TestCategory("Angular")]
         public virtual void AngularServiceUsageFormViewModelTest()
         {
-            using (TestEnvironment testEnvironment = new TestEnvironment(new TestEnvironmentArgs { UseRealServer = true }))
+            using (BitOwinTestEnvironment testEnvironment = new BitOwinTestEnvironment(new TestEnvironmentArgs { UseRealServer = true }))
             {
                 TokenResponse token = testEnvironment.Server.Login("ValidUserName", "ValidPassword", clientName: "TestResOwner");
 
@@ -88,7 +88,7 @@ namespace Bit.Tests.HtmlClient.ViewModel.Implementation
         [TestCategory("HtmlClient"), TestCategory("Angular")]
         public virtual void EntityContextUsageFormViewModelTest()
         {
-            using (TestEnvironment testEnvironment = new TestEnvironment(new TestEnvironmentArgs { UseRealServer = true }))
+            using (BitOwinTestEnvironment testEnvironment = new BitOwinTestEnvironment(new TestEnvironmentArgs { UseRealServer = true }))
             {
                 TokenResponse token = testEnvironment.Server.Login("ValidUserName", "ValidPassword", clientName: "TestResOwner");
 
@@ -107,7 +107,7 @@ namespace Bit.Tests.HtmlClient.ViewModel.Implementation
         [TestCategory("HtmlClient"), TestCategory("Angular")]
         public virtual void AsyncFormViewModelTest()
         {
-            using (TestEnvironment testEnvironment = new TestEnvironment(new TestEnvironmentArgs { UseRealServer = true }))
+            using (BitOwinTestEnvironment testEnvironment = new BitOwinTestEnvironment(new TestEnvironmentArgs { UseRealServer = true }))
             {
                 TokenResponse token = testEnvironment.Server.Login("ValidUserName", "ValidPassword", clientName: "TestResOwner");
 
@@ -131,7 +131,7 @@ namespace Bit.Tests.HtmlClient.ViewModel.Implementation
         [TestCategory("HtmlClient"), TestCategory("Angular")]
         public virtual void SetAsDefaultFormViewModelTest()
         {
-            using (TestEnvironment testEnvironment = new TestEnvironment(new TestEnvironmentArgs { UseRealServer = true }))
+            using (BitOwinTestEnvironment testEnvironment = new BitOwinTestEnvironment(new TestEnvironmentArgs { UseRealServer = true }))
             {
                 TokenResponse token = testEnvironment.Server.Login("ValidUserName", "ValidPassword", clientName: "TestResOwner");
 

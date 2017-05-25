@@ -8,7 +8,7 @@ namespace Bit.Owin.Exceptions
     public class DomainLogicException : AppException
     {
         public DomainLogicException()
-            : this(FoundationMetadataBuilder.DomainLogicException)
+            : this(BitMetadataBuilder.DomainLogicException)
         {
         }
 

@@ -16,7 +16,7 @@ namespace Bit.Tests.Api
         [ExpectedException(typeof(ObjectDisposedException))]
         public virtual void ContainerMustBeDisposedFinally()
         {
-            using (new TestEnvironment())
+            using (new BitOwinTestEnvironment())
             {
 
             }
@@ -28,7 +28,7 @@ namespace Bit.Tests.Api
         [TestCategory("Hosting")]
         public virtual void AllOnAppEndEventsMustBeCalledAtEnd()
         {
-            using (new TestEnvironment())
+            using (new BitOwinTestEnvironment())
             {
 
             }
@@ -45,7 +45,7 @@ namespace Bit.Tests.Api
         [TestCategory("Hosting")]
         public virtual void AllOnAppStartsMustBeCalledOnceAtStartup()
         {
-            using (new TestEnvironment())
+            using (new BitOwinTestEnvironment())
             {
                 foreach (IAppEvents appEventse in
                     TestDependencyManager.CurrentTestDependencyManager.Objects.OfType<IAppEvents>().ToList())

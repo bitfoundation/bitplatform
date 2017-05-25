@@ -19,7 +19,7 @@ namespace Bit.Tests.Api.Middlewares.Tests
         [TestCategory("DefaultPage"), TestCategory("Security")]
         public async Task ReturnDefaultPageForLoggedInUsersOnly()
         {
-            using (TestEnvironment testEnvironment = new TestEnvironment())
+            using (BitOwinTestEnvironment testEnvironment = new BitOwinTestEnvironment())
             {
                 TokenResponse token = testEnvironment.Server.Login("ValidUserName", "ValidPassword", clientName: "TestResOwner");
 
@@ -38,7 +38,7 @@ namespace Bit.Tests.Api.Middlewares.Tests
         [TestCategory("DefaultPage"), TestCategory("Security")]
         public async Task DontReturnDefaultPageForNotLoggedInUsers()
         {
-            using (TestEnvironment testEnvironment = new TestEnvironment())
+            using (BitOwinTestEnvironment testEnvironment = new BitOwinTestEnvironment())
             {
                 HttpResponseMessage getDefaultPageResponse = await testEnvironment.Server.GetHttpClient()
                     .GetAsync("/");
@@ -51,7 +51,7 @@ namespace Bit.Tests.Api.Middlewares.Tests
         [TestCategory("DefaultPage"), TestCategory("Caching")]
         public async Task DefaultPageResponseMustNotBeCacheable()
         {
-            using (TestEnvironment testEnvironment = new TestEnvironment())
+            using (BitOwinTestEnvironment testEnvironment = new BitOwinTestEnvironment())
             {
                 TokenResponse token = testEnvironment.Server.Login("ValidUserName", "ValidPassword", clientName: "TestResOwner");
 
@@ -74,7 +74,7 @@ namespace Bit.Tests.Api.Middlewares.Tests
         [TestCategory("DefaultPage"), TestCategory("Security")]
         public async Task DefaultPageResponseMustHaveSecurityHeaders()
         {
-            using (TestEnvironment testEnvironment = new TestEnvironment())
+            using (BitOwinTestEnvironment testEnvironment = new BitOwinTestEnvironment())
             {
                 TokenResponse token = testEnvironment.Server.Login("ValidUserName", "ValidPassword", clientName: "TestResOwner");
 
@@ -91,7 +91,7 @@ namespace Bit.Tests.Api.Middlewares.Tests
         [TestCategory("DefaultPage"), TestCategory("Security")]
         public async Task DefaultPageResponseMustHaveStrictTransportSecurityHeadersInCaseOfSslRequired()
         {
-            using (TestEnvironment testEnvironment = new TestEnvironment(new TestEnvironmentArgs
+            using (BitOwinTestEnvironment testEnvironment = new BitOwinTestEnvironment(new TestEnvironmentArgs
             {
                 UseHttps = true,
                 ActiveAppEnvironmentCustomizer = environment =>
@@ -130,7 +130,7 @@ namespace Bit.Tests.Api.Middlewares.Tests
         [TestCategory("HtmlClient"), TestCategory("DefaultPage")]
         public virtual void TestDesiredEnvironmentsConfigsArePresentInClientSide()
         {
-            using (TestEnvironment testEnvironment = new TestEnvironment(new TestEnvironmentArgs { UseRealServer = true }))
+            using (BitOwinTestEnvironment testEnvironment = new BitOwinTestEnvironment(new TestEnvironmentArgs { UseRealServer = true }))
             {
                 TokenResponse token = testEnvironment.Server.Login("ValidUserName", "ValidPassword", clientName: "TestResOwner");
 

@@ -109,7 +109,7 @@
     <Compile Include="Contracts\Project\IEdmModelProvider.cs" />
     <Compile Include="Extensions\IDependencyManangerExtensions.cs" />
     <Compile Include="Implementations\Project\DefaultApiAssembliesProvider.cs" />
-    <Compile Include="Implementations\Project\FoundationEdmModelProvider.cs" />
+    <Compile Include="Implementations\Project\BitEdmModelProvider.cs" />
     <Compile Include="Middlewares\WebApi\ActionFilters\ExceptionHandlerFilterAttribute.cs" />
     <Compile Include="Middlewares\WebApi\ActionFilters\LogActionArgsFilterAttribute.cs" />
     <Compile Include="Middlewares\WebApi\ActionFilters\OwinActionFilterAttribute.cs" />

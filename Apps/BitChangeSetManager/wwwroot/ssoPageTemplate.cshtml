@@ -1,8 +1,9 @@
-﻿@using Foundation.Api.Implementations
-@inherits RazorViewTemplate
+﻿@using Bit.IdentityServer.Contracts
+@using Bit.IdentityServer.Model
+@inherits Bit.Owin.Implementations.RazorViewTemplate
 
 @{
-    IdentityServer.Api.Model.SSOPageModel ssoPageModel = Resolve<IdentityServer.Api.Contracts.ISSOPageModelProvider>().GetSSOPageModel();
+    SSOPageModel ssoPageModel = Resolve<ISSOPageModelProvider>().GetSSOPageModel();
 }
 
 <!DOCTYPE html>

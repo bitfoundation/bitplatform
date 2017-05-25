@@ -20,7 +20,7 @@ namespace Bit.Tests.HtmlClient.ViewModel.Implementation
         [TestCategory("HtmlClient"), TestCategory("Rad")]
         public virtual void RadComboFormViewModelTest()
         {
-            using (TestEnvironment testEnvironment = new TestEnvironment(new TestEnvironmentArgs { UseRealServer = true }))
+            using (BitOwinTestEnvironment testEnvironment = new BitOwinTestEnvironment(new TestEnvironmentArgs { UseRealServer = true }))
             {
                 TokenResponse token = testEnvironment.Server.Login("ValidUserName", "ValidPassword", clientName: "TestResOwner");
 
@@ -52,7 +52,7 @@ namespace Bit.Tests.HtmlClient.ViewModel.Implementation
         [TestCategory("HtmlClient"), TestCategory("Rad")]
         public virtual void RadGridFormViewModelAddTest()
         {
-            using (TestEnvironment testEnvironment = new TestEnvironment(new TestEnvironmentArgs { UseRealServer = true }))
+            using (BitOwinTestEnvironment testEnvironment = new BitOwinTestEnvironment(new TestEnvironmentArgs { UseRealServer = true }))
             {
                 TokenResponse token = testEnvironment.Server.Login("ValidUserName", "ValidPassword", clientName: "TestResOwner");
 

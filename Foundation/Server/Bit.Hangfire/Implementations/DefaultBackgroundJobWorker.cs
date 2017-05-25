@@ -94,7 +94,7 @@ namespace Bit.Hangfire.Implementations
 
                 if (jobData == null)
                 {
-                    throw new AppException(FoundationMetadataBuilder.JobNotFound);
+                    throw new AppException(BitMetadataBuilder.JobNotFound);
                 }
 
                 return Task.FromResult(new JobInfo
@@ -155,7 +155,7 @@ namespace Bit.Hangfire.Implementations
 
                 if (jobData == null)
                 {
-                    throw new AppException(FoundationMetadataBuilder.JobNotFound);
+                    throw new AppException(BitMetadataBuilder.JobNotFound);
                 }
 
                 return new JobInfo

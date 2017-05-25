@@ -20,7 +20,7 @@ namespace Bit.Tests.Api.Middlewares.Tests
         [TestCategory("ExceptionHandler"), TestCategory("Logging")]
         public async Task ExceptionHandlerMustNotSaveAnyThingToLogStoreBecauseOfSuccessfulRequests()
         {
-            using (TestEnvironment testEnvironment = new TestEnvironment())
+            using (BitOwinTestEnvironment testEnvironment = new BitOwinTestEnvironment())
             {
                 testEnvironment.Server.Login("ValidUserName", "ValidPassword", clientName: "TestResOwner");
 
@@ -37,7 +37,7 @@ namespace Bit.Tests.Api.Middlewares.Tests
         [TestCategory("ExceptionHandler"), TestCategory("Logging")]
         public async Task ExceptionHandlerMustSaveExceptionToLogStoreBecauseOfExceptionInRequest()
         {
-            using (TestEnvironment testEnvironment = new TestEnvironment(new TestEnvironmentArgs
+            using (BitOwinTestEnvironment testEnvironment = new BitOwinTestEnvironment(new TestEnvironmentArgs
             {
                 AdditionalDependencies = manager =>
                 {
@@ -89,7 +89,7 @@ namespace Bit.Tests.Api.Middlewares.Tests
         [TestCategory("ExceptionHandler"), TestCategory("Logging")]
         public async Task ExceptionHandlerMustSaveFatalToLogStoreBecauseOfErrorRelatedToServer()
         {
-            using (TestEnvironment testEnvironment = new TestEnvironment(new TestEnvironmentArgs
+            using (BitOwinTestEnvironment testEnvironment = new BitOwinTestEnvironment(new TestEnvironmentArgs
             {
                 AdditionalDependencies = manager =>
                 {
@@ -134,7 +134,7 @@ namespace Bit.Tests.Api.Middlewares.Tests
         [TestCategory("ExceptionHandler"), TestCategory("Logging")]
         public async Task ExceptionHandlerMustSaveWarningToLogStoreBecauseOfErrorRelatedToClientRequest()
         {
-            using (TestEnvironment testEnvironment = new TestEnvironment())
+            using (BitOwinTestEnvironment testEnvironment = new BitOwinTestEnvironment())
             {
                 TokenResponse token = testEnvironment.Server.Login("ValidUserName", "ValidPassword", clientName: "TestResOwner");
 

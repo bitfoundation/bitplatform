@@ -13,7 +13,7 @@ namespace Bit.Tests.Api.Middlewares.WebApi.Tests
         [TestCategory("WebApi"), TestCategory("Security")]
         public async Task LoggedInUsersMustHaveAccessToODataWebApis()
         {
-            using (TestEnvironment testEnvironment = new TestEnvironment())
+            using (BitOwinTestEnvironment testEnvironment = new BitOwinTestEnvironment())
             {
                 TokenResponse token = testEnvironment.Server.Login("ValidUserName", "ValidPassword", clientName: "TestResOwner");
 
@@ -28,7 +28,7 @@ namespace Bit.Tests.Api.Middlewares.WebApi.Tests
         [TestCategory("WebApi"), TestCategory("Security")]
         public async Task WebApiResponsesMustHaveSecurityHeaders()
         {
-            using (TestEnvironment testEnvironment = new TestEnvironment())
+            using (BitOwinTestEnvironment testEnvironment = new BitOwinTestEnvironment())
             {
                 TokenResponse token = testEnvironment.Server.Login("ValidUserName", "ValidPassword", clientName: "TestResOwner");
 
@@ -43,7 +43,7 @@ namespace Bit.Tests.Api.Middlewares.WebApi.Tests
         [TestCategory("WebApi"), TestCategory("Security")]
         public async Task NotLoggedInUsersMustHaveAccessToMetadataAnyway()
         {
-            using (TestEnvironment testEnvironment = new TestEnvironment())
+            using (BitOwinTestEnvironment testEnvironment = new BitOwinTestEnvironment())
             {
                 HttpResponseMessage getMetadataResponse = await testEnvironment.Server.GetHttpClient()
                         .GetAsync("/odata/Test/$metadata");
@@ -56,7 +56,7 @@ namespace Bit.Tests.Api.Middlewares.WebApi.Tests
         [TestCategory("WebApi"), TestCategory("Security")]
         public async Task NotLoggedInUsersMustNotHaveAccessToProtectedResources()
         {
-            using (TestEnvironment testEnvironment = new TestEnvironment())
+            using (BitOwinTestEnvironment testEnvironment = new BitOwinTestEnvironment())
             {
                 HttpResponseMessage getMetadataResponse = await testEnvironment.Server.GetHttpClient()
                         .GetAsync("/odata/Test/ValidationSamples/");
@@ -69,7 +69,7 @@ namespace Bit.Tests.Api.Middlewares.WebApi.Tests
         [TestCategory("WebApi"), TestCategory("Security")]
         public async Task NotLoggedInUsersMustHaveAccessToUnProtectedWebApis()
         {
-            using (TestEnvironment testEnvironment = new TestEnvironment())
+            using (BitOwinTestEnvironment testEnvironment = new BitOwinTestEnvironment())
             {
                 HttpResponseMessage getTestModels = await testEnvironment.Server.GetHttpClient()
                         .GetAsync("/odata/Test/TestModels");

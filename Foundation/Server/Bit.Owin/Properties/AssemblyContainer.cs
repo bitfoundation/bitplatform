@@ -9,5 +9,10 @@ namespace Bit.Core
         {
             return typeof(IOwinMiddlewareConfiguration).GetTypeInfo().Assembly;
         }
+
+        public static Assembly GetBitMetadataAssembly(this AssemblyContainer container)
+        {
+            return typeof(IOwinMiddlewareConfiguration).GetTypeInfo().Assembly;
+        }
     }
 }

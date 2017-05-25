@@ -10,7 +10,7 @@ namespace Bit.Tests
         {
             Console.Title = "Bit Tests";
 
-            using (TestEnvironment testEnvironment = new TestEnvironment(new TestEnvironmentArgs
+            using (BitOwinTestEnvironment testEnvironment = new BitOwinTestEnvironment(new TestEnvironmentArgs
             {
                 UseRealServer = true,
                 UseProxyBasedDependencyManager = false

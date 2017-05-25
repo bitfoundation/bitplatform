@@ -7,7 +7,7 @@ namespace Bit.Core
     {
         public static Assembly GetBitTestsAssembly(this AssemblyContainer container)
         {
-            return typeof(TestEnvironment).GetTypeInfo().Assembly;
+            return typeof(BitOwinTestEnvironment).GetTypeInfo().Assembly;
         }
     }
 }

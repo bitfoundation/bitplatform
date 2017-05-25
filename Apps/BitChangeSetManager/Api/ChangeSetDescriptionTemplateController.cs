@@ -1,8 +1,8 @@
 ﻿using BitChangeSetManager.Dto;
-using Foundation.Api.ApiControllers;
-using Foundation.Core.Contracts;
 using System.IO;
 using System.Threading.Tasks;
+using Bit.Api.ApiControllers;
+using Bit.Core.Contracts;
 
 namespace BitChangeSetManager.Api
 {

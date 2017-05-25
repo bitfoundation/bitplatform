@@ -13,7 +13,7 @@ namespace Bit.Tests.Api.Middlewares.SignalR.Tests
         [TestCategory("SignalR"), TestCategory("Security")]
         public virtual void OnlyLoggedInUsersCanHaveAccessToSignalR()
         {
-            using (TestEnvironment testEnvironment = new TestEnvironment())
+            using (BitOwinTestEnvironment testEnvironment = new BitOwinTestEnvironment())
             {
                 TokenResponse token = testEnvironment.Server.Login("ValidUserName", "ValidPassword", clientName: "TestResOwner");
 
@@ -25,7 +25,7 @@ namespace Bit.Tests.Api.Middlewares.SignalR.Tests
         [TestCategory("SignalR"), TestCategory("Security")]
         public virtual void NotLoggedInUsersMustNotHaveAccessToSignalR()
         {
-            using (TestEnvironment testEnvironment = new TestEnvironment())
+            using (BitOwinTestEnvironment testEnvironment = new BitOwinTestEnvironment())
             {
                 try
                 {

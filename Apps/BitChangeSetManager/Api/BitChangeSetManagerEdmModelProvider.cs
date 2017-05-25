@@ -1,8 +1,9 @@
-﻿using Foundation.Api.Contracts.Project;
-using Foundation.Api.Middlewares.WebApi.OData.Contracts;
+﻿using Bit.Api.Contracts.Project;
+using Bit.Api.Middlewares.WebApi.OData.Contracts;
 using System;
 using System.Reflection;
 using System.Web.OData.Builder;
+using Bit.Core;
 
 namespace BitChangeSetManager.Api
 {
@@ -20,7 +21,7 @@ namespace BitChangeSetManager.Api
 
         public virtual void BuildEdmModel(ODataModelBuilder edmModelBuilder)
         {
-            _autoEdmBuilder.AutoBuildEdmFromAssembly(typeof(BitChangeSetManagerEdmModelProvider).GetTypeInfo().Assembly, edmModelBuilder);
+            _autoEdmBuilder.AutoBuildEdmFromAssembly(AssemblyContainer.Current.GetBitChangeSetManagerApiAssembly(), edmModelBuilder);
         }
 
         public virtual string GetEdmName()

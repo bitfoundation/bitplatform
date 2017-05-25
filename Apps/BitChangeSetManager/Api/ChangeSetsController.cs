@@ -1,13 +1,13 @@
 ﻿using BitChangeSetManager.DataAccess;
 using BitChangeSetManager.Dto;
 using BitChangeSetManager.Model;
-using Foundation.Api.ApiControllers;
-using Foundation.Core.Contracts;
 using System;
 using System.Data.Entity;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Bit.Api.ApiControllers;
+using Bit.Core.Contracts;
 
 namespace BitChangeSetManager.Api
 {

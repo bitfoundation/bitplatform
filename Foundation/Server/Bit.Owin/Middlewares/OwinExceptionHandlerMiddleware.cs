@@ -36,7 +36,7 @@ namespace Bit.Owin.Middlewares
                     logger.AddLogData("ResponseStatusCode", statusCode);
                     logger.AddLogData("ResponseReasonPhrase", context.Response.ReasonPhrase);
 
-                    if (responseStatusCodeIsErrorCodeBecauseOfSomeClientBasedReason || context.Response.ReasonPhrase == FoundationMetadataBuilder.KnownError)
+                    if (responseStatusCodeIsErrorCodeBecauseOfSomeClientBasedReason || context.Response.ReasonPhrase == BitMetadataBuilder.KnownError)
                     {
                         await logger.LogWarningAsync("Response has failed status code because of some client side reason");
                     }

@@ -11,7 +11,7 @@ namespace Bit.Tests.IdentityServer
         [TestCategory("IdentityServer")]
         public virtual void LoginWithValidUserNameAndPasswordUsingCodeShouldWorksFine()
         {
-            using (TestEnvironment testEnvironment = new TestEnvironment(new TestEnvironmentArgs { UseRealServer = false }))
+            using (BitOwinTestEnvironment testEnvironment = new BitOwinTestEnvironment(new TestEnvironmentArgs { UseRealServer = false }))
             {
                 TokenClient tokenClient = testEnvironment.Server.BuildTokenClient("TestResOwner", "secret");
                 TokenResponse tokenResponse = tokenClient.RequestResourceOwnerPasswordAsync("ValidUserName", "ValidPassword", scope: "openid profile user_info").Result;
@@ -24,7 +24,7 @@ namespace Bit.Tests.IdentityServer
         [TestCategory("IdentityServer")]
         public virtual void LoginWithInValidUserNameAndPasswordUsingCodeMayNotWorksFine()
         {
-            using (TestEnvironment testEnvironment = new TestEnvironment(new TestEnvironmentArgs { UseRealServer = false }))
+            using (BitOwinTestEnvironment testEnvironment = new BitOwinTestEnvironment(new TestEnvironmentArgs { UseRealServer = false }))
             {
                 TokenClient tokenClient = testEnvironment.Server.BuildTokenClient("TestResOwner", "secret");
                 TokenResponse tokenResponse = tokenClient.RequestResourceOwnerPasswordAsync("InValidUser", "InvalidPassword", scope: "openid profile user_info").Result;

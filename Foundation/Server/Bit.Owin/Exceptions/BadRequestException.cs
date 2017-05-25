@@ -8,7 +8,7 @@ namespace Bit.Owin.Exceptions
     public class BadRequestException : AppException
     {
         public BadRequestException()
-            : this(FoundationMetadataBuilder.BadRequestException)
+            : this(BitMetadataBuilder.BadRequestException)
         {
 
         }

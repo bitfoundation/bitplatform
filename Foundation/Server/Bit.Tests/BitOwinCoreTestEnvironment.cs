@@ -5,9 +5,9 @@ using Bit.Tests.Api.Implementations;
 
 namespace Bit.Tests
 {
-    public class AspNetCoreTestEnvironment : TestEnvironment
+    public class BitOwinCoreTestEnvironment : BitOwinTestEnvironment
     {
-        public AspNetCoreTestEnvironment(TestEnvironmentArgs args = null)
+        public BitOwinCoreTestEnvironment(TestEnvironmentArgs args = null)
             : base(args)
         {
 
@@ -23,7 +23,7 @@ namespace Bit.Tests
 
         protected override IDependenciesManagerProvider GetDependenciesManagerProvider(TestEnvironmentArgs args)
         {
-            return args.CustomDependenciesManagerProvider ?? new FoundationAspNetCoreTestServerDependenciesManagerProvider(args);
+            return args.CustomDependenciesManagerProvider ?? new BitOwinCoreTestDependenciesManagerProvider(args);
         }
     }
 }

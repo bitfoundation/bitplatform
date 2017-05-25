@@ -15,7 +15,7 @@ namespace Bit.Data.EntityFramework.Implementations
         public DefaultDbContext(DbConnection existingConnection, bool contextOwnsConnection)
             : base(existingConnection, contextOwnsConnection)
         {
-
+            
         }
 
         public DefaultDbContext(string connectionString, IDbConnectionProvider dbConnectionProvider)

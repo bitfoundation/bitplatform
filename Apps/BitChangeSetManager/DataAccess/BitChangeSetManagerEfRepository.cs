@@ -1,5 +1,5 @@
 ﻿using Bit.Data.EntityFramework.Implementations;
-using Foundation.Model.Contracts;
+using Bit.Model.Contracts;
 
 namespace BitChangeSetManager.DataAccess
 {

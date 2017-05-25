@@ -1,8 +1,8 @@
-﻿using BitChangeSetManager.DataAccess;
+﻿using Bit.Core.Contracts;
+using Bit.Signalr.Middlewares.Signalr;
+using Bit.Signalr.Middlewares.Signalr.Implementations;
+using BitChangeSetManager.DataAccess;
 using BitChangeSetManager.Model;
-using Foundation.Api.Middlewares.SignalR;
-using Foundation.Api.Middlewares.SignalR.Implementations;
-using Foundation.Core.Contracts;
 using System;
 using System.Threading;
 using System.Threading.Tasks;

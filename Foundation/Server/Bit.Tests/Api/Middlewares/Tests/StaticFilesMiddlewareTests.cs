@@ -17,7 +17,7 @@ namespace Bit.Tests.Api.Middlewares.Tests
         [TestCategory("Static Files"), TestCategory("Caching")]
         public async Task StaticFilesResponsesMustBeCacheable()
         {
-            using (TestEnvironment testEnvironment = new TestEnvironment(new TestEnvironmentArgs
+            using (BitOwinTestEnvironment testEnvironment = new BitOwinTestEnvironment(new TestEnvironmentArgs
             {
                 ActiveAppEnvironmentCustomizer = activeAppEnv => activeAppEnv.DebugMode = false
             }))
@@ -41,7 +41,7 @@ namespace Bit.Tests.Api.Middlewares.Tests
         [TestCategory("Static Files"), TestCategory("Security")]
         public async Task StaticFilesResponsesMustHaveSecurityHeaders()
         {
-            using (TestEnvironment testEnvironment = new TestEnvironment())
+            using (BitOwinTestEnvironment testEnvironment = new BitOwinTestEnvironment())
             {
                 HttpResponseMessage getVirtualPathUrl = await testEnvironment.Server.GetHttpClient()
                     .GetAsync("/Files/V1");
@@ -55,7 +55,7 @@ namespace Bit.Tests.Api.Middlewares.Tests
         [TestCategory("Static Files"), TestCategory("Security")]
         public async Task StaticFilesShouldNotReturnDirectoryContentsInReleaseMode()
         {
-            using (TestEnvironment testEnvironment = new TestEnvironment(new TestEnvironmentArgs
+            using (BitOwinTestEnvironment testEnvironment = new BitOwinTestEnvironment(new TestEnvironmentArgs
             {
                 ActiveAppEnvironmentCustomizer =
                 environment =>
@@ -75,7 +75,7 @@ namespace Bit.Tests.Api.Middlewares.Tests
         [TestCategory("Static Files")]
         public async Task StaticFilesShouldAlwaysProvideVirtualPathBasedOnAppVersion()
         {
-            using (TestEnvironment testEnvironment = new TestEnvironment(new TestEnvironmentArgs
+            using (BitOwinTestEnvironment testEnvironment = new BitOwinTestEnvironment(new TestEnvironmentArgs
             {
                 ActiveAppEnvironmentCustomizer =
                 environment =>
@@ -100,7 +100,7 @@ namespace Bit.Tests.Api.Middlewares.Tests
         [TestCategory("Static Files"), TestCategory("ObjectsLifeCycle")]
         public async Task NoScopeShouldBeCreatedForStaticFilesMiddlewareRequests()
         {
-            using (TestEnvironment testEnvironment = new TestEnvironment())
+            using (BitOwinTestEnvironment testEnvironment = new BitOwinTestEnvironment())
             {
                 await testEnvironment.Server.GetHttpClient().GetAsync("/Files/V1");
 

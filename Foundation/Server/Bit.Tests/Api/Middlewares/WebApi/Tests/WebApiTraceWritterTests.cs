@@ -14,7 +14,7 @@ namespace Bit.Tests.Api.Middlewares.WebApi.Tests
         [TestCategory("WebApi"), TestCategory("Logging")]
         public virtual async Task WebApiShouldReturnTheSameCorrelationIdInResponses()
         {
-            using (TestEnvironment testEnvironment = new TestEnvironment())
+            using (BitOwinTestEnvironment testEnvironment = new BitOwinTestEnvironment())
             {
                 TokenResponse token = testEnvironment.Server.Login("ValidUserName", "ValidPassword", clientName: "TestResOwner");
 

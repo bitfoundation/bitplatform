@@ -7,11 +7,11 @@ using Bit.Api.Middlewares.WebApi.OData.Contracts;
 
 namespace Bit.Api.Implementations.Project
 {
-    public class FoundationEdmModelProvider : IEdmModelProvider
+    public class BitEdmModelProvider : IEdmModelProvider
     {
         private readonly IAutoEdmBuilder _autoEdmBuilder;
 
-        public FoundationEdmModelProvider(IAutoEdmBuilder autoEdmBuilder)
+        public BitEdmModelProvider(IAutoEdmBuilder autoEdmBuilder)
         {
             if (autoEdmBuilder == null)
                 throw new ArgumentNullException(nameof(autoEdmBuilder));
@@ -19,7 +19,7 @@ namespace Bit.Api.Implementations.Project
             _autoEdmBuilder = autoEdmBuilder;
         }
 
-        protected FoundationEdmModelProvider()
+        protected BitEdmModelProvider()
         {
 
         }

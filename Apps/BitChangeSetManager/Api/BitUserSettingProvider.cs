@@ -1,11 +1,11 @@
 ﻿using BitChangeSetManager.DataAccess;
 using BitChangeSetManager.Model;
-using Foundation.Api.Contracts;
-using Foundation.Core.Contracts;
-using Foundation.Model.DomainModels;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using Bit.Core.Contracts;
+using Bit.Model.DomainModels;
+using Bit.Owin.Contracts;
 
 namespace BitChangeSetManager.Api
 {

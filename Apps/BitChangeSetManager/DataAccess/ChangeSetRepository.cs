@@ -1,10 +1,10 @@
 ﻿using BitChangeSetManager.Model;
-using Foundation.Core.Contracts;
 using System.Data.Entity;
 using System.Data.Entity.Infrastructure;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Bit.Core.Contracts;
 
 namespace BitChangeSetManager.DataAccess
 {

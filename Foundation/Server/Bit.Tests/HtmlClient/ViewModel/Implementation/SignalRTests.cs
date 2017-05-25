@@ -17,7 +17,7 @@ namespace Bit.Tests.HtmlClient.ViewModel.Implementation
         [TestCategory("HtmlClient"), TestCategory("SignalR")]
         public virtual void TestSignalRConnection()
         {
-            using (TestEnvironment testEnvironment = new TestEnvironment(new TestEnvironmentArgs { UseRealServer = true }))
+            using (BitOwinTestEnvironment testEnvironment = new BitOwinTestEnvironment(new TestEnvironmentArgs { UseRealServer = true }))
             {
                 TokenResponse token = testEnvironment.Server.Login("ValidUserName", "ValidPassword", clientName: "TestResOwner");
 
@@ -37,7 +37,7 @@ namespace Bit.Tests.HtmlClient.ViewModel.Implementation
         [TestCategory("HtmlClient"), TestCategory("SignalR")]
         public virtual void TestSignalRNoConnectionShouldBeMade()
         {
-            using (TestEnvironment testEnvironment = new TestEnvironment(new TestEnvironmentArgs { UseRealServer = true }))
+            using (BitOwinTestEnvironment testEnvironment = new BitOwinTestEnvironment(new TestEnvironmentArgs { UseRealServer = true }))
             {
                 TokenResponse token = testEnvironment.Server.Login("ValidUserName", "ValidPassword", clientName: "TestResOwner");
 

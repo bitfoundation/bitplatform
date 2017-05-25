@@ -1,10 +1,10 @@
 ﻿using BitChangeSetManager.Model;
-using Foundation.Core.Contracts;
 using System;
 using System.Data.Entity;
 using System.Data.SqlClient;
 using System.Security.Cryptography;
 using System.Text;
+using Bit.Core.Contracts;
 
 namespace BitChangeSetManager.DataAccess
 {

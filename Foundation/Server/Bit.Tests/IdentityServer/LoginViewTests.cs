@@ -2,6 +2,7 @@
 using Bit.Test;
 using Bit.Test.Core.Implementations;
 using Bit.Test.Server;
+using Bit.Tests.IdentityServer.Implementations;
 using FakeItEasy;
 using IdentityServer3.Core.Models;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -17,7 +18,7 @@ namespace Bit.Tests.IdentityServer
         [TestCategory("IdentityServer")]
         public virtual void ValidLoginMustBeRedirectedToClientUrl()
         {
-            using (TestEnvironment testEnvironment = new TestEnvironment(new TestEnvironmentArgs { UseRealServer = true }))
+            using (BitOwinTestEnvironment testEnvironment = new BitOwinTestEnvironment(new TestEnvironmentArgs { UseRealServer = true }))
             {
                 using (RemoteWebDriver driver = testEnvironment.Server.GetWebDriver(new RemoteWebDriverOptions { Uri = @"core/connect/authorize?scope=openid profile user_info&client_id=Test&redirect_uri=http://127.0.0.1/SignIn&response_type=id_token token&state={}&nonce=SgPoeilE1Tub", ClientSideTest = false }))
                 {
@@ -30,8 +31,8 @@ namespace Bit.Tests.IdentityServer
                     driver.WaitForControlReady();
                 }
 
-                Api.Implementations.TestUserService testUserService = TestDependencyManager.CurrentTestDependencyManager.Objects
-                    .OfType<Api.Implementations.TestUserService>()
+                TestUserService testUserService = TestDependencyManager.CurrentTestDependencyManager.Objects
+                    .OfType<TestUserService>()
                     .Single();
 
                 A.CallTo(() => testUserService.AuthenticateLocalAsync(A<LocalAuthenticationContext>.That.Matches(cntx => cntx.UserName == "ValidUserName" && cntx.Password == "ValidPassword")))
@@ -43,7 +44,7 @@ namespace Bit.Tests.IdentityServer
         [TestCategory("IdentityServer")]
         public virtual void InValidLoginMustShowsAnError()
         {
-            using (TestEnvironment testEnvironment = new TestEnvironment(new TestEnvironmentArgs { UseRealServer = true }))
+            using (BitOwinTestEnvironment testEnvironment = new BitOwinTestEnvironment(new TestEnvironmentArgs { UseRealServer = true }))
             {
                 using (RemoteWebDriver driver = testEnvironment.Server.GetWebDriver(new RemoteWebDriverOptions { Uri = @"core/connect/authorize?scope=openid profile user_info&client_id=Test&redirect_uri=http://127.0.0.1/SignIn&response_type=id_token token&state={}&nonce=SgPoeilE1Tub", ClientSideTest = false }))
                 {
@@ -54,8 +55,8 @@ namespace Bit.Tests.IdentityServer
                     Assert.AreEqual("Login failed", driver.GetElementById("error").GetAttribute("innerText"));
                 }
 
-                Api.Implementations.TestUserService testUserService = TestDependencyManager.CurrentTestDependencyManager.Objects
-                    .OfType<Api.Implementations.TestUserService>()
+                TestUserService testUserService = TestDependencyManager.CurrentTestDependencyManager.Objects
+                    .OfType<TestUserService>()
                     .Single();
 
                 A.CallTo(() => testUserService.AuthenticateLocalAsync(A<LocalAuthenticationContext>.That.Matches(cntx => cntx.UserName == "InValidUserName" && cntx.Password == "InValidPassword")))

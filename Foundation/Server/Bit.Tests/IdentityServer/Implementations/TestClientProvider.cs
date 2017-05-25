@@ -3,7 +3,7 @@ using Bit.IdentityServer.Contracts;
 using IdentityServer3.Core;
 using IdentityServer3.Core.Models;
 
-namespace Bit.Tests.Api.Implementations
+namespace Bit.Tests.IdentityServer.Implementations
 {
     public class TestClientProvider : IClientProvider
     {

@@ -5,16 +5,16 @@ using Bit.Core.Models;
 using Bit.Test;
 using Bit.Tests.Properties;
 
-namespace Bit.Tests.Api.Implementations
+namespace Bit.Tests
 {
-    public class TestAppEnvironmentProvider : IAppEnvironmentProvider
+    public class BitTestAppEnvironmentProvider : IAppEnvironmentProvider
     {
-        protected TestAppEnvironmentProvider()
+        protected BitTestAppEnvironmentProvider()
         {
 
         }
 
-        public TestAppEnvironmentProvider(TestEnvironmentArgs args)
+        public BitTestAppEnvironmentProvider(TestEnvironmentArgs args)
         {
             _args = args;
         }

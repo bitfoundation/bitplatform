@@ -1,7 +1,5 @@
 ﻿using BitChangeSetManager.DataAccess;
 using BitChangeSetManager.Model;
-using Foundation.Api.Exceptions;
-using Foundation.Core.Contracts;
 using IdentityServer3.Core.Models;
 using IdentityServer3.Core.Services.Default;
 using System;
@@ -11,6 +9,8 @@ using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
+using Bit.Core.Contracts;
+using Bit.Owin.Exceptions;
 
 namespace BitChangeSetManager.Security
 {

@@ -1,24 +1,6 @@
 ﻿using BitChangeSetManager.Api;
 using BitChangeSetManager.DataAccess;
 using BitChangeSetManager.Security;
-using Foundation.Api.Contracts;
-using Foundation.Api.Contracts.Metadata;
-using Foundation.Api.Implementations;
-using Foundation.Api.Implementations.Metadata;
-using Foundation.Api.Implementations.Project;
-using Foundation.Api.Middlewares;
-using Foundation.Api.Middlewares.WebApi.OData.ActionFilters;
-using Foundation.AspNetCore;
-using Foundation.AspNetCore.Middlewares;
-using Foundation.Core.Contracts;
-using Foundation.Core.Contracts.Project;
-using Foundation.Core.Implementations;
-using Foundation.DataAccess.Contracts;
-using Foundation.DataAccess.Implementations;
-using Foundation.Model.Implementations;
-using IdentityServer.Api.Contracts;
-using IdentityServer.Api.Implementations;
-using IdentityServer.Api.Middlewares;
 using IdentityServer3.Core.Services;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
@@ -27,11 +9,31 @@ using Owin;
 using System;
 using System.Collections.Generic;
 using System.Reflection;
-using Foundation.Api;
-using Foundation.AspNetCore.Contracts;
+using Bit.Api.Implementations.Project;
+using Bit.Api.Middlewares.WebApi.OData.ActionFilters;
+using Bit.Core;
+using Bit.Core.Contracts;
+using Bit.Core.Contracts.Project;
+using Bit.Core.Implementations;
+using Bit.Data;
+using Bit.Data.Contracts;
+using Bit.Hangfire.Middlewares.JobScheduler.Implementations;
+using Bit.IdentityServer.Contracts;
+using Bit.IdentityServer.Implementations;
+using Bit.IdentityServer.Middlewares;
+using Bit.Model.Implementations;
+using Bit.Owin;
+using Bit.Owin.Contracts;
+using Bit.Owin.Contracts.Metadata;
+using Bit.Owin.Implementations;
+using Bit.Owin.Implementations.Metadata;
+using Bit.Owin.Middlewares;
+using Bit.OwinCore;
+using Bit.OwinCore.Contracts;
+using Bit.OwinCore.Middlewares;
+using Bit.Signalr.Middlewares.Signalr;
+using Bit.Signalr.Middlewares.Signalr.Implementations;
 using Microsoft.AspNetCore.Builder;
-using Foundation.Api.Middlewares.SignalR.Implementations;
-using Foundation.Api.Middlewares.SignalR;
 
 namespace BitChangeSetManager.Core
 {
@@ -103,7 +105,22 @@ namespace BitChangeSetManager.Core
             dependencyManager.RegisterOwinMiddleware<LogUserInformationMiddlewareConfiguration>();
             dependencyManager.RegisterOwinMiddleware<MetadataMiddlewareConfiguration>();
 
-            dependencyManager.RegisterDefaultWebApiConfiguration(typeof(FoundationEdmModelProvider).GetTypeInfo().Assembly, typeof(BitChangeSetManagerEdmModelProvider).GetTypeInfo().Assembly);
+            dependencyManager.RegisterDefaultWebApiConfiguration(AssemblyContainer.Current.GetBitApiAssembly(), AssemblyContainer.Current.GetBitChangeSetManagerApiAssembly());
+
+            dependencyManager.RegisterUsing<IOwinMiddlewareConfiguration>(() =>
+            {
+                return dependencyManager.CreateChildDependencyResolver(childDependencyManager =>
+                {
+                    childDependencyManager.RegisterGlobalWebApiActionFiltersUsing(httpConfiguration =>
+                    {
+                        httpConfiguration.Filters.Add(new System.Web.Http.AuthorizeAttribute());
+                    });
+
+                    childDependencyManager.RegisterWebApiMiddlewareUsingDefaultConfiguration("WebApi");
+
+                }).Resolve<IOwinMiddlewareConfiguration>("WebApi");
+
+            }, lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExciting: false);
 
             dependencyManager.RegisterUsing<IOwinMiddlewareConfiguration>(() =>
             {
@@ -115,7 +132,7 @@ namespace BitChangeSetManager.Core
                     });
 
                     childDependencyManager.RegisterWebApiODataMiddlewareUsingDefaultConfiguration("WebApiOData");
-                    childDependencyManager.RegisterEdmModelProvider<FoundationEdmModelProvider>();
+                    childDependencyManager.RegisterEdmModelProvider<BitEdmModelProvider>();
                     childDependencyManager.RegisterEdmModelProvider<BitChangeSetManagerEdmModelProvider>();
 
                 }).Resolve<IOwinMiddlewareConfiguration>("WebApiOData");
@@ -124,10 +141,12 @@ namespace BitChangeSetManager.Core
 
             dependencyManager.RegisterSignalRConfiguration<SignalRSqlServerScaleoutConfiguration>();
             dependencyManager.RegisterSignalRConfiguration<SignalRAuthorizeConfiguration>();
-            dependencyManager.RegisterSignalRMiddlewareUsingDefaultConfiguration(typeof(MessagesHub).GetTypeInfo().Assembly);
+            dependencyManager.RegisterSignalRMiddlewareUsingDefaultConfiguration<BitChangeSetManagerAppMessageHubEvents>(AssemblyContainer.Current.GetBitSignalRAssembly(), AssemblyContainer.Current.GetBitChangeSetManagerSignalrAssembly());
+
+            dependencyManager.RegisterBackgroundJobWorkerUsingDefaultConfiguration<JobSchedulerInMemoryBackendConfiguration>();
 
             dependencyManager.Register<IAppMetadataProvider, DefaultAppMetadataProvider>(lifeCycle: DependencyLifeCycle.SingleInstance);
-            dependencyManager.RegisterMetadata(typeof(FoundationEdmModelProvider).GetTypeInfo().Assembly, typeof(BitChangeSetManagerEdmModelProvider).GetTypeInfo().Assembly);
+            dependencyManager.RegisterMetadata(AssemblyContainer.Current.GetBitMetadataAssembly(), AssemblyContainer.Current.GetBitChangeSetManagerMetadataAssembly());
 
             dependencyManager.RegisterGeneric(typeof(IBitChangeSetManagerRepository<>).GetTypeInfo(), typeof(BitChangeSetManagerEfRepository<>).GetTypeInfo(), DependencyLifeCycle.InstancePerLifetimeScope);
 

@@ -12,7 +12,7 @@ namespace Bit.Tests.Api.ApiControllers.Tests
         [TestCategory("WebApi")]
         public virtual async Task WebApiShouldReturnOk()
         {
-            using (TestEnvironment testEnvironment = new TestEnvironment())
+            using (BitOwinTestEnvironment testEnvironment = new BitOwinTestEnvironment())
             {
                 TokenResponse token = testEnvironment.Server.Login("ValidUserName", "ValidPassword", clientName: "TestResOwner");
 

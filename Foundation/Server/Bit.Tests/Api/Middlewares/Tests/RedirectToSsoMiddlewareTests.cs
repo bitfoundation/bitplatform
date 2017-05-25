@@ -17,7 +17,7 @@ namespace Bit.Tests.Api.Middlewares.Tests
         [TestCategory("RedirectToSso"), TestCategory("Security")]
         public async Task RedirectToSsoIfNotLoggedInOnRootUrl()
         {
-            using (TestEnvironment testEnvironment = new TestEnvironment(new TestEnvironmentArgs
+            using (BitOwinTestEnvironment testEnvironment = new BitOwinTestEnvironment(new TestEnvironmentArgs
             {
                 AdditionalDependencies = manager =>
                 {
@@ -44,7 +44,7 @@ namespace Bit.Tests.Api.Middlewares.Tests
         [TestCategory("RedirectToSso"), TestCategory("Security")]
         public async Task DontRedirectToSsoIfLoggedIn()
         {
-            using (TestEnvironment testEnvironment = new TestEnvironment())
+            using (BitOwinTestEnvironment testEnvironment = new BitOwinTestEnvironment())
             {
                 TokenResponse token = testEnvironment.Server.Login("ValidUserName", "ValidPassword", clientName: "TestResOwner");
 

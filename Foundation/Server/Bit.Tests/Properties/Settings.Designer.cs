@@ -46,9 +46,9 @@ namespace Bit.Tests.Properties {
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.SpecialSettingAttribute(global::System.Configuration.SpecialSetting.ConnectionString)]
         [global::System.Configuration.DefaultSettingValueAttribute("Data Source=.;Initial Catalog=Bit;Integrated Security=True")]
-        public string FoundationReadDbConnectionString {
+        public string BitReadDbConnectionString {
             get {
-                return ((string)(this["FoundationReadDbConnectionString"]));
+                return ((string)(this["BitReadDbConnectionString"]));
             }
         }
     }

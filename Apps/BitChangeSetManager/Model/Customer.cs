@@ -1,8 +1,8 @@
-﻿using Foundation.Model.Contracts;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using Bit.Model.Contracts;
 
 namespace BitChangeSetManager.Model
 {

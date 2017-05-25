@@ -17,7 +17,7 @@ namespace Bit.Tests.HtmlClient.BrowserTests.Caching
         [TestCategory("HtmlClient"), TestCategory("Caching")]
         public virtual void ResourceLikeDefaultPageWhichInNotCachableMustBeRertivedEverytimeByHtmlClient()
         {
-            using (TestEnvironment testEnvironment = new TestEnvironment(new TestEnvironmentArgs { UseRealServer = true }))
+            using (BitOwinTestEnvironment testEnvironment = new BitOwinTestEnvironment(new TestEnvironmentArgs { UseRealServer = true }))
             {
                 TokenResponse token = testEnvironment.Server.Login("ValidUserName", "ValidPassword", clientName: "TestResOwner");
 
@@ -34,7 +34,7 @@ namespace Bit.Tests.HtmlClient.BrowserTests.Caching
         [TestCategory("HtmlClient"), TestCategory("Caching")]
         public virtual void ResourceLikeMetadataWhichAreCachableMustNotBeRertivedEverytimeByHtmlClient()
         {
-            using (TestEnvironment testEnvironment = new TestEnvironment(new TestEnvironmentArgs { UseRealServer = true, ActiveAppEnvironmentCustomizer = activeAppEnv => activeAppEnv.DebugMode = false }))
+            using (BitOwinTestEnvironment testEnvironment = new BitOwinTestEnvironment(new TestEnvironmentArgs { UseRealServer = true, ActiveAppEnvironmentCustomizer = activeAppEnv => activeAppEnv.DebugMode = false }))
             {
                 TokenResponse token = testEnvironment.Server.Login("ValidUserName", "ValidPassword", clientName: "TestResOwner");
 

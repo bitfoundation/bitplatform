@@ -13,7 +13,7 @@ namespace Bit.Tests.Api.Middlewares.JobScheduler.Tests
         [TestCategory("BackgroundJobs"), TestCategory("Security")]
         public async Task LoggedInUserMustHaveAccessToJobsDashboard()
         {
-            using (TestEnvironment testEnvironment = new TestEnvironment())
+            using (BitOwinTestEnvironment testEnvironment = new BitOwinTestEnvironment())
             {
                 TokenResponse token = testEnvironment.Server.Login("ValidUserName", "ValidPassword", clientName: "TestResOwner");
 
@@ -29,7 +29,7 @@ namespace Bit.Tests.Api.Middlewares.JobScheduler.Tests
         [TestCategory("BackgroundJobs"), TestCategory("Security")]
         public async Task NotLoggedInUserMustNotHaveAccessToJobsDashboard()
         {
-            using (TestEnvironment testEnvironment = new TestEnvironment())
+            using (BitOwinTestEnvironment testEnvironment = new BitOwinTestEnvironment())
             {
                 HttpResponseMessage getDefaultPageResponse = await testEnvironment.Server.GetHttpClient()
                     .GetAsync("/jobs");

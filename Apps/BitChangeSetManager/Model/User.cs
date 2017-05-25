@@ -1,4 +1,4 @@
-﻿using Foundation.Model.Contracts;
+﻿using Bit.Model.Contracts;
 using System;
 
 namespace BitChangeSetManager.Model

@@ -359,14 +359,12 @@
     <Compile Include="Api\ApiControllers\Tests\WebApiTests.cs" />
     <Compile Include="Api\ApiControllers\ValidationSamplesController.cs" />
     <Compile Include="Api\AppStartupTests.cs" />
-    <Compile Include="Api\Implementations\Project\FoundationAspNetCoreTestServerDependenciesManager.cs" />
-    <Compile Include="Api\Implementations\FoundationAspNetCoreTestServerDependenciesManagerProvider.cs" />
+    <Compile Include="BitOwinCoreTestDependenciesManagerProvider.cs" />
     <Compile Include="Api\Implementations\Project\TestEdmModelProvider.cs" />
-    <Compile Include="Api\Implementations\Project\TestFoundationDependenciesManager.cs" />
-    <Compile Include="Api\Implementations\TestAppEnvironmentProvider.cs" />
-    <Compile Include="Api\Implementations\TestClientProvider.cs" />
-    <Compile Include="Api\Implementations\TestDependenciesManagerProvider.cs" />
-    <Compile Include="Api\Implementations\TestUserService.cs" />
+    <Compile Include="BitOwinTestDependenciesManagerProvider.cs" />
+    <Compile Include="BitTestAppEnvironmentProvider.cs" />
+    <Compile Include="IdentityServer\Implementations\TestClientProvider.cs" />
+    <Compile Include="IdentityServer\Implementations\TestUserService.cs" />
     <Compile Include="Api\Middlewares\ExceptionThrownMiddleware.cs" />
     <Compile Include="Api\Middlewares\InternalServerErrorMiddleware.cs" />
     <Compile Include="Api\Middlewares\JobScheduler\Tests\JobSchedulerMiddlewareTests.cs" />
@@ -392,7 +390,7 @@
     <Compile Include="Api\Middlewares\WebApi\Tests\WebApiODataCachingTests.cs" />
     <Compile Include="Api\Middlewares\WebApi\Tests\WebApiODataSecurityTests.cs" />
     <Compile Include="Api\Middlewares\WebApi\Tests\WebApiTraceWritterTests.cs" />
-    <Compile Include="AspNetCoreTestEnvironment.cs" />
+    <Compile Include="BitOwinCoreTestEnvironment.cs" />
     <Compile Include="Core\Contracts\IEmailService.cs" />
     <Compile Include="Core\Contracts\IRequestValidator.cs" />
     <Compile Include="Core\Contracts\IValueChecker.cs" />
@@ -439,7 +437,7 @@
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
       <DependentUpon>Settings.settings</DependentUpon>
     </Compile>
-    <Compile Include="TestEnvironment.cs" />
+    <Compile Include="BitOwinTestEnvironment.cs" />
     <Compile Include="TestFakeItEasyLoadNothingBootstrapper.cs" />
   </ItemGroup>
   <ItemGroup>

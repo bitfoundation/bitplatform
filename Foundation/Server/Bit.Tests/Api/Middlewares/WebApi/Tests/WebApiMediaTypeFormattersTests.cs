@@ -12,7 +12,7 @@ namespace Bit.Tests.Api.Middlewares.WebApi.Tests
         [TestCategory("WebApi")]
         public virtual async Task MediaTypeFormattersShouldReturnMinimalStreamedODataJsonWhenNoContentTypeIsDeclaredInRequest()
         {
-            using (TestEnvironment testEnvironment = new TestEnvironment())
+            using (BitOwinTestEnvironment testEnvironment = new BitOwinTestEnvironment())
             {
                 TokenResponse token = testEnvironment.Server.Login("ValidUserName", "ValidPassword", clientName: "TestResOwner");
 
@@ -27,7 +27,7 @@ namespace Bit.Tests.Api.Middlewares.WebApi.Tests
         [TestCategory("WebApi")]
         public virtual async Task MediaTypeFormattersShouldReturnMinimalODataJsonWhenJsonContentTypeIsDeclaredFirstInRequest()
         {
-            using (TestEnvironment testEnvironment = new TestEnvironment())
+            using (BitOwinTestEnvironment testEnvironment = new BitOwinTestEnvironment())
             {
                 TokenResponse token = testEnvironment.Server.Login("ValidUserName", "ValidPassword", clientName: "TestResOwner");
 
@@ -43,7 +43,7 @@ namespace Bit.Tests.Api.Middlewares.WebApi.Tests
         [TestCategory("WebApi")]
         public virtual async Task MediaTypeFormattersShouldReturnMinimalODataJsonWhenStarContentTypeIsDeclaredInRequest()
         {
-            using (TestEnvironment testEnvironment = new TestEnvironment())
+            using (BitOwinTestEnvironment testEnvironment = new BitOwinTestEnvironment())
             {
                 TokenResponse token = testEnvironment.Server.Login("ValidUserName", "ValidPassword", clientName: "TestResOwner");
 
@@ -59,7 +59,7 @@ namespace Bit.Tests.Api.Middlewares.WebApi.Tests
         [TestCategory("WebApi")]
         public virtual async Task MediaTypeFormattersShouldReturnMinimalStreamedODataJsonWhenInvalidContentTypeIsDeclaredInRequest()
         {
-            using (TestEnvironment testEnvironment = new TestEnvironment())
+            using (BitOwinTestEnvironment testEnvironment = new BitOwinTestEnvironment())
             {
                 TokenResponse token = testEnvironment.Server.Login("ValidUserName", "ValidPassword", clientName: "TestResOwner");
 

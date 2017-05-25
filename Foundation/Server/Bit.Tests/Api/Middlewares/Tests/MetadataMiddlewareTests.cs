@@ -16,7 +16,7 @@ namespace Bit.Tests.Api.Middlewares.Tests
         [TestCategory("Metadata")]
         public async Task MetadataMiddlewareShouldAlwaysProvideMetadataBasedOnAppVersion()
         {
-            using (TestEnvironment testEnvironment = new TestEnvironment(new TestEnvironmentArgs
+            using (BitOwinTestEnvironment testEnvironment = new BitOwinTestEnvironment(new TestEnvironmentArgs
             {
                 ActiveAppEnvironmentCustomizer =
                 environment =>
@@ -41,7 +41,7 @@ namespace Bit.Tests.Api.Middlewares.Tests
         [TestCategory("Metadata")]
         public async Task MetadataMiddlewareResponseMustBeDeSerializeableForSimpleCSharpClient()
         {
-            using (TestEnvironment testEnvironment = new TestEnvironment())
+            using (BitOwinTestEnvironment testEnvironment = new BitOwinTestEnvironment())
             {
                 HttpResponseMessage getMetadataForV1 = await testEnvironment.Server.GetHttpClient()
                     .GetAsync("Metadata/V1");
@@ -62,7 +62,7 @@ namespace Bit.Tests.Api.Middlewares.Tests
         [TestCategory("Metadata"), TestCategory("Caching")]
         public async Task MetadataMiddlewareResultMustBeCacheableInNonDebugMode()
         {
-            using (TestEnvironment testEnvironment = new TestEnvironment(new TestEnvironmentArgs
+            using (BitOwinTestEnvironment testEnvironment = new BitOwinTestEnvironment(new TestEnvironmentArgs
             {
                 ActiveAppEnvironmentCustomizer = appEnvironment => appEnvironment.DebugMode = false
             }))
@@ -86,7 +86,7 @@ namespace Bit.Tests.Api.Middlewares.Tests
         [TestCategory("Metadata"), TestCategory("Caching")]
         public async Task MetadataMiddlewareResultMustNotBeCacheableInDebugMode()
         {
-            using (TestEnvironment testEnvironment = new TestEnvironment())
+            using (BitOwinTestEnvironment testEnvironment = new BitOwinTestEnvironment())
             {
                 HttpResponseMessage getMetadataForV1 = await testEnvironment.Server.GetHttpClient()
                     .GetAsync("Metadata/V1");
@@ -107,7 +107,7 @@ namespace Bit.Tests.Api.Middlewares.Tests
         [TestCategory("Metadata"), TestCategory("Security")]
         public async Task MetadataMiddlewareResultMustHaveSecurityHeaders()
         {
-            using (TestEnvironment testEnvironment = new TestEnvironment())
+            using (BitOwinTestEnvironment testEnvironment = new BitOwinTestEnvironment())
             {
                 HttpResponseMessage getMetadataForV1 = await testEnvironment.Server.GetHttpClient()
                     .GetAsync("Metadata/V1");
@@ -120,7 +120,7 @@ namespace Bit.Tests.Api.Middlewares.Tests
         [TestCategory("Metadata")]
         public async Task MetadataMiddlewareResultMustBeJson()
         {
-            using (TestEnvironment testEnvironment = new TestEnvironment())
+            using (BitOwinTestEnvironment testEnvironment = new BitOwinTestEnvironment())
             {
                 HttpResponseMessage getMetadataForV1 = await testEnvironment.Server.GetHttpClient()
                     .GetAsync("Metadata/V1");

@@ -1,14 +1,14 @@
 ﻿using BitChangeSetManager.DataAccess;
 using BitChangeSetManager.Metadata;
-using Foundation.Api.ApiControllers;
-using Foundation.Api.Exceptions;
-using Foundation.Model.Contracts;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Web.OData;
 using System.Web.Http.Controllers;
 using System.Net.Http;
+using Bit.Api.ApiControllers;
+using Bit.Model.Contracts;
+using Bit.Owin.Exceptions;
 
 namespace BitChangeSetManager.Api
 {

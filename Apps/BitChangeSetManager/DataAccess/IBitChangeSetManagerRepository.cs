@@ -1,5 +1,5 @@
-﻿using Foundation.DataAccess.Contracts;
-using Foundation.Model.Contracts;
+﻿using Bit.Data.Contracts;
+using Bit.Model.Contracts;
 
 namespace BitChangeSetManager.DataAccess
 {

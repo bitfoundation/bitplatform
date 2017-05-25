@@ -6,7 +6,7 @@ using Bit.Owin.Implementations.Metadata;
 
 namespace Bit.Owin.Metadata
 {
-    public class FoundationMetadataBuilder : DefaultProjectMetadataBuilder
+    public class BitMetadataBuilder : DefaultProjectMetadataBuilder
     {
         public static readonly string UnKnownError = nameof(UnKnownError);
 

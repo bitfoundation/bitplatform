@@ -15,7 +15,7 @@ namespace Bit.Tests.Api.Middlewares.Tests
         [TestCategory("SignInPage")]
         public async Task ReturnSignInPage()
         {
-            using (TestEnvironment testEnvironment = new TestEnvironment())
+            using (BitOwinTestEnvironment testEnvironment = new BitOwinTestEnvironment())
             {
                 HttpResponseMessage getSignInPage = await testEnvironment.Server.GetHttpClient()
                     .GetAsync("/SignIn");
@@ -28,7 +28,7 @@ namespace Bit.Tests.Api.Middlewares.Tests
         [TestCategory("SignInPage"), TestCategory("Caching")]
         public async Task SignInPageResponseMustNotBeCacheable()
         {
-            using (TestEnvironment testEnvironment = new TestEnvironment())
+            using (BitOwinTestEnvironment testEnvironment = new BitOwinTestEnvironment())
             {
                 HttpResponseMessage getSignInPage = await testEnvironment.Server.GetHttpClient()
                     .GetAsync("/SignIn");
@@ -49,7 +49,7 @@ namespace Bit.Tests.Api.Middlewares.Tests
         [TestCategory("SignInPage"), TestCategory("Security")]
         public async Task SignInPageResponseMustHaveSecurityHeaders()
         {
-            using (TestEnvironment testEnvironment = new TestEnvironment())
+            using (BitOwinTestEnvironment testEnvironment = new BitOwinTestEnvironment())
             {
                 HttpResponseMessage getSignInPage = await testEnvironment.Server.GetHttpClient()
                     .GetAsync("/SignIn");
@@ -65,7 +65,7 @@ namespace Bit.Tests.Api.Middlewares.Tests
         [TestCategory("SignInPage"), TestCategory("Security")]
         public async Task SignInPageResponseMustHaveStrictTransportSecurityHeadersInCaseOfSslRequired()
         {
-            using (TestEnvironment testEnvironment = new TestEnvironment(new TestEnvironmentArgs
+            using (BitOwinTestEnvironment testEnvironment = new BitOwinTestEnvironment(new TestEnvironmentArgs
             {
                 UseHttps = true,
                 ActiveAppEnvironmentCustomizer = environment =>

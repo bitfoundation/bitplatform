@@ -12,7 +12,7 @@
     <Setting Name="UseInMemoryProviderByDefault" Type="System.Boolean" Scope="Application">
       <Value Profile="(Default)">True</Value>
     </Setting>
-    <Setting Name="FoundationReadDbConnectionString" Type="(Connection string)" Scope="Application">
+    <Setting Name="BitReadDbConnectionString" Type="(Connection string)" Scope="Application">
       <DesignTimeValue Profile="(Default)">&lt;?xml version="1.0" encoding="utf-16"?&gt;
 &lt;SerializableConnectionString xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema"&gt;
   &lt;ConnectionString&gt;Data Source=.;Initial Catalog=Bit;Integrated Security=True&lt;/ConnectionString&gt;

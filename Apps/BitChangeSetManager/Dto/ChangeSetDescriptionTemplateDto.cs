@@ -1,5 +1,5 @@
-﻿using Foundation.Model.Contracts;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
+using Bit.Model.Contracts;
 
 namespace BitChangeSetManager.Dto
 {

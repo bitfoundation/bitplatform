@@ -8,21 +8,21 @@ using Bit.Tests.Api.Implementations;
 
 namespace Bit.Tests
 {
-    public class TestEnvironment : TestEnvironmentBase
+    public class BitOwinTestEnvironment : TestEnvironmentBase
     {
-        public TestEnvironment(TestEnvironmentArgs args = null)
+        public BitOwinTestEnvironment(TestEnvironmentArgs args = null)
             : base(args)
         {
         }
 
         protected override IDependenciesManagerProvider GetDependenciesManagerProvider(TestEnvironmentArgs args)
         {
-            return args.CustomDependenciesManagerProvider ?? new TestDependenciesManagerProvider(args);
+            return args.CustomDependenciesManagerProvider ?? new BitOwinTestDependenciesManagerProvider(args);
         }
 
         protected override IAppEnvironmentProvider GetAppEnvironmentProvider(TestEnvironmentArgs args)
         {
-            return args.CustomAppEnvironmentProvider ?? new TestAppEnvironmentProvider(args);
+            return args.CustomAppEnvironmentProvider ?? new BitTestAppEnvironmentProvider(args);
         }
 
         protected override List<Func<TypeInfo, bool>> GetAutoProxyCreationIncludeRules()

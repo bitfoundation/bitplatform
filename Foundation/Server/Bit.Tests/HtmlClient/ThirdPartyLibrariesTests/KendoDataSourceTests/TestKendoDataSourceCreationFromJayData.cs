@@ -20,7 +20,7 @@ namespace Bit.Tests.HtmlClient.ThirdPartyLibrariesTests.KendoDataSourceTests
         [TestCategory("HtmlClient"), TestCategory("KendoDataSource")]
         public virtual void TestKendoDataSourceCreationFromJayDataEntitySet()
         {
-            using (TestEnvironment testEnvironment = new TestEnvironment(new TestEnvironmentArgs { UseRealServer = true }))
+            using (BitOwinTestEnvironment testEnvironment = new BitOwinTestEnvironment(new TestEnvironmentArgs { UseRealServer = true }))
             {
                 TokenResponse token = testEnvironment.Server.Login("ValidUserName", "ValidPassword", clientName: "TestResOwner");
 
@@ -48,7 +48,7 @@ namespace Bit.Tests.HtmlClient.ThirdPartyLibrariesTests.KendoDataSourceTests
         [TestCategory("HtmlClient"), TestCategory("KendoDataSource")]
         public virtual void TestKendoDataSourceCreationFromJayDataODataFunctionCall()
         {
-            using (TestEnvironment testEnvironment = new TestEnvironment(new TestEnvironmentArgs { UseRealServer = true }))
+            using (BitOwinTestEnvironment testEnvironment = new BitOwinTestEnvironment(new TestEnvironmentArgs { UseRealServer = true }))
             {
                 TokenResponse token = testEnvironment.Server.Login("ValidUserName", "ValidPassword", clientName: "TestResOwner");
 

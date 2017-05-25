@@ -12,7 +12,7 @@ namespace Bit.Tests.Api.Middlewares.WebApi.Tests
         [TestCategory("WebApi"), TestCategory("Caching")]
         public async Task WebApiODataResponsesMustNotBeCacheable()
         {
-            using (TestEnvironment testEnvironment = new TestEnvironment())
+            using (BitOwinTestEnvironment testEnvironment = new BitOwinTestEnvironment())
             {
                 HttpResponseMessage getTestModels = await testEnvironment.Server.GetHttpClient()
                         .GetAsync("/odata/Test/TestModels");

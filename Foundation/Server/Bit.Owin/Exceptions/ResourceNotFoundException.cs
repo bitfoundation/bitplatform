@@ -8,7 +8,7 @@ namespace Bit.Owin.Exceptions
     public class ResourceNotFoundException : AppException
     {
         public ResourceNotFoundException()
-            : this(FoundationMetadataBuilder.ResourceNotFoundaException)
+            : this(BitMetadataBuilder.ResourceNotFoundaException)
         {
 
         }

@@ -1,10 +1,10 @@
-﻿using Foundation.Core.Contracts;
-using Foundation.Core.Models;
-using IdentityServer.Api.Contracts;
-using IdentityServer3.Core;
+﻿using IdentityServer3.Core;
 using IdentityServer3.Core.Models;
 using System;
 using System.Collections.Generic;
+using Bit.Core.Contracts;
+using Bit.Core.Models;
+using Bit.IdentityServer.Contracts;
 
 namespace BitChangeSetManager.Security
 {

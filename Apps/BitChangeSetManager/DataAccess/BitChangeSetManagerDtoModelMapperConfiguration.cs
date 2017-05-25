@@ -1,8 +1,8 @@
 ﻿using AutoMapper;
 using BitChangeSetManager.Dto;
 using BitChangeSetManager.Model;
-using Foundation.Model.Contracts;
 using System.Linq;
+using Bit.Model.Contracts;
 
 namespace BitChangeSetManager.DataAccess
 {
