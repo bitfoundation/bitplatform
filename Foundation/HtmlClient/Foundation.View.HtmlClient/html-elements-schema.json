@@ -704,5 +704,130 @@
   {
     "name": "md-list",
     "description": "The <md-list> directive is a list container for 1..n <md-list-item> tags."
-  }
+  },
+  {
+    "name": "md-list-item",
+    "description": "A md-list-item element can be used to represent some information in a row."
+  },
+  {
+    "name": "md-menu",
+    "description": "Menus are elements that open when clicked. They are useful for displaying additional options within the context of an action.Every md-menu must specify exactly two child elements. The first element is what is left in the DOM and is used to open the menu.The second element is the md-menu-content element which represents the contents of the menu when it is open.",
+    "attributes": [
+      {
+        "name": "md-position-mode",
+        "description": "The position mode in the form of x, y. Default value is target,target. Right now the x axis also supports target-right."
+      },
+      {
+        "name": "md-offset",
+        "description": "An offset to apply to the dropdown after positioning x, y. Default value is 0,0."
+      }
+    ]
+  },
+  {
+    "name": "md-menu-bar",
+    "description": "Menu bars are containers that hold multiple menus. They change the behavior and appearence of the md-menu directive to behave similar to an operating system provided menu."
+  },
+  {
+    "name": "md-nav-bar",
+    "description": "The <md-nav-bar> directive renders a list of material tabs that can be used for top-level page navigation. Unlike <md-tabs>, it has no concept of a tab body and no bar pagination.",
+    "attributes": [
+      {
+        "name": "mdSelectedNavItem",
+        "description": "The name of the current tab; this must match the name attribute of <md-nav-item>"
+      },
+      {
+        "name": "mdNoInkBar",
+        "description": "If set to true, the ink bar will be hidden.",
+        "type": "boolean",
+        "values": [
+          "true",
+          "false"
+        ]
+      },
+      {
+        "name": "navBarAriaLabel",
+        "description": "An aria-label for the nav-bar"
+      }
+    ]
+  },
+  {
+    "name": "md-nav-item",
+    "description": "<md-nav-item> describes a page navigation link within the <md-nav-bar> component. It renders an md-button as the actual link.",
+    "attributes": [
+      {
+        "name": "mdNavClick",
+        "description": "Function which will be called when the link is clicked to change the page. Renders as an ng-click."
+      },
+      {
+        "name": "mdNavHref",
+        "description": "url to transition to when this link is clicked. Renders as an ng-href."
+      },
+      {
+        "name": "mdNavSref",
+        "description": "Ui-router state to transition to when this link is clicked. Renders as a ui-sref."
+      },
+      {
+        "name": "srefOpts",
+        "description": "Ui-router options that are passed to the $state.go() function. "
+      },
+      {
+        "name": "name",
+        "description": "The name of this link. Used by the nav bar to know which link is currently selected."
+      }
+    ]
+  },
+  {
+    "name": "md-progress-circular",
+    "description": "The circular progress directive is used to make loading content in your app as delightful and painless as possible by minimizing the amount of visual change a user sees before they can view and interact with content.",
+    "attributes": [
+      {
+        "name": "md-mode",
+        "description": "Select from one of two modes: 'determinate' and 'indeterminate'."
+      },
+      {
+        "name": "value",
+        "description": "In determinate mode, this number represents the percentage of the circular progress. Default: 0",
+        "type": "number"
+      },
+      {
+        "name": "md-diameter",
+        "description": "This specifies the diameter of the circular progress. The value should be a pixel-size value (eg '100'). If this attribute is not present then a default value of '50px' is assumed.",
+        "type": "number"
+      }
+    ]
+  },
+  {
+    "name": "md-progress-linear",
+    "description": "The linear progress directive is used to make loading content in your app as delightful and painless as possible by minimizing the amount of visual change a user sees before they can view and interact with content.",
+    "attributes": [
+      {
+        "name": "md-mode",
+        "description": "Select from one of four modes: determinate, indeterminate, buffer or query."
+      },
+      {
+        "name": "value",
+        "description": "In determinate and buffer modes, this number represents the percentage of the primary progress bar. Default: 0",
+        "type": "number"
+      },
+      {
+        "name": "md-buffer-value",
+        "description": "In the buffer mode, this number represents the percentage of the secondary progress bar. Default: 0",
+        "type": "number"
+      }
+    ]
+  },
+  {
+        "name": "md-radio-button",
+        "description": "The <md-radio-button>directive is the child directive required to be used within <md-radio-group> elements.",
+        "attributes": [
+            {
+                "name": "value",
+                "description": "The value to which the expression should be set when selected."
+            },
+            {
+                "name": "name",
+                "description": "Property name of the form under which the control is published."
+            }
+        ]
+    }
 ]
