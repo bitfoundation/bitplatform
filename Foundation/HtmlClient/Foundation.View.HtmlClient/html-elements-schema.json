@@ -724,7 +724,30 @@
     ]
   },
   {
-        "name": "md-menu-bar",
-        "description": "Menu bars are containers that hold multiple menus. They change the behavior and appearence of the md-menu directive to behave similar to an operating system provided menu."
-    }
+    "name": "md-menu-bar",
+    "description": "Menu bars are containers that hold multiple menus. They change the behavior and appearence of the md-menu directive to behave similar to an operating system provided menu."
+  },
+  {
+    "name": "md-nav-bar",
+    "description": "The <md-nav-bar> directive renders a list of material tabs that can be used for top-level page navigation. Unlike <md-tabs>, it has no concept of a tab body and no bar pagination.",
+    "attributes": [
+      {
+        "name": "mdSelectedNavItem",
+        "description": "The name of the current tab; this must match the name attribute of <md-nav-item>"
+      },
+      {
+        "name": "mdNoInkBar",
+        "description": "If set to true, the ink bar will be hidden.",
+        "type": "boolean",
+        "values": [
+          "true",
+          "false"
+        ]
+      },
+      {
+        "name": "navBarAriaLabel",
+        "description": "An aria-label for the nav-bar"
+      }
+    ]
+  }
 ]
