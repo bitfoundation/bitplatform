@@ -43,9 +43,9 @@ namespace BitChangeSetManager.Api
             return DtoModelMapper.FromModelQueryToDtoQuery(_changeSetsRepository.GetAll(), parameters: new { customersCount = customersCount });
         }
 
-        public override async Task<ChangeSetDto> Insert(ChangeSetDto dto, CancellationToken cancellationToken)
+        public override async Task<ChangeSetDto> Create(ChangeSetDto dto, CancellationToken cancellationToken)
         {
-            ChangeSetDto insertedChangeSet = await base.Insert(dto, cancellationToken);
+            ChangeSetDto insertedChangeSet = await base.Create(dto, cancellationToken);
 
             User user = await _usersRepository.GetByIdAsync(Guid.Parse(_userInformationProvider.GetCurrentUserId()), cancellationToken);
 

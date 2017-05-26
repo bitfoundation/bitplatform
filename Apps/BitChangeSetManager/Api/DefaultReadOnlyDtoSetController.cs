@@ -24,7 +24,7 @@ namespace BitChangeSetManager.Api
             _repository = repository;
         }
 
-        public override Task<TDto> Insert(TDto dto, CancellationToken cancellationToken)
+        public override Task<TDto> Create(TDto dto, CancellationToken cancellationToken)
         {
             throw new AppException(BitChangeSetManagerMetadata.InsertIsDeined);
         }

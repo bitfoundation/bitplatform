@@ -73,5 +73,38 @@ namespace Bit.Api.Middlewares.WebApi.OData.Implementations
 
             return actionMappingsList.ToLookup(httpActionDescriptorAndKey => httpActionDescriptorAndKey.Key, httpActionDescriptorAndKey => httpActionDescriptorAndKey.HttpActionDescriptor);
         }
+
+        public override HttpActionDescriptor SelectAction(HttpControllerContext controllerContext)
+        {
+            try
+            {
+                return base.SelectAction(controllerContext);
+            }
+            catch
+            {
+                object action = null;
+
+                if (controllerContext?.RouteData?.Values?.TryGetValue("action", out action) == true)
+                {
+                    string actionName = Convert.ToString(action);
+
+                    if (actionName == "Patch" || actionName == "PartialUpdate" || actionName == "Put")
+                    {
+                        if (actionName == "Patch")
+                            actionName = "PartialUpdate";
+                        else if (actionName == "Post")
+                            actionName = "Create";
+                        else if (actionName == "Put")
+                            actionName = "Update";
+
+                        controllerContext.RouteData.Values["action"] = actionName;
+
+                        return base.SelectAction(controllerContext);
+                    }
+                }
+
+                throw;
+            }
+        }
     }
 }

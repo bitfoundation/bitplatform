@@ -44,7 +44,7 @@ namespace Bit.Api.ApiControllers
         }
 
         [Create]
-        public virtual async Task<TDto> Insert(TDto dto, CancellationToken cancellationToken)
+        public virtual async Task<TDto> Create(TDto dto, CancellationToken cancellationToken)
         {
             if (dto == null)
                 throw new ArgumentNullException(nameof(dto));
