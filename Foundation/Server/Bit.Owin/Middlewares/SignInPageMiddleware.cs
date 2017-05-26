@@ -42,11 +42,11 @@ namespace Bit.Owin.Middlewares
                 if (key == 'access_token' || key == 'token_type'){{
                     document.cookie = partStr + ';expires=' + nowAsGMTString + ';path={defaultPath}';
                 }}
-                localStorage[key] = value;
+                localStorage['{defaultPath}' + key] = value;
             }}
-            localStorage['login_date'] = new Date();
-            var state = JSON.parse(decodeURIComponent(localStorage.state.replace(/\+/g, ' ')));
-            localStorage['state'] = JSON.stringify(state);
+            localStorage['{defaultPath}login_date'] = new Date();
+            var state = JSON.parse(decodeURIComponent(localStorage['{defaultPath}state'].replace(/\+/g, ' ')));
+            localStorage['{defaultPath}state'] = JSON.stringify(state);
             location = state.pathname || '{defaultPath}';
         </script>
     </head>

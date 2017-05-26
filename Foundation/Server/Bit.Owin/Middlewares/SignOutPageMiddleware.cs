@@ -27,14 +27,14 @@ namespace Bit.Owin.Middlewares
     <head>
         <title>Signing out... Please wait</title>
         <script type='application/javascript'>
-            localStorage.removeItem('access_token');
-            localStorage.removeItem('expires_in');
-            localStorage.removeItem('id_token');
-            localStorage.removeItem('login_date');
-            localStorage.removeItem('scope');
-            localStorage.removeItem('session_state');
-            localStorage.removeItem('state');
-            localStorage.removeItem('token_type');
+            localStorage.removeItem('{defaultPath}access_token');
+            localStorage.removeItem('{defaultPath}expires_in');
+            localStorage.removeItem('{defaultPath}id_token');
+            localStorage.removeItem('{defaultPath}login_date');
+            localStorage.removeItem('{defaultPath}scope');
+            localStorage.removeItem('{defaultPath}session_state');
+            localStorage.removeItem('{defaultPath}state');
+            localStorage.removeItem('{defaultPath}token_type');
             var cookies = document.cookie.split('; ');
             for (var i = 0; i < cookies.length; i++)
             {{
