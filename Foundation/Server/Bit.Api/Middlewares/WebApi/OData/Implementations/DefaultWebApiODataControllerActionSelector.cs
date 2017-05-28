@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
+using System.Web.Http;
 using System.Web.Http.Controllers;
 using Bit.Api.ApiControllers;
 
@@ -80,7 +81,7 @@ namespace Bit.Api.Middlewares.WebApi.OData.Implementations
             {
                 return base.SelectAction(controllerContext);
             }
-            catch
+            catch (HttpResponseException ex) when (ex.Response?.StatusCode == HttpStatusCode.NotFound)
             {
                 object action = null;
 
@@ -88,14 +89,14 @@ namespace Bit.Api.Middlewares.WebApi.OData.Implementations
                 {
                     string actionName = Convert.ToString(action);
 
-                    if (actionName == "Patch" || actionName == "PartialUpdate" || actionName == "Put")
+                    if (actionName == "Patch" || actionName == "Put" || actionName == "Post")
                     {
                         if (actionName == "Patch")
                             actionName = "PartialUpdate";
-                        else if (actionName == "Post")
-                            actionName = "Create";
                         else if (actionName == "Put")
                             actionName = "Update";
+                        else if (actionName == "Post")
+                            actionName = "Create";
 
                         controllerContext.RouteData.Values["action"] = actionName;
 
