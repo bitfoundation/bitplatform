@@ -8,6 +8,16 @@ module Foundation.ViewModel.Implementations {
         }
 
         private getMetadataPromise: Promise<Contracts.AppMetadata> = null;
+        private _appMetadata: Contracts.AppMetadata = null;
+
+        @Core.Log()
+        public getMetadataSync(): Contracts.AppMetadata {
+
+            if (this._appMetadata == null)
+                throw new Error("Can't load metadata sync");
+
+            return this._appMetadata;
+        }
 
         @Core.Log()
         public async getMetadata(): Promise<Contracts.AppMetadata> {
@@ -16,13 +26,13 @@ module Foundation.ViewModel.Implementations {
 
                 this.getMetadataPromise = new Promise<Contracts.AppMetadata>(async (resolve, reject) => {
 
-                    let appMetadata: Contracts.AppMetadata = null;
+                    this._appMetadata = null;
 
                     try {
 
                         const response = await fetch(`Metadata/V${this.clientAppProfileManager.getClientAppProfile().version}`, { credentials: "include" });
                         if (response.ok) {
-                            appMetadata = await response.json() as any;
+                            this._appMetadata = await response.json() as any;
                         }
                         else {
                             reject("Error retriving metadata");
@@ -32,7 +42,7 @@ module Foundation.ViewModel.Implementations {
                         throw e;
                     }
 
-                    resolve(appMetadata);
+                    resolve(this._appMetadata);
 
                 });
 

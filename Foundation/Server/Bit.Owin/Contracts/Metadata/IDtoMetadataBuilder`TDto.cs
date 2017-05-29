@@ -1,6 +1,8 @@
-﻿using System.Collections.Generic;
+﻿using Bit.Core.Models;
+using System;
+using System.Collections.Generic;
+using System.Linq.Expressions;
 using System.Reflection;
-using Bit.Core.Models;
 
 namespace Bit.Owin.Contracts.Metadata
 {
@@ -15,6 +17,19 @@ namespace Bit.Owin.Contracts.Metadata
         public virtual string Pattern { get; set; } = null;
     }
 
+    public class DtoMemberLookup
+    {
+        public virtual string DtoMemberName { get; set; }
+
+        public virtual string LookupDtoType { get; set; }
+
+        public virtual string DataTextField { get; set; }
+
+        public virtual string DataValueField { get; set; }
+
+        public virtual string BaseFilter_JS { get; set; }
+    }
+
     public class DtoMemberCultureTitle
     {
         public virtual string CultureName { get; set; }
@@ -26,7 +41,9 @@ namespace Bit.Owin.Contracts.Metadata
     {
         public virtual string DtoType { get; set; }
 
-        public virtual List<DtoMemberMetadata> MembersMetadata { get; set; } = new List<DtoMemberMetadata>();
+        public virtual List<DtoMemberMetadata> MembersMetadata { get; set; } = new List<DtoMemberMetadata> { };
+
+        public virtual List<DtoMemberLookup> MembersLookups { get; set; } = new List<DtoMemberLookup> { };
     }
 
     public interface IDtoMetadataBuilder<TDto>
@@ -37,5 +54,8 @@ namespace Bit.Owin.Contracts.Metadata
         IDtoMetadataBuilder<TDto> AddMemberMetadata(string memberName, DtoMemberMetadata metadata);
 
         IDtoMetadataBuilder<TDto> AddMemberMetadata(PropertyInfo member, DtoMemberMetadata metadata);
+
+        IDtoMetadataBuilder<TDto> AddLookup<TLookupDto>(string memberName, string dataValueField, string dataTextField, Expression<Func<TLookupDto, bool>> baseFilter = null, string lookupName = null)
+            where TLookupDto : class;
     }
 }

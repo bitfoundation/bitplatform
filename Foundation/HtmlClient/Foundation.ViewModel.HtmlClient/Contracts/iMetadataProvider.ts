@@ -26,9 +26,18 @@
         Messages: Array<EnvironmentCulture>;
     }
 
+    export interface DtoMemberLookup {
+        DtoMemberName: string;
+        LookupDtoType: string;
+        DataTextField: string;
+        DataValueField: string;
+        BaseFilter_JS: string;
+    }
+
     export interface DtoMetadata {
         DtoType: string;
         MembersMetadata: Array<DtoMemberMetadata>;
+        MembersLookups: Array<DtoMemberLookup>;
     }
 
     export interface AppMetadata {
@@ -40,5 +49,6 @@
 
     export interface IMetadataProvider {
         getMetadata(): Promise<AppMetadata>;
+        getMetadataSync(): AppMetadata;
     }
 }

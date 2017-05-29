@@ -273,6 +273,35 @@ module Foundation.View.Directives {
                                 comboBoxOptions.headerTemplate = headerTemplate;
                             }
 
+                            let splittedNgModel = attributes.ngModel.split('.');
+                            let bindedMemberName = splittedNgModel.pop();
+                            let parentOfNgModel = $parse(splittedNgModel.join('.'))($scope);
+
+                            if (parentOfNgModel != null && parentOfNgModel instanceof $data.Entity) {
+                                let metadata = dependencyManager.resolveObject<Foundation.ViewModel.Contracts.IMetadataProvider>("MetadataProvider").getMetadataSync();
+                                let parentOfNgModelType = parentOfNgModel.getType();
+                                let dtoMetadata = metadata.Dtos.find(d => d.DtoType == parentOfNgModelType['fullName']);
+                                if (dtoMetadata != null) {
+                                    let thisDSMemberType = dataSource.options.schema['jayType'];
+                                    if (thisDSMemberType != null) {
+                                        let lookup = dtoMetadata.MembersLookups.find(l => l.DtoMemberName == bindedMemberName && l.LookupDtoType == thisDSMemberType['fullName']);
+                                        if (lookup != null) {
+                                            if (lookup.BaseFilter_JS != null) {
+                                                let originalRead = dataSource['transport'].read;
+                                                dataSource['transport'].read = function (options) {
+                                                    options.baseFilter = lookup.BaseFilter_JS;
+                                                    return originalRead.apply(this, arguments);
+                                                }
+                                            }
+                                            if (comboBoxOptions.dataTextField == null)
+                                                comboBoxOptions.dataTextField = lookup.DataTextField;
+                                            if (comboBoxOptions.dataValueField == null)
+                                                comboBoxOptions.dataValueField = lookup.DataValueField;
+                                        }
+                                    }
+                                }
+                            }
+
                             if (dataSource.options.schema.model.fields[comboBoxOptions.dataTextField] == null)
                                 throw new Error(`Model has no property named ${comboBoxOptions.dataTextField} to be used as text field`);
 

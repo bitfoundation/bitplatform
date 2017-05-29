@@ -2,6 +2,8 @@
 using System.ComponentModel.DataAnnotations;
 using System.Reflection;
 using Bit.Owin.Contracts.Metadata;
+using System.Linq.Expressions;
+using Lambda2Js;
 
 namespace Bit.Owin.Implementations.Metadata
 {
@@ -20,6 +22,35 @@ namespace Bit.Owin.Implementations.Metadata
             _dtoMetadata.DtoType = typeof(TDto).GetTypeInfo().FullName;
 
             AllMetadata.Add(_dtoMetadata);
+
+            return this;
+        }
+
+        public virtual IDtoMetadataBuilder<TDto> AddLookup<TLookupDto>(string memberName, string dataValueField, string dataTextField, Expression<Func<TLookupDto, bool>> baseFilter = null, string lookupName = null)
+            where TLookupDto : class
+        {
+            if (memberName == null)
+                throw new ArgumentNullException(nameof(memberName));
+
+            if (dataTextField == null)
+                throw new ArgumentNullException(nameof(dataTextField));
+
+            if (dataValueField == null)
+                throw new ArgumentNullException(nameof(dataValueField));
+
+            if (_dtoMetadata == null)
+                throw new InvalidOperationException($"{nameof(AddDtoMetadata)} must be called first");
+
+            DtoMemberLookup lookup = new DtoMemberLookup
+            {
+                DtoMemberName = memberName,
+                DataTextField = dataTextField,
+                DataValueField = dataValueField,
+                LookupDtoType = typeof(TLookupDto).GetTypeInfo().FullName,
+                BaseFilter_JS = baseFilter.CompileToJavascript(new JavascriptCompilationOptions(JsCompilationFlags.BodyOnly))
+            };
+
+            _dtoMetadata.MembersLookups.Add(lookup);
 
             return this;
         }
