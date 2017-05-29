@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using System.Web.Http;
 using System.Web.Http.Controllers;
 using Bit.Api.ApiControllers;
+using System.Net;
 
 namespace Bit.Api.Middlewares.WebApi.OData.Implementations
 {
