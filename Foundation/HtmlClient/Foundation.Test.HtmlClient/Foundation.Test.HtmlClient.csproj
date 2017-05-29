@@ -51,6 +51,7 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="views\tests\app.html" />
+    <Content Include="views\tests\lookupsView.html" />
     <Content Include="views\tests\dateTimeServiceView.html" />
     <Content Include="views\tests\firstPartView.html" />
     <Content Include="views\tests\radGridView.html" />
@@ -90,6 +91,7 @@
     <TypeScriptCompile Include="viewModels\tests\asyncViewModel.ts" />
     <TypeScriptCompile Include="viewModels\tests\dateTimeServiceViewModel.ts" />
     <TypeScriptCompile Include="viewModels\tests\entityContextUsageViewModel.ts" />
+    <TypeScriptCompile Include="viewModels\tests\lookupsViewModel.ts" />
     <TypeScriptCompile Include="viewModels\tests\nestedRouteMainViewModel.ts" />
     <TypeScriptCompile Include="viewModels\tests\radGridViewModel.ts" />
     <TypeScriptCompile Include="viewModels\tests\radComboViewModel.ts" />
