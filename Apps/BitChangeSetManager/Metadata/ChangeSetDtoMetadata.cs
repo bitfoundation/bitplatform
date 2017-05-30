@@ -209,10 +209,58 @@ namespace BitChangeSetManager.Metadata
                 }
             });
 
+            AddMemberMetadata(nameof(ChangeSetDto.ProvinceId), new DtoMemberMetadata
+            {
+                Messages = new List<EnvironmentCulture>
+                {
+                    new EnvironmentCulture
+                    {
+                        Name = "EnUs",
+                        Values = new List<EnvironmentCultureValue>
+                        {
+                            new EnvironmentCultureValue { Name = "Label" , Title = "Province" }
+                        }
+                    },
+                    new EnvironmentCulture
+                    {
+                        Name = "FaIr",
+                        Values = new List<EnvironmentCultureValue>
+                        {
+                            new EnvironmentCultureValue { Name = "Label" , Title = "استان" }
+                        }
+                    }
+                }
+            });
+
+            AddMemberMetadata(nameof(ChangeSetDto.CityId), new DtoMemberMetadata
+            {
+                Messages = new List<EnvironmentCulture>
+                {
+                    new EnvironmentCulture
+                    {
+                        Name = "EnUs",
+                        Values = new List<EnvironmentCultureValue>
+                        {
+                            new EnvironmentCultureValue { Name = "Label" , Title = "City" }
+                        }
+                    },
+                    new EnvironmentCulture
+                    {
+                        Name = "FaIr",
+                        Values = new List<EnvironmentCultureValue>
+                        {
+                            new EnvironmentCultureValue { Name = "Label" , Title = "شهر" }
+                        }
+                    }
+                }
+            });
+
             AddLookup<ChangeSetSeverityDto>(nameof(ChangeSetDto.SeverityTitle), nameof(ChangeSetSeverityDto.Title), nameof(ChangeSetSeverityDto.Title));
             AddLookup<ChangeSetDeliveryRequirementDto>(nameof(ChangeSetDto.DeliveryRequirementTitle), nameof(ChangeSetDeliveryRequirementDto.Title), nameof(ChangeSetDeliveryRequirementDto.Title));
             AddLookup<ChangeSetSeverityDto>(nameof(ChangeSetDto.SeverityId), nameof(ChangeSetSeverityDto.Id), nameof(ChangeSetSeverityDto.Title));
             AddLookup<ChangeSetDeliveryRequirementDto>(nameof(ChangeSetDto.DeliveryRequirementId), nameof(ChangeSetDeliveryRequirementDto.Id), nameof(ChangeSetDeliveryRequirementDto.Title));
+            AddLookup<ProvinceDto>(nameof(ChangeSetDto.ProvinceId), nameof(ProvinceDto.Id), nameof(ProvinceDto.Name));
+            AddLookup<CityDto>(nameof(ChangeSetDto.CityId), nameof(CityDto.Id), nameof(CityDto.Name), it => it.CanBeSelectedForChangeSet);
 
             return await base.BuildMetadata();
         }

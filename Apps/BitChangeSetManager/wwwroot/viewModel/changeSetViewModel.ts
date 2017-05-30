@@ -37,13 +37,19 @@
         public changeSetSeveritiesDataSource: kendo.data.DataSource;
         public changeSetDeliveryRequirementsDataSource: kendo.data.DataSource;
         public templates: BitChangeSetManagerModel.ChangeSetDescriptionTemplateDto[];
+        public provincesDataSource: kendo.data.DataSource;
+        public citiesDataSource: kendo.data.DataSource;
+        public context: BitChangeSetManagerContext;
 
         public changeSetMetadata = BitChangeSetManagerModel.ChangeSetDto;
 
         @Command()
         public async $onInit(): Promise<void> {
-            let context = await this.entityContextProvider.getContext<BitChangeSetManagerContext>("BitChangeSetManager");
-            this.templates = await context.changeSetDescriptionTemplate.getAllTemplates().toArray();
+            this.context = await this.entityContextProvider.getContext<BitChangeSetManagerContext>("BitChangeSetManager");
+            this.templates = await this.context.changeSetDescriptionTemplate.getAllTemplates().toArray();
+            this.provincesDataSource = this.context.provinces.asKendoDataSource();
+            this.citiesDataSource = this.context.cities.asKendoDataSource({ serverPaging: true, pageSize: 28, serverSorting: true, sort: { field: "Name", dir: "asc" } });
+            this.citiesDataSource.asChildOf(this.provincesDataSource, ["ProvinceId"], ["Id"]);
         }
 
         @Command()
@@ -64,6 +70,11 @@
                 throw new Error("Change set data is invalid");
             }
 
+        }
+
+        @Command()
+        public async loadCityById(args: { id: any }) {
+            return await this.context.cities.find(args.id);
         }
 
     }

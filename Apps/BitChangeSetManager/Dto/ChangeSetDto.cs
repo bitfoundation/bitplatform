@@ -32,5 +32,13 @@ namespace BitChangeSetManager.Dto
         public virtual Guid DeliveryRequirementId { get; set; }
 
         public virtual string DeliveryRequirementTitle { get; set; }
+
+        public virtual Guid? CityId { get; set; }
+
+        public virtual string CityName { get; set; }
+
+        public virtual Guid? ProvinceId { get; set; }
+
+        public virtual string ProvinceName { get; set; }
     }
 }

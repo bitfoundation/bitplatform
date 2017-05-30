@@ -51,6 +51,23 @@
             </error-messages>
         </md-input-container>
 
+        <md-input-container>
+            <label>{{::vm.changeSetMetadata.ProvinceId.Label}}</label>
+            <rad-combo name="ProvinceId"
+                       rad-datasource="::vm.provincesDataSource"
+                       rad-text="vm.model.ProvinceName"
+                       ng-model="::vm.model.ProvinceId" />
+        </md-input-container>
+
+        <md-input-container>
+            <label>{{::vm.changeSetMetadata.CityId.Label}}</label>
+            <rad-combo name="CityId"
+                       rad-datasource="::vm.citiesDataSource"
+                       rad-text="vm.model.CityName"
+                       ng-model="::vm.model.CityId"
+                       rad-virtual-entity-loader="vm.loadCityById({id})" />
+        </md-input-container>
+        
         <div>
             <rad-grid-save-button ng-click="vm.onSave()" ng-disabled="changeSetForm.$invalid">{{::'Save' | translate}}</rad-grid-save-button>
             <rad-grid-cancel-button>{{::'Cancel' | translate}}</rad-grid-cancel-button>

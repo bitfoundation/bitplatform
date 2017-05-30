@@ -379,10 +379,12 @@
     <Compile Include="Api\ChangeSetDescriptionTemplateController.cs" />
     <Compile Include="Api\ChangeSetSeveritiesController.cs" />
     <Compile Include="Api\BitUserSettingProvider.cs" />
+    <Compile Include="Api\CitiesController.cs" />
     <Compile Include="Api\DefaultReadOnlyDtoSetController.cs" />
     <Compile Include="Api\DeliveriesController.cs" />
     <Compile Include="Api\ChangeSetsController.cs" />
     <Compile Include="Api\CustomersController.cs" />
+    <Compile Include="Api\ProvincesController.cs" />
     <Compile Include="DataAccess\BitChangeSetManagerDbContext.cs" />
     <Compile Include="Api\BitChangeSetManagerEdmModelProvider.cs" />
     <Compile Include="DataAccess\BitChangeSetManagerEfRepository.cs" />
@@ -393,8 +395,10 @@
     <Compile Include="Dto\ChangeSetDto.cs" />
     <Compile Include="Dto\ChangeSetDeliveryRequirementDto.cs" />
     <Compile Include="Dto\ChangeSetSeverityDto.cs" />
+    <Compile Include="Dto\CityDto.cs" />
     <Compile Include="Dto\CustomerDto.cs" />
     <Compile Include="Dto\DeliveryDto.cs" />
+    <Compile Include="Dto\ProvinceDto.cs" />
     <Compile Include="Metadata\BitChangeSetManagerMetadata.cs" />
     <Compile Include="Metadata\ChangeSetDtoMetadata.cs" />
     <Compile Include="Metadata\ChangeSetsViewMetadata.cs" />
@@ -402,9 +406,11 @@
     <Compile Include="Model\ChangeSet.cs" />
     <Compile Include="Model\ChangeSetDeliveryRequirement.cs" />
     <Compile Include="Model\ChangeSetSeverity.cs" />
+    <Compile Include="Model\City.cs" />
     <Compile Include="Model\Delivery.cs" />
     <Compile Include="Model\Customer.cs" />
     <Compile Include="DataAccess\BitChangeSetManagerDtoModelMapperConfiguration.cs" />
+    <Compile Include="Model\Province.cs" />
     <Compile Include="Model\User.cs" />
     <Compile Include="Properties\AssemblyContainer.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

@@ -37,5 +37,15 @@ namespace BitChangeSetManager.Model
 
         [ForeignKey(nameof(DeliveryRequirementId))]
         public virtual ChangeSetDeliveryRequirement DeliveryRequirement { get; set; }
+
+        public virtual Guid? CityId { get; set; }
+
+        [ForeignKey(nameof(CityId))]
+        public virtual City City { get; set; }
+
+        public virtual Guid? ProvinceId { get; set; }
+
+        [ForeignKey(nameof(ProvinceId))]
+        public virtual Province Province { get; set; }
     }
 }
