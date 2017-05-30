@@ -190,7 +190,7 @@
             if (ContextType == null)
                 throw new Error(`No entity context could be found named ${contextName}`);
 
-            if (ContextType["isEventsListenersAreAdded"] != true && config.isOffline == true) {
+            if (ContextType["eventsListenersAreAdded"] != true && config.isOffline == true) {
 
                 for (let memberDefenitionKey in ContextType.memberDefinitions) {
 
@@ -250,7 +250,7 @@
 
                 }
 
-                ContextType["isEventsListenersAreAdded"] = true;
+                ContextType["eventsListenersAreAdded"] = true;
             }
 
             const context: TContext = new ContextType(cfg);

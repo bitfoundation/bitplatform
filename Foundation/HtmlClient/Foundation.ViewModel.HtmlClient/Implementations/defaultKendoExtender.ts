@@ -118,8 +118,12 @@ module Foundation.ViewModel.Implementations {
 
                 parentDataSource.onCurrentChanged(async () => {
 
-                    if (childDataSource.current != null)
-                        childDataSource.current = null;
+                    if (childDataSource.current != null) {
+                        try {
+                            childDataSource.current = null;
+                        }
+                        catch (e) { }
+                    }
 
                     let parentKeyCurrentValues: any[] = null;
                     const currentParent = parentDataSource.current;
@@ -131,42 +135,7 @@ module Foundation.ViewModel.Implementations {
                     if (currentParent != parentDataSource.current)
                         return;
 
-                    if (currentParent == null || parentKeys.some(pk => currentParent[pk] == null)) {
-                        childDataSource.fetch();
-                        return;
-                    }
-                    else {
-                        parentKeyCurrentValues = parentKeys.map(pk => { return currentParent[pk]; });;
-                    }
-
-                    const parentChildFilters: kendo.data.DataSourceFilters = {
-                        logic: "and", filters: childKeys.map((ck, ckI) => {
-                            return { field: ck, value: parentKeyCurrentValues[ckI], operator: "eq", isParentChildFilter: true, parentField: parentKeys[ckI] }
-                        })
-                    };
-
-                    const currentChildFilters = childDataSource.filter();
-
-                    if (currentChildFilters == null || ((currentChildFilters instanceof Array) && currentChildFilters.length == 0) || (currentChildFilters.filters != null && (currentChildFilters.filters instanceof Array) && currentChildFilters.filters.length == 0)) {
-                        childDataSource.filter(parentChildFilters);
-                    }
-                    else {
-                        const checkFilters = (filtersToBeChecked) => {
-                            for (let flt of filtersToBeChecked as any) {
-                                const childKeyI = childKeys.findIndex(ck => ck == flt.field);
-                                if (childKeyI != -1) {
-                                    flt.value = parentKeyCurrentValues[childKeyI];
-                                    flt.isParentChildFilter = true;
-                                }
-                            }
-                        };
-                        const filters = currentChildFilters.filters as any;
-                        checkFilters(filters);
-                        if (filters != null) {
-                            filters.filter(innerFilters => innerFilters.filters != null).forEach(innerFilters => checkFilters(innerFilters.filters));
-                        }
-                        childDataSource.filter(currentChildFilters);
-                    }
+                    await childDataSource.read();
                 });
 
                 const originalChildTransportRead = childDataSource["transport"].read;
@@ -175,27 +144,18 @@ module Foundation.ViewModel.Implementations {
 
                     const currentParent = parentDataSource.current;
 
-                    let parentChildFilterIsValid = options.data.filter != null && options.data.filter.filters != null;
-
-                    const checkFilters = (filtersToBeChecked) => {
-                        for (let flt of filtersToBeChecked as any) {
-                            if (flt.isParentChildFilter == true && (currentParent != null && flt.value != currentParent[flt.parentField]))
-                                parentChildFilterIsValid = false;
-                        }
-                    };
-
-                    if (parentChildFilterIsValid == true) {
-                        const filters = options.data.filter.filters;
-                        checkFilters(filters);
-                        if (filters != null) {
-                            filters.filter(innerFilters => innerFilters.filters != null).forEach(innerFilters => checkFilters(innerFilters.filters));
-                        }
-                    }
-
-                    if (currentParent == null || parentKeys.some(pk => currentParent[pk] == null) || parentChildFilterIsValid == false) {
+                    if (currentParent == null || parentKeys.some(pk => currentParent[pk] == null)) {
                         options.success({ data: [], length: 0 });
                     }
                     else {
+
+                        options.cascadeBaseFilter = childKeys.map((childKey, index) => {
+                            let parentVal = currentParent[parentKeys[index]];
+                            if (typeof parentVal == "string")
+                                parentVal = "'" + parentVal + "'";
+                            return `it.${childKey} == ${parentVal}`;
+                        }).join("&&");
+
                         return originalChildTransportRead.apply(this, arguments);
                     }
                 }
