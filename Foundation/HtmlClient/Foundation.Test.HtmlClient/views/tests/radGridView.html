@@ -18,12 +18,8 @@
         </detail-template>
         <view-template>
             <columns>
-                <column name="Id" title="{{::vm.parentEntityMetadata.Id.Label}}">
-                    {{::dataItem.Id}}
-                </column>
-                <column name="Name" title="{{::vm.parentEntityMetadata.Name.Label}}" rad-datasource="vm.parentEntitiesDataSourceForFilter">
-                    {{::dataItem.Name}}
-                </column>
+                <column name="Id" title="{{::vm.parentEntityMetadata.Id.Label}}"></column>
+                <column name="Name" title="{{::vm.parentEntityMetadata.Name.Label}}" rad-datasource="vm.parentEntitiesDataSourceForFilter"></column>
                 <column name="Version" title="{{::vm.parentEntityMetadata.Version.Label}}">
                     {{::dataItem.Version == 1 ? '(-:' : ')-:'}}
                 </column>

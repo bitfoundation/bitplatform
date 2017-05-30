@@ -341,26 +341,30 @@ module Foundation.View.Directives {
                             extras.attr("rad-model-item-template", "");
                             extras.attr("ng-model", "::dataItem");
 
-                            let isFirstColumn = true;
+                            let isFirstDataColumn = true;
 
                             viewTemplateElement.find("column")
                                 .each((index, item) => {
 
                                     const wrappedItem = angular.element(item);
+                                    let template = item.innerHTML;
 
-                                    if (isFirstColumn == true) {
-                                        isFirstColumn = false;
+                                    if (wrappedItem.attr("name") != null && isFirstDataColumn == true) {
+                                        isFirstDataColumn = false;
+                                        if (template == null || template == "")
+                                            wrappedItem[0].innerHTML = `{{::dataItem.${wrappedItem.attr("name")}}}`;
                                         wrappedItem.append(extras);
+                                        template = item.innerHTML;
                                     }
-
-                                    const template = item.innerHTML;
 
                                     const gridColumn: kendo.ui.GridColumn = {
                                         field: wrappedItem.attr("name"),
                                         title: wrappedItem.attr("title"),
-                                        width: wrappedItem.width() || "auto",
-                                        template: template
+                                        width: wrappedItem.width() || "auto"
                                     };
+
+                                    if (template != null && template != "")
+                                        gridColumn.template = template;
 
                                     gridColumn["element"] = wrappedItem;
 
