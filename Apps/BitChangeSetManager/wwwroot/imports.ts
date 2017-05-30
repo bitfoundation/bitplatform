@@ -6,15 +6,19 @@ import FoundationCore = Foundation.Core;
 import FoundationVM = Foundation.ViewModel;
 import FoundationView = Foundation.View;
 
+import SecureFormViewModelDependency = FoundationCore.SecureFormViewModelDependency;
 import FormViewModelDependency = FoundationCore.FormViewModelDependency;
-import SecureFormViewModelDependency = FoundationCore.FormViewModelDependency;
 import DtoViewModelDependency = FoundationCore.DtoViewModelDependency;
 import DtoRulesDependency = FoundationCore.DtoRulesDependency;
-import Inject = FoundationCore.Inject;
-import IMessageReceiver = FoundationCore.Contracts.IMessageReceiver;
+import ComponentDependency = Foundation.Core.ComponentDependency;
+import DirectiveDependency = FoundationCore.DirectiveDependency;
 import ObjectDependency = FoundationCore.ObjectDependency;
+import Inject = FoundationCore.Inject;
+import InjectAll = FoundationCore.InjectAll;
+import IMessageReceiver = FoundationCore.Contracts.IMessageReceiver;
 import ClientAppProfileManager = FoundationCore.ClientAppProfileManager;
 import DependencyManager = FoundationCore.DependencyManager;
+import Log = FoundationCore.Log;
 
 import FormViewModel = FoundationVM.ViewModels.FormViewModel;
 import DtoViewModel = FoundationVM.ViewModels.DtoViewModel;
