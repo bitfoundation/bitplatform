@@ -96,6 +96,38 @@ module Foundation.View.Directives {
                             watchForDatasourceAndNgModelIfAnyToCreateComboWidgetUnRegisterHandler();
 
                             let radValueFieldName = attributes.radValueFieldName;
+                            let radTextFieldName = attributes.radTextFieldName;
+
+                            let splittedNgModel = attributes.ngModel.split('.');
+                            let bindedMemberName = splittedNgModel.pop();
+                            let parentOfNgModel = $parse(splittedNgModel.join('.'))($scope);
+
+                            if (parentOfNgModel != null && parentOfNgModel instanceof $data.Entity) {
+                                let parentOfNgModelType = parentOfNgModel.getType();
+                                if (parentOfNgModelType.memberDefinitions[`$${bindedMemberName}`] == null)
+                                    throw new Error(`${parentOfNgModelType['fullName']} has no member named ${bindedMemberName}`);
+                                let metadata = dependencyManager.resolveObject<Foundation.ViewModel.Contracts.IMetadataProvider>("MetadataProvider").getMetadataSync();
+                                let dtoMetadata = metadata.Dtos.find(d => d.DtoType == parentOfNgModelType['fullName']);
+                                if (dtoMetadata != null) {
+                                    let thisDSMemberType = dataSource.options.schema['jayType'];
+                                    if (thisDSMemberType != null) {
+                                        let lookup = dtoMetadata.MembersLookups.find(l => l.DtoMemberName == bindedMemberName && l.LookupDtoType == thisDSMemberType['fullName']);
+                                        if (lookup != null) {
+                                            if (lookup.BaseFilter_JS != null) {
+                                                let originalRead = dataSource['transport'].read;
+                                                dataSource['transport'].read = function (options) {
+                                                    options.lookupBaseFilter = lookup.BaseFilter_JS;
+                                                    return originalRead.apply(this, arguments);
+                                                }
+                                            }
+                                            if (radTextFieldName == null)
+                                                radTextFieldName = lookup.DataTextField;
+                                            if (radValueFieldName == null)
+                                                radValueFieldName = lookup.DataValueField;
+                                        }
+                                    }
+                                }
+                            }
 
                             if (radValueFieldName == null) {
                                 if (dataSource.options.schema != null && dataSource.options.schema.model != null && dataSource.options.schema.model.idField != null)
@@ -224,7 +256,7 @@ module Foundation.View.Directives {
                             const comboBoxOptions: kendo.ui.ComboBoxOptions = {
                                 dataSource: dataSource,
                                 autoBind: dataSource.flatView().length != 0 || attributes.radText == null,
-                                dataTextField: attributes.radTextFieldName,
+                                dataTextField: radTextFieldName,
                                 dataValueField: radValueFieldName,
                                 filter: "contains",
                                 minLength: 3,
@@ -271,37 +303,6 @@ module Foundation.View.Directives {
                                 let headerTemplate: any = kendo.template(headerTemplateElementHtml, { useWithBlock: false });
 
                                 comboBoxOptions.headerTemplate = headerTemplate;
-                            }
-
-                            let splittedNgModel = attributes.ngModel.split('.');
-                            let bindedMemberName = splittedNgModel.pop();
-                            let parentOfNgModel = $parse(splittedNgModel.join('.'))($scope);
-
-                            if (parentOfNgModel != null && parentOfNgModel instanceof $data.Entity) {
-                                let parentOfNgModelType = parentOfNgModel.getType();
-                                if (parentOfNgModelType.memberDefinitions[`$${bindedMemberName}`] == null)
-                                    throw new Error(`${parentOfNgModelType['fullName']} has no member named ${bindedMemberName}`);
-                                let metadata = dependencyManager.resolveObject<Foundation.ViewModel.Contracts.IMetadataProvider>("MetadataProvider").getMetadataSync();
-                                let dtoMetadata = metadata.Dtos.find(d => d.DtoType == parentOfNgModelType['fullName']);
-                                if (dtoMetadata != null) {
-                                    let thisDSMemberType = dataSource.options.schema['jayType'];
-                                    if (thisDSMemberType != null) {
-                                        let lookup = dtoMetadata.MembersLookups.find(l => l.DtoMemberName == bindedMemberName && l.LookupDtoType == thisDSMemberType['fullName']);
-                                        if (lookup != null) {
-                                            if (lookup.BaseFilter_JS != null) {
-                                                let originalRead = dataSource['transport'].read;
-                                                dataSource['transport'].read = function (options) {
-                                                    options.baseFilter = lookup.BaseFilter_JS;
-                                                    return originalRead.apply(this, arguments);
-                                                }
-                                            }
-                                            if (comboBoxOptions.dataTextField == null)
-                                                comboBoxOptions.dataTextField = lookup.DataTextField;
-                                            if (comboBoxOptions.dataValueField == null)
-                                                comboBoxOptions.dataValueField = lookup.DataValueField;
-                                        }
-                                    }
-                                }
                             }
 
                             if (dataSource.options.schema.model.fields[comboBoxOptions.dataTextField] == null)
