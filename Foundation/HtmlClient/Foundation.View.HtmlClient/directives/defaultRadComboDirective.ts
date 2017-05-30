@@ -278,8 +278,10 @@ module Foundation.View.Directives {
                             let parentOfNgModel = $parse(splittedNgModel.join('.'))($scope);
 
                             if (parentOfNgModel != null && parentOfNgModel instanceof $data.Entity) {
-                                let metadata = dependencyManager.resolveObject<Foundation.ViewModel.Contracts.IMetadataProvider>("MetadataProvider").getMetadataSync();
                                 let parentOfNgModelType = parentOfNgModel.getType();
+                                if (parentOfNgModelType.memberDefinitions[`$${bindedMemberName}`] == null)
+                                    throw new Error(`${parentOfNgModelType['fullName']} has no member named ${bindedMemberName}`);
+                                let metadata = dependencyManager.resolveObject<Foundation.ViewModel.Contracts.IMetadataProvider>("MetadataProvider").getMetadataSync();
                                 let dtoMetadata = metadata.Dtos.find(d => d.DtoType == parentOfNgModelType['fullName']);
                                 if (dtoMetadata != null) {
                                     let thisDSMemberType = dataSource.options.schema['jayType'];
