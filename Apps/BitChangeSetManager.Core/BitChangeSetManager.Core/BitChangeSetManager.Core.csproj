@@ -12,6 +12,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Include="App_Data\templates.json" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="AntiXSS" Version="4.3.0" />
     <PackageReference Include="Autofac" Version="4.6.0" />
     <PackageReference Include="Autofac.Extensions.DependencyInjection" Version="4.1.0" />
