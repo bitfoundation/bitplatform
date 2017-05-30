@@ -4,6 +4,7 @@ using System.Reflection;
 using Bit.Owin.Contracts.Metadata;
 using System.Linq.Expressions;
 using Lambda2Js;
+using System.Linq;
 
 namespace Bit.Owin.Implementations.Metadata
 {
@@ -46,9 +47,15 @@ namespace Bit.Owin.Implementations.Metadata
                 DtoMemberName = memberName,
                 DataTextField = dataTextField,
                 DataValueField = dataValueField,
-                LookupDtoType = typeof(TLookupDto).GetTypeInfo().FullName,
-                BaseFilter_JS = baseFilter.CompileToJavascript(new JavascriptCompilationOptions(JsCompilationFlags.BodyOnly))
+                LookupDtoType = typeof(TLookupDto).GetTypeInfo().FullName
             };
+
+            if (baseFilter != null)
+            {
+                if (baseFilter.Parameters.Single().Name != "it")
+                    throw new Exception("base filter's parameter name must be 'it'. For example it => it.Id == 1");
+                lookup.BaseFilter_JS = baseFilter.CompileToJavascript(new JavascriptCompilationOptions(JsCompilationFlags.BodyOnly, scriptVersion: ScriptVersion.Es50));
+            }
 
             _dtoMetadata.MembersLookups.Add(lookup);
 
