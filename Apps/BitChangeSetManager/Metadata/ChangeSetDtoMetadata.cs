@@ -209,6 +209,11 @@ namespace BitChangeSetManager.Metadata
                 }
             });
 
+            AddLookup<ChangeSetSeverityDto>(nameof(ChangeSetDto.SeverityTitle), nameof(ChangeSetSeverityDto.Title), nameof(ChangeSetSeverityDto.Title));
+            AddLookup<ChangeSetDeliveryRequirementDto>(nameof(ChangeSetDto.DeliveryRequirementTitle), nameof(ChangeSetDeliveryRequirementDto.Title), nameof(ChangeSetDeliveryRequirementDto.Title));
+            AddLookup<ChangeSetSeverityDto>(nameof(ChangeSetDto.SeverityId), nameof(ChangeSetSeverityDto.Id), nameof(ChangeSetSeverityDto.Title));
+            AddLookup<ChangeSetDeliveryRequirementDto>(nameof(ChangeSetDto.DeliveryRequirementId), nameof(ChangeSetDeliveryRequirementDto.Id), nameof(ChangeSetDeliveryRequirementDto.Title));
+
             return await base.BuildMetadata();
         }
     }

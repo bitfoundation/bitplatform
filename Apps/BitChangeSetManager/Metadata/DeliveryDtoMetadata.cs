@@ -82,6 +82,8 @@ namespace BitChangeSetManager.Metadata
                 }
             });
 
+            AddLookup<CustomerDto>(nameof(DeliveryDto.CustomerName), nameof(CustomerDto.Name), nameof(CustomerDto.Name));
+
             return await base.BuildMetadata();
         }
     }

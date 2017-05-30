@@ -33,7 +33,6 @@
             <label>{{::vm.changeSetMetadata.SeverityId.Label}}</label>
             <rad-combo name="SeverityId"
                        rad-datasource="::vm.changeSetSeveritiesDataSource"
-                       rad-text-field-name="Title"
                        rad-text="::vm.model.SeverityTitle"
                        ng-model="::vm.model.SeverityId" />
             <error-messages field="changeSetForm.SeverityId">
@@ -45,7 +44,6 @@
             <label>{{::vm.changeSetMetadata.DeliveryRequirementId.Label}}</label>
             <rad-combo name="DeliveryRequirementId"
                        rad-datasource="::vm.changeSetDeliveryRequirementsDataSource"
-                       rad-text-field-name="Title"
                        rad-text="vm.model.DeliveryRequirementTitle"
                        ng-model="::vm.model.DeliveryRequirementId" />
             <error-messages field="changeSetForm.DeliveryRequirementId">
