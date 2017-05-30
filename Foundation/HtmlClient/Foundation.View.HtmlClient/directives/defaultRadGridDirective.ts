@@ -325,6 +325,10 @@ module Foundation.View.Directives {
                                 detailTemplateHtml.remove();
                             }
 
+                            let gridDtoType = dataSource.options.schema['jayType'];
+
+                            let metadata = dependencyManager.resolveObject<Foundation.ViewModel.Contracts.IMetadataProvider>("MetadataProvider").getMetadataSync();
+
                             const columns: Array<kendo.ui.GridColumn> = [];
 
                             const viewTemplateElement = angular.element(`#${attributes["viewTemplateId"]}`);
@@ -368,12 +372,12 @@ module Foundation.View.Directives {
                                     if (wrappedItem.attr("name") == null)
                                         throw new Error("column must have a name attribute");
 
-                                    const field = dataSource.options.schema.model.fields[gridColumn.field];
+                                    const fieldInfo = dataSource.options.schema.model.fields[gridColumn.field];
 
-                                    if (field == null)
+                                    if (fieldInfo == null)
                                         throw new Error(`Model has no field named ${gridColumn.field} to be used`);
 
-                                    if (field.type == "date") {
+                                    if (fieldInfo.type == "date") {
 
                                         const currentCulture = clientAppProfileManager.getClientAppProfile().culture;
 
@@ -391,7 +395,7 @@ module Foundation.View.Directives {
 
                                                     const persianDatePickerOptions: PDatePickerOptions = {
                                                         position: ["0px", "0px"],
-                                                        autoClose: field.viewType == "Date",
+                                                        autoClose: fieldInfo.viewType == "Date",
                                                         altField: element,
                                                         altFieldFormatter: (e) => {
                                                             const result = new Date(e);
@@ -399,13 +403,13 @@ module Foundation.View.Directives {
                                                         },
                                                         formatter: (e) => {
                                                             const result = new Date(e);
-                                                            if (field.dateType == "DateTime")
+                                                            if (fieldInfo.dateType == "DateTime")
                                                                 return dateTimeService.getFormattedDateTime(result);
                                                             else
                                                                 return dateTimeService.getFormattedDate(result);
                                                         },
                                                         timePicker: {
-                                                            enabled: field.dateType == "DateTime"
+                                                            enabled: fieldInfo.dateType == "DateTime"
                                                         },
                                                         onShow: () => {
 
@@ -445,7 +449,7 @@ module Foundation.View.Directives {
                                             }
                                         }
                                         else {
-                                            if (field.viewType == "DateTime") {
+                                            if (fieldInfo.viewType == "DateTime") {
                                                 gridColumn.filterable = {
                                                     ui: (element: JQuery) => {
                                                         element.kendoDateTimePicker();
@@ -455,14 +459,39 @@ module Foundation.View.Directives {
                                         }
                                     }
 
-                                    const filterDataSourceAttributeValue = wrappedItem.attr("filter-data-source");
+                                    const filterDataSourceAttributeValue = wrappedItem.attr("rad-datasource");
 
                                     if (filterDataSourceAttributeValue != null) {
 
                                         const filterDataSource: kendo.data.DataSource = $parse(filterDataSourceAttributeValue)($scope);
 
-                                        const filterTextFieldName = wrappedItem.attr("filter-text-field");
-                                        let filterValueFieldName = wrappedItem.attr("filter-value-field");
+                                        if (filterDataSource == null)
+                                            throw new Error(`data source for ${filterDataSourceAttributeValue} is null`);
+
+                                        let filterTextFieldName = wrappedItem.attr("rad-text-field-name");
+                                        let filterValueFieldName = wrappedItem.attr("rad-value-field-name");
+                                        let bindedMemberName = fieldInfo.field;
+
+                                        let dtoMetadata = metadata.Dtos.find(d => d.DtoType == gridDtoType['fullName']);
+                                        if (dtoMetadata != null) {
+                                            let thisDSMemberType = filterDataSource.options.schema['jayType'];
+                                            if (thisDSMemberType != null) {
+                                                let lookup = dtoMetadata.MembersLookups.find(l => l.DtoMemberName == bindedMemberName && l.LookupDtoType == thisDSMemberType['fullName']);
+                                                if (lookup != null) {
+                                                    if (lookup.BaseFilter_JS != null) {
+                                                        let originalRead = filterDataSource['transport'].read;
+                                                        filterDataSource['transport'].read = function (options) {
+                                                            options.lookupBaseFilter = lookup.BaseFilter_JS;
+                                                            return originalRead.apply(this, arguments);
+                                                        }
+                                                    }
+                                                    if (filterTextFieldName == null)
+                                                        filterTextFieldName = lookup.DataTextField;
+                                                    if (filterValueFieldName == null)
+                                                        filterValueFieldName = lookup.DataValueField;
+                                                }
+                                            }
+                                        }
 
                                         if (filterValueFieldName == null) {
                                             if (filterDataSource.options.schema != null && filterDataSource.options.schema.model != null && filterDataSource.options.schema.model.idField != null)
@@ -475,29 +504,31 @@ module Foundation.View.Directives {
                                         if (filterDataSource.options.schema.model.fields[filterValueFieldName] == null)
                                             throw new Error(`Model has no property named ${filterValueFieldName} to be used as value field`);
 
+                                        let comboBoxOptions: kendo.ui.ComboBoxOptions = {
+                                            dataSource: filterDataSource,
+                                            autoBind: filterDataSource.flatView().length != 0,
+                                            dataTextField: filterTextFieldName,
+                                            dataValueField: filterValueFieldName,
+                                            filter: "contains",
+                                            minLength: 3,
+                                            valuePrimitive: true,
+                                            ignoreCase: true,
+                                            suggest: true,
+                                            highlightFirst: true,
+                                            open: (e) => {
+                                                if (e.sender.options.autoBind == false) {
+                                                    e.sender.options.autoBind = true;
+                                                    if (e.sender.options.dataSource.flatView().length == 0)
+                                                        (e.sender.options.dataSource as kendo.data.DataSource).fetch();
+                                                }
+                                            },
+                                            delay: 300,
+                                            placeholder: "..."
+                                        };
+
                                         gridColumn.filterable = {
                                             ui: (element: JQuery) => {
-                                                element.kendoComboBox({
-                                                    autoBind: filterDataSource.flatView().length != 0,
-                                                    open: (e) => {
-                                                        if (e.sender.options.autoBind == false) {
-                                                            e.sender.options.autoBind = true;
-                                                            if (e.sender.options.dataSource.flatView().length == 0)
-                                                                (e.sender.options.dataSource as kendo.data.DataSource).fetch();
-                                                        }
-                                                    },
-                                                    valuePrimitive: true,
-                                                    dataSource: filterDataSource,
-                                                    dataTextField: filterTextFieldName,
-                                                    dataValueField: filterValueFieldName || filterDataSource.options.schema.model.idField,
-                                                    delay: 300,
-                                                    ignoreCase: true,
-                                                    minLength: 3,
-                                                    placeholder: "...",
-                                                    filter: "contains",
-                                                    suggest: true,
-                                                    highlightFirst: true
-                                                });
+                                                element.kendoComboBox(comboBoxOptions);
                                             },
                                             ignoreCase: true
                                         }

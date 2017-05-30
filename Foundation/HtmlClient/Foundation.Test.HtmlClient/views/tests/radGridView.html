@@ -21,7 +21,7 @@
                 <column name="Id" title="{{::vm.parentEntityMetadata.Id.Label}}">
                     {{::dataItem.Id}}
                 </column>
-                <column name="Name" title="{{::vm.parentEntityMetadata.Name.Label}}" filter-data-source="vm.parentEntitiesDataSourceForFilter" filter-text-field="Name" filter-value-field="Name">
+                <column name="Name" title="{{::vm.parentEntityMetadata.Name.Label}}" rad-datasource="vm.parentEntitiesDataSourceForFilter">
                     {{::dataItem.Name}}
                 </column>
                 <column name="Version" title="{{::vm.parentEntityMetadata.Version.Label}}">

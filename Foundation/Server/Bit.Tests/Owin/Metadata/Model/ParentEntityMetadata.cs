@@ -83,6 +83,8 @@ namespace Bit.Tests.Owin.Metadata.Model
 
             });
 
+            AddLookup<ParentEntity>(nameof(ParentEntity.Name), nameof(ParentEntity.Name), nameof(ParentEntity.Name), it => it.Name != "!"); // For testing purposes only :D
+
             return await base.BuildMetadata();
         }
     }
