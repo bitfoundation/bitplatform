@@ -204,27 +204,27 @@ namespace Bit.Data.EntityFrameworkCore.Implementations
 
         public virtual IQueryable<TChild> GetCollectionQuery<TChild>(TEntity entity, Expression<Func<TEntity, ICollection<TChild>>> childs) where TChild : class
         {
-            throw new NotImplementedException();
+            throw new NotSupportedException();
         }
 
         public virtual Task LoadCollectionAsync<TProperty>(TEntity entity, Expression<Func<TEntity, ICollection<TProperty>>> childs, CancellationToken cancellationToken, bool forceReload = false) where TProperty : class
         {
-            throw new NotImplementedException();
+            throw new NotSupportedException();
         }
 
         public virtual void LoadCollection<TProperty>(TEntity entity, Expression<Func<TEntity, ICollection<TProperty>>> childs, bool forceReload = false) where TProperty : class
         {
-            throw new NotImplementedException();
+            throw new NotSupportedException();
         }
 
         public virtual Task LoadReferenceAsync<TProperty>(TEntity entity, Expression<Func<TEntity, TProperty>> member, CancellationToken cancellationToken, bool forceReload = false) where TProperty : class
         {
-            throw new NotImplementedException();
+            throw new NotSupportedException();
         }
 
         public virtual void LoadReference<TProperty>(TEntity entity, Expression<Func<TEntity, TProperty>> member, bool forceReload = false) where TProperty : class
         {
-            throw new NotImplementedException();
+            throw new NotSupportedException();
         }
 
         public virtual async Task SaveChangesAsync(CancellationToken cancellationToken)
