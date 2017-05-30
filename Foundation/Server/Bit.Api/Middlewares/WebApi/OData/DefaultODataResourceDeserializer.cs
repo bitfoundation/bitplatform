@@ -58,10 +58,9 @@ namespace Bit.Api.Middlewares.WebApi.OData
             {
                 base.ApplyStructuralProperty(resource, structuralProperty, structuredType, readContext);
             }
-            catch (ODataException ex)
+            catch (ODataException ex) when (ex.Message == "Does not support untyped value in non-open type.")
             {
-                if (ex.Message != "Does not support untyped value in non-open type.")
-                    throw;
+
             }
         }
     }
