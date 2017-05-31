@@ -1,14 +1,14 @@
 ﻿using Bit.Model.Contracts;
 using System;
 
-namespace BitChangeSetManager.Dto
+namespace BitChangeSetManager.Model
 {
-    public class CityDto : IDtoWithDefaultGuidKey
+    public class Constant : IEntityWithDefaultGuidKey
     {
         public virtual Guid Id { get; set; }
 
         public virtual string Name { get; set; }
 
-        public virtual Guid ProvinceId { get; set; }
+        public virtual string Title { get; set; }
     }
 }

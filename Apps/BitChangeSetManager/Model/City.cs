@@ -14,7 +14,5 @@ namespace BitChangeSetManager.Model
 
         [ForeignKey(nameof(ProvinceId))]
         public virtual Province Province { get; set; }
-
-        public virtual bool CanBeSelectedForChangeSet { get; set; }
     }
 }

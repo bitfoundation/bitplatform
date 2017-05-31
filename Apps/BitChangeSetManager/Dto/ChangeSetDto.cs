@@ -40,5 +40,7 @@ namespace BitChangeSetManager.Dto
         public virtual Guid? ProvinceId { get; set; }
 
         public virtual string ProvinceName { get; set; }
+
+        public virtual Guid? NeedsReviewId { get; set; }
     }
 }

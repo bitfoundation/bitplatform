@@ -384,6 +384,7 @@
     <Compile Include="Api\DeliveriesController.cs" />
     <Compile Include="Api\ChangeSetsController.cs" />
     <Compile Include="Api\CustomersController.cs" />
+    <Compile Include="Api\ConstantsController.cs" />
     <Compile Include="Api\ProvincesController.cs" />
     <Compile Include="DataAccess\BitChangeSetManagerDbContext.cs" />
     <Compile Include="Api\BitChangeSetManagerEdmModelProvider.cs" />
@@ -396,6 +397,7 @@
     <Compile Include="Dto\ChangeSetDeliveryRequirementDto.cs" />
     <Compile Include="Dto\ChangeSetSeverityDto.cs" />
     <Compile Include="Dto\CityDto.cs" />
+    <Compile Include="Dto\ConstantDto.cs" />
     <Compile Include="Dto\CustomerDto.cs" />
     <Compile Include="Dto\DeliveryDto.cs" />
     <Compile Include="Dto\ProvinceDto.cs" />
@@ -407,6 +409,7 @@
     <Compile Include="Model\ChangeSetDeliveryRequirement.cs" />
     <Compile Include="Model\ChangeSetSeverity.cs" />
     <Compile Include="Model\City.cs" />
+    <Compile Include="Model\Constant.cs" />
     <Compile Include="Model\Delivery.cs" />
     <Compile Include="Model\Customer.cs" />
     <Compile Include="DataAccess\BitChangeSetManagerDtoModelMapperConfiguration.cs" />

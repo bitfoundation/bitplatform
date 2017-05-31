@@ -47,5 +47,7 @@ namespace BitChangeSetManager.Model
 
         [ForeignKey(nameof(ProvinceId))]
         public virtual Province Province { get; set; }
+
+        public virtual Guid? NeedsReviewId { get; set; }
     }
 }

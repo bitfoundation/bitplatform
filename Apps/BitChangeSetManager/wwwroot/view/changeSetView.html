@@ -67,7 +67,14 @@
                        ng-model="::vm.model.CityId"
                        rad-virtual-entity-loader="vm.loadCityById({id})" />
         </md-input-container>
-        
+
+        <md-input-container>
+            <label>{{::vm.changeSetMetadata.NeedsReviewId.Label}}</label>
+            <rad-combo name="NeedsReviewId"
+                       rad-datasource="::vm.answersDataSource"
+                       ng-model="::vm.model.NeedsReviewId" />
+        </md-input-container>
+
         <div>
             <rad-grid-save-button ng-click="vm.onSave()" ng-disabled="changeSetForm.$invalid">{{::'Save' | translate}}</rad-grid-save-button>
             <rad-grid-cancel-button>{{::'Cancel' | translate}}</rad-grid-cancel-button>

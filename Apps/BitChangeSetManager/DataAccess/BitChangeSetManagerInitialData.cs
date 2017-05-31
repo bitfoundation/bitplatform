@@ -75,6 +75,7 @@ namespace BitChangeSetManager.DataAccess
                 IBitChangeSetManagerRepository<ChangeSetDeliveryRequirement> changeSetDeliveryRequirementsRepository = childResolver.Resolve<IBitChangeSetManagerRepository<ChangeSetDeliveryRequirement>>();
                 IBitChangeSetManagerRepository<Province> provincesRepository = childResolver.Resolve<IBitChangeSetManagerRepository<Province>>();
                 IBitChangeSetManagerRepository<City> citiesRepository = childResolver.Resolve<IBitChangeSetManagerRepository<City>>();
+                IBitChangeSetManagerRepository<Constant> constantsRepository = childResolver.Resolve<IBitChangeSetManagerRepository<Constant>>();
 
                 Customer customer1 = new Customer { Id = Guid.NewGuid(), Name = "Customer1" };
                 Customer customer2 = new Customer { Id = Guid.NewGuid(), Name = "Customer2" };
@@ -106,12 +107,21 @@ namespace BitChangeSetManager.DataAccess
                 {
                     for (int i = 0; i < 100; i++)
                     {
-                        cities.Add(new City { Id = Guid.NewGuid(), CanBeSelectedForChangeSet = i % 2 == 0, Name = $"City{num}{i}", ProvinceId = province.Id });
+                        cities.Add(new City { Id = Guid.NewGuid(), Name = $"City{num}{i}", ProvinceId = province.Id });
                     }
 
                     num++;
                 }
 
+
+                constantsRepository.AddRange(new[]
+                {
+                    new Constant { Id = Guid.NewGuid(), Name = "Ans_Yes", Title = "Yes" },
+                    new Constant { Id = Guid.NewGuid(), Name = "Ans_No", Title = "No" },
+                    new Constant { Id = Guid.NewGuid(), Name = "Gender_Man", Title = "Man" },
+                    new Constant { Id = Guid.NewGuid(), Name = "Gender_Woman", Title = "Woman" },
+                    new Constant { Id = Guid.NewGuid(), Name = "Gender_Other", Title = "Other" }
+                });
                 provincesRepository.AddRange(new[] { province1, province2, province3 });
                 citiesRepository.AddRange(cities);
                 customersRepository.AddRange(new[] { customer1, customer2 });

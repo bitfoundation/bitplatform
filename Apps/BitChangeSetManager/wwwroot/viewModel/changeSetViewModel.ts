@@ -39,6 +39,7 @@
         public templates: BitChangeSetManagerModel.ChangeSetDescriptionTemplateDto[];
         public provincesDataSource: kendo.data.DataSource;
         public citiesDataSource: kendo.data.DataSource;
+        public answersDataSource: kendo.data.DataSource;
         public context: BitChangeSetManagerContext;
 
         public changeSetMetadata = BitChangeSetManagerModel.ChangeSetDto;
@@ -50,6 +51,7 @@
             this.provincesDataSource = this.context.provinces.asKendoDataSource();
             this.citiesDataSource = this.context.cities.asKendoDataSource({ serverPaging: true, pageSize: 28, serverSorting: true, sort: { field: "Name", dir: "asc" } });
             this.citiesDataSource.asChildOf(this.provincesDataSource, ["ProvinceId"], ["Id"]);
+            this.answersDataSource = this.context.constants.asKendoDataSource();
         }
 
         @Command()
