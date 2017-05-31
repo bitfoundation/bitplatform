@@ -3,14 +3,16 @@ using System.ComponentModel.DataAnnotations;
 using System.Reflection;
 using Bit.Owin.Contracts.Metadata;
 using System.Linq.Expressions;
-using Lambda2Js;
 using System.Linq;
+using Lambda2Js;
 
 namespace Bit.Owin.Implementations.Metadata
 {
     public class DefaultDtoMetadataBuilder<TDto> : DefaultMetadataBuilder, IDtoMetadataBuilder<TDto>
         where TDto : class
     {
+        private static readonly JavascriptCompilationOptions options = new JavascriptCompilationOptions(JsCompilationFlags.BodyOnly, scriptVersion: ScriptVersion.Es60, extensions: new JavascriptConversionExtension[] { new LinqMethods(), new StaticStringMethods(), new StaticMathMethods(), new EnumConversionExtension(EnumOptions.UseStrings) });
+
         private DtoMetadata _dtoMetadata;
 
         public virtual IDtoMetadataBuilder<TDto> AddDtoMetadata(DtoMetadata metadata)
@@ -54,7 +56,7 @@ namespace Bit.Owin.Implementations.Metadata
             {
                 if (baseFilter.Parameters.Single().Name != "it")
                     throw new Exception("base filter's parameter name must be 'it'. For example it => it.Id == 1");
-                lookup.BaseFilter_JS = baseFilter.CompileToJavascript(new JavascriptCompilationOptions(JsCompilationFlags.BodyOnly, scriptVersion: ScriptVersion.Es50));
+                lookup.BaseFilter_JS = baseFilter.CompileToJavascript(options);
             }
 
             _dtoMetadata.MembersLookups.Add(lookup);
