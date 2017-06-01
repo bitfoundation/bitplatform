@@ -12,7 +12,7 @@
     "angular-material": "https://github.com/angular/bower-material.git/#v1.1.4-master-e1345ae",
     "regenerator": "https://github.com/facebook/regenerator.git#runtime@0.10.5",
     "olingo-odatajs": "4.0.0",
-    "jaydata": "https://github.com/bit-foundation/jaydata-releases.git/#1.5.11.97",
+    "jaydata": "https://github.com/bit-foundation/jaydata-releases.git/#1.5.11.98",
     "persian-date": "https://github.com/bit-foundation/PersianDate.git#0.1.9",
     "angular-translate": "2.15.1",
     "signalr": "2.2.2",
