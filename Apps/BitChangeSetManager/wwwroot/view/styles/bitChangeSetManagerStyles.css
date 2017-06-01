@@ -1,0 +1,7 @@
+﻿@import url(https://fonts.googleapis.com/icon?family=Material+Icons); /* https://material.io/icons/ */
+
+.k-edit-form-container {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 7px;
+}

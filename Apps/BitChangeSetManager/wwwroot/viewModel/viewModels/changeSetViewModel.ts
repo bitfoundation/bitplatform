@@ -1,4 +1,4 @@
-﻿module BitChangeSetManager.ViewModels {
+﻿module BitChangeSetManager.ViewModel.ViewModels {
 
     @DtoRulesDependency({ name: "ChangeSetRules" })
     export class ChangeSetRules extends DtoRules<BitChangeSetManagerModel.ChangeSetDto> {
@@ -17,7 +17,7 @@
 
     @DtoViewModelDependency({
         name: "ChangeSetViewModel",
-        templateUrl: `view/changeSetView.html`,
+        templateUrl: `view/views/changeSetView.html`,
         bindings: {
             changeSetSeveritiesDataSource: '<',
             changeSetDeliveryRequirementsDataSource: '<'

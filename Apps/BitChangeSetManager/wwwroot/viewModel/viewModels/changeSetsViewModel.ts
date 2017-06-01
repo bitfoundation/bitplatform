@@ -1,8 +1,8 @@
-﻿module BitChangeSetManager.ViewModels {
+﻿module BitChangeSetManager.ViewModel.ViewModels {
 
     @SecureFormViewModelDependency({
         name: "ChangeSetsViewModel",
-        templateUrl: `view/changeSetsView.html`
+        templateUrl: `view/views/changeSetsView.html`
     })
     export class ChangeSetsViewModel extends FormViewModel {
 

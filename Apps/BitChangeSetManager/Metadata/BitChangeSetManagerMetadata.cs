@@ -34,7 +34,9 @@ namespace BitChangeSetManager.Metadata
                             new EnvironmentCultureValue { Name = nameof(DeleteIsDeined), Title = "Delete is denied" },
                             new EnvironmentCultureValue { Name = nameof(OnlyGetIsAllowed), Title = "Only Get is allowed" },
                             new EnvironmentCultureValue { Name = "Save", Title = "Save" },
-                            new EnvironmentCultureValue { Name = "Cancel", Title = "Cancel" }
+                            new EnvironmentCultureValue { Name = "Cancel", Title = "Cancel" },
+                            new EnvironmentCultureValue { Name = "CloseMenu", Title = "Close Menu" },
+                            new EnvironmentCultureValue { Name = "OpenMenu", Title = "Open Menu" }
                         }
                     },
                     new EnvironmentCulture
@@ -51,7 +53,9 @@ namespace BitChangeSetManager.Metadata
                             new EnvironmentCultureValue { Name = nameof(DeleteIsDeined), Title = "حذف مجاز نیست" },
                             new EnvironmentCultureValue { Name = nameof(OnlyGetIsAllowed), Title = "فقط دریافت مجاز است" },
                             new EnvironmentCultureValue { Name = "Save", Title = "ذخیره" },
-                            new EnvironmentCultureValue { Name = "Cancel", Title = "انصراف" }
+                            new EnvironmentCultureValue { Name = "Cancel", Title = "انصراف" },
+                            new EnvironmentCultureValue { Name = "CloseMenu", Title = "بستن منو" },
+                            new EnvironmentCultureValue { Name = "OpenMenu", Title = "باز کردن منو" }
                         }
                     }
                 }

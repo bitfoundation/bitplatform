@@ -1,0 +1,28 @@
+﻿<main ng-model-options="{ updateOn : 'default blur' , allowInvalid : true , debounce: { 'default': 250, 'blur': 0 } }">
+
+    <md-button class="md-icon-button" ng-click="vm.openMenu()">
+        <md-tooltip>{{'OpenMenu' | translate}}</md-tooltip>
+        <md-icon class="material-icons">menu</md-icon>
+    </md-button>
+
+    <bit-menu-container md-component-id="menu">
+        <md-toolbar layout="row">
+            <div class="md-toolbar-tools">
+                <h2>
+                    <span>{{'AppTitle' | translate}}</span>
+                </h2>
+                <span flex></span>
+                <md-button class="md-icon-button" ng-click="vm.closeMenu()">
+                    <md-tooltip>{{'CloseMenu' | translate}}</md-tooltip>
+                    <md-icon class="material-icons">close</md-icon>
+                </md-button>
+            </div>
+        </md-toolbar>
+        <md-content layout-padding>
+            :D
+        </md-content>
+    </bit-menu-container>
+
+    <ng-outlet></ng-outlet>
+
+</main>

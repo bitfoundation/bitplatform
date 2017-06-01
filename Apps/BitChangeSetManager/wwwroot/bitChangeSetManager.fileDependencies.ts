@@ -231,7 +231,7 @@ module BitChangeSetManager {
 
     dependencyManager.registerFileDependency({
         name: "bit-change-set-manager-styles",
-        path: "view/bitChangeSetManagerStyles",
+        path: "view/styles/bitChangeSetManagerStyles",
         fileDependecyType: "Style"
     });
 }
