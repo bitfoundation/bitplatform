@@ -32,7 +32,7 @@
         <md-input-container>
             <label>{{::vm.changeSetMetadata.SeverityId.Label}}</label>
             <rad-combo name="SeverityId"
-                       rad-datasource="::vm.changeSetSeveritiesDataSource"
+                       rad-data-source="::vm.changeSetSeveritiesDataSource"
                        rad-text="::vm.model.SeverityTitle"
                        ng-model="::vm.model.SeverityId" />
             <error-messages field="changeSetForm.SeverityId">
@@ -43,7 +43,7 @@
         <md-input-container>
             <label>{{::vm.changeSetMetadata.DeliveryRequirementId.Label}}</label>
             <rad-combo name="DeliveryRequirementId"
-                       rad-datasource="::vm.changeSetDeliveryRequirementsDataSource"
+                       rad-data-source="::vm.changeSetDeliveryRequirementsDataSource"
                        rad-text="vm.model.DeliveryRequirementTitle"
                        ng-model="::vm.model.DeliveryRequirementId" />
             <error-messages field="changeSetForm.DeliveryRequirementId">
@@ -54,7 +54,7 @@
         <md-input-container>
             <label>{{::vm.changeSetMetadata.ProvinceId.Label}}</label>
             <rad-combo name="ProvinceId"
-                       rad-datasource="::vm.provincesDataSource"
+                       rad-data-source="::vm.provincesDataSource"
                        rad-text="vm.model.ProvinceName"
                        ng-model="::vm.model.ProvinceId" />
         </md-input-container>
@@ -62,7 +62,7 @@
         <md-input-container>
             <label>{{::vm.changeSetMetadata.CityId.Label}}</label>
             <rad-combo name="CityId"
-                       rad-datasource="::vm.citiesDataSource"
+                       rad-data-source="::vm.citiesDataSource"
                        rad-text="vm.model.CityName"
                        ng-model="::vm.model.CityId"
                        rad-virtual-entity-loader="vm.loadCityById({id})" />
@@ -71,7 +71,7 @@
         <md-input-container>
             <label>{{::vm.changeSetMetadata.NeedsReviewId.Label}}</label>
             <rad-combo name="NeedsReviewId"
-                       rad-datasource="::vm.answersDataSource"
+                       rad-data-source="::vm.answersDataSource"
                        ng-model="::vm.model.NeedsReviewId" />
         </md-input-container>
 
