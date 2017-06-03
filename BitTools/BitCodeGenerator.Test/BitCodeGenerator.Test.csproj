@@ -223,9 +223,9 @@
       <Project>{afe4642a-22a7-4766-873c-80a69bf8545a}</Project>
       <Name>BitCodeGenerator</Name>
     </ProjectReference>
-    <ProjectReference Include="..\BitTools.Core\BitTools.Core.csproj">
-      <Project>{bc781eba-8bc0-4d99-ae8f-defd81cdbd83}</Project>
-      <Name>BitTools.Core</Name>
+    <ProjectReference Include="..\BitTools.Core.VSExtensionBuildVersion\BitTools.Core.VSExtensionBuildVersion.csproj">
+      <Project>{3aa3c219-2d0a-49dd-a025-5b4654bf2cfa}</Project>
+      <Name>BitTools.Core.VSExtensionBuildVersion</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

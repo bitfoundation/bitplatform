@@ -1,0 +1,36 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
+    <HasSharedItems>true</HasSharedItems>
+    <SharedGUID>2c8e2fd6-0db2-470b-9059-9b0b6df1562f</SharedGUID>
+  </PropertyGroup>
+  <PropertyGroup Label="Configuration">
+    <Import_RootNamespace>BitTools.Core</Import_RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)Contracts\HtmlClientProxyGenerator\IDefaultHtmlClientProxyCleaner.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Contracts\HtmlClientProxyGenerator\IDefaultHtmlClientProxyGenerator.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Contracts\HtmlClientProxyGenerator\IHtmlClientContextGenerator.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Contracts\HtmlClientProxyGenerator\IHtmlClientProxyDtosGenerator.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Contracts\IBitCodeGeneratorMappingsProvider.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Contracts\IBitCodeGeneratorOrderedProjectsProvider.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Contracts\IBitConfigProvider.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Contracts\IDtoRulesValidator.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Contracts\IProjectDtoControllersProvider.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Contracts\IProjectDtoRulesProvider.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Contracts\IProjectDtosProvider.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Contracts\IProjectEnumTypesProvider.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Extensions\IEnumerableExtensions.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Extensions\IPropertySymbolExtensions.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Extensions\ISymbolExtensions.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Extensions\ITypeSymbolExtensions.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Extensions\StringExtensions.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Model\BitConfig.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Model\Dto.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Model\DtoController.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Model\DtoRules.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Model\EnumType.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Model\ODataOperation.cs" />
+  </ItemGroup>
+</Project>

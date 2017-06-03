@@ -207,10 +207,6 @@
       <Project>{d3606caf-481e-4632-9060-a9367a5d4f6a}</Project>
       <Name>BitCodeAnalyzer</Name>
     </ProjectReference>
-    <ProjectReference Include="..\BitTools.Core\BitTools.Core.csproj">
-      <Project>{bc781eba-8bc0-4d99-ae8f-defd81cdbd83}</Project>
-      <Name>BitTools.Core</Name>
-    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config">

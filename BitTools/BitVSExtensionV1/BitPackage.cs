@@ -24,6 +24,7 @@ using BitTools.Core.Model;
 using BitVSEditorUtils.Html;
 using Newtonsoft.Json;
 using Microsoft.CodeAnalysis;
+using System.Threading.Tasks;
 
 namespace BitVSExtensionV1
 {
@@ -45,37 +46,6 @@ namespace BitVSExtensionV1
         {
             base.Initialize();
 
-            _componentModel = (IComponentModel)GetService(typeof(SComponentModel));
-
-            if (_componentModel == null)
-            {
-                ShowInitialLoadProblem("Component model is null");
-                return;
-            }
-
-            _workspace = _componentModel.GetService<VisualStudioWorkspace>();
-
-            if (_workspace == null)
-            {
-                ShowInitialLoadProblem("Workspace is null");
-                return;
-            }
-
-            int tryCount = 0;
-
-            while (!File.Exists(_workspace.CurrentSolution.FilePath))
-            {
-                if (tryCount == 60)
-                    break;
-                tryCount++;
-                await System.Threading.Tasks.Task.Delay(1000);
-            }
-
-            if (!File.Exists(_workspace.CurrentSolution.FilePath) || !File.Exists(Path.Combine(Path.GetDirectoryName(_workspace.CurrentSolution.FilePath) + "\\BitConfigV1.json")))
-            {
-                return;
-            }
-
             _serviceContainer = this;
 
             _applicationObject = (DTE2)GetGlobalService(typeof(DTE));
@@ -84,21 +54,6 @@ namespace BitVSExtensionV1
             {
                 ShowInitialLoadProblem("applicationObject is null");
                 return;
-            }
-
-            Window outputWindow = _applicationObject.DTE.Windows.Item(EnvDTE.Constants.vsWindowKindOutput);
-
-            if (outputWindow == null)
-            {
-                ShowInitialLoadProblem("outputWindow is null");
-                return;
-            }
-
-            _outputWindow = (OutputWindow)outputWindow.Object;
-
-            if (!_outputWindow.OutputWindowPanes.Cast<OutputWindowPane>().Any(x => x.Name == BitVSExtensionName))
-            {
-                _outputWindow.OutputWindowPanes.Add(BitVSExtensionName);
             }
 
             string vsVersion = _applicationObject.Version;
@@ -118,6 +73,32 @@ namespace BitVSExtensionV1
                     {
                         RedirectAssembly(needsRuntimeAssemblyRedirectInVS2015, new Version("14.0.0.0"), "b03f5f7f11d50a3a");
                     });
+            }
+
+            _componentModel = (IComponentModel)GetService(typeof(SComponentModel));
+
+            if (_componentModel == null)
+            {
+                ShowInitialLoadProblem("Component model is null");
+                return;
+            }
+
+            if (await PrepareSolution() == false)
+                return;
+
+            Window outputWindow = _applicationObject.DTE.Windows.Item(EnvDTE.Constants.vsWindowKindOutput);
+
+            if (outputWindow == null)
+            {
+                ShowInitialLoadProblem("outputWindow is null");
+                return;
+            }
+
+            _outputWindow = (OutputWindow)outputWindow.Object;
+
+            if (!_outputWindow.OutputWindowPanes.Cast<OutputWindowPane>().Any(x => x.Name == BitVSExtensionName))
+            {
+                _outputWindow.OutputWindowPanes.Add(BitVSExtensionName);
             }
 
             try
@@ -145,9 +126,39 @@ namespace BitVSExtensionV1
             }
         }
 
+        private async Task<bool> PrepareSolution()
+        {
+            _workspace = _componentModel.GetService<VisualStudioWorkspace>();
+
+            if (_workspace == null)
+            {
+                ShowInitialLoadProblem("Workspace is null");
+                return false;
+            }
+
+            int tryCount = 0;
+
+            while (!File.Exists(_workspace.CurrentSolution.FilePath))
+            {
+                if (tryCount == 60)
+                    break;
+                tryCount++;
+                await System.Threading.Tasks.Task.Delay(1000);
+            }
+
+            if (!File.Exists(_workspace.CurrentSolution.FilePath) || !File.Exists(Path.Combine(Path.GetDirectoryName(_workspace.CurrentSolution.FilePath) + "\\BitConfigV1.json")))
+            {
+                return false;
+            }
+
+            _isBeingBuiltProjects = new List<Project>();
+
+            return true;
+        }
+
         private void InitHtmlElements()
         {
-            dynamic configProvider = new DefaultBitConfigProvider();
+            DefaultBitConfigProvider configProvider = new DefaultBitConfigProvider();
 
             BitConfig config = configProvider.GetConfiguration(_workspace, _workspace.CurrentSolution, Enumerable.Empty<Project>().ToList());
 
@@ -259,8 +270,8 @@ namespace BitVSExtensionV1
             if (action == vsBuildAction.vsBuildActionClean)
             {
                 DefaultHtmlClientProxyCleaner cleaner = new DefaultHtmlClientProxyCleaner(new DefaultBitCodeGeneratorMappingsProvider(new DefaultBitConfigProvider()));
-                cleaner.GetType().GetTypeInfo().GetMethod(nameof(DefaultHtmlClientProxyCleaner.DeleteCodes))
-                    .Invoke(cleaner, new object[] { _workspace, solution, _isBeingBuiltProjects });
+
+                cleaner.DeleteCodes(_workspace, solution, _isBeingBuiltProjects);
 
                 Log("Generated codes were deleted");
             }
@@ -275,8 +286,7 @@ namespace BitVSExtensionV1
                     new DefaultBitCodeGeneratorMappingsProvider(new DefaultBitConfigProvider()), dtosProvider
                     , new DefaultHtmlClientProxyDtoGenerator(), new DefaultHtmlClientContextGenerator(), controllersProvider, new DefaultProjectEnumTypesProvider(controllersProvider, dtosProvider));
 
-                generator.GetType().GetTypeInfo().GetMethod(nameof(DefaultHtmlClientProxyGenerator.GenerateCodes))
-                    .Invoke(generator, new object[] { _workspace, solution, _isBeingBuiltProjects });
+                generator.GenerateCodes(_workspace, solution, _isBeingBuiltProjects);
 
                 watch.Stop();
 
@@ -325,7 +335,7 @@ namespace BitVSExtensionV1
             base.Dispose(disposing);
         }
 
-        private readonly List<Project> _isBeingBuiltProjects = new List<Project>();
+        private List<Project> _isBeingBuiltProjects;
 
         private VisualStudioWorkspace _workspace;
 

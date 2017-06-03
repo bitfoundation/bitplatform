@@ -1,10 +1,8 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.26403.7
+VisualStudioVersion = 15.0.26430.6
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BitTools.Core", "BitTools\BitTools.Core\BitTools.Core.csproj", "{BC781EBA-8BC0-4D99-AE8F-DEFD81CDBD83}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BitCodeAnalyzer", "BitTools\BitCodeAnalyzer\BitCodeAnalyzer.csproj", "{D3606CAF-481E-4632-9060-A9367A5D4F6A}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BitCodeAnalyzer.Test", "BitTools\BitCodeAnalyzer.Test\BitCodeAnalyzer.Test.csproj", "{A55080FD-856C-4F04-9308-A6C71C8510B7}"
@@ -19,16 +17,21 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BitODataCSProxyGeneratorIte
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BitVSEditorUtils", "BitTools\BitVSEditorUtils\BitVSEditorUtils.csproj", "{BD380C7D-90FB-4A55-BFEE-D3FFD3A94A3B}"
 EndProject
+Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "BitTools.Core", "BitTools\BitTools.Core\BitTools.Core.shproj", "{2C8E2FD6-0DB2-470B-9059-9B0B6DF1562F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BitTools.Core.VSExtensionBuildVersion", "BitTools\BitTools.Core.VSExtensionBuildVersion\BitTools.Core.VSExtensionBuildVersion.csproj", "{3AA3C219-2D0A-49DD-A025-5B4654BF2CFA}"
+EndProject
 Global
+	GlobalSection(SharedMSBuildProjectFiles) = preSolution
+		BitTools\BitTools.Core\BitTools.Core.projitems*{2c8e2fd6-0db2-470b-9059-9b0b6df1562f}*SharedItemsImports = 13
+		BitTools\BitTools.Core\BitTools.Core.projitems*{3aa3c219-2d0a-49dd-a025-5b4654bf2cfa}*SharedItemsImports = 4
+		BitTools\BitTools.Core\BitTools.Core.projitems*{d3606caf-481e-4632-9060-a9367a5d4f6a}*SharedItemsImports = 4
+	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{BC781EBA-8BC0-4D99-AE8F-DEFD81CDBD83}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{BC781EBA-8BC0-4D99-AE8F-DEFD81CDBD83}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{BC781EBA-8BC0-4D99-AE8F-DEFD81CDBD83}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{BC781EBA-8BC0-4D99-AE8F-DEFD81CDBD83}.Release|Any CPU.Build.0 = Release|Any CPU
 		{D3606CAF-481E-4632-9060-A9367A5D4F6A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{D3606CAF-481E-4632-9060-A9367A5D4F6A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D3606CAF-481E-4632-9060-A9367A5D4F6A}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -57,6 +60,10 @@ Global
 		{BD380C7D-90FB-4A55-BFEE-D3FFD3A94A3B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{BD380C7D-90FB-4A55-BFEE-D3FFD3A94A3B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{BD380C7D-90FB-4A55-BFEE-D3FFD3A94A3B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3AA3C219-2D0A-49DD-A025-5B4654BF2CFA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3AA3C219-2D0A-49DD-A025-5B4654BF2CFA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3AA3C219-2D0A-49DD-A025-5B4654BF2CFA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3AA3C219-2D0A-49DD-A025-5B4654BF2CFA}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
