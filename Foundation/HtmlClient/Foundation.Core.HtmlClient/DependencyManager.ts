@@ -656,7 +656,7 @@ module Foundation.Core {
                 target.injects.push({ name: name, kind: "Single" });
             }
             else {
-                (target.$inject as Array<string>).push(name);
+                (target.$inject as Array<string>).unshift(name);
             }
             return target;
         }
