@@ -40,6 +40,11 @@ namespace Bit.Tests
             _args = args;
         }
 
+        protected BitOwinTestDependenciesManagerProvider()
+        {
+
+        }
+
         public virtual void ConfigureDependencies(IDependencyManager dependencyManager)
         {
             dependencyManager.RegisterMinimalDependencies();

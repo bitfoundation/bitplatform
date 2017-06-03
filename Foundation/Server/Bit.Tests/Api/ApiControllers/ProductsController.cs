@@ -11,7 +11,7 @@ namespace Bit.Tests.Api.ApiControllers
     public class CountriesController : DtoController<CountryDto>
     {
         [Function]
-        public CountryDto[] GetAllContries()
+        public virtual CountryDto[] GetAllContries()
         {
             return new CountryDto[]
             {

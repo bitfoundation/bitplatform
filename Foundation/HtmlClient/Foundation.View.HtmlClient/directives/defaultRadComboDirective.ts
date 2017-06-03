@@ -237,8 +237,10 @@ module Foundation.View.Directives {
                                     },
                                     set: (entity: $data.Entity) => {
 
+                                        let value = null;
+
                                         if (entity != null) {
-                                            let value = entity[radValueFieldName]
+                                            value = entity[radValueFieldName];
                                             if (combo.value() != value)
                                                 combo.value(value);
                                         }
@@ -250,7 +252,7 @@ module Foundation.View.Directives {
                                         }
 
                                         if (ngModelAssign != null) {
-                                            ngModelAssign($scope, null);
+                                            ngModelAssign($scope, value);
                                         }
 
                                         dataSource.onCurrentChanged();
