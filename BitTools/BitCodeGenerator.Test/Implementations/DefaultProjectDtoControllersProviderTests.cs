@@ -20,7 +20,7 @@ namespace BitCodeGenerator.Test.Implementations
                 Solution solution = workspace.CurrentSolution;
 
                 IList<DtoController> controllers = new DefaultProjectDtoControllersProvider()
-                    .GetProjectDtoControllersWithTheirOperations(solution.Projects.Single(p => p.Name == "Foundation.Api"));
+                    .GetProjectDtoControllersWithTheirOperations(solution.Projects.Single(p => p.Name == "Bit.Api"));
 
                 Assert.IsTrue(
                     controllers.Select(c => c.Name).SequenceEqual(new[] { "ClientsLogs", "JobsInfo", "UsersSettings" }));
@@ -35,9 +35,9 @@ namespace BitCodeGenerator.Test.Implementations
                 Solution solution = workspace.CurrentSolution;
 
                 IList<DtoController> controllers = new DefaultProjectDtoControllersProvider()
-                    .GetProjectDtoControllersWithTheirOperations(solution.Projects.Single(p => p.Name == "Foundation.Test"));
+                    .GetProjectDtoControllersWithTheirOperations(solution.Projects.Single(p => p.Name == "Bit.Tests"));
 
-                Assert.AreEqual(9, controllers.Count);
+                Assert.AreEqual(11, controllers.Count);
             }
         }
 
@@ -48,10 +48,10 @@ namespace BitCodeGenerator.Test.Implementations
 using System;
 using System.Threading.Tasks;
 using System.Web.OData;
-using Foundation.Api.ApiControllers;
-using Foundation.Test.Model.DomainModels;
+using Bit.Tests.Model.DomainModels;
+using Bit.Api.ApiControllers;
 
-namespace Foundation.Api.ApiControllers
+namespace Bit.Api.ApiControllers
 {
     [AttributeUsage(AttributeTargets.Method, AllowMultiple = false)]
     public sealed class ActionAttribute : Attribute
@@ -78,7 +78,7 @@ public class ComplexObj3
     public virtual string Name { get; set; }
 }
 
-namespace Foundation.Test.Api.ApiControllers
+namespace Bit.Tests.Api.ApiControllers
 {
     public class TestController : DtoController<TestModel>
     {

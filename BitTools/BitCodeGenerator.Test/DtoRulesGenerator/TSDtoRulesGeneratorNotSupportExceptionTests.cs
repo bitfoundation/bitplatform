@@ -34,11 +34,11 @@ namespace BitCodeGenerator.Test.DtoRulesGenerator
         {
             string testCode = @"
 
-    using Foundation.Api.DtoRules;
+    using Bit.Owin.DtoRules;
 
     namespace Test.Model.Dto
     {
-        public class ProductDto : Foundation.Model.Dto.IDto
+        public class ProductDto : Bit.Model.Contracts.IDto
         {
             public virtual int Id { get; set; }
         }
@@ -64,11 +64,11 @@ namespace BitCodeGenerator.Test.DtoRulesGenerator
         {
             string testCode = @"
 
-    using Foundation.Api.DtoRules;
+    using Bit.Owin.DtoRules;
 
     namespace Test.Model.Dto
     {
-        public class ProductDto : Foundation.Model.Dto.IDto
+        public class ProductDto : Bit.Model.Contracts.IDto
         {
             public virtual int Id { get; set; }
         }
@@ -93,11 +93,11 @@ namespace BitCodeGenerator.Test.DtoRulesGenerator
         {
             string testCode = @"
 
-    using Foundation.Api.DtoRules;
+    using Bit.Owin.DtoRules;
 
     namespace Test.Model.Dto
     {
-        public class ProductDto : Foundation.Model.Dto.IDto
+        public class ProductDto : Bit.Model.Contracts.IDto
         {
             public virtual int Id { get; set; }
         }
@@ -121,11 +121,11 @@ namespace BitCodeGenerator.Test.DtoRulesGenerator
         {
             string testCode = @"
 
-    using Foundation.Api.DtoRules;
+    using Bit.Owin.DtoRules;
 
     namespace Test.Model.Dto
     {
-        public class ProductDto : Foundation.Model.Dto.IDto
+        public class ProductDto : Bit.Model.Contracts.IDto
         {
             public virtual int Id { get; set; }
         }
@@ -149,11 +149,11 @@ namespace BitCodeGenerator.Test.DtoRulesGenerator
         {
             string testCode = @"
 
-    using Foundation.Api.DtoRules;
+    using Bit.Owin.DtoRules;
 
     namespace Test.Model.Dto
     {
-        public class ProductDto : Foundation.Model.Dto.IDto
+        public class ProductDto : Bit.Model.Contracts.IDto
         {
             public virtual int Id { get; set; }
         }
@@ -183,11 +183,11 @@ namespace BitCodeGenerator.Test.DtoRulesGenerator
         {
             string testCode = @"
 
-    using Foundation.Api.DtoRules;
+    using Bit.Owin.DtoRules;
 
     namespace Test.Model.Dto
     {
-        public class ProductDto : Foundation.Model.Dto.IDto
+        public class ProductDto : Bit.Model.Contracts.IDto
         {
             public virtual int Id { get; set; }
         }
@@ -215,11 +215,11 @@ namespace BitCodeGenerator.Test.DtoRulesGenerator
         {
             string testCode = @"
 
-    using Foundation.Api.DtoRules;
+    using Bit.Owin.DtoRules;
 
     namespace Test.Model.Dto
     {
-        public class ProductDto : Foundation.Model.Dto.IDto
+        public class ProductDto : Bit.Model.Contracts.IDto
         {
             public virtual int Id { get; set; }
         }
@@ -249,11 +249,11 @@ namespace BitCodeGenerator.Test.DtoRulesGenerator
         {
             string testCode = @"
 
-    using Foundation.Api.DtoRules;
+    using Bit.Owin.DtoRules;
 
     namespace Test.Model.Dto
     {
-        public class ProductDto : Foundation.Model.Dto.IDto
+        public class ProductDto : Bit.Model.Contracts.IDto
         {
             public virtual int Id { get; set; }
         }
@@ -280,11 +280,11 @@ namespace BitCodeGenerator.Test.DtoRulesGenerator
         {
             string testCode = @"
 
-    using Foundation.Api.DtoRules;
+    using Bit.Owin.DtoRules;
 
     namespace Test.Model.Dto
     {
-        public class ProductDto : Foundation.Model.Dto.IDto
+        public class ProductDto : Bit.Model.Contracts.IDto
         {
             public virtual int Id { get; set; }
         }
@@ -308,11 +308,11 @@ namespace BitCodeGenerator.Test.DtoRulesGenerator
         {
             string testCode = @"
 
-    using Foundation.Api.DtoRules;
+    using Bit.Owin.DtoRules;
 
     namespace Test.Model.Dto
     {
-        public class ProductDto : Foundation.Model.Dto.IDto
+        public class ProductDto : Bit.Model.Contracts.IDto
         {
             public virtual int Id { get; set; }
         }
@@ -345,11 +345,11 @@ namespace BitCodeGenerator.Test.DtoRulesGenerator
         {
             string testCode = @"
 
-    using Foundation.Api.DtoRules;
+    using Bit.Owin.DtoRules;
 
     namespace Test.Model.Dto
     {
-        public class ProductDto : Foundation.Model.Dto.IDto
+        public class ProductDto : Bit.Model.Contracts.IDto
         {
             public virtual int Id { get; set; }
         }
@@ -380,11 +380,11 @@ namespace BitCodeGenerator.Test.DtoRulesGenerator
         {
             string testCode = @"
 
-    using Foundation.Api.DtoRules;
+    using Bit.Owin.DtoRules;
 
     namespace Test.Model.Dto
     {
-        public class ProductDto : Foundation.Model.Dto.IDto
+        public class ProductDto : Bit.Model.Contracts.IDto
         {
             public virtual int Id { get; set; }
         }
@@ -415,11 +415,11 @@ namespace BitCodeGenerator.Test.DtoRulesGenerator
         {
             string testCode = @"
 
-    using Foundation.Api.DtoRules;
+    using Bit.Owin.DtoRules;
 
     namespace Test.Model.Dto
     {
-        public class ProductDto : Foundation.Model.Dto.IDto
+        public class ProductDto : Bit.Model.Contracts.IDto
         {
             public virtual int Id { get; set; }
         }
@@ -448,11 +448,11 @@ namespace BitCodeGenerator.Test.DtoRulesGenerator
         {
             string testCode = @"
 
-    using Foundation.Api.DtoRules;
+    using Bit.Owin.DtoRules;
 
     namespace Test.Model.Dto
     {
-        public class ProductDto : Foundation.Model.Dto.IDto
+        public class ProductDto : Bit.Model.Contracts.IDto
         {
             public virtual int Id { get; set; }
         }
@@ -481,11 +481,11 @@ namespace BitCodeGenerator.Test.DtoRulesGenerator
         {
             string testCode = @"
 
-    using Foundation.Api.DtoRules;
+    using Bit.Owin.DtoRules;
 
     namespace Test.Model.Dto
     {
-        public class ProductDto : Foundation.Model.Dto.IDto
+        public class ProductDto : Bit.Model.Contracts.IDto
         {
             public virtual int Id { get; set; }
         }
@@ -513,11 +513,11 @@ namespace BitCodeGenerator.Test.DtoRulesGenerator
         {
             string testCode = @"
 
-    using Foundation.Api.DtoRules;
+    using Bit.Owin.DtoRules;
 
     namespace Test.Model.Dto
     {
-        public class ProductDto : Foundation.Model.Dto.IDto
+        public class ProductDto : Bit.Model.Contracts.IDto
         {
             public virtual int Id { get; set; }
         }
@@ -545,11 +545,11 @@ namespace BitCodeGenerator.Test.DtoRulesGenerator
         {
             string testCode = @"
 
-    using Foundation.Api.DtoRules;
+    using Bit.Owin.DtoRules;
 
     namespace Test.Model.Dto
     {
-        public class ProductDto : Foundation.Model.Dto.IDto
+        public class ProductDto : Bit.Model.Contracts.IDto
         {
             public virtual int Id { get; set; }
         }
@@ -579,11 +579,11 @@ namespace BitCodeGenerator.Test.DtoRulesGenerator
         {
             string testCode = @"
 
-    using Foundation.Api.DtoRules;
+    using Bit.Owin.DtoRules;
 
     namespace Test.Model.Dto
     {
-        public class ProductDto : Foundation.Model.Dto.IDto
+        public class ProductDto : Bit.Model.Contracts.IDto
         {
             public virtual int Id { get; set; }
         }
@@ -610,11 +610,11 @@ namespace BitCodeGenerator.Test.DtoRulesGenerator
         {
             string testCode = @"
 
-    using Foundation.Api.DtoRules;
+    using Bit.Owin.DtoRules;
 
     namespace Test.Model.Dto
     {
-        public class ProductDto : Foundation.Model.Dto.IDto
+        public class ProductDto : Bit.Model.Contracts.IDto
         {
             public virtual int Id { get; set; }
         }
@@ -641,11 +641,11 @@ namespace BitCodeGenerator.Test.DtoRulesGenerator
         {
             string testCode = @"
 
-    using Foundation.Api.DtoRules;
+    using Bit.Owin.DtoRules;
 
     namespace Test.Model.Dto
     {
-        public class ProductDto : Foundation.Model.Dto.IDto
+        public class ProductDto : Bit.Model.Contracts.IDto
         {
             public virtual int Id { get; set; }
         }
@@ -674,11 +674,11 @@ namespace BitCodeGenerator.Test.DtoRulesGenerator
         {
             string testCode = @"
 
-    using Foundation.Api.DtoRules;
+    using Bit.Owin.DtoRules;
 
     namespace Test.Model.Dto
     {
-        public class ProductDto : Foundation.Model.Dto.IDto
+        public class ProductDto : Bit.Model.Contracts.IDto
         {
             public virtual int Id { get; set; }
         }
@@ -703,12 +703,12 @@ namespace BitCodeGenerator.Test.DtoRulesGenerator
         {
             string testCode = @"
 
-    using Foundation.Api.DtoRules;
+    using Bit.Owin.DtoRules;
     using System;
 
     namespace Test.Model.Dto
     {
-        public class ProductDto : Foundation.Model.Dto.IDto
+        public class ProductDto : Bit.Model.Contracts.IDto
         {
             public virtual int Id { get; set; }
         }

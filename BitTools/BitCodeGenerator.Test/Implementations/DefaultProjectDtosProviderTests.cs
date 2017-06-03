@@ -23,9 +23,9 @@ namespace BitCodeGenerator.Test.Implementations
                 IProjectDtosProvider projectDtosProvider = new DefaultProjectDtosProvider(new DefaultProjectDtoControllersProvider());
 
                 IList<Dto> dtos = projectDtosProvider.GetProjectDtos(solution.Projects.Single(p => p.Name == "Bit.Model"))
-                    .Union(projectDtosProvider.GetProjectDtos(solution.Projects.Single(p => p.Name == "Foundation.Api"))).ToList();
+                    .Union(projectDtosProvider.GetProjectDtos(solution.Projects.Single(p => p.Name == "Bit.Api"))).ToList();
 
-                Assert.IsTrue(dtos.Select(d => d.DtoSymbol.Name).SequenceEqual(new[] { "UserSetting", "JobInfo", "ClientLogDto" }));
+                Assert.IsTrue(dtos.Select(d => d.DtoSymbol.Name).SequenceEqual(new[] { "UserSetting", "JobInfoDto", "ClientLogDto" }));
             }
         }
 
@@ -38,9 +38,9 @@ namespace BitCodeGenerator.Test.Implementations
 
                 IProjectDtosProvider projectDtosProvider = new DefaultProjectDtosProvider(new DefaultProjectDtoControllersProvider());
 
-                IList<Dto> dtos = projectDtosProvider.GetProjectDtos(solution.Projects.Single(p => p.Name == "Foundation.Test")).ToList();
+                IList<Dto> dtos = projectDtosProvider.GetProjectDtos(solution.Projects.Single(p => p.Name == "Bit.Tests")).ToList();
 
-                Assert.AreEqual(11, dtos.Count);
+                Assert.AreEqual(13, dtos.Count);
             }
         }
 

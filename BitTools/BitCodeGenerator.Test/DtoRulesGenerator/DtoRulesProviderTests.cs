@@ -16,7 +16,7 @@ namespace BitCodeGenerator.Test.DtoRulesGenerator
         {
             string testCode = @"
 
-    using Foundation.Api.DtoRules;
+    using Bit.Owin.DtoRules;
 
     namespace Test.Model.Dto
     {
@@ -44,8 +44,8 @@ namespace BitCodeGenerator.Test.DtoRulesGenerator
 
         }
 
-        [Foundation.Api.DtoRules.AutoGenerate]
-        public class CategoryDtoRules : Foundation.Api.DtoRules.DtoRules<Model.Dto.CategoryDto>
+        [Bit.Owin.DtoRules.AutoGenerate]
+        public class CategoryDtoRules : Bit.Owin.DtoRules.DtoRules<Model.Dto.CategoryDto>
         {
 
         }

@@ -37,7 +37,7 @@ namespace BitCodeGenerator.Implementations
 
                     bool isDtoRules = classDeclarationSyntax.BaseList.Types.Select(t => t.Type)
                         .Select(t => semanticModel.GetSymbolInfo(t).Symbol?.OriginalDefinition?.ToString())
-                        .Any(t => t == "Foundation.Api.DtoRules.DtoRules<TDto>");
+                        .Any(t => t == "Bit.Owin.DtoRules.DtoRules<TDto>");
 
                     if (isDtoRules == true)
                     {

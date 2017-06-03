@@ -4,7 +4,7 @@
     {
         public const string BitDtoRules = @"
 
-    namespace Foundation.Model.Dto
+    namespace Bit.Model.Contracts.Dto
     {
         public interface IDto
         {
@@ -12,7 +12,7 @@
         }
     }
 
-    namespace Foundation.Api.DtoRules
+    namespace Bit.Owin.DtoRules
     {
         [AttributeUsage(AttributeTargets.Class, AllowMultiple = false)]
         public sealed class AutoGenerateAttribute : Attribute

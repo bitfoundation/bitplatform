@@ -23,12 +23,12 @@ namespace BitCodeGenerator.Test.Implementations
                 List<Project> projects = solution.Projects.ToList();
 
                 IList<Project> orderedProjects = (new DefaultBitCodeGeneratorOrderedProjectsProvider().GetInvolveableProjects(workspace, solution, projects,
-                        new BitCodeGeneratorMapping { SourceProjects = new[] { new BitTools.Core.Model.ProjectInfo { Name = "Bit.Model" }, new BitTools.Core.Model.ProjectInfo { Name = "Foundation.Api" } } }));
+                        new BitCodeGeneratorMapping { SourceProjects = new[] { new BitTools.Core.Model.ProjectInfo { Name = "Bit.Model" }, new BitTools.Core.Model.ProjectInfo { Name = "Bit.Api" } } }));
 
                 Assert.AreEqual(2, orderedProjects.Count);
 
                 Assert.IsTrue(
-                    orderedProjects.Select(p => p.Name).SequenceEqual(new[] { "Bit.Model", "Foundation.Api" }));
+                    orderedProjects.Select(p => p.Name).SequenceEqual(new[] { "Bit.Model", "Bit.Api" }));
             }
         }
     }

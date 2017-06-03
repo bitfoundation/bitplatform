@@ -28,7 +28,7 @@ namespace BitCodeGenerator.Test.Implementations
 
                 Assert.AreEqual(2, bitCodeGeneratorMappings.Count);
 
-                Assert.AreEqual("Foundation", bitCodeGeneratorMappings.First().EdmName);
+                Assert.AreEqual("Bit", bitCodeGeneratorMappings.First().EdmName);
                 Assert.AreEqual("Test", bitCodeGeneratorMappings.Last().EdmName);
             }
         }
@@ -40,7 +40,7 @@ namespace BitCodeGenerator.Test.Implementations
             {
                 Solution solution = workspace.CurrentSolution;
 
-                List<Project> projects = solution.Projects.Where(p => p.Name == "Foundation.Core").ToList();
+                List<Project> projects = solution.Projects.Where(p => p.Name == "Bit.Core").ToList();
 
                 IList<BitCodeGeneratorMapping> bitCodeGeneratorMappings = new DefaultBitCodeGeneratorMappingsProvider(
                     new DefaultBitConfigProvider())
