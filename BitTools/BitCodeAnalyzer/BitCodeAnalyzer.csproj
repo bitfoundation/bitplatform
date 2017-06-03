@@ -62,18 +62,12 @@
   <ItemGroup>
     <Reference Include="Microsoft.CodeAnalysis, Version=1.3.1.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\..\packages\Microsoft.CodeAnalysis.Common.1.3.2\lib\portable-net45+win8\Microsoft.CodeAnalysis.dll</HintPath>
-      <SpecificVersion>False</SpecificVersion>
-      <Private>False</Private>
     </Reference>
     <Reference Include="Microsoft.CodeAnalysis.CSharp, Version=1.3.1.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\..\packages\Microsoft.CodeAnalysis.CSharp.1.3.2\lib\portable-net45+win8\Microsoft.CodeAnalysis.CSharp.dll</HintPath>
-      <SpecificVersion>False</SpecificVersion>
-      <Private>False</Private>
     </Reference>
     <Reference Include="Microsoft.CodeAnalysis.Workspaces, Version=1.3.1.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\..\packages\Microsoft.CodeAnalysis.Workspaces.Common.1.3.2\lib\portable-net45+win8\Microsoft.CodeAnalysis.Workspaces.dll</HintPath>
-      <SpecificVersion>False</SpecificVersion>
-      <Private>False</Private>
     </Reference>
     <Reference Include="System.Collections.Immutable, Version=1.2.1.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
       <HintPath>..\..\packages\System.Collections.Immutable.1.3.1\lib\portable-net45+win8+wp8+wpa81\System.Collections.Immutable.dll</HintPath>
@@ -117,7 +111,7 @@
     <GetAssemblyIdentity AssemblyFiles="$(OutDir)\$(AssemblyName).dll">
       <Output TaskParameter="Assemblies" ItemName="AnalyzerAssemblyInfo" />
     </GetAssemblyIdentity>
-    <Exec Command="&quot;$(SolutionDir)packages\NuGet.CommandLine.3.5.0\tools\NuGet.exe&quot; pack Diagnostic.nuspec -NoPackageAnalysis -Version %(AnalyzerAssemblyInfo.Version) -OutputDirectory ." WorkingDirectory="$(OutDir)" LogStandardErrorAsError="true" ConsoleToMSBuild="true">
+    <Exec Command="&quot;$(SolutionDir)packages\NuGet.CommandLine.4.1.0\tools\NuGet.exe&quot; pack Diagnostic.nuspec -NoPackageAnalysis -Version %(AnalyzerAssemblyInfo.Version) -OutputDirectory ." WorkingDirectory="$(OutDir)" LogStandardErrorAsError="true" ConsoleToMSBuild="true">
       <Output TaskParameter="ConsoleOutput" PropertyName="OutputOfExec" />
     </Exec>
   </Target>

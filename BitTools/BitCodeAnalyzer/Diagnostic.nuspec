@@ -2,7 +2,7 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd">
   <metadata>
     <id>BitCodeAnalyzer</id>
-    <version>1.1.5.0</version>
+    <version>1.1.5.2</version>
     <title>Bit Code Analyzer</title>
     <authors>Bit Foundation</authors>
     <owners>Bit Foundation</owners>
