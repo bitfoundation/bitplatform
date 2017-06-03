@@ -139,6 +139,29 @@ module Foundation.View.Directives {
                             if (attributes.ngModel != null)
                                 ngModelAssign = $parse(attributes.ngModel).assign;
 
+                            let text: string = null;
+                            let parsedText: ng.ICompiledExpression;
+
+                            if (attributes.radText != null) {
+
+                                parsedText = $parse(attributes.radText);
+
+                                text = parsedText($scope);
+
+                                if (text == "")
+                                    text = null;
+
+                                if (attributes.ngModel != null) {
+                                    $scope.$watch(attributes.ngModel.replace("::", ""), (newValue) => {
+                                        const current = dataSource.current;
+                                        if (current != null)
+                                            parsedText.assign($scope, current[attributes.radTextFieldName]);
+                                        else if (requireArgs.ngModel.$isEmpty(newValue))
+                                            parsedText.assign($scope, "");
+                                    });
+                                }
+                            }
+
                             let kendoWidgetCreatedDisposal = $scope.$on("kendoWidgetCreated", (event, combo: kendo.ui.ComboBox) => {
 
                                 if (combo.element[0] != element[0]) {
@@ -204,14 +227,18 @@ module Foundation.View.Directives {
                                         else
                                             newCurrent = dataItem.innerInstance != null ? dataItem.innerInstance() : dataItem;
 
+                                        if (newCurrent == null && parsedText != null && !requireArgs.ngModel.$isEmpty(combo.value()) && combo.options.autoBind == false) {
+                                            newCurrent = {};
+                                            newCurrent[radValueFieldName] = combo.value();
+                                            newCurrent[radTextFieldName] = parsedText($scope);
+                                        };
+
                                         return newCurrent;
                                     },
                                     set: (entity: $data.Entity) => {
 
-                                        let value = null;
-
                                         if (entity != null) {
-                                            value = entity[radValueFieldName];
+                                            let value = entity[radValueFieldName]
                                             if (combo.value() != value)
                                                 combo.value(value);
                                         }
@@ -223,35 +250,13 @@ module Foundation.View.Directives {
                                         }
 
                                         if (ngModelAssign != null) {
-                                            ngModelAssign($scope, value);
+                                            ngModelAssign($scope, null);
                                         }
 
                                         dataSource.onCurrentChanged();
                                     }
                                 });
                             });
-
-                            let text: string = null;
-
-                            if (attributes.radText != null) {
-
-                                let parsedText = $parse(attributes.radText);
-
-                                text = parsedText($scope);
-
-                                if (text == "")
-                                    text = null;
-
-                                if (attributes.ngModel != null) {
-                                    $scope.$watch(attributes.ngModel.replace("::", ""), (newValue) => {
-                                        const current = dataSource.current;
-                                        if (current != null)
-                                            parsedText.assign($scope, current[attributes.radTextFieldName]);
-                                        else if (requireArgs.ngModel.$isEmpty(newValue))
-                                            parsedText.assign($scope, "");
-                                    });
-                                }
-                            }
 
                             const comboBoxOptions: kendo.ui.ComboBoxOptions = {
                                 dataSource: dataSource,
@@ -336,7 +341,10 @@ module Foundation.View.Directives {
                                             options.success(items);
 
                                             setTimeout(() => {
-                                                let input = element.data("kendoComboBox").wrapper.find("input");
+                                                let combo = element.data("kendoComboBox");
+                                                if (combo == null)
+                                                    return;
+                                                let input = combo.wrapper.find("input");
                                                 let item = items[0];
                                                 input.text(item[comboBoxOptions.dataTextField]);
                                             }, 0);
