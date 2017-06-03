@@ -1,6 +1,6 @@
 ﻿<view id="radGridView">
 
-    <rad-grid id="gridView" rad-datasource="vm.parentEntitiesDataSource" groupable="true" k-on-sort="vm.onSort(kendoEvent)">
+    <rad-grid id="gridView" rad-data-source="vm.parentEntitiesDataSource" groupable="true" k-on-sort="vm.onSort(kendoEvent)">
         <toolbar-template>
             <rad-grid-add-button id="gridAddButton">Add new Parent entity</rad-grid-add-button>
         </toolbar-template>
@@ -19,7 +19,7 @@
         <view-template>
             <columns>
                 <column name="Id" title="{{::vm.parentEntityMetadata.Id.Label}}"></column>
-                <column name="Name" title="{{::vm.parentEntityMetadata.Name.Label}}" rad-datasource="vm.parentEntitiesDataSourceForFilter"></column>
+                <column name="Name" title="{{::vm.parentEntityMetadata.Name.Label}}" rad-data-source="vm.parentEntitiesDataSourceForFilter"></column>
                 <column name="Version" title="{{::vm.parentEntityMetadata.Version.Label}}">
                     {{::dataItem.Version == 1 ? '(-:' : ')-:'}}
                 </column>

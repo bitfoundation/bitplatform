@@ -88,7 +88,7 @@ module Foundation.View.Directives {
 
                     return gridTemplate;
                 },
-                link($scope: ng.IScope, element: JQuery, attributes: ng.IAttributes & { radDatasource: string, radOnInit: string }) {
+                link($scope: ng.IScope, element: JQuery, attributes: ng.IAttributes & { radDataSource: string, radOnInit: string }) {
 
                     const dependencyManager = Core.DependencyManager.getCurrent();
 
@@ -112,12 +112,12 @@ module Foundation.View.Directives {
 
                     $timeout(() => {
 
-                        const watchForDatasourceToCreateDataGridWidgetUnRegisterHandler = $scope.$watch(attributes.radDatasource, (dataSource: kendo.data.DataSource) => {
+                        const watchForDataSourceToCreateDataGridWidgetUnRegisterHandler = $scope.$watch(attributes.radDataSource, (dataSource: kendo.data.DataSource) => {
 
                             if (dataSource == null)
                                 return;
 
-                            watchForDatasourceToCreateDataGridWidgetUnRegisterHandler();
+                            watchForDataSourceToCreateDataGridWidgetUnRegisterHandler();
 
                             const kendoWidgetCreatedDisposal = $scope.$on("kendoWidgetCreated", (event, grid: kendo.ui.Grid) => {
 
@@ -463,7 +463,7 @@ module Foundation.View.Directives {
                                         }
                                     }
 
-                                    const filterDataSourceAttributeValue = wrappedItem.attr("rad-datasource");
+                                    const filterDataSourceAttributeValue = wrappedItem.attr("rad-data-source");
 
                                     if (filterDataSourceAttributeValue != null) {
 

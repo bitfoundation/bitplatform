@@ -7,7 +7,7 @@
         "description": "You can bind rad text, so combo box will show binded data instead of loading data, until user opens it."
       },
       {
-        "name": "rad-datasource",
+        "name": "rad-data-source",
         "description": "Bind this to kendo data source you've in view model."
       },
       {
@@ -62,7 +62,7 @@
     "name": "rad-grid",
     "attributes": [
       {
-        "name": "rad-datasource",
+        "name": "rad-data-source",
         "description": "Bind this to kendo data source you've in view model."
       },
       {

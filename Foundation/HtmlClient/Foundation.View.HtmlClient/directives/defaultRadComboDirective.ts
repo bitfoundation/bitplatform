@@ -64,7 +64,7 @@ module Foundation.View.Directives {
 
                     return template;
                 },
-                link($scope: ng.IScope, element: JQuery, attributes: ng.IAttributes & { ngModel: string, radText: string, radDatasource: string, radValueFieldName: string, radTextFieldName: string, radVirtualEntityLoader: string, radOnInit: string }, requireArgs: { mdInputContainer: { element: JQuery }, ngModel: ng.INgModelController }) {
+                link($scope: ng.IScope, element: JQuery, attributes: ng.IAttributes & { ngModel: string, radText: string, radDataSource: string, radValueFieldName: string, radTextFieldName: string, radVirtualEntityLoader: string, radOnInit: string }, requireArgs: { mdInputContainer: { element: JQuery }, ngModel: ng.INgModelController }) {
 
                     const dependencyManager = Core.DependencyManager.getCurrent();
 
@@ -73,16 +73,16 @@ module Foundation.View.Directives {
 
                     $timeout(() => {
 
-                        const watches = attributes.radText != null ? [attributes.radDatasource, (() => {
+                        const watches = attributes.radText != null ? [attributes.radDataSource, (() => {
                             const modelParts = attributes.radText.split(".");
                             modelParts.pop();
                             const modelParentProp = modelParts.join(".");
                             return modelParentProp;
-                        })()] : [attributes.radDatasource];
+                        })()] : [attributes.radDataSource];
 
                         let model = null;
 
-                        const watchForDatasourceAndNgModelIfAnyToCreateComboWidgetUnRegisterHandler = $scope.$watchGroup(watches, (values: Array<any>) => {
+                        const watchForDataSourceAndNgModelIfAnyToCreateComboWidgetUnRegisterHandler = $scope.$watchGroup(watches, (values: Array<any>) => {
 
                             if (values == null || values.length == 0 || values.some(v => v == null))
                                 return;
@@ -93,7 +93,7 @@ module Foundation.View.Directives {
                                 model = values[1];
                             }
 
-                            watchForDatasourceAndNgModelIfAnyToCreateComboWidgetUnRegisterHandler();
+                            watchForDataSourceAndNgModelIfAnyToCreateComboWidgetUnRegisterHandler();
 
                             let radValueFieldName = attributes.radValueFieldName;
                             let radTextFieldName = attributes.radTextFieldName;

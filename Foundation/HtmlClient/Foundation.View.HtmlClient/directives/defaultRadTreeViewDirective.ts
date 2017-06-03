@@ -48,7 +48,7 @@ module Foundation.View.Directives {
 
                     return template;
                 },
-                link($scope: ng.IScope, element: JQuery, attributes: ng.IAttributes & { radText: string, radDatasource: string, radTextFieldName: string, radOnInit: string }, requireArgs: { mdInputContainer: { element: JQuery } }) {
+                link($scope: ng.IScope, element: JQuery, attributes: ng.IAttributes & { radText: string, radDataSource: string, radTextFieldName: string, radOnInit: string }, requireArgs: { mdInputContainer: { element: JQuery } }) {
 
                     const dependencyManager = Core.DependencyManager.getCurrent();
 
@@ -57,12 +57,12 @@ module Foundation.View.Directives {
 
                     $timeout(() => {
 
-                        const watches = attributes.radText != null ? [attributes.radDatasource, (() => {
+                        const watches = attributes.radText != null ? [attributes.radDataSource, (() => {
                             const modelParts = attributes.radText.split(".");
                             modelParts.pop();
                             const modelParentProp = modelParts.join(".");
                             return modelParentProp;
-                        })()] : [attributes.radDatasource];
+                        })()] : [attributes.radDataSource];
 
                         const watchForDataSourceUnRegisterHandler = $scope.$watchGroup(watches, (values: Array<any>) => {
 
