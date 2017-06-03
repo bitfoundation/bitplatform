@@ -19,10 +19,12 @@
 
                     let direction = FoundationCore.ClientAppProfileManager.getCurrent().getClientAppProfile().direction;
 
-                    if (direction == "Rtl")
-                        element.addClass("md-sidenav-right");
-                    else
-                        element.addClass("md-sidenav-left");
+                    if (!element.hasClass("md-sidenav-right") && !element.hasClass("md-sidenav-left")) {
+                        if (direction == "Rtl")
+                            element.addClass("md-sidenav-right");
+                        else
+                            element.addClass("md-sidenav-left");
+                    }
 
                     angular.element(document.body).mousemove((e) => {
                         if ((e.clientX == 0 && direction == "Ltr") || (e.clientX == document.body.clientWidth - 1 && direction == "Rtl")) {

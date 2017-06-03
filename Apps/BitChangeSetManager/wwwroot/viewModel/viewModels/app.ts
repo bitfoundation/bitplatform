@@ -10,7 +10,8 @@
     export class App extends FormViewModel {
 
 
-        public constructor( @Inject("MessageReceiver") public messageReceiver: IMessageReceiver, @Inject("$mdSidenav") public $mdSidenav: ng.material.ISidenavService) {
+        public constructor( @Inject("MessageReceiver") public messageReceiver: IMessageReceiver,
+            @Inject("$mdSidenav") public $mdSidenav: ng.material.ISidenavService) {
             super();
         }
 
