@@ -368,6 +368,7 @@
     <None Include="wwwroot\package.json" />
     <Content Include="wwwroot\ssoPageTemplate.cshtml" />
     <Content Include="wwwroot\security\tsconfig.json" />
+    <Content Include="wwwroot\view\html-elements-schema.json" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="Web.config">
@@ -441,8 +442,7 @@
     <TypeScriptCompile Include="wwwroot\view\directives\bitMenuContainer.ts" />
   </ItemGroup>
   <ItemGroup>
-    <Analyzer Include="packages\BitCodeAnalyzer.1.1.4.3\analyzers\dotnet\cs\BitCodeAnalyzer.dll" />
-    <Analyzer Include="packages\BitCodeAnalyzer.1.1.4.3\analyzers\dotnet\cs\BitTools.Core.dll" />
+    <Analyzer Include="packages\BitCodeAnalyzer.1.1.5.2\analyzers\dotnet\cs\BitCodeAnalyzer.dll" />
   </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>
