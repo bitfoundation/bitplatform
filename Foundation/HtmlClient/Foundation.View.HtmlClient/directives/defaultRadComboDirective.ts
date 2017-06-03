@@ -241,15 +241,13 @@ module Foundation.View.Directives {
 
                                         if (entity != null) {
                                             value = entity[radValueFieldName];
-                                            if (combo.value() != value)
-                                                combo.value(value);
                                         }
-                                        else {
-                                            if (combo.value() != null)
-                                                combo.value(null);
-                                            if (combo.text() != null)
-                                                combo.text(null);
-                                        }
+
+                                        if (combo.value() != value)
+                                            combo.value(value);
+
+                                        if (requireArgs.ngModel.$isEmpty(value) && !requireArgs.ngModel.$isEmpty(combo.text()))
+                                            combo.text(null);
 
                                         if (ngModelAssign != null) {
                                             ngModelAssign($scope, value);
