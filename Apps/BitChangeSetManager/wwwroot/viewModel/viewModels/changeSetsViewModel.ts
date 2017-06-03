@@ -15,7 +15,10 @@
         public changeSetMetadata = BitChangeSetManagerModel.ChangeSetDto;
         public deliveryMetadata = BitChangeSetManagerModel.DeliveryDto;
 
-        public constructor( @Inject("EntityContextProvider") public entityContextProvider: IEntityContextProvider, @Inject("MessageReceiver") public messageReceiver: IMessageReceiver, @Inject("$mdToast") public $mdToast: ng.material.IToastService, @Inject("$translate") public $translate: ng.translate.ITranslateService) {
+        public constructor( @Inject("EntityContextProvider") public entityContextProvider: IEntityContextProvider,
+            @Inject("MessageReceiver") public messageReceiver: IMessageReceiver,
+            @Inject("$mdToast") public $mdToast: ng.material.IToastService,
+            @Inject("$translate") public $translate: ng.translate.ITranslateService) {
             super();
         }
 
