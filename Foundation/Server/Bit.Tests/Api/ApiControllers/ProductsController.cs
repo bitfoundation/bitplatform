@@ -1,5 +1,6 @@
 ﻿using Bit.Api.ApiControllers;
 using Bit.Tests.Model.Dto;
+using System.Web.OData.Query;
 
 namespace Bit.Tests.Api.ApiControllers
 {
@@ -11,7 +12,7 @@ namespace Bit.Tests.Api.ApiControllers
     public class CountriesController : DtoController<CountryDto>
     {
         [Function]
-        public virtual CountryDto[] GetAllContries()
+        public virtual CountryDto[] GetAllContries(ODataQueryOptions<CountryDto> query)
         {
             return new CountryDto[]
             {
