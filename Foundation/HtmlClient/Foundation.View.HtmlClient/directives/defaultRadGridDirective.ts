@@ -224,7 +224,7 @@ module Foundation.View.Directives {
                                             dataSource.onCurrentChanged();
                                         }
                                         else {
-                                            throw new Error("Not implemented");
+                                            grid.select(grid.tbody.find(`tr[data-uid='${entity.uid}']`));
                                         }
                                     }
                                 });
