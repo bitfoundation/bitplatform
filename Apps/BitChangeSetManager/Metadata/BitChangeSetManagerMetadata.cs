@@ -36,7 +36,8 @@ namespace BitChangeSetManager.Metadata
                             new EnvironmentCultureValue { Name = "Save", Title = "Save" },
                             new EnvironmentCultureValue { Name = "Cancel", Title = "Cancel" },
                             new EnvironmentCultureValue { Name = "CloseMenu", Title = "Close Menu" },
-                            new EnvironmentCultureValue { Name = "OpenMenu", Title = "Open Menu" }
+                            new EnvironmentCultureValue { Name = "OpenMenu", Title = "Open Menu" },
+                            new EnvironmentCultureValue { Name = "BackToTop", Title = "Back to top" }
                         }
                     },
                     new EnvironmentCulture
@@ -55,7 +56,8 @@ namespace BitChangeSetManager.Metadata
                             new EnvironmentCultureValue { Name = "Save", Title = "ذخیره" },
                             new EnvironmentCultureValue { Name = "Cancel", Title = "انصراف" },
                             new EnvironmentCultureValue { Name = "CloseMenu", Title = "بستن منو" },
-                            new EnvironmentCultureValue { Name = "OpenMenu", Title = "باز کردن منو" }
+                            new EnvironmentCultureValue { Name = "OpenMenu", Title = "باز کردن منو" },
+                            new EnvironmentCultureValue { Name = "BackToTop", Title = "بازگشت به بالا" }
                         }
                     }
                 }

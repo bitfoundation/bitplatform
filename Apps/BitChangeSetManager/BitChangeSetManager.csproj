@@ -439,6 +439,7 @@
     <TypeScriptCompile Include="wwwroot\viewModel\viewModels\app.ts" />
     <TypeScriptCompile Include="wwwroot\viewModel\viewModels\changeSetsViewModel.ts" />
     <TypeScriptCompile Include="wwwroot\viewModel\viewModels\changeSetViewModel.ts" />
+    <TypeScriptCompile Include="wwwroot\view\directives\backToTop.ts" />
     <TypeScriptCompile Include="wwwroot\view\directives\bitMenuContainer.ts" />
   </ItemGroup>
   <ItemGroup>
