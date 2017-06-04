@@ -2,7 +2,7 @@
 
 module Foundation.View.Directives {
 
-    @Core.DirectiveDependency({ name: "radMultiSelect" })
+    @Core.DirectiveDependency({ name: "radMultiSelect", usesOldStyle: true })
     export class DefaultRadMultiSelectDirective implements ViewModel.Contracts.IDirective {
 
         public static defaultRadMultiSelectDirectiveCustomizers: Array<($scope: ng.IScope, $attrs: ng.IAttributes, $element: JQuery, multiSelectOptions: kendo.ui.MultiSelectOptions) => void> = [];

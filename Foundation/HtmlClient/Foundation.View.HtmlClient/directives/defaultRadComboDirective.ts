@@ -1,7 +1,7 @@
 ﻿/// <reference path="../../foundation.viewmodel.htmlclient/foundation.viewmodel.d.ts" />
 
 module Foundation.View.Directives {
-    @Core.DirectiveDependency({ name: "radCombo" })
+    @Core.DirectiveDependency({ name: "radCombo", usesOldStyle: true })
     export class DefaultRadComboDirective implements ViewModel.Contracts.IDirective {
 
         public static defaultRadComboDirectiveCustomizers: Array<($scope: ng.IScope, attribues: ng.IAttributes, $element: JQuery, comboBoxOptions: kendo.ui.ComboBoxOptions) => void> = [];

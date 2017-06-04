@@ -142,6 +142,7 @@ module Foundation.ViewModel.Implementations {
             const pathProvider = this.pathProvider;
 
             dependencyManager.getAllDirectivesDependencies()
+                .filter(d => d.usesOldStyle == true)
                 .map(d => { return { name: d.name, instance: Reflect.construct(d.type as Function, []) as Contracts.IDirective }; })
                 .forEach(directive => {
 
@@ -161,6 +162,21 @@ module Foundation.ViewModel.Implementations {
 
                     app.directive(directive.name, modifiedGetDirectiveFactory);
                 });
+
+            const directives = dependencyManager.getAllDirectivesDependencies()
+                .filter(d => d.usesOldStyle == false);
+
+            directives.forEach(vm => {
+
+                if (vm.templateUrl != null)
+                    vm.templateUrl = this.pathProvider.getFullPath(vm.templateUrl);
+
+                vm.controllerAs = vm.controllerAs || "vm";
+                vm.controller = vm.controller || vm.type as any;
+
+                app.directive(vm.name, function () { return vm; });
+
+            });
         }
 
         protected async registerFilters(app: ng.IModule): Promise<void> {

@@ -2,7 +2,7 @@
 
 module Foundation.View.Directives {
 
-    @Core.DirectiveDependency({ name: "radGridDeleteButton" })
+    @Core.DirectiveDependency({ name: "radGridDeleteButton", usesOldStyle: true })
     export class DefaultRadGridDeleteButtonDirective implements ViewModel.Contracts.IDirective {
         public static defaultClasses: string[] = ["md-raised"];
         public getDirectiveFactory(): ng.IDirectiveFactory {

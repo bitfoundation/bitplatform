@@ -2,7 +2,7 @@
 /// <reference path="../../foundation.viewmodel.htmlclient/foundation.viewmodel.d.ts" />
 
 module Foundation.View.Directives {
-    @Core.DirectiveDependency({ name: "errorMessages" })
+    @Core.DirectiveDependency({ name: "errorMessages", usesOldStyle: true })
     export class DefaultErrorMessagesDirective implements ViewModel.Contracts.IDirective {
         public getDirectiveFactory(): ng.IDirectiveFactory {
             return () => ({
@@ -14,7 +14,7 @@ module Foundation.View.Directives {
         }
     }
 
-    @Core.DirectiveDependency({ name: "errorMessagesTransclude" })
+    @Core.DirectiveDependency({ name: "errorMessagesTransclude", usesOldStyle: true })
     export class ErrorMessagesTransclude implements ViewModel.Contracts.IDirective {
         public getDirectiveFactory(): ng.IDirectiveFactory {
             return () => ({

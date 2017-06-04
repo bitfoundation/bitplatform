@@ -2,7 +2,7 @@
 /// <reference path="../../foundation.viewmodel.htmlclient/foundation.viewmodel.d.ts" />
 
 module Foundation.View.Directives {
-    @Core.DirectiveDependency({ name: "layoutChild" })
+    @Core.DirectiveDependency({ name: "layoutChild", usesOldStyle: true })
     export class DefaultLayoutChildDirective implements ViewModel.Contracts.IDirective {
         public getDirectiveFactory(): ng.IDirectiveFactory {
             return () => ({

@@ -2,7 +2,7 @@
 
 module Foundation.View.Directives {
 
-    @Core.DirectiveDependency({ name: "radTreeView" })
+    @Core.DirectiveDependency({ name: "radTreeView", usesOldStyle: true })
     export class DefaultRadTreeViewDirective implements ViewModel.Contracts.IDirective {
 
         public static defaultRadTreeViewDirectiveCustomizers: Array<($scope: ng.IScope, $attrs: ng.IAttributes, $element: JQuery, treeViewOptions: kendo.ui.TreeViewOptions) => void> = [];

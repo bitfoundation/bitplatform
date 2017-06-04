@@ -1,5 +1,5 @@
 ﻿module Foundation.View.Directives {
-    @Core.DirectiveDependency({ name: "radEditor" })
+    @Core.DirectiveDependency({ name: "radEditor", usesOldStyle: true })
     export class DefaultRadEditor implements ViewModel.Contracts.IDirective {
         public getDirectiveFactory(): ng.IDirectiveFactory {
             return () => ({

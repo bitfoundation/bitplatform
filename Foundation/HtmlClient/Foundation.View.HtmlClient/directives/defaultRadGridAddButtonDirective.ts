@@ -1,7 +1,7 @@
 ﻿/// <reference path="../../foundation.viewmodel.htmlclient/foundation.viewmodel.d.ts" />
 
 module Foundation.View.Directives {
-    @Core.DirectiveDependency({ name: "radGridAddButton" })
+    @Core.DirectiveDependency({ name: "radGridAddButton", usesOldStyle: true })
     export class DefaultRadGridAddButtonDirective implements ViewModel.Contracts.IDirective {
         public static defaultClasses: string[] = ["md-raised", "md-primary"];
         public getDirectiveFactory(): ng.IDirectiveFactory {

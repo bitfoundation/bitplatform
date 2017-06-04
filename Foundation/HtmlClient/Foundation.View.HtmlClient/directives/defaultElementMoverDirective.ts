@@ -7,7 +7,7 @@ module Foundation.View.Directives {
         elementSelector: string;
     }
 
-    @Core.DirectiveDependency({ name: "elementMover" })
+    @Core.DirectiveDependency({ name: "elementMover", usesOldStyle: true })
     export class DefaultElementMoverDirective implements ViewModel.Contracts.IDirective {
         public getDirectiveFactory(): ng.IDirectiveFactory {
             return () => ({

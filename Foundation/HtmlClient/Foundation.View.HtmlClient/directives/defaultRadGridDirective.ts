@@ -2,7 +2,7 @@
 
 module Foundation.View.Directives {
 
-    @Core.DirectiveDependency({ name: "radGrid" })
+    @Core.DirectiveDependency({ name: "radGrid", usesOldStyle: true })
     export class DefaultRadGridDirective implements ViewModel.Contracts.IDirective {
 
         public static defaultRadGridDirectiveCustomizers: Array<($scope: ng.IScope, $attrs: ng.IAttributes, $element: JQuery, gridOptions: kendo.ui.GridOptions) => void> = [];

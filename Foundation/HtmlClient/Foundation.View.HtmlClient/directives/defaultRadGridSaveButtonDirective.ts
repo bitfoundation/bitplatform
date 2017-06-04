@@ -2,7 +2,7 @@
 
 module Foundation.View.Directives {
 
-    @Core.DirectiveDependency({ name: "radGridSaveButton" })
+    @Core.DirectiveDependency({ name: "radGridSaveButton", usesOldStyle: true })
     export class DefaultRadGridSaveButtonDirective implements ViewModel.Contracts.IDirective {
         public static defaultClasses: string[] = ["md-raised", "md-primary"];
         public getDirectiveFactory(): ng.IDirectiveFactory {

@@ -2,7 +2,7 @@
 /// <reference path="../../foundation.viewmodel.htmlclient/foundation.viewmodel.d.ts" />
 
 module Foundation.View.Directives {
-    @Core.DirectiveDependency({ name: "colorViewer" })
+    @Core.DirectiveDependency({ name: "colorViewer", usesOldStyle: true })
     export class DefaultColorViewerDirective implements ViewModel.Contracts.IDirective {
         public getDirectiveFactory(): ng.IDirectiveFactory {
             return () => ({

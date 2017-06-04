@@ -1,6 +1,6 @@
 ﻿module Foundation.View.Directives {
 
-    @Core.DirectiveDependency({ name: "iranianPeopleNationalCode" })
+    @Core.DirectiveDependency({ name: "iranianPeopleNationalCode", usesOldStyle: true })
     export class IranianPeopleNationalCodeValidator implements ViewModel.Contracts.IDirective {
         public getDirectiveFactory(): ng.IDirectiveFactory {
             return (): ng.IDirective => {

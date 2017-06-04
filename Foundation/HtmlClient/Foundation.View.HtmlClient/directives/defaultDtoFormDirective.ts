@@ -1,6 +1,6 @@
 ﻿module Foundation.View.Directives {
 
-    @Core.DirectiveDependency({ name: "dtoForm" })
+    @Core.DirectiveDependency({ name: "dtoForm", usesOldStyle: true })
     export class DefaultDtoFormDirective implements ViewModel.Contracts.IDirective {
         public getDirectiveFactory(): ng.IDirectiveFactory {
             return () => ({

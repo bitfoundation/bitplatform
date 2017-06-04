@@ -2,7 +2,7 @@
 
 module Foundation.View.Directives {
 
-    @Core.DirectiveDependency({ name: "radDatePicker" })
+    @Core.DirectiveDependency({ name: "radDatePicker", usesOldStyle: true })
     export class DefaultRadDatePickerDirective implements ViewModel.Contracts.IDirective {
         public getDirectiveFactory(): ng.IDirectiveFactory {
             return () => ({

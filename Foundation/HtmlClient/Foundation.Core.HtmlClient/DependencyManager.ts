@@ -27,8 +27,9 @@ module Foundation.Core {
 
     }
 
-    export interface IDirectiveDependency extends IDependency {
+    export interface IDirectiveDependency extends IDependency, ng.IDirective {
         type?: Function;
+        usesOldStyle?: boolean;
     }
 
     export interface IObjectDependency extends IDependency {
@@ -185,6 +186,9 @@ module Foundation.Core {
 
             if (directiveDependency.name == null || directiveDependency.name == "")
                 throw new Error("directiveDependency's name is null or empty");
+
+            if (directiveDependency.usesOldStyle == null)
+                directiveDependency.usesOldStyle = false;
 
             if (!this.dependencyShouldBeConsidered(directiveDependency))
                 return;

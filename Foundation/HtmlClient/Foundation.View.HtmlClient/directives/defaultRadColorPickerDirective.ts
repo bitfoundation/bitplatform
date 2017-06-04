@@ -1,5 +1,5 @@
 ﻿module Foundation.View.Directives {
-    @Core.DirectiveDependency({ name: "radColorPicker" })
+    @Core.DirectiveDependency({ name: "radColorPicker", usesOldStyle: true })
     export class DefaultRadColorPickerDirective implements ViewModel.Contracts.IDirective {
         public getDirectiveFactory(): ng.IDirectiveFactory {
             return () => ({
