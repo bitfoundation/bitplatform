@@ -8,21 +8,21 @@ module Foundation.View.Directives {
         public getDirectiveFactory(): ng.IDirectiveFactory {
             return () => ({
                 scope: false,
-                compile(element: JQuery, attributes: ng.IAttributes) {
+                compile($element: JQuery, $attrs: ng.IAttributes) {
                     return {
-                        pre($scope: ng.IScope, element: JQuery, attributes: ng.IAttributes, controller: ng.INgModelController, transcludeFn: ng.ITranscludeFunction) {
+                        pre($scope: ng.IScope, $element: JQuery, $attrs: ng.IAttributes, controller: ng.INgModelController, transcludeFn: ng.ITranscludeFunction) {
 
                             const replaceAll = (text: string, search: string, replacement: string) => {
                                 return text.replace(new RegExp(search, "g"), replacement);
                             };
 
-                            const gridIsolatedKey = angular.element(element).parents("rad-grid-editor").attr("isolatedoptionskey");
+                            const gridIsolatedKey = angular.element($element).parents("rad-grid-editor").attr("isolatedoptionskey");
 
-                            const newElementHtml = replaceAll(element[0].outerHTML, "rad-grid-save-button", "md-button");
+                            const newElementHtml = replaceAll($element[0].outerHTML, "rad-grid-save-button", "md-button");
 
-                            const newElement = angular.element(newElementHtml).insertAfter(element);
+                            const newElement = angular.element(newElementHtml).insertAfter($element);
 
-                            angular.element(element).remove();
+                            angular.element($element).remove();
 
                             let $scopeOfGrid = $scope;
                             let $gridScopeName = "this.";
@@ -31,7 +31,7 @@ module Foundation.View.Directives {
                                 $gridScopeName += "$parent.";
                             }
 
-                            newElement.attr("ng-click", `${attributes["ngClick"] || ""};${$gridScopeName}${gridIsolatedKey}Save($event)`);
+                            newElement.attr("ng-click", `${$attrs["ngClick"] || ""};${$gridScopeName}${gridIsolatedKey}Save($event)`);
 
                             if (DefaultRadGridSaveButtonDirective.defaultClasses != null && DefaultRadGridSaveButtonDirective.defaultClasses.length != 0) {
                                 DefaultRadGridSaveButtonDirective.defaultClasses.filter(cls => cls != null && cls != "").forEach(cls => {

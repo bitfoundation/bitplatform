@@ -10,11 +10,11 @@ module Foundation.View.Directives {
                 replace: false,
                 terminal: false,
                 restrict: "A",
-                link: ($scope: ng.IScope, element: ng.IAugmentedJQuery) => {
-                    element.attr("flex-gt-md", "25");
-                    element.attr("flex-gt-sm", "33");
-                    element.attr("flex-gt-xs", "50");
-                    element.attr("flex-xs", "100");
+                link: ($scope: ng.IScope, $element: ng.IAugmentedJQuery) => {
+                    $element.attr("flex-gt-md", "25");
+                    $element.attr("flex-gt-sm", "33");
+                    $element.attr("flex-gt-xs", "50");
+                    $element.attr("flex-xs", "100");
                 }
             });
         }

@@ -110,11 +110,11 @@ module Foundation.ViewModel.Implementations {
 
                     const originalCompile = directive.compile;
 
-                    directive.compile = function (element, attr) {
+                    directive.compile = function ($element, $attrs) {
 
                         const result = originalCompile.apply(this, arguments);
 
-                        const mdInputContainerParent = element.parent("md-input-container");
+                        const mdInputContainerParent = $element.parent("md-input-container");
 
                         if (mdInputContainerParent.length != 0) {
 

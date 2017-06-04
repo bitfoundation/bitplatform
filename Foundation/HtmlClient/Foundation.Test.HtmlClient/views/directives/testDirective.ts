@@ -23,7 +23,7 @@
                     testProperty: "@?"
                 },
                 template: "<div>{{::ctrl.testProperty}}</div>",
-                link($scope: ng.IScope, element: JQuery, attributes: ng.IAttributes, controller: TestDirectiveController) {
+                link($scope: ng.IScope, $element: JQuery, $attrs: ng.IAttributes, controller: TestDirectiveController) {
                     controller.testProperty = 2;
                 }
             });

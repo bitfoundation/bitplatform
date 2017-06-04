@@ -10,7 +10,7 @@
                     mdInputContainer: "^?mdInputContainer",
                     ngModel: "ngModel"
                 },
-                template: (element: JQuery, attrs: ng.IAttributes) => {
+                template: ($element: JQuery, $attrs: ng.IAttributes) => {
 
                     const guidUtils = Core.DependencyManager.getCurrent().resolveObject<ViewModel.Implementations.GuidUtils>("GuidUtils");
 
@@ -20,14 +20,14 @@
 
                     const delayKey = `delay${replaceAll(guidUtils.newGuid(), "-", "")}`;
 
-                    attrs["delayKey"] = delayKey;
+                    $attrs["delayKey"] = delayKey;
 
                     const template = `<textarea kendo-editor k-ng-delay="::${delayKey}"></textarea>`;
 
                     return template;
 
                 },
-                link($scope: ng.IScope, element: JQuery, attributes: ng.IAttributes, requireArgs: { mdInputContainer: { element: JQuery, setHasValue: () => void } }) {
+                link($scope: ng.IScope, $element: JQuery, $attrs: ng.IAttributes, requireArgs: { mdInputContainer: { element: JQuery, setHasValue: () => void } }) {
 
                     const dependencyManager = Core.DependencyManager.getCurrent();
 
@@ -37,7 +37,7 @@
 
                         const kendoWidgetCreatedDisposal = $scope.$on("kendoWidgetCreated", (event, editor: kendo.ui.Editor) => {
 
-                            if (editor.element[0] != element[0]) {
+                            if (editor.element[0] != $element[0]) {
                                 return;
                             }
 
@@ -48,7 +48,7 @@
                                 const mdInputContainerParent = requireArgs.mdInputContainer.element;
 
                                 angular.element(editor.body).focusin(() => {
-                                    if (angular.element(element).is(":disabled"))
+                                    if (angular.element($element).is(":disabled"))
                                         return;
                                     mdInputContainerParent.addClass("md-input-focused");
                                 });
@@ -68,7 +68,7 @@
                         });
                     });
 
-                    $scope[attributes["delayKey"]] = {};
+                    $scope[$attrs["delayKey"]] = {};
                 }
             });
         }

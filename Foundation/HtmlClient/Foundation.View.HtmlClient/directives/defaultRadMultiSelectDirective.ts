@@ -5,7 +5,7 @@ module Foundation.View.Directives {
     @Core.DirectiveDependency({ name: "radMultiSelect" })
     export class DefaultRadMultiSelectDirective implements ViewModel.Contracts.IDirective {
 
-        public static defaultRadMultiSelectDirectiveCustomizers: Array<($scope: ng.IScope, attribues: ng.IAttributes, element: JQuery, multiSelectOptions: kendo.ui.MultiSelectOptions) => void> = [];
+        public static defaultRadMultiSelectDirectiveCustomizers: Array<($scope: ng.IScope, $attrs: ng.IAttributes, $element: JQuery, multiSelectOptions: kendo.ui.MultiSelectOptions) => void> = [];
 
         public getDirectiveFactory(): ng.IDirectiveFactory {
             return () => ({
@@ -16,11 +16,11 @@ module Foundation.View.Directives {
                     mdInputContainer: "^?mdInputContainer",
                     ngModel: "ngModel"
                 },
-                template: (element: JQuery, attrs: ng.IAttributes) => {
+                template: ($element: JQuery, $attrs: ng.IAttributes) => {
 
                     const guidUtils = Core.DependencyManager.getCurrent().resolveObject<ViewModel.Implementations.GuidUtils>("GuidUtils");
 
-                    const itemTemplate = element
+                    const itemTemplate = $element
                         .children("item-template");
 
                     if (itemTemplate.length != 0) {
@@ -33,10 +33,10 @@ module Foundation.View.Directives {
 
                         angular.element(document.body).append(itemTemplate);
 
-                        attrs["itemTemplateId"] = itemTemplateId;
+                        $attrs["itemTemplateId"] = itemTemplateId;
                     }
 
-                    const tagTemplate = element
+                    const tagTemplate = $element
                         .children("tag-template");
 
                     if (tagTemplate.length != 0) {
@@ -49,10 +49,10 @@ module Foundation.View.Directives {
 
                         angular.element(document.body).append(tagTemplate);
 
-                        attrs["tagTemplateId"] = tagTemplateId;
+                        $attrs["tagTemplateId"] = tagTemplateId;
                     }
 
-                    const headerTemplate = element
+                    const headerTemplate = $element
                         .children("header-template");
 
                     if (headerTemplate.length != 0) {
@@ -65,7 +65,7 @@ module Foundation.View.Directives {
 
                         angular.element(document.body).append(headerTemplate);
 
-                        attrs["headerTemplateId"] = headerTemplateId;
+                        $attrs["headerTemplateId"] = headerTemplateId;
                     }
 
                     const replaceAll = (text: string, search: string, replacement: string) => {
@@ -74,10 +74,10 @@ module Foundation.View.Directives {
 
                     const isolatedOptionsKey = `options${replaceAll(guidUtils.newGuid(), "-", "")}`;
 
-                    attrs["isolatedOptionsKey"] = isolatedOptionsKey;
+                    $attrs["isolatedOptionsKey"] = isolatedOptionsKey;
 
                     let ngModelOptions = "";
-                    if (attrs["ngModel"] != null && attrs["ngModelOptions"] == null) {
+                    if ($attrs["ngModel"] != null && $attrs["ngModelOptions"] == null) {
                         ngModelOptions = `ng-model-options="{ updateOn : 'change' , allowInvalid : true }"`;
                     }
 
@@ -85,24 +85,24 @@ module Foundation.View.Directives {
 
                     return template;
                 },
-                link($scope: ng.IScope, element: JQuery, attributes: ng.IAttributes & { ngModel: string, radText: string, radDataSource: string, radValueFieldName: string, radTextFieldName: string, radOnInit: string }, requireArgs: { mdInputContainer: { element: JQuery } }) {
+                link($scope: ng.IScope, $element: JQuery, $attrs: ng.IAttributes & { ngModel: string, radText: string, radDataSource: string, radValueFieldName: string, radTextFieldName: string, radOnInit: string }, requireArgs: { mdInputContainer: { element: JQuery } }) {
 
                     const dependencyManager = Core.DependencyManager.getCurrent();
 
                     const $timeout = dependencyManager.resolveObject<ng.ITimeoutService>("$timeout");
                     const $parse = dependencyManager.resolveObject<ng.IParseService>("$parse");
                     let ngModelAssign = null;
-                    if (attributes.ngModel != null)
-                        ngModelAssign = $parse(attributes.ngModel).assign;
+                    if ($attrs.ngModel != null)
+                        ngModelAssign = $parse($attrs.ngModel).assign;
 
                     $timeout(() => {
 
-                        const watches = attributes.radText != null ? [attributes.radDataSource, (() => {
-                            const modelParts = attributes.radText.split(".");
+                        const watches = $attrs.radText != null ? [$attrs.radDataSource, (() => {
+                            const modelParts = $attrs.radText.split(".");
                             modelParts.pop();
                             const modelParentProp = modelParts.join(".");
                             return modelParentProp;
-                        })()] : [attributes.radDataSource];
+                        })()] : [$attrs.radDataSource];
 
                         let model = null;
 
@@ -119,7 +119,7 @@ module Foundation.View.Directives {
 
                             watchForDataSourceAndNgModelIfAnyToCreateComboWidgetUnRegisterHandler();
 
-                            let radValueFieldName = attributes.radValueFieldName;
+                            let radValueFieldName = $attrs.radValueFieldName;
 
                             if (radValueFieldName == null) {
                                 if (dataSource.options.schema != null && dataSource.options.schema.model != null && dataSource.options.schema.model.idField != null)
@@ -130,7 +130,7 @@ module Foundation.View.Directives {
 
                             let kendoWidgetCreatedDisposal = $scope.$on("kendoWidgetCreated", (event, multiSelect: kendo.ui.MultiSelect) => {
 
-                                if (multiSelect.element[0] != element[0]) {
+                                if (multiSelect.element[0] != $element[0]) {
                                     return;
                                 }
 
@@ -167,7 +167,7 @@ module Foundation.View.Directives {
                                     multiSelect.wrapper
                                         .focusin(() => {
 
-                                            if (angular.element(element).is(":disabled"))
+                                            if (angular.element($element).is(":disabled"))
                                                 return;
 
                                             mdInputContainerParent.addClass("md-input-focused");
@@ -178,7 +178,7 @@ module Foundation.View.Directives {
                                             mdInputContainerParent.removeClass("md-input-focused");
                                         });
 
-                                    $scope.$watchCollection<Array<any>>(attributes.ngModel.replace("::", ""), (newVal, oldVal) => {
+                                    $scope.$watchCollection<Array<any>>($attrs.ngModel.replace("::", ""), (newVal, oldVal) => {
                                         if (newVal != null && newVal.length != 0)
                                             mdInputContainerParent.addClass("md-input-has-value");
                                         else
@@ -193,7 +193,7 @@ module Foundation.View.Directives {
                                     });
                                 }
 
-                                $scope.$watchCollection(attributes.ngModel.replace("::", ""), (newValue, oldVal) => {
+                                $scope.$watchCollection($attrs.ngModel.replace("::", ""), (newValue, oldVal) => {
                                     multiSelect.value(newValue);
                                 });
                             });
@@ -201,7 +201,7 @@ module Foundation.View.Directives {
                             const multiSelectOptions: kendo.ui.MultiSelectOptions = {
                                 dataSource: dataSource,
                                 autoBind: true,
-                                dataTextField: attributes.radTextFieldName,
+                                dataTextField: $attrs.radTextFieldName,
                                 dataValueField: radValueFieldName,
                                 filter: "contains",
                                 minLength: 3,
@@ -219,9 +219,9 @@ module Foundation.View.Directives {
                                 autoClose: false // Should be removed
                             };
 
-                            if (attributes["itemTemplateId"] != null) {
+                            if ($attrs["itemTemplateId"] != null) {
 
-                                let itemTemplateElement = angular.element(`#${attributes["itemTemplateId"]}`);
+                                let itemTemplateElement = angular.element(`#${$attrs["itemTemplateId"]}`);
 
                                 let itemTemplateElementHtml = itemTemplateElement.html();
 
@@ -230,9 +230,9 @@ module Foundation.View.Directives {
                                 multiSelectOptions.itemTemplate = itemTemplate;
                             }
 
-                            if (attributes["tagTemplateId"] != null) {
+                            if ($attrs["tagTemplateId"] != null) {
 
-                                let tagTemplateElement = angular.element(`#${attributes["tagTemplateId"]}`);
+                                let tagTemplateElement = angular.element(`#${$attrs["tagTemplateId"]}`);
 
                                 let tagTemplateElementHtml = tagTemplateElement.html();
 
@@ -241,9 +241,9 @@ module Foundation.View.Directives {
                                 multiSelectOptions.tagTemplate = tagTemplate;
                             }
 
-                            if (attributes["headerTemplateId"] != null) {
+                            if ($attrs["headerTemplateId"] != null) {
 
-                                let headerTemplateElement = angular.element(`#${attributes["headerTemplateId"]}`);
+                                let headerTemplateElement = angular.element(`#${$attrs["headerTemplateId"]}`);
 
                                 let headerTemplateElementHtml = headerTemplateElement.html();
 
@@ -259,17 +259,17 @@ module Foundation.View.Directives {
                                 throw new Error(`Model has no property named ${multiSelectOptions.dataValueField} to be used as value field`);
 
                             DefaultRadMultiSelectDirective.defaultRadMultiSelectDirectiveCustomizers.forEach(multiSelectCustomizer => {
-                                multiSelectCustomizer($scope, attributes, element, multiSelectOptions);
+                                multiSelectCustomizer($scope, $attrs, $element, multiSelectOptions);
                             });
 
-                            if (attributes.radOnInit != null) {
-                                let radOnInitFN = $parse(attributes.radOnInit);
+                            if ($attrs.radOnInit != null) {
+                                let radOnInitFN = $parse($attrs.radOnInit);
                                 if (typeof radOnInitFN == "function") {
                                     radOnInitFN($scope, { multiSelectOptions: multiSelectOptions });
                                 }
                             }
 
-                            $scope[attributes["isolatedOptionsKey"]] = multiSelectOptions;
+                            $scope[$attrs["isolatedOptionsKey"]] = multiSelectOptions;
 
                         });
                     });

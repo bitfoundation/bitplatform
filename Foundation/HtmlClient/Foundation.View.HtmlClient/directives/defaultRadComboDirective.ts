@@ -4,7 +4,7 @@ module Foundation.View.Directives {
     @Core.DirectiveDependency({ name: "radCombo" })
     export class DefaultRadComboDirective implements ViewModel.Contracts.IDirective {
 
-        public static defaultRadComboDirectiveCustomizers: Array<($scope: ng.IScope, attribues: ng.IAttributes, element: JQuery, comboBoxOptions: kendo.ui.ComboBoxOptions) => void> = [];
+        public static defaultRadComboDirectiveCustomizers: Array<($scope: ng.IScope, attribues: ng.IAttributes, $element: JQuery, comboBoxOptions: kendo.ui.ComboBoxOptions) => void> = [];
 
         public getDirectiveFactory(): ng.IDirectiveFactory {
             return () => ({
@@ -15,9 +15,9 @@ module Foundation.View.Directives {
                     mdInputContainer: "^?mdInputContainer",
                     ngModel: "ngModel"
                 },
-                template: (element: JQuery, attrs: ng.IAttributes) => {
+                template: ($element: JQuery, $attrs: ng.IAttributes) => {
 
-                    const itemTemplate = element
+                    const itemTemplate = $element
                         .children("item-template");
 
                     const guidUtils = Core.DependencyManager.getCurrent().resolveObject<ViewModel.Implementations.GuidUtils>("GuidUtils");
@@ -28,10 +28,10 @@ module Foundation.View.Directives {
 
                         angular.element(document.body).append(itemTemplate.attr("id", itemTemplateId).attr("ng-cloak", ""));
 
-                        attrs["itemTemplateId"] = itemTemplateId;
+                        $attrs["itemTemplateId"] = itemTemplateId;
                     }
 
-                    const headerTemplate = angular.element(element)
+                    const headerTemplate = angular.element($element)
                         .children("header-template");
 
                     if (headerTemplate.length != 0) {
@@ -44,7 +44,7 @@ module Foundation.View.Directives {
 
                         angular.element(document.body).append(headerTemplate);
 
-                        attrs["headerTemplateId"] = headerTemplateId;
+                        $attrs["headerTemplateId"] = headerTemplateId;
                     }
 
                     const replaceAll = (text: string, search: string, replacement: string) => {
@@ -53,10 +53,10 @@ module Foundation.View.Directives {
 
                     const isolatedOptionsKey = `options${replaceAll(guidUtils.newGuid(), "-", "")}`;
 
-                    attrs["isolatedOptionsKey"] = isolatedOptionsKey;
+                    $attrs["isolatedOptionsKey"] = isolatedOptionsKey;
 
                     let ngModelOptions = "";
-                    if (attrs["ngModel"] != null && attrs["ngModelOptions"] == null) {
+                    if ($attrs["ngModel"] != null && $attrs["ngModelOptions"] == null) {
                         ngModelOptions = `ng-model-options="{ updateOn : 'change' , allowInvalid : true }"`;
                     }
 
@@ -64,7 +64,7 @@ module Foundation.View.Directives {
 
                     return template;
                 },
-                link($scope: ng.IScope, element: JQuery, attributes: ng.IAttributes & { ngModel: string, radText: string, radDataSource: string, radValueFieldName: string, radTextFieldName: string, radVirtualEntityLoader: string, radOnInit: string }, requireArgs: { mdInputContainer: { element: JQuery }, ngModel: ng.INgModelController }) {
+                link($scope: ng.IScope, $element: JQuery, $attrs: ng.IAttributes & { ngModel: string, radText: string, radDataSource: string, radValueFieldName: string, radTextFieldName: string, radVirtualEntityLoader: string, radOnInit: string }, requireArgs: { mdInputContainer: { element: JQuery }, ngModel: ng.INgModelController }) {
 
                     const dependencyManager = Core.DependencyManager.getCurrent();
 
@@ -73,12 +73,12 @@ module Foundation.View.Directives {
 
                     $timeout(() => {
 
-                        const watches = attributes.radText != null ? [attributes.radDataSource, (() => {
-                            const modelParts = attributes.radText.split(".");
+                        const watches = $attrs.radText != null ? [$attrs.radDataSource, (() => {
+                            const modelParts = $attrs.radText.split(".");
                             modelParts.pop();
                             const modelParentProp = modelParts.join(".");
                             return modelParentProp;
-                        })()] : [attributes.radDataSource];
+                        })()] : [$attrs.radDataSource];
 
                         let model = null;
 
@@ -95,10 +95,10 @@ module Foundation.View.Directives {
 
                             watchForDataSourceAndNgModelIfAnyToCreateComboWidgetUnRegisterHandler();
 
-                            let radValueFieldName = attributes.radValueFieldName;
-                            let radTextFieldName = attributes.radTextFieldName;
+                            let radValueFieldName = $attrs.radValueFieldName;
+                            let radTextFieldName = $attrs.radTextFieldName;
 
-                            let splittedNgModel = attributes.ngModel.split('.');
+                            let splittedNgModel = $attrs.ngModel.split('.');
                             let bindedMemberName = splittedNgModel.pop();
                             let parentOfNgModel = $parse(splittedNgModel.join('.'))($scope);
 
@@ -136,26 +136,26 @@ module Foundation.View.Directives {
 
                             let ngModelAssign = null;
 
-                            if (attributes.ngModel != null)
-                                ngModelAssign = $parse(attributes.ngModel).assign;
+                            if ($attrs.ngModel != null)
+                                ngModelAssign = $parse($attrs.ngModel).assign;
 
                             let text: string = null;
                             let parsedText: ng.ICompiledExpression;
 
-                            if (attributes.radText != null) {
+                            if ($attrs.radText != null) {
 
-                                parsedText = $parse(attributes.radText);
+                                parsedText = $parse($attrs.radText);
 
                                 text = parsedText($scope);
 
                                 if (text == "")
                                     text = null;
 
-                                if (attributes.ngModel != null) {
-                                    $scope.$watch(attributes.ngModel.replace("::", ""), (newValue) => {
+                                if ($attrs.ngModel != null) {
+                                    $scope.$watch($attrs.ngModel.replace("::", ""), (newValue) => {
                                         const current = dataSource.current;
                                         if (current != null)
-                                            parsedText.assign($scope, current[attributes.radTextFieldName]);
+                                            parsedText.assign($scope, current[$attrs.radTextFieldName]);
                                         else if (requireArgs.ngModel.$isEmpty(newValue))
                                             parsedText.assign($scope, "");
                                     });
@@ -164,7 +164,7 @@ module Foundation.View.Directives {
 
                             let kendoWidgetCreatedDisposal = $scope.$on("kendoWidgetCreated", (event, combo: kendo.ui.ComboBox) => {
 
-                                if (combo.element[0] != element[0]) {
+                                if (combo.element[0] != $element[0]) {
                                     return;
                                 }
 
@@ -202,7 +202,7 @@ module Foundation.View.Directives {
 
                                     combo.wrapper
                                         .focusin(() => {
-                                            if (angular.element(element).is(":disabled"))
+                                            if (angular.element($element).is(":disabled"))
                                                 return;
                                             mdInputContainerParent.addClass("md-input-focused");
                                         });
@@ -260,7 +260,7 @@ module Foundation.View.Directives {
 
                             const comboBoxOptions: kendo.ui.ComboBoxOptions = {
                                 dataSource: dataSource,
-                                autoBind: dataSource.flatView().length != 0 || attributes.radText == null,
+                                autoBind: dataSource.flatView().length != 0 || $attrs.radText == null,
                                 dataTextField: radTextFieldName,
                                 dataValueField: radValueFieldName,
                                 filter: "contains",
@@ -273,7 +273,7 @@ module Foundation.View.Directives {
                                     dataSource.onCurrentChanged();
                                 },
                                 open: (e) => {
-                                    if (e.sender.options.autoBind == false && attributes.radText != null) {
+                                    if (e.sender.options.autoBind == false && $attrs.radText != null) {
                                         e.sender.options.autoBind = true;
                                         if (e.sender.options.dataSource.flatView().length == 0)
                                             (e.sender.options.dataSource as kendo.data.DataSource).fetch();
@@ -288,9 +288,9 @@ module Foundation.View.Directives {
                             if (text != null)
                                 comboBoxOptions.text = text;
 
-                            if (attributes["itemTemplateId"] != null) {
+                            if ($attrs["itemTemplateId"] != null) {
 
-                                let itemTemplateElement = angular.element(`#${attributes["itemTemplateId"]}`);
+                                let itemTemplateElement = angular.element(`#${$attrs["itemTemplateId"]}`);
 
                                 let itemTemplateElementHtml = itemTemplateElement.html();
 
@@ -299,9 +299,9 @@ module Foundation.View.Directives {
                                 comboBoxOptions.template = itemTemplate;
                             }
 
-                            if (attributes["headerTemplateId"] != null) {
+                            if ($attrs["headerTemplateId"] != null) {
 
-                                let headerTemplateElement = angular.element(`#${attributes["headerTemplateId"]}`);
+                                let headerTemplateElement = angular.element(`#${$attrs["headerTemplateId"]}`);
 
                                 let headerTemplateElementHtml = headerTemplateElement.html();
 
@@ -316,9 +316,9 @@ module Foundation.View.Directives {
                             if (dataSource.options.schema.model.fields[comboBoxOptions.dataValueField] == null)
                                 throw new Error(`Model has no property named ${comboBoxOptions.dataValueField} to be used as value field`);
 
-                            if (attributes.radVirtualEntityLoader != null) {
+                            if ($attrs.radVirtualEntityLoader != null) {
 
-                                let radVirtualEntityLoader = $parse(attributes.radVirtualEntityLoader);
+                                let radVirtualEntityLoader = $parse($attrs.radVirtualEntityLoader);
 
                                 comboBoxOptions.virtual = {
                                     mapValueTo: 'dataItem',
@@ -341,7 +341,7 @@ module Foundation.View.Directives {
                                             options.success(items);
 
                                             setTimeout(() => {
-                                                let combo = element.data("kendoComboBox");
+                                                let combo = $element.data("kendoComboBox");
                                                 if (combo == null)
                                                     return;
                                                 let input = combo.wrapper.find("input");
@@ -359,17 +359,17 @@ module Foundation.View.Directives {
                             }
 
                             DefaultRadComboDirective.defaultRadComboDirectiveCustomizers.forEach(radComboCustomizer => {
-                                radComboCustomizer($scope, attributes, element, comboBoxOptions);
+                                radComboCustomizer($scope, $attrs, $element, comboBoxOptions);
                             });
 
-                            if (attributes.radOnInit != null) {
-                                let radOnInitFN = $parse(attributes.radOnInit);
+                            if ($attrs.radOnInit != null) {
+                                let radOnInitFN = $parse($attrs.radOnInit);
                                 if (typeof radOnInitFN == "function") {
                                     radOnInitFN($scope, { comboBoxOptions: comboBoxOptions });
                                 }
                             }
 
-                            $scope[attributes["isolatedOptionsKey"]] = comboBoxOptions;
+                            $scope[$attrs["isolatedOptionsKey"]] = comboBoxOptions;
 
                         });
                     });

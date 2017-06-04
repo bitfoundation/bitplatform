@@ -7,7 +7,7 @@
                 restrict: "A",
                 require: "ngModel",
                 scope: false,
-                link($scope: ng.IScope, element: JQuery, attributes: ng.IAttributes & { ngModel: string, dtoRules: string, dtoViewModel: string }, ctrl: ng.IFormController & { $$parentForm: ViewModel.ViewModels.IDtoFormController }) {
+                link($scope: ng.IScope, $element: JQuery, $attrs: ng.IAttributes & { ngModel: string, dtoRules: string, dtoViewModel: string }, ctrl: ng.IFormController & { $$parentForm: ViewModel.ViewModels.IDtoFormController }) {
 
                     let dtoViewModel: ViewModel.ViewModels.DtoViewModel<Model.Contracts.IDto, ViewModel.Implementations.DtoRules<Model.Contracts.IDto>> = null;
                     let dtoRules: ViewModel.Implementations.DtoRules<Model.Contracts.IDto> = null;
@@ -79,7 +79,7 @@
 
                     $timeout(() => {
 
-                        $scope.$watch(attributes.ngModel, (newModel: any, oldModel: any) => {
+                        $scope.$watch($attrs.ngModel, (newModel: any, oldModel: any) => {
 
                             if (newModel == null && oldModel == null)
                                 return;
@@ -89,7 +89,7 @@
 
                             if (newModel != null && newModel.innerInstance != null) {
                                 newModel = newModel.innerInstance();
-                                $parse(attributes.ngModel).assign($scope, newModel);
+                                $parse($attrs.ngModel).assign($scope, newModel);
                             }
 
                             if (newModel != null && !(newModel instanceof $data.Entity))
@@ -128,7 +128,7 @@
                                         Object.defineProperty(propModelController, "visible", {
                                             configurable: true,
                                             set: (isVisible: boolean) => {
-                                                let currentItem = angular.element(element).find(`[name='${propDefenition.name}']`);
+                                                let currentItem = angular.element($element).find(`[name='${propDefenition.name}']`);
                                                 const data = currentItem.data();
                                                 if (data != null && data["handler"] != null && data["handler"].wrapper != null)
                                                     currentItem = data["handler"].wrapper;
@@ -150,7 +150,7 @@
                                         Object.defineProperty(propModelController, "editable", {
                                             configurable: true,
                                             set: (isEditable: boolean) => {
-                                                let currentItem = angular.element(element).find(`[name='${propDefenition.name}']`);
+                                                let currentItem = angular.element($element).find(`[name='${propDefenition.name}']`);
                                                 const data = currentItem.data();
                                                 if (data != null && data["handler"] != null && data["handler"].wrapper != null) {
                                                     currentItem = data["handler"].wrapper;
@@ -217,8 +217,8 @@
                                 }
                             }
 
-                            if (attributes.dtoViewModel != null) {
-                                dtoViewModel = $parse(attributes.dtoViewModel)($scope);
+                            if ($attrs.dtoViewModel != null) {
+                                dtoViewModel = $parse($attrs.dtoViewModel)($scope);
                             }
                             else {
                                 let tryToGetDtoViewModel = $parse("vm")($scope);
@@ -226,8 +226,8 @@
                                     dtoViewModel = tryToGetDtoViewModel as ViewModel.ViewModels.DtoViewModel<Model.Contracts.IDto, ViewModel.Implementations.DtoRules<Model.Contracts.IDto>>;
                             }
 
-                            if (attributes.dtoRules != null)
-                                dtoRules = $parse(attributes.dtoRules)($scope);
+                            if ($attrs.dtoRules != null)
+                                dtoRules = $parse($attrs.dtoRules)($scope);
                             else if (dtoViewModel != null)
                                 dtoRules = dtoViewModel.rules;
 
@@ -293,7 +293,7 @@
                             if (dtoViewModel != null) {
 
                                 if (!(dtoViewModel instanceof ViewModel.ViewModels.DtoViewModel)) {
-                                    throw new Error(`dto view model ${attributes.dtoViewModel} is not instance of dto view model`);
+                                    throw new Error(`dto view model ${$attrs.dtoViewModel} is not instance of dto view model`);
                                 }
 
                                 if (dtoViewModel.model == null || dtoViewModel.model == oldModel)

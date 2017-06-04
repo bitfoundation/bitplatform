@@ -7,7 +7,7 @@
                 replace: true,
                 terminal: true,
                 require: "ngModel",
-                template: (element: JQuery, attrs: ng.IAttributes) => {
+                template: ($element: JQuery, $attrs: ng.IAttributes) => {
 
                     const template = `<input kendo-color-picker k-buttons="false" k-preview="false" k-input="false"></input>`;
 

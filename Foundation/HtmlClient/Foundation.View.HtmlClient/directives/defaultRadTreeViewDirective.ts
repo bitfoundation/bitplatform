@@ -5,7 +5,7 @@ module Foundation.View.Directives {
     @Core.DirectiveDependency({ name: "radTreeView" })
     export class DefaultRadTreeViewDirective implements ViewModel.Contracts.IDirective {
 
-        public static defaultRadTreeViewDirectiveCustomizers: Array<($scope: ng.IScope, attribues: ng.IAttributes, element: JQuery, treeViewOptions: kendo.ui.TreeViewOptions) => void> = [];
+        public static defaultRadTreeViewDirectiveCustomizers: Array<($scope: ng.IScope, $attrs: ng.IAttributes, $element: JQuery, treeViewOptions: kendo.ui.TreeViewOptions) => void> = [];
 
         public getDirectiveFactory(): ng.IDirectiveFactory {
             return () => ({
@@ -16,11 +16,11 @@ module Foundation.View.Directives {
                     mdInputContainer: "^?mdInputContainer",
                     ngModel: "ngModel"
                 },
-                template: (element: JQuery, attrs: ng.IAttributes) => {
+                template: ($element: JQuery, $attrs: ng.IAttributes) => {
 
                     const guidUtils = Core.DependencyManager.getCurrent().resolveObject<ViewModel.Implementations.GuidUtils>("GuidUtils");
 
-                    const itemTemplate = element
+                    const itemTemplate = $element
                         .children("item-template");
 
                     if (itemTemplate.length != 0) {
@@ -33,7 +33,7 @@ module Foundation.View.Directives {
 
                         angular.element(document.body).append(itemTemplate);
 
-                        attrs["itemTemplateId"] = itemTemplateId;
+                        $attrs["itemTemplateId"] = itemTemplateId;
                     }
 
                     const replaceAll = (text: string, search: string, replacement: string) => {
@@ -42,13 +42,13 @@ module Foundation.View.Directives {
 
                     const isolatedOptionsKey = `options${replaceAll(guidUtils.newGuid(), "-", "")}`;
 
-                    attrs["isolatedOptionsKey"] = isolatedOptionsKey;
+                    $attrs["isolatedOptionsKey"] = isolatedOptionsKey;
 
-                    const template = `<div kendo-tree-view=${attrs["name"]} k-options="::${isolatedOptionsKey}" k-ng-delay="::${isolatedOptionsKey}" />`;
+                    const template = `<div kendo-tree-view=${$attrs["name"]} k-options="::${isolatedOptionsKey}" k-ng-delay="::${isolatedOptionsKey}" />`;
 
                     return template;
                 },
-                link($scope: ng.IScope, element: JQuery, attributes: ng.IAttributes & { radText: string, radDataSource: string, radTextFieldName: string, radOnInit: string }, requireArgs: { mdInputContainer: { element: JQuery } }) {
+                link($scope: ng.IScope, element: JQuery, $attrs: ng.IAttributes & { radText: string, radDataSource: string, radTextFieldName: string, radOnInit: string }, requireArgs: { mdInputContainer: { element: JQuery } }) {
 
                     const dependencyManager = Core.DependencyManager.getCurrent();
 
@@ -57,12 +57,12 @@ module Foundation.View.Directives {
 
                     $timeout(() => {
 
-                        const watches = attributes.radText != null ? [attributes.radDataSource, (() => {
-                            const modelParts = attributes.radText.split(".");
+                        const watches = $attrs.radText != null ? [$attrs.radDataSource, (() => {
+                            const modelParts = $attrs.radText.split(".");
                             modelParts.pop();
                             const modelParentProp = modelParts.join(".");
                             return modelParentProp;
-                        })()] : [attributes.radDataSource];
+                        })()] : [$attrs.radDataSource];
 
                         const watchForDataSourceUnRegisterHandler = $scope.$watchGroup(watches, (values: Array<any>) => {
 
@@ -135,7 +135,7 @@ module Foundation.View.Directives {
                             const treeViewOptions: kendo.ui.TreeViewOptions = {
                                 dataSource: dataSource,
                                 autoBind: true,
-                                dataTextField: attributes.radTextFieldName,
+                                dataTextField: $attrs.radTextFieldName,
                                 autoScroll: true,
                                 animation: true,
                                 checkboxes: false,
@@ -143,9 +143,9 @@ module Foundation.View.Directives {
                                 loadOnDemand: true
                             };
 
-                            if (attributes["itemTemplateId"] != null) {
+                            if ($attrs["itemTemplateId"] != null) {
 
-                                const itemTemplateElement = angular.element(`#${attributes["itemTemplateId"]}`);
+                                const itemTemplateElement = angular.element(`#${$attrs["itemTemplateId"]}`);
 
                                 const itemTemplateElementHtml = itemTemplateElement.html();
 
@@ -155,17 +155,17 @@ module Foundation.View.Directives {
                             }
 
                             DefaultRadTreeViewDirective.defaultRadTreeViewDirectiveCustomizers.forEach(treeViewCustomizer => {
-                                treeViewCustomizer($scope, attributes, element, treeViewOptions);
+                                treeViewCustomizer($scope, $attrs, element, treeViewOptions);
                             });
 
-                            if (attributes.radOnInit != null) {
-                                const radOnInitFN = $parse(attributes.radOnInit);
+                            if ($attrs.radOnInit != null) {
+                                const radOnInitFN = $parse($attrs.radOnInit);
                                 if (typeof radOnInitFN == "function") {
                                     radOnInitFN($scope, { treeViewOptions: treeViewOptions });
                                 }
                             }
 
-                            $scope[attributes["isolatedOptionsKey"]] = treeViewOptions;
+                            $scope[$attrs["isolatedOptionsKey"]] = treeViewOptions;
 
                         });
                     });

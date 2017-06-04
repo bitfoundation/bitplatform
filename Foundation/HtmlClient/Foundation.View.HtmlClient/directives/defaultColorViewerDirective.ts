@@ -9,8 +9,8 @@ module Foundation.View.Directives {
                 scope: false,
                 replace: true,
                 terminal: true,
-                template: (element: JQuery, attrs: ng.IAttributes) => {
-                    return `<div style='background-color:${attrs["color"]}; color:transparent;'>color</div>`;
+                template: ($element: JQuery, $attrs: ng.IAttributes) => {
+                    return `<div style='background-color:${$attrs["color"]}; color:transparent;'>color</div>`;
                 }
             });
         }

@@ -15,14 +15,14 @@ module Foundation.View.Directives {
                     predicate: "=",
                     elementSelector: "@"
                 },
-                link($scope: IDefaultElementMoverDirectiveScope, element: JQuery, attributes: ng.IAttributes) {
+                link($scope: IDefaultElementMoverDirectiveScope, $element: JQuery, $attrs: ng.IAttributes) {
 
                     $scope.$watch("predicate", ((isOkToBeMoved: boolean) => {
 
                         if (isOkToBeMoved == true) {
 
                             angular.element($scope.elementSelector)
-                                .appendTo(element);
+                                .appendTo($element);
 
                         }
 

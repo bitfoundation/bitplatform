@@ -5,15 +5,15 @@ module Foundation.View.Directives {
     @Core.DirectiveDependency({ name: "radGrid" })
     export class DefaultRadGridDirective implements ViewModel.Contracts.IDirective {
 
-        public static defaultRadGridDirectiveCustomizers: Array<($scope: ng.IScope, attribues: ng.IAttributes, element: JQuery, gridOptions: kendo.ui.GridOptions) => void> = [];
-        public static defaultRadGridDirectiveColumnCustomizers: Array<($scope: ng.IScope, attribues: ng.IAttributes, element: JQuery, gridOptions: kendo.ui.GridOptions, columnElement: JQuery, gridColumn: kendo.ui.GridColumn) => void> = [];
+        public static defaultRadGridDirectiveCustomizers: Array<($scope: ng.IScope, $attrs: ng.IAttributes, $element: JQuery, gridOptions: kendo.ui.GridOptions) => void> = [];
+        public static defaultRadGridDirectiveColumnCustomizers: Array<($scope: ng.IScope, $attrs: ng.IAttributes, $element: JQuery, gridOptions: kendo.ui.GridOptions, columnElement: JQuery, gridColumn: kendo.ui.GridColumn) => void> = [];
 
         public getDirectiveFactory(): ng.IDirectiveFactory {
             return () => ({
                 scope: false,
                 replace: true,
                 terminal: true,
-                template: (element: JQuery, attrs: ng.IAttributes) => {
+                template: ($element: JQuery, $attrs: ng.IAttributes) => {
 
                     const guidUtils = Core.DependencyManager.getCurrent().resolveObject<ViewModel.Implementations.GuidUtils>("GuidUtils");
 
@@ -23,22 +23,22 @@ module Foundation.View.Directives {
 
                     const isolatedOptionsKey = `options${replaceAll(guidUtils.newGuid(), "-", "")}`;
 
-                    attrs["isolatedOptionsKey"] = isolatedOptionsKey;
+                    $attrs["isolatedOptionsKey"] = isolatedOptionsKey;
 
                     const gridTemplate = `<rad-grid-element kendo-grid k-options="::${isolatedOptionsKey}" k-ng-delay="::${isolatedOptionsKey}" />`;
 
                     const viewRowTemplateId = replaceAll(guidUtils.newGuid(), "-", "");
 
-                    const viewTemplate = angular.element(element)
+                    const viewTemplate = angular.element($element)
                         .children("view-template")
                         .attr("id", viewRowTemplateId)
                         .attr("ng-cloak", "");
 
                     angular.element(document.body).append(viewTemplate);
 
-                    attrs["viewTemplateId"] = viewRowTemplateId;
+                    $attrs["viewTemplateId"] = viewRowTemplateId;
 
-                    const editTemplate = angular.element(element)
+                    const editTemplate = angular.element($element)
                         .children("edit-template");
 
                     if (editTemplate.length != 0) {
@@ -51,10 +51,10 @@ module Foundation.View.Directives {
 
                         angular.element(document.body).append(editTemplate);
 
-                        attrs["editTemplateId"] = editRowTemplateId;
+                        $attrs["editTemplateId"] = editRowTemplateId;
                     }
 
-                    const toolbarTemplate = angular.element(element)
+                    const toolbarTemplate = angular.element($element)
                         .children("toolbar-template");
 
                     if (toolbarTemplate.length != 0) {
@@ -67,10 +67,10 @@ module Foundation.View.Directives {
 
                         angular.element(document.body).append(toolbarTemplate);
 
-                        attrs["toolbarTemplateId"] = toolbarTemplateId;
+                        $attrs["toolbarTemplateId"] = toolbarTemplateId;
                     }
 
-                    const detailTemplate = angular.element(element)
+                    const detailTemplate = angular.element($element)
                         .children("detail-template");
 
                     if (detailTemplate.length != 0) {
@@ -83,12 +83,12 @@ module Foundation.View.Directives {
 
                         angular.element(document.body).append(detailTemplate);
 
-                        attrs["detailTemplateId"] = detailTemplateId;
+                        $attrs["detailTemplateId"] = detailTemplateId;
                     }
 
                     return gridTemplate;
                 },
-                link($scope: ng.IScope, element: JQuery, attributes: ng.IAttributes & { radDataSource: string, radOnInit: string }) {
+                link($scope: ng.IScope, $element: JQuery, $attrs: ng.IAttributes & { radDataSource: string, radOnInit: string }) {
 
                     const dependencyManager = Core.DependencyManager.getCurrent();
 
@@ -112,7 +112,7 @@ module Foundation.View.Directives {
 
                     $timeout(() => {
 
-                        const watchForDataSourceToCreateDataGridWidgetUnRegisterHandler = $scope.$watch(attributes.radDataSource, (dataSource: kendo.data.DataSource) => {
+                        const watchForDataSourceToCreateDataGridWidgetUnRegisterHandler = $scope.$watch($attrs.radDataSource, (dataSource: kendo.data.DataSource) => {
 
                             if (dataSource == null)
                                 return;
@@ -121,7 +121,7 @@ module Foundation.View.Directives {
 
                             const kendoWidgetCreatedDisposal = $scope.$on("kendoWidgetCreated", (event, grid: kendo.ui.Grid) => {
 
-                                if (grid.element[0] != element[0]) {
+                                if (grid.element[0] != $element[0]) {
                                     return;
                                 }
 
@@ -154,7 +154,7 @@ module Foundation.View.Directives {
 
                                 });
 
-                                $scope[attributes["isolatedOptionsKey"] + "Delete"] = ($event) => {
+                                $scope[$attrs["isolatedOptionsKey"] + "Delete"] = ($event) => {
 
                                     const row = angular.element($event.currentTarget).parents("tr");
 
@@ -166,13 +166,13 @@ module Foundation.View.Directives {
 
                                 };
 
-                                if (attributes["editTemplateId"] != null) {
+                                if ($attrs["editTemplateId"] != null) {
 
-                                    $scope[attributes["isolatedOptionsKey"] + "Add"] = () => {
+                                    $scope[$attrs["isolatedOptionsKey"] + "Add"] = () => {
                                         grid.addRow();
                                     };
 
-                                    $scope[attributes["isolatedOptionsKey"] + "Update"] = ($event) => {
+                                    $scope[$attrs["isolatedOptionsKey"] + "Update"] = ($event) => {
 
                                         const row = angular.element($event.currentTarget).parents("tr");
 
@@ -180,13 +180,13 @@ module Foundation.View.Directives {
 
                                     };
 
-                                    $scope[attributes["isolatedOptionsKey"] + "Cancel"] = ($event) => {
+                                    $scope[$attrs["isolatedOptionsKey"] + "Cancel"] = ($event) => {
                                         const uid = angular.element($event.target).parents(".k-popup-edit-form").attr("data-uid");
                                         grid.trigger("cancel", { container: angular.element($event.target).parents(".k-window"), sender: grid, model: grid.dataSource.flatView().find(i => i["uid"] == uid) });
                                         grid.cancelRow();
                                     };
 
-                                    $scope[attributes["isolatedOptionsKey"] + "Save"] = ($event) => {
+                                    $scope[$attrs["isolatedOptionsKey"] + "Save"] = ($event) => {
 
                                         grid.saveRow();
 
@@ -237,9 +237,9 @@ module Foundation.View.Directives {
                             let editTemplateHtmlString: string = null;
                             let editPopupTitle: string = null;
 
-                            if (attributes["editTemplateId"] != null) {
+                            if ($attrs["editTemplateId"] != null) {
 
-                                editTemplateElement = angular.element(`#${attributes["editTemplateId"]}`);
+                                editTemplateElement = angular.element(`#${$attrs["editTemplateId"]}`);
 
                                 let titleAttrValue = editTemplateElement.attr("title");
 
@@ -248,7 +248,7 @@ module Foundation.View.Directives {
 
                                 const editTemplateHtml = angular.element(`<rad-grid-editor rad-model-item-template ng-model='::dataItem'>${editTemplateElement.html()}</rad-grid-editor>`);
 
-                                editTemplateHtml.first().attr("isolatedOptionsKey", attributes["isolatedOptionsKey"]);
+                                editTemplateHtml.first().attr("isolatedOptionsKey", $attrs["isolatedOptionsKey"]);
 
                                 editTemplateHtmlString = editTemplateHtml.first()[0].outerHTML;
 
@@ -257,7 +257,7 @@ module Foundation.View.Directives {
 
                             const gridOptions: kendo.ui.GridOptions = {
                                 dataSource: dataSource,
-                                editable: attributes["editTemplateId"] == null ? { confirmation: true, update: false } : {
+                                editable: $attrs["editTemplateId"] == null ? { confirmation: true, update: false } : {
                                     mode: "popup",
                                     confirmation: true,
                                     template: kendo.template(editTemplateHtmlString, { useWithBlock: false }),
@@ -301,9 +301,9 @@ module Foundation.View.Directives {
                                 groupable: false
                             };
 
-                            if (attributes["toolbarTemplateId"] != null) {
+                            if ($attrs["toolbarTemplateId"] != null) {
 
-                                const toolbarTemplateElement = angular.element(`#${attributes["toolbarTemplateId"]}`);
+                                const toolbarTemplateElement = angular.element(`#${$attrs["toolbarTemplateId"]}`);
 
                                 const toolbarTemplateHtml = toolbarTemplateElement.html();
 
@@ -312,9 +312,9 @@ module Foundation.View.Directives {
                                 gridOptions.toolbar = toolbar;
                             }
 
-                            if (attributes["detailTemplateId"] != null) {
+                            if ($attrs["detailTemplateId"] != null) {
 
-                                const detailTemplateElement = angular.element(`#${attributes["detailTemplateId"]}`);
+                                const detailTemplateElement = angular.element(`#${$attrs["detailTemplateId"]}`);
 
                                 const detailTemplateHtml = angular.element(`<rad-grid-detail-template rad-model-item-template ng-model='::dataItem'>${detailTemplateElement.html()}</rad-grid-detail-template>`);
 
@@ -331,7 +331,7 @@ module Foundation.View.Directives {
 
                             const columns: Array<kendo.ui.GridColumn> = [];
 
-                            const viewTemplateElement = angular.element(`#${attributes["viewTemplateId"]}`);
+                            const viewTemplateElement = angular.element(`#${$attrs["viewTemplateId"]}`);
 
                             let extras = viewTemplateElement.find("extras");
 
@@ -546,22 +546,22 @@ module Foundation.View.Directives {
 
                             columns.forEach(col => {
                                 DefaultRadGridDirective.defaultRadGridDirectiveColumnCustomizers.forEach(colCustomizer => {
-                                    colCustomizer($scope, attributes, element, gridOptions, col["element"], col);
+                                    colCustomizer($scope, $attrs, $element, gridOptions, col["element"], col);
                                 });
                             });
 
                             DefaultRadGridDirective.defaultRadGridDirectiveCustomizers.forEach(gridCustomizer => {
-                                gridCustomizer($scope, attributes, element, gridOptions);
+                                gridCustomizer($scope, $attrs, $element, gridOptions);
                             });
 
-                            if (attributes.radOnInit != null) {
-                                let radOnInitFN = $parse(attributes.radOnInit);
+                            if ($attrs.radOnInit != null) {
+                                let radOnInitFN = $parse($attrs.radOnInit);
                                 if (typeof radOnInitFN == "function") {
                                     radOnInitFN($scope, { gridOptions: gridOptions });
                                 }
                             }
 
-                            $scope[attributes["isolatedOptionsKey"]] = gridOptions;
+                            $scope[$attrs["isolatedOptionsKey"]] = gridOptions;
                         });
                     });
                 }
