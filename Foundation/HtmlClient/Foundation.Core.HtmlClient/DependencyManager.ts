@@ -656,7 +656,7 @@ module Foundation.Core {
         };
     }
 
-    export function Inject(name: string, use$inject = name == "$element" || name == "$scope" || name == "$attrs"): ParameterDecorator {
+    export function Inject(name: string, use$inject = name == "$element" || name == "$scope" || name == "$attrs" || name == "$transclude"): ParameterDecorator {
 
         if (name == null || name == "")
             throw new Error("name may not be null or empty");
