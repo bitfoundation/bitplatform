@@ -187,11 +187,17 @@ module Foundation.Core {
             if (directiveDependency.name == null || directiveDependency.name == "")
                 throw new Error("directiveDependency's name is null or empty");
 
+            if (!this.dependencyShouldBeConsidered(directiveDependency))
+                return;
+
             if (directiveDependency.usesOldStyle == null)
                 directiveDependency.usesOldStyle = false;
 
-            if (!this.dependencyShouldBeConsidered(directiveDependency))
-                return;
+            if (directiveDependency.usesOldStyle == false) {
+                directiveDependency.name = camelize(directiveDependency.name);
+                directiveDependency.controller = directiveDependency.type as any;
+                directiveDependency.controllerAs = directiveDependency.controllerAs || "vm";
+            }
 
             const dependenciesWithThisName = this.directiveDependencies.filter(d => d.name.toLowerCase() == directiveDependency.name.toLowerCase());
 
@@ -228,6 +234,7 @@ module Foundation.Core {
 
             componentDependency.name = camelize(componentDependency.name);
             componentDependency.controller = componentDependency.type as any;
+            componentDependency.controllerAs = componentDependency.controllerAs || "vm";
 
             const dependenciesWithThisName = this.componentDependencies.filter(d => d.name.toLowerCase() == componentDependency.name.toLowerCase());
             let dependenciesWithThisNameIndex = -1;
@@ -262,6 +269,7 @@ module Foundation.Core {
 
             formViewModelDependency.name = camelize(formViewModelDependency.name);
             formViewModelDependency.controller = formViewModelDependency.type as any;
+            formViewModelDependency.controllerAs = formViewModelDependency.controllerAs || "vm";
 
             if (formViewModelDependency.$routeConfig != null) {
                 formViewModelDependency.$routeConfig.filter(r => r.name != null && r.component == null).forEach(r => {

@@ -3,7 +3,7 @@
     // <test test-property="vm.someNumber"></test>
 
     @Foundation.Core.DirectiveDependency({
-        name: "test",
+        name: "Test",
         controllerAs: "ctrl",
         bindToController: {
             testProperty: "="

@@ -34,8 +34,6 @@ module Foundation.ViewModel.Implementations {
                 if (vm.templateUrl != null)
                     vm.templateUrl = this.pathProvider.getFullPath(vm.templateUrl);
 
-                vm.controllerAs = vm.controllerAs || "vm";
-
                 vm.bindings = angular.extend(vm.bindings || {}, { $router: "<" });
 
                 if (vm.name != "app") {
@@ -47,8 +45,6 @@ module Foundation.ViewModel.Implementations {
             });
 
             dependencyManager.getAllComponentDependencies().forEach(component => {
-
-                component.controllerAs = component.controllerAs || "vm";
 
                 if (component.templateUrl != null)
                     component.templateUrl = this.pathProvider.getFullPath(component.templateUrl);
@@ -171,7 +167,6 @@ module Foundation.ViewModel.Implementations {
                 if (vm.templateUrl != null)
                     vm.templateUrl = this.pathProvider.getFullPath(vm.templateUrl);
 
-                vm.controllerAs = vm.controllerAs || "vm";
                 vm.controller = vm.controller || vm.type as any;
 
                 app.directive(vm.name, function () { return vm; });
