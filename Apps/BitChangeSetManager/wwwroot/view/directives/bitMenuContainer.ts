@@ -1,7 +1,7 @@
 ﻿module BitChangeSetManager.View.Directives {
 
     @DirectiveDependency({ name: "bitMenuContainer" })
-    export class DefaultColorViewerDirective implements FoundationVM.Contracts.IDirective {
+    export class BitMenuContainerDirective implements FoundationVM.Contracts.IDirective {
         public getDirectiveFactory(): ng.IDirectiveFactory {
             return () => ({
                 scope: false,
@@ -9,21 +9,21 @@
                 terminal: true,
                 template: `<md-sidenav ng-transclude></md-sidenav>`,
                 transclude: true,
-                link($scope: ng.IScope, element: JQuery, attributes: ng.IAttributes) {
+                link($scope: ng.IScope, $element: JQuery, attributes: ng.IAttributes) {
 
                     let $mdSidenav = DependencyManager.getCurrent().resolveObject<ng.material.ISidenavService>("$mdSidenav")(attributes["mdComponentId"]);
 
-                    element.mouseleave(() => {
+                    $element.mouseleave(() => {
                         $mdSidenav.close();
                     });
 
                     let direction = FoundationCore.ClientAppProfileManager.getCurrent().getClientAppProfile().direction;
 
-                    if (!element.hasClass("md-sidenav-right") && !element.hasClass("md-sidenav-left")) {
+                    if (!$element.hasClass("md-sidenav-right") && !$element.hasClass("md-sidenav-left")) {
                         if (direction == "Rtl")
-                            element.addClass("md-sidenav-right");
+                            $element.addClass("md-sidenav-right");
                         else
-                            element.addClass("md-sidenav-left");
+                            $element.addClass("md-sidenav-left");
                     }
 
                     angular.element(document.body).mousemove((e) => {
