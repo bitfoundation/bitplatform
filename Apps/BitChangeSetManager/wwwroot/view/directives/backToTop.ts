@@ -1,39 +1,41 @@
 ﻿module BitChangeSetManager.View.Directives {
 
-    @DirectiveDependency({ name: "backToTop" })
-    export class BackToTopDirective implements FoundationVM.Contracts.IDirective {
-        public getDirectiveFactory(): ng.IDirectiveFactory {
-            return () => ({
-                scope: false,
-                terminal: true,
-                restrict: "A",
-                link($scope: ng.IScope, $element: JQuery, attributes: ng.IAttributes) {
+    @DirectiveDependency({
+        name: "BackToTop",
+        scope: false,
+        terminal: true,
+        restrict: "A",
+    })
+    export class BackToTopDirective {
 
-                    let dependencyManager = FoundationCore.DependencyManager.getCurrent();
+        public constructor( @Inject("$element") public $element: JQuery, @Inject("$window") public $window: ng.IWindowService) {
 
-                    $element.addClass("back-to-top");
+        }
 
-                    $element.click(() => {
-                        $("html, body").animate({ scrollTop: 0 }, 100);
-                    });
+        private hideShow$elementBasedOnCurrentPosition() {
+            if (this.$window.scrollY > 50) {
+                this.$element.fadeIn();
+            } else {
+                this.$element.fadeOut();
+            }
+        }
 
-                    let $window = $(window);
+        @Command()
+        public async $postLink(): Promise<void> {
 
-                    let hideShow$elementBasedOnCurrentPosition = () => {
-                        if ($window.scrollTop() > 100) {
-                            $element.fadeIn();
-                        } else {
-                            $element.fadeOut();
-                        }
-                    }
+            this.$element.addClass("back-to-top");
 
-                    hideShow$elementBasedOnCurrentPosition();
-
-                    $window.scroll(() => {
-                        hideShow$elementBasedOnCurrentPosition();
-                    });
-                }
+            this.$element.click(() => {
+                $("html, body").animate({ scrollTop: 0 }, 100);
             });
+
+            this.hideShow$elementBasedOnCurrentPosition();
+
+            this.$window.addEventListener("scroll", this.hideShow$elementBasedOnCurrentPosition.bind(this));
+        }
+
+        public $onDestroy() {
+            this.$window.removeEventListener("scroll", this.hideShow$elementBasedOnCurrentPosition);
         }
     }
 }
