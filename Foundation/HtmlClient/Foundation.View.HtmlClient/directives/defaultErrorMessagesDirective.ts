@@ -2,6 +2,7 @@
 /// <reference path="../../foundation.viewmodel.htmlclient/foundation.viewmodel.d.ts" />
 
 module Foundation.View.Directives {
+
     @Core.DirectiveDependency({ name: "errorMessages", usesOldStyle: true })
     export class DefaultErrorMessagesDirective implements ViewModel.Contracts.IDirective {
         public getDirectiveFactory(): ng.IDirectiveFactory {
@@ -14,15 +15,18 @@ module Foundation.View.Directives {
         }
     }
 
-    @Core.DirectiveDependency({ name: "errorMessagesTransclude", usesOldStyle: true })
-    export class ErrorMessagesTransclude implements ViewModel.Contracts.IDirective {
-        public getDirectiveFactory(): ng.IDirectiveFactory {
-            return () => ({
-                link: ($scope: ng.IScope, $element: JQuery, $attrs: ng.IAttributes, ctrl: ng.INgModelController, transclude: ng.ITranscludeFunction) => {
-                    transclude((clone, transcludeScope) => {
-                        angular.element($element).append(clone);
-                    });
-                }
+    @Core.DirectiveDependency({
+        name: "ErrorMessagesTransclude"
+    })
+    export class ErrorMessagesTransclude {
+
+        public constructor( @Core.Inject("$transclude") public $transclude: ng.ITranscludeFunction, @Core.Inject("$element") public $element: JQuery) {
+
+        }
+
+        public $postLink() {
+            this.$transclude((clone, transcludeScope) => {
+                angular.element(this.$element).append(clone);
             });
         }
     }

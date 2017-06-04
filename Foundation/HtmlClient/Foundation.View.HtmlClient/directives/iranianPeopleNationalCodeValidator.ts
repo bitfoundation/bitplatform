@@ -1,24 +1,23 @@
 ﻿module Foundation.View.Directives {
 
-    @Core.DirectiveDependency({ name: "iranianPeopleNationalCode", usesOldStyle: true })
-    export class IranianPeopleNationalCodeValidator implements ViewModel.Contracts.IDirective {
-        public getDirectiveFactory(): ng.IDirectiveFactory {
-            return (): ng.IDirective => {
-                return {
-                    require: "ngModel",
-                    link($scope: ng.IScope, elm: JQuery, attrs: ng.IAttributes, ctrl: ng.INgModelController) {
+    @Core.DirectiveDependency({
+        name: "IranianPeopleNationalCode",
+        require: "ngModel"
+    })
+    export class IranianPeopleNationalCodeValidator {
 
-                        const dependencyManager = Core.DependencyManager.getCurrent();
+        public constructor( @Core.Inject("$element") public $element: JQuery, @Core.Inject("IranianCodeValidator") public iranianCodeValidator: Core.Contracts.IIranianCodeValidator) {
 
-                        const iranianCodeValidator = dependencyManager.resolveObject<Core.Contracts.IIranianCodeValidator>("IranianCodeValidator");
+        }
 
-                        ctrl.$validators["iranianPeopleNationalCode"] = (modelValue: string, viewValue: string) => {
+        public $onInit() {
 
-                            return iranianCodeValidator.nationalCodeIsValid(modelValue);
-                        };
-                    }
-                };
+            let ngModel = this.$element.data('$ngModelController');
+
+            ngModel.$validators["iranian-people-national-code"] = (modelValue: string, viewValue: string) => {
+                return this.iranianCodeValidator.nationalCodeIsValid(modelValue);
             };
+
         }
     }
 }

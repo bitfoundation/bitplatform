@@ -1,19 +1,17 @@
 ﻿module Foundation.View.Directives {
-    @Core.DirectiveDependency({ name: "radColorPicker", usesOldStyle: true })
-    export class DefaultRadColorPickerDirective implements ViewModel.Contracts.IDirective {
-        public getDirectiveFactory(): ng.IDirectiveFactory {
-            return () => ({
-                scope: false,
-                replace: true,
-                terminal: true,
-                require: "ngModel",
-                template: ($element: JQuery, $attrs: ng.IAttributes) => {
+    @Core.DirectiveDependency({
+        name: "RadColorPicker",
+        scope: false,
+        replace: true,
+        terminal: true,
+        require: "ngModel",
+        template: ($element: JQuery, $attrs: ng.IAttributes) => {
 
-                    const template = `<input kendo-color-picker k-buttons="false" k-preview="false" k-input="false"></input>`;
+            const template = `<input kendo-color-picker k-buttons="false" k-preview="false" k-input="false"></input>`;
 
-                    return template;
-                }
-            });
+            return template;
         }
+    })
+    export class DefaultRadColorPickerDirective {
     }
 }
