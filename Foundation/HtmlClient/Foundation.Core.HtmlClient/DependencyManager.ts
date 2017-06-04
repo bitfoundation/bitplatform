@@ -644,7 +644,7 @@ module Foundation.Core {
         };
     }
 
-    export function Inject(name: string): ParameterDecorator {
+    export function Inject(name: string, use$inject = name == "$element" || name == "$scope" || name == "$attrs"): ParameterDecorator {
 
         if (name == null || name == "")
             throw new Error("name may not be null or empty");
@@ -652,7 +652,7 @@ module Foundation.Core {
         return (target: Function, propertyKey: string | symbol): Function => {
             target.injects = target.injects || [];
             target.$inject = target.$inject || [];
-            if (name != "$element" && name != "$scope") {
+            if (use$inject == false) {
                 target.injects.push({ name: name, kind: "Single" });
             }
             else {
