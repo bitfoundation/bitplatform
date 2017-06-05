@@ -1,36 +1,35 @@
 ﻿module Foundation.View.Directives {
 
-    @Core.DirectiveDependency({ name: "radModelItemTemplate", usesOldStyle: true })
-    export class DefaultRadModelItemTemplateDirective implements ViewModel.Contracts.IDirective {
-        public getDirectiveFactory(): ng.IDirectiveFactory {
-            return () => ({
-                require: "ngModel",
-                restrict: "A",
-                scope: false,
-                compile() {
-                    return {
-                        pre($scope: ng.IScope, $element: JQuery, $attrs: ng.IAttributes & { ngModel: string }, ctrl: ng.INgModelController) {
+    @Core.DirectiveDependency({
+        name: "RadModelItemTemplate",
+        require: {
+            ngModel: "ngModel"
+        },
+        restrict: "A",
+        scope: false,
+        compile() {
+            return {
+                pre($scope: ng.IScope, $element: JQuery, $attrs: ng.IAttributes & { ngModel: string }, ctrl: ng.INgModelController) {
 
-                            const dependencyManager = Core.DependencyManager.getCurrent();
-                            const $parse = dependencyManager.resolveObject<ng.IParseService>("$parse");
+                    const dependencyManager = Core.DependencyManager.getCurrent();
+                    const $parse = dependencyManager.resolveObject<ng.IParseService>("$parse");
 
-                            if ($attrs.ngModel == null)
-                                return;
+                    let parsedNgModel = $parse($attrs.ngModel);
+                    let model = parsedNgModel($scope);
 
-                            let model = $parse($attrs.ngModel)($scope);
+                    if (model == null)
+                        return;
 
-                            if (model == null)
-                                return;
+                    if (model.innerInstance != null) {
+                        model = model.innerInstance();
+                        parsedNgModel.assign($scope, model);
+                    }
 
-                            if (model.innerInstance != null) {
-                                model = model.innerInstance();
-                                $parse($attrs.ngModel).assign($scope, model);
-                            }
-
-                        }
-                    };
                 }
-            });
+            };
         }
+    })
+    export class DefaultRadModelItemTemplateDirective {
+
     }
 }

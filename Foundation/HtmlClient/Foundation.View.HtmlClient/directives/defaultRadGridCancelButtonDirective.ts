@@ -2,50 +2,39 @@
 
 module Foundation.View.Directives {
 
-    @Core.DirectiveDependency({ name: "radGridCancelButton", usesOldStyle: true })
-    export class DefaultRadGridCancelButtonDirective implements ViewModel.Contracts.IDirective {
-        public static defaultClasses: string[] = ["md-raised"];
-        public getDirectiveFactory(): ng.IDirectiveFactory {
-            return () => ({
-                scope: false,
-                compile($element: JQuery, $attrs: ng.IAttributes) {
-                    return {
-                        pre: function ($scope: ng.IScope, $element, $attrs: ng.IAttributes, controller: ng.INgModelController, transcludeFn: ng.ITranscludeFunction) {
+    @Core.DirectiveDependency({
+        name: "RadGridCancelButton",
+        bindToController: {
+        },
+        controllerAs: "radGridCancelButton",
+        restrict: "E",
+        scope: true,
+        template: `<button ng-click="radGridCancelButton.radGrid.cancelDataItemChange($event)" ng-transclude></button>`,
+        replace: true,
+        terminal: true,
+        transclude: true
+    })
+    export class DefaultRadGridCancelButtonDirective {
 
-                            const replaceAll = (text: string, search: string, replacement: string) => {
-                                return text.replace(new RegExp(search, "g"), replacement);
-                            };
+        public static defaultClasses: string[] = ["md-button", "md-raised"];
+        public radGrid: DefaultRadGridDirective;
 
-                            const gridIsolatedKey = angular.element($element).parents("rad-grid-editor").attr("isolatedoptionskey");
+        public constructor( @Core.Inject("$element") public $element: JQuery) {
 
-                            const newElementHtml = replaceAll($element[0].outerHTML, "rad-grid-cancel-button", "md-button");
-
-                            const newElement = angular.element(newElementHtml).insertAfter($element);
-
-                            angular.element($element).remove();
-
-                            let $scopeOfGrid = $scope;
-                            let $gridScopeName = "this.";
-                            while ($scopeOfGrid[gridIsolatedKey] == null || $scopeOfGrid.$parent == null) {
-                                $scopeOfGrid = $scopeOfGrid.$parent;
-                                $gridScopeName += "$parent.";
-                            }
-
-                            newElement.attr("ng-click", `${$attrs["ngClick"] || ""};${$gridScopeName}${gridIsolatedKey}Cancel($event)`);
-
-                            if (DefaultRadGridCancelButtonDirective.defaultClasses != null && DefaultRadGridCancelButtonDirective.defaultClasses.length != 0) {
-                                DefaultRadGridCancelButtonDirective.defaultClasses.filter(cls => cls != null && cls != "").forEach(cls => {
-                                    newElement.addClass(cls);
-                                });
-                            }
-
-                            const dependencyManager = Core.DependencyManager.getCurrent();
-
-                            dependencyManager.resolveObject<ng.ICompileService>("$compile")(newElement)($scope);
-                        }
-                    }
-                }
-            });
         }
+
+        public $postLink() {
+
+            setTimeout(() => {
+
+                this.radGrid = this.$element.parents(".k-popup-edit-form").data("radGridController");
+
+                DefaultRadGridAddButtonDirective.defaultClasses.forEach(cssClass => {
+                    this.$element.addClass(cssClass);
+                });
+
+            }, 0);
+        }
+
     }
 }

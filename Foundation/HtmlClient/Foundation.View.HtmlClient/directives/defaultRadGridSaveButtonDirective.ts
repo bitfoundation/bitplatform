@@ -2,50 +2,39 @@
 
 module Foundation.View.Directives {
 
-    @Core.DirectiveDependency({ name: "radGridSaveButton", usesOldStyle: true })
-    export class DefaultRadGridSaveButtonDirective implements ViewModel.Contracts.IDirective {
-        public static defaultClasses: string[] = ["md-raised", "md-primary"];
-        public getDirectiveFactory(): ng.IDirectiveFactory {
-            return () => ({
-                scope: false,
-                compile($element: JQuery, $attrs: ng.IAttributes) {
-                    return {
-                        pre($scope: ng.IScope, $element: JQuery, $attrs: ng.IAttributes, controller: ng.INgModelController, transcludeFn: ng.ITranscludeFunction) {
+    @Core.DirectiveDependency({
+        name: "RadGridSaveButton",
+        bindToController: {
+        },
+        controllerAs: "radGridSaveButton",
+        restrict: "E",
+        scope: true,
+        template: `<button ng-click="radGridSaveButton.radGrid.saveDataItemChange($event)" ng-transclude></button>`,
+        replace: true,
+        terminal: true,
+        transclude: true
+    })
+    export class DefaultRadGridSaveButtonDirective {
 
-                            const replaceAll = (text: string, search: string, replacement: string) => {
-                                return text.replace(new RegExp(search, "g"), replacement);
-                            };
+        public static defaultClasses: string[] = ["md-button", "md-raised", "md-primary"];
+        public radGrid: DefaultRadGridDirective;
 
-                            const gridIsolatedKey = angular.element($element).parents("rad-grid-editor").attr("isolatedoptionskey");
+        public constructor( @Core.Inject("$element") public $element: JQuery) {
 
-                            const newElementHtml = replaceAll($element[0].outerHTML, "rad-grid-save-button", "md-button");
-
-                            const newElement = angular.element(newElementHtml).insertAfter($element);
-
-                            angular.element($element).remove();
-
-                            let $scopeOfGrid = $scope;
-                            let $gridScopeName = "this.";
-                            while ($scopeOfGrid[gridIsolatedKey] == null || $scopeOfGrid.$parent == null) {
-                                $scopeOfGrid = $scopeOfGrid.$parent;
-                                $gridScopeName += "$parent.";
-                            }
-
-                            newElement.attr("ng-click", `${$attrs["ngClick"] || ""};${$gridScopeName}${gridIsolatedKey}Save($event)`);
-
-                            if (DefaultRadGridSaveButtonDirective.defaultClasses != null && DefaultRadGridSaveButtonDirective.defaultClasses.length != 0) {
-                                DefaultRadGridSaveButtonDirective.defaultClasses.filter(cls => cls != null && cls != "").forEach(cls => {
-                                    newElement.addClass(cls);
-                                });
-                            }
-
-                            const dependencyManager = Core.DependencyManager.getCurrent();
-
-                            dependencyManager.resolveObject<ng.ICompileService>("$compile")(newElement)($scope);
-                        }
-                    }
-                }
-            });
         }
+
+        public $postLink() {
+
+            setTimeout(() => {
+
+                this.radGrid = this.$element.parents(".k-popup-edit-form").data("radGridController");
+
+                DefaultRadGridAddButtonDirective.defaultClasses.forEach(cssClass => {
+                    this.$element.addClass(cssClass);
+                });
+
+            }, 0);
+        }
+
     }
 }
