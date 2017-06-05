@@ -1,380 +1,352 @@
 ﻿/// <reference path="../../foundation.viewmodel.htmlclient/foundation.viewmodel.d.ts" />
 
 module Foundation.View.Directives {
-    @Core.DirectiveDependency({ name: "radCombo", usesOldStyle: true })
-    export class DefaultRadComboDirective implements ViewModel.Contracts.IDirective {
+    @Core.DirectiveDependency({
+        name: "RadCombo",
+        scope: true,
+        bindToController: {
+            ngModelValue: "=ngModel",
+            radTextValue: "=radText",
+            radVirtualEntityLoader: "&",
+            radOnInit: "&"
+        },
+        controllerAs: "radCombo",
+        template: ($element: JQuery, $attrs: ng.IAttributes & { ngModelOptions: string }) => {
+
+            const itemTemplate = $element
+                .children("item-template");
+
+            const guidUtils = Core.DependencyManager.getCurrent().resolveObject<ViewModel.Implementations.GuidUtils>("GuidUtils");
+
+            if (itemTemplate.length != 0) {
+
+                const itemTemplateId = guidUtils.newGuid();
+
+                angular.element(document.body).append(itemTemplate.attr("id", itemTemplateId).attr("ng-cloak", ""));
+
+                $attrs["itemTemplateId"] = itemTemplateId;
+            }
+
+            const headerTemplate = angular.element($element)
+                .children("header-template");
+
+            if (headerTemplate.length != 0) {
+
+                const headerTemplateId = guidUtils.newGuid();
+
+                headerTemplate
+                    .attr("id", headerTemplateId)
+                    .attr("ng-cloak", "");
+
+                angular.element(document.body).append(headerTemplate);
+
+                $attrs["headerTemplateId"] = headerTemplateId;
+            }
+
+            let ngModelOptions = "";
+            if ($attrs.ngModelOptions == null) {
+                ngModelOptions = `ng-model-options="{ updateOn : 'change' , allowInvalid : true }"`;
+            }
+
+            const template = `<input ${ngModelOptions} kendo-combo-box k-options="radCombo.options" k-ng-delay="::radCombo.options"></input>`;
+
+            return template;
+        },
+        replace: true,
+        terminal: true,
+        require: {
+            mdInputContainer: "^?mdInputContainer",
+            ngModel: "ngModel"
+        },
+        restrict: "E"
+    })
+    export class DefaultRadComboDirective {
 
         public static defaultRadComboDirectiveCustomizers: Array<($scope: ng.IScope, attribues: ng.IAttributes, $element: JQuery, comboBoxOptions: kendo.ui.ComboBoxOptions) => void> = [];
 
-        public getDirectiveFactory(): ng.IDirectiveFactory {
-            return () => ({
-                scope: false,
-                replace: true,
-                terminal: true,
-                require: {
-                    mdInputContainer: "^?mdInputContainer",
-                    ngModel: "ngModel"
+        public constructor( @Core.Inject("$element") public $element: JQuery,
+            @Core.Inject("$scope") public $scope: ng.IScope,
+            @Core.Inject("$attrs") public $attrs: ng.IAttributes & { ngModel: string, radText: string, radDataSource: string, radValueFieldName: string, radTextFieldName: string, radVirtualEntityLoader: string, radOnInit: string },
+            @Core.Inject("MetadataProvider") public metadataProvider: ViewModel.Contracts.IMetadataProvider) {
+
+        }
+
+        private radValueFieldName: string;
+        private radTextFieldName: string;
+        public ngModelValue: any;
+        public radTextValue: any;
+        public bindedMemberName: string; // in vm.customer.FirstName >> This will return "FirstName"
+        public parentOfNgModel: Model.Contracts.IDto; // in vm.customer.FirstName >> This will return customer instance
+        public dataSource: kendo.data.DataSource;
+        private originalDataSourceTransportRead: any;
+        public ngModel: ng.INgModelController;
+        public mdInputContainer: { element: JQuery };
+        public mdInputContainerParent: JQuery;
+        public options: kendo.ui.ComboBoxOptions;
+        public radVirtualEntityLoader: (args: { id: any }) => Promise<Model.Contracts.IDto>;
+        public radOnInit: (args: { comboBoxOptions: kendo.ui.ComboBoxOptions }) => void;
+
+        public get combo(): kendo.ui.ComboBox {
+            return this.$element.data("kendoComboBox");
+        }
+
+        @ViewModel.Command()
+        public async $onInit(): Promise<void> {
+
+            this.$scope.$on("kendoWidgetCreated", this.onWidgetCreated.bind(this));
+
+            const modelParts = this.$attrs.ngModel.split(".");
+            this.bindedMemberName = modelParts.pop();
+            const ngModelDataItemFullPropName = modelParts.join(".");
+
+            let ngModelAndDataSourceWatchDisposal = this.$scope.$watchGroup([this.$attrs.radDataSource, ngModelDataItemFullPropName], (values: Array<any>) => {
+
+                if (values == null || values.length == 0 || values.some(v => v == null))
+                    return;
+
+                this.dataSource = values[0];
+                this.originalDataSourceTransportRead = this.dataSource['transport'].read;
+                this.parentOfNgModel = values[1];
+
+                ngModelAndDataSourceWatchDisposal();
+                this.onWidgetInitialDataProvided();
+
+            });
+        }
+
+        @ViewModel.Command()
+        public async onWidgetInitialDataProvided(): Promise<void> {
+
+            this.radValueFieldName = this.$attrs.radValueFieldName;
+            this.radTextFieldName = this.$attrs.radTextFieldName;
+
+            if (this.parentOfNgModel instanceof $data.Entity) {
+                let parentOfNgModelType = this.parentOfNgModel.getType();
+                if (parentOfNgModelType.memberDefinitions[`$${this.bindedMemberName}`] == null)
+                    throw new Error(`${parentOfNgModelType['fullName']} has no member named ${this.bindedMemberName}`);
+                let metadata = this.metadataProvider.getMetadataSync();
+                let dtoMetadata = metadata.Dtos.find(d => d.DtoType == parentOfNgModelType['fullName']);
+                if (dtoMetadata != null) {
+                    let thisDSMemberType = this.dataSource.options.schema['jayType'];
+                    if (thisDSMemberType != null) {
+                        let lookup = dtoMetadata.MembersLookups.find(l => l.DtoMemberName == this.bindedMemberName && l.LookupDtoType == thisDSMemberType['fullName']);
+                        if (lookup != null) {
+                            if (lookup.BaseFilter_JS != null) {
+                                let originalRead = this.originalDataSourceTransportRead;
+                                this.dataSource['transport'].read = function (options) {
+                                    options.lookupBaseFilter = lookup.BaseFilter_JS;
+                                    return originalRead.apply(this, arguments);
+                                }
+                            }
+                            if (this.radTextFieldName == null)
+                                this.radTextFieldName = lookup.DataTextField;
+                            if (this.radValueFieldName == null)
+                                this.radValueFieldName = lookup.DataValueField;
+                        }
+                    }
+                }
+            }
+
+            if (this.radValueFieldName == null) {
+                if (this.dataSource.options.schema != null && this.dataSource.options.schema.model != null && this.dataSource.options.schema.model.idField != null)
+                    this.radValueFieldName = this.dataSource.options.schema.model.idField;
+            }
+
+            if (this.$attrs.radText != null) {
+                this.$scope.$watch(this.$attrs.ngModel.replace("::", ""), (newValue) => {
+                    if (this.ngModel.$isEmpty(newValue))
+                        this.radTextValue = "";
+                    else {
+                        const current = this.dataSource.current;
+                        if (current != null)
+                            this.radTextValue = current[this.radTextFieldName];
+                    }
+                });
+            }
+
+            const comboBoxOptions: kendo.ui.ComboBoxOptions = {
+                dataSource: this.dataSource,
+                autoBind: this.dataSource.flatView().length != 0 || this.$attrs.radText == null,
+                dataTextField: this.radTextFieldName,
+                dataValueField: this.radValueFieldName,
+                filter: "contains",
+                minLength: 3,
+                valuePrimitive: true,
+                ignoreCase: true,
+                suggest: true,
+                highlightFirst: true,
+                change: (e) => {
+                    this.dataSource.onCurrentChanged();
                 },
-                template: ($element: JQuery, $attrs: ng.IAttributes) => {
-
-                    const itemTemplate = $element
-                        .children("item-template");
-
-                    const guidUtils = Core.DependencyManager.getCurrent().resolveObject<ViewModel.Implementations.GuidUtils>("GuidUtils");
-
-                    if (itemTemplate.length != 0) {
-
-                        const itemTemplateId = guidUtils.newGuid();
-
-                        angular.element(document.body).append(itemTemplate.attr("id", itemTemplateId).attr("ng-cloak", ""));
-
-                        $attrs["itemTemplateId"] = itemTemplateId;
+                open: (e) => {
+                    if (e.sender.options.autoBind == false && this.$attrs.radText != null) {
+                        e.sender.options.autoBind = true;
+                        if (e.sender.options.dataSource.flatView().length == 0)
+                            (e.sender.options.dataSource as kendo.data.DataSource).fetch();
                     }
+                },
+                delay: 300,
+                popup: {
+                    appendTo: "md-dialog"
+                }
+            };
 
-                    const headerTemplate = angular.element($element)
-                        .children("header-template");
+            if (this.radTextValue != null)
+                comboBoxOptions.text = this.radTextValue;
 
-                    if (headerTemplate.length != 0) {
+            if (this.$attrs["itemTemplateId"] != null) {
 
-                        const headerTemplateId = guidUtils.newGuid();
+                let itemTemplateElement = angular.element(`#${this.$attrs["itemTemplateId"]}`);
 
-                        headerTemplate
-                            .attr("id", headerTemplateId)
-                            .attr("ng-cloak", "");
+                let itemTemplateElementHtml = itemTemplateElement.html();
 
-                        angular.element(document.body).append(headerTemplate);
+                let itemTemplate: any = kendo.template(itemTemplateElementHtml, { useWithBlock: false });
 
-                        $attrs["headerTemplateId"] = headerTemplateId;
+                comboBoxOptions.template = itemTemplate;
+            }
+
+            if (this.$attrs["headerTemplateId"] != null) {
+
+                let headerTemplateElement = angular.element(`#${this.$attrs["headerTemplateId"]}`);
+
+                let headerTemplateElementHtml = headerTemplateElement.html();
+
+                let headerTemplate: any = kendo.template(headerTemplateElementHtml, { useWithBlock: false });
+
+                comboBoxOptions.headerTemplate = headerTemplate;
+            }
+
+            if (this.dataSource.options.schema.model.fields[comboBoxOptions.dataTextField] == null)
+                throw new Error(`Model has no property named ${comboBoxOptions.dataTextField} to be used as text field`);
+
+            if (this.dataSource.options.schema.model.fields[comboBoxOptions.dataValueField] == null)
+                throw new Error(`Model has no property named ${comboBoxOptions.dataValueField} to be used as value field`);
+
+            if (this.$attrs.radVirtualEntityLoader != null) {
+
+                comboBoxOptions.virtual = {
+                    mapValueTo: 'dataItem',
+                    valueMapper: async (options: { value: string, success: (e: Array<any>) => void }): Promise<void> => {
+
+                        try {
+
+                            if (this.ngModel.$isEmpty(options.value)) {
+                                options.success([]);
+                                return;
+                            }
+
+                            let items = $.makeArray(this.dataSource.data())
+                                .filter(t => t[comboBoxOptions.dataValueField] == options.value);
+
+                            if (items.length == 0) {
+                                items = [(await this.radVirtualEntityLoader({ id: options.value }))];
+                            }
+
+                            options.success(items);
+
+                            setTimeout(() => {
+                                let combo = this.combo;
+                                if (combo == null)
+                                    return;
+                                let input = combo.wrapper.find("input");
+                                let item = items[0];
+                                input.text(item[comboBoxOptions.dataTextField]);
+                            }, 0);
+
+                        }
+                        finally {
+                            ViewModel.ScopeManager.update$scope(this.$scope);
+                        }
+
                     }
+                }
+            }
 
-                    const replaceAll = (text: string, search: string, replacement: string) => {
-                        return text.replace(new RegExp(search, "g"), replacement);
+            DefaultRadComboDirective.defaultRadComboDirectiveCustomizers.forEach(radComboCustomizer => {
+                radComboCustomizer(this.$scope, this.$attrs, this.$element, comboBoxOptions);
+            });
+
+            if (this.$attrs.radOnInit != null) {
+                if (this.radOnInit != null) {
+                    this.radOnInit({ comboBoxOptions: comboBoxOptions });
+                }
+            }
+
+            this.options = comboBoxOptions;
+
+        }
+
+        @ViewModel.Command()
+        public onWidgetCreated() {
+
+            let combo = this.combo;
+
+            if (this.mdInputContainer != null) {
+
+                this.mdInputContainerParent = this.mdInputContainer.element;
+
+                combo.wrapper.bind("focusin", this.onComboFocusIn.bind(this));
+            }
+
+            Object.defineProperty(this.dataSource, "current", {
+                configurable: true,
+                enumerable: false,
+                get: () => {
+
+                    let newCurrent = null;
+
+                    const dataItem = combo.dataItem();
+
+                    if (dataItem == null)
+                        newCurrent = null;
+                    else
+                        newCurrent = dataItem.innerInstance != null ? dataItem.innerInstance() : dataItem;
+
+                    if (newCurrent == null && this.$attrs.radText != null && !this.ngModel.$isEmpty(combo.value()) && combo.options.autoBind == false) {
+                        newCurrent = {};
+                        newCurrent[this.radValueFieldName] = combo.value();
+                        newCurrent[this.radTextFieldName] = this.radTextValue;
                     };
 
-                    const isolatedOptionsKey = `options${replaceAll(guidUtils.newGuid(), "-", "")}`;
+                    return newCurrent;
+                },
+                set: (entity: $data.Entity) => {
 
-                    $attrs["isolatedOptionsKey"] = isolatedOptionsKey;
+                    let value = null;
 
-                    let ngModelOptions = "";
-                    if ($attrs["ngModel"] != null && $attrs["ngModelOptions"] == null) {
-                        ngModelOptions = `ng-model-options="{ updateOn : 'change' , allowInvalid : true }"`;
+                    if (entity != null) {
+                        value = entity[this.radValueFieldName];
                     }
 
-                    const template = `<input ${ngModelOptions} kendo-combo-box k-options="::${isolatedOptionsKey}" k-ng-delay="::${isolatedOptionsKey}"></input>`;
+                    if (combo.value() != value)
+                        combo.value(value);
 
-                    return template;
-                },
-                link($scope: ng.IScope, $element: JQuery, $attrs: ng.IAttributes & { ngModel: string, radText: string, radDataSource: string, radValueFieldName: string, radTextFieldName: string, radVirtualEntityLoader: string, radOnInit: string }, requireArgs: { mdInputContainer: { element: JQuery }, ngModel: ng.INgModelController }) {
+                    if (this.ngModel.$isEmpty(value) && !this.ngModel.$isEmpty(combo.text()))
+                        combo.text(null);
 
-                    const dependencyManager = Core.DependencyManager.getCurrent();
+                    this.ngModelValue = value;
 
-                    const $timeout = dependencyManager.resolveObject<ng.ITimeoutService>("$timeout");
-                    const $parse = dependencyManager.resolveObject<ng.IParseService>("$parse");
-
-                    $timeout(() => {
-
-                        const watches = $attrs.radText != null ? [$attrs.radDataSource, (() => {
-                            const modelParts = $attrs.radText.split(".");
-                            modelParts.pop();
-                            const modelParentProp = modelParts.join(".");
-                            return modelParentProp;
-                        })()] : [$attrs.radDataSource];
-
-                        let model = null;
-
-                        const watchForDataSourceAndNgModelIfAnyToCreateComboWidgetUnRegisterHandler = $scope.$watchGroup(watches, (values: Array<any>) => {
-
-                            if (values == null || values.length == 0 || values.some(v => v == null))
-                                return;
-
-                            let dataSource: kendo.data.DataSource = values[0];
-
-                            if (values.length == 2) {
-                                model = values[1];
-                            }
-
-                            watchForDataSourceAndNgModelIfAnyToCreateComboWidgetUnRegisterHandler();
-
-                            let radValueFieldName = $attrs.radValueFieldName;
-                            let radTextFieldName = $attrs.radTextFieldName;
-
-                            let splittedNgModel = $attrs.ngModel.split('.');
-                            let bindedMemberName = splittedNgModel.pop();
-                            let parentOfNgModel = $parse(splittedNgModel.join('.'))($scope);
-
-                            if (parentOfNgModel != null && parentOfNgModel instanceof $data.Entity) {
-                                let parentOfNgModelType = parentOfNgModel.getType();
-                                if (parentOfNgModelType.memberDefinitions[`$${bindedMemberName}`] == null)
-                                    throw new Error(`${parentOfNgModelType['fullName']} has no member named ${bindedMemberName}`);
-                                let metadata = dependencyManager.resolveObject<Foundation.ViewModel.Contracts.IMetadataProvider>("MetadataProvider").getMetadataSync();
-                                let dtoMetadata = metadata.Dtos.find(d => d.DtoType == parentOfNgModelType['fullName']);
-                                if (dtoMetadata != null) {
-                                    let thisDSMemberType = dataSource.options.schema['jayType'];
-                                    if (thisDSMemberType != null) {
-                                        let lookup = dtoMetadata.MembersLookups.find(l => l.DtoMemberName == bindedMemberName && l.LookupDtoType == thisDSMemberType['fullName']);
-                                        if (lookup != null) {
-                                            if (lookup.BaseFilter_JS != null) {
-                                                let originalRead = dataSource['transport'].read;
-                                                dataSource['transport'].read = function (options) {
-                                                    options.lookupBaseFilter = lookup.BaseFilter_JS;
-                                                    return originalRead.apply(this, arguments);
-                                                }
-                                            }
-                                            if (radTextFieldName == null)
-                                                radTextFieldName = lookup.DataTextField;
-                                            if (radValueFieldName == null)
-                                                radValueFieldName = lookup.DataValueField;
-                                        }
-                                    }
-                                }
-                            }
-
-                            if (radValueFieldName == null) {
-                                if (dataSource.options.schema != null && dataSource.options.schema.model != null && dataSource.options.schema.model.idField != null)
-                                    radValueFieldName = dataSource.options.schema.model.idField;
-                            }
-
-                            let ngModelAssign = null;
-
-                            if ($attrs.ngModel != null)
-                                ngModelAssign = $parse($attrs.ngModel).assign;
-
-                            let text: string = null;
-                            let parsedText: ng.ICompiledExpression;
-
-                            if ($attrs.radText != null) {
-
-                                parsedText = $parse($attrs.radText);
-
-                                text = parsedText($scope);
-
-                                if (text == "")
-                                    text = null;
-
-                                if ($attrs.ngModel != null) {
-                                    $scope.$watch($attrs.ngModel.replace("::", ""), (newValue) => {
-                                        const current = dataSource.current;
-                                        if (current != null)
-                                            parsedText.assign($scope, current[$attrs.radTextFieldName]);
-                                        else if (requireArgs.ngModel.$isEmpty(newValue))
-                                            parsedText.assign($scope, "");
-                                    });
-                                }
-                            }
-
-                            let kendoWidgetCreatedDisposal = $scope.$on("kendoWidgetCreated", (event, combo: kendo.ui.ComboBox) => {
-
-                                if (combo.element[0] != $element[0]) {
-                                    return;
-                                }
-
-                                kendoWidgetCreatedDisposal();
-
-                                $scope.$on("$destroy", () => {
-
-                                    delete dataSource.current;
-
-                                    if (combo.wrapper != null) {
-
-                                        combo.wrapper.each(function (id, kElement) {
-                                            const dataObj = angular.element(kElement).data();
-                                            for (let mData in dataObj) {
-                                                if (dataObj.hasOwnProperty(mData)) {
-                                                    if (angular.isObject(dataObj[mData])) {
-                                                        if (typeof dataObj[mData]["destroy"] == "function") {
-                                                            dataObj[mData].destroy();
-                                                        }
-                                                    }
-                                                }
-                                            }
-                                        });
-
-                                        combo.wrapper.remove();
-                                    }
-
-                                    combo.destroy();
-
-                                });
-
-                                if (requireArgs.mdInputContainer != null) {
-
-                                    const mdInputContainerParent = requireArgs.mdInputContainer.element;
-
-                                    combo.wrapper
-                                        .focusin(() => {
-                                            if (angular.element($element).is(":disabled"))
-                                                return;
-                                            mdInputContainerParent.addClass("md-input-focused");
-                                        });
-
-                                    const $destroyDisposal = $scope.$on("$destroy", () => {
-                                        combo.wrapper.unbind("focusin");
-                                        $destroyDisposal();
-                                    });
-                                }
-
-                                Object.defineProperty(dataSource, "current", {
-                                    configurable: true,
-                                    enumerable: false,
-                                    get: () => {
-
-                                        let newCurrent = null;
-
-                                        const dataItem = combo.dataItem();
-
-                                        if (dataItem == null)
-                                            newCurrent = null;
-                                        else
-                                            newCurrent = dataItem.innerInstance != null ? dataItem.innerInstance() : dataItem;
-
-                                        if (newCurrent == null && parsedText != null && !requireArgs.ngModel.$isEmpty(combo.value()) && combo.options.autoBind == false) {
-                                            newCurrent = {};
-                                            newCurrent[radValueFieldName] = combo.value();
-                                            newCurrent[radTextFieldName] = parsedText($scope);
-                                        };
-
-                                        return newCurrent;
-                                    },
-                                    set: (entity: $data.Entity) => {
-
-                                        let value = null;
-
-                                        if (entity != null) {
-                                            value = entity[radValueFieldName];
-                                        }
-
-                                        if (combo.value() != value)
-                                            combo.value(value);
-
-                                        if (requireArgs.ngModel.$isEmpty(value) && !requireArgs.ngModel.$isEmpty(combo.text()))
-                                            combo.text(null);
-
-                                        if (ngModelAssign != null) {
-                                            ngModelAssign($scope, value);
-                                        }
-
-                                        dataSource.onCurrentChanged();
-                                    }
-                                });
-                            });
-
-                            const comboBoxOptions: kendo.ui.ComboBoxOptions = {
-                                dataSource: dataSource,
-                                autoBind: dataSource.flatView().length != 0 || $attrs.radText == null,
-                                dataTextField: radTextFieldName,
-                                dataValueField: radValueFieldName,
-                                filter: "contains",
-                                minLength: 3,
-                                valuePrimitive: true,
-                                ignoreCase: true,
-                                suggest: true,
-                                highlightFirst: true,
-                                change: (e) => {
-                                    dataSource.onCurrentChanged();
-                                },
-                                open: (e) => {
-                                    if (e.sender.options.autoBind == false && $attrs.radText != null) {
-                                        e.sender.options.autoBind = true;
-                                        if (e.sender.options.dataSource.flatView().length == 0)
-                                            (e.sender.options.dataSource as kendo.data.DataSource).fetch();
-                                    }
-                                },
-                                delay: 300,
-                                popup: {
-                                    appendTo: "md-dialog"
-                                }
-                            };
-
-                            if (text != null)
-                                comboBoxOptions.text = text;
-
-                            if ($attrs["itemTemplateId"] != null) {
-
-                                let itemTemplateElement = angular.element(`#${$attrs["itemTemplateId"]}`);
-
-                                let itemTemplateElementHtml = itemTemplateElement.html();
-
-                                let itemTemplate: any = kendo.template(itemTemplateElementHtml, { useWithBlock: false });
-
-                                comboBoxOptions.template = itemTemplate;
-                            }
-
-                            if ($attrs["headerTemplateId"] != null) {
-
-                                let headerTemplateElement = angular.element(`#${$attrs["headerTemplateId"]}`);
-
-                                let headerTemplateElementHtml = headerTemplateElement.html();
-
-                                let headerTemplate: any = kendo.template(headerTemplateElementHtml, { useWithBlock: false });
-
-                                comboBoxOptions.headerTemplate = headerTemplate;
-                            }
-
-                            if (dataSource.options.schema.model.fields[comboBoxOptions.dataTextField] == null)
-                                throw new Error(`Model has no property named ${comboBoxOptions.dataTextField} to be used as text field`);
-
-                            if (dataSource.options.schema.model.fields[comboBoxOptions.dataValueField] == null)
-                                throw new Error(`Model has no property named ${comboBoxOptions.dataValueField} to be used as value field`);
-
-                            if ($attrs.radVirtualEntityLoader != null) {
-
-                                let radVirtualEntityLoader = $parse($attrs.radVirtualEntityLoader);
-
-                                comboBoxOptions.virtual = {
-                                    mapValueTo: 'dataItem',
-                                    valueMapper: async (options: { value: string, success: (e: Array<any>) => void }): Promise<void> => {
-
-                                        try {
-
-                                            if (requireArgs.ngModel.$isEmpty(options.value)) {
-                                                options.success([]);
-                                                return;
-                                            }
-
-                                            let items = $.makeArray(dataSource.data())
-                                                .filter(t => t[comboBoxOptions.dataValueField] == options.value);
-
-                                            if (items.length == 0) {
-                                                items = [(await radVirtualEntityLoader($scope, { id: options.value }))];
-                                            }
-
-                                            options.success(items);
-
-                                            setTimeout(() => {
-                                                let combo = $element.data("kendoComboBox");
-                                                if (combo == null)
-                                                    return;
-                                                let input = combo.wrapper.find("input");
-                                                let item = items[0];
-                                                input.text(item[comboBoxOptions.dataTextField]);
-                                            }, 0);
-
-                                        }
-                                        finally {
-                                            ViewModel.ScopeManager.update$scope($scope);
-                                        }
-
-                                    }
-                                }
-                            }
-
-                            DefaultRadComboDirective.defaultRadComboDirectiveCustomizers.forEach(radComboCustomizer => {
-                                radComboCustomizer($scope, $attrs, $element, comboBoxOptions);
-                            });
-
-                            if ($attrs.radOnInit != null) {
-                                let radOnInitFN = $parse($attrs.radOnInit);
-                                if (typeof radOnInitFN == "function") {
-                                    radOnInitFN($scope, { comboBoxOptions: comboBoxOptions });
-                                }
-                            }
-
-                            $scope[$attrs["isolatedOptionsKey"]] = comboBoxOptions;
-
-                        });
-                    });
+                    this.dataSource.onCurrentChanged();
                 }
             });
+
+        }
+
+        public onComboFocusIn() {
+            if (this.$element.is(":disabled"))
+                return;
+            this.mdInputContainerParent.addClass("md-input-focused");
+        }
+
+        public $onDestroy() {
+            if (this.dataSource != null) {
+                this.dataSource['transport'].read = this.originalDataSourceTransportRead;
+                delete this.dataSource.current;
+            }
+            if (this.combo != null) {
+                this.combo.wrapper.unbind("focusin", this.onComboFocusIn);
+                kendo.destroyWidget(this.combo);
+            }
         }
     }
 }
