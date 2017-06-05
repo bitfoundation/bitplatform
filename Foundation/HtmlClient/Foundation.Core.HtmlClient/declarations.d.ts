@@ -11,6 +11,7 @@ declare module kendo {
             current: $data.Entity | Model;
         }
     }
+    function destroyWidget(widget: kendo.ui.Widget & { wrapper: JQuery }): void;
 }
 
 interface Array<T> {

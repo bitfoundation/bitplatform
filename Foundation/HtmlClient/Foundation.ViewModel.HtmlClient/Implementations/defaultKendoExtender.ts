@@ -85,6 +85,32 @@ module Foundation.ViewModel.Implementations {
 
             };
 
+            kendo.destroyWidget = function (widget: kendo.ui.Widget & { wrapper: JQuery }): void {
+
+                if (widget != null) {
+
+                    if (widget.wrapper != null) {
+
+                        widget.wrapper.each(function (id, kElement) {
+                            const dataObj = angular.element(kElement).data();
+                            for (let mData in dataObj) {
+                                if (dataObj.hasOwnProperty(mData)) {
+                                    if (angular.isObject(dataObj[mData])) {
+                                        if (typeof dataObj[mData]["destroy"] == "function") {
+                                            dataObj[mData].destroy();
+                                        }
+                                    }
+                                }
+                            }
+                        });
+
+                        widget.wrapper.remove();
+                    }
+
+                    widget.destroy();
+                }
+            }
+
             kendo.data.DataSource.prototype.asChildOf = function (parentDataSource, childKeys, parentKeys) {
 
                 if (parentDataSource == null)
