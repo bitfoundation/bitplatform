@@ -1,280 +1,294 @@
 ﻿/// <reference path="../../foundation.viewmodel.htmlclient/foundation.viewmodel.d.ts" />
 
 module Foundation.View.Directives {
+    @Core.DirectiveDependency({
+        name: "RadMultiSelect",
+        scope: true,
+        bindToController: {
+            ngModelValue: "=ngModel",
+            radOnInit: "&"
+        },
+        controllerAs: "radMultiSelect",
+        template: ($element: JQuery, $attrs: ng.IAttributes & { ngModelOptions: string }) => {
 
-    @Core.DirectiveDependency({ name: "radMultiSelect", usesOldStyle: true })
-    export class DefaultRadMultiSelectDirective implements ViewModel.Contracts.IDirective {
+            const guidUtils = Core.DependencyManager.getCurrent().resolveObject<ViewModel.Implementations.GuidUtils>("GuidUtils");
 
-        public static defaultRadMultiSelectDirectiveCustomizers: Array<($scope: ng.IScope, $attrs: ng.IAttributes, $element: JQuery, multiSelectOptions: kendo.ui.MultiSelectOptions) => void> = [];
+            const itemTemplate = $element
+                .children("item-template");
 
-        public getDirectiveFactory(): ng.IDirectiveFactory {
-            return () => ({
-                scope: false,
-                replace: true,
-                terminal: true,
-                require: {
-                    mdInputContainer: "^?mdInputContainer",
-                    ngModel: "ngModel"
-                },
-                template: ($element: JQuery, $attrs: ng.IAttributes) => {
+            if (itemTemplate.length != 0) {
 
-                    const guidUtils = Core.DependencyManager.getCurrent().resolveObject<ViewModel.Implementations.GuidUtils>("GuidUtils");
+                const itemTemplateId = guidUtils.newGuid();
 
-                    const itemTemplate = $element
-                        .children("item-template");
+                itemTemplate
+                    .attr("id", itemTemplateId)
+                    .attr("ng-cloak", "");
 
-                    if (itemTemplate.length != 0) {
+                angular.element(document.body).append(itemTemplate);
 
-                        const itemTemplateId = guidUtils.newGuid();
+                $attrs["itemTemplateId"] = itemTemplateId;
+            }
 
-                        itemTemplate
-                            .attr("id", itemTemplateId)
-                            .attr("ng-cloak", "");
+            const tagTemplate = $element
+                .children("tag-template");
 
-                        angular.element(document.body).append(itemTemplate);
+            if (tagTemplate.length != 0) {
 
-                        $attrs["itemTemplateId"] = itemTemplateId;
-                    }
+                const tagTemplateId = guidUtils.newGuid();
 
-                    const tagTemplate = $element
-                        .children("tag-template");
+                tagTemplate
+                    .attr("id", tagTemplateId)
+                    .attr("ng-cloak", "");
 
-                    if (tagTemplate.length != 0) {
+                angular.element(document.body).append(tagTemplate);
 
-                        const tagTemplateId = guidUtils.newGuid();
+                $attrs["tagTemplateId"] = tagTemplateId;
+            }
 
-                        tagTemplate
-                            .attr("id", tagTemplateId)
-                            .attr("ng-cloak", "");
+            const headerTemplate = $element
+                .children("header-template");
 
-                        angular.element(document.body).append(tagTemplate);
+            if (headerTemplate.length != 0) {
 
-                        $attrs["tagTemplateId"] = tagTemplateId;
-                    }
+                const headerTemplateId = guidUtils.newGuid();
 
-                    const headerTemplate = $element
-                        .children("header-template");
+                headerTemplate
+                    .attr("id", headerTemplateId)
+                    .attr("ng-cloak", "");
 
-                    if (headerTemplate.length != 0) {
+                angular.element(document.body).append(headerTemplate);
 
-                        const headerTemplateId = guidUtils.newGuid();
+                $attrs["headerTemplateId"] = headerTemplateId;
+            }
 
-                        headerTemplate
-                            .attr("id", headerTemplateId)
-                            .attr("ng-cloak", "");
+            let ngModelOptions = "";
+            if ($attrs.ngModelOptions == null) {
+                ngModelOptions = `ng-model-options="{ updateOn : 'change' , allowInvalid : true }"`;
+            }
 
-                        angular.element(document.body).append(headerTemplate);
+            const template = `<select ${ngModelOptions} kendo-multi-select k-options="radMultiSelect.options" k-ng-delay="::radMultiSelect.options"></input>`;
 
-                        $attrs["headerTemplateId"] = headerTemplateId;
-                    }
+            return template;
+        },
+        replace: true,
+        terminal: true,
+        require: {
+            mdInputContainer: "^?mdInputContainer",
+            ngModel: "ngModel"
+        },
+        restrict: "E"
+    })
+    export class DefaultRadMultiSelectDirective {
 
-                    const replaceAll = (text: string, search: string, replacement: string) => {
-                        return text.replace(new RegExp(search, "g"), replacement);
-                    };
+        public static defaultRadMultiSelectDirectiveCustomizers: Array<($scope: ng.IScope, attribues: ng.IAttributes, $element: JQuery, multiSelectOptions: kendo.ui.MultiSelectOptions) => void> = [];
 
-                    const isolatedOptionsKey = `options${replaceAll(guidUtils.newGuid(), "-", "")}`;
+        public constructor( @Core.Inject("$element") public $element: JQuery,
+            @Core.Inject("$scope") public $scope: ng.IScope,
+            @Core.Inject("$attrs") public $attrs: ng.IAttributes & { ngModel: string, radDataSource: string, radValueFieldName: string, radTextFieldName: string, radOnInit: string },
+            @Core.Inject("MetadataProvider") public metadataProvider: ViewModel.Contracts.IMetadataProvider) {
 
-                    $attrs["isolatedOptionsKey"] = isolatedOptionsKey;
+        }
 
-                    let ngModelOptions = "";
-                    if ($attrs["ngModel"] != null && $attrs["ngModelOptions"] == null) {
-                        ngModelOptions = `ng-model-options="{ updateOn : 'change' , allowInvalid : true }"`;
-                    }
+        private radValueFieldName: string;
+        private radTextFieldName: string;
+        public ngModelValue: any;
+        public bindedMemberName: string; // in vm.customer.FirstName >> This will return "FirstName"
+        public parentOfNgModel: Model.Contracts.IDto; // in vm.customer.FirstName >> This will return customer instance
+        public dataSource: kendo.data.DataSource;
+        private originalDataSourceTransportRead: any;
+        public ngModel: ng.INgModelController;
+        public mdInputContainer: { element: JQuery };
+        public mdInputContainerParent: JQuery;
+        public options: kendo.ui.MultiSelectOptions;
+        public radOnInit: (args: { multiSelectOptions: kendo.ui.MultiSelectOptions }) => void;
 
-                    const template = `<select ${ngModelOptions} kendo-multi-select k-options="::${isolatedOptionsKey}" k-ng-delay="::${isolatedOptionsKey}"></select>`;
+        public get multiSelect(): kendo.ui.MultiSelect {
+            return this.$element.data("kendoMultiSelect");
+        }
 
-                    return template;
-                },
-                link($scope: ng.IScope, $element: JQuery, $attrs: ng.IAttributes & { ngModel: string, radText: string, radDataSource: string, radValueFieldName: string, radTextFieldName: string, radOnInit: string }, requireArgs: { mdInputContainer: { element: JQuery } }) {
+        @ViewModel.Command()
+        public async $onInit(): Promise<void> {
 
-                    const dependencyManager = Core.DependencyManager.getCurrent();
+            this.$scope.$on("kendoWidgetCreated", this.onWidgetCreated.bind(this));
 
-                    const $timeout = dependencyManager.resolveObject<ng.ITimeoutService>("$timeout");
-                    const $parse = dependencyManager.resolveObject<ng.IParseService>("$parse");
-                    let ngModelAssign = null;
-                    if ($attrs.ngModel != null)
-                        ngModelAssign = $parse($attrs.ngModel).assign;
+            const modelParts = this.$attrs.ngModel.split(".");
+            this.bindedMemberName = modelParts.pop();
+            const ngModelDataItemFullPropName = modelParts.join(".");
 
-                    $timeout(() => {
+            let ngModelAndDataSourceWatchDisposal = this.$scope.$watchGroup([this.$attrs.radDataSource, ngModelDataItemFullPropName], (values: Array<any>) => {
 
-                        const watches = $attrs.radText != null ? [$attrs.radDataSource, (() => {
-                            const modelParts = $attrs.radText.split(".");
-                            modelParts.pop();
-                            const modelParentProp = modelParts.join(".");
-                            return modelParentProp;
-                        })()] : [$attrs.radDataSource];
+                if (values == null || values.length == 0 || values.some(v => v == null))
+                    return;
 
-                        let model = null;
+                this.dataSource = values[0];
+                this.originalDataSourceTransportRead = this.dataSource['transport'].read;
+                this.parentOfNgModel = values[1];
 
-                        const watchForDataSourceAndNgModelIfAnyToCreateComboWidgetUnRegisterHandler = $scope.$watchGroup(watches, (values: Array<any>) => {
+                ngModelAndDataSourceWatchDisposal();
+                this.onWidgetInitialDataProvided();
 
-                            if (values == null || values.length == 0 || values.some(v => v == null))
-                                return;
-
-                            let dataSource: kendo.data.DataSource = values[0];
-
-                            if (values.length == 2) {
-                                model = values[1];
-                            }
-
-                            watchForDataSourceAndNgModelIfAnyToCreateComboWidgetUnRegisterHandler();
-
-                            let radValueFieldName = $attrs.radValueFieldName;
-
-                            if (radValueFieldName == null) {
-                                if (dataSource.options.schema != null && dataSource.options.schema.model != null && dataSource.options.schema.model.idField != null)
-                                    radValueFieldName = dataSource.options.schema.model.idField;
-                                else
-                                    radValueFieldName = "Id";
-                            }
-
-                            let kendoWidgetCreatedDisposal = $scope.$on("kendoWidgetCreated", (event, multiSelect: kendo.ui.MultiSelect) => {
-
-                                if (multiSelect.element[0] != $element[0]) {
-                                    return;
-                                }
-
-                                kendoWidgetCreatedDisposal();
-
-                                $scope.$on("$destroy", () => {
-
-                                    if (multiSelect.wrapper != null) {
-
-                                        multiSelect.wrapper.each(function (id, kElement) {
-                                            const dataObj = angular.element(kElement).data();
-                                            for (let mData in dataObj) {
-                                                if (dataObj.hasOwnProperty(mData)) {
-                                                    if (angular.isObject(dataObj[mData])) {
-                                                        if (typeof dataObj[mData]["destroy"] == "function") {
-                                                            dataObj[mData].destroy();
-                                                        }
-                                                    }
-                                                }
-                                            }
-                                        });
-
-                                        multiSelect.wrapper.remove();
-                                    }
-
-                                    multiSelect.destroy();
-
-                                });
-
-                                if (requireArgs.mdInputContainer != null) {
-
-                                    const mdInputContainerParent = requireArgs.mdInputContainer.element;
-
-                                    multiSelect.wrapper
-                                        .focusin(() => {
-
-                                            if (angular.element($element).is(":disabled"))
-                                                return;
-
-                                            mdInputContainerParent.addClass("md-input-focused");
-
-                                            multiSelect.open(); // Should be removed
-                                        })
-                                        .focusout(() => {
-                                            mdInputContainerParent.removeClass("md-input-focused");
-                                        });
-
-                                    $scope.$watchCollection<Array<any>>($attrs.ngModel.replace("::", ""), (newVal, oldVal) => {
-                                        if (newVal != null && newVal.length != 0)
-                                            mdInputContainerParent.addClass("md-input-has-value");
-                                        else
-                                            mdInputContainerParent.removeClass("md-input-has-value");
-                                    });
-
-
-                                    const $destroyDisposal = $scope.$on("$destroy", () => {
-                                        multiSelect.wrapper.unbind("focusin");
-                                        multiSelect.wrapper.unbind("focusout");
-                                        $destroyDisposal();
-                                    });
-                                }
-
-                                $scope.$watchCollection($attrs.ngModel.replace("::", ""), (newValue, oldVal) => {
-                                    multiSelect.value(newValue);
-                                });
-                            });
-
-                            const multiSelectOptions: kendo.ui.MultiSelectOptions = {
-                                dataSource: dataSource,
-                                autoBind: true,
-                                dataTextField: $attrs.radTextFieldName,
-                                dataValueField: radValueFieldName,
-                                filter: "contains",
-                                minLength: 3,
-                                valuePrimitive: true,
-                                ignoreCase: true,
-                                highlightFirst: true,
-                                delay: 300,
-                                popup: {
-                                    appendTo: "md-dialog"
-                                },
-                                change: function () {
-                                    if (ngModelAssign != null)
-                                        ngModelAssign($scope, (this as kendo.ui.MultiSelect).value());
-                                },
-                                autoClose: false // Should be removed
-                            };
-
-                            if ($attrs["itemTemplateId"] != null) {
-
-                                let itemTemplateElement = angular.element(`#${$attrs["itemTemplateId"]}`);
-
-                                let itemTemplateElementHtml = itemTemplateElement.html();
-
-                                let itemTemplate: any = kendo.template(itemTemplateElementHtml, { useWithBlock: false });
-
-                                multiSelectOptions.itemTemplate = itemTemplate;
-                            }
-
-                            if ($attrs["tagTemplateId"] != null) {
-
-                                let tagTemplateElement = angular.element(`#${$attrs["tagTemplateId"]}`);
-
-                                let tagTemplateElementHtml = tagTemplateElement.html();
-
-                                let tagTemplate: any = kendo.template(tagTemplateElementHtml, { useWithBlock: false });
-
-                                multiSelectOptions.tagTemplate = tagTemplate;
-                            }
-
-                            if ($attrs["headerTemplateId"] != null) {
-
-                                let headerTemplateElement = angular.element(`#${$attrs["headerTemplateId"]}`);
-
-                                let headerTemplateElementHtml = headerTemplateElement.html();
-
-                                let headerTemplate: any = kendo.template(headerTemplateElementHtml, { useWithBlock: false });
-
-                                multiSelectOptions.headerTemplate = headerTemplate;
-                            }
-
-                            if (dataSource.options.schema.model.fields[multiSelectOptions.dataTextField] == null)
-                                throw new Error(`Model has no property named ${multiSelectOptions.dataTextField} to be used as text field`);
-
-                            if (dataSource.options.schema.model.fields[multiSelectOptions.dataValueField] == null)
-                                throw new Error(`Model has no property named ${multiSelectOptions.dataValueField} to be used as value field`);
-
-                            DefaultRadMultiSelectDirective.defaultRadMultiSelectDirectiveCustomizers.forEach(multiSelectCustomizer => {
-                                multiSelectCustomizer($scope, $attrs, $element, multiSelectOptions);
-                            });
-
-                            if ($attrs.radOnInit != null) {
-                                let radOnInitFN = $parse($attrs.radOnInit);
-                                if (typeof radOnInitFN == "function") {
-                                    radOnInitFN($scope, { multiSelectOptions: multiSelectOptions });
-                                }
-                            }
-
-                            $scope[$attrs["isolatedOptionsKey"]] = multiSelectOptions;
-
-                        });
-                    });
-                }
             });
+        }
+
+        @ViewModel.Command()
+        public async onWidgetInitialDataProvided(): Promise<void> {
+
+            this.radValueFieldName = this.$attrs.radValueFieldName;
+            this.radTextFieldName = this.$attrs.radTextFieldName;
+
+            if (this.parentOfNgModel instanceof $data.Entity) {
+                let parentOfNgModelType = this.parentOfNgModel.getType();
+                if (parentOfNgModelType.memberDefinitions[`$${this.bindedMemberName}`] == null)
+                    throw new Error(`${parentOfNgModelType['fullName']} has no member named ${this.bindedMemberName}`);
+                let metadata = this.metadataProvider.getMetadataSync();
+                let dtoMetadata = metadata.Dtos.find(d => d.DtoType == parentOfNgModelType['fullName']);
+                if (dtoMetadata != null) {
+                    let thisDSMemberType = this.dataSource.options.schema['jayType'];
+                    if (thisDSMemberType != null) {
+                        let lookup = dtoMetadata.MembersLookups.find(l => l.DtoMemberName == this.bindedMemberName && l.LookupDtoType == thisDSMemberType['fullName']);
+                        if (lookup != null) {
+                            if (lookup.BaseFilter_JS != null) {
+                                let originalRead = this.originalDataSourceTransportRead;
+                                this.dataSource['transport'].read = function (options) {
+                                    options.lookupBaseFilter = lookup.BaseFilter_JS;
+                                    return originalRead.apply(this, arguments);
+                                }
+                            }
+                            if (this.radTextFieldName == null)
+                                this.radTextFieldName = lookup.DataTextField;
+                            if (this.radValueFieldName == null)
+                                this.radValueFieldName = lookup.DataValueField;
+                        }
+                    }
+                }
+            }
+
+            if (this.radValueFieldName == null) {
+                if (this.dataSource.options.schema != null && this.dataSource.options.schema.model != null && this.dataSource.options.schema.model.idField != null)
+                    this.radValueFieldName = this.dataSource.options.schema.model.idField;
+            }
+
+            const multiSelectOptions: kendo.ui.MultiSelectOptions = {
+                dataSource: this.dataSource,
+                autoBind: true,
+                dataTextField: this.radTextFieldName,
+                dataValueField: this.radValueFieldName,
+                filter: "contains",
+                minLength: 3,
+                valuePrimitive: true,
+                ignoreCase: true,
+                highlightFirst: true,
+                change: this.applyMultiSelectValueToNgModel.bind(this),
+                delay: 300,
+                popup: {
+                    appendTo: "md-dialog"
+                },
+                autoClose: false // Should be removed
+            };
+
+            if (this.$attrs["itemTemplateId"] != null) {
+
+                let itemTemplateElement = angular.element(`#${this.$attrs["itemTemplateId"]}`);
+
+                let itemTemplateElementHtml = itemTemplateElement.html();
+
+                let itemTemplate: any = kendo.template(itemTemplateElementHtml, { useWithBlock: false });
+
+                multiSelectOptions.itemTemplate = itemTemplate;
+            }
+
+            if (this.$attrs["tagTemplateId"] != null) {
+
+                let tagTemplateElement = angular.element(`#${this.$attrs["tagTemplateId"]}`);
+
+                let tagTemplateElementHtml = tagTemplateElement.html();
+
+                let tagTemplate: any = kendo.template(tagTemplateElementHtml, { useWithBlock: false });
+
+                multiSelectOptions.tagTemplate = tagTemplate;
+            }
+
+            if (this.$attrs["headerTemplateId"] != null) {
+
+                let headerTemplateElement = angular.element(`#${this.$attrs["headerTemplateId"]}`);
+
+                let headerTemplateElementHtml = headerTemplateElement.html();
+
+                let headerTemplate: any = kendo.template(headerTemplateElementHtml, { useWithBlock: false });
+
+                multiSelectOptions.headerTemplate = headerTemplate;
+            }
+
+            if (this.dataSource.options.schema.model.fields[multiSelectOptions.dataTextField] == null)
+                throw new Error(`Model has no property named ${multiSelectOptions.dataTextField} to be used as text field`);
+
+            if (this.dataSource.options.schema.model.fields[multiSelectOptions.dataValueField] == null)
+                throw new Error(`Model has no property named ${multiSelectOptions.dataValueField} to be used as value field`);
+
+            DefaultRadMultiSelectDirective.defaultRadMultiSelectDirectiveCustomizers.forEach(radMultiSelectCustomizer => {
+                radMultiSelectCustomizer(this.$scope, this.$attrs, this.$element, multiSelectOptions);
+            });
+
+            if (this.$attrs.radOnInit != null) {
+                if (this.radOnInit != null) {
+                    this.radOnInit({ multiSelectOptions: multiSelectOptions });
+                }
+            }
+
+            this.options = multiSelectOptions;
+
+        }
+
+        @ViewModel.Command()
+        public async applyMultiSelectValueToNgModel(): Promise<void> {
+            this.ngModelValue = this.multiSelect.value();
+        }
+
+        @ViewModel.Command()
+        public onWidgetCreated() {
+
+            let multiSelect = this.multiSelect;
+
+            if (this.mdInputContainer != null) {
+
+                this.mdInputContainerParent = this.mdInputContainer.element;
+
+                multiSelect.wrapper.bind("focusin", this.onMultiSelectFocusIn.bind(this));
+                multiSelect.wrapper.bind("focusout", this.onMultiSelectFocusOut.bind(this));
+
+                this.$scope.$watchCollection<Array<any>>(this.$attrs.ngModel.replace("::", ""), (newVal, oldVal) => {
+                    if (newVal != null && newVal.length != 0)
+                        this.mdInputContainerParent.addClass("md-input-has-value");
+                    else
+                        this.mdInputContainerParent.removeClass("md-input-has-value");
+                });
+            }
+
+            this.$scope.$watchCollection(this.$attrs.ngModel.replace("::", ""), (newValue, oldVal) => {
+                this.multiSelect.value(newValue);
+            });
+        }
+
+        public onMultiSelectFocusIn() {
+            if (this.$element.is(":disabled"))
+                return;
+            this.mdInputContainerParent.addClass("md-input-focused");
+            this.multiSelect.open(); // Should be removed
+        }
+
+        public onMultiSelectFocusOut() {
+            this.mdInputContainerParent.removeClass("md-input-focused");
+        }
+
+        public $onDestroy() {
+            if (this.dataSource != null) {
+                this.dataSource['transport'].read = this.originalDataSourceTransportRead;
+            }
+            if (this.multiSelect != null) {
+                this.multiSelect.wrapper.unbind("focusin", this.onMultiSelectFocusIn);
+                this.multiSelect.wrapper.bind("focusout", this.onMultiSelectFocusOut);
+                kendo.destroyWidget(this.multiSelect);
+            }
         }
     }
 }
