@@ -1,76 +1,71 @@
 ﻿module Foundation.View.Directives {
-    @Core.DirectiveDependency({ name: "radEditor", usesOldStyle: true })
-    export class DefaultRadEditor implements ViewModel.Contracts.IDirective {
-        public getDirectiveFactory(): ng.IDirectiveFactory {
-            return () => ({
-                scope: false,
-                replace: true,
-                terminal: true,
-                require: {
-                    mdInputContainer: "^?mdInputContainer",
-                    ngModel: "ngModel"
-                },
-                template: ($element: JQuery, $attrs: ng.IAttributes) => {
+    @Core.DirectiveDependency({
+        name: "RadEditor",
+        scope: true,
+        bindToController: {
+        },
+        controllerAs: "radEditor",
+        template: `<textarea kendo-editor k-ng-delay="radEditor.options"></textarea>`,
+        replace: true,
+        terminal: true,
+        require: {
+            mdInputContainer: "^?mdInputContainer",
+            ngModel: "ngModel"
+        },
+        restrict: "E"
+    })
+    export class DefaultRadEditor {
 
-                    const guidUtils = Core.DependencyManager.getCurrent().resolveObject<ViewModel.Implementations.GuidUtils>("GuidUtils");
+        public constructor( @Core.Inject("$element") public $element: JQuery, @Core.Inject("$scope") public $scope: ng.IScope) {
 
-                    const replaceAll = (text: string, search: string, replacement: string) => {
-                        return text.replace(new RegExp(search, "g"), replacement);
-                    };
-
-                    const delayKey = `delay${replaceAll(guidUtils.newGuid(), "-", "")}`;
-
-                    $attrs["delayKey"] = delayKey;
-
-                    const template = `<textarea kendo-editor k-ng-delay="::${delayKey}"></textarea>`;
-
-                    return template;
-
-                },
-                link($scope: ng.IScope, $element: JQuery, $attrs: ng.IAttributes, requireArgs: { mdInputContainer: { element: JQuery, setHasValue: () => void } }) {
-
-                    const dependencyManager = Core.DependencyManager.getCurrent();
-
-                    const $timeout = dependencyManager.resolveObject<ng.ITimeoutService>("$timeout");
-
-                    $timeout(() => {
-
-                        const kendoWidgetCreatedDisposal = $scope.$on("kendoWidgetCreated", (event, editor: kendo.ui.Editor) => {
-
-                            if (editor.element[0] != $element[0]) {
-                                return;
-                            }
-
-                            kendoWidgetCreatedDisposal();
-
-                            if (requireArgs.mdInputContainer != null) {
-
-                                const mdInputContainerParent = requireArgs.mdInputContainer.element;
-
-                                angular.element(editor.body).focusin(() => {
-                                    if (angular.element($element).is(":disabled"))
-                                        return;
-                                    mdInputContainerParent.addClass("md-input-focused");
-                                });
-
-                                mdInputContainerParent.addClass("md-input-has-value");
-
-                                requireArgs.mdInputContainer.setHasValue = function () {
-
-                                };
-
-                                const $destroyDisposal = $scope.$on("$destroy", () => {
-                                    angular.element(editor.body).unbind("focusin");
-                                    $destroyDisposal();
-                                });
-
-                            }
-                        });
-                    });
-
-                    $scope[$attrs["delayKey"]] = {};
-                }
-            });
         }
+
+        @ViewModel.Command()
+        public async $onInit(): Promise<void> {
+
+            this.$scope.$on("kendoWidgetCreated", this.onWidgetCreated.bind(this));
+
+            this.options = {
+                
+            };
+        }
+
+        public onWidgetCreated() {
+
+            if (this.mdInputContainer != null) {
+
+                this.mdInputContainerParent = this.mdInputContainer.element;
+
+                angular.element(this.editor.body).bind("focusin", this.onEditorFocusIn.bind(this));
+
+                this.mdInputContainerParent.addClass("md-input-has-value");
+
+                this.mdInputContainer.setHasValue = function () {
+
+                };
+            }
+        }
+
+        public onEditorFocusIn() {
+            if (this.$element.is(":disabled"))
+                return;
+            this.mdInputContainerParent.addClass("md-input-focused");
+        }
+
+        public mdInputContainer: { element: JQuery, setHasValue: () => void };
+        public mdInputContainerParent: JQuery;
+        public options: kendo.ui.EditorOptions;
+
+        public get editor(): kendo.ui.Editor {
+            return this.$element.data("kendoEditor");
+        }
+
+        public $onDestroy() {
+            if (this.editor != null) {
+                angular.element(this.editor.body).unbind("focusin", this.onEditorFocusIn);
+                kendo.destroyWidget(this.editor);
+            }
+        }
+
     }
 }
