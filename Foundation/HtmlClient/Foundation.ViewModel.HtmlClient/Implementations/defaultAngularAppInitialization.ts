@@ -137,30 +137,7 @@ module Foundation.ViewModel.Implementations {
 
             const pathProvider = this.pathProvider;
 
-            dependencyManager.getAllDirectivesDependencies()
-                .filter(d => d.usesOldStyle == true)
-                .map(d => { return { name: d.name, instance: Reflect.construct(d.type as Function, []) as Contracts.IDirective }; })
-                .forEach(directive => {
-
-                    const originalGetDirectiveFactory = directive.instance.getDirectiveFactory();
-
-                    const modifiedGetDirectiveFactory = function () {
-
-                        const directiveResult: ng.IDirective = originalGetDirectiveFactory.apply(this, arguments);
-
-                        if (directiveResult.templateUrl != null) {
-                            directiveResult.templateUrl = pathProvider.getFullPath(directiveResult.templateUrl);
-                        }
-
-                        return directiveResult;
-
-                    };
-
-                    app.directive(directive.name, modifiedGetDirectiveFactory);
-                });
-
-            const directives = dependencyManager.getAllDirectivesDependencies()
-                .filter(d => d.usesOldStyle == false);
+            const directives = dependencyManager.getAllDirectivesDependencies();
 
             directives.forEach(vm => {
 

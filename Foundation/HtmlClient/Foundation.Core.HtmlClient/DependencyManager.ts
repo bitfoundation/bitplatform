@@ -29,7 +29,6 @@ module Foundation.Core {
 
     export interface IDirectiveDependency extends IDependency, ng.IDirective {
         type?: Function;
-        usesOldStyle?: boolean;
     }
 
     export interface IObjectDependency extends IDependency {
@@ -190,13 +189,8 @@ module Foundation.Core {
             if (!this.dependencyShouldBeConsidered(directiveDependency))
                 return;
 
-            if (directiveDependency.usesOldStyle == null)
-                directiveDependency.usesOldStyle = false;
-
-            if (directiveDependency.usesOldStyle == false) {
-                directiveDependency.name = camelize(directiveDependency.name);
-                directiveDependency.controller = directiveDependency.type as any;
-            }
+            directiveDependency.name = camelize(directiveDependency.name);
+            directiveDependency.controller = directiveDependency.type as any;
 
             const dependenciesWithThisName = this.directiveDependencies.filter(d => d.name.toLowerCase() == directiveDependency.name.toLowerCase());
 
