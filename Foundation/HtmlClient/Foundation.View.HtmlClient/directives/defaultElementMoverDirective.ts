@@ -2,37 +2,31 @@
 
 module Foundation.View.Directives {
 
-    export interface IDefaultElementMoverDirectiveScope extends ng.IScope {
-        predicate: boolean;
-        elementSelector: string;
-    }
-
     @Core.DirectiveDependency({
         name: "ElementMover",
-        scope: {
-            predicate: "=",
+        scope: true,
+        bindToController: {
+            predicate: "<",
             elementSelector: "@"
-        }
+        },
+        controllerAs: "elementMover",
+        restrict: "E"
     })
     export class DefaultElementMoverDirective {
 
-        public constructor( @Core.Inject("$element") public $element: JQuery, @Core.Inject("$scope") public $scope: IDefaultElementMoverDirectiveScope) {
+        public constructor( @Core.Inject("$element") public $element: JQuery) {
 
         }
 
-        public $onInit() {
-
-            this.$scope.$watch("predicate", ((isOkToBeMoved: boolean) => {
-
-                if (isOkToBeMoved == true) {
-
-                    angular.element(this.$scope.elementSelector)
-                        .appendTo(this.$element);
-
-                }
-
-            }));
-
+        public $onChanges(changesObj: { predicate: { currentValue: boolean } }) {
+            if (changesObj.predicate != null && changesObj.predicate.currentValue == true) {
+                angular.element(this.elementSelector)
+                    .appendTo(this.$element);
+            }
         }
+
+        public predicate: boolean;
+
+        public elementSelector: string;
     }
 }

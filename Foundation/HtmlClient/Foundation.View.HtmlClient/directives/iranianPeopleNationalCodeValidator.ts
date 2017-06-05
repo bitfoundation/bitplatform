@@ -2,7 +2,13 @@
 
     @Core.DirectiveDependency({
         name: "IranianPeopleNationalCode",
-        require: "ngModel"
+        require: {
+            ngModel: "ngModel"
+        },
+        restrict: "A",
+        bindToController: {
+        },
+        scope: {}
     })
     export class IranianPeopleNationalCodeValidator {
 
@@ -10,11 +16,11 @@
 
         }
 
+        public ngModel: ng.INgModelController;
+
         public $onInit() {
 
-            let ngModel = this.$element.data('$ngModelController');
-
-            ngModel.$validators["iranian-people-national-code"] = (modelValue: string, viewValue: string) => {
+            this.ngModel.$validators["iranian-people-national-code"] = (modelValue: string, viewValue: string) => {
                 return this.iranianCodeValidator.nationalCodeIsValid(modelValue);
             };
 

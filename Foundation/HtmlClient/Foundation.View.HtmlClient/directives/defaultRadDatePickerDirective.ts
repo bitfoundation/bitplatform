@@ -4,18 +4,31 @@ module Foundation.View.Directives {
 
     @Core.DirectiveDependency({
         name: "RadDatePicker",
-        scope: false,
+        scope: true,
+        bindToController: {
+        },
+        controllerAs: "radDatePicker",
+        template: "<input kendo-date-picker />",
         replace: true,
         terminal: true,
-        require: "ngModel",
-        template: ($element: JQuery, $attrs: ng.IAttributes) => {
-
-            const template = `<input kendo-date-picker />`;
-
-            return template;
-        }
+        require: {
+            ngModel: "ngModel"
+        },
+        restrict: "E"
     })
     export class DefaultRadDatePickerDirective {
+
+        public constructor( @Core.Inject("$element") public $element: JQuery) {
+
+        }
+
+        public get datePicker(): kendo.ui.DatePicker {
+            return this.$element.data("kendoDatePicker");
+        }
+
+        public $onDestroy() {
+            kendo.destroyWidget(this.datePicker);
+        }
 
     }
 }

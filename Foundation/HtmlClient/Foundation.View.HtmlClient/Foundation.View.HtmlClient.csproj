@@ -58,7 +58,6 @@
     <Content Include="contents\styles\theme.light.green.less" />
     <TypeScriptCompile Include="directives\defaultRadEditorDirective.ts" />
     <TypeScriptCompile Include="directives\defaultErrorMessagesDirective.ts" />
-    <TypeScriptCompile Include="directives\defaultLayoutChildDirective.ts" />
     <TypeScriptCompile Include="directives\defaultRadMultiSelectDirective.ts" />
     <TypeScriptCompile Include="directives\defaultRadTreeViewDirective.ts" />
     <TypeScriptCompile Include="directives\defaultRadModelItemTemplateDirective.ts" />
