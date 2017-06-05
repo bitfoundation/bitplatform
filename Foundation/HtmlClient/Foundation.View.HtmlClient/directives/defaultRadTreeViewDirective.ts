@@ -1,176 +1,158 @@
 ﻿/// <reference path="../../foundation.viewmodel.htmlclient/foundation.viewmodel.d.ts" />
 
 module Foundation.View.Directives {
+    @Core.DirectiveDependency({
+        name: "RadTreeView",
+        scope: true,
+        bindToController: {
+            radOnInit: "&"
+        },
+        controllerAs: "radTreeView",
+        template: ($element: JQuery, $attrs: ng.IAttributes) => {
 
-    @Core.DirectiveDependency({ name: "radTreeView", usesOldStyle: true })
-    export class DefaultRadTreeViewDirective implements ViewModel.Contracts.IDirective {
+            const guidUtils = Core.DependencyManager.getCurrent().resolveObject<ViewModel.Implementations.GuidUtils>("GuidUtils");
 
-        public static defaultRadTreeViewDirectiveCustomizers: Array<($scope: ng.IScope, $attrs: ng.IAttributes, $element: JQuery, treeViewOptions: kendo.ui.TreeViewOptions) => void> = [];
+            const itemTemplate = $element
+                .children("item-template");
 
-        public getDirectiveFactory(): ng.IDirectiveFactory {
-            return () => ({
-                scope: false,
-                replace: true,
-                terminal: true,
-                require: {
-                    mdInputContainer: "^?mdInputContainer",
-                    ngModel: "ngModel"
-                },
-                template: ($element: JQuery, $attrs: ng.IAttributes) => {
+            if (itemTemplate.length != 0) {
 
-                    const guidUtils = Core.DependencyManager.getCurrent().resolveObject<ViewModel.Implementations.GuidUtils>("GuidUtils");
+                const itemTemplateId = guidUtils.newGuid();
 
-                    const itemTemplate = $element
-                        .children("item-template");
+                itemTemplate
+                    .attr("id", itemTemplateId)
+                    .attr("ng-cloak", "");
 
-                    if (itemTemplate.length != 0) {
+                angular.element(document.body).append(itemTemplate);
 
-                        const itemTemplateId = guidUtils.newGuid();
+                $attrs["itemTemplateId"] = itemTemplateId;
+            }
 
-                        itemTemplate
-                            .attr("id", itemTemplateId)
-                            .attr("ng-cloak", "");
+            const template = `<div kendo-tree-view k-options="radTreeView.options" k-ng-delay="::radTreeView.options" />`;
 
-                        angular.element(document.body).append(itemTemplate);
+            return template;
+        },
+        replace: true,
+        terminal: true,
+        require: {
+            mdInputContainer: "^?mdInputContainer"
+        },
+        restrict: "E"
+    })
+    export class DefaultRadTreeViewDirective {
 
-                        $attrs["itemTemplateId"] = itemTemplateId;
-                    }
+        public static defaultRadTreeViewDirectiveCustomizers: Array<($scope: ng.IScope, attribues: ng.IAttributes, $element: JQuery, treeViewOptions: kendo.ui.TreeViewOptions) => void> = [];
 
-                    const replaceAll = (text: string, search: string, replacement: string) => {
-                        return text.replace(new RegExp(search, "g"), replacement);
-                    };
+        public constructor( @Core.Inject("$element") public $element: JQuery,
+            @Core.Inject("$scope") public $scope: ng.IScope,
+            @Core.Inject("$attrs") public $attrs: ng.IAttributes & { ngModel: string, radDataSource: string, radValueFieldName: string, radTextFieldName: string, radOnInit: string },
+            @Core.Inject("MetadataProvider") public metadataProvider: ViewModel.Contracts.IMetadataProvider) {
 
-                    const isolatedOptionsKey = `options${replaceAll(guidUtils.newGuid(), "-", "")}`;
+        }
 
-                    $attrs["isolatedOptionsKey"] = isolatedOptionsKey;
+        private radTextFieldName: string;
+        public dataSource: kendo.data.DataSource;
+        public mdInputContainer: { element: JQuery };
+        public mdInputContainerParent: JQuery;
+        public options: kendo.ui.TreeViewOptions;
+        public radOnInit: (args: { treeViewOptions: kendo.ui.TreeViewOptions }) => void;
 
-                    const template = `<div kendo-tree-view=${$attrs["name"]} k-options="::${isolatedOptionsKey}" k-ng-delay="::${isolatedOptionsKey}" />`;
+        public get treeView(): kendo.ui.TreeView {
+            return this.$element.data("kendoTreeView");
+        }
 
-                    return template;
-                },
-                link($scope: ng.IScope, element: JQuery, $attrs: ng.IAttributes & { radText: string, radDataSource: string, radTextFieldName: string, radOnInit: string }, requireArgs: { mdInputContainer: { element: JQuery } }) {
+        @ViewModel.Command()
+        public async $onInit(): Promise<void> {
 
-                    const dependencyManager = Core.DependencyManager.getCurrent();
+            this.$scope.$on("kendoWidgetCreated", this.onWidgetCreated.bind(this));
 
-                    const $timeout = dependencyManager.resolveObject<ng.ITimeoutService>("$timeout");
-                    const $parse = dependencyManager.resolveObject<ng.IParseService>("$parse");
+            let dataSourceWatchDisposal = this.$scope.$watch(this.$attrs.radDataSource, (ds: kendo.data.DataSource) => {
 
-                    $timeout(() => {
+                if (ds == null)
+                    return;
 
-                        const watches = $attrs.radText != null ? [$attrs.radDataSource, (() => {
-                            const modelParts = $attrs.radText.split(".");
-                            modelParts.pop();
-                            const modelParentProp = modelParts.join(".");
-                            return modelParentProp;
-                        })()] : [$attrs.radDataSource];
+                this.dataSource = ds;
 
-                        const watchForDataSourceUnRegisterHandler = $scope.$watchGroup(watches, (values: Array<any>) => {
+                dataSourceWatchDisposal();
+                this.onWidgetInitialDataProvided();
 
-                            if (values == null || values.length == 0 || values.some(v => v == null))
-                                return;
-
-                            const dataSource: kendo.data.DataSource = values[0];
-
-                            watchForDataSourceUnRegisterHandler();
-
-                            const kendoWidgetCreatedDisposal = $scope.$on("kendoWidgetCreated", (event, tree: kendo.ui.TreeView) => {
-
-                                if (tree.element[0] != element[0]) {
-                                    return;
-                                }
-
-                                kendoWidgetCreatedDisposal();
-
-                                $scope.$on("$destroy", () => {
-
-                                    if (tree.wrapper != null) {
-
-                                        tree.wrapper.each(function (id, kElement) {
-                                            const dataObj = angular.element(kElement).data();
-                                            for (let mData in dataObj) {
-                                                if (dataObj.hasOwnProperty(mData)) {
-                                                    if (angular.isObject(dataObj[mData])) {
-                                                        if (typeof dataObj[mData]["destroy"] == "function") {
-                                                            dataObj[mData].destroy();
-                                                        }
-                                                    }
-                                                }
-                                            }
-                                        });
-
-                                        tree.wrapper.remove();
-                                    }
-
-                                    tree.destroy();
-
-                                });
-
-                                if (requireArgs.mdInputContainer != null) {
-
-                                    const mdInputContainerParent = requireArgs.mdInputContainer.element;
-
-                                    tree.wrapper
-                                        .focusin(() => {
-
-                                            if (angular.element(element).is(":disabled"))
-                                                return;
-
-                                            mdInputContainerParent.addClass("md-input-focused");
-                                        })
-                                        .focusout(() => {
-                                            mdInputContainerParent.removeClass("md-input-focused");
-                                        });
-
-                                    mdInputContainerParent.addClass("md-input-has-value");
-
-                                    const $destroyDisposal = $scope.$on("$destroy", () => {
-                                        tree.wrapper.unbind("focusin");
-                                        tree.wrapper.unbind("focusout");
-                                        $destroyDisposal();
-                                    });
-                                }
-
-                            });
-
-                            const treeViewOptions: kendo.ui.TreeViewOptions = {
-                                dataSource: dataSource,
-                                autoBind: true,
-                                dataTextField: $attrs.radTextFieldName,
-                                autoScroll: true,
-                                animation: true,
-                                checkboxes: false,
-                                dragAndDrop: false,
-                                loadOnDemand: true
-                            };
-
-                            if ($attrs["itemTemplateId"] != null) {
-
-                                const itemTemplateElement = angular.element(`#${$attrs["itemTemplateId"]}`);
-
-                                const itemTemplateElementHtml = itemTemplateElement.html();
-
-                                const itemTemplate: any = kendo.template(itemTemplateElementHtml, { useWithBlock: false });
-
-                                treeViewOptions.template = itemTemplate;
-                            }
-
-                            DefaultRadTreeViewDirective.defaultRadTreeViewDirectiveCustomizers.forEach(treeViewCustomizer => {
-                                treeViewCustomizer($scope, $attrs, element, treeViewOptions);
-                            });
-
-                            if ($attrs.radOnInit != null) {
-                                const radOnInitFN = $parse($attrs.radOnInit);
-                                if (typeof radOnInitFN == "function") {
-                                    radOnInitFN($scope, { treeViewOptions: treeViewOptions });
-                                }
-                            }
-
-                            $scope[$attrs["isolatedOptionsKey"]] = treeViewOptions;
-
-                        });
-                    });
-                }
             });
+        }
+
+        @ViewModel.Command()
+        public async onWidgetInitialDataProvided(): Promise<void> {
+
+            this.radTextFieldName = this.$attrs.radTextFieldName;
+
+            const treeViewOptions: kendo.ui.TreeViewOptions = {
+                dataSource: this.dataSource,
+                autoBind: true,
+                dataTextField: this.radTextFieldName,
+                autoScroll: true,
+                animation: true,
+                checkboxes: false,
+                dragAndDrop: false,
+                loadOnDemand: true
+            };
+
+            if (this.$attrs["itemTemplateId"] != null) {
+
+                const itemTemplateElement = angular.element(`#${this.$attrs["itemTemplateId"]}`);
+
+                const itemTemplateElementHtml = itemTemplateElement.html();
+
+                const itemTemplate: any = kendo.template(itemTemplateElementHtml, { useWithBlock: false });
+
+                treeViewOptions.template = itemTemplate;
+            }
+
+            if (this.dataSource.options.schema.model.fields[treeViewOptions.dataTextField] == null)
+                throw new Error(`Model has no property named ${treeViewOptions.dataTextField} to be used as text field`);
+
+            DefaultRadTreeViewDirective.defaultRadTreeViewDirectiveCustomizers.forEach(radTreeViewCustomizer => {
+                radTreeViewCustomizer(this.$scope, this.$attrs, this.$element, treeViewOptions);
+            });
+
+            if (this.$attrs.radOnInit != null) {
+                if (this.radOnInit != null) {
+                    this.radOnInit({ treeViewOptions: treeViewOptions });
+                }
+            }
+
+            this.options = treeViewOptions;
+
+        }
+
+        @ViewModel.Command()
+        public onWidgetCreated() {
+
+            if (this.mdInputContainer != null) {
+
+                this.mdInputContainerParent = this.mdInputContainer.element;
+
+                this.treeView.wrapper.bind("focusin", this.onTreeViewFocusIn.bind(this));
+                this.treeView.wrapper.bind("focusout", this.onTreeViewFocusOut.bind(this));
+                this.mdInputContainerParent.addClass("md-input-has-value");
+            }
+        }
+
+        public onTreeViewFocusIn() {
+            if (this.$element.is(":disabled"))
+                return;
+
+            this.mdInputContainerParent.addClass("md-input-focused");
+        }
+
+        public onTreeViewFocusOut() {
+            this.mdInputContainerParent.removeClass("md-input-focused");
+        }
+
+        public $onDestroy() {
+            if (this.treeView != null) {
+                this.treeView.wrapper.unbind("focusin", this.onTreeViewFocusIn);
+                this.treeView.wrapper.bind("focusout", this.onTreeViewFocusOut);
+                kendo.destroyWidget(this.treeView);
+            }
         }
     }
 }
