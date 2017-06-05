@@ -5,7 +5,7 @@
         bindToController: {
         },
         controllerAs: "radEditor",
-        template: `<textarea kendo-editor k-ng-delay="radEditor.options"></textarea>`,
+        template: `<textarea kendo-editor k-ng-delay="::radEditor.options"></textarea>`,
         replace: true,
         terminal: true,
         require: {
@@ -23,10 +23,13 @@
         @ViewModel.Command()
         public async $onInit(): Promise<void> {
 
-            this.$scope.$on("kendoWidgetCreated", this.onWidgetCreated.bind(this));
+            let kendoWidgetCreatedDisposal = this.$scope.$on("kendoWidgetCreated", () => {
+                kendoWidgetCreatedDisposal();
+                this.onWidgetCreated.bind(this);
+            });
 
             this.options = {
-                
+
             };
         }
 
