@@ -31,7 +31,7 @@
 
         <md-input-container>
             <label>{{::vm.changeSetMetadata.SeverityId.Label}}</label>
-            <rad-combo name="SeverityId"
+            <rad-combo-box name="SeverityId"
                        rad-data-source="::vm.changeSetSeveritiesDataSource"
                        rad-text="::vm.model.SeverityTitle"
                        ng-model="::vm.model.SeverityId" />
@@ -42,7 +42,7 @@
 
         <md-input-container>
             <label>{{::vm.changeSetMetadata.DeliveryRequirementId.Label}}</label>
-            <rad-combo name="DeliveryRequirementId"
+            <rad-combo-box name="DeliveryRequirementId"
                        rad-data-source="::vm.changeSetDeliveryRequirementsDataSource"
                        rad-text="vm.model.DeliveryRequirementTitle"
                        ng-model="::vm.model.DeliveryRequirementId" />
@@ -53,7 +53,7 @@
 
         <md-input-container>
             <label>{{::vm.changeSetMetadata.ProvinceId.Label}}</label>
-            <rad-combo name="ProvinceId"
+            <rad-combo-box name="ProvinceId"
                        rad-data-source="::vm.provincesDataSource"
                        rad-text="vm.model.ProvinceName"
                        ng-model="::vm.model.ProvinceId" />
@@ -61,7 +61,7 @@
 
         <md-input-container>
             <label>{{::vm.changeSetMetadata.CityId.Label}}</label>
-            <rad-combo name="CityId"
+            <rad-combo-box name="CityId"
                        rad-data-source="::vm.citiesDataSource"
                        rad-text="vm.model.CityName"
                        ng-model="::vm.model.CityId"
@@ -70,13 +70,13 @@
 
         <md-input-container>
             <label>{{::vm.changeSetMetadata.NeedsReviewId.Label}}</label>
-            <rad-combo name="NeedsReviewId"
+            <rad-combo-box name="NeedsReviewId"
                        rad-data-source="::vm.answersDataSource"
                        ng-model="::vm.model.NeedsReviewId" />
         </md-input-container>
 
         <div>
-            <rad-grid-save-button ng-click="vm.onSave()" ng-disabled="changeSetForm.$invalid">{{::'Save' | translate}}</rad-grid-save-button>
+            <rad-grid-save-button ng-click="vm.onSave();" ng-disabled="changeSetForm.$invalid">{{::'Save' | translate}}</rad-grid-save-button>
             <rad-grid-cancel-button>{{::'Cancel' | translate}}</rad-grid-cancel-button>
         </div>
 
