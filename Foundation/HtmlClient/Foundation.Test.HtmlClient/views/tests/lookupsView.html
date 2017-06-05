@@ -1,10 +1,10 @@
 ﻿<view id="lookups">
     <dto-form ng-model="vm.product">
         Offline:
-        <rad-combo rad-data-source="vm.offlineCountriesDS" ng-model="vm.product.BuildLocationId_OfflineDatabaseTest" />
+        <rad-combo-box rad-data-source="vm.offlineCountriesDS" ng-model="vm.product.BuildLocationId_OfflineDatabaseTest" />
         Online:
-        <rad-combo rad-data-source="vm.onlineCountriesDS" ng-model="vm.product.BuildLocationId_OnlineTest" />
+        <rad-combo-box rad-data-source="vm.onlineCountriesDS" ng-model="vm.product.BuildLocationId_OnlineTest" />
         Local:
-        <rad-combo rad-data-source="vm.localCountriesDS" ng-model="vm.product.BuildLocationId_InMemoryTest" />
+        <rad-combo-box rad-data-source="vm.localCountriesDS" ng-model="vm.product.BuildLocationId_InMemoryTest" />
     </dto-form>
 </view>

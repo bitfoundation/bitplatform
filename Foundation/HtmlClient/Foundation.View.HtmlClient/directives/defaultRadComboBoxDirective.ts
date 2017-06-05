@@ -2,7 +2,7 @@
 
 module Foundation.View.Directives {
     @Core.DirectiveDependency({
-        name: "RadCombo",
+        name: "RadComboBox",
         scope: true,
         bindToController: {
             ngModelValue: "=ngModel",
@@ -10,7 +10,7 @@ module Foundation.View.Directives {
             radVirtualEntityLoader: "&",
             radOnInit: "&"
         },
-        controllerAs: "radCombo",
+        controllerAs: "radComboBox",
         template: ($element: JQuery, $attrs: ng.IAttributes & { ngModelOptions: string }) => {
 
             const itemTemplate = $element
@@ -48,7 +48,7 @@ module Foundation.View.Directives {
                 ngModelOptions = `ng-model-options="{ updateOn : 'change' , allowInvalid : true }"`;
             }
 
-            const template = `<input ${ngModelOptions} kendo-combo-box k-options="radCombo.options" k-ng-delay="::radCombo.options"></input>`;
+            const template = `<input ${ngModelOptions} kendo-combo-box k-options="radComboBox.options" k-ng-delay="::radComboBox.options"></input>`;
 
             return template;
         },
@@ -60,9 +60,9 @@ module Foundation.View.Directives {
         },
         restrict: "E"
     })
-    export class DefaultRadComboDirective {
+    export class DefaultRadComboBoxDirective {
 
-        public static defaultRadComboDirectiveCustomizers: Array<($scope: ng.IScope, attribues: ng.IAttributes, $element: JQuery, comboBoxOptions: kendo.ui.ComboBoxOptions) => void> = [];
+        public static defaultRadComboBoxDirectiveCustomizers: Array<($scope: ng.IScope, attribues: ng.IAttributes, $element: JQuery, comboBoxOptions: kendo.ui.ComboBoxOptions) => void> = [];
 
         public constructor( @Core.Inject("$element") public $element: JQuery,
             @Core.Inject("$scope") public $scope: ng.IScope,
@@ -86,7 +86,7 @@ module Foundation.View.Directives {
         public radVirtualEntityLoader: (args: { id: any }) => Promise<Model.Contracts.IDto>;
         public radOnInit: (args: { comboBoxOptions: kendo.ui.ComboBoxOptions }) => void;
 
-        public get combo(): kendo.ui.ComboBox {
+        public get comboBox(): kendo.ui.ComboBox {
             return this.$element.data("kendoComboBox");
         }
 
@@ -245,10 +245,10 @@ module Foundation.View.Directives {
                             options.success(items);
 
                             setTimeout(() => {
-                                let combo = this.combo;
-                                if (combo == null)
+                                let comboBox = this.comboBox;
+                                if (comboBox == null)
                                     return;
-                                let input = combo.wrapper.find("input");
+                                let input = comboBox.wrapper.find("input");
                                 let item = items[0];
                                 input.text(item[comboBoxOptions.dataTextField]);
                             }, 0);
@@ -262,8 +262,8 @@ module Foundation.View.Directives {
                 }
             }
 
-            DefaultRadComboDirective.defaultRadComboDirectiveCustomizers.forEach(radComboCustomizer => {
-                radComboCustomizer(this.$scope, this.$attrs, this.$element, comboBoxOptions);
+            DefaultRadComboBoxDirective.defaultRadComboBoxDirectiveCustomizers.forEach(radComboBoxCustomizer => {
+                radComboBoxCustomizer(this.$scope, this.$attrs, this.$element, comboBoxOptions);
             });
 
             if (this.$attrs.radOnInit != null) {
@@ -279,13 +279,13 @@ module Foundation.View.Directives {
         @ViewModel.Command()
         public onWidgetCreated() {
 
-            let combo = this.combo;
+            let comboBox = this.comboBox;
 
             if (this.mdInputContainer != null) {
 
                 this.mdInputContainerParent = this.mdInputContainer.element;
 
-                combo.wrapper.bind("focusin", this.onComboFocusIn.bind(this));
+                comboBox.wrapper.bind("focusin", this.onComboFocusIn.bind(this));
             }
 
             Object.defineProperty(this.dataSource, "current", {
@@ -295,16 +295,16 @@ module Foundation.View.Directives {
 
                     let newCurrent = null;
 
-                    const dataItem = combo.dataItem();
+                    const dataItem = comboBox.dataItem();
 
                     if (dataItem == null)
                         newCurrent = null;
                     else
                         newCurrent = dataItem.innerInstance != null ? dataItem.innerInstance() : dataItem;
 
-                    if (newCurrent == null && this.$attrs.radText != null && !this.ngModel.$isEmpty(combo.value()) && combo.options.autoBind == false) {
+                    if (newCurrent == null && this.$attrs.radText != null && !this.ngModel.$isEmpty(comboBox.value()) && comboBox.options.autoBind == false) {
                         newCurrent = {};
-                        newCurrent[this.radValueFieldName] = combo.value();
+                        newCurrent[this.radValueFieldName] = comboBox.value();
                         newCurrent[this.radTextFieldName] = this.radTextValue;
                     };
 
@@ -318,11 +318,11 @@ module Foundation.View.Directives {
                         value = entity[this.radValueFieldName];
                     }
 
-                    if (combo.value() != value)
-                        combo.value(value);
+                    if (comboBox.value() != value)
+                        comboBox.value(value);
 
-                    if (this.ngModel.$isEmpty(value) && !this.ngModel.$isEmpty(combo.text()))
-                        combo.text(null);
+                    if (this.ngModel.$isEmpty(value) && !this.ngModel.$isEmpty(comboBox.text()))
+                        comboBox.text(null);
 
                     this.ngModelValue = value;
 
@@ -343,9 +343,9 @@ module Foundation.View.Directives {
                 this.dataSource['transport'].read = this.originalDataSourceTransportRead;
                 delete this.dataSource.current;
             }
-            if (this.combo != null) {
-                this.combo.wrapper.unbind("focusin", this.onComboFocusIn);
-                kendo.destroyWidget(this.combo);
+            if (this.comboBox != null) {
+                this.comboBox.wrapper.unbind("focusin", this.onComboFocusIn);
+                kendo.destroyWidget(this.comboBox);
             }
         }
     }

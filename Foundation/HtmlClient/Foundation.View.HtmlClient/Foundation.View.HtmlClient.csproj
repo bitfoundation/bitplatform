@@ -75,7 +75,7 @@
     <TypeScriptCompile Include="directives\defaultRadColorPickerDirective.ts" />
     <TypeScriptCompile Include="directives\defaultColorViewerDirective.ts" />
     <TypeScriptCompile Include="directives\defaultRadDatePickerDirective.ts" />
-    <TypeScriptCompile Include="directives\defaultRadComboDirective.ts" />
+    <TypeScriptCompile Include="directives\defaultRadComboBoxDirective.ts" />
     <TypeScriptCompile Include="directives\defaultRadGridCancelButtonDirective.ts" />
     <TypeScriptCompile Include="directives\defaultElementMoverDirective.ts" />
     <TypeScriptCompile Include="directives\defaultRadGridSaveButtonDirective.ts" />
