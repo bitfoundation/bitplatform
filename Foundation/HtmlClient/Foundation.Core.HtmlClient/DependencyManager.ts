@@ -196,7 +196,6 @@ module Foundation.Core {
             if (directiveDependency.usesOldStyle == false) {
                 directiveDependency.name = camelize(directiveDependency.name);
                 directiveDependency.controller = directiveDependency.type as any;
-                directiveDependency.controllerAs = directiveDependency.controllerAs || "vm";
             }
 
             const dependenciesWithThisName = this.directiveDependencies.filter(d => d.name.toLowerCase() == directiveDependency.name.toLowerCase());
