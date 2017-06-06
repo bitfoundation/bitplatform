@@ -12,7 +12,7 @@ module Foundation.View.Directives {
         },
         restrict: "E",
         scope: true,
-        template: `<button ng-click="radGridEditButton.radGrid.updateDataItem($event)" ng-transclude></button>`,
+        template: `<button ng-click=";radGridEditButton.radGrid.updateDataItem($event)" ng-transclude></button>`,
         replace: true,
         terminal: true,
         transclude: true
