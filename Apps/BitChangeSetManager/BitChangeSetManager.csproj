@@ -443,7 +443,7 @@
     <TypeScriptCompile Include="wwwroot\view\directives\bitMenuContainer.ts" />
   </ItemGroup>
   <ItemGroup>
-    <Analyzer Include="packages\BitCodeAnalyzer.1.1.5.2\analyzers\dotnet\cs\BitCodeAnalyzer.dll" />
+    <Analyzer Include="packages\BitCodeAnalyzer.1.1.5.4\analyzers\dotnet\cs\BitCodeAnalyzer.dll" />
   </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>

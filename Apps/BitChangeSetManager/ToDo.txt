@@ -1,7 +1,10 @@
 ﻿rad on init
 rad grid detail template
 Parent/Child based routing
-Master Page
+Login form
+Header
+Menu
 Background Job Worker
 Sync
 Bundle scripts
+Web API (Send Email + File Upload)
