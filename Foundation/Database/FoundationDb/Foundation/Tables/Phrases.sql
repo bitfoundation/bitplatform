@@ -1,8 +1,0 @@
-﻿CREATE TABLE [Foundation].[Phrases]
-(
-	[Id] BIGINT NOT NULL PRIMARY KEY IDENTITY, 
-    [Name] NVARCHAR(50) NOT NULL, 
-    [Value] NVARCHAR(2500) NOT NULL, 
-    [UserId] NVARCHAR(50) NOT NULL, 
-    [ConcurrencyToken] TIMESTAMP NOT NULL
-)
