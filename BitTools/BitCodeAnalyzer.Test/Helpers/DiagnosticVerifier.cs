@@ -8,6 +8,7 @@ using System.Collections.Immutable;
 using System.Linq;
 using System.Text;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using System.Reflection;
 
 namespace BitCodeAnalyzer.Test.Helpers
 {
@@ -258,11 +259,6 @@ namespace BitCodeAnalyzer.Test.Helpers
         }
         #endregion
 
-        private readonly MetadataReference CorlibReference = MetadataReference.CreateFromFile(typeof(object).Assembly.Location);
-        private readonly MetadataReference SystemCoreReference = MetadataReference.CreateFromFile(typeof(Enumerable).Assembly.Location);
-        private readonly MetadataReference CSharpSymbolsReference = MetadataReference.CreateFromFile(typeof(CSharpCompilation).Assembly.Location);
-        private readonly MetadataReference CodeAnalysisReference = MetadataReference.CreateFromFile(typeof(Compilation).Assembly.Location);
-
         public const string DefaultFilePathPrefix = "Test";
         public const string CSharpDefaultFileExt = "cs";
         public const string VisualBasicDefaultExt = "vb";
@@ -386,10 +382,9 @@ namespace BitCodeAnalyzer.Test.Helpers
             Solution solution = new AdhocWorkspace()
                 .CurrentSolution
                 .AddProject(projectId, TestProjectName, TestProjectName, language)
-                .AddMetadataReference(projectId, CorlibReference)
-                .AddMetadataReference(projectId, SystemCoreReference)
-                .AddMetadataReference(projectId, CSharpSymbolsReference)
-                .AddMetadataReference(projectId, CodeAnalysisReference);
+                .AddMetadataReferences(projectId, AppDomain.CurrentDomain.GetAssemblies()
+                    .Where(asm => asm.IsDynamic == false)
+                    .Select(asm => MetadataReference.CreateFromFile(asm.Location)));
 
             int count = 0;
             foreach (string source in sources)
