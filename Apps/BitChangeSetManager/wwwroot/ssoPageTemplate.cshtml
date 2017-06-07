@@ -34,14 +34,12 @@
             };
     </script>
 
-    <script src="Files/V@(ssoPageModel.AppVersion)/bower_components/bit-releases/foundation.core/foundation.core.js"></script>
-    <script src="Files/V@(ssoPageModel.AppVersion)/bower_components/bit-releases/foundation.viewmodel/foundation.viewmodel.js"></script>
-    <script src="Files/V@(ssoPageModel.AppVersion)/bower_components/bit-releases/foundation.view/foundation.view.js"></script>
-    <script src="Files/V@(ssoPageModel.AppVersion)/bower_components/bit-releases/foundation.identity/identityServer.HtmlClient.js"></script>
+    <script src="Files/V@(ssoPageModel.AppVersion)/bower_components/bit-releases/typescript-client/bit.core.js"></script>
+    <script src="Files/V@(ssoPageModel.AppVersion)/bower_components/bit-releases/typescript-client/bit.ng1.js"></script>
     <script src="Files/V@(ssoPageModel.AppVersion)/security/bitChangeSetManager-security.js"></script>
 
     <script type="text/javascript">
-        Foundation.Core.DependencyManager.getCurrent().init();
+        Bit.DependencyManager.getCurrent().init();
     </script>
 
 </head>

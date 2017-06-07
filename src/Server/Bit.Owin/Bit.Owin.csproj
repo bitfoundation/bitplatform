@@ -1,0 +1,207 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{3556C2A2-58BB-4BF6-938B-CAD6A8F053F7}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>Bit.Owin</RootNamespace>
+    <AssemblyName>Bit.Owin</AssemblyName>
+    <TargetFrameworkVersion>v4.6.2</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="Autofac, Version=4.6.0.0, Culture=neutral, PublicKeyToken=17863af14b0044da, processorArchitecture=MSIL">
+      <HintPath>..\..\..\packages\Autofac.4.6.0\lib\net45\Autofac.dll</HintPath>
+    </Reference>
+    <Reference Include="Autofac.Integration.Owin, Version=4.0.0.0, Culture=neutral, PublicKeyToken=17863af14b0044da, processorArchitecture=MSIL">
+      <HintPath>..\..\..\packages\Autofac.Owin.4.0.0\lib\net45\Autofac.Integration.Owin.dll</HintPath>
+    </Reference>
+    <Reference Include="Autofac.Integration.SignalR, Version=4.0.0.0, Culture=neutral, PublicKeyToken=17863af14b0044da, processorArchitecture=MSIL">
+      <HintPath>..\..\..\packages\Autofac.SignalR2.4.0.0\lib\net45\Autofac.Integration.SignalR.dll</HintPath>
+    </Reference>
+    <Reference Include="Autofac.Integration.WebApi, Version=4.0.0.0, Culture=neutral, PublicKeyToken=17863af14b0044da, processorArchitecture=MSIL">
+      <HintPath>..\..\..\packages\Autofac.WebApi2.4.0.1\lib\net45\Autofac.Integration.WebApi.dll</HintPath>
+    </Reference>
+    <Reference Include="AutoMapper, Version=6.0.2.0, Culture=neutral, PublicKeyToken=be96cd2c38ef1005, processorArchitecture=MSIL">
+      <HintPath>..\..\..\packages\AutoMapper.6.0.2\lib\net45\AutoMapper.dll</HintPath>
+    </Reference>
+    <Reference Include="IdentityServer3, Version=2.6.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\..\packages\IdentityServer3.2.6.0\lib\net45\IdentityServer3.dll</HintPath>
+    </Reference>
+    <Reference Include="IdentityServer3.AccessTokenValidation, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\..\packages\IdentityServer3.AccessTokenValidation.2.15.0\lib\net45\IdentityServer3.AccessTokenValidation.dll</HintPath>
+    </Reference>
+    <Reference Include="Lambda2Js, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\..\packages\Lambda2Js.2.1.1\lib\netstandard1.3\Lambda2Js.dll</HintPath>
+      <SpecificVersion>False</SpecificVersion>
+    </Reference>
+    <Reference Include="Microsoft.Owin, Version=3.1.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\..\..\packages\Microsoft.Owin.3.1.0\lib\net45\Microsoft.Owin.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Owin.FileSystems, Version=3.1.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\..\..\packages\Microsoft.Owin.FileSystems.3.1.0\lib\net45\Microsoft.Owin.FileSystems.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Owin.StaticFiles, Version=3.1.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\..\..\packages\Microsoft.Owin.StaticFiles.3.1.0\lib\net45\Microsoft.Owin.StaticFiles.dll</HintPath>
+    </Reference>
+    <Reference Include="Newtonsoft.Json, Version=10.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>..\..\..\packages\Newtonsoft.Json.10.0.2\lib\net45\Newtonsoft.Json.dll</HintPath>
+    </Reference>
+    <Reference Include="NWebsec.Core, Version=1.6.0.0, Culture=neutral, PublicKeyToken=3613da5f958908a1, processorArchitecture=MSIL">
+      <HintPath>..\..\..\packages\NWebsec.Core.1.6.0\lib\45\NWebsec.Core.dll</HintPath>
+    </Reference>
+    <Reference Include="NWebsec.Owin, Version=2.3.1.0, Culture=neutral, PublicKeyToken=3613da5f958908a1, processorArchitecture=MSIL">
+      <HintPath>..\..\..\packages\NWebsec.Owin.2.3.1\lib\45\NWebsec.Owin.dll</HintPath>
+    </Reference>
+    <Reference Include="Owin, Version=1.0.0.0, Culture=neutral, PublicKeyToken=f0ebd12fd5e55cc5, processorArchitecture=MSIL">
+      <HintPath>..\..\..\packages\Owin.1.0\lib\net40\Owin.dll</HintPath>
+    </Reference>
+    <Reference Include="RazorEngine, Version=3.9.3.0, Culture=neutral, PublicKeyToken=9ee697374c7e744a, processorArchitecture=MSIL">
+      <HintPath>..\..\..\packages\RazorEngine.3.9.3\lib\net45\RazorEngine.dll</HintPath>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.ComponentModel.Annotations, Version=4.1.1.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\..\..\packages\System.ComponentModel.Annotations.4.3.0\lib\net461\System.ComponentModel.Annotations.dll</HintPath>
+    </Reference>
+    <Reference Include="System.ComponentModel.DataAnnotations" />
+    <Reference Include="System.IdentityModel" />
+    <Reference Include="System.IdentityModel.Tokens.Jwt, Version=4.0.20622.1351, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\..\..\packages\System.IdentityModel.Tokens.Jwt.4.0.2.206221351\lib\net45\System.IdentityModel.Tokens.Jwt.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Net.Http, Version=4.1.1.1, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\..\..\packages\System.Net.Http.4.3.2\lib\net46\System.Net.Http.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Runtime.Caching" />
+    <Reference Include="System.Xml" />
+    <Reference Include="System.Xml.ReaderWriter, Version=4.1.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\..\..\packages\System.Xml.ReaderWriter.4.3.0\lib\net46\System.Xml.ReaderWriter.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Contracts\IAutofacDependencyManager.cs" />
+    <Compile Include="Contracts\IDefaultHtmlPageProvider.cs" />
+    <Compile Include="Contracts\IDefaultPageModelProvider.cs" />
+    <Compile Include="Contracts\IExceptionToHttpErrorMapper.cs" />
+    <Compile Include="Contracts\IOwinActionFilter.cs" />
+    <Compile Include="Contracts\IOwinMiddlewareConfiguration.cs" />
+    <Compile Include="Contracts\ITimeZoneManager.cs" />
+    <Compile Include="Contracts\IUserSettingProvider.cs" />
+    <Compile Include="Contracts\Metadata\IAppMetadataProvider.cs" />
+    <Compile Include="Contracts\Metadata\IDtoMetadataBuilder`TDto.cs" />
+    <Compile Include="Contracts\Metadata\IMetadataBuilder.cs" />
+    <Compile Include="Contracts\Metadata\IProjectMetadataBuilder.cs" />
+    <Compile Include="Contracts\Metadata\IViewMetadataBuilder.cs" />
+    <Compile Include="Exceptions\AppException.cs" />
+    <Compile Include="Exceptions\BadRequestException.cs" />
+    <Compile Include="Exceptions\DomainLogicException.cs" />
+    <Compile Include="Exceptions\IHttpStatusCodeAwareException.cs" />
+    <Compile Include="Exceptions\IKnwoException.cs" />
+    <Compile Include="Exceptions\ResourceNotFoundException.cs" />
+    <Compile Include="Extensions\IDependencyManangerExtensions.cs" />
+    <Compile Include="Extensions\IOwinContextExtensions.cs" />
+    <Compile Include="Implementations\AutofacDependencyManager.cs" />
+    <Compile Include="Implementations\ConsoleLogStore.cs" />
+    <Compile Include="Implementations\DefaultAppEnvironmentProvider.cs" />
+    <Compile Include="Implementations\DefaultCertificateProvider.cs" />
+    <Compile Include="Implementations\DefaultDependenciesManagerProvider.cs" />
+    <Compile Include="Implementations\DefaultDependencyManager.cs" />
+    <Compile Include="Implementations\DefaultExceptionToHttpErrorMapper.cs" />
+    <Compile Include="Implementations\DefaultHtmlPageRazorTemplateConfiguration.cs" />
+    <Compile Include="Implementations\DefaultJsonContentFormatter.cs" />
+    <Compile Include="Implementations\DefaultLogger.cs" />
+    <Compile Include="Implementations\DefaultOwinActionFilterMiddleware.cs" />
+    <Compile Include="Implementations\DefaultPageModelProvider.cs" />
+    <Compile Include="Implementations\DefaultPathProvider.cs" />
+    <Compile Include="Implementations\DefaultRandomStringProvider.cs" />
+    <Compile Include="Implementations\DefaultRequestInformationProvider.cs" />
+    <Compile Include="Implementations\DefaultScopeStatusManager.cs" />
+    <Compile Include="Implementations\DefaultTimeZoneManager.cs" />
+    <Compile Include="Implementations\DefaultUserInformationProvider.cs" />
+    <Compile Include="Implementations\DefaultXmlContentFormatter.cs" />
+    <Compile Include="Implementations\Metadata\DefaultAppMetadataProvider.cs" />
+    <Compile Include="Implementations\Metadata\DefaultDtoMetadataBuilder`TDto.cs" />
+    <Compile Include="Implementations\Metadata\DefaultMetadataBuilder.cs" />
+    <Compile Include="Implementations\Metadata\DefaultProjectMetadataBuilder.cs" />
+    <Compile Include="Implementations\Metadata\DefaultViewMetadataBuilder.cs" />
+    <Compile Include="Implementations\RazorDefaultHtmlPageProvider.cs" />
+    <Compile Include="Implementations\RazorViewEngineConfiguration.cs" />
+    <Compile Include="Implementations\RazorViewTemplate.cs" />
+    <Compile Include="Implementations\WindowsEventsLogStore.cs" />
+    <Compile Include="Metadata\Dtos\UserSettingMetadataBuilder.cs" />
+    <Compile Include="Metadata\BitMetadataBuilder.cs" />
+    <Compile Include="Middlewares\AddAcceptCharsetToRequestHeadersIfNotAnyMiddleware.cs" />
+    <Compile Include="Middlewares\AutofacDependencyInjectionMiddlewareConfiguration.cs" />
+    <Compile Include="Middlewares\DefaultPageMiddleware.cs" />
+    <Compile Include="Middlewares\DefaultPageMiddlewareConfiguration.cs" />
+    <Compile Include="Middlewares\DelegateOwinMiddlewareConfiguration.cs" />
+    <Compile Include="Middlewares\InvokeLoginMiddleware.cs" />
+    <Compile Include="Middlewares\InvokeLoginMiddlewareConfiguration.cs" />
+    <Compile Include="Middlewares\InvokeLogOutMiddleware.cs" />
+    <Compile Include="Middlewares\InvokeLogOutMiddlewareConfiguration.cs" />
+    <Compile Include="Middlewares\LogRequestInformationMiddleware.cs" />
+    <Compile Include="Middlewares\LogRequestInformationMiddlewareConfiguration.cs" />
+    <Compile Include="Middlewares\LogUserInformationMiddleware.cs" />
+    <Compile Include="Middlewares\LogUserInformationMiddlewareConfiguration.cs" />
+    <Compile Include="Middlewares\MetadataMiddlewareConfiguration.cs" />
+    <Compile Include="Middlewares\MetadatMiddleware.cs" />
+    <Compile Include="Middlewares\OwinCacheResponseMiddleware.cs" />
+    <Compile Include="Middlewares\OwinExceptionHandlerMiddleware.cs" />
+    <Compile Include="Middlewares\OwinExceptionHandlerMiddlewareConfiguration.cs" />
+    <Compile Include="Middlewares\OwinNoCacheResponseMiddleware.cs" />
+    <Compile Include="Middlewares\ReadAuthTokenFromCookieMiddleware.cs" />
+    <Compile Include="Middlewares\ReadAuthTokenFromCookieMiddlewareConfiguration.cs" />
+    <Compile Include="Middlewares\RedirectToSsoIfNotLoggedInMiddleware.cs" />
+    <Compile Include="Middlewares\RedirectToSsoIfNotLoggedInMiddlewareConfiguration.cs" />
+    <Compile Include="Middlewares\SignInPageMiddleware.cs" />
+    <Compile Include="Middlewares\SignInPageMiddlewareConfiguration.cs" />
+    <Compile Include="Middlewares\SignOutPageMiddleware.cs" />
+    <Compile Include="Middlewares\SignOutPageMiddlewareConfiguration.cs" />
+    <Compile Include="Middlewares\SingleSignOnMiddlewareConfiguration.cs" />
+    <Compile Include="Middlewares\StaticFilesMiddlewareConfiguration.cs" />
+    <Compile Include="Models\DefaultPageModel.cs" />
+    <Compile Include="OwinAppStartup.cs" />
+    <Compile Include="Properties\AssemblyContainer.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Metadata\Views\" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Bit.Core\Bit.Core.csproj">
+      <Project>{fcda72a2-d377-4aa1-a8c5-e6c6805bcb64}</Project>
+      <Name>Bit.Core</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Bit.Data\Bit.Data.csproj">
+      <Project>{722d443e-450d-4c7b-94cf-ac8c553dd8ff}</Project>
+      <Name>Bit.Data</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Bit.Model\Bit.Model.csproj">
+      <Project>{5fac42f7-1179-440d-8be0-ffd364639943}</Project>
+      <Name>Bit.Model</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+</Project>

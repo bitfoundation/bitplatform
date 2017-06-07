@@ -1,0 +1,15 @@
+{
+  "name": "bit-ng1-test",
+  "version": "1.0.0",
+  "description": "Bit Framework",
+  "author": "Bit Foundation",
+  "devDependencies": {
+    "@types/angular": "^1.6.17",
+    "@types/angular-material": "0.0.0",
+    "@types/angular-translate": "^2.15.0",
+    "@types/kendo-ui": "^2016.3.41",
+    "@types/jquery": "^2.0.45",
+    "gulp": "3.9.1",
+    "gulp-less": "3.3.0"
+  }
+}

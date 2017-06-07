@@ -1,7 +1,7 @@
 {
   "Schema": {
     "HtmlSchemaFiles": [
-      "wwwroot\\bower_components\\bit-releases\\foundation.view\\html-elements-schema.json"
+      "wwwroot\\bower_components\\bit-releases\\typescript-client\\html-elements-schema.json"
     ]
   },
   "BitCodeGeneratorConfigs": {
@@ -10,7 +10,7 @@
         "EdmName": "BitChangeSetManager",
         "Namespace": "BitChangeSetManager",
         "DestinationFileName": "wwwroot/BitChangeSetManager.Model.Context",
-        "TypingsPath": "bower_components/bit-releases/foundation.core/typings.d.ts",
+        "TypingsPath": "bower_components\\bit-releases\\typescript-client\\typings.d.ts",
         "SourceProjects": [
           {
             "Name": "BitChangeSetManager"

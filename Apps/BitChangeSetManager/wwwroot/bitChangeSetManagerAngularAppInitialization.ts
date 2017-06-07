@@ -5,7 +5,7 @@ module BitChangeSetManager {
     @ObjectDependency({
         name: "AppEvent"
     })
-    export class BitChangeSetManagerAngularAppInitialization extends FoundationVM.Implementations.DefaultAngularAppInitialization {
+    export class BitChangeSetManagerAngularAppInitialization extends Bit.Implementations.DefaultAngularAppInitialization {
 
         public constructor( @Inject("ClientAppProfileManager") public clientAppProfileManager: ClientAppProfileManager) {
             super();
@@ -24,7 +24,7 @@ module BitChangeSetManager {
         }
 
         protected async onAppRun(app: ng.IModule): Promise<void> {
-            FoundationView.Directives.DefaultRadGridDirective.defaultRadGridDirectiveCustomizers.push(($scope: ng.IScope, attribues: ng.IAttributes, element: JQuery, gridOptions: kendo.ui.GridOptions): void => {
+            Bit.Directives.DefaultRadGridDirective.defaultRadGridDirectiveCustomizers.push(($scope: ng.IScope, attribues: ng.IAttributes, element: JQuery, gridOptions: kendo.ui.GridOptions): void => {
                 gridOptions.groupable = true;
             });
             await super.onAppRun(app);

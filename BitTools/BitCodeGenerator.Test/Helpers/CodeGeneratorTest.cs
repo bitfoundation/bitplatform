@@ -47,7 +47,7 @@ namespace BitCodeGenerator.Test.Helpers
 
         public virtual Workspace GetWorkspace()
         {
-            string solutionPath = Path.Combine(Environment.CurrentDirectory, @"..\..\..\..\Foundation.sln");
+            string solutionPath = Path.Combine(Environment.CurrentDirectory, @"..\..\..\..\Bit.sln");
 
             MSBuildWorkspace workspace = MSBuildWorkspace.Create();
 

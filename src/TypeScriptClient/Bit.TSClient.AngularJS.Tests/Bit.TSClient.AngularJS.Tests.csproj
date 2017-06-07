@@ -1,0 +1,150 @@
+﻿<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\TypeScript\Microsoft.TypeScript.Default.props" Condition="Exists('$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\TypeScript\Microsoft.TypeScript.Default.props')" />
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProductVersion>
+    </ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{7A597FE5-47B7-4EAC-9343-EB9FE30E92E4}</ProjectGuid>
+    <ProjectTypeGuids>{349c5851-65df-11da-9384-00065b846f21};{fae04ec0-301f-11d3-bf4b-00c04f79efbc}</ProjectTypeGuids>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>Bit.TSClient.AngularJS.Tests</RootNamespace>
+    <AssemblyName>Bit.TSClient.AngularJS.Tests</AssemblyName>
+    <TargetFrameworkVersion>v4.6.2</TargetFrameworkVersion>
+    <UseIISExpress>true</UseIISExpress>
+    <IISExpressSSLPort />
+    <IISExpressAnonymousAuthentication />
+    <IISExpressWindowsAuthentication />
+    <IISExpressUseClassicPipelineMode />
+    <UseGlobalApplicationHostFile />
+    <NuGetPackageImportStamp>
+    </NuGetPackageImportStamp>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="tsconfig.json" />
+    <Content Include="views\tests\angularServiceUsageView.html" />
+    <Content Include="views\tests\angularTranslateView.html" />
+    <Content Include="views\tests\app.html" />
+    <Content Include="views\tests\asyncView.html" />
+    <Content Include="views\tests\dateTimeServiceView.html" />
+    <Content Include="views\tests\entityContextUsageView.html" />
+    <Content Include="views\tests\firstPartView.html" />
+    <Content Include="views\tests\formValidationView.html" />
+    <Content Include="views\tests\lookupsView.html" />
+    <Content Include="views\tests\nestedRouteMainView.html" />
+    <Content Include="views\tests\radComboView.html" />
+    <Content Include="views\tests\radGridView.html" />
+    <Content Include="views\tests\repeatView.html" />
+    <Content Include="views\tests\routeParameterView.html" />
+    <Content Include="views\tests\secondPartView.html" />
+    <Content Include="views\tests\simpleView.html" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Properties\" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="bower.json" />
+  </ItemGroup>
+  <ItemGroup>
+    <TypeScriptCompile Include="Identity\identityServer.tests.fileDependencies.ts" />
+    <TypeScriptCompile Include="Identity\identityServer.tests.objectDependencies.ts" />
+    <TypeScriptCompile Include="Identity\Implementations\identityServerTestPathProvider.ts" />
+    <TypeScriptCompile Include="Implementations\bitTestPathProvider.ts" />
+    <TypeScriptCompile Include="Implementations\testDefaultAngularAppInitialization.ts" />
+    <TypeScriptCompile Include="Implementations\Tests\angularAppInitializationTests.ts" />
+    <TypeScriptCompile Include="Implementations\Tests\angularTranslateTests.ts" />
+    <TypeScriptCompile Include="Implementations\Tests\environmentConfigsTests.ts" />
+    <TypeScriptCompile Include="Implementations\Tests\loggerTests.ts" />
+    <TypeScriptCompile Include="Implementations\Tests\radTests.ts" />
+    <TypeScriptCompile Include="Implementations\Tests\signalRTests.ts" />
+    <TypeScriptCompile Include="Implementations\Tests\uiAutomationTests.ts" />
+    <TypeScriptCompile Include="Implementations\Tests\validationTests.ts" />
+    <TypeScriptCompile Include="test.fileDependencies.ts" />
+    <TypeScriptCompile Include="test.objectDependencies.ts" />
+    <TypeScriptCompile Include="thirdPartyLibrariesTests\JayDataContextTests\complexAndEnumAndSimpleTypeTests.ts" />
+    <TypeScriptCompile Include="thirdPartyLibrariesTests\JayDataContextTests\crudTests.ts" />
+    <TypeScriptCompile Include="thirdPartyLibrariesTests\JayDataContextTests\functionsAndActions.ts" />
+    <TypeScriptCompile Include="thirdPartyLibrariesTests\JayDataContextTests\inheritanceTests.ts" />
+    <TypeScriptCompile Include="thirdPartyLibrariesTests\JayDataContextTests\jayDataAndDtoSetControllerTests.ts" />
+    <TypeScriptCompile Include="thirdPartyLibrariesTests\KendoDataSourceTests\testKendoDataSourceCreationFromJayData.ts" />
+    <TypeScriptCompile Include="typings.d.ts" />
+    <TypeScriptCompile Include="viewModels\tests\angularServiceUsageViewModel.ts" />
+    <TypeScriptCompile Include="viewModels\tests\angularTranslateViewModel.ts" />
+    <TypeScriptCompile Include="viewModels\tests\app.ts" />
+    <TypeScriptCompile Include="viewModels\tests\asyncViewModel.ts" />
+    <TypeScriptCompile Include="viewModels\tests\dateTimeServiceViewModel.ts" />
+    <TypeScriptCompile Include="viewModels\tests\entityContextUsageViewModel.ts" />
+    <TypeScriptCompile Include="viewModels\tests\formValidationViewModel.ts" />
+    <TypeScriptCompile Include="viewModels\tests\lookupsViewModel.ts" />
+    <TypeScriptCompile Include="viewModels\tests\nestedRouteMainViewModel.ts" />
+    <TypeScriptCompile Include="viewModels\tests\radComboViewModel.ts" />
+    <TypeScriptCompile Include="viewModels\tests\radGridViewModel.ts" />
+    <TypeScriptCompile Include="viewModels\tests\repeatViewMdoel.ts" />
+    <TypeScriptCompile Include="viewModels\tests\routeParameterViewModel.ts" />
+    <TypeScriptCompile Include="viewModels\tests\simpleViewModel.ts" />
+    <TypeScriptCompile Include="views\directives\testDirective.ts" />
+  </ItemGroup>
+  <ItemGroup>
+    <Service Include="{4A0DDDB5-7A95-4FBF-97CC-616D07737A77}" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Identity\tsconfig.json" />
+  </ItemGroup>
+  <PropertyGroup>
+    <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>
+    <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>
+  </PropertyGroup>
+  <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
+  <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\TypeScript\Microsoft.TypeScript.targets" Condition="Exists('$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\TypeScript\Microsoft.TypeScript.targets')" />
+  <Import Project="$(VSToolsPath)\WebApplications\Microsoft.WebApplication.targets" Condition="'$(VSToolsPath)' != ''" />
+  <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v10.0\WebApplications\Microsoft.WebApplication.targets" Condition="false" />
+  <ProjectExtensions>
+    <VisualStudio>
+      <FlavorProperties GUID="{349c5851-65df-11da-9384-00065b846f21}">
+        <WebProjectProperties>
+          <UseIIS>True</UseIIS>
+          <AutoAssignPort>True</AutoAssignPort>
+          <DevelopmentServerPort>1493</DevelopmentServerPort>
+          <DevelopmentServerVPath>/</DevelopmentServerVPath>
+          <IISUrl>http://localhost:1493/</IISUrl>
+          <NTLMAuthentication>False</NTLMAuthentication>
+          <UseCustomServer>False</UseCustomServer>
+          <CustomServerUrl>
+          </CustomServerUrl>
+          <SaveServerSettingsInUserFile>False</SaveServerSettingsInUserFile>
+        </WebProjectProperties>
+      </FlavorProperties>
+    </VisualStudio>
+  </ProjectExtensions>
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>

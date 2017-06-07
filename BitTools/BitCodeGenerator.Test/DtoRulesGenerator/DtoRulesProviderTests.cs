@@ -20,17 +20,17 @@ namespace BitCodeGenerator.Test.DtoRulesGenerator
 
     namespace Test.Model.Dto
     {
-        public class ProductDto : Foundation.Model.Dto.IDto
+        public class ProductDto : Bit.Model.Contracts.IDto
         {
             public virtual int Id { get; set; }
         }
 
-        public class CategoryDto : Foundation.Model.Dto.IDto
+        public class CategoryDto : Bit.Model.Contracts.IDto
         {
             public virtual int Id { get; set; }
         }
 
-        public class CustomerDto : Foundation.Model.Dto.IDto
+        public class CustomerDto : Bit.Model.Contracts.IDto
         {
             public virtual int Id { get; set; }
         }

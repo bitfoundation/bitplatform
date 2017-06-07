@@ -13,7 +13,7 @@
         public constructor( @Inject("$element") public $element: JQuery,
             @Inject("$attrs") public $attrs: ng.IAttributes & { mdComponentId: string },
             @Inject("$mdSidenav") public $mdSidenav: ng.material.ISidenavService,
-            @Inject("ClientAppProfileManager") public clientAppProfileManager: FoundationCore.ClientAppProfileManager,
+            @Inject("ClientAppProfileManager") public clientAppProfileManager: Bit.ClientAppProfileManager,
             @Inject("$window") public $window: ng.IWindowService) {
 
         }

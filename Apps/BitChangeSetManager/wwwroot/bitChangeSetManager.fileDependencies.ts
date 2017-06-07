@@ -53,26 +53,26 @@ module BitChangeSetManager {
 
     dependencyManager.registerFileDependency({
         name: "controls-styles",
-        path: "bower_components/bit-releases/foundation.view/contents/styles/controls",
+        path: "bower_components/bit-releases/typescript-client/contents/styles/controls",
         fileDependecyType: "Style"
     });
 
     dependencyManager.registerFileDependency({
         name: "light-blue-theme-custom-styles",
-        path: "bower_components/bit-releases/foundation.view/contents/styles/theme.light.blue",
+        path: "bower_components/bit-releases/typescript-client/contents/styles/theme.light.blue",
         fileDependecyType: "Style"
     });
 
     dependencyManager.registerFileDependency({
         name: "en-US-styles",
-        path: "bower_components/bit-releases/foundation.view/contents/styles/en-US",
+        path: "bower_components/bit-releases/typescript-client/contents/styles/en-US",
         fileDependecyType: "Style",
         predicate: appEnvProvider => appEnvProvider.culture == "EnUs"
     });
 
     dependencyManager.registerFileDependency({
         name: "fa-IR-styles",
-        path: "bower_components/bit-releases/foundation.view/contents/styles/fa-IR",
+        path: "bower_components/bit-releases/typescript-client/contents/styles/fa-IR",
         fileDependecyType: "Style",
         predicate: appEnvProvider => appEnvProvider.culture == "FaIr"
     });
@@ -220,8 +220,8 @@ module BitChangeSetManager {
     });
 
     dependencyManager.registerFileDependency({
-        name: "foundation-model-context",
-        path: "bower_components/bit-releases/foundation.viewmodel/Foundation.Model.Context"
+        name: "bit-model-context",
+        path: "bower_components/bit-releases/typescript-client/Bit.Model.Context"
     });
 
     dependencyManager.registerFileDependency({

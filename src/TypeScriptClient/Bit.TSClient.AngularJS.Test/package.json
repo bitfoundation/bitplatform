@@ -1,0 +1,10 @@
+{
+  "name": "bit-ng1-test",
+  "version": "1.0.0",
+  "description": "Bit Framework",
+  "author": "Bit Foundation",
+  "devDependencies": {
+    "@types/jasmine": "^2.5.46",
+    "@types/jasmine-jquery": "^1.5.30"
+  }
+}

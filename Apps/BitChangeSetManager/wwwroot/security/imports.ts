@@ -1,30 +1,21 @@
-﻿/// <reference path="../bower_components/bit-releases/foundation.core/foundation.core.d.ts" />
-/// <reference path="../bower_components/bit-releases/foundation.view/foundation.view.d.ts" />
-/// <reference path="../bower_components/bit-releases/foundation.viewmodel/foundation.viewmodel.d.ts" />
-/// <reference path="../bower_components/bit-releases/foundation.identity/identityserver.htmlclient.d.ts" />
+﻿/// <reference path="../bower_components/bit-releases/typescript-client/typings.d.ts" />
 
-import FoundationCore = Foundation.Core;
-import FoundationVM = Foundation.ViewModel;
-import FoundationView = Foundation.View;
-
-import FormViewModelDependency = FoundationCore.FormViewModelDependency;
-import DtoViewModelDependency = FoundationCore.DtoViewModelDependency;
-import DtoRulesDependency = FoundationCore.DtoRulesDependency;
-import ComponentDependency = Foundation.Core.ComponentDependency;
-import DirectiveDependency = FoundationCore.DirectiveDependency;
-import ObjectDependency = FoundationCore.ObjectDependency;
-import Inject = FoundationCore.Inject;
-import InjectAll = FoundationCore.InjectAll;
-import IMessageReceiver = FoundationCore.Contracts.IMessageReceiver;
-import ClientAppProfileManager = FoundationCore.ClientAppProfileManager;
-import DependencyManager = FoundationCore.DependencyManager;
-import Log = FoundationCore.Log;
+import FormViewModelDependency = Bit.FormViewModelDependency;
+import DtoViewModelDependency = Bit.DtoViewModelDependency;
+import DtoRulesDependency = Bit.DtoRulesDependency;
+import ComponentDependency = Bit.ComponentDependency;
+import DirectiveDependency = Bit.DirectiveDependency;
+import ObjectDependency = Bit.ObjectDependency;
+import Inject = Bit.Inject;
+import InjectAll = Bit.InjectAll;
+import IMessageReceiver = Bit.Contracts.IMessageReceiver;
+import ClientAppProfileManager = Bit.ClientAppProfileManager;
+import DependencyManager = Bit.DependencyManager;
+import Log = Bit.Log;
 
 
-import FormViewModel = FoundationVM.ViewModels.FormViewModel;
-import DtoViewModel = FoundationVM.ViewModels.DtoViewModel;
-import DtoRules = FoundationVM.Implementations.DtoRules;
-import Command = FoundationVM.Command;
-import IEntityContextProvider = FoundationVM.Contracts.IEntityContextProvider;
-
-import IdentityServerVM = IdentityServer.ViewModel;
+import FormViewModel = Bit.ViewModels.FormViewModel;
+import DtoViewModel = Bit.ViewModels.DtoViewModel;
+import DtoRules = Bit.Implementations.DtoRules;
+import Command = Bit.Command;
+import IEntityContextProvider = Bit.Contracts.IEntityContextProvider;

@@ -1,7 +1,7 @@
 {
   "Schema": {
     "HtmlSchemaFiles": [
-      "Foundation\\HtmlClient\\Foundation.View.HtmlClient\\html-elements-schema.json"
+      "src\\TypeScriptClient\\Bit.TSClient.AngularJS\\html-elements-schema.json"
     ]
   },
   "BitCodeGeneratorConfigs": {
@@ -9,8 +9,8 @@
       {
         "EdmName": "Bit",
         "Namespace": "Bit",
-        "DestinationFileName": "Foundation.Model.Context",
-        "TypingsPath": "../../../../bit-framework/Foundation/HtmlClient/foundation.core.htmlclient/typings.d.ts",
+        "DestinationFileName": "Bit.Model.Context",
+        "TypingsPath": "typings.d.ts",
         "SourceProjects": [
           {
             "Name": "Bit.Model"
@@ -20,7 +20,7 @@
           }
         ],
         "DestinationProject": {
-          "Name": "Foundation.ViewModel.HtmlClient"
+          "Name": "Bit.TSClient.Core"
         },
         "NamespaceAliases": [
           {
@@ -33,14 +33,14 @@
         "EdmName": "Test",
         "Namespace": "Test",
         "DestinationFileName": "Test.Model.Context",
-        "TypingsPath": "../../../../bit-framework/Foundation/HtmlClient/foundation.core.htmlclient/typings.d.ts",
+        "TypingsPath": "typings.d.ts",
         "SourceProjects": [
           {
             "Name": "Bit.Tests"
           }
         ],
         "DestinationProject": {
-          "Name": "Foundation.Test.HtmlClient"
+          "Name": "Bit.TSClient.AngularJS.Tests"
         },
         "NamespaceAliases": [
           {

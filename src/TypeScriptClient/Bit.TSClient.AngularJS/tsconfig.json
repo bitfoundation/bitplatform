@@ -1,0 +1,19 @@
+﻿{
+  "compileOnSave": true,
+  "compilerOptions": {
+    "allowUnreachableCode": true,
+    "declaration": true,
+    "emitDecoratorMetadata": false,
+    "experimentalDecorators": true,
+    "module": "none",
+    "outFile": "bit.ng1.js",
+    "target": "es5",
+    "sourceMap": true,
+    "lib": [ "dom", "es2017" ],
+    "charset": "utf8",
+    "inlineSources": true,
+    "removeComments": false,
+    "typeRoots": [ "node_modules\\@types", "..\\Bit.TSClient.Core\\node_modules\\@types" ]
+  },
+  "exclude": [ "bit.ng1.d.ts", "node_modules", "bower_components", "bin", "obj" ]
+}

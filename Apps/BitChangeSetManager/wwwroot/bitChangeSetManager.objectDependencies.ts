@@ -4,23 +4,27 @@ module BitChangeSetManager {
 
     let dependencyManager = DependencyManager.getCurrent();
 
-    dependencyManager.registerObjectDependency({ name: "AppEvent", type: FoundationVM.Implementations.DefaultKendoExtender });
+    dependencyManager.registerObjectDependency({ name: "AppEvent", type: Bit.Implementations.DefaultKendoExtender });
 
-    dependencyManager.registerObjectDependency({ name: "Logger", type: FoundationVM.Implementations.DefaultLogger });
+    dependencyManager.registerObjectDependency({ name: "Logger", type: Bit.Implementations.DefaultLogger });
 
-    dependencyManager.registerObjectDependency({ name: "AppStartup", type: FoundationVM.Implementations.DefaultAppStartup });
+    dependencyManager.registerObjectDependency({ name: "AppStartup", type: Bit.Implementations.DefaultAppStartup });
 
-    dependencyManager.registerObjectDependency({ name: "EntityContextProvider", type: FoundationVM.Implementations.DefaultEntityContextProvider });
+    dependencyManager.registerObjectDependency({ name: "EntityContextProvider", type: Bit.Implementations.DefaultEntityContextProvider });
 
-    dependencyManager.registerObjectDependency({ name: "AppEvent", type: FoundationVM.Implementations.DefaultEntityContextProviderAppEvent });
+    dependencyManager.registerObjectDependency({ name: "AppEvent", type: Bit.Implementations.DefaultEntityContextProviderAppEvent });
 
-    dependencyManager.registerObjectDependency({ name: "MessageReceiver", type: FoundationVM.Implementations.SignalRMessageReceiver });
+    dependencyManager.registerObjectDependency({ name: "MessageReceiver", type: Bit.Implementations.SignalRMessageReceiver });
 
-    dependencyManager.registerObjectDependency({ name: "MetadataProvider", type: FoundationVM.Implementations.DefaultMetadataProvider });
+    dependencyManager.registerObjectDependency({ name: "MetadataProvider", type: Bit.Implementations.DefaultMetadataProvider });
 
-    dependencyManager.registerObjectDependency({ name: "AngularConfiguration", type: FoundationVM.Implementations.DefaultAngularTranslateConfiguration });
+    dependencyManager.registerObjectDependency({ name: "AngularConfiguration", type: Bit.Implementations.DefaultAngularTranslateConfiguration });
 
-    dependencyManager.registerObjectDependency({ name: "DateTimeService", type: FoundationVM.Implementations.DefaultDateTimeService });
+    dependencyManager.registerObjectDependency({ name: "DateTimeService", type: Bit.Implementations.DefaultDateTimeService });
 
-    dependencyManager.registerInstanceDependency({ name: "ClientAppProfileManager" }, FoundationCore.ClientAppProfileManager.getCurrent());
+    dependencyManager.registerObjectDependency({ name: "SecurityService", type: Bit.Implementations.DefaultSecurityService });
+
+    dependencyManager.registerObjectDependency({ name: "GuidUtils", type: Bit.Implementations.DefaultGuidUtils });
+
+    dependencyManager.registerInstanceDependency({ name: "ClientAppProfileManager" }, Bit.ClientAppProfileManager.getCurrent());
 }
