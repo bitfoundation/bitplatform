@@ -5,13 +5,19 @@ Build Instructions:
 
 Requirements: 
 
-  1- Visual Studio 2015 Update 3 or Visual Studio 2017 Update 2 (ASP.NET Core is supported on Visual Studio 2017 only)
+  1- [Install Visual Studio 2017 Update 2+](https://www.visualstudio.com/thank-you-downloading-visual-studio/?sku=Enterprise&rel=15) or Visual Studio 2015 Update 3+ with [TypeScript 2.2+](https://www.microsoft.com/en-us/download/details.aspx?id=48593) for Visual Studio 2015
   
-  2- TypeScript 2.2 for Visual Studio
+  (ASP.NET Core is supported on Visual Studio 2017 only)
   
-  3- Gulp & Bowser installed globally using npm
+  2- [Install .NET 4.6.2 Developer Pack](http://go.microsoft.com/fwlink/?LinkId=780617)
   
-  4- Git
+  2- [Install Git for windows](https://git-scm.com/download/win)
+  
+  4- [Install node for windows](https://nodejs.org/dist/v6.10.3/node-v6.10.3-x64.msi)
+  
+  5- Run npm install bower -g
+  
+  6- Run npm install gulp -g
   
 Steps:
 
@@ -23,15 +29,17 @@ Steps:
   
   4- Add https://www.myget.org/F/bit-foundation/api/v3/index.json as nuget package source.
   
-  5- Run bower install for Foundation\HtmlClient\Foundation.Test.HtmlClient\bower.json
+  5- Run bower install for src/TypeScriptClient/Bit.TSClient.AngularJS.Tests\bower.json
   
-  6- Build the solution. Note that due the lack of TypeScript Project System, you might have to build the solution more than once.
+  6- Run npm install for all 4 folder unders src/TypeScriptClient/
+  
+  7- Build the solution. Note that due the lack of TypeScript Project System, you might have to build the solution more than once.
  
 To run the samples:
 
   1- Run Visual Studio as Administrator
     
-  2- Set Foundation.Test as startup project and run the samples.
+  2- Set Bit.Tests as startup project and run the samples.
 
 Special thanks to:
 
