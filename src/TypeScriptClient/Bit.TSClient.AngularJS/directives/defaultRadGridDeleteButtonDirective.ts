@@ -12,7 +12,10 @@ module Bit.Directives {
         },
         restrict: "E",
         scope: true,
-        template: `<button ng-click=";radGridDeleteButton.radGrid.deleteDataItem($event)" ng-transclude></button>`,
+        template: ($element: JQuery, $attrs: ng.IAttributes & { ngClick: string }) => {
+            delete $attrs.ngClick; // Prevent $compiler from recompiling developer provided custom ng-click (if any)
+            return `<button ng-click=";radGridDeleteButton.radGrid.deleteDataItem($event)" ng-transclude></button>`;
+        },
         replace: true,
         terminal: true,
         transclude: true
