@@ -28,7 +28,7 @@ namespace Bit.Signalr.Middlewares.Signalr.Implementations
             _connectionManager = signalRDependencyResolver.Resolve<IConnectionManager>();
         }
 
-        public virtual async Task SendMessageToUsersAsync<T>(string messageKey, T messageArgs, params string[] userIds)
+        public virtual async Task SendMessageToUsersAsync<T>(string messageKey, T messageArgs, string[] userIds)
             where T : class
         {
             if (userIds == null)
@@ -48,7 +48,7 @@ namespace Bit.Signalr.Middlewares.Signalr.Implementations
                 });
         }
 
-        public virtual void SendMessageToUsers<T>(string messageKey, T messageArgs, params string[] userIds)
+        public virtual void SendMessageToUsers<T>(string messageKey, T messageArgs, string[] userIds)
             where T : class
         {
             if (userIds == null)
@@ -94,12 +94,12 @@ namespace Bit.Signalr.Middlewares.Signalr.Implementations
             hubContext.Clients.All.OnMessageReceived(messageKey, objectArgsAsString);
         }
 
-        public async Task SendMessageToGroupsAsync<T>(string messageKey, T messageArgs, params string[] groupNames) where T : class
+        public async Task SendMessageToGroupsAsync<T>(string messageKey, T messageArgs, string[] groupNames) where T : class
         {
             await SendMessageToUsersAsync(messageKey, messageArgs, groupNames);
         }
 
-        public void SendMessageToGroups<T>(string messageKey, T messageArgs, params string[] groupNames) where T : class
+        public void SendMessageToGroups<T>(string messageKey, T messageArgs, string[] groupNames) where T : class
         {
             SendMessageToUsers(messageKey, messageArgs, groupNames);
         }

@@ -1,24 +1,26 @@
-﻿/*using System;
+﻿using Bit.Core.Contracts;
+using Bit.Owin.Exceptions;
+using Bit.Owin.Metadata;
+using Bit.Test;
+using Bit.Test.Core.Implementations;
+using Bit.Tests;
+using Bit.Tests.Api.ApiControllers;
+using Bit.Tests.Core.Contracts;
+using Bit.Tests.Model.DomainModels;
+using FakeItEasy;
+using IdentityModel.Client;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Simple.OData.Client;
+using System;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
-using FakeItEasy;
-using Foundation.Api.Exceptions;
-using Foundation.Api.Metadata;
-using Foundation.Core.Contracts;
-using Foundation.Test.Core.Contracts;
-using Foundation.Test.Core.Implementations;
-using Foundation.Test.Model.DomainModels;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Simple.OData.Client;
-using Foundation.Test.Api.ApiControllers;
 
 namespace Foundation.Test.Api.Middlewares.WebApi.Tests
 {
     [TestClass]
     public class ExceptionHandlerFilterAttributeTests
     {
-        [Ignore]
         [TestMethod]
         [TestCategory("WebApi"), TestCategory("Logging")]
         public virtual async Task WebApiExceptionHandlerFilterAttributeMustReturnKnownErrorReasonPhraseAndInternalServerErrorStatusCodeAndCorrelationIdInResponseWhenAppExceptionThrownsInWebApi()
@@ -28,7 +30,7 @@ namespace Foundation.Test.Api.Middlewares.WebApi.Tests
             A.CallTo(() => emailService.SendEmail(A<string>.Ignored, A<string>.Ignored, A<string>.Ignored))
                 .Throws(new AppException("Test"));
 
-            using (TestEnvironment testEnvironment = new TestEnvironment(new TestEnvironmentArgs
+            using (BitOwinTestEnvironment testEnvironment = new BitOwinTestEnvironment(new TestEnvironmentArgs
             {
                 AdditionalDependencies = manager =>
                 {
@@ -42,7 +44,7 @@ namespace Foundation.Test.Api.Middlewares.WebApi.Tests
                 {
                     if (message.StatusCode == HttpStatusCode.InternalServerError)
                     {
-                        Assert.AreEqual(FoundationMetadataBuilder.KnownError, message.ReasonPhrase);
+                        Assert.AreEqual(BitMetadataBuilder.KnownError, message.ReasonPhrase);
 
                         ILogger logger = TestDependencyManager.CurrentTestDependencyManager.Objects
                             .OfType<ILogger>().Last();
@@ -71,7 +73,6 @@ namespace Foundation.Test.Api.Middlewares.WebApi.Tests
             }
         }
 
-        [Ignore]
         [TestMethod]
         [TestCategory("WebApi"), TestCategory("Logging")]
         public virtual async Task WebApiExceptionHandlerFilterAttributeMustReturnKnownErrorReasonPhraseAndNotFoundStatusCodeAndCorrelationIdInResponseWhenResourceNotFoundExceptionThrownsInWebApi()
@@ -81,7 +82,7 @@ namespace Foundation.Test.Api.Middlewares.WebApi.Tests
             A.CallTo(() => emailService.SendEmail(A<string>.Ignored, A<string>.Ignored, A<string>.Ignored))
                 .Throws(new ResourceNotFoundException("Test"));
 
-            using (TestEnvironment testEnvironment = new TestEnvironment(new TestEnvironmentArgs
+            using (BitOwinTestEnvironment testEnvironment = new BitOwinTestEnvironment(new TestEnvironmentArgs
             {
                 AdditionalDependencies = manager =>
                 {
@@ -95,7 +96,7 @@ namespace Foundation.Test.Api.Middlewares.WebApi.Tests
                 {
                     if (message.StatusCode == HttpStatusCode.NotFound)
                     {
-                        Assert.AreEqual(FoundationMetadataBuilder.KnownError, message.ReasonPhrase);
+                        Assert.AreEqual(BitMetadataBuilder.KnownError, message.ReasonPhrase);
 
                         ILogger logger = TestDependencyManager.CurrentTestDependencyManager.Objects
                             .OfType<ILogger>().Last();
@@ -124,7 +125,6 @@ namespace Foundation.Test.Api.Middlewares.WebApi.Tests
             }
         }
 
-        [Ignore]
         [TestMethod]
         [TestCategory("WebApi"), TestCategory("Logging")]
         public virtual async Task WebApiExceptionHandlerFilterAttributeMustReturnUnKnownErrorReasonPhraseAndInternalServerErrorStatusCodeAndCorrelationIdInResponseWhenExceptionOtherThanAppExceptionIsThrown()
@@ -134,7 +134,7 @@ namespace Foundation.Test.Api.Middlewares.WebApi.Tests
             A.CallTo(() => emailService.SendEmail(A<string>.Ignored, A<string>.Ignored, A<string>.Ignored))
                 .Throws(new InvalidOperationException("Test"));
 
-            using (TestEnvironment testEnvironment = new TestEnvironment(new TestEnvironmentArgs
+            using (BitOwinTestEnvironment testEnvironment = new BitOwinTestEnvironment(new TestEnvironmentArgs
             {
                 AdditionalDependencies = manager =>
                 {
@@ -152,7 +152,7 @@ namespace Foundation.Test.Api.Middlewares.WebApi.Tests
                 {
                     if (message.StatusCode == HttpStatusCode.InternalServerError)
                     {
-                        Assert.AreEqual(FoundationMetadataBuilder.UnKnownError, message.ReasonPhrase);
+                        Assert.AreEqual(BitMetadataBuilder.UnKnownError, message.ReasonPhrase);
 
                         ILogger logger = TestDependencyManager.CurrentTestDependencyManager.Objects
                             .OfType<ILogger>().Last();
@@ -174,7 +174,7 @@ namespace Foundation.Test.Api.Middlewares.WebApi.Tests
                 }
                 catch (WebRequestException ex)
                 {
-                    Assert.IsTrue(ex.Response.Contains(FoundationMetadataBuilder.UnKnownError));
+                    Assert.IsTrue(ex.Response.Contains(BitMetadataBuilder.UnKnownError));
 
                     Assert.AreEqual(HttpStatusCode.InternalServerError, ex.Code);
                 }
@@ -182,4 +182,3 @@ namespace Foundation.Test.Api.Middlewares.WebApi.Tests
         }
     }
 }
-*/

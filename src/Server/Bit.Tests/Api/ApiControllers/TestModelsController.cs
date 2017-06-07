@@ -156,7 +156,7 @@ namespace Bit.Tests.Api.ApiControllers
 
             string secondJobId = await _backgroundJobWorker.Value
                 .PerformBackgroundJobWhenAnotherJobSucceededAsync<IMessageSender>(jobId,
-                    messageSender => messageSender.SendMessageToUsers("OnEmailSent", new { Title = title }, to));
+                    messageSender => messageSender.SendMessageToUsers("OnEmailSent", new { Title = title }, new[] { to }));
 
             return Guid.Parse(secondJobId);
         }
@@ -174,7 +174,7 @@ namespace Bit.Tests.Api.ApiControllers
         [Action]
         public virtual async Task PushSomethingWithDateTimeOffset()
         {
-            await _messageSender.Value.SendMessageToUsersAsync("TestTask", new { Date = _dateTimeProvider.Value.GetCurrentUtcDateTime() }, "SomeUser");
+            await _messageSender.Value.SendMessageToUsersAsync("TestTask", new { Date = _dateTimeProvider.Value.GetCurrentUtcDateTime() }, new[] { "SomeUser" });
         }
 
         public class WordParameters
@@ -190,7 +190,7 @@ namespace Bit.Tests.Api.ApiControllers
             string to = parameters.to;
             string word = parameters.word;
 
-            await _messageSender.Value.SendMessageToUsersAsync("NewWord", new { Word = word }, to);
+            await _messageSender.Value.SendMessageToUsersAsync("NewWord", new { Word = word }, new[] { to });
         }
 
         [Action]
@@ -200,7 +200,7 @@ namespace Bit.Tests.Api.ApiControllers
             string word = parameters.word;
 
             await _backgroundJobWorker.Value.PerformBackgroundJobAsync<IMessageSender>(messageSender =>
-                        messageSender.SendMessageToUsers("NewWord", new { Word = word }, to));
+                        messageSender.SendMessageToUsers("NewWord", new { Word = word }, new[] { to }));
         }
 
         public class StringFormattersTestsParameters

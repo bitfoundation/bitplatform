@@ -9,6 +9,8 @@ using Microsoft.AspNet.SignalR.Client.Transports;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Chrome;
 using OpenQA.Selenium.Remote;
+using Simple.OData.Client;
+using Newtonsoft.Json;
 
 namespace Bit.Test.Server
 {
@@ -16,7 +18,7 @@ namespace Bit.Test.Server
     {
         public virtual string Uri { get; protected set; }
 
-        /*public virtual ODataBatch BuildODataBatchClient(Action<HttpRequestMessage> beforeRequest = null,
+        public virtual ODataBatch BuildODataBatchClient(Action<HttpRequestMessage> beforeRequest = null,
                   Action<HttpResponseMessage> afterResponse = null, TokenResponse token = null, string route = null)
         {
             if (route == null)
@@ -29,7 +31,7 @@ namespace Bit.Test.Server
                     if (token != null)
                     {
                         message.Headers.Add("Authorization",
-                            $"{token.token_type} {token.access_token}");
+                            $"{token.TokenType} {token.AccessToken}");
                     }
 
                     if (beforeRequest != null)
@@ -44,9 +46,9 @@ namespace Bit.Test.Server
             });
 
             return client;
-        }*/
+        }
 
-        /*public virtual ODataClient BuildODataClient(Action<HttpRequestMessage> beforeRequest = null,
+        public virtual ODataClient BuildODataClient(Action<HttpRequestMessage> beforeRequest = null,
             Action<HttpResponseMessage> afterResponse = null, TokenResponse token = null, string route = null)
         {
             if (route == null)
@@ -59,7 +61,7 @@ namespace Bit.Test.Server
                     if (token != null)
                     {
                         message.Headers.Add("Authorization",
-                            $"{token.token_type} {token.access_token}");
+                            $"{token.TokenType} {token.AccessToken}");
                     }
 
                     if (beforeRequest != null)
@@ -74,7 +76,7 @@ namespace Bit.Test.Server
             });
 
             return client;
-        }*/
+        }
 
         protected abstract HttpMessageHandler GetHttpMessageHandler();
 
@@ -91,13 +93,21 @@ namespace Bit.Test.Server
             {
                 hubProxy.On("OnMessageReceived", (dataAsJson) =>
                 {
-                    onMessageReceived("OnMessageReceived", new SignalRMessageContentFormatter().DeSerialize<dynamic>(dataAsJson));
+                    onMessageReceived("OnMessageReceived", new TestSignalRMessageContentFormatter().DeSerialize<dynamic>(dataAsJson));
                 });
             }
 
             hubConnection.Start(new LongPollingTransport(new SignalRHttpClient(GetHttpMessageHandler()))).Wait();
 
             return hubProxy;
+        }
+
+        public class TestSignalRMessageContentFormatter : SignalRMessageContentFormatter
+        {
+            public override T DeSerialize<T>(string objAsStr)
+            {
+                return JsonConvert.DeserializeObject<T>(objAsStr, GetSettings());
+            }
         }
 
         public abstract void Dispose();

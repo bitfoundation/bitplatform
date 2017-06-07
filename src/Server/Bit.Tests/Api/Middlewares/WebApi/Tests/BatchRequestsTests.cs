@@ -1,4 +1,4 @@
-﻿/*using System;
+﻿using System;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Linq;
 using System.Net;
@@ -6,25 +6,27 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Web.OData;
 using FakeItEasy;
-using Foundation.Core.Contracts;
-using Foundation.Test.Api.ApiControllers;
-using Foundation.Test.Core.Contracts;
-using Foundation.Test.Core.Implementations;
-using Foundation.Test.Model.DomainModels;
 using Simple.OData.Client;
-using Foundation.DataAccess.Contracts;
+using Bit.Tests;
+using IdentityModel.Client;
+using Bit.Tests.Model.DomainModels;
+using Bit.Tests.Api.ApiControllers;
+using Bit.Data.Contracts;
+using Bit.Test.Core.Implementations;
+using Bit.Tests.Core.Contracts;
+using Bit.Test;
+using Bit.Core.Contracts;
 
 namespace Foundation.Test.Api.Middlewares.WebApi.Tests
 {
     [TestClass]
     public class BatchRequestsTests
     {
-        [Ignore]
         [TestMethod]
         [TestCategory("WebApi")]
         public virtual async Task InsertAndUpdateTogether()
         {
-            using (TestEnvironment testEnvironment = new TestEnvironment())
+            using (BitOwinTestEnvironment testEnvironment = new BitOwinTestEnvironment())
             {
                 TokenResponse token = testEnvironment.Server.Login("ValidUserName", "ValidPassword", clientName: "TestResOwner");
 
@@ -69,7 +71,6 @@ namespace Foundation.Test.Api.Middlewares.WebApi.Tests
             }
         }
 
-        [Ignore]
         [TestMethod]
         [TestCategory("WebApi")]
         public virtual async Task ServerMustStopRequestExecutionOfFirstException()
@@ -84,7 +85,7 @@ namespace Foundation.Test.Api.Middlewares.WebApi.Tests
             A.CallTo(() => emailService.SendEmail(A<string>.That.Matches(s => s == "Work"), A<string>.Ignored, A<string>.Ignored))
                 .DoesNothing();
 
-            using (TestEnvironment testEnvironment = new TestEnvironment(new TestEnvironmentArgs
+            using (BitOwinTestEnvironment testEnvironment = new BitOwinTestEnvironment(new TestEnvironmentArgs
             {
                 AdditionalDependencies = manager =>
                 {
@@ -131,7 +132,7 @@ namespace Foundation.Test.Api.Middlewares.WebApi.Tests
                     ILogger logger = TestDependencyManager.CurrentTestDependencyManager.Objects
                         .OfType<ILogger>().Last();
 
-                    A.CallTo(() => controller.SendEmail(A<ODataActionParameters>.Ignored))
+                    A.CallTo(() => controller.SendEmail(A<TestModelsController.EmailParameters>.Ignored))
                                             .MustHaveHappened(Repeated.Exactly.Once);
 
                     A.CallTo(() => logger.LogFatalAsync(A<string>.That.Matches(msg => msg == "Scope was failed")))
@@ -141,4 +142,3 @@ namespace Foundation.Test.Api.Middlewares.WebApi.Tests
         }
     }
 }
-*/

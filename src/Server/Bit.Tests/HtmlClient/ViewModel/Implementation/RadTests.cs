@@ -47,7 +47,6 @@ namespace Bit.Tests.HtmlClient.ViewModel.Implementation
             }
         }
 
-        [Ignore]
         [TestMethod]
         [TestCategory("HtmlClient"), TestCategory("Rad")]
         public virtual void RadGridFormViewModelAddTest()

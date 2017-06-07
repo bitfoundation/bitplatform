@@ -17,7 +17,6 @@ namespace Bit.Tests.HtmlClient.ViewModel.Implementation
     {
         [TestMethod]
         [TestCategory("HtmlClient"), TestCategory("Logging")]
-        [Ignore]
         public virtual void LogException()
         {
             using (BitOwinTestEnvironment testEnvironment = new BitOwinTestEnvironment(new TestEnvironmentArgs { UseRealServer = true }))

@@ -1,24 +1,26 @@
-﻿/*using System.Threading.Tasks;
-using Foundation.Test.Model.DomainModels;
+﻿using System.Threading.Tasks;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Simple.OData.Client;
 using Foundation.Test.Api.ApiControllers;
+using Bit.Tests.Api.ApiControllers;
+using Bit.Tests.Model.DomainModels;
+using IdentityModel.Client;
+using Bit.Tests;
 
 namespace Foundation.Test.Api.Middlewares.SignalR.Tests
 {
     [TestClass]
     public class SignalRPushTests
     {
-        [Ignore]
         [TestMethod]
         [TestCategory("SignalR"), TestCategory("WebApi")]
         public virtual async Task PushFromSomeUserToAnotherUserUsingWebApi()
         {
-            using (TestEnvironment testEnvironment = new TestEnvironment())
+            using (BitOwinTestEnvironment testEnvironment = new BitOwinTestEnvironment())
             {
                 TokenResponse tokenOfUser1 = testEnvironment.Server.Login("ValidUserName", "ValidPassword", clientName: "TestResOwner");
 
-                TokenResponse tokenOfUser2 = testEnvironment.Server.Login("User2", "ValidPassword");
+                TokenResponse tokenOfUser2 = testEnvironment.Server.Login("User2", "ValidPassword", clientName: "TestResOwner");
 
                 ODataClient odataClientOfUser1 = testEnvironment.Server.BuildODataClient(token: tokenOfUser1);
 
@@ -38,16 +40,15 @@ namespace Foundation.Test.Api.Middlewares.SignalR.Tests
             }
         }
 
-        [Ignore]
         [TestMethod]
         [TestCategory("SignalR"), TestCategory("WebApi"), TestCategory("BackgroundJobs")]
         public virtual async Task PushFromSomeUserToAnotherUserUsingWebApiAndBackgroundJobWorker()
         {
-            using (TestEnvironment testEnvironment = new TestEnvironment())
+            using (BitOwinTestEnvironment testEnvironment = new BitOwinTestEnvironment())
             {
                 TokenResponse tokenOfUser1 = testEnvironment.Server.Login("ValidUserName", "ValidPassword", clientName: "TestResOwner");
 
-                TokenResponse tokenOfUser2 = testEnvironment.Server.Login("User2", "ValidPassword");
+                TokenResponse tokenOfUser2 = testEnvironment.Server.Login("User2", "ValidPassword", clientName: "TestResOwner");
 
                 ODataClient odataClientOfUser1 = testEnvironment.Server.BuildODataClient(token: tokenOfUser1);
 
@@ -68,4 +69,3 @@ namespace Foundation.Test.Api.Middlewares.SignalR.Tests
         }
     }
 }
-*/

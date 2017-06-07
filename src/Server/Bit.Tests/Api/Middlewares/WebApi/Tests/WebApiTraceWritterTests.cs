@@ -4,6 +4,16 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using IdentityModel.Client;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Bit.Owin.Exceptions;
+using Bit.Core.Contracts;
+using Bit.Test.Core.Implementations;
+using Simple.OData.Client;
+using Bit.Tests.Api.ApiControllers;
+using Bit.Tests.Model.DomainModels;
+using Bit.Tests.Core.Contracts;
+using FakeItEasy;
+using Bit.Test;
+using System.Reflection;
 
 namespace Bit.Tests.Api.Middlewares.WebApi.Tests
 {
@@ -30,7 +40,6 @@ namespace Bit.Tests.Api.Middlewares.WebApi.Tests
             }
         }
 
-        /*[Ignore]
         [TestMethod]
         [TestCategory("WebApi"), TestCategory("Logging")]
         public virtual async Task WebApiTraceWritterShouldLogCorrelationIdAndExceptionDetails()
@@ -40,7 +49,7 @@ namespace Bit.Tests.Api.Middlewares.WebApi.Tests
             A.CallTo(() => emailService.SendEmail(A<string>.Ignored, A<string>.Ignored, A<string>.Ignored))
                 .Throws(new AppException("Test"));
 
-            using (TestEnvironment testEnvironment = new TestEnvironment(new TestEnvironmentArgs
+            using (BitOwinTestEnvironment testEnvironment = new BitOwinTestEnvironment(new TestEnvironmentArgs
             {
                 AdditionalDependencies = manager =>
                 {
@@ -71,6 +80,6 @@ namespace Bit.Tests.Api.Middlewares.WebApi.Tests
                     Assert.AreEqual("Test", ((AppException)logger.LogData.Single(ld => ld.Key == "WebException").Value).Message);
                 }
             }
-        }*/
+        }
     }
 }

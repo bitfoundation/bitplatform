@@ -1,27 +1,29 @@
-﻿/*using System;
+﻿using Bit.Test;
+using Bit.Tests;
+using Bit.Tests.Api.ApiControllers;
+using Bit.Tests.Core.Contracts;
+using Bit.Tests.Model.DomainModels;
+using FakeItEasy;
+using IdentityModel.Client;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Simple.OData.Client;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using FakeItEasy;
-using Foundation.Test.Core.Contracts;
-using Foundation.Test.Model.DomainModels;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Simple.OData.Client;
-using Foundation.Test.Api.ApiControllers;
 
 namespace Foundation.Test.Api.Middlewares.WebApi.Tests
 {
     [TestClass]
     public class TimeZoneTests
     {
-        [Ignore]
         [TestMethod]
         [TestCategory("WebApi")]
         public virtual async Task TestTimeZonesInCustomActionsWithoutClientsDemand()
         {
             IValueChecker valueChecker = A.Fake<IValueChecker>();
 
-            using (TestEnvironment testEnvironment = new TestEnvironment(new TestEnvironmentArgs
+            using (BitOwinTestEnvironment testEnvironment = new BitOwinTestEnvironment(new TestEnvironmentArgs
             {
                 AdditionalDependencies = manager =>
                 {
@@ -69,14 +71,13 @@ namespace Foundation.Test.Api.Middlewares.WebApi.Tests
             }
         }
 
-        [Ignore]
         [TestMethod]
         [TestCategory("WebApi")]
         public virtual async Task TestTimeZonesInCustomActionsWithClientDemand()
         {
             IValueChecker valueChecker = A.Fake<IValueChecker>();
 
-            using (TestEnvironment testEnvironment = new TestEnvironment(new TestEnvironmentArgs
+            using (BitOwinTestEnvironment testEnvironment = new BitOwinTestEnvironment(new TestEnvironmentArgs
             {
                 AdditionalDependencies = manager =>
                 {
@@ -128,12 +129,11 @@ namespace Foundation.Test.Api.Middlewares.WebApi.Tests
             }
         }
 
-        [Ignore]
         [TestMethod]
         [TestCategory("WebApi")]
         public virtual async Task TestTimeZonesInUrlWithoutClientDemand()
         {
-            using (TestEnvironment testEnvironment = new TestEnvironment())
+            using (BitOwinTestEnvironment testEnvironment = new BitOwinTestEnvironment())
             {
                 TokenResponse token = testEnvironment.Server.Login("ValidUserName", "ValidPassword", clientName: "TestResOwner");
 
@@ -147,12 +147,11 @@ namespace Foundation.Test.Api.Middlewares.WebApi.Tests
             }
         }
 
-        [Ignore]
         [TestMethod]
         [TestCategory("WebApi")]
         public virtual async Task TestTimeZonesInUrlWithClientDemand()
         {
-            using (TestEnvironment testEnvironment = new TestEnvironment())
+            using (BitOwinTestEnvironment testEnvironment = new BitOwinTestEnvironment())
             {
                 TokenResponse token = testEnvironment.Server.Login("ValidUserName", "ValidPassword", clientName: "TestResOwner");
 
@@ -171,4 +170,3 @@ namespace Foundation.Test.Api.Middlewares.WebApi.Tests
         }
     }
 }
-*/

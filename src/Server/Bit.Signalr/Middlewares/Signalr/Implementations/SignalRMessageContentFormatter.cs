@@ -20,7 +20,7 @@ namespace Bit.Signalr.Middlewares.Signalr.Implementations
             return JsonConvert.SerializeObject(obj, GetSettings());
         }
 
-        private JsonSerializerSettings GetSettings()
+        protected virtual JsonSerializerSettings GetSettings()
         {
             if (_settingsCache == null)
             {

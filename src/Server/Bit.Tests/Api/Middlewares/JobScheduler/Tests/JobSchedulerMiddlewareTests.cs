@@ -3,6 +3,19 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using IdentityModel.Client;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Bit.Tests.Core.Contracts;
+using FakeItEasy;
+using Bit.Test;
+using Simple.OData.Client;
+using Bit.Tests.Api.ApiControllers;
+using Bit.Tests.Model.DomainModels;
+using System;
+using Bit.Api.ApiControllers;
+using Bit.Core.Contracts;
+using Bit.Model.Dtos;
+using Bit.Owin.Implementations;
+using Bit.Test.Core.Implementations;
+using System.Linq;
 
 namespace Bit.Tests.Api.Middlewares.JobScheduler.Tests
 {
@@ -38,7 +51,6 @@ namespace Bit.Tests.Api.Middlewares.JobScheduler.Tests
             }
         }
 
-        /*[Ignore]
         [TestMethod]
         [TestCategory("BackgroundJobs"), TestCategory("WebApi")]
         public async Task SendEmailUsingBackgroundJobWorkerAndWebApi()
@@ -53,7 +65,7 @@ namespace Bit.Tests.Api.Middlewares.JobScheduler.Tests
                     emailSent.SetResult(true);
                 });
 
-            using (TestEnvironment testEnvironment = new TestEnvironment(new TestEnvironmentArgs
+            using (BitOwinTestEnvironment testEnvironment = new BitOwinTestEnvironment(new TestEnvironmentArgs
             {
                 AdditionalDependencies = manager =>
                 {
@@ -70,9 +82,9 @@ namespace Bit.Tests.Api.Middlewares.JobScheduler.Tests
                     .Set(new { to = "Someone", title = "Email title", message = "Email message" })
                     .ExecuteAsScalarAsync<Guid>()).ToString();
 
-                ODataClient foundationClient = testEnvironment.Server.BuildODataClient(token: token, route: "Foundation");
+                ODataClient foundationClient = testEnvironment.Server.BuildODataClient(token: token, route: "Bit");
 
-                JobInfo jobInfo = await foundationClient.Controller<JobsInfoController, JobInfo>()
+                JobInfoDto jobInfo = await foundationClient.Controller<JobsInfoController, JobInfoDto>()
                     .Key(jobId)
                     .FindEntryAsync();
 
@@ -82,7 +94,7 @@ namespace Bit.Tests.Api.Middlewares.JobScheduler.Tests
 
                 await Task.Delay(TimeSpan.FromSeconds(1));
 
-                jobInfo = await foundationClient.Controller<JobsInfoController, JobInfo>()
+                jobInfo = await foundationClient.Controller<JobsInfoController, JobInfoDto>()
                     .Key(jobId)
                     .FindEntryAsync();
 
@@ -90,7 +102,6 @@ namespace Bit.Tests.Api.Middlewares.JobScheduler.Tests
             }
         }
 
-        [Ignore]
         [TestMethod]
         [TestCategory("BackgroundJobs"), TestCategory("WebApi")]
         public async Task SendEmailUsingBackgroundJobWorkerAndWebApiAndThenPushToReceiver()
@@ -105,7 +116,7 @@ namespace Bit.Tests.Api.Middlewares.JobScheduler.Tests
                     emailSent.SetResult(true);
                 });
 
-            using (TestEnvironment testEnvironment = new TestEnvironment(new TestEnvironmentArgs
+            using (BitOwinTestEnvironment testEnvironment = new BitOwinTestEnvironment(new TestEnvironmentArgs
             {
                 AdditionalDependencies = manager =>
                 {
@@ -113,7 +124,7 @@ namespace Bit.Tests.Api.Middlewares.JobScheduler.Tests
                 }
             }))
             {
-                TokenResponse someoneToken = testEnvironment.Server.Login("SomeOne", "ValidPassword");
+                TokenResponse someoneToken = testEnvironment.Server.Login("ValidUserName", "ValidPassword", clientName: "TestResOwner");
 
                 TaskCompletionSource<bool> onMessageReceivedCalled = new TaskCompletionSource<bool>();
 
@@ -131,9 +142,9 @@ namespace Bit.Tests.Api.Middlewares.JobScheduler.Tests
                     .Set(new { to = "SomeOne", title = "Email title", message = "Email message" })
                     .ExecuteAsScalarAsync<Guid>()).ToString();
 
-                ODataClient foundationClient = testEnvironment.Server.BuildODataClient(token: token, route: "Foundation");
+                ODataClient foundationClient = testEnvironment.Server.BuildODataClient(token: token, route: "Bit");
 
-                JobInfo jobInfo = await foundationClient.Controller<JobsInfoController, JobInfo>()
+                JobInfoDto jobInfo = await foundationClient.Controller<JobsInfoController, JobInfoDto>()
                     .Key(jobId)
                     .FindEntryAsync();
 
@@ -143,7 +154,7 @@ namespace Bit.Tests.Api.Middlewares.JobScheduler.Tests
 
                 await Task.Delay(TimeSpan.FromSeconds(1));
 
-                jobInfo = await foundationClient.Controller<JobsInfoController, JobInfo>()
+                jobInfo = await foundationClient.Controller<JobsInfoController, JobInfoDto>()
                     .Key(jobId)
                     .FindEntryAsync();
 
@@ -151,7 +162,6 @@ namespace Bit.Tests.Api.Middlewares.JobScheduler.Tests
             }
         }
 
-        [Ignore]
         [TestMethod]
         [TestCategory("BackgroundJobs"), TestCategory("Logging")]
         public async Task LogExceptionWhenEmailSendFailedAndTryForTheSecondTime()
@@ -176,7 +186,7 @@ namespace Bit.Tests.Api.Middlewares.JobScheduler.Tests
                     throw new InvalidOperationException();
                 });
 
-            using (TestEnvironment testEnvironment = new TestEnvironment(new TestEnvironmentArgs
+            using (BitOwinTestEnvironment testEnvironment = new BitOwinTestEnvironment(new TestEnvironmentArgs
             {
                 AdditionalDependencies = manager =>
                 {
@@ -195,11 +205,15 @@ namespace Bit.Tests.Api.Middlewares.JobScheduler.Tests
 
                 Assert.AreEqual(true, await emailSent.Task);
 
-                //A.CallTo(() => DefaultLogger.Current.LogException(A<Exception>.That.Matches(e => e is InvalidOperationException), A<string>.That.Matches(errMsg => errMsg.Contains(jobId))))
-                //    .MustHaveHappened(Repeated.Exactly.Once);
+                ILogger logger = TestDependencyManager.CurrentTestDependencyManager
+                   .Objects.OfType<ILogger>()
+                   .Last();
+
+                A.CallTo(() => logger.LogException(A<Exception>.That.Matches(e => e is InvalidOperationException), A<string>.That.Matches(errMsg => errMsg.Contains(jobId))))
+                    .MustHaveHappened(Repeated.Exactly.Once);
 
                 Assert.AreEqual(2, tryCount);
             }
-        }*/
+        }
     }
 }

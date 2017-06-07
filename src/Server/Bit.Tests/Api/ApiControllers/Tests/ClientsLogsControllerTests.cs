@@ -1,8 +1,10 @@
-﻿/*using FakeItEasy;
-using Foundation.Api.ApiControllers;
-using Foundation.Core.Contracts;
-using Foundation.Model.Dtos;
-using Foundation.Test.Core.Implementations;
+﻿using Bit.Api.ApiControllers;
+using Bit.Core.Contracts;
+using Bit.Model.Dtos;
+using Bit.Test.Core.Implementations;
+using Bit.Tests;
+using FakeItEasy;
+using IdentityModel.Client;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Simple.OData.Client;
 using System.Collections.Generic;
@@ -14,16 +16,15 @@ namespace Foundation.Test.Api.ApiControllers.Tests
     [TestClass]
     public class ClientsLogsControllerTests
     {
-        [Ignore]
         [TestMethod]
         [TestCategory("WebApi"), TestCategory("Logging")]
         public virtual async Task ClientsLogsControllerMustSaveLogsUsingLogger()
         {
-            using (TestEnvironment testEnvironment = new TestEnvironment())
+            using (BitOwinTestEnvironment testEnvironment = new BitOwinTestEnvironment())
             {
                 TokenResponse token = testEnvironment.Server.Login("ValidUserName", "ValidPassword", clientName: "TestResOwner");
 
-                ODataClient client = testEnvironment.Server.BuildODataClient(token: token, route: "Foundation");
+                ODataClient client = testEnvironment.Server.BuildODataClient(token: token, route: "Bit");
 
                 await client.Controller<ClientsLogsController, ClientLogDto>()
                     .Action(nameof(ClientsLogsController.StoreClientLogs))
@@ -43,4 +44,3 @@ namespace Foundation.Test.Api.ApiControllers.Tests
         }
     }
 }
-*/

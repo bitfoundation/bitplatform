@@ -1,15 +1,17 @@
-﻿/*using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Threading.Tasks;
-using Foundation.Test.Model.DomainModels;
 using Simple.OData.Client;
-using Foundation.Test.Api.ApiControllers;
+using Bit.Tests;
+using IdentityModel.Client;
+using Bit.Tests.Api.ApiControllers;
+using Bit.Tests.Model.DomainModels;
 
 namespace Foundation.Test.Api.Middlewares.WebApi.Tests
 {
     [TestClass]
     public class AutoEdmBuilderCustomODataActionsTests
     {
-        It's all about action arguments and methods in custom odata actions
+        /*It's all about action arguments and methods in custom odata actions
         Arguments:
                     1- Single primitive type: TestModelsController.SendEmailUsingBackgroundJobService
                     2- Single entity: TestModelsController.StringFormattersTests
@@ -31,14 +33,13 @@ namespace Foundation.Test.Api.Middlewares.WebApi.Tests
                     6- Queryable of primitives: We're not going to support that for now
                     7- Queryable of entities: See tests
                     8- Queryable of complex values: We're not going to support that for now
-                    9- No return value: TestModelsController.PushSomethingWithDateTimeOffset
+                    9- No return value: TestModelsController.PushSomethingWithDateTimeOffset*/
 
-        [Ignore]
         [TestMethod]
         [TestCategory("OData"), TestCategory("WebApi")]
         public virtual async Task CustomActionMethodWithSingleDtoReturnValueTest()
         {
-            using (TestEnvironment testEnvironment = new TestEnvironment())
+            using (BitOwinTestEnvironment testEnvironment = new BitOwinTestEnvironment())
             {
                 TokenResponse token = testEnvironment.Server.Login("ValidUserName", "ValidPassword", clientName: "TestResOwner");
 
@@ -50,12 +51,11 @@ namespace Foundation.Test.Api.Middlewares.WebApi.Tests
             }
         }
 
-        [Ignore]
         [TestMethod]
         [TestCategory("OData"), TestCategory("WebApi")]
         public virtual async Task CustomActionMethodWithArrayOfEntitiesReturnValueTest()
         {
-            using (TestEnvironment testEnvironment = new TestEnvironment())
+            using (BitOwinTestEnvironment testEnvironment = new BitOwinTestEnvironment())
             {
                 TokenResponse token = testEnvironment.Server.Login("ValidUserName", "ValidPassword", clientName: "TestResOwner");
 
@@ -67,12 +67,11 @@ namespace Foundation.Test.Api.Middlewares.WebApi.Tests
             }
         }
 
-        [Ignore]
         [TestMethod]
         [TestCategory("OData"), TestCategory("WebApi")]
         public virtual async Task CustomActionMethodWithQueryableOfEntitiesReturnValueTest()
         {
-            using (TestEnvironment testEnvironment = new TestEnvironment())
+            using (BitOwinTestEnvironment testEnvironment = new BitOwinTestEnvironment())
             {
                 TokenResponse token = testEnvironment.Server.Login("ValidUserName", "ValidPassword", clientName: "TestResOwner");
 
@@ -85,4 +84,3 @@ namespace Foundation.Test.Api.Middlewares.WebApi.Tests
         }
     }
 }
-*/

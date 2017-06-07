@@ -11,6 +11,8 @@ namespace Microsoft.Owin
             if (context == null)
                 throw new ArgumentNullException(nameof(context));
 
+            context.Request.CallCancelled.ThrowIfCancellationRequested();
+
             IDependencyResolver dependencyResolver = context.Get<IDependencyResolver>("DependencyResolver");
 
             if (dependencyResolver == default(IDependencyResolver))

@@ -3,6 +3,7 @@ using System.Net.Http;
 using IdentityModel.Client;
 using Microsoft.AspNet.SignalR.Client;
 using OpenQA.Selenium.Remote;
+using Simple.OData.Client;
 
 namespace Bit.Test.Server
 {
@@ -21,11 +22,11 @@ namespace Bit.Test.Server
 
         TokenResponse Login(string userName, string password, string clientName, string secret = "secret");
 
-        /*ODataClient BuildODataClient(Action<HttpRequestMessage> beforeRequest = null,
-            Action<HttpResponseMessage> afterResponse = null, TokenResponse token = null, string route = null);*/
+        ODataClient BuildODataClient(Action<HttpRequestMessage> beforeRequest = null,
+            Action<HttpResponseMessage> afterResponse = null, TokenResponse token = null, string route = null);
 
-        /*ODataBatch BuildODataBatchClient(Action<HttpRequestMessage> beforeRequest = null,
-           Action<HttpResponseMessage> afterResponse = null, TokenResponse token = null, string route = null);*/
+        ODataBatch BuildODataBatchClient(Action<HttpRequestMessage> beforeRequest = null,
+           Action<HttpResponseMessage> afterResponse = null, TokenResponse token = null, string route = null);
 
         HttpClient GetHttpClient(TokenResponse token = null);
 

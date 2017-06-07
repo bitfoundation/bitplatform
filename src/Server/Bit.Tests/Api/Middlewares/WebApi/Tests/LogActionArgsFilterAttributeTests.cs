@@ -1,24 +1,26 @@
-﻿/*using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Web.OData;
 using FakeItEasy;
-using Foundation.Core.Contracts;
-using Foundation.Core.Models;
-using Foundation.Test.Core.Contracts;
-using Foundation.Test.Core.Implementations;
-using Foundation.Test.Model.DomainModels;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Simple.OData.Client;
-using Foundation.Test.Api.ApiControllers;
+using Bit.Core.Contracts;
+using Bit.Test.Core.Implementations;
+using Bit.Core.Models;
+using IdentityModel.Client;
+using Bit.Tests;
+using Bit.Tests.Api.ApiControllers;
+using Bit.Tests.Model.DomainModels;
+using Bit.Tests.Core.Contracts;
+using Bit.Test;
 
 namespace Foundation.Test.Api.Middlewares.WebApi.Tests
 {
     [TestClass]
     public class LogActionArgsFilterAttributeTests
     {
-        [Ignore]
         [TestMethod]
         [TestCategory("WebApi"), TestCategory("Logging")]
         public virtual async Task LogActionArgsFilterAttributeShouldLogActionArgs()
@@ -28,7 +30,7 @@ namespace Foundation.Test.Api.Middlewares.WebApi.Tests
             A.CallTo(() => emailService.SendEmail(A<string>.Ignored, A<string>.Ignored, A<string>.Ignored))
                 .Throws<InvalidOperationException>();
 
-            using (TestEnvironment testEnvironment = new TestEnvironment(new TestEnvironmentArgs
+            using (BitOwinTestEnvironment testEnvironment = new BitOwinTestEnvironment(new TestEnvironmentArgs
             {
                 AdditionalDependencies = manager =>
                 {
@@ -61,4 +63,3 @@ namespace Foundation.Test.Api.Middlewares.WebApi.Tests
         }
     }
 }
-*/

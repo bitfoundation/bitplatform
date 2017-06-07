@@ -2,18 +2,29 @@
 using System.Threading.Tasks;
 using IdentityModel.Client;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Bit.Tests.Api.ApiControllers;
+using Simple.OData.Client;
+using Bit.Tests.Model.DomainModels;
+using Bit.Test.Core.Implementations;
+using FakeItEasy;
+using Bit.Tests.Core.Contracts;
+using System.Collections.Generic;
+using System.Threading;
+using System.Linq;
+using Bit.Data.Contracts;
+using System.Web.OData;
+using System;
 
 namespace Bit.Tests.Api.Middlewares.WebApi.Tests
 {
     [TestClass]
     public class WebApiCrudTests
     {
-        /*[Ignore]
         [TestMethod]
         [TestCategory("WebApi"), TestCategory("OData")]
         public async Task TestInsert()
         {
-            using (TestEnvironment testEnvironment = new TestEnvironment())
+            using (BitOwinTestEnvironment testEnvironment = new BitOwinTestEnvironment())
             {
                 TokenResponse token = testEnvironment.Server.Login("ValidUserName", "ValidPassword", clientName: "TestResOwner");
 
@@ -49,12 +60,11 @@ namespace Bit.Tests.Api.Middlewares.WebApi.Tests
             }
         }
 
-        [Ignore]
         [TestMethod]
         [TestCategory("WebApi"), TestCategory("OData")]
         public async Task TestPartialUpdate()
         {
-            using (TestEnvironment testEnvironment = new TestEnvironment())
+            using (BitOwinTestEnvironment testEnvironment = new BitOwinTestEnvironment())
             {
                 TokenResponse token = testEnvironment.Server.Login("ValidUserName", "ValidPassword", clientName: "TestResOwner");
 
@@ -95,12 +105,11 @@ namespace Bit.Tests.Api.Middlewares.WebApi.Tests
             }
         }
 
-        [Ignore]
         [TestMethod]
         [TestCategory("WebApi"), TestCategory("OData")]
         public async Task TestDelete()
         {
-            using (TestEnvironment testEnvironment = new TestEnvironment())
+            using (BitOwinTestEnvironment testEnvironment = new BitOwinTestEnvironment())
             {
                 TokenResponse token = testEnvironment.Server.Login("ValidUserName", "ValidPassword", clientName: "TestResOwner");
 
@@ -134,12 +143,11 @@ namespace Bit.Tests.Api.Middlewares.WebApi.Tests
             }
         }
 
-        [Ignore]
         [TestMethod]
         [TestCategory("WebApi"), TestCategory("OData")]
         public async Task TestSimpleFilter()
         {
-            using (TestEnvironment testEnvironment = new TestEnvironment())
+            using (BitOwinTestEnvironment testEnvironment = new BitOwinTestEnvironment())
             {
                 TokenResponse token = testEnvironment.Server.Login("ValidUserName", "ValidPassword", clientName: "TestResOwner");
 
@@ -159,7 +167,7 @@ namespace Bit.Tests.Api.Middlewares.WebApi.Tests
                 A.CallTo(() => requestValidator.ValidateRequestByUri(A<Uri>.That.Matches(uri => uri.ToString().Contains("$filter=Name eq 'A'"))))
                     .MustHaveHappened(Repeated.Exactly.Once);
             }
-        }*/
+        }
 
         [TestMethod]
         [TestCategory("WebApi"), TestCategory("OData")]

@@ -1,20 +1,23 @@
-﻿/*using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using FakeItEasy;
-using Foundation.Core.Contracts;
-using Foundation.Test.Core.Contracts;
-using Foundation.Test.Model.DomainModels;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Simple.OData.Client;
 using Foundation.Test.Api.ApiControllers;
+using Bit.Tests.Model.DomainModels;
+using Bit.Tests.Api.ApiControllers;
+using IdentityModel.Client;
+using Bit.Tests;
+using Bit.Core.Contracts;
+using Bit.Test;
+using Bit.Tests.Core.Contracts;
 
 namespace Foundation.Test.Api.Middlewares.WebApi.Tests
 {
     [TestClass]
     public class StringFormattersTests
     {
-        [Ignore]
         [TestMethod]
         [TestCategory("WebApi")]
         public virtual async Task TestStringFormattersInCustomActions()
@@ -41,7 +44,7 @@ namespace Foundation.Test.Api.Middlewares.WebApi.Tests
                     return "TWO" + arg;
                 });
 
-            using (TestEnvironment testEnvironment = new TestEnvironment(new TestEnvironmentArgs
+            using (BitOwinTestEnvironment testEnvironment = new BitOwinTestEnvironment(new TestEnvironmentArgs
             {
                 AdditionalDependencies = manager =>
                 {
@@ -96,7 +99,6 @@ namespace Foundation.Test.Api.Middlewares.WebApi.Tests
             }
         }
 
-        [Ignore]
         [TestMethod]
         [TestCategory("WebApi")]
         public virtual async Task TestStringFormattersInUrl()
@@ -111,7 +113,7 @@ namespace Foundation.Test.Api.Middlewares.WebApi.Tests
                     return arg.Replace("VALUE", "Test");
                 });
 
-            using (TestEnvironment testEnvironment = new TestEnvironment(new TestEnvironmentArgs
+            using (BitOwinTestEnvironment testEnvironment = new BitOwinTestEnvironment(new TestEnvironmentArgs
             {
                 AdditionalDependencies = manager =>
                 {
@@ -133,4 +135,3 @@ namespace Foundation.Test.Api.Middlewares.WebApi.Tests
         }
     }
 }
-*/

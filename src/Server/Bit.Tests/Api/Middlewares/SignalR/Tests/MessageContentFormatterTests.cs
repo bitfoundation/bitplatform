@@ -1,26 +1,27 @@
-﻿/*using System;
+﻿using System;
 using System.Linq;
 using System.Threading.Tasks;
 using FakeItEasy;
-using Foundation.Core.Contracts;
-using Foundation.Core.Models;
-using Foundation.Test.Core.Implementations;
-using Foundation.Test.Model.DomainModels;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Simple.OData.Client;
-using Foundation.Test.Api.ApiControllers;
+using Bit.Core.Contracts;
+using Bit.Tests.Api.ApiControllers;
+using Bit.Tests.Model.DomainModels;
+using Bit.Tests;
+using IdentityModel.Client;
+using Bit.Test.Core.Implementations;
+using Bit.Core.Models;
 
 namespace Foundation.Test.Api.Middlewares.SignalR.Tests
 {
     [TestClass]
     public class MessageContentFormatterTests
     {
-        [Ignore]
         [TestMethod]
         [TestCategory("SignalR")]
         public virtual async Task SignalRMessageContentFormatterMustThrowAnExceptionIfMessageArgsContainsDateTimeOffset()
         {
-            using (TestEnvironment testEnvironment = new TestEnvironment())
+            using (BitOwinTestEnvironment testEnvironment = new BitOwinTestEnvironment())
             {
                 TokenResponse token = testEnvironment.Server.Login("ValidUserName", "ValidPassword", clientName: "TestResOwner");
 
@@ -48,4 +49,3 @@ namespace Foundation.Test.Api.Middlewares.SignalR.Tests
         }
     }
 }
-*/
