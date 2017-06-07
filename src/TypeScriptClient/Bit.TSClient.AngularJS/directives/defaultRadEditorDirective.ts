@@ -25,7 +25,7 @@
 
             let kendoWidgetCreatedDisposal = this.$scope.$on("kendoWidgetCreated", () => {
                 kendoWidgetCreatedDisposal();
-                this.onWidgetCreated.bind(this);
+                this.onWidgetCreated();
             });
 
             this.options = {
