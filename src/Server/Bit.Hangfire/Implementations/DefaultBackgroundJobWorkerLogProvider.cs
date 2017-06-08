@@ -31,7 +31,7 @@ namespace Bit.Hangfire.Implementations
         {
             string message = messageFunc?.Invoke() ?? "";
 
-            if (exception != null || (logLevel != LogLevel.Debug && logLevel != LogLevel.Trace && logLevel != LogLevel.Info))
+            if ((exception != null || !string.IsNullOrEmpty(message)) && (logLevel != LogLevel.Debug && logLevel != LogLevel.Trace && logLevel != LogLevel.Info))
             {
                 using (IDependencyResolver childResolver = _dependencyManager.CreateChildDependencyResolver())
                 {
@@ -41,7 +41,7 @@ namespace Bit.Hangfire.Implementations
                     else if (logLevel == LogLevel.Warn)
                         logger.LogWarning(message);
                     else
-                        logger.LogFatal(messageFunc == null ? "" : messageFunc());
+                        logger.LogFatal(message);
                 }
             }
             return true;
