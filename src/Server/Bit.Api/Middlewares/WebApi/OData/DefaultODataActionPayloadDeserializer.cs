@@ -8,6 +8,7 @@ using Bit.Core.Contracts;
 using Bit.Owin.Contracts;
 using Microsoft.OData;
 using Microsoft.Owin;
+using System.Reflection;
 
 namespace Bit.Api.Middlewares.WebApi.OData
 {
@@ -21,14 +22,14 @@ namespace Bit.Api.Middlewares.WebApi.OData
 
         }
 
-        public DefaultODataActionPayloadDeserializer(IEnumerable<IStringCorrector> stringCorrectors,
+        public DefaultODataActionPayloadDeserializer(System.Web.Http.Dependencies.IDependencyResolver dependencyResolver,
             ODataDeserializerProvider deserializerProvider)
             : base(deserializerProvider)
         {
-            if (stringCorrectors == null)
-                throw new ArgumentNullException(nameof(stringCorrectors));
+            if (dependencyResolver == null)
+                throw new ArgumentNullException(nameof(dependencyResolver));
 
-            _stringCorrectors = stringCorrectors;
+            _stringCorrectors = (IEnumerable<IStringCorrector>)dependencyResolver.GetServices(typeof(IStringCorrector).GetTypeInfo());
         }
 
         public override object Read(ODataMessageReader messageReader, Type type, ODataDeserializerContext readContext)

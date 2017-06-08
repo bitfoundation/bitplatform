@@ -7,6 +7,7 @@ using Bit.Owin.Contracts;
 using Microsoft.OData;
 using Microsoft.OData.Edm;
 using Microsoft.Owin;
+using System.Reflection;
 
 namespace Bit.Api.Middlewares.WebApi.OData
 {
@@ -20,14 +21,14 @@ namespace Bit.Api.Middlewares.WebApi.OData
 
         }
 
-        public DefaultODataResourceDeserializer(IEnumerable<IStringCorrector> stringCorrectors,
-            ODataDeserializerProvider deserializerProvider)
+        public DefaultODataResourceDeserializer(System.Web.Http.Dependencies.IDependencyResolver dependencyResolver,
+                    ODataDeserializerProvider deserializerProvider)
             : base(deserializerProvider)
         {
-            if (stringCorrectors == null)
-                throw new ArgumentNullException(nameof(stringCorrectors));
+            if (dependencyResolver == null)
+                throw new ArgumentNullException(nameof(dependencyResolver));
 
-            _stringCorrectors = stringCorrectors;
+            _stringCorrectors = (IEnumerable<IStringCorrector>)dependencyResolver.GetServices(typeof(IStringCorrector).GetTypeInfo());
         }
 
         public override void ApplyStructuralProperty(object resource, ODataProperty structuralProperty, IEdmStructuredTypeReference structuredType, ODataDeserializerContext readContext)

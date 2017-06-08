@@ -125,6 +125,7 @@ namespace Bit.Api.Middlewares.WebApi.OData
                     builder.AddService(ServiceLifetime.Singleton, sp => conventions);
                     builder.AddService(ServiceLifetime.Singleton, sp => edmModel);
                     builder.AddService(ServiceLifetime.Singleton, sp => _odataBatchHandler);
+                    builder.AddService(ServiceLifetime.Singleton, sp => _webApiDependencyResolver);
                     _oDataContainerBuilderCustomizer.Customize(builder);
                 });
             }
