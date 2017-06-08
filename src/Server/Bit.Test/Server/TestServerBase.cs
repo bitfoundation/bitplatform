@@ -91,9 +91,9 @@ namespace Bit.Test.Server
 
             if (onMessageReceived != null)
             {
-                hubProxy.On("OnMessageReceived", (dataAsJson) =>
+                hubProxy.On<string, string>("OnMessageReceived", (key, dataAsJson) =>
                 {
-                    onMessageReceived("OnMessageReceived", new TestSignalRMessageContentFormatter().DeSerialize<dynamic>(dataAsJson));
+                    onMessageReceived(key, new TestSignalRMessageContentFormatter().DeSerialize<dynamic>(dataAsJson));
                 });
             }
 
