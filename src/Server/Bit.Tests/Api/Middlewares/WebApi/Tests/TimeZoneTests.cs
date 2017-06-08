@@ -39,11 +39,11 @@ namespace Foundation.Test.Api.Middlewares.WebApi.Tests
 
                 await client.Controller<TestModelsController, TestModel>()
                     .Action(nameof(TestModelsController.TimeZoneTests))
-                    .Set(new
+                    .Set(new TestModelsController.TimeZoneTestsParameters
                     {
                         simpleDate = date,
                         datesArray = new[] { date, date },
-                        simpleEntity = new TestModel { StringProperty = " ", DateProperty = date, Id = 1, Version = 1 },
+                        simpleDto = new TestModel { StringProperty = " ", DateProperty = date, Id = 1, Version = 1 },
                         entitiesArray = new[]
                         {
                             new TestModel
@@ -97,11 +97,11 @@ namespace Foundation.Test.Api.Middlewares.WebApi.Tests
 
                 await client.Controller<TestModelsController, TestModel>()
                     .Action(nameof(TestModelsController.TimeZoneTests))
-                    .Set(new
+                    .Set(new TestModelsController.TimeZoneTestsParameters
                     {
                         simpleDate = date,
                         datesArray = new[] { date, date },
-                        simpleEntity = new TestModel { StringProperty = " ", DateProperty = date, Id = 1, Version = 1 },
+                        simpleDto = new TestModel { StringProperty = " ", DateProperty = date, Id = 1, Version = 1 },
                         entitiesArray = new[]
                         {
                             new TestModel

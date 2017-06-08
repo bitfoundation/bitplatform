@@ -28,7 +28,7 @@ namespace Foundation.Test.Api.ApiControllers.Tests
 
                 await client.Controller<ClientsLogsController, ClientLogDto>()
                     .Action(nameof(ClientsLogsController.StoreClientLogs))
-                    .Set(new { clientLogs = new[] { new ClientLogDto { Message = "1", Route = "R" } } })
+                    .Set(new ClientsLogsController.StoreClientLogsParameters { clientLogs = new[] { new ClientLogDto { Message = "1", Route = "R" } } })
                     .ExecuteAsync();
 
                 ILogger logger = TestDependencyManager.CurrentTestDependencyManager

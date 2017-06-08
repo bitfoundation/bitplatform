@@ -28,12 +28,13 @@ namespace Foundation.Test.Api.Middlewares.SignalR.Tests
 
                 testEnvironment.Server.BuildSignalRClient(tokenOfUser2, (messageKey, messageArgs) =>
                 {
-                    onMessageReceivedCalled.SetResult(true);
+                    if (messageKey == "NewWord" && messageArgs.Word == "Some word")
+                        onMessageReceivedCalled.SetResult(true);
                 });
 
                 await odataClientOfUser1.Controller<TestModelsController, TestModel>()
                     .Action(nameof(TestModelsController.PushSomeWordToAnotherUser))
-                    .Set(new { to = "User2", word = "Some word" })
+                    .Set(new TestModelsController.WordParameters { to = "User2", word = "Some word" })
                     .ExecuteAsync();
 
                 Assert.AreEqual(true, await onMessageReceivedCalled.Task);
@@ -61,7 +62,7 @@ namespace Foundation.Test.Api.Middlewares.SignalR.Tests
 
                 await odataClientOfUser1.Controller<TestModelsController, TestModel>()
                     .Action(nameof(TestModelsController.PushSomeWordToAnotherUsingBackgroundJobWorker))
-                    .Set(new { to = "User2", word = "Some word" })
+                    .Set(new TestModelsController.WordParameters { to = "User2", word = "Some word" })
                     .ExecuteAsync();
 
                 Assert.AreEqual(true, await onMessageReceivedCalled.Task);

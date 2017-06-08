@@ -12,6 +12,7 @@ using Bit.Tests;
 using Bit.Core.Contracts;
 using Bit.Test;
 using Bit.Tests.Core.Contracts;
+using System;
 
 namespace Foundation.Test.Api.Middlewares.WebApi.Tests
 {
@@ -60,12 +61,11 @@ namespace Foundation.Test.Api.Middlewares.WebApi.Tests
 
                 await client.Controller<TestModelsController, TestModel>()
                     .Action(nameof(TestModelsController.StringFormattersTests))
-                    .Set(new
+                    .Set(new TestModelsController.StringFormattersTestsParameters
                     {
                         simpleString = "simpleString",
                         stringsArray = new[] { "stringsArray1", "stringsArray2" },
                         stringsArray2 = new[] { "stringsArray1", "stringsArray2" },
-                        simpleEntity = new TestModel { StringProperty = "StringProperty", Id = 1, Version = 1 },
                         entitiesArray = new[]
                         {
                             new TestModel
@@ -76,7 +76,8 @@ namespace Foundation.Test.Api.Middlewares.WebApi.Tests
                             {
                                 StringProperty = "StringProperty2", Id = 3, Version = 3
                             }
-                        }
+                        },
+                        simpleDto = new TestModel { StringProperty = "StringProperty", Id = 1, Version = 1 }
                     }).ExecuteAsync();
 
                 A.CallTo(() => valueChecker.CheckValue("ONETWOsimpleString"))
@@ -92,10 +93,10 @@ namespace Foundation.Test.Api.Middlewares.WebApi.Tests
                     .MustHaveHappened(Repeated.Exactly.Once);
 
                 A.CallTo(() => stringCorrector1.CorrectString(A<string>.Ignored))
-                    .MustHaveHappened(Repeated.Exactly.Times(6));
+                    .MustHaveHappened(Repeated.Exactly.Times(8));
 
                 A.CallTo(() => stringCorrector2.CorrectString(A<string>.Ignored))
-                    .MustHaveHappened(Repeated.Exactly.Times(6));
+                    .MustHaveHappened(Repeated.Exactly.Times(8));
             }
         }
 

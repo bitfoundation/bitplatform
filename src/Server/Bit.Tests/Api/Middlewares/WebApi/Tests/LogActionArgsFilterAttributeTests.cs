@@ -46,7 +46,7 @@ namespace Foundation.Test.Api.Middlewares.WebApi.Tests
                 {
                     await client.Controller<TestModelsController, TestModel>()
                         .Action(nameof(TestModelsController.SendEmail))
-                        .Set(new { to = "Someone", title = "Email title", message = "Email message" })
+                        .Set(new TestModelsController.EmailParameters { to = "Someone", title = "Email title", message = "Email message" })
                         .ExecuteAsync();
 
                     Assert.Fail();
@@ -56,7 +56,7 @@ namespace Foundation.Test.Api.Middlewares.WebApi.Tests
                     ILogStore logStore = TestDependencyManager.CurrentTestDependencyManager.Objects
                         .OfType<ILogStore>().Last();
 
-                    A.CallTo(() => logStore.SaveLogAsync(A<LogEntry>.That.Matches(log => (string)((ODataActionParameters)((KeyValuePair<string, object>[])log.LogData.Single(ld => ld.Key == "ActionArgs").Value)[0].Value)["to"] == "Someone")))
+                    A.CallTo(() => logStore.SaveLogAsync(A<LogEntry>.That.Matches(log => ((TestModelsController.EmailParameters)((KeyValuePair<string,object>[])log.LogData.Single(ld => ld.Key == "ActionArgs").Value)[0].Value).to == "Someone")))
                         .MustHaveHappened(Repeated.Exactly.Once);
                 }
             }

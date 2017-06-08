@@ -65,7 +65,7 @@ namespace Bit.Tests.Api.Middlewares.WebApi.Tests
                 {
                     await client.Controller<TestModelsController, TestModel>()
                         .Action(nameof(TestModelsController.SendEmail))
-                        .Set(new { to = "Someone", title = "Email title", message = "Email message" })
+                        .Set(new TestModelsController.EmailParameters { to = "Someone", title = "Email title", message = "Email message" })
                         .ExecuteAsync();
 
                     Assert.Fail();
@@ -75,7 +75,7 @@ namespace Bit.Tests.Api.Middlewares.WebApi.Tests
                     ILogger logger = TestDependencyManager.CurrentTestDependencyManager.Objects
                             .OfType<ILogger>().Last();
 
-                    Assert.IsTrue(logger.LogData.Single(ld => ld.Key == "CorrelationId").Value is Guid);
+                    Assert.IsTrue(logger.LogData.Single(ld => ld.Key == "X-CorrelationId").Value is Guid);
                     Assert.AreEqual(typeof(AppException).GetTypeInfo().FullName, logger.LogData.Single(ld => ld.Key == "WebExceptionType").Value);
                     Assert.AreEqual("Test", ((AppException)logger.LogData.Single(ld => ld.Key == "WebException").Value).Message);
                 }

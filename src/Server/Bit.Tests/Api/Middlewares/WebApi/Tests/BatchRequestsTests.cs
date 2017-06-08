@@ -73,7 +73,7 @@ namespace Foundation.Test.Api.Middlewares.WebApi.Tests
 
         [TestMethod]
         [TestCategory("WebApi")]
-        public virtual async Task ServerMustStopRequestExecutionOfFirstException()
+        public virtual async Task ServerMustStopRequestExecutionOnFirstException()
         {
             // This is based on client's request.
 
@@ -106,12 +106,12 @@ namespace Foundation.Test.Api.Middlewares.WebApi.Tests
                 {
                     client += c => c.Controller<TestModelsController, TestModel>()
                         .Action(nameof(TestModelsController.SendEmail))
-                        .Set(new { to = "Exception", title = "Email title", message = "Email message" })
+                        .Set(new TestModelsController.EmailParameters { to = "Exception", title = "Email title", message = "Email message" })
                         .ExecuteAsync();
 
                     client += c => c.Controller<TestModelsController, TestModel>()
                                         .Action(nameof(TestModelsController.SendEmail))
-                                        .Set(new { to = "Work", title = "Email title", message = "Email message" })
+                                        .Set(new TestModelsController.EmailParameters { to = "Work", title = "Email title", message = "Email message" })
                                         .ExecuteAsync();
 
                     await client.ExecuteAsync();

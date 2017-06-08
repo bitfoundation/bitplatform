@@ -79,7 +79,7 @@ namespace Bit.Tests.Api.Middlewares.JobScheduler.Tests
 
                 string jobId = (await client.Controller<TestModelsController, TestModel>()
                     .Action(nameof(TestModelsController.SendEmailUsingBackgroundJobService))
-                    .Set(new { to = "Someone", title = "Email title", message = "Email message" })
+                    .Set(new TestModelsController.EmailParameters { to = "Someone", title = "Email title", message = "Email message" })
                     .ExecuteAsScalarAsync<Guid>()).ToString();
 
                 ODataClient foundationClient = testEnvironment.Server.BuildODataClient(token: token, route: "Bit");
@@ -87,8 +87,6 @@ namespace Bit.Tests.Api.Middlewares.JobScheduler.Tests
                 JobInfoDto jobInfo = await foundationClient.Controller<JobsInfoController, JobInfoDto>()
                     .Key(jobId)
                     .FindEntryAsync();
-
-                Assert.AreEqual("Enqueued", jobInfo.State);
 
                 Assert.AreEqual(true, await emailSent.Task);
 
@@ -124,7 +122,7 @@ namespace Bit.Tests.Api.Middlewares.JobScheduler.Tests
                 }
             }))
             {
-                TokenResponse someoneToken = testEnvironment.Server.Login("ValidUserName", "ValidPassword", clientName: "TestResOwner");
+                TokenResponse someoneToken = testEnvironment.Server.Login("SomeOne", "ValidPassword", clientName: "TestResOwner");
 
                 TaskCompletionSource<bool> onMessageReceivedCalled = new TaskCompletionSource<bool>();
 
@@ -139,7 +137,7 @@ namespace Bit.Tests.Api.Middlewares.JobScheduler.Tests
 
                 string jobId = (await client.Controller<TestModelsController, TestModel>()
                     .Action(nameof(TestModelsController.SendEmailUsingBackgroundJobServiceAndPushAfterThat))
-                    .Set(new { to = "SomeOne", title = "Email title", message = "Email message" })
+                    .Set(new TestModelsController.EmailParameters { to = "SomeOne", title = "Email title", message = "Email message" })
                     .ExecuteAsScalarAsync<Guid>()).ToString();
 
                 ODataClient foundationClient = testEnvironment.Server.BuildODataClient(token: token, route: "Bit");
@@ -148,9 +146,8 @@ namespace Bit.Tests.Api.Middlewares.JobScheduler.Tests
                     .Key(jobId)
                     .FindEntryAsync();
 
-                Assert.AreEqual("Awaiting", jobInfo.State);
-
                 Assert.AreEqual(true, await emailSent.Task);
+                Assert.AreEqual(true, await onMessageReceivedCalled.Task);
 
                 await Task.Delay(TimeSpan.FromSeconds(1));
 
@@ -200,7 +197,7 @@ namespace Bit.Tests.Api.Middlewares.JobScheduler.Tests
 
                 string jobId = (await client.Controller<TestModelsController, TestModel>()
                     .Action(nameof(TestModelsController.SendEmailUsingBackgroundJobService))
-                    .Set(new { to = "Someone", title = "Email title", message = "Email message" })
+                    .Set(new TestModelsController.EmailParameters { to = "Someone", title = "Email title", message = "Email message" })
                     .ExecuteAsScalarAsync<Guid>()).ToString();
 
                 Assert.AreEqual(true, await emailSent.Task);

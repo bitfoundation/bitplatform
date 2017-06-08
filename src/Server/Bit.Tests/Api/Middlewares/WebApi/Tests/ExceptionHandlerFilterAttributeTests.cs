@@ -49,9 +49,9 @@ namespace Foundation.Test.Api.Middlewares.WebApi.Tests
                         ILogger logger = TestDependencyManager.CurrentTestDependencyManager.Objects
                             .OfType<ILogger>().Last();
 
-                        Guid correlationId = (Guid)logger.LogData.Single(logData => logData.Key == "CorrelationId").Value;
+                        Guid correlationId = (Guid)logger.LogData.Single(logData => logData.Key == "X-CorrelationId").Value;
 
-                        Assert.AreEqual(correlationId.ToString(), message.Headers.Single(h => h.Key == "CorrelationId").Value.Single());
+                        Assert.AreEqual(correlationId.ToString(), message.Headers.Single(h => h.Key == "X-CorrelationId").Value.Single());
                     }
                 });
 
@@ -59,7 +59,7 @@ namespace Foundation.Test.Api.Middlewares.WebApi.Tests
                 {
                     await client.Controller<TestModelsController, TestModel>()
                         .Action(nameof(TestModelsController.SendEmail))
-                        .Set(new { to = "Someone", title = "Email title", message = "Email message" })
+                        .Set(new TestModelsController.EmailParameters { to = "Someone", title = "Email title", message = "Email message" })
                         .ExecuteAsync();
 
                     Assert.Fail();
@@ -101,9 +101,9 @@ namespace Foundation.Test.Api.Middlewares.WebApi.Tests
                         ILogger logger = TestDependencyManager.CurrentTestDependencyManager.Objects
                             .OfType<ILogger>().Last();
 
-                        Guid correlationId = (Guid)logger.LogData.Single(logData => logData.Key == "CorrelationId").Value;
+                        Guid correlationId = (Guid)logger.LogData.Single(logData => logData.Key == "X-CorrelationId").Value;
 
-                        Assert.AreEqual(correlationId.ToString(), message.Headers.Single(h => h.Key == "CorrelationId").Value.Single());
+                        Assert.AreEqual(correlationId.ToString(), message.Headers.Single(h => h.Key == "X-CorrelationId").Value.Single());
                     }
                 });
 
@@ -111,7 +111,7 @@ namespace Foundation.Test.Api.Middlewares.WebApi.Tests
                 {
                     await client.Controller<TestModelsController, TestModel>()
                         .Action(nameof(TestModelsController.SendEmail))
-                        .Set(new { to = "Someone", title = "Email title", message = "Email message" })
+                        .Set(new TestModelsController.EmailParameters { to = "Someone", title = "Email title", message = "Email message" })
                         .ExecuteAsync();
 
                     Assert.Fail();
@@ -157,9 +157,9 @@ namespace Foundation.Test.Api.Middlewares.WebApi.Tests
                         ILogger logger = TestDependencyManager.CurrentTestDependencyManager.Objects
                             .OfType<ILogger>().Last();
 
-                        Guid correlationId = (Guid)logger.LogData.Single(logData => logData.Key == "CorrelationId").Value;
+                        Guid correlationId = (Guid)logger.LogData.Single(logData => logData.Key == "X-CorrelationId").Value;
 
-                        Assert.AreEqual(correlationId.ToString(), message.Headers.Single(h => h.Key == "CorrelationId").Value.Single());
+                        Assert.AreEqual(correlationId.ToString(), message.Headers.Single(h => h.Key == "X-CorrelationId").Value.Single());
                     }
                 });
 
@@ -167,7 +167,7 @@ namespace Foundation.Test.Api.Middlewares.WebApi.Tests
                 {
                     await client.Controller<TestModelsController, TestModel>()
                         .Action(nameof(TestModelsController.SendEmail))
-                        .Set(new { to = "Someone", title = "Email title", message = "Email message" })
+                        .Set(new TestModelsController.EmailParameters { to = "Someone", title = "Email title", message = "Email message" })
                         .ExecuteAsync();
 
                     Assert.Fail();

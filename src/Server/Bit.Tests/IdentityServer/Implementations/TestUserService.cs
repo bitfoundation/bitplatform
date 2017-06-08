@@ -18,6 +18,7 @@ namespace Bit.Tests.IdentityServer.Implementations
     {
         private readonly List<LocalUser> _localUsers = new List<LocalUser>
         {
+            new LocalUser { UserId = "SomeOne" , Password = "ValidPassword" },
             new LocalUser { UserId = "ValidUserName" , Password = "ValidPassword" },
             new LocalUser { UserId = "User2" , Password = "ValidPassword"}
         };
