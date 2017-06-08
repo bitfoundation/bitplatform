@@ -4,6 +4,8 @@ using Bit.Core.Contracts;
 using Bit.Owin.Contracts;
 using Hangfire;
 using Hangfire.MemoryStorage;
+using Hangfire.Logging;
+using Bit.Hangfire.Implementations;
 
 namespace Bit.Hangfire.Middlewares.JobScheduler.Implementations
 {
@@ -12,20 +14,26 @@ namespace Bit.Hangfire.Middlewares.JobScheduler.Implementations
         private BackgroundJobServer _backgroundJobServer;
         private readonly JobActivator _jobActivator;
         private readonly ILifetimeScope _container;
+        private readonly ILogProvider _logProvider;
 
         protected JobSchedulerInMemoryBackendConfiguration()
         {
         }
 
-        public JobSchedulerInMemoryBackendConfiguration(JobActivator jobActivator, IAutofacDependencyManager dependencyManager)
+        public JobSchedulerInMemoryBackendConfiguration(JobActivator jobActivator, IAutofacDependencyManager dependencyManager, ILogProvider logProvider)
         {
             if (jobActivator == null)
                 throw new ArgumentNullException(nameof(jobActivator));
 
-            _jobActivator = jobActivator;
-
             if (dependencyManager == null)
                 throw new ArgumentNullException(nameof(dependencyManager));
+
+            if (logProvider == null)
+                throw new ArgumentNullException(nameof(logProvider));
+
+            _logProvider = logProvider;
+
+            _jobActivator = jobActivator;
 
             _container = dependencyManager.GetContainer();
         }
@@ -36,11 +44,14 @@ namespace Bit.Hangfire.Middlewares.JobScheduler.Implementations
 
             GlobalConfiguration.Configuration.UseStorage(storage);
             GlobalConfiguration.Configuration.UseAutofacActivator(_container);
+            GlobalConfiguration.Configuration.UseLogProvider(_logProvider);
 
             _backgroundJobServer = new BackgroundJobServer(new BackgroundJobServerOptions
             {
                 Activator = _jobActivator
             }, storage);
+
+            LogProvider.SetCurrentLogProvider(_logProvider);
         }
 
         public virtual void OnAppEnd()

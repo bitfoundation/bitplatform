@@ -7,6 +7,7 @@ using Bit.Owin.Contracts;
 using Hangfire;
 using Hangfire.Azure.ServiceBusQueue;
 using Hangfire.SqlServer;
+using Hangfire.Logging;
 
 namespace Bit.Hangfire.Middlewares.JobScheduler.Implementations
 {
@@ -16,12 +17,13 @@ namespace Bit.Hangfire.Middlewares.JobScheduler.Implementations
         private BackgroundJobServer _backgroundJobServer;
         private readonly JobActivator _jobActivator;
         private readonly ILifetimeScope _lifetimeScope;
+        private readonly ILogProvider _logProvider;
 
         protected SqlAndAzureServiceBusBackendJobServerConfiguration()
         {
         }
 
-        public SqlAndAzureServiceBusBackendJobServerConfiguration(IAppEnvironmentProvider appEnvironmentProvider, JobActivator jobActivator, IAutofacDependencyManager dependencyManager)
+        public SqlAndAzureServiceBusBackendJobServerConfiguration(IAppEnvironmentProvider appEnvironmentProvider, JobActivator jobActivator, IAutofacDependencyManager dependencyManager, ILogProvider logProvider)
         {
             if (appEnvironmentProvider == null)
                 throw new ArgumentNullException(nameof(appEnvironmentProvider));
@@ -31,6 +33,11 @@ namespace Bit.Hangfire.Middlewares.JobScheduler.Implementations
 
             if (dependencyManager == null)
                 throw new ArgumentNullException(nameof(dependencyManager));
+
+            if (logProvider == null)
+                throw new ArgumentNullException(nameof(logProvider));
+
+            _logProvider = logProvider;
 
             _appEnvironmentProvider = appEnvironmentProvider;
             _jobActivator = jobActivator;
@@ -59,11 +66,14 @@ namespace Bit.Hangfire.Middlewares.JobScheduler.Implementations
 
             GlobalConfiguration.Configuration.UseStorage(storage);
             GlobalConfiguration.Configuration.UseAutofacActivator(_lifetimeScope);
+            GlobalConfiguration.Configuration.UseLogProvider(_logProvider);
 
             _backgroundJobServer = new BackgroundJobServer(new BackgroundJobServerOptions
             {
                 Activator = _jobActivator
             }, storage);
+
+            LogProvider.SetCurrentLogProvider(_logProvider);
         }
 
         public virtual void OnAppEnd()

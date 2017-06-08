@@ -63,6 +63,7 @@
   <ItemGroup>
     <Compile Include="Extensions\IDependencyManangerExtensions.cs" />
     <Compile Include="Implementations\DefaultBackgroundJobWorker.cs" />
+    <Compile Include="Implementations\DefaultBackgroundJobWorkerLogProvider.cs" />
     <Compile Include="Middlewares\JobScheduler\Implementations\DefaultJobsDashboardAuthorizationFilter.cs" />
     <Compile Include="Middlewares\JobScheduler\Implementations\JobSchedulerInMemoryBackendConfiguration.cs" />
     <Compile Include="Middlewares\JobScheduler\Implementations\SqlAndAzureServiceBusBackendJobServerConfiguration.cs" />
