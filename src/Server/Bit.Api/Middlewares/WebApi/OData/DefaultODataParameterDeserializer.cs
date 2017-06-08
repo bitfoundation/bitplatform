@@ -4,6 +4,8 @@ using System.Reflection;
 using System.Web.OData;
 using System.Web.OData.Formatter.Deserialization;
 using Microsoft.OData;
+using System.Linq;
+using System.Collections;
 
 namespace Bit.Api.Middlewares.WebApi.OData
 {
@@ -33,10 +35,32 @@ namespace Bit.Api.Middlewares.WebApi.OData
 
             foreach (KeyValuePair<string, object> keyVal in payload)
             {
-                typeInfo.GetProperty(keyVal.Key)?.SetValue(result, keyVal.Value);
+                PropertyInfo prop = typeInfo.GetProperty(keyVal.Key);
+
+                if (prop == null)
+                    continue;
+
+                object value = null;
+
+                if (typeof(string) != prop.PropertyType && typeof(IEnumerable).GetTypeInfo().IsAssignableFrom(prop.PropertyType))
+                {
+                    TypeInfo elementType = prop.PropertyType.HasElementType ? prop.PropertyType.GetElementType().GetTypeInfo() : prop.PropertyType.GetGenericArguments().First().GetTypeInfo();
+                    value = ToListMethod.MakeGenericMethod(elementType).Invoke(null, new[] { keyVal.Value });
+                }
+                else
+                    value = keyVal.Value;
+
+                prop.SetValue(result, value);
             }
 
             return result;
+        }
+
+        private MethodInfo ToListMethod = typeof(DefaultODataParameterDeserializer).GetMethod(nameof(ToList), BindingFlags.NonPublic | BindingFlags.Static);
+
+        private static List<T> ToList<T>(IEnumerable<T> source)
+        {
+            return source.ToList();
         }
     }
 }
