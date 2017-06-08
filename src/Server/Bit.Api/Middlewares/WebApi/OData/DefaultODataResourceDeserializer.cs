@@ -8,6 +8,7 @@ using Microsoft.OData;
 using Microsoft.OData.Edm;
 using Microsoft.Owin;
 using System.Reflection;
+using System.Linq;
 
 namespace Bit.Api.Middlewares.WebApi.OData
 {
@@ -28,7 +29,7 @@ namespace Bit.Api.Middlewares.WebApi.OData
             if (dependencyResolver == null)
                 throw new ArgumentNullException(nameof(dependencyResolver));
 
-            _stringCorrectors = (IEnumerable<IStringCorrector>)dependencyResolver.GetServices(typeof(IStringCorrector).GetTypeInfo());
+            _stringCorrectors = dependencyResolver.GetServices(typeof(IStringCorrector).GetTypeInfo()).Cast<IStringCorrector>().ToArray();
         }
 
         public override void ApplyStructuralProperty(object resource, ODataProperty structuralProperty, IEdmStructuredTypeReference structuredType, ODataDeserializerContext readContext)

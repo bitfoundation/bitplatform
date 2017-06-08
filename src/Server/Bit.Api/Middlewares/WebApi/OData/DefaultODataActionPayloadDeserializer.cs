@@ -29,7 +29,7 @@ namespace Bit.Api.Middlewares.WebApi.OData
             if (dependencyResolver == null)
                 throw new ArgumentNullException(nameof(dependencyResolver));
 
-            _stringCorrectors = (IEnumerable<IStringCorrector>)dependencyResolver.GetServices(typeof(IStringCorrector).GetTypeInfo());
+            _stringCorrectors = dependencyResolver.GetServices(typeof(IStringCorrector).GetTypeInfo()).Cast<IStringCorrector>().ToArray();
         }
 
         public override object Read(ODataMessageReader messageReader, Type type, ODataDeserializerContext readContext)
