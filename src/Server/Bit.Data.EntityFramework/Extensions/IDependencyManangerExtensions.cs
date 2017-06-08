@@ -1,13 +1,14 @@
 ﻿using System;
 using Bit.Data.Contracts;
 using Bit.Data.EntityFramework.Implementations;
+using System.Data.Entity;
 
 namespace Bit.Core.Contracts
 {
     public static class IDependencyManangerExtensions
     {
         public static IDependencyManager RegisterEfDbContext<TDbContext>(this IDependencyManager dependencyManager)
-            where TDbContext : class
+            where TDbContext : DbContext
         {
             if (dependencyManager == null)
                 throw new ArgumentNullException(nameof(dependencyManager));
