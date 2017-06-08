@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Diagnostics;
 using Bit.Test;
+using Bit.Core.Contracts;
+using Bit.Owin.Middlewares;
 
 namespace Bit.Tests
 {
@@ -10,11 +12,33 @@ namespace Bit.Tests
         {
             Console.Title = "Bit Tests";
 
-            using (BitOwinTestEnvironment testEnvironment = new BitOwinTestEnvironment(new TestEnvironmentArgs
+            BitOwinTestEnvironment testEnvironment = null;
+
+            bool useASPNetCore = true;
+
+            if (useASPNetCore == false)
             {
-                UseRealServer = true,
-                UseProxyBasedDependencyManager = false
-            }))
+                testEnvironment = new BitOwinTestEnvironment(new TestEnvironmentArgs
+                {
+                    UseRealServer = true,
+                    UseProxyBasedDependencyManager = false
+                });
+            }
+            else
+            {
+                testEnvironment = new BitOwinCoreTestEnvironment(new TestEnvironmentArgs
+                {
+                    UseRealServer = true,
+                    UseProxyBasedDependencyManager = false,
+                    AdditionalDependencies = dependencyManager =>
+                    {
+                        dependencyManager.RegisterOwinMiddleware<RedirectToSsoIfNotLoggedInMiddlewareConfiguration>();
+                        dependencyManager.RegisterDefaultPageMiddlewareUsingDefaultConfiguration();
+                    }
+                });
+            }
+
+            using (testEnvironment)
             {
                 Process.Start(testEnvironment.Server.Uri);
 
