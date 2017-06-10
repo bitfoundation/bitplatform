@@ -9,7 +9,7 @@
   "dependencies": {
     "jquery": "3.2.1",
     "angular": "1.6.4",
-    "angular-material": "https://github.com/angular/bower-material.git/#v1.1.4-master-e1345ae",
+    "angular-material": "https://github.com/angular/bower-material.git/#v1.1.4",
     "regenerator": "https://github.com/facebook/regenerator.git#runtime@0.10.5",
     "olingo-odatajs": "4.0.0",
     "jaydata": "https://github.com/bit-foundation/jaydata-releases.git/#1.5.11.99",
@@ -24,7 +24,7 @@
     "core.js": "2.4.1",
     "ngComponentRouter": "https://github.com/excellalabs/ngComponentRouter.git#1d01d7a6902f0be2688693f14cb40576b718ab39",
     "fetch": "2.0.3",
-    "jasmine-core": "2.6.1",
+    "jasmine-core": "2.6.3",
     "jasmine-jquery": "2.1.1",
     "decimal.js": "https://github.com/MikeMcl/decimal.js.git#v7.0.1",
     "kendo-ui": "kendo-ui-core#2017.2.504",

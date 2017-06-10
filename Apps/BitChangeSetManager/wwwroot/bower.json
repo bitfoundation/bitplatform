@@ -9,7 +9,7 @@
   "dependencies": {
     "jquery": "3.2.1",
     "angular": "1.6.4",
-    "angular-material": "https://github.com/angular/bower-material.git/#v1.1.4-master-e1345ae",
+    "angular-material": "https://github.com/angular/bower-material.git/#v1.1.4",
     "regenerator": "https://github.com/facebook/regenerator.git#runtime@0.10.5",
     "olingo-odatajs": "4.0.0",
     "jaydata": "https://github.com/bit-foundation/jaydata-releases.git/#1.5.11.99",
@@ -26,7 +26,7 @@
     "fetch": "2.0.3",
     "decimal.js": "https://github.com/MikeMcl/decimal.js.git#v7.0.1",
     "kendo-ui": "kendo-ui-core#2017.2.504",
-    "bit-releases": "https://github.com/bit-foundation/bit-releases.git#0.3.4",
+    "bit-releases": "https://github.com/bit-foundation/bit-releases.git#0.3.5",
     "encoderjs": "0.0.1",
     "pubsub-js": "1.5.4"
   },
