@@ -72,8 +72,6 @@ namespace Bit.Hangfire.Middlewares.JobScheduler.Implementations
             {
                 Activator = _jobActivator
             }, storage);
-
-            LogProvider.SetCurrentLogProvider(_logProvider);
         }
 
         public virtual void OnAppEnd()
