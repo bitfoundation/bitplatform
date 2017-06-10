@@ -10,6 +10,7 @@ namespace Bit.Tests.Api.ApiControllers.Tests
     public class WebApiCoreTests
     {
         [TestMethod]
+        [TestCategory("WebApiCore")]
         public virtual async Task WebApiCoreControllerShouldReturnOkStatusCode()
         {
             using (BitOwinCoreTestEnvironment testEnvironment = new BitOwinCoreTestEnvironment(new TestEnvironmentArgs { UseRealServer = false }))
