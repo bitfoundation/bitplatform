@@ -31,8 +31,6 @@ namespace BitCodeAnalyzer.SystemCodeFixes
 
             Diagnostic diagnostic = context.Diagnostics.First();
 
-            TextSpan diagnosticSpan = diagnostic.Location.SourceSpan;
-
             SyntaxNode node = root.FindNode(context.Span);
 
             if (node is ClassDeclarationSyntax == false)

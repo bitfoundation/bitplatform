@@ -59,6 +59,9 @@
       <HintPath>..\..\packages\Microsoft.VisualStudio.Text.UI.15.0.26201\lib\net45\Microsoft.VisualStudio.Text.UI.dll</HintPath>
       <Private>True</Private>
     </Reference>
+    <Reference Include="Microsoft.Web.Core">
+      <HintPath>..\Lib\Microsoft.Web.Core.dll</HintPath>
+    </Reference>
     <Reference Include="Microsoft.Web.Editor">
       <HintPath>..\Lib\Microsoft.Web.Editor.dll</HintPath>
       <Private>False</Private>

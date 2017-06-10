@@ -1,17 +1,16 @@
-﻿using Bit.Api.ApiControllers;
+﻿using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using Bit.Api.ApiControllers;
 using Bit.Core.Contracts;
 using Bit.Model.Dtos;
 using Bit.Test.Core.Implementations;
-using Bit.Tests;
 using FakeItEasy;
 using IdentityModel.Client;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Simple.OData.Client;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
-namespace Foundation.Test.Api.ApiControllers.Tests
+namespace Bit.Tests.Api.ApiControllers.Tests
 {
     [TestClass]
     public class ClientsLogsControllerTests

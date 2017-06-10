@@ -54,7 +54,7 @@ namespace Microsoft.CodeAnalysis
             if (dataTypeAtt == null)
                 return null;
 
-            TypedConstant dataTypeAttributeValue = dataTypeAtt.ConstructorArguments.ExtendedSingle($"Getting parameter of DataTypeAttribute");
+            TypedConstant dataTypeAttributeValue = dataTypeAtt.ConstructorArguments.ExtendedSingle("Getting parameter of DataTypeAttribute");
 
             int value = Convert.ToInt32(dataTypeAttributeValue.Value);
 

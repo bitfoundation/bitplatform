@@ -103,7 +103,7 @@ namespace BitCodeAnalyzer.Test.Helpers
         /// <param name="expectedResults">Diagnostic Results that should have appeared in the code</param>
         private void VerifyDiagnosticResults(IEnumerable<Diagnostic> actualResults, DiagnosticAnalyzer analyzer, params DiagnosticResult[] expectedResults)
         {
-            int expectedCount = expectedResults.Count();
+            int expectedCount = expectedResults.Length;
             IEnumerable<Diagnostic> diagnostics = actualResults as IList<Diagnostic> ?? actualResults.ToList();
             int actualCount = diagnostics.Count();
 

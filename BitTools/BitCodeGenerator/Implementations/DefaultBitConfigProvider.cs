@@ -41,7 +41,7 @@ namespace BitCodeGenerator.Implementations
             string bitConfigFileName = $"BitConfig{Version}.json";
 
             FileInfo bitConfigFileInfo =
-                directoryInfo?.GetFiles(bitConfigFileName)
+                directoryInfo.GetFiles(bitConfigFileName)
                     .ExtendedSingleOrDefault($"Looking for {bitConfigFileName}");
 
             if (bitConfigFileInfo == null)
@@ -67,7 +67,7 @@ namespace BitCodeGenerator.Implementations
                 if (string.IsNullOrEmpty(mapping.TypingsPath))
                     throw new InvalidOperationException("TypingsPath is not provided");
 
-                if (string.IsNullOrEmpty(mapping?.DestinationProject?.Name))
+                if (string.IsNullOrEmpty(mapping.DestinationProject?.Name))
                     throw new InvalidOperationException("DestinationProject is not provided");
 
                 if (mapping.SourceProjects == null || !mapping.SourceProjects.Any() || !mapping.SourceProjects.All(sp => !string.IsNullOrEmpty(sp?.Name)))

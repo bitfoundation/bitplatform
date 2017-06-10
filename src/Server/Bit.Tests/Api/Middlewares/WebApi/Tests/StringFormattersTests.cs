@@ -1,20 +1,17 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using FakeItEasy;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Simple.OData.Client;
-using Foundation.Test.Api.ApiControllers;
-using Bit.Tests.Model.DomainModels;
-using Bit.Tests.Api.ApiControllers;
-using IdentityModel.Client;
-using Bit.Tests;
 using Bit.Core.Contracts;
 using Bit.Test;
+using Bit.Tests.Api.ApiControllers;
 using Bit.Tests.Core.Contracts;
-using System;
+using Bit.Tests.Model.DomainModels;
+using FakeItEasy;
+using IdentityModel.Client;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Simple.OData.Client;
 
-namespace Foundation.Test.Api.Middlewares.WebApi.Tests
+namespace Bit.Tests.Api.Middlewares.WebApi.Tests
 {
     [TestClass]
     public class StringFormattersTests

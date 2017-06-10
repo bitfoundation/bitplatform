@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace BitVSEditorUtils.Html
+namespace BitVSEditorUtils.HTML.Schema
 {
     public class HtmlElementsContainer
     {

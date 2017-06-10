@@ -1,5 +1,4 @@
 ﻿using Bit.Core.Contracts;
-using Bit.Core.Models;
 using Hangfire.Logging;
 using System;
 

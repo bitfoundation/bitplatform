@@ -1,7 +1,6 @@
 ﻿using Bit.Core.Contracts;
 using Bit.Test;
 using Bit.Test.Server;
-using Bit.Tests.Api.Implementations;
 
 namespace Bit.Tests
 {

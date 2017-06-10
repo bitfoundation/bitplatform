@@ -5,7 +5,6 @@ using Bit.Owin.Contracts;
 using Hangfire;
 using Hangfire.MemoryStorage;
 using Hangfire.Logging;
-using Bit.Hangfire.Implementations;
 
 namespace Bit.Hangfire.Middlewares.JobScheduler.Implementations
 {

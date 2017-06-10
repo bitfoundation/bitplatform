@@ -2,13 +2,14 @@
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
 using System.Linq;
+using BitVSEditorUtils.HTML.Schema;
 using Microsoft.Html.Core.Tree.Nodes;
 using Microsoft.Html.Editor.Validation.Def;
 using Microsoft.Html.Editor.Validation.Errors;
 using Microsoft.Html.Editor.Validation.Validators;
 using Microsoft.VisualStudio.Utilities;
 
-namespace BitVSEditorUtils.Html
+namespace BitVSEditorUtils.HTML.Validation
 {
     [Export(typeof(IHtmlElementValidatorProvider))]
     [ContentType("htmlx")]

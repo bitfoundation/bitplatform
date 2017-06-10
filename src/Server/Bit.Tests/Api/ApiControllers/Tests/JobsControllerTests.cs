@@ -1,13 +1,12 @@
 ﻿using System.Threading.Tasks;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Simple.OData.Client;
-using Bit.Tests;
-using IdentityModel.Client;
 using Bit.Api.ApiControllers;
 using Bit.Model.Dtos;
 using Bit.Owin.Metadata;
+using IdentityModel.Client;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Simple.OData.Client;
 
-namespace Foundation.Test.Api.ApiControllers.Tests
+namespace Bit.Tests.Api.ApiControllers.Tests
 {
     [TestClass]
     public class JobsControllerTests

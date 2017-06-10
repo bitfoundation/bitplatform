@@ -54,10 +54,7 @@ namespace BitCodeAnalyzer.Test.Helpers
                 return this._locations;
             }
 
-            set
-            {
-                this._locations = value;
-            }
+            set => this._locations = value;
         }
 
         public DiagnosticSeverity Severity { get; set; }

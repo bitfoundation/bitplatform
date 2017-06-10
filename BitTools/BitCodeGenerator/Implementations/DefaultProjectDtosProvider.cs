@@ -117,7 +117,7 @@ public class ISVClass
 
                     foreach (var dWithIndex in orderedDtosWithIndex)
                     {
-                        if (dto.BaseDtoSymbol == dWithIndex.Dto.DtoSymbol)
+                        if (dto.BaseDtoSymbol?.Equals(dWithIndex.Dto.DtoSymbol) == true)
                             insertIndex = dWithIndex.Index + 1;
                     }
 

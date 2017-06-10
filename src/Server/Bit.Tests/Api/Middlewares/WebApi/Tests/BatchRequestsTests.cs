@@ -1,23 +1,21 @@
 ﻿using System;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Linq;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Web.OData;
-using FakeItEasy;
-using Simple.OData.Client;
-using Bit.Tests;
-using IdentityModel.Client;
-using Bit.Tests.Model.DomainModels;
-using Bit.Tests.Api.ApiControllers;
-using Bit.Data.Contracts;
-using Bit.Test.Core.Implementations;
-using Bit.Tests.Core.Contracts;
-using Bit.Test;
 using Bit.Core.Contracts;
+using Bit.Data.Contracts;
+using Bit.Test;
+using Bit.Test.Core.Implementations;
+using Bit.Tests.Api.ApiControllers;
+using Bit.Tests.Core.Contracts;
+using Bit.Tests.Model.DomainModels;
+using FakeItEasy;
+using IdentityModel.Client;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Simple.OData.Client;
 
-namespace Foundation.Test.Api.Middlewares.WebApi.Tests
+namespace Bit.Tests.Api.Middlewares.WebApi.Tests
 {
     [TestClass]
     public class BatchRequestsTests

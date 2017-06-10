@@ -1,4 +1,4 @@
-﻿namespace BitVSEditorUtils.Html
+﻿namespace BitVSEditorUtils.HTML.Schema
 {
     public interface IHtmlItem
     {

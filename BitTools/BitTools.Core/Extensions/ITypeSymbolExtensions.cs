@@ -219,7 +219,7 @@ namespace Microsoft.CodeAnalysis
 
         private static bool IsDto(ImmutableArray<INamedTypeSymbol> typeInterfaces)
         {
-            foreach (ITypeSymbol tInterface in typeInterfaces)
+            foreach (INamedTypeSymbol tInterface in typeInterfaces)
             {
                 if (tInterface.Name == "IDto")
                     return true;

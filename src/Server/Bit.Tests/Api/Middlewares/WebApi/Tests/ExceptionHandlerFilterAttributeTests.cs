@@ -1,9 +1,12 @@
-﻿using Bit.Core.Contracts;
+﻿using System;
+using System.Linq;
+using System.Net;
+using System.Threading.Tasks;
+using Bit.Core.Contracts;
 using Bit.Owin.Exceptions;
 using Bit.Owin.Metadata;
 using Bit.Test;
 using Bit.Test.Core.Implementations;
-using Bit.Tests;
 using Bit.Tests.Api.ApiControllers;
 using Bit.Tests.Core.Contracts;
 using Bit.Tests.Model.DomainModels;
@@ -11,12 +14,8 @@ using FakeItEasy;
 using IdentityModel.Client;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Simple.OData.Client;
-using System;
-using System.Linq;
-using System.Net;
-using System.Threading.Tasks;
 
-namespace Foundation.Test.Api.Middlewares.WebApi.Tests
+namespace Bit.Tests.Api.Middlewares.WebApi.Tests
 {
     [TestClass]
     public class ExceptionHandlerFilterAttributeTests

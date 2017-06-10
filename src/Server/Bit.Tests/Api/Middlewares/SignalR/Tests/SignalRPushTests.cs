@@ -1,13 +1,11 @@
 ﻿using System.Threading.Tasks;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Simple.OData.Client;
-using Foundation.Test.Api.ApiControllers;
 using Bit.Tests.Api.ApiControllers;
 using Bit.Tests.Model.DomainModels;
 using IdentityModel.Client;
-using Bit.Tests;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Simple.OData.Client;
 
-namespace Foundation.Test.Api.Middlewares.SignalR.Tests
+namespace Bit.Tests.Api.Middlewares.SignalR.Tests
 {
     [TestClass]
     public class SignalRPushTests

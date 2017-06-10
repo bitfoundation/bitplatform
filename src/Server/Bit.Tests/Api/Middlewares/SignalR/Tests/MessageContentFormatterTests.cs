@@ -1,18 +1,17 @@
 ﻿using System;
 using System.Linq;
 using System.Threading.Tasks;
-using FakeItEasy;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Simple.OData.Client;
 using Bit.Core.Contracts;
+using Bit.Core.Models;
+using Bit.Test.Core.Implementations;
 using Bit.Tests.Api.ApiControllers;
 using Bit.Tests.Model.DomainModels;
-using Bit.Tests;
+using FakeItEasy;
 using IdentityModel.Client;
-using Bit.Test.Core.Implementations;
-using Bit.Core.Models;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Simple.OData.Client;
 
-namespace Foundation.Test.Api.Middlewares.SignalR.Tests
+namespace Bit.Tests.Api.Middlewares.SignalR.Tests
 {
     [TestClass]
     public class MessageContentFormatterTests

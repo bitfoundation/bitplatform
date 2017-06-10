@@ -1,12 +1,11 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System.Threading.Tasks;
-using Simple.OData.Client;
-using Bit.Tests;
-using IdentityModel.Client;
+﻿using System.Threading.Tasks;
 using Bit.Tests.Api.ApiControllers;
 using Bit.Tests.Model.DomainModels;
+using IdentityModel.Client;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Simple.OData.Client;
 
-namespace Foundation.Test.Api.Middlewares.WebApi.Tests
+namespace Bit.Tests.Api.Middlewares.WebApi.Tests
 {
     [TestClass]
     public class AutoEdmBuilderCustomODataActionsTests

@@ -1,10 +1,8 @@
 ﻿using System.Linq;
-using System.Threading;
 using Bit.Test;
 using Bit.Test.Core.Implementations;
 using Bit.Test.Server;
 using Bit.Tests.Api.ApiControllers;
-using Bit.Tests.Model.DomainModels;
 using FakeItEasy;
 using IdentityModel.Client;
 using Microsoft.VisualStudio.TestTools.UnitTesting;

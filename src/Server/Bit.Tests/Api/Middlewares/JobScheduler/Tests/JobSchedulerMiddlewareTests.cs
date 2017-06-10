@@ -13,7 +13,6 @@ using System;
 using Bit.Api.ApiControllers;
 using Bit.Core.Contracts;
 using Bit.Model.Dtos;
-using Bit.Owin.Implementations;
 using Bit.Test.Core.Implementations;
 using System.Linq;
 
@@ -82,9 +81,9 @@ namespace Bit.Tests.Api.Middlewares.JobScheduler.Tests
                     .Set(new TestModelsController.EmailParameters { to = "Someone", title = "Email title", message = "Email message" })
                     .ExecuteAsScalarAsync<Guid>()).ToString();
 
-                ODataClient foundationClient = testEnvironment.Server.BuildODataClient(token: token, route: "Bit");
+                ODataClient bitODataClient = testEnvironment.Server.BuildODataClient(token: token, route: "Bit");
 
-                JobInfoDto jobInfo = await foundationClient.Controller<JobsInfoController, JobInfoDto>()
+                JobInfoDto jobInfo = await bitODataClient.Controller<JobsInfoController, JobInfoDto>()
                     .Key(jobId)
                     .FindEntryAsync();
 
@@ -92,7 +91,7 @@ namespace Bit.Tests.Api.Middlewares.JobScheduler.Tests
 
                 await Task.Delay(TimeSpan.FromSeconds(1));
 
-                jobInfo = await foundationClient.Controller<JobsInfoController, JobInfoDto>()
+                jobInfo = await bitODataClient.Controller<JobsInfoController, JobInfoDto>()
                     .Key(jobId)
                     .FindEntryAsync();
 
@@ -140,9 +139,9 @@ namespace Bit.Tests.Api.Middlewares.JobScheduler.Tests
                     .Set(new TestModelsController.EmailParameters { to = "SomeOne", title = "Email title", message = "Email message" })
                     .ExecuteAsScalarAsync<Guid>()).ToString();
 
-                ODataClient foundationClient = testEnvironment.Server.BuildODataClient(token: token, route: "Bit");
+                ODataClient bitODataClient = testEnvironment.Server.BuildODataClient(token: token, route: "Bit");
 
-                JobInfoDto jobInfo = await foundationClient.Controller<JobsInfoController, JobInfoDto>()
+                JobInfoDto jobInfo = await bitODataClient.Controller<JobsInfoController, JobInfoDto>()
                     .Key(jobId)
                     .FindEntryAsync();
 
@@ -151,7 +150,7 @@ namespace Bit.Tests.Api.Middlewares.JobScheduler.Tests
 
                 await Task.Delay(TimeSpan.FromSeconds(1));
 
-                jobInfo = await foundationClient.Controller<JobsInfoController, JobInfoDto>()
+                jobInfo = await bitODataClient.Controller<JobsInfoController, JobInfoDto>()
                     .Key(jobId)
                     .FindEntryAsync();
 

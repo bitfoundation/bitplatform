@@ -2,21 +2,19 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using System.Web.OData;
+using Bit.Core.Contracts;
+using Bit.Core.Models;
+using Bit.Test;
+using Bit.Test.Core.Implementations;
+using Bit.Tests.Api.ApiControllers;
+using Bit.Tests.Core.Contracts;
+using Bit.Tests.Model.DomainModels;
 using FakeItEasy;
+using IdentityModel.Client;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Simple.OData.Client;
-using Bit.Core.Contracts;
-using Bit.Test.Core.Implementations;
-using Bit.Core.Models;
-using IdentityModel.Client;
-using Bit.Tests;
-using Bit.Tests.Api.ApiControllers;
-using Bit.Tests.Model.DomainModels;
-using Bit.Tests.Core.Contracts;
-using Bit.Test;
 
-namespace Foundation.Test.Api.Middlewares.WebApi.Tests
+namespace Bit.Tests.Api.Middlewares.WebApi.Tests
 {
     [TestClass]
     public class LogActionArgsFilterAttributeTests

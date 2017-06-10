@@ -53,7 +53,7 @@ namespace BitCodeAnalyzer.BitAnalyzers.Dto
                     Diagnostic diagn = Diagnostic.Create(Rule, root.GetLocation(), Message);
                     context.ReportDiagnostic(diagn);
                 }
-            };
+            }
         }
     }
 }

@@ -1,19 +1,17 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using BitVSEditorUtils.HTML.Schema;
 using Microsoft.Html.Editor.Completion;
 using Microsoft.Html.Editor.Completion.Def;
 using Microsoft.VisualStudio.Utilities;
 
-namespace BitVSEditorUtils.Html
+namespace BitVSEditorUtils.HTML.Completion
 {
     [HtmlCompletionProvider(CompletionTypes.Attributes, "*")]
     [ContentType("htmlx")]
     public class AttributeCompletion : CompletionBase
     {
-        public override string CompletionType
-        {
-            get { return CompletionTypes.Attributes; }
-        }
+        public override string CompletionType => CompletionTypes.Attributes;
 
         public override IList<HtmlCompletion> GetEntries(HtmlCompletionContext context)
         {

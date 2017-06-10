@@ -4,7 +4,6 @@ using System.Reflection;
 using Bit.Core;
 using Bit.Core.Contracts;
 using Bit.Test;
-using Bit.Tests.Api.Implementations;
 
 namespace Bit.Tests
 {

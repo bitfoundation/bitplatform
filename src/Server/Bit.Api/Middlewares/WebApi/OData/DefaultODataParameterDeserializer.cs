@@ -56,7 +56,7 @@ namespace Bit.Api.Middlewares.WebApi.OData
             return result;
         }
 
-        private MethodInfo ToListMethod = typeof(DefaultODataParameterDeserializer).GetMethod(nameof(ToList), BindingFlags.NonPublic | BindingFlags.Static);
+        private readonly MethodInfo ToListMethod = typeof(DefaultODataParameterDeserializer).GetMethod(nameof(ToList), BindingFlags.NonPublic | BindingFlags.Static);
 
         private static List<T> ToList<T>(IEnumerable<T> source)
         {

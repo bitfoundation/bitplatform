@@ -9,7 +9,7 @@ using System.Runtime.InteropServices;
 using EnvDTE;
 using Project = Microsoft.CodeAnalysis.Project;
 using Solution = Microsoft.CodeAnalysis.Solution;
-using BitHtmlElement = BitVSEditorUtils.Html.HtmlElement;
+using BitHtmlElement = BitVSEditorUtils.HTML.Schema.HtmlElement;
 using System.Windows.Forms;
 using System;
 using System.IO;
@@ -20,11 +20,13 @@ using BitCodeGenerator.Implementations;
 using BitCodeGenerator.Implementations.HtmlClientProxyGenerator;
 using System.Reflection;
 using System.Globalization;
+using System.Threading;
 using BitTools.Core.Model;
-using BitVSEditorUtils.Html;
 using Newtonsoft.Json;
-using Microsoft.CodeAnalysis;
 using System.Threading.Tasks;
+using BitVSEditorUtils.HTML.Completion;
+using BitVSEditorUtils.HTML.Schema;
+using Task = System.Threading.Tasks.Task;
 
 namespace BitVSExtensionV1
 {
@@ -36,11 +38,6 @@ namespace BitVSExtensionV1
     {
         private const string PackageGuidString = "F5222FDA-2C19-434B-9343-B0E942816E4C";
         private const string BitVSExtensionName = "Bit VS Extension V1";
-
-        public BitPacakge()
-        {
-
-        }
 
         protected override async void Initialize()
         {
@@ -68,7 +65,7 @@ namespace BitVSExtensionV1
 
                 RedirectAssembly("System.Collections.Immutable", new Version("1.1.37"), "b03f5f7f11d50a3a");
 
-                new[] { "Microsoft.Html.Core", "Microsoft.Html.Editor", "Microsoft.Web.Editor" }.ToList()
+                new[] { "Microsoft.Web.Core", "Microsoft.Html.Core", "Microsoft.Html.Editor", "Microsoft.Web.Editor", "Microsoft.VisualStudio.Language.Intellisense", "Microsoft.VisualStudio.CoreUtility", "Microsoft.VisualStudio.Imaging", "Microsoft.VisualStudio.Text.Data", "Microsoft.VisualStudio.Text.Logic", "Microsoft.VisualStudio.Text.UI", "Microsoft.VisualStudio.Threading", "Microsoft.VisualStudio.Utilities", "Microsoft.VisualStudio.Validation" }.ToList()
                     .ForEach(needsRuntimeAssemblyRedirectInVS2015 =>
                     {
                         RedirectAssembly(needsRuntimeAssemblyRedirectInVS2015, new Version("14.0.0.0"), "b03f5f7f11d50a3a");
@@ -122,7 +119,6 @@ namespace BitVSExtensionV1
             catch (Exception ex)
             {
                 ShowInitialLoadProblem($"Init html elements failed {ex}");
-                return;
             }
         }
 
@@ -143,7 +139,7 @@ namespace BitVSExtensionV1
                 if (tryCount == 60)
                     break;
                 tryCount++;
-                await System.Threading.Tasks.Task.Delay(1000);
+                await Task.Delay(1000);
             }
 
             if (!File.Exists(_workspace.CurrentSolution.FilePath) || !File.Exists(Path.Combine(Path.GetDirectoryName(_workspace.CurrentSolution.FilePath) + "\\BitConfigV1.json")))
@@ -213,9 +209,7 @@ namespace BitVSExtensionV1
 
         public void RedirectAssembly(string shortName, Version targetVersion, string publicKeyToken)
         {
-            ResolveEventHandler handler = null;
-
-            handler = (sender, args) =>
+            Assembly ResolveEventHandler(object sender, ResolveEventArgs args)
             {
                 AssemblyName requestedAssembly = new AssemblyName(args.Name);
 
@@ -226,12 +220,12 @@ namespace BitVSExtensionV1
                 requestedAssembly.SetPublicKeyToken(new AssemblyName("x, PublicKeyToken=" + publicKeyToken).GetPublicKeyToken());
                 requestedAssembly.CultureInfo = CultureInfo.InvariantCulture;
 
-                AppDomain.CurrentDomain.AssemblyResolve -= handler;
+                AppDomain.CurrentDomain.AssemblyResolve -= ResolveEventHandler;
 
                 return Assembly.Load(requestedAssembly);
-            };
+            }
 
-            AppDomain.CurrentDomain.AssemblyResolve += handler;
+            AppDomain.CurrentDomain.AssemblyResolve += ResolveEventHandler;
         }
 
         private void _buildEvents_OnBuildBegin(vsBuildScope scope, vsBuildAction action)

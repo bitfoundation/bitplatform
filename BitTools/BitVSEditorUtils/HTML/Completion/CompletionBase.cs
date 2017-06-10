@@ -5,12 +5,13 @@ using System.IO;
 using System.Reflection;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
+using BitVSEditorUtils.HTML.Schema;
 using Microsoft.Html.Editor.Completion;
 using Microsoft.Html.Editor.Completion.Def;
 using Microsoft.VisualStudio.Language.Intellisense;
 using Microsoft.Web.Editor.Imaging;
 
-namespace BitVSEditorUtils.Html
+namespace BitVSEditorUtils.HTML.Completion
 {
     public abstract class CompletionBase : IHtmlCompletionListProvider
     {
