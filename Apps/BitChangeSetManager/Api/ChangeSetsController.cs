@@ -49,7 +49,7 @@ namespace BitChangeSetManager.Api
 
             User user = await _usersRepository.GetByIdAsync(Guid.Parse(_userInformationProvider.GetCurrentUserId()), cancellationToken);
 
-            _messageSender.SendMessageToGroups("ChangeSetHasBeenInsertedByUser", new { userName = user.UserName, title = insertedChangeSet.Title }, user.Culture.ToString());
+            _messageSender.SendMessageToGroups("ChangeSetHasBeenInsertedByUser", new { userName = user.UserName, title = insertedChangeSet.Title }, groupNames: new[] { user.Culture.ToString() });
 
             return insertedChangeSet;
         }
