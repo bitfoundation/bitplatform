@@ -1,11 +1,12 @@
 ﻿using BitTools.Core.Model;
 using Microsoft.CodeAnalysis;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace BitTools.Core.Contracts
 {
     public interface IProjectDtoRulesProvider
     {
-        IList<DtoRules> GetProjectAllDtoRules(Project project);
+        Task<IList<DtoRules>> GetProjectAllDtoRules(Project project);
     }
 }

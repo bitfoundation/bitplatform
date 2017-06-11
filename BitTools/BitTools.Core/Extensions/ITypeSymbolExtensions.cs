@@ -16,9 +16,7 @@ namespace Microsoft.CodeAnalysis
 
             if (typeName == nameof(Task) || typeName == nameof(Nullable))
             {
-                INamedTypeSymbol namedTypeSymbol = type as INamedTypeSymbol;
-
-                if (namedTypeSymbol != null && namedTypeSymbol.TypeArguments.Any())
+                if (type is INamedTypeSymbol namedTypeSymbol && namedTypeSymbol.TypeArguments.Any())
                     return namedTypeSymbol.TypeArguments.ExtendedSingle($"Looking for type arguments of {type.Name}");
             }
 

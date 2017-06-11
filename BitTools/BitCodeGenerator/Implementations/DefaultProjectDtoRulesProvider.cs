@@ -6,12 +6,13 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace BitCodeGenerator.Implementations
 {
     public class DefaultProjectDtoRulesProvider : IProjectDtoRulesProvider
     {
-        public virtual IList<DtoRules> GetProjectAllDtoRules(Project project)
+        public virtual async Task<IList<DtoRules>> GetProjectAllDtoRules(Project project)
         {
             if (project == null)
                 throw new ArgumentNullException(nameof(project));
@@ -23,9 +24,9 @@ namespace BitCodeGenerator.Implementations
                 if (!doc.SupportsSemanticModel)
                     continue;
 
-                SemanticModel semanticModel = doc.GetSemanticModelAsync().Result;
+                SemanticModel semanticModel = await doc.GetSemanticModelAsync();
 
-                SyntaxNode root = doc.GetSyntaxRootAsync(CancellationToken.None).Result;
+                SyntaxNode root = await doc.GetSyntaxRootAsync(CancellationToken.None);
 
                 List<ClassDeclarationSyntax> allDtoRulesClasses = new List<ClassDeclarationSyntax>();
 

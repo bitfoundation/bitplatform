@@ -257,7 +257,7 @@ namespace BitVSExtensionV1
             }
         }
 
-        private void _buildEvents_OnBuildDone_Internal(vsBuildScope scope, vsBuildAction action)
+        private async void _buildEvents_OnBuildDone_Internal(vsBuildScope scope, vsBuildAction action)
         {
             Solution solution = _workspace.CurrentSolution;
 
@@ -265,7 +265,7 @@ namespace BitVSExtensionV1
             {
                 DefaultHtmlClientProxyCleaner cleaner = new DefaultHtmlClientProxyCleaner(new DefaultBitCodeGeneratorMappingsProvider(new DefaultBitConfigProvider()));
 
-                cleaner.DeleteCodes(_workspace, solution, _isBeingBuiltProjects);
+                await cleaner.DeleteCodes(_workspace, solution, _isBeingBuiltProjects);
 
                 Log("Generated codes were deleted");
             }
@@ -280,7 +280,7 @@ namespace BitVSExtensionV1
                     new DefaultBitCodeGeneratorMappingsProvider(new DefaultBitConfigProvider()), dtosProvider
                     , new DefaultHtmlClientProxyDtoGenerator(), new DefaultHtmlClientContextGenerator(), controllersProvider, new DefaultProjectEnumTypesProvider(controllersProvider, dtosProvider));
 
-                generator.GenerateCodes(_workspace, solution, _isBeingBuiltProjects);
+                await generator.GenerateCodes(_workspace, solution, _isBeingBuiltProjects);
 
                 watch.Stop();
 

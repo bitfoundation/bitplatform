@@ -44,9 +44,7 @@ namespace BitCodeAnalyzer.BitAnalyzers.Data.EntityFramework
             if (symbolName == "System.Linq.Queryable" || symbolName == "System.Linq.Enumerable" ||
                 symbolName == "System.Data.Entity.QueryableExtensions")
             {
-                MemberAccessExpressionSyntax memberAccess = invocation.Expression as MemberAccessExpressionSyntax;
-
-                if (memberAccess != null && memberAccess.Expression != null)
+                if (invocation.Expression is MemberAccessExpressionSyntax memberAccess && memberAccess.Expression != null)
                 {
                     INamedTypeSymbol instanceType = (context.SemanticModel.GetTypeInfo(memberAccess.Expression).Type as INamedTypeSymbol)?.ConstructedFrom;
 

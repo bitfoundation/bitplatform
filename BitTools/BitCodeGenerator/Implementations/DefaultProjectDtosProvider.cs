@@ -7,6 +7,7 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Text;
 using Microsoft.CodeAnalysis.CSharp;
+using System.Threading.Tasks;
 
 namespace BitCodeGenerator.Implementations
 {
@@ -24,7 +25,7 @@ namespace BitCodeGenerator.Implementations
 
         static DefaultProjectDtosProvider()
         {
-            _isvPropertyForISyncableDtos = new Lazy<IPropertySymbol>(() =>
+            _isvPropertyForISyncableDtos = new Lazy<Task<IPropertySymbol>>(async () =>
             {
                 ProjectId projectId = ProjectId.CreateNewId(debugName: "ISVPropertyProject");
                 DocumentId isvPropDocId = DocumentId.CreateNewId(projectId, debugName: "ISVProp.cs");
@@ -41,16 +42,16 @@ public class ISVClass
                     ));
 
                 Document isvPropDoc = solution.Projects.Single().Documents.Single();
-                ClassDeclarationSyntax isvPropClassDec = isvPropDoc.GetSyntaxRootAsync().Result.DescendantNodes().OfType<ClassDeclarationSyntax>().Single();
-                ITypeSymbol isvPropTypeSymbol = isvPropDoc.GetSemanticModelAsync().Result.GetDeclaredSymbol(isvPropClassDec);
+                ClassDeclarationSyntax isvPropClassDec = (await isvPropDoc.GetSyntaxRootAsync()).DescendantNodes().OfType<ClassDeclarationSyntax>().Single();
+                ITypeSymbol isvPropTypeSymbol = (await isvPropDoc.GetSemanticModelAsync()).GetDeclaredSymbol(isvPropClassDec);
                 return isvPropTypeSymbol.GetMembers().OfType<IPropertySymbol>().Single();
 
             });
         }
 
-        private static readonly Lazy<IPropertySymbol> _isvPropertyForISyncableDtos;
+        private static readonly Lazy<Task<IPropertySymbol>> _isvPropertyForISyncableDtos;
 
-        public virtual IList<Dto> GetProjectDtos(Project project, IList<Project> allSourceProjects = null)
+        public virtual async Task<IList<Dto>> GetProjectDtos(Project project, IList<Project> allSourceProjects = null)
         {
             if (project == null)
                 throw new ArgumentNullException(nameof(project));
@@ -58,28 +59,33 @@ public class ISVClass
             if (allSourceProjects == null)
                 allSourceProjects = new List<Project> { project };
 
-            List<DtoController> dtoControllers = _projectDtoControllersProvider
-                .GetProjectDtoControllersWithTheirOperations(project).ToList();
+            List<DtoController> dtoControllers = (await _projectDtoControllersProvider
+                .GetProjectDtoControllersWithTheirOperations(project)).ToList();
 
-            IList<Dto> dtos = dtoControllers
-                .Select(dtoController =>
+            IList<Dto> dtos = new List<Dto>();
+
+            foreach (DtoController dtoController in dtoControllers)
+            {
+                Dto dto = new Dto
                 {
-                    Dto dto = new Dto
-                    {
-                        DtoSymbol = (INamedTypeSymbol)dtoController.ModelSymbol,
-                        Properties = dtoController.ModelSymbol.GetMembers().OfType<IPropertySymbol>().ToList()
-                    };
+                    DtoSymbol = (INamedTypeSymbol)dtoController.ModelSymbol,
+                    Properties = dtoController.ModelSymbol.GetMembers().OfType<IPropertySymbol>().ToList()
+                };
 
-                    if (dto.DtoSymbol.Interfaces.Any(i => i.Name == "ISyncableDto") && !dto.Properties.Any(p => p.Name == "ISV"))
-                    {
-                        dto.Properties.Add(_isvPropertyForISyncableDtos.Value);
-                    }
+                if (dto.DtoSymbol.Interfaces.Any(i => i.Name == "ISyncableDto") && !dto.Properties.Any(p => p.Name == "ISV"))
+                {
+                    dto.Properties.Add(await _isvPropertyForISyncableDtos.Value);
+                }
 
-                    return dto;
-                })
-                .ToList();
+                dtos.Add(dto);
+            }
 
-            List<Compilation> sourceProjectsCompilations = allSourceProjects.Select(p => p.GetCompilationAsync().Result).ToList();
+            List<Compilation> sourceProjectsCompilations = new List<Compilation>();
+
+            foreach (var p in allSourceProjects)
+            {
+                sourceProjectsCompilations.Add(await p.GetCompilationAsync());
+            }
 
             dtos.SelectMany(d => d.Properties)
                 .Where(p => p.Type.IsComplexType())

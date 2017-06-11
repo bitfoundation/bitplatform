@@ -21,9 +21,8 @@ namespace Microsoft.CodeAnalysis
                 summary = element.Descendants().ExtendedSingleOrDefault($"Looking for summary of {symbol.Name}", e => e.Name.LocalName == "summary")?.Value;
             }
 
-            if (symbol is IFieldSymbol)
+            if (symbol is IFieldSymbol field)
             {
-                IFieldSymbol field = (IFieldSymbol)symbol;
                 if (field.HasConstantValue)
                 {
                     if (summary == null)

@@ -1,11 +1,12 @@
 ﻿using System.Collections.Generic;
 using BitTools.Core.Model;
 using Microsoft.CodeAnalysis;
+using System.Threading.Tasks;
 
 namespace BitTools.Core.Contracts
 {
     public interface IProjectDtosProvider
     {
-        IList<Dto> GetProjectDtos(Project project, IList<Project> sourceProjects = null);
+        Task<IList<Dto>> GetProjectDtos(Project project, IList<Project> sourceProjects = null);
     }
 }

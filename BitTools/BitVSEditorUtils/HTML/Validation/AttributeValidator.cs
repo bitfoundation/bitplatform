@@ -38,9 +38,8 @@ namespace BitVSEditorUtils.HTML.Validation
                     continue;
 
                 int index = element.GetAttributeIndex(attrNode.Name);
-                string error;
 
-                if (!IsTypeValid(attrNode.Value, htmlAttr, out error))
+                if (!IsTypeValid(attrNode.Value, htmlAttr, out string error))
                 {
                     results.AddAttributeError(element, error, HtmlValidationErrorLocation.AttributeValue, index);
                 }
@@ -80,8 +79,7 @@ namespace BitVSEditorUtils.HTML.Validation
             if (attribute.Type == "number")
             {
                 error = $"The value \"{value}\" is not a valid number.";
-                double number;
-                return double.TryParse(value, out number);
+                return double.TryParse(value, out double number);
             }
 
             if (attribute.Type == "enum")

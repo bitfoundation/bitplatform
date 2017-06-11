@@ -7,6 +7,7 @@ using BitTools.Core.Contracts.HtmlClientProxyGenerator;
 using BitTools.Core.Model;
 using Microsoft.CodeAnalysis;
 using System.IO;
+using System.Threading.Tasks;
 
 namespace BitCodeGenerator.Implementations.HtmlClientProxyGenerator
 {
@@ -52,7 +53,7 @@ namespace BitCodeGenerator.Implementations.HtmlClientProxyGenerator
             _projectEnumTypesProvider = projectEnumTypesProvider;
         }
 
-        public virtual void GenerateCodes(Workspace workspace, Solution solution,
+        public virtual async Task GenerateCodes(Workspace workspace, Solution solution,
             IList<Project> projects)
         {
             if (workspace == null)
@@ -79,14 +80,26 @@ namespace BitCodeGenerator.Implementations.HtmlClientProxyGenerator
 
                 IList<Project> involveableProjects = _solutionProjectsSelector.GetInvolveableProjects(workspace, solution, solution.Projects.ToList(), proxyGeneratorMapping);
 
-                IList<Dto> dtos = involveableProjects
-                    .SelectMany(p => _dtosProvider.GetProjectDtos(p, involveableProjects)).ToList();
+                List<Dto> dtos = new List<Dto>();
 
-                IList<EnumType> enumTypes = involveableProjects
-                    .SelectMany(p => _projectEnumTypesProvider.GetProjectEnumTypes(p, involveableProjects)).ToList();
+                foreach (Project p in involveableProjects)
+                {
+                    dtos.AddRange(await _dtosProvider.GetProjectDtos(p, involveableProjects));
+                }
 
-                IList<DtoController> dtoControllers = involveableProjects
-                    .SelectMany(p => _dtoControllersProvider.GetProjectDtoControllersWithTheirOperations(p)).ToList();
+                List<EnumType> enumTypes = new List<EnumType>();
+
+                foreach (Project p in involveableProjects)
+                {
+                    enumTypes.AddRange(await _projectEnumTypesProvider.GetProjectEnumTypes(p, involveableProjects));
+                }
+
+                List<DtoController> dtoControllers = new List<DtoController>();
+
+                foreach (Project p in involveableProjects)
+                {
+                    dtoControllers.AddRange(await _dtoControllersProvider.GetProjectDtoControllersWithTheirOperations(p));
+                }
 
                 generatedJs.AppendLine(_dtoGenerator.GenerateJavaScriptDtos(dtos, enumTypes));
                 generatedJs.AppendLine(_contextGenerator.GenerateJavaScriptContext(dtoControllers, proxyGeneratorMapping));

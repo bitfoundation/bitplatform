@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace BitCodeGenerator.Implementations.HtmlClientProxyGenerator
 {
@@ -21,7 +22,7 @@ namespace BitCodeGenerator.Implementations.HtmlClientProxyGenerator
             _bitCodeGeneratorMappingsProvider = bitCodeGeneratorMappingsProvider;
         }
 
-        public virtual void DeleteCodes(Workspace workspace, Solution solution,
+        public virtual async Task DeleteCodes(Workspace workspace, Solution solution,
             IList<Project> projects)
         {
             if (workspace == null)

@@ -4,6 +4,7 @@ using Microsoft.CodeAnalysis;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace BitCodeGenerator.Implementations
 {
@@ -24,7 +25,7 @@ namespace BitCodeGenerator.Implementations
             _dtosProvider = dtosProvider;
         }
 
-        public virtual IList<EnumType> GetProjectEnumTypes(Project project, IList<Project> allSourceProjects = null)
+        public async Task<IList<EnumType>> GetProjectEnumTypes(Project project, IList<Project> allSourceProjects = null)
         {
             if (project == null)
                 throw new ArgumentNullException(nameof(project));
@@ -34,12 +35,17 @@ namespace BitCodeGenerator.Implementations
 
             IList<EnumType> enumTypes = new List<EnumType>();
 
-            List<DtoController> dtoControllers = _projectDtoControllersProvider
-                .GetProjectDtoControllersWithTheirOperations(project).ToList();
+            List<DtoController> dtoControllers = (await _projectDtoControllersProvider
+                .GetProjectDtoControllersWithTheirOperations(project)).ToList();
 
-            IList<Dto> dtos = _dtosProvider.GetProjectDtos(project, allSourceProjects);
+            IList<Dto> dtos = await _dtosProvider.GetProjectDtos(project, allSourceProjects);
 
-            List<Compilation> sourceProjectsCompilations = allSourceProjects.Select(p => p.GetCompilationAsync().Result).ToList();
+            List<Compilation> sourceProjectsCompilations = new List<Compilation> { };
+
+            foreach (var p in allSourceProjects)
+            {
+                sourceProjectsCompilations.Add(await p.GetCompilationAsync());
+            }
 
             dtos.SelectMany(d => d.Properties)
                 .Where(p => p.Type.IsEnum())
