@@ -4,6 +4,7 @@ using IdentityModel.Client;
 using Microsoft.AspNet.SignalR.Client;
 using OpenQA.Selenium.Remote;
 using Simple.OData.Client;
+using System.Threading.Tasks;
 
 namespace Bit.Test.Server
 {
@@ -20,7 +21,7 @@ namespace Bit.Test.Server
     {
         RemoteWebDriver GetWebDriver(RemoteWebDriverOptions options = null);
 
-        TokenResponse Login(string userName, string password, string clientName, string secret = "secret");
+        Task<TokenResponse> Login(string userName, string password, string clientName, string secret = "secret");
 
         ODataClient BuildODataClient(Action<HttpRequestMessage> beforeRequest = null,
             Action<HttpResponseMessage> afterResponse = null, TokenResponse token = null, string route = null);
@@ -30,7 +31,7 @@ namespace Bit.Test.Server
 
         HttpClient GetHttpClient(TokenResponse token = null);
 
-        IHubProxy BuildSignalRClient(TokenResponse token = null, Action<string, dynamic> onMessageReceived = null);
+        Task<IHubProxy> BuildSignalRClient(TokenResponse token = null, Action<string, dynamic> onMessageReceived = null);
 
         TokenClient BuildTokenClient(string clientName, string secret);
 

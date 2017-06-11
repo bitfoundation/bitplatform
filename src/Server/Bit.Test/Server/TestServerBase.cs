@@ -11,6 +11,7 @@ using OpenQA.Selenium.Chrome;
 using OpenQA.Selenium.Remote;
 using Simple.OData.Client;
 using Newtonsoft.Json;
+using System.Threading.Tasks;
 
 namespace Bit.Test.Server
 {
@@ -80,7 +81,7 @@ namespace Bit.Test.Server
 
         protected abstract HttpMessageHandler GetHttpMessageHandler();
 
-        public virtual IHubProxy BuildSignalRClient(TokenResponse token = null, Action<string, dynamic> onMessageReceived = null)
+        public virtual async Task<IHubProxy> BuildSignalRClient(TokenResponse token = null, Action<string, dynamic> onMessageReceived = null)
         {
             HubConnection hubConnection = new HubConnection(Uri);
 
@@ -97,7 +98,7 @@ namespace Bit.Test.Server
                 });
             }
 
-            hubConnection.Start(new LongPollingTransport(new SignalRHttpClient(GetHttpMessageHandler()))).Wait();
+            await hubConnection.Start(new ServerSentEventsTransport(new SignalRHttpClient(GetHttpMessageHandler())));
 
             return hubProxy;
         }
@@ -164,11 +165,11 @@ namespace Bit.Test.Server
             Uri = uri;
         }
 
-        public virtual TokenResponse Login(string userName, string password, string clientName, string secret = "secret")
+        public virtual async Task<TokenResponse> Login(string userName, string password, string clientName, string secret = "secret")
         {
             TokenClient client = BuildTokenClient(clientName, secret);
 
-            return client.RequestResourceOwnerPasswordAsync(userName, password, "openid profile user_info").Result;
+            return await client.RequestResourceOwnerPasswordAsync(userName, password, "openid profile user_info");
         }
 
         public HttpClient GetHttpClient(TokenResponse token = null)
