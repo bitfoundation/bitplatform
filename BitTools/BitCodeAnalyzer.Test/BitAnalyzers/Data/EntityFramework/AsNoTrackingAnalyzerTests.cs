@@ -4,11 +4,13 @@ using BitCodeAnalyzer.Test.Helpers;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.CodeAnalysis.MSBuild;
+using Microsoft.CodeAnalysis.Text;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.IO;
 using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace BitCodeAnalyzer.Test.BitAnalyzers.Data.EntityFramework
 {
@@ -17,7 +19,7 @@ namespace BitCodeAnalyzer.Test.BitAnalyzers.Data.EntityFramework
     {
         [TestMethod]
         [TestCategory("Analyzer")]
-        public void AsNoTrackingMustBeCalledBeforeAllOtherMethodCallsOfDbQueryAndDbSqlQuery()
+        public async Task AsNoTrackingMustBeCalledBeforeAllOtherMethodCallsOfDbQueryAndDbSqlQuery()
         {
             DiagnosticResult notCalledAsNoTracking1 = new DiagnosticResult
             {
@@ -43,16 +45,16 @@ namespace BitCodeAnalyzer.Test.BitAnalyzers.Data.EntityFramework
                 Locations = new[] { new DiagnosticResultLocation(Path.Combine(basePath, @"EntityFrameworkFullAsNoTrackingCallTests\Program.cs"), 17, 42) }
             };
 
-            VerifyCSharpDiagnostic(notCalledAsNoTracking1, notCalledAsNoTracking2, notCalledAsNoTracking3);
+            await VerifyCSharpDiagnostic(notCalledAsNoTracking1, notCalledAsNoTracking2, notCalledAsNoTracking3);
         }
 
         private readonly string basePath = new DirectoryInfo(Path.Combine(Environment.CurrentDirectory, @"..\..\BitAnalyzers\Data\EntityFramework\EntityFrameworkFullAsNoTrackingCallTests")).FullName;
 
-        public override Project CreateProject(string[] sources, string language = "C#")
+        public override async Task<Project> CreateProject(string[] sources, string language = "C#")
         {
             MSBuildWorkspace workspace = MSBuildWorkspace.Create();
 
-            workspace.OpenSolutionAsync(Path.Combine(basePath, "EntityFrameworkFullAsNoTrackingCallTests.sln"), CancellationToken.None).Wait();
+            await workspace.OpenSolutionAsync(Path.Combine(basePath, "EntityFrameworkFullAsNoTrackingCallTests.sln"), CancellationToken.None);
 
             return workspace.CurrentSolution.Projects.Single();
         }

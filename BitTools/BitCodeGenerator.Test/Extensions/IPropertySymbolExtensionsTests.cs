@@ -4,6 +4,7 @@ using Microsoft.CodeAnalysis;
 using BitCodeGenerator.Test.Helpers;
 using BitCodeGenerator.Implementations;
 using BitTools.Core.Model;
+using System.Threading.Tasks;
 
 namespace BitCodeGenerator.Test.Extensions
 {
@@ -11,7 +12,7 @@ namespace BitCodeGenerator.Test.Extensions
     public class IPropertySymbolExtensionsTests : CodeGeneratorTest
     {
         [TestMethod]
-        public void IPropertySymbolExtensionsShouldDeterminateKeyPropertiesAsDesired()
+        public async Task IPropertySymbolExtensionsShouldDeterminateKeyPropertiesAsDesired()
         {
             string dtoCode = @"
 
@@ -40,7 +41,7 @@ public class SamplesController : DtoController<SampleDto>
 ";
             DefaultProjectDtosProvider dtosProvider = new DefaultProjectDtosProvider(new DefaultProjectDtoControllersProvider());
 
-            Dto dto = dtosProvider.GetProjectDtos(CreateProjectFromSourceCodes(dtoCode)).Single();
+            Dto dto = (await dtosProvider.GetProjectDtos(CreateProjectFromSourceCodes(dtoCode))).Single();
 
             Assert.IsFalse(dto.Properties.ElementAt(0).IsKey());
             Assert.IsFalse(dto.Properties.ElementAt(1).IsKey());
@@ -49,7 +50,7 @@ public class SamplesController : DtoController<SampleDto>
         }
 
         [TestMethod]
-        public void IPropertySymbolExtensionsShouldDeterminateConcurrencyCheckPropertiesAsDesired()
+        public async Task IPropertySymbolExtensionsShouldDeterminateConcurrencyCheckPropertiesAsDesired()
         {
             string dtoCode = @"
 
@@ -77,7 +78,7 @@ public class SamplesController : DtoController<SampleDto>
 ";
             DefaultProjectDtosProvider dtosProvider = new DefaultProjectDtosProvider(new DefaultProjectDtoControllersProvider());
 
-            Dto dto = dtosProvider.GetProjectDtos(CreateProjectFromSourceCodes(dtoCode)).Single();
+            Dto dto = (await dtosProvider.GetProjectDtos(CreateProjectFromSourceCodes(dtoCode))).Single();
 
             Assert.IsTrue(dto.Properties.ElementAt(0).HasConcurrencyCheck());
             Assert.AreEqual(1, dto.Properties.Count(p => p.HasConcurrencyCheck()));

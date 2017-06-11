@@ -16,7 +16,7 @@ namespace BitCodeGenerator.Test.Implementations
         [TestMethod, TestCategory("BitCodeGenerator")]
         public async Task DefaultBitCodeGeneratorOrderedProjectsProviderTestsShouldReturnProjectsAsDesired()
         {
-            using (Workspace workspace = GetWorkspace())
+            using (Workspace workspace = await GetWorkspace())
             {
                 Solution solution = workspace.CurrentSolution;
 

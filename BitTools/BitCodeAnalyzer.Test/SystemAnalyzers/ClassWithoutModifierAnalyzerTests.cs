@@ -5,6 +5,7 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CodeFixes;
 using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using System.Threading.Tasks;
 
 namespace BitCodeAnalyzer.Test.SystemAnalyzers
 {
@@ -13,7 +14,7 @@ namespace BitCodeAnalyzer.Test.SystemAnalyzers
     {
         [TestMethod]
         [TestCategory("Analyzer")]
-        public void FindClassesWithoutModifier()
+        public async Task FindClassesWithoutModifier()
         {
             const string sourceCodeWithClassWithoutModifier = @"
     namespace MyNamespace
@@ -36,12 +37,12 @@ namespace BitCodeAnalyzer.Test.SystemAnalyzers
                 Locations = new[] { new DiagnosticResultLocation(9, 9) }
             };
 
-            VerifyCSharpDiagnostic(sourceCodeWithClassWithoutModifier, classWithoutModifier);
+            await VerifyCSharpDiagnostic(sourceCodeWithClassWithoutModifier, classWithoutModifier);
         }
 
         [TestMethod]
         [TestCategory("CodeFixeProvider")]
-        public void AddPublicModifierTest()
+        public async Task AddPublicModifierTest()
         {
             const string sourceCodeWithClassWithoutModifier = @"
     namespace MyNamespace
@@ -71,7 +72,7 @@ namespace BitCodeAnalyzer.Test.SystemAnalyzers
         }
     }";
 
-            VerifyCSharpFix(sourceCodeWithClassWithoutModifier, fixedSourceCode);
+            await VerifyCSharpFix(sourceCodeWithClassWithoutModifier, fixedSourceCode);
         }
 
         protected override CodeFixProvider GetCSharpCodeFixProvider()

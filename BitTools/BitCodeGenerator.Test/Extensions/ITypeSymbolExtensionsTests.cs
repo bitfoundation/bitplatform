@@ -4,6 +4,7 @@ using BitTools.Core.Model;
 using Microsoft.CodeAnalysis;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace BitCodeGenerator.Test.Extensions
 {
@@ -11,7 +12,7 @@ namespace BitCodeGenerator.Test.Extensions
     public class ITypeSymbolExtensionsTests : CodeGeneratorTest
     {
         [TestMethod]
-        public void ITypeSymbolExtensionsShouldDetectUnderlyingTypeSymbolAsDesired()
+        public async Task ITypeSymbolExtensionsShouldDetectUnderlyingTypeSymbolAsDesired()
         {
             string dtoCode = @"
 public interface IDto {
@@ -37,7 +38,7 @@ public class SamplesController : DtoController<SampleDto>
 ";
             DefaultProjectDtosProvider dtosProvider = new DefaultProjectDtosProvider(new DefaultProjectDtoControllersProvider());
 
-            Dto dto = dtosProvider.GetProjectDtos(CreateProjectFromSourceCodes(dtoCode)).Single();
+            Dto dto = (await dtosProvider.GetProjectDtos(CreateProjectFromSourceCodes(dtoCode))).Single();
 
             Assert.AreEqual("Int32", dto.Properties.ElementAt(0).Type.GetUnderlyingTypeSymbol().Name);
             Assert.AreEqual("Int32", dto.Properties.ElementAt(1).Type.GetUnderlyingTypeSymbol().Name);
@@ -45,7 +46,7 @@ public class SamplesController : DtoController<SampleDto>
         }
 
         [TestMethod]
-        public void ITypeSymbolExtensionsShouldDetectVoidReturnTypeAsDesired()
+        public async Task ITypeSymbolExtensionsShouldDetectVoidReturnTypeAsDesired()
         {
             string controllerCode = @"
 
@@ -85,7 +86,7 @@ public class DtoController<TDto>
 ";
             DefaultProjectDtoControllersProvider controllersProvider = new DefaultProjectDtoControllersProvider();
 
-            DtoController controller = controllersProvider.GetProjectDtoControllersWithTheirOperations(CreateProjectFromSourceCodes(controllerCode)).Single();
+            DtoController controller = (await controllersProvider.GetProjectDtoControllersWithTheirOperations(CreateProjectFromSourceCodes(controllerCode))).Single();
 
             Assert.IsTrue(controller.Operations.ElementAt(0).ReturnType.IsVoid());
             Assert.IsTrue(controller.Operations.ElementAt(1).ReturnType.IsVoid());
@@ -94,7 +95,7 @@ public class DtoController<TDto>
         }
 
         [TestMethod]
-        public void ITypeSymbolExtensionsShouldDetectIsCollectionTypeAsDesired()
+        public async Task ITypeSymbolExtensionsShouldDetectIsCollectionTypeAsDesired()
         {
             string dtoCode = @"
 
@@ -128,7 +129,7 @@ public class SamplesController : DtoController<SampleDto>
 
             DefaultProjectDtosProvider dtosProvider = new DefaultProjectDtosProvider(new DefaultProjectDtoControllersProvider());
 
-            Dto dto = dtosProvider.GetProjectDtos(CreateProjectFromSourceCodes(dtoCode)).Single();
+            Dto dto = (await dtosProvider.GetProjectDtos(CreateProjectFromSourceCodes(dtoCode))).Single();
             Assert.IsFalse(dto.Properties.ElementAt(0).Type.IsCollectionType());
             Assert.IsFalse(dto.Properties.ElementAt(1).Type.IsCollectionType());
             Assert.IsFalse(dto.Properties.ElementAt(2).Type.IsCollectionType());
@@ -141,7 +142,7 @@ public class SamplesController : DtoController<SampleDto>
         }
 
         [TestMethod]
-        public void ITypeSymbolExtensionsShouldDetectIsQueryableTypeAsDesired()
+        public async Task ITypeSymbolExtensionsShouldDetectIsQueryableTypeAsDesired()
         {
             string dtoCode = @"
 public interface IDto {
@@ -174,7 +175,7 @@ public class SamplesController : DtoController<SampleDto>
 
             DefaultProjectDtosProvider dtosProvider = new DefaultProjectDtosProvider(new DefaultProjectDtoControllersProvider());
 
-            Dto dto = dtosProvider.GetProjectDtos(CreateProjectFromSourceCodes(dtoCode)).Single();
+            Dto dto = (await dtosProvider.GetProjectDtos(CreateProjectFromSourceCodes(dtoCode))).Single();
             Assert.IsFalse(dto.Properties.ElementAt(0).Type.IsQueryableType());
             Assert.IsFalse(dto.Properties.ElementAt(1).Type.IsQueryableType());
             Assert.IsFalse(dto.Properties.ElementAt(2).Type.IsQueryableType());
@@ -187,7 +188,7 @@ public class SamplesController : DtoController<SampleDto>
         }
 
         [TestMethod]
-        public void ITypeSymbolExtensionsShouldDetectNullableTypeSymbolAsDesired()
+        public async Task ITypeSymbolExtensionsShouldDetectNullableTypeSymbolAsDesired()
         {
             string dtoCode = @"
 public interface IDto {
@@ -213,7 +214,7 @@ public class SamplesController : DtoController<SampleDto>
 ";
             DefaultProjectDtosProvider dtosProvider = new DefaultProjectDtosProvider(new DefaultProjectDtoControllersProvider());
 
-            Dto dto = dtosProvider.GetProjectDtos(CreateProjectFromSourceCodes(dtoCode)).Single();
+            Dto dto = (await dtosProvider.GetProjectDtos(CreateProjectFromSourceCodes(dtoCode))).Single();
 
             Assert.IsFalse(dto.Properties.ElementAt(0).Type.IsNullable());
             Assert.IsTrue(dto.Properties.ElementAt(1).Type.IsNullable());
@@ -221,7 +222,7 @@ public class SamplesController : DtoController<SampleDto>
         }
 
         [TestMethod]
-        public void ITypeSymbolExtensionsShouldReturnEdmElementTypeNameAsDesired()
+        public async Task ITypeSymbolExtensionsShouldReturnEdmElementTypeNameAsDesired()
         {
             string dtoCode = @"
 
@@ -246,13 +247,13 @@ public class SamplesController : DtoController<SampleDto>
 ";
             DefaultProjectDtosProvider dtosProvider = new DefaultProjectDtosProvider(new DefaultProjectDtoControllersProvider());
 
-            Dto dto = dtosProvider.GetProjectDtos(CreateProjectFromSourceCodes(dtoCode)).Single();
+            Dto dto = (await dtosProvider.GetProjectDtos(CreateProjectFromSourceCodes(dtoCode))).Single();
 
             Assert.AreEqual("Edm.Int32", (dto.Properties.ElementAt(0).Type as INamedTypeSymbol).GetEdmElementTypeName());
         }
 
         [TestMethod]
-        public void ITypeSymbolExtensionsShouldReturnEdmTypeNameAsDesired()
+        public async Task ITypeSymbolExtensionsShouldReturnEdmTypeNameAsDesired()
         {
             string dtoCode = @"
 public interface IDto {
@@ -288,7 +289,7 @@ public class SamplesController : DtoController<SampleDto>
 ";
             DefaultProjectDtosProvider dtosProvider = new DefaultProjectDtosProvider(new DefaultProjectDtoControllersProvider());
 
-            Dto dto = dtosProvider.GetProjectDtos(CreateProjectFromSourceCodes(dtoCode)).Last();
+            Dto dto = (await dtosProvider.GetProjectDtos(CreateProjectFromSourceCodes(dtoCode))).Last();
 
             Assert.AreEqual("Edm.Int32", (dto.Properties.ElementAt(0).Type as INamedTypeSymbol).GetEdmTypeName(useArrayForIEnumerableTypes: true));
             Assert.AreEqual("Edm.String", (dto.Properties.ElementAt(1).Type as INamedTypeSymbol).GetEdmTypeName(useArrayForIEnumerableTypes: true));
@@ -302,7 +303,7 @@ public class SamplesController : DtoController<SampleDto>
         }
 
         [TestMethod]
-        public void ITypeSymbolExtensionsShouldReturnTypeScriptElementTypeNameAsDesired()
+        public async Task ITypeSymbolExtensionsShouldReturnTypeScriptElementTypeNameAsDesired()
         {
             string dtoCode = @"
 
@@ -327,13 +328,13 @@ public class SamplesController : DtoController<SampleDto>
 ";
             DefaultProjectDtosProvider dtosProvider = new DefaultProjectDtosProvider(new DefaultProjectDtoControllersProvider());
 
-            Dto dto = dtosProvider.GetProjectDtos(CreateProjectFromSourceCodes(dtoCode)).Single();
+            Dto dto = (await dtosProvider.GetProjectDtos(CreateProjectFromSourceCodes(dtoCode))).Single();
 
             Assert.AreEqual("number", (dto.Properties.ElementAt(0).Type as INamedTypeSymbol).GetTypeScriptElementTypeName());
         }
 
         [TestMethod]
-        public void ITypeSymbolExtensionsShouldReturnTypeScriptTypeNameAsDesired()
+        public async Task ITypeSymbolExtensionsShouldReturnTypeScriptTypeNameAsDesired()
         {
             string dtoCode = @"
 
@@ -369,7 +370,7 @@ public class SamplesController : DtoController<SampleDto>
 ";
             DefaultProjectDtosProvider dtosProvider = new DefaultProjectDtosProvider(new DefaultProjectDtoControllersProvider());
 
-            Dto dto = dtosProvider.GetProjectDtos(CreateProjectFromSourceCodes(dtoCode)).Last();
+            Dto dto = (await dtosProvider.GetProjectDtos(CreateProjectFromSourceCodes(dtoCode))).Last();
 
             Assert.AreEqual("number", (dto.Properties.ElementAt(0).Type as INamedTypeSymbol).GetTypescriptTypeName(useArrayForIEnumerableTypes: true));
             Assert.AreEqual("string", (dto.Properties.ElementAt(1).Type as INamedTypeSymbol).GetTypescriptTypeName(useArrayForIEnumerableTypes: true));
@@ -382,7 +383,7 @@ public class SamplesController : DtoController<SampleDto>
         }
 
         [TestMethod]
-        public virtual void ITypeSymbolExtensionsShouldFindDtosAsDesired()
+        public virtual async Task ITypeSymbolExtensionsShouldFindDtosAsDesired()
         {
             string dtoCode = @"
 public interface IDto {
@@ -432,7 +433,7 @@ public class People3Controller : DtoController<Person3>
 ";
             DefaultProjectDtosProvider dtosProvider = new DefaultProjectDtosProvider(new DefaultProjectDtoControllersProvider());
 
-            Dto[] dtos = dtosProvider.GetProjectDtos(CreateProjectFromSourceCodes(dtoCode)).ToArray();
+            Dto[] dtos = (await dtosProvider.GetProjectDtos(CreateProjectFromSourceCodes(dtoCode))).ToArray();
 
             Assert.IsTrue(new[] { "Person3", "Person2", "Person" }.SequenceEqual(dtos.Select(d => d.DtoSymbol.Name).ToArray()));
         }

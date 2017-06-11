@@ -9,6 +9,7 @@ using System.Linq;
 using System.Text;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Reflection;
+using System.Threading.Tasks;
 
 namespace BitCodeAnalyzer.Test.Helpers
 {
@@ -39,9 +40,9 @@ namespace BitCodeAnalyzer.Test.Helpers
         /// Note: input a DiagnosticResult for each Diagnostic expected
         /// </summary>
         /// <param name="expected"> DiagnosticResults that should appear after the analyzer is run on the source</param>
-        protected void VerifyCSharpDiagnostic(params DiagnosticResult[] expected)
+        protected async Task VerifyCSharpDiagnostic(params DiagnosticResult[] expected)
         {
-            VerifyDiagnostics(new string[] { }, LanguageNames.CSharp, GetCSharpDiagnosticAnalyzer(), expected);
+            await VerifyDiagnostics(new string[] { }, LanguageNames.CSharp, GetCSharpDiagnosticAnalyzer(), expected);
         }
 
         /// <summary>
@@ -50,9 +51,9 @@ namespace BitCodeAnalyzer.Test.Helpers
         /// </summary>
         /// <param name="source">A class in the form of a string to run the analyzer on</param>
         /// <param name="expected"> DiagnosticResults that should appear after the analyzer is run on the source</param>
-        protected void VerifyCSharpDiagnostic(string source, params DiagnosticResult[] expected)
+        protected async Task VerifyCSharpDiagnostic(string source, params DiagnosticResult[] expected)
         {
-            VerifyDiagnostics(new[] { source }, LanguageNames.CSharp, GetCSharpDiagnosticAnalyzer(), expected);
+            await VerifyDiagnostics(new[] { source }, LanguageNames.CSharp, GetCSharpDiagnosticAnalyzer(), expected);
         }
 
         /// <summary>
@@ -61,20 +62,9 @@ namespace BitCodeAnalyzer.Test.Helpers
         /// </summary>
         /// <param name="sources">An array of strings to create source documents from to run the analyzers on</param>
         /// <param name="expected">DiagnosticResults that should appear after the analyzer is run on the sources</param>
-        protected void VerifyCSharpDiagnostic(string[] sources, params DiagnosticResult[] expected)
+        protected async Task VerifyCSharpDiagnostic(string[] sources, params DiagnosticResult[] expected)
         {
-            VerifyDiagnostics(sources, LanguageNames.CSharp, GetCSharpDiagnosticAnalyzer(), expected);
-        }
-
-        /// <summary>
-        /// Called to test a VB DiagnosticAnalyzer when applied on the inputted strings as a source
-        /// Note: input a DiagnosticResult for each Diagnostic expected
-        /// </summary>
-        /// <param name="sources">An array of strings to create source documents from to run the analyzers on</param>
-        /// <param name="expected">DiagnosticResults that should appear after the analyzer is run on the sources</param>
-        protected void VerifyBasicDiagnostic(string[] sources, params DiagnosticResult[] expected)
-        {
-            VerifyDiagnostics(sources, LanguageNames.VisualBasic, GetBasicDiagnosticAnalyzer(), expected);
+            await VerifyDiagnostics(sources, LanguageNames.CSharp, GetCSharpDiagnosticAnalyzer(), expected);
         }
 
         /// <summary>
@@ -85,9 +75,9 @@ namespace BitCodeAnalyzer.Test.Helpers
         /// <param name="language">The language of the classes represented by the source strings</param>
         /// <param name="analyzer">The analyzer to be run on the source code</param>
         /// <param name="expected">DiagnosticResults that should appear after the analyzer is run on the sources</param>
-        private void VerifyDiagnostics(string[] sources, string language, DiagnosticAnalyzer analyzer, params DiagnosticResult[] expected)
+        private async Task VerifyDiagnostics(string[] sources, string language, DiagnosticAnalyzer analyzer, params DiagnosticResult[] expected)
         {
-            Diagnostic[] diagnostics = GetSortedDiagnostics(sources, language, analyzer);
+            Diagnostic[] diagnostics = await GetSortedDiagnostics(sources, language, analyzer);
             VerifyDiagnosticResults(diagnostics, analyzer, expected);
         }
 
@@ -261,7 +251,6 @@ namespace BitCodeAnalyzer.Test.Helpers
 
         public const string DefaultFilePathPrefix = "Test";
         public const string CSharpDefaultFileExt = "cs";
-        public const string VisualBasicDefaultExt = "vb";
         public const string TestProjectName = "TestProject";
 
         #region  Get Diagnostics
@@ -273,9 +262,9 @@ namespace BitCodeAnalyzer.Test.Helpers
         /// <param name="language">The language the source classes are in</param>
         /// <param name="analyzer">The analyzer to be run on the sources</param>
         /// <returns>An IEnumerable of Diagnostics that surfaced in the source code, sorted by Location</returns>
-        private Diagnostic[] GetSortedDiagnostics(string[] sources, string language, DiagnosticAnalyzer analyzer)
+        private async Task<Diagnostic[]> GetSortedDiagnostics(string[] sources, string language, DiagnosticAnalyzer analyzer)
         {
-            return GetSortedDiagnosticsFromDocuments(analyzer, GetDocuments(sources, language));
+            return await GetSortedDiagnosticsFromDocuments(analyzer, await GetDocuments(sources, language));
         }
 
         /// <summary>
@@ -285,7 +274,7 @@ namespace BitCodeAnalyzer.Test.Helpers
         /// <param name="analyzer">The analyzer to run on the documents</param>
         /// <param name="documents">The Documents that the analyzer will be run on</param>
         /// <returns>An IEnumerable of Diagnostics that surfaced in the source code, sorted by Location</returns>
-        protected Diagnostic[] GetSortedDiagnosticsFromDocuments(DiagnosticAnalyzer analyzer, Document[] documents)
+        protected async Task<Diagnostic[]> GetSortedDiagnosticsFromDocuments(DiagnosticAnalyzer analyzer, Document[] documents)
         {
             HashSet<Project> projects = new HashSet<Project>();
             foreach (Document document in documents)
@@ -296,8 +285,8 @@ namespace BitCodeAnalyzer.Test.Helpers
             List<Diagnostic> diagnostics = new List<Diagnostic>();
             foreach (Project project in projects)
             {
-                CompilationWithAnalyzers compilationWithAnalyzers = project.GetCompilationAsync().Result.WithAnalyzers(ImmutableArray.Create(analyzer));
-                ImmutableArray<Diagnostic> diags = compilationWithAnalyzers.GetAnalyzerDiagnosticsAsync().Result;
+                CompilationWithAnalyzers compilationWithAnalyzers = (await project.GetCompilationAsync()).WithAnalyzers(ImmutableArray.Create(analyzer));
+                ImmutableArray<Diagnostic> diags = await compilationWithAnalyzers.GetAnalyzerDiagnosticsAsync();
                 foreach (Diagnostic diag in diags)
                 {
                     if (diag.Location == Location.None || diag.Location.IsInMetadata)
@@ -308,7 +297,7 @@ namespace BitCodeAnalyzer.Test.Helpers
                     {
                         foreach (Document document in documents)
                         {
-                            SyntaxTree tree = document.GetSyntaxTreeAsync().Result;
+                            SyntaxTree tree = await document.GetSyntaxTreeAsync();
                             if (tree == diag.Location.SourceTree)
                             {
                                 diagnostics.Add(diag);
@@ -342,14 +331,14 @@ namespace BitCodeAnalyzer.Test.Helpers
         /// <param name="sources">Classes in the form of strings</param>
         /// <param name="language">The language the source code is in</param>
         /// <returns>A Tuple containing the Documents produced from the sources and their TextSpans if relevant</returns>
-        private Document[] GetDocuments(string[] sources, string language)
+        private async Task<Document[]> GetDocuments(string[] sources, string language)
         {
-            if (language != LanguageNames.CSharp && language != LanguageNames.VisualBasic)
+            if (language != LanguageNames.CSharp)
             {
                 throw new ArgumentException("Unsupported Language");
             }
 
-            Project project = CreateProject(sources, language);
+            Project project = await CreateProject(sources, language);
             Document[] documents = project.Documents.ToArray();
 
             return documents;
@@ -361,9 +350,9 @@ namespace BitCodeAnalyzer.Test.Helpers
         /// <param name="source">Classes in the form of a string</param>
         /// <param name="language">The language the source code is in</param>
         /// <returns>A Document created from the source string</returns>
-        protected Document CreateDocument(string source, string language = LanguageNames.CSharp)
+        protected async Task<Document> CreateDocument(string source, string language = LanguageNames.CSharp)
         {
-            return CreateProject(new[] { source }, language).Documents.First();
+            return (await CreateProject(new[] { source }, language)).Documents.First();
         }
 
         /// <summary>
@@ -372,10 +361,10 @@ namespace BitCodeAnalyzer.Test.Helpers
         /// <param name="sources">Classes in the form of strings</param>
         /// <param name="language">The language the source code is in</param>
         /// <returns>A Project created out of the Documents created from the source strings</returns>
-        public virtual Project CreateProject(string[] sources, string language = LanguageNames.CSharp)
+        public virtual async Task<Project> CreateProject(string[] sources, string language = LanguageNames.CSharp)
         {
             string fileNamePrefix = DefaultFilePathPrefix;
-            string fileExt = language == LanguageNames.CSharp ? CSharpDefaultFileExt : VisualBasicDefaultExt;
+            string fileExt = CSharpDefaultFileExt;
 
             ProjectId projectId = ProjectId.CreateNewId(debugName: TestProjectName);
 

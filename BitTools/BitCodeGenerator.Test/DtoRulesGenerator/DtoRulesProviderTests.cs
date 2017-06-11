@@ -5,6 +5,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using BitCodeGenerator.Test.Helpers;
 using BitTools.Core.Model;
 using BitCodeGenerator.Implementations;
+using System.Threading.Tasks;
 
 namespace BitCodeGenerator.Test.DtoRulesGenerator
 {
@@ -12,7 +13,7 @@ namespace BitCodeGenerator.Test.DtoRulesGenerator
     public class DtoRulesProviderTests : CodeGeneratorTest
     {
         [TestMethod, TestCategory("TSDtoRulesGenerator")]
-        public void TSDtoRulesGeneratorShouldFindDtoRules()
+        public async Task TSDtoRulesGeneratorShouldFindDtoRules()
         {
             string testCode = @"
 
@@ -69,7 +70,7 @@ namespace BitCodeGenerator.Test.DtoRulesGenerator
 ";
             Project proj = CreateProjectFromSourceCodes(Codes.BitDtoRules, testCode);
 
-            IList<DtoRules> allDtoRules = new DefaultProjectDtoRulesProvider().GetProjectAllDtoRules(proj);
+            IList<DtoRules> allDtoRules = await new DefaultProjectDtoRulesProvider().GetProjectAllDtoRules(proj);
 
             Assert.AreEqual(2, allDtoRules.Count);
             Assert.AreEqual("ProductDtoRules", allDtoRules.ElementAt(0).Name);

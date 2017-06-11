@@ -16,7 +16,7 @@ namespace BitCodeGenerator.Test.Implementations
         [TestMethod, TestCategory("BitCodeGenerator")]
         public virtual async Task DefaultBitCodeGeneratorMappingsProviderShouldReturnDesiredMappings()
         {
-            using (Workspace workspace = GetWorkspace())
+            using (Workspace workspace = await GetWorkspace())
             {
                 Solution solution = workspace.CurrentSolution;
 
@@ -36,7 +36,7 @@ namespace BitCodeGenerator.Test.Implementations
         [TestMethod, TestCategory("BitCodeGenerator")]
         public virtual async Task DefaultBitCodeGeneratorMappingsProviderShouldReturnNoMappings()
         {
-            using (Workspace workspace = GetWorkspace())
+            using (Workspace workspace = await GetWorkspace())
             {
                 Solution solution = workspace.CurrentSolution;
 

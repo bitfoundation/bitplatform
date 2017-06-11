@@ -3,6 +3,7 @@ using BitCodeAnalyzer.Test.Helpers;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using System.Threading.Tasks;
 
 namespace BitCodeAnalyzer.Test.BitAnalyzers.Dto
 {
@@ -11,7 +12,7 @@ namespace BitCodeAnalyzer.Test.BitAnalyzers.Dto
     {
         [TestMethod]
         [TestCategory("Analyzer")]
-        public void FindDtoAndComplexClassPublicDefaultCtor()
+        public async Task FindDtoAndComplexClassPublicDefaultCtor()
         {
             const string sourceCodeWithDtoAndComplexClassPublicDefaultCtor = @"
                 public class ClassWithPublicCtorWhichIsNotValidDueHavingParameter : IDto
@@ -118,7 +119,7 @@ namespace BitCodeAnalyzer.Test.BitAnalyzers.Dto
                  }
             };
 
-            VerifyCSharpDiagnostic(sourceCodeWithDtoAndComplexClassPublicDefaultCtor, errors);
+            await VerifyCSharpDiagnostic(sourceCodeWithDtoAndComplexClassPublicDefaultCtor, errors);
         }
 
         protected override DiagnosticAnalyzer GetCSharpDiagnosticAnalyzer()

@@ -16,14 +16,13 @@ namespace BitCodeGenerator.Test.Implementations
         [TestMethod]
         public virtual async Task DefaultProjectDtosProviderShouldReturnDtosAsDesired()
         {
-            using (Workspace workspace = GetWorkspace())
+            using (Workspace workspace = await GetWorkspace())
             {
                 Solution solution = workspace.CurrentSolution;
 
                 IProjectDtosProvider projectDtosProvider = new DefaultProjectDtosProvider(new DefaultProjectDtoControllersProvider());
 
-                IList<Dto> dtos = projectDtosProvider.GetProjectDtos(solution.Projects.Single(p => p.Name == "Bit.Model"))
-                    .Union(projectDtosProvider.GetProjectDtos(solution.Projects.Single(p => p.Name == "Bit.Api"))).ToList();
+                IList<Dto> dtos = (await projectDtosProvider.GetProjectDtos(solution.Projects.Single(p => p.Name == "Bit.Model"|| p.Name == "Bit.Api"))).ToList();
 
                 Assert.IsTrue(dtos.Select(d => d.DtoSymbol.Name).SequenceEqual(new[] { "UserSetting", "JobInfoDto", "ClientLogDto" }));
             }
@@ -32,13 +31,13 @@ namespace BitCodeGenerator.Test.Implementations
         [TestMethod]
         public virtual async Task DefaultProjectDtosProviderShouldReturnDtosOfTestProjectAsDesired()
         {
-            using (Workspace workspace = GetWorkspace())
+            using (Workspace workspace = await GetWorkspace())
             {
                 Solution solution = workspace.CurrentSolution;
 
                 IProjectDtosProvider projectDtosProvider = new DefaultProjectDtosProvider(new DefaultProjectDtoControllersProvider());
 
-                IList<Dto> dtos = projectDtosProvider.GetProjectDtos(solution.Projects.Single(p => p.Name == "Bit.Tests")).ToList();
+                IList<Dto> dtos = (await projectDtosProvider.GetProjectDtos(solution.Projects.Single(p => p.Name == "Bit.Tests"))).ToList();
 
                 Assert.AreEqual(13, dtos.Count);
             }
@@ -72,7 +71,7 @@ public class TestController : DtoController<TestDto>
 
             IProjectDtosProvider projectDtosProvider = new DefaultProjectDtosProvider(new DefaultProjectDtoControllersProvider());
 
-            Assert.AreEqual(1, projectDtosProvider.GetProjectDtos(CreateProjectFromSourceCodes(sourceCodeOfDtoControllerWithActionAndParameter)).Single().Properties.Count);
+            Assert.AreEqual(1, (await projectDtosProvider.GetProjectDtos(CreateProjectFromSourceCodes(sourceCodeOfDtoControllerWithActionAndParameter))).Single().Properties.Count);
         }
 
         [TestMethod]
@@ -104,7 +103,7 @@ public class TestController : DtoController<TestDto>
 
             IProjectDtosProvider projectDtosProvider = new DefaultProjectDtosProvider(new DefaultProjectDtoControllersProvider());
 
-            Assert.AreEqual(1, projectDtosProvider.GetProjectDtos(CreateProjectFromSourceCodes(sourceCodeOfDtoControllerWithActionAndParameter)).Single().Properties.Count);
+            Assert.AreEqual(1, (await projectDtosProvider.GetProjectDtos(CreateProjectFromSourceCodes(sourceCodeOfDtoControllerWithActionAndParameter))).Single().Properties.Count);
         }
 
         [TestMethod]
@@ -135,11 +134,11 @@ public class TestController : DtoController<TestDto>
 
             IProjectDtosProvider projectDtosProvider = new DefaultProjectDtosProvider(new DefaultProjectDtoControllersProvider());
 
-            Assert.AreEqual(0, projectDtosProvider.GetProjectDtos(CreateProjectFromSourceCodes(sourceCodeOfDtoControllerWithActionAndParameter)).Single().Properties.Count);
+            Assert.AreEqual(0, (await projectDtosProvider.GetProjectDtos(CreateProjectFromSourceCodes(sourceCodeOfDtoControllerWithActionAndParameter))).Single().Properties.Count);
         }
 
         [TestMethod]
-        public virtual void DefaultDtosProviderShouldReturnComplexTypesOfSourceProjectsOnly()
+        public virtual async Task DefaultDtosProviderShouldReturnComplexTypesOfSourceProjectsOnly()
         {
             string sourceProjectCodes = @"
 
@@ -208,7 +207,7 @@ public class ComplexObj2
 
             DefaultProjectDtosProvider projectDtosProvider = new DefaultProjectDtosProvider(new DefaultProjectDtoControllersProvider());
 
-            Dto[] dtos = projectDtosProvider.GetProjectDtos(sourceProject).ToArray();
+            Dto[] dtos = (await projectDtosProvider.GetProjectDtos(sourceProject)).ToArray();
 
             Assert.IsTrue(dtos.Select(d => d.DtoSymbol.Name).SequenceEqual(new[] { "ComplexObj3", "ComplexObj", "TestComplexDto" }));
         }
@@ -267,7 +266,7 @@ public class XController : DtoController<XDto>
 
             IProjectDtosProvider projectDtosProvider = new DefaultProjectDtosProvider(new DefaultProjectDtoControllersProvider());
 
-            IList<Dto> result = projectDtosProvider.GetProjectDtos(CreateProjectFromSourceCodes(sourceCodes));
+            IList<Dto> result = await projectDtosProvider.GetProjectDtos(CreateProjectFromSourceCodes(sourceCodes));
 
             Assert.IsTrue(result.Select(dto => dto.DtoSymbol.Name).SequenceEqual(new[] { "CityDto", "XDto", "PersonDto", "CustomerDto" }));
         }
@@ -317,7 +316,7 @@ public class EmployeesController : PeopleController<EmployeeDto>
 ";
             IProjectDtosProvider projectDtosProvider = new DefaultProjectDtosProvider(new DefaultProjectDtoControllersProvider());
 
-            IList<Dto> result = projectDtosProvider.GetProjectDtos(CreateProjectFromSourceCodes(sourceCodes));
+            IList<Dto> result = await projectDtosProvider.GetProjectDtos(CreateProjectFromSourceCodes(sourceCodes));
 
             Assert.IsTrue(result.Select(dto => dto.DtoSymbol.Name).SequenceEqual(new[] { "PersonDto", "EmployeeDto", "CustomerDto" }));
         }

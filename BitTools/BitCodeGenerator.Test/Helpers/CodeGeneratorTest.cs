@@ -45,13 +45,13 @@ namespace BitCodeGenerator.Test.Helpers
             return CreateProjectFromSourceCodesWithExistingSolution(solution, sourceCodes);
         }
 
-        public virtual Workspace GetWorkspace()
+        public virtual async Task<Workspace> GetWorkspace()
         {
             string solutionPath = Path.Combine(Environment.CurrentDirectory, @"..\..\..\..\Bit.sln");
 
             MSBuildWorkspace workspace = MSBuildWorkspace.Create();
 
-            workspace.OpenSolutionAsync(solutionPath, CancellationToken.None).Wait();
+            await workspace.OpenSolutionAsync(solutionPath, CancellationToken.None);
 
             return workspace;
         }

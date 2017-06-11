@@ -4,6 +4,7 @@ using Microsoft.CodeAnalysis;
 using BitCodeGenerator.Test.Helpers;
 using BitCodeGenerator.Implementations;
 using BitTools.Core.Model;
+using System.Threading.Tasks;
 
 namespace BitCodeGenerator.Test.Extensions
 {
@@ -12,7 +13,7 @@ namespace BitCodeGenerator.Test.Extensions
     {
         [TestMethod]
         [Ignore]
-        public void ISymbolExtensionsShouldReturnCommentsAsDesired()
+        public async Task ISymbolExtensionsShouldReturnCommentsAsDesired()
         {
             string dtoCode = @"
 
@@ -41,7 +42,7 @@ public class SamplesController : DtoController<SampleDto>
 ";
             DefaultProjectDtosProvider dtosProvider = new DefaultProjectDtosProvider(new DefaultProjectDtoControllersProvider());
 
-            Dto dto = dtosProvider.GetProjectDtos(CreateProjectFromSourceCodes(dtoCode)).Single();
+            Dto dto = (await dtosProvider.GetProjectDtos(CreateProjectFromSourceCodes(dtoCode))).Single();
 
             Assert.AreEqual(@"/**
     Test

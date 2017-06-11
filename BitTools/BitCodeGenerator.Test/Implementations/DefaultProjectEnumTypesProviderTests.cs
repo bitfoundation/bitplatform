@@ -81,7 +81,7 @@ public class DtoWithEnumController : DtoController<DtoWithEnum>
 
             Project proj = CreateProjectFromSourceCodes(sourceCodes);
 
-            IList<EnumType> result = projectEnumTypesProvider.GetProjectEnumTypes(proj, new[] { proj });
+            IList<EnumType> result = await projectEnumTypesProvider.GetProjectEnumTypes(proj, new[] { proj });
 
             Assert.IsTrue(result.Select(enumType => enumType.EnumTypeSymbol.Name).SequenceEqual(new[] { "TestGender", "TestGender2" }));
 

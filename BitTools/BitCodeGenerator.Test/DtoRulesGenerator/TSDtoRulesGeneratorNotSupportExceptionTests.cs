@@ -5,17 +5,18 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using BitCodeGenerator.Test.Helpers;
 using BitTools.Core.Model;
 using BitCodeGenerator.Implementations;
+using System.Threading.Tasks;
 
 namespace BitCodeGenerator.Test.DtoRulesGenerator
 {
     [TestClass]
     public class TSDtoRulesGeneratorNotSupportExceptionTests : CodeGeneratorTest
     {
-        public void TestNotSupported(string testCode, string message)
+        public async Task TestNotSupported(string testCode, string message)
         {
             Project proj = CreateProjectFromSourceCodes(Codes.BitDtoRules, testCode);
 
-            DtoRules productDtoRules = new DefaultProjectDtoRulesProvider().GetProjectAllDtoRules(proj).Single();
+            DtoRules productDtoRules = (await new DefaultProjectDtoRulesProvider().GetProjectAllDtoRules(proj)).Single();
 
             try
             {
@@ -30,7 +31,7 @@ namespace BitCodeGenerator.Test.DtoRulesGenerator
         }
 
         [TestMethod, TestCategory("TSDtoRulesGenerator")]
-        public void TSDtoRulesGeneratorDoesNotSupportMultipleConstructors()
+        public async Task TSDtoRulesGeneratorDoesNotSupportMultipleConstructors()
         {
             string testCode = @"
 
@@ -56,11 +57,11 @@ namespace BitCodeGenerator.Test.DtoRulesGenerator
 
 ";
 
-            TestNotSupported(testCode, "Multiple constructor is not supported");
+            await TestNotSupported(testCode, "Multiple constructor is not supported");
         }
 
         [TestMethod, TestCategory("TSDtoRulesGenerator")]
-        public void TSDtoRulesGeneratorDoesNotSupportMethodOverloading()
+        public async Task TSDtoRulesGeneratorDoesNotSupportMethodOverloading()
         {
             string testCode = @"
 
@@ -85,11 +86,11 @@ namespace BitCodeGenerator.Test.DtoRulesGenerator
     }
 
 ";
-            TestNotSupported(testCode, "Method overloading is not supported");
+            await TestNotSupported(testCode, "Method overloading is not supported");
         }
 
         [TestMethod, TestCategory("TSDtoRulesGenerator")]
-        public void TSDtoRulesGeneratorDoesNotSupportRefParameters()
+        public async Task TSDtoRulesGeneratorDoesNotSupportRefParameters()
         {
             string testCode = @"
 
@@ -113,11 +114,11 @@ namespace BitCodeGenerator.Test.DtoRulesGenerator
     }
 
 ";
-            TestNotSupported(testCode, "Ref parameter is not supported");
+            await TestNotSupported(testCode, "Ref parameter is not supported");
         }
 
         [TestMethod, TestCategory("TSDtoRuleGenerator")]
-        public void TSDtoRulesGeneratorDoesNotSupportOutParameters()
+        public async Task TSDtoRulesGeneratorDoesNotSupportOutParameters()
         {
             string testCode = @"
 
@@ -141,11 +142,11 @@ namespace BitCodeGenerator.Test.DtoRulesGenerator
     }
 
 ";
-            TestNotSupported(testCode, "Out parameter is not supported");
+            await TestNotSupported(testCode, "Out parameter is not supported");
         }
 
         [TestMethod, TestCategory("TSDtoRulesGenerator")]
-        public void TSDtoRulesGeneratorDoesNotSupportAnonymousMethod()
+        public async Task TSDtoRulesGeneratorDoesNotSupportAnonymousMethod()
         {
             string testCode = @"
 
@@ -175,11 +176,11 @@ namespace BitCodeGenerator.Test.DtoRulesGenerator
     }
 
 ";
-            TestNotSupported(testCode, "Anonymous method expression is not supported");
+            await TestNotSupported(testCode, "Anonymous method expression is not supported");
         }
 
         [TestMethod, TestCategory("TSDtoRulesGenerator")]
-        public void TSDtoRulesGeneratorDoesNotSupportCast()
+        public async Task TSDtoRulesGeneratorDoesNotSupportCast()
         {
             string testCode = @"
 
@@ -207,11 +208,11 @@ namespace BitCodeGenerator.Test.DtoRulesGenerator
     }
 
 ";
-            TestNotSupported(testCode, "Cast expression is not supported");
+            await TestNotSupported(testCode, "Cast expression is not supported");
         }
 
         [TestMethod, TestCategory("TSDtoRulesGenerator")]
-        public void TSDtoRulesGeneratorDoesNotSupportChecked()
+        public async Task TSDtoRulesGeneratorDoesNotSupportChecked()
         {
             string testCode = @"
 
@@ -241,11 +242,11 @@ namespace BitCodeGenerator.Test.DtoRulesGenerator
     }
 
 ";
-            TestNotSupported(testCode, "Checked statement is not supported");
+            await TestNotSupported(testCode, "Checked statement is not supported");
         }
 
         [TestMethod, TestCategory("TSDtoRulesGenerator")]
-        public void TSDtoRulesGeneratorDoesNotSupportDestructor()
+        public async Task TSDtoRulesGeneratorDoesNotSupportDestructor()
         {
             string testCode = @"
 
@@ -272,11 +273,11 @@ namespace BitCodeGenerator.Test.DtoRulesGenerator
     }
 
 ";
-            TestNotSupported(testCode, "Destructor declaration is not supported");
+            await TestNotSupported(testCode, "Destructor declaration is not supported");
         }
 
         [TestMethod, TestCategory("TSDtoRulesGenerator")]
-        public void TSDtoRulesGeneratorDoesNotSupportEventDeclaration()
+        public async Task TSDtoRulesGeneratorDoesNotSupportEventDeclaration()
         {
             string testCode = @"
 
@@ -300,11 +301,11 @@ namespace BitCodeGenerator.Test.DtoRulesGenerator
     }
 
 ";
-            TestNotSupported(testCode, "Event field declaration is not supported");
+            await TestNotSupported(testCode, "Event field declaration is not supported");
         }
 
         [TestMethod, TestCategory("TSDtoRulesGenerator")]
-        public void TSDtoRulesGeneratorDoesNotSupportGoTo()
+        public async Task TSDtoRulesGeneratorDoesNotSupportGoTo()
         {
             string testCode = @"
 
@@ -337,11 +338,11 @@ namespace BitCodeGenerator.Test.DtoRulesGenerator
 
 ";
 
-            TestNotSupported(testCode, "Go to is not supported");
+            await TestNotSupported(testCode, "Go to is not supported");
         }
 
         [TestMethod, TestCategory("TSDtoRulesGenerator")]
-        public void TSDtoRulesGeneratorDoesNotSupportLabeledStatement()
+        public async Task TSDtoRulesGeneratorDoesNotSupportLabeledStatement()
         {
             string testCode = @"
 
@@ -371,12 +372,12 @@ namespace BitCodeGenerator.Test.DtoRulesGenerator
     }
 
 ";
-            TestNotSupported(testCode, "Labeled statements is not supported");
+            await TestNotSupported(testCode, "Labeled statements is not supported");
         }
 
 
         [TestMethod, TestCategory("TSDtoRulesGenerator")]
-        public void TSDtoRulesGeneratorDoesNotSupportLock()
+        public async Task TSDtoRulesGeneratorDoesNotSupportLock()
         {
             string testCode = @"
 
@@ -407,11 +408,11 @@ namespace BitCodeGenerator.Test.DtoRulesGenerator
 
 ";
 
-            TestNotSupported(testCode, "Lock statement is not supported");
+            await TestNotSupported(testCode, "Lock statement is not supported");
         }
 
         [TestMethod, TestCategory("TSDtoRulesGenerator")]
-        public void TSDtoRulesGeneratorDoesNotSupportQuerySyntaxLinq()
+        public async Task TSDtoRulesGeneratorDoesNotSupportQuerySyntaxLinq()
         {
             string testCode = @"
 
@@ -440,11 +441,11 @@ namespace BitCodeGenerator.Test.DtoRulesGenerator
 
 ";
 
-            TestNotSupported(testCode, "Query syntax linq is not supported");
+            await TestNotSupported(testCode, "Query syntax linq is not supported");
         }
 
         [TestMethod, TestCategory("TSDtoRulesGenerator")]
-        public void TSDtoRulesGeneratorDoesNotSupportRegion()
+        public async Task TSDtoRulesGeneratorDoesNotSupportRegion()
         {
             string testCode = @"
 
@@ -473,11 +474,11 @@ namespace BitCodeGenerator.Test.DtoRulesGenerator
 
 ";
 
-            TestNotSupported(testCode, "Region directive is not supported");
+            await TestNotSupported(testCode, "Region directive is not supported");
         }
 
         [TestMethod, TestCategory("TSDtoRulesGenerator")]
-        public void TSDtoRulesGeneratorDoesNotSupportSizeOf()
+        public async Task TSDtoRulesGeneratorDoesNotSupportSizeOf()
         {
             string testCode = @"
 
@@ -505,11 +506,11 @@ namespace BitCodeGenerator.Test.DtoRulesGenerator
 
 ";
 
-            TestNotSupported(testCode, "SizeOf is not supported");
+            await TestNotSupported(testCode, "SizeOf is not supported");
         }
 
         [TestMethod, TestCategory("TSDtoRulesGenerator")]
-        public void TSDtoRulesGeneratorDoesNotSupportTypeOf()
+        public async Task TSDtoRulesGeneratorDoesNotSupportTypeOf()
         {
             string testCode = @"
 
@@ -537,11 +538,11 @@ namespace BitCodeGenerator.Test.DtoRulesGenerator
 
 ";
 
-            TestNotSupported(testCode, "Type Of expression is not supported");
+            await TestNotSupported(testCode, "Type Of expression is not supported");
         }
 
         [TestMethod, TestCategory("TSDtoRulesGenerator")]
-        public void TSDtoRulesGeneratorDoesNotSupportUnsafe()
+        public async Task TSDtoRulesGeneratorDoesNotSupportUnsafe()
         {
             string testCode = @"
 
@@ -571,11 +572,11 @@ namespace BitCodeGenerator.Test.DtoRulesGenerator
     }
 
 ";
-            TestNotSupported(testCode, "Unsafe statement is not supported");
+            await TestNotSupported(testCode, "Unsafe statement is not supported");
         }
 
         [TestMethod, TestCategory("TSDtoRulesGenerator")]
-        public void TSDtoRulesGeneratorDoesNotSupportYield()
+        public async Task TSDtoRulesGeneratorDoesNotSupportYield()
         {
             string testCode = @"
 
@@ -602,11 +603,11 @@ namespace BitCodeGenerator.Test.DtoRulesGenerator
     }
 
 ";
-            TestNotSupported(testCode, "Yield statement is not supported");
+            await TestNotSupported(testCode, "Yield statement is not supported");
         }
 
         [TestMethod, TestCategory("TSDtoRulesGenerator")]
-        public void TSDtoRulesGeneratorDoesNotSupportAwait()
+        public async Task TSDtoRulesGeneratorDoesNotSupportAwait()
         {
             string testCode = @"
 
@@ -633,11 +634,11 @@ namespace BitCodeGenerator.Test.DtoRulesGenerator
     }
 
 ";
-            TestNotSupported(testCode, "Await expression is not supported");
+            await TestNotSupported(testCode, "Await expression is not supported");
         }
 
         [TestMethod, TestCategory("TSDtoRulesGenerator")]
-        public void TSDtoRulesGeneratorDoesNotSupportNullConditionalOperator()
+        public async Task TSDtoRulesGeneratorDoesNotSupportNullConditionalOperator()
         {
             string testCode = @"
 
@@ -666,11 +667,11 @@ namespace BitCodeGenerator.Test.DtoRulesGenerator
 
 ";
 
-            TestNotSupported(testCode, "Null-Conditional operator expression is not supported");
+            await TestNotSupported(testCode, "Null-Conditional operator expression is not supported");
         }
 
         [TestMethod, TestCategory("TSDtoRulesGenerator")]
-        public void TSDtoRulesGeneratorDoesNotSupportVolatileKeyword()
+        public async Task TSDtoRulesGeneratorDoesNotSupportVolatileKeyword()
         {
             string testCode = @"
 
@@ -695,11 +696,11 @@ namespace BitCodeGenerator.Test.DtoRulesGenerator
 
 ";
 
-            TestNotSupported(testCode, "Volatile keyword is not supported");
+            await TestNotSupported(testCode, "Volatile keyword is not supported");
         }
 
         [TestMethod, TestCategory("TSDtoRulesGenerator")]
-        public void TSDtoRulesGeneratorDoesNotSupportCatchBlockForInheritedExceptionTypes()
+        public async Task TSDtoRulesGeneratorDoesNotSupportCatchBlockForInheritedExceptionTypes()
         {
             string testCode = @"
 
@@ -728,7 +729,7 @@ namespace BitCodeGenerator.Test.DtoRulesGenerator
 
 ";
 
-            TestNotSupported(testCode, "Catch block for inherited exception types is not supported");
+            await TestNotSupported(testCode, "Catch block for inherited exception types is not supported");
         }
     }
 }

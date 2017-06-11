@@ -3,6 +3,7 @@ using BitCodeAnalyzer.Test.Helpers;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using System.Threading.Tasks;
 
 namespace BitCodeAnalyzer.Test.SystemAnalyzers
 {
@@ -11,7 +12,7 @@ namespace BitCodeAnalyzer.Test.SystemAnalyzers
     {
         [TestMethod]
         [TestCategory("Analyzer")]
-        public void FindPropertiesWithInternalModifiersOnTheirAccessors()
+        public async Task FindPropertiesWithInternalModifiersOnTheirAccessors()
         {
             const string sourceCodeOfPropertiesWithInternalModifiersOnTheirAccessors = @"
     namespace MyNamespace
@@ -30,7 +31,7 @@ namespace BitCodeAnalyzer.Test.SystemAnalyzers
                 Locations = new[] { new DiagnosticResultLocation(7, 13) }
             };
 
-            VerifyCSharpDiagnostic(sourceCodeOfPropertiesWithInternalModifiersOnTheirAccessors, classWithoutModifier);
+            await VerifyCSharpDiagnostic(sourceCodeOfPropertiesWithInternalModifiersOnTheirAccessors, classWithoutModifier);
         }
 
         protected override DiagnosticAnalyzer GetCSharpDiagnosticAnalyzer()

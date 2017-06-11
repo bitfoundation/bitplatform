@@ -15,11 +15,11 @@ namespace BitCodeGenerator.Test.Implementations
         [TestMethod]
         public virtual async Task DefaultProjectDtoControllersProviderShouldReturnDtoControllersAsDesired()
         {
-            using (Workspace workspace = GetWorkspace())
+            using (Workspace workspace = await GetWorkspace())
             {
                 Solution solution = workspace.CurrentSolution;
 
-                IList<DtoController> controllers = new DefaultProjectDtoControllersProvider()
+                IList<DtoController> controllers = await new DefaultProjectDtoControllersProvider()
                     .GetProjectDtoControllersWithTheirOperations(solution.Projects.Single(p => p.Name == "Bit.Api"));
 
                 Assert.IsTrue(
@@ -30,11 +30,11 @@ namespace BitCodeGenerator.Test.Implementations
         [TestMethod]
         public virtual async Task DefaultProjectDtoControllersProviderShouldReturnDtoControllersOfTestProjectAsDesired()
         {
-            using (Workspace workspace = GetWorkspace())
+            using (Workspace workspace = await GetWorkspace())
             {
                 Solution solution = workspace.CurrentSolution;
 
-                IList<DtoController> controllers = new DefaultProjectDtoControllersProvider()
+                IList<DtoController> controllers = await new DefaultProjectDtoControllersProvider()
                     .GetProjectDtoControllersWithTheirOperations(solution.Projects.Single(p => p.Name == "Bit.Tests"));
 
                 Assert.AreEqual(11, controllers.Count);
@@ -113,7 +113,7 @@ namespace Bit.Tests.Api.ApiControllers
 }
 ";
 
-            IList<DtoController> controllers = new DefaultProjectDtoControllersProvider()
+            IList<DtoController> controllers = await new DefaultProjectDtoControllersProvider()
                     .GetProjectDtoControllersWithTheirOperations(CreateProjectFromSourceCodes(sourceCodeOfDtoControllerWithActionAndParameter));
 
             Assert.AreEqual("Edm.Int32", controllers.Single()

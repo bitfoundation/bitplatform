@@ -7,6 +7,7 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CodeFixes;
 using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using System.Threading.Tasks;
 
 namespace BitCodeAnalyzer.Test.SystemAnalyzers.WebAnalyzers
 {
@@ -15,7 +16,7 @@ namespace BitCodeAnalyzer.Test.SystemAnalyzers.WebAnalyzers
     {
         [TestMethod]
         [TestCategory("Analyzer")]
-        public void FindSystemWebUsages()
+        public async Task FindSystemWebUsages()
         {
             typeof(HostingEnvironment).GetTypeInfo();
 
@@ -40,7 +41,7 @@ namespace BitCodeAnalyzer.Test.SystemAnalyzers.WebAnalyzers
                 Locations = new[] { new DiagnosticResultLocation(10, 52) }
             };
 
-            VerifyCSharpDiagnostic(sourceCodeWithSystemWebUsage, firstSystemWebUsage);
+            await VerifyCSharpDiagnostic(sourceCodeWithSystemWebUsage, firstSystemWebUsage);
         }
 
         protected override CodeFixProvider GetCSharpCodeFixProvider()

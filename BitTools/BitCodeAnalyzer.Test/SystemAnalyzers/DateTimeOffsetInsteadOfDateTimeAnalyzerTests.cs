@@ -5,6 +5,7 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CodeFixes;
 using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using System.Threading.Tasks;
 
 namespace BitCodeAnalyzer.Test.SystemAnalyzers
 {
@@ -13,7 +14,7 @@ namespace BitCodeAnalyzer.Test.SystemAnalyzers
     {
         [TestMethod]
         [TestCategory("Analyzer")]
-        public void FindDateTimeUsageTest()
+        public async Task FindDateTimeUsageTest()
         {
             const string sourceCodeWithDateTimeUsage = @"
     using System;
@@ -49,12 +50,12 @@ namespace BitCodeAnalyzer.Test.SystemAnalyzers
                 Locations = new[] { new DiagnosticResultLocation(15, 30) }
             };
 
-            VerifyCSharpDiagnostic(sourceCodeWithDateTimeUsage, firstDateTimeUsage, secondDateTimeUsage);
+            await VerifyCSharpDiagnostic(sourceCodeWithDateTimeUsage, firstDateTimeUsage, secondDateTimeUsage);
         }
 
         [TestMethod]
         [TestCategory("CodeFixeProvider")]
-        public void FixDateTimeUsageTest()
+        public async Task FixDateTimeUsageTest()
         {
             const string sourceCodeWithDateTimeUsage = @"
     using System;
@@ -94,7 +95,7 @@ namespace BitCodeAnalyzer.Test.SystemAnalyzers
         }
     }";
 
-            VerifyCSharpFix(sourceCodeWithDateTimeUsage, fixedSourceCode);
+            await VerifyCSharpFix(sourceCodeWithDateTimeUsage, fixedSourceCode);
         }
 
         protected override CodeFixProvider GetCSharpCodeFixProvider()
