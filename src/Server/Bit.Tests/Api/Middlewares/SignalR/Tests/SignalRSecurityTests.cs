@@ -3,6 +3,7 @@ using System.Net;
 using IdentityModel.Client;
 using Microsoft.AspNet.SignalR.Client;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using System.Threading.Tasks;
 
 namespace Bit.Tests.Api.Middlewares.SignalR.Tests
 {
@@ -11,30 +12,30 @@ namespace Bit.Tests.Api.Middlewares.SignalR.Tests
     {
         [TestMethod]
         [TestCategory("SignalR"), TestCategory("Security")]
-        public virtual void OnlyLoggedInUsersCanHaveAccessToSignalR()
+        public virtual async Task OnlyLoggedInUsersCanHaveAccessToSignalR()
         {
             using (BitOwinTestEnvironment testEnvironment = new BitOwinTestEnvironment())
             {
-                TokenResponse token = testEnvironment.Server.Login("ValidUserName", "ValidPassword", clientName: "TestResOwner");
+                TokenResponse token = await testEnvironment.Server.Login("ValidUserName", "ValidPassword", clientName: "TestResOwner");
 
-                testEnvironment.Server.BuildSignalRClient(token);
+                await testEnvironment.Server.BuildSignalRClient(token);
             }
         }
 
         [TestMethod]
         [TestCategory("SignalR"), TestCategory("Security")]
-        public virtual void NotLoggedInUsersMustNotHaveAccessToSignalR()
+        public virtual async Task NotLoggedInUsersMustNotHaveAccessToSignalR()
         {
             using (BitOwinTestEnvironment testEnvironment = new BitOwinTestEnvironment())
             {
                 try
                 {
-                    testEnvironment.Server.BuildSignalRClient();
+                    await testEnvironment.Server.BuildSignalRClient();
                     Assert.Fail();
                 }
-                catch (AggregateException ex)
+                catch (HttpClientException ex)
                 {
-                    Assert.AreEqual(HttpStatusCode.Unauthorized, ((HttpClientException)ex.InnerException)?.Response?.StatusCode);
+                    Assert.AreEqual(HttpStatusCode.Unauthorized, ex.Response?.StatusCode);
                 }
             }
         }

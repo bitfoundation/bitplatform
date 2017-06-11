@@ -12,6 +12,7 @@ using IdentityModel.Client;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Remote;
+using System.Threading.Tasks;
 
 namespace Bit.Tests.HtmlClient.ThirdPartyLibrariesTests.JayDataContextTests
 {
@@ -20,11 +21,11 @@ namespace Bit.Tests.HtmlClient.ThirdPartyLibrariesTests.JayDataContextTests
     {
         [TestMethod]
         [TestCategory("HtmlClient"), TestCategory("JayDataDtoSetController")]
-        public virtual void TestGetOfDtoSetController()
+        public virtual async Task TestGetOfDtoSetController()
         {
             using (BitOwinTestEnvironment testEnvironment = new BitOwinTestEnvironment(new TestEnvironmentArgs { UseRealServer = true }))
             {
-                TokenResponse token = testEnvironment.Server.Login("ValidUserName", "ValidPassword", clientName: "TestResOwner");
+                TokenResponse token = await testEnvironment.Server.Login("ValidUserName", "ValidPassword", clientName: "TestResOwner");
 
                 using (RemoteWebDriver driver = testEnvironment.Server.GetWebDriver(new RemoteWebDriverOptions { Token = token }))
                 {
@@ -42,11 +43,11 @@ namespace Bit.Tests.HtmlClient.ThirdPartyLibrariesTests.JayDataContextTests
 
         [TestMethod]
         [TestCategory("HtmlClient"), TestCategory("JayDataDtoSetController")]
-        public virtual void TestPatchOfDtoSetController()
+        public virtual async Task TestPatchOfDtoSetController()
         {
             using (BitOwinTestEnvironment testEnvironment = new BitOwinTestEnvironment(new TestEnvironmentArgs { UseRealServer = true }))
             {
-                TokenResponse token = testEnvironment.Server.Login("ValidUserName", "ValidPassword", clientName: "TestResOwner");
+                TokenResponse token = await testEnvironment.Server.Login("ValidUserName", "ValidPassword", clientName: "TestResOwner");
 
                 using (RemoteWebDriver driver = testEnvironment.Server.GetWebDriver(new RemoteWebDriverOptions { Token = token }))
                 {

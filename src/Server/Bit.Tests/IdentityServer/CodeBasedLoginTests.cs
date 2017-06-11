@@ -1,6 +1,7 @@
 ﻿using Bit.Test;
 using IdentityModel.Client;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using System.Threading.Tasks;
 
 namespace Bit.Tests.IdentityServer
 {
@@ -9,12 +10,12 @@ namespace Bit.Tests.IdentityServer
     {
         [TestMethod]
         [TestCategory("IdentityServer")]
-        public virtual void LoginWithValidUserNameAndPasswordUsingCodeShouldWorksFine()
+        public virtual async Task LoginWithValidUserNameAndPasswordUsingCodeShouldWorksFine()
         {
             using (BitOwinTestEnvironment testEnvironment = new BitOwinTestEnvironment(new TestEnvironmentArgs { UseRealServer = false }))
             {
                 TokenClient tokenClient = testEnvironment.Server.BuildTokenClient("TestResOwner", "secret");
-                TokenResponse tokenResponse = tokenClient.RequestResourceOwnerPasswordAsync("ValidUserName", "ValidPassword", scope: "openid profile user_info").Result;
+                TokenResponse tokenResponse = await tokenClient.RequestResourceOwnerPasswordAsync("ValidUserName", "ValidPassword", scope: "openid profile user_info");
 
                 Assert.IsFalse(tokenResponse.IsError);
             }
@@ -22,12 +23,12 @@ namespace Bit.Tests.IdentityServer
 
         [TestMethod]
         [TestCategory("IdentityServer")]
-        public virtual void LoginWithInValidUserNameAndPasswordUsingCodeMayNotWorksFine()
+        public virtual async Task LoginWithInValidUserNameAndPasswordUsingCodeMayNotWorksFine()
         {
             using (BitOwinTestEnvironment testEnvironment = new BitOwinTestEnvironment(new TestEnvironmentArgs { UseRealServer = false }))
             {
                 TokenClient tokenClient = testEnvironment.Server.BuildTokenClient("TestResOwner", "secret");
-                TokenResponse tokenResponse = tokenClient.RequestResourceOwnerPasswordAsync("InValidUser", "InvalidPassword", scope: "openid profile user_info").Result;
+                TokenResponse tokenResponse = await tokenClient.RequestResourceOwnerPasswordAsync("InValidUser", "InvalidPassword", scope: "openid profile user_info");
 
                 Assert.IsTrue(tokenResponse.IsError);
             }

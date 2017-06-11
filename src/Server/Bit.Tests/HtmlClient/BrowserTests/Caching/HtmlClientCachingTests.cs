@@ -7,6 +7,7 @@ using Bit.Test.Server;
 using IdentityModel.Client;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using OpenQA.Selenium.Remote;
+using System.Threading.Tasks;
 
 namespace Bit.Tests.HtmlClient.BrowserTests.Caching
 {
@@ -15,11 +16,11 @@ namespace Bit.Tests.HtmlClient.BrowserTests.Caching
     {
         [TestMethod]
         [TestCategory("HtmlClient"), TestCategory("Caching")]
-        public virtual void ResourceLikeDefaultPageWhichInNotCachableMustBeRertivedEverytimeByHtmlClient()
+        public virtual async Task ResourceLikeDefaultPageWhichInNotCachableMustBeRertivedEverytimeByHtmlClient()
         {
             using (BitOwinTestEnvironment testEnvironment = new BitOwinTestEnvironment(new TestEnvironmentArgs { UseRealServer = true }))
             {
-                TokenResponse token = testEnvironment.Server.Login("ValidUserName", "ValidPassword", clientName: "TestResOwner");
+                TokenResponse token = await testEnvironment.Server.Login("ValidUserName", "ValidPassword", clientName: "TestResOwner");
 
                 using (RemoteWebDriver driver = testEnvironment.Server.GetWebDriver(new RemoteWebDriverOptions { Token = token }))
                 {
@@ -32,11 +33,11 @@ namespace Bit.Tests.HtmlClient.BrowserTests.Caching
 
         [TestMethod]
         [TestCategory("HtmlClient"), TestCategory("Caching")]
-        public virtual void ResourceLikeMetadataWhichAreCachableMustNotBeRertivedEverytimeByHtmlClient()
+        public virtual async Task ResourceLikeMetadataWhichAreCachableMustNotBeRertivedEverytimeByHtmlClient()
         {
             using (BitOwinTestEnvironment testEnvironment = new BitOwinTestEnvironment(new TestEnvironmentArgs { UseRealServer = true, ActiveAppEnvironmentCustomizer = activeAppEnv => activeAppEnv.DebugMode = false }))
             {
-                TokenResponse token = testEnvironment.Server.Login("ValidUserName", "ValidPassword", clientName: "TestResOwner");
+                TokenResponse token = await testEnvironment.Server.Login("ValidUserName", "ValidPassword", clientName: "TestResOwner");
 
                 using (RemoteWebDriver driver = testEnvironment.Server.GetWebDriver(new RemoteWebDriverOptions { Token = token }))
                 {

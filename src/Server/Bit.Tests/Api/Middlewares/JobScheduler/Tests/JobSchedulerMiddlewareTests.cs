@@ -27,7 +27,7 @@ namespace Bit.Tests.Api.Middlewares.JobScheduler.Tests
         {
             using (BitOwinTestEnvironment testEnvironment = new BitOwinTestEnvironment())
             {
-                TokenResponse token = testEnvironment.Server.Login("ValidUserName", "ValidPassword", clientName: "TestResOwner");
+                TokenResponse token = await testEnvironment.Server.Login("ValidUserName", "ValidPassword", clientName: "TestResOwner");
 
                 HttpResponseMessage getDefaultPageResponse = await testEnvironment.Server.GetHttpClient(token).GetAsync("/jobs");
 
@@ -72,7 +72,7 @@ namespace Bit.Tests.Api.Middlewares.JobScheduler.Tests
                 }
             }))
             {
-                TokenResponse token = testEnvironment.Server.Login("ValidUserName", "ValidPassword", clientName: "TestResOwner");
+                TokenResponse token = await testEnvironment.Server.Login("ValidUserName", "ValidPassword", clientName: "TestResOwner");
 
                 ODataClient client = testEnvironment.Server.BuildODataClient(token: token);
 
@@ -121,16 +121,16 @@ namespace Bit.Tests.Api.Middlewares.JobScheduler.Tests
                 }
             }))
             {
-                TokenResponse someoneToken = testEnvironment.Server.Login("SomeOne", "ValidPassword", clientName: "TestResOwner");
+                TokenResponse someoneToken = await testEnvironment.Server.Login("SomeOne", "ValidPassword", clientName: "TestResOwner");
 
                 TaskCompletionSource<bool> onMessageReceivedCalled = new TaskCompletionSource<bool>();
 
-                testEnvironment.Server.BuildSignalRClient(someoneToken, (messageKey, messageArgs) =>
+                await testEnvironment.Server.BuildSignalRClient(someoneToken, (messageKey, messageArgs) =>
                 {
                     onMessageReceivedCalled.SetResult(true);
                 });
 
-                TokenResponse token = testEnvironment.Server.Login("ValidUserName", "ValidPassword", clientName: "TestResOwner");
+                TokenResponse token = await testEnvironment.Server.Login("ValidUserName", "ValidPassword", clientName: "TestResOwner");
 
                 ODataClient client = testEnvironment.Server.BuildODataClient(token: token);
 
@@ -191,7 +191,7 @@ namespace Bit.Tests.Api.Middlewares.JobScheduler.Tests
                 }
             }))
             {
-                TokenResponse token = testEnvironment.Server.Login("ValidUserName", "ValidPassword", clientName: "TestResOwner");
+                TokenResponse token = await testEnvironment.Server.Login("ValidUserName", "ValidPassword", clientName: "TestResOwner");
 
                 ODataClient client = testEnvironment.Server.BuildODataClient(token: token);
 

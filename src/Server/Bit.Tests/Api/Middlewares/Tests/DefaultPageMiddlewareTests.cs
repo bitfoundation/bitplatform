@@ -21,7 +21,7 @@ namespace Bit.Tests.Api.Middlewares.Tests
         {
             using (BitOwinTestEnvironment testEnvironment = new BitOwinTestEnvironment())
             {
-                TokenResponse token = testEnvironment.Server.Login("ValidUserName", "ValidPassword", clientName: "TestResOwner");
+                TokenResponse token = await testEnvironment.Server.Login("ValidUserName", "ValidPassword", clientName: "TestResOwner");
 
                 HttpResponseMessage getDefaultPageResponse = await testEnvironment.Server.GetHttpClient(token)
                     .GetAsync("/");
@@ -53,7 +53,7 @@ namespace Bit.Tests.Api.Middlewares.Tests
         {
             using (BitOwinTestEnvironment testEnvironment = new BitOwinTestEnvironment())
             {
-                TokenResponse token = testEnvironment.Server.Login("ValidUserName", "ValidPassword", clientName: "TestResOwner");
+                TokenResponse token = await testEnvironment.Server.Login("ValidUserName", "ValidPassword", clientName: "TestResOwner");
 
                 HttpResponseMessage getDefaultPageResponse = await testEnvironment.Server.GetHttpClient(token)
                     .GetAsync("/");
@@ -76,7 +76,7 @@ namespace Bit.Tests.Api.Middlewares.Tests
         {
             using (BitOwinTestEnvironment testEnvironment = new BitOwinTestEnvironment())
             {
-                TokenResponse token = testEnvironment.Server.Login("ValidUserName", "ValidPassword", clientName: "TestResOwner");
+                TokenResponse token = await testEnvironment.Server.Login("ValidUserName", "ValidPassword", clientName: "TestResOwner");
 
                 HttpResponseMessage getDefaultPageResponse = await testEnvironment.Server.GetHttpClient(token)
                     .GetAsync("/");
@@ -114,7 +114,7 @@ namespace Bit.Tests.Api.Middlewares.Tests
                 }
             }))
             {
-                TokenResponse token = testEnvironment.Server.Login("ValidUserName", "ValidPassword", clientName: "TestResOwner");
+                TokenResponse token = await testEnvironment.Server.Login("ValidUserName", "ValidPassword", clientName: "TestResOwner");
 
                 HttpResponseMessage getDefaultPageResponse = await testEnvironment.Server.GetHttpClient(token)
                     .GetAsync(testEnvironment.Server.Uri);
@@ -128,11 +128,11 @@ namespace Bit.Tests.Api.Middlewares.Tests
 
         [TestMethod]
         [TestCategory("HtmlClient"), TestCategory("DefaultPage")]
-        public virtual void TestDesiredEnvironmentsConfigsArePresentInClientSide()
+        public virtual async Task TestDesiredEnvironmentsConfigsArePresentInClientSide()
         {
             using (BitOwinTestEnvironment testEnvironment = new BitOwinTestEnvironment(new TestEnvironmentArgs { UseRealServer = true }))
             {
-                TokenResponse token = testEnvironment.Server.Login("ValidUserName", "ValidPassword", clientName: "TestResOwner");
+                TokenResponse token = await testEnvironment.Server.Login("ValidUserName", "ValidPassword", clientName: "TestResOwner");
 
                 using (RemoteWebDriver driver = testEnvironment.Server.GetWebDriver(new RemoteWebDriverOptions { Token = token }))
                 {

@@ -26,7 +26,7 @@ namespace Bit.Tests.Api.Middlewares.WebApi.Tests
         {
             using (BitOwinTestEnvironment testEnvironment = new BitOwinTestEnvironment())
             {
-                TokenResponse token = testEnvironment.Server.Login("ValidUserName", "ValidPassword", clientName: "TestResOwner");
+                TokenResponse token = await testEnvironment.Server.Login("ValidUserName", "ValidPassword", clientName: "TestResOwner");
 
                 ODataBatch batchClient = testEnvironment.Server.BuildODataBatchClient(token: token);
 
@@ -91,7 +91,7 @@ namespace Bit.Tests.Api.Middlewares.WebApi.Tests
                 }
             }))
             {
-                TokenResponse token = testEnvironment.Server.Login("ValidUserName", "ValidPassword", clientName: "TestResOwner");
+                TokenResponse token = await testEnvironment.Server.Login("ValidUserName", "ValidPassword", clientName: "TestResOwner");
 
                 ODataBatch client = testEnvironment.Server.BuildODataBatchClient(token: token, afterResponse: message =>
                 {

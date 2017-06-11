@@ -16,15 +16,15 @@ namespace Bit.Tests.Api.Middlewares.SignalR.Tests
         {
             using (BitOwinTestEnvironment testEnvironment = new BitOwinTestEnvironment())
             {
-                TokenResponse tokenOfUser1 = testEnvironment.Server.Login("ValidUserName", "ValidPassword", clientName: "TestResOwner");
+                TokenResponse tokenOfUser1 = await testEnvironment.Server.Login("ValidUserName", "ValidPassword", clientName: "TestResOwner");
 
-                TokenResponse tokenOfUser2 = testEnvironment.Server.Login("User2", "ValidPassword", clientName: "TestResOwner");
+                TokenResponse tokenOfUser2 = await testEnvironment.Server.Login("User2", "ValidPassword", clientName: "TestResOwner");
 
                 ODataClient odataClientOfUser1 = testEnvironment.Server.BuildODataClient(token: tokenOfUser1);
 
                 TaskCompletionSource<bool> onMessageReceivedCalled = new TaskCompletionSource<bool>();
 
-                testEnvironment.Server.BuildSignalRClient(tokenOfUser2, (messageKey, messageArgs) =>
+                await testEnvironment.Server.BuildSignalRClient(tokenOfUser2, (messageKey, messageArgs) =>
                 {
                     if (messageKey == "NewWord" && messageArgs.Word == "Some word")
                         onMessageReceivedCalled.SetResult(true);
@@ -45,15 +45,15 @@ namespace Bit.Tests.Api.Middlewares.SignalR.Tests
         {
             using (BitOwinTestEnvironment testEnvironment = new BitOwinTestEnvironment())
             {
-                TokenResponse tokenOfUser1 = testEnvironment.Server.Login("ValidUserName", "ValidPassword", clientName: "TestResOwner");
+                TokenResponse tokenOfUser1 = await testEnvironment.Server.Login("ValidUserName", "ValidPassword", clientName: "TestResOwner");
 
-                TokenResponse tokenOfUser2 = testEnvironment.Server.Login("User2", "ValidPassword", clientName: "TestResOwner");
+                TokenResponse tokenOfUser2 = await testEnvironment.Server.Login("User2", "ValidPassword", clientName: "TestResOwner");
 
                 ODataClient odataClientOfUser1 = testEnvironment.Server.BuildODataClient(token: tokenOfUser1);
 
                 TaskCompletionSource<bool> onMessageReceivedCalled = new TaskCompletionSource<bool>();
 
-                testEnvironment.Server.BuildSignalRClient(tokenOfUser2, (messageKey, messageArgs) =>
+                await testEnvironment.Server.BuildSignalRClient(tokenOfUser2, (messageKey, messageArgs) =>
                 {
                     onMessageReceivedCalled.SetResult(true);
                 });

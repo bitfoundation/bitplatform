@@ -10,6 +10,7 @@ using IdentityModel.Client;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Remote;
+using System.Threading.Tasks;
 
 namespace Bit.Tests.HtmlClient.ThirdPartyLibrariesTests.KendoDataSourceTests
 {
@@ -18,11 +19,11 @@ namespace Bit.Tests.HtmlClient.ThirdPartyLibrariesTests.KendoDataSourceTests
     {
         [TestMethod]
         [TestCategory("HtmlClient"), TestCategory("KendoDataSource")]
-        public virtual void TestKendoDataSourceCreationFromJayDataEntitySet()
+        public virtual async Task TestKendoDataSourceCreationFromJayDataEntitySet()
         {
             using (BitOwinTestEnvironment testEnvironment = new BitOwinTestEnvironment(new TestEnvironmentArgs { UseRealServer = true }))
             {
-                TokenResponse token = testEnvironment.Server.Login("ValidUserName", "ValidPassword", clientName: "TestResOwner");
+                TokenResponse token = await testEnvironment.Server.Login("ValidUserName", "ValidPassword", clientName: "TestResOwner");
 
                 using (RemoteWebDriver driver = testEnvironment.Server.GetWebDriver(new RemoteWebDriverOptions { Token = token }))
                 {
@@ -46,11 +47,11 @@ namespace Bit.Tests.HtmlClient.ThirdPartyLibrariesTests.KendoDataSourceTests
 
         [TestMethod]
         [TestCategory("HtmlClient"), TestCategory("KendoDataSource")]
-        public virtual void TestKendoDataSourceCreationFromJayDataODataFunctionCall()
+        public virtual async Task TestKendoDataSourceCreationFromJayDataODataFunctionCall()
         {
             using (BitOwinTestEnvironment testEnvironment = new BitOwinTestEnvironment(new TestEnvironmentArgs { UseRealServer = true }))
             {
-                TokenResponse token = testEnvironment.Server.Login("ValidUserName", "ValidPassword", clientName: "TestResOwner");
+                TokenResponse token = await testEnvironment.Server.Login("ValidUserName", "ValidPassword", clientName: "TestResOwner");
 
                 using (RemoteWebDriver driver = testEnvironment.Server.GetWebDriver(new RemoteWebDriverOptions { Token = token }))
                 {

@@ -4,6 +4,7 @@ using IdentityModel.Client;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Remote;
+using System.Threading.Tasks;
 
 namespace Bit.Tests.HtmlClient.ThirdPartyLibrariesTests.JayDataContextTests
 {
@@ -12,11 +13,11 @@ namespace Bit.Tests.HtmlClient.ThirdPartyLibrariesTests.JayDataContextTests
     {
         [TestMethod]
         [TestCategory("HtmlClient"), TestCategory("JayDataContextOData")]
-        public virtual void TestInheritance()
+        public virtual async Task TestInheritance()
         {
             using (BitOwinTestEnvironment testEnvironment = new BitOwinTestEnvironment(new TestEnvironmentArgs { UseRealServer = true }))
             {
-                TokenResponse token = testEnvironment.Server.Login("ValidUserName", "ValidPassword", clientName: "TestResOwner");
+                TokenResponse token = await testEnvironment.Server.Login("ValidUserName", "ValidPassword", clientName: "TestResOwner");
 
                 using (RemoteWebDriver driver = testEnvironment.Server.GetWebDriver(new RemoteWebDriverOptions { Token = token }))
                 {

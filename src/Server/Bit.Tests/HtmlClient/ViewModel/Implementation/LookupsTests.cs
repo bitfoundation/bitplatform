@@ -10,6 +10,7 @@ using OpenQA.Selenium;
 using OpenQA.Selenium.Remote;
 using System.Web.OData.Query;
 using Bit.Tests.Model.Dto;
+using System.Threading.Tasks;
 
 namespace Bit.Tests.HtmlClient.ViewModel.Implementation
 {
@@ -18,11 +19,11 @@ namespace Bit.Tests.HtmlClient.ViewModel.Implementation
     {
         [TestMethod]
         [TestCategory("HtmlClient")]
-        public virtual void TestODataLookupBaseFilter()
+        public virtual async Task TestODataLookupBaseFilter()
         {
             using (BitOwinTestEnvironment testEnvironment = new BitOwinTestEnvironment(new TestEnvironmentArgs { UseRealServer = true }))
             {
-                TokenResponse token = testEnvironment.Server.Login("ValidUserName", "ValidPassword", clientName: "TestResOwner");
+                TokenResponse token = await testEnvironment.Server.Login("ValidUserName", "ValidPassword", clientName: "TestResOwner");
 
                 using (RemoteWebDriver driver = testEnvironment.Server.GetWebDriver(new RemoteWebDriverOptions { Token = token }))
                 {

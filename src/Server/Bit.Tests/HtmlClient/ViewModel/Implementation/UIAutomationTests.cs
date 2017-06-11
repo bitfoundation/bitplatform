@@ -9,6 +9,7 @@ using IdentityModel.Client;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Remote;
+using System.Threading.Tasks;
 
 namespace Bit.Tests.HtmlClient.ViewModel.Implementation
 {
@@ -18,11 +19,11 @@ namespace Bit.Tests.HtmlClient.ViewModel.Implementation
     {
         [TestMethod]
         [TestCategory("HtmlClient"), TestCategory("Angular")]
-        public virtual void TestGetBindingContextAndGetFormViewModel()
+        public virtual async Task TestGetBindingContextAndGetFormViewModel()
         {
             using (BitOwinTestEnvironment testEnvironment = new BitOwinTestEnvironment(new TestEnvironmentArgs { UseRealServer = true }))
             {
-                TokenResponse token = testEnvironment.Server.Login("ValidUserName", "ValidPassword", clientName: "TestResOwner");
+                TokenResponse token = await testEnvironment.Server.Login("ValidUserName", "ValidPassword", clientName: "TestResOwner");
 
                 using (RemoteWebDriver driver = testEnvironment.Server.GetWebDriver(new RemoteWebDriverOptions { Token = token }))
                 {
@@ -42,11 +43,11 @@ namespace Bit.Tests.HtmlClient.ViewModel.Implementation
 
         [TestMethod]
         [TestCategory("HtmlClient"), TestCategory("Angular")]
-        public virtual void TestGettingSomeVariables()
+        public virtual async Task TestGettingSomeVariables()
         {
             using (BitOwinTestEnvironment testEnvironment = new BitOwinTestEnvironment(new TestEnvironmentArgs { UseRealServer = true }))
             {
-                TokenResponse token = testEnvironment.Server.Login("ValidUserName", "ValidPassword", clientName: "TestResOwner");
+                TokenResponse token = await testEnvironment.Server.Login("ValidUserName", "ValidPassword", clientName: "TestResOwner");
 
                 using (RemoteWebDriver driver = testEnvironment.Server.GetWebDriver(new RemoteWebDriverOptions { Token = token }))
                 {
