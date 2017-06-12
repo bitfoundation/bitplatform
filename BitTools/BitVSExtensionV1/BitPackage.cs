@@ -14,13 +14,11 @@ using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.Design;
-using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 using BitHtmlElement = BitVSEditorUtils.HTML.Schema.HtmlElement;
 using Project = Microsoft.CodeAnalysis.Project;
@@ -70,14 +68,6 @@ namespace BitVSExtensionV1
                     });
             }
 
-            _componentModel = (IComponentModel)GetService(typeof(SComponentModel));
-
-            if (_componentModel == null)
-            {
-                ShowInitialLoadProblem("Component model is null");
-                return;
-            }
-
             Window outputWindow = _applicationObject.DTE.Windows.Item(EnvDTE.Constants.vsWindowKindOutput);
 
             if (outputWindow == null)
@@ -93,26 +83,68 @@ namespace BitVSExtensionV1
                 _outputWindow.OutputWindowPanes.Add(BitVSExtensionName);
             }
 
+            try
+            {
+                _outputPane = _outputWindow.OutputWindowPanes.Cast<OutputWindowPane>()
+                    .ExtendedSingle("Finding bit output pane", x => x.Name == BitVSExtensionName);
+            }
+            catch (Exception ex)
+            {
+                ShowInitialLoadProblem(ex.Message);
+                return;
+            }
+
+            try
+            {
+                _statusBar = (IVsStatusbar)_serviceContainer.GetService(typeof(SVsStatusbar));
+                if (_statusBar == null)
+                    throw new InvalidOperationException("status bar is null");
+            }
+            catch (Exception ex)
+            {
+                ShowInitialLoadProblem($"Could not find status bar {ex}.");
+                return;
+            }
+
+            _componentModel = (IComponentModel)GetService(typeof(SComponentModel));
+
+            if (_componentModel == null)
+            {
+                LogWarn("Component model is null.");
+                return;
+            }
+
+            try
+            {
+                GetWorkspace();
+            }
+            catch (Exception ex)
+            {
+                LogException("Workspace not found.", ex);
+                return;
+            }
+
             _applicationObject.Events.BuildEvents.OnBuildProjConfigDone += _buildEvents_OnBuildProjConfigDone;
             _applicationObject.Events.BuildEvents.OnBuildDone += _buildEvents_OnBuildDone;
             _applicationObject.Events.BuildEvents.OnBuildBegin += _buildEvents_OnBuildBegin;
 
-            if (await PrepareSolution() == false)
-                return;
-
             await DoOnSolutionReadyOrChange();
         }
 
-        private async Task<bool> PrepareSolution()
+        private void GetWorkspace()
         {
             _workspace = _componentModel.GetService<VisualStudioWorkspace>();
 
             if (_workspace == null)
             {
-                ShowInitialLoadProblem("Workspace is null");
-                return false;
+                throw new InvalidOperationException("workspace is null");
             }
 
+            _workspace.WorkspaceChanged += _workspace_WorkspaceChanged;
+        }
+
+        private async Task DoOnSolutionReadyOrChange()
+        {
             int tryCount = 0;
 
             while (!File.Exists(_workspace.CurrentSolution.FilePath))
@@ -123,94 +155,116 @@ namespace BitVSExtensionV1
                 await Task.Delay(1000);
             }
 
-            if (!File.Exists(_workspace.CurrentSolution.FilePath) || !File.Exists(Path.Combine(Path.GetDirectoryName(_workspace.CurrentSolution.FilePath) + "\\BitConfigV1.json")))
+            if (!File.Exists(_workspace.CurrentSolution.FilePath))
             {
-                return false;
+                LogWarn("Could not find solution.");
+                return;
             }
 
-            _isBeingBuiltProjects = new List<Project>();
+            if (!File.Exists(Path.Combine(Path.GetDirectoryName(_workspace.CurrentSolution.FilePath) + "\\BitConfigV1.json")))
+            {
+                LogWarn("Could not find BitConfigV1.json file.");
+                return;
+            }
 
-            _workspace.WorkspaceChanged += _workspace_WorkspaceChanged;
+            _outputPane.Clear();
+            _shouldGeneratedProjects = _workspace.CurrentSolution.Projects.ToList();
 
-            return true;
-        }
-
-        private async Task DoOnSolutionReadyOrChange()
-        {
             try
             {
                 InitHtmlElements();
             }
             catch (Exception ex)
             {
-                ShowInitialLoadProblem($"Init html elements failed {ex}");
+                LogException("Init html elements failed.", ex);
             }
 
             try
             {
-                await GenerateAll();
+                await GenerateCodes();
             }
             catch (Exception ex)
             {
-                ShowInitialLoadProblem($"Generate all failed {ex}");
+                LogException("Generate all failed.", ex);
+            }
+
+            _shouldGeneratedProjects = new List<Project> { };
+        }
+
+        private async Task GenerateCodes()
+        {
+            try
+            {
+                IProjectDtoControllersProvider controllersProvider = new DefaultProjectDtoControllersProvider();
+                IProjectDtosProvider dtosProvider = new DefaultProjectDtosProvider(controllersProvider);
+
+                DefaultHtmlClientProxyGenerator generator = new DefaultHtmlClientProxyGenerator(new DefaultBitCodeGeneratorOrderedProjectsProvider(),
+                    new DefaultBitCodeGeneratorMappingsProvider(new DefaultBitConfigProvider()), dtosProvider
+                    , new DefaultHtmlClientProxyDtoGenerator(), new DefaultHtmlClientContextGenerator(), controllersProvider, new DefaultProjectEnumTypesProvider(controllersProvider, dtosProvider));
+
+                await generator.GenerateCodes(_workspace.CurrentSolution, _shouldGeneratedProjects);
+
+                Log($"Code Generation Completed.");
+            }
+            catch (Exception ex)
+            {
+                LogException("Code Generation failed.", ex);
             }
         }
 
-        private async Task GenerateAll()
+        private async Task CleanCodes()
         {
-            Stopwatch watch = Stopwatch.StartNew();
+            DefaultHtmlClientProxyCleaner cleaner = new DefaultHtmlClientProxyCleaner(new DefaultBitCodeGeneratorMappingsProvider(new DefaultBitConfigProvider()));
 
-            IProjectDtoControllersProvider controllersProvider = new DefaultProjectDtoControllersProvider();
-            IProjectDtosProvider dtosProvider = new DefaultProjectDtosProvider(controllersProvider);
+            await cleaner.DeleteCodes(_workspace.CurrentSolution, _shouldGeneratedProjects);
 
-            DefaultHtmlClientProxyGenerator generator = new DefaultHtmlClientProxyGenerator(new DefaultBitCodeGeneratorOrderedProjectsProvider(),
-                new DefaultBitCodeGeneratorMappingsProvider(new DefaultBitConfigProvider()), dtosProvider
-                , new DefaultHtmlClientProxyDtoGenerator(), new DefaultHtmlClientContextGenerator(), controllersProvider, new DefaultProjectEnumTypesProvider(controllersProvider, dtosProvider));
-
-            await generator.GenerateCodes(_workspace.CurrentSolution, _workspace.CurrentSolution.Projects.ToList());
-
-            watch.Stop();
-
-            Log($"Code Generation Completed in {watch.ElapsedMilliseconds} milli seconds");
+            Log("Generated codes were deleted.");
         }
 
         private void InitHtmlElements()
         {
-            HtmlElementsContainer.Elements = new List<BitHtmlElement> { };
-
-            DefaultBitConfigProvider configProvider = new DefaultBitConfigProvider();
-
-            BitConfig config = configProvider.GetConfiguration(_workspace.CurrentSolution, Enumerable.Empty<Project>().ToList());
-
-            List<BitHtmlElement> allElements = new List<BitHtmlElement>();
-
-            foreach (string path in config.Schema.HtmlSchemaFiles)
+            try
             {
-                List<BitHtmlElement> newElements = JsonConvert.DeserializeObject<List<BitHtmlElement>>(File.ReadAllText(path));
+                HtmlElementsContainer.Elements = new List<BitHtmlElement> { };
 
-                foreach (BitHtmlElement newElement in newElements)
+                DefaultBitConfigProvider configProvider = new DefaultBitConfigProvider();
+
+                BitConfig config = configProvider.GetConfiguration(_workspace.CurrentSolution, Enumerable.Empty<Project>().ToList());
+
+                List<BitHtmlElement> allElements = new List<BitHtmlElement>();
+
+                foreach (string path in config.Schema.HtmlSchemaFiles)
                 {
-                    newElement.Attributes = newElement.Attributes ?? new List<HtmlAttribute> { };
-                    newElement.Description = newElement.Description ?? "";
+                    List<BitHtmlElement> newElements = JsonConvert.DeserializeObject<List<BitHtmlElement>>(File.ReadAllText(path));
 
-                    if (string.IsNullOrEmpty(newElement.Name))
-                        throw new InvalidOperationException("Element must have a name");
+                    foreach (BitHtmlElement newElement in newElements)
+                    {
+                        newElement.Attributes = newElement.Attributes ?? new List<HtmlAttribute> { };
+                        newElement.Description = newElement.Description ?? "";
 
-                    newElement.Type = newElement.Type ?? "";
+                        if (string.IsNullOrEmpty(newElement.Name))
+                            throw new InvalidOperationException("Element must have a name");
 
-                    BitHtmlElement equivalentHtmlElement = allElements.FirstOrDefault(e => e.Name == newElement.Name);
+                        newElement.Type = newElement.Type ?? "";
 
-                    if (equivalentHtmlElement != null)
-                        equivalentHtmlElement.Attributes.AddRange(newElement.Attributes);
-                    else
-                        allElements.Add(newElement);
+                        BitHtmlElement equivalentHtmlElement = allElements.FirstOrDefault(e => e.Name == newElement.Name);
+
+                        if (equivalentHtmlElement != null)
+                            equivalentHtmlElement.Attributes.AddRange(newElement.Attributes);
+                        else
+                            allElements.Add(newElement);
+                    }
                 }
+
+                if (!allElements.Any(element => element.Name == "*"))
+                    allElements.Add(new BitHtmlElement { Name = "*", Attributes = new List<HtmlAttribute> { }, Description = "", Type = "existing" });
+
+                HtmlElementsContainer.Elements = allElements;
             }
-
-            if (!allElements.Any(element => element.Name == "*"))
-                allElements.Add(new BitHtmlElement { Name = "*", Attributes = new List<HtmlAttribute> { }, Description = "", Type = "existing" });
-
-            HtmlElementsContainer.Elements = allElements;
+            catch (Exception ex)
+            {
+                LogException($"Init html elements failed.", ex);
+            }
         }
 
         private async void _workspace_WorkspaceChanged(object sender, WorkspaceChangeEventArgs e)
@@ -221,7 +275,7 @@ namespace BitVSExtensionV1
             }
         }
 
-        public void RedirectAssembly(string shortName, Version targetVersion, string publicKeyToken)
+        private void RedirectAssembly(string shortName, Version targetVersion, string publicKeyToken)
         {
             Assembly ResolveEventHandler(object sender, ResolveEventArgs args)
             {
@@ -244,7 +298,7 @@ namespace BitVSExtensionV1
 
         private void _buildEvents_OnBuildBegin(vsBuildScope scope, vsBuildAction action)
         {
-            _isBeingBuiltProjects.Clear();
+            _shouldGeneratedProjects.Clear();
         }
 
         private void _buildEvents_OnBuildProjConfigDone(string project, string projectConfig, string platform, string solutionConfig, bool success)
@@ -254,69 +308,50 @@ namespace BitVSExtensionV1
 
             if (proj != null)
             {
-                _isBeingBuiltProjects.Add(proj);
+                _shouldGeneratedProjects.Add(proj);
             }
         }
 
-        private void _buildEvents_OnBuildDone(vsBuildScope scope, vsBuildAction action)
+        private async void _buildEvents_OnBuildDone(vsBuildScope scope, vsBuildAction action)
         {
             try
             {
-                _buildEvents_OnBuildDone_Internal(scope, action);
+                if (action == vsBuildAction.vsBuildActionClean)
+                {
+                    await CleanCodes();
+                }
+                else
+                {
+                    await GenerateCodes();
+                }
             }
             catch (Exception ex)
             {
-                Log(ex.ToString());
-                throw;
+                LogException("Generate|Clean codes failed.", ex);
             }
         }
 
-        private async void _buildEvents_OnBuildDone_Internal(vsBuildScope scope, vsBuildAction action)
+        private void LogException(string text, Exception ex)
         {
-            if (action == vsBuildAction.vsBuildActionClean)
-            {
-                DefaultHtmlClientProxyCleaner cleaner = new DefaultHtmlClientProxyCleaner(new DefaultBitCodeGeneratorMappingsProvider(new DefaultBitConfigProvider()));
-
-                await cleaner.DeleteCodes(_workspace.CurrentSolution, _isBeingBuiltProjects);
-
-                Log("Generated codes were deleted");
-            }
-            else
-            {
-                Stopwatch watch = Stopwatch.StartNew();
-
-                IProjectDtoControllersProvider controllersProvider = new DefaultProjectDtoControllersProvider();
-                IProjectDtosProvider dtosProvider = new DefaultProjectDtosProvider(controllersProvider);
-
-                DefaultHtmlClientProxyGenerator generator = new DefaultHtmlClientProxyGenerator(new DefaultBitCodeGeneratorOrderedProjectsProvider(),
-                    new DefaultBitCodeGeneratorMappingsProvider(new DefaultBitConfigProvider()), dtosProvider
-                    , new DefaultHtmlClientProxyDtoGenerator(), new DefaultHtmlClientContextGenerator(), controllersProvider, new DefaultProjectEnumTypesProvider(controllersProvider, dtosProvider));
-
-                await generator.GenerateCodes(_workspace.CurrentSolution, _isBeingBuiltProjects);
-
-                watch.Stop();
-
-                Log($"Code Generation Completed in {watch.ElapsedMilliseconds} milli seconds");
-            }
-
+            _statusBar.SetText($"Bit: {text} See output pane for more info");
+            _outputPane.OutputString($"{text} {DateTimeOffset.Now} \n");
+            _outputPane.Activate();
         }
 
-        public void Log(string text)
+        private void Log(string text)
         {
-            OutputWindowPane outputPane = _outputWindow.OutputWindowPanes.Cast<OutputWindowPane>()
-                .SingleOrDefault(x => x.Name == BitVSExtensionName);
-
-            if (outputPane == null)
-            {
-                MessageBox.Show(text, BitVSExtensionName, MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
-            }
-            else
-            {
-                outputPane.OutputString($"{text}\n");
-            }
+            _statusBar.SetText($"Bit: {text}");
+            _outputPane.OutputString($"{text} {DateTimeOffset.Now} \n");
         }
 
-        public void ShowInitialLoadProblem(string errorMessage)
+        private void LogWarn(string text)
+        {
+            _statusBar.SetText($"Bit: {text}");
+            _outputPane.OutputString($"{text} {DateTimeOffset.Now} \n");
+            _outputPane.Activate();
+        }
+
+        private void ShowInitialLoadProblem(string errorMessage)
         {
             if (errorMessage == null)
                 throw new ArgumentNullException(nameof(errorMessage));
@@ -344,7 +379,7 @@ namespace BitVSExtensionV1
             base.Dispose(disposing);
         }
 
-        private List<Project> _isBeingBuiltProjects;
+        private List<Project> _shouldGeneratedProjects;
 
         private VisualStudioWorkspace _workspace;
 
@@ -354,6 +389,10 @@ namespace BitVSExtensionV1
 
         private OutputWindow _outputWindow;
 
+        private OutputWindowPane _outputPane;
+
         private DTE2 _applicationObject;
+
+        private IVsStatusbar _statusBar;
     }
 }
