@@ -8,7 +8,10 @@
     "outFile": "bitChangeSetManager-security.js",
     "target": "es5",
     "sourceMap": true,
-    "lib": [ "dom", "es2015" ]
+    "lib": [ "dom", "es2017" ],
+    "charset": "utf8",
+    "inlineSources": true,
+    "removeComments": false
   },
   "exclude": [ "node_modules", "bower_components", "bin", "obj" ]
 }
