@@ -263,6 +263,13 @@
             if (formViewModelDependency.$routeConfig != null) {
                 formViewModelDependency.$routeConfig.filter(r => r.name != null && r.component == null).forEach(r => {
                     r.component = camelize(r.name);
+                    if (r.path != null) {
+                        let originalPath = r.path;
+                        r.path = originalPath.toLowerCase();
+                        if (r.path != originalPath && this.clientAppProfile.isDebugMode == true) {
+                            console.warn(`Path of ${r.name} changed from ${originalPath} to ${r.path}.`);
+                        }
+                    }
                 });
             }
 
