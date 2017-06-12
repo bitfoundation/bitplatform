@@ -1,5 +1,6 @@
 ﻿using Fclp;
 using System;
+using System.IO;
 
 namespace BitCLIV1
 {
@@ -15,12 +16,17 @@ namespace BitCLIV1
     {
         public BitCLIV1Action Action { get; set; }
 
-        public string Path { get; set; }
+        public string SolutionPath { get; set; }
     }
 
     public class Program
     {
         public static void Main(string[] args)
+        {
+            ASyncMain(args).Wait();
+        }
+
+        public static async System.Threading.Tasks.Task ASyncMain(string[] args)
         {
             FluentCommandLineParser<BitCLIV1Args> commandLineParser = new FluentCommandLineParser<BitCLIV1Args>();
 
@@ -29,10 +35,10 @@ namespace BitCLIV1
                 .Required()
                 .WithDescription($"Action to perform. {nameof(BitCLIV1Action.Clean)} || {nameof(BitCLIV1Action.Generate)} || {nameof(BitCLIV1Action.Validate)}. Required");
 
-            commandLineParser.Setup(arg => arg.Path)
+            commandLineParser.Setup(arg => arg.SolutionPath)
                 .As('p', "path")
-                .SetDefault("//")
-                .WithDescription("Path to folder which contains BitConfigV1.json file. Not Required. Default is current folder.");
+                .Required()
+                .WithDescription("Path to solution file. Required.");
 
             commandLineParser.SetupHelp("?", "help")
                 .Callback(helpText => Console.WriteLine(helpText));
@@ -46,6 +52,11 @@ namespace BitCLIV1
             else
             {
                 BitCLIV1Args typedArgs = commandLineParser.Object;
+
+                bool solutionPathIsRelative = !Path.IsPathRooted(typedArgs.SolutionPath);
+
+                if (solutionPathIsRelative == true)
+                    typedArgs.SolutionPath = Path.Combine(Environment.CurrentDirectory, typedArgs.SolutionPath);
             }
         }
     }
