@@ -61,6 +61,14 @@ namespace Bit.Owin.Middlewares
                 innerApp.UseXDownloadOptions();
                 innerApp.UseFileServer(options);
             });
+
+            owinApp.Map("/Files", innerApp =>
+            {
+                innerApp.Use<OwinNoCacheResponseMiddleware>();
+                innerApp.UseXContentTypeOptions();
+                innerApp.UseXDownloadOptions();
+                innerApp.UseFileServer(options);
+            });
         }
     }
 }

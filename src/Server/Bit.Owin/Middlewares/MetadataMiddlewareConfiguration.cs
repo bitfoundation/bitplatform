@@ -39,6 +39,14 @@ namespace Bit.Owin.Middlewares
                 innerApp.UseXDownloadOptions();
                 innerApp.Use<MetadatMiddleware>();
             });
+
+            owinApp.Map("/Metadata", innerApp =>
+            {
+                innerApp.Use<OwinNoCacheResponseMiddleware>();
+                innerApp.UseXContentTypeOptions();
+                innerApp.UseXDownloadOptions();
+                innerApp.Use<MetadatMiddleware>();
+            });
         }
     }
 }
