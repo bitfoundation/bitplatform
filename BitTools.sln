@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.26430.6
+VisualStudioVersion = 15.0.26430.13
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BitCodeAnalyzer", "BitTools\BitCodeAnalyzer\BitCodeAnalyzer.csproj", "{D3606CAF-481E-4632-9060-A9367A5D4F6A}"
 EndProject
@@ -20,6 +20,8 @@ EndProject
 Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "BitTools.Core", "BitTools\BitTools.Core\BitTools.Core.shproj", "{2C8E2FD6-0DB2-470B-9059-9B0B6DF1562F}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BitTools.Core.VSExtensionBuildVersion", "BitTools\BitTools.Core.VSExtensionBuildVersion\BitTools.Core.VSExtensionBuildVersion.csproj", "{3AA3C219-2D0A-49DD-A025-5B4654BF2CFA}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BitCLIV1", "BitTools\BitCLIV1\BitCLIV1.csproj", "{932801D8-91D1-4A97-AB42-0DFF4E525690}"
 EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
@@ -64,6 +66,10 @@ Global
 		{3AA3C219-2D0A-49DD-A025-5B4654BF2CFA}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3AA3C219-2D0A-49DD-A025-5B4654BF2CFA}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{3AA3C219-2D0A-49DD-A025-5B4654BF2CFA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{932801D8-91D1-4A97-AB42-0DFF4E525690}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{932801D8-91D1-4A97-AB42-0DFF4E525690}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{932801D8-91D1-4A97-AB42-0DFF4E525690}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{932801D8-91D1-4A97-AB42-0DFF4E525690}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
