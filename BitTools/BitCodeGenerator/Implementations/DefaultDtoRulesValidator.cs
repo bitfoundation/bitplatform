@@ -5,12 +5,13 @@ using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using System.Linq;
 using Microsoft.CodeAnalysis;
+using System.Collections.Generic;
 
 namespace BitCodeGenerator.Implementations
 {
     public class DefaultDtoRulesValidator : IDtoRulesValidator
     {
-        public virtual void Validate(DtoRules dtoRules)
+        public virtual void Validate(DtoRules dtoRules, IList<Project> allSourceProjects = null)
         {
             if (dtoRules.DtoRulesSymbol
                 .Constructors.Length > 1)

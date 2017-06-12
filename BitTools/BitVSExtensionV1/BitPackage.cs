@@ -1,31 +1,29 @@
-﻿using System.Collections.Generic;
+﻿using BitCodeGenerator.Implementations;
+using BitCodeGenerator.Implementations.HtmlClientProxyGenerator;
+using BitTools.Core.Contracts;
+using BitTools.Core.Model;
+using BitVSEditorUtils.HTML.Schema;
+using EnvDTE;
+using EnvDTE80;
+using Microsoft.CodeAnalysis;
 using Microsoft.VisualStudio.ComponentModelHost;
 using Microsoft.VisualStudio.LanguageServices;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
-using System.ComponentModel.Design;
-using System.Linq;
-using System.Runtime.InteropServices;
-using EnvDTE;
-using Project = Microsoft.CodeAnalysis.Project;
-using Solution = Microsoft.CodeAnalysis.Solution;
-using BitHtmlElement = BitVSEditorUtils.HTML.Schema.HtmlElement;
-using System.Windows.Forms;
-using System;
-using System.IO;
-using EnvDTE80;
-using System.Diagnostics;
-using BitTools.Core.Contracts;
-using BitCodeGenerator.Implementations;
-using BitCodeGenerator.Implementations.HtmlClientProxyGenerator;
-using System.Reflection;
-using System.Globalization;
-using System.Threading;
-using BitTools.Core.Model;
 using Newtonsoft.Json;
+using System;
+using System.Collections.Generic;
+using System.ComponentModel.Design;
+using System.Diagnostics;
+using System.Globalization;
+using System.IO;
+using System.Linq;
+using System.Reflection;
+using System.Runtime.InteropServices;
 using System.Threading.Tasks;
-using BitVSEditorUtils.HTML.Completion;
-using BitVSEditorUtils.HTML.Schema;
+using System.Windows.Forms;
+using BitHtmlElement = BitVSEditorUtils.HTML.Schema.HtmlElement;
+using Project = Microsoft.CodeAnalysis.Project;
 using Task = System.Threading.Tasks.Task;
 
 namespace BitVSExtensionV1
@@ -80,9 +78,6 @@ namespace BitVSExtensionV1
                 return;
             }
 
-            if (await PrepareSolution() == false)
-                return;
-
             Window outputWindow = _applicationObject.DTE.Windows.Item(EnvDTE.Constants.vsWindowKindOutput);
 
             if (outputWindow == null)
@@ -98,28 +93,14 @@ namespace BitVSExtensionV1
                 _outputWindow.OutputWindowPanes.Add(BitVSExtensionName);
             }
 
-            try
-            {
-                CheckAssemblyVersions();
-            }
-            catch (Exception ex)
-            {
-                ShowInitialLoadProblem($"Check version failed {ex}");
-                return;
-            }
-
             _applicationObject.Events.BuildEvents.OnBuildProjConfigDone += _buildEvents_OnBuildProjConfigDone;
             _applicationObject.Events.BuildEvents.OnBuildDone += _buildEvents_OnBuildDone;
             _applicationObject.Events.BuildEvents.OnBuildBegin += _buildEvents_OnBuildBegin;
 
-            try
-            {
-                InitHtmlElements();
-            }
-            catch (Exception ex)
-            {
-                ShowInitialLoadProblem($"Init html elements failed {ex}");
-            }
+            if (await PrepareSolution() == false)
+                return;
+
+            await DoOnSolutionReadyOrChange();
         }
 
         private async Task<bool> PrepareSolution()
@@ -149,14 +130,57 @@ namespace BitVSExtensionV1
 
             _isBeingBuiltProjects = new List<Project>();
 
+            _workspace.WorkspaceChanged += _workspace_WorkspaceChanged;
+
             return true;
+        }
+
+        private async Task DoOnSolutionReadyOrChange()
+        {
+            try
+            {
+                InitHtmlElements();
+            }
+            catch (Exception ex)
+            {
+                ShowInitialLoadProblem($"Init html elements failed {ex}");
+            }
+
+            try
+            {
+                await GenerateAll();
+            }
+            catch (Exception ex)
+            {
+                ShowInitialLoadProblem($"Generate all failed {ex}");
+            }
+        }
+
+        private async Task GenerateAll()
+        {
+            Stopwatch watch = Stopwatch.StartNew();
+
+            IProjectDtoControllersProvider controllersProvider = new DefaultProjectDtoControllersProvider();
+            IProjectDtosProvider dtosProvider = new DefaultProjectDtosProvider(controllersProvider);
+
+            DefaultHtmlClientProxyGenerator generator = new DefaultHtmlClientProxyGenerator(new DefaultBitCodeGeneratorOrderedProjectsProvider(),
+                new DefaultBitCodeGeneratorMappingsProvider(new DefaultBitConfigProvider()), dtosProvider
+                , new DefaultHtmlClientProxyDtoGenerator(), new DefaultHtmlClientContextGenerator(), controllersProvider, new DefaultProjectEnumTypesProvider(controllersProvider, dtosProvider));
+
+            await generator.GenerateCodes(_workspace.CurrentSolution, _workspace.CurrentSolution.Projects.ToList());
+
+            watch.Stop();
+
+            Log($"Code Generation Completed in {watch.ElapsedMilliseconds} milli seconds");
         }
 
         private void InitHtmlElements()
         {
+            HtmlElementsContainer.Elements = new List<BitHtmlElement> { };
+
             DefaultBitConfigProvider configProvider = new DefaultBitConfigProvider();
 
-            BitConfig config = configProvider.GetConfiguration(_workspace, _workspace.CurrentSolution, Enumerable.Empty<Project>().ToList());
+            BitConfig config = configProvider.GetConfiguration(_workspace.CurrentSolution, Enumerable.Empty<Project>().ToList());
 
             List<BitHtmlElement> allElements = new List<BitHtmlElement>();
 
@@ -189,22 +213,12 @@ namespace BitVSExtensionV1
             HtmlElementsContainer.Elements = allElements;
         }
 
-        private void CheckAssemblyVersions()
+        private async void _workspace_WorkspaceChanged(object sender, WorkspaceChangeEventArgs e)
         {
-            string bitCoreVersion = typeof(BitConfig).GetTypeInfo().Assembly.GetName().Version.ToString();
-            string bitCodeGeneratorVersion = typeof(DefaultBitConfigProvider).GetTypeInfo().Assembly.GetName().Version.ToString();
-            string bitVSEditorVersion = typeof(AttributeCompletion).GetTypeInfo().Assembly.GetName().Version.ToString();
-            string bitVSExtensionVersion = typeof(BitPacakge).GetTypeInfo().Assembly.GetName().Version.ToString();
-
-            bool allVersionsAreEqual = (bitCoreVersion == bitVSExtensionVersion) && (bitCodeGeneratorVersion == bitVSExtensionVersion) && (bitVSEditorVersion == bitVSExtensionVersion);
-
-            Log($"BitToolsCoreVersion: {bitCoreVersion} at {typeof(BitConfig).GetTypeInfo().Assembly.Location}");
-            Log($"BitCodeGeneratorVersion: {bitCodeGeneratorVersion} at {typeof(DefaultBitConfigProvider).GetTypeInfo().Assembly.Location}");
-            Log($"BitVSEditor: {bitVSEditorVersion} at {typeof(AttributeCompletion).GetTypeInfo().Assembly.Location}");
-            Log($"BitVSExtensionV1Version: {bitVSExtensionVersion} at {typeof(BitPacakge).GetTypeInfo().Assembly.Location}");
-
-            if (allVersionsAreEqual == false)
-                throw new InvalidOperationException("Version mismathch");
+            if (e.Kind == WorkspaceChangeKind.SolutionAdded)
+            {
+                await DoOnSolutionReadyOrChange();
+            }
         }
 
         public void RedirectAssembly(string shortName, Version targetVersion, string publicKeyToken)
@@ -259,13 +273,11 @@ namespace BitVSExtensionV1
 
         private async void _buildEvents_OnBuildDone_Internal(vsBuildScope scope, vsBuildAction action)
         {
-            Solution solution = _workspace.CurrentSolution;
-
             if (action == vsBuildAction.vsBuildActionClean)
             {
                 DefaultHtmlClientProxyCleaner cleaner = new DefaultHtmlClientProxyCleaner(new DefaultBitCodeGeneratorMappingsProvider(new DefaultBitConfigProvider()));
 
-                await cleaner.DeleteCodes(_workspace, solution, _isBeingBuiltProjects);
+                await cleaner.DeleteCodes(_workspace.CurrentSolution, _isBeingBuiltProjects);
 
                 Log("Generated codes were deleted");
             }
@@ -280,7 +292,7 @@ namespace BitVSExtensionV1
                     new DefaultBitCodeGeneratorMappingsProvider(new DefaultBitConfigProvider()), dtosProvider
                     , new DefaultHtmlClientProxyDtoGenerator(), new DefaultHtmlClientContextGenerator(), controllersProvider, new DefaultProjectEnumTypesProvider(controllersProvider, dtosProvider));
 
-                await generator.GenerateCodes(_workspace, solution, _isBeingBuiltProjects);
+                await generator.GenerateCodes(_workspace.CurrentSolution, _isBeingBuiltProjects);
 
                 watch.Stop();
 
@@ -317,6 +329,9 @@ namespace BitVSExtensionV1
 
         protected override void Dispose(bool disposing)
         {
+            if (_workspace != null)
+                _workspace.WorkspaceChanged -= _workspace_WorkspaceChanged;
+
             if (_applicationObject?.Events?.BuildEvents != null)
             {
                 _applicationObject.Events.BuildEvents.OnBuildProjConfigDone -= _buildEvents_OnBuildProjConfigDone;

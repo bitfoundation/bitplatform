@@ -12,7 +12,7 @@ namespace BitCodeGenerator.Implementations
 {
     public class DefaultProjectDtoRulesProvider : IProjectDtoRulesProvider
     {
-        public virtual async Task<IList<DtoRules>> GetProjectAllDtoRules(Project project)
+        public virtual async Task<IList<DtoRules>> GetProjectAllDtoRules(Project project, IList<Project> allSourceProjects = null)
         {
             if (project == null)
                 throw new ArgumentNullException(nameof(project));

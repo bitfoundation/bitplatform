@@ -24,7 +24,7 @@ namespace BitCodeGenerator.Test.Implementations
 
                 IList<BitCodeGeneratorMapping> bitCodeGeneratorMappings = new DefaultBitCodeGeneratorMappingsProvider(
                     new DefaultBitConfigProvider())
-                    .GetBitCodeGeneratorMappings(workspace, solution, projects);
+                    .GetBitCodeGeneratorMappings(solution, projects);
 
                 Assert.AreEqual(2, bitCodeGeneratorMappings.Count);
 
@@ -44,7 +44,7 @@ namespace BitCodeGenerator.Test.Implementations
 
                 IList<BitCodeGeneratorMapping> bitCodeGeneratorMappings = new DefaultBitCodeGeneratorMappingsProvider(
                     new DefaultBitConfigProvider())
-                    .GetBitCodeGeneratorMappings(workspace, solution, projects);
+                    .GetBitCodeGeneratorMappings(solution, projects);
 
                 Assert.AreEqual(0, bitCodeGeneratorMappings.Count);
             }

@@ -53,19 +53,15 @@ namespace BitCodeGenerator.Implementations.HtmlClientProxyGenerator
             _projectEnumTypesProvider = projectEnumTypesProvider;
         }
 
-        public virtual async Task GenerateCodes(Workspace workspace, Solution solution,
-            IList<Project> projects)
+        public virtual async Task GenerateCodes(Solution solution, IList<Project> projects)
         {
-            if (workspace == null)
-                throw new ArgumentNullException(nameof(workspace));
-
             if (solution == null)
                 throw new ArgumentNullException(nameof(solution));
 
             if (projects == null)
                 throw new ArgumentNullException(nameof(projects));
 
-            foreach (BitCodeGeneratorMapping proxyGeneratorMapping in _bitCodeGeneratorMappingsProvider.GetBitCodeGeneratorMappings(workspace, solution, projects))
+            foreach (BitCodeGeneratorMapping proxyGeneratorMapping in _bitCodeGeneratorMappingsProvider.GetBitCodeGeneratorMappings(solution, projects))
             {
                 string generatedContextName = proxyGeneratorMapping.DestinationFileName;
 
@@ -78,7 +74,7 @@ namespace BitCodeGenerator.Implementations.HtmlClientProxyGenerator
                 Project destProject = solution.Projects
                         .Last(p => p.Name == proxyGeneratorMapping.DestinationProject.Name);
 
-                IList<Project> involveableProjects = _solutionProjectsSelector.GetInvolveableProjects(workspace, solution, solution.Projects.ToList(), proxyGeneratorMapping);
+                IList<Project> involveableProjects = _solutionProjectsSelector.GetInvolveableProjects(solution, solution.Projects.ToList(), proxyGeneratorMapping);
 
                 List<Dto> dtos = new List<Dto>();
 

@@ -22,11 +22,8 @@ namespace BitCodeGenerator.Implementations
     {
         public virtual string Version { get; set; } = "V1";
 
-        public virtual BitConfig GetConfiguration(Workspace workspace, Solution solution, IList<Project> projects)
+        public virtual BitConfig GetConfiguration(Solution solution, IList<Project> projects)
         {
-            if (workspace == null)
-                throw new ArgumentNullException(nameof(workspace));
-
             if (solution == null)
                 throw new ArgumentNullException(nameof(solution));
 

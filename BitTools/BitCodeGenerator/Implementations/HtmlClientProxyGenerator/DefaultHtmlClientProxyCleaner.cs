@@ -22,19 +22,15 @@ namespace BitCodeGenerator.Implementations.HtmlClientProxyGenerator
             _bitCodeGeneratorMappingsProvider = bitCodeGeneratorMappingsProvider;
         }
 
-        public virtual async Task DeleteCodes(Workspace workspace, Solution solution,
-            IList<Project> projects)
+        public virtual async Task DeleteCodes(Solution solution, IList<Project> projects)
         {
-            if (workspace == null)
-                throw new ArgumentNullException(nameof(workspace));
-
             if (solution == null)
                 throw new ArgumentNullException(nameof(solution));
 
             if (projects == null)
                 throw new ArgumentNullException(nameof(projects));
 
-            foreach (BitCodeGeneratorMapping proxyGeneratorMapping in _bitCodeGeneratorMappingsProvider.GetBitCodeGeneratorMappings(workspace, solution, projects))
+            foreach (BitCodeGeneratorMapping proxyGeneratorMapping in _bitCodeGeneratorMappingsProvider.GetBitCodeGeneratorMappings(solution, projects))
             {
                 string contextName = proxyGeneratorMapping.DestinationFileName;
 

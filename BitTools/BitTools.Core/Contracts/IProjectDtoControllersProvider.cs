@@ -7,6 +7,6 @@ namespace BitTools.Core.Contracts
 {
     public interface IProjectDtoControllersProvider
     {
-        Task<IList<DtoController>> GetProjectDtoControllersWithTheirOperations(Project project);
+        Task<IList<DtoController>> GetProjectDtoControllersWithTheirOperations(Project project, IList<Project> allSourceProjects = null);
     }
 }

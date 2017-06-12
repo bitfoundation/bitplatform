@@ -10,11 +10,8 @@ namespace BitCodeGenerator.Implementations
 {
     public class DefaultBitCodeGeneratorOrderedProjectsProvider : IBitCodeGeneratorOrderedProjectsProvider
     {
-        public virtual IList<Project> GetInvolveableProjects(Workspace workspace, Solution solution, IList<Project> projects, BitCodeGeneratorMapping htmlClientProxyGeneratorMapping)
+        public virtual IList<Project> GetInvolveableProjects(Solution solution, IList<Project> projects, BitCodeGeneratorMapping htmlClientProxyGeneratorMapping)
         {
-            if (workspace == null)
-                throw new ArgumentNullException(nameof(workspace));
-
             if (solution == null)
                 throw new ArgumentNullException(nameof(solution));
 
