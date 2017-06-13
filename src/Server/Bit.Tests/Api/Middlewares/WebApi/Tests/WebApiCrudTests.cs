@@ -26,7 +26,7 @@ namespace Bit.Tests.Api.Middlewares.WebApi.Tests
         {
             using (BitOwinTestEnvironment testEnvironment = new BitOwinTestEnvironment())
             {
-                TokenResponse token = await testEnvironment.Server.Login("ValidUserName", "ValidPassword", clientName: "TestResOwner");
+                TokenResponse token = await testEnvironment.Server.Login("ValidUserName", "ValidPassword", clientId: "TestResOwner");
 
                 ODataClient client = testEnvironment.Server.BuildODataClient(token: token);
 
@@ -66,7 +66,7 @@ namespace Bit.Tests.Api.Middlewares.WebApi.Tests
         {
             using (BitOwinTestEnvironment testEnvironment = new BitOwinTestEnvironment())
             {
-                TokenResponse token = await testEnvironment.Server.Login("ValidUserName", "ValidPassword", clientName: "TestResOwner");
+                TokenResponse token = await testEnvironment.Server.Login("ValidUserName", "ValidPassword", clientId: "TestResOwner");
 
                 ODataClient client = testEnvironment.Server.BuildODataClient(token: token);
 
@@ -111,7 +111,7 @@ namespace Bit.Tests.Api.Middlewares.WebApi.Tests
         {
             using (BitOwinTestEnvironment testEnvironment = new BitOwinTestEnvironment())
             {
-                TokenResponse token = await testEnvironment.Server.Login("ValidUserName", "ValidPassword", clientName: "TestResOwner");
+                TokenResponse token = await testEnvironment.Server.Login("ValidUserName", "ValidPassword", clientId: "TestResOwner");
 
                 ODataClient client = testEnvironment.Server.BuildODataClient(token: token);
 
@@ -149,7 +149,7 @@ namespace Bit.Tests.Api.Middlewares.WebApi.Tests
         {
             using (BitOwinTestEnvironment testEnvironment = new BitOwinTestEnvironment())
             {
-                TokenResponse token = await testEnvironment.Server.Login("ValidUserName", "ValidPassword", clientName: "TestResOwner");
+                TokenResponse token = await testEnvironment.Server.Login("ValidUserName", "ValidPassword", clientId: "TestResOwner");
 
                 IRequestValidator requestValidator = A.Fake<IRequestValidator>();
 
@@ -175,7 +175,7 @@ namespace Bit.Tests.Api.Middlewares.WebApi.Tests
         {
             using (BitOwinTestEnvironment testEnvironment = new BitOwinTestEnvironment())
             {
-                TokenResponse token = await testEnvironment.Server.Login("ValidUserName", "ValidPassword", clientName: "TestResOwner");
+                TokenResponse token = await testEnvironment.Server.Login("ValidUserName", "ValidPassword", clientId: "TestResOwner");
 
                 HttpResponseMessage response = await testEnvironment.Server.GetHttpClient(token)
                             .GetAsync("/odata/Test/ChildEntities?$top=1&$select=Id,Name&$expand=ParentEntity($select=Id,Name)");

@@ -30,7 +30,7 @@ namespace Bit.Tests.Api.Middlewares.WebApi.Tests
                 }
             }))
             {
-                TokenResponse token = await testEnvironment.Server.Login("ValidUserName", "ValidPassword", clientName: "TestResOwner");
+                TokenResponse token = await testEnvironment.Server.Login("ValidUserName", "ValidPassword", clientId: "TestResOwner");
 
                 ODataClient client = testEnvironment.Server.BuildODataClient(token: token);
 
@@ -84,7 +84,7 @@ namespace Bit.Tests.Api.Middlewares.WebApi.Tests
                 }
             }))
             {
-                TokenResponse token = await testEnvironment.Server.Login("ValidUserName", "ValidPassword", clientName: "TestResOwner");
+                TokenResponse token = await testEnvironment.Server.Login("ValidUserName", "ValidPassword", clientId: "TestResOwner");
 
                 ODataClient client = testEnvironment.Server.BuildODataClient(token: token, beforeRequest: message =>
                 {
@@ -134,7 +134,7 @@ namespace Bit.Tests.Api.Middlewares.WebApi.Tests
         {
             using (BitOwinTestEnvironment testEnvironment = new BitOwinTestEnvironment())
             {
-                TokenResponse token = await testEnvironment.Server.Login("ValidUserName", "ValidPassword", clientName: "TestResOwner");
+                TokenResponse token = await testEnvironment.Server.Login("ValidUserName", "ValidPassword", clientId: "TestResOwner");
 
                 ODataClient client = testEnvironment.Server.BuildODataClient(token: token);
 
@@ -152,7 +152,7 @@ namespace Bit.Tests.Api.Middlewares.WebApi.Tests
         {
             using (BitOwinTestEnvironment testEnvironment = new BitOwinTestEnvironment())
             {
-                TokenResponse token = await testEnvironment.Server.Login("ValidUserName", "ValidPassword", clientName: "TestResOwner");
+                TokenResponse token = await testEnvironment.Server.Login("ValidUserName", "ValidPassword", clientId: "TestResOwner");
 
                 ODataClient client = testEnvironment.Server.BuildODataClient(token: token, beforeRequest: message =>
                 {

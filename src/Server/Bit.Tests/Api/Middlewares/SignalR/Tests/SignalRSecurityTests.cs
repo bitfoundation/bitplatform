@@ -16,7 +16,7 @@ namespace Bit.Tests.Api.Middlewares.SignalR.Tests
         {
             using (BitOwinTestEnvironment testEnvironment = new BitOwinTestEnvironment())
             {
-                TokenResponse token = await testEnvironment.Server.Login("ValidUserName", "ValidPassword", clientName: "TestResOwner");
+                TokenResponse token = await testEnvironment.Server.Login("ValidUserName", "ValidPassword", clientId: "TestResOwner");
 
                 await testEnvironment.Server.BuildSignalRClient(token);
             }

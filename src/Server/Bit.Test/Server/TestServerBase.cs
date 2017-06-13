@@ -165,9 +165,9 @@ namespace Bit.Test.Server
             Uri = uri;
         }
 
-        public virtual async Task<TokenResponse> Login(string userName, string password, string clientName, string secret = "secret")
+        public virtual async Task<TokenResponse> Login(string userName, string password, string clientId, string secret = "secret")
         {
-            TokenClient client = BuildTokenClient(clientName, secret);
+            TokenClient client = BuildTokenClient(clientId, secret);
 
             return await client.RequestResourceOwnerPasswordAsync(userName, password, "openid profile user_info");
         }
@@ -186,9 +186,9 @@ namespace Bit.Test.Server
             return client;
         }
 
-        public virtual TokenClient BuildTokenClient(string clientName, string secret = "secret")
+        public virtual TokenClient BuildTokenClient(string clientId, string secret = "secret")
         {
-            TokenClient tokenClient = new TokenClient($@"{Uri}core/connect/token", clientName, secret, innerHttpMessageHandler: GetHttpMessageHandler());
+            TokenClient tokenClient = new TokenClient($@"{Uri}core/connect/token", clientId, secret, innerHttpMessageHandler: GetHttpMessageHandler());
 
             return tokenClient;
         }

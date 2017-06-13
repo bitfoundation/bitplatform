@@ -22,7 +22,7 @@ namespace Bit.Tests.Api.Middlewares.Tests
         {
             using (BitOwinTestEnvironment testEnvironment = new BitOwinTestEnvironment())
             {
-                await testEnvironment.Server.Login("ValidUserName", "ValidPassword", clientName: "TestResOwner");
+                await testEnvironment.Server.Login("ValidUserName", "ValidPassword", clientId: "TestResOwner");
 
                 IScopeStatusManager scopeStatusManager = TestDependencyManager.CurrentTestDependencyManager
                     .Objects.OfType<IScopeStatusManager>()
@@ -53,7 +53,7 @@ namespace Bit.Tests.Api.Middlewares.Tests
             {
                 try
                 {
-                    TokenResponse token = await testEnvironment.Server.Login("ValidUserName", "ValidPassword", clientName: "TestResOwner");
+                    TokenResponse token = await testEnvironment.Server.Login("ValidUserName", "ValidPassword", clientId: "TestResOwner");
 
                     await testEnvironment.Server.GetHttpClient(token)
                         .GetAsync("/Exception");
@@ -103,7 +103,7 @@ namespace Bit.Tests.Api.Middlewares.Tests
                 }
             }))
             {
-                TokenResponse token = await testEnvironment.Server.Login("ValidUserName", "ValidPassword", clientName: "TestResOwner");
+                TokenResponse token = await testEnvironment.Server.Login("ValidUserName", "ValidPassword", clientId: "TestResOwner");
 
                 await testEnvironment.Server.GetHttpClient(token)
                             .GetAsync("/InternalServerError");
@@ -136,7 +136,7 @@ namespace Bit.Tests.Api.Middlewares.Tests
         {
             using (BitOwinTestEnvironment testEnvironment = new BitOwinTestEnvironment())
             {
-                TokenResponse token = await testEnvironment.Server.Login("ValidUserName", "ValidPassword", clientName: "TestResOwner");
+                TokenResponse token = await testEnvironment.Server.Login("ValidUserName", "ValidPassword", clientId: "TestResOwner");
 
                 await testEnvironment.Server.GetHttpClient(token)
                     .GetAsync("/odata/Test/XYZ");

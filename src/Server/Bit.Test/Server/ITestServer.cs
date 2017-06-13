@@ -21,7 +21,7 @@ namespace Bit.Test.Server
     {
         RemoteWebDriver GetWebDriver(RemoteWebDriverOptions options = null);
 
-        Task<TokenResponse> Login(string userName, string password, string clientName, string secret = "secret");
+        Task<TokenResponse> Login(string userName, string password, string clientId, string secret = "secret");
 
         ODataClient BuildODataClient(Action<HttpRequestMessage> beforeRequest = null,
             Action<HttpResponseMessage> afterResponse = null, TokenResponse token = null, string route = null);
@@ -33,7 +33,7 @@ namespace Bit.Test.Server
 
         Task<IHubProxy> BuildSignalRClient(TokenResponse token = null, Action<string, dynamic> onMessageReceived = null);
 
-        TokenClient BuildTokenClient(string clientName, string secret);
+        TokenClient BuildTokenClient(string clientId, string secret);
 
         void Initialize(string uri);
 

@@ -16,9 +16,9 @@ namespace Bit.Tests.Api.Middlewares.SignalR.Tests
         {
             using (BitOwinTestEnvironment testEnvironment = new BitOwinTestEnvironment())
             {
-                TokenResponse tokenOfUser1 = await testEnvironment.Server.Login("ValidUserName", "ValidPassword", clientName: "TestResOwner");
+                TokenResponse tokenOfUser1 = await testEnvironment.Server.Login("ValidUserName", "ValidPassword", clientId: "TestResOwner");
 
-                TokenResponse tokenOfUser2 = await testEnvironment.Server.Login("User2", "ValidPassword", clientName: "TestResOwner");
+                TokenResponse tokenOfUser2 = await testEnvironment.Server.Login("User2", "ValidPassword", clientId: "TestResOwner");
 
                 ODataClient odataClientOfUser1 = testEnvironment.Server.BuildODataClient(token: tokenOfUser1);
 
@@ -45,9 +45,9 @@ namespace Bit.Tests.Api.Middlewares.SignalR.Tests
         {
             using (BitOwinTestEnvironment testEnvironment = new BitOwinTestEnvironment())
             {
-                TokenResponse tokenOfUser1 = await testEnvironment.Server.Login("ValidUserName", "ValidPassword", clientName: "TestResOwner");
+                TokenResponse tokenOfUser1 = await testEnvironment.Server.Login("ValidUserName", "ValidPassword", clientId: "TestResOwner");
 
-                TokenResponse tokenOfUser2 = await testEnvironment.Server.Login("User2", "ValidPassword", clientName: "TestResOwner");
+                TokenResponse tokenOfUser2 = await testEnvironment.Server.Login("User2", "ValidPassword", clientId: "TestResOwner");
 
                 ODataClient odataClientOfUser1 = testEnvironment.Server.BuildODataClient(token: tokenOfUser1);
 
