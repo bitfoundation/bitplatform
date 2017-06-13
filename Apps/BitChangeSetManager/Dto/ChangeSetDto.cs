@@ -1,6 +1,8 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
 using Bit.Model.Contracts;
+using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace BitChangeSetManager.Dto
 {
@@ -42,5 +44,21 @@ namespace BitChangeSetManager.Dto
         public virtual string ProvinceName { get; set; }
 
         public virtual Guid? NeedsReviewId { get; set; }
+
+        [InverseProperty(nameof(ChangeSetImagetDto.ChangeSet))]
+        public virtual List<ChangeSetImagetDto> Images { get; set; }
+    }
+
+    public class ChangeSetImagetDto : IDtoWithDefaultGuidKey
+    {
+        public virtual Guid Id { get; set; }
+
+        public virtual string Name { get; set; }
+
+        public virtual Guid ChangeSetId { get; set; }
+
+        [ForeignKey(nameof(ChangeSetId))]
+        [InverseProperty(nameof(ChangeSetDto.Images))]
+        public virtual ChangeSetDto ChangeSet { get; set; }
     }
 }

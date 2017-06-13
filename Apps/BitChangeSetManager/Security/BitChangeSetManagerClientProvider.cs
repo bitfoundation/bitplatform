@@ -63,7 +63,7 @@ namespace BitChangeSetManager.Security
                 },
                 new Client
                 {
-                    /*  Required nuget package: IdentityModel + Microsoft.Net.Http
+                    /*  Required nuget packages: IdentityModel + Microsoft.Net.Http
                      
                         public async Task<string> CallSecureApiSample()
                         {

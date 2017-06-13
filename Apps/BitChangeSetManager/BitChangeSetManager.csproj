@@ -377,6 +377,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Api\BitChangeSetManagerAppMessageHubEvents.cs" />
+    <Compile Include="Api\ChangeSetImagesController.cs" />
     <Compile Include="Api\ChangeSetDeliveryRequirementsController.cs" />
     <Compile Include="Api\ChangeSetDescriptionTemplateController.cs" />
     <Compile Include="Api\ChangeSetSeveritiesController.cs" />
@@ -408,6 +409,7 @@
     <Compile Include="Metadata\ChangeSetsViewMetadata.cs" />
     <Compile Include="Metadata\DeliveryDtoMetadata.cs" />
     <Compile Include="Model\ChangeSet.cs" />
+    <Compile Include="Model\ChangeSetImage.cs" />
     <Compile Include="Model\ChangeSetDeliveryRequirement.cs" />
     <Compile Include="Model\ChangeSetSeverity.cs" />
     <Compile Include="Model\City.cs" />

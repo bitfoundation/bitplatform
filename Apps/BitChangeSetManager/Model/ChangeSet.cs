@@ -49,5 +49,7 @@ namespace BitChangeSetManager.Model
         public virtual Province Province { get; set; }
 
         public virtual Guid? NeedsReviewId { get; set; }
+
+        public virtual List<ChangeSetImage> Images { get; set; }
     }
 }

@@ -36,6 +36,8 @@ namespace BitChangeSetManager.DataAccess
 
         public virtual DbSet<Constant> Constants { get; set; }
 
+        public virtual DbSet<ChangeSetImage> ChangeSetImages { get; set; }
+
         protected override void OnModelCreating(DbModelBuilder modelBuilder)
         {
             modelBuilder.Conventions.Remove<ManyToManyCascadeDeleteConvention>();
