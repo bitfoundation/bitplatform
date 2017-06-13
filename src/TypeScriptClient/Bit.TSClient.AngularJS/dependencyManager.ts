@@ -13,6 +13,8 @@
         loadStatus?: "IsBeingLoaded" | "NotLoaded" | "Loaded" | "LoadError";
         promise?: Promise<void>;
         continueOnError?: boolean;
+        onLoad?: () => void;
+        onError?: () => void;
     }
 
     export interface IComponentDependency extends IDependency, ng.IComponentOptions {
@@ -331,6 +333,8 @@
 
                 element.onload = (): void => {
 
+                    if (nextFile.onLoad != null)
+                        nextFile.onLoad();
                     nextFile.loadStatus = "Loaded";
                     nextFile = files.shift();
 
@@ -345,6 +349,8 @@
 
                 element.onerror = (e): void => {
 
+                    if (nextFile.onError != null)
+                        nextFile.onError();
                     nextFile.loadStatus = "LoadError";
 
                     if (nextFile.continueOnError == false)
