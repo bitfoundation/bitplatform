@@ -4,7 +4,7 @@
   "description": "Bit Framework",
   "author": "Bit Foundation",
   "devDependencies": {
-    "@types/jasmine": "^2.5.46",
+    "@types/jasmine": "^2.5.52",
     "@types/jasmine-jquery": "^1.5.30"
   }
 }

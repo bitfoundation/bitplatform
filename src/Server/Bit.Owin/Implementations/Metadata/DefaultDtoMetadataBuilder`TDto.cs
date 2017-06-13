@@ -11,7 +11,7 @@ namespace Bit.Owin.Implementations.Metadata
     public class DefaultDtoMetadataBuilder<TDto> : DefaultMetadataBuilder, IDtoMetadataBuilder<TDto>
         where TDto : class
     {
-        private static readonly JavascriptCompilationOptions options = new JavascriptCompilationOptions(JsCompilationFlags.BodyOnly, scriptVersion: ScriptVersion.Es60, extensions: new JavascriptConversionExtension[] { new LinqMethods(), new StaticStringMethods(), new StaticMathMethods(), new EnumConversionExtension(EnumOptions.UseStrings) });
+        private static readonly JavascriptCompilationOptions options = new JavascriptCompilationOptions(JsCompilationFlags.BodyOnly, scriptVersion: ScriptVersion.Es70, extensions: new JavascriptConversionExtension[] { new LinqMethods(), new StaticStringMethods(), new StaticMathMethods(), new EnumConversionExtension(EnumOptions.UseStrings) });
 
         private DtoMetadata _dtoMetadata;
 

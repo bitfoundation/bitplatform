@@ -32,7 +32,7 @@
     <PackageReference Include="IdentityModel" Version="2.9.1" />
     <PackageReference Include="IdentityServer3" Version="2.6.0" />
     <PackageReference Include="IdentityServer3.AccessTokenValidation" Version="2.15.0" />
-    <PackageReference Include="Lambda2Js" Version="2.1.1" />
+    <PackageReference Include="Lambda2Js" Version="3.0.1" />
     <PackageReference Include="Microsoft.AspNet.Cors" Version="5.2.3" />
     <PackageReference Include="Microsoft.AspNet.OData" Version="6.0.0" />
     <PackageReference Include="Microsoft.AspNet.Razor" Version="3.2.3" />
