@@ -149,7 +149,13 @@
 
     dependencyManager.registerFileDependency({
         name: "angular",
-        path: "bit-framework/src/TypeScriptClient/Bit.TSClient.AngularJS.Tests/bower_components/angular/angular"
+        path: "bit-framework/src/TypeScriptClient/Bit.TSClient.AngularJS.Tests/bower_components/angular/angular",
+        onLoad: () => {
+            // For electron compatibility
+            if (typeof window["require"] != 'undefined' && window["module"] != null && window["module"].exports != null) {
+                window["$"] = window["jQuery"] = window["module"].exports;
+            }
+        }
     });
 
     dependencyManager.registerFileDependency({

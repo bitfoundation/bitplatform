@@ -8,6 +8,7 @@
     "@types/angular-material": "0.0.0",
     "@types/angular-translate": "^2.15.0",
     "@types/decimal.js": "0.0.29",
+    "@types/electron": "^1.6.10",
     "@types/jquery": "^2.0.45",
     "@types/kendo-ui": "^2016.3.41",
     "@types/pubsub-js": "1.5.17",

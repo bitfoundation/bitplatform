@@ -48,7 +48,13 @@ module BitChangeSetManagerSecurity {
 
     dependencyManager.registerFileDependency({
         name: "jQuery",
-        path: "bower_components/jquery/dist/jquery"
+        path: "bower_components/jquery/dist/jquery",
+        onLoad: () => {
+            // For electron compatibility
+            if (typeof window["require"] != 'undefined' && window["module"] != null && window["module"].exports != null) {
+                window["$"] = window["jQuery"] = window["module"].exports;
+            }
+        }
     });
 
     dependencyManager.registerFileDependency({

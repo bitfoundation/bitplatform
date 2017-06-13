@@ -351,6 +351,7 @@
     </Content>
     <None Include="ToDo.txt" />
     <Content Include="wwwroot\defaultPageTemplate.cshtml" />
+    <Content Include="wwwroot\electron-sample\main.js" />
     <Content Include="wwwroot\view\views\app.html" />
     <Content Include="wwwroot\view\styles\bitChangeSetManagerStyles.css" />
     <Content Include="wwwroot\view\views\changeSetView.html" />
@@ -365,6 +366,7 @@
     </None>
     <None Include="wwwroot\bower.json" />
     <Content Include="wwwroot\tsconfig.json" />
+    <Content Include="wwwroot\electron-sample\package.json" />
     <None Include="wwwroot\package.json" />
     <Content Include="wwwroot\ssoPageTemplate.cshtml" />
     <Content Include="wwwroot\security\tsconfig.json" />

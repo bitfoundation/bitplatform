@@ -60,7 +60,13 @@ module Bit.Identity.Tests {
 
     dependencyManager.registerFileDependency({
         name: "jQuery",
-        path: "bit-framework/src/TypeScriptClient/Bit.TSClient.AngularJS.Tests/bower_components/jquery/dist/jquery"
+        path: "bit-framework/src/TypeScriptClient/Bit.TSClient.AngularJS.Tests/bower_components/jquery/dist/jquery",
+        onLoad: () => {
+            // For electron compatibility
+            if (typeof window["require"] != 'undefined' && window["module"] != null && window["module"].exports != null) {
+                window["$"] = window["jQuery"] = window["module"].exports;
+            }
+        }
     });
 
     dependencyManager.registerFileDependency({
