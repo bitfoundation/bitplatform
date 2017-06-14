@@ -13,7 +13,7 @@ namespace Bit.Owin.Middlewares
             if (owinApp == null)
                 throw new ArgumentNullException(nameof(owinApp));
 
-            owinApp.MapWhen(IsDefaultPageAndNotLoggedIn,
+            owinApp.MapWhen(IfIsNotLoggedIn,
                 innerApp =>
                 {
                     innerApp.Use<OwinNoCacheResponseMiddleware>();
@@ -21,7 +21,7 @@ namespace Bit.Owin.Middlewares
                 });
         }
 
-        public virtual bool IsDefaultPageAndNotLoggedIn(IOwinContext cntx)
+        public virtual bool IfIsNotLoggedIn(IOwinContext cntx)
         {
             return cntx.GetDependencyResolver().Resolve<IUserInformationProvider>().IsAuthenticated() == false;
         }
