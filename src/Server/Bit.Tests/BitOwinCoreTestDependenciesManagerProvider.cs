@@ -32,6 +32,8 @@ using Bit.Tests.Model.Implementations;
 using Bit.Tests.Properties;
 using IdentityServer3.Core.Services;
 using Microsoft.Extensions.DependencyInjection;
+using Bit.Api.Middlewares.WebApi.OData.Contracts;
+using Bit.Api.Middlewares.WebApi.OData.Implementations;
 
 namespace Bit.Tests
 {
@@ -116,6 +118,8 @@ namespace Bit.Tests
                 }).Resolve<IOwinMiddlewareConfiguration>("WebApiOData");
 
             }, lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExciting: false);
+
+            dependencyManager.Register<IODataSqlBuilder, DefaultODataSqlBuilder>(lifeCycle: DependencyLifeCycle.SingleInstance);
 
             dependencyManager.RegisterSignalRConfiguration<SignalRAuthorizeConfiguration>();
             dependencyManager.RegisterSignalRMiddlewareUsingDefaultConfiguration(AssemblyContainer.Current.GetBitSignalRAssembly());

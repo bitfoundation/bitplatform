@@ -47,6 +47,10 @@
     <Reference Include="Correlator, Version=1.1.0.0, Culture=neutral, PublicKeyToken=ad71b95c30d52163, processorArchitecture=MSIL">
       <HintPath>..\..\..\packages\WebApiCorrelator.1.1.0.0\lib\net452\Correlator.dll</HintPath>
     </Reference>
+    <Reference Include="LambdaSqlBuilder, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\..\packages\LambdaSqlBuilder.0.9\lib\net40\LambdaSqlBuilder.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.CSharp" />
     <Reference Include="Microsoft.Extensions.DependencyInjection, Version=1.1.1.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
       <HintPath>..\..\..\packages\Microsoft.Extensions.DependencyInjection.1.1.1\lib\netstandard1.1\Microsoft.Extensions.DependencyInjection.dll</HintPath>
     </Reference>
@@ -130,6 +134,7 @@
     <Compile Include="Middlewares\WebApi\OData\Contracts\IAutoEdmBuilder.cs" />
     <Compile Include="Middlewares\WebApi\OData\Contracts\IODataContainerBuilderCustomizer.cs" />
     <Compile Include="Middlewares\WebApi\OData\Contracts\IODataModelBuilderProvider.cs" />
+    <Compile Include="Middlewares\WebApi\OData\Contracts\IODataSqlBuilder.cs" />
     <Compile Include="Middlewares\WebApi\OData\DefaultODataActionPayloadDeserializer.cs" />
     <Compile Include="Middlewares\WebApi\OData\DefaultODataEnumDeserializer.cs" />
     <Compile Include="Middlewares\WebApi\OData\DefaultODataEnumSerializer.cs" />
@@ -142,6 +147,7 @@
     <Compile Include="Middlewares\WebApi\OData\Implementations\DefaultAutoEdmBuilder.cs" />
     <Compile Include="Middlewares\WebApi\OData\Implementations\DefaultODataContainerBuilderCustomizer.cs" />
     <Compile Include="Middlewares\WebApi\OData\Implementations\DefaultODataModelBuilderProvider.cs" />
+    <Compile Include="Middlewares\WebApi\OData\Implementations\DefaultODataSqlBuilder.cs" />
     <Compile Include="Middlewares\WebApi\OData\Implementations\DefaultWebApiODataControllerActionSelector.cs" />
     <Compile Include="Middlewares\WebApi\OData\Implementations\DefaultWebApiODataGlobalActionFilterProviders.cs" />
     <Compile Include="Middlewares\WebApi\OData\Implementations\DefaultWebApiODataOwinPipelineInjector.cs" />

@@ -14,6 +14,8 @@ using Bit.Tests.Core.Contracts;
 using Bit.Tests.Model.DomainModels;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Owin;
+using System.Web.OData.Query;
+using Bit.Api.Middlewares.WebApi.OData.Contracts;
 
 namespace Bit.Tests.Api.ApiControllers
 {
@@ -384,6 +386,22 @@ namespace Bit.Tests.Api.ApiControllers
         public virtual string FunctionForNullArg(string name)
         {
             return "Ok";
+        }
+
+        [Function]
+        public virtual IQueryable<TestModel> TestSqlBuilder(ODataQueryOptions<TestModel> odataQuery)
+        {
+            IDependencyResolver dependencyResolver = Request.GetOwinContext().GetDependencyResolver();
+            IValueChecker valueChecker = dependencyResolver.Resolve<IValueChecker>();
+            IODataSqlBuilder odataSqlBuilder = dependencyResolver.Resolve<IODataSqlBuilder>();
+            odataSqlBuilder.BuildSqlQuery(odataQuery, out string where, out string orderBy, out long? top, out long? skip, out IDictionary<string, object> parameters);
+            valueChecker.CheckValue(where);
+            valueChecker.CheckValue(orderBy);
+            valueChecker.CheckValue(top);
+            valueChecker.CheckValue(skip);
+            valueChecker.CheckValue(parameters.Values.ToArray());
+
+            return new TestModel[] { }.AsQueryable();
         }
     }
 }
