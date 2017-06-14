@@ -16,13 +16,14 @@ namespace Bit.Api.Middlewares.WebApi.OData.Implementations
             SqlLamBase.SetAdapter(SqlAdapter.SqlServer2012);
         }
 
-        public void BuildSqlQuery<TDto>(ODataQueryOptions<TDto> odataQuery, out string where, out string orderBy,
+        public void BuildSqlQuery<TDto>(ODataQueryOptions<TDto> odataQuery, out string columns, out string where, out string orderBy,
                                                                             out long? top, out long? skip, out IDictionary<string, object> parameters)
             where TDto : class
         {
             if (odataQuery == null)
                 throw new ArgumentNullException(nameof(odataQuery));
 
+            columns = "*";
             orderBy = where = null;
             top = odataQuery.Top?.Value;
             skip = odataQuery.Skip?.Value;
