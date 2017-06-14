@@ -60,6 +60,10 @@
     <Reference Include="Lambda2Js, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\..\..\packages\Lambda2Js.3.0.1\lib\net40\Lambda2Js.dll</HintPath>
     </Reference>
+    <Reference Include="LambdaSqlBuilder, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\TypeScriptClient\Bit.TSClient.AngularJS.Tests\bower_components\bit-lib\LambdaSqlBuilder\LambdaSqlBuilder.dll</HintPath>
+    </Reference>
     <Reference Include="Microsoft.AspNet.SignalR.Client, Version=2.2.2.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\..\..\packages\Microsoft.AspNet.SignalR.Client.2.2.2\lib\net45\Microsoft.AspNet.SignalR.Client.dll</HintPath>
     </Reference>
@@ -218,16 +222,20 @@
       <HintPath>..\..\..\packages\Remotion.Linq.2.1.1\lib\net45\Remotion.Linq.dll</HintPath>
     </Reference>
     <Reference Include="Simple.OData.Client.Core, Version=5.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\..\packages\Simple.OData.Client.5.0.0-alpha3\lib\net45\Simple.OData.Client.Core.dll</HintPath>
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\TypeScriptClient\Bit.TSClient.AngularJS.Tests\bower_components\bit-lib\Simple.OData.Client\Simple.OData.Client.Core.dll</HintPath>
     </Reference>
     <Reference Include="Simple.OData.Client.Dynamic, Version=5.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\..\packages\Simple.OData.Client.5.0.0-alpha3\lib\net45\Simple.OData.Client.Dynamic.dll</HintPath>
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\TypeScriptClient\Bit.TSClient.AngularJS.Tests\bower_components\bit-lib\Simple.OData.Client\Simple.OData.Client.Dynamic.dll</HintPath>
     </Reference>
     <Reference Include="Simple.OData.Client.V3.Adapter, Version=5.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\..\packages\Simple.OData.Client.5.0.0-alpha3\lib\net45\Simple.OData.Client.V3.Adapter.dll</HintPath>
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\TypeScriptClient\Bit.TSClient.AngularJS.Tests\bower_components\bit-lib\Simple.OData.Client\Simple.OData.Client.V3.Adapter.dll</HintPath>
     </Reference>
     <Reference Include="Simple.OData.Client.V4.Adapter, Version=5.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\..\packages\Simple.OData.Client.5.0.0-alpha3\lib\net45\Simple.OData.Client.V4.Adapter.dll</HintPath>
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\TypeScriptClient\Bit.TSClient.AngularJS.Tests\bower_components\bit-lib\Simple.OData.Client\Simple.OData.Client.V4.Adapter.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.AppContext, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
@@ -375,6 +383,7 @@
     <Compile Include="Api\ApiControllers\Tests\WebApiTests.cs" />
     <Compile Include="Api\ApiControllers\ValidationSamplesController.cs" />
     <Compile Include="Api\AppStartupTests.cs" />
+    <Compile Include="Api\Middlewares\WebApi\Tests\ODataSqlBuilderTests.cs" />
     <Compile Include="BitOwinCoreTestDependenciesManagerProvider.cs" />
     <Compile Include="Api\Implementations\Project\TestEdmModelProvider.cs" />
     <Compile Include="BitOwinTestDependenciesManagerProvider.cs" />
