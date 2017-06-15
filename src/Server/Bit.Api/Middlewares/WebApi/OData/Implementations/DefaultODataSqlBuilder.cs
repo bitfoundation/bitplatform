@@ -1,10 +1,13 @@
 ﻿using Bit.Api.Middlewares.WebApi.OData.Contracts;
+using Bit.Owin.Exceptions;
 using LambdaSqlBuilder;
 using LambdaSqlBuilder.ValueObjects;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Reflection;
 using System.Web.OData.Query;
 
 namespace Bit.Api.Middlewares.WebApi.OData.Implementations
@@ -16,18 +19,20 @@ namespace Bit.Api.Middlewares.WebApi.OData.Implementations
             SqlLamBase.SetAdapter(SqlAdapter.SqlServer2012);
         }
 
-        public void BuildSqlQuery<TDto>(ODataQueryOptions<TDto> odataQuery, out string columns, out string where, out string orderBy,
-                                                                            out long? top, out long? skip, out IDictionary<string, object> parameters)
+        public virtual (string Columns, string Where, string OrderBy, long? Top, long? Skip, IDictionary<string, object> Parameters) BuildSqlQueryParts<TDto>(ODataQueryOptions<TDto> odataQuery)
             where TDto : class
         {
             if (odataQuery == null)
                 throw new ArgumentNullException(nameof(odataQuery));
 
-            columns = "*";
-            orderBy = where = null;
-            top = odataQuery.Top?.Value;
-            skip = odataQuery.Skip?.Value;
-            parameters = null;
+            string columns = "*";
+            string orderBy = null, where = null;
+            long? top = odataQuery.Top?.Value;
+            long? skip = odataQuery.Skip?.Value;
+            IDictionary<string, object> parameters = null;
+
+            if (odataQuery.SelectExpand != null && odataQuery.SelectExpand.SelectExpandClause.AllSelected != true)
+                throw new BadRequestException("$select is not supported for this resource");
 
             if (odataQuery.Filter != null)
             {
@@ -45,8 +50,8 @@ namespace Bit.Api.Middlewares.WebApi.OData.Implementations
                 WhereExpressionFinder<TDto> whereFinder = new WhereExpressionFinder<TDto>();
                 whereFinder.Visit(filteredOdataQueryAsLinq.Expression);
 
-                ConvertCallRemover<TDto> convertCallRemover = new ConvertCallRemover<TDto>();
-                whereFinder.Where = (Expression<Func<TDto, bool>>)convertCallRemover.Visit(whereFinder.Where);
+                ExtraMethodCallRemover<TDto> extraMethodCallRemover = new ExtraMethodCallRemover<TDto>();
+                whereFinder.Where = (Expression<Func<TDto, bool>>)extraMethodCallRemover.Visit(whereFinder.Where);
 
                 SqlLam<TDto> sqlQuery = new SqlLam<TDto>(whereFinder.Where);
 
@@ -74,6 +79,48 @@ namespace Bit.Api.Middlewares.WebApi.OData.Implementations
 
                 orderBy = string.Join(",", sqlQuery.SqlBuilder.OrderByList);
             }
+
+            return new ValueTuple<string, string, string, long?, long?, IDictionary<string, object>>(columns, where, orderBy, top, skip, parameters);
+        }
+
+        public virtual (string Select, string SelectCount, bool SelectCountFromDb, IDictionary<string, object> Parameters) BuildSqlQuery<TDto>(ODataQueryOptions<TDto> queryOptions, string tableName)
+            where TDto : class
+        {
+            if (queryOptions == null)
+                throw new ArgumentNullException(nameof(queryOptions));
+
+            TypeInfo dtoType = typeof(TDto).GetTypeInfo();
+
+            var sqlQuery = BuildSqlQueryParts(queryOptions);
+
+            if (sqlQuery.Skip != null)
+            {
+                if (sqlQuery.Top == null)
+                    throw new BadRequestException("$top is not provided while there is a $skip");
+
+                if (sqlQuery.OrderBy == null)
+                    throw new BadRequestException("$orderby is not provided while there is a $skip");
+            }
+
+            string whereClause = sqlQuery.Where == null ? "" : $"where {sqlQuery.Where}";
+            string offsetClause = sqlQuery.Skip == null ? "" : $"offset {sqlQuery.Skip} rows";
+            string topClause = "", fetchRowClause = "";
+            if (sqlQuery.Top != null)
+            {
+                if (sqlQuery.Skip != null)
+                    fetchRowClause = $"fetch next {sqlQuery.Top} rows only";
+                else
+                    topClause = $"top({sqlQuery.Top})";
+            }
+            string orderByClause = sqlQuery.OrderBy == null ? "" : $"order by {sqlQuery.OrderBy}";
+
+            string select = $"select {topClause} {sqlQuery.Columns} from {tableName} as [{dtoType.Name}] {whereClause} {orderByClause} {offsetClause} {fetchRowClause}";
+
+            string selectCount = $"select count_big(1) from {tableName} as [{dtoType.Name}] {whereClause}";
+
+            bool selectCountFromDb = queryOptions.Count?.Value == true && sqlQuery.Top != null;
+
+            return new ValueTuple<string, string, bool, IDictionary<string, object>>(select, selectCount, selectCountFromDb, sqlQuery.Parameters);
         }
     }
 
@@ -126,15 +173,27 @@ namespace Bit.Api.Middlewares.WebApi.OData.Implementations
         }
     }
 
-    class ConvertCallRemover<TDto> : ExpressionVisitor
+    class ExtraMethodCallRemover<TDto> : ExpressionVisitor
         where TDto : class
     {
         protected override Expression VisitUnary(UnaryExpression node)
         {
             if (node?.NodeType == ExpressionType.Convert)
-                return (MemberExpression)(node as UnaryExpression).Operand;
+                return (MemberExpression)node.Operand;
 
             return base.VisitUnary(node);
+        }
+
+        protected override Expression VisitMethodCall(MethodCallExpression node)
+        {
+            if (node.Method.Name == nameof(string.ToLower) || node.Method.Name == nameof(string.ToUpper))
+            {
+                if (node.Object is UnaryExpression)
+                    return VisitUnary((UnaryExpression)node.Object);
+                else
+                    return node.Object;
+            }
+            return base.VisitMethodCall(node);
         }
     }
 }
