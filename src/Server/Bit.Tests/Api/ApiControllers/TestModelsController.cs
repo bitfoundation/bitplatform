@@ -16,6 +16,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Owin;
 using System.Web.OData.Query;
 using Bit.Api.Middlewares.WebApi.OData.Contracts;
+using Bit.Api.Middlewares.WebApi.OData.ActionFilters;
 
 namespace Bit.Tests.Api.ApiControllers
 {
@@ -389,40 +390,22 @@ namespace Bit.Tests.Api.ApiControllers
         }
 
         [Function]
+        [IgnoreODataEnableQuery]
         public virtual IQueryable<TestModel> TestSqlBuilder(ODataQueryOptions<TestModel> odataQuery)
         {
             IDependencyResolver dependencyResolver = Request.GetOwinContext().GetDependencyResolver();
             IValueChecker valueChecker = dependencyResolver.Resolve<IValueChecker>();
             IODataSqlBuilder odataSqlBuilder = dependencyResolver.Resolve<IODataSqlBuilder>();
-            odataSqlBuilder.BuildSqlQuery(odataQuery, out string columns, out string where, out string orderBy, out long? top, out long? skip, out IDictionary<string, object> parameters);
-            valueChecker.CheckValue(where);
-            valueChecker.CheckValue(orderBy);
-            valueChecker.CheckValue(top);
-            valueChecker.CheckValue(skip);
-            valueChecker.CheckValue(parameters.Values.ToArray());
-
-            if (skip != null)
-            {
-                if (top == null)
-                    throw new BadRequestException("$top is not provided while there is a $skip");
-
-                if (orderBy == null)
-                    throw new BadRequestException("$orderby is not provided while there is a $skip");
-            }
-
-            string whereClause = where == null ? "" : $"where {where}";
-            string offsetClause = skip == null ? "" : $"offset {skip} rows";
-            string topClause = "", fetchRowClause = "";
-            if (top != null)
-            {
-                if (skip != null)
-                    fetchRowClause = $"fetch next {top} rows only";
-                else
-                    topClause = $"top({top})";
-            }
-            string orderByClause = orderBy == null ? "" : $"order by {orderBy}";
-
-            string select = $"select {topClause} {columns} from TestModels as [TestModel] {whereClause} {orderByClause} {offsetClause} {fetchRowClause}";
+            var sqlParts = odataSqlBuilder.BuildSqlQueryParts(odataQuery);
+            valueChecker.CheckValue(sqlParts.Where);
+            valueChecker.CheckValue(sqlParts.OrderBy);
+            valueChecker.CheckValue(sqlParts.Top);
+            valueChecker.CheckValue(sqlParts.Skip);
+            valueChecker.CheckValue(sqlParts.Parameters.Values.ToArray());
+            var sql = odataSqlBuilder.BuildSqlQuery(odataQuery, tableName: "Test.TestModels");
+            valueChecker.CheckValue(sql.Select);
+            valueChecker.CheckValue(sql.SelectCount);
+            valueChecker.CheckValue(sql.SelectCountFromDb);
 
             return new TestModel[] { }.AsQueryable();
         }

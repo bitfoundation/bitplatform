@@ -37,7 +37,7 @@ namespace Bit.Tests.Api.Middlewares.WebApi.Tests
 
                 await client.Controller<TestModelsController, TestModel>()
                     .Function(nameof(TestModelsController.TestSqlBuilder))
-                    .Filter(t => (t.Id == 1 && t.StringProperty.Contains("Test")) || t.Id == 3)
+                    .Filter(t => (t.Id == 1 && t.StringProperty.ToLower().Contains("Test")) || t.Id == 3)
                     .OrderBy(t => t.Id)
                     .ThenByDescending(t => t.StringProperty)
                     .Top(10)
@@ -57,6 +57,15 @@ namespace Bit.Tests.Api.Middlewares.WebApi.Tests
                     .MustHaveHappened(Repeated.Exactly.Once);
 
                 A.CallTo(() => valueChecker.CheckValue(A<object[]>.That.Matches(parameters => (long)parameters[0] == 1 && (string)parameters[1] == "%Test%" && (long)parameters[2] == 3)))
+                    .MustHaveHappened(Repeated.Exactly.Once);
+
+                A.CallTo(() => valueChecker.CheckValue("select  * from Test.TestModels as [TestModel] where (([TestModel].[Id] = @Param1 AND [TestModel].[StringProperty] LIKE @Param2) OR [TestModel].[Id] = @Param3) order by [TestModel].[Id],[TestModel].[StringProperty] DESC offset 7 rows fetch next 10 rows only"))
+                    .MustHaveHappened(Repeated.Exactly.Once);
+
+                A.CallTo(() => valueChecker.CheckValue("select count_big(1) from Test.TestModels as [TestModel] where (([TestModel].[Id] = @Param1 AND [TestModel].[StringProperty] LIKE @Param2) OR [TestModel].[Id] = @Param3)"))
+                    .MustHaveHappened(Repeated.Exactly.Once);
+
+                A.CallTo(() => valueChecker.CheckValue(false))
                     .MustHaveHappened(Repeated.Exactly.Once);
             }
         }
