@@ -35,6 +35,9 @@ namespace Bit.Api.Middlewares.WebApi.OData.ActionFilters
             if (actionExecutedContext?.Response?.Content is ObjectContent &&
                 actionExecutedContext.Response?.IsSuccessStatusCode == true)
             {
+                if (actionExecutedContext.Request.Properties.ContainsKey("IgnoreODataEnableQuery"))
+                    return;
+
                 ObjectContent objContent = ((ObjectContent)(actionExecutedContext.Response.Content));
 
                 TypeInfo actionReturnType = objContent.ObjectType.GetTypeInfo();
