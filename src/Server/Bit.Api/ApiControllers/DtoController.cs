@@ -1,8 +1,11 @@
 ﻿using System;
 using System.Collections.ObjectModel;
 using System.Net.Http;
+using System.Reflection;
 using System.Web.Http.Controllers;
 using System.Web.OData;
+using System.Web.OData.Extensions;
+using System.Web.OData.Query;
 
 namespace Bit.Api.ApiControllers
 {
@@ -86,6 +89,12 @@ namespace Bit.Api.ApiControllers
     public class DtoController<TDto> : ODataController
         where TDto : class
     {
-
+        protected virtual ODataQueryOptions<TDto> GetODataQueryOptions()
+        {
+            HttpRequestMessageProperties requestODataProps = Request.ODataProperties();
+            ODataQueryContext currentOdataQueryContext = new ODataQueryContext(Request.GetModel(), typeof(TDto).GetTypeInfo(), requestODataProps.Path);
+            ODataQueryOptions<TDto> currentOdataQueryOptions = new ODataQueryOptions<TDto>(currentOdataQueryContext, Request);
+            return currentOdataQueryOptions;
+        }
     }
 }
