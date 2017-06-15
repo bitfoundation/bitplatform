@@ -47,7 +47,7 @@ namespace BitCodeGenerator.Implementations.HtmlClientProxyGenerator
 
         private static void DeleteCodes(string fileName, string extension, Project destProject)
         {
-            string fullPath = $@"{new FileInfo(destProject.FilePath).Directory}\{fileName}{extension}";
+            string fullPath = $@"{Directory.GetParent(destProject.FilePath).FullName}\{fileName}{extension}";
 
             if (File.Exists(fullPath))
                 File.Delete(fullPath);

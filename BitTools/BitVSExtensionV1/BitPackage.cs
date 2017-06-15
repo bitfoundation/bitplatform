@@ -161,7 +161,7 @@ namespace BitVSExtensionV1
                 return;
             }
 
-            if (!File.Exists(Path.Combine(Path.GetDirectoryName(_workspace.CurrentSolution.FilePath) + "\\BitConfigV1.json")))
+            if (!CurrentSolutionHasBitConfigV1JsonFile())
             {
                 LogWarn("Could not find BitConfigV1.json file.");
                 return;
@@ -170,9 +170,37 @@ namespace BitVSExtensionV1
             _outputPane.Clear();
             _shouldGeneratedProjects = _workspace.CurrentSolution.Projects.ToList();
 
+            DefaultBitConfigProvider configProvider = new DefaultBitConfigProvider();
+
+            BitConfig config = null;
+
             try
             {
-                InitHtmlElements();
+                config = configProvider.GetConfiguration(_workspace.CurrentSolution, Enumerable.Empty<Project>().ToList());
+
+                foreach (var mapping in config.BitCodeGeneratorConfigs.BitCodeGeneratorMappings)
+                {
+                    if (!_workspace.CurrentSolution.Projects.Any(p => p.Name == mapping.DestinationProject.Name))
+                        throw new InvalidOperationException($"No project found named {mapping.DestinationProject.Name}");
+
+                    foreach (var proj in mapping.SourceProjects)
+                    {
+                        if (!_workspace.CurrentSolution.Projects.Any(p => p.Name == proj.Name))
+                            throw new InvalidOperationException($"No project found named {proj.Name}");
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                LogException("Parse BitConfigV1.json failed.", ex);
+            }
+
+            if (config == null)
+                return;
+
+            try
+            {
+                InitHtmlElements(config);
             }
             catch (Exception ex)
             {
@@ -189,6 +217,11 @@ namespace BitVSExtensionV1
             }
 
             _shouldGeneratedProjects = new List<Project> { };
+        }
+
+        private bool CurrentSolutionHasBitConfigV1JsonFile()
+        {
+            return File.Exists(Path.Combine(Path.GetDirectoryName(_workspace.CurrentSolution.FilePath) + "\\BitConfigV1.json"));
         }
 
         private async Task GenerateCodes()
@@ -221,15 +254,11 @@ namespace BitVSExtensionV1
             Log("Generated codes were deleted.");
         }
 
-        private void InitHtmlElements()
+        private void InitHtmlElements(BitConfig config)
         {
             try
             {
                 HtmlElementsContainer.Elements = new List<BitHtmlElement> { };
-
-                DefaultBitConfigProvider configProvider = new DefaultBitConfigProvider();
-
-                BitConfig config = configProvider.GetConfiguration(_workspace.CurrentSolution, Enumerable.Empty<Project>().ToList());
 
                 List<BitHtmlElement> allElements = new List<BitHtmlElement>();
 
@@ -303,8 +332,11 @@ namespace BitVSExtensionV1
 
         private void _buildEvents_OnBuildProjConfigDone(string project, string projectConfig, string platform, string solutionConfig, bool success)
         {
+            if (!CurrentSolutionHasBitConfigV1JsonFile())
+                return;
+
             Project proj = _workspace.CurrentSolution.Projects
-                .ExtendedSingle($"Lookin for {project} in [ {(string.Join(",", _workspace.CurrentSolution.Projects.Select(prj => prj.Name)))} ]", prj => prj.Language == "C#" && new FileInfo(prj.FilePath).Name == project.Split('\\').Last());
+            .ExtendedSingle($"Lookin for {project} in [ {(string.Join(",", _workspace.CurrentSolution.Projects.Select(prj => prj.Name)))} ]", prj => prj.Language == "C#" && Path.GetFileName(prj.FilePath) == project.Split('\\').Last());
 
             if (proj != null)
             {
@@ -314,6 +346,9 @@ namespace BitVSExtensionV1
 
         private async void _buildEvents_OnBuildDone(vsBuildScope scope, vsBuildAction action)
         {
+            if (!CurrentSolutionHasBitConfigV1JsonFile())
+                return;
+
             try
             {
                 if (action == vsBuildAction.vsBuildActionClean)
@@ -334,7 +369,7 @@ namespace BitVSExtensionV1
         private void LogException(string text, Exception ex)
         {
             _statusBar.SetText($"Bit: {text} See output pane for more info");
-            _outputPane.OutputString($"{text} {DateTimeOffset.Now} \n");
+            _outputPane.OutputString($"{text} {DateTimeOffset.Now} \n {ex} \n");
             _outputPane.Activate();
         }
 

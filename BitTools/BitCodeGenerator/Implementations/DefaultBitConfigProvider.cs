@@ -30,7 +30,7 @@ namespace BitCodeGenerator.Implementations
             if (projects == null)
                 throw new ArgumentNullException(nameof(projects));
 
-            DirectoryInfo directoryInfo = new FileInfo(solution.FilePath).Directory;
+            DirectoryInfo directoryInfo = Directory.GetParent(solution.FilePath);
 
             if (directoryInfo == null)
                 throw new InvalidOperationException($"Could not find directory of {solution.FilePath}");

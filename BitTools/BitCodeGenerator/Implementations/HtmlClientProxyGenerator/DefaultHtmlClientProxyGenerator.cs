@@ -110,7 +110,7 @@ namespace BitCodeGenerator.Implementations.HtmlClientProxyGenerator
 
         private static void WriteResults(Solution solution, String generatedCodes, string fileName, string extension, Project destProject)
         {
-            string fullPath = $@"{new FileInfo(destProject.FilePath).Directory}\{fileName}{extension}";
+            string fullPath = $@"{Directory.GetParent(destProject.FilePath).FullName}\{fileName}{extension}";
 
             File.WriteAllText(fullPath, generatedCodes, Encoding.UTF8);
         }
