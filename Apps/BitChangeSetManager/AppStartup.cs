@@ -25,8 +25,10 @@ using Bit.Owin.Contracts.Metadata;
 using Bit.Owin.Implementations;
 using Bit.Owin.Implementations.Metadata;
 using Bit.Owin.Middlewares;
-using Bit.Signalr.Middlewares.Signalr;
 using Bit.Signalr.Middlewares.Signalr.Implementations;
+using Bit.Api.Middlewares.WebApi.OData.Contracts;
+using Bit.Api.Middlewares.WebApi.OData.Implementations;
+using BitChangeSetManager.Api.Implementations;
 
 namespace BitChangeSetManager
 {
@@ -114,6 +116,8 @@ namespace BitChangeSetManager
                 }).Resolve<IOwinMiddlewareConfiguration>("WebApiOData");
 
             }, lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExciting: false);
+
+            dependencyManager.Register<IODataSqlBuilder, DefaultODataSqlBuilder>(lifeCycle: DependencyLifeCycle.SingleInstance);
 
             if (DefaultAppEnvironmentProvider.Current.GetActiveAppEnvironment().DebugMode == false)
                 dependencyManager.RegisterSignalRConfiguration<SignalRSqlServerScaleoutConfiguration>();

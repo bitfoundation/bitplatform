@@ -7,7 +7,7 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace BitChangeSetManager.Api
+namespace BitChangeSetManager.Api.Implementations
 {
     public class BitChangeSetManagerAppMessageHubEvents : DefaultMessageHubEvents
     {

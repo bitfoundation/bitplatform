@@ -15,7 +15,7 @@
     <RootNamespace>BitChangeSetManager</RootNamespace>
     <AssemblyName>BitChangeSetManager</AssemblyName>
     <TargetFrameworkVersion>v4.6.2</TargetFrameworkVersion>
-    <UseIISExpress>true</UseIISExpress>
+    <UseIISExpress>false</UseIISExpress>
     <IISExpressSSLPort>44340</IISExpressSSLPort>
     <IISExpressAnonymousAuthentication>enabled</IISExpressAnonymousAuthentication>
     <IISExpressWindowsAuthentication>disabled</IISExpressWindowsAuthentication>
@@ -101,6 +101,9 @@
     <Reference Include="Correlator, Version=1.1.0.0, Culture=neutral, PublicKeyToken=ad71b95c30d52163, processorArchitecture=MSIL">
       <HintPath>packages\WebApiCorrelator.1.1.0.0\lib\net452\Correlator.dll</HintPath>
     </Reference>
+    <Reference Include="Dapper, Version=1.50.2.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>packages\Dapper.1.50.2\lib\net451\Dapper.dll</HintPath>
+    </Reference>
     <Reference Include="EntityFramework, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
       <HintPath>packages\EntityFramework.6.1.3\lib\net45\EntityFramework.dll</HintPath>
     </Reference>
@@ -130,6 +133,9 @@
     </Reference>
     <Reference Include="Lambda2Js, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>packages\Lambda2Js.3.0.1\lib\net40\Lambda2Js.dll</HintPath>
+    </Reference>
+    <Reference Include="LambdaSqlBuilder, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>packages\LambdaSqlBuilder.0.9\lib\net40\LambdaSqlBuilder.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.AspNet.SignalR.Core, Version=2.2.2.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>packages\Microsoft.AspNet.SignalR.Core.2.2.2\lib\net45\Microsoft.AspNet.SignalR.Core.dll</HintPath>
@@ -317,6 +323,9 @@
     <Reference Include="System.Security.Cryptography.X509Certificates, Version=4.1.1.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
       <HintPath>packages\System.Security.Cryptography.X509Certificates.4.3.0\lib\net461\System.Security.Cryptography.X509Certificates.dll</HintPath>
     </Reference>
+    <Reference Include="System.ValueTuple, Version=4.0.1.1, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+      <HintPath>packages\System.ValueTuple.4.3.1\lib\netstandard1.0\System.ValueTuple.dll</HintPath>
+    </Reference>
     <Reference Include="System.Web.Cors, Version=5.2.3.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>packages\Microsoft.AspNet.Cors.5.2.3\lib\net45\System.Web.Cors.dll</HintPath>
     </Reference>
@@ -377,12 +386,12 @@
     </Content>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Api\BitChangeSetManagerAppMessageHubEvents.cs" />
+    <Compile Include="Api\Implementations\BitChangeSetManagerAppMessageHubEvents.cs" />
     <Compile Include="Api\ChangeSetImagesController.cs" />
     <Compile Include="Api\ChangeSetDeliveryRequirementsController.cs" />
     <Compile Include="Api\ChangeSetDescriptionTemplateController.cs" />
     <Compile Include="Api\ChangeSetSeveritiesController.cs" />
-    <Compile Include="Api\BitUserSettingProvider.cs" />
+    <Compile Include="Api\Implementations\BitUserSettingProvider.cs" />
     <Compile Include="Api\CitiesController.cs" />
     <Compile Include="Api\DefaultReadOnlyDtoSetController.cs" />
     <Compile Include="Api\DeliveriesController.cs" />
@@ -391,7 +400,7 @@
     <Compile Include="Api\ConstantsController.cs" />
     <Compile Include="Api\ProvincesController.cs" />
     <Compile Include="DataAccess\BitChangeSetManagerDbContext.cs" />
-    <Compile Include="Api\BitChangeSetManagerEdmModelProvider.cs" />
+    <Compile Include="Api\Implementations\BitChangeSetManagerEdmModelProvider.cs" />
     <Compile Include="DataAccess\BitChangeSetManagerEfRepository.cs" />
     <Compile Include="DataAccess\BitChangeSetManagerInitialData.cs" />
     <Compile Include="DataAccess\ChangeSetRepository.cs" />

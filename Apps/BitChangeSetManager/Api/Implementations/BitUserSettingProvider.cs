@@ -7,7 +7,7 @@ using Bit.Core.Contracts;
 using Bit.Model.DomainModels;
 using Bit.Owin.Contracts;
 
-namespace BitChangeSetManager.Api
+namespace BitChangeSetManager.Api.Implementations
 {
     public class BitUserSettingProvider : IUserSettingProvider
     {
