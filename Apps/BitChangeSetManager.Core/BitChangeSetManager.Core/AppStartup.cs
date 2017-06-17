@@ -1,16 +1,7 @@
-﻿using BitChangeSetManager.Api;
-using BitChangeSetManager.DataAccess;
-using BitChangeSetManager.Security;
-using IdentityServer3.Core.Services;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Owin.Cors;
-using Owin;
-using System;
-using System.Collections.Generic;
-using System.Reflection;
-using Bit.Api.Implementations.Project;
+﻿using Bit.Api.Implementations.Project;
 using Bit.Api.Middlewares.WebApi.OData.ActionFilters;
+using Bit.Api.Middlewares.WebApi.OData.Contracts;
+using Bit.Api.Middlewares.WebApi.OData.Implementations;
 using Bit.Core;
 using Bit.Core.Contracts;
 using Bit.Core.Contracts.Project;
@@ -31,9 +22,19 @@ using Bit.Owin.Middlewares;
 using Bit.OwinCore;
 using Bit.OwinCore.Contracts;
 using Bit.OwinCore.Middlewares;
-using Bit.Signalr.Middlewares.Signalr;
 using Bit.Signalr.Middlewares.Signalr.Implementations;
+using BitChangeSetManager.Api.Implementations;
+using BitChangeSetManager.DataAccess;
+using BitChangeSetManager.Security;
+using IdentityServer3.Core.Services;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Owin.Cors;
+using Owin;
+using System;
+using System.Collections.Generic;
+using System.Reflection;
 
 namespace BitChangeSetManager.Core
 {
@@ -138,6 +139,8 @@ namespace BitChangeSetManager.Core
                 }).Resolve<IOwinMiddlewareConfiguration>("WebApiOData");
 
             }, lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExciting: false);
+
+            dependencyManager.Register<IODataSqlBuilder, DefaultODataSqlBuilder>(lifeCycle: DependencyLifeCycle.SingleInstance);
 
             if (DefaultAppEnvironmentProvider.Current.GetActiveAppEnvironment().DebugMode == false)
                 dependencyManager.RegisterSignalRConfiguration<SignalRSqlServerScaleoutConfiguration>();
