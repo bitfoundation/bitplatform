@@ -17,6 +17,7 @@ using Microsoft.Owin;
 using System.Web.OData.Query;
 using Bit.Api.Middlewares.WebApi.OData.Contracts;
 using Bit.Api.Middlewares.WebApi.OData.ActionFilters;
+using Bit.Tests.Model.Dto;
 
 namespace Bit.Tests.Api.ApiControllers
 {
@@ -374,19 +375,56 @@ namespace Bit.Tests.Api.ApiControllers
 
         public class ActionForNullArgParameters
         {
-            public string name { get; set; }
+            public string nullSimpleProp { get; set; }
+
+            public TestModel nullDto { get; set; }
+
+            public ComplexObj nullComplex { get; set; }
+
+            public IEnumerable<string> nullSimpleProps { get; set; }
+
+            public IEnumerable<TestModel> nullDtos { get; set; }
+
+            public IEnumerable<ComplexObj> nullComplexes { get; set; }
+
+            public string notNullSimpleProp { get; set; }
         }
 
         [Action]
-        public virtual string ActionForNullArg(ActionForNullArgParameters parameters)
+        public virtual void ActionForNullArg(ActionForNullArgParameters parameters)
         {
-            return "Ok";
+            if (parameters.nullDto != null)
+                throw new InvalidOperationException();
+
+            if (parameters.nullSimpleProp != null)
+                throw new InvalidOperationException();
+
+            if (parameters.nullComplex != null)
+                throw new InvalidOperationException();
+
+            if (parameters.nullDtos.Any())
+                throw new InvalidOperationException();
+
+            if (parameters.nullSimpleProps.Any())
+                throw new InvalidOperationException();
+
+            if (parameters.nullComplexes.Any())
+                throw new InvalidOperationException();
+
+            if (parameters.notNullSimpleProp == null)
+                throw new InvalidOperationException();
         }
 
         [Function]
-        public virtual string FunctionForNullArg(string name)
+        public virtual string FunctionForNullArg(string nullValue, string notNullValue)
         {
-            return "Ok";
+            if (nullValue != null)
+                throw new InvalidOperationException();
+
+            if (notNullValue == null)
+                throw new InvalidOperationException();
+
+            return "test";
         }
 
         [Function]

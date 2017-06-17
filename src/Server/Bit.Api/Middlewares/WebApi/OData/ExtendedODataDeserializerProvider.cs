@@ -22,13 +22,13 @@ namespace Bit.Api.Middlewares.WebApi.OData
         {
             _rootContainer = rootContainer;
 
-            _DefaultODataParameterDeserializerValue = new Lazy<DefaultODataParameterDeserializer>(() =>
+            _DefaultODataParameterDeserializerValue = new Lazy<DefaultODataActionParameterDeserializer>(() =>
             {
-                return (DefaultODataParameterDeserializer)_rootContainer.GetService(typeof(DefaultODataParameterDeserializer).GetTypeInfo());
+                return (DefaultODataActionParameterDeserializer)_rootContainer.GetService(typeof(DefaultODataActionParameterDeserializer).GetTypeInfo());
             });
         }
 
-        private readonly Lazy<DefaultODataParameterDeserializer> _DefaultODataParameterDeserializerValue;
+        private readonly Lazy<DefaultODataActionParameterDeserializer> _DefaultODataParameterDeserializerValue;
 
         public override ODataDeserializer GetODataDeserializer(Type type, HttpRequestMessage request)
         {

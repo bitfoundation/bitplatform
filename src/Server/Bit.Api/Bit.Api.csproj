@@ -139,12 +139,9 @@
     <Compile Include="Middlewares\WebApi\OData\Contracts\IODataContainerBuilderCustomizer.cs" />
     <Compile Include="Middlewares\WebApi\OData\Contracts\IODataModelBuilderProvider.cs" />
     <Compile Include="Middlewares\WebApi\OData\Contracts\IODataSqlBuilder.cs" />
-    <Compile Include="Middlewares\WebApi\OData\DefaultODataActionPayloadDeserializer.cs" />
-    <Compile Include="Middlewares\WebApi\OData\DefaultODataEnumDeserializer.cs" />
     <Compile Include="Middlewares\WebApi\OData\DefaultODataEnumSerializer.cs" />
-    <Compile Include="Middlewares\WebApi\OData\DefaultODataParameterDeserializer.cs" />
+    <Compile Include="Middlewares\WebApi\OData\DefaultODataActionParameterDeserializer.cs" />
     <Compile Include="Middlewares\WebApi\OData\DefaultODataPrimitiveSerializer.cs" />
-    <Compile Include="Middlewares\WebApi\OData\DefaultODataResourceDeserializer.cs" />
     <Compile Include="Middlewares\WebApi\OData\DefaultODataUriResolver.cs" />
     <Compile Include="Middlewares\WebApi\OData\ExtendedODataDeserializerProvider.cs" />
     <Compile Include="Middlewares\WebApi\OData\Extensions\DeltaExtensions.cs" />

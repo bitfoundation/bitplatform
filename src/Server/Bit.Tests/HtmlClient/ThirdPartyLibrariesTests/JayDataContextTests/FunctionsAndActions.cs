@@ -76,14 +76,14 @@ namespace Bit.Tests.HtmlClient.ThirdPartyLibrariesTests.JayDataContextTests
                     .OfType<TestModelsController>()
                     .First();
 
-                A.CallTo(() => actionCallTest.ActionForNullArg(A<TestModelsController.ActionForNullArgParameters>.That.Matches(parameters => parameters.name == null)))
+                A.CallTo(() => actionCallTest.ActionForNullArg(A<TestModelsController.ActionForNullArgParameters>.Ignored))
                     .MustHaveHappened(Repeated.Exactly.Once);
 
                 TestModelsController functionCallTest = TestDependencyManager.CurrentTestDependencyManager.Objects
                     .OfType<TestModelsController>()
                     .Last();
 
-                A.CallTo(() => functionCallTest.FunctionForNullArg(null))
+                A.CallTo(() => functionCallTest.FunctionForNullArg(null, "test"))
                     .MustHaveHappened(Repeated.Exactly.Once);
             }
         }
