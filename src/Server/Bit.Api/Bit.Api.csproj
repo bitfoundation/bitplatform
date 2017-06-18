@@ -133,6 +133,7 @@
     <Compile Include="Middlewares\WebApi\OData\ActionFilters\DefaultODataAuthorizeAttribute.cs" />
     <Compile Include="Middlewares\WebApi\OData\ActionFilters\IgnoreODataEnableQueryAttribute.cs" />
     <Compile Include="Middlewares\WebApi\OData\ActionFilters\ODataEnableQueryAttribute.cs" />
+    <Compile Include="Middlewares\WebApi\OData\ActionFilters\ODataNullReturnValueActionFilter.cs" />
     <Compile Include="Middlewares\WebApi\OData\ActionFilters\RequestQSStringCorrectorsApplierActionFilterAttribute.cs" />
     <Compile Include="Middlewares\WebApi\OData\ActionFilters\RequestQSTimeZoneApplierActionFilterAttribute.cs" />
     <Compile Include="Middlewares\WebApi\OData\Contracts\IAutoEdmBuilder.cs" />

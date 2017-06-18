@@ -17,8 +17,10 @@ let testActionCall = async (): Promise<void> => {
 let passNullTests = async (): Promise<void> => {
     const contextProvider = Bit.DependencyManager.getCurrent().resolveObject<Bit.Contracts.IEntityContextProvider>("EntityContextProvider");
     const context = await contextProvider.getContext<TestContext>("Test");
-    await context.testModels.actionForNullArg(null, null, null, [], [], [], "test");
-    await context.testModels.functionForNullArg(null, "test");
+    if ((await context.testModels.actionForNullArg(null, null, null, [], [], [], "test")) != null)
+        throw new Error("Null return problem");
+    if ((await context.testModels.functionForNullArg(null, "test")) != null)
+        throw new Error("Null return problem");
 };
 
 let testBatchCallODataFunctions = async (): Promise<void> => {

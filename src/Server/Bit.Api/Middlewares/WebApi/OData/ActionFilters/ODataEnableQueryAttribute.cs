@@ -32,13 +32,14 @@ namespace Bit.Api.Middlewares.WebApi.OData.ActionFilters
 
         public override async Task OnActionExecutedAsync(HttpActionExecutedContext actionExecutedContext, CancellationToken cancellationToken)
         {
-            if (actionExecutedContext?.Response?.Content is ObjectContent &&
-                actionExecutedContext.Response?.IsSuccessStatusCode == true)
+            if (actionExecutedContext.Response?.Content is ObjectContent &&
+                actionExecutedContext.Response.IsSuccessStatusCode == true &&
+                !actionExecutedContext.Request.Properties.ContainsKey("IgnoreODataEnableQuery"))
             {
-                if (actionExecutedContext.Request.Properties.ContainsKey("IgnoreODataEnableQuery"))
-                    return;
-
                 ObjectContent objContent = ((ObjectContent)(actionExecutedContext.Response.Content));
+
+                if (objContent.Value == null)
+                    return;
 
                 TypeInfo actionReturnType = objContent.ObjectType.GetTypeInfo();
 
@@ -46,93 +47,86 @@ namespace Bit.Api.Middlewares.WebApi.OData.ActionFilters
                 {
                     TypeInfo queryElementType = actionReturnType.HasElementType ? actionReturnType.GetElementType().GetTypeInfo() : actionReturnType.GetGenericArguments().First() /* Why not calling Single() ? http://stackoverflow.com/questions/41718323/why-variable-of-type-ienumerablesomething-gettype-getgenericargsuments-c */.GetTypeInfo();
 
-                    if (objContent.Value == null)
+                    bool isIQueryable = typeof(IQueryable).GetTypeInfo().IsAssignableFrom(actionReturnType);
+
+                    IDataProviderSpecificMethodsProvider dataProviderSpecificMethodsProvider = null;
+
+                    if (isIQueryable == true)
                     {
-                        objContent.Value = Array.CreateInstance(queryElementType, 0);
+                        IEnumerable<IDataProviderSpecificMethodsProvider> dataProviderSpecificMethodsProviders = actionExecutedContext.Request.GetOwinContext().GetDependencyResolver().ResolveAll<IDataProviderSpecificMethodsProvider>();
+                        dataProviderSpecificMethodsProvider = (IDataProviderSpecificMethodsProvider)typeof(ODataEnableQueryAttribute).GetMethod(nameof(FindDataProviderSpecificMethodsProvider)).MakeGenericMethod(queryElementType).Invoke(this, new object[] { objContent.Value, dataProviderSpecificMethodsProviders });
                     }
                     else
                     {
-                        bool isIQueryable = typeof(IQueryable).GetTypeInfo().IsAssignableFrom(actionReturnType);
+                        objContent.Value = typeof(ODataEnableQueryAttribute).GetMethod(nameof(ToQueryable)).MakeGenericMethod(queryElementType).Invoke(this, new object[] { objContent.Value });
+                    }
 
-                        IDataProviderSpecificMethodsProvider dataProviderSpecificMethodsProvider = null;
+                    HttpRequestMessageProperties requestODataProps = actionExecutedContext.Request.ODataProperties();
+                    ODataQueryContext currentOdataQueryContext = new ODataQueryContext(actionExecutedContext.Request.GetModel(), queryElementType, requestODataProps.Path);
+                    ODataQueryOptions currentOdataQueryOptions = new ODataQueryOptions(currentOdataQueryContext, actionExecutedContext.Request);
+                    ODataQuerySettings globalODataQuerySettings = new ODataQuerySettings
+                    {
+                        EnableConstantParameterization = this.EnableConstantParameterization,
+                        EnsureStableOrdering = this.EnsureStableOrdering,
+                        HandleNullPropagation = this.HandleNullPropagation,
+                        PageSize = this.DefaultPageSize
+                    };
 
-                        if (isIQueryable == true)
-                        {
-                            IEnumerable<IDataProviderSpecificMethodsProvider> dataProviderSpecificMethodsProviders = actionExecutedContext.Request.GetOwinContext().GetDependencyResolver().ResolveAll<IDataProviderSpecificMethodsProvider>();
-                            dataProviderSpecificMethodsProvider = (IDataProviderSpecificMethodsProvider)typeof(ODataEnableQueryAttribute).GetMethod(nameof(FindDataProviderSpecificMethodsProvider)).MakeGenericMethod(queryElementType).Invoke(this, new object[] { objContent.Value, dataProviderSpecificMethodsProviders });
-                        }
+                    if (dataProviderSpecificMethodsProvider != null)
+                    {
+                        if (dataProviderSpecificMethodsProvider.SupportsConstantParameterization() == true)
+                            globalODataQuerySettings.EnableConstantParameterization = true;
                         else
-                        {
-                            objContent.Value = typeof(ODataEnableQueryAttribute).GetMethod(nameof(ToQueryable)).MakeGenericMethod(queryElementType).Invoke(this, new object[] { objContent.Value });
-                        }
+                            globalODataQuerySettings.EnableConstantParameterization = false;
+                    }
 
-                        HttpRequestMessageProperties requestODataProps = actionExecutedContext.Request.ODataProperties();
-                        ODataQueryContext currentOdataQueryContext = new ODataQueryContext(actionExecutedContext.Request.GetModel(), queryElementType, requestODataProps.Path);
-                        ODataQueryOptions currentOdataQueryOptions = new ODataQueryOptions(currentOdataQueryContext, actionExecutedContext.Request);
-                        ODataQuerySettings globalODataQuerySettings = new ODataQuerySettings
-                        {
-                            EnableConstantParameterization = this.EnableConstantParameterization,
-                            EnsureStableOrdering = this.EnsureStableOrdering,
-                            HandleNullPropagation = this.HandleNullPropagation,
-                            PageSize = this.DefaultPageSize
-                        };
+                    ValidateQuery(actionExecutedContext.Request, currentOdataQueryOptions);
 
+                    int? currentQueryPageSize = currentOdataQueryOptions.Top?.Value;
+                    int? globalQuerypageSize = globalODataQuerySettings.PageSize;
+                    int? takeCount = null;
+                    int? skipCount = currentOdataQueryOptions.Skip?.Value;
+
+                    if (currentQueryPageSize.HasValue)
+                        takeCount = currentQueryPageSize.Value;
+                    else if (globalQuerypageSize.HasValue == true)
+                        takeCount = globalQuerypageSize.Value;
+                    else
+                        takeCount = null;
+
+                    globalODataQuerySettings.PageSize = null; // ApplyTo will enumerates the query for values other than null. We are gonna apply take in ToList & ToListAsync methods.
+
+                    if (currentOdataQueryOptions.Filter != null)
+                    {
+                        objContent.Value = currentOdataQueryOptions.Filter.ApplyTo(query: (IQueryable)objContent.Value, querySettings: globalODataQuerySettings);
+                    }
+
+                    if (currentOdataQueryOptions.Count?.Value == true && takeCount.HasValue == true)
+                    {
+                        long count = default(long);
                         if (dataProviderSpecificMethodsProvider != null)
-                        {
-                            if (dataProviderSpecificMethodsProvider.SupportsConstantParameterization() == true)
-                                globalODataQuerySettings.EnableConstantParameterization = true;
-                            else
-                                globalODataQuerySettings.EnableConstantParameterization = false;
-                        }
-
-                        ValidateQuery(actionExecutedContext.Request, currentOdataQueryOptions);
-
-                        int? currentQueryPageSize = currentOdataQueryOptions.Top?.Value;
-                        int? globalQuerypageSize = globalODataQuerySettings.PageSize;
-                        int? takeCount = null;
-                        int? skipCount = currentOdataQueryOptions.Skip?.Value;
-
-                        if (currentQueryPageSize.HasValue)
-                            takeCount = currentQueryPageSize.Value;
-                        else if (globalQuerypageSize.HasValue == true)
-                            takeCount = globalQuerypageSize.Value;
+                            count = await (Task<long>)typeof(ODataEnableQueryAttribute).GetMethod(nameof(GetCountAsync)).MakeGenericMethod(queryElementType).Invoke(this, new object[] { objContent.Value, dataProviderSpecificMethodsProvider, cancellationToken });
                         else
-                            takeCount = null;
+                            count = (long)typeof(ODataEnableQueryAttribute).GetMethod(nameof(GetCount)).MakeGenericMethod(queryElementType).Invoke(this, new object[] { objContent.Value });
 
-                        globalODataQuerySettings.PageSize = null; // ApplyTo will enumerates the query for values other than null. We are gonna apply take in ToList & ToListAsync methods.
+                        actionExecutedContext.Request.Properties["System.Web.OData.TotalCountFunc"] = new Func<long>(() => count);
+                    }
 
-                        if (currentOdataQueryOptions.Filter != null)
-                        {
-                            objContent.Value = currentOdataQueryOptions.Filter.ApplyTo(query: (IQueryable)objContent.Value, querySettings: globalODataQuerySettings);
-                        }
+                    objContent.Value = currentOdataQueryOptions.ApplyTo(query: (IQueryable)objContent.Value, querySettings: globalODataQuerySettings, ignoreQueryOptions: AllowedQueryOptions.Filter | AllowedQueryOptions.Skip | AllowedQueryOptions.Top);
 
-                        if (currentOdataQueryOptions.Count?.Value == true && takeCount.HasValue == true)
-                        {
-                            long count = default(long);
-                            if (dataProviderSpecificMethodsProvider != null)
-                                count = await (Task<long>)typeof(ODataEnableQueryAttribute).GetMethod(nameof(GetCountAsync)).MakeGenericMethod(queryElementType).Invoke(this, new object[] { objContent.Value, dataProviderSpecificMethodsProvider, cancellationToken });
-                            else
-                                count = (long)typeof(ODataEnableQueryAttribute).GetMethod(nameof(GetCount)).MakeGenericMethod(queryElementType).Invoke(this, new object[] { objContent.Value });
+                    if (currentOdataQueryOptions.SelectExpand != null)
+                        queryElementType = objContent.Value.GetType().GetTypeInfo().GetGenericArguments().Single().GetTypeInfo();
 
-                            actionExecutedContext.Request.Properties["System.Web.OData.TotalCountFunc"] = new Func<long>(() => count);
-                        }
+                    if (dataProviderSpecificMethodsProvider != null)
+                        objContent.Value = await (Task<object>)typeof(ODataEnableQueryAttribute).GetMethod(nameof(ToListAsync)).MakeGenericMethod(queryElementType).Invoke(this, new object[] { objContent.Value, dataProviderSpecificMethodsProvider, takeCount, skipCount, cancellationToken });
+                    else
+                        objContent.Value = typeof(ODataEnableQueryAttribute).GetMethod(nameof(ToList)).MakeGenericMethod(queryElementType).Invoke(this, new object[] { objContent.Value, takeCount, skipCount });
 
-                        objContent.Value = currentOdataQueryOptions.ApplyTo(query: (IQueryable)objContent.Value, querySettings: globalODataQuerySettings, ignoreQueryOptions: AllowedQueryOptions.Filter | AllowedQueryOptions.Skip | AllowedQueryOptions.Top);
-
-                        if (currentOdataQueryOptions.SelectExpand != null)
-                            queryElementType = objContent.Value.GetType().GetTypeInfo().GetGenericArguments().Single().GetTypeInfo();
-
-                        if (dataProviderSpecificMethodsProvider != null)
-                            objContent.Value = await (Task<object>)typeof(ODataEnableQueryAttribute).GetMethod(nameof(ToListAsync)).MakeGenericMethod(queryElementType).Invoke(this, new object[] { objContent.Value, dataProviderSpecificMethodsProvider, takeCount, skipCount, cancellationToken });
-                        else
-                            objContent.Value = typeof(ODataEnableQueryAttribute).GetMethod(nameof(ToList)).MakeGenericMethod(queryElementType).Invoke(this, new object[] { objContent.Value, takeCount, skipCount });
-
-                        if (currentOdataQueryOptions.Count?.Value == true && takeCount.HasValue == false)
-                        {
-                            // We've no paging becuase there is no global config for max top and there is no top specified by the client's request, so the retured result of query's length is equivalent to total count of the query
-                            long count = ((IList)objContent.Value).Count;
-                            actionExecutedContext.Request.Properties["System.Web.OData.TotalCountFunc"] = new Func<long>(() => count);
-                        }
+                    if (currentOdataQueryOptions.Count?.Value == true && takeCount.HasValue == false)
+                    {
+                        // We've no paging becuase there is no global config for max top and there is no top specified by the client's request, so the retured result of query's length is equivalent to total count of the query
+                        long count = ((IList)objContent.Value).Count;
+                        actionExecutedContext.Request.Properties["System.Web.OData.TotalCountFunc"] = new Func<long>(() => count);
                     }
                 }
             }

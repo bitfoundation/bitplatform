@@ -37,4 +37,12 @@ namespace Bit.Api.Middlewares.WebApi.OData.Implementations
             webApiConfiguration.Filters.Add(new RequestQSTimeZoneApplierActionFilterAttribute());
         }
     }
+
+    public class GlobalODataNullReturnValueActionFilterProvider : IWebApiConfigurationCustomizer
+    {
+        public virtual void CustomizeWebApiConfiguration(HttpConfiguration webApiConfiguration)
+        {
+            webApiConfiguration.Filters.Add(new ODataNullReturnValueActionFilter());
+        }
+    }
 }

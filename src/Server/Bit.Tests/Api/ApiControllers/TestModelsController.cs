@@ -391,7 +391,7 @@ namespace Bit.Tests.Api.ApiControllers
         }
 
         [Action]
-        public virtual void ActionForNullArg(ActionForNullArgParameters parameters)
+        public virtual string ActionForNullArg(ActionForNullArgParameters parameters)
         {
             if (parameters.nullDto != null)
                 throw new InvalidOperationException();
@@ -413,6 +413,8 @@ namespace Bit.Tests.Api.ApiControllers
 
             if (parameters.notNullSimpleProp == null)
                 throw new InvalidOperationException();
+
+            return null;
         }
 
         [Function]
@@ -424,7 +426,7 @@ namespace Bit.Tests.Api.ApiControllers
             if (notNullValue == null)
                 throw new InvalidOperationException();
 
-            return "test";
+            return null;
         }
 
         [Function]
