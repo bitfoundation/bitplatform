@@ -1,10 +1,12 @@
-﻿using Bit.Core.Contracts;
+﻿using Bit.Api.ApiControllers;
+using Bit.Core.Contracts;
 using Bit.Owin.Contracts;
 using Microsoft.OData;
 using Microsoft.Owin;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Reflection;
@@ -35,6 +37,9 @@ namespace Bit.Api.Middlewares.WebApi.OData
 
         public override object Read(ODataMessageReader messageReader, Type type, ODataDeserializerContext readContext)
         {
+            if (!readContext.Request.GetActionDescriptor().GetCustomAttributes<ActionAttribute>().Any())
+                throw new InvalidOperationException($"{nameof(DefaultODataActionParameterDeserializer)} is designed for odata actions only");
+
             TypeInfo typeInfo = type.GetTypeInfo();
 
             IDependencyResolver dependencyResolver = readContext.Request.GetOwinContext()
@@ -42,21 +47,27 @@ namespace Bit.Api.Middlewares.WebApi.OData
 
             ITimeZoneManager timeZoneManager = dependencyResolver.Resolve<ITimeZoneManager>();
 
-            string jsonBody = readContext.Request.Content.ReadAsStringAsync().Result;
-
-            object result = JsonConvert.DeserializeObject(jsonBody, typeInfo, new JsonSerializerSettings
+            using (StreamReader requestStreamReader = new StreamReader(readContext.Request.Content.ReadAsStreamAsync().Result))
             {
-                ReferenceLoopHandling = ReferenceLoopHandling.Ignore,
-                DateFormatHandling = DateFormatHandling.IsoDateFormat,
-                Converters = new JsonConverter[]
+                using (JsonTextReader requestJsonReader = new JsonTextReader(requestStreamReader))
                 {
-                    _odataJsonDeserializerEnumConverter,
-                    _stringFormatterConvert,
-                    new ODataJsonDeSerializerDateTimeOffsetTimeZone(timeZoneManager)
-                }
-            });
+                    JsonSerializer deserilizer = JsonSerializer.Create(new JsonSerializerSettings
+                    {
+                        ReferenceLoopHandling = ReferenceLoopHandling.Ignore,
+                        DateFormatHandling = DateFormatHandling.IsoDateFormat,
+                        Converters = new JsonConverter[]
+                        {
+                            _odataJsonDeserializerEnumConverter,
+                            _stringFormatterConvert,
+                            new ODataJsonDeSerializerDateTimeOffsetTimeZone(timeZoneManager)
+                        }
+                    });
 
-            return result;
+                    object result = deserilizer.Deserialize(requestJsonReader, typeInfo);
+
+                    return result;
+                }
+            }
         }
     }
 
