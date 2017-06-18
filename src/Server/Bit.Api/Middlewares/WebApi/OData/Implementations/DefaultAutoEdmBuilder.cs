@@ -20,7 +20,7 @@ namespace Bit.Api.Middlewares.WebApi.OData.Implementations
 
         public TypeInfo Type { get; set; }
 
-        public bool IsOptional => Type.IsClass || (Type.IsGenericType && Type.GetGenericTypeDefinition().GetTypeInfo() == typeof(Nullable<>).GetTypeInfo());
+        public bool IsOptional => Type.IsClass || Nullable.GetUnderlyingType(Type) != null;
     }
 
     public class DefaultAutoEdmBuilder : IAutoEdmBuilder
