@@ -1,6 +1,5 @@
 # Summary
 
-* [Getting started](/docs/getting-started.md)
-
-
+* [Introduction](README.md)
+* [Getting started](docs/getting-started.md)
 

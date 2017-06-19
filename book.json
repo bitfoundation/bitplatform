@@ -1,0 +1,9 @@
+{
+    "plugins": [
+        "youtube",
+        "-fontsettings",
+        "-sharing",
+        "-lunr",
+        "livereload"
+    ]
+}
