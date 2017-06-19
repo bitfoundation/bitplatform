@@ -1,76 +1,25 @@
 # bit-framework
-Full Stack Framework to build Web Sites, Web Apps, Hybrid Apps and Native Mobile Apps
 
-Build Instructions:
+Bit framework is a full stack framework for [C\#](https://docs.microsoft.com/en-us/dotnet/csharp/csharp), [JavaScript ](https://developer.mozilla.org/en-US/docs/Web/JavaScript)and [TypeScript ](https://www.typescriptlang.org/)developers. It's a combination of best practices and facilities to implement those best practices. Bit can help you develop high quality apps in less time.
 
-Requirements: 
+You can develop any of following app types using Bit:
 
-  1- [Install Visual Studio 2017 Update 2+](https://www.visualstudio.com/thank-you-downloading-visual-studio/?sku=Enterprise&rel=15) or Visual Studio 2015 Update 3+ with [TypeScript 2.2+](https://www.microsoft.com/en-us/download/details.aspx?id=48593) for Visual Studio 2015
-  
-  (ASP.NET Core is supported on Visual Studio 2017 only)
-  
-  2- [Install .NET 4.6.2 Developer Pack](http://go.microsoft.com/fwlink/?LinkId=780617)
-  
-  2- [Install Git for windows](https://git-scm.com/download/win)
-  
-  4- [Install node for windows](https://nodejs.org/dist/v6.10.3/node-v6.10.3-x64.msi)
-  
-  5- Run npm install bower -g
-  
-  6- Run npm install gulp -g
-  
-Steps:
+* Web Apps \(Single Page web apps using [Angular](http://angular.io/), [AngularJS](https://angularjs.org), [React](https://facebook.github.io/react/) and [Aurelia](http://aurelia.io/)\)
+* Desktop Apps using [Electron](https://electron.atom.io/) and [WPF](https://docs.microsoft.com/en-us/dotnet/framework/wpf/getting-started/)
+* Hybrid mobile apps using [Apache Cordova](https://cordova.apache.org/)
+* Native mobile apps using [Xamarin Forms](https://www.xamarin.com/forms) and [React Native](https://facebook.github.io/react-native)
 
-  1- Clone the repository using git clone https://github.com/bit-foundation/bit-framework.git
-  
-  2- Open Tools > Options > Environment > Extensions and updates and add https://myget.org/F/bit-foundation/vsix as additional extension gallery.
-  
-  3- Install Bit VS Extension V1 and restart the visual studio.
-  
-  4- Add https://www.myget.org/F/bit-foundation/api/v3/index.json as nuget package source.
-  
-  5- Run bower install for src/TypeScriptClient/Bit.TSClient.AngularJS.Tests\bower.json
-  
-  6- Run npm install for all 4 folder unders src/TypeScriptClient/
-  
-  7- Build the solution. Note that due the lack of TypeScript Project System, you might have to build the solution more than once.
- 
-To run the samples:
+## **Contribute**
 
-  1- Run Visual Studio as Administrator
-    
-  2- Set Bit.Tests as startup project and run the samples.
+There are many ways to contribute
 
-Special thanks to:
+* Submit bugs
+* Engage with other developers on [stackoverflow](http://stackoverflow.com/questions/tagged/bit-framework)
+* Join [\#bit-framework](http://twitter.com/#!/search/realtime/%23bit-framework) discussion on Twitter
 
-https://github.com/Microsoft/TypeScript
+## Documentation
 
-https://github.com/xamarin/Xamarin.Forms
+Read docs on [https://docs.bit-framework.com/](https://docs.bit-framework.com/)
 
-https://github.com/jaystack/jaydata
 
-https://github.com/angular/angular.js/
 
-https://github.com/angular/material
-
-https://github.com/apache/olingo-odata4-js
-
-https://github.com/SignalR/SignalR
-
-https://github.com/telerik/kendo-ui-core
-
-https://github.com/SeleniumHQ/selenium
-
-https://github.com/HangfireIO/Hangfire
-
-https://github.com/IdentityServer/IdentityServer3
-
-https://github.com/OData/WebApi
-
-https://github.com/aspnet/EntityFramework
-
-https://github.com/owin
-
-https://github.com/aspnet/Home
-
-https://github.com/aspnet/KestrelHttpServer
