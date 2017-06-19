@@ -4,6 +4,12 @@
         "-fontsettings",
         "-sharing",
         "-lunr",
-        "livereload"
-    ]
+        "livereload",
+        "disqus"
+    ],
+    "pluginsConfig": {
+        "disqus": {
+            "shortName": "bit-framework"
+        }
+    }
 }
