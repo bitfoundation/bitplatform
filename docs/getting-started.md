@@ -10,10 +10,8 @@
 * For Typescript development install TypeScript 2.3 for Visual Studio [2015 ](https://www.microsoft.com/en-us/download/details.aspx?id=48593)\| [2017](https://www.microsoft.com/en-us/download/details.aspx?id=55258)
 * In Visual Studio open "Tools &gt; Options &gt; Environment &gt; Extensions and updates" and add [https://myget.org/F/bit-foundation/vsix](https://myget.org/F/bit-foundation/vsix) as additional extension gallery. Then install **Bit VS Extension V1** from Tools &gt; Extensions and updates
 
-{% youtube src="https://www.youtube.com/watch?v=sg7_d2TlJ5Y" %}{% endyoutube %}
-
 {% youtube %}
-https://www.youtube.com/watch?v=sg7_d2TlJ5Y
+https://youtu.be/zT8mxN-zf4I
 {% endyoutube %}
 
 * Add [https://www.myget.org/F/bit-foundation/api/v3/index.json](https://www.myget.org/F/bit-foundation/api/v3/index.json) as nuget package source from "Tools &gt; Nuget Package Manager &gt; Package Manager Settings"
