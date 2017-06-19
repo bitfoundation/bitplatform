@@ -1,10 +1,6 @@
 {
     "plugins": [
         "youtube",
-        "-fontsettings",
-        "-sharing",
-        "-lunr",
-        "livereload",
         "disqus"
     ],
     "pluginsConfig": {
