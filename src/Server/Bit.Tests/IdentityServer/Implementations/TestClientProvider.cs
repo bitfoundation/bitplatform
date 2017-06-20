@@ -31,13 +31,11 @@ namespace Bit.Tests.IdentityServer.Implementations
                     RequireConsent = false,
                     RedirectUris = new List<string>
                     {
-                        "http://127.0.0.1/SignIn",
-                        "https://127.0.0.1/SignIn"
+                        @"^(http|https):\/\/(\S+\.)?(bit-framework.com|localhost|127.0.0.1)\/SignIn\/?"
                     },
                     PostLogoutRedirectUris = new List<string>
                     {
-                        "http://127.0.0.1/SignOut",
-                        "https://127.0.0.1/SignOut"
+                        @"^(http|https):\/\/(\S+\.)?(bit-framework.com|localhost|127.0.0.1)\/SignOut\/?"
                     },
                     AllowAccessToAllScopes = true,
                     AlwaysSendClientClaims = true,
@@ -68,13 +66,11 @@ namespace Bit.Tests.IdentityServer.Implementations
                     RequireConsent = false,
                     RedirectUris = new List<string>
                     {
-                        "http://127.0.0.1/SignIn",
-                        "https://127.0.0.1/SignIn"
+                        @"^(http|https):\/\/(\S+\.)?(bit-framework.com|localhost|127.0.0.1)\/SignIn\/?"
                     },
                     PostLogoutRedirectUris = new List<string>
                     {
-                        "http://127.0.0.1/SignOut",
-                        "https://127.0.0.1/SignOut"
+                        @"^(http|https):\/\/(\S+\.)?(bit-framework.com|localhost|127.0.0.1)\/SignOut\/?"
                     },
                     AllowAccessToAllScopes = true,
                     AlwaysSendClientClaims = true,

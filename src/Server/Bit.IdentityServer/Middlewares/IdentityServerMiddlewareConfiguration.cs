@@ -17,9 +17,10 @@ namespace Bit.IdentityServer.Middlewares
         private readonly ICertificateProvider _certificateProvider;
         private readonly IDependencyManager _dependencyManager;
         private readonly IScopesProvider _scopesProvider;
+        private readonly IRedirectUriValidator _redirectUriValidator;
 
         public IdentityServerMiddlewareConfiguration(IAppEnvironmentProvider appEnvironmentProvider,
-            IScopesProvider scopesProvider, ICertificateProvider certificateProvider, IDependencyManager dependencyManager)
+            IScopesProvider scopesProvider, ICertificateProvider certificateProvider, IDependencyManager dependencyManager, IRedirectUriValidator redirectUriValidator)
         {
             if (appEnvironmentProvider == null)
                 throw new ArgumentNullException(nameof(appEnvironmentProvider));
@@ -33,10 +34,14 @@ namespace Bit.IdentityServer.Middlewares
             if (dependencyManager == null)
                 throw new ArgumentNullException(nameof(dependencyManager));
 
+            if (redirectUriValidator == null)
+                throw new ArgumentNullException(nameof(redirectUriValidator));
+
             _appEnvironmentProvider = appEnvironmentProvider;
             _scopesProvider = scopesProvider;
             _certificateProvider = certificateProvider;
             _dependencyManager = dependencyManager;
+            _redirectUriValidator = redirectUriValidator;
         }
 
         protected IdentityServerMiddlewareConfiguration()
@@ -63,6 +68,8 @@ namespace Bit.IdentityServer.Middlewares
                     new Registration<IUserService>(_dependencyManager.Resolve<IUserService>());
 
                 factory.ViewService = new Registration<IViewService>(_dependencyManager.Resolve<IViewService>());
+
+                factory.RedirectUriValidator = new Registration<IRedirectUriValidator>(_redirectUriValidator);
 
                 bool requireSslConfigValue = activeAppEnvironment.GetConfig("RequireSsl", defaultValueOnNotFound: false);
 
