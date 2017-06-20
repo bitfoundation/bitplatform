@@ -40,7 +40,6 @@ namespace Bit.Tests
                     },
                     Security = new EnvironmentSecurity
                     {
-                        SSOServerUrl = "http://127.0.0.1/core",
                         Scopes = new[] { "openid", "profile", "user_info" },
                         ClientName = "Test",
                         ClientSecret = "secret"
@@ -80,10 +79,8 @@ namespace Bit.Tests
                         new EnvironmentConfig { Key = "TestDbConnectionString", Value = string.Format(Settings.Default.TestDbConnectionString, Guid.NewGuid())  },
                         new EnvironmentConfig { Key = "IdentityCertificatePassword" , Value = "P@ssw0rd" },
                         new EnvironmentConfig { Key = "ClientSideAccessibleConfigTest", Value = true, AccessibleInClientSide = true},
-                        new EnvironmentConfig { Key = "ClientHostBaseUri", Value = "http://127.0.0.1" , AccessibleInClientSide = true },
-                        new EnvironmentConfig { Key = "ClientHostVirtualPath", Value = "/" , AccessibleInClientSide = true },
+                        new EnvironmentConfig { Key = "HostVirtualPath", Value = "/" , AccessibleInClientSide = true },
                         new EnvironmentConfig { Key = "KendoUILoadMode" , Value = "Web" /*Web|Core*/ , AccessibleInClientSide = true },
-                        new EnvironmentConfig { Key = "IdentityServerSiteName" , Value = "Identity Server" },
                         new EnvironmentConfig { Key = "SsoPageTemplatePath" , Value = @"bit-framework\src\Server\Bit.Tests\ssoPageTemplate.cshtml" }
                     }
                 };

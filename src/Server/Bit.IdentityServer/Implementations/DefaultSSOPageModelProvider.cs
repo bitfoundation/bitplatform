@@ -50,7 +50,7 @@ namespace Bit.IdentityServer.Implementations
                 EnvironmentConfigsJSON = _contentFormatter.Serialize(_activeAppEnvironment
                                             .Configs.Where(c => c.AccessibleInClientSide == true)
                                             .Select(c => new { value = c.Value, key = c.Key })),
-                BaseHref = _activeAppEnvironment.GetConfig("ClientHostVirtualPath", "/")
+                BaseHref = _activeAppEnvironment.GetHostVirtualPath()
             };
         }
 
@@ -72,7 +72,7 @@ namespace Bit.IdentityServer.Implementations
                 EnvironmentConfigsJSON = _contentFormatter.Serialize(_activeAppEnvironment
                                             .Configs.Where(c => c.AccessibleInClientSide == true)
                                             .Select(c => new { value = c.Value, key = c.Key })),
-                BaseHref = _activeAppEnvironment.GetConfig("ClientHostVirtualPath", "/")
+                BaseHref = _activeAppEnvironment.GetHostVirtualPath()
             };
         }
     }

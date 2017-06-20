@@ -1,11 +1,11 @@
-﻿using System;
-using System.Net.Http;
-using Bit.Core.Contracts;
+﻿using Bit.Core.Contracts;
 using Bit.Core.Models;
 using Bit.Owin.Contracts;
 using IdentityServer3.AccessTokenValidation;
 using IdentityServer3.Core.Models;
 using Owin;
+using System;
+using System.Net.Http;
 
 namespace Bit.Owin.Middlewares
 {
@@ -41,7 +41,7 @@ namespace Bit.Owin.Middlewares
             IdentityServerBearerTokenAuthenticationOptions authOptions = new IdentityServerBearerTokenAuthenticationOptions
             {
                 ClientId = activeAppEnvironment.Security.ClientName,
-                Authority = activeAppEnvironment.Security.SSOServerUrl,
+                Authority = activeAppEnvironment.GetSsoUrl(),
                 DelayLoadMetadata = true,
                 RequiredScopes = activeAppEnvironment.Security.Scopes,
                 ClientSecret = activeAppEnvironment.Security.ClientSecret.Sha512(),
@@ -53,7 +53,7 @@ namespace Bit.Owin.Middlewares
                 SigningCertificate = _certificateProvider.GetSingleSignOnCertificate(),
                 BackchannelHttpHandler = GetHttpClientHandler(nameof(IdentityServerBearerTokenAuthenticationOptions.BackchannelHttpHandler)),
                 IntrospectionHttpHandler = GetHttpClientHandler(nameof(IdentityServerBearerTokenAuthenticationOptions.IntrospectionHttpHandler)),
-                IssuerName = activeAppEnvironment.Security.SSOServerUrl
+                IssuerName = activeAppEnvironment.GetSsoUrl()
             };
 
             owinApp.UseIdentityServerBearerTokenAuthentication(authOptions);

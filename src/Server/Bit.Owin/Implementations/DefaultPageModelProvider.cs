@@ -75,7 +75,7 @@ namespace Bit.Owin.Implementations
                 .Configs.Where(c => c.AccessibleInClientSide == true)
                 .Select(c => new { value = c.Value, key = c.Key }));
 
-            defaultPageModel.BaseHref = activeAppEnvironment.GetConfig("ClientHostVirtualPath", "/");
+            defaultPageModel.BaseHref = activeAppEnvironment.GetHostVirtualPath();
 
             return defaultPageModel;
         }
@@ -122,7 +122,7 @@ namespace Bit.Owin.Implementations
                 .Configs.Where(c => c.AccessibleInClientSide == true)
                 .Select(c => new { value = c.Value, key = c.Key }));
 
-            defaultPageModel.BaseHref = activeAppEnvironment.GetConfig("ClientHostVirtualPath", "/");
+            defaultPageModel.BaseHref = activeAppEnvironment.GetHostVirtualPath();
 
             return defaultPageModel;
         }

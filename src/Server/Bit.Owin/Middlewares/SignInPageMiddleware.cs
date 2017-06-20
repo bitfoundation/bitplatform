@@ -18,9 +18,9 @@ namespace Bit.Owin.Middlewares
 
             IAppEnvironmentProvider appEnvironmentProvider = dependencyResolver.Resolve<IAppEnvironmentProvider>();
 
-            AppEnvironment activEnvironment = appEnvironmentProvider.GetActiveAppEnvironment();
+            AppEnvironment activeAppEnvironment = appEnvironmentProvider.GetActiveAppEnvironment();
 
-            string defaultPath = activEnvironment.GetConfig("ClientHostVirtualPath", "/");
+            string defaultPath = activeAppEnvironment.GetHostVirtualPath();
 
             string signInPage = $@"
 <html>

@@ -73,7 +73,7 @@ namespace Bit.IdentityServer.Middlewares
 
                 bool requireSslConfigValue = activeAppEnvironment.GetConfig("RequireSsl", defaultValueOnNotFound: false);
 
-                string identityServerSiteName = activeAppEnvironment.GetConfig("IdentityServerSiteName", "Identity Server");
+                string identityServerSiteName = activeAppEnvironment.GetConfig("IdentityServerSiteName", $"{activeAppEnvironment.AppInfo.Name} Identity Server");
 
                 IdentityServerOptions identityServerOptions = new IdentityServerOptions
                 {
@@ -82,6 +82,7 @@ namespace Bit.IdentityServer.Middlewares
                     Factory = factory,
                     RequireSsl = requireSslConfigValue,
                     EnableWelcomePage = activeAppEnvironment.DebugMode == true,
+                    IssuerUri = activeAppEnvironment.GetSsoUrl(),
                     CspOptions = new CspOptions
                     {
                         // Content security policy

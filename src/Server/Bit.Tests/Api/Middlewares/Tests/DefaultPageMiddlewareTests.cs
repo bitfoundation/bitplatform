@@ -108,9 +108,6 @@ namespace Bit.Tests.Api.Middlewares.Tests
                     {
                         environment.Configs.Add(new EnvironmentConfig { Key = "RequireSsl", Value = true });
                     }
-
-                    environment.Configs.Find(c => c.Key == "ClientHostBaseUri").Value = "https://127.0.0.1";
-                    environment.Security.SSOServerUrl = "https://127.0.0.1/core";
                 }
             }))
             {

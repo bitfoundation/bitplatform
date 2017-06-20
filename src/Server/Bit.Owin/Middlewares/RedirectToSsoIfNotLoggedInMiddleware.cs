@@ -12,8 +12,6 @@ namespace Bit.Owin.Middlewares
         {
         }
 
-        private string _baseRedirectUri = null;
-
         public override Task Invoke(IOwinContext context)
         {
             IDependencyResolver dependencyResolver = context.GetDependencyResolver();
@@ -22,22 +20,18 @@ namespace Bit.Owin.Middlewares
 
             IAppEnvironmentProvider appEnvironmentProvider = dependencyResolver.Resolve<IAppEnvironmentProvider>();
 
-            AppEnvironment activEnvironment = appEnvironmentProvider.GetActiveAppEnvironment();
+            AppEnvironment activeAppEnvironment = appEnvironmentProvider.GetActiveAppEnvironment();
 
-            if (_baseRedirectUri == null)
-            {
-                _baseRedirectUri = $"{activEnvironment.Security.SSOServerUrl}/connect/authorize?scope={string.Join(" ", activEnvironment.Security.Scopes)}&client_id={activEnvironment.Security.ClientName}&redirect_uri={activEnvironment.GetConfig("ClientHostBaseUri", context.Request.Host.Value)}{activEnvironment.GetConfig("ClientHostVirtualPath", "/")}SignIn&response_type=id_token token";
-            }
+            string redirect_uri_host = $"{context.Request.Scheme}://{context.Request.Host.Value}{activeAppEnvironment.GetHostVirtualPath()}SignIn";
+            string redirect_uri = $"{activeAppEnvironment.GetSsoUrl()}/connect/authorize?scope={string.Join(" ", activeAppEnvironment.Security.Scopes)}&client_id={activeAppEnvironment.Security.ClientName}&redirect_uri={redirect_uri_host}&response_type=id_token token";
 
-            string pathname = activEnvironment.GetConfig("ClientHostVirtualPath", "/") + (context.Request.Path.HasValue ? context.Request.Path.Value.Substring(1) : string.Empty);
+            string pathname = activeAppEnvironment.GetHostVirtualPath() + (context.Request.Path.HasValue ? context.Request.Path.Value.Substring(1) : string.Empty);
 
             string state = $@"{{""pathname"":""{pathname}""}}";
 
             string nonce = randomStringProvider.GetRandomNonSecureString(12);
 
-            string redirectUrl = $"{_baseRedirectUri}&state={state}&nonce={nonce}";
-
-            context.Response.Redirect(redirectUrl);
+            context.Response.Redirect($"{redirect_uri}&state={state}&nonce={nonce}");
 
             return Task.CompletedTask;
         }

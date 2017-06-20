@@ -5,7 +5,7 @@
         @Log()
         public isLoggedIn(): boolean {
 
-            let path = ClientAppProfileManager.getCurrent().getClientAppProfile().getConfig("ClientHostVirtualPath", "/");
+            let path = ClientAppProfileManager.getCurrent().getClientAppProfile().getConfig("HostVirtualPath", "/");
 
             if (localStorage[`${path}access_token`] == null)
                 return false;
@@ -28,7 +28,7 @@
 
         @Log()
         public logout(): void {
-            let path = ClientAppProfileManager.getCurrent().getClientAppProfile().getConfig("ClientHostVirtualPath", "/");
+            let path = ClientAppProfileManager.getCurrent().getClientAppProfile().getConfig("HostVirtualPath", "/");
             location.assign(encodeURI(`InvokeLogout?id_token=${localStorage[`${path}id_token`]}`));
         }
 

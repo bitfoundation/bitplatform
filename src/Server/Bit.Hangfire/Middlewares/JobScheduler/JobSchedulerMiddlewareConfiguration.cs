@@ -36,7 +36,7 @@ namespace Bit.Hangfire.Middlewares.JobScheduler
             owinApp.UseHangfireDashboard("/jobs", new DashboardOptions
             {
                 Authorization = _authFilters,
-                AppPath = _appEnvironmentProvider.GetActiveAppEnvironment().GetConfig("ClientHostVirtualPath", "/")
+                AppPath = _appEnvironmentProvider.GetActiveAppEnvironment().GetHostVirtualPath()
             });
         }
     }
