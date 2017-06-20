@@ -56,6 +56,16 @@ namespace Bit.Core.Models
             else
                 return (T)config.Value;
         }
+
+        public virtual string GetHostVirtualPath()
+        {
+            return GetConfig("HostVirtualPath", "/");
+        }
+
+        public virtual string GetSsoUrl()
+        {
+            return Security?.SSOServerUrl ?? $"{GetHostVirtualPath()}core";
+        }
     }
 
     [Serializable]
