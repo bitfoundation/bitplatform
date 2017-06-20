@@ -10,7 +10,6 @@
       "DefaultCulture": "EnUs"
     },
     "Security": {
-      "SSOServerUrl": "http://localhost:9090/bit-change-set-manager/core",
       "Scopes": [ "openid", "profile", "user_info" ],
       "ClientName": "BitChangeSetManager",
       "ClientSecret": "secret"
@@ -37,34 +36,13 @@
     ],
     "Configs": [
       {
-        "Key": "DefaultPageTemplatePath",
-        "Value": "defaultPageTemplate.cshtml"
-      },
-      {
-        "Key": "StaticFilesRelativePath",
-        "Value": ".\\wwwroot\\"
-      },
-      {
-        "Key": "ClientHostBaseUri",
-        "Value": "http://localhost:9090",
-        "AccessibleInClientSide": true
-      },
-      {
-        "Key": "ClientHostVirtualPath",
+        "Key": "HostVirtualPath",
         "Value": "/bit-change-set-manager/",
         "AccessibleInClientSide": true
       },
       {
         "Key": "IdentityCertificatePassword",
         "Value": "P@ssw0rd"
-      },
-      {
-        "Key": "IdentityServerCertificatePath",
-        "Value": "IdentityServerCertificate.pfx"
-      },
-      {
-        "Key": "SsoPageTemplatePath",
-        "Value": "ssoPageTemplate.cshtml"
       },
       {
         "Key": "BitChangeSetManagerDbConnectionString",

@@ -167,6 +167,7 @@ namespace BitChangeSetManager.Core
             dependencyManager.Register<IViewService, DefaultViewService>(lifeCycle: DependencyLifeCycle.SingleInstance);
             dependencyManager.Register<ISsoPageHtmlProvider, RazorSsoHtmlPageProvider>(lifeCycle: DependencyLifeCycle.SingleInstance);
             dependencyManager.Register<ISSOPageModelProvider, DefaultSSOPageModelProvider>(lifeCycle: DependencyLifeCycle.SingleInstance);
+            dependencyManager.Register<IRedirectUriValidator, PatternBasedRedirectUriValidator>(lifeCycle: DependencyLifeCycle.SingleInstance);
 
             dependencyManager.Register<IClientProvider, BitChangeSetManagerClientProvider>(lifeCycle: DependencyLifeCycle.SingleInstance);
             dependencyManager.Register<IUserService, BitChangeSetManagerUserService>(lifeCycle: DependencyLifeCycle.SingleInstance);

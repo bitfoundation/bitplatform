@@ -46,11 +46,11 @@ namespace BitChangeSetManager.Security
                     RequireConsent = false,
                     RedirectUris = new List<string>
                     {
-                        $@"{activeAppEnvironment.GetConfig<string>("ClientHostBaseUri")}{activeAppEnvironment.GetConfig<string>("ClientHostVirtualPath")}SignIn"
+                        $@"^(http|https):\/\/(\S+\.)?(bit-change-set-manager.com|localhost|127.0.0.1)(:\d+)?\b{activeAppEnvironment.GetHostVirtualPath()}\bSignIn\/?"
                     },
                     PostLogoutRedirectUris = new List<string>
                     {
-                        $@"{activeAppEnvironment.GetConfig<string>("ClientHostBaseUri")}{activeAppEnvironment.GetConfig<string>("ClientHostVirtualPath")}SignOut"
+                        $@"^(http|https):\/\/(\S+\.)?(bit-change-set-manager.com|localhost|127.0.0.1)(:\d+)?\b{activeAppEnvironment.GetHostVirtualPath()}\bSignOut\/?"
                     },
                     AllowAccessToAllScopes = true,
                     AlwaysSendClientClaims = true,
@@ -99,16 +99,7 @@ namespace BitChangeSetManager.Security
                         Constants.StandardScopes.Profile,
                         "user_info"
                     },
-                    ClientUri = "https://github.com/bit-foundation/bit-framework/",
                     RequireConsent = false,
-                    RedirectUris = new List<string>
-                    {
-                        $@"{activeAppEnvironment.GetConfig<string>("ClientHostBaseUri")}{activeAppEnvironment.GetConfig<string>("ClientHostVirtualPath")}SignIn"
-                    },
-                    PostLogoutRedirectUris = new List<string>
-                    {
-                        $@"{activeAppEnvironment.GetConfig<string>("ClientHostBaseUri")}{activeAppEnvironment.GetConfig<string>("ClientHostVirtualPath")}SignOut"
-                    },
                     AllowAccessToAllScopes = true,
                     AlwaysSendClientClaims = true,
                     IncludeJwtId = true,

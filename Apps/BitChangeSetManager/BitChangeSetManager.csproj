@@ -15,7 +15,7 @@
     <RootNamespace>BitChangeSetManager</RootNamespace>
     <AssemblyName>BitChangeSetManager</AssemblyName>
     <TargetFrameworkVersion>v4.6.2</TargetFrameworkVersion>
-    <UseIISExpress>false</UseIISExpress>
+    <UseIISExpress>true</UseIISExpress>
     <IISExpressSSLPort>44340</IISExpressSSLPort>
     <IISExpressAnonymousAuthentication>enabled</IISExpressAnonymousAuthentication>
     <IISExpressWindowsAuthentication>disabled</IISExpressWindowsAuthentication>
@@ -89,7 +89,8 @@
       <HintPath>wwwroot\bower_components\bit-releases\bit.model\Bit.Model.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="Bit.Owin">
+    <Reference Include="Bit.Owin, Version=0.0.0.1, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
       <HintPath>wwwroot\bower_components\bit-releases\bit.owin\Bit.Owin.dll</HintPath>
     </Reference>
     <Reference Include="Bit.OwinCore">
