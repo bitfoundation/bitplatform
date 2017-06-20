@@ -43,7 +43,7 @@ namespace Bit.IdentityServer.Implementations
         {
             if (_result == null)
             {
-                string templateFilePath = _pathProvider.StaticFileMapPath(_activeAppEnvironment.GetConfig<string>("SsoPageTemplatePath"));
+                string templateFilePath = _pathProvider.StaticFileMapPath(_activeAppEnvironment.GetConfig<string>("SsoPageTemplatePath", "ssoPageTemplate.cshtml"));
 
                 string template = File.ReadAllText(templateFilePath);
 
