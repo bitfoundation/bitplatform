@@ -1,14 +1,34 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using Bit.IdentityServer.Contracts;
 using IdentityServer3.Core;
 using IdentityServer3.Core.Models;
+using Bit.Core.Models;
+using Bit.Core.Contracts;
+using System;
 
 namespace Bit.Tests.IdentityServer.Implementations
 {
     public class TestClientProvider : IClientProvider
     {
+        private readonly IAppEnvironmentProvider _appEnvironmentProvider;
+
+        public TestClientProvider(IAppEnvironmentProvider appEnvironmentProvider)
+        {
+            if (appEnvironmentProvider == null)
+                throw new ArgumentNullException(nameof(appEnvironmentProvider));
+
+            _appEnvironmentProvider = appEnvironmentProvider;
+        }
+
+        protected TestClientProvider()
+        {
+
+        }
+
         public virtual IEnumerable<Client> GetClients()
         {
+            AppEnvironment activeAppEnvironment = _appEnvironmentProvider.GetActiveAppEnvironment();
+
             return new[]
             {
                 new Client
@@ -31,11 +51,11 @@ namespace Bit.Tests.IdentityServer.Implementations
                     RequireConsent = false,
                     RedirectUris = new List<string>
                     {
-                        @"^(http|https):\/\/(\S+\.)?(xeposhq.com|localhost|127.0.0.1)(:\d+)?\/SignIn\/?"
+                        $@"^(http|https):\/\/(\S+\.)?(bit-framework.com|localhost|127.0.0.1)(:\d+)?\b{activeAppEnvironment.GetHostVirtualPath()}\bSignIn\/?"
                     },
                     PostLogoutRedirectUris = new List<string>
                     {
-                        @"^(http|https):\/\/(\S+\.)?(xeposhq.com|localhost|127.0.0.1)(:\d+)?\/SignOut\/?"
+                        $@"^(http|https):\/\/(\S+\.)?(bit-framework.com|localhost|127.0.0.1)(:\d+)?\b{activeAppEnvironment.GetHostVirtualPath()}\bSignOut\/?"
                     },
                     AllowAccessToAllScopes = true,
                     AlwaysSendClientClaims = true,
@@ -62,16 +82,7 @@ namespace Bit.Tests.IdentityServer.Implementations
                         Constants.StandardScopes.Profile,
                         "user_info"
                     },
-                    ClientUri = "http://test.com/",
                     RequireConsent = false,
-                    RedirectUris = new List<string>
-                    {
-                        @"^(http|https):\/\/(\S+\.)?(bit-framework.com|localhost|127.0.0.1)\/SignIn\/?"
-                    },
-                    PostLogoutRedirectUris = new List<string>
-                    {
-                        @"^(http|https):\/\/(\S+\.)?(bit-framework.com|localhost|127.0.0.1)\/SignOut\/?"
-                    },
                     AllowAccessToAllScopes = true,
                     AlwaysSendClientClaims = true,
                     IncludeJwtId = true,
