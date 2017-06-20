@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using Bit.IdentityServer.Contracts;
 using IdentityServer3.Core;
 using IdentityServer3.Core.Models;
