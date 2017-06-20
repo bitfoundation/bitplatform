@@ -31,11 +31,11 @@ namespace Bit.Tests.IdentityServer.Implementations
                     RequireConsent = false,
                     RedirectUris = new List<string>
                     {
-                        @"^(http|https):\/\/(\S+\.)?(bit-framework.com|localhost|127.0.0.1)\/SignIn\/?"
+                        @"^(http|https):\/\/(\S+\.)?(xeposhq.com|localhost|127.0.0.1)(:\d+)?\/SignIn\/?"
                     },
                     PostLogoutRedirectUris = new List<string>
                     {
-                        @"^(http|https):\/\/(\S+\.)?(bit-framework.com|localhost|127.0.0.1)\/SignOut\/?"
+                        @"^(http|https):\/\/(\S+\.)?(xeposhq.com|localhost|127.0.0.1)(:\d+)?\/SignOut\/?"
                     },
                     AllowAccessToAllScopes = true,
                     AlwaysSendClientClaims = true,
