@@ -45,8 +45,7 @@ namespace Bit.Owin.Implementations
 
             if (IsKnownError(exp))
                 message = exp.Message;
-
-            if (_activeAppEnvironment.DebugMode == true)
+            else if (_activeAppEnvironment.DebugMode == true)
                 message = exp.ToString();
 
             return message;
