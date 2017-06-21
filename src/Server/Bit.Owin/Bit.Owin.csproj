@@ -125,6 +125,7 @@
     <Compile Include="Extensions\IDependencyManangerExtensions.cs" />
     <Compile Include="Extensions\IOwinContextExtensions.cs" />
     <Compile Include="Implementations\AutofacDependencyManager.cs" />
+    <Compile Include="Implementations\DebugLogStore.cs" />
     <Compile Include="Implementations\ConsoleLogStore.cs" />
     <Compile Include="Implementations\DefaultAppEnvironmentProvider.cs" />
     <Compile Include="Implementations\DefaultCertificateProvider.cs" />
@@ -181,7 +182,7 @@
     <Compile Include="Middlewares\SignInPageMiddlewareConfiguration.cs" />
     <Compile Include="Middlewares\SignOutPageMiddleware.cs" />
     <Compile Include="Middlewares\SignOutPageMiddlewareConfiguration.cs" />
-    <Compile Include="Middlewares\SingleSignOnMiddlewareConfiguration.cs" />
+    <Compile Include="Middlewares\SingleSignOnClientMiddlewareConfiguration.cs" />
     <Compile Include="Middlewares\StaticFilesMiddlewareConfiguration.cs" />
     <Compile Include="Models\DefaultPageModel.cs" />
     <Compile Include="OwinAppStartup.cs" />

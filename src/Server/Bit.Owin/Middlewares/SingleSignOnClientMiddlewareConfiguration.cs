@@ -9,16 +9,16 @@ using System.Net.Http;
 
 namespace Bit.Owin.Middlewares
 {
-    public class SingleSignOnMiddlewareConfiguration : IOwinMiddlewareConfiguration
+    public class SingleSignOnClientMiddlewareConfiguration : IOwinMiddlewareConfiguration
     {
         private readonly IAppEnvironmentProvider _appEnvironmentProvider;
         private readonly ICertificateProvider _certificateProvider;
 
-        protected SingleSignOnMiddlewareConfiguration()
+        protected SingleSignOnClientMiddlewareConfiguration()
         {
         }
 
-        public SingleSignOnMiddlewareConfiguration(IAppEnvironmentProvider appEnvironmentProvider,
+        public SingleSignOnClientMiddlewareConfiguration(IAppEnvironmentProvider appEnvironmentProvider,
             ICertificateProvider certificateProvider)
         {
             if (appEnvironmentProvider == null)
