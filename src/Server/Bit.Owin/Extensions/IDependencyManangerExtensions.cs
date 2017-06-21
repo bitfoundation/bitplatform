@@ -133,13 +133,24 @@ namespace Bit.Core.Contracts
             return dependencyManager;
         }
 
-        public static IDependencyManager RegisterSingleSignOnServer(this IDependencyManager dependencyManager)
+        public static IDependencyManager RegisterSingleSignOnClient(this IDependencyManager dependencyManager)
         {
-            dependencyManager.RegisterOwinMiddleware<SingleSignOnMiddlewareConfiguration>();
+            dependencyManager.RegisterOwinMiddleware<ReadAuthTokenFromCookieMiddlewareConfiguration>();
+            dependencyManager.RegisterOwinMiddleware<SingleSignOnClientMiddlewareConfiguration>();
             dependencyManager.RegisterOwinMiddleware<SignOutPageMiddlewareConfiguration>();
             dependencyManager.RegisterOwinMiddleware<InvokeLogOutMiddlewareConfiguration>();
             dependencyManager.RegisterOwinMiddleware<SignInPageMiddlewareConfiguration>();
             dependencyManager.RegisterOwinMiddleware<InvokeLoginMiddlewareConfiguration>();
+            dependencyManager.Register<IScopeStatusManager, DefaultScopeStatusManager>();
+            dependencyManager.Register<IRandomStringProvider, DefaultRandomStringProvider>(lifeCycle: DependencyLifeCycle.SingleInstance);
+            dependencyManager.Register<ICertificateProvider, DefaultCertificateProvider>(lifeCycle: DependencyLifeCycle.SingleInstance);
+            return dependencyManager;
+        }
+
+        public static IDependencyManager RegisterLogStore<TLogStore>(this IDependencyManager dependencyManager)
+            where TLogStore : class, ILogStore
+        {
+            dependencyManager.Register<ILogStore, TLogStore>(overwriteExciting: false);
             return dependencyManager;
         }
     }
