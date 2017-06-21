@@ -42,7 +42,7 @@ namespace Bit.Test
                 args = new TestEnvironmentArgs();
 
             if (args.FullUri == null && args.HostName == null)
-                args.HostName = "127.0.0.1";
+                args.HostName = "localhost";
 
             string uri = args.FullUri != null ? args.FullUri : new Uri($"{(args.UseHttps ? "https" : "http")}://{args.HostName}:{args.Port}/").ToString();
 

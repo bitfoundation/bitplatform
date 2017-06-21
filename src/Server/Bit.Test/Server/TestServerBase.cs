@@ -138,7 +138,7 @@ namespace Bit.Test.Server
             //capabilities.SetCapability(MobileCapabilityType.App, "Browser");
             //capabilities.SetCapability("platformName", "Android");
 
-            //AndroidDriver<AndroidElement> driver = new AndroidDriver<AndroidElement>(new Uri("http://127.0.0.1:4723/wd/hub"), capabilities);
+            //AndroidDriver<AndroidElement> driver = new AndroidDriver<AndroidElement>(new Uri("http://localhost:4723/wd/hub"), capabilities);
 
             try
             {
