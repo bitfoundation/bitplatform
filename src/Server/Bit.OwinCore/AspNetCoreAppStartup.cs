@@ -47,7 +47,25 @@ namespace Bit.OwinCore
             }, lifeCycle: DependencyLifeCycle.InstancePerLifetimeScope);
         }
 
-        public virtual void Configure(IApplicationBuilder aspNetCoreApp, OwinAppStartup owinAppStartup, IEnumerable<IAspNetCoreMiddlewareConfiguration> aspNetCoreMiddlewares)
+        public void Configure(IApplicationBuilder aspNetCoreApp, OwinAppStartup owinAppStartup, IEnumerable<IAspNetCoreMiddlewareConfiguration> aspNetCoreMiddlewares)
+        {
+            string hostVirtualPath = DefaultAppEnvironmentProvider.Current.GetActiveAppEnvironment().GetHostVirtualPath();
+            string hostVirtualPathAsAspNeteCorePrefix = hostVirtualPath.Substring(0, hostVirtualPath.Length - 1);
+
+            if (!string.IsNullOrEmpty(hostVirtualPathAsAspNeteCorePrefix))
+            {
+                aspNetCoreApp.Map(hostVirtualPathAsAspNeteCorePrefix, bitAspNetCoreApp =>
+                {
+                    ConfigureBitAspNetCoreApp(bitAspNetCoreApp, owinAppStartup, aspNetCoreMiddlewares);
+                });
+            }
+            else
+            {
+                ConfigureBitAspNetCoreApp(aspNetCoreApp, owinAppStartup, aspNetCoreMiddlewares);
+            }
+        }
+
+        public virtual void ConfigureBitAspNetCoreApp(IApplicationBuilder aspNetCoreApp, OwinAppStartup owinAppStartup, IEnumerable<IAspNetCoreMiddlewareConfiguration> aspNetCoreMiddlewares)
         {
             aspNetCoreMiddlewares
                 .Where(m => m.GetRegisterKind() == RegisterKind.BeforeOwinPiepline)
