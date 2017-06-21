@@ -34,9 +34,9 @@ namespace BitChangeSetManager.Api
 
             DbTransaction dbTransaction = DbConnectionProvider.GetDbTransaction(connectionString);
 
-            IEnumerable<CityDto> cities = await dbConnection.QueryAsync<CityDto>(sqlQuery.Select, sqlQuery.Parameters, transaction: dbTransaction);
+            IEnumerable<CityDto> cities = await dbConnection.QueryAsync<CityDto>(sqlQuery.SelectQuery, sqlQuery.Parts.Parameters, transaction: dbTransaction);
 
-            long total = sqlQuery.SelectCountFromDb == false ? cities.LongCount() : ((await dbConnection.ExecuteScalarAsync<long?>(sqlQuery.SelectCount, sqlQuery.Parameters, transaction: dbTransaction)) ?? 0);
+            long total = sqlQuery.Parts.GetTotalCountFromDb == false ? cities.LongCount() : ((await dbConnection.ExecuteScalarAsync<long?>(sqlQuery.SelectTotalCountQuery, sqlQuery.Parts.Parameters, transaction: dbTransaction)) ?? 0);
 
             Request.Properties["System.Web.OData.TotalCountFunc"] = new Func<long>(() => total);
 

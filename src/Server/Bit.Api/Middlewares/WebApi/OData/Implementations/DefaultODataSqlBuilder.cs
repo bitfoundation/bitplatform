@@ -4,7 +4,6 @@ using LambdaSqlBuilder;
 using LambdaSqlBuilder.ValueObjects;
 using System;
 using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
@@ -19,7 +18,7 @@ namespace Bit.Api.Middlewares.WebApi.OData.Implementations
             SqlLamBase.SetAdapter(SqlAdapter.SqlServer2012);
         }
 
-        public virtual (string Columns, string Where, string OrderBy, long? Top, long? Skip, IDictionary<string, object> Parameters) BuildSqlQueryParts<TDto>(ODataQueryOptions<TDto> odataQuery)
+        public virtual ODataSqlQueryParts BuildSqlQueryParts<TDto>(ODataQueryOptions<TDto> odataQuery)
             where TDto : class
         {
             if (odataQuery == null)
@@ -80,47 +79,61 @@ namespace Bit.Api.Middlewares.WebApi.OData.Implementations
                 orderBy = string.Join(",", sqlQuery.SqlBuilder.OrderByList);
             }
 
-            return new ValueTuple<string, string, string, long?, long?, IDictionary<string, object>>(columns, where, orderBy, top, skip, parameters);
+            bool selectCountFromDb = odataQuery.Count?.Value == true && top != null;
+
+            return new ODataSqlQueryParts
+            {
+                SelectionClause = columns,
+                OrderByClause = orderBy,
+                Parameters = parameters,
+                GetTotalCountFromDb = selectCountFromDb,
+                Skip = skip,
+                Top = top,
+                WhereClause = where
+            };
         }
 
-        public virtual (string Select, string SelectCount, bool SelectCountFromDb, IDictionary<string, object> Parameters) BuildSqlQuery<TDto>(ODataQueryOptions<TDto> queryOptions, string tableName)
+        public virtual ODataSqlQuery BuildSqlQuery<TDto>(ODataQueryOptions<TDto> odataQuery, string tableName)
             where TDto : class
         {
-            if (queryOptions == null)
-                throw new ArgumentNullException(nameof(queryOptions));
+            if (odataQuery == null)
+                throw new ArgumentNullException(nameof(odataQuery));
 
             TypeInfo dtoType = typeof(TDto).GetTypeInfo();
 
-            var sqlQuery = BuildSqlQueryParts(queryOptions);
+            var sqlQueryParts = BuildSqlQueryParts(odataQuery);
 
-            if (sqlQuery.Skip != null)
+            if (sqlQueryParts.Skip != null)
             {
-                if (sqlQuery.Top == null)
+                if (sqlQueryParts.Top == null)
                     throw new BadRequestException("$top is not provided while there is a $skip");
 
-                if (sqlQuery.OrderBy == null)
+                if (sqlQueryParts.OrderByClause == null)
                     throw new BadRequestException("$orderby is not provided while there is a $skip");
             }
 
-            string whereClause = sqlQuery.Where == null ? "" : $"where {sqlQuery.Where}";
-            string offsetClause = sqlQuery.Skip == null ? "" : $"offset {sqlQuery.Skip} rows";
+            string whereClause = sqlQueryParts.WhereClause == null ? "" : $"where {sqlQueryParts.WhereClause}";
+            string offsetClause = sqlQueryParts.Skip == null ? "" : $"offset {sqlQueryParts.Skip} rows";
             string topClause = "", fetchRowClause = "";
-            if (sqlQuery.Top != null)
+            if (sqlQueryParts.Top != null)
             {
-                if (sqlQuery.Skip != null)
-                    fetchRowClause = $"fetch next {sqlQuery.Top} rows only";
+                if (sqlQueryParts.Skip != null)
+                    fetchRowClause = $"fetch next {sqlQueryParts.Top} rows only";
                 else
-                    topClause = $"top({sqlQuery.Top})";
+                    topClause = $"top({sqlQueryParts.Top})";
             }
-            string orderByClause = sqlQuery.OrderBy == null ? "" : $"order by {sqlQuery.OrderBy}";
+            string orderByClause = sqlQueryParts.OrderByClause == null ? "" : $"order by {sqlQueryParts.OrderByClause}";
 
-            string select = $"select {topClause} {sqlQuery.Columns} from {tableName} as [{dtoType.Name}] {whereClause} {orderByClause} {offsetClause} {fetchRowClause}";
+            string select = $"select {topClause} {sqlQueryParts.SelectionClause} from {tableName} as [{dtoType.Name}] {whereClause} {orderByClause} {offsetClause} {fetchRowClause}";
 
             string selectCount = $"select count_big(1) from {tableName} as [{dtoType.Name}] {whereClause}";
 
-            bool selectCountFromDb = queryOptions.Count?.Value == true && sqlQuery.Top != null;
-
-            return new ValueTuple<string, string, bool, IDictionary<string, object>>(select, selectCount, selectCountFromDb, sqlQuery.Parameters);
+            return new ODataSqlQuery
+            {
+                Parts = sqlQueryParts,
+                SelectQuery = select,
+                SelectTotalCountQuery = selectCount
+            };
         }
     }
 

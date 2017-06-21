@@ -437,15 +437,15 @@ namespace Bit.Tests.Api.ApiControllers
             IValueChecker valueChecker = dependencyResolver.Resolve<IValueChecker>();
             IODataSqlBuilder odataSqlBuilder = dependencyResolver.Resolve<IODataSqlBuilder>();
             var sqlParts = odataSqlBuilder.BuildSqlQueryParts(odataQuery);
-            valueChecker.CheckValue(sqlParts.Where);
-            valueChecker.CheckValue(sqlParts.OrderBy);
+            valueChecker.CheckValue(sqlParts.WhereClause);
+            valueChecker.CheckValue(sqlParts.OrderByClause);
             valueChecker.CheckValue(sqlParts.Top);
             valueChecker.CheckValue(sqlParts.Skip);
             valueChecker.CheckValue(sqlParts.Parameters.Values.ToArray());
             var sql = odataSqlBuilder.BuildSqlQuery(odataQuery, tableName: "Test.TestModels");
-            valueChecker.CheckValue(sql.Select);
-            valueChecker.CheckValue(sql.SelectCount);
-            valueChecker.CheckValue(sql.SelectCountFromDb);
+            valueChecker.CheckValue(sql.SelectQuery);
+            valueChecker.CheckValue(sql.SelectTotalCountQuery);
+            valueChecker.CheckValue(sql.Parts.GetTotalCountFromDb);
 
             return new TestModel[] { }.AsQueryable();
         }

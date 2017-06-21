@@ -3,12 +3,38 @@ using System.Web.OData.Query;
 
 namespace Bit.Api.Middlewares.WebApi.OData.Contracts
 {
+    public class ODataSqlQueryParts
+    {
+        public string SelectionClause { get; set; }
+
+        public string WhereClause { get; set; }
+
+        public string OrderByClause { get; set; }
+
+        public long? Top { get; set; }
+
+        public long? Skip { get; set; }
+
+        public bool GetTotalCountFromDb { get; set; }
+
+        public IDictionary<string, object> Parameters { get; set; }
+    }
+
+    public class ODataSqlQuery
+    {
+        public ODataSqlQueryParts Parts { get; set; }
+
+        public string SelectQuery { get; set; }
+
+        public string SelectTotalCountQuery { get; set; }
+    }
+
     public interface IODataSqlBuilder
     {
-        (string Columns, string Where, string OrderBy, long? Top, long? Skip, IDictionary<string, object> Parameters) BuildSqlQueryParts<TDto>(ODataQueryOptions<TDto> odataQuery)
+        ODataSqlQueryParts BuildSqlQueryParts<TDto>(ODataQueryOptions<TDto> odataQuery)
             where TDto : class;
 
-        (string Select, string SelectCount, bool SelectCountFromDb, IDictionary<string, object> Parameters) BuildSqlQuery<TDto>(ODataQueryOptions<TDto> queryOptions, string tableName)
+        ODataSqlQuery BuildSqlQuery<TDto>(ODataQueryOptions<TDto> queryOptions, string tableName)
             where TDto : class;
     }
 }
