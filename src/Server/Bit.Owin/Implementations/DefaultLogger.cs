@@ -37,16 +37,6 @@ namespace Bit.Owin.Implementations
             _activeAppEnvironment = appEnvironmentProvider.GetActiveAppEnvironment();
         }
 
-        public virtual void LogWarning(string message)
-        {
-            if (message == null)
-                throw new ArgumentNullException(nameof(message));
-
-            const string severity = "Warning";
-
-            LogEntry logEntry = CreateLogEntry(message, severity);
-        }
-
         private void SaveLogEntryUsingAllLogStores(LogEntry logEntry)
         {
             List<Exception> logExceptions = new List<Exception>();
@@ -104,6 +94,42 @@ namespace Bit.Owin.Implementations
             });
         }
 
+        public virtual async Task LogWarningAsync(string message)
+        {
+            if (message == null)
+                throw new ArgumentNullException(nameof(message));
+
+            const string severity = "Warning";
+
+            LogEntry logEntry = CreateLogEntry(message, severity);
+
+            await SaveLogEntryUsingAllLogStoresAsync(logEntry);
+        }
+
+        public virtual void LogWarning(string message)
+        {
+            if (message == null)
+                throw new ArgumentNullException(nameof(message));
+
+            const string severity = "Warning";
+
+            LogEntry logEntry = CreateLogEntry(message, severity);
+
+            SaveLogEntryUsingAllLogStores(logEntry);
+        }
+
+        public virtual async Task LogFatalAsync(string message)
+        {
+            if (message == null)
+                throw new ArgumentNullException(nameof(message));
+
+            string severity = "Fatal";
+
+            LogEntry logEntry = CreateLogEntry(message, severity);
+
+            await SaveLogEntryUsingAllLogStoresAsync(logEntry);
+        }
+
         public virtual void LogFatal(string message)
         {
             if (message == null)
@@ -116,12 +142,12 @@ namespace Bit.Owin.Implementations
             SaveLogEntryUsingAllLogStores(logEntry);
         }
 
-        public virtual async Task LogWarningAsync(string message)
+        public virtual async Task LogInformationAsync(string message)
         {
             if (message == null)
                 throw new ArgumentNullException(nameof(message));
 
-            const string severity = "Warning";
+            string severity = "Information";
 
             LogEntry logEntry = CreateLogEntry(message, severity);
 
@@ -140,14 +166,23 @@ namespace Bit.Owin.Implementations
             SaveLogEntryUsingAllLogStores(logEntry);
         }
 
-        public virtual async Task LogFatalAsync(string message)
+        public virtual async Task LogExceptionAsync(Exception exp, string message)
         {
             if (message == null)
                 throw new ArgumentNullException(nameof(message));
 
-            string severity = "Fatal";
+            if (exp == null)
+                throw new ArgumentNullException(nameof(exp));
+
+            string severity = "Error";
+
+            if (!(exp is AppException))
+                severity = "Fatal";
 
             LogEntry logEntry = CreateLogEntry(message, severity);
+
+            AddLogData("Exception", exp);
+            AddLogData("ExceptionType", exp.GetType().FullName);
 
             await SaveLogEntryUsingAllLogStoresAsync(logEntry);
         }
@@ -171,39 +206,6 @@ namespace Bit.Owin.Implementations
             AddLogData("ExceptionType", exp.GetType().FullName);
 
             SaveLogEntryUsingAllLogStores(logEntry);
-        }
-
-        public virtual async Task LogInformationAsync(string message)
-        {
-            if (message == null)
-                throw new ArgumentNullException(nameof(message));
-
-            string severity = "Information";
-
-            LogEntry logEntry = CreateLogEntry(message, severity);
-
-            await SaveLogEntryUsingAllLogStoresAsync(logEntry);
-        }
-
-        public virtual async Task LogExceptionAsync(Exception exp, string message)
-        {
-            if (message == null)
-                throw new ArgumentNullException(nameof(message));
-
-            if (exp == null)
-                throw new ArgumentNullException(nameof(exp));
-
-            string severity = "Error";
-
-            if (!(exp is AppException))
-                severity = "Fatal";
-
-            LogEntry logEntry = CreateLogEntry(message, severity);
-
-            AddLogData("Exception", exp);
-            AddLogData("ExceptionType", exp.GetType().FullName);
-
-            await SaveLogEntryUsingAllLogStoresAsync(logEntry);
         }
 
         private LogEntry CreateLogEntry(string message, string severity)
