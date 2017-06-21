@@ -23,17 +23,21 @@
             "Title": "Bit Change Set Manager"
           }
         ]
+      },
+      {
+        "Name": "FaIr",
+        "Values": [
+          {
+            "Name": "AppTitle",
+            "Title": "مدیریت تغییرات Bit"
+          }
+        ]
       }
     ],
     "Configs": [
       {
         "Key": "StaticFilesRelativePath",
-        "Value": "..\\..\\BitChangeSetManager\\wwwroot\\"
-      },
-      {
-        "Key": "HostVirtualPath",
-        "Value": "/bit-change-set-manager/",
-        "AccessibleInClientSide": true
+        "Value": "..\\..\\..\\..\\..\\..\\BitChangeSetManager\\wwwroot\\"
       },
       {
         "Key": "IdentityCertificatePassword",

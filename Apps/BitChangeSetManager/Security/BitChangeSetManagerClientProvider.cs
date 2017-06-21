@@ -46,11 +46,11 @@ namespace BitChangeSetManager.Security
                     RequireConsent = false,
                     RedirectUris = new List<string>
                     {
-                        $@"^(http|https):\/\/(\S+\.)?(bit-change-set-manager.com|localhost|127.0.0.1)(:\d+)?\b{activeAppEnvironment.GetHostVirtualPath()}\bSignIn\/?"
+                        $@"^(http|https):\/\/(\S+\.)?(bit-change-set-manager.com|localhost)(:\d+)?\b{activeAppEnvironment.GetHostVirtualPath()}\bSignIn\/?"
                     },
                     PostLogoutRedirectUris = new List<string>
                     {
-                        $@"^(http|https):\/\/(\S+\.)?(bit-change-set-manager.com|localhost|127.0.0.1)(:\d+)?\b{activeAppEnvironment.GetHostVirtualPath()}\bSignOut\/?"
+                        $@"^(http|https):\/\/(\S+\.)?(bit-change-set-manager.com|localhost)(:\d+)?\b{activeAppEnvironment.GetHostVirtualPath()}\bSignOut\/?"
                     },
                     AllowAccessToAllScopes = true,
                     AlwaysSendClientClaims = true,

@@ -60,16 +60,14 @@ namespace Bit.Tests
             dependencyManager.RegisterInstance(DefaultPathProvider.Current);
 
             dependencyManager.Register<ITimeZoneManager, DefaultTimeZoneManager>();
-            dependencyManager.Register<IScopeStatusManager, DefaultScopeStatusManager>();
             dependencyManager.Register<IRequestInformationProvider, DefaultRequestInformationProvider>();
             dependencyManager.Register<ILogger, DefaultLogger>();
+            dependencyManager.RegisterLogStore<ConsoleLogStore>();
+            dependencyManager.RegisterLogStore<DebugLogStore>();
             dependencyManager.Register<IUserInformationProvider, DefaultUserInformationProvider>();
-            dependencyManager.Register<ILogStore, ConsoleLogStore>();
             dependencyManager.Register<IDbConnectionProvider, DefaultSqlDbConnectionProvider>();
 
             dependencyManager.Register<IDateTimeProvider, DefaultDateTimeProvider>(lifeCycle: DependencyLifeCycle.SingleInstance);
-            dependencyManager.Register<IRandomStringProvider, DefaultRandomStringProvider>(lifeCycle: DependencyLifeCycle.SingleInstance);
-            dependencyManager.Register<ICertificateProvider, DefaultCertificateProvider>(lifeCycle: DependencyLifeCycle.SingleInstance);
             dependencyManager.Register<IExceptionToHttpErrorMapper, DefaultExceptionToHttpErrorMapper>(lifeCycle: DependencyLifeCycle.SingleInstance);
 
             dependencyManager.RegisterAppEvents<RazorViewEngineConfiguration>();
@@ -80,8 +78,7 @@ namespace Bit.Tests
             dependencyManager.RegisterOwinMiddleware<ExtendAspNetCoreAutofacLifetimeToOwinMiddlewareConfiguration>(); //@Important
             dependencyManager.RegisterOwinMiddleware<OwinExceptionHandlerMiddlewareConfiguration>();
             dependencyManager.RegisterOwinMiddleware<LogRequestInformationMiddlewareConfiguration>();
-            dependencyManager.RegisterOwinMiddleware<ReadAuthTokenFromCookieMiddlewareConfiguration>();
-            dependencyManager.RegisterSingleSignOnServer();
+            dependencyManager.RegisterSingleSignOnClient();
             dependencyManager.RegisterOwinMiddleware<LogUserInformationMiddlewareConfiguration>();
             dependencyManager.RegisterOwinMiddleware<MetadataMiddlewareConfiguration>();
 
@@ -143,24 +140,7 @@ namespace Bit.Tests
             dependencyManager.RegisterDtoModelMapperConfiguration<DefaultDtoModelMapperConfiguration>();
             dependencyManager.RegisterDtoModelMapperConfiguration<TestDtoModelMapperConfiguration>();
 
-            #region IdentityServer
-
-            dependencyManager.Register<IScopesProvider, DefaultScopesProvider>(lifeCycle: DependencyLifeCycle.SingleInstance);
-            dependencyManager.Register<IdentityServer3.Core.Logging.ILogProvider, DefaultIdentityServerLogProvider>(lifeCycle: DependencyLifeCycle.SingleInstance);
-            dependencyManager.RegisterOwinMiddleware<IdentityServerMiddlewareConfiguration>();
-            dependencyManager.Register<IViewService, DefaultViewService>(lifeCycle: DependencyLifeCycle.SingleInstance);
-            dependencyManager.Register<ISsoPageHtmlProvider, RazorSsoHtmlPageProvider>(lifeCycle: DependencyLifeCycle.SingleInstance);
-            dependencyManager.Register<ISSOPageModelProvider, DefaultSSOPageModelProvider>(lifeCycle: DependencyLifeCycle.SingleInstance);
-            dependencyManager.Register<IRedirectUriValidator, PatternBasedRedirectUriValidator>(lifeCycle: DependencyLifeCycle.SingleInstance);
-
-            #endregion
-
-            #region IdentityServer.Test
-
-            dependencyManager.Register<IClientProvider, TestClientProvider>(lifeCycle: DependencyLifeCycle.SingleInstance);
-            dependencyManager.Register<IUserService, TestUserService>(lifeCycle: DependencyLifeCycle.SingleInstance);
-
-            #endregion
+            dependencyManager.RegisterSingleSignOnServer<TestUserService, TestClientProvider>();
 
             if (_args?.AdditionalDependencies != null)
                 _args?.AdditionalDependencies(dependencyManager);

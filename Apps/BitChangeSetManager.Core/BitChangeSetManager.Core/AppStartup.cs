@@ -9,25 +9,18 @@ using Bit.Core.Implementations;
 using Bit.Data;
 using Bit.Data.Contracts;
 using Bit.Hangfire.Middlewares.JobScheduler.Implementations;
-using Bit.IdentityServer.Contracts;
-using Bit.IdentityServer.Implementations;
-using Bit.IdentityServer.Middlewares;
 using Bit.Model.Implementations;
-using Bit.Owin;
 using Bit.Owin.Contracts;
 using Bit.Owin.Contracts.Metadata;
 using Bit.Owin.Implementations;
 using Bit.Owin.Implementations.Metadata;
 using Bit.Owin.Middlewares;
 using Bit.OwinCore;
-using Bit.OwinCore.Contracts;
 using Bit.OwinCore.Middlewares;
 using Bit.Signalr.Middlewares.Signalr.Implementations;
 using BitChangeSetManager.Api.Implementations;
 using BitChangeSetManager.DataAccess;
 using BitChangeSetManager.Security;
-using IdentityServer3.Core.Services;
-using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Owin.Cors;
@@ -58,14 +51,6 @@ namespace BitChangeSetManager.Core
             yield return this;
         }
 
-        public override void Configure(IApplicationBuilder aspNetCoreApp, OwinAppStartup owinAppStartup, IEnumerable<IAspNetCoreMiddlewareConfiguration> aspNetCoreMiddlewares)
-        {
-            aspNetCoreApp.Map("/bit-change-set-manager", innerApsNetCoreApp =>
-            {
-                base.Configure(innerApsNetCoreApp, owinAppStartup, aspNetCoreMiddlewares);
-            });
-        }
-
         public void ConfigureDependencies(IDependencyManager dependencyManager)
         {
             dependencyManager.RegisterMinimalDependencies();
@@ -75,15 +60,15 @@ namespace BitChangeSetManager.Core
             dependencyManager.RegisterInstance(DefaultPathProvider.Current);
 
             dependencyManager.Register<ITimeZoneManager, DefaultTimeZoneManager>();
-            dependencyManager.Register<IScopeStatusManager, DefaultScopeStatusManager>();
             dependencyManager.Register<IRequestInformationProvider, DefaultRequestInformationProvider>();
             dependencyManager.Register<ILogger, DefaultLogger>();
+            if (DefaultAppEnvironmentProvider.Current.GetActiveAppEnvironment().DebugMode == true)
+                dependencyManager.RegisterLogStore<DebugLogStore>();
+            dependencyManager.RegisterLogStore<ConsoleLogStore>();
             dependencyManager.Register<IUserInformationProvider, DefaultUserInformationProvider>();
             dependencyManager.Register<IDbConnectionProvider, DefaultSqlDbConnectionProvider>();
 
             dependencyManager.Register<IDateTimeProvider, DefaultDateTimeProvider>(lifeCycle: DependencyLifeCycle.SingleInstance);
-            dependencyManager.Register<IRandomStringProvider, DefaultRandomStringProvider>(lifeCycle: DependencyLifeCycle.SingleInstance);
-            dependencyManager.Register<ICertificateProvider, DefaultCertificateProvider>(lifeCycle: DependencyLifeCycle.SingleInstance);
             dependencyManager.Register<IExceptionToHttpErrorMapper, DefaultExceptionToHttpErrorMapper>(lifeCycle: DependencyLifeCycle.SingleInstance);
 
             dependencyManager.RegisterAppEvents<BitChangeSetManagerInitialData>();
@@ -101,8 +86,7 @@ namespace BitChangeSetManager.Core
             // dependencyManager.RegisterOwinMiddleware<AutofacDependencyInjectionMiddlewareConfiguration>(); @Important
             // dependencyManager.RegisterOwinMiddleware<OwinExceptionHandlerMiddlewareConfiguration>(); @Important
             dependencyManager.RegisterOwinMiddleware<LogRequestInformationMiddlewareConfiguration>();
-            dependencyManager.RegisterOwinMiddleware<ReadAuthTokenFromCookieMiddlewareConfiguration>();
-            dependencyManager.RegisterSingleSignOnServer();
+            dependencyManager.RegisterSingleSignOnClient();
             dependencyManager.RegisterOwinMiddleware<LogUserInformationMiddlewareConfiguration>();
             dependencyManager.RegisterOwinMiddleware<MetadataMiddlewareConfiguration>();
 
@@ -161,21 +145,13 @@ namespace BitChangeSetManager.Core
             dependencyManager.RegisterDtoModelMapperConfiguration<DefaultDtoModelMapperConfiguration>();
             dependencyManager.RegisterDtoModelMapperConfiguration<BitChangeSetManagerDtoModelMapperConfiguration>();
 
-            dependencyManager.Register<IScopesProvider, DefaultScopesProvider>(lifeCycle: DependencyLifeCycle.SingleInstance);
-            dependencyManager.Register<IdentityServer3.Core.Logging.ILogProvider, DefaultIdentityServerLogProvider>(lifeCycle: DependencyLifeCycle.SingleInstance);
-            dependencyManager.RegisterOwinMiddleware<IdentityServerMiddlewareConfiguration>();
-            dependencyManager.Register<IViewService, DefaultViewService>(lifeCycle: DependencyLifeCycle.SingleInstance);
-            dependencyManager.Register<ISsoPageHtmlProvider, RazorSsoHtmlPageProvider>(lifeCycle: DependencyLifeCycle.SingleInstance);
-            dependencyManager.Register<ISSOPageModelProvider, DefaultSSOPageModelProvider>(lifeCycle: DependencyLifeCycle.SingleInstance);
-            dependencyManager.Register<IRedirectUriValidator, PatternBasedRedirectUriValidator>(lifeCycle: DependencyLifeCycle.SingleInstance);
-
-            dependencyManager.Register<IClientProvider, BitChangeSetManagerClientProvider>(lifeCycle: DependencyLifeCycle.SingleInstance);
-            dependencyManager.Register<IUserService, BitChangeSetManagerUserService>(lifeCycle: DependencyLifeCycle.SingleInstance);
+            dependencyManager.RegisterSingleSignOnServer<BitChangeSetManagerUserService, BitChangeSetManagerClientProvider>();
 
             dependencyManager.RegisterOwinMiddleware<RedirectToSsoIfNotLoggedInMiddlewareConfiguration>();
             dependencyManager.RegisterDefaultPageMiddlewareUsingDefaultConfiguration();
 
             dependencyManager.Register<IChangeSetRepository, ChangeSetRepository>();
+            dependencyManager.Register<IUserSettingProvider, BitUserSettingProvider>();
         }
     }
 }

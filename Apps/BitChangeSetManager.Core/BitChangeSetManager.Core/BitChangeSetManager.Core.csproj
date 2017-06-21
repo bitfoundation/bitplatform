@@ -156,6 +156,9 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Content Update="App_Data\templates.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <Content Update="environments.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
