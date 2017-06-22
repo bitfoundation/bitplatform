@@ -11,6 +11,8 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Remote;
 using System.Threading.Tasks;
+using OpenQA.Selenium.Support.UI;
+using System;
 
 namespace Bit.Tests.HtmlClient.ViewModel.Implementation
 {
@@ -28,6 +30,8 @@ namespace Bit.Tests.HtmlClient.ViewModel.Implementation
                 using (RemoteWebDriver driver = testEnvironment.Server.GetWebDriver(new RemoteWebDriverOptions { Token = token }))
                 {
                     driver.NavigateToRoute("rad-combo-page");
+
+                    await Task.Delay(5000);
 
                     driver.ExecuteTest("Bit.Tests.Implementations.Tests.RadTests.testRadComboFormViewModel");
                 }

@@ -28,7 +28,8 @@ namespace Bit.Tests.HtmlClient.ViewModel.Implementation
                 using (RemoteWebDriver driver = testEnvironment.Server.GetWebDriver(new RemoteWebDriverOptions { Token = token }))
                 {
                     driver.NavigateToRoute("lookups-page");
-                    driver.WaitForControlReady();
+                    driver.WaitForCondition(d => d.Url.Contains("lookups-page"));
+                    await Task.Delay(5000);
                 }
 
                 CountriesController countriesController = TestDependencyManager.CurrentTestDependencyManager.Objects

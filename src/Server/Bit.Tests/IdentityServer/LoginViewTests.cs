@@ -8,6 +8,8 @@ using IdentityServer3.Core.Models;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Remote;
+using OpenQA.Selenium.Support.UI;
+using System;
 
 namespace Bit.Tests.IdentityServer
 {
@@ -22,13 +24,14 @@ namespace Bit.Tests.IdentityServer
             {
                 using (RemoteWebDriver driver = testEnvironment.Server.GetWebDriver(new RemoteWebDriverOptions { Uri = @"core/connect/authorize?scope=openid profile user_info&client_id=Test&redirect_uri=http://localhost/SignIn&response_type=id_token token&state={}&nonce=SgPoeilE1Tub", ClientSideTest = false }))
                 {
-                    driver.GetElementById("username").SendKeys("ValidUserName");
+                    new WebDriverWait(driver, TimeSpan.FromSeconds(3))
+                        .Until(ExpectedConditions.ElementExists(By.Name("loginForm")));
 
-                    driver.GetElementById("password").SendKeys("ValidPassword");
+                    driver.FindElementByName("username").SendKeys("ValidUserName");
 
-                    driver.GetElementById("login").Click();
+                    driver.FindElementByName("password").SendKeys("ValidPassword");
 
-                    driver.WaitForControlReady();
+                    driver.FindElementByName("login").Click();
                 }
 
                 TestUserService testUserService = TestDependencyManager.CurrentTestDependencyManager.Objects
@@ -48,11 +51,17 @@ namespace Bit.Tests.IdentityServer
             {
                 using (RemoteWebDriver driver = testEnvironment.Server.GetWebDriver(new RemoteWebDriverOptions { Uri = @"core/connect/authorize?scope=openid profile user_info&client_id=Test&redirect_uri=http://localhost/SignIn&response_type=id_token token&state={}&nonce=SgPoeilE1Tub", ClientSideTest = false }))
                 {
-                    driver.GetElementById("username").SendKeys("InValidUserName");
-                    driver.GetElementById("password").SendKeys("InValidPassword");
-                    driver.GetElementById("login").Click();
-                    driver.WaitForControlReady();
-                    Assert.AreEqual("Login failed", driver.GetElementById("error").GetAttribute("innerText"));
+                    new WebDriverWait(driver, TimeSpan.FromSeconds(3))
+                        .Until(ExpectedConditions.ElementExists(By.Name("loginForm")));
+
+                    driver.FindElementByName("username").SendKeys("InValidUserName");
+                    driver.FindElementByName("password").SendKeys("InValidPassword");
+                    driver.FindElementByName("login").Click();
+
+                    new WebDriverWait(driver, TimeSpan.FromSeconds(3))
+                        .Until(ExpectedConditions.ElementExists(By.Name("error")));
+
+                    Assert.AreEqual("Login failed", driver.FindElementByName("error").GetAttribute("innerText"));
                 }
 
                 TestUserService testUserService = TestDependencyManager.CurrentTestDependencyManager.Objects

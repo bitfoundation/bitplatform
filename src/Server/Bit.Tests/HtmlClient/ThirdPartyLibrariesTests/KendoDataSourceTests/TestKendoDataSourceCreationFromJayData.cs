@@ -27,6 +27,7 @@ namespace Bit.Tests.HtmlClient.ThirdPartyLibrariesTests.KendoDataSourceTests
 
                 using (RemoteWebDriver driver = testEnvironment.Server.GetWebDriver(new RemoteWebDriverOptions { Token = token }))
                 {
+                    await Task.Delay(5000);
                     driver.ExecuteTest("testKendoDataSourceCreationFromJayDataEntitySet");
                 }
 

@@ -99,7 +99,7 @@ namespace Bit.Tests.HtmlClient.ViewModel.Implementation
 
                     IWebElement label = driver.GetElementById("test");
 
-                    label.WaitForControlPropertyEqual("innerText", "32=32");
+                    driver.WaitForCondition(d => label.Text == "32=32");
                 }
             }
         }
@@ -138,7 +138,7 @@ namespace Bit.Tests.HtmlClient.ViewModel.Implementation
 
                 using (RemoteWebDriver driver = testEnvironment.Server.GetWebDriver(new RemoteWebDriverOptions { Token = token }))
                 {
-                    driver.WaitForControlReady();
+                    driver.WaitForCondition(d => d.Title == "Nested View");
 
                     Assert.AreEqual("Nested View", driver.Title);
 

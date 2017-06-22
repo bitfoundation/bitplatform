@@ -3,34 +3,10 @@ using System.Diagnostics;
 using System.Threading;
 using Newtonsoft.Json;
 using OpenQA.Selenium.Remote;
+using OpenQA.Selenium.Support.UI;
 
 namespace OpenQA.Selenium
 {
-    public static class IWebElementExtensions
-    {
-        [DebuggerNonUserCode]
-        public static void WaitForControlPropertyEqual(this IWebElement element, string property, string value)
-        {
-            int triesCount = 0;
-
-            do
-            {
-                try
-                {
-                    if (element.GetAttribute(property) == value)
-                        return;
-                }
-                catch
-                {
-                    Thread.Sleep(250);
-                    triesCount++;
-                }
-            } while (triesCount < 10);
-
-            throw new InvalidOperationException($"property {property} has not value of {value}");
-        }
-    }
-
     public static class IRemoteWebDriverExtensions
     {
         public static void NavigateToRoute(this RemoteWebDriver driver, string route)
@@ -42,33 +18,13 @@ namespace OpenQA.Selenium
             driver.GetElementById("testsConsole");
         }
 
-        public static void WaitForControlReady(this RemoteWebDriver driver)
-        {
-            Thread.Sleep(1500);
-        }
-
         [DebuggerNonUserCode]
         public static IWebElement GetElementById(this RemoteWebDriver driver, string id)
         {
-            int triesCount = 0;
+            new WebDriverWait(driver, TimeSpan.FromSeconds(2.5))
+                .Until(ExpectedConditions.ElementExists(By.Id(id)));
 
-            do
-            {
-                try
-                {
-                    IWebElement result = driver.FindElementById(id);
-
-                    if (result != null)
-                        return result;
-                }
-                catch
-                {
-                    Thread.Sleep(250);
-                    triesCount++;
-                }
-            } while (triesCount < 10);
-
-            throw new InvalidOperationException($"Element with id '{id}' couldn't be found.");
+            return driver.FindElementById(id);
         }
 
         [DebuggerNonUserCode]
@@ -94,19 +50,10 @@ namespace OpenQA.Selenium
 
             string finalTestScript = $"executeTest({testScript},'{arguments}');";
 
-            driver.WaitForControlReady();
-
             driver.ExecuteScript(finalTestScript);
 
-            int triesCount = 0;
-
-            do
-            {
-                if (testsConsole.GetAttribute("value") != consoleValue)
-                    break;
-                Thread.Sleep(200);
-                triesCount++;
-            } while (triesCount < 50);
+            new WebDriverWait(driver, TimeSpan.FromSeconds(10))
+                .Until(d => testsConsole.GetAttribute("value") != consoleValue);
 
             consoleValue = testsConsole.GetAttribute("value");
 
@@ -121,26 +68,10 @@ namespace OpenQA.Selenium
         }
 
         [DebuggerNonUserCode]
-        public static void WaitForCondition(this RemoteWebDriver driver, Func<RemoteWebDriver, bool> func)
+        public static void WaitForCondition(this RemoteWebDriver driver, Func<RemoteWebDriver, bool> condition)
         {
-            int triesCount = 0;
-
-            do
-            {
-                try
-                {
-                    if ((func(driver) == true))
-                        return;
-                }
-                catch { }
-                finally
-                {
-                    Thread.Sleep(250);
-                    triesCount++;
-                }
-            } while (triesCount < 10);
-
-            throw new InvalidOperationException();
+            new WebDriverWait(driver, TimeSpan.FromSeconds(2.5))
+                .Until(d => condition)(driver);
         }
     }
 }
