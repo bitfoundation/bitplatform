@@ -5,6 +5,6 @@
   "author": "Bit Foundation",
   "devDependencies": {
     "@types/jasmine": "^2.5.52",
-    "@types/jasmine-jquery": "^1.5.30"
+    "@types/jasmine-jquery": "^1.5.31"
   }
 }

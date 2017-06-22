@@ -6,6 +6,6 @@
   "devDependencies": {
     "@types/decimal.js": "0.0.29",
     "@types/pubsub-js": "1.5.17",
-    "@types/signalr": "^2.2.33"
+    "@types/signalr": "^2.2.34"
   }
 }

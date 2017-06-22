@@ -24,7 +24,7 @@
     "core.js": "2.4.1",
     "ngComponentRouter": "https://github.com/excellalabs/ngComponentRouter.git#1d01d7a6902f0be2688693f14cb40576b718ab39",
     "fetch": "2.0.3",
-    "jasmine-core": "2.6.3",
+    "jasmine-core": "2.6.4",
     "jasmine-jquery": "2.1.1",
     "decimal.js": "https://github.com/MikeMcl/decimal.js.git#v7.0.1",
     "bit-lib": "https://github.com/bit-foundation/Lib.git#v0.0.1",
