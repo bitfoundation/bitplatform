@@ -2,12 +2,12 @@
 
 **Prerequisites:**
 
-* Install Visual Studio 2015 Update 3 or [Visual Studio 2017 Update 2](https://www.visualstudio.com/downloads/). We've supported Community, Professional and Enterprise editions[^1]
+* Visual Studio 2015 Update 3 or [Visual Studio 2017 Update 2](https://www.visualstudio.com/downloads/). We've supported Community, Professional and Enterprise editions[^1]
 
-* Install [.NET 4.6.2 Developer Pack](http://go.microsoft.com/fwlink/?LinkId=780617)
-* Install [Git for Windows](https://git-scm.com/download/win)
-* Install [node js for windows](https://nodejs.org/en/download/)
-* For Typescript development install TypeScript 2.3 for Visual Studio [2015 ](https://www.microsoft.com/en-us/download/details.aspx?id=48593)\| [2017](https://www.microsoft.com/en-us/download/details.aspx?id=55258)
+* [.NET 4.7 Developer Pack](https://www.microsoft.com/en-us/download/details.aspx?id=55168)
+
+**Steps:**
+
 * In Visual Studio open "Tools &gt; Options &gt; Environment &gt; Extensions and updates" and add [https://myget.org/F/bit-foundation/vsix](https://myget.org/F/bit-foundation/vsix) as additional extension gallery. Then install **Bit VS Extension V1** from Tools &gt; Extensions and updates
 
 {% youtube %}
