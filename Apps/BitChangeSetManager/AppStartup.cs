@@ -51,6 +51,7 @@ namespace BitChangeSetManager
 
             dependencyManager.Register<ITimeZoneManager, DefaultTimeZoneManager>();
             dependencyManager.Register<IRequestInformationProvider, DefaultRequestInformationProvider>();
+            dependencyManager.Register<Microsoft.Owin.Logging.ILoggerFactory, DefaultOwinLoggerFactory>();
             dependencyManager.Register<ILogger, DefaultLogger>();
             if (DefaultAppEnvironmentProvider.Current.GetActiveAppEnvironment().DebugMode == true)
                 dependencyManager.RegisterLogStore<DebugLogStore>();

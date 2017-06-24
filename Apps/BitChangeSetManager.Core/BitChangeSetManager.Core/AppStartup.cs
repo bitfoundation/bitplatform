@@ -21,10 +21,9 @@ using Bit.Signalr.Middlewares.Signalr.Implementations;
 using BitChangeSetManager.Api.Implementations;
 using BitChangeSetManager.DataAccess;
 using BitChangeSetManager.Security;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Owin.Cors;
-using Owin;
 using System;
 using System.Collections.Generic;
 using System.Reflection;
@@ -60,7 +59,8 @@ namespace BitChangeSetManager.Core
             dependencyManager.RegisterInstance(DefaultPathProvider.Current);
 
             dependencyManager.Register<ITimeZoneManager, DefaultTimeZoneManager>();
-            dependencyManager.Register<IRequestInformationProvider, DefaultRequestInformationProvider>();
+            dependencyManager.Register<IRequestInformationProvider, AspNetCoreRequestInformationProvider>();
+            dependencyManager.Register<Microsoft.Owin.Logging.ILoggerFactory, DefaultOwinLoggerFactory>();
             dependencyManager.Register<ILogger, DefaultLogger>();
             if (DefaultAppEnvironmentProvider.Current.GetActiveAppEnvironment().DebugMode == true)
                 dependencyManager.RegisterLogStore<DebugLogStore>();
@@ -74,20 +74,18 @@ namespace BitChangeSetManager.Core
             dependencyManager.RegisterAppEvents<BitChangeSetManagerInitialData>();
             dependencyManager.RegisterAppEvents<RazorViewEngineConfiguration>();
 
-            dependencyManager.RegisterAspNetCoreMiddleware<AspNetCoreExceptionHandlerMiddlewareConfiguration>(); //@Important
-
-            dependencyManager.RegisterOwinMiddlewareUsing(owinApp =>
+            dependencyManager.RegisterAspNetCoreMiddlewareUsing(aspNetCoreApp =>
             {
-                owinApp.UseCors(CorsOptions.AllowAll);
+                aspNetCoreApp.UseCors(c => c.AllowAnyOrigin());
             });
 
-            dependencyManager.RegisterOwinMiddleware<StaticFilesMiddlewareConfiguration>();
-            dependencyManager.RegisterOwinMiddleware<ExtendAspNetCoreAutofacLifetimeToOwinMiddlewareConfiguration>(); //@Important
-            // dependencyManager.RegisterOwinMiddleware<AutofacDependencyInjectionMiddlewareConfiguration>(); @Important
-            // dependencyManager.RegisterOwinMiddleware<OwinExceptionHandlerMiddlewareConfiguration>(); @Important
-            dependencyManager.RegisterOwinMiddleware<LogRequestInformationMiddlewareConfiguration>();
-            dependencyManager.RegisterSingleSignOnClient();
-            dependencyManager.RegisterOwinMiddleware<LogUserInformationMiddlewareConfiguration>();
+            dependencyManager.RegisterAspNetCoreMiddleware<AspNetCoreStaticFilesMiddlewareConfiguration>();
+            dependencyManager.RegisterOwinMiddleware<AspNetCoreAutofacDependencyInjectionMiddlewareConfiguration>();
+            dependencyManager.RegisterAspNetCoreMiddleware<AspNetCoreExceptionHandlerMiddlewareConfiguration>();
+            dependencyManager.RegisterAspNetCoreMiddleware<AspNetCoreLogRequestInformationMiddlewareConfiguration>();
+            dependencyManager.RegisterAspNetCoreSingleSignOnClient();
+            dependencyManager.RegisterAspNetCoreMiddleware<AspNetCoreLogUserInformationMiddlewareConfiguration>();
+
             dependencyManager.RegisterOwinMiddleware<MetadataMiddlewareConfiguration>();
 
             dependencyManager.RegisterDefaultWebApiConfiguration(AssemblyContainer.Current.GetBitApiAssembly(), AssemblyContainer.Current.GetBitChangeSetManagerApiAssembly());
@@ -152,6 +150,13 @@ namespace BitChangeSetManager.Core
 
             dependencyManager.Register<IChangeSetRepository, ChangeSetRepository>();
             dependencyManager.Register<IUserSettingProvider, BitUserSettingProvider>();
+        }
+
+        public override void InitServices(IServiceCollection services)
+        {
+            services.AddCors();
+
+            base.InitServices(services);
         }
     }
 }
