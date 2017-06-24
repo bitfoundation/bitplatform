@@ -8,6 +8,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Remote;
 using System.Threading.Tasks;
+using System.Collections.Generic;
 
 namespace Bit.Tests.HtmlClient.ViewModel.Implementation
 {
@@ -25,12 +26,15 @@ namespace Bit.Tests.HtmlClient.ViewModel.Implementation
                 using (RemoteWebDriver driver = testEnvironment.Server.GetWebDriver(new RemoteWebDriverOptions { Token = token }))
                 {
                     driver.ExecuteTest("testSignalRConnection");
+
+                    await Task.Delay(1000);
                 }
 
-                ILogger logger = TestDependencyManager.CurrentTestDependencyManager
-                    .Objects.OfType<ILogger>().Last();
+                IEnumerable<ILogger> loggers = TestDependencyManager.CurrentTestDependencyManager.Objects
+                                    .OfType<ILogger>()
+                                    .ToList();
 
-                Assert.IsTrue(logger.LogData.Any(ld => ld.Key == nameof(IRequestInformationProvider.RequestUri) && ((string)ld.Value).Contains("signalr/start")));
+                Assert.IsTrue(loggers.SelectMany(l => l.LogData).Any(ld => ld.Key == nameof(IRequestInformationProvider.RequestUri) && ((string)ld.Value).Contains("signalr/start")));
             }
         }
 

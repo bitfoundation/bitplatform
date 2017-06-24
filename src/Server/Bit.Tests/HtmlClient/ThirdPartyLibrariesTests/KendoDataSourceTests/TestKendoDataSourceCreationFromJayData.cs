@@ -11,6 +11,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Remote;
 using System.Threading.Tasks;
+using System.Collections.Generic;
 
 namespace Bit.Tests.HtmlClient.ThirdPartyLibrariesTests.KendoDataSourceTests
 {
@@ -38,11 +39,11 @@ namespace Bit.Tests.HtmlClient.ThirdPartyLibrariesTests.KendoDataSourceTests
                 A.CallTo(() => testModelsController.Get(A<CancellationToken>.Ignored))
                     .MustHaveHappened(Repeated.Exactly.Once);
 
-                ILogger logger = TestDependencyManager.CurrentTestDependencyManager.Objects
+                IEnumerable<ILogger> loggers = TestDependencyManager.CurrentTestDependencyManager.Objects
                     .OfType<ILogger>()
-                    .Last();
+                    .ToList();
 
-                Assert.IsTrue(((string)logger.LogData.Single(ld => ld.Key == nameof(IRequestInformationProvider.RequestUri)).Value).Contains("?$filter=(StringProperty eq 'Test')"));
+                Assert.IsTrue((loggers.SelectMany(l => l.LogData).Any(ld => ld.Key == nameof(IRequestInformationProvider.RequestUri) && ((string)ld.Value).Contains("?$filter=(StringProperty eq 'Test')"))));
             }
         }
 
@@ -66,11 +67,11 @@ namespace Bit.Tests.HtmlClient.ThirdPartyLibrariesTests.KendoDataSourceTests
                 A.CallTo(() => testModelsController.GetTestModelsByStringPropertyValue(1))
                     .MustHaveHappened(Repeated.Exactly.Once);
 
-                ILogger logger = TestDependencyManager.CurrentTestDependencyManager.Objects
+                IEnumerable<ILogger> loggers = TestDependencyManager.CurrentTestDependencyManager.Objects
                     .OfType<ILogger>()
-                    .Last();
+                    .ToList();
 
-                Assert.IsTrue(((string)logger.LogData.Single(ld => ld.Key == nameof(IRequestInformationProvider.RequestUri)).Value).Contains("?$filter=(StringProperty eq 'String1')"));
+                Assert.IsTrue((loggers.SelectMany(l => l.LogData).Any(ld => ld.Key == nameof(IRequestInformationProvider.RequestUri) && ((string)ld.Value).Contains("?$filter=(StringProperty eq 'String1')"))));
             }
         }
     }
