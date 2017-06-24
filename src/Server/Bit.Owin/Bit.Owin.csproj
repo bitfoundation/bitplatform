@@ -126,6 +126,7 @@
     <Compile Include="Extensions\IDependencyManangerExtensions.cs" />
     <Compile Include="Extensions\IOwinContextExtensions.cs" />
     <Compile Include="Implementations\AutofacDependencyManager.cs" />
+    <Compile Include="Implementations\DefaultOwinLoggerFactory.cs" />
     <Compile Include="Implementations\DebugLogStore.cs" />
     <Compile Include="Implementations\ConsoleLogStore.cs" />
     <Compile Include="Implementations\DefaultAppEnvironmentProvider.cs" />

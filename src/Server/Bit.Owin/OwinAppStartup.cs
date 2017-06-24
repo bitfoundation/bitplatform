@@ -38,8 +38,6 @@ namespace Bit.Owin
 
             owinAppProps.AppName = activeEnvironment.AppInfo.Name;
 
-            owinApp.SetLoggerFactory(new DiagnosticsLoggerFactory());
-
             if (DefaultDependencyManager.Current.IsInited() == false)
             {
                 DefaultDependencyManager.Current.Init();
@@ -51,6 +49,8 @@ namespace Bit.Owin
 
                 DefaultDependencyManager.Current.BuildContainer();
             }
+
+            owinApp.SetLoggerFactory(DefaultDependencyManager.Current.Resolve<ILoggerFactory>());
 
             DefaultDependencyManager.Current.ResolveAll<IAppEvents>()
                 .ToList()
