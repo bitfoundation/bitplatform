@@ -1,8 +1,7 @@
-using System.Collections.Generic;
-using System.Reflection;
-using System.Web.Http;
 using Bit.Api.Implementations.Project;
 using Bit.Api.Middlewares.WebApi.OData.ActionFilters;
+using Bit.Api.Middlewares.WebApi.OData.Contracts;
+using Bit.Api.Middlewares.WebApi.OData.Implementations;
 using Bit.Core;
 using Bit.Core.Contracts;
 using Bit.Core.Contracts.Project;
@@ -11,9 +10,6 @@ using Bit.Data;
 using Bit.Data.Contracts;
 using Bit.Data.EntityFrameworkCore.Implementations;
 using Bit.Hangfire.Middlewares.JobScheduler.Implementations;
-using Bit.IdentityServer.Contracts;
-using Bit.IdentityServer.Implementations;
-using Bit.IdentityServer.Middlewares;
 using Bit.Model.Implementations;
 using Bit.Owin.Contracts;
 using Bit.Owin.Contracts.Metadata;
@@ -27,9 +23,9 @@ using Bit.Tests.Data.Implementations;
 using Bit.Tests.IdentityServer.Implementations;
 using Bit.Tests.Model.Implementations;
 using Bit.Tests.Properties;
-using IdentityServer3.Core.Services;
-using Bit.Api.Middlewares.WebApi.OData.Implementations;
-using Bit.Api.Middlewares.WebApi.OData.Contracts;
+using System.Collections.Generic;
+using System.Reflection;
+using System.Web.Http;
 
 namespace Bit.Tests
 {
@@ -57,6 +53,7 @@ namespace Bit.Tests
 
             dependencyManager.Register<ITimeZoneManager, DefaultTimeZoneManager>();
             dependencyManager.Register<IRequestInformationProvider, DefaultRequestInformationProvider>();
+            dependencyManager.Register<Microsoft.Owin.Logging.ILoggerFactory, DefaultOwinLoggerFactory>();
             dependencyManager.Register<ILogger, DefaultLogger>();
             dependencyManager.RegisterLogStore<ConsoleLogStore>();
             dependencyManager.RegisterLogStore<DebugLogStore>();
@@ -75,6 +72,7 @@ namespace Bit.Tests
             dependencyManager.RegisterOwinMiddleware<LogRequestInformationMiddlewareConfiguration>();
             dependencyManager.RegisterSingleSignOnClient();
             dependencyManager.RegisterOwinMiddleware<LogUserInformationMiddlewareConfiguration>();
+
             dependencyManager.RegisterOwinMiddleware<MetadataMiddlewareConfiguration>();
 
             dependencyManager.RegisterDefaultWebApiConfiguration(AssemblyContainer.Current.GetBitApiAssembly(), AssemblyContainer.Current.GetBitTestsAssembly());

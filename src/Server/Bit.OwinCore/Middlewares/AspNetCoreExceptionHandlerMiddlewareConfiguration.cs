@@ -20,11 +20,6 @@ namespace Bit.OwinCore.Middlewares
 
             aspNetCoreApp.UseMiddleware<AspNetCoreExceptionHandlerMiddleware>();
         }
-
-        public virtual RegisterKind GetRegisterKind()
-        {
-            return RegisterKind.BeforeOwinPiepline;
-        }
     }
 
     public class AspNetCoreExceptionHandlerMiddleware

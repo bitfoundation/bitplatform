@@ -1,8 +1,7 @@
-﻿using System.Collections.Generic;
-using System.Reflection;
-using System.Web.Http;
-using Bit.Api.Implementations.Project;
+﻿using Bit.Api.Implementations.Project;
 using Bit.Api.Middlewares.WebApi.OData.ActionFilters;
+using Bit.Api.Middlewares.WebApi.OData.Contracts;
+using Bit.Api.Middlewares.WebApi.OData.Implementations;
 using Bit.Core;
 using Bit.Core.Contracts;
 using Bit.Core.Contracts.Project;
@@ -11,9 +10,6 @@ using Bit.Data;
 using Bit.Data.Contracts;
 using Bit.Data.EntityFrameworkCore.Implementations;
 using Bit.Hangfire.Middlewares.JobScheduler.Implementations;
-using Bit.IdentityServer.Contracts;
-using Bit.IdentityServer.Implementations;
-using Bit.IdentityServer.Middlewares;
 using Bit.Model.Implementations;
 using Bit.Owin.Contracts;
 using Bit.Owin.Contracts.Metadata;
@@ -30,10 +26,10 @@ using Bit.Tests.Data.Implementations;
 using Bit.Tests.IdentityServer.Implementations;
 using Bit.Tests.Model.Implementations;
 using Bit.Tests.Properties;
-using IdentityServer3.Core.Services;
 using Microsoft.Extensions.DependencyInjection;
-using Bit.Api.Middlewares.WebApi.OData.Contracts;
-using Bit.Api.Middlewares.WebApi.OData.Implementations;
+using System.Collections.Generic;
+using System.Reflection;
+using System.Web.Http;
 
 namespace Bit.Tests
 {
@@ -60,7 +56,8 @@ namespace Bit.Tests
             dependencyManager.RegisterInstance(DefaultPathProvider.Current);
 
             dependencyManager.Register<ITimeZoneManager, DefaultTimeZoneManager>();
-            dependencyManager.Register<IRequestInformationProvider, DefaultRequestInformationProvider>();
+            dependencyManager.Register<IRequestInformationProvider, AspNetCoreRequestInformationProvider>();
+            dependencyManager.Register<Microsoft.Owin.Logging.ILoggerFactory, DefaultOwinLoggerFactory>();
             dependencyManager.Register<ILogger, DefaultLogger>();
             dependencyManager.RegisterLogStore<ConsoleLogStore>();
             dependencyManager.RegisterLogStore<DebugLogStore>();
@@ -73,13 +70,15 @@ namespace Bit.Tests
             dependencyManager.RegisterAppEvents<RazorViewEngineConfiguration>();
             dependencyManager.RegisterAppEvents<InitialTestDataConfiguration>();
 
-            dependencyManager.RegisterOwinMiddleware<StaticFilesMiddlewareConfiguration>();
-            dependencyManager.RegisterAspNetCoreMiddleware<AspNetCoreExceptionHandlerMiddlewareConfiguration>(); //@Important
-            dependencyManager.RegisterOwinMiddleware<ExtendAspNetCoreAutofacLifetimeToOwinMiddlewareConfiguration>(); //@Important
-            dependencyManager.RegisterOwinMiddleware<OwinExceptionHandlerMiddlewareConfiguration>();
-            dependencyManager.RegisterOwinMiddleware<LogRequestInformationMiddlewareConfiguration>();
-            dependencyManager.RegisterSingleSignOnClient();
-            dependencyManager.RegisterOwinMiddleware<LogUserInformationMiddlewareConfiguration>();
+            dependencyManager.RegisterAspNetCoreMiddleware<AspNetCoreStaticFilesMiddlewareConfiguration>();
+            dependencyManager.RegisterOwinMiddleware<AspNetCoreAutofacDependencyInjectionMiddlewareConfiguration>();
+            dependencyManager.RegisterAspNetCoreMiddleware<AspNetCoreExceptionHandlerMiddlewareConfiguration>();
+            dependencyManager.RegisterAspNetCoreMiddleware<AspNetCoreLogRequestInformationMiddlewareConfiguration>();
+            dependencyManager.RegisterAspNetCoreSingleSignOnClient();
+            dependencyManager.RegisterAspNetCoreMiddleware<AspNetCoreLogUserInformationMiddlewareConfiguration>();
+
+            dependencyManager.RegisterAspNetCoreMiddleware<TestWebApiCoreMvcMiddlewareConfiguration>();
+
             dependencyManager.RegisterOwinMiddleware<MetadataMiddlewareConfiguration>();
 
             dependencyManager.RegisterDefaultWebApiConfiguration(AssemblyContainer.Current.GetBitApiAssembly(), AssemblyContainer.Current.GetBitTestsAssembly());
@@ -145,7 +144,8 @@ namespace Bit.Tests
             if (_args?.AdditionalDependencies != null)
                 _args?.AdditionalDependencies(dependencyManager);
 
-            dependencyManager.RegisterAspNetCoreMiddleware<TestWebApiCoreMvcMiddlewareConfiguration>(); //@Important
+            dependencyManager.RegisterOwinMiddleware<RedirectToSsoIfNotLoggedInMiddlewareConfiguration>();
+            dependencyManager.RegisterDefaultPageMiddlewareUsingDefaultConfiguration();
         }
 
         public virtual void ConfigureServices(IServiceCollection services, IDependencyManager dependencyManager)

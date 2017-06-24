@@ -68,16 +68,10 @@ namespace Bit.OwinCore
         public virtual void ConfigureBitAspNetCoreApp(IApplicationBuilder aspNetCoreApp, OwinAppStartup owinAppStartup, IEnumerable<IAspNetCoreMiddlewareConfiguration> aspNetCoreMiddlewares)
         {
             aspNetCoreMiddlewares
-                .Where(m => m.GetRegisterKind() == RegisterKind.BeforeOwinPiepline)
                 .ToList()
                 .ForEach(aspNetCoreMiddleware => aspNetCoreMiddleware.Configure(aspNetCoreApp));
 
             aspNetCoreApp.UseOwinApp(owinAppStartup.Configuration);
-
-            aspNetCoreMiddlewares
-                .Where(m => m.GetRegisterKind() == RegisterKind.AfterOwinPipeline)
-                .ToList()
-                .ForEach(aspNetCoreMiddleware => aspNetCoreMiddleware.Configure(aspNetCoreApp));
         }
     }
 }

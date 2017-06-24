@@ -15,10 +15,5 @@ namespace Bit.Tests.Api.Middlewares
                 innerAspNetCoreApp.UseMiddleware<AspNetCoreNoCacheResponseMiddleware>();
             });
         }
-
-        public virtual RegisterKind GetRegisterKind()
-        {
-            return RegisterKind.AfterOwinPipeline;
-        }
     }
 }

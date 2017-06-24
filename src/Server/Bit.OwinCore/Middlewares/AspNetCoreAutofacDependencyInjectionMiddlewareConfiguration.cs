@@ -1,7 +1,4 @@
-﻿using System;
-using System.Reflection;
-using System.Threading.Tasks;
-using Autofac;
+﻿using Autofac;
 using Autofac.Integration.Owin;
 using Bit.Owin.Contracts;
 using Bit.Owin.Middlewares;
@@ -9,28 +6,31 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Owin;
 using Owin;
+using System;
+using System.Reflection;
+using System.Threading.Tasks;
 
 namespace Bit.OwinCore.Middlewares
 {
-    public class ExtendAspNetCoreAutofacLifetimeToOwinMiddlewareConfiguration : IOwinMiddlewareConfiguration
+    public class AspNetCoreAutofacDependencyInjectionMiddlewareConfiguration : IOwinMiddlewareConfiguration
     {
         public virtual void Configure(IAppBuilder owinApp)
         {
-            owinApp.Use<ExtendAspNetCoreAutofacLifetimeToOwinMiddleware>();
+            owinApp.Use<AspNetCoreAutofacDependencyInjectionMiddleware>();
 
             owinApp.Use<AutofacScopeBasedDependencyResolverMiddleware>();
         }
     }
 
-    public class ExtendAspNetCoreAutofacLifetimeToOwinMiddleware : OwinMiddleware
+    public class AspNetCoreAutofacDependencyInjectionMiddleware : OwinMiddleware
     {
-        public ExtendAspNetCoreAutofacLifetimeToOwinMiddleware(OwinMiddleware next)
+        public AspNetCoreAutofacDependencyInjectionMiddleware(OwinMiddleware next)
             : base(next)
         {
 
         }
 
-        static ExtendAspNetCoreAutofacLifetimeToOwinMiddleware()
+        static AspNetCoreAutofacDependencyInjectionMiddleware()
         {
             TypeInfo autofacConstantsType = typeof(OwinContextExtensions).GetTypeInfo().Assembly.GetType("Autofac.Integration.Owin.Constants").GetTypeInfo();
 

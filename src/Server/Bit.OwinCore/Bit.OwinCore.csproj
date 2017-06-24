@@ -44,6 +44,15 @@
       <HintPath>..\..\..\packages\FSharp.Core.4.2.1\lib\net45\FSharp.Core.dll</HintPath>
       <Private>True</Private>
     </Reference>
+    <Reference Include="IdentityServer3, Version=2.6.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\..\packages\IdentityServer3.2.6.0\lib\net45\IdentityServer3.dll</HintPath>
+    </Reference>
+    <Reference Include="IdentityServer3.AccessTokenValidation, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\..\packages\IdentityServer3.AccessTokenValidation.2.15.0\lib\net45\IdentityServer3.AccessTokenValidation.dll</HintPath>
+    </Reference>
+    <Reference Include="IdentityServer3.AccessTokenValidation.AspNetCore, Version=1.0.2.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\..\packages\IdentityServer3.AccessTokenValidation.AspNetCore.1.0.2\lib\net451\IdentityServer3.AccessTokenValidation.AspNetCore.dll</HintPath>
+    </Reference>
     <Reference Include="Microsoft.AspNetCore.Authorization, Version=1.1.2.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
       <HintPath>..\..\..\packages\Microsoft.AspNetCore.Authorization.1.1.2\lib\net451\Microsoft.AspNetCore.Authorization.dll</HintPath>
     </Reference>
@@ -91,6 +100,9 @@
     </Reference>
     <Reference Include="Microsoft.AspNetCore.Routing.Abstractions, Version=1.1.2.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
       <HintPath>..\..\..\packages\Microsoft.AspNetCore.Routing.Abstractions.1.1.2\lib\net451\Microsoft.AspNetCore.Routing.Abstractions.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.AspNetCore.StaticFiles, Version=1.1.2.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
+      <HintPath>..\..\..\packages\Microsoft.AspNetCore.StaticFiles.1.1.2\lib\net451\Microsoft.AspNetCore.StaticFiles.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.AspNetCore.WebUtilities, Version=1.1.2.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
       <HintPath>..\..\..\packages\Microsoft.AspNetCore.WebUtilities.1.1.2\lib\net451\Microsoft.AspNetCore.WebUtilities.dll</HintPath>
@@ -158,6 +170,9 @@
     <Reference Include="Newtonsoft.Json, Version=10.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <HintPath>..\..\..\packages\Newtonsoft.Json.10.0.3\lib\net45\Newtonsoft.Json.dll</HintPath>
     </Reference>
+    <Reference Include="NWebsec.AspNetCore.Middleware, Version=1.1.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\..\packages\NWebsec.AspNetCore.Middleware.1.1.0\lib\net451\NWebsec.AspNetCore.Middleware.dll</HintPath>
+    </Reference>
     <Reference Include="Owin, Version=1.0.0.0, Culture=neutral, PublicKeyToken=f0ebd12fd5e55cc5, processorArchitecture=MSIL">
       <HintPath>..\..\..\packages\Owin.1.0\lib\net40\Owin.dll</HintPath>
     </Reference>
@@ -189,6 +204,7 @@
     <Reference Include="System.Globalization.Calendars, Version=4.0.2.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
       <HintPath>..\..\..\packages\System.Globalization.Calendars.4.3.0\lib\net46\System.Globalization.Calendars.dll</HintPath>
     </Reference>
+    <Reference Include="System.IdentityModel" />
     <Reference Include="System.IO, Version=4.1.1.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
       <HintPath>..\..\..\packages\System.IO.4.3.0\lib\net462\System.IO.dll</HintPath>
     </Reference>
@@ -227,6 +243,7 @@
     <Reference Include="System.Runtime, Version=4.1.1.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
       <HintPath>..\..\..\packages\System.Runtime.4.3.0\lib\net462\System.Runtime.dll</HintPath>
     </Reference>
+    <Reference Include="System.Runtime.Caching" />
     <Reference Include="System.Runtime.CompilerServices.Unsafe, Version=4.0.2.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
       <HintPath>..\..\..\packages\System.Runtime.CompilerServices.Unsafe.4.3.0\lib\netstandard1.0\System.Runtime.CompilerServices.Unsafe.dll</HintPath>
     </Reference>
@@ -271,13 +288,22 @@
     <Compile Include="Extensions\IDependencyManangerExtensions.cs" />
     <Compile Include="Extensions\OwinExtensions.cs" />
     <Compile Include="Implementations\AspNetCorePathProvider.cs" />
+    <Compile Include="Implementations\AspNetCoreRequestInformationProvider.cs" />
     <Compile Include="Implementations\Servers\HttpListenerServer.cs" />
     <Compile Include="Implementations\Servers\SuaveServer.cs" />
     <Compile Include="Middlewares\AspNetCoreCacheResponseMiddleware.cs" />
     <Compile Include="Middlewares\AspNetCoreExceptionHandlerMiddlewareConfiguration.cs" />
     <Compile Include="Middlewares\AspNetCoreNoCacheResponseMiddleware.cs" />
     <Compile Include="Middlewares\DelegateAspNetCoreMiddlewareConfiguration.cs" />
-    <Compile Include="Middlewares\ExtendAspNetCoreAutofacLifetimeToOwinMiddleware.cs" />
+    <Compile Include="Middlewares\AspNetCoreAutofacDependencyInjectionMiddlewareConfiguration.cs" />
+    <Compile Include="Middlewares\AspNetCoreStaticFilesMiddlewareConfiguration.cs" />
+    <Compile Include="Middlewares\AspNetCoreLogRequestInformationMiddleware.cs" />
+    <Compile Include="Middlewares\AspNetCoreLogRequestInformationMiddlewareConfiguration.cs" />
+    <Compile Include="Middlewares\AspNetCoreLogUserInformationMiddleware.cs" />
+    <Compile Include="Middlewares\AspNetCoreLogUserInformationMiddlewareConfiguration.cs" />
+    <Compile Include="Middlewares\AspNetCoreReadAuthTokenFromCookieMiddleware.cs" />
+    <Compile Include="Middlewares\AspNetCoreReadAuthTokenFromCookieMiddlewareConfiguration.cs" />
+    <Compile Include="Middlewares\AspNetCoreSingleSignOnClientMiddlewareConfiguration.cs" />
     <Compile Include="Middlewares\WebApiCore\Extensions\IServiceCollectionExtensions.cs" />
     <Compile Include="Properties\AssemblyContainer.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -305,7 +331,9 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <None Include="packages.config" />
+    <None Include="packages.config">
+      <SubType>Designer</SubType>
+    </None>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

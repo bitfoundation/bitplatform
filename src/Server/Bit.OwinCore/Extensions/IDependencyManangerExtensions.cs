@@ -1,7 +1,9 @@
-﻿using System;
+﻿using Bit.Owin.Implementations;
+using Bit.Owin.Middlewares;
 using Bit.OwinCore.Contracts;
 using Bit.OwinCore.Middlewares;
 using Microsoft.AspNetCore.Builder;
+using System;
 
 namespace Bit.Core.Contracts
 {
@@ -18,7 +20,7 @@ namespace Bit.Core.Contracts
             return dependencyManager;
         }
 
-        public static IDependencyManager RegisterAspNetCoreMiddlewareUsing(this IDependencyManager dependencyManager, Action<IApplicationBuilder> aspNetCoreAppCustomizer, RegisterKind registerKind)
+        public static IDependencyManager RegisterAspNetCoreMiddlewareUsing(this IDependencyManager dependencyManager, Action<IApplicationBuilder> aspNetCoreAppCustomizer)
         {
             if (dependencyManager == null)
                 throw new ArgumentNullException(nameof(dependencyManager));
@@ -26,8 +28,22 @@ namespace Bit.Core.Contracts
             if (aspNetCoreAppCustomizer == null)
                 throw new ArgumentNullException(nameof(aspNetCoreAppCustomizer));
 
-            dependencyManager.RegisterInstance<IAspNetCoreMiddlewareConfiguration>(new DelegateAspNetCoreMiddlewareConfiguration(aspNetCoreAppCustomizer, registerKind), overwriteExciting: false);
+            dependencyManager.RegisterInstance<IAspNetCoreMiddlewareConfiguration>(new DelegateAspNetCoreMiddlewareConfiguration(aspNetCoreAppCustomizer), overwriteExciting: false);
 
+            return dependencyManager;
+        }
+
+        public static IDependencyManager RegisterAspNetCoreSingleSignOnClient(this IDependencyManager dependencyManager)
+        {
+            dependencyManager.RegisterAspNetCoreMiddleware<AspNetCoreReadAuthTokenFromCookieMiddlewareConfiguration>();
+            dependencyManager.RegisterAspNetCoreMiddleware<AspNetCoreSingleSignOnClientMiddlewareConfiguration>();
+            dependencyManager.RegisterOwinMiddleware<SignOutPageMiddlewareConfiguration>();
+            dependencyManager.RegisterOwinMiddleware<InvokeLogOutMiddlewareConfiguration>();
+            dependencyManager.RegisterOwinMiddleware<SignInPageMiddlewareConfiguration>();
+            dependencyManager.RegisterOwinMiddleware<InvokeLoginMiddlewareConfiguration>();
+            dependencyManager.Register<IScopeStatusManager, DefaultScopeStatusManager>();
+            dependencyManager.Register<IRandomStringProvider, DefaultRandomStringProvider>(lifeCycle: DependencyLifeCycle.SingleInstance);
+            dependencyManager.Register<ICertificateProvider, DefaultCertificateProvider>(lifeCycle: DependencyLifeCycle.SingleInstance);
             return dependencyManager;
         }
     }

@@ -29,12 +29,7 @@ namespace Bit.Tests
                 testEnvironment = new BitOwinCoreTestEnvironment(new TestEnvironmentArgs
                 {
                     UseRealServer = true,
-                    UseProxyBasedDependencyManager = false,
-                    AdditionalDependencies = dependencyManager =>
-                    {
-                        dependencyManager.RegisterOwinMiddleware<RedirectToSsoIfNotLoggedInMiddlewareConfiguration>();
-                        dependencyManager.RegisterDefaultPageMiddlewareUsingDefaultConfiguration();
-                    }
+                    UseProxyBasedDependencyManager = false
                 });
             }
 
