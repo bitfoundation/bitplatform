@@ -16,10 +16,17 @@ namespace Bit.OwinCore.Middlewares
 
         public async Task Invoke(HttpContext context)
         {
-            if (context.Response.Headers.All(h => !string.Equals(h.Key, "Cache-Control", StringComparison.InvariantCultureIgnoreCase)))
-                context.Response.Headers.Add("Cache-Control", new[] { "public", "max-age=31536000" });
-            if (context.Response.Headers.All(h => !string.Equals(h.Key, "Pragma", StringComparison.InvariantCultureIgnoreCase)))
-                context.Response.Headers.Add("Pragma", new[] { "public" });
+            if (context.Response.Headers.Any(h => string.Equals(h.Key, "Cache-Control", StringComparison.InvariantCultureIgnoreCase)))
+                context.Response.Headers.Remove("Cache-Control");
+            context.Response.Headers.Add("Cache-Control", new[] { "public", "max-age=31536000" });
+
+            if (context.Response.Headers.Any(h => string.Equals(h.Key, "Pragma", StringComparison.InvariantCultureIgnoreCase)))
+                context.Response.Headers.Remove("Pragma");
+            context.Response.Headers.Add("Pragma", new[] { "public" });
+
+            if (context.Response.Headers.Any(h => string.Equals(h.Key, "Expires", StringComparison.InvariantCultureIgnoreCase)))
+                context.Response.Headers.Remove("Expires");
+            context.Response.Headers.Add("Expires", new[] { "max" });
 
             await Next.Invoke(context);
         }

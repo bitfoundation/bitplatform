@@ -1,4 +1,5 @@
 ﻿using Bit.Core.Contracts;
+using Bit.Owin.Middlewares;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using System.Threading.Tasks;
@@ -20,11 +21,7 @@ namespace Bit.OwinCore.Middlewares
 
             IUserInformationProvider userInformationProvider = context.RequestServices.GetService<IUserInformationProvider>();
 
-            if (userInformationProvider.IsAuthenticated())
-            {
-                logger.AddLogData("UserId", userInformationProvider.GetCurrentUserId());
-                logger.AddLogData("AuthenticationType", userInformationProvider.GetAuthenticationType());
-            }
+            LogUserInformationMiddleware.LogUserInformation(logger, userInformationProvider);
 
             await Next.Invoke(context);
         }

@@ -36,6 +36,13 @@ namespace Bit.Owin.Middlewares
             if (owinApp == null)
                 throw new ArgumentNullException(nameof(owinApp));
 
+            IdentityServerBearerTokenAuthenticationOptions authOptions = BuildIdentityServerBearerTokenAuthenticationOptions();
+
+            owinApp.UseIdentityServerBearerTokenAuthentication(authOptions);
+        }
+
+        public virtual IdentityServerBearerTokenAuthenticationOptions BuildIdentityServerBearerTokenAuthenticationOptions()
+        {
             AppEnvironment activeAppEnvironment = _appEnvironmentProvider.GetActiveAppEnvironment();
 
             IdentityServerBearerTokenAuthenticationOptions authOptions = new IdentityServerBearerTokenAuthenticationOptions
@@ -56,7 +63,7 @@ namespace Bit.Owin.Middlewares
                 IssuerName = activeAppEnvironment.GetSsoUrl()
             };
 
-            owinApp.UseIdentityServerBearerTokenAuthentication(authOptions);
+            return authOptions;
         }
 
         protected virtual HttpMessageHandler GetHttpClientHandler(string usage)

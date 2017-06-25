@@ -20,13 +20,18 @@ namespace Bit.Owin.Middlewares
             IUserInformationProvider userInformationProvider =
                 dependencyResolver.Resolve<IUserInformationProvider>();
 
+            LogUserInformation(logger, userInformationProvider);
+
+            await Next.Invoke(context);
+        }
+
+        public static void LogUserInformation(ILogger logger, IUserInformationProvider userInformationProvider)
+        {
             if (userInformationProvider.IsAuthenticated())
             {
                 logger.AddLogData("UserId", userInformationProvider.GetCurrentUserId());
                 logger.AddLogData("AuthenticationType", userInformationProvider.GetAuthenticationType());
             }
-
-            await Next.Invoke(context);
         }
     }
 }

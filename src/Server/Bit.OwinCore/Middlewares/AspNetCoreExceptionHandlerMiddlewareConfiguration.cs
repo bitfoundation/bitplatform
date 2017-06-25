@@ -48,9 +48,12 @@ namespace Bit.OwinCore.Middlewares
                 {
                     scopeStatusManager.MarkAsFailed();
 
-                    logger.AddLogData("ResponseStatusCode", statusCode);
+                    string reasonPhrase = context.Features.Get<IHttpResponseFeature>().ReasonPhrase;
 
-                    if (responseStatusCodeIsErrorCodeBecauseOfSomeClientBasedReason || context.Features.Get<IHttpResponseFeature>().ReasonPhrase == BitMetadataBuilder.KnownError)
+                    logger.AddLogData("ResponseStatusCode", statusCode);
+                    logger.AddLogData("ResponseReasonPhrase", reasonPhrase);
+
+                    if (responseStatusCodeIsErrorCodeBecauseOfSomeClientBasedReason || reasonPhrase == BitMetadataBuilder.KnownError)
                     {
                         await logger.LogWarningAsync("Response has failed status code because of some client side reason");
                     }

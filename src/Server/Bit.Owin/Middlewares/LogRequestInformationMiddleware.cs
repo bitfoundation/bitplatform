@@ -20,6 +20,13 @@ namespace Bit.Owin.Middlewares
             IRequestInformationProvider requestInformationProvider =
                 dependencyResolver.Resolve<IRequestInformationProvider>();
 
+            LogRequest(logger, requestInformationProvider);
+
+            await Next.Invoke(context);
+        }
+
+        public static void LogRequest(ILogger logger, IRequestInformationProvider requestInformationProvider)
+        {
             logger.AddLogData(nameof(IRequestInformationProvider.HttpMethod), requestInformationProvider.HttpMethod);
             logger.AddLogData(nameof(IRequestInformationProvider.RequestUri), requestInformationProvider.RequestUri);
 
@@ -72,8 +79,6 @@ namespace Bit.Owin.Middlewares
 
             if (requestInformationProvider.CorrelationId != null)
                 logger.AddLogData("X-CorrelationId", requestInformationProvider.CorrelationId);
-
-            await Next.Invoke(context);
         }
     }
 }

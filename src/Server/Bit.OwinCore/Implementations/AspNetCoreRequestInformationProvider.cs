@@ -1,9 +1,11 @@
 ﻿using Bit.Core.Contracts;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Extensions;
+using Microsoft.AspNetCore.Http.Features;
 using System;
 using System.Linq;
 using System.Security.Claims;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Bit.Owin.Implementations
 {
@@ -121,7 +123,7 @@ namespace Bit.Owin.Implementations
 
         public virtual string RequestUri
         {
-            get => _context.Request.GetDisplayUrl();
+            get => new Uri($"{_context.Request.Scheme}://{_context.Request.Host}{_context.Request.Path}{_context.Request.QueryString}").ToString();
             protected set => throw new InvalidOperationException();
         }
 
