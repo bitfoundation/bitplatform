@@ -19,6 +19,8 @@ namespace Bit.Test
 
         public bool UseRealServer { get; set; } = false;
 
+        public bool UseAspNetCore { get; set; } = false;
+
         public bool UseHttps { get; set; } = false;
 
         public Action<IDependencyManager> AdditionalDependencies { get; set; } = null;
@@ -65,9 +67,19 @@ namespace Bit.Test
         protected virtual ITestServer GetTestServer(TestEnvironmentArgs args)
         {
             if (args.UseRealServer == true)
-                return new OwinSelfHostTestServer();
+            {
+                if (args.UseAspNetCore == false)
+                    return new OwinSelfHostTestServer();
+                else
+                    return new AspNetCoreSelfHostTestServer();
+            }
             else
-                return new OwinEmbeddedTestServer();
+            {
+                if (args.UseAspNetCore == false)
+                    return new OwinEmbeddedTestServer();
+                else
+                    return new AspNetCoreEmbeddedTestServer();
+            }
         }
 
         protected virtual List<Func<TypeInfo, bool>> GetAutoProxyCreationIgnoreRules()
