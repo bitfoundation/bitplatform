@@ -65,40 +65,32 @@
     <Reference Include="AutoMapper, Version=6.1.0.0, Culture=neutral, PublicKeyToken=be96cd2c38ef1005, processorArchitecture=MSIL">
       <HintPath>packages\AutoMapper.6.1.0\lib\net45\AutoMapper.dll</HintPath>
     </Reference>
-    <Reference Include="Bit.Api">
-      <HintPath>wwwroot\bower_components\bit-releases\bit.api\Bit.Api.dll</HintPath>
+    <Reference Include="Bit.Api, Version=0.0.0.2, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>packages\Bit.Api.0.0.0.2\lib\net47\Bit.Api.dll</HintPath>
     </Reference>
-    <Reference Include="Bit.Core">
-      <HintPath>wwwroot\bower_components\bit-releases\bit.core\Bit.Core.dll</HintPath>
-      <Private>True</Private>
+    <Reference Include="Bit.Core, Version=0.0.0.2, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>packages\Bit.Core.0.0.0.2\lib\net47\Bit.Core.dll</HintPath>
     </Reference>
-    <Reference Include="Bit.Data">
-      <HintPath>wwwroot\bower_components\bit-releases\bit.data\Bit.Data.dll</HintPath>
-      <Private>True</Private>
+    <Reference Include="Bit.Data, Version=0.0.0.2, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>packages\Bit.Data.0.0.0.2\lib\net47\Bit.Data.dll</HintPath>
     </Reference>
-    <Reference Include="Bit.Data.EntityFramework">
-      <HintPath>wwwroot\bower_components\bit-releases\bit.data.entityFramework\Bit.Data.EntityFramework.dll</HintPath>
-      <Private>True</Private>
+    <Reference Include="Bit.Data.EntityFramework, Version=0.0.0.2, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>packages\Bit.Data.EntityFramework.0.0.0.2\lib\net47\Bit.Data.EntityFramework.dll</HintPath>
     </Reference>
-    <Reference Include="Bit.Hangfire">
-      <HintPath>wwwroot\bower_components\bit-releases\bit.hangfire\Bit.Hangfire.dll</HintPath>
+    <Reference Include="Bit.Hangfire, Version=0.0.0.2, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>packages\Bit.Hangfire.0.0.0.2\lib\net47\Bit.Hangfire.dll</HintPath>
     </Reference>
-    <Reference Include="Bit.IdentityServer">
-      <HintPath>wwwroot\bower_components\bit-releases\bit.identityServer\Bit.IdentityServer.dll</HintPath>
+    <Reference Include="Bit.IdentityServer, Version=0.0.0.2, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>packages\Bit.IdentityServer.0.0.0.2\lib\net47\Bit.IdentityServer.dll</HintPath>
     </Reference>
-    <Reference Include="Bit.Model">
-      <HintPath>wwwroot\bower_components\bit-releases\bit.model\Bit.Model.dll</HintPath>
-      <Private>True</Private>
+    <Reference Include="Bit.Model, Version=0.0.0.2, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>packages\Bit.Model.0.0.0.2\lib\net47\Bit.Model.dll</HintPath>
     </Reference>
-    <Reference Include="Bit.Owin, Version=0.0.0.1, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>wwwroot\bower_components\bit-releases\bit.owin\Bit.Owin.dll</HintPath>
+    <Reference Include="Bit.Owin, Version=0.0.0.2, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>packages\Bit.Owin.0.0.0.2\lib\net47\Bit.Owin.dll</HintPath>
     </Reference>
-    <Reference Include="Bit.OwinCore">
-      <HintPath>wwwroot\bower_components\bit-releases\bit.owinCore\Bit.OwinCore.dll</HintPath>
-    </Reference>
-    <Reference Include="Bit.Signalr">
-      <HintPath>wwwroot\bower_components\bit-releases\bit.signalr\Bit.Signalr.dll</HintPath>
+    <Reference Include="Bit.Signalr, Version=0.0.0.2, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>packages\Bit.Signalr.0.0.0.2\lib\net47\Bit.Signalr.dll</HintPath>
     </Reference>
     <Reference Include="Correlator, Version=1.1.0.0, Culture=neutral, PublicKeyToken=ad71b95c30d52163, processorArchitecture=MSIL">
       <HintPath>packages\WebApiCorrelator.1.1.0.0\lib\net452\Correlator.dll</HintPath>

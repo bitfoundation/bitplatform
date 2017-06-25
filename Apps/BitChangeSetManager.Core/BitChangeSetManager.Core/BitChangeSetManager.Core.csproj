@@ -24,6 +24,16 @@
     <PackageReference Include="Autofac.WebApi2" Version="4.0.1" />
     <PackageReference Include="Autofac.WebApi2.Owin" Version="4.0.0" />
     <PackageReference Include="AutoMapper" Version="6.1.0" />
+    <PackageReference Include="Bit.Api" Version="0.0.0.2" />
+    <PackageReference Include="Bit.Core" Version="0.0.0.2" />
+    <PackageReference Include="Bit.Data" Version="0.0.0.2" />
+    <PackageReference Include="Bit.Data.EntityFramework" Version="0.0.0.2" />
+    <PackageReference Include="Bit.Hangfire" Version="0.0.0.2" />
+    <PackageReference Include="Bit.IdentityServer" Version="0.0.0.2" />
+    <PackageReference Include="Bit.Model" Version="0.0.0.2" />
+    <PackageReference Include="Bit.Owin" Version="0.0.0.2" />
+    <PackageReference Include="Bit.OwinCore" Version="0.0.0.2" />
+    <PackageReference Include="Bit.Signalr" Version="0.0.0.2" />
     <PackageReference Include="BitCodeAnalyzer" Version="1.1.5.4" />
     <PackageReference Include="Dapper" Version="1.50.2" />
     <PackageReference Include="EntityFramework" Version="6.1.3" />
@@ -126,38 +136,6 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\BitChangeSetManager\BitChangeSetManager.csproj" />
-  </ItemGroup>
-  <ItemGroup>
-    <Reference Include="Bit.Api">
-      <HintPath>..\..\BitChangeSetManager\wwwroot\bower_components\bit-releases\bit.api\Bit.Api.dll</HintPath>
-    </Reference>
-    <Reference Include="Bit.Core">
-      <HintPath>..\..\BitChangeSetManager\wwwroot\bower_components\bit-releases\bit.core\Bit.Core.dll</HintPath>
-    </Reference>
-    <Reference Include="Bit.Data">
-      <HintPath>..\..\BitChangeSetManager\wwwroot\bower_components\bit-releases\bit.data\Bit.Data.dll</HintPath>
-    </Reference>
-    <Reference Include="Bit.Data.EntityFramework">
-      <HintPath>..\..\BitChangeSetManager\wwwroot\bower_components\bit-releases\bit.data.entityFramework\Bit.Data.EntityFramework.dll</HintPath>
-    </Reference>
-    <Reference Include="Bit.Hangfire">
-      <HintPath>..\..\BitChangeSetManager\wwwroot\bower_components\bit-releases\bit.hangfire\Bit.Hangfire.dll</HintPath>
-    </Reference>
-    <Reference Include="Bit.IdentityServer">
-      <HintPath>..\..\BitChangeSetManager\wwwroot\bower_components\bit-releases\bit.identityServer\Bit.IdentityServer.dll</HintPath>
-    </Reference>
-    <Reference Include="Bit.Model">
-      <HintPath>..\..\BitChangeSetManager\wwwroot\bower_components\bit-releases\bit.model\Bit.Model.dll</HintPath>
-    </Reference>
-    <Reference Include="Bit.Owin">
-      <HintPath>..\..\BitChangeSetManager\wwwroot\bower_components\bit-releases\bit.owin\Bit.Owin.dll</HintPath>
-    </Reference>
-    <Reference Include="Bit.OwinCore">
-      <HintPath>..\..\BitChangeSetManager\wwwroot\bower_components\bit-releases\bit.owinCore\Bit.OwinCore.dll</HintPath>
-    </Reference>
-    <Reference Include="Bit.Signalr">
-      <HintPath>..\..\BitChangeSetManager\wwwroot\bower_components\bit-releases\bit.signalr\Bit.Signalr.dll</HintPath>
-    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Content Update="App_Data\templates.json">

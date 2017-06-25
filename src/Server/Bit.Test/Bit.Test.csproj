@@ -246,6 +246,39 @@
     <Compile Include="TestEnvironmentBase.cs" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="Nuget\Bit.Api.nuspec">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="Nuget\Bit.Hangfire.nuspec">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="Nuget\Bit.Signalr.nuspec">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="Nuget\Bit.IdentityServer.nuspec">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="Nuget\Bit.OwinCore.nuspec">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="Nuget\Bit.Owin.nuspec">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="Nuget\Bit.Data.EntityFrameworkCore.nuspec">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="Nuget\Bit.Data.EntityFramework.nuspec">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="Nuget\Bit.Data.nuspec">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="Nuget\Bit.Model.nuspec">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="Nuget\Bit.Core.nuspec">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
@@ -256,6 +289,14 @@
     <ProjectReference Include="..\Bit.Core\Bit.Core.csproj">
       <Project>{fcda72a2-d377-4aa1-a8c5-e6c6805bcb64}</Project>
       <Name>Bit.Core</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Bit.Data.EntityFrameworkCore\Bit.Data.EntityFrameworkCore.csproj">
+      <Project>{795411d0-0471-47ea-b461-5a5235752c5a}</Project>
+      <Name>Bit.Data.EntityFrameworkCore</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Bit.Data.EntityFramework\Bit.Data.EntityFramework.csproj">
+      <Project>{86a1f761-36f3-4038-977d-1ea0ace29d7c}</Project>
+      <Name>Bit.Data.EntityFramework</Name>
     </ProjectReference>
     <ProjectReference Include="..\Bit.Data\Bit.Data.csproj">
       <Project>{722d443e-450d-4c7b-94cf-ac8c553dd8ff}</Project>
@@ -293,5 +334,43 @@
       <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
     </PropertyGroup>
     <Error Condition="!Exists('..\..\..\packages\Microsoft.Bcl.Build.1.0.21\build\Microsoft.Bcl.Build.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\..\packages\Microsoft.Bcl.Build.1.0.21\build\Microsoft.Bcl.Build.targets'))" />
+  </Target>
+  <Target Name="AfterBuild">
+    <GetAssemblyIdentity AssemblyFiles="$(OutDir)\$(AssemblyName).dll">
+      <Output TaskParameter="Assemblies" ItemName="BitAssemblyInfo" />
+    </GetAssemblyIdentity>
+    <Exec Command="&quot;$(SolutionDir)packages\NuGet.CommandLine.4.1.0\tools\NuGet.exe&quot; pack Nuget\Bit.Core.nuspec -NoPackageAnalysis -Version %(BitAssemblyInfo.Version) -OutputDirectory ." WorkingDirectory="$(OutDir)" LogStandardErrorAsError="true" ConsoleToMSBuild="true">
+      <Output TaskParameter="ConsoleOutput" PropertyName="OutputOfExec" />
+    </Exec>
+    <Exec Command="&quot;$(SolutionDir)packages\NuGet.CommandLine.4.1.0\tools\NuGet.exe&quot; pack Nuget\Bit.Model.nuspec -NoPackageAnalysis -Version %(BitAssemblyInfo.Version) -OutputDirectory ." WorkingDirectory="$(OutDir)" LogStandardErrorAsError="true" ConsoleToMSBuild="true">
+      <Output TaskParameter="ConsoleOutput" PropertyName="OutputOfExec" />
+    </Exec>
+    <Exec Command="&quot;$(SolutionDir)packages\NuGet.CommandLine.4.1.0\tools\NuGet.exe&quot; pack Nuget\Bit.Data.nuspec -NoPackageAnalysis -Version %(BitAssemblyInfo.Version) -OutputDirectory ." WorkingDirectory="$(OutDir)" LogStandardErrorAsError="true" ConsoleToMSBuild="true">
+      <Output TaskParameter="ConsoleOutput" PropertyName="OutputOfExec" />
+    </Exec>
+    <Exec Command="&quot;$(SolutionDir)packages\NuGet.CommandLine.4.1.0\tools\NuGet.exe&quot; pack Nuget\Bit.Data.EntityFramework.nuspec -NoPackageAnalysis -Version %(BitAssemblyInfo.Version) -OutputDirectory ." WorkingDirectory="$(OutDir)" LogStandardErrorAsError="true" ConsoleToMSBuild="true">
+      <Output TaskParameter="ConsoleOutput" PropertyName="OutputOfExec" />
+    </Exec>
+    <Exec Command="&quot;$(SolutionDir)packages\NuGet.CommandLine.4.1.0\tools\NuGet.exe&quot; pack Nuget\Bit.Data.EntityFrameworkCore.nuspec -NoPackageAnalysis -Version %(BitAssemblyInfo.Version) -OutputDirectory ." WorkingDirectory="$(OutDir)" LogStandardErrorAsError="true" ConsoleToMSBuild="true">
+      <Output TaskParameter="ConsoleOutput" PropertyName="OutputOfExec" />
+    </Exec>
+    <Exec Command="&quot;$(SolutionDir)packages\NuGet.CommandLine.4.1.0\tools\NuGet.exe&quot; pack Nuget\Bit.Owin.nuspec -NoPackageAnalysis -Version %(BitAssemblyInfo.Version) -OutputDirectory ." WorkingDirectory="$(OutDir)" LogStandardErrorAsError="true" ConsoleToMSBuild="true">
+      <Output TaskParameter="ConsoleOutput" PropertyName="OutputOfExec" />
+    </Exec>
+    <Exec Command="&quot;$(SolutionDir)packages\NuGet.CommandLine.4.1.0\tools\NuGet.exe&quot; pack Nuget\Bit.OwinCore.nuspec -NoPackageAnalysis -Version %(BitAssemblyInfo.Version) -OutputDirectory ." WorkingDirectory="$(OutDir)" LogStandardErrorAsError="true" ConsoleToMSBuild="true">
+      <Output TaskParameter="ConsoleOutput" PropertyName="OutputOfExec" />
+    </Exec>
+    <Exec Command="&quot;$(SolutionDir)packages\NuGet.CommandLine.4.1.0\tools\NuGet.exe&quot; pack Nuget\Bit.Signalr.nuspec -NoPackageAnalysis -Version %(BitAssemblyInfo.Version) -OutputDirectory ." WorkingDirectory="$(OutDir)" LogStandardErrorAsError="true" ConsoleToMSBuild="true">
+      <Output TaskParameter="ConsoleOutput" PropertyName="OutputOfExec" />
+    </Exec>
+    <Exec Command="&quot;$(SolutionDir)packages\NuGet.CommandLine.4.1.0\tools\NuGet.exe&quot; pack Nuget\Bit.Hangfire.nuspec -NoPackageAnalysis -Version %(BitAssemblyInfo.Version) -OutputDirectory ." WorkingDirectory="$(OutDir)" LogStandardErrorAsError="true" ConsoleToMSBuild="true">
+      <Output TaskParameter="ConsoleOutput" PropertyName="OutputOfExec" />
+    </Exec>
+    <Exec Command="&quot;$(SolutionDir)packages\NuGet.CommandLine.4.1.0\tools\NuGet.exe&quot; pack Nuget\Bit.Api.nuspec -NoPackageAnalysis -Version %(BitAssemblyInfo.Version) -OutputDirectory ." WorkingDirectory="$(OutDir)" LogStandardErrorAsError="true" ConsoleToMSBuild="true">
+      <Output TaskParameter="ConsoleOutput" PropertyName="OutputOfExec" />
+    </Exec>
+    <Exec Command="&quot;$(SolutionDir)packages\NuGet.CommandLine.4.1.0\tools\NuGet.exe&quot; pack Nuget\Bit.IdentityServer.nuspec -NoPackageAnalysis -Version %(BitAssemblyInfo.Version) -OutputDirectory ." WorkingDirectory="$(OutDir)" LogStandardErrorAsError="true" ConsoleToMSBuild="true">
+      <Output TaskParameter="ConsoleOutput" PropertyName="OutputOfExec" />
+    </Exec>
   </Target>
 </Project>

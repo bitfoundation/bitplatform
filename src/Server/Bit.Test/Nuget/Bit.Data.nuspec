@@ -1,25 +1,27 @@
-﻿<?xml version="1.0"?>
+<?xml version="1.0"?>
 <package xmlns="http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd">
   <metadata>
-    <id>BitCodeAnalyzer</id>
-    <version>1.1.7.2</version>
-    <title>Bit Code Analyzer</title>
+    <id>Bit.Data</id>
+    <version>0.0.0.2</version>
+    <title>Bit Data</title>
     <authors>Bit Foundation</authors>
     <owners>Bit Foundation</owners>
     <licenseUrl>https://github.com/bit-foundation/bit-framework/blob/master/LICENSE</licenseUrl>
     <projectUrl>https://github.com/bit-foundation/bit-framework</projectUrl>
     <iconUrl>https://avatars.githubusercontent.com/u/22663390</iconUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
-    <description>BitCodeAnalyzer</description>
+    <description>Bit.Data</description>
     <releaseNotes>Summary of changes made in this release of the package.</releaseNotes>
     <copyright>Copyright © Bit Foundation 2017</copyright>
-    <tags>BitCodeAnalyzer Roslyn Analyzers Bit</tags>
+    <tags>Bit Data</tags>
     <frameworkAssemblies>
-      <frameworkAssembly assemblyName="System" targetFramework="" />
+      <frameworkAssembly assemblyName="System.Data" targetFramework="" />
     </frameworkAssemblies>
+    <dependencies>
+      <dependency id="Bit.Model" version="0.0.0.2" />
+    </dependencies>
   </metadata>
   <files>
-    <file src="*.dll" target="analyzers\dotnet\cs" exclude="**\Microsoft.CodeAnalysis.*;**\System.Collections.Immutable.*;**\System.Reflection.Metadata.*;**\System.Composition.*" />
-    <file src="tools\*.ps1" target="tools\" />
+    <file src="..\Bit.Data.dll;..\Bit.Data.pdb" target="lib\net47" />
   </files>
 </package>
