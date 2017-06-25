@@ -449,7 +449,6 @@
     <Compile Include="Api\Middlewares\WebApi\Tests\WebApiODataCachingTests.cs" />
     <Compile Include="Api\Middlewares\WebApi\Tests\WebApiODataSecurityTests.cs" />
     <Compile Include="Api\Middlewares\WebApi\Tests\WebApiTraceWritterTests.cs" />
-    <Compile Include="BitOwinCoreTestEnvironment.cs" />
     <Compile Include="Core\Contracts\IEmailService.cs" />
     <Compile Include="Core\Contracts\IRequestValidator.cs" />
     <Compile Include="Core\Contracts\IValueChecker.cs" />

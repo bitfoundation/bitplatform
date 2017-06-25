@@ -13,7 +13,7 @@ namespace Bit.Tests.Api.ApiControllers.Tests
         [TestCategory("WebApiCore")]
         public virtual async Task WebApiCoreControllerShouldReturnOkStatusCode()
         {
-            using (BitOwinCoreTestEnvironment testEnvironment = new BitOwinCoreTestEnvironment(new TestEnvironmentArgs { UseRealServer = false }))
+            using (BitOwinTestEnvironment testEnvironment = new BitOwinTestEnvironment(new TestEnvironmentArgs { UseRealServer = false , UseAspNetCore = true }))
             {
                 HttpResponseMessage response = await testEnvironment.Server.GetHttpClient()
                     .GetAsync("api-core/People/GetData");
