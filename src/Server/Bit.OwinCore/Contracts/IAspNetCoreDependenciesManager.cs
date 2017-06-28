@@ -1,5 +1,4 @@
 ﻿using Bit.Core.Contracts;
-using Bit.Core.Contracts.Project;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Bit.OwinCore.Contracts

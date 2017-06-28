@@ -43,11 +43,8 @@
     <Reference Include="Autofac.Integration.WebApi, Version=4.0.0.0, Culture=neutral, PublicKeyToken=17863af14b0044da, processorArchitecture=MSIL">
       <HintPath>..\..\..\packages\Autofac.WebApi2.4.0.1\lib\net45\Autofac.Integration.WebApi.dll</HintPath>
     </Reference>
-    <Reference Include="AutoMapper, Version=6.1.0.0, Culture=neutral, PublicKeyToken=be96cd2c38ef1005, processorArchitecture=MSIL">
-      <HintPath>..\..\..\packages\AutoMapper.6.1.0\lib\net45\AutoMapper.dll</HintPath>
-    </Reference>
-    <Reference Include="IdentityServer3, Version=2.6.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\..\packages\IdentityServer3.2.6.0\lib\net45\IdentityServer3.dll</HintPath>
+    <Reference Include="AutoMapper, Version=6.1.1.0, Culture=neutral, PublicKeyToken=be96cd2c38ef1005, processorArchitecture=MSIL">
+      <HintPath>..\..\..\packages\AutoMapper.6.1.1\lib\net45\AutoMapper.dll</HintPath>
     </Reference>
     <Reference Include="IdentityServer3.AccessTokenValidation, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\..\..\packages\IdentityServer3.AccessTokenValidation.2.15.0\lib\net45\IdentityServer3.AccessTokenValidation.dll</HintPath>
@@ -99,9 +96,6 @@
     </Reference>
     <Reference Include="System.Runtime.Caching" />
     <Reference Include="System.Xml" />
-    <Reference Include="System.Xml.ReaderWriter, Version=4.1.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
-      <HintPath>..\..\..\packages\System.Xml.ReaderWriter.4.3.0\lib\net46\System.Xml.ReaderWriter.dll</HintPath>
-    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Contracts\IAutofacDependencyManager.cs" />
@@ -123,7 +117,7 @@
     <Compile Include="Exceptions\IHttpStatusCodeAwareException.cs" />
     <Compile Include="Exceptions\IKnwoException.cs" />
     <Compile Include="Exceptions\ResourceNotFoundException.cs" />
-    <Compile Include="Extensions\IDependencyManangerExtensions.cs" />
+    <Compile Include="Extensions\IDependencyManagerExtensions.cs" />
     <Compile Include="Extensions\IOwinContextExtensions.cs" />
     <Compile Include="Implementations\AutofacDependencyManager.cs" />
     <Compile Include="Implementations\DefaultOwinLoggerFactory.cs" />
@@ -157,6 +151,7 @@
     <Compile Include="Implementations\WindowsEventsLogStore.cs" />
     <Compile Include="Metadata\Dtos\UserSettingMetadataBuilder.cs" />
     <Compile Include="Metadata\BitMetadataBuilder.cs" />
+    <Compile Include="Metadata\Views\LoginViewMetadataBuilder.cs" />
     <Compile Include="Middlewares\AddAcceptCharsetToRequestHeadersIfNotAnyMiddleware.cs" />
     <Compile Include="Middlewares\AutofacDependencyInjectionMiddlewareConfiguration.cs" />
     <Compile Include="Middlewares\DefaultPageMiddleware.cs" />
@@ -191,9 +186,7 @@
     <Compile Include="Properties\AssemblyContainer.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Metadata\Views\" />
-  </ItemGroup>
+  <ItemGroup />
   <ItemGroup>
     <None Include="packages.config" />
   </ItemGroup>
@@ -201,10 +194,6 @@
     <ProjectReference Include="..\Bit.Core\Bit.Core.csproj">
       <Project>{fcda72a2-d377-4aa1-a8c5-e6c6805bcb64}</Project>
       <Name>Bit.Core</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Bit.Data\Bit.Data.csproj">
-      <Project>{722d443e-450d-4c7b-94cf-ac8c553dd8ff}</Project>
-      <Name>Bit.Data</Name>
     </ProjectReference>
     <ProjectReference Include="..\Bit.Model\Bit.Model.csproj">
       <Project>{5fac42f7-1179-440d-8be0-ffd364639943}</Project>

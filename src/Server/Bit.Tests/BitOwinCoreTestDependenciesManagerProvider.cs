@@ -1,15 +1,9 @@
-﻿using Bit.Api.Implementations.Project;
-using Bit.Api.Middlewares.WebApi.OData.ActionFilters;
-using Bit.Api.Middlewares.WebApi.OData.Contracts;
-using Bit.Api.Middlewares.WebApi.OData.Implementations;
-using Bit.Core;
+﻿using Bit.Core;
 using Bit.Core.Contracts;
-using Bit.Core.Contracts.Project;
 using Bit.Core.Implementations;
 using Bit.Data;
 using Bit.Data.Contracts;
 using Bit.Data.EntityFrameworkCore.Implementations;
-using Bit.Hangfire.Middlewares.JobScheduler.Implementations;
 using Bit.Model.Implementations;
 using Bit.Owin.Contracts;
 using Bit.Owin.Contracts.Metadata;
@@ -18,7 +12,6 @@ using Bit.Owin.Implementations.Metadata;
 using Bit.Owin.Middlewares;
 using Bit.OwinCore.Contracts;
 using Bit.OwinCore.Middlewares;
-using Bit.Signalr.Middlewares.Signalr.Implementations;
 using Bit.Test;
 using Bit.Tests.Api.Implementations.Project;
 using Bit.Tests.Api.Middlewares;
@@ -30,6 +23,12 @@ using Microsoft.Extensions.DependencyInjection;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Web.Http;
+using Bit.Hangfire.Implementations;
+using Bit.OData.ActionFilters;
+using Bit.OData.Contracts;
+using Bit.OData.Implementations;
+using Bit.Signalr.Implementations;
+using System.Data.SqlClient;
 
 namespace Bit.Tests
 {
@@ -49,26 +48,24 @@ namespace Bit.Tests
 
         public virtual void ConfigureDependencies(IDependencyManager dependencyManager)
         {
+            AssemblyContainer.Current.Init();
+
             dependencyManager.RegisterMinimalDependencies();
 
             dependencyManager.RegisterInstance(DefaultAppEnvironmentProvider.Current);
             dependencyManager.RegisterInstance(DefaultJsonContentFormatter.Current);
             dependencyManager.RegisterInstance(DefaultPathProvider.Current);
 
-            dependencyManager.Register<ITimeZoneManager, DefaultTimeZoneManager>();
             dependencyManager.Register<IRequestInformationProvider, AspNetCoreRequestInformationProvider>();
-            dependencyManager.Register<Microsoft.Owin.Logging.ILoggerFactory, DefaultOwinLoggerFactory>();
             dependencyManager.Register<ILogger, DefaultLogger>();
             dependencyManager.RegisterLogStore<ConsoleLogStore>();
             dependencyManager.RegisterLogStore<DebugLogStore>();
-            dependencyManager.Register<IUserInformationProvider, DefaultUserInformationProvider>();
-            dependencyManager.Register<IDbConnectionProvider, DefaultSqlDbConnectionProvider>();
-
-            dependencyManager.Register<IDateTimeProvider, DefaultDateTimeProvider>(lifeCycle: DependencyLifeCycle.SingleInstance);
-            dependencyManager.Register<IExceptionToHttpErrorMapper, DefaultExceptionToHttpErrorMapper>(lifeCycle: DependencyLifeCycle.SingleInstance);
+            dependencyManager.Register<IDbConnectionProvider, DefaultDbConnectionProvider<SqlConnection>>();
 
             dependencyManager.RegisterAppEvents<RazorViewEngineConfiguration>();
             dependencyManager.RegisterAppEvents<InitialTestDataConfiguration>();
+
+            dependencyManager.RegisterDefaultOwinApp();
 
             dependencyManager.RegisterAspNetCoreMiddleware<AspNetCoreStaticFilesMiddlewareConfiguration>();
             dependencyManager.RegisterOwinMiddleware<AspNetCoreAutofacDependencyInjectionMiddlewareConfiguration>();
@@ -81,7 +78,7 @@ namespace Bit.Tests
 
             dependencyManager.RegisterOwinMiddleware<MetadataMiddlewareConfiguration>();
 
-            dependencyManager.RegisterDefaultWebApiConfiguration(AssemblyContainer.Current.GetBitApiAssembly(), AssemblyContainer.Current.GetBitTestsAssembly());
+            dependencyManager.RegisterDefaultWebApiODataConfiguration();
 
             dependencyManager.RegisterUsing<IOwinMiddlewareConfiguration>(() =>
             {
@@ -118,12 +115,12 @@ namespace Bit.Tests
             dependencyManager.Register<IODataSqlBuilder, DefaultODataSqlBuilder>(lifeCycle: DependencyLifeCycle.SingleInstance);
 
             dependencyManager.RegisterSignalRConfiguration<SignalRAuthorizeConfiguration>();
-            dependencyManager.RegisterSignalRMiddlewareUsingDefaultConfiguration(AssemblyContainer.Current.GetBitSignalRAssembly());
+            dependencyManager.RegisterSignalRMiddlewareUsingDefaultConfiguration();
 
             dependencyManager.RegisterBackgroundJobWorkerUsingDefaultConfiguration<JobSchedulerInMemoryBackendConfiguration>();
 
             dependencyManager.Register<IAppMetadataProvider, DefaultAppMetadataProvider>(lifeCycle: DependencyLifeCycle.SingleInstance);
-            dependencyManager.RegisterMetadata(AssemblyContainer.Current.GetBitMetadataAssembly(), AssemblyContainer.Current.GetBitTestsAssembly(), AssemblyContainer.Current.GetBitIdentityServerAssembly());
+            dependencyManager.RegisterMetadata();
 
             dependencyManager.RegisterGeneric(typeof(IRepository<>).GetTypeInfo(), typeof(TestEfRepository<>).GetTypeInfo(), DependencyLifeCycle.InstancePerLifetimeScope);
 

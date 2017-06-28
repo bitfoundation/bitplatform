@@ -1,7 +1,7 @@
-﻿using Bit.Api.Middlewares.WebApi.OData.ActionFilters;
-using Bit.Api.Middlewares.WebApi.OData.Contracts;
-using Bit.Core.Contracts;
+﻿using Bit.Core.Contracts;
 using Bit.Data.Contracts;
+using Bit.OData.ActionFilters;
+using Bit.OData.Contracts;
 using BitChangeSetManager.DataAccess;
 using BitChangeSetManager.Dto;
 using BitChangeSetManager.Model;

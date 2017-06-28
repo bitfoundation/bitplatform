@@ -95,7 +95,7 @@
     <Compile Include="Contracts\IScopesProvider.cs" />
     <Compile Include="Contracts\ISsoPageHtmlProvider.cs" />
     <Compile Include="Contracts\ISSOPageModelProvider.cs" />
-    <Compile Include="Extensions\IDependencyManangerExtensions.cs" />
+    <Compile Include="Extensions\IDependencyManagerExtensions.cs" />
     <Compile Include="Implementations\ActiveDirectoryUserServiceProvider.cs" />
     <Compile Include="Implementations\DefaultCustomLoginDataProvider.cs" />
     <Compile Include="Implementations\DefaultIdentityServerLogProvider.cs" />
@@ -104,8 +104,7 @@
     <Compile Include="Implementations\DefaultViewService.cs" />
     <Compile Include="Implementations\ExtendedRedirectUriValidator.cs" />
     <Compile Include="Implementations\RazorSsoHtmlPageProvider.cs" />
-    <Compile Include="Metadata\Views\LoginViewMetadataBuilder.cs" />
-    <Compile Include="Middlewares\IdentityServerMiddlewareConfiguration.cs" />
+    <Compile Include="IdentityServerMiddlewareConfiguration.cs" />
     <Compile Include="Model\SSOPageModel.cs" />
     <Compile Include="Properties\AssemblyContainer.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

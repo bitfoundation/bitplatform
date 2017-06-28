@@ -1,4 +1,4 @@
-﻿using Bit.Api.ApiControllers;
+﻿using Bit.OData.ODataControllers;
 using Bit.Tests.Model.Dto;
 using System.Web.OData.Query;
 

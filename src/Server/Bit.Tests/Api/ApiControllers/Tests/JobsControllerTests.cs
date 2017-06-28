@@ -1,5 +1,5 @@
 ﻿using System.Threading.Tasks;
-using Bit.Api.ApiControllers;
+using Bit.OData.ODataControllers;
 using Bit.Model.Dtos;
 using Bit.Owin.Metadata;
 using IdentityModel.Client;

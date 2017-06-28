@@ -71,18 +71,19 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Extensions\IDependencyManangerExtensions.cs" />
-    <Compile Include="Middlewares\Signalr\Contracts\IMessagesHubEvents.cs" />
-    <Compile Include="Middlewares\Signalr\Contracts\ISignalRConfiguration.cs" />
-    <Compile Include="Middlewares\Signalr\Implementations\DefaultMessageHubEvents.cs" />
-    <Compile Include="Middlewares\Signalr\Implementations\DefaultSignalRAssemblyLocator.cs" />
-    <Compile Include="Middlewares\Signalr\Implementations\SignalRAuthorizeConfiguration.cs" />
-    <Compile Include="Middlewares\Signalr\Implementations\SignalRAzureServiceBusScaleoutConfiguration.cs" />
-    <Compile Include="Middlewares\Signalr\Implementations\SignalRMessageContentFormatter.cs" />
-    <Compile Include="Middlewares\Signalr\Implementations\SignalRMessageSender.cs" />
-    <Compile Include="Middlewares\Signalr\Implementations\SignalRSqlServerScaleoutConfiguration.cs" />
-    <Compile Include="Middlewares\Signalr\MessagesHub.cs" />
-    <Compile Include="Middlewares\Signalr\SignalRMiddlewareConfiguration.cs" />
+    <Compile Include="Extensions\DelegateSignalRConfiguration.cs" />
+    <Compile Include="Extensions\IDependencyManagerExtensions.cs" />
+    <Compile Include="Contracts\IMessagesHubEvents.cs" />
+    <Compile Include="Contracts\ISignalRConfiguration.cs" />
+    <Compile Include="Implementations\DefaultMessageHubEvents.cs" />
+    <Compile Include="Implementations\DefaultSignalRAssemblyLocator.cs" />
+    <Compile Include="Implementations\SignalRAuthorizeConfiguration.cs" />
+    <Compile Include="Implementations\SignalRAzureServiceBusScaleoutConfiguration.cs" />
+    <Compile Include="Implementations\SignalRMessageContentFormatter.cs" />
+    <Compile Include="Implementations\SignalRMessageSender.cs" />
+    <Compile Include="Implementations\SignalRSqlServerScaleoutConfiguration.cs" />
+    <Compile Include="MessagesHub.cs" />
+    <Compile Include="SignalRMiddlewareConfiguration.cs" />
     <Compile Include="Properties\AssemblyContainer.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

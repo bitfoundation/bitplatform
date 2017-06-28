@@ -1,0 +1,212 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Linq.Expressions;
+using System.Reflection;
+using System.Web.OData.Query;
+using Bit.OData.Contracts;
+using Bit.Owin.Exceptions;
+using LambdaSqlBuilder;
+using LambdaSqlBuilder.ValueObjects;
+
+namespace Bit.OData.Implementations
+{
+    public class DefaultODataSqlBuilder : IODataSqlBuilder
+    {
+        public DefaultODataSqlBuilder()
+        {
+            SqlLamBase.SetAdapter(SqlAdapter.SqlServer2012);
+        }
+
+        public virtual ODataSqlQueryParts BuildSqlQueryParts<TDto>(ODataQueryOptions<TDto> odataQuery)
+            where TDto : class
+        {
+            if (odataQuery == null)
+                throw new ArgumentNullException(nameof(odataQuery));
+
+            string columns = "*";
+            string orderBy = null, where = null;
+            long? top = odataQuery.Top?.Value;
+            long? skip = odataQuery.Skip?.Value;
+            IDictionary<string, object> parameters = null;
+
+            if (odataQuery.SelectExpand != null && odataQuery.SelectExpand.SelectExpandClause.AllSelected != true)
+                throw new BadRequestException("$select is not supported for this resource");
+
+            if (odataQuery.Filter != null)
+            {
+                IQueryable<TDto> odataQueryAsLinq = Enumerable.Empty<TDto>()
+                    .AsQueryable();
+
+                IQueryable filteredOdataQueryAsLinq = odataQuery.Filter.ApplyTo(odataQueryAsLinq, new ODataQuerySettings
+                {
+                    EnableConstantParameterization = false,
+                    EnsureStableOrdering = false,
+                    HandleNullPropagation = HandleNullPropagationOption.False,
+                    PageSize = null
+                });
+
+                WhereExpressionFinder<TDto> whereFinder = new WhereExpressionFinder<TDto>();
+                whereFinder.Visit(filteredOdataQueryAsLinq.Expression);
+
+                ExtraMethodCallRemover<TDto> extraMethodCallRemover = new ExtraMethodCallRemover<TDto>();
+                whereFinder.Where = (Expression<Func<TDto, bool>>)extraMethodCallRemover.Visit(whereFinder.Where);
+
+                SqlLam<TDto> sqlQuery = new SqlLam<TDto>(whereFinder.Where);
+
+                where = string.Join("", sqlQuery.SqlBuilder.WhereConditions);
+                parameters = sqlQuery.QueryParameters;
+            }
+
+            if (odataQuery.OrderBy != null)
+            {
+                IQueryable<TDto> odataQueryAsLinq = Enumerable.Empty<TDto>()
+                    .AsQueryable();
+
+                IQueryable orderedOdataQueryAsLinq = odataQuery.OrderBy.ApplyTo(odataQueryAsLinq, new ODataQuerySettings
+                {
+                    EnableConstantParameterization = false,
+                    EnsureStableOrdering = false,
+                    HandleNullPropagation = HandleNullPropagationOption.False,
+                    PageSize = null
+                });
+
+                SqlLam<TDto> sqlQuery = new SqlLam<TDto>();
+
+                OrderByFinder<TDto> orderByFinder = new OrderByFinder<TDto>(sqlQuery);
+                orderByFinder.Visit(orderedOdataQueryAsLinq.Expression);
+
+                orderBy = string.Join(",", sqlQuery.SqlBuilder.OrderByList);
+            }
+
+            bool selectCountFromDb = odataQuery.Count?.Value == true && top != null;
+
+            return new ODataSqlQueryParts
+            {
+                SelectionClause = columns,
+                OrderByClause = orderBy,
+                Parameters = parameters,
+                GetTotalCountFromDb = selectCountFromDb,
+                Skip = skip,
+                Top = top,
+                WhereClause = where
+            };
+        }
+
+        public virtual ODataSqlQuery BuildSqlQuery<TDto>(ODataQueryOptions<TDto> odataQuery, string tableName)
+            where TDto : class
+        {
+            if (odataQuery == null)
+                throw new ArgumentNullException(nameof(odataQuery));
+
+            TypeInfo dtoType = typeof(TDto).GetTypeInfo();
+
+            var sqlQueryParts = BuildSqlQueryParts(odataQuery);
+
+            if (sqlQueryParts.Skip != null)
+            {
+                if (sqlQueryParts.Top == null)
+                    throw new BadRequestException("$top is not provided while there is a $skip");
+
+                if (sqlQueryParts.OrderByClause == null)
+                    throw new BadRequestException("$orderby is not provided while there is a $skip");
+            }
+
+            string whereClause = sqlQueryParts.WhereClause == null ? "" : $"where {sqlQueryParts.WhereClause}";
+            string offsetClause = sqlQueryParts.Skip == null ? "" : $"offset {sqlQueryParts.Skip} rows";
+            string topClause = "", fetchRowClause = "";
+            if (sqlQueryParts.Top != null)
+            {
+                if (sqlQueryParts.Skip != null)
+                    fetchRowClause = $"fetch next {sqlQueryParts.Top} rows only";
+                else
+                    topClause = $"top({sqlQueryParts.Top})";
+            }
+            string orderByClause = sqlQueryParts.OrderByClause == null ? "" : $"order by {sqlQueryParts.OrderByClause}";
+
+            string select = $"select {topClause} {sqlQueryParts.SelectionClause} from {tableName} as [{dtoType.Name}] {whereClause} {orderByClause} {offsetClause} {fetchRowClause}";
+
+            string selectCount = $"select count_big(1) from {tableName} as [{dtoType.Name}] {whereClause}";
+
+            return new ODataSqlQuery
+            {
+                Parts = sqlQueryParts,
+                SelectQuery = select,
+                SelectTotalCountQuery = selectCount
+            };
+        }
+    }
+
+    class OrderByFinder<TDto> : ExpressionVisitor
+        where TDto : class
+    {
+        private readonly SqlLam<TDto> _sqlQuery;
+
+        public OrderByFinder(SqlLam<TDto> sqlQuery)
+        {
+            if (sqlQuery == null)
+                throw new ArgumentNullException(nameof(sqlQuery));
+
+            _sqlQuery = sqlQuery;
+        }
+
+        protected override Expression VisitMethodCall(MethodCallExpression node)
+        {
+            Expression result = base.VisitMethodCall(node);
+
+            if (node.Method.Name == nameof(Enumerable.OrderBy) || node.Method.Name == nameof(Enumerable.ThenBy))
+                _sqlQuery.OrderBy(ChangeType((LambdaExpression)node.Arguments.OfType<UnaryExpression>().Single().Operand));
+
+            if (node.Method.Name == nameof(Enumerable.OrderByDescending) || node.Method.Name == nameof(Enumerable.ThenByDescending))
+                _sqlQuery.OrderByDescending(ChangeType((LambdaExpression)node.Arguments.OfType<UnaryExpression>().Single().Operand));
+
+            return result;
+        }
+
+        public Expression<Func<TDto, object>> ChangeType(LambdaExpression expression)
+        {
+            Expression converted = Expression.Convert(expression.Body, typeof(object));
+            return Expression.Lambda<Func<TDto, object>>(converted, expression.Parameters);
+        }
+    }
+
+    class WhereExpressionFinder<TDto> : ExpressionVisitor
+        where TDto : class
+    {
+        public Expression<Func<TDto, bool>> Where { get; set; }
+
+        protected override Expression VisitLambda<T>(Expression<T> node)
+        {
+            if (Where == null)
+                Where = node as Expression<Func<TDto, bool>>;
+            else
+                throw new InvalidOperationException("Expression may not contains multiple lambda expressions");
+
+            return base.VisitLambda(node);
+        }
+    }
+
+    class ExtraMethodCallRemover<TDto> : ExpressionVisitor
+        where TDto : class
+    {
+        protected override Expression VisitUnary(UnaryExpression node)
+        {
+            if (node?.NodeType == ExpressionType.Convert)
+                return (MemberExpression)node.Operand;
+
+            return base.VisitUnary(node);
+        }
+
+        protected override Expression VisitMethodCall(MethodCallExpression node)
+        {
+            if (node.Method.Name == nameof(string.ToLower) || node.Method.Name == nameof(string.ToUpper))
+            {
+                if (node.Object is UnaryExpression)
+                    return VisitUnary((UnaryExpression)node.Object);
+                else
+                    return node.Object;
+            }
+            return base.VisitMethodCall(node);
+        }
+    }
+}

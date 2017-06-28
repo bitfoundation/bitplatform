@@ -246,7 +246,10 @@
     <Compile Include="TestEnvironmentBase.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Nuget\Bit.Api.nuspec">
+    <None Include="Nuget\Bit.OData.nuspec">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="Nuget\Bit.WebApi.nuspec">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Include="Nuget\Bit.Hangfire.nuspec">
@@ -282,9 +285,9 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Bit.Api\Bit.Api.csproj">
+    <ProjectReference Include="..\Bit.WebApi\Bit.WebApi.csproj">
       <Project>{05a90af8-a22c-480c-865f-db46b3a65699}</Project>
-      <Name>Bit.Api</Name>
+      <Name>Bit.WebApi</Name>
     </ProjectReference>
     <ProjectReference Include="..\Bit.Core\Bit.Core.csproj">
       <Project>{fcda72a2-d377-4aa1-a8c5-e6c6805bcb64}</Project>
@@ -313,6 +316,10 @@
     <ProjectReference Include="..\Bit.Model\Bit.Model.csproj">
       <Project>{5fac42f7-1179-440d-8be0-ffd364639943}</Project>
       <Name>Bit.Model</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Bit.OData\Bit.OData.csproj">
+      <Project>{e3cf9459-0dae-45b3-94d6-d3394818590e}</Project>
+      <Name>Bit.OData</Name>
     </ProjectReference>
     <ProjectReference Include="..\Bit.OwinCore\Bit.OwinCore.csproj">
       <Project>{54059991-4b49-46ab-90fc-33c145860fc4}</Project>
@@ -366,7 +373,10 @@
     <Exec Command="&quot;$(SolutionDir)packages\NuGet.CommandLine.4.1.0\tools\NuGet.exe&quot; pack Nuget\Bit.Hangfire.nuspec -NoPackageAnalysis -Version %(BitAssemblyInfo.Version) -OutputDirectory ." WorkingDirectory="$(OutDir)" LogStandardErrorAsError="true" ConsoleToMSBuild="true">
       <Output TaskParameter="ConsoleOutput" PropertyName="OutputOfExec" />
     </Exec>
-    <Exec Command="&quot;$(SolutionDir)packages\NuGet.CommandLine.4.1.0\tools\NuGet.exe&quot; pack Nuget\Bit.Api.nuspec -NoPackageAnalysis -Version %(BitAssemblyInfo.Version) -OutputDirectory ." WorkingDirectory="$(OutDir)" LogStandardErrorAsError="true" ConsoleToMSBuild="true">
+    <Exec Command="&quot;$(SolutionDir)packages\NuGet.CommandLine.4.1.0\tools\NuGet.exe&quot; pack Nuget\Bit.WebApi.nuspec -NoPackageAnalysis -Version %(BitAssemblyInfo.Version) -OutputDirectory ." WorkingDirectory="$(OutDir)" LogStandardErrorAsError="true" ConsoleToMSBuild="true">
+      <Output TaskParameter="ConsoleOutput" PropertyName="OutputOfExec" />
+    </Exec>
+    <Exec Command="&quot;$(SolutionDir)packages\NuGet.CommandLine.4.1.0\tools\NuGet.exe&quot; pack Nuget\Bit.OData.nuspec -NoPackageAnalysis -Version %(BitAssemblyInfo.Version) -OutputDirectory ." WorkingDirectory="$(OutDir)" LogStandardErrorAsError="true" ConsoleToMSBuild="true">
       <Output TaskParameter="ConsoleOutput" PropertyName="OutputOfExec" />
     </Exec>
     <Exec Command="&quot;$(SolutionDir)packages\NuGet.CommandLine.4.1.0\tools\NuGet.exe&quot; pack Nuget\Bit.IdentityServer.nuspec -NoPackageAnalysis -Version %(BitAssemblyInfo.Version) -OutputDirectory ." WorkingDirectory="$(OutDir)" LogStandardErrorAsError="true" ConsoleToMSBuild="true">

@@ -2,7 +2,7 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd">
   <metadata>
     <id>Bit.Core</id>
-    <version>0.0.0.2</version>
+    <version>0.0.0.4</version>
     <title>Bit Core</title>
     <authors>Bit Foundation</authors>
     <owners>Bit Foundation</owners>

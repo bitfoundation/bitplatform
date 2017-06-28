@@ -3,7 +3,6 @@ using System.Globalization;
 using System.Linq;
 using System.Threading;
 using Bit.Core.Contracts;
-using Bit.Core.Contracts.Project;
 using Bit.Core.Models;
 using Bit.Owin.Contracts;
 using Bit.Owin.Implementations;

@@ -285,7 +285,7 @@
     <Compile Include="AutofacAspNetCoreAppStartup.cs" />
     <Compile Include="Contracts\IAspNetCoreDependenciesManager.cs" />
     <Compile Include="Contracts\IAspNetCoreMiddlewareConfiguration.cs" />
-    <Compile Include="Extensions\IDependencyManangerExtensions.cs" />
+    <Compile Include="Extensions\IDependencyManagerExtensions.cs" />
     <Compile Include="Extensions\OwinExtensions.cs" />
     <Compile Include="Implementations\AspNetCorePathProvider.cs" />
     <Compile Include="Implementations\AspNetCoreRequestInformationProvider.cs" />
@@ -309,9 +309,9 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Bit.Api\Bit.Api.csproj">
+    <ProjectReference Include="..\Bit.WebApi\Bit.WebApi.csproj">
       <Project>{05a90af8-a22c-480c-865f-db46b3a65699}</Project>
-      <Name>Bit.Api</Name>
+      <Name>Bit.WebApi</Name>
     </ProjectReference>
     <ProjectReference Include="..\Bit.Core\Bit.Core.csproj">
       <Project>{fcda72a2-d377-4aa1-a8c5-e6c6805bcb64}</Project>

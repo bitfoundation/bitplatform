@@ -1,7 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using Bit.Core.Contracts;
-using Bit.Core.Contracts.Project;
 using Bit.Owin;
 using Bit.Owin.Implementations;
 using Bit.OwinCore.Contracts;
@@ -34,10 +33,10 @@ namespace Bit.OwinCore
 
             foreach (IDependenciesManager projectDependenciesManager in DefaultDependenciesManagerProvider.Current.GetDependenciesManagers())
             {
+                projectDependenciesManager.ConfigureDependencies(DefaultDependencyManager.Current);
+
                 if (projectDependenciesManager is IAspNetCoreDependenciesManager)
                     ((IAspNetCoreDependenciesManager)projectDependenciesManager).ConfigureServices(services, DefaultDependencyManager.Current);
-
-                projectDependenciesManager.ConfigureDependencies(DefaultDependencyManager.Current);
             }
 
             DefaultDependencyManager.Current.RegisterUsing(() =>

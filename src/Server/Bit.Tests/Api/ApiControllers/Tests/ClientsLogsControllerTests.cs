@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Bit.Api.ApiControllers;
+using Bit.OData.ODataControllers;
 using Bit.Core.Contracts;
 using Bit.Model.Dtos;
 using Bit.Test.Core.Implementations;

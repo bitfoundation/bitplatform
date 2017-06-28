@@ -10,7 +10,7 @@ using Simple.OData.Client;
 using Bit.Tests.Api.ApiControllers;
 using Bit.Tests.Model.DomainModels;
 using System;
-using Bit.Api.ApiControllers;
+using Bit.OData.ODataControllers;
 using Bit.Core.Contracts;
 using Bit.Model.Dtos;
 using Bit.Test.Core.Implementations;

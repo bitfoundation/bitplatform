@@ -43,8 +43,8 @@
     <Reference Include="Autofac, Version=4.6.0.0, Culture=neutral, PublicKeyToken=17863af14b0044da, processorArchitecture=MSIL">
       <HintPath>..\..\..\packages\Autofac.4.6.0\lib\net45\Autofac.dll</HintPath>
     </Reference>
-    <Reference Include="AutoMapper, Version=6.1.0.0, Culture=neutral, PublicKeyToken=be96cd2c38ef1005, processorArchitecture=MSIL">
-      <HintPath>..\..\..\packages\AutoMapper.6.1.0\lib\net45\AutoMapper.dll</HintPath>
+    <Reference Include="AutoMapper, Version=6.1.1.0, Culture=neutral, PublicKeyToken=be96cd2c38ef1005, processorArchitecture=MSIL">
+      <HintPath>..\..\..\packages\AutoMapper.6.1.1\lib\net45\AutoMapper.dll</HintPath>
     </Reference>
     <Reference Include="Castle.Core, Version=4.1.0.0, Culture=neutral, PublicKeyToken=407dd0808d44fbdc, processorArchitecture=MSIL">
       <HintPath>..\..\..\packages\Castle.Core.4.1.0\lib\net45\Castle.Core.dll</HintPath>
@@ -230,6 +230,9 @@
     <Reference Include="NWebsec.AspNetCore.Middleware, Version=1.1.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\..\..\packages\NWebsec.AspNetCore.Middleware.1.1.0\lib\net451\NWebsec.AspNetCore.Middleware.dll</HintPath>
     </Reference>
+    <Reference Include="NWebsec.Core, Version=1.6.0.0, Culture=neutral, PublicKeyToken=3613da5f958908a1, processorArchitecture=MSIL">
+      <HintPath>..\..\..\packages\NWebsec.Core.1.6.0\lib\45\NWebsec.Core.dll</HintPath>
+    </Reference>
     <Reference Include="Owin, Version=1.0.0.0, Culture=neutral, PublicKeyToken=f0ebd12fd5e55cc5, processorArchitecture=MSIL">
       <HintPath>..\..\..\packages\Owin.1.0\lib\net40\Owin.dll</HintPath>
     </Reference>
@@ -237,7 +240,7 @@
       <HintPath>..\..\..\packages\RazorEngine.3.10.0\lib\net45\RazorEngine.dll</HintPath>
     </Reference>
     <Reference Include="Remotion.Linq, Version=2.1.0.0, Culture=neutral, PublicKeyToken=fee00910d6e5f53b, processorArchitecture=MSIL">
-      <HintPath>..\..\..\packages\Remotion.Linq.2.1.1\lib\net45\Remotion.Linq.dll</HintPath>
+      <HintPath>..\..\..\packages\Remotion.Linq.2.1.2\lib\net45\Remotion.Linq.dll</HintPath>
     </Reference>
     <Reference Include="Simple.OData.Client.Core, Version=5.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
@@ -521,9 +524,9 @@
     <Folder Include="Api\Middlewares\WebApi\Implementations\" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Bit.Api\Bit.Api.csproj">
+    <ProjectReference Include="..\Bit.WebApi\Bit.WebApi.csproj">
       <Project>{05a90af8-a22c-480c-865f-db46b3a65699}</Project>
-      <Name>Bit.Api</Name>
+      <Name>Bit.WebApi</Name>
     </ProjectReference>
     <ProjectReference Include="..\Bit.Core\Bit.Core.csproj">
       <Project>{fcda72a2-d377-4aa1-a8c5-e6c6805bcb64}</Project>
@@ -552,6 +555,10 @@
     <ProjectReference Include="..\Bit.Model\Bit.Model.csproj">
       <Project>{5fac42f7-1179-440d-8be0-ffd364639943}</Project>
       <Name>Bit.Model</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Bit.OData\Bit.OData.csproj">
+      <Project>{e3cf9459-0dae-45b3-94d6-d3394818590e}</Project>
+      <Name>Bit.OData</Name>
     </ProjectReference>
     <ProjectReference Include="..\Bit.OwinCore\Bit.OwinCore.csproj">
       <Project>{54059991-4b49-46ab-90fc-33c145860fc4}</Project>

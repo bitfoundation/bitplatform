@@ -63,13 +63,13 @@
     <Reference Include="System.Transactions" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Extensions\IDependencyManangerExtensions.cs" />
+    <Compile Include="Extensions\IDependencyManagerExtensions.cs" />
     <Compile Include="Implementations\DefaultBackgroundJobWorker.cs" />
     <Compile Include="Implementations\DefaultBackgroundJobWorkerLogProvider.cs" />
-    <Compile Include="Middlewares\JobScheduler\Implementations\DefaultJobsDashboardAuthorizationFilter.cs" />
-    <Compile Include="Middlewares\JobScheduler\Implementations\JobSchedulerInMemoryBackendConfiguration.cs" />
-    <Compile Include="Middlewares\JobScheduler\Implementations\SqlAndAzureServiceBusBackendJobServerConfiguration.cs" />
-    <Compile Include="Middlewares\JobScheduler\JobSchedulerMiddlewareConfiguration.cs" />
+    <Compile Include="Implementations\DefaultJobsDashboardAuthorizationFilter.cs" />
+    <Compile Include="Implementations\JobSchedulerInMemoryBackendConfiguration.cs" />
+    <Compile Include="Implementations\SqlAndAzureServiceBusBackendJobServerConfiguration.cs" />
+    <Compile Include="JobSchedulerMiddlewareConfiguration.cs" />
     <Compile Include="Properties\AssemblyContainer.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
@@ -90,5 +90,6 @@
   <ItemGroup>
     <None Include="packages.config" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

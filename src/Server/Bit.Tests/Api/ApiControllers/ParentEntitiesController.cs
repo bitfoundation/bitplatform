@@ -3,7 +3,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Web.Http;
-using Bit.Api.ApiControllers;
+using Bit.OData.ODataControllers;
 using Bit.Data.Contracts;
 using Bit.Owin.Exceptions;
 using Bit.Tests.Model.DomainModels;

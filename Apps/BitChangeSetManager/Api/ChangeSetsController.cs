@@ -6,8 +6,8 @@ using System.Data.Entity;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Bit.Api.ApiControllers;
 using Bit.Core.Contracts;
+using Bit.OData.ODataControllers;
 
 namespace BitChangeSetManager.Api
 {

@@ -1,8 +1,7 @@
 ﻿using System;
 using System.Web.OData.Builder;
-using Bit.Api.Contracts.Project;
-using Bit.Api.Middlewares.WebApi.OData.Contracts;
 using Bit.Core;
+using Bit.OData.Contracts;
 
 namespace Bit.Tests.Api.Implementations.Project
 {

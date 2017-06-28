@@ -1,0 +1,38 @@
+﻿using System;
+using System.Net.Http;
+using System.Threading;
+using System.Threading.Tasks;
+using System.Web.Http;
+using System.Web.Http.Filters;
+using Bit.Core.Contracts;
+using Bit.Owin.Contracts;
+using Microsoft.Owin;
+
+namespace Bit.WebApi.ActionFilters
+{
+    public class ExceptionHandlerFilterAttribute : ExceptionFilterAttribute
+    {
+        public override async Task OnExceptionAsync(HttpActionExecutedContext actionExecutedContext, CancellationToken cancellationToken)
+        {
+            IDependencyResolver scopeDependencyResolver = actionExecutedContext.Request.GetOwinContext().GetDependencyResolver();
+
+            IScopeStatusManager scopeStatusManager = scopeDependencyResolver.Resolve<IScopeStatusManager>();
+            IExceptionToHttpErrorMapper exceptionToHttpErrorMapper = scopeDependencyResolver.Resolve<IExceptionToHttpErrorMapper>();
+
+            Exception exception = actionExecutedContext.Exception;
+            actionExecutedContext.Response = CreateErrorResponseMessage(actionExecutedContext, exceptionToHttpErrorMapper, exception);
+
+            actionExecutedContext.Response.ReasonPhrase = exceptionToHttpErrorMapper.GetReasonPhrase(exception);
+
+            if (scopeStatusManager.WasSucceeded())
+                scopeStatusManager.MarkAsFailed();
+
+            await base.OnExceptionAsync(actionExecutedContext, cancellationToken);
+        }
+
+        protected virtual HttpResponseMessage CreateErrorResponseMessage(HttpActionExecutedContext actionExecutedContext, IExceptionToHttpErrorMapper exceptionToHttpErrorMapper, Exception exception)
+        {
+            return actionExecutedContext.Request.CreateErrorResponse(exceptionToHttpErrorMapper.GetStatusCode(exception), new HttpError() { Message = exceptionToHttpErrorMapper.GetMessage(exception) });
+        }
+    }
+}

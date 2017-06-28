@@ -2,7 +2,7 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd">
   <metadata>
     <id>Bit.Data</id>
-    <version>0.0.0.2</version>
+    <version>0.0.0.4</version>
     <title>Bit Data</title>
     <authors>Bit Foundation</authors>
     <owners>Bit Foundation</owners>
@@ -18,7 +18,7 @@
       <frameworkAssembly assemblyName="System.Data" targetFramework="" />
     </frameworkAssemblies>
     <dependencies>
-      <dependency id="Bit.Model" version="0.0.0.2" />
+      <dependency id="Bit.Model" version="0.0.0.4" />
     </dependencies>
   </metadata>
   <files>

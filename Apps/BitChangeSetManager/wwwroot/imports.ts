@@ -1,4 +1,4 @@
-﻿/// <reference path="bower_components/bit-releases/typescript-client/typings.d.ts" />
+﻿/// <reference path="bower_components/bit-releases/typescript-client/typings.all.d.ts" />
 
 import SecureFormViewModelDependency = Bit.SecureFormViewModelDependency;
 import FormViewModelDependency = Bit.FormViewModelDependency;
