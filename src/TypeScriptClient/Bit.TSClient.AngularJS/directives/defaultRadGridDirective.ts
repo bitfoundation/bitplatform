@@ -380,7 +380,8 @@ module Bit.Directives {
                                     if (lookup.BaseFilter_JS != null) {
                                         let originalRead = filterDataSource['transport'].read;
                                         filterDataSource['transport'].read = function (options) {
-                                            options.lookupBaseFilter = lookup.BaseFilter_JS;
+                                            options.data = options.data || {};
+                                            options.data.lookupBaseFilter = lookup.BaseFilter_JS;
                                             return originalRead.apply(this, arguments);
                                         }
                                     }

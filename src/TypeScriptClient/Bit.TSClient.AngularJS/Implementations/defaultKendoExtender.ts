@@ -76,6 +76,11 @@ module Bit.Implementations {
 
                 if (action != null) {
                     dataSource.onCurrentChangedHandlers.push(action);
+                    return () => {
+                        let index = dataSource.onCurrentChangedHandlers.indexOf(action);
+                        if (index > -1)
+                            dataSource.onCurrentChangedHandlers.splice(index, 1);
+                    };
                 } else {
 
                     for (let handler of dataSource.onCurrentChangedHandlers) {
@@ -175,7 +180,8 @@ module Bit.Implementations {
                     }
                     else {
 
-                        options.cascadeBaseFilter = childKeys.map((childKey, index) => {
+                        options.data = options.data || {};
+                        options.data.cascadeBaseFilter = childKeys.map((childKey, index) => {
                             let parentVal = currentParent[parentKeys[index]];
                             if (typeof parentVal == "string")
                                 parentVal = "'" + parentVal + "'";

@@ -6,12 +6,12 @@ declare module kendo {
         export interface DataSource extends Observable {
             flatView(): ObservableArray;
             dataView<TEntity>(): Array<TEntity>;
-            onCurrentChanged(action?): void;
+            onCurrentChanged(action?: () => void): () => void;
             asChildOf(parentDataSource: DataSource, childKeys: string[], parentKeys: string[]);
             current: $data.Entity | Model;
         }
     }
-    function destroyWidget(widget: kendo.ui.Widget & { wrapper: JQuery }): void;
+    function destroyWidget(widget: kendo.ui.Widget & { wrapper: any }): void;
 }
 
 declare namespace angular.material {
