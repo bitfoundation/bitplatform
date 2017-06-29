@@ -27,7 +27,6 @@
     "jasmine-core": "2.6.4",
     "jasmine-jquery": "2.1.1",
     "decimal.js": "https://github.com/MikeMcl/decimal.js.git#v7.0.1",
-    "bit-lib": "https://github.com/bit-foundation/Lib.git#v0.0.1",
     "kendo-ui": "kendo-ui-core#2017.2.504",
     "pubsub-js": "1.5.4",
     "encoderjs": "0.0.1"

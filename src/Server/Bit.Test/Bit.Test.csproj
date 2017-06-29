@@ -110,16 +110,16 @@
       <HintPath>..\..\..\packages\Owin.1.0\lib\net40\Owin.dll</HintPath>
     </Reference>
     <Reference Include="Simple.OData.Client.Core, Version=5.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\..\packages\Simple.OData.Client.5.0.0-alpha3\lib\net45\Simple.OData.Client.Core.dll</HintPath>
+      <HintPath>..\..\..\packages\Simple.OData.Client.Beta.0.0.0.1\lib\net47\Simple.OData.Client.Core.dll</HintPath>
     </Reference>
     <Reference Include="Simple.OData.Client.Dynamic, Version=5.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\..\packages\Simple.OData.Client.5.0.0-alpha3\lib\net45\Simple.OData.Client.Dynamic.dll</HintPath>
+      <HintPath>..\..\..\packages\Simple.OData.Client.Beta.0.0.0.1\lib\net47\Simple.OData.Client.Dynamic.dll</HintPath>
     </Reference>
     <Reference Include="Simple.OData.Client.V3.Adapter, Version=5.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\..\packages\Simple.OData.Client.5.0.0-alpha3\lib\net45\Simple.OData.Client.V3.Adapter.dll</HintPath>
+      <HintPath>..\..\..\packages\Simple.OData.Client.Beta.0.0.0.1\lib\net47\Simple.OData.Client.V3.Adapter.dll</HintPath>
     </Reference>
     <Reference Include="Simple.OData.Client.V4.Adapter, Version=5.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\..\packages\Simple.OData.Client.5.0.0-alpha3\lib\net45\Simple.OData.Client.V4.Adapter.dll</HintPath>
+      <HintPath>..\..\..\packages\Simple.OData.Client.Beta.0.0.0.1\lib\net47\Simple.OData.Client.V4.Adapter.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.AppContext, Version=4.1.1.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
@@ -282,7 +282,9 @@
     <None Include="Nuget\Bit.Core.nuspec">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Include="packages.config" />
+    <None Include="packages.config">
+      <SubType>Designer</SubType>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Bit.WebApi\Bit.WebApi.csproj">
