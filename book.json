@@ -2,7 +2,7 @@
     "plugins": [
         "youtube",
         "disqus",
-        "copy-code"
+        "copy-code-button"
     ],
     "pluginsConfig": {
         "disqus": {
