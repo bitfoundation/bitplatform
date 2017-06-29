@@ -1,0 +1,11 @@
+﻿[
+  {
+    "Name": "Dev",
+    "IsActive": true,
+    "DebugMode": true,
+    "AppInfo": {
+      "Name": "WebApiSelfHostSample",
+      "Version": "1"
+    }
+  }
+]
