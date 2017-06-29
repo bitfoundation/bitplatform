@@ -2,7 +2,7 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd">
   <metadata>
     <id>Bit.WebApi</id>
-    <version>0.0.0.4</version>
+    <version>0.0.0.8</version>
     <title>Bit Owin Core</title>
     <authors>Bit Foundation</authors>
     <owners>Bit Foundation</owners>
@@ -15,7 +15,7 @@
     <copyright>Copyright © Bit Foundation 2017</copyright>
     <tags>Bit Web API Rest Microsoft AspNet WebApi AspNetWebApi</tags>
     <dependencies>
-      <dependency id="Bit.Owin" version="0.0.0.4" />
+      <dependency id="Bit.Owin" version="0.0.0.8" />
       <dependency id="Autofac.WebApi2" version="4.0.1" />
       <dependency id="Autofac.WebApi2.Owin" version="4.0.0" />
       <dependency id="Microsoft.AspNet.WebApi.Client" version="5.2.3" />

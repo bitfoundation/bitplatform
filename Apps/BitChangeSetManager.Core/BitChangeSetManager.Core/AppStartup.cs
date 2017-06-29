@@ -51,6 +51,7 @@ namespace BitChangeSetManager.Core
         public void ConfigureDependencies(IDependencyManager dependencyManager)
         {
             AssemblyContainer.Current.Init();
+            AssemblyContainer.Current.AddAppAssemblies(AssemblyContainer.Current.GetBitChangeSetManagerAssembly());
 
             dependencyManager.RegisterMinimalDependencies();
 

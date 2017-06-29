@@ -24,5 +24,10 @@ namespace Bit.Core
         {
             return typeof(AppStartup).GetTypeInfo().Assembly;
         }
+
+        public static Assembly GetBitChangeSetManagerAssembly(this AssemblyContainer container)
+        {
+            return typeof(AppStartup).GetTypeInfo().Assembly;
+        }
     }
 }
