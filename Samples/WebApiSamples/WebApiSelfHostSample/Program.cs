@@ -13,9 +13,9 @@ using System.Web.Http;
 
 namespace WebApiSelfHostSample
 {
-    class Program
+    public class Program
     {
-        static void Main(string[] args)
+        public static void Main(string[] args)
         {
             string baseAddress = "http://localhost:9000/";
 
@@ -110,6 +110,12 @@ namespace WebApiSelfHostSample
                 return dependencyManager.CreateChildDependencyResolver(childDependencyManager =>
                 {
                     childDependencyManager.RegisterWebApiMiddlewareUsingDefaultConfiguration("WebApi");
+
+                    childDependencyManager.RegisterGlobalWebApiCustomizerUsing(httpConfiguration =>
+                    {
+
+                    });
+
                 }).Resolve<IOwinMiddlewareConfiguration>("WebApi");
 
             }, lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExciting: false);
