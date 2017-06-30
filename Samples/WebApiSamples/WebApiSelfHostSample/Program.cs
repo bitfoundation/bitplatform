@@ -65,7 +65,7 @@ namespace WebApiSelfHostSample
         }
     }
 
-    public class AppStartup : OwinAppStartup, IDependenciesManager, IDependenciesManagerProvider
+    public class AppStartup : OwinAppStartup, IOwinDependenciesManager, IDependenciesManagerProvider
     {
         public override void Configuration(IAppBuilder owinApp)
         {
