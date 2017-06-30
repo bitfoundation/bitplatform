@@ -26,7 +26,7 @@ using System.Reflection;
 
 namespace BitChangeSetManager
 {
-    public class AppStartup : OwinAppStartup, IDependenciesManager, IDependenciesManagerProvider
+    public class AppStartup : OwinAppStartup, IOwinDependenciesManager, IDependenciesManagerProvider
     {
         public override void Configuration(IAppBuilder owinApp)
         {
@@ -109,8 +109,6 @@ namespace BitChangeSetManager
                 }).Resolve<IOwinMiddlewareConfiguration>("WebApiOData");
 
             }, lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExciting: false);
-
-            dependencyManager.Register<IODataSqlBuilder, DefaultODataSqlBuilder>(lifeCycle: DependencyLifeCycle.SingleInstance);
 
             if (DefaultAppEnvironmentProvider.Current.GetActiveAppEnvironment().DebugMode == false)
                 dependencyManager.RegisterSignalRConfiguration<SignalRSqlServerScaleoutConfiguration>();

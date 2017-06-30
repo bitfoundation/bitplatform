@@ -28,7 +28,7 @@ namespace Bit.Tests
             {
                 _activeAppEnvironment = new AppEnvironment
                 {
-                    Name = "Test",
+                    Name = "Development",
                     IsActive = true,
                     DebugMode = true,
                     AppInfo = new EnvironmentAppInfo

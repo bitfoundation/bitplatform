@@ -41,7 +41,7 @@ namespace Bit.Owin
             {
                 DefaultDependencyManager.Current.Init();
 
-                foreach (IDependenciesManager projectDependenciesManager in DefaultDependenciesManagerProvider.Current.GetDependenciesManagers())
+                foreach (IOwinDependenciesManager projectDependenciesManager in DefaultDependenciesManagerProvider.Current.GetDependenciesManagers().OfType<IOwinDependenciesManager>())
                 {
                     projectDependenciesManager.ConfigureDependencies(DefaultDependencyManager.Current);
                 }

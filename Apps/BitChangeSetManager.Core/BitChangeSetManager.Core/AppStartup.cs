@@ -5,7 +5,6 @@ using Bit.Data.Contracts;
 using Bit.Hangfire.Implementations;
 using Bit.Model.Implementations;
 using Bit.OData.ActionFilters;
-using Bit.OData.Contracts;
 using Bit.OData.Implementations;
 using Bit.Owin.Contracts;
 using Bit.Owin.Contracts.Metadata;
@@ -13,6 +12,7 @@ using Bit.Owin.Implementations;
 using Bit.Owin.Implementations.Metadata;
 using Bit.Owin.Middlewares;
 using Bit.OwinCore;
+using Bit.OwinCore.Contracts;
 using Bit.OwinCore.Middlewares;
 using Bit.Signalr.Implementations;
 using BitChangeSetManager.Api.Implementations;
@@ -28,10 +28,10 @@ using System.Reflection;
 
 namespace BitChangeSetManager.Core
 {
-    public class AppStartup : AutofacAspNetCoreAppStartup, IDependenciesManager, IDependenciesManagerProvider
+    public class AppStartup : AutofacAspNetCoreAppStartup, IAspNetCoreDependenciesManager, IDependenciesManagerProvider
     {
-        public AppStartup(IHostingEnvironment hostingEnvironment)
-            : base(hostingEnvironment)
+        public AppStartup(IServiceProvider serviceProvider)
+            : base(serviceProvider)
         {
 
         }
@@ -48,10 +48,12 @@ namespace BitChangeSetManager.Core
             yield return this;
         }
 
-        public void ConfigureDependencies(IDependencyManager dependencyManager)
+        public virtual void ConfigureDependencies(IServiceProvider serviceProvider, IServiceCollection services, IDependencyManager dependencyManager)
         {
             AssemblyContainer.Current.Init();
             AssemblyContainer.Current.AddAppAssemblies(AssemblyContainer.Current.GetBitChangeSetManagerAssembly());
+
+            IHostingEnvironment env = serviceProvider.GetService<IHostingEnvironment>();
 
             dependencyManager.RegisterMinimalDependencies();
 
@@ -62,7 +64,7 @@ namespace BitChangeSetManager.Core
             dependencyManager.Register<IRequestInformationProvider, AspNetCoreRequestInformationProvider>();
 
             dependencyManager.Register<ILogger, DefaultLogger>();
-            if (DefaultAppEnvironmentProvider.Current.GetActiveAppEnvironment().DebugMode == true)
+            if (env.IsDevelopment())
                 dependencyManager.RegisterLogStore<DebugLogStore>();
             dependencyManager.RegisterLogStore<ConsoleLogStore>();
 
@@ -73,6 +75,7 @@ namespace BitChangeSetManager.Core
 
             dependencyManager.RegisterDefaultOwinApp();
 
+            services.AddCors();
             dependencyManager.RegisterAspNetCoreMiddlewareUsing(aspNetCoreApp =>
             {
                 aspNetCoreApp.UseCors(c => c.AllowAnyOrigin());
@@ -121,9 +124,7 @@ namespace BitChangeSetManager.Core
 
             }, lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExciting: false);
 
-            dependencyManager.Register<IODataSqlBuilder, DefaultODataSqlBuilder>(lifeCycle: DependencyLifeCycle.SingleInstance);
-
-            if (DefaultAppEnvironmentProvider.Current.GetActiveAppEnvironment().DebugMode == false)
+            if (env.IsDevelopment())
                 dependencyManager.RegisterSignalRConfiguration<SignalRSqlServerScaleoutConfiguration>();
             dependencyManager.RegisterSignalRConfiguration<SignalRAuthorizeConfiguration>();
             dependencyManager.RegisterSignalRMiddlewareUsingDefaultConfiguration<BitChangeSetManagerAppMessageHubEvents>();
@@ -149,13 +150,6 @@ namespace BitChangeSetManager.Core
 
             dependencyManager.Register<IChangeSetRepository, ChangeSetRepository>();
             dependencyManager.Register<IUserSettingProvider, BitUserSettingProvider>();
-        }
-
-        public override void InitServices(IServiceCollection services)
-        {
-            services.AddCors();
-
-            base.InitServices(services);
         }
     }
 }

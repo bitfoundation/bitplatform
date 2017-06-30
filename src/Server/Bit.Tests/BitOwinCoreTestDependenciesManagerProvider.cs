@@ -1,10 +1,12 @@
 ﻿using Bit.Core;
 using Bit.Core.Contracts;
-using Bit.Core.Implementations;
 using Bit.Data;
 using Bit.Data.Contracts;
 using Bit.Data.EntityFrameworkCore.Implementations;
+using Bit.Hangfire.Implementations;
 using Bit.Model.Implementations;
+using Bit.OData.ActionFilters;
+using Bit.OData.Implementations;
 using Bit.Owin.Contracts;
 using Bit.Owin.Contracts.Metadata;
 using Bit.Owin.Implementations;
@@ -12,6 +14,7 @@ using Bit.Owin.Implementations.Metadata;
 using Bit.Owin.Middlewares;
 using Bit.OwinCore.Contracts;
 using Bit.OwinCore.Middlewares;
+using Bit.Signalr.Implementations;
 using Bit.Test;
 using Bit.Tests.Api.Implementations.Project;
 using Bit.Tests.Api.Middlewares;
@@ -20,15 +23,11 @@ using Bit.Tests.IdentityServer.Implementations;
 using Bit.Tests.Model.Implementations;
 using Bit.Tests.Properties;
 using Microsoft.Extensions.DependencyInjection;
+using System;
 using System.Collections.Generic;
+using System.Data.SqlClient;
 using System.Reflection;
 using System.Web.Http;
-using Bit.Hangfire.Implementations;
-using Bit.OData.ActionFilters;
-using Bit.OData.Contracts;
-using Bit.OData.Implementations;
-using Bit.Signalr.Implementations;
-using System.Data.SqlClient;
 
 namespace Bit.Tests
 {
@@ -46,7 +45,7 @@ namespace Bit.Tests
             _args = args;
         }
 
-        public virtual void ConfigureDependencies(IDependencyManager dependencyManager)
+        public virtual void ConfigureDependencies(IServiceProvider serviceProvider, IServiceCollection services, IDependencyManager dependencyManager)
         {
             AssemblyContainer.Current.Init();
 
@@ -74,6 +73,7 @@ namespace Bit.Tests
             dependencyManager.RegisterAspNetCoreSingleSignOnClient();
             dependencyManager.RegisterAspNetCoreMiddleware<AspNetCoreLogUserInformationMiddlewareConfiguration>();
 
+            services.AddWebApiCore();
             dependencyManager.RegisterAspNetCoreMiddleware<TestWebApiCoreMvcMiddlewareConfiguration>();
 
             dependencyManager.RegisterOwinMiddleware<MetadataMiddlewareConfiguration>();
@@ -112,8 +112,6 @@ namespace Bit.Tests
 
             }, lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExciting: false);
 
-            dependencyManager.Register<IODataSqlBuilder, DefaultODataSqlBuilder>(lifeCycle: DependencyLifeCycle.SingleInstance);
-
             dependencyManager.RegisterSignalRConfiguration<SignalRAuthorizeConfiguration>();
             dependencyManager.RegisterSignalRMiddlewareUsingDefaultConfiguration();
 
@@ -143,11 +141,6 @@ namespace Bit.Tests
 
             dependencyManager.RegisterOwinMiddleware<RedirectToSsoIfNotLoggedInMiddlewareConfiguration>();
             dependencyManager.RegisterDefaultPageMiddlewareUsingDefaultConfiguration();
-        }
-
-        public virtual void ConfigureServices(IServiceCollection services, IDependencyManager dependencyManager)
-        {
-            services.AddWebApiCore();
         }
 
         public virtual IEnumerable<IDependenciesManager> GetDependenciesManagers()

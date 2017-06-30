@@ -49,6 +49,7 @@ namespace Bit.Core.Contracts
 
         public static IDependencyManager RegisterDefaultWebApiODataConfiguration(this IDependencyManager dependencyManager, params Assembly[] controllersAssemblies)
         {
+            dependencyManager.Register<IODataSqlBuilder, DefaultODataSqlBuilder>(lifeCycle: DependencyLifeCycle.SingleInstance);
             return dependencyManager.RegisterDefaultWebApiConfiguration(AssemblyContainer.Current.AssembliesWithDefaultAssemblies(controllersAssemblies).Union(new[] { AssemblyContainer.Current.GetBitWebApiAssembly(), AssemblyContainer.Current.GetBitODataAssembly(), typeof(MetadataController).GetTypeInfo().Assembly }).ToArray());
         }
     }

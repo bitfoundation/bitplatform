@@ -2,7 +2,7 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd">
   <metadata>
     <id>Bit.Data.EntityFramework</id>
-    <version>0.0.0.8</version>
+    <version>0.0.1.1</version>
     <title>Bit Data EntityFramework</title>
     <authors>Bit Foundation</authors>
     <owners>Bit Foundation</owners>
@@ -15,7 +15,7 @@
     <copyright>Copyright © Bit Foundation 2017</copyright>
     <tags>Bit EntityFramework Entity Framework EF Database Microsoft Data O/RM ADO.NET</tags>
     <dependencies>
-      <dependency id="Bit.Data" version="0.0.0.8" />
+      <dependency id="Bit.Data" version="0.0.1.1" />
     </dependencies>
   </metadata>
   <files>

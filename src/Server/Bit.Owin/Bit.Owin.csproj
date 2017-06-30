@@ -149,6 +149,7 @@
     <Compile Include="Contracts\IDefaultPageModelProvider.cs" />
     <Compile Include="Contracts\IExceptionToHttpErrorMapper.cs" />
     <Compile Include="Contracts\IOwinActionFilter.cs" />
+    <Compile Include="Contracts\IOwinDependenciesManager.cs" />
     <Compile Include="Contracts\IOwinMiddlewareConfiguration.cs" />
     <Compile Include="Contracts\ITimeZoneManager.cs" />
     <Compile Include="Contracts\IUserSettingProvider.cs" />

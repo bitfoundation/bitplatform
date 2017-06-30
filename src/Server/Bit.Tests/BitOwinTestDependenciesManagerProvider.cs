@@ -1,15 +1,18 @@
 using Bit.Core;
 using Bit.Core.Contracts;
-using Bit.Core.Implementations;
 using Bit.Data;
 using Bit.Data.Contracts;
 using Bit.Data.EntityFrameworkCore.Implementations;
+using Bit.Hangfire.Implementations;
 using Bit.Model.Implementations;
+using Bit.OData.ActionFilters;
+using Bit.OData.Implementations;
 using Bit.Owin.Contracts;
 using Bit.Owin.Contracts.Metadata;
 using Bit.Owin.Implementations;
 using Bit.Owin.Implementations.Metadata;
 using Bit.Owin.Middlewares;
+using Bit.Signalr.Implementations;
 using Bit.Test;
 using Bit.Tests.Api.Implementations.Project;
 using Bit.Tests.Data.Implementations;
@@ -17,18 +20,13 @@ using Bit.Tests.IdentityServer.Implementations;
 using Bit.Tests.Model.Implementations;
 using Bit.Tests.Properties;
 using System.Collections.Generic;
+using System.Data.SqlClient;
 using System.Reflection;
 using System.Web.Http;
-using Bit.Hangfire.Implementations;
-using Bit.OData.ActionFilters;
-using Bit.OData.Contracts;
-using Bit.OData.Implementations;
-using Bit.Signalr.Implementations;
-using System.Data.SqlClient;
 
 namespace Bit.Tests
 {
-    public class BitOwinTestDependenciesManagerProvider : IDependenciesManager, IDependenciesManagerProvider
+    public class BitOwinTestDependenciesManagerProvider : IOwinDependenciesManager, IDependenciesManagerProvider
     {
         private readonly TestEnvironmentArgs _args;
 
@@ -106,8 +104,6 @@ namespace Bit.Tests
                 }).Resolve<IOwinMiddlewareConfiguration>("WebApiOData");
 
             }, lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExciting: false);
-
-            dependencyManager.Register<IODataSqlBuilder, DefaultODataSqlBuilder>(lifeCycle: DependencyLifeCycle.SingleInstance);
 
             dependencyManager.RegisterSignalRConfiguration<SignalRAuthorizeConfiguration>();
             dependencyManager.RegisterSignalRMiddlewareUsingDefaultConfiguration();

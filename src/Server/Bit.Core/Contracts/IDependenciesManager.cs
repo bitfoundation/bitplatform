@@ -2,6 +2,6 @@
 {
     public interface IDependenciesManager
     {
-        void ConfigureDependencies(IDependencyManager dependencyManager);
+        
     }
 }
