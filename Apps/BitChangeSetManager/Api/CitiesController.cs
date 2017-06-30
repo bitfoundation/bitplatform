@@ -2,9 +2,8 @@
 using Bit.Data.Contracts;
 using Bit.OData.ActionFilters;
 using Bit.OData.Contracts;
-using BitChangeSetManager.DataAccess;
+using Bit.OData.ODataControllers;
 using BitChangeSetManager.Dto;
-using BitChangeSetManager.Model;
 using Dapper;
 using System;
 using System.Collections.Generic;
@@ -15,18 +14,13 @@ using System.Threading.Tasks;
 
 namespace BitChangeSetManager.Api
 {
-    public class CitiesController : DefaultReadOnlyDtoSetController<City, CityDto>
+    public class CitiesController : DtoController<CityDto>
     {
-        public CitiesController(IBitChangeSetManagerRepository<City> repository)
-            : base(repository)
-        {
-
-        }
-
+        [Get]
         [IgnoreODataEnableQuery]
-        public override async Task<IQueryable<CityDto>> GetAll(CancellationToken cancellationToken)
+        public async Task<IEnumerable<CityDto>> GetAll(CancellationToken cancellationToken)
         {
-            var sqlQuery = ODataSqlBuilder.BuildSqlQuery(GetODataQueryOptions(), tableName: "bit.Cities");
+            ODataSqlQuery odataSqlQuery = ODataSqlBuilder.BuildSqlQuery(GetODataQueryOptions(), tableName: "bit.Cities");
 
             string connectionString = AppEnvironmentProvider.GetActiveAppEnvironment().GetConfig<string>("BitChangeSetManagerDbConnectionString");
 
@@ -34,13 +28,13 @@ namespace BitChangeSetManager.Api
 
             DbTransaction dbTransaction = DbConnectionProvider.GetDbTransaction(connectionString);
 
-            IEnumerable<CityDto> cities = await dbConnection.QueryAsync<CityDto>(sqlQuery.SelectQuery, sqlQuery.Parts.Parameters, transaction: dbTransaction);
+            IEnumerable<CityDto> cities = await dbConnection.QueryAsync<CityDto>(odataSqlQuery.SelectQuery, odataSqlQuery.Parts.Parameters, transaction: dbTransaction);
 
-            long total = sqlQuery.Parts.GetTotalCountFromDb == false ? cities.LongCount() : ((await dbConnection.ExecuteScalarAsync<long?>(sqlQuery.SelectTotalCountQuery, sqlQuery.Parts.Parameters, transaction: dbTransaction)) ?? 0);
+            long total = odataSqlQuery.Parts.GetTotalCountFromDb == false ? cities.LongCount() : ((await dbConnection.ExecuteScalarAsync<long?>(odataSqlQuery.SelectTotalCountQuery, odataSqlQuery.Parts.Parameters, transaction: dbTransaction)) ?? 0);
 
             Request.Properties["System.Web.OData.TotalCountFunc"] = new Func<long>(() => total);
 
-            return cities.AsQueryable();
+            return cities;
         }
 
         public IODataSqlBuilder ODataSqlBuilder { get; set; }
