@@ -8,6 +8,7 @@ using Bit.OData.Contracts;
 using Bit.Owin.Exceptions;
 using LambdaSqlBuilder;
 using LambdaSqlBuilder.ValueObjects;
+using System.Web.OData.Extensions;
 
 namespace Bit.OData.Implementations
 {
@@ -133,6 +134,26 @@ namespace Bit.OData.Implementations
                 Parts = sqlQueryParts,
                 SelectQuery = select,
                 SelectTotalCountQuery = selectCount
+            };
+        }
+
+        public virtual ODataSqlJsonQuery BuildSqlJsonQuery<TDto>(ODataQueryOptions<TDto> odataQueryOptions, string tableName) where TDto : class
+        {
+            ODataSqlQuery odataSqlQuery = BuildSqlQuery(odataQueryOptions, tableName: tableName);
+
+            string edmTypeFullPath = $"{odataQueryOptions.Request.GetReaderSettings().BaseUri}$metadata#{odataQueryOptions.Context.Path}";
+
+            string finalSelectCountQuery = odataSqlQuery.Parts.GetTotalCountFromDb ? $"({odataSqlQuery.SelectTotalCountQuery}) as '@odata.count' ," : "";
+
+            string sqlJsonQuery = $@"select * from (select '{edmTypeFullPath}' as '@odata.context', 
+			  {finalSelectCountQuery}
+			  ({odataSqlQuery.SelectQuery} FOR JSON PATH) as 'value') as ODataResult
+FOR JSON AUTO, WITHOUT_ARRAY_WRAPPER";
+
+            return new ODataSqlJsonQuery
+            {
+                SqlJsonQuery = sqlJsonQuery,
+                SqlQuery = odataSqlQuery
             };
         }
     }

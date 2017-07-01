@@ -29,12 +29,22 @@ namespace Bit.OData.Contracts
         public string SelectTotalCountQuery { get; set; }
     }
 
+    public class ODataSqlJsonQuery
+    {
+        public ODataSqlQuery SqlQuery { get; set; }
+
+        public string SqlJsonQuery { get; set; }
+    }
+
     public interface IODataSqlBuilder
     {
         ODataSqlQueryParts BuildSqlQueryParts<TDto>(ODataQueryOptions<TDto> odataQuery)
             where TDto : class;
 
         ODataSqlQuery BuildSqlQuery<TDto>(ODataQueryOptions<TDto> queryOptions, string tableName)
+            where TDto : class;
+
+        ODataSqlJsonQuery BuildSqlJsonQuery<TDto>(ODataQueryOptions<TDto> odataQueryOptions, string tableName)
             where TDto : class;
     }
 }
