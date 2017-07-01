@@ -49,6 +49,7 @@
     <Compile Include="Contracts\IRepository.cs" />
     <Compile Include="DefaultDtoModelMapper.cs" />
     <Compile Include="DefaultDbConnectionProvider.cs" />
+    <Compile Include="Extensions\IDataReaderExtensions.cs" />
     <Compile Include="Extensions\IDependencyManagerExtensions.cs" />
     <Compile Include="Extensions\IQueryableExtensions.cs" />
     <Compile Include="Extensions\IWhereByKeyBuildersExtensions.cs" />
