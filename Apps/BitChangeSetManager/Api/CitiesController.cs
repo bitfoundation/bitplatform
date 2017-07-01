@@ -1,22 +1,22 @@
 ﻿using Bit.Core.Contracts;
 using Bit.Data.Contracts;
-using Bit.OData.ActionFilters;
+using Bit.OData.Contents;
 using Bit.OData.Contracts;
 using Bit.OData.ODataControllers;
 using BitChangeSetManager.Dto;
 using Dapper;
-using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Data.Common;
-using System.Linq;
+using System.Net;
+using System.Net.Http;
 using System.Threading;
-using System.Threading.Tasks;
 
 namespace BitChangeSetManager.Api
 {
     public class CitiesController : DtoController<CityDto>
     {
-        [Get]
+        /*[Get]
         [IgnoreODataEnableQuery]
         public async Task<IEnumerable<CityDto>> GetAll(CancellationToken cancellationToken)
         {
@@ -35,6 +35,34 @@ namespace BitChangeSetManager.Api
             Request.Properties["System.Web.OData.TotalCountFunc"] = new Func<long>(() => total);
 
             return cities;
+        }*/
+
+        [Get]
+        [ReturnType(typeof(IEnumerable<CityDto>))]
+        public HttpResponseMessage GetAll(CancellationToken cancellationToken)
+        {
+            ODataSqlJsonQuery odataSqlQuery = ODataSqlBuilder.BuildSqlJsonQuery(GetODataQueryOptions(), tableName: "bit.Cities");
+
+            string connectionString = AppEnvironmentProvider.GetActiveAppEnvironment().GetConfig<string>("BitChangeSetManagerDbConnectionString");
+
+            BitODataStreamContent responseContent = new BitODataStreamContent(async (stream) =>
+            {
+                DbConnection dbConnection = await DbConnectionProvider.GetDbConnectionAsync(connectionString, true, cancellationToken);
+
+                DbTransaction dbTransaction = DbConnectionProvider.GetDbTransaction(connectionString);
+
+                await (await dbConnection.ExecuteReaderAsync(odataSqlQuery.SqlJsonQuery, odataSqlQuery.SqlQuery.Parts.Parameters, transaction: dbTransaction)).PopulateStreamAsync(stream, cancellationToken);
+
+            }, cancellationToken);
+
+            HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = responseContent
+            };
+
+            response.Headers.Add("OData-Version", "4.0");
+
+            return response;
         }
 
         public IODataSqlBuilder ODataSqlBuilder { get; set; }
