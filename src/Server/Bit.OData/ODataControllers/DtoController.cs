@@ -9,6 +9,16 @@ using System.Web.OData.Query;
 
 namespace Bit.OData.ODataControllers
 {
+    [AttributeUsage(AttributeTargets.Method, AllowMultiple = false)]
+    public class ReturnTypeAttribute : Attribute
+    {
+        public ReturnTypeAttribute(Type type)
+        {
+            if (type == null)
+                throw new ArgumentNullException(nameof(type));
+        }
+    }
+
     [AttributeUsage(AttributeTargets.Method, AllowMultiple = false, Inherited = true)]
     public sealed class ActionAttribute : Attribute, IActionHttpMethodProvider
     {
