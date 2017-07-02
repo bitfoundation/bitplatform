@@ -193,6 +193,7 @@
     <Compile Include="ActionFilters\ODataNullReturnValueActionFilter.cs" />
     <Compile Include="ActionFilters\RequestQSStringCorrectorsApplierActionFilterAttribute.cs" />
     <Compile Include="ActionFilters\RequestQSTimeZoneApplierActionFilterAttribute.cs" />
+    <Compile Include="Contents\ODataPushStreamContent.cs" />
     <Compile Include="Contents\ODataStreamContent.cs" />
     <Compile Include="Contracts\IAutoEdmBuilder.cs" />
     <Compile Include="Contracts\IODataContainerBuilderCustomizer.cs" />
