@@ -45,7 +45,7 @@ namespace BitChangeSetManager.Api
 
             string connectionString = AppEnvironmentProvider.GetActiveAppEnvironment().GetConfig<string>("BitChangeSetManagerDbConnectionString");
 
-            BitODataStreamContent responseContent = new BitODataStreamContent(async (stream) =>
+            ODataPushStreamContent responseContent = new ODataPushStreamContent(async (stream) =>
             {
                 DbConnection dbConnection = await DbConnectionProvider.GetDbConnectionAsync(connectionString, true, cancellationToken);
 
