@@ -51,11 +51,11 @@ namespace Bit.Tests.IdentityServer.Implementations
                     RequireConsent = false,
                     RedirectUris = new List<string>
                     {
-                        $@"^(http|https):\/\/(\S+\.)?bit-framework.com(:\d+)?\b{activeAppEnvironment.GetHostVirtualPath()}\bSignIn\/?"
+                        $@"^(http|https):\/\/(\S+\.)?(bit-framework.com|localhost|127.0.0.1)(:\d+)?\b{activeAppEnvironment.GetHostVirtualPath()}\bSignIn\/?"
                     },
                     PostLogoutRedirectUris = new List<string>
                     {
-                        $@"^(http|https):\/\/(\S+\.)?bit-framework.com(:\d+)?\b{activeAppEnvironment.GetHostVirtualPath()}\bSignOut\/?"
+                        $@"^(http|https):\/\/(\S+\.)?(bit-framework.com|localhost|127.0.0.1)(:\d+)?\b{activeAppEnvironment.GetHostVirtualPath()}\bSignOut\/?"
                     },
                     AllowAccessToAllScopes = true,
                     AlwaysSendClientClaims = true,
