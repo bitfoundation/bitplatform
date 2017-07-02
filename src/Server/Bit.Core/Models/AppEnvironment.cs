@@ -23,7 +23,7 @@ namespace Bit.Core.Models
 
         public virtual List<EnvironmentConfig> Configs { get; set; } = new List<EnvironmentConfig>();
 
-        public virtual T GetConfig<T>(string configKey)
+        public virtual bool TryGetConfig<T>(string configKey, out T value)
         {
             if (configKey == null)
                 throw new ArgumentNullException(nameof(configKey));
@@ -35,26 +35,31 @@ namespace Bit.Core.Models
                 string.Equals(c.Key, configKey, StringComparison.OrdinalIgnoreCase));
 
             if (config == null)
+            {
+                value = default(T);
+                return false;
+            }
+            else
+            {
+                value = (T)config.Value;
+                return true;
+            }
+        }
+
+        public virtual T GetConfig<T>(string configKey)
+        {
+            if (!TryGetConfig(configKey, out T value))
                 throw new InvalidOperationException($"No config found named {configKey} in app environment named {Name}");
 
-            return (T)config.Value;
+            return value;
         }
 
         public virtual T GetConfig<T>(string configKey, T defaultValueOnNotFound)
         {
-            if (configKey == null)
-                throw new ArgumentNullException(nameof(configKey));
-
-            if (Configs == null)
-                throw new InvalidOperationException("App environment is not valid");
-
-            EnvironmentConfig config = Configs.SingleOrDefault(c =>
-                string.Equals(c.Key, configKey, StringComparison.OrdinalIgnoreCase));
-
-            if (config == null)
+            if (!TryGetConfig(configKey, out T value))
                 return defaultValueOnNotFound;
             else
-                return (T)config.Value;
+                return value;
         }
 
         public virtual string GetHostVirtualPath()
@@ -65,6 +70,25 @@ namespace Bit.Core.Models
         public virtual string GetSsoUrl()
         {
             return Security?.SSOServerUrl ?? $"{GetHostVirtualPath()}core";
+        }
+
+        public virtual bool HasConfig(string configKey)
+        {
+            if (configKey == null)
+                throw new ArgumentNullException(nameof(configKey));
+
+            return Configs.Any(c => string.Equals(c.Key, configKey, StringComparison.OrdinalIgnoreCase));
+        }
+
+        public virtual void AddOrReplace(EnvironmentConfig config)
+        {
+            if (config == null)
+                throw new ArgumentNullException(nameof(config));
+
+            if (!HasConfig(config.Key))
+                Configs.Add(config);
+            else
+                Configs.Find(c => string.Equals(c.Key, config.Key, StringComparison.OrdinalIgnoreCase)).Value = config.Value;
         }
     }
 

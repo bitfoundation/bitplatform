@@ -52,9 +52,9 @@ namespace Bit.Owin.Implementations
             if (logContents.Length >= 30000)
                 logContents = logContents.Substring(0, 29999);
 
-            if (_activeAppEnvironment.Configs.Any(c => string.Equals(c.Key, "EventLogId", StringComparison.CurrentCultureIgnoreCase)))
+            if (_activeAppEnvironment.TryGetConfig("EventLogId", out long eventLogId))
             {
-                appLog.WriteEntry(logContents, eventLogsSeverity, Convert.ToInt32(_activeAppEnvironment.GetConfig<long>("EventLogId")));
+                appLog.WriteEntry(logContents, eventLogsSeverity, Convert.ToInt32(eventLogId));
             }
             else
             {
@@ -88,9 +88,9 @@ namespace Bit.Owin.Implementations
             if (logContents.Length >= 30000)
                 logContents = logContents.Substring(0, 29999);
 
-            if (_activeAppEnvironment.Configs.Any(c => string.Equals(c.Key, "EventLogId", StringComparison.CurrentCultureIgnoreCase)))
+            if (_activeAppEnvironment.TryGetConfig("EventLogId", out long eventLogId))
             {
-                appLog.WriteEntry(logContents, eventLogsSeverity, Convert.ToInt32(_activeAppEnvironment.GetConfig<long>("EventLogId")));
+                appLog.WriteEntry(logContents, eventLogsSeverity, Convert.ToInt32(eventLogId));
             }
             else
             {
