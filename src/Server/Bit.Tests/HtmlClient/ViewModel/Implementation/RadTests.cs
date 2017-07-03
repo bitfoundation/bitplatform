@@ -29,11 +29,9 @@ namespace Bit.Tests.HtmlClient.ViewModel.Implementation
 
                 using (RemoteWebDriver driver = testEnvironment.Server.GetWebDriver(new RemoteWebDriverOptions { Token = token }))
                 {
-                    driver.NavigateToRoute("rad-combo-page");
+                    await driver.NavigateToRoute("rad-combo-page");
 
-                    await Task.Delay(5000);
-
-                    driver.ExecuteTest("Bit.Tests.Implementations.Tests.RadTests.testRadComboFormViewModel");
+                    await driver.ExecuteTest("Bit.Tests.Implementations.Tests.RadTests.testRadComboFormViewModel");
                 }
 
                 TestModelsController testModelsController = TestDependencyManager.CurrentTestDependencyManager.Objects
@@ -62,9 +60,9 @@ namespace Bit.Tests.HtmlClient.ViewModel.Implementation
 
                 using (RemoteWebDriver driver = testEnvironment.Server.GetWebDriver(new RemoteWebDriverOptions { Token = token }))
                 {
-                    driver.NavigateToRoute("rad-grid-page");
+                    await driver.NavigateToRoute("rad-grid-page");
 
-                    driver.ExecuteTest("Bit.Tests.Implementations.Tests.RadTests.testRadGridFormViewModelAdd");
+                    await driver.ExecuteTest("Bit.Tests.Implementations.Tests.RadTests.testRadGridFormViewModelAdd");
                 }
 
                 ParentEntitiesController parentEntitiesController = TestDependencyManager.CurrentTestDependencyManager.Objects

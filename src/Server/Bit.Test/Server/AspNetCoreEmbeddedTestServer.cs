@@ -3,6 +3,8 @@ using System.Net.Http;
 using Bit.OwinCore;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.TestHost;
+using OpenQA.Selenium.Remote;
+using System;
 
 namespace Bit.Test.Server
 {
@@ -28,6 +30,11 @@ namespace Bit.Test.Server
         protected override HttpMessageHandler GetHttpMessageHandler()
         {
             return _server.CreateHandler();
+        }
+
+        public override RemoteWebDriver GetWebDriver(RemoteWebDriverOptions options = null)
+        {
+            throw new NotSupportedException();
         }
     }
 }

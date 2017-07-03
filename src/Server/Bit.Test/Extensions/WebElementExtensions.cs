@@ -1,21 +1,23 @@
-﻿using System;
-using System.Diagnostics;
-using System.Threading;
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 using OpenQA.Selenium.Remote;
 using OpenQA.Selenium.Support.UI;
+using System;
+using System.Diagnostics;
+using System.Threading.Tasks;
 
 namespace OpenQA.Selenium
 {
     public static class IRemoteWebDriverExtensions
     {
-        public static void NavigateToRoute(this RemoteWebDriver driver, string route)
+        public static async Task NavigateToRoute(this RemoteWebDriver driver, string route)
         {
             Uri uri = new Uri(driver.Url);
 
             driver.Url = $"{uri.Scheme}://{uri.Host}:{uri.Port}/{route}";
 
             driver.GetElementById("testsConsole");
+
+            await Task.Delay(2500);
         }
 
         [DebuggerNonUserCode]
@@ -28,7 +30,7 @@ namespace OpenQA.Selenium
         }
 
         [DebuggerNonUserCode]
-        public static void ExecuteTest(this RemoteWebDriver driver, string testScript, params object[] args)
+        public static async Task ExecuteTest(this RemoteWebDriver driver, string testScript, params object[] args)
         {
             if (driver == null)
                 throw new ArgumentNullException(nameof(driver));
@@ -52,8 +54,7 @@ namespace OpenQA.Selenium
 
             driver.ExecuteScript(finalTestScript);
 
-            new WebDriverWait(driver, TimeSpan.FromSeconds(10))
-                .Until(d => testsConsole.GetAttribute("value") != consoleValue);
+            await driver.WaitForCondition(d => testsConsole.GetAttribute("value") != consoleValue);
 
             consoleValue = testsConsole.GetAttribute("value");
 
@@ -68,10 +69,26 @@ namespace OpenQA.Selenium
         }
 
         [DebuggerNonUserCode]
-        public static void WaitForCondition(this RemoteWebDriver driver, Func<RemoteWebDriver, bool> condition)
+        public static async Task WaitForCondition(this RemoteWebDriver driver, Func<RemoteWebDriver, bool> condition)
         {
-            new WebDriverWait(driver, TimeSpan.FromSeconds(2.5))
-                .Until(d => condition)(driver);
+            int triesCount = 0;
+
+            do
+            {
+                try
+                {
+                    if ((condition(driver) == true))
+                        return;
+                }
+                catch { }
+                finally
+                {
+                    await Task.Delay(250);
+                    triesCount++;
+                }
+            } while (triesCount < 10);
+
+            throw new InvalidOperationException();
         }
     }
 }

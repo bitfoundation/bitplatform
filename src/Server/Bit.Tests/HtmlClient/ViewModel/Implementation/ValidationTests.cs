@@ -21,9 +21,9 @@ namespace Bit.Tests.HtmlClient.ViewModel.Implementation
 
                 using (RemoteWebDriver driver = testEnvironment.Server.GetWebDriver(new RemoteWebDriverOptions { Token = token }))
                 {
-                    driver.NavigateToRoute("form-validation-page");
+                    await driver.NavigateToRoute("form-validation-page");
 
-                    driver.ExecuteTest("Bit.Tests.Implementations.Tests.ValidationTests.testValidationFormViewModelWithValidBehavior");
+                    await driver.ExecuteTest("Bit.Tests.Implementations.Tests.ValidationTests.testValidationFormViewModelWithValidBehavior");
                 }
             }
         }
@@ -38,9 +38,9 @@ namespace Bit.Tests.HtmlClient.ViewModel.Implementation
 
                 using (RemoteWebDriver driver = testEnvironment.Server.GetWebDriver(new RemoteWebDriverOptions { Token = token }))
                 {
-                    driver.NavigateToRoute("form-validation-page");
+                    await driver.NavigateToRoute("form-validation-page");
 
-                    driver.ExecuteTest("Bit.Tests.Implementations.Tests.ValidationTests.testValidationFormViewModelWithInValidBehavior");
+                    await driver.ExecuteTest("Bit.Tests.Implementations.Tests.ValidationTests.testValidationFormViewModelWithInValidBehavior");
                 }
             }
         }

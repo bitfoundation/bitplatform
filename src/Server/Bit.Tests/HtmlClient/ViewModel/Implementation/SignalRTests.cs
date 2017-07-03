@@ -25,9 +25,7 @@ namespace Bit.Tests.HtmlClient.ViewModel.Implementation
 
                 using (RemoteWebDriver driver = testEnvironment.Server.GetWebDriver(new RemoteWebDriverOptions { Token = token }))
                 {
-                    driver.ExecuteTest("testSignalRConnection");
-
-                    await Task.Delay(1000);
+                    await driver.ExecuteTest("testSignalRConnection");
                 }
 
                 IEnumerable<ILogger> loggers = TestDependencyManager.CurrentTestDependencyManager.Objects

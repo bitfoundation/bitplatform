@@ -122,7 +122,7 @@ namespace Bit.Tests.Api.Middlewares.Tests
 
                 using (RemoteWebDriver driver = testEnvironment.Server.GetWebDriver(new RemoteWebDriverOptions { Token = token }))
                 {
-                    driver.ExecuteTest("testDesiredEnvironmentsConfigsArePresentInClientSide");
+                    await driver.ExecuteTest("testDesiredEnvironmentsConfigsArePresentInClientSide");
                 }
             }
         }

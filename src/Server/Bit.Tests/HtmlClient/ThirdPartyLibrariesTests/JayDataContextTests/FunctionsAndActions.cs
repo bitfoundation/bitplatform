@@ -25,7 +25,7 @@ namespace Bit.Tests.HtmlClient.ThirdPartyLibrariesTests.JayDataContextTests
 
                 using (RemoteWebDriver driver = testEnvironment.Server.GetWebDriver(new RemoteWebDriverOptions { Token = token }))
                 {
-                    driver.ExecuteTest(@"testFunctionCallAndTakeMethodAfterThat");
+                    await driver.ExecuteTest(@"testFunctionCallAndTakeMethodAfterThat");
                 }
 
                 TestModelsController testModelsController = TestDependencyManager.CurrentTestDependencyManager.Objects
@@ -47,7 +47,7 @@ namespace Bit.Tests.HtmlClient.ThirdPartyLibrariesTests.JayDataContextTests
 
                 using (RemoteWebDriver driver = testEnvironment.Server.GetWebDriver(new RemoteWebDriverOptions { Token = token }))
                 {
-                    driver.ExecuteTest(@"testActionCall");
+                    await driver.ExecuteTest(@"testActionCall");
                 }
 
                 TestModelsController testModelsController = TestDependencyManager.CurrentTestDependencyManager.Objects
@@ -69,7 +69,7 @@ namespace Bit.Tests.HtmlClient.ThirdPartyLibrariesTests.JayDataContextTests
 
                 using (RemoteWebDriver driver = testEnvironment.Server.GetWebDriver(new RemoteWebDriverOptions { Token = token }))
                 {
-                    driver.ExecuteTest(@"passNullTests");
+                    await driver.ExecuteTest(@"passNullTests");
                 }
 
                 TestModelsController actionCallTest = TestDependencyManager.CurrentTestDependencyManager.Objects
@@ -98,7 +98,7 @@ namespace Bit.Tests.HtmlClient.ThirdPartyLibrariesTests.JayDataContextTests
 
                 using (RemoteWebDriver driver = testEnvironment.Server.GetWebDriver(new RemoteWebDriverOptions { Token = token }))
                 {
-                    driver.ExecuteTest(@"testBatchCallODataFunctions");
+                    await driver.ExecuteTest(@"testBatchCallODataFunctions");
                 }
 
                 TestModelsController testModelsController = TestDependencyManager.CurrentTestDependencyManager.Objects
@@ -129,7 +129,7 @@ namespace Bit.Tests.HtmlClient.ThirdPartyLibrariesTests.JayDataContextTests
 
                 using (RemoteWebDriver driver = testEnvironment.Server.GetWebDriver(new RemoteWebDriverOptions { Token = token }))
                 {
-                    driver.ExecuteTest(@"testIEEE754Compatibility");
+                    await driver.ExecuteTest(@"testIEEE754Compatibility");
                 }
 
                 A.CallTo(() => TestDependencyManager.CurrentTestDependencyManager.Objects
@@ -172,7 +172,7 @@ namespace Bit.Tests.HtmlClient.ThirdPartyLibrariesTests.JayDataContextTests
 
                 using (RemoteWebDriver driver = testEnvironment.Server.GetWebDriver(new RemoteWebDriverOptions { Token = token }))
                 {
-                    driver.ExecuteTest(@"testPassingArrayOfEntitiesToController");
+                    await driver.ExecuteTest(@"testPassingArrayOfEntitiesToController");
                 }
 
                 A.CallTo(() => TestDependencyManager.CurrentTestDependencyManager.Objects

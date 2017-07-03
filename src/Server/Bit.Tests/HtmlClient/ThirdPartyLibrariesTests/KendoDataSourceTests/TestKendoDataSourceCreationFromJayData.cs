@@ -28,8 +28,7 @@ namespace Bit.Tests.HtmlClient.ThirdPartyLibrariesTests.KendoDataSourceTests
 
                 using (RemoteWebDriver driver = testEnvironment.Server.GetWebDriver(new RemoteWebDriverOptions { Token = token }))
                 {
-                    await Task.Delay(5000);
-                    driver.ExecuteTest("testKendoDataSourceCreationFromJayDataEntitySet");
+                    await driver.ExecuteTest("testKendoDataSourceCreationFromJayDataEntitySet");
                 }
 
                 TestModelsController testModelsController = TestDependencyManager.CurrentTestDependencyManager.Objects
@@ -57,7 +56,7 @@ namespace Bit.Tests.HtmlClient.ThirdPartyLibrariesTests.KendoDataSourceTests
 
                 using (RemoteWebDriver driver = testEnvironment.Server.GetWebDriver(new RemoteWebDriverOptions { Token = token }))
                 {
-                    driver.ExecuteTest("testKendoDataSourceCreationFromJayDataODataFunctionCall");
+                    await driver.ExecuteTest("testKendoDataSourceCreationFromJayDataODataFunctionCall");
                 }
 
                 TestModelsController testModelsController = TestDependencyManager.CurrentTestDependencyManager.Objects

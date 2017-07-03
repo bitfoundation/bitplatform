@@ -29,7 +29,7 @@ namespace Bit.Tests.HtmlClient.ViewModel.Implementation
                 {
                     using (RemoteWebDriver driver = testEnvironment.Server.GetWebDriver(new RemoteWebDriverOptions { Token = token }))
                     {
-                        driver.ExecuteTest("LoggerTests.logException");
+                        await driver.ExecuteTest("LoggerTests.logException");
                     }
 
                     Assert.Fail();
