@@ -76,7 +76,7 @@
 
         @Command()
         public async loadCityById(args: { id: any }) {
-            return await this.context.cities.find(args.id);
+            return await this.context.cities.first((c,id) => c.Id == id, args);
         }
 
     }
