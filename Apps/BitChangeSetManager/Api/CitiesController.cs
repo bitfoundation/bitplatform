@@ -1,22 +1,26 @@
 ﻿using Bit.Core.Contracts;
 using Bit.Data.Contracts;
+using Bit.OData.ActionFilters;
 using Bit.OData.Contents;
 using Bit.OData.Contracts;
 using Bit.OData.ODataControllers;
 using BitChangeSetManager.Dto;
 using Dapper;
+using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
+using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace BitChangeSetManager.Api
 {
     public class CitiesController : DtoController<CityDto>
     {
-        /*[Get]
+        [Get]
         [IgnoreODataEnableQuery]
         public async Task<IEnumerable<CityDto>> GetAll(CancellationToken cancellationToken)
         {
@@ -35,9 +39,9 @@ namespace BitChangeSetManager.Api
             Request.Properties["System.Web.OData.TotalCountFunc"] = new Func<long>(() => total);
 
             return cities;
-        }*/
+        }
 
-        [Get]
+        /*[Get]
         [ReturnType(typeof(IEnumerable<CityDto>))]
         public HttpResponseMessage GetAll(CancellationToken cancellationToken)
         {
@@ -63,7 +67,7 @@ namespace BitChangeSetManager.Api
             response.Headers.Add("OData-Version", "4.0");
 
             return response;
-        }
+        }*/
 
         public IODataSqlBuilder ODataSqlBuilder { get; set; }
 
