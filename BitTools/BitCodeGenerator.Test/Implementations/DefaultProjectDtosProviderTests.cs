@@ -22,7 +22,7 @@ namespace BitCodeGenerator.Test.Implementations
 
                 IProjectDtosProvider projectDtosProvider = new DefaultProjectDtosProvider(new DefaultProjectDtoControllersProvider());
 
-                IList<Dto> dtos = (await projectDtosProvider.GetProjectDtos(solution.Projects.Single(p => p.Name == "Bit.Model"|| p.Name == "Bit.Api"))).ToList();
+                IList<Dto> dtos = (await projectDtosProvider.GetProjectDtos(solution.Projects.Single(p => p.Name == "Bit.Model"|| p.Name == "Bit.OData"))).ToList();
 
                 Assert.IsTrue(dtos.Select(d => d.DtoSymbol.Name).SequenceEqual(new[] { "UserSetting", "JobInfoDto", "ClientLogDto" }));
             }
