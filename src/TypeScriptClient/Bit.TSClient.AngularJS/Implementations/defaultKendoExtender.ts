@@ -72,17 +72,19 @@ module Bit.Implementations {
                 configurable: false,
                 enumerable: false,
                 get: function () {
-                    if (this["getHandlers"] == null || this["getHandlers"].length == 0)
-                        return null;
-                    return this["getHandlers"][0]();
+                    return this["_current"];
                 },
                 set: function (entity: $data.Entity) {
+
+                    this["_current"] = entity;
 
                     if (this["setHandlers"] == null)
                         return;
 
                     for (let setHandler of this["setHandlers"])
                         setHandler(entity);
+
+                    this.onCurrentChanged();
                 }
             });
 

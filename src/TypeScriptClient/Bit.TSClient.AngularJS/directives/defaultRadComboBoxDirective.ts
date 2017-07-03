@@ -177,7 +177,9 @@ module Bit.Directives {
                 suggest: true,
                 highlightFirst: true,
                 change: (e) => {
-                    this.dataSource.onCurrentChanged();
+                    setTimeout(() => {
+                        this.dataSource.current = this.getCurrent();
+                    }, 0);
                 },
                 open: (e) => {
                     if (e.sender.options.autoBind == false && this.$attrs.radText != null) {
@@ -185,6 +187,9 @@ module Bit.Directives {
                         if (e.sender.options.dataSource.flatView().length == 0)
                             (e.sender.options.dataSource as kendo.data.DataSource).fetch();
                     }
+                },
+                dataBound: (e) => {
+                    this.syncCurrent();
                 },
                 delay: 300,
                 popup: {
@@ -290,10 +295,17 @@ module Bit.Directives {
             }
 
             this.dataSource["setHandlers"] = this.dataSource["setHandlers"] || [];
-            this.dataSource["getHandlers"] = this.dataSource["getHandlers"] || [];
+
+            this.syncCurrent();
 
             this.dataSource["setHandlers"].push(this.setCurrent.bind(this));
-            this.dataSource["getHandlers"].push(this.getCurrent.bind(this));
+        }
+
+        public syncCurrent() {
+            if (this.dataSource.current == null && this.getCurrent() != null)
+                this.dataSource["_current"] = this.getCurrent();
+            if (this.dataSource.current != null && this.getCurrent() == null)
+                this.setCurrent(this.dataSource.current as $data.Entity);
         }
 
         public setCurrent(entity: $data.Entity) {
@@ -315,8 +327,6 @@ module Bit.Directives {
             this.$scope.$applyAsync(() => {
                 this.ngModelValue = value;
             });
-
-            this.dataSource.onCurrentChanged();
         }
 
         public getCurrent() {
@@ -350,11 +360,9 @@ module Bit.Directives {
         public $onDestroy() {
             if (this.dataSource != null) {
                 this.dataSource['transport'].read = this.originalDataSourceTransportRead;
-                delete this.dataSource.current;
+                this.dataSource["setHandlers"].splice(this.dataSource["setHandlers"].indexOf(this.setCurrent), 1);
             }
             if (this.comboBox != null) {
-                this.dataSource["setHandlers"].splice(this.dataSource["setHandlers"].indexOf(this.setCurrent), 1);
-                this.dataSource["getHandlers"].splice(this.dataSource["getHandlers"].indexOf(this.getCurrent), 1);
                 this.comboBox.wrapper.unbind("focusin", this.onComboFocusIn);
                 kendo.destroyWidget(this.comboBox);
             }
