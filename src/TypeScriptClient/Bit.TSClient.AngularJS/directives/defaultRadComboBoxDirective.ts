@@ -325,7 +325,9 @@ module Bit.Directives {
                     if (this.ngModel.$isEmpty(value) && !this.ngModel.$isEmpty(comboBox.text()))
                         comboBox.text(null);
 
-                    this.ngModelValue = value;
+                    this.$scope.$applyAsync(() => {
+                        this.ngModelValue = value;
+                    });
 
                     this.dataSource.onCurrentChanged();
                 }
