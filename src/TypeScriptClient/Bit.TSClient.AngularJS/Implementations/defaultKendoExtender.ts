@@ -149,14 +149,6 @@ module Bit.Implementations {
 
                 parentDataSource.onCurrentChanged(async () => {
 
-                    if (childDataSource.current != null) {
-                        try {
-                            childDataSource.current = null;
-                        }
-                        catch (e) { }
-                    }
-
-                    let parentKeyCurrentValues: any[] = null;
                     const currentParent = parentDataSource.current;
 
                     await new Promise<void>((resolve) => {
@@ -165,6 +157,15 @@ module Bit.Implementations {
 
                     if (currentParent != parentDataSource.current)
                         return;
+
+                    if (childDataSource.current != null) {
+                        try {
+                            let currentChild = childDataSource.current;
+                            if (currentParent == null || parentKeys.some((pk, i) => currentChild[childKeys[i]] != currentParent[pk]))
+                                childDataSource.current = null;
+                        }
+                        catch (e) { }
+                    }
 
                     await childDataSource.read();
                 });
