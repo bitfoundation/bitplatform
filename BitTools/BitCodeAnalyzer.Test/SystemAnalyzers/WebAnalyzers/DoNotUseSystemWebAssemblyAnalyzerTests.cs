@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Reflection;
-using System.Web.Hosting;
 using BitCodeAnalyzer.SystemAnalyzers.WebAnalyzers;
 using BitCodeAnalyzer.Test.Helpers;
 using Microsoft.CodeAnalysis;
@@ -18,7 +17,7 @@ namespace BitCodeAnalyzer.Test.SystemAnalyzers.WebAnalyzers
         [TestCategory("Analyzer")]
         public async Task FindSystemWebUsages()
         {
-            typeof(HostingEnvironment).GetTypeInfo();
+            Assembly.Load("System.Web, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a");
 
             const string sourceCodeWithSystemWebUsage = @"
     using System;
