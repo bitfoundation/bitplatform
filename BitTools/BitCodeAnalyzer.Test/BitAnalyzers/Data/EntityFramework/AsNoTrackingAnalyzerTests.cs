@@ -1,15 +1,12 @@
 using BitCodeAnalyzer.BitAnalyzers.Data.EntityFramework;
-using BitCodeAnalyzer.SystemAnalyzers;
 using BitCodeAnalyzer.Test.Helpers;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.CodeAnalysis.MSBuild;
-using Microsoft.CodeAnalysis.Text;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.IO;
 using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
 
 namespace BitCodeAnalyzer.Test.BitAnalyzers.Data.EntityFramework
@@ -54,7 +51,7 @@ namespace BitCodeAnalyzer.Test.BitAnalyzers.Data.EntityFramework
         {
             MSBuildWorkspace workspace = MSBuildWorkspace.Create();
 
-            await workspace.OpenSolutionAsync(Path.Combine(basePath, "EntityFrameworkFullAsNoTrackingCallTests.sln"), CancellationToken.None);
+            await workspace.OpenSolutionAsync(Path.Combine(basePath, "EntityFrameworkFullAsNoTrackingCallTests.sln"));
 
             return workspace.CurrentSolution.Projects.Single();
         }
