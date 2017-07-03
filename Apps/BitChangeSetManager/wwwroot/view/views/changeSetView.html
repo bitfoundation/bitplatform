@@ -1,10 +1,10 @@
 ﻿<md-content>
 
-    <dto-form ng-model="::vm.model" name="changeSetForm">
+    <dto-form ng-model="vm.model" name="changeSetForm">
 
         <md-input-container>
             <label>{{::vm.changeSetMetadata.Title.Label}}</label>
-            <input type="text" name="Title" ng-model="::vm.model.Title" />
+            <input type="text" name="Title" ng-model="vm.model.Title" />
             <error-messages field="changeSetForm.Title">
                 <error ng-message="required">{{::vm.changeSetMetadata.Title.RequiredMessage}}</error>
                 <error ng-message="max-length">{{::vm.changeSetMetadata.Title.MaxLengthMessage}}</error>
@@ -13,12 +13,12 @@
 
         <md-input-container style="display:block;">
             <label>{{::vm.changeSetMetadata.AssociatedCommitUrl.Label}}</label>
-            <input type="text" name="AssociatedCommitUrl" ng-model="::vm.model.AssociatedCommitUrl" />
+            <input type="text" name="AssociatedCommitUrl" ng-model="vm.model.AssociatedCommitUrl" />
         </md-input-container>
 
         <md-input-container style="display:block;">
             <label>{{::vm.changeSetMetadata.Description.Label}}</label>
-            <rad-editor name="Description" ng-model="::vm.model.Description" k-ng-model="::vm.model.Description" />
+            <rad-editor name="Description" ng-model="vm.model.Description" k-ng-model="vm.model.Description" />
             <error-messages field="changeSetForm.Description">
                 <error ng-message="max-length">{{::vm.changeSetMetadata.Description.MaxLengthMessage}}</error>
             </error-messages>
@@ -34,7 +34,7 @@
             <rad-combo-box name="SeverityId"
                        rad-data-source="::vm.changeSetSeveritiesDataSource"
                        rad-text="::vm.model.SeverityTitle"
-                       ng-model="::vm.model.SeverityId" />
+                       ng-model="vm.model.SeverityId" />
             <error-messages field="changeSetForm.SeverityId">
                 <error ng-message="required">{{::vm.changeSetMetadata.SeverityId.RequiredMessage}}</error>
             </error-messages>
@@ -45,7 +45,7 @@
             <rad-combo-box name="DeliveryRequirementId"
                        rad-data-source="::vm.changeSetDeliveryRequirementsDataSource"
                        rad-text="vm.model.DeliveryRequirementTitle"
-                       ng-model="::vm.model.DeliveryRequirementId" />
+                       ng-model="vm.model.DeliveryRequirementId" />
             <error-messages field="changeSetForm.DeliveryRequirementId">
                 <error ng-message="required">{{::vm.changeSetMetadata.DeliveryRequirementId.RequiredMessage}}</error>
             </error-messages>
@@ -56,15 +56,14 @@
             <rad-combo-box name="ProvinceId"
                        rad-data-source="::vm.provincesDataSource"
                        rad-text="vm.model.ProvinceName"
-                       ng-model="::vm.model.ProvinceId" />
+                       ng-model="vm.model.ProvinceId" />
         </md-input-container>
 
         <md-input-container>
             <label>{{::vm.changeSetMetadata.CityId.Label}}</label>
             <rad-combo-box name="CityId"
                        rad-data-source="::vm.citiesDataSource"
-                       rad-text="vm.model.CityName"
-                       ng-model="::vm.model.CityId"
+                       ng-model="vm.model.CityId"
                        rad-virtual-entity-loader="vm.loadCityById({id})" />
         </md-input-container>
 
@@ -72,7 +71,7 @@
             <label>{{::vm.changeSetMetadata.NeedsReviewId.Label}}</label>
             <rad-combo-box name="NeedsReviewId"
                        rad-data-source="::vm.answersDataSource"
-                       ng-model="::vm.model.NeedsReviewId" />
+                       ng-model="vm.model.NeedsReviewId" />
         </md-input-container>
 
         <div>
