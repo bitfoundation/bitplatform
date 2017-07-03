@@ -289,50 +289,56 @@ module Bit.Directives {
                 comboBox.wrapper.bind("focusin", this.onComboFocusIn.bind(this));
             }
 
-            Object.defineProperty(this.dataSource, "current", {
-                configurable: true,
-                enumerable: false,
-                get: () => {
+            this.dataSource["setHandlers"] = this.dataSource["setHandlers"] || [];
+            this.dataSource["getHandlers"] = this.dataSource["getHandlers"] || [];
 
-                    let newCurrent = null;
+            this.dataSource["setHandlers"].push(this.setCurrent.bind(this));
+            this.dataSource["getHandlers"].push(this.getCurrent.bind(this));
+        }
 
-                    const dataItem = comboBox.dataItem();
+        public setCurrent(entity: $data.Entity) {
 
-                    if (dataItem == null)
-                        newCurrent = null;
-                    else
-                        newCurrent = dataItem.innerInstance != null ? dataItem.innerInstance() : dataItem;
+            let comboBox = this.comboBox;
 
-                    if (newCurrent == null && this.$attrs.radText != null && !this.ngModel.$isEmpty(comboBox.value()) && comboBox.options.autoBind == false) {
-                        newCurrent = {};
-                        newCurrent[this.radValueFieldName] = comboBox.value();
-                        newCurrent[this.radTextFieldName] = this.radTextValue;
-                    };
+            let value = null;
 
-                    return newCurrent;
-                },
-                set: (entity: $data.Entity) => {
+            if (entity != null) {
+                value = entity[this.radValueFieldName];
+            }
 
-                    let value = null;
+            if (comboBox.value() != value)
+                comboBox.value(value);
 
-                    if (entity != null) {
-                        value = entity[this.radValueFieldName];
-                    }
+            if (this.ngModel.$isEmpty(value) && !this.ngModel.$isEmpty(comboBox.text()))
+                comboBox.text(null);
 
-                    if (comboBox.value() != value)
-                        comboBox.value(value);
-
-                    if (this.ngModel.$isEmpty(value) && !this.ngModel.$isEmpty(comboBox.text()))
-                        comboBox.text(null);
-
-                    this.$scope.$applyAsync(() => {
-                        this.ngModelValue = value;
-                    });
-
-                    this.dataSource.onCurrentChanged();
-                }
+            this.$scope.$applyAsync(() => {
+                this.ngModelValue = value;
             });
 
+            this.dataSource.onCurrentChanged();
+        }
+
+        public getCurrent() {
+
+            let comboBox = this.comboBox;
+
+            let newCurrent = null;
+
+            const dataItem = comboBox.dataItem();
+
+            if (dataItem == null)
+                newCurrent = null;
+            else
+                newCurrent = dataItem.innerInstance != null ? dataItem.innerInstance() : dataItem;
+
+            if (newCurrent == null && this.$attrs.radText != null && !this.ngModel.$isEmpty(comboBox.value()) && comboBox.options.autoBind == false) {
+                newCurrent = {};
+                newCurrent[this.radValueFieldName] = comboBox.value();
+                newCurrent[this.radTextFieldName] = this.radTextValue;
+            };
+
+            return newCurrent;
         }
 
         public onComboFocusIn() {
@@ -347,6 +353,8 @@ module Bit.Directives {
                 delete this.dataSource.current;
             }
             if (this.comboBox != null) {
+                this.dataSource["setHandlers"].splice(this.dataSource["setHandlers"].indexOf(this.setCurrent), 1);
+                this.dataSource["getHandlers"].splice(this.dataSource["getHandlers"].indexOf(this.getCurrent), 1);
                 this.comboBox.wrapper.unbind("focusin", this.onComboFocusIn);
                 kendo.destroyWidget(this.comboBox);
             }

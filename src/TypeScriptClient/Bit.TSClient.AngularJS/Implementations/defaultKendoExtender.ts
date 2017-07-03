@@ -68,6 +68,24 @@ module Bit.Implementations {
                     });
             };
 
+            Object.defineProperty(kendo.data.DataSource.prototype, "current", {
+                configurable: false,
+                enumerable: false,
+                get: function () {
+                    if (this["getHandlers"] == null || this["getHandlers"].length == 0)
+                        return null;
+                    return this["getHandlers"][0]();
+                },
+                set: function (entity: $data.Entity) {
+
+                    if (this["setHandlers"] == null)
+                        return;
+
+                    for (let setHandler of this["setHandlers"])
+                        setHandler(entity);
+                }
+            });
+
             kendo.data.DataSource.prototype.onCurrentChanged = function (action) {
 
                 const dataSource = this;
