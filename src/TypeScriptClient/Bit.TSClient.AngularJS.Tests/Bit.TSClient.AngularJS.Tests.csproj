@@ -106,6 +106,7 @@
     <TypeScriptCompile Include="viewModels\tests\dateTimeServiceViewModel.ts" />
     <TypeScriptCompile Include="viewModels\tests\entityContextUsageViewModel.ts" />
     <TypeScriptCompile Include="viewModels\tests\formValidationViewModel.ts" />
+    <TypeScriptCompile Include="viewModels\tests\lookupsSearchViewModel.ts" />
     <TypeScriptCompile Include="viewModels\tests\lookupsViewModel.ts" />
     <TypeScriptCompile Include="viewModels\tests\nestedRouteMainViewModel.ts" />
     <TypeScriptCompile Include="viewModels\tests\radComboViewModel.ts" />

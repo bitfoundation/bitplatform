@@ -6,6 +6,8 @@ namespace Bit.Tests.Model.Dto
     {
         public int Id { get; set; }
 
+        public int BuildLocationId { get; set; }
+
         public int BuildLocationId_InMemoryTest { get; set; }
 
         public int BuildLocationId_OfflineDatabaseTest { get; set; }

@@ -17,6 +17,7 @@
             { path: "/route-parameter-page/:to", name: "RouteParameterFormViewModel" },
             { path: "/simple-page", name: "SimpleFormViewModel" },
             { path: "/lookups-page", name: "LookupsFormViewModel" },
+            { path: "/lookups-search-page", name: "LookupsSearchViewModel" },
             { path: "/**", redirectTo: ["NestedRouteMainFormViewModel"] }
         ]
     })
