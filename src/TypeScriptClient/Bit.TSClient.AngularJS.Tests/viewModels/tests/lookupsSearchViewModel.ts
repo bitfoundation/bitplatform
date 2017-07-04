@@ -4,7 +4,7 @@
         name: "LookupsSearchViewModel", template: `
 
 <dto-form ng-model="vm.product">
-    <rad-combo-box rad-data-source="vm.countriesDataSource" ng-model="vm.product.BuildLocationId" />
+    <rad-combo-box rad-data-source="vm.countriesDataSource" lookup-search="true" ng-model="vm.product.BuildLocationId" />
     <br />
     {{vm.product.BuildLocationId}}
     {{vm.countriesDataSource.current.Name}}
