@@ -12,7 +12,7 @@
             culture = culture == null ? ClientAppProfileManager.getCurrent().getClientAppProfile().culture : culture;
 
             if (culture == "FaIr") {
-                return persianDate(date).format("YYYY/MM/DD") as string;
+                return window["persianDate"](date).format("YYYY/MM/DD") as string;
             }
             else {
                 return Provider.getFormattedDateDelegate(date);
@@ -33,7 +33,7 @@
             culture = culture == null ? ClientAppProfileManager.getCurrent().getClientAppProfile().culture : culture;
 
             if (culture == "FaIr") {
-                return persianDate(date).format("DD MMMM YYYY, hh:mm a") as string;
+                return window["persianDate"](date).format("DD MMMM YYYY, hh:mm a") as string;
             }
             else {
                 return Provider.getFormattedDateTimeDelegate(date);

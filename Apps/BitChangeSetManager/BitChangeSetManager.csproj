@@ -387,9 +387,9 @@
     <None Include="Web.Release.config">
       <DependentUpon>Web.config</DependentUpon>
     </None>
-    <None Include="wwwroot\bower.json" />
     <Content Include="wwwroot\tsconfig.json" />
     <Content Include="wwwroot\electron-sample\package.json" />
+    <Content Include="wwwroot\.npmrc" />
     <None Include="wwwroot\package.json" />
     <Content Include="wwwroot\ssoPageTemplate.cshtml" />
     <Content Include="wwwroot\security\tsconfig.json" />
@@ -459,9 +459,9 @@
     <TypeScriptCompile Include="wwwroot\bitChangeSetManagerAngularAppInitialization.ts" />
     <TypeScriptCompile Include="wwwroot\bitChangeSetManagerPathProvider.ts" />
     <TypeScriptCompile Include="wwwroot\imports.ts" />
-    <TypeScriptCompile Include="wwwroot\security\bitChangeSetManagerSecurityPathProvider.ts" />
     <TypeScriptCompile Include="wwwroot\security\bitChangeSetManagerSecurity.fileDependencies.ts" />
     <TypeScriptCompile Include="wwwroot\security\bitChangeSetManagerSecurity.objectDependencies.ts" />
+    <TypeScriptCompile Include="wwwroot\security\bitChangeSetManagerSecurityPathProvider.ts" />
     <TypeScriptCompile Include="wwwroot\security\imports.ts" />
     <TypeScriptCompile Include="wwwroot\viewModel\viewModels\app.ts" />
     <TypeScriptCompile Include="wwwroot\viewModel\viewModels\changeSetsViewModel.ts" />
@@ -472,6 +472,7 @@
   <ItemGroup>
     <Analyzer Include="packages\BitCodeAnalyzer.1.1.5.4\analyzers\dotnet\cs\BitCodeAnalyzer.dll" />
   </ItemGroup>
+  <ItemGroup />
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>
     <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>

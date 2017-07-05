@@ -1,11 +1,39 @@
 {
   "name": "bit-core",
-  "version": "1.0.0",
-  "description": "Bit Framework",
+  "version": "0.0.1",
+  "description": "Bit Framework - TypeScript Client - Core",
   "author": "Bit Foundation",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/bit-foundation/bit-framework/"
+  },
+  "keywords": [
+    "bit",
+    "angularjs",
+    "kendo",
+    "typescript",
+    "odata",
+    "offline",
+    "rad",
+    "sync"
+  ],
+  "license": "MIT",
   "devDependencies": {
     "@types/decimal.js": "0.0.29",
     "@types/pubsub-js": "1.5.17",
     "@types/signalr": "^2.2.34"
+  },
+  "optionalDependencies": {
+    "decimal.js": "7.2.3",
+    "pubsub-js": "1.5.7",
+    "signalr": "2.2.2",
+    "regenerator": "0.9.7",
+    "core-js": "2.4.1",
+    "whatwg-fetch": "2.0.3",
+    "@bit/encoder": "^1.0.0"
+  },
+  "dependencies": {
+    "@bit/jaydata": "^1.5.12",
+    "@bit/olingo-odatajs": "4.0.0"
   }
 }

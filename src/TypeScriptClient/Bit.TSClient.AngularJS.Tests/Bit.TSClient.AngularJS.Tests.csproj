@@ -74,9 +74,6 @@
     <Folder Include="Properties\" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="bower.json" />
-  </ItemGroup>
-  <ItemGroup>
     <TypeScriptCompile Include="Identity\identityServer.tests.fileDependencies.ts" />
     <TypeScriptCompile Include="Identity\identityServer.tests.objectDependencies.ts" />
     <TypeScriptCompile Include="Identity\Implementations\identityServerTestPathProvider.ts" />

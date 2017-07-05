@@ -13,5 +13,5 @@
     "inlineSources": true,
     "removeComments": false
   },
-  "exclude": [ "node_modules", "bower_components", "bin", "obj", "security" ]
+  "exclude": [ "node_modules", "bin", "obj", "security" ]
 }

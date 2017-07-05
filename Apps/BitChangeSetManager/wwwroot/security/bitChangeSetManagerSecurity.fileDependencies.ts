@@ -6,36 +6,43 @@ module BitChangeSetManagerSecurity {
 
     dependencyManager.registerFileDependency({
         name: "normalize",
-        path: "bower_components/normalize-css/normalize",
+        path: "node_modules/normalize-css/normalize",
         fileDependecyType: "Style"
     });
 
     dependencyManager.registerFileDependency({
         name: "angular-material-styles",
-        path: "bower_components/angular-material/angular-material",
+        path: "node_modules/angular-material/angular-material",
         fileDependecyType: "Style"
     });
 
     dependencyManager.registerFileDependency({
         name: "controls-styles",
-        path: "bower_components/bit-releases/typescript-client/contents/styles/controls",
+        path: "node_modules/@bit/bit-framework/contents/styles/controls",
         fileDependecyType: "Style"
     });
 
     dependencyManager.registerFileDependency({
         name: "en-US-styles",
-        path: "bower_components/bit-releases/typescript-client/contents/styles/en-US",
+        path: "node_modules/@bit/bit-framework/contents/styles/en-US",
+        fileDependecyType: "Style",
+        predicate: appEnvProvider => appEnvProvider.culture == "EnUs"
+    });
+
+    dependencyManager.registerFileDependency({
+        name: "bit-change-set-manager-styles",
+        path: "view/styles/bitChangeSetManagerStyles",
         fileDependecyType: "Style"
     });
 
     dependencyManager.registerFileDependency({
         name: "Core-js",
-        path: "bower_components/Core.js/client/Core"
+        path: "node_modules/Core-js/client/Core"
     });
 
     dependencyManager.registerFileDependency({
         name: "fetch",
-        path: "bower_components/fetch/fetch",
+        path: "node_modules/fetch/fetch",
         predicate: (appInfo) => {
             return typeof (fetch) == "undefined";
         }
@@ -43,12 +50,12 @@ module BitChangeSetManagerSecurity {
 
     dependencyManager.registerFileDependency({
         name: "runtime",
-        path: "bower_components/regenerator/packages/regenerator-runtime/runtime"
+        path: "node_modules/regenerator-runtime/runtime"
     });
 
     dependencyManager.registerFileDependency({
         name: "jQuery",
-        path: "bower_components/jquery/dist/jquery",
+        path: "node_modules/jquery/dist/jquery",
         onLoad: () => {
             // For electron compatibility
             if (typeof window["require"] != 'undefined' && window["module"] != null && window["module"].exports != null) {
@@ -59,56 +66,56 @@ module BitChangeSetManagerSecurity {
 
     dependencyManager.registerFileDependency({
         name: "angular",
-        path: "bower_components/angular/angular"
+        path: "node_modules/angular/angular"
     });
 
     dependencyManager.registerFileDependency({
         name: "odataJS",
-        path: "bower_components/olingo-odatajs/odatajs"
+        path: "node_modules/@bit/olingo-odatajs/odatajs"
     });
 
     dependencyManager.registerFileDependency({
         name: "jayData",
-        path: "bower_components/jaydata/dist/jaydata"
+        path: "node_modules/@bit/jaydata/jaydata"
     });
 
     dependencyManager.registerFileDependency({
         name: "jayData-odata-provider",
-        path: "bower_components/jaydata/dist/jaydataproviders/oDataProvider"
+        path: "node_modules/@bit/jaydata/jaydataproviders/oDataProvider"
     });
 
     dependencyManager.registerFileDependency({
         name: "angular-animate",
-        path: "bower_components/angular-animate/angular-animate"
+        path: "node_modules/angular-animate/angular-animate"
     });
 
     dependencyManager.registerFileDependency({
         name: "angular-area",
-        path: "bower_components/angular-aria/angular-aria"
+        path: "node_modules/angular-aria/angular-aria"
     });
 
     dependencyManager.registerFileDependency({
         name: "angular-material",
-        path: "bower_components/angular-material/angular-material"
+        path: "node_modules/angular-material/angular-material"
     });
 
     dependencyManager.registerFileDependency({
         name: "angular-messages",
-        path: "bower_components/angular-messages/angular-messages"
+        path: "node_modules/angular-messages/angular-messages"
     });
 
     dependencyManager.registerFileDependency({
         name: "angular-translate",
-        path: "bower_components/angular-translate/angular-translate"
+        path: "node_modules/angular-translate/dist/angular-translate"
     });
 
     dependencyManager.registerFileDependency({
         name: "encoderjs",
-        path: "bower_components/encoderjs/encoder"
+        path: "node_modules/@bit/encoder/encoder"
     });
 
     dependencyManager.registerFileDependency({
         name: "bit-model-context",
-        path: "bower_components/bit-releases/typescript-client/Bit.Model.Context"
+        path: "node_modules/@bit/bit-framework/Bit.Model.Context"
     });
 }

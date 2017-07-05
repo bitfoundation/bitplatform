@@ -15,5 +15,5 @@
     "inlineSources": true,
     "removeComments": false
   },
-  "exclude": [ "bit.identity.tests.d.ts", "node_modules", "bower_components", "bin", "obj" ]
+  "exclude": [ "bit.identity.tests.d.ts", "node_modules", "bin", "obj" ]
 }

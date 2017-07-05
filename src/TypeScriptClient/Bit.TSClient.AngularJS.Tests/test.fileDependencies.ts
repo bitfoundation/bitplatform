@@ -4,19 +4,19 @@
 
     dependencyManager.registerFileDependency({
         name: "normalize",
-        path: "bit-framework/src/TypeScriptClient/Bit.TSClient.AngularJS.Tests/bower_components/normalize-css/normalize",
+        path: "bit-framework/src/TypeScriptClient/Bit.TSClient.AngularJS/node_modules/normalize-css/normalize",
         fileDependecyType: "Style"
     });
 
     dependencyManager.registerFileDependency({
         name: "angular-material-styles",
-        path: "bit-framework/src/TypeScriptClient/Bit.TSClient.AngularJS.Tests/bower_components/angular-material/angular-material",
+        path: "bit-framework/src/TypeScriptClient/Bit.TSClient.AngularJS/node_modules/angular-material/angular-material",
         fileDependecyType: "Style"
     });
 
     dependencyManager.registerFileDependency({
         name: "kendo-common-styles",
-        path: "bit-framework/src/TypeScriptClient/Bit.TSClient.AngularJS.Tests/bower_components/kendo-ui/styles/kendo.common.min",
+        path: "bit-framework/src/TypeScriptClient/Bit.TSClient.AngularJS/node_modules/@bit/kendo-ui-core/styles/kendo.common.min",
         predicate: (appInfo) => {
             return appInfo.screenSize == "DesktopAndTablet";
         },
@@ -25,7 +25,7 @@
 
     dependencyManager.registerFileDependency({
         name: "kendo-light-green-theme-styles",
-        path: "bit-framework/src/TypeScriptClient/Bit.TSClient.AngularJS.Tests/bower_components/kendo-ui/styles/kendo.metro.min",
+        path: "bit-framework/src/TypeScriptClient/Bit.TSClient.AngularJS/node_modules/@bit/kendo-ui-core/styles/kendo.metro.min",
         predicate: (appInfo) => {
             return appInfo.screenSize == "DesktopAndTablet" && appInfo.theme == "LightGreen";
         },
@@ -34,7 +34,7 @@
 
     dependencyManager.registerFileDependency({
         name: "kendo-light-blue-theme-styles",
-        path: "bit-framework/src/TypeScriptClient/Bit.TSClient.AngularJS.Tests/bower_components/kendo-ui/styles/kendo.material.min",
+        path: "bit-framework/src/TypeScriptClient/Bit.TSClient.AngularJS/node_modules/@bit/kendo-ui-core/styles/kendo.material.min",
         predicate: (appInfo) => {
             return appInfo.screenSize == "DesktopAndTablet" && appInfo.theme == "LightBlue";
         },
@@ -43,7 +43,7 @@
 
     dependencyManager.registerFileDependency({
         name: "kendo-dark-amber-theme-styles",
-        path: "bit-framework/src/TypeScriptClient/Bit.TSClient.AngularJS.Tests/bower_components/kendo-ui/styles/kendo.materialblack.min",
+        path: "bit-framework/src/TypeScriptClient/Bit.TSClient.AngularJS/node_modules/@bit/kendo-ui-core/styles/kendo.materialblack.min",
         predicate: (appInfo) => {
             return appInfo.screenSize == "DesktopAndTablet" && appInfo.theme == "DarkAmber";
         },
@@ -52,7 +52,7 @@
 
     dependencyManager.registerFileDependency({
         name: "kendo-rtl-styles",
-        path: "bit-framework/src/TypeScriptClient/Bit.TSClient.AngularJS.Tests/bower_components/kendo-ui/styles/kendo.rtl.min",
+        path: "bit-framework/src/TypeScriptClient/Bit.TSClient.AngularJS/node_modules/@bit/kendo-ui-core/styles/kendo.rtl.min",
         predicate: (appInfo) => {
             return appInfo.screenSize == "DesktopAndTablet" && appInfo.culture == "FaIr";
         },
@@ -60,15 +60,15 @@
     });
 
     dependencyManager.registerFileDependency({
-        name: "persian-datePicker-styles",
-        path: "bit-framework/src/TypeScriptClient/Bit.TSClient.AngularJS.Tests/bower_components/persian-datepicker/dist/css/persian-datepicker-0.4.9",
+        name: "persian-date-picker-styles",
+        path: "bit-framework/src/TypeScriptClient/Bit.TSClient.AngularJS/node_modules/@bit/persian-date-picker/dist/css/persian-date-picker.min",
         fileDependecyType: "Style",
         predicate: (appInfo) => appInfo.culture == "FaIr"
     });
 
     dependencyManager.registerFileDependency({
-        name: "persian-datePicker-blue-styles",
-        path: "bit-framework/src/TypeScriptClient/Bit.TSClient.AngularJS.Tests/bower_components/persian-datepicker/dist/css/theme/persian-datepicker-blue",
+        name: "persian-date-picker-blue-styles",
+        path: "bit-framework/src/TypeScriptClient/Bit.TSClient.AngularJS/node_modules/@bit/persian-date-picker/dist/css/theme/persian-date-picker-blue",
         fileDependecyType: "Style",
         predicate: (appInfo) => appInfo.culture == "FaIr"
     });
@@ -126,12 +126,12 @@
 
     dependencyManager.registerFileDependency({
         name: "Core-js",
-        path: "bit-framework/src/TypeScriptClient/Bit.TSClient.AngularJS.Tests/bower_components/Core.js/client/Core"
+        path: "bit-framework/src/TypeScriptClient/Bit.TSClient.Core/node_modules/Core-js/client/Core"
     });
 
     dependencyManager.registerFileDependency({
         name: "fetch",
-        path: "bit-framework/src/TypeScriptClient/Bit.TSClient.AngularJS.Tests/bower_components/fetch/fetch",
+        path: "bit-framework/src/TypeScriptClient/Bit.TSClient.Core/node_modules/fetch/fetch",
         predicate: (appInfo) => {
             return typeof (fetch) == "undefined";
         }
@@ -139,17 +139,17 @@
 
     dependencyManager.registerFileDependency({
         name: "runtime",
-        path: "bit-framework/src/TypeScriptClient/Bit.TSClient.AngularJS.Tests/bower_components/regenerator/packages/regenerator-runtime/runtime"
+        path: "bit-framework/src/TypeScriptClient/Bit.TSClient.Core/node_modules/regenerator-runtime/runtime"
     });
 
     dependencyManager.registerFileDependency({
         name: "jQuery",
-        path: "bit-framework/src/TypeScriptClient/Bit.TSClient.AngularJS.Tests/bower_components/jquery/dist/jquery"
+        path: "bit-framework/src/TypeScriptClient/Bit.TSClient.AngularJS/node_modules/jquery/dist/jquery"
     });
 
     dependencyManager.registerFileDependency({
         name: "angular",
-        path: "bit-framework/src/TypeScriptClient/Bit.TSClient.AngularJS.Tests/bower_components/angular/angular",
+        path: "bit-framework/src/TypeScriptClient/Bit.TSClient.AngularJS/node_modules/angular/angular",
         onLoad: () => {
             // For electron compatibility
             if (typeof window["require"] != 'undefined' && window["module"] != null && window["module"].exports != null) {
@@ -160,7 +160,7 @@
 
     dependencyManager.registerFileDependency({
         name: "kendo-ui-web",
-        path: "bit-framework/src/TypeScriptClient/Bit.TSClient.AngularJS.Tests/bower_components/kendo-ui/js/kendo.web.min",
+        path: "bit-framework/src/TypeScriptClient/Bit.TSClient.AngularJS/node_modules/@bit/kendo-ui-core/js/kendo.web.min",
         predicate: (appInfo) => {
             return appInfo.screenSize == "DesktopAndTablet" && appInfo.getConfig<string>("KendoUILoadMode") == "Web";
         }
@@ -168,7 +168,7 @@
 
     dependencyManager.registerFileDependency({
         name: "kendo-ui-core",
-        path: "bit-framework/src/TypeScriptClient/Bit.TSClient.AngularJS.Tests/bower_components/kendo-ui/src/js/kendo.ui.core",
+        path: "bit-framework/src/TypeScriptClient/Bit.TSClient.AngularJS/node_modules/@bit/kendo-ui-core/js/kendo.ui.core",
         predicate: (appInfo) => {
             return appInfo.screenSize == "DesktopAndTablet" && appInfo.getConfig<string>("KendoUILoadMode") == "Core";
         }
@@ -176,7 +176,7 @@
 
     dependencyManager.registerFileDependency({
         name: "kendo-core",
-        path: "bit-framework/src/TypeScriptClient/Bit.TSClient.AngularJS.Tests/bower_components/kendo-ui/src/js/kendo.Core",
+        path: "bit-framework/src/TypeScriptClient/Bit.TSClient.AngularJS/node_modules/@bit/kendo-ui-core/js/kendo.Core",
         predicate: (appInfo) => {
             return appInfo.screenSize == "MobileAndPhablet" && appInfo.getConfig<string>("KendoUILoadMode") == "Core";
         }
@@ -184,7 +184,7 @@
 
     dependencyManager.registerFileDependency({
         name: "kendo-data",
-        path: "bit-framework/src/TypeScriptClient/Bit.TSClient.AngularJS.Tests/bower_components/kendo-ui/src/js/kendo.data",
+        path: "bit-framework/src/TypeScriptClient/Bit.TSClient.AngularJS/node_modules/@bit/kendo-ui-core/js/kendo.data",
         predicate: (appInfo) => {
             return appInfo.screenSize == "MobileAndPhablet" && appInfo.getConfig<string>("KendoUILoadMode") == "Core";
         }
@@ -192,7 +192,7 @@
 
     dependencyManager.registerFileDependency({
         name: "kendo-binder",
-        path: "bit-framework/src/TypeScriptClient/Bit.TSClient.AngularJS.Tests/bower_components/kendo-ui/src/js/kendo.binder",
+        path: "bit-framework/src/TypeScriptClient/Bit.TSClient.AngularJS/node_modules/@bit/kendo-ui-core/js/kendo.binder",
         predicate: (appInfo) => {
             return appInfo.screenSize == "MobileAndPhablet" && appInfo.getConfig<string>("KendoUILoadMode") == "Core";
         }
@@ -200,7 +200,7 @@
 
     dependencyManager.registerFileDependency({
         name: "kendo-culture-fa-IR",
-        path: "bit-framework/src/TypeScriptClient/Bit.TSClient.AngularJS.Tests/bower_components/kendo-ui/js/cultures/kendo.culture.fa-IR.min",
+        path: "bit-framework/src/TypeScriptClient/Bit.TSClient.AngularJS/node_modules/@bit/kendo-ui-core/js/cultures/kendo.culture.fa-IR.min",
         predicate: (appInfo) => {
             return appInfo.screenSize == "DesktopAndTablet" && appInfo.culture == "FaIr";
         }
@@ -208,7 +208,7 @@
 
     dependencyManager.registerFileDependency({
         name: "kendo-messages-fa-IR",
-        path: "bit-framework/src/TypeScriptClient/Bit.TSClient.AngularJS.Tests/bower_components/kendo-ui/js/messages/kendo.messages.fa-IR.min",
+        path: "bit-framework/src/TypeScriptClient/Bit.TSClient.AngularJS/node_modules/@bit/kendo-ui-core/js/messages/kendo.messages.fa-IR.min",
         continueOnError: true,
         predicate: (appInfo) => {
             return appInfo.screenSize == "DesktopAndTablet" && appInfo.culture == "FaIr";
@@ -217,105 +217,105 @@
 
     dependencyManager.registerFileDependency({
         name: "odataJS",
-        path: "bit-framework/src/TypeScriptClient/Bit.TSClient.AngularJS.Tests/bower_components/olingo-odatajs/odatajs"
+        path: "bit-framework/src/TypeScriptClient/Bit.TSClient.Core/node_modules/@bit/olingo-odatajs/odatajs"
     });
 
     dependencyManager.registerFileDependency({
         name: "jayData",
-        path: "bit-framework/src/TypeScriptClient/Bit.TSClient.AngularJS.Tests/bower_components/jaydata/dist/jaydata"
+        path: "bit-framework/src/TypeScriptClient/Bit.TSClient.Core/node_modules/@bit/jaydata/jaydata"
     });
 
     dependencyManager.registerFileDependency({
         name: "jayData-inMemory-provider",
-        path: "bit-framework/src/TypeScriptClient/Bit.TSClient.AngularJS.Tests/bower_components/jaydata/dist/jaydataproviders/InMemoryProvider"
+        path: "bit-framework/src/TypeScriptClient/Bit.TSClient.Core/node_modules/@bit/jaydata/jaydataproviders/InMemoryProvider"
     });
 
     dependencyManager.registerFileDependency({
         name: "jayData-odata-provider",
-        path: "bit-framework/src/TypeScriptClient/Bit.TSClient.AngularJS.Tests/bower_components/jaydata/dist/jaydataproviders/oDataProvider"
+        path: "bit-framework/src/TypeScriptClient/Bit.TSClient.Core/node_modules/@bit/jaydata/jaydataproviders/oDataProvider"
     });
 
     dependencyManager.registerFileDependency({
         name: "jayData-indexedDb-provider",
-        path: "bit-framework/src/TypeScriptClient/Bit.TSClient.AngularJS.Tests/bower_components/jaydata/dist/jaydataproviders/indexedDbProvider"
+        path: "bit-framework/src/TypeScriptClient/Bit.TSClient.Core/node_modules/@bit/jaydata/jaydataproviders/indexedDbProvider"
     });
 
     dependencyManager.registerFileDependency({
         name: "jayData-kendo-module",
-        path: "bit-framework/src/TypeScriptClient/Bit.TSClient.AngularJS.Tests/bower_components/jaydata/dist/jaydatamodules/kendo"
+        path: "bit-framework/src/TypeScriptClient/Bit.TSClient.Core/node_modules/@bit/jaydata/jaydatamodules/kendo"
     });
 
     dependencyManager.registerFileDependency({
         name: "jayData-inmemroy-module",
-        path: "bit-framework/src/TypeScriptClient/Bit.TSClient.AngularJS.Tests/bower_components/jaydata/dist/jaydatamodules/inmemory"
+        path: "bit-framework/src/TypeScriptClient/Bit.TSClient.Core/node_modules/@bit/jaydata/jaydatamodules/inmemory"
     });
 
     dependencyManager.registerFileDependency({
         name: "ng-component-router",
-        path: "bit-framework/src/TypeScriptClient/Bit.TSClient.AngularJS.Tests/bower_components/ngComponentRouter/angular_1_router"
+        path: "bit-framework/src/TypeScriptClient/Bit.TSClient.AngularJS/node_modules/ngComponentRouter/angular_1_router"
     });
 
     dependencyManager.registerFileDependency({
         name: "angular-animate",
-        path: "bit-framework/src/TypeScriptClient/Bit.TSClient.AngularJS.Tests/bower_components/angular-animate/angular-animate"
+        path: "bit-framework/src/TypeScriptClient/Bit.TSClient.AngularJS/node_modules/angular-animate/angular-animate"
     });
 
     dependencyManager.registerFileDependency({
         name: "angular-area",
-        path: "bit-framework/src/TypeScriptClient/Bit.TSClient.AngularJS.Tests/bower_components/angular-aria/angular-aria"
+        path: "bit-framework/src/TypeScriptClient/Bit.TSClient.AngularJS/node_modules/angular-aria/angular-aria"
     });
 
     dependencyManager.registerFileDependency({
         name: "angular-material",
-        path: "bit-framework/src/TypeScriptClient/Bit.TSClient.AngularJS.Tests/bower_components/angular-material/angular-material"
+        path: "bit-framework/src/TypeScriptClient/Bit.TSClient.AngularJS/node_modules/angular-material/angular-material"
     });
 
     dependencyManager.registerFileDependency({
         name: "angular-messages",
-        path: "bit-framework/src/TypeScriptClient/Bit.TSClient.AngularJS.Tests/bower_components/angular-messages/angular-messages"
+        path: "bit-framework/src/TypeScriptClient/Bit.TSClient.AngularJS/node_modules/angular-messages/angular-messages"
     });
 
     dependencyManager.registerFileDependency({
         name: "angular-translate",
-        path: "bit-framework/src/TypeScriptClient/Bit.TSClient.AngularJS.Tests/bower_components/angular-translate/angular-translate"
+        path: "bit-framework/src/TypeScriptClient/Bit.TSClient.AngularJS/node_modules/angular-translate/dist/angular-translate"
     });
 
     dependencyManager.registerFileDependency({
         name: "persian-date",
-        path: "bit-framework/src/TypeScriptClient/Bit.TSClient.AngularJS.Tests/bower_components/persian-date/dist/0.1.8/persian-date-0.1.8",
+        path: "bit-framework/src/TypeScriptClient/Bit.TSClient.AngularJS/node_modules/@bit/persian-date/dist/persian-date",
         predicate: (appInfo) => appInfo.culture == "FaIr"
     });
 
     dependencyManager.registerFileDependency({
         name: "persian-date-picker",
-        path: "bit-framework/src/TypeScriptClient/Bit.TSClient.AngularJS.Tests/bower_components/persian-datepicker/dist/js/persian-datepicker-0.4.9",
+        path: "bit-framework/src/TypeScriptClient/Bit.TSClient.AngularJS/node_modules/@bit/persian-date-picker/dist/js/persian-date-picker",
         predicate: (appInfo) => appInfo.culture == "FaIr"
     });
 
     dependencyManager.registerFileDependency({
         name: "jasmine",
-        path: "bit-framework/src/TypeScriptClient/Bit.TSClient.AngularJS.Tests/bower_components/jasmine-core/lib/jasmine-core/jasmine"
+        path: "bit-framework/src/TypeScriptClient/Bit.TSClient.AngularJS.Test/node_modules/jasmine-core/lib/jasmine-core/jasmine"
     });
 
     dependencyManager.registerFileDependency({
         name: "jasmine-jquery",
-        path: "bit-framework/src/TypeScriptClient/Bit.TSClient.AngularJS.Tests/bower_components/jasmine-jquery/lib/jasmine-jquery",
+        path: "bit-framework/src/TypeScriptClient/Bit.TSClient.AngularJS.Test/node_modules/jasmine-jquery/lib/jasmine-jquery",
         loadTime: "Defered"
     });
 
     dependencyManager.registerFileDependency({
         name: "signalR",
-        path: "bit-framework/src/TypeScriptClient/Bit.TSClient.AngularJS.Tests/bower_components/signalr/jquery.signalR"
+        path: "bit-framework/src/TypeScriptClient/Bit.TSClient.Core/node_modules/signalr/jquery.signalR"
     });
 
     dependencyManager.registerFileDependency({
         name: "pubsub-js",
-        path: "bit-framework/src/TypeScriptClient/Bit.TSClient.AngularJS.Tests/bower_components/pubsub-js/src/pubsub"
+        path: "bit-framework/src/TypeScriptClient/Bit.TSClient.Core/node_modules/pubsub-js/src/pubsub"
     });
 
     dependencyManager.registerFileDependency({
         name: "decimaljs",
-        path: "bit-framework/src/TypeScriptClient/Bit.TSClient.AngularJS.Tests/bower_components/decimal.js/decimal"
+        path: "bit-framework/src/TypeScriptClient/Bit.TSClient.Core/node_modules/decimal.js/decimal"
     });
 
     dependencyManager.registerFileDependency({

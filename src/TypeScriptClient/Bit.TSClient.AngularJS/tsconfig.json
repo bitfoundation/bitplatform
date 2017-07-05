@@ -15,5 +15,5 @@
     "removeComments": false,
     "typeRoots": [ "node_modules\\@types", "..\\Bit.TSClient.Core\\node_modules\\@types" ]
   },
-  "exclude": [ "bit.ng1.d.ts", "node_modules", "bower_components", "bin", "obj" ]
+  "exclude": [ "bit.ng1.d.ts", "node_modules", "bin", "obj" ]
 }
