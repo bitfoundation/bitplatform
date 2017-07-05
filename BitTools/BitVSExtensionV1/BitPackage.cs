@@ -76,21 +76,15 @@ namespace BitVSExtensionV1
                 return;
             }
 
-            _outputWindow = (OutputWindow)outputWindow.Object;
-
-            if (!_outputWindow.OutputWindowPanes.Cast<OutputWindowPane>().Any(x => x.Name == BitVSExtensionName))
-            {
-                _outputWindow.OutputWindowPanes.Add(BitVSExtensionName);
-            }
-
             try
             {
-                _outputPane = _outputWindow.OutputWindowPanes.Cast<OutputWindowPane>()
-                    .ExtendedSingle("Finding bit output pane", x => x.Name == BitVSExtensionName);
+                _outputWindow = (OutputWindow)outputWindow.Object;
+
+                _outputPane = _outputWindow.OutputWindowPanes.Cast<OutputWindowPane>().ExtendedSingleOrDefault("Finding output pane", x => x.Name == BitVSExtensionName) ?? _outputWindow.OutputWindowPanes.Add(BitVSExtensionName);
             }
             catch (Exception ex)
             {
-                ShowInitialLoadProblem(ex.Message);
+                ShowInitialLoadProblem($"Error finding output pane {ex}.");
                 return;
             }
 
@@ -127,8 +121,6 @@ namespace BitVSExtensionV1
             _applicationObject.Events.BuildEvents.OnBuildProjConfigDone += _buildEvents_OnBuildProjConfigDone;
             _applicationObject.Events.BuildEvents.OnBuildDone += _buildEvents_OnBuildDone;
             _applicationObject.Events.BuildEvents.OnBuildBegin += _buildEvents_OnBuildBegin;
-
-            await DoOnSolutionReadyOrChange();
         }
 
         private void GetWorkspace()
@@ -145,16 +137,6 @@ namespace BitVSExtensionV1
 
         private async Task DoOnSolutionReadyOrChange()
         {
-            int tryCount = 0;
-
-            while (!File.Exists(_workspace.CurrentSolution.FilePath))
-            {
-                if (tryCount == 60)
-                    break;
-                tryCount++;
-                await Task.Delay(1000);
-            }
-
             if (!File.Exists(_workspace.CurrentSolution.FilePath))
             {
                 LogWarn("Could not find solution.");
@@ -178,12 +160,12 @@ namespace BitVSExtensionV1
             {
                 config = configProvider.GetConfiguration(_workspace.CurrentSolution, Enumerable.Empty<Project>().ToList());
 
-                foreach (var mapping in config.BitCodeGeneratorConfigs.BitCodeGeneratorMappings)
+                foreach (BitCodeGeneratorMapping mapping in config.BitCodeGeneratorConfigs.BitCodeGeneratorMappings)
                 {
                     if (!_workspace.CurrentSolution.Projects.Any(p => p.Name == mapping.DestinationProject.Name))
                         throw new InvalidOperationException($"No project found named {mapping.DestinationProject.Name}");
 
-                    foreach (var proj in mapping.SourceProjects)
+                    foreach (BitTools.Core.Model.ProjectInfo proj in mapping.SourceProjects)
                     {
                         if (!_workspace.CurrentSolution.Projects.Any(p => p.Name == proj.Name))
                             throw new InvalidOperationException($"No project found named {proj.Name}");
@@ -193,10 +175,8 @@ namespace BitVSExtensionV1
             catch (Exception ex)
             {
                 LogException("Parse BitConfigV1.json failed.", ex);
-            }
-
-            if (config == null)
                 return;
+            }
 
             try
             {
@@ -336,7 +316,7 @@ namespace BitVSExtensionV1
                 return;
 
             Project proj = _workspace.CurrentSolution.Projects
-            .ExtendedSingle($"Lookin for {project} in [ {(string.Join(",", _workspace.CurrentSolution.Projects.Select(prj => prj.Name)))} ]", prj => prj.Language == "C#" && Path.GetFileName(prj.FilePath) == project.Split('\\').Last());
+                                .ExtendedSingle($"Lookin for {project} in [ {(string.Join(",", _workspace.CurrentSolution.Projects.Select(prj => prj.Name)))} ]", prj => prj.Language == "C#" && Path.GetFileName(prj.FilePath) == project.Split('\\').Last());
 
             if (proj != null)
             {
