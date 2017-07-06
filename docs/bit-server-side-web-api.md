@@ -63,6 +63,7 @@ Read [first part of "Swagger and ASP.NET Web API"](http://wmpratt.com/swagger-an
 Differences between our sample (2WebApiSwagger project) and that article:
 
 1- There is no App_Start folder. This is a ASP.NET thing.
+
 2- In following code:
 
 ```csharp
@@ -71,14 +72,17 @@ GlobalConfiguration.Configuration
   .EnableSwaggerUi();
 ```
 
-[GlobalConfiguration](https://msdn.microsoft.com/en-us/library/system.web.http.globalconfiguration(v=vs.118).aspx) uses ASP.NET pipeline directly and it does not work on ASP.NET Core. But bit's config works on both ASP.NET & ASP.NET Core.
+[GlobalConfiguration](https://msdn.microsoft.com/en-us/library/system.web.http.globalconfiguration.aspx) uses ASP.NET pipeline directly and it does not work on ASP.NET Core. But bit's config works on both ASP.NET & ASP.NET Core.
+
 3- Instead of adding Swashbuckle package, you've to install Swashbuckle.Core package. Swashbuckle package relys on ASP.NET pipeline and it does not work on ASP.NET Core. But our code works on both.
+
 4- In following code:
 ```csharp
 c.IncludeXmlComments(string.Format(@"{0}\bin\SwaggerDemoApi.XML",           
                            System.AppDomain.CurrentDomain.BaseDirectory));
 ```
-We use DefaultPathProvider.Current.GetCurrentAppPath() instead of System.AppDomain.CurrentDomain.BaseDirectory which works fine on both ASP.NET/ASP.NET Core. We also use Path.Combine which works fine on linux servers instead of string.Format & \ charecter usage.
+We use #DefaultPathProvider.Current.GetCurrentAppPath()# instead of #System.AppDomain.CurrentDomain.BaseDirectory# which works fine on both ASP.NET/ASP.NET Core. We also use Path.Combine which works fine on linux servers instead of string.Format & \ charecter usage.
+
 5- We've following code which has no equivalent in article codes:
 ```csharp
 c.RootUrl(req => new Uri(req.RequestUri, req.GetOwinContext().Request.PathBase.Value /* /api */).ToString());
