@@ -11,7 +11,7 @@ using System.Collections.Generic;
 using System.Net.Http;
 using System.Web.Http;
 
-namespace WebApiSelfHostSample
+namespace SimpeWebApi
 {
     public class Program
     {
@@ -113,7 +113,7 @@ namespace WebApiSelfHostSample
 
                     childDependencyManager.RegisterGlobalWebApiCustomizerUsing(httpConfiguration =>
                     {
-
+                        // You've access to web api's http configuration here
                     });
 
                 }).Resolve<IOwinMiddlewareConfiguration>("WebApi");

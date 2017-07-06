@@ -4,11 +4,11 @@ Web API is a powerful library to develop rest api in .NET world. If you're not f
 
 Using bit you'll get more benefits from web api. This includes following:
 
-1. We've configured web api on top of [owin](http://owin.org). Owin stands for "Open web interface for .NET". We've developed codes to make you're app up & running on following workloads:
+1. We've configured web api on top of [owin](http://owin.org). Owin stands for "Open web interface for .NET". We've developed codes to make sure your app works well on following workloads:
     - ASP.NET/IIS on windows server & azure web/app services
     - ASP.NET Core/Kestrel on Windows & Linux Servers
     - Self host windows services & azure web jobs
-2. We've configured web api on top of [asp.net core/owin branching](https://docs.microsoft.com/en-us/aspnet/core/fundamentals/middleware). Think about something as fast as node js & power of .NET (-:
+2. We've configured web api on top of [asp.net core/owin branching](https://docs.microsoft.com/en-us/aspnet/core/fundamentals/middleware). Think about something as fast as node js with power of .NET (-:
 3. We've developed roslyn analyzers to warn you about codes that won't work on ASP.NET Core.
 4. We've developed extensive logging infrastructure in bit framework. It logs everything for you in your app, including web api traces.
 5. We've configured headers like [X-Content-Type-Options](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/X-Content-Type-Options), [X-CorrelationId](http://theburningmonk.com/2015/05/a-consistent-approach-to-track-correlation-ids-through-microservices/) etc. We've done this to improve you logging, security etc.
@@ -21,7 +21,7 @@ After installing [git for windows](https://git-scm.com/download/win) you can run
 git clone https://github.com/bit-foundation/bit-framework.git
 ```
 
-Then open Samples\WebApiSamples\WebApiSamples.sln
+Then open Samples\WebApiSamples\WebApiSamples.sln, then go to 1SimpleWebApi sample.
 
 There are several classes there. Program and ValuesController are get copied from[this microsoft docs article](https://docs.microsoft.com/en-us/aspnet/web-api/overview/hosting-aspnet-web-api/use-owin-to-self-host-web-api). It's a good idea to read that article first.
 
@@ -54,14 +54,49 @@ Note that security samples can be found under [Bit Identity Server](/bit-identit
 
 ## Samples:
 
+### Web API - Swagger configuration
+
+Swagger is the World's Most Popular API Tooling. Using this sample you can findout how to customize web api in bit.
+
+Read [first part of "Swagger and ASP.NET Web API"](http://wmpratt.com/swagger-and-asp-net-web-api-part-1/). We follow the second part in [Bit Identity Server](/bit-identity-server.md).
+
+Differences between our sample (2WebApiSwagger project) and that article:
+
+1- There is no App_Start folder. This is a ASP.NET thing.
+2- In following code:
+
+```csharp
+GlobalConfiguration.Configuration
+  .EnableSwagger(c => c.SingleApiVersion("v1", "A title for your API"))
+  .EnableSwaggerUi();
+```
+
+[GlobalConfiguration](https://msdn.microsoft.com/en-us/library/system.web.http.globalconfiguration(v=vs.118).aspx) uses ASP.NET pipeline directly and it does not work on ASP.NET Core. But bit's config works on both ASP.NET & ASP.NET Core.
+3- Instead of adding Swashbuckle package, you've to install Swashbuckle.Core package. Swashbuckle package relys on ASP.NET pipeline and it does not work on ASP.NET Core. But our code works on both.
+4- In following code:
+```csharp
+c.IncludeXmlComments(string.Format(@"{0}\bin\SwaggerDemoApi.XML",           
+                           System.AppDomain.CurrentDomain.BaseDirectory));
+```
+We use DefaultPathProvider.Current.GetCurrentAppPath() instead of System.AppDomain.CurrentDomain.BaseDirectory which works fine on both ASP.NET/ASP.NET Core. We also use Path.Combine which works fine on linux servers instead of string.Format & \ charecter usage.
+5- We've following code which has no equivalent in article codes:
+```csharp
+c.RootUrl(req => new Uri(req.RequestUri, req.GetOwinContext().Request.PathBase.Value /* /api */).ToString());
+```
+As you see in article, you open swgger ui by opening http://localhost:51609/swagger/ but in bit's sample you open http://localhost:9000/api/swagger/. You open /swagger under /api. This is a magic of owin/asp.net core's request branching. That improves your app performance a lot, because instead of passing all requests (even signalr and file requests) to swagger, you pass /api requests to swagger which is a expected behavior. That line of codes is telling where is swagger is hosted as it is not aware of that magic.
+
+So run the second sample and you're good to go (-:
+
 ### Web API file upload/download sample
 
 Using this sample, you'll findout several important concepts, from async/await to ASP.NET Core friendly development.
 
 Comming soon.
 
-### Web API - Swagger configuration
+### All code toghether on ASP.NET
 
-Swagger is the World's Most Popular API Tooling. Using this sample you can findout how to customize web api in bit.
+Comming soon.
+
+### All code together on ASP.NET Core
 
 Comming soon.
