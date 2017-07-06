@@ -25,7 +25,6 @@ namespace WebApiSwagger
         {
             string baseAddress = "http://localhost:9000/";
 
-            // Start OWIN host 
             using (WebApp.Start<AppStartup>(url: baseAddress))
             {
                 Console.WriteLine("Open http://localhost:9000/api/swagger/");
