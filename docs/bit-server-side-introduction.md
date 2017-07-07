@@ -2,7 +2,7 @@
 
 You can develop server side of your apps using Bit framework.
 
-You can develop your app based on [Traditional ASP.NET](https://www.asp.net/) or [ASP.NET Core](https://docs.microsoft.com/en-us/aspnet/core/) \(With [Full .NET Framework](https://www.microsoft.com/net)\). ASP.NET Core with [.NET Core](https://www.microsoft.com/net/core) support will be added in near future. You can track that by following [this issue.](https://github.com/bit-foundation/bit-framework/issues/59)
+Your app can be hosted on [Traditional ASP.NET](https://www.asp.net/) or [ASP.NET Core](https://docs.microsoft.com/en-us/aspnet/core/) \(With [Full .NET Framework](https://www.microsoft.com/net)\). ASP.NET Core with [.NET Core](https://www.microsoft.com/net/core) support will be added in near future. You can track that by following [this issue.](https://github.com/bit-foundation/bit-framework/issues/59)
 
 By the abstraction we provide to you, your develop no matter you choose ASP.NET Core, ASP.NET Traditional or ASP.NET Core with .NET Core. You develop on ASP.NET Core the same way as you develop on ASP.NET Traditional. Only configurations between those platforms are different.
 
@@ -23,4 +23,4 @@ We've some C\# analyzers to detect your codes which are not compatible with ASP.
 * Integrated Logging infrastructure
 * , ...
 
-Remember that you can use whatever you want. You're not limited to what we provide to you. For example in API-OData section, we show you how to use Web API first. Because most people are familiar with that already. Then we show you how better can be in bit world.
+Remember that you can use whatever you want. You're not limited to what we provide to you.

@@ -4,7 +4,7 @@ Web API is a powerful library to develop rest api in .NET world. If you're not f
 
 Using bit you'll get more benefits from web api. This includes following:
 
-1. We've configured web api on top of [owin](http://owin.org). Owin stands for "Open web interface for .NET". We've developed codes to make sure your app works well on following workloads:
+1. We've configured web api on top of [owin](http://owin.org). Owin stands for "Open web interface for .NET" and allows your code to work almost anywhere. We've developed extra codes to make sure your app works well on following workloads:
     - ASP.NET/IIS on windows server & azure web/app services
     - ASP.NET Core/Kestrel on Windows & Linux Servers
     - Self host windows services & azure web jobs
@@ -21,9 +21,9 @@ After installing [git for windows](https://git-scm.com/download/win) you can run
 git clone https://github.com/bit-foundation/bit-framework.git
 ```
 
-Then open Samples\WebApiSamples\WebApiSamples.sln, then go to 1SimpleWebApi sample.
+Then open Samples\WebApiSamples\WebApiSamples.sln, then go to 1SimpleWebApi project.
 
-There are several classes there. Program and ValuesController are get copied from[this microsoft docs article](https://docs.microsoft.com/en-us/aspnet/web-api/overview/hosting-aspnet-web-api/use-owin-to-self-host-web-api). It's a good idea to read that article first.
+There are several classes there. Program and ValuesController are get copied from [this microsoft docs article](https://docs.microsoft.com/en-us/aspnet/web-api/overview/hosting-aspnet-web-api/use-owin-to-self-host-web-api). It's a good idea to read that article first.
 
 For now, lets ingore the third class: "AppStartup".
 
@@ -98,11 +98,11 @@ The important thing you've to notice is "You don't have to use System.Web.dll cl
 
 By removing usages of that dll, you're going to make sure that your code works well on asp.net core too whenever you migrate your code (which can be done very easily using bit). So drop using #HttpContext.Current and all other members of System.Web.dll#
 
-Web API Attribute routing works fine in bit project, but instead of [Route("api/file-manager/upload")] or [RoutePrefix("api/file-manager")], you've to write [Route("file-manager/upload")] or [RoutePrefix("file-manager)], this means you should not write /api in your attribute routings. That's a side effect if branching, which improves you're app performance in turn.
+Web API Attribute routing works fine in bit project, but instead of [Route("api/file-manager/upload")] or [RoutePrefix("api/file-manager")], you've to write [Route("file-manager/upload")] or [RoutePrefix("file-manager)], this means you should not write /api in your attribute routings. That's a side effect of branching, which improves you're app performance in turn.
 
 Remember to use async/await and CancellationToken in your Web API codes at it improves your app overall scability.
 
-So open 3rd sample. It contains upload methods using Web API attribute routing. It uses async/await and CancellationToken and shows you how you can upload files to fodlers/database.
+So open 3rd sample. It contains upload methods using Web API attribute routing. It uses async/await and CancellationToken and shows you how you can upload files to folders/database.
 
 ### Web API - Swagger configuration on ASP.NET
 
