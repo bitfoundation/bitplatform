@@ -108,11 +108,11 @@ So open 3rd sample. It contains upload methods using Web API attribute routing. 
 
 In 4th project (4WebApiAspNetHost), you'll find a bit web api project hosted on ASP.NET/IIS.
 
-Differences between this project and previews projects:
+#### Differences between this project and previews projects:
 
 1- Instead of Microsoft.Owin.Host.HttpListener nuget package, we've installed Microsoft.Owin.Host.SystemWeb. Using first nuget packge, you can "self host" bit server side apps on windows services, console apps, azure job workers etc. Using second package, you can host bit server side apps on top of ASP.NET/IIS. All codes you've developed are the same (We've copied codes from 2WebApiSwagger project in fact).
 
-Differences between this project and normal asp.net web api project:
+#### Differences between this project and normal asp.net web api project:
 
 1- There is a key to introduce AppStartup class as following:
 
@@ -163,7 +163,7 @@ AppStartup is a class name & WebApiAspNetHost is a namespace. (Second one is ass
 <sessionState mode="Off" />
 ```
 
-By following configs, we've removed extra modules and handlers
+9- By following configs, we've removed extra modules and handlers
 
 ```xml
   <system.webServer>
@@ -201,7 +201,7 @@ By following configs, we've removed extra modules and handlers
 
 ### Web API - Configuration on ASP.NET Core
 
-Differences between this project and first project:
+#### Differences between this project and first project:
 
 1- Instead of Microsoft.Owin.Host.HttpListener nuget package, we've installed Bit.OwinCore. Using Bit.OwinCore, you can host your app on top of asp.net core. ASP.NET core apps can be hosted almost anywhere.
 
