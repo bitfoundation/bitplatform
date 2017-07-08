@@ -20,7 +20,7 @@
 
         private onMouseMove(e: MouseEvent) {
 
-            if ((this.direction == "Ltr" && e.clientX == 0) || (this.direction == "Rtl" && e.clientX == document.body.clientWidth - 1)) {
+            if ((this.direction == "Ltr" && e.clientX <= 5) || (this.direction == "Rtl" && e.clientX >= document.body.clientWidth - 5)) {
                 if (!this.$mdSidenavObject.isOpen()) {
                     this.$mdSidenavObject.open();
                 }
