@@ -6,31 +6,31 @@ module BitChangeSetManager {
 
     dependencyManager.registerFileDependency({
         name: "normalize",
-        path: "bower_components/normalize-css/normalize",
+        path: "node_modules/normalize-css/normalize",
         fileDependecyType: "Style"
     });
 
     dependencyManager.registerFileDependency({
         name: "angular-material-styles",
-        path: "bower_components/angular-material/angular-material",
+        path: "node_modules/angular-material/angular-material",
         fileDependecyType: "Style"
     });
 
     dependencyManager.registerFileDependency({
         name: "kendo-common-styles",
-        path: "bower_components/kendo-ui/styles/kendo.common.min",
+        path: "node_modules/@bit/kendo-ui-core/styles/kendo.common.min",
         fileDependecyType: "Style"
     });
 
     dependencyManager.registerFileDependency({
         name: "kendo-light-blue-theme-styles",
-        path: "bower_components/kendo-ui/styles/kendo.material.min",
+        path: "node_modules/@bit/kendo-ui-core/styles/kendo.material.min",
         fileDependecyType: "Style"
     });
 
     dependencyManager.registerFileDependency({
         name: "kendo-rtl-styles",
-        path: "bower_components/kendo-ui/styles/kendo.rtl.min",
+        path: "node_modules/@bit/kendo-ui-core/styles/kendo.rtl.min",
         predicate: (appInfo) => {
             return appInfo.screenSize == "DesktopAndTablet" && appInfo.culture == "FaIr";
         },
@@ -38,53 +38,53 @@ module BitChangeSetManager {
     });
 
     dependencyManager.registerFileDependency({
-        name: "persian-datePicker-styles",
-        path: "bower_components/persian-datepicker/dist/css/persian-datepicker-0.4.9",
+        name: "persian-date-picker-styles",
+        path: "node_modules/@bit/persian-date-picker/dist/css/persian-date-picker",
         fileDependecyType: "Style",
         predicate: (appInfo) => appInfo.culture == "FaIr"
     });
 
     dependencyManager.registerFileDependency({
-        name: "persian-datePicker-blue-styles",
-        path: "bower_components/persian-datepicker/dist/css/theme/persian-datepicker-blue",
+        name: "persian-date-picker-blue-styles",
+        path: "node_modules/@bit/persian-date-picker/dist/css/theme/persian-date-picker-blue",
         fileDependecyType: "Style",
         predicate: (appInfo) => appInfo.culture == "FaIr"
     });
 
     dependencyManager.registerFileDependency({
         name: "controls-styles",
-        path: "bower_components/bit-releases/typescript-client/contents/styles/controls",
+        path: "node_modules/@bit/bit-framework/contents/styles/controls",
         fileDependecyType: "Style"
     });
 
     dependencyManager.registerFileDependency({
         name: "light-blue-theme-custom-styles",
-        path: "bower_components/bit-releases/typescript-client/contents/styles/theme.light.blue",
+        path: "node_modules/@bit/bit-framework/contents/styles/theme.light.blue",
         fileDependecyType: "Style"
     });
 
     dependencyManager.registerFileDependency({
         name: "en-US-styles",
-        path: "bower_components/bit-releases/typescript-client/contents/styles/en-US",
+        path: "node_modules/@bit/bit-framework/contents/styles/en-US",
         fileDependecyType: "Style",
         predicate: appEnvProvider => appEnvProvider.culture == "EnUs"
     });
 
     dependencyManager.registerFileDependency({
         name: "fa-IR-styles",
-        path: "bower_components/bit-releases/typescript-client/contents/styles/fa-IR",
+        path: "node_modules/@bit/bit-framework/contents/styles/fa-IR",
         fileDependecyType: "Style",
         predicate: appEnvProvider => appEnvProvider.culture == "FaIr"
     });
 
     dependencyManager.registerFileDependency({
         name: "Core-js",
-        path: "bower_components/Core.js/client/Core"
+        path: "node_modules/Core-js/client/Core"
     });
 
     dependencyManager.registerFileDependency({
         name: "fetch",
-        path: "bower_components/fetch/fetch",
+        path: "node_modules/fetch/fetch",
         predicate: (appInfo) => {
             return typeof (fetch) == "undefined";
         }
@@ -92,12 +92,12 @@ module BitChangeSetManager {
 
     dependencyManager.registerFileDependency({
         name: "runtime",
-        path: "bower_components/regenerator/packages/regenerator-runtime/runtime"
+        path: "node_modules/regenerator-runtime/runtime"
     });
 
     dependencyManager.registerFileDependency({
         name: "jQuery",
-        path: "bower_components/jquery/dist/jquery",
+        path: "node_modules/jquery/dist/jquery",
         onLoad: () => {
             // For electron compatibility
             if (typeof window["require"] != 'undefined' && window["module"] != null && window["module"].exports != null) {
@@ -108,17 +108,17 @@ module BitChangeSetManager {
 
     dependencyManager.registerFileDependency({
         name: "angular",
-        path: "bower_components/angular/angular"
+        path: "node_modules/angular/angular"
     });
 
     dependencyManager.registerFileDependency({
         name: "kendo-ui-web",
-        path: "bower_components/kendo-ui/js/kendo.web.min"
+        path: "node_modules/@bit/kendo-ui-core/js/kendo.web.min"
     });
 
     dependencyManager.registerFileDependency({
         name: "kendo-culture-fa-IR",
-        path: "bower_components/kendo-ui/js/cultures/kendo.culture.fa-IR.min",
+        path: "node_modules/@bit/kendo-ui-core/js/cultures/kendo.culture.fa-IR.min",
         predicate: (appInfo) => {
             return appInfo.screenSize == "DesktopAndTablet" && appInfo.culture == "FaIr";
         }
@@ -126,7 +126,7 @@ module BitChangeSetManager {
 
     dependencyManager.registerFileDependency({
         name: "kendo-messages-fa-IR",
-        path: "bower_components/kendo-ui/js/messages/kendo.messages.fa-IR.min",
+        path: "node_modules/@bit/kendo-ui-core/js/messages/kendo.messages.fa-IR.min",
         continueOnError: true,
         predicate: (appInfo) => {
             return appInfo.screenSize == "DesktopAndTablet" && appInfo.culture == "FaIr";
@@ -135,99 +135,99 @@ module BitChangeSetManager {
 
     dependencyManager.registerFileDependency({
         name: "odataJS",
-        path: "bower_components/olingo-odatajs/odatajs"
+        path: "node_modules/@bit/olingo-odatajs/odatajs"
     });
 
     dependencyManager.registerFileDependency({
         name: "jayData",
-        path: "bower_components/jaydata/dist/jaydata"
+        path: "node_modules/@bit/jaydata/jaydata"
     });
 
     dependencyManager.registerFileDependency({
         name: "jayData-inMemory-provider",
-        path: "bower_components/jaydata/dist/jaydataproviders/InMemoryProvider"
+        path: "node_modules/@bit/jaydata/jaydataproviders/InMemoryProvider"
     });
 
     dependencyManager.registerFileDependency({
         name: "jayData-odata-provider",
-        path: "bower_components/jaydata/dist/jaydataproviders/oDataProvider"
+        path: "node_modules/@bit/jaydata/jaydataproviders/oDataProvider"
     });
 
     dependencyManager.registerFileDependency({
         name: "jayData-indexedDb-provider",
-        path: "bower_components/jaydata/dist/jaydataproviders/indexedDbProvider"
+        path: "node_modules/@bit/jaydata/jaydataproviders/indexedDbProvider"
     });
 
     dependencyManager.registerFileDependency({
         name: "jayData-kendo-module",
-        path: "bower_components/jaydata/dist/jaydatamodules/kendo"
+        path: "node_modules/@bit/jaydata/jaydatamodules/kendo"
     });
 
     dependencyManager.registerFileDependency({
         name: "jayData-inmemroy-module",
-        path: "bower_components/jaydata/dist/jaydatamodules/inmemory"
+        path: "node_modules/@bit/jaydata/jaydatamodules/inmemory"
     });
 
     dependencyManager.registerFileDependency({
         name: "ng-component-router",
-        path: "bower_components/ngComponentRouter/angular_1_router"
+        path: "node_modules/ngComponentRouter/angular_1_router"
     });
 
     dependencyManager.registerFileDependency({
         name: "angular-animate",
-        path: "bower_components/angular-animate/angular-animate"
+        path: "node_modules/angular-animate/angular-animate"
     });
 
     dependencyManager.registerFileDependency({
         name: "angular-area",
-        path: "bower_components/angular-aria/angular-aria"
+        path: "node_modules/angular-aria/angular-aria"
     });
 
     dependencyManager.registerFileDependency({
         name: "angular-material",
-        path: "bower_components/angular-material/angular-material"
+        path: "node_modules/angular-material/angular-material"
     });
 
     dependencyManager.registerFileDependency({
         name: "angular-messages",
-        path: "bower_components/angular-messages/angular-messages"
+        path: "node_modules/angular-messages/angular-messages"
     });
 
     dependencyManager.registerFileDependency({
         name: "angular-translate",
-        path: "bower_components/angular-translate/angular-translate"
+        path: "node_modules/angular-translate/dist/angular-translate"
     });
 
     dependencyManager.registerFileDependency({
         name: "persian-date",
-        path: "bower_components/persian-date/dist/0.1.8/persian-date-0.1.8",
+        path: "node_modules/@bit/persian-date/dist/persian-date",
         predicate: (appInfo) => appInfo.culture == "FaIr"
     });
 
     dependencyManager.registerFileDependency({
         name: "persian-date-picker",
-        path: "bower_components/persian-datepicker/dist/js/persian-datepicker-0.4.9",
+        path: "node_modules/@bit/persian-date-picker/dist/js/persian-date-picker",
         predicate: (appInfo) => appInfo.culture == "FaIr"
     });
 
     dependencyManager.registerFileDependency({
         name: "signalR",
-        path: "bower_components/signalr/jquery.signalR"
-    });
-
-    dependencyManager.registerFileDependency({
-        name: "decimaljs",
-        path: "bower_components/decimal.js/decimal"
+        path: "node_modules/signalr/jquery.signalR"
     });
 
     dependencyManager.registerFileDependency({
         name: "pubsub-js",
-        path: "bower_components/pubsub-js/src/pubsub"
+        path: "node_modules/pubsub-js/src/pubsub"
+    });
+
+    dependencyManager.registerFileDependency({
+        name: "decimaljs",
+        path: "node_modules/decimal.js/decimal"
     });
 
     dependencyManager.registerFileDependency({
         name: "bit-model-context",
-        path: "bower_components/bit-releases/typescript-client/Bit.Model.Context"
+        path: "node_modules/@bit/bit-framework/Bit.Model.Context"
     });
 
     dependencyManager.registerFileDependency({

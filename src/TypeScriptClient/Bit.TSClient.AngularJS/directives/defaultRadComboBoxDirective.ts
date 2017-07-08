@@ -134,7 +134,8 @@ module Bit.Directives {
                             if (lookup.BaseFilter_JS != null) {
                                 let originalRead = this.originalDataSourceTransportRead;
                                 this.dataSource['transport'].read = function (options) {
-                                    options.lookupBaseFilter = lookup.BaseFilter_JS;
+                                    options.data = options.data || {};
+                                    options.data.lookupBaseFilter = lookup.BaseFilter_JS;
                                     return originalRead.apply(this, arguments);
                                 }
                             }
@@ -176,7 +177,9 @@ module Bit.Directives {
                 suggest: true,
                 highlightFirst: true,
                 change: (e) => {
-                    this.dataSource.onCurrentChanged();
+                    setTimeout(() => {
+                        this.dataSource.current = this.getCurrent();
+                    }, 0);
                 },
                 open: (e) => {
                     if (e.sender.options.autoBind == false && this.$attrs.radText != null) {
@@ -184,6 +187,9 @@ module Bit.Directives {
                         if (e.sender.options.dataSource.flatView().length == 0)
                             (e.sender.options.dataSource as kendo.data.DataSource).fetch();
                     }
+                },
+                dataBound: (e) => {
+                    this.syncCurrent();
                 },
                 delay: 300,
                 popup: {
@@ -288,48 +294,61 @@ module Bit.Directives {
                 comboBox.wrapper.bind("focusin", this.onComboFocusIn.bind(this));
             }
 
-            Object.defineProperty(this.dataSource, "current", {
-                configurable: true,
-                enumerable: false,
-                get: () => {
+            this.dataSource["setHandlers"] = this.dataSource["setHandlers"] || [];
 
-                    let newCurrent = null;
+            this.syncCurrent();
 
-                    const dataItem = comboBox.dataItem();
+            this.dataSource["setHandlers"].push(this.setCurrent.bind(this));
+        }
 
-                    if (dataItem == null)
-                        newCurrent = null;
-                    else
-                        newCurrent = dataItem.innerInstance != null ? dataItem.innerInstance() : dataItem;
+        public syncCurrent() {
+            if (this.dataSource.current == null && this.getCurrent() != null)
+                this.dataSource["_current"] = this.getCurrent();
+            if (this.dataSource.current != null && this.getCurrent() == null)
+                this.setCurrent(this.dataSource.current as $data.Entity);
+        }
 
-                    if (newCurrent == null && this.$attrs.radText != null && !this.ngModel.$isEmpty(comboBox.value()) && comboBox.options.autoBind == false) {
-                        newCurrent = {};
-                        newCurrent[this.radValueFieldName] = comboBox.value();
-                        newCurrent[this.radTextFieldName] = this.radTextValue;
-                    };
+        public setCurrent(entity: $data.Entity) {
 
-                    return newCurrent;
-                },
-                set: (entity: $data.Entity) => {
+            let comboBox = this.comboBox;
 
-                    let value = null;
+            let value = null;
 
-                    if (entity != null) {
-                        value = entity[this.radValueFieldName];
-                    }
+            if (entity != null) {
+                value = entity[this.radValueFieldName];
+            }
 
-                    if (comboBox.value() != value)
-                        comboBox.value(value);
+            if (comboBox.value() != value)
+                comboBox.value(value);
 
-                    if (this.ngModel.$isEmpty(value) && !this.ngModel.$isEmpty(comboBox.text()))
-                        comboBox.text(null);
+            if (this.ngModel.$isEmpty(value) && !this.ngModel.$isEmpty(comboBox.text()))
+                comboBox.text(null);
 
-                    this.ngModelValue = value;
-
-                    this.dataSource.onCurrentChanged();
-                }
+            this.$scope.$applyAsync(() => {
+                this.ngModelValue = value;
             });
+        }
 
+        public getCurrent() {
+
+            let comboBox = this.comboBox;
+
+            let newCurrent = null;
+
+            const dataItem = comboBox.dataItem();
+
+            if (dataItem == null)
+                newCurrent = null;
+            else
+                newCurrent = dataItem.innerInstance != null ? dataItem.innerInstance() : dataItem;
+
+            if (newCurrent == null && this.$attrs.radText != null && !this.ngModel.$isEmpty(comboBox.value()) && comboBox.options.autoBind == false) {
+                newCurrent = {};
+                newCurrent[this.radValueFieldName] = comboBox.value();
+                newCurrent[this.radTextFieldName] = this.radTextValue;
+            };
+
+            return newCurrent;
         }
 
         public onComboFocusIn() {
@@ -341,7 +360,7 @@ module Bit.Directives {
         public $onDestroy() {
             if (this.dataSource != null) {
                 this.dataSource['transport'].read = this.originalDataSourceTransportRead;
-                delete this.dataSource.current;
+                this.dataSource["setHandlers"].splice(this.dataSource["setHandlers"].indexOf(this.setCurrent), 1);
             }
             if (this.comboBox != null) {
                 this.comboBox.wrapper.unbind("focusin", this.onComboFocusIn);

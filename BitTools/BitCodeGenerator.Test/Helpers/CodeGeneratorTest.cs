@@ -51,7 +51,7 @@ namespace BitCodeGenerator.Test.Helpers
 
             MSBuildWorkspace workspace = MSBuildWorkspace.Create();
 
-            await workspace.OpenSolutionAsync(solutionPath, CancellationToken.None);
+            await workspace.OpenSolutionAsync(solutionPath);
 
             return workspace;
         }

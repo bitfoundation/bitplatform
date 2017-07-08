@@ -11,8 +11,6 @@ namespace Bit.Owin.Implementations.Metadata
     public class DefaultDtoMetadataBuilder<TDto> : DefaultMetadataBuilder, IDtoMetadataBuilder<TDto>
         where TDto : class
     {
-        private static readonly JavascriptCompilationOptions options = new JavascriptCompilationOptions(JsCompilationFlags.BodyOnly, scriptVersion: ScriptVersion.Es70, extensions: new JavascriptConversionExtension[] { new LinqMethods(), new StaticStringMethods(), new StaticMathMethods(), new EnumConversionExtension(EnumOptions.UseStrings) });
-
         private DtoMetadata _dtoMetadata;
 
         public virtual IDtoMetadataBuilder<TDto> AddDtoMetadata(DtoMetadata metadata)
@@ -54,14 +52,23 @@ namespace Bit.Owin.Implementations.Metadata
 
             if (baseFilter != null)
             {
-                if (baseFilter.Parameters.Single().Name != "it")
-                    throw new Exception("base filter's parameter name must be 'it'. For example it => it.Id == 1");
-                lookup.BaseFilter_JS = baseFilter.CompileToJavascript(options);
+                lookup.BaseFilter_JS = BuildLookupJsFilterFromLambdaExpression(baseFilter, lookup);
             }
 
             _dtoMetadata.MembersLookups.Add(lookup);
 
             return this;
+        }
+
+        protected virtual JavascriptCompilationOptions JavascriptCompilationOptions => new JavascriptCompilationOptions(JsCompilationFlags.BodyOnly, scriptVersion: ScriptVersion.Es70, extensions: new JavascriptConversionExtension[] { new LinqMethods(), new StaticStringMethods(), new StaticMathMethods(), new EnumConversionExtension(EnumOptions.UseStrings) });
+
+        protected virtual string BuildLookupJsFilterFromLambdaExpression<TLookupDto>(Expression<Func<TLookupDto, bool>> baseFilter, DtoMemberLookup lookup)
+            where TLookupDto : class
+        {
+            if (baseFilter.Parameters.Single().Name != "it")
+                throw new Exception("base filter's parameter name must be 'it'. For example it => it.Id == 1");
+
+            return baseFilter.CompileToJavascript(JavascriptCompilationOptions);
         }
 
         public virtual IDtoMetadataBuilder<TDto> AddMemberMetadata(string memberName, DtoMemberMetadata metadata)

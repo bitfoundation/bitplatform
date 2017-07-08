@@ -1,6 +1,6 @@
 ﻿using Bit.Core.Contracts;
-using Bit.Signalr.Middlewares.Signalr;
-using Bit.Signalr.Middlewares.Signalr.Implementations;
+using Bit.Signalr;
+using Bit.Signalr.Implementations;
 using BitChangeSetManager.DataAccess;
 using BitChangeSetManager.Model;
 using System;

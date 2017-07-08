@@ -25,7 +25,7 @@ namespace Bit.Tests.HtmlClient.ViewModel.Implementation
 
                 using (RemoteWebDriver driver = testEnvironment.Server.GetWebDriver(new RemoteWebDriverOptions { Token = token }))
                 {
-                    driver.NavigateToRoute("simple-page");
+                    await driver.NavigateToRoute("simple-page");
 
                     Assert.AreEqual("12=12", driver.GetElementById("test").GetAttribute("innerText"));
                 }
@@ -42,9 +42,9 @@ namespace Bit.Tests.HtmlClient.ViewModel.Implementation
 
                 using (RemoteWebDriver driver = testEnvironment.Server.GetWebDriver(new RemoteWebDriverOptions { Token = token }))
                 {
-                    driver.NavigateToRoute("route-parameter-page/value");
+                    await driver.NavigateToRoute("route-parameter-page/value");
 
-                    driver.WaitForCondition(d => d.Title == "value");
+                    await driver.WaitForCondition(d => d.Title == "value");
                 }
             }
         }
@@ -59,7 +59,7 @@ namespace Bit.Tests.HtmlClient.ViewModel.Implementation
 
                 using (RemoteWebDriver driver = testEnvironment.Server.GetWebDriver(new RemoteWebDriverOptions { Token = token }))
                 {
-                    driver.NavigateToRoute("nested-route-page");
+                    await driver.NavigateToRoute("nested-route-page");
 
                     driver.GetElementById("gotonextpart").Click();
 
@@ -78,9 +78,9 @@ namespace Bit.Tests.HtmlClient.ViewModel.Implementation
 
                 using (RemoteWebDriver driver = testEnvironment.Server.GetWebDriver(new RemoteWebDriverOptions { Token = token }))
                 {
-                    driver.NavigateToRoute("angular-service-usage-page");
+                    await driver.NavigateToRoute("angular-service-usage-page");
 
-                    driver.WaitForCondition(d => d.Title == "done");
+                    await driver.WaitForCondition(d => d.Title == "done");
                 }
             }
         }
@@ -95,11 +95,11 @@ namespace Bit.Tests.HtmlClient.ViewModel.Implementation
 
                 using (RemoteWebDriver driver = testEnvironment.Server.GetWebDriver(new RemoteWebDriverOptions { Token = token }))
                 {
-                    driver.NavigateToRoute("entity-context-usage-page");
+                    await driver.NavigateToRoute("entity-context-usage-page");
 
                     IWebElement label = driver.GetElementById("test");
 
-                    driver.WaitForCondition(d => label.Text == "32=32");
+                    await driver.WaitForCondition(d => label.Text == "32=32");
                 }
             }
         }
@@ -114,9 +114,9 @@ namespace Bit.Tests.HtmlClient.ViewModel.Implementation
 
                 using (RemoteWebDriver driver = testEnvironment.Server.GetWebDriver(new RemoteWebDriverOptions { Token = token }))
                 {
-                    driver.NavigateToRoute("async-page");
+                    await driver.NavigateToRoute("async-page");
 
-                    driver.ExecuteTest("Bit.Tests.Implementations.Tests.AngularAppInitializationTests.testAsyncFormViewModel");
+                    await driver.ExecuteTest("Bit.Tests.Implementations.Tests.AngularAppInitializationTests.testAsyncFormViewModel");
                 }
 
                 TestModelsController testModelsController = TestDependencyManager.CurrentTestDependencyManager.Objects
@@ -138,7 +138,7 @@ namespace Bit.Tests.HtmlClient.ViewModel.Implementation
 
                 using (RemoteWebDriver driver = testEnvironment.Server.GetWebDriver(new RemoteWebDriverOptions { Token = token }))
                 {
-                    driver.WaitForCondition(d => d.Title == "Nested View");
+                    await driver.WaitForCondition(d => d.Title == "Nested View");
 
                     Assert.AreEqual("Nested View", driver.Title);
 

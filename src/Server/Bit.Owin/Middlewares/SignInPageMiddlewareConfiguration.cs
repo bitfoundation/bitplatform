@@ -33,7 +33,7 @@ namespace Bit.Owin.Middlewares
                 {
                     if (_activeAppEnvironment.GetConfig("RequireSsl", defaultValueOnNotFound: false))
                     {
-                        innerApp.UseHsts(TimeSpan.FromDays(1));
+                        innerApp.UseHsts(config => config.IncludeSubdomains().MaxAge(days: 30));
                     }
 
                     innerApp.UseXfo(xFrameOptions => { xFrameOptions.SameOrigin(); });

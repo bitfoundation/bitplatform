@@ -104,6 +104,9 @@
     <TypeScriptCompile Include="provider.ts" />
     <TypeScriptCompile Include="typings.d.ts" />
   </ItemGroup>
+  <ItemGroup>
+    <Content Include=".npmrc" />
+  </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>
     <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>

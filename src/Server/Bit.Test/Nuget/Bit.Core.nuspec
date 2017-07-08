@@ -1,0 +1,21 @@
+<?xml version="1.0"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd">
+  <metadata>
+    <id>Bit.Core</id>
+    <version>0.0.1.3</version>
+    <title>Bit Core</title>
+    <authors>Bit Foundation</authors>
+    <owners>Bit Foundation</owners>
+    <licenseUrl>https://github.com/bit-foundation/bit-framework/blob/master/LICENSE</licenseUrl>
+    <projectUrl>https://github.com/bit-foundation/bit-framework</projectUrl>
+    <iconUrl>https://avatars.githubusercontent.com/u/22663390</iconUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>Bit.Core</description>
+    <releaseNotes>Summary of changes made in this release of the package.</releaseNotes>
+    <copyright>Copyright © Bit Foundation 2017</copyright>
+    <tags>Bit</tags>
+  </metadata>
+  <files>
+    <file src="..\Bit.Core.*" target="lib\net47" />
+  </files>
+</package>

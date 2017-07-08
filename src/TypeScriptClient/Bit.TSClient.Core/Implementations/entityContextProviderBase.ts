@@ -29,6 +29,10 @@
 
                 $data["defaults"].parameterResolutionCompatibility = false;
 
+                $data["defaults"].withReferenceMethods = true;
+
+                $data["defaults"].enableDeepSave = true;
+
                 const originalArrayRequired = $data["Validation"].EntityValidation.prototype.supportedValidations["$data.Array"].required;
 
                 $data["Validation"].EntityValidation.prototype.supportedValidations["$data.Array"].required = function required(value, definedValue) {

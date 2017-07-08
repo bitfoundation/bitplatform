@@ -2,7 +2,6 @@
 using Bit.Core.Models;
 using Bit.Owin.Contracts;
 using IdentityServer3.AccessTokenValidation;
-using IdentityServer3.Core.Models;
 using Owin;
 using System;
 using System.Net.Http;
@@ -51,7 +50,7 @@ namespace Bit.Owin.Middlewares
                 Authority = activeAppEnvironment.GetSsoUrl(),
                 DelayLoadMetadata = true,
                 RequiredScopes = activeAppEnvironment.Security.Scopes,
-                ClientSecret = activeAppEnvironment.Security.ClientSecret.Sha512(),
+                ClientSecret = activeAppEnvironment.Security.ClientSecret,
                 EnableValidationResultCache = true,
                 ValidationResultCacheDuration = TimeSpan.FromMinutes(15),
                 // ValidationMode = ValidationMode.ValidationEndpoint,

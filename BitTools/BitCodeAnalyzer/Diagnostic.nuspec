@@ -2,7 +2,7 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd">
   <metadata>
     <id>BitCodeAnalyzer</id>
-    <version>1.1.7.2</version>
+    <version>1.1.7.6</version>
     <title>Bit Code Analyzer</title>
     <authors>Bit Foundation</authors>
     <owners>Bit Foundation</owners>
@@ -13,7 +13,7 @@
     <description>BitCodeAnalyzer</description>
     <releaseNotes>Summary of changes made in this release of the package.</releaseNotes>
     <copyright>Copyright © Bit Foundation 2017</copyright>
-    <tags>BitCodeAnalyzer, analyzers, Bit</tags>
+    <tags>BitCodeAnalyzer Roslyn Analyzers Bit</tags>
     <frameworkAssemblies>
       <frameworkAssembly assemblyName="System" targetFramework="" />
     </frameworkAssemblies>

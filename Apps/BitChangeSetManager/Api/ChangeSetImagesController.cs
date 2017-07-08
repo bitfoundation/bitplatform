@@ -1,4 +1,4 @@
-﻿using Bit.Api.ApiControllers;
+﻿using Bit.OData.ODataControllers;
 using Bit.Owin.Exceptions;
 using BitChangeSetManager.DataAccess;
 using BitChangeSetManager.Dto;

@@ -1,14 +1,14 @@
-﻿using BitChangeSetManager.DataAccess;
+﻿using Bit.Model.Contracts;
+using Bit.OData.ODataControllers;
+using Bit.Owin.Exceptions;
+using BitChangeSetManager.DataAccess;
 using BitChangeSetManager.Metadata;
 using System;
+using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Web.OData;
 using System.Web.Http.Controllers;
-using System.Net.Http;
-using Bit.Api.ApiControllers;
-using Bit.Model.Contracts;
-using Bit.Owin.Exceptions;
+using System.Web.OData;
 
 namespace BitChangeSetManager.Api
 {
@@ -29,7 +29,7 @@ namespace BitChangeSetManager.Api
             throw new AppException(BitChangeSetManagerMetadata.InsertIsDeined);
         }
 
-        public override Task<TDto> Update(Guid key, Delta<TDto> modifiedDtoDelta, CancellationToken cancellationToken)
+        public override Task<TDto> PartialUpdate(Guid key, Delta<TDto> modifiedDtoDelta, CancellationToken cancellationToken)
         {
             throw new AppException(BitChangeSetManagerMetadata.UpdateIsDeined);
         }

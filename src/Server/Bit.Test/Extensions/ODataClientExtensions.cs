@@ -1,4 +1,4 @@
-﻿using Bit.Api.ApiControllers;
+﻿using Bit.OData.ODataControllers;
 using Bit.Model.Contracts;
 using System;
 using System.Reflection;

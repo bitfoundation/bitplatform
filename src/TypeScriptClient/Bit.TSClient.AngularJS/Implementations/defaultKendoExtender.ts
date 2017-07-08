@@ -68,6 +68,26 @@ module Bit.Implementations {
                     });
             };
 
+            Object.defineProperty(kendo.data.DataSource.prototype, "current", {
+                configurable: false,
+                enumerable: false,
+                get: function () {
+                    return this["_current"];
+                },
+                set: function (entity: $data.Entity) {
+
+                    this["_current"] = entity;
+
+                    if (this["setHandlers"] == null)
+                        return;
+
+                    for (let setHandler of this["setHandlers"])
+                        setHandler(entity);
+
+                    this.onCurrentChanged();
+                }
+            });
+
             kendo.data.DataSource.prototype.onCurrentChanged = function (action) {
 
                 const dataSource = this;
@@ -76,6 +96,11 @@ module Bit.Implementations {
 
                 if (action != null) {
                     dataSource.onCurrentChangedHandlers.push(action);
+                    return () => {
+                        let index = dataSource.onCurrentChangedHandlers.indexOf(action);
+                        if (index > -1)
+                            dataSource.onCurrentChangedHandlers.splice(index, 1);
+                    };
                 } else {
 
                     for (let handler of dataSource.onCurrentChangedHandlers) {
@@ -144,14 +169,6 @@ module Bit.Implementations {
 
                 parentDataSource.onCurrentChanged(async () => {
 
-                    if (childDataSource.current != null) {
-                        try {
-                            childDataSource.current = null;
-                        }
-                        catch (e) { }
-                    }
-
-                    let parentKeyCurrentValues: any[] = null;
                     const currentParent = parentDataSource.current;
 
                     await new Promise<void>((resolve) => {
@@ -160,6 +177,15 @@ module Bit.Implementations {
 
                     if (currentParent != parentDataSource.current)
                         return;
+
+                    if (childDataSource.current != null) {
+                        try {
+                            let currentChild = childDataSource.current;
+                            if (currentParent == null || parentKeys.some((pk, i) => currentChild[childKeys[i]] != currentParent[pk]))
+                                childDataSource.current = null;
+                        }
+                        catch (e) { }
+                    }
 
                     await childDataSource.read();
                 });
@@ -175,7 +201,8 @@ module Bit.Implementations {
                     }
                     else {
 
-                        options.cascadeBaseFilter = childKeys.map((childKey, index) => {
+                        options.data = options.data || {};
+                        options.data.cascadeBaseFilter = childKeys.map((childKey, index) => {
                             let parentVal = currentParent[parentKeys[index]];
                             if (typeof parentVal == "string")
                                 parentVal = "'" + parentVal + "'";

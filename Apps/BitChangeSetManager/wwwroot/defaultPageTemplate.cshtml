@@ -33,8 +33,8 @@
             environmentConfigs: @(model.EnvironmentConfigsJSON)
         };
     </script>
-    <script src="Files/V@(model.AppVersion)/bower_components/bit-releases/typescript-client/bit.core.js"></script>
-    <script src="Files/V@(model.AppVersion)/bower_components/bit-releases/typescript-client/bit.ng1.js"></script>
+    <script src="Files/V@(model.AppVersion)/node_modules/@("@")bit/bit-framework/bit.core.js"></script>
+    <script src="Files/V@(model.AppVersion)/node_modules/@("@")bit/bit-framework/bit.ng1.js"></script>
     <script src="Files/V@(model.AppVersion)/bitChangeSetManager.js"></script>
     <script type="text/javascript">
         Bit.DependencyManager.getCurrent().init();

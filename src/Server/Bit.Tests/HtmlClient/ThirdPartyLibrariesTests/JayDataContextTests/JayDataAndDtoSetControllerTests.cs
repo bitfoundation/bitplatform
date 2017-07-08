@@ -29,7 +29,7 @@ namespace Bit.Tests.HtmlClient.ThirdPartyLibrariesTests.JayDataContextTests
 
                 using (RemoteWebDriver driver = testEnvironment.Server.GetWebDriver(new RemoteWebDriverOptions { Token = token }))
                 {
-                    driver.ExecuteTest(@"testGetOfDtoSetController");
+                    await driver.ExecuteTest(@"testGetOfDtoSetController");
                 }
 
                 TestCustomersController testCustomersController = TestDependencyManager.CurrentTestDependencyManager.Objects
@@ -51,14 +51,14 @@ namespace Bit.Tests.HtmlClient.ThirdPartyLibrariesTests.JayDataContextTests
 
                 using (RemoteWebDriver driver = testEnvironment.Server.GetWebDriver(new RemoteWebDriverOptions { Token = token }))
                 {
-                    driver.ExecuteTest(@"testPatchOfDtoSetController");
+                    await driver.ExecuteTest(@"testPatchOfDtoSetController");
                 }
 
                 TestCustomersController testCustomersController = TestDependencyManager.CurrentTestDependencyManager.Objects
                     .OfType<TestCustomersController>()
                     .ElementAt(1);
 
-                A.CallTo(() => testCustomersController.Update(Guid.Parse("28e1ff65-da41-4fa3-8aeb-5196494b407d"), A<Delta<TestCustomerDto>>.That.Matches(d => d.GetInstance().Name == "TestCustomer?"), A<CancellationToken>.Ignored))
+                A.CallTo(() => testCustomersController.PartialUpdate(Guid.Parse("28e1ff65-da41-4fa3-8aeb-5196494b407d"), A<Delta<TestCustomerDto>>.That.Matches(d => d.GetInstance().Name == "TestCustomer?"), A<CancellationToken>.Ignored))
                     .MustHaveHappened(Repeated.Exactly.Once);
             }
         }

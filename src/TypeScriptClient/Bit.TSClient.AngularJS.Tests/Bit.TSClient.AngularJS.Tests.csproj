@@ -74,9 +74,6 @@
     <Folder Include="Properties\" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="bower.json" />
-  </ItemGroup>
-  <ItemGroup>
     <TypeScriptCompile Include="Identity\identityServer.tests.fileDependencies.ts" />
     <TypeScriptCompile Include="Identity\identityServer.tests.objectDependencies.ts" />
     <TypeScriptCompile Include="Identity\Implementations\identityServerTestPathProvider.ts" />
@@ -106,6 +103,7 @@
     <TypeScriptCompile Include="viewModels\tests\dateTimeServiceViewModel.ts" />
     <TypeScriptCompile Include="viewModels\tests\entityContextUsageViewModel.ts" />
     <TypeScriptCompile Include="viewModels\tests\formValidationViewModel.ts" />
+    <TypeScriptCompile Include="viewModels\tests\lookupsSearchViewModel.ts" />
     <TypeScriptCompile Include="viewModels\tests\lookupsViewModel.ts" />
     <TypeScriptCompile Include="viewModels\tests\nestedRouteMainViewModel.ts" />
     <TypeScriptCompile Include="viewModels\tests\radComboViewModel.ts" />

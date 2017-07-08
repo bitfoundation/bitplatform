@@ -10,6 +10,8 @@
 
 * In Visual Studio open "Tools &gt; Options &gt; Environment &gt; Extensions and updates" and add [https://myget.org/F/bit-foundation/vsix](https://myget.org/F/bit-foundation/vsix) as additional extension gallery. Then install **Bit VS Extension V1** from Tools &gt; Extensions and updates
 
+Following video shows you how to do that. You're welcome to put comments on our youtube videos too.
+
 {% youtube %}
 https://youtu.be/zT8mxN-zf4I
 {% endyoutube %}

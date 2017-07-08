@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Bit.Core;
+using System;
 using System.Linq;
 using System.Reflection;
 
@@ -14,7 +15,7 @@ namespace Microsoft.Extensions.DependencyInjection
             if (controllersAssemblies == null)
                 throw new ArgumentNullException(nameof(controllersAssemblies));
 
-            controllersAssemblies = controllersAssemblies.Any() ? controllersAssemblies : new[] { Assembly.GetCallingAssembly() };
+            controllersAssemblies = AssemblyContainer.Current.AssembliesWithDefaultAssemblies(controllersAssemblies);
 
             IMvcCoreBuilder builder = services.AddMvcCore()
                 .AddJsonFormatters();

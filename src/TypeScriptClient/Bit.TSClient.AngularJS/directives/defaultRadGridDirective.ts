@@ -166,8 +166,10 @@ module Bit.Directives {
                     angular.element(".k-edit-buttons").remove();
                 },
                 change: (e) => {
-                    this.dataSource.onCurrentChanged();
-                    ScopeManager.update$scope(this.$scope);
+                    setTimeout(() => {
+                        this.dataSource.current = this.getCurrent();
+                        ScopeManager.update$scope(this.$scope);
+                    }, 0);
                 },
                 autoBind: true,
                 cancel: async (e): Promise<void> => {
@@ -193,7 +195,10 @@ module Bit.Directives {
                 mobile: false,
                 filterable: true,
                 columnMenu: true,
-                groupable: false
+                groupable: false,
+                dataBound: (e) => {
+                    this.syncCurrent();
+                }
             };
 
             if (this.$attrs["toolbarTemplateId"] != null) {
@@ -380,7 +385,8 @@ module Bit.Directives {
                                     if (lookup.BaseFilter_JS != null) {
                                         let originalRead = filterDataSource['transport'].read;
                                         filterDataSource['transport'].read = function (options) {
-                                            options.lookupBaseFilter = lookup.BaseFilter_JS;
+                                            options.data = options.data || {};
+                                            options.data.lookupBaseFilter = lookup.BaseFilter_JS;
                                             return originalRead.apply(this, arguments);
                                         }
                                     }
@@ -464,43 +470,58 @@ module Bit.Directives {
 
             grid.wrapper.find(".k-header").data("radGridController", this);
 
-            Object.defineProperty(this.dataSource, "current", {
-                configurable: true,
-                enumerable: false,
-                get: () => {
+            this.dataSource["setHandlers"] = this.dataSource["setHandlers"] || []
 
-                    let current = null;
+            this.syncCurrent();
 
-                    const itemBeingInserted = grid.dataSource
-                        .flatView().find(i => i["isNew"]() == true);
+            this.dataSource["setHandlers"].push(this.setCurrent.bind(this));
+        }
 
-                    if (itemBeingInserted != null)
-                        current = itemBeingInserted.innerInstance != null ? itemBeingInserted.innerInstance() : itemBeingInserted;
+        public syncCurrent() {
+            if (this.dataSource.current == null && this.getCurrent() != null)
+                this.dataSource["_current"] = this.getCurrent();
+            if (this.dataSource.current != null && this.getCurrent() == null)
+                this.setCurrent(this.dataSource.current as $data.Entity);
+        }
 
-                    if (current == null) {
+        public setCurrent(entity: $data.Entity) {
 
-                        const selectedDataItem = grid.dataItem(grid.select());
+            let grid = this.grid;
 
-                        if (selectedDataItem == null)
-                            current = null;
-                        else
-                            current = selectedDataItem.innerInstance != null ? selectedDataItem.innerInstance() : itemBeingInserted;
-                    }
+            if (entity == null) {
+                grid.clearSelection();
+            }
+            else {
+                let _current = this.getCurrent();
+                if (_current == null || _current.uid != entity.uid)
+                    grid.select(grid.tbody.find(`tr[data-uid='${entity.uid}']`));
+            }
 
-                    return current;
-                },
-                set: (entity: $data.Entity) => {
+        }
 
-                    if (entity == null) {
-                        grid.clearSelection();
-                        this.dataSource.onCurrentChanged();
-                    }
-                    else {
-                        grid.select(grid.tbody.find(`tr[data-uid='${entity.uid}']`));
-                    }
-                }
-            });
+        public getCurrent() {
 
+            let grid = this.grid;
+
+            let current = null;
+
+            const itemBeingInserted = grid.dataSource
+                .flatView().find(i => i["isNew"]() == true);
+
+            if (itemBeingInserted != null)
+                current = itemBeingInserted.innerInstance != null ? itemBeingInserted.innerInstance() : itemBeingInserted;
+
+            if (current == null) {
+
+                const selectedDataItem = grid.dataItem(grid.select());
+
+                if (selectedDataItem == null)
+                    current = null;
+                else
+                    current = selectedDataItem.innerInstance != null ? selectedDataItem.innerInstance() : itemBeingInserted;
+            }
+
+            return current;
         }
 
         public onDataSourceError() {
@@ -545,7 +566,7 @@ module Bit.Directives {
         public $onDestroy() {
             if (this.dataSource != null) {
                 this.dataSource.unbind("error", this.onDataSourceError);
-                delete this.dataSource.current;
+                this.dataSource["setHandlers"].splice(this.dataSource["setHandlers"].indexOf(this.setCurrent), 1);
             }
             if (this.grid != null) {
                 kendo.destroyWidget(this.grid);

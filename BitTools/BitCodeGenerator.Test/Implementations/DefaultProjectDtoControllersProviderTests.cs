@@ -20,7 +20,7 @@ namespace BitCodeGenerator.Test.Implementations
                 Solution solution = workspace.CurrentSolution;
 
                 IList<DtoController> controllers = await new DefaultProjectDtoControllersProvider()
-                    .GetProjectDtoControllersWithTheirOperations(solution.Projects.Single(p => p.Name == "Bit.Api"));
+                    .GetProjectDtoControllersWithTheirOperations(solution.Projects.Single(p => p.Name == "Bit.OData"));
 
                 Assert.IsTrue(
                     controllers.Select(c => c.Name).SequenceEqual(new[] { "ClientsLogs", "JobsInfo", "UsersSettings" }));
@@ -49,9 +49,9 @@ using System;
 using System.Threading.Tasks;
 using System.Web.OData;
 using Bit.Tests.Model.DomainModels;
-using Bit.Api.ApiControllers;
+using Bit.OData.ODataControllers;
 
-namespace Bit.Api.ApiControllers
+namespace Bit.OData.ODataControllers
 {
     [AttributeUsage(AttributeTargets.Method, AllowMultiple = false)]
     public sealed class ActionAttribute : Attribute

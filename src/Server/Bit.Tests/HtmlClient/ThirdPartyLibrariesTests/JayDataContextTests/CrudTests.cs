@@ -29,7 +29,7 @@ namespace Bit.Tests.HtmlClient.ThirdPartyLibrariesTests.JayDataContextTests
 
                 using (RemoteWebDriver driver = testEnvironment.Server.GetWebDriver(new RemoteWebDriverOptions { Token = token }))
                 {
-                    driver.ExecuteTest("testInsert");
+                    await driver.ExecuteTest("testInsert");
                 }
 
                 TestModelsController testModelsController = TestDependencyManager.CurrentTestDependencyManager.Objects
@@ -51,7 +51,7 @@ namespace Bit.Tests.HtmlClient.ThirdPartyLibrariesTests.JayDataContextTests
 
                 using (RemoteWebDriver driver = testEnvironment.Server.GetWebDriver(new RemoteWebDriverOptions { Token = token }))
                 {
-                    driver.ExecuteTest("testComplexTypeWithOData");
+                    await driver.ExecuteTest("testComplexTypeWithOData");
                 }
 
                 TestComplexController controllerForInsert = TestDependencyManager.CurrentTestDependencyManager.Objects
@@ -87,7 +87,7 @@ namespace Bit.Tests.HtmlClient.ThirdPartyLibrariesTests.JayDataContextTests
 
                 using (RemoteWebDriver driver = testEnvironment.Server.GetWebDriver(new RemoteWebDriverOptions { Token = token }))
                 {
-                    driver.ExecuteTest("simpleArrayValuesTest");
+                    await driver.ExecuteTest("simpleArrayValuesTest");
                 }
 
                 TestComplexController controllerForSimpleValuesArray = TestDependencyManager.CurrentTestDependencyManager.Objects
@@ -109,7 +109,7 @@ namespace Bit.Tests.HtmlClient.ThirdPartyLibrariesTests.JayDataContextTests
 
                 using (RemoteWebDriver driver = testEnvironment.Server.GetWebDriver(new RemoteWebDriverOptions { Token = token }))
                 {
-                    driver.ExecuteTest("enumTest");
+                    await driver.ExecuteTest("enumTest");
                 }
 
                 DtoWithEnumController firstCallController = TestDependencyManager.CurrentTestDependencyManager.Objects
@@ -138,7 +138,7 @@ namespace Bit.Tests.HtmlClient.ThirdPartyLibrariesTests.JayDataContextTests
 
                 using (RemoteWebDriver driver = testEnvironment.Server.GetWebDriver(new RemoteWebDriverOptions { Token = token }))
                 {
-                    driver.ExecuteTest("testComplexTypeWithOfflineDb");
+                    await driver.ExecuteTest("testComplexTypeWithOfflineDb");
                 }
             }
         }
@@ -153,7 +153,7 @@ namespace Bit.Tests.HtmlClient.ThirdPartyLibrariesTests.JayDataContextTests
 
                 using (RemoteWebDriver driver = testEnvironment.Server.GetWebDriver(new RemoteWebDriverOptions { Token = token }))
                 {
-                    driver.ExecuteTest(@"testGetAllAndFilter");
+                    await driver.ExecuteTest(@"testGetAllAndFilter");
                 }
 
                 ParentEntitiesController parentEntitiesController = TestDependencyManager.CurrentTestDependencyManager.Objects
@@ -175,7 +175,7 @@ namespace Bit.Tests.HtmlClient.ThirdPartyLibrariesTests.JayDataContextTests
 
                 using (RemoteWebDriver driver = testEnvironment.Server.GetWebDriver(new RemoteWebDriverOptions { Token = token }))
                 {
-                    driver.ExecuteTest(@"testBatchReadRequest");
+                    await driver.ExecuteTest(@"testBatchReadRequest");
                 }
 
                 ParentEntitiesController parentEntitiesController = TestDependencyManager.CurrentTestDependencyManager.Objects

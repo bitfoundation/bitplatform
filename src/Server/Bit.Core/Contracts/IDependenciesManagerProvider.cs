@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using Bit.Core.Contracts.Project;
 
 namespace Bit.Core.Contracts
 {

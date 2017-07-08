@@ -34,6 +34,7 @@
     <Reference Include="System" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AssemblyContainer.cs" />
     <Compile Include="Contracts\IAppEnvironmentProvider.cs" />
     <Compile Include="Contracts\IAppEvents.cs" />
     <Compile Include="Contracts\IBackgroundJobWorker.cs" />
@@ -53,7 +54,7 @@
     <Compile Include="Contracts\IScopeStatusManager.cs" />
     <Compile Include="Contracts\IStringCorrector.cs" />
     <Compile Include="Contracts\IUserInformationProvider.cs" />
-    <Compile Include="Contracts\Project\IDependenciesManager.cs" />
+    <Compile Include="Contracts\IDependenciesManager.cs" />
     <Compile Include="Implementations\DefaultDateTimeProvider.cs" />
     <Compile Include="Implementations\DefaultIraninCodeValidator.cs" />
     <Compile Include="Models\AppEnvironment.cs" />

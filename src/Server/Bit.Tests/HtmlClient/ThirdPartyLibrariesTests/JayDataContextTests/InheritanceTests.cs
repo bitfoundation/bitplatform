@@ -21,7 +21,7 @@ namespace Bit.Tests.HtmlClient.ThirdPartyLibrariesTests.JayDataContextTests
 
                 using (RemoteWebDriver driver = testEnvironment.Server.GetWebDriver(new RemoteWebDriverOptions { Token = token }))
                 {
-                    driver.ExecuteTest("testInheritance");
+                    await driver.ExecuteTest("testInheritance");
                 }
             }
         }

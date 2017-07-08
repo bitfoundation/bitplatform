@@ -1,5 +1,5 @@
 ﻿using System.Linq;
-using Bit.Api.ApiControllers;
+using Bit.OData.ODataControllers;
 using Bit.Model.Dtos;
 using Bit.Test;
 using Bit.Test.Core.Implementations;
@@ -29,7 +29,7 @@ namespace Bit.Tests.HtmlClient.ViewModel.Implementation
                 {
                     using (RemoteWebDriver driver = testEnvironment.Server.GetWebDriver(new RemoteWebDriverOptions { Token = token }))
                     {
-                        driver.ExecuteTest("LoggerTests.logException");
+                        await driver.ExecuteTest("LoggerTests.logException");
                     }
 
                     Assert.Fail();

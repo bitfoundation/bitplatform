@@ -19,7 +19,7 @@
                     encodedJson = loginModelJson.innerHTML;
                 }
 
-                const json = window["Encoder"].htmlDecode(encodedJson);
+                const json = Encoder.htmlDecode(encodedJson);
 
                 this.model = JSON.parse(json);
 

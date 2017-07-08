@@ -21,9 +21,9 @@ namespace Bit.Tests.HtmlClient.ViewModel.Implementation
 
                 using (RemoteWebDriver driver = testEnvironment.Server.GetWebDriver(new RemoteWebDriverOptions { Token = token }))
                 {
-                    driver.NavigateToRoute("angular-translate-page");
+                    await driver.NavigateToRoute("angular-translate-page");
 
-                    driver.ExecuteTest("Bit.Tests.Implementations.Tests.AngularTranslateTests.testAngularTransalateFormViewModel");
+                    await driver.ExecuteTest("Bit.Tests.Implementations.Tests.AngularTranslateTests.testAngularTransalateFormViewModel");
                 }
             }
         }
@@ -38,7 +38,7 @@ namespace Bit.Tests.HtmlClient.ViewModel.Implementation
 
                 using (RemoteWebDriver driver = testEnvironment.Server.GetWebDriver(new RemoteWebDriverOptions { Token = token }))
                 {
-                    driver.NavigateToRoute("date-time-service-page");
+                    await driver.NavigateToRoute("date-time-service-page");
 
                     Assert.AreEqual("2016/01/02", driver.GetElementById("date").Text);
 
@@ -64,7 +64,7 @@ namespace Bit.Tests.HtmlClient.ViewModel.Implementation
 
                 using (RemoteWebDriver driver = testEnvironment.Server.GetWebDriver(new RemoteWebDriverOptions { Token = token }))
                 {
-                    driver.NavigateToRoute("date-time-service-page");
+                    await driver.NavigateToRoute("date-time-service-page");
 
                     Assert.AreEqual("۱۳۹۴/۱۱/۱۲", driver.GetElementById("date").Text);
 

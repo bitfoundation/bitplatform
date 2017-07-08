@@ -15,6 +15,7 @@ namespace Bit.Tests.Owin.Metadata.Dtos
             base.AddLookup<CountryDto>(nameof(ProductDto.BuildLocationId_InMemoryTest), nameof(CountryDto.Id), nameof(CountryDto.Name), it => it.SomeProperty == 1 || it.SomeProperty == 2);
             base.AddLookup<CountryDto>(nameof(ProductDto.BuildLocationId_OnlineTest), nameof(CountryDto.Id), nameof(CountryDto.Name), it => it.SomeProperty == 1 || it.SomeProperty == 3);
             base.AddLookup<CountryDto>(nameof(ProductDto.BuildLocationId_OfflineDatabaseTest), nameof(CountryDto.Id), nameof(CountryDto.Name), it => it.SomeProperty == 2);
+            base.AddLookup<CountryDto>(nameof(ProductDto.BuildLocationId), nameof(CountryDto.Id), nameof(CountryDto.Name));
 
             return base.BuildMetadata();
         }

@@ -4,7 +4,7 @@ using System.Linq;
 using System.Reflection;
 using Bit.Core;
 using Bit.Core.Contracts;
-using Bit.Core.Contracts.Project;
+
 namespace Bit.Owin.Implementations
 {
     [AttributeUsage(AttributeTargets.Assembly, AllowMultiple = true)]

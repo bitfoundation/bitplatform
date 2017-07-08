@@ -26,7 +26,7 @@ namespace BitCodeGenerator.Implementations
 
                 SemanticModel semanticModel = await doc.GetSemanticModelAsync();
 
-                SyntaxNode root = await doc.GetSyntaxRootAsync(CancellationToken.None);
+                SyntaxNode root = await doc.GetSyntaxRootAsync();
 
                 List<ClassDeclarationSyntax> allDtoRulesClasses = new List<ClassDeclarationSyntax>();
 

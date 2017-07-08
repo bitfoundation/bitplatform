@@ -103,7 +103,8 @@ namespace Bit.Test
                 serviceType => AssemblyContainer.Current.GetBitDataAssembly() == serviceType.Assembly,
                 serviceType => AssemblyContainer.Current.GetBitModelAssembly() == serviceType.Assembly,
                 serviceType => AssemblyContainer.Current.GetBitTestAssembly() == serviceType.Assembly,
-                serviceType => AssemblyContainer.Current.GetBitApiAssembly() == serviceType.Assembly,
+                serviceType => AssemblyContainer.Current.GetBitWebApiAssembly() == serviceType.Assembly,
+                serviceType => AssemblyContainer.Current.GetBitODataAssembly() == serviceType.Assembly,
                 serviceType => AssemblyContainer.Current.GetBitHangfireAssembly() == serviceType.Assembly,
                 serviceType => AssemblyContainer.Current.GetBitSignalRAssembly() == serviceType.Assembly
             };

@@ -7,7 +7,7 @@ namespace Bit.Core
     {
         public static Assembly GetBitDataAssembly(this AssemblyContainer container)
         {
-            return typeof(DefaultSqlDbConnectionProvider).GetTypeInfo().Assembly;
+            return typeof(DefaultDbConnectionProvider<>).GetTypeInfo().Assembly;
         }
     }
 }

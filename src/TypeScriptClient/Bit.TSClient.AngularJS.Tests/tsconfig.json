@@ -15,5 +15,5 @@
     "removeComments": false,
     "typeRoots": [ "..\\Bit.TSClient.Core\\node_modules\\@types", "..\\Bit.TSClient.AngularJS\\node_modules\\@types", "..\\Bit.TSClient.AngularJS.Test\\node_modules\\@types" ]
   },
-  "exclude": [ "Identity", "bit.ng1.tests.d.ts", "node_modules", "bower_components", "bin", "obj" ]
+  "exclude": [ "Identity", "bit.ng1.tests.d.ts", "node_modules", "bin", "obj" ]
 }

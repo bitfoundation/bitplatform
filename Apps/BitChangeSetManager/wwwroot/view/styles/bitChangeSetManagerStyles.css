@@ -8,6 +8,7 @@
 
 .back-to-top {
     right: 15px;
+    bottom: 15px;
     top: auto;
     left: auto;
     position: fixed;

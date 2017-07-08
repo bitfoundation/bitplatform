@@ -14,5 +14,5 @@
     "inlineSources": true,
     "removeComments": false
   },
-  "exclude": [ "bit.core.d.ts", "node_modules", "bower_components", "bin", "obj" ]
+  "exclude": [ "bit.core.d.ts", "node_modules", "bin", "obj" ]
 }

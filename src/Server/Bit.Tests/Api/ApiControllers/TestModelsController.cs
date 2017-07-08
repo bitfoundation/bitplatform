@@ -6,7 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Web.Http;
 using System.Web.OData;
-using Bit.Api.ApiControllers;
+using Bit.OData.ODataControllers;
 using Bit.Core.Contracts;
 using Bit.Data.Contracts;
 using Bit.Owin.Exceptions;
@@ -15,8 +15,8 @@ using Bit.Tests.Model.DomainModels;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Owin;
 using System.Web.OData.Query;
-using Bit.Api.Middlewares.WebApi.OData.Contracts;
-using Bit.Api.Middlewares.WebApi.OData.ActionFilters;
+using Bit.OData.ActionFilters;
+using Bit.OData.Contracts;
 using Bit.Tests.Model.Dto;
 
 namespace Bit.Tests.Api.ApiControllers

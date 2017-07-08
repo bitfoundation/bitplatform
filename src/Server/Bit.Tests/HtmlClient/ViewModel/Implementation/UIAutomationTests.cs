@@ -27,9 +27,9 @@ namespace Bit.Tests.HtmlClient.ViewModel.Implementation
 
                 using (RemoteWebDriver driver = testEnvironment.Server.GetWebDriver(new RemoteWebDriverOptions { Token = token }))
                 {
-                    driver.NavigateToRoute("repeat-page");
+                    await driver.NavigateToRoute("repeat-page");
 
-                    driver.ExecuteTest("Bit.Tests.Implementations.Tests.UiAutomationTests.testGetBindingContextAndGetFormViewModel");
+                    await driver.ExecuteTest("Bit.Tests.Implementations.Tests.UiAutomationTests.testGetBindingContextAndGetFormViewModel");
                 }
 
                 TestModelsController testModelsController = TestDependencyManager.CurrentTestDependencyManager.Objects
@@ -51,7 +51,7 @@ namespace Bit.Tests.HtmlClient.ViewModel.Implementation
 
                 using (RemoteWebDriver driver = testEnvironment.Server.GetWebDriver(new RemoteWebDriverOptions { Token = token }))
                 {
-                    driver.ExecuteTest("Bit.Tests.Implementations.Tests.UiAutomationTests.testGettingSomeVariables", 5, 5, "Hi", new DateTimeOffset(2016, 1, 1, 1, 1, 1, TimeSpan.Zero), new { firstNum = 5, secondNum = 5, message = "Hi", date = new DateTimeOffset(2016, 1, 1, 1, 1, 1, TimeSpan.Zero) });
+                    await driver.ExecuteTest("Bit.Tests.Implementations.Tests.UiAutomationTests.testGettingSomeVariables", 5, 5, "Hi", new DateTimeOffset(2016, 1, 1, 1, 1, 1, TimeSpan.Zero), new { firstNum = 5, secondNum = 5, message = "Hi", date = new DateTimeOffset(2016, 1, 1, 1, 1, 1, TimeSpan.Zero) });
                 }
             }
         }

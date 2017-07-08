@@ -1,0 +1,11 @@
+﻿[
+  {
+    "Name": "Development",
+    "IsActive": true,
+    "DebugMode": true,
+    "AppInfo": {
+      "Name": "2WebApiSwagger",
+      "Version": "1"
+    }
+  }
+]

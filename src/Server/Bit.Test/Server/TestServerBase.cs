@@ -1,7 +1,5 @@
 ﻿using System;
 using System.Net.Http;
-using Bit.Signalr.Middlewares.Signalr;
-using Bit.Signalr.Middlewares.Signalr.Implementations;
 using Bit.Test.Api.Middlewares.SignalR;
 using IdentityModel.Client;
 using Microsoft.AspNet.SignalR.Client;
@@ -12,6 +10,8 @@ using OpenQA.Selenium.Remote;
 using Simple.OData.Client;
 using Newtonsoft.Json;
 using System.Threading.Tasks;
+using Bit.Signalr;
+using Bit.Signalr.Implementations;
 
 namespace Bit.Test.Server
 {

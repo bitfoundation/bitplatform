@@ -1,23 +1,20 @@
-﻿using Bit.Api.Implementations.Project;
-using Bit.Api.Middlewares.WebApi.OData.ActionFilters;
-using Bit.Api.Middlewares.WebApi.OData.Contracts;
-using Bit.Api.Middlewares.WebApi.OData.Implementations;
-using Bit.Core;
+﻿using Bit.Core;
 using Bit.Core.Contracts;
-using Bit.Core.Contracts.Project;
-using Bit.Core.Implementations;
 using Bit.Data;
 using Bit.Data.Contracts;
-using Bit.Hangfire.Middlewares.JobScheduler.Implementations;
+using Bit.Hangfire.Implementations;
 using Bit.Model.Implementations;
+using Bit.OData.ActionFilters;
+using Bit.OData.Implementations;
 using Bit.Owin.Contracts;
 using Bit.Owin.Contracts.Metadata;
 using Bit.Owin.Implementations;
 using Bit.Owin.Implementations.Metadata;
 using Bit.Owin.Middlewares;
 using Bit.OwinCore;
+using Bit.OwinCore.Contracts;
 using Bit.OwinCore.Middlewares;
-using Bit.Signalr.Middlewares.Signalr.Implementations;
+using Bit.Signalr.Implementations;
 using BitChangeSetManager.Api.Implementations;
 using BitChangeSetManager.DataAccess;
 using BitChangeSetManager.Security;
@@ -26,14 +23,15 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Generic;
+using System.Data.SqlClient;
 using System.Reflection;
 
 namespace BitChangeSetManager.Core
 {
-    public class AppStartup : AutofacAspNetCoreAppStartup, IDependenciesManager, IDependenciesManagerProvider
+    public class AppStartup : AutofacAspNetCoreAppStartup, IAspNetCoreDependenciesManager, IDependenciesManagerProvider
     {
-        public AppStartup(IHostingEnvironment hostingEnvironment)
-            : base(hostingEnvironment)
+        public AppStartup(IServiceProvider serviceProvider)
+            : base(serviceProvider)
         {
 
         }
@@ -50,30 +48,34 @@ namespace BitChangeSetManager.Core
             yield return this;
         }
 
-        public void ConfigureDependencies(IDependencyManager dependencyManager)
+        public virtual void ConfigureDependencies(IServiceProvider serviceProvider, IServiceCollection services, IDependencyManager dependencyManager)
         {
+            AssemblyContainer.Current.Init();
+            AssemblyContainer.Current.AddAppAssemblies(AssemblyContainer.Current.GetBitChangeSetManagerAssembly());
+
+            IHostingEnvironment env = serviceProvider.GetService<IHostingEnvironment>();
+
             dependencyManager.RegisterMinimalDependencies();
 
             dependencyManager.RegisterInstance(DefaultAppEnvironmentProvider.Current);
             dependencyManager.RegisterInstance(DefaultJsonContentFormatter.Current);
             dependencyManager.RegisterInstance(DefaultPathProvider.Current);
 
-            dependencyManager.Register<ITimeZoneManager, DefaultTimeZoneManager>();
             dependencyManager.Register<IRequestInformationProvider, AspNetCoreRequestInformationProvider>();
-            dependencyManager.Register<Microsoft.Owin.Logging.ILoggerFactory, DefaultOwinLoggerFactory>();
+
             dependencyManager.Register<ILogger, DefaultLogger>();
-            if (DefaultAppEnvironmentProvider.Current.GetActiveAppEnvironment().DebugMode == true)
+            if (env.IsDevelopment())
                 dependencyManager.RegisterLogStore<DebugLogStore>();
             dependencyManager.RegisterLogStore<ConsoleLogStore>();
-            dependencyManager.Register<IUserInformationProvider, DefaultUserInformationProvider>();
-            dependencyManager.Register<IDbConnectionProvider, DefaultSqlDbConnectionProvider>();
 
-            dependencyManager.Register<IDateTimeProvider, DefaultDateTimeProvider>(lifeCycle: DependencyLifeCycle.SingleInstance);
-            dependencyManager.Register<IExceptionToHttpErrorMapper, DefaultExceptionToHttpErrorMapper>(lifeCycle: DependencyLifeCycle.SingleInstance);
+            dependencyManager.Register<IDbConnectionProvider, DefaultDbConnectionProvider<SqlConnection>>();
 
             dependencyManager.RegisterAppEvents<BitChangeSetManagerInitialData>();
             dependencyManager.RegisterAppEvents<RazorViewEngineConfiguration>();
 
+            dependencyManager.RegisterDefaultOwinApp();
+
+            services.AddCors();
             dependencyManager.RegisterAspNetCoreMiddlewareUsing(aspNetCoreApp =>
             {
                 aspNetCoreApp.UseCors(c => c.AllowAnyOrigin());
@@ -88,7 +90,7 @@ namespace BitChangeSetManager.Core
 
             dependencyManager.RegisterOwinMiddleware<MetadataMiddlewareConfiguration>();
 
-            dependencyManager.RegisterDefaultWebApiConfiguration(AssemblyContainer.Current.GetBitApiAssembly(), AssemblyContainer.Current.GetBitChangeSetManagerApiAssembly());
+            dependencyManager.RegisterDefaultWebApiODataConfiguration();
 
             dependencyManager.RegisterUsing<IOwinMiddlewareConfiguration>(() =>
             {
@@ -122,17 +124,15 @@ namespace BitChangeSetManager.Core
 
             }, lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExciting: false);
 
-            dependencyManager.Register<IODataSqlBuilder, DefaultODataSqlBuilder>(lifeCycle: DependencyLifeCycle.SingleInstance);
-
-            if (DefaultAppEnvironmentProvider.Current.GetActiveAppEnvironment().DebugMode == false)
+            if (env.IsDevelopment())
                 dependencyManager.RegisterSignalRConfiguration<SignalRSqlServerScaleoutConfiguration>();
             dependencyManager.RegisterSignalRConfiguration<SignalRAuthorizeConfiguration>();
-            dependencyManager.RegisterSignalRMiddlewareUsingDefaultConfiguration<BitChangeSetManagerAppMessageHubEvents>(AssemblyContainer.Current.GetBitSignalRAssembly(), AssemblyContainer.Current.GetBitChangeSetManagerSignalrAssembly());
+            dependencyManager.RegisterSignalRMiddlewareUsingDefaultConfiguration<BitChangeSetManagerAppMessageHubEvents>();
 
             dependencyManager.RegisterBackgroundJobWorkerUsingDefaultConfiguration<JobSchedulerInMemoryBackendConfiguration>();
 
             dependencyManager.Register<IAppMetadataProvider, DefaultAppMetadataProvider>(lifeCycle: DependencyLifeCycle.SingleInstance);
-            dependencyManager.RegisterMetadata(AssemblyContainer.Current.GetBitMetadataAssembly(), AssemblyContainer.Current.GetBitIdentityServerAssembly(), AssemblyContainer.Current.GetBitChangeSetManagerMetadataAssembly());
+            dependencyManager.RegisterMetadata();
 
             dependencyManager.RegisterGeneric(typeof(IBitChangeSetManagerRepository<>).GetTypeInfo(), typeof(BitChangeSetManagerEfRepository<>).GetTypeInfo(), DependencyLifeCycle.InstancePerLifetimeScope);
 
@@ -150,13 +150,6 @@ namespace BitChangeSetManager.Core
 
             dependencyManager.Register<IChangeSetRepository, ChangeSetRepository>();
             dependencyManager.Register<IUserSettingProvider, BitUserSettingProvider>();
-        }
-
-        public override void InitServices(IServiceCollection services)
-        {
-            services.AddCors();
-
-            base.InitServices(services);
         }
     }
 }

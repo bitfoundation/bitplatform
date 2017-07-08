@@ -1,4 +1,4 @@
-﻿using Bit.Api.ApiControllers;
+﻿using Bit.OData.ODataControllers;
 using Bit.Data.Contracts;
 using Bit.Tests.Model.DomainModels;
 using Bit.Tests.Model.Dto;

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PackageManifest Version="2.0.0" xmlns="http://schemas.microsoft.com/developer/vsx-schema/2011" xmlns:d="http://schemas.microsoft.com/developer/vsx-schema-design/2011">
   <Metadata>
-    <Identity Id="BitVSExtensionV1.3BA081F8-34B0-4614-8E80-03F9B3A5BBF0" Version="1.1.7.2" Language="en-US" Publisher="Bit Foundation" />
+    <Identity Id="BitVSExtensionV1.3BA081F8-34B0-4614-8E80-03F9B3A5BBF0" Version="1.1.7.6" Language="en-US" Publisher="Bit Foundation" />
     <DisplayName>Bit VS Extension V1</DisplayName>
     <Description xml:space="preserve">Bit Framework - Visual Studio Extension - V1</Description>
     <MoreInfo>https://bit-foundation.com/</MoreInfo>
@@ -26,9 +26,5 @@
   </Assets>
   <Prerequisites>
     <Prerequisite Id="Microsoft.VisualStudio.Component.CoreEditor" Version="[14.0,16.0)" DisplayName="Visual Studio core editor" />
-    <Prerequisite Id="Microsoft.Net.ComponentGroup.4.7.DeveloperTools" Version="[14.0,16.0)" DisplayName=".NET Framework 4.7 development tools" />
-    <Prerequisite Id="Microsoft.VisualStudio.Component.Web" Version="[14.0,16.0)" DisplayName="ASP.NET and web development tools" />
-    <Prerequisite Id="Microsoft.Net.Component.4.7.SDK" Version="[14.0,16.0)" DisplayName=".NET Framework 4.7 SDK" />
-    <Prerequisite Id="Microsoft.Net.Component.4.7.TargetingPack" Version="[14.0,16.0)" DisplayName=".NET Framework 4.7 targeting pack" />
   </Prerequisites>
 </PackageManifest>

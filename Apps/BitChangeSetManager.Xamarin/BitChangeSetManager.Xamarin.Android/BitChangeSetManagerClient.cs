@@ -8,9 +8,187 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-// Generation date: 5/20/2017 15:21:18
+// Generation date: 6/25/2017 14:07:12
 namespace BitChangeSetManager.Xamarin.BitChangeSetManager.Dto
 {
+    /// <summary>
+    /// There are no comments for ChangeSetImagetDtoSingle in the schema.
+    /// </summary>
+    [global::Microsoft.OData.Client.OriginalNameAttribute("ChangeSetImagetDtoSingle")]
+    public partial class ChangeSetImagetDtoSingle : global::Microsoft.OData.Client.DataServiceQuerySingle<ChangeSetImagetDto>
+    {
+        /// <summary>
+        /// Initialize a new ChangeSetImagetDtoSingle object.
+        /// </summary>
+        public ChangeSetImagetDtoSingle(global::Microsoft.OData.Client.DataServiceContext context, string path)
+            : base(context, path) {}
+
+        /// <summary>
+        /// Initialize a new ChangeSetImagetDtoSingle object.
+        /// </summary>
+        public ChangeSetImagetDtoSingle(global::Microsoft.OData.Client.DataServiceContext context, string path, bool isComposable)
+            : base(context, path, isComposable) {}
+
+        /// <summary>
+        /// Initialize a new ChangeSetImagetDtoSingle object.
+        /// </summary>
+        public ChangeSetImagetDtoSingle(global::Microsoft.OData.Client.DataServiceQuerySingle<ChangeSetImagetDto> query)
+            : base(query) {}
+
+        /// <summary>
+        /// There are no comments for ChangeSet in the schema.
+        /// </summary>
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "2.4.0")]
+        [global::Microsoft.OData.Client.OriginalNameAttribute("ChangeSet")]
+        public global::BitChangeSetManager.Xamarin.BitChangeSetManager.Dto.ChangeSetDtoSingle ChangeSet
+        {
+            get
+            {
+                if (!this.IsComposable)
+                {
+                    throw new global::System.NotSupportedException("The previous function is not composable.");
+                }
+                if ((this._ChangeSet == null))
+                {
+                    this._ChangeSet = new global::BitChangeSetManager.Xamarin.BitChangeSetManager.Dto.ChangeSetDtoSingle(this.Context, GetPath("ChangeSet"));
+                }
+                return this._ChangeSet;
+            }
+        }
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "2.4.0")]
+        private global::BitChangeSetManager.Xamarin.BitChangeSetManager.Dto.ChangeSetDtoSingle _ChangeSet;
+    }
+    /// <summary>
+    /// There are no comments for ChangeSetImagetDto in the schema.
+    /// </summary>
+    /// <KeyProperties>
+    /// Id
+    /// </KeyProperties>
+    [global::Microsoft.OData.Client.Key("Id")]
+    [global::Microsoft.OData.Client.OriginalNameAttribute("ChangeSetImagetDto")]
+    public partial class ChangeSetImagetDto : global::Microsoft.OData.Client.BaseEntityType, global::System.ComponentModel.INotifyPropertyChanged
+    {
+        /// <summary>
+        /// Create a new ChangeSetImagetDto object.
+        /// </summary>
+        /// <param name="ID">Initial value of Id.</param>
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "2.4.0")]
+        public static ChangeSetImagetDto CreateChangeSetImagetDto(global::System.Guid ID)
+        {
+            ChangeSetImagetDto changeSetImagetDto = new ChangeSetImagetDto();
+            changeSetImagetDto.Id = ID;
+            return changeSetImagetDto;
+        }
+        /// <summary>
+        /// There are no comments for Property Id in the schema.
+        /// </summary>
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "2.4.0")]
+        [global::Microsoft.OData.Client.OriginalNameAttribute("Id")]
+        public global::System.Guid Id
+        {
+            get
+            {
+                return this._Id;
+            }
+            set
+            {
+                this.OnIdChanging(value);
+                this._Id = value;
+                this.OnIdChanged();
+                this.OnPropertyChanged("Id");
+            }
+        }
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "2.4.0")]
+        private global::System.Guid _Id;
+        partial void OnIdChanging(global::System.Guid value);
+        partial void OnIdChanged();
+        /// <summary>
+        /// There are no comments for Property Name in the schema.
+        /// </summary>
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "2.4.0")]
+        [global::Microsoft.OData.Client.OriginalNameAttribute("Name")]
+        public string Name
+        {
+            get
+            {
+                return this._Name;
+            }
+            set
+            {
+                this.OnNameChanging(value);
+                this._Name = value;
+                this.OnNameChanged();
+                this.OnPropertyChanged("Name");
+            }
+        }
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "2.4.0")]
+        private string _Name;
+        partial void OnNameChanging(string value);
+        partial void OnNameChanged();
+        /// <summary>
+        /// There are no comments for Property ChangeSetId in the schema.
+        /// </summary>
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "2.4.0")]
+        [global::Microsoft.OData.Client.OriginalNameAttribute("ChangeSetId")]
+        public global::System.Nullable<global::System.Guid> ChangeSetId
+        {
+            get
+            {
+                return this._ChangeSetId;
+            }
+            set
+            {
+                this.OnChangeSetIdChanging(value);
+                this._ChangeSetId = value;
+                this.OnChangeSetIdChanged();
+                this.OnPropertyChanged("ChangeSetId");
+            }
+        }
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "2.4.0")]
+        private global::System.Nullable<global::System.Guid> _ChangeSetId;
+        partial void OnChangeSetIdChanging(global::System.Nullable<global::System.Guid> value);
+        partial void OnChangeSetIdChanged();
+        /// <summary>
+        /// There are no comments for Property ChangeSet in the schema.
+        /// </summary>
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "2.4.0")]
+        [global::Microsoft.OData.Client.OriginalNameAttribute("ChangeSet")]
+        public global::BitChangeSetManager.Xamarin.BitChangeSetManager.Dto.ChangeSetDto ChangeSet
+        {
+            get
+            {
+                return this._ChangeSet;
+            }
+            set
+            {
+                this.OnChangeSetChanging(value);
+                this._ChangeSet = value;
+                this.OnChangeSetChanged();
+                this.OnPropertyChanged("ChangeSet");
+            }
+        }
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "2.4.0")]
+        private global::BitChangeSetManager.Xamarin.BitChangeSetManager.Dto.ChangeSetDto _ChangeSet;
+        partial void OnChangeSetChanging(global::BitChangeSetManager.Xamarin.BitChangeSetManager.Dto.ChangeSetDto value);
+        partial void OnChangeSetChanged();
+        /// <summary>
+        /// This event is raised when the value of the property is changed
+        /// </summary>
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "2.4.0")]
+        public event global::System.ComponentModel.PropertyChangedEventHandler PropertyChanged;
+        /// <summary>
+        /// The value of the property is changed
+        /// </summary>
+        /// <param name="property">property name</param>
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "2.4.0")]
+        protected virtual void OnPropertyChanged(string property)
+        {
+            if ((this.PropertyChanged != null))
+            {
+                this.PropertyChanged(this, new global::System.ComponentModel.PropertyChangedEventArgs(property));
+            }
+        }
+    }
     /// <summary>
     /// There are no comments for ChangeSetDeliveryRequirementDtoSingle in the schema.
     /// </summary>
@@ -342,6 +520,141 @@ namespace BitChangeSetManager.Xamarin.BitChangeSetManager.Dto
         }
     }
     /// <summary>
+    /// There are no comments for CityDtoSingle in the schema.
+    /// </summary>
+    [global::Microsoft.OData.Client.OriginalNameAttribute("CityDtoSingle")]
+    public partial class CityDtoSingle : global::Microsoft.OData.Client.DataServiceQuerySingle<CityDto>
+    {
+        /// <summary>
+        /// Initialize a new CityDtoSingle object.
+        /// </summary>
+        public CityDtoSingle(global::Microsoft.OData.Client.DataServiceContext context, string path)
+            : base(context, path) {}
+
+        /// <summary>
+        /// Initialize a new CityDtoSingle object.
+        /// </summary>
+        public CityDtoSingle(global::Microsoft.OData.Client.DataServiceContext context, string path, bool isComposable)
+            : base(context, path, isComposable) {}
+
+        /// <summary>
+        /// Initialize a new CityDtoSingle object.
+        /// </summary>
+        public CityDtoSingle(global::Microsoft.OData.Client.DataServiceQuerySingle<CityDto> query)
+            : base(query) {}
+
+    }
+    /// <summary>
+    /// There are no comments for CityDto in the schema.
+    /// </summary>
+    /// <KeyProperties>
+    /// Id
+    /// </KeyProperties>
+    [global::Microsoft.OData.Client.Key("Id")]
+    [global::Microsoft.OData.Client.OriginalNameAttribute("CityDto")]
+    public partial class CityDto : global::Microsoft.OData.Client.BaseEntityType, global::System.ComponentModel.INotifyPropertyChanged
+    {
+        /// <summary>
+        /// Create a new CityDto object.
+        /// </summary>
+        /// <param name="ID">Initial value of Id.</param>
+        /// <param name="provinceId">Initial value of ProvinceId.</param>
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "2.4.0")]
+        public static CityDto CreateCityDto(global::System.Guid ID, global::System.Guid provinceId)
+        {
+            CityDto cityDto = new CityDto();
+            cityDto.Id = ID;
+            cityDto.ProvinceId = provinceId;
+            return cityDto;
+        }
+        /// <summary>
+        /// There are no comments for Property Id in the schema.
+        /// </summary>
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "2.4.0")]
+        [global::Microsoft.OData.Client.OriginalNameAttribute("Id")]
+        public global::System.Guid Id
+        {
+            get
+            {
+                return this._Id;
+            }
+            set
+            {
+                this.OnIdChanging(value);
+                this._Id = value;
+                this.OnIdChanged();
+                this.OnPropertyChanged("Id");
+            }
+        }
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "2.4.0")]
+        private global::System.Guid _Id;
+        partial void OnIdChanging(global::System.Guid value);
+        partial void OnIdChanged();
+        /// <summary>
+        /// There are no comments for Property Name in the schema.
+        /// </summary>
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "2.4.0")]
+        [global::Microsoft.OData.Client.OriginalNameAttribute("Name")]
+        public string Name
+        {
+            get
+            {
+                return this._Name;
+            }
+            set
+            {
+                this.OnNameChanging(value);
+                this._Name = value;
+                this.OnNameChanged();
+                this.OnPropertyChanged("Name");
+            }
+        }
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "2.4.0")]
+        private string _Name;
+        partial void OnNameChanging(string value);
+        partial void OnNameChanged();
+        /// <summary>
+        /// There are no comments for Property ProvinceId in the schema.
+        /// </summary>
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "2.4.0")]
+        [global::Microsoft.OData.Client.OriginalNameAttribute("ProvinceId")]
+        public global::System.Guid ProvinceId
+        {
+            get
+            {
+                return this._ProvinceId;
+            }
+            set
+            {
+                this.OnProvinceIdChanging(value);
+                this._ProvinceId = value;
+                this.OnProvinceIdChanged();
+                this.OnPropertyChanged("ProvinceId");
+            }
+        }
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "2.4.0")]
+        private global::System.Guid _ProvinceId;
+        partial void OnProvinceIdChanging(global::System.Guid value);
+        partial void OnProvinceIdChanged();
+        /// <summary>
+        /// This event is raised when the value of the property is changed
+        /// </summary>
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "2.4.0")]
+        public event global::System.ComponentModel.PropertyChangedEventHandler PropertyChanged;
+        /// <summary>
+        /// The value of the property is changed
+        /// </summary>
+        /// <param name="property">property name</param>
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "2.4.0")]
+        protected virtual void OnPropertyChanged(string property)
+        {
+            if ((this.PropertyChanged != null))
+            {
+                this.PropertyChanged(this, new global::System.ComponentModel.PropertyChangedEventArgs(property));
+            }
+        }
+    }
+    /// <summary>
     /// There are no comments for DeliveryDtoSingle in the schema.
     /// </summary>
     [global::Microsoft.OData.Client.OriginalNameAttribute("DeliveryDtoSingle")]
@@ -573,6 +886,28 @@ namespace BitChangeSetManager.Xamarin.BitChangeSetManager.Dto
         public ChangeSetDtoSingle(global::Microsoft.OData.Client.DataServiceQuerySingle<ChangeSetDto> query)
             : base(query) {}
 
+        /// <summary>
+        /// There are no comments for Images in the schema.
+        /// </summary>
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "2.4.0")]
+        [global::Microsoft.OData.Client.OriginalNameAttribute("Images")]
+        public global::Microsoft.OData.Client.DataServiceQuery<global::BitChangeSetManager.Xamarin.BitChangeSetManager.Dto.ChangeSetImagetDto> Images
+        {
+            get
+            {
+                if (!this.IsComposable)
+                {
+                    throw new global::System.NotSupportedException("The previous function is not composable.");
+                }
+                if ((this._Images == null))
+                {
+                    this._Images = Context.CreateQuery<global::BitChangeSetManager.Xamarin.BitChangeSetManager.Dto.ChangeSetImagetDto>(GetPath("Images"));
+                }
+                return this._Images;
+            }
+        }
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "2.4.0")]
+        private global::Microsoft.OData.Client.DataServiceQuery<global::BitChangeSetManager.Xamarin.BitChangeSetManager.Dto.ChangeSetImagetDto> _Images;
     }
     /// <summary>
     /// There are no comments for ChangeSetDto in the schema.
@@ -834,6 +1169,144 @@ namespace BitChangeSetManager.Xamarin.BitChangeSetManager.Dto
         partial void OnDeliveryRequirementTitleChanging(string value);
         partial void OnDeliveryRequirementTitleChanged();
         /// <summary>
+        /// There are no comments for Property CityId in the schema.
+        /// </summary>
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "2.4.0")]
+        [global::Microsoft.OData.Client.OriginalNameAttribute("CityId")]
+        public global::System.Nullable<global::System.Guid> CityId
+        {
+            get
+            {
+                return this._CityId;
+            }
+            set
+            {
+                this.OnCityIdChanging(value);
+                this._CityId = value;
+                this.OnCityIdChanged();
+                this.OnPropertyChanged("CityId");
+            }
+        }
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "2.4.0")]
+        private global::System.Nullable<global::System.Guid> _CityId;
+        partial void OnCityIdChanging(global::System.Nullable<global::System.Guid> value);
+        partial void OnCityIdChanged();
+        /// <summary>
+        /// There are no comments for Property CityName in the schema.
+        /// </summary>
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "2.4.0")]
+        [global::Microsoft.OData.Client.OriginalNameAttribute("CityName")]
+        public string CityName
+        {
+            get
+            {
+                return this._CityName;
+            }
+            set
+            {
+                this.OnCityNameChanging(value);
+                this._CityName = value;
+                this.OnCityNameChanged();
+                this.OnPropertyChanged("CityName");
+            }
+        }
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "2.4.0")]
+        private string _CityName;
+        partial void OnCityNameChanging(string value);
+        partial void OnCityNameChanged();
+        /// <summary>
+        /// There are no comments for Property ProvinceId in the schema.
+        /// </summary>
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "2.4.0")]
+        [global::Microsoft.OData.Client.OriginalNameAttribute("ProvinceId")]
+        public global::System.Nullable<global::System.Guid> ProvinceId
+        {
+            get
+            {
+                return this._ProvinceId;
+            }
+            set
+            {
+                this.OnProvinceIdChanging(value);
+                this._ProvinceId = value;
+                this.OnProvinceIdChanged();
+                this.OnPropertyChanged("ProvinceId");
+            }
+        }
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "2.4.0")]
+        private global::System.Nullable<global::System.Guid> _ProvinceId;
+        partial void OnProvinceIdChanging(global::System.Nullable<global::System.Guid> value);
+        partial void OnProvinceIdChanged();
+        /// <summary>
+        /// There are no comments for Property ProvinceName in the schema.
+        /// </summary>
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "2.4.0")]
+        [global::Microsoft.OData.Client.OriginalNameAttribute("ProvinceName")]
+        public string ProvinceName
+        {
+            get
+            {
+                return this._ProvinceName;
+            }
+            set
+            {
+                this.OnProvinceNameChanging(value);
+                this._ProvinceName = value;
+                this.OnProvinceNameChanged();
+                this.OnPropertyChanged("ProvinceName");
+            }
+        }
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "2.4.0")]
+        private string _ProvinceName;
+        partial void OnProvinceNameChanging(string value);
+        partial void OnProvinceNameChanged();
+        /// <summary>
+        /// There are no comments for Property NeedsReviewId in the schema.
+        /// </summary>
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "2.4.0")]
+        [global::Microsoft.OData.Client.OriginalNameAttribute("NeedsReviewId")]
+        public global::System.Nullable<global::System.Guid> NeedsReviewId
+        {
+            get
+            {
+                return this._NeedsReviewId;
+            }
+            set
+            {
+                this.OnNeedsReviewIdChanging(value);
+                this._NeedsReviewId = value;
+                this.OnNeedsReviewIdChanged();
+                this.OnPropertyChanged("NeedsReviewId");
+            }
+        }
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "2.4.0")]
+        private global::System.Nullable<global::System.Guid> _NeedsReviewId;
+        partial void OnNeedsReviewIdChanging(global::System.Nullable<global::System.Guid> value);
+        partial void OnNeedsReviewIdChanged();
+        /// <summary>
+        /// There are no comments for Property Images in the schema.
+        /// </summary>
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "2.4.0")]
+        [global::Microsoft.OData.Client.OriginalNameAttribute("Images")]
+        public global::Microsoft.OData.Client.DataServiceCollection<global::BitChangeSetManager.Xamarin.BitChangeSetManager.Dto.ChangeSetImagetDto> Images
+        {
+            get
+            {
+                return this._Images;
+            }
+            set
+            {
+                this.OnImagesChanging(value);
+                this._Images = value;
+                this.OnImagesChanged();
+                this.OnPropertyChanged("Images");
+            }
+        }
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "2.4.0")]
+        private global::Microsoft.OData.Client.DataServiceCollection<global::BitChangeSetManager.Xamarin.BitChangeSetManager.Dto.ChangeSetImagetDto> _Images = new global::Microsoft.OData.Client.DataServiceCollection<global::BitChangeSetManager.Xamarin.BitChangeSetManager.Dto.ChangeSetImagetDto>(null, global::Microsoft.OData.Client.TrackingMode.None);
+        partial void OnImagesChanging(global::Microsoft.OData.Client.DataServiceCollection<global::BitChangeSetManager.Xamarin.BitChangeSetManager.Dto.ChangeSetImagetDto> value);
+        partial void OnImagesChanged();
+        /// <summary>
         /// This event is raised when the value of the property is changed
         /// </summary>
         [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "2.4.0")]
@@ -964,10 +1437,276 @@ namespace BitChangeSetManager.Xamarin.BitChangeSetManager.Dto
         }
     }
     /// <summary>
+    /// There are no comments for ConstantDtoSingle in the schema.
+    /// </summary>
+    [global::Microsoft.OData.Client.OriginalNameAttribute("ConstantDtoSingle")]
+    public partial class ConstantDtoSingle : global::Microsoft.OData.Client.DataServiceQuerySingle<ConstantDto>
+    {
+        /// <summary>
+        /// Initialize a new ConstantDtoSingle object.
+        /// </summary>
+        public ConstantDtoSingle(global::Microsoft.OData.Client.DataServiceContext context, string path)
+            : base(context, path) {}
+
+        /// <summary>
+        /// Initialize a new ConstantDtoSingle object.
+        /// </summary>
+        public ConstantDtoSingle(global::Microsoft.OData.Client.DataServiceContext context, string path, bool isComposable)
+            : base(context, path, isComposable) {}
+
+        /// <summary>
+        /// Initialize a new ConstantDtoSingle object.
+        /// </summary>
+        public ConstantDtoSingle(global::Microsoft.OData.Client.DataServiceQuerySingle<ConstantDto> query)
+            : base(query) {}
+
+    }
+    /// <summary>
+    /// There are no comments for ConstantDto in the schema.
+    /// </summary>
+    /// <KeyProperties>
+    /// Id
+    /// </KeyProperties>
+    [global::Microsoft.OData.Client.Key("Id")]
+    [global::Microsoft.OData.Client.OriginalNameAttribute("ConstantDto")]
+    public partial class ConstantDto : global::Microsoft.OData.Client.BaseEntityType, global::System.ComponentModel.INotifyPropertyChanged
+    {
+        /// <summary>
+        /// Create a new ConstantDto object.
+        /// </summary>
+        /// <param name="ID">Initial value of Id.</param>
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "2.4.0")]
+        public static ConstantDto CreateConstantDto(global::System.Guid ID)
+        {
+            ConstantDto constantDto = new ConstantDto();
+            constantDto.Id = ID;
+            return constantDto;
+        }
+        /// <summary>
+        /// There are no comments for Property Id in the schema.
+        /// </summary>
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "2.4.0")]
+        [global::Microsoft.OData.Client.OriginalNameAttribute("Id")]
+        public global::System.Guid Id
+        {
+            get
+            {
+                return this._Id;
+            }
+            set
+            {
+                this.OnIdChanging(value);
+                this._Id = value;
+                this.OnIdChanged();
+                this.OnPropertyChanged("Id");
+            }
+        }
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "2.4.0")]
+        private global::System.Guid _Id;
+        partial void OnIdChanging(global::System.Guid value);
+        partial void OnIdChanged();
+        /// <summary>
+        /// There are no comments for Property Name in the schema.
+        /// </summary>
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "2.4.0")]
+        [global::Microsoft.OData.Client.OriginalNameAttribute("Name")]
+        public string Name
+        {
+            get
+            {
+                return this._Name;
+            }
+            set
+            {
+                this.OnNameChanging(value);
+                this._Name = value;
+                this.OnNameChanged();
+                this.OnPropertyChanged("Name");
+            }
+        }
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "2.4.0")]
+        private string _Name;
+        partial void OnNameChanging(string value);
+        partial void OnNameChanged();
+        /// <summary>
+        /// There are no comments for Property Title in the schema.
+        /// </summary>
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "2.4.0")]
+        [global::Microsoft.OData.Client.OriginalNameAttribute("Title")]
+        public string Title
+        {
+            get
+            {
+                return this._Title;
+            }
+            set
+            {
+                this.OnTitleChanging(value);
+                this._Title = value;
+                this.OnTitleChanged();
+                this.OnPropertyChanged("Title");
+            }
+        }
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "2.4.0")]
+        private string _Title;
+        partial void OnTitleChanging(string value);
+        partial void OnTitleChanged();
+        /// <summary>
+        /// This event is raised when the value of the property is changed
+        /// </summary>
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "2.4.0")]
+        public event global::System.ComponentModel.PropertyChangedEventHandler PropertyChanged;
+        /// <summary>
+        /// The value of the property is changed
+        /// </summary>
+        /// <param name="property">property name</param>
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "2.4.0")]
+        protected virtual void OnPropertyChanged(string property)
+        {
+            if ((this.PropertyChanged != null))
+            {
+                this.PropertyChanged(this, new global::System.ComponentModel.PropertyChangedEventArgs(property));
+            }
+        }
+    }
+    /// <summary>
+    /// There are no comments for ProvinceDtoSingle in the schema.
+    /// </summary>
+    [global::Microsoft.OData.Client.OriginalNameAttribute("ProvinceDtoSingle")]
+    public partial class ProvinceDtoSingle : global::Microsoft.OData.Client.DataServiceQuerySingle<ProvinceDto>
+    {
+        /// <summary>
+        /// Initialize a new ProvinceDtoSingle object.
+        /// </summary>
+        public ProvinceDtoSingle(global::Microsoft.OData.Client.DataServiceContext context, string path)
+            : base(context, path) {}
+
+        /// <summary>
+        /// Initialize a new ProvinceDtoSingle object.
+        /// </summary>
+        public ProvinceDtoSingle(global::Microsoft.OData.Client.DataServiceContext context, string path, bool isComposable)
+            : base(context, path, isComposable) {}
+
+        /// <summary>
+        /// Initialize a new ProvinceDtoSingle object.
+        /// </summary>
+        public ProvinceDtoSingle(global::Microsoft.OData.Client.DataServiceQuerySingle<ProvinceDto> query)
+            : base(query) {}
+
+    }
+    /// <summary>
+    /// There are no comments for ProvinceDto in the schema.
+    /// </summary>
+    /// <KeyProperties>
+    /// Id
+    /// </KeyProperties>
+    [global::Microsoft.OData.Client.Key("Id")]
+    [global::Microsoft.OData.Client.OriginalNameAttribute("ProvinceDto")]
+    public partial class ProvinceDto : global::Microsoft.OData.Client.BaseEntityType, global::System.ComponentModel.INotifyPropertyChanged
+    {
+        /// <summary>
+        /// Create a new ProvinceDto object.
+        /// </summary>
+        /// <param name="ID">Initial value of Id.</param>
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "2.4.0")]
+        public static ProvinceDto CreateProvinceDto(global::System.Guid ID)
+        {
+            ProvinceDto provinceDto = new ProvinceDto();
+            provinceDto.Id = ID;
+            return provinceDto;
+        }
+        /// <summary>
+        /// There are no comments for Property Id in the schema.
+        /// </summary>
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "2.4.0")]
+        [global::Microsoft.OData.Client.OriginalNameAttribute("Id")]
+        public global::System.Guid Id
+        {
+            get
+            {
+                return this._Id;
+            }
+            set
+            {
+                this.OnIdChanging(value);
+                this._Id = value;
+                this.OnIdChanged();
+                this.OnPropertyChanged("Id");
+            }
+        }
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "2.4.0")]
+        private global::System.Guid _Id;
+        partial void OnIdChanging(global::System.Guid value);
+        partial void OnIdChanged();
+        /// <summary>
+        /// There are no comments for Property Name in the schema.
+        /// </summary>
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "2.4.0")]
+        [global::Microsoft.OData.Client.OriginalNameAttribute("Name")]
+        public string Name
+        {
+            get
+            {
+                return this._Name;
+            }
+            set
+            {
+                this.OnNameChanging(value);
+                this._Name = value;
+                this.OnNameChanged();
+                this.OnPropertyChanged("Name");
+            }
+        }
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "2.4.0")]
+        private string _Name;
+        partial void OnNameChanging(string value);
+        partial void OnNameChanged();
+        /// <summary>
+        /// This event is raised when the value of the property is changed
+        /// </summary>
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "2.4.0")]
+        public event global::System.ComponentModel.PropertyChangedEventHandler PropertyChanged;
+        /// <summary>
+        /// The value of the property is changed
+        /// </summary>
+        /// <param name="property">property name</param>
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "2.4.0")]
+        protected virtual void OnPropertyChanged(string property)
+        {
+            if ((this.PropertyChanged != null))
+            {
+                this.PropertyChanged(this, new global::System.ComponentModel.PropertyChangedEventArgs(property));
+            }
+        }
+    }
+    /// <summary>
     /// Class containing all extension methods
     /// </summary>
     public static class ExtensionMethods
     {
+        /// <summary>
+        /// Get an entity of type global::BitChangeSetManager.Xamarin.BitChangeSetManager.Dto.ChangeSetImagetDto as global::BitChangeSetManager.Xamarin.BitChangeSetManager.Dto.ChangeSetImagetDtoSingle specified by key from an entity set
+        /// </summary>
+        /// <param name="source">source entity set</param>
+        /// <param name="keys">dictionary with the names and values of keys</param>
+        public static global::BitChangeSetManager.Xamarin.BitChangeSetManager.Dto.ChangeSetImagetDtoSingle ByKey(this global::Microsoft.OData.Client.DataServiceQuery<global::BitChangeSetManager.Xamarin.BitChangeSetManager.Dto.ChangeSetImagetDto> source, global::System.Collections.Generic.Dictionary<string, object> keys)
+        {
+            return new global::BitChangeSetManager.Xamarin.BitChangeSetManager.Dto.ChangeSetImagetDtoSingle(source.Context, source.GetKeyPath(global::Microsoft.OData.Client.Serializer.GetKeyString(source.Context, keys)));
+        }
+        /// <summary>
+        /// Get an entity of type global::BitChangeSetManager.Xamarin.BitChangeSetManager.Dto.ChangeSetImagetDto as global::BitChangeSetManager.Xamarin.BitChangeSetManager.Dto.ChangeSetImagetDtoSingle specified by key from an entity set
+        /// </summary>
+        /// <param name="source">source entity set</param>
+        /// <param name="id">The value of id</param>
+        public static global::BitChangeSetManager.Xamarin.BitChangeSetManager.Dto.ChangeSetImagetDtoSingle ByKey(this global::Microsoft.OData.Client.DataServiceQuery<global::BitChangeSetManager.Xamarin.BitChangeSetManager.Dto.ChangeSetImagetDto> source,
+            global::System.Guid id)
+        {
+            global::System.Collections.Generic.Dictionary<string, object> keys = new global::System.Collections.Generic.Dictionary<string, object>
+            {
+                { "Id", id }
+            };
+            return new global::BitChangeSetManager.Xamarin.BitChangeSetManager.Dto.ChangeSetImagetDtoSingle(source.Context, source.GetKeyPath(global::Microsoft.OData.Client.Serializer.GetKeyString(source.Context, keys)));
+        }
         /// <summary>
         /// Get an entity of type global::BitChangeSetManager.Xamarin.BitChangeSetManager.Dto.ChangeSetDeliveryRequirementDto as global::BitChangeSetManager.Xamarin.BitChangeSetManager.Dto.ChangeSetDeliveryRequirementDtoSingle specified by key from an entity set
         /// </summary>
@@ -1038,6 +1777,29 @@ namespace BitChangeSetManager.Xamarin.BitChangeSetManager.Dto
             return new global::BitChangeSetManager.Xamarin.BitChangeSetManager.Dto.ChangeSetSeverityDtoSingle(source.Context, source.GetKeyPath(global::Microsoft.OData.Client.Serializer.GetKeyString(source.Context, keys)));
         }
         /// <summary>
+        /// Get an entity of type global::BitChangeSetManager.Xamarin.BitChangeSetManager.Dto.CityDto as global::BitChangeSetManager.Xamarin.BitChangeSetManager.Dto.CityDtoSingle specified by key from an entity set
+        /// </summary>
+        /// <param name="source">source entity set</param>
+        /// <param name="keys">dictionary with the names and values of keys</param>
+        public static global::BitChangeSetManager.Xamarin.BitChangeSetManager.Dto.CityDtoSingle ByKey(this global::Microsoft.OData.Client.DataServiceQuery<global::BitChangeSetManager.Xamarin.BitChangeSetManager.Dto.CityDto> source, global::System.Collections.Generic.Dictionary<string, object> keys)
+        {
+            return new global::BitChangeSetManager.Xamarin.BitChangeSetManager.Dto.CityDtoSingle(source.Context, source.GetKeyPath(global::Microsoft.OData.Client.Serializer.GetKeyString(source.Context, keys)));
+        }
+        /// <summary>
+        /// Get an entity of type global::BitChangeSetManager.Xamarin.BitChangeSetManager.Dto.CityDto as global::BitChangeSetManager.Xamarin.BitChangeSetManager.Dto.CityDtoSingle specified by key from an entity set
+        /// </summary>
+        /// <param name="source">source entity set</param>
+        /// <param name="id">The value of id</param>
+        public static global::BitChangeSetManager.Xamarin.BitChangeSetManager.Dto.CityDtoSingle ByKey(this global::Microsoft.OData.Client.DataServiceQuery<global::BitChangeSetManager.Xamarin.BitChangeSetManager.Dto.CityDto> source,
+            global::System.Guid id)
+        {
+            global::System.Collections.Generic.Dictionary<string, object> keys = new global::System.Collections.Generic.Dictionary<string, object>
+            {
+                { "Id", id }
+            };
+            return new global::BitChangeSetManager.Xamarin.BitChangeSetManager.Dto.CityDtoSingle(source.Context, source.GetKeyPath(global::Microsoft.OData.Client.Serializer.GetKeyString(source.Context, keys)));
+        }
+        /// <summary>
         /// Get an entity of type global::BitChangeSetManager.Xamarin.BitChangeSetManager.Dto.DeliveryDto as global::BitChangeSetManager.Xamarin.BitChangeSetManager.Dto.DeliveryDtoSingle specified by key from an entity set
         /// </summary>
         /// <param name="source">source entity set</param>
@@ -1105,6 +1867,52 @@ namespace BitChangeSetManager.Xamarin.BitChangeSetManager.Dto
                 { "Id", id }
             };
             return new global::BitChangeSetManager.Xamarin.BitChangeSetManager.Dto.CustomerDtoSingle(source.Context, source.GetKeyPath(global::Microsoft.OData.Client.Serializer.GetKeyString(source.Context, keys)));
+        }
+        /// <summary>
+        /// Get an entity of type global::BitChangeSetManager.Xamarin.BitChangeSetManager.Dto.ConstantDto as global::BitChangeSetManager.Xamarin.BitChangeSetManager.Dto.ConstantDtoSingle specified by key from an entity set
+        /// </summary>
+        /// <param name="source">source entity set</param>
+        /// <param name="keys">dictionary with the names and values of keys</param>
+        public static global::BitChangeSetManager.Xamarin.BitChangeSetManager.Dto.ConstantDtoSingle ByKey(this global::Microsoft.OData.Client.DataServiceQuery<global::BitChangeSetManager.Xamarin.BitChangeSetManager.Dto.ConstantDto> source, global::System.Collections.Generic.Dictionary<string, object> keys)
+        {
+            return new global::BitChangeSetManager.Xamarin.BitChangeSetManager.Dto.ConstantDtoSingle(source.Context, source.GetKeyPath(global::Microsoft.OData.Client.Serializer.GetKeyString(source.Context, keys)));
+        }
+        /// <summary>
+        /// Get an entity of type global::BitChangeSetManager.Xamarin.BitChangeSetManager.Dto.ConstantDto as global::BitChangeSetManager.Xamarin.BitChangeSetManager.Dto.ConstantDtoSingle specified by key from an entity set
+        /// </summary>
+        /// <param name="source">source entity set</param>
+        /// <param name="id">The value of id</param>
+        public static global::BitChangeSetManager.Xamarin.BitChangeSetManager.Dto.ConstantDtoSingle ByKey(this global::Microsoft.OData.Client.DataServiceQuery<global::BitChangeSetManager.Xamarin.BitChangeSetManager.Dto.ConstantDto> source,
+            global::System.Guid id)
+        {
+            global::System.Collections.Generic.Dictionary<string, object> keys = new global::System.Collections.Generic.Dictionary<string, object>
+            {
+                { "Id", id }
+            };
+            return new global::BitChangeSetManager.Xamarin.BitChangeSetManager.Dto.ConstantDtoSingle(source.Context, source.GetKeyPath(global::Microsoft.OData.Client.Serializer.GetKeyString(source.Context, keys)));
+        }
+        /// <summary>
+        /// Get an entity of type global::BitChangeSetManager.Xamarin.BitChangeSetManager.Dto.ProvinceDto as global::BitChangeSetManager.Xamarin.BitChangeSetManager.Dto.ProvinceDtoSingle specified by key from an entity set
+        /// </summary>
+        /// <param name="source">source entity set</param>
+        /// <param name="keys">dictionary with the names and values of keys</param>
+        public static global::BitChangeSetManager.Xamarin.BitChangeSetManager.Dto.ProvinceDtoSingle ByKey(this global::Microsoft.OData.Client.DataServiceQuery<global::BitChangeSetManager.Xamarin.BitChangeSetManager.Dto.ProvinceDto> source, global::System.Collections.Generic.Dictionary<string, object> keys)
+        {
+            return new global::BitChangeSetManager.Xamarin.BitChangeSetManager.Dto.ProvinceDtoSingle(source.Context, source.GetKeyPath(global::Microsoft.OData.Client.Serializer.GetKeyString(source.Context, keys)));
+        }
+        /// <summary>
+        /// Get an entity of type global::BitChangeSetManager.Xamarin.BitChangeSetManager.Dto.ProvinceDto as global::BitChangeSetManager.Xamarin.BitChangeSetManager.Dto.ProvinceDtoSingle specified by key from an entity set
+        /// </summary>
+        /// <param name="source">source entity set</param>
+        /// <param name="id">The value of id</param>
+        public static global::BitChangeSetManager.Xamarin.BitChangeSetManager.Dto.ProvinceDtoSingle ByKey(this global::Microsoft.OData.Client.DataServiceQuery<global::BitChangeSetManager.Xamarin.BitChangeSetManager.Dto.ProvinceDto> source,
+            global::System.Guid id)
+        {
+            global::System.Collections.Generic.Dictionary<string, object> keys = new global::System.Collections.Generic.Dictionary<string, object>
+            {
+                { "Id", id }
+            };
+            return new global::BitChangeSetManager.Xamarin.BitChangeSetManager.Dto.ProvinceDtoSingle(source.Context, source.GetKeyPath(global::Microsoft.OData.Client.Serializer.GetKeyString(source.Context, keys)));
         }
     }
 }
@@ -1178,6 +1986,24 @@ namespace BitChangeSetManager.Xamarin.BitChangeSetManager
             return null;
         }
         /// <summary>
+        /// There are no comments for ChangeSetImages in the schema.
+        /// </summary>
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "2.4.0")]
+        [global::Microsoft.OData.Client.OriginalNameAttribute("ChangeSetImages")]
+        public global::Microsoft.OData.Client.DataServiceQuery<global::BitChangeSetManager.Xamarin.BitChangeSetManager.Dto.ChangeSetImagetDto> ChangeSetImages
+        {
+            get
+            {
+                if ((this._ChangeSetImages == null))
+                {
+                    this._ChangeSetImages = base.CreateQuery<global::BitChangeSetManager.Xamarin.BitChangeSetManager.Dto.ChangeSetImagetDto>("ChangeSetImages");
+                }
+                return this._ChangeSetImages;
+            }
+        }
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "2.4.0")]
+        private global::Microsoft.OData.Client.DataServiceQuery<global::BitChangeSetManager.Xamarin.BitChangeSetManager.Dto.ChangeSetImagetDto> _ChangeSetImages;
+        /// <summary>
         /// There are no comments for ChangeSetDeliveryRequirements in the schema.
         /// </summary>
         [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "2.4.0")]
@@ -1231,6 +2057,24 @@ namespace BitChangeSetManager.Xamarin.BitChangeSetManager
         }
         [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "2.4.0")]
         private global::Microsoft.OData.Client.DataServiceQuery<global::BitChangeSetManager.Xamarin.BitChangeSetManager.Dto.ChangeSetSeverityDto> _ChangeSetSeverities;
+        /// <summary>
+        /// There are no comments for Cities in the schema.
+        /// </summary>
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "2.4.0")]
+        [global::Microsoft.OData.Client.OriginalNameAttribute("Cities")]
+        public global::Microsoft.OData.Client.DataServiceQuery<global::BitChangeSetManager.Xamarin.BitChangeSetManager.Dto.CityDto> Cities
+        {
+            get
+            {
+                if ((this._Cities == null))
+                {
+                    this._Cities = base.CreateQuery<global::BitChangeSetManager.Xamarin.BitChangeSetManager.Dto.CityDto>("Cities");
+                }
+                return this._Cities;
+            }
+        }
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "2.4.0")]
+        private global::Microsoft.OData.Client.DataServiceQuery<global::BitChangeSetManager.Xamarin.BitChangeSetManager.Dto.CityDto> _Cities;
         /// <summary>
         /// There are no comments for Deliveries in the schema.
         /// </summary>
@@ -1286,6 +2130,50 @@ namespace BitChangeSetManager.Xamarin.BitChangeSetManager
         [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "2.4.0")]
         private global::Microsoft.OData.Client.DataServiceQuery<global::BitChangeSetManager.Xamarin.BitChangeSetManager.Dto.CustomerDto> _Customers;
         /// <summary>
+        /// There are no comments for Constants in the schema.
+        /// </summary>
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "2.4.0")]
+        [global::Microsoft.OData.Client.OriginalNameAttribute("Constants")]
+        public global::Microsoft.OData.Client.DataServiceQuery<global::BitChangeSetManager.Xamarin.BitChangeSetManager.Dto.ConstantDto> Constants
+        {
+            get
+            {
+                if ((this._Constants == null))
+                {
+                    this._Constants = base.CreateQuery<global::BitChangeSetManager.Xamarin.BitChangeSetManager.Dto.ConstantDto>("Constants");
+                }
+                return this._Constants;
+            }
+        }
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "2.4.0")]
+        private global::Microsoft.OData.Client.DataServiceQuery<global::BitChangeSetManager.Xamarin.BitChangeSetManager.Dto.ConstantDto> _Constants;
+        /// <summary>
+        /// There are no comments for Provinces in the schema.
+        /// </summary>
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "2.4.0")]
+        [global::Microsoft.OData.Client.OriginalNameAttribute("Provinces")]
+        public global::Microsoft.OData.Client.DataServiceQuery<global::BitChangeSetManager.Xamarin.BitChangeSetManager.Dto.ProvinceDto> Provinces
+        {
+            get
+            {
+                if ((this._Provinces == null))
+                {
+                    this._Provinces = base.CreateQuery<global::BitChangeSetManager.Xamarin.BitChangeSetManager.Dto.ProvinceDto>("Provinces");
+                }
+                return this._Provinces;
+            }
+        }
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "2.4.0")]
+        private global::Microsoft.OData.Client.DataServiceQuery<global::BitChangeSetManager.Xamarin.BitChangeSetManager.Dto.ProvinceDto> _Provinces;
+        /// <summary>
+        /// There are no comments for ChangeSetImages in the schema.
+        /// </summary>
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "2.4.0")]
+        public void AddToChangeSetImages(global::BitChangeSetManager.Xamarin.BitChangeSetManager.Dto.ChangeSetImagetDto changeSetImagetDto)
+        {
+            base.AddObject("ChangeSetImages", changeSetImagetDto);
+        }
+        /// <summary>
         /// There are no comments for ChangeSetDeliveryRequirements in the schema.
         /// </summary>
         [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "2.4.0")]
@@ -1308,6 +2196,14 @@ namespace BitChangeSetManager.Xamarin.BitChangeSetManager
         public void AddToChangeSetSeverities(global::BitChangeSetManager.Xamarin.BitChangeSetManager.Dto.ChangeSetSeverityDto changeSetSeverityDto)
         {
             base.AddObject("ChangeSetSeverities", changeSetSeverityDto);
+        }
+        /// <summary>
+        /// There are no comments for Cities in the schema.
+        /// </summary>
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "2.4.0")]
+        public void AddToCities(global::BitChangeSetManager.Xamarin.BitChangeSetManager.Dto.CityDto cityDto)
+        {
+            base.AddObject("Cities", cityDto);
         }
         /// <summary>
         /// There are no comments for Deliveries in the schema.
@@ -1333,6 +2229,22 @@ namespace BitChangeSetManager.Xamarin.BitChangeSetManager
         {
             base.AddObject("Customers", customerDto);
         }
+        /// <summary>
+        /// There are no comments for Constants in the schema.
+        /// </summary>
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "2.4.0")]
+        public void AddToConstants(global::BitChangeSetManager.Xamarin.BitChangeSetManager.Dto.ConstantDto constantDto)
+        {
+            base.AddObject("Constants", constantDto);
+        }
+        /// <summary>
+        /// There are no comments for Provinces in the schema.
+        /// </summary>
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "2.4.0")]
+        public void AddToProvinces(global::BitChangeSetManager.Xamarin.BitChangeSetManager.Dto.ProvinceDto provinceDto)
+        {
+            base.AddObject("Provinces", provinceDto);
+        }
         [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "2.4.0")]
         private abstract class GeneratedEdmModel
         {
@@ -1342,6 +2254,17 @@ namespace BitChangeSetManager.Xamarin.BitChangeSetManager
             private const string Edmx = @"<edmx:Edmx Version=""4.0"" xmlns:edmx=""http://docs.oasis-open.org/odata/ns/edmx"">
   <edmx:DataServices>
     <Schema Namespace=""BitChangeSetManager.Dto"" xmlns=""http://docs.oasis-open.org/odata/ns/edm"">
+      <EntityType Name=""ChangeSetImagetDto"">
+        <Key>
+          <PropertyRef Name=""Id"" />
+        </Key>
+        <Property Name=""Id"" Type=""Edm.Guid"" Nullable=""false"" />
+        <Property Name=""Name"" Type=""Edm.String"" />
+        <Property Name=""ChangeSetId"" Type=""Edm.Guid"" />
+        <NavigationProperty Name=""ChangeSet"" Type=""BitChangeSetManager.Dto.ChangeSetDto"">
+          <ReferentialConstraint Property=""ChangeSetId"" ReferencedProperty=""Id"" />
+        </NavigationProperty>
+      </EntityType>
       <EntityType Name=""ChangeSetDeliveryRequirementDto"">
         <Key>
           <PropertyRef Name=""Id"" />
@@ -1362,6 +2285,14 @@ namespace BitChangeSetManager.Xamarin.BitChangeSetManager
         </Key>
         <Property Name=""Id"" Type=""Edm.Guid"" Nullable=""false"" />
         <Property Name=""Title"" Type=""Edm.String"" />
+      </EntityType>
+      <EntityType Name=""CityDto"">
+        <Key>
+          <PropertyRef Name=""Id"" />
+        </Key>
+        <Property Name=""Id"" Type=""Edm.Guid"" Nullable=""false"" />
+        <Property Name=""Name"" Type=""Edm.String"" />
+        <Property Name=""ProvinceId"" Type=""Edm.Guid"" Nullable=""false"" />
       </EntityType>
       <EntityType Name=""DeliveryDto"">
         <Key>
@@ -1388,6 +2319,12 @@ namespace BitChangeSetManager.Xamarin.BitChangeSetManager
         <Property Name=""SeverityTitle"" Type=""Edm.String"" />
         <Property Name=""DeliveryRequirementId"" Type=""Edm.Guid"" Nullable=""false"" />
         <Property Name=""DeliveryRequirementTitle"" Type=""Edm.String"" />
+        <Property Name=""CityId"" Type=""Edm.Guid"" />
+        <Property Name=""CityName"" Type=""Edm.String"" />
+        <Property Name=""ProvinceId"" Type=""Edm.Guid"" />
+        <Property Name=""ProvinceName"" Type=""Edm.String"" />
+        <Property Name=""NeedsReviewId"" Type=""Edm.Guid"" />
+        <NavigationProperty Name=""Images"" Type=""Collection(BitChangeSetManager.Dto.ChangeSetImagetDto)"" />
       </EntityType>
       <EntityType Name=""CustomerDto"">
         <Key>
@@ -1396,6 +2333,21 @@ namespace BitChangeSetManager.Xamarin.BitChangeSetManager
         <Property Name=""Id"" Type=""Edm.Guid"" Nullable=""false"" />
         <Property Name=""Name"" Type=""Edm.String"" Nullable=""false"" />
       </EntityType>
+      <EntityType Name=""ConstantDto"">
+        <Key>
+          <PropertyRef Name=""Id"" />
+        </Key>
+        <Property Name=""Id"" Type=""Edm.Guid"" Nullable=""false"" />
+        <Property Name=""Name"" Type=""Edm.String"" />
+        <Property Name=""Title"" Type=""Edm.String"" />
+      </EntityType>
+      <EntityType Name=""ProvinceDto"">
+        <Key>
+          <PropertyRef Name=""Id"" />
+        </Key>
+        <Property Name=""Id"" Type=""Edm.Guid"" Nullable=""false"" />
+        <Property Name=""Name"" Type=""Edm.String"" />
+      </EntityType>
     </Schema>
     <Schema Namespace=""BitChangeSetManager"" xmlns=""http://docs.oasis-open.org/odata/ns/edm"">
       <Function Name=""GetAllTemplates"" IsBound=""true"">
@@ -1403,12 +2355,20 @@ namespace BitChangeSetManager.Xamarin.BitChangeSetManager
         <ReturnType Type=""Collection(BitChangeSetManager.Dto.ChangeSetDescriptionTemplateDto)"" />
       </Function>
       <EntityContainer Name=""BitChangeSetManagerContext"">
+        <EntitySet Name=""ChangeSetImages"" EntityType=""BitChangeSetManager.Dto.ChangeSetImagetDto"">
+          <NavigationPropertyBinding Path=""ChangeSet"" Target=""ChangeSets"" />
+        </EntitySet>
         <EntitySet Name=""ChangeSetDeliveryRequirements"" EntityType=""BitChangeSetManager.Dto.ChangeSetDeliveryRequirementDto"" />
         <EntitySet Name=""ChangeSetDescriptionTemplate"" EntityType=""BitChangeSetManager.Dto.ChangeSetDescriptionTemplateDto"" />
         <EntitySet Name=""ChangeSetSeverities"" EntityType=""BitChangeSetManager.Dto.ChangeSetSeverityDto"" />
+        <EntitySet Name=""Cities"" EntityType=""BitChangeSetManager.Dto.CityDto"" />
         <EntitySet Name=""Deliveries"" EntityType=""BitChangeSetManager.Dto.DeliveryDto"" />
-        <EntitySet Name=""ChangeSets"" EntityType=""BitChangeSetManager.Dto.ChangeSetDto"" />
+        <EntitySet Name=""ChangeSets"" EntityType=""BitChangeSetManager.Dto.ChangeSetDto"">
+          <NavigationPropertyBinding Path=""Images"" Target=""ChangeSetImages"" />
+        </EntitySet>
         <EntitySet Name=""Customers"" EntityType=""BitChangeSetManager.Dto.CustomerDto"" />
+        <EntitySet Name=""Constants"" EntityType=""BitChangeSetManager.Dto.ConstantDto"" />
+        <EntitySet Name=""Provinces"" EntityType=""BitChangeSetManager.Dto.ProvinceDto"" />
       </EntityContainer>
     </Schema>
   </edmx:DataServices>

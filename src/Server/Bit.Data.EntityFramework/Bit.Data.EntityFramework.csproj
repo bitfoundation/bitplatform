@@ -42,7 +42,7 @@
     <Reference Include="System.Data" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Extensions\IDependencyManangerExtensions.cs" />
+    <Compile Include="Extensions\IDependencyManagerExtensions.cs" />
     <Compile Include="Implementations\DefaultDbContext.cs" />
     <Compile Include="Implementations\EfDataProviderSpecificMethodsProvider.cs" />
     <Compile Include="Implementations\EfEntityWithDefaultGuidKeyRepository.cs" />

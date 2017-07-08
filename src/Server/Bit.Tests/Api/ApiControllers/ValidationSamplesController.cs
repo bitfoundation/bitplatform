@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using Bit.Api.ApiControllers;
+using Bit.OData.ODataControllers;
 using Bit.Tests.Model.Dto;
 
 namespace Bit.Tests.Api.ApiControllers

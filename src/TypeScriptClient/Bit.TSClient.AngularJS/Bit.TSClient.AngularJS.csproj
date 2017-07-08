@@ -134,6 +134,9 @@
   <ItemGroup>
     <Content Include="contents\styles\theme.light.green.less" />
   </ItemGroup>
+  <ItemGroup>
+    <Content Include=".npmrc" />
+  </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>
     <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>

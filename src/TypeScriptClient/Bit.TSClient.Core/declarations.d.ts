@@ -14,3 +14,5 @@ declare namespace decimal {
 
 declare var clientAppProfile: Bit.Contracts.IClientAppProfile;
 declare var odatajs: any;
+
+declare var Encoder: { htmlDecode: (value: string) => string };

@@ -1,4 +1,4 @@
-﻿using Bit.Api.ApiControllers;
+﻿using Bit.OData.ODataControllers;
 using BitChangeSetManager.DataAccess;
 using BitChangeSetManager.Dto;
 using BitChangeSetManager.Model;

@@ -2,7 +2,7 @@
 using Bit.Core.Models;
 using Bit.OwinCore.Contracts;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.Extensions.FileProviders;
+using Microsoft.AspNetCore.Hosting;
 using Owin;
 using System;
 
@@ -11,32 +11,27 @@ namespace Bit.OwinCore.Middlewares
     public class AspNetCoreStaticFilesMiddlewareConfiguration : IAspNetCoreMiddlewareConfiguration
     {
         private readonly IAppEnvironmentProvider _appEnvironmentProvider;
-        private readonly IPathProvider _pathProvider;
+        private readonly IHostingEnvironment _hostingEnvironment;
 
         protected AspNetCoreStaticFilesMiddlewareConfiguration()
         {
         }
 
-        public AspNetCoreStaticFilesMiddlewareConfiguration(IAppEnvironmentProvider appEnvironmentProvider,
-            IPathProvider pathProvider)
+        public AspNetCoreStaticFilesMiddlewareConfiguration(IAppEnvironmentProvider appEnvironmentProvider, IHostingEnvironment hostingEnvironment)
         {
             if (appEnvironmentProvider == null)
                 throw new ArgumentNullException(nameof(appEnvironmentProvider));
 
-            if (pathProvider == null)
-                throw new ArgumentNullException(nameof(pathProvider));
+            if (hostingEnvironment == null)
+                throw new ArgumentNullException(nameof(hostingEnvironment));
 
             _appEnvironmentProvider = appEnvironmentProvider;
-            _pathProvider = pathProvider;
+            _hostingEnvironment = hostingEnvironment;
         }
 
         public virtual void Configure(IApplicationBuilder aspNetCoreApp)
         {
             AppEnvironment appEnvironment = _appEnvironmentProvider.GetActiveAppEnvironment();
-
-            string rootFolder = _pathProvider.GetCurrentStaticFilesPath();
-
-            PhysicalFileProvider fileSystem = new PhysicalFileProvider(rootFolder);
 
             FileServerOptions options = new FileServerOptions
             {
@@ -46,7 +41,7 @@ namespace Bit.OwinCore.Middlewares
 
             options.DefaultFilesOptions.DefaultFileNames.Clear();
 
-            options.FileProvider = fileSystem;
+            options.FileProvider = _hostingEnvironment.WebRootFileProvider;
 
             string path = $@"/Files/V{appEnvironment.AppInfo.Version}";
 
