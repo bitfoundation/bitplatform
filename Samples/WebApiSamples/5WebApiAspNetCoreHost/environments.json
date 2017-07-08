@@ -1,0 +1,11 @@
+﻿[
+  {
+    "Name": "Development",
+    "IsActive": true,
+    "DebugMode": true,
+    "AppInfo": {
+      "Name": "5WebApiAspNetCoreHost",
+      "Version": "1"
+    }
+  }
+]

@@ -124,7 +124,7 @@ namespace BitChangeSetManager.Core
 
             }, lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExciting: false);
 
-            if (env.IsDevelopment())
+            if (env.IsProduction())
                 dependencyManager.RegisterSignalRConfiguration<SignalRSqlServerScaleoutConfiguration>();
             dependencyManager.RegisterSignalRConfiguration<SignalRAuthorizeConfiguration>();
             dependencyManager.RegisterSignalRMiddlewareUsingDefaultConfiguration<BitChangeSetManagerAppMessageHubEvents>();

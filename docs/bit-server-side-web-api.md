@@ -201,4 +201,8 @@ By following configs, we've removed extra modules and handlers
 
 ### Web API - Configuration on ASP.NET Core
 
-Comming soon.
+Differences between this project and first project:
+
+1- Instead of Microsoft.Owin.Host.HttpListener nuget package, we've installed Bit.OwinCore. Using Bit.OwinCore, you can host your app on top of asp.net core. ASP.NET core apps can be hosted almost anywhere.
+
+Web API configuration and web api codes are all the same. (-:

@@ -11,6 +11,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "3WebApiFileUpload", "3WebAp
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "4WebApiAspNetHost", "4WebApiAspNetHost\4WebApiAspNetHost.csproj", "{6BA0A378-5431-469A-A7CB-3A10027214C6}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "5WebApiAspNetCoreHost", "5WebApiAspNetCoreHost\5WebApiAspNetCoreHost.csproj", "{A5B91370-1400-4F5A-84C6-0B049186C743}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -33,6 +35,10 @@ Global
 		{6BA0A378-5431-469A-A7CB-3A10027214C6}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{6BA0A378-5431-469A-A7CB-3A10027214C6}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{6BA0A378-5431-469A-A7CB-3A10027214C6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A5B91370-1400-4F5A-84C6-0B049186C743}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A5B91370-1400-4F5A-84C6-0B049186C743}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A5B91370-1400-4F5A-84C6-0B049186C743}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A5B91370-1400-4F5A-84C6-0B049186C743}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
