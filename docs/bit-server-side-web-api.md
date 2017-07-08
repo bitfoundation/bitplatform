@@ -104,10 +104,101 @@ Remember to use async/await and CancellationToken in your Web API codes at it im
 
 So open 3rd sample. It contains upload methods using Web API attribute routing. It uses async/await and CancellationToken and shows you how you can upload files to folders/database.
 
-### Web API - Swagger configuration on ASP.NET
+### Web API - Configuration on ASP.NET
 
-Comming soon.
+In 4th project (4WebApiAspNetHost), you'll find a bit web api project hosted on ASP.NET/IIS.
 
-### Web API - Swagger configuration on ASP.NET Core
+Differences between this project and previews projects:
+
+1- Instead of Microsoft.Owin.Host.HttpListener nuget package, we've installed Microsoft.Owin.Host.SystemWeb. Using first nuget packge, you can "self host" bit server side apps on windows services, console apps, azure job workers etc. Using second package, you can host bit server side apps on top of ASP.NET/IIS. All codes you've developed are the same (We've copied codes from 2WebApiSwagger project in fact).
+
+Differences between this project and normal asp.net web api project:
+
+1- There is a key to introduce AppStartup class as following:
+
+```xml
+<add key="owin:AppStartup" value="WebApiAspNetHost.AppStartup, WebApiAspNetHost" />
+```
+
+AppStartup is a class name & WebApiAspNetHost is a namespace. (Second one is assembly name)
+
+2- To prevent asp.net web pages from being started, we've added following
+
+```xml
+<add key="webpages:Enabled" value="false" />
+```
+
+3- As we've introduced app startup class using "owin:AppStartup" config, we use following to disable automatic search:
+
+```xml
+<add key="owin:AutomaticAppStartup" value="false" />
+```
+
+4- We've added [enablePrefetchOptimization="true" optimizeCompilations="true"] to improve app overall performance.
+
+5- We've removed all assemblies from being compiled as this is not required in bit projects:
+
+```xml
+<assemblies>
+    <remove assembly="*" />
+</assemblies>
+```
+
+6- We've added [enableVersionHeader="false"] to remove extra headers from responses.
+
+7- We've removed all http handlers & modules as 1 owin handler manages everything for you.
+
+```xml
+<httpModules>
+    <clear />
+</httpModules>
+<httpHandlers>
+    <clear />
+</httpHandlers>
+```
+
+8- We've disabled session as it is not required in bit projects.
+
+```xml
+<sessionState mode="Off" />
+```
+
+By following configs, we've removed extra modules and handlers
+
+```xml
+  <system.webServer>
+    <validation validateIntegratedModeConfiguration="false" />
+    <modules runAllManagedModulesForAllRequests="false">
+      <remove name="Session" />
+      <remove name="FormsAuthentication" />
+      <remove name="DefaultAuthentication" />
+      <remove name="RoleManager" />
+      <remove name="FileAuthorization" />
+      <remove name="AnonymousIdentification" />
+      <remove name="Profile" />
+      <remove name="UrlMappingsModule" />
+      <remove name="ServiceModel-4.0" />
+      <remove name="UrlRoutingModule-4.0" />
+      <remove name="ScriptModule-4.0" />
+      <remove name="WebDAVModule" />
+    </modules>
+    <defaultDocument>
+      <files>
+        <clear />
+      </files>
+    </defaultDocument>
+    <handlers>
+      <clear />
+      <add name="Owin" verb="*" path="*" type="Microsoft.Owin.Host.SystemWeb.OwinHttpHandler, Microsoft.Owin.Host.SystemWeb" />
+    </handlers>
+    <httpProtocol>
+      <customHeaders>
+        <clear />
+      </customHeaders>
+    </httpProtocol>
+  </system.webServer>
+```
+
+### Web API - Configuration on ASP.NET Core
 
 Comming soon.
