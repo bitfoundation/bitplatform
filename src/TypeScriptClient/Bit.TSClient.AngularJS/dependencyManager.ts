@@ -537,7 +537,7 @@
 
     export function ObjectDependency(objectDependency: IObjectDependency): ClassDecorator {
 
-        return (targetService: IObjectDependency & Function) => {
+        return (targetService: IObjectDependency & Function): any => {
 
             targetService = Injectable()(targetService) as IObjectDependency & Function;
 
@@ -552,7 +552,7 @@
 
     export function DtoRulesDependency(dtoRules: IObjectDependency): ClassDecorator {
 
-        return (targetDtoRules: IObjectDependency & Function) => {
+        return (targetDtoRules: IObjectDependency & Function): any => {
 
             targetDtoRules = Injectable()(targetDtoRules) as IObjectDependency & Function;
 
@@ -569,7 +569,7 @@
 
     export function FormViewModelDependency(formViewModelDependency: IFormViewModelDependency): ClassDecorator {
 
-        return (targetFormViewModel: IFormViewModelDependency & Function): Function => {
+        return (targetFormViewModel: IFormViewModelDependency & Function): any => {
 
             targetFormViewModel = Injectable()(targetFormViewModel) as IFormViewModelDependency & Function;
 
@@ -584,7 +584,7 @@
 
     export function SecureFormViewModelDependency(formViewModelDependency: IFormViewModelDependency): ClassDecorator {
 
-        return (targetFormViewModel: IFormViewModelDependency & Function): Function => {
+        return (targetFormViewModel: IFormViewModelDependency & Function): any => {
 
             targetFormViewModel = Injectable()(targetFormViewModel) as IFormViewModelDependency & Function;
 
@@ -610,7 +610,7 @@
 
     export function ComponentDependency(componentDependency: IComponentDependency): ClassDecorator {
 
-        return (targetComponent: IComponentDependency & Function): Function => {
+        return (targetComponent: IComponentDependency & Function): any => {
 
             targetComponent = Injectable()(targetComponent) as IComponentDependency & Function;
 
@@ -625,7 +625,7 @@
 
     export function DtoViewModelDependency(dtoViewModel: IComponentDependency): ClassDecorator {
 
-        return (targetDtoViewModel: IComponentDependency & Function): Function => {
+        return (targetDtoViewModel: IComponentDependency & Function): any => {
 
             targetDtoViewModel = Injectable()(targetDtoViewModel) as IComponentDependency & Function;
 
@@ -645,7 +645,7 @@
 
     export function DirectiveDependency(directiveDependency: IDirectiveDependency): ClassDecorator {
 
-        return (targetDirective: IDirectiveDependency & Function): Function => {
+        return (targetDirective: IDirectiveDependency & Function): any => {
 
             targetDirective = Injectable()(targetDirective) as IDirectiveDependency & Function;
 
@@ -690,7 +690,7 @@
 
     export function Injectable(): ClassDecorator {
 
-        return (target: Function): Function => {
+        return (target: Function): any => {
 
             const injects = target.injects;
 

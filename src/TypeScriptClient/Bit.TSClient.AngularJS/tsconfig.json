@@ -13,7 +13,8 @@
     "charset": "utf8",
     "inlineSources": true,
     "removeComments": false,
-    "typeRoots": [ "node_modules\\@types", "..\\Bit.TSClient.Core\\node_modules\\@types" ]
+    "typeRoots": [ "node_modules\\@types", "..\\Bit.TSClient.Core\\node_modules\\@types" ],
+    "skipLibCheck": true
   },
   "exclude": [ "bit.ng1.d.ts", "node_modules", "bin", "obj" ]
 }

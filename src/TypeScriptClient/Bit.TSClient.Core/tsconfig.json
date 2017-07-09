@@ -12,7 +12,8 @@
     "lib": [ "es2017", "dom" ],
     "charset": "utf8",
     "inlineSources": true,
-    "removeComments": false
+    "removeComments": false,
+    "skipLibCheck": true
   },
   "exclude": [ "bit.core.d.ts", "node_modules", "bin", "obj" ]
 }

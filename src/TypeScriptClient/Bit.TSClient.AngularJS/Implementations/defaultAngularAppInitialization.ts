@@ -197,7 +197,7 @@
 
                         DependencyManager.getCurrent().registerCustomObjectResolver({
                             canResolve: (name) => angular.element(document.body).injector().has(name),
-                            resolve: <T>(name) => angular.element(document.body).injector().get<T>(name)
+                            resolve: <T>(name) => angular.element(document.body).injector().get<T>(name) as any
                         });
 
                         await this.registerValues(app);

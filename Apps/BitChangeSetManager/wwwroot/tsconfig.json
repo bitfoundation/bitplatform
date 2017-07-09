@@ -11,7 +11,8 @@
     "lib": [ "dom", "es2017" ],
     "charset": "utf8",
     "inlineSources": true,
-    "removeComments": false
+    "removeComments": false,
+    "skipLibCheck": true
   },
   "exclude": [ "node_modules", "bin", "obj", "security" ]
 }
