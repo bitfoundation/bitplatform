@@ -215,4 +215,10 @@ Web API configuration and web api codes are all the same. (-:
 
 Web API configuration and web api codes are all the same. (-:
 
+Run .Net core app stesp:
+
+1- Download .NET Core 2 Preview from https://www.microsoft.com/net/core/preview
+
+2- Open Samples\WebApiSamples\6WebApiDotNetCoreHost in visual studio code and press F5 or Open WebApiSamples.sln in Visual Studio 2017 Update 3 Preview
+
 Note that upcoming articles have no .net core sample as we've not officillay supported .net core yet, but after we officially supported .net core, you can start a safe/easy migrate.

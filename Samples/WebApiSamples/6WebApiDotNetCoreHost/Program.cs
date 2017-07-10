@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore;
+﻿using System.IO;
+using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Hosting;
 
 namespace WebApiDotNetCoreHost
@@ -7,12 +8,15 @@ namespace WebApiDotNetCoreHost
     {
         public static void Main(string[] args)
         {
-            BuildWebHost(args).Run();
-        }
-
-        public static IWebHost BuildWebHost(string[] args) =>
-            WebHost.CreateDefaultBuilder(args)
+            IWebHost host = new WebHostBuilder()
+                .UseKestrel()
+                .UseContentRoot(Directory.GetCurrentDirectory())
+                .UseWebRoot(Directory.GetCurrentDirectory())
+                .UseIISIntegration()
                 .UseStartup<AppStartup>()
                 .Build();
+
+            host.Run();
+        }
     }
 }

@@ -7,10 +7,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Folder Include="wwwroot\" />
-  </ItemGroup>
-
-  <ItemGroup>
     <PackageReference Include="Bit.Core" Version="0.0.1.4" />
     <PackageReference Include="Bit.Model" Version="0.0.1.4" />
     <PackageReference Include="Bit.WebApi" Version="0.0.1.4" />
