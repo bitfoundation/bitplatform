@@ -206,3 +206,13 @@ AppStartup is a class name & WebApiAspNetHost is a namespace. (Second one is ass
 1- Instead of Microsoft.Owin.Host.HttpListener nuget package, we've installed Bit.OwinCore. Using Bit.OwinCore, you can host your app on top of asp.net core. ASP.NET core apps can be hosted almost anywhere.
 
 Web API configuration and web api codes are all the same. (-:
+
+### Web API - Configuration on ASP.NET Core / .NET Core
+
+#### Differences between this project and first project:
+
+1- Instead of Microsoft.Owin.Host.HttpListener nuget package, we've installed Bit.OwinCore. Using Bit.OwinCore, you can host your app on top of asp.net core. ASP.NET core apps can be hosted almost anywhere.
+
+Web API configuration and web api codes are all the same. (-:
+
+Note that upcoming articles have no .net core sample as we've not officillay supported .net core yet, but after official release, you'll not have to change any line of your codes. This will be a safe/easy migrate.
