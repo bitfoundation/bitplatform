@@ -215,4 +215,4 @@ Web API configuration and web api codes are all the same. (-:
 
 Web API configuration and web api codes are all the same. (-:
 
-Note that upcoming articles have no .net core sample as we've not officillay supported .net core yet, but after official release, you'll not have to change any line of your codes. This will be a safe/easy migrate.
+Note that upcoming articles have no .net core sample as we've not officillay supported .net core yet, but after we officially supported .net core, you can start a safe/easy migrate.
