@@ -1,16 +1,17 @@
-﻿using BitChangeSetManager.DataAccess;
+﻿using Bit.Core.Contracts;
+using Bit.Owin.Exceptions;
+using BitChangeSetManager.DataAccess;
 using BitChangeSetManager.Model;
 using IdentityServer3.Core.Models;
 using IdentityServer3.Core.Services.Default;
 using System;
 using System.Collections.Generic;
-using System.Linq;
+using System.Data.Entity;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
-using Bit.Core.Contracts;
-using Bit.Owin.Exceptions;
 
 namespace BitChangeSetManager.Security
 {
@@ -58,8 +59,8 @@ namespace BitChangeSetManager.Security
                 {
                     IBitChangeSetManagerRepository<User> usersRepository = resolver.Resolve<IBitChangeSetManagerRepository<User>>();
 
-                    user = usersRepository.GetAll()
-                         .SingleOrDefault(u => u.UserName.ToLower() == username && u.Password == password);
+                    user = await (await usersRepository.GetAllAsync(CancellationToken.None))
+                         .SingleOrDefaultAsync(u => u.UserName.ToLower() == username && u.Password == password);
                 }
 
                 if (user == null)
@@ -102,8 +103,8 @@ namespace BitChangeSetManager.Security
 
                 Guid userId = Guid.Parse(context.Subject.Identity.Name);
 
-                user = usersRepository.GetAll()
-                     .SingleOrDefault(u => u.Id == userId);
+                user = await (await usersRepository.GetAllAsync(CancellationToken.None))
+                     .SingleOrDefaultAsync(u => u.Id == userId);
             }
 
             if (user != null)
@@ -131,19 +132,22 @@ namespace BitChangeSetManager.Security
 
         public override async Task IsActiveAsync(IsActiveContext context)
         {
-            User user = null;
-
-            using (IDependencyResolver resolver = _dependencyManager.CreateChildDependencyResolver())
+            if (context.Subject?.Identity?.Name != null)
             {
-                IBitChangeSetManagerRepository<User> usersRepository = resolver.Resolve<IBitChangeSetManagerRepository<User>>();
+                using (IDependencyResolver resolver = _dependencyManager.CreateChildDependencyResolver())
+                {
+                    IBitChangeSetManagerRepository<User> usersRepository = resolver.Resolve<IBitChangeSetManagerRepository<User>>();
 
-                Guid userId = Guid.Parse(context.Subject.Identity.Name);
+                    Guid userId = Guid.Parse(context.Subject.Identity.Name);
 
-                user = usersRepository.GetAll()
-                     .SingleOrDefault(u => u.Id == userId);
+                    context.IsActive = await (await usersRepository.GetAllAsync(CancellationToken.None))
+                         .AnyAsync(u => u.Id == userId);
+                }
             }
-
-            context.IsActive = user != null;
+            else
+            {
+                // context.IsActive = false; // Redirect loop problem. Must be solved.
+            }
 
             await base.IsActiveAsync(context);
         }

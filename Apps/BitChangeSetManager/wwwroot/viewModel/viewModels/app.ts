@@ -11,7 +11,8 @@
 
 
         public constructor( @Inject("MessageReceiver") public messageReceiver: IMessageReceiver,
-            @Inject("$mdSidenav") public $mdSidenav: ng.material.ISidenavService) {
+            @Inject("$mdSidenav") public $mdSidenav: ng.material.ISidenavService,
+            @Inject("SecurityService") public securityService: ISecurityService) {
             super();
         }
 
@@ -28,6 +29,11 @@
         @Command()
         public async closeMenu(): Promise<void> {
             await this.$mdSidenav("menu").close();
+        }
+
+        @Command()
+        public async logout(): Promise<void> {
+            this.securityService.logout();
         }
     }
 }

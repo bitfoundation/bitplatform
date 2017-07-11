@@ -10,6 +10,7 @@ import ObjectDependency = Bit.ObjectDependency;
 import Inject = Bit.Inject;
 import InjectAll = Bit.InjectAll;
 import IMessageReceiver = Bit.Contracts.IMessageReceiver;
+import ISecurityService = Bit.Contracts.ISecurityService;
 import ClientAppProfileManager = Bit.ClientAppProfileManager;
 import DependencyManager = Bit.DependencyManager;
 import Log = Bit.Log;
