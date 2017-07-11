@@ -15,6 +15,7 @@ using System.Net;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Web.Http.Description;
 
 namespace BitChangeSetManager.Api
 {
@@ -42,7 +43,7 @@ namespace BitChangeSetManager.Api
         }
 
         /*[Get]
-        [ReturnType(typeof(IEnumerable<CityDto>))]
+        [ResponseType(typeof(IEnumerable<CityDto>))]
         public HttpResponseMessage GetAll(CancellationToken cancellationToken)
         {
             ODataSqlJsonQuery odataSqlQuery = ODataSqlBuilder.BuildSqlJsonQuery(GetODataQueryOptions(), tableName: "bit.Cities");
