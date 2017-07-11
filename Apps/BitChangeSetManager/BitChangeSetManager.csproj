@@ -414,6 +414,7 @@
     <Compile Include="Api\CustomersController.cs" />
     <Compile Include="Api\ConstantsController.cs" />
     <Compile Include="Api\ProvincesController.cs" />
+    <Compile Include="Api\UsersAvatarController.cs" />
     <Compile Include="DataAccess\BitChangeSetManagerDbContext.cs" />
     <Compile Include="Api\Implementations\BitChangeSetManagerEdmModelProvider.cs" />
     <Compile Include="DataAccess\BitChangeSetManagerEfRepository.cs" />

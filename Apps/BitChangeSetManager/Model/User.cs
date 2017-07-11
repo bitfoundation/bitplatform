@@ -17,5 +17,7 @@ namespace BitChangeSetManager.Model
         public virtual string Password { get; set; }
 
         public virtual BitCulture Culture { get; set; }
+
+        public byte[] AvatarImage { get; set; }
     }
 }
