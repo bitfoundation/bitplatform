@@ -65,8 +65,6 @@ namespace Bit.OwinCore
             if (_hostingEnvironment.WebRootFileProvider == null || _hostingEnvironment.WebRootFileProvider is NullFileProvider)
                 _hostingEnvironment.WebRootFileProvider = new PhysicalFileProvider(_hostingEnvironment.WebRootPath);
 
-            _hostingEnvironment.EnvironmentName = activeAppEnvironment.DebugMode ? "Development" : "Production";
-
             string hostVirtualPath = activeAppEnvironment.GetHostVirtualPath();
             string hostVirtualPathAsAspNeteCorePrefix = hostVirtualPath.Substring(0, hostVirtualPath.Length - 1);
 
