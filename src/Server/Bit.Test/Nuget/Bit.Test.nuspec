@@ -1,27 +1,22 @@
 <?xml version="1.0"?>
 <package xmlns="http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd">
   <metadata>
-    <id>Bit.OwinCore</id>
+    <id>Bit.Test</id>
     <version>0.0.1.6</version>
-    <title>Bit Owin Core</title>
+    <title>Bit Test</title>
     <authors>Bit Foundation</authors>
     <owners>Bit Foundation</owners>
     <licenseUrl>https://github.com/bit-foundation/bit-framework/blob/master/LICENSE</licenseUrl>
     <projectUrl>https://github.com/bit-foundation/bit-framework</projectUrl>
     <iconUrl>https://avatars.githubusercontent.com/u/22663390</iconUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
-    <description>Bit.OwinCore</description>
+    <description>Bit.Test</description>
     <releaseNotes>Summary of changes made in this release of the package.</releaseNotes>
     <copyright>Copyright © Bit Foundation 2017</copyright>
-    <tags>Bit aspnetcore</tags>
-    <dependencies>
-      <dependency id="Bit.Owin" version="0.0.1.6" />
-      <dependency id="Microsoft.AspNetCore.Owin" version="1.1.2" />
-      <dependency id="Autofac.Extensions.DependencyInjection" version="4.1.0" />
-    </dependencies>
+    <tags>Bit</tags>
   </metadata>
   <files>
-    <file src="..\Bit.OwinCore.*" target="lib\net47" />
-    <file src="..\Bit.OwinCore.*" target="lib\netcoreapp2" />
+    <file src="..\Bit.Test.*" target="lib\net47" />
+    <file src="..\Bit.Test.*" target="lib\netcoreapp2" />
   </files>
 </package>

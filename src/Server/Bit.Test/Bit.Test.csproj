@@ -299,6 +299,9 @@
     <Compile Include="TestEnvironmentBase.cs" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="Nuget\Bit.Test.nuspec">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Include="Nuget\Bit.OData.nuspec">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
@@ -428,6 +431,9 @@
       <Output TaskParameter="ConsoleOutput" PropertyName="OutputOfExec" />
     </Exec>
     <Exec Command="&quot;$(SolutionDir)packages\NuGet.CommandLine.4.1.0\tools\NuGet.exe&quot; pack Nuget\Bit.IdentityServer.nuspec -NoPackageAnalysis -Version %(BitAssemblyInfo.Version) -OutputDirectory ." WorkingDirectory="$(OutDir)" LogStandardErrorAsError="true" ConsoleToMSBuild="true">
+      <Output TaskParameter="ConsoleOutput" PropertyName="OutputOfExec" />
+    </Exec>
+    <Exec Command="&quot;$(SolutionDir)packages\NuGet.CommandLine.4.1.0\tools\NuGet.exe&quot; pack Nuget\Bit.Test.nuspec -NoPackageAnalysis -Version %(BitAssemblyInfo.Version) -OutputDirectory ." WorkingDirectory="$(OutDir)" LogStandardErrorAsError="true" ConsoleToMSBuild="true">
       <Output TaskParameter="ConsoleOutput" PropertyName="OutputOfExec" />
     </Exec>
   </Target>

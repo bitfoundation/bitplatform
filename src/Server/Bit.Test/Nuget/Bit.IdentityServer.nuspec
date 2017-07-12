@@ -2,7 +2,7 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd">
   <metadata>
     <id>Bit.IdentityServer</id>
-    <version>0.0.1.3</version>
+    <version>0.0.1.6</version>
     <title>Bit Owin Core</title>
     <authors>Bit Foundation</authors>
     <owners>Bit Foundation</owners>
@@ -15,10 +15,11 @@
     <copyright>Copyright © Bit Foundation 2017</copyright>
     <tags>Bit OAuth2 OAuth OpenID Security 2.0 Connect Identity IdentityServer</tags>
     <dependencies>
-      <dependency id="Bit.Owin" version="0.0.1.3" />
+      <dependency id="Bit.Owin" version="0.0.1.6" />
     </dependencies>
   </metadata>
   <files>
     <file src="..\Bit.IdentityServer.*" target="lib\net47" />
+    <file src="..\Bit.IdentityServer.*" target="lib\netcoreapp2" />
   </files>
 </package>

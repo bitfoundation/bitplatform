@@ -2,7 +2,7 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd">
   <metadata>
     <id>Bit.Data</id>
-    <version>0.0.1.3</version>
+    <version>0.0.1.6</version>
     <title>Bit Data</title>
     <authors>Bit Foundation</authors>
     <owners>Bit Foundation</owners>
@@ -18,10 +18,11 @@
       <frameworkAssembly assemblyName="System.Data" targetFramework="" />
     </frameworkAssemblies>
     <dependencies>
-      <dependency id="Bit.Model" version="0.0.1.3" />
+      <dependency id="Bit.Model" version="0.0.1.6" />
     </dependencies>
   </metadata>
   <files>
     <file src="..\Bit.Data.dll;..\Bit.Data.pdb" target="lib\net47" />
+    <file src="..\Bit.Data.dll;..\Bit.Data.pdb" target="lib\netcoreapp2" />
   </files>
 </package>
