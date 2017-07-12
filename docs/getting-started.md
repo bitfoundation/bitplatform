@@ -16,8 +16,6 @@ Following video shows you how to do that. You're welcome to put comments on our 
 https://youtu.be/zT8mxN-zf4I
 {% endyoutube %}
 
-* Add [https://www.myget.org/F/bit-foundation/api/v3/index.json](https://www.myget.org/F/bit-foundation/api/v3/index.json) as nuget package source from "Tools &gt; Nuget Package Manager &gt; Package Manager Settings"
-
 [^1]: We're going to support [Jet brains Rider IDE](https://www.jetbrains.com/rider/), [Visual Studio Code](https://code.visualstudio.com/) and [Visual Studio for mac](https://www.visualstudio.com/vs/visual-studio-mac/). In a meaning time you'll be able to develop on mac and linux too. Follow these issues links to get notified whenever these items get ready: [Rider](https://github.com/bit-foundation/bit-framework/issues/58), [Visual Studio Code](https://github.com/bit-foundation/bit-framework/issues/57) and [Visual Studio for mac](https://github.com/bit-foundation/bit-framework/issues/56).
 
 [^2]: You can install .NET 4.7 on [Windows 7 SP1], [2008 R2 SP1], [8.1], [2012], [10 Anniversary update+] and [2016]. For Windows 7 SP1, 2008 R2 SP1 and 2012, you've to install [d3dcompiler](https://support.microsoft.com/en-us/help/4020302) first.
