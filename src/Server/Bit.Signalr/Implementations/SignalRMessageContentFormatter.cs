@@ -26,6 +26,10 @@ namespace Bit.Signalr.Implementations
             {
                 _settingsCache = new JsonSerializerSettings
                 {
+                    ReferenceLoopHandling = ReferenceLoopHandling.Ignore,
+                    DateFormatHandling = DateFormatHandling.IsoDateFormat,
+                    TypeNameAssemblyFormatHandling = TypeNameAssemblyFormatHandling.Simple,
+                    TypeNameHandling = TypeNameHandling.All,
                     Converters = new List<JsonConverter>
                     {
                         new ThrowExceptionForDateTimeOffsetValues()

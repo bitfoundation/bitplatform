@@ -28,7 +28,9 @@ namespace Bit.Owin.Implementations
             return JsonConvert.DeserializeObject<T>(objAsStr, new JsonSerializerSettings
             {
                 ReferenceLoopHandling = ReferenceLoopHandling.Ignore,
-                DateFormatHandling = DateFormatHandling.IsoDateFormat
+                DateFormatHandling = DateFormatHandling.IsoDateFormat,
+                TypeNameAssemblyFormatHandling = TypeNameAssemblyFormatHandling.Simple,
+                TypeNameHandling = TypeNameHandling.All
             });
         }
 
