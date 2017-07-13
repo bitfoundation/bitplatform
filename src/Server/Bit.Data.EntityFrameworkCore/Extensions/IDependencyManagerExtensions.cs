@@ -16,9 +16,9 @@ namespace Bit.Core.Contracts
             if (dependencyManager == null)
                 throw new ArgumentNullException(nameof(dependencyManager));
 
-            dependencyManager.Register<IDbContextObjectsProvider, TDbContextObjectsProvider>();
-            dependencyManager.Register<TDbContext, TDbContext>();
-            dependencyManager.Register<IDataProviderSpecificMethodsProvider, EfCoreDataProviderSpecificMethodsProvider>(overwriteExciting: false, lifeCycle: DependencyLifeCycle.SingleInstance);
+            dependencyManager.Register<IDbContextObjectsProvider, TDbContextObjectsProvider>(overwriteExciting: false);
+            dependencyManager.Register<TDbContext, TDbContext>(overwriteExciting: false);
+            dependencyManager.Register<IDataProviderSpecificMethodsProvider, EfCoreDataProviderSpecificMethodsProvider>(lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExciting: false);
             dependencyManager.RegisterGeneric(typeof(IWhereByKeyBuilder<,>).GetTypeInfo(), typeof(EfCoreWhereByKeyBuilder<,>).GetTypeInfo(), lifeCycle: DependencyLifeCycle.SingleInstance);
 
             return dependencyManager;

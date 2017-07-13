@@ -1,6 +1,7 @@
 ﻿using Bit.IdentityServer;
 using Bit.IdentityServer.Contracts;
 using Bit.IdentityServer.Implementations;
+using Bit.Owin.Implementations;
 using IdentityServer3.Core.Services;
 
 namespace Bit.Core.Contracts
@@ -11,16 +12,18 @@ namespace Bit.Core.Contracts
             where TUserService : class, IUserService
             where TClientProvider : class, IClientProvider
         {
-            dependencyManager.Register<IScopesProvider, DefaultScopesProvider>(lifeCycle: DependencyLifeCycle.SingleInstance);
-            dependencyManager.Register<IdentityServer3.Core.Logging.ILogProvider, DefaultIdentityServerLogProvider>(lifeCycle: DependencyLifeCycle.SingleInstance);
-            dependencyManager.RegisterOwinMiddleware<IdentityServerMiddlewareConfiguration>();
-            dependencyManager.Register<IViewService, DefaultViewService>(lifeCycle: DependencyLifeCycle.SingleInstance);
-            dependencyManager.Register<ISsoPageHtmlProvider, RazorSsoHtmlPageProvider>(lifeCycle: DependencyLifeCycle.SingleInstance);
-            dependencyManager.Register<ISSOPageModelProvider, DefaultSSOPageModelProvider>(lifeCycle: DependencyLifeCycle.SingleInstance);
-            dependencyManager.Register<IRedirectUriValidator, ExtendedRedirectUriValidator>(lifeCycle: DependencyLifeCycle.SingleInstance);
+            dependencyManager.Register<ICertificateProvider, DefaultCertificateProvider>(lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExciting: false);
 
-            dependencyManager.Register<IClientProvider, TClientProvider>(lifeCycle: DependencyLifeCycle.SingleInstance);
-            dependencyManager.Register<IUserService, TUserService>(lifeCycle: DependencyLifeCycle.SingleInstance);
+            dependencyManager.Register<IScopesProvider, DefaultScopesProvider>(lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExciting: false);
+            dependencyManager.Register<IdentityServer3.Core.Logging.ILogProvider, DefaultIdentityServerLogProvider>(lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExciting: false);
+            dependencyManager.RegisterOwinMiddleware<IdentityServerMiddlewareConfiguration>();
+            dependencyManager.Register<IViewService, DefaultViewService>(lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExciting: false);
+            dependencyManager.Register<ISsoPageHtmlProvider, RazorSsoHtmlPageProvider>(lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExciting: false);
+            dependencyManager.Register<ISSOPageModelProvider, DefaultSSOPageModelProvider>(lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExciting: false);
+            dependencyManager.Register<IRedirectUriValidator, ExtendedRedirectUriValidator>(lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExciting: false);
+
+            dependencyManager.Register<IClientProvider, TClientProvider>(lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExciting: false);
+            dependencyManager.Register<IUserService, TUserService>(lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExciting: false);
 
             return dependencyManager;
         }

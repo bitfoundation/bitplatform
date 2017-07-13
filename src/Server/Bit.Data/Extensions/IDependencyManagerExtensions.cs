@@ -30,7 +30,7 @@ namespace Bit.Core.Contracts
 
                 return mapper;
 
-            }, lifeCycle: DependencyLifeCycle.SingleInstance);
+            }, lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExciting: false);
 
             return dependencyManager;
         }

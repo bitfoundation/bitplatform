@@ -41,8 +41,8 @@ namespace Bit.Core.Contracts
             dependencyManager.RegisterOwinMiddleware<InvokeLogOutMiddlewareConfiguration>();
             dependencyManager.RegisterOwinMiddleware<SignInPageMiddlewareConfiguration>();
             dependencyManager.RegisterOwinMiddleware<InvokeLoginMiddlewareConfiguration>();
-            dependencyManager.Register<IRandomStringProvider, DefaultRandomStringProvider>(lifeCycle: DependencyLifeCycle.SingleInstance);
-            dependencyManager.Register<ICertificateProvider, DefaultCertificateProvider>(lifeCycle: DependencyLifeCycle.SingleInstance);
+            dependencyManager.Register<IRandomStringProvider, DefaultRandomStringProvider>(lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExciting: false);
+            dependencyManager.Register<ICertificateProvider, DefaultCertificateProvider>(lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExciting: false);
             return dependencyManager;
         }
     }

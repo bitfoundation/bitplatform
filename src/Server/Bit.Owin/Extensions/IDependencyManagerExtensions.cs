@@ -55,10 +55,10 @@ namespace Bit.Core.Contracts
             if (dependencyManager == null)
                 throw new ArgumentNullException(nameof(dependencyManager));
 
-            dependencyManager.RegisterInstance(DefaultDependenciesManagerProvider.Current)
-                .RegisterInstance(DefaultDependencyManager.Current);
+            dependencyManager.RegisterInstance(DefaultDependenciesManagerProvider.Current, overwriteExciting: false)
+                .RegisterInstance(DefaultDependencyManager.Current, overwriteExciting: false);
 
-            dependencyManager.Register<IDateTimeProvider, DefaultDateTimeProvider>(lifeCycle: DependencyLifeCycle.SingleInstance);
+            dependencyManager.Register<IDateTimeProvider, DefaultDateTimeProvider>(lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExciting: false);
 
             return dependencyManager;
         }
@@ -68,8 +68,8 @@ namespace Bit.Core.Contracts
             if (dependencyManager == null)
                 throw new ArgumentNullException(nameof(dependencyManager));
 
-            dependencyManager.Register<IDefaultHtmlPageProvider, RazorDefaultHtmlPageProvider>();
-            dependencyManager.Register<IDefaultPageModelProvider, DefaultPageModelProvider>();
+            dependencyManager.Register<IDefaultHtmlPageProvider, RazorDefaultHtmlPageProvider>(overwriteExciting: false);
+            dependencyManager.Register<IDefaultPageModelProvider, DefaultPageModelProvider>(overwriteExciting: false);
 
             dependencyManager.RegisterAppEvents<DefaultHtmlPageRazorTemplateConfiguration>();
             dependencyManager.RegisterOwinMiddleware<DefaultPageMiddlewareConfiguration>();
@@ -107,8 +107,8 @@ namespace Bit.Core.Contracts
             dependencyManager.RegisterOwinMiddleware<InvokeLogOutMiddlewareConfiguration>();
             dependencyManager.RegisterOwinMiddleware<SignInPageMiddlewareConfiguration>();
             dependencyManager.RegisterOwinMiddleware<InvokeLoginMiddlewareConfiguration>();
-            dependencyManager.Register<IRandomStringProvider, DefaultRandomStringProvider>(lifeCycle: DependencyLifeCycle.SingleInstance);
-            dependencyManager.Register<ICertificateProvider, DefaultCertificateProvider>(lifeCycle: DependencyLifeCycle.SingleInstance);
+            dependencyManager.Register<IRandomStringProvider, DefaultRandomStringProvider>(lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExciting: false);
+            dependencyManager.Register<ICertificateProvider, DefaultCertificateProvider>(lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExciting: false);
             return dependencyManager;
         }
 
@@ -121,11 +121,11 @@ namespace Bit.Core.Contracts
 
         public static IDependencyManager RegisterDefaultOwinApp(this IDependencyManager dependencyManager)
         {
-            dependencyManager.Register<IScopeStatusManager, DefaultScopeStatusManager>();
-            dependencyManager.Register<Microsoft.Owin.Logging.ILoggerFactory, DefaultOwinLoggerFactory>();
-            dependencyManager.Register<IUserInformationProvider, DefaultUserInformationProvider>();
-            dependencyManager.Register<IExceptionToHttpErrorMapper, DefaultExceptionToHttpErrorMapper>(lifeCycle: DependencyLifeCycle.SingleInstance);
-            dependencyManager.Register<ITimeZoneManager, DefaultTimeZoneManager>();
+            dependencyManager.Register<IScopeStatusManager, DefaultScopeStatusManager>(overwriteExciting: false);
+            dependencyManager.Register<Microsoft.Owin.Logging.ILoggerFactory, DefaultOwinLoggerFactory>(overwriteExciting: false);
+            dependencyManager.Register<IUserInformationProvider, DefaultUserInformationProvider>(overwriteExciting: false);
+            dependencyManager.Register<IExceptionToHttpErrorMapper, DefaultExceptionToHttpErrorMapper>(lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExciting: false);
+            dependencyManager.Register<ITimeZoneManager, DefaultTimeZoneManager>(overwriteExciting: false);
 
             return dependencyManager;
         }
