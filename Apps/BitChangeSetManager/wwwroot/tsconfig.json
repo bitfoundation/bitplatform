@@ -2,17 +2,17 @@
   "compileOnSave": true,
   "compilerOptions": {
     "allowUnreachableCode": true,
+    "charset": "utf8",
     "emitDecoratorMetadata": false,
     "experimentalDecorators": true,
+    "inlineSources": true,
+    "lib": [ "dom", "es2017" ],
     "module": "none",
     "outFile": "bitChangeSetManager.js",
-    "target": "es5",
-    "sourceMap": true,
-    "lib": [ "dom", "es2017" ],
-    "charset": "utf8",
-    "inlineSources": true,
     "removeComments": false,
-    "skipLibCheck": true
+    "skipLibCheck": true,
+    "sourceMap": true,
+    "target": "es5"
   },
   "exclude": [ "node_modules", "bin", "obj", "security" ]
 }

@@ -2,18 +2,18 @@
   "compileOnSave": true,
   "compilerOptions": {
     "allowUnreachableCode": true,
+    "charset": "utf8",
     "declaration": true,
     "emitDecoratorMetadata": false,
     "experimentalDecorators": true,
+    "inlineSources": true,
+    "lib": [ "es2017", "dom" ],
     "module": "none",
     "outFile": "bit.core.js",
-    "target": "es5",
-    "sourceMap": true,
-    "lib": [ "es2017", "dom" ],
-    "charset": "utf8",
-    "inlineSources": true,
     "removeComments": false,
-    "skipLibCheck": true
+    "skipLibCheck": true,
+    "sourceMap": true,
+    "target": "es5"
   },
   "exclude": [ "bit.core.d.ts", "node_modules", "bin", "obj" ]
 }
