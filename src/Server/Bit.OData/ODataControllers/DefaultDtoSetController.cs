@@ -4,7 +4,7 @@ using Bit.Model.Contracts;
 
 namespace Bit.OData.ODataControllers
 {
-    public class DefaultDtoSetController<TModel, TDto> : DtoSetController<TModel, TDto, Guid>
+    public class DefaultDtoSetController<TDto, TModel> : DtoSetController<TDto, TModel, Guid>
         where TDto : class, IDtoWithDefaultGuidKey
         where TModel : class, IEntityWithDefaultGuidKey
     {

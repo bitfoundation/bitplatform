@@ -10,7 +10,7 @@ using Bit.Owin.Exceptions;
 
 namespace Bit.OData.ODataControllers
 {
-    public class DtoSetController<TModel, TDto, TKey> : DtoController<TDto>
+    public class DtoSetController<TDto, TModel, TKey> : DtoController<TDto>
         where TDto : class, IDtoWithDefaultKey<TKey>
         where TModel : class, IEntityWithDefaultKey<TKey>
     {
