@@ -4,18 +4,6 @@ module Bit.Implementations {
         @Log()
         public async onAppStartup(): Promise<void> {
 
-            Provider.getFormattedDateDelegate = (date: any) => {
-                return kendo.toString(date, "yyyy/dd/MM");
-            };
-
-            Provider.getFormattedDateTimeDelegate = (date: any) => {
-                return kendo.toString(date, "yyyy/dd/MM, hh:mm tt");
-            };
-
-            Provider.parseDateDelegate = (date: any) => {
-                return kendo.parseDate(date);
-            };
-
             function flattenGroups(data) {
 
                 let idx, result = [], length, items, itemIndex;

@@ -85,6 +85,7 @@
                     sessionStorage.removeItem("logs");
                 }
                 catch (e) {
+                    console.error(e);
                     sessionStorage["logs"] = JSON.stringify(logs);
                 }
             }

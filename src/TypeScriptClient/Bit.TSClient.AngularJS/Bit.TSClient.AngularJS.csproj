@@ -87,6 +87,7 @@
     <TypeScriptCompile Include="directives\iranianPeopleNationalCodeValidator.ts" />
     <TypeScriptCompile Include="components\persianDatePicker.ts" />
     <TypeScriptCompile Include="Implementations\defaultLogger.ts" />
+    <TypeScriptCompile Include="Implementations\defaultProvider.ts" />
     <TypeScriptCompile Include="Implementations\Identity\identityserverdefaultangularappinitialization.ts" />
     <TypeScriptCompile Include="typings\declarations.d.ts" />
     <TypeScriptCompile Include="dependencyManager.ts" />

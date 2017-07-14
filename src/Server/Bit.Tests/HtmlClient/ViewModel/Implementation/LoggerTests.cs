@@ -18,7 +18,6 @@ namespace Bit.Tests.HtmlClient.ViewModel.Implementation
     {
         [TestMethod]
         [TestCategory("HtmlClient"), TestCategory("Logging")]
-        [Ignore]
         public virtual async Task LogException()
         {
             using (BitOwinTestEnvironment testEnvironment = new BitOwinTestEnvironment(new TestEnvironmentArgs { UseRealServer = true }))
@@ -29,7 +28,11 @@ namespace Bit.Tests.HtmlClient.ViewModel.Implementation
                 {
                     using (RemoteWebDriver driver = testEnvironment.Server.GetWebDriver(new RemoteWebDriverOptions { Token = token }))
                     {
-                        await driver.ExecuteTest("LoggerTests.logException");
+                        try
+                        {
+                            await driver.ExecuteTest("LoggerTests.logException");
+                        }
+                        catch { }
                     }
 
                     Assert.Fail();

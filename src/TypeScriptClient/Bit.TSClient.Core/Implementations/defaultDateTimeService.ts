@@ -11,19 +11,14 @@
 
             culture = culture == null ? ClientAppProfileManager.getCurrent().getClientAppProfile().culture : culture;
 
-            if (culture == "FaIr") {
-                return window["persianDate"](date).format("YYYY/MM/DD") as string;
-            }
-            else {
-                return Provider.getFormattedDateDelegate(date);
-            }
+            if (Provider.getFormattedDateDelegate == null)
+                throw new Error("There is no implementation provided for Provider.getFormattedDateDelegate");
 
+            return Provider.getFormattedDateDelegate(date, culture);
         }
 
-        public getFormattedDateTime(date?: Date, culture?: string): string {
 
-            if (Provider.getFormattedDateTimeDelegate == null)
-                throw new Error("There is no implementation specified for getFormattedDateTime");
+        public getFormattedDateTime(date?: Date, culture?: string): string {
 
             if (date == null)
                 return null;
@@ -32,12 +27,10 @@
 
             culture = culture == null ? ClientAppProfileManager.getCurrent().getClientAppProfile().culture : culture;
 
-            if (culture == "FaIr") {
-                return window["persianDate"](date).format("DD MMMM YYYY, hh:mm a") as string;
-            }
-            else {
-                return Provider.getFormattedDateTimeDelegate(date);
-            }
+            if (Provider.getFormattedDateTimeDelegate == null)
+                throw new Error("There is no implementation provided for Provider.getFormattedDateTimeDelegate");
+
+            return Provider.getFormattedDateTimeDelegate(date, culture);
         }
 
         public getCurrentDate(): Date {
@@ -48,6 +41,9 @@
 
             if (date == null)
                 return null;
+
+            if (Provider.parseDateDelegate == null)
+                throw new Error("There is no implementation provided for Provider.parseDateDelegate");
 
             return Provider.parseDateDelegate(date);
         }

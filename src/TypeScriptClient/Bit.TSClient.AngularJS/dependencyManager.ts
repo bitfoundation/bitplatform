@@ -381,6 +381,8 @@
 
         public init(): void {
 
+            Bit.Implementations.DefaultProvider.buildProvider();
+
             this.fileDependencies.forEach(fileDependency => {
 
                 let path = fileDependency.path;
