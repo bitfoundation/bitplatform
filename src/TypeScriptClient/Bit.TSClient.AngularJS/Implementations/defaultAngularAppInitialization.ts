@@ -10,9 +10,11 @@
 
         private clientAppProfile: Contracts.IClientAppProfile;
 
-        protected getBaseModuleDependencies(): Array<string> {
+        protected getModuleDependencies(): Array<string> {
             return [];
         }
+
+        protected ngAdapter: any;
 
         protected async onAppRun(app: ng.IModule): Promise<void> {
 
@@ -55,9 +57,9 @@
 
         protected async buildAppModule(): Promise<ng.IModule> {
 
-            const baseModuleDependencies = this.getBaseModuleDependencies();
+            const moduleDependencies = this.getModuleDependencies();
 
-            const app = angular.module(this.clientAppProfile.appName, baseModuleDependencies);
+            const app = angular.module(this.clientAppProfile.appName, moduleDependencies);
 
             return app;
         }
@@ -212,9 +214,14 @@
 
                         await this.onAppRun(app);
 
-                        angular.bootstrap(document.body, [this.clientAppProfile.appName], {
-                            strictDi: true
-                        });
+                        if (this.ngAdapter == null) {
+                            angular.bootstrap(document.body, [this.clientAppProfile.appName], {
+                                strictDi: true
+                            });
+                        }
+                        else {
+                            this.ngAdapter.bootstrap(document.body, [this.clientAppProfile.appName]);
+                        }
 
                         res();
                     }

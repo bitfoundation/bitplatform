@@ -8,3 +8,11 @@
 /// <reference path="..\\Bit.TSClient.AngularJS\\typings\\angular-component-router.d.ts" />
 /// <reference path="..\\Bit.TSClient.AngularJS\\typings\\declarations.d.ts" />
 /// <reference path="..\\Bit.TSClient.AngularJS.Test\\bit.ng1.test.d.ts" />
+
+declare var ng: {
+    core: any;
+    upgrade: any;
+    common: any;
+    platformBrowser: any;
+    forms: any;
+}

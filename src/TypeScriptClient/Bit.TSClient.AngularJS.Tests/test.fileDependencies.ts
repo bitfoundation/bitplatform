@@ -281,6 +281,56 @@
     });
 
     dependencyManager.registerFileDependency({
+        name: "zone-js",
+        path: "bit-framework/src/TypeScriptClient/Bit.TSClient.AngularJS/node_modules/zone.js/dist/zone"
+    });
+
+    dependencyManager.registerFileDependency({
+        name: "reflect-metadata",
+        path: "bit-framework/src/TypeScriptClient/Bit.TSClient.AngularJS/node_modules/reflect-metadata/Reflect"
+    });
+
+    dependencyManager.registerFileDependency({
+        name: "rx",
+        path: "bit-framework/src/TypeScriptClient/Bit.TSClient.AngularJS/node_modules/rxjs/bundles/Rx"
+    });
+
+    dependencyManager.registerFileDependency({
+        name: "ng-core",
+        path: "bit-framework/src/TypeScriptClient/Bit.TSClient.AngularJS/node_modules/@angular/core/bundles/core.umd"
+    });
+
+    dependencyManager.registerFileDependency({
+        name: "ng-common",
+        path: "bit-framework/src/TypeScriptClient/Bit.TSClient.AngularJS/node_modules/@angular/common/bundles/common.umd"
+    });
+
+    dependencyManager.registerFileDependency({
+        name: "ng-forms",
+        path: "bit-framework/src/TypeScriptClient/Bit.TSClient.AngularJS/node_modules/@angular/forms/bundles/forms.umd"
+    });
+
+    dependencyManager.registerFileDependency({
+        name: "ng-compiler",
+        path: "bit-framework/src/TypeScriptClient/Bit.TSClient.AngularJS/node_modules/@angular/compiler/bundles/compiler.umd"
+    });
+
+    dependencyManager.registerFileDependency({
+        name: "ng-platform-browser",
+        path: "bit-framework/src/TypeScriptClient/Bit.TSClient.AngularJS/node_modules/@angular/platform-browser/bundles/platform-browser.umd"
+    });
+
+    dependencyManager.registerFileDependency({
+        name: "ng-platform-browser-dynamic",
+        path: "bit-framework/src/TypeScriptClient/Bit.TSClient.AngularJS/node_modules/@angular/platform-browser-dynamic/bundles/platform-browser-dynamic.umd"
+    });
+
+    dependencyManager.registerFileDependency({
+        name: "ng-upgrade",
+        path: "bit-framework/src/TypeScriptClient/Bit.TSClient.AngularJS/node_modules/@angular/upgrade/bundles/upgrade.umd"
+    });
+
+    dependencyManager.registerFileDependency({
         name: "persian-date",
         path: "bit-framework/src/TypeScriptClient/Bit.TSClient.AngularJS/node_modules/@bit/persian-date/dist/persian-date",
         predicate: (appInfo) => appInfo.culture == "FaIr"

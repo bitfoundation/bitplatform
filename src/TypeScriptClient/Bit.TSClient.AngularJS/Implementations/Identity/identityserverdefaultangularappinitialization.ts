@@ -6,7 +6,7 @@
             super();
         }
 
-        protected getBaseModuleDependencies(): Array<string> {
+        protected getModuleDependencies(): Array<string> {
             return ["pascalprecht.translate", "ngMessages", "ngMaterial", "ngAria", "ngAnimate"];
         }
     }
