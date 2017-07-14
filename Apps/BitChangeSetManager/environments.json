@@ -10,7 +10,6 @@
       "DefaultCulture": "EnUs"
     },
     "Security": {
-      "Scopes": [ "openid", "profile", "user_info" ],
       "ClientName": "BitChangeSetManager",
       "ClientSecret": "secret"
     },

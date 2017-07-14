@@ -4,7 +4,7 @@ using BitChangeSetManager.Model;
 
 namespace BitChangeSetManager.Api
 {
-    public class ConstantsController : DefaultReadOnlyDtoSetController<Constant, ConstantDto>
+    public class ConstantsController : DefaultReadOnlyDtoSetController<ConstantDto, Constant>
     {
         public ConstantsController(IBitChangeSetManagerRepository<Constant> repository)
             : base(repository)

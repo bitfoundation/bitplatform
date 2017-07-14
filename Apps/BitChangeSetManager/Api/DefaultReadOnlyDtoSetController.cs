@@ -12,7 +12,7 @@ using System.Web.OData;
 
 namespace BitChangeSetManager.Api
 {
-    public class DefaultReadOnlyDtoSetController<TModel, TDto> : DefaultDtoSetController<TModel, TDto>
+    public class DefaultReadOnlyDtoSetController<TDto, TModel> : DefaultDtoSetController<TDto, TModel>
         where TDto : class, IDtoWithDefaultGuidKey
         where TModel : class, IEntityWithDefaultGuidKey
     {

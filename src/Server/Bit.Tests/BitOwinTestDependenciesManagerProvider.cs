@@ -8,9 +8,7 @@ using Bit.Model.Implementations;
 using Bit.OData.ActionFilters;
 using Bit.OData.Implementations;
 using Bit.Owin.Contracts;
-using Bit.Owin.Contracts.Metadata;
 using Bit.Owin.Implementations;
-using Bit.Owin.Implementations.Metadata;
 using Bit.Owin.Middlewares;
 using Bit.Signalr.Implementations;
 using Bit.Test;
@@ -46,15 +44,8 @@ namespace Bit.Tests
 
             dependencyManager.RegisterMinimalDependencies();
 
-            dependencyManager.RegisterInstance(DefaultAppEnvironmentProvider.Current);
-            dependencyManager.RegisterInstance(DefaultJsonContentFormatter.Current);
-            dependencyManager.RegisterInstance(DefaultPathProvider.Current);
+            dependencyManager.RegisterDefaultLogger(typeof(ConsoleLogStore).GetTypeInfo(), typeof(DebugLogStore).GetTypeInfo());
 
-            dependencyManager.Register<IRequestInformationProvider, DefaultRequestInformationProvider>();
-            dependencyManager.Register<Microsoft.Owin.Logging.ILoggerFactory, DefaultOwinLoggerFactory>();
-            dependencyManager.Register<ILogger, DefaultLogger>();
-            dependencyManager.RegisterLogStore<ConsoleLogStore>();
-            dependencyManager.RegisterLogStore<DebugLogStore>();
             dependencyManager.Register<IDbConnectionProvider, DefaultDbConnectionProvider<SqlConnection>>();
 
             dependencyManager.RegisterAppEvents<RazorViewEngineConfiguration>();
@@ -63,55 +54,40 @@ namespace Bit.Tests
             dependencyManager.RegisterDefaultOwinApp();
 
             dependencyManager.RegisterOwinMiddleware<StaticFilesMiddlewareConfiguration>();
-            dependencyManager.RegisterOwinMiddleware<AutofacDependencyInjectionMiddlewareConfiguration>();
-            dependencyManager.RegisterOwinMiddleware<OwinExceptionHandlerMiddlewareConfiguration>();
-            dependencyManager.RegisterOwinMiddleware<LogRequestInformationMiddlewareConfiguration>();
+            dependencyManager.RegisterMinimalOwinMiddlewares();
             dependencyManager.RegisterSingleSignOnClient();
-            dependencyManager.RegisterOwinMiddleware<LogUserInformationMiddlewareConfiguration>();
 
-            dependencyManager.RegisterOwinMiddleware<MetadataMiddlewareConfiguration>();
+            dependencyManager.RegisterMetadata();
 
-            dependencyManager.RegisterDefaultWebApiODataConfiguration();
+            dependencyManager.RegisterDefaultWebApiAndODataConfiguration();
 
-            dependencyManager.RegisterUsing<IOwinMiddlewareConfiguration>(() =>
+            dependencyManager.RegisterWebApiMiddleware(webApiDependencyManager =>
             {
-                return dependencyManager.CreateChildDependencyResolver(childDependencyManager =>
+                webApiDependencyManager.RegisterGlobalWebApiActionFiltersUsing(httpConfiguration =>
                 {
-                    childDependencyManager.RegisterGlobalWebApiActionFiltersUsing(httpConfiguration =>
-                    {
-                        httpConfiguration.Filters.Add(new AuthorizeAttribute());
-                    });
+                    httpConfiguration.Filters.Add(new AuthorizeAttribute());
+                });
 
-                    childDependencyManager.RegisterWebApiMiddlewareUsingDefaultConfiguration("WebApi");
+                webApiDependencyManager.RegisterWebApiMiddlewareUsingDefaultConfiguration();
+            });
 
-                }).Resolve<IOwinMiddlewareConfiguration>("WebApi");
-
-            }, lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExciting: false);
-
-            dependencyManager.RegisterUsing<IOwinMiddlewareConfiguration>(() =>
+            dependencyManager.RegisterODataMiddleware(odataDependencyManager =>
             {
-                return dependencyManager.CreateChildDependencyResolver(childDependencyManager =>
+                odataDependencyManager.RegisterGlobalWebApiActionFiltersUsing(httpConfiguration =>
                 {
-                    childDependencyManager.RegisterGlobalWebApiActionFiltersUsing(httpConfiguration =>
-                    {
-                        httpConfiguration.Filters.Add(new DefaultODataAuthorizeAttribute());
-                    });
+                    httpConfiguration.Filters.Add(new DefaultODataAuthorizeAttribute());
+                });
 
-                    childDependencyManager.RegisterWebApiODataMiddlewareUsingDefaultConfiguration("WebApiOData");
-                    childDependencyManager.RegisterEdmModelProvider<BitEdmModelProvider>();
-                    childDependencyManager.RegisterEdmModelProvider<TestEdmModelProvider>();
+                odataDependencyManager.RegisterEdmModelProvider<BitEdmModelProvider>();
+                odataDependencyManager.RegisterEdmModelProvider<TestEdmModelProvider>();
 
-                }).Resolve<IOwinMiddlewareConfiguration>("WebApiOData");
-
-            }, lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExciting: false);
+                odataDependencyManager.RegisterWebApiODataMiddlewareUsingDefaultConfiguration();
+            });
 
             dependencyManager.RegisterSignalRConfiguration<SignalRAuthorizeConfiguration>();
             dependencyManager.RegisterSignalRMiddlewareUsingDefaultConfiguration();
 
-            dependencyManager.RegisterBackgroundJobWorkerUsingDefaultConfiguration<JobSchedulerInMemoryBackendConfiguration>();
-
-            dependencyManager.Register<IAppMetadataProvider, DefaultAppMetadataProvider>(lifeCycle: DependencyLifeCycle.SingleInstance);
-            dependencyManager.RegisterMetadata();
+            dependencyManager.RegisterHangfireBackgroundJobWorkerUsingDefaultConfiguration<JobSchedulerInMemoryBackendConfiguration>();
 
             dependencyManager.RegisterGeneric(typeof(IRepository<>).GetTypeInfo(), typeof(TestEfRepository<>).GetTypeInfo(), DependencyLifeCycle.InstancePerLifetimeScope);
 
@@ -132,8 +108,8 @@ namespace Bit.Tests
             if (_args?.AdditionalDependencies != null)
                 _args?.AdditionalDependencies(dependencyManager);
 
-            dependencyManager.RegisterOwinMiddleware<RedirectToSsoIfNotLoggedInMiddlewareConfiguration>();
-            dependencyManager.RegisterDefaultPageMiddlewareUsingDefaultConfiguration();
+
+            dependencyManager.RegisterSecureDefaultPageMiddlewareUsingDefaultConfiguration();
         }
 
         public virtual IEnumerable<IDependenciesManager> GetDependenciesManagers()

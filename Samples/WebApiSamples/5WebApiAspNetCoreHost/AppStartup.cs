@@ -1,12 +1,9 @@
 ﻿using AutoMapper;
 using Bit.Core;
 using Bit.Core.Contracts;
-using Bit.Owin.Contracts;
 using Bit.Owin.Implementations;
 using Bit.OwinCore;
 using Bit.OwinCore.Contracts;
-using Bit.OwinCore.Middlewares;
-using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Swashbuckle.Application;
 using System;
@@ -14,6 +11,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Reflection;
 using System.Web.Http;
 using System.Web.Http.Description;
 
@@ -43,48 +41,30 @@ namespace WebApiAspNetCoreHost
         {
             AssemblyContainer.Current.Init();
 
-            IHostingEnvironment env = serviceProvider.GetService<IHostingEnvironment>();
-
             dependencyManager.RegisterMinimalDependencies();
 
-            dependencyManager.RegisterInstance(DefaultAppEnvironmentProvider.Current);
-            dependencyManager.RegisterInstance(DefaultJsonContentFormatter.Current);
-            dependencyManager.RegisterInstance(DefaultPathProvider.Current);
+            dependencyManager.RegisterDefaultLogger(typeof(DebugLogStore).GetTypeInfo(), typeof(ConsoleLogStore).GetTypeInfo());
 
-            dependencyManager.Register<IRequestInformationProvider, AspNetCoreRequestInformationProvider>();
+            dependencyManager.RegisterDefaultOwinCoreApp();
 
-            dependencyManager.Register<ILogger, DefaultLogger>();
-            if (env.IsDevelopment())
-                dependencyManager.RegisterLogStore<DebugLogStore>();
-            dependencyManager.RegisterLogStore<ConsoleLogStore>();
-
-            dependencyManager.RegisterDefaultOwinApp();
-
-            dependencyManager.RegisterOwinMiddleware<AspNetCoreAutofacDependencyInjectionMiddlewareConfiguration>();
-            dependencyManager.RegisterAspNetCoreMiddleware<AspNetCoreExceptionHandlerMiddlewareConfiguration>();
-            dependencyManager.RegisterAspNetCoreMiddleware<AspNetCoreLogRequestInformationMiddlewareConfiguration>();
+            dependencyManager.RegisterMinimalOwinCoreMiddlewares();
 
             dependencyManager.RegisterDefaultWebApiConfiguration();
 
-            dependencyManager.RegisterUsing<IOwinMiddlewareConfiguration>(() =>
+            dependencyManager.RegisterWebApiMiddleware(webApiDependencyManager =>
             {
-                return dependencyManager.CreateChildDependencyResolver(childDependencyManager =>
+                webApiDependencyManager.RegisterWebApiMiddlewareUsingDefaultConfiguration();
+
+                webApiDependencyManager.RegisterGlobalWebApiCustomizerUsing(httpConfiguration =>
                 {
-                    childDependencyManager.RegisterWebApiMiddlewareUsingDefaultConfiguration("WebApi");
-
-                    childDependencyManager.RegisterGlobalWebApiCustomizerUsing(httpConfiguration =>
+                    httpConfiguration.EnableSwagger(c =>
                     {
-                        httpConfiguration.EnableSwagger(c =>
-                        {
-                            c.SingleApiVersion("v1", "SwaggerDemoApi");
-                            c.DescribeAllEnumsAsStrings();
-                            c.RootUrl(req => new Uri(req.RequestUri, req.GetOwinContext().Request.PathBase.Value /* /api */).ToString());
-                        }).EnableSwaggerUi();
-                    });
-
-                }).Resolve<IOwinMiddlewareConfiguration>("WebApi");
-
-            }, lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExciting: false);
+                        c.SingleApiVersion("v1", "SwaggerDemoApi");
+                        c.DescribeAllEnumsAsStrings();
+                        c.RootUrl(req => new Uri(req.RequestUri, req.GetOwinContext().Request.PathBase.Value /* /api */).ToString());
+                    }).EnableSwaggerUi();
+                });
+            });
         }
     }
 

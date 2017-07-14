@@ -7,7 +7,10 @@ namespace BitChangeSetManager.Core
         public static void Main(string[] args)
         {
             IWebHost host = new WebHostBuilder()
-                .UseKestrel()
+                .UseKestrel(options =>
+                {
+                    options.AddServerHeader = false;
+                })
                 .UseIISIntegration()
                 .UseStartup<AppStartup>()
                 .Build();

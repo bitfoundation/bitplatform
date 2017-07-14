@@ -3,7 +3,6 @@ using Bit.Core.Contracts;
 using Bit.Owin;
 using Bit.Owin.Contracts;
 using Bit.Owin.Implementations;
-using Bit.Owin.Middlewares;
 using Microsoft.Owin.Hosting;
 using Owin;
 using System;
@@ -11,6 +10,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Net;
 using System.Net.Http;
+using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Web.Http;
@@ -103,34 +103,17 @@ public class AppStartup : OwinAppStartup, IOwinDependenciesManager, IDependencie
 
         dependencyManager.RegisterMinimalDependencies();
 
-        dependencyManager.RegisterInstance(DefaultAppEnvironmentProvider.Current);
-        dependencyManager.RegisterInstance(DefaultJsonContentFormatter.Current);
-        dependencyManager.RegisterInstance(DefaultPathProvider.Current);
-
-        dependencyManager.Register<IRequestInformationProvider, DefaultRequestInformationProvider>();
-
-        dependencyManager.Register<ILogger, DefaultLogger>();
-
-        if (DefaultAppEnvironmentProvider.Current.GetActiveAppEnvironment().DebugMode == true)
-            dependencyManager.RegisterLogStore<DebugLogStore>();
-        dependencyManager.RegisterLogStore<ConsoleLogStore>();
+        dependencyManager.RegisterDefaultLogger(typeof(DebugLogStore).GetTypeInfo(), typeof(ConsoleLogStore).GetTypeInfo());
 
         dependencyManager.RegisterDefaultOwinApp();
 
-        dependencyManager.RegisterOwinMiddleware<AutofacDependencyInjectionMiddlewareConfiguration>();
-        dependencyManager.RegisterOwinMiddleware<OwinExceptionHandlerMiddlewareConfiguration>();
-        dependencyManager.RegisterOwinMiddleware<LogRequestInformationMiddlewareConfiguration>();
+        dependencyManager.RegisterMinimalOwinMiddlewares();
 
         dependencyManager.RegisterDefaultWebApiConfiguration();
 
-        dependencyManager.RegisterUsing<IOwinMiddlewareConfiguration>(() =>
+        dependencyManager.RegisterWebApiMiddleware(webApiDependencyManager =>
         {
-            return dependencyManager.CreateChildDependencyResolver(childDependencyManager =>
-            {
-                childDependencyManager.RegisterWebApiMiddlewareUsingDefaultConfiguration("WebApi");
-
-            }).Resolve<IOwinMiddlewareConfiguration>("WebApi");
-
-        }, lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExciting: false);
+            webApiDependencyManager.RegisterWebApiMiddlewareUsingDefaultConfiguration();
+        });
     }
 }

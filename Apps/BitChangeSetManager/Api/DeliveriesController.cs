@@ -5,7 +5,7 @@ using BitChangeSetManager.Model;
 
 namespace BitChangeSetManager.Api
 {
-    public class DeliveriesController : DefaultDtoSetController<Delivery, DeliveryDto>
+    public class DeliveriesController : DefaultDtoSetController<DeliveryDto, Delivery>
     {
         public DeliveriesController(IBitChangeSetManagerRepository<Delivery> deliveriesRepository)
             : base(deliveriesRepository)

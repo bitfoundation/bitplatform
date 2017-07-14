@@ -34,14 +34,15 @@ So, what's AppStartup class anyway? It configures your app. You'll understand it
 ```csharp
 dependencyManager.RegisterDefaultWebApiConfiguration();
 
-dependencyManager.RegisterUsing<IOwinMiddlewareConfiguration>(() =>
+dependencyManager.RegisterWebApiMiddleware(webApiDependencyManager =>
 {
-    return dependencyManager.CreateChildDependencyResolver(childDependencyManager =>
-    {
-        childDependencyManager.RegisterWebApiMiddlewareUsingDefaultConfiguration("WebApi");
-    }).Resolve<IOwinMiddlewareConfiguration>("WebApi");
+    webApiDependencyManager.RegisterWebApiMiddlewareUsingDefaultConfiguration();
 
-}, lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExciting: false);
+    webApiDependencyManager.RegisterGlobalWebApiCustomizerUsing(httpConfiguration =>
+    {
+        // You've access to web api's http configuration here
+    });
+});
 ```
 
 That code configures web api into your app using default configuration. Default configuration is all about security, performance, logging etc.

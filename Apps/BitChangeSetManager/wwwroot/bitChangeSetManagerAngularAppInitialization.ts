@@ -11,7 +11,7 @@ module BitChangeSetManager {
             super();
         }
 
-        protected getBaseModuleDependencies(): Array<string> {
+        protected getModuleDependencies(): Array<string> {
             let modules = ["pascalprecht.translate", "ngComponentRouter", "ngMessages", "ngMaterial", "ngAria", "ngAnimate", "kendo.directives"];
             return modules;
         }

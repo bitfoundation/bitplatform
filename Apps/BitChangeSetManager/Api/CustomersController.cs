@@ -5,7 +5,7 @@ using BitChangeSetManager.Model;
 
 namespace BitChangeSetManager.Api
 {
-    public class CustomersController : DefaultDtoSetController<Customer, CustomerDto>
+    public class CustomersController : DefaultDtoSetController<CustomerDto, Customer>
     {
         public CustomersController(IBitChangeSetManagerRepository<Customer> customersRepository)
             : base(customersRepository)

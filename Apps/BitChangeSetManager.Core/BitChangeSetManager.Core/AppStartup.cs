@@ -7,10 +7,7 @@ using Bit.Model.Implementations;
 using Bit.OData.ActionFilters;
 using Bit.OData.Implementations;
 using Bit.Owin.Contracts;
-using Bit.Owin.Contracts.Metadata;
 using Bit.Owin.Implementations;
-using Bit.Owin.Implementations.Metadata;
-using Bit.Owin.Middlewares;
 using Bit.OwinCore;
 using Bit.OwinCore.Contracts;
 using Bit.OwinCore.Middlewares;
@@ -19,7 +16,6 @@ using BitChangeSetManager.Api.Implementations;
 using BitChangeSetManager.DataAccess;
 using BitChangeSetManager.Security;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Generic;
@@ -53,27 +49,16 @@ namespace BitChangeSetManager.Core
             AssemblyContainer.Current.Init();
             AssemblyContainer.Current.AddAppAssemblies(AssemblyContainer.Current.GetBitChangeSetManagerAssembly());
 
-            IHostingEnvironment env = serviceProvider.GetService<IHostingEnvironment>();
-
             dependencyManager.RegisterMinimalDependencies();
 
-            dependencyManager.RegisterInstance(DefaultAppEnvironmentProvider.Current);
-            dependencyManager.RegisterInstance(DefaultJsonContentFormatter.Current);
-            dependencyManager.RegisterInstance(DefaultPathProvider.Current);
-
-            dependencyManager.Register<IRequestInformationProvider, AspNetCoreRequestInformationProvider>();
-
-            dependencyManager.Register<ILogger, DefaultLogger>();
-            if (env.IsDevelopment())
-                dependencyManager.RegisterLogStore<DebugLogStore>();
-            dependencyManager.RegisterLogStore<ConsoleLogStore>();
+            dependencyManager.RegisterDefaultLogger(typeof(DebugLogStore).GetTypeInfo(), typeof(ConsoleLogStore).GetTypeInfo());
 
             dependencyManager.Register<IDbConnectionProvider, DefaultDbConnectionProvider<SqlConnection>>();
 
             dependencyManager.RegisterAppEvents<BitChangeSetManagerInitialData>();
             dependencyManager.RegisterAppEvents<RazorViewEngineConfiguration>();
 
-            dependencyManager.RegisterDefaultOwinApp();
+            dependencyManager.RegisterDefaultOwinCoreApp();
 
             services.AddCors();
             dependencyManager.RegisterAspNetCoreMiddlewareUsing(aspNetCoreApp =>
@@ -82,57 +67,42 @@ namespace BitChangeSetManager.Core
             });
 
             dependencyManager.RegisterAspNetCoreMiddleware<AspNetCoreStaticFilesMiddlewareConfiguration>();
-            dependencyManager.RegisterOwinMiddleware<AspNetCoreAutofacDependencyInjectionMiddlewareConfiguration>();
-            dependencyManager.RegisterAspNetCoreMiddleware<AspNetCoreExceptionHandlerMiddlewareConfiguration>();
-            dependencyManager.RegisterAspNetCoreMiddleware<AspNetCoreLogRequestInformationMiddlewareConfiguration>();
+            dependencyManager.RegisterMinimalOwinCoreMiddlewares();
             dependencyManager.RegisterAspNetCoreSingleSignOnClient();
-            dependencyManager.RegisterAspNetCoreMiddleware<AspNetCoreLogUserInformationMiddlewareConfiguration>();
 
-            dependencyManager.RegisterOwinMiddleware<MetadataMiddlewareConfiguration>();
+            dependencyManager.RegisterMetadata();
 
-            dependencyManager.RegisterDefaultWebApiODataConfiguration();
+            dependencyManager.RegisterDefaultWebApiAndODataConfiguration();
 
-            dependencyManager.RegisterUsing<IOwinMiddlewareConfiguration>(() =>
+            dependencyManager.RegisterWebApiMiddleware(webApiDependencyManager =>
             {
-                return dependencyManager.CreateChildDependencyResolver(childDependencyManager =>
+                webApiDependencyManager.RegisterGlobalWebApiActionFiltersUsing(httpConfiguration =>
                 {
-                    childDependencyManager.RegisterGlobalWebApiActionFiltersUsing(httpConfiguration =>
-                    {
-                        httpConfiguration.Filters.Add(new System.Web.Http.AuthorizeAttribute());
-                    });
+                    httpConfiguration.Filters.Add(new System.Web.Http.AuthorizeAttribute());
+                });
 
-                    childDependencyManager.RegisterWebApiMiddlewareUsingDefaultConfiguration("WebApi");
+                webApiDependencyManager.RegisterWebApiMiddlewareUsingDefaultConfiguration();
+            });
 
-                }).Resolve<IOwinMiddlewareConfiguration>("WebApi");
-
-            }, lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExciting: false);
-
-            dependencyManager.RegisterUsing<IOwinMiddlewareConfiguration>(() =>
+            dependencyManager.RegisterODataMiddleware(odataDependencyManager =>
             {
-                return dependencyManager.CreateChildDependencyResolver(childDependencyManager =>
+                odataDependencyManager.RegisterGlobalWebApiActionFiltersUsing(httpConfiguration =>
                 {
-                    childDependencyManager.RegisterGlobalWebApiActionFiltersUsing(httpConfiguration =>
-                    {
-                        httpConfiguration.Filters.Add(new DefaultODataAuthorizeAttribute());
-                    });
+                    httpConfiguration.Filters.Add(new DefaultODataAuthorizeAttribute());
+                });
 
-                    childDependencyManager.RegisterWebApiODataMiddlewareUsingDefaultConfiguration("WebApiOData");
-                    childDependencyManager.RegisterEdmModelProvider<BitEdmModelProvider>();
-                    childDependencyManager.RegisterEdmModelProvider<BitChangeSetManagerEdmModelProvider>();
+                odataDependencyManager.RegisterEdmModelProvider<BitEdmModelProvider>();
+                odataDependencyManager.RegisterEdmModelProvider<BitChangeSetManagerEdmModelProvider>();
+                odataDependencyManager.RegisterWebApiODataMiddlewareUsingDefaultConfiguration();
 
-                }).Resolve<IOwinMiddlewareConfiguration>("WebApiOData");
+            });
 
-            }, lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExciting: false);
-
-            if (env.IsProduction())
+            if (DefaultAppEnvironmentProvider.Current.GetActiveAppEnvironment().DebugMode == false)
                 dependencyManager.RegisterSignalRConfiguration<SignalRSqlServerScaleoutConfiguration>();
             dependencyManager.RegisterSignalRConfiguration<SignalRAuthorizeConfiguration>();
             dependencyManager.RegisterSignalRMiddlewareUsingDefaultConfiguration<BitChangeSetManagerAppMessageHubEvents>();
 
-            dependencyManager.RegisterBackgroundJobWorkerUsingDefaultConfiguration<JobSchedulerInMemoryBackendConfiguration>();
-
-            dependencyManager.Register<IAppMetadataProvider, DefaultAppMetadataProvider>(lifeCycle: DependencyLifeCycle.SingleInstance);
-            dependencyManager.RegisterMetadata();
+            dependencyManager.RegisterHangfireBackgroundJobWorkerUsingDefaultConfiguration<JobSchedulerInMemoryBackendConfiguration>();
 
             dependencyManager.RegisterGeneric(typeof(IBitChangeSetManagerRepository<>).GetTypeInfo(), typeof(BitChangeSetManagerEfRepository<>).GetTypeInfo(), DependencyLifeCycle.InstancePerLifetimeScope);
 
@@ -145,8 +115,7 @@ namespace BitChangeSetManager.Core
 
             dependencyManager.RegisterSingleSignOnServer<BitChangeSetManagerUserService, BitChangeSetManagerClientProvider>();
 
-            dependencyManager.RegisterOwinMiddleware<RedirectToSsoIfNotLoggedInMiddlewareConfiguration>();
-            dependencyManager.RegisterDefaultPageMiddlewareUsingDefaultConfiguration();
+            dependencyManager.RegisterSecureDefaultPageMiddlewareUsingDefaultConfiguration();
 
             dependencyManager.Register<IChangeSetRepository, ChangeSetRepository>();
             dependencyManager.Register<IUserSettingProvider, BitUserSettingProvider>();

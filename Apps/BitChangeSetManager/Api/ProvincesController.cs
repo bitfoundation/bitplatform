@@ -4,7 +4,7 @@ using BitChangeSetManager.Model;
 
 namespace BitChangeSetManager.Api
 {
-    public class ProvincesController : DefaultReadOnlyDtoSetController<Province, ProvinceDto>
+    public class ProvincesController : DefaultReadOnlyDtoSetController<ProvinceDto, Province>
     {
         public ProvincesController(IBitChangeSetManagerRepository<Province> repository)
             : base(repository)

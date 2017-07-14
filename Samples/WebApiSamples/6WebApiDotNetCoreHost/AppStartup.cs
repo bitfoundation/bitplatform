@@ -10,6 +10,7 @@ using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Generic;
 using System.Web.Http;
+using System.Reflection;
 
 namespace WebApiDotNetCoreHost
 {
@@ -35,40 +36,22 @@ namespace WebApiDotNetCoreHost
 
         public virtual void ConfigureDependencies(IServiceProvider serviceProvider, IServiceCollection services, IDependencyManager dependencyManager)
         {
-            AssemblyContainer.Current.Init();
-
-            IHostingEnvironment env = serviceProvider.GetService<IHostingEnvironment>();
+AssemblyContainer.Current.Init();
 
             dependencyManager.RegisterMinimalDependencies();
 
-            dependencyManager.RegisterInstance(DefaultAppEnvironmentProvider.Current);
-            dependencyManager.RegisterInstance(DefaultJsonContentFormatter.Current);
-            dependencyManager.RegisterInstance(DefaultPathProvider.Current);
+            dependencyManager.RegisterDefaultLogger(typeof(DebugLogStore).GetTypeInfo(), typeof(ConsoleLogStore).GetTypeInfo());
 
-            dependencyManager.Register<IRequestInformationProvider, AspNetCoreRequestInformationProvider>();
+            dependencyManager.RegisterDefaultOwinCoreApp();
 
-            dependencyManager.Register<ILogger, DefaultLogger>();
-            if (env.IsDevelopment())
-                dependencyManager.RegisterLogStore<DebugLogStore>();
-            dependencyManager.RegisterLogStore<ConsoleLogStore>();
-
-            dependencyManager.RegisterDefaultOwinApp();
-
-            dependencyManager.RegisterOwinMiddleware<AspNetCoreAutofacDependencyInjectionMiddlewareConfiguration>();
-            dependencyManager.RegisterAspNetCoreMiddleware<AspNetCoreExceptionHandlerMiddlewareConfiguration>();
-            dependencyManager.RegisterAspNetCoreMiddleware<AspNetCoreLogRequestInformationMiddlewareConfiguration>();
+            dependencyManager.RegisterMinimalOwinCoreMiddlewares();
 
             dependencyManager.RegisterDefaultWebApiConfiguration();
 
-            dependencyManager.RegisterUsing<IOwinMiddlewareConfiguration>(() =>
+            dependencyManager.RegisterWebApiMiddleware(webApiDependencyManager =>
             {
-                return dependencyManager.CreateChildDependencyResolver(childDependencyManager =>
-                {
-                    childDependencyManager.RegisterWebApiMiddlewareUsingDefaultConfiguration("WebApi");
-
-                }).Resolve<IOwinMiddlewareConfiguration>("WebApi");
-
-            }, lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExciting: false);
+                webApiDependencyManager.RegisterWebApiMiddlewareUsingDefaultConfiguration();
+            });
         }
     }
 
