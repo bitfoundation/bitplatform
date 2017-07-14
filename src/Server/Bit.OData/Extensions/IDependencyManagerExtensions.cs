@@ -3,6 +3,7 @@ using Bit.OData;
 using Bit.OData.ActionFilters;
 using Bit.OData.Contracts;
 using Bit.OData.Implementations;
+using Bit.Owin.Contracts;
 using Bit.WebApi.Contracts;
 using Bit.WebApi.Implementations;
 using System;
@@ -25,7 +26,7 @@ namespace Bit.Core.Contracts
             return dependencyManager;
         }
 
-        public static IDependencyManager RegisterWebApiODataMiddlewareUsingDefaultConfiguration(this IDependencyManager dependencyManager, string name = null)
+        public static IDependencyManager RegisterWebApiODataMiddlewareUsingDefaultConfiguration(this IDependencyManager dependencyManager, string name = "WebApiOData")
         {
             if (dependencyManager == null)
                 throw new ArgumentNullException(nameof(dependencyManager));
@@ -47,10 +48,25 @@ namespace Bit.Core.Contracts
             return dependencyManager;
         }
 
-        public static IDependencyManager RegisterDefaultWebApiODataConfiguration(this IDependencyManager dependencyManager, params Assembly[] controllersAssemblies)
+        public static IDependencyManager RegisterDefaultWebApiAndODataConfiguration(this IDependencyManager dependencyManager, params Assembly[] controllersAssemblies)
         {
             dependencyManager.Register<IODataSqlBuilder, DefaultODataSqlBuilder>(lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExciting: false);
             return dependencyManager.RegisterDefaultWebApiConfiguration(AssemblyContainer.Current.AssembliesWithDefaultAssemblies(controllersAssemblies).Union(new[] { AssemblyContainer.Current.GetBitWebApiAssembly(), AssemblyContainer.Current.GetBitODataAssembly(), typeof(MetadataController).GetTypeInfo().Assembly }).ToArray());
+        }
+
+        public static IDependencyManager RegisterODataMiddleware(this IDependencyManager dependencyManager, Action<IDependencyManager> onConfigure)
+        {
+            dependencyManager.RegisterUsing<IOwinMiddlewareConfiguration>(() =>
+            {
+                return dependencyManager.CreateChildDependencyResolver(odataDependencyManager =>
+                {
+                    onConfigure(odataDependencyManager);
+
+                }).Resolve<IOwinMiddlewareConfiguration>("WebApiOData");
+
+            }, lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExciting: false);
+
+            return dependencyManager;
         }
     }
 }

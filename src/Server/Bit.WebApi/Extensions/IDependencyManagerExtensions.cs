@@ -8,6 +8,7 @@ using Bit.WebApi;
 using Bit.WebApi.ActionFilters;
 using Bit.WebApi.Contracts;
 using Bit.WebApi.Implementations;
+using Bit.Owin.Contracts;
 
 namespace Bit.Core.Contracts
 {
@@ -63,7 +64,7 @@ namespace Bit.Core.Contracts
             return dependencyManager.RegisterGlobalWebApiCustomizerUsing(addGlobalActionFilters);
         }
 
-        public static IDependencyManager RegisterWebApiMiddlewareUsingDefaultConfiguration(this IDependencyManager dependencyManager, string name = null)
+        public static IDependencyManager RegisterWebApiMiddlewareUsingDefaultConfiguration(this IDependencyManager dependencyManager, string name = "WebApi")
         {
             if (dependencyManager == null)
                 throw new ArgumentNullException(nameof(dependencyManager));
@@ -73,6 +74,22 @@ namespace Bit.Core.Contracts
             dependencyManager.RegisterWebApiConfigurationCustomizer<GlobalDefaultLogActionArgsActionFilterProvider<LogActionArgsFilterAttribute>>();
             dependencyManager.RegisterWebApiConfigurationCustomizer<GlobalDefaultExceptionHandlerActionFilterProvider<ExceptionHandlerFilterAttribute>>();
             dependencyManager.RegisterOwinMiddleware<WebApiMiddlewareConfiguration>(name);
+
+            return dependencyManager;
+        }
+
+        public static IDependencyManager RegisterWebApiMiddleware(this IDependencyManager dependencyManager, Action<IDependencyManager> onConfigure)
+        {
+            dependencyManager.RegisterUsing<IOwinMiddlewareConfiguration>(() =>
+            {
+                return dependencyManager.CreateChildDependencyResolver(childDependencyManager =>
+                {
+
+                    onConfigure(childDependencyManager);
+
+                }).Resolve<IOwinMiddlewareConfiguration>("WebApi");
+
+            }, lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExciting: false);
 
             return dependencyManager;
         }

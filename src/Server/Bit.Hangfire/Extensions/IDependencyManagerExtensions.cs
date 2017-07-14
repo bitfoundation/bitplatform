@@ -9,7 +9,7 @@ namespace Bit.Core.Contracts
 {
     public static class IDependencyManagerExtensions
     {
-        public static IDependencyManager RegisterBackgroundJobWorkerUsingDefaultConfiguration<TJobSchedulerBackendConfiguration>(this IDependencyManager dependencyManager)
+        public static IDependencyManager RegisterHangfireBackgroundJobWorkerUsingDefaultConfiguration<TJobSchedulerBackendConfiguration>(this IDependencyManager dependencyManager)
             where TJobSchedulerBackendConfiguration : class, IAppEvents
         {
             if (dependencyManager == null)
