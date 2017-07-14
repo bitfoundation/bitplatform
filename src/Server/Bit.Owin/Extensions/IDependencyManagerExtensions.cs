@@ -10,6 +10,7 @@ using Bit.Owin.Implementations;
 using Bit.Owin.Middlewares;
 using Owin;
 using Bit.Core.Implementations;
+using Bit.Owin.Implementations.Metadata;
 
 namespace Bit.Core.Contracts
 {
@@ -60,6 +61,22 @@ namespace Bit.Core.Contracts
 
             dependencyManager.Register<IDateTimeProvider, DefaultDateTimeProvider>(lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExciting: false);
 
+            dependencyManager.RegisterInstance(DefaultAppEnvironmentProvider.Current, overwriteExciting: false);
+            dependencyManager.RegisterInstance(DefaultJsonContentFormatter.Current, overwriteExciting: false);
+            dependencyManager.RegisterInstance(DefaultPathProvider.Current, overwriteExciting: false);
+
+            return dependencyManager;
+        }
+
+        public static IDependencyManager RegisterSecureDefaultPageMiddlewareUsingDefaultConfiguration(this IDependencyManager dependencyManager)
+        {
+            if (dependencyManager == null)
+                throw new ArgumentNullException(nameof(dependencyManager));
+
+            dependencyManager.RegisterOwinMiddleware<RedirectToSsoIfNotLoggedInMiddlewareConfiguration>();
+
+            dependencyManager.RegisterDefaultPageMiddlewareUsingDefaultConfiguration();
+
             return dependencyManager;
         }
 
@@ -85,6 +102,9 @@ namespace Bit.Core.Contracts
             if (metadataAssemblies == null)
                 throw new ArgumentNullException(nameof(metadataAssemblies));
 
+            dependencyManager.RegisterOwinMiddleware<MetadataMiddlewareConfiguration>();
+            dependencyManager.Register<IAppMetadataProvider, DefaultAppMetadataProvider>(lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExciting: false);
+
             metadataAssemblies = AssemblyContainer.Current.AssembliesWithDefaultAssemblies(metadataAssemblies).Union(new[] { AssemblyContainer.Current.GetBitMetadataAssembly() }).ToArray();
 
             metadataAssemblies.SelectMany(asm => asm.GetTypes())
@@ -107,6 +127,7 @@ namespace Bit.Core.Contracts
             dependencyManager.RegisterOwinMiddleware<InvokeLogOutMiddlewareConfiguration>();
             dependencyManager.RegisterOwinMiddleware<SignInPageMiddlewareConfiguration>();
             dependencyManager.RegisterOwinMiddleware<InvokeLoginMiddlewareConfiguration>();
+            dependencyManager.RegisterOwinMiddleware<LogUserInformationMiddlewareConfiguration>();
             dependencyManager.Register<IRandomStringProvider, DefaultRandomStringProvider>(lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExciting: false);
             dependencyManager.Register<ICertificateProvider, DefaultCertificateProvider>(lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExciting: false);
             return dependencyManager;
@@ -115,7 +136,13 @@ namespace Bit.Core.Contracts
         public static IDependencyManager RegisterLogStore<TLogStore>(this IDependencyManager dependencyManager)
             where TLogStore : class, ILogStore
         {
-            dependencyManager.Register<ILogStore, TLogStore>(overwriteExciting: false);
+            dependencyManager.RegisterLogStore(typeof(TLogStore).GetTypeInfo());
+            return dependencyManager;
+        }
+
+        public static IDependencyManager RegisterLogStore(this IDependencyManager dependencyManager, TypeInfo logStore)
+        {
+            dependencyManager.Register(typeof(ILogStore).GetTypeInfo(), logStore, overwriteExciting: false);
             return dependencyManager;
         }
 
@@ -126,7 +153,29 @@ namespace Bit.Core.Contracts
             dependencyManager.Register<IUserInformationProvider, DefaultUserInformationProvider>(overwriteExciting: false);
             dependencyManager.Register<IExceptionToHttpErrorMapper, DefaultExceptionToHttpErrorMapper>(lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExciting: false);
             dependencyManager.Register<ITimeZoneManager, DefaultTimeZoneManager>(overwriteExciting: false);
+            dependencyManager.Register<IRequestInformationProvider, DefaultRequestInformationProvider>(overwriteExciting: false);
 
+            return dependencyManager;
+        }
+
+        public static IDependencyManager RegisterDefaultLogger(this IDependencyManager dependencyManager, params TypeInfo[] logStores)
+        {
+            dependencyManager.Register<Microsoft.Owin.Logging.ILoggerFactory, DefaultOwinLoggerFactory>();
+            dependencyManager.Register<ILogger, DefaultLogger>();
+
+            foreach (TypeInfo logStore in logStores)
+            {
+                dependencyManager.RegisterLogStore(logStore);
+            }
+
+            return dependencyManager;
+        }
+
+        public static IDependencyManager RegisterMinimalOwinMiddlewares(this IDependencyManager dependencyManager)
+        {
+            dependencyManager.RegisterOwinMiddleware<AutofacDependencyInjectionMiddlewareConfiguration>();
+            dependencyManager.RegisterOwinMiddleware<OwinExceptionHandlerMiddlewareConfiguration>();
+            dependencyManager.RegisterOwinMiddleware<LogRequestInformationMiddlewareConfiguration>();
             return dependencyManager;
         }
     }
