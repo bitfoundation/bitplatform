@@ -15,7 +15,10 @@ namespace Bit.Core.Models
 
         public virtual EnvironmentAppInfo AppInfo { get; set; } = new EnvironmentAppInfo { };
 
-        public virtual EnvironmentSecurity Security { get; set; } = new EnvironmentSecurity { };
+        public virtual EnvironmentSecurity Security { get; set; } = new EnvironmentSecurity
+        {
+            Scopes = new string[] { "openid", "profile", "user_info" }
+        };
 
         public virtual EnvironmentCulture[] Cultures { get; set; } = new EnvironmentCulture[] { };
 
