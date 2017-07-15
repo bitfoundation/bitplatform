@@ -16,6 +16,9 @@
     <tags>Bit AspNet Microsoft SignalR AspNetSignalR websockets real-time realtime comet HTTP streaming</tags>
     <dependencies>
       <dependency id="Bit.Owin" version="0.0.1.6" />
+      <dependency id="Autofac.SignalR2" version="4.0.0" />
+      <dependency id="Microsoft.AspNet.SignalR.Core" version="2.2.2" />
+      <dependency id="System.Security.Cryptography.ProtectedData" version="4.3.0" />
     </dependencies>
   </metadata>
   <files>
