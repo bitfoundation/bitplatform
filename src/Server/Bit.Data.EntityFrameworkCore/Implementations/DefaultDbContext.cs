@@ -13,6 +13,7 @@ namespace Bit.Data.EntityFrameworkCore.Implementations
         protected DefaultDbContext(DbContextOptions options)
             : base(options)
         {
+            ApplyDefaultConfig();
         }
 
         protected DefaultDbContext(string connectionString, IDbContextObjectsProvider dbContextCreationOptionsProvider)
@@ -29,6 +30,11 @@ namespace Bit.Data.EntityFrameworkCore.Implementations
             if (dbContextObjects.Transaction != null /* We're going to use a relational database */)
                 UseTransactionForRelationalDatabases(dbContextObjects);
 
+            ApplyDefaultConfig();
+        }
+
+        private void ApplyDefaultConfig()
+        {
             ChangeTracker.AutoDetectChangesEnabled = false;
             ChangeTracker.QueryTrackingBehavior = QueryTrackingBehavior.NoTracking;
         }

@@ -6,23 +6,31 @@ namespace Bit.Data.EntityFramework.Implementations
 {
     public class DefaultDbContext : DbContext
     {
-        private readonly IDbConnectionProvider _dbConnectionProvider;
-
         protected DefaultDbContext()
         {
+        }
+
+        public DefaultDbContext(string nameOrConnectionString)
+            : base(nameOrConnectionString)
+        {
+            ApplyDefaultConfig();
         }
 
         public DefaultDbContext(DbConnection existingConnection, bool contextOwnsConnection)
             : base(existingConnection, contextOwnsConnection)
         {
-            
+            ApplyDefaultConfig();
         }
 
         public DefaultDbContext(string connectionString, IDbConnectionProvider dbConnectionProvider)
             : base(dbConnectionProvider.GetDbConnection(connectionString, rollbackOnScopeStatusFailure: true), contextOwnsConnection: false)
         {
-            _dbConnectionProvider = dbConnectionProvider;
-            Database.UseTransaction(_dbConnectionProvider.GetDbTransaction(connectionString));
+            ApplyDefaultConfig();
+            Database.UseTransaction(dbConnectionProvider.GetDbTransaction(connectionString));
+        }
+
+        private void ApplyDefaultConfig()
+        {
             Configuration.AutoDetectChangesEnabled = false;
             Configuration.EnsureTransactionsForFunctionsAndCommands = true;
             Configuration.LazyLoadingEnabled = false;
