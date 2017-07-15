@@ -6,6 +6,8 @@ using Bit.Owin.Contracts;
 using Bit.Signalr.Contracts;
 using Microsoft.AspNet.SignalR;
 using Owin;
+using Bit.Core.Implementations;
+using System.Reflection;
 
 namespace Bit.Signalr
 {
@@ -38,6 +40,13 @@ namespace Bit.Signalr
         {
             if (owinApp == null)
                 throw new ArgumentNullException(nameof(owinApp));
+
+            if (PlatformUtilities.IsRunningOnDotNetCore && !PlatformUtilities.IsRunningOnMono)
+            {
+                TypeInfo type = typeof(HubConfiguration).GetTypeInfo().Assembly.GetType("Microsoft.AspNet.SignalR.Infrastructure.MonoUtility").GetTypeInfo();
+                FieldInfo _isRunningMonoField = type.GetField("_isRunningMono", BindingFlags.NonPublic | BindingFlags.Static);
+                _isRunningMonoField.SetValue(null, new Lazy<bool>(() => true));
+            }
 
             HubConfiguration signalRConfig = new HubConfiguration
             {
