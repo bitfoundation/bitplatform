@@ -104,9 +104,12 @@
     <Compile Include="Contracts\ISSOPageModelProvider.cs" />
     <Compile Include="Extensions\IDependencyManagerExtensions.cs" />
     <Compile Include="Implementations\ActiveDirectoryUserServiceProvider.cs" />
+    <Compile Include="Implementations\DefaultEventService.cs" />
+    <Compile Include="Implementations\DefaultClientProvider.cs" />
     <Compile Include="Implementations\DefaultCustomLoginDataProvider.cs" />
     <Compile Include="Implementations\DefaultIdentityServerLogProvider.cs" />
     <Compile Include="Implementations\DefaultScopesProvider.cs" />
+    <Compile Include="Implementations\DefaultUserService.cs" />
     <Compile Include="Implementations\DefaultSSOPageModelProvider.cs" />
     <Compile Include="Implementations\DefaultViewService.cs" />
     <Compile Include="Implementations\ExtendedRedirectUriValidator.cs" />

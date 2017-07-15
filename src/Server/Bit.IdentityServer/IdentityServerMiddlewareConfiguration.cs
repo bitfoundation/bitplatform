@@ -1,16 +1,19 @@
-﻿using System;
-using System.Linq;
-using Bit.Core.Contracts;
+﻿using Bit.Core.Contracts;
 using Bit.Core.Models;
 using Bit.IdentityServer.Contracts;
 using Bit.Owin.Contracts;
 using IdentityServer3.Core.Configuration;
+using IdentityServer3.Core.Events;
 using IdentityServer3.Core.Logging;
 using IdentityServer3.Core.Services;
 using Owin;
+using System;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace Bit.IdentityServer
 {
+
     public class IdentityServerMiddlewareConfiguration : IOwinMiddlewareConfiguration
     {
         private readonly IAppEnvironmentProvider _appEnvironmentProvider;
@@ -18,9 +21,10 @@ namespace Bit.IdentityServer
         private readonly IDependencyManager _dependencyManager;
         private readonly IScopesProvider _scopesProvider;
         private readonly IRedirectUriValidator _redirectUriValidator;
+        private readonly IEventService _eventService;
 
         public IdentityServerMiddlewareConfiguration(IAppEnvironmentProvider appEnvironmentProvider,
-            IScopesProvider scopesProvider, ICertificateProvider certificateProvider, IDependencyManager dependencyManager, IRedirectUriValidator redirectUriValidator)
+            IScopesProvider scopesProvider, ICertificateProvider certificateProvider, IDependencyManager dependencyManager, IRedirectUriValidator redirectUriValidator, IEventService eventService)
         {
             if (appEnvironmentProvider == null)
                 throw new ArgumentNullException(nameof(appEnvironmentProvider));
@@ -37,11 +41,15 @@ namespace Bit.IdentityServer
             if (redirectUriValidator == null)
                 throw new ArgumentNullException(nameof(redirectUriValidator));
 
+            if (eventService == null)
+                throw new ArgumentNullException(nameof(eventService));
+
             _appEnvironmentProvider = appEnvironmentProvider;
             _scopesProvider = scopesProvider;
             _certificateProvider = certificateProvider;
             _dependencyManager = dependencyManager;
             _redirectUriValidator = redirectUriValidator;
+            _eventService = eventService;
         }
 
         protected IdentityServerMiddlewareConfiguration()
@@ -66,6 +74,8 @@ namespace Bit.IdentityServer
 
                 factory.UserService =
                     new Registration<IUserService>(_dependencyManager.Resolve<IUserService>());
+
+                factory.EventService = new Registration<IEventService>(_eventService);
 
                 factory.ViewService = new Registration<IViewService>(_dependencyManager.Resolve<IViewService>());
 
@@ -102,6 +112,11 @@ namespace Bit.IdentityServer
                         EnableTokenEndpoint = true,
                         EnableTokenRevocationEndpoint = true,
                         EnableUserInfoEndpoint = true
+                    },
+                    EventsOptions = new EventsOptions
+                    {
+                        RaiseErrorEvents = true,
+                        RaiseFailureEvents = true
                     }
                 };
 

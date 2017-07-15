@@ -1,10 +1,10 @@
-﻿using System;
+﻿using Bit.IdentityServer.Implementations;
+using Bit.Owin.Exceptions;
+using IdentityServer3.Core.Models;
+using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Security.Claims;
 using System.Threading.Tasks;
-using IdentityServer3.Core.Models;
-using IdentityServer3.Core.Services.Default;
 
 namespace Bit.Tests.IdentityServer.Implementations
 {
@@ -14,7 +14,7 @@ namespace Bit.Tests.IdentityServer.Implementations
         public virtual string Password { get; set; }
     }
 
-    public class TestUserService : UserServiceBase
+    public class TestUserService : DefaultUserService
     {
         private readonly List<LocalUser> _localUsers = new List<LocalUser>
         {
@@ -23,75 +23,19 @@ namespace Bit.Tests.IdentityServer.Implementations
             new LocalUser { UserId = "User2" , Password = "ValidPassword"}
         };
 
-        public override async Task AuthenticateLocalAsync(LocalAuthenticationContext context)
+        public override async Task<string> GetUserIdByLocalAuthenticationContextAsync(LocalAuthenticationContext context)
         {
-            string username = context.UserName;
+            LocalUser user = _localUsers.SingleOrDefault(u => u.UserId == context.UserName && u.Password == context.Password);
 
-            LocalUser user = _localUsers.SingleOrDefault(u => u.UserId == username && u.Password == context.Password);
+            if (user == null)
+                throw new DomainLogicException("LoginFailed");
 
-            try
-            {
-                if (user == null)
-                    throw new InvalidOperationException("LoginFailed");
-
-                List<Claim> claims = new List<Claim>
-                {
-                    new Claim("sub",user.UserId),
-                    new Claim("primary_sid", user.UserId),
-                    new Claim("upn", user.UserId),
-                    new Claim("name", user.UserId),
-                    new Claim("given_name", user.UserId)
-                };
-
-                AuthenticateResult result = new AuthenticateResult(user.UserId, user.UserId,
-                    claims,
-                    authenticationMethod: "custom");
-
-                context.AuthenticateResult = result;
-
-                await base.AuthenticateLocalAsync(context);
-            }
-            catch
-            {
-                AuthenticateResult result = new AuthenticateResult("LoginFailed");
-
-                context.AuthenticateResult = result;
-            }
+            return user.UserId;
         }
 
-        public override async Task GetProfileDataAsync(ProfileDataRequestContext context)
+        public override async Task<bool> UserIsActiveAsync(IsActiveContext context, string userId)
         {
-            LocalUser user = _localUsers.SingleOrDefault(u => u.UserId == context.Subject.Identity.Name);
-
-            if (user != null)
-            {
-                List<Claim> claims = new List<Claim>
-                {
-                    new Claim("sub",user.UserId),
-                    new Claim("primary_sid", user.UserId),
-                    new Claim("upn", user.UserId),
-                    new Claim("name", user.UserId),
-                    new Claim("given_name", user.UserId)
-                };
-
-                context.IssuedClaims = claims;
-
-                await base.GetProfileDataAsync(context);
-            }
-        }
-
-        public override async Task IsActiveAsync(IsActiveContext context)
-        {
-            context.IsActive = false;
-
-            LocalUser user = _localUsers.SingleOrDefault(u => u.UserId == context.Subject.Identity.Name);
-
-            if (user != null)
-            {
-                context.IsActive = true;
-            }
-
-            await base.IsActiveAsync(context);
+            return _localUsers.Any(u => u.UserId == userId);
         }
     }
 }

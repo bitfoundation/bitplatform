@@ -1,14 +1,14 @@
-using System.Collections.Generic;
-using Bit.IdentityServer.Contracts;
-using IdentityServer3.Core;
-using IdentityServer3.Core.Models;
-using Bit.Core.Models;
 using Bit.Core.Contracts;
+using Bit.Core.Models;
+using Bit.IdentityServer.Contracts;
+using Bit.IdentityServer.Implementations;
+using IdentityServer3.Core.Models;
 using System;
+using System.Collections.Generic;
 
 namespace Bit.Tests.IdentityServer.Implementations
 {
-    public class TestClientProvider : IClientProvider
+    public class TestClientProvider : DefaultClientProvider
     {
         private readonly IAppEnvironmentProvider _appEnvironmentProvider;
 
@@ -25,30 +25,17 @@ namespace Bit.Tests.IdentityServer.Implementations
 
         }
 
-        public virtual IEnumerable<Client> GetClients()
+        public override IEnumerable<Client> GetClients()
         {
             AppEnvironment activeAppEnvironment = _appEnvironmentProvider.GetActiveAppEnvironment();
 
             return new[]
             {
-                new Client
+                GetImplicitFlowClient(new BitImplicitFlowClient
                 {
                     ClientName = "Test",
-                    Enabled = true,
                     ClientId = "Test",
-                    ClientSecrets = new List<Secret>
-                    {
-                        new Secret("secret".Sha512())
-                    },
-                    Flow = Flows.Implicit,
-                    AllowedScopes = new List<string>
-                    {
-                        Constants.StandardScopes.OpenId,
-                        Constants.StandardScopes.Profile,
-                        "user_info"
-                    },
-                    ClientUri = "http://test.com/",
-                    RequireConsent = false,
+                    Secret = "secret",
                     RedirectUris = new List<string>
                     {
                         $@"^(http|https):\/\/(\S+\.)?(bit-framework.com|localhost|127.0.0.1)(:\d+)?\b{activeAppEnvironment.GetHostVirtualPath()}\bSignIn\/?"
@@ -57,41 +44,15 @@ namespace Bit.Tests.IdentityServer.Implementations
                     {
                         $@"^(http|https):\/\/(\S+\.)?(bit-framework.com|localhost|127.0.0.1)(:\d+)?\b{activeAppEnvironment.GetHostVirtualPath()}\bSignOut\/?"
                     },
-                    AllowAccessToAllScopes = true,
-                    AlwaysSendClientClaims = true,
-                    IncludeJwtId = true,
-                    IdentityTokenLifetime = 86400 /*1 Day*/,
-                    AccessTokenLifetime = 86400 /*1 Day*/,
-                    AuthorizationCodeLifetime = 86400 /*1 Day*/,
-                    AccessTokenType = AccessTokenType.Jwt,
-                    AllowAccessToAllCustomGrantTypes = true
-                },
-                new Client
+                    TokensLifetime = TimeSpan.FromDays(1)
+                }),
+                GetResourceOwnerFlowClient(new BitResourceOwnerFlowClient
                 {
                     ClientName = "TestResOwner",
-                    Enabled = true,
                     ClientId = "TestResOwner",
-                    ClientSecrets = new List<Secret>
-                    {
-                        new Secret("secret".Sha512())
-                    },
-                    Flow = Flows.ResourceOwner,
-                    AllowedScopes = new List<string>
-                    {
-                        Constants.StandardScopes.OpenId,
-                        Constants.StandardScopes.Profile,
-                        "user_info"
-                    },
-                    RequireConsent = false,
-                    AllowAccessToAllScopes = true,
-                    AlwaysSendClientClaims = true,
-                    IncludeJwtId = true,
-                    IdentityTokenLifetime = 86400 /*1 Day*/,
-                    AccessTokenLifetime = 86400 /*1 Day*/,
-                    AuthorizationCodeLifetime = 86400 /*1 Day*/,
-                    AccessTokenType = AccessTokenType.Jwt,
-                    AllowAccessToAllCustomGrantTypes = true
-                }
+                    Secret = "secret",
+                    TokensLifetime = TimeSpan.FromDays(1)
+                })
             };
         }
     }

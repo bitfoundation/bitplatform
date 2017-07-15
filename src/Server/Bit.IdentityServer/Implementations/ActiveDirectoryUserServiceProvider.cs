@@ -1,15 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.DirectoryServices.AccountManagement;
-using System.Security.Claims;
-using System.Threading.Tasks;
-using Bit.Core.Contracts;
+﻿using Bit.Core.Contracts;
+using Bit.Owin.Exceptions;
 using IdentityServer3.Core.Models;
-using IdentityServer3.Core.Services.Default;
+using System;
+using System.DirectoryServices.AccountManagement;
+using System.Threading.Tasks;
 
 namespace Bit.IdentityServer.Implementations
 {
-    public class ActiveDirectoryUserServiceProvider : UserServiceBase
+    public class ActiveDirectoryUserServiceProvider : DefaultUserService
     {
         private readonly string _activeDirectoryName;
 
@@ -26,106 +24,40 @@ namespace Bit.IdentityServer.Implementations
 
         }
 
-        public override async Task AuthenticateLocalAsync(LocalAuthenticationContext context)
+        public override async Task<string> GetUserIdByLocalAuthenticationContextAsync(LocalAuthenticationContext context)
         {
             string username = context.UserName;
             string password = context.Password;
 
-            try
+            using (PrincipalContext principalContext = new PrincipalContext(ContextType.Domain, _activeDirectoryName))
             {
-                using (PrincipalContext principalContext = new PrincipalContext(ContextType.Domain, _activeDirectoryName))
+                string userNameAsWinUserName = username;
+
+                if (!userNameAsWinUserName.Contains(_activeDirectoryName))
+                    userNameAsWinUserName = $"{_activeDirectoryName}\\{userNameAsWinUserName}";
+
+                if (principalContext.ValidateCredentials(userNameAsWinUserName, password))
                 {
-                    string userNameAsWinUserName = username;
-
-                    if (!userNameAsWinUserName.Contains(_activeDirectoryName))
-                        userNameAsWinUserName = $"{_activeDirectoryName}\\{userNameAsWinUserName}";
-
-                    if (principalContext.ValidateCredentials(userNameAsWinUserName, password))
+                    using (UserPrincipal user = UserPrincipal.FindByIdentity(principalContext, IdentityType.SamAccountName, userNameAsWinUserName))
                     {
-                        using (
-                            UserPrincipal user = UserPrincipal.FindByIdentity(principalContext,
-                                IdentityType.SamAccountName, userNameAsWinUserName))
-                        {
-                            if (user == null)
-                                throw new InvalidOperationException("LoginFailed");
-
-                            List<Claim> claims = new List<Claim>
-                            {
-                                new Claim("sub", user.Sid.Value),
-                                new Claim("primary_sid", user.Sid.Value),
-                                new Claim("upn", user.UserPrincipalName),
-                                new Claim("name", user.Name),
-                                new Claim("given_name", user.GivenName)
-                            };
-
-                            AuthenticateResult result = new AuthenticateResult(user.SamAccountName, user.SamAccountName,
-                                claims,
-                                authenticationMethod: "custom");
-
-                            context.AuthenticateResult = result;
-                        }
-                    }
-                    else
-                    {
-                        throw new InvalidOperationException("LoginFailed");
+                        if (user != null)
+                            return user.Sid.Value;
                     }
                 }
-
-                await base.AuthenticateLocalAsync(context);
             }
-            catch
-            {
-                AuthenticateResult result = new AuthenticateResult("LoginFailed");
 
-                context.AuthenticateResult = result;
-            }
+            throw new DomainLogicException("UserInActiveDirectoryCouldNotBeFound");
         }
 
-        public override async Task GetProfileDataAsync(ProfileDataRequestContext context)
+        public override async Task<bool> UserIsActiveAsync(IsActiveContext context, string userId)
         {
             using (PrincipalContext principalContext = new PrincipalContext(ContextType.Domain, _activeDirectoryName))
             {
-                using (
-                    UserPrincipal user = UserPrincipal.FindByIdentity(principalContext, IdentityType.SamAccountName,
-                        context.Subject.Identity.Name))
+                using (UserPrincipal user = UserPrincipal.FindByIdentity(principalContext, IdentityType.SamAccountName, context.Subject.Identity.Name))
                 {
-                    if (user != null)
-                    {
-                        List<Claim> claims = new List<Claim>
-                        {
-                            new Claim("sub", user.Sid.Value),
-                            new Claim("primary_sid", user.Sid.Value),
-                            new Claim("upn", user.UserPrincipalName),
-                            new Claim("name", user.Name),
-                            new Claim("given_name", user.GivenName)
-                        };
-
-                        context.IssuedClaims = claims;
-
-                        await base.GetProfileDataAsync(context);
-                    }
+                    return user != null && user.Enabled != null && user.Enabled.Value;
                 }
             }
-        }
-
-        public override async Task IsActiveAsync(IsActiveContext context)
-        {
-            context.IsActive = false;
-
-            using (PrincipalContext principalContext = new PrincipalContext(ContextType.Domain, _activeDirectoryName))
-            {
-                using (
-                    UserPrincipal user = UserPrincipal.FindByIdentity(principalContext, IdentityType.SamAccountName,
-                        context.Subject.Identity.Name))
-                {
-                    if (user != null)
-                    {
-                        context.IsActive = user.Enabled != null && user.Enabled.Value;
-                    }
-                }
-            }
-
-            await base.IsActiveAsync(context);
         }
     }
 }

@@ -30,14 +30,30 @@ namespace Bit.IdentityServer.Implementations
 
         }
 
-        public virtual Task<Stream> ClientPermissions(ClientPermissionsViewModel model)
+        public virtual async Task<Stream> ClientPermissions(ClientPermissionsViewModel model)
         {
-            throw new NotImplementedException();
+            string content = $@"<!DOCTYPE html>
+                            <html>
+                                <head>
+                                    <title>ClientPermissions >> Not Implemented</title>
+                                </head>
+                                <body>ClientPermissions >> Not Implemented</body>
+                            </html>";
+
+            return await ReturnHtmlAsync(model, content, CancellationToken.None);
         }
 
-        public virtual Task<Stream> Consent(ConsentViewModel model, ValidatedAuthorizeRequest authorizeRequest)
+        public virtual async Task<Stream> Consent(ConsentViewModel model, ValidatedAuthorizeRequest authorizeRequest)
         {
-            throw new NotImplementedException();
+            string content = $@"<!DOCTYPE html>
+                            <html>
+                                <head>
+                                    <title>Consent >> Not Implemented</title>
+                                </head>
+                                <body>Consent >> Not Implemented</body>
+                            </html>";
+
+            return await ReturnHtmlAsync(model, content, CancellationToken.None);
         }
 
         public virtual async Task<Stream> Error(ErrorViewModel model)
@@ -47,7 +63,7 @@ namespace Bit.IdentityServer.Implementations
                                 <head>
                                     <title>{model.ErrorMessage}</title>
                                 </head>
-                                <body>{model.ErrorMessage}</body>
+                                <body>{model.ErrorMessage} <br /> RequestId: {model.RequestId}</body>
                             </html>";
 
             return await ReturnHtmlAsync(model, content, CancellationToken.None);
@@ -55,13 +71,30 @@ namespace Bit.IdentityServer.Implementations
 
         public virtual async Task<Stream> LoggedOut(LoggedOutViewModel model, SignOutMessage message)
         {
-            string content = $@"<!DOCTYPE html>
+            string content = null;
+
+            if (!string.IsNullOrEmpty(model.RedirectUrl))
+            {
+                content = $@"<!DOCTYPE html>
                             <html>
                                 <head>
                                     <meta http-equiv='refresh' content='0;{model.RedirectUrl}'>
                                 </head>
                                 <body></body>
                             </html>";
+            }
+            else
+            {
+                content = $@"<!DOCTYPE html>
+                            <html>
+                                <head>
+                                    <title>No redirect url on logout error</title>
+                                </head>
+                                <body>
+                                    No redirect url on logout error
+                                </body>
+                            </html>";
+            }
 
             return await ReturnHtmlAsync(model, content, CancellationToken.None);
         }
