@@ -4,7 +4,7 @@ namespace Bit.Core.Implementations
 {
     public class PlatformUtilities
     {
-        private static readonly Lazy<bool> _isRunningMono = new Lazy<bool>(() =>
+        private static readonly Lazy<bool> _isRunningOnMono = new Lazy<bool>(() =>
         {
             try
             {
@@ -16,11 +16,23 @@ namespace Bit.Core.Implementations
             }
         });
 
+        private static readonly Lazy<bool> _isRunningOnDotNetCore = new Lazy<bool>(() =>
+        {
+            try
+            {
+                return Type.GetType("System.Runtime.Loader.AssemblyLoadContext") != null;
+            }
+            catch
+            {
+                return false;
+            }
+        });
+
         public static bool IsRunningOnMono
         {
             get
             {
-                return _isRunningMono.Value;
+                return _isRunningOnMono.Value;
             }
         }
 
@@ -28,7 +40,7 @@ namespace Bit.Core.Implementations
         {
             get
             {
-                return false;
+                return _isRunningOnDotNetCore.Value;
             }
         }
     }
