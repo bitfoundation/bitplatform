@@ -39,6 +39,8 @@ namespace BitChangeSetManager.DataAccess
                     {
                         bool newDbCreated = dbContext.Database.CreateIfNotExists();
 
+                        dbContext.Database.Initialize(force: true);
+
                         if (newDbCreated == false)
                             return;
                     }

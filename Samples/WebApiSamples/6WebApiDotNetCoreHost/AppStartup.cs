@@ -36,7 +36,7 @@ namespace WebApiDotNetCoreHost
 
         public virtual void ConfigureDependencies(IServiceProvider serviceProvider, IServiceCollection services, IDependencyManager dependencyManager)
         {
-AssemblyContainer.Current.Init();
+            AssemblyContainer.Current.Init();
 
             dependencyManager.RegisterMinimalDependencies();
 

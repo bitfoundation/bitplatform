@@ -1,9 +1,9 @@
 ﻿using Bit.Core.Contracts;
+using Bit.IdentityServer.Implementations;
 using Bit.Owin.Exceptions;
 using BitChangeSetManager.DataAccess;
 using BitChangeSetManager.Model;
 using IdentityServer3.Core.Models;
-using IdentityServer3.Core.Services.Default;
 using System;
 using System.Collections.Generic;
 using System.Data.Entity;
@@ -15,7 +15,7 @@ using System.Threading.Tasks;
 
 namespace BitChangeSetManager.Security
 {
-    public class BitChangeSetManagerUserService : UserServiceBase
+    public class BitChangeSetManagerUserService : DefaultUserService
     {
         private readonly IDependencyManager _dependencyManager;
 
@@ -24,132 +24,77 @@ namespace BitChangeSetManager.Security
             _dependencyManager = dependencyManager;
         }
 
-        public override async Task AuthenticateLocalAsync(LocalAuthenticationContext context)
+        public override async Task<string> GetUserIdByLocalAuthenticationContextAsync(LocalAuthenticationContext context)
         {
-            try
+            string username = context.UserName;
+            string password = context.Password;
+
+            if (string.IsNullOrEmpty(username))
+                throw new ArgumentException(nameof(username));
+
+            if (string.IsNullOrEmpty(password))
+                throw new ArgumentException(nameof(password));
+
+            using (MD5 md5Hash = MD5.Create())
             {
-                string username = context.UserName;
-                string password = context.Password;
+                byte[] data = md5Hash.ComputeHash(Encoding.UTF8.GetBytes(password));
 
-                if (string.IsNullOrEmpty(username))
-                    throw new ArgumentException(nameof(username));
+                StringBuilder sBuilder = new StringBuilder();
 
-                if (string.IsNullOrEmpty(password))
-                    throw new ArgumentException(nameof(password));
-
-                using (MD5 md5Hash = MD5.Create())
+                for (int i = 0; i < data.Length; i++)
                 {
-                    byte[] data = md5Hash.ComputeHash(Encoding.UTF8.GetBytes(password));
-
-                    StringBuilder sBuilder = new StringBuilder();
-
-                    for (int i = 0; i < data.Length; i++)
-                    {
-                        sBuilder.Append(data[i].ToString("x2"));
-                    }
-
-                    password = sBuilder.ToString();
+                    sBuilder.Append(data[i].ToString("x2"));
                 }
 
-                username = username.ToLower();
-
-                User user = null;
-
-                using (IDependencyResolver resolver = _dependencyManager.CreateChildDependencyResolver())
-                {
-                    IBitChangeSetManagerRepository<User> usersRepository = resolver.Resolve<IBitChangeSetManagerRepository<User>>();
-
-                    user = await (await usersRepository.GetAllAsync(CancellationToken.None))
-                         .SingleOrDefaultAsync(u => u.UserName.ToLower() == username && u.Password == password);
-                }
-
-                if (user == null)
-                    throw new InvalidOperationException("LoginFailed");
-
-                string userId = user.Id.ToString();
-
-                List<Claim> claims = new List<Claim>
-                {
-                    new Claim("sub",userId),
-                    new Claim("primary_sid", userId),
-                    new Claim("upn", userId),
-                    new Claim("name", userId),
-                    new Claim("given_name", userId)
-                };
-
-                AuthenticateResult result = new AuthenticateResult(userId, userId,
-                    claims,
-                    authenticationMethod: "custom");
-
-                context.AuthenticateResult = result;
-
-                await base.AuthenticateLocalAsync(context);
+                password = sBuilder.ToString();
             }
-            catch
-            {
-                AuthenticateResult result = new AuthenticateResult("LoginFailed");
 
-                context.AuthenticateResult = result;
-            }
-        }
+            username = username.ToLower();
 
-        public override async Task GetProfileDataAsync(ProfileDataRequestContext context)
-        {
             User user = null;
 
             using (IDependencyResolver resolver = _dependencyManager.CreateChildDependencyResolver())
             {
                 IBitChangeSetManagerRepository<User> usersRepository = resolver.Resolve<IBitChangeSetManagerRepository<User>>();
 
-                Guid userId = Guid.Parse(context.Subject.Identity.Name);
-
                 user = await (await usersRepository.GetAllAsync(CancellationToken.None))
-                     .SingleOrDefaultAsync(u => u.Id == userId);
+                     .SingleOrDefaultAsync(u => u.UserName.ToLower() == username && u.Password == password);
             }
 
-            if (user != null)
+            if (user == null)
+                throw new DomainLogicException("LoginFailed");
+
+            string userId = user.Id.ToString();
+
+            List<Claim> claims = new List<Claim>
             {
-                string userId = user.Id.ToString();
+                new Claim("sub",userId),
+                new Claim("primary_sid", userId),
+                new Claim("upn", userId),
+                new Claim("name", userId),
+                new Claim("given_name", userId)
+            };
 
-                List<Claim> claims = new List<Claim>
-                {
-                    new Claim("sub", userId),
-                    new Claim("primary_sid", userId),
-                    new Claim("upn", userId),
-                    new Claim("name", userId),
-                    new Claim("given_name", userId)
-                };
+            AuthenticateResult result = new AuthenticateResult(userId, userId,
+                claims,
+                authenticationMethod: "custom");
 
-                context.IssuedClaims = claims;
+            context.AuthenticateResult = result;
 
-                await base.GetProfileDataAsync(context);
-            }
-            else
-            {
-                throw new ResourceNotFoundException("User could not be found");
-            }
+            return userId;
         }
 
-        public override async Task IsActiveAsync(IsActiveContext context)
+        public override async Task<bool> UserIsActiveAsync(IsActiveContext context, string userId)
         {
-            if (context.Subject?.Identity?.Name != null)
+            using (IDependencyResolver resolver = _dependencyManager.CreateChildDependencyResolver())
             {
-                using (IDependencyResolver resolver = _dependencyManager.CreateChildDependencyResolver())
-                {
-                    IBitChangeSetManagerRepository<User> usersRepository = resolver.Resolve<IBitChangeSetManagerRepository<User>>();
+                IBitChangeSetManagerRepository<User> usersRepository = resolver.Resolve<IBitChangeSetManagerRepository<User>>();
 
-                    Guid userId = Guid.Parse(context.Subject.Identity.Name);
+                Guid userIdAsGuid = Guid.Parse(userId);
 
-                    context.IsActive = await (await usersRepository.GetAllAsync(CancellationToken.None))
-                         .AnyAsync(u => u.Id == userId);
-                }
+                return await (await usersRepository.GetAllAsync(CancellationToken.None))
+                     .AnyAsync(u => u.Id == userIdAsGuid);
             }
-            else
-            {
-                // context.IsActive = false; // Redirect loop problem. Must be solved.
-            }
-
-            await base.IsActiveAsync(context);
         }
     }
 }

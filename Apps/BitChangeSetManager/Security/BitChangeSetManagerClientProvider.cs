@@ -1,14 +1,14 @@
-﻿using IdentityServer3.Core;
+﻿using Bit.Core.Contracts;
+using Bit.Core.Models;
+using Bit.IdentityServer.Contracts;
+using Bit.IdentityServer.Implementations;
 using IdentityServer3.Core.Models;
 using System;
 using System.Collections.Generic;
-using Bit.Core.Contracts;
-using Bit.Core.Models;
-using Bit.IdentityServer.Contracts;
 
 namespace BitChangeSetManager.Security
 {
-    public class BitChangeSetManagerClientProvider : IClientProvider
+    public class BitChangeSetManagerClientProvider : DefaultClientProvider
     {
         private readonly IAppEnvironmentProvider _appEnvironmentProvider;
 
@@ -20,95 +20,57 @@ namespace BitChangeSetManager.Security
             _appEnvironmentProvider = appEnvironmentProvider;
         }
 
-        public virtual IEnumerable<Client> GetClients()
+        public override IEnumerable<Client> GetClients()
         {
             AppEnvironment activeAppEnvironment = _appEnvironmentProvider.GetActiveAppEnvironment();
 
             return new[]
             {
-                new Client
+                GetImplicitFlowClient(new BitImplicitFlowClient
                 {
-                    ClientName = "BitChangeSetManager",
-                    Enabled = true,
                     ClientId = "BitChangeSetManager",
-                    ClientSecrets = new List<Secret>
-                    {
-                        new Secret("secret".Sha512())
-                    },
-                    Flow = Flows.Implicit,
-                    AllowedScopes = new List<string>
-                    {
-                        Constants.StandardScopes.OpenId,
-                        Constants.StandardScopes.Profile,
-                        "user_info"
-                    },
-                    ClientUri = "https://github.com/bit-foundation/bit-framework/",
-                    RequireConsent = false,
-                    RedirectUris = new List<string>
-                    {
-                        $@"^(http|https):\/\/(\S+\.)?(bit-change-set-manager.com|localhost)(:\d+)?\b{activeAppEnvironment.GetHostVirtualPath()}\bSignIn\/?"
-                    },
+                    ClientName = "BitChangeSetManager",
                     PostLogoutRedirectUris = new List<string>
                     {
                         $@"^(http|https):\/\/(\S+\.)?(bit-change-set-manager.com|localhost)(:\d+)?\b{activeAppEnvironment.GetHostVirtualPath()}\bSignOut\/?"
                     },
-                    AllowAccessToAllScopes = true,
-                    AlwaysSendClientClaims = true,
-                    IncludeJwtId = true,
-                    IdentityTokenLifetime = 86400 /*1 Day*/,
-                    AccessTokenLifetime = 86400 /*1 Day*/,
-                    AuthorizationCodeLifetime = 86400 /*1 Day*/,
-                    AccessTokenType = AccessTokenType.Jwt,
-                    AllowAccessToAllCustomGrantTypes = true
-                },
-                new Client
+                    RedirectUris = new List<string>
+                    {
+                        $@"^(http|https):\/\/(\S+\.)?(bit-change-set-manager.com|localhost)(:\d+)?\b{activeAppEnvironment.GetHostVirtualPath()}\bSignIn\/?"
+                    },
+                    Secret = "secret",
+                    TokensLifetime = TimeSpan.FromDays(1) 
+                }),
+                GetResourceOwnerFlowClient(new BitResourceOwnerFlowClient
                 {
-                    /*  Required nuget packages: IdentityModel + Microsoft.Net.Http
-                     
-                        public async Task<string> CallSecureApiSample()
-                        {
-                            string baseAddress = "http://localhost:9090/bit-change-set-manager";
-
-                            using (TokenClient identityClient = new TokenClient($"{baseAddress}/core/connect/token", "BitChangeSetManager-ResOwner", "secret"))
-                            {
-                                TokenResponse tokenResponse = await identityClient.RequestResourceOwnerPasswordAsync("test1", "test", "openid profile user_info");
-
-                                using (HttpClient httpClient = new HttpClient { })
-                                {
-                                    httpClient.SetBearerToken(tokenResponse.AccessToken);
-
-                                    string response = await httpClient.GetStringAsync($"{baseAddress}/odata/BitChangeSetManager/changeSets");
-
-                                    return response;
-                                }
-                            }
-                        }
-
-                     */
-                    ClientName = "BitChangeSetManager",
-                    Enabled = true,
                     ClientId = "BitChangeSetManager-ResOwner",
-                    ClientSecrets = new List<Secret>
+                    ClientName = "BitChangeSetManager-ResOwner",
+                    Secret = "secret",
+                    TokensLifetime = TimeSpan.FromDays(1)
+                })
+
+                /*  Required nuget packages: IdentityModel + Microsoft.Net.Http
+                     
+                public async Task<string> CallSecureApiSample()
+                {
+                    string baseAddress = "http://localhost:9090/bit-change-set-manager";
+
+                    using (TokenClient identityClient = new TokenClient($"{baseAddress}/core/connect/token", "BitChangeSetManager-ResOwner", "secret"))
                     {
-                        new Secret("secret".Sha512())
-                    },
-                    Flow = Flows.ResourceOwner,
-                    AllowedScopes = new List<string>
-                    {
-                        Constants.StandardScopes.OpenId,
-                        Constants.StandardScopes.Profile,
-                        "user_info"
-                    },
-                    RequireConsent = false,
-                    AllowAccessToAllScopes = true,
-                    AlwaysSendClientClaims = true,
-                    IncludeJwtId = true,
-                    IdentityTokenLifetime = 86400 /*1 Day*/,
-                    AccessTokenLifetime = 86400 /*1 Day*/,
-                    AuthorizationCodeLifetime = 86400 /*1 Day*/,
-                    AccessTokenType = AccessTokenType.Jwt,
-                    AllowAccessToAllCustomGrantTypes = true
+                        TokenResponse tokenResponse = await identityClient.RequestResourceOwnerPasswordAsync("test1", "test", "openid profile user_info");
+
+                        using (HttpClient httpClient = new HttpClient { })
+                        {
+                            httpClient.SetBearerToken(tokenResponse.AccessToken);
+
+                            string response = await httpClient.GetStringAsync($"{baseAddress}/odata/BitChangeSetManager/changeSets");
+
+                            return response;
+                        }
+                    }
                 }
+
+                */
             };
         }
     }
