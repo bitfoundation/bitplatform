@@ -1,7 +1,7 @@
 {
   "Schema": {
     "HtmlSchemaFiles": [
-      "wwwroot\\node_modules\\@bit\\bit-framework\\html-elements-schema.json"
+      "..\\BitChangeSetManager\\wwwroot\\node_modules\\@bit\\bit-framework\\html-elements-schema.json"
     ]
   },
   "BitCodeGeneratorConfigs": {
