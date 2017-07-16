@@ -6,8 +6,8 @@ using Bit.Owin.Contracts;
 using Bit.Signalr.Contracts;
 using Microsoft.AspNet.SignalR;
 using Owin;
-using Bit.Core.Implementations;
 using System.Reflection;
+using Bit.Core.Extensions;
 
 namespace Bit.Signalr
 {
