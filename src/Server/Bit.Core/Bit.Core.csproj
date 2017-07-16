@@ -55,9 +55,10 @@
     <Compile Include="Contracts\IStringCorrector.cs" />
     <Compile Include="Contracts\IUserInformationProvider.cs" />
     <Compile Include="Contracts\IDependenciesManager.cs" />
+    <Compile Include="Extensions\AssemblyExtensions.cs" />
     <Compile Include="Implementations\DefaultDateTimeProvider.cs" />
     <Compile Include="Implementations\DefaultIraninCodeValidator.cs" />
-    <Compile Include="Implementations\PlatformUtilities.cs" />
+    <Compile Include="Extensions\PlatformUtilities.cs" />
     <Compile Include="Models\AppEnvironment.cs" />
     <Compile Include="Models\LogData.cs" />
     <Compile Include="Models\LogEntry.cs" />
