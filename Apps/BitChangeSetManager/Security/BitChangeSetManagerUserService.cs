@@ -5,9 +5,7 @@ using BitChangeSetManager.DataAccess;
 using BitChangeSetManager.Model;
 using IdentityServer3.Core.Models;
 using System;
-using System.Collections.Generic;
 using System.Data.Entity;
-using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading;
@@ -64,24 +62,7 @@ namespace BitChangeSetManager.Security
             if (user == null)
                 throw new DomainLogicException("LoginFailed");
 
-            string userId = user.Id.ToString();
-
-            List<Claim> claims = new List<Claim>
-            {
-                new Claim("sub",userId),
-                new Claim("primary_sid", userId),
-                new Claim("upn", userId),
-                new Claim("name", userId),
-                new Claim("given_name", userId)
-            };
-
-            AuthenticateResult result = new AuthenticateResult(userId, userId,
-                claims,
-                authenticationMethod: "custom");
-
-            context.AuthenticateResult = result;
-
-            return userId;
+            return user.Id.ToString();
         }
 
         public override async Task<bool> UserIsActiveAsync(IsActiveContext context, string userId)
