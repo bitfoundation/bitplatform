@@ -107,8 +107,8 @@ namespace Bit.Core.Contracts
 
             metadataAssemblies = AssemblyContainer.Current.AssembliesWithDefaultAssemblies(metadataAssemblies).Union(new[] { AssemblyContainer.Current.GetBitMetadataAssembly() }).ToArray();
 
-            metadataAssemblies.SelectMany(asm => asm.GetTypes())
-                .Where(t => t.IsClass && !t.IsAbstract && !t.IsGenericType && t.IsPublic)
+            metadataAssemblies.SelectMany(asm => asm.GetLoadableExportedTypes())
+                .Where(t => t.IsClass && !t.IsAbstract && !t.IsGenericType)
                 .Where(t => typeof(IMetadataBuilder).GetTypeInfo().IsAssignableFrom(t.GetTypeInfo()))
                 .ToList()
                 .ForEach(t =>

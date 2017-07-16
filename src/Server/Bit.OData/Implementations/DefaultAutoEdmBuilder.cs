@@ -41,8 +41,7 @@ namespace Bit.OData.Implementations
         public virtual void AutoBuildEdmFromAssembly(Assembly assembly, ODataModelBuilder modelBuilder)
         {
             List<TypeInfo> controllers = assembly
-                .GetTypes()
-                .Select(t => IntrospectionExtensions.GetTypeInfo(t))
+                .GetLoadableExportedTypes()
                 .Where(t =>
                 {
                     TypeInfo baseGenericType = (t.BaseType?.GetTypeInfo()?.IsGenericType == true ? t.BaseType?.GetTypeInfo()?.GetGenericTypeDefinition() : null)?.GetTypeInfo();
