@@ -306,6 +306,7 @@
       <HintPath>..\..\..\packages\System.Runtime.InteropServices.RuntimeInformation.4.3.0\lib\net45\System.Runtime.InteropServices.RuntimeInformation.dll</HintPath>
     </Reference>
     <Reference Include="System.Runtime.Serialization" />
+    <Reference Include="System.Security" />
     <Reference Include="System.Security.Claims, Version=4.0.2.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
       <HintPath>..\..\..\packages\System.Security.Claims.4.3.0\lib\net46\System.Security.Claims.dll</HintPath>
     </Reference>
@@ -317,6 +318,9 @@
     </Reference>
     <Reference Include="System.Security.Cryptography.Primitives, Version=4.0.1.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
       <HintPath>..\..\..\packages\System.Security.Cryptography.Primitives.4.3.0\lib\net46\System.Security.Cryptography.Primitives.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Security.Cryptography.ProtectedData, Version=4.0.1.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\..\..\packages\System.Security.Cryptography.ProtectedData.4.3.0\lib\net46\System.Security.Cryptography.ProtectedData.dll</HintPath>
     </Reference>
     <Reference Include="System.Security.Cryptography.X509Certificates, Version=4.1.1.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
       <HintPath>..\..\..\packages\System.Security.Cryptography.X509Certificates.4.3.0\lib\net461\System.Security.Cryptography.X509Certificates.dll</HintPath>
@@ -348,6 +352,7 @@
     <Compile Include="Extensions\OwinExtensions.cs" />
     <Compile Include="Implementations\AspNetCorePathProvider.cs" />
     <Compile Include="Implementations\AspNetCoreRequestInformationProvider.cs" />
+    <Compile Include="Implementations\DefaultDataProtectionProvider.cs" />
     <Compile Include="Implementations\Servers\HttpListenerServer.cs" />
     <Compile Include="Implementations\Servers\SuaveServer.cs" />
     <Compile Include="Middlewares\AspNetCoreCacheResponseMiddleware.cs" />

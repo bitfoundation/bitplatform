@@ -2,8 +2,10 @@
 using Bit.Owin.Implementations;
 using Bit.Owin.Middlewares;
 using Bit.OwinCore.Contracts;
+using Bit.OwinCore.Implementations;
 using Bit.OwinCore.Middlewares;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.Owin.Security.DataProtection;
 using System;
 
 namespace Bit.Core.Contracts
@@ -64,6 +66,7 @@ namespace Bit.Core.Contracts
             dependencyManager.Register<IExceptionToHttpErrorMapper, DefaultExceptionToHttpErrorMapper>(lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExciting: false);
             dependencyManager.Register<ITimeZoneManager, DefaultTimeZoneManager>(overwriteExciting: false);
             dependencyManager.Register<IRequestInformationProvider, AspNetCoreRequestInformationProvider>(overwriteExciting: false);
+            dependencyManager.Register<IDataProtectionProvider, DefaultDataProtectionProvider>(lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExciting: false);
             return dependencyManager;
         }
     }

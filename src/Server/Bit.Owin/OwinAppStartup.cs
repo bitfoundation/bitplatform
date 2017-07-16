@@ -9,6 +9,7 @@ using Bit.Owin.Implementations;
 using Microsoft.Owin.BuilderProperties;
 using Microsoft.Owin.Logging;
 using Owin;
+using Microsoft.Owin.Security.DataProtection;
 
 namespace Bit.Owin
 {
@@ -58,6 +59,9 @@ namespace Bit.Owin
             DefaultDependencyManager.Current.ResolveAll<IOwinMiddlewareConfiguration>()
                 .ToList()
                 .ForEach(middlewareConfig => middlewareConfig.Configure(owinApp));
+
+            if (DefaultDependencyManager.Current.IsRegistered<IDataProtectionProvider>())
+                owinApp.SetDataProtectionProvider(DefaultDependencyManager.Current.Resolve<IDataProtectionProvider>());
 
             if (owinAppProps.OnAppDisposing != CancellationToken.None)
             {
