@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Bit.Core.Implementations
+namespace Bit.Core.Extensions
 {
     public class PlatformUtilities
     {
