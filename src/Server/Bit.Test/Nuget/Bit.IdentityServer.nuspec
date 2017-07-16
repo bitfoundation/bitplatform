@@ -16,6 +16,8 @@
     <tags>Bit OAuth2 OAuth OpenID Security 2.0 Connect Identity IdentityServer</tags>
     <dependencies>
       <dependency id="Bit.Owin" version="0.0.1.6" />
+      <dependency id="AntiXSS" version="4.3.0" />
+      <dependency id="IdentityServer3" version="2.6.0" />
     </dependencies>
   </metadata>
   <files>
