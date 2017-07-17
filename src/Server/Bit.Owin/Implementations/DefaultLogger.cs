@@ -16,9 +16,11 @@ namespace Bit.Owin.Implementations
         private readonly IDateTimeProvider _dateTimeProvider;
         private readonly IEnumerable<ILogStore> _logStores;
 
+#if DEBUG
         protected DefaultLogger()
         {
         }
+#endif
 
         public DefaultLogger(IEnumerable<ILogStore> logStores, IAppEnvironmentProvider appEnvironmentProvider,
             IDateTimeProvider dateTimeProvider)

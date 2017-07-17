@@ -10,10 +10,11 @@ namespace Bit.Owin.Implementations
     {
         private readonly IRequestInformationProvider _requestInformationProvider;
 
+#if DEBUG
         protected DefaultUserInformationProvider()
         {
-            
         }
+#endif
 
         public DefaultUserInformationProvider(IRequestInformationProvider requestInformationProvider)
         {

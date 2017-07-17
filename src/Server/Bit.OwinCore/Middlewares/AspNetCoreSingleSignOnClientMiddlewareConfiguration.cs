@@ -9,9 +9,11 @@ namespace Bit.Owin.Middlewares
 {
     public class AspNetCoreSingleSignOnClientMiddlewareConfiguration : SingleSignOnClientMiddlewareConfiguration, IAspNetCoreMiddlewareConfiguration
     {
+#if DEBUG
         protected AspNetCoreSingleSignOnClientMiddlewareConfiguration()
         {
         }
+#endif
 
         public AspNetCoreSingleSignOnClientMiddlewareConfiguration(IAppEnvironmentProvider appEnvironmentProvider,
             ICertificateProvider certificateProvider) : base(appEnvironmentProvider, certificateProvider)

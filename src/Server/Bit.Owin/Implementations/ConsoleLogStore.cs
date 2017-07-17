@@ -14,10 +14,11 @@ namespace Bit.Owin.Implementations
             _formatter = formatter;
         }
 
+#if DEBUG
         protected ConsoleLogStore()
         {
-
         }
+#endif
 
         public virtual void SaveLog(LogEntry logEntry)
         {

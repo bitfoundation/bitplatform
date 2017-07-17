@@ -8,11 +8,11 @@ namespace Bit.OData.ODataControllers
         where TDto : class, IDtoWithDefaultGuidKey
         where TModel : class, IEntityWithDefaultGuidKey
     {
+#if DEBUG
         protected DefaultDtoSetController()
-            : base()
         {
-
         }
+#endif
 
         public DefaultDtoSetController(IEntityWithDefaultGuidKeyRepository<TModel> repository)
             : base(repository)

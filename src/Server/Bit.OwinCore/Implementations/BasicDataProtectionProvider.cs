@@ -7,7 +7,7 @@ using System.Security.Cryptography;
 
 namespace Bit.OwinCore.Implementations
 {
-    public class DefaultDataProtectionProvider : IDataProtector, IDataProtectionProvider
+    public class BasicDataProtectionProvider : IDataProtector, IDataProtectionProvider
     {
         private const string PRIMARY_PURPOSE = "Microsoft.Owin.Security.IDataProtector";
 
@@ -17,12 +17,13 @@ namespace Bit.OwinCore.Implementations
 
         public virtual string[] Purposes { get; set; } = new string[] { };
 
-        protected DefaultDataProtectionProvider()
+#if DEBUG
+        protected BasicDataProtectionProvider()
         {
-
         }
+#endif
 
-        public DefaultDataProtectionProvider(IAppEnvironmentProvider appEnvironmentProvider)
+        public BasicDataProtectionProvider(IAppEnvironmentProvider appEnvironmentProvider)
         {
             if (appEnvironmentProvider == null)
                 throw new ArgumentNullException(nameof(appEnvironmentProvider));
@@ -66,7 +67,7 @@ namespace Bit.OwinCore.Implementations
             if (purposes == null)
                 throw new ArgumentNullException(nameof(purposes));
 
-            return new DefaultDataProtectionProvider(_appEnvironmentProvider)
+            return new BasicDataProtectionProvider(_appEnvironmentProvider)
             {
                 Purposes = purposes
             };

@@ -9,10 +9,11 @@ namespace Bit.IdentityServer.Implementations
     {
         private readonly IDependencyManager _dependencyManager;
 
+#if DEBUG
         protected DefaultEventService()
         {
-
         }
+#endif
 
         public DefaultEventService(IDependencyManager dependencyManager)
         {

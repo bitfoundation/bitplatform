@@ -13,7 +13,7 @@ using System.Threading.Tasks;
 
 namespace BitChangeSetManager.Security
 {
-    public class BitChangeSetManagerUserService : DefaultUserService
+    public class BitChangeSetManagerUserService : UserService
     {
         private readonly IDependencyManager _dependencyManager;
 

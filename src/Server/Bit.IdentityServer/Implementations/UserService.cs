@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace Bit.IdentityServer.Implementations
 {
-    public abstract class DefaultUserService : UserServiceBase
+    public abstract class UserService : IdentityServer3.Core.Services.Default.UserServiceBase
     {
         public abstract Task<string> GetUserIdByLocalAuthenticationContextAsync(LocalAuthenticationContext context);
 

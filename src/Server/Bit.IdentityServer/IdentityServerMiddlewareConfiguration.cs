@@ -52,10 +52,11 @@ namespace Bit.IdentityServer
             _eventService = eventService;
         }
 
+#if DEBUG
         protected IdentityServerMiddlewareConfiguration()
         {
-
         }
+#endif
 
         public virtual void Configure(IAppBuilder owinApp)
         {

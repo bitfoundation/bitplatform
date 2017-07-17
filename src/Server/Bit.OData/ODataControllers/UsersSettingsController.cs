@@ -25,10 +25,11 @@ namespace Bit.OData.ODataControllers
             _usersSettingsRepository = usersSettingsRepository;
         }
 
+#if DEBUG
         protected UsersSettingsController()
         {
-
         }
+#endif
 
         [Get]
         public virtual async Task<IQueryable<UserSetting>> Get(CancellationToken cancellationToken)

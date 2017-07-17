@@ -40,7 +40,7 @@ namespace BitChangeSetManager.Api
 
             foreach (HttpContent file in (await Request.Content.ReadAsMultipartAsync(provider)).Contents)
             {
-                string filename = Path.GetFileName(file.Headers.ContentDisposition.FileName.Trim('\"'));
+                string filename = Path.GetFileName(file.Headers.ContentDisposition.FileName);
 
                 byte[] data = await file.ReadAsByteArrayAsync();
 
@@ -66,7 +66,7 @@ public static async Task UploadImagess()
 
     client.SetBearerToken(token.AccessToken);
 
-    string[] fileNames = new[] { @"C:\temp\1.png", @"C:\temp\2.png" };
+    string[] fileNames = new[] { @"C:/temp/1.png", @"C:/temp/2.png" };
 
     using (MultipartFormDataContent content = new MultipartFormDataContent())
     {

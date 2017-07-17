@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Bit.IdentityServer.Implementations
 {
-    public class ActiveDirectoryUserServiceProvider : DefaultUserService
+    public class ActiveDirectoryUserServiceProvider : UserService
     {
         private readonly string _activeDirectoryName;
 
@@ -19,10 +19,11 @@ namespace Bit.IdentityServer.Implementations
             _activeDirectoryName = appEnvironmentProvider.GetActiveAppEnvironment().GetConfig<string>("ActiveDirectoryName");
         }
 
+#if DEBUG
         protected ActiveDirectoryUserServiceProvider()
         {
-
         }
+#endif
 
         public override async Task<string> GetUserIdByLocalAuthenticationContextAsync(LocalAuthenticationContext context)
         {

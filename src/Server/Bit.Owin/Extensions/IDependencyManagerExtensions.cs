@@ -153,7 +153,7 @@ namespace Bit.Core.Contracts
             dependencyManager.Register<IUserInformationProvider, DefaultUserInformationProvider>(overwriteExciting: false);
             dependencyManager.Register<IExceptionToHttpErrorMapper, DefaultExceptionToHttpErrorMapper>(lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExciting: false);
             dependencyManager.Register<ITimeZoneManager, DefaultTimeZoneManager>(overwriteExciting: false);
-            dependencyManager.Register<IRequestInformationProvider, DefaultRequestInformationProvider>(overwriteExciting: false);
+            dependencyManager.Register<IRequestInformationProvider, OwinRequestInformationProvider>(overwriteExciting: false);
 
             return dependencyManager;
         }

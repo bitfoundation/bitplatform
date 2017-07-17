@@ -17,10 +17,11 @@ namespace Bit.Signalr.Implementations
             _assemblies = assemblies;
         }
 
+#if DEBUG
         protected DefaultSignalRAssemblyLocator()
         {
-
         }
+#endif
 
         public virtual IList<Assembly> GetAssemblies()
         {

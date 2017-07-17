@@ -12,9 +12,11 @@ namespace Bit.Owin.Implementations
         private readonly AppEnvironment _activeAppEnvironment;
         private readonly IPathProvider _pathProvider;
 
+#if DEBUG
         protected DefaultHtmlPageRazorTemplateConfiguration()
         {
         }
+#endif
 
         public DefaultHtmlPageRazorTemplateConfiguration(IAppEnvironmentProvider appEnvironmentProvider,
             IPathProvider pathProvider)

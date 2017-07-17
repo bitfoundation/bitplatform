@@ -19,9 +19,11 @@ namespace Bit.Owin.Middlewares
     {
         private readonly ILifetimeScope _lifetimeScope;
 
+#if DEBUG
         protected AutofacDependencyInjectionMiddlewareConfiguration()
         {
         }
+#endif
 
         public AutofacDependencyInjectionMiddlewareConfiguration(IAutofacDependencyManager dependencyManager)
         {

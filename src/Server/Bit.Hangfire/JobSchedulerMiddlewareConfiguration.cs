@@ -26,10 +26,11 @@ namespace Bit.Hangfire
             _appEnvironmentProvider = appEnvironmentProvider;
         }
 
+#if DEBUG
         protected JobSchedulerMiddlewareConfiguration()
         {
-
         }
+#endif
 
         public virtual void Configure(IAppBuilder owinApp)
         {

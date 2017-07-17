@@ -12,9 +12,11 @@ namespace Bit.Owin.Implementations
         private readonly AppEnvironment _activeAppEnvironment;
         private readonly IContentFormatter _contentFormatter;
 
+#if DEBUG
         protected WindowsEventsLogStore()
         {
         }
+#endif
 
         public WindowsEventsLogStore(IContentFormatter contentFormatter, IAppEnvironmentProvider appEnvironmentProvider)
         {

@@ -9,9 +9,11 @@ namespace Bit.Signalr.Implementations
     {
         private readonly IAppEnvironmentProvider _appEnvironmentProvider;
 
+#if DEBUG
         protected SignalRAzureServiceBusScaleoutConfiguration()
         {
         }
+#endif
 
         public SignalRAzureServiceBusScaleoutConfiguration(IAppEnvironmentProvider appEnvironmentProvider)
         {

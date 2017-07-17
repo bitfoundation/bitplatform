@@ -18,10 +18,11 @@ namespace Bit.OData.Implementations
             _autoEdmBuilder = autoEdmBuilder;
         }
 
+#if DEBUG
         protected BitEdmModelProvider()
         {
-
         }
+#endif
 
         public virtual void BuildEdmModel(ODataModelBuilder edmModelBuilder)
         {

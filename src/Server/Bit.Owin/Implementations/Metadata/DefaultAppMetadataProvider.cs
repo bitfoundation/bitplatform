@@ -15,10 +15,11 @@ namespace Bit.Owin.Implementations.Metadata
         private AppMetadata _appMetadata;
         private readonly IAppEnvironmentProvider _appEnvironmentProvider;
 
+#if DEBUG
         protected DefaultAppMetadataProvider()
         {
-
         }
+#endif
 
         public DefaultAppMetadataProvider(IEnumerable<IMetadataBuilder> metadataBuilders, IAppEnvironmentProvider appEnvironmentProvider)
         {

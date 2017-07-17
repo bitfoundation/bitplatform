@@ -36,7 +36,7 @@
     "Configs": [
       {
         "Key": "StaticFilesRelativePath",
-        "Value": "..\\..\\..\\..\\..\\..\\BitChangeSetManager\\wwwroot\\"
+        "Value": "../../../../../../BitChangeSetManager/wwwroot/"
       },
       {
         "Key": "IdentityCertificatePassword",

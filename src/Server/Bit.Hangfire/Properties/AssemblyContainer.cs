@@ -7,7 +7,7 @@ namespace Bit.Core
     {
         public static Assembly GetBitHangfireAssembly(this AssemblyContainer container)
         {
-            return typeof(DefaultBackgroundJobWorker).GetTypeInfo().Assembly;
+            return typeof(HangfireBackgroundJobWorker).GetTypeInfo().Assembly;
         }
     }
 }

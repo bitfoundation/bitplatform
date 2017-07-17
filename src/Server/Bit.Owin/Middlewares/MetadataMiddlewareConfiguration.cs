@@ -11,9 +11,11 @@ namespace Bit.Owin.Middlewares
     {
         private readonly IAppEnvironmentProvider _appEnvironmentProvider;
 
+#if DEBUG
         protected MetadataMiddlewareConfiguration()
         {
         }
+#endif
 
         public MetadataMiddlewareConfiguration(IAppEnvironmentProvider appEnvironmentProvider)
         {

@@ -12,9 +12,11 @@ namespace Bit.Owin.Implementations
     {
         private readonly IAppEnvironmentProvider _appEnvironmentProvider;
 
+#if DEBUG
         protected RazorViewEngineConfiguration()
         {
         }
+#endif
 
         public RazorViewEngineConfiguration(IAppEnvironmentProvider appEnvironmentProvider)
         {

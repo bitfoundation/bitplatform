@@ -13,9 +13,11 @@ namespace Bit.Owin.Implementations
     {
         private readonly HttpContext _context;
 
+#if DEBUG
         protected AspNetCoreRequestInformationProvider()
         {
         }
+#endif
 
         public AspNetCoreRequestInformationProvider(IHttpContextAccessor httpContextAccessor)
         {

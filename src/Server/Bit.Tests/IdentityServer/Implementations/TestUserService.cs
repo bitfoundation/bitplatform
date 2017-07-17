@@ -14,7 +14,7 @@ namespace Bit.Tests.IdentityServer.Implementations
         public virtual string Password { get; set; }
     }
 
-    public class TestUserService : DefaultUserService
+    public class TestUserService : UserService
     {
         private readonly List<LocalUser> _localUsers = new List<LocalUser>
         {

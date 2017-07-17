@@ -5,7 +5,7 @@ using Microsoft.Owin;
 
 namespace Bit.Hangfire.Implementations
 {
-    public class DefaultJobsDashboardAuthorizationFilter : IDashboardAuthorizationFilter
+    public class HangfireJobsDashboardAuthorizationFilter : IDashboardAuthorizationFilter
     {
         public virtual bool Authorize([NotNull] DashboardContext context)
         {

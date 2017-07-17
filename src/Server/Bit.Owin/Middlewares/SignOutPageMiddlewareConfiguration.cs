@@ -11,9 +11,11 @@ namespace Bit.Owin.Middlewares
     {
         private readonly AppEnvironment _activeAppEnvironment;
 
+#if DEBUG
         protected SignOutPageMiddlewareConfiguration()
         {
         }
+#endif
 
         public SignOutPageMiddlewareConfiguration(IAppEnvironmentProvider appEnvironmentProvider)
         {

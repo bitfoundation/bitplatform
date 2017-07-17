@@ -18,10 +18,11 @@ namespace Bit.OData.ODataControllers
             _backgroundJobWorker = backgroundJobWorker;
         }
 
+#if DEBUG
         protected JobsInfoController()
         {
-
         }
+#endif
 
         [Get]
         public virtual async Task<JobInfoDto> Get(string key, CancellationToken cancellationToken)

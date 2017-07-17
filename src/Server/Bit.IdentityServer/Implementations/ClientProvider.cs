@@ -6,7 +6,7 @@ using System.Collections.Generic;
 
 namespace Bit.IdentityServer.Implementations
 {
-    public abstract class DefaultClientProvider : IClientProvider
+    public abstract class ClientProvider : IClientProvider
     {
         public abstract IEnumerable<Client> GetClients();
 

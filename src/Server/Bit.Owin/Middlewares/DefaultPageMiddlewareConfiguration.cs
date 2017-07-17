@@ -11,9 +11,11 @@ namespace Bit.Owin.Middlewares
     {
         private readonly AppEnvironment _activeAppEnvironment;
 
+#if DEBUG
         protected DefaultPageMiddlewareConfiguration()
         {
         }
+#endif
 
         public DefaultPageMiddlewareConfiguration(IAppEnvironmentProvider appEnvironmentProvider)
         {

@@ -13,9 +13,11 @@ namespace Bit.Owin.Middlewares
         private readonly IAppEnvironmentProvider _appEnvironmentProvider;
         private readonly ICertificateProvider _certificateProvider;
 
+#if DEBUG
         protected SingleSignOnClientMiddlewareConfiguration()
         {
         }
+#endif
 
         public SingleSignOnClientMiddlewareConfiguration(IAppEnvironmentProvider appEnvironmentProvider,
             ICertificateProvider certificateProvider)

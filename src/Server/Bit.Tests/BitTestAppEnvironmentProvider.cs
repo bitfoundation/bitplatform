@@ -73,15 +73,15 @@ namespace Bit.Tests
                     },
                     Configs = new List<EnvironmentConfig>
                     {
-                        new EnvironmentConfig { Key = "DefaultPageTemplatePath", Value = @".\bit-framework\src\Server\Bit.Tests\defaultPageTemplate.cshtml" },
-                        new EnvironmentConfig { Key = "IdentityServerCertificatePath", Value = @"..\..\IdentityServerCertificate.pfx" },
-                        new EnvironmentConfig { Key = "StaticFilesRelativePath", Value = @"..\..\..\..\..\..\" },
+                        new EnvironmentConfig { Key = "DefaultPageTemplatePath", Value = @"./bit-framework/src/Server/Bit.Tests/defaultPageTemplate.cshtml" },
+                        new EnvironmentConfig { Key = "IdentityServerCertificatePath", Value = @"../../IdentityServerCertificate.pfx" },
+                        new EnvironmentConfig { Key = "StaticFilesRelativePath", Value = @"../../../../../../" },
                         new EnvironmentConfig { Key = "TestDbConnectionString", Value = string.Format(Settings.Default.TestDbConnectionString, Guid.NewGuid())  },
                         new EnvironmentConfig { Key = "IdentityCertificatePassword" , Value = "P@ssw0rd" },
                         new EnvironmentConfig { Key = "ClientSideAccessibleConfigTest", Value = true, AccessibleInClientSide = true},
                         new EnvironmentConfig { Key = "HostVirtualPath", Value = "/" , AccessibleInClientSide = true },
                         new EnvironmentConfig { Key = "KendoUILoadMode" , Value = "Web" /*Web|Core*/ , AccessibleInClientSide = true },
-                        new EnvironmentConfig { Key = "SsoPageTemplatePath" , Value = @"bit-framework\src\Server\Bit.Tests\ssoPageTemplate.cshtml" }
+                        new EnvironmentConfig { Key = "SsoPageTemplatePath" , Value = @"bit-framework/src/Server/Bit.Tests/ssoPageTemplate.cshtml" }
                     }
                 };
             }

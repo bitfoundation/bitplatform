@@ -25,10 +25,11 @@ namespace Bit.IdentityServer.Implementations
             _ssoHtmlPageProvider = ssoHtmlPageProvider;
         }
 
+#if DEBUG
         protected DefaultViewService()
         {
-
         }
+#endif
 
         public virtual async Task<Stream> ClientPermissions(ClientPermissionsViewModel model)
         {

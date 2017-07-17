@@ -79,7 +79,7 @@ module BitChangeSetManager {
 
     dependencyManager.registerFileDependency({
         name: "Core-js",
-        path: "node_modules/Core-js/client/Core"
+        path: "node_modules/core-js/client/core"
     });
 
     dependencyManager.registerFileDependency({
@@ -155,7 +155,7 @@ module BitChangeSetManager {
 
     dependencyManager.registerFileDependency({
         name: "jayData-indexedDb-provider",
-        path: "node_modules/@bit/jaydata/jaydataproviders/indexedDbProvider"
+        path: "node_modules/@bit/jaydata/jaydataproviders/IndexedDbProvider"
     });
 
     dependencyManager.registerFileDependency({
@@ -165,12 +165,12 @@ module BitChangeSetManager {
 
     dependencyManager.registerFileDependency({
         name: "jayData-inmemroy-module",
-        path: "node_modules/@bit/jaydata/jaydatamodules/inmemory"
+        path: "node_modules/@bit/jaydata/jaydatamodules/inMemory"
     });
 
     dependencyManager.registerFileDependency({
         name: "ng-component-router",
-        path: "node_modules/ngComponentRouter/angular_1_router"
+        path: "node_modules/ngcomponentrouter/angular_1_router"
     });
 
     dependencyManager.registerFileDependency({
@@ -232,7 +232,7 @@ module BitChangeSetManager {
 
     dependencyManager.registerFileDependency({
         name: "bit-change-set-manager-context",
-        path: "bitChangeSetManager.Model.Context"
+        path: "BitChangeSetManager.Model.Context"
     });
 
     dependencyManager.registerFileDependency({

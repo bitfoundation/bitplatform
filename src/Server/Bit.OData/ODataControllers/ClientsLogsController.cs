@@ -20,10 +20,11 @@ namespace Bit.OData.ODataControllers
             _logger = logger;
         }
 
+#if DEBUG
         protected ClientsLogsController()
         {
-
         }
+#endif
 
         public class StoreClientLogsParameters
         {

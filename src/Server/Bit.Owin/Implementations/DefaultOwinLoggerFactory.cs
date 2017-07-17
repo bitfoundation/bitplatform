@@ -17,10 +17,11 @@ namespace Bit.Owin.Implementations
             _dependencyManager = dependencyManager;
         }
 
+#if DEBUG
         protected DefaultOwinLoggerFactory()
         {
-
         }
+#endif
 
         public Microsoft.Owin.Logging.ILogger Create(string name)
         {

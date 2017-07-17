@@ -11,11 +11,12 @@ namespace Bit.OData.Serialization
     {
         private readonly IServiceProvider _rootContainer;
 
-        protected ExtendedODataDeserializerProvider()
+#if DEBUG
+        protected ExtendedODataDeserializerProvider() 
             : base(null)
         {
-
         }
+#endif
 
         public ExtendedODataDeserializerProvider(IServiceProvider rootContainer)
             : base(rootContainer)

@@ -17,9 +17,11 @@ namespace Bit.Signalr
         private readonly IEnumerable<ISignalRConfiguration> _signalRScaleoutConfigurations;
         private readonly Microsoft.AspNet.SignalR.IDependencyResolver _dependencyResolver;
 
+#if DEBUG
         protected SignalRMiddlewareConfiguration()
         {
         }
+#endif
 
         public SignalRMiddlewareConfiguration(Microsoft.AspNet.SignalR.IDependencyResolver dependencyResolver, IAppEnvironmentProvider appEnvironmentProvider,
             IEnumerable<ISignalRConfiguration> signalRScaleoutConfigurations = null)

@@ -13,9 +13,11 @@ namespace Bit.Owin.Implementations
     {
         private readonly IOwinContext _owinContext;
 
+#if DEBUG
         protected RazorDefaultHtmlPageProvider()
         {
         }
+#endif
 
         public RazorDefaultHtmlPageProvider(IOwinContext owinContext)
         {

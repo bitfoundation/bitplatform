@@ -182,7 +182,7 @@
     <Compile Include="Implementations\DefaultPageModelProvider.cs" />
     <Compile Include="Implementations\DefaultPathProvider.cs" />
     <Compile Include="Implementations\DefaultRandomStringProvider.cs" />
-    <Compile Include="Implementations\DefaultRequestInformationProvider.cs" />
+    <Compile Include="Implementations\OwinRequestInformationProvider.cs" />
     <Compile Include="Implementations\DefaultScopeStatusManager.cs" />
     <Compile Include="Implementations\DefaultTimeZoneManager.cs" />
     <Compile Include="Implementations\DefaultUserInformationProvider.cs" />

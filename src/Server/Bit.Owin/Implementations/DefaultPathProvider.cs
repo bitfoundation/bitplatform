@@ -8,9 +8,11 @@ namespace Bit.Owin.Implementations
     {
         private static IPathProvider _current;
 
+#if DEBUG
         protected DefaultPathProvider()
         {
         }
+#endif
 
         public static IPathProvider Current
         {
@@ -38,7 +40,7 @@ namespace Bit.Owin.Implementations
 
         public string GetCurrentStaticFilesPath()
         {
-            return MapPath(DefaultAppEnvironmentProvider.Current.GetActiveAppEnvironment().GetConfig("StaticFilesRelativePath", ".\\wwwroot\\"));
+            return MapPath(DefaultAppEnvironmentProvider.Current.GetActiveAppEnvironment().GetConfig("StaticFilesRelativePath", "./wwwroot/"));
         }
 
         public string StaticFileMapPath(string path)

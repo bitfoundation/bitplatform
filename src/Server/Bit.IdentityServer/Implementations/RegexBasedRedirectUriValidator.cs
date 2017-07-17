@@ -10,11 +10,11 @@ using Bit.Core.Models;
 
 namespace Bit.IdentityServer.Implementations
 {
-    public class ExtendedRedirectUriValidator : DefaultRedirectUriValidator, IRedirectUriValidator
+    public class RegexBasedRedirectUriValidator : DefaultRedirectUriValidator, IRedirectUriValidator
     {
         private readonly AppEnvironment _activeAppEnvironment;
 
-        public ExtendedRedirectUriValidator(IAppEnvironmentProvider appEnvironmentProvider)
+        public RegexBasedRedirectUriValidator(IAppEnvironmentProvider appEnvironmentProvider)
         {
             if (appEnvironmentProvider == null)
                 throw new ArgumentNullException(nameof(appEnvironmentProvider));
@@ -22,10 +22,11 @@ namespace Bit.IdentityServer.Implementations
             _activeAppEnvironment = appEnvironmentProvider.GetActiveAppEnvironment();
         }
 
-        protected ExtendedRedirectUriValidator()
+#if DEBUG
+        protected RegexBasedRedirectUriValidator()
         {
-
         }
+#endif
 
         public override async Task<bool> IsPostLogoutRedirectUriValidAsync(string requestedUri, Client client)
         {

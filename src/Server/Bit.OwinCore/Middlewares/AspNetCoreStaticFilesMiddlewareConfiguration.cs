@@ -13,9 +13,11 @@ namespace Bit.OwinCore.Middlewares
         private readonly IAppEnvironmentProvider _appEnvironmentProvider;
         private readonly IHostingEnvironment _hostingEnvironment;
 
+#if DEBUG
         protected AspNetCoreStaticFilesMiddlewareConfiguration()
         {
         }
+#endif
 
         public AspNetCoreStaticFilesMiddlewareConfiguration(IAppEnvironmentProvider appEnvironmentProvider, IHostingEnvironment hostingEnvironment)
         {
