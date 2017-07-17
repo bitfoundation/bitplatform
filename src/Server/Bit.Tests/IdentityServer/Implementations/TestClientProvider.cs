@@ -8,7 +8,7 @@ using System.Collections.Generic;
 
 namespace Bit.Tests.IdentityServer.Implementations
 {
-    public class TestClientProvider : DefaultClientProvider
+    public class TestClientProvider : ClientProvider
     {
         private readonly IAppEnvironmentProvider _appEnvironmentProvider;
 

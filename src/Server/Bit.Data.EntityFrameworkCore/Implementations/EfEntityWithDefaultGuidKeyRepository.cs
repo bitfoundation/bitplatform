@@ -12,7 +12,7 @@ namespace Bit.Data.EntityFrameworkCore.Implementations
         {
         }
 
-        protected EfEntityWithDefaultGuidKeyRepository(DefaultDbContext dbContext)
+        protected EfEntityWithDefaultGuidKeyRepository(DbContextBase dbContext)
             : base(dbContext)
         {
         }

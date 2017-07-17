@@ -5,16 +5,16 @@ using Bit.WebApi.Contracts;
 
 namespace Bit.WebApi.Implementations
 {
-    public class DefaultApiAssembliesProvider : IApiAssembliesProvider
+    public class DefaultWebApiAssembliesProvider : IApiAssembliesProvider
     {
-        protected DefaultApiAssembliesProvider()
+        protected DefaultWebApiAssembliesProvider()
         {
 
         }
 
         private readonly IEnumerable<Assembly> _assemblies;
 
-        public DefaultApiAssembliesProvider(IEnumerable<Assembly> assemblies)
+        public DefaultWebApiAssembliesProvider(IEnumerable<Assembly> assemblies)
         {
             if (assemblies == null)
                 throw new ArgumentNullException(nameof(assemblies));

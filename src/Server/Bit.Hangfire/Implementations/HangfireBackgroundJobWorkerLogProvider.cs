@@ -4,16 +4,16 @@ using System;
 
 namespace Bit.Hangfire.Implementations
 {
-    public class DefaultBackgroundJobWorkerLogProvider : ILog, ILogProvider
+    public class HangfireBackgroundJobWorkerLogProvider : ILog, ILogProvider
     {
         private readonly IDependencyManager _dependencyManager;
 
-        protected DefaultBackgroundJobWorkerLogProvider()
+        protected HangfireBackgroundJobWorkerLogProvider()
         {
 
         }
 
-        public DefaultBackgroundJobWorkerLogProvider(IDependencyManager dependencyManager)
+        public HangfireBackgroundJobWorkerLogProvider(IDependencyManager dependencyManager)
         {
             if (dependencyManager == null)
                 throw new ArgumentNullException(nameof(dependencyManager));

@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Bit.IdentityServer.Implementations
 {
-    public class ActiveDirectoryUserServiceProvider : DefaultUserService
+    public class ActiveDirectoryUserServiceProvider : UserService
     {
         private readonly string _activeDirectoryName;
 

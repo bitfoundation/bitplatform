@@ -352,7 +352,7 @@
     <Compile Include="Extensions\OwinExtensions.cs" />
     <Compile Include="Implementations\AspNetCorePathProvider.cs" />
     <Compile Include="Implementations\AspNetCoreRequestInformationProvider.cs" />
-    <Compile Include="Implementations\DefaultDataProtectionProvider.cs" />
+    <Compile Include="Implementations\BasicDataProtectionProvider.cs" />
     <Compile Include="Implementations\Servers\HttpListenerServer.cs" />
     <Compile Include="Implementations\Servers\SuaveServer.cs" />
     <Compile Include="Middlewares\AspNetCoreCacheResponseMiddleware.cs" />

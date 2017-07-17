@@ -73,9 +73,9 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Extensions\IDependencyManagerExtensions.cs" />
-    <Compile Include="Implementations\DefaultBackgroundJobWorker.cs" />
-    <Compile Include="Implementations\DefaultBackgroundJobWorkerLogProvider.cs" />
-    <Compile Include="Implementations\DefaultJobsDashboardAuthorizationFilter.cs" />
+    <Compile Include="Implementations\HangfireBackgroundJobWorker.cs" />
+    <Compile Include="Implementations\HangfireBackgroundJobWorkerLogProvider.cs" />
+    <Compile Include="Implementations\HangfireJobsDashboardAuthorizationFilter.cs" />
     <Compile Include="Implementations\JobSchedulerInMemoryBackendConfiguration.cs" />
     <Compile Include="Implementations\SqlAndAzureServiceBusBackendJobServerConfiguration.cs" />
     <Compile Include="JobSchedulerMiddlewareConfiguration.cs" />

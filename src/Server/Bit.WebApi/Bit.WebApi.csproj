@@ -83,7 +83,7 @@
   <ItemGroup>
     <Compile Include="Contracts\IApiAssembliesProvider.cs" />
     <Compile Include="Extensions\IDependencyManagerExtensions.cs" />
-    <Compile Include="Implementations\DefaultApiAssembliesProvider.cs" />
+    <Compile Include="Implementations\DefaultWebApiAssembliesProvider.cs" />
     <Compile Include="ActionFilters\ExceptionHandlerFilterAttribute.cs" />
     <Compile Include="ActionFilters\LogActionArgsFilterAttribute.cs" />
     <Compile Include="ActionFilters\OwinActionFilterAttribute.cs" />

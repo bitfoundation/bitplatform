@@ -16,7 +16,7 @@ namespace Bit.Data.EntityFramework.Implementations
         {
         }
 
-        protected EfEntityWithDefaultKeyRepository(DefaultDbContext dbContext)
+        protected EfEntityWithDefaultKeyRepository(DbContextBase dbContext)
             : base(dbContext)
         {
         }

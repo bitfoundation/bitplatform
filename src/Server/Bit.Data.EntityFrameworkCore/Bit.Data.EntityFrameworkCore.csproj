@@ -174,7 +174,7 @@
   <ItemGroup>
     <Compile Include="Contracts\IDbContextObjectsProvider.cs" />
     <Compile Include="Extensions\IDependencyManagerExtensions.cs" />
-    <Compile Include="Implementations\DefaultDbContext.cs" />
+    <Compile Include="Implementations\DbContextBase.cs" />
     <Compile Include="Implementations\EfCoreDataProviderSpecificMethodsProvider.cs" />
     <Compile Include="Implementations\EfEntityWithDefaultGuidKeyRepository.cs" />
     <Compile Include="Implementations\EfEntityWithDefaultKeyRepository.cs" />

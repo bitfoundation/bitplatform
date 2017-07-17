@@ -6,15 +6,15 @@ using Microsoft.Owin;
 
 namespace Bit.Owin.Implementations
 {
-    public class DefaultRequestInformationProvider : IRequestInformationProvider
+    public class OwinRequestInformationProvider : IRequestInformationProvider
     {
         private readonly IOwinContext _context;
 
-        protected DefaultRequestInformationProvider()
+        protected OwinRequestInformationProvider()
         {
         }
 
-        public DefaultRequestInformationProvider(IOwinContext context)
+        public OwinRequestInformationProvider(IOwinContext context)
         {
             if (context == null)
                 throw new ArgumentNullException(nameof(context));

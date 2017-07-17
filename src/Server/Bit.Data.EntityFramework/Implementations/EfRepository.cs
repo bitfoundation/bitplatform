@@ -14,14 +14,14 @@ namespace Bit.Data.EntityFramework.Implementations
     public class EfRepository<TEntity> : IRepository<TEntity>
         where TEntity : class, IEntity
     {
-        private readonly DefaultDbContext _dbContext;
+        private readonly DbContextBase _dbContext;
         private readonly DbSet<TEntity> _set;
 
         protected EfRepository()
         {
         }
 
-        protected EfRepository(DefaultDbContext dbContext)
+        protected EfRepository(DbContextBase dbContext)
         {
             if (dbContext == null)
                 throw new ArgumentNullException(nameof(dbContext));

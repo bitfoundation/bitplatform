@@ -10,7 +10,7 @@ using Hangfire.Storage;
 
 namespace Bit.Hangfire.Implementations
 {
-    public class DefaultBackgroundJobWorker : IBackgroundJobWorker
+    public class HangfireBackgroundJobWorker : IBackgroundJobWorker
     {
         public virtual Task<string> PerformBackgroundJobAsync<TService>(Expression<Action<TService>> methodCall)
         {
