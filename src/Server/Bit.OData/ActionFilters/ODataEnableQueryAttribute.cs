@@ -115,7 +115,10 @@ namespace Bit.OData.ActionFilters
                     objContent.Value = currentOdataQueryOptions.ApplyTo(query: (IQueryable)objContent.Value, querySettings: globalODataQuerySettings, ignoreQueryOptions: AllowedQueryOptions.Filter | AllowedQueryOptions.Skip | AllowedQueryOptions.Top);
 
                     if (currentOdataQueryOptions.SelectExpand != null)
-                        queryElementType = objContent.Value.GetType().GetTypeInfo().GetGenericArguments().Single().GetTypeInfo();
+                    {
+                        TypeInfo newReturnTypeAfterApplyingSelect = objContent.Value.GetType().GetTypeInfo();
+                        queryElementType = newReturnTypeAfterApplyingSelect.GetGenericArguments().ExtendedSingle($"Get generic arguments of ${newReturnTypeAfterApplyingSelect.Name}").GetTypeInfo();
+                    }
 
                     if (dataProviderSpecificMethodsProvider != null)
                         objContent.Value = await (Task<object>)typeof(ODataEnableQueryAttribute).GetMethod(nameof(ToListAsync)).MakeGenericMethod(queryElementType).Invoke(this, new object[] { objContent.Value, dataProviderSpecificMethodsProvider, takeCount, skipCount, cancellationToken });

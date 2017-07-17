@@ -34,8 +34,8 @@ namespace Bit.Core.Models
             if (Configs == null)
                 throw new InvalidOperationException("App environment is not valid");
 
-            EnvironmentConfig config = Configs.SingleOrDefault(c =>
-                string.Equals(c.Key, configKey, StringComparison.OrdinalIgnoreCase));
+            EnvironmentConfig config = Configs.ExtendedSingleOrDefault($"Finding {configKey}", c =>
+                 string.Equals(c.Key, configKey, StringComparison.OrdinalIgnoreCase));
 
             if (config == null)
             {

@@ -37,7 +37,7 @@ namespace Bit.Owin.Implementations
                     if (!_timeZonesCache.ContainsKey(_currentTimeZoneName))
                     {
                         _timeZonesCache.TryAdd(_currentTimeZoneName,
-                            TimeZoneInfo.GetSystemTimeZones().Single(t => t.Id == _currentTimeZoneName || t.StandardName == _currentTimeZoneName || t.DaylightName == _currentTimeZoneName || t.DaylightName == _currentTimeZoneName));
+                            TimeZoneInfo.GetSystemTimeZones().ExtendedSingle($"Finding {_currentTimeZoneName} in {nameof(TimeZoneInfo)}.{nameof(TimeZoneInfo.GetSystemTimeZones)}", t => t.Id == _currentTimeZoneName || t.StandardName == _currentTimeZoneName || t.DaylightName == _currentTimeZoneName || t.DaylightName == _currentTimeZoneName));
                     }
                 }
             }
@@ -56,7 +56,7 @@ namespace Bit.Owin.Implementations
                     if (!_timeZonesCache.ContainsKey(_desiredTimeZoneName))
                     {
                         _timeZonesCache.TryAdd(_desiredTimeZoneName,
-                        TimeZoneInfo.GetSystemTimeZones().Single(t => t.Id == _desiredTimeZoneName || t.StandardName == _desiredTimeZoneName || t.DaylightName == _desiredTimeZoneName || t.DaylightName == _desiredTimeZoneName));
+                            TimeZoneInfo.GetSystemTimeZones().ExtendedSingle($"Finding {_currentTimeZoneName} in {nameof(TimeZoneInfo)}.{nameof(TimeZoneInfo.GetSystemTimeZones)}", t => t.Id == _desiredTimeZoneName || t.StandardName == _desiredTimeZoneName || t.DaylightName == _desiredTimeZoneName || t.DaylightName == _desiredTimeZoneName));
                     }
                 }
             }

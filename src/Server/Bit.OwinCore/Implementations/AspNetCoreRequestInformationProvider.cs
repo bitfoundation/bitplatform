@@ -154,7 +154,7 @@ namespace Bit.Owin.Implementations
 
                 if (headers.ContainsKey("Current-Time-Zone"))
                 {
-                    _currentTimeZone = headers["Current-Time-Zone"].Single();
+                    _currentTimeZone = headers["Current-Time-Zone"].ExtendedSingle($"Finding Current-Time-Zone header");
 
                     return _currentTimeZone;
                 }
@@ -186,7 +186,7 @@ namespace Bit.Owin.Implementations
                 if (headers.ContainsKey("Desired-Time-Zone"))
                 {
                     _desiredTimeZone =
-                        headers["Desired-Time-Zone"].Single();
+                        headers["Desired-Time-Zone"].ExtendedSingle($"Finding Desired-Time-Zone header");
 
                     return _desiredTimeZone;
                 }

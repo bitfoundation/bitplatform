@@ -16,12 +16,12 @@ namespace Bit.WebApi.ActionFilters
                 .GetDependencyResolver()
                 .Resolve<ILogger>();
 
-            logger.AddLogData("ActionArgs", actionContext.ActionArguments.Where(arg => LogParamter(arg.Value)).ToArray());
+            logger.AddLogData("ActionArgs", actionContext.ActionArguments.Where(arg => LogParameter(arg.Value)).ToArray());
 
             base.OnActionExecuting(actionContext);
         }
 
-        protected virtual bool LogParamter(object parameter)
+        protected virtual bool LogParameter(object parameter)
         {
             return parameter != null && !(parameter is CancellationToken);
         }

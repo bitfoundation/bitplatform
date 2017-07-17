@@ -65,7 +65,7 @@ namespace Bit.Owin.Implementations.Metadata
         protected virtual string BuildLookupJsFilterFromLambdaExpression<TLookupDto>(Expression<Func<TLookupDto, bool>> baseFilter, DtoMemberLookup lookup)
             where TLookupDto : class
         {
-            if (baseFilter.Parameters.Single().Name != "it")
+            if (baseFilter.Parameters.ExtendedSingle("Finding base filter parameters").Name != "it")
                 throw new Exception("base filter's parameter name must be 'it'. For example it => it.Id == 1");
 
             return baseFilter.CompileToJavascript(JavascriptCompilationOptions);

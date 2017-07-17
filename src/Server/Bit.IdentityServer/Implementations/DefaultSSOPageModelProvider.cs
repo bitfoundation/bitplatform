@@ -39,9 +39,9 @@ namespace Bit.IdentityServer.Implementations
             {
                 AppTitle = _activeAppEnvironment
                                 .Cultures
-                                .Single(c => c.Name == _activeAppEnvironment.AppInfo.DefaultCulture)
+                                .ExtendedSingle($"Finding cultures of {_activeAppEnvironment.AppInfo.DefaultCulture} in {_activeAppEnvironment.Name} environment", c => c.Name == _activeAppEnvironment.AppInfo.DefaultCulture)
                                 .Values
-                                .Single(v => v.Name == "AppTitle").Title,
+                                .ExtendedSingle($"Finding AppTitle in {_activeAppEnvironment.AppInfo.DefaultCulture} cultures of {_activeAppEnvironment.Name} environment", v => v.Name == "AppTitle").Title,
                 AppName = _activeAppEnvironment.AppInfo.Name,
                 AppVersion = _activeAppEnvironment.AppInfo.Version,
                 Culture = _activeAppEnvironment.AppInfo.DefaultCulture,
@@ -61,9 +61,9 @@ namespace Bit.IdentityServer.Implementations
             {
                 AppTitle = _activeAppEnvironment
                                 .Cultures
-                                .Single(c => c.Name == _activeAppEnvironment.AppInfo.DefaultCulture)
+                                .ExtendedSingle($"Finding cultures of {_activeAppEnvironment.AppInfo.DefaultCulture} in {_activeAppEnvironment.Name} environment", c => c.Name == _activeAppEnvironment.AppInfo.DefaultCulture)
                                 .Values
-                                .Single(v => v.Name == "AppTitle").Title,
+                                .ExtendedSingle($"Finding AppTitle in {_activeAppEnvironment.AppInfo.DefaultCulture} cultures of {_activeAppEnvironment.Name} environment", v => v.Name == "AppTitle").Title,
                 AppName = _activeAppEnvironment.AppInfo.Name,
                 AppVersion = _activeAppEnvironment.AppInfo.Version,
                 Culture = _activeAppEnvironment.AppInfo.DefaultCulture,

@@ -66,7 +66,7 @@ namespace Bit.OData.Implementations
             var controllersWithDto = controllers
                 .Select(c => new
                 {
-                    DtoType = GetFinalDtoType(c.BaseType?.GetGenericArguments().SingleOrDefault(t => IsDto(t.GetTypeInfo())).GetTypeInfo()),
+                    DtoType = GetFinalDtoType(c.BaseType?.GetGenericArguments().ExtendedSingleOrDefault($"Finding dto in {c.Name}", t => IsDto(t.GetTypeInfo())).GetTypeInfo()),
                     Controller = c
                 })
                 .Where(c => c.DtoType != null)
@@ -106,7 +106,7 @@ namespace Bit.OData.Implementations
                 IActionHttpMethodProvider actionHttpMethodProvider =
                     method.GetCustomAttributes().OfType<FunctionAttribute>().Cast<IActionHttpMethodProvider>()
                     .Union(method.GetCustomAttributes().OfType<ActionAttribute>().Cast<IActionHttpMethodProvider>())
-                    .SingleOrDefault();
+                    .ExtendedSingleOrDefault($"Finding ${nameof(IActionHttpMethodProvider)} attribute in {method.Name}");
 
                 if (actionHttpMethodProvider != null)
                 {
@@ -131,7 +131,7 @@ namespace Bit.OData.Implementations
                     {
                         ParameterInfo parameter = method
                             .GetParameters()
-                            .SingleOrDefault(p => p.ParameterType.GetTypeInfo() != typeof(CancellationToken).GetTypeInfo() && !typeof(ODataQueryOptions).IsAssignableFrom(p.ParameterType.GetTypeInfo()));
+                            .ExtendedSingleOrDefault($"Finding parameter of {method.Name}", p => p.ParameterType.GetTypeInfo() != typeof(CancellationToken).GetTypeInfo() && !typeof(ODataQueryOptions).IsAssignableFrom(p.ParameterType.GetTypeInfo()));
 
                         if (parameter != null)
                         {
@@ -158,7 +158,7 @@ namespace Bit.OData.Implementations
                                 throw new InvalidOperationException($"Use IEnumerable<{parameterType.GetElementType().GetTypeInfo().Name}> instead of {parameterType.GetElementType().GetTypeInfo().Name}[] for parameter {operationParameter.Name} of {operationParameter.Name} in {controllerName} controller");
 
                             if (parameterType.IsGenericType)
-                                parameterType = parameterType.GetGenericArguments().Single().GetTypeInfo();
+                                parameterType = parameterType.GetGenericArguments().ExtendedSingle($"Finding parameter type from generic arguments of {parameterType.Name}").GetTypeInfo();
 
                             ParameterConfiguration parameter = (ParameterConfiguration)_collectionParameterMethodInfo
                                                                                             .MakeGenericMethod(parameterType)
@@ -183,13 +183,13 @@ namespace Bit.OData.Implementations
                         if (typeof(Task).GetTypeInfo().IsAssignableFrom(type))
                         {
                             if (type.IsGenericType)
-                                type = type.GetGenericArguments().Single().GetTypeInfo();
+                                type = type.GetGenericArguments().ExtendedSingle($"Finding Return type of {method.Name}").GetTypeInfo();
                         }
 
                         if (typeof(string) != type && typeof(IEnumerable).IsAssignableFrom(type))
                         {
                             if (type.IsGenericType)
-                                type = type.GetGenericArguments().Single().GetTypeInfo();
+                                type = type.GetGenericArguments().ExtendedSingle($"Finding Return type of {method.Name}").GetTypeInfo();
                             else if (type.IsArray)
                                 type = type.GetElementType().GetTypeInfo();
                             isCollection = true;
@@ -253,7 +253,7 @@ namespace Bit.OData.Implementations
         {
             if (type.IsGenericParameter && type.GetGenericParameterConstraints().Any())
             {
-                Type finalDtoType = type.GetGenericParameterConstraints().SingleOrDefault(t => IsDto(t.GetTypeInfo()));
+                Type finalDtoType = type.GetGenericParameterConstraints().ExtendedSingleOrDefault($"Finding dto of {type.Name}", t => IsDto(t.GetTypeInfo()));
                 if (finalDtoType != null)
                     return finalDtoType.GetTypeInfo();
                 return null;

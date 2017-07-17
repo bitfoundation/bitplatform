@@ -65,8 +65,8 @@ namespace Bit.Owin.Implementations
                 desiredTimeZoneValue = desiredTimeZone;
 
             string appTitle = activeAppEnvironment.Cultures.Any() ? activeAppEnvironment.Cultures
-                .Single(c => c.Name == culture).Values.Single(v =>
-                    string.Equals(v.Name, "AppTitle", StringComparison.OrdinalIgnoreCase)).Title : string.Empty;
+                .ExtendedSingle($"Finding culture {culture} in environment {activeAppEnvironment.Name}", c => c.Name == culture).Values.ExtendedSingle($"Finding AppTitle in culture {culture}", v =>
+                      string.Equals(v.Name, "AppTitle", StringComparison.OrdinalIgnoreCase)).Title : string.Empty;
 
             defaultPageModel.AppTitle = appTitle;
             defaultPageModel.Culture = culture;
@@ -112,8 +112,8 @@ namespace Bit.Owin.Implementations
                 desiredTimeZoneValue = desiredTimeZone;
 
             string appTitle = activeAppEnvironment.Cultures.Any() ? activeAppEnvironment.Cultures
-                .Single(c => c.Name == culture).Values.Single(v =>
-                    string.Equals(v.Name, "AppTitle", StringComparison.OrdinalIgnoreCase)).Title : string.Empty;
+                .ExtendedSingle($"Finding culture {culture} in environment {activeAppEnvironment.Name}", c => c.Name == culture).Values.ExtendedSingle($"Finding AppTitle in culture {culture}", v =>
+                      string.Equals(v.Name, "AppTitle", StringComparison.OrdinalIgnoreCase)).Title : string.Empty;
 
             defaultPageModel.AppTitle = appTitle;
             defaultPageModel.Culture = culture;

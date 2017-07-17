@@ -176,10 +176,10 @@ FOR JSON AUTO, WITHOUT_ARRAY_WRAPPER";
             Expression result = base.VisitMethodCall(node);
 
             if (node.Method.Name == nameof(Enumerable.OrderBy) || node.Method.Name == nameof(Enumerable.ThenBy))
-                _sqlQuery.OrderBy(ChangeType((LambdaExpression)node.Arguments.OfType<UnaryExpression>().Single().Operand));
+                _sqlQuery.OrderBy(ChangeType((LambdaExpression)node.Arguments.OfType<UnaryExpression>().ExtendedSingle($"Finding Operand in {node.Method.Name}").Operand));
 
             if (node.Method.Name == nameof(Enumerable.OrderByDescending) || node.Method.Name == nameof(Enumerable.ThenByDescending))
-                _sqlQuery.OrderByDescending(ChangeType((LambdaExpression)node.Arguments.OfType<UnaryExpression>().Single().Operand));
+                _sqlQuery.OrderByDescending(ChangeType((LambdaExpression)node.Arguments.OfType<UnaryExpression>().ExtendedSingle($"Finding Operand in {node.Method.Name}").Operand));
 
             return result;
         }
