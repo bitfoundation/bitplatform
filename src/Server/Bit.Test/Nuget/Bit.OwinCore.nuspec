@@ -21,6 +21,7 @@
       <dependency id="NWebsec.AspNetCore.Core" version="1.1.0" />
       <dependency id="NWebsec.AspNetCore.Middleware" version="1.1.0" />
       <dependency id="Microsoft.AspNetCore.StaticFiles" version="1.1.2" />
+      <dependency id="System.Security.Cryptography.ProtectedData" version="4.3.0" />
     </dependencies>
   </metadata>
   <files>
