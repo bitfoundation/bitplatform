@@ -52,6 +52,9 @@ namespace Bit.Owin
 
             owinApp.SetLoggerFactory(DefaultDependencyManager.Current.Resolve<ILoggerFactory>());
 
+            if (DefaultDependencyManager.Current.IsRegistered<IDataProtectionProvider>())
+                owinApp.SetDataProtectionProvider(DefaultDependencyManager.Current.Resolve<IDataProtectionProvider>());
+
             DefaultDependencyManager.Current.ResolveAll<IAppEvents>()
                 .ToList()
                 .ForEach(appEvents => appEvents.OnAppStartup());
@@ -59,9 +62,6 @@ namespace Bit.Owin
             DefaultDependencyManager.Current.ResolveAll<IOwinMiddlewareConfiguration>()
                 .ToList()
                 .ForEach(middlewareConfig => middlewareConfig.Configure(owinApp));
-
-            if (DefaultDependencyManager.Current.IsRegistered<IDataProtectionProvider>())
-                owinApp.SetDataProtectionProvider(DefaultDependencyManager.Current.Resolve<IDataProtectionProvider>());
 
             if (owinAppProps.OnAppDisposing != CancellationToken.None)
             {
