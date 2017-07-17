@@ -8,10 +8,11 @@ namespace Bit.WebApi.Implementations
     {
         private readonly Action<HttpConfiguration> _addGlobalActionFilters;
 
+#if DEBUG
         protected DelegateGlobalActionFiltersProvider()
         {
-
         }
+#endif
 
         public DelegateGlobalActionFiltersProvider(Action<HttpConfiguration> addGlobalActionFilters)
         {

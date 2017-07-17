@@ -17,10 +17,11 @@ namespace Bit.Signalr.Implementations
             _userInformationProvider = userInformationProvider;
         }
 
+#if DEBUG
         protected DefaultMessageHubEvents()
         {
-
         }
+#endif
 
         public virtual async Task OnConnected(MessagesHub hub)
         {

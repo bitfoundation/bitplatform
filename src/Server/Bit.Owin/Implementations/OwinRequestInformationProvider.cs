@@ -10,9 +10,11 @@ namespace Bit.Owin.Implementations
     {
         private readonly IOwinContext _context;
 
+#if DEBUG
         protected OwinRequestInformationProvider()
         {
         }
+#endif
 
         public OwinRequestInformationProvider(IOwinContext context)
         {

@@ -19,10 +19,11 @@ namespace Bit.OData.Implementations
             _stringCorrectors = stringCorrectors;
         }
 
+#if DEBUG
         protected GlobalDefaultRequestQSStringCorrectorsApplierActionFilterProvider()
         {
-
         }
+#endif
 
         public virtual void CustomizeWebApiConfiguration(HttpConfiguration webApiConfiguration)
         {

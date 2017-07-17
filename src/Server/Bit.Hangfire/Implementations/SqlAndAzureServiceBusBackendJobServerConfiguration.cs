@@ -19,9 +19,11 @@ namespace Bit.Hangfire.Implementations
         private readonly ILifetimeScope _lifetimeScope;
         private readonly ILogProvider _logProvider;
 
+#if DEBUG
         protected SqlAndAzureServiceBusBackendJobServerConfiguration()
         {
         }
+#endif
 
         public SqlAndAzureServiceBusBackendJobServerConfiguration(IAppEnvironmentProvider appEnvironmentProvider, JobActivator jobActivator, IAutofacDependencyManager dependencyManager, ILogProvider logProvider)
         {

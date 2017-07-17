@@ -8,10 +8,11 @@ namespace Bit.Hangfire.Implementations
     {
         private readonly IDependencyManager _dependencyManager;
 
+#if DEBUG
         protected HangfireBackgroundJobWorkerLogProvider()
         {
-
         }
+#endif
 
         public HangfireBackgroundJobWorkerLogProvider(IDependencyManager dependencyManager)
         {

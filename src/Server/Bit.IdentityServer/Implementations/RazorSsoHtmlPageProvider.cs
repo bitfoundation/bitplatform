@@ -30,10 +30,11 @@ namespace Bit.IdentityServer.Implementations
             _activeAppEnvironment = appEnvironmentProvider.GetActiveAppEnvironment();
         }
 
+#if DEBUG
         protected RazorSsoHtmlPageProvider()
         {
-
         }
+#endif
 
         private string _result = null;
         private readonly IPathProvider _pathProvider;

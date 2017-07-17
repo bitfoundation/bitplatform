@@ -15,9 +15,11 @@ namespace Bit.Hangfire.Implementations
         private readonly ILifetimeScope _container;
         private readonly ILogProvider _logProvider;
 
+#if DEBUG
         protected JobSchedulerInMemoryBackendConfiguration()
         {
         }
+#endif
 
         public JobSchedulerInMemoryBackendConfiguration(JobActivator jobActivator, IAutofacDependencyManager dependencyManager, ILogProvider logProvider)
         {

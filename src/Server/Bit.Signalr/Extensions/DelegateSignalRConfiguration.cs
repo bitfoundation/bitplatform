@@ -13,10 +13,11 @@ namespace Bit.Core.Contracts
             _signalrHubCustomizer = signalrHubCustomizer;
         }
 
+#if DEBUG
         protected DelegateSignalRConfiguration()
         {
-
         }
+#endif
 
         public virtual void Configure(HubConfiguration signalRConfig)
         {

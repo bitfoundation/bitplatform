@@ -64,10 +64,11 @@ namespace Bit.IdentityServer.Implementations
              };
         }
 
+#if DEBUG
         protected DefaultIdentityServerLogProvider()
         {
-
         }
+#endif
 
         private readonly Logger _logger;
 

@@ -27,10 +27,11 @@ namespace Bit.IdentityServer.Implementations
             _contentFormatter = contentFormatter;
         }
 
+#if DEBUG
         protected DefaultSSOPageModelProvider()
         {
-
         }
+#endif
 
         public virtual SSOPageModel GetSSOPageModel()
         {

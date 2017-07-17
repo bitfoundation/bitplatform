@@ -12,9 +12,11 @@ namespace Bit.Signalr.Implementations
         private readonly IMessageContentFormatter _formatter;
         private readonly IConnectionManager _connectionManager;
 
+#if DEBUG
         protected SignalRMessageSender()
         {
         }
+#endif
 
         public SignalRMessageSender(IMessageContentFormatter formatter, Microsoft.AspNet.SignalR.IDependencyResolver signalRDependencyResolver)
         {

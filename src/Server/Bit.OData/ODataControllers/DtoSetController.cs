@@ -14,10 +14,11 @@ namespace Bit.OData.ODataControllers
         where TDto : class, IDtoWithDefaultKey<TKey>
         where TModel : class, IEntityWithDefaultKey<TKey>
     {
+#if DEBUG
         protected DtoSetController()
         {
-
         }
+#endif
 
         public DtoSetController(IEntityWithDefaultKeyRepository<TModel, TKey> repository)
         {

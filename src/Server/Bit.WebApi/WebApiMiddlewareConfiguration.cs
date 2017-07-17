@@ -19,10 +19,11 @@ namespace Bit.WebApi
         private HttpConfiguration _webApiConfig;
         private HttpServer _server;
 
+#if DEBUG
         protected WebApiMiddlewareConfiguration()
         {
-
         }
+#endif
 
         public WebApiMiddlewareConfiguration(IAppEnvironmentProvider appEnvironmentProvider,
             IEnumerable<IWebApiConfigurationCustomizer> webApiConfgurationCustomizers, System.Web.Http.Dependencies.IDependencyResolver webApiDependencyResolver, IWebApiOwinPipelineInjector webApiOwinPipelineInjector)

@@ -19,10 +19,11 @@ namespace Bit.IdentityServer.Implementations
             _activeDirectoryName = appEnvironmentProvider.GetActiveAppEnvironment().GetConfig<string>("ActiveDirectoryName");
         }
 
+#if DEBUG
         protected ActiveDirectoryUserServiceProvider()
         {
-
         }
+#endif
 
         public override async Task<string> GetUserIdByLocalAuthenticationContextAsync(LocalAuthenticationContext context)
         {

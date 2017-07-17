@@ -18,10 +18,11 @@ namespace Bit.OData.ActionFilters
             _stringCorrectors = stringCorrectors;
         }
 
+#if DEBUG
         protected RequestQSStringCorrectorsApplierActionFilterAttribute()
         {
-
         }
+#endif
 
         public override void OnActionExecuting(HttpActionContext actionContext)
         {

@@ -22,10 +22,11 @@ namespace Bit.Data
             _mapper = mapper;
         }
 
+#if DEBUG
         protected DefaultDtoModelMapper()
         {
-
         }
+#endif
 
         public virtual TModel FromDtoToModel(TDto dto, TModel existingModel)
         {

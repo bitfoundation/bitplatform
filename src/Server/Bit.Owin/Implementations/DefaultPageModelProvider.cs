@@ -16,9 +16,11 @@ namespace Bit.Owin.Implementations
         private readonly IUserSettingProvider _usersSettingsProvider;
         private readonly IContentFormatter _contentFormatter;
 
+#if DEBUG
         protected DefaultPageModelProvider()
         {
         }
+#endif
 
         public DefaultPageModelProvider(IContentFormatter contentFormatter, IAppEnvironmentProvider appEnvironmentProvider, IUserSettingProvider usersSettingsProvider = null)
         {

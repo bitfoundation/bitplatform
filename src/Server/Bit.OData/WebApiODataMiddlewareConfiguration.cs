@@ -33,10 +33,11 @@ namespace Bit.OData
         private readonly IODataContainerBuilderCustomizer _oDataContainerBuilderCustomizer;
         private readonly IWebApiOwinPipelineInjector _webApiOwinPipelineInjector;
 
+#if DEBUG
         protected WebApiODataMiddlewareConfiguration()
         {
-
         }
+#endif
 
         public WebApiODataMiddlewareConfiguration(IAppEnvironmentProvider appEnvironmentProvider,
             IEnumerable<IEdmModelProvider> emdEdmModelProviders, IEnumerable<IWebApiConfigurationCustomizer> webApiConfgurationCustomizers, System.Web.Http.Dependencies.IDependencyResolver webApiDependencyResolver, IODataModelBuilderProvider oDataModelBuilderProvider, IODataContainerBuilderCustomizer oDataContainerBuilderCustomizer, IWebApiOwinPipelineInjector webApiOwinPipelineInjector)

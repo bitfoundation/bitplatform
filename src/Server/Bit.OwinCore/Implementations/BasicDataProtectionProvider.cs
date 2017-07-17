@@ -17,10 +17,11 @@ namespace Bit.OwinCore.Implementations
 
         public virtual string[] Purposes { get; set; } = new string[] { };
 
+#if DEBUG
         protected BasicDataProtectionProvider()
         {
-
         }
+#endif
 
         public BasicDataProtectionProvider(IAppEnvironmentProvider appEnvironmentProvider)
         {

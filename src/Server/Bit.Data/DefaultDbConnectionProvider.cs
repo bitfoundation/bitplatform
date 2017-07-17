@@ -17,9 +17,11 @@ namespace Bit.Data
 
         private readonly IScopeStatusManager _scopeStatusManager;
 
+#if DEBUG
         protected DefaultDbConnectionProvider()
         {
         }
+#endif
 
         public DefaultDbConnectionProvider(IScopeStatusManager scopeStatusManager)
         {

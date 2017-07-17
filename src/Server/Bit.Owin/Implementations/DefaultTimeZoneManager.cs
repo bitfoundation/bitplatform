@@ -22,10 +22,11 @@ namespace Bit.Owin.Implementations
             _desiredTimeZoneName = requestInformationProvider.DesiredTimeZone;
         }
 
+#if DEBUG
         protected DefaultTimeZoneManager()
         {
-
         }
+#endif
 
         public virtual TimeZoneInfo GetClientCurrentTimeZone()
         {

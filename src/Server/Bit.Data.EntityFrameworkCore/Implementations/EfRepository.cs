@@ -16,9 +16,11 @@ namespace Bit.Data.EntityFrameworkCore.Implementations
         private readonly DbContextBase _dbContext;
         private readonly DbSet<TEntity> _set;
 
+#if DEBUG
         protected EfRepository()
         {
         }
+#endif
 
         protected EfRepository(DbContextBase dbContext)
         {

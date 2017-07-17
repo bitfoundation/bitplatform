@@ -11,10 +11,11 @@ namespace Bit.Data.EntityFramework.Implementations
     public class EfEntityWithDefaultKeyRepository<TEntity, TKey> : EfRepository<TEntity>, IEntityWithDefaultKeyRepository<TEntity, TKey>
         where TEntity : class, IEntityWithDefaultKey<TKey>
     {
+#if DEBUG
         protected EfEntityWithDefaultKeyRepository()
-            : base()
         {
         }
+#endif
 
         protected EfEntityWithDefaultKeyRepository(DbContextBase dbContext)
             : base(dbContext)

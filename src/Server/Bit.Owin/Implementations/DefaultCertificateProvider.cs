@@ -12,9 +12,11 @@ namespace Bit.Owin.Implementations
         private readonly IPathProvider _pathProvider;
         private X509Certificate2 _certificate;
 
+#if DEBUG
         protected DefaultCertificateProvider()
         {
         }
+#endif
 
         public DefaultCertificateProvider(IAppEnvironmentProvider appEnvironmentProvider, IPathProvider pathProvider)
         {

@@ -21,10 +21,11 @@ namespace Bit.Owin.Implementations
             _activeAppEnvironment = appEnvironmentProvider.GetActiveAppEnvironment();
         }
 
+#if DEBUG
         protected DefaultExceptionToHttpErrorMapper()
         {
-
         }
+#endif
 
         protected virtual Exception UnWrapException(Exception exp)
         {

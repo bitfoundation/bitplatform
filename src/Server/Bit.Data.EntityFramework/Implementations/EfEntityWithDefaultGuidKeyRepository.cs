@@ -7,10 +7,11 @@ namespace Bit.Data.EntityFramework.Implementations
     public class EfEntityWithDefaultGuidKeyRepository<TEntity> : EfEntityWithDefaultKeyRepository<TEntity, Guid>, IEntityWithDefaultGuidKeyRepository<TEntity>
         where TEntity : class, IEntityWithDefaultGuidKey
     {
+#if DEBUG
         protected EfEntityWithDefaultGuidKeyRepository()
-            : base()
         {
         }
+#endif
 
         protected EfEntityWithDefaultGuidKeyRepository(DbContextBase dbContext)
             : base(dbContext)

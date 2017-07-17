@@ -22,10 +22,11 @@ namespace Bit.IdentityServer.Implementations
             _activeAppEnvironment = appEnvironmentProvider.GetActiveAppEnvironment();
         }
 
+#if DEBUG
         protected RegexBasedRedirectUriValidator()
         {
-
         }
+#endif
 
         public override async Task<bool> IsPostLogoutRedirectUriValidAsync(string requestedUri, Client client)
         {

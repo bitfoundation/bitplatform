@@ -14,9 +14,11 @@ namespace Bit.Owin.Implementations
 
         private AppEnvironment _activeEnvironment;
 
+#if DEBUG
         protected DefaultAppEnvironmentProvider()
         {
         }
+#endif
 
         public DefaultAppEnvironmentProvider(IPathProvider pathProvider, IContentFormatter contentFormatter)
         {

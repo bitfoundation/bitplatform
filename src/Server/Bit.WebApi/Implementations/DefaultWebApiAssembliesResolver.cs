@@ -13,10 +13,11 @@ namespace Bit.WebApi.Implementations
 
         private ICollection<Assembly> _result;
 
+#if DEBUG
         protected DefaultWebApiAssembliesResolver()
         {
-
         }
+#endif
 
         public DefaultWebApiAssembliesResolver(IEnumerable<IApiAssembliesProvider> apiAssembliesProviders)
         {

@@ -16,10 +16,11 @@ namespace Bit.Owin.Middlewares
             _owinAppCustomizer = owinAppCustomizer;
         }
 
+#if DEBUG
         protected DelegateOwinMiddlewareConfiguration()
         {
-
         }
+#endif
 
         public virtual void Configure(IAppBuilder owinApp)
         {

@@ -14,9 +14,11 @@ namespace Bit.Data.EntityFrameworkCore.Implementations
         private readonly IDictionary<string, DbContextObjects> _dbContextObjects =
             new Dictionary<string, DbContextObjects>();
 
+#if DEBUG
         protected SqlDbContextObjectsProvider()
         {
         }
+#endif
 
         public SqlDbContextObjectsProvider(IDbConnectionProvider dbConnectionProvider)
         {
