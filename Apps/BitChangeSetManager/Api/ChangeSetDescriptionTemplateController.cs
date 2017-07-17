@@ -15,7 +15,7 @@ namespace BitChangeSetManager.Api
         [Function]
         public async Task<ChangeSetDescriptionTemplateDto[]> GetAllTemplates()
         {
-            string templatesFilePath = PathProvider.MapPath("App_Data\\templates.json");
+            string templatesFilePath = PathProvider.MapPath("App_Data/templates.json");
 
             using (StreamReader reader = File.OpenText(templatesFilePath))
             {

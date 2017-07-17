@@ -38,7 +38,7 @@ namespace Bit.Owin.Implementations
 
         public string GetCurrentStaticFilesPath()
         {
-            return MapPath(DefaultAppEnvironmentProvider.Current.GetActiveAppEnvironment().GetConfig("StaticFilesRelativePath", ".\\wwwroot\\"));
+            return MapPath(DefaultAppEnvironmentProvider.Current.GetActiveAppEnvironment().GetConfig("StaticFilesRelativePath", "./wwwroot/"));
         }
 
         public string StaticFileMapPath(string path)
