@@ -8,7 +8,7 @@ using Bit.Data.Contracts;
 
 namespace BitChangeSetManager.DataAccess
 {
-    public class BitChangeSetManagerDbContext : DefaultDbContext
+    public class BitChangeSetManagerDbContext : DbContextBase
     {
         public BitChangeSetManagerDbContext(DbConnection existingConnection)
             : base(existingConnection, contextOwnsConnection: true)

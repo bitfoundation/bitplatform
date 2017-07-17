@@ -8,7 +8,7 @@ using System.Collections.Generic;
 
 namespace BitChangeSetManager.Security
 {
-    public class BitChangeSetManagerClientProvider : DefaultClientProvider
+    public class BitChangeSetManagerClientProvider : ClientProvider
     {
         private readonly IAppEnvironmentProvider _appEnvironmentProvider;
 
