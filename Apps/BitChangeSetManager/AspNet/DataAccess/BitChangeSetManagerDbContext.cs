@@ -8,7 +8,7 @@ using Bit.Data.Contracts;
 
 namespace BitChangeSetManager.DataAccess
 {
-    public class BitChangeSetManagerDbContext : DbContextBase
+    public class BitChangeSetManagerDbContext : EfDbContextBase
     {
         public BitChangeSetManagerDbContext(DbConnection existingConnection)
             : base(existingConnection, contextOwnsConnection: true)
@@ -37,6 +37,10 @@ namespace BitChangeSetManager.DataAccess
         public virtual DbSet<Constant> Constants { get; set; }
 
         public virtual DbSet<ChangeSetImage> ChangeSetImages { get; set; }
+
+        public virtual DbSet<Province> Provinces { get; set; }
+
+        public virtual DbSet<City> Cities { get; set; }
 
         protected override void OnModelCreating(DbModelBuilder modelBuilder)
         {

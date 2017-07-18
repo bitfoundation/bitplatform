@@ -24,17 +24,17 @@
     <PackageReference Include="Autofac.WebApi2" Version="4.0.1" />
     <PackageReference Include="Autofac.WebApi2.Owin" Version="4.0.0" />
     <PackageReference Include="AutoMapper" Version="6.1.1" />
-    <PackageReference Include="Bit.Core" Version="0.0.2.9" />
-    <PackageReference Include="Bit.Data" Version="0.0.2.9" />
-    <PackageReference Include="Bit.Data.EntityFramework" Version="0.0.2.9" />
-    <PackageReference Include="Bit.Hangfire" Version="0.0.2.9" />
-    <PackageReference Include="Bit.IdentityServer" Version="0.0.2.9" />
-    <PackageReference Include="Bit.Model" Version="0.0.2.9" />
-    <PackageReference Include="Bit.OData" Version="0.0.2.9" />
-    <PackageReference Include="Bit.Owin" Version="0.0.2.9" />
-    <PackageReference Include="Bit.OwinCore" Version="0.0.2.9" />
-    <PackageReference Include="Bit.Signalr" Version="0.0.2.9" />
-    <PackageReference Include="Bit.WebApi" Version="0.0.2.9" />
+    <PackageReference Include="Bit.Core" Version="0.0.3.1" />
+    <PackageReference Include="Bit.Data" Version="0.0.3.1" />
+    <PackageReference Include="Bit.Data.EntityFramework" Version="0.0.3.1" />
+    <PackageReference Include="Bit.Hangfire" Version="0.0.3.1" />
+    <PackageReference Include="Bit.IdentityServer" Version="0.0.3.1" />
+    <PackageReference Include="Bit.Model" Version="0.0.3.1" />
+    <PackageReference Include="Bit.OData" Version="0.0.3.1" />
+    <PackageReference Include="Bit.Owin" Version="0.0.3.1" />
+    <PackageReference Include="Bit.OwinCore" Version="0.0.3.1" />
+    <PackageReference Include="Bit.Signalr" Version="0.0.3.1" />
+    <PackageReference Include="Bit.WebApi" Version="0.0.3.1" />
     <PackageReference Include="BitCodeAnalyzer" Version="1.1.7.6" />
     <PackageReference Include="Dapper" Version="1.50.2" />
     <PackageReference Include="EntityFramework" Version="6.1.3" />

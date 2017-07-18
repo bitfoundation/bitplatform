@@ -54,6 +54,7 @@
     <Reference Include="IdentityModel, Version=2.9.1.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\..\packages\IdentityModel.2.9.1\lib\netstandard1.4\IdentityModel.dll</HintPath>
     </Reference>
+    <Reference Include="Microsoft.CSharp" />
     <Reference Include="Microsoft.OData.Client, Version=6.17.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\..\packages\Microsoft.OData.Client.6.17.0\lib\portable-net45+wp8+win8+wpa\Microsoft.OData.Client.dll</HintPath>
     </Reference>
@@ -69,7 +70,7 @@
     <Reference Include="Mono.Android" />
     <Reference Include="mscorlib" />
     <Reference Include="Newtonsoft.Json, Version=10.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\Newtonsoft.Json.10.0.2\lib\netstandard1.3\Newtonsoft.Json.dll</HintPath>
+      <HintPath>..\..\packages\Newtonsoft.Json.10.0.3\lib\netstandard1.3\Newtonsoft.Json.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />

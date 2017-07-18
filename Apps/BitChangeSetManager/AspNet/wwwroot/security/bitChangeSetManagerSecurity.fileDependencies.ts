@@ -37,7 +37,7 @@ module BitChangeSetManagerSecurity {
 
     dependencyManager.registerFileDependency({
         name: "Core-js",
-        path: "node_modules/Core-js/client/Core"
+        path: "node_modules/core-js/client/core"
     });
 
     dependencyManager.registerFileDependency({
