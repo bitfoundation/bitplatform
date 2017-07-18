@@ -213,15 +213,12 @@ ModelManifest.xml
 # Bit Foundation
 **/bower_components/*
 *.map
-/BitTools/BitCodeGenerator/Implementations/HtmlClientProxyGenerator/Templates/TypeScriptDtosGeneratorTemplate1.cs
-/BitTools/BitCodeGenerator/Implementations/HtmlClientProxyGenerator/Templates/TypeScriptContextGeneratorTemplate1.cs
-/BitTools/BitCodeGenerator/Implementations/HtmlClientProxyGenerator/Templates/JavaScriptDtosGeneratorTemplate1.cs
-/BitTools/BitCodeGenerator/Implementations/HtmlClientProxyGenerator/Templates/JavaScriptContextGeneratorTemplate1.cs
-/Apps/BitChangeSetManager/wwwroot/BitChangeSetManager.Model.Context.js
-/Apps/BitChangeSetManager/wwwroot/BitChangeSetManager.Model.Context.d.ts
-/Apps/BitChangeSetManager/wwwroot/bitChangeSetManager.ts
-/Apps/BitChangeSetManager/wwwroot/bitChangeSetManager.js
-/Apps/BitChangeSetManager/wwwroot/security/bitChangeSetManager-security.js
+/BitTools/BitCodeGenerator/Implementations/HtmlClientProxyGenerator/Templates/*.cs
+/Apps/BitChangeSetManager/AspNet/wwwroot/BitChangeSetManager.Model.Context.js
+/Apps/BitChangeSetManager/AspNet/wwwroot/BitChangeSetManager.Model.Context.d.ts
+/Apps/BitChangeSetManager/AspNet/wwwroot/bitChangeSetManager.ts
+/Apps/BitChangeSetManager/AspNet/wwwroot/bitChangeSetManager.js
+/Apps/BitChangeSetManager/AspNet/wwwroot/security/bitChangeSetManager-security.js
 /src/TypeScriptClient/Bit.TSClient.Core/Bit.Model.Context.js
 /src/TypeScriptClient/Bit.TSClient.Core/Bit.Model.Context.d.ts
 /src/TypeScriptClient/Bit.TSClient.Core/bit.core.js

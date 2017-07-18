@@ -138,8 +138,9 @@
     <PackageReference Include="System.Xml.XDocument" Version="4.3.0" />
     <PackageReference Include="WebApiCorrelator" Version="1.1.0" />
   </ItemGroup>
+
   <ItemGroup>
-    <ProjectReference Include="..\..\BitChangeSetManager\BitChangeSetManager.csproj" />
+    <ProjectReference Include="..\AspNet\BitChangeSetManager.csproj" />
   </ItemGroup>
   <ItemGroup>
     <Content Update="App_Data\templates.json">
