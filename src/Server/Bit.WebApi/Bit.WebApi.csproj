@@ -81,6 +81,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ActionFilters\AddAcceptCharsetToRequestHeadersIfNotAnyFilterAttribute.cs" />
     <Compile Include="Contracts\IApiAssembliesProvider.cs" />
     <Compile Include="Extensions\IDependencyManagerExtensions.cs" />
     <Compile Include="Implementations\DefaultWebApiAssembliesProvider.cs" />

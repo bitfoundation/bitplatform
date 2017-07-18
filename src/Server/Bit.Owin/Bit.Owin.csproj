@@ -199,7 +199,6 @@
     <Compile Include="Metadata\Dtos\UserSettingMetadataBuilder.cs" />
     <Compile Include="Metadata\BitMetadataBuilder.cs" />
     <Compile Include="Metadata\Views\LoginViewMetadataBuilder.cs" />
-    <Compile Include="Middlewares\AddAcceptCharsetToRequestHeadersIfNotAnyMiddleware.cs" />
     <Compile Include="Middlewares\AutofacDependencyInjectionMiddlewareConfiguration.cs" />
     <Compile Include="Middlewares\DefaultPageMiddleware.cs" />
     <Compile Include="Middlewares\DefaultPageMiddlewareConfiguration.cs" />

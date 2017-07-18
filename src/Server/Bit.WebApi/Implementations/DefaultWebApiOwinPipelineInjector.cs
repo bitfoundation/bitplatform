@@ -19,7 +19,6 @@ namespace Bit.WebApi.Implementations
 
             owinApp.Map("/api", innerApp =>
             {
-                innerApp.Use<AddAcceptCharsetToRequestHeadersIfNotAnyMiddleware>();
                 innerApp.UseXContentTypeOptions();
                 innerApp.UseWebApi(server);
             });
