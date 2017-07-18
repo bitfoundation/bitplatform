@@ -43,7 +43,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Extensions\IDependencyManagerExtensions.cs" />
-    <Compile Include="Implementations\DbContextBase.cs" />
+    <Compile Include="Implementations\EfDbContextBase.cs" />
     <Compile Include="Implementations\EfDataProviderSpecificMethodsProvider.cs" />
     <Compile Include="Implementations\EfEntityWithDefaultGuidKeyRepository.cs" />
     <Compile Include="Implementations\EfEntityWithDefaultKeyRepository.cs" />

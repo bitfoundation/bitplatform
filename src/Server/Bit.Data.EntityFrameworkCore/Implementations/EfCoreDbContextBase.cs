@@ -4,19 +4,19 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Bit.Data.EntityFrameworkCore.Implementations
 {
-    public class DbContextBase : DbContext
+    public class EfCoreDbContextBase : DbContext
     {
-        protected DbContextBase()
+        protected EfCoreDbContextBase()
         {
         }
 
-        protected DbContextBase(DbContextOptions options)
+        protected EfCoreDbContextBase(DbContextOptions options)
             : base(options)
         {
             ApplyDefaultConfig();
         }
 
-        protected DbContextBase(string connectionString, IDbContextObjectsProvider dbContextCreationOptionsProvider)
+        protected EfCoreDbContextBase(string connectionString, IDbContextObjectsProvider dbContextCreationOptionsProvider)
             : base(dbContextCreationOptionsProvider.GetDbContextOptions(connectionString).Options)
         {
             if (dbContextCreationOptionsProvider == null)

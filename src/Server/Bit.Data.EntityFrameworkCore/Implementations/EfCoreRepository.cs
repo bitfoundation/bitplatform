@@ -13,7 +13,7 @@ namespace Bit.Data.EntityFrameworkCore.Implementations
     public class EfRepository<TEntity> : IRepository<TEntity>
         where TEntity : class, IEntity
     {
-        private readonly DbContextBase _dbContext;
+        private readonly EfCoreDbContextBase _dbContext;
         private readonly DbSet<TEntity> _set;
 
 #if DEBUG
@@ -22,7 +22,7 @@ namespace Bit.Data.EntityFrameworkCore.Implementations
         }
 #endif
 
-        protected EfRepository(DbContextBase dbContext)
+        protected EfRepository(EfCoreDbContextBase dbContext)
         {
             if (dbContext == null)
                 throw new ArgumentNullException(nameof(dbContext));

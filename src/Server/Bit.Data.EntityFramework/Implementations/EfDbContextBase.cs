@@ -4,25 +4,25 @@ using Bit.Data.Contracts;
 
 namespace Bit.Data.EntityFramework.Implementations
 {
-    public class DbContextBase : DbContext
+    public class EfDbContextBase : DbContext
     {
-        protected DbContextBase()
+        protected EfDbContextBase()
         {
         }
 
-        public DbContextBase(string nameOrConnectionString)
+        public EfDbContextBase(string nameOrConnectionString)
             : base(nameOrConnectionString)
         {
             ApplyDefaultConfig();
         }
 
-        public DbContextBase(DbConnection existingConnection, bool contextOwnsConnection)
+        public EfDbContextBase(DbConnection existingConnection, bool contextOwnsConnection)
             : base(existingConnection, contextOwnsConnection)
         {
             ApplyDefaultConfig();
         }
 
-        public DbContextBase(string connectionString, IDbConnectionProvider dbConnectionProvider)
+        public EfDbContextBase(string connectionString, IDbConnectionProvider dbConnectionProvider)
             : base(dbConnectionProvider.GetDbConnection(connectionString, rollbackOnScopeStatusFailure: true), contextOwnsConnection: false)
         {
             ApplyDefaultConfig();

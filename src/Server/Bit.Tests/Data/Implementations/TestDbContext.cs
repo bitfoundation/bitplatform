@@ -7,7 +7,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Bit.Tests.Data.Implementations
 {
-    public class TestDbContext : DbContextBase
+    public class TestDbContext : EfCoreDbContextBase
     {
         protected TestDbContext()
             : base()
