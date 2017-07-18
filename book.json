@@ -2,7 +2,6 @@
     "plugins": [
         "youtube",
         "disqus",
-        "copy-code-button",
         "edit-link",
         "prism", 
         "-highlight",
