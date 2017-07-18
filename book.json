@@ -2,11 +2,23 @@
     "plugins": [
         "youtube",
         "disqus",
-        "copy-code-button"
+        "copy-code-button",
+        "edit-link",
+        "prism", 
+        "-highlight",
+        "github",
+        "anchorjs"
     ],
     "pluginsConfig": {
         "disqus": {
             "shortName": "bit-framework"
+        },
+        "edit-link": {
+            "base": "https://github.com/bit-foundation/bit-framework/tree/master",
+            "label": "Edit This Page"
+        },
+        "github": {
+            "url": "https://github.com/bit-foundation/bit-framework/"
         }
     }
 }
