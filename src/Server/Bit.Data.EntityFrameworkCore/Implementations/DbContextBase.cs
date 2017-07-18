@@ -17,7 +17,7 @@ namespace Bit.Data.EntityFrameworkCore.Implementations
         }
 
         protected DbContextBase(string connectionString, IDbContextObjectsProvider dbContextCreationOptionsProvider)
-            : this(dbContextCreationOptionsProvider.GetDbContextOptions(connectionString).Options)
+            : base(dbContextCreationOptionsProvider.GetDbContextOptions(connectionString).Options)
         {
             if (dbContextCreationOptionsProvider == null)
                 throw new ArgumentNullException(nameof(dbContextCreationOptionsProvider));
