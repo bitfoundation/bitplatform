@@ -57,6 +57,7 @@
     <Compile Include="Contracts\IDependenciesManager.cs" />
     <Compile Include="Extensions\AssemblyExtensions.cs" />
     <Compile Include="Extensions\IEnumerableExtensions.cs" />
+    <Compile Include="Extensions\IQueryableExtensions.cs" />
     <Compile Include="Implementations\DefaultDateTimeProvider.cs" />
     <Compile Include="Implementations\DefaultIraninCodeValidator.cs" />
     <Compile Include="Extensions\PlatformUtilities.cs" />
