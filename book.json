@@ -18,11 +18,11 @@
         },
         "github": {
             "url": "https://github.com/bit-foundation/bit-framework/"
+        },
+        "theme-default": {
+            "styles": {
+                "website": "docs/styles/main.css"
+            }
         }
-    },
-    "styles": {
-        "website": [
-            "docs/styles/main.css"
-        ]
     }
 }
