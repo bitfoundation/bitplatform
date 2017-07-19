@@ -3,7 +3,7 @@
         "youtube",
         "disqus",
         "edit-link",
-        "prism", 
+        "prism",
         "-highlight",
         "github",
         "anchorjs"
@@ -19,5 +19,10 @@
         "github": {
             "url": "https://github.com/bit-foundation/bit-framework/"
         }
+    },
+    "styles": {
+        "website": [
+            "docs/styles/main.css"
+        ]
     }
 }
