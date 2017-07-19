@@ -20,6 +20,12 @@ namespace Microsoft.CodeAnalysis
                     return namedTypeSymbol.TypeArguments.ExtendedSingle($"Looking for type arguments of {type.Name}");
             }
 
+            if (typeName == "SingleResult")
+            {
+                if (type is INamedTypeSymbol namedTypeSymbol && namedTypeSymbol.TypeArguments.Any())
+                    return namedTypeSymbol.TypeArguments.ExtendedSingle($"Looking for type arguments of {type.Name}");
+            }
+
             return type;
         }
 

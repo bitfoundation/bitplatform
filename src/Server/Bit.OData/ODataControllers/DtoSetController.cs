@@ -1,13 +1,14 @@
-﻿using System;
+﻿using Bit.Data.Contracts;
+using Bit.Data.Implementations;
+using Bit.Model.Contracts;
+using Bit.Owin.Exceptions;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Web.Http;
 using System.Web.OData;
-using Bit.Data.Contracts;
-using Bit.Model.Contracts;
-using Bit.Owin.Exceptions;
-using Bit.Data.Implementations;
 
 namespace Bit.OData.ODataControllers
 {
@@ -51,11 +52,30 @@ namespace Bit.OData.ODataControllers
 
             TModel model = await Repository.AddAsync(FromDtoToModel(dto), cancellationToken);
 
-            return await Get(model.Id, cancellationToken);
+            return await GetById(model.Id, cancellationToken);
         }
 
-        [Get]
-        public virtual async Task<TDto> Get(TKey key, CancellationToken cancellationToken)
+        protected virtual async Task<TDto> GetById(TKey key, CancellationToken cancellationToken)
+        {
+            IDataProviderSpecificMethodsProvider dataProviderSpecificMethodsProvider = null;
+
+            IQueryable<TDto> getByIdQuery = await GetByIdQuery(key, cancellationToken);
+
+            if (DataProviderSpecificMethodsProviders != null)
+                dataProviderSpecificMethodsProvider = DataProviderSpecificMethodsProviders.FirstOrDefault(asyncQueryableExecuter => asyncQueryableExecuter.SupportsQueryable<TDto>(getByIdQuery));
+
+            if (dataProviderSpecificMethodsProvider == null)
+                dataProviderSpecificMethodsProvider = DefaultDataProviderSpecificMethodsProvider.Current;
+
+            TDto result = await dataProviderSpecificMethodsProvider.FirstOrDefaultAsync(getByIdQuery, cancellationToken);
+
+            if (result == null)
+                throw new ResourceNotFoundException();
+
+            return result;
+        }
+
+        private async Task<IQueryable<TDto>> GetByIdQuery(TKey key, CancellationToken cancellationToken)
         {
             IQueryable<TDto> baseQuery = await GetAll(cancellationToken);
 
@@ -69,14 +89,13 @@ namespace Bit.OData.ODataControllers
 
             baseQuery = dataProviderSpecificMethodsProvider.ApplyWhereByKeys(baseQuery, key);
 
-            TDto dtoResult = default(TDto);
+            return baseQuery;
+        }
 
-            dtoResult = await dataProviderSpecificMethodsProvider.FirstOrDefaultAsync(baseQuery, cancellationToken);
-
-            if (dtoResult == null)
-                throw new ResourceNotFoundException();
-
-            return dtoResult;
+        [Get]
+        public virtual async Task<SingleResult<TDto>> Get(TKey key, CancellationToken cancellationToken)
+        {
+            return SingleResult.Create(await GetByIdQuery(key, cancellationToken));
         }
 
         [Delete]
@@ -92,7 +111,7 @@ namespace Bit.OData.ODataControllers
             if (modifiedDtoDelta == null)
                 throw new ArgumentNullException(nameof(modifiedDtoDelta));
 
-            TDto originalDto = await Get(key, cancellationToken);
+            TDto originalDto = await GetById(key, cancellationToken);
 
             if (originalDto == null)
                 throw new ResourceNotFoundException();
@@ -115,7 +134,7 @@ namespace Bit.OData.ODataControllers
 
             model = await Repository.UpdateAsync(model, cancellationToken);
 
-            return await Get(key, cancellationToken);
+            return await GetById(key, cancellationToken);
         }
 
         [Get]

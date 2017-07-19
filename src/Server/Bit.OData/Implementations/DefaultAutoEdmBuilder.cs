@@ -1,17 +1,17 @@
-﻿using System;
+﻿using Bit.Model.Implementations;
+using Bit.OData.Contracts;
+using Bit.OData.ODataControllers;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Web.Http;
 using System.Web.Http.Controllers;
 using System.Web.OData.Builder;
 using System.Web.OData.Query;
-using Bit.Model.Contracts;
-using Bit.OData.Contracts;
-using Bit.OData.ODataControllers;
-using Bit.Model.Implementations;
 
 namespace Bit.OData.Implementations
 {
@@ -182,6 +182,12 @@ namespace Bit.OData.Implementations
                         bool isCollection = false;
 
                         if (typeof(Task).GetTypeInfo().IsAssignableFrom(type))
+                        {
+                            if (type.IsGenericType)
+                                type = type.GetGenericArguments().ExtendedSingle($"Finding Return type of {method.Name}").GetTypeInfo();
+                        }
+
+                        if (typeof(SingleResult).GetTypeInfo().IsAssignableFrom(type))
                         {
                             if (type.IsGenericType)
                                 type = type.GetGenericArguments().ExtendedSingle($"Finding Return type of {method.Name}").GetTypeInfo();

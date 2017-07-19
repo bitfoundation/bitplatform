@@ -1,4 +1,8 @@
-﻿using System;
+﻿using Bit.Data.Contracts;
+using Bit.Data.Implementations;
+using Bit.Owin.Exceptions;
+using Microsoft.Owin;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -6,13 +10,11 @@ using System.Net.Http;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Web.Http;
 using System.Web.Http.Filters;
 using System.Web.OData;
 using System.Web.OData.Extensions;
 using System.Web.OData.Query;
-using Bit.Data.Contracts;
-using Microsoft.Owin;
-using Bit.Data.Implementations;
 
 namespace Bit.OData.ActionFilters
 {
@@ -42,7 +44,12 @@ namespace Bit.OData.ActionFilters
                 if (objContent.Value == null)
                     return;
 
-                TypeInfo actionReturnType = objContent.ObjectType.GetTypeInfo();
+                bool isSingleResult = objContent.Value is SingleResult;
+
+                if (isSingleResult == true)
+                    objContent.Value = ((SingleResult)objContent.Value).Queryable;
+
+                TypeInfo actionReturnType = objContent.Value.GetType().GetTypeInfo();
 
                 if (typeof(string) != actionReturnType && typeof(IEnumerable).GetTypeInfo().IsAssignableFrom(actionReturnType))
                 {
@@ -100,7 +107,7 @@ namespace Bit.OData.ActionFilters
                         objContent.Value = currentOdataQueryOptions.Filter.ApplyTo(query: (IQueryable)objContent.Value, querySettings: globalODataQuerySettings);
                     }
 
-                    if (currentOdataQueryOptions.Count?.Value == true && takeCount.HasValue == true)
+                    if (currentOdataQueryOptions.Count?.Value == true && takeCount.HasValue == true && isSingleResult == false)
                     {
                         long count = await (Task<long>)typeof(ODataEnableQueryAttribute).GetMethod(nameof(GetCountAsync)).MakeGenericMethod(queryElementType).Invoke(this, new object[] { objContent.Value, dataProviderSpecificMethodsProvider, cancellationToken });
                         actionExecutedContext.Request.Properties["System.Web.OData.TotalCountFunc"] = new Func<long>(() => count);
@@ -113,9 +120,16 @@ namespace Bit.OData.ActionFilters
                         TypeInfo newReturnTypeAfterApplyingSelect = objContent.Value.GetType().GetTypeInfo();
                         queryElementType = newReturnTypeAfterApplyingSelect.GetGenericArguments().ExtendedSingle($"Get generic arguments of ${newReturnTypeAfterApplyingSelect.Name}").GetTypeInfo();
                     }
-                        objContent.Value = await (Task<object>)typeof(ODataEnableQueryAttribute).GetMethod(nameof(ToListAsync)).MakeGenericMethod(queryElementType).Invoke(this, new object[] { objContent.Value, dataProviderSpecificMethodsProvider, takeCount, skipCount, cancellationToken });
 
-                    if (currentOdataQueryOptions.Count?.Value == true && takeCount.HasValue == false)
+                    if (isSingleResult == false)
+                        objContent.Value = await (Task<object>)typeof(ODataEnableQueryAttribute).GetMethod(nameof(ToListAsync)).MakeGenericMethod(queryElementType).Invoke(this, new object[] { objContent.Value, dataProviderSpecificMethodsProvider, takeCount, skipCount, cancellationToken });
+                    else
+                    {
+                        objContent.Value = await (Task<object>)typeof(ODataEnableQueryAttribute).GetMethod(nameof(FirstAsync)).MakeGenericMethod(queryElementType).Invoke(this, new object[] { objContent.Value, dataProviderSpecificMethodsProvider, cancellationToken });
+                        actionExecutedContext.Request.Properties["System.Web.OData.TotalCountFunc"] = new Func<long>(() => 1);
+                    }
+
+                    if (currentOdataQueryOptions.Count?.Value == true && takeCount.HasValue == false && isSingleResult == false)
                     {
                         // We've no paging becuase there is no global config for max top and there is no top specified by the client's request, so the retured result of query's length is equivalent to total count of the query
                         long count = ((IList)objContent.Value).Count;
@@ -167,6 +181,22 @@ namespace Bit.OData.ActionFilters
             }
 
             return await dataProviderSpecificMethodsProvider.ToListAsync(query, cancellationToken);
+        }
+
+        public virtual async Task<object> FirstAsync<T>(IQueryable<T> query, IDataProviderSpecificMethodsProvider dataProviderSpecificMethodsProvider, CancellationToken cancellationToken)
+        {
+            if (query == null)
+                throw new ArgumentNullException(nameof(query));
+
+            if (dataProviderSpecificMethodsProvider == null)
+                throw new ArgumentNullException(nameof(dataProviderSpecificMethodsProvider));
+
+            object result = await dataProviderSpecificMethodsProvider.FirstOrDefaultAsync(query, cancellationToken);
+
+            if (result == null)
+                throw new ResourceNotFoundException();
+
+            return result;
         }
 
         public virtual IQueryable<T> ToQueryable<T>(IEnumerable<T> source)
