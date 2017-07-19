@@ -62,7 +62,7 @@ namespace Bit.OwinCore.Implementations
             }
         }
 
-        public virtual IDataProtector Create(params string[] purposes)
+        public virtual IDataProtector Create(string[] purposes)
         {
             if (purposes == null)
                 throw new ArgumentNullException(nameof(purposes));
