@@ -12,18 +12,22 @@ namespace Microsoft.CodeAnalysis
             if (type == null)
                 throw new ArgumentNullException(nameof(type));
 
-            string typeName = type.Name;
-
-            if (typeName == nameof(Task) || typeName == nameof(Nullable))
+            if (type.Name == nameof(Task))
             {
                 if (type is INamedTypeSymbol namedTypeSymbol && namedTypeSymbol.TypeArguments.Any())
-                    return namedTypeSymbol.TypeArguments.ExtendedSingle($"Looking for type arguments of {type.Name}");
+                    type = namedTypeSymbol.TypeArguments.ExtendedSingle($"Looking for type arguments of {type.Name}");
             }
 
-            if (typeName == "SingleResult")
+            if (type.Name == "SingleResult")
             {
                 if (type is INamedTypeSymbol namedTypeSymbol && namedTypeSymbol.TypeArguments.Any())
-                    return namedTypeSymbol.TypeArguments.ExtendedSingle($"Looking for type arguments of {type.Name}");
+                    type = namedTypeSymbol.TypeArguments.ExtendedSingle($"Looking for type arguments of {type.Name}");
+            }
+
+            if (type.Name == nameof(Nullable))
+            {
+                if (type is INamedTypeSymbol namedTypeSymbol && namedTypeSymbol.TypeArguments.Any())
+                    type = namedTypeSymbol.TypeArguments.ExtendedSingle($"Looking for type arguments of {type.Name}");
             }
 
             return type;
