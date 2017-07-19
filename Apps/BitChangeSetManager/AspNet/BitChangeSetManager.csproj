@@ -65,35 +65,35 @@
     <Reference Include="AutoMapper, Version=6.1.1.0, Culture=neutral, PublicKeyToken=be96cd2c38ef1005, processorArchitecture=MSIL">
       <HintPath>..\packages\AutoMapper.6.1.1\lib\net45\AutoMapper.dll</HintPath>
     </Reference>
-    <Reference Include="Bit.Core, Version=0.0.3.5, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Bit.Core.0.0.3.5\lib\net47\Bit.Core.dll</HintPath>
+    <Reference Include="Bit.Core, Version=0.0.3.6, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Bit.Core.0.0.3.6\lib\net47\Bit.Core.dll</HintPath>
     </Reference>
-    <Reference Include="Bit.Data, Version=0.0.3.5, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Bit.Data.0.0.3.5\lib\net47\Bit.Data.dll</HintPath>
+    <Reference Include="Bit.Data, Version=0.0.3.6, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Bit.Data.0.0.3.6\lib\net47\Bit.Data.dll</HintPath>
     </Reference>
-    <Reference Include="Bit.Data.EntityFramework, Version=0.0.3.5, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Bit.Data.EntityFramework.0.0.3.5\lib\net47\Bit.Data.EntityFramework.dll</HintPath>
+    <Reference Include="Bit.Data.EntityFramework, Version=0.0.3.6, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Bit.Data.EntityFramework.0.0.3.6\lib\net47\Bit.Data.EntityFramework.dll</HintPath>
     </Reference>
-    <Reference Include="Bit.Hangfire, Version=0.0.3.5, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Bit.Hangfire.0.0.3.5\lib\net47\Bit.Hangfire.dll</HintPath>
+    <Reference Include="Bit.Hangfire, Version=0.0.3.6, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Bit.Hangfire.0.0.3.6\lib\net47\Bit.Hangfire.dll</HintPath>
     </Reference>
-    <Reference Include="Bit.IdentityServer, Version=0.0.3.5, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Bit.IdentityServer.0.0.3.5\lib\net47\Bit.IdentityServer.dll</HintPath>
+    <Reference Include="Bit.IdentityServer, Version=0.0.3.6, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Bit.IdentityServer.0.0.3.6\lib\net47\Bit.IdentityServer.dll</HintPath>
     </Reference>
-    <Reference Include="Bit.Model, Version=0.0.3.5, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Bit.Model.0.0.3.5\lib\net47\Bit.Model.dll</HintPath>
+    <Reference Include="Bit.Model, Version=0.0.3.6, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Bit.Model.0.0.3.6\lib\net47\Bit.Model.dll</HintPath>
     </Reference>
-    <Reference Include="Bit.OData, Version=0.0.3.5, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Bit.OData.0.0.3.5\lib\net47\Bit.OData.dll</HintPath>
+    <Reference Include="Bit.OData, Version=0.0.3.6, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Bit.OData.0.0.3.6\lib\net47\Bit.OData.dll</HintPath>
     </Reference>
-    <Reference Include="Bit.Owin, Version=0.0.3.5, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Bit.Owin.0.0.3.5\lib\net47\Bit.Owin.dll</HintPath>
+    <Reference Include="Bit.Owin, Version=0.0.3.6, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Bit.Owin.0.0.3.6\lib\net47\Bit.Owin.dll</HintPath>
     </Reference>
-    <Reference Include="Bit.Signalr, Version=0.0.3.5, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Bit.Signalr.0.0.3.5\lib\net47\Bit.Signalr.dll</HintPath>
+    <Reference Include="Bit.Signalr, Version=0.0.3.6, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Bit.Signalr.0.0.3.6\lib\net47\Bit.Signalr.dll</HintPath>
     </Reference>
-    <Reference Include="Bit.WebApi, Version=0.0.3.5, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Bit.WebApi.0.0.3.5\lib\net47\Bit.WebApi.dll</HintPath>
+    <Reference Include="Bit.WebApi, Version=0.0.3.6, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Bit.WebApi.0.0.3.6\lib\net47\Bit.WebApi.dll</HintPath>
     </Reference>
     <Reference Include="Correlator, Version=1.1.0.0, Culture=neutral, PublicKeyToken=ad71b95c30d52163, processorArchitecture=MSIL">
       <HintPath>..\packages\WebApiCorrelator.1.1.0.0\lib\net452\Correlator.dll</HintPath>
@@ -412,13 +412,14 @@
     <Compile Include="Api\ChangeSetSeveritiesController.cs" />
     <Compile Include="Api\Implementations\BitUserSettingProvider.cs" />
     <Compile Include="Api\CitiesController.cs" />
-    <Compile Include="Api\DefaultReadOnlyDtoSetController.cs" />
+    <Compile Include="Api\DefaultDtoSetControllers.cs" />
     <Compile Include="Api\DeliveriesController.cs" />
     <Compile Include="Api\ChangeSetsController.cs" />
     <Compile Include="Api\CustomersController.cs" />
     <Compile Include="Api\ConstantsController.cs" />
     <Compile Include="Api\ProvincesController.cs" />
     <Compile Include="Api\UsersAvatarController.cs" />
+    <Compile Include="Api\UsersController.cs" />
     <Compile Include="DataAccess\BitChangeSetManagerDbContext.cs" />
     <Compile Include="Api\Implementations\BitChangeSetManagerEdmModelProvider.cs" />
     <Compile Include="DataAccess\BitChangeSetManagerEfRepository.cs" />
@@ -434,6 +435,7 @@
     <Compile Include="Dto\CustomerDto.cs" />
     <Compile Include="Dto\DeliveryDto.cs" />
     <Compile Include="Dto\ProvinceDto.cs" />
+    <Compile Include="Dto\UserDto.cs" />
     <Compile Include="Metadata\BitChangeSetManagerMetadata.cs" />
     <Compile Include="Metadata\ChangeSetDtoMetadata.cs" />
     <Compile Include="Metadata\ChangeSetsViewMetadata.cs" />
