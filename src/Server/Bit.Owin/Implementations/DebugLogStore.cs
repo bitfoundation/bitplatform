@@ -1,4 +1,5 @@
-﻿using System;
+﻿#define DEBUG
+using System;
 using System.Threading.Tasks;
 using Bit.Core.Contracts;
 using Bit.Core.Models;
@@ -15,11 +16,9 @@ namespace Bit.Owin.Implementations
             _formatter = formatter;
         }
 
-#if DEBUG
         protected DebugLogStore()
         {
         }
-#endif
 
         public virtual void SaveLog(LogEntry logEntry)
         {
