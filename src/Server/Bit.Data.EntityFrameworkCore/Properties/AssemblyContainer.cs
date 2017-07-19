@@ -7,7 +7,7 @@ namespace Bit.Core
     {
         public static Assembly GetBitDataEntityFrameworkCoreAssembly(this AssemblyContainer container)
         {
-            return typeof(EfRepository<>).GetTypeInfo().Assembly;
+            return typeof(EfCoreRepository<>).GetTypeInfo().Assembly;
         }
     }
 }

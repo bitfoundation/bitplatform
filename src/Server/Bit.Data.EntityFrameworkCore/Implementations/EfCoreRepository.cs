@@ -10,19 +10,19 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Bit.Data.EntityFrameworkCore.Implementations
 {
-    public class EfRepository<TEntity> : IRepository<TEntity>
+    public class EfCoreRepository<TEntity> : IRepository<TEntity>
         where TEntity : class, IEntity
     {
         private readonly EfCoreDbContextBase _dbContext;
         private readonly DbSet<TEntity> _set;
 
 #if DEBUG
-        protected EfRepository()
+        protected EfCoreRepository()
         {
         }
 #endif
 
-        protected EfRepository(EfCoreDbContextBase dbContext)
+        protected EfCoreRepository(EfCoreDbContextBase dbContext)
         {
             if (dbContext == null)
                 throw new ArgumentNullException(nameof(dbContext));
@@ -35,6 +35,10 @@ namespace Bit.Data.EntityFrameworkCore.Implementations
             if (entityToAdd == null)
                 throw new ArgumentNullException(nameof(entityToAdd));
 
+            IEntityWithDefaultGuidKey entityToAddAsEntityWithDefaultGuidKey = entityToAdd as IEntityWithDefaultGuidKey;
+            if (entityToAddAsEntityWithDefaultGuidKey != null && entityToAddAsEntityWithDefaultGuidKey.Id == Guid.Empty)
+                entityToAddAsEntityWithDefaultGuidKey.Id = Guid.NewGuid();
+
             _dbContext.Add(entityToAdd);
 
             await SaveChangesAsync(cancellationToken);
@@ -46,6 +50,13 @@ namespace Bit.Data.EntityFrameworkCore.Implementations
         {
             if (entitiesToAdd == null)
                 throw new ArgumentNullException(nameof(entitiesToAdd));
+
+            foreach (IEntity entityToAdd in entitiesToAdd)
+            {
+                IEntityWithDefaultGuidKey entityToAddAsEntityWithDefaultGuidKey = entityToAdd as IEntityWithDefaultGuidKey;
+                if (entityToAddAsEntityWithDefaultGuidKey != null && entityToAddAsEntityWithDefaultGuidKey.Id == Guid.Empty)
+                    entityToAddAsEntityWithDefaultGuidKey.Id = Guid.NewGuid();
+            }
 
             _dbContext.AddRange(entitiesToAdd);
 
@@ -145,6 +156,10 @@ namespace Bit.Data.EntityFrameworkCore.Implementations
             if (entityToAdd == null)
                 throw new ArgumentNullException(nameof(entityToAdd));
 
+            IEntityWithDefaultGuidKey entityToAddAsEntityWithDefaultGuidKey = entityToAdd as IEntityWithDefaultGuidKey;
+            if (entityToAddAsEntityWithDefaultGuidKey != null && entityToAddAsEntityWithDefaultGuidKey.Id == Guid.Empty)
+                entityToAddAsEntityWithDefaultGuidKey.Id = Guid.NewGuid();
+
             _dbContext.Add(entityToAdd);
 
             SaveChanges();
@@ -156,6 +171,13 @@ namespace Bit.Data.EntityFrameworkCore.Implementations
         {
             if (entitiesToAdd == null)
                 throw new ArgumentNullException(nameof(entitiesToAdd));
+
+            foreach (IEntity entityToAdd in entitiesToAdd)
+            {
+                IEntityWithDefaultGuidKey entityToAddAsEntityWithDefaultGuidKey = entityToAdd as IEntityWithDefaultGuidKey;
+                if (entityToAddAsEntityWithDefaultGuidKey != null && entityToAddAsEntityWithDefaultGuidKey.Id == Guid.Empty)
+                    entityToAddAsEntityWithDefaultGuidKey.Id = Guid.NewGuid();
+            }
 
             _dbContext.AddRange(entitiesToAdd);
 

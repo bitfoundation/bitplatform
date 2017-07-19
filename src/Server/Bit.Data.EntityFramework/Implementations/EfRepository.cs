@@ -36,6 +36,10 @@ namespace Bit.Data.EntityFramework.Implementations
             if (entityToAdd == null)
                 throw new ArgumentNullException(nameof(entityToAdd));
 
+            IEntityWithDefaultGuidKey entityToAddAsEntityWithDefaultGuidKey = entityToAdd as IEntityWithDefaultGuidKey;
+            if (entityToAddAsEntityWithDefaultGuidKey != null && entityToAddAsEntityWithDefaultGuidKey.Id == Guid.Empty)
+                entityToAddAsEntityWithDefaultGuidKey.Id = Guid.NewGuid();
+
             _set.Add(entityToAdd);
 
             await SaveChangesAsync(cancellationToken);
@@ -47,6 +51,13 @@ namespace Bit.Data.EntityFramework.Implementations
         {
             if (entitiesToAdd == null)
                 throw new ArgumentNullException(nameof(entitiesToAdd));
+
+            foreach (IEntity entityToAdd in entitiesToAdd)
+            {
+                IEntityWithDefaultGuidKey entityToAddAsEntityWithDefaultGuidKey = entityToAdd as IEntityWithDefaultGuidKey;
+                if (entityToAddAsEntityWithDefaultGuidKey != null && entityToAddAsEntityWithDefaultGuidKey.Id == Guid.Empty)
+                    entityToAddAsEntityWithDefaultGuidKey.Id = Guid.NewGuid();
+            }
 
             _set.AddRange(entitiesToAdd);
 
@@ -148,6 +159,10 @@ namespace Bit.Data.EntityFramework.Implementations
             if (entityToAdd == null)
                 throw new ArgumentNullException(nameof(entityToAdd));
 
+            IEntityWithDefaultGuidKey entityToAddAsEntityWithDefaultGuidKey = entityToAdd as IEntityWithDefaultGuidKey;
+            if (entityToAddAsEntityWithDefaultGuidKey != null && entityToAddAsEntityWithDefaultGuidKey.Id == Guid.Empty)
+                entityToAddAsEntityWithDefaultGuidKey.Id = Guid.NewGuid();
+
             _set.Add(entityToAdd);
 
             SaveChanges();
@@ -159,6 +174,13 @@ namespace Bit.Data.EntityFramework.Implementations
         {
             if (entitiesToAdd == null)
                 throw new ArgumentNullException(nameof(entitiesToAdd));
+
+            foreach (IEntity entityToAdd in entitiesToAdd)
+            {
+                IEntityWithDefaultGuidKey entityToAddAsEntityWithDefaultGuidKey = entityToAdd as IEntityWithDefaultGuidKey;
+                if (entityToAddAsEntityWithDefaultGuidKey != null && entityToAddAsEntityWithDefaultGuidKey.Id == Guid.Empty)
+                    entityToAddAsEntityWithDefaultGuidKey.Id = Guid.NewGuid();
+            }
 
             _set.AddRange(entitiesToAdd);
 
