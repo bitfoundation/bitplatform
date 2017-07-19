@@ -1,7 +1,6 @@
 ﻿rad on init
 rad grid detail template
 Parent/Child based routing
-Login form
 Header
 Menu
 Background Job Worker

@@ -12,12 +12,19 @@
 
         public constructor( @Inject("MessageReceiver") public messageReceiver: IMessageReceiver,
             @Inject("$mdSidenav") public $mdSidenav: ng.material.ISidenavService,
-            @Inject("SecurityService") public securityService: ISecurityService) {
+            @Inject("SecurityService") public securityService: ISecurityService,
+            @Inject("EntityContextProvider") public entityContextProvider: IEntityContextProvider) {
             super();
         }
 
+        public user: BitChangeSetManager.Dto.UserDto;
+
         @Command()
         public async $onInit(): Promise<void> {
+
+            let context = await this.entityContextProvider.getContext<BitChangeSetManagerContext>("BitChangeSetManager");
+            this.user = await context.users.getCurrentUser();
+
             await this.messageReceiver.start();
         }
 

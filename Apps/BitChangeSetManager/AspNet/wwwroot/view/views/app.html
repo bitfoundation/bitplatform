@@ -13,15 +13,15 @@
         <div flex layout-align="end center" layout="row">
             <md-menu>
                 <md-button class="md-primary" ng-click="$mdMenu.open($event)">
-                    User
-                    <img class="header-avator" src="api/user/get-current-user-avatar/" />
+                    {{::vm.user.UserName}}
+                    <img class="header-avator" src="api/users-avatars/get-current-user-avatar/" />
                 </md-button>
                 <md-menu-content width="4">
                     <md-menu-item>
                         <md-button>
                             <div flex layout="row" layout-align="start">
                                 <md-icon>face</md-icon>
-                                <span>My profile</span>
+                                <span>{{::"ProfileSettings" | translate}}</span>
                             </div>
                         </md-button>
                     </md-menu-item>
@@ -30,7 +30,7 @@
                         <md-button ng-click="vm.logout()">
                             <div flex layout="row" layout-align="start">
                                 <md-icon>directions_walk</md-icon>
-                                <span>Log out</span>
+                                <span>{{::"Logout" | translate}}</span>
                             </div>
                         </md-button>
                     </md-menu-item>

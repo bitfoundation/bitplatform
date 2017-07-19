@@ -20,7 +20,7 @@ namespace BitChangeSetManager.Api
         public IUserInformationProvider UserInformationProvider { get; set; }
 
         [HttpGet]
-        [Route("user/get-current-user-avatar")]
+        [Route("users-avatars/get-current-user-avatar")]
         public async Task<HttpResponseMessage> GetUserAvatar(CancellationToken cancellationToken)
         {
             Guid currentUserId = Guid.Parse(UserInformationProvider.GetCurrentUserId());
