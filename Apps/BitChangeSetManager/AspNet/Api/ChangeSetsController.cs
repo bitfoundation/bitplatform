@@ -11,7 +11,7 @@ using Bit.OData.ODataControllers;
 
 namespace BitChangeSetManager.Api
 {
-    public class ChangeSetsController : DefaultDtoSetController<ChangeSetDto, ChangeSet>
+    public class ChangeSetsController : BitChangeSetManagerDtoSetController<ChangeSetDto, ChangeSet>
     {
         private readonly IChangeSetRepository _changeSetsRepository;
         private readonly IMessageSender _messageSender;

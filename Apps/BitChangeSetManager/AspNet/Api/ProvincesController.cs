@@ -4,11 +4,16 @@ using BitChangeSetManager.Model;
 
 namespace BitChangeSetManager.Api
 {
-    public class ProvincesController : DefaultReadOnlyDtoSetController<ProvinceDto, Province>
+    public class ProvincesController : BitChangeSetManagerDtoSetController<ProvinceDto, Province>
     {
         public ProvincesController(IBitChangeSetManagerRepository<Province> repository)
             : base(repository)
         {
+        }
+
+        protected override bool IsReadOnly()
+        {
+            return true;
         }
     }
 }
