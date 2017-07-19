@@ -176,12 +176,9 @@
     <Compile Include="Extensions\IDependencyManagerExtensions.cs" />
     <Compile Include="Implementations\EfCoreDbContextBase.cs" />
     <Compile Include="Implementations\EfCoreDataProviderSpecificMethodsProvider.cs" />
-    <Compile Include="Implementations\EfCoreEntityWithDefaultGuidKeyRepository.cs" />
-    <Compile Include="Implementations\EfCoreEntityWithDefaultKeyRepository.cs" />
     <Compile Include="Implementations\EfCoreRepository.cs" />
     <Compile Include="Implementations\InMemoryDbContextObjectsProvider.cs" />
     <Compile Include="Implementations\SqlDbContextObjectsProvider.cs" />
-    <Compile Include="Implementations\EfCoreWhereByKeyBuilder.cs" />
     <Compile Include="Properties\AssemblyContainer.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

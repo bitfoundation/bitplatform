@@ -58,6 +58,7 @@
     <Compile Include="Dtos\ClientLogDto.cs" />
     <Compile Include="Dtos\JobInfoDto.cs" />
     <Compile Include="Implementations\DefaultDtoModelMapperConfiguration.cs" />
+    <Compile Include="Implementations\DtoMetadataWorkspace.cs" />
     <Compile Include="Properties\AssemblyContainer.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

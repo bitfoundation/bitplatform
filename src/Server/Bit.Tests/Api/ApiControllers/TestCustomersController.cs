@@ -13,7 +13,7 @@ namespace Bit.Tests.Api.ApiControllers
 
         }
 
-        public TestCustomersController(IEntityWithDefaultGuidKeyRepository<TestCustomer> testCustomersRepository)
+        public TestCustomersController(IRepository<TestCustomer> testCustomersRepository)
             : base(testCustomersRepository)
         {
 

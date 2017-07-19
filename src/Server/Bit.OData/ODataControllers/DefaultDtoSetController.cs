@@ -14,7 +14,7 @@ namespace Bit.OData.ODataControllers
         }
 #endif
 
-        public DefaultDtoSetController(IEntityWithDefaultGuidKeyRepository<TModel> repository)
+        public DefaultDtoSetController(IRepository<TModel> repository)
             : base(repository)
         {
 

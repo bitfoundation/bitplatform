@@ -45,8 +45,6 @@
     <Compile Include="Extensions\IDependencyManagerExtensions.cs" />
     <Compile Include="Implementations\EfDbContextBase.cs" />
     <Compile Include="Implementations\EfDataProviderSpecificMethodsProvider.cs" />
-    <Compile Include="Implementations\EfEntityWithDefaultGuidKeyRepository.cs" />
-    <Compile Include="Implementations\EfEntityWithDefaultKeyRepository.cs" />
     <Compile Include="Implementations\EfRepository.cs" />
     <Compile Include="Properties\AssemblyContainer.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

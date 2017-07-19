@@ -20,5 +20,7 @@ namespace Bit.Data.Contracts
         IQueryable<T> Take<T>(IQueryable<T> source, int count);
 
         IQueryable<T> Skip<T>(IQueryable<T> source, int count);
+
+        IQueryable<T> ApplyWhereByKeys<T>(IQueryable<T> source, params object[] keys);
     }
 }

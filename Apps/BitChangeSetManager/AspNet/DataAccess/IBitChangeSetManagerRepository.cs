@@ -3,8 +3,8 @@ using Bit.Model.Contracts;
 
 namespace BitChangeSetManager.DataAccess
 {
-    public interface IBitChangeSetManagerRepository<TEntity> : IEntityWithDefaultGuidKeyRepository<TEntity>
-        where TEntity : class, IEntityWithDefaultGuidKey
+    public interface IBitChangeSetManagerRepository<TEntity> : IRepository<TEntity>
+        where TEntity : class, IEntity
     {
     }
 }

@@ -65,5 +65,9 @@ namespace Bit.Data.Contracts
         Task SaveChangesAsync(CancellationToken cancellationToken);
 
         void SaveChanges();
+
+        Task<TEntity> GetByIdAsync(params object[] ids);
+
+        TEntity GetById(params object[] ids);
     }
 }

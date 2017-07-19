@@ -23,7 +23,7 @@ namespace BitChangeSetManager.Api.Implementations
 
         public override async Task OnConnected(MessagesHub hub)
         {
-            User user = await _usersRepository.GetByIdAsync(Guid.Parse(_userInformationProvider.GetCurrentUserId()), default(CancellationToken));
+            User user = await _usersRepository.GetByIdAsync(Guid.Parse(_userInformationProvider.GetCurrentUserId()));
 
             await hub.Groups.Add(hub.Context.ConnectionId, user.Culture.ToString());
 

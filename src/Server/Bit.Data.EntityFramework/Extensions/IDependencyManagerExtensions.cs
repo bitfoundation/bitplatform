@@ -2,6 +2,7 @@
 using Bit.Data.Contracts;
 using Bit.Data.EntityFramework.Implementations;
 using System.Data.Entity;
+using Bit.Data.Implementations;
 
 namespace Bit.Core.Contracts
 {
@@ -15,6 +16,8 @@ namespace Bit.Core.Contracts
 
             dependencyManager.Register<TDbContext, TDbContext>(overwriteExciting: false);
             dependencyManager.Register<IDataProviderSpecificMethodsProvider, EfDataProviderSpecificMethodsProvider>(lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExciting: false);
+            dependencyManager.Register<EfDataProviderSpecificMethodsProvider, EfDataProviderSpecificMethodsProvider>(lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExciting: false);
+            dependencyManager.Register<IUnitOfWork, DefaultUnitOfWork>(lifeCycle: DependencyLifeCycle.InstancePerLifetimeScope, overwriteExciting: false);
 
             return dependencyManager;
         }

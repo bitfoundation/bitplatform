@@ -240,5 +240,19 @@ namespace Bit.Data.EntityFrameworkCore.Implementations
             _dbContext.ChangeTracker.DetectChanges();
             _dbContext.SaveChanges();
         }
+
+        public virtual async Task<TEntity> GetByIdAsync(params object[] ids)
+        {
+            return await EfDataProviderSpecificMethodsProvider.ApplyWhereByKeys((await GetAllAsync(CancellationToken.None)), ids)
+                .SingleAsync(CancellationToken.None);
+        }
+
+        public virtual TEntity GetById(params object[] ids)
+        {
+            return EfDataProviderSpecificMethodsProvider.ApplyWhereByKeys(GetAll(), ids)
+                .Single();
+        }
+
+        public EfCoreDataProviderSpecificMethodsProvider EfDataProviderSpecificMethodsProvider { get; set; }
     }
 }

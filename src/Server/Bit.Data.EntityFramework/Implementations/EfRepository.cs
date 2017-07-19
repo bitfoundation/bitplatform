@@ -1,13 +1,13 @@
-﻿using System;
+﻿using Bit.Data.Contracts;
+using Bit.Model.Contracts;
+using System;
 using System.Collections.Generic;
+using System.Data.Entity;
+using System.Data.Entity.Infrastructure;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Data.Entity;
-using System.Data.Entity.Infrastructure;
-using Bit.Data.Contracts;
-using Bit.Model.Contracts;
 
 namespace Bit.Data.EntityFramework.Implementations
 {
@@ -255,5 +255,19 @@ namespace Bit.Data.EntityFramework.Implementations
             _dbContext.ChangeTracker.DetectChanges();
             _dbContext.SaveChanges();
         }
+
+        public virtual async Task<TEntity> GetByIdAsync(params object[] keys)
+        {
+            return await EfDataProviderSpecificMethodsProvider.ApplyWhereByKeys((await GetAllAsync(CancellationToken.None)), keys)
+                .SingleAsync(CancellationToken.None);
+        }
+
+        public virtual TEntity GetById(params object[] keys)
+        {
+            return EfDataProviderSpecificMethodsProvider.ApplyWhereByKeys(GetAll(), keys)
+                .Single();
+        }
+
+        public EfDataProviderSpecificMethodsProvider EfDataProviderSpecificMethodsProvider { get; set; }
     }
 }

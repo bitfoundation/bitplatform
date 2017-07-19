@@ -43,16 +43,14 @@
   <ItemGroup>
     <Compile Include="Contracts\IDataProviderSpecificMethodsProvider.cs" />
     <Compile Include="Contracts\IDbConnectionProvider.cs" />
-    <Compile Include="Contracts\IWhereByKeyBuilder.cs" />
-    <Compile Include="Contracts\IEntityWithDefaultGuidKeyRepository.cs" />
-    <Compile Include="Contracts\IEntityWithDefaultKeyRepository.cs" />
     <Compile Include="Contracts\IRepository.cs" />
+    <Compile Include="Contracts\IUnitOfWork.cs" />
     <Compile Include="DefaultDtoModelMapper.cs" />
     <Compile Include="DefaultDbConnectionProvider.cs" />
     <Compile Include="Extensions\IDataReaderExtensions.cs" />
     <Compile Include="Extensions\IDependencyManagerExtensions.cs" />
-    <Compile Include="Extensions\IQueryableExtensions.cs" />
-    <Compile Include="Extensions\IWhereByKeyBuildersExtensions.cs" />
+    <Compile Include="Implementations\DefaultDataProviderSpecificMethodsProvider.cs" />
+    <Compile Include="Implementations\DefaultUnitOfWork.cs" />
     <Compile Include="Properties\AssemblyContainer.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

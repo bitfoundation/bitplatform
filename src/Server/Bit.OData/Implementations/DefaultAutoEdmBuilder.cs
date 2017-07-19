@@ -11,6 +11,7 @@ using System.Web.OData.Query;
 using Bit.Model.Contracts;
 using Bit.OData.Contracts;
 using Bit.OData.ODataControllers;
+using Bit.Model.Implementations;
 
 namespace Bit.OData.Implementations
 {
@@ -66,7 +67,7 @@ namespace Bit.OData.Implementations
             var controllersWithDto = controllers
                 .Select(c => new
                 {
-                    DtoType = GetFinalDtoType(c.BaseType?.GetGenericArguments().ExtendedSingleOrDefault($"Finding dto in {c.Name}", t => IsDto(t.GetTypeInfo())).GetTypeInfo()),
+                    DtoType = DtoMetadataWorkspace.Current.GetFinalDtoType(c.BaseType?.GetGenericArguments().ExtendedSingleOrDefault($"Finding dto in {c.Name}", t => DtoMetadataWorkspace.Current.IsDto(t.GetTypeInfo())).GetTypeInfo()),
                     Controller = c
                 })
                 .Where(c => c.DtoType != null)
@@ -195,9 +196,9 @@ namespace Bit.OData.Implementations
                             isCollection = true;
                         }
 
-                        if (IsDto(type))
+                        if (DtoMetadataWorkspace.Current.IsDto(type))
                         {
-                            type = GetFinalDtoType(type);
+                            type = DtoMetadataWorkspace.Current.GetFinalDtoType(type);
 
                             if (isCollection == true)
                             {
@@ -244,30 +245,12 @@ namespace Bit.OData.Implementations
             }
         }
 
-        public virtual bool IsDto(TypeInfo type)
-        {
-            return type.IsClass && type.GetInterface(nameof(IDto)) != null;
-        }
-
-        public virtual TypeInfo GetFinalDtoType(TypeInfo type)
-        {
-            if (type.IsGenericParameter && type.GetGenericParameterConstraints().Any())
-            {
-                Type finalDtoType = type.GetGenericParameterConstraints().ExtendedSingleOrDefault($"Finding dto of {type.Name}", t => IsDto(t.GetTypeInfo()));
-                if (finalDtoType != null)
-                    return finalDtoType.GetTypeInfo();
-                return null;
-            }
-            else
-                return type;
-        }
-
         public virtual TypeInfo GetBaseType(TypeInfo dtoType)
         {
             if (dtoType == null)
                 throw new ArgumentNullException(nameof(dtoType));
 
-            if (IsDto(dtoType.BaseType.GetTypeInfo()))
+            if (DtoMetadataWorkspace.Current.IsDto(dtoType.BaseType.GetTypeInfo()))
                 return dtoType.BaseType.GetTypeInfo();
             else
                 return null;

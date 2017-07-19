@@ -482,7 +482,6 @@
     <Compile Include="Core\Contracts\IValueChecker.cs" />
     <Compile Include="Data\Implementations\InitialTestDataConfiguration.cs" />
     <Compile Include="Data\Implementations\TestDbContext.cs" />
-    <Compile Include="Data\Implementations\TestEfEntityWithDefaultGuidKeyRepository.cs" />
     <Compile Include="Data\Implementations\TestEfRepository.cs" />
     <Compile Include="HtmlClient\BrowserTests\Caching\HtmlClientCachingTests.cs" />
     <Compile Include="HtmlClient\ThirdPartyLibrariesTests\JayDataContextTests\CrudTests.cs" />

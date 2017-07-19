@@ -12,6 +12,7 @@ using System.Web.OData.Extensions;
 using System.Web.OData.Query;
 using Bit.Data.Contracts;
 using Microsoft.Owin;
+using Bit.Data.Implementations;
 
 namespace Bit.OData.ActionFilters
 {
@@ -61,6 +62,9 @@ namespace Bit.OData.ActionFilters
                         objContent.Value = typeof(ODataEnableQueryAttribute).GetMethod(nameof(ToQueryable)).MakeGenericMethod(queryElementType).Invoke(this, new object[] { objContent.Value });
                     }
 
+                    if (dataProviderSpecificMethodsProvider == null)
+                        dataProviderSpecificMethodsProvider = DefaultDataProviderSpecificMethodsProvider.Current;
+
                     HttpRequestMessageProperties requestODataProps = actionExecutedContext.Request.ODataProperties();
                     ODataQueryContext currentOdataQueryContext = new ODataQueryContext(actionExecutedContext.Request.GetModel(), queryElementType, requestODataProps.Path);
                     ODataQueryOptions currentOdataQueryOptions = new ODataQueryOptions(currentOdataQueryContext, actionExecutedContext.Request);
@@ -72,13 +76,8 @@ namespace Bit.OData.ActionFilters
                         PageSize = this.DefaultPageSize
                     };
 
-                    if (dataProviderSpecificMethodsProvider != null)
-                    {
-                        if (dataProviderSpecificMethodsProvider.SupportsConstantParameterization() == true)
-                            globalODataQuerySettings.EnableConstantParameterization = true;
-                        else
-                            globalODataQuerySettings.EnableConstantParameterization = false;
-                    }
+                    if (dataProviderSpecificMethodsProvider.SupportsConstantParameterization() == true)
+                        globalODataQuerySettings.EnableConstantParameterization = true;
 
                     ValidateQuery(actionExecutedContext.Request, currentOdataQueryOptions);
 
@@ -103,12 +102,7 @@ namespace Bit.OData.ActionFilters
 
                     if (currentOdataQueryOptions.Count?.Value == true && takeCount.HasValue == true)
                     {
-                        long count = default(long);
-                        if (dataProviderSpecificMethodsProvider != null)
-                            count = await (Task<long>)typeof(ODataEnableQueryAttribute).GetMethod(nameof(GetCountAsync)).MakeGenericMethod(queryElementType).Invoke(this, new object[] { objContent.Value, dataProviderSpecificMethodsProvider, cancellationToken });
-                        else
-                            count = (long)typeof(ODataEnableQueryAttribute).GetMethod(nameof(GetCount)).MakeGenericMethod(queryElementType).Invoke(this, new object[] { objContent.Value });
-
+                        long count = await (Task<long>)typeof(ODataEnableQueryAttribute).GetMethod(nameof(GetCountAsync)).MakeGenericMethod(queryElementType).Invoke(this, new object[] { objContent.Value, dataProviderSpecificMethodsProvider, cancellationToken });
                         actionExecutedContext.Request.Properties["System.Web.OData.TotalCountFunc"] = new Func<long>(() => count);
                     }
 
@@ -119,11 +113,7 @@ namespace Bit.OData.ActionFilters
                         TypeInfo newReturnTypeAfterApplyingSelect = objContent.Value.GetType().GetTypeInfo();
                         queryElementType = newReturnTypeAfterApplyingSelect.GetGenericArguments().ExtendedSingle($"Get generic arguments of ${newReturnTypeAfterApplyingSelect.Name}").GetTypeInfo();
                     }
-
-                    if (dataProviderSpecificMethodsProvider != null)
                         objContent.Value = await (Task<object>)typeof(ODataEnableQueryAttribute).GetMethod(nameof(ToListAsync)).MakeGenericMethod(queryElementType).Invoke(this, new object[] { objContent.Value, dataProviderSpecificMethodsProvider, takeCount, skipCount, cancellationToken });
-                    else
-                        objContent.Value = typeof(ODataEnableQueryAttribute).GetMethod(nameof(ToList)).MakeGenericMethod(queryElementType).Invoke(this, new object[] { objContent.Value, takeCount, skipCount });
 
                     if (currentOdataQueryOptions.Count?.Value == true && takeCount.HasValue == false)
                     {
@@ -136,7 +126,6 @@ namespace Bit.OData.ActionFilters
         }
 
         public virtual IDataProviderSpecificMethodsProvider FindDataProviderSpecificMethodsProvider<T>(IQueryable<T> query, IEnumerable<IDataProviderSpecificMethodsProvider> dataProviderSpecificMethodsProviders)
-            where T : class
         {
             if (query == null)
                 throw new ArgumentNullException(nameof(query));
@@ -148,34 +137,7 @@ namespace Bit.OData.ActionFilters
                 .FirstOrDefault(dataProviderSpecificMethodsProvider => dataProviderSpecificMethodsProvider.SupportsQueryable<T>(query));
         }
 
-        public virtual long GetCount<T>(IQueryable<T> query)
-        {
-            if (query == null)
-                throw new ArgumentNullException(nameof(query));
-
-            return query.Count();
-        }
-
-        public virtual List<T> ToList<T>(IQueryable<T> query, int? takeCount, int? skipCount)
-        {
-            if (query == null)
-                throw new ArgumentNullException(nameof(query));
-
-            if (skipCount.HasValue == true)
-            {
-                query = query.Skip(skipCount.Value);
-            }
-
-            if (takeCount.HasValue == true)
-            {
-                query = query.Take(takeCount.Value);
-            }
-
-            return query.ToList();
-        }
-
         public virtual async Task<long> GetCountAsync<T>(IQueryable<T> query, IDataProviderSpecificMethodsProvider dataProviderSpecificMethodsProvider, CancellationToken cancellationToken)
-            where T : class
         {
             if (query == null)
                 throw new ArgumentNullException(nameof(query));
@@ -187,7 +149,6 @@ namespace Bit.OData.ActionFilters
         }
 
         public virtual async Task<object> ToListAsync<T>(IQueryable<T> query, IDataProviderSpecificMethodsProvider dataProviderSpecificMethodsProvider, int? takeCount, int? skipCount, CancellationToken cancellationToken)
-            where T : class
         {
             if (query == null)
                 throw new ArgumentNullException(nameof(query));
