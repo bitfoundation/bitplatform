@@ -150,7 +150,6 @@ namespace BitVSExtensionV1
             }
 
             _outputPane.Clear();
-            _shouldGeneratedProjects = _workspace.CurrentSolution.Projects.ToList();
 
             DefaultBitConfigProvider configProvider = new DefaultBitConfigProvider();
 
@@ -162,12 +161,12 @@ namespace BitVSExtensionV1
 
                 foreach (BitCodeGeneratorMapping mapping in config.BitCodeGeneratorConfigs.BitCodeGeneratorMappings)
                 {
-                    if (!_workspace.CurrentSolution.Projects.Any(p => p.Name == mapping.DestinationProject.Name))
+                    if (!_workspace.CurrentSolution.Projects.Any(p => p.Name == mapping.DestinationProject.Name && p.Language == LanguageNames.CSharp))
                         throw new InvalidOperationException($"No project found named {mapping.DestinationProject.Name}");
 
                     foreach (BitTools.Core.Model.ProjectInfo proj in mapping.SourceProjects)
                     {
-                        if (!_workspace.CurrentSolution.Projects.Any(p => p.Name == proj.Name))
+                        if (!_workspace.CurrentSolution.Projects.Any(p => p.Name == proj.Name && p.Language == LanguageNames.CSharp))
                             throw new InvalidOperationException($"No project found named {proj.Name}");
                     }
                 }
@@ -187,16 +186,8 @@ namespace BitVSExtensionV1
                 LogException("Init html elements failed.", ex);
             }
 
-            try
-            {
-                await GenerateCodes();
-            }
-            catch (Exception ex)
-            {
-                LogException("Generate all failed.", ex);
-            }
-
             _shouldGeneratedProjects = new List<Project> { };
+            generateCodesForTheFirstTimeExecuted = false;
         }
 
         private bool CurrentSolutionHasBitConfigV1JsonFile()
@@ -305,8 +296,15 @@ namespace BitVSExtensionV1
             AppDomain.CurrentDomain.AssemblyResolve += ResolveEventHandler;
         }
 
-        private void _buildEvents_OnBuildBegin(vsBuildScope scope, vsBuildAction action)
+        private async void _buildEvents_OnBuildBegin(vsBuildScope scope, vsBuildAction action)
         {
+            if (generateCodesForTheFirstTimeExecuted == false)
+            {
+                generateCodesForTheFirstTimeExecuted = true;
+                _shouldGeneratedProjects = _workspace.CurrentSolution.Projects.Where(p => p.Language == LanguageNames.CSharp).ToList();
+                await GenerateCodes();
+            }
+
             _shouldGeneratedProjects.Clear();
         }
 
@@ -315,13 +313,10 @@ namespace BitVSExtensionV1
             if (!CurrentSolutionHasBitConfigV1JsonFile())
                 return;
 
-            Project proj = _workspace.CurrentSolution.Projects
-                                .ExtendedSingle($"Lookin for {project} in [ {(string.Join(",", _workspace.CurrentSolution.Projects.Select(prj => prj.Name)))} ]", prj => prj.Language == "C#" && Path.GetFileName(prj.FilePath) == project.Split('\\').Last());
+            Project proj = _workspace.CurrentSolution.Projects.Where(p => p.Language == LanguageNames.CSharp)
+                                .ExtendedSingle($"Lookin for {project} in [ {(string.Join(",", _workspace.CurrentSolution.Projects.Select(prj => prj.Name)))} ]", prj => Path.GetFileName(prj.FilePath) == project.Split('\\').Last());
 
-            if (proj != null)
-            {
-                _shouldGeneratedProjects.Add(proj);
-            }
+            _shouldGeneratedProjects.Add(proj);
         }
 
         private async void _buildEvents_OnBuildDone(vsBuildScope scope, vsBuildAction action)
@@ -409,5 +404,7 @@ namespace BitVSExtensionV1
         private DTE2 _applicationObject;
 
         private IVsStatusbar _statusBar;
+
+        private bool generateCodesForTheFirstTimeExecuted = false;
     }
 }
