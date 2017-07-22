@@ -12,8 +12,8 @@ namespace Bit.Tests.Data.Implementations
 
         }
 
-        protected TestEfRepository()
-            : base()
+        protected TestEfRepository() 
+            : base(null)
         {
 
         }

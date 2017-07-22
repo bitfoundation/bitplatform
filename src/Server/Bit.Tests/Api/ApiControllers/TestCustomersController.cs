@@ -7,8 +7,8 @@ namespace Bit.Tests.Api.ApiControllers
 {
     public class TestCustomersController : DefaultDtoSetController<TestCustomerDto, TestCustomer>
     {
-        protected TestCustomersController()
-            : base()
+        protected TestCustomersController() 
+            : base(null)
         {
 
         }
