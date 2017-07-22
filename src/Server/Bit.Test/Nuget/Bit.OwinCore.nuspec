@@ -22,6 +22,7 @@
       <dependency id="NWebsec.AspNetCore.Middleware" version="1.1.0" />
       <dependency id="Microsoft.AspNetCore.StaticFiles" version="1.1.2" />
       <dependency id="System.Security.Cryptography.ProtectedData" version="4.3.0" />
+      <dependency id="IdentityServer3.AccessTokenValidation.AspNetCore" version="1.0.2" />
     </dependencies>
   </metadata>
   <files>
