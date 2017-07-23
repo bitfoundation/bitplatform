@@ -75,6 +75,11 @@ namespace Bit.Core.Models
             return Security?.SSOServerUrl ?? $"{GetHostVirtualPath()}core";
         }
 
+        public virtual string GetSsoIssuerName()
+        {
+            return Security?.IssuerName ?? AppInfo.Name;
+        }
+
         public virtual bool HasConfig(string configKey)
         {
             if (configKey == null)
@@ -113,6 +118,8 @@ namespace Bit.Core.Models
     public class EnvironmentSecurity
     {
         public virtual string SSOServerUrl { get; set; }
+
+        public virtual string IssuerName { get; set; }
 
         public virtual string ClientSecret { get; set; }
 

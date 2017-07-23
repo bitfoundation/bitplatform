@@ -93,7 +93,7 @@ namespace Bit.IdentityServer
                     Factory = factory,
                     RequireSsl = requireSslConfigValue,
                     EnableWelcomePage = activeAppEnvironment.DebugMode == true,
-                    IssuerUri = activeAppEnvironment.GetSsoUrl(),
+                    IssuerUri = activeAppEnvironment.GetSsoIssuerName(),
                     CspOptions = new CspOptions
                     {
                         // Content security policy

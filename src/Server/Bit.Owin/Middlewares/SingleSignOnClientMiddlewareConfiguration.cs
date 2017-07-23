@@ -61,7 +61,7 @@ namespace Bit.Owin.Middlewares
                 SigningCertificate = _certificateProvider.GetSingleSignOnCertificate(),
                 BackchannelHttpHandler = GetHttpClientHandler(nameof(IdentityServerBearerTokenAuthenticationOptions.BackchannelHttpHandler)),
                 IntrospectionHttpHandler = GetHttpClientHandler(nameof(IdentityServerBearerTokenAuthenticationOptions.IntrospectionHttpHandler)),
-                IssuerName = activeAppEnvironment.GetSsoUrl()
+                IssuerName = activeAppEnvironment.GetSsoIssuerName()
             };
 
             return authOptions;
