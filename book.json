@@ -7,8 +7,8 @@
         "-highlight",
         "github",
         "anchorjs",
-        "toggle-headers",
-        "alerts"
+        "alerts",
+        "ga"
     ],
     "pluginsConfig": {
         "disqus": {
@@ -25,6 +25,9 @@
             "styles": {
                 "website": "docs/styles/main.css"
             }
+        },
+        "ga": {
+            "token": "UA-103080720-1"
         }
     }
 }

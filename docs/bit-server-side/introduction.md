@@ -6,7 +6,8 @@ Your app can be hosted on [Traditional ASP.NET](https://www.asp.net/) or [ASP.NE
 
 By the abstraction we provide to you, your develop no matter you choose ASP.NET Core, ASP.NET Traditional or ASP.NET Core with .NET Core. You develop on ASP.NET Core the same way as you develop on ASP.NET Traditional. Only configurations between those platforms are different.
 
-> **[info] Our recommendation:**
+> **[success]Recommendation:**
+>
 > Choose ASP.NET Core with Full .NET Framework. You can host your app on Windows/Linux servers + You can use powerful libraries like Entity Framework Full \(6\). As .NET > Core becomes mature, you can upgrade your app to .NET Core easily.
 
 We've some C\# analyzers to detect your codes which are not compatible with ASP.NET Core \| .NET Core. You'll see something like this:
