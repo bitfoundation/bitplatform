@@ -7,7 +7,8 @@
         "-highlight",
         "github",
         "anchorjs",
-        "rss"
+        "toggle-headers",
+        "alerts"
     ],
     "pluginsConfig": {
         "disqus": {
@@ -24,20 +25,6 @@
             "styles": {
                 "website": "docs/styles/main.css"
             }
-        },
-        "rss": {
-            "title": "Bit Framework docs",
-            "description": "Rss for docs located in https://docs.bit-framework.com/",
-            "author": "Bit Foundation",
-            "site_url": "https://docs.bit-framework.com/",
-            "feed_url": "https://docs.bit-framework.com/rss",
-            "managingEditor": "ysmoradi@outlook.com (Yaser Moradi)",
-            "webMaster": "ysmoradi@outlook.com (Yaser Moradi)",
-            "categories": [
-                "C#",
-                "TypeScript",
-                "JavaScript"
-            ]
         }
     }
 }
