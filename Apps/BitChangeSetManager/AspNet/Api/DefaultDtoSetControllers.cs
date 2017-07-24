@@ -4,8 +4,10 @@ using Bit.Owin.Exceptions;
 using BitChangeSetManager.DataAccess;
 using BitChangeSetManager.Metadata;
 using System;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Web.Http;
 using System.Web.OData;
 
 namespace BitChangeSetManager.Api
@@ -22,6 +24,7 @@ namespace BitChangeSetManager.Api
             _repository = repository;
         }
 
+        [Create]
         public override async Task<TDto> Create(TDto dto, CancellationToken cancellationToken)
         {
             if (IsReadOnly())
@@ -30,6 +33,7 @@ namespace BitChangeSetManager.Api
                 return await base.Create(dto, cancellationToken);
         }
 
+        [PartialUpdate]
         public override async Task<TDto> PartialUpdate(Guid key, Delta<TDto> modifiedDtoDelta, CancellationToken cancellationToken)
         {
             if (IsReadOnly())
@@ -38,12 +42,34 @@ namespace BitChangeSetManager.Api
                 return await base.PartialUpdate(key, modifiedDtoDelta, cancellationToken);
         }
 
+        [Delete]
         public override async Task Delete(Guid key, CancellationToken cancellationToken)
         {
             if (IsReadOnly())
                 throw new AppException(BitChangeSetManagerMetadata.DeleteIsDeined);
             else
                 await base.Delete(key, cancellationToken);
+        }
+
+        [Update]
+        public override Task<TDto> Update(Guid key, TDto dto, CancellationToken cancellationToken)
+        {
+            if (IsReadOnly())
+                throw new AppException(BitChangeSetManagerMetadata.DeleteIsDeined);
+            else
+                return base.Update(key, dto, cancellationToken);
+        }
+
+        [Get]
+        public override Task<SingleResult<TDto>> Get(Guid key, CancellationToken cancellationToken)
+        {
+            return base.Get(key, cancellationToken);
+        }
+
+        [Get]
+        public override Task<IQueryable<TDto>> GetAll(CancellationToken cancellationToken)
+        {
+            return base.GetAll(cancellationToken);
         }
 
         protected virtual bool IsReadOnly()
