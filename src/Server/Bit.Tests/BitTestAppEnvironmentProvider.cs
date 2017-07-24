@@ -41,7 +41,7 @@ namespace Bit.Tests
                     Security = new EnvironmentSecurity
                     {
                         Scopes = new[] { "openid", "profile", "user_info" },
-                        ClientName = "Test",
+                        ClientId = "Test",
                         ClientSecret = "secret"
                     },
                     Cultures = new[]

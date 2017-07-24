@@ -48,7 +48,7 @@ namespace Bit.Owin.Middlewares
 
             IdentityServerBearerTokenAuthenticationOptions authOptions = new IdentityServerBearerTokenAuthenticationOptions
             {
-                ClientId = activeAppEnvironment.Security.ClientName,
+                ClientId = activeAppEnvironment.Security.ClientId,
                 Authority = activeAppEnvironment.GetSsoUrl(),
                 DelayLoadMetadata = true,
                 RequiredScopes = activeAppEnvironment.Security.Scopes,

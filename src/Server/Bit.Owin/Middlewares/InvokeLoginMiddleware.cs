@@ -24,7 +24,7 @@ namespace Bit.Owin.Middlewares
             AppEnvironment activeAppEnvironment = appEnvironmentProvider.GetActiveAppEnvironment();
 
             string redirect_uri_host = $"{context.Request.Scheme}://{context.Request.Host.Value}{activeAppEnvironment.GetHostVirtualPath()}SignIn";
-            string redirect_uri = $"{activeAppEnvironment.GetSsoUrl()}/connect/authorize?scope={string.Join(" ", activeAppEnvironment.Security.Scopes)}&client_id={activeAppEnvironment.Security.ClientName}&redirect_uri={redirect_uri_host}&response_type=id_token token";
+            string redirect_uri = $"{activeAppEnvironment.GetSsoUrl()}/connect/authorize?scope={string.Join(" ", activeAppEnvironment.Security.Scopes)}&client_id={activeAppEnvironment.Security.ClientId}&redirect_uri={redirect_uri_host}&response_type=id_token token";
 
             string pathname = context.Request.Path.Value;
 
