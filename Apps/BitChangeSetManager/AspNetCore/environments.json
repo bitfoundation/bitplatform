@@ -10,7 +10,7 @@
       "DefaultCulture": "EnUs"
     },
     "Security": {
-      "ClientName": "BitChangeSetManager",
+      "ClientId": "BitChangeSetManager",
       "ClientSecret": "secret"
     },
     "Cultures": [
