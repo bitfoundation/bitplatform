@@ -9,7 +9,8 @@
         "anchorjs",
         "alerts",
         "ga",
-        "meta-single"
+        "meta-single",
+        "sitemap"
     ],
     "pluginsConfig": {
         "disqus": {
@@ -33,6 +34,9 @@
         "meta-single": {
             "name": "google-site-verification",
             "content": "FT-uebPTuNBnwygf2UqGPg6F9PJ4fetE-f-gfpkig20"
-        }
+        },
+        "sitemap": {
+            "hostname": "http://docs.bit-framework.com/"
+        }
     }
 }
