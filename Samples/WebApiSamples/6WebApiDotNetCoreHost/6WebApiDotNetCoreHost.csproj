@@ -5,15 +5,15 @@
     <RootNamespace>WebApiDotNetCoreHost</RootNamespace>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="Bit.Core" Version="0.0.3.9" />
-    <PackageReference Include="Bit.Model" Version="0.0.3.9" />
-    <PackageReference Include="Bit.WebApi" Version="0.0.3.9" />
+    <PackageReference Include="Bit.Core" Version="0.0.4.2" />
+    <PackageReference Include="Bit.Model" Version="0.0.4.2" />
+    <PackageReference Include="Bit.WebApi" Version="0.0.4.2" />
     <PackageReference Include="Microsoft.AspNet.WebApi.Core" Version="5.2.3" />
     <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="4.0.4.403061554" />
     <PackageReference Include="IdentityModel" Version="1.13.1" />
     <PackageReference Include="Microsoft.IdentityModel.Protocol.Extensions" Version="1.0.4.403061554" />
-    <PackageReference Include="Bit.Owin" Version="0.0.3.9" />
-    <PackageReference Include="Bit.OwinCore" Version="0.0.3.9" />
+    <PackageReference Include="Bit.Owin" Version="0.0.4.2" />
+    <PackageReference Include="Bit.OwinCore" Version="0.0.4.2" />
     <PackageReference Include="Autofac.Extensions.DependencyInjection" Version="4.1.0" />
     <PackageReference Include="Microsoft.AspNetCore" Version="2.0.0-preview2-final" />
     <PackageReference Include="Microsoft.AspNetCore.Owin" Version="2.0.0-preview2-final" />

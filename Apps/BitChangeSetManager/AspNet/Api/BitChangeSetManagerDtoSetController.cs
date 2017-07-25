@@ -60,18 +60,6 @@ namespace BitChangeSetManager.Api
                 return base.Update(key, dto, cancellationToken);
         }
 
-        [Get]
-        public override Task<SingleResult<TDto>> Get(Guid key, CancellationToken cancellationToken)
-        {
-            return base.Get(key, cancellationToken);
-        }
-
-        [Get]
-        public override Task<IQueryable<TDto>> GetAll(CancellationToken cancellationToken)
-        {
-            return base.GetAll(cancellationToken);
-        }
-
         protected virtual bool IsReadOnly()
         {
             return false;

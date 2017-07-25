@@ -12,10 +12,11 @@ namespace Bit.Tests.Data.Implementations
 
         }
 
-        protected TestEfRepository() 
-            : base(null)
+#if DEBUG
+        protected TestEfRepository()
         {
 
         }
+#endif
     }
 }
