@@ -27,7 +27,7 @@ There are several classes there. Program and ValuesController are get copied fro
 
 For now, lets ignore the third class: "AppStartup".
 
-Press F5 ،you'll see ["value1","value2"] at the end of console's output.
+Press F5, you'll see ["value1","value2"] at the end of console's output.
 
 So, what's AppStartup class anyway? It configures your app. You'll understand its parts while you're reading docs, but for now let's focus on following codes of that only:
 
