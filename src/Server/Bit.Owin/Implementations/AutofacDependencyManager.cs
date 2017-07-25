@@ -3,8 +3,6 @@ using System.Collections.Generic;
 using System.Reflection;
 using Autofac;
 using Autofac.Builder;
-using Autofac.Integration.SignalR;
-using Autofac.Integration.WebApi;
 using Bit.Core.Contracts;
 using Bit.Owin.Contracts;
 
@@ -186,20 +184,13 @@ namespace Bit.Owin.Implementations
             return RegisterInstance(obj, typeof(TContract).GetTypeInfo(), overwriteExciting, name);
         }
 
-        public virtual IDependencyManager RegisterHubs(params Assembly[] assemblies)
+        public virtual IDependencyManager RegisterAssemblyTypes(Assembly[] assemblies, Predicate<TypeInfo> predicate = null)
         {
-            GetContainerBuidler().RegisterHubs(assemblies).SingleInstance();
+            GetContainerBuidler().RegisterAssemblyTypes(assemblies)
+                .Where(t => predicate == null ? true : predicate(t.GetTypeInfo()));
 
             return this;
         }
-
-        public virtual IDependencyManager RegisterApiControllers(params Assembly[] assemblies)
-        {
-            GetContainerBuidler().RegisterApiControllers(assemblies).PropertiesAutowired();
-
-            return this;
-        }
-
         public IDependencyManager RegisterGeneric(TypeInfo contractType, TypeInfo serviceType, DependencyLifeCycle lifeCycle)
         {
             IRegistrationBuilder<object, ReflectionActivatorData, DynamicRegistrationStyle> registration = GetContainerBuidler().RegisterGeneric(serviceType).PropertiesAutowired().As(contractType);

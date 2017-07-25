@@ -9,6 +9,7 @@ using Bit.WebApi.ActionFilters;
 using Bit.WebApi.Contracts;
 using Bit.WebApi.Implementations;
 using Bit.Owin.Contracts;
+using System.Web.Http.Controllers;
 
 namespace Bit.Core.Contracts
 {
@@ -23,7 +24,7 @@ namespace Bit.Core.Contracts
 
             dependencyManager.RegisterInstance<IApiAssembliesProvider>(new DefaultWebApiAssembliesProvider(controllersAssemblies), overwriteExciting: false);
 
-            dependencyManager.RegisterApiControllers(controllersAssemblies);
+            dependencyManager.RegisterAssemblyTypes(controllersAssemblies, t => typeof(IHttpController).GetTypeInfo().IsAssignableFrom(t) && t.Name.EndsWith("Controller", StringComparison.Ordinal));
 
             dependencyManager.Register<System.Web.Http.Dispatcher.IAssembliesResolver, DefaultWebApiAssembliesResolver>(lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExciting: false);
             dependencyManager.Register<System.Web.Http.Tracing.ITraceWriter, DefaultWebApiTraceWritter>(lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExciting: false);

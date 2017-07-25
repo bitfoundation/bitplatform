@@ -36,9 +36,7 @@ namespace Bit.Core.Contracts
 
         IDependencyManager BuildContainer();
 
-        IDependencyManager RegisterHubs(params Assembly[] assemblies);
-
-        IDependencyManager RegisterApiControllers(params Assembly[] assemblies);
+        IDependencyManager RegisterAssemblyTypes(Assembly[] assemblies, Predicate<TypeInfo> predicate = null);
 
         bool IsInited();
 
