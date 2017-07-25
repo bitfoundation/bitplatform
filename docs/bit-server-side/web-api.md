@@ -25,9 +25,9 @@ Then open Samples\WebApiSamples\WebApiSamples.sln, then go to 1SimpleWebApi proj
 
 There are several classes there. Program and ValuesController are get copied from [this microsoft docs article](https://docs.microsoft.com/en-us/aspnet/web-api/overview/hosting-aspnet-web-api/use-owin-to-self-host-web-api). It's a good idea to read that article first.
 
-For now, lets ingore the third class: "AppStartup".
+For now, lets ignore the third class: "AppStartup".
 
-Press F5 and you'll see ["value1","value2"] at the end of console's output.
+Press F5 ،you'll see ["value1","value2"] at the end of console's output.
 
 So, what's AppStartup class anyway? It configures your app. You'll understand its parts while you're reading docs, but for now let's focus on following codes of that only:
 
@@ -57,7 +57,7 @@ Note that security samples can be found under [Bit Identity Server](/bit-identit
 
 ### Web API - Swagger configuration sample
 
-Swagger is the World's Most Popular API Tooling. Using this sample you can findout how to customize web api in bit.
+Swagger is the World's Most Popular API Tooling. by Using this sample you can findout how to customize web api in bit.
 
 Read [first part of "Swagger and ASP.NET Web API"](http://wmpratt.com/swagger-and-asp-net-web-api-part-1/). We follow the second part in [Bit Identity Server](/bit-identity-server.md).
 
@@ -88,7 +88,7 @@ We use #DefaultPathProvider.Current.GetCurrentAppPath()# instead of #System.AppD
 ```csharp
 c.RootUrl(req => new Uri(req.RequestUri, req.GetOwinContext().Request.PathBase.Value /* /api */).ToString());
 ```
-As you see in article, you open swgger ui by opening http://localhost:51609/swagger/ but in bit's sample you open http://localhost:9000/api/swagger/. You open /swagger under /api. This is a magic of owin/asp.net core's request branching. That improves your app performance a lot, because instead of passing all requests (even signalr and file requests) to swagger, you pass /api requests to swagger which is a expected behavior. That line of codes is telling where is swagger is hosted as it is not aware of that magic.
+As you see in article, you open swgger ui by opening http://localhost:51609/swagger/ but in bit's sample you open http://localhost:9000/api/swagger/. You open /swagger under /api. This is a magic of owin/asp.net core's request branching. That improves your app performance a lot, because instead of passing all requests (even signalr and file requests) to swagger, you pass /api requests to swagger which is a expected behavior. That line of codes is telling where swagger is hosted as it is not aware of that magic.
 
 So run the second sample and you're good to go (-:
 
@@ -97,7 +97,7 @@ So run the second sample and you're good to go (-:
 There is a [question](https://stackoverflow.com/questions/10320232/how-to-accept-a-file-post) on stackoverflow.com about web api file upload.
 The important thing you've to notice is "You don't have to use System.Web.dll classes in bit world, even when you're hosting your app on traditional asp.net
 
-By removing usages of that dll, you're going to make sure that your code works well on asp.net core too whenever you migrate your code (which can be done very easily using bit). So drop using #HttpContext.Current and all other members of System.Web.dll#
+By removing usages of that dll, you're going to make sure that your code works well on asp.net core either whenever you migrate your code (which can be done very easily using bit). So drop using #HttpContext.Current and all other members of System.Web.dll#
 
 Web API Attribute routing works fine in bit project, but instead of [Route("api/file-manager/upload")] or [RoutePrefix("api/file-manager")], you've to write [Route("file-manager/upload")] or [RoutePrefix("file-manager)], this means you should not write /api in your attribute routings. That's a side effect of branching, which improves you're app performance in turn.
 
