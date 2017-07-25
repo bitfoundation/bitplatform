@@ -71,7 +71,7 @@ namespace Bit.Data
             {
                 TDbConnection newDbConnection = new TDbConnection();
                 newDbConnection.ConnectionString = connectionString;
-                await newDbConnection.OpenAsync(cancellationToken);
+                await newDbConnection.OpenAsync(cancellationToken).ConfigureAwait(false);
                 DbTransaction transaction = newDbConnection.BeginTransaction(IsolationLevel.ReadCommitted);
                 _connections.Add(connectionString, new DbConnectionAndTransactionPair(newDbConnection, transaction, rollbackOnScopeStatusFailure));
             }

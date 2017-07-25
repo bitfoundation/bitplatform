@@ -50,7 +50,7 @@ namespace Bit.Owin.Metadata.Views
                 }
             });
 
-            return await base.BuildMetadata();
+            return await base.BuildMetadata().ConfigureAwait(false);
         }
     }
 }

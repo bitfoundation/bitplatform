@@ -41,7 +41,7 @@ namespace Bit.Data.EntityFrameworkCore.Implementations
 
             _dbContext.Add(entityToAdd);
 
-            await SaveChangesAsync(cancellationToken);
+            await SaveChangesAsync(cancellationToken).ConfigureAwait(false);
 
             return entityToAdd;
         }
@@ -60,7 +60,7 @@ namespace Bit.Data.EntityFrameworkCore.Implementations
 
             _dbContext.AddRange(entitiesToAdd);
 
-            await SaveChangesAsync(cancellationToken);
+            await SaveChangesAsync(cancellationToken).ConfigureAwait(false);
 
             return entitiesToAdd;
         }
@@ -72,7 +72,7 @@ namespace Bit.Data.EntityFrameworkCore.Implementations
 
             _dbContext.Update(entityToUpdate);
 
-            await SaveChangesAsync(cancellationToken);
+            await SaveChangesAsync(cancellationToken).ConfigureAwait(false);
 
             return entityToUpdate;
         }
@@ -85,12 +85,12 @@ namespace Bit.Data.EntityFrameworkCore.Implementations
             if (entityToDelete is IArchivableEntity)
             {
                 ((IArchivableEntity)entityToDelete).IsArchived = true;
-                return await UpdateAsync(entityToDelete, cancellationToken);
+                return await UpdateAsync(entityToDelete, cancellationToken).ConfigureAwait(false);
             }
             else
             {
                 _dbContext.Remove(entityToDelete);
-                await SaveChangesAsync(cancellationToken);
+                await SaveChangesAsync(cancellationToken).ConfigureAwait(false);
                 return entityToDelete;
             }
         }
@@ -254,7 +254,7 @@ namespace Bit.Data.EntityFrameworkCore.Implementations
         public virtual async Task SaveChangesAsync(CancellationToken cancellationToken)
         {
             _dbContext.ChangeTracker.DetectChanges();
-            await _dbContext.SaveChangesAsync(cancellationToken);
+            await _dbContext.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
         }
 
         public virtual void SaveChanges()
@@ -265,8 +265,8 @@ namespace Bit.Data.EntityFrameworkCore.Implementations
 
         public virtual async Task<TEntity> GetByIdAsync(params object[] ids)
         {
-            return await EfDataProviderSpecificMethodsProvider.ApplyWhereByKeys((await GetAllAsync(CancellationToken.None)), ids)
-                .SingleAsync(CancellationToken.None);
+            return await EfDataProviderSpecificMethodsProvider.ApplyWhereByKeys((await GetAllAsync(CancellationToken.None).ConfigureAwait(false)), ids)
+                .SingleAsync(CancellationToken.None).ConfigureAwait(false);
         }
 
         public virtual TEntity GetById(params object[] ids)

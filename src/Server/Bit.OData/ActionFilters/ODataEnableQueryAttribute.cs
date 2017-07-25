@@ -159,7 +159,7 @@ namespace Bit.OData.ActionFilters
             if (dataProviderSpecificMethodsProvider == null)
                 throw new ArgumentNullException(nameof(dataProviderSpecificMethodsProvider));
 
-            return await dataProviderSpecificMethodsProvider.LongCountAsync(query, cancellationToken);
+            return await dataProviderSpecificMethodsProvider.LongCountAsync(query, cancellationToken).ConfigureAwait(false);
         }
 
         public virtual async Task<object> ToListAsync<T>(IQueryable<T> query, IDataProviderSpecificMethodsProvider dataProviderSpecificMethodsProvider, int? takeCount, int? skipCount, CancellationToken cancellationToken)
@@ -180,7 +180,7 @@ namespace Bit.OData.ActionFilters
                 query = dataProviderSpecificMethodsProvider.Take(query, takeCount.Value);
             }
 
-            return await dataProviderSpecificMethodsProvider.ToListAsync(query, cancellationToken);
+            return await dataProviderSpecificMethodsProvider.ToListAsync(query, cancellationToken).ConfigureAwait(false);
         }
 
         public virtual async Task<object> FirstAsync<T>(IQueryable<T> query, IDataProviderSpecificMethodsProvider dataProviderSpecificMethodsProvider, CancellationToken cancellationToken)
@@ -191,7 +191,7 @@ namespace Bit.OData.ActionFilters
             if (dataProviderSpecificMethodsProvider == null)
                 throw new ArgumentNullException(nameof(dataProviderSpecificMethodsProvider));
 
-            object result = await dataProviderSpecificMethodsProvider.FirstOrDefaultAsync(query, cancellationToken);
+            object result = await dataProviderSpecificMethodsProvider.FirstOrDefaultAsync(query, cancellationToken).ConfigureAwait(false);
 
             if (result == null)
                 throw new ResourceNotFoundException();

@@ -42,7 +42,7 @@ namespace Bit.Owin.Metadata.Dtos
 
             });
 
-            return await base.BuildMetadata();
+            return await base.BuildMetadata().ConfigureAwait(false);
         }
     }
 }

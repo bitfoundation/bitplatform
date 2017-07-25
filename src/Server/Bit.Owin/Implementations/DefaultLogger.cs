@@ -67,7 +67,7 @@ namespace Bit.Owin.Implementations
             {
                 try
                 {
-                    await logStore.SaveLogAsync(logEntry);
+                    await logStore.SaveLogAsync(logEntry).ConfigureAwait(false);
                 }
                 catch (Exception exp)
                 {
@@ -105,7 +105,7 @@ namespace Bit.Owin.Implementations
 
             LogEntry logEntry = CreateLogEntry(message, severity);
 
-            await SaveLogEntryUsingAllLogStoresAsync(logEntry);
+            await SaveLogEntryUsingAllLogStoresAsync(logEntry).ConfigureAwait(false);
         }
 
         public virtual void LogWarning(string message)
@@ -129,7 +129,7 @@ namespace Bit.Owin.Implementations
 
             LogEntry logEntry = CreateLogEntry(message, severity);
 
-            await SaveLogEntryUsingAllLogStoresAsync(logEntry);
+            await SaveLogEntryUsingAllLogStoresAsync(logEntry).ConfigureAwait(false);
         }
 
         public virtual void LogFatal(string message)
@@ -153,7 +153,7 @@ namespace Bit.Owin.Implementations
 
             LogEntry logEntry = CreateLogEntry(message, severity);
 
-            await SaveLogEntryUsingAllLogStoresAsync(logEntry);
+            await SaveLogEntryUsingAllLogStoresAsync(logEntry).ConfigureAwait(false);
         }
 
         public virtual void LogInformation(string message)
@@ -187,7 +187,7 @@ namespace Bit.Owin.Implementations
             AddLogData("ExceptionAdditionalMessage", message);
             AddLogData("ExceptionType", exp.GetType().FullName);
 
-            await SaveLogEntryUsingAllLogStoresAsync(logEntry);
+            await SaveLogEntryUsingAllLogStoresAsync(logEntry).ConfigureAwait(false);
         }
 
         public virtual void LogException(Exception exp, string message)

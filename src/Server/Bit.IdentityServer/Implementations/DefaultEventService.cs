@@ -35,7 +35,7 @@ namespace Bit.IdentityServer.Implementations
                     logger.AddLogData("IdentityServerEventId", evt.Id);
                     logger.AddLogData(nameof(Event<object>.Name), evt.Name);
 
-                    await logger.LogFatalAsync(evt.Message);
+                    await logger.LogFatalAsync(evt.Message).ConfigureAwait(false);
                 }
             }
         }

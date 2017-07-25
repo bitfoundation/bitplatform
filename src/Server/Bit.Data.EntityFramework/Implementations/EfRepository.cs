@@ -42,7 +42,7 @@ namespace Bit.Data.EntityFramework.Implementations
 
             _set.Add(entityToAdd);
 
-            await SaveChangesAsync(cancellationToken);
+            await SaveChangesAsync(cancellationToken).ConfigureAwait(false);
 
             return entityToAdd;
         }
@@ -61,7 +61,7 @@ namespace Bit.Data.EntityFramework.Implementations
 
             _set.AddRange(entitiesToAdd);
 
-            await SaveChangesAsync(cancellationToken);
+            await SaveChangesAsync(cancellationToken).ConfigureAwait(false);
 
             return entitiesToAdd;
         }
@@ -74,7 +74,7 @@ namespace Bit.Data.EntityFramework.Implementations
             _set.Attach(entityToUpdate);
             _dbContext.Entry(entityToUpdate).State = EntityState.Modified;
 
-            await SaveChangesAsync(cancellationToken);
+            await SaveChangesAsync(cancellationToken).ConfigureAwait(false);
 
             return entityToUpdate;
         }
@@ -87,13 +87,13 @@ namespace Bit.Data.EntityFramework.Implementations
             if (entityToDelete is IArchivableEntity)
             {
                 ((IArchivableEntity)entityToDelete).IsArchived = true;
-                return await UpdateAsync(entityToDelete, cancellationToken);
+                return await UpdateAsync(entityToDelete, cancellationToken).ConfigureAwait(false);
             }
             else
             {
                 _set.Attach(entityToDelete);
                 _dbContext.Entry(entityToDelete).State = EntityState.Deleted;
-                await SaveChangesAsync(cancellationToken);
+                await SaveChangesAsync(cancellationToken).ConfigureAwait(false);
                 return entityToDelete;
             }
         }
@@ -241,7 +241,7 @@ namespace Bit.Data.EntityFramework.Implementations
             DbCollectionEntry<TEntity, TProperty> collection = _dbContext.Entry(entity).Collection(childs);
 
             if (forceReload == true || collection.IsLoaded == false)
-                await collection.LoadAsync(cancellationToken);
+                await collection.LoadAsync(cancellationToken).ConfigureAwait(false);
         }
 
         public virtual void LoadCollection<TProperty>(TEntity entity, Expression<Func<TEntity, ICollection<TProperty>>> childs, bool forceReload = false) where TProperty : class
@@ -256,7 +256,7 @@ namespace Bit.Data.EntityFramework.Implementations
         {
             DbReferenceEntry<TEntity, TProperty> reference = _dbContext.Entry(entity).Reference(member);
             if (forceReload == true || reference.IsLoaded == false)
-                await reference.LoadAsync(cancellationToken);
+                await reference.LoadAsync(cancellationToken).ConfigureAwait(false);
         }
 
         public virtual void LoadReference<TProperty>(TEntity entity, Expression<Func<TEntity, TProperty>> member, bool forceReload = false) where TProperty : class
@@ -269,7 +269,7 @@ namespace Bit.Data.EntityFramework.Implementations
         public virtual async Task SaveChangesAsync(CancellationToken cancellationToken)
         {
             _dbContext.ChangeTracker.DetectChanges();
-            await _dbContext.SaveChangesAsync(cancellationToken);
+            await _dbContext.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
         }
 
         public virtual void SaveChanges()
@@ -280,8 +280,8 @@ namespace Bit.Data.EntityFramework.Implementations
 
         public virtual async Task<TEntity> GetByIdAsync(params object[] keys)
         {
-            return await EfDataProviderSpecificMethodsProvider.ApplyWhereByKeys((await GetAllAsync(CancellationToken.None)), keys)
-                .SingleAsync(CancellationToken.None);
+            return await EfDataProviderSpecificMethodsProvider.ApplyWhereByKeys((await GetAllAsync(CancellationToken.None).ConfigureAwait(false)), keys)
+                .SingleAsync(CancellationToken.None).ConfigureAwait(false);
         }
 
         public virtual TEntity GetById(params object[] keys)

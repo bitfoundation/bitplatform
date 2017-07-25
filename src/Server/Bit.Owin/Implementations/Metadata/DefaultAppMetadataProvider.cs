@@ -41,7 +41,7 @@ namespace Bit.Owin.Implementations.Metadata
 
                 foreach (IMetadataBuilder metadataBuilder in _metadataBuilders)
                 {
-                    allMetadata.AddRange(await metadataBuilder.BuildMetadata());
+                    allMetadata.AddRange(await metadataBuilder.BuildMetadata().ConfigureAwait(false));
                 }
 
                 AppEnvironment activeAppEnvironment = _appEnvironmentProvider.GetActiveAppEnvironment();

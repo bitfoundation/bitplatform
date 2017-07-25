@@ -41,7 +41,7 @@ namespace Bit.IdentityServer.Implementations
                                 <body>ClientPermissions >> Not Implemented</body>
                             </html>";
 
-            return await ReturnHtmlAsync(model, content, CancellationToken.None);
+            return await ReturnHtmlAsync(model, content, CancellationToken.None).ConfigureAwait(false);
         }
 
         public virtual async Task<Stream> Consent(ConsentViewModel model, ValidatedAuthorizeRequest authorizeRequest)
@@ -54,7 +54,7 @@ namespace Bit.IdentityServer.Implementations
                                 <body>Consent >> Not Implemented</body>
                             </html>";
 
-            return await ReturnHtmlAsync(model, content, CancellationToken.None);
+            return await ReturnHtmlAsync(model, content, CancellationToken.None).ConfigureAwait(false);
         }
 
         public virtual async Task<Stream> Error(ErrorViewModel model)
@@ -67,7 +67,7 @@ namespace Bit.IdentityServer.Implementations
                                 <body>{model.ErrorMessage} <br /> RequestId: {model.RequestId}</body>
                             </html>";
 
-            return await ReturnHtmlAsync(model, content, CancellationToken.None);
+            return await ReturnHtmlAsync(model, content, CancellationToken.None).ConfigureAwait(false);
         }
 
         public virtual async Task<Stream> LoggedOut(LoggedOutViewModel model, SignOutMessage message)
@@ -97,7 +97,7 @@ namespace Bit.IdentityServer.Implementations
                             </html>";
             }
 
-            return await ReturnHtmlAsync(model, content, CancellationToken.None);
+            return await ReturnHtmlAsync(model, content, CancellationToken.None).ConfigureAwait(false);
         }
 
         public virtual async Task<Stream> Login(LoginViewModel model, SignInMessage message)
@@ -137,10 +137,10 @@ namespace Bit.IdentityServer.Implementations
                 ReturnUrl = message.ReturnUrl == null ? "" : new Uri(message.ReturnUrl).ParseQueryString()["redirect_uri"]
             }, Formatting.None, jsonSerSettings);
 
-            string loginPageHtml = (await _ssoHtmlPageProvider.GetSsoPageAsync(CancellationToken.None))
+            string loginPageHtml = (await _ssoHtmlPageProvider.GetSsoPageAsync(CancellationToken.None).ConfigureAwait(false))
                 .Replace("{model}", Microsoft.Security.Application.Encoder.HtmlEncode(json));
 
-            return await ReturnHtmlAsync(model, loginPageHtml, CancellationToken.None);
+            return await ReturnHtmlAsync(model, loginPageHtml, CancellationToken.None).ConfigureAwait(false);
         }
 
         private async Task<Stream> ReturnHtmlAsync(CommonViewModel model, string html, CancellationToken cancellationToken)
@@ -149,9 +149,9 @@ namespace Bit.IdentityServer.Implementations
 
             StreamWriter writter = new StreamWriter(viewStream);
 
-            await writter.WriteAsync(html);
+            await writter.WriteAsync(html).ConfigureAwait(false);
 
-            await writter.FlushAsync();
+            await writter.FlushAsync().ConfigureAwait(false);
 
             viewStream.Seek(0, SeekOrigin.Begin);
 
@@ -174,7 +174,7 @@ namespace Bit.IdentityServer.Implementations
                                 </body>
                             </html>";
 
-            return await ReturnHtmlAsync(model, content, CancellationToken.None);
+            return await ReturnHtmlAsync(model, content, CancellationToken.None).ConfigureAwait(false);
         }
     }
 }

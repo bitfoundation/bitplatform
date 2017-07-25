@@ -31,14 +31,14 @@ namespace Bit.IdentityServer.Implementations
         public override async Task<bool> IsPostLogoutRedirectUriValidAsync(string requestedUri, Client client)
         {
             return _activeAppEnvironment.DebugMode == true ||
-                (await base.IsPostLogoutRedirectUriValidAsync(requestedUri, client)) ||
+                (await base.IsPostLogoutRedirectUriValidAsync(requestedUri, client).ConfigureAwait(false)) ||
                 client.PostLogoutRedirectUris.Any(rUri => Regex.IsMatch(requestedUri, rUri, RegexOptions.Compiled | RegexOptions.IgnoreCase | RegexOptions.IgnorePatternWhitespace | RegexOptions.CultureInvariant));
         }
 
         public override async Task<bool> IsRedirectUriValidAsync(string requestedUri, Client client)
         {
             return _activeAppEnvironment.DebugMode == true ||
-                (await base.IsRedirectUriValidAsync(requestedUri, client)) ||
+                (await base.IsRedirectUriValidAsync(requestedUri, client).ConfigureAwait(false)) ||
                 client.RedirectUris.Any(rUri => Regex.IsMatch(requestedUri, rUri, RegexOptions.Compiled | RegexOptions.IgnoreCase | RegexOptions.IgnorePatternWhitespace | RegexOptions.CultureInvariant));
         }
     }

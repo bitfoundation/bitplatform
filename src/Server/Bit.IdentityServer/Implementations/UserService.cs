@@ -18,7 +18,7 @@ namespace Bit.IdentityServer.Implementations
         {
             try
             {
-                string userId = await GetUserIdByLocalAuthenticationContextAsync(context);
+                string userId = await GetUserIdByLocalAuthenticationContextAsync(context).ConfigureAwait(false);
 
                 if (context.AuthenticateResult == null)
                 {
@@ -46,7 +46,7 @@ namespace Bit.IdentityServer.Implementations
                     throw;
             }
 
-            await base.AuthenticateLocalAsync(context);
+            await base.AuthenticateLocalAsync(context).ConfigureAwait(false);
         }
 
         public override async sealed Task GetProfileDataAsync(ProfileDataRequestContext context)
@@ -64,7 +64,7 @@ namespace Bit.IdentityServer.Implementations
 
             context.IssuedClaims = claims;
 
-            await base.GetProfileDataAsync(context);
+            await base.GetProfileDataAsync(context).ConfigureAwait(false);
         }
 
         public abstract Task<bool> UserIsActiveAsync(IsActiveContext context, string userId);
@@ -73,7 +73,7 @@ namespace Bit.IdentityServer.Implementations
         {
             try
             {
-                context.IsActive = await UserIsActiveAsync(context, context.Subject.Identity.Name);
+                context.IsActive = await UserIsActiveAsync(context, context.Subject.Identity.Name).ConfigureAwait(false);
             }
             catch
             {
@@ -84,7 +84,7 @@ namespace Bit.IdentityServer.Implementations
                 context.IsActive = true; // Temporary fix: To prevent redirect loop on logout.
             }
 
-            await base.IsActiveAsync(context);
+            await base.IsActiveAsync(context).ConfigureAwait(false);
         }
     }
 }

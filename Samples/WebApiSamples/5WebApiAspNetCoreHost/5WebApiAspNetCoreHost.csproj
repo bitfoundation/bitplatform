@@ -12,8 +12,8 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Autofac.Extensions.DependencyInjection" Version="4.1.0" />
-    <PackageReference Include="Bit.OwinCore" Version="0.0.3.8" />
-    <PackageReference Include="Bit.WebApi" Version="0.0.3.8" />
+    <PackageReference Include="Bit.OwinCore" Version="0.0.3.9" />
+    <PackageReference Include="Bit.WebApi" Version="0.0.3.9" />
     <PackageReference Include="Microsoft.AspNetCore" Version="1.1.2" />
     <PackageReference Include="Microsoft.AspNetCore.Owin" Version="1.1.2" />
     <PackageReference Include="Swashbuckle.Core" Version="5.6.0" />

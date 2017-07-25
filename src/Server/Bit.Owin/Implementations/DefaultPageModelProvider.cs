@@ -93,7 +93,7 @@ namespace Bit.Owin.Implementations
                 AppName = activeAppEnvironment.AppInfo.Name
             };
 
-            UserSetting userSetting = await _usersSettingsProvider.GetCurrentUserSettingAsync(cancellationToken);
+            UserSetting userSetting = await _usersSettingsProvider.GetCurrentUserSettingAsync(cancellationToken).ConfigureAwait(false);
 
             string theme = userSetting?.Theme ?? activeAppEnvironment.AppInfo.DefaultTheme;
 

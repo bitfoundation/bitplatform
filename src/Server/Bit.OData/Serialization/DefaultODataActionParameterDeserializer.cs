@@ -47,7 +47,7 @@ namespace Bit.OData.Serialization
 
             ITimeZoneManager timeZoneManager = dependencyResolver.Resolve<ITimeZoneManager>();
 
-            using (StreamReader requestStreamReader = new StreamReader(readContext.Request.Content.ReadAsStreamAsync().Result))
+            using (StreamReader requestStreamReader = new StreamReader(readContext.Request.Content.ReadAsStreamAsync().GetAwaiter().GetResult()))
             {
                 using (JsonTextReader requestJsonReader = new JsonTextReader(requestStreamReader))
                 {

@@ -56,7 +56,7 @@ namespace Bit.Owin.Metadata
                 }
             });
 
-            return await base.BuildMetadata();
+            return await base.BuildMetadata().ConfigureAwait(false);
         }
     }
 }
