@@ -1,9 +1,5 @@
 ﻿module Bit.Components.Identity {
 
-    export interface LoginScope extends ng.IScope {
-        loginModel: Models.Identity.ISsoModel;
-    }
-
     @ComponentDependency({
         name: "login", template: `
 
@@ -28,7 +24,7 @@
         font-weight: bold;
         padding: 3px;
         text-align: center;
-        margin-top: 0
+        margin-top: 0;
     }
 
     .login-error-message {

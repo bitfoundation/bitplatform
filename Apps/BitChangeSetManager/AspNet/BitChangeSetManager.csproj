@@ -412,7 +412,7 @@
     <Compile Include="Api\ChangeSetSeveritiesController.cs" />
     <Compile Include="Api\Implementations\BitUserSettingProvider.cs" />
     <Compile Include="Api\CitiesController.cs" />
-    <Compile Include="Api\DefaultDtoSetControllers.cs" />
+    <Compile Include="Api\BitChangeSetManagerDtoSetController.cs" />
     <Compile Include="Api\DeliveriesController.cs" />
     <Compile Include="Api\ChangeSetsController.cs" />
     <Compile Include="Api\CustomersController.cs" />
