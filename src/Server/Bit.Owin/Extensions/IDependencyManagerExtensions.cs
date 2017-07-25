@@ -65,6 +65,8 @@ namespace Bit.Core.Contracts
             dependencyManager.RegisterInstance(DefaultJsonContentFormatter.Current, overwriteExciting: false);
             dependencyManager.RegisterInstance(DefaultPathProvider.Current, overwriteExciting: false);
 
+            dependencyManager.Register<IScopeStatusManager, DefaultScopeStatusManager>(overwriteExciting: false);
+
             return dependencyManager;
         }
 
@@ -148,7 +150,6 @@ namespace Bit.Core.Contracts
 
         public static IDependencyManager RegisterDefaultOwinApp(this IDependencyManager dependencyManager)
         {
-            dependencyManager.Register<IScopeStatusManager, DefaultScopeStatusManager>(overwriteExciting: false);
             dependencyManager.Register<Microsoft.Owin.Logging.ILoggerFactory, DefaultOwinLoggerFactory>(overwriteExciting: false);
             dependencyManager.Register<IUserInformationProvider, DefaultUserInformationProvider>(overwriteExciting: false);
             dependencyManager.Register<IExceptionToHttpErrorMapper, DefaultExceptionToHttpErrorMapper>(lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExciting: false);

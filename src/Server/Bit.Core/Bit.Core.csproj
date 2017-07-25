@@ -61,6 +61,7 @@
     <Compile Include="Implementations\DefaultDateTimeProvider.cs" />
     <Compile Include="Implementations\DefaultIraninCodeValidator.cs" />
     <Compile Include="Extensions\PlatformUtilities.cs" />
+    <Compile Include="Implementations\DefaultScopeStatusManager.cs" />
     <Compile Include="Models\AppEnvironment.cs" />
     <Compile Include="Models\LogData.cs" />
     <Compile Include="Models\LogEntry.cs" />
