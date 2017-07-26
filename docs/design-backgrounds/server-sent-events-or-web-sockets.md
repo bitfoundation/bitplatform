@@ -1,14 +1,14 @@
 # Server sent events or web socktets?
 
-There are several modern libraries to call rest api in client side code such as [fetch](https://developer.mozilla.org/en/docs/Web/API/Fetch_API), .NET Http Client etc.
+There are several modern libraries to call rest api in client side code such as [fetch](https://developer.mozilla.org/en/docs/Web/API/Fetch_API), ".NET Http Client" etc.
 
 We also have "OData $metadata" and "Swagger metadata" that allow us to generate our client side code we need to call our rest api very easily. For example [NSwag](https://github.com/RSuter/NSwag) can generate your codes.
 
 These libraries are extensible, with caching, resiliency and security built-in.
 
-Server side frameworks such as [Web API](https://www.asp.net/web-api), [Service Stack](http://docs.servicestack.net/api-design) are also mature, powerful, extensible with lots of features you need to develop modern apps. They've routing, dependency injection, logging, security etc.
+Server side frameworks such as [Web API](https://www.asp.net/web-api) and [Service Stack](http://docs.servicestack.net/api-design) are also mature, powerful, extensible with lots of features you need to develop modern apps. They've routing, dependency injection, logging, security etc.
 
-We also use web sockets to push some data from server to client. But Web socket introduce several problems as we start to use that in our apps:
+We also use web sockets to push some data from server to client. But Web socket introduce several problems as we begin to use that in our apps:
 
 1- It opens one connection from server to client (the handy useful one), and one another from client to server. We almost have nothing to do with second connection (from client to server).But it uses our valuable resources such as memory etc with no value provided in turn. If we start to use that connection instead of our modern http clients, we lose everything provided by ASP.NET Web API, Service Stack, Swagger, OData, fetch, Http client, service worker etc.
 
@@ -16,7 +16,7 @@ We also use web sockets to push some data from server to client. But Web socket 
 
 3- When you create http compression policy, it won't be applied to your Web Sockets.
 
-While we're developing [Bit Framework](https://github.com/bit-foundation/bit-framework/), we add every best practice we know in its "default" configuration. As Bit Framework supports HTTP 2.0, you'll use only one connection from client to server that works with your favorite modern http client, and at server side you've web api that you already know. To push from server to client you'll use [Server Sent Events](https://developer.mozilla.org/en-US/docs/Web/API/Server-sent_events) instead of web sockets by default. Server Sent Events (SSE) is a HTTP thing, it supports http CORS policies, respects http compression policies and uses less resources.By Using Bit Framework's architecture you can provide services to more users with the same hardware and budget.
+While we're developing [Bit Framework](https://github.com/bit-foundation/bit-framework/), we add every best practice we know in its "default" configuration. As Bit Framework supports HTTP 2.0, you'll use only one connection from client to server that works with your favorite modern http client, and at server side you've web api that you already know. To push from server to client you'll use [Server Sent Events](https://developer.mozilla.org/en-US/docs/Web/API/Server-sent_events) instead of web sockets by default. Server Sent Events (SSE) is a HTTP thing, it supports http CORS policies, respects http compression policies and uses less resources. By Using Bit Framework's architecture you can provide services to more users with the same hardware and budget.
 
 If you're not using Bit, you can use SSE on you're own. For example, in Signalr, start hub by follwoing code in client side:
 
