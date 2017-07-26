@@ -13,6 +13,27 @@ using System.Web.Http.Controllers;
 using System.Web.OData.Builder;
 using System.Web.OData.Query;
 
+namespace System.Reflection
+{
+    public static class TypeInfoExtensions
+    {
+        public static bool IsDtoController(this TypeInfo controllerType)
+        {
+            TypeInfo baseGenericType = (controllerType.BaseType?.GetTypeInfo()?.IsGenericType == true ? controllerType.BaseType?.GetTypeInfo()?.GetGenericTypeDefinition() : null)?.GetTypeInfo();
+
+            while (baseGenericType != null)
+            {
+                if (typeof(DtoController<>).GetTypeInfo().IsAssignableFrom(baseGenericType))
+                    return true;
+
+                baseGenericType = (baseGenericType.BaseType?.GetTypeInfo()?.IsGenericType == true ? baseGenericType.BaseType?.GetTypeInfo()?.GetGenericTypeDefinition() : null)?.GetTypeInfo();
+            }
+
+            return false;
+        }
+    }
+}
+
 namespace Bit.OData.Implementations
 {
     public class DefaultAutoEdmBuilderParameterInfo
@@ -43,20 +64,7 @@ namespace Bit.OData.Implementations
         {
             List<TypeInfo> controllers = assembly
                 .GetLoadableExportedTypes()
-                .Where(t =>
-                {
-                    TypeInfo baseGenericType = (t.BaseType?.GetTypeInfo()?.IsGenericType == true ? t.BaseType?.GetTypeInfo()?.GetGenericTypeDefinition() : null)?.GetTypeInfo();
-
-                    while (baseGenericType != null)
-                    {
-                        if (typeof(DtoController<>).GetTypeInfo().IsAssignableFrom(baseGenericType))
-                            return true;
-
-                        baseGenericType = (baseGenericType.BaseType?.GetTypeInfo()?.IsGenericType == true ? baseGenericType.BaseType?.GetTypeInfo()?.GetGenericTypeDefinition() : null)?.GetTypeInfo();
-                    }
-
-                    return false;
-                })
+                .Where(t => t.IsDtoController())
                 .ToList();
 
             AutoBuildEdmFromTypes(controllers, modelBuilder);
