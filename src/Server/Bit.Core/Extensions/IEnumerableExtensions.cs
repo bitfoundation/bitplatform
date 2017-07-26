@@ -18,9 +18,9 @@ namespace System.Linq
             {
                 return predicate == null ? source.SingleOrDefault() : source.SingleOrDefault(predicate);
             }
-            catch (Exception ex)
+            catch (InvalidOperationException ex)
             {
-                throw new Exception(message, ex);
+                throw new InvalidOperationException(message, ex);
             }
         }
 
@@ -36,9 +36,9 @@ namespace System.Linq
             {
                 return predicate == null ? source.Single() : source.Single(predicate);
             }
-            catch (Exception ex)
+            catch (InvalidOperationException ex)
             {
-                throw new Exception(message, ex);
+                throw new InvalidOperationException(message, ex);
             }
         }
     }
