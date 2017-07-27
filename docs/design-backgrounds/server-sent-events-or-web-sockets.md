@@ -29,3 +29,8 @@ By that code, signalr uses server sent events by default.
 ### Conclusion:
 
 Use Server Sent Events + HTTP 2.0 instead of Web Sockets.
+
+> **[info]Client Support:**
+>
+> Server sent events is supported across all C# clients, including WPF, Xamarin for android and iOS etc. 88.7% of browsers support SSE and for those with no support,
+> you can use [EventSource polyfill](https://github.com/amvtek/EventSource)
