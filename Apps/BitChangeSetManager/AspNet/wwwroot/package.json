@@ -22,7 +22,7 @@
     "@types/signalr": "^2.2.34"
   },
   "dependencies": {
-    "@bit/bit-framework": "0.4.9",
+    "@bit/bit-framework": "0.5.1",
     "@bit/jaydata": "^1.5.12",
     "@bit/jaydata-odatajs": "4.0.1",
     "angular": "1.6.5",
