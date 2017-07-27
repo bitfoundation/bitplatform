@@ -30,7 +30,8 @@
     "regenerator": "0.9.7",
     "core-js": "2.4.1",
     "whatwg-fetch": "2.0.3",
-    "@bit/encoder": "^1.0.0"
+    "@bit/encoder": "^1.0.0",
+    "event-source-polyfill": "0.0.9"
   },
   "dependencies": {
     "@bit/jaydata": "^1.5.12",

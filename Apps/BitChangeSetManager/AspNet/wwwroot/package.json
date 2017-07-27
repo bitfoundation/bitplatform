@@ -43,6 +43,7 @@
     "angular-messages": "1.6.5",
     "normalize-css": "2.3.1",
     "@bit/persian-date-picker": "0.4.9",
-    "@bit/persian-date": "0.1.9"
+    "@bit/persian-date": "0.1.9",
+    "event-source-polyfill": "0.0.9"
   }
 }

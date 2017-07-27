@@ -138,6 +138,14 @@
     });
 
     dependencyManager.registerFileDependency({
+        name: "event-source-polyfill",
+        path: "bit-framework/src/TypeScriptClient/Bit.TSClient.Core/node_modules/event-source-polyfill/eventsourc",
+        predicate: (appInfo) => {
+            return typeof (window["EventSource"]) == "undefined";
+        }
+    });
+
+    dependencyManager.registerFileDependency({
         name: "runtime",
         path: "bit-framework/src/TypeScriptClient/Bit.TSClient.Core/node_modules/regenerator-runtime/runtime"
     });

@@ -97,6 +97,14 @@ module BitChangeSetManager {
     });
 
     dependencyManager.registerFileDependency({
+        name: "event-source-polyfill",
+        path: "node_modules/event-source-polyfill/eventsource",
+        predicate: (appInfo) => {
+            return typeof (window["EventSource"]) == "undefined";
+        }
+    });
+
+    dependencyManager.registerFileDependency({
         name: "runtime",
         path: "node_modules/regenerator-runtime/runtime"
     });
