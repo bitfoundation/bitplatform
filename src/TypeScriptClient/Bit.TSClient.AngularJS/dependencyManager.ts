@@ -302,17 +302,14 @@
 
             const loadInitialFileDependecy = (nextFile: IFileDependency) => {
 
+                if (nextFile == null) {
+                    const app = this.resolveObject<Contracts.IAppStartup>("AppStartup");
+                    app.configuration();
+                    return;
+                }
+
                 if (this.dependencyShouldBeConsidered(nextFile) == false) {
-
-                    nextFile = files.shift();
-
-                    if (nextFile != null) {
-                        loadInitialFileDependecy(nextFile);
-                    } else {
-                        const app = this.resolveObject<Contracts.IAppStartup>("AppStartup");
-                        app.configuration();
-                    }
-
+                    loadInitialFileDependecy(files.shift());
                     return;
                 }
 
@@ -322,61 +319,49 @@
                     element = document.createElement("script") as HTMLScriptElement & HTMLLinkElement;
                     element.type = "text/javascript";
                     element.src = nextFile.path;
+                    element.async = false;
                 } else {
                     element = document.createElement("link") as HTMLScriptElement & HTMLLinkElement;
                     element.rel = "stylesheet";
                     element.type = "text/css";
                     element.href = nextFile.path;
+                    element.async = false;
                 }
 
                 nextFile.loadStatus = "IsBeingLoaded";
 
                 element.onload = (): void => {
 
+                    element.onload = null;
+
                     if (nextFile.onLoad != null)
                         nextFile.onLoad();
+
                     nextFile.loadStatus = "Loaded";
-                    nextFile = files.shift();
 
-                    if (nextFile != null) {
-                        loadInitialFileDependecy(nextFile);
-                    } else {
-                        const app = this.resolveObject<Contracts.IAppStartup>("AppStartup");
-                        app.configuration();
-                    }
-
+                    loadInitialFileDependecy(files.shift());
                 };
 
                 element.onerror = (e): void => {
 
+                    element.onload = null;
+
                     if (nextFile.onError != null)
                         nextFile.onError();
+
                     nextFile.loadStatus = "LoadError";
 
                     if (nextFile.continueOnError == false)
                         throw e;
 
-                    nextFile = files.shift();
-
-                    if (nextFile != null) {
-                        loadInitialFileDependecy(nextFile);
-                    } else {
-                        const app = this.resolveObject<Contracts.IAppStartup>("AppStartup");
-                        app.configuration();
-                    }
-
+                    loadInitialFileDependecy(files.shift());
                 };
 
                 document.head.appendChild(element);
-            };
+            }
 
-            if (files.length != 0) {
-                loadInitialFileDependecy(files.shift());
-            }
-            else {
-                const app = this.resolveObject<Contracts.IAppStartup>("AppStartup");
-                app.configuration();
-            }
+            loadInitialFileDependecy(files.shift());
+
         }
 
         public init(): void {
@@ -444,6 +429,7 @@
                         element = document.createElement("script");
                         (element as HTMLScriptElement).type = "text/javascript";
                         (element as HTMLScriptElement).src = fileDependency.path;
+                        (element as HTMLScriptElement).async = false;
                     } else {
                         element = document.createElement("link");
                         (element as HTMLLinkElement).rel = "stylesheet";
@@ -455,6 +441,8 @@
 
                     element.onload = (): void => {
 
+                        element.onload = null;
+
                         if (this.clientAppProfile.isDebugMode == true) {
                             console.trace(`${fileDependency.name} loaded`);
                         }
@@ -465,6 +453,9 @@
                     };
 
                     element.onerror = (err): void => {
+
+                        element.onerror = null;
+
                         fileDependency.loadStatus = "LoadError";
                         reject(err);
                     }
