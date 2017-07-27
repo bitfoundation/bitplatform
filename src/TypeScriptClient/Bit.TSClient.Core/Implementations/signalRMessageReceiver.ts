@@ -22,7 +22,7 @@
             await this.getInitPromise();
             await new Promise<void>((res, rej) => {
                 return $.connection.hub.start({
-                    transport: config.preferWebSockets == true ? ["webSockets", "serverSentEvents", "longPolling", "foreverFrame"] : ["serverSentEvents", "webSockets", "longPolling", "foreverFrame"]
+                    transport: config.preferWebSockets == true ? ["webSockets", "serverSentEvents"] : ["serverSentEvents", "webSockets"]
                 }).then(() => res()).fail((e) => rej(e));
             });
             this._isConnected = true;
