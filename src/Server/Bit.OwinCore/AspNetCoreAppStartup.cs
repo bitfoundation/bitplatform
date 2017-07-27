@@ -65,20 +65,7 @@ namespace Bit.OwinCore
             if (_hostingEnvironment.WebRootFileProvider == null || _hostingEnvironment.WebRootFileProvider is NullFileProvider)
                 _hostingEnvironment.WebRootFileProvider = new PhysicalFileProvider(_hostingEnvironment.WebRootPath);
 
-            string hostVirtualPath = activeAppEnvironment.GetHostVirtualPath();
-            string hostVirtualPathAsAspNeteCorePrefix = hostVirtualPath.Substring(0, hostVirtualPath.Length - 1);
-
-            if (!string.IsNullOrEmpty(hostVirtualPathAsAspNeteCorePrefix))
-            {
-                aspNetCoreApp.Map(hostVirtualPathAsAspNeteCorePrefix, bitAspNetCoreApp =>
-                {
-                    ConfigureBitAspNetCoreApp(bitAspNetCoreApp, owinAppStartup, aspNetCoreMiddlewares);
-                });
-            }
-            else
-            {
-                ConfigureBitAspNetCoreApp(aspNetCoreApp, owinAppStartup, aspNetCoreMiddlewares);
-            }
+            ConfigureBitAspNetCoreApp(aspNetCoreApp, owinAppStartup, aspNetCoreMiddlewares);
         }
 
         public virtual void ConfigureBitAspNetCoreApp(IApplicationBuilder aspNetCoreApp, OwinAppStartup owinAppStartup, IEnumerable<IAspNetCoreMiddlewareConfiguration> aspNetCoreMiddlewares)
