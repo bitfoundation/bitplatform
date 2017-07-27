@@ -42,7 +42,7 @@ module BitChangeSetManagerSecurity {
 
     dependencyManager.registerFileDependency({
         name: "fetch",
-        path: "node_modules/fetch/fetch",
+        path: "node_modules/whatwg-fetch/fetch",
         predicate: (appInfo) => {
             return typeof (fetch) == "undefined";
         }
@@ -71,7 +71,7 @@ module BitChangeSetManagerSecurity {
 
     dependencyManager.registerFileDependency({
         name: "odataJS",
-        path: "node_modules/@bit/olingo-odatajs/odatajs"
+        path: "node_modules/@bit/jaydata-odatajs/jaydata-odatajs-4.0.1"
     });
 
     dependencyManager.registerFileDependency({

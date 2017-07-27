@@ -34,6 +34,6 @@
   },
   "dependencies": {
     "@bit/jaydata": "^1.5.12",
-    "@bit/olingo-odatajs": "4.0.0"
+    "@bit/jaydata-odatajs": "4.0.1"
   }
 }

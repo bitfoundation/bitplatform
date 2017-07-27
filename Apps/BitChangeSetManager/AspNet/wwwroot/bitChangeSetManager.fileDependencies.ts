@@ -78,13 +78,19 @@ module BitChangeSetManager {
     });
 
     dependencyManager.registerFileDependency({
+        name: "bit-change-set-manager-styles",
+        path: "view/styles/bitChangeSetManagerStyles",
+        fileDependecyType: "Style"
+    });
+
+    dependencyManager.registerFileDependency({
         name: "Core-js",
         path: "node_modules/core-js/client/core"
     });
 
     dependencyManager.registerFileDependency({
         name: "fetch",
-        path: "node_modules/fetch/fetch",
+        path: "node_modules/whatwg-fetch/fetch",
         predicate: (appInfo) => {
             return typeof (fetch) == "undefined";
         }
@@ -135,7 +141,7 @@ module BitChangeSetManager {
 
     dependencyManager.registerFileDependency({
         name: "odataJS",
-        path: "node_modules/@bit/olingo-odatajs/odatajs"
+        path: "node_modules/@bit/jaydata-odatajs/jaydata-odatajs-4.0.1"
     });
 
     dependencyManager.registerFileDependency({
@@ -233,11 +239,5 @@ module BitChangeSetManager {
     dependencyManager.registerFileDependency({
         name: "bit-change-set-manager-context",
         path: "BitChangeSetManager.Model.Context"
-    });
-
-    dependencyManager.registerFileDependency({
-        name: "bit-change-set-manager-styles",
-        path: "view/styles/bitChangeSetManagerStyles",
-        fileDependecyType: "Style"
     });
 }

@@ -131,7 +131,7 @@
 
     dependencyManager.registerFileDependency({
         name: "fetch",
-        path: "bit-framework/src/TypeScriptClient/Bit.TSClient.Core/node_modules/fetch/fetch",
+        path: "bit-framework/src/TypeScriptClient/Bit.TSClient.Core/node_modules/whatwg-fetch/fetch",
         predicate: (appInfo) => {
             return typeof (fetch) == "undefined";
         }
@@ -217,7 +217,7 @@
 
     dependencyManager.registerFileDependency({
         name: "odataJS",
-        path: "bit-framework/src/TypeScriptClient/Bit.TSClient.Core/node_modules/@bit/olingo-odatajs/odatajs"
+        path: "bit-framework/src/TypeScriptClient/Bit.TSClient.Core/node_modules/@bit/jaydata-odatajs/jaydata-odatajs-4.0.1"
     });
 
     dependencyManager.registerFileDependency({

@@ -24,7 +24,7 @@
   "dependencies": {
     "@bit/bit-framework": "0.4.9",
     "@bit/jaydata": "^1.5.12",
-    "@bit/olingo-odatajs": "4.0.0",
+    "@bit/jaydata-odatajs": "4.0.1",
     "angular": "1.6.5",
     "ngcomponentrouter": "2.1.0",
     "decimal.js": "7.2.3",
