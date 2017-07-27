@@ -135,6 +135,14 @@ namespace BitVSExtensionV1
             _workspace.WorkspaceChanged += _workspace_WorkspaceChanged;
         }
 
+        private async void _workspace_WorkspaceChanged(object sender, WorkspaceChangeEventArgs e)
+        {
+            if (e.Kind == WorkspaceChangeKind.SolutionAdded)
+            {
+                await DoOnSolutionReadyOrChange();
+            }
+        }
+
         private async Task DoOnSolutionReadyOrChange()
         {
             if (!File.Exists(_workspace.CurrentSolution.FilePath))
@@ -188,6 +196,7 @@ namespace BitVSExtensionV1
 
             _shouldGeneratedProjects = new List<Project> { };
             generateCodesForTheFirstTimeExecuted = false;
+            thereWasAnErrorInBuild = false;
         }
 
         private bool CurrentSolutionHasBitConfigV1JsonFile()
@@ -267,14 +276,6 @@ namespace BitVSExtensionV1
             }
         }
 
-        private async void _workspace_WorkspaceChanged(object sender, WorkspaceChangeEventArgs e)
-        {
-            if (e.Kind == WorkspaceChangeKind.SolutionAdded)
-            {
-                await DoOnSolutionReadyOrChange();
-            }
-        }
-
         private void RedirectAssembly(string shortName, Version targetVersion, string publicKeyToken)
         {
             Assembly ResolveEventHandler(object sender, ResolveEventArgs args)
@@ -298,12 +299,17 @@ namespace BitVSExtensionV1
 
         private async void _buildEvents_OnBuildBegin(vsBuildScope scope, vsBuildAction action)
         {
-            if (generateCodesForTheFirstTimeExecuted == false)
+            if (!CurrentSolutionHasBitConfigV1JsonFile())
+                return;
+
+            if (generateCodesForTheFirstTimeExecuted == false || thereWasAnErrorInBuild == true)
             {
-                generateCodesForTheFirstTimeExecuted = true;
                 _shouldGeneratedProjects = _workspace.CurrentSolution.Projects.Where(p => p.Language == LanguageNames.CSharp).ToList();
                 await GenerateCodes();
             }
+
+            generateCodesForTheFirstTimeExecuted = true;
+            thereWasAnErrorInBuild = false;
 
             _shouldGeneratedProjects.Clear();
         }
@@ -312,6 +318,8 @@ namespace BitVSExtensionV1
         {
             if (!CurrentSolutionHasBitConfigV1JsonFile())
                 return;
+
+            thereWasAnErrorInBuild = thereWasAnErrorInBuild && success;
 
             Project proj = _workspace.CurrentSolution.Projects.Where(p => p.Language == LanguageNames.CSharp)
                                 .ExtendedSingle($"Lookin for {project} in [ {(string.Join(",", _workspace.CurrentSolution.Projects.Select(prj => prj.Name)))} ]", prj => Path.GetFileName(prj.FilePath) == project.Split('\\').Last());
@@ -406,5 +414,7 @@ namespace BitVSExtensionV1
         private IVsStatusbar _statusBar;
 
         private bool generateCodesForTheFirstTimeExecuted = false;
+
+        private bool thereWasAnErrorInBuild = false;
     }
 }
