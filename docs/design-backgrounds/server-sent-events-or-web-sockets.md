@@ -33,4 +33,4 @@ By that code, signalr uses server sent events by default.
 
 ### Conclusion:
 
-Use Server Sent Events + HTTP 2.0 instead of Web Sockets.
+Use Server Sent Events + HTTP 2.0 instead of Web Sockets, if you've nothing to do with client to server part of web sockets.
