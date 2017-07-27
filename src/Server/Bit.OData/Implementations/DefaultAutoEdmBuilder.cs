@@ -251,7 +251,7 @@ namespace Bit.OData.Implementations
                     else
                     {
                         if (isFunction)
-                            throw new InvalidOperationException("Function must have a return type, use action instead");
+                            throw new InvalidOperationException($"Function {method.Name} in {apiController.Name} must have a return type, use action instead");
 
                         operationConfiguration.OptionalReturn = true;
                     }
