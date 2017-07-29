@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Hosting;
+using System.IO;
 
 namespace BitChangeSetManager.Core
 {
@@ -7,6 +8,7 @@ namespace BitChangeSetManager.Core
         public static void Main(string[] args)
         {
             IWebHost host = new WebHostBuilder()
+                .UseContentRoot(Directory.GetCurrentDirectory())
                 .UseKestrel(options =>
                 {
                     options.AddServerHeader = false;
