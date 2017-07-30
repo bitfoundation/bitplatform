@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using Bit.Model.Contracts;
@@ -27,6 +28,18 @@ namespace System.Web.OData
                         return;
                     prop.SetValue(dest, obj);
                 });
+        }
+
+        public static void IgnoreChanges<TDto>(this Delta<TDto> source, params string[] members)
+            where TDto : class, IDto
+        {
+            if (source == null)
+                throw new ArgumentNullException(nameof(source));
+
+            foreach (string member in members)
+            {
+                (((HashSet<string>)source.GetChangedPropertyNames())).Remove(member);
+            }
         }
     }
 }
