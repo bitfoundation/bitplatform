@@ -31,12 +31,12 @@
             this.changeSetSeveritiesDataSource = changeSetSeverities.toQueryable(BitChangeSetManagerModel.ChangeSetSeverityDto).asKendoDataSource();
             this.changeSetDeliveryRequirementsDataSource = changeSetDeliveryRequirements.toQueryable(BitChangeSetManagerModel.ChangeSetDeliveryRequirementDto).asKendoDataSource();
 
-            this.changeSetsDataSource = context.changeSets.asKendoDataSource({ serverPaging: true, pageSize: 5 });
+            this.changeSetsDataSource = context.changeSets.asKendoDataSource({ serverPaging: true, pageSize: 5, serverSorting: true, sort: { field: "Title", dir: "asc" } });
 
             this.deliveriesDataSource = context
                 .deliveries
                 .map(d => { return { Id: d.Id, CustomerName: d.CustomerName, ChangeSetId: d.ChangeSetId, DeliveredOn: d.DeliveredOn } })
-                .asKendoDataSource({ serverPaging: true, pageSize: 5 });
+                .asKendoDataSource({ serverPaging: true, pageSize: 5, serverSorting: true, sort: { field: "CustomerName", dir: "asc" } });
 
             this.deliveriesDataSource.asChildOf(this.changeSetsDataSource, ["ChangeSetId"], ["Id"]);
 
