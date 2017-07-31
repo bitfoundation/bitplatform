@@ -169,7 +169,6 @@
     <Compile Include="Implementations\DefaultDependenciesManagerProvider.cs" />
     <Compile Include="Implementations\DefaultDependencyManager.cs" />
     <Compile Include="Implementations\DefaultExceptionToHttpErrorMapper.cs" />
-    <Compile Include="Implementations\DefaultHtmlPageRazorTemplateConfiguration.cs" />
     <Compile Include="Implementations\DefaultJsonContentFormatter.cs" />
     <Compile Include="Implementations\DefaultLogger.cs" />
     <Compile Include="Implementations\DefaultOwinActionFilterMiddleware.cs" />

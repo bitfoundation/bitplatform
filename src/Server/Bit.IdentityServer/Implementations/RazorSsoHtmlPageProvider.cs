@@ -12,7 +12,7 @@ namespace Bit.IdentityServer.Implementations
 {
     public class RazorSsoHtmlPageProvider : ISsoPageHtmlProvider
     {
-        private readonly IDependencyManager _dependencyManager;
+        private readonly IDependencyResolver _dependencyResolver;
 
         public RazorSsoHtmlPageProvider(IAppEnvironmentProvider appEnvironmentProvider, IPathProvider pathProvider, IDependencyManager dependencyManager)
         {
@@ -25,7 +25,7 @@ namespace Bit.IdentityServer.Implementations
             if (pathProvider == null)
                 throw new ArgumentNullException(nameof(pathProvider));
 
-            _dependencyManager = dependencyManager;
+            _dependencyResolver = dependencyManager;
             _pathProvider = pathProvider;
             _activeAppEnvironment = appEnvironmentProvider.GetActiveAppEnvironment();
         }
@@ -42,19 +42,7 @@ namespace Bit.IdentityServer.Implementations
 
         public virtual async Task<string> GetSsoPageAsync(CancellationToken cancellationToken)
         {
-            if (_result == null)
-            {
-                string templateFilePath = _pathProvider.StaticFileMapPath(_activeAppEnvironment.GetConfig<string>("SsoPageTemplatePath", "ssoPageTemplate.cshtml"));
-
-                string template = File.ReadAllText(templateFilePath);
-
-                Engine.Razor.Compile(name: "ssoPageTemplate", modelType: typeof(IDependencyManager),
-                    templateSource: new LoadedTemplateSource(template, templateFilePath));
-
-                _result = Engine.Razor.Run("ssoPageTemplate", typeof(IDependencyManager), _dependencyManager);
-            }
-
-            return _result;
+            return Engine.Razor.Run("ssoPageTemplate", typeof(IDependencyResolver), _dependencyResolver);
         }
     }
 }

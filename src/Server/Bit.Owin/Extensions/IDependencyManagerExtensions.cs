@@ -90,7 +90,6 @@ namespace Bit.Core.Contracts
             dependencyManager.Register<IDefaultHtmlPageProvider, RazorDefaultHtmlPageProvider>(overwriteExciting: false);
             dependencyManager.Register<IDefaultPageModelProvider, DefaultPageModelProvider>(overwriteExciting: false);
 
-            dependencyManager.RegisterAppEvents<DefaultHtmlPageRazorTemplateConfiguration>();
             dependencyManager.RegisterOwinMiddleware<DefaultPageMiddlewareConfiguration>();
 
             return dependencyManager;

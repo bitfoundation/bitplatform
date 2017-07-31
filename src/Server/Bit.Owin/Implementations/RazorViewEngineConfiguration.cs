@@ -5,12 +5,14 @@ using RazorEngine;
 using RazorEngine.Configuration;
 using RazorEngine.Templating;
 using RazorEngine.Text;
+using System.IO;
 
 namespace Bit.Owin.Implementations
 {
     public class RazorViewEngineConfiguration : IAppEvents
     {
         private readonly IAppEnvironmentProvider _appEnvironmentProvider;
+        private readonly IPathProvider _pathProvider;
 
 #if DEBUG
         protected RazorViewEngineConfiguration()
@@ -18,12 +20,16 @@ namespace Bit.Owin.Implementations
         }
 #endif
 
-        public RazorViewEngineConfiguration(IAppEnvironmentProvider appEnvironmentProvider)
+        public RazorViewEngineConfiguration(IAppEnvironmentProvider appEnvironmentProvider, IPathProvider pathProvider)
         {
             if (appEnvironmentProvider == null)
                 throw new ArgumentNullException(nameof(appEnvironmentProvider));
 
+            if (pathProvider == null)
+                throw new ArgumentNullException(nameof(pathProvider));
+
             _appEnvironmentProvider = appEnvironmentProvider;
+            _pathProvider = pathProvider;
         }
 
         public virtual void OnAppStartup()
@@ -39,6 +45,26 @@ namespace Bit.Owin.Implementations
             IRazorEngineService service = RazorEngineService.Create(config);
 
             Engine.Razor = service;
+
+            string defaultPageTemplateFilePath = _pathProvider.StaticFileMapPath(activeAppEnvironment.GetConfig("DefaultPageTemplatePath", "defaultPageTemplate.cshtml"));
+
+            if (File.Exists(defaultPageTemplateFilePath))
+            {
+                string defaultPageTemplateContents = File.ReadAllText(defaultPageTemplateFilePath);
+
+                Engine.Razor.Compile(name: "defaultPageTemplate", modelType: typeof(IDependencyResolver),
+                    templateSource: new LoadedTemplateSource(defaultPageTemplateContents, defaultPageTemplateFilePath));
+            }
+
+            string ssoPageTemplateFilePath = _pathProvider.StaticFileMapPath(activeAppEnvironment.GetConfig("SsoPageTemplatePath", "ssoPageTemplate.cshtml"));
+
+            if (File.Exists(ssoPageTemplateFilePath))
+            {
+                string ssoPageTemplateContents = File.ReadAllText(ssoPageTemplateFilePath);
+
+                Engine.Razor.Compile(name: "ssoPageTemplate", modelType: typeof(IDependencyResolver),
+                    templateSource: new LoadedTemplateSource(ssoPageTemplateContents, ssoPageTemplateFilePath));
+            }
         }
 
         public class NullCompatibleEncodedStringFactory : IEncodedStringFactory
