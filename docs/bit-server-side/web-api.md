@@ -9,10 +9,9 @@ Using bit you'll get more benefits from web api. This includes following:
     - ASP.NET Core/Kestrel on Windows & Linux Servers
     - Self host windows services & azure web jobs
 2. We've configured web api on top of [asp.net core/owin branching](https://docs.microsoft.com/en-us/aspnet/core/fundamentals/middleware). Think about something as fast as node js with power of .NET (-:
-3. We've developed roslyn analyzers to warn you about codes that won't work on ASP.NET Core.
-4. We've developed extensive logging infrastructure in bit framework. It logs everything for you in your app, including web api traces.
-5. We've configured headers like [X-Content-Type-Options](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/X-Content-Type-Options), [X-CorrelationId](http://theburningmonk.com/2015/05/a-consistent-approach-to-track-correlation-ids-through-microservices/) etc. We've done this to improve you logging, security etc.
-6. You can protect your web api with bit identity server, a modern single sign on server based on open id/oauth 2.0
+3. We've developed extensive logging infrastructure in bit framework. It logs everything for you in your app, including web api traces.
+4. We've configured headers like [X-Content-Type-Options](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/X-Content-Type-Options), [X-CorrelationId](http://theburningmonk.com/2015/05/a-consistent-approach-to-track-correlation-ids-through-microservices/) etc. We've done this to improve logging, security etc.
+5. You can protect your web api with bit identity server, a modern single sign on server based on open id/oauth 2.0
 
 ## Getting started
 
@@ -51,7 +50,7 @@ Bit is a very extensible framework developed based on best practices. We've exte
 
 In following samples, you can find out how to customize web api in bit, but feel free to [drops us an issue in github](https://github.com/bit-foundation/bit-framework/issues), ask a question on [stackoverflow.com](http://stackoverflow.com/questions/tagged/bit-framework) or use comments below if you can't find what you want in these samples.
 
-Note that security samples can be found under [Bit Identity Server](/bit-identity-server.md)
+Note that security samples can be found under [Bit Identity Server](/bit-identity-server.md) (Read it later)
 
 ## Samples:
 
@@ -59,7 +58,7 @@ Note that security samples can be found under [Bit Identity Server](/bit-identit
 
 Swagger is the World's Most Popular API Tooling. by Using this sample you can find out how to customize web api in bit.
 
-Read [first part of "Swagger and ASP.NET Web API"](http://wmpratt.com/swagger-and-asp-net-web-api-part-1/). We follow the second part in [Bit Identity Server](/bit-identity-server.md).
+Read [first part of "Swagger and ASP.NET Web API"](http://wmpratt.com/swagger-and-asp-net-web-api-part-1/)
 
 Differences between our sample (2WebApiSwagger project) and that article:
 
@@ -88,7 +87,7 @@ We use #DefaultPathProvider.Current.GetCurrentAppPath()# instead of #System.AppD
 ```csharp
 c.RootUrl(req => new Uri(req.RequestUri, req.GetOwinContext().Request.PathBase.Value /* /api */).ToString());
 ```
-As you see in article, you open swgger ui by opening http://localhost:51609/swagger/ but in bit's sample, you open http://localhost:9000/api/swagger/. You open /swagger under /api. This is a magic of owin/asp.net core's request branching. That improves your app performance a lot, because instead of passing all requests (even signalr and file requests) to swagger, you pass /api requests to swagger which is an expected behavior. That line of codes is telling where swagger is hosted as it is not aware of that magic.
+As you see in the article, you open swgger ui by opening http://localhost:51609/swagger/ but in bit's sample, you open http://localhost:9000/api/swagger/. You open /swagger under /api. This is a magic of owin/asp.net core's request branching. That improves your app performance a lot, because it handles request far better than non bit apps. Web api handles web api requests only, signalr handles signalr requests only etc. In non bit apps, web api as an example receives all requests, but does something for those starting with /api (Based on web api configuration you provide). But ASP.NET Core/Owin branching routes every request to its correct handler (Web API to Web API, Signalr to Signalr etc). That line of codes is telling swagger that where is web api, as swagger is not aware of that magic.
 
 So run the second sample and you're good to go (-:
 
@@ -98,6 +97,7 @@ There is a [question](https://stackoverflow.com/questions/10320232/how-to-accept
 The important thing you've to notice is "You don't have to use System.Web.dll classes in bit world, even when you're hosting your app on traditional asp.net
 
 By removing usages of that dll, you're going to make sure that your code works well on asp.net core either whenever you migrate your code (which can be done very easily using bit). So drop using #HttpContext.Current and all other members of System.Web.dll#
+
 
 Web API Attribute routing works fine in bit project, but instead of [Route("api/file-manager/upload")] or [RoutePrefix("api/file-manager")], you've to write [Route("file-manager/upload")] or [RoutePrefix("file-manager)], this means you should not write /api in your attribute routings. That's a side effect of branching, which improves your app performance in turn.
 
@@ -113,7 +113,7 @@ In 4th project (4WebApiAspNetHost), you'll find a bit web api project hosted on 
 
 1- Instead of Microsoft.Owin.Host.HttpListener nuget package, we've installed Microsoft.Owin.Host.SystemWeb. Using first nuget package, you can "self host" bit server side apps on windows services, console apps, azure job workers etc. Using the second package, you can host bit server side apps on top of ASP.NET/IIS. All codes you've developed are the same (We've copied codes from 2WebApiSwagger project in fact).
 
-#### Differences between this project and normal asp.net web api project:
+#### Differences between this project and default traditional asp.net project: (Ignore this section if you'd like to run your app on top of ASP.NET Core)
 
 1- There is a key to introduce AppStartup class as following:
 
@@ -147,7 +147,7 @@ AppStartup is a class name & WebApiAspNetHost is a namespace. (Second one is ass
 
 6- We've added [enableVersionHeader="false"] to remove extra headers from responses.
 
-7- We've removed all http handlers & modules as 1 owin handler manages everything for you.
+7- We've removed all http handlers & modules. They're not required in bit projects.
 
 ```xml
 <httpModules>
@@ -164,7 +164,7 @@ AppStartup is a class name & WebApiAspNetHost is a namespace. (Second one is ass
 <sessionState mode="Off" />
 ```
 
-9- By following configs, we've removed extra modules and handlers
+9- By following configs, we've removed extra modules, handlers, headers and default documents. And we've added Owin handler. That handler makes static files, web api, signalr etc work.
 
 ```xml
   <system.webServer>
@@ -212,7 +212,7 @@ Web API configuration and web api codes are all the same. (-:
 
 #### Differences between this project and first project:
 
-1- Instead of Microsoft.Owin.Host.HttpListener nuget package, we've installed Bit.OwinCore. Using Bit.OwinCore, you can host your app on top of asp.net core. ASP.NET core apps can be hosted almost anywhere.
+1- As like as ASP.NET Core with full .NET framework, we've Bit.OwinCore instead of Microsoft.Owin.Host.HttpListener
 
 Web API configuration and web api codes are all the same. (-:
 

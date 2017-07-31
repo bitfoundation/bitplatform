@@ -5,7 +5,7 @@ Bit framework is a full stack framework for [C\#](https://docs.microsoft.com/en-
 You can develop any of following app types using Bit:
 
 * Web Apps \(Single Page web apps using [Angular](http://angular.io/), [AngularJS](https://angularjs.org), [React](https://facebook.github.io/react/) and [Aurelia](http://aurelia.io/)\)
-* Cloud/Micro service friendly API apps
+* Cloud/Micro service friendly API
 * Desktop Apps using [Electron](https://electron.atom.io/) and [WPF](https://docs.microsoft.com/en-us/dotnet/framework/wpf/getting-started/)
 * Hybrid mobile apps using [Apache Cordova](https://cordova.apache.org/)
 * Native mobile apps using [Xamarin Forms](https://www.xamarin.com/forms) and [React Native](https://facebook.github.io/react-native)
