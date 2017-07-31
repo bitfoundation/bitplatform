@@ -25,7 +25,7 @@ Then open Samples\WebApiSamples\WebApiSamples.sln, then go to 1SimpleWebApi proj
 
 There are several classes there. Program and ValuesController are get copied from [this microsoft docs article](https://docs.microsoft.com/en-us/aspnet/web-api/overview/hosting-aspnet-web-api/use-owin-to-self-host-web-api). It's a good idea to read that article first.
 
-For now, lets ignore the third class: "AppStartup".
+For now, let's ignore the third class: "AppStartup".
 
 Press F5, you'll see ["value1","value2"] at the end of console's output.
 
@@ -45,11 +45,11 @@ dependencyManager.RegisterWebApiMiddleware(webApiDependencyManager =>
 });
 ```
 
-That code configures web api into your app using default configuration. Default configuration is all about security, performance, logging etc.
+That code configures web api into your app using the default configuration. Default configuration is all about security, performance, logging etc.
 
-Bit is a very extensible framework developed based on best practices. We've extensivly used dependency injection in our code base and you can customize default behaviors based on your requirements.
+Bit is a very extensible framework developed based on best practices. We've extensively used dependency injection in our code base and you can customize default behaviors based on your requirements.
 
-In following samples, you can findout how to customize web api in bit, but feel free to [drops us an issue in github](https://github.com/bit-foundation/bit-framework/issues), ask a question on [stackoverflow.com](http://stackoverflow.com/questions/tagged/bit-framework) or use comments below if you can't find what you want in these samples.
+In following samples, you can find out how to customize web api in bit, but feel free to [drops us an issue in github](https://github.com/bit-foundation/bit-framework/issues), ask a question on [stackoverflow.com](http://stackoverflow.com/questions/tagged/bit-framework) or use comments below if you can't find what you want in these samples.
 
 Note that security samples can be found under [Bit Identity Server](/bit-identity-server.md)
 
@@ -57,7 +57,7 @@ Note that security samples can be found under [Bit Identity Server](/bit-identit
 
 ### Web API - Swagger configuration sample
 
-Swagger is the World's Most Popular API Tooling. by Using this sample you can findout how to customize web api in bit.
+Swagger is the World's Most Popular API Tooling. by Using this sample you can find out how to customize web api in bit.
 
 Read [first part of "Swagger and ASP.NET Web API"](http://wmpratt.com/swagger-and-asp-net-web-api-part-1/). We follow the second part in [Bit Identity Server](/bit-identity-server.md).
 
@@ -75,20 +75,20 @@ GlobalConfiguration.Configuration
 
 [GlobalConfiguration](https://msdn.microsoft.com/en-us/library/system.web.http.globalconfiguration.aspx) uses ASP.NET pipeline directly and it does not work on ASP.NET Core. But bit's config works on both ASP.NET & ASP.NET Core.
 
-3- Instead of adding Swashbuckle package, you've to install Swashbuckle.Core package. Swashbuckle package relys on ASP.NET pipeline and it does not work on ASP.NET Core. But our code works on both.
+3- Instead of adding Swashbuckle package, you've to install Swashbuckle.Core package. Swashbuckle package relies on ASP.NET pipeline and it does not work on ASP.NET Core. But our code works on both.
 
 4- In following code:
 ```csharp
 c.IncludeXmlComments(string.Format(@"{0}\bin\SwaggerDemoApi.XML",           
                            System.AppDomain.CurrentDomain.BaseDirectory));
 ```
-We use #DefaultPathProvider.Current.GetCurrentAppPath()# instead of #System.AppDomain.CurrentDomain.BaseDirectory# which works fine on both ASP.NET/ASP.NET Core. We also use Path.Combine which works fine on linux servers instead of string.Format & \ charecter usage.
+We use #DefaultPathProvider.Current.GetCurrentAppPath()# instead of #System.AppDomain.CurrentDomain.BaseDirectory# which works fine on both ASP.NET/ASP.NET Core. We also use Path.Combine which works fine on linux servers instead of string.Format & \ character usage.
 
-5- We've following code which has no equivalent in article codes:
+5- We've following code which has no equivalent in the article codes:
 ```csharp
 c.RootUrl(req => new Uri(req.RequestUri, req.GetOwinContext().Request.PathBase.Value /* /api */).ToString());
 ```
-As you see in article, you open swgger ui by opening http://localhost:51609/swagger/ but in bit's sample you open http://localhost:9000/api/swagger/. You open /swagger under /api. This is a magic of owin/asp.net core's request branching. That improves your app performance a lot, because instead of passing all requests (even signalr and file requests) to swagger, you pass /api requests to swagger which is a expected behavior. That line of codes is telling where swagger is hosted as it is not aware of that magic.
+As you see in article, you open swgger ui by opening http://localhost:51609/swagger/ but in bit's sample, you open http://localhost:9000/api/swagger/. You open /swagger under /api. This is a magic of owin/asp.net core's request branching. That improves your app performance a lot, because instead of passing all requests (even signalr and file requests) to swagger, you pass /api requests to swagger which is an expected behavior. That line of codes is telling where swagger is hosted as it is not aware of that magic.
 
 So run the second sample and you're good to go (-:
 
@@ -99,9 +99,9 @@ The important thing you've to notice is "You don't have to use System.Web.dll cl
 
 By removing usages of that dll, you're going to make sure that your code works well on asp.net core either whenever you migrate your code (which can be done very easily using bit). So drop using #HttpContext.Current and all other members of System.Web.dll#
 
-Web API Attribute routing works fine in bit project, but instead of [Route("api/file-manager/upload")] or [RoutePrefix("api/file-manager")], you've to write [Route("file-manager/upload")] or [RoutePrefix("file-manager)], this means you should not write /api in your attribute routings. That's a side effect of branching, which improves you're app performance in turn.
+Web API Attribute routing works fine in bit project, but instead of [Route("api/file-manager/upload")] or [RoutePrefix("api/file-manager")], you've to write [Route("file-manager/upload")] or [RoutePrefix("file-manager)], this means you should not write /api in your attribute routings. That's a side effect of branching, which improves your app performance in turn.
 
-Remember to use async/await and CancellationToken in your Web API codes at it improves your app overall scability.
+Remember to use async/await and CancellationToken in your Web API codes at it improves your app overall scalability.
 
 So open 3rd sample. It contains upload methods using Web API attribute routing. It uses async/await and CancellationToken and shows you how you can upload files to folders/database.
 
@@ -111,7 +111,7 @@ In 4th project (4WebApiAspNetHost), you'll find a bit web api project hosted on 
 
 #### Differences between this project and previews projects:
 
-1- Instead of Microsoft.Owin.Host.HttpListener nuget package, we've installed Microsoft.Owin.Host.SystemWeb. Using first nuget packge, you can "self host" bit server side apps on windows services, console apps, azure job workers etc. Using second package, you can host bit server side apps on top of ASP.NET/IIS. All codes you've developed are the same (We've copied codes from 2WebApiSwagger project in fact).
+1- Instead of Microsoft.Owin.Host.HttpListener nuget package, we've installed Microsoft.Owin.Host.SystemWeb. Using first nuget package, you can "self host" bit server side apps on windows services, console apps, azure job workers etc. Using the second package, you can host bit server side apps on top of ASP.NET/IIS. All codes you've developed are the same (We've copied codes from 2WebApiSwagger project in fact).
 
 #### Differences between this project and normal asp.net web api project:
 
