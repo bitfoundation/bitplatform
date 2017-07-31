@@ -18,6 +18,7 @@ namespace Bit.Test.Server
                 .UseUrls(uri)
                 .UseContentRoot(Directory.GetCurrentDirectory())
                 .UseStartup<AutofacAspNetCoreAppStartup>()
+                .CaptureStartupErrors(true)
                 .Build();
 
             _host.Start();

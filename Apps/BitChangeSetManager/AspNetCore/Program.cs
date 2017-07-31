@@ -14,6 +14,7 @@ namespace BitChangeSetManager.Core
                     options.AddServerHeader = false;
                 })
                 .UseIISIntegration()
+                .CaptureStartupErrors(true)
                 .UseStartup<AppStartup>()
                 .Build();
 
