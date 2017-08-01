@@ -6,4 +6,4 @@
   * [Web API](/docs/bit-server-side/web-api.md)
 * [Design backgrounds](docs/design-backgrounds/introduction.md)
   * [Server sent events or Web Sockets?](docs/design-backgrounds/server-sent-events-or-web-sockets.md)
-  * [Optimized entity framework for N-Tier applications](docs/optimized-entity-framework-for-n-tier-apps.md)
+  * [Optimized entity framework for N-Tier applications](docs/design-backgrounds/optimized-entity-framework-for-n-tier-apps.md)
