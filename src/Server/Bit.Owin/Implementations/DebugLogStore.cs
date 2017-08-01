@@ -22,12 +22,14 @@ namespace Bit.Owin.Implementations
 
         public virtual void SaveLog(LogEntry logEntry)
         {
-            Debug.WriteLine(_formatter.Serialize(logEntry) + Environment.NewLine);
+            if (Debugger.IsAttached)
+                Debug.WriteLine(_formatter.Serialize(logEntry) + Environment.NewLine);
         }
 
         public virtual async Task SaveLogAsync(LogEntry logEntry)
         {
-            Debug.WriteLine(_formatter.Serialize(logEntry) + Environment.NewLine);
+            if (Debugger.IsAttached)
+                Debug.WriteLine(_formatter.Serialize(logEntry) + Environment.NewLine);
         }
     }
 }
