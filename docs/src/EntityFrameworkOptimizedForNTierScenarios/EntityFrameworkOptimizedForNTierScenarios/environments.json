@@ -1,0 +1,11 @@
+﻿[
+  {
+    "Name": "Development",
+    "IsActive": true,
+    "DebugMode": false,
+    "AppInfo": {
+      "Name": "EntityFrameworkOptimizedForNTierScenarios",
+      "Version": "1"
+    }
+  }
+]
