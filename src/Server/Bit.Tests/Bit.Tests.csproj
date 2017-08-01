@@ -32,6 +32,7 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <DocumentationFile>bin\Release\Bit.Tests.xml</DocumentationFile>
   </PropertyGroup>
   <PropertyGroup>
     <StartupObject>Bit.Tests.Program</StartupObject>

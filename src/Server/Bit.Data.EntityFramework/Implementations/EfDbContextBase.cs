@@ -4,6 +4,9 @@ using Bit.Data.Contracts;
 
 namespace Bit.Data.EntityFramework.Implementations
 {
+    /// <summary>
+    /// Entity Framework DbContext, optimized for N-Tier app development
+    /// </summary>
     public class EfDbContextBase : DbContext
     {
         protected EfDbContextBase()

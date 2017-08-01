@@ -48,7 +48,7 @@
     </dependencies>
   </metadata>
   <files>
-    <file src="..\Bit.Owin.dll;..\Bit.Owin.pdb" target="lib\net47" />
-    <file src="..\Bit.Owin.dll;..\Bit.Owin.pdb" target="lib\netcoreapp2" />
+    <file src="..\Bit.Owin.dll;..\Bit.Owin.pdb;..\Bit.Owin.xml" target="lib\net47" />
+    <file src="..\Bit.Owin.dll;..\Bit.Owin.pdb;..\Bit.Owin.xml" target="lib\netcoreapp2" />
   </files>
 </package>

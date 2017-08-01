@@ -13,8 +13,14 @@ using Microsoft.Owin.Security.DataProtection;
 
 namespace Bit.Owin
 {
+    /// <summary>
+    /// Startup class for your owin based apps. It's similar to asp.net core's startup class
+    /// </summary>
     public class OwinAppStartup
     {
+        /// <summary>
+        /// First method called by owin hosts
+        /// </summary>
         public virtual void Configuration(IAppBuilder owinApp)
         {
             if (owinApp == null)

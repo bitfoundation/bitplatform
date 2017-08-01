@@ -51,6 +51,13 @@ namespace Bit.Core.Contracts
             return dependencyManager;
         }
 
+        /// <summary>
+        /// Configures minimal dependencies you need to make your app work. It registers <see cref="IDateTimeProvider"/> by <see cref="DefaultDateTimeProvider"/>
+        /// | <see cref="IAppEnvironmentProvider"/> by <see cref="DefaultAppEnvironmentProvider"/>
+        /// | <see cref="IContentFormatter"/> by <see cref="DefaultJsonContentFormatter"/>
+        /// | <see cref="IPathProvider"/> by <see cref="DefaultPathProvider"/>
+        /// | <see cref="IScopeStatusManager"/> by <see cref="DefaultScopeStatusManager"/>
+        /// </summary>
         public static IDependencyManager RegisterMinimalDependencies(this IDependencyManager dependencyManager)
         {
             if (dependencyManager == null)
@@ -147,6 +154,13 @@ namespace Bit.Core.Contracts
             return dependencyManager;
         }
 
+        /// <summary>
+        /// Configures owin into your app. It registers <see cref="Microsoft.Owin.Logging.ILoggerFactory"/> by <see cref="DefaultOwinLoggerFactory"/>
+        /// | <see cref="IUserInformationProvider"/> by <see cref="DefaultUserInformationProvider"/>
+        /// | <see cref="IExceptionToHttpErrorMapper"/> by <see cref="DefaultExceptionToHttpErrorMapper"/>
+        /// | <see cref="ITimeZoneManager"/> by <see cref="DefaultTimeZoneManager"/>
+        /// | <see cref="IRequestInformationProvider"/> by <see cref="OwinRequestInformationProvider"/>
+        /// </summary>
         public static IDependencyManager RegisterDefaultOwinApp(this IDependencyManager dependencyManager)
         {
             dependencyManager.Register<Microsoft.Owin.Logging.ILoggerFactory, DefaultOwinLoggerFactory>(overwriteExciting: false);
@@ -158,6 +172,11 @@ namespace Bit.Core.Contracts
             return dependencyManager;
         }
 
+        /// <summary>
+        /// Configures bit logging. It registers <see cref="Microsoft.Owin.Logging.ILoggerFactory"/> by <see cref="DefaultOwinLoggerFactory"/>
+        /// | <see cref="ILogger"/> by <see cref="DefaultLogger"/>
+        /// </summary>
+        /// <param name="logStores">Class types which implemented <see cref="ILogStore"/></param>
         public static IDependencyManager RegisterDefaultLogger(this IDependencyManager dependencyManager, params TypeInfo[] logStores)
         {
             dependencyManager.Register<Microsoft.Owin.Logging.ILoggerFactory, DefaultOwinLoggerFactory>();
@@ -171,6 +190,11 @@ namespace Bit.Core.Contracts
             return dependencyManager;
         }
 
+        /// <summary>
+        /// Adds minimal owin middlewares for dependency injection, exception handling and logging. It registers following owin middlewares <see cref="AutofacDependencyInjectionMiddlewareConfiguration"/>
+        /// | <see cref="OwinExceptionHandlerMiddlewareConfiguration"/>
+        /// | <see cref="LogRequestInformationMiddlewareConfiguration"/>
+        /// </summary>
         public static IDependencyManager RegisterMinimalOwinMiddlewares(this IDependencyManager dependencyManager)
         {
             dependencyManager.RegisterOwinMiddleware<AutofacDependencyInjectionMiddlewareConfiguration>();

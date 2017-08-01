@@ -15,6 +15,14 @@ namespace Bit.Core.Contracts
 {
     public static class IDependencyManagerExtensions
     {
+        /// <summary>
+        /// Configures web api. It finds web api controllers in <see cref="AssemblyContainer"/> app assemblies. and it registers <see cref="IApiAssembliesProvider"/> by <see cref="DefaultWebApiAssembliesProvider"/>
+        /// | <see cref="System.Web.Http.Dispatcher.IAssembliesResolver"/> by <see cref="DefaultWebApiAssembliesResolver"/>
+        /// | <see cref="System.Web.Http.Tracing.ITraceWriter"/> by <see cref="DefaultWebApiTraceWritter"/>
+        /// | It adds <see cref="OwinNoCacheResponseMiddleware"/> middleware and <see cref="AddAcceptCharsetToRequestHeadersIfNotAnyFilterAttribute"/> action filter globally
+        /// | It configures web api by <see cref="GlobalHostAuthenticationFilterProvider"/> and <see cref="ClientCorrelationWebApiConfigurationCustomizer"/>
+        /// </summary>
+        /// <param name="controllersAssemblies">Bit finds web api controllers in these assemblies too</param>
         public static IDependencyManager RegisterDefaultWebApiConfiguration(this IDependencyManager dependencyManager, params Assembly[] controllersAssemblies)
         {
             if (dependencyManager == null)
@@ -48,6 +56,10 @@ namespace Bit.Core.Contracts
             return dependencyManager;
         }
 
+        /// <summary>
+        /// Using this method you can customize web api's http configuration
+        /// </summary>
+        /// <param name="webApiCustomizer">http configuration to be customized</param>
         public static IDependencyManager RegisterGlobalWebApiCustomizerUsing(this IDependencyManager dependencyManager, Action<HttpConfiguration> webApiCustomizer)
         {
             if (dependencyManager == null)
@@ -66,6 +78,12 @@ namespace Bit.Core.Contracts
             return dependencyManager.RegisterGlobalWebApiCustomizerUsing(addGlobalActionFilters);
         }
 
+        /// <summary>
+        /// Adds minimal dependencies to make web api work. It registers <see cref="System.Web.Http.Dependencies.IDependencyResolver"/> by <see cref="AutofacWebApiDependencyResolver"/>
+        /// | <see cref="IWebApiOwinPipelineInjector"/> by <see cref="DefaultWebApiOwinPipelineInjector"/>
+        /// It adds <see cref="LogActionArgsFilterAttribute"/> and <see cref="ExceptionHandlerFilterAttribute"/> action filters
+        /// It registers <see cref="WebApiMiddlewareConfiguration"/> middleware
+        /// </summary>
         public static IDependencyManager RegisterWebApiMiddlewareUsingDefaultConfiguration(this IDependencyManager dependencyManager, string name = "WebApi")
         {
             if (dependencyManager == null)
@@ -80,6 +98,10 @@ namespace Bit.Core.Contracts
             return dependencyManager;
         }
 
+        /// <summary>
+        /// Adds WebApi middleware
+        /// </summary>
+        /// <param name="onConfigure">Everything you perform using this dependency manager, will be applied to this web api only. You can provide any implementation for web api | bit interfaces such as <see cref="System.Web.Http.Tracing.ITraceWriter"/> that affects this web api only.</param>
         public static IDependencyManager RegisterWebApiMiddleware(this IDependencyManager dependencyManager, Action<IDependencyManager> onConfigure)
         {
             dependencyManager.RegisterUsing<IOwinMiddlewareConfiguration>(() =>

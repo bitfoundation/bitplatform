@@ -21,6 +21,9 @@ namespace Bit.Owin.Implementations
         public Type Type { get; }
     }
 
+    /// <summary>
+    /// By default it finds <see cref="DependenciesManagerAttribute" /> attributes in assemblies, then it returns instances of <see cref="IDependenciesManager"/> provided by those attributes. You can change its behavior by setting its <see cref="Current"/> to another implementation of <see cref="IDependenciesManagerProvider"/>
+    /// </summary>
     public class DefaultDependenciesManagerProvider : IDependenciesManagerProvider
     {
         private static IDependenciesManagerProvider _current;
@@ -39,6 +42,9 @@ namespace Bit.Owin.Implementations
             _args = args;
         }
 
+        /// <summary>
+        /// Current <see cref="IDependenciesManagerProvider"/> implementation used by bit
+        /// </summary>
         public static IDependenciesManagerProvider Current
         {
             get

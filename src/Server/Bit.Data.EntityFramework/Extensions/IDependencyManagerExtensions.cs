@@ -1,15 +1,21 @@
-﻿using System;
-using Bit.Data.Contracts;
+﻿using Bit.Data.Contracts;
 using Bit.Data.EntityFramework.Implementations;
-using System.Data.Entity;
 using Bit.Data.Implementations;
+using System;
 
 namespace Bit.Core.Contracts
 {
     public static class IDependencyManagerExtensions
     {
+        /// <summary>
+        /// Configures EntityFramework. It registers <typeparamref name="TDbContext"/>
+        /// | <see cref="IDataProviderSpecificMethodsProvider"/> by <see cref="EfDataProviderSpecificMethodsProvider"/>
+        /// | <see cref="EfDataProviderSpecificMethodsProvider"/> itself
+        /// | <see cref="IUnitOfWork"/> by <see cref="DefaultUnitOfWork"/>
+        /// </summary>
+        /// <typeparam name="TDbContext">Any class inherited from <see cref="EfDbContextBase"/></typeparam>
         public static IDependencyManager RegisterEfDbContext<TDbContext>(this IDependencyManager dependencyManager)
-            where TDbContext : DbContext
+            where TDbContext : EfDbContextBase
         {
             if (dependencyManager == null)
                 throw new ArgumentNullException(nameof(dependencyManager));

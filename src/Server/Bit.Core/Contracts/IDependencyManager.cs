@@ -30,6 +30,9 @@ namespace Bit.Core.Contracts
         bool IsRegistered(TypeInfo contractType);
     }
 
+    /// <summary>
+    /// Registers dependencies such as repositories and middlewares such as web api, signalr etc
+    /// </summary>
     public interface IDependencyManager : IDependencyResolver
     {
         IDependencyManager Init();
@@ -52,7 +55,10 @@ namespace Bit.Core.Contracts
 
         IDependencyManager RegisterInstance(object obj, TypeInfo contractType, bool overwriteExciting = true, string name = null);
 
-        IDependencyManager RegisterGeneric(TypeInfo contractType, TypeInfo serviceType, DependencyLifeCycle lifeCycle);
+        /// <summary>
+        /// Register an un-parameterised generic type, e.g. IRepository&lt;&gt;. Concrete types will be made as they are requested, e.g. with IRepository&lt;Customer&gt;
+        /// </summary>
+        IDependencyManager RegisterGeneric(TypeInfo contractType, TypeInfo serviceType, DependencyLifeCycle lifeCycle = DependencyLifeCycle.InstancePerLifetimeScope);
 
         IDependencyManager RegisterUsing<TContract>(Func<TContract> factory, string name = null,
             DependencyLifeCycle lifeCycle = DependencyLifeCycle.InstancePerLifetimeScope, bool overwriteExciting = true);

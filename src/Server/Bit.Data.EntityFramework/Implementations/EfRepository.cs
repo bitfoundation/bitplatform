@@ -11,6 +11,10 @@ using System.Threading.Tasks;
 
 namespace Bit.Data.EntityFramework.Implementations
 {
+    /// <summary>
+    /// Entity Framework implementation of <see cref="Bit.Data.Contracts.IRepository{TEntity}"/> which uses <see cref="Bit.Data.EntityFramework.Implementations.EfDbContextBase"/>
+    /// </summary>
+    /// <typeparam name="TEntity">Entity class with <see cref="Bit.Model.Contracts.IEntity"/> marker</typeparam>
     public class EfRepository<TEntity> : IRepository<TEntity>
         where TEntity : class, IEntity
     {

@@ -192,7 +192,11 @@ namespace Bit.Owin.Implementations
 
             return this;
         }
-        public IDependencyManager RegisterGeneric(TypeInfo contractType, TypeInfo serviceType, DependencyLifeCycle lifeCycle)
+
+        /// <summary>
+        /// Register an un-parameterised generic type, e.g. IRepository&lt;&gt;. Concrete types will be made as they are requested, e.g. with IRepository&lt;Customer&gt;
+        /// </summary>
+        public IDependencyManager RegisterGeneric(TypeInfo contractType, TypeInfo serviceType, DependencyLifeCycle lifeCycle = DependencyLifeCycle.InstancePerLifetimeScope)
         {
             IRegistrationBuilder<object, ReflectionActivatorData, DynamicRegistrationStyle> registration = GetContainerBuidler().RegisterGeneric(serviceType).PropertiesAutowired().As(contractType);
 

@@ -51,6 +51,11 @@ namespace Bit.Core.Contracts
             return dependencyManager;
         }
 
+        /// <summary>
+        /// Adds minimal asp.net core middlewares for dependency injection, exception handling and logging. It registers following asp.net core middlewares <see cref="AspNetCoreAutofacDependencyInjectionMiddlewareConfiguration"/>
+        /// | <see cref="AspNetCoreExceptionHandlerMiddlewareConfiguration"/>
+        /// | <see cref="AspNetCoreLogRequestInformationMiddlewareConfiguration"/>
+        /// </summary>
         public static IDependencyManager RegisterMinimalOwinCoreMiddlewares(this IDependencyManager dependencyManager)
         {
             dependencyManager.RegisterOwinMiddleware<AspNetCoreAutofacDependencyInjectionMiddlewareConfiguration>();
@@ -59,6 +64,14 @@ namespace Bit.Core.Contracts
             return dependencyManager;
         }
 
+        /// <summary>
+        /// Configures asp.net core into your app. It registers <see cref="Microsoft.Owin.Logging.ILoggerFactory"/> by <see cref="DefaultOwinLoggerFactory"/>
+        /// | <see cref="IUserInformationProvider"/> by <see cref="DefaultUserInformationProvider"/>
+        /// | <see cref="IExceptionToHttpErrorMapper"/> by <see cref="DefaultExceptionToHttpErrorMapper"/>
+        /// | <see cref="ITimeZoneManager"/> by <see cref="DefaultTimeZoneManager"/>
+        /// | <see cref="IRequestInformationProvider"/> by <see cref="AspNetCoreRequestInformationProvider"/>
+        /// | On Mono, it registers <see cref="IDataProtectionProvider"/> by <see cref="BasicDataProtectionProvider"/>
+        /// </summary>
         public static IDependencyManager RegisterDefaultOwinCoreApp(this IDependencyManager dependencyManager)
         {
             dependencyManager.Register<Microsoft.Owin.Logging.ILoggerFactory, DefaultOwinLoggerFactory>(overwriteExciting: false);

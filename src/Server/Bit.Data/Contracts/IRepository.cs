@@ -8,6 +8,10 @@ using Bit.Model.Contracts;
 
 namespace Bit.Data.Contracts
 {
+    /// <summary>
+    /// Contract of Bit repositories
+    /// </summary>
+    /// <typeparam name="TEntity">Entity class with <see cref="Bit.Model.Contracts.IEntity"/> marker</typeparam>
     public interface IRepository<TEntity>
         where TEntity : class, IEntity
     {
