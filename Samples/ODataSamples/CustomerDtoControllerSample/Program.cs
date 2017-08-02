@@ -1,0 +1,20 @@
+﻿using Microsoft.AspNetCore.Hosting;
+using System.IO;
+
+namespace CustomerDtoControllerSample
+{
+    public class Program
+    {
+        public static void Main(string[] args)
+        {
+            IWebHost host = new WebHostBuilder()
+                .UseKestrel()
+                .UseContentRoot(Directory.GetCurrentDirectory())
+                .UseStartup<AppStartup>()
+                .CaptureStartupErrors(true)
+                .Build();
+
+            host.Run();
+        }
+    }
+}
