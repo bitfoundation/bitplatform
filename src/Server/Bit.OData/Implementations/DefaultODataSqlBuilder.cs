@@ -102,7 +102,7 @@ namespace Bit.OData.Implementations
 
             TypeInfo dtoType = typeof(TDto).GetTypeInfo();
 
-            var sqlQueryParts = BuildSqlQueryParts(odataQuery);
+            ODataSqlQueryParts sqlQueryParts = BuildSqlQueryParts(odataQuery);
 
             if (sqlQueryParts.Skip != null)
             {

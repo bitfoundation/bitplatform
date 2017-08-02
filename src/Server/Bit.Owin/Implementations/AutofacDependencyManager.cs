@@ -235,7 +235,7 @@ namespace Bit.Owin.Implementations
             if (contractType == null)
                 throw new ArgumentNullException(nameof(contractType));
 
-            var registration = GetContainerBuidler().RegisterType(serviceType)
+            IRegistrationBuilder<object, ConcreteReflectionActivatorData, SingleRegistrationStyle> registration = GetContainerBuidler().RegisterType(serviceType)
                     .PropertiesAutowired()
                     .As(contractType);
 
@@ -258,7 +258,7 @@ namespace Bit.Owin.Implementations
             if (obj == null)
                 throw new ArgumentNullException(nameof(obj));
 
-            var registration = GetContainerBuidler().RegisterInstance(obj).As(contractType);
+            IRegistrationBuilder<object, SimpleActivatorData, SingleRegistrationStyle> registration = GetContainerBuidler().RegisterInstance(obj).As(contractType);
 
             if (name != null)
                 registration = registration.Named(name, contractType);

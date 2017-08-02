@@ -221,7 +221,7 @@ namespace WebApiSwagger
         [ResponseType(typeof(Superhero))]
         public HttpResponseMessage GetById(Guid id)
         {
-            var superhero = Superheroes.FirstOrDefault(c => c.Id == id);
+            Superhero superhero = Superheroes.FirstOrDefault(c => c.Id == id);
 
             return superhero == null
                 ? Request.CreateErrorResponse(HttpStatusCode.NotFound, "Superhero not found")
@@ -242,7 +242,7 @@ namespace WebApiSwagger
         public HttpResponseMessage Post(PostSuperheroModel postSuperheroModel)
         {
             // Map a PostSuperheroModel object to Superhero object
-            var superhero = Mapper.Map<Superhero>(postSuperheroModel);
+            Superhero superhero = Mapper.Map<Superhero>(postSuperheroModel);
 
             superhero.Id = Guid.NewGuid();
             Superheroes.Add(superhero);
@@ -262,11 +262,11 @@ namespace WebApiSwagger
         [ResponseType(typeof(Superhero))]
         public HttpResponseMessage Put(PutSuperheroModel putSuperheroModel)
         {
-            var existingSuperhero = Superheroes.FirstOrDefault(c => c.Id == putSuperheroModel.Id);
+            Superhero existingSuperhero = Superheroes.FirstOrDefault(c => c.Id == putSuperheroModel.Id);
             if (existingSuperhero == null)
                 return Request.CreateErrorResponse(HttpStatusCode.NotFound, "Superhero not found");
 
-            var superhero = Mapper.Map<Superhero>(putSuperheroModel);
+            Superhero superhero = Mapper.Map<Superhero>(putSuperheroModel);
             Superheroes.Remove(existingSuperhero);
             Superheroes.Add(superhero);
 
@@ -283,7 +283,7 @@ namespace WebApiSwagger
         /// <returns></returns>
         public HttpResponseMessage Delete(Guid id)
         {
-            var existingSuperhero = Superheroes.FirstOrDefault(c => c.Id == id);
+            Superhero existingSuperhero = Superheroes.FirstOrDefault(c => c.Id == id);
 
             if (existingSuperhero == null)
                 return Request.CreateErrorResponse(HttpStatusCode.NotFound, "Superhero not found");

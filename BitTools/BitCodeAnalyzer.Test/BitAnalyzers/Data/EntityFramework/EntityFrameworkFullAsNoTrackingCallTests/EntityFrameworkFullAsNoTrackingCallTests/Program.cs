@@ -12,7 +12,7 @@ namespace EntityFrameworkFullAsNoTrackingCallTests
             {
                 bool problem1 = context.Set<Product>().Any();
 
-                bool problem2 = context.Products.AnyAsync().Result;
+                bool problem2 = context.Products.AnyAsync().GetAwaiter().GetResult();
 
                 List<Product> problem3 = context.Products.ToList();
 
@@ -26,7 +26,7 @@ namespace EntityFrameworkFullAsNoTrackingCallTests
 
                 bool ok1 = context.Set<Product>().AsNoTracking().Any();
 
-                bool ok2 = context.Products.AsNoTracking().AnyAsync().Result;
+                bool ok2 = context.Products.AsNoTracking().AnyAsync().GetAwaiter().GetResult();
 
                 List<Product> ok3 = context.Products.AsNoTracking().ToList();
 

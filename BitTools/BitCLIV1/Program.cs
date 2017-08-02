@@ -23,7 +23,7 @@ namespace BitCLIV1
     {
         public static void Main(string[] args)
         {
-            ASyncMain(args).Wait();
+            ASyncMain(args).GetAwaiter().GetResult();
         }
 
         public static async System.Threading.Tasks.Task ASyncMain(string[] args)

@@ -25,10 +25,10 @@ namespace SimpeWebApi
                 // Create HttpCient and make a request to api/values 
                 HttpClient client = new HttpClient();
 
-                var response = client.GetAsync(baseAddress + "api/values").Result;
+                HttpResponseMessage response = client.GetAsync(baseAddress + "api/values").GetAwaiter().GetResult();
 
                 Console.WriteLine(response);
-                Console.WriteLine(response.Content.ReadAsStringAsync().Result);
+                Console.WriteLine(response.Content.ReadAsStringAsync().GetAwaiter().GetResult());
                 Console.ReadLine();
             }
 
