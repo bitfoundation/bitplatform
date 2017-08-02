@@ -81,6 +81,7 @@ public class CustomersController : ApiController
     public virtual async Task AddNewCustomer(CancellationToken cancellationToken, Customer customer)
     {
         await CustomersRepository.AddAsync(customer, cancellationToken);
+        // App has implicit unit of work. If you throw an exception here, we save nothing to database
     }
 }
 ```
