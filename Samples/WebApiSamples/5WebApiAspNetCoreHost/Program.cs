@@ -12,6 +12,7 @@ namespace WebApiAspNetCoreHost
                 .UseContentRoot(Directory.GetCurrentDirectory())
                 .UseIISIntegration()
                 .UseStartup<AppStartup>()
+                .CaptureStartupErrors(true)
                 .Build();
 
             host.Run();

@@ -14,6 +14,7 @@ namespace WebApiDotNetCoreHost
                 .UseWebRoot(Directory.GetCurrentDirectory())
                 .UseIISIntegration()
                 .UseStartup<AppStartup>()
+                .CaptureStartupErrors(true)
                 .Build();
 
             host.Run();
