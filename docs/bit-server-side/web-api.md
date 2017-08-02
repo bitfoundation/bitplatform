@@ -54,7 +54,7 @@ Note that security samples can be found under [Bit Identity Server](/bit-identit
 
 ## Samples:
 
-### Web API - Swagger configuration sample
+### 1- Web API - Swagger configuration sample
 
 Swagger is the World's Most Popular API Tooling. by Using this sample you can find out how to customize web api in bit.
 
@@ -91,7 +91,7 @@ As you see in the article, you open swgger ui by opening http://localhost:51609/
 
 So run the second sample and you're good to go (-:
 
-### Web API file upload sample
+### 2- Web API file upload sample
 
 There is a [question](https://stackoverflow.com/questions/10320232/how-to-accept-a-file-post) on stackoverflow.com about web api file upload.
 The important thing you've to notice is "You don't have to use System.Web.dll classes in bit world, even when you're hosting your app on traditional asp.net
@@ -105,15 +105,15 @@ Remember to use async/await and CancellationToken in your Web API codes at it im
 
 So open 3rd sample. It contains upload methods using Web API attribute routing. It uses async/await and CancellationToken and shows you how you can upload files to folders/database.
 
-### Web API - Configuration on ASP.NET
+### 3- Web API - Configuration on ASP.NET
 
 In 4th project (4WebApiAspNetHost), you'll find a bit web api project hosted on ASP.NET/IIS.
 
-#### Differences between this project and previews projects:
+##### Differences between this project and previews projects:
 
 1- Instead of Microsoft.Owin.Host.HttpListener nuget package, we've installed Microsoft.Owin.Host.SystemWeb. Using first nuget package, you can "self host" bit server side apps on windows services, console apps, azure job workers etc. Using the second package, you can host bit server side apps on top of ASP.NET/IIS. All codes you've developed are the same (We've copied codes from 2WebApiSwagger project in fact).
 
-#### Differences between this project and default traditional asp.net project: (Ignore this section if you'd like to run your app on top of ASP.NET Core)
+##### Differences between this project and default traditional asp.net project: (Ignore this section if you'd like to run your app on top of ASP.NET Core)
 
 1- There is a key to introduce AppStartup class as following:
 
@@ -200,17 +200,17 @@ AppStartup is a class name & WebApiAspNetHost is a namespace. (Second one is ass
   </system.webServer>
 ```
 
-### Web API - Configuration on ASP.NET Core
+### 4- Web API - Configuration on ASP.NET Core
 
-#### Differences between this project and first project:
+##### Differences between this project and first project:
 
 1- Instead of Microsoft.Owin.Host.HttpListener nuget package, we've installed Bit.OwinCore. Using Bit.OwinCore, you can host your app on top of asp.net core. ASP.NET core apps can be hosted almost anywhere.
 
 Web API configuration and web api codes are all the same. (-:
 
-### Web API - Configuration on ASP.NET Core / .NET Core
+### 5- Web API - Configuration on ASP.NET Core / .NET Core
 
-#### Differences between this project and first project:
+##### Differences between this project and first project:
 
 1- As like as ASP.NET Core with full .NET framework, we've Bit.OwinCore instead of Microsoft.Owin.Host.HttpListener
 
