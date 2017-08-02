@@ -230,7 +230,7 @@ Bit's dependency injection covers you anywhere, from web api to signalr, backgro
 
 As you see in that project, there is an IEmailService interface and DefaultEmailService class. We've registered that as following:
 
-```
+```csharp
 dependencyManager.Register<IEmailService, DefaultEmailService>();
 ```
 
@@ -238,7 +238,7 @@ It uses [Autofac](https://autofac.org/) by default. Support for other IOC contai
 
 You can also specify life cycle by calling .Register like following:
 
-```
+```csharp
 dependencyManager.Register<IEmailService, DefaultEmailService>(lifeCycle: DependencyLifeCycle.InstancePerLifetimeScope);
 ```
 
@@ -250,7 +250,7 @@ If you've got a complex scenario, simply drops us an [issue on github](https://g
 
 You can also cast dependency manager to IAutofacDependencyManager, and after that, you can access [ContainerBuilder](http://docs.autofac.org/en/latest/register/registration.html) of autofac.
 
-```
+```csharp
 ContainerBuilder autofacContainerBuilder = ((IAutofacDependencyManager)dependencyManager).GetContainerBuidler();
 ```
 
