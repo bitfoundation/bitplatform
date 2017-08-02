@@ -223,3 +223,35 @@ Run .Net core app stesp:
 2- Open Samples\WebApiSamples\6WebApiDotNetCoreHost in visual studio code and press F5 or Open WebApiSamples.sln in Visual Studio 2017 Update 3 Preview
 
 Note that upcoming articles have no .net core sample as we've not officillay supported .net core yet, but after we officially supported .net core, you can start a safe/easy migrate.
+
+### 6- Web API - Dependency Injection samples:
+
+Bit's dependency injection covers you anywhere, from web api to signalr, background job workers, etc. As you see in AppStartup class of samples, there is a dependencyManager variable in both ASP.NET & ASP.NET Core projects. If you register/add some thing with that, it is accessible using constructor and property injection anywhere you need it. Let's take a look at  [sample](https://github.com/bit-foundation/bit-framework/tree/master/Samples/WebApiSamples/7WebApiDependencyInjection)
+
+As you see in that project, there is an IEmailService interface and DefaultEmailService class. We've registered that as following:
+
+```
+dependencyManager.Register<IEmailService, DefaultEmailService>();
+```
+
+It uses [Autofac](https://autofac.org/) by default. Support for other IOC containers is going to be added soon.
+
+You can also specify life cycle by calling .Register like following:
+
+```
+dependencyManager.Register<IEmailService, DefaultEmailService>(lifeCycle: DependencyLifeCycle.InstancePerLifetimeScope);
+```
+
+It accepts two lifecyles: InstancePerLifetimeScope & SingleInstance. InstancePerLifetimeScope creates a new instance of your class for every web request, every background job, etc. But SingleInstance creates one instance and use that anywhere. Classes which are registered using InstancePerLifetimeScope have access to IUserInformationProvider which provides you information about the current user and some classes like Entity framework db context and repositories have to be InstancePerLifetimeScope if you intend to follow best practices. (Default lifecycle is InstancePerLifetimeScope if you call .Register without specifying lifecyle)
+
+You've also other Register methods like RegisterGeneric, RegisterInstance, RegisterTypes and RegisterUsing.
+
+If you've got a complex scenario, simply drops us an [issue on github](https://github.com/bit-foundation/bit-framework/issues) or ask a question on [stackoverflow](https://stackoverflow.com/questions/tagged/bit-framework).
+
+You can also cast dependency manager to IAutofacDependencyManager, and after that, you can access [ContainerBuilder](http://docs.autofac.org/en/latest/register/registration.html) of autofac.
+
+```
+ContainerBuilder autofacContainerBuilder = ((IAutofacDependencyManager)dependencyManager).GetContainerBuidler();
+```
+
+In ASP.NET core projects, you've access to [IServiceCollection](https://docs.microsoft.com/en-us/aspnet/core/fundamentals/dependency-injection) by default.
