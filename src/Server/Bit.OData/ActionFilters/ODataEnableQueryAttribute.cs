@@ -45,6 +45,7 @@ namespace Bit.OData.ActionFilters
                     return;
 
                 bool isSingleResult = objContent.Value is SingleResult;
+                bool isCountRequest = actionExecutedContext.Request.RequestUri.LocalPath?.Contains("/$count") == true;
 
                 if (isSingleResult == true)
                     objContent.Value = ((SingleResult)objContent.Value).Queryable;
@@ -105,6 +106,12 @@ namespace Bit.OData.ActionFilters
                     if (currentOdataQueryOptions.Filter != null)
                     {
                         objContent.Value = currentOdataQueryOptions.Filter.ApplyTo(query: (IQueryable)objContent.Value, querySettings: globalODataQuerySettings);
+                    }
+
+                    if (isCountRequest == true)
+                    {
+                        objContent.Value = await (Task<long>)typeof(ODataEnableQueryAttribute).GetMethod(nameof(GetCountAsync)).MakeGenericMethod(queryElementType).Invoke(this, new object[] { objContent.Value, dataProviderSpecificMethodsProvider, cancellationToken });
+                        return;
                     }
 
                     if (currentOdataQueryOptions.Count?.Value == true && takeCount.HasValue == true && isSingleResult == false)
