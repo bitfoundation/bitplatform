@@ -27,7 +27,7 @@ Processor=Intel Core i7-7700K CPU 4.20GHz (Kaby Lake), ProcessorCount=8
 ```
 
  | Method             | Mean        | Error      | StdDev    |
- |-------------------:|------------:|-----------:|----------:|
+ |--------------------|-------------|------------|-----------|
  | Return Empty list  | 505.5 μs    | 8.637 μs   | 8.079 μs  |
  | BitRepository      | 20.00 ms    | 0.3654 ms  | 0.3418 ms |
  | SharpRepository    | 1,965.27 ms | 38.8008 ms | 65.887 ms |
