@@ -173,7 +173,7 @@ select * from Customers inner join Cities on Id = CustomerId where IsActive = 1 
 
 As you see, the filter we've developed at server side (c => c.IsActive == true) is combined with query we passed from client side (filter=CityId eq 1). Filters are combined with "AND", so there is no security risk at all.
 
-This one: [http://localhost:9000/odata/MyApp/Customers/MyApp.GetActiveCustomers?$filter=Id eq 2&$select=Id,FirstName,LastName](http://localhost:9000/odata/MyApp/Customers/MyApp.GetActiveCustomers?$filter=Id%20eq%202&$select=Id,FirstName,LastName) results into following sql:
+This one: [http://localhost:9000/odata/MyApp/Customers/MyApp.GetActiveCustomers?$select=Id,FirstName,LastName](http://localhost:9000/odata/MyApp/Customers/MyApp.GetActiveCustomers?$select=Id,FirstName,LastName) results into following sql:
 
 ```sql
 select Id,FirstName,LastName from Customers where IsActive = 1 /*true*/
