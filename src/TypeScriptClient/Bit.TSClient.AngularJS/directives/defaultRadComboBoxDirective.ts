@@ -43,6 +43,22 @@ module Bit.Directives {
                 $attrs["headerTemplateId"] = headerTemplateId;
             }
 
+            const noDataTemplate = angular.element($element)
+                .children("no-data-template");
+
+            if (noDataTemplate.length != 0) {
+
+                const noDataTemplateId = guidUtils.newGuid();
+
+                noDataTemplate
+                    .attr("id", noDataTemplateId)
+                    .attr("ng-cloak", "");
+
+                angular.element(document.body).append(noDataTemplate);
+
+                $attrs["noDataTemplateId"] = noDataTemplateId;
+            }
+
             let ngModelOptions = "";
             if ($attrs.ngModelOptions == null) {
                 ngModelOptions = `ng-model-options="{ updateOn : 'change' , allowInvalid : true }"`;
@@ -220,6 +236,17 @@ module Bit.Directives {
                 let headerTemplate: any = kendo.template(headerTemplateElementHtml, { useWithBlock: false });
 
                 comboBoxOptions.headerTemplate = headerTemplate;
+            }
+
+            if (this.$attrs["noDataTemplateId"] != null) {
+
+                let noDataTemplateElement = angular.element(`#${this.$attrs["noDataTemplateId"]}`);
+
+                let noDataTemplateElementHtml = noDataTemplateElement.html();
+
+                let noDataTemplate: any = kendo.template(noDataTemplateElementHtml, { useWithBlock: false });
+
+                comboBoxOptions.noDataTemplate = noDataTemplate;
             }
 
             if (this.dataSource.options.schema.model.fields[comboBoxOptions.dataTextField] == null)
