@@ -69,10 +69,12 @@
                 throw new Error("entitySetName may not be null");
 
             const entitySetConfigs = entitySetNames
-                .map(entitySetName => { return this.entitySetConfigs.find(ec => ec.entitySetName.toLowerCase() == entitySetName.toLowerCase()); });
-
-            if (entitySetConfigs.some(entitySetConfig => entitySetConfig == null))
-                throw new Error("No entity set config found named");
+                .map(entitySetName => {
+                    const cnfg = this.entitySetConfigs.find(ec => ec.entitySetName.toLowerCase() == entitySetName.toLowerCase());
+                    if (cnfg == null)
+                        throw new Error(`No entity set config found named ${entitySetName}`);
+                    return cnfg;
+                });
 
             if (navigator.onLine == false)
                 return;
@@ -95,7 +97,7 @@
             if (toServerEntitySetSyncMaterials.length > 0) {
 
                 const allRecentlyChangedOfflineEntities = await offlineContext.batchExecuteQuery(toServerEntitySetSyncMaterials.map(entitySetSyncMaterial => {
-                    return entitySetSyncMaterial.offlineEntitySet.filter(e => e.ISV != true);
+                    return entitySetSyncMaterial.offlineEntitySet.filter(e => e.ISV == false);
                 }));
 
                 for (let i = 0; i < toServerEntitySetSyncMaterials.length; i++) {
@@ -121,7 +123,7 @@
             if (fromServerEntitySetSyncMaterials.length > 0) {
 
                 const allOfflineEntitiesOrderedByVersion = await offlineContext.batchExecuteQuery(fromServerEntitySetSyncMaterials.map(entitySetSyncMaterial => {
-                    return entitySetSyncMaterial.offlineEntitySet.orderByDescending(e => e.Version).take(1);
+                    return entitySetSyncMaterial.offlineEntitySet.orderByDescending(e => e.Version).map(function (it) { return { Version: it.Version }; }).take(1);
                 })) as Model.Contracts.ISyncableDto[][];
 
                 const loadRecentlyChangedOnlineEntitiesQueries = fromServerEntitySetSyncMaterials.map((entitySetSyncMaterial, i) => {
@@ -144,6 +146,8 @@
                 for (let i = 0; i < allRecentlyChangedOnlineEntities.length; i++) {
 
                     const recentlyChangedOnlineEntities = allRecentlyChangedOnlineEntities[i];
+                    if (recentlyChangedOnlineEntities.length == 0)
+                        continue;
                     const offlineEntitiesOrderedByVersion = allOfflineEntitiesOrderedByVersion[i];
                     const entitySetSyncMaterial = fromServerEntitySetSyncMaterials[i];
 
@@ -151,17 +155,19 @@
                         entitySetSyncMaterial.offlineEntitySet.addMany(recentlyChangedOnlineEntities);
                     }
                     else {
-                        const mapString = entitySetSyncMaterial.entitySetConfig.keyMembers.map(function (k) { return `it.${k}`; }).join(",");
-                        const filterString = recentlyChangedOnlineEntities.map(function (recentlyChangedOnlineEntity) {
-                            return entitySetSyncMaterial.entitySetConfig.keyMembers.map(function (key) {
-                                let rKeyValue = recentlyChangedOnlineEntity[key];
-                                if (typeof (rKeyValue) == "string")
-                                    rKeyValue = `'${rKeyValue}'`;
-                                return `it.${key} == ${rKeyValue}`;
-                            }).join(" && ")
-                        }).join(" || ");
 
-                        const equivalentOfflineEntities = await entitySetSyncMaterial.offlineEntitySet.map(mapString).filter(filterString).toArray();
+                        const mapString = `function(it) { return { ${entitySetSyncMaterial.entitySetConfig.keyMembers.map(function (k) { return `${k}: it.${k}`; }).join(",")} } }`;
+
+                        let recentlyChangedOnlineEntitiesCopy = recentlyChangedOnlineEntities.slice();
+                        let maxParametersCount = offlineContext["storageProvider"].name == "webSql" ? 127 : recentlyChangedOnlineEntitiesCopy.length;
+
+                        let equivalentOfflineEntities = [];
+
+                        while (recentlyChangedOnlineEntitiesCopy.length != 0) {
+                            for (const keyMember of entitySetSyncMaterial.entitySetConfig.keyMembers) {
+                                equivalentOfflineEntities = equivalentOfflineEntities.concat(await entitySetSyncMaterial.offlineEntitySet.map(mapString).filter(`function (it, keys) { return it.${keyMember} in keys; }`, { keys: recentlyChangedOnlineEntitiesCopy.splice(0, maxParametersCount).map(e => { return e[keyMember]; }) }).toArray());
+                            }
+                        }
 
                         for (const recentlyChangedOnlineEntity of recentlyChangedOnlineEntities) {
 

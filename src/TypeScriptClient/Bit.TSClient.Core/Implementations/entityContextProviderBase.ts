@@ -151,7 +151,7 @@
             return this.oDataJSInitPromise;
         }
 
-        public static defaultOfflineDbProvider: "indexedDb" | "webSql" = "indexedDb";
+        public static defaultOfflineDbProvider: "indexedDb" | "webSql" | "local" = "local";
 
         @Log()
         public async getContext<TContext extends $data.EntityContext>(contextName: string, config?: { isOffline?: boolean, jayDataConfig?: any }): Promise<TContext> {
