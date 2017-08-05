@@ -1,6 +1,6 @@
 ﻿/// <reference path="implementations/testdefaultangularappinitialization.ts" />
 module Bit.Tests {
-    
+
     let dependencyManager = DependencyManager.getCurrent();
 
     dependencyManager.registerObjectDependency({ name: "AppEvent", type: Bit.Implementations.DefaultKendoExtender });
@@ -24,6 +24,8 @@ module Bit.Tests {
     dependencyManager.registerObjectDependency({ name: "SecurityService", type: Bit.Implementations.DefaultSecurityService });
 
     dependencyManager.registerObjectDependency({ name: "GuidUtils", type: Bit.Implementations.DefaultGuidUtils });
+
+    dependencyManager.registerObjectDependency({ name: "SyncService", type: Bit.Implementations.DefaultSyncService });
 
     dependencyManager.registerInstanceDependency({ name: "ClientAppProfileManager" }, ClientAppProfileManager.getCurrent());
 }

@@ -249,6 +249,11 @@
     });
 
     dependencyManager.registerFileDependency({
+        name: "jayData-webSql-provider",
+        path: "bit-framework/src/TypeScriptClient/Bit.TSClient.Core/node_modules/@bit/jaydata/jaydataproviders/SqLiteProvider"
+    });
+
+    dependencyManager.registerFileDependency({
         name: "jayData-kendo-module",
         path: "bit-framework/src/TypeScriptClient/Bit.TSClient.Core/node_modules/@bit/jaydata/jaydatamodules/kendo"
     });
