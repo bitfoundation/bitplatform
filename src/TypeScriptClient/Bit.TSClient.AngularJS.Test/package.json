@@ -19,11 +19,11 @@
   ],
   "license": "MIT",
   "devDependencies": {
-    "@types/jasmine": "^2.5.52",
+    "@types/jasmine": "^2.5.53",
     "@types/jasmine-jquery": "^1.5.31"
   },
   "dependencies": {
-    "jasmine": "2.6.0",
+    "jasmine": "2.7.0",
     "jasmine-jquery": "2.1.1"
   }
 }

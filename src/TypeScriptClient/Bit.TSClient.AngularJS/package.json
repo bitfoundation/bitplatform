@@ -19,13 +19,13 @@
   ],
   "license": "MIT",
   "devDependencies": {
-    "@types/angular": "^1.6.20",
-    "@types/angular-material": "0.0.0",
+    "@types/angular": "^1.6.28",
+    "@types/angular-material": "1.1.53",
     "@types/angular-translate": "^2.15.1",
-    "@types/jquery": "^2.0.46",
+    "@types/jquery": "^3.2.11",
     "@types/kendo-ui": "^2016.3.41",
     "gulp": "3.9.1",
-    "gulp-less": "3.3.0"
+    "gulp-less": "3.3.2"
   },
   "optionalDependencies": {
     "angular-translate": "2.15.2",

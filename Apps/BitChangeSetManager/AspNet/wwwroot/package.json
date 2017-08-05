@@ -12,18 +12,18 @@
   ],
   "license": "MIT",
   "devDependencies": {
-    "@types/angular": "^1.6.20",
-    "@types/angular-material": "0.0.0",
+    "@types/angular": "^1.6.28",
+    "@types/angular-material": "1.1.53",
     "@types/angular-translate": "^2.15.1",
-    "@types/decimal.js": "0.0.29",
-    "@types/jquery": "^2.0.46",
+    "@types/decimal.js": "0.0.30",
+    "@types/jquery": "^3.2.11",
     "@types/kendo-ui": "^2016.3.41",
     "@types/pubsub-js": "1.5.17",
     "@types/signalr": "^2.2.34"
   },
   "dependencies": {
     "@bit/bit-framework": "0.5.1",
-    "@bit/jaydata": "^1.5.12",
+    "@bit/jaydata": "^1.5.13",
     "@bit/jaydata-odatajs": "4.0.1",
     "angular": "1.6.5",
     "ngcomponentrouter": "2.1.0",
