@@ -68,36 +68,7 @@ namespace Bit.Owin.Implementations
 
         public virtual void SaveLog(LogEntry logEntry)
         {
-            if (logEntry == null)
-                throw new ArgumentNullException(nameof(logEntry));
-
-            EventLog appLog = new EventLog("Application")
-            {
-                Source = _activeAppEnvironment.AppInfo.Name
-            };
-
-            EventLogEntryType eventLogsSeverity;
-
-            if (logEntry.Severity == "Warning")
-                eventLogsSeverity = EventLogEntryType.Warning;
-            else if (logEntry.Severity == "Information")
-                eventLogsSeverity = EventLogEntryType.Information;
-            else
-                eventLogsSeverity = EventLogEntryType.Error;
-
-            string logContents = _contentFormatter.Serialize(logEntry);
-
-            if (logContents.Length >= 30000)
-                logContents = logContents.Substring(0, 29999);
-
-            if (_activeAppEnvironment.TryGetConfig("EventLogId", out long eventLogId))
-            {
-                appLog.WriteEntry(logContents, eventLogsSeverity, Convert.ToInt32(eventLogId));
-            }
-            else
-            {
-                appLog.WriteEntry(logContents, eventLogsSeverity);
-            }
+            SaveLogAsync(logEntry).GetAwaiter().GetResult();
         }
     }
 }

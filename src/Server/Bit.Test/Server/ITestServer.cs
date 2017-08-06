@@ -24,10 +24,10 @@ namespace Bit.Test.Server
         Task<TokenResponse> Login(string userName, string password, string clientId, string secret = "secret");
 
         ODataClient BuildODataClient(Action<HttpRequestMessage> beforeRequest = null,
-            Action<HttpResponseMessage> afterResponse = null, TokenResponse token = null, string route = null);
+            Action<HttpResponseMessage> afterResponse = null, TokenResponse token = null, string edmName = "Test");
 
         ODataBatch BuildODataBatchClient(Action<HttpRequestMessage> beforeRequest = null,
-           Action<HttpResponseMessage> afterResponse = null, TokenResponse token = null, string route = null);
+           Action<HttpResponseMessage> afterResponse = null, TokenResponse token = null, string edmName = "Test");
 
         HttpClient GetHttpClient(TokenResponse token = null);
 

@@ -192,24 +192,7 @@ namespace Bit.Owin.Implementations
 
         public virtual void LogException(Exception exp, string message)
         {
-            if (message == null)
-                throw new ArgumentNullException(nameof(message));
-
-            if (exp == null)
-                throw new ArgumentNullException(nameof(exp));
-
-            string severity = "Error";
-
-            if (!(exp is AppException))
-                severity = "Fatal";
-
-            LogEntry logEntry = CreateLogEntry(message, severity);
-
-            AddLogData("Exception", exp);
-            AddLogData("ExceptionAdditionalMessage", message);
-            AddLogData("ExceptionType", exp.GetType().FullName);
-
-            SaveLogEntryUsingAllLogStores(logEntry);
+            LogExceptionAsync(exp, message).GetAwaiter().GetResult();
         }
 
         private LogEntry CreateLogEntry(string message, string severity)

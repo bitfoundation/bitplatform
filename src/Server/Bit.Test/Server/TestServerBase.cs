@@ -20,42 +20,15 @@ namespace Bit.Test.Server
         public virtual string Uri { get; protected set; }
 
         public virtual ODataBatch BuildODataBatchClient(Action<HttpRequestMessage> beforeRequest = null,
-                  Action<HttpResponseMessage> afterResponse = null, TokenResponse token = null, string route = null)
+                  Action<HttpResponseMessage> afterResponse = null, TokenResponse token = null, string edmName = "Test")
         {
-            if (route == null)
-                route = "Test";
-
-            ODataBatch client = new ODataBatch(new ODataClientSettings($"{Uri}odata/{route}/")
-            {
-                BeforeRequest = message =>
-                {
-                    if (token != null)
-                    {
-                        message.Headers.Add("Authorization",
-                            $"{token.TokenType} {token.AccessToken}");
-                    }
-
-                    if (beforeRequest != null)
-                        beforeRequest(message);
-                },
-                AfterResponse = message =>
-                {
-                    if (afterResponse != null)
-                        afterResponse(message);
-                },
-                OnCreateMessageHandler = () => GetHttpMessageHandler()
-            });
-
-            return client;
+            return new ODataBatch(BuildODataClient(beforeRequest, afterResponse, token, edmName));
         }
 
         public virtual ODataClient BuildODataClient(Action<HttpRequestMessage> beforeRequest = null,
-            Action<HttpResponseMessage> afterResponse = null, TokenResponse token = null, string route = null)
+            Action<HttpResponseMessage> afterResponse = null, TokenResponse token = null, string edmName = "Test")
         {
-            if (route == null)
-                route = "Test";
-
-            ODataClient client = new ODataClient(new ODataClientSettings($"{Uri}odata/{route}/")
+            ODataClient client = new ODataClient(new ODataClientSettings($"{Uri}odata/{edmName}/")
             {
                 BeforeRequest = message =>
                 {

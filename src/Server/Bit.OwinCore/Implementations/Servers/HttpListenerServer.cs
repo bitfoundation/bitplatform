@@ -1,61 +1,20 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using Bit.OwinCore.Implementations.Servers;
 using Microsoft.AspNetCore.Hosting.Server;
-using Microsoft.AspNetCore.Hosting.Server.Features;
-using Microsoft.AspNetCore.Http.Features;
-using Microsoft.AspNetCore.Owin;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Owin.BuilderProperties;
 using Microsoft.Owin.Host.HttpListener;
+using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
-namespace Microsoft.AspNetCore.Hosting
+namespace Bit.OwinCore.Implementations.Servers
 {
-    public class HttpListenerServer : IServer
+    public class HttpListenerServer : OwinServer, IServer
     {
         private IDisposable _HttpListenerServer;
 
-        public IFeatureCollection Features { get; } = new FeatureCollection();
-
-        public HttpListenerServer()
-        {
-            Features.Set<IServerAddressesFeature>(new ServerAddressesFeature());
-        }
-
         public void Start<TContext>(IHttpApplication<TContext> application)
         {
-            Func<IDictionary<string, object>, Task> appFunc = async env =>
-            {
-                FeatureCollection features = new FeatureCollection(new OwinFeatureCollection(env));
-
-                TContext context = application.CreateContext(features);
-
-                try
-                {
-                    await application.ProcessRequestAsync(context);
-                }
-                catch (Exception ex)
-                {
-                    application.DisposeContext(context, ex);
-                    throw;
-                }
-
-                application.DisposeContext(context, null);
-
-            };
-
-            appFunc = OwinWebSocketAcceptAdapter.AdaptWebSockets(appFunc);
-
-            Dictionary<string, object> props = new Dictionary<string, object>
-            {
-                ["host.Addresses"] =
-                Features.Get<IServerAddressesFeature>()
-                    .Addresses.Select(add => new Uri(add))
-                    .Select(add => new Address(add.Scheme, add.Host, add.Port.ToString(), add.LocalPath).Dictionary)
-                    .ToList()
-            };
-
+            CreateOwinProps(application, out Func<IDictionary<string, object>, Task> appFunc, out Dictionary<string, object> props);
 
             OwinServerFactory.Initialize(props);
 
@@ -67,7 +26,10 @@ namespace Microsoft.AspNetCore.Hosting
             _HttpListenerServer?.Dispose();
         }
     }
+}
 
+namespace Microsoft.AspNetCore.Hosting
+{
     public static class HttpListenerWebHostBuilderExtensions
     {
         public static IWebHostBuilder UseHttpListener(this IWebHostBuilder builder)

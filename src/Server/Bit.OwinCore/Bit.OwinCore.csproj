@@ -353,6 +353,7 @@
     <Compile Include="Implementations\AspNetCoreRequestInformationProvider.cs" />
     <Compile Include="Implementations\BasicDataProtectionProvider.cs" />
     <Compile Include="Implementations\Servers\HttpListenerServer.cs" />
+    <Compile Include="Implementations\Servers\OwinServer.cs" />
     <Compile Include="Implementations\Servers\SuaveServer.cs" />
     <Compile Include="Middlewares\AspNetCoreCacheResponseMiddleware.cs" />
     <Compile Include="Middlewares\AspNetCoreExceptionHandlerMiddlewareConfiguration.cs" />
