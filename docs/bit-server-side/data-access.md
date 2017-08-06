@@ -1,14 +1,14 @@
 # Bit Data Access
 
-You can use Bit Data Access components, or you can use your own preferred way to read/manipulate database. But why you might choose Bit data access anyway? These are answers:
+You can use Bit Data Access components, or you can use your own preferred way to read/manipulate database. But why you might choose Bit data access anyway?
 
-1- True async support. Application with async code gets scaled better, but what does this mean to us? Each server side app has limited threads. Threads are workers and your app works because they work. Threads count is limited, you've not unlimited threads, so you've to use them carefully. When a request comes to your web api action, and you get data from database using entity framework, your thread (your valuable thread) waits until database returns data. But that wait is useless. In case you use async-await, your thread executes other requests instead of waiting for a database.
+1- True async support. Application with async code gets scaled better, but what does this mean to us? Each server side app has limited threads. Threads are workers and your app works because they work. Threads count is limited, so you've to use them carefully. When a request comes to your web api action, and you get data from database using entity framework (For example), your thread (your valuable thread) waits until database returns data. But that wait is useless. In case you use async-await, your thread executes other requests instead of waiting for a database.
 
-2- True cancellation token support. There is CancellationToken in every web api action you develop. If user/operator closes its browser, or if you cancel request at client side programmatically, that cancellation token gets notified. Almost all bit framework's methods accept cancellation token, and they stop their work if cancellation token gets notified.
+2- True cancellation token support. There is a CancellationToken in every web api action you develop. If user/operator closes its browser, or if you cancel request at client side programmatically, that cancellation token gets notified. Almost all bit framework's methods accept cancellation token, and they stop their work by simply passing that token.
 
-3- Bit Data Access components are optimized for N-Tier app development. To have a better understanding what does this mean see [here](https://docs.bit-framework.com/docs/design-backgrounds/optimized-entity-framework-for-n-tier-apps.html).
+3- Bit Data Access components are optimized for N-Tier app development. To have a better understanding about what does this mean see [here](https://docs.bit-framework.com/docs/design-backgrounds/optimized-entity-framework-for-n-tier-apps.html).
 
-### Entity Framework 
+### Entity Framework
 
 Getting started: (Sample can be found [here](https://github.com/bit-foundation/bit-framework/tree/master/Samples/DataAccessSamples/))
 
@@ -28,20 +28,20 @@ public class MyAppDbContext : EfDbContextBase
     public MyAppDbContext()
         : base(DefaultAppEnvironmentProvider.Current.GetActiveAppEnvironment().GetConfig<string>("AppConnectionString"))
     {
-        // This one is need for migrations/initializers etc.
+        // This constructor is need for migrations/initializers etc.
     }
 
     public MyAppDbContext(IAppEnvironmentProvider appEnvironmentProvider, IDbConnectionProvider dbConnectionProvider)
         : base(appEnvironmentProvider.GetActiveAppEnvironment().GetConfig<string>("AppConnectionString"), dbConnectionProvider)
     {
-        // This one has better performance, provides implicit unit of work, etc
+        // This constructor has better performance, provides implicit unit of work, etc. And it is automatically used by bit framework while processing requests etc.
     }
 
     public virtual DbSet<Customer> Customers { get; set; }
 }
 ```
 
-App environment provider provides you a way to access your configuration. By default, it reads configs from environments.json file. You don't have to use that in this case, your db context just needs a connection string, read it from app environment provider, asp.net core's configuration provider, app/web config files or write connection string there directly.
+App environment provider provides you a way to access your configuration. By default, it reads configs from environments.json file. You don't have to use that, your db context just needs a connection string, read it from app environment provider, asp.net core's configuration provider, app/web config files or write connection string there directly.
 
 See environments.json file
 
@@ -120,7 +120,7 @@ dependencyManager.Register<IOrdersRepository, OrdersRepository>(); // It registe
 
 It's as like as Entity Framework, with two differences:
 
-1- We register entity framework by following:
+1- We register entity framework core by following:
 
 ```csharp
 dependencyManager.RegisterEfCoreDbContext<MyAppDbContext, SqlDbContextObjectsProvider>();
@@ -138,7 +138,7 @@ public MyAppDbContext()
 public MyAppDbContext(IAppEnvironmentProvider appEnvironmentProvider, IDbContextObjectsProvider dbContextCreationOptionsProvider)
         : base(appEnvironmentProvider.GetActiveAppEnvironment().GetConfig<string>("AppConnectionString"), dbContextCreationOptionsProvider)
 {
-    // This one has better performance, provides implicit unit of work, etc
+     // This constructor has better performance, provides implicit unit of work, etc. And it is automatically used by bit framework while processing requests etc.
 }
 ```
 
