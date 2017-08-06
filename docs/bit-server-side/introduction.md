@@ -8,9 +8,9 @@ By the abstraction we provide to you, you develop no matter you choose ASP.NET C
 
 > **[success]Recommendation:**
 >
-> Choose ASP.NET Core with Full .NET Framework. You can host your app on Windows/Linux servers + You can use powerful libraries like Entity Framework Full \(6\). As .NET Core becomes mature, you can upgrade your app to .NET Core easily.
+> Choose ASP.NET Core with Full .NET Framework. After we supported .NET Core, you can upgrade your app to .NET Core easily.
 
-We've some C\# analyzers to help you at realtime while you're developing. You'll see something like this:
+We also watch your codes at realtime to inform you about common mistakes. For example, if you use some classes which are not part of ASP.NET Core / .NET Core, you'll see something like this:
 
 ![](/assets/WarnAboutNonASPNETCoreCompatilbeCodeUsage.png)
 
@@ -25,4 +25,4 @@ We've some C\# analyzers to help you at realtime while you're developing. You'll
 * Integrated Logging infrastructure
 * , ...
 
-Remember that you can use whatever you want. You're not limited to what we provide to you.
+Remember that you can use whatever you want. You're not limited to what we provide to you. Bit is a framework for developers.
