@@ -15,7 +15,7 @@ namespace Bit.OData.Serialization
         {
             ODataEnumValue result = base.CreateODataEnumValue(graph, enumType, writeContext);
 
-            if (result != null && !string.IsNullOrEmpty(result.Value) && !string.IsNullOrEmpty(result.TypeName))
+            if (!string.IsNullOrEmpty(result?.Value) && !string.IsNullOrEmpty(result.TypeName))
             {
                 // EnumKey >> "Namespace.EnumType'EnumKey'"
                 result = new ODataEnumValue($"{result.TypeName}'{result.Value}'");

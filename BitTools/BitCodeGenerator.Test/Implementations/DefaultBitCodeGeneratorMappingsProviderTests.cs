@@ -4,7 +4,6 @@ using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using BitCodeGenerator.Test.Helpers;
-using BitCodeGenerator.Implementations.HtmlClientProxyGenerator;
 using BitTools.Core.Model;
 using BitCodeGenerator.Implementations;
 

@@ -4,10 +4,8 @@ using BitTools.Core.Contracts;
 using BitTools.Core.Model;
 using Microsoft.CodeAnalysis;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace BitCodeGenerator.Test.Implementations

@@ -56,7 +56,7 @@ namespace Bit.IdentityServer.Implementations
             {
                 using (UserPrincipal user = UserPrincipal.FindByIdentity(principalContext, IdentityType.SamAccountName, context.Subject.Identity.Name))
                 {
-                    return user != null && user.Enabled != null && user.Enabled.Value;
+                    return user?.Enabled != null && user.Enabled.Value;
                 }
             }
         }

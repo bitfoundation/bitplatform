@@ -9,8 +9,6 @@ namespace Bit.OData.Serialization
 {
     public class ExtendedODataDeserializerProvider : DefaultODataDeserializerProvider
     {
-        private readonly IServiceProvider _rootContainer;
-
 #if DEBUG
         protected ExtendedODataDeserializerProvider() 
             : base(null)
@@ -21,12 +19,7 @@ namespace Bit.OData.Serialization
         public ExtendedODataDeserializerProvider(IServiceProvider rootContainer)
             : base(rootContainer)
         {
-            _rootContainer = rootContainer;
-
-            _DefaultODataParameterDeserializerValue = new Lazy<DefaultODataActionParameterDeserializer>(() =>
-            {
-                return (DefaultODataActionParameterDeserializer)_rootContainer.GetService(typeof(DefaultODataActionParameterDeserializer).GetTypeInfo());
-            });
+            _DefaultODataParameterDeserializerValue = new Lazy<DefaultODataActionParameterDeserializer>(() => (DefaultODataActionParameterDeserializer)rootContainer.GetService(typeof(DefaultODataActionParameterDeserializer).GetTypeInfo()));
         }
 
         private readonly Lazy<DefaultODataActionParameterDeserializer> _DefaultODataParameterDeserializerValue;

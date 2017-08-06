@@ -1,11 +1,8 @@
 ﻿using Bit.Core.Contracts;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.Extensions;
-using Microsoft.AspNetCore.Http.Features;
 using System;
 using System.Linq;
 using System.Security.Claims;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace Bit.Owin.Implementations
 {
@@ -154,7 +151,7 @@ namespace Bit.Owin.Implementations
 
                 if (headers.ContainsKey("Current-Time-Zone"))
                 {
-                    _currentTimeZone = headers["Current-Time-Zone"].ExtendedSingle($"Finding Current-Time-Zone header");
+                    _currentTimeZone = headers["Current-Time-Zone"].ExtendedSingle("Finding Current-Time-Zone header");
 
                     return _currentTimeZone;
                 }
@@ -186,7 +183,7 @@ namespace Bit.Owin.Implementations
                 if (headers.ContainsKey("Desired-Time-Zone"))
                 {
                     _desiredTimeZone =
-                        headers["Desired-Time-Zone"].ExtendedSingle($"Finding Desired-Time-Zone header");
+                        headers["Desired-Time-Zone"].ExtendedSingle("Finding Desired-Time-Zone header");
 
                     return _desiredTimeZone;
                 }

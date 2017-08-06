@@ -39,7 +39,7 @@ namespace Bit.Owin.Implementations
                 string password = activeAppEnvironment
                     .GetConfig<string>("IdentityCertificatePassword");
 
-                _certificate = new X509Certificate2(File.ReadAllBytes(_pathProvider.MapPath(activeAppEnvironment.GetConfig<string>("IdentityServerCertificatePath", "IdentityServerCertificate.pfx"))),
+                _certificate = new X509Certificate2(File.ReadAllBytes(_pathProvider.MapPath(activeAppEnvironment.GetConfig("IdentityServerCertificatePath", "IdentityServerCertificate.pfx"))),
                     password);
             }
 

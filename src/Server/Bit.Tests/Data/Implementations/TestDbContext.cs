@@ -2,7 +2,6 @@
 using Bit.Data.EntityFrameworkCore.Contracts;
 using Bit.Data.EntityFrameworkCore.Implementations;
 using Bit.Model.DomainModels;
-using Bit.Tests.Api.ApiControllers;
 using Bit.Tests.Model.DomainModels;
 using Microsoft.EntityFrameworkCore;
 
@@ -11,7 +10,6 @@ namespace Bit.Tests.Data.Implementations
     public class TestDbContext : EfCoreDbContextBase
     {
         protected TestDbContext()
-            : base()
         {
 
         }

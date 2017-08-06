@@ -1,9 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using AutoMapper;
-using Bit.Model.Contracts;
 using Bit.Owin.Contracts;
 using Bit.Owin.Contracts.Metadata;
 using Bit.Owin.Implementations;

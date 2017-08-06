@@ -37,10 +37,7 @@ namespace BitCodeAnalyzer.SystemAnalyzers.WebAnalyzers
 
             ISymbol usageSymbol = context.SemanticModel.GetSymbolInfo(root).Symbol;
 
-            if (usageSymbol == null)
-                return;
-
-            if (usageSymbol.Kind == SymbolKind.NamedType && usageSymbol.ContainingAssembly?.Name == "System.Web")
+            if (usageSymbol?.Kind == SymbolKind.NamedType && usageSymbol.ContainingAssembly?.Name == "System.Web")
             {
                 Diagnostic diagn = Diagnostic.Create(Rule, root.GetLocation(), Message);
 

@@ -10,9 +10,9 @@ namespace Bit.Test.Server
 {
     public class RemoteWebDriverOptions
     {
-        public string Uri { get; set; } = null;
+        public string Uri { get; set; }
 
-        public TokenResponse Token { get; set; } = null;
+        public TokenResponse Token { get; set; }
 
         public bool ClientSideTest { get; set; } = true;
     }

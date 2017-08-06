@@ -2,10 +2,6 @@
 
     export class SignalRMessageReceiver implements Contracts.IMessageReceiver {
 
-        public constructor() {
-
-        }
-
         private _isInited = false;
         private _isConnected = false;
         private _stayConnected = false;

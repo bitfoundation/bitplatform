@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading;
 using BitTools.Core.Contracts;
 using BitTools.Core.Model;
 using Microsoft.CodeAnalysis;
@@ -72,7 +71,7 @@ namespace BitCodeGenerator.Implementations
                         ModelSymbol = controllerSymbol.BaseType.TypeArguments.ExtendedSingleOrDefault($"Looking for model of ${controllerSymbol.Name}", t => t.IsDto())
                     };
 
-                    if (dtoController.ModelSymbol != null && dtoController.ModelSymbol is ITypeParameterSymbol)
+                    if (dtoController.ModelSymbol is ITypeParameterSymbol)
                     {
                         dtoController.ModelSymbol = ((ITypeParameterSymbol)dtoController.ModelSymbol).ConstraintTypes.ExtendedSingleOrDefault($"Looking for model on generic model {dtoController.ModelSymbol.Name}", t => t.IsDto());
                     }

@@ -11,7 +11,7 @@ declare module kendo {
             current: $data.Entity | Model;
         }
     }
-    function destroyWidget(widget: kendo.ui.Widget & { wrapper: any }): void;
+    function destroyWidget(widget: ui.Widget & { wrapper: any }): void;
 }
 
 declare namespace angular.material {

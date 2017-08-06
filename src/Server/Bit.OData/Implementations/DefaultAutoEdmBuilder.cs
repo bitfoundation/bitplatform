@@ -47,9 +47,9 @@ namespace Bit.OData.Implementations
 
     public class DefaultAutoEdmBuilder : IAutoEdmBuilder
     {
-        private readonly MethodInfo _buildControllerOperations = null;
-        private readonly MethodInfo _buildDto = null;
-        private readonly MethodInfo _collectionParameterMethodInfo = null;
+        private readonly MethodInfo _buildControllerOperations;
+        private readonly MethodInfo _buildDto;
+        private readonly MethodInfo _collectionParameterMethodInfo;
 
         public DefaultAutoEdmBuilder()
         {

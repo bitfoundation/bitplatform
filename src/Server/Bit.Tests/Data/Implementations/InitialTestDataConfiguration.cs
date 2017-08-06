@@ -12,7 +12,6 @@ namespace Bit.Tests.Data.Implementations
     public class InitialTestDataConfiguration : IAppEvents
     {
         private readonly IDependencyManager _dependencyManager;
-        private readonly IDateTimeProvider _dateTimeProvider;
 
         public InitialTestDataConfiguration(IDependencyManager dependencyManager, IDateTimeProvider dateTimeProvider)
         {
@@ -23,7 +22,7 @@ namespace Bit.Tests.Data.Implementations
                 throw new ArgumentNullException(nameof(dateTimeProvider));
 
             _dependencyManager = dependencyManager;
-            _dateTimeProvider = dateTimeProvider;
+            var dateTimeProvider1 = dateTimeProvider;
 
             _parentEntities = new List<ParentEntity>
             {
@@ -31,7 +30,7 @@ namespace Bit.Tests.Data.Implementations
                 {
                     Name = "A",
                     Version = 1 ,
-                    Date = _dateTimeProvider.GetCurrentUtcDateTime(),
+                    Date = dateTimeProvider1.GetCurrentUtcDateTime(),
                     ChildEntities = new List<ChildEntity>
                     {
                         new ChildEntity { Name = "a1" , Version = 7 },
@@ -43,7 +42,7 @@ namespace Bit.Tests.Data.Implementations
                 {
                     Name = "B",
                     Version = 2,
-                    Date = _dateTimeProvider.GetCurrentUtcDateTime(),
+                    Date = dateTimeProvider1.GetCurrentUtcDateTime(),
                     ChildEntities = new List<ChildEntity>
                     {
                         new ChildEntity { Name = "b1" , Version = 4 },
@@ -55,7 +54,7 @@ namespace Bit.Tests.Data.Implementations
                 {
                     Name = "C",
                     Version = 3,
-                    Date = _dateTimeProvider.GetCurrentUtcDateTime(),
+                    Date = dateTimeProvider1.GetCurrentUtcDateTime(),
                     ChildEntities = new List<ChildEntity>
                     {
                         new ChildEntity { Name = "c1" , Version = 1 },

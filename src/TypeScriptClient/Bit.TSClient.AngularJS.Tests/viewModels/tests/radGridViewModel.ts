@@ -8,7 +8,7 @@
 
         public parentEntitiesDataSource: kendo.data.DataSource = null;
         public parentEntitiesDataSourceForFilter: kendo.data.DataSource = null;
-        public parentEntityMetadata = Bit.Tests.Model.DomainModels.ParentEntity;
+        public parentEntityMetadata = Tests.Model.DomainModels.ParentEntity;
 
         @Command()
         public async $onInit(): Promise<void> {
@@ -19,13 +19,13 @@
 
         @Command()
         public doSomethingWithCurrentEntity() {
-            const parentEntity = this.parentEntitiesDataSource.current as Bit.Tests.Model.DomainModels.ParentEntity;
+            const parentEntity = this.parentEntitiesDataSource.current as Tests.Model.DomainModels.ParentEntity;
             parentEntity.Name += "?";
             this.$document.attr("title", parentEntity.Name);
         }
 
         @Command()
-        public onDetailInit(data: Bit.Tests.Model.DomainModels.ParentEntity): void {
+        public onDetailInit(data: Tests.Model.DomainModels.ParentEntity): void {
 
             console.warn(data.Id);
 

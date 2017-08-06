@@ -28,20 +28,8 @@ namespace Bit.Core.Extensions
             }
         });
 
-        public static bool IsRunningOnMono
-        {
-            get
-            {
-                return _isRunningOnMono.Value;
-            }
-        }
+        public static bool IsRunningOnMono => _isRunningOnMono.Value;
 
-        public static bool IsRunningOnDotNetCore
-        {
-            get
-            {
-                return _isRunningOnDotNetCore.Value;
-            }
-        }
+        public static bool IsRunningOnDotNetCore { get; } = _isRunningOnDotNetCore.Value;
     }
 }

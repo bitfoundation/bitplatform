@@ -20,7 +20,7 @@ namespace Bit.OData.ActionFilters
 {
     public class ODataEnableQueryAttribute : EnableQueryAttribute
     {
-        private int? _defaultPageSize = null;
+        private int? _defaultPageSize;
 
         public virtual int? DefaultPageSize
         {
@@ -45,7 +45,7 @@ namespace Bit.OData.ActionFilters
                     return;
 
                 bool isSingleResult = objContent.Value is SingleResult;
-                bool isCountRequest = actionExecutedContext.Request.RequestUri.LocalPath?.Contains("/$count") == true;
+                bool isCountRequest = actionExecutedContext.Request.RequestUri.LocalPath.Contains("/$count") == true;
 
                 if (isSingleResult == true)
                     objContent.Value = ((SingleResult)objContent.Value).Queryable;
@@ -67,7 +67,7 @@ namespace Bit.OData.ActionFilters
                     }
                     else
                     {
-                        objContent.Value = typeof(ODataEnableQueryAttribute).GetMethod(nameof(ToQueryable)).MakeGenericMethod(queryElementType).Invoke(this, new object[] { objContent.Value });
+                        objContent.Value = typeof(ODataEnableQueryAttribute).GetMethod(nameof(ToQueryable)).MakeGenericMethod(queryElementType).Invoke(this, new [] { objContent.Value });
                     }
 
                     if (dataProviderSpecificMethodsProvider == null)
@@ -110,13 +110,13 @@ namespace Bit.OData.ActionFilters
 
                     if (isCountRequest == true)
                     {
-                        objContent.Value = await (Task<long>)typeof(ODataEnableQueryAttribute).GetMethod(nameof(GetCountAsync)).MakeGenericMethod(queryElementType).Invoke(this, new object[] { objContent.Value, dataProviderSpecificMethodsProvider, cancellationToken });
+                        objContent.Value = await (Task<long>)typeof(ODataEnableQueryAttribute).GetMethod(nameof(GetCountAsync)).MakeGenericMethod(queryElementType).Invoke(this, new [] { objContent.Value, dataProviderSpecificMethodsProvider, cancellationToken });
                         return;
                     }
 
                     if (currentOdataQueryOptions.Count?.Value == true && takeCount.HasValue == true && isSingleResult == false)
                     {
-                        long count = await (Task<long>)typeof(ODataEnableQueryAttribute).GetMethod(nameof(GetCountAsync)).MakeGenericMethod(queryElementType).Invoke(this, new object[] { objContent.Value, dataProviderSpecificMethodsProvider, cancellationToken });
+                        long count = await (Task<long>)typeof(ODataEnableQueryAttribute).GetMethod(nameof(GetCountAsync)).MakeGenericMethod(queryElementType).Invoke(this, new [] { objContent.Value, dataProviderSpecificMethodsProvider, cancellationToken });
                         actionExecutedContext.Request.Properties["System.Web.OData.TotalCountFunc"] = new Func<long>(() => count);
                     }
 
@@ -129,10 +129,10 @@ namespace Bit.OData.ActionFilters
                     }
 
                     if (isSingleResult == false)
-                        objContent.Value = await (Task<object>)typeof(ODataEnableQueryAttribute).GetMethod(nameof(ToListAsync)).MakeGenericMethod(queryElementType).Invoke(this, new object[] { objContent.Value, dataProviderSpecificMethodsProvider, takeCount, skipCount, cancellationToken });
+                        objContent.Value = await (Task<object>)typeof(ODataEnableQueryAttribute).GetMethod(nameof(ToListAsync)).MakeGenericMethod(queryElementType).Invoke(this, new [] { objContent.Value, dataProviderSpecificMethodsProvider, takeCount, skipCount, cancellationToken });
                     else
                     {
-                        objContent.Value = await (Task<object>)typeof(ODataEnableQueryAttribute).GetMethod(nameof(FirstAsync)).MakeGenericMethod(queryElementType).Invoke(this, new object[] { objContent.Value, dataProviderSpecificMethodsProvider, cancellationToken });
+                        objContent.Value = await (Task<object>)typeof(ODataEnableQueryAttribute).GetMethod(nameof(FirstAsync)).MakeGenericMethod(queryElementType).Invoke(this, new [] { objContent.Value, dataProviderSpecificMethodsProvider, cancellationToken });
                         actionExecutedContext.Request.Properties["System.Web.OData.TotalCountFunc"] = new Func<long>(() => 1);
                     }
 

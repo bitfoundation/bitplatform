@@ -89,7 +89,7 @@ namespace Bit.Tests
 
             dependencyManager.RegisterHangfireBackgroundJobWorkerUsingDefaultConfiguration<JobSchedulerInMemoryBackendConfiguration>();
 
-            dependencyManager.RegisterGeneric(typeof(IRepository<>).GetTypeInfo(), typeof(TestEfRepository<>).GetTypeInfo(), DependencyLifeCycle.InstancePerLifetimeScope);
+            dependencyManager.RegisterGeneric(typeof(IRepository<>).GetTypeInfo(), typeof(TestEfRepository<>).GetTypeInfo());
 
             if (Settings.Default.UseInMemoryProviderByDefault)
                 dependencyManager.RegisterEfCoreDbContext<TestDbContext, InMemoryDbContextObjectsProvider>();
@@ -103,9 +103,7 @@ namespace Bit.Tests
 
             dependencyManager.RegisterSingleSignOnServer<TestUserService, TestClientProvider>();
 
-            if (_args?.AdditionalDependencies != null)
-                _args?.AdditionalDependencies(dependencyManager);
-
+            _args?.AdditionalDependencies?.Invoke(dependencyManager);
 
             dependencyManager.RegisterSecureDefaultPageMiddlewareUsingDefaultConfiguration();
         }

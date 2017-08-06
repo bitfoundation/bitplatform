@@ -39,9 +39,9 @@ namespace BitChangeSetManager.Security
 
                 StringBuilder sBuilder = new StringBuilder();
 
-                for (int i = 0; i < data.Length; i++)
+                foreach (byte d in data)
                 {
-                    sBuilder.Append(data[i].ToString("x2"));
+                    sBuilder.Append(d.ToString("x2"));
                 }
 
                 password = sBuilder.ToString();

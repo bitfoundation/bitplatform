@@ -73,7 +73,7 @@ namespace Bit.OData.Serialization
 
     internal class ODataJsonDeSerializerDateTimeOffsetTimeZone : JsonConverter
     {
-        private ITimeZoneManager _timeZoneManager;
+        private readonly ITimeZoneManager _timeZoneManager;
 
         public ODataJsonDeSerializerDateTimeOffsetTimeZone(ITimeZoneManager timeZoneManager)
         {
@@ -109,7 +109,7 @@ namespace Bit.OData.Serialization
 
     internal class ODataJsonDeSerializerStringCorrector : JsonConverter
     {
-        private IEnumerable<IStringCorrector> _stringCorrectors;
+        private readonly IEnumerable<IStringCorrector> _stringCorrectors;
 
         public ODataJsonDeSerializerStringCorrector(IEnumerable<IStringCorrector> stringCorrectors)
         {
@@ -163,6 +163,9 @@ namespace Bit.OData.Serialization
                 return null;
 
             Type unwrappedType = objectType.IsEnum ? objectType : Nullable.GetUnderlyingType(objectType);
+
+            if (unwrappedType == null)
+                throw new InvalidOperationException($"{nameof(unwrappedType)} is null");
 
             string fullName = unwrappedType.FullName;
 

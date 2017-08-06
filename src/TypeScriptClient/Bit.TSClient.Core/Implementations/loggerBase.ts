@@ -13,7 +13,7 @@
                 console.trace({ message: message, additionalInfo: additionalInfo, err: err });
         }
 
-        private createLogInfo(message: string, additionalInfo ?: string, err ?: Error): Bit.Model.Dtos.ClientLogDto {
+        private createLogInfo(message: string, additionalInfo ?: string, err ?: Error): Model.Dtos.ClientLogDto {
 
             const logInfo: any = {
                 Message: message,
@@ -44,7 +44,7 @@
 
         private lastLoggedError: string = null;
 
-        protected ingoreLog(logInfo: Bit.Model.Dtos.ClientLogDto): boolean {
+        protected ingoreLog(logInfo: Model.Dtos.ClientLogDto): boolean {
             if (logInfo.ErrorName == "HTTP request failed" /*This type of error is handled at server side*/)
                 return true;
             if (logInfo.Error == this.lastLoggedError)
@@ -53,7 +53,7 @@
             return false;
         }
 
-        private saveLog(logInfo: Bit.Model.Dtos.ClientLogDto) {
+        private saveLog(logInfo: Model.Dtos.ClientLogDto) {
 
             if (logInfo == null)
                 throw new Error("logInfo is null");
@@ -63,7 +63,7 @@
 
             const logsJson = sessionStorage["logs"];
 
-            let logs = new Array<Bit.Model.Dtos.ClientLogDto>();
+            let logs = new Array<Model.Dtos.ClientLogDto>();
 
             if (logsJson != null) {
                 logs = JSON.parse(logsJson);
@@ -74,7 +74,7 @@
             this.saveLogsToServer(logs);
         }
 
-        private async saveLogsToServer(logs: Array<Bit.Model.Dtos.ClientLogDto>): Promise < void> {
+        private async saveLogsToServer(logs: Array<Model.Dtos.ClientLogDto>): Promise < void> {
             if(navigator.onLine) {
                 try {
                     const context = await this.entityContextProvider.getContext<BitContext>("Bit");

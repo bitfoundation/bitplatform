@@ -136,8 +136,6 @@
 
             const dependencyManager = DependencyManager.getCurrent();
 
-            const pathProvider = this.pathProvider;
-
             const directives = dependencyManager.getAllDirectivesDependencies();
 
             directives.forEach(vm => {

@@ -11,8 +11,6 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Remote;
 using System.Threading.Tasks;
-using OpenQA.Selenium.Support.UI;
-using System;
 
 namespace Bit.Tests.HtmlClient.ViewModel.Implementation
 {

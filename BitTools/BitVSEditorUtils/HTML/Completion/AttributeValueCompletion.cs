@@ -15,7 +15,6 @@ namespace BitVSEditorUtils.HTML.Completion
 
         public override IList<HtmlCompletion> GetEntries(HtmlCompletionContext context)
         {
-            List<HtmlCompletion> list = new List<HtmlCompletion>();
             string tagName = context.Element.Name.ToLowerInvariant();
             string attrName = context.Attribute.Name.ToLowerInvariant();
 
@@ -23,7 +22,7 @@ namespace BitVSEditorUtils.HTML.Completion
 
             HtmlElement element = HtmlElementsContainer.Elements.ExtendedSingleOrDefault($"Looking for {tagName} tag", e => e.Name == tagName);
 
-            if (element != null && element.Attributes != null)
+            if (element?.Attributes != null)
                 all.AddRange(element.Attributes);
 
             List<HtmlAttribute> attributes = new List<HtmlAttribute>();

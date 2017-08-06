@@ -56,18 +56,20 @@ namespace Bit.Data.EntityFramework.Implementations
             if (entitiesToAdd == null)
                 throw new ArgumentNullException(nameof(entitiesToAdd));
 
-            foreach (IEntity entityToAdd in entitiesToAdd)
+            List<TEntity> entitiesToAddList = entitiesToAdd as List<TEntity> ?? entitiesToAdd.ToList();
+
+            foreach (TEntity entityToAdd in entitiesToAddList)
             {
                 IEntityWithDefaultGuidKey entityToAddAsEntityWithDefaultGuidKey = entityToAdd as IEntityWithDefaultGuidKey;
                 if (entityToAddAsEntityWithDefaultGuidKey != null && entityToAddAsEntityWithDefaultGuidKey.Id == Guid.Empty)
                     entityToAddAsEntityWithDefaultGuidKey.Id = Guid.NewGuid();
             }
 
-            _set.AddRange(entitiesToAdd);
+            _set.AddRange(entitiesToAddList);
 
             await SaveChangesAsync(cancellationToken).ConfigureAwait(false);
 
-            return entitiesToAdd;
+            return entitiesToAddList;
         }
 
         public virtual async Task<TEntity> UpdateAsync(TEntity entityToUpdate, CancellationToken cancellationToken)
@@ -179,18 +181,20 @@ namespace Bit.Data.EntityFramework.Implementations
             if (entitiesToAdd == null)
                 throw new ArgumentNullException(nameof(entitiesToAdd));
 
-            foreach (IEntity entityToAdd in entitiesToAdd)
+            List<TEntity> entityToAddList = entitiesToAdd as List<TEntity> ?? entitiesToAdd.ToList();
+
+            foreach (TEntity entityToAdd in entityToAddList)
             {
                 IEntityWithDefaultGuidKey entityToAddAsEntityWithDefaultGuidKey = entityToAdd as IEntityWithDefaultGuidKey;
                 if (entityToAddAsEntityWithDefaultGuidKey != null && entityToAddAsEntityWithDefaultGuidKey.Id == Guid.Empty)
                     entityToAddAsEntityWithDefaultGuidKey.Id = Guid.NewGuid();
             }
 
-            _set.AddRange(entitiesToAdd);
+            _set.AddRange(entityToAddList);
 
             SaveChanges();
 
-            return entitiesToAdd;
+            return entityToAddList;
         }
 
         public virtual TEntity Update(TEntity entityToUpdate)

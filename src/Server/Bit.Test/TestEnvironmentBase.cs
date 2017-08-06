@@ -15,17 +15,17 @@ namespace Bit.Test
     {
         public string FullUri { get; set; } = null;
 
-        public string HostName { get; set; } = null;
+        public string HostName { get; set; }
 
-        public bool UseRealServer { get; set; } = false;
+        public bool UseRealServer { get; set; }
 
-        public bool UseAspNetCore { get; set; } = false;
+        public bool UseAspNetCore { get; set; }
 
-        public bool UseHttps { get; set; } = false;
+        public bool UseHttps { get; set; }
 
-        public Action<IDependencyManager> AdditionalDependencies { get; set; } = null;
+        public Action<IDependencyManager> AdditionalDependencies { get; set; }
 
-        public Action<AppEnvironment> ActiveAppEnvironmentCustomizer { get; set; } = null;
+        public Action<AppEnvironment> ActiveAppEnvironmentCustomizer { get; set; }
 
         public IDependenciesManagerProvider CustomDependenciesManagerProvider { get; set; } = null;
 

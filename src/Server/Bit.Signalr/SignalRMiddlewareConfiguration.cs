@@ -46,8 +46,9 @@ namespace Bit.Signalr
             if (PlatformUtilities.IsRunningOnDotNetCore && !PlatformUtilities.IsRunningOnMono)
             {
                 TypeInfo type = typeof(HubConfiguration).GetTypeInfo().Assembly.GetType("Microsoft.AspNet.SignalR.Infrastructure.MonoUtility").GetTypeInfo();
-                FieldInfo _isRunningMonoField = type.GetField("_isRunningMono", BindingFlags.NonPublic | BindingFlags.Static);
-                _isRunningMonoField.SetValue(null, new Lazy<bool>(() => true));
+                FieldInfo isRunningMonoField = type.GetField("_isRunningMono", BindingFlags.NonPublic | BindingFlags.Static);
+                if (isRunningMonoField != null)
+                    isRunningMonoField.SetValue(null, new Lazy<bool>(() => true));
             }
 
             HubConfiguration signalRConfig = new HubConfiguration

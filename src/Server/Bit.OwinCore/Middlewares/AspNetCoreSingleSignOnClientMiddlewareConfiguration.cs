@@ -2,7 +2,6 @@
 using Bit.OwinCore.Contracts;
 using IdentityServer3.AccessTokenValidation;
 using Microsoft.AspNetCore.Builder;
-using Owin;
 using System;
 
 namespace Bit.Owin.Middlewares

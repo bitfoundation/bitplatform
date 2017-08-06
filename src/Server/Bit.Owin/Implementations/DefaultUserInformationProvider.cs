@@ -37,7 +37,7 @@ namespace Bit.Owin.Implementations
         public virtual string GetCurrentUserId()
         {
             return GetClaims()
-                .ExtendedSingle($"Finding primary_sid in claims", claim => string.Equals(claim.Type, "primary_sid", StringComparison.OrdinalIgnoreCase))
+                .ExtendedSingle("Finding primary_sid in claims", claim => string.Equals(claim.Type, "primary_sid", StringComparison.OrdinalIgnoreCase))
                 .Value;
         }
 

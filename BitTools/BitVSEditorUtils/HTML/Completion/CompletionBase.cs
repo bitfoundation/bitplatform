@@ -27,6 +27,8 @@ namespace BitVSEditorUtils.HTML.Completion
         {
             string assembly = Assembly.GetExecutingAssembly().Location;
             string folder = Path.GetDirectoryName(assembly);
+            if (folder == null)
+                throw new InvalidOperationException($"{nameof(folder)} is null");
             string path = Path.Combine(folder, "Bit-Foundation.png");
 
             Uri uri = new Uri(path);
@@ -48,7 +50,7 @@ namespace BitVSEditorUtils.HTML.Completion
                 if (!string.IsNullOrEmpty(item.Type))
                     description += Environment.NewLine + Environment.NewLine + "Type: " + CultureInfo.CurrentCulture.TextInfo.ToTitleCase(item.Type);
 
-                HtmlCompletion entry = new HtmlCompletion(item.Name, item.Name, description.Trim(), _icon, null, context.Session as ICompletionSession);
+                HtmlCompletion entry = new HtmlCompletion(item.Name, item.Name, description.Trim(), _icon, null, context.Session);
                 list.Add(entry);
             }
 
@@ -64,7 +66,7 @@ namespace BitVSEditorUtils.HTML.Completion
 
             foreach (string item in items)
             {
-                HtmlCompletion entry = new HtmlCompletion(item, item, "", _glyph, null, context.Session as ICompletionSession);
+                HtmlCompletion entry = new HtmlCompletion(item, item, "", _glyph, null, context.Session);
                 list.Add(entry);
             }
 

@@ -6,14 +6,10 @@ namespace Bit.IdentityServer.Implementations
 {
     public class DefaultIdentityServerLogProvider : ILogProvider, IDisposable
     {
-        private readonly IDependencyManager _dependencyManager;
-
         public DefaultIdentityServerLogProvider(IDependencyManager dependencyManager)
         {
             if (dependencyManager == null)
                 throw new ArgumentNullException(nameof(dependencyManager));
-
-            _dependencyManager = dependencyManager;
 
             _logger = (level, func, exception, parameters) =>
              {
@@ -25,7 +21,7 @@ namespace Bit.IdentityServer.Implementations
 
                          try
                          {
-                             scope = _dependencyManager.CreateChildDependencyResolver();
+                             scope = dependencyManager.CreateChildDependencyResolver();
                          }
                          catch (ObjectDisposedException)
                          { }

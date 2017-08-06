@@ -53,13 +53,11 @@ namespace Bit.OwinCore
             {
                 HttpContext context = DefaultDependencyManager.Current.Resolve<IHttpContextAccessor>().HttpContext;
                 return (IOwinContext)context.Items["OwinContext"];
-            }, lifeCycle: DependencyLifeCycle.InstancePerLifetimeScope);
+            });
         }
 
         public void Configure(IApplicationBuilder aspNetCoreApp, OwinAppStartup owinAppStartup, IEnumerable<IAspNetCoreMiddlewareConfiguration> aspNetCoreMiddlewares)
         {
-            AppEnvironment activeAppEnvironment = DefaultAppEnvironmentProvider.Current.GetActiveAppEnvironment();
-
             if (string.IsNullOrEmpty(_hostingEnvironment.WebRootPath))
                 _hostingEnvironment.WebRootPath = _pathProvider.GetCurrentStaticFilesPath();
             if (_hostingEnvironment.WebRootFileProvider == null || _hostingEnvironment.WebRootFileProvider is NullFileProvider)

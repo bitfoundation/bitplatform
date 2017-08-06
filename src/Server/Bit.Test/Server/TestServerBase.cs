@@ -38,13 +38,11 @@ namespace Bit.Test.Server
                             $"{token.TokenType} {token.AccessToken}");
                     }
 
-                    if (beforeRequest != null)
-                        beforeRequest(message);
+                    beforeRequest?.Invoke(message);
                 },
                 AfterResponse = message =>
                 {
-                    if (afterResponse != null)
-                        afterResponse(message);
+                    afterResponse?.Invoke(message);
                 },
                 OnCreateMessageHandler = () => GetHttpMessageHandler()
             });

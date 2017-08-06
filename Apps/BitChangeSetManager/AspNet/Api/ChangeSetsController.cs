@@ -7,7 +7,6 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Bit.Core.Contracts;
-using Bit.OData.ODataControllers;
 
 namespace BitChangeSetManager.Api
 {
@@ -18,7 +17,7 @@ namespace BitChangeSetManager.Api
         private readonly IUserInformationProvider _userInformationProvider;
         private readonly IBitChangeSetManagerRepository<User> _usersRepository;
 
-        public ChangeSetsController(IChangeSetRepository changeSetsRepository, IMessageSender messageSender, IUserInformationProvider userInformationProvider, IBitChangeSetManagerRepository<Model.User> usersRepository)
+        public ChangeSetsController(IChangeSetRepository changeSetsRepository, IMessageSender messageSender, IUserInformationProvider userInformationProvider, IBitChangeSetManagerRepository<User> usersRepository)
             : base(changeSetsRepository)
         {
             _changeSetsRepository = changeSetsRepository;

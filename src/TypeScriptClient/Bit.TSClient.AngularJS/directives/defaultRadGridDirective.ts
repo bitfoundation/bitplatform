@@ -470,7 +470,7 @@ module Bit.Directives {
 
             grid.wrapper.find(".k-header").data("radGridController", this);
 
-            this.dataSource["setHandlers"] = this.dataSource["setHandlers"] || []
+            this.dataSource["setHandlers"] = this.dataSource["setHandlers"] || [];
 
             this.syncCurrent();
 

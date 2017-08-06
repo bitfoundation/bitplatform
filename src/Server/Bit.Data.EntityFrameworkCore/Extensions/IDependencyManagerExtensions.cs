@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Reflection;
 using Bit.Data.Contracts;
 using Bit.Data.EntityFrameworkCore.Contracts;
 using Bit.Data.EntityFrameworkCore.Implementations;

@@ -26,8 +26,6 @@ namespace Bit.Owin.Middlewares
             string redirect_uri_host = $"{context.Request.Scheme}://{context.Request.Host.Value}{activeAppEnvironment.GetHostVirtualPath()}SignIn";
             string redirect_uri = $"{activeAppEnvironment.GetSsoUrl()}/connect/authorize?scope={string.Join(" ", activeAppEnvironment.Security.Scopes)}&client_id={activeAppEnvironment.Security.ClientId}&redirect_uri={redirect_uri_host}&response_type=id_token token";
 
-            string pathname = context.Request.Path.Value;
-
             string stateArgs = string.Join(string.Empty, context.Request.Path.Value.SkipWhile(c => c == '/'));
 
             string nonce = randomStringProvider.GetRandomNonSecureString(12);

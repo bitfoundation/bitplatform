@@ -86,8 +86,7 @@ namespace Bit.Tests
                 };
             }
 
-            if (_args?.ActiveAppEnvironmentCustomizer != null)
-                _args?.ActiveAppEnvironmentCustomizer(_activeAppEnvironment);
+            _args?.ActiveAppEnvironmentCustomizer?.Invoke(_activeAppEnvironment);
 
             return _activeAppEnvironment;
         }

@@ -14,7 +14,7 @@ namespace Bit.Tests.Api.ApiControllers
         [Function]
         public virtual CountryDto[] GetAllContries(ODataQueryOptions<CountryDto> query)
         {
-            return new CountryDto[]
+            return new []
             {
                 new CountryDto { Id = 1 , Name = "Test1", SomeProperty = 1 },
                 new CountryDto { Id = 2 , Name = "Test2", SomeProperty = 2 },

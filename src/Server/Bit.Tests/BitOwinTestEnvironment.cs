@@ -17,7 +17,7 @@ namespace Bit.Tests
 
         protected override IDependenciesManagerProvider GetDependenciesManagerProvider(TestEnvironmentArgs args)
         {
-            return args.CustomDependenciesManagerProvider ?? (args.UseAspNetCore ? (IDependenciesManagerProvider)new BitOwinCoreTestDependenciesManagerProvider(args) : (IDependenciesManagerProvider)new BitOwinTestDependenciesManagerProvider(args));
+            return args.CustomDependenciesManagerProvider ?? (args.UseAspNetCore ? new BitOwinCoreTestDependenciesManagerProvider(args) : (IDependenciesManagerProvider)new BitOwinTestDependenciesManagerProvider(args));
         }
 
         protected override IAppEnvironmentProvider GetAppEnvironmentProvider(TestEnvironmentArgs args)

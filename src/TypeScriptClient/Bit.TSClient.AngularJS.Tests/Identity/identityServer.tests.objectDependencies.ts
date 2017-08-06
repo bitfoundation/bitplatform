@@ -1,6 +1,6 @@
 ﻿module Bit.Tests.Identity {
 
-    let dependencyManager = Bit.DependencyManager.getCurrent();
+    let dependencyManager = DependencyManager.getCurrent();
 
     dependencyManager.registerObjectDependency({ name: "ModelProvider", type: Implementations.Identity.DefaultModelProvider });
 

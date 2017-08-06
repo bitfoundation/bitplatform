@@ -1,5 +1,4 @@
-﻿using System;
-using System.Net;
+﻿using System.Net;
 using IdentityModel.Client;
 using Microsoft.AspNet.SignalR.Client;
 using Microsoft.VisualStudio.TestTools.UnitTesting;

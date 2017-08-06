@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using BitTools.Core.Contracts.HtmlClientProxyGenerator;
 using BitTools.Core.Model;
 using Microsoft.CodeAnalysis;
 using BitTools.Core.Contracts;

@@ -4,7 +4,6 @@ using Bit.Signalr.Implementations;
 using BitChangeSetManager.DataAccess;
 using BitChangeSetManager.Model;
 using System;
-using System.Threading;
 using System.Threading.Tasks;
 
 namespace BitChangeSetManager.Api.Implementations
@@ -14,7 +13,7 @@ namespace BitChangeSetManager.Api.Implementations
         private readonly IUserInformationProvider _userInformationProvider;
         private readonly IBitChangeSetManagerRepository<User> _usersRepository;
 
-        public BitChangeSetManagerAppMessageHubEvents(IUserInformationProvider userInformationProvider, IBitChangeSetManagerRepository<Model.User> usersRepository)
+        public BitChangeSetManagerAppMessageHubEvents(IUserInformationProvider userInformationProvider, IBitChangeSetManagerRepository<User> usersRepository)
             : base(userInformationProvider)
         {
             _userInformationProvider = userInformationProvider;

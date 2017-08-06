@@ -17,7 +17,7 @@ namespace Bit.Core.Models
 
         public virtual EnvironmentSecurity Security { get; set; } = new EnvironmentSecurity
         {
-            Scopes = new string[] { "openid", "profile", "user_info" }
+            Scopes = new [] { "openid", "profile", "user_info" }
         };
 
         public virtual EnvironmentCulture[] Cultures { get; set; } = new EnvironmentCulture[] { };

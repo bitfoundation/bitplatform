@@ -366,7 +366,7 @@
 
         public init(): void {
 
-            Bit.Implementations.DefaultProvider.buildProvider();
+            Implementations.DefaultProvider.buildProvider();
 
             this.fileDependencies.forEach(fileDependency => {
 

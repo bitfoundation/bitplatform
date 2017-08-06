@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using Bit.Test;
 using Bit.Tests.Api.ApiControllers;
 using Bit.Tests.Core.Contracts;
@@ -10,7 +7,6 @@ using FakeItEasy;
 using IdentityModel.Client;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Simple.OData.Client;
-using System.Dynamic;
 
 namespace Bit.Tests.Api.Middlewares.WebApi.Tests
 {

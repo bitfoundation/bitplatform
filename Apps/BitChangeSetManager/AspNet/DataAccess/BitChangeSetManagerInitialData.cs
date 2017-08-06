@@ -32,19 +32,16 @@ namespace BitChangeSetManager.DataAccess
         {
             Database.SetInitializer<BitChangeSetManagerDbContext>(null);
 
-            using (IDependencyResolver childResolver = _dependencyManager.CreateChildDependencyResolver())
+            using (SqlConnection dbConnection = new SqlConnection(_appEnvironmentProvider.GetActiveAppEnvironment().GetConfig<string>("BitChangeSetManagerDbConnectionString")))
             {
-                using (SqlConnection dbConnection = new SqlConnection(_appEnvironmentProvider.GetActiveAppEnvironment().GetConfig<string>("BitChangeSetManagerDbConnectionString")))
+                using (BitChangeSetManagerDbContext dbContext = new BitChangeSetManagerDbContext(dbConnection))
                 {
-                    using (BitChangeSetManagerDbContext dbContext = new BitChangeSetManagerDbContext(dbConnection))
-                    {
-                        bool newDbCreated = dbContext.Database.CreateIfNotExists();
+                    bool newDbCreated = dbContext.Database.CreateIfNotExists();
 
-                        dbContext.Database.Initialize(force: true);
+                    dbContext.Database.Initialize(force: true);
 
-                        if (newDbCreated == false)
-                            return;
-                    }
+                    if (newDbCreated == false)
+                        return;
                 }
             }
 
@@ -64,9 +61,9 @@ namespace BitChangeSetManager.DataAccess
 
                         StringBuilder sBuilder = new StringBuilder();
 
-                        for (int i = 0; i < data.Length; i++)
+                        foreach (byte d in data)
                         {
-                            sBuilder.Append(data[i].ToString("x2"));
+                            sBuilder.Append(d.ToString("x2"));
                         }
 
                         password = sBuilder.ToString();

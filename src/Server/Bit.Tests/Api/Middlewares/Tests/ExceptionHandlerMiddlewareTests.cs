@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Bit.Core.Contracts;
@@ -43,7 +42,7 @@ namespace Bit.Tests.Api.Middlewares.Tests
                 {
                     manager.RegisterOwinMiddlewareUsing(owinApp =>
                     {
-                        MapExtensions.Map((IAppBuilder) owinApp, (string) "/Exception", innerApp =>
+                        owinApp.Map("/Exception", innerApp =>
                         {
                             AppBuilderUseExtensions.Use<ExceptionThrownMiddleware>(innerApp);
                         });
@@ -76,7 +75,7 @@ namespace Bit.Tests.Api.Middlewares.Tests
                     A.CallTo(() => logger.LogExceptionAsync(A<Exception>.That.Matches(e => e is InvalidOperationException), A<string>.Ignored))
                         .MustHaveHappened(Repeated.Exactly.Once);
 
-                    IEnumerable<LogData> logData = logger.LogData;
+                    LogData[] logData = logger.LogData.ToArray();
 
                     logData.Single(c => c.Key == "ExceptionType" && ((string)c.Value).Contains("InvalidOperationException"));
                     logData.Single(c => c.Key == nameof(IRequestInformationProvider.HttpMethod) && (string)c.Value == "GET");
@@ -122,7 +121,7 @@ namespace Bit.Tests.Api.Middlewares.Tests
                 A.CallTo(() => logger.LogFatalAsync(A<string>.Ignored))
                             .MustHaveHappened(Repeated.Exactly.Once);
 
-                IEnumerable<LogData> logData = logger.LogData;
+                LogData[] logData = logger.LogData.ToArray();
 
                 logData.Single(c => c.Key == "ResponseStatusCode" && (string)c.Value == "501");
                 logData.Single(c => c.Key == nameof(IRequestInformationProvider.HttpMethod) && (string)c.Value == "GET");
@@ -155,7 +154,7 @@ namespace Bit.Tests.Api.Middlewares.Tests
                 A.CallTo(() => logger.LogWarningAsync(A<string>.Ignored))
                     .MustHaveHappened(Repeated.Exactly.Once);
 
-                IEnumerable<LogData> logData = logger.LogData;
+                LogData[] logData = logger.LogData.ToArray();
 
                 logData.Single(c => c.Key == "ResponseStatusCode" && (string)c.Value == "406");
                 logData.Single(c => c.Key == nameof(IRequestInformationProvider.HttpMethod) && (string)c.Value == "GET");

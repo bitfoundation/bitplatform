@@ -212,7 +212,7 @@ FOR JSON AUTO, WITHOUT_ARRAY_WRAPPER";
     {
         protected override Expression VisitUnary(UnaryExpression node)
         {
-            if (node?.NodeType == ExpressionType.Convert)
+            if (node.NodeType == ExpressionType.Convert)
                 return (MemberExpression)node.Operand;
 
             return base.VisitUnary(node);

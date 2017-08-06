@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace Bit.IdentityServer.Implementations
 {
-    public abstract class UserService : IdentityServer3.Core.Services.Default.UserServiceBase
+    public abstract class UserService : UserServiceBase
     {
         public abstract Task<string> GetUserIdByLocalAuthenticationContextAsync(LocalAuthenticationContext context);
 
@@ -49,7 +49,7 @@ namespace Bit.IdentityServer.Implementations
             await base.AuthenticateLocalAsync(context).ConfigureAwait(false);
         }
 
-        public override async sealed Task GetProfileDataAsync(ProfileDataRequestContext context)
+        public sealed override async Task GetProfileDataAsync(ProfileDataRequestContext context)
         {
             string userId = context.Subject.Identity.Name;
 

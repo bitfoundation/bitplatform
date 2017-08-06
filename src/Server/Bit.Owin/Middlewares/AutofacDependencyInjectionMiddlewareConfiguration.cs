@@ -59,7 +59,7 @@ namespace Bit.Owin.Middlewares
             IAutofacDependencyManager childDependencyManager = new AutofacDependencyManager();
             childDependencyManager.UseContainer(context.GetAutofacLifetimeScope());
 
-            context.Set<IDependencyResolver>("DependencyResolver", (IDependencyResolver)childDependencyManager);
+            context.Set("DependencyResolver", (IDependencyResolver)childDependencyManager);
 
             await Next.Invoke(context);
         }

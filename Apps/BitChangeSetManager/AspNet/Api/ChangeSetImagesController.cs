@@ -1,5 +1,4 @@
-﻿using Bit.OData.ODataControllers;
-using Bit.Owin.Exceptions;
+﻿using Bit.Owin.Exceptions;
 using BitChangeSetManager.DataAccess;
 using BitChangeSetManager.Dto;
 using BitChangeSetManager.Model;
@@ -38,7 +37,7 @@ namespace BitChangeSetManager.Api
 
             MultipartMemoryStreamProvider provider = new MultipartMemoryStreamProvider();
 
-            foreach (HttpContent file in (await Request.Content.ReadAsMultipartAsync(provider)).Contents)
+            foreach (HttpContent file in (await Request.Content.ReadAsMultipartAsync(provider, cancellationToken)).Contents)
             {
                 string filename = Path.GetFileName(file.Headers.ContentDisposition.FileName);
 
@@ -99,8 +98,10 @@ public static async Task UploadImagess()
                 throw new ResourceNotFoundException();
 
             MemoryStream memStream = new MemoryStream(image.Data);
-            HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK);
-            response.Content = new StreamContent(memStream);
+            HttpResponseMessage response = new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new StreamContent(memStream)
+            };
             response.Content.Headers.ContentType = new MediaTypeHeaderValue("image/png");
             return response;
         }

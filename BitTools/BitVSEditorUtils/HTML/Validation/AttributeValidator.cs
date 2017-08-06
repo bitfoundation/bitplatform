@@ -27,7 +27,7 @@ namespace BitVSEditorUtils.HTML.Validation
 
             HtmlElement match = HtmlElementsContainer.Elements.ExtendedSingleOrDefault($"Looking for tag {element.Name}", e => e.Name.Equals(element.Name, StringComparison.OrdinalIgnoreCase));
 
-            if (match != null && match.Attributes != null)
+            if (match?.Attributes != null)
                 attributes.AddRange(match.Attributes);
 
             foreach (HtmlAttribute htmlAttr in attributes)

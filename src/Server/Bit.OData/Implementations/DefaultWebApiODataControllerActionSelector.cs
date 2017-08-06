@@ -19,8 +19,11 @@ namespace Bit.OData.Implementations
 
         protected virtual string GetActionName(MethodInfo method)
         {
+            if (method == null)
+                throw new ArgumentNullException(nameof(method));
+
             IActionHttpMethodProvider actionHttpMethodProvider = method.GetCustomAttributes().OfType<IActionHttpMethodProvider>()
-                .ExtendedSingle($"Finding IActionHttpMethodProvider on method {method.Name} on type {method.DeclaringType.Name}");
+                .ExtendedSingle($"Finding IActionHttpMethodProvider on method {method.Name} on type {method.DeclaringType?.Name}");
 
             if (actionHttpMethodProvider is FunctionAttribute)
                 return method.Name;
@@ -51,7 +54,7 @@ namespace Bit.OData.Implementations
                     .Where(m => m.GetCustomAttributes().OfType<IActionHttpMethodProvider>().Any())
                     .ToList();
 
-                ILookup<string, HttpActionDescriptor> actionsLookup = allActions.ToLookup(method => GetActionName(method), method => (HttpActionDescriptor)(new ReflectedHttpActionDescriptor(controllerDescriptor, method)));
+                ILookup<string, HttpActionDescriptor> actionsLookup = allActions.ToLookup(GetActionName, method => (HttpActionDescriptor)(new ReflectedHttpActionDescriptor(controllerDescriptor, method)));
 
                 controllerDescriptor.Properties.TryAdd("CachedActions", actionsLookup);
                 controllerDescriptor.Properties.TryAdd("CachedActionsList", actionsLookup.SelectMany(actions => actions).Cast<ReflectedHttpActionDescriptor>().ToList());

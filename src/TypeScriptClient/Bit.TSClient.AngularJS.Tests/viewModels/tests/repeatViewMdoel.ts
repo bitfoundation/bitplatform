@@ -2,7 +2,7 @@
     @SecureFormViewModelDependency({ name: "RepeatFormViewModel", templateUrl: "|Bit|/Bit.TSClient.AngularJS.Tests/views/tests/repeatview.html" })
     export class RepeatFormViewModel extends Bit.ViewModels.FormViewModel {
 
-        public testModels: Array<Bit.Tests.Model.DomainModels.TestModel> = null;
+        public testModels: Array<Tests.Model.DomainModels.TestModel> = null;
 
         public someProperty = "This is a view model";
 

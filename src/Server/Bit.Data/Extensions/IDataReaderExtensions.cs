@@ -22,12 +22,11 @@ namespace System.Data
                     if (reader.HasRows)
                     {
                         if (reader.FieldCount != 1)
-                            throw new ArgumentException("SELECT query should not have " + reader.FieldCount + " columns (expected 1).", "reader");
+                            throw new ArgumentException("SELECT query should not have " + reader.FieldCount + " columns (expected 1).", nameof(reader));
 
-                        string buffer = null;
                         if (reader[0].GetType().Name == "String")
                         {
-                            buffer = reader.GetString(0);
+                            string buffer = reader.GetString(0);
                             await FlushContent(stream, buffer, -1, cancellationToken).ConfigureAwait(false);
                         }
                         else if (reader[0].GetType().Name == "Byte[]")
@@ -57,7 +56,7 @@ namespace System.Data
             }
             else
             {
-                byte[] binary = Encoding.UTF8.GetBytes(content as string);
+                byte[] binary = Encoding.UTF8.GetBytes((string)content);
                 await stream.WriteAsync(binary, 0, binary.Length, cancellationToken).ConfigureAwait(false);
                 await stream.FlushAsync(cancellationToken).ConfigureAwait(false);
             }

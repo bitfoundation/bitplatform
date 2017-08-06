@@ -12,9 +12,9 @@ namespace Bit.Owin.Contracts.Metadata
 
         public virtual List<EnvironmentCulture> Messages { get; set; } = new List<EnvironmentCulture>();
 
-        public virtual bool IsRequired { get; set; } = false;
+        public virtual bool IsRequired { get; set; }
 
-        public virtual string Pattern { get; set; } = null;
+        public virtual string Pattern { get; set; }
     }
 
     public class DtoMemberLookup

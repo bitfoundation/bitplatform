@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Web.Http;
-using Bit.Owin.Middlewares;
 using Bit.WebApi.Contracts;
 using NWebsec.Owin;
 using Owin;

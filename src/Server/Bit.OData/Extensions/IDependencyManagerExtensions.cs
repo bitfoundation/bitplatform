@@ -56,15 +56,7 @@ namespace Bit.Core.Contracts
 
         public static IDependencyManager RegisterODataMiddleware(this IDependencyManager dependencyManager, Action<IDependencyManager> onConfigure)
         {
-            dependencyManager.RegisterUsing<IOwinMiddlewareConfiguration>(() =>
-            {
-                return dependencyManager.CreateChildDependencyResolver(odataDependencyManager =>
-                {
-                    onConfigure(odataDependencyManager);
-
-                }).Resolve<IOwinMiddlewareConfiguration>("WebApiOData");
-
-            }, lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExciting: false);
+            dependencyManager.RegisterUsing(() => dependencyManager.CreateChildDependencyResolver(onConfigure).Resolve<IOwinMiddlewareConfiguration>("WebApiOData"), lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExciting: false);
 
             return dependencyManager;
         }

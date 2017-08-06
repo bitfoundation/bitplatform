@@ -1,9 +1,7 @@
 ﻿using System;
-using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using Bit.Core.Contracts;
-using Bit.Core.Models;
 using Bit.IdentityServer.Contracts;
 using RazorEngine;
 using RazorEngine.Templating;
@@ -26,8 +24,7 @@ namespace Bit.IdentityServer.Implementations
                 throw new ArgumentNullException(nameof(pathProvider));
 
             _dependencyResolver = dependencyManager;
-            _pathProvider = pathProvider;
-            _activeAppEnvironment = appEnvironmentProvider.GetActiveAppEnvironment();
+            appEnvironmentProvider.GetActiveAppEnvironment();
         }
 
 #if DEBUG
@@ -35,10 +32,6 @@ namespace Bit.IdentityServer.Implementations
         {
         }
 #endif
-
-        private string _result = null;
-        private readonly IPathProvider _pathProvider;
-        private readonly AppEnvironment _activeAppEnvironment;
 
         public virtual async Task<string> GetSsoPageAsync(CancellationToken cancellationToken)
         {

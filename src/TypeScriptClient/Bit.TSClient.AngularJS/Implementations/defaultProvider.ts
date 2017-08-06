@@ -24,7 +24,7 @@
                 return kendo.parseDate(date);
             };
 
-            Provider.loggerProvider = () => Bit.DependencyManager.getCurrent().resolveObject<Bit.Contracts.ILogger>("Logger");
+            Provider.loggerProvider = () => DependencyManager.getCurrent().resolveObject<Contracts.ILogger>("Logger");
         }
     }
 }

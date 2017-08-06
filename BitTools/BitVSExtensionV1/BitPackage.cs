@@ -217,7 +217,7 @@ namespace BitVSExtensionV1
 
                 await generator.GenerateCodes(_workspace.CurrentSolution, _shouldGeneratedProjects);
 
-                Log($"Code Generation Completed.");
+                Log("Code Generation Completed.");
             }
             catch (Exception ex)
             {
@@ -272,7 +272,7 @@ namespace BitVSExtensionV1
             }
             catch (Exception ex)
             {
-                LogException($"Init html elements failed.", ex);
+                LogException("Init html elements failed.", ex);
             }
         }
 
@@ -413,8 +413,8 @@ namespace BitVSExtensionV1
 
         private IVsStatusbar _statusBar;
 
-        private bool generateCodesForTheFirstTimeExecuted = false;
+        private bool generateCodesForTheFirstTimeExecuted;
 
-        private bool thereWasAnErrorInBuild = false;
+        private bool thereWasAnErrorInBuild;
     }
 }

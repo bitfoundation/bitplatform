@@ -1,5 +1,4 @@
-﻿using Bit.OData.ODataControllers;
-using BitChangeSetManager.DataAccess;
+﻿using BitChangeSetManager.DataAccess;
 using BitChangeSetManager.Dto;
 using BitChangeSetManager.Model;
 

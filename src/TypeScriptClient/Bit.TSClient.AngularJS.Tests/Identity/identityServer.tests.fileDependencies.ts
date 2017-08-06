@@ -2,7 +2,7 @@
 
 module Bit.Identity.Tests {
 
-    let dependencyManager = Bit.DependencyManager.getCurrent();
+    let dependencyManager = DependencyManager.getCurrent();
 
     dependencyManager.registerFileDependency({
         name: "normalize",

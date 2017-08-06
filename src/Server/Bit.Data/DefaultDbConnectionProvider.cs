@@ -51,8 +51,7 @@ namespace Bit.Data
 
             if (!_connections.ContainsKey(connectionString))
             {
-                TDbConnection newConnection = new TDbConnection();
-                newConnection.ConnectionString = connectionString;
+                TDbConnection newConnection = new TDbConnection { ConnectionString = connectionString };
                 newConnection.Open();
                 DbTransaction transaction = newConnection.BeginTransaction(IsolationLevel.ReadCommitted);
                 _connections.Add(connectionString, new DbConnectionAndTransactionPair(newConnection, transaction, rollbackOnScopeStatusFailure));
@@ -69,8 +68,7 @@ namespace Bit.Data
 
             if (!_connections.ContainsKey(connectionString))
             {
-                TDbConnection newDbConnection = new TDbConnection();
-                newDbConnection.ConnectionString = connectionString;
+                TDbConnection newDbConnection = new TDbConnection { ConnectionString = connectionString };
                 await newDbConnection.OpenAsync(cancellationToken).ConfigureAwait(false);
                 DbTransaction transaction = newDbConnection.BeginTransaction(IsolationLevel.ReadCommitted);
                 _connections.Add(connectionString, new DbConnectionAndTransactionPair(newDbConnection, transaction, rollbackOnScopeStatusFailure));

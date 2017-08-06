@@ -4,10 +4,8 @@ using Bit.Owin.Exceptions;
 using BitChangeSetManager.DataAccess;
 using BitChangeSetManager.Metadata;
 using System;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Web.Http;
 using System.Web.OData;
 
 namespace BitChangeSetManager.Api

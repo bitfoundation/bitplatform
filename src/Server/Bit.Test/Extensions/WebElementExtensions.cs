@@ -54,7 +54,8 @@ namespace OpenQA.Selenium
 
             driver.ExecuteScript(finalTestScript);
 
-            await driver.WaitForCondition(d => testsConsole.GetAttribute("value") != consoleValue);
+            string value = consoleValue;
+            await driver.WaitForCondition(d => testsConsole.GetAttribute("value") != value);
 
             consoleValue = testsConsole.GetAttribute("value");
 
