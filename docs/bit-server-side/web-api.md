@@ -8,7 +8,7 @@ Using bit you'll get more benefits from web api. This includes following:
     - ASP.NET/IIS on windows server & azure web/app services
     - ASP.NET Core/Kestrel on Windows & Linux Servers
     - Self host windows services & azure web jobs
-2. We've configured web api on top of [asp.net core/owin branching](https://docs.microsoft.com/en-us/aspnet/core/fundamentals/middleware). Think about something as fast as node js with power of .NET (-:
+2. We've configured web api on top of [asp.net core/owin request branching](https://docs.microsoft.com/en-us/aspnet/core/fundamentals/middleware). Think about something as fast as node js with power of .NET (-:
 3. We've developed extensive logging infrastructure in bit framework. It logs everything for you in your app, including web api traces.
 4. We've configured headers like [X-Content-Type-Options](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/X-Content-Type-Options), [X-CorrelationId](http://theburningmonk.com/2015/05/a-consistent-approach-to-track-correlation-ids-through-microservices/) etc. We've done this to improve logging, security etc.
 5. You can protect your web api with bit identity server, a modern single sign on server based on open id/oauth 2.0
@@ -46,15 +46,15 @@ dependencyManager.RegisterWebApiMiddleware(webApiDependencyManager =>
 
 That code configures web api into your app using the default configuration. Default configuration is all about security, performance, logging etc.
 
+This sample uses [Microsoft.Owin.Host.HttpListener] nuget package which allows you to self host bit based apps under windows services / console apps.
+
 Bit is a very extensible framework developed based on best practices. We've extensively used dependency injection in our code base and you can customize default behaviors based on your requirements.
 
 In following samples, you can find out how to customize web api in bit, but feel free to [drops us an issue in github](https://github.com/bit-foundation/bit-framework/issues), ask a question on [stackoverflow.com](http://stackoverflow.com/questions/tagged/bit-framework) or use comments below if you can't find what you want in these samples.
 
 Note that security samples can be found under [Bit Identity Server](/bit-identity-server.md) (Read it later)
 
-## Samples:
-
-### 1- Web API - Swagger configuration sample
+### Web API - Swagger configuration sample
 
 Swagger is the World's Most Popular API Tooling. by Using this sample you can find out how to customize web api in bit.
 
@@ -87,31 +87,30 @@ We use #DefaultPathProvider.Current.GetCurrentAppPath()# instead of #System.AppD
 ```csharp
 c.RootUrl(req => new Uri(req.RequestUri, req.GetOwinContext().Request.PathBase.Value /* /api */).ToString());
 ```
-As you see in the article, you open swgger ui by opening http://localhost:51609/swagger/ but in bit's sample, you open http://localhost:9000/api/swagger/. You open /swagger under /api. This is a magic of owin/asp.net core's request branching. That improves your app performance a lot, because it handles request far better than non bit apps. Web api handles web api requests only, signalr handles signalr requests only etc. In non bit apps, web api as an example receives all requests, but does something for those starting with /api (Based on web api configuration you provide). But ASP.NET Core/Owin branching routes every request to its correct handler (Web API to Web API, Signalr to Signalr etc). That line of codes is telling swagger that where is web api, as swagger is not aware of that magic.
+As you see in the article, you open swgger ui by opening http://localhost:51609/swagger/ but in bit's sample, you open http://localhost:9000/api/swagger/. You open /swagger under /api. This is a magic of owin/asp.net core's request branching.
 
 So run the second sample and you're good to go (-:
 
-### 2- Web API file upload sample
+### Web API file upload sample
 
 There is a [question](https://stackoverflow.com/questions/10320232/how-to-accept-a-file-post) on stackoverflow.com about web api file upload.
 The important thing you've to notice is "You don't have to use System.Web.dll classes in bit world, even when you're hosting your app on traditional asp.net
 
 By removing usages of that dll, you're going to make sure that your code works well on asp.net core either whenever you migrate your code (which can be done very easily using bit). So drop using #HttpContext.Current and all other members of System.Web.dll#
 
-
 Web API Attribute routing works fine in bit project, but instead of [Route("api/file-manager/upload")] or [RoutePrefix("api/file-manager")], you've to write [Route("file-manager/upload")] or [RoutePrefix("file-manager)], this means you should not write /api in your attribute routings. That's a side effect of branching, which improves your app performance in turn.
 
-Remember to use async/await and CancellationToken in your Web API codes at it improves your app overall scalability.
+Remember to use async/await and CancellationToken in your Web API codes at it improves your app overall scalability and performance. Using CancellationToken, bit stops processing requests when user/operator cancels her request. (By closing the browser/mobile app for example).
 
-So open 3rd sample. It contains upload methods using Web API attribute routing. It uses async/await and CancellationToken and shows you how you can upload files to folders/database.
+So open 3rd sample. It contains upload methods using Web API attribute routing. It uses async/await & CancellationToken.
 
-### 3- Web API - Configuration on ASP.NET
+### Web API - Configuration on ASP.NET
 
 In 4th project (4WebApiAspNetHost), you'll find a bit web api project hosted on ASP.NET/IIS.
 
 ##### Differences between this project and previews projects:
 
-1- Instead of Microsoft.Owin.Host.HttpListener nuget package, we've installed Microsoft.Owin.Host.SystemWeb. Using first nuget package, you can "self host" bit server side apps on windows services, console apps, azure job workers etc. Using the second package, you can host bit server side apps on top of ASP.NET/IIS. All codes you've developed are the same (We've copied codes from 2WebApiSwagger project in fact).
+1- Instead of [Microsoft.Owin.Host.HttpListener] nuget package, we've installed [Microsoft.Owin.Host.SystemWeb]. Using that, you can host bit server side apps on top of ASP.NET/IIS. All codes you've developed are the same (We've copied codes from 2WebApiSwagger project in fact).
 
 ##### Differences between this project and default traditional asp.net project: (Ignore this section if you'd like to run your app on top of ASP.NET Core)
 
@@ -124,12 +123,13 @@ In 4th project (4WebApiAspNetHost), you'll find a bit web api project hosted on 
 AppStartup is a class name & WebApiAspNetHost is a namespace. (Second one is assembly name)
 
 2- To prevent asp.net web pages from being started, we've added following
+ASP.NET web pages starts itself automatically, but it is not needed in bit based apps. So disale it to achieve better startup performance.
 
 ```xml
 <add key="webpages:Enabled" value="false" />
 ```
 
-3- As we've introduced app startup class using "owin:AppStartup" config, we use following to disable automatic search:
+3- As we've introduced app startup class using "owin:AppStartup" config, we use following to disable automatic AppStartup class search:
 
 ```xml
 <add key="owin:AutomaticAppStartup" value="false" />
@@ -145,7 +145,7 @@ AppStartup is a class name & WebApiAspNetHost is a namespace. (Second one is ass
 </assemblies>
 ```
 
-6- We've added [enableVersionHeader="false"] to remove extra headers from responses.
+6- We've added [enableVersionHeader="false"] to remove extra headers from responses. [This results into better security](https://www.troyhunt.com/shhh-dont-let-your-response-headers/)
 
 7- We've removed all http handlers & modules. They're not required in bit projects.
 
@@ -200,19 +200,19 @@ AppStartup is a class name & WebApiAspNetHost is a namespace. (Second one is ass
   </system.webServer>
 ```
 
-### 4- Web API - Configuration on ASP.NET Core
+### Web API - Configuration on ASP.NET Core
 
 ##### Differences between this project and first project:
 
-1- Instead of Microsoft.Owin.Host.HttpListener nuget package, we've installed Bit.OwinCore. Using Bit.OwinCore, you can host your app on top of asp.net core. ASP.NET core apps can be hosted almost anywhere.
+1- Instead of [Microsoft.Owin.Host.HttpListener] nuget package, we've installed [Bit.OwinCore] nuget package. Using Bit.OwinCore, you can host your app on top of asp.net core. ASP.NET core apps can be hosted almost anywhere.
 
 Web API configuration and web api codes are all the same. (-:
 
-### 5- Web API - Configuration on ASP.NET Core / .NET Core
+### Web API - Configuration on ASP.NET Core / .NET Core
 
 ##### Differences between this project and first project:
 
-1- As like as ASP.NET Core with full .NET framework, we've Bit.OwinCore instead of Microsoft.Owin.Host.HttpListener
+1- As like as ASP.NET Core with full .NET framework, we've [Bit.OwinCore] instead of [Microsoft.Owin.Host.HttpListener]
 
 Web API configuration and web api codes are all the same. (-:
 
@@ -224,7 +224,7 @@ Run .Net core app stesp:
 
 Note that upcoming articles have no .net core sample as we've not officillay supported .net core yet, but after we officially supported .net core, you can start a safe/easy migrate.
 
-### 6- Web API - Dependency Injection samples:
+### Web API - Dependency Injection samples:
 
 Bit's dependency injection covers you anywhere, from web api to signalr, background job workers, etc. As you see in AppStartup class of samples, there is a dependencyManager variable in both ASP.NET & ASP.NET Core projects. If you register/add some thing with that, it is accessible using constructor and property injection anywhere you need it. Let's take a look at  [sample](https://github.com/bit-foundation/bit-framework/tree/master/Samples/WebApiSamples/7WebApiDependencyInjection)
 
@@ -242,9 +242,9 @@ You can also specify life cycle by calling .Register like following:
 dependencyManager.Register<IEmailService, DefaultEmailService>(lifeCycle: DependencyLifeCycle.InstancePerLifetimeScope);
 ```
 
-It accepts two lifecyles: InstancePerLifetimeScope & SingleInstance. InstancePerLifetimeScope creates a new instance of your class for every web request, every background job, etc. But SingleInstance creates one instance and use that anywhere. Classes which are registered using InstancePerLifetimeScope have access to IUserInformationProvider which provides you information about the current user and some classes like Entity framework db context and repositories have to be InstancePerLifetimeScope if you intend to follow best practices. (Default lifecycle is InstancePerLifetimeScope if you call .Register without specifying lifecyle)
+It accepts two lifecyles: InstancePerLifetimeScope & SingleInstance. InstancePerLifetimeScope creates a new instance of your class for every web request, every background job start, etc. But SingleInstance creates one instance and use that anywhere. Classes which are registered using InstancePerLifetimeScope have access to IUserInformationProvider which provides you information about the current user and some classes like Entity framework db context and repositories have to be InstancePerLifetimeScope if you intend to follow best practices. (Default lifecycle is InstancePerLifetimeScope if you call .Register without specifying lifecyle)
 
-You've also other Register methods like RegisterGeneric, RegisterInstance, RegisterTypes and RegisterUsing.
+You've also other Register methods like RegisterGeneric, RegisterInstance, RegisterTypes and RegisterUsing, you're welcomed to use those method if you're a DI ninja ;D
 
 If you've got a complex scenario, simply drops us an [issue on github](https://github.com/bit-foundation/bit-framework/issues) or ask a question on [stackoverflow](https://stackoverflow.com/questions/tagged/bit-framework).
 
