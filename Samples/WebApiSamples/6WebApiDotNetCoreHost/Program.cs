@@ -9,7 +9,10 @@ namespace WebApiDotNetCoreHost
         public static void Main(string[] args)
         {
             IWebHost host = new WebHostBuilder()
-                .UseKestrel()
+                .UseKestrel(options =>
+                {
+                    options.AddServerHeader = false;
+                })
                 .UseContentRoot(Directory.GetCurrentDirectory())
                 .UseWebRoot(Directory.GetCurrentDirectory())
                 .UseIISIntegration()
