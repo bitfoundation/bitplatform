@@ -15,7 +15,7 @@
     <copyright>Copyright © Bit Foundation 2017</copyright>
     <tags>Bit Framework Entity Core entity-framework-core EF Data O/RM</tags>
     <dependencies>
-      <dependency id="Bit.Data" version="0.0.1.6" />
+      <dependency id="Bit.Data" version="[0.0.1.6]" />
       <dependency id="System.Linq.Dynamic.Core" version="1.0.7.6" />
       <dependency id="Microsoft.EntityFrameworkCore" version="1.1.2" />
     </dependencies>

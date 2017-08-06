@@ -15,7 +15,7 @@
     <copyright>Copyright © Bit Foundation 2017</copyright>
     <tags>Bit aspnetcore</tags>
     <dependencies>
-      <dependency id="Bit.Owin" version="0.0.1.6" />
+      <dependency id="Bit.Owin" version="[0.0.1.6]" />
       <dependency id="Microsoft.AspNetCore.Owin" version="1.1.2" />
       <dependency id="Autofac.Extensions.DependencyInjection" version="4.1.0" />
       <dependency id="NWebsec.AspNetCore.Core" version="1.1.0" />

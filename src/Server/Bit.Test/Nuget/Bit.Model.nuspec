@@ -15,7 +15,7 @@
     <copyright>Copyright © Bit Foundation 2017</copyright>
     <tags>Bit Model Dto Entity</tags>
     <dependencies>
-      <dependency id="Bit.Core" version="0.0.1.6" />
+      <dependency id="Bit.Core" version="[0.0.1.6]" />
       <dependency id="AutoMapper" version="6.1.1" />
       <dependency id="System.ComponentModel.Annotations" version="4.3.0" />
     </dependencies>

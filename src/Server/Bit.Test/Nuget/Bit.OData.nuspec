@@ -15,8 +15,7 @@
     <copyright>Copyright © Bit Foundation 2017</copyright>
     <tags>Bit Web API OData Rest Microsoft AspNet WebApi AspNetWebApi</tags>
     <dependencies>
-      <dependency id="Bit.Owin" version="0.0.1.6" />
-      <dependency id="Bit.WebApi" version="0.0.1.6" />
+      <dependency id="Bit.WebApi" version="[0.0.1.6]" />
       <dependency id="LambdaSqlBuilder" version="0.9" />
       <dependency id="Microsoft.AspNet.OData" version="6.0.0" />
     </dependencies>

@@ -15,7 +15,7 @@
     <copyright>Copyright © Bit Foundation 2017</copyright>
     <tags>Bit EntityFramework Entity Framework EF Database Microsoft Data O/RM ADO.NET</tags>
     <dependencies>
-      <dependency id="Bit.Data" version="0.0.1.6" />
+      <dependency id="Bit.Data" version="[0.0.1.6]" />
       <dependency id="EntityFramework" version="6.1.3" />
     </dependencies>
   </metadata>

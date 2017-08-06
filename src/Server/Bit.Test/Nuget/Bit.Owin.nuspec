@@ -15,7 +15,7 @@
     <copyright>Copyright © Bit Foundation 2017</copyright>
     <tags>Bit Microsoft Katana OWIN</tags>
     <dependencies>
-      <dependency id="Bit.Model" version="0.0.1.6" />
+      <dependency id="Bit.Model" version="[0.0.1.6]" />
       <dependency id="Autofac" version="4.6.0" />
       <dependency id="Autofac.Owin" version="4.1.0" />
       <dependency id="IdentityModel" version="[1.13.1,2)" />

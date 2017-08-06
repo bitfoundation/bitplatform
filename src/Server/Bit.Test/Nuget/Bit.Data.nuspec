@@ -18,7 +18,7 @@
       <frameworkAssembly assemblyName="System.Data" targetFramework="" />
     </frameworkAssemblies>
     <dependencies>
-      <dependency id="Bit.Model" version="0.0.1.6" />
+      <dependency id="Bit.Model" version="[0.0.1.6]" />
       <dependency id="System.Linq.Dynamic" version="1.0.7" />
     </dependencies>
   </metadata>
