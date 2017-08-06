@@ -1,7 +1,7 @@
 {
   "name": "bit-core",
   "version": "0.0.1",
-  "description": "Bit Framework - TypeScript Client - Core",
+  "description": "Bit Framework - TypeScript/JavaScript Client - Core",
   "author": "Bit Foundation",
   "repository": {
     "type": "git",

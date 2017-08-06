@@ -1,7 +1,7 @@
 {
   "name": "bit-ng1-test",
   "version": "0.0.1",
-  "description": "Bit Framework - TypeScript Client - Angular JS",
+  "description": "Bit Framework - TypeScript/JavaScript Client - Angular JS",
   "author": "Bit Foundation",
   "repository": {
     "type": "git",
