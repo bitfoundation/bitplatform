@@ -11,6 +11,7 @@ using Bit.Owin.Contracts;
 using Microsoft.OData;
 using Microsoft.Owin;
 using Newtonsoft.Json;
+using System.Web.Http.Controllers;
 
 namespace Bit.OData.Serialization
 {
@@ -37,7 +38,9 @@ namespace Bit.OData.Serialization
 
         public override object Read(ODataMessageReader messageReader, Type type, ODataDeserializerContext readContext)
         {
-            if (!readContext.Request.GetActionDescriptor().GetCustomAttributes<ActionAttribute>().Any())
+            HttpActionDescriptor actionDescriptor = readContext.Request.GetActionDescriptor();
+
+            if (actionDescriptor != null && !actionDescriptor.GetCustomAttributes<ActionAttribute>().Any())
                 throw new InvalidOperationException($"{nameof(DefaultODataActionParameterDeserializer)} is designed for odata actions only");
 
             TypeInfo typeInfo = type.GetTypeInfo();

@@ -4,13 +4,14 @@ using System.Net.Http;
 using System.Reflection;
 using System.Web.OData.Formatter.Deserialization;
 using Bit.OData.ODataControllers;
+using System.Web.Http.Controllers;
 
 namespace Bit.OData.Serialization
 {
     public class ExtendedODataDeserializerProvider : DefaultODataDeserializerProvider
     {
 #if DEBUG
-        protected ExtendedODataDeserializerProvider() 
+        protected ExtendedODataDeserializerProvider()
             : base(null)
         {
         }
@@ -26,7 +27,9 @@ namespace Bit.OData.Serialization
 
         public override ODataDeserializer GetODataDeserializer(Type type, HttpRequestMessage request)
         {
-            if (request.GetActionDescriptor().GetCustomAttributes<ActionAttribute>().Any())
+            HttpActionDescriptor actionDescriptor = request.GetActionDescriptor();
+
+            if (actionDescriptor != null && actionDescriptor.GetCustomAttributes<ActionAttribute>().Any())
             {
                 return _DefaultODataParameterDeserializerValue.Value;
             }
