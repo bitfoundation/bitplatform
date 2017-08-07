@@ -14,6 +14,9 @@ namespace BitChangeSetManager.DataAccess
 
             mapperConfigExpression.CreateMap<ChangeSet, ChangeSetDto>()
                 .ForMember(changeSetMember => changeSetMember.IsDeliveredToAll, config => config.MapFrom(changeSet => changeSet.Deliveries.Count() == customersCount));
+
+            mapperConfigExpression.CreateMap<Province, ProvinceDto>()
+                .ForMember(province => province.CitiesCount, config => config.MapFrom(province => province.Cities.LongCount()));
         }
     }
 }
