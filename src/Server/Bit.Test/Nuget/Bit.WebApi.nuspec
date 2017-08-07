@@ -16,7 +16,7 @@
     <tags>Bit Web API Rest Microsoft AspNet WebApi AspNetWebApi</tags>
     <dependencies>
       <dependency id="Bit.Owin" version="[0.0.1.6]" />
-      <dependency id="Autofac.WebApi2" version="4.0.1" />
+      <dependency id="Autofac.WebApi2" version="4.1.0" />
       <dependency id="Autofac.WebApi2.Owin" version="4.0.0" />
       <dependency id="Microsoft.AspNet.WebApi.Client" version="5.2.3" />
       <dependency id="Microsoft.AspNet.WebApi.Core" version="5.2.3" />

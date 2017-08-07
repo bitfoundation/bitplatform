@@ -17,7 +17,7 @@
     <dependencies>
       <dependency id="Bit.Owin" version="[0.0.1.6]" />
       <dependency id="AntiXSS" version="4.3.0" />
-      <dependency id="IdentityServer3" version="2.6.0" />
+      <dependency id="IdentityServer3" version="2.6.1" />
     </dependencies>
   </metadata>
   <files>
