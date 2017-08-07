@@ -1,12 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Web.Http;
-using System.Web.OData.Batch;
-using System.Web.OData.Builder;
-using System.Web.OData.Extensions;
-using System.Web.OData.Routing.Conventions;
-using Bit.Core.Contracts;
+﻿using Bit.Core.Contracts;
 using Bit.Core.Models;
 using Bit.OData.Contracts;
 using Bit.Owin.Contracts;
@@ -14,6 +6,14 @@ using Bit.WebApi.Contracts;
 using Microsoft.OData;
 using Microsoft.OData.Edm;
 using Owin;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Web.Http;
+using System.Web.OData.Batch;
+using System.Web.OData.Builder;
+using System.Web.OData.Extensions;
+using System.Web.OData.Routing.Conventions;
 
 namespace Bit.OData
 {
@@ -83,13 +83,13 @@ namespace Bit.OData
 
             _webApiConfig.IncludeErrorDetailPolicy = _activeAppEnvironment.DebugMode ? IncludeErrorDetailPolicy.LocalOnly : IncludeErrorDetailPolicy.Never;
 
+            _webApiConfig.DependencyResolver = _webApiDependencyResolver;
+
             _webApiConfgurationCustomizers.ToList()
                 .ForEach(webApiConfigurationCustomizer =>
                 {
                     webApiConfigurationCustomizer.CustomizeWebApiConfiguration(_webApiConfig);
                 });
-
-            _webApiConfig.DependencyResolver = _webApiDependencyResolver;
 
             _server = new HttpServer(_webApiConfig);
 

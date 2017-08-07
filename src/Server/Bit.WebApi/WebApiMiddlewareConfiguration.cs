@@ -1,12 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Web.Http;
-using Bit.Core.Contracts;
+﻿using Bit.Core.Contracts;
 using Bit.Core.Models;
 using Bit.Owin.Contracts;
 using Bit.WebApi.Contracts;
 using Owin;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Web.Http;
 
 namespace Bit.WebApi
 {
@@ -56,13 +56,13 @@ namespace Bit.WebApi
 
             _webApiConfig.IncludeErrorDetailPolicy = _activeAppEnvironment.DebugMode ? IncludeErrorDetailPolicy.LocalOnly : IncludeErrorDetailPolicy.Never;
 
+            _webApiConfig.DependencyResolver = _webApiDependencyResolver;
+
             _webApiConfgurationCustomizers.ToList()
                 .ForEach(webApiConfigurationCustomizer =>
                 {
                     webApiConfigurationCustomizer.CustomizeWebApiConfiguration(_webApiConfig);
                 });
-
-            _webApiConfig.DependencyResolver = _webApiDependencyResolver;
 
             _server = new HttpServer(_webApiConfig);
 
