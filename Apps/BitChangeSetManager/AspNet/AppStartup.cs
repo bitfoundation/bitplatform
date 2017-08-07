@@ -19,6 +19,7 @@ using Owin;
 using System.Collections.Generic;
 using System.Data.SqlClient;
 using System.Reflection;
+using Swashbuckle.Application;
 
 namespace BitChangeSetManager
 {
@@ -59,6 +60,7 @@ namespace BitChangeSetManager
             dependencyManager.RegisterOwinMiddleware<StaticFilesMiddlewareConfiguration>();
             dependencyManager.RegisterMinimalOwinMiddlewares();
             dependencyManager.RegisterSingleSignOnClient();
+
             dependencyManager.RegisterMetadata();
 
             dependencyManager.RegisterDefaultWebApiAndODataConfiguration();
@@ -70,19 +72,37 @@ namespace BitChangeSetManager
                     httpConfiguration.Filters.Add(new System.Web.Http.AuthorizeAttribute());
                 });
 
+                webApiDependencyManager.RegisterGlobalWebApiActionFiltersUsing(httpConfiguration =>
+                {
+                    httpConfiguration.EnableSwagger(c =>
+                    {
+                        c.SingleApiVersion("v1", $"{DefaultAppEnvironmentProvider.Current.GetActiveAppEnvironment().AppInfo.Name}-Api");
+                        c.ApplyDefaultApiConfig(httpConfiguration);
+                    }).EnableSwaggerUi();
+                });
+
                 webApiDependencyManager.RegisterWebApiMiddlewareUsingDefaultConfiguration();
             });
 
-            dependencyManager.RegisterODataMiddleware(childDependencyManager =>
+            dependencyManager.RegisterODataMiddleware(odataDependencyManager =>
             {
-                childDependencyManager.RegisterGlobalWebApiActionFiltersUsing(httpConfiguration =>
+                odataDependencyManager.RegisterGlobalWebApiActionFiltersUsing(httpConfiguration =>
                 {
                     httpConfiguration.Filters.Add(new DefaultODataAuthorizeAttribute());
                 });
 
-                childDependencyManager.RegisterEdmModelProvider<BitEdmModelProvider>();
-                childDependencyManager.RegisterEdmModelProvider<BitChangeSetManagerEdmModelProvider>();
-                childDependencyManager.RegisterWebApiODataMiddlewareUsingDefaultConfiguration();
+                odataDependencyManager.RegisterGlobalWebApiActionFiltersUsing(httpConfiguration =>
+                {
+                    httpConfiguration.EnableSwagger(c =>
+                    {
+                        c.SingleApiVersion("v1", $"{DefaultAppEnvironmentProvider.Current.GetActiveAppEnvironment().AppInfo.Name}-OData");
+                        c.ApplyDefaultODataConfig(httpConfiguration);
+                    }).EnableSwaggerUi();
+                });
+
+                odataDependencyManager.RegisterEdmModelProvider<BitEdmModelProvider>();
+                odataDependencyManager.RegisterEdmModelProvider<BitChangeSetManagerEdmModelProvider>();
+                odataDependencyManager.RegisterWebApiODataMiddlewareUsingDefaultConfiguration();
             });
 
             if (DefaultAppEnvironmentProvider.Current.GetActiveAppEnvironment().DebugMode == false)

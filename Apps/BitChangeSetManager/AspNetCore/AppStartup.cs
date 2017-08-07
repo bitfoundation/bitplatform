@@ -17,6 +17,7 @@ using BitChangeSetManager.DataAccess;
 using BitChangeSetManager.Security;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
+using Swashbuckle.Application;
 using System;
 using System.Collections.Generic;
 using System.Data.SqlClient;
@@ -81,6 +82,15 @@ namespace BitChangeSetManager.Core
                     httpConfiguration.Filters.Add(new System.Web.Http.AuthorizeAttribute());
                 });
 
+                webApiDependencyManager.RegisterGlobalWebApiActionFiltersUsing(httpConfiguration =>
+                {
+                    httpConfiguration.EnableSwagger(c =>
+                    {
+                        c.SingleApiVersion("v1", $"{DefaultAppEnvironmentProvider.Current.GetActiveAppEnvironment().AppInfo.Name}-Api");
+                        c.ApplyDefaultApiConfig(httpConfiguration);
+                    }).EnableSwaggerUi();
+                });
+
                 webApiDependencyManager.RegisterWebApiMiddlewareUsingDefaultConfiguration();
             });
 
@@ -89,6 +99,15 @@ namespace BitChangeSetManager.Core
                 odataDependencyManager.RegisterGlobalWebApiActionFiltersUsing(httpConfiguration =>
                 {
                     httpConfiguration.Filters.Add(new DefaultODataAuthorizeAttribute());
+                });
+
+                odataDependencyManager.RegisterGlobalWebApiActionFiltersUsing(httpConfiguration =>
+                {
+                    httpConfiguration.EnableSwagger(c =>
+                    {
+                        c.SingleApiVersion("v1", $"{DefaultAppEnvironmentProvider.Current.GetActiveAppEnvironment().AppInfo.Name}-OData");
+                        c.ApplyDefaultODataConfig(httpConfiguration);
+                    }).EnableSwaggerUi();
                 });
 
                 odataDependencyManager.RegisterEdmModelProvider<BitEdmModelProvider>();
