@@ -122,10 +122,10 @@ namespace Bit.OData.ActionFilters
 
                     objContent.Value = currentOdataQueryOptions.ApplyTo(query: (IQueryable)objContent.Value, querySettings: globalODataQuerySettings, ignoreQueryOptions: AllowedQueryOptions.Filter | AllowedQueryOptions.Skip | AllowedQueryOptions.Top);
 
-                    if (currentOdataQueryOptions.SelectExpand != null)
+                    if (currentOdataQueryOptions.SelectExpand != null || currentOdataQueryOptions.Apply != null)
                     {
-                        TypeInfo newReturnTypeAfterApplyingSelect = objContent.Value.GetType().GetTypeInfo();
-                        queryElementType = newReturnTypeAfterApplyingSelect.GetGenericArguments().ExtendedSingle($"Get generic arguments of ${newReturnTypeAfterApplyingSelect.Name}").GetTypeInfo();
+                        TypeInfo newReturnTypeAfterApplyingSelectOrApply = objContent.Value.GetType().GetTypeInfo();
+                        queryElementType = newReturnTypeAfterApplyingSelectOrApply.GetGenericArguments().ExtendedSingle($"Get generic arguments of ${newReturnTypeAfterApplyingSelectOrApply.Name}").GetTypeInfo();
                     }
 
                     if (isSingleResult == false)
