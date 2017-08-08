@@ -8,13 +8,15 @@ namespace Bit.OData.Implementations
 {
     public class DefaultWebApiODataOwinPipelineInjector : IWebApiOwinPipelineInjector
     {
-        public virtual void UseWebApiOData(IAppBuilder owinApp, HttpServer server)
+        public virtual void UseWebApiOData(IAppBuilder owinApp, HttpServer server, HttpConfiguration webApiConfiguration)
         {
             if (owinApp == null)
                 throw new ArgumentNullException(nameof(owinApp));
 
             if (server == null)
                 throw new ArgumentNullException(nameof(server));
+
+            webApiConfiguration.Properties.TryAdd("Owin-Branch-Route-Prefix", "odata");
 
             owinApp.Map("/odata", innerApp =>
             {

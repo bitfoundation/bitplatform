@@ -132,7 +132,7 @@ namespace Bit.OData
 
             owinApp.UseAutofacWebApi(_webApiConfig);
 
-            _webApiOwinPipelineInjector.UseWebApiOData(owinApp, _server);
+            _webApiOwinPipelineInjector.UseWebApiOData(owinApp, _server, _webApiConfig);
 
             _webApiConfig.EnsureInitialized();
         }
