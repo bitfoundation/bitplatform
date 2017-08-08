@@ -53,10 +53,7 @@ namespace BitCLIV1
             {
                 BitCLIV1Args typedArgs = commandLineParser.Object;
 
-                bool solutionPathIsRelative = !Path.IsPathRooted(typedArgs.SolutionPath);
-
-                if (solutionPathIsRelative == true)
-                    typedArgs.SolutionPath = Path.Combine(Environment.CurrentDirectory, typedArgs.SolutionPath);
+                typedArgs.SolutionPath = Path.Combine(Environment.CurrentDirectory, typedArgs.SolutionPath);
             }
         }
     }
