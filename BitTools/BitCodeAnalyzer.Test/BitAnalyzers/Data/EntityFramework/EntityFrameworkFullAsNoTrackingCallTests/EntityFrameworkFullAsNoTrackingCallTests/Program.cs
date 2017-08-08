@@ -4,9 +4,9 @@ using System.Linq;
 
 namespace EntityFrameworkFullAsNoTrackingCallTests
 {
-    class Program
+    public class Program
     {
-        static void Main(string[] args)
+        public static void Main(string[] args)
         {
             using (AppDbContext context = new AppDbContext())
             {

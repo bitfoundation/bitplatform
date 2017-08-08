@@ -11,6 +11,7 @@ using Bit.Owin.Implementations;
 using Microsoft.Owin.Hosting;
 using Newtonsoft.Json;
 using Owin;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -153,6 +154,11 @@ namespace EntityFrameworkOptimizedForNTierScenarios
     {
         public static void Main(string[] args)
         {
+#if DEBUG
+
+            throw new InvalidOperationException("To achieve accurate results, set project configuration to release mode.");
+#endif
+
             Database.SetInitializer<CustomersDbContextForBitRepository>(null);
             Database.SetInitializer<CustomersDbContextForSharpRepository>(null);
 

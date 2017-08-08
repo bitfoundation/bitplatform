@@ -13,6 +13,7 @@ namespace CustomerDtoControllerSample
                     options.AddServerHeader = false;
                 })
                 .UseContentRoot(Directory.GetCurrentDirectory())
+                .UseIISIntegration()
                 .UseStartup<AppStartup>()
                 .CaptureStartupErrors(true)
                 .Build();

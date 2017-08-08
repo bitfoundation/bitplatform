@@ -11,6 +11,10 @@
       {
         "Key": "AppConnectionString",
         "Value": "Data Source=.;Initial Catalog=MyAppDb;Integrated Security=True;"
+      },
+      {
+        "Key": "StaticFilesRelativePath",
+        "Value": "." // Will be removed after we fixed a problem at Bit.OwinCore.AspNetCoreAppStartup.Configure(IApplicationBuilder aspNetCoreApp, OwinAppStartup owinAppStartup, IEnumerable<IAspNetCoreMiddlewareConfiguration> aspNetCoreMiddlewares)
       }
     ]
   }

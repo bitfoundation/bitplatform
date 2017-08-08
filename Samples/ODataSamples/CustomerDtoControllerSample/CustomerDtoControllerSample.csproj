@@ -4,10 +4,6 @@
     <TargetFramework>net47</TargetFramework>
     <RuntimeIdentifier>win7-x86</RuntimeIdentifier>
   </PropertyGroup>
-
-  <ItemGroup>
-    <Folder Include="wwwroot\" />
-  </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Bit.Core" Version="0.0.5.7" />
     <PackageReference Include="Bit.Data" Version="0.0.5.7" />
@@ -19,6 +15,11 @@
     <PackageReference Include="Bit.WebApi" Version="0.0.5.7" />
     <PackageReference Include="Microsoft.AspNetCore" Version="1.1.2" />
     <PackageReference Include="Microsoft.OData.Core" Version="7.3.0" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Update="environments.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
 
 </Project>
