@@ -1,26 +1,28 @@
-﻿using System;
-using Bit.OData.ODataControllers;
+﻿using Bit.OData.ODataControllers;
 using Bit.Tests.Model.Dto;
+using System;
 
 namespace Bit.Tests.Api.ApiControllers
 {
-    public class SampleBaseController<TSampleBaseDto> : DtoController<TSampleBaseDto>
-        where TSampleBaseDto : SampleBaseDto, new()
+    public class SampleBaseController : DtoController<SampleBaseDto>
     {
-        public virtual TSampleBaseDto GetSampleDto()
+        [Function]
+        public virtual SampleBaseDto GetSampleDto()
         {
-            return new TSampleBaseDto() { Id = Guid.NewGuid(), Name = "1" };
+            return new SampleBaseDto() { };
         }
     }
 
-    public class SampleInheritedController : SampleBaseController<SampleInheritedDto>
+    public class SampleInheritedController : DtoController<SampleInheritedDto>
     {
         [Function]
-        public override SampleInheritedDto GetSampleDto()
+        public virtual SampleInheritedDto GetSampleDto()
         {
-            SampleInheritedDto result = base.GetSampleDto();
+            SampleInheritedDto result = new SampleInheritedDto { };
 
             result.LastName = "1";
+            result.Id = Guid.NewGuid();
+            result.Name = "1";
 
             return result;
         }
