@@ -18,7 +18,7 @@
       <dependency id="Bit.WebApi" version="[0.0.1.6]" />
       <dependency id="LambdaSqlBuilder" version="0.9" />
       <dependency id="Microsoft.AspNet.OData" version="6.0.0" />
-      <dependency id="Bit.Swashbuckle.OData.Beta " version="4.0.0" />
+      <dependency id="Bit.Swashbuckle.OData.Beta " version="4.0.1" />
     </dependencies>
   </metadata>
   <files>
