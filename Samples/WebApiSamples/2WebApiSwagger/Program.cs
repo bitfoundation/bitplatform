@@ -10,6 +10,7 @@ using Owin;
 using Swashbuckle.Application;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -28,7 +29,7 @@ namespace WebApiSwagger
 
             using (WebApp.Start<AppStartup>(url: baseAddress))
             {
-                Console.WriteLine("Open http://localhost:9000/api/swagger/");
+                Process.Start("http://localhost:9000/api/swagger/");
                 Console.ReadLine();
             }
         }
@@ -72,8 +73,7 @@ namespace WebApiSwagger
                     {
                         c.SingleApiVersion("v1", "SwaggerDemoApi");
                         c.IncludeXmlComments(Path.Combine(DefaultPathProvider.Current.GetCurrentAppPath(), "WebApiSwagger.xml"));
-                        c.DescribeAllEnumsAsStrings();
-                        c.RootUrl(req => new Uri(req.RequestUri, req.GetOwinContext().Request.PathBase.Value /* /api */).ToString());
+                        c.ApplyDefaultApiConfig(httpConfiguration);
                     }).EnableSwaggerUi();
                 });
             });

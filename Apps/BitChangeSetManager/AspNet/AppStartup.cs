@@ -20,6 +20,7 @@ using System.Collections.Generic;
 using System.Data.SqlClient;
 using System.Reflection;
 using Swashbuckle.Application;
+using Bit.Core.Models;
 
 namespace BitChangeSetManager
 {
@@ -72,11 +73,12 @@ namespace BitChangeSetManager
                     httpConfiguration.Filters.Add(new System.Web.Http.AuthorizeAttribute());
                 });
 
-                webApiDependencyManager.RegisterGlobalWebApiActionFiltersUsing(httpConfiguration =>
+                webApiDependencyManager.RegisterGlobalWebApiCustomizerUsing(httpConfiguration =>
                 {
                     httpConfiguration.EnableSwagger(c =>
                     {
-                        c.SingleApiVersion("v1", $"{DefaultAppEnvironmentProvider.Current.GetActiveAppEnvironment().AppInfo.Name}-Api");
+                        EnvironmentAppInfo appInfo = DefaultAppEnvironmentProvider.Current.GetActiveAppEnvironment().AppInfo;
+                        c.SingleApiVersion($"v{appInfo.Version}", $"{appInfo.Name}-Api");
                         c.ApplyDefaultApiConfig(httpConfiguration);
                     }).EnableSwaggerUi();
                 });
@@ -91,11 +93,12 @@ namespace BitChangeSetManager
                     httpConfiguration.Filters.Add(new DefaultODataAuthorizeAttribute());
                 });
 
-                odataDependencyManager.RegisterGlobalWebApiActionFiltersUsing(httpConfiguration =>
+                odataDependencyManager.RegisterGlobalWebApiCustomizerUsing(httpConfiguration =>
                 {
                     httpConfiguration.EnableSwagger(c =>
                     {
-                        c.SingleApiVersion("v1", $"{DefaultAppEnvironmentProvider.Current.GetActiveAppEnvironment().AppInfo.Name}-OData");
+                        EnvironmentAppInfo appInfo = DefaultAppEnvironmentProvider.Current.GetActiveAppEnvironment().AppInfo;
+                        c.SingleApiVersion($"v{appInfo.Version}", $"{appInfo.Name}-Api");
                         c.ApplyDefaultODataConfig(httpConfiguration);
                     }).EnableSwaggerUi();
                 });

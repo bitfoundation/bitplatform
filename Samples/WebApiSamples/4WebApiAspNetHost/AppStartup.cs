@@ -55,8 +55,7 @@ namespace WebApiAspNetHost
                     httpConfiguration.EnableSwagger(c =>
                     {
                         c.SingleApiVersion("v1", "SwaggerDemoApi");
-                        c.DescribeAllEnumsAsStrings();
-                        c.RootUrl(req => new Uri(req.RequestUri, req.GetOwinContext().Request.PathBase.Value /* /api */).ToString());
+                        c.ApplyDefaultApiConfig(httpConfiguration);
                     }).EnableSwaggerUi();
                 });
             });

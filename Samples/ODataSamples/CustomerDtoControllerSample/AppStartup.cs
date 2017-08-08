@@ -12,6 +12,7 @@ using Bit.Owin.Implementations;
 using Bit.OwinCore;
 using Bit.OwinCore.Contracts;
 using Microsoft.Extensions.DependencyInjection;
+using Swashbuckle.Application;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -62,10 +63,28 @@ namespace CustomerDtoControllerSample
             dependencyManager.RegisterWebApiMiddleware(webApiDependencyManager =>
             {
                 webApiDependencyManager.RegisterWebApiMiddlewareUsingDefaultConfiguration();
+
+                webApiDependencyManager.RegisterGlobalWebApiCustomizerUsing(httpConfiguration =>
+                {
+                    httpConfiguration.EnableSwagger(c =>
+                    {
+                        c.SingleApiVersion("v1", $"Swagger-Api");
+                        c.ApplyDefaultApiConfig(httpConfiguration);
+                    }).EnableSwaggerUi();
+                });
             });
 
             dependencyManager.RegisterODataMiddleware(odataDependencyManager =>
             {
+                odataDependencyManager.RegisterGlobalWebApiCustomizerUsing(httpConfiguration =>
+                {
+                    httpConfiguration.EnableSwagger(c =>
+                    {
+                        c.SingleApiVersion("v1", $"Swagger-Api");
+                        c.ApplyDefaultODataConfig(httpConfiguration);
+                    }).EnableSwaggerUi();
+                });
+
                 odataDependencyManager.RegisterEdmModelProvider<BitEdmModelProvider>();
                 odataDependencyManager.RegisterEdmModelProvider<MyAppEdmModelProvider>();
                 odataDependencyManager.RegisterWebApiODataMiddlewareUsingDefaultConfiguration();
