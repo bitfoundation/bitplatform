@@ -5,7 +5,7 @@ So, what's OData? following text which is copied from http://odata.org describes
 OData (Open Data Protocol) is an ISO/IEC approved, OASIS standard that defines a set of best practices for building and consuming "RESTful APIs". OData helps you "focus on your business logic" while building RESTful APIs.
 OData RESTful APIs are easy to consume. The OData metadata, a machine-readable description of the data model of the APIs, enables the creation of powerful generic client proxies and tools.
 
-Using bit framework, you can build OData services very easily, and we generate C# - TypeScript - JavaScript clients for you automatically. You can use those no matter you're developing xamarin forms, angular js, angular, react js & native etc.
+Using bit framework, you can build OData services very easily, and we generate C# - TypeScript - JavaScript clients for you automatically. You can use those no matter you're developing xamarin forms, angular js, angular, react js & native etc. We also have out of the box support for Open-API (Swagger). Using [azure auto rest](https://github.com/Azure/autorest) tools, you can generate client side for almost any language you want.
 
 In bit apps, you develop odata controllers for your DTO (Data transfer objects) classes.
 
@@ -156,9 +156,8 @@ Note that you don't have to use bit repository here. You don't have to use entit
 [Function] is used to return data, it has to return data, and it accepts simple type parameters like int, string, enum, etc.
 [Action] is used to do something, its return value is optional, and it accepts single/list of DTO(s), complex type(s) (DTO without key) or simple type parameters like int, string, enum, etc.
 
-Run the app and you're good to go. By opening http://localhost:9000/odata/MyApp/$metadata you see $metadata. $metadata describes your DTO classes, complex types, enums, actions and functions in a standard format. There are tools in several languages to generate client side proxy for you. You can see the list of libraries and tools [here](http://www.odata.org/libraries/).
+Run the app and you're good to go. By opening http://localhost:9000/odata/swagger/, you see swagger's console. By opening http://localhost:9000/odata/MyApp/$metadata you see $metadata. $metadata describes your DTO classes, complex types, enums, actions and functions in a standard format. There are tools in several languages to generate client side proxy for you. You can see the list of libraries and tools [here](http://www.odata.org/libraries/).
 Note that you can call OData controllers using jquery ajax, fetch, etc too, as they're REST APIs.
-[There is a library](https://github.com/rbeauchamp/Swashbuckle.OData) to generate swagger from your odata metadata if you prefer to use swagger.
 
 Open this url in your browser: http://localhost:9000/odata/MyApp/Customers/MyApp.GetActiveCustomers You see 50 customers which are active. It runs something like this on a database:
 

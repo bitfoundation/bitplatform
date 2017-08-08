@@ -85,9 +85,9 @@ We use #DefaultPathProvider.Current.GetCurrentAppPath()# instead of #System.AppD
 
 5- We've following code which has no equivalent in the article codes:
 ```csharp
-c.RootUrl(req => new Uri(req.RequestUri, req.GetOwinContext().Request.PathBase.Value /* /api */).ToString());
+c.ApplyDefaultApiConfig(httpConfiguration);
 ```
-As you see in the article, you open swgger ui by opening http://localhost:51609/swagger/ but in bit's sample, you open http://localhost:9000/api/swagger/. You open /swagger under /api. This is a magic of owin/asp.net core's request branching.
+As you see in the article, you open swgger ui by opening http://localhost:51609/swagger/ but in bit's sample, you open http://localhost:9000/api/swagger/. You open /swagger under /api. This is a magic of owin/asp.net core's request branching. Method "ApplyDefaultApiConfig" of swagger config manages this for you.
 
 So run the second sample and you're good to go (-:
 
