@@ -6,6 +6,6 @@ namespace BitTools.Core.Contracts
 {
     public interface IBitCodeGeneratorMappingsProvider
     {
-        IList<BitCodeGeneratorMapping> GetBitCodeGeneratorMappings(Workspace workspace, string solutionFilePath, IList<string> projectNames);
+        IList<BitCodeGeneratorMapping> GetBitCodeGeneratorMappings(Workspace workspace, IList<string> projectNames);
     }
 }

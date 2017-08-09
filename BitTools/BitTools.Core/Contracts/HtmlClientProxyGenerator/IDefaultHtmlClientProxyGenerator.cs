@@ -6,6 +6,6 @@ namespace BitTools.Core.Contracts.HtmlClientProxyGenerator
 {
     public interface IDefaultHtmlClientProxyGenerator
     {
-        Task GenerateCodes(Workspace workspace, string solutionFilePath, IList<string> projectNames);
+        Task GenerateCodes(Workspace workspace, IList<string> projectNames);
     }
 }

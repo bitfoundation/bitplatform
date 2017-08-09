@@ -53,7 +53,7 @@ namespace BitCodeGenerator.Implementations.HtmlClientProxyGenerator
             _projectEnumTypesProvider = projectEnumTypesProvider;
         }
 
-        public virtual async Task GenerateCodes(Workspace workspace, string solutionFilePath, IList<string> projectNames)
+        public virtual async Task GenerateCodes(Workspace workspace, IList<string> projectNames)
         {
             if (workspace == null)
                 throw new ArgumentNullException(nameof(workspace));
@@ -61,7 +61,7 @@ namespace BitCodeGenerator.Implementations.HtmlClientProxyGenerator
             if (projectNames == null)
                 throw new ArgumentNullException(nameof(projectNames));
 
-            foreach (BitCodeGeneratorMapping proxyGeneratorMapping in _bitCodeGeneratorMappingsProvider.GetBitCodeGeneratorMappings(workspace, solutionFilePath, projectNames))
+            foreach (BitCodeGeneratorMapping proxyGeneratorMapping in _bitCodeGeneratorMappingsProvider.GetBitCodeGeneratorMappings(workspace, projectNames))
             {
                 string generatedContextName = proxyGeneratorMapping.DestinationFileName;
 

@@ -6,7 +6,6 @@ using BitVSEditorUtils.HTML.Schema;
 using EnvDTE;
 using EnvDTE80;
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.MSBuild;
 using Microsoft.VisualStudio.ComponentModelHost;
 using Microsoft.VisualStudio.LanguageServices;
 using Microsoft.VisualStudio.Shell;
@@ -114,13 +113,6 @@ namespace BitVSExtensionV1
 
             _visualStudioWorkspace.WorkspaceFailed += _workspace_WorkspaceFailed;
             _visualStudioWorkspace.WorkspaceChanged += _workspace_WorkspaceChanged;
-
-            try
-            {
-                _msBuildWorkspace = MSBuildWorkspace.Create();
-                _msBuildWorkspace.WorkspaceFailed += _workspace_WorkspaceFailed;
-            }
-            catch { }
         }
 
         private void _workspace_WorkspaceFailed(object sender, WorkspaceDiagnosticEventArgs e)
@@ -144,7 +136,7 @@ namespace BitVSExtensionV1
                 return;
             }
 
-            if (!WorkspaceHasBitConfigV1JsonFile(_visualStudioWorkspace))
+            if (!WorkspaceHasBitConfigV1JsonFile())
             {
                 LogWarn("Could not find BitConfigV1.json file.");
                 return;
@@ -152,12 +144,6 @@ namespace BitVSExtensionV1
 
             if (Environment.Version < new Version("4.0.30319.42000"))
                 ShowInitialLoadProblem("To develop bit projects, you've to install .NET 4.7.1 Developer Pack");
-
-            try
-            {
-                _msBuildWorkspace?.OpenSolutionAsync(_visualStudioWorkspace.CurrentSolution.FilePath).GetAwaiter().GetResult();
-            }
-            catch { }
 
             _outputPane.Clear();
 
@@ -197,16 +183,17 @@ namespace BitVSExtensionV1
             }
 
             _shouldGeneratedProjectNames = new List<string> { };
-            generateCodesForTheFirstTimeExecuted = false;
+            needsFirstTimeGenerateCode = true;
+            lastActionWasClean = false;
             thereWasAnErrorInLastBuild = false;
         }
 
-        private bool WorkspaceHasBitConfigV1JsonFile(Workspace workspace)
+        private bool WorkspaceHasBitConfigV1JsonFile()
         {
-            return File.Exists(workspace.CurrentSolution.FilePath) && File.Exists(Path.Combine(Path.GetDirectoryName(workspace.CurrentSolution.FilePath) + "\\BitConfigV1.json"));
+            return File.Exists(_visualStudioWorkspace.CurrentSolution.FilePath) && File.Exists(Path.Combine(Path.GetDirectoryName(_visualStudioWorkspace.CurrentSolution.FilePath) + "\\BitConfigV1.json"));
         }
 
-        private void CallGenerateCodes(Workspace workspace)
+        private void CallGenerateCodes()
         {
             Stopwatch sw = null;
             try
@@ -220,7 +207,7 @@ namespace BitVSExtensionV1
                     new DefaultBitCodeGeneratorMappingsProvider(new DefaultBitConfigProvider()), dtosProvider
                     , new DefaultHtmlClientProxyDtoGenerator(), new DefaultHtmlClientContextGenerator(), controllersProvider, new DefaultProjectEnumTypesProvider(controllersProvider, dtosProvider));
 
-                System.Threading.Tasks.Task.Run(async () => await generator.GenerateCodes(workspace, _visualStudioWorkspace.CurrentSolution.FilePath, _shouldGeneratedProjectNames)).GetAwaiter().GetResult();
+                System.Threading.Tasks.Task.Run(async () => await generator.GenerateCodes(_visualStudioWorkspace, _shouldGeneratedProjectNames)).GetAwaiter().GetResult();
 
                 Log($"Code Generation Completed in {sw.ElapsedMilliseconds} ms.");
             }
@@ -238,11 +225,9 @@ namespace BitVSExtensionV1
         {
             DefaultHtmlClientProxyCleaner cleaner = new DefaultHtmlClientProxyCleaner(new DefaultBitCodeGeneratorMappingsProvider(new DefaultBitConfigProvider()));
 
-            System.Threading.Tasks.Task.Run(async () => await cleaner.DeleteCodes(_visualStudioWorkspace, _visualStudioWorkspace.CurrentSolution.FilePath, _shouldGeneratedProjectNames)).GetAwaiter().GetResult();
+            System.Threading.Tasks.Task.Run(async () => await cleaner.DeleteCodes(_visualStudioWorkspace, _shouldGeneratedProjectNames)).GetAwaiter().GetResult();
 
             Log("Generated codes were deleted.");
-
-            generateCodesForTheFirstTimeExecuted = false;
         }
 
         private void InitHtmlElements(BitConfig config)
@@ -289,31 +274,24 @@ namespace BitVSExtensionV1
 
         private void _buildEvents_OnBuildBegin(vsBuildScope scope, vsBuildAction action)
         {
-            if (!WorkspaceHasBitConfigV1JsonFile(_visualStudioWorkspace))
+            if (!WorkspaceHasBitConfigV1JsonFile() || action == vsBuildAction.vsBuildActionClean)
                 return;
 
-            if (generateCodesForTheFirstTimeExecuted == false || thereWasAnErrorInLastBuild == true)
+            if (needsFirstTimeGenerateCode == true || thereWasAnErrorInLastBuild == true || lastActionWasClean == true)
             {
                 _shouldGeneratedProjectNames = _visualStudioWorkspace.CurrentSolution.Projects.Where(p => p.Language == LanguageNames.CSharp).Select(p => p.Name).ToList();
-                try
-                {
-                    if (_msBuildWorkspace?.CurrentSolution != null && _msBuildWorkspace.CurrentSolution.Projects.Any(p => p.HasDocuments))
-                        CallGenerateCodes(_msBuildWorkspace);
-                }
-                catch
-                {
-                    CallGenerateCodes(_visualStudioWorkspace);
-                }
+                CallGenerateCodes();
             }
 
-            generateCodesForTheFirstTimeExecuted = true;
+            needsFirstTimeGenerateCode = false;
+            lastActionWasClean = false;
             thereWasAnErrorInLastBuild = false;
             _shouldGeneratedProjectNames.Clear();
         }
 
         private void _buildEvents_OnBuildProjConfigDone(string project, string projectConfig, string platform, string solutionConfig, bool success)
         {
-            if (!WorkspaceHasBitConfigV1JsonFile(_visualStudioWorkspace))
+            if (!WorkspaceHasBitConfigV1JsonFile())
                 return;
 
             thereWasAnErrorInLastBuild = thereWasAnErrorInLastBuild && success;
@@ -326,7 +304,7 @@ namespace BitVSExtensionV1
 
         private void _buildEvents_OnBuildDone(vsBuildScope scope, vsBuildAction action)
         {
-            if (!WorkspaceHasBitConfigV1JsonFile(_visualStudioWorkspace))
+            if (!WorkspaceHasBitConfigV1JsonFile())
                 return;
 
             try
@@ -334,10 +312,11 @@ namespace BitVSExtensionV1
                 if (action == vsBuildAction.vsBuildActionClean)
                 {
                     CallCleanCodes();
+                    lastActionWasClean = true;
                 }
                 else
                 {
-                    CallGenerateCodes(_visualStudioWorkspace);
+                    CallGenerateCodes();
                 }
             }
             catch (Exception ex)
@@ -385,12 +364,6 @@ namespace BitVSExtensionV1
                 _visualStudioWorkspace.WorkspaceFailed -= _workspace_WorkspaceFailed;
             }
 
-            if (_msBuildWorkspace != null)
-            {
-                _msBuildWorkspace.WorkspaceFailed -= _workspace_WorkspaceFailed;
-                _msBuildWorkspace.Dispose();
-            }
-
             if (_applicationObject?.Events?.BuildEvents != null)
             {
                 _applicationObject.Events.BuildEvents.OnBuildProjConfigDone -= _buildEvents_OnBuildProjConfigDone;
@@ -407,8 +380,6 @@ namespace BitVSExtensionV1
 
         private VisualStudioWorkspace _visualStudioWorkspace;
 
-        private MSBuildWorkspace _msBuildWorkspace;
-
         private IComponentModel _componentModel;
 
         private IServiceContainer _serviceContainer;
@@ -421,7 +392,9 @@ namespace BitVSExtensionV1
 
         private IVsStatusbar _statusBar;
 
-        private bool generateCodesForTheFirstTimeExecuted;
+        private bool needsFirstTimeGenerateCode;
+
+        private bool lastActionWasClean;
 
         private bool thereWasAnErrorInLastBuild;
     }
