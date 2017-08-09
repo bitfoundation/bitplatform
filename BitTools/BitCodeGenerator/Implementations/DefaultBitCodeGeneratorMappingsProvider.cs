@@ -19,7 +19,7 @@ namespace BitCodeGenerator.Implementations
             _configurationProvider = configurationProvider;
         }
 
-        public virtual IList<BitCodeGeneratorMapping> GetBitCodeGeneratorMappings(Workspace workspace, IList<string> projectNames)
+        public virtual IList<BitCodeGeneratorMapping> GetBitCodeGeneratorMappings(Workspace workspace, string solutionFilePath, IList<string> projectNames)
         {
             if (workspace == null)
                 throw new ArgumentNullException(nameof(workspace));
@@ -29,7 +29,7 @@ namespace BitCodeGenerator.Implementations
 
             HashSet<BitCodeGeneratorMapping> affectedBitCodeGeneratorMappings = new HashSet<BitCodeGeneratorMapping>();
 
-            BitConfig bitConfig = _configurationProvider.GetConfiguration(workspace, projectNames);
+            BitConfig bitConfig = _configurationProvider.GetConfiguration(solutionFilePath);
 
             foreach (string projName in projectNames)
             {

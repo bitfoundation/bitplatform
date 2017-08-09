@@ -167,7 +167,7 @@ namespace BitVSExtensionV1
 
             try
             {
-                config = configProvider.GetConfiguration(_visualStudioWorkspace, Enumerable.Empty<string>().ToList());
+                config = configProvider.GetConfiguration(_visualStudioWorkspace.CurrentSolution.FilePath);
 
                 foreach (BitCodeGeneratorMapping mapping in config.BitCodeGeneratorConfigs.BitCodeGeneratorMappings)
                 {
@@ -220,7 +220,7 @@ namespace BitVSExtensionV1
                     new DefaultBitCodeGeneratorMappingsProvider(new DefaultBitConfigProvider()), dtosProvider
                     , new DefaultHtmlClientProxyDtoGenerator(), new DefaultHtmlClientContextGenerator(), controllersProvider, new DefaultProjectEnumTypesProvider(controllersProvider, dtosProvider));
 
-                System.Threading.Tasks.Task.Run(async () => await generator.GenerateCodes(workspace, _shouldGeneratedProjectNames)).GetAwaiter().GetResult();
+                System.Threading.Tasks.Task.Run(async () => await generator.GenerateCodes(workspace, _visualStudioWorkspace.CurrentSolution.FilePath, _shouldGeneratedProjectNames)).GetAwaiter().GetResult();
 
                 Log($"Code Generation Completed in {sw.ElapsedMilliseconds} ms.");
             }
@@ -238,7 +238,7 @@ namespace BitVSExtensionV1
         {
             DefaultHtmlClientProxyCleaner cleaner = new DefaultHtmlClientProxyCleaner(new DefaultBitCodeGeneratorMappingsProvider(new DefaultBitConfigProvider()));
 
-            System.Threading.Tasks.Task.Run(async () => await cleaner.DeleteCodes(_visualStudioWorkspace, _shouldGeneratedProjectNames)).GetAwaiter().GetResult();
+            System.Threading.Tasks.Task.Run(async () => await cleaner.DeleteCodes(_visualStudioWorkspace, _visualStudioWorkspace.CurrentSolution.FilePath, _shouldGeneratedProjectNames)).GetAwaiter().GetResult();
 
             Log("Generated codes were deleted.");
 
@@ -297,21 +297,8 @@ namespace BitVSExtensionV1
                 _shouldGeneratedProjectNames = _visualStudioWorkspace.CurrentSolution.Projects.Where(p => p.Language == LanguageNames.CSharp).Select(p => p.Name).ToList();
                 try
                 {
-                    if (_msBuildWorkspace?.CurrentSolution != null)
-                    {
-                        if (WorkspaceHasBitConfigV1JsonFile(_msBuildWorkspace))
-                            CallGenerateCodes(_msBuildWorkspace);
-                        else
-                        {
-                            LogWarn($"MsBuildWorkspace's path is not valid {_msBuildWorkspace.CurrentSolution.FilePath}");
-                            throw new InvalidOperationException("MsBuildWorkspace's path is not valid");
-                        }
-                    }
-                    else
-                    {
-                        LogWarn($"Either MsBuildWorkspace or its solution is null");
-                        throw new InvalidOperationException("MsBuildWorkspace?.CurrentSolution is null");
-                    }
+                    if (_msBuildWorkspace?.CurrentSolution != null && _msBuildWorkspace.CurrentSolution.Projects.Any(p => p.HasDocuments))
+                        CallGenerateCodes(_msBuildWorkspace);
                 }
                 catch
                 {
