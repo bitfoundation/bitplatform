@@ -37,8 +37,8 @@ namespace BitCodeGenerator.Implementations.HtmlClientProxyGenerator
                 string jsContextExtension = ".js";
                 string tsContextExtension = ".d.ts";
 
-                Project destProject = solution.Projects
-                        .Last(p => p.Name == proxyGeneratorMapping.DestinationProject.Name);
+                Project destProject = solution.Projects.Where(p => p.Language == LanguageNames.CSharp)
+                        .ExtendedSingle($"Trying to find project with name: {proxyGeneratorMapping.DestinationProject.Name}", p => p.Name == proxyGeneratorMapping.DestinationProject.Name);
 
                 DeleteCodes(contextName, jsContextExtension, destProject);
                 DeleteCodes(contextName, tsContextExtension, destProject);

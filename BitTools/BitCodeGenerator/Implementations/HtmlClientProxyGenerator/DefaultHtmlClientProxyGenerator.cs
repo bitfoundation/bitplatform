@@ -71,10 +71,10 @@ namespace BitCodeGenerator.Implementations.HtmlClientProxyGenerator
                 string generatedJsContextExtension = ".js";
                 string generatedTsContextExtension = ".d.ts";
 
-                Project destProject = solution.Projects
-                        .Last(p => p.Name == proxyGeneratorMapping.DestinationProject.Name);
+                Project destProject = solution.Projects.Where(p => p.Language == LanguageNames.CSharp)
+                    .ExtendedSingle($"Trying to find project with name: {proxyGeneratorMapping.DestinationProject.Name}", p => p.Name == proxyGeneratorMapping.DestinationProject.Name);
 
-                IList<Project> involveableProjects = _solutionProjectsSelector.GetInvolveableProjects(solution, solution.Projects.ToList(), proxyGeneratorMapping);
+                IList<Project> involveableProjects = _solutionProjectsSelector.GetInvolveableProjects(solution, solution.Projects.Where(p => p.Language == LanguageNames.CSharp).ToList(), proxyGeneratorMapping);
 
                 List<Dto> dtos = new List<Dto>();
 
