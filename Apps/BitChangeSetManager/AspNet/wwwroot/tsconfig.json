@@ -3,11 +3,13 @@
   "compilerOptions": {
     "allowUnreachableCode": true,
     "charset": "utf8",
+    "diagnostics": false,
     "emitDecoratorMetadata": false,
     "experimentalDecorators": true,
     "inlineSources": true,
     "lib": [ "dom", "es2017" ],
     "module": "none",
+    "noEmitOnError": false,
     "outFile": "bitChangeSetManager.js",
     "removeComments": false,
     "skipLibCheck": true,
