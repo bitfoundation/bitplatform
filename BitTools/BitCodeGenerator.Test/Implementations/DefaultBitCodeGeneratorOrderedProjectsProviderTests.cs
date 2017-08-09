@@ -21,7 +21,7 @@ namespace BitCodeGenerator.Test.Implementations
 
                 List<Project> projects = solution.Projects.ToList();
 
-                IList<Project> orderedProjects = (new DefaultBitCodeGeneratorOrderedProjectsProvider().GetInvolveableProjects(solution, projects,
+                IList<Project> orderedProjects = (new DefaultBitCodeGeneratorOrderedProjectsProvider().GetInvolveableProjects(workspace, projects,
                         new BitCodeGeneratorMapping { SourceProjects = new[] { new BitTools.Core.Model.ProjectInfo { Name = "Bit.Model" }, new BitTools.Core.Model.ProjectInfo { Name = "Bit.OData" } } }));
 
                 Assert.AreEqual(2, orderedProjects.Count);

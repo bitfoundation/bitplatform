@@ -6,6 +6,6 @@ namespace BitTools.Core.Contracts.HtmlClientProxyGenerator
 {
     public interface IDefaultHtmlClientProxyCleaner
     {
-        Task DeleteCodes(Solution solution, IList<Project> projects);
+        Task DeleteCodes(Workspace workspace, IList<string> projectNames);
     }
 }

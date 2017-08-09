@@ -22,18 +22,18 @@ namespace BitCodeGenerator.Implementations
     {
         public virtual string Version { get; set; } = "V1";
 
-        public virtual BitConfig GetConfiguration(Solution solution, IList<Project> projects)
+        public virtual BitConfig GetConfiguration(Workspace workspace, IList<string> projectNames)
         {
-            if (solution == null)
-                throw new ArgumentNullException(nameof(solution));
+            if (workspace == null)
+                throw new ArgumentNullException(nameof(workspace));
 
-            if (projects == null)
-                throw new ArgumentNullException(nameof(projects));
+            if (projectNames == null)
+                throw new ArgumentNullException(nameof(projectNames));
 
-            DirectoryInfo directoryInfo = Directory.GetParent(solution.FilePath);
+            DirectoryInfo directoryInfo = Directory.GetParent(workspace.CurrentSolution.FilePath);
 
             if (directoryInfo == null)
-                throw new InvalidOperationException($"Could not find directory of {solution.FilePath}");
+                throw new InvalidOperationException($"Could not find directory of {workspace.CurrentSolution.FilePath}");
 
             string bitConfigFileName = $"BitConfig{Version}.json";
 

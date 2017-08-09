@@ -19,11 +19,11 @@ namespace BitCodeGenerator.Test.Implementations
             {
                 Solution solution = workspace.CurrentSolution;
 
-                List<Project> projects = solution.Projects.ToList();
+                List<string> projectNames = solution.Projects.Select(p => p.Name).ToList();
 
                 IList<BitCodeGeneratorMapping> bitCodeGeneratorMappings = new DefaultBitCodeGeneratorMappingsProvider(
                     new DefaultBitConfigProvider())
-                    .GetBitCodeGeneratorMappings(solution, projects);
+                    .GetBitCodeGeneratorMappings(workspace, projectNames);
 
                 Assert.AreEqual(2, bitCodeGeneratorMappings.Count);
 
@@ -39,11 +39,11 @@ namespace BitCodeGenerator.Test.Implementations
             {
                 Solution solution = workspace.CurrentSolution;
 
-                List<Project> projects = solution.Projects.Where(p => p.Name == "Bit.Core").ToList();
+                List<string> projectNames = solution.Projects.Where(p => p.Name == "Bit.Core").Select(p => p.Name).ToList();
 
                 IList<BitCodeGeneratorMapping> bitCodeGeneratorMappings = new DefaultBitCodeGeneratorMappingsProvider(
                     new DefaultBitConfigProvider())
-                    .GetBitCodeGeneratorMappings(solution, projects);
+                    .GetBitCodeGeneratorMappings(workspace, projectNames);
 
                 Assert.AreEqual(0, bitCodeGeneratorMappings.Count);
             }

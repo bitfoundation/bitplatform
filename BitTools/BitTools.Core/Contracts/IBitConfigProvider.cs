@@ -6,7 +6,7 @@ namespace BitTools.Core.Contracts
 {
     public interface IBitConfigProvider
     {
-        BitConfig GetConfiguration(Solution solution, IList<Project> projects);
+        BitConfig GetConfiguration(Workspace workspace, IList<string> projectNames);
 
         string Version { get; set; }
     }

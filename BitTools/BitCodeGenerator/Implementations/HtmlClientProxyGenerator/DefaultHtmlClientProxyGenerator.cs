@@ -53,15 +53,15 @@ namespace BitCodeGenerator.Implementations.HtmlClientProxyGenerator
             _projectEnumTypesProvider = projectEnumTypesProvider;
         }
 
-        public virtual async Task GenerateCodes(Solution solution, IList<Project> projects)
+        public virtual async Task GenerateCodes(Workspace workspace, IList<string> projectNames)
         {
-            if (solution == null)
-                throw new ArgumentNullException(nameof(solution));
+            if (workspace == null)
+                throw new ArgumentNullException(nameof(workspace));
 
-            if (projects == null)
-                throw new ArgumentNullException(nameof(projects));
+            if (projectNames == null)
+                throw new ArgumentNullException(nameof(projectNames));
 
-            foreach (BitCodeGeneratorMapping proxyGeneratorMapping in _bitCodeGeneratorMappingsProvider.GetBitCodeGeneratorMappings(solution, projects))
+            foreach (BitCodeGeneratorMapping proxyGeneratorMapping in _bitCodeGeneratorMappingsProvider.GetBitCodeGeneratorMappings(workspace, projectNames))
             {
                 string generatedContextName = proxyGeneratorMapping.DestinationFileName;
 
@@ -71,10 +71,10 @@ namespace BitCodeGenerator.Implementations.HtmlClientProxyGenerator
                 string generatedJsContextExtension = ".js";
                 string generatedTsContextExtension = ".d.ts";
 
-                Project destProject = solution.Projects.Where(p => p.Language == LanguageNames.CSharp)
+                Project destProject = workspace.CurrentSolution.Projects.Where(p => p.Language == LanguageNames.CSharp)
                     .ExtendedSingle($"Trying to find project with name: {proxyGeneratorMapping.DestinationProject.Name}", p => p.Name == proxyGeneratorMapping.DestinationProject.Name);
 
-                IList<Project> involveableProjects = _solutionProjectsSelector.GetInvolveableProjects(solution, solution.Projects.Where(p => p.Language == LanguageNames.CSharp).ToList(), proxyGeneratorMapping);
+                IList<Project> involveableProjects = _solutionProjectsSelector.GetInvolveableProjects(workspace, workspace.CurrentSolution.Projects.Where(p => p.Language == LanguageNames.CSharp).ToList(), proxyGeneratorMapping);
 
                 List<Dto> dtos = new List<Dto>();
 
@@ -102,15 +102,15 @@ namespace BitCodeGenerator.Implementations.HtmlClientProxyGenerator
                 generatedTs.AppendLine(_dtoGenerator.GenerateTypeScriptDtos(dtos, enumTypes, proxyGeneratorMapping.TypingsPath));
                 generatedTs.AppendLine(_contextGenerator.GenerateTypeScriptContext(dtoControllers, proxyGeneratorMapping));
 
-                WriteResults(solution, generatedJs.ToString(), generatedContextName, generatedJsContextExtension, destProject);
+                WriteFiles(workspace.CurrentSolution, generatedJs.ToString(), generatedContextName, generatedJsContextExtension, destProject);
 
-                WriteResults(solution, generatedTs.ToString(), generatedContextName, generatedTsContextExtension, destProject);
+                WriteFiles(workspace.CurrentSolution, generatedTs.ToString(), generatedContextName, generatedTsContextExtension, destProject);
             }
         }
 
-        private static void WriteResults(Solution solution, String generatedCodes, string fileName, string extension, Project destProject)
+        private static void WriteFiles(Solution solution, String generatedCodes, string fileName, string extension, Project destProject)
         {
-            string fullPath = $@"{Directory.GetParent(destProject.FilePath).FullName}\{fileName}{extension}";
+            string fullPath = Path.Combine(Directory.GetParent(destProject.FilePath).FullName, $"{fileName}{extension}");
 
             File.WriteAllText(fullPath, generatedCodes, Encoding.UTF8);
         }

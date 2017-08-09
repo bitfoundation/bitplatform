@@ -19,23 +19,23 @@ namespace BitCodeGenerator.Implementations
             _configurationProvider = configurationProvider;
         }
 
-        public virtual IList<BitCodeGeneratorMapping> GetBitCodeGeneratorMappings(Solution solution, IList<Project> projects)
+        public virtual IList<BitCodeGeneratorMapping> GetBitCodeGeneratorMappings(Workspace workspace, IList<string> projectNames)
         {
-            if (solution == null)
-                throw new ArgumentNullException(nameof(solution));
+            if (workspace == null)
+                throw new ArgumentNullException(nameof(workspace));
 
-            if (projects == null)
-                throw new ArgumentNullException(nameof(projects));
+            if (projectNames == null)
+                throw new ArgumentNullException(nameof(projectNames));
 
             HashSet<BitCodeGeneratorMapping> affectedBitCodeGeneratorMappings = new HashSet<BitCodeGeneratorMapping>();
 
-            BitConfig bitConfig = _configurationProvider.GetConfiguration(solution, projects);
+            BitConfig bitConfig = _configurationProvider.GetConfiguration(workspace, projectNames);
 
-            foreach (Project vsProject in projects)
+            foreach (string projName in projectNames)
             {
                 bitConfig.BitCodeGeneratorConfigs
                     .BitCodeGeneratorMappings
-                    .Where(cm => cm.SourceProjects.Any(sp => sp.Name == vsProject.Name))
+                    .Where(cm => cm.SourceProjects.Any(sp => sp.Name == projName))
                     .ToList()
                     .ForEach((sm) => affectedBitCodeGeneratorMappings.Add(sm));
             }

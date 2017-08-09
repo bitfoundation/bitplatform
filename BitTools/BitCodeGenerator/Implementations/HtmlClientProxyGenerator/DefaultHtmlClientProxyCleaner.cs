@@ -22,32 +22,32 @@ namespace BitCodeGenerator.Implementations.HtmlClientProxyGenerator
             _bitCodeGeneratorMappingsProvider = bitCodeGeneratorMappingsProvider;
         }
 
-        public virtual async Task DeleteCodes(Solution solution, IList<Project> projects)
+        public virtual async Task DeleteCodes(Workspace workspace, IList<string> projectNames)
         {
-            if (solution == null)
-                throw new ArgumentNullException(nameof(solution));
+            if (workspace == null)
+                throw new ArgumentNullException(nameof(workspace));
 
-            if (projects == null)
-                throw new ArgumentNullException(nameof(projects));
+            if (projectNames == null)
+                throw new ArgumentNullException(nameof(projectNames));
 
-            foreach (BitCodeGeneratorMapping proxyGeneratorMapping in _bitCodeGeneratorMappingsProvider.GetBitCodeGeneratorMappings(solution, projects))
+            foreach (BitCodeGeneratorMapping proxyGeneratorMapping in _bitCodeGeneratorMappingsProvider.GetBitCodeGeneratorMappings(workspace, projectNames))
             {
                 string contextName = proxyGeneratorMapping.DestinationFileName;
 
                 string jsContextExtension = ".js";
                 string tsContextExtension = ".d.ts";
 
-                Project destProject = solution.Projects.Where(p => p.Language == LanguageNames.CSharp)
+                Project destProject = workspace.CurrentSolution.Projects.Where(p => p.Language == LanguageNames.CSharp)
                         .ExtendedSingle($"Trying to find project with name: {proxyGeneratorMapping.DestinationProject.Name}", p => p.Name == proxyGeneratorMapping.DestinationProject.Name);
 
-                DeleteCodes(contextName, jsContextExtension, destProject);
-                DeleteCodes(contextName, tsContextExtension, destProject);
+                DeleteFiles(contextName, jsContextExtension, destProject);
+                DeleteFiles(contextName, tsContextExtension, destProject);
             }
         }
 
-        private static void DeleteCodes(string fileName, string extension, Project destProject)
+        private static void DeleteFiles(string fileName, string extension, Project destProject)
         {
-            string fullPath = $@"{Directory.GetParent(destProject.FilePath).FullName}\{fileName}{extension}";
+            string fullPath = Path.Combine(Directory.GetParent(destProject.FilePath).FullName, $"{fileName}{extension}");
 
             if (File.Exists(fullPath))
                 File.Delete(fullPath);
