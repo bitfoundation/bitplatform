@@ -35,4 +35,6 @@ Processor=Intel Core i7-7700K CPU 4.20GHz (Kaby Lake), ProcessorCount=8
  
  [This script](https://github.com/bit-foundation/bit-framework/blob/master/docs/src/EntityFrameworkOptimizedForNTierScenarios/EntityFrameworkOptimizedForNTierScenarios/CreateTestDatabaseScript.sql) creates a database which has 10.000 customers, and each customer has 3 orders. As you can see in benchmarks, returning empty list is very fast. It's all about "micro" seconds. BitRepository has Mean with value (20.00 ms) which is acceptable as it's returning whole 10.000 customers in every request. And finally, you see Sharp repository's result which is about seconds! "It's not because of SharpRepository itself", it is because of the default configuration of entity framework.
 
+ But, I'm a true fan of lazy loading, can I use that in my codes while I'm using bit repository? The answer is yes. [See here](https://docs.bit-framework.com/docs/bit-server-side/data-access.html#bit-repository-specific-methods)
+
 What do you think about this?
