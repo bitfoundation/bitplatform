@@ -239,22 +239,28 @@ namespace Bit.Data.EntityFramework.Implementations
             return _set.AsNoTracking();
         }
 
-        public virtual IQueryable<TChild> GetCollectionQuery<TChild>(TEntity entity, Expression<Func<TEntity, ICollection<TChild>>> childs) where TChild : class
+        public virtual IQueryable<TChild> GetCollectionQuery<TChild>(TEntity entity, Expression<Func<TEntity, IEnumerable<TChild>>> childs) where TChild : class
         {
-            return _dbContext.Entry(entity).Collection(childs).Query();
+            Expression<Func<TEntity, ICollection<TChild>>> convertedChilds = Expression.Lambda<Func<TEntity, ICollection<TChild>>>(childs.Body, childs.Parameters);
+
+            return _dbContext.Entry(entity).Collection(convertedChilds).Query();
         }
 
-        public virtual async Task LoadCollectionAsync<TProperty>(TEntity entity, Expression<Func<TEntity, ICollection<TProperty>>> childs, CancellationToken cancellationToken, bool forceReload = false) where TProperty : class
+        public virtual async Task LoadCollectionAsync<TProperty>(TEntity entity, Expression<Func<TEntity, IEnumerable<TProperty>>> childs, CancellationToken cancellationToken, bool forceReload = false) where TProperty : class
         {
-            DbCollectionEntry<TEntity, TProperty> collection = _dbContext.Entry(entity).Collection(childs);
+            Expression<Func<TEntity, ICollection<TProperty>>> convertedChilds = Expression.Lambda<Func<TEntity, ICollection<TProperty>>>(childs.Body, childs.Parameters);
+
+            DbCollectionEntry<TEntity, TProperty> collection = _dbContext.Entry(entity).Collection(convertedChilds);
 
             if (forceReload == true || collection.IsLoaded == false)
                 await collection.LoadAsync(cancellationToken).ConfigureAwait(false);
         }
 
-        public virtual void LoadCollection<TProperty>(TEntity entity, Expression<Func<TEntity, ICollection<TProperty>>> childs, bool forceReload = false) where TProperty : class
+        public virtual void LoadCollection<TProperty>(TEntity entity, Expression<Func<TEntity, IEnumerable<TProperty>>> childs, bool forceReload = false) where TProperty : class
         {
-            DbCollectionEntry<TEntity, TProperty> collection = _dbContext.Entry(entity).Collection(childs);
+            Expression<Func<TEntity, ICollection<TProperty>>> convertedChilds = Expression.Lambda<Func<TEntity, ICollection<TProperty>>>(childs.Body, childs.Parameters);
+
+            DbCollectionEntry<TEntity, TProperty> collection = _dbContext.Entry(entity).Collection(convertedChilds);
 
             if (forceReload == true || collection.IsLoaded == false)
                 collection.Load();
@@ -263,6 +269,7 @@ namespace Bit.Data.EntityFramework.Implementations
         public virtual async Task LoadReferenceAsync<TProperty>(TEntity entity, Expression<Func<TEntity, TProperty>> member, CancellationToken cancellationToken, bool forceReload = false) where TProperty : class
         {
             DbReferenceEntry<TEntity, TProperty> reference = _dbContext.Entry(entity).Reference(member);
+
             if (forceReload == true || reference.IsLoaded == false)
                 await reference.LoadAsync(cancellationToken).ConfigureAwait(false);
         }
@@ -270,6 +277,7 @@ namespace Bit.Data.EntityFramework.Implementations
         public virtual void LoadReference<TProperty>(TEntity entity, Expression<Func<TEntity, TProperty>> member, bool forceReload = false) where TProperty : class
         {
             DbReferenceEntry<TEntity, TProperty> reference = _dbContext.Entry(entity).Reference(member);
+
             if (forceReload == true || reference.IsLoaded == false)
                 reference.Load();
         }

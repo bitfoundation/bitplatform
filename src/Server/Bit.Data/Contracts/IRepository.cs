@@ -49,13 +49,13 @@ namespace Bit.Data.Contracts
 
         Task<IQueryable<TEntity>> GetAllAsync(CancellationToken cancellationToken);
 
-        IQueryable<TChild> GetCollectionQuery<TChild>(TEntity entity, Expression<Func<TEntity, ICollection<TChild>>> childs)
+        IQueryable<TChild> GetCollectionQuery<TChild>(TEntity entity, Expression<Func<TEntity, IEnumerable<TChild>>> childs)
             where TChild : class;
 
-        void LoadCollection<TProperty>(TEntity entity, Expression<Func<TEntity, ICollection<TProperty>>> childs, bool forceReload = false)
+        void LoadCollection<TProperty>(TEntity entity, Expression<Func<TEntity, IEnumerable<TProperty>>> childs, bool forceReload = false)
             where TProperty : class;
 
-        Task LoadCollectionAsync<TProperty>(TEntity entity, Expression<Func<TEntity, ICollection<TProperty>>> childs,
+        Task LoadCollectionAsync<TProperty>(TEntity entity, Expression<Func<TEntity, IEnumerable<TProperty>>> childs,
             CancellationToken cancellationToken, bool forceReload = false)
             where TProperty : class;
 
