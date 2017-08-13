@@ -49,21 +49,40 @@ namespace Bit.Data.Contracts
 
         Task<IQueryable<TEntity>> GetAllAsync(CancellationToken cancellationToken);
 
+        /// <summary>
+        /// Returns the query that would be used to load <paramref name="childs"/> collection from the database.
+        /// The returned query can be modified using LINQ to perform filtering or operations
+        /// in the database, such as counting the number of entities in the collection in
+        /// the database without actually loading them
+        /// </summary>
+        /// <returns>A query for the <paramref name="childs"/> collection</returns>
         IQueryable<TChild> GetCollectionQuery<TChild>(TEntity entity, Expression<Func<TEntity, IEnumerable<TChild>>> childs)
             where TChild : class;
 
-        void LoadCollection<TProperty>(TEntity entity, Expression<Func<TEntity, IEnumerable<TProperty>>> childs, bool forceReload = false)
+        /// <summary>
+        /// Loads the collection of <paramref name="childs"/> entities from the database
+        /// </summary>
+        void LoadCollection<TProperty>(TEntity entity, Expression<Func<TEntity, IEnumerable<TProperty>>> childs)
             where TProperty : class;
 
+        /// <summary>
+        /// Asynchronously loads the collection of <paramref name="childs"/> entities from the database
+        /// </summary>
         Task LoadCollectionAsync<TProperty>(TEntity entity, Expression<Func<TEntity, IEnumerable<TProperty>>> childs,
-            CancellationToken cancellationToken, bool forceReload = false)
+            CancellationToken cancellationToken)
             where TProperty : class;
 
+        /// <summary>
+        /// Asynchronously loads the <paramref name="member"/> entity from the database
+        /// </summary>
         Task LoadReferenceAsync<TProperty>(TEntity entity, Expression<Func<TEntity, TProperty>> member,
-            CancellationToken cancellationToken, bool forceReload = false)
+            CancellationToken cancellationToken)
             where TProperty : class;
 
-        void LoadReference<TProperty>(TEntity entity, Expression<Func<TEntity, TProperty>> member, bool forceReload = false)
+        /// <summary>
+        /// Loads the <paramref name="member"/> entity from the database
+        /// </summary>
+        void LoadReference<TProperty>(TEntity entity, Expression<Func<TEntity, TProperty>> member)
             where TProperty : class;
 
         Task SaveChangesAsync(CancellationToken cancellationToken);
