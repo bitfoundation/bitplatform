@@ -4,6 +4,7 @@ using Bit.Signalr.Implementations;
 using BitChangeSetManager.DataAccess;
 using BitChangeSetManager.Model;
 using System;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace BitChangeSetManager.Api.Implementations
@@ -22,7 +23,7 @@ namespace BitChangeSetManager.Api.Implementations
 
         public override async Task OnConnected(MessagesHub hub)
         {
-            User user = await _usersRepository.GetByIdAsync(Guid.Parse(_userInformationProvider.GetCurrentUserId()));
+            User user = await _usersRepository.GetByIdAsync(CancellationToken.None, Guid.Parse(_userInformationProvider.GetCurrentUserId()));
 
             await hub.Groups.Add(hub.Context.ConnectionId, user.Culture.ToString());
 

@@ -46,7 +46,7 @@ namespace BitChangeSetManager.Api
         {
             ChangeSetDto insertedChangeSet = await base.Create(dto, cancellationToken);
 
-            User user = await _usersRepository.GetByIdAsync(Guid.Parse(_userInformationProvider.GetCurrentUserId()));
+            User user = await _usersRepository.GetByIdAsync(cancellationToken, Guid.Parse(_userInformationProvider.GetCurrentUserId()));
 
             _messageSender.SendMessageToGroups("ChangeSetHasBeenInsertedByUser", new { userName = user.UserName, title = insertedChangeSet.Title }, groupNames: new[] { user.Culture.ToString() });
 

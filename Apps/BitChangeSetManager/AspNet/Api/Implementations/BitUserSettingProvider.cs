@@ -34,7 +34,7 @@ namespace BitChangeSetManager.Api.Implementations
 
         public async Task<UserSetting> GetCurrentUserSettingAsync(CancellationToken cancellationToken)
         {
-            User user = await _usersRepository.GetByIdAsync(Guid.Parse(_userInformationProvider.GetCurrentUserId()));
+            User user = await _usersRepository.GetByIdAsync(cancellationToken, Guid.Parse(_userInformationProvider.GetCurrentUserId()));
 
             UserSetting result = new UserSetting
             {

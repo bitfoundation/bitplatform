@@ -47,23 +47,23 @@
     <Reference Include="AutoMapper, Version=6.1.1.0, Culture=neutral, PublicKeyToken=be96cd2c38ef1005, processorArchitecture=MSIL">
       <HintPath>..\packages\AutoMapper.6.1.1\lib\net45\AutoMapper.dll</HintPath>
     </Reference>
-    <Reference Include="Bit.Core, Version=0.0.5.7, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Bit.Core.0.0.5.7\lib\net47\Bit.Core.dll</HintPath>
+    <Reference Include="Bit.Core, Version=0.0.6.1, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Bit.Core.0.0.6.1\lib\net47\Bit.Core.dll</HintPath>
     </Reference>
-    <Reference Include="Bit.Data, Version=0.0.5.7, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Bit.Data.0.0.5.7\lib\net47\Bit.Data.dll</HintPath>
+    <Reference Include="Bit.Data, Version=0.0.6.1, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Bit.Data.0.0.6.1\lib\net47\Bit.Data.dll</HintPath>
     </Reference>
-    <Reference Include="Bit.Data.EntityFrameworkCore, Version=0.0.5.7, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Bit.Data.EntityFrameworkCore.0.0.5.7\lib\net47\Bit.Data.EntityFrameworkCore.dll</HintPath>
+    <Reference Include="Bit.Data.EntityFrameworkCore, Version=0.0.6.1, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Bit.Data.EntityFrameworkCore.0.0.6.1\lib\net47\Bit.Data.EntityFrameworkCore.dll</HintPath>
     </Reference>
-    <Reference Include="Bit.Model, Version=0.0.5.7, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Bit.Model.0.0.5.7\lib\net47\Bit.Model.dll</HintPath>
+    <Reference Include="Bit.Model, Version=0.0.6.1, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Bit.Model.0.0.6.1\lib\net47\Bit.Model.dll</HintPath>
     </Reference>
-    <Reference Include="Bit.Owin, Version=0.0.5.7, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Bit.Owin.0.0.5.7\lib\net47\Bit.Owin.dll</HintPath>
+    <Reference Include="Bit.Owin, Version=0.0.6.1, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Bit.Owin.0.0.6.1\lib\net47\Bit.Owin.dll</HintPath>
     </Reference>
-    <Reference Include="Bit.WebApi, Version=0.0.5.7, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Bit.WebApi.0.0.5.7\lib\net47\Bit.WebApi.dll</HintPath>
+    <Reference Include="Bit.WebApi, Version=0.0.6.1, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Bit.WebApi.0.0.6.1\lib\net47\Bit.WebApi.dll</HintPath>
     </Reference>
     <Reference Include="Correlator, Version=1.1.0.0, Culture=neutral, PublicKeyToken=ad71b95c30d52163, processorArchitecture=MSIL">
       <HintPath>..\packages\WebApiCorrelator.1.1.0.0\lib\net452\Correlator.dll</HintPath>
