@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Bit.Data.Contracts;
 using Bit.Model.Contracts;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
 
 namespace Bit.Data.EntityFrameworkCore.Implementations
 {
@@ -230,29 +231,41 @@ namespace Bit.Data.EntityFrameworkCore.Implementations
             return _set.AsNoTracking();
         }
 
-        public virtual IQueryable<TChild> GetCollectionQuery<TChild>(TEntity entity, Expression<Func<TEntity, ICollection<TChild>>> childs) where TChild : class
+        public virtual IQueryable<TChild> GetCollectionQuery<TChild>(TEntity entity, Expression<Func<TEntity, IEnumerable<TChild>>> childs) where TChild : class
         {
-            throw new NotSupportedException();
+            return _dbContext.Entry(entity).Collection(childs).Query();
         }
 
-        public virtual Task LoadCollectionAsync<TProperty>(TEntity entity, Expression<Func<TEntity, ICollection<TProperty>>> childs, CancellationToken cancellationToken, bool forceReload = false) where TProperty : class
+        public virtual async Task LoadCollectionAsync<TProperty>(TEntity entity, Expression<Func<TEntity, IEnumerable<TProperty>>> childs, CancellationToken cancellationToken, bool forceReload = false) where TProperty : class
         {
-            throw new NotSupportedException();
+            CollectionEntry<TEntity, TProperty> collection = _dbContext.Entry(entity).Collection(childs);
+
+            if (forceReload == true || collection.IsLoaded == false)
+                await collection.LoadAsync(cancellationToken).ConfigureAwait(false);
         }
 
-        public virtual void LoadCollection<TProperty>(TEntity entity, Expression<Func<TEntity, ICollection<TProperty>>> childs, bool forceReload = false) where TProperty : class
+        public virtual void LoadCollection<TProperty>(TEntity entity, Expression<Func<TEntity, IEnumerable<TProperty>>> childs, bool forceReload = false) where TProperty : class
         {
-            throw new NotSupportedException();
+            CollectionEntry<TEntity, TProperty> collection = _dbContext.Entry(entity).Collection(childs);
+
+            if (forceReload == true || collection.IsLoaded == false)
+                collection.Load();
         }
 
-        public virtual Task LoadReferenceAsync<TProperty>(TEntity entity, Expression<Func<TEntity, TProperty>> member, CancellationToken cancellationToken, bool forceReload = false) where TProperty : class
+        public virtual async Task LoadReferenceAsync<TProperty>(TEntity entity, Expression<Func<TEntity, TProperty>> member, CancellationToken cancellationToken, bool forceReload = false) where TProperty : class
         {
-            throw new NotSupportedException();
+            ReferenceEntry<TEntity, TProperty> reference = _dbContext.Entry(entity).Reference(member);
+
+            if (forceReload == true || reference.IsLoaded == false)
+                await reference.LoadAsync(cancellationToken).ConfigureAwait(false);
         }
 
         public virtual void LoadReference<TProperty>(TEntity entity, Expression<Func<TEntity, TProperty>> member, bool forceReload = false) where TProperty : class
         {
-            throw new NotSupportedException();
+            ReferenceEntry<TEntity, TProperty> reference = _dbContext.Entry(entity).Reference(member);
+
+            if (forceReload == true || reference.IsLoaded == false)
+                reference.Load();
         }
 
         public virtual async Task SaveChangesAsync(CancellationToken cancellationToken)
