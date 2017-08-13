@@ -175,13 +175,13 @@ Using bit repository, you can write that code as follows:
 [Route("customers/customer-lazy-sample")]
 public virtual async Task CustomerLazySample(CancellationToken cancellationToken)
 {
-    Customer customer = await CustomersRepository.GetByIdAsync(cancellationToken, 1); // Use async-await + cancellation token
+    Customer customer = await CustomersRepository.GetByIdAsync(cancellationToken, 1);
 
     // a few lines of codes...
 
     // now we need customer's orders. So we simply write:
 
-    await CustomersRepository.LoadCollectionAsync(customer, c => c.Orders, cancellationToken); // Use async-await + cancellation token (-:
+    await CustomersRepository.LoadCollectionAsync(customer, c => c.Orders, cancellationToken); // Use async-await + cancellation token for lazy loading! (-:
 
     // before our foreach
 
