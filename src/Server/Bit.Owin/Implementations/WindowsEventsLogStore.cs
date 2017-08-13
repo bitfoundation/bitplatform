@@ -29,7 +29,12 @@ namespace Bit.Owin.Implementations
             _activeAppEnvironment = appEnvironmentProvider.GetActiveAppEnvironment();
         }
 
-        public virtual Task SaveLogAsync(LogEntry logEntry)
+        public virtual async Task SaveLogAsync(LogEntry logEntry)
+        {
+            SaveLog(logEntry);
+        }
+
+        public virtual void SaveLog(LogEntry logEntry)
         {
             if (logEntry == null)
                 throw new ArgumentNullException(nameof(logEntry));
@@ -61,13 +66,6 @@ namespace Bit.Owin.Implementations
             {
                 appLog.WriteEntry(logContents, eventLogsSeverity);
             }
-
-            return Task.FromResult<object>(null);
-        }
-
-        public virtual void SaveLog(LogEntry logEntry)
-        {
-            SaveLogAsync(logEntry).GetAwaiter().GetResult();
         }
     }
 }

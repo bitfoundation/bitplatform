@@ -22,11 +22,6 @@ namespace Bit.Owin.Implementations
 
         public virtual void SaveLog(LogEntry logEntry)
         {
-            SaveLogAsync(logEntry).GetAwaiter().GetResult();
-        }
-
-        public virtual async Task SaveLogAsync(LogEntry logEntry)
-        {
             ConsoleColor originalColor = Console.ForegroundColor;
 
             try
@@ -50,6 +45,11 @@ namespace Bit.Owin.Implementations
             {
                 Console.ForegroundColor = originalColor;
             }
+        }
+
+        public virtual async Task SaveLogAsync(LogEntry logEntry)
+        {
+            SaveLog(logEntry);
         }
     }
 }
