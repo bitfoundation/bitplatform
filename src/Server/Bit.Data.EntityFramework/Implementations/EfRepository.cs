@@ -31,6 +31,7 @@ namespace Bit.Data.EntityFramework.Implementations
         {
             if (dbContext == null)
                 throw new ArgumentNullException(nameof(dbContext));
+
             _dbContext = dbContext;
             _set = dbContext.Set<TEntity>();
         }
@@ -77,7 +78,7 @@ namespace Bit.Data.EntityFramework.Implementations
             if (entityToUpdate == null)
                 throw new ArgumentNullException(nameof(entityToUpdate));
 
-            _set.Attach(entityToUpdate);
+            Attach(entityToUpdate);
             _dbContext.Entry(entityToUpdate).State = EntityState.Modified;
 
             await SaveChangesAsync(cancellationToken).ConfigureAwait(false);
@@ -97,7 +98,7 @@ namespace Bit.Data.EntityFramework.Implementations
             }
             else
             {
-                _set.Attach(entityToDelete);
+                Attach(entityToDelete);
                 _dbContext.Entry(entityToDelete).State = EntityState.Deleted;
                 await SaveChangesAsync(cancellationToken).ConfigureAwait(false);
                 return entityToDelete;
@@ -109,6 +110,8 @@ namespace Bit.Data.EntityFramework.Implementations
             if (entity == null)
                 throw new ArgumentNullException(nameof(entity));
 
+            Attach(entity);
+
             return _dbContext.Entry(entity).Property(prop).IsModified;
         }
 
@@ -116,6 +119,8 @@ namespace Bit.Data.EntityFramework.Implementations
         {
             if (entity == null)
                 throw new ArgumentNullException(nameof(entity));
+
+            Attach(entity);
 
             return _dbContext.Entry(entity).Property(prop).OriginalValue;
         }
@@ -125,6 +130,8 @@ namespace Bit.Data.EntityFramework.Implementations
             if (entity == null)
                 throw new ArgumentNullException(nameof(entity));
 
+            Attach(entity);
+
             return _dbContext.Entry(entity).State == EntityState.Deleted;
         }
 
@@ -132,6 +139,8 @@ namespace Bit.Data.EntityFramework.Implementations
         {
             if (entity == null)
                 throw new ArgumentNullException(nameof(entity));
+
+            Attach(entity);
 
             return _dbContext.Entry(entity).State == EntityState.Added;
         }
@@ -141,6 +150,8 @@ namespace Bit.Data.EntityFramework.Implementations
             if (entity == null)
                 throw new ArgumentNullException(nameof(entity));
 
+            Attach(entity);
+
             return _dbContext.Entry(entity).State != EntityState.Unchanged;
         }
 
@@ -148,6 +159,8 @@ namespace Bit.Data.EntityFramework.Implementations
         {
             if (entity == null)
                 throw new ArgumentNullException(nameof(entity));
+
+            Attach(entity);
 
             _dbContext.Entry(entity).State = EntityState.Detached;
         }
@@ -157,7 +170,8 @@ namespace Bit.Data.EntityFramework.Implementations
             if (entity == null)
                 throw new ArgumentNullException(nameof(entity));
 
-            _set.Attach(entity);
+            if (_dbContext.Entry(entity).State == EntityState.Detached)
+                _set.Attach(entity);
         }
 
         public virtual TEntity Add(TEntity entityToAdd)
@@ -202,7 +216,7 @@ namespace Bit.Data.EntityFramework.Implementations
             if (entityToUpdate == null)
                 throw new ArgumentNullException(nameof(entityToUpdate));
 
-            _set.Attach(entityToUpdate);
+            Attach(entityToUpdate);
             _dbContext.Entry(entityToUpdate).State = EntityState.Modified;
 
             SaveChanges();
@@ -222,7 +236,7 @@ namespace Bit.Data.EntityFramework.Implementations
             }
             else
             {
-                _set.Attach(entityToDelete);
+                Attach(entityToDelete);
                 _dbContext.Entry(entityToDelete).State = EntityState.Deleted;
                 SaveChanges();
                 return entityToDelete;
@@ -243,12 +257,16 @@ namespace Bit.Data.EntityFramework.Implementations
         {
             Expression<Func<TEntity, ICollection<TChild>>> convertedChilds = Expression.Lambda<Func<TEntity, ICollection<TChild>>>(childs.Body, childs.Parameters);
 
+            Attach(entity);
+
             return _dbContext.Entry(entity).Collection(convertedChilds).Query();
         }
 
         public virtual async Task LoadCollectionAsync<TProperty>(TEntity entity, Expression<Func<TEntity, IEnumerable<TProperty>>> childs, CancellationToken cancellationToken, bool forceReload = false) where TProperty : class
         {
             Expression<Func<TEntity, ICollection<TProperty>>> convertedChilds = Expression.Lambda<Func<TEntity, ICollection<TProperty>>>(childs.Body, childs.Parameters);
+
+            Attach(entity);
 
             DbCollectionEntry<TEntity, TProperty> collection = _dbContext.Entry(entity).Collection(convertedChilds);
 
@@ -260,6 +278,8 @@ namespace Bit.Data.EntityFramework.Implementations
         {
             Expression<Func<TEntity, ICollection<TProperty>>> convertedChilds = Expression.Lambda<Func<TEntity, ICollection<TProperty>>>(childs.Body, childs.Parameters);
 
+            Attach(entity);
+
             DbCollectionEntry<TEntity, TProperty> collection = _dbContext.Entry(entity).Collection(convertedChilds);
 
             if (forceReload == true || collection.IsLoaded == false)
@@ -268,6 +288,8 @@ namespace Bit.Data.EntityFramework.Implementations
 
         public virtual async Task LoadReferenceAsync<TProperty>(TEntity entity, Expression<Func<TEntity, TProperty>> member, CancellationToken cancellationToken, bool forceReload = false) where TProperty : class
         {
+            Attach(entity);
+
             DbReferenceEntry<TEntity, TProperty> reference = _dbContext.Entry(entity).Reference(member);
 
             if (forceReload == true || reference.IsLoaded == false)
@@ -276,6 +298,8 @@ namespace Bit.Data.EntityFramework.Implementations
 
         public virtual void LoadReference<TProperty>(TEntity entity, Expression<Func<TEntity, TProperty>> member, bool forceReload = false) where TProperty : class
         {
+            Attach(entity);
+
             DbReferenceEntry<TEntity, TProperty> reference = _dbContext.Entry(entity).Reference(member);
 
             if (forceReload == true || reference.IsLoaded == false)
@@ -294,10 +318,10 @@ namespace Bit.Data.EntityFramework.Implementations
             _dbContext.SaveChanges();
         }
 
-        public virtual async Task<TEntity> GetByIdAsync(params object[] keys)
+        public virtual async Task<TEntity> GetByIdAsync(CancellationToken cancellationToken, params object[] keys)
         {
             return await EfDataProviderSpecificMethodsProvider.ApplyWhereByKeys((await GetAllAsync(CancellationToken.None).ConfigureAwait(false)), keys)
-                .SingleAsync(CancellationToken.None).ConfigureAwait(false);
+                .SingleAsync(cancellationToken).ConfigureAwait(false);
         }
 
         public virtual TEntity GetById(params object[] keys)

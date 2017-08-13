@@ -101,7 +101,7 @@ namespace Bit.OData.ODataControllers
         [Delete]
         public virtual async Task Delete(TKey key, CancellationToken cancellationToken)
         {
-            TModel model = await Repository.GetByIdAsync(key);
+            TModel model = await Repository.GetByIdAsync(cancellationToken, key);
             await Repository.DeleteAsync(model, cancellationToken);
         }
 
