@@ -28,7 +28,7 @@
     "pubsub-js": "1.5.7",
     "signalr": "2.2.2",
     "regenerator": "0.9.7",
-    "core-js": "2.4.1",
+    "core-js": "2.5.0",
     "whatwg-fetch": "2.0.3",
     "@bit/encoder": "^1.0.0",
     "event-source-polyfill": "0.0.9"

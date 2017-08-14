@@ -17,7 +17,7 @@
     "@types/angular-translate": "^2.15.1",
     "@types/decimal.js": "0.0.30",
     "@types/jquery": "^3.2.11",
-    "@types/kendo-ui": "^2016.3.41",
+    "@types/kendo-ui": "^2017.1.7",
     "@types/pubsub-js": "1.5.17",
     "@types/signalr": "^2.2.34"
   },
@@ -31,7 +31,7 @@
     "pubsub-js": "1.5.7",
     "signalr": "2.2.2",
     "regenerator": "0.9.7",
-    "core-js": "2.4.1",
+    "core-js": "2.5.0",
     "whatwg-fetch": "2.0.3",
     "@bit/encoder": "^1.0.0",
     "angular-translate": "2.15.2",
