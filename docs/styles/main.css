@@ -77,6 +77,9 @@
 .book-header {
     color: #ccc;
 }
+.book-header h1{
+    opacity:1;
+}
 
 .book-summary ul.summary li a.custom-link, .book-summary ul.summary li.divider {
     display: none;
