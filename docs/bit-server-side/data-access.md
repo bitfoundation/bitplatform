@@ -1,12 +1,12 @@
 # Bit Data Access
 
-You can use Bit Data Access components, or you can use your own preferred way to read/manipulate database. But why you might choose Bit data access anyway?
+You can use Bit Data Access components, or you can use your own preferred way to read/manipulate data. But why you might choose Bit data access anyway?
 
 1- True async support. Application with async code gets scaled better, but what does this mean to us? Each server side app has limited threads. Threads are workers and your app works because they work. Threads count is limited, so you've to use them carefully. When a request comes to your web api action, and you get data from database using entity framework (For example), your thread (your valuable thread) waits until database returns data. But that wait is useless. In case you use async-await, your thread executes other requests instead of waiting for a database.
 
 2- True cancellation token support. There is a CancellationToken in every web api action you develop. If user/operator closes its browser, or if you cancel request at client side programmatically, that cancellation token gets notified. Almost all bit framework's methods accept cancellation token, and they stop their work by simply passing that token.
 
-3- Bit Data Access components are optimized for N-Tier app development. To have a better understanding about what does this mean see [here](https://docs.bit-framework.com/docs/design-backgrounds/optimized-entity-framework-for-n-tier-apps.html).
+3- Bit Data Access components are optimized for N-Tier app development. To have a better understanding about what does this mean read this [amazing article](https://docs.bit-framework.com/docs/design-backgrounds/optimized-entity-framework-for-n-tier-apps.html).
 
 ### Entity Framework
 
@@ -182,8 +182,6 @@ public virtual async Task CustomerLazySample(CancellationToken cancellationToken
     // now we need customer's orders. So we simply write:
 
     await CustomersRepository.LoadCollectionAsync(customer, c => c.Orders, cancellationToken); // Use async-await + cancellation token for lazy loading! (-:
-
-    // before our foreach
 
     foreach (Order order in customer.Orders)
     {

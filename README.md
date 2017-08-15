@@ -23,4 +23,4 @@ There are many ways to contribute
 
 Read docs on [https://docs.bit-framework.com/](https://docs.bit-framework.com/)
 
-You can also watch [Announcements](https://github.com/bit-foundation/Announcements) to track important docs/codes changes.
+You can also watch [Announcements](https://github.com/bit-foundation/Announcements/issues) to track important docs/codes changes.

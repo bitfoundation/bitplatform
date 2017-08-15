@@ -25,4 +25,4 @@ We also watch your codes at realtime to inform you about common mistakes. For ex
 * Integrated Logging infrastructure
 * , ...
 
-Remember that you can use whatever you want. You're not limited to what we provide to you. Bit is a framework for developers.
+Remember that you can use whatever you want. You're not limited to what we provide to you.
