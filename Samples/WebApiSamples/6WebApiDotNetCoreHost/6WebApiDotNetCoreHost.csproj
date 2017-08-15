@@ -14,8 +14,8 @@
     <PackageReference Include="Microsoft.IdentityModel.Protocol.Extensions" Version="1.0.4.403061554" />
     <PackageReference Include="Bit.Owin" Version="0.0.6.2" />
     <PackageReference Include="Bit.OwinCore" Version="0.0.6.2" />
-    <PackageReference Include="Microsoft.AspNetCore" Version="2.0.0-preview2-final" />
-    <PackageReference Include="Microsoft.AspNetCore.Owin" Version="2.0.0-preview2-final" />
+    <PackageReference Include="Microsoft.AspNetCore" Version="2.0.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Owin" Version="2.0.0" />
     <PackageReference Include="Microsoft.AspNet.WebApi.Client" Version="5.2.3" />
   </ItemGroup>
   <ItemGroup>
