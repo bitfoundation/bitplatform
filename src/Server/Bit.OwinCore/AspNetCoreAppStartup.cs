@@ -1,5 +1,4 @@
 ﻿using Bit.Core.Contracts;
-using Bit.Core.Models;
 using Bit.Owin;
 using Bit.Owin.Contracts;
 using Bit.Owin.Implementations;
@@ -13,6 +12,7 @@ using Microsoft.Extensions.FileProviders;
 using Microsoft.Owin;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 
 namespace Bit.OwinCore
@@ -60,7 +60,8 @@ namespace Bit.OwinCore
         {
             if (string.IsNullOrEmpty(_hostingEnvironment.WebRootPath))
                 _hostingEnvironment.WebRootPath = _pathProvider.GetCurrentStaticFilesPath();
-            if (_hostingEnvironment.WebRootFileProvider == null || _hostingEnvironment.WebRootFileProvider is NullFileProvider)
+
+            if (Directory.Exists(_hostingEnvironment.WebRootPath) && (_hostingEnvironment.WebRootFileProvider == null || _hostingEnvironment.WebRootFileProvider is NullFileProvider))
                 _hostingEnvironment.WebRootFileProvider = new PhysicalFileProvider(_hostingEnvironment.WebRootPath);
 
             ConfigureBitAspNetCoreApp(aspNetCoreApp, owinAppStartup, aspNetCoreMiddlewares);
