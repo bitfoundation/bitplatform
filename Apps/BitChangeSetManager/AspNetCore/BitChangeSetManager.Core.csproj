@@ -70,18 +70,18 @@
     <PackageReference Include="Microsoft.IdentityModel.Protocol.Extensions" Version="1.0.4.403061554" />
     <PackageReference Include="Microsoft.IdentityModel.Tokens" Version="5.1.4" />
     <PackageReference Include="Microsoft.Net.Http" Version="2.2.29" />
-    <PackageReference Include="Microsoft.NETCore.Platforms" Version="1.1.0" />
-    <PackageReference Include="Microsoft.OData.Core" Version="7.3.0" />
-    <PackageReference Include="Microsoft.OData.Edm" Version="7.3.0" />
+    <PackageReference Include="Microsoft.NETCore.Platforms" Version="2.0.0" />
+    <PackageReference Include="Microsoft.OData.Core" Version="7.3.1" />
+    <PackageReference Include="Microsoft.OData.Edm" Version="7.3.1" />
     <PackageReference Include="Microsoft.Owin" Version="3.1.0" />
     <PackageReference Include="Microsoft.Owin.FileSystems" Version="3.1.0" />
     <PackageReference Include="Microsoft.Owin.Security" Version="3.1.0" />
     <PackageReference Include="Microsoft.Owin.Security.Jwt" Version="3.1.0" />
     <PackageReference Include="Microsoft.Owin.Security.OAuth" Version="3.1.0" />
     <PackageReference Include="Microsoft.Owin.StaticFiles" Version="3.1.0" />
-    <PackageReference Include="Microsoft.Spatial" Version="7.3.0" />
+    <PackageReference Include="Microsoft.Spatial" Version="7.3.1" />
     <PackageReference Include="Microsoft.Win32.Primitives" Version="4.3.0" />
-    <PackageReference Include="NETStandard.Library" Version="1.6.1" />
+    <PackageReference Include="NETStandard.Library" Version="2.0.0" />
     <PackageReference Include="Newtonsoft.Json" Version="10.0.3" />
     <PackageReference Include="NWebsec.AspNetCore.Core" Version="1.1.0" />
     <PackageReference Include="NWebsec.AspNetCore.Middleware" Version="1.1.0" />
