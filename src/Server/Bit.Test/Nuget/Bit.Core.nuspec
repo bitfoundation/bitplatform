@@ -16,7 +16,6 @@
     <tags>Bit</tags>
   </metadata>
   <files>
-    <file src="..\Bit.Core.*" target="lib\net47" />
-    <file src="..\Bit.Core.*" target="lib\netcoreapp2" />
+    <file src="..\Bit.Core.*" target="lib\netstandard2.0" />
   </files>
 </package>

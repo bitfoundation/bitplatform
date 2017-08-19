@@ -16,16 +16,16 @@
     <tags>Bit Web API OData Rest Microsoft AspNet WebApi AspNetWebApi</tags>
     <dependencies>
       <dependency id="Bit.WebApi" version="[0.0.1.6]" />
+      <dependency id="Bit.Data" version="[0.0.1.6]" />
       <dependency id="LambdaSqlBuilder" version="0.9" />
-      <dependency id="Microsoft.AspNet.OData" version="6.0.0" />
-      <dependency id="Bit.Swashbuckle.OData.Beta " version="4.0.3" />
+      <dependency id="Bit.Microsoft.AspNet.OData" version="6.0.0" />
+      <dependency id="Bit.Swashbuckle.OData.Beta" version="4.0.3" />
       <dependency id="Microsoft.Spatial" version="7.3.1" />
       <dependency id="Microsoft.OData.Core" version="7.3.1" />
       <dependency id="Microsoft.OData.Edm" version="7.3.1" />
     </dependencies>
   </metadata>
   <files>
-    <file src="..\Bit.OData.*" target="lib\net47" />
-    <file src="..\Bit.OData.*" target="lib\netcoreapp2" />
+    <file src="..\Bit.OData.*" target="lib\netstandard2.0" />
   </files>
 </package>

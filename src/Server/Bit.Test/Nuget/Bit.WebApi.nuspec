@@ -26,7 +26,6 @@
     </dependencies>
   </metadata>
   <files>
-    <file src="..\Bit.WebApi.*" target="lib\net47" />
-    <file src="..\Bit.WebApi.*" target="lib\netcoreapp2" />
+    <file src="..\Bit.WebApi.*" target="lib\netstandard2.0" />
   </files>
 </package>
