@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Bit.OwinCore.Implementations.Servers
@@ -11,13 +12,18 @@ namespace Bit.OwinCore.Implementations.Servers
     {
         private IDisposable _suaveServer;
 
-        public void Start<TContext>(IHttpApplication<TContext> application)
+        public virtual async Task StartAsync<TContext>(IHttpApplication<TContext> application, CancellationToken cancellationToken)
         {
             CreateOwinProps(application, out Func<IDictionary<string, object>, Task> appFunc, out Dictionary<string, object> props);
 
             Suave.Owin.OwinServerFactory.Initialize(props);
 
             _suaveServer = Suave.Owin.OwinServerFactory.Create(appFunc, props);
+        }
+
+        public virtual async Task StopAsync(CancellationToken cancellationToken)
+        {
+
         }
 
         public void Dispose()

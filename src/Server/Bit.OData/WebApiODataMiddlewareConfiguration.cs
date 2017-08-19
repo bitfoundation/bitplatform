@@ -29,6 +29,7 @@ namespace Bit.OData
         private ODataBatchHandler _odataBatchHandler;
         private readonly IODataContainerBuilderCustomizer _oDataContainerBuilderCustomizer;
         private readonly IWebApiOwinPipelineInjector _webApiOwinPipelineInjector;
+        private readonly IContainerBuilder _containerBuilder;
 
 #if DEBUG
         protected WebApiODataMiddlewareConfiguration()
@@ -37,7 +38,7 @@ namespace Bit.OData
 #endif
 
         public WebApiODataMiddlewareConfiguration(IAppEnvironmentProvider appEnvironmentProvider,
-            IEnumerable<IEdmModelProvider> emdEdmModelProviders, IEnumerable<IWebApiConfigurationCustomizer> webApiConfgurationCustomizers, System.Web.Http.Dependencies.IDependencyResolver webApiDependencyResolver, IODataModelBuilderProvider oDataModelBuilderProvider, IODataContainerBuilderCustomizer oDataContainerBuilderCustomizer, IWebApiOwinPipelineInjector webApiOwinPipelineInjector)
+            IEnumerable<IEdmModelProvider> emdEdmModelProviders, IEnumerable<IWebApiConfigurationCustomizer> webApiConfgurationCustomizers, System.Web.Http.Dependencies.IDependencyResolver webApiDependencyResolver, IODataModelBuilderProvider oDataModelBuilderProvider, IODataContainerBuilderCustomizer oDataContainerBuilderCustomizer, IWebApiOwinPipelineInjector webApiOwinPipelineInjector, IContainerBuilder containerBuilder)
         {
             if (emdEdmModelProviders == null)
                 throw new ArgumentNullException(nameof(emdEdmModelProviders));
@@ -60,6 +61,9 @@ namespace Bit.OData
             if (webApiOwinPipelineInjector == null)
                 throw new ArgumentNullException(nameof(webApiOwinPipelineInjector));
 
+            if (containerBuilder == null)
+                throw new ArgumentNullException(nameof(containerBuilder));
+
             _activeAppEnvironment = appEnvironmentProvider.GetActiveAppEnvironment();
             _emdEdmModelProviders = emdEdmModelProviders;
             _webApiConfgurationCustomizers = webApiConfgurationCustomizers;
@@ -67,6 +71,7 @@ namespace Bit.OData
             _oDataModelBuilderProvider = oDataModelBuilderProvider;
             _oDataContainerBuilderCustomizer = oDataContainerBuilderCustomizer;
             _webApiOwinPipelineInjector = webApiOwinPipelineInjector;
+            _containerBuilder = containerBuilder;
         }
 
         public virtual void Configure(IAppBuilder owinApp)
@@ -119,6 +124,8 @@ namespace Bit.OData
                 IEnumerable<IODataRoutingConvention> conventions = ODataRoutingConventions.CreateDefault();
 
                 IEdmModel edmModel = modelBuilder.GetEdmModel();
+
+                _webApiConfig.UseCustomContainerBuilder(() => _containerBuilder);
 
                 _webApiConfig.MapODataServiceRoute(routeName, edmModelProviders.Key, builder =>
                 {

@@ -4,6 +4,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Owin.Host.HttpListener;
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Bit.OwinCore.Implementations.Servers
@@ -12,13 +13,18 @@ namespace Bit.OwinCore.Implementations.Servers
     {
         private IDisposable _HttpListenerServer;
 
-        public void Start<TContext>(IHttpApplication<TContext> application)
+        public virtual async Task StartAsync<TContext>(IHttpApplication<TContext> application, CancellationToken cancellationToken)
         {
             CreateOwinProps(application, out Func<IDictionary<string, object>, Task> appFunc, out Dictionary<string, object> props);
 
             OwinServerFactory.Initialize(props);
 
             _HttpListenerServer = OwinServerFactory.Create(appFunc, props);
+        }
+
+        public virtual async Task StopAsync(CancellationToken cancellationToken)
+        {
+            
         }
 
         public void Dispose()

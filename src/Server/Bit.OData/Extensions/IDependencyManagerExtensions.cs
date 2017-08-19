@@ -6,6 +6,7 @@ using Bit.OData.Implementations;
 using Bit.Owin.Contracts;
 using Bit.WebApi.Contracts;
 using Bit.WebApi.Implementations;
+using Microsoft.OData;
 using System;
 using System.Linq;
 using System.Reflection;
@@ -40,6 +41,7 @@ namespace Bit.Core.Contracts
             dependencyManager.RegisterWebApiConfigurationCustomizer<GlobalDefaultLogActionArgsActionFilterProvider<ODataLogActionArgsFilterAttribute>>();
             dependencyManager.RegisterWebApiConfigurationCustomizer<GlobalDefaultExceptionHandlerActionFilterProvider<ODataExceptionHandlerFilterAttribute>>();
             dependencyManager.Register<IAutoEdmBuilder, DefaultAutoEdmBuilder>(lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExciting: false);
+            dependencyManager.Register<IContainerBuilder, ExtendedContainerBuilder>(lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExciting: false);
             dependencyManager.Register<IODataModelBuilderProvider, DefaultODataModelBuilderProvider>(lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExciting: false);
             dependencyManager.Register<IODataContainerBuilderCustomizer, DefaultODataContainerBuilderCustomizer>(lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExciting: false);
             dependencyManager.Register<System.Web.Http.Controllers.IHttpActionSelector, DefaultWebApiODataControllerActionSelector>(lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExciting: false);
