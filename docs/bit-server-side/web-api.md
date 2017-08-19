@@ -219,7 +219,7 @@ ASP.NET web pages starts itself automatically, but it is not needed in bit based
       <clear />
       <!-- In ASP.NET add Owin handler as following: !-->
       <add name="Owin" verb="*" path="*" type="Microsoft.Owin.Host.SystemWeb.OwinHttpHandler, Microsoft.Owin.Host.SystemWeb" />
-      <!-- In ASP.NET Core add ASP-NET-Module handler as following: !-->
+      <!-- In ASP.NET Core add aspNetCore handler as following: !-->
       <add name="aspNetCore" path="*" verb="*" modules="AspNetCoreModule" resourceType="Unspecified" />
     </handlers>
     <!-- This aspNetCore tag is required in ASP.NET Core projects: !-->

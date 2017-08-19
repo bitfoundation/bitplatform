@@ -1,6 +1,6 @@
  # Bit OData
 
-So, what's OData? following text which is copied from http://odata.org describes odata well
+So, what's OData? following text which is copied from http://odata.org describes odata well:
 
 OData (Open Data Protocol) is an ISO/IEC approved, OASIS standard that defines a set of best practices for building and consuming "RESTful APIs". OData helps you "focus on your business logic" while building RESTful APIs.
 OData RESTful APIs are easy to consume. The OData metadata, a machine-readable description of the data model of the APIs, enables the creation of powerful generic client proxies and tools.
@@ -9,7 +9,7 @@ Using bit framework, you can build OData services very easily, and we generate C
 
 In bit apps, you develop odata controllers for your DTO (Data transfer objects) classes.
 
-Instead of sending your models to client, you send DTO to the client. Your model gets complicated over time based on business requirements, and in the client side you need something less complicated and easier to use. DTO (ViewModel in MVC) is a common best practice is modern software development world.
+Instead of sending your domain models to client, you send DTO to the client. Your model gets complicated over time based on business requirements, and in the client side you need something less complicated and easier to use. DTO (Something similar to ViewModel in MVC) is a common best practice is modern software development world.
 
 Model - DTO examples:
 
