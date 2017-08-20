@@ -8,7 +8,7 @@ using System.Web.Http.Filters;
 
 namespace Bit.WebApi.ActionFilters
 {
-    public class LogActionArgsFilterAttribute : ActionFilterAttribute
+    public class LogOperationArgsFilterAttribute : ActionFilterAttribute
     {
         public override void OnActionExecuting(HttpActionContext actionContext)
         {
@@ -16,7 +16,7 @@ namespace Bit.WebApi.ActionFilters
                 .GetDependencyResolver()
                 .Resolve<ILogger>();
 
-            logger.AddLogData("ActionArgs", actionContext.ActionArguments.Where(arg => LogParameter(arg.Value)).ToArray());
+            logger.AddLogData("OperationArgs", actionContext.ActionArguments.Where(arg => LogParameter(arg.Value)).ToArray());
 
             base.OnActionExecuting(actionContext);
         }

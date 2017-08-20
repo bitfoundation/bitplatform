@@ -21,12 +21,12 @@ namespace Bit.WebApi.Implementations
         }
     }
 
-    public class GlobalDefaultLogActionArgsActionFilterProvider<TLogActionArgs> : IWebApiConfigurationCustomizer
-        where TLogActionArgs : LogActionArgsFilterAttribute, new()
+    public class GlobalDefaultLogOperationArgsActionFilterProvider<TOperationArgsArgs> : IWebApiConfigurationCustomizer
+        where TOperationArgsArgs : LogOperationArgsFilterAttribute, new()
     {
         public virtual void CustomizeWebApiConfiguration(HttpConfiguration webApiConfiguration)
         {
-            webApiConfiguration.Filters.Add(new TLogActionArgs());
+            webApiConfiguration.Filters.Add(new TOperationArgsArgs());
         }
     }
 

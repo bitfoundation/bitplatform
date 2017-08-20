@@ -489,7 +489,7 @@
     <Compile Include="Api\Middlewares\WebApi\Tests\AutoEdmBuilderCustomODataActionsTests.cs" />
     <Compile Include="Api\Middlewares\WebApi\Tests\BatchRequestsTests.cs" />
     <Compile Include="Api\Middlewares\WebApi\Tests\ExceptionHandlerFilterAttributeTests.cs" />
-    <Compile Include="Api\Middlewares\WebApi\Tests\LogActionArgsFilterAttributeTests.cs" />
+    <Compile Include="Api\Middlewares\WebApi\Tests\LogOperationArgsFilterAttributeTests.cs" />
     <Compile Include="Api\Middlewares\WebApi\Tests\ODataMetadataTests.cs" />
     <Compile Include="Api\Middlewares\WebApi\Tests\StringFormattersTests.cs" />
     <Compile Include="Api\Middlewares\WebApi\Tests\TimeZoneTests.cs" />

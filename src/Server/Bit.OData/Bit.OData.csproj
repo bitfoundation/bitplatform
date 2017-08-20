@@ -199,7 +199,7 @@
     <Compile Include="ActionFilters\IgnoreODataEnableQueryAttribute.cs" />
     <Compile Include="ActionFilters\ODataEnableQueryAttribute.cs" />
     <Compile Include="ActionFilters\ODataExceptionHandlerFilterAttribute.cs" />
-    <Compile Include="ActionFilters\ODataLogActionArgsFilterAttribute.cs" />
+    <Compile Include="ActionFilters\ODataLogOperationArgsFilterAttribute.cs" />
     <Compile Include="ActionFilters\ODataNullReturnValueActionFilter.cs" />
     <Compile Include="ActionFilters\RequestQSStringCorrectorsApplierActionFilterAttribute.cs" />
     <Compile Include="ActionFilters\RequestQSTimeZoneApplierActionFilterAttribute.cs" />

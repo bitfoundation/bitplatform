@@ -38,7 +38,7 @@ namespace Bit.Core.Contracts
             dependencyManager.RegisterWebApiConfigurationCustomizer<GlobalDefaultRequestQSTimeZoneApplierActionFilterProvider>();
             dependencyManager.RegisterWebApiConfigurationCustomizer<GlobalODataNullReturnValueActionFilterProvider>();
             dependencyManager.RegisterWebApiConfigurationCustomizer<DefaultGlobalEnableQueryActionFilterProvider>();
-            dependencyManager.RegisterWebApiConfigurationCustomizer<GlobalDefaultLogActionArgsActionFilterProvider<ODataLogActionArgsFilterAttribute>>();
+            dependencyManager.RegisterWebApiConfigurationCustomizer<GlobalDefaultLogOperationArgsActionFilterProvider<ODataLogOperationArgsFilterAttribute>>();
             dependencyManager.RegisterWebApiConfigurationCustomizer<GlobalDefaultExceptionHandlerActionFilterProvider<ODataExceptionHandlerFilterAttribute>>();
             dependencyManager.Register<IAutoEdmBuilder, DefaultAutoEdmBuilder>(lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExciting: false);
             dependencyManager.Register<IContainerBuilder, ExtendedContainerBuilder>(lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExciting: false);

@@ -3,7 +3,7 @@ using System.Web.OData.Query;
 
 namespace Bit.OData.ActionFilters
 {
-    public class ODataLogActionArgsFilterAttribute : LogActionArgsFilterAttribute
+    public class ODataLogOperationArgsFilterAttribute : LogOperationArgsFilterAttribute
     {
         protected override bool LogParameter(object parameter)
         {

@@ -81,7 +81,7 @@ namespace Bit.Core.Contracts
         /// <summary>
         /// Adds minimal dependencies to make web api work. It registers <see cref="System.Web.Http.Dependencies.IDependencyResolver"/> by <see cref="AutofacWebApiDependencyResolver"/>
         /// | <see cref="IWebApiOwinPipelineInjector"/> by <see cref="DefaultWebApiOwinPipelineInjector"/>
-        /// It adds <see cref="LogActionArgsFilterAttribute"/> and <see cref="ExceptionHandlerFilterAttribute"/> action filters
+        /// It adds <see cref="LogOperationArgsFilterAttribute"/> and <see cref="ExceptionHandlerFilterAttribute"/> action filters
         /// It registers <see cref="WebApiMiddlewareConfiguration"/> middleware
         /// </summary>
         public static IDependencyManager RegisterWebApiMiddlewareUsingDefaultConfiguration(this IDependencyManager dependencyManager, string name = "WebApi")
@@ -91,7 +91,7 @@ namespace Bit.Core.Contracts
 
             dependencyManager.Register<System.Web.Http.Dependencies.IDependencyResolver, AutofacWebApiDependencyResolver>(lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExciting: false);
             dependencyManager.Register<IWebApiOwinPipelineInjector, DefaultWebApiOwinPipelineInjector>(lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExciting: false);
-            dependencyManager.RegisterWebApiConfigurationCustomizer<GlobalDefaultLogActionArgsActionFilterProvider<LogActionArgsFilterAttribute>>();
+            dependencyManager.RegisterWebApiConfigurationCustomizer<GlobalDefaultLogOperationArgsActionFilterProvider<LogOperationArgsFilterAttribute>>();
             dependencyManager.RegisterWebApiConfigurationCustomizer<GlobalDefaultExceptionHandlerActionFilterProvider<ExceptionHandlerFilterAttribute>>();
             dependencyManager.RegisterOwinMiddleware<WebApiMiddlewareConfiguration>(name);
 
