@@ -65,17 +65,21 @@ Add-MpPreference -ExclusionPath "C:\Users\$env:UserName\AppData\Roaming\npm-cach
 We provide a recommended settings to improve visual studio responsiveness and reduce build time and environment performance,
 this settings apply to Visual Studio 2017.
 
+
 Environment -> General
 * Uncheck "Automatically adjust visual experience based on client performance"
 * Uncheck "Enable rich client visual experience"
 * Check "Use hardware graphics acceleration if available"
 
+
 Environment -> Startup
 * Set "At startup" to "Show empty environment at startup"
 * Uncheck "Download content every"
 
+
 Environment -> Synchronized settings (ignore if you are not logged in with Micorosft account)
 * Uncheck "Synchronize settings across devices when signed into Visual Studio"
+
 
 Projects and Solutions -> Web Package Management
 * Set "Restore on Project Open" to false (for Bower)
@@ -86,22 +90,28 @@ Projects and Solutions -> Web Package Management
 Text Editor -> General
 * Uncheck "Track changes"
 
+
 Text Editor -> All Languages -> Scroll Bars
 * Uncheck "Show annotations over vertical scroll bar"
+
 
 Text Editor -> All Languages -> CodeLens
 * Uncheck "Enable CodeLens"
 
+
 Text Editor -> C# -> Advanced
 * Uncheck "Enable full solution analysis"
+
 
 Debugging
 * Uncheck "Suppress JIT optimization on module load (Managed only)"
 * Uncheck "Enable Edit and Continue"
 * Uncheck "Enable JavaScript debugging for ASP.NET (Chrome and IE)"
 
+
 Debugging -> Just-In-Time
 * Uncheck "Script"
+
 
 IntelliTrace
 * Uncheck "Enable IntelliTrace"
