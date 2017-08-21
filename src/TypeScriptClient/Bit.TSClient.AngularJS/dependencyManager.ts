@@ -474,12 +474,12 @@
             return fileDependency.promise;
         }
 
-        public resolveObject<TContract>(objectDependencyName: string): TContract {
+        public resolveObject<TService>(objectDependencyName: string): TService {
 
             if (objectDependencyName == null || objectDependencyName == "")
                 throw new Error("argument exception: objectDependencyName");
 
-            let result = this.resolveAllObjects<TContract>(objectDependencyName)[0];
+            let result = this.resolveAllObjects<TService>(objectDependencyName)[0];
 
             if (result == null) {
                 for (let customObjectResolver of this.customObjectResolvers) {
@@ -488,7 +488,7 @@
                         canResolve = customObjectResolver.canResolve == null || customObjectResolver.canResolve(objectDependencyName);
                     } catch (e) { }
                     if (canResolve == true) {
-                        result = customObjectResolver.resolve<TContract>(objectDependencyName);
+                        result = customObjectResolver.resolve<TService>(objectDependencyName);
                         if (result != null)
                             break;
                     }
@@ -502,7 +502,7 @@
             return result;
         }
 
-        public resolveAllObjects<TContract>(objectDependencyName: string): Array<TContract> {
+        public resolveAllObjects<TService>(objectDependencyName: string): Array<TService> {
 
             if (objectDependencyName == null || objectDependencyName == "")
                 throw new Error("argument exception: objectDependencyName");

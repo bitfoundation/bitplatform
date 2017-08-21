@@ -7,20 +7,20 @@ namespace Bit.Owin.Implementations
 {
     public class RazorViewTemplate : TemplateBase<IDependencyResolver>
     {
-        protected virtual TContract Resolve<TContract>(string name = null)
+        protected virtual TService Resolve<TService>(string name = null)
         {
             if (name != null)
                 throw new NotSupportedException();
 
-            return Model.Resolve<TContract>();
+            return Model.Resolve<TService>();
         }
 
-        protected virtual IEnumerable<TContract> ResolveAll<TContract>(string name = null)
+        protected virtual IEnumerable<TService> ResolveAll<TService>(string name = null)
         {
             if (name != null)
                 throw new NotSupportedException();
 
-            return Model.Resolve<IEnumerable<TContract>>();
+            return Model.Resolve<IEnumerable<TService>>();
         }
     }
 }

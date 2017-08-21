@@ -22,45 +22,45 @@ namespace Bit.Test.Core.Implementations
             {
                 x.Registered += (sender, args) =>
                 {
-                    TypeInfo serviceType = args.ComponentRegistration.Activator.LimitType.GetTypeInfo();
+                    TypeInfo implementationType = args.ComponentRegistration.Activator.LimitType.GetTypeInfo();
 
-                    if (IsGoingToCreateProxyForService(serviceType))
+                    if (IsGoingToCreateProxyForImplementationType(implementationType))
                     {
-                        ConstructorInfo[] constructors = serviceType.GetConstructors(BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
+                        ConstructorInfo[] constructors = implementationType.GetConstructors(BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
 
                         if (constructors.Length == 1)
                         {
                             if (constructors.Single().GetParameters().Any())
                             {
-                                throw new InvalidOperationException($"{serviceType.FullName} has only one constructor which has parameter");
+                                throw new InvalidOperationException($"{implementationType.FullName} has only one constructor which has parameter");
                             }
                         }
                         else
                         {
                             if (constructors.All(c => !c.GetParameters().Any()))
                             {
-                                throw new InvalidOperationException($"{serviceType.FullName} has more than one constructor, but all without parameter");
+                                throw new InvalidOperationException($"{implementationType.FullName} has more than one constructor, but all without parameter");
                             }
 
                             if (constructors.All(c => c.GetParameters().Any()))
                             {
-                                throw new InvalidOperationException($"{serviceType.FullName} has more than one constructor, but all with parameter");
+                                throw new InvalidOperationException($"{implementationType.FullName} has more than one constructor, but all with parameter");
                             }
 
                             if (constructors.GroupBy(c => c.IsPublic).Count() == 1)
                             {
-                                throw new InvalidOperationException($"{serviceType.FullName} has more than one constructor, all with same visibility level");
+                                throw new InvalidOperationException($"{implementationType.FullName} has more than one constructor, all with same visibility level");
                             }
 
                             if (constructors.Single(c => !c.IsPublic).GetParameters().Any())
                             {
-                                throw new InvalidOperationException($"{serviceType.FullName} has more than one constructor, and its non public constructor has parameter");
+                                throw new InvalidOperationException($"{implementationType.FullName} has more than one constructor, and its non public constructor has parameter");
                             }
                         }
 
-                        if (serviceType.GetMethods(BindingFlags.Instance | BindingFlags.Public | BindingFlags.DeclaredOnly).Any(m => !m.IsVirtual))
+                        if (implementationType.GetMethods(BindingFlags.Instance | BindingFlags.Public | BindingFlags.DeclaredOnly).Any(m => !m.IsVirtual))
                         {
-                            throw new InvalidOperationException($"{serviceType.FullName} has non virtual public instance members");
+                            throw new InvalidOperationException($"{implementationType.FullName} has non virtual public instance members");
                         }
                     }
 
@@ -75,10 +75,10 @@ namespace Bit.Test.Core.Implementations
 
         public virtual List<Func<TypeInfo, bool>> AutoProxyCreationIgnoreRules { get; set; } = new List<Func<TypeInfo, bool>> { };
 
-        public virtual bool IsGoingToCreateProxyForService(TypeInfo serviceType)
+        public virtual bool IsGoingToCreateProxyForImplementationType(TypeInfo implementationType)
         {
-            return AutoProxyCreationIncludeRules.Any(rule => rule(serviceType) == true)
-                && AutoProxyCreationIgnoreRules.All(rule => rule(serviceType) == false);
+            return AutoProxyCreationIncludeRules.Any(rule => rule(implementationType) == true)
+                && AutoProxyCreationIgnoreRules.All(rule => rule(implementationType) == false);
         }
 
         public virtual void ComponentRegistration_Activating(object sender, Autofac.Core.ActivatingEventArgs<object> e)
@@ -87,7 +87,7 @@ namespace Bit.Test.Core.Implementations
 
             TypeInfo instanceType = instance.GetType().GetTypeInfo();
 
-            if (IsGoingToCreateProxyForService(instanceType))
+            if (IsGoingToCreateProxyForImplementationType(instanceType))
             {
                 instance = _createProxyForService.MakeGenericMethod(instanceType).Invoke(this, new[] { instance });
                 e.ReplaceInstance(instance);

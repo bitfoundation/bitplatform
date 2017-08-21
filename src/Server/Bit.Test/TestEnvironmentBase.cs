@@ -86,10 +86,9 @@ namespace Bit.Test
         {
             return new List<Func<TypeInfo, bool>>
             {
-                serviceType => GetBaseTypes(serviceType).Any(t => t.Name == "DbContext"),
-                serviceType => GetBaseTypes(serviceType).Any(t => t.Name == "Hub"),
-                serviceType => serviceType.IsArray,
-                serviceType => serviceType.IsInterface
+                implementationType => GetBaseTypes(implementationType).Any(t => t.Name == "DbContext"),
+                implementationType => GetBaseTypes(implementationType).Any(t => t.Name == "Hub"),
+                implementationType => implementationType.IsArray
             };
         }
 
@@ -97,16 +96,16 @@ namespace Bit.Test
         {
             return new List<Func<TypeInfo, bool>>
             {
-                serviceType => AssemblyContainer.Current.GetBitIdentityServerAssembly() == serviceType.Assembly,
-                serviceType => AssemblyContainer.Current.GetBitCoreAssembly() == serviceType.Assembly,
-                serviceType => AssemblyContainer.Current.GetBitOwinAssembly() == serviceType.Assembly,
-                serviceType => AssemblyContainer.Current.GetBitDataAssembly() == serviceType.Assembly,
-                serviceType => AssemblyContainer.Current.GetBitModelAssembly() == serviceType.Assembly,
-                serviceType => AssemblyContainer.Current.GetBitTestAssembly() == serviceType.Assembly,
-                serviceType => AssemblyContainer.Current.GetBitWebApiAssembly() == serviceType.Assembly,
-                serviceType => AssemblyContainer.Current.GetBitODataAssembly() == serviceType.Assembly,
-                serviceType => AssemblyContainer.Current.GetBitHangfireAssembly() == serviceType.Assembly,
-                serviceType => AssemblyContainer.Current.GetBitSignalRAssembly() == serviceType.Assembly
+                implementationType => AssemblyContainer.Current.GetBitIdentityServerAssembly() == implementationType.Assembly,
+                implementationType => AssemblyContainer.Current.GetBitCoreAssembly() == implementationType.Assembly,
+                implementationType => AssemblyContainer.Current.GetBitOwinAssembly() == implementationType.Assembly,
+                implementationType => AssemblyContainer.Current.GetBitDataAssembly() == implementationType.Assembly,
+                implementationType => AssemblyContainer.Current.GetBitModelAssembly() == implementationType.Assembly,
+                implementationType => AssemblyContainer.Current.GetBitTestAssembly() == implementationType.Assembly,
+                implementationType => AssemblyContainer.Current.GetBitWebApiAssembly() == implementationType.Assembly,
+                implementationType => AssemblyContainer.Current.GetBitODataAssembly() == implementationType.Assembly,
+                implementationType => AssemblyContainer.Current.GetBitHangfireAssembly() == implementationType.Assembly,
+                implementationType => AssemblyContainer.Current.GetBitSignalRAssembly() == implementationType.Assembly
             };
         }
 

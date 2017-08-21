@@ -91,74 +91,74 @@ namespace Bit.Owin.Implementations
             return (IDependencyResolver)childDependencyManager;
         }
 
-        public virtual TContract Resolve<TContract>(string name = null)
+        public virtual TService Resolve<TService>(string name = null)
         {
             ILifetimeScope container = GetContainer();
 
             if (name != null)
-                return container.ResolveNamed<TContract>(name);
+                return container.ResolveNamed<TService>(name);
 
-            return container.Resolve<TContract>();
+            return container.Resolve<TService>();
         }
 
-        public virtual IEnumerable<TContract> ResolveAll<TContract>(string name = null)
+        public virtual IEnumerable<TService> ResolveAll<TService>(string name = null)
         {
             ILifetimeScope container = GetContainer();
 
             if (name != null)
-                return container.ResolveNamed<IEnumerable<TContract>>(name);
+                return container.ResolveNamed<IEnumerable<TService>>(name);
 
-            return container.Resolve<IEnumerable<TContract>>();
+            return container.Resolve<IEnumerable<TService>>();
         }
 
-        public virtual TContract ResolveOptional<TContract>(string name = null)
-            where TContract : class
+        public virtual TService ResolveOptional<TService>(string name = null)
+            where TService : class
         {
             ILifetimeScope container = GetContainer();
 
             if (name != null)
-                return container.ResolveNamed<TContract>(name);
+                return container.ResolveNamed<TService>(name);
 
-            return container.ResolveOptional<TContract>();
+            return container.ResolveOptional<TService>();
         }
 
-        public virtual object Resolve(TypeInfo contractType, string name = null)
+        public virtual object Resolve(TypeInfo serviceType, string name = null)
         {
-            if (contractType == null)
-                throw new ArgumentNullException(nameof(contractType));
+            if (serviceType == null)
+                throw new ArgumentNullException(nameof(serviceType));
 
             ILifetimeScope container = GetContainer();
 
             if (name != null)
-                return container.ResolveNamed(name, contractType);
+                return container.ResolveNamed(name, serviceType);
 
-            return container.Resolve(contractType);
+            return container.Resolve(serviceType);
         }
 
-        public virtual object ResolveOptional(TypeInfo contractType, string name = null)
+        public virtual object ResolveOptional(TypeInfo serviceType, string name = null)
         {
-            if (contractType == null)
-                throw new ArgumentNullException(nameof(contractType));
+            if (serviceType == null)
+                throw new ArgumentNullException(nameof(serviceType));
 
             ILifetimeScope container = GetContainer();
 
             if (name != null)
-                return container.ResolveNamed(name, contractType);
+                return container.ResolveNamed(name, serviceType);
 
-            return container.ResolveOptional(contractType);
+            return container.ResolveOptional(serviceType);
         }
 
-        public virtual IEnumerable<object> ResolveAll(TypeInfo contractType, string name = null)
+        public virtual IEnumerable<object> ResolveAll(TypeInfo serviceType, string name = null)
         {
-            if (contractType == null)
-                throw new ArgumentNullException(nameof(contractType));
+            if (serviceType == null)
+                throw new ArgumentNullException(nameof(serviceType));
 
             ILifetimeScope container = GetContainer();
 
             if (name != null)
-                return (IEnumerable<object>)container.ResolveNamed(name, contractType);
+                return (IEnumerable<object>)container.ResolveNamed(name, serviceType);
 
-            return (IEnumerable<object>)container.Resolve(contractType);
+            return (IEnumerable<object>)container.Resolve(serviceType);
         }
 
         public virtual object GetService(TypeInfo serviceType)
@@ -171,17 +171,17 @@ namespace Bit.Owin.Implementations
             return GetContainer().ResolveOptional(serviceType);
         }
 
-        public virtual IDependencyManager Register<TContract, TService>(string name = null,
+        public virtual IDependencyManager Register<TService, TImplementation>(string name = null,
             DependencyLifeCycle lifeCycle = DependencyLifeCycle.InstancePerLifetimeScope, bool overwriteExciting = true)
-            where TService : class, TContract
+            where TImplementation : class, TService
         {
-            return Register(typeof(TContract).GetTypeInfo(), typeof(TService).GetTypeInfo(), name, lifeCycle, overwriteExciting);
+            return Register(typeof(TService).GetTypeInfo(), typeof(TImplementation).GetTypeInfo(), name, lifeCycle, overwriteExciting);
         }
 
-        public virtual IDependencyManager RegisterInstance<TContract>(TContract obj, bool overwriteExciting = true, string name = null)
-            where TContract : class
+        public virtual IDependencyManager RegisterInstance<TService>(TService obj, bool overwriteExciting = true, string name = null)
+            where TService : class
         {
-            return RegisterInstance(obj, typeof(TContract).GetTypeInfo(), overwriteExciting, name);
+            return RegisterInstance(obj, typeof(TService).GetTypeInfo(), overwriteExciting, name);
         }
 
         public virtual IDependencyManager RegisterAssemblyTypes(Assembly[] assemblies, Predicate<TypeInfo> predicate = null)
@@ -196,9 +196,9 @@ namespace Bit.Owin.Implementations
         /// <summary>
         /// Register an un-parameterised generic type, e.g. IRepository&lt;&gt;. Concrete types will be made as they are requested, e.g. with IRepository&lt;Customer&gt;
         /// </summary>
-        public IDependencyManager RegisterGeneric(TypeInfo contractType, TypeInfo serviceType, DependencyLifeCycle lifeCycle = DependencyLifeCycle.InstancePerLifetimeScope)
+        public IDependencyManager RegisterGeneric(TypeInfo serviceType, TypeInfo implementationType, DependencyLifeCycle lifeCycle = DependencyLifeCycle.InstancePerLifetimeScope)
         {
-            IRegistrationBuilder<object, ReflectionActivatorData, DynamicRegistrationStyle> registration = GetContainerBuidler().RegisterGeneric(serviceType).PropertiesAutowired().As(contractType);
+            IRegistrationBuilder<object, ReflectionActivatorData, DynamicRegistrationStyle> registration = GetContainerBuidler().RegisterGeneric(implementationType).PropertiesAutowired().As(serviceType);
 
             if (lifeCycle == DependencyLifeCycle.SingleInstance)
                 registration = registration.SingleInstance();
@@ -214,16 +214,16 @@ namespace Bit.Owin.Implementations
             return RegisterUsing(() => factory(), typeof(T).GetTypeInfo(), name, lifeCycle, overwriteExciting);
         }
 
-        public virtual IDependencyManager RegisterUsing(Func<object> factory, TypeInfo contractType, string name = null, DependencyLifeCycle lifeCycle = DependencyLifeCycle.InstancePerLifetimeScope, bool overwriteExciting = true)
+        public virtual IDependencyManager RegisterUsing(Func<object> factory, TypeInfo serviceType, string name = null, DependencyLifeCycle lifeCycle = DependencyLifeCycle.InstancePerLifetimeScope, bool overwriteExciting = true)
         {
             IRegistrationBuilder<object, SimpleActivatorData, SingleRegistrationStyle> registration = GetContainerBuidler().Register((context, parameter) => factory.DynamicInvoke())
-                .As(contractType);
+                .As(serviceType);
 
             if (overwriteExciting == false)
                 registration = registration.PreserveExistingDefaults();
 
             if (name != null)
-                registration = registration.Named(name, contractType);
+                registration = registration.Named(name, serviceType);
 
             if (lifeCycle == DependencyLifeCycle.SingleInstance)
                 registration = registration.SingleInstance();
@@ -233,23 +233,23 @@ namespace Bit.Owin.Implementations
             return this;
         }
 
-        public virtual IDependencyManager Register(TypeInfo contractType, TypeInfo serviceType, string name = null, DependencyLifeCycle lifeCycle = DependencyLifeCycle.InstancePerLifetimeScope, bool overwriteExciting = true)
+        public virtual IDependencyManager Register(TypeInfo serviceType, TypeInfo implementationType, string name = null, DependencyLifeCycle lifeCycle = DependencyLifeCycle.InstancePerLifetimeScope, bool overwriteExciting = true)
         {
+            if (implementationType == null)
+                throw new ArgumentNullException(nameof(implementationType));
+
             if (serviceType == null)
                 throw new ArgumentNullException(nameof(serviceType));
 
-            if (contractType == null)
-                throw new ArgumentNullException(nameof(contractType));
-
-            IRegistrationBuilder<object, ConcreteReflectionActivatorData, SingleRegistrationStyle> registration = GetContainerBuidler().RegisterType(serviceType)
+            IRegistrationBuilder<object, ConcreteReflectionActivatorData, SingleRegistrationStyle> registration = GetContainerBuidler().RegisterType(implementationType)
                     .PropertiesAutowired()
-                    .As(contractType);
+                    .As(serviceType);
 
             if (overwriteExciting == false)
                 registration = registration.PreserveExistingDefaults();
 
             if (name != null)
-                registration = registration.Named(name, contractType);
+                registration = registration.Named(name, serviceType);
 
             if (lifeCycle == DependencyLifeCycle.SingleInstance)
                 registration = registration.SingleInstance();
@@ -259,15 +259,15 @@ namespace Bit.Owin.Implementations
             return this;
         }
 
-        public virtual IDependencyManager RegisterInstance(object obj, TypeInfo contractType, bool overwriteExciting = true, string name = null)
+        public virtual IDependencyManager RegisterInstance(object obj, TypeInfo serviceType, bool overwriteExciting = true, string name = null)
         {
             if (obj == null)
                 throw new ArgumentNullException(nameof(obj));
 
-            IRegistrationBuilder<object, SimpleActivatorData, SingleRegistrationStyle> registration = GetContainerBuidler().RegisterInstance(obj).As(contractType);
+            IRegistrationBuilder<object, SimpleActivatorData, SingleRegistrationStyle> registration = GetContainerBuidler().RegisterInstance(obj).As(serviceType);
 
             if (name != null)
-                registration = registration.Named(name, contractType);
+                registration = registration.Named(name, serviceType);
 
             if (overwriteExciting == false)
                 registration = registration.PreserveExistingDefaults();
@@ -275,17 +275,17 @@ namespace Bit.Owin.Implementations
             return this;
         }
 
-        public virtual bool IsRegistered<TContract>()
+        public virtual bool IsRegistered<TService>()
         {
-            return GetContainer().IsRegistered<TContract>();
+            return GetContainer().IsRegistered<TService>();
         }
 
-        public virtual bool IsRegistered(TypeInfo contractType)
+        public virtual bool IsRegistered(TypeInfo serviceType)
         {
-            if (contractType == null)
-                throw new ArgumentNullException(nameof(contractType));
+            if (serviceType == null)
+                throw new ArgumentNullException(nameof(serviceType));
 
-            return GetContainer().IsRegistered(contractType);
+            return GetContainer().IsRegistered(serviceType);
         }
 
         public virtual void Dispose()

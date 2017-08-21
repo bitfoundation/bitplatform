@@ -31,7 +31,7 @@ namespace Bit.Tests
 
             baseList.AddRange(new List<Func<TypeInfo, bool>>
             {
-                serviceType => serviceType.Assembly == AssemblyContainer.Current.GetBitTestsAssembly()
+                implementationType => implementationType.Assembly == AssemblyContainer.Current.GetBitTestsAssembly()
             });
 
             return baseList;
