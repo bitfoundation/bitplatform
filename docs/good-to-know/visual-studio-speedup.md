@@ -123,3 +123,5 @@ Disable Browser link
 
 
 Feedback and questions are welcome in the comments below.
+
+[Reference](https://medium.com/burak-tasci/tweaking-the-environment-to-speed-up-visual-studio-79cd1920fed9)
