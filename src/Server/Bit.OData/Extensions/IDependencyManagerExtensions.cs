@@ -43,7 +43,6 @@ namespace Bit.Core.Contracts
             dependencyManager.Register<IAutoEdmBuilder, DefaultAutoEdmBuilder>(lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExciting: false);
             dependencyManager.Register<IContainerBuilder, ExtendedContainerBuilder>(lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExciting: false);
             dependencyManager.Register<IODataModelBuilderProvider, DefaultODataModelBuilderProvider>(lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExciting: false);
-            dependencyManager.Register<IODataContainerBuilderCustomizer, DefaultODataContainerBuilderCustomizer>(lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExciting: false);
             dependencyManager.Register<System.Web.Http.Controllers.IHttpActionSelector, DefaultWebApiODataControllerActionSelector>(lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExciting: false);
             dependencyManager.RegisterOwinMiddleware<WebApiODataMiddlewareConfiguration>(name);
 

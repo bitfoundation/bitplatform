@@ -27,7 +27,6 @@ namespace Bit.OData
         private HttpConfiguration _webApiConfig;
         private HttpServer _server;
         private ODataBatchHandler _odataBatchHandler;
-        private readonly IODataContainerBuilderCustomizer _oDataContainerBuilderCustomizer;
         private readonly IWebApiOwinPipelineInjector _webApiOwinPipelineInjector;
         private readonly IContainerBuilder _containerBuilder;
 
@@ -38,7 +37,7 @@ namespace Bit.OData
 #endif
 
         public WebApiODataMiddlewareConfiguration(IAppEnvironmentProvider appEnvironmentProvider,
-            IEnumerable<IEdmModelProvider> emdEdmModelProviders, IEnumerable<IWebApiConfigurationCustomizer> webApiConfgurationCustomizers, System.Web.Http.Dependencies.IDependencyResolver webApiDependencyResolver, IODataModelBuilderProvider oDataModelBuilderProvider, IODataContainerBuilderCustomizer oDataContainerBuilderCustomizer, IWebApiOwinPipelineInjector webApiOwinPipelineInjector, IContainerBuilder containerBuilder)
+            IEnumerable<IEdmModelProvider> emdEdmModelProviders, IEnumerable<IWebApiConfigurationCustomizer> webApiConfgurationCustomizers, System.Web.Http.Dependencies.IDependencyResolver webApiDependencyResolver, IODataModelBuilderProvider oDataModelBuilderProvider, IWebApiOwinPipelineInjector webApiOwinPipelineInjector, IContainerBuilder containerBuilder)
         {
             if (emdEdmModelProviders == null)
                 throw new ArgumentNullException(nameof(emdEdmModelProviders));
@@ -55,9 +54,6 @@ namespace Bit.OData
             if (oDataModelBuilderProvider == null)
                 throw new ArgumentNullException(nameof(oDataModelBuilderProvider));
 
-            if (oDataContainerBuilderCustomizer == null)
-                throw new ArgumentNullException(nameof(oDataContainerBuilderCustomizer));
-
             if (webApiOwinPipelineInjector == null)
                 throw new ArgumentNullException(nameof(webApiOwinPipelineInjector));
 
@@ -69,7 +65,6 @@ namespace Bit.OData
             _webApiConfgurationCustomizers = webApiConfgurationCustomizers;
             _webApiDependencyResolver = webApiDependencyResolver;
             _oDataModelBuilderProvider = oDataModelBuilderProvider;
-            _oDataContainerBuilderCustomizer = oDataContainerBuilderCustomizer;
             _webApiOwinPipelineInjector = webApiOwinPipelineInjector;
             _containerBuilder = containerBuilder;
         }
@@ -98,6 +93,8 @@ namespace Bit.OData
 
             _server = new HttpServer(_webApiConfig);
 
+            _webApiConfig.UseCustomContainerBuilder(() => _containerBuilder);
+
             foreach (IGrouping<string, IEdmModelProvider> edmModelProviders in _emdEdmModelProviders.GroupBy(mp => mp.GetEdmName()))
             {
                 ODataModelBuilder modelBuilder = _oDataModelBuilderProvider.GetODataModelBuilder(_webApiConfig, containerName: $"{edmModelProviders.Key}Context", @namespace: edmModelProviders.Key);
@@ -125,15 +122,12 @@ namespace Bit.OData
 
                 IEdmModel edmModel = modelBuilder.GetEdmModel();
 
-                _webApiConfig.UseCustomContainerBuilder(() => _containerBuilder);
-
                 _webApiConfig.MapODataServiceRoute(routeName, edmModelProviders.Key, builder =>
                 {
                     builder.AddService(ServiceLifetime.Singleton, sp => conventions);
                     builder.AddService(ServiceLifetime.Singleton, sp => edmModel);
                     builder.AddService(ServiceLifetime.Singleton, sp => _odataBatchHandler);
                     builder.AddService(ServiceLifetime.Singleton, sp => _webApiDependencyResolver);
-                    _oDataContainerBuilderCustomizer.Customize(builder);
                 });
             }
 
