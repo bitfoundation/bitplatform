@@ -211,13 +211,19 @@ namespace Bit.Owin.Implementations
         public virtual IDependencyManager RegisterUsing<T>(Func<T> factory, string name = null,
             DependencyLifeCycle lifeCycle = DependencyLifeCycle.InstancePerLifetimeScope, bool overwriteExciting = true)
         {
-            IRegistrationBuilder<T, SimpleActivatorData, SingleRegistrationStyle> registration = GetContainerBuidler().Register((context, parameter) => factory());
+            return RegisterUsing(() => factory(), typeof(T).GetTypeInfo(), name, lifeCycle, overwriteExciting);
+        }
+
+        public virtual IDependencyManager RegisterUsing(Func<object> factory, TypeInfo contractType, string name = null, DependencyLifeCycle lifeCycle = DependencyLifeCycle.InstancePerLifetimeScope, bool overwriteExciting = true)
+        {
+            IRegistrationBuilder<object, SimpleActivatorData, SingleRegistrationStyle> registration = GetContainerBuidler().Register((context, parameter) => factory.DynamicInvoke())
+                .As(contractType);
 
             if (overwriteExciting == false)
                 registration = registration.PreserveExistingDefaults();
 
             if (name != null)
-                registration = registration.Named<T>(name);
+                registration = registration.Named(name, contractType);
 
             if (lifeCycle == DependencyLifeCycle.SingleInstance)
                 registration = registration.SingleInstance();

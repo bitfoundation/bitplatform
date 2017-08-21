@@ -63,6 +63,8 @@ namespace Bit.Core.Contracts
         IDependencyManager RegisterUsing<TContract>(Func<TContract> factory, string name = null,
             DependencyLifeCycle lifeCycle = DependencyLifeCycle.InstancePerLifetimeScope, bool overwriteExciting = true);
 
+        IDependencyManager RegisterUsing(Func<object> factory, TypeInfo contractType, string name = null, DependencyLifeCycle lifeCycle = DependencyLifeCycle.InstancePerLifetimeScope, bool overwriteExciting = true);
+
         IDependencyResolver CreateChildDependencyResolver(Action<IDependencyManager> childDependencyManager = null);
     }
 }
