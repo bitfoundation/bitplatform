@@ -13,7 +13,7 @@ You can exclude this process manually or use this PowerShell script to exclude t
 
 Note that you should run this script with administrator privileges
 
-powershell
+```powershell
 
 # Requires -RunAsAdministrator
 # Visual Studio & tools
@@ -58,39 +58,42 @@ Add-MpPreference -ExclusionPath "C:\Users\$env:UserName\AppData\Roaming\JetBrain
 Add-MpPreference -ExclusionPath "C:\Users\$env:UserName\AppData\Roaming\npm"
 Add-MpPreference -ExclusionPath "C:\Users\$env:UserName\AppData\Roaming\npm-cache"
 
+```
+
 #### Visual Studio Settings
 
 We provide a recommended settings to improve visual studio responsiveness and reduce build time and environment performance,
 this settings apply to Visual Studio 2017.
-
-Environment -> Startup
-* Set "At startup" to "Show empty environment at startup"
-* Uncheck "Download content every"
 
 Environment -> General
 * Uncheck "Automatically adjust visual experience based on client performance"
 * Uncheck "Enable rich client visual experience"
 * Check "Use hardware graphics acceleration if available"
 
-Environment -> Synchronized settings
+Environment -> Startup
+* Set "At startup" to "Show empty environment at startup"
+* Uncheck "Download content every"
+
+Environment -> Synchronized settings (ignore if you are not logged in with Micorosft account)
 * Uncheck "Synchronize settings across devices when signed into Visual Studio"
-
-Text Editor -> All Languages -> Scroll Bars
-* Uncheck "Show annotations over vertical scroll bar"
-Text Editor -> All Languages -> CodeLens
-* Uncheck "Enable CodeLens"
-
-Text Editor -> General
-* Uncheck "Track changes"
-
-Text Editor -> C# -> Advanced
-* Uncheck "Enable full solution analysis"
 
 Projects and Solutions -> Web Package Management
 * Set "Restore on Project Open" to false (for Bower)
 * Set "Restore on Save" to false (for Bower)
 * Set "Restore on Project Open" to false (for NPM)
 * Set "Restore on Save" to false (for NPM)
+
+Text Editor -> General
+* Uncheck "Track changes"
+
+Text Editor -> All Languages -> Scroll Bars
+* Uncheck "Show annotations over vertical scroll bar"
+
+Text Editor -> All Languages -> CodeLens
+* Uncheck "Enable CodeLens"
+
+Text Editor -> C# -> Advanced
+* Uncheck "Enable full solution analysis"
 
 Debugging
 * Uncheck "Suppress JIT optimization on module load (Managed only)"
@@ -104,7 +107,9 @@ IntelliTrace
 * Uncheck "Enable IntelliTrace"
 
 Disable Browser link
+
 ![](/assets/browser-link.png)
+
 
 
 Feedback and questions are welcome in the comments below.
