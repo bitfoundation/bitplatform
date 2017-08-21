@@ -206,7 +206,6 @@
     <Compile Include="Contents\ODataPushStreamContent.cs" />
     <Compile Include="Contents\ODataStreamContent.cs" />
     <Compile Include="Contracts\IAutoEdmBuilder.cs" />
-    <Compile Include="Contracts\IODataContainerBuilderCustomizer.cs" />
     <Compile Include="Contracts\IODataModelBuilderProvider.cs" />
     <Compile Include="Contracts\IODataSqlBuilder.cs" />
     <Compile Include="Contracts\IEdmModelProvider.cs" />
@@ -215,7 +214,6 @@
     <Compile Include="Extensions\OpenApiExtensions.cs" />
     <Compile Include="Implementations\DefaultAutoEdmBuilder.cs" />
     <Compile Include="Implementations\DefaultEdmModelProvider.cs" />
-    <Compile Include="Implementations\DefaultODataContainerBuilderCustomizer.cs" />
     <Compile Include="Implementations\DefaultODataModelBuilderProvider.cs" />
     <Compile Include="Implementations\DefaultODataSqlBuilder.cs" />
     <Compile Include="Implementations\DefaultWebApiODataControllerActionSelector.cs" />
