@@ -96,7 +96,6 @@ Tools -> Options -> Environment -> General
 
 
 Tools -> Options -> Environment -> Startup
-* Set "At startup" to "Show empty environment at startup"
 * Uncheck "Download content every"
 
 
@@ -110,9 +109,6 @@ Tools -> Options -> Projects and Solutions -> Web Package Management
 * Set "Restore on Project Open" to false (for NPM)
 * Set "Restore on Save" to false (for NPM)
 
-Tools -> Options -> Text Editor -> General
-* Uncheck "Track changes"
-
 
 Tools -> Options -> Text Editor -> All Languages -> Scroll Bars
 * Uncheck "Show annotations over vertical scroll bar"
@@ -120,10 +116,6 @@ Tools -> Options -> Text Editor -> All Languages -> Scroll Bars
 
 Tools -> Options -> Text Editor -> All Languages -> CodeLens
 * Uncheck "Enable CodeLens"
-
-
-Tools -> Options -> Text Editor -> C# -> Advanced
-* Uncheck "Enable full solution analysis"
 
 
 Tools -> Options -> Debugging
