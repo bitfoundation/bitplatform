@@ -4,9 +4,9 @@ In this article, we want to increase efficiency of visual studio and do some tri
 If you feel like your IDE is slow, it's time to change some configuration to make your visual studio go faster. let's talk about the tweaks.
 
 
-#### Visual Studio And Windows Defender
+#### Visual Studio and Windows Defender
 
-Windows defender is consuming cpu time as same as visual studio, so we excude visual studio to reduce this time
+Windows defender is consuming cpu time as same as visual studio, so we exclude visual studio to reduce this time
 we need to exclude devenv,msbuild,dotnet,npm,nuget, etc.
 
 You can exclude this process manually or use this PowerShell script to exclude them together 
@@ -62,58 +62,54 @@ Add-MpPreference -ExclusionPath "C:\Users\$env:UserName\AppData\Roaming\npm-cach
 
 #### Visual Studio Settings
 
-We provide a recommended settings to improve visual studio responsiveness and reduce build time and environment performance,
-this settings apply to Visual Studio 2017.
+We provide a recommended setting to improve visual studio responsiveness and reduce build/debug time and environment performance.
+
+Not all these configurations are applicable to your Visual Studio based on your Visual Studio's version and workloads/components you've installed.
 
 
-Environment -> General
+Tools -> Options -> Environment -> General
 * Uncheck "Automatically adjust visual experience based on client performance"
 * Uncheck "Enable rich client visual experience"
 * Check "Use hardware graphics acceleration if available"
 
 
-Environment -> Startup
-* Set "At startup" to "Show empty environment at startup"
+Tools -> Options -> Environment -> Startup
 * Uncheck "Download content every"
 
 
-Environment -> Synchronized settings (ignore if you are not logged in with Micorosft account)
+Tools -> Options -> Environment -> Synchronized settings (ignore if you are not logged in with Microsoft account)
 * Uncheck "Synchronize settings across devices when signed into Visual Studio"
 
 
-Projects and Solutions -> Web Package Management
+Tools -> Options -> Projects and Solutions -> Web Package Management
 * Set "Restore on Project Open" to false (for Bower)
 * Set "Restore on Save" to false (for Bower)
 * Set "Restore on Project Open" to false (for NPM)
 * Set "Restore on Save" to false (for NPM)
 
-Text Editor -> General
+Tools -> Options -> Text Editor -> General
 * Uncheck "Track changes"
 
 
-Text Editor -> All Languages -> Scroll Bars
+Tools -> Options -> Text Editor -> All Languages -> Scroll Bars
 * Uncheck "Show annotations over vertical scroll bar"
 
 
-Text Editor -> All Languages -> CodeLens
+Tools -> Options -> Text Editor -> All Languages -> CodeLens
 * Uncheck "Enable CodeLens"
 
 
-Text Editor -> C# -> Advanced
-* Uncheck "Enable full solution analysis"
-
-
-Debugging
+Tools -> Options -> Debugging
 * Uncheck "Suppress JIT optimization on module load (Managed only)"
 * Uncheck "Enable Edit and Continue"
 * Uncheck "Enable JavaScript debugging for ASP.NET (Chrome and IE)"
 
 
-Debugging -> Just-In-Time
+Tools -> Options -> Debugging -> Just-In-Time
 * Uncheck "Script"
 
 
-IntelliTrace
+Tools -> Options -> IntelliTrace
 * Uncheck "Enable IntelliTrace"
 
 Disable Browser link

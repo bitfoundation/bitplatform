@@ -9,7 +9,7 @@ Using bit framework, you can build OData services very easily, and we generate C
 
 In bit apps, you develop odata controllers for your DTO (Data transfer objects) classes.
 
-Instead of sending your domain models to client, you send DTO to the client. Your model gets complicated over time based on business requirements, and in the client side you need something less complicated and easier to use. DTO (Something similar to ViewModel in MVC) is a common best practice is modern software development world.
+Instead of sending your domain models to client, you send DTO to the client. Your model gets complicated over time based on business requirements, and in the client side you need something less complicated and easier to use. DTO (Something similar to ViewModel in MVC) is a common best practice in modern software development world.
 
 Model - DTO examples:
 
@@ -98,7 +98,7 @@ To send DTO to client side, you develop DtoController. [Examples can be found he
 
 ### 1- CustomerDtoControllerSample
 
-In this sample with don't create two DTO classes for customers as this is a simple sample only.
+In this sample we don't create two DTO classes for customers as this is a simple sample only.
 
 In Bit-OData, you develop DtoController instead of ApiController. Note that you can continue developing API controllers side by side.
 
