@@ -21,6 +21,7 @@ namespace Bit.Owin.Middlewares
             AppEnvironment activeAppEnvironment = appEnvironmentProvider.GetActiveAppEnvironment();
 
             string defaultPath = activeAppEnvironment.GetHostVirtualPath();
+            string defaultPathWithoutEndingSlashIfIsNotRoot = defaultPath == "/" ? defaultPath : defaultPath.Substring(0, defaultPath.Length - 1);
 
             string singOutPage = $@"
 <html>
@@ -42,7 +43,7 @@ namespace Bit.Owin.Middlewares
                 var eqPos = cookie.indexOf('=');
                 var name = eqPos > -1 ? cookie.substr(0, eqPos) : cookie;
                 if(name == 'access_token' || name == 'token_type')
-                    document.cookie = name + '=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path={defaultPath}';
+                    document.cookie = name + '=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path={defaultPathWithoutEndingSlashIfIsNotRoot}';
             }}
             location = '{defaultPath}';
         </script>
