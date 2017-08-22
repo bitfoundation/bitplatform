@@ -3,13 +3,16 @@
 In this article, we want to increase efficiency of visual studio and do some tricks that could boost visual studio performance,
 If you feel like your IDE is slow, it's time to change some configuration to make your visual studio go faster. let's talk about the tweaks.
 
+### Upgrade to SSD
+
+First of all, use SSD drive rather than HDD.
 
 #### Visual Studio and Windows Defender
 
-Windows defender is consuming cpu time as same as visual studio, so we exclude visual studio to reduce this time
+Anti-Virtus is consuming cpu time as same as Visual Studio, so we exclude visual studio to reduce this time
 we need to exclude devenv,msbuild,dotnet,npm,nuget, etc.
 
-You can exclude this process manually or use this PowerShell script to exclude them together 
+Here you can see a list of folders to be added to Windows Defender exclusion list. If you're not using Windows Defender, then use this directories list to configure your preferred Anti-Virus software.
 
 Note that you should run this script with administrator privileges
 
@@ -60,6 +63,25 @@ Add-MpPreference -ExclusionPath "C:\Users\$env:UserName\AppData\Roaming\npm-cach
 
 ```
 
+Also add your **project directory** to Anti-virus exclusion list.
+
+
+#### Windows Search Index
+
+Windows Indexing Service pull disk I/O to 100% when you build project or installing packages,
+you can disable indexing service at all or just exclude your project directory from indexing 
+**Note that by disabling this feature you can still search but without indexing** ,it will be slower a little bit
+
+Open Control Panel and go to Indexing Options.
+
+![](/assets/Control-panel.png)
+
+ Click the ‘Modify’ button
+
+![](/assets/Indexing-Option.png)
+
+ in the ‘Indexed Locations’ window, navigate to the folder you want to exclude from search. Uncheck the location and click ‘Ok’.
+
 #### Visual Studio Settings
 
 We provide a recommended setting to improve visual studio responsiveness and reduce build/debug time and environment performance.
@@ -74,6 +96,7 @@ Tools -> Options -> Environment -> General
 
 
 Tools -> Options -> Environment -> Startup
+* Set "At startup" to "Show empty environment at startup"
 * Uncheck "Download content every"
 
 
@@ -99,11 +122,15 @@ Tools -> Options -> Text Editor -> All Languages -> CodeLens
 * Uncheck "Enable CodeLens"
 
 
+Tools -> Options -> Text Editor -> C# -> Advanced
+* Uncheck "Enable full solution analysis"
+
+
 Tools -> Options -> Debugging
 * Uncheck "Suppress JIT optimization on module load (Managed only)"
 * Uncheck "Enable Edit and Continue"
 * Uncheck "Enable JavaScript debugging for ASP.NET (Chrome and IE)"
-
+* Uncheck "Enable Diagnostic Tools while debugging"
 
 Tools -> Options -> Debugging -> Just-In-Time
 * Uncheck "Script"
@@ -118,6 +145,7 @@ Disable Browser link
 
 
 
-Feedback and questions are welcome in the comments below.
 
-[Reference](https://medium.com/burak-tasci/tweaking-the-environment-to-speed-up-visual-studio-79cd1920fed9)
+[Refrence](http://medium.com/burak-tasci/tweaking-the-environment-to-speed-up-visual-studio-79cd1920fed9)
+
+Feedback and questions are welcome in the comments below.
