@@ -21,6 +21,7 @@ namespace Bit.Owin.Middlewares
             AppEnvironment activeAppEnvironment = appEnvironmentProvider.GetActiveAppEnvironment();
 
             string defaultPath = activeAppEnvironment.GetHostVirtualPath();
+            string defaultPathWithoutEndingSlashIfIsNotRoot = defaultPath == "/" ? defaultPath : defaultPath.Substring(0, defaultPath.Length - 1);
 
             string signInPage = $@"
 <html>
@@ -40,7 +41,7 @@ namespace Bit.Owin.Middlewares
                 var key = keyValue[0];
                 var value = keyValue[1];
                 if (key == 'access_token' || key == 'token_type'){{
-                    document.cookie = partStr + ';expires=' + nowAsGMTString + ';path={defaultPath}';
+                    document.cookie = partStr + ';expires=' + nowAsGMTString + ';path={defaultPathWithoutEndingSlashIfIsNotRoot}';
                 }}
                 localStorage['{defaultPath}' + key] = value;
             }}
