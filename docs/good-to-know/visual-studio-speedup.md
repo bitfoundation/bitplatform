@@ -3,13 +3,16 @@
 In this article, we want to increase efficiency of visual studio and do some tricks that could boost visual studio performance,
 If you feel like your IDE is slow, it's time to change some configuration to make your visual studio go faster. let's talk about the tweaks.
 
+### Upgrade to SSD
+
+First of all, upgrade tou old hard disk drive to SSD drive.this will make much of a difference
 
 #### Visual Studio And Windows Defender
 
 Windows defender is consuming cpu time as same as visual studio, so we excude visual studio to reduce this time
 we need to exclude devenv,msbuild,dotnet,npm,nuget, etc.
 
-You can exclude this process manually or use this PowerShell script to exclude them together 
+You can exclude this process manually or use this PowerShell script to exclude them together from Windows Defender
 
 Note that you should run this script with administrator privileges
 
@@ -60,6 +63,25 @@ Add-MpPreference -ExclusionPath "C:\Users\$env:UserName\AppData\Roaming\npm-cach
 
 ```
 
+Also you can exclude your project directory from Windows Defender or your AntiVirus software
+
+
+#### Windows Search Index
+
+Windows Indexing Service pull disk I/O to 100% when you build project or installing packages,
+you can disable indexing service at all or just exclude your project directory from indexing 
+**Note that by disabling this feature you can still search but without indexing ** ,it will be slower a little bit
+
+Open Control Panel and go to Indexing Options.
+
+![](/assets/Control-panel.png)
+
+ Click the ‘Modify’ button
+
+![](/assets/Indexing-Option.png)
+
+ in the ‘Indexed Locations’ window, navigate to the folder you want to exclude from search.Uncheck the location and click ‘Ok’.
+
 #### Visual Studio Settings
 
 We provide a recommended settings to improve visual studio responsiveness and reduce build time and environment performance,
@@ -107,7 +129,7 @@ Debugging
 * Uncheck "Suppress JIT optimization on module load (Managed only)"
 * Uncheck "Enable Edit and Continue"
 * Uncheck "Enable JavaScript debugging for ASP.NET (Chrome and IE)"
-
+* Uncheck "Enable Diagnostic Tools while debugging"
 
 Debugging -> Just-In-Time
 * Uncheck "Script"
@@ -121,5 +143,8 @@ Disable Browser link
 ![](/assets/browser-link.png)
 
 
+
+
+[Refrence](http://medium.com/burak-tasci/tweaking-the-environment-to-speed-up-visual-studio-79cd1920fed9)
 
 Feedback and questions are welcome in the comments below.
