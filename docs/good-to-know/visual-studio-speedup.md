@@ -70,7 +70,7 @@ Also you can exclude your project directory from Windows Defender or your AntiVi
 
 Windows Indexing Service pull disk I/O to 100% when you build project or installing packages,
 you can disable indexing service at all or just exclude your project directory from indexing 
-**Note that by disabling this feature you can still search but without indexing ** ,it will be slower a little bit
+** Note that by disabling this feature you can still search but without indexing ** ,it will be slower a little bit
 
 Open Control Panel and go to Indexing Options.
 
