@@ -1,81 +1,23 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="14.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+<Project Sdk="Microsoft.NET.Sdk">
+
   <PropertyGroup>
-    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{FCDA72A2-D377-4AA1-A8C5-E6C6805BCB64}</ProjectGuid>
-    <OutputType>Library</OutputType>
-    <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Bit.Core</RootNamespace>
-    <AssemblyName>Bit.Core</AssemblyName>
-    <TargetFrameworkVersion>v4.7</TargetFrameworkVersion>
-    <FileAlignment>512</FileAlignment>
-    <TargetFrameworkProfile />
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <Version>0.0.1.6</Version>
+    <Authors>Bit Foundation</Authors>
+    <Company>Bit Foundation</Company>
+    <Product>Bit Framework</Product>
+    <Description>Bit.Core</Description>
+    <Copyright>Copyright © Bit Foundation 2017</Copyright>
+    <PackageLicenseUrl>https://github.com/bit-foundation/bit-framework/blob/master/LICENSE</PackageLicenseUrl>
+    <PackageProjectUrl>https://github.com/bit-foundation/bit-framework</PackageProjectUrl>
+    <PackageIconUrl>https://avatars.githubusercontent.com/u/22663390</PackageIconUrl>
+    <RepositoryUrl>https://github.com/bit-foundation/bit-framework</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageTags>Bit</PackageTags>
+    <AssemblyVersion>0.0.1.6</AssemblyVersion>
+    <FileVersion>0.0.1.6</FileVersion>
+    <PackageReleaseNotes>https://github.com/bit-foundation/bit-framework/releases</PackageReleaseNotes>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <DebugSymbols>true</DebugSymbols>
-    <DebugType>full</DebugType>
-    <Optimize>false</Optimize>
-    <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-    <DocumentationFile>bin\Debug\Bit.Core.xml</DocumentationFile>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <DebugType>pdbonly</DebugType>
-    <Optimize>true</Optimize>
-    <OutputPath>bin\Release\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-    <DocumentationFile>bin\Release\Bit.Core.xml</DocumentationFile>
-  </PropertyGroup>
-  <ItemGroup>
-    <Reference Include="System" />
-  </ItemGroup>
-  <ItemGroup>
-    <Compile Include="AssemblyContainer.cs" />
-    <Compile Include="Contracts\IAppEnvironmentProvider.cs" />
-    <Compile Include="Contracts\IAppEvents.cs" />
-    <Compile Include="Contracts\IBackgroundJobWorker.cs" />
-    <Compile Include="Contracts\ICertificateProvider.cs" />
-    <Compile Include="Contracts\IContentFormatter.cs" />
-    <Compile Include="Contracts\IDateTimeProvider.cs" />
-    <Compile Include="Contracts\IDependenciesManagerProvider.cs" />
-    <Compile Include="Contracts\IDependencyManager.cs" />
-    <Compile Include="Contracts\IIraninCodeValidator.cs" />
-    <Compile Include="Contracts\ILogger.cs" />
-    <Compile Include="Contracts\ILogStore.cs" />
-    <Compile Include="Contracts\IMessageContentFormatter.cs" />
-    <Compile Include="Contracts\IMessageSender.cs" />
-    <Compile Include="Contracts\IPathProvider.cs" />
-    <Compile Include="Contracts\IRandomStringProvider.cs" />
-    <Compile Include="Contracts\IRequestInformationProvider.cs" />
-    <Compile Include="Contracts\IScopeStatusManager.cs" />
-    <Compile Include="Contracts\IStringCorrector.cs" />
-    <Compile Include="Contracts\IUserInformationProvider.cs" />
-    <Compile Include="Contracts\IDependenciesManager.cs" />
-    <Compile Include="Extensions\AssemblyExtensions.cs" />
-    <Compile Include="Extensions\IEnumerableExtensions.cs" />
-    <Compile Include="Extensions\IQueryableExtensions.cs" />
-    <Compile Include="Implementations\DefaultDateTimeProvider.cs" />
-    <Compile Include="Implementations\DefaultIraninCodeValidator.cs" />
-    <Compile Include="Extensions\PlatformUtilities.cs" />
-    <Compile Include="Implementations\DefaultScopeStatusManager.cs" />
-    <Compile Include="Models\AppEnvironment.cs" />
-    <Compile Include="Models\LogData.cs" />
-    <Compile Include="Models\LogEntry.cs" />
-    <Compile Include="Properties\AssemblyContainer.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
-  </ItemGroup>
-  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
-       Other similar extension points exist, see Microsoft.Common.targets.
-  <Target Name="BeforeBuild">
-  </Target>
-  <Target Name="AfterBuild">
-  </Target>
-  -->
+
 </Project>
