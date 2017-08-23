@@ -46,8 +46,8 @@
     <Compile Include="Contracts\IArchivableDto.cs" />
     <Compile Include="Contracts\IArchivableEntity.cs" />
     <Compile Include="Contracts\IDto.cs" />
-    <Compile Include="Contracts\IDtoModelMapper.cs" />
-    <Compile Include="Contracts\IDtoModelMapperConfiguration.cs" />
+    <Compile Include="Contracts\IDtoEntityMapper.cs" />
+    <Compile Include="Contracts\IDtoEntityMapperConfiguration.cs" />
     <Compile Include="Contracts\IDtoWithDefaultGuidKey.cs" />
     <Compile Include="Contracts\IDtoWithDefaultKey.cs" />
     <Compile Include="Contracts\IEntity.cs" />
@@ -59,7 +59,7 @@
     <Compile Include="DomainModels\UserSetting.cs" />
     <Compile Include="Dtos\ClientLogDto.cs" />
     <Compile Include="Dtos\JobInfoDto.cs" />
-    <Compile Include="Implementations\DefaultDtoModelMapperConfiguration.cs" />
+    <Compile Include="Implementations\DefaultDtoEntityMapperConfiguration.cs" />
     <Compile Include="Implementations\DtoMetadataWorkspace.cs" />
     <Compile Include="Properties\AssemblyContainer.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

@@ -5,7 +5,7 @@ using Bit.Tests.Model.Dto;
 
 namespace Bit.Tests.Model.Implementations
 {
-    public class TestDtoModelMapperConfiguration : IDtoModelMapperConfiguration
+    public class TestDtoEntityMapperConfiguration : IDtoEntityMapperConfiguration
     {
         public virtual void Configure(IMapperConfigurationExpression mapperConfigExpression)
         {

@@ -467,7 +467,7 @@
     <Compile Include="Api\AppStartupTests.cs" />
     <Compile Include="Api\Middlewares\WebApi\Tests\ODataSqlBuilderTests.cs" />
     <Compile Include="BitOwinCoreTestDependenciesManagerProvider.cs" />
-    <Compile Include="Api\Implementations\Project\TestEdmModelProvider.cs" />
+    <Compile Include="Api\Implementations\Project\TestODataModelBuilder.cs" />
     <Compile Include="BitOwinTestDependenciesManagerProvider.cs" />
     <Compile Include="BitTestAppEnvironmentProvider.cs" />
     <Compile Include="HtmlClient\ViewModel\Implementation\LookupsTests.cs" />
@@ -486,7 +486,7 @@
     <Compile Include="Api\Middlewares\Tests\SignInPageMiddlewareTests.cs" />
     <Compile Include="Api\Middlewares\Tests\StaticFilesMiddlewareTests.cs" />
     <Compile Include="Api\Middlewares\TestWebApiCoreMvcMiddlewareConfiguration.cs" />
-    <Compile Include="Api\Middlewares\WebApi\Tests\AutoEdmBuilderCustomODataActionsTests.cs" />
+    <Compile Include="Api\Middlewares\WebApi\Tests\AutoODataModelBuilderCustomODataActionsTests.cs" />
     <Compile Include="Api\Middlewares\WebApi\Tests\BatchRequestsTests.cs" />
     <Compile Include="Api\Middlewares\WebApi\Tests\ExceptionHandlerFilterAttributeTests.cs" />
     <Compile Include="Api\Middlewares\WebApi\Tests\LogOperationArgsFilterAttributeTests.cs" />
@@ -536,7 +536,7 @@
     <Compile Include="Model\Dto\TestComplexDto.cs" />
     <Compile Include="Model\Dto\TestCustomerDto.cs" />
     <Compile Include="Model\Dto\ValidationSampleDto.cs" />
-    <Compile Include="Model\Implementations\TestDtoModelMapperConfiguration.cs" />
+    <Compile Include="Model\Implementations\TestDtoEntityMapperConfiguration.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyContainer.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

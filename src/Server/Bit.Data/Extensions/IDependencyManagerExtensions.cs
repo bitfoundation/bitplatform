@@ -10,16 +10,16 @@ namespace Bit.Core.Contracts
 {
     public static class IDependencyManagerExtensions
     {
-        public static IDependencyManager RegisterDtoModelMapper(this IDependencyManager dependencyManager)
+        public static IDependencyManager RegisterDtoEntityMapper(this IDependencyManager dependencyManager)
         {
             if (dependencyManager == null)
                 throw new ArgumentNullException(nameof(dependencyManager));
 
-            dependencyManager.RegisterGeneric(typeof(IDtoModelMapper<,>).GetTypeInfo(), typeof(DefaultDtoModelMapper<,>).GetTypeInfo(), DependencyLifeCycle.SingleInstance);
+            dependencyManager.RegisterGeneric(typeof(IDtoEntityMapper<,>).GetTypeInfo(), typeof(DefaultDtoEntityMapper<,>).GetTypeInfo(), DependencyLifeCycle.SingleInstance);
 
             dependencyManager.RegisterUsing(() =>
             {
-                IEnumerable<IDtoModelMapperConfiguration> configs = dependencyManager.Resolve<IEnumerable<IDtoModelMapperConfiguration>>();
+                IEnumerable<IDtoEntityMapperConfiguration> configs = dependencyManager.Resolve<IEnumerable<IDtoEntityMapperConfiguration>>();
 
                 MapperConfiguration mapperConfig = new MapperConfiguration(cfg =>
                 {
@@ -35,13 +35,13 @@ namespace Bit.Core.Contracts
             return dependencyManager;
         }
 
-        public static IDependencyManager RegisterDtoModelMapperConfiguration<TDtoModelMapperConfiguration>(this IDependencyManager dependencyManager)
-            where TDtoModelMapperConfiguration : class, IDtoModelMapperConfiguration
+        public static IDependencyManager RegisterDtoEntityMapperConfiguration<TDtoEntityMapperConfiguration>(this IDependencyManager dependencyManager)
+            where TDtoEntityMapperConfiguration : class, IDtoEntityMapperConfiguration
         {
             if (dependencyManager == null)
                 throw new ArgumentNullException(nameof(dependencyManager));
 
-            dependencyManager.Register<IDtoModelMapperConfiguration, TDtoModelMapperConfiguration>(lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExciting: false);
+            dependencyManager.Register<IDtoEntityMapperConfiguration, TDtoEntityMapperConfiguration>(lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExciting: false);
 
             return dependencyManager;
         }

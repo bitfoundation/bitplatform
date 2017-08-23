@@ -2,7 +2,7 @@
 
 namespace Bit.Model.Contracts
 {
-    public interface IDtoModelMapperConfiguration
+    public interface IDtoEntityMapperConfiguration
     {
         void Configure(IMapperConfigurationExpression mapperConfigExpression);
     }

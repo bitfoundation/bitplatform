@@ -12,9 +12,9 @@ using System.Web.OData;
 
 namespace Bit.OData.ODataControllers
 {
-    public class DtoSetController<TDto, TModel, TKey> : DtoController<TDto>
+    public class DtoSetController<TDto, TEntity, TKey> : DtoController<TDto>
         where TDto : class, IDtoWithDefaultKey<TKey>
-        where TModel : class, IEntityWithDefaultKey<TKey>
+        where TEntity : class, IEntityWithDefaultKey<TKey>
     {
 #if DEBUG
         protected DtoSetController()
@@ -22,7 +22,7 @@ namespace Bit.OData.ODataControllers
         }
 #endif
 
-        public DtoSetController(IRepository<TModel> repository)
+        public DtoSetController(IRepository<TEntity> repository)
         {
             if (repository == null)
                 throw new ArgumentNullException(nameof(repository));
@@ -30,18 +30,18 @@ namespace Bit.OData.ODataControllers
             Repository = repository;
         }
 
-        protected IRepository<TModel> Repository { get; set; }
+        protected IRepository<TEntity> Repository { get; set; }
 
         /// <summary>
         /// Optional Dependency. You can override FromDtoToModel and GetAll.
         /// </summary>
-        public virtual IDtoModelMapper<TDto, TModel> DtoModelMapper { get; set; }
+        public virtual IDtoEntityMapper<TDto, TEntity> DtoEntityMapper { get; set; }
 
         public virtual IEnumerable<IDataProviderSpecificMethodsProvider> DataProviderSpecificMethodsProviders { get; set; }
 
-        protected virtual TModel FromDtoToModel(TDto dto)
+        protected virtual TEntity FromDtoToEntity(TDto dto)
         {
-            return DtoModelMapper.FromDtoToModel(dto);
+            return DtoEntityMapper.FromDtoToEntity(dto);
         }
 
         [Create]
@@ -50,9 +50,9 @@ namespace Bit.OData.ODataControllers
             if (dto == null)
                 throw new ArgumentNullException(nameof(dto));
 
-            TModel model = await Repository.AddAsync(FromDtoToModel(dto), cancellationToken);
+            TEntity entity = await Repository.AddAsync(FromDtoToEntity(dto), cancellationToken);
 
-            return await GetById(model.Id, cancellationToken);
+            return await GetById(entity.Id, cancellationToken);
         }
 
         protected virtual async Task<TDto> GetById(TKey key, CancellationToken cancellationToken)
@@ -101,8 +101,8 @@ namespace Bit.OData.ODataControllers
         [Delete]
         public virtual async Task Delete(TKey key, CancellationToken cancellationToken)
         {
-            TModel model = await Repository.GetByIdAsync(cancellationToken, key);
-            await Repository.DeleteAsync(model, cancellationToken);
+            TEntity entity = await Repository.GetByIdAsync(cancellationToken, key);
+            await Repository.DeleteAsync(entity, cancellationToken);
         }
 
         [PartialUpdate]
@@ -127,12 +127,12 @@ namespace Bit.OData.ODataControllers
             if (dto == null)
                 throw new ArgumentNullException(nameof(dto));
 
-            TModel model = FromDtoToModel(dto);
+            TEntity entity = FromDtoToEntity(dto);
 
-            if (!EqualityComparer<TKey>.Default.Equals(key, model.Id))
+            if (!EqualityComparer<TKey>.Default.Equals(key, entity.Id))
                 throw new BadRequestException();
 
-            model = await Repository.UpdateAsync(model, cancellationToken);
+            entity = await Repository.UpdateAsync(entity, cancellationToken);
 
             return await GetById(key, cancellationToken);
         }
@@ -140,7 +140,7 @@ namespace Bit.OData.ODataControllers
         [Get]
         public virtual async Task<IQueryable<TDto>> GetAll(CancellationToken cancellationToken)
         {
-            return DtoModelMapper.FromModelQueryToDtoQuery(await Repository.GetAllAsync(cancellationToken));
+            return DtoEntityMapper.FromEntityQueryToDtoQuery(await Repository.GetAllAsync(cancellationToken));
         }
     }
 }

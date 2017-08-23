@@ -36,7 +36,7 @@ namespace System.Reflection
 
 namespace Bit.OData.Implementations
 {
-    public class DefaultAutoEdmBuilderParameterInfo
+    public class DefaultAutoODataModelBuilderParameterInfo
     {
         public string Name { get; set; }
 
@@ -45,13 +45,13 @@ namespace Bit.OData.Implementations
         public bool IsOptional => Type.IsClass || Nullable.GetUnderlyingType(Type) != null;
     }
 
-    public class DefaultAutoEdmBuilder : IAutoEdmBuilder
+    public class DefaultAutoODataModelBuilder : IAutoODataModelBuilder
     {
         private readonly MethodInfo _buildControllerOperations;
         private readonly MethodInfo _buildDto;
         private readonly MethodInfo _collectionParameterMethodInfo;
 
-        public DefaultAutoEdmBuilder()
+        public DefaultAutoODataModelBuilder()
         {
             _buildControllerOperations = GetType().GetTypeInfo().GetMethod(nameof(BuildControllerOperations), BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.DeclaredOnly);
 
@@ -60,17 +60,17 @@ namespace Bit.OData.Implementations
             _collectionParameterMethodInfo = typeof(ActionConfiguration).GetTypeInfo().GetMethod(nameof(ActionConfiguration.CollectionParameter));
         }
 
-        public virtual void AutoBuildEdmFromAssembly(Assembly assembly, ODataModelBuilder modelBuilder)
+        public virtual void AutoBuildODatModelFromAssembly(Assembly assembly, ODataModelBuilder modelBuilder)
         {
             List<TypeInfo> controllers = assembly
                 .GetLoadableExportedTypes()
                 .Where(t => t.IsDtoController())
                 .ToList();
 
-            AutoBuildEdmFromTypes(controllers, modelBuilder);
+            AutoBuildODataModelFromTypes(controllers, modelBuilder);
         }
 
-        public virtual void AutoBuildEdmFromTypes(IEnumerable<TypeInfo> controllers, ODataModelBuilder modelBuilder)
+        public virtual void AutoBuildODataModelFromTypes(IEnumerable<TypeInfo> controllers, ODataModelBuilder odataModelBuilder)
         {
             var controllersWithDto = controllers
                 .Select(c => new
@@ -83,32 +83,32 @@ namespace Bit.OData.Implementations
 
             foreach (var controllerWithDto in controllersWithDto)
             {
-                _buildDto.MakeGenericMethod(controllerWithDto.DtoType).Invoke(this, new object[] { modelBuilder, controllerWithDto.Controller });
+                _buildDto.MakeGenericMethod(controllerWithDto.DtoType).Invoke(this, new object[] { odataModelBuilder, controllerWithDto.Controller });
             }
 
             foreach (var controllerWithDto in controllersWithDto)
             {
                 if (controllerWithDto.Controller.IsGenericType)
                     continue;
-                _buildControllerOperations.MakeGenericMethod(controllerWithDto.DtoType).Invoke(this, new object[] { modelBuilder, controllerWithDto.Controller });
+                _buildControllerOperations.MakeGenericMethod(controllerWithDto.DtoType).Invoke(this, new object[] { odataModelBuilder, controllerWithDto.Controller });
             }
         }
 
-        private void BuildDto<TDto>(ODataModelBuilder modelBuilder, TypeInfo apiController)
+        private void BuildDto<TDto>(ODataModelBuilder odataModelBuilder, TypeInfo apiController)
              where TDto : class
         {
             TypeInfo dtoType = typeof(TDto).GetTypeInfo();
             string controllerName = GetControllerName(apiController);
-            EntitySetConfiguration<TDto> entitySet = modelBuilder.EntitySet<TDto>(controllerName);
+            EntitySetConfiguration<TDto> entitySet = odataModelBuilder.EntitySet<TDto>(controllerName);
             if (GetBaseType(dtoType) == null)
                 entitySet.EntityType.DerivesFromNothing();
         }
 
-        private void BuildControllerOperations<TDto>(ODataModelBuilder modelBuilder, TypeInfo apiController)
+        private void BuildControllerOperations<TDto>(ODataModelBuilder odataModelBuilder, TypeInfo apiController)
             where TDto : class
         {
             string controllerName = GetControllerName(apiController);
-            EntitySetConfiguration<TDto> entitySet = modelBuilder.EntitySet<TDto>(controllerName);
+            EntitySetConfiguration<TDto> entitySet = odataModelBuilder.EntitySet<TDto>(controllerName);
 
             foreach (MethodInfo method in apiController.GetMethods(BindingFlags.Instance | BindingFlags.Public | BindingFlags.DeclaredOnly))
             {
@@ -125,7 +125,7 @@ namespace Bit.OData.Implementations
                     if (!isFunction && !isAction)
                         continue;
 
-                    List<DefaultAutoEdmBuilderParameterInfo> operationParameters = new List<DefaultAutoEdmBuilderParameterInfo>();
+                    List<DefaultAutoODataModelBuilderParameterInfo> operationParameters = new List<DefaultAutoODataModelBuilderParameterInfo>();
 
                     if (isFunction)
                     {
@@ -133,7 +133,7 @@ namespace Bit.OData.Implementations
                         {
                             if (parameter.ParameterType.GetTypeInfo() == typeof(CancellationToken).GetTypeInfo() || typeof(ODataQueryOptions).IsAssignableFrom(parameter.ParameterType.GetTypeInfo()))
                                 continue;
-                            operationParameters.Add(new DefaultAutoEdmBuilderParameterInfo { Name = parameter.Name, Type = parameter.ParameterType.GetTypeInfo() });
+                            operationParameters.Add(new DefaultAutoODataModelBuilderParameterInfo { Name = parameter.Name, Type = parameter.ParameterType.GetTypeInfo() });
                         }
                     }
                     else if (isAction)
@@ -145,7 +145,7 @@ namespace Bit.OData.Implementations
                         if (parameter != null)
                         {
                             foreach (PropertyInfo prop in parameter.ParameterType.GetProperties(BindingFlags.Public | BindingFlags.Instance))
-                                operationParameters.Add(new DefaultAutoEdmBuilderParameterInfo { Name = prop.Name, Type = prop.PropertyType.GetTypeInfo() });
+                                operationParameters.Add(new DefaultAutoODataModelBuilderParameterInfo { Name = prop.Name, Type = prop.PropertyType.GetTypeInfo() });
                         }
                     }
 
@@ -156,7 +156,7 @@ namespace Bit.OData.Implementations
                     else if (isFunction)
                         operationConfiguration = entitySet.EntityType.Collection.Function(method.Name);
 
-                    foreach (DefaultAutoEdmBuilderParameterInfo operationParameter in operationParameters)
+                    foreach (DefaultAutoODataModelBuilderParameterInfo operationParameter in operationParameters)
                     {
                         TypeInfo parameterType = operationParameter.Type;
 

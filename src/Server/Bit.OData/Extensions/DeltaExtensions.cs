@@ -6,25 +6,25 @@ namespace System.Web.OData
 {
     public static class DeltaExtensions
     {
-        public static void Patch<TSourceDto, TSourceModel>(this Delta<TSourceDto> source, TSourceModel dest)
-            where TSourceDto : class, IDto
-            where TSourceModel : class, IEntity
+        public static void Patch<TDto, TEntity>(this Delta<TDto> sourceDto, TEntity destinationEntity)
+            where TDto : class, IDto
+            where TEntity : class, IEntity
         {
-            if (source == null)
-                throw new ArgumentNullException(nameof(source));
+            if (sourceDto == null)
+                throw new ArgumentNullException(nameof(sourceDto));
 
-            source.GetChangedPropertyNames()
+            sourceDto.GetChangedPropertyNames()
                 .ToList()
                 .ForEach(changedPropName =>
                 {
-                    PropertyInfo prop = typeof(TSourceModel).GetTypeInfo().GetProperty(changedPropName);
+                    PropertyInfo prop = typeof(TEntity).GetTypeInfo().GetProperty(changedPropName);
                     if (prop == null)
                         return;
                     object obj = null;
-                    source.TryGetPropertyValue(changedPropName, out obj);
+                    sourceDto.TryGetPropertyValue(changedPropName, out obj);
                     if (obj != null && !prop.PropertyType.IsInstanceOfType(obj))
                         return;
-                    prop.SetValue(dest, obj);
+                    prop.SetValue(destinationEntity, obj);
                 });
         }
     }

@@ -47,7 +47,7 @@
     <Compile Include="Contracts\IDbConnectionProvider.cs" />
     <Compile Include="Contracts\IRepository.cs" />
     <Compile Include="Contracts\IUnitOfWork.cs" />
-    <Compile Include="DefaultDtoModelMapper.cs" />
+    <Compile Include="DefaultDtoEntityMapper.cs" />
     <Compile Include="DefaultDbConnectionProvider.cs" />
     <Compile Include="Extensions\IDataReaderExtensions.cs" />
     <Compile Include="Extensions\IDependencyManagerExtensions.cs" />

@@ -97,8 +97,8 @@ namespace Bit.Tests
                     }).EnableSwaggerUi();
                 });
 
-                odataDependencyManager.RegisterEdmModelProvider<BitEdmModelProvider>();
-                odataDependencyManager.RegisterEdmModelProvider<TestEdmModelProvider>();
+                odataDependencyManager.RegisterODataModelBuilder<BitODataModelBuilder>();
+                odataDependencyManager.RegisterODataModelBuilder<TestODataModelBuilder>();
 
                 odataDependencyManager.RegisterWebApiODataMiddlewareUsingDefaultConfiguration();
             });
@@ -115,10 +115,10 @@ namespace Bit.Tests
             else
                 dependencyManager.RegisterEfCoreDbContext<TestDbContext, SqlDbContextObjectsProvider>();
 
-            dependencyManager.RegisterDtoModelMapper();
+            dependencyManager.RegisterDtoEntityMapper();
 
-            dependencyManager.RegisterDtoModelMapperConfiguration<DefaultDtoModelMapperConfiguration>();
-            dependencyManager.RegisterDtoModelMapperConfiguration<TestDtoModelMapperConfiguration>();
+            dependencyManager.RegisterDtoEntityMapperConfiguration<DefaultDtoEntityMapperConfiguration>();
+            dependencyManager.RegisterDtoEntityMapperConfiguration<TestDtoEntityMapperConfiguration>();
 
             dependencyManager.RegisterSingleSignOnServer<TestUserService, TestClientProvider>();
 

@@ -20,7 +20,7 @@ namespace Bit.OData
     public class WebApiODataMiddlewareConfiguration : IOwinMiddlewareConfiguration, IDisposable
     {
         private readonly AppEnvironment _activeAppEnvironment;
-        private readonly IEnumerable<IEdmModelProvider> _emdEdmModelProviders;
+        private readonly IEnumerable<IODataModelBuilder> _odataModelBuilders;
         private readonly IEnumerable<IWebApiConfigurationCustomizer> _webApiConfgurationCustomizers;
         private readonly System.Web.Http.Dependencies.IDependencyResolver _webApiDependencyResolver;
         private readonly IODataModelBuilderProvider _oDataModelBuilderProvider;
@@ -37,10 +37,10 @@ namespace Bit.OData
 #endif
 
         public WebApiODataMiddlewareConfiguration(IAppEnvironmentProvider appEnvironmentProvider,
-            IEnumerable<IEdmModelProvider> emdEdmModelProviders, IEnumerable<IWebApiConfigurationCustomizer> webApiConfgurationCustomizers, System.Web.Http.Dependencies.IDependencyResolver webApiDependencyResolver, IODataModelBuilderProvider oDataModelBuilderProvider, IWebApiOwinPipelineInjector webApiOwinPipelineInjector, IContainerBuilder containerBuilder)
+            IEnumerable<IODataModelBuilder> odataModelBuilders, IEnumerable<IWebApiConfigurationCustomizer> webApiConfgurationCustomizers, System.Web.Http.Dependencies.IDependencyResolver webApiDependencyResolver, IODataModelBuilderProvider oDataModelBuilderProvider, IWebApiOwinPipelineInjector webApiOwinPipelineInjector, IContainerBuilder containerBuilder)
         {
-            if (emdEdmModelProviders == null)
-                throw new ArgumentNullException(nameof(emdEdmModelProviders));
+            if (odataModelBuilders == null)
+                throw new ArgumentNullException(nameof(odataModelBuilders));
 
             if (appEnvironmentProvider == null)
                 throw new ArgumentNullException(nameof(appEnvironmentProvider));
@@ -61,7 +61,7 @@ namespace Bit.OData
                 throw new ArgumentNullException(nameof(containerBuilder));
 
             _activeAppEnvironment = appEnvironmentProvider.GetActiveAppEnvironment();
-            _emdEdmModelProviders = emdEdmModelProviders;
+            _odataModelBuilders = odataModelBuilders;
             _webApiConfgurationCustomizers = webApiConfgurationCustomizers;
             _webApiDependencyResolver = webApiDependencyResolver;
             _oDataModelBuilderProvider = oDataModelBuilderProvider;
@@ -95,16 +95,16 @@ namespace Bit.OData
 
             _webApiConfig.UseCustomContainerBuilder(() => _containerBuilder);
 
-            foreach (IGrouping<string, IEdmModelProvider> edmModelProviders in _emdEdmModelProviders.GroupBy(mp => mp.GetEdmName()))
+            foreach (IGrouping<string, IODataModelBuilder> odataModelBuilders in _odataModelBuilders.GroupBy(mp => mp.GetODataRoute()))
             {
-                ODataModelBuilder modelBuilder = _oDataModelBuilderProvider.GetODataModelBuilder(_webApiConfig, containerName: $"{edmModelProviders.Key}Context", @namespace: edmModelProviders.Key);
+                ODataModelBuilder modelBuilder = _oDataModelBuilderProvider.GetODataModelBuilder(_webApiConfig, containerName: $"{odataModelBuilders.Key}Context", @namespace: odataModelBuilders.Key);
 
-                foreach (IEdmModelProvider edmModelProvider in edmModelProviders)
+                foreach (IODataModelBuilder odataModelBuilder in odataModelBuilders)
                 {
-                    edmModelProvider.BuildEdmModel(modelBuilder);
+                    odataModelBuilder.BuildModel(modelBuilder);
                 }
 
-                string routeName = $"{edmModelProviders.Key}-odata";
+                string routeName = $"{odataModelBuilders.Key}-odata";
 
                 _odataBatchHandler = new DefaultODataBatchHandler(_server);
 
@@ -122,7 +122,7 @@ namespace Bit.OData
 
                 IEdmModel edmModel = modelBuilder.GetEdmModel();
 
-                _webApiConfig.MapODataServiceRoute(routeName, edmModelProviders.Key, builder =>
+                _webApiConfig.MapODataServiceRoute(routeName, odataModelBuilders.Key, builder =>
                 {
                     builder.AddService(ServiceLifetime.Singleton, sp => conventions);
                     builder.AddService(ServiceLifetime.Singleton, sp => edmModel);

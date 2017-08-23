@@ -8,7 +8,7 @@ using Simple.OData.Client;
 namespace Bit.Tests.Api.Middlewares.WebApi.Tests
 {
     [TestClass]
-    public class AutoEdmBuilderCustomODataActionsTests
+    public class AutoODataModelBuilderCustomODataActionsTests
     {
         /*It's all about action arguments and methods in custom odata actions
         Arguments:

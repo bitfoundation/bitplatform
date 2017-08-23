@@ -6,7 +6,7 @@ using Bit.Model.Contracts;
 
 namespace Bit.Model.Implementations
 {
-    public class DefaultDtoModelMapperConfiguration : IDtoModelMapperConfiguration
+    public class DefaultDtoEntityMapperConfiguration : IDtoEntityMapperConfiguration
     {
         public virtual void Configure(IMapperConfigurationExpression mapperConfigExpression)
         {
