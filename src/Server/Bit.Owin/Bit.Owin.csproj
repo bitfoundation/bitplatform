@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netstandard2.0</TargetFramework>
+    <TargetFramework>net461</TargetFramework>
     <PackageTags>Bit Microsoft Katana OWIN</PackageTags>
     <Version>0.0.1.6</Version>
     <Authors>Bit Foundation</Authors>
@@ -32,6 +32,10 @@
     <PackageReference Include="Newtonsoft.Json" Version="10.0.3" />
     <PackageReference Include="NWebsec.Owin" Version="2.3.1" />
     <PackageReference Include="RazorEngine" Version="3.10.0" />
+    <PackageReference Include="Microsoft.IdentityModel.Protocol.Extensions" Version="[1.0.4.403061554,2)" />
+    <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="[4.0.4.403061554,5)" />
+    <PackageReference Include="IdentityModel" Version="[1.13.1,2)" />
+    <PackageReference Include="Bit.Model" Version="[0.0.1.6]" />
   </ItemGroup>
 
   <ItemGroup>

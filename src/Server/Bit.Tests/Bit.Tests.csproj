@@ -10,6 +10,8 @@
   <ItemGroup>
     <PackageReference Include="MSTest.TestAdapter" Version="1.2.0-beta3" />
     <PackageReference Include="MSTest.TestFramework" Version="1.2.0-beta3" />
+    <PackageReference Include="Bit.Test" Version="[0.0.1.6]" />
+    <PackageReference Include="Selenium.WebDriver.ChromeDriver" Version="2.31.0" />
   </ItemGroup>
 
   <ItemGroup>

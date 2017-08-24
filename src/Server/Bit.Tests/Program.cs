@@ -1,6 +1,7 @@
 ﻿using Bit.Test;
 using System;
 using System.Diagnostics;
+using System.IO;
 
 namespace Bit.Tests
 {
@@ -8,6 +9,8 @@ namespace Bit.Tests
     {
         public static void Main(string[] args)
         {
+            Environment.CurrentDirectory = Path.Combine(Environment.CurrentDirectory, @"bin\debug\net461");
+
             Console.Title = "Bit Tests";
 
             using (BitOwinTestEnvironment testEnvironment = new BitOwinTestEnvironment(new TestEnvironmentArgs

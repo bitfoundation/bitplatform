@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netstandard2.0</TargetFramework>
+    <TargetFramework>net461</TargetFramework>
     <PackageTags>Bit Web API Rest Microsoft AspNet WebApi AspNetWebApi</PackageTags>
     <Version>0.0.1.6</Version>
     <Company>Bit Foundation</Company>
@@ -27,6 +27,7 @@
     <PackageReference Include="Microsoft.AspNet.WebApi.Owin" Version="5.2.3" />
     <PackageReference Include="Swashbuckle.Core" Version="5.6.0" />
     <PackageReference Include="WebApiCorrelator" Version="1.1.0" />
+    <PackageReference Include="Bit.Owin" Version="[0.0.1.6]" />
   </ItemGroup>
 
   <ItemGroup>

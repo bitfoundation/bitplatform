@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netstandard2.0</TargetFramework>
+    <TargetFramework>net461</TargetFramework>
     <PackageTags>Bit Web API OData Rest Microsoft AspNet WebApi AspNetWebApi</PackageTags>
     <Version>0.0.1.6</Version>
     <Authors>Bit Foundation</Authors>
@@ -23,7 +23,8 @@
   <ItemGroup>
     <PackageReference Include="Bit.Microsoft.AspNet.OData" Version="6.0.0" />
     <PackageReference Include="Bit.Swashbuckle.OData.Beta" Version="4.0.4" />
-    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="2.0.0.0" />
+    <PackageReference Include="Bit.Data" Version="[0.0.1.6]" />
+    <PackageReference Include="Bit.WebApi" Version="[0.0.1.6]" />
   </ItemGroup>
 
   <ItemGroup>

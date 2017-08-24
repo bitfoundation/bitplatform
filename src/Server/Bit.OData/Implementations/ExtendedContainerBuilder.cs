@@ -18,7 +18,7 @@ namespace Bit.OData.Implementations
 
             IServiceCollection services = (IServiceCollection)GetType().GetTypeInfo().BaseType.GetField(nameof(services), BindingFlags.NonPublic | BindingFlags.Instance).GetValue(this);
 
-            return services.BuildServiceProvider(); // This line needs recompile against MS.Extensions.DI 2.0
+            return (IServiceProvider)services.GetType().GetTypeInfo().Assembly.GetType(typeof(ServiceCollectionContainerBuilderExtensions).GetTypeInfo().FullName).GetMethod(nameof(ServiceCollectionContainerBuilderExtensions.BuildServiceProvider), new[] { typeof(IServiceCollection) }).Invoke(null, new object[] { services });
         }
 
         protected virtual void AddDefaultServices()
