@@ -25,9 +25,8 @@
     <PackageReference Include="Autofac.Owin" Version="4.1.0" />
     <PackageReference Include="IdentityServer3.AccessTokenValidation" Version="2.15.0" />
     <PackageReference Include="Lambda2Js" Version="3.0.1" />
-    <PackageReference Include="LambdaSqlBuilder" Version="0.9.0" />
-    <PackageReference Include="Microsoft.Owin" Version="3.1.0" />
-    <PackageReference Include="Microsoft.Owin.FileSystems" Version="3.1.0" />
+    <PackageReference Include="Microsoft.AspNet.Razor" Version="3.2.3" />
+    <PackageReference Include="Microsoft.Owin.Security.Jwt" Version="3.1.0" />
     <PackageReference Include="Microsoft.Owin.StaticFiles" Version="3.1.0" />
     <PackageReference Include="Newtonsoft.Json" Version="10.0.3" />
     <PackageReference Include="NWebsec.Owin" Version="2.3.1" />
@@ -36,6 +35,7 @@
     <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="[4.0.4.403061554,5)" />
     <PackageReference Include="IdentityModel" Version="[1.13.1,2)" />
     <PackageReference Include="Bit.Model" Version="[0.0.1.6]" />
+    <PackageReference Include="System.Net.Http" Version="4.3.2" />
   </ItemGroup>
 
   <ItemGroup>

@@ -25,8 +25,8 @@
     <PackageReference Include="HangFire.Azure.ServiceBusQueue" Version="2.2.0" />
     <PackageReference Include="Hangfire.Core" Version="1.6.15" />
     <PackageReference Include="Hangfire.MemoryStorage" Version="1.5.1" />
-    <PackageReference Include="Hangfire.SqlServer" Version="1.6.15" />
     <PackageReference Include="Bit.Owin" Version="[0.0.1.6]" />
+    <PackageReference Include="Hangfire.SqlServer" Version="1.6.15" />
   </ItemGroup>
 
   <ItemGroup>
