@@ -14,9 +14,11 @@ namespace Bit.Owin.Middlewares
         private readonly IAppEnvironmentProvider _appEnvironmentProvider;
         private readonly IPathProvider _pathProvider;
 
+#if DEBUG
         protected StaticFilesMiddlewareConfiguration()
         {
         }
+#endif
 
         public StaticFilesMiddlewareConfiguration(IAppEnvironmentProvider appEnvironmentProvider,
             IPathProvider pathProvider)

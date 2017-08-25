@@ -23,7 +23,7 @@ namespace Bit.Data.EntityFrameworkCore.Implementations
         }
 #endif
 
-        protected EfCoreRepository(EfCoreDbContextBase dbContext)
+        public EfCoreRepository(EfCoreDbContextBase dbContext)
         {
             if (dbContext == null)
                 throw new ArgumentNullException(nameof(dbContext));

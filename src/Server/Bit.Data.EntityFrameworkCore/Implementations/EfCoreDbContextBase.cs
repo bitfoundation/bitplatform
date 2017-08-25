@@ -10,13 +10,13 @@ namespace Bit.Data.EntityFrameworkCore.Implementations
         {
         }
 
-        protected EfCoreDbContextBase(DbContextOptions options)
+        public EfCoreDbContextBase(DbContextOptions options)
             : base(options)
         {
             ApplyDefaultConfig();
         }
 
-        protected EfCoreDbContextBase(string connectionString, IDbContextObjectsProvider dbContextCreationOptionsProvider)
+        public EfCoreDbContextBase(string connectionString, IDbContextObjectsProvider dbContextCreationOptionsProvider)
             : base(dbContextCreationOptionsProvider.GetDbContextOptions(connectionString).Options)
         {
             if (dbContextCreationOptionsProvider == null)

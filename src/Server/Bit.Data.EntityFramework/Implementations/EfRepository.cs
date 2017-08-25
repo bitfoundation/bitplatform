@@ -27,7 +27,7 @@ namespace Bit.Data.EntityFramework.Implementations
         }
 #endif
 
-        protected EfRepository(EfDbContextBase dbContext)
+        public EfRepository(EfDbContextBase dbContext)
         {
             if (dbContext == null)
                 throw new ArgumentNullException(nameof(dbContext));
