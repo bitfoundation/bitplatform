@@ -2,20 +2,38 @@
 
 **Prerequisites:**
 
-* Visual Studio 2015 Update 3 or [Visual Studio 2017](https://www.visualstudio.com/downloads/). We've supported Community, Professional and Enterprise editions[^1]
+1- ***Visual Studio***:
 
-* [.NET 4.7](https://www.microsoft.com/en-us/download/details.aspx?id=55168) Developer Pack[^2]
+    To develop traditional ASP.NET projects, you can use any versions of Visual Studio from Visual Studio 2015 Update 3 to Visual Studio 2017 Update 3 with ASP.NET workload installed.
 
-**Steps:**
+    To develop ASP.NET Core 1.0 projects, you can use any versions of Visual Studio from Visual Studio 2017 to Visual Studio 2017 Update 3 with ASP.NET Core workload installed.
 
-* In Visual Studio open "Tools &gt; Options &gt; Environment &gt; Extensions and updates" and add [https://myget.org/F/bit-foundation/vsix](https://myget.org/F/bit-foundation/vsix) as additional extension gallery. Then install **Bit VS Extension V1** from Tools &gt; Extensions and updates
+    To develop ASP.NET Core 2.0 projects, you've to install Visual Studio 2017 Update 3 with ASP.NET Core workload installed.
 
-Following video shows you how to do that. You're welcome to put comments on our youtube videos too.
+    Download Visual Studio from [here](https://www.visualstudio.com/downloads/).
 
-{% youtube %}
-https://youtu.be/zT8mxN-zf4I
-{% endyoutube %}
 
-[^1]: We're going to support [Jet brains Rider IDE](https://www.jetbrains.com/rider/), [Visual Studio Code](https://code.visualstudio.com/) and [Visual Studio for mac](https://www.visualstudio.com/vs/visual-studio-mac/). In a meaning time, you'll be able to develop on mac and linux too. Follow these issues links to get notified whenever these items get ready: [Rider](https://github.com/bit-foundation/bit-framework/issues/58), [Visual Studio Code](https://github.com/bit-foundation/bit-framework/issues/57) and [Visual Studio for mac](https://github.com/bit-foundation/bit-framework/issues/56).
+2- ***[.NET Core SDK](https://www.microsoft.com/net/download/core)*** >> For ASP .NET Core development only
 
-[^2]: You can install .NET 4.7 on [Windows 7 SP1], [2008 R2 SP1], [8.1], [2012], [10 Anniversary update+] and [2016]. For Windows 7 SP1, 2008 R2 SP1 and 2012, you've to install [d3dcompiler](https://support.microsoft.com/en-us/help/4020302) first.
+3- ***[.NET 4.6.1](https://www.microsoft.com/en-us/download/details.aspx?id=49978) Developer Pack***
+
+
+**Which of them shoud I choose?**
+
+Note that based on bit framework's abstractions, **there's no difference between codes of developers who are running their app on top of traditional ASP .NET or the new ASP .NET Core one**.
+
+Bit is based on [OWIN](http://owin.org) abstractions. Owin stands for **Open Web Interface for .NET**.
+
+Both ASP .NET and ASP .NET Core have support for OWIN. See [here](https://www.nuget.org/packages/Microsoft.Owin.Host.SystemWeb/) and [here](https://www.nuget.org/packages/Microsoft.AspNetCore.Owin/) You can Also self host Owin apps inside windows services, console application etc using [Owin Self Host](https://www.nuget.org/packages/Microsoft.Owin.SelfHost/).
+
+ASP .NET apps run on Full .NET Framework, which means you've to run them on Windows only. ASP .NET Core apps have two options, run on Full .NET Framework or run on .NET Core.
+
+Bit has supported both traditional ASP .NET and ASP .NET Core with Full .NET Framework, and we're working on [.NET Core support](https://github.com/bit-foundation/bit-framework/issues/59).
+
+There are several good news here: 
+    
+    1- **There will be no code change required** for you to switch from ASP .NET Core with Full .NET Framework to ASP .NET Core with .NET Core.
+
+    2- We'll achieve this goal soon. (: (After they released .NET Core 2.1)
+
+We recommend you to start with ASP.NET Core with Full .NET Framework, and start an easy switch whenever we announced our .NET Core support.
