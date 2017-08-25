@@ -10,7 +10,7 @@ namespace Bit.Core.Contracts
     public static class IDependencyManagerExtensions
     {
         public static IDependencyManager RegisterEfCoreDbContext<TDbContext, TDbContextObjectsProvider>(this IDependencyManager dependencyManager)
-            where TDbContext : DbContext
+            where TDbContext : EfCoreDbContextBase
             where TDbContextObjectsProvider : class, IDbContextObjectsProvider
         {
             if (dependencyManager == null)
