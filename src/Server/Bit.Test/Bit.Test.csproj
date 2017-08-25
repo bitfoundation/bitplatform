@@ -5,6 +5,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Bit.Simple.OData.Client" Version="5.0.0" />
     <PackageReference Include="FakeItEasy" Version="4.0.0" />
     <PackageReference Include="Microsoft.AspNet.SignalR.Client" Version="2.2.2" />
     <PackageReference Include="Microsoft.AspNetCore.TestHost" Version="2.0.0" />
@@ -13,7 +14,6 @@
     <PackageReference Include="Selenium.Support" Version="3.5.1" />
     <PackageReference Include="Selenium.WebDriver" Version="3.5.1" />
     <PackageReference Include="Selenium.WebDriver.ChromeDriver" Version="2.31.0" />
-    <PackageReference Include="Simple.OData.Client.Beta" Version="0.0.0.2" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="2.0.0" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="2.0.0" />
     <PackageReference Include="Microsoft.AspNetCore.Hosting" Version="2.0.0" />
