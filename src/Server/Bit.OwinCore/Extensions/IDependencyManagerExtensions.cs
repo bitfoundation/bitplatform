@@ -79,7 +79,7 @@ namespace Bit.Core.Contracts
             dependencyManager.Register<IExceptionToHttpErrorMapper, DefaultExceptionToHttpErrorMapper>(lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExciting: false);
             dependencyManager.Register<ITimeZoneManager, DefaultTimeZoneManager>(overwriteExciting: false);
             dependencyManager.Register<IRequestInformationProvider, AspNetCoreRequestInformationProvider>(overwriteExciting: false);
-            if (PlatformUtilities.IsRunningOnMono)
+            if (PlatformUtilities.IsRunningOnMono || PlatformUtilities.IsRunningOnDotNetCore)
                 dependencyManager.Register<IDataProtectionProvider, BasicDataProtectionProvider>(lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExciting: false);
             return dependencyManager;
         }
