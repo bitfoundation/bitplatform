@@ -6,7 +6,7 @@ using Bit.Model.Contracts;
 
 namespace BitChangeSetManager.DataAccess
 {
-    public class BitChangeSetManagerDtoModelMapperConfiguration : IDtoModelMapperConfiguration
+    public class BitChangeSetManagerDtoEntityMapperConfiguration : IDtoEntityMapperConfiguration
     {
         public virtual void Configure(IMapperConfigurationExpression mapperConfigExpression)
         {

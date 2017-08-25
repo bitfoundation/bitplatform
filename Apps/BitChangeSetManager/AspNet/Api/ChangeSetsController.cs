@@ -39,7 +39,7 @@ namespace BitChangeSetManager.Api
 
             int customersCount = await (await CustomersRepository.GetAllAsync(cancellationToken)).CountAsync(cancellationToken);
 
-            return DtoModelMapper.FromModelQueryToDtoQuery((await _changeSetsRepository.GetAllAsync(cancellationToken)), parameters: new { customersCount = customersCount });
+            return DtoEntityMapper.FromEntityQueryToDtoQuery((await _changeSetsRepository.GetAllAsync(cancellationToken)), parameters: new { customersCount = customersCount });
         }
 
         public override async Task<ChangeSetDto> Create(ChangeSetDto dto, CancellationToken cancellationToken)

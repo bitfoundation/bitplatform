@@ -113,8 +113,8 @@ namespace BitChangeSetManager.Core
                     }).EnableSwaggerUi();
                 });
 
-                odataDependencyManager.RegisterEdmModelProvider<BitEdmModelProvider>();
-                odataDependencyManager.RegisterEdmModelProvider<BitChangeSetManagerEdmModelProvider>();
+                odataDependencyManager.RegisterODataModelBuilder<BitODataModelBuilder>();
+                odataDependencyManager.RegisterODataModelBuilder<BitChangeSetManagerODataModelBuilder>();
                 odataDependencyManager.RegisterWebApiODataMiddlewareUsingDefaultConfiguration();
 
             });
@@ -130,10 +130,10 @@ namespace BitChangeSetManager.Core
 
             dependencyManager.RegisterEfDbContext<BitChangeSetManagerDbContext>();
 
-            dependencyManager.RegisterDtoModelMapper();
+            dependencyManager.RegisterDtoEntityMapper();
 
-            dependencyManager.RegisterDtoModelMapperConfiguration<DefaultDtoModelMapperConfiguration>();
-            dependencyManager.RegisterDtoModelMapperConfiguration<BitChangeSetManagerDtoModelMapperConfiguration>();
+            dependencyManager.RegisterDtoEntityMapperConfiguration<DefaultDtoEntityMapperConfiguration>();
+            dependencyManager.RegisterDtoEntityMapperConfiguration<BitChangeSetManagerDtoEntityMapperConfiguration>();
 
             dependencyManager.RegisterSingleSignOnServer<BitChangeSetManagerUserService, BitChangeSetManagerClientProvider>();
 

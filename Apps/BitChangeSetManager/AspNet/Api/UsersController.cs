@@ -18,14 +18,14 @@ namespace BitChangeSetManager.Api
 
         public IUserInformationProvider UserInformationProvider { get; set; }
 
-        public IDtoModelMapper<UserDto, User> DtoModelMapper { get; set; }
+        public IDtoEntityMapper<UserDto, User> DtoModelMapper { get; set; }
 
         [Function]
         public async Task<SingleResult<UserDto>> GetCurrentUser(CancellationToken cancellationToken)
         {
             Guid userId = Guid.Parse(UserInformationProvider.GetCurrentUserId());
 
-            return SingleResult.Create(DtoModelMapper.FromModelQueryToDtoQuery((await UsersRepository.GetAllAsync(cancellationToken)))
+            return SingleResult.Create(DtoModelMapper.FromEntityQueryToDtoQuery((await UsersRepository.GetAllAsync(cancellationToken)))
                  .Where(u => u.Id == userId));
         }
     }

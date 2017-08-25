@@ -85,8 +85,8 @@ namespace CustomerDtoControllerSample
                     }).EnableSwaggerUi();
                 });
 
-                odataDependencyManager.RegisterEdmModelProvider<BitEdmModelProvider>();
-                odataDependencyManager.RegisterEdmModelProvider<MyAppEdmModelProvider>();
+                odataDependencyManager.RegisterODataModelBuilder<BitODataModelBuilder>();
+                odataDependencyManager.RegisterODataModelBuilder<MyAppODataModelBuilder>();
                 odataDependencyManager.RegisterWebApiODataMiddlewareUsingDefaultConfiguration();
             });
 
@@ -95,29 +95,29 @@ namespace CustomerDtoControllerSample
             dependencyManager.RegisterAppEvents<MyAppDbContextInitializer>();
             dependencyManager.RegisterGeneric(typeof(IRepository<>).GetTypeInfo(), typeof(MyAppRepository<>).GetTypeInfo());
 
-            dependencyManager.RegisterDtoModelMapper();
-            dependencyManager.RegisterDtoModelMapperConfiguration<DefaultDtoModelMapperConfiguration>();
+            dependencyManager.RegisterDtoEntityMapper();
+            dependencyManager.RegisterDtoEntityMapperConfiguration<DefaultDtoEntityMapperConfiguration>();
         }
     }
 
-    public class MyAppEdmModelProvider : DefaultEdmModelProvider
+    public class MyAppODataModelBuilder : DefaultODataModelBuilder
     {
-        public MyAppEdmModelProvider(IAutoEdmBuilder autoEdmBuilder)
-            : base(autoEdmBuilder)
+        public MyAppODataModelBuilder(IAutoODataModelBuilder autoODataModelBuilder)
+            : base(autoODataModelBuilder)
         {
 
         }
 
-        public override string GetEdmName()
+        public override string GetODataRoute()
         {
             return "MyApp";
         }
 
-        public override void BuildEdmModel(ODataModelBuilder edmModelBuilder)
+        public override void BuildModel(ODataModelBuilder odataModelBuilder)
         {
-            // edmModelBuilder is useful for advanced scenarios.
+            // odataModelBuilder is useful for advanced scenarios.
 
-            base.BuildEdmModel(edmModelBuilder);
+            base.BuildModel(odataModelBuilder);
         }
     }
 
@@ -241,12 +241,12 @@ namespace CustomerDtoControllerSample
     {
         public virtual IRepository<Customer> CustomersRepository { get; set; }
 
-        public virtual IDtoModelMapper<CustomerDto, Customer> Mapper { get; set; }
+        public virtual IDtoEntityMapper<CustomerDto, Customer> Mapper { get; set; }
 
         [Function] // Using bit repository and bit mapper
         public virtual async Task<IQueryable<CustomerDto>> GetActiveCustomers(CancellationToken cancellationToken)
         {
-            return Mapper.FromModelQueryToDtoQuery((await CustomersRepository.GetAllAsync(cancellationToken)).Where(c => c.IsActive == true));
+            return Mapper.FromEntityQueryToDtoQuery((await CustomersRepository.GetAllAsync(cancellationToken)).Where(c => c.IsActive == true));
         }
 
         [Function] // Any thing you like, customer array, entity framework db context, dapper, mongo db etc.

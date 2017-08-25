@@ -1,20 +1,14 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
-    <TargetFramework>net47</TargetFramework>
+    <TargetFramework>net461</TargetFramework>
     <RuntimeIdentifier>win7-x86</RuntimeIdentifier>
   </PropertyGroup>
+
   <ItemGroup>
-    <PackageReference Include="Bit.Core" Version="0.0.6.4" />
-    <PackageReference Include="Bit.Data" Version="0.0.6.4" />
-    <PackageReference Include="Bit.Data.EntityFramework" Version="0.0.6.4" />
-    <PackageReference Include="Bit.Model" Version="0.0.6.4" />
-    <PackageReference Include="Bit.OData" Version="0.0.6.4" />
-    <PackageReference Include="Bit.Owin" Version="0.0.6.4" />
-    <PackageReference Include="Bit.OwinCore" Version="0.0.6.4" />
-    <PackageReference Include="Bit.WebApi" Version="0.0.6.4" />
-    <PackageReference Include="Microsoft.AspNetCore" Version="1.1.2" />
-    <PackageReference Include="Microsoft.OData.Core" Version="7.3.1" />
+    <PackageReference Include="Bit.Data.EntityFramework" Version="0.0.6.5" />
+    <PackageReference Include="Bit.OData" Version="0.0.6.5" />
+    <PackageReference Include="Bit.OwinCore" Version="0.0.6.5" />
   </ItemGroup>
   <ItemGroup>
     <Content Update="environments.json">
