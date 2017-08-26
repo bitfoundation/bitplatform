@@ -11,6 +11,7 @@
     "IIS Express": {
       "commandName": "IISExpress",
       "launchBrowser": true,
+      "launchUrl": "odata/swagger/ui/index#!/Customers/Customers_GetActiveCustomers",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
       }

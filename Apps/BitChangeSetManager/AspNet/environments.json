@@ -35,11 +35,6 @@
     ],
     "Configs": [
       {
-        "Key": "HostVirtualPath",
-        "Value": "/bit-change-set-manager/",
-        "AccessibleInClientSide": true
-      },
-      {
         "Key": "IdentityCertificatePassword",
         "Value": "P@ssw0rd"
       },

@@ -155,8 +155,9 @@ namespace EntityFrameworkOptimizedForNTierScenarios
         public static void Main(string[] args)
         {
 #if DEBUG
-
-            throw new InvalidOperationException("To achieve accurate results, set project configuration to release mode.");
+            Console.ForegroundColor = ConsoleColor.Yellow;
+            Console.WriteLine("*****To achieve accurate results, set project configuration to release mode.*****");
+            return;
 #endif
 
             Database.SetInitializer<CustomersDbContextForBitRepository>(null);

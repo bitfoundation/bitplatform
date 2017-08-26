@@ -5,11 +5,11 @@ using System.Web.OData.Builder;
 
 namespace BitChangeSetManager.Api.Implementations
 {
-    public class BitChangeSetManagerODataModelBuilder : IODataModelBuilder
+    public class BitChangeSetManagerODataServiceBuilder : IODataServiceBuilder
     {
         private readonly IAutoODataModelBuilder _autoEdmBuilder;
 
-        public BitChangeSetManagerODataModelBuilder(IAutoODataModelBuilder autoEdmBuilder)
+        public BitChangeSetManagerODataServiceBuilder(IAutoODataModelBuilder autoEdmBuilder)
         {
             if (autoEdmBuilder == null)
                 throw new ArgumentNullException(nameof(autoEdmBuilder));

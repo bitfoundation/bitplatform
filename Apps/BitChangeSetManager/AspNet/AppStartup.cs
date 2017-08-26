@@ -103,8 +103,8 @@ namespace BitChangeSetManager
                     }).EnableSwaggerUi();
                 });
 
-                odataDependencyManager.RegisterODataModelBuilder<BitODataModelBuilder>();
-                odataDependencyManager.RegisterODataModelBuilder<BitChangeSetManagerODataModelBuilder>();
+                odataDependencyManager.RegisterODataServiceBuilder<BitODataServiceBuilder>();
+                odataDependencyManager.RegisterODataServiceBuilder<BitChangeSetManagerODataServiceBuilder>();
                 odataDependencyManager.RegisterWebApiODataMiddlewareUsingDefaultConfiguration();
             });
 

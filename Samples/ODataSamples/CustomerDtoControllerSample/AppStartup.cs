@@ -85,8 +85,8 @@ namespace CustomerDtoControllerSample
                     }).EnableSwaggerUi();
                 });
 
-                odataDependencyManager.RegisterODataModelBuilder<BitODataModelBuilder>();
-                odataDependencyManager.RegisterODataModelBuilder<MyAppODataModelBuilder>();
+                odataDependencyManager.RegisterODataServiceBuilder<BitODataServiceBuilder>();
+                odataDependencyManager.RegisterODataServiceBuilder<MyAppODataServiceBuilder>();
                 odataDependencyManager.RegisterWebApiODataMiddlewareUsingDefaultConfiguration();
             });
 
@@ -100,24 +100,19 @@ namespace CustomerDtoControllerSample
         }
     }
 
-    public class MyAppODataModelBuilder : DefaultODataModelBuilder
+    public class MyAppODataServiceBuilder : IODataServiceBuilder
     {
-        public MyAppODataModelBuilder(IAutoODataModelBuilder autoODataModelBuilder)
-            : base(autoODataModelBuilder)
-        {
+        public IAutoODataModelBuilder AutoODataModelBuilder { get; set; }
 
-        }
-
-        public override string GetODataRoute()
+        public string GetODataRoute()
         {
             return "MyApp";
         }
 
-        public override void BuildModel(ODataModelBuilder odataModelBuilder)
+        public void BuildModel(ODataModelBuilder odataModelBuilder)
         {
             // odataModelBuilder is useful for advanced scenarios.
-
-            base.BuildModel(odataModelBuilder);
+            AutoODataModelBuilder.AutoBuildODatModelFromAssembly(typeof(MyAppODataServiceBuilder).GetTypeInfo().Assembly, odataModelBuilder);
         }
     }
 
