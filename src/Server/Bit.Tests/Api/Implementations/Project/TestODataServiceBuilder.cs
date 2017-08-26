@@ -5,11 +5,11 @@ using Bit.OData.Contracts;
 
 namespace Bit.Tests.Api.Implementations.Project
 {
-    public class TestODataModelBuilder : IODataModelBuilder
+    public class TestODataServiceBuilder : IODataServiceBuilder
     {
         private readonly IAutoODataModelBuilder _autoODataModelBuilder;
 
-        public TestODataModelBuilder(IAutoODataModelBuilder autoODataModelBuilder)
+        public TestODataServiceBuilder(IAutoODataModelBuilder autoODataModelBuilder)
         {
             if (autoODataModelBuilder == null)
                 throw new ArgumentNullException(nameof(autoODataModelBuilder));
@@ -17,7 +17,7 @@ namespace Bit.Tests.Api.Implementations.Project
             _autoODataModelBuilder = autoODataModelBuilder;
         }
 
-        protected TestODataModelBuilder()
+        protected TestODataServiceBuilder()
         {
 
         }

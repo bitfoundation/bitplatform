@@ -2,7 +2,7 @@
 
 namespace Bit.OData.Contracts
 {
-    public interface IODataModelBuilder
+    public interface IODataServiceBuilder
     {
         void BuildModel(ODataModelBuilder odataModelBuilder);
 

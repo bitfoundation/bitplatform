@@ -20,7 +20,7 @@ namespace Bit.OData
     public class WebApiODataMiddlewareConfiguration : IOwinMiddlewareConfiguration, IDisposable
     {
         private readonly AppEnvironment _activeAppEnvironment;
-        private readonly IEnumerable<IODataModelBuilder> _odataModelBuilders;
+        private readonly IEnumerable<IODataServiceBuilder> _odataServiceBuilders;
         private readonly IEnumerable<IWebApiConfigurationCustomizer> _webApiConfgurationCustomizers;
         private readonly System.Web.Http.Dependencies.IDependencyResolver _webApiDependencyResolver;
         private readonly IODataModelBuilderProvider _oDataModelBuilderProvider;
@@ -37,10 +37,10 @@ namespace Bit.OData
 #endif
 
         public WebApiODataMiddlewareConfiguration(IAppEnvironmentProvider appEnvironmentProvider,
-            IEnumerable<IODataModelBuilder> odataModelBuilders, IEnumerable<IWebApiConfigurationCustomizer> webApiConfgurationCustomizers, System.Web.Http.Dependencies.IDependencyResolver webApiDependencyResolver, IODataModelBuilderProvider oDataModelBuilderProvider, IWebApiOwinPipelineInjector webApiOwinPipelineInjector, IContainerBuilder containerBuilder)
+            IEnumerable<IODataServiceBuilder> odataServiceBuilders, IEnumerable<IWebApiConfigurationCustomizer> webApiConfgurationCustomizers, System.Web.Http.Dependencies.IDependencyResolver webApiDependencyResolver, IODataModelBuilderProvider oDataModelBuilderProvider, IWebApiOwinPipelineInjector webApiOwinPipelineInjector, IContainerBuilder containerBuilder)
         {
-            if (odataModelBuilders == null)
-                throw new ArgumentNullException(nameof(odataModelBuilders));
+            if (odataServiceBuilders == null)
+                throw new ArgumentNullException(nameof(odataServiceBuilders));
 
             if (appEnvironmentProvider == null)
                 throw new ArgumentNullException(nameof(appEnvironmentProvider));
@@ -61,7 +61,7 @@ namespace Bit.OData
                 throw new ArgumentNullException(nameof(containerBuilder));
 
             _activeAppEnvironment = appEnvironmentProvider.GetActiveAppEnvironment();
-            _odataModelBuilders = odataModelBuilders;
+            _odataServiceBuilders = odataServiceBuilders;
             _webApiConfgurationCustomizers = webApiConfgurationCustomizers;
             _webApiDependencyResolver = webApiDependencyResolver;
             _oDataModelBuilderProvider = oDataModelBuilderProvider;
@@ -95,16 +95,16 @@ namespace Bit.OData
 
             _webApiConfig.UseCustomContainerBuilder(() => _containerBuilder);
 
-            foreach (IGrouping<string, IODataModelBuilder> odataModelBuilders in _odataModelBuilders.GroupBy(mp => mp.GetODataRoute()))
+            foreach (IGrouping<string, IODataServiceBuilder> odataServiceBuilders in _odataServiceBuilders.GroupBy(mp => mp.GetODataRoute()))
             {
-                ODataModelBuilder modelBuilder = _oDataModelBuilderProvider.GetODataModelBuilder(_webApiConfig, containerName: $"{odataModelBuilders.Key}Context", @namespace: odataModelBuilders.Key);
+                ODataModelBuilder modelBuilder = _oDataModelBuilderProvider.GetODataModelBuilder(_webApiConfig, containerName: $"{odataServiceBuilders.Key}Context", @namespace: odataServiceBuilders.Key);
 
-                foreach (IODataModelBuilder odataModelBuilder in odataModelBuilders)
+                foreach (IODataServiceBuilder odataServiceBuilder in odataServiceBuilders)
                 {
-                    odataModelBuilder.BuildModel(modelBuilder);
+                    odataServiceBuilder.BuildModel(modelBuilder);
                 }
 
-                string routeName = $"{odataModelBuilders.Key}-odata";
+                string routeName = $"{odataServiceBuilders.Key}-odata";
 
                 _odataBatchHandler = new DefaultODataBatchHandler(_server);
 
@@ -122,7 +122,7 @@ namespace Bit.OData
 
                 IEdmModel edmModel = modelBuilder.GetEdmModel();
 
-                _webApiConfig.MapODataServiceRoute(routeName, odataModelBuilders.Key, builder =>
+                _webApiConfig.MapODataServiceRoute(routeName, odataServiceBuilders.Key, builder =>
                 {
                     builder.AddService(ServiceLifetime.Singleton, sp => conventions);
                     builder.AddService(ServiceLifetime.Singleton, sp => edmModel);

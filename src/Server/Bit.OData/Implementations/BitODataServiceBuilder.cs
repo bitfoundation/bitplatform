@@ -6,11 +6,11 @@ using Bit.OData.ODataControllers;
 
 namespace Bit.OData.Implementations
 {
-    public class BitODataModelBuilder : IODataModelBuilder
+    public class BitODataServiceBuilder : IODataServiceBuilder
     {
         private readonly IAutoODataModelBuilder _autoODataModelBuilder;
 
-        public BitODataModelBuilder(IAutoODataModelBuilder autoODataModelBuilder)
+        public BitODataServiceBuilder(IAutoODataModelBuilder autoODataModelBuilder)
         {
             if (autoODataModelBuilder == null)
                 throw new ArgumentNullException(nameof(autoODataModelBuilder));
@@ -19,7 +19,7 @@ namespace Bit.OData.Implementations
         }
 
 #if DEBUG
-        protected BitODataModelBuilder()
+        protected BitODataServiceBuilder()
         {
         }
 #endif

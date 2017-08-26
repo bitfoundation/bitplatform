@@ -16,13 +16,13 @@ namespace Bit.Core.Contracts
 {
     public static class IDependencyManagerExtensions
     {
-        public static IDependencyManager RegisterODataModelBuilder<TODataModelBuilder>(this IDependencyManager dependencyManager)
-            where TODataModelBuilder : class, IODataModelBuilder
+        public static IDependencyManager RegisterODataServiceBuilder<TODataServiceBuilder>(this IDependencyManager dependencyManager)
+            where TODataServiceBuilder : class, IODataServiceBuilder
         {
             if (dependencyManager == null)
                 throw new ArgumentNullException(nameof(dependencyManager));
 
-            dependencyManager.Register<IODataModelBuilder, TODataModelBuilder>(lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExciting: false);
+            dependencyManager.Register<IODataServiceBuilder, TODataServiceBuilder>(lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExciting: false);
 
             return dependencyManager;
         }

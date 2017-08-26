@@ -97,8 +97,8 @@ namespace Bit.Tests
                     }).EnableSwaggerUi();
                 });
 
-                odataDependencyManager.RegisterODataModelBuilder<BitODataModelBuilder>();
-                odataDependencyManager.RegisterODataModelBuilder<TestODataModelBuilder>();
+                odataDependencyManager.RegisterODataServiceBuilder<BitODataServiceBuilder>();
+                odataDependencyManager.RegisterODataServiceBuilder<TestODataServiceBuilder>();
 
                 odataDependencyManager.RegisterWebApiODataMiddlewareUsingDefaultConfiguration();
             });
