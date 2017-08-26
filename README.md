@@ -12,6 +12,8 @@ You can develop any of following app types using Bit:
 * Hybrid mobile apps using [Apache Cordova](https://cordova.apache.org/)
 * Native mobile apps using [Xamarin Forms](https://www.xamarin.com/forms) and [React Native](https://facebook.github.io/react-native)
 
+You can develop all these types of apps with Offline|Mobile first support. You also have access to RAD components such as Grid, MultiSelect etc.
+
 ## **Contribute**
 
 There are many ways to contribute

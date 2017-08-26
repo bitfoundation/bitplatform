@@ -8,21 +8,8 @@ By the abstraction we provide to you, you develop no matter you choose ASP.NET C
 
 > **[success]Recommendation:**
 >
-> Choose ASP.NET Core with Full .NET Framework. After we supported .NET Core, you can upgrade your app to .NET Core easily.
+> Choose ASP.NET Core with Full .NET Framework. After we supported .NET Core, you can upgrade your app to .NET Core easily. Note that not all apps should use .NET Core, due its limitations. As an example, Entity framework 6 (Which is not availble in .NET Core) has several important features you can't find in Entity framework core.
 
 We also watch your codes at realtime to inform you about common mistakes. For example, if you use some classes which are not part of ASP.NET Core / .NET Core, you'll see something like this:
 
 ![](/assets/WarnAboutNonASPNETCoreCompatilbeCodeUsage.png)
-
-**What we provide to you at server side:**
-
-* API-OData
-* Single sign on server
-* Background Job Worker
-* Real time communication
-* Data access
-* Test framework for your server side codes
-* Integrated Logging infrastructure
-* , ...
-
-Remember that you can use whatever you want. You're not limited to what we provide to you.
