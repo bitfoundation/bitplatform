@@ -1,5 +1,5 @@
 ﻿using System.Reflection;
-using Bit.IdentityServer.Implementations;
+using Bit.IdentityServer;
 
 namespace Bit.Core
 {
@@ -7,7 +7,7 @@ namespace Bit.Core
     {
         public static Assembly GetBitIdentityServerAssembly(this AssemblyContainer container)
         {
-            return typeof(ActiveDirectoryUserServiceProvider).GetTypeInfo().Assembly;
+            return typeof(IdentityServerMiddlewareConfiguration).GetTypeInfo().Assembly;
         }
     }
 }

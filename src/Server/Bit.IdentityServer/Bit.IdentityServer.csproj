@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net461</TargetFramework>
+    <TargetFrameworks>net461;netcoreapp2.0</TargetFrameworks>
     <PackageTags>Bit OAuth2 OAuth OpenID Security 2.0 Connect Identity IdentityServer</PackageTags>
     <Version>0.0.1.6</Version>
     <Authors>Bit Foundation</Authors>
@@ -20,6 +20,10 @@
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
   </PropertyGroup>
 
+  <ItemGroup Condition="'$(TargetFramework)' != 'net461'">
+    <Compile Remove="Implementations\ActiveDirectoryUserServiceProvider.cs" />
+  </ItemGroup>
+
   <ItemGroup>
     <PackageReference Include="AntiXSS" Version="4.3.0" />
     <PackageReference Include="IdentityServer3" Version="2.6.1" />
@@ -30,7 +34,7 @@
     <ProjectReference Include="..\Bit.Owin\Bit.Owin.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
+  <ItemGroup Condition="'$(TargetFramework)' == 'net461'">
     <Reference Include="System.DirectoryServices.AccountManagement" />
   </ItemGroup>
 
