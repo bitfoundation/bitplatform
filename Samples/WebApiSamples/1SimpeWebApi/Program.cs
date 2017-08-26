@@ -7,7 +7,7 @@ using Microsoft.Owin.Hosting;
 using Owin;
 using System;
 using System.Collections.Generic;
-using System.Net.Http;
+using System.Diagnostics;
 using System.Reflection;
 using System.Web.Http;
 
@@ -17,51 +17,21 @@ namespace SimpeWebApi
     {
         public static void Main(string[] args)
         {
-            string baseAddress = "http://localhost:9000/";
+            string baseAddress = "http://localhost:9001/";
 
-            // Start OWIN host 
             using (WebApp.Start<AppStartup>(url: baseAddress))
             {
-                // Create HttpCient and make a request to api/values 
-                HttpClient client = new HttpClient();
-
-                HttpResponseMessage response = client.GetAsync(baseAddress + "api/values").GetAwaiter().GetResult();
-
-                Console.WriteLine(response);
-                Console.WriteLine(response.Content.ReadAsStringAsync().GetAwaiter().GetResult());
+                Process.Start($"{baseAddress}api/values/");
                 Console.ReadLine();
             }
-
         }
     }
 
     public class ValuesController : ApiController
     {
-        // GET api/values 
         public IEnumerable<string> Get()
         {
             return new string[] { "value1", "value2" };
-        }
-
-        // GET api/values/5 
-        public string Get(int id)
-        {
-            return "value";
-        }
-
-        // POST api/values 
-        public void Post([FromBody]string value)
-        {
-        }
-
-        // PUT api/values/5 
-        public void Put(int id, [FromBody]string value)
-        {
-        }
-
-        // DELETE api/values/5 
-        public void Delete(int id)
-        {
         }
     }
 

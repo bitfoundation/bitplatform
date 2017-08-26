@@ -8,6 +8,7 @@ using Microsoft.Owin.Hosting;
 using Owin;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Net.Http;
 using System.Reflection;
 using System.Web.Http;
@@ -18,21 +19,13 @@ namespace WebApiDependencyInjection
     {
         public static void Main(string[] args)
         {
-            string baseAddress = "http://localhost:9000/";
+            string baseAddress = "http://localhost:9007/";
 
-            // Start OWIN host 
             using (WebApp.Start<AppStartup>(url: baseAddress))
             {
-                // Create HttpCient and make a request to api/values 
-                HttpClient client = new HttpClient();
-
-                HttpResponseMessage response = client.GetAsync(baseAddress + "api/values").GetAwaiter().GetResult();
-
-                Console.WriteLine(response);
-                Console.WriteLine(response.Content.ReadAsStringAsync().GetAwaiter().GetResult());
+                Process.Start($"{baseAddress}api/values/");
                 Console.ReadLine();
             }
-
         }
     }
 

@@ -8,8 +8,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Bit.OwinCore" Version="0.0.6.5" />
-    <PackageReference Include="Bit.WebApi" Version="0.0.6.5" />
+    <PackageReference Include="Bit.OwinCore" Version="0.0.6.6" />
+    <PackageReference Include="Bit.WebApi" Version="0.0.6.6" />
     <PackageReference Include="BitCodeAnalyzer" Version="1.1.7.6" />
   </ItemGroup>
   <ItemGroup>

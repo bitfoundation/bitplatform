@@ -25,11 +25,11 @@ namespace WebApiSwagger
     {
         public static void Main(string[] args)
         {
-            string baseAddress = "http://localhost:9000/";
+            string baseAddress = "http://localhost:9002/";
 
             using (WebApp.Start<AppStartup>(url: baseAddress))
             {
-                Process.Start("http://localhost:9000/api/swagger/");
+                Process.Start($"{baseAddress}api/swagger/");
                 Console.ReadLine();
             }
         }

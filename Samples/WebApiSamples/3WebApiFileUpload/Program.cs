@@ -21,7 +21,7 @@ namespace WebApiFileUpload
     {
         public static void Main(string[] args)
         {
-            string baseAddress = "http://localhost:9000/";
+            string baseAddress = "http://localhost:9003/";
 
             using (WebApp.Start<AppStartup>(url: baseAddress))
             {
@@ -31,7 +31,10 @@ namespace WebApiFileUpload
 
                     string filePath = Console.ReadLine();
 
-                    webClient.UploadFile($"{baseAddress}/api/file-manager/upload-files-to-folder" /* Client's url has /api */, filePath);
+                    if (!File.Exists(filePath))
+                        Console.WriteLine("File does not exists");
+                    else
+                        webClient.UploadFile($"{baseAddress}/api/file-manager/upload-files-to-folder" /* Client's url has /api */, filePath);
                 }
 
                 Console.ReadLine();
