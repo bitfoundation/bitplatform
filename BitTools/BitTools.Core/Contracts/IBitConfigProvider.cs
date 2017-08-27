@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-using BitTools.Core.Model;
-using Microsoft.CodeAnalysis;
+﻿using BitTools.Core.Model;
 
 namespace BitTools.Core.Contracts
 {

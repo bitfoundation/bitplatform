@@ -1,10 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using BitTools.Core.Contracts;
 using BitTools.Core.Model;
-using Microsoft.CodeAnalysis;
 using Newtonsoft.Json;
 
 namespace BitCodeGenerator.Implementations

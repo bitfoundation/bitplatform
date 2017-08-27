@@ -213,7 +213,7 @@ namespace BitVSExtensionV1
             }
             catch (Exception ex)
             {
-                LogException($"Code Generation failed.", ex);
+                LogException("Code Generation failed.", ex);
             }
             finally
             {

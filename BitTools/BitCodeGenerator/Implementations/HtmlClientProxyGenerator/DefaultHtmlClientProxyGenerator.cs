@@ -102,13 +102,13 @@ namespace BitCodeGenerator.Implementations.HtmlClientProxyGenerator
                 generatedTs.AppendLine(_dtoGenerator.GenerateTypeScriptDtos(dtos, enumTypes, proxyGeneratorMapping.TypingsPath));
                 generatedTs.AppendLine(_contextGenerator.GenerateTypeScriptContext(dtoControllers, proxyGeneratorMapping));
 
-                WriteFiles(workspace.CurrentSolution, generatedJs.ToString(), generatedContextName, generatedJsContextExtension, destProject);
+                WriteFiles(generatedJs.ToString(), generatedContextName, generatedJsContextExtension, destProject);
 
-                WriteFiles(workspace.CurrentSolution, generatedTs.ToString(), generatedContextName, generatedTsContextExtension, destProject);
+                WriteFiles(generatedTs.ToString(), generatedContextName, generatedTsContextExtension, destProject);
             }
         }
 
-        private static void WriteFiles(Solution solution, String generatedCodes, string fileName, string extension, Project destProject)
+        private static void WriteFiles(string generatedCodes, string fileName, string extension, Project destProject)
         {
             string fullPath = Path.Combine(Directory.GetParent(destProject.FilePath).FullName, $"{fileName}{extension}");
 

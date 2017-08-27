@@ -47,7 +47,7 @@ namespace BitCodeAnalyzer.Test.BitAnalyzers.Data.EntityFramework
 
         private readonly string basePath = new DirectoryInfo(Path.Combine(Environment.CurrentDirectory, @"..\..\BitAnalyzers\Data\EntityFramework\EntityFrameworkFullAsNoTrackingCallTests")).FullName;
 
-        public override async Task<Project> CreateProject(string[] sources, string language = "C#")
+        public override async Task<Project> CreateProject(string[] sources, string language = LanguageNames.CSharp)
         {
             MSBuildWorkspace workspace = MSBuildWorkspace.Create();
 
