@@ -4,7 +4,7 @@
 
     export class DefaultAngularAppInitialization implements Contracts.IAppEvents {
 
-        public constructor(public pathProvider = dependencyManager.resolveObject<Contracts.IPathProvider>("PathProvider"), public dateTimeService = dependencyManager.resolveObject<Contracts.IDateTimeService>("DateTimeService"), public angularConfigs = dependencyManager.resolveAllObjects<Contracts.IAngularConfiguration>("AngularConfiguration"), public securityService = dependencyManager.resolveObject<Contracts.ISecurityService>("SecurityService"), public logger = dependencyManager.resolveObject<Contracts.ILogger>("Logger"), public clientAppProfileManager = ClientAppProfileManager.getCurrent()) {
+        public constructor(public pathProvider = dependencyManager.resolveObject<Contracts.IPathProvider>("PathProvider"), public dateTimeService = dependencyManager.resolveObject<Contracts.IDateTimeService>("DateTimeService"), public angularConfigs = dependencyManager.resolveAllObjects<Contracts.IAngularConfiguration>("AngularConfiguration"), public logger = dependencyManager.resolveObject<Contracts.ILogger>("Logger"), public clientAppProfileManager = ClientAppProfileManager.getCurrent()) {
             this.clientAppProfile = clientAppProfileManager.getClientAppProfile();
         }
 
