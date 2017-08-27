@@ -7,7 +7,7 @@ namespace Bit.Tests
 {
     public class Program
     {
-        public static void Main(string[] args)
+        public static void Main()
         {
             Environment.CurrentDirectory = Path.Combine(Environment.CurrentDirectory, @"bin\debug\net461");
 

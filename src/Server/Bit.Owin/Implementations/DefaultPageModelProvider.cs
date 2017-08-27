@@ -46,7 +46,7 @@ namespace Bit.Owin.Implementations
                 AppName = activeAppEnvironment.AppInfo.Name
             };
 
-            UserSetting userSetting = _usersSettingsProvider == null ? null : _usersSettingsProvider.GetCurrentUserSetting();
+            UserSetting userSetting = _usersSettingsProvider?.GetCurrentUserSetting();
 
             string theme = userSetting?.Theme ?? activeAppEnvironment.AppInfo.DefaultTheme;
 

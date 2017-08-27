@@ -2,7 +2,6 @@
 using Bit.Data.Contracts;
 using Bit.Data.EntityFrameworkCore.Contracts;
 using Bit.Data.EntityFrameworkCore.Implementations;
-using Microsoft.EntityFrameworkCore;
 using Bit.Data.Implementations;
 
 namespace Bit.Core.Contracts

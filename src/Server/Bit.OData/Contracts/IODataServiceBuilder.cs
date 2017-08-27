@@ -4,7 +4,7 @@ namespace Bit.OData.Contracts
 {
     public interface IODataServiceBuilder
     {
-        void BuildModel(ODataModelBuilder odataModelBuilder);
+        void BuildModel(ODataModelBuilder oDataModelBuilder);
 
         string GetODataRoute();
     }

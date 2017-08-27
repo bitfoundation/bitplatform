@@ -41,8 +41,7 @@ namespace Bit.Data.EntityFramework.Implementations
             if (entityToAdd == null)
                 throw new ArgumentNullException(nameof(entityToAdd));
 
-            IEntityWithDefaultGuidKey entityToAddAsEntityWithDefaultGuidKey = entityToAdd as IEntityWithDefaultGuidKey;
-            if (entityToAddAsEntityWithDefaultGuidKey != null && entityToAddAsEntityWithDefaultGuidKey.Id == Guid.Empty)
+            if (entityToAdd is IEntityWithDefaultGuidKey entityToAddAsEntityWithDefaultGuidKey && entityToAddAsEntityWithDefaultGuidKey.Id == Guid.Empty)
                 entityToAddAsEntityWithDefaultGuidKey.Id = Guid.NewGuid();
 
             _set.Add(entityToAdd);
@@ -61,8 +60,7 @@ namespace Bit.Data.EntityFramework.Implementations
 
             foreach (TEntity entityToAdd in entitiesToAddList)
             {
-                IEntityWithDefaultGuidKey entityToAddAsEntityWithDefaultGuidKey = entityToAdd as IEntityWithDefaultGuidKey;
-                if (entityToAddAsEntityWithDefaultGuidKey != null && entityToAddAsEntityWithDefaultGuidKey.Id == Guid.Empty)
+                if (entityToAdd is IEntityWithDefaultGuidKey entityToAddAsEntityWithDefaultGuidKey && entityToAddAsEntityWithDefaultGuidKey.Id == Guid.Empty)
                     entityToAddAsEntityWithDefaultGuidKey.Id = Guid.NewGuid();
             }
 
@@ -179,8 +177,7 @@ namespace Bit.Data.EntityFramework.Implementations
             if (entityToAdd == null)
                 throw new ArgumentNullException(nameof(entityToAdd));
 
-            IEntityWithDefaultGuidKey entityToAddAsEntityWithDefaultGuidKey = entityToAdd as IEntityWithDefaultGuidKey;
-            if (entityToAddAsEntityWithDefaultGuidKey != null && entityToAddAsEntityWithDefaultGuidKey.Id == Guid.Empty)
+            if (entityToAdd is IEntityWithDefaultGuidKey entityToAddAsEntityWithDefaultGuidKey && entityToAddAsEntityWithDefaultGuidKey.Id == Guid.Empty)
                 entityToAddAsEntityWithDefaultGuidKey.Id = Guid.NewGuid();
 
             _set.Add(entityToAdd);
@@ -199,8 +196,7 @@ namespace Bit.Data.EntityFramework.Implementations
 
             foreach (TEntity entityToAdd in entityToAddList)
             {
-                IEntityWithDefaultGuidKey entityToAddAsEntityWithDefaultGuidKey = entityToAdd as IEntityWithDefaultGuidKey;
-                if (entityToAddAsEntityWithDefaultGuidKey != null && entityToAddAsEntityWithDefaultGuidKey.Id == Guid.Empty)
+                if (entityToAdd is IEntityWithDefaultGuidKey entityToAddAsEntityWithDefaultGuidKey && entityToAddAsEntityWithDefaultGuidKey.Id == Guid.Empty)
                     entityToAddAsEntityWithDefaultGuidKey.Id = Guid.NewGuid();
             }
 

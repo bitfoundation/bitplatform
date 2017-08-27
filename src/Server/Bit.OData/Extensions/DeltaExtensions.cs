@@ -20,8 +20,7 @@ namespace System.Web.OData
                     PropertyInfo prop = typeof(TEntity).GetTypeInfo().GetProperty(changedPropName);
                     if (prop == null)
                         return;
-                    object obj = null;
-                    sourceDto.TryGetPropertyValue(changedPropName, out obj);
+                    sourceDto.TryGetPropertyValue(changedPropName, out object obj);
                     if (obj != null && !prop.PropertyType.IsInstanceOfType(obj))
                         return;
                     prop.SetValue(destinationEntity, obj);

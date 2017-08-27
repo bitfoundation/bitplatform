@@ -24,9 +24,9 @@ namespace Bit.OData.Implementations
         }
 #endif
 
-        public virtual void BuildModel(ODataModelBuilder odataModelBuilder)
+        public virtual void BuildModel(ODataModelBuilder oDataModelBuilder)
         {
-            _autoODataModelBuilder.AutoBuildODataModelFromTypes(new[] { typeof(ClientsLogsController).GetTypeInfo(), typeof(JobsInfoController).GetTypeInfo(), typeof(UsersSettingsController).GetTypeInfo() }, odataModelBuilder);
+            _autoODataModelBuilder.AutoBuildODataModelFromTypes(new[] { typeof(ClientsLogsController).GetTypeInfo(), typeof(JobsInfoController).GetTypeInfo(), typeof(UsersSettingsController).GetTypeInfo() }, oDataModelBuilder);
         }
 
         public virtual string GetODataRoute()

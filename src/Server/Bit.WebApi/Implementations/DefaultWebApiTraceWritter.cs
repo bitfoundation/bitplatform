@@ -12,7 +12,7 @@ namespace Bit.WebApi.Implementations
     {
         public virtual void Trace(HttpRequestMessage request, string category, TraceLevel level, Action<TraceRecord> traceAction)
         {
-            if (request != null && request.GetOwinContext() != null && (level == TraceLevel.Fatal || level == TraceLevel.Warn || level == TraceLevel.Error))
+            if (request?.GetOwinContext() != null && (level == TraceLevel.Fatal || level == TraceLevel.Warn || level == TraceLevel.Error))
             {
                 TraceRecord traceRecord = new TraceRecord(request, category, level);
                 traceAction(traceRecord);

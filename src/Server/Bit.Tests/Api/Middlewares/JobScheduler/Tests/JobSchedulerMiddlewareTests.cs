@@ -81,7 +81,7 @@ namespace Bit.Tests.Api.Middlewares.JobScheduler.Tests
                     .Set(new TestModelsController.EmailParameters { to = "Someone", title = "Email title", message = "Email message" })
                     .ExecuteAsScalarAsync<Guid>()).ToString();
 
-                ODataClient bitODataClient = testEnvironment.Server.BuildODataClient(token: token, edmName: "Bit");
+                ODataClient bitODataClient = testEnvironment.Server.BuildODataClient(token: token, odataRouteName: "Bit");
 
                 JobInfoDto jobInfo = await bitODataClient.Controller<JobsInfoController, JobInfoDto>()
                     .Key(jobId)
@@ -139,7 +139,7 @@ namespace Bit.Tests.Api.Middlewares.JobScheduler.Tests
                     .Set(new TestModelsController.EmailParameters { to = "SomeOne", title = "Email title", message = "Email message" })
                     .ExecuteAsScalarAsync<Guid>()).ToString();
 
-                ODataClient bitODataClient = testEnvironment.Server.BuildODataClient(token: token, edmName: "Bit");
+                ODataClient bitODataClient = testEnvironment.Server.BuildODataClient(token: token, odataRouteName: "Bit");
 
                 JobInfoDto jobInfo = await bitODataClient.Controller<JobsInfoController, JobInfoDto>()
                     .Key(jobId)

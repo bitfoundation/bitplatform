@@ -46,7 +46,7 @@ namespace Bit.Test
             if (args.FullUri == null && args.HostName == null)
                 args.HostName = "localhost";
 
-            string uri = args.FullUri != null ? args.FullUri : new Uri($"{(args.UseHttps ? "https" : "http")}://{args.HostName}:{args.Port}/").ToString();
+            string uri = args.FullUri ?? new Uri($"{(args.UseHttps ? "https" : "http")}://{args.HostName}:{args.Port}/").ToString();
 
             if (args.UseProxyBasedDependencyManager == true)
             {

@@ -26,7 +26,7 @@ namespace Bit.OData.Serialization
 
         }
 
-        public DefaultODataActionParameterDeserializer(ODataDeserializerProvider deserializerProvider, System.Web.Http.Dependencies.IDependencyResolver dependencyResolver)
+        public DefaultODataActionParameterDeserializer(System.Web.Http.Dependencies.IDependencyResolver dependencyResolver)
             : base(ODataPayloadKind.Parameter)
         {
             if (dependencyResolver == null)

@@ -44,7 +44,7 @@ namespace Bit.Tests.Api.Middlewares.Tests
                     {
                         owinApp.Map("/Exception", innerApp =>
                         {
-                            AppBuilderUseExtensions.Use<ExceptionThrownMiddleware>(innerApp);
+                            innerApp.Use<ExceptionThrownMiddleware>();
                         });
                     });
                 }

@@ -23,7 +23,7 @@ namespace Bit.Tests.Api.ApiControllers.Tests
             {
                 TokenResponse token = await testEnvironment.Server.Login("ValidUserName", "ValidPassword", clientId: "TestResOwner");
 
-                ODataClient client = testEnvironment.Server.BuildODataClient(token: token, edmName: "Bit");
+                ODataClient client = testEnvironment.Server.BuildODataClient(token: token, odataRouteName: "Bit");
 
                 await client.Controller<ClientsLogsController, ClientLogDto>()
                     .Action(nameof(ClientsLogsController.StoreClientLogs))

@@ -22,9 +22,9 @@ namespace Bit.Tests.Api.Implementations.Project
 
         }
 
-        public virtual void BuildModel(ODataModelBuilder edmModelBuilder)
+        public virtual void BuildModel(ODataModelBuilder oDataModelBuilder)
         {
-            _autoODataModelBuilder.AutoBuildODatModelFromAssembly(AssemblyContainer.Current.GetBitTestsAssembly(), edmModelBuilder);
+            _autoODataModelBuilder.AutoBuildODatModelFromAssembly(AssemblyContainer.Current.GetBitTestsAssembly(), oDataModelBuilder);
         }
 
         public virtual string GetODataRoute()

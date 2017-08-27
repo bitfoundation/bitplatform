@@ -187,7 +187,7 @@ namespace Bit.Owin.Implementations
         public virtual IDependencyManager RegisterAssemblyTypes(Assembly[] assemblies, Predicate<TypeInfo> predicate = null)
         {
             GetContainerBuidler().RegisterAssemblyTypes(assemblies)
-                .Where(t => predicate == null ? true : predicate(t.GetTypeInfo()))
+                .Where(t => predicate == null || predicate(t.GetTypeInfo()))
                 .PropertiesAutowired();
 
             return this;

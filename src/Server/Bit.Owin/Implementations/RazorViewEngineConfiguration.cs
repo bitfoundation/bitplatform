@@ -85,7 +85,7 @@ namespace Bit.Owin.Implementations
 
                 public override string ToString()
                 {
-                    return _obj == null ? string.Empty : _obj.ToString();
+                    return _obj?.ToString() ?? string.Empty;
                 }
             }
 

@@ -63,7 +63,7 @@ namespace Bit.OData.ActionFilters
                     if (isIQueryable == true)
                     {
                         IEnumerable<IDataProviderSpecificMethodsProvider> dataProviderSpecificMethodsProviders = actionExecutedContext.Request.GetOwinContext().GetDependencyResolver().ResolveAll<IDataProviderSpecificMethodsProvider>();
-                        dataProviderSpecificMethodsProvider = (IDataProviderSpecificMethodsProvider)typeof(ODataEnableQueryAttribute).GetMethod(nameof(FindDataProviderSpecificMethodsProvider)).MakeGenericMethod(queryElementType).Invoke(this, new object[] { objContent.Value, dataProviderSpecificMethodsProviders });
+                        dataProviderSpecificMethodsProvider = (IDataProviderSpecificMethodsProvider)typeof(ODataEnableQueryAttribute).GetMethod(nameof(FindDataProviderSpecificMethodsProvider)).MakeGenericMethod(queryElementType).Invoke(this, new [] { objContent.Value, dataProviderSpecificMethodsProviders });
                     }
                     else
                     {

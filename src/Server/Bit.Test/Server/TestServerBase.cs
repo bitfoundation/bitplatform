@@ -20,15 +20,15 @@ namespace Bit.Test.Server
         public virtual string Uri { get; protected set; }
 
         public virtual ODataBatch BuildODataBatchClient(Action<HttpRequestMessage> beforeRequest = null,
-                  Action<HttpResponseMessage> afterResponse = null, TokenResponse token = null, string edmName = "Test")
+                  Action<HttpResponseMessage> afterResponse = null, TokenResponse token = null, string odataRouteName = "Test")
         {
-            return new ODataBatch(BuildODataClient(beforeRequest, afterResponse, token, edmName));
+            return new ODataBatch(BuildODataClient(beforeRequest, afterResponse, token, odataRouteName));
         }
 
         public virtual ODataClient BuildODataClient(Action<HttpRequestMessage> beforeRequest = null,
-            Action<HttpResponseMessage> afterResponse = null, TokenResponse token = null, string edmName = "Test")
+            Action<HttpResponseMessage> afterResponse = null, TokenResponse token = null, string odataRouteName = "Test")
         {
-            ODataClient client = new ODataClient(new ODataClientSettings($"{Uri}odata/{edmName}/")
+            ODataClient client = new ODataClient(new ODataClientSettings($"{Uri}odata/{odataRouteName}/")
             {
                 BeforeRequest = message =>
                 {
@@ -44,7 +44,7 @@ namespace Bit.Test.Server
                 {
                     afterResponse?.Invoke(message);
                 },
-                OnCreateMessageHandler = () => GetHttpMessageHandler()
+                OnCreateMessageHandler = GetHttpMessageHandler
             });
 
             return client;

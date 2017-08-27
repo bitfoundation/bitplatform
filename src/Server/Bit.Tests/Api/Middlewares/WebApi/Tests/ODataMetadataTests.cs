@@ -11,18 +11,18 @@ namespace Bit.Tests.Api.Middlewares.WebApi.Tests
     {
         [TestMethod]
         [TestCategory("WebApi"), TestCategory("OData")]
-        public async Task AllEdmProvidersMustProvideTheirOwnMetadata()
+        public async Task AllODataServicesMustProvideTheirOwnMetadata()
         {
             using (BitOwinTestEnvironment testEnvironment = new BitOwinTestEnvironment())
             {
                 TokenResponse token = await testEnvironment.Server.Login("ValidUserName", "ValidPassword", clientId: "TestResOwner");
 
-                string[] edmModelProviders = new string[] { "Bit", "Test" };
+                string[] odataServicesRoutes = new string[] { "Bit", "Test" };
 
-                foreach (string edmModelProvider in edmModelProviders)
+                foreach (string odataServiceRoute in odataServicesRoutes)
                 {
                     HttpResponseMessage getMetadataResponse = await testEnvironment.Server.GetHttpClient(token)
-                            .GetAsync($"/odata/{edmModelProvider}/$metadata");
+                            .GetAsync($"/odata/{odataServiceRoute}/$metadata");
 
                     Assert.AreEqual(HttpStatusCode.OK, getMetadataResponse.StatusCode);
 
