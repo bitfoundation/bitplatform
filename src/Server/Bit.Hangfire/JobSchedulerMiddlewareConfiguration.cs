@@ -34,11 +34,15 @@ namespace Bit.Hangfire
 
         public virtual void Configure(IAppBuilder owinApp)
         {
+#if NET461
             owinApp.UseHangfireDashboard("/jobs", new DashboardOptions
             {
                 Authorization = _authFilters,
                 AppPath = _appEnvironmentProvider.GetActiveAppEnvironment().GetHostVirtualPath()
             });
+#else
+            throw new NotImplementedException();
+#endif
         }
     }
 }
