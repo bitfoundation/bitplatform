@@ -23,7 +23,7 @@ namespace BitCodeAnalyzer.BitAnalyzers.Data.EntityFramework
 
         public override void Initialize(AnalysisContext context)
         {
-            context.EnableConcurrentExecution();
+            context.BitEnableConcurrentExecution();
             context.RegisterSyntaxNodeAction(AnalyzeSyntax, SyntaxKind.InvocationExpression);
         }
 

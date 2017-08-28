@@ -45,7 +45,7 @@ namespace BitCodeAnalyzer.Test.BitAnalyzers.Data.EntityFramework
             await VerifyCSharpDiagnostic(notCalledAsNoTracking1, notCalledAsNoTracking2, notCalledAsNoTracking3);
         }
 
-        private readonly string basePath = new DirectoryInfo(Path.Combine(Environment.CurrentDirectory, @"..\..\BitAnalyzers\Data\EntityFramework\EntityFrameworkFullAsNoTrackingCallTests")).FullName;
+        private readonly string basePath = new DirectoryInfo(Path.Combine(Environment.CurrentDirectory, @"..\..\..\BitAnalyzers\Data\EntityFramework\EntityFrameworkFullAsNoTrackingCallTests")).FullName;
 
         public override async Task<Project> CreateProject(string[] sources, string language = LanguageNames.CSharp)
         {

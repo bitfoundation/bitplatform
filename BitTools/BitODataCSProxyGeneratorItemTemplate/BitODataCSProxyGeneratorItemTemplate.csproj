@@ -15,7 +15,7 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>BitODataCSProxyGeneratorItemTemplate</RootNamespace>
     <AssemblyName>BitODataCSProxyGeneratorItemTemplate</AssemblyName>
-    <TargetFrameworkVersion>v4.7</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <GeneratePkgDefFile>false</GeneratePkgDefFile>
     <IncludeAssemblyInVSIXContainer>false</IncludeAssemblyInVSIXContainer>
@@ -55,6 +55,11 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ODataT4Template.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>ODataT4Template.tt</DependentUpon>
+    </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -62,10 +67,10 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="ODataT4Template.tt">
-      <LastGenOutput>ODataT4Template1.cs</LastGenOutput>
+      <LastGenOutput>ODataT4Template.cs</LastGenOutput>
       <Generator>TextTemplatingFileGenerator</Generator>
     </Content>
-    <Content Include="ODataT4Template.ttinclude" />
+    <None Include="ODataT4Template.ttinclude" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="__TemplateIcon.ico" />
@@ -74,13 +79,9 @@
     <Service Include="{508349B6-6B84-4DF5-91F0-309BEEBAD82D}" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\BitTools.Core.VSExtensionBuildVersion\BitTools.Core.VSExtensionBuildVersion.csproj">
-      <Project>{3aa3c219-2d0a-49dd-a025-5b4654bf2cfa}</Project>
-      <Name>BitTools.Core.VSExtensionBuildVersion</Name>
-    </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="app.config" />
+    <None Include="app.config">
+      <SubType>Designer</SubType>
+    </None>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="$(VSToolsPath)\VSSDK\Microsoft.VsSDK.targets" Condition="'$(VSToolsPath)' != ''" />
