@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <TargetFrameworks>net461;netcoreapp2.0</TargetFrameworks>
-    <Version>0.0.1.6</Version>
+    <Version>0.0.6.7</Version>
     <Authors>Bit Foundation</Authors>
     <Company>Bit Foundation</Company>
     <Product>Bit Framework</Product>
@@ -14,8 +14,8 @@
     <RepositoryUrl>https://github.com/bit-foundation/bit-framework</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <PackageTags>Bit</PackageTags>
-    <AssemblyVersion>0.0.1.6</AssemblyVersion>
-    <FileVersion>0.0.1.6</FileVersion>
+    <AssemblyVersion>0.0.6.7</AssemblyVersion>
+    <FileVersion>0.0.6.7</FileVersion>
     <PackageReleaseNotes>https://github.com/bit-foundation/bit-framework/releases</PackageReleaseNotes>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
   </PropertyGroup>
