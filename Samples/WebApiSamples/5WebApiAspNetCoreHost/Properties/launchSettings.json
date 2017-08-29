@@ -19,6 +19,7 @@
     "WebApiAspNetCoreHost": {
       "commandName": "Project",
       "launchBrowser": true,
+      "launchUrl": "api/swagger/",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
       },
