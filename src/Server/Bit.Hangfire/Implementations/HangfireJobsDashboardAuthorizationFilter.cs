@@ -9,8 +9,14 @@ namespace Bit.Hangfire.Implementations
     {
         public virtual bool Authorize([NotNull] DashboardContext context)
         {
+            IUserInformationProvider userInformationProvider = null;
+#if NET461
             IOwinContext owinContext = new OwinContext(context.GetOwinEnvironment());
-            bool isAuthenticated = owinContext.GetDependencyResolver().Resolve<IUserInformationProvider>().IsAuthenticated();
+            userInformationProvider = owinContext.GetDependencyResolver().Resolve<IUserInformationProvider>();
+#else
+            userInformationProvider = Microsoft.Extensions.DependencyInjection.ServiceProviderServiceExtensions.GetService<IUserInformationProvider>(context.GetHttpContext().RequestServices);
+#endif
+            bool isAuthenticated = userInformationProvider.IsAuthenticated();
             return isAuthenticated;
         }
     }
