@@ -5,16 +5,18 @@
     <ApplicationIcon />
     <OutputType>Exe</OutputType>
     <StartupObject />
+    <AssemblyVersion>0.0.6.0</AssemblyVersion>
+    <FileVersion>0.0.1.6</FileVersion>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="MSTest.TestAdapter" Version="1.2.0-beta3" />
     <PackageReference Include="MSTest.TestFramework" Version="1.2.0-beta3" />
-    <PackageReference Include="Bit.Test" Version="[0.0.1.6]" />
     <PackageReference Include="Selenium.WebDriver.ChromeDriver" Version="2.31.0" />
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Bit.OwinCore.AspNetCore2Upgrade\Bit.OwinCore.AspNetCore2Upgrade.csproj" />
     <ProjectReference Include="..\Bit.Test\Bit.Test.csproj" />
   </ItemGroup>
 

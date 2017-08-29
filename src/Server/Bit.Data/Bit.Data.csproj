@@ -22,7 +22,6 @@
 
   <ItemGroup>
     <PackageReference Include="System.Linq.Dynamic" Version="1.0.7" />
-    <PackageReference Include="Bit.Model" Version="[0.0.1.6]" />
   </ItemGroup>
 
   <ItemGroup>

@@ -16,7 +16,7 @@
     <RepositoryType>git</RepositoryType>
     <PackageReleaseNotes>https://github.com/bit-foundation/bit-framework/releases</PackageReleaseNotes>
     <AssemblyVersion>0.0.1.6</AssemblyVersion>
-    <FileVersion>0.0.1.0</FileVersion>
+    <FileVersion>0.0.1.6</FileVersion>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
   </PropertyGroup>
 
@@ -37,7 +37,6 @@
     <PackageReference Include="System.Reflection.Metadata" Version="1.5.0" />
     <PackageReference Include="System.Runtime.CompilerServices.Unsafe" Version="4.4.0" />
     <PackageReference Include="System.Security.Cryptography.ProtectedData" Version="4.4.0" />
-    <PackageReference Include="Bit.Owin" Version="[0.0.1.6]" />
     <PackageReference Include="System.Text.Encodings.Web" Version="4.4.0" />
     <PackageReference Include="System.Threading.Tasks.Extensions" Version="4.4.0" />
   </ItemGroup>
