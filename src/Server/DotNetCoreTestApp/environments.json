@@ -1,0 +1,11 @@
+﻿[
+  {
+    "Name": "Development",
+    "IsActive": true,
+    "DebugMode": true,
+    "AppInfo": {
+      "Name": "DotNetCoreTestApp",
+      "Version": "1"
+    }
+  }
+]

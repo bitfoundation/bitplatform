@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.26730.3
+VisualStudioVersion = 15.0.26730.10
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Server", "Server", "{C4390E9A-3483-45A8-9A3F-D8DBFF3A38DB}"
 EndProject
@@ -10,29 +10,29 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Bit", "Bit", "{3B9BD8FE-95D
 		BitConfigV1.json = BitConfigV1.json
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Bit.Model", "src\Server\Bit.Model\Bit.Model.csproj", "{5FAC42F7-1179-440D-8BE0-FFD364639943}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Bit.Model", "src\Server\Bit.Model\Bit.Model.csproj", "{5FAC42F7-1179-440D-8BE0-FFD364639943}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Bit.Data", "src\Server\Bit.Data\Bit.Data.csproj", "{722D443E-450D-4C7B-94CF-AC8C553DD8FF}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Bit.Data", "src\Server\Bit.Data\Bit.Data.csproj", "{722D443E-450D-4C7B-94CF-AC8C553DD8FF}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Bit.Data.EntityFrameworkCore", "src\Server\Bit.Data.EntityFrameworkCore\Bit.Data.EntityFrameworkCore.csproj", "{795411D0-0471-47EA-B461-5A5235752C5A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Bit.Data.EntityFrameworkCore", "src\Server\Bit.Data.EntityFrameworkCore\Bit.Data.EntityFrameworkCore.csproj", "{795411D0-0471-47EA-B461-5A5235752C5A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Bit.Data.EntityFramework", "src\Server\Bit.Data.EntityFramework\Bit.Data.EntityFramework.csproj", "{86A1F761-36F3-4038-977D-1EA0ACE29D7C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Bit.Data.EntityFramework", "src\Server\Bit.Data.EntityFramework\Bit.Data.EntityFramework.csproj", "{86A1F761-36F3-4038-977D-1EA0ACE29D7C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Bit.Owin", "src\Server\Bit.Owin\Bit.Owin.csproj", "{3556C2A2-58BB-4BF6-938B-CAD6A8F053F7}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Bit.Owin", "src\Server\Bit.Owin\Bit.Owin.csproj", "{3556C2A2-58BB-4BF6-938B-CAD6A8F053F7}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Bit.Signalr", "src\Server\Bit.Signalr\Bit.Signalr.csproj", "{6F4EA6B3-BCC9-4137-8ABE-2B4847C530BE}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Bit.Signalr", "src\Server\Bit.Signalr\Bit.Signalr.csproj", "{6F4EA6B3-BCC9-4137-8ABE-2B4847C530BE}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Bit.WebApi", "src\Server\Bit.WebApi\Bit.WebApi.csproj", "{05A90AF8-A22C-480C-865F-DB46B3A65699}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Bit.WebApi", "src\Server\Bit.WebApi\Bit.WebApi.csproj", "{05A90AF8-A22C-480C-865F-DB46B3A65699}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Bit.Hangfire", "src\Server\Bit.Hangfire\Bit.Hangfire.csproj", "{91908A6F-D4F7-4AC0-B7DD-81546F421D16}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Bit.Hangfire", "src\Server\Bit.Hangfire\Bit.Hangfire.csproj", "{91908A6F-D4F7-4AC0-B7DD-81546F421D16}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Bit.IdentityServer", "src\Server\Bit.IdentityServer\Bit.IdentityServer.csproj", "{69C7E331-607C-447C-8029-778A11901ABA}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Bit.IdentityServer", "src\Server\Bit.IdentityServer\Bit.IdentityServer.csproj", "{69C7E331-607C-447C-8029-778A11901ABA}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Bit.OwinCore", "src\Server\Bit.OwinCore\Bit.OwinCore.csproj", "{54059991-4B49-46AB-90FC-33C145860FC4}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Bit.OwinCore", "src\Server\Bit.OwinCore\Bit.OwinCore.csproj", "{54059991-4B49-46AB-90FC-33C145860FC4}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Bit.Test", "src\Server\Bit.Test\Bit.Test.csproj", "{AB00E786-A5ED-4397-A188-79B09D9FC049}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Bit.Test", "src\Server\Bit.Test\Bit.Test.csproj", "{AB00E786-A5ED-4397-A188-79B09D9FC049}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Bit.Tests", "src\Server\Bit.Tests\Bit.Tests.csproj", "{84AC4B39-1C59-4067-985F-84C63DF04501}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Bit.Tests", "src\Server\Bit.Tests\Bit.Tests.csproj", "{84AC4B39-1C59-4067-985F-84C63DF04501}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "TypeScriptClient", "TypeScriptClient", "{5481E589-4586-4FD1-AF25-412B23FAFF79}"
 EndProject
@@ -44,9 +44,11 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Bit.TSClient.AngularJS.Test
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Bit.TSClient.AngularJS.Tests", "src\TypeScriptClient\Bit.TSClient.AngularJS.Tests\Bit.TSClient.AngularJS.Tests.csproj", "{7A597FE5-47B7-4EAC-9343-EB9FE30E92E4}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Bit.OData", "src\Server\Bit.OData\Bit.OData.csproj", "{E3CF9459-0DAE-45B3-94D6-D3394818590E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Bit.OData", "src\Server\Bit.OData\Bit.OData.csproj", "{E3CF9459-0DAE-45B3-94D6-D3394818590E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Bit.Core", "src\Server\Bit.Core\Bit.Core.csproj", "{5C0D6365-C26D-478B-943A-A1A2B1259422}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Bit.Core", "src\Server\Bit.Core\Bit.Core.csproj", "{5C0D6365-C26D-478B-943A-A1A2B1259422}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DotNetCoreTestApp", "src\Server\DotNetCoreTestApp\DotNetCoreTestApp.csproj", "{2DA757D9-B4B1-4DDD-A486-0EEE5894C186}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -200,6 +202,14 @@ Global
 		{5C0D6365-C26D-478B-943A-A1A2B1259422}.Release|Any CPU.Build.0 = Release|Any CPU
 		{5C0D6365-C26D-478B-943A-A1A2B1259422}.Release|x64.ActiveCfg = Release|Any CPU
 		{5C0D6365-C26D-478B-943A-A1A2B1259422}.Release|x64.Build.0 = Release|Any CPU
+		{2DA757D9-B4B1-4DDD-A486-0EEE5894C186}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2DA757D9-B4B1-4DDD-A486-0EEE5894C186}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2DA757D9-B4B1-4DDD-A486-0EEE5894C186}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{2DA757D9-B4B1-4DDD-A486-0EEE5894C186}.Debug|x64.Build.0 = Debug|Any CPU
+		{2DA757D9-B4B1-4DDD-A486-0EEE5894C186}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2DA757D9-B4B1-4DDD-A486-0EEE5894C186}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2DA757D9-B4B1-4DDD-A486-0EEE5894C186}.Release|x64.ActiveCfg = Release|Any CPU
+		{2DA757D9-B4B1-4DDD-A486-0EEE5894C186}.Release|x64.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -223,6 +233,7 @@ Global
 		{7A597FE5-47B7-4EAC-9343-EB9FE30E92E4} = {5481E589-4586-4FD1-AF25-412B23FAFF79}
 		{E3CF9459-0DAE-45B3-94D6-D3394818590E} = {C4390E9A-3483-45A8-9A3F-D8DBFF3A38DB}
 		{5C0D6365-C26D-478B-943A-A1A2B1259422} = {C4390E9A-3483-45A8-9A3F-D8DBFF3A38DB}
+		{2DA757D9-B4B1-4DDD-A486-0EEE5894C186} = {C4390E9A-3483-45A8-9A3F-D8DBFF3A38DB}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {1215D425-A440-4391-A5A7-402ACBF8B4B0}
