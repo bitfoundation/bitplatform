@@ -2,8 +2,9 @@
 
   <PropertyGroup>
     <TargetFrameworks>net461</TargetFrameworks>
-    <AssemblyVersion>1.1.9.7</AssemblyVersion>
-    <FileVersion>1.1.9.7</FileVersion>
+    <AssemblyVersion>1.1.9.9</AssemblyVersion>
+    <FileVersion>1.1.9.9</FileVersion>
+    <Version>1.1.9.9</Version>
   </PropertyGroup>
 
   <ItemGroup>
