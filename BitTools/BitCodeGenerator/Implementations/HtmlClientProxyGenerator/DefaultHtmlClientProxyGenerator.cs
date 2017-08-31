@@ -14,20 +14,20 @@ namespace BitCodeGenerator.Implementations.HtmlClientProxyGenerator
     public class DefaultHtmlClientProxyGenerator : IDefaultHtmlClientProxyGenerator
     {
         private readonly IBitCodeGeneratorOrderedProjectsProvider _solutionProjectsSelector;
-        private readonly IBitCodeGeneratorMappingsProvider _bitCodeGeneratorMappingsProvider;
+        private readonly IBitConfigProvider _bitConfigProvider;
         private readonly IProjectDtosProvider _dtosProvider;
         private readonly IProjectEnumTypesProvider _projectEnumTypesProvider;
         private readonly IProjectDtoControllersProvider _dtoControllersProvider;
         private readonly IHtmlClientProxyDtosGenerator _dtoGenerator;
         private readonly IHtmlClientContextGenerator _contextGenerator;
 
-        public DefaultHtmlClientProxyGenerator(IBitCodeGeneratorOrderedProjectsProvider solutionProjectsSelector, IBitCodeGeneratorMappingsProvider contextMappingsProvider, IProjectDtosProvider dtosProvider, IHtmlClientProxyDtosGenerator dtoGenerator, IHtmlClientContextGenerator contextGenerator, IProjectDtoControllersProvider dtoControllersProvider, IProjectEnumTypesProvider projectEnumTypesProvider)
+        public DefaultHtmlClientProxyGenerator(IBitCodeGeneratorOrderedProjectsProvider solutionProjectsSelector, IBitConfigProvider bitConfigProvider, IProjectDtosProvider dtosProvider, IHtmlClientProxyDtosGenerator dtoGenerator, IHtmlClientContextGenerator contextGenerator, IProjectDtoControllersProvider dtoControllersProvider, IProjectEnumTypesProvider projectEnumTypesProvider)
         {
             if (solutionProjectsSelector == null)
                 throw new ArgumentNullException(nameof(solutionProjectsSelector));
 
-            if (contextMappingsProvider == null)
-                throw new ArgumentNullException(nameof(contextMappingsProvider));
+            if (bitConfigProvider == null)
+                throw new ArgumentNullException(nameof(bitConfigProvider));
 
             if (dtosProvider == null)
                 throw new ArgumentNullException(nameof(dtosProvider));
@@ -45,7 +45,7 @@ namespace BitCodeGenerator.Implementations.HtmlClientProxyGenerator
                 throw new ArgumentNullException(nameof(dtoControllersProvider));
 
             _solutionProjectsSelector = solutionProjectsSelector;
-            _bitCodeGeneratorMappingsProvider = contextMappingsProvider;
+            _bitConfigProvider = bitConfigProvider;
             _dtosProvider = dtosProvider;
             _dtoGenerator = dtoGenerator;
             _contextGenerator = contextGenerator;
@@ -53,15 +53,14 @@ namespace BitCodeGenerator.Implementations.HtmlClientProxyGenerator
             _projectEnumTypesProvider = projectEnumTypesProvider;
         }
 
-        public virtual async Task GenerateCodes(Workspace workspace, IList<string> projectNames)
+        public virtual async Task GenerateCodes(Workspace workspace)
         {
             if (workspace == null)
                 throw new ArgumentNullException(nameof(workspace));
 
-            if (projectNames == null)
-                throw new ArgumentNullException(nameof(projectNames));
+            BitConfig bitConfig = _bitConfigProvider.GetConfiguration(workspace.CurrentSolution.FilePath);
 
-            foreach (BitCodeGeneratorMapping proxyGeneratorMapping in _bitCodeGeneratorMappingsProvider.GetBitCodeGeneratorMappings(workspace, projectNames))
+            foreach (BitCodeGeneratorMapping proxyGeneratorMapping in bitConfig.BitCodeGeneratorConfigs.BitCodeGeneratorMappings)
             {
                 string generatedContextName = proxyGeneratorMapping.DestinationFileName;
 

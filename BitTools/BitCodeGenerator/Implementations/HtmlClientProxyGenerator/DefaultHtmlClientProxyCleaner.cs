@@ -12,25 +12,24 @@ namespace BitCodeGenerator.Implementations.HtmlClientProxyGenerator
 {
     public class DefaultHtmlClientProxyCleaner : IDefaultHtmlClientProxyCleaner
     {
-        private readonly IBitCodeGeneratorMappingsProvider _bitCodeGeneratorMappingsProvider;
+        private readonly IBitConfigProvider _bitConfigProvider;
 
-        public DefaultHtmlClientProxyCleaner(IBitCodeGeneratorMappingsProvider bitCodeGeneratorMappingsProvider)
+        public DefaultHtmlClientProxyCleaner(IBitConfigProvider bitConfigProvider)
         {
-            if (bitCodeGeneratorMappingsProvider == null)
-                throw new ArgumentNullException(nameof(bitCodeGeneratorMappingsProvider));
+            if (bitConfigProvider == null)
+                throw new ArgumentNullException(nameof(bitConfigProvider));
 
-            _bitCodeGeneratorMappingsProvider = bitCodeGeneratorMappingsProvider;
+            _bitConfigProvider = bitConfigProvider;
         }
 
-        public virtual async Task DeleteCodes(Workspace workspace, IList<string> projectNames)
+        public virtual async Task DeleteCodes(Workspace workspace)
         {
             if (workspace == null)
                 throw new ArgumentNullException(nameof(workspace));
 
-            if (projectNames == null)
-                throw new ArgumentNullException(nameof(projectNames));
+            BitConfig bitConfig = _bitConfigProvider.GetConfiguration(workspace.CurrentSolution.FilePath);
 
-            foreach (BitCodeGeneratorMapping proxyGeneratorMapping in _bitCodeGeneratorMappingsProvider.GetBitCodeGeneratorMappings(workspace, projectNames))
+            foreach (BitCodeGeneratorMapping proxyGeneratorMapping in bitConfig.BitCodeGeneratorConfigs.BitCodeGeneratorMappings)
             {
                 string contextName = proxyGeneratorMapping.DestinationFileName;
 

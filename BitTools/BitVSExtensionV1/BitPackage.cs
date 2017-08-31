@@ -21,7 +21,6 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Windows.Forms;
 using BitHtmlElement = BitVSEditorUtils.HTML.Schema.HtmlElement;
-using Project = Microsoft.CodeAnalysis.Project;
 
 namespace BitVSExtensionV1
 {
@@ -187,7 +186,6 @@ namespace BitVSExtensionV1
             try
             {
                 bitWorkspaceIsPrepared = thereWasAnErrorInLastBuild = generateCodeWasCalledWhileBitWorkspaceWasNotPrepared = lastActionWasClean = false;
-                _shouldGeneratedProjectNames = new List<string> { };
                 Log("Preparing bit workspace... This includes restoring nuget packages, building your solution etc.");
 
                 using (System.Diagnostics.Process dotnetBuildProcess = new System.Diagnostics.Process())
@@ -260,13 +258,10 @@ namespace BitVSExtensionV1
                 IProjectDtosProvider dtosProvider = new DefaultProjectDtosProvider(controllersProvider);
 
                 DefaultHtmlClientProxyGenerator generator = new DefaultHtmlClientProxyGenerator(new DefaultBitCodeGeneratorOrderedProjectsProvider(),
-                    new DefaultBitCodeGeneratorMappingsProvider(new DefaultBitConfigProvider()), dtosProvider
+                    new DefaultBitConfigProvider(), dtosProvider
                     , new DefaultHtmlClientProxyDtoGenerator(), new DefaultHtmlClientContextGenerator(), controllersProvider, new DefaultProjectEnumTypesProvider(controllersProvider, dtosProvider));
 
-                if (_mSBuildWorkspace != null || lastActionWasClean == true || thereWasAnErrorInLastBuild == true)
-                    _shouldGeneratedProjectNames = _visualStudioWorkspace.CurrentSolution.Projects.Where(p => p.Language == LanguageNames.CSharp).Select(p => p.Name).ToList();
-
-                await generator.GenerateCodes((_mSBuildWorkspace != null ? (Workspace)_mSBuildWorkspace : (Workspace)_visualStudioWorkspace), _shouldGeneratedProjectNames);
+                await generator.GenerateCodes((_mSBuildWorkspace != null ? (Workspace)_mSBuildWorkspace : (Workspace)_visualStudioWorkspace));
 
                 Log($"Code Generation Completed in {sw.ElapsedMilliseconds} ms, using {(_mSBuildWorkspace != null ? "MsBuildWorkspace" : "VisualStduioWorkspce")}");
 
@@ -284,9 +279,9 @@ namespace BitVSExtensionV1
 
         private async void CallCleanCodes()
         {
-            DefaultHtmlClientProxyCleaner cleaner = new DefaultHtmlClientProxyCleaner(new DefaultBitCodeGeneratorMappingsProvider(new DefaultBitConfigProvider()));
+            DefaultHtmlClientProxyCleaner cleaner = new DefaultHtmlClientProxyCleaner(new DefaultBitConfigProvider());
 
-            await cleaner.DeleteCodes(_visualStudioWorkspace, _shouldGeneratedProjectNames);
+            await cleaner.DeleteCodes(_visualStudioWorkspace);
 
             Log("Generated codes were deleted.");
         }
@@ -344,8 +339,6 @@ namespace BitVSExtensionV1
                 thereWasAnErrorInLastBuild = false;
                 CallGenerateCodes();
             }
-
-            _shouldGeneratedProjectNames.Clear();
         }
 
         private void _buildEvents_OnBuildProjConfigDone(string project, string projectConfig, string platform, string solutionConfig, bool success)
@@ -354,11 +347,6 @@ namespace BitVSExtensionV1
                 return;
 
             thereWasAnErrorInLastBuild = thereWasAnErrorInLastBuild && success;
-
-            Project proj = _visualStudioWorkspace.CurrentSolution.Projects.Where(p => p.Language == LanguageNames.CSharp)
-                                .ExtendedSingle($"Lookin for {project} in [ {(string.Join(",", _visualStudioWorkspace.CurrentSolution.Projects.Where(p => p.Language == LanguageNames.CSharp).Select(prj => prj.Name)))} ]", prj => Path.GetFileName(prj.FilePath) == project.Split('\\').Last());
-
-            _shouldGeneratedProjectNames.Add(proj.Name);
         }
 
         private void _buildEvents_OnBuildDone(vsBuildScope scope, vsBuildAction action)
@@ -451,8 +439,6 @@ namespace BitVSExtensionV1
                 _mSBuildWorkspace = null;
             }
         }
-
-        private List<string> _shouldGeneratedProjectNames;
 
         private VisualStudioWorkspace _visualStudioWorkspace;
 

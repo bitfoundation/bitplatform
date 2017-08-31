@@ -55,11 +55,6 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="ODataT4Template.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>ODataT4Template.tt</DependentUpon>
-    </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -68,7 +63,6 @@
   <ItemGroup>
     <Content Include="ODataT4Template.tt">
       <LastGenOutput>ODataT4Template.cs</LastGenOutput>
-      <Generator>TextTemplatingFileGenerator</Generator>
     </Content>
     <None Include="ODataT4Template.ttinclude" />
   </ItemGroup>

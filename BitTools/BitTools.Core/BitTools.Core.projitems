@@ -13,7 +13,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)Contracts\HtmlClientProxyGenerator\IDefaultHtmlClientProxyGenerator.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Contracts\HtmlClientProxyGenerator\IHtmlClientContextGenerator.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Contracts\HtmlClientProxyGenerator\IHtmlClientProxyDtosGenerator.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Contracts\IBitCodeGeneratorMappingsProvider.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Contracts\IBitCodeGeneratorOrderedProjectsProvider.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Contracts\IBitConfigProvider.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Contracts\IDtoRulesValidator.cs" />
