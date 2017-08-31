@@ -66,38 +66,38 @@
     <Reference Include="AutoMapper, Version=6.1.1.0, Culture=neutral, PublicKeyToken=be96cd2c38ef1005, processorArchitecture=MSIL">
       <HintPath>..\packages\AutoMapper.6.1.1\lib\net45\AutoMapper.dll</HintPath>
     </Reference>
-    <Reference Include="Bit.Core, Version=0.0.6.7, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Bit.Core.0.0.6.7\lib\net461\Bit.Core.dll</HintPath>
+    <Reference Include="Bit.Core, Version=0.0.6.8, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Bit.Core.0.0.6.8\lib\net461\Bit.Core.dll</HintPath>
     </Reference>
-    <Reference Include="Bit.Data, Version=0.0.6.7, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Bit.Data.0.0.6.7\lib\net461\Bit.Data.dll</HintPath>
+    <Reference Include="Bit.Data, Version=0.0.6.8, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Bit.Data.0.0.6.8\lib\net461\Bit.Data.dll</HintPath>
     </Reference>
-    <Reference Include="Bit.Data.EntityFramework, Version=0.0.6.7, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Bit.Data.EntityFramework.0.0.6.7\lib\net461\Bit.Data.EntityFramework.dll</HintPath>
+    <Reference Include="Bit.Data.EntityFramework, Version=0.0.6.8, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Bit.Data.EntityFramework.0.0.6.8\lib\net461\Bit.Data.EntityFramework.dll</HintPath>
     </Reference>
-    <Reference Include="Bit.Hangfire, Version=0.0.6.7, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Bit.Hangfire.0.0.6.7\lib\net461\Bit.Hangfire.dll</HintPath>
+    <Reference Include="Bit.Hangfire, Version=0.0.6.8, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Bit.Hangfire.0.0.6.8\lib\net461\Bit.Hangfire.dll</HintPath>
     </Reference>
-    <Reference Include="Bit.IdentityServer, Version=0.0.6.7, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Bit.IdentityServer.0.0.6.7\lib\net461\Bit.IdentityServer.dll</HintPath>
+    <Reference Include="Bit.IdentityServer, Version=0.0.6.8, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Bit.IdentityServer.0.0.6.8\lib\net461\Bit.IdentityServer.dll</HintPath>
     </Reference>
-    <Reference Include="Bit.Model, Version=0.0.6.7, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Bit.Model.0.0.6.7\lib\net461\Bit.Model.dll</HintPath>
+    <Reference Include="Bit.Model, Version=0.0.6.8, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Bit.Model.0.0.6.8\lib\net461\Bit.Model.dll</HintPath>
     </Reference>
-    <Reference Include="Bit.OData, Version=0.0.6.7, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Bit.OData.0.0.6.7\lib\net461\Bit.OData.dll</HintPath>
+    <Reference Include="Bit.OData, Version=0.0.6.8, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Bit.OData.0.0.6.8\lib\net461\Bit.OData.dll</HintPath>
     </Reference>
-    <Reference Include="Bit.Owin, Version=0.0.6.7, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Bit.Owin.0.0.6.7\lib\net461\Bit.Owin.dll</HintPath>
+    <Reference Include="Bit.Owin, Version=0.0.6.8, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Bit.Owin.0.0.6.8\lib\net461\Bit.Owin.dll</HintPath>
     </Reference>
-    <Reference Include="Bit.Signalr, Version=0.0.6.7, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Bit.Signalr.0.0.6.7\lib\net461\Bit.Signalr.dll</HintPath>
+    <Reference Include="Bit.Signalr, Version=0.0.6.8, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Bit.Signalr.0.0.6.8\lib\net461\Bit.Signalr.dll</HintPath>
     </Reference>
-    <Reference Include="Bit.WebApi, Version=0.0.6.7, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Bit.WebApi.0.0.6.7\lib\net461\Bit.WebApi.dll</HintPath>
+    <Reference Include="Bit.WebApi, Version=0.0.6.8, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Bit.WebApi.0.0.6.8\lib\net461\Bit.WebApi.dll</HintPath>
     </Reference>
     <Reference Include="Correlator, Version=1.1.0.0, Culture=neutral, PublicKeyToken=ad71b95c30d52163, processorArchitecture=MSIL">
-      <HintPath>..\packages\Bit.WebApiCorrelator.1.1.0.0\lib\net452\Correlator.dll</HintPath>
+      <HintPath>..\packages\Bit.WebApiCorrelator.1.1.0.1\lib\net452\Correlator.dll</HintPath>
     </Reference>
     <Reference Include="Dapper, Version=1.50.2.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\Dapper.1.50.2\lib\net451\Dapper.dll</HintPath>
@@ -153,11 +153,11 @@
     <Reference Include="Microsoft.CSharp">
       <Private>True</Private>
     </Reference>
-    <Reference Include="Microsoft.Extensions.DependencyInjection, Version=1.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
-      <HintPath>..\packages\Microsoft.Extensions.DependencyInjection.1.0.0\lib\netstandard1.1\Microsoft.Extensions.DependencyInjection.dll</HintPath>
+    <Reference Include="Microsoft.Extensions.DependencyInjection, Version=1.1.1.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Extensions.DependencyInjection.1.1.1\lib\netstandard1.1\Microsoft.Extensions.DependencyInjection.dll</HintPath>
     </Reference>
-    <Reference Include="Microsoft.Extensions.DependencyInjection.Abstractions, Version=1.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
-      <HintPath>..\packages\Microsoft.Extensions.DependencyInjection.Abstractions.1.0.0\lib\netstandard1.0\Microsoft.Extensions.DependencyInjection.Abstractions.dll</HintPath>
+    <Reference Include="Microsoft.Extensions.DependencyInjection.Abstractions, Version=1.1.1.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Extensions.DependencyInjection.Abstractions.1.1.1\lib\netstandard1.0\Microsoft.Extensions.DependencyInjection.Abstractions.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.IdentityModel.Protocol.Extensions, Version=1.0.40306.1554, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.IdentityModel.Protocol.Extensions.1.0.4.403061554\lib\net45\Microsoft.IdentityModel.Protocol.Extensions.dll</HintPath>
@@ -198,6 +198,9 @@
     <Reference Include="Microsoft.Spatial, Version=7.3.1.10814, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.Spatial.7.3.1\lib\portable-net45+win8+wpa81\Microsoft.Spatial.dll</HintPath>
     </Reference>
+    <Reference Include="Microsoft.Win32.Primitives, Version=4.0.2.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.Win32.Primitives.4.3.0\lib\net46\Microsoft.Win32.Primitives.dll</HintPath>
+    </Reference>
     <Reference Include="Microsoft.WindowsAzure.Configuration, Version=1.7.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.WindowsAzure.ConfigurationManager.1.7.0.0\lib\net35-full\Microsoft.WindowsAzure.Configuration.dll</HintPath>
     </Reference>
@@ -220,7 +223,11 @@
       <HintPath>..\packages\Swashbuckle.Core.5.6.0\lib\net40\Swashbuckle.Core.dll</HintPath>
     </Reference>
     <Reference Include="Swashbuckle.OData, Version=1.0.0.0, Culture=neutral, PublicKeyToken=a2e252c86e553959, processorArchitecture=MSIL">
-      <HintPath>..\packages\Bit.Swashbuckle.OData.3.4.0\lib\net452\Swashbuckle.OData.dll</HintPath>
+      <HintPath>..\packages\Bit.Swashbuckle.OData.3.4.1\lib\net452\Swashbuckle.OData.dll</HintPath>
+    </Reference>
+    <Reference Include="System.AppContext, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.AppContext.4.3.0\lib\net46\System.AppContext.dll</HintPath>
+      <Private>True</Private>
     </Reference>
     <Reference Include="System.ComponentModel.Annotations, Version=4.2.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
       <HintPath>..\packages\System.ComponentModel.Annotations.4.4.0\lib\net461\System.ComponentModel.Annotations.dll</HintPath>
@@ -228,16 +235,35 @@
     <Reference Include="System.ComponentModel.Composition">
       <Private>True</Private>
     </Reference>
+    <Reference Include="System.Console, Version=4.0.1.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Console.4.3.0\lib\net46\System.Console.dll</HintPath>
+    </Reference>
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="System.DirectoryServices.AccountManagement" />
+    <Reference Include="System.Globalization.Calendars, Version=4.0.2.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Globalization.Calendars.4.3.0\lib\net46\System.Globalization.Calendars.dll</HintPath>
+    </Reference>
     <Reference Include="System.IdentityModel">
       <Private>True</Private>
     </Reference>
     <Reference Include="System.IdentityModel.Tokens.Jwt, Version=4.0.40306.1554, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\packages\System.IdentityModel.Tokens.Jwt.4.0.4.403061554\lib\net45\System.IdentityModel.Tokens.Jwt.dll</HintPath>
     </Reference>
+    <Reference Include="System.IO.Compression, Version=4.1.2.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.IO.Compression.4.3.0\lib\net46\System.IO.Compression.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="System.IO.Compression.FileSystem">
       <Private>True</Private>
+    </Reference>
+    <Reference Include="System.IO.Compression.ZipFile, Version=4.0.2.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.IO.Compression.ZipFile.4.3.0\lib\net46\System.IO.Compression.ZipFile.dll</HintPath>
+    </Reference>
+    <Reference Include="System.IO.FileSystem, Version=4.0.2.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.IO.FileSystem.4.3.0\lib\net46\System.IO.FileSystem.dll</HintPath>
+    </Reference>
+    <Reference Include="System.IO.FileSystem.Primitives, Version=4.0.2.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.IO.FileSystem.Primitives.4.3.0\lib\net46\System.IO.FileSystem.Primitives.dll</HintPath>
     </Reference>
     <Reference Include="System.Linq.Dynamic, Version=1.0.6132.35681, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\System.Linq.Dynamic.1.0.7\lib\net40\System.Linq.Dynamic.dll</HintPath>
@@ -253,6 +279,9 @@
     </Reference>
     <Reference Include="System.Net.Http.WebRequest">
       <Private>True</Private>
+    </Reference>
+    <Reference Include="System.Net.Sockets, Version=4.1.1.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Net.Sockets.4.3.0\lib\net46\System.Net.Sockets.dll</HintPath>
     </Reference>
     <Reference Include="System.Numerics">
       <Private>True</Private>
@@ -273,6 +302,10 @@
       <Private>True</Private>
     </Reference>
     <Reference Include="System.EnterpriseServices">
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System.Runtime.InteropServices.RuntimeInformation, Version=4.0.1.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Runtime.InteropServices.RuntimeInformation.4.3.0\lib\net45\System.Runtime.InteropServices.RuntimeInformation.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="System.Runtime.Serialization" />
@@ -305,7 +338,7 @@
       <HintPath>..\packages\Microsoft.AspNet.WebApi.Owin.5.2.3\lib\net45\System.Web.Http.Owin.dll</HintPath>
     </Reference>
     <Reference Include="System.Web.OData, Version=6.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>..\packages\Bit.Microsoft.AspNet.OData.6.0.0\lib\netstandard2.0\System.Web.OData.dll</HintPath>
+      <HintPath>..\packages\Bit.Microsoft.AspNet.OData.6.0.1\lib\net45\System.Web.OData.dll</HintPath>
     </Reference>
     <Reference Include="System.Web.Razor, Version=3.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.AspNet.Razor.3.2.3\lib\net45\System.Web.Razor.dll</HintPath>
@@ -314,6 +347,9 @@
       <Private>True</Private>
     </Reference>
     <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Xml.ReaderWriter, Version=4.1.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Xml.ReaderWriter.4.3.0\lib\net46\System.Xml.ReaderWriter.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <None Include="App_Data\templates.json" />
