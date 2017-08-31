@@ -13,10 +13,10 @@
         "TypingsPath": "typings.d.ts",
         "SourceProjects": [
           {
-            "Name": "Bit.Model"
+            "Name": "Bit.Model(net461)"
           },
           {
-            "Name": "Bit.OData"
+            "Name": "Bit.OData(net461)"
           }
         ],
         "DestinationProject": {
