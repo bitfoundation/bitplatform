@@ -115,16 +115,14 @@ namespace BitVSExtensionV1
             _visualStudioWorkspace.WorkspaceFailed += _workspace_WorkspaceFailed;
             _visualStudioWorkspace.WorkspaceChanged += _workspace_WorkspaceChanged;
 
-            _mSBuildWorkspace = MSBuildWorkspace.Create();
+            _mSBuildWorkspace = MSBuildWorkspace.Create(new Dictionary<string, string>(), _visualStudioWorkspace.Services.HostServices);
             _mSBuildWorkspace.LoadMetadataForReferencedProjects = _mSBuildWorkspace.SkipUnrecognizedProjects = true;
             _mSBuildWorkspace.WorkspaceFailed += _workspace_WorkspaceFailed;
         }
 
         private void _workspace_WorkspaceFailed(object sender, WorkspaceDiagnosticEventArgs e)
         {
-            if (_mSBuildWorkspace == sender)
-                useMsBuildWorkspace = false;
-            LogWarn($"{e.Diagnostic.Kind} {e.Diagnostic.Message}");
+            LogWarn($"{sender.GetType().Name} {e.Diagnostic.Kind} {e.Diagnostic.Message}");
         }
 
         private void _workspace_WorkspaceChanged(object sender, WorkspaceChangeEventArgs e)
@@ -162,12 +160,12 @@ namespace BitVSExtensionV1
                 foreach (BitCodeGeneratorMapping mapping in config.BitCodeGeneratorConfigs.BitCodeGeneratorMappings)
                 {
                     if (!_visualStudioWorkspace.CurrentSolution.Projects.Any(p => p.Name == mapping.DestinationProject.Name && p.Language == LanguageNames.CSharp))
-                        throw new InvalidOperationException($"No project found named {mapping.DestinationProject.Name}");
+                        LogWarn($"No project found named {mapping.DestinationProject.Name}");
 
                     foreach (BitTools.Core.Model.ProjectInfo proj in mapping.SourceProjects)
                     {
                         if (!_visualStudioWorkspace.CurrentSolution.Projects.Any(p => p.Name == proj.Name && p.Language == LanguageNames.CSharp))
-                            throw new InvalidOperationException($"No project found named {proj.Name}");
+                            LogWarn($"No project found named {proj.Name}");
                     }
                 }
             }
@@ -186,15 +184,12 @@ namespace BitVSExtensionV1
                 LogException("Init html elements failed.", ex);
             }
 
-            _shouldGeneratedProjectNames = new List<string> { };
-            needsFirstTimeGenerateCode = true;
-            lastActionWasClean = false;
-            thereWasAnErrorInLastBuild = false;
-
-            Log("Preparing bit workspace...");
-
             try
             {
+                bitWorkspaceIsPrepared = thereWasAnErrorInLastBuild = generateCodeWasCalledWhileBitWorkspaceWasNotPrepared = lastActionWasClean = false;
+                _shouldGeneratedProjectNames = new List<string> { };
+                Log("Preparing bit workspace... This includes restoring nuget packages, building your solution etc.");
+
                 using (System.Diagnostics.Process dotnetBuildProcess = new System.Diagnostics.Process())
                 {
                     dotnetBuildProcess.StartInfo.UseShellExecute = false;
@@ -207,17 +202,39 @@ namespace BitVSExtensionV1
                     await dotnetBuildProcess.StandardOutput.ReadToEndAsync();
                     dotnetBuildProcess.WaitForExit();
                 }
+
+                OpenMsBuildWorkspace:
+                try
+                {
+                    await _mSBuildWorkspace.OpenSolutionAsync(_visualStudioWorkspace.CurrentSolution.FilePath);
+                }
+                catch (InvalidOperationException ex) when (ex.Message == "The operation cannot be completed because a build is already in progress.")
+                {
+                    Log("Try to open ms build workspace...");
+                    await System.Threading.Tasks.Task.Delay(1000);
+                    goto OpenMsBuildWorkspace;
+                }
+                catch
+                {
+                    DisposeMsBuildWorkspace();
+                    throw;
+                }
             }
             catch (Exception ex)
             {
-                LogException("Dotnet build failed", ex);
+                LogException("Bit workspace preparation failed", ex);
             }
+            finally
+            {
+                bitWorkspaceIsPrepared = true;
+                Log("Bit workspace gets prepared", activatePane: true);
 
-            _mSBuildWorkspace.CloseSolution();
-            await _mSBuildWorkspace.OpenSolutionAsync(_visualStudioWorkspace.CurrentSolution.FilePath);
-            useMsBuildWorkspace = true;
-
-            Log("Preparing bit workspace finished");
+                if (generateCodeWasCalledWhileBitWorkspaceWasNotPrepared == true)
+                {
+                    CallGenerateCodes();
+                    generateCodeWasCalledWhileBitWorkspaceWasNotPrepared = false;
+                }
+            }
         }
 
         private bool WorkspaceHasBitConfigV1JsonFile()
@@ -227,6 +244,12 @@ namespace BitVSExtensionV1
 
         private async void CallGenerateCodes()
         {
+            if (bitWorkspaceIsPrepared == false)
+            {
+                generateCodeWasCalledWhileBitWorkspaceWasNotPrepared = true;
+                return;
+            }
+
             Stopwatch sw = null;
 
             try
@@ -240,9 +263,14 @@ namespace BitVSExtensionV1
                     new DefaultBitCodeGeneratorMappingsProvider(new DefaultBitConfigProvider()), dtosProvider
                     , new DefaultHtmlClientProxyDtoGenerator(), new DefaultHtmlClientContextGenerator(), controllersProvider, new DefaultProjectEnumTypesProvider(controllersProvider, dtosProvider));
 
-                await generator.GenerateCodes((useMsBuildWorkspace ? (Workspace)_mSBuildWorkspace : (Workspace)_visualStudioWorkspace), _shouldGeneratedProjectNames);
+                if (_mSBuildWorkspace != null || lastActionWasClean == true || thereWasAnErrorInLastBuild == true)
+                    _shouldGeneratedProjectNames = _visualStudioWorkspace.CurrentSolution.Projects.Where(p => p.Language == LanguageNames.CSharp).Select(p => p.Name).ToList();
 
-                Log($"Code Generation Completed in {sw.ElapsedMilliseconds} ms, using {(useMsBuildWorkspace ? "MsBuildWorkspace" : "VisualStduioWorkspce")}");
+                await generator.GenerateCodes((_mSBuildWorkspace != null ? (Workspace)_mSBuildWorkspace : (Workspace)_visualStudioWorkspace), _shouldGeneratedProjectNames);
+
+                Log($"Code Generation Completed in {sw.ElapsedMilliseconds} ms, using {(_mSBuildWorkspace != null ? "MsBuildWorkspace" : "VisualStduioWorkspce")}");
+
+                DisposeMsBuildWorkspace();
             }
             catch (Exception ex)
             {
@@ -258,7 +286,7 @@ namespace BitVSExtensionV1
         {
             DefaultHtmlClientProxyCleaner cleaner = new DefaultHtmlClientProxyCleaner(new DefaultBitCodeGeneratorMappingsProvider(new DefaultBitConfigProvider()));
 
-            await cleaner.DeleteCodes((useMsBuildWorkspace ? (Workspace)_mSBuildWorkspace : (Workspace)_visualStudioWorkspace), _shouldGeneratedProjectNames);
+            await cleaner.DeleteCodes(_visualStudioWorkspace, _shouldGeneratedProjectNames);
 
             Log("Generated codes were deleted.");
         }
@@ -310,15 +338,13 @@ namespace BitVSExtensionV1
             if (!WorkspaceHasBitConfigV1JsonFile() || action == vsBuildAction.vsBuildActionClean)
                 return;
 
-            if (needsFirstTimeGenerateCode == true || thereWasAnErrorInLastBuild == true || lastActionWasClean == true)
+            if (thereWasAnErrorInLastBuild == true || lastActionWasClean == true)
             {
-                _shouldGeneratedProjectNames = _visualStudioWorkspace.CurrentSolution.Projects.Where(p => p.Language == LanguageNames.CSharp).Select(p => p.Name).ToList();
+                lastActionWasClean = false;
+                thereWasAnErrorInLastBuild = false;
                 CallGenerateCodes();
             }
 
-            needsFirstTimeGenerateCode = false;
-            lastActionWasClean = false;
-            thereWasAnErrorInLastBuild = false;
             _shouldGeneratedProjectNames.Clear();
         }
 
@@ -358,24 +384,29 @@ namespace BitVSExtensionV1
             }
         }
 
-        private void LogException(string text, Exception ex)
+        private void LogException(string text, Exception ex, bool activatePane = true)
         {
             _statusBar.SetText($"Bit: {text} See output pane for more info");
             _outputPane.OutputString($"{text} {DateTimeOffset.Now} \n {ex} \n");
             _outputPane.Activate();
+            if (activatePane == true)
+                _outputPane.Activate();
         }
 
-        private void Log(string text)
+        private void Log(string text, bool activatePane = false)
         {
             _statusBar.SetText($"Bit: {text}");
             _outputPane.OutputString($"{text} {DateTimeOffset.Now} \n");
+            if (activatePane == true)
+                _outputPane.Activate();
         }
 
-        private void LogWarn(string text)
+        private void LogWarn(string text, bool activatePane = false)
         {
             _statusBar.SetText($"Bit: {text}");
             _outputPane.OutputString($"{text} {DateTimeOffset.Now} \n");
-            _outputPane.Activate();
+            if (activatePane == true)
+                _outputPane.Activate();
         }
 
         private void ShowInitialLoadProblem(string errorMessage)
@@ -397,11 +428,7 @@ namespace BitVSExtensionV1
                 _visualStudioWorkspace.WorkspaceFailed -= _workspace_WorkspaceFailed;
             }
 
-            if (_mSBuildWorkspace != null)
-            {
-                _mSBuildWorkspace.WorkspaceFailed -= _workspace_WorkspaceFailed;
-                _mSBuildWorkspace.Dispose();
-            }
+            DisposeMsBuildWorkspace();
 
             if (_applicationObject?.Events?.BuildEvents != null)
             {
@@ -413,6 +440,16 @@ namespace BitVSExtensionV1
             }
 
             base.Dispose(disposing);
+        }
+
+        private void DisposeMsBuildWorkspace()
+        {
+            if (_mSBuildWorkspace != null)
+            {
+                _mSBuildWorkspace.WorkspaceFailed -= _workspace_WorkspaceFailed;
+                _mSBuildWorkspace.Dispose();
+                _mSBuildWorkspace = null;
+            }
         }
 
         private List<string> _shouldGeneratedProjectNames;
@@ -433,12 +470,12 @@ namespace BitVSExtensionV1
 
         private IVsStatusbar _statusBar;
 
-        private bool needsFirstTimeGenerateCode;
-
         private bool lastActionWasClean;
 
         private bool thereWasAnErrorInLastBuild;
 
-        private bool useMsBuildWorkspace;
+        private bool generateCodeWasCalledWhileBitWorkspaceWasNotPrepared;
+
+        private bool bitWorkspaceIsPrepared;
     }
 }
