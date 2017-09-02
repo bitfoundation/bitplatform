@@ -113,10 +113,6 @@ namespace BitVSExtensionV1
 
             _visualStudioWorkspace.WorkspaceFailed += _workspace_WorkspaceFailed;
             _visualStudioWorkspace.WorkspaceChanged += _workspace_WorkspaceChanged;
-
-            _mSBuildWorkspace = MSBuildWorkspace.Create(new Dictionary<string, string>(), _visualStudioWorkspace.Services.HostServices);
-            _mSBuildWorkspace.LoadMetadataForReferencedProjects = _mSBuildWorkspace.SkipUnrecognizedProjects = true;
-            _mSBuildWorkspace.WorkspaceFailed += _workspace_WorkspaceFailed;
         }
 
         private void _workspace_WorkspaceFailed(object sender, WorkspaceDiagnosticEventArgs e)
@@ -185,8 +181,8 @@ namespace BitVSExtensionV1
 
             try
             {
-                bitWorkspaceIsPrepared = thereWasAnErrorInLastBuild = generateCodeWasCalledWhileBitWorkspaceWasNotPrepared = lastActionWasClean = false;
-                Log("Preparing bit workspace... This includes restoring nuget packages, building your solution etc.");
+                bitWorkspaceIsPrepared = thereWasAnErrorInLastBuild = lastActionWasClean = false;
+                Log("Preparing bit workspace... This includes restoring nuget packages, building your solution and generating codes.");
 
                 using (System.Diagnostics.Process dotnetBuildProcess = new System.Diagnostics.Process())
                 {
@@ -200,23 +196,6 @@ namespace BitVSExtensionV1
                     await dotnetBuildProcess.StandardOutput.ReadToEndAsync();
                     dotnetBuildProcess.WaitForExit();
                 }
-
-                OpenMsBuildWorkspace:
-                try
-                {
-                    await _mSBuildWorkspace.OpenSolutionAsync(_visualStudioWorkspace.CurrentSolution.FilePath);
-                }
-                catch (InvalidOperationException ex) when (ex.Message == "The operation cannot be completed because a build is already in progress.")
-                {
-                    Log("Try to open ms build workspace...");
-                    await System.Threading.Tasks.Task.Delay(1000);
-                    goto OpenMsBuildWorkspace;
-                }
-                catch
-                {
-                    DisposeMsBuildWorkspace();
-                    throw;
-                }
             }
             catch (Exception ex)
             {
@@ -225,13 +204,8 @@ namespace BitVSExtensionV1
             finally
             {
                 bitWorkspaceIsPrepared = true;
+                await CallGenerateCodes();
                 Log("Bit workspace gets prepared", activatePane: true);
-
-                if (generateCodeWasCalledWhileBitWorkspaceWasNotPrepared == true)
-                {
-                    CallGenerateCodes();
-                    generateCodeWasCalledWhileBitWorkspaceWasNotPrepared = false;
-                }
             }
         }
 
@@ -240,11 +214,10 @@ namespace BitVSExtensionV1
             return File.Exists(_visualStudioWorkspace.CurrentSolution.FilePath) && File.Exists(Path.Combine(Path.GetDirectoryName(_visualStudioWorkspace.CurrentSolution.FilePath) + "\\BitConfigV1.json"));
         }
 
-        private async void CallGenerateCodes()
+        private async System.Threading.Tasks.Task CallGenerateCodes()
         {
             if (bitWorkspaceIsPrepared == false)
             {
-                generateCodeWasCalledWhileBitWorkspaceWasNotPrepared = true;
                 return;
             }
 
@@ -261,11 +234,19 @@ namespace BitVSExtensionV1
                     new DefaultBitConfigProvider(), dtosProvider
                     , new DefaultHtmlClientProxyDtoGenerator(), new DefaultHtmlClientContextGenerator(), controllersProvider, new DefaultProjectEnumTypesProvider(controllersProvider, dtosProvider));
 
-                await generator.GenerateCodes((_mSBuildWorkspace != null ? (Workspace)_mSBuildWorkspace : (Workspace)_visualStudioWorkspace));
+                Workspace workspaceForCodeGeneration = await GetWorkspaceForCodeGeneration();
 
-                Log($"Code Generation Completed in {sw.ElapsedMilliseconds} ms, using {(_mSBuildWorkspace != null ? "MsBuildWorkspace" : "VisualStduioWorkspce")}");
+                try
+                {
+                    await generator.GenerateCodes(workspaceForCodeGeneration);
 
-                DisposeMsBuildWorkspace();
+                    Log($"Code Generation Completed in {sw.ElapsedMilliseconds} ms using {workspaceForCodeGeneration.GetType().Name}");
+                }
+                finally
+                {
+                    if (workspaceForCodeGeneration is MSBuildWorkspace)
+                        workspaceForCodeGeneration.Dispose();
+                }
             }
             catch (Exception ex)
             {
@@ -277,7 +258,29 @@ namespace BitVSExtensionV1
             }
         }
 
-        private async void CallCleanCodes()
+        private async System.Threading.Tasks.Task<Workspace> GetWorkspaceForCodeGeneration()
+        {
+            bool vsWorkspaceIsValid = true;
+
+            foreach (Microsoft.CodeAnalysis.Project proj in _visualStudioWorkspace.CurrentSolution.Projects.Where(p => p.Language == LanguageNames.CSharp))
+            {
+                if (!(await proj.GetCompilationAsync()).ReferencedAssemblyNames.Any())
+                {
+                    vsWorkspaceIsValid = false;
+                    break;
+                }
+            }
+
+            if (vsWorkspaceIsValid)
+                return _visualStudioWorkspace;
+
+            MSBuildWorkspace msBuildWorkspaace = MSBuildWorkspace.Create(new Dictionary<string, string>(), _visualStudioWorkspace.Services.HostServices);
+            msBuildWorkspaace.LoadMetadataForReferencedProjects = msBuildWorkspaace.SkipUnrecognizedProjects = true;
+            await msBuildWorkspaace.OpenSolutionAsync(_visualStudioWorkspace.CurrentSolution.FilePath);
+            return msBuildWorkspaace;
+        }
+
+        private async System.Threading.Tasks.Task CallCleanCodes()
         {
             DefaultHtmlClientProxyCleaner cleaner = new DefaultHtmlClientProxyCleaner(new DefaultBitConfigProvider());
 
@@ -328,7 +331,7 @@ namespace BitVSExtensionV1
             }
         }
 
-        private void _buildEvents_OnBuildBegin(vsBuildScope scope, vsBuildAction action)
+        private async void _buildEvents_OnBuildBegin(vsBuildScope scope, vsBuildAction action)
         {
             if (!WorkspaceHasBitConfigV1JsonFile() || action == vsBuildAction.vsBuildActionClean)
                 return;
@@ -337,7 +340,7 @@ namespace BitVSExtensionV1
             {
                 lastActionWasClean = false;
                 thereWasAnErrorInLastBuild = false;
-                CallGenerateCodes();
+                await CallGenerateCodes();
             }
         }
 
@@ -349,7 +352,7 @@ namespace BitVSExtensionV1
             thereWasAnErrorInLastBuild = thereWasAnErrorInLastBuild && success;
         }
 
-        private void _buildEvents_OnBuildDone(vsBuildScope scope, vsBuildAction action)
+        private async void _buildEvents_OnBuildDone(vsBuildScope scope, vsBuildAction action)
         {
             if (!WorkspaceHasBitConfigV1JsonFile())
                 return;
@@ -358,12 +361,12 @@ namespace BitVSExtensionV1
             {
                 if (action == vsBuildAction.vsBuildActionClean)
                 {
-                    CallCleanCodes();
+                    await CallCleanCodes();
                     lastActionWasClean = true;
                 }
                 else
                 {
-                    CallGenerateCodes();
+                    await CallGenerateCodes();
                 }
             }
             catch (Exception ex)
@@ -416,8 +419,6 @@ namespace BitVSExtensionV1
                 _visualStudioWorkspace.WorkspaceFailed -= _workspace_WorkspaceFailed;
             }
 
-            DisposeMsBuildWorkspace();
-
             if (_applicationObject?.Events?.BuildEvents != null)
             {
                 _applicationObject.Events.BuildEvents.OnBuildProjConfigDone -= _buildEvents_OnBuildProjConfigDone;
@@ -430,19 +431,7 @@ namespace BitVSExtensionV1
             base.Dispose(disposing);
         }
 
-        private void DisposeMsBuildWorkspace()
-        {
-            if (_mSBuildWorkspace != null)
-            {
-                _mSBuildWorkspace.WorkspaceFailed -= _workspace_WorkspaceFailed;
-                _mSBuildWorkspace.Dispose();
-                _mSBuildWorkspace = null;
-            }
-        }
-
         private VisualStudioWorkspace _visualStudioWorkspace;
-
-        private MSBuildWorkspace _mSBuildWorkspace;
 
         private IComponentModel _componentModel;
 
@@ -459,8 +448,6 @@ namespace BitVSExtensionV1
         private bool lastActionWasClean;
 
         private bool thereWasAnErrorInLastBuild;
-
-        private bool generateCodeWasCalledWhileBitWorkspaceWasNotPrepared;
 
         private bool bitWorkspaceIsPrepared;
     }
