@@ -111,7 +111,7 @@ Tools -> Options -> Projects and Solutions -> Web Package Management
 
 
 Tools -> Options -> Text Editor -> All Languages -> Scroll Bars
-* Uncheck "Show annotations over vertical scroll bar"
+* Uncheck "Show annotations over vertical scroll bar" Then check "Show errors"
 
 
 Tools -> Options -> Text Editor -> All Languages -> CodeLens
