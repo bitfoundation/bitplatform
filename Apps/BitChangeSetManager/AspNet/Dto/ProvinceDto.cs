@@ -3,7 +3,7 @@ using System;
 
 namespace BitChangeSetManager.Dto
 {
-    public class ProvinceDto : IDtoWithDefaultGuidKey
+    public class ProvinceDto : IDto
     {
         public virtual Guid Id { get; set; }
 

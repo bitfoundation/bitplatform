@@ -19,16 +19,16 @@
   ],
   "license": "MIT",
   "devDependencies": {
-    "@types/decimal.js": "0.0.30",
-    "@types/pubsub-js": "1.5.17",
+    "@types/decimal.js": "0.0.31",
+    "@types/pubsub-js": "1.5.18",
     "@types/signalr": "^2.2.34"
   },
   "optionalDependencies": {
     "decimal.js": "7.2.3",
     "pubsub-js": "1.5.7",
     "signalr": "2.2.2",
-    "regenerator": "0.9.7",
-    "core-js": "2.5.0",
+    "regenerator": "0.10.1",
+    "core-js": "2.5.1",
     "whatwg-fetch": "2.0.3",
     "@bit/encoder": "^1.0.0",
     "event-source-polyfill": "0.0.9"

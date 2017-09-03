@@ -3,7 +3,7 @@ using Bit.Model.Contracts;
 
 namespace BitChangeSetManager.Dto
 {
-    public class ChangeSetSeverityDto : IDtoWithDefaultGuidKey
+    public class ChangeSetSeverityDto : IDto
     {
         public virtual Guid Id { get; set; }
 

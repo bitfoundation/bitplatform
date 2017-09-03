@@ -6,7 +6,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace BitChangeSetManager.Dto
 {
-    public class ChangeSetDto : IDtoWithDefaultGuidKey
+    public class ChangeSetDto : IDto
     {
         [Key]
         public virtual Guid Id { get; set; }
@@ -49,7 +49,7 @@ namespace BitChangeSetManager.Dto
         public virtual List<ChangeSetImagetDto> Images { get; set; }
     }
 
-    public class ChangeSetImagetDto : IDtoWithDefaultGuidKey
+    public class ChangeSetImagetDto : IDto
     {
         public virtual Guid Id { get; set; }
 

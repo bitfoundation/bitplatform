@@ -7,17 +7,11 @@
   "BitCodeGeneratorConfigs": {
     "BitCodeGeneratorMappings": [
       {
-        "EdmName": "Bit",
+        "Route": "Bit",
         "Namespace": "Bit",
         "DestinationFileName": "Bit.Model.Context",
         "TypingsPath": "typings.d.ts",
         "SourceProjects": [
-          {
-            "Name": "Bit.Model"
-          },
-          {
-            "Name": "Bit.OData"
-          },
           {
             "Name": "Bit.Model(net461)"
           },
@@ -36,7 +30,7 @@
         ]
       },
       {
-        "EdmName": "Test",
+        "Route": "Test",
         "Namespace": "Test",
         "DestinationFileName": "Test.Model.Context",
         "TypingsPath": "typings.d.ts",

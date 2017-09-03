@@ -10,7 +10,7 @@ using Bit.Core.Contracts;
 
 namespace BitChangeSetManager.Api
 {
-    public class ChangeSetsController : BitChangeSetManagerDtoSetController<ChangeSetDto, ChangeSet>
+    public class ChangeSetsController : BitChangeSetManagerDtoSetController<ChangeSetDto, ChangeSet, Guid>
     {
         private readonly IChangeSetRepository _changeSetsRepository;
         private readonly IMessageSender _messageSender;
@@ -24,6 +24,10 @@ namespace BitChangeSetManager.Api
             _messageSender = messageSender;
             _userInformationProvider = userInformationProvider;
             _usersRepository = usersRepository;
+        }
+
+        public ChangeSetsController(IBitChangeSetManagerRepository<ChangeSet> repository) : base(repository)
+        {
         }
 
         public IBitChangeSetManagerRepository<Customer> CustomersRepository { get; set; }

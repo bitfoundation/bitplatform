@@ -65,7 +65,7 @@ namespace BitCodeGenerator.Implementations
                 if (string.IsNullOrEmpty(mapping.Namespace))
                     throw new InvalidOperationException("Namespace is not provided");
 
-                if (string.IsNullOrEmpty(mapping.EdmName))
+                if (string.IsNullOrEmpty(mapping.Route))
                     throw new InvalidOperationException("EdmName is not provided");
             }
 

@@ -19,7 +19,7 @@
 
     public class BitCodeGeneratorMapping
     {
-        public virtual string EdmName { get; set; }
+        public virtual string Route { get; set; }
 
         public virtual string Namespace { get; set; }
 

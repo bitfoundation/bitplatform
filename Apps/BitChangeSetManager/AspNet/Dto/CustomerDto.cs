@@ -4,7 +4,7 @@ using Bit.Model.Contracts;
 
 namespace BitChangeSetManager.Dto
 {
-    public class CustomerDto : IDtoWithDefaultGuidKey
+    public class CustomerDto : IDto
     {
         [Key]
         public virtual Guid Id { get; set; }

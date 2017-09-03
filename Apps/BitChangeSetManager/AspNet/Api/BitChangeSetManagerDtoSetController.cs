@@ -10,9 +10,9 @@ using System.Web.OData;
 
 namespace BitChangeSetManager.Api
 {
-    public class BitChangeSetManagerDtoSetController<TDto, TModel> : DefaultDtoSetController<TDto, TModel>
-        where TDto : class, IDtoWithDefaultGuidKey
-        where TModel : class, IEntityWithDefaultGuidKey
+    public class BitChangeSetManagerDtoSetController<TDto, TModel, TKey> : DtoSetController<TDto, TModel, TKey>
+        where TDto : class, IDto
+        where TModel : class, IEntity
     {
         private readonly IBitChangeSetManagerRepository<TModel> _repository;
 
@@ -32,7 +32,7 @@ namespace BitChangeSetManager.Api
         }
 
         [PartialUpdate]
-        public override async Task<TDto> PartialUpdate(Guid key, Delta<TDto> modifiedDtoDelta, CancellationToken cancellationToken)
+        public override async Task<TDto> PartialUpdate(TKey key, Delta<TDto> modifiedDtoDelta, CancellationToken cancellationToken)
         {
             if (IsReadOnly())
                 throw new AppException(BitChangeSetManagerMetadata.UpdateIsDeined);
@@ -41,7 +41,7 @@ namespace BitChangeSetManager.Api
         }
 
         [Delete]
-        public override async Task Delete(Guid key, CancellationToken cancellationToken)
+        public override async Task Delete(TKey key, CancellationToken cancellationToken)
         {
             if (IsReadOnly())
                 throw new AppException(BitChangeSetManagerMetadata.DeleteIsDeined);
@@ -50,7 +50,7 @@ namespace BitChangeSetManager.Api
         }
 
         [Update]
-        public override Task<TDto> Update(Guid key, TDto dto, CancellationToken cancellationToken)
+        public override Task<TDto> Update(TKey key, TDto dto, CancellationToken cancellationToken)
         {
             if (IsReadOnly())
                 throw new AppException(BitChangeSetManagerMetadata.DeleteIsDeined);

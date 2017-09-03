@@ -14,7 +14,7 @@ using System.Web.Http;
 
 namespace BitChangeSetManager.Api
 {
-    public class ChangeSetImagesController : BitChangeSetManagerDtoSetController<ChangeSetImagetDto, ChangeSetImage>
+    public class ChangeSetImagesController : BitChangeSetManagerDtoSetController<ChangeSetImagetDto, ChangeSetImage, Guid>
     {
         public ChangeSetImagesController(IBitChangeSetManagerRepository<ChangeSetImage> repository)
             : base(repository)
