@@ -97,8 +97,6 @@
     <TypeScriptCompile Include="log.ts" />
     <TypeScriptCompile Include="Model\iArchivableDto.ts" />
     <TypeScriptCompile Include="Model\iDto.ts" />
-    <TypeScriptCompile Include="Model\iDtoWithDefaultGuidKey.ts" />
-    <TypeScriptCompile Include="Model\iDtoWithDefaultKey.ts" />
     <TypeScriptCompile Include="Model\Identity\iSsoModel.ts" />
     <TypeScriptCompile Include="Model\iSyncableDto.ts" />
     <TypeScriptCompile Include="Model\iVersionableDto.ts" />

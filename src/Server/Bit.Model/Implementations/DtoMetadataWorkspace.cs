@@ -52,5 +52,17 @@ namespace Bit.Model.Implementations
             else
                 return props.Where(p => p.Name == "Id" || p.Name == $"{typeInfo.Name}Id").ToArray();
         }
+
+        public virtual object[] GetKeys(IDto dto)
+        {
+            if (dto == null)
+                throw new ArgumentNullException(nameof(dto));
+
+            TypeInfo dtoType = dto.GetType().GetTypeInfo();
+
+            PropertyInfo[] props = GetKeyColums(dtoType);
+
+            return props.Select(p => p.GetValue(dto)).ToArray();
+        }
     }
 }

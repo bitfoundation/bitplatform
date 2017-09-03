@@ -1,10 +1,12 @@
 ﻿using Bit.Data.Contracts;
 using Bit.Data.Implementations;
 using Bit.Model.Contracts;
+using Bit.Model.Implementations;
 using Bit.Owin.Exceptions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Web.Http;
@@ -13,8 +15,8 @@ using System.Web.OData;
 namespace Bit.OData.ODataControllers
 {
     public class DtoSetController<TDto, TEntity, TKey> : DtoController<TDto>
-        where TDto : class, IDtoWithDefaultKey<TKey>
-        where TEntity : class, IEntityWithDefaultKey<TKey>
+        where TDto : class, IDto
+        where TEntity : class, IEntity
     {
 #if DEBUG
         protected DtoSetController()
@@ -52,7 +54,12 @@ namespace Bit.OData.ODataControllers
 
             TEntity entity = await Repository.AddAsync(FromDtoToEntity(dto), cancellationToken);
 
-            return await GetById(entity.Id, cancellationToken);
+            return await GetById(GetKey(DtoEntityMapper.FromEntityToDto(entity)), cancellationToken);
+        }
+
+        protected virtual TKey GetKey(TDto dto)
+        {
+            return (TKey)DtoMetadataWorkspace.Current.GetKeys(dto).ExtendedSingle($"Finding keys of ${typeof(TDto).GetTypeInfo().Name}");
         }
 
         protected virtual async Task<TDto> GetById(TKey key, CancellationToken cancellationToken)
@@ -129,7 +136,7 @@ namespace Bit.OData.ODataControllers
 
             TEntity entity = FromDtoToEntity(dto);
 
-            if (!EqualityComparer<TKey>.Default.Equals(key, entity.Id))
+            if (!EqualityComparer<TKey>.Default.Equals(key, GetKey(dto)))
                 throw new BadRequestException();
 
             entity = await Repository.UpdateAsync(entity, cancellationToken);

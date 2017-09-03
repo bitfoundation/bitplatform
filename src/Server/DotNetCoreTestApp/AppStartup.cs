@@ -133,7 +133,7 @@ namespace DotNetCoreTestApp
         public virtual DbSet<Customer> Customers { get; set; }
     }
 
-    public class Customer : IEntityWithDefaultKey<int>
+    public class Customer : IEntity
     {
         public virtual int Id { get; set; }
 
@@ -142,7 +142,7 @@ namespace DotNetCoreTestApp
         public virtual string LastName { get; set; }
     }
 
-    public class CustomerDto : IDtoWithDefaultKey<int>
+    public class CustomerDto : IDto
     {
         public virtual int Id { get; set; }
 

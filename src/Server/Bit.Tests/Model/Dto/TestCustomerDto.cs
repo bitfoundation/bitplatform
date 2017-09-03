@@ -4,7 +4,7 @@ using Bit.Model.Contracts;
 
 namespace Bit.Tests.Model.Dto
 {
-    public class TestCustomerDto : IDtoWithDefaultGuidKey
+    public class TestCustomerDto : IDto
     {
         [Key]
         public virtual Guid Id { get; set; }

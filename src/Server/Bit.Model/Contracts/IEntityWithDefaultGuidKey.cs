@@ -2,8 +2,9 @@
 
 namespace Bit.Model.Contracts
 {
-    public interface IEntityWithDefaultGuidKey : IEntityWithDefaultKey<Guid>
+    [Obsolete]
+    public interface IEntityWithDefaultGuidKey : IEntity
     {
-
+        Guid Id { get; set; }
     }
 }
