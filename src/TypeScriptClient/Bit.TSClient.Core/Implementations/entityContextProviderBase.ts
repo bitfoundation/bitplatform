@@ -101,21 +101,31 @@
 
                         odatajs.oData.utils.prepareRequest = function (request, handler, context) {
                             request.headers = request.headers || {};
-                            request.headers["Current-Time-Zone"] = clientAppProfile.currentTimeZone;
-                            request.headers["Desired-Time-Zone"] = clientAppProfile.desiredTimeZone;
-                            request.headers["Client-App-Version"] = clientAppProfile.version;
-                            request.headers["Client-Type"] = clientAppProfile.clientType;
-                            request.headers["Client-Culture"] = clientAppProfile.culture;
-                            request.headers["Client-Screen-Size"] = clientAppProfile.screenSize;
-                            request.headers["Client-Route"] = location.pathname;
-                            request.headers["Client-Theme"] = clientAppProfile.theme;
-                            request.headers["Client-Debug-Mode"] = clientAppProfile.isDebugMode;
+                            if (clientAppProfile.currentTimeZone != null && clientAppProfile.currentTimeZone != "")
+                                request.headers["Current-Time-Zone"] = clientAppProfile.currentTimeZone;
+                            if (clientAppProfile.desiredTimeZone != null && clientAppProfile.desiredTimeZone != "")
+                                request.headers["Desired-Time-Zone"] = clientAppProfile.desiredTimeZone;
+                            if (clientAppProfile.version != null && clientAppProfile.version != "")
+                                request.headers["Client-App-Version"] = clientAppProfile.version;
+                            if (clientAppProfile.clientType != null && clientAppProfile.clientType != "")
+                                request.headers["Client-Type"] = clientAppProfile.clientType;
+                            if (clientAppProfile.culture != null && clientAppProfile.culture != "")
+                                request.headers["Client-Culture"] = clientAppProfile.culture;
+                            if (clientAppProfile.screenSize != null && clientAppProfile.screenSize != "")
+                                request.headers["Client-Screen-Size"] = clientAppProfile.screenSize;
+                            if (location.pathname != null && location.pathname != "")
+                                request.headers["Client-Route"] = location.pathname;
+                            if (clientAppProfile.theme != null && clientAppProfile.theme != "")
+                                request.headers["Client-Theme"] = clientAppProfile.theme;
+                            if (clientAppProfile.isDebugMode != null)
+                                request.headers["Client-Debug-Mode"] = clientAppProfile.isDebugMode;
                             request.headers["Client-Date-Time"] = new Date().toISOString();
-                            if (navigator.language != null)
+                            if (navigator.language != null && navigator.language != "")
                                 request.headers["System-Language"] = navigator.language;
-                            if (navigator["systemLanguage"] != null)
+                            if (navigator["systemLanguage"] != null && navigator["systemLanguage"] != "")
                                 request.headers["Client-Sys-Language"] = navigator["systemLanguage"];
-                            request.headers["Client-Platform"] = navigator.platform;
+                            if (navigator.platform != null && navigator.platform != "")
+                                request.headers["Client-Platform"] = navigator.platform;
                             const results = originalPrepareRequest.apply(this, arguments);
                             if (request.headers["Content-Type"] == null)
                                 request.headers["Content-Type"] = "application/json";
