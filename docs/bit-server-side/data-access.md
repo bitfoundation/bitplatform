@@ -2,9 +2,12 @@
 
 You can use Bit Data Access components, or you can use your own preferred way to read/manipulate data. But why you might choose Bit data access anyway?
 
-1- True async support. Application with async code gets scaled better, but what does this mean to us? Each server side app has limited threads. Threads are workers and your app works because they work. Threads count is limited, so you've to use them carefully. When a request comes to your web api action, and you get data from database using entity framework (For example), your thread (your valuable thread) waits until database returns data. But that wait is useless. In case you use async-await, your thread executes other requests instead of waiting for a database.
 
-2- True cancellation token support. There is a CancellationToken in every web api action you develop. If user/operator closes its browser, or if you cancel request at client side programmatically, that cancellation token gets notified. Almost all bit framework's methods accept cancellation token, and they stop their work by simply passing that token.
+1- True async support. Application with async code gets scaled better, but what does this mean to us? Each server side app has limited workers., and your app works because they work. Workers count is limited, so you've to use them carefully. When a request comes to your web api action, and you get data from database using entity framework (For example), your worker (your valuable worker) waits until database returns data. But that wait is useless. If you use async-await, your worker handles other requests instead of waiting for a database.
+
+
+2- True cancellation token support. There is a CancellationToken in every web api action you develop. If user/operator closes its browser, or if you cancel request at client side programmatically, that cancellation token gets notified. Almost all bit framework's methods accept cancellation token, and they stop their work as cancellation token gets notified.
+
 
 3- Bit Data Access components are optimized for N-Tier app development. To have a better understanding about what does this mean read this [amazing article](https://docs.bit-framework.com/docs/design-backgrounds/optimized-entity-framework-for-n-tier-apps.html).
 
@@ -20,7 +23,7 @@ public class Customer : IEntity
 }
 ```
 
-Then develop a DbContext class which inherits from EfDbContextBase. The reason is described [here](https://docs.bit-framework.com/docs/design-backgrounds/optimized-entity-framework-for-n-tier-apps.html).
+Then develop a DbContext class which inherits from EfDbContextBase. The reason is described [in an article we've previously mentioned](https://docs.bit-framework.com/docs/design-backgrounds/optimized-entity-framework-for-n-tier-apps.html).
 
 ```csharp
 public class MyAppDbContext : EfDbContextBase
@@ -28,7 +31,7 @@ public class MyAppDbContext : EfDbContextBase
     public MyAppDbContext()
         : base(DefaultAppEnvironmentProvider.Current.GetActiveAppEnvironment().GetConfig<string>("AppConnectionString"))
     {
-        // This constructor is need for migrations/initializers etc.
+        // This constructor is needed for migrations/initializers etc.
     }
 
     public MyAppDbContext(IAppEnvironmentProvider appEnvironmentProvider, IDbConnectionProvider dbConnectionProvider)
@@ -106,6 +109,7 @@ public class OrdersRepository : MyAppRepository<Order>, IOrdersRepository
 
 You can use app events to do something at app startup/end. You can initialize your db context as you see in MyAppDbContextInitializer class.
 
+
 Then register followings:
 
 ```csharp
@@ -150,26 +154,7 @@ Bit repository has several methods such as GetAll, Add, Remove etc as like as an
 
 LoadCollection - LoadReference - GetCollectionQuery
 
-By reading the article which describes [why bit repository is optimized for N-Tier scenarios](https://docs.bit-framework.com/docs/design-backgrounds/optimized-entity-framework-for-n-tier-apps.html), you'll find out we disable lazy loading by default which improves your app performance from 3 times to 100 times based on a scenario. But how you can achieve lazy loading in case you need that? Consider following code:
-
-```csharp
-[Route("customers/customer-lazy-sample")]
-public virtual void CustomerLazySample()
-{
-    Customer customer = DbContext.Customers.Find(1);
-
-    // a few lines of codes...
-
-    // Now we need customer's orders. So we simply write:
-
-    foreach (Order order in customer.Orders /* Now entity framework loads orders of that customer. This load is not async, and does not support cancellation token )-: */)
-    {
-
-    }
-}
-```
-
-Using bit repository, you can write that code as follows:
+By reading the article which describes [why bit repository is optimized for N-Tier scenarios](https://docs.bit-framework.com/docs/design-backgrounds/optimized-entity-framework-for-n-tier-apps.html), you'll find out we disable "property based" lazy loading by default which improves your app performance from 3 times to 100 times based on a scenario. But how you can achieve lazy loading in case you need that? Consider following code:
 
 ```csharp
 [Route("customers/customer-lazy-sample")]
@@ -181,7 +166,7 @@ public virtual async Task CustomerLazySample(CancellationToken cancellationToken
 
     // now we need customer's orders. So we simply write:
 
-    await CustomersRepository.LoadCollectionAsync(customer, c => c.Orders, cancellationToken); // Use async-await + cancellation token for lazy loading! (-:
+    await CustomersRepository.LoadCollectionAsync(customer, c => c.Orders, cancellationToken); // Uses async-await + cancellation token for lazy loading! And it has no performance penalty (-:
 
     foreach (Order order in customer.Orders)
     {
@@ -190,6 +175,6 @@ public virtual async Task CustomerLazySample(CancellationToken cancellationToken
 }
 ```
 
-LoadReference is similar to LoadCollection, but you call it when you intend to load reference properties, for example, City of Customer. (Each customer has a City property called BirthLocationCity, so you can write CustomersRepository.LoadReferenceAsync(customer, c => c.BirthLocationCity, cancellationToken), and then you can access customer.BirthLocationCity property.
+LoadReference is similar to LoadCollection, but you call it when you intend to load reference properties, for example, City of Customer. (Each customer has a City property called BirthLocationCity, so you can write await CustomersRepository.LoadReferenceAsync(customer, c => c.BirthLocationCity, cancellationToken), and then you can access customer.BirthLocationCity property.
 
 GetCollectionQuery returns IQueryable, for example, IQueryable of orders of that customer.

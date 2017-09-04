@@ -9,11 +9,11 @@ Using bit framework, you can build OData services very easily, and we generate C
 
 In bit apps, you develop odata controllers for your DTO (Data transfer objects) classes.
 
-Instead of sending your domain models to client, you send DTO to the client. Your model gets complicated over time based on business requirements, and in the client side you need something less complicated and easier to use. DTO (Something similar to ViewModel in MVC) is a common best practice in modern software development world.
+Instead of sending your "domain models/entities" to client, you send DTO to the client. Your "model/entities" gets complicated over time based on business requirements, and in the client side you need something less complicated and easier to use. DTO (Something similar to ViewModel in MVC) is a common best practice in modern software development world.
 
-Model - DTO examples:
+"Model/Entity" - DTO examples:
 
-Example 1: Consider following models:
+Example 1: Consider following "models/entities":
 
 ```csharp
 public class Customer : IEntity
@@ -50,7 +50,7 @@ public class CustomerDto : IDto
 
 This is called flattening.
 
-Example 2: Consider following models:
+Example 2: Consider following "models/entities":
 
 ```csharp
 public class Customer : IEntity
@@ -84,13 +84,13 @@ public class CustomerDto : IDto
 }
 ```
 
-You can create as many as DTOs from your models. You can add calculated fields, apply flattening etc.
+You can create as many as DTOs from your "models/entities". You can add calculated fields, apply flattening etc.
 
 To follow best practices, keep these rules in your mind:
 
-1- Do not inherit from models in your DTO classes. For example, CustomerDto does not inherit from Customer.
+1- Do not inherit from "models/entities" in your DTO classes. For example, CustomerDto does not inherit from Customer.
 
-2- Do not declare a property with type of your models in your DTO classes. For example, CustomerDto has no property of type City model.
+2- Do not declare a property with type of your "models/entities" in your DTO classes. For example, CustomerDto has no property of type City model. Do not use models/enities enums and complex types in your dto clasess too.
 
 3- Develop a DTO for every Task you've. For example, if you want to show customers names and their orders count, create a DTO for this task. And when you want to create a Customer registration form which accepts credit card number, develop a new DTO for that task.
 
@@ -122,75 +122,75 @@ And you can use following code to add OData to your app:
 ```csharp
 dependencyManager.RegisterODataMiddleware(odataDependencyManager =>
 {
-    odataDependencyManager.RegisterEdmModelProvider<BitEdmModelProvider>();
-    odataDependencyManager.RegisterEdmModelProvider<MyAppEdmModelProvider>();
+    odataDependencyManager.RegisterODataServiceBuilder<BitODataServiceBuilder>();
+    odataDependencyManager.RegisterODataServiceBuilder<MyAppODataServiceBuilder>();
     odataDependencyManager.RegisterWebApiODataMiddlewareUsingDefaultConfiguration();
 });
 ```
 
-In MyAppEdmModelProvider class, you've access to ODataModelBuilder, which is useful in advanced scenarios. We create OData metadata from your DTO classes automatically, so you don't have to do anything special in most cases. So just assign a name to your EdmModel:
+In MyAppODataServiceBuilder class, you've access to ODataModelBuilder, which is useful in advanced scenarios. We create OData metadata from your DTO classes automatically, so you don't have to do anything special in most cases. So just configure your odata route:
 
 ```csharp
-public override string GetEdmName() // Edm stands for Entity Data Model.
+public override string GetODataRoute()
 {
     return "MyApp";
 }
 ```
 
-Develop your model & DTO classes. And then in CustomersController you see these codes:
+In CustomersController you see these codes:
 
 ```csharp
-public virtual IDtoModelMapper<CustomerDto, Customer> Mapper { get; set; }
+public virtual IDtoEntityMapper<CustomerDto, Customer> Mapper { get; set; }
 
 [Function]
 public virtual async Task<IQueryable<CustomerDto>> GetActiveCustomers(CancellationToken cancellationToken)
 {
-    return Mapper.FromModelQueryToDtoQuery((await CustomersRepository.GetAllAsync(cancellationToken)).Where(c => c.IsActive == true));
+    return Mapper.FromEntityQueryToDtoQuery((await CustomersRepository.GetAllAsync(cancellationToken)).Where(c => c.IsActive == true));
 }
 ```
 
-Mapper automatically maps model classes to DTO classes. It uses [AutoMapper](http://automapper.org/) by default and the way we use auto mapper will not slow down your app as described [here](https://docs.bit-framework.com/docs/design-backgrounds/why-auto-mapper-has-no-performance-penalty.html).
+Mapper automatically maps "model/entities" classes to DTO classes. It uses [AutoMapper](http://automapper.org/) by default and the way we use auto mapper will not slow down your app as described [here](https://docs.bit-framework.com/docs/design-backgrounds/why-auto-mapper-has-no-performance-penalty.html).
 
 Note that you don't have to use bit repository here. You don't have to use entity framework either. You can use mongo db, simple array etc. We need some customers only.
 
 [Function] is used to return data, it has to return data, and it accepts simple type parameters like int, string, enum, etc.
-[Action] is used to do something, its return value is optional, and it accepts single/list of DTO(s), complex type(s) (DTO without key) or simple type parameters like int, string, enum, etc.
+[Action] is used to do something, its return value is optional, and it accepts almost anything.
 
-Run the app and you're good to go. By opening http://localhost:9000/odata/swagger/, you see swagger's console. By opening http://localhost:9000/odata/MyApp/$metadata you see $metadata. $metadata describes your DTO classes, complex types, enums, actions and functions in a standard format. There are tools in several languages to generate client side proxy for you. You can see the list of libraries and tools [here](http://www.odata.org/libraries/).
+Run the app and you're good to go. That's a swagger's console you see by default. By opening http://localhost:9000/odata/MyApp/$metadata you see $metadata. $metadata describes your DTO classes, complex types, enums, actions and functions in a standard format. There are tools in several languages to generate client side proxy for you. You can see the list of libraries and tools [here](http://www.odata.org/libraries/).
 Note that you can call OData controllers using jquery ajax, fetch, etc too, as they're REST APIs.
 
-Open this url in your browser: http://localhost:9000/odata/MyApp/Customers/MyApp.GetActiveCustomers You see 50 customers which are active. It runs something like this on a database:
+Try GetActiveCustomers, It runs something like this on a database:
 
 ```sql
 select * from Customers inner join Cities on Id = CustomerId where IsActive = 1 /*true*/
 ```
 
-What if we want active customers who are located in city 1? Test this: [http://localhost:9000/odata/MyApp/Customers/MyApp.GetActiveCustomers?$filter=CityId eq 1](http://localhost:9000/odata/MyApp/Customers/MyApp.GetActiveCustomers?$filter=CityId%20eq%201)
+It has several parameters such as $filter, $order by etc. These are standard OData parameters and they work no matter where the data is come from. (You don't have to use Bit's repository or EntityFramework!)
+
+Try     CityId eq 1      for $filter, it returns customers located in City 1 only!
+
+It runs something like this on a database:
 
 ```sql
 select * from Customers inner join Cities on Id = CustomerId where IsActive = 1 /*true*/ and CityId = 1
 ```
 
-As you see, the filter we've developed at server side (c => c.IsActive == true) is combined with query we passed from URL (filter=CityId eq 1). Filters are combined with "AND", so there is no security risk at all.
+As you see, the filter we've developed at server side (c => c.IsActive == true) is combined with query we passed from client side (CityId eq 1). Filters are combined with "AND", so there is no security risk at all.
 
-This one: [http://localhost:9000/odata/MyApp/Customers/MyApp.GetActiveCustomers?$select=Id,FirstName,LastName](http://localhost:9000/odata/MyApp/Customers/MyApp.GetActiveCustomers?$select=Id,FirstName,LastName) results into following sql:
+Try     Id,FirstName,LastName    for $select, it returns those properties of customers only!
+
+It runs something like this on a database:
 
 ```sql
 select Id,FirstName,LastName from Customers where IsActive = 1 /*true*/
 ```
 
-It supports projection, and there is no join (customers-cities) anymore! As we've not requested any columns of City.
+There is no join between customers and cities as we've not requested CityName property. It's really performance tuned and smart!
 
-Ordering:
+OData supports filtering, ordering, projection, paging etc in a standard way. Almost all UI vendors have support for OData in their rad components such as data grid etc. You can create amazing excel sheets and dashboard using its odata support. In C# and TypeScript you're able to write LINQ queries to consume odata resources. For example:
 
-http://localhost:9000/odata/MyApp/Customers/MyApp.GetActiveCustomers?$orderby=FirstName
+```csharp
+context.customers.GetActiveCustomers().Where(c => c.CityId == 1).ToList(); // This will be converted to $fitler > CityId eq 1
+```
 
-Paging:
-
-http://localhost:9000/odata/MyApp/Customers/MyApp.GetActiveCustomers?$orderby=FirstName&$top=10&$skip=10&$count=true
-
-It returns requested data + the count of total active customers count! Paging made easy at client side.
-
-These standard features help you to develop your client side mobile and web apps very easily. Known UI vendors such as Telerik and DevExpress have built-in support for OData in their controls such as DataGrid. You can open GetActiveCustomers in excel sheet etc.
-
-TODO: Async-Await | CRUD | SingleResult | TypeScript client | C# client | Action |
+Action | CRUD | SingleResult | TypeScript client | C# client | Exception handling | Logging |

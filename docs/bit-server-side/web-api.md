@@ -26,11 +26,10 @@ There are several classes there. Program and ValuesController are get copied fro
 
 For now, let's ignore the third class: "AppStartup".
 
-Press F5, you'll see ["value1","value2"] at the end of console's output. That code starts a self host server with power of "Microsoft.Owin.Host.HttpListener", then it sends a request using HttpClient. The response ["value1","value2"] gets written to Console's output then.
+Press F5, you'll see the result in your default browser. This project starts a self host server with power of "Microsoft.Owin.Host.HttpListener", which allows you to self host bit based apps under windows services / console apps.
 
-[Microsoft.Owin.Host.HttpListener] nuget package which allows you to self host bit based apps under windows services / console apps.
 
-So, what's AppStartup class anyway? It configures your app. You'll understand its parts while you're reading docs, but for now let's focus on following codes of that only:
+What's AppStartup class anyway? It configures your app. You'll understand its parts while you're reading docs, but for now let's focus on following codes only:
 
 ```csharp
 dependencyManager.RegisterDefaultWebApiConfiguration();
@@ -48,9 +47,10 @@ dependencyManager.RegisterWebApiMiddleware(webApiDependencyManager =>
 
 That code configures web api into your app using the default configuration. Default configuration is all about security, performance, logging etc.
 
-Bit is a very extensible framework developed based on best practices. We've extensively used dependency injection in our code base and you can customize default behaviors based on your requirements.
+Bit is a very extensible framework developed based on best practices. We've extensively used dependency injection in our code base and you can customize default behaviors and conventions based on your requirements.
 
 In following samples, you can find out how to customize web api in bit, but feel free to [drops us an issue in github](https://github.com/bit-foundation/bit-framework/issues), ask a question on [stackoverflow.com](http://stackoverflow.com/questions/tagged/bit-framework) or use comments below if you can't find what you want in these samples.
+
 
 Note that security samples can be found under [Bit Identity Server](/bit-identity-server.md) (Read them later)
 
@@ -64,6 +64,7 @@ Differences between our sample (2WebApiSwagger project) and that article:
 
 1- There is no App_Start folder in bit projects by default. It's not needed.
 
+
 2- In following code:
 
 ```csharp
@@ -74,7 +75,9 @@ GlobalConfiguration.Configuration
 
 [GlobalConfiguration](https://msdn.microsoft.com/en-us/library/system.web.http.globalconfiguration.aspx) uses ASP.NET pipeline directly and it does not work on ASP.NET Core. But bit's config works on both ASP.NET & ASP.NET Core.
 
+
 3- Instead of adding Swashbuckle package, you've to install Swashbuckle.Core package. Swashbuckle package relies on ASP.NET pipeline and it does not work on ASP.NET Core. But our code works on both.
+
 
 4- In following code:
 ```csharp
@@ -83,11 +86,12 @@ c.IncludeXmlComments(string.Format(@"{0}\bin\SwaggerDemoApi.XML",
 ```
 We use #DefaultPathProvider.Current.GetCurrentAppPath()# instead of #System.AppDomain.CurrentDomain.BaseDirectory# which works fine on both ASP.NET/ASP.NET Core. We also use Path.Combine which works fine on linux servers instead of string.Format and "\" character usage.
 
+
 5- We've following code which has no equivalent in the article codes:
 ```csharp
 c.ApplyDefaultApiConfig(httpConfiguration);
 ```
-As you see in the article, you open swgger ui by opening http://localhost:51609/swagger/ but in bit's sample, you open http://localhost:9000/api/swagger/. You open /swagger under /api. This is a magic of owin/asp.net core's request branching. Calling method "ApplyDefaultApiConfig" on swagger config do that + bunch of other good works.
+As you see in the article, you open swgger ui by opening http://localhost:51609/swagger/ but in bit's sample, you open http://localhost:9000/api/swagger/. You open /swagger under /api. This is a magic of owin/asp.net core's request branching. Calling method "ApplyDefaultApiConfig" describs that magic to swagger. It also performs a bunch of other recommneded swagger configs for you too.
 
 So run the second sample and you're good to go (-:
 
@@ -96,9 +100,12 @@ So run the second sample and you're good to go (-:
 There is a [question](https://stackoverflow.com/questions/10320232/how-to-accept-a-file-post) on stackoverflow.com about web api file upload.
 The important thing you've to notice is "You don't have to use System.Web.dll classes in bit world, even when you're hosting your app on traditional asp.net
 
+
 By removing usages of that dll, you're going to make sure that your code works well on both asp.net & asp.net core. So drop using #HttpContext.Current and all other members of System.Web.dll#. Note that if you install Bit.CodeAnalyzer nuget package, we warn you about this automatically.
 
-Web API Attribute routing works fine in bit project, but instead of [Route("api/file-manager/upload")] or [RoutePrefix("api/file-manager")], you've to write [Route("file-manager/upload")] or [RoutePrefix("file-manager)], this means you should not write /api in your attribute routings. That's a side effect of branching, which improves your app performance in turn.
+
+Web API Attribute routing works fine in bit project, but instead of [Route("api/file-manager/upload")] or [RoutePrefix("api/file-manager")], you've to write [Route("file-manager/upload")] or [RoutePrefix("file-manager)], this means **you should not write /api in your attribute routings**.
+
 
 Remember to use async/await and CancellationToken in your Web API codes at it improves your app overall scalability and performance. Using CancellationToken, bit stops processing requests when user/operator cancels her request. (By closing the browser/mobile app for example).
 
@@ -130,17 +137,14 @@ Web API configuration and web api codes are all the same. (-:
 
 Run .Net core app steps:
 
-1- [Download and install .NET Core 2](https://www.microsoft.com/net/core#windowscmd)
-
-2- Open Samples\WebApiSamples\6WebApiDotNetCoreHost in visual studio code or Visual Studio 2017 Update 3 and press F5.
-
 Note that upcoming articles have no .net core sample as we've not officially supported .net core yet, but after we officially supported .net core, you can start an easy/safe migration.
 
 ### Optimized Web.Config for both ASP.NET & ASP.NET Core projects:
 
 Do followings to achieve better performance in both ASP.NET & ASP.NET Core projects: (Both 5WebApiAspNetCoreHost & 4WebApiAspNetHost have web.config file you can use)
 
-1- There is a key to introduce AppStartup class as following: (ASP.NET only)
+
+1- There is a key to introduce AppStartup class as following: (**ASP.NET only**)
 
 ```xml
 <add key="owin:AppStartup" value="WebApiAspNetHost.AppStartup, WebApiAspNetHost" />
@@ -148,23 +152,7 @@ Do followings to achieve better performance in both ASP.NET & ASP.NET Core proje
 
 AppStartup is a class name & WebApiAspNetHost is a namespace. (Second one is assembly name)
 
-2- To prevent asp.net web pages from being started, we've added following:
-
-```xml
-<add key="webpages:Enabled" value="false" />
-```
-
-ASP.NET web pages starts itself automatically, but it is not needed in bit based apps. So disable it to achieve better startup performance.
-
-3- As we've introduced app startup class using "owin:AppStartup" config, we use following to disable automatic AppStartup class search: (ASP.NET only)
-
-```xml
-<add key="owin:AutomaticAppStartup" value="false" />
-```
-
-4- We've added [enablePrefetchOptimization="true" optimizeCompilations="true"] to improve app overall performance.
-
-5- We've removed all assemblies from being compiled as this is not required in bit projects:
+2- We've removed all assemblies from being compiled as this is not required in bit projects:
 
 ```xml
 <assemblies>
@@ -172,9 +160,9 @@ ASP.NET web pages starts itself automatically, but it is not needed in bit based
 </assemblies>
 ```
 
-6- We've added [enableVersionHeader="false"] to remove extra headers from responses. [This results into better security](https://www.troyhunt.com/shhh-dont-let-your-response-headers/)
+3- We've added [enableVersionHeader="false"] to remove extra headers from responses. [This results into better security](https://www.troyhunt.com/shhh-dont-let-your-response-headers/)
 
-7- We've removed all http handlers & modules. They're not required in bit projects.
+4- We've removed all http handlers & modules. They're not required in bit projects.
 
 ```xml
 <httpModules>
@@ -185,13 +173,13 @@ ASP.NET web pages starts itself automatically, but it is not needed in bit based
 </httpHandlers>
 ```
 
-8- We've disabled session as it is not required in bit projects.
+5- We've disabled session as it is not required in bit projects.
 
 ```xml
 <sessionState mode="Off" />
 ```
 
-9- By following configs, we've removed extra modules, handlers, headers and default documents. And we've added Owin handler. That handler makes static files, web api, signalr etc work.
+6- By following configs, we've removed extra modules, handlers, headers and default documents. And we've added Owin handler. That handler makes static files, web api, signalr etc work.
 
 ```xml
   <system.webServer>
@@ -250,7 +238,7 @@ You can also specify life cycle by calling .Register like following:
 dependencyManager.Register<IEmailService, DefaultEmailService>(lifeCycle: DependencyLifeCycle.InstancePerLifetimeScope);
 ```
 
-It accepts two life cycles: InstancePerLifetimeScope & SingleInstance. InstancePerLifetimeScope creates a new instance of your class for every web request, every background job start, etc. But SingleInstance creates one instance and uses that anywhere. Classes which are registered using InstancePerLifetimeScope have access to IUserInformationProvider which provides you information about the current user and some classes like Entity framework's db context and repositories. (Default lifecycle is InstancePerLifetimeScope if you call .Register without specifying life cycle)
+It accepts two life cycles: InstancePerLifetimeScope & SingleInstance. InstancePerLifetimeScope creates a new instance of your class for every web request, every background job start, etc. But SingleInstance creates one instance and uses that anywhere. Classes which are registered using InstancePerLifetimeScope have access to current user, and some classes like Entity framework's db context and repositories should be registered using InstancePerLifetimeScope.
 
 You've also other Register methods like RegisterGeneric, RegisterInstance, RegisterTypes and RegisterUsing, you're welcomed to use those method if you're a DI ninja ;D
 
@@ -260,6 +248,6 @@ You can also cast dependency manager to IAutofacDependencyManager, and after tha
 ContainerBuilder autofacContainerBuilder = ((IAutofacDependencyManager)dependencyManager).GetContainerBuidler();
 ```
 
-In ASP.NET core projects, you've access to [IServiceCollection](https://docs.microsoft.com/en-us/aspnet/core/fundamentals/dependency-injection) by default.
+In ASP.NET core projects, you've access to [IServiceCollection](https://docs.microsoft.com/en-us/aspnet/core/fundamentals/dependency-injection) by default too.
 
 If you've got a complex scenario, simply drops us an [issue on github](https://github.com/bit-foundation/bit-framework/issues) or ask a question on [stackoverflow](https://stackoverflow.com/questions/tagged/bit-framework).
