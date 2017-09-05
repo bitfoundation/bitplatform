@@ -51,22 +51,22 @@ namespace BitCodeGenerator.Implementations
             foreach (BitCodeGeneratorMapping mapping in bitConfig.BitCodeGeneratorConfigs.BitCodeGeneratorMappings)
             {
                 if (string.IsNullOrEmpty(mapping.DestinationFileName))
-                    throw new InvalidOperationException("DestinationFileName is not provided");
+                    throw new InvalidOperationException($"{nameof(BitCodeGeneratorMapping.DestinationFileName)} is not provided");
 
                 if (string.IsNullOrEmpty(mapping.TypingsPath))
-                    throw new InvalidOperationException("TypingsPath is not provided");
+                    throw new InvalidOperationException($"{nameof(BitCodeGeneratorMapping.TypingsPath)} is not provided");
 
                 if (string.IsNullOrEmpty(mapping.DestinationProject?.Name))
-                    throw new InvalidOperationException("DestinationProject is not provided");
+                    throw new InvalidOperationException($"{nameof(BitCodeGeneratorMapping.DestinationProject)} is not provided");
 
                 if (mapping.SourceProjects == null || !mapping.SourceProjects.Any() || !mapping.SourceProjects.All(sp => !string.IsNullOrEmpty(sp?.Name)))
-                    throw new InvalidOperationException("No | Bad Source Projects is not provided");
+                    throw new InvalidOperationException($"No {nameof(BitCodeGeneratorMapping.SourceProjects)} is not provided");
 
                 if (string.IsNullOrEmpty(mapping.Namespace))
-                    throw new InvalidOperationException("Namespace is not provided");
+                    throw new InvalidOperationException($"{nameof(BitCodeGeneratorMapping.Namespace)} is not provided");
 
                 if (string.IsNullOrEmpty(mapping.Route))
-                    throw new InvalidOperationException("EdmName is not provided");
+                    throw new InvalidOperationException($"{nameof(BitCodeGeneratorMapping.Route)} is not provided");
             }
 
             return bitConfig;
