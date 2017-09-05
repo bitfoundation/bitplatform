@@ -16,7 +16,7 @@
 	}
 <#}#>
 
-declare class <#= Mapping.EdmName #>Context extends $data.EntityContext {
+declare class <#= Mapping.Route #>Context extends $data.EntityContext {
 
 	<# foreach (DtoController controller in Controllers) { #>
 	    <#= controller.ControllerSymbol.GetDocumentationSummary() #>

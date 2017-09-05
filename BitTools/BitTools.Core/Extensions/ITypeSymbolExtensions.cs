@@ -18,12 +18,6 @@ namespace Microsoft.CodeAnalysis
                     type = namedTypeSymbol.TypeArguments.ExtendedSingle($"Looking for type arguments of {type.Name}");
             }
 
-            if (type.Name == "SingleResult")
-            {
-                if (type is INamedTypeSymbol namedTypeSymbol && namedTypeSymbol.TypeArguments.Any())
-                    type = namedTypeSymbol.TypeArguments.ExtendedSingle($"Looking for type arguments of {type.Name}");
-            }
-
             if (type.Name == nameof(Nullable))
             {
                 if (type is INamedTypeSymbol namedTypeSymbol && namedTypeSymbol.TypeArguments.Any())
@@ -55,7 +49,7 @@ namespace Microsoft.CodeAnalysis
 
             type = type.GetUnderlyingTypeSymbol();
 
-            return type.Name != nameof(String) && ((type is IArrayTypeSymbol) || type.Name == "IEnumerable" || type.AllInterfaces.Any(i => i.Name == "IEnumerable"));
+            return type.Name != nameof(String) && ((type is IArrayTypeSymbol) || type.Name == "IEnumerable" || type.AllInterfaces.Any(i => i.Name == "IEnumerable") || type.Name == "SingleResult");
         }
 
         public static bool IsQueryableType(this ITypeSymbol type)
@@ -65,7 +59,7 @@ namespace Microsoft.CodeAnalysis
 
             type = type.GetUnderlyingTypeSymbol();
 
-            return type.AllInterfaces.Any(i => i.Name == "IQueryable");
+            return type.AllInterfaces.Any(i => i.Name == "IQueryable") || type.Name == "SingleResult";
         }
 
         public static bool IsNullable(this ITypeSymbol type)
