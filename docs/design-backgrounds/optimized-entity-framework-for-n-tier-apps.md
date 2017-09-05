@@ -8,7 +8,7 @@ When user/operator changes any of those customers in a web app or mobile app, we
 
 This sample is a common thing in N-Tier world, when most changes are made in other tiers such as browsers and mobile devices.
 
-In bit framework, we disable entity framework features by default. Features like "Lazy loading", "Change Tracking", "Proxy creation" etc. Bit repository, on the other hand, calls "AsNoTracking" on all your queries.
+In bit framework, we disable entity framework features by default. Features like "Property based Lazy loading (The lazy loading itself works properly)", "Change Tracking", "Proxy creation" etc. Bit repository, on the other hand, calls "AsNoTracking" on all your queries.
 
 We've developed roslyn analyzers to inform you when you're doing something wrong while you're working with db context too. See below:
 
@@ -35,4 +35,4 @@ Processor=Intel Core i7-7700K CPU 4.20GHz (Kaby Lake), ProcessorCount=8
  
  [This script](https://github.com/bit-foundation/bit-framework/blob/master/docs/src/EntityFrameworkOptimizedForNTierScenarios/EntityFrameworkOptimizedForNTierScenarios/CreateTestDatabaseScript.sql) creates a database which has 10.000 customers, and each customer has 3 orders. As you can see in benchmarks, returning empty list is very fast. It's all about "micro" seconds. BitRepository has Mean with value (20.00 ms) which is acceptable as it's returning whole 10.000 customers in every request. And finally, you see Sharp repository's result which is about seconds! "It's not because of SharpRepository itself", it is because of the default configuration of entity framework.
 
-But, I'm a true fan of lazy loading, can I use that in my codes while I'm using bit repository? [The answer is yes](https://docs.bit-framework.com/docs/bit-server-side/data-access.html#bit-repository-specific-methods) We've a far better lazy loading support in comparision of default lazy loading
+But, I'm a true fan of lazy loading, can I use that in my codes while I'm using bit repository? [The answer is yes](https://docs.bit-framework.com/docs/bit-server-side/data-access.html#bit-repository-specific-methods) We've a far better lazy loading support in comparision of property based lazy loading
