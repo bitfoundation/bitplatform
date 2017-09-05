@@ -23,7 +23,7 @@
         public async $onInit(): Promise<void> {
 
             let context = await this.entityContextProvider.getContext<BitChangeSetManagerContext>("BitChangeSetManager");
-            this.user = await context.users.getCurrentUser();
+            this.user = await context.users.getCurrentUser().getValue();
 
             await this.messageReceiver.start();
         }

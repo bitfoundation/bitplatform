@@ -23,7 +23,7 @@
   },
   "dependencies": {
     "@bit/bit-framework": "0.5.2",
-    "@bit/jaydata": "^1.5.13",
+    "@bit/jaydata": "^1.5.14",
     "@bit/jaydata-odatajs": "4.0.1",
     "angular": "1.6.6",
     "ngcomponentrouter": "2.1.0",

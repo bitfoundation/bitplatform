@@ -236,3 +236,4 @@ ModelManifest.xml
 /src/TypeScriptClient/Bit.TSClient.AngularJS.Tests/bit.ng1.tests.d.ts
 _book
 /BitTools/BitODataCSProxyGeneratorItemTemplate/ODataT4Template.cs
+*yarn.lock

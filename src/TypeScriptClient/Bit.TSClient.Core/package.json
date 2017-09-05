@@ -34,7 +34,7 @@
     "event-source-polyfill": "0.0.9"
   },
   "dependencies": {
-    "@bit/jaydata": "^1.5.13",
+    "@bit/jaydata": "^1.5.14",
     "@bit/jaydata-odatajs": "4.0.1"
   }
 }
