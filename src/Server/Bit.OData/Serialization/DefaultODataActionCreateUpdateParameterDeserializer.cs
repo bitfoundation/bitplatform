@@ -1,32 +1,33 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Net.Http;
-using System.Reflection;
-using System.Web.OData.Formatter.Deserialization;
-using Bit.Core.Contracts;
+﻿using Bit.Core.Contracts;
+using Bit.Model.Contracts;
 using Bit.OData.ODataControllers;
 using Bit.Owin.Contracts;
 using Microsoft.OData;
 using Microsoft.Owin;
 using Newtonsoft.Json;
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Net.Http;
+using System.Reflection;
 using System.Web.Http.Controllers;
+using System.Web.OData.Formatter.Deserialization;
 
 namespace Bit.OData.Serialization
 {
-    public class DefaultODataActionParameterDeserializer : ODataDeserializer
+    public class DefaultODataActionCreateUpdateParameterDeserializer : ODataDeserializer
     {
         private readonly ODataJsonDeSerializerStringCorrector _stringFormatterConvert;
         private readonly ODataJsonDeSerializerEnumConverter _odataJsonDeserializerEnumConverter;
 
-        protected DefaultODataActionParameterDeserializer()
+        protected DefaultODataActionCreateUpdateParameterDeserializer()
             : base(ODataPayloadKind.Parameter)
         {
 
         }
 
-        public DefaultODataActionParameterDeserializer(System.Web.Http.Dependencies.IDependencyResolver dependencyResolver)
+        public DefaultODataActionCreateUpdateParameterDeserializer(System.Web.Http.Dependencies.IDependencyResolver dependencyResolver)
             : base(ODataPayloadKind.Parameter)
         {
             if (dependencyResolver == null)
@@ -40,8 +41,8 @@ namespace Bit.OData.Serialization
         {
             HttpActionDescriptor actionDescriptor = readContext.Request.GetActionDescriptor();
 
-            if (actionDescriptor != null && !actionDescriptor.GetCustomAttributes<ActionAttribute>().Any())
-                throw new InvalidOperationException($"{nameof(DefaultODataActionParameterDeserializer)} is designed for odata actions only");
+            if (actionDescriptor != null && !actionDescriptor.GetCustomAttributes<ActionAttribute>().Any() && !actionDescriptor.GetCustomAttributes<CreateAttribute>().Any() && !actionDescriptor.GetCustomAttributes<UpdateAttribute>().Any())
+                throw new InvalidOperationException($"{nameof(DefaultODataActionCreateUpdateParameterDeserializer)} is designed for odata actions|creates|updates only");
 
             TypeInfo typeInfo = type.GetTypeInfo();
 
@@ -54,6 +55,22 @@ namespace Bit.OData.Serialization
             {
                 using (JsonTextReader requestJsonReader = new JsonTextReader(requestStreamReader))
                 {
+                    void error(object sender, Newtonsoft.Json.Serialization.ErrorEventArgs e)
+                    {
+                        if (e.ErrorContext.Error is JsonSerializationException && e.ErrorContext.Error.Message.StartsWith("Could not find member "))
+                        {
+                            if (e.CurrentObject is IOpenDto)
+                            {
+                                IOpenDto openDto = (IOpenDto)e.CurrentObject;
+                                openDto.Properties = openDto.Properties ?? new Dictionary<string, object>();
+                                if (requestJsonReader.Read())
+                                    openDto.Properties.Add((string)e.ErrorContext.Member, requestJsonReader.Value);
+                            }
+
+                            e.ErrorContext.Handled = true;
+                        }
+                    }
+
                     JsonSerializer deserilizer = JsonSerializer.Create(new JsonSerializerSettings
                     {
                         ReferenceLoopHandling = ReferenceLoopHandling.Ignore,
@@ -63,12 +80,23 @@ namespace Bit.OData.Serialization
                             _odataJsonDeserializerEnumConverter,
                             _stringFormatterConvert,
                             new ODataJsonDeSerializerDateTimeOffsetTimeZone(timeZoneManager)
-                        }
+                        },
+                        MissingMemberHandling = MissingMemberHandling.Error
                     });
 
-                    object result = deserilizer.Deserialize(requestJsonReader, typeInfo);
+                    deserilizer.Error += error;
 
-                    return result;
+                    try
+                    {
+
+                        object result = deserilizer.Deserialize(requestJsonReader, typeInfo);
+
+                        return result;
+                    }
+                    finally
+                    {
+                        deserilizer.Error -= error;
+                    }
                 }
             }
         }
