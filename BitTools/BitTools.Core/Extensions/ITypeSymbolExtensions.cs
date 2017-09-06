@@ -49,7 +49,7 @@ namespace Microsoft.CodeAnalysis
 
             type = type.GetUnderlyingTypeSymbol();
 
-            return type.Name != nameof(String) && ((type is IArrayTypeSymbol) || type.Name == "IEnumerable" || type.AllInterfaces.Any(i => i.Name == "IEnumerable") || type.Name == "SingleResult");
+            return type.Name != nameof(String) && type.Name != "Dictionary" && ((type is IArrayTypeSymbol) || type.Name == "IEnumerable" || type.AllInterfaces.Any(i => i.Name == "IEnumerable") || type.Name == "SingleResult");
         }
 
         public static bool IsQueryableType(this ITypeSymbol type)
@@ -115,6 +115,8 @@ namespace Microsoft.CodeAnalysis
                 return "Edm.Byte";
             if (typeName == nameof(Double))
                 return "Edm.Double";
+            if (typeName == "Dictionary")
+                return "$data.Object";
             else
             {
                 if (type.IsQueryableType() || type.IsCollectionType())
@@ -164,6 +166,8 @@ namespace Microsoft.CodeAnalysis
                 return "number";
             if (typeName == nameof(Double)) // double
                 return "number";
+            if (typeName == "Dictionary")
+                return "any";
             else
             {
                 if (type.IsQueryableType() || type.IsCollectionType())
