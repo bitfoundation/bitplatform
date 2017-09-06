@@ -33,6 +33,8 @@
 
                 $data["defaults"].enableDeepSave = true;
 
+                $data["defaults"].openTypeDefaultPropertyName = "Properties";
+
                 const originalArrayRequired = $data["Validation"].EntityValidation.prototype.supportedValidations["$data.Array"].required;
 
                 $data["Validation"].EntityValidation.prototype.supportedValidations["$data.Array"].required = function required(value, definedValue) {
