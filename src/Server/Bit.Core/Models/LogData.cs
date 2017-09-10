@@ -8,7 +8,7 @@
 
         public override string ToString()
         {
-            return Key ?? base.ToString();
+            return $"{Key} {Value}" ?? base.ToString();
         }
     }
 }
