@@ -33,7 +33,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Bit.Data\Bit.Data.csproj" />
-    <ProjectReference Include="..\Bit.OwinCore.AspNetCore2Upgrade\Bit.OwinCore.AspNetCore2Upgrade.csproj" />
   </ItemGroup>
 
 </Project>
