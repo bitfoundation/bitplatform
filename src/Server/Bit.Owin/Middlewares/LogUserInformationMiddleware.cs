@@ -31,6 +31,7 @@ namespace Bit.Owin.Middlewares
             {
                 logger.AddLogData("UserId", userInformationProvider.GetCurrentUserId());
                 logger.AddLogData("AuthenticationType", userInformationProvider.GetAuthenticationType());
+                logger.AddLogData("ClientId", userInformationProvider.GetClientId());
             }
         }
     }
