@@ -39,6 +39,7 @@
     <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="[4.0.4.403061554,5)" />
     <PackageReference Include="IdentityModel" Version="[1.13.1,2)" />
     <PackageReference Include="System.Net.Http" Version="4.3.2" />
+    <PackageReference Include="Thinktecture.IdentityModel.Owin.BasicAuthentication" Version="1.0.1" />
   </ItemGroup>
 
   <ItemGroup>

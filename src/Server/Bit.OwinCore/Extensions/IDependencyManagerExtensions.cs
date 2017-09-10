@@ -7,7 +7,9 @@ using Bit.OwinCore.Implementations;
 using Bit.OwinCore.Middlewares;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Owin.Security.DataProtection;
+using Owin;
 using System;
+using System.Threading.Tasks;
 
 namespace Bit.Core.Contracts
 {
@@ -81,6 +83,22 @@ namespace Bit.Core.Contracts
             dependencyManager.Register<IRequestInformationProvider, AspNetCoreRequestInformationProvider>(overwriteExciting: false);
             if (PlatformUtilities.IsRunningOnMono || PlatformUtilities.IsRunningOnDotNetCore)
                 dependencyManager.Register<IDataProtectionProvider, BasicDataProtectionProvider>(lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExciting: false);
+            return dependencyManager;
+        }
+
+        public static IDependencyManager RegisterBasicAuthMiddlewareCore(this IDependencyManager dependencyManager, Func<string, string, Task<bool>> userPassValidator)
+        {
+            if (userPassValidator == null)
+                throw new ArgumentNullException(nameof(userPassValidator));
+
+            dependencyManager.RegisterAspNetCoreMiddlewareUsing(aspNetCoreApp =>
+            {
+                aspNetCoreApp.UseOwinApp(owinApp =>
+                {
+                    owinApp.UseBasicAuthentication(userPassValidator);
+                });
+            });
+
             return dependencyManager;
         }
     }

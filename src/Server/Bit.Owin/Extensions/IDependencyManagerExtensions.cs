@@ -1,13 +1,14 @@
-﻿using System;
-using System.Linq;
-using System.Reflection;
+﻿using Bit.Core.Implementations;
 using Bit.Owin.Contracts;
 using Bit.Owin.Contracts.Metadata;
 using Bit.Owin.Implementations;
+using Bit.Owin.Implementations.Metadata;
 using Bit.Owin.Middlewares;
 using Owin;
-using Bit.Core.Implementations;
-using Bit.Owin.Implementations.Metadata;
+using System;
+using System.Linq;
+using System.Reflection;
+using System.Threading.Tasks;
 
 namespace Bit.Core.Contracts
 {
@@ -197,6 +198,19 @@ namespace Bit.Core.Contracts
             dependencyManager.RegisterOwinMiddleware<AutofacDependencyInjectionMiddlewareConfiguration>();
             dependencyManager.RegisterOwinMiddleware<OwinExceptionHandlerMiddlewareConfiguration>();
             dependencyManager.RegisterOwinMiddleware<LogRequestInformationMiddlewareConfiguration>();
+            return dependencyManager;
+        }
+
+        public static IDependencyManager RegisterBasicAuthMiddleware(this IDependencyManager dependencyManager, Func<string, string, Task<bool>> userPassValidator)
+        {
+            if (userPassValidator == null)
+                throw new ArgumentNullException(nameof(userPassValidator));
+
+            dependencyManager.RegisterOwinMiddlewareUsing(owinApp =>
+            {
+                owinApp.UseBasicAuthentication(userPassValidator);
+            });
+
             return dependencyManager;
         }
     }
