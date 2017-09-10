@@ -9,6 +9,7 @@ namespace Bit.WebApi.Implementations
         public virtual void CustomizeWebApiConfiguration(HttpConfiguration webApiConfiguration)
         {
             webApiConfiguration.Filters.Add(new HostAuthenticationFilter("Bearer"));
+            webApiConfiguration.Filters.Add(new HostAuthenticationFilter("Basic"));
         }
     }
 
