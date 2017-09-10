@@ -5,8 +5,8 @@
     <RootNamespace>WebApiDotNetCoreHost</RootNamespace>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="Bit.OwinCore" Version="0.0.7.1" />
-    <PackageReference Include="Bit.WebApi" Version="0.0.7.1" />
+    <PackageReference Include="Bit.OwinCore" Version="0.0.7.2" />
+    <PackageReference Include="Bit.WebApi" Version="0.0.7.2" />
     <PackageReference Include="BitCodeAnalyzer" Version="1.1.9.8" />
   </ItemGroup>
   <ItemGroup>
