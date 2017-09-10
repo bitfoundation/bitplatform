@@ -65,5 +65,12 @@ namespace Bit.Owin.Implementations
         {
             return _requestInformationProvider.Identity;
         }
+
+        public virtual string GetClientId()
+        {
+            return GetClaims()
+                .ExtendedSingle("Finding client_id in claims", claim => string.Equals(claim.Type, "client_id", StringComparison.OrdinalIgnoreCase))
+                .Value;
+        }
     }
 }
