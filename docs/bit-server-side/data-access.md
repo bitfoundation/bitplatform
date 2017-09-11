@@ -3,7 +3,7 @@
 You can use Bit Data Access components, or you can use your own preferred way to read/manipulate data. But why you might choose Bit data access anyway?
 
 
-1- True async support. Application with async code gets scaled better, but what does this mean to us? Each server side app has limited workers., and your app works because they work. Workers count is limited, so you've to use them carefully. When a request comes to your web api action, and you get data from database using entity framework (For example), your worker (your valuable worker) waits until database returns data. But that wait is useless. If you use async-await, your worker handles other requests instead of waiting for a database.
+1- True async support. Application with async code gets scaled better, but what does this mean to us? Each server side app has limited workers, and your app works because they work. Workers count is limited, so you've to use them carefully. When a request comes to your web api action, and you get data from database using entity framework (For example), your worker (your valuable worker) waits until database returns data. But that wait is useless (database has its own workers). If you use async-await, your worker handles other requests instead of waiting for a database.
 
 
 2- True cancellation token support. There is a CancellationToken in every web api action you develop. If user/operator closes its browser, or if you cancel request at client side programmatically, that cancellation token gets notified. Almost all bit framework's methods accept cancellation token, and they stop their work as cancellation token gets notified.
@@ -15,7 +15,7 @@ You can use Bit Data Access components, or you can use your own preferred way to
 
 Getting started: (Sample can be found [here](https://github.com/bit-foundation/bit-framework/tree/master/Samples/DataAccessSamples/))
 
-At first, you've to develop your domain model. Use IEntity interface to mark your classes as entity. It's just a marker and has no member to implement really.
+At first, you've to develop your entities. Use IEntity interface to mark your classes as entity. It's just a marker and has no member to implement.
 
 ```csharp
 public class Customer : IEntity
@@ -73,7 +73,7 @@ In Web API classes, use that as following:
 ```csharp
 public class CustomersController : ApiController
 {
-    public virtual IRepository<Customer> CustomersRepository { get; set; }
+    public virtual IRepository<Customer> CustomersRepository { get; set; } // property injection
 
     [Route("customers/get-customers")]
     public virtual async Task<List<Customer>> GetCustomers(CancellationToken cancellationToken)
@@ -110,7 +110,7 @@ public class OrdersRepository : MyAppRepository<Order>, IOrdersRepository
 You can use app events to do something at app startup/end. You can initialize your db context as you see in MyAppDbContextInitializer class.
 
 
-Then register followings:
+These are AppStartup registrations:
 
 ```csharp
 dependencyManager.Register<IDbConnectionProvider, DefaultDbConnectionProvider<SqlConnection>>(); // Uses Sql connection
@@ -160,11 +160,9 @@ By reading the article which describes [why bit repository is optimized for N-Ti
 [Route("customers/customer-lazy-sample")]
 public virtual async Task CustomerLazySample(CancellationToken cancellationToken)
 {
-    Customer customer = await CustomersRepository.GetByIdAsync(cancellationToken, 1);
+    Customer customer = await CustomersRepository.GetByIdAsync(1, cancellationToken);
 
-    // a few lines of codes...
-
-    // now we need customer's orders. So we simply write:
+    // After some works, now we need customer's orders. So we simply write:
 
     await CustomersRepository.LoadCollectionAsync(customer, c => c.Orders, cancellationToken); // Uses async-await + cancellation token for lazy loading! And it has no performance penalty (-:
 
@@ -175,6 +173,31 @@ public virtual async Task CustomerLazySample(CancellationToken cancellationToken
 }
 ```
 
-LoadReference is similar to LoadCollection, but you call it when you intend to load reference properties, for example, City of Customer. (Each customer has a City property called BirthLocationCity, so you can write await CustomersRepository.LoadReferenceAsync(customer, c => c.BirthLocationCity, cancellationToken), and then you can access customer.BirthLocationCity property.
+LoadReference is similar to LoadCollection, but you call it when you intend to load reference properties.
+
+```csharp
+public class Category : IEntity
+{ 
+    public int Id { get; set; }
+    public string Name { get; set; }
+}
+
+public class Product : IEntity
+{
+    public int Id { get; set; }
+    public string Name { get; set; }
+    public Category Category { get; set; }
+    [ForeignKey(nameof(Category))]
+    public int CategoryId { get;set; }
+}
+
+
+Product product = await ProductsRepository.GetByIdAsync(1, cancellationToken);
+
+await ProductsRepository.LoadReferenceAsync(product, p => p.Category);
+
+// product.Category is now retrived from database.
+
+```
 
 GetCollectionQuery returns IQueryable, for example, IQueryable of orders of that customer.

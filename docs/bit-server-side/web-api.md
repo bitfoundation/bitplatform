@@ -26,7 +26,7 @@ There are several classes there. Program and ValuesController are get copied fro
 
 For now, let's ignore the third class: "AppStartup".
 
-Press F5, you'll see the result in your default browser. This project starts a self host server with power of "Microsoft.Owin.Host.HttpListener", which allows you to self host bit based apps under windows services / console apps.
+Press F5, you'll see the result in your default browser. This project starts a self host server with power of [Microsoft.Owin.SelfHost](https://www.nuget.org/packages/Microsoft.Owin.SelfHost/), which allows you to self host bit based apps under windows services / console apps.
 
 
 What's AppStartup class anyway? It configures your app. You'll understand its parts while you're reading docs, but for now let's focus on following codes only:
@@ -47,7 +47,7 @@ dependencyManager.RegisterWebApiMiddleware(webApiDependencyManager =>
 
 That code configures web api into your app using the default configuration. Default configuration is all about security, performance, logging etc.
 
-Bit is a very extensible framework developed based on best practices. We've extensively used dependency injection in our code base and you can customize default behaviors and conventions based on your requirements.
+Bit is a extensible framework developed based on best practices. We've extensively used dependency injection in our code base and you can customize default behaviors and conventions based on your requirements.
 
 In following samples, you can find out how to customize web api in bit, but feel free to [drops us an issue in github](https://github.com/bit-foundation/bit-framework/issues), ask a question on [stackoverflow.com](http://stackoverflow.com/questions/tagged/bit-framework) or use comments below if you can't find what you want in these samples.
 
@@ -84,7 +84,7 @@ GlobalConfiguration.Configuration
 c.IncludeXmlComments(string.Format(@"{0}\bin\SwaggerDemoApi.XML",           
                            System.AppDomain.CurrentDomain.BaseDirectory));
 ```
-We use #DefaultPathProvider.Current.GetCurrentAppPath()# instead of #System.AppDomain.CurrentDomain.BaseDirectory# which works fine on both ASP.NET/ASP.NET Core. We also use Path.Combine which works fine on linux servers instead of string.Format and "\" character usage.
+We've used #DefaultPathProvider.Current.GetCurrentAppPath()# instead of #System.AppDomain.CurrentDomain.BaseDirectory# which works fine on both ASP.NET/ASP.NET Core. We also use Path.Combine which works fine on linux servers instead of string.Format and "\" character usage.
 
 
 5- We've following code which has no equivalent in the article codes:
@@ -101,124 +101,43 @@ There is a [question](https://stackoverflow.com/questions/10320232/how-to-accept
 The important thing you've to notice is "You don't have to use System.Web.dll classes in bit world, even when you're hosting your app on traditional asp.net
 
 
-By removing usages of that dll, you're going to make sure that your code works well on both asp.net & asp.net core. So drop using #HttpContext.Current and all other members of System.Web.dll#. Note that if you install Bit.CodeAnalyzer nuget package, we warn you about this automatically.
+By removing usages of that dll, you're going to make sure that your code works well on both asp.net & asp.net core. So drop using #HttpContext.Current and all other members of System.Web.dll#. Note that if you install Bit.CodeAnalyzer nuget package, we warn you about this automatically. Other System.Web.* assemblies such as System.Web.Http.dll are ok.
 
 
-Web API Attribute routing works fine in bit project, but instead of [Route("api/file-manager/upload")] or [RoutePrefix("api/file-manager")], you've to write [Route("file-manager/upload")] or [RoutePrefix("file-manager)], this means **you should not write /api in your attribute routings**.
+Web API Attribute routing works fine in bit projects, but instead of [Route("api/file-manager/upload")] or [RoutePrefix("api/file-manager")], you've to write [Route("file-manager/upload")] or [RoutePrefix("file-manager)], this means **you should not write /api in your attribute routings**.
 
 
-Remember to use async/await and CancellationToken in your Web API codes at it improves your app overall scalability and performance. Using CancellationToken, bit stops processing requests when user/operator cancels her request. (By closing the browser/mobile app for example).
+Remember to use async/await and CancellationToken in your Web API codes at it improves your app overall scalability and performance. Using CancellationToken, bit stops processing requests when user/operator cancels her request. (By closing the browser/mobile app or clicking on cancel button provided by you).
 
 So open 3rd sample. It contains upload methods using Web API attribute routing and uses async/await & CancellationToken.
 
-### Web API - Configuration on traditional ASP.NET
+### Web API - Configuration on traditional "ASP.NET"
 
 In 4th project (4WebApiAspNetHost), you'll find a bit web api project hosted on ASP.NET/IIS.
 
 ##### Differences between this project and previews projects:
 
-1- Instead of [Microsoft.Owin.Host.HttpListener] nuget package, we've installed [Microsoft.Owin.Host.SystemWeb]. Using that, you can host bit server side apps on top of ASP.NET/IIS. All codes you've developed are the same (We've copied codes from 2WebApiSwagger project in fact).
+1- Instead of [Microsoft.Owin.SelfHost] nuget package, we've installed [Microsoft.Owin.Host.SystemWeb]. Using that, you can host bit server side apps on top of ASP.NET/IIS. All codes you've developed are the same (We've copied codes from 2WebApiSwagger project in fact).
 
-### Web API - Configuration on ASP.NET Core
+### Web API - Configuration on "ASP.NET Core / Full .NET Framework"
 
 ##### Differences between this project and first project:
 
-1- Instead of [Microsoft.Owin.Host.HttpListener] nuget package, we've installed [Bit.OwinCore] nuget package. Using Bit.OwinCore, you can host your app on top of asp.net core. ASP.NET core apps can be hosted almost anywhere.
+1- Instead of [Microsoft.Owin.SelfHost] nuget package, we've installed [Bit.OwinCore] nuget package. Using Bit.OwinCore, you can host your app on top of asp.net core. ASP.NET core apps can be hosted almost anywhere.
 
 Web API configuration and web api codes are all the same. (-:
 
-### Web API - Configuration on ASP.NET Core / .NET Core
+### Web API - Configuration on "ASP.NET Core / .NET Core"
 
 ##### Differences between this project and first project:
 
-1- As like as ASP.NET Core with full .NET framework, we've [Bit.OwinCore] instead of [Microsoft.Owin.Host.HttpListener]
+1- As like as ASP.NET Core with full .NET framework, we've [Bit.OwinCore] instead of [Microsoft.Owin.SelfHost]
 
 Web API configuration and web api codes are all the same. (-:
 
 Run .Net core app steps:
 
 Note that upcoming articles have no .net core sample as we've not officially supported .net core yet, but after we officially supported .net core, you can start an easy/safe migration.
-
-### Optimized Web.Config for both ASP.NET & ASP.NET Core projects:
-
-Do followings to achieve better performance in both ASP.NET & ASP.NET Core projects: (Both 5WebApiAspNetCoreHost & 4WebApiAspNetHost have web.config file you can use)
-
-
-1- There is a key to introduce AppStartup class as following: (**ASP.NET only**)
-
-```xml
-<add key="owin:AppStartup" value="WebApiAspNetHost.AppStartup, WebApiAspNetHost" />
-```
-
-AppStartup is a class name & WebApiAspNetHost is a namespace. (Second one is assembly name)
-
-2- We've removed all assemblies from being compiled as this is not required in bit projects:
-
-```xml
-<assemblies>
-    <remove assembly="*" />
-</assemblies>
-```
-
-3- We've added [enableVersionHeader="false"] to remove extra headers from responses. [This results into better security](https://www.troyhunt.com/shhh-dont-let-your-response-headers/)
-
-4- We've removed all http handlers & modules. They're not required in bit projects.
-
-```xml
-<httpModules>
-    <clear />
-</httpModules>
-<httpHandlers>
-    <clear />
-</httpHandlers>
-```
-
-5- We've disabled session as it is not required in bit projects.
-
-```xml
-<sessionState mode="Off" />
-```
-
-6- By following configs, we've removed extra modules, handlers, headers and default documents. And we've added Owin handler. That handler makes static files, web api, signalr etc work.
-
-```xml
-  <system.webServer>
-    <validation validateIntegratedModeConfiguration="false" />
-    <modules runAllManagedModulesForAllRequests="false">
-      <remove name="Session" />
-      <remove name="FormsAuthentication" />
-      <remove name="DefaultAuthentication" />
-      <remove name="RoleManager" />
-      <remove name="FileAuthorization" />
-      <remove name="AnonymousIdentification" />
-      <remove name="Profile" />
-      <remove name="UrlMappingsModule" />
-      <remove name="ServiceModel-4.0" />
-      <remove name="UrlRoutingModule-4.0" />
-      <remove name="ScriptModule-4.0" />
-      <remove name="WebDAVModule" />
-    </modules>
-    <defaultDocument>
-      <files>
-        <clear />
-      </files>
-    </defaultDocument>
-    <handlers>
-      <clear />
-      <!-- In ASP.NET add Owin handler as following: !-->
-      <add name="Owin" verb="*" path="*" type="Microsoft.Owin.Host.SystemWeb.OwinHttpHandler, Microsoft.Owin.Host.SystemWeb" />
-      <!-- In ASP.NET Core add aspNetCore handler as following: !-->
-      <add name="aspNetCore" path="*" verb="*" modules="AspNetCoreModule" resourceType="Unspecified" />
-    </handlers>
-    <!-- This aspNetCore tag is required in ASP.NET Core projects: !-->
-    <aspNetCore processPath="%LAUNCHER_PATH%" arguments="%LAUNCHER_ARGS%" forwardWindowsAuthToken="false" stdoutLogEnabled="false" />
-    <httpProtocol>
-      <customHeaders>
-        <clear />
-      </customHeaders>
-    </httpProtocol>
-  </system.webServer>
-```
 
 ### Web API - Dependency Injection samples:
 
@@ -248,6 +167,6 @@ You can also cast dependency manager to IAutofacDependencyManager, and after tha
 ContainerBuilder autofacContainerBuilder = ((IAutofacDependencyManager)dependencyManager).GetContainerBuidler();
 ```
 
-In ASP.NET core projects, you've access to [IServiceCollection](https://docs.microsoft.com/en-us/aspnet/core/fundamentals/dependency-injection) by default too.
+In ASP.NET core projects, you've access to [IServiceCollection](https://docs.microsoft.com/en-us/aspnet/core/fundamentals/dependency-injection) too.
 
 If you've got a complex scenario, simply drops us an [issue on github](https://github.com/bit-foundation/bit-framework/issues) or ask a question on [stackoverflow](https://stackoverflow.com/questions/tagged/bit-framework).
