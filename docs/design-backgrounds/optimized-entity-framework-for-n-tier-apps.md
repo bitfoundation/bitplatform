@@ -39,4 +39,4 @@ Processor=Intel Core i7-7700K CPU 4.20GHz (Kaby Lake), ProcessorCount=8
  
  _________
 
-Ninja tip: [Here you can learn how to do lazy loading withour slowing down your app + support for async lazy loading!](https://docs.bit-framework.com/docs/bit-server-side/data-access.html#bit-repository-specific-methods) We've a far better lazy loading support in comparision of property based lazy loading
+Ninja tip: [Here you can learn how to do lazy loading withour slowing down your app + support for async lazy loading!](https://docs.bit-framework.com/docs/bit-server-side/data-access.html#bit-repository-specific-methods)
