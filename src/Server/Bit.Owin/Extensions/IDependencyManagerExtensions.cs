@@ -201,7 +201,7 @@ namespace Bit.Core.Contracts
             return dependencyManager;
         }
 
-        public static IDependencyManager RegisterBasicAuthMiddleware(this IDependencyManager dependencyManager, Func<string, string, Task<bool>> userPassValidator)
+        public static IDependencyManager RegisterBasicAuthMiddleware(this IDependencyManager dependencyManager, BasicAuthUserPassValidator userPassValidator)
         {
             if (userPassValidator == null)
                 throw new ArgumentNullException(nameof(userPassValidator));
