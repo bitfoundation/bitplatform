@@ -7,6 +7,8 @@ OData RESTful APIs are easy to consume. The OData metadata, a machine-readable d
 
 Using bit framework, you can build OData services very easily, and we generate C# - TypeScript - JavaScript clients for you automatically. You can use those no matter you're developing xamarin forms, angular js, angular, react js & native etc. We also have out of the box support for Open-API (Swagger). Using [azure auto rest](https://github.com/Azure/autorest) tools, you can generate client side for almost any language you want.
 
+**An OData controller has built-in support for paging/filtering/sorting/projection/grouping and aggregation.** In C#/TypeScript/JavaScript you develop LINQ queries, then we send that query to server side and server returns data based on your query. OData supports batch requests as well which results into better performance.
+
 In bit apps, you develop odata controllers for your DTO (Data transfer objects) classes.
 
 Instead of sending your "domain models/entities" to client, you send DTO to the client. Your "model/entities" gets complicated over time based on business requirements, and in the client side you need something less complicated and easier to use. DTO (Something similar to ViewModel in MVC) is a common best practice in modern software development world.
@@ -16,18 +18,17 @@ Instead of sending your "domain models/entities" to client, you send DTO to the 
 Example 1: Consider following "models/entities":
 
 ```csharp
-public class Customer : IEntity
+public class Product : IEntity
 {
     public int Id { get;set; }
-    public string FirstName { get; set; }
-    public string LastName { get; set; }
-    public bool IsActive { get; set; }
-    public City City { get; set; }
-    [ForeignKey(nameof(City))]
-    public int CityId { get; set; }
+    public string Name { get; set; }
+    public decimal Price { get; set; }
+    public Category Category { get; set; }
+    [ForeignKey(nameof(Category))]
+    public int CategoryId { get; set; }
 }
 
-public class City : IEntity
+public class Category : IEntity
 {
     public int Id { get;set; }
     public string Name { get; set; }
@@ -37,14 +38,13 @@ public class City : IEntity
 You can have following DTO:
 
 ```csharp
-public class CustomerDto : IDto
+public class ProductDto : IDto
 {
     public int Id { get;set; }
-    public string FirstName { get; set; }
-    public string LastName { get; set; }
-    public bool IsActive { get; set; }
-    public int CityId { get; set; }
-    public string CityName { get; set; } // We've added "Name" of city as "CityName" into CustomerDto class.
+    public string Name { get; set; }
+    public decimal Price { get; set; }
+    public int CategoryId { get; set; }
+    public string CategoryName { get; set; } // We've added "Name" of category as "CategoryName" into ProductDto class. So, at client side, we can create a list of products very easily and every product has its cateogry name included.
 }
 ```
 
@@ -88,9 +88,9 @@ You can create as many as DTOs from your "models/entities". You can add calculat
 
 To follow best practices, keep these rules in your mind:
 
-1- Do not inherit from "models/entities" in your DTO classes. For example, CustomerDto does not inherit from Customer.
+1- **Do not inherit from "models/entities" in your DTO classes.** For example, CustomerDto does not inherit from Customer.
 
-2- Do not declare a property with type of your "models/entities" in your DTO classes. For example, CustomerDto has no property of type City model. Do not use models/enities enums and complex types in your dto clasess too.
+2- **Do not declare a property with type of your "models/entities" in your DTO classes.** For example, ProductDto has no property of type Category model. Do not use models/enities enums and complex types in your dto clasess too.
 
 3- Develop a DTO for every Task you've. For example, if you want to show customers names and their orders count, create a DTO for this task. And when you want to create a Customer registration form which accepts credit card number, develop a new DTO for that task.
 
@@ -133,7 +133,7 @@ In MyAppODataServiceBuilder class, you've access to ODataModelBuilder, which is 
 ```csharp
 public override string GetODataRoute()
 {
-    return "MyApp";
+    return "MyApp"; // http://localhost/odata/MyApp/...
 }
 ```
 
