@@ -240,4 +240,4 @@ Notes:
 
 2- When your app is in debug mode, exceptions details are written into responses. So if "DebugModel" is set to "true" in environments.json, you see exception details, no matter the exception is known or not, but if it is set to "false", then you see "UnKnownException" for unknwon exceptions and exception's message for known exceptions.
 
-Pro tip: If you prefer to create new "Known" exception types, [take a look at following question in stackoverflow.com]()
+Pro tip: If you prefer to create new "Known" exception types, [take a look at following question in stackoverflow.com](https://stackoverflow.com/a/46202377/2720104)
