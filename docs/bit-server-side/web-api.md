@@ -170,3 +170,74 @@ ContainerBuilder autofacContainerBuilder = ((IAutofacDependencyManager)dependenc
 In ASP.NET core projects, you've access to [IServiceCollection](https://docs.microsoft.com/en-us/aspnet/core/fundamentals/dependency-injection) too.
 
 If you've got a complex scenario, simply drops us an [issue on github](https://github.com/bit-foundation/bit-framework/issues) or ask a question on [stackoverflow](https://stackoverflow.com/questions/tagged/bit-framework).
+
+### Exceptions:
+
+Consider the following code:
+
+```csharp
+public void ValidateCustomer(Customer customer)
+{
+    if (customer.FirstName == customer.LastName))
+        throw new Exception("Customer's first name and last name might not be identical"); // Sample rule.
+}
+public async Task SaveCustomer(Customer customer, CancellationToken cancellationToken)
+{
+    ValidateCustomer(customer);
+    // Save customer using entity framework's db context for example.
+}
+```
+
+When you try to save a customer, there might be two types of exceptions: "Known" and "Unknown" exceptions.
+
+It is known that a customer with identical first name and last name would not be saved to the database, but the client does not except sql exception because your database server is down!
+
+Every unknown exception results into following response:
+
+```
+StatusCode: 500
+ReasonPharse: "UnKnownError"
+Message: "UnKnownError"
+```
+
+**All exceptions are unknown**, except following:
+
+DomainLogicException, ResourceNotFoundException, BadRequestException
+
+So, let's rewrite the last example again:
+
+```csharp
+public void ValidateCustomer(Customer customer)
+{
+    if (customer.FirstName == customer.LastName))
+        throw new DomainLogicException("Customer's first name and last name might not be identical"); // Sample rule.
+}
+```
+The response would be:
+
+```
+StatusCode: 500
+ReasonPharse: "KnownError"
+Message: "Customer's first name and last name might not be identical"
+```
+
+Bad request exception is as like as DomainLogicException, but it in a response with (400-BadRequest) status code. The status code of ResourceNotFoundException would be 404
+
+Let's take a look at another example:
+
+```csharp
+public async Task UpdateCustomer(int customerId, string newName)
+{
+    // Customer customer = try to find customer in database first...
+    if (customer == null)
+        throw new ResourceNotFoundException($"Customer with Id {customerId} was not found");
+}
+```
+
+Notes:
+
+1- Every response has a header called X-CorrelationId (RequestId). When we log exceptions for you, it has a X-CorrelationId, so you can associate a request/response to an exception.
+
+2- When your app is in debug mode, exceptions details are written into responses. So if "DebugModel" is set to "true" in environments.json, you see exception details, no matter the exception is known or not, but if it is set to "false", then you see "UnKnownException" for unknwon exceptions and exception's message for known exceptions.
+
+Pro tip: If you prefer to create new "Known" exception types, [take a look at following question in stackoverflow.com]()
