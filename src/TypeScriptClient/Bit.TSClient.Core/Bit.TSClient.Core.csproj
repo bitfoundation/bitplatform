@@ -100,7 +100,6 @@
     <TypeScriptCompile Include="Model\Identity\iSsoModel.ts" />
     <TypeScriptCompile Include="Model\iSyncableDto.ts" />
     <TypeScriptCompile Include="Model\iVersionableDto.ts" />
-    <TypeScriptCompile Include="Model\iWithDefaultKey.ts" />
     <TypeScriptCompile Include="provider.ts" />
     <TypeScriptCompile Include="typings.d.ts" />
   </ItemGroup>
