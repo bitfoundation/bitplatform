@@ -70,10 +70,6 @@ namespace Bit.Owin.Implementations
 
             if (exp is IHttpStatusCodeAwareException)
                 return ((IHttpStatusCodeAwareException)exp).StatusCode;
-            if (exp is BadRequestException)
-                return HttpStatusCode.BadRequest;
-            else if (exp is ResourceNotFoundException)
-                return HttpStatusCode.NotFound;
 
             return HttpStatusCode.InternalServerError;
         }

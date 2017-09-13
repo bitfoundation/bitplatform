@@ -1,11 +1,12 @@
 ﻿using System;
+using System.Net;
 using System.Runtime.Serialization;
 using Bit.Owin.Metadata;
 
 namespace Bit.Owin.Exceptions
 {
     [Serializable]
-    public class BadRequestException : AppException
+    public class BadRequestException : AppException, IHttpStatusCodeAwareException
     {
         public BadRequestException()
             : this(BitMetadataBuilder.BadRequestException)
@@ -30,5 +31,7 @@ namespace Bit.Owin.Exceptions
         {
 
         }
+
+        public HttpStatusCode StatusCode { get; set; } = HttpStatusCode.BadRequest;
     }
 }

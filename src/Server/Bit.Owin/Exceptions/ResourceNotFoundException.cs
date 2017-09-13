@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Runtime.Serialization;
 using Bit.Owin.Metadata;
+using System.Net;
 
 namespace Bit.Owin.Exceptions
 {
@@ -30,5 +31,7 @@ namespace Bit.Owin.Exceptions
         {
 
         }
+
+        public HttpStatusCode StatusCode { get; set; } = HttpStatusCode.NotFound;
     }
 }
