@@ -2,7 +2,7 @@
 
 namespace Bit.Model.Contracts
 {
-    public interface IOpenDto : IDto
+    public interface IOpenType
     {
         Dictionary<string, object> Properties { get; set; }
     }

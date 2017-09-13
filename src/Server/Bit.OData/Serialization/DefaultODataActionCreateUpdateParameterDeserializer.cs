@@ -59,9 +59,9 @@ namespace Bit.OData.Serialization
                     {
                         if (e.ErrorContext.Error is JsonSerializationException && e.ErrorContext.Error.Message.StartsWith("Could not find member "))
                         {
-                            if (e.CurrentObject is IOpenDto)
+                            if (e.CurrentObject is IOpenType)
                             {
-                                IOpenDto openDto = (IOpenDto)e.CurrentObject;
+                                IOpenType openDto = (IOpenType)e.CurrentObject;
                                 openDto.Properties = openDto.Properties ?? new Dictionary<string, object>();
                                 if (requestJsonReader.Read())
                                     openDto.Properties.Add((string)e.ErrorContext.Member, requestJsonReader.Value);
@@ -88,7 +88,6 @@ namespace Bit.OData.Serialization
 
                     try
                     {
-
                         object result = deserilizer.Deserialize(requestJsonReader, typeInfo);
 
                         return result;
