@@ -66,6 +66,7 @@
   <ItemGroup>
     <TypeScriptCompile Include="components\Identity\antiForgeryTokenComponent.ts" />
     <TypeScriptCompile Include="components\Identity\loginComponent.ts" />
+    <TypeScriptCompile Include="components\persianDatePicker.ts" />
     <TypeScriptCompile Include="Contracts\iAngularConfiguration.ts" />
     <TypeScriptCompile Include="Contracts\iDtoViewModel.ts" />
     <TypeScriptCompile Include="directives\defaultColorViewerDirective.ts" />
@@ -86,8 +87,6 @@
     <TypeScriptCompile Include="directives\defaultRadModelItemTemplateDirective.ts" />
     <TypeScriptCompile Include="directives\defaultRadMultiSelectDirective.ts" />
     <TypeScriptCompile Include="directives\defaultRadTreeViewDirective.ts" />
-    <TypeScriptCompile Include="directives\iranianPeopleNationalCodeValidator.ts" />
-    <TypeScriptCompile Include="components\persianDatePicker.ts" />
     <TypeScriptCompile Include="Implementations\defaultLogger.ts" />
     <TypeScriptCompile Include="Implementations\defaultProvider.ts" />
     <TypeScriptCompile Include="Implementations\Identity\identityserverdefaultangularappinitialization.ts" />

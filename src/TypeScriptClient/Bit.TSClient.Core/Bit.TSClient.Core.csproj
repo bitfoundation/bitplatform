@@ -70,7 +70,6 @@
     <TypeScriptCompile Include="Contracts\iClientAppProfile.ts" />
     <TypeScriptCompile Include="Contracts\iDateTimeService.ts" />
     <TypeScriptCompile Include="Contracts\iEntityContextProvider.ts" />
-    <TypeScriptCompile Include="Contracts\iIranianCodeValidator.ts" />
     <TypeScriptCompile Include="Contracts\iLogger.ts" />
     <TypeScriptCompile Include="Contracts\iMath.ts" />
     <TypeScriptCompile Include="Contracts\iMessageReceiver.ts" />
@@ -84,7 +83,6 @@
     <TypeScriptCompile Include="Implementations\defaultDateTimeService.ts" />
     <TypeScriptCompile Include="Implementations\entityContextProviderBase.ts" />
     <TypeScriptCompile Include="Implementations\entityContextProviderAppEventBase.ts" />
-    <TypeScriptCompile Include="Implementations\defaultIranianCodeValidator.ts" />
     <TypeScriptCompile Include="Implementations\loggerBase.ts" />
     <TypeScriptCompile Include="Implementations\defaultMath.ts" />
     <TypeScriptCompile Include="Implementations\defaultMetadataProvider.ts" />
