@@ -61,14 +61,14 @@
 
     dependencyManager.registerFileDependency({
         name: "persian-date-picker-styles",
-        path: "bit-framework/src/TypeScriptClient/Bit.TSClient.AngularJS/node_modules/@bit/persian-date-picker/dist/css/persian-date-picker.min",
+        path: "bit-framework/src/TypeScriptClient/Bit.TSClient.AngularJS/node_modules/persian-datepicker/dist/css/persian-datepicker.min",
         fileDependecyType: "Style",
         predicate: (appInfo) => appInfo.culture == "FaIr"
     });
 
     dependencyManager.registerFileDependency({
         name: "persian-date-picker-blue-styles",
-        path: "bit-framework/src/TypeScriptClient/Bit.TSClient.AngularJS/node_modules/@bit/persian-date-picker/dist/css/theme/persian-date-picker-blue",
+        path: "bit-framework/src/TypeScriptClient/Bit.TSClient.AngularJS/node_modules/persian-datepicker/dist/css/theme/persian-datepicker-blue.min",
         fileDependecyType: "Style",
         predicate: (appInfo) => appInfo.culture == "FaIr"
     });
@@ -295,13 +295,13 @@
 
     dependencyManager.registerFileDependency({
         name: "persian-date",
-        path: "bit-framework/src/TypeScriptClient/Bit.TSClient.AngularJS/node_modules/@bit/persian-date/dist/persian-date",
+        path: "bit-framework/src/TypeScriptClient/Bit.TSClient.AngularJS/node_modules/persian-datepicker/assets/persian-date.min",
         predicate: (appInfo) => appInfo.culture == "FaIr"
     });
 
     dependencyManager.registerFileDependency({
         name: "persian-date-picker",
-        path: "bit-framework/src/TypeScriptClient/Bit.TSClient.AngularJS/node_modules/@bit/persian-date-picker/dist/js/persian-date-picker",
+        path: "bit-framework/src/TypeScriptClient/Bit.TSClient.AngularJS/node_modules/persian-datepicker/dist/js/persian-datepicker",
         predicate: (appInfo) => appInfo.culture == "FaIr"
     });
 

@@ -287,6 +287,22 @@ module Bit.Directives {
 
                         if (currentCulture == "FaIr") {
 
+                            if (jQuery["persian-date-picker-val-override-is-configured"] != true) {
+
+                                let jQueryOriginalVal = jQuery.fn.val;
+
+                                jQuery.fn.val = (function (value) {
+                                    let result = jQueryOriginalVal.apply(this, arguments);
+                                    if (arguments.length == 1 && this.hasClass("persian-date-picker-value")) {
+                                        this.trigger("change");
+                                    }
+                                    return result;
+                                }) as any;
+
+                                jQuery["persian-date-picker-val-override-is-configured"] = true;
+
+                            }
+
                             gridColumn.filterable = {
 
                                 ui: (element: JQuery) => {
@@ -295,10 +311,11 @@ module Bit.Directives {
 
                                     element.after('<input type="button" class="k-button" style="width:100%" />');
 
+                                    element.addClass("persian-date-picker-value");
+
                                     const datePickerButton = element.next();
 
-                                    const persianDatePickerOptions: PDatePickerOptions = {
-                                        position: ["0px", "0px"],
+                                    const persianDatePickerOptions = {
                                         autoClose: fieldInfo.viewType == "Date",
                                         altField: element,
                                         altFieldFormatter: (e) => {
@@ -314,32 +331,10 @@ module Bit.Directives {
                                         },
                                         timePicker: {
                                             enabled: fieldInfo.dateType == "DateTime"
-                                        },
-                                        onShow: () => {
-
-                                            const thisPDatePickerElementToBePopupedUsingKendoPopup = angular.element(".datepicker-plot-area")
-                                                .filter((eId, el) => angular.element(el).is(":visible"));
-
-                                            const parentMenu = element.parents("div.k-column-menu").first();
-
-                                            const kendoPopupElement = thisPDatePickerElementToBePopupedUsingKendoPopup.kendoPopup({
-                                                anchor: parentMenu
-                                            });
-
-                                            const kendoPopup = kendoPopupElement.data("kendoPopup");
-
-                                            kendoPopup.open();
-
-                                            thisPDatePickerElementToBePopupedUsingKendoPopup.css("top", "-25px");
-
-                                            this["kendoPopuo"] = kendoPopup;
-                                        },
-                                        onHide: () => {
-                                            this["kendoPopuo"].destroy();
                                         }
                                     };
 
-                                    datePickerButton.pDatepicker(persianDatePickerOptions);
+                                    let datePickerInstance = datePickerButton["persianDatepicker"](persianDatePickerOptions);
 
                                     if (val == null || val == "")
                                         datePickerButton.val(null);
@@ -349,6 +344,12 @@ module Bit.Directives {
                                     element.val(val);
 
                                     element.hide();
+
+                                    element.parents("div.k-filterable.k-content").data("kendoFilterMenu")["popup"].bind("close", function (e) {
+                                        if (datePickerInstance.model.view.$container.css("display") == "block") {
+                                            e.preventDefault();
+                                        }
+                                    });
                                 }
                             }
                         }

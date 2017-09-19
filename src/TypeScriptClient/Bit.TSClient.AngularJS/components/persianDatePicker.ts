@@ -3,18 +3,18 @@
     @ComponentDependency({
         name: "persianDatePicker",
         require: {
-            'ngModelController': "ngModel",
-            'mdInputContainer' : "^?mdInputContainer"
+            "ngModelController": "ngModel",
+            "mdInputContainer": "^?mdInputContainer"
         },
         bindings: {
-            'ngModel': "=",
-            'isDateTime?': "="
+            "ngModel": "=",
+            "isDateTime?": "="
         },
         template: ["$element", "$attrs", ($element: JQuery, $attrs: ng.IAttributes) => {
 
             return `<persian-date-element>
                         <input id='display' type='text'></input>
-                        <input id='value' ng-model='vm.ngModel' type='hidden'></input>
+                        <input id='value' class='persian-date-picker-value' ng-model='vm.ngModel' type='hidden'></input>
                     <persian-date-element>`;
 
         }]
@@ -34,6 +34,22 @@
         };
 
         public async $onInit(): Promise<void> {
+
+            if (jQuery["persian-date-picker-val-override-is-configured"] != true) {
+
+                let jQueryOriginalVal = jQuery.fn.val;
+
+                jQuery.fn.val = (function (value) {
+                    let result = jQueryOriginalVal.apply(this, arguments);
+                    if (arguments.length == 1 && this.hasClass("persian-date-picker-value")) {
+                        this.trigger("change");
+                    }
+                    return result;
+                }) as any;
+
+                jQuery["persian-date-picker-val-override-is-configured"] = true;
+
+            }
 
             this.isDateTime = this.isDateTime || false;
 
@@ -76,7 +92,7 @@
             const isDateTime = this.isDateTime;
             const dateTimeService = this.dateTimeService;
 
-            this.$display.pDatepicker({
+            this.$display["persianDatepicker"]({
                 autoClose: this.isDateTime == false,
                 altField: this.$value,
                 altFieldFormatter: (e) => {
