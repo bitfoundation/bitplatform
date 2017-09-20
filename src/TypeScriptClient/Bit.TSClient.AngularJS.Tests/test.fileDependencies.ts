@@ -16,19 +16,19 @@
 
     dependencyManager.registerFileDependency({
         name: "kendo-common-styles",
-        path: "bit-framework/src/TypeScriptClient/Bit.TSClient.AngularJS/node_modules/kendo-ui-core/css/web/kendo.common.min",
+        path: "bit-framework/src/TypeScriptClient/Bit.TSClient.AngularJS/node_modules/kendo-ui/styles/kendo.common.min",
         predicate: (appInfo) => {
             return appInfo.screenSize == "DesktopAndTablet";
         },
         fileDependecyType: "Style",
         onError: () => {
-            console.warn("Download professional version of kendo and copy kendo.common.min.css to node_modules/kendo-ui-core/css/web/");
+            console.warn("Download professional version of kendo and copy that to bit-framework/src/TypeScriptClient/Bit.TSClient.AngularJS/node_modules/kendo-ui/");
         }
     });
 
     dependencyManager.registerFileDependency({
         name: "kendo-light-green-theme-styles",
-        path: "bit-framework/src/TypeScriptClient/Bit.TSClient.AngularJS/node_modules/kendo-ui-core/css/web/kendo.metro.min",
+        path: "bit-framework/src/TypeScriptClient/Bit.TSClient.AngularJS/node_modules/kendo-ui/styles/kendo.metro.min",
         predicate: (appInfo) => {
             return appInfo.screenSize == "DesktopAndTablet" && appInfo.theme == "LightGreen";
         },
@@ -37,7 +37,7 @@
 
     dependencyManager.registerFileDependency({
         name: "kendo-light-blue-theme-styles",
-        path: "bit-framework/src/TypeScriptClient/Bit.TSClient.AngularJS/node_modules/kendo-ui-core/css/web/kendo.material.min",
+        path: "bit-framework/src/TypeScriptClient/Bit.TSClient.AngularJS/node_modules/kendo-ui/styles/kendo.material.min",
         predicate: (appInfo) => {
             return appInfo.screenSize == "DesktopAndTablet" && appInfo.theme == "LightBlue";
         },
@@ -46,7 +46,7 @@
 
     dependencyManager.registerFileDependency({
         name: "kendo-dark-amber-theme-styles",
-        path: "bit-framework/src/TypeScriptClient/Bit.TSClient.AngularJS/node_modules/kendo-ui-core/css/web/kendo.materialblack.min",
+        path: "bit-framework/src/TypeScriptClient/Bit.TSClient.AngularJS/node_modules/kendo-ui/styles/kendo.materialblack.min",
         predicate: (appInfo) => {
             return appInfo.screenSize == "DesktopAndTablet" && appInfo.theme == "DarkAmber";
         },
@@ -55,7 +55,7 @@
 
     dependencyManager.registerFileDependency({
         name: "kendo-rtl-styles",
-        path: "bit-framework/src/TypeScriptClient/Bit.TSClient.AngularJS/node_modules/kendo-ui-core/css/web/kendo.rtl.min",
+        path: "bit-framework/src/TypeScriptClient/Bit.TSClient.AngularJS/node_modules/kendo-ui/styles/kendo.rtl.min",
         predicate: (appInfo) => {
             return appInfo.screenSize == "DesktopAndTablet" && appInfo.culture == "FaIr";
         },
@@ -155,12 +155,7 @@
 
     dependencyManager.registerFileDependency({
         name: "jQuery",
-        path: "bit-framework/src/TypeScriptClient/Bit.TSClient.AngularJS/node_modules/jquery/dist/jquery"
-    });
-
-    dependencyManager.registerFileDependency({
-        name: "angular",
-        path: "bit-framework/src/TypeScriptClient/Bit.TSClient.AngularJS/node_modules/angular/angular",
+        path: "bit-framework/src/TypeScriptClient/Bit.TSClient.AngularJS/node_modules/jquery/dist/jquery",
         onLoad: () => {
             // For electron compatibility
             if (typeof window["require"] != 'undefined' && window["module"] != null && window["module"].exports != null) {
@@ -170,51 +165,21 @@
     });
 
     dependencyManager.registerFileDependency({
+        name: "angular",
+        path: "bit-framework/src/TypeScriptClient/Bit.TSClient.AngularJS/node_modules/angular/angular"
+    });
+
+    dependencyManager.registerFileDependency({
         name: "kendo-ui-web",
-        path: "bit-framework/src/TypeScriptClient/Bit.TSClient.AngularJS/node_modules/kendo-ui-core/js/kendo.web.min",
+        path: "bit-framework/src/TypeScriptClient/Bit.TSClient.AngularJS/node_modules/kendo-ui/js/kendo.web.min",
         predicate: (appInfo) => {
-            return appInfo.screenSize == "DesktopAndTablet" && appInfo.getConfig<string>("KendoUILoadMode") == "Web";
-        },
-        onError: () => {
-            console.warn("Download professional version of kendo and copy kendo.web.min.js to node_modules/kendo-ui-core/js/");
-        }
-    });
-
-    dependencyManager.registerFileDependency({
-        name: "kendo-ui-core",
-        path: "bit-framework/src/TypeScriptClient/Bit.TSClient.AngularJS/node_modules/@bit/kendo-ui-core/js/kendo.ui.core",
-        predicate: (appInfo) => {
-            return appInfo.screenSize == "DesktopAndTablet" && appInfo.getConfig<string>("KendoUILoadMode") == "Core";
-        }
-    });
-
-    dependencyManager.registerFileDependency({
-        name: "kendo-core",
-        path: "bit-framework/src/TypeScriptClient/Bit.TSClient.AngularJS/node_modules/@bit/kendo-ui-core/js/kendo.Core",
-        predicate: (appInfo) => {
-            return appInfo.screenSize == "MobileAndPhablet" && appInfo.getConfig<string>("KendoUILoadMode") == "Core";
-        }
-    });
-
-    dependencyManager.registerFileDependency({
-        name: "kendo-data",
-        path: "bit-framework/src/TypeScriptClient/Bit.TSClient.AngularJS/node_modules/@bit/kendo-ui-core/js/kendo.data",
-        predicate: (appInfo) => {
-            return appInfo.screenSize == "MobileAndPhablet" && appInfo.getConfig<string>("KendoUILoadMode") == "Core";
-        }
-    });
-
-    dependencyManager.registerFileDependency({
-        name: "kendo-binder",
-        path: "bit-framework/src/TypeScriptClient/Bit.TSClient.AngularJS/node_modules/@bit/kendo-ui-core/js/kendo.binder",
-        predicate: (appInfo) => {
-            return appInfo.screenSize == "MobileAndPhablet" && appInfo.getConfig<string>("KendoUILoadMode") == "Core";
+            return appInfo.screenSize == "DesktopAndTablet";
         }
     });
 
     dependencyManager.registerFileDependency({
         name: "kendo-culture-fa-IR",
-        path: "bit-framework/src/TypeScriptClient/Bit.TSClient.AngularJS/node_modules/@bit/kendo-ui-core/js/cultures/kendo.culture.fa-IR.min",
+        path: "bit-framework/src/TypeScriptClient/Bit.TSClient.AngularJS/node_modules/kendo-ui/js/cultures/kendo.culture.fa-IR.min",
         predicate: (appInfo) => {
             return appInfo.screenSize == "DesktopAndTablet" && appInfo.culture == "FaIr";
         }
@@ -222,7 +187,7 @@
 
     dependencyManager.registerFileDependency({
         name: "kendo-messages-fa-IR",
-        path: "bit-framework/src/TypeScriptClient/Bit.TSClient.AngularJS/node_modules/@bit/kendo-ui-core/js/messages/kendo.messages.fa-IR.min",
+        path: "bit-framework/src/TypeScriptClient/Bit.TSClient.AngularJS/node_modules/kendo-ui/js/messages/kendo.messages.fa-IR.min",
         continueOnError: true,
         predicate: (appInfo) => {
             return appInfo.screenSize == "DesktopAndTablet" && appInfo.culture == "FaIr";

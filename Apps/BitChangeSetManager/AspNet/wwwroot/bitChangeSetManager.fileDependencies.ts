@@ -18,19 +18,22 @@ module BitChangeSetManager {
 
     dependencyManager.registerFileDependency({
         name: "kendo-common-styles",
-        path: "node_modules/@bit/kendo-ui-core/styles/kendo.common.min",
-        fileDependecyType: "Style"
+        path: "node_modules/kendo-ui/styles/kendo.common.min",
+        fileDependecyType: "Style",
+        onError: () => {
+            console.warn("Download professional version of kendo and copy that to node_modules/kendo-ui/")
+        }
     });
 
     dependencyManager.registerFileDependency({
         name: "kendo-light-blue-theme-styles",
-        path: "node_modules/@bit/kendo-ui-core/styles/kendo.material.min",
+        path: "node_modules/kendo-ui/styles/kendo.material.min",
         fileDependecyType: "Style"
     });
 
     dependencyManager.registerFileDependency({
         name: "kendo-rtl-styles",
-        path: "node_modules/@bit/kendo-ui-core/styles/kendo.rtl.min",
+        path: "node_modules/kendo-ui/styles/kendo.rtl.min",
         predicate: (appInfo) => {
             return appInfo.screenSize == "DesktopAndTablet" && appInfo.culture == "FaIr";
         },
@@ -39,14 +42,14 @@ module BitChangeSetManager {
 
     dependencyManager.registerFileDependency({
         name: "persian-date-picker-styles",
-        path: "node_modules/@bit/persian-date-picker/dist/css/persian-date-picker",
+        path: "node_modules/persian-datepicker/dist/css/persian-datepicker.min",
         fileDependecyType: "Style",
         predicate: (appInfo) => appInfo.culture == "FaIr"
     });
 
     dependencyManager.registerFileDependency({
         name: "persian-date-picker-blue-styles",
-        path: "node_modules/@bit/persian-date-picker/dist/css/theme/persian-date-picker-blue",
+        path: "node_modules/persian-datepicker/dist/css/theme/persian-datepicker-blue.min",
         fileDependecyType: "Style",
         predicate: (appInfo) => appInfo.culture == "FaIr"
     });
@@ -127,12 +130,12 @@ module BitChangeSetManager {
 
     dependencyManager.registerFileDependency({
         name: "kendo-ui-web",
-        path: "node_modules/@bit/kendo-ui-core/js/kendo.web.min"
+        path: "node_modules/kendo-ui/js/kendo.web.min"
     });
 
     dependencyManager.registerFileDependency({
         name: "kendo-culture-fa-IR",
-        path: "node_modules/@bit/kendo-ui-core/js/cultures/kendo.culture.fa-IR.min",
+        path: "node_modules/kendo-ui/js/cultures/kendo.culture.fa-IR.min",
         predicate: (appInfo) => {
             return appInfo.screenSize == "DesktopAndTablet" && appInfo.culture == "FaIr";
         }
@@ -140,7 +143,7 @@ module BitChangeSetManager {
 
     dependencyManager.registerFileDependency({
         name: "kendo-messages-fa-IR",
-        path: "node_modules/@bit/kendo-ui-core/js/messages/kendo.messages.fa-IR.min",
+        path: "node_modules/kendo-ui/js/messages/kendo.messages.fa-IR.min",
         continueOnError: true,
         predicate: (appInfo) => {
             return appInfo.screenSize == "DesktopAndTablet" && appInfo.culture == "FaIr";
@@ -214,13 +217,13 @@ module BitChangeSetManager {
 
     dependencyManager.registerFileDependency({
         name: "persian-date",
-        path: "node_modules/@bit/persian-date/dist/persian-date",
+        path: "node_modules/persian-datepicker/assets/persian-date.min",
         predicate: (appInfo) => appInfo.culture == "FaIr"
     });
 
     dependencyManager.registerFileDependency({
         name: "persian-date-picker",
-        path: "node_modules/@bit/persian-date-picker/dist/js/persian-date-picker",
+        path: "node_modules/persian-datepicker/dist/js/persian-datepicker",
         predicate: (appInfo) => appInfo.culture == "FaIr"
     });
 

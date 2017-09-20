@@ -80,7 +80,6 @@ namespace Bit.Tests
                         new EnvironmentConfig { Key = "IdentityCertificatePassword" , Value = "P@ssw0rd" },
                         new EnvironmentConfig { Key = "ClientSideAccessibleConfigTest", Value = true, AccessibleInClientSide = true},
                         new EnvironmentConfig { Key = "HostVirtualPath", Value = "/" , AccessibleInClientSide = true },
-                        new EnvironmentConfig { Key = "KendoUILoadMode" , Value = "Web" /*Web|Core*/ , AccessibleInClientSide = true },
                         new EnvironmentConfig { Key = "SsoPageTemplatePath" , Value = @"bit-framework/src/Server/Bit.Tests/ssoPageTemplate.cshtml" }
                     }
                 };
