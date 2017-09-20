@@ -6,7 +6,7 @@ using System.Net;
 namespace Bit.Owin.Exceptions
 {
     [Serializable]
-    public class ResourceNotFoundException : AppException
+    public class ResourceNotFoundException : AppException, IHttpStatusCodeAwareException
     {
         public ResourceNotFoundException()
             : this(BitMetadataBuilder.ResourceNotFoundaException)
