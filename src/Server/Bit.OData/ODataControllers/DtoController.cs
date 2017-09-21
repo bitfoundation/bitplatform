@@ -74,8 +74,8 @@ namespace Bit.OData.ODataControllers
 
         public override void OnActionExecuted(HttpActionExecutedContext actionExecutedContext)
         {
-            if (!actionExecutedContext.Response.Headers.Contains(nameof(HttpResponseHeaders.Location))
-                && actionExecutedContext.Response?.Content is ObjectContent
+            if (actionExecutedContext?.Response?.Headers != null && !actionExecutedContext.Response.Headers.Contains(nameof(HttpResponseHeaders.Location))
+                && actionExecutedContext.Response.Content is ObjectContent
                 && actionExecutedContext.Response.IsSuccessStatusCode == true)
             {
                 ObjectContent objContent = ((ObjectContent)(actionExecutedContext.Response.Content));
