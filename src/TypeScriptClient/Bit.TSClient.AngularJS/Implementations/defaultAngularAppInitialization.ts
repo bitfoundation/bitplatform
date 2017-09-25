@@ -14,8 +14,6 @@
             return [];
         }
 
-        protected ngAdapter: any;
-
         protected async onAppRun(app: ng.IModule): Promise<void> {
 
         }
@@ -212,14 +210,9 @@
 
                         await this.onAppRun(app);
 
-                        if (this.ngAdapter == null) {
-                            angular.bootstrap(document.body, [this.clientAppProfile.appName], {
-                                strictDi: true
-                            });
-                        }
-                        else {
-                            this.ngAdapter.bootstrap(document.body, [this.clientAppProfile.appName]);
-                        }
+                        angular.bootstrap(document.body, [this.clientAppProfile.appName], {
+                            strictDi: true
+                        });
 
                         res();
                     }
