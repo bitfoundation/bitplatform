@@ -110,7 +110,7 @@
                         onlineContext.attach(clonedEntityToBeSavedInOnlineContext, $data.EntityAttachMode.AllChanged);
                         if (clonedEntityToBeSavedInOnlineContext.IsArchived == true)
                             clonedEntityToBeSavedInOnlineContext.entityState = $data.EntityState.Deleted;
-                        else if (clonedEntityToBeSavedInOnlineContext.Version == null || clonedEntityToBeSavedInOnlineContext.Version == "0")
+                        else if (clonedEntityToBeSavedInOnlineContext.Version == null || clonedEntityToBeSavedInOnlineContext.Version == "0000000000000000000")
                             clonedEntityToBeSavedInOnlineContext.entityState = $data.EntityState.Added;
                         else
                             clonedEntityToBeSavedInOnlineContext.entityState = $data.EntityState.Modified;
@@ -130,7 +130,7 @@
 
                     const offlineEntitiesOrderedByVersion = allOfflineEntitiesOrderedByVersion[i];
 
-                    let maxVersion = "0";
+                    let maxVersion = "0000000000000000000";
 
                     if (offlineEntitiesOrderedByVersion[0] != null)
                         maxVersion = offlineEntitiesOrderedByVersion[0].Version;
@@ -152,6 +152,10 @@
                     const entitySetSyncMaterial = fromServerEntitySetSyncMaterials[i];
 
                     if (offlineEntitiesOrderedByVersion.length == 0) {
+                        for (let onlineEntity of recentlyChangedOnlineEntities) {
+                            onlineEntity.ISV = true;
+                            onlineEntity.Version = onlineEntity.Version.padStart(19, "0");
+                        }
                         entitySetSyncMaterial.offlineEntitySet.addMany(recentlyChangedOnlineEntities);
                     }
                     else {
@@ -177,6 +181,7 @@
 
                                 const clonedEntity = entitySetSyncMaterial.offlineEntitySet.elementType["create"](recentlyChangedOnlineEntity["initData"]) as Model.Contracts.ISyncableDto;
                                 clonedEntity.ISV = true;
+                                clonedEntity.Version = clonedEntity.Version.padStart(19, "0");
                                 offlineContext.attach(clonedEntity, $data.EntityAttachMode.AllChanged);
 
                                 if (clonedEntity.IsArchived == true) {
