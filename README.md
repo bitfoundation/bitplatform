@@ -1,5 +1,3 @@
-Bit framework is going to release its first public version in Sep 22, 2017 (:
-
 # bit-framework [![MIT Licence](https://badges.frapsoft.com/os/mit/mit.svg?v=103)](https://github.com/bit-foundation/bit-framework/blob/master/LICENSE) ![MyGet](https://img.shields.io/bit-foundation.myget/bit-foundation/vpre/BitCodeAnalyzer.svg?style=flat-square&label=myget)
 
 Bit framework is a full stack framework for [C\#](https://docs.microsoft.com/en-us/dotnet/csharp/csharp), [JavaScript ](https://developer.mozilla.org/en-US/docs/Web/JavaScript)and [TypeScript ](https://www.typescriptlang.org/)developers. It's a combination of best practices and facilities to implement those best practices. Bit can help you develop high quality apps in less time.
