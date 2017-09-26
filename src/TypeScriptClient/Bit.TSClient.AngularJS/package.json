@@ -23,7 +23,7 @@
     "@types/angular-material": "^1.1.54",
     "@types/angular-translate": "^2.15.1",
     "@types/jquery": "^3.2.12",
-    "@types/kendo-ui": "^2017.2.2",
+    "@types/kendo-ui": "^2017.3.0",
     "gulp": "^3.9.1",
     "gulp-less": "^3.3.2"
   },
