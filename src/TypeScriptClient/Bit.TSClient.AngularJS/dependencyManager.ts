@@ -584,7 +584,7 @@
             let original$canActivate = formViewModelDependency.$canActivate as Function;
 
             formViewModelDependency.$canActivate = ["$nextInstruction", "$prevInstruction", function (next: ng.ComponentInstruction, prev: ng.ComponentInstruction) {
-                const securityService = DependencyManager.getCurrent().resolveObject<Contracts.ISecurityService>("securityService");
+                const securityService = DependencyManager.getCurrent().resolveObject<Contracts.ISecurityService>("SecurityService");
                 if (!securityService.isLoggedIn()) {
                     securityService.login();
                     return false;
