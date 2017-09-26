@@ -97,7 +97,7 @@
             if (toServerEntitySetSyncMaterials.length > 0) {
 
                 const allRecentlyChangedOfflineEntities = await offlineContext.batchExecuteQuery(toServerEntitySetSyncMaterials.map(entitySetSyncMaterial => {
-                    return entitySetSyncMaterial.offlineEntitySet.filter(e => e.ISV == false);
+                    return entitySetSyncMaterial.offlineEntitySet.filter(e => e.IsSynced == false);
                 }));
 
                 for (let i = 0; i < toServerEntitySetSyncMaterials.length; i++) {
@@ -153,7 +153,7 @@
 
                     if (offlineEntitiesOrderedByVersion.length == 0) {
                         for (let onlineEntity of recentlyChangedOnlineEntities) {
-                            onlineEntity.ISV = true;
+                            onlineEntity.IsSynced = true;
                             onlineEntity.Version = onlineEntity.Version.padStart(19, "0");
                         }
                         entitySetSyncMaterial.offlineEntitySet.addMany(recentlyChangedOnlineEntities);
@@ -180,7 +180,7 @@
                             if (recentlyChangedOnlineEntity.IsArchived == false || hasEquivalentInOfflineContext == true) {
 
                                 const clonedEntity = entitySetSyncMaterial.offlineEntitySet.elementType["create"](recentlyChangedOnlineEntity["initData"]) as Model.Contracts.ISyncableDto;
-                                clonedEntity.ISV = true;
+                                clonedEntity.IsSynced = true;
                                 clonedEntity.Version = clonedEntity.Version.padStart(19, "0");
                                 offlineContext.attach(clonedEntity, $data.EntityAttachMode.AllChanged);
 

@@ -25,31 +25,31 @@ namespace BitCodeGenerator.Implementations
 
         static DefaultProjectDtosProvider()
         {
-            _isvPropertyForISyncableDtos = new Lazy<Task<IPropertySymbol>>(async () =>
+            _isSyncedPropertyForISyncableDtos = new Lazy<Task<IPropertySymbol>>(async () =>
             {
-                ProjectId projectId = ProjectId.CreateNewId(debugName: "ISVPropertyProject");
-                DocumentId isvPropDocId = DocumentId.CreateNewId(projectId, debugName: "ISVProp.cs");
+                ProjectId projectId = ProjectId.CreateNewId(debugName: "IsSyncedPropertyProject");
+                DocumentId isSyncedPropDocId = DocumentId.CreateNewId(projectId, debugName: "IsSyncedProp.cs");
 
                 Solution solution = new AdhocWorkspace()
                     .CurrentSolution
-                    .AddProject(projectId, "ISVPropertyProject", "ISVPropertyProject", LanguageNames.CSharp)
+                    .AddProject(projectId, "IsSyncedPropertyProject", "IsSyncedPropertyProject", LanguageNames.CSharp)
                     .AddMetadataReference(projectId, MetadataReference.CreateFromFile(typeof(bool).Assembly.Location))
-                    .AddDocument(isvPropDocId, "ISVProp.cs", SourceText.From(@"
-public class ISVClass
+                    .AddDocument(isSyncedPropDocId, "IsSyncedProp.cs", SourceText.From(@"
+public class IsSyncedClass
 {
-    public bool ISV { get; set; }
+    public bool IsSynced { get; set; }
 }"
                     ));
 
-                Document isvPropDoc = solution.Projects.Single().Documents.Single();
-                ClassDeclarationSyntax isvPropClassDec = (await isvPropDoc.GetSyntaxRootAsync()).DescendantNodes().OfType<ClassDeclarationSyntax>().Single();
-                ITypeSymbol isvPropTypeSymbol = (await isvPropDoc.GetSemanticModelAsync()).GetDeclaredSymbol(isvPropClassDec);
-                return isvPropTypeSymbol.GetMembers().OfType<IPropertySymbol>().Single();
+                Document isSyncedPropDoc = solution.Projects.Single().GetDocument(isSyncedPropDocId);
+                ClassDeclarationSyntax isSyncedPropClassDec = (await isSyncedPropDoc.GetSyntaxRootAsync()).DescendantNodes().OfType<ClassDeclarationSyntax>().Single();
+                ITypeSymbol isSyncedPropTypeSymbol = (await isSyncedPropDoc.GetSemanticModelAsync()).GetDeclaredSymbol(isSyncedPropClassDec);
+                return isSyncedPropTypeSymbol.GetMembers().OfType<IPropertySymbol>().Single();
 
             });
         }
 
-        private static readonly Lazy<Task<IPropertySymbol>> _isvPropertyForISyncableDtos;
+        private static readonly Lazy<Task<IPropertySymbol>> _isSyncedPropertyForISyncableDtos;
 
         public virtual async Task<IList<Dto>> GetProjectDtos(Project project, IList<Project> allSourceProjects = null)
         {
@@ -72,9 +72,9 @@ public class ISVClass
                     Properties = dtoController.ModelSymbol.GetMembers().OfType<IPropertySymbol>().ToList()
                 };
 
-                if (dto.DtoSymbol.Interfaces.Any(i => i.Name == "ISyncableDto") && !dto.Properties.Any(p => p.Name == "ISV"))
+                if (dto.DtoSymbol.Interfaces.Any(i => i.Name == "ISyncableDto") && !dto.Properties.Any(p => p.Name == "IsSynced"))
                 {
-                    dto.Properties.Add(await _isvPropertyForISyncableDtos.Value);
+                    dto.Properties.Add(await _isSyncedPropertyForISyncableDtos.Value);
                 }
 
                 dtos.Add(dto);

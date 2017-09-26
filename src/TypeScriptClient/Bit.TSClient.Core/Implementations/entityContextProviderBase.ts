@@ -237,8 +237,8 @@
                                 if (e.Version != "0000000000000000000")
                                     throw new Error("An entity has been created with version other than null or zero.");
                             }
-                            if (members["$ISV"] != null)
-                                e.ISV = false;
+                            if (members["$IsSynced"] != null)
+                                e.IsSynced = false;
                         }
                     });
 
@@ -246,8 +246,8 @@
                         if ((e["context"] != null && e["context"]["ignoreEntityEvents"] != true && e["context"]["storageProvider"].name == EntityContextProviderBase.defaultOfflineDbProvider) || (e["storeToken"] != null && e["storeToken"].args.provider == EntityContextProviderBase.defaultOfflineDbProvider)) {
                             const eType = e.getType();
                             const members = eType.memberDefinitions;
-                            if (members["$ISV"] != null)
-                                e.ISV = false;
+                            if (members["$IsSynced"] != null)
+                                e.IsSynced = false;
                         }
                     });
 
@@ -255,8 +255,8 @@
                         if (((e["context"] != null && e["context"]["ignoreEntityEvents"] != true && e["context"]["storageProvider"].name == EntityContextProviderBase.defaultOfflineDbProvider) || (e["storeToken"] != null && e["storeToken"].args.provider == EntityContextProviderBase.defaultOfflineDbProvider) && (e.Version != null && e.Version != "0"))) {
                             const eType = e.getType();
                             const members = eType.memberDefinitions;
-                            if (members["$ISV"] != null)
-                                e.ISV = false;
+                            if (members["$IsSynced"] != null)
+                                e.IsSynced = false;
                             if (members["$IsArchived"] != null) {
                                 e.IsArchived = true;
                                 e.entityState = $data.EntityState.Modified;

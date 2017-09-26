@@ -44,7 +44,7 @@ namespace BitCodeGenerator.Test.Implementations
         }
 
         [TestMethod]
-        public virtual async Task ISyncableDtoShouldHaveISVPropertyEvenWhenThereIsNoDeclaredISVProperty()
+        public virtual async Task ISyncableDtoShouldHaveIsSyncedPropertyEvenWhenThereIsNoDeclaredIsSyncedProperty()
         {
             const string sourceCodeOfDtoControllerWithActionAndParameter = @"
 
@@ -75,7 +75,7 @@ public class TestController : DtoController<TestDto>
         }
 
         [TestMethod]
-        public virtual async Task ISyncableDtoShouldHaveISVProperty()
+        public virtual async Task ISyncableDtoShouldHaveIsSyncedProperty()
         {
             const string sourceCodeOfDtoControllerWithActionAndParameter = @"
 
@@ -86,7 +86,7 @@ public interface ISyncableDto : IDto {
 }
 
 public class TestDto : ISyncableDto {
-    public bool ISV { get; set; }
+    public bool IsSynced { get; set; }
 }
 
 public class DtoController<TDto>
@@ -107,7 +107,7 @@ public class TestController : DtoController<TestDto>
         }
 
         [TestMethod]
-        public virtual async Task IDtoShouldNotHaveISVPropertyWhenItIsNotISyncable()
+        public virtual async Task IDtoShouldNotHaveIsSyncedPropertyWhenItIsNotISyncable()
         {
             const string sourceCodeOfDtoControllerWithActionAndParameter = @"
 
