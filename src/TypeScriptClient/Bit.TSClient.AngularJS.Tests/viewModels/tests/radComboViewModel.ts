@@ -1,13 +1,12 @@
 ﻿module Bit.Tests.ViewModels {
-    @SecureFormViewModelDependency({ name: "RadComboFormViewModel", templateUrl: "|Bit|/Bit.TSClient.AngularJS.Tests/views/tests/radComboview.html" })
-    export class RadComboFormViewModel extends Bit.ViewModels.FormViewModel {
+    @ComponentDependency({ name: "RadComboViewModel", templateUrl: "|Bit|/Bit.TSClient.AngularJS.Tests/views/tests/radComboview.html" })
+    export class RadComboViewModel {
 
         public testModelsDataSource: kendo.data.DataSource = null;
 
         public model: Tests.Model.DomainModels.ParentEntity = null;
 
         public constructor( @Inject("EntityContextProvider") public entityContextProvider: Contracts.IEntityContextProvider) {
-            super();
         }
 
         @Command()

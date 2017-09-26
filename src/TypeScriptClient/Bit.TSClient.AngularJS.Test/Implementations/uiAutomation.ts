@@ -1,6 +1,6 @@
 ﻿module Bit.Implementations {
 
-    export class UIAutomation<TFormViewModel> {
+    export class UIAutomation<TViewModel> {
 
         public view: JQuery;
 
@@ -12,8 +12,8 @@
             this.view = view;
         }
 
-        public get formViewModel(): TFormViewModel {
-            return this.getFormViewModel(this.view);
+        public get viewModel(): TViewModel {
+            return this.getViewModel(this.view);
         }
 
         protected get $scope(): ng.IScope {
@@ -49,12 +49,12 @@
             return false;
         }
 
-        public getFormViewModel(element: JQuery, name = "vm"): TFormViewModel {
+        public getViewModel(element: JQuery, name = "vm"): TViewModel {
 
             if (element == null)
                 throw new Error("element is null");
 
-            return this.getBindingContext<TFormViewModel>(element, name);
+            return this.getBindingContext<TViewModel>(element, name);
 
         }
 

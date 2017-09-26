@@ -1,9 +1,9 @@
 ﻿module Bit.Tests.ViewModels {
-    @SecureFormViewModelDependency({ name: "EntityContextUsageFormViewModel", templateUrl: "|Bit|/Bit.TSClient.AngularJS.Tests/views/tests/entityContextUsageview.html" })
-    export class EntityContextUsageFormViewModel extends Bit.ViewModels.FormViewModel {
+    @ComponentDependency({ name: "EntityContextUsageViewModel", templateUrl: "|Bit|/Bit.TSClient.AngularJS.Tests/views/tests/entityContextUsageview.html" })
+    export class EntityContextUsageViewModel {
 
         public constructor( @Inject("EntityContextProvider") public entityContextProvider: Contracts.IEntityContextProvider) {
-            super();
+            
         }
 
         public num = 0;

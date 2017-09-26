@@ -13,7 +13,7 @@ namespace Bit.Tests.HtmlClient.ViewModel.Implementation
     {
         [TestMethod]
         [TestCategory("HtmlClient"), TestCategory("Validation")]
-        public virtual async Task TestValidationFormViewModelWithValidBehavior()
+        public virtual async Task TestValidationViewModelWithValidBehavior()
         {
             using (BitOwinTestEnvironment testEnvironment = new BitOwinTestEnvironment(new TestEnvironmentArgs { UseRealServer = true }))
             {
@@ -23,14 +23,14 @@ namespace Bit.Tests.HtmlClient.ViewModel.Implementation
                 {
                     await driver.NavigateToRoute("form-validation-page");
 
-                    await driver.ExecuteTest("Bit.Tests.Implementations.Tests.ValidationTests.testValidationFormViewModelWithValidBehavior");
+                    await driver.ExecuteTest("Bit.Tests.Implementations.Tests.ValidationTests.testValidationViewModelWithValidBehavior");
                 }
             }
         }
 
         [TestMethod]
         [TestCategory("HtmlClient"), TestCategory("Validation")]
-        public virtual async Task TestValidationFormViewModelWithInValidBehavior()
+        public virtual async Task TestValidationViewModelWithInValidBehavior()
         {
             using (BitOwinTestEnvironment testEnvironment = new BitOwinTestEnvironment(new TestEnvironmentArgs { UseRealServer = true }))
             {
@@ -40,7 +40,7 @@ namespace Bit.Tests.HtmlClient.ViewModel.Implementation
                 {
                     await driver.NavigateToRoute("form-validation-page");
 
-                    await driver.ExecuteTest("Bit.Tests.Implementations.Tests.ValidationTests.testValidationFormViewModelWithInValidBehavior");
+                    await driver.ExecuteTest("Bit.Tests.Implementations.Tests.ValidationTests.testValidationViewModelWithInValidBehavior");
                 }
             }
         }

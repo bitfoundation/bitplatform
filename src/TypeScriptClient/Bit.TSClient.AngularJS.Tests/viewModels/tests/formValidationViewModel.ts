@@ -12,8 +12,8 @@
 
     }
 
-    @DtoViewModelDependency({ name: "FormValidationFormViewModel", templateUrl: "|Bit|/Bit.TSClient.AngularJS.Tests/views/tests/formValidationview.html" })
-    export class FormValidationFormViewModel extends Bit.ViewModels.DtoViewModel<Tests.Model.Dto.ValidationSampleDto, ValidationSampleRules> {
+    @DtoViewModelDependency({ name: "FormValidationViewModel", templateUrl: "|Bit|/Bit.TSClient.AngularJS.Tests/views/tests/formValidationview.html" })
+    export class FormValidationViewModel extends Bit.ViewModels.DtoViewModel<Tests.Model.Dto.ValidationSampleDto, ValidationSampleRules> {
 
         public constructor( @Inject("ValidationSampleRules") public validationSampleRules: ValidationSampleRules) {
             super();

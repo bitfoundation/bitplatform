@@ -1,13 +1,12 @@
 ﻿module Bit.Tests.ViewModels {
-    @SecureFormViewModelDependency({ name: "RepeatFormViewModel", templateUrl: "|Bit|/Bit.TSClient.AngularJS.Tests/views/tests/repeatview.html" })
-    export class RepeatFormViewModel extends Bit.ViewModels.FormViewModel {
+    @ComponentDependency({ name: "RepeatViewModel", templateUrl: "|Bit|/Bit.TSClient.AngularJS.Tests/views/tests/repeatview.html" })
+    export class RepeatViewModel {
 
         public testModels: Array<Tests.Model.DomainModels.TestModel> = null;
 
         public someProperty = "This is a view model";
 
         public constructor( @Inject("EntityContextProvider") public entityContextProvider: Contracts.IEntityContextProvider) {
-            super();
         }
 
         @Command()

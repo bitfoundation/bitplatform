@@ -1,10 +1,9 @@
 ﻿module Bit.Tests.ViewModels {
 
-    @SecureFormViewModelDependency({ name: "AngularTranslateFormViewModel", templateUrl: "|Bit|/Bit.TSClient.AngularJS.Tests/views/tests/angularTranslateview.html" })
-    export class AngularTranslateFormViewModel extends Bit.ViewModels.FormViewModel {
+    @ComponentDependency({ name: "AngularTranslateViewModel", templateUrl: "|Bit|/Bit.TSClient.AngularJS.Tests/views/tests/angularTranslateview.html" })
+    export class AngularTranslateViewModel {
 
         public constructor( @Inject("$translate") public $translate: ng.translate.ITranslateService) {
-            super();
         }
 
         public text: string = "KnownError";

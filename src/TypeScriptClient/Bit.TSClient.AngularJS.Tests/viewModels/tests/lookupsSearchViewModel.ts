@@ -1,6 +1,6 @@
 ﻿module Bit.Tests.ViewModels {
 
-    @SecureFormViewModelDependency({
+    @ComponentDependency({
         name: "LookupsSearchViewModel", template: `
 
 <dto-form ng-model="vm.product">
@@ -11,10 +11,10 @@
 </dto-form>
 
 ` })
-    export class LookupsSearchViewModel extends Bit.ViewModels.FormViewModel {
+    export class LookupsSearchViewModel {
 
         public constructor( @Inject("EntityContextProvider") public entityContextProvider: Contracts.IEntityContextProvider) {
-            super();
+
         }
 
         public product = new BitTestsModel.ProductDto();

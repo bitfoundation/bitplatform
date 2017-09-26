@@ -1,6 +1,6 @@
 ﻿module Bit.Tests.ViewModels {
-    @SecureFormViewModelDependency({ name: "SimpleFormViewModel", templateUrl: "|Bit|/Bit.TSClient.AngularJS.Tests/views/tests/simpleview.html" })
-    export class SimpleFormViewModel extends Bit.ViewModels.FormViewModel {
+    @ComponentDependency({ name: "SimpleViewModel", templateUrl: "|Bit|/Bit.TSClient.AngularJS.Tests/views/tests/simpleview.html" })
+    export class SimpleViewModel {
         public num = 10;
     }
 }

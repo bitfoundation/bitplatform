@@ -88,19 +88,6 @@
     ]
   },
   {
-    "name": "ng-outlet",
-    "description": "The directive that identifies where the Router should render its Components."
-  },
-  {
-    "name": "a",
-    "attributes": [
-      {
-        "name": "ng-link",
-        "description": "<a ng-link=\"[ 'ViewModelName' , { arg1 : 'value' }]\">Title</a> for binding a clickable HTML element to a route, via a Link Parameters Array."
-      }
-    ]
-  },
-  {
     "name": "persian-date-picker",
     "description": "This Date picker work with solar based calendar. It accepts ng-model. To configure date or date/time see is-date-time attribute.",
     "attributes": [

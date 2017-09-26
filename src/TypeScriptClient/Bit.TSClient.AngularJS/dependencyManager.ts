@@ -21,10 +21,6 @@
         type?: Function;
     }
 
-    export interface IFormViewModelDependency extends IComponentDependency {
-
-    }
-
     export interface IDirectiveDependency extends IDependency, ng.IDirective {
         type?: Function;
     }
@@ -45,8 +41,6 @@
         private fileDependencies = new Array<IFileDependency>();
 
         private objectDependencies = new Array<IObjectDependency>();
-
-        private formViewModelDependencies = new Array<IFormViewModelDependency>();
 
         private componentDependencies = new Array<IComponentDependency>();
 
@@ -241,54 +235,6 @@
             }
             else {
                 this.componentDependencies.push(componentDependency);
-            }
-        }
-
-        public registerFormViewModelDependency(formViewModelDependency: IFormViewModelDependency): void {
-
-            if (formViewModelDependency == null)
-                throw new Error("formViewModelDependency is null");
-
-            if (formViewModelDependency.type == null)
-                throw new Error("viewModel dependency's type may not be null");
-
-            if (formViewModelDependency.name == null)
-                throw new Error("viewModel dependency's name may not be null");
-
-            if (!this.dependencyShouldBeConsidered(formViewModelDependency))
-                return;
-
-            formViewModelDependency.name = camelize(formViewModelDependency.name);
-            formViewModelDependency.controller = formViewModelDependency.type as any;
-            formViewModelDependency.controllerAs = formViewModelDependency.controllerAs || "vm";
-
-            if (formViewModelDependency.$routeConfig != null) {
-                formViewModelDependency.$routeConfig.filter(r => r.name != null && r.component == null).forEach(r => {
-                    r.component = camelize(r.name);
-                    if (r.path != null) {
-                        let originalPath = r.path;
-                        r.path = originalPath.toLowerCase();
-                        if (r.path != originalPath && this.clientAppProfile.isDebugMode == true) {
-                            console.warn(`Path of ${r.name} changed from ${originalPath} to ${r.path}.`);
-                        }
-                    }
-                });
-            }
-
-            const dependenciesWithThisName = this.formViewModelDependencies.filter(d => d.name.toLowerCase() == formViewModelDependency.name.toLowerCase());
-            let dependenciesWithThisNameIndex = -1;
-            if (dependenciesWithThisName.length == 1) {
-                dependenciesWithThisNameIndex = this.formViewModelDependencies.indexOf(dependenciesWithThisName[0]);
-            }
-
-            if (dependenciesWithThisNameIndex != -1) {
-                if (formViewModelDependency.overwriteExisting == true)
-                    this.formViewModelDependencies[dependenciesWithThisNameIndex] = formViewModelDependency;
-                else
-                    throw new Error(`Duplicated viewModel dependency ${formViewModelDependency.name}`);
-            }
-            else {
-                this.formViewModelDependencies.push(formViewModelDependency);
             }
         }
 
@@ -519,10 +465,6 @@
             return this.directiveDependencies;
         }
 
-        public getAllFormViewModelsDependencies(): Array<IFormViewModelDependency> {
-            return this.formViewModelDependencies;
-        }
-
         public getAllComponentDependencies(): Array<IComponentDependency> {
             return this.componentDependencies;
         }
@@ -557,47 +499,6 @@
                 .registerObjectDependency(dtoRules);
 
             return targetDtoRules;
-        };
-    }
-
-    export function FormViewModelDependency(formViewModelDependency: IFormViewModelDependency): ClassDecorator {
-
-        return (targetFormViewModel: IFormViewModelDependency & Function): any => {
-
-            targetFormViewModel = Injectable()(targetFormViewModel) as IFormViewModelDependency & Function;
-
-            formViewModelDependency.type = targetFormViewModel;
-
-            DependencyManager.getCurrent()
-                .registerFormViewModelDependency(formViewModelDependency);
-
-            return targetFormViewModel;
-        };
-    }
-
-    export function SecureFormViewModelDependency(formViewModelDependency: IFormViewModelDependency): ClassDecorator {
-
-        return (targetFormViewModel: IFormViewModelDependency & Function): any => {
-
-            targetFormViewModel = Injectable()(targetFormViewModel) as IFormViewModelDependency & Function;
-
-            let original$canActivate = formViewModelDependency.$canActivate as Function;
-
-            formViewModelDependency.$canActivate = ["$nextInstruction", "$prevInstruction", function (next: ng.ComponentInstruction, prev: ng.ComponentInstruction) {
-                const securityService = DependencyManager.getCurrent().resolveObject<Contracts.ISecurityService>("SecurityService");
-                if (!securityService.isLoggedIn()) {
-                    securityService.login();
-                    return false;
-                }
-                return original$canActivate == null ? true : original$canActivate.apply(this, arguments);
-            }];
-
-            formViewModelDependency.type = targetFormViewModel;
-
-            DependencyManager.getCurrent()
-                .registerFormViewModelDependency(formViewModelDependency);
-
-            return targetFormViewModel;
         };
     }
 

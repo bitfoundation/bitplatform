@@ -1,9 +1,9 @@
 ﻿module Bit.Tests.ViewModels {
-    @SecureFormViewModelDependency({ name: "DateTimeServiceFormViewModel",  templateUrl: "|Bit|/Bit.TSClient.AngularJS.Tests/views/tests/dateTimeServiceView.html" })
-    export class DateTimeServiceFormViewModel extends Bit.ViewModels.FormViewModel {
+    @ComponentDependency({ name: "DateTimeServiceViewModel",  templateUrl: "|Bit|/Bit.TSClient.AngularJS.Tests/views/tests/dateTimeServiceView.html" })
+    export class DateTimeServiceViewModel {
 
         public constructor( @Inject("DateTimeService") public dateTimeService: Contracts.IDateTimeService) {
-            super();
+            
         }
 
         public date: Date;

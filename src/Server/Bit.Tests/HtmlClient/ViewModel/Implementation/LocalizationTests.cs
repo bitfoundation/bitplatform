@@ -13,7 +13,7 @@ namespace Bit.Tests.HtmlClient.ViewModel.Implementation
     {
         [TestMethod]
         [TestCategory("HtmlClient"), TestCategory("Angular")]
-        public virtual async Task TestAngularTranslateFormViewModel()
+        public virtual async Task TestAngularTranslateViewModel()
         {
             using (BitOwinTestEnvironment testEnvironment = new BitOwinTestEnvironment(new TestEnvironmentArgs { UseRealServer = true }))
             {
@@ -23,7 +23,7 @@ namespace Bit.Tests.HtmlClient.ViewModel.Implementation
                 {
                     await driver.NavigateToRoute("angular-translate-page");
 
-                    await driver.ExecuteTest("Bit.Tests.Implementations.Tests.AngularTranslateTests.testAngularTransalateFormViewModel");
+                    await driver.ExecuteTest("Bit.Tests.Implementations.Tests.AngularTranslateTests.testAngularTransalateViewModel");
                 }
             }
         }

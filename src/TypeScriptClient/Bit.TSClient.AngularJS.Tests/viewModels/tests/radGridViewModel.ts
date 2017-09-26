@@ -1,9 +1,9 @@
 ﻿module Bit.Tests.ViewModels {
-    @SecureFormViewModelDependency({ name: "RadGridFormViewModel", templateUrl: "|Bit|/Bit.TSClient.AngularJS.Tests/views/tests/radGridview.html" })
-    export class RadGridFormViewModel extends Bit.ViewModels.FormViewModel {
+    @ComponentDependency({ name: "RadGridViewModel", templateUrl: "|Bit|/Bit.TSClient.AngularJS.Tests/views/tests/radGridview.html" })
+    export class RadGridViewModel {
 
         public constructor( @Inject("EntityContextProvider") public entityContextProvider: Contracts.IEntityContextProvider, @Inject("$document") public $document: ng.IDocumentService) {
-            super();
+
         }
 
         public parentEntitiesDataSource: kendo.data.DataSource = null;

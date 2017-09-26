@@ -19,29 +19,12 @@
         }
 
         protected async registerValues(app: ng.IModule): Promise<void> {
-            app.value("$routerRootComponent", "app");
+            
         }
 
         protected async registerComponents(app: ng.IModule): Promise<void> {
 
             const dependencyManager = DependencyManager.getCurrent();
-
-            const formViewModelDependencies = dependencyManager.getAllFormViewModelsDependencies();
-
-            formViewModelDependencies.forEach(vm => {
-
-                if (vm.templateUrl != null)
-                    vm.templateUrl = this.pathProvider.getFullPath(vm.templateUrl);
-
-                vm.bindings = angular.extend(vm.bindings || {}, { $router: "<" });
-
-                if (vm.name != "app") {
-                    vm.require = angular.extend(vm.require || {}, { ngOutlet: "^ngOutlet" });
-                }
-
-                app.component(vm.name, vm);
-
-            });
 
             dependencyManager.getAllComponentDependencies().forEach(component => {
 

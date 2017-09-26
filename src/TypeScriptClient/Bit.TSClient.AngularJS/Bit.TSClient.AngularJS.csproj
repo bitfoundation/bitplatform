@@ -102,9 +102,7 @@
     <TypeScriptCompile Include="Implementations\dtoRules.ts" />
     <TypeScriptCompile Include="scopeManager.ts" />
     <TypeScriptCompile Include="typings.d.ts" />
-    <TypeScriptCompile Include="typings\angular-component-router.d.ts" />
     <TypeScriptCompile Include="viewModels\dtoViewModel.ts" />
-    <TypeScriptCompile Include="viewModels\formViewModel.ts" />
   </ItemGroup>
   <ItemGroup>
     <Service Include="{4A0DDDB5-7A95-4FBF-97CC-616D07737A77}" />

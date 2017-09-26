@@ -1,10 +1,10 @@
 ﻿module Bit.Tests.ViewModels {
 
-    @SecureFormViewModelDependency({ name: "AsyncFormViewModel", templateUrl: "|Bit|/Bit.TSClient.AngularJS.Tests/views/tests/asyncview.html" })
-    export class AsyncFormViewModel extends Bit.ViewModels.FormViewModel {
+    @ComponentDependency({ name: "AsyncViewModel", templateUrl: "|Bit|/Bit.TSClient.AngularJS.Tests/views/tests/asyncview.html" })
+    export class AsyncViewModel {
 
         public constructor( @Inject("EntityContextProvider") public entityContextProvider: Contracts.IEntityContextProvider) {
-            super();
+            
         }
 
         public sumResult: number = null;

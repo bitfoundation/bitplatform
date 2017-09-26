@@ -19,7 +19,7 @@ namespace Bit.Tests.HtmlClient.ViewModel.Implementation
     {
         [TestMethod]
         [TestCategory("HtmlClient"), TestCategory("Rad")]
-        public virtual async Task RadComboFormViewModelTest()
+        public virtual async Task RadComboViewModelTest()
         {
             using (BitOwinTestEnvironment testEnvironment = new BitOwinTestEnvironment(new TestEnvironmentArgs { UseRealServer = true }))
             {
@@ -29,7 +29,7 @@ namespace Bit.Tests.HtmlClient.ViewModel.Implementation
                 {
                     await driver.NavigateToRoute("rad-combo-page");
 
-                    await driver.ExecuteTest("Bit.Tests.Implementations.Tests.RadTests.testRadComboFormViewModel");
+                    await driver.ExecuteTest("Bit.Tests.Implementations.Tests.RadTests.testRadComboViewModel");
                 }
 
                 TestModelsController testModelsController = TestDependencyManager.CurrentTestDependencyManager.Objects
@@ -50,7 +50,7 @@ namespace Bit.Tests.HtmlClient.ViewModel.Implementation
 
         [TestMethod]
         [TestCategory("HtmlClient"), TestCategory("Rad")]
-        public virtual async Task RadGridFormViewModelAddTest()
+        public virtual async Task RadGridViewModelAddTest()
         {
             using (BitOwinTestEnvironment testEnvironment = new BitOwinTestEnvironment(new TestEnvironmentArgs { UseRealServer = true }))
             {
@@ -60,7 +60,7 @@ namespace Bit.Tests.HtmlClient.ViewModel.Implementation
                 {
                     await driver.NavigateToRoute("rad-grid-page");
 
-                    await driver.ExecuteTest("Bit.Tests.Implementations.Tests.RadTests.testRadGridFormViewModelAdd");
+                    await driver.ExecuteTest("Bit.Tests.Implementations.Tests.RadTests.testRadGridViewModelAdd");
                 }
 
                 ParentEntitiesController parentEntitiesController = TestDependencyManager.CurrentTestDependencyManager.Objects

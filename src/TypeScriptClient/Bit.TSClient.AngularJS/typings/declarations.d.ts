@@ -14,17 +14,6 @@ declare module kendo {
     function destroyWidget(widget: ui.Widget & { wrapper: any }): void;
 }
 
-declare namespace angular.material {
-    interface IPromptDialog extends ng.material.IPresetDialog<IPromptDialog> {
-        cancel(cancel: string): IPromptDialog;
-        placeholder(placeholder: string): IPromptDialog;
-    }
-    interface IDialogService {
-        show(dialog: ng.material.IDialogOptions | ng.material.IAlertDialog | ng.material.IConfirmDialog | IPromptDialog): ng.IPromise<any>;
-        prompt(): IPromptDialog;
-    }
-}
-
 declare namespace decimal {
     interface IDecimalStatic extends IDecimalConfig {
         add(firstValue: string, secondValue: string): string;

@@ -1,13 +1,21 @@
 ﻿module Bit.Tests.ViewModels {
-    @SecureFormViewModelDependency({ name: "RouteParameterFormViewModel", templateUrl: "|Bit|/Bit.TSClient.AngularJS.Tests/views/tests/routeParameterview.html" })
-    export class RouteParameterFormViewModel extends Bit.ViewModels.FormViewModel {
+    @ComponentDependency({
+        name: "RouteParameterViewModel",
+        templateUrl: "|Bit|/Bit.TSClient.AngularJS.Tests/views/tests/routeParameterview.html",
+        bindings: {
+            $transition$: '<'
+        }
+    })
+    export class RouteParameterViewModel {
 
         public constructor( @Inject("$document") public $document: ng.IDocumentService) {
-            super();
+
         }
 
+        public $transition$: any;
+
         public async $onInit(): Promise<void> {
-            const to: string = this.route.params["to"];
+            const to: string = this.$transition$.params().to;
             this.$document.attr("title", to);
         }
     }

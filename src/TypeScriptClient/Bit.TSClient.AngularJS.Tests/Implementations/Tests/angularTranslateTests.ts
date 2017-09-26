@@ -2,16 +2,16 @@
 
     export class AngularTranslateTests {
 
-        public static async testAngularTransalateFormViewModel(): Promise<void> {
+        public static async testAngularTransalateViewModel(): Promise<void> {
 
-            const uiAutomation = new Bit.Implementations.UIAutomation<ViewModels.AngularTranslateFormViewModel>(angular.element("#angularTranslateView"));
+            const uiAutomation = new Bit.Implementations.UIAutomation<ViewModels.AngularTranslateViewModel>(angular.element("#angularTranslateView"));
 
-            await uiAutomation.formViewModel.changeText();
+            await uiAutomation.viewModel.changeText();
 
-            if (uiAutomation.formViewModel.text != "Unknown error")
+            if (uiAutomation.viewModel.text != "Unknown error")
                 throw new Error("problem in angular translate");
 
-            await uiAutomation.formViewModel.changeLanguage();
+            await uiAutomation.viewModel.changeLanguage();
 
             if (uiAutomation.view.find("#test2").text() != "خطای مشخص")
                 throw new Error("problem in angular translate");

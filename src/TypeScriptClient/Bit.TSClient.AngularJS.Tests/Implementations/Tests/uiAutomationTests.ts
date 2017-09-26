@@ -1,25 +1,25 @@
 ﻿module Bit.Tests.Implementations.Tests {
     export class UiAutomationTests {
-        public static async testGetBindingContextAndGetFormViewModel(): Promise<void> {
+        public static async testGetBindingContextAndGetViewModel(): Promise<void> {
 
-            const uiAutomation = new Bit.Implementations.UIAutomation<ViewModels.RepeatFormViewModel>(angular.element("#repeatView"));
+            const uiAutomation = new Bit.Implementations.UIAutomation<ViewModels.RepeatViewModel>(angular.element("#repeatView"));
 
-            const repeatFormViewModel = uiAutomation.formViewModel;
+            const repeatViewModel = uiAutomation.viewModel;
 
-            if (repeatFormViewModel.testModels.length != 2) {
+            if (repeatViewModel.testModels.length != 2) {
                 throw new Error("problem in testGetBindingContextAndGetViewModel");
             }
 
-            if (repeatFormViewModel.someProperty != "This is a view model") {
+            if (repeatViewModel.someProperty != "This is a view model") {
                 throw new Error("problem in testGetBindingContextAndGetViewModel");
             }
 
-            repeatFormViewModel.testModels.forEach((tm, i) => {
+            repeatViewModel.testModels.forEach((tm, i) => {
 
                 const tmFromView = uiAutomation.getBindingContext<Bit.Tests.Model.DomainModels.TestModel>(uiAutomation.view.find(`#testModel${i}`), "tm");
 
                 if (tmFromView.Id != tm.Id)
-                    throw new Error("problem in testGetBindingContextAndGetFormViewModel");
+                    throw new Error("problem in testGetBindingContextAndGetViewModel");
 
             });
         }

@@ -19,7 +19,7 @@ namespace Bit.Tests.HtmlClient.ViewModel.Implementation
     {
         [TestMethod]
         [TestCategory("HtmlClient"), TestCategory("Angular")]
-        public virtual async Task TestGetBindingContextAndGetFormViewModel()
+        public virtual async Task TestGetBindingContextAndGetViewModel()
         {
             using (BitOwinTestEnvironment testEnvironment = new BitOwinTestEnvironment(new TestEnvironmentArgs { UseRealServer = true }))
             {
@@ -29,7 +29,7 @@ namespace Bit.Tests.HtmlClient.ViewModel.Implementation
                 {
                     await driver.NavigateToRoute("repeat-page");
 
-                    await driver.ExecuteTest("Bit.Tests.Implementations.Tests.UiAutomationTests.testGetBindingContextAndGetFormViewModel");
+                    await driver.ExecuteTest("Bit.Tests.Implementations.Tests.UiAutomationTests.testGetBindingContextAndGetViewModel");
                 }
 
                 TestModelsController testModelsController = TestDependencyManager.CurrentTestDependencyManager.Objects

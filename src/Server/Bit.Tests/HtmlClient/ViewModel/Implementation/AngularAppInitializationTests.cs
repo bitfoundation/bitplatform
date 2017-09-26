@@ -17,7 +17,7 @@ namespace Bit.Tests.HtmlClient.ViewModel.Implementation
     {
         [TestMethod]
         [TestCategory("HtmlClient"), TestCategory("Angular")]
-        public virtual async Task SimpleFormViewModelTest()
+        public virtual async Task SimpleViewModelTest()
         {
             using (BitOwinTestEnvironment testEnvironment = new BitOwinTestEnvironment(new TestEnvironmentArgs { UseRealServer = true }))
             {
@@ -34,7 +34,7 @@ namespace Bit.Tests.HtmlClient.ViewModel.Implementation
 
         [TestMethod]
         [TestCategory("HtmlClient"), TestCategory("Angular")]
-        public virtual async Task RouteParameterFormViewModelTest()
+        public virtual async Task RouteParameterViewModelTest()
         {
             using (BitOwinTestEnvironment testEnvironment = new BitOwinTestEnvironment(new TestEnvironmentArgs { UseRealServer = true }))
             {
@@ -70,7 +70,7 @@ namespace Bit.Tests.HtmlClient.ViewModel.Implementation
 
         [TestMethod]
         [TestCategory("HtmlClient"), TestCategory("Angular")]
-        public virtual async Task AngularServiceUsageFormViewModelTest()
+        public virtual async Task AngularServiceUsageViewModelTest()
         {
             using (BitOwinTestEnvironment testEnvironment = new BitOwinTestEnvironment(new TestEnvironmentArgs { UseRealServer = true }))
             {
@@ -87,7 +87,7 @@ namespace Bit.Tests.HtmlClient.ViewModel.Implementation
 
         [TestMethod]
         [TestCategory("HtmlClient"), TestCategory("Angular")]
-        public virtual async Task EntityContextUsageFormViewModelTest()
+        public virtual async Task EntityContextUsageViewModelTest()
         {
             using (BitOwinTestEnvironment testEnvironment = new BitOwinTestEnvironment(new TestEnvironmentArgs { UseRealServer = true }))
             {
@@ -106,7 +106,7 @@ namespace Bit.Tests.HtmlClient.ViewModel.Implementation
 
         [TestMethod]
         [TestCategory("HtmlClient"), TestCategory("Angular")]
-        public virtual async Task AsyncFormViewModelTest()
+        public virtual async Task AsyncViewModelTest()
         {
             using (BitOwinTestEnvironment testEnvironment = new BitOwinTestEnvironment(new TestEnvironmentArgs { UseRealServer = true }))
             {
@@ -116,7 +116,7 @@ namespace Bit.Tests.HtmlClient.ViewModel.Implementation
                 {
                     await driver.NavigateToRoute("async-page");
 
-                    await driver.ExecuteTest("Bit.Tests.Implementations.Tests.AngularAppInitializationTests.testAsyncFormViewModel");
+                    await driver.ExecuteTest("Bit.Tests.Implementations.Tests.AngularAppInitializationTests.testAsyncViewModel");
                 }
 
                 TestModelsController testModelsController = TestDependencyManager.CurrentTestDependencyManager.Objects
@@ -130,7 +130,7 @@ namespace Bit.Tests.HtmlClient.ViewModel.Implementation
 
         [TestMethod]
         [TestCategory("HtmlClient"), TestCategory("Angular")]
-        public virtual async Task SetAsDefaultFormViewModelTest()
+        public virtual async Task SetAsDefaultViewModelTest()
         {
             using (BitOwinTestEnvironment testEnvironment = new BitOwinTestEnvironment(new TestEnvironmentArgs { UseRealServer = true }))
             {

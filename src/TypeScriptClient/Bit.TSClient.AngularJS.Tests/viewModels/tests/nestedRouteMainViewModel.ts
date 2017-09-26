@@ -1,36 +1,41 @@
 ﻿module Bit.Tests.ViewModels {
-    @SecureFormViewModelDependency({
-        name: "NestedRouteMainFormViewModel", templateUrl: "|Bit|/Bit.TSClient.AngularJS.Tests/views/tests/nestedRouteMainview.html",
-        $routeConfig: [
-            { path: "/first-part-page/", name: "FirstPartFormViewModel", useAsDefault: true },
-            { path: "/second-part-page/:parameter", name: "SecondPartFormViewModel" },
-            { path: "/**", redirectTo: ["NestedRouteMainFormViewModel"] }
-        ]
+    @ComponentDependency({
+        name: "NestedRouteMainViewModel", templateUrl: "|Bit|/Bit.TSClient.AngularJS.Tests/views/tests/nestedRouteMainview.html"
     })
-    export class NestedRouteMainFormViewModel extends Bit.ViewModels.FormViewModel {
+    export class NestedRouteMainViewModel {
         public constructor( @Inject("$document") public $document: ng.IDocumentService) {
-            super();
             this.$document.attr("title", "Nested View");
         }
     }
 
-    @SecureFormViewModelDependency({ name: "FirstPartFormViewModel", templateUrl: "|Bit|/Bit.TSClient.AngularJS.Tests/views/tests/firstPartview.html" })
-    export class FirstPartFormViewModel extends Bit.ViewModels.FormViewModel {
+    @ComponentDependency({ name: "FirstPartViewModel", templateUrl: "|Bit|/Bit.TSClient.AngularJS.Tests/views/tests/firstPartview.html" })
+    export class FirstPartViewModel {
+
+        public constructor( @Inject("$state") public $state) {
+
+        }
 
         public goToNextPart(): void {
-            this.$router.navigate(["SecondPartFormViewModel", { parameter: 1 }]);
+            this.$state.go("nestedRouteMainViewModel.secondPartViewModel", { parameter: 1 });
         }
+
     }
 
-    @SecureFormViewModelDependency({
-        name: "SecondPartFormViewModel", templateUrl: "|Bit|/Bit.TSClient.AngularJS.Tests/views/tests/secondPartview.html"
+    @ComponentDependency({
+        name: "SecondPartViewModel",
+        templateUrl: "|Bit|/Bit.TSClient.AngularJS.Tests/views/tests/secondPartview.html",
+        bindings: {
+            $transition$: '<'
+        }
     })
-    export class SecondPartFormViewModel extends Bit.ViewModels.FormViewModel {
+    export class SecondPartViewModel {
 
         public parameter: number;
 
+        public $transition$: any;
+
         public async $onInit(): Promise<void> {
-            this.parameter = this.route.params["parameter"];
+            this.parameter = this.$transition$.params().parameter;
         }
     }
 }

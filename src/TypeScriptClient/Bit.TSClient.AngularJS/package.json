@@ -38,7 +38,6 @@
     "persian-datepicker": "^0.5.10"
   },
   "dependencies": {
-    "angular": "^1.6.6",
-    "ngcomponentrouter": "^2.1.0"
+    "angular": "^1.6.6"
   }
 }

@@ -235,8 +235,8 @@
     });
 
     dependencyManager.registerFileDependency({
-        name: "ng-component-router",
-        path: "bit-framework/src/TypeScriptClient/Bit.TSClient.AngularJS/node_modules/ngComponentRouter/angular_1_router"
+        name: "ui-router",
+        path: "bit-framework/src/TypeScriptClient/Bit.TSClient.AngularJS.Tests/node_modules/@uirouter/angularjs/release/angular-ui-router"
     });
 
     dependencyManager.registerFileDependency({
