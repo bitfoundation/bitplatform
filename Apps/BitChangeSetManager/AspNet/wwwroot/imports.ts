@@ -1,7 +1,5 @@
 ﻿/// <reference path="node_modules/@bit/bit-framework/typings.all.d.ts" />
 
-import SecureFormViewModelDependency = Bit.SecureFormViewModelDependency;
-import FormViewModelDependency = Bit.FormViewModelDependency;
 import DtoViewModelDependency = Bit.DtoViewModelDependency;
 import DtoRulesDependency = Bit.DtoRulesDependency;
 import ComponentDependency = Bit.ComponentDependency;
@@ -15,7 +13,6 @@ import ClientAppProfileManager = Bit.ClientAppProfileManager;
 import DependencyManager = Bit.DependencyManager;
 import Log = Bit.Log;
 
-import FormViewModel = Bit.ViewModels.FormViewModel;
 import DtoViewModel = Bit.ViewModels.DtoViewModel;
 import DtoFormController = Bit.ViewModels.DtoFormController;
 import DtoRules = Bit.Implementations.DtoRules;

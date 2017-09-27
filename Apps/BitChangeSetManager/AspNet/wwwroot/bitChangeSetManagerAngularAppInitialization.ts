@@ -12,14 +12,27 @@ module BitChangeSetManager {
         }
 
         protected getModuleDependencies(): Array<string> {
-            let modules = ["pascalprecht.translate", "ngComponentRouter", "ngMessages", "ngMaterial", "ngAria", "ngAnimate", "kendo.directives"];
+            let modules = ["pascalprecht.translate", "ui.router", "ngMessages", "ngMaterial", "ngAria", "ngAnimate", "kendo.directives"];
             return modules;
         }
 
         protected async configureAppModule(app: ng.IModule): Promise<void> {
+
             app.config(["$locationProvider", ($locationProvider: ng.ILocationProvider) => {
                 $locationProvider.html5Mode(true);
             }]);
+
+            app.config(["$stateProvider", "$urlRouterProvider", "$urlServiceProvider", ($stateProvider, $urlRouterProvider, $urlServiceProvider) => {
+
+                $urlServiceProvider.rules.otherwise({ state: "changeSetsViewModel" });
+
+                $stateProvider.state("changeSetsViewModel", {
+                    url: "/change-sets-page",
+                    component: "changeSetsViewModel"
+                });
+
+            }]);
+
             await super.configureAppModule(app);
         }
 

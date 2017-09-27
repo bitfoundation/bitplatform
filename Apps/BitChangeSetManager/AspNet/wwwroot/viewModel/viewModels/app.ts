@@ -1,20 +1,16 @@
 ﻿module BitChangeSetManager.ViewModel.ViewModels {
 
-    @SecureFormViewModelDependency({
+    @ComponentDependency({
         name: "App",
-        templateUrl: `view/views/app.html`,
-        $routeConfig: [
-            { path: "/change-sets-page", name: "ChangeSetsViewModel", useAsDefault: true }
-        ]
+        templateUrl: `view/views/app.html`
     })
-    export class App extends FormViewModel {
+    export class App {
 
 
         public constructor( @Inject("MessageReceiver") public messageReceiver: IMessageReceiver,
             @Inject("$mdSidenav") public $mdSidenav: ng.material.ISidenavService,
             @Inject("SecurityService") public securityService: ISecurityService,
             @Inject("EntityContextProvider") public entityContextProvider: IEntityContextProvider) {
-            super();
         }
 
         public user: BitChangeSetManager.Dto.UserDto;

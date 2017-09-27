@@ -1,10 +1,10 @@
 ﻿module BitChangeSetManager.ViewModel.ViewModels {
 
-    @SecureFormViewModelDependency({
+    @ComponentDependency({
         name: "ChangeSetsViewModel",
         templateUrl: `view/views/changeSetsView.html`
     })
-    export class ChangeSetsViewModel extends FormViewModel {
+    export class ChangeSetsViewModel {
 
         public changeSetsDataSource: kendo.data.DataSource;
         public deliveriesDataSource: kendo.data.DataSource;
@@ -19,7 +19,6 @@
             @Inject("MessageReceiver") public messageReceiver: IMessageReceiver,
             @Inject("$mdToast") public $mdToast: ng.material.IToastService,
             @Inject("$translate") public $translate: ng.translate.ITranslateService) {
-            super();
         }
 
         @Command()
