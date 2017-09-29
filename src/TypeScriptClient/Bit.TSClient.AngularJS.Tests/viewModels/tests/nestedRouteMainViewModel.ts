@@ -11,7 +11,7 @@
     @ComponentDependency({ name: "FirstPartViewModel", templateUrl: "|Bit|/Bit.TSClient.AngularJS.Tests/views/tests/firstPartview.html" })
     export class FirstPartViewModel {
 
-        public constructor( @Inject("$state") public $state) {
+        public constructor( @Inject("$state") public $state: ng.ui.IStateService) {
 
         }
 

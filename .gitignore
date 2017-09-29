@@ -237,4 +237,4 @@ ModelManifest.xml
 _book
 /BitTools/BitODataCSProxyGeneratorItemTemplate/ODataT4Template.cs
 *yarn.lock
-/src/TypeScriptClient/Bit.TSClient.AngularJS.Tests/package-lock.json
+*package-lock.json

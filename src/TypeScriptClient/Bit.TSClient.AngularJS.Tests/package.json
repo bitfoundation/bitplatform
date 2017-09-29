@@ -1,4 +1,7 @@
 {
+  "devDependencies": {
+    "@types/angular-ui-router": "^1.1.39"
+  },
   "dependencies": {
     "@uirouter/angularjs": "^1.0.6"
   }

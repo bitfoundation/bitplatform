@@ -21,7 +21,7 @@
                 $locationProvider.html5Mode(true);
             }]);
 
-            app.config(["$stateProvider", "$urlRouterProvider", "$urlServiceProvider", ($stateProvider, $urlRouterProvider, $urlServiceProvider) => {
+            app.config(["$stateProvider", "$urlRouterProvider", "$urlServiceProvider", ($stateProvider: ng.ui.IStateProvider, $urlRouterProvider: ng.ui.IUrlRouterProvider, $urlServiceProvider) => {
 
                 $urlServiceProvider.rules.otherwise({ state: "nestedRouteMainViewModel" });
 
@@ -50,7 +50,7 @@
                     url: "/nested-route-page",
                     redirectTo: 'nestedRouteMainViewModel.firstPartViewModel',
                     component: "nestedRouteMainViewModel"
-                }).state("nestedRouteMainViewModel.firstPartViewModel", {
+                    }).state("nestedRouteMainViewModel.firstPartViewModel", {
                     url: "/first-part-page",
                     component: "firstPartViewModel"
                 }).state("nestedRouteMainViewModel.secondPartViewModel", {

@@ -1,7 +1,7 @@
 ﻿module BitChangeSetManager.ViewModel.ViewModels {
 
     @ComponentDependency({
-        name: "ChangeSetsViewModel",
+        name: "changeSetsViewModel",
         templateUrl: `view/views/changeSetsView.html`
     })
     export class ChangeSetsViewModel {

@@ -1,7 +1,7 @@
 ﻿module BitChangeSetManager.ViewModel.ViewModels {
 
     @ComponentDependency({
-        name: "App",
+        name: "app",
         templateUrl: `view/views/app.html`
     })
     export class App {

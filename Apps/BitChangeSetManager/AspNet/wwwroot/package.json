@@ -15,6 +15,7 @@
     "@types/angular": "^1.6.32",
     "@types/angular-material": "^1.1.54",
     "@types/angular-translate": "^2.15.1",
+    "@types/angular-ui-router": "^1.1.39",
     "@types/decimal.js": "^0.0.31",
     "@types/jquery": "^3.2.12",
     "@types/kendo-ui": "^2017.3.0",

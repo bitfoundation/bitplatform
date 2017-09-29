@@ -16,7 +16,7 @@
     }
 
     @DtoViewModelDependency({
-        name: "ChangeSetViewModel",
+        name: "changeSetViewModel",
         templateUrl: `view/views/changeSetView.html`,
         bindings: {
             changeSetSeveritiesDataSource: '<',
@@ -76,7 +76,7 @@
 
         @Command()
         public async loadCityById(args: { id: any }) {
-            return await this.context.cities.first((c,id) => c.Id == id, args);
+            return await this.context.cities.first((c, id) => c.Id == id, args);
         }
 
     }

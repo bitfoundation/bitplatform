@@ -22,7 +22,7 @@ module BitChangeSetManager {
                 $locationProvider.html5Mode(true);
             }]);
 
-            app.config(["$stateProvider", "$urlRouterProvider", "$urlServiceProvider", ($stateProvider, $urlRouterProvider, $urlServiceProvider) => {
+            app.config(["$stateProvider", "$urlRouterProvider", "$urlServiceProvider", ($stateProvider: ng.ui.IStateProvider, $urlRouterProvider: ng.ui.IUrlRouterProvider, $urlServiceProvider) => {
 
                 $urlServiceProvider.rules.otherwise({ state: "changeSetsViewModel" });
 
