@@ -22,20 +22,21 @@
     }
 
     @ComponentDependency({
-        name: "SecondPartViewModel",
+        name: "secondPartViewModel",
         templateUrl: "|Bit|/Bit.TSClient.AngularJS.Tests/views/tests/secondPartview.html",
-        bindings: {
-            $transition$: '<'
-        }
+        cache: true
     })
     export class SecondPartViewModel {
 
+        public constructor( @Inject("$state") public $state: ng.ui.IStateService) {
+
+        }
+
         public parameter: number;
 
-        public $transition$: any;
-
-        public async $onInit(): Promise<void> {
-            this.parameter = this.$transition$.params().parameter;
+        @Command()
+        public async onActivated(initialActivation: boolean) {
+            this.parameter = this.$state.params.parameter;
         }
     }
 }

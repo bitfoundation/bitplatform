@@ -55,7 +55,7 @@
                     component: "firstPartViewModel"
                 }).state("nestedRouteMainViewModel.secondPartViewModel", {
                     url: "/:parameter",
-                    component: "secondPartViewModel"
+                    component: "secondPartViewModelCache"
                 }).state("radGridViewModel", {
                     url: "/rad-grid-page",
                     component: "radGridViewModel"

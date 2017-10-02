@@ -66,6 +66,7 @@
   <ItemGroup>
     <TypeScriptCompile Include="components\Identity\antiForgeryTokenComponent.ts" />
     <TypeScriptCompile Include="components\Identity\loginComponent.ts" />
+    <TypeScriptCompile Include="components\cacheComponent.ts" />
     <TypeScriptCompile Include="components\persianDatePicker.ts" />
     <TypeScriptCompile Include="Contracts\iAngularConfiguration.ts" />
     <TypeScriptCompile Include="Contracts\iDtoViewModel.ts" />

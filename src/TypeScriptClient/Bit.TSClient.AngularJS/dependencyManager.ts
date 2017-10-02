@@ -19,6 +19,7 @@
 
     export interface IComponentDependency extends IDependency, ng.IComponentOptions {
         type?: Function;
+        cache?: boolean;
     }
 
     export interface IDirectiveDependency extends IDependency, ng.IDirective {
@@ -214,6 +215,9 @@
             if (componentDependency.name == null)
                 throw new Error("component dependency's name may not be null");
 
+            if (componentDependency.cache == null)
+                componentDependency.cache == false;
+
             if (!this.dependencyShouldBeConsidered(componentDependency))
                 return;
 
@@ -231,10 +235,30 @@
                 if (componentDependency.overwriteExisting == true)
                     this.componentDependencies[dependenciesWithThisNameIndex] = componentDependency;
                 else
-                    throw new Error("Duplicated component dependency");
+                    throw new Error(`Duplicated component dependency ${componentDependency.name}`);
             }
             else {
                 this.componentDependencies.push(componentDependency);
+            }
+
+            if (componentDependency.cache == true) {
+
+                let cacheComponent: IComponentDependency = { } as any;
+
+                for (const prp in componentDependency) {
+                    cacheComponent[prp] = componentDependency[prp];
+                }
+
+                cacheComponent.name = componentDependency.name + "Cache";
+                cacheComponent.cache = false;
+                cacheComponent.controller = cacheComponent.type = Bit.Components.CacheComponent;
+                cacheComponent.controllerAs = "vm";
+                cacheComponent.overwriteExisting = false;
+                cacheComponent.predicate = null;
+                cacheComponent.template = `<cache component-name="${componentDependency.name}"></cache>`;
+                delete cacheComponent.templateUrl;
+
+                this.registerComponentDependency(cacheComponent);
             }
         }
 
@@ -353,7 +377,7 @@
             const fileDependency = fileDepsWithThisName[0];
 
             if (fileDependency.loadTime == "Early")
-                throw new Error("This file dependency was loaded at app startup");
+                throw new Error(`${fileDependencyName} file dependency was loaded at app startup`);
 
             if (fileDependency.loadStatus != "NotLoaded")
                 return fileDependency.promise;
