@@ -341,17 +341,15 @@
             this.fileDependencies.forEach(fileDependency => {
 
                 let path = fileDependency.path;
-
-                let ext = "js";
-
-                if (fileDependency.fileDependecyType == "Style") {
-                    ext = "css";
-                }
-
-                path += `.${ext}`;
-
-                if (path.indexOf("http") != 0)
+                
+                if (!Implementations.PathUtils.isUrlPath(path)) {
+                    let ext = "js";
+                    if (fileDependency.fileDependecyType == "Style") {
+                        ext = "css";
+                    }
+                    path += `.${ext}`;
                     path = `Files/V${this.clientAppProfile.version}/${path}`;
+                }
 
                 fileDependency.path = path;
             });
