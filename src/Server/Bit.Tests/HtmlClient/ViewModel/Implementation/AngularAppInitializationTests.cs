@@ -61,7 +61,11 @@ namespace Bit.Tests.HtmlClient.ViewModel.Implementation
                 {
                     await driver.NavigateToRoute("nested-route-page");
 
+                    await Task.Yield();
+
                     driver.GetElementById("gotonextpart").Click();
+
+                    await Task.Yield();
 
                     Assert.AreEqual("1", driver.GetElementById("parameter").GetAttribute("innerText"));
                 }
