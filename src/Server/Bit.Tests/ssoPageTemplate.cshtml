@@ -19,19 +19,7 @@
     <meta http-equiv="Expires" content="0" />
     <base href="/" />
 
-    <script type="text/javascript">
-        clientAppProfile = {
-            theme: "@(ssoPageModel.Theme)",
-            culture: "@(ssoPageModel.Culture)",
-            version: "@(ssoPageModel.AppVersion)",
-            isDebugMode: @(ssoPageModel.DebugMode.ToString().ToLowerInvariant()),
-            appTitle: "@(ssoPageModel.AppTitle)",
-            appName: "@(ssoPageModel.AppName)",
-            desiredTimeZone: "@(ssoPageModel.DesiredTimeZoneValue)",
-            environmentConfigs: @(ssoPageModel.EnvironmentConfigsJSON)
-            };
-    </script>
-
+    <script src="ClientAppProfile"></script>
     <script src="Files/V@(ssoPageModel.AppVersion)/bit-framework/src/TypeScriptClient/Bit.TSClient.Core/bit.core.js"></script>
     <script src="Files/V@(ssoPageModel.AppVersion)/bit-framework/src/TypeScriptClient/Bit.TSClient.AngularJS/bit.ng1.js"></script>
     <script src="Files/V@(ssoPageModel.AppVersion)/bit-framework/src/TypeScriptClient/Bit.TSClient.AngularJS.Test/bit.ng1.test.js"></script>

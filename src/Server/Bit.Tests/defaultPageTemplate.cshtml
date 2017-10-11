@@ -20,18 +20,7 @@
     <meta http-equiv="Pragma" content="no-cache" />
     <meta http-equiv="Expires" content="0" />
     <base href="@(model.BaseHref)" />
-    <script type="text/javascript">
-        clientAppProfile = {
-            theme: "@(model.Theme)",
-            culture: "@(model.Culture)",
-            version: "@(model.AppVersion)",
-            isDebugMode: @(model.DebugMode.ToString().ToLowerInvariant()),
-            appTitle: "@(model.AppTitle)",
-            appName: "@(model.AppName)",
-            desiredTimeZone: "@(model.DesiredTimeZoneValue)",
-            environmentConfigs: @(model.EnvironmentConfigsJSON)
-        };
-    </script>
+    <script src="ClientAppProfile"></script>
     <script src="Files/V@(model.AppVersion)/bit-framework/src/TypeScriptClient/Bit.TSClient.Core/bit.core.js"></script>
     <script src="Files/V@(model.AppVersion)/bit-framework/src/TypeScriptClient/Bit.TSClient.AngularJS/bit.ng1.js"></script>
     <script src="Files/V@(model.AppVersion)/bit-framework/src/TypeScriptClient/Bit.TSClient.AngularJS.Test/bit.ng1.test.js"></script>

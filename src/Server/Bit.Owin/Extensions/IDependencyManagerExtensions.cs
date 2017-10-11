@@ -108,6 +108,7 @@ namespace Bit.Core.Contracts
             if (metadataAssemblies == null)
                 throw new ArgumentNullException(nameof(metadataAssemblies));
 
+            dependencyManager.RegisterOwinMiddleware<ClientAppProfileMiddlewareConfiguration>();
             dependencyManager.RegisterOwinMiddleware<MetadataMiddlewareConfiguration>();
             dependencyManager.Register<IAppMetadataProvider, DefaultAppMetadataProvider>(lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExciting: false);
 
