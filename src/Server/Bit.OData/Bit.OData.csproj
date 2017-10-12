@@ -21,7 +21,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Bit.Microsoft.AspNet.OData" Version="6.0.1" />
+    <PackageReference Include="Bit.Microsoft.AspNet.OData" Version="6.1.0" />
     <PackageReference Include="Bit.Swashbuckle.OData" Version="3.4.1" />
     <PackageReference Include="LambdaSqlBuilder" Version="0.9.0" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="1.1.1" />

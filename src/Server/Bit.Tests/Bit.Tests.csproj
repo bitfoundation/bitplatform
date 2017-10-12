@@ -11,8 +11,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="MSTest.TestAdapter" Version="1.2.0-beta3" />
-    <PackageReference Include="MSTest.TestFramework" Version="1.2.0-beta3" />
+    <PackageReference Include="MSTest.TestAdapter" Version="1.2.0" />
+    <PackageReference Include="MSTest.TestFramework" Version="1.2.0" />
     <PackageReference Include="Selenium.WebDriver.ChromeDriver" Version="2.33.0" />
   </ItemGroup>
 
