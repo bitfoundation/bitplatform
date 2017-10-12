@@ -30,6 +30,6 @@ namespace Bit.Core.Extensions
 
         public static bool IsRunningOnMono => _isRunningOnMono.Value;
 
-        public static bool IsRunningOnDotNetCore { get; } = _isRunningOnDotNetCore.Value;
+        public static bool IsRunningOnDotNetCore => _isRunningOnDotNetCore.Value;
     }
 }
