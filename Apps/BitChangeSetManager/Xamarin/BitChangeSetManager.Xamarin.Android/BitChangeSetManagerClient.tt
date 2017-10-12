@@ -6,7 +6,7 @@ public static class Configuration
     // eg : "http://services.odata.org/V4/OData/OData.svc/", "File:///C:/Odata.edmx", or @"C:\Odata.edmx"
     // ### Notice ### If the OData service requires authentication for accessing the metadata document, the value of
     // MetadataDocumentUri has to be set to a local file path, or the client code generation process will fail.
-	public const string MetadataDocumentUri = "http://192.168.21.42/BitChangeSetManager/odata/BitChangeSetManager/";
+	public const string MetadataDocumentUri = "http://localhost:30098/odata/BitChangeSetManager/";
 
 	// The use of DataServiceCollection enables entity and property tracking. The value must be set to true or false.
 	public const bool UseDataServiceCollection = true;

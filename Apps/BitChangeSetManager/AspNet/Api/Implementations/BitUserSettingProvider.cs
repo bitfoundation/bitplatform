@@ -6,23 +6,18 @@ using System.Threading.Tasks;
 using Bit.Core.Contracts;
 using Bit.Model.DomainModels;
 using Bit.Owin.Contracts;
+using Bit.Data.Contracts;
 
 namespace BitChangeSetManager.Api.Implementations
 {
     public class BitUserSettingProvider : IUserSettingProvider
     {
-        private readonly IUserInformationProvider _userInformationProvider;
-        private readonly IBitChangeSetManagerRepository<User> _usersRepository;
-
-        public BitUserSettingProvider(IUserInformationProvider userInformationProvider, IBitChangeSetManagerRepository<User> usersRepository)
-        {
-            _userInformationProvider = userInformationProvider;
-            _usersRepository = usersRepository;
-        }
+        public virtual IUserInformationProvider UserInformationProvider { get; set; }
+        public virtual IRepository<User> UsersRepository { get; set; }
 
         public UserSetting GetCurrentUserSetting()
         {
-            User user = _usersRepository.GetById(Guid.Parse(_userInformationProvider.GetCurrentUserId()));
+            User user = UsersRepository.GetById(Guid.Parse(UserInformationProvider.GetCurrentUserId()));
 
             UserSetting result = new UserSetting
             {
@@ -34,7 +29,7 @@ namespace BitChangeSetManager.Api.Implementations
 
         public async Task<UserSetting> GetCurrentUserSettingAsync(CancellationToken cancellationToken)
         {
-            User user = await _usersRepository.GetByIdAsync(cancellationToken, Guid.Parse(_userInformationProvider.GetCurrentUserId()));
+            User user = await UsersRepository.GetByIdAsync(cancellationToken, Guid.Parse(UserInformationProvider.GetCurrentUserId()));
 
             UserSetting result = new UserSetting
             {

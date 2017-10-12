@@ -1,4 +1,5 @@
 ﻿using Bit.Core.Contracts;
+using Bit.Data.Contracts;
 using Bit.Model.Contracts;
 using Bit.OData.ODataControllers;
 using BitChangeSetManager.DataAccess;
@@ -14,7 +15,7 @@ namespace BitChangeSetManager.Api
 {
     public class UsersController : DtoController<UserDto>
     {
-        public IBitChangeSetManagerRepository<User> UsersRepository { get; set; }
+        public IRepository<User> UsersRepository { get; set; }
 
         public IUserInformationProvider UserInformationProvider { get; set; }
 

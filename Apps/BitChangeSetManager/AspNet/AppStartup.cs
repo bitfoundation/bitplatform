@@ -115,7 +115,7 @@ namespace BitChangeSetManager
 
             dependencyManager.RegisterHangfireBackgroundJobWorkerUsingDefaultConfiguration<JobSchedulerInMemoryBackendConfiguration>();
 
-            dependencyManager.RegisterGeneric(typeof(IBitChangeSetManagerRepository<>).GetTypeInfo(), typeof(BitChangeSetManagerEfRepository<>).GetTypeInfo(), DependencyLifeCycle.InstancePerLifetimeScope);
+            dependencyManager.RegisterGeneric(typeof(IRepository<>).GetTypeInfo(), typeof(BitChangeSetManagerEfRepository<>).GetTypeInfo(), DependencyLifeCycle.InstancePerLifetimeScope);
 
             dependencyManager.RegisterEfDbContext<BitChangeSetManagerDbContext>();
 

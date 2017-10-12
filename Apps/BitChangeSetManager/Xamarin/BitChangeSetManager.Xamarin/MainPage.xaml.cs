@@ -15,7 +15,7 @@ namespace BitChangeSetManager.Xamarin
             InitializeComponent();
         }
 
-        public const string BaseAddress = "http://192.168.21.42/BitChangeSetManager";
+        public const string BaseAddress = "http://10.0.2.2:9092";
 
         private TokenResponse _tokenResponse = null;
 

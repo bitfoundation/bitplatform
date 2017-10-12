@@ -7,11 +7,6 @@ namespace BitChangeSetManager.Api
 {
     public class ChangeSetSeveritiesController : BitChangeSetManagerDtoSetController<ChangeSetSeverityDto, ChangeSetSeverity, Guid>
     {
-        public ChangeSetSeveritiesController(IBitChangeSetManagerRepository<ChangeSetSeverity> repository)
-            : base(repository)
-        {
-        }
-
         protected override bool IsReadOnly()
         {
             return true;

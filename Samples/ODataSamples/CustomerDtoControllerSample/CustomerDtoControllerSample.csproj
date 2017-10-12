@@ -6,9 +6,9 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Bit.Data.EntityFramework" Version="0.0.7.4" />
-    <PackageReference Include="Bit.OData" Version="0.0.7.4" />
-    <PackageReference Include="Bit.OwinCore" Version="0.0.7.4" />
+    <PackageReference Include="Bit.Data.EntityFramework" Version="0.0.8.1" />
+    <PackageReference Include="Bit.OData" Version="0.0.8.1" />
+    <PackageReference Include="Bit.OwinCore" Version="0.0.8.1" />
   </ItemGroup>
   <ItemGroup>
     <Content Update="environments.json">

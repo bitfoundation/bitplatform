@@ -88,11 +88,7 @@ namespace EntityFrameworkSample
     public class MyAppRepository<TEntity> : EfRepository<TEntity>
         where TEntity : class, IEntity
     {
-        public MyAppRepository(MyAppDbContext dbContext)
-            : base(dbContext)
-        {
 
-        }
     }
 
     public class CustomersController : ApiController
@@ -118,12 +114,6 @@ namespace EntityFrameworkSample
 
     public class OrdersRepository : MyAppRepository<Order>, IOrdersRepository
     {
-        public OrdersRepository(MyAppDbContext dbContext)
-            : base(dbContext)
-        {
-
-        }
-
         public virtual async Task<long> GetOrdersCount(CancellationToken cancellationToken)
         {
             return await (await GetAllAsync(cancellationToken)).LongCountAsync(cancellationToken);

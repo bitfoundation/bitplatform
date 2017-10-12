@@ -7,30 +7,22 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Bit.Core.Contracts;
+using Bit.Data.Contracts;
+using System.Web.OData;
 
 namespace BitChangeSetManager.Api
 {
     public class ChangeSetsController : BitChangeSetManagerDtoSetController<ChangeSetDto, ChangeSet, Guid>
     {
-        private readonly IChangeSetRepository _changeSetsRepository;
-        private readonly IMessageSender _messageSender;
-        private readonly IUserInformationProvider _userInformationProvider;
-        private readonly IBitChangeSetManagerRepository<User> _usersRepository;
-
-        public ChangeSetsController(IChangeSetRepository changeSetsRepository, IMessageSender messageSender, IUserInformationProvider userInformationProvider, IBitChangeSetManagerRepository<User> usersRepository)
-            : base(changeSetsRepository)
+        public ChangeSetsController(IChangeSetRepository changeSetRepository)
         {
-            _changeSetsRepository = changeSetsRepository;
-            _messageSender = messageSender;
-            _userInformationProvider = userInformationProvider;
-            _usersRepository = usersRepository;
+            Repository = changeSetRepository;
         }
 
-        public ChangeSetsController(IBitChangeSetManagerRepository<ChangeSet> repository) : base(repository)
-        {
-        }
-
-        public IBitChangeSetManagerRepository<Customer> CustomersRepository { get; set; }
+        public virtual IMessageSender MessageSender { get; set; }
+        public virtual IUserInformationProvider UserInformationProvider { get; set; }
+        public virtual IRepository<User> UsersRepository { get; set; }
+        public IRepository<Customer> CustomersRepository { get; set; }
 
         public override async Task<IQueryable<ChangeSetDto>> GetAll(CancellationToken cancellationToken)
         {
@@ -43,18 +35,28 @@ namespace BitChangeSetManager.Api
 
             int customersCount = await (await CustomersRepository.GetAllAsync(cancellationToken)).CountAsync(cancellationToken);
 
-            return DtoEntityMapper.FromEntityQueryToDtoQuery((await _changeSetsRepository.GetAllAsync(cancellationToken)), parameters: new { customersCount = customersCount });
+            return DtoEntityMapper.FromEntityQueryToDtoQuery((await Repository.GetAllAsync(cancellationToken)), parameters: new { customersCount = customersCount });
         }
 
         public override async Task<ChangeSetDto> Create(ChangeSetDto dto, CancellationToken cancellationToken)
         {
             ChangeSetDto insertedChangeSet = await base.Create(dto, cancellationToken);
 
-            User user = await _usersRepository.GetByIdAsync(cancellationToken, Guid.Parse(_userInformationProvider.GetCurrentUserId()));
+            User user = await UsersRepository.GetByIdAsync(cancellationToken, Guid.Parse(UserInformationProvider.GetCurrentUserId()));
 
-            _messageSender.SendMessageToGroups("ChangeSetHasBeenInsertedByUser", new { userName = user.UserName, title = insertedChangeSet.Title }, groupNames: new[] { user.Culture.ToString() });
+            MessageSender.SendMessageToGroups("ChangeSetHasBeenInsertedByUser", new { userName = user.UserName, title = insertedChangeSet.Title }, groupNames: new[] { user.Culture.ToString() });
 
             return insertedChangeSet;
+        }
+
+        public override Task<ChangeSetDto> Update(Guid key, ChangeSetDto dto, CancellationToken cancellationToken)
+        {
+            return base.Update(key, dto, cancellationToken);
+        }
+
+        public override Task<ChangeSetDto> PartialUpdate(Guid key, Delta<ChangeSetDto> modifiedDtoDelta, CancellationToken cancellationToken)
+        {
+            return base.PartialUpdate(key, modifiedDtoDelta, cancellationToken);
         }
     }
 }

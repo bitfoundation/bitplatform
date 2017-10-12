@@ -12,16 +12,9 @@ namespace BitChangeSetManager.DataAccess
 {
     public class BitChangeSetManagerInitialData : IAppEvents
     {
-        private readonly IAppEnvironmentProvider _appEnvironmentProvider;
-        private readonly IDateTimeProvider _dateTimeProvider;
-        private readonly IDependencyManager _dependencyManager;
-
-        public BitChangeSetManagerInitialData(IDependencyManager dependencyManager, IAppEnvironmentProvider appEnvironmentProvider, IDateTimeProvider dateTimeProvider)
-        {
-            _dependencyManager = dependencyManager;
-            _dateTimeProvider = dateTimeProvider;
-            _appEnvironmentProvider = appEnvironmentProvider;
-        }
+        public virtual IAppEnvironmentProvider AppEnvironmentProvider { get; set; }
+        public virtual IDateTimeProvider DateTimeProvider { get; set; }
+        public virtual IDependencyManager DependencyManager { get; set; }
 
         public void OnAppEnd()
         {
@@ -32,7 +25,7 @@ namespace BitChangeSetManager.DataAccess
         {
             Database.SetInitializer<BitChangeSetManagerDbContext>(null);
 
-            using (SqlConnection dbConnection = new SqlConnection(_appEnvironmentProvider.GetActiveAppEnvironment().GetConfig<string>("BitChangeSetManagerDbConnectionString")))
+            using (SqlConnection dbConnection = new SqlConnection(AppEnvironmentProvider.GetActiveAppEnvironment().GetConfig<string>("BitChangeSetManagerDbConnectionString")))
             {
                 using (BitChangeSetManagerDbContext dbContext = new BitChangeSetManagerDbContext(dbConnection))
                 {
@@ -45,13 +38,13 @@ namespace BitChangeSetManager.DataAccess
                 }
             }
 
-            using (IDependencyResolver childResolver = _dependencyManager.CreateChildDependencyResolver())
+            using (IDependencyResolver childResolver = DependencyManager.CreateChildDependencyResolver())
             {
                 IUnitOfWork unitOfWork = childResolver.Resolve<IUnitOfWork>();
 
                 using (unitOfWork.BeginWork())
                 {
-                    IBitChangeSetManagerRepository<User> usersRepository = childResolver.Resolve<IBitChangeSetManagerRepository<User>>();
+                    IRepository<User> usersRepository = childResolver.Resolve<IRepository<User>>();
 
                     string password = "test";
 
@@ -76,14 +69,14 @@ namespace BitChangeSetManager.DataAccess
                     usersRepository.Add(new User { Id = Guid.Parse("2438fc43-5e6a-46e2-b82d-a746dfb6877e"), UserName = "Test3", Password = password, Culture = BitCulture.EnUs, AvatarImage = userAvatar });
                     usersRepository.Add(new User { Id = Guid.Parse("051351fb-b4c5-4b4d-8f5d-202eb08af8c7"), UserName = "Test4", Password = password, Culture = BitCulture.FaIr, AvatarImage = userAvatar });
 
-                    IBitChangeSetManagerRepository<Customer> customersRepository = childResolver.Resolve<IBitChangeSetManagerRepository<Customer>>();
-                    IBitChangeSetManagerRepository<Delivery> deliveriesRepository = childResolver.Resolve<IBitChangeSetManagerRepository<Delivery>>();
+                    IRepository<Customer> customersRepository = childResolver.Resolve<IRepository<Customer>>();
+                    IRepository<Delivery> deliveriesRepository = childResolver.Resolve<IRepository<Delivery>>();
                     IChangeSetRepository changeSetsRepository = childResolver.Resolve<IChangeSetRepository>();
-                    IBitChangeSetManagerRepository<ChangeSetSeverity> changeSetSeveritiesRepository = childResolver.Resolve<IBitChangeSetManagerRepository<ChangeSetSeverity>>();
-                    IBitChangeSetManagerRepository<ChangeSetDeliveryRequirement> changeSetDeliveryRequirementsRepository = childResolver.Resolve<IBitChangeSetManagerRepository<ChangeSetDeliveryRequirement>>();
-                    IBitChangeSetManagerRepository<Province> provincesRepository = childResolver.Resolve<IBitChangeSetManagerRepository<Province>>();
-                    IBitChangeSetManagerRepository<City> citiesRepository = childResolver.Resolve<IBitChangeSetManagerRepository<City>>();
-                    IBitChangeSetManagerRepository<Constant> constantsRepository = childResolver.Resolve<IBitChangeSetManagerRepository<Constant>>();
+                    IRepository<ChangeSetSeverity> changeSetSeveritiesRepository = childResolver.Resolve<IRepository<ChangeSetSeverity>>();
+                    IRepository<ChangeSetDeliveryRequirement> changeSetDeliveryRequirementsRepository = childResolver.Resolve<IRepository<ChangeSetDeliveryRequirement>>();
+                    IRepository<Province> provincesRepository = childResolver.Resolve<IRepository<Province>>();
+                    IRepository<City> citiesRepository = childResolver.Resolve<IRepository<City>>();
+                    IRepository<Constant> constantsRepository = childResolver.Resolve<IRepository<Constant>>();
 
                     Customer customer1 = new Customer { Id = Guid.NewGuid(), Name = "Customer1" };
                     Customer customer2 = new Customer { Id = Guid.NewGuid(), Name = "Customer2" };
@@ -99,9 +92,9 @@ namespace BitChangeSetManager.DataAccess
                     ChangeSet changeSet1 = new ChangeSet { Id = Guid.NewGuid(), AssociatedCommitUrl = "http://github.com/bit-foundation/bit-framework", Description = "Desc1", Title = "ChangeSet1", DeliveryRequirementId = changeSetDeliveryRequirement1.Id, SeverityId = changeSetSeverity3.Id };
                     ChangeSet changeSet2 = new ChangeSet { Id = Guid.NewGuid(), AssociatedCommitUrl = "http://github.com/bit-foundation/bit-framework", Description = "Desc2", Title = "ChangeSet2", DeliveryRequirementId = changeSetDeliveryRequirement1.Id, SeverityId = changeSetSeverity3.Id };
 
-                    Delivery delivery1 = new Delivery { ChangeSetId = changeSet1.Id, Id = Guid.NewGuid(), CustomerId = customer1.Id, DeliveredOn = _dateTimeProvider.GetCurrentUtcDateTime() };
-                    Delivery delivery2 = new Delivery { ChangeSetId = changeSet1.Id, Id = Guid.NewGuid(), CustomerId = customer2.Id, DeliveredOn = _dateTimeProvider.GetCurrentUtcDateTime() };
-                    Delivery delivery3 = new Delivery { ChangeSetId = changeSet2.Id, Id = Guid.NewGuid(), CustomerId = customer1.Id, DeliveredOn = _dateTimeProvider.GetCurrentUtcDateTime() };
+                    Delivery delivery1 = new Delivery { ChangeSetId = changeSet1.Id, Id = Guid.NewGuid(), CustomerId = customer1.Id, DeliveredOn = DateTimeProvider.GetCurrentUtcDateTime() };
+                    Delivery delivery2 = new Delivery { ChangeSetId = changeSet1.Id, Id = Guid.NewGuid(), CustomerId = customer2.Id, DeliveredOn = DateTimeProvider.GetCurrentUtcDateTime() };
+                    Delivery delivery3 = new Delivery { ChangeSetId = changeSet2.Id, Id = Guid.NewGuid(), CustomerId = customer1.Id, DeliveredOn = DateTimeProvider.GetCurrentUtcDateTime() };
 
                     Province province1 = new Province { Id = Guid.NewGuid(), Name = "Province1" };
                     Province province2 = new Province { Id = Guid.NewGuid(), Name = "Province2" };

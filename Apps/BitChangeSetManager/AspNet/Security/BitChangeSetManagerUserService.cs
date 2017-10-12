@@ -1,4 +1,5 @@
 ﻿using Bit.Core.Contracts;
+using Bit.Data.Contracts;
 using Bit.IdentityServer.Implementations;
 using Bit.Owin.Exceptions;
 using BitChangeSetManager.DataAccess;
@@ -15,12 +16,7 @@ namespace BitChangeSetManager.Security
 {
     public class BitChangeSetManagerUserService : UserService
     {
-        private readonly IDependencyManager _dependencyManager;
-
-        public BitChangeSetManagerUserService(IDependencyManager dependencyManager)
-        {
-            _dependencyManager = dependencyManager;
-        }
+        public virtual IDependencyManager DependencyManager { get; set; }
 
         public override async Task<string> GetUserIdByLocalAuthenticationContextAsync(LocalAuthenticationContext context)
         {
@@ -51,9 +47,9 @@ namespace BitChangeSetManager.Security
 
             User user = null;
 
-            using (IDependencyResolver resolver = _dependencyManager.CreateChildDependencyResolver())
+            using (IDependencyResolver resolver = DependencyManager.CreateChildDependencyResolver())
             {
-                IBitChangeSetManagerRepository<User> usersRepository = resolver.Resolve<IBitChangeSetManagerRepository<User>>();
+                IRepository<User> usersRepository = resolver.Resolve<IRepository<User>>();
 
                 user = await (await usersRepository.GetAllAsync(CancellationToken.None))
                      .SingleOrDefaultAsync(u => u.UserName.ToLower() == username && u.Password == password);
@@ -67,9 +63,9 @@ namespace BitChangeSetManager.Security
 
         public override async Task<bool> UserIsActiveAsync(IsActiveContext context, string userId)
         {
-            using (IDependencyResolver resolver = _dependencyManager.CreateChildDependencyResolver())
+            using (IDependencyResolver resolver = DependencyManager.CreateChildDependencyResolver())
             {
-                IBitChangeSetManagerRepository<User> usersRepository = resolver.Resolve<IBitChangeSetManagerRepository<User>>();
+                IRepository<User> usersRepository = resolver.Resolve<IRepository<User>>();
 
                 Guid userIdAsGuid = Guid.Parse(userId);
 

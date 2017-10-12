@@ -14,14 +14,6 @@ namespace BitChangeSetManager.Api
         where TDto : class, IDto
         where TModel : class, IEntity
     {
-        private readonly IBitChangeSetManagerRepository<TModel> _repository;
-
-        public BitChangeSetManagerDtoSetController(IBitChangeSetManagerRepository<TModel> repository)
-            : base(repository)
-        {
-            _repository = repository;
-        }
-
         [Create]
         public override async Task<TDto> Create(TDto dto, CancellationToken cancellationToken)
         {

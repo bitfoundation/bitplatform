@@ -10,19 +10,11 @@ namespace BitChangeSetManager.Security
 {
     public class BitChangeSetManagerClientProvider : ClientProvider
     {
-        private readonly IAppEnvironmentProvider _appEnvironmentProvider;
-
-        public BitChangeSetManagerClientProvider(IAppEnvironmentProvider appEnvironmentProvider)
-        {
-            if (appEnvironmentProvider == null)
-                throw new ArgumentNullException(nameof(appEnvironmentProvider));
-
-            _appEnvironmentProvider = appEnvironmentProvider;
-        }
+        public virtual IAppEnvironmentProvider AppEnvironmentProvider { get; set; }
 
         public override IEnumerable<Client> GetClients()
         {
-            AppEnvironment activeAppEnvironment = _appEnvironmentProvider.GetActiveAppEnvironment();
+            AppEnvironment activeAppEnvironment = AppEnvironmentProvider.GetActiveAppEnvironment();
 
             return new[]
             {
@@ -39,7 +31,7 @@ namespace BitChangeSetManager.Security
                         $@"^(http|https):\/\/(\S+\.)?(bit-change-set-manager.com|localhost)(:\d+)?\b{activeAppEnvironment.GetHostVirtualPath()}\bSignIn\/?"
                     },
                     Secret = "secret",
-                    TokensLifetime = TimeSpan.FromDays(1) 
+                    TokensLifetime = TimeSpan.FromDays(1)
                 }),
                 GetResourceOwnerFlowClient(new BitResourceOwnerFlowClient
                 {

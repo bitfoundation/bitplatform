@@ -113,11 +113,6 @@ namespace EntityFrameworkOptimizedForNTierScenarios
     public class BitRepository<TEntity> : EfRepository<TEntity>
         where TEntity : class, IEntity
     {
-        public BitRepository(CustomersDbContextForBitRepository dbContext)
-            : base(dbContext)
-        {
-
-        }
     }
 
     public class CustomersForBitRepositoryController : ApiController

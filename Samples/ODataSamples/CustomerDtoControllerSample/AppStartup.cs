@@ -192,11 +192,6 @@ namespace CustomerDtoControllerSample
     public class MyAppRepository<TEntity> : EfRepository<TEntity>
         where TEntity : class, IEntity
     {
-        public MyAppRepository(MyAppDbContext dbContext)
-            : base(dbContext)
-        {
-
-        }
     }
 
     public class MyAppDbContextInitializer : IAppEvents

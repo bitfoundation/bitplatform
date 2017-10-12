@@ -1,4 +1,5 @@
-﻿using Bit.Owin.Exceptions;
+﻿using Bit.Data.Contracts;
+using Bit.Owin.Exceptions;
 using BitChangeSetManager.DataAccess;
 using BitChangeSetManager.Dto;
 using BitChangeSetManager.Model;
@@ -16,17 +17,12 @@ namespace BitChangeSetManager.Api
 {
     public class ChangeSetImagesController : BitChangeSetManagerDtoSetController<ChangeSetImagetDto, ChangeSetImage, Guid>
     {
-        public ChangeSetImagesController(IBitChangeSetManagerRepository<ChangeSetImage> repository)
-            : base(repository)
-        {
-
-        }
     }
 
     [RoutePrefix("change-set-images")]
     public class ChangeSetImagesFileController : ApiController
     {
-        public IBitChangeSetManagerRepository<ChangeSetImage> Repository { get; set; }
+        public IRepository<ChangeSetImage> Repository { get; set; }
 
         [Route("add-new-images/{changeSetId}")]
         [HttpPost]

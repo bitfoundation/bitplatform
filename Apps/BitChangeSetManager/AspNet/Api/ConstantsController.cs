@@ -7,11 +7,6 @@ namespace BitChangeSetManager.Api
 {
     public class ConstantsController : BitChangeSetManagerDtoSetController<ConstantDto, Constant, Guid>
     {
-        public ConstantsController(IBitChangeSetManagerRepository<Constant> repository)
-            : base(repository)
-        {
-        }
-
         protected override bool IsReadOnly()
         {
             return true;

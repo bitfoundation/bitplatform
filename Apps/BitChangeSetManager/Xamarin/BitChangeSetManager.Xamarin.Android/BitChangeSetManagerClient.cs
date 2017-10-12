@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-// Generation date: 6/25/2017 14:07:12
+// Generation date: 10/11/2017 20:28:40
 namespace BitChangeSetManager.Xamarin.BitChangeSetManager.Dto
 {
     /// <summary>
@@ -1608,11 +1608,13 @@ namespace BitChangeSetManager.Xamarin.BitChangeSetManager.Dto
         /// Create a new ProvinceDto object.
         /// </summary>
         /// <param name="ID">Initial value of Id.</param>
+        /// <param name="citiesCount">Initial value of CitiesCount.</param>
         [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "2.4.0")]
-        public static ProvinceDto CreateProvinceDto(global::System.Guid ID)
+        public static ProvinceDto CreateProvinceDto(global::System.Guid ID, long citiesCount)
         {
             ProvinceDto provinceDto = new ProvinceDto();
             provinceDto.Id = ID;
+            provinceDto.CitiesCount = citiesCount;
             return provinceDto;
         }
         /// <summary>
@@ -1661,6 +1663,139 @@ namespace BitChangeSetManager.Xamarin.BitChangeSetManager.Dto
         private string _Name;
         partial void OnNameChanging(string value);
         partial void OnNameChanged();
+        /// <summary>
+        /// There are no comments for Property CitiesCount in the schema.
+        /// </summary>
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "2.4.0")]
+        [global::Microsoft.OData.Client.OriginalNameAttribute("CitiesCount")]
+        public long CitiesCount
+        {
+            get
+            {
+                return this._CitiesCount;
+            }
+            set
+            {
+                this.OnCitiesCountChanging(value);
+                this._CitiesCount = value;
+                this.OnCitiesCountChanged();
+                this.OnPropertyChanged("CitiesCount");
+            }
+        }
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "2.4.0")]
+        private long _CitiesCount;
+        partial void OnCitiesCountChanging(long value);
+        partial void OnCitiesCountChanged();
+        /// <summary>
+        /// This event is raised when the value of the property is changed
+        /// </summary>
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "2.4.0")]
+        public event global::System.ComponentModel.PropertyChangedEventHandler PropertyChanged;
+        /// <summary>
+        /// The value of the property is changed
+        /// </summary>
+        /// <param name="property">property name</param>
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "2.4.0")]
+        protected virtual void OnPropertyChanged(string property)
+        {
+            if ((this.PropertyChanged != null))
+            {
+                this.PropertyChanged(this, new global::System.ComponentModel.PropertyChangedEventArgs(property));
+            }
+        }
+    }
+    /// <summary>
+    /// There are no comments for UserDtoSingle in the schema.
+    /// </summary>
+    [global::Microsoft.OData.Client.OriginalNameAttribute("UserDtoSingle")]
+    public partial class UserDtoSingle : global::Microsoft.OData.Client.DataServiceQuerySingle<UserDto>
+    {
+        /// <summary>
+        /// Initialize a new UserDtoSingle object.
+        /// </summary>
+        public UserDtoSingle(global::Microsoft.OData.Client.DataServiceContext context, string path)
+            : base(context, path) {}
+
+        /// <summary>
+        /// Initialize a new UserDtoSingle object.
+        /// </summary>
+        public UserDtoSingle(global::Microsoft.OData.Client.DataServiceContext context, string path, bool isComposable)
+            : base(context, path, isComposable) {}
+
+        /// <summary>
+        /// Initialize a new UserDtoSingle object.
+        /// </summary>
+        public UserDtoSingle(global::Microsoft.OData.Client.DataServiceQuerySingle<UserDto> query)
+            : base(query) {}
+
+    }
+    /// <summary>
+    /// There are no comments for UserDto in the schema.
+    /// </summary>
+    /// <KeyProperties>
+    /// Id
+    /// </KeyProperties>
+    [global::Microsoft.OData.Client.Key("Id")]
+    [global::Microsoft.OData.Client.OriginalNameAttribute("UserDto")]
+    public partial class UserDto : global::Microsoft.OData.Client.BaseEntityType, global::System.ComponentModel.INotifyPropertyChanged
+    {
+        /// <summary>
+        /// Create a new UserDto object.
+        /// </summary>
+        /// <param name="ID">Initial value of Id.</param>
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "2.4.0")]
+        public static UserDto CreateUserDto(global::System.Guid ID)
+        {
+            UserDto userDto = new UserDto();
+            userDto.Id = ID;
+            return userDto;
+        }
+        /// <summary>
+        /// There are no comments for Property Id in the schema.
+        /// </summary>
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "2.4.0")]
+        [global::Microsoft.OData.Client.OriginalNameAttribute("Id")]
+        public global::System.Guid Id
+        {
+            get
+            {
+                return this._Id;
+            }
+            set
+            {
+                this.OnIdChanging(value);
+                this._Id = value;
+                this.OnIdChanged();
+                this.OnPropertyChanged("Id");
+            }
+        }
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "2.4.0")]
+        private global::System.Guid _Id;
+        partial void OnIdChanging(global::System.Guid value);
+        partial void OnIdChanged();
+        /// <summary>
+        /// There are no comments for Property UserName in the schema.
+        /// </summary>
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "2.4.0")]
+        [global::Microsoft.OData.Client.OriginalNameAttribute("UserName")]
+        public string UserName
+        {
+            get
+            {
+                return this._UserName;
+            }
+            set
+            {
+                this.OnUserNameChanging(value);
+                this._UserName = value;
+                this.OnUserNameChanged();
+                this.OnPropertyChanged("UserName");
+            }
+        }
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "2.4.0")]
+        private string _UserName;
+        partial void OnUserNameChanging(string value);
+        partial void OnUserNameChanged();
         /// <summary>
         /// This event is raised when the value of the property is changed
         /// </summary>
@@ -1914,6 +2049,29 @@ namespace BitChangeSetManager.Xamarin.BitChangeSetManager.Dto
             };
             return new global::BitChangeSetManager.Xamarin.BitChangeSetManager.Dto.ProvinceDtoSingle(source.Context, source.GetKeyPath(global::Microsoft.OData.Client.Serializer.GetKeyString(source.Context, keys)));
         }
+        /// <summary>
+        /// Get an entity of type global::BitChangeSetManager.Xamarin.BitChangeSetManager.Dto.UserDto as global::BitChangeSetManager.Xamarin.BitChangeSetManager.Dto.UserDtoSingle specified by key from an entity set
+        /// </summary>
+        /// <param name="source">source entity set</param>
+        /// <param name="keys">dictionary with the names and values of keys</param>
+        public static global::BitChangeSetManager.Xamarin.BitChangeSetManager.Dto.UserDtoSingle ByKey(this global::Microsoft.OData.Client.DataServiceQuery<global::BitChangeSetManager.Xamarin.BitChangeSetManager.Dto.UserDto> source, global::System.Collections.Generic.Dictionary<string, object> keys)
+        {
+            return new global::BitChangeSetManager.Xamarin.BitChangeSetManager.Dto.UserDtoSingle(source.Context, source.GetKeyPath(global::Microsoft.OData.Client.Serializer.GetKeyString(source.Context, keys)));
+        }
+        /// <summary>
+        /// Get an entity of type global::BitChangeSetManager.Xamarin.BitChangeSetManager.Dto.UserDto as global::BitChangeSetManager.Xamarin.BitChangeSetManager.Dto.UserDtoSingle specified by key from an entity set
+        /// </summary>
+        /// <param name="source">source entity set</param>
+        /// <param name="id">The value of id</param>
+        public static global::BitChangeSetManager.Xamarin.BitChangeSetManager.Dto.UserDtoSingle ByKey(this global::Microsoft.OData.Client.DataServiceQuery<global::BitChangeSetManager.Xamarin.BitChangeSetManager.Dto.UserDto> source,
+            global::System.Guid id)
+        {
+            global::System.Collections.Generic.Dictionary<string, object> keys = new global::System.Collections.Generic.Dictionary<string, object>
+            {
+                { "Id", id }
+            };
+            return new global::BitChangeSetManager.Xamarin.BitChangeSetManager.Dto.UserDtoSingle(source.Context, source.GetKeyPath(global::Microsoft.OData.Client.Serializer.GetKeyString(source.Context, keys)));
+        }
     }
 }
 namespace BitChangeSetManager.Xamarin.BitChangeSetManager
@@ -2166,6 +2324,24 @@ namespace BitChangeSetManager.Xamarin.BitChangeSetManager
         [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "2.4.0")]
         private global::Microsoft.OData.Client.DataServiceQuery<global::BitChangeSetManager.Xamarin.BitChangeSetManager.Dto.ProvinceDto> _Provinces;
         /// <summary>
+        /// There are no comments for Users in the schema.
+        /// </summary>
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "2.4.0")]
+        [global::Microsoft.OData.Client.OriginalNameAttribute("Users")]
+        public global::Microsoft.OData.Client.DataServiceQuery<global::BitChangeSetManager.Xamarin.BitChangeSetManager.Dto.UserDto> Users
+        {
+            get
+            {
+                if ((this._Users == null))
+                {
+                    this._Users = base.CreateQuery<global::BitChangeSetManager.Xamarin.BitChangeSetManager.Dto.UserDto>("Users");
+                }
+                return this._Users;
+            }
+        }
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "2.4.0")]
+        private global::Microsoft.OData.Client.DataServiceQuery<global::BitChangeSetManager.Xamarin.BitChangeSetManager.Dto.UserDto> _Users;
+        /// <summary>
         /// There are no comments for ChangeSetImages in the schema.
         /// </summary>
         [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "2.4.0")]
@@ -2244,6 +2420,14 @@ namespace BitChangeSetManager.Xamarin.BitChangeSetManager
         public void AddToProvinces(global::BitChangeSetManager.Xamarin.BitChangeSetManager.Dto.ProvinceDto provinceDto)
         {
             base.AddObject("Provinces", provinceDto);
+        }
+        /// <summary>
+        /// There are no comments for Users in the schema.
+        /// </summary>
+        [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "2.4.0")]
+        public void AddToUsers(global::BitChangeSetManager.Xamarin.BitChangeSetManager.Dto.UserDto userDto)
+        {
+            base.AddObject("Users", userDto);
         }
         [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.OData.Client.Design.T4", "2.4.0")]
         private abstract class GeneratedEdmModel
@@ -2347,12 +2531,24 @@ namespace BitChangeSetManager.Xamarin.BitChangeSetManager
         </Key>
         <Property Name=""Id"" Type=""Edm.Guid"" Nullable=""false"" />
         <Property Name=""Name"" Type=""Edm.String"" />
+        <Property Name=""CitiesCount"" Type=""Edm.Int64"" Nullable=""false"" />
+      </EntityType>
+      <EntityType Name=""UserDto"">
+        <Key>
+          <PropertyRef Name=""Id"" />
+        </Key>
+        <Property Name=""Id"" Type=""Edm.Guid"" Nullable=""false"" />
+        <Property Name=""UserName"" Type=""Edm.String"" />
       </EntityType>
     </Schema>
     <Schema Namespace=""BitChangeSetManager"" xmlns=""http://docs.oasis-open.org/odata/ns/edm"">
       <Function Name=""GetAllTemplates"" IsBound=""true"">
         <Parameter Name=""bindingParameter"" Type=""Collection(BitChangeSetManager.Dto.ChangeSetDescriptionTemplateDto)"" />
         <ReturnType Type=""Collection(BitChangeSetManager.Dto.ChangeSetDescriptionTemplateDto)"" />
+      </Function>
+      <Function Name=""GetCurrentUser"" IsBound=""true"">
+        <Parameter Name=""bindingParameter"" Type=""Collection(BitChangeSetManager.Dto.UserDto)"" />
+        <ReturnType Type=""BitChangeSetManager.Dto.UserDto"" />
       </Function>
       <EntityContainer Name=""BitChangeSetManagerContext"">
         <EntitySet Name=""ChangeSetImages"" EntityType=""BitChangeSetManager.Dto.ChangeSetImagetDto"">
@@ -2369,6 +2565,7 @@ namespace BitChangeSetManager.Xamarin.BitChangeSetManager
         <EntitySet Name=""Customers"" EntityType=""BitChangeSetManager.Dto.CustomerDto"" />
         <EntitySet Name=""Constants"" EntityType=""BitChangeSetManager.Dto.ConstantDto"" />
         <EntitySet Name=""Provinces"" EntityType=""BitChangeSetManager.Dto.ProvinceDto"" />
+        <EntitySet Name=""Users"" EntityType=""BitChangeSetManager.Dto.UserDto"" />
       </EntityContainer>
     </Schema>
   </edmx:DataServices>
@@ -2415,6 +2612,19 @@ namespace BitChangeSetManager.Xamarin.BitChangeSetManager
             }
 
             return source.CreateFunctionQuery<global::BitChangeSetManager.Xamarin.BitChangeSetManager.Dto.ChangeSetDescriptionTemplateDto>("BitChangeSetManager.GetAllTemplates", false);
+        }
+        /// <summary>
+        /// There are no comments for GetCurrentUser in the schema.
+        /// </summary>
+        [global::Microsoft.OData.Client.OriginalNameAttribute("GetCurrentUser")]
+        public static global::BitChangeSetManager.Xamarin.BitChangeSetManager.Dto.UserDtoSingle GetCurrentUser(this global::Microsoft.OData.Client.DataServiceQuery<global::BitChangeSetManager.Xamarin.BitChangeSetManager.Dto.UserDto> source)
+        {
+            if (!source.IsComposable)
+            {
+                throw new global::System.NotSupportedException("The previous function is not composable.");
+            }
+
+            return new global::BitChangeSetManager.Xamarin.BitChangeSetManager.Dto.UserDtoSingle(source.CreateFunctionQuerySingle<global::BitChangeSetManager.Xamarin.BitChangeSetManager.Dto.UserDto>("BitChangeSetManager.GetCurrentUser", false));
         }
     }
 }

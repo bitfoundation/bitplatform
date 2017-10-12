@@ -7,10 +7,6 @@ namespace BitChangeSetManager.Api
 {
     public class ProvincesController : BitChangeSetManagerDtoSetController<ProvinceDto, Province, Guid>
     {
-        public ProvincesController(IBitChangeSetManagerRepository<Province> repository)
-            : base(repository)
-        {
-        }
 
         protected override bool IsReadOnly()
         {
