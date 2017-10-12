@@ -13,30 +13,9 @@ namespace Bit.Signalr
 {
     public class SignalRMiddlewareConfiguration : IOwinMiddlewareConfiguration
     {
-        private readonly IAppEnvironmentProvider _appEnvironmentProvider;
-        private readonly IEnumerable<ISignalRConfiguration> _signalRScaleoutConfigurations;
-        private readonly Microsoft.AspNet.SignalR.IDependencyResolver _dependencyResolver;
-
-#if DEBUG
-        protected SignalRMiddlewareConfiguration()
-        {
-        }
-#endif
-
-        public SignalRMiddlewareConfiguration(Microsoft.AspNet.SignalR.IDependencyResolver dependencyResolver, IAppEnvironmentProvider appEnvironmentProvider,
-            IEnumerable<ISignalRConfiguration> signalRScaleoutConfigurations = null)
-        {
-            if (appEnvironmentProvider == null)
-                throw new ArgumentNullException(nameof(appEnvironmentProvider));
-
-            if (dependencyResolver == null)
-                throw new ArgumentNullException(nameof(dependencyResolver));
-
-            _appEnvironmentProvider = appEnvironmentProvider;
-            _dependencyResolver = dependencyResolver;
-            _signalRScaleoutConfigurations = signalRScaleoutConfigurations;
-
-        }
+        public virtual IAppEnvironmentProvider AppEnvironmentProvider { get; set; }
+        public virtual IEnumerable<ISignalRConfiguration> SignalRScaleoutConfigurations { get; set; }
+        public virtual Microsoft.AspNet.SignalR.IDependencyResolver DependencyResolver { get; set; }
 
         public virtual void Configure(IAppBuilder owinApp)
         {
@@ -53,13 +32,13 @@ namespace Bit.Signalr
 
             HubConfiguration signalRConfig = new HubConfiguration
             {
-                EnableDetailedErrors = _appEnvironmentProvider.GetActiveAppEnvironment().DebugMode == true,
+                EnableDetailedErrors = AppEnvironmentProvider.GetActiveAppEnvironment().DebugMode == true,
                 EnableJavaScriptProxies = true,
                 EnableJSONP = false,
-                Resolver = _dependencyResolver
+                Resolver = DependencyResolver
             };
 
-            _signalRScaleoutConfigurations.ToList()
+            SignalRScaleoutConfigurations.ToList()
                 .ForEach(cnfg =>
                 {
                     cnfg.Configure(signalRConfig);

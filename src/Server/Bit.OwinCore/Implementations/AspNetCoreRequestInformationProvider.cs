@@ -8,21 +8,18 @@ namespace Bit.Owin.Implementations
 {
     public class AspNetCoreRequestInformationProvider : IRequestInformationProvider
     {
-        private readonly HttpContext _context;
-
-#if DEBUG
-        protected AspNetCoreRequestInformationProvider()
+        public virtual IHttpContextAccessor HttpContextAccessor
         {
-        }
-#endif
+            set
+            {
+                if (value == null)
+                    throw new ArgumentNullException(nameof(HttpContextAccessor));
 
-        public AspNetCoreRequestInformationProvider(IHttpContextAccessor httpContextAccessor)
-        {
-            if (httpContextAccessor == null)
-                throw new ArgumentNullException(nameof(httpContextAccessor));
-
-            _context = httpContextAccessor.HttpContext;
+                _context = value.HttpContext;
+            }
         }
+
+        private HttpContext _context;
 
         public virtual string UserAgent
         {

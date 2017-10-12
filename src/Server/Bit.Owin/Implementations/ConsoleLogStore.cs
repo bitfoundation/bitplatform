@@ -7,18 +7,7 @@ namespace Bit.Owin.Implementations
 {
     public class ConsoleLogStore : ILogStore
     {
-        private readonly IContentFormatter _formatter;
-
-        public ConsoleLogStore(IContentFormatter formatter)
-        {
-            _formatter = formatter;
-        }
-
-#if DEBUG
-        protected ConsoleLogStore()
-        {
-        }
-#endif
+        public virtual IContentFormatter Formatter { get; set; }
 
         public virtual void SaveLog(LogEntry logEntry)
         {
@@ -39,7 +28,7 @@ namespace Bit.Owin.Implementations
                         break;
                 }
 
-                Console.WriteLine(_formatter.Serialize(logEntry) + Environment.NewLine);
+                Console.WriteLine(Formatter.Serialize(logEntry) + Environment.NewLine);
             }
             finally
             {

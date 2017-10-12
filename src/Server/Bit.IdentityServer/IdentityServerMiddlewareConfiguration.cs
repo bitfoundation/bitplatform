@@ -14,47 +14,12 @@ namespace Bit.IdentityServer
 
     public class IdentityServerMiddlewareConfiguration : IOwinMiddlewareConfiguration
     {
-        private readonly IAppEnvironmentProvider _appEnvironmentProvider;
-        private readonly ICertificateProvider _certificateProvider;
-        private readonly IDependencyManager _dependencyManager;
-        private readonly IScopesProvider _scopesProvider;
-        private readonly IRedirectUriValidator _redirectUriValidator;
-        private readonly IEventService _eventService;
-
-        public IdentityServerMiddlewareConfiguration(IAppEnvironmentProvider appEnvironmentProvider,
-            IScopesProvider scopesProvider, ICertificateProvider certificateProvider, IDependencyManager dependencyManager, IRedirectUriValidator redirectUriValidator, IEventService eventService)
-        {
-            if (appEnvironmentProvider == null)
-                throw new ArgumentNullException(nameof(appEnvironmentProvider));
-
-            if (scopesProvider == null)
-                throw new ArgumentNullException(nameof(scopesProvider));
-
-            if (certificateProvider == null)
-                throw new ArgumentNullException(nameof(certificateProvider));
-
-            if (dependencyManager == null)
-                throw new ArgumentNullException(nameof(dependencyManager));
-
-            if (redirectUriValidator == null)
-                throw new ArgumentNullException(nameof(redirectUriValidator));
-
-            if (eventService == null)
-                throw new ArgumentNullException(nameof(eventService));
-
-            _appEnvironmentProvider = appEnvironmentProvider;
-            _scopesProvider = scopesProvider;
-            _certificateProvider = certificateProvider;
-            _dependencyManager = dependencyManager;
-            _redirectUriValidator = redirectUriValidator;
-            _eventService = eventService;
-        }
-
-#if DEBUG
-        protected IdentityServerMiddlewareConfiguration()
-        {
-        }
-#endif
+        public virtual IAppEnvironmentProvider AppEnvironmentProvider { get; set; }
+        public virtual ICertificateProvider CertificateProvider { get; set; }
+        public virtual IDependencyManager DependencyManager { get; set; }
+        public virtual IScopesProvider ScopesProvider { get; set; }
+        public virtual IRedirectUriValidator RedirectUriValidator { get; set; }
+        public virtual IEventService EventService { get; set; }
 
         public virtual void Configure(IAppBuilder owinApp)
         {
@@ -63,22 +28,22 @@ namespace Bit.IdentityServer
 
             owinApp.Map("/core", coreApp =>
             {
-                LogProvider.SetCurrentLogProvider(_dependencyManager.Resolve<ILogProvider>());
+                LogProvider.SetCurrentLogProvider(DependencyManager.Resolve<ILogProvider>());
 
-                AppEnvironment activeAppEnvironment = _appEnvironmentProvider.GetActiveAppEnvironment();
+                AppEnvironment activeAppEnvironment = AppEnvironmentProvider.GetActiveAppEnvironment();
 
                 IdentityServerServiceFactory factory = new IdentityServerServiceFactory()
-                    .UseInMemoryClients(_dependencyManager.Resolve<IClientProvider>().GetClients().ToArray())
-                    .UseInMemoryScopes(_scopesProvider.GetScopes());
+                    .UseInMemoryClients(DependencyManager.Resolve<IClientProvider>().GetClients().ToArray())
+                    .UseInMemoryScopes(ScopesProvider.GetScopes());
 
                 factory.UserService =
-                    new Registration<IUserService>(_dependencyManager.Resolve<IUserService>());
+                    new Registration<IUserService>(DependencyManager.Resolve<IUserService>());
 
-                factory.EventService = new Registration<IEventService>(_eventService);
+                factory.EventService = new Registration<IEventService>(EventService);
 
-                factory.ViewService = new Registration<IViewService>(_dependencyManager.Resolve<IViewService>());
+                factory.ViewService = new Registration<IViewService>(DependencyManager.Resolve<IViewService>());
 
-                factory.RedirectUriValidator = new Registration<IRedirectUriValidator>(_redirectUriValidator);
+                factory.RedirectUriValidator = new Registration<IRedirectUriValidator>(RedirectUriValidator);
 
                 bool requireSslConfigValue = activeAppEnvironment.GetConfig("RequireSsl", defaultValueOnNotFound: false);
 
@@ -87,7 +52,7 @@ namespace Bit.IdentityServer
                 IdentityServerOptions identityServerOptions = new IdentityServerOptions
                 {
                     SiteName = identityServerSiteName,
-                    SigningCertificate = _certificateProvider.GetSingleSignOnCertificate(),
+                    SigningCertificate = CertificateProvider.GetSingleSignOnCertificate(),
                     Factory = factory,
                     RequireSsl = requireSslConfigValue,
                     EnableWelcomePage = activeAppEnvironment.DebugMode == true,

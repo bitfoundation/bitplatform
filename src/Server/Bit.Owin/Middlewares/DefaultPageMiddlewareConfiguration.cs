@@ -9,20 +9,17 @@ namespace Bit.Owin.Middlewares
 {
     public class DefaultPageMiddlewareConfiguration : IOwinMiddlewareConfiguration
     {
-        private readonly AppEnvironment _activeAppEnvironment;
+        private AppEnvironment _activeAppEnvironment;
 
-#if DEBUG
-        protected DefaultPageMiddlewareConfiguration()
+        public virtual IAppEnvironmentProvider AppEnvironmentProvider
         {
-        }
-#endif
+            set
+            {
+                if (value == null)
+                    throw new ArgumentNullException(nameof(value));
 
-        public DefaultPageMiddlewareConfiguration(IAppEnvironmentProvider appEnvironmentProvider)
-        {
-            if (appEnvironmentProvider == null)
-                throw new ArgumentNullException(nameof(appEnvironmentProvider));
-
-            _activeAppEnvironment = appEnvironmentProvider.GetActiveAppEnvironment();
+                _activeAppEnvironment = value.GetActiveAppEnvironment();
+            }
         }
 
         public virtual void Configure(IAppBuilder owinApp)

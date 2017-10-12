@@ -11,33 +11,14 @@ namespace Bit.Owin.Middlewares
 {
     public class StaticFilesMiddlewareConfiguration : IOwinMiddlewareConfiguration
     {
-        private readonly IAppEnvironmentProvider _appEnvironmentProvider;
-        private readonly IPathProvider _pathProvider;
-
-#if DEBUG
-        protected StaticFilesMiddlewareConfiguration()
-        {
-        }
-#endif
-
-        public StaticFilesMiddlewareConfiguration(IAppEnvironmentProvider appEnvironmentProvider,
-            IPathProvider pathProvider)
-        {
-            if (appEnvironmentProvider == null)
-                throw new ArgumentNullException(nameof(appEnvironmentProvider));
-
-            if (pathProvider == null)
-                throw new ArgumentNullException(nameof(pathProvider));
-
-            _appEnvironmentProvider = appEnvironmentProvider;
-            _pathProvider = pathProvider;
-        }
+        public virtual IAppEnvironmentProvider AppEnvironmentProvider { get; set; }
+        public virtual IPathProvider PathProvider { get; set; }
 
         public virtual void Configure(IAppBuilder owinApp)
         {
-            AppEnvironment appEnvironment = _appEnvironmentProvider.GetActiveAppEnvironment();
+            AppEnvironment appEnvironment = AppEnvironmentProvider.GetActiveAppEnvironment();
 
-            string rootFolder = _pathProvider.GetCurrentStaticFilesPath();
+            string rootFolder = PathProvider.GetCurrentStaticFilesPath();
 
             PhysicalFileSystem fileSystem = new PhysicalFileSystem(rootFolder);
 

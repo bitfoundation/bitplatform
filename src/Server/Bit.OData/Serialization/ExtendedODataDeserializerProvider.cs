@@ -10,12 +10,10 @@ namespace Bit.OData.Serialization
 {
     public class ExtendedODataDeserializerProvider : DefaultODataDeserializerProvider
     {
-#if DEBUG
         protected ExtendedODataDeserializerProvider()
             : base(null)
         {
         }
-#endif
 
         public ExtendedODataDeserializerProvider(IServiceProvider rootContainer)
             : base(rootContainer)

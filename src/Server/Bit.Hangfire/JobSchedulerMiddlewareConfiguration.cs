@@ -15,35 +15,16 @@ namespace Bit.Hangfire
         OwinCore.Contracts.IAspNetCoreMiddlewareConfiguration
 #endif
     {
-        private readonly IEnumerable<IDashboardAuthorizationFilter> _authFilters;
-        private readonly IAppEnvironmentProvider _appEnvironmentProvider;
-
-        public JobSchedulerMiddlewareConfiguration(IEnumerable<IDashboardAuthorizationFilter> authFilters, IAppEnvironmentProvider appEnvironmentProvider)
-        {
-            if (authFilters == null)
-                throw new ArgumentNullException(nameof(authFilters));
-
-            _authFilters = authFilters;
-
-            if (appEnvironmentProvider == null)
-                throw new ArgumentNullException(nameof(appEnvironmentProvider));
-
-            _appEnvironmentProvider = appEnvironmentProvider;
-        }
-
-#if DEBUG
-        protected JobSchedulerMiddlewareConfiguration()
-        {
-        }
-#endif
+        public virtual IEnumerable<IDashboardAuthorizationFilter> AuthFilters { get; set; }
+        public virtual IAppEnvironmentProvider AppEnvironmentProvider { get; set; }
 
 #if NET461
         public virtual void Configure(IAppBuilder owinApp)
         {
             owinApp.UseHangfireDashboard("/jobs", new DashboardOptions
             {
-                Authorization = _authFilters,
-                AppPath = _appEnvironmentProvider.GetActiveAppEnvironment().GetHostVirtualPath()
+                Authorization = AuthFilters,
+                AppPath = AppEnvironmentProvider.GetActiveAppEnvironment().GetHostVirtualPath()
             });
         }
 #else
@@ -51,8 +32,8 @@ namespace Bit.Hangfire
         {
             aspNetCoreApp.UseHangfireDashboard("/jobs", new DashboardOptions
             {
-                Authorization = _authFilters,
-                AppPath = _appEnvironmentProvider.GetActiveAppEnvironment().GetHostVirtualPath()
+                Authorization = AuthFilters,
+                AppPath = AppEnvironmentProvider.GetActiveAppEnvironment().GetHostVirtualPath()
             });
         }
 #endif

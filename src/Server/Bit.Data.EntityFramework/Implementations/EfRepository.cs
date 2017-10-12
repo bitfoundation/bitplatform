@@ -18,22 +18,23 @@ namespace Bit.Data.EntityFramework.Implementations
     public class EfRepository<TEntity> : IRepository<TEntity>
         where TEntity : class, IEntity
     {
-        private readonly EfDbContextBase _dbContext;
-        private readonly DbSet<TEntity> _set;
+        private EfDbContextBase _dbContext;
 
-#if DEBUG
-        protected EfRepository()
+        public virtual EfDbContextBase DbContext
         {
+            get { return _dbContext; }
+            set
+            {
+                _dbContext = value;
+                _set = _dbContext.Set<TEntity>();
+            }
         }
-#endif
 
-        public EfRepository(EfDbContextBase dbContext)
+        private DbSet<TEntity> _set;
+
+        protected virtual DbSet<TEntity> Set
         {
-            if (dbContext == null)
-                throw new ArgumentNullException(nameof(dbContext));
-
-            _dbContext = dbContext;
-            _set = dbContext.Set<TEntity>();
+            get { return _set; }
         }
 
         public virtual async Task<TEntity> AddAsync(TEntity entityToAdd, CancellationToken cancellationToken)
@@ -44,7 +45,7 @@ namespace Bit.Data.EntityFramework.Implementations
             if (entityToAdd is IEntityWithDefaultGuidKey entityToAddAsEntityWithDefaultGuidKey && entityToAddAsEntityWithDefaultGuidKey.Id == Guid.Empty)
                 entityToAddAsEntityWithDefaultGuidKey.Id = Guid.NewGuid();
 
-            _set.Add(entityToAdd);
+            Set.Add(entityToAdd);
 
             await SaveChangesAsync(cancellationToken).ConfigureAwait(false);
 
@@ -64,7 +65,7 @@ namespace Bit.Data.EntityFramework.Implementations
                     entityToAddAsEntityWithDefaultGuidKey.Id = Guid.NewGuid();
             }
 
-            _set.AddRange(entitiesToAddList);
+            Set.AddRange(entitiesToAddList);
 
             await SaveChangesAsync(cancellationToken).ConfigureAwait(false);
 
@@ -77,7 +78,7 @@ namespace Bit.Data.EntityFramework.Implementations
                 throw new ArgumentNullException(nameof(entityToUpdate));
 
             Attach(entityToUpdate);
-            _dbContext.Entry(entityToUpdate).State = EntityState.Modified;
+            DbContext.Entry(entityToUpdate).State = EntityState.Modified;
 
             await SaveChangesAsync(cancellationToken).ConfigureAwait(false);
 
@@ -97,7 +98,7 @@ namespace Bit.Data.EntityFramework.Implementations
             else
             {
                 Attach(entityToDelete);
-                _dbContext.Entry(entityToDelete).State = EntityState.Deleted;
+                DbContext.Entry(entityToDelete).State = EntityState.Deleted;
                 await SaveChangesAsync(cancellationToken).ConfigureAwait(false);
                 return entityToDelete;
             }
@@ -110,7 +111,7 @@ namespace Bit.Data.EntityFramework.Implementations
 
             Attach(entity);
 
-            return _dbContext.Entry(entity).Property(prop).IsModified;
+            return DbContext.Entry(entity).Property(prop).IsModified;
         }
 
         public virtual TProperty GetOriginalValue<TProperty>(TEntity entity, Expression<Func<TEntity, TProperty>> prop)
@@ -120,7 +121,7 @@ namespace Bit.Data.EntityFramework.Implementations
 
             Attach(entity);
 
-            return _dbContext.Entry(entity).Property(prop).OriginalValue;
+            return DbContext.Entry(entity).Property(prop).OriginalValue;
         }
 
         public virtual bool IsDeleted(TEntity entity)
@@ -130,7 +131,7 @@ namespace Bit.Data.EntityFramework.Implementations
 
             Attach(entity);
 
-            return _dbContext.Entry(entity).State == EntityState.Deleted;
+            return DbContext.Entry(entity).State == EntityState.Deleted;
         }
 
         public virtual bool IsAdded(TEntity entity)
@@ -140,7 +141,7 @@ namespace Bit.Data.EntityFramework.Implementations
 
             Attach(entity);
 
-            return _dbContext.Entry(entity).State == EntityState.Added;
+            return DbContext.Entry(entity).State == EntityState.Added;
         }
 
         public virtual bool IsModified(TEntity entity)
@@ -150,7 +151,7 @@ namespace Bit.Data.EntityFramework.Implementations
 
             Attach(entity);
 
-            return _dbContext.Entry(entity).State != EntityState.Unchanged;
+            return DbContext.Entry(entity).State != EntityState.Unchanged;
         }
 
         public virtual void Detach(TEntity entity)
@@ -160,7 +161,7 @@ namespace Bit.Data.EntityFramework.Implementations
 
             Attach(entity);
 
-            _dbContext.Entry(entity).State = EntityState.Detached;
+            DbContext.Entry(entity).State = EntityState.Detached;
         }
 
         public virtual void Attach(TEntity entity)
@@ -168,8 +169,8 @@ namespace Bit.Data.EntityFramework.Implementations
             if (entity == null)
                 throw new ArgumentNullException(nameof(entity));
 
-            if (_dbContext.Entry(entity).State == EntityState.Detached)
-                _set.Attach(entity);
+            if (DbContext.Entry(entity).State == EntityState.Detached)
+                Set.Attach(entity);
         }
 
         public virtual TEntity Add(TEntity entityToAdd)
@@ -180,7 +181,7 @@ namespace Bit.Data.EntityFramework.Implementations
             if (entityToAdd is IEntityWithDefaultGuidKey entityToAddAsEntityWithDefaultGuidKey && entityToAddAsEntityWithDefaultGuidKey.Id == Guid.Empty)
                 entityToAddAsEntityWithDefaultGuidKey.Id = Guid.NewGuid();
 
-            _set.Add(entityToAdd);
+            Set.Add(entityToAdd);
 
             SaveChanges();
 
@@ -200,7 +201,7 @@ namespace Bit.Data.EntityFramework.Implementations
                     entityToAddAsEntityWithDefaultGuidKey.Id = Guid.NewGuid();
             }
 
-            _set.AddRange(entityToAddList);
+            Set.AddRange(entityToAddList);
 
             SaveChanges();
 
@@ -213,7 +214,7 @@ namespace Bit.Data.EntityFramework.Implementations
                 throw new ArgumentNullException(nameof(entityToUpdate));
 
             Attach(entityToUpdate);
-            _dbContext.Entry(entityToUpdate).State = EntityState.Modified;
+            DbContext.Entry(entityToUpdate).State = EntityState.Modified;
 
             SaveChanges();
 
@@ -233,7 +234,7 @@ namespace Bit.Data.EntityFramework.Implementations
             else
             {
                 Attach(entityToDelete);
-                _dbContext.Entry(entityToDelete).State = EntityState.Deleted;
+                DbContext.Entry(entityToDelete).State = EntityState.Deleted;
                 SaveChanges();
                 return entityToDelete;
             }
@@ -241,12 +242,12 @@ namespace Bit.Data.EntityFramework.Implementations
 
         public virtual IQueryable<TEntity> GetAll()
         {
-            return _set.AsNoTracking();
+            return Set.AsNoTracking();
         }
 
         public virtual async Task<IQueryable<TEntity>> GetAllAsync(CancellationToken cancellationToken)
         {
-            return _set.AsNoTracking();
+            return Set.AsNoTracking();
         }
 
         public virtual IQueryable<TChild> GetCollectionQuery<TChild>(TEntity entity, Expression<Func<TEntity, IEnumerable<TChild>>> childs) where TChild : class
@@ -255,7 +256,7 @@ namespace Bit.Data.EntityFramework.Implementations
 
             Attach(entity);
 
-            return _dbContext.Entry(entity).Collection(convertedChilds).Query();
+            return DbContext.Entry(entity).Collection(convertedChilds).Query();
         }
 
         public virtual async Task LoadCollectionAsync<TProperty>(TEntity entity, Expression<Func<TEntity, IEnumerable<TProperty>>> childs, CancellationToken cancellationToken)
@@ -265,42 +266,42 @@ namespace Bit.Data.EntityFramework.Implementations
 
             Attach(entity);
 
-            DbCollectionEntry<TEntity, TProperty> collection = _dbContext.Entry(entity).Collection(convertedChilds);
+            DbCollectionEntry<TEntity, TProperty> collection = DbContext.Entry(entity).Collection(convertedChilds);
 
             if (collection.IsLoaded == false)
                 await collection.LoadAsync(cancellationToken).ConfigureAwait(false);
         }
 
-        public virtual void LoadCollection<TProperty>(TEntity entity, Expression<Func<TEntity, IEnumerable<TProperty>>> childs) 
+        public virtual void LoadCollection<TProperty>(TEntity entity, Expression<Func<TEntity, IEnumerable<TProperty>>> childs)
             where TProperty : class
         {
             Expression<Func<TEntity, ICollection<TProperty>>> convertedChilds = Expression.Lambda<Func<TEntity, ICollection<TProperty>>>(childs.Body, childs.Parameters);
 
             Attach(entity);
 
-            DbCollectionEntry<TEntity, TProperty> collection = _dbContext.Entry(entity).Collection(convertedChilds);
+            DbCollectionEntry<TEntity, TProperty> collection = DbContext.Entry(entity).Collection(convertedChilds);
 
             if (collection.IsLoaded == false)
                 collection.Load();
         }
 
-        public virtual async Task LoadReferenceAsync<TProperty>(TEntity entity, Expression<Func<TEntity, TProperty>> member, CancellationToken cancellationToken) 
+        public virtual async Task LoadReferenceAsync<TProperty>(TEntity entity, Expression<Func<TEntity, TProperty>> member, CancellationToken cancellationToken)
             where TProperty : class
         {
             Attach(entity);
 
-            DbReferenceEntry<TEntity, TProperty> reference = _dbContext.Entry(entity).Reference(member);
+            DbReferenceEntry<TEntity, TProperty> reference = DbContext.Entry(entity).Reference(member);
 
             if (reference.IsLoaded == false)
                 await reference.LoadAsync(cancellationToken).ConfigureAwait(false);
         }
 
-        public virtual void LoadReference<TProperty>(TEntity entity, Expression<Func<TEntity, TProperty>> member) 
+        public virtual void LoadReference<TProperty>(TEntity entity, Expression<Func<TEntity, TProperty>> member)
             where TProperty : class
         {
             Attach(entity);
 
-            DbReferenceEntry<TEntity, TProperty> reference = _dbContext.Entry(entity).Reference(member);
+            DbReferenceEntry<TEntity, TProperty> reference = DbContext.Entry(entity).Reference(member);
 
             if (reference.IsLoaded == false)
                 reference.Load();
@@ -308,14 +309,14 @@ namespace Bit.Data.EntityFramework.Implementations
 
         public virtual async Task SaveChangesAsync(CancellationToken cancellationToken)
         {
-            _dbContext.ChangeTracker.DetectChanges();
-            await _dbContext.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+            DbContext.ChangeTracker.DetectChanges();
+            await DbContext.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
         }
 
         public virtual void SaveChanges()
         {
-            _dbContext.ChangeTracker.DetectChanges();
-            _dbContext.SaveChanges();
+            DbContext.ChangeTracker.DetectChanges();
+            DbContext.SaveChanges();
         }
 
         public virtual async Task<TEntity> GetByIdAsync(CancellationToken cancellationToken, params object[] keys)

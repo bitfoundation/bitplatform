@@ -9,21 +9,17 @@ namespace Bit.IdentityServer.Implementations
 {
     public class ActiveDirectoryUserServiceProvider : UserService
     {
-        private readonly string _activeDirectoryName;
+        private string _activeDirectoryName;
 
-        public ActiveDirectoryUserServiceProvider(IAppEnvironmentProvider appEnvironmentProvider)
+        public virtual IAppEnvironmentProvider AppEnvironmentProvider
         {
-            if (appEnvironmentProvider == null)
-                throw new ArgumentNullException(nameof(appEnvironmentProvider));
-
-            _activeDirectoryName = appEnvironmentProvider.GetActiveAppEnvironment().GetConfig<string>("ActiveDirectoryName");
+            set
+            {
+                if (value == null)
+                    throw new ArgumentNullException(nameof(AppEnvironmentProvider));
+                _activeDirectoryName = value.GetActiveAppEnvironment().GetConfig<string>("ActiveDirectoryName");
+            }
         }
-
-#if DEBUG
-        protected ActiveDirectoryUserServiceProvider()
-        {
-        }
-#endif
 
         public override async Task<string> GetUserIdByLocalAuthenticationContextAsync(LocalAuthenticationContext context)
         {

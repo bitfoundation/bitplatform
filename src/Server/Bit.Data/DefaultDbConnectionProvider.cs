@@ -15,21 +15,7 @@ namespace Bit.Data
         private readonly IDictionary<string, DbConnectionAndTransactionPair> _connections =
             new Dictionary<string, DbConnectionAndTransactionPair>();
 
-        private readonly IScopeStatusManager _scopeStatusManager;
-
-#if DEBUG
-        protected DefaultDbConnectionProvider()
-        {
-        }
-#endif
-
-        public DefaultDbConnectionProvider(IScopeStatusManager scopeStatusManager)
-        {
-            if (scopeStatusManager == null)
-                throw new ArgumentNullException(nameof(scopeStatusManager));
-
-            _scopeStatusManager = scopeStatusManager;
-        }
+        public virtual IScopeStatusManager ScopeStatusManager { get; set; }
 
         public virtual DbTransaction GetDbTransaction(string connectionString)
         {
@@ -84,7 +70,7 @@ namespace Bit.Data
 
         protected virtual void Dispose(bool disposing)
         {
-            bool wasSucceeded = _scopeStatusManager.WasSucceeded();
+            bool wasSucceeded = ScopeStatusManager.WasSucceeded();
 
             foreach (DbConnectionAndTransactionPair connectionAndTransaction in _connections.Values)
             {

@@ -12,21 +12,18 @@ namespace Bit.IdentityServer.Implementations
 {
     public class RegexBasedRedirectUriValidator : DefaultRedirectUriValidator, IRedirectUriValidator
     {
-        private readonly AppEnvironment _activeAppEnvironment;
-
-        public RegexBasedRedirectUriValidator(IAppEnvironmentProvider appEnvironmentProvider)
+        public virtual IAppEnvironmentProvider AppEnvironmentProvider
         {
-            if (appEnvironmentProvider == null)
-                throw new ArgumentNullException(nameof(appEnvironmentProvider));
+            set
+            {
+                if (value == null)
+                    throw new ArgumentNullException(nameof(AppEnvironmentProvider));
 
-            _activeAppEnvironment = appEnvironmentProvider.GetActiveAppEnvironment();
+                _activeAppEnvironment = value.GetActiveAppEnvironment();
+            }
         }
 
-#if DEBUG
-        protected RegexBasedRedirectUriValidator()
-        {
-        }
-#endif
+        private AppEnvironment _activeAppEnvironment;
 
         public override async Task<bool> IsPostLogoutRedirectUriValidAsync(string requestedUri, Client client)
         {

@@ -10,28 +10,11 @@ namespace Bit.Owin.Implementations.Metadata
 {
     public class DefaultAppMetadataProvider : IAppMetadataProvider
     {
-        private readonly IEnumerable<IMetadataBuilder> _metadataBuilders;
 
         private AppMetadata _appMetadata;
-        private readonly IAppEnvironmentProvider _appEnvironmentProvider;
 
-#if DEBUG
-        protected DefaultAppMetadataProvider()
-        {
-        }
-#endif
-
-        public DefaultAppMetadataProvider(IEnumerable<IMetadataBuilder> metadataBuilders, IAppEnvironmentProvider appEnvironmentProvider)
-        {
-            if (metadataBuilders == null)
-                throw new ArgumentNullException(nameof(metadataBuilders));
-
-            if (appEnvironmentProvider == null)
-                throw new ArgumentNullException(nameof(appEnvironmentProvider));
-
-            _metadataBuilders = metadataBuilders;
-            _appEnvironmentProvider = appEnvironmentProvider;
-        }
+        public virtual IEnumerable<IMetadataBuilder> MetadataBuilders { get; set; }
+        public virtual IAppEnvironmentProvider AppEnvironmentProvider { get; set; }
 
         public virtual async Task<AppMetadata> GetAppMetadata()
         {
@@ -39,12 +22,12 @@ namespace Bit.Owin.Implementations.Metadata
             {
                 List<ObjectMetadata> allMetadata = new List<ObjectMetadata>();
 
-                foreach (IMetadataBuilder metadataBuilder in _metadataBuilders)
+                foreach (IMetadataBuilder metadataBuilder in MetadataBuilders)
                 {
                     allMetadata.AddRange(await metadataBuilder.BuildMetadata().ConfigureAwait(false));
                 }
 
-                AppEnvironment activeAppEnvironment = _appEnvironmentProvider.GetActiveAppEnvironment();
+                AppEnvironment activeAppEnvironment = AppEnvironmentProvider.GetActiveAppEnvironment();
 
                 _appMetadata = new AppMetadata
                 {

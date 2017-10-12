@@ -8,36 +8,24 @@ namespace Bit.Owin.Implementations
 {
     public class DefaultAppEnvironmentProvider : IAppEnvironmentProvider
     {
-        private static IAppEnvironmentProvider _current;
-        private readonly IPathProvider _pathProvider;
-        private readonly IContentFormatter _contentFormatter;
-
         private AppEnvironment _activeEnvironment;
+        private static IAppEnvironmentProvider _current;
 
-#if DEBUG
-        protected DefaultAppEnvironmentProvider()
-        {
-        }
-#endif
-
-        public DefaultAppEnvironmentProvider(IPathProvider pathProvider, IContentFormatter contentFormatter)
-        {
-            if (pathProvider == null)
-                throw new ArgumentNullException(nameof(pathProvider));
-
-            if (contentFormatter == null)
-                throw new ArgumentNullException(nameof(contentFormatter));
-
-            _pathProvider = pathProvider;
-            _contentFormatter = contentFormatter;
-        }
+        public virtual IPathProvider PathProvider { get; set; }
+        public virtual IContentFormatter ContentFormatter { get; set; }
 
         public static IAppEnvironmentProvider Current
         {
             get
             {
                 if (_current == null)
-                    _current = new DefaultAppEnvironmentProvider(DefaultPathProvider.Current, DefaultJsonContentFormatter.Current);
+                {
+                    _current = new DefaultAppEnvironmentProvider
+                    {
+                        ContentFormatter = DefaultJsonContentFormatter.Current,
+                        PathProvider = DefaultPathProvider.Current
+                    };
+                }
                 return _current;
             }
             set => _current = value;
@@ -48,9 +36,9 @@ namespace Bit.Owin.Implementations
             if (_activeEnvironment != null)
                 return _activeEnvironment;
 
-            string environmentsAsJson = File.ReadAllText(_pathProvider.MapPath("environments.json"));
+            string environmentsAsJson = File.ReadAllText(PathProvider.MapPath("environments.json"));
 
-            AppEnvironment[] allEnvironments = _contentFormatter.DeSerialize<AppEnvironment[]>(environmentsAsJson);
+            AppEnvironment[] allEnvironments = ContentFormatter.DeSerialize<AppEnvironment[]>(environmentsAsJson);
 
             AppEnvironment[] activeEnvironments = allEnvironments.Where(env => env.IsActive).ToArray();
 

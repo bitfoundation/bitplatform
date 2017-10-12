@@ -12,39 +12,24 @@ namespace Bit.WebApi
 {
     public class WebApiMiddlewareConfiguration : IOwinMiddlewareConfiguration, IDisposable
     {
-        private readonly AppEnvironment _activeAppEnvironment;
-        private readonly IEnumerable<IWebApiConfigurationCustomizer> _webApiConfgurationCustomizers;
-        private readonly System.Web.Http.Dependencies.IDependencyResolver _webApiDependencyResolver;
-        private readonly IWebApiOwinPipelineInjector _webApiOwinPipelineInjector;
+        public virtual IEnumerable<IWebApiConfigurationCustomizer> WebApiConfgurationCustomizers { get; set; }
+        public virtual System.Web.Http.Dependencies.IDependencyResolver WebApiDependencyResolver { get; set; }
+        public virtual IWebApiOwinPipelineInjector WebApiOwinPipelineInjector { get; set; }
+
+        public virtual IAppEnvironmentProvider AppEnvironmentProvider
+        {
+            set
+            {
+                if (value == null)
+                    throw new ArgumentNullException(nameof(AppEnvironmentProvider));
+
+                _activeAppEnvironment = value.GetActiveAppEnvironment();
+            }
+        }
+
+        private AppEnvironment _activeAppEnvironment;
         private HttpConfiguration _webApiConfig;
         private HttpServer _server;
-
-#if DEBUG
-        protected WebApiMiddlewareConfiguration()
-        {
-        }
-#endif
-
-        public WebApiMiddlewareConfiguration(IAppEnvironmentProvider appEnvironmentProvider,
-            IEnumerable<IWebApiConfigurationCustomizer> webApiConfgurationCustomizers, System.Web.Http.Dependencies.IDependencyResolver webApiDependencyResolver, IWebApiOwinPipelineInjector webApiOwinPipelineInjector)
-        {
-            if (appEnvironmentProvider == null)
-                throw new ArgumentNullException(nameof(appEnvironmentProvider));
-
-            if (webApiConfgurationCustomizers == null)
-                throw new ArgumentNullException(nameof(webApiConfgurationCustomizers));
-
-            if (webApiDependencyResolver == null)
-                throw new ArgumentNullException(nameof(webApiDependencyResolver));
-
-            if (webApiOwinPipelineInjector == null)
-                throw new ArgumentNullException(nameof(webApiOwinPipelineInjector));
-
-            _activeAppEnvironment = appEnvironmentProvider.GetActiveAppEnvironment();
-            _webApiConfgurationCustomizers = webApiConfgurationCustomizers;
-            _webApiDependencyResolver = webApiDependencyResolver;
-            _webApiOwinPipelineInjector = webApiOwinPipelineInjector;
-        }
 
         public virtual void Configure(IAppBuilder owinApp)
         {
@@ -56,9 +41,9 @@ namespace Bit.WebApi
 
             _webApiConfig.IncludeErrorDetailPolicy = _activeAppEnvironment.DebugMode ? IncludeErrorDetailPolicy.LocalOnly : IncludeErrorDetailPolicy.Never;
 
-            _webApiConfig.DependencyResolver = _webApiDependencyResolver;
+            _webApiConfig.DependencyResolver = WebApiDependencyResolver;
 
-            _webApiConfgurationCustomizers.ToList()
+            WebApiConfgurationCustomizers.ToList()
                 .ForEach(webApiConfigurationCustomizer =>
                 {
                     webApiConfigurationCustomizer.CustomizeWebApiConfiguration(_webApiConfig);
@@ -72,7 +57,7 @@ namespace Bit.WebApi
 
             owinApp.UseAutofacWebApi(_webApiConfig);
 
-            _webApiOwinPipelineInjector.UseWebApiOData(owinApp, _server, _webApiConfig);
+            WebApiOwinPipelineInjector.UseWebApiOData(owinApp, _server, _webApiConfig);
 
             _webApiConfig.EnsureInitialized();
         }

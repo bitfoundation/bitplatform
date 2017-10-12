@@ -9,29 +9,15 @@ namespace Bit.WebApi.Implementations
 {
     public class DefaultWebApiAssembliesResolver : IAssembliesResolver
     {
-        private readonly IEnumerable<IApiAssembliesProvider> _apiAssembliesProviders;
+        public virtual IEnumerable<IApiAssembliesProvider> ApiAssembliesProviders { get; set; }
 
         private ICollection<Assembly> _result;
-
-#if DEBUG
-        protected DefaultWebApiAssembliesResolver()
-        {
-        }
-#endif
-
-        public DefaultWebApiAssembliesResolver(IEnumerable<IApiAssembliesProvider> apiAssembliesProviders)
-        {
-            if (apiAssembliesProviders == null)
-                throw new ArgumentNullException(nameof(apiAssembliesProviders));
-
-            _apiAssembliesProviders = apiAssembliesProviders;
-        }
 
         public virtual ICollection<Assembly> GetAssemblies()
         {
             if (_result == null)
             {
-                _result = _apiAssembliesProviders
+                _result = ApiAssembliesProviders
                     .SelectMany(asmProvider => asmProvider.GetApiAssemblies())
                     .ToList();
             }

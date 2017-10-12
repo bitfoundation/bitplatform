@@ -11,27 +11,20 @@ namespace Bit.IdentityServer.Implementations
 {
     public class DefaultSSOPageModelProvider : ISSOPageModelProvider
     {
-        private readonly AppEnvironment _activeAppEnvironment;
-        private readonly IContentFormatter _contentFormatter;
+        private AppEnvironment _activeAppEnvironment;
 
-        public DefaultSSOPageModelProvider(IContentFormatter contentFormatter, IAppEnvironmentProvider appEnvironmentProvider)
+        public virtual IContentFormatter ContentFormatter { get; set; }
+
+        public virtual IAppEnvironmentProvider AppEnvironmentProvider
         {
-            if (appEnvironmentProvider == null)
-                throw new ArgumentNullException(nameof(appEnvironmentProvider));
+            set
+            {
+                if (value == null)
+                    throw new ArgumentNullException(nameof(AppEnvironmentProvider));
 
-            if (contentFormatter == null)
-                throw new ArgumentNullException(nameof(contentFormatter));
-
-            _activeAppEnvironment = appEnvironmentProvider.GetActiveAppEnvironment();
-
-            _contentFormatter = contentFormatter;
+                _activeAppEnvironment = value.GetActiveAppEnvironment();
+            }
         }
-
-#if DEBUG
-        protected DefaultSSOPageModelProvider()
-        {
-        }
-#endif
 
         public virtual SSOPageModel GetSSOPageModel()
         {
@@ -48,7 +41,7 @@ namespace Bit.IdentityServer.Implementations
                 DebugMode = _activeAppEnvironment.DebugMode,
                 DesiredTimeZoneValue = _activeAppEnvironment.AppInfo.DefaultTimeZone,
                 Theme = _activeAppEnvironment.AppInfo.DefaultTheme,
-                EnvironmentConfigsJSON = _contentFormatter.Serialize(_activeAppEnvironment
+                EnvironmentConfigsJSON = ContentFormatter.Serialize(_activeAppEnvironment
                                             .Configs.Where(c => c.AccessibleInClientSide == true)
                                             .Select(c => new { value = c.Value, key = c.Key })),
                 BaseHref = _activeAppEnvironment.GetHostVirtualPath()
@@ -70,7 +63,7 @@ namespace Bit.IdentityServer.Implementations
                 DebugMode = _activeAppEnvironment.DebugMode,
                 DesiredTimeZoneValue = _activeAppEnvironment.AppInfo.DefaultTimeZone,
                 Theme = _activeAppEnvironment.AppInfo.DefaultTheme,
-                EnvironmentConfigsJSON = _contentFormatter.Serialize(_activeAppEnvironment
+                EnvironmentConfigsJSON = ContentFormatter.Serialize(_activeAppEnvironment
                                             .Configs.Where(c => c.AccessibleInClientSide == true)
                                             .Select(c => new { value = c.Value, key = c.Key })),
                 BaseHref = _activeAppEnvironment.GetHostVirtualPath()

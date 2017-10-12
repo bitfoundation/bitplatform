@@ -7,26 +7,12 @@ namespace Bit.Signalr.Implementations
 {
     public class DefaultMessageHubEvents : IMessagesHubEvents
     {
-        private readonly IUserInformationProvider _userInformationProvider;
-
-        public DefaultMessageHubEvents(IUserInformationProvider userInformationProvider)
-        {
-            if (userInformationProvider == null)
-                throw new ArgumentNullException(nameof(userInformationProvider));
-
-            _userInformationProvider = userInformationProvider;
-        }
-
-#if DEBUG
-        protected DefaultMessageHubEvents()
-        {
-        }
-#endif
+        public virtual IUserInformationProvider UserInformationProvider { get; set; }
 
         public virtual async Task OnConnected(MessagesHub hub)
         {
-            if (_userInformationProvider.IsAuthenticated())
-                await hub.Groups.Add(hub.Context.ConnectionId, _userInformationProvider.GetCurrentUserId());
+            if (UserInformationProvider.IsAuthenticated())
+                await hub.Groups.Add(hub.Context.ConnectionId, UserInformationProvider.GetCurrentUserId());
         }
 
         public virtual async Task OnDisconnected(MessagesHub hub, bool stopCalled)

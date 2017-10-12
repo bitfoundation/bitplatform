@@ -7,22 +7,11 @@ namespace Bit.Signalr.Implementations
 {
     public class SignalRSqlServerScaleoutConfiguration : ISignalRConfiguration
     {
-        private readonly IAppEnvironmentProvider _appEnvironmentProvider;
-
-#if DEBUG
-        protected SignalRSqlServerScaleoutConfiguration()
-        {
-        }
-#endif
-
-        public SignalRSqlServerScaleoutConfiguration(IAppEnvironmentProvider appEnvironmentProvider)
-        {
-            _appEnvironmentProvider = appEnvironmentProvider;
-        }
+        public virtual IAppEnvironmentProvider AppEnvironmentProvider { get; set; }
 
         public virtual void Configure(HubConfiguration signalRConfig)
         {
-            AppEnvironment activeAppEnvironment = _appEnvironmentProvider.GetActiveAppEnvironment();
+            AppEnvironment activeAppEnvironment = AppEnvironmentProvider.GetActiveAppEnvironment();
 
             string sqlServerConnectionString = activeAppEnvironment.GetConfig<string>("SignalRSqlServerConnectionString");
 

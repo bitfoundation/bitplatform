@@ -10,33 +10,15 @@ namespace Bit.OData.ODataControllers
 {
     public class UsersSettingsController : DtoController<UserSetting>
     {
-        private readonly IUserInformationProvider _userInformationProvider;
-        private readonly IRepository<UserSetting> _usersSettingsRepository;
-
-        public UsersSettingsController(IUserInformationProvider userInformationProvider, IRepository<UserSetting> usersSettingsRepository)
-        {
-            if (userInformationProvider == null)
-                throw new ArgumentNullException(nameof(userInformationProvider));
-
-            if (usersSettingsRepository == null)
-                throw new ArgumentNullException(nameof(usersSettingsRepository));
-
-            _userInformationProvider = userInformationProvider;
-            _usersSettingsRepository = usersSettingsRepository;
-        }
-
-#if DEBUG
-        protected UsersSettingsController()
-        {
-        }
-#endif
+        public virtual IUserInformationProvider UserInformationProvider { get; set; }
+        public virtual IRepository<UserSetting> UsersSettingsRepository { get; set; }
 
         [Get]
         public virtual async Task<IQueryable<UserSetting>> Get(CancellationToken cancellationToken)
         {
-            string userId = _userInformationProvider.GetCurrentUserId();
+            string userId = UserInformationProvider.GetCurrentUserId();
 
-            return (await _usersSettingsRepository
+            return (await UsersSettingsRepository
                 .GetAllAsync(cancellationToken))
                 .Where(userSetting => userSetting.UserId == userId);
         }

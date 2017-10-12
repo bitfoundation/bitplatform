@@ -161,11 +161,7 @@ namespace DotNetCoreTestApp
     public class TestEfRepository<TEntity> : EfCoreRepository<TEntity>
         where TEntity : class, IEntity
     {
-        public TestEfRepository(TestDbContext context)
-            : base(context)
-        {
 
-        }
     }
 
     public class ValuesController : ApiController
@@ -178,11 +174,6 @@ namespace DotNetCoreTestApp
 
     public class CustomersController : DtoSetController<CustomerDto, Customer, int>
     {
-        public CustomersController(IRepository<Customer> repository)
-            : base(repository)
-        {
-        }
-
         [Function]
         public int Sum(int firstNumber, int secondNumber)
         {

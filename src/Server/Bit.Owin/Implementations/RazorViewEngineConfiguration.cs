@@ -11,32 +11,14 @@ namespace Bit.Owin.Implementations
 {
     public class RazorViewEngineConfiguration : IAppEvents
     {
-        private readonly IAppEnvironmentProvider _appEnvironmentProvider;
-        private readonly IPathProvider _pathProvider;
-
-#if DEBUG
-        protected RazorViewEngineConfiguration()
-        {
-        }
-#endif
-
-        public RazorViewEngineConfiguration(IAppEnvironmentProvider appEnvironmentProvider, IPathProvider pathProvider)
-        {
-            if (appEnvironmentProvider == null)
-                throw new ArgumentNullException(nameof(appEnvironmentProvider));
-
-            if (pathProvider == null)
-                throw new ArgumentNullException(nameof(pathProvider));
-
-            _appEnvironmentProvider = appEnvironmentProvider;
-            _pathProvider = pathProvider;
-        }
+        public virtual IAppEnvironmentProvider AppEnvironmentProvider { get; set; }
+        public virtual IPathProvider PathProvider { get; set; }
 
         public virtual void OnAppStartup()
         {
             TemplateServiceConfiguration config = new TemplateServiceConfiguration();
 
-            AppEnvironment activeAppEnvironment = _appEnvironmentProvider.GetActiveAppEnvironment();
+            AppEnvironment activeAppEnvironment = AppEnvironmentProvider.GetActiveAppEnvironment();
 
             config.Debug = activeAppEnvironment.DebugMode;
             config.Language = Language.CSharp;
@@ -46,7 +28,7 @@ namespace Bit.Owin.Implementations
 
             Engine.Razor = service;
 
-            string defaultPageTemplateFilePath = _pathProvider.StaticFileMapPath(activeAppEnvironment.GetConfig("DefaultPageTemplatePath", "defaultPageTemplate.cshtml"));
+            string defaultPageTemplateFilePath = PathProvider.StaticFileMapPath(activeAppEnvironment.GetConfig("DefaultPageTemplatePath", "defaultPageTemplate.cshtml"));
 
             if (File.Exists(defaultPageTemplateFilePath))
             {
@@ -56,7 +38,7 @@ namespace Bit.Owin.Implementations
                     templateSource: new LoadedTemplateSource(defaultPageTemplateContents, defaultPageTemplateFilePath));
             }
 
-            string ssoPageTemplateFilePath = _pathProvider.StaticFileMapPath(activeAppEnvironment.GetConfig("SsoPageTemplatePath", "ssoPageTemplate.cshtml"));
+            string ssoPageTemplateFilePath = PathProvider.StaticFileMapPath(activeAppEnvironment.GetConfig("SsoPageTemplatePath", "ssoPageTemplate.cshtml"));
 
             if (File.Exists(ssoPageTemplateFilePath))
             {

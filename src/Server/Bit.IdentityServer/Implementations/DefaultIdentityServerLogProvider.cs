@@ -6,67 +6,66 @@ namespace Bit.IdentityServer.Implementations
 {
     public class DefaultIdentityServerLogProvider : ILogProvider, IDisposable
     {
-        public DefaultIdentityServerLogProvider(IDependencyManager dependencyManager)
+        public virtual IDependencyManager DependencyManager
         {
-            if (dependencyManager == null)
-                throw new ArgumentNullException(nameof(dependencyManager));
+            set
+            {
+                IDependencyManager dependencyManager = value;
 
-            _logger = (level, func, exception, parameters) =>
-             {
-                 if (level == LogLevel.Error || level == LogLevel.Fatal || level == LogLevel.Warn || exception != null)
-                 {
-                     if (func != null)
-                     {
-                         IDependencyResolver scope = null;
+                if (dependencyManager == null)
+                    throw new ArgumentNullException(nameof(dependencyManager));
 
-                         try
-                         {
-                             scope = dependencyManager.CreateChildDependencyResolver();
-                         }
-                         catch (ObjectDisposedException)
-                         { }
+                _logger = (level, func, exception, parameters) =>
+                {
+                    if (level == LogLevel.Error || level == LogLevel.Fatal || level == LogLevel.Warn || exception != null)
+                    {
+                        if (func != null)
+                        {
+                            IDependencyResolver scope = null;
 
-                         if (scope != null)
-                         {
-                             using (scope)
-                             {
-                                 ILogger logger = scope.Resolve<ILogger>();
+                            try
+                            {
+                                scope = dependencyManager.CreateChildDependencyResolver();
+                            }
+                            catch (ObjectDisposedException)
+                            { }
 
-                                 string message = null;
+                            if (scope != null)
+                            {
+                                using (scope)
+                                {
+                                    ILogger logger = scope.Resolve<ILogger>();
 
-                                 try
-                                 {
-                                     message = string.Format(func(), parameters);
-                                 }
-                                 catch
-                                 {
-                                     message = func();
-                                 }
+                                    string message = null;
 
-                                 if (exception != null)
-                                     logger.LogException(exception, message);
-                                 else if (level == LogLevel.Warn)
-                                     logger.LogWarning(message);
-                                 else
-                                     logger.LogFatal(message);
-                             }
-                         }
-                     }
+                                    try
+                                    {
+                                        message = string.Format(func(), parameters);
+                                    }
+                                    catch
+                                    {
+                                        message = func();
+                                    }
 
-                     return true;
-                 }
+                                    if (exception != null)
+                                        logger.LogException(exception, message);
+                                    else if (level == LogLevel.Warn)
+                                        logger.LogWarning(message);
+                                    else
+                                        logger.LogFatal(message);
+                                }
+                            }
+                        }
 
-                 return false;
-             };
+                        return true;
+                    }
+
+                    return false;
+                };
+            }
         }
 
-#if DEBUG
-        protected DefaultIdentityServerLogProvider()
-        {
-        }
-#endif
-
-        private readonly Logger _logger;
+        private Logger _logger;
 
         public virtual Logger GetLogger(string name)
         {

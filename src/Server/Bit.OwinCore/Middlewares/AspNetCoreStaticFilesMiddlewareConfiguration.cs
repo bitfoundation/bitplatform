@@ -9,30 +9,12 @@ namespace Bit.OwinCore.Middlewares
 {
     public class AspNetCoreStaticFilesMiddlewareConfiguration : IAspNetCoreMiddlewareConfiguration
     {
-        private readonly IAppEnvironmentProvider _appEnvironmentProvider;
-        private readonly IHostingEnvironment _hostingEnvironment;
-
-#if DEBUG
-        protected AspNetCoreStaticFilesMiddlewareConfiguration()
-        {
-        }
-#endif
-
-        public AspNetCoreStaticFilesMiddlewareConfiguration(IAppEnvironmentProvider appEnvironmentProvider, IHostingEnvironment hostingEnvironment)
-        {
-            if (appEnvironmentProvider == null)
-                throw new ArgumentNullException(nameof(appEnvironmentProvider));
-
-            if (hostingEnvironment == null)
-                throw new ArgumentNullException(nameof(hostingEnvironment));
-
-            _appEnvironmentProvider = appEnvironmentProvider;
-            _hostingEnvironment = hostingEnvironment;
-        }
+        public virtual IAppEnvironmentProvider AppEnvironmentProvider { get; set; }
+        public virtual IHostingEnvironment HostingEnvironment { get; set; }
 
         public virtual void Configure(IApplicationBuilder aspNetCoreApp)
         {
-            AppEnvironment appEnvironment = _appEnvironmentProvider.GetActiveAppEnvironment();
+            AppEnvironment appEnvironment = AppEnvironmentProvider.GetActiveAppEnvironment();
 
             FileServerOptions options = new FileServerOptions
             {
@@ -42,7 +24,7 @@ namespace Bit.OwinCore.Middlewares
 
             options.DefaultFilesOptions.DefaultFileNames.Clear();
 
-            options.FileProvider = _hostingEnvironment.WebRootFileProvider;
+            options.FileProvider = HostingEnvironment.WebRootFileProvider;
 
             string path = $@"/Files/V{appEnvironment.AppInfo.Version}";
 

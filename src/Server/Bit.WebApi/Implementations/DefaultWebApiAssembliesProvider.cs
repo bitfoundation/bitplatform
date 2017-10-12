@@ -7,11 +7,10 @@ namespace Bit.WebApi.Implementations
 {
     public class DefaultWebApiAssembliesProvider : IApiAssembliesProvider
     {
-#if DEBUG
         protected DefaultWebApiAssembliesProvider()
         {
+
         }
-#endif
 
         private readonly IEnumerable<Assembly> _assemblies;
 

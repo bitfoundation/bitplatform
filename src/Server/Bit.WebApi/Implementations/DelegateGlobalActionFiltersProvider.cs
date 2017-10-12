@@ -6,13 +6,12 @@ namespace Bit.WebApi.Implementations
 {
     public class DelegateGlobalActionFiltersProvider : IWebApiConfigurationCustomizer
     {
-        private readonly Action<HttpConfiguration> _addGlobalActionFilters;
-
-#if DEBUG
         protected DelegateGlobalActionFiltersProvider()
         {
+
         }
-#endif
+
+        private readonly Action<HttpConfiguration> _addGlobalActionFilters;
 
         public DelegateGlobalActionFiltersProvider(Action<HttpConfiguration> addGlobalActionFilters)
         {

@@ -9,25 +9,11 @@ namespace Bit.Owin.Middlewares
 {
     public class MetadataMiddlewareConfiguration : IOwinMiddlewareConfiguration
     {
-        private readonly IAppEnvironmentProvider _appEnvironmentProvider;
-
-#if DEBUG
-        protected MetadataMiddlewareConfiguration()
-        {
-        }
-#endif
-
-        public MetadataMiddlewareConfiguration(IAppEnvironmentProvider appEnvironmentProvider)
-        {
-            if (appEnvironmentProvider == null)
-                throw new ArgumentNullException(nameof(appEnvironmentProvider));
-
-            _appEnvironmentProvider = appEnvironmentProvider;
-        }
+        public virtual IAppEnvironmentProvider AppEnvironmentProvider { get; set; }
 
         public virtual void Configure(IAppBuilder owinApp)
         {
-            AppEnvironment appEnvironment = _appEnvironmentProvider.GetActiveAppEnvironment();
+            AppEnvironment appEnvironment = AppEnvironmentProvider.GetActiveAppEnvironment();
 
             string path = $@"/Metadata/V{appEnvironment.AppInfo.Version}";
 

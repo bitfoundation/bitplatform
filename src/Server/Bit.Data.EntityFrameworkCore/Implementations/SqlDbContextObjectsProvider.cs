@@ -9,24 +9,10 @@ namespace Bit.Data.EntityFrameworkCore.Implementations
 {
     public class SqlDbContextObjectsProvider : IDbContextObjectsProvider
     {
-        private readonly IDbConnectionProvider _dbConnectionProvider;
+        public virtual IDbConnectionProvider DbConnectionProvider { get; set; }
 
         private readonly IDictionary<string, DbContextObjects> _dbContextObjects =
             new Dictionary<string, DbContextObjects>();
-
-#if DEBUG
-        protected SqlDbContextObjectsProvider()
-        {
-        }
-#endif
-
-        public SqlDbContextObjectsProvider(IDbConnectionProvider dbConnectionProvider)
-        {
-            if (dbConnectionProvider == null)
-                throw new ArgumentNullException(nameof(dbConnectionProvider));
-
-            _dbConnectionProvider = dbConnectionProvider;
-        }
 
         public virtual DbContextObjects GetDbContextOptions(string connectionString)
         {
@@ -37,13 +23,13 @@ namespace Bit.Data.EntityFrameworkCore.Implementations
             {
                 DbContextOptionsBuilder dbContextOptionsBuilder = new DbContextOptionsBuilder();
 
-                DbConnection dbConnection = _dbConnectionProvider.GetDbConnection(connectionString, rollbackOnScopeStatusFailure: true);
+                DbConnection dbConnection = DbConnectionProvider.GetDbConnection(connectionString, rollbackOnScopeStatusFailure: true);
 
                 dbContextOptionsBuilder.UseSqlServer(dbConnection);
 
                 _dbContextObjects.Add(connectionString, new DbContextObjects
                 {
-                    Transaction = _dbConnectionProvider.GetDbTransaction(connectionString),
+                    Transaction = DbConnectionProvider.GetDbTransaction(connectionString),
                     Connection = dbConnection,
                     Options = dbContextOptionsBuilder.Options
                 });

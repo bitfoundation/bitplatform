@@ -9,24 +9,21 @@ namespace Bit.Owin.Implementations
     public class DefaultTimeZoneManager : ITimeZoneManager
     {
         private static readonly ConcurrentDictionary<string, TimeZoneInfo> _timeZonesCache = new ConcurrentDictionary<string, TimeZoneInfo>();
-        private readonly string _currentTimeZoneName;
-        private readonly string _desiredTimeZoneName;
+        private string _currentTimeZoneName;
+        private string _desiredTimeZoneName;
 
-        public DefaultTimeZoneManager(IRequestInformationProvider requestInformationProvider)
+        public virtual IRequestInformationProvider RequestInformationProvider
         {
-            if (requestInformationProvider == null)
-                throw new ArgumentNullException(nameof(requestInformationProvider));
+            set
+            {
+                if (value == null)
+                    throw new ArgumentNullException(nameof(RequestInformationProvider));
 
-            _currentTimeZoneName = requestInformationProvider.CurrentTimeZone;
+                _currentTimeZoneName = value.CurrentTimeZone;
 
-            _desiredTimeZoneName = requestInformationProvider.DesiredTimeZone;
+                _desiredTimeZoneName = value.DesiredTimeZone;
+            }
         }
-
-#if DEBUG
-        protected DefaultTimeZoneManager()
-        {
-        }
-#endif
 
         public virtual TimeZoneInfo GetClientCurrentTimeZone()
         {

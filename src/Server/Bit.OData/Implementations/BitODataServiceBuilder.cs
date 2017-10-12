@@ -8,25 +8,11 @@ namespace Bit.OData.Implementations
 {
     public class BitODataServiceBuilder : IODataServiceBuilder
     {
-        private readonly IAutoODataModelBuilder _autoODataModelBuilder;
-
-        public BitODataServiceBuilder(IAutoODataModelBuilder autoODataModelBuilder)
-        {
-            if (autoODataModelBuilder == null)
-                throw new ArgumentNullException(nameof(autoODataModelBuilder));
-
-            _autoODataModelBuilder = autoODataModelBuilder;
-        }
-
-#if DEBUG
-        protected BitODataServiceBuilder()
-        {
-        }
-#endif
+        public virtual IAutoODataModelBuilder AutoODataModelBuilder { get; set; }
 
         public virtual void BuildModel(ODataModelBuilder oDataModelBuilder)
         {
-            _autoODataModelBuilder.AutoBuildODataModelFromTypes(new[] { typeof(ClientsLogsController).GetTypeInfo(), typeof(JobsInfoController).GetTypeInfo(), typeof(UsersSettingsController).GetTypeInfo() }, oDataModelBuilder);
+            AutoODataModelBuilder.AutoBuildODataModelFromTypes(new[] { typeof(ClientsLogsController).GetTypeInfo(), typeof(JobsInfoController).GetTypeInfo(), typeof(UsersSettingsController).GetTypeInfo() }, oDataModelBuilder);
         }
 
         public virtual string GetODataRoute()

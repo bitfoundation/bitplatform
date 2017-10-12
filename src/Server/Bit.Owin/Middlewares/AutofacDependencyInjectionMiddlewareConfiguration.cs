@@ -17,20 +17,17 @@ namespace Bit.Owin.Middlewares
     /// </summary>
     public class AutofacDependencyInjectionMiddlewareConfiguration : IOwinMiddlewareConfiguration
     {
-        private readonly ILifetimeScope _lifetimeScope;
+        private ILifetimeScope _lifetimeScope;
 
-#if DEBUG
-        protected AutofacDependencyInjectionMiddlewareConfiguration()
+        public virtual IAutofacDependencyManager DependencyManager
         {
-        }
-#endif
+            set
+            {
+                if (value == null)
+                    throw new ArgumentNullException(nameof(DependencyManager));
 
-        public AutofacDependencyInjectionMiddlewareConfiguration(IAutofacDependencyManager dependencyManager)
-        {
-            if (dependencyManager == null)
-                throw new ArgumentNullException(nameof(dependencyManager));
-
-            _lifetimeScope = dependencyManager.GetContainer();
+                _lifetimeScope = value.GetContainer();
+            }
         }
 
         public virtual void Configure(IAppBuilder owinApp)

@@ -8,49 +8,35 @@ namespace Bit.Owin.Implementations
 {
     public class OwinRequestInformationProvider : IRequestInformationProvider
     {
-        private readonly IOwinContext _context;
-
-#if DEBUG
-        protected OwinRequestInformationProvider()
-        {
-        }
-#endif
-
-        public OwinRequestInformationProvider(IOwinContext context)
-        {
-            if (context == null)
-                throw new ArgumentNullException(nameof(context));
-
-            _context = context;
-        }
+        public virtual IOwinContext Context { get; set; }
 
         public virtual string UserAgent
         {
-            get => _context.Request?.Headers?.Get("user-agent");
+            get => Context.Request?.Headers?.Get("user-agent");
             protected set => throw new InvalidOperationException();
         }
 
         public virtual string HttpMethod
         {
-            get => _context.Request?.Method;
+            get => Context.Request?.Method;
             protected set => throw new InvalidOperationException();
         }
 
         public virtual string ClientIp
         {
-            get => _context.Request?.RemoteIpAddress;
+            get => Context.Request?.RemoteIpAddress;
             protected set => throw new InvalidOperationException();
         }
 
         public virtual string ClientAppVersion
         {
-            get => _context.Request?.Headers?.Get("Client-App-Version");
+            get => Context.Request?.Headers?.Get("Client-App-Version");
             protected set => throw new InvalidOperationException();
         }
 
         public virtual string SystemLanguage
         {
-            get => _context.Request?.Headers?.Get("System-Language");
+            get => Context.Request?.Headers?.Get("System-Language");
             protected set => throw new InvalidOperationException();
         }
 
@@ -58,7 +44,7 @@ namespace Bit.Owin.Implementations
         {
             get
             {
-                string clientDateTime = _context.Request?.Headers?.Get("Client-Date-Time");
+                string clientDateTime = Context.Request?.Headers?.Get("Client-Date-Time");
                 if (clientDateTime == null)
                     return null;
                 return DateTimeOffset.Parse(clientDateTime);
@@ -68,43 +54,43 @@ namespace Bit.Owin.Implementations
 
         public virtual string ClientType
         {
-            get => _context.Request?.Headers?.Get("Client-Type");
+            get => Context.Request?.Headers?.Get("Client-Type");
             protected set => throw new InvalidOperationException();
         }
 
         public virtual string ClientCulture
         {
-            get => _context.Request?.Headers?.Get("Client-Culture");
+            get => Context.Request?.Headers?.Get("Client-Culture");
             protected set => throw new InvalidOperationException();
         }
 
         public virtual string ClientScreenSize
         {
-            get => _context.Request?.Headers?.Get("Client-Screen-Size");
+            get => Context.Request?.Headers?.Get("Client-Screen-Size");
             protected set => throw new InvalidOperationException();
         }
 
         public virtual string ClientPlatform
         {
-            get => _context.Request?.Headers?.Get("Client-Platform");
+            get => Context.Request?.Headers?.Get("Client-Platform");
             protected set => throw new InvalidOperationException();
         }
 
         public virtual string ClientRoute
         {
-            get => _context.Request?.Headers?.Get("Client-Route");
+            get => Context.Request?.Headers?.Get("Client-Route");
             protected set => throw new InvalidOperationException();
         }
 
         public virtual string ClientSysLanguage
         {
-            get => _context.Request?.Headers?.Get("Client-Sys-Language");
+            get => Context.Request?.Headers?.Get("Client-Sys-Language");
             protected set => throw new InvalidOperationException();
         }
 
         public virtual string ClientTheme
         {
-            get => _context.Request?.Headers?.Get("Client-Theme");
+            get => Context.Request?.Headers?.Get("Client-Theme");
             protected set => throw new InvalidOperationException();
         }
 
@@ -112,7 +98,7 @@ namespace Bit.Owin.Implementations
         {
             get
             {
-                string clientDebugMode = _context.Request?.Headers?.Get("Client-Debug-Mode");
+                string clientDebugMode = Context.Request?.Headers?.Get("Client-Debug-Mode");
                 if (clientDebugMode == null)
                     return null;
                 return bool.Parse(clientDebugMode);
@@ -122,13 +108,13 @@ namespace Bit.Owin.Implementations
 
         public virtual string RequestUri
         {
-            get => _context.Request?.Uri?.ToString();
+            get => Context.Request?.Uri?.ToString();
             protected set => throw new InvalidOperationException();
         }
 
         public virtual ClaimsIdentity Identity
         {
-            get => _context.Authentication?.User?.Identity as ClaimsIdentity;
+            get => Context.Authentication?.User?.Identity as ClaimsIdentity;
             protected set => throw new InvalidOperationException();
         }
 
@@ -141,13 +127,13 @@ namespace Bit.Owin.Implementations
                 if (_currentTimeZone != null)
                     return _currentTimeZone;
 
-                if (_context.Request == null)
+                if (Context.Request == null)
                     throw new InvalidOperationException();
 
-                if (_context.Request.Headers == null)
+                if (Context.Request.Headers == null)
                     throw new InvalidOperationException();
 
-                IHeaderDictionary headers = _context.Request.Headers;
+                IHeaderDictionary headers = Context.Request.Headers;
 
                 if (headers.ContainsKey("Current-Time-Zone"))
                 {
@@ -172,13 +158,13 @@ namespace Bit.Owin.Implementations
                 if (_desiredTimeZone != null)
                     return _desiredTimeZone;
 
-                if (_context.Request == null)
+                if (Context.Request == null)
                     throw new InvalidOperationException();
 
-                if (_context.Request.Headers == null)
+                if (Context.Request.Headers == null)
                     throw new InvalidOperationException();
 
-                IHeaderDictionary headers = _context.Request.Headers;
+                IHeaderDictionary headers = Context.Request.Headers;
 
                 if (headers.ContainsKey("Desired-Time-Zone"))
                 {
@@ -197,19 +183,19 @@ namespace Bit.Owin.Implementations
 
         public virtual string ContentType
         {
-            get => _context.Request?.Headers?.Get("Content-Type");
+            get => Context.Request?.Headers?.Get("Content-Type");
             protected set => throw new InvalidOperationException();
         }
 
         public virtual string Origin
         {
-            get => _context.Request?.Headers?.Get("Origin");
+            get => Context.Request?.Headers?.Get("Origin");
             protected set => throw new InvalidOperationException();
         }
 
         public virtual string Referer
         {
-            get => _context.Request?.Headers?.Get("Referer");
+            get => Context.Request?.Headers?.Get("Referer");
             protected set => throw new InvalidOperationException();
         }
 
@@ -217,7 +203,7 @@ namespace Bit.Owin.Implementations
         {
             get
             {
-                string correlationId = _context.Request?.Headers?.Get("X-CorrelationId");
+                string correlationId = Context.Request?.Headers?.Get("X-CorrelationId");
                 if (correlationId != null)
                     return Guid.Parse(correlationId);
                 else

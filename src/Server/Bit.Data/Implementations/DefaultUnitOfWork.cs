@@ -14,37 +14,22 @@ namespace Bit.Data.Implementations
 
     public class DefaultUnitOfWork : IUnitOfWork
     {
-        private readonly IScopeStatusManager _scopeStatusManager;
-
-        public DefaultUnitOfWork(IScopeStatusManager scopeStatusManager)
-        {
-            if (scopeStatusManager == null)
-                throw new ArgumentNullException(nameof(scopeStatusManager));
-
-            _scopeStatusManager = scopeStatusManager;
-        }
-
-#if DEBUG
-        protected DefaultUnitOfWork()
-        {
-
-        }
-#endif
+        public virtual IScopeStatusManager ScopeStatusManager { get; set; }
 
         public IDisposable BeginWork()
         {
-            _scopeStatusManager.MarkAsFailed(); // Failed by default
+            ScopeStatusManager.MarkAsFailed(); // Failed by default
             return new UnitOfWorkManager();
         }
 
         public void CommitWork()
         {
-            _scopeStatusManager.MarkAsSucceeded();
+            ScopeStatusManager.MarkAsSucceeded();
         }
 
         public void RollbackWork()
         {
-            _scopeStatusManager.MarkAsFailed();
+            ScopeStatusManager.MarkAsFailed();
         }
     }
 }

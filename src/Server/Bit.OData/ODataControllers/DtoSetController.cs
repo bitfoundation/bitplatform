@@ -18,21 +18,7 @@ namespace Bit.OData.ODataControllers
         where TDto : class, IDto
         where TEntity : class, IEntity
     {
-#if DEBUG
-        protected DtoSetController()
-        {
-        }
-#endif
-
-        public DtoSetController(IRepository<TEntity> repository)
-        {
-            if (repository == null)
-                throw new ArgumentNullException(nameof(repository));
-
-            Repository = repository;
-        }
-
-        protected IRepository<TEntity> Repository { get; set; }
+        public virtual IRepository<TEntity> Repository { get; set; }
 
         /// <summary>
         /// Optional Dependency. You can override FromDtoToModel and GetAll.

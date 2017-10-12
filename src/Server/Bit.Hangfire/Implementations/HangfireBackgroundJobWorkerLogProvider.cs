@@ -6,21 +6,7 @@ namespace Bit.Hangfire.Implementations
 {
     public class HangfireBackgroundJobWorkerLogProvider : ILog, ILogProvider
     {
-        private readonly IDependencyManager _dependencyManager;
-
-#if DEBUG
-        protected HangfireBackgroundJobWorkerLogProvider()
-        {
-        }
-#endif
-
-        public HangfireBackgroundJobWorkerLogProvider(IDependencyManager dependencyManager)
-        {
-            if (dependencyManager == null)
-                throw new ArgumentNullException(nameof(dependencyManager));
-
-            _dependencyManager = dependencyManager;
-        }
+        public virtual IDependencyManager DependencyManager { get; set; }
 
         public virtual ILog GetLogger(string name)
         {
@@ -33,7 +19,7 @@ namespace Bit.Hangfire.Implementations
 
             if ((exception != null || !string.IsNullOrEmpty(message)) && (logLevel != LogLevel.Debug && logLevel != LogLevel.Trace && logLevel != LogLevel.Info))
             {
-                using (IDependencyResolver childResolver = _dependencyManager.CreateChildDependencyResolver())
+                using (IDependencyResolver childResolver = DependencyManager.CreateChildDependencyResolver())
                 {
                     ILogger logger = childResolver.Resolve<ILogger>();
                     if (exception != null)

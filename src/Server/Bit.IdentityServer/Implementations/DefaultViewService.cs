@@ -15,21 +15,7 @@ namespace Bit.IdentityServer.Implementations
 {
     public class DefaultViewService : IViewService
     {
-        private readonly ISsoPageHtmlProvider _ssoHtmlPageProvider;
-
-        public DefaultViewService(ISsoPageHtmlProvider ssoHtmlPageProvider)
-        {
-            if (ssoHtmlPageProvider == null)
-                throw new ArgumentNullException(nameof(ssoHtmlPageProvider));
-
-            _ssoHtmlPageProvider = ssoHtmlPageProvider;
-        }
-
-#if DEBUG
-        protected DefaultViewService()
-        {
-        }
-#endif
+        public virtual ISsoPageHtmlProvider SsoHtmlPageProvider { get; set; }
 
         public virtual async Task<Stream> ClientPermissions(ClientPermissionsViewModel model)
         {
@@ -137,7 +123,7 @@ namespace Bit.IdentityServer.Implementations
                 ReturnUrl = message.ReturnUrl == null ? "" : new Uri(message.ReturnUrl).ParseQueryString()["redirect_uri"]
             }, Formatting.None, jsonSerSettings);
 
-            string loginPageHtml = (await _ssoHtmlPageProvider.GetSsoPageAsync(CancellationToken.None).ConfigureAwait(false))
+            string loginPageHtml = (await SsoHtmlPageProvider.GetSsoPageAsync(CancellationToken.None).ConfigureAwait(false))
                 .Replace("{model}", Microsoft.Security.Application.Encoder.HtmlEncode(json));
 
             return await ReturnHtmlAsync(model, loginPageHtml, CancellationToken.None).ConfigureAwait(false);

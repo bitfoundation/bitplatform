@@ -3,6 +3,7 @@ using Bit.Data.Contracts;
 using Bit.Data.EntityFrameworkCore.Contracts;
 using Bit.Data.EntityFrameworkCore.Implementations;
 using Bit.Data.Implementations;
+using System.Reflection;
 
 namespace Bit.Core.Contracts
 {
@@ -16,7 +17,7 @@ namespace Bit.Core.Contracts
                 throw new ArgumentNullException(nameof(dependencyManager));
 
             dependencyManager.Register<IDbContextObjectsProvider, TDbContextObjectsProvider>(overwriteExciting: false);
-            dependencyManager.Register<TDbContext, TDbContext>(overwriteExciting: false);
+            dependencyManager.Register(new[] { typeof(EfCoreDbContextBase).GetTypeInfo(), typeof(TDbContext).GetTypeInfo() }, typeof(TDbContext).GetTypeInfo(), overwriteExciting: false);
             dependencyManager.Register<IDataProviderSpecificMethodsProvider, EfCoreDataProviderSpecificMethodsProvider>(lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExciting: false);
             dependencyManager.Register<EfCoreDataProviderSpecificMethodsProvider, EfCoreDataProviderSpecificMethodsProvider>(lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExciting: false);
             dependencyManager.Register<IUnitOfWork, DefaultUnitOfWork>(lifeCycle: DependencyLifeCycle.InstancePerLifetimeScope, overwriteExciting: false);

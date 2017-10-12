@@ -8,21 +8,7 @@ namespace Bit.Owin.Implementations
 {
     public class DefaultUserInformationProvider : IUserInformationProvider
     {
-        private readonly IRequestInformationProvider _requestInformationProvider;
-
-#if DEBUG
-        protected DefaultUserInformationProvider()
-        {
-        }
-#endif
-
-        public DefaultUserInformationProvider(IRequestInformationProvider requestInformationProvider)
-        {
-            if (requestInformationProvider == null)
-                throw new ArgumentNullException(nameof(requestInformationProvider));
-
-            _requestInformationProvider = requestInformationProvider;
-        }
+        public virtual IRequestInformationProvider RequestInformationProvider { get; set; }
 
         public virtual bool IsAuthenticated()
         {
@@ -63,7 +49,7 @@ namespace Bit.Owin.Implementations
 
         public virtual ClaimsIdentity GetIdentity()
         {
-            return _requestInformationProvider.Identity;
+            return RequestInformationProvider.Identity;
         }
 
         public virtual string GetClientId()

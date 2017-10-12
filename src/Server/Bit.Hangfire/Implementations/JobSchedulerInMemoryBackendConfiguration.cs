@@ -1,43 +1,32 @@
-﻿using System;
-using Autofac;
+﻿using Autofac;
 using Bit.Core.Contracts;
 using Bit.Owin.Contracts;
 using Hangfire;
 using Hangfire.Logging;
 using Hangfire.MemoryStorage;
+using System;
 
 namespace Bit.Hangfire.Implementations
 {
     public class JobSchedulerInMemoryBackendConfiguration : IAppEvents
     {
+        private ILifetimeScope _container;
+
         private BackgroundJobServer _backgroundJobServer;
-        private readonly JobActivator _jobActivator;
-        private readonly ILifetimeScope _container;
-        private readonly ILogProvider _logProvider;
 
-#if DEBUG
-        protected JobSchedulerInMemoryBackendConfiguration()
+        public virtual ILogProvider LogProvider { get; set; }
+
+        public virtual IAutofacDependencyManager DependencyManager
         {
+            set
+            {
+                if (value == null)
+                    throw new ArgumentNullException(nameof(DependencyManager));
+                _container = value.GetContainer();
+            }
         }
-#endif
 
-        public JobSchedulerInMemoryBackendConfiguration(JobActivator jobActivator, IAutofacDependencyManager dependencyManager, ILogProvider logProvider)
-        {
-            if (jobActivator == null)
-                throw new ArgumentNullException(nameof(jobActivator));
-
-            if (dependencyManager == null)
-                throw new ArgumentNullException(nameof(dependencyManager));
-
-            if (logProvider == null)
-                throw new ArgumentNullException(nameof(logProvider));
-
-            _logProvider = logProvider;
-
-            _jobActivator = jobActivator;
-
-            _container = dependencyManager.GetContainer();
-        }
+        public virtual JobActivator JobActivator { get; set; }
 
         public virtual void OnAppStartup()
         {
@@ -45,11 +34,11 @@ namespace Bit.Hangfire.Implementations
 
             GlobalConfiguration.Configuration.UseStorage(storage);
             GlobalConfiguration.Configuration.UseAutofacActivator(_container);
-            GlobalConfiguration.Configuration.UseLogProvider(_logProvider);
+            GlobalConfiguration.Configuration.UseLogProvider(LogProvider);
 
             _backgroundJobServer = new BackgroundJobServer(new BackgroundJobServerOptions
             {
-                Activator = _jobActivator
+                Activator = JobActivator
             }, storage);
         }
 

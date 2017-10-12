@@ -19,54 +19,26 @@ namespace Bit.OData
 {
     public class WebApiODataMiddlewareConfiguration : IOwinMiddlewareConfiguration, IDisposable
     {
-        private readonly AppEnvironment _activeAppEnvironment;
-        private readonly IEnumerable<IODataServiceBuilder> _odataServiceBuilders;
-        private readonly IEnumerable<IWebApiConfigurationCustomizer> _webApiConfgurationCustomizers;
-        private readonly System.Web.Http.Dependencies.IDependencyResolver _webApiDependencyResolver;
-        private readonly IODataModelBuilderProvider _oDataModelBuilderProvider;
+        private AppEnvironment _activeAppEnvironment;
         private HttpConfiguration _webApiConfig;
         private HttpServer _server;
         private ODataBatchHandler _odataBatchHandler;
-        private readonly IWebApiOwinPipelineInjector _webApiOwinPipelineInjector;
-        private readonly IContainerBuilder _containerBuilder;
 
-#if DEBUG
-        protected WebApiODataMiddlewareConfiguration()
+        public virtual IEnumerable<IODataServiceBuilder> OdataServiceBuilders { get; set; }
+        public virtual IEnumerable<IWebApiConfigurationCustomizer> WebApiConfgurationCustomizers { get; set; }
+        public virtual System.Web.Http.Dependencies.IDependencyResolver WebApiDependencyResolver { get; set; }
+        public virtual IODataModelBuilderProvider ODataModelBuilderProvider { get; set; }
+        public virtual IWebApiOwinPipelineInjector WebApiOwinPipelineInjector { get; set; }
+        public virtual IContainerBuilder ContainerBuilder { get; set; }
+
+        public virtual IAppEnvironmentProvider AppEnvironmentProvider
         {
-        }
-#endif
-
-        public WebApiODataMiddlewareConfiguration(IAppEnvironmentProvider appEnvironmentProvider,
-            IEnumerable<IODataServiceBuilder> odataServiceBuilders, IEnumerable<IWebApiConfigurationCustomizer> webApiConfgurationCustomizers, System.Web.Http.Dependencies.IDependencyResolver webApiDependencyResolver, IODataModelBuilderProvider oDataModelBuilderProvider, IWebApiOwinPipelineInjector webApiOwinPipelineInjector, IContainerBuilder containerBuilder)
-        {
-            if (odataServiceBuilders == null)
-                throw new ArgumentNullException(nameof(odataServiceBuilders));
-
-            if (appEnvironmentProvider == null)
-                throw new ArgumentNullException(nameof(appEnvironmentProvider));
-
-            if (webApiConfgurationCustomizers == null)
-                throw new ArgumentNullException(nameof(webApiConfgurationCustomizers));
-
-            if (webApiDependencyResolver == null)
-                throw new ArgumentNullException(nameof(webApiDependencyResolver));
-
-            if (oDataModelBuilderProvider == null)
-                throw new ArgumentNullException(nameof(oDataModelBuilderProvider));
-
-            if (webApiOwinPipelineInjector == null)
-                throw new ArgumentNullException(nameof(webApiOwinPipelineInjector));
-
-            if (containerBuilder == null)
-                throw new ArgumentNullException(nameof(containerBuilder));
-
-            _activeAppEnvironment = appEnvironmentProvider.GetActiveAppEnvironment();
-            _odataServiceBuilders = odataServiceBuilders;
-            _webApiConfgurationCustomizers = webApiConfgurationCustomizers;
-            _webApiDependencyResolver = webApiDependencyResolver;
-            _oDataModelBuilderProvider = oDataModelBuilderProvider;
-            _webApiOwinPipelineInjector = webApiOwinPipelineInjector;
-            _containerBuilder = containerBuilder;
+            set
+            {
+                if (value == null)
+                    throw new ArgumentNullException(nameof(AppEnvironmentProvider));
+                _activeAppEnvironment = value.GetActiveAppEnvironment();
+            }
         }
 
         public virtual void Configure(IAppBuilder owinApp)
@@ -83,9 +55,9 @@ namespace Bit.OData
 
             _webApiConfig.IncludeErrorDetailPolicy = _activeAppEnvironment.DebugMode ? IncludeErrorDetailPolicy.LocalOnly : IncludeErrorDetailPolicy.Never;
 
-            _webApiConfig.DependencyResolver = _webApiDependencyResolver;
+            _webApiConfig.DependencyResolver = WebApiDependencyResolver;
 
-            _webApiConfgurationCustomizers.ToList()
+            WebApiConfgurationCustomizers.ToList()
                 .ForEach(webApiConfigurationCustomizer =>
                 {
                     webApiConfigurationCustomizer.CustomizeWebApiConfiguration(_webApiConfig);
@@ -93,11 +65,11 @@ namespace Bit.OData
 
             _server = new HttpServer(_webApiConfig);
 
-            _webApiConfig.UseCustomContainerBuilder(() => _containerBuilder);
+            _webApiConfig.UseCustomContainerBuilder(() => ContainerBuilder);
 
-            foreach (IGrouping<string, IODataServiceBuilder> odataServiceBuilders in _odataServiceBuilders.GroupBy(mp => mp.GetODataRoute()))
+            foreach (IGrouping<string, IODataServiceBuilder> odataServiceBuilders in OdataServiceBuilders.GroupBy(mp => mp.GetODataRoute()))
             {
-                ODataModelBuilder modelBuilder = _oDataModelBuilderProvider.GetODataModelBuilder(_webApiConfig, containerName: $"{odataServiceBuilders.Key}Context", @namespace: odataServiceBuilders.Key);
+                ODataModelBuilder modelBuilder = ODataModelBuilderProvider.GetODataModelBuilder(_webApiConfig, containerName: $"{odataServiceBuilders.Key}Context", @namespace: odataServiceBuilders.Key);
 
                 foreach (IODataServiceBuilder odataServiceBuilder in odataServiceBuilders)
                 {
@@ -127,13 +99,13 @@ namespace Bit.OData
                     builder.AddService(ServiceLifetime.Singleton, sp => conventions);
                     builder.AddService(ServiceLifetime.Singleton, sp => edmModel);
                     builder.AddService(ServiceLifetime.Singleton, sp => _odataBatchHandler);
-                    builder.AddService(ServiceLifetime.Singleton, sp => _webApiDependencyResolver);
+                    builder.AddService(ServiceLifetime.Singleton, sp => WebApiDependencyResolver);
                 });
             }
 
             owinApp.UseAutofacWebApi(_webApiConfig);
 
-            _webApiOwinPipelineInjector.UseWebApiOData(owinApp, _server, _webApiConfig);
+            WebApiOwinPipelineInjector.UseWebApiOData(owinApp, _server, _webApiConfig);
 
             _webApiConfig.EnsureInitialized();
         }

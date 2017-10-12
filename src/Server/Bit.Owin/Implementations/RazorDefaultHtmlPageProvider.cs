@@ -11,32 +11,18 @@ namespace Bit.Owin.Implementations
 {
     public class RazorDefaultHtmlPageProvider : IDefaultHtmlPageProvider
     {
-        private readonly IOwinContext _owinContext;
-
-#if DEBUG
-        protected RazorDefaultHtmlPageProvider()
-        {
-        }
-#endif
-
-        public RazorDefaultHtmlPageProvider(IOwinContext owinContext)
-        {
-            if (owinContext == null)
-                throw new ArgumentNullException(nameof(owinContext));
-
-            _owinContext = owinContext;
-        }
+        public virtual IOwinContext OwinContext { get; set; }
 
         public virtual Task<string> GetDefaultPageAsync(CancellationToken cancellationToken)
         {
             return Task.FromResult(Engine.Razor.Run("defaultPageTemplate", typeof(IDependencyResolver),
-                _owinContext.GetDependencyResolver()));
+                OwinContext.GetDependencyResolver()));
         }
 
         public virtual string GetDefaultPage()
         {
             return Engine.Razor.Run("defaultPageTemplate", typeof(IDependencyResolver),
-                _owinContext.GetDependencyResolver());
+                OwinContext.GetDependencyResolver());
         }
     }
 }

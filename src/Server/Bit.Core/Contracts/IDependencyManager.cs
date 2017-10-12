@@ -47,21 +47,30 @@ namespace Bit.Core.Contracts
             DependencyLifeCycle lifeCycle = DependencyLifeCycle.InstancePerLifetimeScope, bool overwriteExciting = true)
             where TImplementation : class, TService;
 
-        IDependencyManager Register(TypeInfo serviceType, TypeInfo implementationType, string name = null,
+        IDependencyManager Register(TypeInfo[] servicesType, TypeInfo implementationType, string name = null,
     DependencyLifeCycle lifeCycle = DependencyLifeCycle.InstancePerLifetimeScope, bool overwriteExciting = true);
+
+        IDependencyManager Register(TypeInfo serviceType, TypeInfo implementationType, string name = null,
+DependencyLifeCycle lifeCycle = DependencyLifeCycle.InstancePerLifetimeScope, bool overwriteExciting = true);
 
         IDependencyManager RegisterInstance<TService>(TService implementationInstance, bool overwriteExciting = true, string name = null)
             where TService : class;
+
+        IDependencyManager RegisterInstance(object obj, TypeInfo[] servicesType, bool overwriteExciting = true, string name = null);
 
         IDependencyManager RegisterInstance(object obj, TypeInfo serviceType, bool overwriteExciting = true, string name = null);
 
         /// <summary>
         /// Register an un-parameterised generic type, e.g. IRepository&lt;&gt;. Concrete types will be made as they are requested, e.g. with IRepository&lt;Customer&gt;
         /// </summary>
+        IDependencyManager RegisterGeneric(TypeInfo[] servicesType, TypeInfo implementationType, DependencyLifeCycle lifeCycle = DependencyLifeCycle.InstancePerLifetimeScope);
+
         IDependencyManager RegisterGeneric(TypeInfo serviceType, TypeInfo implementationType, DependencyLifeCycle lifeCycle = DependencyLifeCycle.InstancePerLifetimeScope);
 
         IDependencyManager RegisterUsing<TService>(Func<TService> factory, string name = null,
             DependencyLifeCycle lifeCycle = DependencyLifeCycle.InstancePerLifetimeScope, bool overwriteExciting = true);
+
+        IDependencyManager RegisterUsing(Func<object> factory, TypeInfo[] servicesType, string name = null, DependencyLifeCycle lifeCycle = DependencyLifeCycle.InstancePerLifetimeScope, bool overwriteExciting = true);
 
         IDependencyManager RegisterUsing(Func<object> factory, TypeInfo serviceType, string name = null, DependencyLifeCycle lifeCycle = DependencyLifeCycle.InstancePerLifetimeScope, bool overwriteExciting = true);
 

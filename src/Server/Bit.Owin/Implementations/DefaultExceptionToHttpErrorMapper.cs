@@ -11,21 +11,18 @@ namespace Bit.Owin.Implementations
 {
     public class DefaultExceptionToHttpErrorMapper : IExceptionToHttpErrorMapper
     {
-        private readonly AppEnvironment _activeAppEnvironment;
-
-        public DefaultExceptionToHttpErrorMapper(IAppEnvironmentProvider appEnvironmentProvider)
+        public virtual IAppEnvironmentProvider AppEnvironmentProvider
         {
-            if (appEnvironmentProvider == null)
-                throw new ArgumentNullException(nameof(appEnvironmentProvider));
+            set
+            {
+                if (value == null)
+                    throw new ArgumentNullException(nameof(AppEnvironmentProvider));
 
-            _activeAppEnvironment = appEnvironmentProvider.GetActiveAppEnvironment();
+                _activeAppEnvironment = value.GetActiveAppEnvironment();
+            }
         }
 
-#if DEBUG
-        protected DefaultExceptionToHttpErrorMapper()
-        {
-        }
-#endif
+        private AppEnvironment _activeAppEnvironment;
 
         protected virtual Exception UnWrapException(Exception exp)
         {

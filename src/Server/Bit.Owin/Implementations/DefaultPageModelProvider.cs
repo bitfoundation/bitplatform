@@ -12,32 +12,13 @@ namespace Bit.Owin.Implementations
 {
     public class DefaultPageModelProvider : IDefaultPageModelProvider
     {
-        private readonly IAppEnvironmentProvider _appEnvironmentProvider;
-        private readonly IUserSettingProvider _usersSettingsProvider;
-        private readonly IContentFormatter _contentFormatter;
-
-#if DEBUG
-        protected DefaultPageModelProvider()
-        {
-        }
-#endif
-
-        public DefaultPageModelProvider(IContentFormatter contentFormatter, IAppEnvironmentProvider appEnvironmentProvider, IUserSettingProvider usersSettingsProvider = null)
-        {
-            if (appEnvironmentProvider == null)
-                throw new ArgumentNullException(nameof(appEnvironmentProvider));
-
-            if (contentFormatter == null)
-                throw new ArgumentNullException(nameof(contentFormatter));
-
-            _usersSettingsProvider = usersSettingsProvider;
-            _appEnvironmentProvider = appEnvironmentProvider;
-            _contentFormatter = contentFormatter;
-        }
+        public virtual IAppEnvironmentProvider AppEnvironmentProvider { get; set; }
+        public virtual IUserSettingProvider UsersSettingsProvider { get; set; }
+        public virtual IContentFormatter ContentFormatter { get; set; }
 
         public virtual DefaultPageModel GetDefaultPageModel()
         {
-            AppEnvironment activeAppEnvironment = _appEnvironmentProvider.GetActiveAppEnvironment();
+            AppEnvironment activeAppEnvironment = AppEnvironmentProvider.GetActiveAppEnvironment();
 
             DefaultPageModel defaultPageModel = new DefaultPageModel
             {
@@ -46,7 +27,7 @@ namespace Bit.Owin.Implementations
                 AppName = activeAppEnvironment.AppInfo.Name
             };
 
-            UserSetting userSetting = _usersSettingsProvider?.GetCurrentUserSetting();
+            UserSetting userSetting = UsersSettingsProvider?.GetCurrentUserSetting();
 
             string theme = userSetting?.Theme ?? activeAppEnvironment.AppInfo.DefaultTheme;
 
@@ -73,7 +54,7 @@ namespace Bit.Owin.Implementations
             defaultPageModel.DesiredTimeZoneValue = desiredTimeZoneValue;
             defaultPageModel.Theme = theme;
 
-            defaultPageModel.EnvironmentConfigsJSON = _contentFormatter.Serialize(activeAppEnvironment
+            defaultPageModel.EnvironmentConfigsJSON = ContentFormatter.Serialize(activeAppEnvironment
                 .Configs.Where(c => c.AccessibleInClientSide == true)
                 .Select(c => new { value = c.Value, key = c.Key }));
 
@@ -84,7 +65,7 @@ namespace Bit.Owin.Implementations
 
         public virtual async Task<DefaultPageModel> GetDefaultPageModelAsync(CancellationToken cancellationToken)
         {
-            AppEnvironment activeAppEnvironment = _appEnvironmentProvider.GetActiveAppEnvironment();
+            AppEnvironment activeAppEnvironment = AppEnvironmentProvider.GetActiveAppEnvironment();
 
             DefaultPageModel defaultPageModel = new DefaultPageModel
             {
@@ -93,7 +74,7 @@ namespace Bit.Owin.Implementations
                 AppName = activeAppEnvironment.AppInfo.Name
             };
 
-            UserSetting userSetting = _usersSettingsProvider == null ? null : await _usersSettingsProvider.GetCurrentUserSettingAsync(cancellationToken).ConfigureAwait(false);
+            UserSetting userSetting = UsersSettingsProvider == null ? null : await UsersSettingsProvider.GetCurrentUserSettingAsync(cancellationToken).ConfigureAwait(false);
 
             string theme = userSetting?.Theme ?? activeAppEnvironment.AppInfo.DefaultTheme;
 
@@ -120,7 +101,7 @@ namespace Bit.Owin.Implementations
             defaultPageModel.DesiredTimeZoneValue = desiredTimeZoneValue;
             defaultPageModel.Theme = theme;
 
-            defaultPageModel.EnvironmentConfigsJSON = _contentFormatter.Serialize(activeAppEnvironment
+            defaultPageModel.EnvironmentConfigsJSON = ContentFormatter.Serialize(activeAppEnvironment
                 .Configs.Where(c => c.AccessibleInClientSide == true)
                 .Select(c => new { value = c.Value, key = c.Key }));
 

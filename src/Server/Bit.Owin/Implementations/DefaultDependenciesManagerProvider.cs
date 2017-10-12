@@ -31,11 +31,9 @@ namespace Bit.Owin.Implementations
         private IDependenciesManager[] _result;
         private readonly object[] _args;
 
-#if DEBUG
         protected DefaultDependenciesManagerProvider()
         {
         }
-#endif
 
         public DefaultDependenciesManagerProvider(params object[] args)
         {

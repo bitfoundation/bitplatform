@@ -9,25 +9,19 @@ namespace Bit.Signalr.Implementations
 {
     public class SignalRMessageSender : IMessageSender
     {
-        private readonly IMessageContentFormatter _formatter;
-        private readonly IConnectionManager _connectionManager;
+        public virtual IMessageContentFormatter Formatter { get; set; }
 
-#if DEBUG
-        protected SignalRMessageSender()
+        private IConnectionManager _connectionManager;
+
+        public virtual Microsoft.AspNet.SignalR.IDependencyResolver SignalrDependencyResolver
         {
-        }
-#endif
+            set
+            {
+                if (value == null)
+                    throw new ArgumentNullException(nameof(SignalrDependencyResolver));
 
-        public SignalRMessageSender(IMessageContentFormatter formatter, Microsoft.AspNet.SignalR.IDependencyResolver signalRDependencyResolver)
-        {
-            if (formatter == null)
-                throw new ArgumentNullException(nameof(formatter));
-
-            if (signalRDependencyResolver == null)
-                throw new ArgumentNullException(nameof(signalRDependencyResolver));
-
-            _formatter = formatter;
-            _connectionManager = signalRDependencyResolver.Resolve<IConnectionManager>();
+                _connectionManager = value.Resolve<IConnectionManager>();
+            }
         }
 
         public virtual async Task SendMessageToUsersAsync<T>(string messageKey, T messageArgs, string[] userIds)
@@ -41,7 +35,7 @@ namespace Bit.Signalr.Implementations
 
             IHubContext hubContext = _connectionManager.GetHubContext<MessagesHub>();
 
-            string objectArgsAsString = messageArgs == null ? string.Empty : _formatter.Serialize(messageArgs);
+            string objectArgsAsString = messageArgs == null ? string.Empty : Formatter.Serialize(messageArgs);
 
             userIds.ToList()
                 .ForEach(async u =>
@@ -61,7 +55,7 @@ namespace Bit.Signalr.Implementations
 
             IHubContext hubContext = _connectionManager.GetHubContext<MessagesHub>();
 
-            string objectArgsAsString = messageArgs == null ? string.Empty : _formatter.Serialize(messageArgs);
+            string objectArgsAsString = messageArgs == null ? string.Empty : Formatter.Serialize(messageArgs);
 
             userIds.ToList()
                 .ForEach(u =>
@@ -78,7 +72,7 @@ namespace Bit.Signalr.Implementations
 
             IHubContext hubContext = _connectionManager.GetHubContext<MessagesHub>();
 
-            string objectArgsAsString = messageArgs == null ? string.Empty : _formatter.Serialize(messageArgs);
+            string objectArgsAsString = messageArgs == null ? string.Empty : Formatter.Serialize(messageArgs);
 
             await hubContext.Clients.All.OnMessageReceived(messageKey, objectArgsAsString);
         }
@@ -91,7 +85,7 @@ namespace Bit.Signalr.Implementations
 
             IHubContext hubContext = _connectionManager.GetHubContext<MessagesHub>();
 
-            string objectArgsAsString = messageArgs == null ? string.Empty : _formatter.Serialize(messageArgs);
+            string objectArgsAsString = messageArgs == null ? string.Empty : Formatter.Serialize(messageArgs);
 
             hubContext.Clients.All.OnMessageReceived(messageKey, objectArgsAsString);
         }

@@ -10,27 +10,8 @@ namespace Bit.Owin.Middlewares
 {
     public class SingleSignOnClientMiddlewareConfiguration : IOwinMiddlewareConfiguration
     {
-        private readonly IAppEnvironmentProvider _appEnvironmentProvider;
-        private readonly ICertificateProvider _certificateProvider;
-
-#if DEBUG
-        protected SingleSignOnClientMiddlewareConfiguration()
-        {
-        }
-#endif
-
-        public SingleSignOnClientMiddlewareConfiguration(IAppEnvironmentProvider appEnvironmentProvider,
-            ICertificateProvider certificateProvider)
-        {
-            if (appEnvironmentProvider == null)
-                throw new ArgumentNullException(nameof(appEnvironmentProvider));
-
-            if (certificateProvider == null)
-                throw new ArgumentNullException(nameof(certificateProvider));
-
-            _appEnvironmentProvider = appEnvironmentProvider;
-            _certificateProvider = certificateProvider;
-        }
+        public virtual IAppEnvironmentProvider AppEnvironmentProvider { get; set; }
+        public virtual ICertificateProvider CertificateProvider { get; set; }
 
         public virtual void Configure(IAppBuilder owinApp)
         {
@@ -44,7 +25,7 @@ namespace Bit.Owin.Middlewares
 
         public virtual IdentityServerBearerTokenAuthenticationOptions BuildIdentityServerBearerTokenAuthenticationOptions()
         {
-            AppEnvironment activeAppEnvironment = _appEnvironmentProvider.GetActiveAppEnvironment();
+            AppEnvironment activeAppEnvironment = AppEnvironmentProvider.GetActiveAppEnvironment();
 
             IdentityServerBearerTokenAuthenticationOptions authOptions = new IdentityServerBearerTokenAuthenticationOptions
             {
@@ -58,7 +39,7 @@ namespace Bit.Owin.Middlewares
                 // ValidationMode = ValidationMode.ValidationEndpoint,
                 ValidationMode = ValidationMode.Local,
                 PreserveAccessToken = true,
-                SigningCertificate = _certificateProvider.GetSingleSignOnCertificate(),
+                SigningCertificate = CertificateProvider.GetSingleSignOnCertificate(),
                 BackchannelHttpHandler = GetHttpClientHandler(nameof(IdentityServerBearerTokenAuthenticationOptions.BackchannelHttpHandler)),
                 IntrospectionHttpHandler = GetHttpClientHandler(nameof(IdentityServerBearerTokenAuthenticationOptions.IntrospectionHttpHandler)),
                 IssuerName = activeAppEnvironment.GetSsoIssuerName()

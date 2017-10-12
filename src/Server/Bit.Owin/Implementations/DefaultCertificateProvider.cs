@@ -8,38 +8,21 @@ namespace Bit.Owin.Implementations
 {
     public class DefaultCertificateProvider : ICertificateProvider
     {
-        private readonly IAppEnvironmentProvider _appEnvironmentProvider;
-        private readonly IPathProvider _pathProvider;
+        public virtual IAppEnvironmentProvider AppEnvironmentProvider { get; set; }
+        public virtual IPathProvider PathProvider { get; set; }
+
         private X509Certificate2 _certificate;
-
-#if DEBUG
-        protected DefaultCertificateProvider()
-        {
-        }
-#endif
-
-        public DefaultCertificateProvider(IAppEnvironmentProvider appEnvironmentProvider, IPathProvider pathProvider)
-        {
-            if (appEnvironmentProvider == null)
-                throw new ArgumentNullException(nameof(appEnvironmentProvider));
-
-            if (pathProvider == null)
-                throw new ArgumentNullException(nameof(pathProvider));
-
-            _appEnvironmentProvider = appEnvironmentProvider;
-            _pathProvider = pathProvider;
-        }
 
         public virtual X509Certificate2 GetSingleSignOnCertificate()
         {
             if (_certificate == null)
             {
-                AppEnvironment activeAppEnvironment = _appEnvironmentProvider.GetActiveAppEnvironment();
+                AppEnvironment activeAppEnvironment = AppEnvironmentProvider.GetActiveAppEnvironment();
 
                 string password = activeAppEnvironment
                     .GetConfig<string>("IdentityCertificatePassword");
 
-                _certificate = new X509Certificate2(File.ReadAllBytes(_pathProvider.MapPath(activeAppEnvironment.GetConfig("IdentityServerCertificatePath", "IdentityServerCertificate.pfx"))),
+                _certificate = new X509Certificate2(File.ReadAllBytes(PathProvider.MapPath(activeAppEnvironment.GetConfig("IdentityServerCertificatePath", "IdentityServerCertificate.pfx"))),
                     password);
             }
 

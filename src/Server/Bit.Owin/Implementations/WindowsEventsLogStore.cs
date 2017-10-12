@@ -8,25 +8,18 @@ namespace Bit.Owin.Implementations
 {
     public class WindowsEventsLogStore : ILogStore
     {
-        private readonly AppEnvironment _activeAppEnvironment;
-        private readonly IContentFormatter _contentFormatter;
+        private AppEnvironment _activeAppEnvironment;
 
-#if DEBUG
-        protected WindowsEventsLogStore()
+        public virtual IContentFormatter ContentFormatter { get; set; }
+
+        public virtual IAppEnvironmentProvider AppEnvironmentProvider
         {
-        }
-#endif
-
-        public WindowsEventsLogStore(IContentFormatter contentFormatter, IAppEnvironmentProvider appEnvironmentProvider)
-        {
-            if (contentFormatter == null)
-                throw new ArgumentNullException(nameof(contentFormatter));
-
-            if (appEnvironmentProvider == null)
-                throw new ArgumentNullException(nameof(appEnvironmentProvider));
-
-            _contentFormatter = contentFormatter;
-            _activeAppEnvironment = appEnvironmentProvider.GetActiveAppEnvironment();
+            set
+            {
+                if (value == null)
+                    throw new ArgumentNullException(nameof(AppEnvironmentProvider));
+                _activeAppEnvironment = value.GetActiveAppEnvironment();
+            }
         }
 
         public virtual async Task SaveLogAsync(LogEntry logEntry)
@@ -53,7 +46,7 @@ namespace Bit.Owin.Implementations
             else
                 eventLogsSeverity = EventLogEntryType.Error;
 
-            string logContents = _contentFormatter.Serialize(logEntry);
+            string logContents = ContentFormatter.Serialize(logEntry);
 
             if (logContents.Length >= 30000)
                 logContents = logContents.Substring(0, 29999);

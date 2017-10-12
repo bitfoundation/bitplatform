@@ -7,24 +7,13 @@ namespace Bit.IdentityServer.Implementations
 {
     public class DefaultEventService : IEventService
     {
-        private readonly IDependencyManager _dependencyManager;
-
-#if DEBUG
-        protected DefaultEventService()
-        {
-        }
-#endif
-
-        public DefaultEventService(IDependencyManager dependencyManager)
-        {
-            _dependencyManager = dependencyManager;
-        }
+        public virtual IDependencyManager DependencyManager { get; set; }
 
         public virtual async Task RaiseAsync<T>(Event<T> evt)
         {
             if (evt.EventType == EventTypes.Error || evt.EventType == EventTypes.Failure)
             {
-                using (Core.Contracts.IDependencyResolver resolver = _dependencyManager.CreateChildDependencyResolver())
+                using (Core.Contracts.IDependencyResolver resolver = DependencyManager.CreateChildDependencyResolver())
                 {
                     ILogger logger = resolver.Resolve<ILogger>();
 

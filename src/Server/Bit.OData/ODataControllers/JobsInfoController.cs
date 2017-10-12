@@ -8,21 +8,7 @@ namespace Bit.OData.ODataControllers
 {
     public class JobsInfoController : DtoController<JobInfoDto>
     {
-        private readonly IBackgroundJobWorker _backgroundJobWorker;
-
-        public JobsInfoController(IBackgroundJobWorker backgroundJobWorker)
-        {
-            if (backgroundJobWorker == null)
-                throw new ArgumentNullException(nameof(backgroundJobWorker));
-
-            _backgroundJobWorker = backgroundJobWorker;
-        }
-
-#if DEBUG
-        protected JobsInfoController()
-        {
-        }
-#endif
+        public virtual IBackgroundJobWorker BackgroundJobWorker { get; set; }
 
         [Get]
         public virtual async Task<JobInfoDto> Get(string key, CancellationToken cancellationToken)
@@ -30,7 +16,7 @@ namespace Bit.OData.ODataControllers
             if (key == null)
                 throw new ArgumentNullException(nameof(key));
 
-            JobInfo jobInfo = await _backgroundJobWorker.GetJobInfoAsync(key, cancellationToken);
+            JobInfo jobInfo = await BackgroundJobWorker.GetJobInfoAsync(key, cancellationToken);
 
             return new JobInfoDto
             {

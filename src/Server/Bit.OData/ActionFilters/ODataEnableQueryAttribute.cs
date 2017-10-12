@@ -187,7 +187,7 @@ namespace Bit.OData.ActionFilters
                 query = dataProviderSpecificMethodsProvider.Take(query, takeCount.Value);
             }
 
-            return await dataProviderSpecificMethodsProvider.ToListAsync(query, cancellationToken).ConfigureAwait(false);
+            return await dataProviderSpecificMethodsProvider.ToArrayAsync(query, cancellationToken).ConfigureAwait(false);
         }
 
         public virtual async Task<object> FirstAsync<T>(IQueryable<T> query, IDataProviderSpecificMethodsProvider dataProviderSpecificMethodsProvider, CancellationToken cancellationToken)

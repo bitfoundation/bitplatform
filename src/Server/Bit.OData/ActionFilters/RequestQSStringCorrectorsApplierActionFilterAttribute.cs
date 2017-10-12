@@ -8,21 +8,7 @@ namespace Bit.OData.ActionFilters
 {
     public class RequestQSStringCorrectorsApplierActionFilterAttribute : ActionFilterAttribute
     {
-        private readonly IEnumerable<IStringCorrector> _stringCorrectors;
-
-        public RequestQSStringCorrectorsApplierActionFilterAttribute(IEnumerable<IStringCorrector> stringCorrectors)
-        {
-            if (stringCorrectors == null)
-                throw new ArgumentNullException(nameof(stringCorrectors));
-
-            _stringCorrectors = stringCorrectors;
-        }
-
-#if DEBUG
-        protected RequestQSStringCorrectorsApplierActionFilterAttribute()
-        {
-        }
-#endif
+        public virtual IEnumerable<IStringCorrector> StringCorrectors { get; set; }
 
         public override void OnActionExecuting(HttpActionContext actionContext)
         {
@@ -30,7 +16,7 @@ namespace Bit.OData.ActionFilters
 
             if (!string.IsNullOrEmpty(url.Query))
             {
-                foreach (IStringCorrector stringCorrector in _stringCorrectors)
+                foreach (IStringCorrector stringCorrector in StringCorrectors)
                 {
                     string originalQueryString = url.Query;
                     string fixedQueryString = stringCorrector.CorrectString(originalQueryString);

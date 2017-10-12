@@ -9,18 +9,6 @@ namespace Bit.OwinCore.Middlewares
 {
     public class AspNetCoreSingleSignOnClientMiddlewareConfiguration : SingleSignOnClientMiddlewareConfiguration, IAspNetCoreMiddlewareConfiguration
     {
-#if DEBUG
-        protected AspNetCoreSingleSignOnClientMiddlewareConfiguration()
-        {
-        }
-#endif
-
-        public AspNetCoreSingleSignOnClientMiddlewareConfiguration(IAppEnvironmentProvider appEnvironmentProvider,
-            ICertificateProvider certificateProvider) : base(appEnvironmentProvider, certificateProvider)
-        {
-
-        }
-
         public virtual void Configure(IApplicationBuilder aspNetCoreApp)
         {
             if (aspNetCoreApp == null)

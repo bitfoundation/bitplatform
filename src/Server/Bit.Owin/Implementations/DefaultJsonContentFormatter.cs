@@ -7,12 +7,6 @@ namespace Bit.Owin.Implementations
     {
         private static IContentFormatter _current;
 
-#if DEBUG
-        protected DefaultJsonContentFormatter()
-        {
-        }
-#endif
-
         public static IContentFormatter Current
         {
             get

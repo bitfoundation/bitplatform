@@ -8,12 +8,6 @@ namespace Bit.Owin.Implementations
     {
         private static IPathProvider _current;
 
-#if DEBUG
-        protected DefaultPathProvider()
-        {
-        }
-#endif
-
         public static IPathProvider Current
         {
             get

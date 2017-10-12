@@ -1,5 +1,3 @@
-using System;
-using System.Transactions;
 using Autofac;
 using Bit.Core.Contracts;
 using Bit.Core.Models;
@@ -8,47 +6,35 @@ using Hangfire;
 using Hangfire.Azure.ServiceBusQueue;
 using Hangfire.Logging;
 using Hangfire.SqlServer;
+using System;
+using System.Transactions;
 
 namespace Bit.Hangfire.Implementations
 {
     public class SqlAndAzureServiceBusBackendJobServerConfiguration : IAppEvents
     {
-        private readonly IAppEnvironmentProvider _appEnvironmentProvider;
+        public virtual IAutofacDependencyManager DependencyManager
+        {
+            set
+            {
+                if (value == null)
+                    throw new ArgumentNullException(nameof(DependencyManager));
+                _lifetimeScope = value.GetContainer();
+            }
+        }
+
+        public virtual JobActivator JobActivator { get; set; }
+
+        public virtual IAppEnvironmentProvider AppEnvironmentProvider { get; set; }
+
+        public virtual ILogProvider LogProvider { get; set; }
+
         private BackgroundJobServer _backgroundJobServer;
-        private readonly JobActivator _jobActivator;
-        private readonly ILifetimeScope _lifetimeScope;
-        private readonly ILogProvider _logProvider;
-
-#if DEBUG
-        protected SqlAndAzureServiceBusBackendJobServerConfiguration()
-        {
-        }
-#endif
-
-        public SqlAndAzureServiceBusBackendJobServerConfiguration(IAppEnvironmentProvider appEnvironmentProvider, JobActivator jobActivator, IAutofacDependencyManager dependencyManager, ILogProvider logProvider)
-        {
-            if (appEnvironmentProvider == null)
-                throw new ArgumentNullException(nameof(appEnvironmentProvider));
-
-            if (jobActivator == null)
-                throw new ArgumentNullException(nameof(jobActivator));
-
-            if (dependencyManager == null)
-                throw new ArgumentNullException(nameof(dependencyManager));
-
-            if (logProvider == null)
-                throw new ArgumentNullException(nameof(logProvider));
-
-            _logProvider = logProvider;
-
-            _appEnvironmentProvider = appEnvironmentProvider;
-            _jobActivator = jobActivator;
-            _lifetimeScope = dependencyManager.GetContainer();
-        }
+        private ILifetimeScope _lifetimeScope;
 
         public virtual void OnAppStartup()
         {
-            AppEnvironment activeAppEnvironment = _appEnvironmentProvider.GetActiveAppEnvironment();
+            AppEnvironment activeAppEnvironment = AppEnvironmentProvider.GetActiveAppEnvironment();
 
             string jobSchedulerDbConnectionString = activeAppEnvironment.GetConfig<string>("JobSchedulerDbConnectionString");
 
@@ -72,11 +58,11 @@ namespace Bit.Hangfire.Implementations
 
             GlobalConfiguration.Configuration.UseStorage(storage);
             GlobalConfiguration.Configuration.UseAutofacActivator(_lifetimeScope);
-            GlobalConfiguration.Configuration.UseLogProvider(_logProvider);
+            GlobalConfiguration.Configuration.UseLogProvider(LogProvider);
 
             _backgroundJobServer = new BackgroundJobServer(new BackgroundJobServerOptions
             {
-                Activator = _jobActivator
+                Activator = JobActivator
             }, storage);
         }
 

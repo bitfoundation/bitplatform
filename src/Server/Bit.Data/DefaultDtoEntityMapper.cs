@@ -12,28 +12,15 @@ namespace Bit.Data
         where TEntity : class, IEntity
     {
         private static readonly bool _entityTypeAndDtoTypeAreEqual = typeof(TEntity).GetTypeInfo() == typeof(TDto).GetTypeInfo();
-        private readonly IMapper _mapper;
 
-        public DefaultDtoEntityMapper(IMapper mapper)
-        {
-            if (mapper == null)
-                throw new ArgumentNullException(nameof(mapper));
-
-            _mapper = mapper;
-        }
-
-#if DEBUG
-        protected DefaultDtoEntityMapper()
-        {
-        }
-#endif
+        public virtual IMapper Mapper { get; set; }
 
         public virtual TEntity FromDtoToEntity(TDto dto, TEntity existingEntity)
         {
             if (_entityTypeAndDtoTypeAreEqual == true)
                 return dto as TEntity;
 
-            return existingEntity == null ? _mapper.Map<TDto, TEntity>(dto) : _mapper.Map(dto, existingEntity);
+            return existingEntity == null ? Mapper.Map<TDto, TEntity>(dto) : Mapper.Map(dto, existingEntity);
         }
 
         public virtual IQueryable<TDto> FromEntityQueryToDtoQuery(IQueryable<TEntity> entityQuery)
@@ -44,7 +31,7 @@ namespace Bit.Data
             if (_entityTypeAndDtoTypeAreEqual == true)
                 return entityQuery as IQueryable<TDto>;
 
-            return entityQuery.ProjectTo<TDto>(configuration: _mapper.ConfigurationProvider);
+            return entityQuery.ProjectTo<TDto>(configuration: Mapper.ConfigurationProvider);
         }
 
         public IQueryable<TDto> FromEntityQueryToDtoQuery(IQueryable<TEntity> entityQuery, object parameters)
@@ -58,7 +45,7 @@ namespace Bit.Data
             if (_entityTypeAndDtoTypeAreEqual == true)
                 return entityQuery as IQueryable<TDto>;
 
-            return entityQuery.ProjectTo<TDto>(configuration: _mapper.ConfigurationProvider, parameters: parameters);
+            return entityQuery.ProjectTo<TDto>(configuration: Mapper.ConfigurationProvider, parameters: parameters);
         }
 
         public virtual TDto FromEntityToDto(TEntity entity, TDto existingDto)
@@ -66,7 +53,7 @@ namespace Bit.Data
             if (_entityTypeAndDtoTypeAreEqual == true)
                 return entity as TDto;
 
-            return existingDto == null ? _mapper.Map<TEntity, TDto>(entity) : _mapper.Map(entity, existingDto);
+            return existingDto == null ? Mapper.Map<TEntity, TDto>(entity) : Mapper.Map(entity, existingDto);
         }
     }
 }

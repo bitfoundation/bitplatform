@@ -9,20 +9,17 @@ namespace Bit.Owin.Middlewares
 {
     public class SignOutPageMiddlewareConfiguration : IOwinMiddlewareConfiguration
     {
-        private readonly AppEnvironment _activeAppEnvironment;
+        private AppEnvironment _activeAppEnvironment;
 
-#if DEBUG
-        protected SignOutPageMiddlewareConfiguration()
+        public virtual IAppEnvironmentProvider AppEnvironmentProvider
         {
-        }
-#endif
+            set
+            {
+                if (value == null)
+                    throw new ArgumentNullException(nameof(AppEnvironmentProvider));
 
-        public SignOutPageMiddlewareConfiguration(IAppEnvironmentProvider appEnvironmentProvider)
-        {
-            if (appEnvironmentProvider == null)
-                throw new ArgumentNullException(nameof(appEnvironmentProvider));
-
-            _activeAppEnvironment = appEnvironmentProvider.GetActiveAppEnvironment();
+                _activeAppEnvironment = value.GetActiveAppEnvironment();
+            }
         }
 
         public virtual void Configure(IAppBuilder owinApp)

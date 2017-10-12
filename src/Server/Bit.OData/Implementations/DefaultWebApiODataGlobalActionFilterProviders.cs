@@ -9,25 +9,11 @@ namespace Bit.OData.Implementations
 {
     public class GlobalDefaultRequestQSStringCorrectorsApplierActionFilterProvider : IWebApiConfigurationCustomizer
     {
-        private readonly IEnumerable<IStringCorrector> _stringCorrectors;
-
-        public GlobalDefaultRequestQSStringCorrectorsApplierActionFilterProvider(IEnumerable<IStringCorrector> stringCorrectors)
-        {
-            if (stringCorrectors == null)
-                throw new ArgumentNullException(nameof(stringCorrectors));
-
-            _stringCorrectors = stringCorrectors;
-        }
-
-#if DEBUG
-        protected GlobalDefaultRequestQSStringCorrectorsApplierActionFilterProvider()
-        {
-        }
-#endif
+        public virtual IEnumerable<IStringCorrector> StringCorrectors { get; set; }
 
         public virtual void CustomizeWebApiConfiguration(HttpConfiguration webApiConfiguration)
         {
-            webApiConfiguration.Filters.Add(new RequestQSStringCorrectorsApplierActionFilterAttribute(_stringCorrectors));
+            webApiConfiguration.Filters.Add(new RequestQSStringCorrectorsApplierActionFilterAttribute() { StringCorrectors = StringCorrectors });
         }
     }
 

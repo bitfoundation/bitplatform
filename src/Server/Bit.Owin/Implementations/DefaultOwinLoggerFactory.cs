@@ -7,21 +7,7 @@ namespace Bit.Owin.Implementations
 {
     public class DefaultOwinLoggerFactory : ILoggerFactory, Microsoft.Owin.Logging.ILogger
     {
-        private readonly IDependencyManager _dependencyManager;
-
-        public DefaultOwinLoggerFactory(IDependencyManager dependencyManager)
-        {
-            if (dependencyManager == null)
-                throw new ArgumentNullException(nameof(dependencyManager));
-
-            _dependencyManager = dependencyManager;
-        }
-
-#if DEBUG
-        protected DefaultOwinLoggerFactory()
-        {
-        }
-#endif
+        public virtual IDependencyManager DependencyManager { get; set; }
 
         public Microsoft.Owin.Logging.ILogger Create(string name)
         {
@@ -38,7 +24,7 @@ namespace Bit.Owin.Implementations
 
                     try
                     {
-                        scope = _dependencyManager.CreateChildDependencyResolver();
+                        scope = DependencyManager.CreateChildDependencyResolver();
                     }
                     catch (ObjectDisposedException)
                     { }

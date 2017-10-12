@@ -12,25 +12,29 @@ namespace Bit.OwinCore.Implementations
         private const string PRIMARY_PURPOSE = "Microsoft.Owin.Security.IDataProtector";
 
         private readonly DataProtectionScope _dataProtectionScope = DataProtectionScope.CurrentUser;
-        private readonly AppEnvironment _appEnvironment;
-        private readonly IAppEnvironmentProvider _appEnvironmentProvider;
+
+        private AppEnvironment _activeAppEnvironment;
+
+        private IAppEnvironmentProvider _appEnvironmentProvider;
+
+        public virtual IAppEnvironmentProvider AppEnvironmentProvider
+        {
+            set
+            {
+                if (value == null)
+                    throw new ArgumentNullException(nameof(AppEnvironmentProvider));
+
+                _appEnvironmentProvider = value;
+
+                _activeAppEnvironment = _appEnvironmentProvider.GetActiveAppEnvironment();
+            }
+            get
+            {
+                return _appEnvironmentProvider;
+            }
+        }
 
         public virtual string[] Purposes { get; set; } = new string[] { };
-
-#if DEBUG
-        protected BasicDataProtectionProvider()
-        {
-        }
-#endif
-
-        public BasicDataProtectionProvider(IAppEnvironmentProvider appEnvironmentProvider)
-        {
-            if (appEnvironmentProvider == null)
-                throw new ArgumentNullException(nameof(appEnvironmentProvider));
-
-            _appEnvironmentProvider = appEnvironmentProvider;
-            _appEnvironment = appEnvironmentProvider.GetActiveAppEnvironment();
-        }
 
         public virtual byte[] Protect(byte[] userData)
         {
@@ -50,7 +54,7 @@ namespace Bit.OwinCore.Implementations
                 using (CryptoStream cryptoStream = new CryptoStream(memoryStream, sha256, CryptoStreamMode.Write))
                 using (StreamWriter writer = new StreamWriter(cryptoStream))
                 {
-                    writer.Write(_appEnvironment.AppInfo.Name);
+                    writer.Write(_activeAppEnvironment.AppInfo.Name);
                     writer.Write(PRIMARY_PURPOSE);
 
                     foreach (string purpose in Purposes)
@@ -67,8 +71,9 @@ namespace Bit.OwinCore.Implementations
             if (purposes == null)
                 throw new ArgumentNullException(nameof(purposes));
 
-            return new BasicDataProtectionProvider(_appEnvironmentProvider)
+            return new BasicDataProtectionProvider
             {
+                AppEnvironmentProvider = AppEnvironmentProvider,
                 Purposes = purposes
             };
         }

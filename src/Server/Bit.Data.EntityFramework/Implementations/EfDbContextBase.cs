@@ -9,13 +9,6 @@ namespace Bit.Data.EntityFramework.Implementations
     /// </summary>
     public class EfDbContextBase : DbContext
     {
-
-#if DEBUG
-        protected EfDbContextBase()
-        {
-        }
-#endif 
-
         public EfDbContextBase(string nameOrConnectionString)
             : base(nameOrConnectionString)
         {

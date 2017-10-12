@@ -10,21 +10,7 @@ namespace Bit.OData.ODataControllers
     [AllowAnonymous]
     public class ClientsLogsController : DtoController<ClientLogDto>
     {
-        private readonly ILogger _logger;
-
-        public ClientsLogsController(ILogger logger)
-        {
-            if (logger == null)
-                throw new ArgumentNullException(nameof(logger));
-
-            _logger = logger;
-        }
-
-#if DEBUG
-        protected ClientsLogsController()
-        {
-        }
-#endif
+        public virtual ILogger Logger { get; set; }
 
         public class StoreClientLogsParameters
         {
@@ -34,17 +20,17 @@ namespace Bit.OData.ODataControllers
         [Action]
         public virtual async Task StoreClientLogs(StoreClientLogsParameters actionParameters)
         {
-            _logger.AddLogData("ClientLogs", actionParameters.clientLogs);
+            Logger.AddLogData("ClientLogs", actionParameters.clientLogs);
 
-            await _logger.LogWarningAsync("Client-Log");
+            await Logger.LogWarningAsync("Client-Log");
         }
 
         [Create]
         public virtual async Task<ClientLogDto> Create(ClientLogDto clientLog)
         {
-            _logger.AddLogData("ClientLogs", clientLog);
+            Logger.AddLogData("ClientLogs", clientLog);
 
-            await _logger.LogWarningAsync("Client-Log");
+            await Logger.LogWarningAsync("Client-Log");
 
             return clientLog;
         }

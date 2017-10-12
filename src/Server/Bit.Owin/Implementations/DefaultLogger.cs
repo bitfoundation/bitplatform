@@ -12,38 +12,27 @@ namespace Bit.Owin.Implementations
 {
     public class DefaultLogger : ILogger
     {
-        private readonly AppEnvironment _activeAppEnvironment;
-        private readonly IDateTimeProvider _dateTimeProvider;
-        private readonly IEnumerable<ILogStore> _logStores;
+        private AppEnvironment _activeAppEnvironment;
 
-#if DEBUG
-        protected DefaultLogger()
+        public virtual IDateTimeProvider DateTimeProvider { get; set; }
+        public virtual IEnumerable<ILogStore> LogStores { get; set; }
+
+        public virtual IAppEnvironmentProvider AppEnvironmentProvider
         {
-        }
-#endif
+            set
+            {
+                if (value == null)
+                    throw new ArgumentNullException(nameof(AppEnvironmentProvider));
 
-        public DefaultLogger(IEnumerable<ILogStore> logStores, IAppEnvironmentProvider appEnvironmentProvider,
-            IDateTimeProvider dateTimeProvider)
-        {
-            if (appEnvironmentProvider == null)
-                throw new ArgumentNullException(nameof(appEnvironmentProvider));
-
-            if (dateTimeProvider == null)
-                throw new ArgumentNullException(nameof(dateTimeProvider));
-
-            if (logStores == null)
-                throw new ArgumentNullException(nameof(logStores));
-
-            _dateTimeProvider = dateTimeProvider;
-            _logStores = logStores;
-            _activeAppEnvironment = appEnvironmentProvider.GetActiveAppEnvironment();
+                _activeAppEnvironment = value.GetActiveAppEnvironment();
+            }
         }
 
         private void SaveLogEntryUsingAllLogStores(LogEntry logEntry)
         {
             List<Exception> logExceptions = new List<Exception>();
 
-            foreach (ILogStore logStore in _logStores)
+            foreach (ILogStore logStore in LogStores)
             {
                 try
                 {
@@ -63,7 +52,7 @@ namespace Bit.Owin.Implementations
         {
             List<Exception> logExceptions = new List<Exception>();
 
-            foreach (ILogStore logStore in _logStores)
+            foreach (ILogStore logStore in LogStores)
             {
                 try
                 {
@@ -225,7 +214,7 @@ namespace Bit.Owin.Implementations
                 AppEnvironmentName = _activeAppEnvironment.Name,
                 AppWasInDebugMode = _activeAppEnvironment.DebugMode,
                 AppServerName = Environment.MachineName,
-                AppServerDateTime = _dateTimeProvider.GetCurrentUtcDateTime(),
+                AppServerDateTime = DateTimeProvider.GetCurrentUtcDateTime(),
                 AppServerOSVersion = Environment.OSVersion.ToString(),
                 AppServerAppDomainName = AppDomain.CurrentDomain.FriendlyName,
                 AppServerProcessId = Process.GetCurrentProcess().Id,

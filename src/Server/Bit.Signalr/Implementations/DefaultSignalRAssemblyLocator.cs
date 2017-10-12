@@ -7,6 +7,11 @@ namespace Bit.Signalr.Implementations
 {
     public class DefaultSignalRAssemblyLocator : IAssemblyLocator
     {
+        protected DefaultSignalRAssemblyLocator()
+        {
+
+        }
+
         private readonly Assembly[] _assemblies;
 
         public DefaultSignalRAssemblyLocator(Assembly[] assemblies)
@@ -16,12 +21,6 @@ namespace Bit.Signalr.Implementations
 
             _assemblies = assemblies;
         }
-
-#if DEBUG
-        protected DefaultSignalRAssemblyLocator()
-        {
-        }
-#endif
 
         public virtual IList<Assembly> GetAssemblies()
         {
