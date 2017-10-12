@@ -11,7 +11,7 @@ namespace Bit.Data.Contracts
 
         bool SupportsConstantParameterization();
 
-        Task<List<T>> ToListAsync<T>(IQueryable<T> source, CancellationToken cancellationToken);
+        Task<T[]> ToArrayAsync<T>(IQueryable<T> source, CancellationToken cancellationToken);
 
         Task<long> LongCountAsync<T>(IQueryable<T> source, CancellationToken cancellationToken);
 

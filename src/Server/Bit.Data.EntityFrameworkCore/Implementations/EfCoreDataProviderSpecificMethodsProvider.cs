@@ -42,13 +42,13 @@ namespace Bit.Data.EntityFrameworkCore.Implementations
             return source is EntityQueryable<T>;
         }
 
-        public override Task<List<T>> ToListAsync<T>(IQueryable<T> source, CancellationToken cancellationToken)
+        public override Task<T[]> ToArrayAsync<T>(IQueryable<T> source, CancellationToken cancellationToken)
         {
             if (source == null)
                 throw new ArgumentNullException(nameof(source));
 
             return source
-                .ToListAsync(cancellationToken);
+                .ToArrayAsync(cancellationToken);
         }
 
         public override IQueryable<T> ApplyWhereByKeys<T>(IQueryable<T> source, params object[] keys)

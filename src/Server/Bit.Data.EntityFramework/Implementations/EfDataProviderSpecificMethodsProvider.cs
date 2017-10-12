@@ -1,7 +1,6 @@
 ﻿using Bit.Data.Contracts;
 using Bit.Data.Implementations;
 using System;
-using System.Collections.Generic;
 using System.Data.Entity;
 using System.Data.Entity.Infrastructure;
 using System.Linq;
@@ -58,13 +57,13 @@ namespace Bit.Data.EntityFramework.Implementations
             return source.Take(() => count);
         }
 
-        public override Task<List<T>> ToListAsync<T>(IQueryable<T> source, CancellationToken cancellationToken)
+        public override Task<T[]> ToArrayAsync<T>(IQueryable<T> source, CancellationToken cancellationToken)
         {
             if (source == null)
                 throw new ArgumentNullException(nameof(source));
 
             return source
-                .ToListAsync(cancellationToken);
+                .ToArrayAsync(cancellationToken);
         }
 
         public override IQueryable<T> ApplyWhereByKeys<T>(IQueryable<T> source, params object[] keys)

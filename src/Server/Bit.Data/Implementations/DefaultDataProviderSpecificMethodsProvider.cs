@@ -87,12 +87,12 @@ namespace Bit.Data.Implementations
             return source.Take(count);
         }
 
-        public virtual async Task<List<T>> ToListAsync<T>(IQueryable<T> source, CancellationToken cancellationToken)
+        public virtual async Task<T[]> ToArrayAsync<T>(IQueryable<T> source, CancellationToken cancellationToken)
         {
             if (source == null)
                 throw new ArgumentNullException(nameof(source));
 
-            return source.ToList();
+            return source.ToArray();
         }
     }
 }
