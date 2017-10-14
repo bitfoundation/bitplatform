@@ -1,13 +1,16 @@
-﻿using System;
+﻿using Bit.Core;
+using Bit.Core.Contracts;
+using Bit.Core.Models;
+using Bit.Owin.Contracts;
+using Bit.Owin.Implementations;
+using Bit.OwinCore.Contracts;
+using Bit.Test.Core.Implementations;
+using Bit.Test.Server;
+using Microsoft.Extensions.DependencyInjection;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using Bit.Core;
-using Bit.Core.Contracts;
-using Bit.Core.Models;
-using Bit.Owin.Implementations;
-using Bit.Test.Core.Implementations;
-using Bit.Test.Server;
 
 namespace Bit.Test
 {
@@ -34,6 +37,55 @@ namespace Bit.Test
         public bool UseProxyBasedDependencyManager { get; set; } = true;
 
         public int? Port { get; set; } = null;
+    }
+
+    public class TestAdditionalDependencies : IAspNetCoreDependenciesManager, IOwinDependenciesManager, IDependenciesManagerProvider
+    {
+        private readonly Action<IDependencyManager> _dependenciesManager;
+
+        public TestAdditionalDependencies(Action<IDependencyManager> dependenciesManager)
+        {
+            _dependenciesManager = dependenciesManager;
+        }
+
+        public virtual void ConfigureDependencies(IServiceProvider serviceProvider, IServiceCollection services, IDependencyManager dependencyManager)
+        {
+            _dependenciesManager?.Invoke(dependencyManager);
+        }
+
+        public virtual void ConfigureDependencies(IDependencyManager dependencyManager)
+        {
+            _dependenciesManager?.Invoke(dependencyManager);
+        }
+
+        public virtual IEnumerable<IDependenciesManager> GetDependenciesManagers()
+        {
+            yield return this;
+        }
+    }
+
+    public class TestAppEnvironmentProvider : IAppEnvironmentProvider
+    {
+        private readonly IAppEnvironmentProvider _appEnvironmentProvider;
+        private readonly Action<AppEnvironment> _appEnvCustomizer;
+
+        public TestAppEnvironmentProvider(IAppEnvironmentProvider appEnvironmentProvider, Action<AppEnvironment> appEnvCustomizer = null)
+        {
+            if (appEnvironmentProvider == null)
+                throw new ArgumentNullException(nameof(appEnvironmentProvider));
+
+            _appEnvironmentProvider = appEnvironmentProvider;
+            _appEnvCustomizer = appEnvCustomizer;
+        }
+
+        public virtual AppEnvironment GetActiveAppEnvironment()
+        {
+            AppEnvironment result = _appEnvironmentProvider.GetActiveAppEnvironment();
+
+            _appEnvCustomizer?.Invoke(result);
+
+            return result;
+        }
     }
 
     public class TestEnvironmentBase : IDisposable
@@ -121,12 +173,12 @@ namespace Bit.Test
 
         protected virtual IAppEnvironmentProvider GetAppEnvironmentProvider(TestEnvironmentArgs args)
         {
-            return args.CustomAppEnvironmentProvider ?? DefaultAppEnvironmentProvider.Current;
+            return new TestAppEnvironmentProvider(args.CustomAppEnvironmentProvider ?? DefaultAppEnvironmentProvider.Current, args.ActiveAppEnvironmentCustomizer);
         }
 
         protected virtual IDependenciesManagerProvider GetDependenciesManagerProvider(TestEnvironmentArgs args)
         {
-            return args.CustomDependenciesManagerProvider ?? DefaultDependenciesManagerProvider.Current;
+            return new CompositeDependenciesManagerProvider(args.CustomDependenciesManagerProvider ?? DefaultDependenciesManagerProvider.Current, new TestAdditionalDependencies(args.AdditionalDependencies));
         }
 
         public ITestServer Server { get; }
