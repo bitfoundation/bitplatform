@@ -93,7 +93,7 @@ namespace CustomerDtoControllerSample
             dependencyManager.Register<IDbConnectionProvider, DefaultDbConnectionProvider<SqlConnection>>();
             dependencyManager.RegisterEfDbContext<MyAppDbContext>();
             dependencyManager.RegisterAppEvents<MyAppDbContextInitializer>();
-            dependencyManager.RegisterGeneric(typeof(IRepository<>).GetTypeInfo(), typeof(MyAppRepository<>).GetTypeInfo());
+            dependencyManager.RegisterRepository(typeof(MyAppRepository<>).GetTypeInfo());
 
             dependencyManager.RegisterDtoEntityMapper();
             dependencyManager.RegisterDtoEntityMapperConfiguration<DefaultDtoEntityMapperConfiguration>();

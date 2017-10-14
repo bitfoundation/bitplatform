@@ -3,6 +3,7 @@ using Bit.Data.Contracts;
 using Bit.IdentityServer.Implementations;
 using Bit.Owin.Exceptions;
 using BitChangeSetManager.DataAccess;
+using BitChangeSetManager.DataAccess.Contracts;
 using BitChangeSetManager.Model;
 using IdentityServer3.Core.Models;
 using System;
@@ -49,7 +50,7 @@ namespace BitChangeSetManager.Security
 
             using (IDependencyResolver resolver = DependencyManager.CreateChildDependencyResolver())
             {
-                IRepository<User> usersRepository = resolver.Resolve<IRepository<User>>();
+                IBitChangeSetManagerRepository<User> usersRepository = resolver.Resolve<IBitChangeSetManagerRepository<User>>();
 
                 user = await (await usersRepository.GetAllAsync(CancellationToken.None))
                      .SingleOrDefaultAsync(u => u.UserName.ToLower() == username && u.Password == password);
@@ -65,7 +66,7 @@ namespace BitChangeSetManager.Security
         {
             using (IDependencyResolver resolver = DependencyManager.CreateChildDependencyResolver())
             {
-                IRepository<User> usersRepository = resolver.Resolve<IRepository<User>>();
+                IBitChangeSetManagerRepository<User> usersRepository = resolver.Resolve<IBitChangeSetManagerRepository<User>>();
 
                 Guid userIdAsGuid = Guid.Parse(userId);
 

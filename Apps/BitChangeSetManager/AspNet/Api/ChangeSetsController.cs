@@ -9,20 +9,16 @@ using System.Threading.Tasks;
 using Bit.Core.Contracts;
 using Bit.Data.Contracts;
 using System.Web.OData;
+using BitChangeSetManager.DataAccess.Contracts;
 
 namespace BitChangeSetManager.Api
 {
     public class ChangeSetsController : BitChangeSetManagerDtoSetController<ChangeSetDto, ChangeSet, Guid>
     {
-        public ChangeSetsController(IChangeSetRepository changeSetRepository)
-        {
-            Repository = changeSetRepository;
-        }
-
         public virtual IMessageSender MessageSender { get; set; }
         public virtual IUserInformationProvider UserInformationProvider { get; set; }
-        public virtual IRepository<User> UsersRepository { get; set; }
-        public IRepository<Customer> CustomersRepository { get; set; }
+        public virtual IBitChangeSetManagerRepository<User> UsersRepository { get; set; }
+        public virtual IBitChangeSetManagerRepository<Customer> CustomersRepository { get; set; }
 
         public override async Task<IQueryable<ChangeSetDto>> GetAll(CancellationToken cancellationToken)
         {
@@ -47,16 +43,6 @@ namespace BitChangeSetManager.Api
             MessageSender.SendMessageToGroups("ChangeSetHasBeenInsertedByUser", new { userName = user.UserName, title = insertedChangeSet.Title }, groupNames: new[] { user.Culture.ToString() });
 
             return insertedChangeSet;
-        }
-
-        public override Task<ChangeSetDto> Update(Guid key, ChangeSetDto dto, CancellationToken cancellationToken)
-        {
-            return base.Update(key, dto, cancellationToken);
-        }
-
-        public override Task<ChangeSetDto> PartialUpdate(Guid key, Delta<ChangeSetDto> modifiedDtoDelta, CancellationToken cancellationToken)
-        {
-            return base.PartialUpdate(key, modifiedDtoDelta, cancellationToken);
         }
     }
 }

@@ -6,12 +6,13 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Bit.Data.Contracts;
+using BitChangeSetManager.DataAccess.Contracts;
 
 namespace BitChangeSetManager.Api.Implementations
 {
     public class BitChangeSetManagerAppMessageHubEvents : DefaultMessageHubEvents
     {
-        public virtual IRepository<User> UsersRepository { get; set; }
+        public virtual IBitChangeSetManagerRepository<User> UsersRepository { get; set; }
 
         public override async Task OnConnected(MessagesHub hub)
         {

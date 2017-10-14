@@ -2,6 +2,7 @@
 using Bit.Data.Contracts;
 using Bit.Owin.Exceptions;
 using BitChangeSetManager.DataAccess;
+using BitChangeSetManager.DataAccess.Contracts;
 using BitChangeSetManager.Model;
 using System;
 using System.Data.Entity;
@@ -16,7 +17,7 @@ namespace BitChangeSetManager.Api
 {
     public class UsersAvatarController : ApiController
     {
-        public IRepository<User> UsersRepository { get; set; }
+        public IBitChangeSetManagerRepository<User> UsersRepository { get; set; }
 
         public IUserInformationProvider UserInformationProvider { get; set; }
 

@@ -15,6 +15,7 @@ using Bit.OwinCore.Middlewares;
 using Bit.Signalr.Implementations;
 using BitChangeSetManager.Api.Implementations;
 using BitChangeSetManager.DataAccess;
+using BitChangeSetManager.DataAccess.Implementations;
 using BitChangeSetManager.Security;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
@@ -126,7 +127,8 @@ namespace BitChangeSetManager.Core
 
             dependencyManager.RegisterHangfireBackgroundJobWorkerUsingDefaultConfiguration<JobSchedulerInMemoryBackendConfiguration>();
 
-            dependencyManager.RegisterGeneric(typeof(IRepository<>).GetTypeInfo(), typeof(BitChangeSetManagerEfRepository<>).GetTypeInfo(), DependencyLifeCycle.InstancePerLifetimeScope);
+            dependencyManager.RegisterRepository(typeof(BitChangeSetManagerEfRepository<>).GetTypeInfo());
+            dependencyManager.RegisterRepository(typeof(ChangeSetRepository).GetTypeInfo());
 
             dependencyManager.RegisterEfDbContext<BitChangeSetManagerDbContext>();
 
@@ -139,7 +141,6 @@ namespace BitChangeSetManager.Core
 
             dependencyManager.RegisterSecureDefaultPageMiddlewareUsingDefaultConfiguration();
 
-            dependencyManager.Register<IChangeSetRepository, ChangeSetRepository>();
             dependencyManager.Register<IUserSettingProvider, BitUserSettingProvider>();
         }
     }

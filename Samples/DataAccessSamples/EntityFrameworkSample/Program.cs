@@ -183,8 +183,8 @@ namespace EntityFrameworkSample
             dependencyManager.Register<IDbConnectionProvider, DefaultDbConnectionProvider<SqlConnection>>();
             dependencyManager.RegisterEfDbContext<MyAppDbContext>();
             dependencyManager.RegisterAppEvents<MyAppDbContextInitializer>();
-            dependencyManager.RegisterGeneric(typeof(IRepository<>).GetTypeInfo(), typeof(MyAppRepository<>).GetTypeInfo());
-            dependencyManager.Register<IOrdersRepository, OrdersRepository>();
+            dependencyManager.RegisterRepository(typeof(MyAppRepository<>).GetTypeInfo());
+            dependencyManager.RegisterRepository(typeof(OrdersRepository).GetTypeInfo());
         }
     }
 }

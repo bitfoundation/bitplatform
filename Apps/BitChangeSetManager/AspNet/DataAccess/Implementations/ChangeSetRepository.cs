@@ -6,22 +6,13 @@ using System.Threading;
 using System.Threading.Tasks;
 using Bit.Core.Contracts;
 using Bit.Data.Contracts;
+using BitChangeSetManager.DataAccess.Contracts;
 
-namespace BitChangeSetManager.DataAccess
+namespace BitChangeSetManager.DataAccess.Implementations
 {
-    public interface IChangeSetRepository : IRepository<ChangeSet>
+    public class ChangeSetRepository : BitChangeSetManagerEfRepository<ChangeSet>, IChangeSetsRepository
     {
-
-    }
-
-    public class ChangeSetRepository : BitChangeSetManagerEfRepository<ChangeSet>, IChangeSetRepository
-    {
-        private readonly IDateTimeProvider _dateTimeProvider;
-
-        public ChangeSetRepository(IDateTimeProvider dateTimeProvider)
-        {
-            _dateTimeProvider = dateTimeProvider;
-        }
+        public IDateTimeProvider DateTimeProvider { get; set; }
 
         public override void SaveChanges()
         {
@@ -43,7 +34,7 @@ namespace BitChangeSetManager.DataAccess
 
             foreach (DbEntityEntry<ChangeSet> changeSet in DbContext.ChangeTracker.Entries<ChangeSet>().Where(e => e.State == EntityState.Added))
             {
-                changeSet.Entity.CreatedOn = _dateTimeProvider.GetCurrentUtcDateTime();
+                changeSet.Entity.CreatedOn = DateTimeProvider.GetCurrentUtcDateTime();
             }
         }
     }

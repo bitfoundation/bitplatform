@@ -21,6 +21,7 @@ using System.Data.SqlClient;
 using System.Reflection;
 using Swashbuckle.Application;
 using Bit.Core.Models;
+using BitChangeSetManager.DataAccess.Implementations;
 
 namespace BitChangeSetManager
 {
@@ -115,7 +116,8 @@ namespace BitChangeSetManager
 
             dependencyManager.RegisterHangfireBackgroundJobWorkerUsingDefaultConfiguration<JobSchedulerInMemoryBackendConfiguration>();
 
-            dependencyManager.RegisterGeneric(typeof(IRepository<>).GetTypeInfo(), typeof(BitChangeSetManagerEfRepository<>).GetTypeInfo(), DependencyLifeCycle.InstancePerLifetimeScope);
+            dependencyManager.RegisterRepository(typeof(BitChangeSetManagerEfRepository<>).GetTypeInfo());
+            dependencyManager.RegisterRepository(typeof(ChangeSetRepository).GetTypeInfo());
 
             dependencyManager.RegisterEfDbContext<BitChangeSetManagerDbContext>();
 
@@ -128,7 +130,6 @@ namespace BitChangeSetManager
 
             dependencyManager.RegisterSecureDefaultPageMiddlewareUsingDefaultConfiguration();
 
-            dependencyManager.Register<IChangeSetRepository, ChangeSetRepository>();
             dependencyManager.Register<IUserSettingProvider, BitUserSettingProvider>();
         }
     }

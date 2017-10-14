@@ -7,8 +7,9 @@ using System.Text;
 using Bit.Core.Contracts;
 using System.Collections.Generic;
 using Bit.Data.Contracts;
+using BitChangeSetManager.DataAccess.Contracts;
 
-namespace BitChangeSetManager.DataAccess
+namespace BitChangeSetManager.DataAccess.Implementations
 {
     public class BitChangeSetManagerInitialData : IAppEvents
     {
@@ -44,7 +45,7 @@ namespace BitChangeSetManager.DataAccess
 
                 using (unitOfWork.BeginWork())
                 {
-                    IRepository<User> usersRepository = childResolver.Resolve<IRepository<User>>();
+                    IBitChangeSetManagerRepository<User> usersRepository = childResolver.Resolve<IBitChangeSetManagerRepository<User>>();
 
                     string password = "test";
 
@@ -69,14 +70,14 @@ namespace BitChangeSetManager.DataAccess
                     usersRepository.Add(new User { Id = Guid.Parse("2438fc43-5e6a-46e2-b82d-a746dfb6877e"), UserName = "Test3", Password = password, Culture = BitCulture.EnUs, AvatarImage = userAvatar });
                     usersRepository.Add(new User { Id = Guid.Parse("051351fb-b4c5-4b4d-8f5d-202eb08af8c7"), UserName = "Test4", Password = password, Culture = BitCulture.FaIr, AvatarImage = userAvatar });
 
-                    IRepository<Customer> customersRepository = childResolver.Resolve<IRepository<Customer>>();
-                    IRepository<Delivery> deliveriesRepository = childResolver.Resolve<IRepository<Delivery>>();
-                    IChangeSetRepository changeSetsRepository = childResolver.Resolve<IChangeSetRepository>();
-                    IRepository<ChangeSetSeverity> changeSetSeveritiesRepository = childResolver.Resolve<IRepository<ChangeSetSeverity>>();
-                    IRepository<ChangeSetDeliveryRequirement> changeSetDeliveryRequirementsRepository = childResolver.Resolve<IRepository<ChangeSetDeliveryRequirement>>();
-                    IRepository<Province> provincesRepository = childResolver.Resolve<IRepository<Province>>();
-                    IRepository<City> citiesRepository = childResolver.Resolve<IRepository<City>>();
-                    IRepository<Constant> constantsRepository = childResolver.Resolve<IRepository<Constant>>();
+                    IBitChangeSetManagerRepository<Customer> customersRepository = childResolver.Resolve<IBitChangeSetManagerRepository<Customer>>();
+                    IBitChangeSetManagerRepository<Delivery> deliveriesRepository = childResolver.Resolve<IBitChangeSetManagerRepository<Delivery>>();
+                    IBitChangeSetManagerRepository<ChangeSet> changeSetsRepository = childResolver.Resolve<IBitChangeSetManagerRepository<ChangeSet>>();
+                    IBitChangeSetManagerRepository<ChangeSetSeverity> changeSetSeveritiesRepository = childResolver.Resolve<IBitChangeSetManagerRepository<ChangeSetSeverity>>();
+                    IBitChangeSetManagerRepository<ChangeSetDeliveryRequirement> changeSetDeliveryRequirementsRepository = childResolver.Resolve<IBitChangeSetManagerRepository<ChangeSetDeliveryRequirement>>();
+                    IBitChangeSetManagerRepository<Province> provincesRepository = childResolver.Resolve<IBitChangeSetManagerRepository<Province>>();
+                    IBitChangeSetManagerRepository<City> citiesRepository = childResolver.Resolve<IBitChangeSetManagerRepository<City>>();
+                    IBitChangeSetManagerRepository<Constant> constantsRepository = childResolver.Resolve<IBitChangeSetManagerRepository<Constant>>();
 
                     Customer customer1 = new Customer { Id = Guid.NewGuid(), Name = "Customer1" };
                     Customer customer2 = new Customer { Id = Guid.NewGuid(), Name = "Customer2" };

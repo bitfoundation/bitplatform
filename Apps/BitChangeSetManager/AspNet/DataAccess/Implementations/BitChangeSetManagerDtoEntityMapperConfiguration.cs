@@ -4,7 +4,7 @@ using BitChangeSetManager.Model;
 using System.Linq;
 using Bit.Model.Contracts;
 
-namespace BitChangeSetManager.DataAccess
+namespace BitChangeSetManager.DataAccess.Implementations
 {
     public class BitChangeSetManagerDtoEntityMapperConfiguration : IDtoEntityMapperConfiguration
     {

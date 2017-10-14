@@ -81,17 +81,12 @@ namespace EntityFrameworkOptimizedForNTierScenarios
 
     public class CustomersForSharpRepositoryController : ApiController
     {
-        private readonly SharpRepository.Repository.IRepository<Customer> _customersSharpRepository;
-
-        public CustomersForSharpRepositoryController(SharpRepository.Repository.IRepository<Customer> customersSharpRepository)
-        {
-            _customersSharpRepository = customersSharpRepository;
-        }
+        public SharpRepository.Repository.IRepository<Customer> CustomersSharpRepository { get; set; }
 
         [Route("customers/get-customers-by-sharp-repository")]
         public List<Customer> GetCustomersBySharpRepository()
         {
-            return _customersSharpRepository.GetAll().ToList();
+            return CustomersSharpRepository.GetAll().ToList();
         }
     }
 
@@ -117,17 +112,12 @@ namespace EntityFrameworkOptimizedForNTierScenarios
 
     public class CustomersForBitRepositoryController : ApiController
     {
-        private readonly IRepository<Customer> _customersBitRepository;
-
-        public CustomersForBitRepositoryController(IRepository<Customer> customersBitRepository)
-        {
-            _customersBitRepository = customersBitRepository;
-        }
+        public IRepository<Customer> CustomersBitRepository { get; set; }
 
         [Route("customers/get-customers-by-bit-repository")]
         public List<Customer> GetCustomersByBitRepository()
         {
-            return _customersBitRepository.GetAll().ToList();
+            return CustomersBitRepository.GetAll().ToList();
         }
     }
 
@@ -207,7 +197,7 @@ namespace EntityFrameworkOptimizedForNTierScenarios
             #region Register Bit Repository
 
             dependencyManager.RegisterEfDbContext<CustomersDbContextForBitRepository>();
-            dependencyManager.RegisterGeneric(typeof(IRepository<>).GetTypeInfo(), typeof(BitRepository<>).GetTypeInfo());
+            dependencyManager.RegisterRepository(typeof(BitRepository<>).GetTypeInfo());
 
             #endregion
 
