@@ -66,7 +66,7 @@ namespace Bit.Core.Contracts
             if (!repositoryContracts.Any())
                 throw new InvalidOperationException($"Type {repositoryType.FullName} has no repository contract");
 
-            if (repositoryContracts.All(i => i.IsGenericType))
+            if (repositoryType.IsGenericType)
                 dependencyManager.RegisterGeneric(repositoryContracts, repositoryType);
             else
                 dependencyManager.Register(repositoryContracts, repositoryType);
