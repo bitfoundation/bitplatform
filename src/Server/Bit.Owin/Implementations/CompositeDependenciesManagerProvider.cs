@@ -6,6 +6,11 @@ namespace Bit.Owin.Implementations
 {
     public class CompositeDependenciesManagerProvider : IDependenciesManagerProvider, IDependenciesManager
     {
+        protected CompositeDependenciesManagerProvider()
+        {
+
+        }
+
         private readonly IDependenciesManagerProvider[] _dependenciesManagerProviders;
 
         public CompositeDependenciesManagerProvider(params IDependenciesManagerProvider[] dependenciesManagerProviders)

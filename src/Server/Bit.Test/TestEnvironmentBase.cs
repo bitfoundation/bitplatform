@@ -69,6 +69,11 @@ namespace Bit.Test
         private readonly IAppEnvironmentProvider _appEnvironmentProvider;
         private readonly Action<AppEnvironment> _appEnvCustomizer;
 
+        protected TestAppEnvironmentProvider()
+        {
+
+        }
+
         public TestAppEnvironmentProvider(IAppEnvironmentProvider appEnvironmentProvider, Action<AppEnvironment> appEnvCustomizer = null)
         {
             if (appEnvironmentProvider == null)
