@@ -188,7 +188,7 @@ namespace Bit.Owin.Implementations
         {
             GetContainerBuidler().RegisterAssemblyTypes(assemblies)
                 .Where(t => predicate == null || predicate(t.GetTypeInfo()))
-                .PropertiesAutowired();
+                .PropertiesAutowired(wiringFlags: PropertyWiringOptions.PreserveSetValues);
 
             return this;
         }
@@ -203,7 +203,9 @@ namespace Bit.Owin.Implementations
 
         public IDependencyManager RegisterGeneric(TypeInfo[] servicesType, TypeInfo implementationType, DependencyLifeCycle lifeCycle = DependencyLifeCycle.InstancePerLifetimeScope)
         {
-            IRegistrationBuilder<object, ReflectionActivatorData, DynamicRegistrationStyle> registration = GetContainerBuidler().RegisterGeneric(implementationType).PropertiesAutowired().As(servicesType);
+            IRegistrationBuilder<object, ReflectionActivatorData, DynamicRegistrationStyle> registration = GetContainerBuidler().RegisterGeneric(implementationType)
+                .PropertiesAutowired(wiringFlags: PropertyWiringOptions.PreserveSetValues)
+                .As(servicesType);
 
             if (lifeCycle == DependencyLifeCycle.SingleInstance)
                 registration = registration.SingleInstance();
@@ -260,7 +262,7 @@ namespace Bit.Owin.Implementations
                 throw new ArgumentNullException(nameof(servicesType));
 
             IRegistrationBuilder<object, ConcreteReflectionActivatorData, SingleRegistrationStyle> registration = GetContainerBuidler().RegisterType(implementationType)
-                    .PropertiesAutowired()
+                    .PropertiesAutowired(wiringFlags: PropertyWiringOptions.PreserveSetValues)
                     .As(servicesType);
 
             if (overwriteExciting == false)
