@@ -90,7 +90,7 @@ namespace DotNetCoreTestApp
 
             dependencyManager.RegisterSignalRMiddlewareUsingDefaultConfiguration();
 
-            dependencyManager.RegisterGeneric(typeof(IRepository<>).GetTypeInfo(), typeof(TestEfRepository<>).GetTypeInfo());
+            dependencyManager.RegisterRepository(typeof(TestEfRepository<>).GetTypeInfo());
 
             dependencyManager.RegisterEfCoreDbContext<TestDbContext, InMemoryDbContextObjectsProvider>();
 
