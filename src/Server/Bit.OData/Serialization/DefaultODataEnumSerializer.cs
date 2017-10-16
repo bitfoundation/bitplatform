@@ -1,6 +1,8 @@
-﻿using System.Web.OData.Formatter.Serialization;
-using Microsoft.OData;
+﻿using Microsoft.OData;
 using Microsoft.OData.Edm;
+using System.Collections.Generic;
+using System.Linq;
+using System.Web.OData.Formatter.Serialization;
 
 namespace Bit.OData.Serialization
 {
@@ -15,10 +17,13 @@ namespace Bit.OData.Serialization
         {
             ODataEnumValue result = base.CreateODataEnumValue(graph, enumType, writeContext);
 
-            if (!string.IsNullOrEmpty(result?.Value) && !string.IsNullOrEmpty(result.TypeName))
+            if (writeContext.Request.Headers.TryGetValues("Bit-Client-Type", out IEnumerable<string> values) && values.Any(v => string.Equals(v, "TS-Client", System.StringComparison.InvariantCultureIgnoreCase)))
             {
-                // EnumKey >> "Namespace.EnumType'EnumKey'"
-                result = new ODataEnumValue($"{result.TypeName}'{result.Value}'");
+                if (!string.IsNullOrEmpty(result?.Value) && !string.IsNullOrEmpty(result.TypeName))
+                {
+                    // EnumKey >> "Namespace.EnumType'EnumKey'"
+                    result = new ODataEnumValue($"{result.TypeName}'{result.Value}'");
+                }
             }
 
             return result;
