@@ -1,4 +1,4 @@
-﻿module Bit {     
+﻿module Bit {
 
     export function Log() {
 
@@ -14,10 +14,15 @@
 
                 let result = null;
 
+                let startTime: number = null;
+
                 try {
 
                     if (clientAppProfile.isDebugMode == true) {
-                        console.time(propertyKey);
+                        if (typeof (performance) != "undefined")
+                            startTime = performance.now();
+                        else
+                            console.time(propertyKey);
                     }
 
                     result = originalMethod.apply(this, args);
@@ -29,8 +34,12 @@
                         const rPromise = result as Promise<void>;
 
                         rPromise.then(() => {
-                            if (clientAppProfile.isDebugMode == true)
-                                console.timeEnd(propertyKey);
+                            if (clientAppProfile.isDebugMode == true) {
+                                if (typeof (performance) != "undefined")
+                                    console.log(`${propertyKey}: ${performance.now() - startTime}ms`);
+                                else
+                                    console.timeEnd(propertyKey);
+                            }
                         });
 
                         rPromise.catch((e) => {
@@ -51,8 +60,12 @@
                     throw e;
                 }
                 finally {
-                    if (isPromise == false && clientAppProfile.isDebugMode == true)
-                        console.timeEnd(propertyKey);
+                    if (isPromise == false && clientAppProfile.isDebugMode == true) {
+                        if (typeof (performance) != "undefined")
+                            console.log(`${propertyKey}: ${performance.now() - startTime}ms`);
+                        else
+                            console.timeEnd(propertyKey);
+                    }
                 }
 
                 return result;

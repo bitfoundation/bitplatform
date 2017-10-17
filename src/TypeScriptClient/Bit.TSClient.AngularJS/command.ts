@@ -28,10 +28,15 @@
 
                 let result = null;
 
+                let startTime: number = null;
+
                 try {
 
                     if (clientAppProfile.isDebugMode == true) {
-                        console.time(propertyKey);
+                        if (typeof (performance) != "undefined")
+                            startTime = performance.now();
+                        else
+                            console.time(propertyKey);
                     }
 
                     $rootScope = DependencyManager.getCurrent().resolveObject<ng.IRootScopeService>("$rootScope");
@@ -46,8 +51,12 @@
 
                         rPromise.then(() => {
 
-                            if (clientAppProfile.isDebugMode == true)
-                                console.timeEnd(propertyKey);
+                            if (clientAppProfile.isDebugMode == true) {
+                                if (typeof (performance) != "undefined")
+                                    console.log(`${propertyKey}: ${performance.now() - startTime}ms`);
+                                else
+                                    console.timeEnd(propertyKey);
+                            }
 
                             if (configuration.callUpdate$scope != "Never") {
                                 ScopeManager.update$scope($rootScope, configuration.$appyMode);
@@ -76,8 +85,12 @@
                             ScopeManager.update$scope($rootScope, configuration.$appyMode);
                         }
 
-                        if (clientAppProfile.isDebugMode == true)
-                            console.timeEnd(propertyKey);
+                        if (clientAppProfile.isDebugMode == true) {
+                            if (typeof (performance) != "undefined")
+                                console.log(`${propertyKey}: ${performance.now() - startTime}ms`);
+                            else
+                                console.timeEnd(propertyKey);
+                        }
                     }
                 }
 
