@@ -51,9 +51,9 @@ namespace DotNetCoreTestApp
 
             dependencyManager.RegisterDefaultLogger(typeof(DebugLogStore).GetTypeInfo(), typeof(ConsoleLogStore).GetTypeInfo());
 
-            dependencyManager.RegisterDefaultOwinCoreApp();
+            dependencyManager.RegisterDefaultAspNetCoreApp();
 
-            dependencyManager.RegisterMinimalOwinCoreMiddlewares();
+            dependencyManager.RegisterMinimalAspNetCoreMiddlewares();
 
             dependencyManager.RegisterDefaultWebApiAndODataConfiguration();
 

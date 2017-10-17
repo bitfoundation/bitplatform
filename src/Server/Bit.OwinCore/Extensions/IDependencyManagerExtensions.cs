@@ -9,7 +9,6 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.Owin.Security.DataProtection;
 using Owin;
 using System;
-using System.Threading.Tasks;
 
 namespace Bit.Core.Contracts
 {
@@ -58,7 +57,7 @@ namespace Bit.Core.Contracts
         /// | <see cref="AspNetCoreExceptionHandlerMiddlewareConfiguration"/>
         /// | <see cref="AspNetCoreLogRequestInformationMiddlewareConfiguration"/>
         /// </summary>
-        public static IDependencyManager RegisterMinimalOwinCoreMiddlewares(this IDependencyManager dependencyManager)
+        public static IDependencyManager RegisterMinimalAspNetCoreMiddlewares(this IDependencyManager dependencyManager)
         {
             dependencyManager.RegisterOwinMiddleware<AspNetCoreAutofacDependencyInjectionMiddlewareConfiguration>();
             dependencyManager.RegisterAspNetCoreMiddleware<AspNetCoreExceptionHandlerMiddlewareConfiguration>();
@@ -74,7 +73,7 @@ namespace Bit.Core.Contracts
         /// | <see cref="IRequestInformationProvider"/> by <see cref="AspNetCoreRequestInformationProvider"/>
         /// | On Mono, it registers <see cref="IDataProtectionProvider"/> by <see cref="BasicDataProtectionProvider"/>
         /// </summary>
-        public static IDependencyManager RegisterDefaultOwinCoreApp(this IDependencyManager dependencyManager)
+        public static IDependencyManager RegisterDefaultAspNetCoreApp(this IDependencyManager dependencyManager)
         {
             dependencyManager.Register<Microsoft.Owin.Logging.ILoggerFactory, DefaultOwinLoggerFactory>(overwriteExciting: false);
             dependencyManager.Register<IUserInformationProvider, DefaultUserInformationProvider>(overwriteExciting: false);

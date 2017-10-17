@@ -55,10 +55,10 @@ namespace Bit.Tests
             dependencyManager.RegisterAppEvents<RazorViewEngineConfiguration>();
             dependencyManager.RegisterAppEvents<InitialTestDataConfiguration>();
 
-            dependencyManager.RegisterDefaultOwinCoreApp();
+            dependencyManager.RegisterDefaultAspNetCoreApp();
 
             dependencyManager.RegisterAspNetCoreMiddleware<AspNetCoreStaticFilesMiddlewareConfiguration>();
-            dependencyManager.RegisterMinimalOwinCoreMiddlewares();
+            dependencyManager.RegisterMinimalAspNetCoreMiddlewares();
 
             dependencyManager.RegisterBasicAuthMiddlewareCore(async (username, password) => username == password ? username : null);
 
