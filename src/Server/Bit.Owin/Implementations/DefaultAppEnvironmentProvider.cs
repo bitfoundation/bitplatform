@@ -52,5 +52,10 @@ namespace Bit.Owin.Implementations
 
             return _activeEnvironment;
         }
+
+        public override string ToString()
+        {
+            return _activeEnvironment?.ToString() ?? base.ToString();
+        }
     }
 }

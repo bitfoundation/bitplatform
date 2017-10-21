@@ -17,7 +17,7 @@ namespace Bit.Core.Models
 
         public virtual EnvironmentSecurity Security { get; set; } = new EnvironmentSecurity
         {
-            Scopes = new [] { "openid", "profile", "user_info" }
+            Scopes = new[] { "openid", "profile", "user_info" }
         };
 
         public virtual EnvironmentCulture[] Cultures { get; set; } = new EnvironmentCulture[] { };
@@ -98,6 +98,11 @@ namespace Bit.Core.Models
             else
                 Configs.Find(c => string.Equals(c.Key, config.Key, StringComparison.OrdinalIgnoreCase)).Value = config.Value;
         }
+
+        public override string ToString()
+        {
+            return $"{nameof(Name)}: {Name}, {nameof(IsActive)}: {IsActive}, {nameof(DebugMode)}: {DebugMode}";
+        }
     }
 
     [Serializable]
@@ -112,6 +117,11 @@ namespace Bit.Core.Models
         public virtual string DefaultTheme { get; set; }
 
         public virtual string DefaultCulture { get; set; }
+
+        public override string ToString()
+        {
+            return $"{nameof(Name)}: {Name}, {nameof(Version)}: {Version}";
+        }
     }
 
     [Serializable]
@@ -126,12 +136,22 @@ namespace Bit.Core.Models
         public virtual string ClientId { get; set; }
 
         public virtual string[] Scopes { get; set; }
+
+        public override string ToString()
+        {
+            return $"{nameof(IssuerName)}: {IssuerName}, {nameof(ClientId)}: {ClientId}";
+        }
     }
 
     [Serializable]
     public class EnvironmentTheme
     {
         public virtual string Name { get; set; }
+
+        public override string ToString()
+        {
+            return $"{nameof(Name)}: {Name}";
+        }
     }
 
     [Serializable]
@@ -140,6 +160,11 @@ namespace Bit.Core.Models
         public virtual string Name { get; set; }
 
         public virtual List<EnvironmentCultureValue> Values { get; set; } = new List<EnvironmentCultureValue>();
+
+        public override string ToString()
+        {
+            return $"{nameof(Name)}: {Name}";
+        }
     }
 
     [Serializable]
@@ -148,6 +173,11 @@ namespace Bit.Core.Models
         public virtual string Name { get; set; }
 
         public virtual string Title { get; set; }
+
+        public override string ToString()
+        {
+            return $"{nameof(Name)}: {Name}, {nameof(Title)}: {Title}";
+        }
     }
 
     [Serializable]
@@ -158,5 +188,10 @@ namespace Bit.Core.Models
         public virtual object Value { get; set; }
 
         public virtual bool AccessibleInClientSide { get; set; }
+
+        public override string ToString()
+        {
+            return $"{nameof(Key)}: {Key}, {nameof(Value)}: {Value}";
+        }
     }
 }

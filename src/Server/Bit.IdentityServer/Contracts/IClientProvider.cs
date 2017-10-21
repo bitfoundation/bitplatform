@@ -13,6 +13,11 @@ namespace Bit.IdentityServer.Contracts
         public string Secret { get; set; }
 
         public TimeSpan TokensLifetime { get; set; }
+
+        public override string ToString()
+        {
+            return $"{nameof(ClientId)}: {ClientId}, {nameof(ClientName)}: {ClientName}";
+        }
     }
 
     public class BitImplicitFlowClient : BitClient

@@ -22,5 +22,10 @@ namespace Bit.Owin.Models
         public virtual string EnvironmentConfigsJSON { get; set; }
 
         public virtual string BaseHref { get; set; }
+
+        public override string ToString()
+        {
+            return $"{nameof(AppName)}: {AppName}, {nameof(DebugMode)}: {DebugMode}";
+        }
     }
 }

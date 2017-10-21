@@ -20,5 +20,10 @@ namespace Bit.Core.Implementations
         {
             _isFailed = false;
         }
+
+        public override string ToString()
+        {
+            return $"Scope failed: {_isFailed}";
+        }
     }
 }
