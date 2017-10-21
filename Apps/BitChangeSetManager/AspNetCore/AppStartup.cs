@@ -61,7 +61,7 @@ namespace BitChangeSetManager.Core
             dependencyManager.RegisterAppEvents<BitChangeSetManagerInitialData>();
             dependencyManager.RegisterAppEvents<RazorViewEngineConfiguration>();
 
-            dependencyManager.RegisterDefaultOwinCoreApp();
+            dependencyManager.RegisterDefaultAspNetCoreApp();
 
             services.AddCors();
             dependencyManager.RegisterAspNetCoreMiddlewareUsing(aspNetCoreApp =>
@@ -70,7 +70,7 @@ namespace BitChangeSetManager.Core
             });
 
             dependencyManager.RegisterAspNetCoreMiddleware<AspNetCoreStaticFilesMiddlewareConfiguration>();
-            dependencyManager.RegisterMinimalOwinCoreMiddlewares();
+            dependencyManager.RegisterMinimalAspNetCoreMiddlewares();
             dependencyManager.RegisterAspNetCoreSingleSignOnClient();
 
             dependencyManager.RegisterMetadata();
