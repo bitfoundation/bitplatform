@@ -35,7 +35,8 @@ namespace Bit.Owin.Implementations
             return JsonConvert.SerializeObject(obj, new JsonSerializerSettings
             {
                 ReferenceLoopHandling = ReferenceLoopHandling.Ignore,
-                DateFormatHandling = DateFormatHandling.IsoDateFormat
+                DateFormatHandling = DateFormatHandling.IsoDateFormat,
+                Formatting = Formatting.Indented
             });
         }
     }
