@@ -25,6 +25,7 @@
     <PackageReference Include="Microsoft.AspNet.SignalR.ServiceBus" Version="2.2.2" />
     <PackageReference Include="Microsoft.AspNet.SignalR.SqlServer" Version="2.2.2" />
     <PackageReference Include="Microsoft.CSharp" Version="4.4.0" />
+    <PackageReference Include="Microsoft.DotNet.Analyzers.Compatibility" Version="0.1.2-alpha" />
   </ItemGroup>
 
   <ItemGroup>

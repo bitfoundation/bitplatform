@@ -26,6 +26,7 @@
     <PackageReference Include="Hangfire.Core" Version="1.6.17" />
     <PackageReference Include="Hangfire.MemoryStorage" Version="1.5.1" />
     <PackageReference Include="Hangfire.SqlServer" Version="1.6.17" />
+    <PackageReference Include="Microsoft.DotNet.Analyzers.Compatibility" Version="0.1.2-alpha" />
   </ItemGroup>
 
   <ItemGroup>

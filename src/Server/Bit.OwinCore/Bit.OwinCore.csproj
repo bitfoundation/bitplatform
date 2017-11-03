@@ -30,6 +30,7 @@
     <PackageReference Include="Microsoft.AspNetCore.Server.IISIntegration" Version="1.1.2" />
     <PackageReference Include="Microsoft.AspNetCore.Server.Kestrel" Version="1.1.2" />
     <PackageReference Include="Microsoft.AspNetCore.StaticFiles" Version="1.1.2" />
+    <PackageReference Include="Microsoft.DotNet.Analyzers.Compatibility" Version="0.1.2-alpha" />
     <PackageReference Include="NWebsec.AspNetCore.Middleware" Version="1.1.0" />
     <PackageReference Include="System.Buffers" Version="4.4.0" />
     <PackageReference Include="System.Diagnostics.DiagnosticSource" Version="4.4.1" />

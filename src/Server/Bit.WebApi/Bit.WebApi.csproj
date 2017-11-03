@@ -25,6 +25,7 @@
     <PackageReference Include="Autofac.WebApi2.Owin" Version="4.0.0" />
     <PackageReference Include="Bit.WebApiCorrelator" Version="1.1.0.1" />
     <PackageReference Include="Microsoft.AspNet.WebApi.Owin" Version="5.2.3" />
+    <PackageReference Include="Microsoft.DotNet.Analyzers.Compatibility" Version="0.1.2-alpha" />
     <PackageReference Include="Swashbuckle.Core" Version="5.6.0" />
   </ItemGroup>
 
