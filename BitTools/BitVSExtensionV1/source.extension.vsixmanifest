@@ -20,7 +20,6 @@
     <Assets>
         <Asset Type="Microsoft.VisualStudio.VsPackage" d:Source="Project" d:ProjectName="%CurrentProject%" Path="|%CurrentProject%;PkgdefProjectOutputGroup|" />
         <Asset Type="Microsoft.VisualStudio.MefComponent" d:Source="Project" d:ProjectName="%CurrentProject%" Path="|%CurrentProject%|" />
-        <Asset Type="Microsoft.VisualStudio.ItemTemplate" d:Source="Project" d:ProjectName="BitODataCSProxyGeneratorItemTemplate" d:TargetPath="|BitODataCSProxyGeneratorItemTemplate;TemplateProjectOutputGroup|" Path="ItemTemplates" d:VsixSubPath="ItemTemplates" />
         <Asset Type="Microsoft.VisualStudio.MefComponent" d:Source="Project" d:ProjectName="BitVSEditorUtils" Path="|BitVSEditorUtils|" />
         <Asset Type="Microsoft.VisualStudio.Assembly" d:Source="Project" d:ProjectName="BitTools.Core.VSExtensionBuildVersion" Path="|BitTools.Core.VSExtensionBuildVersion|" AssemblyName="|BitTools.Core.VSExtensionBuildVersion;AssemblyName|" />
         <Asset Type="Microsoft.VisualStudio.Assembly" d:Source="Project" d:ProjectName="BitCodeGenerator" Path="|BitCodeGenerator|" AssemblyName="|BitCodeGenerator;AssemblyName|" />

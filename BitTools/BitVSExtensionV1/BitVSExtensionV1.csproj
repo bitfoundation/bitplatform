@@ -112,9 +112,6 @@
     <Reference Include="Microsoft.CodeAnalysis.VisualBasic, Version=1.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\..\packages\Microsoft.CodeAnalysis.VisualBasic.1.0.0\lib\net45\Microsoft.CodeAnalysis.VisualBasic.dll</HintPath>
     </Reference>
-    <Reference Include="Microsoft.CodeAnalysis.VisualBasic.Features, Version=1.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\Microsoft.CodeAnalysis.VisualBasic.Features.1.0.0\lib\net46\Microsoft.CodeAnalysis.VisualBasic.Features.dll</HintPath>
-    </Reference>
     <Reference Include="Microsoft.CodeAnalysis.VisualBasic.Workspaces, Version=1.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\..\packages\Microsoft.CodeAnalysis.VisualBasic.Workspaces.1.0.0\lib\net45\Microsoft.CodeAnalysis.VisualBasic.Workspaces.dll</HintPath>
     </Reference>
@@ -134,18 +131,6 @@
     <Reference Include="Microsoft.Html.Editor">
       <HintPath>..\Lib\Microsoft.Html.Editor.dll</HintPath>
       <Private>False</Private>
-    </Reference>
-    <Reference Include="Microsoft.OData.Client, Version=6.18.0.10905, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\Microsoft.OData.Client.6.18.0\lib\net40\Microsoft.OData.Client.dll</HintPath>
-    </Reference>
-    <Reference Include="Microsoft.OData.Core, Version=6.18.0.10905, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\Microsoft.OData.Core.6.18.0\lib\portable-net45+win+wpa81\Microsoft.OData.Core.dll</HintPath>
-    </Reference>
-    <Reference Include="Microsoft.OData.Edm, Version=6.18.0.10905, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\Microsoft.OData.Edm.6.18.0\lib\portable-net45+win+wpa81\Microsoft.OData.Edm.dll</HintPath>
-    </Reference>
-    <Reference Include="Microsoft.Spatial, Version=6.18.0.10905, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\Microsoft.Spatial.6.18.0\lib\portable-net45+win+wpa81\Microsoft.Spatial.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.VisualStudio.CommandBars, Version=8.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
       <EmbedInteropTypes>False</EmbedInteropTypes>
@@ -371,13 +356,6 @@
       <Name>BitCodeGenerator</Name>
       <IncludeOutputGroupsInVSIX>BuiltProjectOutputGroup%3bBuiltProjectOutputGroupDependencies%3bGetCopyToOutputDirectoryItems%3bSatelliteDllsProjectOutputGroup%3b</IncludeOutputGroupsInVSIX>
       <IncludeOutputGroupsInVSIXLocalOnly>DebugSymbolsProjectOutputGroup%3b</IncludeOutputGroupsInVSIXLocalOnly>
-    </ProjectReference>
-    <ProjectReference Include="..\BitODataCSProxyGeneratorItemTemplate\BitODataCSProxyGeneratorItemTemplate.csproj">
-      <Project>{B7C505DA-20FD-4453-91A2-8DBD6D920F54}</Project>
-      <Name>BitODataCSProxyGeneratorItemTemplate</Name>
-      <VSIXSubPath>ItemTemplates</VSIXSubPath>
-      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
-      <IncludeOutputGroupsInVSIX>TemplateProjectOutputGroup%3b</IncludeOutputGroupsInVSIX>
     </ProjectReference>
     <ProjectReference Include="..\BitTools.Core.VSExtensionBuildVersion\BitTools.Core.VSExtensionBuildVersion.csproj">
       <Project>{3AA3C219-2D0A-49DD-A025-5B4654BF2CFA}</Project>

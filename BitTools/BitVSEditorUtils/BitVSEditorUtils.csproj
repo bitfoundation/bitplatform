@@ -20,15 +20,19 @@
   <ItemGroup>
     <Reference Include="Microsoft.Html.Core">
       <HintPath>..\Lib\Microsoft.Html.Core.dll</HintPath>
+      <Private>false</Private>
     </Reference>
     <Reference Include="Microsoft.Html.Editor">
       <HintPath>..\Lib\Microsoft.Html.Editor.dll</HintPath>
+      <Private>false</Private>
     </Reference>
     <Reference Include="Microsoft.Web.Core">
       <HintPath>..\Lib\Microsoft.Web.Core.dll</HintPath>
+      <Private>false</Private>
     </Reference>
     <Reference Include="Microsoft.Web.Editor">
       <HintPath>..\Lib\Microsoft.Web.Editor.dll</HintPath>
+      <Private>false</Private>
     </Reference>
     <Reference Include="PresentationCore" />
     <Reference Include="System.ComponentModel.Composition" />
