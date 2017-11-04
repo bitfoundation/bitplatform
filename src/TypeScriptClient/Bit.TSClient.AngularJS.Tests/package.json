@@ -1,8 +1,8 @@
 {
   "devDependencies": {
-    "@types/angular-ui-router": "^1.1.39"
+    "@types/angular-ui-router": "^1.1.40"
   },
   "dependencies": {
-    "@uirouter/angularjs": "^1.0.8"
+    "@uirouter/angularjs": "^1.0.10"
   }
 }
