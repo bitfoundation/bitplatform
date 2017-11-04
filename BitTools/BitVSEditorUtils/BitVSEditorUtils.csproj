@@ -9,8 +9,8 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="1.0.0" />
-    <PackageReference Include="Microsoft.VisualStudio.Language.Intellisense" Version="15.0.26606" />
-    <PackageReference Include="Microsoft.VisualStudio.Utilities" Version="15.0.26607" />
+    <PackageReference Include="Microsoft.VisualStudio.Language.Intellisense" Version="15.4.27004" />
+    <PackageReference Include="Microsoft.VisualStudio.Utilities" Version="15.4.27004" />
   </ItemGroup>
 
   <ItemGroup>

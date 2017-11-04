@@ -11,9 +11,9 @@
     <PackageReference Include="FluentCommandLineParser" Version="1.4.3" />
     <PackageReference Include="Microsoft.Build" Version="15.3.409" />
     <PackageReference Include="Microsoft.Build.Tasks.Core" Version="15.3.409" />
-    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="2.3.1" />
-    <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Features" Version="2.3.1" />
-    <PackageReference Include="Microsoft.CodeAnalysis.Workspaces.Common" Version="2.3.1" />
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="2.4.0" />
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Features" Version="2.4.0" />
+    <PackageReference Include="Microsoft.CodeAnalysis.Workspaces.Common" Version="2.4.0" />
   </ItemGroup>
 
   <ItemGroup>
