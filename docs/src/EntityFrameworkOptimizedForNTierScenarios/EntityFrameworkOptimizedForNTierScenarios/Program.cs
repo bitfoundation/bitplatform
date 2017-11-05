@@ -94,6 +94,7 @@ namespace EntityFrameworkOptimizedForNTierScenarios
 
     #region Bit DbContext + Bit Repository + TestApiController
 
+    [DbConfigurationType(typeof(UseDefaultModelStoreDbConfiguration))]
     public class CustomersDbContextForBitRepository : EfDbContextBase
     {
         public CustomersDbContextForBitRepository()

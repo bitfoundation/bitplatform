@@ -66,6 +66,7 @@ namespace EntityFrameworkSample
         public virtual Customer Customer { get; set; }
     }
 
+    [DbConfigurationType(typeof(UseDefaultModelStoreDbConfiguration))]
     public class MyAppDbContext : EfDbContextBase
     {
         public MyAppDbContext()

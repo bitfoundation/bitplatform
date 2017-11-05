@@ -168,6 +168,7 @@ namespace CustomerDtoControllerSample
         public string CityName { get; set; }
     }
 
+    [DbConfigurationType(typeof(UseDefaultModelStoreDbConfiguration))]
     public class MyAppDbContext : EfDbContextBase
     {
         public MyAppDbContext()

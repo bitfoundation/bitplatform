@@ -6,9 +6,14 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Bit.Data.EntityFramework" Version="0.0.8.5" />
-    <PackageReference Include="Bit.OData" Version="0.0.8.5" />
-    <PackageReference Include="Bit.OwinCore" Version="0.0.8.5" />
+    <None Remove="CustomerDtoControllerSample.MyAppDbContext.edmx" />
+    <None Remove="System.Data.Entity.Migrations.Utilities.EmptyContext.edmx" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Bit.Data.EntityFramework" Version="0.0.8.6" />
+    <PackageReference Include="Bit.OData" Version="0.0.8.6" />
+    <PackageReference Include="Bit.OwinCore" Version="0.0.8.6" />
   </ItemGroup>
   <ItemGroup>
     <Content Update="environments.json">

@@ -8,6 +8,7 @@ using Bit.Data.Contracts;
 
 namespace BitChangeSetManager.DataAccess
 {
+    [DbConfigurationType(typeof(UseDefaultModelStoreDbConfiguration))]
     public class BitChangeSetManagerDbContext : EfDbContextBase
     {
         public BitChangeSetManagerDbContext(DbConnection existingConnection)

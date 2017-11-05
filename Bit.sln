@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.26730.10
+VisualStudioVersion = 15.0.27004.2006
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Server", "Server", "{C4390E9A-3483-45A8-9A3F-D8DBFF3A38DB}"
 EndProject
@@ -50,7 +50,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Bit.Core", "src\Server\Bit.
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DotNetCoreTestApp", "src\Server\DotNetCoreTestApp\DotNetCoreTestApp.csproj", "{2DA757D9-B4B1-4DDD-A486-0EEE5894C186}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Bit.OwinCore.AspNetCore2Upgrade", "src\Server\Bit.OwinCore.AspNetCore2Upgrade\Bit.OwinCore.AspNetCore2Upgrade.csproj", "{4716B925-1D32-482F-8439-4CF46D3F0974}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Bit.OwinCore.AspNetCore2Upgrade", "src\Server\Bit.OwinCore.AspNetCore2Upgrade\Bit.OwinCore.AspNetCore2Upgrade.csproj", "{4716B925-1D32-482F-8439-4CF46D3F0974}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

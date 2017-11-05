@@ -8,8 +8,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Bit.Data.EntityFrameworkCore" Version="0.0.8.5" />
-    <PackageReference Include="Bit.WebApi" Version="0.0.8.5" />
+    <PackageReference Include="Bit.Data.EntityFrameworkCore" Version="0.0.8.6" />
+    <PackageReference Include="Bit.WebApi" Version="0.0.8.6" />
     <PackageReference Include="BitCodeAnalyzer" Version="1.1.9.8" />
     <PackageReference Include="Microsoft.Owin.SelfHost" Version="3.1.0" />
   </ItemGroup>

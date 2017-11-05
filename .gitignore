@@ -238,3 +238,5 @@ _book
 /BitTools/BitODataCSProxyGeneratorItemTemplate/ODataT4Template.cs
 *yarn.lock
 *package-lock.json
+/Samples/ODataSamples/CustomerDtoControllerSample/*.edmx
+/Apps/BitChangeSetManager/AspNetCore/BitChangeSetManager.DataAccess.BitChangeSetManagerDbContext.edmx
