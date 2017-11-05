@@ -170,13 +170,12 @@ module Bit.Directives {
             }
 
             if (this.$attrs.radText != null) {
-                this.$scope.$watch(this.$attrs.ngModel.replace("::", ""), (newValue) => {
-                    if (this.ngModel.$isEmpty(newValue))
+                this.dataSource.onCurrentChanged(() => {
+                    const current = this.dataSource.current;
+                    if (current == null)
                         this.radTextValue = "";
                     else {
-                        const current = this.dataSource.current;
-                        if (current != null)
-                            this.radTextValue = current[this.radTextFieldName];
+                        this.radTextValue = current[this.radTextFieldName];
                     }
                 });
             }
