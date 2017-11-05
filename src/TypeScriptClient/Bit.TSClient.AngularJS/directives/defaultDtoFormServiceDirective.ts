@@ -195,6 +195,14 @@
                                         return viewValue;
                                     });
                                 }
+                                if (propDefenition.nullable == false && (propDefenition.originalType == "Edm.Decimal" || propDefenition.originalType == "Edm.Double" || propDefenition.originalType == "Edm.Single" || propDefenition.originalType == "Edm.Int16" || propDefenition.originalType == "Edm.Int32" || propDefenition.originalType == "Edm.Int64")) {
+                                    propModelController.$parsers.push((viewValue) => {
+                                        if (viewValue == null || viewValue == "") {
+                                            viewValue = "0";
+                                        }
+                                        return viewValue;
+                                    });
+                                }
                                 if (propDefenition.originalType == "Edm.Decimal" || propDefenition.originalType == "Edm.Double" || propDefenition.originalType == "Edm.Single") {
                                     propModelController.$parsers.push((viewValue) => {
                                         if (viewValue != null && typeof viewValue == "string") {
