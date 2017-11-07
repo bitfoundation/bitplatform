@@ -49,7 +49,7 @@ namespace Bit.Hangfire.Implementations
                 SchemaName = "Jobs"
             });
 
-            if (activeAppEnvironment.DebugMode == false)
+            if (activeAppEnvironment.HasConfig("JobSchedulerAzureServiceBusConnectionString"))
             {
                 string signalRAzureServiceBusConnectionString = activeAppEnvironment.GetConfig<string>("JobSchedulerAzureServiceBusConnectionString");
 
