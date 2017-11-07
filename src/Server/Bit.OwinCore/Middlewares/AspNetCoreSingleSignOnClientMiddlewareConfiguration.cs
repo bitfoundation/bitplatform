@@ -1,5 +1,4 @@
-﻿using Bit.Core.Contracts;
-using Bit.OwinCore.Contracts;
+﻿using Bit.OwinCore.Contracts;
 using IdentityServer3.AccessTokenValidation;
 using Microsoft.AspNetCore.Builder;
 using System;

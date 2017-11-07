@@ -11,7 +11,7 @@ namespace Bit.OwinCore.Implementations.Servers
 {
     public class HttpListenerServer : OwinServer, IServer
     {
-        private IDisposable _HttpListenerServer;
+        private IDisposable _httpListenerServer;
 
         public virtual async Task StartAsync<TContext>(IHttpApplication<TContext> application, CancellationToken cancellationToken)
         {
@@ -19,7 +19,7 @@ namespace Bit.OwinCore.Implementations.Servers
 
             OwinServerFactory.Initialize(props);
 
-            _HttpListenerServer = OwinServerFactory.Create(appFunc, props);
+            _httpListenerServer = OwinServerFactory.Create(appFunc, props);
         }
 
         public virtual async Task StopAsync(CancellationToken cancellationToken)
@@ -29,7 +29,7 @@ namespace Bit.OwinCore.Implementations.Servers
 
         public void Dispose()
         {
-            _HttpListenerServer?.Dispose();
+            _httpListenerServer?.Dispose();
         }
     }
 }

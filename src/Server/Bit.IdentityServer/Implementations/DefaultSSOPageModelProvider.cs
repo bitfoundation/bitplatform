@@ -41,7 +41,7 @@ namespace Bit.IdentityServer.Implementations
                 DebugMode = _activeAppEnvironment.DebugMode,
                 DesiredTimeZoneValue = _activeAppEnvironment.AppInfo.DefaultTimeZone,
                 Theme = _activeAppEnvironment.AppInfo.DefaultTheme,
-                EnvironmentConfigsJSON = ContentFormatter.Serialize(_activeAppEnvironment
+                EnvironmentConfigsJson = ContentFormatter.Serialize(_activeAppEnvironment
                                             .Configs.Where(c => c.AccessibleInClientSide == true)
                                             .Select(c => new { value = c.Value, key = c.Key })),
                 BaseHref = _activeAppEnvironment.GetHostVirtualPath()
@@ -63,7 +63,7 @@ namespace Bit.IdentityServer.Implementations
                 DebugMode = _activeAppEnvironment.DebugMode,
                 DesiredTimeZoneValue = _activeAppEnvironment.AppInfo.DefaultTimeZone,
                 Theme = _activeAppEnvironment.AppInfo.DefaultTheme,
-                EnvironmentConfigsJSON = ContentFormatter.Serialize(_activeAppEnvironment
+                EnvironmentConfigsJson = ContentFormatter.Serialize(_activeAppEnvironment
                                             .Configs.Where(c => c.AccessibleInClientSide == true)
                                             .Select(c => new { value = c.Value, key = c.Key })),
                 BaseHref = _activeAppEnvironment.GetHostVirtualPath()

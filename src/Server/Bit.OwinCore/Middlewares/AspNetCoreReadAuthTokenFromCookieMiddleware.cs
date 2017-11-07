@@ -5,11 +5,11 @@ namespace Bit.OwinCore.Middlewares
 {
     public class AspNetCoreReadAuthTokenFromCookieMiddleware
     {
-        private readonly RequestDelegate Next;
+        private readonly RequestDelegate _next;
 
         public AspNetCoreReadAuthTokenFromCookieMiddleware(RequestDelegate next)
         {
-            Next = next;
+            _next = next;
         }
 
         public async Task Invoke(HttpContext context)
@@ -23,7 +23,7 @@ namespace Bit.OwinCore.Middlewares
                     });
             }
 
-            await Next.Invoke(context);
+            await _next.Invoke(context);
         }
     }
 }

@@ -54,7 +54,7 @@ namespace Bit.Owin.Implementations
             defaultPageModel.DesiredTimeZoneValue = desiredTimeZoneValue;
             defaultPageModel.Theme = theme;
 
-            defaultPageModel.EnvironmentConfigsJSON = ContentFormatter.Serialize(activeAppEnvironment
+            defaultPageModel.EnvironmentConfigsJson = ContentFormatter.Serialize(activeAppEnvironment
                 .Configs.Where(c => c.AccessibleInClientSide == true)
                 .Select(c => new { value = c.Value, key = c.Key }));
 
@@ -101,7 +101,7 @@ namespace Bit.Owin.Implementations
             defaultPageModel.DesiredTimeZoneValue = desiredTimeZoneValue;
             defaultPageModel.Theme = theme;
 
-            defaultPageModel.EnvironmentConfigsJSON = ContentFormatter.Serialize(activeAppEnvironment
+            defaultPageModel.EnvironmentConfigsJson = ContentFormatter.Serialize(activeAppEnvironment
                 .Configs.Where(c => c.AccessibleInClientSide == true)
                 .Select(c => new { value = c.Value, key = c.Key }));
 

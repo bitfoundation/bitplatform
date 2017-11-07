@@ -1,5 +1,4 @@
-﻿using System;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using Bit.Core.Contracts;
 using Bit.Signalr.Contracts;
 

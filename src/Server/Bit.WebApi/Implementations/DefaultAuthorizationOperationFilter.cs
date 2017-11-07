@@ -22,9 +22,6 @@ namespace Bit.WebApi.Implementations
             if (hasAuthAttribute == false)
                 return;
 
-            if (hasAuthAttribute == false)
-                return;
-
             if (operation.security == null)
                 operation.security = new List<IDictionary<string, IEnumerable<string>>>();
 

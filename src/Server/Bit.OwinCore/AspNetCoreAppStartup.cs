@@ -42,8 +42,8 @@ namespace Bit.OwinCore
 
             foreach (IDependenciesManager projectDependenciesManager in DefaultDependenciesManagerProvider.Current.GetDependenciesManagers())
             {
-                if (projectDependenciesManager is IAspNetCoreDependenciesManager)
-                    ((IAspNetCoreDependenciesManager)projectDependenciesManager).ConfigureDependencies(_serviceProvider, services, DefaultDependencyManager.Current);
+                if (projectDependenciesManager is IAspNetCoreDependenciesManager aspNetCoreDependenciesManager)
+                    aspNetCoreDependenciesManager.ConfigureDependencies(_serviceProvider, services, DefaultDependencyManager.Current);
 
                 else if (projectDependenciesManager is IOwinDependenciesManager)
                     ((IOwinDependenciesManager)projectDependenciesManager).ConfigureDependencies(DefaultDependencyManager.Current);

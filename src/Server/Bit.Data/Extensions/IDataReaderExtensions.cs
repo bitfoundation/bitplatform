@@ -22,7 +22,7 @@ namespace System.Data
                     if (reader.HasRows)
                     {
                         if (reader.FieldCount != 1)
-                            throw new ArgumentException("SELECT query should not have " + reader.FieldCount + " columns (expected 1).", nameof(reader));
+                            throw new ArgumentException($"SELECT query should not have {reader.FieldCount} columns (expected 1).", nameof(reader));
 
                         if (reader[0].GetType().Name == "String")
                         {

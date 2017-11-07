@@ -75,10 +75,10 @@ namespace Bit.IdentityServer.Implementations
                 content = @"<!DOCTYPE html>
                             <html>
                                 <head>
-                                    <title>No redirect url on logout error</title>
+                                    <title>No redirect url on logout</title>
                                 </head>
                                 <body>
-                                    No redirect url on logout error
+                                    No redirect url on logout
                                 </body>
                             </html>";
             }

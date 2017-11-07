@@ -1,5 +1,4 @@
-﻿using System;
-using System.Reflection;
+﻿using System.Reflection;
 using System.Web.OData.Builder;
 using Bit.OData.Contracts;
 using Bit.OData.ODataControllers;

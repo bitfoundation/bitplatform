@@ -24,11 +24,11 @@ namespace Bit.OwinCore.Middlewares
 
     public class AspNetCoreExceptionHandlerMiddleware
     {
-        private readonly RequestDelegate Next;
+        private readonly RequestDelegate _next;
 
         public AspNetCoreExceptionHandlerMiddleware(RequestDelegate next)
         {
-            Next = next;
+            _next = next;
         }
 
         public async Task Invoke(HttpContext context)
@@ -39,7 +39,7 @@ namespace Bit.OwinCore.Middlewares
 
             try
             {
-                await Next.Invoke(context);
+                await _next.Invoke(context);
                 string statusCode = context.Response.StatusCode.ToString();
                 bool responseStatusCodeIsErrorCodeBecauseOfSomeServerBasedReason = statusCode.StartsWith("5");
                 bool responseStatusCodeIsErrorCodeBecauseOfSomeClientBasedReason = statusCode.StartsWith("4");

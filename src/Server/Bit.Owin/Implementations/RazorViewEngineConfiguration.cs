@@ -1,5 +1,4 @@
-﻿using System;
-using Bit.Core.Contracts;
+﻿using Bit.Core.Contracts;
 using Bit.Core.Models;
 using RazorEngine;
 using RazorEngine.Configuration;

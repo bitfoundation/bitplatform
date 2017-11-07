@@ -9,7 +9,7 @@ namespace Bit.OwinCore.Implementations
 {
     public class BasicDataProtectionProvider : IDataProtector, IDataProtectionProvider
     {
-        private const string PRIMARY_PURPOSE = "Microsoft.Owin.Security.IDataProtector";
+        private const string PrimaryPurpose = "Microsoft.Owin.Security.IDataProtector";
 
         private readonly DataProtectionScope _dataProtectionScope = DataProtectionScope.CurrentUser;
 
@@ -28,10 +28,7 @@ namespace Bit.OwinCore.Implementations
 
                 _activeAppEnvironment = _appEnvironmentProvider.GetActiveAppEnvironment();
             }
-            get
-            {
-                return _appEnvironmentProvider;
-            }
+            get => _appEnvironmentProvider;
         }
 
         public virtual string[] Purposes { get; set; } = new string[] { };
@@ -55,7 +52,7 @@ namespace Bit.OwinCore.Implementations
                 using (StreamWriter writer = new StreamWriter(cryptoStream))
                 {
                     writer.Write(_activeAppEnvironment.AppInfo.Name);
-                    writer.Write(PRIMARY_PURPOSE);
+                    writer.Write(PrimaryPurpose);
 
                     foreach (string purpose in Purposes)
                     {

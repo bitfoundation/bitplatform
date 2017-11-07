@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using Bit.Core.Contracts;
 using Bit.Owin.Contracts;
 using Hangfire;

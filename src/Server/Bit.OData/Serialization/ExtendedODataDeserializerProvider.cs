@@ -18,10 +18,10 @@ namespace Bit.OData.Serialization
         public ExtendedODataDeserializerProvider(IServiceProvider rootContainer)
             : base(rootContainer)
         {
-            _DefaultODataParameterDeserializerValue = new Lazy<DefaultODataActionCreateUpdateParameterDeserializer>(() => (DefaultODataActionCreateUpdateParameterDeserializer)rootContainer.GetService(typeof(DefaultODataActionCreateUpdateParameterDeserializer).GetTypeInfo()));
+            _defaultODataParameterDeserializerValue = new Lazy<DefaultODataActionCreateUpdateParameterDeserializer>(() => (DefaultODataActionCreateUpdateParameterDeserializer)rootContainer.GetService(typeof(DefaultODataActionCreateUpdateParameterDeserializer).GetTypeInfo()));
         }
 
-        private readonly Lazy<DefaultODataActionCreateUpdateParameterDeserializer> _DefaultODataParameterDeserializerValue;
+        private readonly Lazy<DefaultODataActionCreateUpdateParameterDeserializer> _defaultODataParameterDeserializerValue;
 
         public override ODataDeserializer GetODataDeserializer(Type type, HttpRequestMessage request)
         {
@@ -31,7 +31,7 @@ namespace Bit.OData.Serialization
                 actionDescriptor.GetCustomAttributes<CreateAttribute>().Any() ||
                 actionDescriptor.GetCustomAttributes<UpdateAttribute>().Any()))
             {
-                return _DefaultODataParameterDeserializerValue.Value;
+                return _defaultODataParameterDeserializerValue.Value;
             }
 
             return base.GetODataDeserializer(type, request);

@@ -1,4 +1,5 @@
 {
+  "name": "bit.ng.test",
   "devDependencies": {
     "@types/angular-ui-router": "^1.1.40"
   },

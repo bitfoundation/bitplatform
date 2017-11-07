@@ -1,7 +1,6 @@
 ﻿using AutoMapper;
 using Bit.Core;
 using Bit.Core.Contracts;
-using Bit.Data.Contracts;
 using Bit.Data.EntityFrameworkCore.Contracts;
 using Bit.Data.EntityFrameworkCore.Implementations;
 using Bit.Model.Contracts;

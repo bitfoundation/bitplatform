@@ -65,8 +65,8 @@ namespace Bit.Owin.Implementations
         {
             exp = UnWrapException(exp);
 
-            if (exp is IHttpStatusCodeAwareException)
-                return ((IHttpStatusCodeAwareException)exp).StatusCode;
+            if (exp is IHttpStatusCodeAwareException httpStatusCodeAwareException)
+                return httpStatusCodeAwareException.StatusCode;
 
             return HttpStatusCode.InternalServerError;
         }

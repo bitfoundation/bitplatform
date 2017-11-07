@@ -8,7 +8,7 @@
 
         public override string ToString()
         {
-            return $"{nameof(Key)}: {Key}, {nameof(Value)}: {Value}" ?? base.ToString();
+            return $"{nameof(Key)}: {Key}, {nameof(Value)}: {Value}";
         }
     }
 }

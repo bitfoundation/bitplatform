@@ -55,7 +55,7 @@ namespace Bit.OData.Serialization
             {
                 using (JsonTextReader requestJsonReader = new JsonTextReader(requestStreamReader))
                 {
-                    void error(object sender, Newtonsoft.Json.Serialization.ErrorEventArgs e)
+                    void Error(object sender, Newtonsoft.Json.Serialization.ErrorEventArgs e)
                     {
                         if (e.ErrorContext.Error is JsonSerializationException && e.ErrorContext.Error.Message.StartsWith("Could not find member "))
                         {
@@ -83,7 +83,7 @@ namespace Bit.OData.Serialization
                         MissingMemberHandling = MissingMemberHandling.Error
                     });
 
-                    deserilizer.Error += error;
+                    deserilizer.Error += Error;
 
                     try
                     {
@@ -93,7 +93,7 @@ namespace Bit.OData.Serialization
                     }
                     finally
                     {
-                        deserilizer.Error -= error;
+                        deserilizer.Error -= Error;
                     }
                 }
             }

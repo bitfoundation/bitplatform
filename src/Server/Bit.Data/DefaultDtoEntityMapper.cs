@@ -29,7 +29,7 @@ namespace Bit.Data
                 throw new ArgumentNullException(nameof(entityQuery));
 
             if (_entityTypeAndDtoTypeAreEqual == true)
-                return entityQuery as IQueryable<TDto>;
+                return (IQueryable<TDto>)entityQuery;
 
             return entityQuery.ProjectTo<TDto>(configuration: Mapper.ConfigurationProvider);
         }
@@ -43,7 +43,7 @@ namespace Bit.Data
                 throw new ArgumentNullException(nameof(parameters));
 
             if (_entityTypeAndDtoTypeAreEqual == true)
-                return entityQuery as IQueryable<TDto>;
+                return (IQueryable<TDto>)entityQuery;
 
             return entityQuery.ProjectTo<TDto>(configuration: Mapper.ConfigurationProvider, parameters: parameters);
         }

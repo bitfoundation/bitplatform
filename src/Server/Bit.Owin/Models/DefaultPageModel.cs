@@ -19,7 +19,7 @@ namespace Bit.Owin.Models
 
         public virtual string DesiredTimeZoneValue { get; set; }
 
-        public virtual string EnvironmentConfigsJSON { get; set; }
+        public virtual string EnvironmentConfigsJson { get; set; }
 
         public virtual string BaseHref { get; set; }
 

@@ -22,7 +22,7 @@ namespace Bit.Data.EntityFramework.Implementations
 
         public virtual EfDbContextBase DbContext
         {
-            get { return _dbContext; }
+            get => _dbContext;
             set
             {
                 _dbContext = value;
@@ -32,10 +32,7 @@ namespace Bit.Data.EntityFramework.Implementations
 
         private DbSet<TEntity> _set;
 
-        protected virtual DbSet<TEntity> Set
-        {
-            get { return _set; }
-        }
+        protected virtual DbSet<TEntity> Set => _set;
 
         public virtual async Task<TEntity> AddAsync(TEntity entityToAdd, CancellationToken cancellationToken)
         {
@@ -90,9 +87,9 @@ namespace Bit.Data.EntityFramework.Implementations
             if (entityToDelete == null)
                 throw new ArgumentNullException(nameof(entityToDelete));
 
-            if (entityToDelete is IArchivableEntity)
+            if (entityToDelete is IArchivableEntity archivableEntity)
             {
-                ((IArchivableEntity)entityToDelete).IsArchived = true;
+                archivableEntity.IsArchived = true;
                 return await UpdateAsync(entityToDelete, cancellationToken).ConfigureAwait(false);
             }
             else
@@ -226,9 +223,9 @@ namespace Bit.Data.EntityFramework.Implementations
             if (entityToDelete == null)
                 throw new ArgumentNullException(nameof(entityToDelete));
 
-            if (entityToDelete is IArchivableEntity)
+            if (entityToDelete is IArchivableEntity archivableEntity)
             {
-                ((IArchivableEntity)entityToDelete).IsArchived = true;
+                archivableEntity.IsArchived = true;
                 return Update(entityToDelete);
             }
             else

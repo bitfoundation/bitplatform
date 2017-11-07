@@ -222,8 +222,8 @@ FOR JSON AUTO, WITHOUT_ARRAY_WRAPPER";
         {
             if (node.Method.Name == nameof(string.ToLower) || node.Method.Name == nameof(string.ToUpper))
             {
-                if (node.Object is UnaryExpression)
-                    return VisitUnary((UnaryExpression)node.Object);
+                if (node.Object is UnaryExpression unaryExpression)
+                    return VisitUnary(unaryExpression);
                 else
                     return node.Object;
             }

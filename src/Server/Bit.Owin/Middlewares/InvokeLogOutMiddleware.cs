@@ -21,11 +21,11 @@ namespace Bit.Owin.Middlewares
 
             AppEnvironment activeAppEnvironment = appEnvironmentProvider.GetActiveAppEnvironment();
 
-            string redirect_uri_host = $"{context.Request.Scheme}://{context.Request.Host.Value}{activeAppEnvironment.GetHostVirtualPath()}SignOut";
+            string redirectUriHost = $"{context.Request.Scheme}://{context.Request.Host.Value}{activeAppEnvironment.GetHostVirtualPath()}SignOut";
 
-            string redirect_uri = $"{activeAppEnvironment.GetSsoUrl()}/connect/endsession?post_logout_redirect_uri={redirect_uri_host}";
+            string redirectUri = $"{activeAppEnvironment.GetSsoUrl()}/connect/endsession?post_logout_redirect_uri={redirectUriHost}";
 
-            context.Response.Redirect(redirect_uri + "&id_token_hint=" + context.Request.Query["id_token"]);
+            context.Response.Redirect(redirectUri + "&id_token_hint=" + context.Request.Query["id_token"]);
 
             context.Authentication.SignOut("custom", "Barear");
         }

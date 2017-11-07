@@ -216,7 +216,7 @@
                 throw new Error("component dependency's name may not be null");
 
             if (componentDependency.cache == null)
-                componentDependency.cache == false;
+                componentDependency.cache = false;
 
             if (!this.dependencyShouldBeConsidered(componentDependency))
                 return;
@@ -251,7 +251,7 @@
 
                 cacheComponent.name = componentDependency.name + "Cache";
                 cacheComponent.cache = false;
-                cacheComponent.controller = cacheComponent.type = Bit.Components.CacheComponent;
+                cacheComponent.controller = cacheComponent.type = Components.CacheComponent;
                 cacheComponent.controllerAs = "vm";
                 cacheComponent.overwriteExisting = false;
                 cacheComponent.predicate = null;

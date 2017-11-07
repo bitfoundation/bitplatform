@@ -3,7 +3,6 @@ using Bit.Core.Models;
 using Bit.OwinCore.Contracts;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using System;
 
 namespace Bit.OwinCore.Middlewares
 {

@@ -7,11 +7,11 @@ namespace Bit.OwinCore.Middlewares
 {
     public class AspNetCoreCacheResponseMiddleware
     {
-        private readonly RequestDelegate Next;
+        private readonly RequestDelegate _next;
 
         public AspNetCoreCacheResponseMiddleware(RequestDelegate next)
         {
-            Next = next;
+            _next = next;
         }
 
         public async Task Invoke(HttpContext context)
@@ -28,7 +28,7 @@ namespace Bit.OwinCore.Middlewares
                 context.Response.Headers.Remove("Expires");
             context.Response.Headers.Add("Expires", new[] { "max" });
 
-            await Next.Invoke(context);
+            await _next.Invoke(context);
         }
     }
 }

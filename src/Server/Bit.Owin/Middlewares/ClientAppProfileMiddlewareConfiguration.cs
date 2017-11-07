@@ -34,7 +34,7 @@ clientAppProfile = {{
     appTitle: ""{model.AppTitle}"",
     appName: ""{model.AppName}"",
     desiredTimeZone: ""{model.DesiredTimeZoneValue}"",
-    environmentConfigs: {model.EnvironmentConfigsJSON}
+    environmentConfigs: {model.EnvironmentConfigsJson}
 }};
 
                 ";

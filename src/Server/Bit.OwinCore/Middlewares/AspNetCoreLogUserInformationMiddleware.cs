@@ -8,11 +8,11 @@ namespace Bit.OwinCore.Middlewares
 {
     public class AspNetCoreLogUserInformationMiddleware
     {
-        private readonly RequestDelegate Next;
+        private readonly RequestDelegate _next;
 
         public AspNetCoreLogUserInformationMiddleware(RequestDelegate next)
         {
-            Next = next;
+            _next = next;
         }
 
         public async Task Invoke(HttpContext context)
@@ -23,7 +23,7 @@ namespace Bit.OwinCore.Middlewares
 
             LogUserInformationMiddleware.LogUserInformation(logger, userInformationProvider);
 
-            await Next.Invoke(context);
+            await _next.Invoke(context);
         }
     }
 }

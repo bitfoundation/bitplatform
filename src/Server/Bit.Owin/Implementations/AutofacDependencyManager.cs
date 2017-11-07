@@ -284,7 +284,7 @@ namespace Bit.Owin.Implementations
 
         public virtual IDependencyManager RegisterInstance(object obj, TypeInfo serviceType, bool overwriteExciting = true, string name = null)
         {
-            return RegisterInstance(obj, serviceType, overwriteExciting, name);
+            return RegisterInstance(obj, new [] { serviceType }, overwriteExciting, name);
         }
 
         public virtual IDependencyManager RegisterInstance(object obj, TypeInfo[] servicesType, bool overwriteExciting = true, string name = null)
