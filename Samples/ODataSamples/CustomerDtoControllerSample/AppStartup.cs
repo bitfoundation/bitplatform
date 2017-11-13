@@ -22,6 +22,7 @@ using System.Linq;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Web.Http;
 using System.Web.OData.Builder;
 
 namespace CustomerDtoControllerSample
@@ -256,5 +257,32 @@ namespace CustomerDtoControllerSample
         }
 
         public virtual MyAppDbContext AppDbContext { get; set; }
+
+        public class SendEmailToCustomerParams
+        {
+            public int customerId { get; set; }
+
+            public string message { get; set; }
+        }
+
+        [Action]
+        public async Task SendEmailToCustomer(SendEmailToCustomerParams args)
+        {
+            // ...
+        }
+
+        [Function]
+        public virtual async Task<CustomerDto> GetCustomerById(int customerId, CancellationToken cancellationToken)
+        {
+            return await Mapper.FromEntityQueryToDtoQuery((await CustomersRepository.GetAllAsync(cancellationToken)))
+                .FirstAsync(c => c.Id == customerId, cancellationToken);
+        }
+
+        [Function]
+        public virtual async Task<SingleResult<CustomerDto>> GetCustomerById2(int customerId, CancellationToken cancellationToken)
+        {
+            return SingleResult.Create(Mapper.FromEntityQueryToDtoQuery((await CustomersRepository.GetAllAsync(cancellationToken)))
+                .Where(c => c.Id == customerId));
+        }
     }
 }

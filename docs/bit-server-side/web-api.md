@@ -171,7 +171,7 @@ In ASP.NET core projects, you've access to [IServiceCollection](https://docs.mic
 
 If you've got a complex scenario, simply drops us an [issue on github](https://github.com/bit-foundation/bit-framework/issues) or ask a question on [stackoverflow](https://stackoverflow.com/questions/tagged/bit-framework).
 
-### Exceptions:
+### Exception handling:
 
 Consider the following code:
 
@@ -238,6 +238,18 @@ Notes:
 
 1- Every response has a header called X-CorrelationId (RequestId). When we log exceptions for you, it has a X-CorrelationId, so you can associate a request/response to an exception.
 
-2- When your app is in debug mode, exceptions details are written into responses. So if "DebugModel" is set to "true" in environments.json, you see exception details, no matter the exception is known or not, but if it is set to "false", then you see "UnKnownException" for unknwon exceptions and exception's message for known exceptions.
+2- When your app is in debug mode, exceptions details are written into responses. So if "DebugModel" is set to "true" in environments.json, you see exception details, no matter the exception is known or not, but if it is set to "false", then you see "UnKnownException" for unknown exceptions and exception's message for known exceptions.
 
 Pro tip: If you prefer to create new "Known" exception types, [take a look at following question in stackoverflow.com](https://stackoverflow.com/a/46202377/2720104)
+
+### Logging:
+
+Everything is being logged in memory, and there are some log stores such as Windows event logs, Visual Studio's console etc.
+
+Log contains lots of important data such as user info, machine info, app info etc. It has a key called "X-CorrelationId" (RequestId). When client receives an error, there is a X-CorrelationId stored in both response and log.
+
+To add event log stores you can use following code:
+
+```csharp
+dependencyManager.RegisterDefaultLogger(typeof(WindowsEventsLogStore).GetTypeInfo(), typeof(DebugLogStore).GetTypeInfo()); // You can add as many as event log stores you want.
+```

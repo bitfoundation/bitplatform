@@ -189,19 +189,133 @@ It runs something like this on a database:
 select Id,FirstName,LastName from Customers where IsActive = 1 /*true*/
 ```
 
-There is no join between customers and cities as we've not requested CityName property. It's really performance tuned and smart!
+There is no join between customers and cities as we've not requested CityName property. It's smart!
 
 OData supports filtering, ordering, projection, paging etc in a standard way. Almost all UI vendors have support for OData in their rad components such as data grid etc. You can create amazing excel sheets and dashboard using its odata support. In C#/TypeScript/JavaScript you're able to write LINQ queries to consume odata resources. For example:
 
 ```csharp
-context.customers.GetActiveCustomers().Where(c => c.CityId == 1).ToArray(); // This will be converted to $fitler > CityId eq 1
+context.customers.GetActiveCustomers().Where(c => c.CityId == 1).ToArray(); // C#
+
+// This will be converted to $fitler > CityId eq 1
 ```
 
 ```javascript
-context.customers.getActiveCustomers().filter(c => c.CityId == 1).toArray();
+context.customers.getActiveCustomers().filter(c => c.CityId == 1).toArray(); // JavaScript/TypeScript
 ```
 
-Action | CRUD | SingleResult | TypeScript client | C# client | Logging
+**OData action:**
+
+GetActiveCustomers is an OData function. Let's write an OData action to send an email to a customer by customerId and message. (Imaging every customer has an email in database).
+
+```csharp
+public class SendEmailToCustomerArgs
+{
+    public int customerId { get; set; }
+
+    public string message { get; set; }
+}
+
+public async Task SendEmailToCustomer(SendEmailToCustomerArgs args)
+{
+    // ...
+}
+```
+
+As you can see this action has no return value (Task is an async equivalent of void). There is a class called SendEmailToCustomerArgs. Each property of that class describes one of your parameters. It can have a properties such as public Customer[] customers { get; set; } etc.
+
+To accept a complex type, you've to define your complex type as following:
+
+```csharp
+[ComplexType]
+public class Location
+{
+    public int Lat { get;set; }
+    public int Lon { get;set; }
+}
+```
+
+SendEmailToCustomerArgs can accepts following parameters too:
+
+```csharp
+public class SendEmailToCustomerParams
+{
+    public Location location { get; set; } // complex type parameter
+
+    public Customer[] customers { get; set; } // array of customer dto
+}
+```
+
+**OData Single result:**
+
+Imaging you want to create a function which returns customer by its Id. You might develop something like this:
+
+```csharp
+[Function]
+public virtual async Task<CustomerDto> GetCustomerById(int customerId, CancellationToken cancellationToken)
+{
+    return await Mapper.FromEntityQueryToDtoQuery((await CustomersRepository.GetAllAsync(cancellationToken)))
+                       .FirstAsync(c => c.Id == customerId, cancellationToken);
+}
+```
+
+First, it converts model query to dto query, then it returns customer by id. We recommend you to use SingleResult here. It has following advantages:
+
+1- In case no data is found, it returns 404 - NotFound status code.
+
+2- It supports odata queries such as $select, so if you want, you can return some properties of customer when you call GetCustomerById
+
+Let's rewrite that as following:
+
+```csharp
+[Function]
+public virtual async Task<SingleResult<CustomerDto>> GetCustomerById2(int customerId, CancellationToken cancellationToken)
+{
+    return SingleResult.Create(Mapper.FromEntityQueryToDtoQuery((await CustomersRepository.GetAllAsync(cancellationToken)))
+        .Where(c => c.Id == customerId)); // We use .Where instead of .First
+}
+```
+
+
+**Associations:**
+
+Imaging you've CategoryDto & ProductDto classes where one category has many products. You can write followings:
+
+```csharp
+
+public class CategoryDto : IDto
+{
+    public int Id { get; set; }
+
+    public string Name { get; set; }
+
+    [InverseProperty(nameof(ProductDto.Category))]
+    public List<ProductDto> Products { get; set; }
+}
+
+public class ProductDto : IDto
+{
+    public int Id { get; set; }
+
+    public string Name { get; set; }
+
+    public int CategoryId { get; set; }
+
+    [ForeignKey(nameof(CategoryId))]
+    [InverseProperty(nameof(CategoryDto.Products))]
+    public CategoryDto Category { get; set; }
+}
+
+```
+
+You provide such a details for following reasons:
+
+1- OData is a query language, for example you can execute complicated queries such as "categories without products" ($filter) directly from client side. You can load categories which are located in specific city with or without their products ($exapnd).
+
+2- We offer a local (sqlLite-webSql-indexedDb) database creation from your DTO(s) in C#/JavaScript/TypeScript, so you can use linq queries to work with offline database as like as your odata server. We also offer a sync service to push/pull changes to/from online server and local database. To create that database, we need those information.
+
+DtoSetController
+
+Custom model dto mapping
 
 Background Job Worker
 
