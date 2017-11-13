@@ -19,7 +19,7 @@
     "CustomerDtoControllerSample": {
       "commandName": "Project",
       "launchBrowser": true,
-      "launchUrl": "odata/MyApp/$metadata",
+      "launchUrl": "odata/swagger/ui/index#!/Customers/Customers_GetActiveCustomers",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
       },

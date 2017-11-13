@@ -10,7 +10,7 @@ Using bit you'll get more benefits from web api. This includes following:
     - Self host Windows services + Azure web jobs
 2. We've configured web api on top of [asp.net core/owin request branching](https://docs.microsoft.com/en-us/aspnet/core/fundamentals/middleware). Think about something as fast as node js with power of .NET (-:
 3. We've developed extensive logging infrastructure in bit framework. It logs everything for you in your app, including web api traces.
-4. We've configured headers like [X-Content-Type-Options](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/X-Content-Type-Options), [X-CorrelationId](http://theburningmonk.com/2015/05/a-consistent-approach-to-track-correlation-ids-through-microservices/) etc. We've done this to improve logging, security etc.
+4. We've configured headers like [X-Content-Type-Options](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/X-Content-Type-Options), [X-CorrelationId](http://theburningmonk.com/2015/05/a-consistent-approach-to-track-correlation-ids-through-microservices/) etc to improve logging, security etc.
 5. You can protect your web api with bit identity server, a modern single sign on server based on open id/oauth 2.0
 
 ## Getting started

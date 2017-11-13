@@ -116,8 +116,8 @@ These are AppStartup registrations:
 dependencyManager.Register<IDbConnectionProvider, DefaultDbConnectionProvider<SqlConnection>>(); // Uses Sql connection
 dependencyManager.RegisterEfDbContext<MyAppDbContext>(); // Registers db context class
 dependencyManager.RegisterAppEvents<MyAppDbContextInitializer>(); // App event to initialize db context at startup
-dependencyManager.RegisterGeneric(typeof(IRepository<>).GetTypeInfo(), typeof(MyAppRepository<>).GetTypeInfo()); // You can inject IRepository<Customer> or IRepository<any class you want> by this generic registrations
-dependencyManager.Register<IOrdersRepository, OrdersRepository>(); // It registers custome orders repository
+dependencyManager.RegisterRepository(typeof(MyAppRepository<>).GetTypeInfo()); // You can inject IRepository<Customer> or IRepository<any class you want>
+dependencyManager.RegisterRepository(typeof(OrdersRepository).GetTypeInfo()); // It registers custom orders repository
 ```
 
 ### Entity Framework Core

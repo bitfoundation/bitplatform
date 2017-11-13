@@ -7,13 +7,16 @@ OData RESTful APIs are easy to consume. The OData metadata, a machine-readable d
 
 Using bit framework, you can build OData services very easily, and we generate C# - TypeScript - JavaScript clients for you automatically. You can use those no matter you're developing xamarin forms, angular js, angular, react js & native etc. We also have out of the box support for Open-API (Swagger). Using [azure auto rest](https://github.com/Azure/autorest) tools, you can generate client side for almost any language you want.
 
-**An OData controller has built-in support for paging/filtering/sorting/projection/grouping and aggregation.** In C#/TypeScript/JavaScript you develop LINQ queries, then we send that query to server side and server returns data based on your query. OData supports batch requests as well which results into better performance.
+**An OData controller has full built-in support for paging/filtering/sorting/projection/grouping and aggregation.**
+
+In C#/TypeScript/JavaScript you develop LINQ queries, then we send that query to server side and server returns data based on your query. OData supports batch requests as well which results into better performance.
 
 In bit apps, you develop odata controllers for your DTO (Data transfer objects) classes.
 
-Instead of sending your "domain models/entities" to client, you send DTO to the client. Your "model/entities" gets complicated over time based on business requirements, and in the client side you need something less complicated and easier to use. DTO (Something similar to ViewModel in MVC) is a common best practice in modern software development world.
+Instead of sending your "domain models/entities" to client, you send DTO to the client. Your "model/entities" gets complicated over time based on business requirements, and at the client side you need something less complicated and easier to use. DTO (Something similar to ViewModel in MVC) is a common best practice in modern software development world.
 
-"Model/Entity" - DTO examples:
+
+**"Model/Entity" - DTO examples:**
 
 Example 1: Consider following "models/entities":
 
@@ -98,8 +101,6 @@ To send DTO to client side, you develop DtoController. [Examples can be found he
 
 ### 1- CustomerDtoControllerSample
 
-In this sample we don't create two DTO classes for customers as this is a simple sample only.
-
 In Bit-OData, you develop DtoController instead of ApiController. Note that you can continue developing API controllers side by side.
 
 So, lets take a look at new codes. First you've to configure web api & odata toghether by following code:
@@ -159,23 +160,26 @@ Note that you don't have to use bit repository here. You don't have to use entit
 Run the app and you're good to go. That's a swagger's console you see by default. By opening http://localhost:9000/odata/MyApp/$metadata you see $metadata. $metadata describes your DTO classes, complex types, enums, actions and functions in a standard format. There are tools in several languages to generate client side proxy for you. You can see the list of libraries and tools [here](http://www.odata.org/libraries/).
 Note that you can call OData controllers using jquery ajax, fetch, etc too, as they're REST APIs.
 
+
 Try GetActiveCustomers, It runs something like this on a database:
 
 ```sql
-select * from Customers inner join Cities on Id = CustomerId where IsActive = 1 /*true*/
+select * from Customers inner join Cities on Id = CustomerId where IsActive = 1 /*1 means true. It comes from your server side linq query: Where(c => c.IsActive == true))*/
 ```
 
-It has several parameters such as $filter, $order by etc. These are standard OData parameters and they work no matter where the data is come from. (You don't have to use Bit's repository or EntityFramework!)
+It accepts several parameters such as $filter, $order by etc. These are standard OData parameters and they work no matter where the data is come from (Bit repository, entity framework's db context, simple array etc).
+
 
 Try     CityId eq 1      for $filter, it returns customers located in City 1 only!
 
 It runs something like this on a database:
 
 ```sql
-select * from Customers inner join Cities on Id = CustomerId where IsActive = 1 /*true*/ and CityId = 1
+select * from Customers inner join Cities on Id = CustomerId where IsActive = 1 and CityId = 1
 ```
 
-As you see, the filter we've developed at server side (c => c.IsActive == true) is combined with query we passed from client side (CityId eq 1). Filters are combined with "AND", so there is no security risk at all.
+As you see, the filter we've developed at server side (c => c.IsActive == true) is **combined** with query we passed from client side (CityId eq 1). Filters are combined with "AND", so there is no security risk at all.
+
 
 Try     Id,FirstName,LastName    for $select, it returns those properties of customers only!
 
@@ -187,10 +191,24 @@ select Id,FirstName,LastName from Customers where IsActive = 1 /*true*/
 
 There is no join between customers and cities as we've not requested CityName property. It's really performance tuned and smart!
 
-OData supports filtering, ordering, projection, paging etc in a standard way. Almost all UI vendors have support for OData in their rad components such as data grid etc. You can create amazing excel sheets and dashboard using its odata support. In C# and TypeScript you're able to write LINQ queries to consume odata resources. For example:
+OData supports filtering, ordering, projection, paging etc in a standard way. Almost all UI vendors have support for OData in their rad components such as data grid etc. You can create amazing excel sheets and dashboard using its odata support. In C#/TypeScript/JavaScript you're able to write LINQ queries to consume odata resources. For example:
 
 ```csharp
-context.customers.GetActiveCustomers().Where(c => c.CityId == 1).ToList(); // This will be converted to $fitler > CityId eq 1
+context.customers.GetActiveCustomers().Where(c => c.CityId == 1).ToArray(); // This will be converted to $fitler > CityId eq 1
 ```
 
-Action | CRUD | SingleResult | TypeScript client | C# client | Exception handling | Logging |
+```javascript
+context.customers.getActiveCustomers().filter(c => c.CityId == 1).toArray();
+```
+
+Action | CRUD | SingleResult | TypeScript client | C# client | Logging
+
+Background Job Worker
+
+Singalr
+
+Identity Server
+
+Automated Tests
+
+Project creation
