@@ -24,6 +24,9 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Web.Http;
 using System.Web.OData.Builder;
+using System.Web.OData;
+using System.IdentityModel;
+using AutoMapper;
 
 namespace CustomerDtoControllerSample
 {
@@ -98,6 +101,7 @@ namespace CustomerDtoControllerSample
 
             dependencyManager.RegisterDtoEntityMapper();
             dependencyManager.RegisterDtoEntityMapperConfiguration<DefaultDtoEntityMapperConfiguration>();
+            dependencyManager.RegisterDtoEntityMapperConfiguration<MyAppDtoEntityMapperConfiguration>();
         }
     }
 
@@ -189,6 +193,10 @@ namespace CustomerDtoControllerSample
         public virtual DbSet<Order> Orders { get; set; }
 
         public virtual DbSet<City> Cities { get; set; }
+
+        public virtual DbSet<Product> Products { get; set; }
+
+        public virtual DbSet<Category> Categories { get; set; }
     }
 
     public class MyAppRepository<TEntity> : EfRepository<TEntity>
@@ -283,6 +291,121 @@ namespace CustomerDtoControllerSample
         {
             return SingleResult.Create(Mapper.FromEntityQueryToDtoQuery((await CustomersRepository.GetAllAsync(cancellationToken)))
                 .Where(c => c.Id == customerId));
+        }
+    }
+
+    #region Model
+
+    public class Category : IEntity
+    {
+        public int Id { get; set; }
+
+        public string Name { get; set; }
+
+        public bool IsActive { get; set; }
+
+        public List<Product> Products { get; set; }
+    }
+
+    public class Product : IEntity
+    {
+        public int Id { get; set; }
+
+        public string Name { get; set; }
+
+        public int CategoryId { get; set; }
+
+        [ForeignKey(nameof(CategoryId))]
+        public Category Category { get; set; }
+    }
+
+    #endregion
+
+    #region Dto
+
+    public class CategoryDto : IDto
+    {
+        public int Id { get; set; }
+
+        public string Name { get; set; }
+
+        [InverseProperty(nameof(ProductDto.Category))]
+        public List<ProductDto> Products { get; set; }
+
+        public bool IsActive { get; set; }
+
+        public int ProductsCount { get; set; }
+    }
+
+    public class ProductDto : IDto
+    {
+        public int Id { get; set; }
+
+        public string Name { get; set; }
+
+        public int CategoryId { get; set; }
+
+        [ForeignKey(nameof(CategoryId))]
+        [InverseProperty(nameof(CategoryDto.Products))]
+        public CategoryDto Category { get; set; }
+    }
+
+    #endregion
+
+    #region DtoSetControllers
+
+    public class CategoriesController : DtoSetController<CategoryDto, Category, int /* Key type */>
+    {
+        public async override Task<CategoryDto> Create(CategoryDto dto, CancellationToken cancellationToken)
+        {
+            // custom logic ...
+
+            return await base.Create(dto, cancellationToken);
+        }
+
+        public async override Task<CategoryDto> Update(int key, CategoryDto dto, CancellationToken cancellationToken)
+        {
+            // custom logic ...
+
+            return await base.Update(key, dto, cancellationToken);
+        }
+
+        public async override Task<CategoryDto> PartialUpdate(int key, Delta<CategoryDto> modifiedDtoDelta, CancellationToken cancellationToken)
+        {
+            // custom logic ...
+
+            return await base.PartialUpdate(key, modifiedDtoDelta, cancellationToken);
+        }
+
+        public async override Task Delete(int key, CancellationToken cancellationToken)
+        {
+            throw new BadRequestException(); // We may disable delete for this Dto.
+        }
+
+        public async override Task<SingleResult<CategoryDto>> Get(int key, CancellationToken cancellationToken)
+        {
+            return await base.Get(key, cancellationToken);
+        }
+
+        public async override Task<IQueryable<CategoryDto>> GetAll(CancellationToken cancellationToken)
+        {
+            return (await base.GetAll(cancellationToken)).Where(c => c.IsActive == true); // Return active categories only.
+        }
+    }
+
+    public class ProductsController : DtoSetController<ProductDto, Product, int>
+    {
+
+    }
+
+    #endregion
+
+    public class MyAppDtoEntityMapperConfiguration : IDtoEntityMapperConfiguration
+    {
+        public virtual void Configure(IMapperConfigurationExpression mapperConfigExpression)
+        {
+            mapperConfigExpression.CreateMap<Category, CategoryDto>()
+                .ForMember(category => category.ProductsCount, config => config.MapFrom(category => category.Products.Count()));
         }
     }
 }

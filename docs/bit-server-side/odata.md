@@ -262,7 +262,7 @@ First, it converts model query to dto query, then it returns customer by id. We 
 
 1- In case no data is found, it returns 404 - NotFound status code.
 
-2- It supports odata queries such as $select, so if you want, you can return some properties of customer when you call GetCustomerById
+2- It supports odata queries such as $select, so if you want, you can return some properties of the customer when you call GetCustomerById
 
 Let's rewrite that as following:
 
@@ -309,13 +309,39 @@ public class ProductDto : IDto
 
 You provide such a details for following reasons:
 
-1- OData is a query language, for example you can execute complicated queries such as "categories without products" ($filter) directly from client side. You can load categories which are located in specific city with or without their products ($exapnd).
+1- OData is a query language, for example, you can execute complicated queries such as "categories without products" ($filter) directly from the client side. You can load categories which are located in the specific city with or without their products ($exapnd).
 
-2- We offer a local (sqlLite-webSql-indexedDb) database creation from your DTO(s) in C#/JavaScript/TypeScript, so you can use linq queries to work with offline database as like as your odata server. We also offer a sync service to push/pull changes to/from online server and local database. To create that database, we need those information.
+2- We offer a local (sqlLite-webSql-indexedDb) database creation from your DTO(s) in C#/JavaScript/TypeScript, so you can use linq queries to work with the offline database as like as your odata server. We also offer a sync service to push/pull changes to/from online server and local database. To create that database, we need those information.
 
-DtoSetController
+**DtoSetController:**
 
-Custom model dto mapping
+DtoSetController needs 3 things: Model-Dto-Repository. It gives you Create-Read-Update-Delete over that repository. It's really simple and extendable. You can write actions/functions there and you can override following Create|Read|Update|Delete methods to customize them.
+
+**Custom Dto-Model mapping:**
+
+Imaging CategoryDto has a property called ProductsCount. It's a calculated property by something like this: category => category.Products.Count()
+
+To handle this, you've to develop custom mapping using AutoMapper facilities. For example:
+
+```csharp
+
+public class MyAppDtoEntityMapperConfiguration : IDtoEntityMapperConfiguration
+{
+    public virtual void Configure(IMapperConfigurationExpression mapperConfigExpression)
+    {
+        mapperConfigExpression.CreateMap<Category, CategoryDto>()
+            .ForMember(category => category.ProductsCount, config => config.MapFrom(category => category.Products.Count()));
+    }
+}
+
+// AppStartup class
+dependencyManager.RegisterDtoEntityMapperConfiguration<MyAppDtoEntityMapperConfiguration>();
+
+```
+
+Run the app, you can insert/update/delete/read categories and products using swagger ui. You can invoke OData queries such as $filter there.
+
+C# / JavaScript / TypeScript client
 
 Background Job Worker
 
