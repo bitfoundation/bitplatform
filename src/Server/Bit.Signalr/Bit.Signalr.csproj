@@ -3,7 +3,7 @@
   <PropertyGroup>
     <TargetFrameworks>net461;netcoreapp2.0</TargetFrameworks>
     <PackageTags>Bit AspNet Microsoft SignalR AspNetSignalR websockets real-time realtime comet HTTP streaming</PackageTags>
-    <Version>0.0.6.7</Version>
+    <Version>0.6.7</Version>
     <Authors>Bit Foundation</Authors>
     <Company>Bit Foundation</Company>
     <Product>Bit Framework</Product>
@@ -25,7 +25,6 @@
     <PackageReference Include="Microsoft.AspNet.SignalR.ServiceBus" Version="2.2.2" />
     <PackageReference Include="Microsoft.AspNet.SignalR.SqlServer" Version="2.2.2" />
     <PackageReference Include="Microsoft.CSharp" Version="4.4.0" />
-    <PackageReference Include="Microsoft.DotNet.Analyzers.Compatibility" Version="0.1.2-alpha" />
   </ItemGroup>
 
   <ItemGroup>

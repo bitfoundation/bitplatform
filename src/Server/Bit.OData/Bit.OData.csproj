@@ -3,7 +3,7 @@
   <PropertyGroup>
     <TargetFrameworks>net461;netcoreapp2.0</TargetFrameworks>
     <PackageTags>Bit Web API OData Rest Microsoft AspNet WebApi AspNetWebApi</PackageTags>
-    <Version>0.0.6.7</Version>
+    <Version>0.6.7</Version>
     <Authors>Bit Foundation</Authors>
     <Company>Bit Foundation</Company>
     <Product>Bit Framework</Product>
@@ -24,7 +24,6 @@
     <PackageReference Include="Bit.Microsoft.AspNet.OData" Version="6.1.0" />
     <PackageReference Include="Bit.Swashbuckle.OData" Version="3.4.1" />
     <PackageReference Include="LambdaSqlBuilder" Version="0.9.0" />
-    <PackageReference Include="Microsoft.DotNet.Analyzers.Compatibility" Version="0.1.2-alpha" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="1.1.1" />
     <PackageReference Include="Microsoft.OData.Core" Version="7.3.1" />
     <PackageReference Include="System.Collections" Version="4.3.0" />

@@ -3,7 +3,7 @@
   <PropertyGroup>
     <TargetFramework>net461</TargetFramework>
     <PackageTags>Bit EntityFramework Entity Framework EF Database Microsoft Data O/RM ADO.NET</PackageTags>
-    <Version>0.0.6.7</Version>
+    <Version>0.6.7</Version>
     <Authors>Bit Foundation</Authors>
     <Company>Bit Foundation</Company>
     <Product>Bit Framework</Product>
@@ -22,7 +22,6 @@
 
   <ItemGroup>
     <PackageReference Include="EntityFramework" Version="6.2.0" />
-    <PackageReference Include="Microsoft.DotNet.Analyzers.Compatibility" Version="0.1.2-alpha" />
   </ItemGroup>
 
   <ItemGroup>

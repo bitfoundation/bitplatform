@@ -3,7 +3,7 @@
   <PropertyGroup>
     <TargetFrameworks>net461;netcoreapp2.0</TargetFrameworks>
     <PackageTags>Bit Microsoft Katana OWIN</PackageTags>
-    <Version>0.0.6.7</Version>
+    <Version>0.6.7</Version>
     <Authors>Bit Foundation</Authors>
     <Company>Bit Foundation</Company>
     <Product>Bit Framework</Product>
@@ -30,7 +30,6 @@
     <PackageReference Include="IdentityServer3.AccessTokenValidation" Version="2.15.0" />
     <PackageReference Include="Lambda2Js" Version="3.0.1" />
     <PackageReference Include="Microsoft.AspNet.Razor" Version="3.2.3" />
-    <PackageReference Include="Microsoft.DotNet.Analyzers.Compatibility" Version="0.1.2-alpha" />
     <PackageReference Include="Microsoft.Owin.Security.Jwt" Version="3.1.0" />
     <PackageReference Include="Microsoft.Owin.StaticFiles" Version="3.1.0" />
     <PackageReference Include="Newtonsoft.Json" Version="10.0.3" />
@@ -40,7 +39,7 @@
     <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="[4.0.4.403061554,5)" />
     <PackageReference Include="IdentityModel" Version="[1.13.1,2)" />
     <PackageReference Include="System.Net.Http" Version="4.3.3" />
-    <PackageReference Include="System.Security.Cryptography.X509Certificates" Version="4.3.1" />
+    <PackageReference Include="System.Security.Cryptography.X509Certificates" Version="4.3.2" />
     <PackageReference Include="Thinktecture.IdentityModel.Owin.BasicAuthentication" Version="1.0.1" />
   </ItemGroup>
 
