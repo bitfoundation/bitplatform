@@ -95,7 +95,7 @@ public class DtoWithEnumController : DtoController<DtoWithEnum>
         {
             public bool Equals(EnumMember x, EnumMember y)
             {
-                return x.Name == y.Name && x.Value == y.Value && x.Index == y.Index;
+                return x?.Name == y?.Name && x?.Value == y?.Value && x?.Index == y?.Index;
             }
 
             public int GetHashCode(EnumMember obj)

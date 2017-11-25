@@ -146,7 +146,7 @@ namespace BitVSExtensionV1
 
             DefaultBitConfigProvider configProvider = new DefaultBitConfigProvider();
 
-            BitConfig config = null;
+            BitConfig config;
 
             try
             {

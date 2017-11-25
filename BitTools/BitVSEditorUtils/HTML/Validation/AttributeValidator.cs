@@ -79,7 +79,7 @@ namespace BitVSEditorUtils.HTML.Validation
             if (attribute.Type == "number")
             {
                 error = $"The value \"{value}\" is not a valid number.";
-                return double.TryParse(value, out double number);
+                return double.TryParse(value, out double _);
             }
 
             if (attribute.Type == "enum")

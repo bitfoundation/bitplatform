@@ -26,9 +26,9 @@ namespace BitCodeAnalyzer.Test.Helpers
                 throw new ArgumentOutOfRangeException(nameof(column), "column must be >= -1");
             }
 
-            this.Path = path;
-            this.Line = line;
-            this.Column = column;
+            Path = path;
+            Line = line;
+            Column = column;
         }
 
         public string Path { get; }
@@ -47,14 +47,14 @@ namespace BitCodeAnalyzer.Test.Helpers
         {
             get
             {
-                if (this._locations == null)
+                if (_locations == null)
                 {
-                    this._locations = new DiagnosticResultLocation[] { };
+                    _locations = new DiagnosticResultLocation[] { };
                 }
-                return this._locations;
+                return _locations;
             }
 
-            set => this._locations = value;
+            set => _locations = value;
         }
 
         public DiagnosticSeverity Severity { get; set; }
@@ -63,10 +63,10 @@ namespace BitCodeAnalyzer.Test.Helpers
 
         public string Message { get; set; }
 
-        public string Path => this.Locations.Length > 0 ? this.Locations[0].Path : "";
+        public string Path => Locations.Length > 0 ? Locations[0].Path : "";
 
-        public int Line => this.Locations.Length > 0 ? this.Locations[0].Line : -1;
+        public int Line => Locations.Length > 0 ? Locations[0].Line : -1;
 
-        public int Column => this.Locations.Length > 0 ? this.Locations[0].Column : -1;
+        public int Column => Locations.Length > 0 ? Locations[0].Column : -1;
     }
 }

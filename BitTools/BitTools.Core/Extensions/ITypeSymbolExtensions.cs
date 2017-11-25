@@ -217,8 +217,8 @@ namespace Microsoft.CodeAnalysis
             if (symbol == null)
                 throw new ArgumentNullException(nameof(symbol));
 
-            if (symbol is ITypeParameterSymbol)
-                return ((ITypeParameterSymbol)symbol).ConstraintTypes.Any(t => t.IsDto());
+            if (symbol is ITypeParameterSymbol parameterSymbol)
+                return parameterSymbol.ConstraintTypes.Any(t => t.IsDto());
 
             return symbol.TypeKind == TypeKind.Class && IsDto(symbol.AllInterfaces);
         }
@@ -249,11 +249,11 @@ namespace Microsoft.CodeAnalysis
             if (!elementType.IsCollectionType())
                 throw new InvalidOperationException("type is not a collection type");
 
-            if (elementType is IArrayTypeSymbol)
-                return ((IArrayTypeSymbol)elementType).ElementType;
+            if (elementType is IArrayTypeSymbol arrayTypeSymbol)
+                return arrayTypeSymbol.ElementType;
 
-            if (elementType is INamedTypeSymbol && ((INamedTypeSymbol)elementType).TypeArguments.Any())
-                elementType = ((INamedTypeSymbol)elementType).TypeArguments.ExtendedSingle($"Looking for type arguments of {elementType.Name}");
+            if (elementType is INamedTypeSymbol namedTypeSymbol && namedTypeSymbol.TypeArguments.Any())
+                elementType = namedTypeSymbol.TypeArguments.ExtendedSingle($"Looking for type arguments of {elementType.Name}");
 
             return elementType;
         }
