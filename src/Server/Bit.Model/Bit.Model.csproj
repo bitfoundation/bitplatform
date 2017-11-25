@@ -22,7 +22,7 @@
 
   <ItemGroup>
     <PackageReference Include="AutoMapper" Version="6.2.1" />
-    <PackageReference Include="System.ComponentModel.Annotations" Version="4.4.0" />
+	  <PackageReference Include="System.ComponentModel.Annotations" Version="4.4.0" />
   </ItemGroup>
 
   <ItemGroup>

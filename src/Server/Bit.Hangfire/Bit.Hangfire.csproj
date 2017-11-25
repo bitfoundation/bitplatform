@@ -23,7 +23,6 @@
   <ItemGroup>
     <PackageReference Include="Hangfire.Autofac" Version="2.3.1" />
     <PackageReference Include="HangFire.Azure.ServiceBusQueue" Version="2.2.1" />
-    <PackageReference Include="Hangfire.Core" Version="1.6.17" />
     <PackageReference Include="Hangfire.MemoryStorage" Version="1.5.2" />
     <PackageReference Include="Hangfire.SqlServer" Version="1.6.17" />
   </ItemGroup>

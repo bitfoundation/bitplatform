@@ -24,7 +24,6 @@
     <PackageReference Include="Autofac.SignalR2" Version="4.0.0" />
     <PackageReference Include="Microsoft.AspNet.SignalR.ServiceBus" Version="2.2.2" />
     <PackageReference Include="Microsoft.AspNet.SignalR.SqlServer" Version="2.2.2" />
-    <PackageReference Include="Microsoft.CSharp" Version="4.4.0" />
   </ItemGroup>
 
   <ItemGroup>
