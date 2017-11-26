@@ -62,5 +62,34 @@ namespace Microsoft.CodeAnalysis
                 .OfType<IFieldSymbol>()
                 .ExtendedSingle($"Looking for {value} in DataTypeAttribute field members", fld => Convert.ToInt32(fld.ConstantValue) == value).Name;
         }
+
+        public static bool IsAssociationProperty(this IPropertySymbol prop)
+        {
+            if (prop.Type.IsCollectionType() || prop.Type.IsQueryableType())
+            {
+                return TypeIsSimple(prop.Type.GetElementType()); // List<CustomerDto>
+            }
+            else
+            {
+                return TypeIsSimple(prop.Type); // CustomerDto
+            }
+        }
+
+        private static bool TypeIsSimple(this ITypeSymbol symbol)
+        {
+            string typeEdmName = symbol.GetEdmTypeName(useArrayForIEnumerableTypes: true);
+            bool typeIsSimpleType = typeEdmName.StartsWith("$data") || typeEdmName.StartsWith("Edm");
+            return !typeIsSimpleType && !symbol.IsEnum();
+        }
+
+        public static string GetInversePropertyName(this IPropertySymbol prop)
+        {
+            AttributeData inversePropertyAtt = prop.GetAttributes().SingleOrDefault(att => att.AttributeClass.Name == "InversePropertyAttribute");
+
+            if (inversePropertyAtt != null)
+                return inversePropertyAtt.ConstructorArguments.Single().Value.ToString();
+            else
+                return "$$unbound";
+        }
     }
 }

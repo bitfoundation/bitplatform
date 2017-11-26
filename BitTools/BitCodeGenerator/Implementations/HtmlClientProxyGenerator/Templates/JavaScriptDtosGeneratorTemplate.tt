@@ -28,9 +28,9 @@
 								{
 									#> , "elementType": "<#= (prp.Type).GetEdmElementTypeName() #>"
 			<# } #>
-			<# if (prp.GetAttributes().Any(att => att.AttributeClass.Name == "InversePropertyAttribute"))
+			<# if (prp.IsAssociationProperty())
 			{
-				#> , "inverseProperty": "<#= prp.GetAttributes().Single(att => att.AttributeClass.Name == "InversePropertyAttribute").ConstructorArguments.Single().Value.ToString() #>"
+				#> , "inverseProperty": "<#= prp.GetInversePropertyName() #>"
 			<# } #>
 			<# if (prp.IsKey()) { #>
 			, "key": true

@@ -6,7 +6,7 @@
 <#@ import namespace="System.Linq" #>
 <#@ import namespace="System" #>
 
-<#= Mapping.Route #>Context = $data.EntityContext.extend("<#= Mapping.EdmName #>Context", {
+<#= Mapping.Route #>Context = $data.EntityContext.extend("<#= Mapping.Route #>Context", {
 	<# foreach (DtoController controller in Controllers) { #>
 		<#= controller.Name.AsCamelCase() #> : {
 			"type": "$data.EntitySet",
