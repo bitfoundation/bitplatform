@@ -1,6 +1,6 @@
-﻿using System.Data.Entity;
+﻿using Bit.Core.Implementations;
+using System.Data.Entity;
 using System.Data.Entity.Infrastructure;
-using System.IO;
 
 namespace Bit.Data.EntityFramework.Implementations
 {
@@ -8,7 +8,7 @@ namespace Bit.Data.EntityFramework.Implementations
     {
         public UseDefaultModelStoreDbConfiguration()
         {
-            SetModelStore(new DefaultDbModelStore(Directory.GetCurrentDirectory()));
+            SetModelStore(new DefaultDbModelStore(DefaultPathProvider.Current.GetCurrentAppPath()));
         }
     }
 }
