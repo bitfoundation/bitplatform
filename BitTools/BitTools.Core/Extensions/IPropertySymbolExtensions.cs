@@ -67,19 +67,19 @@ namespace Microsoft.CodeAnalysis
         {
             if (prop.Type.IsCollectionType() || prop.Type.IsQueryableType())
             {
-                return TypeIsSimple(prop.Type.GetElementType()); // List<CustomerDto>
+                return IsAssociationProperty_Internal(prop.Type.GetElementType()); // List<CustomerDto>
             }
             else
             {
-                return TypeIsSimple(prop.Type); // CustomerDto
+                return IsAssociationProperty_Internal(prop.Type); // CustomerDto
             }
         }
 
-        private static bool TypeIsSimple(this ITypeSymbol symbol)
+        private static bool IsAssociationProperty_Internal(this ITypeSymbol symbol)
         {
             string typeEdmName = symbol.GetEdmTypeName(useArrayForIEnumerableTypes: true);
             bool typeIsSimpleType = typeEdmName.StartsWith("$data") || typeEdmName.StartsWith("Edm");
-            return !typeIsSimpleType && !symbol.IsEnum();
+            return !typeIsSimpleType && !symbol.IsEnum() && !symbol.IsComplexType();
         }
 
         public static string GetInversePropertyName(this IPropertySymbol prop)
