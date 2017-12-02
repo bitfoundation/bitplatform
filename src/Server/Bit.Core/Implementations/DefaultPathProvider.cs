@@ -2,7 +2,7 @@
 using System.IO;
 using Bit.Core.Contracts;
 
-namespace Bit.Owin.Implementations
+namespace Bit.Core.Implementations
 {
     public class DefaultPathProvider : IPathProvider
     {

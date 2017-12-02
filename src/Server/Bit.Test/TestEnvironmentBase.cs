@@ -1,5 +1,6 @@
 ﻿using Bit.Core;
 using Bit.Core.Contracts;
+using Bit.Core.Implementations;
 using Bit.Core.Models;
 using Bit.Owin.Contracts;
 using Bit.Owin.Implementations;

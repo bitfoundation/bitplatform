@@ -1,5 +1,5 @@
-﻿using Bit.Core.Models;
-using Bit.Owin.Implementations;
+﻿using Bit.Core.Implementations;
+using Bit.Core.Models;
 using Bit.WebApi.Implementations;
 using System;
 using System.Net.Http;

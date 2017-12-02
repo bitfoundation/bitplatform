@@ -1,4 +1,4 @@
-﻿using Bit.Owin.Implementations;
+﻿using Bit.Core.Implementations;
 using Swashbuckle.Swagger;
 using System.Collections.Generic;
 using System.Linq;

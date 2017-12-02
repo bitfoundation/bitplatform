@@ -4,7 +4,7 @@ using System.Linq;
 using Bit.Core.Contracts;
 using Bit.Core.Models;
 
-namespace Bit.Owin.Implementations
+namespace Bit.Core.Implementations
 {
     public class DefaultAppEnvironmentProvider : IAppEnvironmentProvider
     {

@@ -1,11 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Data.SqlClient;
-using Bit.Core.Contracts;
-using Bit.Owin.Implementations;
+﻿using Bit.Core.Contracts;
+using Bit.Core.Implementations;
 using Bit.Tests.Model.DomainModels;
 using Bit.Tests.Properties;
 using Microsoft.EntityFrameworkCore;
+using System;
+using System.Collections.Generic;
+using System.Data.SqlClient;
 
 namespace Bit.Tests.Data.Implementations
 {

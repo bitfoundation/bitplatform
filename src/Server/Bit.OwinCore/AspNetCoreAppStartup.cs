@@ -1,4 +1,5 @@
 ﻿using Bit.Core.Contracts;
+using Bit.Core.Implementations;
 using Bit.Owin;
 using Bit.Owin.Contracts;
 using Bit.Owin.Implementations;

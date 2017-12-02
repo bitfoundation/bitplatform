@@ -1,5 +1,5 @@
 ﻿using Bit.Core.Contracts;
-using Bit.Owin.Implementations;
+using Bit.Core.Implementations;
 using Microsoft.AspNetCore.Hosting;
 
 namespace Bit.OwinCore.Implementations

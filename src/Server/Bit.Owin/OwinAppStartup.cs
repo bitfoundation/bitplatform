@@ -10,6 +10,7 @@ using Microsoft.Owin.BuilderProperties;
 using Microsoft.Owin.Logging;
 using Owin;
 using Microsoft.Owin.Security.DataProtection;
+using Bit.Core.Implementations;
 
 namespace Bit.Owin
 {
