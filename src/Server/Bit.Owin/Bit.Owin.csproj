@@ -27,7 +27,7 @@
   <ItemGroup>
     <PackageReference Include="Autofac" Version="4.6.2" />
     <PackageReference Include="Autofac.Owin" Version="4.1.0" />
-    <PackageReference Include="IdentityServer3.AccessTokenValidation" Version="2.15.0" />
+    <PackageReference Include="IdentityServer3.AccessTokenValidation" Version="2.15.1" />
     <PackageReference Include="Lambda2Js" Version="3.0.1" />
     <PackageReference Include="Microsoft.AspNet.Razor" Version="3.2.3" />
     <PackageReference Include="Microsoft.Owin.Security.Jwt" Version="3.1.0" />
