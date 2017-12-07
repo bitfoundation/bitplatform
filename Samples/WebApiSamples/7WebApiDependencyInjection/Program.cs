@@ -87,7 +87,7 @@ namespace WebApiDependencyInjection
                 webApiDependencyManager.RegisterWebApiMiddlewareUsingDefaultConfiguration();
             });
 
-            dependencyManager.Register<IEmailService, DefaultEmailService>(lifeCycle: DependencyLifeCycle.InstancePerLifetimeScope);
+            dependencyManager.Register<IEmailService, DefaultEmailService>(lifeCycle: DependencyLifeCycle.PerScopeInstance);
 
             ContainerBuilder autofacContainerBuilder = ((IAutofacDependencyManager)dependencyManager).GetContainerBuidler();
         }

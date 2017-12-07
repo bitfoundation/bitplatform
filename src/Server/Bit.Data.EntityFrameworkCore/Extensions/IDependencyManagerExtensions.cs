@@ -20,7 +20,7 @@ namespace Bit.Core.Contracts
             dependencyManager.Register(new[] { typeof(EfCoreDbContextBase).GetTypeInfo(), typeof(TDbContext).GetTypeInfo() }, typeof(TDbContext).GetTypeInfo(), overwriteExciting: false);
             dependencyManager.Register<IDataProviderSpecificMethodsProvider, EfCoreDataProviderSpecificMethodsProvider>(lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExciting: false);
             dependencyManager.Register<EfCoreDataProviderSpecificMethodsProvider, EfCoreDataProviderSpecificMethodsProvider>(lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExciting: false);
-            dependencyManager.Register<IUnitOfWork, DefaultUnitOfWork>(lifeCycle: DependencyLifeCycle.InstancePerLifetimeScope, overwriteExciting: false);
+            dependencyManager.Register<IUnitOfWork, DefaultUnitOfWork>(overwriteExciting: false);
 
             return dependencyManager;
         }

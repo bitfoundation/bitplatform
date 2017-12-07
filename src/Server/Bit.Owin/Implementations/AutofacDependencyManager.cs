@@ -172,7 +172,7 @@ namespace Bit.Owin.Implementations
         }
 
         public virtual IDependencyManager Register<TService, TImplementation>(string name = null,
-            DependencyLifeCycle lifeCycle = DependencyLifeCycle.InstancePerLifetimeScope, bool overwriteExciting = true)
+            DependencyLifeCycle lifeCycle = DependencyLifeCycle.PerScopeInstance, bool overwriteExciting = true)
             where TImplementation : class, TService
         {
             return Register(new[] { typeof(TService).GetTypeInfo() }, typeof(TImplementation).GetTypeInfo(), name, lifeCycle, overwriteExciting);
@@ -196,12 +196,12 @@ namespace Bit.Owin.Implementations
         /// <summary>
         /// Register an un-parameterised generic type, e.g. IRepository&lt;&gt;. Concrete types will be made as they are requested, e.g. with IRepository&lt;Customer&gt;
         /// </summary>
-        public IDependencyManager RegisterGeneric(TypeInfo serviceType, TypeInfo implementationType, DependencyLifeCycle lifeCycle = DependencyLifeCycle.InstancePerLifetimeScope)
+        public IDependencyManager RegisterGeneric(TypeInfo serviceType, TypeInfo implementationType, DependencyLifeCycle lifeCycle = DependencyLifeCycle.PerScopeInstance)
         {
             return RegisterGeneric(new[] { serviceType }, implementationType, lifeCycle);
         }
 
-        public IDependencyManager RegisterGeneric(TypeInfo[] servicesType, TypeInfo implementationType, DependencyLifeCycle lifeCycle = DependencyLifeCycle.InstancePerLifetimeScope)
+        public IDependencyManager RegisterGeneric(TypeInfo[] servicesType, TypeInfo implementationType, DependencyLifeCycle lifeCycle = DependencyLifeCycle.PerScopeInstance)
         {
             IRegistrationBuilder<object, ReflectionActivatorData, DynamicRegistrationStyle> registration = GetContainerBuidler().RegisterGeneric(implementationType)
                 .PropertiesAutowired(wiringFlags: PropertyWiringOptions.PreserveSetValues)
@@ -210,23 +210,23 @@ namespace Bit.Owin.Implementations
             if (lifeCycle == DependencyLifeCycle.SingleInstance)
                 registration = registration.SingleInstance();
             else
-                registration = registration.InstancePerLifetimeScope();
+                registration = registration.PerScopeInstance();
 
             return this;
         }
 
         public virtual IDependencyManager RegisterUsing<T>(Func<T> factory, string name = null,
-            DependencyLifeCycle lifeCycle = DependencyLifeCycle.InstancePerLifetimeScope, bool overwriteExciting = true)
+            DependencyLifeCycle lifeCycle = DependencyLifeCycle.PerScopeInstance, bool overwriteExciting = true)
         {
             return RegisterUsing(() => factory(), new[] { typeof(T).GetTypeInfo() }, name, lifeCycle, overwriteExciting);
         }
 
-        public virtual IDependencyManager RegisterUsing(Func<object> factory, TypeInfo serviceType, string name = null, DependencyLifeCycle lifeCycle = DependencyLifeCycle.InstancePerLifetimeScope, bool overwriteExciting = true)
+        public virtual IDependencyManager RegisterUsing(Func<object> factory, TypeInfo serviceType, string name = null, DependencyLifeCycle lifeCycle = DependencyLifeCycle.PerScopeInstance, bool overwriteExciting = true)
         {
             return RegisterUsing(factory, new[] { serviceType }, name, lifeCycle, overwriteExciting);
         }
 
-        public virtual IDependencyManager RegisterUsing(Func<object> factory, TypeInfo[] servicesType, string name = null, DependencyLifeCycle lifeCycle = DependencyLifeCycle.InstancePerLifetimeScope, bool overwriteExciting = true)
+        public virtual IDependencyManager RegisterUsing(Func<object> factory, TypeInfo[] servicesType, string name = null, DependencyLifeCycle lifeCycle = DependencyLifeCycle.PerScopeInstance, bool overwriteExciting = true)
         {
             IRegistrationBuilder<object, SimpleActivatorData, SingleRegistrationStyle> registration = GetContainerBuidler().Register((context, parameter) => factory.DynamicInvoke())
                 .As(servicesType);
@@ -243,17 +243,17 @@ namespace Bit.Owin.Implementations
             if (lifeCycle == DependencyLifeCycle.SingleInstance)
                 registration = registration.SingleInstance();
             else
-                registration = registration.InstancePerLifetimeScope();
+                registration = registration.PerScopeInstance();
 
             return this;
         }
 
-        public virtual IDependencyManager Register(TypeInfo serviceType, TypeInfo implementationType, string name = null, DependencyLifeCycle lifeCycle = DependencyLifeCycle.InstancePerLifetimeScope, bool overwriteExciting = true)
+        public virtual IDependencyManager Register(TypeInfo serviceType, TypeInfo implementationType, string name = null, DependencyLifeCycle lifeCycle = DependencyLifeCycle.PerScopeInstance, bool overwriteExciting = true)
         {
             return Register(new[] { serviceType }, implementationType, name, lifeCycle, overwriteExciting);
         }
 
-        public virtual IDependencyManager Register(TypeInfo[] servicesType, TypeInfo implementationType, string name = null, DependencyLifeCycle lifeCycle = DependencyLifeCycle.InstancePerLifetimeScope, bool overwriteExciting = true)
+        public virtual IDependencyManager Register(TypeInfo[] servicesType, TypeInfo implementationType, string name = null, DependencyLifeCycle lifeCycle = DependencyLifeCycle.PerScopeInstance, bool overwriteExciting = true)
         {
             if (implementationType == null)
                 throw new ArgumentNullException(nameof(implementationType));
@@ -277,7 +277,7 @@ namespace Bit.Owin.Implementations
             if (lifeCycle == DependencyLifeCycle.SingleInstance)
                 registration = registration.SingleInstance();
             else
-                registration = registration.InstancePerLifetimeScope();
+                registration = registration.PerScopeInstance();
 
             return this;
         }
