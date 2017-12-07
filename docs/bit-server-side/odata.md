@@ -9,7 +9,7 @@ Using bit framework, you can build OData services very easily, and we generate C
 
 **An OData controller has full built-in support for paging/filtering/sorting/projection/grouping and aggregation.**
 
-In C#/TypeScript/JavaScript you develop LINQ queries, then we send that query to server side and server returns data based on your query. OData supports batch requests as well which results into better performance.
+At client side, use develop LINQ queries using C#/TypeScript/JavaScript, then we send that query to server side and server returns data based on your query. OData supports batch requests as well which results into better performance.
 
 In bit apps, you develop odata controllers for your DTO (Data transfer objects) classes.
 

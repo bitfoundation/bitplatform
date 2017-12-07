@@ -47,7 +47,7 @@ dependencyManager.RegisterWebApiMiddleware(webApiDependencyManager =>
 
 That code configures web api into your app using the default configuration. Default configuration is all about security, performance, logging etc.
 
-Bit is a extensible framework developed based on best practices. We've extensively used dependency injection in our code base and you can customize default behaviors and conventions based on your requirements.
+Bit is an extensible framework developed based on best practices. We've extensively used dependency injection in our code base and you can customize default behaviors and conventions based on your requirements.
 
 In following samples, you can find out how to customize web api in bit, but feel free to [drops us an issue in github](https://github.com/bit-foundation/bit-framework/issues), ask a question on [stackoverflow.com](http://stackoverflow.com/questions/tagged/bit-framework) or use comments below if you can't find what you want in these samples.
 
@@ -135,9 +135,7 @@ Web API configuration and web api codes are all the same. (-:
 
 Web API configuration and web api codes are all the same. (-:
 
-Run .Net core app steps:
-
-Note that upcoming articles have no .net core sample as we've not officially supported .net core yet, but after we officially supported .net core, you can start an easy/safe migration.
+Note that upcoming articles have no .net core sample as we've not officially supported .net core yet, but after [we officially supported .net core](https://github.com/bit-foundation/bit-framework/issues/59), you can start an easy/safe migration.
 
 ### Web API - Dependency Injection samples:
 
@@ -154,10 +152,10 @@ It uses [Autofac](https://autofac.org/) by default. Support for other IOC contai
 You can also specify life cycle by calling .Register like following:
 
 ```csharp
-dependencyManager.Register<IEmailService, DefaultEmailService>(lifeCycle: DependencyLifeCycle.InstancePerLifetimeScope);
+dependencyManager.Register<IEmailService, DefaultEmailService>(lifeCycle: DependencyLifeCycle.PerScopeInstance);
 ```
 
-It accepts two life cycles: InstancePerLifetimeScope & SingleInstance. InstancePerLifetimeScope creates a new instance of your class for every web request, every background job start, etc. But SingleInstance creates one instance and uses that anywhere. Classes which are registered using InstancePerLifetimeScope have access to current user, and some classes like Entity framework's db context and repositories should be registered using InstancePerLifetimeScope.
+It accepts two life cycles: PerScopeInstance & SingleInstance. PerScopeInstance creates a new instance of your class for every web request, every background job start, etc. But SingleInstance creates one instance and uses that anywhere. Classes which are registered using PerScopeInstance have access to current user, and some classes like Entity framework's db context and repositories should be registered using PerScopeInstance.
 
 You've also other Register methods like RegisterGeneric, RegisterInstance, RegisterTypes and RegisterUsing, you're welcomed to use those method if you're a DI ninja ;D
 
@@ -192,7 +190,7 @@ When you try to save a customer, there might be two types of exceptions: "Known"
 
 It is known that a customer with identical first name and last name would not be saved to the database, but the client does not except sql exception because your database server is down!
 
-Every unknown exception results into following response:
+Every **unknown exception** results into following response:
 
 ```
 StatusCode: 500
@@ -221,7 +219,7 @@ ReasonPharse: "KnownError"
 Message: "Customer's first name and last name might not be identical"
 ```
 
-Bad request exception is as like as DomainLogicException, but it in a response with (400-BadRequest) status code. The status code of ResourceNotFoundException would be 404
+Bad request exception is as like as DomainLogicException, but it results in a response with (400-BadRequest) status code. The status code of ResourceNotFoundException would be 404
 
 Let's take a look at another example:
 
@@ -244,7 +242,7 @@ Pro tip: If you prefer to create new "Known" exception types, [take a look at fo
 
 ### Logging:
 
-Everything is being logged in memory, and there are some log stores such as Windows event logs, Visual Studio's console etc.
+Everything is being logged in memory, and there are some log stores such as Windows event logs, Visual Studio's console etc to make them permanent.
 
 Log contains lots of important data such as user info, machine info, app info etc. It has a key called "X-CorrelationId" (RequestId). When client receives an error, there is a X-CorrelationId stored in both response and log.
 

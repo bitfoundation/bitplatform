@@ -1,10 +1,10 @@
 # Optimized entity framework for N-Tier applications
 
-Using Entity Framework with "ASP.NET Web API and/or MVC" is a common thing in .NET based projects. Most developers use entity framework with its default configuration. Entity framework has several features such as **Property based** Lazy loading, **automatic** change tracking etc. But every feature comes with a cost and unfortunately these features are not useful in most scenarios in N-Tier apps.
+Using Entity Framework with "ASP.NET/ASP.NET Core" "Web API/MVC" is a common thing in .NET based projects. Most developers use entity framework with its default configuration. Entity framework has several features such as **Automatic** Property based Lazy loading, **Automatic** change tracking etc. But every feature comes with a cost and unfortunately these features are not useful in most scenarios in N-Tier apps.
 
-Consider a web api which returns a list of active customers from the database. With or without a repository, an entity framework's db context gets created. Then it runs a query against a database, creates an instance of the customer for each record of database result set. Then db context gets disposed. After that, [Json.NET](http://www.newtonsoft.com/json) returns json created from customers list.
+Consider a web api which returns list of active customers from the database. With or without a repository, an entity framework's db context gets created. Then it runs a query against a database, creates an instance of the customer for each record of database result set. Then db context gets disposed. After that, [Json.NET](http://www.newtonsoft.com/json) returns json created from customers list.
 
-When user/operator changes any of those customers in a web app or mobile app, we send changes to the server and a "new" instance of customer gets created based on that. We save that customer using "newly" created db context. So in this sample, there was no need to automatic change tracking to get active customers first.
+When user/operator changes any of those customers in a web app or mobile app, we send changes to the server and a "new" instance of customer gets created based on that. We save that customer using "newly" created db context. So in this sample, there is no need to automatic change tracking to get active customers first, because changes are not applied on that specific customers & db context instances. Changes are made in separate tier.
 
 This sample is a common thing in N-Tier world, when **most changes are made in other tiers such as browsers and mobile devices**.
 
