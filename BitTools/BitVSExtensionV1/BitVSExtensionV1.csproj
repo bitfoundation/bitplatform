@@ -279,10 +279,8 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\BitCodeGenerator\BitCodeGenerator.csproj">
-      <Project>{AFE4642A-22A7-4766-873C-80A69BF8545A}</Project>
+      <Project>{debed051-f837-4a0d-a230-02fb4e8533c3}</Project>
       <Name>BitCodeGenerator</Name>
-      <IncludeOutputGroupsInVSIX>BuiltProjectOutputGroup%3bBuiltProjectOutputGroupDependencies%3bGetCopyToOutputDirectoryItems%3bSatelliteDllsProjectOutputGroup%3b</IncludeOutputGroupsInVSIX>
-      <IncludeOutputGroupsInVSIXLocalOnly>DebugSymbolsProjectOutputGroup%3b</IncludeOutputGroupsInVSIXLocalOnly>
     </ProjectReference>
     <ProjectReference Include="..\BitTools.Core.VSExtensionBuildVersion\BitTools.Core.VSExtensionBuildVersion.csproj">
       <Project>{3AA3C219-2D0A-49DD-A025-5B4654BF2CFA}</Project>

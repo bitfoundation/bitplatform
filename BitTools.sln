@@ -1,13 +1,11 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.27004.2006
+VisualStudioVersion = 15.0.27130.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BitCodeAnalyzer", "BitTools\BitCodeAnalyzer\BitCodeAnalyzer.csproj", "{D3606CAF-481E-4632-9060-A9367A5D4F6A}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BitCodeAnalyzer.Test", "BitTools\BitCodeAnalyzer.Test\BitCodeAnalyzer.Test.csproj", "{A55080FD-856C-4F04-9308-A6C71C8510B7}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BitCodeGenerator", "BitTools\BitCodeGenerator\BitCodeGenerator.csproj", "{AFE4642A-22A7-4766-873C-80A69BF8545A}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BitCodeGenerator.Test", "BitTools\BitCodeGenerator.Test\BitCodeGenerator.Test.csproj", "{68E603AF-2472-4B68-9BC6-9772AFCA9579}"
 EndProject
@@ -20,6 +18,8 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BitTools.Core.VSExtensionBuildVersion", "BitTools\BitTools.Core.VSExtensionBuildVersion\BitTools.Core.VSExtensionBuildVersion.csproj", "{3AA3C219-2D0A-49DD-A025-5B4654BF2CFA}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BitCLIV1", "BitTools\BitCLIV1\BitCLIV1.csproj", "{932801D8-91D1-4A97-AB42-0DFF4E525690}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BitCodeGenerator", "BitTools\BitCodeGenerator\BitCodeGenerator.csproj", "{DEBED051-F837-4A0D-A230-02FB4E8533C3}"
 EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
@@ -40,10 +40,6 @@ Global
 		{A55080FD-856C-4F04-9308-A6C71C8510B7}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A55080FD-856C-4F04-9308-A6C71C8510B7}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A55080FD-856C-4F04-9308-A6C71C8510B7}.Release|Any CPU.Build.0 = Release|Any CPU
-		{AFE4642A-22A7-4766-873C-80A69BF8545A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{AFE4642A-22A7-4766-873C-80A69BF8545A}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{AFE4642A-22A7-4766-873C-80A69BF8545A}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{AFE4642A-22A7-4766-873C-80A69BF8545A}.Release|Any CPU.Build.0 = Release|Any CPU
 		{68E603AF-2472-4B68-9BC6-9772AFCA9579}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{68E603AF-2472-4B68-9BC6-9772AFCA9579}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{68E603AF-2472-4B68-9BC6-9772AFCA9579}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -64,6 +60,10 @@ Global
 		{932801D8-91D1-4A97-AB42-0DFF4E525690}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{932801D8-91D1-4A97-AB42-0DFF4E525690}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{932801D8-91D1-4A97-AB42-0DFF4E525690}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DEBED051-F837-4A0D-A230-02FB4E8533C3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DEBED051-F837-4A0D-A230-02FB4E8533C3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DEBED051-F837-4A0D-A230-02FB4E8533C3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DEBED051-F837-4A0D-A230-02FB4E8533C3}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
