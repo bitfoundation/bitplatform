@@ -43,7 +43,7 @@ namespace BitVSExtensionV1
 
             if (_applicationObject == null)
             {
-                ShowInitialLoadProblem("applicationObject is null");
+                ShowInitialLoadProblem($"{_applicationObject}-{nameof(DTE2)} not found");
                 return;
             }
 
@@ -51,7 +51,7 @@ namespace BitVSExtensionV1
 
             if (outputWindow == null)
             {
-                ShowInitialLoadProblem("outputWindow is null");
+                ShowInitialLoadProblem($"{outputWindow}-{nameof(Window)} not found");
                 return;
             }
 
@@ -63,7 +63,7 @@ namespace BitVSExtensionV1
             }
             catch (Exception ex)
             {
-                ShowInitialLoadProblem($"Error finding output pane {ex}.");
+                ShowInitialLoadProblem($"{_outputPane}-{nameof(OutputWindowPane)} not found => {ex}.");
                 return;
             }
 
@@ -75,7 +75,7 @@ namespace BitVSExtensionV1
             }
             catch (Exception ex)
             {
-                ShowInitialLoadProblem($"Could not find status bar {ex}.");
+                ShowInitialLoadProblem($"{_statusBar}-{nameof(IVsStatusbar)} not found => {ex}");
                 return;
             }
 
@@ -83,7 +83,7 @@ namespace BitVSExtensionV1
 
             if (_componentModel == null)
             {
-                LogWarn("Component model is null.");
+                LogWarn($"{_componentModel}-{nameof(IComponentModel)} is null.");
                 return;
             }
 
@@ -100,6 +100,39 @@ namespace BitVSExtensionV1
             _applicationObject.Events.BuildEvents.OnBuildProjConfigDone += _buildEvents_OnBuildProjConfigDone;
             _applicationObject.Events.BuildEvents.OnBuildDone += _buildEvents_OnBuildDone;
             _applicationObject.Events.BuildEvents.OnBuildBegin += _buildEvents_OnBuildBegin;
+            _applicationObject.Events.SolutionEvents.Opened += SolutionEvents_Opened;
+        }
+
+        private async void SolutionEvents_Opened()
+        {
+            Func<bool> vsHasASavedSolutionButRoslynWorkspaceHasNoPath = () =>
+            {
+                bool result = _applicationObject.Solution.Saved && string.IsNullOrEmpty(_visualStudioWorkspace.CurrentSolution.FilePath);
+                if (result == false)
+                    LogWarn($"Visual studio has a saved solution, but roslyn's workspace has no file path");
+                return result;
+            };
+
+            Func<bool> vsSolutionHasSomeProjectsButRoslynOneNothing = () =>
+            {
+                bool result = _applicationObject.Solution.Projects.Cast<object>().Any() && !_visualStudioWorkspace.CurrentSolution.Projects.Any();
+                if (result == false)
+                    LogWarn($"Visual studio has some projects, but roslyn's workspace has no project");
+                return result;
+            };
+
+            int retryCount = 30;
+
+            while (vsHasASavedSolutionButRoslynWorkspaceHasNoPath() || vsSolutionHasSomeProjectsButRoslynOneNothing() || retryCount <= 0)
+            {
+                await System.Threading.Tasks.Task.Delay(500);
+                retryCount--;
+            }
+
+            if (vsHasASavedSolutionButRoslynWorkspaceHasNoPath() || vsSolutionHasSomeProjectsButRoslynOneNothing())
+                LogWarn($"15 seconds delay wasn't enough to make Visual Studio's workspace ready.");
+
+            DoOnSolutionReadyOrChange();
         }
 
         private void GetWorkspace()
@@ -112,20 +145,11 @@ namespace BitVSExtensionV1
             }
 
             _visualStudioWorkspace.WorkspaceFailed += _workspace_WorkspaceFailed;
-            _visualStudioWorkspace.WorkspaceChanged += _workspace_WorkspaceChanged;
         }
 
         private void _workspace_WorkspaceFailed(object sender, WorkspaceDiagnosticEventArgs e)
         {
             LogWarn($"{sender.GetType().Name} {e.Diagnostic.Kind} {e.Diagnostic.Message}");
-        }
-
-        private void _workspace_WorkspaceChanged(object sender, WorkspaceChangeEventArgs e)
-        {
-            if (e.Kind == WorkspaceChangeKind.SolutionAdded)
-            {
-                DoOnSolutionReadyOrChange();
-            }
         }
 
         private async void DoOnSolutionReadyOrChange()
@@ -142,7 +166,7 @@ namespace BitVSExtensionV1
                 return;
             }
 
-            _outputPane.Clear();
+            _outputPane.OutputString("__________----------__________ \n");
 
             DefaultBitConfigProvider configProvider = new DefaultBitConfigProvider();
 
@@ -212,6 +236,48 @@ namespace BitVSExtensionV1
         private bool WorkspaceHasBitConfigV1JsonFile()
         {
             return File.Exists(_visualStudioWorkspace.CurrentSolution.FilePath) && File.Exists(Path.Combine(Path.GetDirectoryName(_visualStudioWorkspace.CurrentSolution.FilePath) + "\\BitConfigV1.json"));
+        }
+
+        private void InitHtmlElements(BitConfig config)
+        {
+            try
+            {
+                HtmlElementsContainer.Elements = new List<BitHtmlElement> { };
+
+                List<BitHtmlElement> allElements = new List<BitHtmlElement>();
+
+                foreach (string path in config.Schema.HtmlSchemaFiles)
+                {
+                    List<BitHtmlElement> newElements = JsonConvert.DeserializeObject<List<BitHtmlElement>>(File.ReadAllText(path));
+
+                    foreach (BitHtmlElement newElement in newElements)
+                    {
+                        newElement.Attributes = newElement.Attributes ?? new List<HtmlAttribute> { };
+                        newElement.Description = newElement.Description ?? "";
+
+                        if (string.IsNullOrEmpty(newElement.Name))
+                            throw new InvalidOperationException("Element must have a name");
+
+                        newElement.Type = newElement.Type ?? "";
+
+                        BitHtmlElement equivalentHtmlElement = allElements.FirstOrDefault(e => e.Name == newElement.Name);
+
+                        if (equivalentHtmlElement != null)
+                            equivalentHtmlElement.Attributes.AddRange(newElement.Attributes);
+                        else
+                            allElements.Add(newElement);
+                    }
+                }
+
+                if (!allElements.Any(element => element.Name == "*"))
+                    allElements.Add(new BitHtmlElement { Name = "*", Attributes = new List<HtmlAttribute> { }, Description = "", Type = "existing" });
+
+                HtmlElementsContainer.Elements = allElements;
+            }
+            catch (Exception ex)
+            {
+                LogException("Init html elements failed.", ex);
+            }
         }
 
         private async System.Threading.Tasks.Task CallGenerateCodes()
@@ -287,48 +353,6 @@ namespace BitVSExtensionV1
             await cleaner.DeleteCodes(_visualStudioWorkspace);
 
             Log("Generated codes were deleted.");
-        }
-
-        private void InitHtmlElements(BitConfig config)
-        {
-            try
-            {
-                HtmlElementsContainer.Elements = new List<BitHtmlElement> { };
-
-                List<BitHtmlElement> allElements = new List<BitHtmlElement>();
-
-                foreach (string path in config.Schema.HtmlSchemaFiles)
-                {
-                    List<BitHtmlElement> newElements = JsonConvert.DeserializeObject<List<BitHtmlElement>>(File.ReadAllText(path));
-
-                    foreach (BitHtmlElement newElement in newElements)
-                    {
-                        newElement.Attributes = newElement.Attributes ?? new List<HtmlAttribute> { };
-                        newElement.Description = newElement.Description ?? "";
-
-                        if (string.IsNullOrEmpty(newElement.Name))
-                            throw new InvalidOperationException("Element must have a name");
-
-                        newElement.Type = newElement.Type ?? "";
-
-                        BitHtmlElement equivalentHtmlElement = allElements.FirstOrDefault(e => e.Name == newElement.Name);
-
-                        if (equivalentHtmlElement != null)
-                            equivalentHtmlElement.Attributes.AddRange(newElement.Attributes);
-                        else
-                            allElements.Add(newElement);
-                    }
-                }
-
-                if (!allElements.Any(element => element.Name == "*"))
-                    allElements.Add(new BitHtmlElement { Name = "*", Attributes = new List<HtmlAttribute> { }, Description = "", Type = "existing" });
-
-                HtmlElementsContainer.Elements = allElements;
-            }
-            catch (Exception ex)
-            {
-                LogException("Init html elements failed.", ex);
-            }
         }
 
         private async void _buildEvents_OnBuildBegin(vsBuildScope scope, vsBuildAction action)
@@ -415,17 +439,18 @@ namespace BitVSExtensionV1
         {
             if (_visualStudioWorkspace != null)
             {
-                _visualStudioWorkspace.WorkspaceChanged -= _workspace_WorkspaceChanged;
                 _visualStudioWorkspace.WorkspaceFailed -= _workspace_WorkspaceFailed;
             }
 
-            if (_applicationObject?.Events?.BuildEvents != null)
+            if (_applicationObject?.Events != null)
             {
                 _applicationObject.Events.BuildEvents.OnBuildProjConfigDone -= _buildEvents_OnBuildProjConfigDone;
 
                 _applicationObject.Events.BuildEvents.OnBuildBegin -= _buildEvents_OnBuildBegin;
 
                 _applicationObject.Events.BuildEvents.OnBuildDone -= _buildEvents_OnBuildDone;
+
+                _applicationObject.Events.SolutionEvents.Opened -= SolutionEvents_Opened;
             }
 
             base.Dispose(disposing);
