@@ -210,7 +210,7 @@ namespace Bit.Owin.Implementations
             if (lifeCycle == DependencyLifeCycle.SingleInstance)
                 registration = registration.SingleInstance();
             else
-                registration = registration.PerScopeInstance();
+                registration = registration.InstancePerLifetimeScope();
 
             return this;
         }
@@ -243,7 +243,7 @@ namespace Bit.Owin.Implementations
             if (lifeCycle == DependencyLifeCycle.SingleInstance)
                 registration = registration.SingleInstance();
             else
-                registration = registration.PerScopeInstance();
+                registration = registration.InstancePerLifetimeScope();
 
             return this;
         }
@@ -277,7 +277,7 @@ namespace Bit.Owin.Implementations
             if (lifeCycle == DependencyLifeCycle.SingleInstance)
                 registration = registration.SingleInstance();
             else
-                registration = registration.PerScopeInstance();
+                registration = registration.InstancePerLifetimeScope();
 
             return this;
         }
