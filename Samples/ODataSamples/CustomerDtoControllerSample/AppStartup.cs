@@ -27,6 +27,7 @@ using System.Web.OData.Builder;
 using System.Web.OData;
 using System.IdentityModel;
 using AutoMapper;
+using Bit.Core.Implementations;
 
 namespace CustomerDtoControllerSample
 {
@@ -252,7 +253,7 @@ namespace CustomerDtoControllerSample
         [Function] // Any thing you like, customer array, entity framework db context, dapper, mongo db etc.
         public virtual async Task<IQueryable<CustomerDto>> GetActiveCustomers2(CancellationToken cancellationToken)
         {
-            return AppDbContext.Customers.Where(c => c.IsActive == true)
+            return AppDbContext.Customers.AsNoTracking().Where(c => c.IsActive == true)
                 .Select(c => new CustomerDto
                 {
                     Id = c.Id,

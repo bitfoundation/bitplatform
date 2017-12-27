@@ -8,14 +8,14 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Bit.Data.EntityFrameworkCore" Version="0.8.8" />
-    <PackageReference Include="Bit.WebApi" Version="0.8.8" />
-    <PackageReference Include="BitCodeAnalyzer" Version="1.1.9.8" />
-    <PackageReference Include="Microsoft.Owin.SelfHost" Version="3.1.0" />
+    <Folder Include="Properties\" />
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Properties\" />
+    <PackageReference Include="Bit.Data.EntityFrameworkCore" Version="0.8.9" />
+    <PackageReference Include="Bit.WebApi" Version="0.8.9" />
+    <PackageReference Include="BitCodeAnalyzer" Version="1.1.9.8" />
+    <PackageReference Include="Microsoft.Owin.SelfHost" Version="3.1.0" />
   </ItemGroup>
 
   <ItemGroup>

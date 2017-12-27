@@ -1,5 +1,7 @@
 ﻿using Bit.Model.Contracts;
 using System;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace BitChangeSetManager.Model
 {
@@ -8,8 +10,10 @@ namespace BitChangeSetManager.Model
         FaIr, EnUs
     }
 
-    public class User : IEntityWithDefaultGuidKey
+    public class User : IEntity
     {
+        [Key]
+        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public virtual Guid Id { get; set; }
 
         public virtual string UserName { get; set; }

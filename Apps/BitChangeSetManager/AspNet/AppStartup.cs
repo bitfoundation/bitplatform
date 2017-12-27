@@ -22,6 +22,7 @@ using System.Reflection;
 using Swashbuckle.Application;
 using Bit.Core.Models;
 using BitChangeSetManager.DataAccess.Implementations;
+using Bit.Core.Implementations;
 
 namespace BitChangeSetManager
 {

@@ -1,5 +1,5 @@
-﻿using Microsoft.AspNetCore.Hosting;
-using System.IO;
+﻿using Bit.OwinCore;
+using Microsoft.AspNetCore.Hosting;
 
 namespace WebApiAspNetCoreHost
 {
@@ -7,18 +7,12 @@ namespace WebApiAspNetCoreHost
     {
         public static void Main(string[] args)
         {
-            IWebHost host = new WebHostBuilder()
-                .UseKestrel(options =>
-                {
-                    options.AddServerHeader = false;
-                })
-                .UseContentRoot(Directory.GetCurrentDirectory())
-                .UseIISIntegration()
-                .UseStartup<AppStartup>()
-                .CaptureStartupErrors(true)
-                .Build();
-
-            host.Run();
+            BuildWebHost(args).Run();
         }
+
+        public static IWebHost BuildWebHost(string[] args) =>
+            BitWebHost.CreateDefaultBuilder(args)
+                .UseStartup<AppStartup>()
+                .Build();
     }
 }

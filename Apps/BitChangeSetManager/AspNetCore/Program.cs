@@ -1,5 +1,5 @@
-﻿using Microsoft.AspNetCore.Hosting;
-using System.IO;
+﻿using Bit.OwinCore;
+using Microsoft.AspNetCore.Hosting;
 
 namespace BitChangeSetManager.Core
 {
@@ -7,18 +7,12 @@ namespace BitChangeSetManager.Core
     {
         public static void Main(string[] args)
         {
-            IWebHost host = new WebHostBuilder()
-                .UseContentRoot(Directory.GetCurrentDirectory())
-                .UseKestrel(options =>
-                {
-                    options.AddServerHeader = false;
-                })
-                .UseIISIntegration()
-                .CaptureStartupErrors(true)
+            BuildWebHost(args).Run();
+        }
+
+        public static IWebHost BuildWebHost(string[] args) =>
+            BitWebHost.CreateDefaultBuilder(args)
                 .UseStartup<AppStartup>()
                 .Build();
-
-            host.Run();
-        }
     }
 }

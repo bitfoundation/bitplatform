@@ -1,5 +1,6 @@
 ﻿using Bit.Core;
 using Bit.Core.Contracts;
+using Bit.Core.Implementations;
 using Bit.Data;
 using Bit.Data.Contracts;
 using Bit.Data.EntityFrameworkCore.Contracts;

@@ -7,9 +7,10 @@ namespace Bit.Tests.Model.DomainModels
 {
     [Table("Cities", Schema = "Test")]
     [Serializable]
-    public class TestCity : IEntityWithDefaultGuidKey
+    public class TestCity : IEntity
     {
         [Key]
+        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public virtual Guid Id { get; set; }
 
         public virtual string Name { get; set; }

@@ -5,9 +5,10 @@ using Bit.Model.Contracts;
 
 namespace BitChangeSetManager.Model
 {
-    public class Delivery : IEntityWithDefaultGuidKey
+    public class Delivery : IEntity
     {
         [Key]
+        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public virtual Guid Id { get; set; }
 
         public virtual Guid CustomerId { get; set; }

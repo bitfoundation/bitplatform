@@ -6,9 +6,10 @@ using Bit.Model.Contracts;
 
 namespace BitChangeSetManager.Model
 {
-    public class ChangeSet : IEntityWithDefaultGuidKey
+    public class ChangeSet : IEntity
     {
         [Key]
+        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public virtual Guid Id { get; set; }
 
         [Required]
