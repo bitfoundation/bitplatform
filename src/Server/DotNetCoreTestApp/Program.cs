@@ -1,6 +1,6 @@
-﻿using Microsoft.AspNetCore.Hosting;
+﻿using Bit.OwinCore;
+using Microsoft.AspNetCore.Hosting;
 using System;
-using System.IO;
 using System.Reflection;
 
 namespace DotNetCoreTestApp
@@ -11,20 +11,13 @@ namespace DotNetCoreTestApp
         {
             AppDomain.CurrentDomain.AssemblyResolve += CurrentDomain_AssemblyResolve;
 
-            IWebHost host = new WebHostBuilder()
-                .UseKestrel(options =>
-                {
-                    options.AddServerHeader = false;
-                })
-                .UseContentRoot(Directory.GetCurrentDirectory())
-                .UseWebRoot(Directory.GetCurrentDirectory())
-                .UseIISIntegration()
-                .UseStartup<AppStartup>()
-                .CaptureStartupErrors(true)
-                .Build();
-
-            host.Run();
+            BuildWebHost(args).Run();
         }
+
+        public static IWebHost BuildWebHost(string[] args) =>
+            BitWebHost.CreateDefaultBuilder(args)
+                .UseStartup<AppStartup>()
+                .Build();
 
         private static Assembly CurrentDomain_AssemblyResolve(object sender, ResolveEventArgs args)
         {
