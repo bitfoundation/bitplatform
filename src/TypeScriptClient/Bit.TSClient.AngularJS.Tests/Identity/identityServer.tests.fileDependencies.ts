@@ -47,7 +47,7 @@ module Bit.Identity.Tests {
 
     dependencyManager.registerFileDependency({
         name: "fetch",
-        path: "bit-framework/src/TypeScriptClient/Bit.TSClient.Core/node_modules/fetch/fetch",
+        path: "bit-framework/src/TypeScriptClient/Bit.TSClient.Core/node_modules/whatwg-fetch/fetch",
         predicate: (appInfo) => {
             return typeof (fetch) == "undefined";
         }
