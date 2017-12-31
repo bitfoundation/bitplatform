@@ -34,7 +34,7 @@ namespace Bit.Owin.Middlewares
             var time = now.getTime();
             var expireTime = time + (expireTimeInSeconds * 1000);
             now.setTime(expireTime);
-            var nowAsGMTString = now.toGMTString();
+            var nowAsGMTString = now.toUTCString();
             for (var i = 0; i < parts.length; i++) {{
                 var partStr = parts[i];
                 var keyValue = partStr.split('=');
