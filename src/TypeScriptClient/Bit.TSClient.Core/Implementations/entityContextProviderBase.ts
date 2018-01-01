@@ -167,6 +167,10 @@
 
         public static defaultOfflineDbProvider: "indexedDb" | "webSql" | "local" = "local";
 
+        private isOfflineDbProvider(providerName: string): boolean {
+            return providerName == "indexedDb" || providerName == "webSql" || providerName == "local";
+        }
+
         @Log()
         public async getContext<TContext extends $data.EntityContext>(contextName: string, config?: { isOffline?: boolean, jayDataConfig?: any }): Promise<TContext> {
 
@@ -222,7 +226,9 @@
                         continue;
 
                     memberDefenition.elementType["addEventListener"]("beforeCreate", (sender: any, e: Model.Contracts.ISyncableDto) => {
-                        if ((e["context"] != null && e["context"]["ignoreEntityEvents"] != true && e["context"]["storageProvider"].name == EntityContextProviderBase.defaultOfflineDbProvider) || (e["storeToken"] != null && e["storeToken"].args.provider == EntityContextProviderBase.defaultOfflineDbProvider)) {
+                        const context = e["context"];
+                        const storeToken = e["storeToken"];
+                        if (context != null && context.ignoreEntityEvents != true && (this.isOfflineDbProvider(context.storageProvider.name) || (storeToken != null && this.isOfflineDbProvider(storeToken.args.provider)))) {
                             const eType = e.getType();
                             const members = eType.memberDefinitions as any;
                             for (let keyMember of members.getKeyProperties()) {
@@ -245,7 +251,9 @@
                     });
 
                     memberDefenition.elementType["addEventListener"]("beforeUpdate", (sender: any, e: Model.Contracts.ISyncableDto) => {
-                        if ((e["context"] != null && e["context"]["ignoreEntityEvents"] != true && e["context"]["storageProvider"].name == EntityContextProviderBase.defaultOfflineDbProvider) || (e["storeToken"] != null && e["storeToken"].args.provider == EntityContextProviderBase.defaultOfflineDbProvider)) {
+                        const context = e["context"];
+                        const storeToken = e["storeToken"];
+                        if (context != null && context.ignoreEntityEvents != true && (this.isOfflineDbProvider(context.storageProvider.name) || (storeToken != null && this.isOfflineDbProvider(storeToken.args.provider)))) {
                             const eType = e.getType();
                             const members = eType.memberDefinitions;
                             if (members["$IsSynced"] != null)
@@ -254,14 +262,18 @@
                     });
 
                     memberDefenition.elementType["addEventListener"]("beforeDelete", (sender: any, e: Model.Contracts.ISyncableDto) => {
-                        if (((e["context"] != null && e["context"]["ignoreEntityEvents"] != true && e["context"]["storageProvider"].name == EntityContextProviderBase.defaultOfflineDbProvider) || (e["storeToken"] != null && e["storeToken"].args.provider == EntityContextProviderBase.defaultOfflineDbProvider) && (e.Version != null && e.Version != "0"))) {
-                            const eType = e.getType();
-                            const members = eType.memberDefinitions;
-                            if (members["$IsSynced"] != null)
-                                e.IsSynced = false;
-                            if (members["$IsArchived"] != null) {
-                                e.IsArchived = true;
-                                e.entityState = $data.EntityState.Modified;
+                        const context = e["context"];
+                        const storeToken = e["storeToken"];
+                        if (context != null && context.ignoreEntityEvents != true && (this.isOfflineDbProvider(context.storageProvider.name) || (storeToken != null && this.isOfflineDbProvider(storeToken.args.provider)))) {
+                            if (e.Version != null && e.Version != "0000000000000000000") {
+                                const eType = e.getType();
+                                const members = eType.memberDefinitions;
+                                if (members["$IsSynced"] != null)
+                                    e.IsSynced = false;
+                                if (members["$IsArchived"] != null) {
+                                    e.IsArchived = true;
+                                    e.entityState = $data.EntityState.Modified;
+                                }
                             }
                         }
                     });
