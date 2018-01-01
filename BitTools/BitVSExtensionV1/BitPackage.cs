@@ -97,6 +97,7 @@ namespace BitVSExtensionV1
                 return;
             }
 
+            _buildEvents = _applicationObject.Events.BuildEvents;
             _applicationObject.Events.BuildEvents.OnBuildProjConfigDone += _buildEvents_OnBuildProjConfigDone;
             _applicationObject.Events.BuildEvents.OnBuildDone += _buildEvents_OnBuildDone;
             _applicationObject.Events.BuildEvents.OnBuildBegin += _buildEvents_OnBuildBegin;
@@ -206,20 +207,10 @@ namespace BitVSExtensionV1
             try
             {
                 bitWorkspaceIsPrepared = thereWasAnErrorInLastBuild = lastActionWasClean = false;
+
                 Log("Preparing bit workspace... This includes restoring nuget packages, building your solution and generating codes.");
 
-                using (System.Diagnostics.Process dotnetBuildProcess = new System.Diagnostics.Process())
-                {
-                    dotnetBuildProcess.StartInfo.UseShellExecute = false;
-                    dotnetBuildProcess.StartInfo.RedirectStandardOutput = true;
-                    dotnetBuildProcess.StartInfo.FileName = @"dotnet";
-                    dotnetBuildProcess.StartInfo.Arguments = "build";
-                    dotnetBuildProcess.StartInfo.CreateNoWindow = true;
-                    dotnetBuildProcess.StartInfo.WorkingDirectory = Directory.GetParent(_visualStudioWorkspace.CurrentSolution.FilePath).FullName;
-                    dotnetBuildProcess.Start();
-                    await dotnetBuildProcess.StandardOutput.ReadToEndAsync();
-                    dotnetBuildProcess.WaitForExit();
-                }
+                _applicationObject.Solution.SolutionBuild.Build(WaitForBuildToFinish: true);
             }
             catch (Exception ex)
             {
@@ -332,6 +323,7 @@ namespace BitVSExtensionV1
             {
                 if (!(await proj.GetCompilationAsync()).ReferencedAssemblyNames.Any())
                 {
+                    LogWarn($"{nameof(VisualStudioWorkspace)} is not ready due project {proj.Name}");
                     vsWorkspaceIsValid = false;
                     break;
                 }
@@ -467,6 +459,8 @@ namespace BitVSExtensionV1
         private OutputWindowPane _outputPane;
 
         private DTE2 _applicationObject;
+
+        private BuildEvents _buildEvents;
 
         private IVsStatusbar _statusBar;
 
