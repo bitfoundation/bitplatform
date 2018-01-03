@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "BitCLIV1": {
+      "commandName": "Project",
+      "commandLineArgs": "-a Generate -p ..\\..\\Bit.sln"
+    }
+  }
+}

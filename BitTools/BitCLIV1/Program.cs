@@ -1,4 +1,9 @@
-﻿using Fclp;
+﻿using BitCodeGenerator.Implementations;
+using BitCodeGenerator.Implementations.HtmlClientProxyGenerator;
+using BitTools.Core.Contracts;
+using Fclp;
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.MSBuild;
 using System;
 using System.IO;
 
@@ -54,7 +59,42 @@ namespace BitCLIV1
                 BitCLIV1Args typedArgs = commandLineParser.Object;
 
                 typedArgs.SolutionPath = Path.Combine(Environment.CurrentDirectory, typedArgs.SolutionPath);
+
+                using (MSBuildWorkspace workspace = MSBuildWorkspace.Create())
+                {
+                    workspace.LoadMetadataForReferencedProjects = workspace.SkipUnrecognizedProjects = true;
+
+                    workspace.WorkspaceFailed += Workspace_WorkspaceFailed;
+
+                    workspace.OpenSolutionAsync(typedArgs.SolutionPath).GetAwaiter().GetResult();
+
+                    try
+                    {
+                        switch (typedArgs.Action)
+                        {
+                            case BitCLIV1Action.Generate:
+                                IProjectDtoControllersProvider controllersProvider = new DefaultProjectDtoControllersProvider();
+                                IProjectDtosProvider dtosProvider = new DefaultProjectDtosProvider(controllersProvider);
+                                DefaultHtmlClientProxyGenerator generator = new DefaultHtmlClientProxyGenerator(new DefaultBitCodeGeneratorOrderedProjectsProvider(), new DefaultBitConfigProvider(), dtosProvider, new DefaultHtmlClientProxyDtoGenerator(), new DefaultHtmlClientContextGenerator(), controllersProvider, new DefaultProjectEnumTypesProvider(controllersProvider, dtosProvider));
+                                generator.GenerateCodes(workspace).GetAwaiter().GetResult();
+                                break;
+                            case BitCLIV1Action.Validate:
+                                throw new NotImplementedException("Validate");
+                            case BitCLIV1Action.Clean:
+                                throw new NotImplementedException("Clean");
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine(ex);
+                    }
+                }
             }
+        }
+
+        private static void Workspace_WorkspaceFailed(object sender, WorkspaceDiagnosticEventArgs e)
+        {
+            Console.WriteLine($"{e.Diagnostic.Kind} => {e.Diagnostic.Message}");
         }
     }
 }

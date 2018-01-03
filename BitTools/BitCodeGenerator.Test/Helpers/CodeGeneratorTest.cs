@@ -48,9 +48,17 @@ namespace BitCodeGenerator.Test.Helpers
 
             MSBuildWorkspace workspace = MSBuildWorkspace.Create();
 
+            workspace.WorkspaceFailed += Workspace_WorkspaceFailed;
+
             await workspace.OpenSolutionAsync(solutionPath);
 
             return workspace;
+        }
+
+        private void Workspace_WorkspaceFailed(object sender, WorkspaceDiagnosticEventArgs e)
+        {
+            if (e.Diagnostic.Kind == WorkspaceDiagnosticKind.Failure)
+                throw new InvalidOperationException(e.Diagnostic.Message);
         }
     }
 }

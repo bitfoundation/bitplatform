@@ -5,14 +5,18 @@
     <Version>1.1.9.9</Version>
     <AssemblyVersion>1.1.9.9</AssemblyVersion>
     <FileVersion>1.1.9.9</FileVersion>
+    <AutoGenerateBindingRedirects>True</AutoGenerateBindingRedirects>
+    <IsPackable>false</IsPackable>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="EntityFramework" Version="6.2.0" />
     <PackageReference Include="Microsoft.Build" Version="15.5.180" />
     <PackageReference Include="Microsoft.Build.Tasks.Core" Version="15.5.180" />
+    <PackageReference Include="Microsoft.CodeAnalysis" Version="1.0.0" />
     <PackageReference Include="MSTest.TestAdapter" Version="1.2.0" />
     <PackageReference Include="MSTest.TestFramework" Version="1.2.0" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.5.0" />
   </ItemGroup>
 
   <ItemGroup>
