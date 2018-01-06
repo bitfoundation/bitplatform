@@ -1,0 +1,39 @@
+{
+    "manifestVersion": 1,
+    "id": "BITCLIV1",
+    "name": "Bit CLI V1",
+    "version": "0.0.1",
+    "publisher": "bit-foundation",
+    "targets": [
+        {
+            "id": "Microsoft.VisualStudio.Services"
+        }
+    ],
+    "description": "Provides services to validate,generate,clean codes...",
+    "categories": [
+        "Build and release"
+    ],
+    "icons": {
+        "default": "images/extension-icon.png"
+    },
+    "files": [
+        {
+            "path": "buildtask"
+        },
+        {
+            "path": "bin"
+        }
+    ],
+    "contributions": [
+        {
+            "id": "custom-build-task",
+            "type": "ms.vss-distributed-task.task",
+            "targets": [
+                "ms.vss-distributed-task.tasks"
+            ],
+            "properties": {
+                "name": "buildtask"
+            }
+        }
+    ]
+}
