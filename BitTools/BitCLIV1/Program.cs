@@ -5,7 +5,9 @@ using Fclp;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.MSBuild;
 using System;
+using System.Diagnostics;
 using System.IO;
+using System.Threading.Tasks;
 
 namespace BitCLIV1
 {
@@ -28,10 +30,35 @@ namespace BitCLIV1
     {
         public static void Main(string[] args)
         {
-            ASyncMain(args).GetAwaiter().GetResult();
+            Stopwatch stopwatch = Stopwatch.StartNew();
+            try
+            {
+                Console.WriteLine("Starting...");
+                AsyncMain(args).GetAwaiter().GetResult();
+                Console.WriteLine("Code generation completed successfully");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.ToString());
+
+                if (ex is AggregateException aggExp)
+                {
+                    foreach (Exception innerException in aggExp.InnerExceptions)
+                    {
+                        Console.WriteLine(innerException.ToString());
+                    }
+                }
+
+                Console.WriteLine("Code generation completed with errors");
+            }
+            finally
+            {
+                stopwatch.Stop();
+                Console.WriteLine($"Finished... at {stopwatch.Elapsed.TotalSeconds.ToString("#.#")} seconds");
+            }
         }
 
-        public static async System.Threading.Tasks.Task ASyncMain(string[] args)
+        private static async Task AsyncMain(string[] args)
         {
             FluentCommandLineParser<BitCLIV1Args> commandLineParser = new FluentCommandLineParser<BitCLIV1Args>();
 
@@ -52,7 +79,7 @@ namespace BitCLIV1
 
             if (result.HasErrors == true)
             {
-                Console.WriteLine(result.ErrorText);
+                throw new Exception(result.ErrorText);
             }
             else
             {
@@ -60,33 +87,34 @@ namespace BitCLIV1
 
                 typedArgs.SolutionPath = Path.Combine(Environment.CurrentDirectory, typedArgs.SolutionPath);
 
+                if (!File.Exists(typedArgs.SolutionPath))
+                    throw new FileNotFoundException($"Solution could not be found at {typedArgs.SolutionPath}");
+
+                Console.WriteLine($"Solution Path: {typedArgs.SolutionPath}");
+                Console.WriteLine($"Action: {typedArgs.Action}");
+
                 using (MSBuildWorkspace workspace = MSBuildWorkspace.Create())
                 {
                     workspace.LoadMetadataForReferencedProjects = workspace.SkipUnrecognizedProjects = true;
 
                     workspace.WorkspaceFailed += Workspace_WorkspaceFailed;
 
-                    workspace.OpenSolutionAsync(typedArgs.SolutionPath).GetAwaiter().GetResult();
+                    await workspace.OpenSolutionAsync(typedArgs.SolutionPath);
 
-                    try
+                    switch (typedArgs.Action)
                     {
-                        switch (typedArgs.Action)
-                        {
-                            case BitCLIV1Action.Generate:
-                                IProjectDtoControllersProvider controllersProvider = new DefaultProjectDtoControllersProvider();
-                                IProjectDtosProvider dtosProvider = new DefaultProjectDtosProvider(controllersProvider);
-                                DefaultHtmlClientProxyGenerator generator = new DefaultHtmlClientProxyGenerator(new DefaultBitCodeGeneratorOrderedProjectsProvider(), new DefaultBitConfigProvider(), dtosProvider, new DefaultHtmlClientProxyDtoGenerator(), new DefaultHtmlClientContextGenerator(), controllersProvider, new DefaultProjectEnumTypesProvider(controllersProvider, dtosProvider));
-                                generator.GenerateCodes(workspace).GetAwaiter().GetResult();
-                                break;
-                            case BitCLIV1Action.Validate:
-                                throw new NotImplementedException("Validate");
-                            case BitCLIV1Action.Clean:
-                                throw new NotImplementedException("Clean");
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        Console.WriteLine(ex);
+                        case BitCLIV1Action.Generate:
+                            IProjectDtoControllersProvider controllersProvider = new DefaultProjectDtoControllersProvider();
+                            IProjectDtosProvider dtosProvider = new DefaultProjectDtosProvider(controllersProvider);
+                            DefaultHtmlClientProxyGenerator generator = new DefaultHtmlClientProxyGenerator(new DefaultBitCodeGeneratorOrderedProjectsProvider(), new DefaultBitConfigProvider(), dtosProvider, new DefaultHtmlClientProxyDtoGenerator(), new DefaultHtmlClientContextGenerator(), controllersProvider, new DefaultProjectEnumTypesProvider(controllersProvider, dtosProvider));
+                            await generator.GenerateCodes(workspace);
+                            break;
+                        case BitCLIV1Action.Validate:
+                            throw new NotImplementedException("Validate");
+                        case BitCLIV1Action.Clean:
+                            throw new NotImplementedException("Clean");
+                        default:
+                            throw new NotSupportedException();
                     }
                 }
             }
