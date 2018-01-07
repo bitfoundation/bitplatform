@@ -20,21 +20,14 @@
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
   </PropertyGroup>
 
-  <ItemGroup Condition="'$(TargetFramework)' != 'net461'">
-    <Compile Remove="Implementations\ActiveDirectoryUserServiceProvider.cs" />
-  </ItemGroup>
-
   <ItemGroup>
     <PackageReference Include="AntiXSS" Version="4.3.0" />
     <PackageReference Include="IdentityServer3" Version="2.6.1" />
+    <PackageReference Include="System.DirectoryServices.AccountManagement" Version="4.5.0-preview1-25914-04" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\Bit.Owin\Bit.Owin.csproj" />
-  </ItemGroup>
-
-  <ItemGroup Condition="'$(TargetFramework)' == 'net461'">
-    <Reference Include="System.DirectoryServices.AccountManagement" />
   </ItemGroup>
 
 </Project>
