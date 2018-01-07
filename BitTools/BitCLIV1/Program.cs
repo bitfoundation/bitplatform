@@ -23,7 +23,7 @@ namespace BitCLIV1
     {
         public BitCLIV1Action Action { get; set; }
 
-        public string SolutionPath { get; set; }
+        public string Path { get; set; }
     }
 
     public class Program
@@ -50,6 +50,8 @@ namespace BitCLIV1
                 }
 
                 Console.WriteLine("Code generation completed with errors");
+
+                throw;
             }
             finally
             {
@@ -67,7 +69,7 @@ namespace BitCLIV1
                 .Required()
                 .WithDescription($"Action to perform. {nameof(BitCLIV1Action.Clean)} || {nameof(BitCLIV1Action.Generate)} || {nameof(BitCLIV1Action.Validate)}. Required");
 
-            commandLineParser.Setup(arg => arg.SolutionPath)
+            commandLineParser.Setup(arg => arg.Path)
                 .As('p', "path")
                 .Required()
                 .WithDescription("Path to solution file. Required.");
@@ -85,13 +87,36 @@ namespace BitCLIV1
             {
                 BitCLIV1Args typedArgs = commandLineParser.Object;
 
-                typedArgs.SolutionPath = Path.Combine(Environment.CurrentDirectory, typedArgs.SolutionPath);
+                typedArgs.Path = Path.Combine(Environment.CurrentDirectory, typedArgs.Path);
 
-                if (!File.Exists(typedArgs.SolutionPath))
-                    throw new FileNotFoundException($"Solution could not be found at {typedArgs.SolutionPath}");
+                if (!File.Exists(typedArgs.Path))
+                    throw new FileNotFoundException($"Solution could not be found at {typedArgs.Path}");
 
-                Console.WriteLine($"Solution Path: {typedArgs.SolutionPath}");
+                Console.WriteLine($"Solution Path: {typedArgs.Path}");
                 Console.WriteLine($"Action: {typedArgs.Action}");
+
+                try
+                {
+                    using (Process dotnetBuildProcess = new Process())
+                    {
+                        dotnetBuildProcess.StartInfo.UseShellExecute = false;
+                        dotnetBuildProcess.StartInfo.RedirectStandardOutput = true;
+                        dotnetBuildProcess.StartInfo.FileName = "dotnet";
+                        dotnetBuildProcess.StartInfo.Arguments = $"build {typedArgs.Path}";
+                        dotnetBuildProcess.StartInfo.CreateNoWindow = true;
+                        dotnetBuildProcess.StartInfo.WorkingDirectory = Directory.GetParent(typedArgs.Path).FullName;
+                        dotnetBuildProcess.Start();
+                        string output = await dotnetBuildProcess.StandardOutput.ReadToEndAsync();
+                        Console.WriteLine(output);
+                        dotnetBuildProcess.WaitForExit();
+                    }
+
+                    Console.WriteLine("DotNetBuild completed successfully");
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"DotNetBuild Error => {ex.ToString()}");
+                }
 
                 using (MSBuildWorkspace workspace = MSBuildWorkspace.Create())
                 {
@@ -99,7 +124,7 @@ namespace BitCLIV1
 
                     workspace.WorkspaceFailed += Workspace_WorkspaceFailed;
 
-                    await workspace.OpenSolutionAsync(typedArgs.SolutionPath);
+                    await workspace.OpenSolutionAsync(typedArgs.Path);
 
                     switch (typedArgs.Action)
                     {

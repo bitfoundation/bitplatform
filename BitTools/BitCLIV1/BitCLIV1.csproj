@@ -15,6 +15,7 @@
     <PackageReference Include="Microsoft.Build.Tasks.Core" Version="15.5.180" />
     <PackageReference Include="Microsoft.Build.Utilities.Core" Version="15.5.180" />
     <PackageReference Include="Microsoft.CodeAnalysis" Version="1.0.0" />
+    <PackageReference Include="System.Threading.Tasks.Dataflow" Version="4.8.0" />
   </ItemGroup>
 
   <ItemGroup>
