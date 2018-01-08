@@ -59,12 +59,13 @@ namespace BitCLIV1
 
                 WriteLine("Code generation completed with errors", ConsoleColor.Red);
 
-                throw;
+                Environment.Exit(-1);
             }
             finally
             {
                 stopwatch.Stop();
                 WriteLine($"Finished... at {stopwatch.Elapsed.TotalSeconds.ToString("#.#")} seconds", ConsoleColor.Gray);
+                Environment.Exit(0);
             }
         }
 
@@ -114,7 +115,7 @@ namespace BitCLIV1
                         dotnetBuildProcess.StartInfo.FileName = "dotnet";
                         dotnetBuildProcess.StartInfo.Arguments = $"build {typedArgs.Path}";
                         dotnetBuildProcess.StartInfo.CreateNoWindow = true;
-                        dotnetBuildProcess.StartInfo.WorkingDirectory = Directory.GetParent(typedArgs.Path).FullName;
+                        dotnetBuildProcess.StartInfo.WorkingDirectory = Environment.CurrentDirectory = Directory.GetParent(typedArgs.Path).FullName;
                         dotnetBuildProcess.Start();
                         string output = await dotnetBuildProcess.StandardOutput.ReadToEndAsync();
                         WriteLine(output, ConsoleColor.White);
