@@ -28,35 +28,43 @@ namespace BitCLIV1
 
     public class Program
     {
+        private static void WriteLine(string message, ConsoleColor color)
+        {
+            ConsoleColor originalColor = Console.ForegroundColor;
+            Console.ForegroundColor = color;
+            Console.WriteLine(message);
+            Console.ForegroundColor = originalColor;
+        }
+
         public static void Main(string[] args)
         {
             Stopwatch stopwatch = Stopwatch.StartNew();
             try
             {
-                Console.WriteLine("Starting...");
+                WriteLine("Starting...", ConsoleColor.Gray);
                 AsyncMain(args).GetAwaiter().GetResult();
-                Console.WriteLine("Code generation completed successfully");
+                WriteLine("Code generation completed successfully", ConsoleColor.Green);
             }
             catch (Exception ex)
             {
-                Console.WriteLine(ex.ToString());
+                WriteLine(ex.ToString(), ConsoleColor.Red);
 
                 if (ex is AggregateException aggExp)
                 {
                     foreach (Exception innerException in aggExp.InnerExceptions)
                     {
-                        Console.WriteLine(innerException.ToString());
+                        WriteLine(innerException.ToString(), ConsoleColor.Red);
                     }
                 }
 
-                Console.WriteLine("Code generation completed with errors");
+                WriteLine("Code generation completed with errors", ConsoleColor.Red);
 
                 throw;
             }
             finally
             {
                 stopwatch.Stop();
-                Console.WriteLine($"Finished... at {stopwatch.Elapsed.TotalSeconds.ToString("#.#")} seconds");
+                WriteLine($"Finished... at {stopwatch.Elapsed.TotalSeconds.ToString("#.#")} seconds", ConsoleColor.Gray);
             }
         }
 
@@ -75,7 +83,7 @@ namespace BitCLIV1
                 .WithDescription("Path to solution file. Required.");
 
             commandLineParser.SetupHelp("?", "help")
-                .Callback(helpText => Console.WriteLine(helpText));
+                .Callback(helpText => WriteLine(helpText, ConsoleColor.Blue));
 
             ICommandLineParserResult result = commandLineParser.Parse(args);
 
@@ -92,11 +100,13 @@ namespace BitCLIV1
                 if (!File.Exists(typedArgs.Path))
                     throw new FileNotFoundException($"Solution could not be found at {typedArgs.Path}");
 
-                Console.WriteLine($"Solution Path: {typedArgs.Path}");
-                Console.WriteLine($"Action: {typedArgs.Action}");
+                WriteLine($"Solution Path: {typedArgs.Path}", ConsoleColor.Blue);
+                WriteLine($"Action: {typedArgs.Action}", ConsoleColor.Blue);
 
                 try
                 {
+                    WriteLine("DotNetBuild started...", ConsoleColor.Gray);
+
                     using (Process dotnetBuildProcess = new Process())
                     {
                         dotnetBuildProcess.StartInfo.UseShellExecute = false;
@@ -107,15 +117,15 @@ namespace BitCLIV1
                         dotnetBuildProcess.StartInfo.WorkingDirectory = Directory.GetParent(typedArgs.Path).FullName;
                         dotnetBuildProcess.Start();
                         string output = await dotnetBuildProcess.StandardOutput.ReadToEndAsync();
-                        Console.WriteLine(output);
+                        WriteLine(output, ConsoleColor.White);
                         dotnetBuildProcess.WaitForExit();
                     }
 
-                    Console.WriteLine("DotNetBuild completed successfully");
+                    WriteLine("DotNetBuild completed", ConsoleColor.Gray);
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine($"DotNetBuild Error => {ex.ToString()}");
+                    WriteLine($"DotNetBuild Error => {ex.ToString()}", ConsoleColor.Red);
                 }
 
                 using (MSBuildWorkspace workspace = MSBuildWorkspace.Create())
@@ -147,7 +157,7 @@ namespace BitCLIV1
 
         private static void Workspace_WorkspaceFailed(object sender, WorkspaceDiagnosticEventArgs e)
         {
-            Console.WriteLine($"{e.Diagnostic.Kind} => {e.Diagnostic.Message}");
+            WriteLine($"{e.Diagnostic.Kind} => {e.Diagnostic.Message}", e.Diagnostic.Kind == WorkspaceDiagnosticKind.Failure ? ConsoleColor.Red : ConsoleColor.Yellow);
         }
     }
 }
