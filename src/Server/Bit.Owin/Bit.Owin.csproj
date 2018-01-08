@@ -20,10 +20,6 @@
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
   </PropertyGroup>
 
-  <ItemGroup Condition="'$(TargetFramework)' != 'net461'">
-    <Compile Remove="Implementations\WindowsEventsLogStore.cs" />
-  </ItemGroup>
-
   <ItemGroup>
     <PackageReference Include="Autofac" Version="4.6.2" />
     <PackageReference Include="Autofac.Owin" Version="4.1.0" />
@@ -36,6 +32,7 @@
     <PackageReference Include="NWebsec.Owin" Version="2.3.1" />
     <PackageReference Include="RazorEngine" Version="3.10.0" />
     <PackageReference Include="System.Configuration.ConfigurationManager" Version="4.4.1" />
+    <PackageReference Include="System.Diagnostics.EventLog" Version="4.5.0-preview1-25914-04" />
     <PackageReference Include="System.Net.Http" Version="4.3.3" />
     <PackageReference Include="Thinktecture.IdentityModel.Owin.BasicAuthentication" Version="1.0.1" />
   </ItemGroup>
