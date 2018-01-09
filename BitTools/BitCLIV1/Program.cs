@@ -7,6 +7,8 @@ using Microsoft.CodeAnalysis.MSBuild;
 using System;
 using System.Diagnostics;
 using System.IO;
+using System.Reflection;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace BitCLIV1
@@ -28,11 +30,39 @@ namespace BitCLIV1
 
     public class Program
     {
-        private static void WriteLine(string message, ConsoleColor color)
+        private static void WriteInfo(string message)
+        {
+            WriteLine(message, ConsoleColor.Blue, isError: false);
+        }
+
+        private static void WriteWarning(string message)
+        {
+            WriteLine(message, ConsoleColor.Yellow, isError: false);
+        }
+
+        private static void WriteWellMessage(string message)
+        {
+            WriteLine(message, ConsoleColor.Green, isError: false);
+        }
+
+        private static void WriteMessage(string message)
+        {
+            WriteLine(message, ConsoleColor.White, isError: false);
+        }
+
+        private static void WriteError(string message)
+        {
+            WriteLine(message, ConsoleColor.Red, isError: true);
+        }
+
+        private static void WriteLine(string message, ConsoleColor color, bool isError)
         {
             ConsoleColor originalColor = Console.ForegroundColor;
             Console.ForegroundColor = color;
-            Console.WriteLine(message);
+            if (isError == false)
+                Console.WriteLine(message);
+            else
+                Console.Error.WriteLine(message);
             Console.ForegroundColor = originalColor;
         }
 
@@ -41,30 +71,38 @@ namespace BitCLIV1
             Stopwatch stopwatch = Stopwatch.StartNew();
             try
             {
-                WriteLine("Starting...", ConsoleColor.Gray);
+                WriteMessage("Starting...");
                 AsyncMain(args).GetAwaiter().GetResult();
-                WriteLine("Code generation completed successfully", ConsoleColor.Green);
+                WriteWellMessage("Code generation completed successfully");
             }
             catch (Exception ex)
             {
-                WriteLine(ex.ToString(), ConsoleColor.Red);
+                WriteError(ex.ToString());
+
+                if (ex is ReflectionTypeLoadException refExp)
+                {
+                    foreach (Exception innerException in refExp.LoaderExceptions)
+                    {
+                        WriteError(innerException.ToString());
+                    }
+                }
 
                 if (ex is AggregateException aggExp)
                 {
                     foreach (Exception innerException in aggExp.InnerExceptions)
                     {
-                        WriteLine(innerException.ToString(), ConsoleColor.Red);
+                        WriteError(innerException.ToString());
                     }
                 }
 
-                WriteLine("Code generation completed with errors", ConsoleColor.Red);
+                WriteError("Code generation completed with errors");
 
                 Environment.Exit(-1);
             }
             finally
             {
                 stopwatch.Stop();
-                WriteLine($"Finished... at {stopwatch.Elapsed.TotalSeconds.ToString("#.#")} seconds", ConsoleColor.Gray);
+                WriteMessage($"Finished... at {stopwatch.Elapsed.TotalSeconds.ToString("#.#")} seconds");
                 Environment.Exit(0);
             }
         }
@@ -84,7 +122,7 @@ namespace BitCLIV1
                 .WithDescription("Path to solution file. Required.");
 
             commandLineParser.SetupHelp("?", "help")
-                .Callback(helpText => WriteLine(helpText, ConsoleColor.Blue));
+                .Callback(helpText => WriteInfo(helpText));
 
             ICommandLineParserResult result = commandLineParser.Parse(args);
 
@@ -101,32 +139,52 @@ namespace BitCLIV1
                 if (!File.Exists(typedArgs.Path))
                     throw new FileNotFoundException($"Solution could not be found at {typedArgs.Path}");
 
-                WriteLine($"Solution Path: {typedArgs.Path}", ConsoleColor.Blue);
-                WriteLine($"Action: {typedArgs.Action}", ConsoleColor.Blue);
+                WriteInfo($"Solution Path: {typedArgs.Path}");
+                WriteInfo($"Action: {typedArgs.Action}");
 
                 try
                 {
-                    WriteLine("DotNetBuild started...", ConsoleColor.Gray);
+                    WriteMessage("DotNetBuild started...");
 
-                    using (Process dotnetBuildProcess = new Process())
+                    using (AutoResetEvent outputWaitHandle = new AutoResetEvent(false))
+                    using (AutoResetEvent errorWaitHandle = new AutoResetEvent(false))
                     {
-                        dotnetBuildProcess.StartInfo.UseShellExecute = false;
-                        dotnetBuildProcess.StartInfo.RedirectStandardOutput = true;
-                        dotnetBuildProcess.StartInfo.FileName = "dotnet";
-                        dotnetBuildProcess.StartInfo.Arguments = $"build {typedArgs.Path}";
-                        dotnetBuildProcess.StartInfo.CreateNoWindow = true;
-                        dotnetBuildProcess.StartInfo.WorkingDirectory = Environment.CurrentDirectory = Directory.GetParent(typedArgs.Path).FullName;
-                        dotnetBuildProcess.Start();
-                        string output = await dotnetBuildProcess.StandardOutput.ReadToEndAsync();
-                        WriteLine(output, ConsoleColor.White);
-                        dotnetBuildProcess.WaitForExit();
+                        using (Process dotnetBuildProcess = new Process())
+                        {
+                            dotnetBuildProcess.StartInfo.UseShellExecute = false;
+                            dotnetBuildProcess.StartInfo.RedirectStandardOutput = dotnetBuildProcess.StartInfo.RedirectStandardError = true;
+                            dotnetBuildProcess.StartInfo.FileName = "dotnet";
+                            dotnetBuildProcess.StartInfo.Arguments = $"build {typedArgs.Path}";
+                            dotnetBuildProcess.StartInfo.CreateNoWindow = true;
+                            dotnetBuildProcess.StartInfo.WorkingDirectory = Environment.CurrentDirectory = Directory.GetParent(typedArgs.Path).FullName;
+                            dotnetBuildProcess.OutputDataReceived += (sender, e) =>
+                            {
+                                if (e.Data != null)
+                                    WriteMessage(e.Data);
+                                else
+                                    outputWaitHandle.Set();
+                            };
+                            dotnetBuildProcess.ErrorDataReceived += (sender, e) =>
+                            {
+                                if (e.Data != null)
+                                    WriteError(e.Data);
+                                else
+                                    errorWaitHandle.Set();
+                            };
+                            dotnetBuildProcess.Start();
+                            dotnetBuildProcess.BeginOutputReadLine();
+                            dotnetBuildProcess.BeginErrorReadLine();
+                            dotnetBuildProcess.WaitForExit();
+                            outputWaitHandle.WaitOne();
+                            errorWaitHandle.WaitOne();
+                        }
                     }
 
-                    WriteLine("DotNetBuild completed", ConsoleColor.Gray);
+                    WriteMessage("DotNetBuild completed");
                 }
                 catch (Exception ex)
                 {
-                    WriteLine($"DotNetBuild Error => {ex.ToString()}", ConsoleColor.Red);
+                    WriteError($"DotNetBuild Error => {ex.ToString()}");
                 }
 
                 using (MSBuildWorkspace workspace = MSBuildWorkspace.Create())
@@ -158,7 +216,11 @@ namespace BitCLIV1
 
         private static void Workspace_WorkspaceFailed(object sender, WorkspaceDiagnosticEventArgs e)
         {
-            WriteLine($"{e.Diagnostic.Kind} => {e.Diagnostic.Message}", e.Diagnostic.Kind == WorkspaceDiagnosticKind.Failure ? ConsoleColor.Red : ConsoleColor.Yellow);
+            string message = $"{e.Diagnostic.Kind} => {e.Diagnostic.Message}";
+            if (e.Diagnostic.Kind == WorkspaceDiagnosticKind.Failure)
+                WriteError(message);
+            else
+                WriteWarning(message);
         }
     }
 }
