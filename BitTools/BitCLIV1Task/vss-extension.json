@@ -2,7 +2,7 @@
     "manifestVersion": 1,
     "id": "BITCLIV1",
     "name": "Bit CLI V1",
-    "version": "0.5.2",
+    "version": "0.6.2",
     "publisher": "bit-foundation",
     "targets": [
         {

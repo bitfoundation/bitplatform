@@ -113,7 +113,7 @@ namespace BitCLIV1
 
             commandLineParser.Setup(arg => arg.Action)
                 .As('a', "action")
-                .Required()
+                .SetDefault(BitCLIV1Action.Generate)
                 .WithDescription($"Action to perform. {nameof(BitCLIV1Action.Clean)} || {nameof(BitCLIV1Action.Generate)} || {nameof(BitCLIV1Action.Validate)}. Required");
 
             commandLineParser.Setup(arg => arg.Path)

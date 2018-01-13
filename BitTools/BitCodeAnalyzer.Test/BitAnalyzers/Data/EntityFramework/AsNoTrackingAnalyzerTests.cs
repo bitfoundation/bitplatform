@@ -5,6 +5,7 @@ using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.CodeAnalysis.MSBuild;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -49,7 +50,10 @@ namespace BitCodeAnalyzer.Test.BitAnalyzers.Data.EntityFramework
 
         public override async Task<Project> CreateProject(string[] sources, string language = LanguageNames.CSharp)
         {
-            MSBuildWorkspace workspace = MSBuildWorkspace.Create();
+            MSBuildWorkspace workspace = MSBuildWorkspace.Create(new Dictionary<string, string>()
+            {
+                { "TargetFramework", "net461" }
+            });
 
             await workspace.OpenSolutionAsync(Path.Combine(basePath, "EntityFrameworkFullAsNoTrackingCallTests.sln"));
 

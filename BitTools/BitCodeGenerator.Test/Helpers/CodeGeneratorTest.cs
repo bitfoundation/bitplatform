@@ -2,6 +2,7 @@
 using Microsoft.CodeAnalysis.MSBuild;
 using Microsoft.CodeAnalysis.Text;
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -46,7 +47,10 @@ namespace BitCodeGenerator.Test.Helpers
         {
             string solutionPath = Path.Combine(Environment.CurrentDirectory, @"..\..\..\..\..\Bit.sln");
 
-            MSBuildWorkspace workspace = MSBuildWorkspace.Create();
+            MSBuildWorkspace workspace = MSBuildWorkspace.Create(new Dictionary<string, string>()
+            {
+                { "TargetFramework", "net461" }
+            });
 
             workspace.WorkspaceFailed += Workspace_WorkspaceFailed;
 

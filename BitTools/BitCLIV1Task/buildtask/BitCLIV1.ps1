@@ -20,4 +20,3 @@ if(-not ($proc.ExitCode -eq 0)) {
 else {
     Write-Host "Bit CLI V1 Success" -ForegroundColor Green
 }
-
