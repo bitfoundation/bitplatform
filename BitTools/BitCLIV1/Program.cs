@@ -71,15 +71,12 @@ namespace BitCLIV1
 
         public static void Main(string[] args)
         {
-            new List<string> { "Microsoft.Build", "Microsoft.Build.Framework", "Microsoft.Build.Tasks.Core", "Microsoft.Build.Utilities.Core" }.ForEach(asm => RedirectAssembly(asm, new Version("15.1.0.0"), "b03f5f7f11d50a3a"));
-            RedirectAssembly("Microsoft.Build.Tasks.CodeAnalysis", new Version("2.6.0.0"), "31bf3856ad364e35");
-
-            ProjectCollection projectCollection = new ProjectCollection();
-
-            if (projectCollection.GetToolset("15.0") == null)
+            if (ProjectCollection.GlobalProjectCollection.GetToolset("15.0") == null)
             {
                 throw new Exception("MSBuild 15 not found");
             }
+
+            ProjectCollection.GlobalProjectCollection.DefaultToolsVersion = "15.0";
 
             Stopwatch stopwatch = Stopwatch.StartNew();
             try
@@ -118,31 +115,6 @@ namespace BitCLIV1
                 WriteMessage($"Finished... at {stopwatch.Elapsed.TotalSeconds.ToString("#.#")} seconds");
                 Environment.Exit(0);
             }
-        }
-
-        public static void RedirectAssembly(string shortName, Version targetVersion, string publicKeyToken)
-        {
-            ResolveEventHandler handler = null;
-
-            handler = (sender, args) =>
-            {
-                AssemblyName requestedAssembly = new AssemblyName(args.Name);
-
-                if (requestedAssembly.Name != shortName)
-                    return null;
-
-                requestedAssembly.Version = targetVersion;
-                requestedAssembly.SetPublicKeyToken(new AssemblyName("x, PublicKeyToken=" + publicKeyToken).GetPublicKeyToken());
-                requestedAssembly.CultureInfo = CultureInfo.InvariantCulture;
-
-                AppDomain.CurrentDomain.AssemblyResolve -= handler;
-
-                WriteInfo($"Redirecting {shortName} assembly...");
-
-                return Assembly.Load(requestedAssembly);
-            };
-
-            AppDomain.CurrentDomain.AssemblyResolve += handler;
         }
 
         private static async Task AsyncMain(string[] args)
