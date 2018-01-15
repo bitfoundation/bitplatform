@@ -1,140 +1,19 @@
-﻿<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\TypeScript\Microsoft.TypeScript.Default.props" Condition="Exists('$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\TypeScript\Microsoft.TypeScript.Default.props')" />
-  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+﻿<Project Sdk="Microsoft.NET.Sdk.Web" ToolsVersion="15.0">
   <PropertyGroup>
-    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProductVersion>
-    </ProductVersion>
-    <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>{DEAB1EBC-AEF6-4006-B458-A537B0987E22}</ProjectGuid>
-    <ProjectTypeGuids>{349c5851-65df-11da-9384-00065b846f21};{fae04ec0-301f-11d3-bf4b-00c04f79efbc}</ProjectTypeGuids>
-    <OutputType>Library</OutputType>
-    <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Bit.TSClient.Core</RootNamespace>
-    <AssemblyName>Bit.TSClient.Core</AssemblyName>
-    <TargetFrameworkVersion>v4.7</TargetFrameworkVersion>
-    <UseIISExpress>true</UseIISExpress>
-    <IISExpressSSLPort />
-    <IISExpressAnonymousAuthentication />
-    <IISExpressWindowsAuthentication />
-    <IISExpressUseClassicPipelineMode />
-    <UseGlobalApplicationHostFile />
-    <NuGetPackageImportStamp>
-    </NuGetPackageImportStamp>
-    <TargetFrameworkProfile />
+    <TargetFramework>netstandard2.0</TargetFramework>
     <TypeScriptToolsVersion>2.6</TypeScriptToolsVersion>
-    <Use64BitIISExpress />
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <DebugSymbols>true</DebugSymbols>
-    <DebugType>full</DebugType>
-    <Optimize>false</Optimize>
-    <OutputPath>bin\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <DebugSymbols>true</DebugSymbols>
-    <DebugType>pdbonly</DebugType>
-    <Optimize>true</Optimize>
-    <OutputPath>bin\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
+    <OutputType>Library</OutputType>
+    <ApplicationIcon />
+    <StartupObject />
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="System" />
-    <Reference Include="System.Data.DataSetExtensions" />
-    <Reference Include="System.Web.ApplicationServices" />
-    <Reference Include="System.Web.DynamicData" />
-    <Reference Include="System.Web.Entity" />
-    <Reference Include="System.Web.Extensions" />
-    <Reference Include="System.Xml.Linq" />
+    <None Remove="bit.core.d.ts" />
+    <None Remove="bit.core.js" />
+    <None Remove="bit.core.js.map" />
+    <None Remove="Bit.Model.Context.d.ts" />
+    <None Remove="Bit.Model.Context.js" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Properties\" />
   </ItemGroup>
-  <ItemGroup>
-    <Content Include="package.json" />
-    <Content Include="tsconfig.json" />
-  </ItemGroup>
-  <ItemGroup>
-    <Service Include="{4A0DDDB5-7A95-4FBF-97CC-616D07737A77}" />
-  </ItemGroup>
-  <ItemGroup>
-    <TypeScriptCompile Include="clientAppProfileManager.ts" />
-    <TypeScriptCompile Include="Contracts\iAppEvents.ts" />
-    <TypeScriptCompile Include="Contracts\iAppStartup.ts" />
-    <TypeScriptCompile Include="Contracts\iClientAppProfile.ts" />
-    <TypeScriptCompile Include="Contracts\iDateTimeService.ts" />
-    <TypeScriptCompile Include="Contracts\iEntityContextProvider.ts" />
-    <TypeScriptCompile Include="Contracts\iLogger.ts" />
-    <TypeScriptCompile Include="Contracts\iMath.ts" />
-    <TypeScriptCompile Include="Contracts\iMessageReceiver.ts" />
-    <TypeScriptCompile Include="Contracts\iMetadataProvider.ts" />
-    <TypeScriptCompile Include="Contracts\Identity\iModelProvider.ts" />
-    <TypeScriptCompile Include="Contracts\iPathProvider.ts" />
-    <TypeScriptCompile Include="Contracts\iSecurityService.ts" />
-    <TypeScriptCompile Include="Contracts\iSyncService.ts" />
-    <TypeScriptCompile Include="declarations.d.ts" />
-    <TypeScriptCompile Include="Implementations\appStartupBase.ts" />
-    <TypeScriptCompile Include="Implementations\defaultDateTimeService.ts" />
-    <TypeScriptCompile Include="Implementations\entityContextProviderBase.ts" />
-    <TypeScriptCompile Include="Implementations\entityContextProviderAppEventBase.ts" />
-    <TypeScriptCompile Include="Implementations\loggerBase.ts" />
-    <TypeScriptCompile Include="Implementations\defaultMath.ts" />
-    <TypeScriptCompile Include="Implementations\defaultMetadataProvider.ts" />
-    <TypeScriptCompile Include="Implementations\defaultPathProvider.ts" />
-    <TypeScriptCompile Include="Implementations\defaultSecurityService.ts" />
-    <TypeScriptCompile Include="Implementations\defaultSyncService.ts" />
-    <TypeScriptCompile Include="Implementations\defaultGuidUtils.ts" />
-    <TypeScriptCompile Include="Implementations\Identity\defaultModelProvider.ts" />
-    <TypeScriptCompile Include="Implementations\signalRMessageReceiver.ts" />
-    <TypeScriptCompile Include="log.ts" />
-    <TypeScriptCompile Include="Model\iArchivableDto.ts" />
-    <TypeScriptCompile Include="Model\iDto.ts" />
-    <TypeScriptCompile Include="Model\Identity\iSsoModel.ts" />
-    <TypeScriptCompile Include="Model\iSyncableDto.ts" />
-    <TypeScriptCompile Include="Model\iVersionableDto.ts" />
-    <TypeScriptCompile Include="provider.ts" />
-    <TypeScriptCompile Include="typings.d.ts" />
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include=".npmrc" />
-  </ItemGroup>
-  <PropertyGroup>
-    <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>
-    <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>
-  </PropertyGroup>
-  <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
-  <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\TypeScript\Microsoft.TypeScript.targets" Condition="Exists('$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\TypeScript\Microsoft.TypeScript.targets')" />
-  <Import Project="$(VSToolsPath)\WebApplications\Microsoft.WebApplication.targets" Condition="'$(VSToolsPath)' != ''" />
-  <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v10.0\WebApplications\Microsoft.WebApplication.targets" Condition="false" />
-  <ProjectExtensions>
-    <VisualStudio>
-      <FlavorProperties GUID="{349c5851-65df-11da-9384-00065b846f21}">
-        <WebProjectProperties>
-          <UseIIS>True</UseIIS>
-          <AutoAssignPort>True</AutoAssignPort>
-          <DevelopmentServerPort>63755</DevelopmentServerPort>
-          <DevelopmentServerVPath>/</DevelopmentServerVPath>
-          <IISUrl>http://localhost:63659/</IISUrl>
-          <NTLMAuthentication>False</NTLMAuthentication>
-          <UseCustomServer>False</UseCustomServer>
-          <CustomServerUrl>
-          </CustomServerUrl>
-          <SaveServerSettingsInUserFile>False</SaveServerSettingsInUserFile>
-        </WebProjectProperties>
-      </FlavorProperties>
-    </VisualStudio>
-  </ProjectExtensions>
-  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
-       Other similar extension points exist, see Microsoft.Common.targets.
-  <Target Name="BeforeBuild">
-  </Target>
-  <Target Name="AfterBuild">
-  </Target>
-  -->
 </Project>

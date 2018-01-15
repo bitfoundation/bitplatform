@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.27004.2002
+VisualStudioVersion = 15.0.27130.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Bit", "Bit", "{FEC2451A-227B-463C-A04A-FB015CDAB1A4}"
 	ProjectSection(SolutionItems) = preProject
@@ -12,15 +12,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BitChangeSetManager", "AspN
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BitChangeSetManager.Core", "AspNetCore\BitChangeSetManager.Core.csproj", "{CEB01FF4-6C6D-4977-8980-B8C1836711C8}"
 EndProject
-Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "BitChangeSetManager.Xamarin", "Xamarin\BitChangeSetManager.Xamarin\BitChangeSetManager.Xamarin.shproj", "{C3A56F2C-0496-4AC3-838D-5A1B106EA57D}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BitChangeSetManager.Xamarin.Android", "Xamarin\BitChangeSetManager.Xamarin.Android\BitChangeSetManager.Xamarin.Android.csproj", "{854DCF72-0126-43D0-8232-A265186E719A}"
-EndProject
 Global
-	GlobalSection(SharedMSBuildProjectFiles) = preSolution
-		Xamarin\BitChangeSetManager.Xamarin\BitChangeSetManager.Xamarin.projitems*{854dcf72-0126-43d0-8232-a265186e719a}*SharedItemsImports = 4
-		Xamarin\BitChangeSetManager.Xamarin\BitChangeSetManager.Xamarin.projitems*{c3a56f2c-0496-4ac3-838d-5a1b106ea57d}*SharedItemsImports = 13
-	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
 		Release|Any CPU = Release|Any CPU
@@ -34,12 +26,6 @@ Global
 		{CEB01FF4-6C6D-4977-8980-B8C1836711C8}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{CEB01FF4-6C6D-4977-8980-B8C1836711C8}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{CEB01FF4-6C6D-4977-8980-B8C1836711C8}.Release|Any CPU.Build.0 = Release|Any CPU
-		{854DCF72-0126-43D0-8232-A265186E719A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{854DCF72-0126-43D0-8232-A265186E719A}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{854DCF72-0126-43D0-8232-A265186E719A}.Debug|Any CPU.Deploy.0 = Debug|Any CPU
-		{854DCF72-0126-43D0-8232-A265186E719A}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{854DCF72-0126-43D0-8232-A265186E719A}.Release|Any CPU.Build.0 = Release|Any CPU
-		{854DCF72-0126-43D0-8232-A265186E719A}.Release|Any CPU.Deploy.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
