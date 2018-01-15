@@ -1,4 +1,5 @@
-﻿using Bit.Data.Contracts;
+﻿using Bit.Core.Contracts;
+using Bit.Data.Contracts;
 using Bit.Model.Contracts;
 using System;
 using System.Collections.Generic;
@@ -41,6 +42,8 @@ namespace Bit.Data.EntityFramework.Implementations
 
             if (entityToAdd is IEntityWithDefaultGuidKey entityToAddAsEntityWithDefaultGuidKey && entityToAddAsEntityWithDefaultGuidKey.Id == Guid.Empty)
                 entityToAddAsEntityWithDefaultGuidKey.Id = Guid.NewGuid();
+            if (entityToAdd is IVersionableEntity versionableEntity && versionableEntity.Version == default(long))
+                versionableEntity.Version = DateTimeProvider.GetCurrentUtcDateTime().UtcTicks;
 
             Set.Add(entityToAdd);
 
@@ -60,6 +63,8 @@ namespace Bit.Data.EntityFramework.Implementations
             {
                 if (entityToAdd is IEntityWithDefaultGuidKey entityToAddAsEntityWithDefaultGuidKey && entityToAddAsEntityWithDefaultGuidKey.Id == Guid.Empty)
                     entityToAddAsEntityWithDefaultGuidKey.Id = Guid.NewGuid();
+                if (entityToAdd is IVersionableEntity versionableEntity && versionableEntity.Version == default(long))
+                    versionableEntity.Version = DateTimeProvider.GetCurrentUtcDateTime().UtcTicks;
             }
 
             Set.AddRange(entitiesToAddList);
@@ -177,6 +182,8 @@ namespace Bit.Data.EntityFramework.Implementations
 
             if (entityToAdd is IEntityWithDefaultGuidKey entityToAddAsEntityWithDefaultGuidKey && entityToAddAsEntityWithDefaultGuidKey.Id == Guid.Empty)
                 entityToAddAsEntityWithDefaultGuidKey.Id = Guid.NewGuid();
+            if (entityToAdd is IVersionableEntity versionableEntity && versionableEntity.Version == default(long))
+                versionableEntity.Version = DateTimeProvider.GetCurrentUtcDateTime().UtcTicks;
 
             Set.Add(entityToAdd);
 
@@ -196,6 +203,8 @@ namespace Bit.Data.EntityFramework.Implementations
             {
                 if (entityToAdd is IEntityWithDefaultGuidKey entityToAddAsEntityWithDefaultGuidKey && entityToAddAsEntityWithDefaultGuidKey.Id == Guid.Empty)
                     entityToAddAsEntityWithDefaultGuidKey.Id = Guid.NewGuid();
+                if (entityToAdd is IVersionableEntity versionableEntity && versionableEntity.Version == default(long))
+                    versionableEntity.Version = DateTimeProvider.GetCurrentUtcDateTime().UtcTicks;
             }
 
             Set.AddRange(entityToAddList);
@@ -328,6 +337,8 @@ namespace Bit.Data.EntityFramework.Implementations
                 .Single();
         }
 
-        public EfDataProviderSpecificMethodsProvider EfDataProviderSpecificMethodsProvider { get; set; }
+        public virtual EfDataProviderSpecificMethodsProvider EfDataProviderSpecificMethodsProvider { get; set; }
+
+        public virtual IDateTimeProvider DateTimeProvider { get; set; }
     }
 }

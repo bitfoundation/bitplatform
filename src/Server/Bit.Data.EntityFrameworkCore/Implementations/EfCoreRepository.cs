@@ -4,6 +4,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
+using Bit.Core.Contracts;
 using Bit.Data.Contracts;
 using Bit.Model.Contracts;
 using Microsoft.EntityFrameworkCore;
@@ -36,6 +37,8 @@ namespace Bit.Data.EntityFrameworkCore.Implementations
 
             if (entityToAdd is IEntityWithDefaultGuidKey entityToAddAsEntityWithDefaultGuidKey && entityToAddAsEntityWithDefaultGuidKey.Id == Guid.Empty)
                 entityToAddAsEntityWithDefaultGuidKey.Id = Guid.NewGuid();
+            if (entityToAdd is IVersionableEntity versionableEntity && versionableEntity.Version == default(long))
+                versionableEntity.Version = DateTimeProvider.GetCurrentUtcDateTime().UtcTicks;
 
             DbContext.Add(entityToAdd);
 
@@ -55,6 +58,8 @@ namespace Bit.Data.EntityFrameworkCore.Implementations
             {
                 if (entityToAdd is IEntityWithDefaultGuidKey entityToAddAsEntityWithDefaultGuidKey && entityToAddAsEntityWithDefaultGuidKey.Id == Guid.Empty)
                     entityToAddAsEntityWithDefaultGuidKey.Id = Guid.NewGuid();
+                if (entityToAdd is IVersionableEntity versionableEntity && versionableEntity.Version == default(long))
+                    versionableEntity.Version = DateTimeProvider.GetCurrentUtcDateTime().UtcTicks;
             }
 
             DbContext.AddRange(entitiesToAddList);
@@ -170,6 +175,8 @@ namespace Bit.Data.EntityFrameworkCore.Implementations
 
             if (entityToAdd is IEntityWithDefaultGuidKey entityToAddAsEntityWithDefaultGuidKey && entityToAddAsEntityWithDefaultGuidKey.Id == Guid.Empty)
                 entityToAddAsEntityWithDefaultGuidKey.Id = Guid.NewGuid();
+            if (entityToAdd is IVersionableEntity versionableEntity && versionableEntity.Version == default(long))
+                versionableEntity.Version = DateTimeProvider.GetCurrentUtcDateTime().UtcTicks;
 
             DbContext.Add(entityToAdd);
 
@@ -189,6 +196,8 @@ namespace Bit.Data.EntityFrameworkCore.Implementations
             {
                 if (entityToAdd is IEntityWithDefaultGuidKey entityToAddAsEntityWithDefaultGuidKey && entityToAddAsEntityWithDefaultGuidKey.Id == Guid.Empty)
                     entityToAddAsEntityWithDefaultGuidKey.Id = Guid.NewGuid();
+                if (entityToAdd is IVersionableEntity versionableEntity && versionableEntity.Version == default(long))
+                    versionableEntity.Version = DateTimeProvider.GetCurrentUtcDateTime().UtcTicks;
             }
 
             DbContext.AddRange(entityToAddList);
@@ -312,6 +321,8 @@ namespace Bit.Data.EntityFrameworkCore.Implementations
                 .Single();
         }
 
-        public EfCoreDataProviderSpecificMethodsProvider EfDataProviderSpecificMethodsProvider { get; set; }
+        public virtual EfCoreDataProviderSpecificMethodsProvider EfDataProviderSpecificMethodsProvider { get; set; }
+
+        public virtual IDateTimeProvider DateTimeProvider { get; set; }
     }
 }
