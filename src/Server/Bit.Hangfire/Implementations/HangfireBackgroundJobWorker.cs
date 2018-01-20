@@ -50,7 +50,7 @@ namespace Bit.Hangfire.Implementations
             return Task.FromResult(BackgroundJob.Schedule(methodCall, when));
         }
 
-        public virtual Task PerformRecurringBackgroundJobAsync<TService>(Expression<Action<TService>> methodCall, string cronExpression)
+        public virtual Task PerformRecurringBackgroundJobAsync<TService>(string jobId, Expression<Action<TService>> methodCall, string cronExpression)
         {
             if (methodCall == null)
                 throw new ArgumentNullException(nameof(methodCall));
@@ -58,7 +58,10 @@ namespace Bit.Hangfire.Implementations
             if (cronExpression == null)
                 throw new ArgumentNullException(nameof(cronExpression));
 
-            RecurringJob.AddOrUpdate(methodCall, cronExpression);
+            if (jobId == null)
+                throw new ArgumentNullException(nameof(jobId));
+
+            RecurringJob.AddOrUpdate(recurringJobId: jobId, methodCall: methodCall, cronExpression: cronExpression);
 
             return Task.CompletedTask;
         }
@@ -167,7 +170,7 @@ namespace Bit.Hangfire.Implementations
             }
         }
 
-        public virtual void PerformRecurringBackgroundJob<TService>(Expression<Action<TService>> methodCall, string cronExpression)
+        public virtual void PerformRecurringBackgroundJob<TService>(string jobId, Expression<Action<TService>> methodCall, string cronExpression)
         {
             if (methodCall == null)
                 throw new ArgumentNullException(nameof(methodCall));
@@ -175,7 +178,10 @@ namespace Bit.Hangfire.Implementations
             if (cronExpression == null)
                 throw new ArgumentNullException(nameof(cronExpression));
 
-            RecurringJob.AddOrUpdate(methodCall, cronExpression);
+            if (jobId == null)
+                throw new ArgumentNullException(nameof(jobId));
+
+            RecurringJob.AddOrUpdate(recurringJobId: jobId, methodCall: methodCall, cronExpression: cronExpression);
         }
 
         public virtual void StopRecurringBackgroundJob(string jobId)
