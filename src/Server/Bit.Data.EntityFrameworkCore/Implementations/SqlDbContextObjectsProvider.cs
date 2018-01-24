@@ -1,41 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using Microsoft.EntityFrameworkCore;
 using System.Data.Common;
-using Bit.Data.Contracts;
-using Bit.Data.EntityFrameworkCore.Contracts;
-using Microsoft.EntityFrameworkCore;
 
 namespace Bit.Data.EntityFrameworkCore.Implementations
 {
-    public class SqlDbContextObjectsProvider : IDbContextObjectsProvider
+    public class SqlDbContextObjectsProvider : DbContextObjectsProvider
     {
-        public virtual IDbConnectionProvider DbConnectionProvider { get; set; }
-
-        private readonly IDictionary<string, DbContextObjects> _dbContextObjects =
-            new Dictionary<string, DbContextObjects>();
-
-        public virtual DbContextObjects GetDbContextOptions(string connectionString)
+        public override void UseDbConnection(DbConnection dbConnection, DbContextOptionsBuilder dbContextOptionsBuilder)
         {
-            if (connectionString == null)
-                throw new ArgumentNullException(nameof(connectionString));
-
-            if (!_dbContextObjects.ContainsKey(connectionString))
-            {
-                DbContextOptionsBuilder dbContextOptionsBuilder = new DbContextOptionsBuilder();
-
-                DbConnection dbConnection = DbConnectionProvider.GetDbConnection(connectionString, rollbackOnScopeStatusFailure: true);
-
-                dbContextOptionsBuilder.UseSqlServer(dbConnection);
-
-                _dbContextObjects.Add(connectionString, new DbContextObjects
-                {
-                    Transaction = DbConnectionProvider.GetDbTransaction(connectionString),
-                    Connection = dbConnection,
-                    Options = dbContextOptionsBuilder.Options
-                });
-            }
-
-            return _dbContextObjects[connectionString];
+            dbContextOptionsBuilder.UseSqlServer(dbConnection);
         }
     }
 }

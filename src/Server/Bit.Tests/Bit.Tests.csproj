@@ -22,4 +22,10 @@
     <ProjectReference Include="..\Bit.Test\Bit.Test.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Update="Properties\Settings.settings">
+      <Generator>SettingsSingleFileGenerator</Generator>
+    </None>
+  </ItemGroup>
+
 </Project>
