@@ -50,9 +50,9 @@ namespace Bit.OwinCore
                     ((IOwinDependenciesManager)projectDependenciesManager).ConfigureDependencies(DefaultDependencyManager.Current);
             }
 
-            DefaultDependencyManager.Current.RegisterUsing(() =>
+            DefaultDependencyManager.Current.RegisterUsing((depManager) =>
             {
-                HttpContext context = DefaultDependencyManager.Current.Resolve<IHttpContextAccessor>().HttpContext;
+                HttpContext context = depManager.Resolve<IHttpContextAccessor>().HttpContext;
                 return (IOwinContext)context.Items["OwinContext"];
             });
         }

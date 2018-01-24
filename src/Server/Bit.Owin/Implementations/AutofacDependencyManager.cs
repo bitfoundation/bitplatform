@@ -215,20 +215,20 @@ namespace Bit.Owin.Implementations
             return this;
         }
 
-        public virtual IDependencyManager RegisterUsing<T>(Func<T> factory, string name = null,
+        public virtual IDependencyManager RegisterUsing<T>(Func<IDependencyManager, T> factory, string name = null,
             DependencyLifeCycle lifeCycle = DependencyLifeCycle.PerScopeInstance, bool overwriteExciting = true)
         {
-            return RegisterUsing(() => factory(), new[] { typeof(T).GetTypeInfo() }, name, lifeCycle, overwriteExciting);
+            return RegisterUsing((depManager) => factory(depManager), new[] { typeof(T).GetTypeInfo() }, name, lifeCycle, overwriteExciting);
         }
 
-        public virtual IDependencyManager RegisterUsing(Func<object> factory, TypeInfo serviceType, string name = null, DependencyLifeCycle lifeCycle = DependencyLifeCycle.PerScopeInstance, bool overwriteExciting = true)
+        public virtual IDependencyManager RegisterUsing(Func<IDependencyManager, object> factory, TypeInfo serviceType, string name = null, DependencyLifeCycle lifeCycle = DependencyLifeCycle.PerScopeInstance, bool overwriteExciting = true)
         {
             return RegisterUsing(factory, new[] { serviceType }, name, lifeCycle, overwriteExciting);
         }
 
-        public virtual IDependencyManager RegisterUsing(Func<object> factory, TypeInfo[] servicesType, string name = null, DependencyLifeCycle lifeCycle = DependencyLifeCycle.PerScopeInstance, bool overwriteExciting = true)
+        public virtual IDependencyManager RegisterUsing(Func<IDependencyManager, object> factory, TypeInfo[] servicesType, string name = null, DependencyLifeCycle lifeCycle = DependencyLifeCycle.PerScopeInstance, bool overwriteExciting = true)
         {
-            IRegistrationBuilder<object, SimpleActivatorData, SingleRegistrationStyle> registration = GetContainerBuidler().Register((context, parameter) => factory.DynamicInvoke())
+            IRegistrationBuilder<object, SimpleActivatorData, SingleRegistrationStyle> registration = GetContainerBuidler().Register((context, parameter) => factory.DynamicInvoke(this))
                 .As(servicesType);
 
             if (overwriteExciting == false)
@@ -284,7 +284,7 @@ namespace Bit.Owin.Implementations
 
         public virtual IDependencyManager RegisterInstance(object obj, TypeInfo serviceType, bool overwriteExciting = true, string name = null)
         {
-            return RegisterInstance(obj, new [] { serviceType }, overwriteExciting, name);
+            return RegisterInstance(obj, new[] { serviceType }, overwriteExciting, name);
         }
 
         public virtual IDependencyManager RegisterInstance(object obj, TypeInfo[] servicesType, bool overwriteExciting = true, string name = null)

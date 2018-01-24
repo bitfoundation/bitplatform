@@ -67,12 +67,12 @@ DependencyLifeCycle lifeCycle = DependencyLifeCycle.PerScopeInstance, bool overw
 
         IDependencyManager RegisterGeneric(TypeInfo serviceType, TypeInfo implementationType, DependencyLifeCycle lifeCycle = DependencyLifeCycle.PerScopeInstance);
 
-        IDependencyManager RegisterUsing<TService>(Func<TService> factory, string name = null,
+        IDependencyManager RegisterUsing<TService>(Func<IDependencyManager, TService> factory, string name = null,
             DependencyLifeCycle lifeCycle = DependencyLifeCycle.PerScopeInstance, bool overwriteExciting = true);
 
-        IDependencyManager RegisterUsing(Func<object> factory, TypeInfo[] servicesType, string name = null, DependencyLifeCycle lifeCycle = DependencyLifeCycle.PerScopeInstance, bool overwriteExciting = true);
+        IDependencyManager RegisterUsing(Func<IDependencyManager, object> factory, TypeInfo[] servicesType, string name = null, DependencyLifeCycle lifeCycle = DependencyLifeCycle.PerScopeInstance, bool overwriteExciting = true);
 
-        IDependencyManager RegisterUsing(Func<object> factory, TypeInfo serviceType, string name = null, DependencyLifeCycle lifeCycle = DependencyLifeCycle.PerScopeInstance, bool overwriteExciting = true);
+        IDependencyManager RegisterUsing(Func<IDependencyManager, object> factory, TypeInfo serviceType, string name = null, DependencyLifeCycle lifeCycle = DependencyLifeCycle.PerScopeInstance, bool overwriteExciting = true);
 
         IDependencyResolver CreateChildDependencyResolver(Action<IDependencyManager> childDependencyManager = null);
     }
