@@ -19,7 +19,7 @@ namespace Bit.Test.Server
 
     public interface ITestServer : IDisposable
     {
-        RemoteWebDriver GetWebDriver(RemoteWebDriverOptions options = null);
+        RemoteWebDriver BuildWebDriver(RemoteWebDriverOptions options = null);
 
         Task<TokenResponse> Login(string userName, string password, string clientId, string secret = "secret");
 
@@ -29,7 +29,7 @@ namespace Bit.Test.Server
         ODataBatch BuildODataBatchClient(Action<HttpRequestMessage> beforeRequest = null,
            Action<HttpResponseMessage> afterResponse = null, TokenResponse token = null, string odataRouteName = "Test");
 
-        HttpClient GetHttpClient(TokenResponse token = null);
+        HttpClient BuildHttpClient(TokenResponse token = null);
 
         Task<IHubProxy> BuildSignalRClient(TokenResponse token = null, Action<string, dynamic> onMessageReceived = null);
 

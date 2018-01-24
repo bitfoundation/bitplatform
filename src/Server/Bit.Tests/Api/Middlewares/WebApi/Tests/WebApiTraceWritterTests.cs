@@ -28,7 +28,7 @@ namespace Bit.Tests.Api.Middlewares.WebApi.Tests
             {
                 TokenResponse token = await testEnvironment.Server.Login("ValidUserName", "ValidPassword", clientId: "TestResOwner");
 
-                HttpClient client = testEnvironment.Server.GetHttpClient(token);
+                HttpClient client = testEnvironment.Server.BuildHttpClient(token);
 
                 Guid correlationId = Guid.NewGuid();
 

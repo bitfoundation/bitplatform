@@ -15,7 +15,7 @@ namespace Bit.Tests.Api.ApiControllers.Tests
         {
             using (BitOwinTestEnvironment testEnvironment = new BitOwinTestEnvironment(new TestEnvironmentArgs { UseRealServer = false , UseAspNetCore = true }))
             {
-                HttpResponseMessage response = await testEnvironment.Server.GetHttpClient()
+                HttpResponseMessage response = await testEnvironment.Server.BuildHttpClient()
                     .GetAsync("api-core/People/GetData");
 
                 response.EnsureSuccessStatusCode();

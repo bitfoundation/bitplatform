@@ -22,7 +22,7 @@ namespace Bit.Tests.Api.Middlewares.Tests
             {
                 TokenResponse token = await testEnvironment.Server.Login("ValidUserName", "ValidPassword", clientId: "TestResOwner");
 
-                HttpResponseMessage getDefaultPageResponse = await testEnvironment.Server.GetHttpClient(token)
+                HttpResponseMessage getDefaultPageResponse = await testEnvironment.Server.BuildHttpClient(token)
                     .GetAsync("/");
 
                 Assert.AreEqual(HttpStatusCode.OK, getDefaultPageResponse.StatusCode);
@@ -39,7 +39,7 @@ namespace Bit.Tests.Api.Middlewares.Tests
         {
             using (BitOwinTestEnvironment testEnvironment = new BitOwinTestEnvironment())
             {
-                HttpResponseMessage getDefaultPageResponse = await testEnvironment.Server.GetHttpClient()
+                HttpResponseMessage getDefaultPageResponse = await testEnvironment.Server.BuildHttpClient()
                     .GetAsync("/");
 
                 Assert.AreNotEqual(HttpStatusCode.OK, getDefaultPageResponse.StatusCode);
@@ -54,7 +54,7 @@ namespace Bit.Tests.Api.Middlewares.Tests
             {
                 TokenResponse token = await testEnvironment.Server.Login("ValidUserName", "ValidPassword", clientId: "TestResOwner");
 
-                HttpResponseMessage getDefaultPageResponse = await testEnvironment.Server.GetHttpClient(token)
+                HttpResponseMessage getDefaultPageResponse = await testEnvironment.Server.BuildHttpClient(token)
                     .GetAsync("/");
 
                 Assert.AreEqual(false, getDefaultPageResponse.Headers.CacheControl.Public);
@@ -77,7 +77,7 @@ namespace Bit.Tests.Api.Middlewares.Tests
             {
                 TokenResponse token = await testEnvironment.Server.Login("ValidUserName", "ValidPassword", clientId: "TestResOwner");
 
-                HttpResponseMessage getDefaultPageResponse = await testEnvironment.Server.GetHttpClient(token)
+                HttpResponseMessage getDefaultPageResponse = await testEnvironment.Server.BuildHttpClient(token)
                     .GetAsync("/");
 
                 Assert.AreEqual(true, getDefaultPageResponse.Headers.Contains("X-Content-Type-Options"));
@@ -101,7 +101,7 @@ namespace Bit.Tests.Api.Middlewares.Tests
             {
                 TokenResponse token = await testEnvironment.Server.Login("ValidUserName", "ValidPassword", clientId: "TestResOwner");
 
-                HttpResponseMessage getDefaultPageResponse = await testEnvironment.Server.GetHttpClient(token)
+                HttpResponseMessage getDefaultPageResponse = await testEnvironment.Server.BuildHttpClient(token)
                     .GetAsync(testEnvironment.Server.Uri);
 
                 Assert.AreEqual(true, getDefaultPageResponse.Headers.Contains("X-Content-Type-Options"));
@@ -119,7 +119,7 @@ namespace Bit.Tests.Api.Middlewares.Tests
             {
                 TokenResponse token = await testEnvironment.Server.Login("ValidUserName", "ValidPassword", clientId: "TestResOwner");
 
-                using (RemoteWebDriver driver = testEnvironment.Server.GetWebDriver(new RemoteWebDriverOptions { Token = token }))
+                using (RemoteWebDriver driver = testEnvironment.Server.BuildWebDriver(new RemoteWebDriverOptions { Token = token }))
                 {
                     await driver.ExecuteTest("testDesiredEnvironmentsConfigsArePresentInClientSide");
                 }

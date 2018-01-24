@@ -16,7 +16,7 @@ namespace Bit.Tests.Api.ApiControllers.Tests
             {
                 TokenResponse token = await testEnvironment.Server.Login("ValidUserName", "ValidPassword", clientId: "TestResOwner");
 
-                HttpClient client = testEnvironment.Server.GetHttpClient(token: token);
+                HttpClient client = testEnvironment.Server.BuildHttpClient(token: token);
 
                 HttpResponseMessage response = await client.GetAsync("api/customers/1/orders");
 

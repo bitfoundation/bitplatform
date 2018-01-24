@@ -84,7 +84,7 @@ namespace Bit.Test.Server
 
         public abstract void Dispose();
 
-        public virtual RemoteWebDriver GetWebDriver(RemoteWebDriverOptions options = null)
+        public virtual RemoteWebDriver BuildWebDriver(RemoteWebDriverOptions options = null)
         {
             if (options == null)
                 options = new RemoteWebDriverOptions();
@@ -143,7 +143,7 @@ namespace Bit.Test.Server
             return await client.RequestResourceOwnerPasswordAsync(userName, password, "openid profile user_info");
         }
 
-        public HttpClient GetHttpClient(TokenResponse token = null)
+        public HttpClient BuildHttpClient(TokenResponse token = null)
         {
             HttpClient client = HttpClientFactory.Create(GetHttpMessageHandler());
 

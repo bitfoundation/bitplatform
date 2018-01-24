@@ -54,7 +54,7 @@ namespace Bit.Tests.Api.Middlewares.Tests
                 {
                     TokenResponse token = await testEnvironment.Server.Login("ValidUserName", "ValidPassword", clientId: "TestResOwner");
 
-                    await testEnvironment.Server.GetHttpClient(token)
+                    await testEnvironment.Server.BuildHttpClient(token)
                         .GetAsync("/Exception");
 
                     Assert.Fail();
@@ -104,7 +104,7 @@ namespace Bit.Tests.Api.Middlewares.Tests
             {
                 TokenResponse token = await testEnvironment.Server.Login("ValidUserName", "ValidPassword", clientId: "TestResOwner");
 
-                await testEnvironment.Server.GetHttpClient(token)
+                await testEnvironment.Server.BuildHttpClient(token)
                             .GetAsync("/InternalServerError");
 
                 IScopeStatusManager scopeStatusManager = TestDependencyManager.CurrentTestDependencyManager
@@ -137,7 +137,7 @@ namespace Bit.Tests.Api.Middlewares.Tests
             {
                 TokenResponse token = await testEnvironment.Server.Login("ValidUserName", "ValidPassword", clientId: "TestResOwner");
 
-                await testEnvironment.Server.GetHttpClient(token)
+                await testEnvironment.Server.BuildHttpClient(token)
                     .GetAsync("/odata/Test/XYZ");
 
                 IScopeStatusManager scopeStatusManager = TestDependencyManager.CurrentTestDependencyManager

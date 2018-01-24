@@ -32,7 +32,7 @@ namespace Bit.Test.Server
             return _server.CreateHandler();
         }
 
-        public override RemoteWebDriver GetWebDriver(RemoteWebDriverOptions options = null)
+        public override RemoteWebDriver BuildWebDriver(RemoteWebDriverOptions options = null)
         {
             throw new NotSupportedException();
         }

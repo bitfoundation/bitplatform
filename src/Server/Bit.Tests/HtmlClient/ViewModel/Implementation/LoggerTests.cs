@@ -26,7 +26,7 @@ namespace Bit.Tests.HtmlClient.ViewModel.Implementation
 
                 try
                 {
-                    using (RemoteWebDriver driver = testEnvironment.Server.GetWebDriver(new RemoteWebDriverOptions { Token = token }))
+                    using (RemoteWebDriver driver = testEnvironment.Server.BuildWebDriver(new RemoteWebDriverOptions { Token = token }))
                     {
                         try
                         {

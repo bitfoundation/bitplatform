@@ -22,7 +22,7 @@ namespace Bit.Tests.Api.Middlewares.Tests
                 ActiveAppEnvironmentCustomizer = activeAppEnv => activeAppEnv.DebugMode = false
             }))
             {
-                HttpResponseMessage getVirtualPathUrl = await testEnvironment.Server.GetHttpClient()
+                HttpResponseMessage getVirtualPathUrl = await testEnvironment.Server.BuildHttpClient()
                     .GetAsync("/Files/V1");
 
                 Assert.AreEqual(true, getVirtualPathUrl.Headers.CacheControl.Public);
@@ -43,7 +43,7 @@ namespace Bit.Tests.Api.Middlewares.Tests
         {
             using (BitOwinTestEnvironment testEnvironment = new BitOwinTestEnvironment())
             {
-                HttpResponseMessage getVirtualPathUrl = await testEnvironment.Server.GetHttpClient()
+                HttpResponseMessage getVirtualPathUrl = await testEnvironment.Server.BuildHttpClient()
                     .GetAsync("/Files/V1");
 
                 Assert.AreEqual(true, getVirtualPathUrl.Headers.Contains("X-Content-Type-Options"));
@@ -64,7 +64,7 @@ namespace Bit.Tests.Api.Middlewares.Tests
                 }
             }))
             {
-                HttpResponseMessage getVirtualPathUrl = await testEnvironment.Server.GetHttpClient()
+                HttpResponseMessage getVirtualPathUrl = await testEnvironment.Server.BuildHttpClient()
                     .GetAsync("/Files/V1");
 
                 Assert.AreEqual(HttpStatusCode.NotFound, getVirtualPathUrl.StatusCode);
@@ -84,12 +84,12 @@ namespace Bit.Tests.Api.Middlewares.Tests
                 }
             }))
             {
-                HttpResponseMessage getVirtualPathUrlV1 = await testEnvironment.Server.GetHttpClient()
+                HttpResponseMessage getVirtualPathUrlV1 = await testEnvironment.Server.BuildHttpClient()
                     .GetAsync("/Files/V1");
 
                 Assert.AreNotEqual(HttpStatusCode.OK, getVirtualPathUrlV1.StatusCode);
 
-                HttpResponseMessage getVirtualPathUrlV2 = await testEnvironment.Server.GetHttpClient()
+                HttpResponseMessage getVirtualPathUrlV2 = await testEnvironment.Server.BuildHttpClient()
                     .GetAsync("/Files/V2");
 
                 Assert.AreNotEqual(HttpStatusCode.NotFound, getVirtualPathUrlV2.StatusCode);
@@ -102,7 +102,7 @@ namespace Bit.Tests.Api.Middlewares.Tests
         {
             using (BitOwinTestEnvironment testEnvironment = new BitOwinTestEnvironment())
             {
-                await testEnvironment.Server.GetHttpClient().GetAsync("/Files/V1");
+                await testEnvironment.Server.BuildHttpClient().GetAsync("/Files/V1");
 
                 Assert.IsFalse(TestDependencyManager.CurrentTestDependencyManager.Objects
                     .OfType<IScopeStatusManager>().Any());

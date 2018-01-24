@@ -21,7 +21,7 @@ namespace Bit.Tests.Api.Middlewares.WebApi.Tests
 
                 foreach (string odataServiceRoute in odataServicesRoutes)
                 {
-                    HttpResponseMessage getMetadataResponse = await testEnvironment.Server.GetHttpClient(token)
+                    HttpResponseMessage getMetadataResponse = await testEnvironment.Server.BuildHttpClient(token)
                             .GetAsync($"/odata/{odataServiceRoute}/$metadata");
 
                     Assert.AreEqual(HttpStatusCode.OK, getMetadataResponse.StatusCode);

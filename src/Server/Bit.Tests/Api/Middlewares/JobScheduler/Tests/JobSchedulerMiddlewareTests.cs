@@ -29,7 +29,7 @@ namespace Bit.Tests.Api.Middlewares.JobScheduler.Tests
             {
                 TokenResponse token = await testEnvironment.Server.Login("ValidUserName", "ValidPassword", clientId: "TestResOwner");
 
-                HttpResponseMessage getDefaultPageResponse = await testEnvironment.Server.GetHttpClient(token).GetAsync("/jobs");
+                HttpResponseMessage getDefaultPageResponse = await testEnvironment.Server.BuildHttpClient(token).GetAsync("/jobs");
 
                 Assert.AreEqual(HttpStatusCode.OK, getDefaultPageResponse.StatusCode);
 
@@ -43,7 +43,7 @@ namespace Bit.Tests.Api.Middlewares.JobScheduler.Tests
         {
             using (BitOwinTestEnvironment testEnvironment = new BitOwinTestEnvironment())
             {
-                HttpResponseMessage getDefaultPageResponse = await testEnvironment.Server.GetHttpClient()
+                HttpResponseMessage getDefaultPageResponse = await testEnvironment.Server.BuildHttpClient()
                     .GetAsync("/jobs");
 
                 Assert.AreEqual(HttpStatusCode.Unauthorized, getDefaultPageResponse.StatusCode);

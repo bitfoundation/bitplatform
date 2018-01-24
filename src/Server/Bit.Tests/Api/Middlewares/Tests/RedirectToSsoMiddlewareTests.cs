@@ -29,7 +29,7 @@ namespace Bit.Tests.Api.Middlewares.Tests
                 }
             }))
             {
-                HttpResponseMessage getDefaultPageResponse = await testEnvironment.Server.GetHttpClient()
+                HttpResponseMessage getDefaultPageResponse = await testEnvironment.Server.BuildHttpClient()
                     .GetAsync("/some-page", HttpCompletionOption.ResponseHeadersRead);
 
                 Assert.AreEqual(HttpStatusCode.Redirect, getDefaultPageResponse.StatusCode);
@@ -46,7 +46,7 @@ namespace Bit.Tests.Api.Middlewares.Tests
             {
                 TokenResponse token = await testEnvironment.Server.Login("ValidUserName", "ValidPassword", clientId: "TestResOwner");
 
-                HttpResponseMessage getDefaultPageResponse = await testEnvironment.Server.GetHttpClient(token)
+                HttpResponseMessage getDefaultPageResponse = await testEnvironment.Server.BuildHttpClient(token)
                     .GetAsync("/");
 
                 Assert.AreNotEqual(HttpStatusCode.Redirect, getDefaultPageResponse.StatusCode);

@@ -16,7 +16,7 @@ namespace Bit.Tests.Api.Middlewares.WebApi.Tests
             {
                 TokenResponse token = await testEnvironment.Server.Login("ValidUserName", "ValidPassword", clientId: "TestResOwner");
 
-                HttpResponseMessage getTestModelsResponse = await testEnvironment.Server.GetHttpClient(token)
+                HttpResponseMessage getTestModelsResponse = await testEnvironment.Server.BuildHttpClient(token)
                     .GetAsync("/odata/Test/TestModels");
 
                 Assert.AreEqual("application/json; odata.metadata=minimal; odata.streaming=true; charset=utf-8", getTestModelsResponse.Content.Headers.ContentType.ToString());
@@ -31,7 +31,7 @@ namespace Bit.Tests.Api.Middlewares.WebApi.Tests
             {
                 TokenResponse token = await testEnvironment.Server.Login("ValidUserName", "ValidPassword", clientId: "TestResOwner");
 
-                HttpResponseMessage getTestModelsResponse = await testEnvironment.Server.GetHttpClient(token)
+                HttpResponseMessage getTestModelsResponse = await testEnvironment.Server.BuildHttpClient(token)
                     .AddHeader("Accept", "application/json, text/javascript, */*; q=0.01")
                     .GetAsync("/odata/Test/TestModels");
 
@@ -47,7 +47,7 @@ namespace Bit.Tests.Api.Middlewares.WebApi.Tests
             {
                 TokenResponse token = await testEnvironment.Server.Login("ValidUserName", "ValidPassword", clientId: "TestResOwner");
 
-                HttpResponseMessage getTestModelsResponse = await testEnvironment.Server.GetHttpClient(token)
+                HttpResponseMessage getTestModelsResponse = await testEnvironment.Server.BuildHttpClient(token)
                     .AddHeader("Accept", "*/*; q=0.01")
                     .GetAsync("/odata/Test/TestModels");
 
@@ -63,7 +63,7 @@ namespace Bit.Tests.Api.Middlewares.WebApi.Tests
             {
                 TokenResponse token = await testEnvironment.Server.Login("ValidUserName", "ValidPassword", clientId: "TestResOwner");
 
-                HttpResponseMessage getTestModelsResponse = await testEnvironment.Server.GetHttpClient(token)
+                HttpResponseMessage getTestModelsResponse = await testEnvironment.Server.BuildHttpClient(token)
                     .AddHeader("Accept", "text/html; q=0.01")
                     .GetAsync("/odata/Test/TestModels");
 

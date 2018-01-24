@@ -16,7 +16,7 @@ namespace Bit.Tests.Api.Middlewares.Tests
         {
             using (BitOwinTestEnvironment testEnvironment = new BitOwinTestEnvironment())
             {
-                HttpResponseMessage getSignInPage = await testEnvironment.Server.GetHttpClient()
+                HttpResponseMessage getSignInPage = await testEnvironment.Server.BuildHttpClient()
                     .GetAsync("/SignIn");
 
                 Assert.AreEqual(HttpStatusCode.OK, getSignInPage.StatusCode);
@@ -29,7 +29,7 @@ namespace Bit.Tests.Api.Middlewares.Tests
         {
             using (BitOwinTestEnvironment testEnvironment = new BitOwinTestEnvironment())
             {
-                HttpResponseMessage getSignInPage = await testEnvironment.Server.GetHttpClient()
+                HttpResponseMessage getSignInPage = await testEnvironment.Server.BuildHttpClient()
                     .GetAsync("/SignIn");
 
                 Assert.AreEqual(false, getSignInPage.Headers.CacheControl.Public);
@@ -50,7 +50,7 @@ namespace Bit.Tests.Api.Middlewares.Tests
         {
             using (BitOwinTestEnvironment testEnvironment = new BitOwinTestEnvironment())
             {
-                HttpResponseMessage getSignInPage = await testEnvironment.Server.GetHttpClient()
+                HttpResponseMessage getSignInPage = await testEnvironment.Server.BuildHttpClient()
                     .GetAsync("/SignIn");
 
                 Assert.AreEqual(true, getSignInPage.Headers.Contains("X-Frame-Options"));
@@ -73,7 +73,7 @@ namespace Bit.Tests.Api.Middlewares.Tests
                 }
             }))
             {
-                HttpResponseMessage getSignInPage = await testEnvironment.Server.GetHttpClient()
+                HttpResponseMessage getSignInPage = await testEnvironment.Server.BuildHttpClient()
                     .GetAsync($"{testEnvironment.Server.Uri}SignIn");
 
                 Assert.AreEqual(true, getSignInPage.Headers.Contains("X-Frame-Options"));

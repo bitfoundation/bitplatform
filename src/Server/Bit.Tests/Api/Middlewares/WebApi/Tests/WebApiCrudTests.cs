@@ -1,19 +1,19 @@
-﻿using System.Net.Http;
-using System.Threading.Tasks;
+﻿using Bit.Data.Contracts;
+using Bit.Test.Core.Implementations;
+using Bit.Tests.Api.ApiControllers;
+using Bit.Tests.Core.Contracts;
+using Bit.Tests.Model.DomainModels;
+using FakeItEasy;
 using IdentityModel.Client;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Bit.Tests.Api.ApiControllers;
 using Simple.OData.Client;
-using Bit.Tests.Model.DomainModels;
-using Bit.Test.Core.Implementations;
-using FakeItEasy;
-using Bit.Tests.Core.Contracts;
-using System.Collections.Generic;
-using System.Threading;
-using System.Linq;
-using Bit.Data.Contracts;
-using System.Web.OData;
 using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Net.Http;
+using System.Threading;
+using System.Threading.Tasks;
+using System.Web.OData;
 
 namespace Bit.Tests.Api.Middlewares.WebApi.Tests
 {
@@ -177,7 +177,7 @@ namespace Bit.Tests.Api.Middlewares.WebApi.Tests
             {
                 TokenResponse token = await testEnvironment.Server.Login("ValidUserName", "ValidPassword", clientId: "TestResOwner");
 
-                HttpResponseMessage response = await testEnvironment.Server.GetHttpClient(token)
+                HttpResponseMessage response = await testEnvironment.Server.BuildHttpClient(token)
                             .GetAsync("/odata/Test/ChildEntities?$top=1&$select=Id,Name&$expand=ParentEntity($select=Id,Name)");
 
                 response.EnsureSuccessStatusCode();

@@ -25,12 +25,12 @@ namespace Bit.Tests.Api.Middlewares.Tests
                 }
             }))
             {
-                HttpResponseMessage getMetadataForV1 = await testEnvironment.Server.GetHttpClient()
+                HttpResponseMessage getMetadataForV1 = await testEnvironment.Server.BuildHttpClient()
                     .GetAsync("Metadata/V1");
 
                 Assert.AreNotEqual(HttpStatusCode.OK, getMetadataForV1.StatusCode);
 
-                HttpResponseMessage getMetadataForV2 = await testEnvironment.Server.GetHttpClient()
+                HttpResponseMessage getMetadataForV2 = await testEnvironment.Server.BuildHttpClient()
                     .GetAsync("Metadata/V2");
 
                 Assert.AreEqual(HttpStatusCode.OK, getMetadataForV2.StatusCode);
@@ -43,7 +43,7 @@ namespace Bit.Tests.Api.Middlewares.Tests
         {
             using (BitOwinTestEnvironment testEnvironment = new BitOwinTestEnvironment())
             {
-                HttpResponseMessage getMetadataForV1 = await testEnvironment.Server.GetHttpClient()
+                HttpResponseMessage getMetadataForV1 = await testEnvironment.Server.BuildHttpClient()
                     .GetAsync("Metadata/V1");
 
                 getMetadataForV1.EnsureSuccessStatusCode();
@@ -67,7 +67,7 @@ namespace Bit.Tests.Api.Middlewares.Tests
                 ActiveAppEnvironmentCustomizer = appEnvironment => appEnvironment.DebugMode = false
             }))
             {
-                HttpResponseMessage getMetadataForV1 = await testEnvironment.Server.GetHttpClient()
+                HttpResponseMessage getMetadataForV1 = await testEnvironment.Server.BuildHttpClient()
                     .GetAsync("Metadata/V1");
 
                 Assert.AreEqual(true, getMetadataForV1.Headers.CacheControl.Public);
@@ -88,7 +88,7 @@ namespace Bit.Tests.Api.Middlewares.Tests
         {
             using (BitOwinTestEnvironment testEnvironment = new BitOwinTestEnvironment())
             {
-                HttpResponseMessage getMetadataForV1 = await testEnvironment.Server.GetHttpClient()
+                HttpResponseMessage getMetadataForV1 = await testEnvironment.Server.BuildHttpClient()
                     .GetAsync("Metadata/V1");
 
                 Assert.AreEqual(false, getMetadataForV1.Headers.CacheControl.Public);
@@ -109,7 +109,7 @@ namespace Bit.Tests.Api.Middlewares.Tests
         {
             using (BitOwinTestEnvironment testEnvironment = new BitOwinTestEnvironment())
             {
-                HttpResponseMessage getMetadataForV1 = await testEnvironment.Server.GetHttpClient()
+                HttpResponseMessage getMetadataForV1 = await testEnvironment.Server.BuildHttpClient()
                     .GetAsync("Metadata/V1");
 
                 Assert.AreEqual(true, getMetadataForV1.Headers.Contains("X-Content-Type-Options"));
@@ -122,7 +122,7 @@ namespace Bit.Tests.Api.Middlewares.Tests
         {
             using (BitOwinTestEnvironment testEnvironment = new BitOwinTestEnvironment())
             {
-                HttpResponseMessage getMetadataForV1 = await testEnvironment.Server.GetHttpClient()
+                HttpResponseMessage getMetadataForV1 = await testEnvironment.Server.BuildHttpClient()
                     .GetAsync("Metadata/V1");
 
                 Assert.AreEqual("application/json", getMetadataForV1.Content.Headers.ContentType.MediaType);

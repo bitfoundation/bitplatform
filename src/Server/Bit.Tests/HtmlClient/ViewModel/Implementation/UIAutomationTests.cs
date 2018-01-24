@@ -25,7 +25,7 @@ namespace Bit.Tests.HtmlClient.ViewModel.Implementation
             {
                 TokenResponse token = await testEnvironment.Server.Login("ValidUserName", "ValidPassword", clientId: "TestResOwner");
 
-                using (RemoteWebDriver driver = testEnvironment.Server.GetWebDriver(new RemoteWebDriverOptions { Token = token }))
+                using (RemoteWebDriver driver = testEnvironment.Server.BuildWebDriver(new RemoteWebDriverOptions { Token = token }))
                 {
                     await driver.NavigateToRoute("repeat-page");
 
@@ -49,7 +49,7 @@ namespace Bit.Tests.HtmlClient.ViewModel.Implementation
             {
                 TokenResponse token = await testEnvironment.Server.Login("ValidUserName", "ValidPassword", clientId: "TestResOwner");
 
-                using (RemoteWebDriver driver = testEnvironment.Server.GetWebDriver(new RemoteWebDriverOptions { Token = token }))
+                using (RemoteWebDriver driver = testEnvironment.Server.BuildWebDriver(new RemoteWebDriverOptions { Token = token }))
                 {
                     await driver.ExecuteTest("Bit.Tests.Implementations.Tests.UiAutomationTests.testGettingSomeVariables", 5, 5, "Hi", new DateTimeOffset(2016, 1, 1, 1, 1, 1, TimeSpan.Zero), new { firstNum = 5, secondNum = 5, message = "Hi", date = new DateTimeOffset(2016, 1, 1, 1, 1, 1, TimeSpan.Zero) });
                 }

@@ -14,7 +14,7 @@ namespace Bit.Tests.Api.Middlewares.WebApi.Tests
         {
             using (BitOwinTestEnvironment testEnvironment = new BitOwinTestEnvironment())
             {
-                HttpResponseMessage getTestModels = await testEnvironment.Server.GetHttpClient()
+                HttpResponseMessage getTestModels = await testEnvironment.Server.BuildHttpClient()
                         .GetAsync("/odata/Test/TestModels");
 
                 Assert.AreEqual(HttpStatusCode.OK, getTestModels.StatusCode);
