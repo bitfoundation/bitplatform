@@ -13,18 +13,23 @@ namespace Bit.Owin.Middlewares
         {
         }
 
+        private AppEnvironment _App;
+
         public override async Task Invoke(IOwinContext context)
         {
             IDependencyResolver dependencyResolver = context.GetDependencyResolver();
 
+            if (_App == null)
+            {
+                IAppEnvironmentProvider appEnvironmentProvider = dependencyResolver.Resolve<IAppEnvironmentProvider>();
+
+                _App = appEnvironmentProvider.GetActiveAppEnvironment();
+            }
+
             IRandomStringProvider randomStringProvider = dependencyResolver.Resolve<IRandomStringProvider>();
 
-            IAppEnvironmentProvider appEnvironmentProvider = dependencyResolver.Resolve<IAppEnvironmentProvider>();
-
-            AppEnvironment activeAppEnvironment = appEnvironmentProvider.GetActiveAppEnvironment();
-
-            string redirectUriHost = $"{context.Request.Scheme}://{context.Request.Host.Value}{activeAppEnvironment.GetHostVirtualPath()}SignIn";
-            string redirectUri = $"{activeAppEnvironment.GetSsoUrl()}/connect/authorize?scope={string.Join(" ", activeAppEnvironment.Security.Scopes)}&client_id={activeAppEnvironment.Security.ClientId}&redirect_uri={redirectUriHost}&response_type=id_token token";
+            string redirectUriHost = $"{context.Request.Scheme}://{context.Request.Host.Value}{_App.GetHostVirtualPath()}SignIn";
+            string redirectUri = $"{_App.GetSsoUrl()}/connect/authorize?scope={string.Join(" ", _App.Security.Scopes)}&client_id={_App.Security.ClientId}&redirect_uri={redirectUriHost}&response_type=id_token token";
 
             string stateArgs = string.Join(string.Empty, context.Request.Path.Value.SkipWhile(c => c == '/'));
 

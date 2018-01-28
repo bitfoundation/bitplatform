@@ -1,4 +1,5 @@
 ﻿using Bit.Core.Contracts;
+using Bit.Core.Models;
 using Microsoft.Owin.Security.DataProtection;
 using System;
 using System.Collections.Concurrent;
@@ -9,7 +10,18 @@ namespace Bit.OwinCore.Implementations
 {
     public class BasicDataProtectionProvider : IDataProtectionProvider
     {
-        public virtual IAppEnvironmentProvider AppEnvironmentProvider { get; set; }
+        private IAppEnvironmentProvider _AppEnvironmentProvider;
+        private AppEnvironment _App;
+
+        public virtual IAppEnvironmentProvider AppEnvironmentProvider
+        {
+            get => _AppEnvironmentProvider;
+            set
+            {
+                _AppEnvironmentProvider = value;
+                _App = _AppEnvironmentProvider.GetActiveAppEnvironment();
+            }
+        }
 
         private readonly ConcurrentDictionary<string, BasicDataProtector> _basicDataProtectors = new ConcurrentDictionary<string, BasicDataProtector>();
 
@@ -18,7 +30,7 @@ namespace Bit.OwinCore.Implementations
             if (purposes == null)
                 throw new ArgumentNullException(nameof(purposes));
 
-            string appName = AppEnvironmentProvider.GetActiveAppEnvironment().AppInfo.Name;
+            string appName = _App.AppInfo.Name;
 
             string key = $"{appName} => {string.Join(",", purposes)}";
 

@@ -12,15 +12,20 @@ namespace Bit.Owin.Middlewares
         {
         }
 
+        private AppEnvironment _App;
+
         public override async Task Invoke(IOwinContext context)
         {
             IDependencyResolver dependencyResolver = context.GetDependencyResolver();
 
-            IAppEnvironmentProvider appEnvironmentProvider = dependencyResolver.Resolve<IAppEnvironmentProvider>();
+            if (_App == null)
+            {
+                IAppEnvironmentProvider appEnvironmentProvider = dependencyResolver.Resolve<IAppEnvironmentProvider>();
 
-            AppEnvironment activeAppEnvironment = appEnvironmentProvider.GetActiveAppEnvironment();
+                _App = appEnvironmentProvider.GetActiveAppEnvironment();
+            }
 
-            string defaultPath = activeAppEnvironment.GetHostVirtualPath();
+            string defaultPath = _App.GetHostVirtualPath();
             string defaultPathWithoutEndingSlashIfIsNotRoot = defaultPath == "/" ? defaultPath : defaultPath.Substring(0, defaultPath.Length - 1);
 
             string signInPage = $@"

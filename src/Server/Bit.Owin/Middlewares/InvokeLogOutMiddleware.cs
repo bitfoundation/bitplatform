@@ -12,18 +12,22 @@ namespace Bit.Owin.Middlewares
         {
         }
 
+        private AppEnvironment _App;
+
         public override async Task Invoke(IOwinContext context)
         {
             IDependencyResolver dependencyResolver = context.GetDependencyResolver();
 
-            IAppEnvironmentProvider appEnvironmentProvider = dependencyResolver
-                .Resolve<IAppEnvironmentProvider>();
+            if (_App == null)
+            {
+                IAppEnvironmentProvider appEnvironmentProvider = dependencyResolver.Resolve<IAppEnvironmentProvider>();
 
-            AppEnvironment activeAppEnvironment = appEnvironmentProvider.GetActiveAppEnvironment();
+                _App = appEnvironmentProvider.GetActiveAppEnvironment();
+            }
 
-            string redirectUriHost = $"{context.Request.Scheme}://{context.Request.Host.Value}{activeAppEnvironment.GetHostVirtualPath()}SignOut";
+            string redirectUriHost = $"{context.Request.Scheme}://{context.Request.Host.Value}{_App.GetHostVirtualPath()}SignOut";
 
-            string redirectUri = $"{activeAppEnvironment.GetSsoUrl()}/connect/endsession?post_logout_redirect_uri={redirectUriHost}";
+            string redirectUri = $"{_App.GetSsoUrl()}/connect/endsession?post_logout_redirect_uri={redirectUriHost}";
 
             context.Response.Redirect(redirectUri + "&id_token_hint=" + context.Request.Query["id_token"]);
 

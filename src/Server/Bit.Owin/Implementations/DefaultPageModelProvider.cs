@@ -12,29 +12,39 @@ namespace Bit.Owin.Implementations
 {
     public class DefaultPageModelProvider : IDefaultPageModelProvider
     {
-        public virtual IAppEnvironmentProvider AppEnvironmentProvider { get; set; }
+        private IAppEnvironmentProvider _AppEnvironmentProvider;
+        private AppEnvironment _App;
+
+        public virtual IAppEnvironmentProvider AppEnvironmentProvider
+        {
+            get => _AppEnvironmentProvider;
+            set
+            {
+                _AppEnvironmentProvider = value;
+                _App = _AppEnvironmentProvider.GetActiveAppEnvironment();
+            }
+        }
+        
         public virtual IUserSettingProvider UsersSettingsProvider { get; set; }
         public virtual IContentFormatter ContentFormatter { get; set; }
 
         public virtual DefaultPageModel GetDefaultPageModel()
         {
-            AppEnvironment activeAppEnvironment = AppEnvironmentProvider.GetActiveAppEnvironment();
-
             DefaultPageModel defaultPageModel = new DefaultPageModel
             {
-                AppVersion = activeAppEnvironment.AppInfo.Version,
-                DebugMode = activeAppEnvironment.DebugMode,
-                AppName = activeAppEnvironment.AppInfo.Name
+                AppVersion = _App.AppInfo.Version,
+                DebugMode = _App.DebugMode,
+                AppName = _App.AppInfo.Name
             };
 
             UserSetting userSetting = UsersSettingsProvider?.GetCurrentUserSetting();
 
-            string theme = userSetting?.Theme ?? activeAppEnvironment.AppInfo.DefaultTheme;
+            string theme = userSetting?.Theme ?? _App.AppInfo.DefaultTheme;
 
-            string culture = userSetting?.Culture ?? activeAppEnvironment.AppInfo.DefaultCulture;
+            string culture = userSetting?.Culture ?? _App.AppInfo.DefaultCulture;
 
             string desiredTimeZone = userSetting?.DesiredTimeZone ??
-                                           activeAppEnvironment.AppInfo.DefaultTimeZone;
+                                           _App.AppInfo.DefaultTimeZone;
 
             string desiredTimeZoneValue = null;
 
@@ -45,8 +55,8 @@ namespace Bit.Owin.Implementations
                 !string.Equals(desiredTimeZone, "Auto", StringComparison.CurrentCulture))
                 desiredTimeZoneValue = desiredTimeZone;
 
-            string appTitle = activeAppEnvironment.Cultures.Any() ? activeAppEnvironment.Cultures
-                .ExtendedSingle($"Finding culture {culture} in environment {activeAppEnvironment.Name}", c => c.Name == culture).Values.ExtendedSingle($"Finding AppTitle in culture {culture}", v =>
+            string appTitle = _App.Cultures.Any() ? _App.Cultures
+                .ExtendedSingle($"Finding culture {culture} in environment {_App.Name}", c => c.Name == culture).Values.ExtendedSingle($"Finding AppTitle in culture {culture}", v =>
                       string.Equals(v.Name, "AppTitle", StringComparison.OrdinalIgnoreCase)).Title : string.Empty;
 
             defaultPageModel.AppTitle = appTitle;
@@ -54,34 +64,32 @@ namespace Bit.Owin.Implementations
             defaultPageModel.DesiredTimeZoneValue = desiredTimeZoneValue;
             defaultPageModel.Theme = theme;
 
-            defaultPageModel.EnvironmentConfigsJson = ContentFormatter.Serialize(activeAppEnvironment
+            defaultPageModel.EnvironmentConfigsJson = ContentFormatter.Serialize(_App
                 .Configs.Where(c => c.AccessibleInClientSide == true)
                 .Select(c => new { value = c.Value, key = c.Key }));
 
-            defaultPageModel.BaseHref = activeAppEnvironment.GetHostVirtualPath();
+            defaultPageModel.BaseHref = _App.GetHostVirtualPath();
 
             return defaultPageModel;
         }
 
         public virtual async Task<DefaultPageModel> GetDefaultPageModelAsync(CancellationToken cancellationToken)
         {
-            AppEnvironment activeAppEnvironment = AppEnvironmentProvider.GetActiveAppEnvironment();
-
             DefaultPageModel defaultPageModel = new DefaultPageModel
             {
-                AppVersion = activeAppEnvironment.AppInfo.Version,
-                DebugMode = activeAppEnvironment.DebugMode,
-                AppName = activeAppEnvironment.AppInfo.Name
+                AppVersion = _App.AppInfo.Version,
+                DebugMode = _App.DebugMode,
+                AppName = _App.AppInfo.Name
             };
 
             UserSetting userSetting = UsersSettingsProvider == null ? null : await UsersSettingsProvider.GetCurrentUserSettingAsync(cancellationToken).ConfigureAwait(false);
 
-            string theme = userSetting?.Theme ?? activeAppEnvironment.AppInfo.DefaultTheme;
+            string theme = userSetting?.Theme ?? _App.AppInfo.DefaultTheme;
 
-            string culture = userSetting?.Culture ?? activeAppEnvironment.AppInfo.DefaultCulture;
+            string culture = userSetting?.Culture ?? _App.AppInfo.DefaultCulture;
 
             string desiredTimeZone = userSetting?.DesiredTimeZone ??
-                                           activeAppEnvironment.AppInfo.DefaultTimeZone;
+                                           _App.AppInfo.DefaultTimeZone;
 
             string desiredTimeZoneValue = null;
 
@@ -92,8 +100,8 @@ namespace Bit.Owin.Implementations
                 !string.Equals(desiredTimeZone, "Auto", StringComparison.CurrentCulture))
                 desiredTimeZoneValue = desiredTimeZone;
 
-            string appTitle = activeAppEnvironment.Cultures.Any() ? activeAppEnvironment.Cultures
-                .ExtendedSingle($"Finding culture {culture} in environment {activeAppEnvironment.Name}", c => c.Name == culture).Values.ExtendedSingle($"Finding AppTitle in culture {culture}", v =>
+            string appTitle = _App.Cultures.Any() ? _App.Cultures
+                .ExtendedSingle($"Finding culture {culture} in environment {_App.Name}", c => c.Name == culture).Values.ExtendedSingle($"Finding AppTitle in culture {culture}", v =>
                       string.Equals(v.Name, "AppTitle", StringComparison.OrdinalIgnoreCase)).Title : string.Empty;
 
             defaultPageModel.AppTitle = appTitle;
@@ -101,11 +109,11 @@ namespace Bit.Owin.Implementations
             defaultPageModel.DesiredTimeZoneValue = desiredTimeZoneValue;
             defaultPageModel.Theme = theme;
 
-            defaultPageModel.EnvironmentConfigsJson = ContentFormatter.Serialize(activeAppEnvironment
+            defaultPageModel.EnvironmentConfigsJson = ContentFormatter.Serialize(_App
                 .Configs.Where(c => c.AccessibleInClientSide == true)
                 .Select(c => new { value = c.Value, key = c.Key }));
 
-            defaultPageModel.BaseHref = activeAppEnvironment.GetHostVirtualPath();
+            defaultPageModel.BaseHref = _App.GetHostVirtualPath();
 
             return defaultPageModel;
         }
