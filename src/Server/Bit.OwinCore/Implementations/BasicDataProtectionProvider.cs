@@ -1,78 +1,67 @@
 ﻿using Bit.Core.Contracts;
-using Bit.Core.Models;
 using Microsoft.Owin.Security.DataProtection;
 using System;
+using System.Collections.Concurrent;
 using System.IO;
 using System.Security.Cryptography;
 
 namespace Bit.OwinCore.Implementations
 {
-    public class BasicDataProtectionProvider : IDataProtector, IDataProtectionProvider
+    public class BasicDataProtectionProvider : IDataProtectionProvider
     {
-        private const string PrimaryPurpose = "Microsoft.Owin.Security.IDataProtector";
+        public virtual IAppEnvironmentProvider AppEnvironmentProvider { get; set; }
 
-        private readonly DataProtectionScope _dataProtectionScope = DataProtectionScope.CurrentUser;
-
-        private AppEnvironment _activeAppEnvironment;
-
-        private IAppEnvironmentProvider _appEnvironmentProvider;
-
-        public virtual IAppEnvironmentProvider AppEnvironmentProvider
-        {
-            set
-            {
-                if (value == null)
-                    throw new ArgumentNullException(nameof(AppEnvironmentProvider));
-
-                _appEnvironmentProvider = value;
-
-                _activeAppEnvironment = _appEnvironmentProvider.GetActiveAppEnvironment();
-            }
-            get => _appEnvironmentProvider;
-        }
-
-        public virtual string[] Purposes { get; set; } = new string[] { };
-
-        public virtual byte[] Protect(byte[] userData)
-        {
-            return ProtectedData.Protect(userData, GetEntropy(), _dataProtectionScope);
-        }
-
-        public virtual byte[] Unprotect(byte[] protectedData)
-        {
-            return ProtectedData.Unprotect(protectedData, GetEntropy(), _dataProtectionScope);
-        }
-
-        private byte[] GetEntropy()
-        {
-            using (SHA256 sha256 = SHA256.Create())
-            {
-                using (MemoryStream memoryStream = new MemoryStream())
-                using (CryptoStream cryptoStream = new CryptoStream(memoryStream, sha256, CryptoStreamMode.Write))
-                using (StreamWriter writer = new StreamWriter(cryptoStream))
-                {
-                    writer.Write(_activeAppEnvironment.AppInfo.Name);
-                    writer.Write(PrimaryPurpose);
-
-                    foreach (string purpose in Purposes)
-                    {
-                        writer.Write(purpose);
-                    }
-                }
-                return sha256.Hash;
-            }
-        }
+        private readonly ConcurrentDictionary<string, BasicDataProtector> _basicDataProtectors = new ConcurrentDictionary<string, BasicDataProtector>();
 
         public virtual IDataProtector Create(string[] purposes)
         {
             if (purposes == null)
                 throw new ArgumentNullException(nameof(purposes));
 
-            return new BasicDataProtectionProvider
+            string appName = AppEnvironmentProvider.GetActiveAppEnvironment().AppInfo.Name;
+
+            string key = $"{appName} => {string.Join(",", purposes)}";
+
+            return _basicDataProtectors.GetOrAdd(key, (k) => new BasicDataProtector(appName, purposes));
+        }
+    }
+
+    public class BasicDataProtector : IDataProtector
+    {
+        private const string PrimaryPurpose = "Microsoft.Owin.Security.IDataProtector";
+
+        private const DataProtectionScope Scope = DataProtectionScope.CurrentUser;
+
+        private readonly byte[] _entropy;
+
+        public BasicDataProtector(string appName, string[] purposes)
+        {
+            using (MD5 md5 = MD5.Create())
             {
-                AppEnvironmentProvider = AppEnvironmentProvider,
-                Purposes = purposes
-            };
+                using (MemoryStream memoryStream = new MemoryStream())
+                using (CryptoStream cryptoStream = new CryptoStream(memoryStream, md5, CryptoStreamMode.Write))
+                using (StreamWriter writer = new StreamWriter(cryptoStream))
+                {
+                    writer.Write(appName);
+                    writer.Write(PrimaryPurpose);
+
+                    foreach (string purpose in purposes)
+                    {
+                        writer.Write(purpose);
+                    }
+                }
+                _entropy = md5.Hash;
+            }
+        }
+
+        public virtual byte[] Protect(byte[] userData)
+        {
+            return ProtectedData.Protect(userData, _entropy, Scope);
+        }
+
+        public virtual byte[] Unprotect(byte[] protectedData)
+        {
+            return ProtectedData.Unprotect(protectedData, _entropy, Scope);
         }
     }
 }
