@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Linq;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
@@ -98,7 +99,30 @@ namespace Bit.IdentityServer.Implementations
             if (model.Custom == null && message.ReturnUrl != null)
             {
                 string state = new Uri(message.ReturnUrl).ParseQueryString()["state"] ?? "{}";
-                model.Custom = JsonConvert.DeserializeObject<dynamic>(state, jsonSerSettings);
+
+                try
+                {
+                    dynamic custom = model.Custom = JsonConvert.DeserializeObject<dynamic>(state, jsonSerSettings);
+
+                    string signInType = custom.SignInType;
+
+                    if (signInType != null && model.ExternalProviders.Any(extProvider => extProvider.Type == signInType))
+                    {
+                        string redirectUri = model.ExternalProviders.Single(extProvider => extProvider.Type == signInType).Href;
+
+                        return await ReturnHtmlAsync(model, $@"<!DOCTYPE html>
+                            <html>
+                                <head>
+                                    <meta http-equiv='refresh' content='0;{redirectUri}'>
+                                </head>
+                                <body></body>
+                            </html>", CancellationToken.None).ConfigureAwait(false);
+                    }
+                }
+                catch
+                {
+                    model.Custom = new { };
+                }
             }
 
             string json = JsonConvert.SerializeObject(new
