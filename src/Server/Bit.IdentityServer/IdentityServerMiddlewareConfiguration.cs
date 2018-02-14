@@ -5,6 +5,7 @@ using Bit.Owin.Contracts;
 using IdentityServer3.Core.Configuration;
 using IdentityServer3.Core.Logging;
 using IdentityServer3.Core.Services;
+using Microsoft.Owin.Security.Google;
 using Owin;
 using System;
 using System.Linq;
@@ -81,11 +82,40 @@ namespace Bit.IdentityServer
                     {
                         RaiseErrorEvents = true,
                         RaiseFailureEvents = true
+                    },
+                    AuthenticationOptions = new AuthenticationOptions
+                    {
+                        IdentityProviders = ConfigureIdentityProviders
                     }
                 };
 
                 coreApp.UseIdentityServer(identityServerOptions);
             });
+        }
+
+        protected virtual void ConfigureIdentityProviders(IAppBuilder owinApp, string signInAsType)
+        {
+            AppEnvironment activeAppEnvironment = AppEnvironmentProvider.GetActiveAppEnvironment();
+
+            if (activeAppEnvironment.HasConfig("GoogleClientId"))
+            {
+                string googleClientId = activeAppEnvironment.GetConfig<string>("GoogleClientId");
+                string googleSecret = activeAppEnvironment.GetConfig<string>("GoogleSecret");
+                ConfigureGoogleAccount(owinApp, googleClientId, googleSecret, signInAsType);
+            }
+        }
+
+        protected virtual void ConfigureGoogleAccount(IAppBuilder owinApp, string clientId, string secret, string signInAsType)
+        {
+            GoogleOAuth2AuthenticationOptions google = new GoogleOAuth2AuthenticationOptions
+            {
+                AuthenticationType = "Google",
+                SignInAsAuthenticationType = signInAsType,
+                ClientId = clientId,
+                ClientSecret = secret
+            };
+
+            owinApp.UseGoogleAuthentication(google);
         }
     }
 }
