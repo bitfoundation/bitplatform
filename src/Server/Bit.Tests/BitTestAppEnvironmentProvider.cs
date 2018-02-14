@@ -80,7 +80,9 @@ namespace Bit.Tests
                         new EnvironmentConfig { Key = "IdentityCertificatePassword" , Value = "P@ssw0rd" },
                         new EnvironmentConfig { Key = "ClientSideAccessibleConfigTest", Value = true, AccessibleInClientSide = true},
                         new EnvironmentConfig { Key = "HostVirtualPath", Value = "/" , AccessibleInClientSide = true },
-                        new EnvironmentConfig { Key = "SsoPageTemplatePath" , Value = @"bit-framework/src/Server/Bit.Tests/ssoPageTemplate.cshtml" }
+                        new EnvironmentConfig { Key = "SsoPageTemplatePath" , Value = @"bit-framework/src/Server/Bit.Tests/ssoPageTemplate.cshtml" },
+                        new EnvironmentConfig { Key = "GoogleClientId" , Value = "563799658385-5vv2jcqml5dv7fosup10e57unahfufdd.apps.googleusercontent.com" },
+                        new EnvironmentConfig { Key = "GoogleSecret" , Value = "v8zVdioz7K-rnYjz7MdxL_fQ" }
                     }
                 };
             }

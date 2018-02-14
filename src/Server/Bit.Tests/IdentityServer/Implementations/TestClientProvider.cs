@@ -38,7 +38,8 @@ namespace Bit.Tests.IdentityServer.Implementations
                     Secret = "secret",
                     RedirectUris = new List<string>
                     {
-                        $@"^(http|https):\/\/(\S+\.)?(bit-framework.com|localhost|127.0.0.1)(:\d+)?\b{activeAppEnvironment.GetHostVirtualPath()}\bSignIn\/?"
+                        $@"^(http|https):\/\/(\S+\.)?(bit-framework.com|localhost|127.0.0.1|indie-ir001.ngrok.io)(:\d+)?\b{activeAppEnvironment.GetHostVirtualPath()}\bSignIn\/?",
+                        "Test://oauth2redirect"
                     },
                     PostLogoutRedirectUris = new List<string>
                     {

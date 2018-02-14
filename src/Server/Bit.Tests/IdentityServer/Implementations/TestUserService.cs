@@ -36,5 +36,20 @@ namespace Bit.Tests.IdentityServer.Implementations
         {
             return _localUsers.Any(u => u.UserId == userId);
         }
+
+        protected override async Task<string> GetInternalUserId(ExternalAuthenticationContext context)
+        {
+            ExternalAuthClaims externalClaims = GetExternalClaims(context);
+
+            LocalUser user = _localUsers.FirstOrDefault(u => u.UserId == externalClaims.UserName);
+
+            if (user == null)
+            {
+                user = new LocalUser { UserId = externalClaims.UserName, Password = null };
+                _localUsers.Add(user);
+            }
+
+            return user.UserId;
+        }
     }
 }

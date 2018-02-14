@@ -17,7 +17,8 @@ namespace Bit.Tests
             {
                 UseRealServer = true,
                 UseProxyBasedDependencyManager = false,
-                UseAspNetCore = true
+                UseAspNetCore = true/*,
+                HostName = "indie-ir001.ngrok.io"*/
             }))
             {
 
