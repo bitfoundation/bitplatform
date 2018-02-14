@@ -86,6 +86,11 @@
 
         <md-button name="login" class="md-raised md-primary login-button" type="submit" ng-disabled="loginForm.$invalid">{{:: "Login" | translate }}</md-button>
 
+        <section ng-if="::vm.loginModel.externalProviders != null && vm.loginModel.externalProviders.length != 0">
+          <div class="label">{{:: "OrLoginUsing" | translate }}</div>
+          <a ng-repeat="provider in ::vm.loginModel.externalProviders" class='md-button md-primary' style='padding-top:9px;' ng-href="{{::provider.href}}">{{:: provider.text | translate }}</a>
+        </section>
+
     </form>
 </div>
 
