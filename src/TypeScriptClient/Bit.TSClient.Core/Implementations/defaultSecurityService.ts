@@ -5,17 +5,32 @@
         @Log()
         public isLoggedIn(): boolean {
 
+            const token = this.getCurrentToken();
+
+            if (token == null)
+                return false;
+
+            return ((Number(new Date()) - Number(token.login_date)) / 1000) > token.expires_in;
+        }
+
+        @Log()
+        public getCurrentToken(): Contracts.Token {
+
             let path = ClientAppProfileManager.getCurrent().getClientAppProfile().getConfig("HostVirtualPath", "/");
 
             if (localStorage[`${path}access_token`] == null)
-                return false;
+                return null;
             if (localStorage[`${path}login_date`] == null)
-                return false;
+                return null;
             if (localStorage[`${path}expires_in`] == null)
-                return false;
-            if (((Number(new Date()) - Number(new Date(localStorage[`${path}login_date`]))) / 1000) > Number(localStorage[`${path}expires_in`]))
-                return false;
-            return true;
+                return null;
+
+            return {
+                access_token: localStorage[`${path}access_token`],
+                expires_in: Number(localStorage[`${path}expires_in`]),
+                login_date: new Date(localStorage[`${path}login_date`]),
+                token_type: localStorage[`${path}token_type`]
+            };
         }
 
         @Log()
@@ -27,7 +42,7 @@
         }
 
         @Log()
-        public async loginWithCredentials(username: string, password: string, client_id: string, client_secret: string, scopes = ["openid", "profile", "user_info"], saveToken = true): Promise<{ access_token: string, expires_in: number, token_type: string }> {
+        public async loginWithCredentials(username: string, password: string, client_id: string, client_secret: string, scopes = ["openid", "profile", "user_info"], saveToken = true): Promise<Contracts.Token> {
 
             if (username == null)
                 throw new Error("username is null");
@@ -49,16 +64,17 @@
                 method: "POST", body: loginData, headers: loginHeaders
             });
 
-            const json = await res.json();
+            const json: Contracts.Token & { error_description: string } = await res.json();
 
             if (res.ok) {
+
+                const now = new Date();
 
                 if (saveToken == true) {
 
                     const defaultPath = Bit.ClientAppProfileManager.getCurrent().getClientAppProfile().getConfig<string>("HostVirtualPath", "/");
                     const defaultPathWithoutEndingSlashIfIsNotRoot = defaultPath == "/" ? defaultPath : defaultPath.substring(0, defaultPath.length - 1);
 
-                    const now = new Date();
                     const time = now.getTime();
                     const expireTime = time + (json.expires_in * 1000);
                     now.setTime(expireTime);
@@ -73,6 +89,8 @@
                     document.cookie = `access_token=${json.access_token}` + ";expires=" + nowAsGMTString + `;path=${defaultPathWithoutEndingSlashIfIsNotRoot}`;
                     document.cookie = `token_type=${json.token_type}` + ";expires=" + nowAsGMTString + `;path=${defaultPathWithoutEndingSlashIfIsNotRoot}`;
                 }
+
+                json.login_date = new Date();
 
                 return json;
             }
