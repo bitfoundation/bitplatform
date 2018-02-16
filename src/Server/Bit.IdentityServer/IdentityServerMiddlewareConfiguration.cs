@@ -8,6 +8,7 @@ using IdentityServer3.Core.Services;
 using Microsoft.Owin.Security.Google;
 using Owin;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace Bit.IdentityServer
@@ -21,6 +22,7 @@ namespace Bit.IdentityServer
         public virtual IScopesProvider ScopesProvider { get; set; }
         public virtual IRedirectUriValidator RedirectUriValidator { get; set; }
         public virtual IEventService EventService { get; set; }
+        public virtual IEnumerable<IExternalIdentityProviderConfiguration> ExternalIdentityProviderConfigurations { get; set; }
 
         public virtual void Configure(IAppBuilder owinApp)
         {
@@ -95,27 +97,10 @@ namespace Bit.IdentityServer
 
         protected virtual void ConfigureIdentityProviders(IAppBuilder owinApp, string signInAsType)
         {
-            AppEnvironment activeAppEnvironment = AppEnvironmentProvider.GetActiveAppEnvironment();
-
-            if (activeAppEnvironment.HasConfig("GoogleClientId"))
+            foreach (IExternalIdentityProviderConfiguration externalIdentityProviderConfiguration in ExternalIdentityProviderConfigurations)
             {
-                string googleClientId = activeAppEnvironment.GetConfig<string>("GoogleClientId");
-                string googleSecret = activeAppEnvironment.GetConfig<string>("GoogleSecret");
-                ConfigureGoogleAccount(owinApp, googleClientId, googleSecret, signInAsType);
+                externalIdentityProviderConfiguration.ConfiguerExternalIdentityProvider(owinApp, signInAsType);
             }
-        }
-
-        protected virtual void ConfigureGoogleAccount(IAppBuilder owinApp, string clientId, string secret, string signInAsType)
-        {
-            GoogleOAuth2AuthenticationOptions google = new GoogleOAuth2AuthenticationOptions
-            {
-                AuthenticationType = "Google",
-                SignInAsAuthenticationType = signInAsType,
-                ClientId = clientId,
-                ClientSecret = secret
-            };
-
-            owinApp.UseGoogleAuthentication(google);
         }
     }
 }

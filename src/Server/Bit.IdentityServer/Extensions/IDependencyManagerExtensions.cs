@@ -1,6 +1,7 @@
 ﻿using Bit.IdentityServer;
 using Bit.IdentityServer.Contracts;
 using Bit.IdentityServer.Implementations;
+using Bit.IdentityServer.Implementations.ExternalIdentityProviderConfigurations;
 using Bit.Owin.Implementations;
 using IdentityServer3.Core.Services;
 
@@ -25,6 +26,8 @@ namespace Bit.Core.Contracts
 
             dependencyManager.Register<IClientProvider, TClientProvider>(lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExciting: false);
             dependencyManager.Register<IUserService, TUserService>(lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExciting: false);
+
+            dependencyManager.Register<IExternalIdentityProviderConfiguration, GoogleIdentityProviderConfiguration>(overwriteExciting: false);
 
             return dependencyManager;
         }
