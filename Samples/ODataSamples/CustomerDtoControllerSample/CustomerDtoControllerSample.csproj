@@ -11,9 +11,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Bit.Data.EntityFramework" Version="0.8.9" />
-    <PackageReference Include="Bit.OData" Version="0.8.9" />
-    <PackageReference Include="Bit.OwinCore" Version="0.8.9" />
+    <PackageReference Include="Bit.Data.EntityFramework" Version="0.9.1" />
+    <PackageReference Include="Bit.OData" Version="0.9.1" />
+    <PackageReference Include="Bit.OwinCore" Version="0.9.1" />
     <PackageReference Include="BitCodeAnalyzer" Version="1.1.9.8" />
   </ItemGroup>
   <ItemGroup>
