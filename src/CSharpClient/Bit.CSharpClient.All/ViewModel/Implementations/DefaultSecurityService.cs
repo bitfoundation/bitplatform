@@ -14,12 +14,13 @@ namespace Bit.ViewModel.Implementations
 {
     public class DefaultSecurityService : ISecurityService
     {
-        public DefaultSecurityService(AccountStore accountStore, IConfigProvider configProvider, BitOAuth2Authenticator bitOAuth2Authenticator, OAuthLoginPresenter oAuthLoginPresenter, TokenClient tokenClient)
+        public DefaultSecurityService(AccountStore accountStore, IConfigProvider configProvider, BitOAuth2Authenticator bitOAuth2Authenticator, OAuthLoginPresenter oAuthLoginPresenter, TokenClient tokenClient, IDateTimeProvider dateTimeProvider)
         {
             _configProvider = configProvider;
             _accountStore = accountStore;
             _oAuthLoginPresenter = oAuthLoginPresenter;
             _tokenClient = tokenClient;
+            _dateTimeProvider = dateTimeProvider;
             BitOAuth2Authenticator = _bitOAuth2Authenticator = bitOAuth2Authenticator;
         }
 
@@ -28,26 +29,51 @@ namespace Bit.ViewModel.Implementations
         private readonly AccountStore _accountStore;
         private readonly OAuthLoginPresenter _oAuthLoginPresenter;
         private readonly TokenClient _tokenClient;
+        private readonly IDateTimeProvider _dateTimeProvider;
 
         public static BitOAuth2Authenticator BitOAuth2Authenticator { get; protected set; }
 
-        public virtual async Task<bool> IsLoggedIn(CancellationToken cancellationToken = default(CancellationToken))
+        public virtual bool IsLoggedIn()
         {
-            return (await GetAccount(cancellationToken)) != null;
+            Account account = GetAccount();
+
+            if (account == null)
+                return false;
+
+            Token token = account;
+
+            return (_dateTimeProvider.GetCurrentUtcDateTime() - token.login_date) < TimeSpan.FromSeconds(token.expires_in);
         }
 
-        private async Task<Account> GetAccount(CancellationToken cancellationToken)
+        public virtual async Task<bool> IsLoggedInAsync(CancellationToken cancellationToken = default(CancellationToken))
+        {
+            Account account = await GetAccountAsync();
+
+            if (account == null)
+                return false;
+
+            Token token = account;
+
+            return (_dateTimeProvider.GetCurrentUtcDateTime() - token.login_date) < TimeSpan.FromSeconds(token.expires_in);
+        }
+
+        private Account GetAccount()
+        {
+            return (_accountStore.FindAccountsForService(_configProvider.AppName)).SingleOrDefault();
+        }
+
+        private async Task<Account> GetAccountAsync()
         {
             return (await _accountStore.FindAccountsForServiceAsync(_configProvider.AppName)).SingleOrDefault();
         }
 
-        public virtual Task<(string access_token, long expires_in, string token_type)> Login(object state = null, CancellationToken cancellationToken = default(CancellationToken))
+        public virtual Task<Token> Login(object state = null, CancellationToken cancellationToken = default(CancellationToken))
         {
             state = state ?? new { };
 
             BitOAuth2Authenticator.State = state;
 
-            TaskCompletionSource<(string access_token, long expires_in, string token_type)> taskSource = new TaskCompletionSource<(string access_token, long expires_in, string token_type)>();
+            TaskCompletionSource<Token> taskSource = new TaskCompletionSource<Token>();
 
             async void completed(object sender, AuthenticatorCompletedEventArgs e)
             {
@@ -60,14 +86,16 @@ namespace Bit.ViewModel.Implementations
                     {
                         try
                         {
-                            await Logout(cancellationToken, internalAppLogoutOnly: true);
+                            await Logout(internalAppLogoutOnly: true);
                         }
                         catch { }
+
+                        e.Account.Properties.Add("login_date", Convert.ToString(_dateTimeProvider.GetCurrentUtcDateTime()));
 
                         await _accountStore.SaveAsync(e.Account, _configProvider.AppName);
                     }
 
-                    taskSource.SetResult(await GetCurrentToken(cancellationToken));
+                    taskSource.SetResult(e.Account);
                 }
                 else
                 {
@@ -91,7 +119,7 @@ namespace Bit.ViewModel.Implementations
             return taskSource.Task;
         }
 
-        public virtual async Task<(string access_token, long expires_in, string token_type)> LoginWithCredentials(string username, string password, CancellationToken cancellationToken = default(CancellationToken))
+        public virtual async Task<Token> LoginWithCredentials(string username, string password, CancellationToken cancellationToken = default(CancellationToken))
         {
             TokenResponse tokenResponse = await _tokenClient.RequestResourceOwnerPasswordAsync(username, password, scope: "openid profile user_info");
 
@@ -100,7 +128,7 @@ namespace Bit.ViewModel.Implementations
 
             try
             {
-                await Logout(cancellationToken, internalAppLogoutOnly: true);
+                await Logout(internalAppLogoutOnly: true);
             }
             catch { }
 
@@ -112,24 +140,25 @@ namespace Bit.ViewModel.Implementations
 
             Account account = new Account(username, new Dictionary<string, string>
             {
-                {"access_token" , tokenResponse.AccessToken },
-                {"expires_in" , tokenResponse.ExpiresIn.ToString()},
-                {"token_type" , tokenResponse.TokenType }
+                { "access_token" , tokenResponse.AccessToken },
+                { "expires_in" , tokenResponse.ExpiresIn.ToString()},
+                { "token_type" , tokenResponse.TokenType },
+                { "login_date", Convert.ToString(_dateTimeProvider.GetCurrentUtcDateTime()) }
             });
 
             await _accountStore.SaveAsync(account, _configProvider.AppName);
 
-            return (tokenResponse.AccessToken, tokenResponse.ExpiresIn, tokenResponse.TokenType);
+            return account;
         }
 
         public virtual async Task Logout(CancellationToken cancellationToken = default(CancellationToken))
         {
-            await Logout(cancellationToken, internalAppLogoutOnly: false);
+            await Logout(internalAppLogoutOnly: false);
         }
 
-        private async Task Logout(CancellationToken cancellationToken, bool internalAppLogoutOnly)
+        private async Task Logout(bool internalAppLogoutOnly)
         {
-            Account account = await GetAccount(cancellationToken);
+            Account account = GetAccount();
 
             if (account != null)
             {
@@ -138,18 +167,28 @@ namespace Bit.ViewModel.Implementations
 
             if (internalAppLogoutOnly == false)
             {
-                WebAuthenticator.ClearCookies();
+                WebAuthenticator.ClearCookies(); // This won't work due security reasons >> We need to store id_token + calling InvokeLogout?id_token=...
             }
         }
 
-        public virtual async Task<(string access_token, long expires_in, string token_type)> GetCurrentToken(CancellationToken cancellationToken = default(CancellationToken))
+        public virtual Token GetCurrentToken()
         {
-            if ((await IsLoggedIn(cancellationToken)) == false)
-                throw new InvalidOperationException("Token not found");
+            Account account = GetAccount();
 
-            Account account = await GetAccount(cancellationToken);
+            if (account == null)
+                return null;
 
-            return (account.Properties["access_token"], Convert.ToInt64(account.Properties["expires_in"]), account.Properties["token_type"]);
+            return account;
+        }
+
+        public virtual async Task<Token> GetCurrentTokenAsync(CancellationToken cancellationToken = default(CancellationToken))
+        {
+            Account account = await GetAccountAsync();
+
+            if (account == null)
+                return null;
+
+            return account;
         }
     }
 }
