@@ -31,9 +31,9 @@ namespace Bit.CSharpClientSample
 
         public MainViewModel(ODataClient oDataClient, HttpClient httpClient, IPageDialogService pageDialogService, IDeviceService deviceService, ISecurityService securityService)
         {
-            CheckIsLoggedIn = new DelegateCommand(async () =>
+            CheckIsLoggedIn = new DelegateCommand(() =>
             {
-                bool isLoggedIn = await securityService.IsLoggedIn();
+                bool isLoggedIn = securityService.IsLoggedIn();
 
                 deviceService.BeginInvokeOnMainThread(async () =>
                 {
@@ -61,18 +61,11 @@ namespace Bit.CSharpClientSample
 
             SendHttpRequest = new DelegateCommand(async () =>
             {
-                httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", (await securityService.GetCurrentToken()).access_token);
-
                 HttpResponseMessage response = await httpClient.GetAsync("odata/Test/parentEntities");
             });
 
             SendODataRequest = new DelegateCommand(async () =>
             {
-                oDataClient.UpdateRequestHeaders(new Dictionary<string, IEnumerable<string>>
-                {
-                    {"Authorization", new string[]{ $"Bearer {(await securityService.GetCurrentToken()).access_token}" } }
-                });
-
                 var result = await oDataClient.For("ParentEntities").FindEntriesAsync();
             });
 
