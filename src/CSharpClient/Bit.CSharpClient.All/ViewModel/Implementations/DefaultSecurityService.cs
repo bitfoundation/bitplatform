@@ -90,7 +90,8 @@ namespace Bit.ViewModel.Implementations
                         }
                         catch { }
 
-                        e.Account.Properties.Add("login_date", Convert.ToString(_dateTimeProvider.GetCurrentUtcDateTime()));
+                        if (!e.Account.Properties.ContainsKey(nameof(Token.login_date)))
+                            e.Account.Properties.Add(nameof(Token.login_date), Convert.ToString(_dateTimeProvider.GetCurrentUtcDateTime()));
 
                         await _accountStore.SaveAsync(e.Account, _configProvider.AppName);
                     }
@@ -124,7 +125,7 @@ namespace Bit.ViewModel.Implementations
             TokenResponse tokenResponse = await _tokenClient.RequestResourceOwnerPasswordAsync(username, password, scope: "openid profile user_info");
 
             if (tokenResponse.IsError)
-                throw new Exception($"{tokenResponse.Error}");
+                throw tokenResponse.Exception ?? new Exception($"{tokenResponse.Error}");
 
             try
             {

@@ -11,10 +11,10 @@ namespace Bit.ViewModel.Contracts
         {
             return new Token
             {
-                access_token = account.Properties["access_token"],
-                expires_in = Convert.ToInt64(account.Properties["expires_in"]),
-                login_date = Convert.ToDateTime(account.Properties["login_date"]),
-                token_type = account.Properties["token_type"]
+                access_token = account.Properties[nameof(access_token)],
+                expires_in = Convert.ToInt64(account.Properties[nameof(expires_in)]),
+                login_date = Convert.ToDateTime(account.Properties[nameof(login_date)]),
+                token_type = account.Properties[nameof(token_type)]
             };
         }
 
