@@ -1,4 +1,6 @@
 ﻿using Autofac;
+using Bit.CSharpClientSample.ViewModels;
+using Bit.CSharpClientSample.Views;
 using Bit.ViewModel.Contracts;
 using Bit.ViewModel.Implementations;
 using IdentityModel.Client;
@@ -43,13 +45,22 @@ namespace Bit.CSharpClientSample
         protected async override void OnInitialized()
         {
             InitializeComponent();
-            await NavigationService.NavigateAsync("Nav/Main");
+
+            if (await Container.Resolve<ISecurityService>().IsLoggedInAsync())
+            {
+                await NavigationService.NavigateAsync("Nav/Main");
+            }
+            else
+            {
+                await NavigationService.NavigateAsync("Login");
+            }
         }
 
         protected override void RegisterTypes(IContainerRegistry containerRegistry)
         {
             containerRegistry.RegisterForNavigation<NavigationPage>("Nav");
 
+            containerRegistry.RegisterForNavigation<LoginView, LoginViewModel>("Login");
             containerRegistry.RegisterForNavigation<MainView, MainViewModel>("Main");
 
             Simple.OData.Client.V4Adapter.Reference();
