@@ -134,7 +134,13 @@ namespace Bit.ViewModel.Implementations
             catch { }
 
             string[] tokenParts = tokenResponse.AccessToken.Split('.');
-            byte[] decodedByteArrayToken = Convert.FromBase64String(tokenParts[1]);
+
+            string fixedString = tokenParts[1].Trim().Replace(" ", "+");
+            if (fixedString.Length % 4 > 0)
+                fixedString = fixedString.PadRight(fixedString.Length + 4 - fixedString.Length % 4, '=');
+
+            byte[] decodedByteArrayToken = Convert.FromBase64String(fixedString);
+
             string decodedStringToken = Encoding.UTF8.GetString(decodedByteArrayToken);
             JObject jwtToken = JObject.Parse(decodedStringToken);
             string userName = jwtToken["sub"].Value<string>();
