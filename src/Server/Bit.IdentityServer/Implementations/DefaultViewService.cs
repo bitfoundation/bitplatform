@@ -18,6 +18,8 @@ namespace Bit.IdentityServer.Implementations
     {
         public virtual ISsoPageHtmlProvider SsoHtmlPageProvider { get; set; }
 
+        public virtual ICustomLoginDataProvider CustomLoginDataProvider { get; set; }
+
         public virtual async Task<Stream> ClientPermissions(ClientPermissionsViewModel model)
         {
             string content = @"<!DOCTYPE html>
@@ -102,7 +104,7 @@ namespace Bit.IdentityServer.Implementations
 
                 try
                 {
-                    dynamic custom = model.Custom = JsonConvert.DeserializeObject<dynamic>(state, jsonSerSettings);
+                    dynamic custom = model.Custom = CustomLoginDataProvider.GetCustomData(message);
 
                     string signInType = custom.SignInType;
 

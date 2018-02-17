@@ -9,10 +9,10 @@ namespace Bit.IdentityServer.Implementations
 {
     public class DefaultCustomLoginDataProvider : ICustomLoginDataProvider
     {
-        public virtual dynamic GetCustomData(LocalAuthenticationContext context)
+        public virtual dynamic GetCustomData(SignInMessage signInMessage)
         {
-            if (context == null)
-                throw new ArgumentNullException(nameof(context));
+            if (signInMessage == null)
+                throw new ArgumentNullException(nameof(signInMessage));
 
             JsonSerializerSettings jsonSerSettings = new JsonSerializerSettings()
             {
@@ -21,7 +21,7 @@ namespace Bit.IdentityServer.Implementations
                 DateFormatHandling = DateFormatHandling.IsoDateFormat
             };
 
-            return JsonConvert.DeserializeObject<dynamic>(new Uri(context.SignInMessage.ReturnUrl).ParseQueryString()["state"], jsonSerSettings);
+            return JsonConvert.DeserializeObject<dynamic>(new Uri(signInMessage.ReturnUrl).ParseQueryString()["state"], jsonSerSettings);
         }
     }
 }

@@ -4,6 +4,6 @@ namespace Bit.IdentityServer.Contracts
 {
     public interface ICustomLoginDataProvider
     {
-        dynamic GetCustomData(LocalAuthenticationContext context);
+        dynamic GetCustomData(SignInMessage signInMessage);
     }
 }
