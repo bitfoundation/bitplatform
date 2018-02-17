@@ -75,7 +75,7 @@ namespace Bit.Owin.Implementations
         {
             exp = UnWrapException(exp);
 
-            if (exp is IKnwoException)
+            if (exp is IKnownException)
                 return true;
 
             return false;
