@@ -33,9 +33,12 @@ namespace Bit.WebApi.Implementations
                         exception = exception.InnerException;
                     if (!logger.LogData.Any(d => d.Key == "X-CorrelationId"))
                         logger.AddLogData("X-CorrelationId", request.GetCorrelationId());
-                    logger.AddLogData("WebExceptionType", exception.GetType().FullName);
-                    logger.AddLogData("WebException", exception);
-                    logger.AddLogData("WebApiErrorMessage", traceRecord.Message);
+                    if (!logger.LogData.Any(d => d.Key == "WebExceptionType"))
+                        logger.AddLogData("WebExceptionType", exception.GetType().FullName);
+                    if (!logger.LogData.Any(d => d.Key == "WebException"))
+                        logger.AddLogData("WebException", exception.ToString());
+                    if (!logger.LogData.Any(d => d.Key == "WebApiErrorMessage"))
+                        logger.AddLogData("WebApiErrorMessage", traceRecord.Message);
                 }
             }
         }

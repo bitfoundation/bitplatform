@@ -172,7 +172,7 @@ namespace Bit.Owin.Implementations
 
             LogEntry logEntry = CreateLogEntry(message, severity);
 
-            AddLogData("Exception", exp);
+            AddLogData("Exception", exp.ToString());
             AddLogData("ExceptionAdditionalMessage", message);
             AddLogData("ExceptionType", exp.GetType().FullName);
 
@@ -194,7 +194,7 @@ namespace Bit.Owin.Implementations
 
             LogEntry logEntry = CreateLogEntry(message, severity);
 
-            AddLogData("Exception", exp);
+            AddLogData("Exception", exp.ToString());
             AddLogData("ExceptionAdditionalMessage", message);
             AddLogData("ExceptionType", exp.GetType().FullName);
 
