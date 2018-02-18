@@ -1,7 +1,8 @@
 ﻿using Bit.ViewModel.Contracts;
-using Microsoft.QueryStringDotNET;
 using Newtonsoft.Json;
 using System;
+using System.Collections.Specialized;
+using System.Net.Http;
 using System.Threading.Tasks;
 using Xamarin.Auth;
 
@@ -26,7 +27,7 @@ namespace Bit.ViewModel.Implementations
         {
             Uri originalUri = await base.GetInitialUrlAsync();
 
-            QueryString queryString = new QueryString();
+            NameValueCollection queryString = originalUri.ParseQueryString();
             queryString.Set("response_type", "id_token token");
             queryString.Set("nonce", Guid.NewGuid().ToString("N"));
             queryString.Set("client_id", ClientId);
