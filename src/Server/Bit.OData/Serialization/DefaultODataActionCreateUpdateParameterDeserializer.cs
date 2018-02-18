@@ -1,4 +1,5 @@
 ﻿using Bit.Core.Contracts;
+using Bit.Core.Implementations;
 using Bit.Model.Contracts;
 using Bit.OData.ODataControllers;
 using Bit.Owin.Contracts;
@@ -70,18 +71,18 @@ namespace Bit.OData.Serialization
                         }
                     }
 
-                    JsonSerializer deserilizer = JsonSerializer.Create(new JsonSerializerSettings
+                    JsonSerializerSettings settings = DefaultJsonContentFormatter.DeSerializeSettings();
+
+                    settings.Converters = new JsonConverter[]
                     {
-                        ReferenceLoopHandling = ReferenceLoopHandling.Ignore,
-                        DateFormatHandling = DateFormatHandling.IsoDateFormat,
-                        Converters = new JsonConverter[]
-                        {
-                            _odataJsonDeserializerEnumConverter,
-                            _stringFormatterConvert,
-                            new ODataJsonDeSerializerDateTimeOffsetTimeZone(timeZoneManager)
-                        },
-                        MissingMemberHandling = MissingMemberHandling.Error
-                    });
+                        _odataJsonDeserializerEnumConverter,
+                        _stringFormatterConvert,
+                        new ODataJsonDeSerializerDateTimeOffsetTimeZone(timeZoneManager)
+                    };
+
+                    settings.MissingMemberHandling = MissingMemberHandling.Error;
+
+                    JsonSerializer deserilizer = JsonSerializer.Create(settings);
 
                     deserilizer.Error += Error;
 

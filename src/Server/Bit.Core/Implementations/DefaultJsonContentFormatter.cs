@@ -1,5 +1,6 @@
 ﻿using Bit.Core.Contracts;
 using Newtonsoft.Json;
+using System;
 
 namespace Bit.Core.Implementations
 {
@@ -21,23 +22,30 @@ namespace Bit.Core.Implementations
 
         public virtual T DeSerialize<T>(string objAsStr)
         {
-            return JsonConvert.DeserializeObject<T>(objAsStr, new JsonSerializerSettings
-            {
-                ReferenceLoopHandling = ReferenceLoopHandling.Ignore,
-                DateFormatHandling = DateFormatHandling.IsoDateFormat,
-                TypeNameAssemblyFormatHandling = TypeNameAssemblyFormatHandling.Simple,
-                TypeNameHandling = TypeNameHandling.All
-            });
+            return JsonConvert.DeserializeObject<T>(objAsStr, DeSerializeSettings());
         }
+
+        public static Func<JsonSerializerSettings> DeSerializeSettings { get; set; } = () => new JsonSerializerSettings
+        {
+            ReferenceLoopHandling = ReferenceLoopHandling.Ignore,
+            DateFormatHandling = DateFormatHandling.IsoDateFormat,
+            TypeNameAssemblyFormatHandling = TypeNameAssemblyFormatHandling.Simple,
+            TypeNameHandling = TypeNameHandling.All
+        };
+
+        public static Func<JsonSerializerSettings> SerializeSettings { get; set; } = () => new JsonSerializerSettings
+        {
+            ReferenceLoopHandling = ReferenceLoopHandling.Ignore,
+            DateFormatHandling = DateFormatHandling.IsoDateFormat
+        };
 
         public virtual string Serialize<T>(T obj)
         {
-            return JsonConvert.SerializeObject(obj, new JsonSerializerSettings
-            {
-                ReferenceLoopHandling = ReferenceLoopHandling.Ignore,
-                DateFormatHandling = DateFormatHandling.IsoDateFormat,
-                Formatting = Formatting.Indented
-            });
+            JsonSerializerSettings jsonSerializerSettings = SerializeSettings();
+
+            jsonSerializerSettings.Formatting = Formatting.Indented;
+
+            return JsonConvert.SerializeObject(obj, jsonSerializerSettings);
         }
     }
 }

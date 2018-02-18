@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json;
+﻿using Bit.Core.Implementations;
+using Newtonsoft.Json;
 using OpenQA.Selenium.Remote;
 using OpenQA.Selenium.Support.UI;
 using System;
@@ -44,11 +45,7 @@ namespace OpenQA.Selenium
 
             string consoleValue = testsConsole.GetAttribute("value");
 
-            string arguments = JsonConvert.SerializeObject(args, new JsonSerializerSettings
-            {
-                DateFormatHandling = DateFormatHandling.IsoDateFormat,
-                ReferenceLoopHandling = ReferenceLoopHandling.Ignore
-            });
+            string arguments = JsonConvert.SerializeObject(args, DefaultJsonContentFormatter.SerializeSettings());
 
             string finalTestScript = $"executeTest({testScript},'{arguments}');";
 

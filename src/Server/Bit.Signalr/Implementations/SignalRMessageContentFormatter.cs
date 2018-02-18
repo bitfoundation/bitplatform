@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Reflection;
 using Bit.Core.Contracts;
+using Bit.Core.Implementations;
 using Newtonsoft.Json;
 
 namespace Bit.Signalr.Implementations
@@ -24,16 +25,12 @@ namespace Bit.Signalr.Implementations
         {
             if (_settingsCache == null)
             {
-                _settingsCache = new JsonSerializerSettings
+                _settingsCache = DefaultJsonContentFormatter.SerializeSettings();
+                _settingsCache.TypeNameAssemblyFormatHandling = TypeNameAssemblyFormatHandling.Simple;
+                _settingsCache.TypeNameHandling = TypeNameHandling.All;
+                _settingsCache.Converters = new List<JsonConverter>
                 {
-                    ReferenceLoopHandling = ReferenceLoopHandling.Ignore,
-                    DateFormatHandling = DateFormatHandling.IsoDateFormat,
-                    TypeNameAssemblyFormatHandling = TypeNameAssemblyFormatHandling.Simple,
-                    TypeNameHandling = TypeNameHandling.All,
-                    Converters = new List<JsonConverter>
-                    {
-                        new ThrowExceptionForDateTimeOffsetValues()
-                    }
+                    new ThrowExceptionForDateTimeOffsetValues()
                 };
             }
             return _settingsCache;

@@ -77,7 +77,7 @@ namespace Bit.Tests.Api.Middlewares.WebApi.Tests
 
                     Assert.IsTrue(logger.LogData.Single(ld => ld.Key == "X-CorrelationId").Value is Guid);
                     Assert.AreEqual(typeof(AppException).GetTypeInfo().FullName, logger.LogData.Single(ld => ld.Key == "WebExceptionType").Value);
-                    Assert.AreEqual("Test", ((AppException)logger.LogData.Single(ld => ld.Key == "WebException").Value).Message);
+                    Assert.IsTrue(((string)(logger.LogData.Single(ld => ld.Key == "WebException").Value)).Contains("Bit.Owin.Exceptions.AppException: Test"));
                 }
             }
         }

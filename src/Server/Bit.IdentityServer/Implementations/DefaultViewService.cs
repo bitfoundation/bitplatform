@@ -4,6 +4,7 @@ using System.Linq;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
+using Bit.Core.Implementations;
 using Bit.IdentityServer.Contracts;
 using IdentityServer3.Core.Models;
 using IdentityServer3.Core.Services;
@@ -91,12 +92,8 @@ namespace Bit.IdentityServer.Implementations
 
         public virtual async Task<Stream> Login(LoginViewModel model, SignInMessage message)
         {
-            JsonSerializerSettings jsonSerSettings = new JsonSerializerSettings()
-            {
-                ContractResolver = new CamelCasePropertyNamesContractResolver(),
-                ReferenceLoopHandling = ReferenceLoopHandling.Ignore,
-                DateFormatHandling = DateFormatHandling.IsoDateFormat
-            };
+            JsonSerializerSettings jsonSerSettings = DefaultJsonContentFormatter.SerializeSettings();
+            jsonSerSettings.ContractResolver = new CamelCasePropertyNamesContractResolver();
 
             if (model.Custom == null && message.ReturnUrl != null)
             {
