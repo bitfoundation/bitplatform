@@ -26,14 +26,14 @@
     <PackageReference Include="IdentityModel" Version="2.16.1" />
     <PackageReference Include="Microsoft.Net.Http" Version="2.2.29" />
     <PackageReference Include="Microsoft.OData.Core" Version="6.19.0" />
-    <PackageReference Include="Newtonsoft.Json" Version="10.0.3" />
+    <PackageReference Include="Newtonsoft.Json" Version="11.0.1" />
     <PackageReference Include="PCLCrypto" Version="2.0.147" />
     <PackageReference Include="Prism.Autofac.Forms" Version="7.0.0.396" />
     <PackageReference Include="QueryString.NET" Version="1.0.0" />
     <PackageReference Include="Simple.OData.V4.Client" Version="4.29.0" />
     <PackageReference Include="Xamarin.Auth" Version="1.5.0.3" />
     <PackageReference Include="Xamarin.Auth.XamarinForms" Version="1.5.0.3" />
-    <PackageReference Include="Xamarin.Forms" Version="2.5.0.122203" />
+    <PackageReference Include="Xamarin.Forms" Version="2.5.0.280555" />
   </ItemGroup>
 
 </Project>

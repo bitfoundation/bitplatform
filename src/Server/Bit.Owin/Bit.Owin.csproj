@@ -22,13 +22,13 @@
 
   <ItemGroup>
     <PackageReference Include="Autofac" Version="4.6.2" />
-    <PackageReference Include="Autofac.Owin" Version="4.1.0" />
+    <PackageReference Include="Autofac.Owin" Version="4.2.0" />
     <PackageReference Include="IdentityServer3.AccessTokenValidation" Version="2.15.1" />
     <PackageReference Include="Lambda2Js" Version="3.0.1" />
     <PackageReference Include="Microsoft.AspNet.Razor" Version="3.2.4" />
     <PackageReference Include="Microsoft.Owin.Security.Jwt" Version="3.1.0" />
     <PackageReference Include="Microsoft.Owin.StaticFiles" Version="3.1.0" />
-    <PackageReference Include="Newtonsoft.Json" Version="10.0.3" />
+    <PackageReference Include="Newtonsoft.Json" Version="11.0.1" />
     <PackageReference Include="NWebsec.Owin" Version="2.3.1" />
     <PackageReference Include="RazorEngine" Version="3.10.0" />
     <PackageReference Include="System.Configuration.ConfigurationManager" Version="4.4.1" />
