@@ -29,6 +29,7 @@ namespace Bit.Core.Contracts
             dependencyManager.Register<IUserService, TUserService>(lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExciting: false);
 
             dependencyManager.Register<IExternalIdentityProviderConfiguration, GoogleIdentityProviderConfiguration>(overwriteExciting: false);
+            dependencyManager.Register<IExternalIdentityProviderConfiguration, FacebookIdentityProviderConfiguration>(overwriteExciting: false);
 
             return dependencyManager;
         }
