@@ -1,7 +1,9 @@
 ﻿using Bit.IdentityServer.Implementations;
 using Bit.Owin.Exceptions;
 using IdentityServer3.Core.Models;
+using System;
 using System.Collections.Generic;
+using System.IdentityModel.Claims;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -39,13 +41,16 @@ namespace Bit.Tests.IdentityServer.Implementations
 
         protected override async Task<string> GetInternalUserId(ExternalAuthenticationContext context)
         {
-            ExternalAuthClaims externalClaims = GetExternalClaims(context);
+            string nameIdentifier = context.ExternalIdentity.Claims.GetClaimValue(ClaimTypes.NameIdentifier);
 
-            LocalUser user = _localUsers.FirstOrDefault(u => u.UserId == externalClaims.UserName);
+            if (nameIdentifier == null)
+                throw new InvalidOperationException($"{nameof(nameIdentifier)} is null");
+
+            LocalUser user = _localUsers.FirstOrDefault(u => u.UserId == nameIdentifier);
 
             if (user == null)
             {
-                user = new LocalUser { UserId = externalClaims.UserName, Password = null };
+                user = new LocalUser { UserId = nameIdentifier, Password = null };
                 _localUsers.Add(user);
             }
 
