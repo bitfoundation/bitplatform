@@ -2,7 +2,9 @@
 using Bit.Core.Models;
 using Bit.IdentityServer.Contracts;
 using Microsoft.Owin.Security.Google;
+using Newtonsoft.Json.Linq;
 using Owin;
+using System.Collections.Generic;
 
 namespace Bit.IdentityServer.Implementations.ExternalIdentityProviderConfigurations
 {
@@ -24,7 +26,23 @@ namespace Bit.IdentityServer.Implementations.ExternalIdentityProviderConfigurati
                     AuthenticationType = "Google",
                     SignInAsAuthenticationType = signInType,
                     ClientId = googleClientId,
-                    ClientSecret = googleSecret
+                    ClientSecret = googleSecret,
+                    Provider = new GoogleOAuth2AuthenticationProvider
+                    {
+                        OnAuthenticated = async context =>
+                        {
+                            context.Identity.AddClaim(new System.Security.Claims.Claim("access_token", context.AccessToken));
+
+                            foreach (KeyValuePair<string, JToken> claim in context.User)
+                            {
+                                string claimType = string.Format("{0}", claim.Key);
+                                string claimValue = claim.Value.ToString();
+
+                                if (!context.Identity.HasClaim(claimType, claimValue))
+                                    context.Identity.AddClaim(new System.Security.Claims.Claim(claimType, claimValue, "XmlSchemaString", "Google"));
+                            }
+                        }
+                    }
                 });
             }
         }
