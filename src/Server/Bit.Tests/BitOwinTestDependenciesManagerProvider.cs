@@ -76,7 +76,7 @@ namespace Bit.Tests
                     {
                         c.SingleApiVersion("v1", "Swagger-Api");
                         c.ApplyDefaultApiConfig(httpConfiguration);
-                    }).EnableSwaggerUi();
+                    }).EnableBitSwaggerUi();
                 });
 
                 webApiDependencyManager.RegisterWebApiMiddlewareUsingDefaultConfiguration();
@@ -95,7 +95,7 @@ namespace Bit.Tests
                     {
                         c.SingleApiVersion("v1", "Swagger-OData");
                         c.ApplyDefaultODataConfig(httpConfiguration);
-                    }).EnableSwaggerUi();
+                    }).EnableBitSwaggerUi();
                 });
 
                 odataDependencyManager.RegisterODataServiceBuilder<BitODataServiceBuilder>();

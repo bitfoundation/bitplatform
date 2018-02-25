@@ -1,8 +1,11 @@
 ﻿using Bit.Core.Implementations;
 using Bit.Core.Models;
+using Bit.WebApi;
 using Bit.WebApi.Implementations;
 using System;
+using System.Linq;
 using System.Net.Http;
+using System.Reflection;
 using System.Threading;
 using System.Web.Http;
 
@@ -28,14 +31,39 @@ namespace Swashbuckle.Application
                 .Flow("password")
                 .TokenUrl($"{appEnv.GetSsoUrl()}/connect/token")
                 .Scopes(scopes =>
-                {
-                    foreach (string scope in appEnv.Security.Scopes)
-                    {
-                        scopes.Add(scope, scope);
-                    }
-                });
+                 {
+                     if (!appEnv.Security.Scopes.SequenceEqual(new[] { "openid", "profile", "user_info" }))
+                     {
+                         foreach (string scope in appEnv.Security.Scopes)
+                         {
+                             scopes.Add(scope, scope);
+                         }
+                     }
+                 });
 
             return doc;
+        }
+
+        private static Action<SwaggerUiConfig> GetBitSwaggerUiConfig(Action<SwaggerUiConfig> configure = null)
+        {
+            Action<SwaggerUiConfig> bitConfigure = c =>
+            {
+                c.InjectJavaScript(typeof(WebApiMiddlewareConfiguration).GetTypeInfo().Assembly, "Bit.WebApi.Extensions.SwaggerExtender.js", isTemplate: false);
+
+                configure?.Invoke(c);
+            };
+
+            return bitConfigure;
+        }
+
+        public static void EnableBitSwaggerUi(this SwaggerEnabledConfiguration doc, Action<SwaggerUiConfig> configure = null)
+        {
+            doc.EnableSwaggerUi(GetBitSwaggerUiConfig(configure));
+        }
+
+        public static void EnableBitSwaggerUi(this SwaggerEnabledConfiguration doc, string routeTemplate, Action<SwaggerUiConfig> configure = null)
+        {
+            doc.EnableSwaggerUi(routeTemplate, GetBitSwaggerUiConfig(configure));
         }
     }
 }

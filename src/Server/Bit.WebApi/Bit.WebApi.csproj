@@ -21,6 +21,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <EmbeddedResource Include="Extensions\SwaggerExtender.js" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Autofac.WebApi2" Version="4.1.0" />
     <PackageReference Include="Autofac.WebApi2.Owin" Version="4.0.0" />
     <PackageReference Include="Bit.WebApiCorrelator" Version="1.1.0.1" />

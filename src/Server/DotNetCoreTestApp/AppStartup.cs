@@ -64,7 +64,7 @@ namespace DotNetCoreTestApp
                     {
                         c.SingleApiVersion("v1", "Test-Api");
                         c.ApplyDefaultApiConfig(httpConfiguration);
-                    }).EnableSwaggerUi();
+                    }).EnableBitSwaggerUi();
                 });
 
                 webApiDependencyManager.RegisterWebApiMiddlewareUsingDefaultConfiguration();
@@ -81,7 +81,7 @@ namespace DotNetCoreTestApp
                     {
                         c.SingleApiVersion("v1", "Test-Api");
                         c.ApplyDefaultODataConfig(httpConfiguration);
-                    }).EnableSwaggerUi();
+                    }).EnableBitSwaggerUi();
                 });
 
                 odataDependencyManager.RegisterWebApiODataMiddlewareUsingDefaultConfiguration();
