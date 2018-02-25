@@ -46,14 +46,14 @@ namespace Swashbuckle.Application
 
         private static Action<SwaggerUiConfig> GetBitSwaggerUiConfig(Action<SwaggerUiConfig> configure = null)
         {
-            Action<SwaggerUiConfig> bitConfigure = c =>
+            void CreateBitSwaggerUiConfig(SwaggerUiConfig c)
             {
                 c.InjectJavaScript(typeof(WebApiMiddlewareConfiguration).GetTypeInfo().Assembly, "Bit.WebApi.Extensions.SwaggerExtender.js", isTemplate: false);
 
                 configure?.Invoke(c);
-            };
+            }
 
-            return bitConfigure;
+            return CreateBitSwaggerUiConfig;
         }
 
         public static void EnableBitSwaggerUi(this SwaggerEnabledConfiguration doc, Action<SwaggerUiConfig> configure = null)

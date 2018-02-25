@@ -12,7 +12,7 @@ namespace Bit.OwinCore
         {
             TypeInfo webHostType = Type.GetType($"Microsoft.AspNetCore.WebHost, Microsoft.AspNetCore, Version={typeof(WebHost).GetTypeInfo().Assembly.GetName().Version}, Culture=neutral, PublicKeyToken=adb9793829ddae60")?.GetTypeInfo();
 
-            MethodInfo createDefaultBuilderMethod = webHostType?.GetMethod("CreateDefaultBuilder", new Type[] { typeof(string[]) });
+            MethodInfo createDefaultBuilderMethod = webHostType?.GetMethod("CreateDefaultBuilder", new[] { typeof(string[]).GetTypeInfo() });
 
             if (createDefaultBuilderMethod == null)
             {

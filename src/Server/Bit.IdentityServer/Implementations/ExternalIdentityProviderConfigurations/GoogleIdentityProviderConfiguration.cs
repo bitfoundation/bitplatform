@@ -35,7 +35,7 @@ namespace Bit.IdentityServer.Implementations.ExternalIdentityProviderConfigurati
 
                             foreach (KeyValuePair<string, JToken> claim in context.User)
                             {
-                                string claimType = string.Format("{0}", claim.Key);
+                                string claimType = $"{claim.Key}";
                                 string claimValue = claim.Value.ToString();
 
                                 if (!context.Identity.HasClaim(claimType, claimValue))

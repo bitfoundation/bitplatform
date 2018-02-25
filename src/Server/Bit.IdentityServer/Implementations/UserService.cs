@@ -3,7 +3,6 @@ using IdentityServer3.Core.Models;
 using IdentityServer3.Core.Services.Default;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
 

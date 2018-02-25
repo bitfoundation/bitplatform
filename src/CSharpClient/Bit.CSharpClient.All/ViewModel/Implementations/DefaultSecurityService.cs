@@ -102,7 +102,7 @@ namespace Bit.ViewModel.Implementations
                 {
                     throw new InvalidOperationException("Authentication failed");
                 }
-            };
+            }
 
             void error(object sender, AuthenticatorErrorEventArgs e)
             {
@@ -110,7 +110,7 @@ namespace Bit.ViewModel.Implementations
                 _bitOAuth2Authenticator.Error -= error;
 
                 taskSource.SetException(e.Exception ?? new Exception(e.Message));
-            };
+            }
 
             _bitOAuth2Authenticator.Completed += completed;
             _bitOAuth2Authenticator.Error += error;
@@ -122,7 +122,7 @@ namespace Bit.ViewModel.Implementations
 
         public virtual async Task<Token> LoginWithCredentials(string username, string password, CancellationToken cancellationToken = default(CancellationToken))
         {
-            TokenResponse tokenResponse = await _tokenClient.RequestResourceOwnerPasswordAsync(username, password, scope: "openid profile user_info");
+            TokenResponse tokenResponse = await _tokenClient.RequestResourceOwnerPasswordAsync(username, password, scope: "openid profile user_info", cancellationToken: cancellationToken);
 
             if (tokenResponse.IsError)
                 throw tokenResponse.Exception ?? new Exception($"{tokenResponse.Error}");

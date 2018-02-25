@@ -83,7 +83,7 @@ namespace Bit.OData.ODataControllers
                 if (objContent.Value == null)
                     return;
 
-                actionExecutedContext.Response.Headers.Location = (Uri)GenerateODataLinkMethod.Value.Invoke(null, new object[] { actionExecutedContext.Request, objContent.Value, false });
+                actionExecutedContext.Response.Headers.Location = (Uri)GenerateODataLinkMethod.Value.Invoke(null, new [] { actionExecutedContext.Request, objContent.Value, false });
             }
 
             base.OnActionExecuted(actionExecutedContext);

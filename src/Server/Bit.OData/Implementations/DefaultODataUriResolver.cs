@@ -6,7 +6,7 @@ namespace Bit.OData.Implementations
     {
         public override bool EnableCaseInsensitive
         {
-            get { return true; }
+            get => true;
             set { }
         }
     }

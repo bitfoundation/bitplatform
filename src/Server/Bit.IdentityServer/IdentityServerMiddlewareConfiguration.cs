@@ -5,7 +5,6 @@ using Bit.Owin.Contracts;
 using IdentityServer3.Core.Configuration;
 using IdentityServer3.Core.Logging;
 using IdentityServer3.Core.Services;
-using Microsoft.Owin.Security.Google;
 using Owin;
 using System;
 using System.Collections.Generic;
