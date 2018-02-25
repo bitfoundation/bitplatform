@@ -49,9 +49,9 @@ namespace Bit.Owin
             {
                 DefaultDependencyManager.Current.Init();
 
-                foreach (IOwinDependenciesManager projectDependenciesManager in DefaultDependenciesManagerProvider.Current.GetDependenciesManagers().OfType<IOwinDependenciesManager>())
+                foreach (IOwinAppModule appModule in DefaultAppModulesProvider.Current.GetAppModules().Cast<IOwinAppModule>())
                 {
-                    projectDependenciesManager.ConfigureDependencies(DefaultDependencyManager.Current);
+                    appModule.ConfigureDependencies(DefaultDependencyManager.Current);
                 }
 
                 DefaultDependencyManager.Current.BuildContainer();

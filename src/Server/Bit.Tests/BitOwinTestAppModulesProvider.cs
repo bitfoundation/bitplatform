@@ -25,16 +25,16 @@ using System.Web.Http;
 
 namespace Bit.Tests
 {
-    public class BitOwinTestDependenciesManagerProvider : IOwinDependenciesManager, IDependenciesManagerProvider
+    public class BitOwinTestAppModulesProvider : IOwinAppModule, IAppModulesProvider
     {
         private readonly TestEnvironmentArgs _args;
 
-        public BitOwinTestDependenciesManagerProvider(TestEnvironmentArgs args)
+        public BitOwinTestAppModulesProvider(TestEnvironmentArgs args)
         {
             _args = args;
         }
 
-        protected BitOwinTestDependenciesManagerProvider()
+        protected BitOwinTestAppModulesProvider()
         {
 
         }
@@ -128,7 +128,7 @@ namespace Bit.Tests
             dependencyManager.RegisterSecureDefaultPageMiddlewareUsingDefaultConfiguration();
         }
 
-        public virtual IEnumerable<IDependenciesManager> GetDependenciesManagers()
+        public virtual IEnumerable<IAppModule> GetAppModules()
         {
             yield return this;
         }

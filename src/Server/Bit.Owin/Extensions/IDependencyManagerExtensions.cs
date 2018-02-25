@@ -60,7 +60,7 @@ namespace Bit.Core.Contracts
             if (dependencyManager == null)
                 throw new ArgumentNullException(nameof(dependencyManager));
 
-            dependencyManager.RegisterInstance(DefaultDependenciesManagerProvider.Current, overwriteExciting: false)
+            dependencyManager.RegisterInstance(DefaultAppModulesProvider.Current, overwriteExciting: false)
                 .RegisterInstance(DefaultDependencyManager.Current, overwriteExciting: false);
 
             dependencyManager.Register<IDateTimeProvider, DefaultDateTimeProvider>(lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExciting: false);

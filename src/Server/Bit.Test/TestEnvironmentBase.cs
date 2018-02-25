@@ -31,7 +31,7 @@ namespace Bit.Test
 
         public Action<AppEnvironment> ActiveAppEnvironmentCustomizer { get; set; }
 
-        public IDependenciesManagerProvider CustomDependenciesManagerProvider { get; set; } = null;
+        public IAppModulesProvider CustomAppModulesProvider { get; set; } = null;
 
         public IAppEnvironmentProvider CustomAppEnvironmentProvider { get; set; } = null;
 
@@ -40,26 +40,26 @@ namespace Bit.Test
         public int? Port { get; set; } = null;
     }
 
-    public class TestAdditionalDependencies : IAspNetCoreDependenciesManager, IOwinDependenciesManager, IDependenciesManagerProvider
+    public class TestAdditionalDependencies : IAspNetCoreAppModule, IOwinAppModule, IAppModulesProvider
     {
-        private readonly Action<IDependencyManager> _dependenciesManager;
+        private readonly Action<IDependencyManager> _dependencyManagerDelegate;
 
-        public TestAdditionalDependencies(Action<IDependencyManager> dependenciesManager)
+        public TestAdditionalDependencies(Action<IDependencyManager> dependencyManagerDelegate)
         {
-            _dependenciesManager = dependenciesManager;
+            _dependencyManagerDelegate = dependencyManagerDelegate;
         }
 
         public virtual void ConfigureDependencies(IServiceProvider serviceProvider, IServiceCollection services, IDependencyManager dependencyManager)
         {
-            _dependenciesManager?.Invoke(dependencyManager);
+            _dependencyManagerDelegate?.Invoke(dependencyManager);
         }
 
         public virtual void ConfigureDependencies(IDependencyManager dependencyManager)
         {
-            _dependenciesManager?.Invoke(dependencyManager);
+            _dependencyManagerDelegate?.Invoke(dependencyManager);
         }
 
-        public virtual IEnumerable<IDependenciesManager> GetDependenciesManagers()
+        public virtual IEnumerable<IAppModule> GetAppModules()
         {
             yield return this;
         }
@@ -114,7 +114,7 @@ namespace Bit.Test
                 TestDependencyManager.CurrentTestDependencyManager.AutoProxyCreationIncludeRules.AddRange(GetAutoProxyCreationIncludeRules());
             }
 
-            DefaultDependenciesManagerProvider.Current = GetDependenciesManagerProvider(args);
+            DefaultAppModulesProvider.Current = GetAppModulesProvider(args);
             DefaultAppEnvironmentProvider.Current = GetAppEnvironmentProvider(args);
 
             Server = GetTestServer(args);
@@ -182,9 +182,9 @@ namespace Bit.Test
             return new TestAppEnvironmentProvider(args.CustomAppEnvironmentProvider ?? DefaultAppEnvironmentProvider.Current, args.ActiveAppEnvironmentCustomizer);
         }
 
-        protected virtual IDependenciesManagerProvider GetDependenciesManagerProvider(TestEnvironmentArgs args)
+        protected virtual IAppModulesProvider GetAppModulesProvider(TestEnvironmentArgs args)
         {
-            return new CompositeDependenciesManagerProvider(args.CustomDependenciesManagerProvider ?? DefaultDependenciesManagerProvider.Current, new TestAdditionalDependencies(args.AdditionalDependencies));
+            return new CompositeAppModulesProvider(args.CustomAppModulesProvider ?? DefaultAppModulesProvider.Current, new TestAdditionalDependencies(args.AdditionalDependencies));
         }
 
         public ITestServer Server { get; }

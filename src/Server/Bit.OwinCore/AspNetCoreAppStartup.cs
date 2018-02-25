@@ -41,13 +41,13 @@ namespace Bit.OwinCore
 
             DefaultDependencyManager.Current.Init();
 
-            foreach (IDependenciesManager projectDependenciesManager in DefaultDependenciesManagerProvider.Current.GetDependenciesManagers())
+            foreach (IAppModule appModule in DefaultAppModulesProvider.Current.GetAppModules())
             {
-                if (projectDependenciesManager is IAspNetCoreDependenciesManager aspNetCoreDependenciesManager)
-                    aspNetCoreDependenciesManager.ConfigureDependencies(_serviceProvider, services, DefaultDependencyManager.Current);
+                if (appModule is IAspNetCoreAppModule aspNetCoreAppModule)
+                    aspNetCoreAppModule.ConfigureDependencies(_serviceProvider, services, DefaultDependencyManager.Current);
 
-                else if (projectDependenciesManager is IOwinDependenciesManager)
-                    ((IOwinDependenciesManager)projectDependenciesManager).ConfigureDependencies(DefaultDependencyManager.Current);
+                else if (appModule is IOwinAppModule owinAppModule)
+                    owinAppModule.ConfigureDependencies(DefaultDependencyManager.Current);
             }
 
             DefaultDependencyManager.Current.RegisterUsing((depManager) =>
