@@ -21,7 +21,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Autofac.Extensions.DependencyInjection" Version="4.2.0" />
+    <PackageReference Include="Autofac.Extensions.DependencyInjection" Version="4.2.1" />
     <PackageReference Include="Microsoft.AspNetCore" Version="1.1.5" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc.Formatters.Json" Version="1.1.6" />
     <PackageReference Include="Microsoft.AspNetCore.Owin" Version="1.1.2" />
