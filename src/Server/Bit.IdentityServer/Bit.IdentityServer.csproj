@@ -25,6 +25,9 @@
     <PackageReference Include="IdentityServer3" Version="2.6.1" />
     <PackageReference Include="Microsoft.Owin.Security.Facebook" Version="3.1.0" />
     <PackageReference Include="Microsoft.Owin.Security.Google" Version="3.1.0" />
+    <PackageReference Include="Microsoft.Owin.Security.MicrosoftAccount" Version="3.1.0" />
+    <PackageReference Include="Microsoft.Owin.Security.Twitter" Version="3.1.0" />
+    <PackageReference Include="Owin.Security.Providers.LinkedIn" Version="2.20.0" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(TargetFramework)' == 'netcoreapp2.0'">

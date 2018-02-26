@@ -30,6 +30,9 @@ namespace Bit.Core.Contracts
 
             dependencyManager.Register<IExternalIdentityProviderConfiguration, GoogleIdentityProviderConfiguration>(overwriteExciting: false);
             dependencyManager.Register<IExternalIdentityProviderConfiguration, FacebookIdentityProviderConfiguration>(overwriteExciting: false);
+            dependencyManager.Register<IExternalIdentityProviderConfiguration, TwitterIdentityProviderConfiguration>(overwriteExciting: false);
+            dependencyManager.Register<IExternalIdentityProviderConfiguration, MicrosoftIdentityProviderConfiguration>(overwriteExciting: false);
+            dependencyManager.Register<IExternalIdentityProviderConfiguration, LinkedInIdentityProviderConfiguration>(overwriteExciting: false);
 
             return dependencyManager;
         }
