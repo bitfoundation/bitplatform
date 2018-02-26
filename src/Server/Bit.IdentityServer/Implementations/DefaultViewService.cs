@@ -103,7 +103,13 @@ namespace Bit.IdentityServer.Implementations
                 {
                     dynamic custom = model.Custom = CustomLoginDataProvider.GetCustomData(message);
 
-                    string signInType = custom.SignInType;
+                    string signInType = null;
+
+                    try
+                    {
+                        signInType = custom.SignInType;
+                    }
+                    catch { }
 
                     if (signInType != null && model.ExternalProviders.Any(extProvider => extProvider.Type == signInType))
                     {
