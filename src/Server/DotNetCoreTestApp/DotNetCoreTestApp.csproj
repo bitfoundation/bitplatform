@@ -10,6 +10,7 @@
   <ItemGroup>
     <ProjectReference Include="..\Bit.Data.EntityFrameworkCore\Bit.Data.EntityFrameworkCore.csproj" />
     <ProjectReference Include="..\Bit.Hangfire\Bit.Hangfire.csproj" />
+    <ProjectReference Include="..\Bit.IdentityServer\Bit.IdentityServer.csproj" />
     <ProjectReference Include="..\Bit.OData\Bit.OData.csproj" />
     <ProjectReference Include="..\Bit.OwinCore.AspNetCore2Upgrade\Bit.OwinCore.AspNetCore2Upgrade.csproj" />
     <ProjectReference Include="..\Bit.OwinCore\Bit.OwinCore.csproj" />

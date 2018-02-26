@@ -56,7 +56,6 @@ namespace Bit.Tests
 
             dependencyManager.RegisterOwinMiddleware<StaticFilesMiddlewareConfiguration>();
             dependencyManager.RegisterMinimalOwinMiddlewares();
-            dependencyManager.RegisterBasicAuthMiddleware(async (username, password) => username == password ? username : null);
             dependencyManager.RegisterSingleSignOnClient();
 
             dependencyManager.RegisterMetadata();

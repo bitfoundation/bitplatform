@@ -200,18 +200,5 @@ namespace Bit.Core.Contracts
             dependencyManager.RegisterOwinMiddleware<LogRequestInformationMiddlewareConfiguration>();
             return dependencyManager;
         }
-
-        public static IDependencyManager RegisterBasicAuthMiddleware(this IDependencyManager dependencyManager, BasicAuthUserPassValidator userPassValidator)
-        {
-            if (userPassValidator == null)
-                throw new ArgumentNullException(nameof(userPassValidator));
-
-            dependencyManager.RegisterOwinMiddlewareUsing(owinApp =>
-            {
-                owinApp.UseBasicAuthentication(userPassValidator);
-            });
-
-            return dependencyManager;
-        }
     }
 }

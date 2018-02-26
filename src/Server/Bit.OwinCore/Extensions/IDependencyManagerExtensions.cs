@@ -84,21 +84,5 @@ namespace Bit.Core.Contracts
                 dependencyManager.Register<IDataProtectionProvider, BasicDataProtectionProvider>(lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExciting: false);
             return dependencyManager;
         }
-
-        public static IDependencyManager RegisterBasicAuthMiddlewareCore(this IDependencyManager dependencyManager, BasicAuthUserPassValidator userPassValidator)
-        {
-            if (userPassValidator == null)
-                throw new ArgumentNullException(nameof(userPassValidator));
-
-            dependencyManager.RegisterAspNetCoreMiddlewareUsing(aspNetCoreApp =>
-            {
-                aspNetCoreApp.UseOwinApp(owinApp =>
-                {
-                    owinApp.UseBasicAuthentication(userPassValidator);
-                });
-            });
-
-            return dependencyManager;
-        }
     }
 }

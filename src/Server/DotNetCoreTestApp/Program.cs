@@ -23,6 +23,8 @@ namespace DotNetCoreTestApp
         {
             if (args.Name.StartsWith("System.Data.Linq"))
                 return Assembly.LoadFile(@"C:\Program Files\Mono\lib\mono\2.0-api\System.Data.Linq.dll");
+            else if (args.Name.StartsWith("System.IdentityModel"))
+                return Assembly.LoadFile(@"C:\Program Files\Mono\lib\mono\4.5\System.IdentityModel.dll");
             return null;
         }
     }

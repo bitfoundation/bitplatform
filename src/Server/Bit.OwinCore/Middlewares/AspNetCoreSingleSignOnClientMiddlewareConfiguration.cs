@@ -1,8 +1,7 @@
-﻿using Bit.OwinCore.Contracts;
-using IdentityServer3.AccessTokenValidation;
+﻿using Bit.Owin.Middlewares;
+using Bit.OwinCore.Contracts;
 using Microsoft.AspNetCore.Builder;
 using System;
-using Bit.Owin.Middlewares;
 
 namespace Bit.OwinCore.Middlewares
 {
@@ -13,9 +12,7 @@ namespace Bit.OwinCore.Middlewares
             if (aspNetCoreApp == null)
                 throw new ArgumentNullException(nameof(aspNetCoreApp));
 
-            IdentityServerBearerTokenAuthenticationOptions authOptions = BuildIdentityServerBearerTokenAuthenticationOptions();
-
-            aspNetCoreApp.UseIdentityServerBearerTokenAuthentication(authOptions);
+            aspNetCoreApp.UseOwinApp(UseJwtBearerAuthentication);
         }
     }
 }

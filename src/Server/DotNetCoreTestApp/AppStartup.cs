@@ -3,20 +3,26 @@ using Bit.Core;
 using Bit.Core.Contracts;
 using Bit.Data.EntityFrameworkCore.Contracts;
 using Bit.Data.EntityFrameworkCore.Implementations;
+using Bit.IdentityServer.Contracts;
+using Bit.IdentityServer.Implementations;
 using Bit.Model.Contracts;
 using Bit.Model.Implementations;
+using Bit.OData.ActionFilters;
 using Bit.OData.Contracts;
 using Bit.OData.Implementations;
 using Bit.OData.ODataControllers;
+using Bit.Owin.Exceptions;
 using Bit.Owin.Implementations;
 using Bit.OwinCore;
 using Bit.OwinCore.Contracts;
+using IdentityServer3.Core.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Swashbuckle.Application;
 using System;
 using System.Collections.Generic;
 using System.Reflection;
+using System.Threading.Tasks;
 using System.Web.Http;
 using System.Web.OData.Builder;
 
@@ -54,10 +60,17 @@ namespace DotNetCoreTestApp
 
             dependencyManager.RegisterMinimalAspNetCoreMiddlewares();
 
+            dependencyManager.RegisterAspNetCoreSingleSignOnClient();
+
             dependencyManager.RegisterDefaultWebApiAndODataConfiguration();
 
             dependencyManager.RegisterWebApiMiddleware(webApiDependencyManager =>
             {
+                webApiDependencyManager.RegisterGlobalWebApiActionFiltersUsing(httpConfiguration =>
+                {
+                    httpConfiguration.Filters.Add(new System.Web.Http.AuthorizeAttribute());
+                });
+
                 webApiDependencyManager.RegisterGlobalWebApiActionFiltersUsing(httpConfiguration =>
                 {
                     httpConfiguration.EnableSwagger(c =>
@@ -72,6 +85,11 @@ namespace DotNetCoreTestApp
 
             dependencyManager.RegisterODataMiddleware(odataDependencyManager =>
             {
+                odataDependencyManager.RegisterGlobalWebApiActionFiltersUsing(httpConfiguration =>
+                {
+                    httpConfiguration.Filters.Add(new DefaultODataAuthorizeAttribute());
+                });
+
                 odataDependencyManager.RegisterODataServiceBuilder<BitODataServiceBuilder>();
                 odataDependencyManager.RegisterODataServiceBuilder<TestODataServiceBuilder>();
 
@@ -97,6 +115,41 @@ namespace DotNetCoreTestApp
 
             dependencyManager.RegisterDtoEntityMapperConfiguration<DefaultDtoEntityMapperConfiguration>();
             dependencyManager.RegisterDtoEntityMapperConfiguration<TestDtoEntityMapperConfiguration>();
+
+            dependencyManager.RegisterSingleSignOnServer<TestUserService, TestClientProvider>();
+        }
+    }
+
+    public class TestUserService : UserService
+    {
+        public override async Task<string> GetUserIdByLocalAuthenticationContextAsync(LocalAuthenticationContext context)
+        {
+            if (context.UserName == context.Password)
+                return context.UserName;
+
+            throw new DomainLogicException("LoginFailed");
+        }
+
+        public async override Task<bool> UserIsActiveAsync(IsActiveContext context, string userId)
+        {
+            return true;
+        }
+    }
+
+    public class TestClientProvider : ClientProvider
+    {
+        public override IEnumerable<Client> GetClients()
+        {
+            return new[]
+            {
+                GetResourceOwnerFlowClient(new BitResourceOwnerFlowClient
+                {
+                    ClientName = "TestResOwner",
+                    ClientId = "TestResOwner",
+                    Secret = "secret",
+                    TokensLifetime = TimeSpan.FromDays(1)
+                })
+            };
         }
     }
 

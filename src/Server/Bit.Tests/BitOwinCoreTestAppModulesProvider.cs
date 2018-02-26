@@ -60,8 +60,6 @@ namespace Bit.Tests
             dependencyManager.RegisterAspNetCoreMiddleware<AspNetCoreStaticFilesMiddlewareConfiguration>();
             dependencyManager.RegisterMinimalAspNetCoreMiddlewares();
 
-            dependencyManager.RegisterBasicAuthMiddlewareCore(async (username, password) => username == password ? username : null);
-
             dependencyManager.RegisterAspNetCoreSingleSignOnClient();
 
             services.AddWebApiCore();

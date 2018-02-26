@@ -3,8 +3,8 @@ using Bit.Owin.Exceptions;
 using IdentityServer3.Core.Models;
 using System;
 using System.Collections.Generic;
-using System.IdentityModel.Claims;
 using System.Linq;
+using System.Security.Claims;
 using System.Threading.Tasks;
 
 namespace Bit.Tests.IdentityServer.Implementations
