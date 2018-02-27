@@ -75,7 +75,7 @@ namespace WebApiSwagger
                         c.SingleApiVersion("v1", "SwaggerDemoApi");
                         c.IncludeXmlComments(Path.Combine(DefaultPathProvider.Current.GetCurrentAppPath(), "WebApiSwagger.xml"));
                         c.ApplyDefaultApiConfig(httpConfiguration);
-                    }).EnableSwaggerUi();
+                    }).EnableBitSwaggerUI();
                 });
             });
         }

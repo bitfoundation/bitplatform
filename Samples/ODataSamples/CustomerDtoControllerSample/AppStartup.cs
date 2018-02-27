@@ -75,7 +75,7 @@ namespace CustomerDtoControllerSample
                     {
                         c.SingleApiVersion("v1", $"Swagger-Api");
                         c.ApplyDefaultApiConfig(httpConfiguration);
-                    }).EnableSwaggerUi();
+                    }).EnableBitSwaggerUI();
                 });
             });
 
@@ -87,7 +87,7 @@ namespace CustomerDtoControllerSample
                     {
                         c.SingleApiVersion("v1", $"Swagger-Api");
                         c.ApplyDefaultODataConfig(httpConfiguration);
-                    }).EnableSwaggerUi();
+                    }).EnableBitSwaggerUI();
                 });
 
                 odataDependencyManager.RegisterODataServiceBuilder<BitODataServiceBuilder>();
