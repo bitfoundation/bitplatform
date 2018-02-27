@@ -1,12 +1,14 @@
 using Autofac;
 using Bit.Core.Contracts;
 using Bit.Core.Models;
+using Bit.Hangfire.Contracts;
 using Bit.Owin.Contracts;
 using Hangfire;
 using Hangfire.Azure.ServiceBusQueue;
 using Hangfire.Logging;
 using Hangfire.SqlServer;
 using System;
+using System.Collections.Generic;
 using System.Transactions;
 
 namespace Bit.Hangfire.Implementations
@@ -28,6 +30,8 @@ namespace Bit.Hangfire.Implementations
         public virtual IAppEnvironmentProvider AppEnvironmentProvider { get; set; }
 
         public virtual ILogProvider LogProvider { get; set; }
+
+        public virtual IEnumerable<IHangfireOptionsCustomizer> Customizers { get; set; }
 
         private BackgroundJobServer _backgroundJobServer;
         private ILifetimeScope _lifetimeScope;
@@ -60,10 +64,17 @@ namespace Bit.Hangfire.Implementations
             GlobalConfiguration.Configuration.UseAutofacActivator(_lifetimeScope);
             GlobalConfiguration.Configuration.UseLogProvider(LogProvider);
 
-            _backgroundJobServer = new BackgroundJobServer(new BackgroundJobServerOptions
+            BackgroundJobServerOptions options = new BackgroundJobServerOptions
             {
                 Activator = JobActivator
-            }, storage);
+            };
+
+            foreach (IHangfireOptionsCustomizer customizer in Customizers)
+            {
+                customizer.Customize(GlobalConfiguration.Configuration, options, storage);
+            }
+
+            _backgroundJobServer = new BackgroundJobServer(options, storage);
         }
 
         public virtual void OnAppEnd()
