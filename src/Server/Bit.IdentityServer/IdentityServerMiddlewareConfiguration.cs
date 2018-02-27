@@ -22,6 +22,7 @@ namespace Bit.IdentityServer
         public virtual IRedirectUriValidator RedirectUriValidator { get; set; }
         public virtual IEventService EventService { get; set; }
         public virtual IEnumerable<IExternalIdentityProviderConfiguration> ExternalIdentityProviderConfigurations { get; set; }
+        public virtual IEnumerable<IIdentityServerOptionsCustomizer> Customizers { get; set; }
 
         public virtual void Configure(IAppBuilder owinApp)
         {
@@ -89,6 +90,11 @@ namespace Bit.IdentityServer
                         IdentityProviders = ConfigureIdentityProviders
                     }
                 };
+
+                foreach (IIdentityServerOptionsCustomizer customizer in Customizers)
+                {
+                    customizer.Customize(identityServerOptions);
+                }
 
                 coreApp.UseIdentityServer(identityServerOptions);
             });
