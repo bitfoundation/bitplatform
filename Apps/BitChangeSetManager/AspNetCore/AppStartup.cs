@@ -28,7 +28,7 @@ using System.Reflection;
 
 namespace BitChangeSetManager.Core
 {
-    public class AppStartup : AutofacAspNetCoreAppStartup, IAspNetCoreDependenciesManager, IDependenciesManagerProvider
+    public class AppStartup : AutofacAspNetCoreAppStartup, IAspNetCoreAppModule, IAppModulesProvider
     {
         public AppStartup(IServiceProvider serviceProvider)
             : base(serviceProvider)
@@ -38,12 +38,12 @@ namespace BitChangeSetManager.Core
 
         public override IServiceProvider ConfigureServices(IServiceCollection services)
         {
-            DefaultDependenciesManagerProvider.Current = this;
+            DefaultAppModulesProvider.Current = this;
 
             return base.ConfigureServices(services);
         }
 
-        public IEnumerable<IDependenciesManager> GetDependenciesManagers()
+        public IEnumerable<IAppModule> GetAppModules()
         {
             yield return this;
         }

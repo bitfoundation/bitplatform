@@ -1,5 +1,7 @@
-﻿using Bit.Core;
+﻿using AutoMapper;
+using Bit.Core;
 using Bit.Core.Contracts;
+using Bit.Core.Implementations;
 using Bit.Data;
 using Bit.Data.Contracts;
 using Bit.Data.EntityFramework.Implementations;
@@ -8,6 +10,7 @@ using Bit.Model.Implementations;
 using Bit.OData.Contracts;
 using Bit.OData.Implementations;
 using Bit.OData.ODataControllers;
+using Bit.Owin.Exceptions;
 using Bit.Owin.Implementations;
 using Bit.OwinCore;
 using Bit.OwinCore.Contracts;
@@ -23,15 +26,12 @@ using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Web.Http;
-using System.Web.OData.Builder;
 using System.Web.OData;
-using System.IdentityModel;
-using AutoMapper;
-using Bit.Core.Implementations;
+using System.Web.OData.Builder;
 
 namespace CustomerDtoControllerSample
 {
-    public class AppStartup : AutofacAspNetCoreAppStartup, IAspNetCoreDependenciesManager, IDependenciesManagerProvider
+    public class AppStartup : AutofacAspNetCoreAppStartup, IAspNetCoreAppModule, IAppModulesProvider
     {
         public AppStartup(IServiceProvider serviceProvider)
             : base(serviceProvider)
@@ -41,12 +41,12 @@ namespace CustomerDtoControllerSample
 
         public override IServiceProvider ConfigureServices(IServiceCollection services)
         {
-            DefaultDependenciesManagerProvider.Current = this;
+            DefaultAppModulesProvider.Current = this;
 
             return base.ConfigureServices(services);
         }
 
-        public IEnumerable<IDependenciesManager> GetDependenciesManagers()
+        public IEnumerable<IAppModule> GetAppModules()
         {
             yield return this;
         }

@@ -11,7 +11,7 @@ using System.Web.Http;
 
 namespace WebApiDotNetCoreHost
 {
-    public class AppStartup : AutofacAspNetCoreAppStartup, IAspNetCoreDependenciesManager, IDependenciesManagerProvider
+    public class AppStartup : AutofacAspNetCoreAppStartup, IAspNetCoreAppModule, IAppModulesProvider
     {
         public AppStartup(IServiceProvider serviceProvider)
             : base(serviceProvider)
@@ -21,12 +21,12 @@ namespace WebApiDotNetCoreHost
 
         public override IServiceProvider ConfigureServices(IServiceCollection services)
         {
-            DefaultDependenciesManagerProvider.Current = this;
+            DefaultAppModulesProvider.Current = this;
 
             return base.ConfigureServices(services);
         }
 
-        public IEnumerable<IDependenciesManager> GetDependenciesManagers()
+        public IEnumerable<IAppModule> GetAppModules()
         {
             yield return this;
         }

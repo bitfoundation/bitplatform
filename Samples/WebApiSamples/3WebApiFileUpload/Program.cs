@@ -86,16 +86,16 @@ public class FileController : ApiController
     }
 }
 
-public class AppStartup : OwinAppStartup, IOwinDependenciesManager, IDependenciesManagerProvider
+public class AppStartup : OwinAppStartup, IOwinAppModule, IAppModulesProvider
 {
     public override void Configuration(IAppBuilder owinApp)
     {
-        DefaultDependenciesManagerProvider.Current = this;
+        DefaultAppModulesProvider.Current = this;
 
         base.Configuration(owinApp);
     }
 
-    public IEnumerable<IDependenciesManager> GetDependenciesManagers()
+    public IEnumerable<IAppModule> GetAppModules()
     {
         yield return this;
     }
