@@ -34,19 +34,17 @@ namespace Bit.Owin.Middlewares
         <title>Signing in... Please wait</title>
         <script type='application/javascript'>
             var parts = location.hash.replace('#','').split('&');
-            var expireTimeInSeconds = Number(parts[3].split('=')[1]);
-            var now = new Date();
-            var time = now.getTime();
-            var expireTime = time + (expireTimeInSeconds * 1000);
-            now.setTime(expireTime);
-            var nowAsGMTString = now.toUTCString();
+            var expiresTimeInSeconds = Number(parts[3].split('=')[1]);
+            var expiresDate = new Date();
+            expiresDate.setTime(expiresDate.getTime() + (expiresTimeInSeconds * 1000));
+            var expiresDateAsUTCString = expiresDate.toUTCString();
             for (var i = 0; i < parts.length; i++) {{
                 var partStr = parts[i];
                 var keyValue = partStr.split('=');
                 var key = keyValue[0];
                 var value = keyValue[1];
                 if (key == 'access_token' || key == 'token_type'){{
-                    document.cookie = partStr + ';expires=' + nowAsGMTString + ';path={defaultPathWithoutEndingSlashIfIsNotRoot}';
+                    document.cookie = partStr + ';expires=' + expiresDateAsUTCString + ';path={defaultPathWithoutEndingSlashIfIsNotRoot}';
                 }}
                 localStorage['{defaultPath}' + key] = value;
             }}

@@ -10,7 +10,7 @@
             if (token == null)
                 return false;
 
-            return ((Number(new Date()) - Number(token.login_date)) / 1000) > token.expires_in;
+            return ((Number(new Date()) - Number(token.login_date)) / 1000) < token.expires_in;
         }
 
         @Log()
@@ -68,29 +68,27 @@
 
             if (res.ok) {
 
-                const now = new Date();
+                json.login_date = new Date();
 
                 if (saveToken == true) {
 
                     const defaultPath = Bit.ClientAppProfileManager.getCurrent().getClientAppProfile().getConfig<string>("HostVirtualPath", "/");
                     const defaultPathWithoutEndingSlashIfIsNotRoot = defaultPath == "/" ? defaultPath : defaultPath.substring(0, defaultPath.length - 1);
 
-                    const time = now.getTime();
-                    const expireTime = time + (json.expires_in * 1000);
-                    now.setTime(expireTime);
-                    const nowAsGMTString = now.toUTCString();
+                    const expiresTimeInSeconds = json.expires_in;
+                    const expiresDate = new Date();
+                    expiresDate.setTime(expiresDate.getTime() + (expiresTimeInSeconds * 1000));
+                    const expiresDateAsUTCString = expiresDate.toUTCString();
 
                     localStorage[`${defaultPath}access_token`] = json.access_token;
                     localStorage[`${defaultPath}expires_in`] = json.expires_in;
-                    localStorage[`${defaultPath}login_date`] = now;
+                    localStorage[`${defaultPath}login_date`] = json.login_date;
                     localStorage[`${defaultPath}token_type`] = json.token_type;
                     localStorage[`${defaultPath}scope`] = scopes.join("%20");
 
-                    document.cookie = `access_token=${json.access_token}` + ";expires=" + nowAsGMTString + `;path=${defaultPathWithoutEndingSlashIfIsNotRoot}`;
-                    document.cookie = `token_type=${json.token_type}` + ";expires=" + nowAsGMTString + `;path=${defaultPathWithoutEndingSlashIfIsNotRoot}`;
+                    document.cookie = `access_token=${json.access_token}` + ";expires=" + expiresDateAsUTCString + `;path=${defaultPathWithoutEndingSlashIfIsNotRoot}`;
+                    document.cookie = `token_type=${json.token_type}` + ";expires=" + expiresDateAsUTCString + `;path=${defaultPathWithoutEndingSlashIfIsNotRoot}`;
                 }
-
-                json.login_date = new Date();
 
                 return json;
             }
