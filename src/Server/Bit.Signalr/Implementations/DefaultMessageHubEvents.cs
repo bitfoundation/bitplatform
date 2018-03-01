@@ -11,7 +11,7 @@ namespace Bit.Signalr.Implementations
         public virtual async Task OnConnected(MessagesHub hub)
         {
             if (UserInformationProvider.IsAuthenticated())
-                await hub.Groups.Add(hub.Context.ConnectionId, UserInformationProvider.GetCurrentUserId());
+                await hub.Groups.Add(hub.Context.ConnectionId, UserInformationProvider.GetCurrentUserId()).ConfigureAwait(false);
         }
 
         public virtual async Task OnDisconnected(MessagesHub hub, bool stopCalled)

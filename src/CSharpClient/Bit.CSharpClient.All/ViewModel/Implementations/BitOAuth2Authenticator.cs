@@ -25,7 +25,7 @@ namespace Bit.ViewModel.Implementations
 
         public override async Task<Uri> GetInitialUrlAsync()
         {
-            Uri originalUri = await base.GetInitialUrlAsync();
+            Uri originalUri = await base.GetInitialUrlAsync().ConfigureAwait(false);
 
             NameValueCollection queryString = originalUri.ParseQueryString();
             queryString.Set("response_type", "id_token token");

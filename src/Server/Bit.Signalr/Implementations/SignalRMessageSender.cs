@@ -40,7 +40,7 @@ namespace Bit.Signalr.Implementations
             userIds.ToList()
                 .ForEach(async u =>
                 {
-                    await hubContext.Clients.Group(u).OnMessageReceived(messageKey, objectArgsAsString);
+                    await hubContext.Clients.Group(u).OnMessageReceived(messageKey, objectArgsAsString).ConfigureAwait(false);
                 });
         }
 
@@ -74,7 +74,7 @@ namespace Bit.Signalr.Implementations
 
             string objectArgsAsString = messageArgs == null ? string.Empty : Formatter.Serialize(messageArgs);
 
-            await hubContext.Clients.All.OnMessageReceived(messageKey, objectArgsAsString);
+            await hubContext.Clients.All.OnMessageReceived(messageKey, objectArgsAsString).ConfigureAwait(false);
         }
 
         public void SendMessageToAll<T>(string messageKey, T messageArgs)
@@ -92,7 +92,7 @@ namespace Bit.Signalr.Implementations
 
         public async Task SendMessageToGroupsAsync<T>(string messageKey, T messageArgs, string[] groupNames) where T : class
         {
-            await SendMessageToUsersAsync(messageKey, messageArgs, groupNames);
+            await SendMessageToUsersAsync(messageKey, messageArgs, groupNames).ConfigureAwait(false);
         }
 
         public void SendMessageToGroups<T>(string messageKey, T messageArgs, string[] groupNames) where T : class

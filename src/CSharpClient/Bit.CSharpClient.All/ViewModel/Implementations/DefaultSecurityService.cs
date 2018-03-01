@@ -47,7 +47,7 @@ namespace Bit.ViewModel.Implementations
 
         public virtual async Task<bool> IsLoggedInAsync(CancellationToken cancellationToken = default(CancellationToken))
         {
-            Account account = await GetAccountAsync();
+            Account account = await GetAccountAsync().ConfigureAwait(false);
 
             if (account == null)
                 return false;
@@ -64,7 +64,7 @@ namespace Bit.ViewModel.Implementations
 
         private async Task<Account> GetAccountAsync()
         {
-            return (await _accountStore.FindAccountsForServiceAsync(_configProvider.AppName)).SingleOrDefault();
+            return (await _accountStore.FindAccountsForServiceAsync(_configProvider.AppName).ConfigureAwait(false)).SingleOrDefault();
         }
 
         public virtual Task<Token> Login(object state = null, CancellationToken cancellationToken = default(CancellationToken))
@@ -86,14 +86,14 @@ namespace Bit.ViewModel.Implementations
                     {
                         try
                         {
-                            await Logout(internalAppLogoutOnly: true);
+                            await Logout(internalAppLogoutOnly: true).ConfigureAwait(false);
                         }
                         catch { }
 
                         if (!e.Account.Properties.ContainsKey(nameof(Token.login_date)))
                             e.Account.Properties.Add(nameof(Token.login_date), Convert.ToString(_dateTimeProvider.GetCurrentUtcDateTime()));
 
-                        await _accountStore.SaveAsync(e.Account, _configProvider.AppName);
+                        await _accountStore.SaveAsync(e.Account, _configProvider.AppName).ConfigureAwait(false);
                     }
 
                     taskSource.SetResult(e.Account);
@@ -122,14 +122,14 @@ namespace Bit.ViewModel.Implementations
 
         public virtual async Task<Token> LoginWithCredentials(string username, string password, CancellationToken cancellationToken = default(CancellationToken))
         {
-            TokenResponse tokenResponse = await _tokenClient.RequestResourceOwnerPasswordAsync(username, password, scope: "openid profile user_info", cancellationToken: cancellationToken);
+            TokenResponse tokenResponse = await _tokenClient.RequestResourceOwnerPasswordAsync(username, password, scope: "openid profile user_info", cancellationToken: cancellationToken).ConfigureAwait(false);
 
             if (tokenResponse.IsError)
                 throw tokenResponse.Exception ?? new Exception($"{tokenResponse.Error}");
 
             try
             {
-                await Logout(internalAppLogoutOnly: true);
+                await Logout(internalAppLogoutOnly: true).ConfigureAwait(false);
             }
             catch { }
 
@@ -153,14 +153,14 @@ namespace Bit.ViewModel.Implementations
                 { "login_date", Convert.ToString(_dateTimeProvider.GetCurrentUtcDateTime()) }
             });
 
-            await _accountStore.SaveAsync(account, _configProvider.AppName);
+            await _accountStore.SaveAsync(account, _configProvider.AppName).ConfigureAwait(false);
 
             return account;
         }
 
         public virtual async Task Logout(CancellationToken cancellationToken = default(CancellationToken))
         {
-            await Logout(internalAppLogoutOnly: false);
+            await Logout(internalAppLogoutOnly: false).ConfigureAwait(false);
         }
 
         private async Task Logout(bool internalAppLogoutOnly)
@@ -169,7 +169,7 @@ namespace Bit.ViewModel.Implementations
 
             if (account != null)
             {
-                await _accountStore.DeleteAsync(account, _configProvider.AppName);
+                await _accountStore.DeleteAsync(account, _configProvider.AppName).ConfigureAwait(false);
             }
 
             if (internalAppLogoutOnly == false)
@@ -190,7 +190,7 @@ namespace Bit.ViewModel.Implementations
 
         public virtual async Task<Token> GetCurrentTokenAsync(CancellationToken cancellationToken = default(CancellationToken))
         {
-            Account account = await GetAccountAsync();
+            Account account = await GetAccountAsync().ConfigureAwait(false);
 
             if (account == null)
                 return null;
