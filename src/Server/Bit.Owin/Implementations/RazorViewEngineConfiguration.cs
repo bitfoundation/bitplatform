@@ -27,24 +27,24 @@ namespace Bit.Owin.Implementations
 
             Engine.Razor = service;
 
-            string defaultPageTemplateFilePath = PathProvider.StaticFileMapPath(activeAppEnvironment.GetConfig("DefaultPageTemplatePath", "defaultPageTemplate.cshtml"));
+            string indexPageFilePath = PathProvider.StaticFileMapPath(activeAppEnvironment.GetConfig("IndexPagePath", "indexPage.cshtml"));
 
-            if (File.Exists(defaultPageTemplateFilePath))
+            if (File.Exists(indexPageFilePath))
             {
-                string defaultPageTemplateContents = File.ReadAllText(defaultPageTemplateFilePath);
+                string indexPageContents = File.ReadAllText(indexPageFilePath);
 
-                Engine.Razor.Compile(name: "defaultPageTemplate", modelType: typeof(IDependencyResolver),
-                    templateSource: new LoadedTemplateSource(defaultPageTemplateContents, defaultPageTemplateFilePath));
+                Engine.Razor.Compile(name: "indexPage", modelType: typeof(IDependencyResolver),
+                    templateSource: new LoadedTemplateSource(indexPageContents, indexPageFilePath));
             }
 
-            string ssoPageTemplateFilePath = PathProvider.StaticFileMapPath(activeAppEnvironment.GetConfig("SsoPageTemplatePath", "ssoPageTemplate.cshtml"));
+            string loginPageFilePath = PathProvider.StaticFileMapPath(activeAppEnvironment.GetConfig("LoginPagePath", "loginPage.cshtml"));
 
-            if (File.Exists(ssoPageTemplateFilePath))
+            if (File.Exists(loginPageFilePath))
             {
-                string ssoPageTemplateContents = File.ReadAllText(ssoPageTemplateFilePath);
+                string loginPageContents = File.ReadAllText(loginPageFilePath);
 
-                Engine.Razor.Compile(name: "ssoPageTemplate", modelType: typeof(IDependencyResolver),
-                    templateSource: new LoadedTemplateSource(ssoPageTemplateContents, ssoPageTemplateFilePath));
+                Engine.Razor.Compile(name: "loginPage", modelType: typeof(IDependencyResolver),
+                    templateSource: new LoadedTemplateSource(loginPageContents, loginPageFilePath));
             }
         }
 

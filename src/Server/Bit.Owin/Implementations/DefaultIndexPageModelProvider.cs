@@ -10,7 +10,7 @@ using Bit.Owin.Models;
 
 namespace Bit.Owin.Implementations
 {
-    public class DefaultPageModelProvider : IDefaultPageModelProvider
+    public class DefaultIndexPageModelProvider : IIndexPageModelProvider
     {
         private IAppEnvironmentProvider _AppEnvironmentProvider;
         private AppEnvironment _App;
@@ -28,9 +28,9 @@ namespace Bit.Owin.Implementations
         public virtual IUserSettingProvider UsersSettingsProvider { get; set; }
         public virtual IContentFormatter ContentFormatter { get; set; }
 
-        public virtual DefaultPageModel GetDefaultPageModel()
+        public virtual IndexPageModel GetIndexPageModel()
         {
-            DefaultPageModel defaultPageModel = new DefaultPageModel
+            IndexPageModel indexPageModel = new IndexPageModel
             {
                 AppVersion = _App.AppInfo.Version,
                 DebugMode = _App.DebugMode,
@@ -59,23 +59,23 @@ namespace Bit.Owin.Implementations
                 .ExtendedSingle($"Finding culture {culture} in environment {_App.Name}", c => c.Name == culture).Values.ExtendedSingle($"Finding AppTitle in culture {culture}", v =>
                       string.Equals(v.Name, "AppTitle", StringComparison.OrdinalIgnoreCase)).Title : string.Empty;
 
-            defaultPageModel.AppTitle = appTitle;
-            defaultPageModel.Culture = culture;
-            defaultPageModel.DesiredTimeZoneValue = desiredTimeZoneValue;
-            defaultPageModel.Theme = theme;
+            indexPageModel.AppTitle = appTitle;
+            indexPageModel.Culture = culture;
+            indexPageModel.DesiredTimeZoneValue = desiredTimeZoneValue;
+            indexPageModel.Theme = theme;
 
-            defaultPageModel.EnvironmentConfigsJson = ContentFormatter.Serialize(_App
+            indexPageModel.EnvironmentConfigsJson = ContentFormatter.Serialize(_App
                 .Configs.Where(c => c.AccessibleInClientSide == true)
                 .Select(c => new { value = c.Value, key = c.Key }));
 
-            defaultPageModel.BaseHref = _App.GetHostVirtualPath();
+            indexPageModel.BaseHref = _App.GetHostVirtualPath();
 
-            return defaultPageModel;
+            return indexPageModel;
         }
 
-        public virtual async Task<DefaultPageModel> GetDefaultPageModelAsync(CancellationToken cancellationToken)
+        public virtual async Task<IndexPageModel> GetIndexPageModelAsync(CancellationToken cancellationToken)
         {
-            DefaultPageModel defaultPageModel = new DefaultPageModel
+            IndexPageModel indexPageModel = new IndexPageModel
             {
                 AppVersion = _App.AppInfo.Version,
                 DebugMode = _App.DebugMode,
@@ -104,18 +104,18 @@ namespace Bit.Owin.Implementations
                 .ExtendedSingle($"Finding culture {culture} in environment {_App.Name}", c => c.Name == culture).Values.ExtendedSingle($"Finding AppTitle in culture {culture}", v =>
                       string.Equals(v.Name, "AppTitle", StringComparison.OrdinalIgnoreCase)).Title : string.Empty;
 
-            defaultPageModel.AppTitle = appTitle;
-            defaultPageModel.Culture = culture;
-            defaultPageModel.DesiredTimeZoneValue = desiredTimeZoneValue;
-            defaultPageModel.Theme = theme;
+            indexPageModel.AppTitle = appTitle;
+            indexPageModel.Culture = culture;
+            indexPageModel.DesiredTimeZoneValue = desiredTimeZoneValue;
+            indexPageModel.Theme = theme;
 
-            defaultPageModel.EnvironmentConfigsJson = ContentFormatter.Serialize(_App
+            indexPageModel.EnvironmentConfigsJson = ContentFormatter.Serialize(_App
                 .Configs.Where(c => c.AccessibleInClientSide == true)
                 .Select(c => new { value = c.Value, key = c.Key }));
 
-            defaultPageModel.BaseHref = _App.GetHostVirtualPath();
+            indexPageModel.BaseHref = _App.GetHostVirtualPath();
 
-            return defaultPageModel;
+            return indexPageModel;
         }
     }
 }

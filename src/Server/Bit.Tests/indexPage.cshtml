@@ -3,7 +3,7 @@
 @inherits Bit.Owin.Implementations.RazorViewTemplate
 
 @{
-    DefaultPageModel model = Resolve<IDefaultPageModelProvider>().GetDefaultPageModel();
+    IndexPageModel model = Resolve<IIndexPageModelProvider>().GetIndexPageModel();
 }
 
 <!DOCTYPE html>

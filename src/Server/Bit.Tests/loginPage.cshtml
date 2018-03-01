@@ -3,14 +3,14 @@
 @inherits Bit.Owin.Implementations.RazorViewTemplate
 
 @{
-    SSOPageModel ssoPageModel = Resolve<ISSOPageModelProvider>().GetSSOPageModel();
+    LoginPageModel loginPageModel = Resolve<ILoginPageModelProvider>().GetLoginPageModel();
 }
 
 <!DOCTYPE html>
 <html>
 
 <head>
-    <title>@(ssoPageModel.AppTitle)</title>
+    <title>@(loginPageModel.AppTitle)</title>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
@@ -20,10 +20,10 @@
     <base href="/" />
 
     <script src="ClientAppProfile"></script>
-    <script src="Files/V@(ssoPageModel.AppVersion)/bit-framework/src/TypeScriptClient/Bit.TSClient.Core/bit.core.js"></script>
-    <script src="Files/V@(ssoPageModel.AppVersion)/bit-framework/src/TypeScriptClient/Bit.TSClient.AngularJS/bit.ng1.js"></script>
-    <script src="Files/V@(ssoPageModel.AppVersion)/bit-framework/src/TypeScriptClient/Bit.TSClient.AngularJS.Test/bit.ng1.test.js"></script>
-    <script src="Files/V@(ssoPageModel.AppVersion)/bit-framework/src/TypeScriptClient/Bit.TSClient.AngularJS.Tests/identity/bit.identity.tests.js"></script>
+    <script src="Files/V@(loginPageModel.AppVersion)/bit-framework/src/TypeScriptClient/Bit.TSClient.Core/bit.core.js"></script>
+    <script src="Files/V@(loginPageModel.AppVersion)/bit-framework/src/TypeScriptClient/Bit.TSClient.AngularJS/bit.ng1.js"></script>
+    <script src="Files/V@(loginPageModel.AppVersion)/bit-framework/src/TypeScriptClient/Bit.TSClient.AngularJS.Test/bit.ng1.test.js"></script>
+    <script src="Files/V@(loginPageModel.AppVersion)/bit-framework/src/TypeScriptClient/Bit.TSClient.AngularJS.Tests/identity/bit.identity.tests.js"></script>
     <script type="text/javascript">
         Bit.DependencyManager.getCurrent().init();
     </script>

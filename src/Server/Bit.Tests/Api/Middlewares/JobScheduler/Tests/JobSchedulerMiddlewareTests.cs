@@ -29,11 +29,11 @@ namespace Bit.Tests.Api.Middlewares.JobScheduler.Tests
             {
                 TokenResponse token = await testEnvironment.Server.Login("ValidUserName", "ValidPassword", clientId: "TestResOwner");
 
-                HttpResponseMessage getDefaultPageResponse = await testEnvironment.Server.BuildHttpClient(token).GetAsync("/jobs");
+                HttpResponseMessage getIndexPageResponse = await testEnvironment.Server.BuildHttpClient(token).GetAsync("/jobs");
 
-                Assert.AreEqual(HttpStatusCode.OK, getDefaultPageResponse.StatusCode);
+                Assert.AreEqual(HttpStatusCode.OK, getIndexPageResponse.StatusCode);
 
-                Assert.AreEqual("text/html", getDefaultPageResponse.Content.Headers.ContentType.MediaType);
+                Assert.AreEqual("text/html", getIndexPageResponse.Content.Headers.ContentType.MediaType);
             }
         }
 
@@ -43,10 +43,10 @@ namespace Bit.Tests.Api.Middlewares.JobScheduler.Tests
         {
             using (BitOwinTestEnvironment testEnvironment = new BitOwinTestEnvironment())
             {
-                HttpResponseMessage getDefaultPageResponse = await testEnvironment.Server.BuildHttpClient()
+                HttpResponseMessage getIndexPageResponse = await testEnvironment.Server.BuildHttpClient()
                     .GetAsync("/jobs");
 
-                Assert.AreEqual(HttpStatusCode.Unauthorized, getDefaultPageResponse.StatusCode);
+                Assert.AreEqual(HttpStatusCode.Unauthorized, getIndexPageResponse.StatusCode);
             }
         }
 

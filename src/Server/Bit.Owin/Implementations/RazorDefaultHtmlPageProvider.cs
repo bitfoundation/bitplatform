@@ -8,19 +8,19 @@ using RazorEngine.Templating;
 
 namespace Bit.Owin.Implementations
 {
-    public class RazorDefaultHtmlPageProvider : IDefaultHtmlPageProvider
+    public class RazorDefaultHtmlPageProvider : IIndexPageContentsProvider
     {
         public virtual IOwinContext OwinContext { get; set; }
 
-        public virtual Task<string> GetDefaultPageAsync(CancellationToken cancellationToken)
+        public virtual Task<string> GetIndexPageHtmlContentsAsync(CancellationToken cancellationToken)
         {
-            return Task.FromResult(Engine.Razor.Run("defaultPageTemplate", typeof(IDependencyResolver),
+            return Task.FromResult(Engine.Razor.Run("indexPage", typeof(IDependencyResolver),
                 OwinContext.GetDependencyResolver()));
         }
 
-        public virtual string GetDefaultPage()
+        public virtual string GetIndexPageHtmlContents()
         {
-            return Engine.Razor.Run("defaultPageTemplate", typeof(IDependencyResolver),
+            return Engine.Razor.Run("indexPage", typeof(IDependencyResolver),
                 OwinContext.GetDependencyResolver());
         }
     }

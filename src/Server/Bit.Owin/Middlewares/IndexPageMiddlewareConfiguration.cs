@@ -7,7 +7,7 @@ using Owin;
 
 namespace Bit.Owin.Middlewares
 {
-    public class DefaultPageMiddlewareConfiguration : IOwinMiddlewareConfiguration
+    public class IndexPageMiddlewareConfiguration : IOwinMiddlewareConfiguration
     {
         private AppEnvironment _activeAppEnvironment;
 
@@ -40,7 +40,7 @@ namespace Bit.Owin.Middlewares
 
             owinApp.Use<OwinNoCacheResponseMiddleware>();
 
-            owinApp.Use<DefaultPageMiddleware>();
+            owinApp.Use<IndexPageMiddleware>();
         }
     }
 }

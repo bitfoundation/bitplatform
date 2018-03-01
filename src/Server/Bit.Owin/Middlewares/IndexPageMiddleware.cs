@@ -5,9 +5,9 @@ using Microsoft.Owin;
 
 namespace Bit.Owin.Middlewares
 {
-    public class DefaultPageMiddleware : OwinMiddleware
+    public class IndexPageMiddleware : OwinMiddleware
     {
-        public DefaultPageMiddleware(OwinMiddleware next)
+        public IndexPageMiddleware(OwinMiddleware next)
             : base(next)
         {
 
@@ -17,11 +17,11 @@ namespace Bit.Owin.Middlewares
         {
             IDependencyResolver dependencyResolver = context.GetDependencyResolver();
 
-            string defaultPage = await dependencyResolver.Resolve<IDefaultHtmlPageProvider>().GetDefaultPageAsync(context.Request.CallCancelled);
+            string indexPageContents = await dependencyResolver.Resolve<IIndexPageContentsProvider>().GetIndexPageHtmlContentsAsync(context.Request.CallCancelled);
 
             context.Response.ContentType = "text/html; charset=utf-8";
 
-            await context.Response.WriteAsync(defaultPage, context.Request.CallCancelled);
+            await context.Response.WriteAsync(indexPageContents, context.Request.CallCancelled);
         }
     }
 }

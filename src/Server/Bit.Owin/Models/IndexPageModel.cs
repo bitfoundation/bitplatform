@@ -1,6 +1,9 @@
-﻿namespace Bit.IdentityServer.Model
+﻿using System;
+
+namespace Bit.Owin.Models
 {
-    public class SSOPageModel
+    [Serializable]
+    public class IndexPageModel
     {
         public virtual string AppTitle { get; set; }
 

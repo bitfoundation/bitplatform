@@ -21,9 +21,9 @@ namespace Bit.Owin.Middlewares
                 {
                     IDependencyResolver dependencyResolver = context.GetDependencyResolver();
 
-                    IDefaultPageModelProvider defaultPageModelProvider = dependencyResolver.Resolve<IDefaultPageModelProvider>();
+                    IIndexPageModelProvider indexPageModelProvider = dependencyResolver.Resolve<IIndexPageModelProvider>();
 
-                    DefaultPageModel model = await defaultPageModelProvider.GetDefaultPageModelAsync(context.Request.CallCancelled);
+                    IndexPageModel model = await indexPageModelProvider.GetIndexPageModelAsync(context.Request.CallCancelled);
 
                     string clientAppProfile = $@"
 clientAppProfile = {{

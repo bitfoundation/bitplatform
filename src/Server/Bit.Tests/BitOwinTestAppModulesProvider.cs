@@ -124,7 +124,7 @@ namespace Bit.Tests
 
             _args?.AdditionalDependencies?.Invoke(dependencyManager);
 
-            dependencyManager.RegisterSecureDefaultPageMiddlewareUsingDefaultConfiguration();
+            dependencyManager.RegisterSecureIndexPageMiddlewareUsingDefaultConfiguration();
         }
 
         public virtual IEnumerable<IAppModule> GetAppModules()

@@ -1,9 +1,6 @@
-﻿using System;
-
-namespace Bit.Owin.Models
+﻿namespace Bit.IdentityServer.Model
 {
-    [Serializable]
-    public class DefaultPageModel
+    public class LoginPageModel
     {
         public virtual string AppTitle { get; set; }
 

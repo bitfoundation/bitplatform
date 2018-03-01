@@ -17,7 +17,7 @@ namespace Bit.IdentityServer.Implementations
 {
     public class DefaultViewService : IViewService
     {
-        public virtual ISsoPageHtmlProvider SsoHtmlPageProvider { get; set; }
+        public virtual ILoginPageContentsProvider SsoHtmlPageProvider { get; set; }
 
         public virtual ICustomLoginDataProvider CustomLoginDataProvider { get; set; }
 
@@ -152,7 +152,7 @@ namespace Bit.IdentityServer.Implementations
                 ReturnUrl = message.ReturnUrl == null ? "" : new Uri(message.ReturnUrl).ParseQueryString()["redirect_uri"]
             }, Formatting.None, jsonSerSettings);
 
-            string loginPageHtml = (await SsoHtmlPageProvider.GetSsoPageAsync(CancellationToken.None).ConfigureAwait(false))
+            string loginPageHtml = (await SsoHtmlPageProvider.GetLoginPageHtmlContentsAsync(CancellationToken.None).ConfigureAwait(false))
                 .Replace("{model}", Microsoft.Security.Application.Encoder.HtmlEncode(json));
 
             return await ReturnHtmlAsync(model, loginPageHtml, CancellationToken.None).ConfigureAwait(false);

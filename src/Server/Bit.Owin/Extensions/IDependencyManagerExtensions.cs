@@ -74,27 +74,27 @@ namespace Bit.Core.Contracts
             return dependencyManager;
         }
 
-        public static IDependencyManager RegisterSecureDefaultPageMiddlewareUsingDefaultConfiguration(this IDependencyManager dependencyManager)
+        public static IDependencyManager RegisterSecureIndexPageMiddlewareUsingDefaultConfiguration(this IDependencyManager dependencyManager)
         {
             if (dependencyManager == null)
                 throw new ArgumentNullException(nameof(dependencyManager));
 
             dependencyManager.RegisterOwinMiddleware<RedirectToSsoIfNotLoggedInMiddlewareConfiguration>();
 
-            dependencyManager.RegisterDefaultPageMiddlewareUsingDefaultConfiguration();
+            dependencyManager.RegisterIndexPageMiddlewareUsingDefaultConfiguration();
 
             return dependencyManager;
         }
 
-        public static IDependencyManager RegisterDefaultPageMiddlewareUsingDefaultConfiguration(this IDependencyManager dependencyManager)
+        public static IDependencyManager RegisterIndexPageMiddlewareUsingDefaultConfiguration(this IDependencyManager dependencyManager)
         {
             if (dependencyManager == null)
                 throw new ArgumentNullException(nameof(dependencyManager));
 
-            dependencyManager.Register<IDefaultHtmlPageProvider, RazorDefaultHtmlPageProvider>(overwriteExciting: false);
-            dependencyManager.Register<IDefaultPageModelProvider, DefaultPageModelProvider>(overwriteExciting: false);
+            dependencyManager.Register<IIndexPageContentsProvider, RazorDefaultHtmlPageProvider>(overwriteExciting: false);
+            dependencyManager.Register<IIndexPageModelProvider, DefaultIndexPageModelProvider>(overwriteExciting: false);
 
-            dependencyManager.RegisterOwinMiddleware<DefaultPageMiddlewareConfiguration>();
+            dependencyManager.RegisterOwinMiddleware<IndexPageMiddlewareConfiguration>();
 
             return dependencyManager;
         }
@@ -108,6 +108,7 @@ namespace Bit.Core.Contracts
                 throw new ArgumentNullException(nameof(metadataAssemblies));
 
             dependencyManager.RegisterOwinMiddleware<ClientAppProfileMiddlewareConfiguration>();
+            dependencyManager.Register<IIndexPageModelProvider, DefaultIndexPageModelProvider>(overwriteExciting: false);
             dependencyManager.RegisterOwinMiddleware<MetadataMiddlewareConfiguration>();
             dependencyManager.Register<IAppMetadataProvider, DefaultAppMetadataProvider>(lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExciting: false);
 

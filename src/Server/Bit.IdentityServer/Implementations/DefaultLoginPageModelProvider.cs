@@ -9,7 +9,7 @@ using Bit.IdentityServer.Model;
 
 namespace Bit.IdentityServer.Implementations
 {
-    public class DefaultSSOPageModelProvider : ISSOPageModelProvider
+    public class DefaultLoginPageModelProvider : ILoginPageModelProvider
     {
         private AppEnvironment _activeAppEnvironment;
 
@@ -26,9 +26,9 @@ namespace Bit.IdentityServer.Implementations
             }
         }
 
-        public virtual SSOPageModel GetSSOPageModel()
+        public virtual LoginPageModel GetLoginPageModel()
         {
-            return new SSOPageModel
+            return new LoginPageModel
             {
                 AppTitle = _activeAppEnvironment
                                 .Cultures
@@ -48,9 +48,9 @@ namespace Bit.IdentityServer.Implementations
             };
         }
 
-        public virtual async Task<SSOPageModel> GetSSOPageModelAsync(CancellationToken cancellationToken)
+        public virtual async Task<LoginPageModel> GetLoginPageModelAsync(CancellationToken cancellationToken)
         {
-            return new SSOPageModel
+            return new LoginPageModel
             {
                 AppTitle = _activeAppEnvironment
                                 .Cultures
