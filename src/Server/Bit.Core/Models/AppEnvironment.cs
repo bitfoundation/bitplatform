@@ -80,6 +80,11 @@ namespace Bit.Core.Models
             return Security?.IssuerName ?? AppInfo.Name;
         }
 
+        public virtual string GetDefaultClientId()
+        {
+            return Security?.DefaultClientId ?? AppInfo.Name;
+        }
+
         public virtual bool HasConfig(string configKey)
         {
             if (configKey == null)
@@ -131,15 +136,16 @@ namespace Bit.Core.Models
 
         public virtual string IssuerName { get; set; }
 
-        public virtual string ClientSecret { get; set; }
-
-        public virtual string ClientId { get; set; }
-
         public virtual string[] Scopes { get; set; }
+
+        /// <summary>
+        /// It's used in redirects of InvokeLogin & RedirectToSsoIfNotLoggedIn middlewares to sso
+        /// </summary>
+        public virtual string DefaultClientId { get; set; }
 
         public override string ToString()
         {
-            return $"{nameof(IssuerName)}: {IssuerName}, {nameof(ClientId)}: {ClientId}";
+            return $"{nameof(IssuerName)}: {IssuerName}";
         }
     }
 

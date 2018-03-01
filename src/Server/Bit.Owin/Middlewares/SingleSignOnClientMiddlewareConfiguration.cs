@@ -25,12 +25,14 @@ namespace Bit.Owin.Middlewares
         {
             AppEnvironment activeAppEnvironment = AppEnvironmentProvider.GetActiveAppEnvironment();
 
+            string issuerName = activeAppEnvironment.GetSsoIssuerName();
+
             owinApp.UseJwtBearerAuthentication(new JwtBearerAuthenticationOptions
             {
-                AllowedAudiences = new string[] { $"{activeAppEnvironment.Security.ClientId}/resources" },
+                AllowedAudiences = new string[] { $"{issuerName}/resources" },
                 IssuerSecurityKeyProviders = new[]
                 {
-                    new X509CertificateSecurityKeyProvider(activeAppEnvironment.GetSsoIssuerName(), CertificateProvider.GetSingleSignOnCertificate())
+                    new X509CertificateSecurityKeyProvider(issuerName, CertificateProvider.GetSingleSignOnCertificate())
                 }
             });
         }

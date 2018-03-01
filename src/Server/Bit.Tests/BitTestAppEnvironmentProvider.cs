@@ -38,12 +38,6 @@ namespace Bit.Tests
                         DefaultTheme = "LightBlue",
                         DefaultCulture = "EnUs"
                     },
-                    Security = new EnvironmentSecurity
-                    {
-                        Scopes = new[] { "openid", "profile", "user_info" },
-                        ClientId = "Test",
-                        ClientSecret = "secret"
-                    },
                     Cultures = new[]
                     {
                         new EnvironmentCulture
