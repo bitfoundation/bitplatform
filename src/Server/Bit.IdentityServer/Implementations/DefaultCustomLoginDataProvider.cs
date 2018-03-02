@@ -14,7 +14,12 @@ namespace Bit.IdentityServer.Implementations
             if (signInMessage == null)
                 throw new ArgumentNullException(nameof(signInMessage));
 
-            return JsonConvert.DeserializeObject<dynamic>(new Uri(signInMessage.ReturnUrl).ParseQueryString()["state"], DefaultJsonContentFormatter.DeSerializeSettings());
+            string state = new Uri(signInMessage.ReturnUrl).ParseQueryString()["state"];
+
+            if (string.IsNullOrEmpty(state))
+                return new { };
+
+            return JsonConvert.DeserializeObject<dynamic>(state, DefaultJsonContentFormatter.DeSerializeSettings());
         }
     }
 }
