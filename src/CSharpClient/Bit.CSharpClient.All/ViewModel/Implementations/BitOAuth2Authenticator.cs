@@ -1,43 +1,79 @@
 ﻿using Bit.ViewModel.Contracts;
-using Newtonsoft.Json;
 using System;
-using System.Collections.Specialized;
-using System.Net.Http;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Xamarin.Auth;
+using Xamarin.Auth.Presenters;
 
 namespace Bit.ViewModel.Implementations
 {
     public class BitOAuth2Authenticator : OAuth2Authenticator
     {
-        private readonly IConfigProvider _configProvider;
+        private readonly IClientAppProfile _clientAppProfile;
+        private readonly AccountStore _accountStore;
+        private readonly OAuthLoginPresenter _oAuthLoginPresenter;
 
-        public BitOAuth2Authenticator(IConfigProvider configProvider)
-            : base(clientId: configProvider.OAuthImplicitFlowClientId,
+        public BitOAuth2Authenticator(IClientAppProfile clientAppProfile,
+            AccountStore accountStore,
+            OAuthLoginPresenter oAuthLoginPresenter)
+            : base(clientId: "Temp",
                   scope: "openid profile user_info",
-                  authorizeUrl: new Uri(configProvider.HostUri, relativeUri: "core/connect/authorize"),
-                  redirectUrl: configProvider.OAuthImplicitFlowRedirectUri,
+                  authorizeUrl: new Uri("https://temp-uri.org"),
+                  redirectUrl: new Uri("https://temp-uri.org"),
                   getUsernameAsync: null,
                   isUsingNativeUI: true)
         {
-            _configProvider = configProvider;
+            _clientAppProfile = clientAppProfile;
+            _accountStore = accountStore;
+            _oAuthLoginPresenter = oAuthLoginPresenter;
         }
 
         public override async Task<Uri> GetInitialUrlAsync()
         {
-            Uri originalUri = await base.GetInitialUrlAsync().ConfigureAwait(false);
-
-            NameValueCollection queryString = originalUri.ParseQueryString();
-            queryString.Set("response_type", "id_token token");
-            queryString.Set("nonce", Guid.NewGuid().ToString("N"));
-            queryString.Set("client_id", ClientId);
-            queryString.Set("redirect_uri", _configProvider.OAuthImplicitFlowRedirectUri.ToString());
-            queryString.Set("scope", Scope);
-            queryString.Set("state", JsonConvert.SerializeObject(State));
-
-            return new Uri($"{AuthorizeUrl}?{queryString}");
+            return Url;
         }
 
-        internal object State { get; set; } = new { };
+        protected Uri Url { get; set; }
+        protected TaskCompletionSource<Token> CurrentLoginTaskCompletionSource { get; set; }
+        protected string CurrentAction { get; set; }
+        protected TaskCompletionSource<object> CurrentLogoutTaskCompletionSource { get; set; }
+
+        public virtual Task Logout(Uri url)
+        {
+            CurrentAction = "Logout";
+            Url = url;
+            CurrentLogoutTaskCompletionSource = new TaskCompletionSource<object>();
+            _oAuthLoginPresenter.Login(this);
+            return CurrentLogoutTaskCompletionSource.Task;
+        }
+
+        public virtual Task<Token> Login(Uri url)
+        {
+            CurrentAction = "Login";
+            Url = url;
+            CurrentLoginTaskCompletionSource = new TaskCompletionSource<Token>();
+            _oAuthLoginPresenter.Login(this);
+            return CurrentLoginTaskCompletionSource.Task;
+        }
+
+        protected override async void OnPageEncountered(Uri url, IDictionary<string, string> query, IDictionary<string, string> fragment)
+        {
+            if (CurrentAction == "Login")
+            {
+                Token token = (Dictionary<string, string>)fragment;
+
+                Account account = Token.FromTokenToAccount(token);
+
+                await _accountStore.SaveAsync(account, _clientAppProfile.AppName).ConfigureAwait(false);
+
+                CurrentLoginTaskCompletionSource.SetResult(account);
+            }
+            else
+            {
+                CurrentLogoutTaskCompletionSource.SetResult(null);
+            }
+
+            base.OnPageEncountered(url, query, fragment);
+        }
     }
 }

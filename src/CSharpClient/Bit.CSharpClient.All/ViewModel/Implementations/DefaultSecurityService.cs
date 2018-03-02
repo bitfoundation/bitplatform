@@ -1,10 +1,8 @@
 ﻿using Bit.ViewModel.Contracts;
 using IdentityModel.Client;
-using Newtonsoft.Json.Linq;
+using Newtonsoft.Json;
 using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Xamarin.Auth;
@@ -14,24 +12,23 @@ namespace Bit.ViewModel.Implementations
 {
     public class DefaultSecurityService : ISecurityService
     {
-        public DefaultSecurityService(AccountStore accountStore, IConfigProvider configProvider, BitOAuth2Authenticator bitOAuth2Authenticator, OAuthLoginPresenter oAuthLoginPresenter, TokenClient tokenClient, IDateTimeProvider dateTimeProvider)
+        public DefaultSecurityService(AccountStore accountStore,
+            IClientAppProfile clientAppProfile,
+            BitOAuth2Authenticator bitOAuth2Authenticator,
+            OAuthLoginPresenter oAuthLoginPresenter,
+            IDateTimeProvider dateTimeProvider)
         {
-            _configProvider = configProvider;
+            _clientAppProfile = clientAppProfile;
             _accountStore = accountStore;
-            _oAuthLoginPresenter = oAuthLoginPresenter;
-            _tokenClient = tokenClient;
             _dateTimeProvider = dateTimeProvider;
-            BitOAuth2Authenticator = _bitOAuth2Authenticator = bitOAuth2Authenticator;
+            OAuthAuthenticator = bitOAuth2Authenticator;
         }
 
-        private readonly IConfigProvider _configProvider;
-        private readonly BitOAuth2Authenticator _bitOAuth2Authenticator;
+        private readonly IClientAppProfile _clientAppProfile;
         private readonly AccountStore _accountStore;
-        private readonly OAuthLoginPresenter _oAuthLoginPresenter;
-        private readonly TokenClient _tokenClient;
         private readonly IDateTimeProvider _dateTimeProvider;
 
-        public static BitOAuth2Authenticator BitOAuth2Authenticator { get; protected set; }
+        public static BitOAuth2Authenticator OAuthAuthenticator { get; protected set; }
 
         public virtual bool IsLoggedIn()
         {
@@ -59,122 +56,51 @@ namespace Bit.ViewModel.Implementations
 
         private Account GetAccount()
         {
-            return (_accountStore.FindAccountsForService(_configProvider.AppName)).SingleOrDefault();
+            return (_accountStore.FindAccountsForService(_clientAppProfile.AppName)).SingleOrDefault();
         }
 
         private async Task<Account> GetAccountAsync()
         {
-            return (await _accountStore.FindAccountsForServiceAsync(_configProvider.AppName).ConfigureAwait(false)).SingleOrDefault();
+            return (await _accountStore.FindAccountsForServiceAsync(_clientAppProfile.AppName).ConfigureAwait(false)).SingleOrDefault();
         }
 
-        public virtual Task<Token> Login(object state = null, CancellationToken cancellationToken = default(CancellationToken))
+        public virtual Task<Token> Login(object state = null, string client_id = null, CancellationToken cancellationToken = default(CancellationToken))
         {
-            state = state ?? new { };
-
-            BitOAuth2Authenticator.State = state;
-
-            TaskCompletionSource<Token> taskSource = new TaskCompletionSource<Token>();
-
-            async void completed(object sender, AuthenticatorCompletedEventArgs e)
-            {
-                _bitOAuth2Authenticator.Completed -= completed;
-                _bitOAuth2Authenticator.Error -= error;
-
-                if (e.IsAuthenticated)
-                {
-                    if (e.Account != null)
-                    {
-                        try
-                        {
-                            await Logout(internalAppLogoutOnly: true).ConfigureAwait(false);
-                        }
-                        catch { }
-
-                        if (!e.Account.Properties.ContainsKey(nameof(Token.login_date)))
-                            e.Account.Properties.Add(nameof(Token.login_date), Convert.ToString(_dateTimeProvider.GetCurrentUtcDateTime()));
-
-                        await _accountStore.SaveAsync(e.Account, _configProvider.AppName).ConfigureAwait(false);
-                    }
-
-                    taskSource.SetResult(e.Account);
-                }
-                else
-                {
-                    throw new InvalidOperationException("Authentication failed");
-                }
-            }
-
-            void error(object sender, AuthenticatorErrorEventArgs e)
-            {
-                _bitOAuth2Authenticator.Completed -= completed;
-                _bitOAuth2Authenticator.Error -= error;
-
-                taskSource.SetException(e.Exception ?? new Exception(e.Message));
-            }
-
-            _bitOAuth2Authenticator.Completed += completed;
-            _bitOAuth2Authenticator.Error += error;
-
-            _oAuthLoginPresenter.Login(_bitOAuth2Authenticator);
-
-            return taskSource.Task;
+            return OAuthAuthenticator.Login(GetLoginUrl(state, client_id));
         }
 
-        public virtual async Task<Token> LoginWithCredentials(string username, string password, CancellationToken cancellationToken = default(CancellationToken))
+        public virtual async Task<Token> LoginWithCredentials(string username, string password, string client_id, string client_secret, string[] scopes = null, CancellationToken cancellationToken = default(CancellationToken))
         {
-            TokenResponse tokenResponse = await _tokenClient.RequestResourceOwnerPasswordAsync(username, password, scope: "openid profile user_info", cancellationToken: cancellationToken).ConfigureAwait(false);
+            if (scopes == null)
+                scopes = "openid profile user_info".Split(' ');
 
-            if (tokenResponse.IsError)
-                throw tokenResponse.Exception ?? new Exception($"{tokenResponse.Error}");
-
-            try
+            using (TokenClient tokenClient = new TokenClient(address: new Uri(_clientAppProfile.HostUri, "core/connect/token").ToString(), clientId: client_id, clientSecret: client_secret))
             {
-                await Logout(internalAppLogoutOnly: true).ConfigureAwait(false);
+                TokenResponse tokenResponse = await tokenClient.RequestResourceOwnerPasswordAsync(username, password, scope: string.Join(" ", scopes), cancellationToken: cancellationToken).ConfigureAwait(false);
+
+                if (tokenResponse.IsError)
+                    throw tokenResponse.Exception ?? new Exception($"{tokenResponse.Error}");
+
+                Account account = Token.FromTokenToAccount(tokenResponse);
+
+                await _accountStore.SaveAsync(account, _clientAppProfile.AppName).ConfigureAwait(false);
+
+                return account;
             }
-            catch { }
-
-            string[] tokenParts = tokenResponse.AccessToken.Split('.');
-
-            string fixedString = tokenParts[1].Trim().Replace(" ", "+");
-            if (fixedString.Length % 4 > 0)
-                fixedString = fixedString.PadRight(fixedString.Length + 4 - fixedString.Length % 4, '=');
-
-            byte[] decodedByteArrayToken = Convert.FromBase64String(fixedString);
-
-            string decodedStringToken = Encoding.UTF8.GetString(decodedByteArrayToken);
-            JObject jwtToken = JObject.Parse(decodedStringToken);
-            string userName = jwtToken["sub"].Value<string>();
-
-            Account account = new Account(username, new Dictionary<string, string>
-            {
-                { "access_token" , tokenResponse.AccessToken },
-                { "expires_in" , tokenResponse.ExpiresIn.ToString()},
-                { "token_type" , tokenResponse.TokenType },
-                { "login_date", Convert.ToString(_dateTimeProvider.GetCurrentUtcDateTime()) }
-            });
-
-            await _accountStore.SaveAsync(account, _configProvider.AppName).ConfigureAwait(false);
-
-            return account;
         }
 
-        public virtual async Task Logout(CancellationToken cancellationToken = default(CancellationToken))
-        {
-            await Logout(internalAppLogoutOnly: false).ConfigureAwait(false);
-        }
-
-        private async Task Logout(bool internalAppLogoutOnly)
+        public virtual async Task Logout(object state = null, string client_id = null, CancellationToken cancellationToken = default(CancellationToken))
         {
             Account account = GetAccount();
 
             if (account != null)
             {
-                await _accountStore.DeleteAsync(account, _configProvider.AppName).ConfigureAwait(false);
-            }
-
-            if (internalAppLogoutOnly == false)
-            {
-                WebAuthenticator.ClearCookies(); // This won't work due security reasons >> We need to store id_token + calling InvokeLogout?id_token=...
+                Token token = account;
+                await _accountStore.DeleteAsync(account, _clientAppProfile.AppName).ConfigureAwait(false);
+                if (!string.IsNullOrEmpty(token.id_token))
+                {
+                    await OAuthAuthenticator.Logout(GetLogoutUrl(token.id_token, state, client_id));
+                }
             }
         }
 
@@ -196,6 +122,33 @@ namespace Bit.ViewModel.Implementations
                 return null;
 
             return account;
+        }
+
+        public virtual Uri GetLoginUrl(object state = null, string client_id = null)
+        {
+            state = state ?? new { };
+
+            string relativeUri = $"InvokeLogin?state={JsonConvert.SerializeObject(state)}&redirect_uri={ _clientAppProfile.OAuthRedirectUri}";
+
+            if (!string.IsNullOrEmpty(client_id))
+                relativeUri += $"&client_id={client_id}";
+
+            return new Uri(_clientAppProfile.HostUri, relativeUri: relativeUri);
+        }
+
+        public virtual Uri GetLogoutUrl(string id_token, object state = null, string client_id = null)
+        {
+            if (string.IsNullOrEmpty(id_token))
+                throw new ArgumentException(nameof(id_token));
+
+            state = state ?? new { };
+
+            string relativeUri = $"InvokeLogout?state={JsonConvert.SerializeObject(state)}&redirect_uri={_clientAppProfile.OAuthRedirectUri}&id_token={id_token}";
+
+            if (!string.IsNullOrEmpty(client_id))
+                relativeUri += $"&client_id={client_id}";
+
+            return new Uri(_clientAppProfile.HostUri, relativeUri: relativeUri);
         }
     }
 }
