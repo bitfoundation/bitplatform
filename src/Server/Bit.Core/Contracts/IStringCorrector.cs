@@ -6,6 +6,6 @@
     /// </summary>
     public interface IStringCorrector
     {
-        string CorrectString(string source);
+        string CorrectString(string input);
     }
 }
