@@ -59,7 +59,7 @@ namespace Bit.CSharpClientSample.Droid
 
             Uri uri = new Uri(Intent.Data.ToString());
 
-            DefaultSecurityService.BitOAuth2Authenticator?.OnPageLoading(uri);
+            DefaultSecurityService.OAuthAuthenticator?.OnPageLoading(uri);
 
             Finish();
         }

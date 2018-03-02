@@ -12,6 +12,8 @@ namespace Bit.CSharpClientSample.ViewModels
     {
         public DelegateCommand LoginUsingCredentionals { get; set; }
 
+        public DelegateCommand LoginUsingBrowser { get; set; }
+
         public DelegateCommand LoginUsingGooglePlus { get; set; }
 
         public string UserName { get; set; } = "ValidUserName";
@@ -24,7 +26,7 @@ namespace Bit.CSharpClientSample.ViewModels
             {
                 try
                 {
-                    await securityService.LoginWithCredentials(UserName, Password);
+                    await securityService.LoginWithCredentials(UserName, Password, client_id: "TestResOwner", client_secret: "secret");
                     await navigationService.NavigateAsync("/Nav/Main");
                 }
                 catch
@@ -42,6 +44,20 @@ namespace Bit.CSharpClientSample.ViewModels
                 try
                 {
                     await securityService.Login(new { SignInType = "Google" });
+                    await navigationService.NavigateAsync("/Nav/Main");
+                }
+                catch
+                {
+                    await pageDialogService.DisplayAlertAsync("Login failed", "Login failed", "Ok");
+                    throw;
+                }
+            });
+
+            LoginUsingBrowser = new DelegateCommand(async () =>
+            {
+                try
+                {
+                    await securityService.Login();
                     await navigationService.NavigateAsync("/Nav/Main");
                 }
                 catch

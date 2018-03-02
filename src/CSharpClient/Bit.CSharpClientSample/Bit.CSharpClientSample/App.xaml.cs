@@ -3,7 +3,6 @@ using Bit.CSharpClientSample.ViewModels;
 using Bit.CSharpClientSample.Views;
 using Bit.ViewModel.Contracts;
 using Bit.ViewModel.Implementations;
-using IdentityModel.Client;
 using Prism;
 using Prism.Autofac;
 using Prism.Ioc;
@@ -19,21 +18,6 @@ using Xamarin.Forms.Xaml;
 
 namespace Bit.CSharpClientSample
 {
-    public class TestConfigProvider : IConfigProvider
-    {
-        public Uri HostUri => new Uri("http://indie-ir001.ngrok.io/");
-
-        public string OAuthImplicitFlowClientId => "Test";
-
-        public Uri OAuthImplicitFlowRedirectUri => new Uri("Test://oauth2redirect");
-
-        public string OAuthResourceOwnerFlowClientId => "TestResOwner";
-
-        public string OAuthResourceOwnerFlowSecret => "secret";
-
-        public string AppName => "Test";
-    }
-
     public partial class App : PrismApplication
     {
         public App(IPlatformInitializer initializer)
@@ -68,7 +52,7 @@ namespace Bit.CSharpClientSample
             containerRegistry.GetBuilder().Register(c =>
             {
                 ISecurityService securityService = c.Resolve<ISecurityService>();
-                ODataClient odataClient = new ODataClient(new ODataClientSettings(new Uri(c.Resolve<IConfigProvider>().HostUri, "odata/Test/"))
+                ODataClient odataClient = new ODataClient(new ODataClientSettings(new Uri(c.Resolve<IClientAppProfile>().HostUri, "odata/Test/"))
                 {
                     OnCreateMessageHandler = () => new TokenHandler(securityService, new HttpClientHandler())
                 });
@@ -78,20 +62,19 @@ namespace Bit.CSharpClientSample
             containerRegistry.GetBuilder().Register(c =>
             {
                 ISecurityService securityService = c.Resolve<ISecurityService>();
-                HttpClient httpClient = new HttpClient(new TokenHandler(securityService, new HttpClientHandler())) { BaseAddress = c.Resolve<IConfigProvider>().HostUri };
+                HttpClient httpClient = new HttpClient(new TokenHandler(securityService, new HttpClientHandler())) { BaseAddress = c.Resolve<IClientAppProfile>().HostUri };
                 return httpClient;
-            }).SingleInstance();
-
-            containerRegistry.GetBuilder().Register(c =>
-            {
-                IConfigProvider configProvider = c.Resolve<IConfigProvider>();
-                return new TokenClient(address: new Uri(configProvider.HostUri, "core/connect/token").ToString(), clientId: configProvider.OAuthResourceOwnerFlowClientId, clientSecret: configProvider.OAuthResourceOwnerFlowSecret);
             }).SingleInstance();
 
             containerRegistry.RegisterSingleton<BitOAuth2Authenticator>();
             containerRegistry.RegisterSingleton<OAuthLoginPresenter>();
             containerRegistry.RegisterSingleton<ISecurityService, DefaultSecurityService>();
-            containerRegistry.RegisterSingleton<IConfigProvider, TestConfigProvider>();
+            containerRegistry.GetBuilder().Register<IClientAppProfile>(c => new DefaultClientAppProfile
+            {
+                HostUri = new Uri("http://indie-ir001.ngrok.io/"),
+                OAuthRedirectUri = new Uri("Test://oauth2redirect"),
+                AppName = "Test"
+            });
             containerRegistry.RegisterSingleton<IDateTimeProvider, DefaultDateTimeProvider>();
 
             containerRegistry.GetBuilder().Register(c => AccountStore.Create()).SingleInstance();

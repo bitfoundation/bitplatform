@@ -6,6 +6,7 @@
         <Entry Text="{Binding UserName}" />
         <Entry Text="{Binding Password}" />
         <Button Text="Login using credentionals" Command="{Binding LoginUsingCredentionals}" />
+        <Button Text="Login using Browser" Command="{Binding LoginUsingBrowser}" />
         <Button Text="Login using Google" Command="{Binding LoginUsingGooglePlus}" />
     </StackLayout>
 </ContentPage>
