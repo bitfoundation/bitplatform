@@ -145,7 +145,7 @@ namespace Bit.Core.Models
 
         public override string ToString()
         {
-            return $"{nameof(IssuerName)}: {IssuerName}";
+            return $"{nameof(IssuerName)}: {IssuerName}, {nameof(DefaultClientId)}: {DefaultClientId}, {nameof(Scopes)}: {Scopes}";
         }
     }
 
