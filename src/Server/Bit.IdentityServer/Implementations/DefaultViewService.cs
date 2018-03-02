@@ -64,25 +64,27 @@ namespace Bit.IdentityServer.Implementations
         {
             string content = null;
 
-            if (!string.IsNullOrEmpty(model.RedirectUrl))
+            string url = model?.RedirectUrl ?? message?.ReturnUrl;
+
+            if (!string.IsNullOrEmpty(url))
             {
                 content = $@"<!DOCTYPE html>
                             <html>
                                 <head>
-                                    <meta http-equiv='refresh' content='0;{model.RedirectUrl}'>
+                                    <meta http-equiv='refresh' content='0;{url}'>
                                 </head>
                                 <body></body>
                             </html>";
             }
             else
             {
-                content = @"<!DOCTYPE html>
+                content = $@"<!DOCTYPE html>
                             <html>
                                 <head>
                                     <title>No redirect url on logout</title>
                                 </head>
                                 <body>
-                                    No redirect url on logout
+                                    No redirect url on logout. Perhaps your redirect url is not listed in {nameof(ClientProvider.GetClients)} of {nameof(ClientProvider)}
                                 </body>
                             </html>";
             }
@@ -97,8 +99,6 @@ namespace Bit.IdentityServer.Implementations
 
             if (model.Custom == null && message.ReturnUrl != null)
             {
-                string state = new Uri(message.ReturnUrl).ParseQueryString()["state"] ?? "{}";
-
                 try
                 {
                     dynamic custom = model.Custom = CustomLoginDataProvider.GetCustomData(message);

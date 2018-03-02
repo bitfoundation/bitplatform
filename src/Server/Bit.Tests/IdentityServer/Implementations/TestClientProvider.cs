@@ -43,7 +43,8 @@ namespace Bit.Tests.IdentityServer.Implementations
                     },
                     PostLogoutRedirectUris = new List<string>
                     {
-                        $@"^(http|https):\/\/(\S+\.)?(bit-framework.com|localhost|127.0.0.1)(:\d+)?\b{activeAppEnvironment.GetHostVirtualPath()}\bSignOut\/?"
+                        $@"^(http|https):\/\/(\S+\.)?(bit-framework.com|localhost|127.0.0.1)(:\d+)?\b{activeAppEnvironment.GetHostVirtualPath()}\bSignOut\/?",
+                        "Test://oauth2redirect"
                     },
                     TokensLifetime = TimeSpan.FromDays(1)
                 }),
