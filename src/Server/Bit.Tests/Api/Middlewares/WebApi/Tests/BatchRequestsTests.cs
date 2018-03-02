@@ -133,7 +133,7 @@ namespace Bit.Tests.Api.Middlewares.WebApi.Tests
                     A.CallTo(() => controller.SendEmail(A<TestModelsController.EmailParameters>.Ignored))
                                             .MustHaveHappened(Repeated.Exactly.Once);
 
-                    A.CallTo(() => logger.LogFatalAsync(A<string>.That.Matches(msg => msg == "Scope was failed")))
+                    A.CallTo(() => logger.LogFatalAsync(A<string>.That.Matches(msg => msg == "Scope was failed: Operation is not valid due to the current state of the object.")))
                                             .MustHaveHappened(Repeated.Exactly.Once);
                 }
             }

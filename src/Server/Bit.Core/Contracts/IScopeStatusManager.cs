@@ -4,8 +4,10 @@
     {
         bool WasSucceeded();
 
-        void MarkAsFailed();
+        void MarkAsFailed(string reason);
 
         void MarkAsSucceeded();
+
+        string FailureReason { get; }
     }
 }

@@ -25,7 +25,7 @@ namespace Bit.WebApi.ActionFilters
             actionExecutedContext.Response.ReasonPhrase = exceptionToHttpErrorMapper.GetReasonPhrase(exception);
 
             if (scopeStatusManager.WasSucceeded())
-                scopeStatusManager.MarkAsFailed();
+                scopeStatusManager.MarkAsFailed(exception.Message);
 
             await base.OnExceptionAsync(actionExecutedContext, cancellationToken);
         }

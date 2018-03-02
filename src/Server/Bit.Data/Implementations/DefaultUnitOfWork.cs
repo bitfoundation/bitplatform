@@ -18,7 +18,7 @@ namespace Bit.Data.Implementations
 
         public IDisposable BeginWork()
         {
-            ScopeStatusManager.MarkAsFailed(); // Failed by default
+            ScopeStatusManager.MarkAsFailed($"As {nameof(DefaultUnitOfWork)} begins it work, scope is failed by default, until {nameof(CommitWork)} is called");
             return new UnitOfWorkManager();
         }
 
@@ -29,7 +29,7 @@ namespace Bit.Data.Implementations
 
         public void RollbackWork()
         {
-            ScopeStatusManager.MarkAsFailed();
+            ScopeStatusManager.MarkAsFailed($"{nameof(RollbackWork)} of {nameof(DefaultUnitOfWork)} is called");
         }
     }
 }

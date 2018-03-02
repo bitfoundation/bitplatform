@@ -24,7 +24,7 @@ namespace Bit.Data
 
             if (!_connections.ContainsKey(connectionString))
             {
-                throw new InvalidOperationException("No connection was created");
+                throw new InvalidOperationException($"No connection was created, either call {nameof(GetDbConnection)} or {nameof(GetDbConnectionAsync)}");
             }
 
             return _connections[connectionString].Transaction;

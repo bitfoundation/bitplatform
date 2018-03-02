@@ -46,9 +46,9 @@ namespace Bit.OwinCore.Middlewares
                 if (responseStatusCodeIsErrorCodeBecauseOfSomeServerBasedReason ||
                     responseStatusCodeIsErrorCodeBecauseOfSomeClientBasedReason)
                 {
-                    scopeStatusManager.MarkAsFailed();
+                    string reasonPhrase = context.Features.Get<IHttpResponseFeature>().ReasonPhrase ?? "UnknownReasonPhrase";
 
-                    string reasonPhrase = context.Features.Get<IHttpResponseFeature>().ReasonPhrase;
+                    scopeStatusManager.MarkAsFailed(reasonPhrase);
 
                     logger.AddLogData("ResponseStatusCode", statusCode);
                     logger.AddLogData("ResponseReasonPhrase", reasonPhrase);
@@ -64,7 +64,7 @@ namespace Bit.OwinCore.Middlewares
                 }
                 else if (!scopeStatusManager.WasSucceeded())
                 {
-                    await logger.LogFatalAsync("Scope was failed");
+                    await logger.LogFatalAsync($"Scope was failed: {scopeStatusManager.FailureReason}");
                 }
                 else
                 {
@@ -74,7 +74,7 @@ namespace Bit.OwinCore.Middlewares
             catch (Exception exp)
             {
                 if (scopeStatusManager.WasSucceeded())
-                    scopeStatusManager.MarkAsFailed();
+                    scopeStatusManager.MarkAsFailed(exp.Message);
                 await logger.LogExceptionAsync(exp, "Request-Execution-Exception");
                 string statusCode = context.Response.StatusCode.ToString();
                 bool responseStatusCodeIsErrorCodeBecauseOfSomeServerBasedReason = statusCode.StartsWith("5");
