@@ -68,6 +68,7 @@ namespace Bit.Core.Contracts
             dependencyManager.RegisterInstance(DefaultAppEnvironmentProvider.Current, overwriteExciting: false);
             dependencyManager.RegisterInstance(DefaultJsonContentFormatter.Current, overwriteExciting: false);
             dependencyManager.RegisterInstance(DefaultPathProvider.Current, overwriteExciting: false);
+            dependencyManager.Register<IUrlStateProvider, DefaultUrlStateProvider>(lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExciting: false);
 
             dependencyManager.Register<IScopeStatusManager, DefaultScopeStatusManager>(overwriteExciting: false);
 
