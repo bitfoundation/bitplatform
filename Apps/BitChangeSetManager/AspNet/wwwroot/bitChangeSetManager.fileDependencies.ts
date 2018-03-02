@@ -151,11 +151,6 @@ module BitChangeSetManager {
     });
 
     dependencyManager.registerFileDependency({
-        name: "odataJS",
-        path: "node_modules/@bit/jaydata-odatajs/jaydata-odatajs-4.0.1"
-    });
-
-    dependencyManager.registerFileDependency({
         name: "jayData",
         path: "node_modules/@bit/jaydata/jaydata"
     });
