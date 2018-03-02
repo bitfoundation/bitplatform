@@ -3,6 +3,7 @@ using IdentityServer3.Core;
 using IdentityServer3.Core.Models;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Bit.IdentityServer.Implementations
 {
@@ -15,7 +16,7 @@ namespace Bit.IdentityServer.Implementations
             return new Client
             {
                 ClientName = client.ClientName,
-                Enabled = true,
+                Enabled = client.Enabled,
                 ClientId = client.ClientId,
                 ClientSecrets = new List<Secret>
                 {
@@ -29,8 +30,8 @@ namespace Bit.IdentityServer.Implementations
                     "user_info"
                 },
                 RequireConsent = false,
-                RedirectUris = client.RedirectUris,
-                PostLogoutRedirectUris = client.PostLogoutRedirectUris,
+                RedirectUris = client.RedirectUris.ToList(),
+                PostLogoutRedirectUris = client.PostLogoutRedirectUris.ToList(),
                 AllowAccessToAllScopes = true,
                 AlwaysSendClientClaims = true,
                 IncludeJwtId = true,
@@ -48,6 +49,7 @@ namespace Bit.IdentityServer.Implementations
             {
                 ClientId = client.ClientId,
                 ClientName = client.ClientName,
+                Enabled = client.Enabled,
                 PostLogoutRedirectUris = new List<string> { },
                 RedirectUris = new List<string> { },
                 Secret = client.Secret,

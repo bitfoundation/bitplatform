@@ -6,13 +6,15 @@ namespace Bit.IdentityServer.Contracts
 {
     public class BitClient
     {
-        public string ClientName { get; set; }
+        public virtual string ClientName { get; set; }
 
-        public string ClientId { get; set; }
+        public virtual string ClientId { get; set; }
 
-        public string Secret { get; set; }
+        public virtual string Secret { get; set; }
 
-        public TimeSpan TokensLifetime { get; set; }
+        public virtual TimeSpan TokensLifetime { get; set; } = TimeSpan.FromDays(7);
+
+        public virtual bool Enabled { get; set; } = true;
 
         public override string ToString()
         {
@@ -22,9 +24,9 @@ namespace Bit.IdentityServer.Contracts
 
     public class BitImplicitFlowClient : BitClient
     {
-        public List<string> RedirectUris { get; set; }
+        public virtual IEnumerable<string> RedirectUris { get; set; }
 
-        public List<string> PostLogoutRedirectUris { get; set; }
+        public virtual IEnumerable<string> PostLogoutRedirectUris { get; set; }
     }
 
     public class BitResourceOwnerFlowClient : BitClient
