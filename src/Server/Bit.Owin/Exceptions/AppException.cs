@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Bit.Core.Contracts;
+using System;
 using System.Runtime.Serialization;
 
 namespace Bit.Owin.Exceptions
@@ -10,15 +11,18 @@ namespace Bit.Owin.Exceptions
         {
         }
 
-        public AppException(string message) : base(message)
+        public AppException(string message)
+            : base(message)
         {
         }
 
-        public AppException(string message, Exception innerException) : base(message, innerException)
+        public AppException(string message, Exception innerException)
+            : base(message, innerException)
         {
         }
 
-        protected AppException(SerializationInfo info, StreamingContext context) : base(info, context)
+        protected AppException(SerializationInfo info, StreamingContext context)
+            : base(info, context)
         {
         }
     }

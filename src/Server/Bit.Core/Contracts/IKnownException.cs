@@ -1,4 +1,4 @@
-﻿namespace Bit.Owin.Exceptions
+﻿namespace Bit.Core.Contracts
 {
     public interface IKnownException
     {
