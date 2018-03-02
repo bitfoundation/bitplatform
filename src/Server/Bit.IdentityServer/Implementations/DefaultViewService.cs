@@ -6,6 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Bit.Core.Implementations;
 using Bit.IdentityServer.Contracts;
+using Bit.Owin.Contracts;
 using IdentityServer3.Core.Models;
 using IdentityServer3.Core.Services;
 using IdentityServer3.Core.Validation;
@@ -19,7 +20,7 @@ namespace Bit.IdentityServer.Implementations
     {
         public virtual ILoginPageContentsProvider SsoHtmlPageProvider { get; set; }
 
-        public virtual ICustomLoginDataProvider CustomLoginDataProvider { get; set; }
+        public virtual IUrlStateProvider UrlStateProvider { get; set; }
 
         public virtual async Task<Stream> ClientPermissions(ClientPermissionsViewModel model)
         {
@@ -101,7 +102,7 @@ namespace Bit.IdentityServer.Implementations
             {
                 try
                 {
-                    dynamic custom = model.Custom = CustomLoginDataProvider.GetCustomData(message);
+                    dynamic custom = model.Custom = UrlStateProvider.GetState(new Uri(message.ReturnUrl));
 
                     string signInType = null;
 
