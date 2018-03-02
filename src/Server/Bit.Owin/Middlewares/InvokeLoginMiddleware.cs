@@ -1,9 +1,7 @@
-﻿using System.Linq;
-using System.Threading.Tasks;
-using Bit.Core.Contracts;
+﻿using Bit.Core.Contracts;
 using Bit.Core.Models;
 using Microsoft.Owin;
-using System.Net.Http;
+using System.Threading.Tasks;
 
 namespace Bit.Owin.Middlewares
 {
@@ -29,16 +27,16 @@ namespace Bit.Owin.Middlewares
 
             IRandomStringProvider randomStringProvider = dependencyResolver.Resolve<IRandomStringProvider>();
 
-            string client_Id = context.Request.Uri.ParseQueryString()["client_id"] ?? _App.GetDefaultClientId();
+            string client_Id = context.Request.Query["client_id"] ?? _App.GetDefaultClientId();
+            string afterLoginRedirect_uri = context.Request.Query["redirect_uri"] ?? $"{context.Request.Scheme}://{context.Request.Host.Value}{_App.GetHostVirtualPath()}SignIn";
 
-            string redirectUriHost = $"{context.Request.Scheme}://{context.Request.Host.Value}{_App.GetHostVirtualPath()}SignIn";
-            string redirectUri = $"{_App.GetSsoUrl()}/connect/authorize?scope={string.Join(" ", _App.Security.Scopes)}&client_id={client_Id}&redirect_uri={redirectUriHost}&response_type=id_token token";
+            string ssoRedirectUri = $"{_App.GetSsoUrl()}/connect/authorize?scope={string.Join(" ", _App.Security.Scopes)}&client_id={client_Id}&redirect_uri={afterLoginRedirect_uri}&response_type=id_token token";
 
-            string stateArgs = string.Join(string.Empty, context.Request.Path.Value.SkipWhile(c => c == '/'));
+            string stateArgs = context.Request.Query["state"] ?? "{}";
 
             string nonce = randomStringProvider.GetRandomNonSecureString(12);
 
-            context.Response.Redirect($"{redirectUri}&state={stateArgs}&nonce={nonce}");
+            context.Response.Redirect($"{ssoRedirectUri}&state={stateArgs}&nonce={nonce}");
         }
     }
 }
