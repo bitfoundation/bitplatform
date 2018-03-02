@@ -2,6 +2,7 @@
 
     export interface Token {
         access_token: string;
+        id_token: string;
         expires_in: number;
         token_type: string;
         login_date: Date;
@@ -9,9 +10,11 @@
 
     export interface ISecurityService {
         isLoggedIn(): boolean;
-        login(state?: any): void;
-        logout(): void;
-        loginWithCredentials(username: string, password: string, client_id: string, client_secret: string, scopes?: string[], saveToken?: boolean): Promise<Token>;
+        login(state?: any, client_id?: string): void;
+        logout(state?: any, client_id?: string): void;
+        loginWithCredentials(username: string, password: string, client_id: string, client_secret: string, scopes?: string[]): Promise<Token>;
         getCurrentToken(): Token;
+        getLoginUrl(state?: any, client_id?: string): string;
+        getLogoutUrl(id_token: string, state?: any, client_id?: string): string;
     }
 }
