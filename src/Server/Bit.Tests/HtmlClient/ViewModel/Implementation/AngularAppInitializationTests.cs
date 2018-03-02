@@ -65,7 +65,7 @@ namespace Bit.Tests.HtmlClient.ViewModel.Implementation
 
                     driver.GetElementById("gotonextpart").Click();
 
-                    await Task.Yield();
+                    await Task.Delay(500);
 
                     Assert.AreEqual("1", driver.GetElementById("parameter").GetAttribute("innerText"));
                 }
