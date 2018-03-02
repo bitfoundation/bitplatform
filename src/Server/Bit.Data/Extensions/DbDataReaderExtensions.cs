@@ -6,11 +6,16 @@ using System.Threading.Tasks;
 
 namespace System.Data
 {
-    public static class IDataReaderExtensions
+    public static class DbDataReaderExtensions
     {
-        public static async Task PopulateStreamAsync(this IDataReader reader, Stream stream, CancellationToken cancellationToken)
+        public static async Task PopulateStreamAsync(this DbDataReader reader, Stream stream, CancellationToken cancellationToken)
         {
-            await FlushSqlResultsToStream((DbDataReader)reader, stream, cancellationToken).ConfigureAwait(false);
+            if (reader == null)
+                throw new ArgumentNullException(nameof(reader));
+            if (stream == null)
+                throw new ArgumentNullException(nameof(stream));
+
+            await FlushSqlResultsToStream(reader, stream, cancellationToken).ConfigureAwait(false);
         }
 
         private static async Task FlushSqlResultsToStream(DbDataReader reader, Stream stream, CancellationToken cancellationToken)
