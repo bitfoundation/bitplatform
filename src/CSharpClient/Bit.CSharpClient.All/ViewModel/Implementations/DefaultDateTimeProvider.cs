@@ -9,5 +9,18 @@ namespace Bit.ViewModel.Implementations
         {
             return DateTimeOffset.UtcNow;
         }
+
+        private static IDateTimeProvider _current;
+
+        public static IDateTimeProvider Current
+        {
+            get
+            {
+                if (_current == null)
+                    _current = new DefaultDateTimeProvider();
+                return _current;
+            }
+            set => _current = value;
+        }
     }
 }
