@@ -51,7 +51,12 @@ namespace Bit.Owin.Middlewares
             localStorage['{defaultPath}login_date'] = new Date();
             var state = JSON.parse(decodeURIComponent(localStorage['{defaultPath}state'].replace(/\+/g, ' ')));
             localStorage['{defaultPath}state'] = JSON.stringify(state);
-            location = state.pathname || '{defaultPath}';
+            if(state.autoClose == null || state.autoClose == false) {{
+                location = state.pathname || '{defaultPath}';
+            }}
+            else {{
+                window.close();
+            }}
         </script>
     </head>
     <body>
