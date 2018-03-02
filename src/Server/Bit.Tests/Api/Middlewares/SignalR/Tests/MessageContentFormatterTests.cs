@@ -40,7 +40,7 @@ namespace Bit.Tests.Api.Middlewares.SignalR.Tests
 
                     A.CallTo(() => logStore.SaveLogAsync(A<LogEntry>.That.Matches(log =>
                                       log.LogData.Any(logData => logData.Key == "WebException" &&
-                                              ((string)logData.Value).Contains("You may not use date time values in task push content formatter")))))
+                                              ((string)logData.Value).Contains("You may not use date time values in signalr content formatter")))))
                                               .MustHaveHappened(Repeated.Exactly.Once);
                 }
             }
