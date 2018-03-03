@@ -3,7 +3,7 @@
 @inherits Bit.Owin.Implementations.RazorViewTemplate
 
 @{
-    SSOPageModel model = Resolve<ISSOPageModelProvider>().GetSSOPageModel();
+    LoginPageModel model = Resolve<ILoginPageModelProvider>().GetLoginPageModel();
 }
 
 <!DOCTYPE html>

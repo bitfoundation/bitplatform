@@ -92,7 +92,7 @@ namespace BitChangeSetManager.Core
                         EnvironmentAppInfo appInfo = DefaultAppEnvironmentProvider.Current.GetActiveAppEnvironment().AppInfo;
                         c.SingleApiVersion($"v{appInfo.Version}", $"{appInfo.Name}-Api");
                         c.ApplyDefaultApiConfig(httpConfiguration);
-                    }).EnableBitSwaggerUI();
+                    }).EnableBitSwaggerUi();
                 });
 
                 webApiDependencyManager.RegisterWebApiMiddlewareUsingDefaultConfiguration();
@@ -112,7 +112,7 @@ namespace BitChangeSetManager.Core
                         EnvironmentAppInfo appInfo = DefaultAppEnvironmentProvider.Current.GetActiveAppEnvironment().AppInfo;
                         c.SingleApiVersion($"v{appInfo.Version}", $"{appInfo.Name}-Api");
                         c.ApplyDefaultODataConfig(httpConfiguration);
-                    }).EnableBitSwaggerUI();
+                    }).EnableBitSwaggerUi();
                 });
 
                 odataDependencyManager.RegisterODataServiceBuilder<BitODataServiceBuilder>();
@@ -140,7 +140,7 @@ namespace BitChangeSetManager.Core
 
             dependencyManager.RegisterSingleSignOnServer<BitChangeSetManagerUserService, BitChangeSetManagerClientProvider>();
 
-            dependencyManager.RegisterSecureDefaultPageMiddlewareUsingDefaultConfiguration();
+            dependencyManager.RegisterSecureIndexPageMiddlewareUsingDefaultConfiguration();
 
             dependencyManager.Register<IUserSettingProvider, BitUserSettingProvider>();
         }

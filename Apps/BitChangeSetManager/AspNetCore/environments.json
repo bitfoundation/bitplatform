@@ -9,10 +9,6 @@
       "DefaultTheme": "LightBlue",
       "DefaultCulture": "EnUs"
     },
-    "Security": {
-      "ClientId": "BitChangeSetManager",
-      "ClientSecret": "secret"
-    },
     "Cultures": [
       {
         "Name": "EnUs",

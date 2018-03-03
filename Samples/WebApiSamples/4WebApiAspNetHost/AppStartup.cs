@@ -56,7 +56,7 @@ namespace WebApiAspNetHost
                     {
                         c.SingleApiVersion("v1", "SwaggerDemoApi");
                         c.ApplyDefaultApiConfig(httpConfiguration);
-                    }).EnableBitSwaggerUI();
+                    }).EnableBitSwaggerUi();
                 });
             });
         }
