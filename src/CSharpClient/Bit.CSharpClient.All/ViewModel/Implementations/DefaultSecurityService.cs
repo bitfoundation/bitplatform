@@ -3,6 +3,7 @@ using IdentityModel.Client;
 using Newtonsoft.Json;
 using System;
 using System.Linq;
+using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using Xamarin.Auth;
@@ -74,7 +75,7 @@ namespace Bit.ViewModel.Implementations
             if (scopes == null)
                 scopes = "openid profile user_info".Split(' ');
 
-            using (TokenClient tokenClient = new TokenClient(address: new Uri(_clientAppProfile.HostUri, "core/connect/token").ToString(), clientId: client_id, clientSecret: client_secret))
+            using (TokenClient tokenClient = new TokenClient(address: new Uri(_clientAppProfile.HostUri, "core/connect/token").ToString(), clientId: client_id, clientSecret: client_secret, innerHttpMessageHandler: GetHttpMessageHandler()))
             {
                 TokenResponse tokenResponse = await tokenClient.RequestResourceOwnerPasswordAsync(username, password, scope: string.Join(" ", scopes), cancellationToken: cancellationToken).ConfigureAwait(false);
 
@@ -87,6 +88,11 @@ namespace Bit.ViewModel.Implementations
 
                 return account;
             }
+        }
+
+        protected virtual HttpMessageHandler GetHttpMessageHandler()
+        {
+            return new HttpClientHandler();
         }
 
         public virtual async Task Logout(object state = null, string client_id = null, CancellationToken cancellationToken = default(CancellationToken))
