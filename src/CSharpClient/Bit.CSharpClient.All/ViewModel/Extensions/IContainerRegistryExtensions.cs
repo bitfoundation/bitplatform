@@ -18,6 +18,7 @@ namespace Prism.Ioc
 
             containerRegistry.RegisterForNavigation<TView, TViewModel>(name: name);
             containerRegistry.Register<TViewModel>();
+            containerRegistry.Register<TView>();
         }
 
         public static void RegisterNavigation<TView>(this IContainerRegistry containerRegistry, string name)
@@ -30,6 +31,7 @@ namespace Prism.Ioc
                 throw new ArgumentNullException(nameof(name));
 
             containerRegistry.RegisterForNavigation<TView>(name: name);
+            containerRegistry.Register<TView>();
         }
 
         public static void RegisterNavigation(this IContainerRegistry containerRegistry, Type viewType, string name)
@@ -41,6 +43,7 @@ namespace Prism.Ioc
                 throw new ArgumentNullException(nameof(name));
 
             containerRegistry.RegisterForNavigation(viewType: viewType, name: name);
+            containerRegistry.Register(viewType);
         }
 
         public static void RegisterNavigationOnIdiom<TView, TViewModel>(this IContainerRegistry containerRegistry, string name, Type desktopView = null, Type tabletView = null, Type phoneView = null)
@@ -55,6 +58,13 @@ namespace Prism.Ioc
 
             containerRegistry.RegisterForNavigationOnIdiom<TView, TViewModel>(name: name, desktopView: desktopView, tabletView: tabletView, phoneView: phoneView);
             containerRegistry.Register<TViewModel>();
+            containerRegistry.Register<TView>();
+            if (desktopView != null)
+                containerRegistry.Register(desktopView);
+            if (tabletView != null)
+                containerRegistry.Register(tabletView);
+            if (phoneView != null)
+                containerRegistry.Register(phoneView);
         }
 
         public static void RegisterNavigationOnPlatform<TView, TViewModel>(this IContainerRegistry containerRegistry, params IPlatform[] platforms)
@@ -66,6 +76,7 @@ namespace Prism.Ioc
 
             containerRegistry.RegisterForNavigationOnPlatform<TView, TViewModel>(platforms: platforms);
             containerRegistry.Register<TViewModel>();
+            containerRegistry.Register<TView>();
         }
 
         public static void RegisterNavigationOnPlatform<TView, TViewModel>(this IContainerRegistry containerRegistry, string name, params IPlatform[] platforms)
@@ -80,6 +91,7 @@ namespace Prism.Ioc
 
             containerRegistry.RegisterForNavigationOnPlatform<TView, TViewModel>(name: name, platforms: platforms);
             containerRegistry.Register<TViewModel>();
+            containerRegistry.Register<TView>();
         }
     }
 }
