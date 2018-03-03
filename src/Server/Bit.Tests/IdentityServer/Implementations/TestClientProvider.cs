@@ -46,14 +46,16 @@ namespace Bit.Tests.IdentityServer.Implementations
                         $@"^(http|https):\/\/(\S+\.)?(bit-framework.com|localhost|127.0.0.1)(:\d+)?\b{activeAppEnvironment.GetHostVirtualPath()}\bSignOut\/?",
                         "Test://oauth2redirect"
                     },
-                    TokensLifetime = TimeSpan.FromDays(1)
+                    TokensLifetime = TimeSpan.FromDays(7),
+                    Enabled = true
                 }),
                 GetResourceOwnerFlowClient(new BitResourceOwnerFlowClient
                 {
                     ClientName = "TestResOwner",
                     ClientId = "TestResOwner",
                     Secret = "secret",
-                    TokensLifetime = TimeSpan.FromDays(1)
+                    TokensLifetime = TimeSpan.FromDays(7),
+                    Enabled = true
                 })
             };
         }

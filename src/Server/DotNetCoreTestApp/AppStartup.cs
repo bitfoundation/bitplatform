@@ -147,7 +147,8 @@ namespace DotNetCoreTestApp
                     ClientName = "TestResOwner",
                     ClientId = "TestResOwner",
                     Secret = "secret",
-                    TokensLifetime = TimeSpan.FromDays(1)
+                    TokensLifetime = TimeSpan.FromDays(7),
+                    Enabled = true
                 })
             };
         }

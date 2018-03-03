@@ -31,14 +31,16 @@ namespace BitChangeSetManager.Security
                         $@"^(http|https):\/\/(\S+\.)?(bit-change-set-manager.com|localhost)(:\d+)?\b{activeAppEnvironment.GetHostVirtualPath()}\bSignIn\/?"
                     },
                     Secret = "secret",
-                    TokensLifetime = TimeSpan.FromDays(1)
+                    TokensLifetime = TimeSpan.FromDays(7),
+                    Enabled = true
                 }),
                 GetResourceOwnerFlowClient(new BitResourceOwnerFlowClient
                 {
                     ClientId = "BitChangeSetManager-ResOwner",
                     ClientName = "BitChangeSetManager-ResOwner",
                     Secret = "secret",
-                    TokensLifetime = TimeSpan.FromDays(1)
+                    TokensLifetime = TimeSpan.FromDays(7),
+                    Enabled = true
                 })
 
                 /*  Required nuget packages: IdentityModel + Microsoft.Net.Http
