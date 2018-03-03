@@ -2,10 +2,11 @@
 using Android.Content;
 using Android.Content.PM;
 using Android.OS;
+using Bit.Droid;
+using Bit.ViewModel.Contracts;
 using Bit.ViewModel.Implementations;
 using Prism;
 using Prism.Ioc;
-using System;
 using Xamarin.Auth.Presenters.XamarinAndroid;
 using Xamarin.Forms;
 using Xamarin.Forms.Platform.Android;
@@ -32,37 +33,30 @@ namespace Bit.CSharpClientSample.Droid
 
     public class TestAppInitializer : IPlatformInitializer
     {
-        private readonly Context _context;
+        private readonly Activity _activity;
 
-        public TestAppInitializer(Context context)
+        public TestAppInitializer(Activity activity)
         {
-            _context = context;
+            _activity = activity;
         }
 
         public void RegisterTypes(IContainerRegistry containerRegistry)
         {
-            containerRegistry.RegisterInstance(_context);
+            containerRegistry.RegisterInstance<Activity>(_activity);
+            containerRegistry.RegisterInstance<Context>(_activity);
+
+            containerRegistry.Register<IBrowserService, DefaultBrowserService>();
         }
     }
 
-    [Activity(Label = "CustomUrlSchemeInterceptorActivity", NoHistory = true, LaunchMode = LaunchMode.SingleTop)]
+    [Activity(Label = nameof(TestAppSSOUrlRedirectParserActivity), NoHistory = true, LaunchMode = LaunchMode.SingleTop)]
     [IntentFilter(
     new[] { Intent.ActionView },
     Categories = new[] { Intent.CategoryDefault, Intent.CategoryBrowsable },
     DataSchemes = new[] { "test" },
     DataPath = "test://oauth2redirect")]
-    public class CustomUrlSchemeInterceptorActivity : Activity
+    public class TestAppSSOUrlRedirectParserActivity : BitSSOUrlRedirectParserActivity
     {
-        protected override void OnCreate(Bundle savedInstanceState)
-        {
-            base.OnCreate(savedInstanceState);
-
-            Uri uri = new Uri(Intent.Data.ToString());
-
-            DefaultSecurityService.OAuthAuthenticator?.OnPageLoading(uri);
-
-            Finish();
-        }
     }
 }
 
