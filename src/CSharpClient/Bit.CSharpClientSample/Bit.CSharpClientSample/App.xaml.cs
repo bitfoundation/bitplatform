@@ -18,7 +18,7 @@ using Xamarin.Forms.Xaml;
 
 namespace Bit.CSharpClientSample
 {
-    public partial class App : PrismApplication
+    public partial class App : BitApplication
     {
         public App(IPlatformInitializer initializer)
                     : base(initializer)
@@ -42,10 +42,10 @@ namespace Bit.CSharpClientSample
 
         protected override void RegisterTypes(IContainerRegistry containerRegistry)
         {
-            containerRegistry.RegisterForNavigation<NavigationPage>("Nav");
+            containerRegistry.RegisterNavigation<NavigationPage>("Nav");
 
-            containerRegistry.RegisterForNavigation<LoginView, LoginViewModel>("Login");
-            containerRegistry.RegisterForNavigation<MainView, MainViewModel>("Main");
+            containerRegistry.RegisterNavigation<LoginView, LoginViewModel>("Login");
+            containerRegistry.RegisterNavigation<MainView, MainViewModel>("Main");
 
             Simple.OData.Client.V4Adapter.Reference();
 

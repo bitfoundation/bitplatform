@@ -1,5 +1,5 @@
-﻿using Bit.ViewModel.Contracts;
-using Prism.Commands;
+﻿using Bit.ViewModel;
+using Bit.ViewModel.Contracts;
 using Prism.Mvvm;
 using Prism.Navigation;
 using Prism.Services;
@@ -8,13 +8,13 @@ using System.Net.Http;
 
 namespace Bit.CSharpClientSample.ViewModels
 {
-    public class LoginViewModel : BindableBase
+    public class LoginViewModel : BitViewModelBase
     {
-        public DelegateCommand LoginUsingCredentionals { get; set; }
+        public BitDelegateCommand LoginUsingCredentionals { get; set; }
 
-        public DelegateCommand LoginUsingBrowser { get; set; }
+        public BitDelegateCommand LoginUsingBrowser { get; set; }
 
-        public DelegateCommand LoginUsingGooglePlus { get; set; }
+        public BitDelegateCommand LoginUsingGooglePlus { get; set; }
 
         public string UserName { get; set; } = "ValidUserName";
 
@@ -22,7 +22,7 @@ namespace Bit.CSharpClientSample.ViewModels
 
         public LoginViewModel(INavigationService navigationService, ODataClient oDataClient, HttpClient httpClient, IPageDialogService pageDialogService, ISecurityService securityService)
         {
-            LoginUsingCredentionals = new DelegateCommand(async () =>
+            LoginUsingCredentionals = new BitDelegateCommand(async () =>
             {
                 try
                 {
@@ -39,7 +39,7 @@ namespace Bit.CSharpClientSample.ViewModels
             LoginUsingCredentionals.ObservesProperty(() => UserName);
             LoginUsingCredentionals.ObservesProperty(() => Password);
 
-            LoginUsingGooglePlus = new DelegateCommand(async () =>
+            LoginUsingGooglePlus = new BitDelegateCommand(async () =>
             {
                 try
                 {
@@ -53,7 +53,7 @@ namespace Bit.CSharpClientSample.ViewModels
                 }
             });
 
-            LoginUsingBrowser = new DelegateCommand(async () =>
+            LoginUsingBrowser = new BitDelegateCommand(async () =>
             {
                 try
                 {
