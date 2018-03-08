@@ -12,8 +12,7 @@ namespace Bit.Model.Implementations
         {
             mapperConfigExpression.CreateMissingTypeMaps = true;
 
-            mapperConfigExpression.ForAllPropertyMaps(p => p.DestinationProperty.GetCustomAttribute<ForeignKeyAttribute>() != null
-                       && p.DestinationProperty.GetCustomAttribute<InversePropertyAttribute>() != null
+            mapperConfigExpression.ForAllPropertyMaps(p => (p.DestinationProperty.GetCustomAttribute<ForeignKeyAttribute>() != null || p.DestinationProperty.GetCustomAttribute<InversePropertyAttribute>() != null)
                        && !typeof(IEnumerable).IsAssignableFrom(p.DestinationProperty.ReflectedType)
                        && typeof(IDto).IsAssignableFrom(p.DestinationProperty.ReflectedType),
                 (pConfig, member) =>
