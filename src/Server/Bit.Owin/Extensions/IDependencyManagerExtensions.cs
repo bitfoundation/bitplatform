@@ -200,6 +200,10 @@ namespace Bit.Core.Contracts
             dependencyManager.RegisterOwinMiddleware<AutofacDependencyInjectionMiddlewareConfiguration>();
             dependencyManager.RegisterOwinMiddleware<OwinExceptionHandlerMiddlewareConfiguration>();
             dependencyManager.RegisterOwinMiddleware<LogRequestInformationMiddlewareConfiguration>();
+            dependencyManager.RegisterOwinMiddlewareUsing(owinApp =>
+            {
+                owinApp.Use<AddAcceptCharsetToRequestHeadersIfNotAnyMiddleware>();
+            });
             return dependencyManager;
         }
     }
