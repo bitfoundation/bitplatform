@@ -14,7 +14,7 @@ namespace Bit.Owin.Middlewares
 
         private AppEnvironment _App;
 
-        public override async Task Invoke(IOwinContext context)
+        public override Task Invoke(IOwinContext context)
         {
             IDependencyResolver dependencyResolver = context.GetDependencyResolver();
 
@@ -34,6 +34,8 @@ namespace Bit.Owin.Middlewares
             context.Response.Redirect($"{ssoRedirectUri}&id_token_hint={(context.Request.Query["id_token"])}&state={stateArgs}");
 
             context.Authentication.SignOut("custom", "Barear");
+
+            return Task.CompletedTask;
         }
     }
 }

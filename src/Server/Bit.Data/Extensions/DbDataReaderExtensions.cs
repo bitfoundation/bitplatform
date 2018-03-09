@@ -8,14 +8,14 @@ namespace System.Data
 {
     public static class DbDataReaderExtensions
     {
-        public static async Task PopulateStreamAsync(this DbDataReader reader, Stream stream, CancellationToken cancellationToken)
+        public static Task PopulateStreamAsync(this DbDataReader reader, Stream stream, CancellationToken cancellationToken)
         {
             if (reader == null)
                 throw new ArgumentNullException(nameof(reader));
             if (stream == null)
                 throw new ArgumentNullException(nameof(stream));
 
-            await FlushSqlResultsToStream(reader, stream, cancellationToken).ConfigureAwait(false);
+            return FlushSqlResultsToStream(reader, stream, cancellationToken);
         }
 
         private static async Task FlushSqlResultsToStream(DbDataReader reader, Stream stream, CancellationToken cancellationToken)

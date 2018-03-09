@@ -5,6 +5,7 @@ using Newtonsoft.Json.Linq;
 using Owin;
 using Owin.Security.Providers.LinkedIn;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace Bit.IdentityServer.Implementations.ExternalIdentityProviderConfigurations
 {
@@ -29,7 +30,7 @@ namespace Bit.IdentityServer.Implementations.ExternalIdentityProviderConfigurati
                     ClientSecret = linkedInSecret,
                     Provider = new LinkedInAuthenticationProvider
                     {
-                        OnAuthenticated = async context =>
+                        OnAuthenticated = context =>
                         {
                             context.Identity.AddClaim(new System.Security.Claims.Claim("access_token", context.AccessToken));
 
@@ -41,6 +42,8 @@ namespace Bit.IdentityServer.Implementations.ExternalIdentityProviderConfigurati
                                 if (!context.Identity.HasClaim(claimType, claimValue))
                                     context.Identity.AddClaim(new System.Security.Claims.Claim(claimType, claimValue, "XmlSchemaString", "LinkedIn"));
                             }
+
+                            return Task.CompletedTask;
                         }
                     }
                 };

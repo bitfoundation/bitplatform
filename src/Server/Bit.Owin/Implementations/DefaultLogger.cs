@@ -133,7 +133,7 @@ namespace Bit.Owin.Implementations
             SaveLogEntryUsingAllLogStores(logEntry);
         }
 
-        public virtual async Task LogInformationAsync(string message)
+        public virtual Task LogInformationAsync(string message)
         {
             if (message == null)
                 throw new ArgumentNullException(nameof(message));
@@ -142,7 +142,7 @@ namespace Bit.Owin.Implementations
 
             LogEntry logEntry = CreateLogEntry(message, severity);
 
-            await SaveLogEntryUsingAllLogStoresAsync(logEntry).ConfigureAwait(false);
+            return SaveLogEntryUsingAllLogStoresAsync(logEntry);
         }
 
         public virtual void LogInformation(string message)
@@ -157,7 +157,7 @@ namespace Bit.Owin.Implementations
             SaveLogEntryUsingAllLogStores(logEntry);
         }
 
-        public virtual async Task LogExceptionAsync(Exception exp, string message)
+        public virtual Task LogExceptionAsync(Exception exp, string message)
         {
             if (message == null)
                 throw new ArgumentNullException(nameof(message));
@@ -176,7 +176,7 @@ namespace Bit.Owin.Implementations
             AddLogData("ExceptionAdditionalMessage", message);
             AddLogData("ExceptionType", exp.GetType().FullName);
 
-            await SaveLogEntryUsingAllLogStoresAsync(logEntry).ConfigureAwait(false);
+            return SaveLogEntryUsingAllLogStoresAsync(logEntry);
         }
 
         public virtual void LogException(Exception exp, string message)

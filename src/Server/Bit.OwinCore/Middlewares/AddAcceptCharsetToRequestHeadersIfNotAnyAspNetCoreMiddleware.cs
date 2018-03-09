@@ -15,12 +15,12 @@ namespace Bit.OwinCore.Middlewares
             _next = next;
         }
 
-        public async Task Invoke(HttpContext httpContext)
+        public Task Invoke(HttpContext httpContext)
         {
             if (!httpContext.Request.Headers.ContainsKey("Accept-Charset"))
                 httpContext.Request.Headers.Add("Accept-Charset", new[] { "utf-8" });
 
-            await _next(httpContext);
+            return _next(httpContext);
         }
     }
 }

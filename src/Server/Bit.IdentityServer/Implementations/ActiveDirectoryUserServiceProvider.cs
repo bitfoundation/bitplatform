@@ -21,7 +21,7 @@ namespace Bit.IdentityServer.Implementations
             }
         }
 
-        public override async Task<string> GetUserIdByLocalAuthenticationContextAsync(LocalAuthenticationContext context)
+        public override Task<string> GetUserIdByLocalAuthenticationContextAsync(LocalAuthenticationContext context)
         {
             string username = context.UserName;
             string password = context.Password;
@@ -38,7 +38,7 @@ namespace Bit.IdentityServer.Implementations
                     using (UserPrincipal user = UserPrincipal.FindByIdentity(principalContext, IdentityType.SamAccountName, userNameAsWinUserName))
                     {
                         if (user != null)
-                            return user.Sid.Value;
+                            return Task.FromResult(user.Sid.Value);
                     }
                 }
             }
@@ -46,13 +46,13 @@ namespace Bit.IdentityServer.Implementations
             throw new DomainLogicException("UserInActiveDirectoryCouldNotBeFound");
         }
 
-        public override async Task<bool> UserIsActiveAsync(IsActiveContext context, string userId)
+        public override Task<bool> UserIsActiveAsync(IsActiveContext context, string userId)
         {
             using (PrincipalContext principalContext = new PrincipalContext(ContextType.Domain, _activeDirectoryName))
             {
                 using (UserPrincipal user = UserPrincipal.FindByIdentity(principalContext, IdentityType.SamAccountName, context.Subject.Identity.Name))
                 {
-                    return user?.Enabled != null && user.Enabled.Value;
+                    return Task.FromResult(user?.Enabled != null && user.Enabled.Value);
                 }
             }
         }

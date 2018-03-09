@@ -14,7 +14,7 @@ namespace Bit.Owin.Middlewares
 
         private AppEnvironment _App;
 
-        public override async Task Invoke(IOwinContext context)
+        public override Task Invoke(IOwinContext context)
         {
             IDependencyResolver dependencyResolver = context.GetDependencyResolver();
 
@@ -37,6 +37,8 @@ namespace Bit.Owin.Middlewares
             string nonce = randomStringProvider.GetRandomNonSecureString(12);
 
             context.Response.Redirect($"{ssoRedirectUri}&state={stateArgs}&nonce={nonce}");
+
+            return Task.CompletedTask;
         }
     }
 }

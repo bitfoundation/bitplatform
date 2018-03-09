@@ -16,9 +16,9 @@ namespace Bit.IdentityServer.Implementations
             return Engine.Razor.Run("loginPage", typeof(IDependencyResolver), DependencyResolver);
         }
 
-        public virtual async Task<string> GetLoginPageHtmlContentsAsync(CancellationToken cancellationToken)
+        public virtual Task<string> GetLoginPageHtmlContentsAsync(CancellationToken cancellationToken)
         {
-            return Engine.Razor.Run("loginPage", typeof(IDependencyResolver), DependencyResolver);
+            return Task.FromResult(Engine.Razor.Run("loginPage", typeof(IDependencyResolver), DependencyResolver));
         }
     }
 }

@@ -22,7 +22,7 @@ namespace Bit.IdentityServer.Implementations
 
         public virtual IUrlStateProvider UrlStateProvider { get; set; }
 
-        public virtual async Task<Stream> ClientPermissions(ClientPermissionsViewModel model)
+        public virtual Task<Stream> ClientPermissions(ClientPermissionsViewModel model)
         {
             string content = @"<!DOCTYPE html>
                             <html>
@@ -32,10 +32,10 @@ namespace Bit.IdentityServer.Implementations
                                 <body>ClientPermissions >> Not Implemented</body>
                             </html>";
 
-            return await ReturnHtmlAsync(model, content, CancellationToken.None).ConfigureAwait(false);
+            return ReturnHtmlAsync(model, content, CancellationToken.None);
         }
 
-        public virtual async Task<Stream> Consent(ConsentViewModel model, ValidatedAuthorizeRequest authorizeRequest)
+        public virtual Task<Stream> Consent(ConsentViewModel model, ValidatedAuthorizeRequest authorizeRequest)
         {
             string content = @"<!DOCTYPE html>
                             <html>
@@ -45,10 +45,10 @@ namespace Bit.IdentityServer.Implementations
                                 <body>Consent >> Not Implemented</body>
                             </html>";
 
-            return await ReturnHtmlAsync(model, content, CancellationToken.None).ConfigureAwait(false);
+            return ReturnHtmlAsync(model, content, CancellationToken.None);
         }
 
-        public virtual async Task<Stream> Error(ErrorViewModel model)
+        public virtual Task<Stream> Error(ErrorViewModel model)
         {
             string content = $@"<!DOCTYPE html>
                             <html>
@@ -58,10 +58,10 @@ namespace Bit.IdentityServer.Implementations
                                 <body>{model.ErrorMessage} <br /> RequestId: {model.RequestId}</body>
                             </html>";
 
-            return await ReturnHtmlAsync(model, content, CancellationToken.None).ConfigureAwait(false);
+            return ReturnHtmlAsync(model, content, CancellationToken.None);
         }
 
-        public virtual async Task<Stream> LoggedOut(LoggedOutViewModel model, SignOutMessage message)
+        public virtual Task<Stream> LoggedOut(LoggedOutViewModel model, SignOutMessage message)
         {
             string content = null;
 
@@ -90,7 +90,7 @@ namespace Bit.IdentityServer.Implementations
                             </html>";
             }
 
-            return await ReturnHtmlAsync(model, content, CancellationToken.None).ConfigureAwait(false);
+            return ReturnHtmlAsync(model, content, CancellationToken.None);
         }
 
         public virtual async Task<Stream> Login(LoginViewModel model, SignInMessage message)
@@ -174,7 +174,7 @@ namespace Bit.IdentityServer.Implementations
             return viewStream;
         }
 
-        public virtual async Task<Stream> Logout(LogoutViewModel model, SignOutMessage message)
+        public virtual Task<Stream> Logout(LogoutViewModel model, SignOutMessage message)
         {
             // Based on current InvokeLogOut Middleware, this method will not be called, because of context.Authentication.SignOut("custom", "Barear"); code.
 
@@ -190,7 +190,7 @@ namespace Bit.IdentityServer.Implementations
                                 </body>
                             </html>";
 
-            return await ReturnHtmlAsync(model, content, CancellationToken.None).ConfigureAwait(false);
+            return ReturnHtmlAsync(model, content, CancellationToken.None);
         }
     }
 }

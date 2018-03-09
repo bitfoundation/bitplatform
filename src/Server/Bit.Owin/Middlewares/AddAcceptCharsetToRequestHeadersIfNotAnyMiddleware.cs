@@ -8,18 +8,18 @@ namespace Bit.Owin.Middlewares
     /// </summary>
     public class AddAcceptCharsetToRequestHeadersIfNotAnyMiddleware : OwinMiddleware
     {
-        protected AddAcceptCharsetToRequestHeadersIfNotAnyMiddleware(OwinMiddleware next)
+        public AddAcceptCharsetToRequestHeadersIfNotAnyMiddleware(OwinMiddleware next)
            : base(next)
         {
 
         }
 
-        public async override Task Invoke(IOwinContext context)
+        public override Task Invoke(IOwinContext context)
         {
             if (!context.Request.Headers.ContainsKey("Accept-Charset"))
                 context.Request.Headers.Add("Accept-Charset", new[] { "utf-8" });
 
-            await Next.Invoke(context);
+            return Next.Invoke(context);
         }
     }
 }

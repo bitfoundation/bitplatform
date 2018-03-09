@@ -242,9 +242,9 @@ namespace Bit.Data.EntityFrameworkCore.Implementations
             return Set.AsNoTracking();
         }
 
-        public virtual async Task<IQueryable<TEntity>> GetAllAsync(CancellationToken cancellationToken)
+        public virtual Task<IQueryable<TEntity>> GetAllAsync(CancellationToken cancellationToken)
         {
-            return Set.AsNoTracking();
+            return Task.FromResult(Set.AsNoTracking());
         }
 
         public virtual IQueryable<TChild> GetCollectionQuery<TChild>(TEntity entity, Expression<Func<TEntity, IEnumerable<TChild>>> childs) where TChild : class
@@ -297,10 +297,10 @@ namespace Bit.Data.EntityFrameworkCore.Implementations
                 reference.Load();
         }
 
-        public virtual async Task SaveChangesAsync(CancellationToken cancellationToken)
+        public virtual Task SaveChangesAsync(CancellationToken cancellationToken)
         {
             DbContext.ChangeTracker.DetectChanges();
-            await DbContext.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+            return DbContext.SaveChangesAsync(cancellationToken);
         }
 
         public virtual void SaveChanges()

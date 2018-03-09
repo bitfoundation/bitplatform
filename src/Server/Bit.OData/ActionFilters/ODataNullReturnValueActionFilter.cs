@@ -14,7 +14,7 @@ namespace Bit.OData.ActionFilters
 {
     public class ODataNullReturnValueActionFilter : ActionFilterAttribute
     {
-        public override async Task OnActionExecutedAsync(HttpActionExecutedContext actionExecutedContext, CancellationToken cancellationToken)
+        public override Task OnActionExecutedAsync(HttpActionExecutedContext actionExecutedContext, CancellationToken cancellationToken)
         {
             if (actionExecutedContext.Response?.Content is ObjectContent &&
                actionExecutedContext.Response.IsSuccessStatusCode == true)
@@ -22,7 +22,7 @@ namespace Bit.OData.ActionFilters
                 ObjectContent objContent = ((ObjectContent)(actionExecutedContext.Response.Content));
 
                 if (objContent.Value != null)
-                    return;
+                    return Task.CompletedTask;
 
                 TypeInfo actionReturnType = objContent.ObjectType.GetTypeInfo();
 
@@ -41,6 +41,8 @@ namespace Bit.OData.ActionFilters
                     actionExecutedContext.Response.Content.Headers.ContentType.Parameters.Add(new NameValueHeaderValue("odata.metadata", "minimal"));
                 }
             }
+
+            return Task.CompletedTask;
         }
     }
 }

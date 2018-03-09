@@ -122,17 +122,17 @@ namespace DotNetCoreTestApp
 
     public class TestUserService : UserService
     {
-        public override async Task<string> GetUserIdByLocalAuthenticationContextAsync(LocalAuthenticationContext context)
+        public override Task<string> GetUserIdByLocalAuthenticationContextAsync(LocalAuthenticationContext context)
         {
             if (context.UserName == context.Password)
-                return context.UserName;
+                return Task.FromResult(context.UserName);
 
             throw new DomainLogicException("LoginFailed");
         }
 
-        public async override Task<bool> UserIsActiveAsync(IsActiveContext context, string userId)
+        public override Task<bool> UserIsActiveAsync(IsActiveContext context, string userId)
         {
-            return true;
+            return Task.FromResult(true);
         }
     }
 

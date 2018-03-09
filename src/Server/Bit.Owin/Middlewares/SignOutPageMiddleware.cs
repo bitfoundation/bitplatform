@@ -13,7 +13,7 @@ namespace Bit.Owin.Middlewares
         {
         }
 
-        public override async Task Invoke(IOwinContext context)
+        public override Task Invoke(IOwinContext context)
         {
             IDependencyResolver dependencyResolver = context.GetDependencyResolver();
 
@@ -69,7 +69,7 @@ namespace Bit.Owin.Middlewares
 
             context.Response.ContentType = "text/html; charset=utf-8";
 
-            await context.Response.WriteAsync(singOutPage, context.Request.CallCancelled);
+            return context.Response.WriteAsync(singOutPage, context.Request.CallCancelled);
         }
     }
 }

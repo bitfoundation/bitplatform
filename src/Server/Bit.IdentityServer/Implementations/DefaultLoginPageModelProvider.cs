@@ -48,9 +48,9 @@ namespace Bit.IdentityServer.Implementations
             };
         }
 
-        public virtual async Task<LoginPageModel> GetLoginPageModelAsync(CancellationToken cancellationToken)
+        public virtual Task<LoginPageModel> GetLoginPageModelAsync(CancellationToken cancellationToken)
         {
-            return new LoginPageModel
+            return Task.FromResult(new LoginPageModel
             {
                 AppTitle = _activeAppEnvironment
                                 .Cultures
@@ -67,7 +67,7 @@ namespace Bit.IdentityServer.Implementations
                                             .Configs.Where(c => c.AccessibleInClientSide == true)
                                             .Select(c => new { value = c.Value, key = c.Key })),
                 BaseHref = _activeAppEnvironment.GetHostVirtualPath()
-            };
+            });
         }
     }
 }

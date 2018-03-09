@@ -22,9 +22,11 @@ namespace Bit.Owin.Implementations
             }
         }
 
-        public virtual async Task SaveLogAsync(LogEntry logEntry)
+        public virtual Task SaveLogAsync(LogEntry logEntry)
         {
             SaveLog(logEntry);
+
+            return Task.CompletedTask;
         }
 
         public virtual void SaveLog(LogEntry logEntry)

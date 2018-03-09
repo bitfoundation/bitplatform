@@ -10,7 +10,7 @@ namespace OpenQA.Selenium
 {
     public static class IRemoteWebDriverExtensions
     {
-        public static async Task NavigateToRoute(this RemoteWebDriver driver, string route)
+        public static Task NavigateToRoute(this RemoteWebDriver driver, string route)
         {
             Uri uri = new Uri(driver.Url);
 
@@ -18,7 +18,7 @@ namespace OpenQA.Selenium
 
             driver.GetElementById("testsConsole");
 
-            await Task.Delay(2500);
+            return Task.Delay(2500);
         }
 
         [DebuggerNonUserCode]

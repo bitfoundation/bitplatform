@@ -12,18 +12,20 @@ namespace Bit.OwinCore.Implementations.Servers
     {
         private IDisposable _suaveServer;
 
-        public virtual async Task StartAsync<TContext>(IHttpApplication<TContext> application, CancellationToken cancellationToken)
+        public virtual Task StartAsync<TContext>(IHttpApplication<TContext> application, CancellationToken cancellationToken)
         {
             CreateOwinProps(application, out Func<IDictionary<string, object>, Task> appFunc, out Dictionary<string, object> props);
 
             Suave.Owin.OwinServerFactory.Initialize(props);
 
             _suaveServer = Suave.Owin.OwinServerFactory.Create(appFunc, props);
+
+            return Task.CompletedTask;
         }
 
-        public virtual async Task StopAsync(CancellationToken cancellationToken)
+        public virtual Task StopAsync(CancellationToken cancellationToken)
         {
-
+            return Task.CompletedTask;
         }
 
         public void Dispose()

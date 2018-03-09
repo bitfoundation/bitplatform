@@ -28,9 +28,9 @@ namespace Bit.ViewModel.Implementations
             _oAuthLoginPresenter = oAuthLoginPresenter;
         }
 
-        public override async Task<Uri> GetInitialUrlAsync()
+        public override Task<Uri> GetInitialUrlAsync()
         {
-            return Url;
+            return Task.FromResult(Url);
         }
 
         protected Uri Url { get; set; }

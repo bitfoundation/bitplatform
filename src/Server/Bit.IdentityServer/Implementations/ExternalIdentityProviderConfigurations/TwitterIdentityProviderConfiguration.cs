@@ -3,6 +3,7 @@ using Bit.Core.Models;
 using Bit.IdentityServer.Contracts;
 using Microsoft.Owin.Security.Twitter;
 using Owin;
+using System.Threading.Tasks;
 
 namespace Bit.IdentityServer.Implementations.ExternalIdentityProviderConfigurations
 {
@@ -27,7 +28,7 @@ namespace Bit.IdentityServer.Implementations.ExternalIdentityProviderConfigurati
                     ConsumerSecret = twitterSecret,
                     Provider = new TwitterAuthenticationProvider
                     {
-                        OnAuthenticated = async context =>
+                        OnAuthenticated = context =>
                         {
                             context.Identity.AddClaim(new System.Security.Claims.Claim("access_token", context.AccessToken));
                             context.Identity.AddClaim(new System.Security.Claims.Claim("access_token_secret", context.AccessTokenSecret));
@@ -40,6 +41,8 @@ namespace Bit.IdentityServer.Implementations.ExternalIdentityProviderConfigurati
                                 if (!context.Identity.HasClaim(claimType, claimValue))
                                     context.Identity.AddClaim(new System.Security.Claims.Claim(claimType, claimValue, "XmlSchemaString", "Twitter"));
                             }
+
+                            return Task.CompletedTask;
                         }
                     }
                 };

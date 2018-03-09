@@ -136,11 +136,11 @@ namespace Bit.Test.Server
             Uri = uri;
         }
 
-        public virtual async Task<TokenResponse> Login(string userName, string password, string clientId, string secret = "secret")
+        public virtual Task<TokenResponse> Login(string userName, string password, string clientId, string secret = "secret")
         {
             TokenClient client = BuildTokenClient(clientId, secret);
 
-            return await client.RequestResourceOwnerPasswordAsync(userName, password, "openid profile user_info");
+            return client.RequestResourceOwnerPasswordAsync(userName, password, "openid profile user_info");
         }
 
         public HttpClient BuildHttpClient(TokenResponse token = null)

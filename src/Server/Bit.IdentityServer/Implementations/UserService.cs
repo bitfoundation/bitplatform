@@ -49,7 +49,7 @@ namespace Bit.IdentityServer.Implementations
             await base.AuthenticateLocalAsync(context).ConfigureAwait(false);
         }
 
-        public sealed override async Task GetProfileDataAsync(ProfileDataRequestContext context)
+        public sealed override Task GetProfileDataAsync(ProfileDataRequestContext context)
         {
             string userId = context.Subject.Identity.Name;
 
@@ -64,7 +64,7 @@ namespace Bit.IdentityServer.Implementations
 
             context.IssuedClaims = claims;
 
-            await base.GetProfileDataAsync(context).ConfigureAwait(false);
+            return base.GetProfileDataAsync(context);
         }
 
         public abstract Task<bool> UserIsActiveAsync(IsActiveContext context, string userId);
@@ -87,7 +87,7 @@ namespace Bit.IdentityServer.Implementations
             await base.IsActiveAsync(context).ConfigureAwait(false);
         }
 
-        protected virtual async Task<string> GetInternalUserId(ExternalAuthenticationContext context)
+        protected virtual Task<string> GetInternalUserId(ExternalAuthenticationContext context)
         {
             throw new NotImplementedException();
         }

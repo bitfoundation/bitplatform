@@ -12,7 +12,7 @@ namespace Bit.OwinCore.Middlewares
             _next = next;
         }
 
-        public async Task Invoke(HttpContext context)
+        public Task Invoke(HttpContext context)
         {
             if (context.Request.Headers != null && !context.Request.Headers.ContainsKey("Authorization"))
             {
@@ -23,7 +23,7 @@ namespace Bit.OwinCore.Middlewares
                     });
             }
 
-            await _next.Invoke(context);
+            return _next.Invoke(context);
         }
     }
 }

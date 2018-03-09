@@ -22,14 +22,14 @@ namespace Bit.WebApi.ActionFilters
 
         public override bool AllowMultiple => true;
 
-        public virtual async Task ExecuteExceptionFilterAsync(HttpActionExecutedContext actionExecutedContext, CancellationToken cancellationToken)
+        public virtual Task ExecuteExceptionFilterAsync(HttpActionExecutedContext actionExecutedContext, CancellationToken cancellationToken)
         {
-
+            return Task.CompletedTask;
         }
 
-        public virtual async Task OnExceptionAsync(HttpActionExecutedContext actionExecutedContext)
+        public virtual Task OnExceptionAsync(HttpActionExecutedContext actionExecutedContext)
         {
-            await OwinActionFilter.OnExceptionAsync(actionExecutedContext.Request.GetOwinContext(), actionExecutedContext.Exception);
+            return OwinActionFilter.OnExceptionAsync(actionExecutedContext.Request.GetOwinContext(), actionExecutedContext.Exception);
         }
 
         public override async Task OnActionExecutingAsync(HttpActionContext actionContext, CancellationToken cancellationToken)

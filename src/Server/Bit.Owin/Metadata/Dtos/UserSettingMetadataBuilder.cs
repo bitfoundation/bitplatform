@@ -8,7 +8,7 @@ namespace Bit.Owin.Metadata.Dtos
 {
     public class UserSettingMetadataBuilder : DefaultDtoMetadataBuilder<UserSetting>
     {
-        public override async Task<IEnumerable<ObjectMetadata>> BuildMetadata()
+        public override Task<IEnumerable<ObjectMetadata>> BuildMetadata()
         {
             AddDtoMetadata(new DtoMetadata { });
 
@@ -42,7 +42,7 @@ namespace Bit.Owin.Metadata.Dtos
 
             });
 
-            return await base.BuildMetadata().ConfigureAwait(false);
+            return base.BuildMetadata();
         }
     }
 }

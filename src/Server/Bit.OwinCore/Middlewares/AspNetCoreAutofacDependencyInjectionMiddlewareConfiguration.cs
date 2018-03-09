@@ -28,7 +28,7 @@ namespace Bit.OwinCore.Middlewares
 
         }
 
-        public override async Task Invoke(IOwinContext context)
+        public override Task Invoke(IOwinContext context)
         {
             HttpContext aspNetCoreContext = (HttpContext)context.Environment["Microsoft.AspNetCore.Http.HttpContext"];
 
@@ -38,7 +38,7 @@ namespace Bit.OwinCore.Middlewares
 
             context.SetAutofacLifetimeScope(autofacScope);
 
-            await Next.Invoke(context);
+            return Next.Invoke(context);
         }
     }
 }
