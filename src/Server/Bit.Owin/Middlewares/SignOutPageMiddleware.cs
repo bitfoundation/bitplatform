@@ -32,7 +32,7 @@ namespace Bit.Owin.Middlewares
 
             try
             {
-                autoCloseIsTrue = state.autoClose == true;
+                autoCloseIsTrue = state.AutoClose == true;
             }
             catch { }
 
