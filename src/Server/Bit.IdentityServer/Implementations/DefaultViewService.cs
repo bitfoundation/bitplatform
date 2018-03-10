@@ -4,8 +4,8 @@ using System.Linq;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
+using Bit.Core.Contracts;
 using Bit.Core.Implementations;
-using Bit.IdentityServer.Contracts;
 using Bit.Owin.Contracts;
 using IdentityServer3.Core.Models;
 using IdentityServer3.Core.Services;
@@ -18,9 +18,13 @@ namespace Bit.IdentityServer.Implementations
 {
     public class DefaultViewService : IViewService
     {
-        public virtual ILoginPageContentsProvider SsoHtmlPageProvider { get; set; }
+        public virtual IHtmlPageProvider HtmlPageProvider { get; set; }
 
         public virtual IUrlStateProvider UrlStateProvider { get; set; }
+
+        public virtual IPathProvider PathProvider { get; set; }
+
+        public virtual IAppEnvironmentProvider AppEnvironmentProvider { get; set; }
 
         public virtual Task<Stream> ClientPermissions(ClientPermissionsViewModel model)
         {
@@ -153,10 +157,12 @@ namespace Bit.IdentityServer.Implementations
                 ReturnUrl = message.ReturnUrl == null ? "" : new Uri(message.ReturnUrl).ParseQueryString()["redirect_uri"]
             }, Formatting.None, jsonSerSettings);
 
-            string loginPageHtml = (await SsoHtmlPageProvider.GetLoginPageHtmlContentsAsync(CancellationToken.None).ConfigureAwait(false))
-                .Replace("{model}", Microsoft.Security.Application.Encoder.HtmlEncode(json));
+            string loginPageHtmlInitialHtml = File.ReadAllText(PathProvider.StaticFileMapPath(AppEnvironmentProvider.GetActiveAppEnvironment().GetConfig("LoginPagePath", "loginPage.html")));
 
-            return await ReturnHtmlAsync(model, loginPageHtml, CancellationToken.None).ConfigureAwait(false);
+            string loginPageHtmlFinalHtml = (await HtmlPageProvider.GetHtmlPageAsync(loginPageHtmlInitialHtml, CancellationToken.None).ConfigureAwait(false))
+                .Replace("{{model.ClientModel.toJson()}}", Microsoft.Security.Application.Encoder.HtmlEncode(json));
+
+            return await ReturnHtmlAsync(model, loginPageHtmlFinalHtml, CancellationToken.None).ConfigureAwait(false);
         }
 
         private async Task<Stream> ReturnHtmlAsync(CommonViewModel model, string html, CancellationToken cancellationToken)

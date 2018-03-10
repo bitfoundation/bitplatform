@@ -53,6 +53,8 @@ namespace Bit.OwinCore
             DefaultDependencyManager.Current.RegisterUsing((depManager) =>
             {
                 HttpContext context = depManager.Resolve<IHttpContextAccessor>().HttpContext;
+                if (context == null)
+                    throw new InvalidOperationException($"{nameof(IHttpContextAccessor.HttpContext)} of {nameof(IHttpContextAccessor)} is null");
                 return (IOwinContext)context.Items["OwinContext"];
             });
         }

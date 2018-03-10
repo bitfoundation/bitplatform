@@ -1,7 +1,8 @@
-﻿using System.Threading.Tasks;
-using Bit.Core.Contracts;
+﻿using Bit.Core.Contracts;
 using Bit.Owin.Contracts;
 using Microsoft.Owin;
+using System.IO;
+using System.Threading.Tasks;
 
 namespace Bit.Owin.Middlewares
 {
@@ -17,7 +18,9 @@ namespace Bit.Owin.Middlewares
         {
             IDependencyResolver dependencyResolver = context.GetDependencyResolver();
 
-            string indexPageContents = await dependencyResolver.Resolve<IIndexPageContentsProvider>().GetIndexPageHtmlContentsAsync(context.Request.CallCancelled);
+            string htmlPage = File.ReadAllText(dependencyResolver.Resolve<IPathProvider>().StaticFileMapPath(dependencyResolver.Resolve<IAppEnvironmentProvider>().GetActiveAppEnvironment().GetConfig("IndexPagePath", "indexPage.html")));
+
+            string indexPageContents = await dependencyResolver.Resolve<IHtmlPageProvider>().GetHtmlPageAsync(htmlPage, context.Request.CallCancelled);
 
             context.Response.ContentType = "text/html; charset=utf-8";
 

@@ -92,9 +92,8 @@ namespace Bit.Core.Contracts
             if (dependencyManager == null)
                 throw new ArgumentNullException(nameof(dependencyManager));
 
-            dependencyManager.Register<IIndexPageContentsProvider, RazorDefaultHtmlPageProvider>(overwriteExciting: false);
-            dependencyManager.Register<IIndexPageModelProvider, DefaultIndexPageModelProvider>(overwriteExciting: false);
 
+            dependencyManager.RegisterOwinMiddleware<ClientAppProfileMiddlewareConfiguration>();
             dependencyManager.RegisterOwinMiddleware<IndexPageMiddlewareConfiguration>();
 
             return dependencyManager;
@@ -108,8 +107,6 @@ namespace Bit.Core.Contracts
             if (metadataAssemblies == null)
                 throw new ArgumentNullException(nameof(metadataAssemblies));
 
-            dependencyManager.RegisterOwinMiddleware<ClientAppProfileMiddlewareConfiguration>();
-            dependencyManager.Register<IIndexPageModelProvider, DefaultIndexPageModelProvider>(overwriteExciting: false);
             dependencyManager.RegisterOwinMiddleware<MetadataMiddlewareConfiguration>();
             dependencyManager.Register<IAppMetadataProvider, DefaultAppMetadataProvider>(lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExciting: false);
 
@@ -168,6 +165,8 @@ namespace Bit.Core.Contracts
             dependencyManager.Register<IExceptionToHttpErrorMapper, DefaultExceptionToHttpErrorMapper>(lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExciting: false);
             dependencyManager.Register<ITimeZoneManager, DefaultTimeZoneManager>(overwriteExciting: false);
             dependencyManager.Register<IRequestInformationProvider, OwinRequestInformationProvider>(overwriteExciting: false);
+            dependencyManager.Register<IClientProfileAppModelProvider, DefaultClientAppProfileModelProvider>(overwriteExciting: false);
+            dependencyManager.Register<IHtmlPageProvider, DefaultHtmlPageProvider>(overwriteExciting: false);
 
             return dependencyManager;
         }

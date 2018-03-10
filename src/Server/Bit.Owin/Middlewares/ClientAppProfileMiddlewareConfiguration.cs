@@ -21,20 +21,20 @@ namespace Bit.Owin.Middlewares
                 {
                     IDependencyResolver dependencyResolver = context.GetDependencyResolver();
 
-                    IIndexPageModelProvider indexPageModelProvider = dependencyResolver.Resolve<IIndexPageModelProvider>();
+                    IClientProfileAppModelProvider pageModelProvider = dependencyResolver.Resolve<IClientProfileAppModelProvider>();
 
-                    IndexPageModel model = await indexPageModelProvider.GetIndexPageModelAsync(context.Request.CallCancelled);
+                    ClientAppProfileModel clientAppProfileModel = await pageModelProvider.GetClientAppProfileModelAsync(context.Request.CallCancelled);
 
                     string clientAppProfile = $@"
 clientAppProfile = {{
-    theme: ""{model.Theme}"",
-    culture: ""{model.Culture}"",
-    version: ""{model.AppVersion}"",
-    isDebugMode: {model.DebugMode.ToString().ToLowerInvariant()},
-    appTitle: ""{model.AppTitle}"",
-    appName: ""{model.AppName}"",
-    desiredTimeZone: ""{model.DesiredTimeZoneValue}"",
-    environmentConfigs: {model.EnvironmentConfigsJson}
+    theme: ""{clientAppProfileModel.Theme}"",
+    culture: ""{clientAppProfileModel.Culture}"",
+    version: ""{clientAppProfileModel.AppVersion}"",
+    isDebugMode: {clientAppProfileModel.DebugMode.ToString().ToLowerInvariant()},
+    appTitle: ""{clientAppProfileModel.AppTitle}"",
+    appName: ""{clientAppProfileModel.AppName}"",
+    desiredTimeZone: ""{clientAppProfileModel.DesiredTimeZoneValue}"",
+    environmentConfigs: {clientAppProfileModel.EnvironmentConfigsJson}
 }};
 
                 ";

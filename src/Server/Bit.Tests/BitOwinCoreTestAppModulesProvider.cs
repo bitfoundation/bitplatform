@@ -52,7 +52,6 @@ namespace Bit.Tests
 
             dependencyManager.Register<IDbConnectionProvider, DefaultDbConnectionProvider<SqlConnection>>();
 
-            dependencyManager.RegisterAppEvents<RazorViewEngineConfiguration>();
             dependencyManager.RegisterAppEvents<InitialTestDataConfiguration>();
 
             dependencyManager.RegisterDefaultAspNetCoreApp();

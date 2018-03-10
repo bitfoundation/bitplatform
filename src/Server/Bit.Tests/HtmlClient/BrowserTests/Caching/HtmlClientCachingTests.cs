@@ -27,7 +27,7 @@ namespace Bit.Tests.HtmlClient.BrowserTests.Caching
                     driver.Navigate().Refresh();
                 }
 
-                Assert.AreNotEqual(1, TestDependencyManager.CurrentTestDependencyManager.Objects.OfType<IIndexPageContentsProvider>().Count());
+                Assert.AreNotEqual(1, TestDependencyManager.CurrentTestDependencyManager.Objects.OfType<IHtmlPageProvider>().Count());
             }
         }
 

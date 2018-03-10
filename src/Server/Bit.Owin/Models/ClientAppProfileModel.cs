@@ -3,7 +3,7 @@
 namespace Bit.Owin.Models
 {
     [Serializable]
-    public class IndexPageModel
+    public class ClientAppProfileModel
     {
         public virtual string AppTitle { get; set; }
 

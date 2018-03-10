@@ -10,7 +10,7 @@ using Bit.Owin.Models;
 
 namespace Bit.Owin.Implementations
 {
-    public class DefaultIndexPageModelProvider : IIndexPageModelProvider
+    public class DefaultClientAppProfileModelProvider : IClientProfileAppModelProvider
     {
         private IAppEnvironmentProvider _AppEnvironmentProvider;
         private AppEnvironment _App;
@@ -28,9 +28,9 @@ namespace Bit.Owin.Implementations
         public virtual IUserSettingProvider UsersSettingsProvider { get; set; }
         public virtual IContentFormatter ContentFormatter { get; set; }
 
-        public virtual IndexPageModel GetIndexPageModel()
+        public virtual ClientAppProfileModel GetClientAppProfileModel()
         {
-            IndexPageModel indexPageModel = new IndexPageModel
+            ClientAppProfileModel clientAppProfileMdoel = new ClientAppProfileModel
             {
                 AppVersion = _App.AppInfo.Version,
                 DebugMode = _App.DebugMode,
@@ -59,23 +59,23 @@ namespace Bit.Owin.Implementations
                 .ExtendedSingle($"Finding culture {culture} in environment {_App.Name}", c => c.Name == culture).Values.ExtendedSingle($"Finding AppTitle in culture {culture}", v =>
                       string.Equals(v.Name, "AppTitle", StringComparison.OrdinalIgnoreCase)).Title : string.Empty;
 
-            indexPageModel.AppTitle = appTitle;
-            indexPageModel.Culture = culture;
-            indexPageModel.DesiredTimeZoneValue = desiredTimeZoneValue;
-            indexPageModel.Theme = theme;
+            clientAppProfileMdoel.AppTitle = appTitle;
+            clientAppProfileMdoel.Culture = culture;
+            clientAppProfileMdoel.DesiredTimeZoneValue = desiredTimeZoneValue;
+            clientAppProfileMdoel.Theme = theme;
 
-            indexPageModel.EnvironmentConfigsJson = ContentFormatter.Serialize(_App
+            clientAppProfileMdoel.EnvironmentConfigsJson = ContentFormatter.Serialize(_App
                 .Configs.Where(c => c.AccessibleInClientSide == true)
                 .Select(c => new { value = c.Value, key = c.Key }));
 
-            indexPageModel.BaseHref = _App.GetHostVirtualPath();
+            clientAppProfileMdoel.BaseHref = _App.GetHostVirtualPath();
 
-            return indexPageModel;
+            return clientAppProfileMdoel;
         }
 
-        public virtual async Task<IndexPageModel> GetIndexPageModelAsync(CancellationToken cancellationToken)
+        public virtual async Task<ClientAppProfileModel> GetClientAppProfileModelAsync(CancellationToken cancellationToken)
         {
-            IndexPageModel indexPageModel = new IndexPageModel
+            ClientAppProfileModel clientAppProfileModel = new ClientAppProfileModel
             {
                 AppVersion = _App.AppInfo.Version,
                 DebugMode = _App.DebugMode,
@@ -104,18 +104,18 @@ namespace Bit.Owin.Implementations
                 .ExtendedSingle($"Finding culture {culture} in environment {_App.Name}", c => c.Name == culture).Values.ExtendedSingle($"Finding AppTitle in culture {culture}", v =>
                       string.Equals(v.Name, "AppTitle", StringComparison.OrdinalIgnoreCase)).Title : string.Empty;
 
-            indexPageModel.AppTitle = appTitle;
-            indexPageModel.Culture = culture;
-            indexPageModel.DesiredTimeZoneValue = desiredTimeZoneValue;
-            indexPageModel.Theme = theme;
+            clientAppProfileModel.AppTitle = appTitle;
+            clientAppProfileModel.Culture = culture;
+            clientAppProfileModel.DesiredTimeZoneValue = desiredTimeZoneValue;
+            clientAppProfileModel.Theme = theme;
 
-            indexPageModel.EnvironmentConfigsJson = ContentFormatter.Serialize(_App
+            clientAppProfileModel.EnvironmentConfigsJson = ContentFormatter.Serialize(_App
                 .Configs.Where(c => c.AccessibleInClientSide == true)
                 .Select(c => new { value = c.Value, key = c.Key }));
 
-            indexPageModel.BaseHref = _App.GetHostVirtualPath();
+            clientAppProfileModel.BaseHref = _App.GetHostVirtualPath();
 
-            return indexPageModel;
+            return clientAppProfileModel;
         }
     }
 }

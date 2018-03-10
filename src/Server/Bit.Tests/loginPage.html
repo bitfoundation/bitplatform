@@ -1,0 +1,35 @@
+﻿<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Test</title>
+    <link rel="shortcut icon" href="Files/V{{model.AppVersion}}/favicon.ico" type="image/x-icon">
+    <link rel="icon" href="Files/V{{model.AppVersion}}/favicon.ico" type="image/x-icon">
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+    <meta http-equiv="Pragma" content="no-cache" />
+    <meta http-equiv="Expires" content="0" />
+    <base href="{{model.BaseHref}}" />
+    <script src="ClientAppProfile"></script>
+    <script src="Files/V{{model.AppVersion}}/bit-framework/src/TypeScriptClient/Bit.TSClient.Core/bit.core.js"></script>
+    <script src="Files/V{{model.AppVersion}}/bit-framework/src/TypeScriptClient/Bit.TSClient.AngularJS/bit.ng1.js"></script>
+    <script src="Files/V{{model.AppVersion}}/bit-framework/src/TypeScriptClient/Bit.TSClient.AngularJS.Test/bit.ng1.test.js"></script>
+    <script src="Files/V{{model.AppVersion}}/bit-framework/src/TypeScriptClient/Bit.TSClient.AngularJS.Tests/identity/bit.identity.tests.js"></script>
+    <script type="text/javascript">
+        Bit.DependencyManager.getCurrent().init();
+    </script>
+</head>
+
+<body>
+
+    <login></login>
+
+    <script id="modelJson" type="application/json">
+        {{model.ClientModel.toJson()}}
+    </script>
+
+</body>
+
+</html>

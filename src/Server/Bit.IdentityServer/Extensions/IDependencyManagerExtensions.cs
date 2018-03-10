@@ -3,6 +3,7 @@ using Bit.IdentityServer.Contracts;
 using Bit.IdentityServer.Implementations;
 using Bit.IdentityServer.Implementations.ExternalIdentityProviderConfigurations;
 using Bit.Owin.Implementations;
+using Bit.Owin.Middlewares;
 using IdentityServer3.Core.Services;
 
 namespace Bit.Core.Contracts
@@ -17,10 +18,9 @@ namespace Bit.Core.Contracts
 
             dependencyManager.Register<IScopesProvider, DefaultScopesProvider>(lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExciting: false);
             dependencyManager.Register<IdentityServer3.Core.Logging.ILogProvider, DefaultIdentityServerLogProvider>(lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExciting: false);
+            dependencyManager.RegisterOwinMiddleware<ClientAppProfileMiddlewareConfiguration>();
             dependencyManager.RegisterOwinMiddleware<IdentityServerMiddlewareConfiguration>(name: name);
             dependencyManager.Register<IViewService, DefaultViewService>(lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExciting: false);
-            dependencyManager.Register<ILoginPageContentsProvider, RazorLoginPageContentsProvider>(lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExciting: false);
-            dependencyManager.Register<ILoginPageModelProvider, DefaultLoginPageModelProvider>(lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExciting: false);
             dependencyManager.Register<IRedirectUriValidator, RegexBasedRedirectUriValidator>(lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExciting: false);
             dependencyManager.Register<IEventService, DefaultEventService>(lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExciting: false);
 
