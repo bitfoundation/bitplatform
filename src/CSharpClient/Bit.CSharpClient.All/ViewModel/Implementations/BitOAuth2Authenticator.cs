@@ -66,11 +66,11 @@ namespace Bit.ViewModel.Implementations
 
                 await _accountStore.SaveAsync(account, _clientAppProfile.AppName).ConfigureAwait(false);
 
-                CurrentLoginTaskCompletionSource.SetResult(account);
+                CurrentLoginTaskCompletionSource.TrySetResult(account);
             }
             else
             {
-                CurrentLogoutTaskCompletionSource.SetResult(null);
+                CurrentLogoutTaskCompletionSource.TrySetResult(null);
             }
 
             base.OnPageEncountered(url, query, fragment);
