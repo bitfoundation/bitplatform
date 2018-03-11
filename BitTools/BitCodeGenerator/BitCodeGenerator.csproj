@@ -40,26 +40,26 @@
     <Compile Include="Implementations\DefaultProjectDtoRulesProvider.cs" />
     <Compile Include="Implementations\DefaultProjectDtosProvider.cs" />
     <Compile Include="Implementations\DefaultProjectEnumTypesProvider.cs" />
-    <Compile Include="Implementations\HtmlClientProxyGenerator\DefaultHtmlClientContextGenerator.cs" />
-    <Compile Include="Implementations\HtmlClientProxyGenerator\DefaultHtmlClientProxyCleaner.cs" />
-    <Compile Include="Implementations\HtmlClientProxyGenerator\DefaultHtmlClientProxyDtoGenerator.cs" />
-    <Compile Include="Implementations\HtmlClientProxyGenerator\DefaultHtmlClientProxyGenerator.cs" />
-    <Compile Include="Implementations\HtmlClientProxyGenerator\Templates\JavaScriptContextGeneratorTemplate1.cs">
+    <Compile Include="Implementations\TypeScriptClientProxyGenerator\DefaultTypeScriptClientContextGenerator.cs" />
+    <Compile Include="Implementations\TypeScriptClientProxyGenerator\DefaultTypeScriptClientProxyCleaner.cs" />
+    <Compile Include="Implementations\TypeScriptClientProxyGenerator\DefaultTypeScriptClientProxyDtoGenerator.cs" />
+    <Compile Include="Implementations\TypeScriptClientProxyGenerator\DefaultTypeScriptClientProxyGenerator.cs" />
+    <Compile Include="Implementations\TypeScriptClientProxyGenerator\Templates\JavaScriptContextGeneratorTemplate1.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
       <DependentUpon>JavaScriptContextGeneratorTemplate.tt</DependentUpon>
     </Compile>
-    <Compile Include="Implementations\HtmlClientProxyGenerator\Templates\JavaScriptDtosGeneratorTemplate1.cs">
+    <Compile Include="Implementations\TypeScriptClientProxyGenerator\Templates\JavaScriptDtosGeneratorTemplate1.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
       <DependentUpon>JavaScriptDtosGeneratorTemplate.tt</DependentUpon>
     </Compile>
-    <Compile Include="Implementations\HtmlClientProxyGenerator\Templates\TypeScriptContextGeneratorTemplate1.cs">
+    <Compile Include="Implementations\TypeScriptClientProxyGenerator\Templates\TypeScriptContextGeneratorTemplate1.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
       <DependentUpon>TypeScriptContextGeneratorTemplate.tt</DependentUpon>
     </Compile>
-    <Compile Include="Implementations\HtmlClientProxyGenerator\Templates\TypeScriptDtosGeneratorTemplate1.cs">
+    <Compile Include="Implementations\TypeScriptClientProxyGenerator\Templates\TypeScriptDtosGeneratorTemplate1.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
       <DependentUpon>TypeScriptDtosGeneratorTemplate.tt</DependentUpon>
@@ -67,19 +67,19 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Implementations\HtmlClientProxyGenerator\Templates\JavaScriptContextGeneratorTemplate.tt">
+    <Content Include="Implementations\TypeScriptClientProxyGenerator\Templates\JavaScriptContextGeneratorTemplate.tt">
       <Generator>TextTemplatingFilePreprocessor</Generator>
       <LastGenOutput>JavaScriptContextGeneratorTemplate1.cs</LastGenOutput>
     </Content>
-    <Content Include="Implementations\HtmlClientProxyGenerator\Templates\JavaScriptDtosGeneratorTemplate.tt">
+    <Content Include="Implementations\TypeScriptClientProxyGenerator\Templates\JavaScriptDtosGeneratorTemplate.tt">
       <Generator>TextTemplatingFilePreprocessor</Generator>
       <LastGenOutput>JavaScriptDtosGeneratorTemplate1.cs</LastGenOutput>
     </Content>
-    <Content Include="Implementations\HtmlClientProxyGenerator\Templates\TypeScriptContextGeneratorTemplate.tt">
+    <Content Include="Implementations\TypeScriptClientProxyGenerator\Templates\TypeScriptContextGeneratorTemplate.tt">
       <Generator>TextTemplatingFilePreprocessor</Generator>
       <LastGenOutput>TypeScriptContextGeneratorTemplate1.cs</LastGenOutput>
     </Content>
-    <Content Include="Implementations\HtmlClientProxyGenerator\Templates\TypeScriptDtosGeneratorTemplate.tt">
+    <Content Include="Implementations\TypeScriptClientProxyGenerator\Templates\TypeScriptDtosGeneratorTemplate.tt">
       <Generator>TextTemplatingFilePreprocessor</Generator>
       <LastGenOutput>TypeScriptDtosGeneratorTemplate1.cs</LastGenOutput>
     </Content>
@@ -98,7 +98,7 @@
       <Version>5.0.8</Version>
     </PackageReference>
     <PackageReference Include="Microsoft.CodeAnalysis.Workspaces.Common">
-      <Version>1.0.0</Version>
+      <Version>1.2.2</Version>
     </PackageReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

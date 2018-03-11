@@ -1,9 +1,9 @@
 ﻿using System.Collections.Generic;
 using BitTools.Core.Model;
 
-namespace BitTools.Core.Contracts.HtmlClientProxyGenerator
+namespace BitTools.Core.Contracts.TypeScriptClientProxyGenerator
 {
-    public interface IHtmlClientContextGenerator
+    public interface ITypeScriptClientContextGenerator
     {
         string GenerateTypeScriptContext(IList<DtoController> controllers, BitCodeGeneratorMapping mapping);
 

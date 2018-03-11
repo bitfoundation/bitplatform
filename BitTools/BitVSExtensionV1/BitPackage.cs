@@ -1,8 +1,7 @@
 ﻿using BitCodeGenerator.Implementations;
-using BitCodeGenerator.Implementations.HtmlClientProxyGenerator;
+using BitCodeGenerator.Implementations.TypeScriptClientProxyGenerator;
 using BitTools.Core.Contracts;
 using BitTools.Core.Model;
-using BitVSEditorUtils.HTML.Schema;
 using EnvDTE;
 using EnvDTE80;
 using Microsoft.CodeAnalysis;
@@ -11,7 +10,6 @@ using Microsoft.VisualStudio.ComponentModelHost;
 using Microsoft.VisualStudio.LanguageServices;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
-using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.Design;
@@ -20,7 +18,6 @@ using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Windows.Forms;
-using BitHtmlElement = BitVSEditorUtils.HTML.Schema.HtmlElement;
 
 namespace BitVSExtensionV1
 {
@@ -197,15 +194,6 @@ namespace BitVSExtensionV1
 
             try
             {
-                InitHtmlElements(config);
-            }
-            catch (Exception ex)
-            {
-                LogException("Init html elements failed.", ex);
-            }
-
-            try
-            {
                 bitWorkspaceIsPrepared = thereWasAnErrorInLastBuild = lastActionWasClean = false;
 
                 Log("Preparing bit workspace... This includes restoring nuget packages, building your solution and generating codes.");
@@ -229,48 +217,6 @@ namespace BitVSExtensionV1
             return File.Exists(_visualStudioWorkspace.CurrentSolution.FilePath) && File.Exists(Path.Combine(Path.GetDirectoryName(_visualStudioWorkspace.CurrentSolution.FilePath) + "\\BitConfigV1.json"));
         }
 
-        private void InitHtmlElements(BitConfig config)
-        {
-            try
-            {
-                HtmlElementsContainer.Elements = new List<BitHtmlElement> { };
-
-                List<BitHtmlElement> allElements = new List<BitHtmlElement>();
-
-                foreach (string path in config.Schema.HtmlSchemaFiles)
-                {
-                    List<BitHtmlElement> newElements = JsonConvert.DeserializeObject<List<BitHtmlElement>>(File.ReadAllText(path));
-
-                    foreach (BitHtmlElement newElement in newElements)
-                    {
-                        newElement.Attributes = newElement.Attributes ?? new List<HtmlAttribute> { };
-                        newElement.Description = newElement.Description ?? "";
-
-                        if (string.IsNullOrEmpty(newElement.Name))
-                            throw new InvalidOperationException("Element must have a name");
-
-                        newElement.Type = newElement.Type ?? "";
-
-                        BitHtmlElement equivalentHtmlElement = allElements.FirstOrDefault(e => e.Name == newElement.Name);
-
-                        if (equivalentHtmlElement != null)
-                            equivalentHtmlElement.Attributes.AddRange(newElement.Attributes);
-                        else
-                            allElements.Add(newElement);
-                    }
-                }
-
-                if (!allElements.Any(element => element.Name == "*"))
-                    allElements.Add(new BitHtmlElement { Name = "*", Attributes = new List<HtmlAttribute> { }, Description = "", Type = "existing" });
-
-                HtmlElementsContainer.Elements = allElements;
-            }
-            catch (Exception ex)
-            {
-                LogException("Init html elements failed.", ex);
-            }
-        }
-
         private async System.Threading.Tasks.Task CallGenerateCodes()
         {
             if (bitWorkspaceIsPrepared == false)
@@ -287,9 +233,9 @@ namespace BitVSExtensionV1
                 IProjectDtoControllersProvider controllersProvider = new DefaultProjectDtoControllersProvider();
                 IProjectDtosProvider dtosProvider = new DefaultProjectDtosProvider(controllersProvider);
 
-                DefaultHtmlClientProxyGenerator generator = new DefaultHtmlClientProxyGenerator(new DefaultBitCodeGeneratorOrderedProjectsProvider(),
+                DefaultTypeScriptClientProxyGenerator generator = new DefaultTypeScriptClientProxyGenerator(new DefaultBitCodeGeneratorOrderedProjectsProvider(),
                     new DefaultBitConfigProvider(), dtosProvider
-                    , new DefaultHtmlClientProxyDtoGenerator(), new DefaultHtmlClientContextGenerator(), controllersProvider, new DefaultProjectEnumTypesProvider(controllersProvider, dtosProvider));
+                    , new DefaultTypeScriptClientProxyDtoGenerator(), new DefaultTypeScriptClientContextGenerator(), controllersProvider, new DefaultProjectEnumTypesProvider(controllersProvider, dtosProvider));
 
                 Workspace workspaceForCodeGeneration = await GetWorkspaceForCodeGeneration();
 
@@ -340,7 +286,7 @@ namespace BitVSExtensionV1
 
         private async System.Threading.Tasks.Task CallCleanCodes()
         {
-            DefaultHtmlClientProxyCleaner cleaner = new DefaultHtmlClientProxyCleaner(new DefaultBitConfigProvider());
+            DefaultTypeScriptClientProxyCleaner cleaner = new DefaultTypeScriptClientProxyCleaner(new DefaultBitConfigProvider());
 
             await cleaner.DeleteCodes(_visualStudioWorkspace);
 

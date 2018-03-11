@@ -23,7 +23,7 @@
     <UseGlobalApplicationHostFile />
     <NuGetPackageImportStamp>
     </NuGetPackageImportStamp>
-    <TypeScriptToolsVersion>2.5</TypeScriptToolsVersion>
+    <TypeScriptToolsVersion>2.7</TypeScriptToolsVersion>
     <TargetFrameworkProfile />
     <Use64BitIISExpress />
   </PropertyGroup>
@@ -69,7 +69,6 @@
     <None Include="wwwroot\package.json" />
     <Content Include="wwwroot\loginPage.cshtml" />
     <Content Include="wwwroot\security\tsconfig.json" />
-    <Content Include="wwwroot\view\html-elements-schema.json" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="Web.config">

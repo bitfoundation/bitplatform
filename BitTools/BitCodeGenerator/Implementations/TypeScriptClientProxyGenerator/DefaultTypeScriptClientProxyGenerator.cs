@@ -3,25 +3,25 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using BitTools.Core.Contracts;
-using BitTools.Core.Contracts.HtmlClientProxyGenerator;
+using BitTools.Core.Contracts.TypeScriptClientProxyGenerator;
 using BitTools.Core.Model;
 using Microsoft.CodeAnalysis;
 using System.IO;
 using System.Threading.Tasks;
 
-namespace BitCodeGenerator.Implementations.HtmlClientProxyGenerator
+namespace BitCodeGenerator.Implementations.TypeScriptClientProxyGenerator
 {
-    public class DefaultHtmlClientProxyGenerator : IDefaultHtmlClientProxyGenerator
+    public class DefaultTypeScriptClientProxyGenerator : IDefaultTypeScriptClientProxyGenerator
     {
         private readonly IBitCodeGeneratorOrderedProjectsProvider _solutionProjectsSelector;
         private readonly IBitConfigProvider _bitConfigProvider;
         private readonly IProjectDtosProvider _dtosProvider;
         private readonly IProjectEnumTypesProvider _projectEnumTypesProvider;
         private readonly IProjectDtoControllersProvider _dtoControllersProvider;
-        private readonly IHtmlClientProxyDtosGenerator _dtoGenerator;
-        private readonly IHtmlClientContextGenerator _contextGenerator;
+        private readonly ITypeScriptClientProxyDtosGenerator _dtoGenerator;
+        private readonly ITypeScriptClientContextGenerator _contextGenerator;
 
-        public DefaultHtmlClientProxyGenerator(IBitCodeGeneratorOrderedProjectsProvider solutionProjectsSelector, IBitConfigProvider bitConfigProvider, IProjectDtosProvider dtosProvider, IHtmlClientProxyDtosGenerator dtoGenerator, IHtmlClientContextGenerator contextGenerator, IProjectDtoControllersProvider dtoControllersProvider, IProjectEnumTypesProvider projectEnumTypesProvider)
+        public DefaultTypeScriptClientProxyGenerator(IBitCodeGeneratorOrderedProjectsProvider solutionProjectsSelector, IBitConfigProvider bitConfigProvider, IProjectDtosProvider dtosProvider, ITypeScriptClientProxyDtosGenerator dtoGenerator, ITypeScriptClientContextGenerator contextGenerator, IProjectDtoControllersProvider dtoControllersProvider, IProjectEnumTypesProvider projectEnumTypesProvider)
         {
             if (solutionProjectsSelector == null)
                 throw new ArgumentNullException(nameof(solutionProjectsSelector));

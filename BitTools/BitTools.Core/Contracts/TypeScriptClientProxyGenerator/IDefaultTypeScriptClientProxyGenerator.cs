@@ -1,9 +1,9 @@
 ﻿using Microsoft.CodeAnalysis;
 using System.Threading.Tasks;
 
-namespace BitTools.Core.Contracts.HtmlClientProxyGenerator
+namespace BitTools.Core.Contracts.TypeScriptClientProxyGenerator
 {
-    public interface IDefaultHtmlClientProxyGenerator
+    public interface IDefaultTypeScriptClientProxyGenerator
     {
         Task GenerateCodes(Workspace workspace);
     }

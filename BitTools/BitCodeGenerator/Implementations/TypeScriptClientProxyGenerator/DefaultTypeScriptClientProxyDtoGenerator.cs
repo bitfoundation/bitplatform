@@ -1,12 +1,12 @@
 using System;
 using System.Collections.Generic;
-using BitTools.Core.Contracts.HtmlClientProxyGenerator;
-using BitCodeGenerator.Implementations.HtmlClientProxyGenerator.Templates;
+using BitTools.Core.Contracts.TypeScriptClientProxyGenerator;
+using BitCodeGenerator.Implementations.TypeScriptClientProxyGenerator.Templates;
 using BitTools.Core.Model;
 
-namespace BitCodeGenerator.Implementations.HtmlClientProxyGenerator
+namespace BitCodeGenerator.Implementations.TypeScriptClientProxyGenerator
 {
-    public class DefaultHtmlClientProxyDtoGenerator : IHtmlClientProxyDtosGenerator
+    public class DefaultTypeScriptClientProxyDtoGenerator : ITypeScriptClientProxyDtosGenerator
     {
         public virtual string GenerateTypeScriptDtos(IList<Dto> dtos, IList<EnumType> enumTypes, string typingsPath)
         {

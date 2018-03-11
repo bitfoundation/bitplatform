@@ -1,5 +1,5 @@
 ﻿using BitTools.Core.Contracts;
-using BitTools.Core.Contracts.HtmlClientProxyGenerator;
+using BitTools.Core.Contracts.TypeScriptClientProxyGenerator;
 using BitTools.Core.Model;
 using Microsoft.CodeAnalysis;
 using System;
@@ -7,13 +7,13 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace BitCodeGenerator.Implementations.HtmlClientProxyGenerator
+namespace BitCodeGenerator.Implementations.TypeScriptClientProxyGenerator
 {
-    public class DefaultHtmlClientProxyCleaner : IDefaultHtmlClientProxyCleaner
+    public class DefaultTypeScriptClientProxyCleaner : IDefaultTypeScriptClientProxyCleaner
     {
         private readonly IBitConfigProvider _bitConfigProvider;
 
-        public DefaultHtmlClientProxyCleaner(IBitConfigProvider bitConfigProvider)
+        public DefaultTypeScriptClientProxyCleaner(IBitConfigProvider bitConfigProvider)
         {
             if (bitConfigProvider == null)
                 throw new ArgumentNullException(nameof(bitConfigProvider));

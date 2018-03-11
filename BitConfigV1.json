@@ -1,9 +1,4 @@
 {
-  "Schema": {
-    "HtmlSchemaFiles": [
-      "src/TypeScriptClient/Bit.TSClient.AngularJS/html-elements-schema.json"
-    ]
-  },
   "BitCodeGeneratorConfigs": {
     "BitCodeGeneratorMappings": [
       {

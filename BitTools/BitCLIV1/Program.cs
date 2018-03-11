@@ -1,5 +1,5 @@
 ﻿using BitCodeGenerator.Implementations;
-using BitCodeGenerator.Implementations.HtmlClientProxyGenerator;
+using BitCodeGenerator.Implementations.TypeScriptClientProxyGenerator;
 using BitTools.Core.Contracts;
 using Fclp;
 using Microsoft.Build.Evaluation;
@@ -210,7 +210,7 @@ namespace BitCLIV1
                         case BitCLIV1Action.Generate:
                             IProjectDtoControllersProvider controllersProvider = new DefaultProjectDtoControllersProvider();
                             IProjectDtosProvider dtosProvider = new DefaultProjectDtosProvider(controllersProvider);
-                            DefaultHtmlClientProxyGenerator generator = new DefaultHtmlClientProxyGenerator(new DefaultBitCodeGeneratorOrderedProjectsProvider(), new DefaultBitConfigProvider(), dtosProvider, new DefaultHtmlClientProxyDtoGenerator(), new DefaultHtmlClientContextGenerator(), controllersProvider, new DefaultProjectEnumTypesProvider(controllersProvider, dtosProvider));
+                            DefaultTypeScriptClientProxyGenerator generator = new DefaultTypeScriptClientProxyGenerator(new DefaultBitCodeGeneratorOrderedProjectsProvider(), new DefaultBitConfigProvider(), dtosProvider, new DefaultTypeScriptClientProxyDtoGenerator(), new DefaultTypeScriptClientContextGenerator(), controllersProvider, new DefaultProjectEnumTypesProvider(controllersProvider, dtosProvider));
                             await generator.GenerateCodes(workspace);
                             break;
                         case BitCLIV1Action.Validate:
