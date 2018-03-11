@@ -1,7 +1,9 @@
-﻿using Microsoft.AspNetCore.Hosting;
+﻿using Bit.Core;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Hosting.Internal;
 using System;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 
 namespace Bit.OwinCore
@@ -10,6 +12,8 @@ namespace Bit.OwinCore
     {
         public static IWebHostBuilder CreateDefaultBuilder(string[] args)
         {
+            AppDomain.CurrentDomain.AssemblyResolve += CurrentDomain_AssemblyResolve;
+
             TypeInfo webHostType = Type.GetType($"Microsoft.AspNetCore.WebHost, Microsoft.AspNetCore, Version={typeof(WebHost).GetTypeInfo().Assembly.GetName().Version}, Culture=neutral, PublicKeyToken=adb9793829ddae60")?.GetTypeInfo();
 
             MethodInfo createDefaultBuilderMethod = webHostType?.GetMethod("CreateDefaultBuilder", new[] { typeof(string[]).GetTypeInfo() });
@@ -22,6 +26,27 @@ namespace Bit.OwinCore
             {
                 return AspNetCore2(args, createDefaultBuilderMethod);
             }
+        }
+
+        private static Assembly CurrentDomain_AssemblyResolve(object sender, ResolveEventArgs args)
+        {
+            Assembly bitOwinCoreAssembly = AssemblyContainer.Current.GetBitOwinCoreAssembly();
+
+            string dllResourceName = bitOwinCoreAssembly.GetManifestResourceNames().ExtendedSingleOrDefault($"Finding equivalent resource for {args.Name}", resName => resName == $"Bit.OwinCore.Assemblies.{new AssemblyName(args.Name).Name}.dll");
+
+            if (!string.IsNullOrEmpty(dllResourceName))
+            {
+                using (Stream dllStream = bitOwinCoreAssembly.GetManifestResourceStream(dllResourceName))
+                {
+                    using (MemoryStream bufferStream = new MemoryStream())
+                    {
+                        dllStream.CopyTo(bufferStream);
+                        return Assembly.Load(bufferStream.ToArray());
+                    }
+                }
+            }
+
+            return null;
         }
 
         private static IWebHostBuilder AspNetCore2(string[] args, MethodInfo createDefaultBuilderMethod)

@@ -20,6 +20,12 @@
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
   </PropertyGroup>
 
+  <ItemGroup Condition="'$(TargetFramework)' == 'netcoreapp2.0'">
+    <EmbeddedResource Include="Assemblies\System.Data.Linq.dll" />
+    <EmbeddedResource Include="Assemblies\System.IdentityModel.dll" />
+    <EmbeddedResource Include="Assemblies\System.ServiceModel.dll" />
+  </ItemGroup>
+
   <ItemGroup>
     <PackageReference Include="Autofac.Extensions.DependencyInjection" Version="4.2.1" />
     <PackageReference Include="Microsoft.AspNetCore" Version="1.1.5" />
