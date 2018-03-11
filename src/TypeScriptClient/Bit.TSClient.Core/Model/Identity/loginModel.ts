@@ -1,6 +1,6 @@
 ﻿module Bit.Models.Identity {
 
-    export interface ISsoModel {
+    export interface LoginModel {
         additionalLinks: any;
         allowRememberMe: boolean;
         antiForgery: {

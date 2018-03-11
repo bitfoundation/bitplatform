@@ -98,10 +98,10 @@
 ` })
     export class LoginComponent {
 
-        public loginModel: Models.Identity.ISsoModel;
+        public loginModel: Models.Identity.LoginModel;
 
-        public constructor( @Inject("ModelProvider") public modelProvider: Contracts.Identity.IModelProvider) {
-            this.loginModel = this.modelProvider.getModel();
+        public constructor(@Inject("LoginModelProvider") public loginModel: Contracts.Identity.ILoginModelProvider) {
+            this.loginModel = this.loginModel.getModel();
         }
 
     }

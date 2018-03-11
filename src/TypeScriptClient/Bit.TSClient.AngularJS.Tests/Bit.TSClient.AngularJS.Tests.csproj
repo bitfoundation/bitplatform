@@ -10,6 +10,9 @@
     <None Remove="bit.ng1.tests.d.ts" />
     <None Remove="bit.ng1.tests.js" />
     <None Remove="bit.ng1.tests.js.map" />
+    <None Remove="Identity\bit.identity.tests.d.ts" />
+    <None Remove="Identity\bit.identity.tests.js" />
+    <None Remove="Identity\bit.identity.tests.js.map" />
     <None Remove="Test.Model.Context.d.ts" />
     <None Remove="Test.Model.Context.js" />
   </ItemGroup>

@@ -1,11 +1,11 @@
 ﻿module Bit.Implementations.Identity {
 
-    export class DefaultModelProvider implements Contracts.Identity.IModelProvider {
+    export class DefaultLoginModelProvider implements Contracts.Identity.ILoginModelProvider {
 
-        private model: Models.Identity.ISsoModel;
+        private model: Models.Identity.LoginModel;
 
         @Log()
-        public getModel(): Models.Identity.ISsoModel {
+        public getModel(): Models.Identity.LoginModel {
 
             if (this.model == null) {
 
