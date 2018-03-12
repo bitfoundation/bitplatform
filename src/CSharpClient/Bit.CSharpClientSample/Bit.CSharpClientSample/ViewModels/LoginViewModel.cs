@@ -20,7 +20,7 @@ namespace Bit.CSharpClientSample.ViewModels
 
         public string Password { get; set; } = "ValidPassword";
 
-        public LoginViewModel(INavigationService navigationService, ODataClient oDataClient, HttpClient httpClient, IPageDialogService pageDialogService, ISecurityService securityService)
+        public LoginViewModel(INavigationService navigationService, IODataClient oDataClient, HttpClient httpClient, IPageDialogService pageDialogService, ISecurityService securityService)
         {
             LoginUsingCredentionals = new BitDelegateCommand(async () =>
             {

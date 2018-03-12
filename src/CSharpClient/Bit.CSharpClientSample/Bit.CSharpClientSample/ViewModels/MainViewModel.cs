@@ -15,7 +15,7 @@ namespace Bit.CSharpClientSample.ViewModels
 
         public BitDelegateCommand Logout { get; set; }
 
-        public MainViewModel(INavigationService navigationService, ODataClient oDataClient, HttpClient httpClient, ISecurityService securityService)
+        public MainViewModel(INavigationService navigationService, IODataClient oDataClient, HttpClient httpClient, ISecurityService securityService)
         {
             SendHttpRequest = new BitDelegateCommand(async () =>
             {

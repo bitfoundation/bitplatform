@@ -137,7 +137,7 @@ namespace Bit.Tests.HtmlClient.ThirdPartyLibrariesTests.JayDataContextTests
             {
                 TokenResponse token = await testEnvironment.Server.Login("ValidUserName", "ValidPassword", clientId: "TestResOwner");
 
-                ODataClient client = testEnvironment.Server.BuildODataClient(token: token);
+                IODataClient client = testEnvironment.Server.BuildODataClient(token: token);
 
                 DtoWithEnum dtoWithEnum = await client.Controller<DtoWithEnumController, DtoWithEnum>()
                     .Function(nameof(DtoWithEnumController.GetDtoWithEnumsByGender))

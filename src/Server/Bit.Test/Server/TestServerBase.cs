@@ -25,7 +25,7 @@ namespace Bit.Test.Server
             return new ODataBatch(BuildODataClient(beforeRequest, afterResponse, token, odataRouteName));
         }
 
-        public virtual ODataClient BuildODataClient(Action<HttpRequestMessage> beforeRequest = null,
+        public virtual IODataClient BuildODataClient(Action<HttpRequestMessage> beforeRequest = null,
             Action<HttpResponseMessage> afterResponse = null, TokenResponse token = null, string odataRouteName = "Test")
         {
             ODataClient client = new ODataClient(new ODataClientSettings($"{Uri}odata/{odataRouteName}/")

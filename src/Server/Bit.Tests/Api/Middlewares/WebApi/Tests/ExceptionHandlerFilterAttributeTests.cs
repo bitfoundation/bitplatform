@@ -39,7 +39,7 @@ namespace Bit.Tests.Api.Middlewares.WebApi.Tests
             {
                 TokenResponse token = await testEnvironment.Server.Login("ValidUserName", "ValidPassword", clientId: "TestResOwner");
 
-                ODataClient client = testEnvironment.Server.BuildODataClient(token: token, afterResponse: message =>
+                IODataClient client = testEnvironment.Server.BuildODataClient(token: token, afterResponse: message =>
                 {
                     if (message.StatusCode == HttpStatusCode.InternalServerError)
                     {
@@ -91,7 +91,7 @@ namespace Bit.Tests.Api.Middlewares.WebApi.Tests
             {
                 TokenResponse token = await testEnvironment.Server.Login("ValidUserName", "ValidPassword", clientId: "TestResOwner");
 
-                ODataClient client = testEnvironment.Server.BuildODataClient(token: token, afterResponse: message =>
+                IODataClient client = testEnvironment.Server.BuildODataClient(token: token, afterResponse: message =>
                 {
                     if (message.StatusCode == HttpStatusCode.NotFound)
                     {
@@ -147,7 +147,7 @@ namespace Bit.Tests.Api.Middlewares.WebApi.Tests
             {
                 TokenResponse token = await testEnvironment.Server.Login("ValidUserName", "ValidPassword", clientId: "TestResOwner");
 
-                ODataClient client = testEnvironment.Server.BuildODataClient(token: token, afterResponse: message =>
+                IODataClient client = testEnvironment.Server.BuildODataClient(token: token, afterResponse: message =>
                 {
                     if (message.StatusCode == HttpStatusCode.InternalServerError)
                     {

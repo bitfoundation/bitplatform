@@ -52,7 +52,7 @@ namespace Bit.CSharpClientSample
             containerRegistry.GetBuilder().Register(c =>
             {
                 ISecurityService securityService = c.Resolve<ISecurityService>();
-                ODataClient odataClient = new ODataClient(new ODataClientSettings(new Uri(c.Resolve<IClientAppProfile>().HostUri, "odata/Test/"))
+                IODataClient odataClient = new ODataClient(new ODataClientSettings(new Uri(c.Resolve<IClientAppProfile>().HostUri, "odata/Test/"))
                 {
                     OnCreateMessageHandler = () => new TokenHandler(securityService, new HttpClientHandler())
                 });

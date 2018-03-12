@@ -74,14 +74,14 @@ namespace Bit.Tests.Api.Middlewares.JobScheduler.Tests
             {
                 TokenResponse token = await testEnvironment.Server.Login("ValidUserName", "ValidPassword", clientId: "TestResOwner");
 
-                ODataClient client = testEnvironment.Server.BuildODataClient(token: token);
+                IODataClient client = testEnvironment.Server.BuildODataClient(token: token);
 
                 string jobId = (await client.Controller<TestModelsController, TestModel>()
                     .Action(nameof(TestModelsController.SendEmailUsingBackgroundJobService))
                     .Set(new TestModelsController.EmailParameters { to = "Someone", title = "Email title", message = "Email message" })
                     .ExecuteAsScalarAsync<Guid>()).ToString();
 
-                ODataClient bitODataClient = testEnvironment.Server.BuildODataClient(token: token, odataRouteName: "Bit");
+                IODataClient bitODataClient = testEnvironment.Server.BuildODataClient(token: token, odataRouteName: "Bit");
 
                 JobInfoDto jobInfo = await bitODataClient.Controller<JobsInfoController, JobInfoDto>()
                     .Key(jobId)
@@ -132,14 +132,14 @@ namespace Bit.Tests.Api.Middlewares.JobScheduler.Tests
 
                 TokenResponse token = await testEnvironment.Server.Login("ValidUserName", "ValidPassword", clientId: "TestResOwner");
 
-                ODataClient client = testEnvironment.Server.BuildODataClient(token: token);
+                IODataClient client = testEnvironment.Server.BuildODataClient(token: token);
 
                 string jobId = (await client.Controller<TestModelsController, TestModel>()
                     .Action(nameof(TestModelsController.SendEmailUsingBackgroundJobServiceAndPushAfterThat))
                     .Set(new TestModelsController.EmailParameters { to = "SomeOne", title = "Email title", message = "Email message" })
                     .ExecuteAsScalarAsync<Guid>()).ToString();
 
-                ODataClient bitODataClient = testEnvironment.Server.BuildODataClient(token: token, odataRouteName: "Bit");
+                IODataClient bitODataClient = testEnvironment.Server.BuildODataClient(token: token, odataRouteName: "Bit");
 
                 JobInfoDto jobInfo = await bitODataClient.Controller<JobsInfoController, JobInfoDto>()
                     .Key(jobId)
@@ -193,7 +193,7 @@ namespace Bit.Tests.Api.Middlewares.JobScheduler.Tests
             {
                 TokenResponse token = await testEnvironment.Server.Login("ValidUserName", "ValidPassword", clientId: "TestResOwner");
 
-                ODataClient client = testEnvironment.Server.BuildODataClient(token: token);
+                IODataClient client = testEnvironment.Server.BuildODataClient(token: token);
 
                 string jobId = (await client.Controller<TestModelsController, TestModel>()
                     .Action(nameof(TestModelsController.SendEmailUsingBackgroundJobService))

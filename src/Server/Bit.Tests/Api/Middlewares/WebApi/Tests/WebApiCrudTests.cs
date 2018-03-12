@@ -28,7 +28,7 @@ namespace Bit.Tests.Api.Middlewares.WebApi.Tests
             {
                 TokenResponse token = await testEnvironment.Server.Login("ValidUserName", "ValidPassword", clientId: "TestResOwner");
 
-                ODataClient client = testEnvironment.Server.BuildODataClient(token: token);
+                IODataClient client = testEnvironment.Server.BuildODataClient(token: token);
 
                 TestModel modelBeforeInsert = new TestModel
                 {
@@ -68,7 +68,7 @@ namespace Bit.Tests.Api.Middlewares.WebApi.Tests
             {
                 TokenResponse token = await testEnvironment.Server.Login("ValidUserName", "ValidPassword", clientId: "TestResOwner");
 
-                ODataClient client = testEnvironment.Server.BuildODataClient(token: token);
+                IODataClient client = testEnvironment.Server.BuildODataClient(token: token);
 
                 long modelBeforeUpdateId = await client.Controller<TestModelsController, TestModel>()
                     .Top(1)
@@ -113,7 +113,7 @@ namespace Bit.Tests.Api.Middlewares.WebApi.Tests
             {
                 TokenResponse token = await testEnvironment.Server.Login("ValidUserName", "ValidPassword", clientId: "TestResOwner");
 
-                ODataClient client = testEnvironment.Server.BuildODataClient(token: token);
+                IODataClient client = testEnvironment.Server.BuildODataClient(token: token);
 
                 long modelIdForDelete = await client.Controller<TestModelsController, TestModel>()
                     .Top(1)
@@ -153,7 +153,7 @@ namespace Bit.Tests.Api.Middlewares.WebApi.Tests
 
                 IRequestValidator requestValidator = A.Fake<IRequestValidator>();
 
-                ODataClient client = testEnvironment.Server.BuildODataClient(token: token, beforeRequest: message =>
+                IODataClient client = testEnvironment.Server.BuildODataClient(token: token, beforeRequest: message =>
                 {
                     requestValidator.ValidateRequestByUri(message.RequestUri);
                 });

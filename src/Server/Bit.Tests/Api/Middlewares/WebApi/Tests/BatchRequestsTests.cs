@@ -30,7 +30,7 @@ namespace Bit.Tests.Api.Middlewares.WebApi.Tests
 
                 ODataBatch batchClient = testEnvironment.Server.BuildODataBatchClient(token: token);
 
-                ODataClient client = testEnvironment.Server.BuildODataClient(token: token);
+                IODataClient client = testEnvironment.Server.BuildODataClient(token: token);
 
                 TestModel modelBeforeInsert = new TestModel
                 {
