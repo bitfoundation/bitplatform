@@ -23,7 +23,7 @@
     "@types/signalr": "^2.2.35"
   },
   "dependencies": {
-    "@bit/bit-framework": "^0.6.2",
+    "@bit/bit-framework": "^0.9.6",
     "@bit/encoder": "^1.0.0",
     "@bit/jaydata": "^1.5.15",
     "@uirouter/angularjs": "^1.0.11",
@@ -34,7 +34,7 @@
     "angular-messages": "^1.6.7",
     "angular-translate": "^2.16.0",
     "core-js": "^2.5.1",
-    "decimal.js": "^9.0.1",
+    "decimal.js": "^10.0.0",
     "event-source-polyfill": "^0.0.12",
     "jquery": "^3.2.1",
     "normalize-css": "^2.3.1",
