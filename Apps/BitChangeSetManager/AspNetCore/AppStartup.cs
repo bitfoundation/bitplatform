@@ -60,7 +60,6 @@ namespace BitChangeSetManager.Core
             dependencyManager.Register<IDbConnectionProvider, DefaultDbConnectionProvider<SqlConnection>>();
 
             dependencyManager.RegisterAppEvents<BitChangeSetManagerInitialData>();
-            dependencyManager.RegisterAppEvents<RazorViewEngineConfiguration>();
 
             dependencyManager.RegisterDefaultAspNetCoreApp();
 

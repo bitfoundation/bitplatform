@@ -2,7 +2,7 @@
 
 module BitChangeSetManagerSecurity {
 
-    let dependencyManager = DependencyManager.getCurrent();
+    const dependencyManager = DependencyManager.getCurrent();
 
     dependencyManager.registerFileDependency({
         name: "normalize",

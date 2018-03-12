@@ -47,9 +47,11 @@
   <ItemGroup>
     <None Include="App_Data\templates.json" />
     <Content Include="environments.json" />
-    <None Include="packages.config" />
+    <None Include="packages.config">
+      <SubType>Designer</SubType>
+    </None>
     <None Include="ToDo.txt" />
-    <Content Include="wwwroot\indexPage.cshtml" />
+    <Content Include="wwwroot\indexPage.html" />
     <Content Include="wwwroot\electron-sample\main.js" />
     <Content Include="wwwroot\view\views\app.html" />
     <Content Include="wwwroot\view\styles\bitChangeSetManagerStyles.css" />
@@ -67,7 +69,7 @@
     <Content Include="wwwroot\electron-sample\package.json" />
     <Content Include="wwwroot\.npmrc" />
     <None Include="wwwroot\package.json" />
-    <Content Include="wwwroot\loginPage.cshtml" />
+    <Content Include="wwwroot\loginPage.html" />
     <Content Include="wwwroot\security\tsconfig.json" />
   </ItemGroup>
   <ItemGroup>
@@ -170,35 +172,35 @@
     <Reference Include="AutoMapper, Version=6.2.2.0, Culture=neutral, PublicKeyToken=be96cd2c38ef1005, processorArchitecture=MSIL">
       <HintPath>..\packages\AutoMapper.6.2.2\lib\net45\AutoMapper.dll</HintPath>
     </Reference>
-    <Reference Include="Bit.Core, Version=0.9.4.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Bit.Core.0.9.4\lib\net461\Bit.Core.dll</HintPath>
+    <Reference Include="Bit.Core, Version=0.9.6.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Bit.Core.0.9.6\lib\net461\Bit.Core.dll</HintPath>
     </Reference>
-    <Reference Include="Bit.Data, Version=0.9.4.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Bit.Data.0.9.4\lib\net461\Bit.Data.dll</HintPath>
+    <Reference Include="Bit.Data, Version=0.9.6.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Bit.Data.0.9.6\lib\net461\Bit.Data.dll</HintPath>
     </Reference>
-    <Reference Include="Bit.Data.EntityFramework, Version=0.9.4.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Bit.Data.EntityFramework.0.9.4\lib\net461\Bit.Data.EntityFramework.dll</HintPath>
+    <Reference Include="Bit.Data.EntityFramework, Version=0.9.6.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Bit.Data.EntityFramework.0.9.6\lib\net461\Bit.Data.EntityFramework.dll</HintPath>
     </Reference>
-    <Reference Include="Bit.Hangfire, Version=0.9.4.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Bit.Hangfire.0.9.4\lib\net461\Bit.Hangfire.dll</HintPath>
+    <Reference Include="Bit.Hangfire, Version=0.9.6.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Bit.Hangfire.0.9.6\lib\net461\Bit.Hangfire.dll</HintPath>
     </Reference>
-    <Reference Include="Bit.IdentityServer, Version=0.9.4.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Bit.IdentityServer.0.9.4\lib\net461\Bit.IdentityServer.dll</HintPath>
+    <Reference Include="Bit.IdentityServer, Version=0.9.6.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Bit.IdentityServer.0.9.6\lib\net461\Bit.IdentityServer.dll</HintPath>
     </Reference>
-    <Reference Include="Bit.Model, Version=0.9.4.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Bit.Model.0.9.4\lib\net461\Bit.Model.dll</HintPath>
+    <Reference Include="Bit.Model, Version=0.9.6.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Bit.Model.0.9.6\lib\net461\Bit.Model.dll</HintPath>
     </Reference>
-    <Reference Include="Bit.OData, Version=0.9.4.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Bit.OData.0.9.4\lib\net461\Bit.OData.dll</HintPath>
+    <Reference Include="Bit.OData, Version=0.9.6.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Bit.OData.0.9.6\lib\net461\Bit.OData.dll</HintPath>
     </Reference>
-    <Reference Include="Bit.Owin, Version=0.9.4.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Bit.Owin.0.9.4\lib\net461\Bit.Owin.dll</HintPath>
+    <Reference Include="Bit.Owin, Version=0.9.6.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Bit.Owin.0.9.6\lib\net461\Bit.Owin.dll</HintPath>
     </Reference>
-    <Reference Include="Bit.Signalr, Version=0.9.4.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Bit.Signalr.0.9.4\lib\net461\Bit.Signalr.dll</HintPath>
+    <Reference Include="Bit.Signalr, Version=0.9.6.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Bit.Signalr.0.9.6\lib\net461\Bit.Signalr.dll</HintPath>
     </Reference>
-    <Reference Include="Bit.WebApi, Version=0.9.4.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Bit.WebApi.0.9.4\lib\net461\Bit.WebApi.dll</HintPath>
+    <Reference Include="Bit.WebApi, Version=0.9.6.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Bit.WebApi.0.9.6\lib\net461\Bit.WebApi.dll</HintPath>
     </Reference>
     <Reference Include="Correlator, Version=1.1.0.0, Culture=neutral, PublicKeyToken=ad71b95c30d52163, processorArchitecture=MSIL">
       <HintPath>..\packages\WebApiCorrelator.1.1.0.0\lib\net452\Correlator.dll</HintPath>
@@ -328,7 +330,7 @@
       <HintPath>..\packages\Owin.1.0\lib\net40\Owin.dll</HintPath>
     </Reference>
     <Reference Include="Owin.Security.Providers.LinkedIn, Version=2.0.0.0, Culture=neutral, PublicKeyToken=1328b8c16b108c43, processorArchitecture=MSIL">
-      <HintPath>..\packages\Owin.Security.Providers.LinkedIn.2.20.0\lib\net45\Owin.Security.Providers.LinkedIn.dll</HintPath>
+      <HintPath>..\packages\Owin.Security.Providers.LinkedIn.2.21.0\lib\net45\Owin.Security.Providers.LinkedIn.dll</HintPath>
     </Reference>
     <Reference Include="RazorEngine, Version=3.10.0.0, Culture=neutral, PublicKeyToken=9ee697374c7e744a, processorArchitecture=MSIL">
       <HintPath>..\packages\RazorEngine.3.10.0\lib\net45\RazorEngine.dll</HintPath>
@@ -412,6 +414,9 @@
     <Reference Include="System.Xml.ReaderWriter, Version=4.1.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
       <HintPath>..\packages\System.Xml.ReaderWriter.4.3.0\lib\net46\System.Xml.ReaderWriter.dll</HintPath>
     </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <Analyzer Include="..\packages\BitCodeAnalyzer.1.2.6.2\analyzers\dotnet\cs\BitCodeAnalyzer.dll" />
   </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>

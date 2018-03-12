@@ -2,7 +2,7 @@
 
 module BitChangeSetManagerSecurity {
 
-    let dependencyManager = DependencyManager.getCurrent();
+    const dependencyManager = DependencyManager.getCurrent();
 
     dependencyManager.registerObjectDependency({ name: "ModelProvider", type: Bit.Implementations.Identity.DefaultModelProvider });
 

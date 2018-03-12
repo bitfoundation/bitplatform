@@ -11,6 +11,7 @@ using Bit.Owin.Implementations;
 using Microsoft.Owin.Hosting;
 using Newtonsoft.Json;
 using Owin;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
