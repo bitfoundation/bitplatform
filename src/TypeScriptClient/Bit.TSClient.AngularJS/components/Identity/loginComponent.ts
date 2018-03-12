@@ -100,8 +100,8 @@
 
         public loginModel: Models.Identity.LoginModel;
 
-        public constructor(@Inject("LoginModelProvider") public loginModel: Contracts.Identity.ILoginModelProvider) {
-            this.loginModel = this.loginModel.getModel();
+        public constructor(@Inject("LoginModelProvider") public loginModelProvider: Contracts.Identity.ILoginModelProvider) {
+            this.loginModel = this.loginModelProvider.getModel();
         }
 
     }
