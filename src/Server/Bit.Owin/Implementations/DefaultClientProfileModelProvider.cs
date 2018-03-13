@@ -10,7 +10,7 @@ using Bit.Owin.Models;
 
 namespace Bit.Owin.Implementations
 {
-    public class DefaultClientAppProfileModelProvider : IClientProfileAppModelProvider
+    public class DefaultClientProfileModelProvider : IClientProfileModelProvider
     {
         private IAppEnvironmentProvider _AppEnvironmentProvider;
         private AppEnvironment _App;
@@ -28,9 +28,9 @@ namespace Bit.Owin.Implementations
         public virtual IUserSettingProvider UsersSettingsProvider { get; set; }
         public virtual IContentFormatter ContentFormatter { get; set; }
 
-        public virtual ClientAppProfileModel GetClientAppProfileModel()
+        public virtual ClientProfileModel GetClientProfileModel()
         {
-            ClientAppProfileModel clientAppProfileMdoel = new ClientAppProfileModel
+            ClientProfileModel clientProfileMdoel = new ClientProfileModel
             {
                 AppVersion = _App.AppInfo.Version,
                 DebugMode = _App.DebugMode,
@@ -59,23 +59,23 @@ namespace Bit.Owin.Implementations
                 .ExtendedSingle($"Finding culture {culture} in environment {_App.Name}", c => c.Name == culture).Values.ExtendedSingle($"Finding AppTitle in culture {culture}", v =>
                       string.Equals(v.Name, "AppTitle", StringComparison.OrdinalIgnoreCase)).Title : string.Empty;
 
-            clientAppProfileMdoel.AppTitle = appTitle;
-            clientAppProfileMdoel.Culture = culture;
-            clientAppProfileMdoel.DesiredTimeZoneValue = desiredTimeZoneValue;
-            clientAppProfileMdoel.Theme = theme;
+            clientProfileMdoel.AppTitle = appTitle;
+            clientProfileMdoel.Culture = culture;
+            clientProfileMdoel.DesiredTimeZoneValue = desiredTimeZoneValue;
+            clientProfileMdoel.Theme = theme;
 
-            clientAppProfileMdoel.EnvironmentConfigsJson = ContentFormatter.Serialize(_App
+            clientProfileMdoel.EnvironmentConfigsJson = ContentFormatter.Serialize(_App
                 .Configs.Where(c => c.AccessibleInClientSide == true)
                 .Select(c => new { value = c.Value, key = c.Key }));
 
-            clientAppProfileMdoel.BaseHref = _App.GetHostVirtualPath();
+            clientProfileMdoel.BaseHref = _App.GetHostVirtualPath();
 
-            return clientAppProfileMdoel;
+            return clientProfileMdoel;
         }
 
-        public virtual async Task<ClientAppProfileModel> GetClientAppProfileModelAsync(CancellationToken cancellationToken)
+        public virtual async Task<ClientProfileModel> GetClientProfileModelAsync(CancellationToken cancellationToken)
         {
-            ClientAppProfileModel clientAppProfileModel = new ClientAppProfileModel
+            ClientProfileModel clientAppProfileModel = new ClientProfileModel
             {
                 AppVersion = _App.AppInfo.Version,
                 DebugMode = _App.DebugMode,

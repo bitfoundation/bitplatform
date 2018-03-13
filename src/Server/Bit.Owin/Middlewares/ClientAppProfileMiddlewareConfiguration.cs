@@ -21,27 +21,15 @@ namespace Bit.Owin.Middlewares
                 {
                     IDependencyResolver dependencyResolver = context.GetDependencyResolver();
 
-                    IClientProfileAppModelProvider pageModelProvider = dependencyResolver.Resolve<IClientProfileAppModelProvider>();
+                    IClientProfileModelProvider clientProfileModelProvider = dependencyResolver.Resolve<IClientProfileModelProvider>();
 
-                    ClientAppProfileModel clientAppProfileModel = await pageModelProvider.GetClientAppProfileModelAsync(context.Request.CallCancelled);
+                    ClientProfileModel clientProfileModel = await clientProfileModelProvider.GetClientProfileModelAsync(context.Request.CallCancelled);
 
-                    string clientAppProfile = $@"
-clientAppProfile = {{
-    theme: ""{clientAppProfileModel.Theme}"",
-    culture: ""{clientAppProfileModel.Culture}"",
-    version: ""{clientAppProfileModel.AppVersion}"",
-    isDebugMode: {clientAppProfileModel.DebugMode.ToString().ToLowerInvariant()},
-    appTitle: ""{clientAppProfileModel.AppTitle}"",
-    appName: ""{clientAppProfileModel.AppName}"",
-    desiredTimeZone: ""{clientAppProfileModel.DesiredTimeZoneValue}"",
-    environmentConfigs: {clientAppProfileModel.EnvironmentConfigsJson}
-}};
-
-                ";
+                    string clientAppProfileJson = clientProfileModel.ToJavaScriptObject();
 
                     context.Response.ContentType = "text/javascript; charset=utf-8";
 
-                    await context.Response.WriteAsync(clientAppProfile, context.Request.CallCancelled);
+                    await context.Response.WriteAsync(clientAppProfileJson, context.Request.CallCancelled);
                 });
             });
         }

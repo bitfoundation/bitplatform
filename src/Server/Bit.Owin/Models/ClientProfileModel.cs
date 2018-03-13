@@ -3,7 +3,7 @@
 namespace Bit.Owin.Models
 {
     [Serializable]
-    public class ClientAppProfileModel
+    public class ClientProfileModel
     {
         public virtual string AppTitle { get; set; }
 
@@ -22,6 +22,28 @@ namespace Bit.Owin.Models
         public virtual string EnvironmentConfigsJson { get; set; }
 
         public virtual string BaseHref { get; set; }
+
+        internal string ToJavaScriptObject()
+        {
+            return $@"
+clientAppProfile = {{
+    theme: ""{Theme}"",
+    culture: ""{Culture}"",
+    version: ""{AppVersion}"",
+    isDebugMode: {DebugMode.ToString().ToLowerInvariant()},
+    appTitle: ""{AppTitle}"",
+    appName: ""{AppName}"",
+    desiredTimeZone: ""{DesiredTimeZoneValue}"",
+    environmentConfigs: {EnvironmentConfigsJson}
+}};
+
+                ";
+        }
+
+        internal string ToJavaScriptTag()
+        {
+            return $"<script type=\"text/javascript\">{ToJavaScriptObject()}</script>";
+        }
 
         public override string ToString()
         {
