@@ -78,7 +78,7 @@
 
                 json.login_date = new Date();
 
-                const defaultPath = Bit.ClientAppProfileManager.getCurrent().getClientAppProfile().getConfig<string>("HostVirtualPath", "/");
+                const defaultPath = ClientAppProfileManager.getCurrent().getClientAppProfile().getConfig<string>("HostVirtualPath", "/");
                 const defaultPathWithoutEndingSlashIfIsNotRoot = defaultPath == "/" ? defaultPath : defaultPath.substring(0, defaultPath.length - 1);
 
                 const expiresTimeInSeconds = json.expires_in;
@@ -110,7 +110,7 @@
             }
             else {
 
-                const defaultPath = Bit.ClientAppProfileManager.getCurrent().getClientAppProfile().getConfig<string>("HostVirtualPath", "/");
+                const defaultPath = ClientAppProfileManager.getCurrent().getClientAppProfile().getConfig<string>("HostVirtualPath", "/");
                 const defaultPathWithoutEndingSlashIfIsNotRoot = defaultPath == "/" ? defaultPath : defaultPath.substr(0, defaultPath.length - 1);
 
                 localStorage.removeItem(`${defaultPath}access_token`);

@@ -8,8 +8,8 @@
         now.setTime(expireTime);
         var nowAsGMTString = now.toUTCString();
 
-        document.cookie = 'access_token=' + data.access_token + ';expires=' + nowAsGMTString + ';path=' + window.swaggerApi.basePath;
-        document.cookie = 'token_type=' + data.token_type + ';expires=' + nowAsGMTString + ';path=' + window.swaggerApi.basePath;
+        document.cookie = "access_token=" + data.access_token + ";expires=" + nowAsGMTString + ";path=" + window.swaggerApi.basePath;
+        document.cookie = "token_type=" + data.token_type + ";expires=" + nowAsGMTString + ";path=" + window.swaggerApi.basePath;
     }
 
     return window.onOAuthComplete_original.apply(this, arguments);

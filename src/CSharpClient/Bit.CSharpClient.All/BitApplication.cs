@@ -10,12 +10,10 @@ namespace Bit
     {
         public BitAutofacContainerExtension(ContainerBuilder containerBuilder)
         {
-            _containerBuilder = containerBuilder;
-            _autofacContainerExtension = new AutofacContainerExtension(_containerBuilder);
+            _autofacContainerExtension = new AutofacContainerExtension(containerBuilder);
         }
 
         private readonly AutofacContainerExtension _autofacContainerExtension;
-        private readonly ContainerBuilder _containerBuilder;
 
         public ContainerBuilder Builder => _autofacContainerExtension.Builder;
 

@@ -23,7 +23,7 @@
             prevValidationsRollbackHandlers?: Array<{ memberName: string, errorKey: string, handler: () => void }>,
             dtoViewModelPropertyChangedFunction?: (sender?: $data.Entity, e?: $data.Event & { newValue: any, oldValue: any, propertyName: any }) => void,
             dtoViewModelPropertyChangingFunction?: (sender?: $data.Entity, e?: $data.Event & { newValue: any, oldValue: any, propertyName: any }) => void,
-            dtoRulesPropertyChangedFunction?: (sender?: $data.Entity, e?: $data.Event & { newValue: any, oldValue: any, propertyName: any }) => void
+            dtoRulesPropertyChangedFunction?: (sender?: $data.Entity, e?: $data.Event & { newValue: any, oldValue: any, propertyName: any }) => void;
         } = {};
 
         public cleanUp() {
@@ -176,7 +176,7 @@
                                 propModelController.$setValidity = function () {
                                     propModelController.validityEvaludated = true;
                                     return original$setValidity.apply(propModelController, arguments);
-                                }
+                                };
 
                                 if (propDefenition.nullable == true) {
                                     propModelController.$parsers.push((viewValue) => {

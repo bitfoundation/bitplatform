@@ -17,7 +17,7 @@ namespace Bit.WebApi.Implementations
             if (hasAllowAnonymous == true)
                 return;
 
-            bool hasAuthAttribute = apiDescription.ActionDescriptor.GetFilterPipeline().OfType<FilterInfo>().Any(e => e.Instance is AuthorizationFilterAttribute);
+            bool hasAuthAttribute = apiDescription.ActionDescriptor.GetFilterPipeline().Any(e => e.Instance is AuthorizationFilterAttribute);
 
             if (hasAuthAttribute == false)
                 return;

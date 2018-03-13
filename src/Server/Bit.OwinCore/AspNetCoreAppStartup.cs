@@ -50,10 +50,7 @@ namespace Bit.OwinCore
                     owinAppModule.ConfigureDependencies(DefaultDependencyManager.Current);
             }
 
-            DefaultDependencyManager.Current.RegisterUsing((depManager) =>
-            {
-                return depManager.Resolve<IHttpContextAccessor>().HttpContext;
-            });
+            DefaultDependencyManager.Current.RegisterUsing((depManager) => depManager.Resolve<IHttpContextAccessor>().HttpContext);
 
             DefaultDependencyManager.Current.RegisterUsing((depManager) =>
             {

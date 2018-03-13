@@ -7,7 +7,6 @@ using Bit.OwinCore.Implementations;
 using Bit.OwinCore.Middlewares;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Owin.Security.DataProtection;
-using Owin;
 using System;
 
 namespace Bit.Core.Contracts

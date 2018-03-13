@@ -14,7 +14,7 @@ namespace Bit.Owin.Implementations
 
         public virtual IAppEnvironmentProvider AppEnvironmentProvider
         {
-            get { return _appEnvironmentProvider; }
+            get => _appEnvironmentProvider;
             set
             {
                 _appEnvironmentProvider = value;
