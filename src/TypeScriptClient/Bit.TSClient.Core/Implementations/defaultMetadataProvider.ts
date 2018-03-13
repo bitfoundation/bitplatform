@@ -29,7 +29,7 @@
                             this._appMetadata = await response.json() as any;
                         }
                         else {
-                            reject("Error retriving metadata");
+                            reject("Error retrieving metadata");
                         }
                     } catch (e) {
                         reject(e);

@@ -279,7 +279,7 @@
     dependencyManager.registerFileDependency({
         name: "jasmine-jquery",
         path: "bit-framework/src/TypeScriptClient/Bit.TSClient.AngularJS.Test/node_modules/jasmine-jquery/lib/jasmine-jquery",
-        loadTime: "Defered"
+        loadTime: "Deferred"
     });
 
     dependencyManager.registerFileDependency({

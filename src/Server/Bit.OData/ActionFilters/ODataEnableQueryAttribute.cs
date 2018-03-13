@@ -138,7 +138,7 @@ namespace Bit.OData.ActionFilters
 
                     if (currentOdataQueryOptions.Count?.Value == true && takeCount.HasValue == false && isSingleResult == false)
                     {
-                        // We've no paging becuase there is no global config for max top and there is no top specified by the client's request, so the retured result of query's length is equivalent to total count of the query
+                        // We've no paging because there is no global config for max top and there is no top specified by the client's request, so the returned result of query's length is equivalent to total count of the query
                         long count = ((IList)objContent.Value).Count;
                         actionExecutedContext.Request.Properties["System.Web.OData.TotalCountFunc"] = new Func<long>(() => count);
                     }

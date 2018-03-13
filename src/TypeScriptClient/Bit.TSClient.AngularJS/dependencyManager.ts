@@ -8,7 +8,7 @@
 
     export interface IFileDependency extends IDependency {
         path: string;
-        loadTime?: "Defered" | "Early";
+        loadTime?: "Deferred" | "Early";
         fileDependecyType?: "Script" | "Style";
         loadStatus?: "IsBeingLoaded" | "NotLoaded" | "Loaded" | "LoadError";
         promise?: Promise<void>;

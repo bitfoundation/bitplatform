@@ -33,7 +33,7 @@ namespace Bit.Owin.Middlewares
 
             context.Response.Redirect($"{ssoRedirectUri}&id_token_hint={(context.Request.Query["id_token"])}&state={stateArgs}");
 
-            context.Authentication.SignOut("custom", "Barear");
+            context.Authentication.SignOut("custom", "Bearer");
 
             return Task.CompletedTask;
         }

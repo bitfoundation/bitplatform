@@ -182,7 +182,7 @@ namespace Bit.IdentityServer.Implementations
 
         public virtual Task<Stream> Logout(LogoutViewModel model, SignOutMessage message)
         {
-            // Based on current InvokeLogOut Middleware, this method will not be called, because of context.Authentication.SignOut("custom", "Barear"); code.
+            // Based on current InvokeLogOut Middleware, this method will not be called, because of context.Authentication.SignOut("custom", "Bearer"); code.
 
             string content = $@"<!DOCTYPE html>
                             <html>

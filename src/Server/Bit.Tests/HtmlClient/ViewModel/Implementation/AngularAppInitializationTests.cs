@@ -63,7 +63,7 @@ namespace Bit.Tests.HtmlClient.ViewModel.Implementation
 
                     await Task.Yield();
 
-                    driver.GetElementById("gotonextpart").Click();
+                    driver.GetElementById("go-to-next-part").Click();
 
                     await Task.Delay(500);
 
