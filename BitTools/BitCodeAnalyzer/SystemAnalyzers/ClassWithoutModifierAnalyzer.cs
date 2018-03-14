@@ -12,7 +12,7 @@ namespace BitCodeAnalyzer.SystemAnalyzers
         public const string DiagnosticId = nameof(ClassWithoutModifierAnalyzer);
 
         public const string Title = "Add modifier to your class.";
-        public const string Message = "Your class must have at least one modifier. (Public, Private, etc)";
+        public const string Message = "Your class must have at least one modifier. (Public, internal, etc)";
         public const string Description = Message;
         private const string Category = "System";
 
