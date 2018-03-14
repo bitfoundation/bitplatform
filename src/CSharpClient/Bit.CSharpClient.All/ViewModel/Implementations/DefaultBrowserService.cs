@@ -27,11 +27,6 @@ namespace Bit.ViewModel.Implementations
 
         public virtual void OpenUrl(Uri url)
         {
-            if (_deviceService.RuntimePlatform == RuntimePlatform.Android || _deviceService.RuntimePlatform == RuntimePlatform.iOS)
-            {
-                throw new InvalidOperationException($"Register {nameof(DefaultBrowserService)} using platform specific {nameof(IPlatformInitializer)}");
-            }
-
             if (url == null)
                 throw new ArgumentNullException(nameof(url));
 
@@ -47,8 +42,7 @@ namespace Bit.ViewModel.Implementations
             mgr.BindService();
 
             return;
-#endif
-#if iOS
+#elif iOS
             var destination = new Foundation.NSUrl(url.ToString());
 
             var sfViewController = new SafariServices.SFSafariViewController(destination);
@@ -60,8 +54,14 @@ namespace Bit.ViewModel.Implementations
             controller.PresentViewController(sfViewController, true, null);
 
             return;
-#endif
+#else
+            if (_deviceService.RuntimePlatform == RuntimePlatform.Android || _deviceService.RuntimePlatform == RuntimePlatform.iOS)
+            {
+                throw new InvalidOperationException($"Register {nameof(DefaultBrowserService)} using platform specific {nameof(IPlatformInitializer)}");
+            }
+
             _deviceService.OpenUri(url);
+#endif
         }
     }
 }

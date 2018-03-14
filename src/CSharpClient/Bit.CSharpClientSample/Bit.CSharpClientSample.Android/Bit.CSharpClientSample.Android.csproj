@@ -29,6 +29,7 @@
     <WarningLevel>4</WarningLevel>
     <AndroidLinkMode>None</AndroidLinkMode>
     <AndroidSupportedAbis>x86</AndroidSupportedAbis>
+    <AndroidStoreUncompressedFileExtensions>.dll</AndroidStoreUncompressedFileExtensions>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -55,7 +56,7 @@
       <Version>25.4.0.2</Version>
     </PackageReference>
     <PackageReference Include="Xamarin.Auth">
-      <Version>1.5.0.3</Version>
+      <Version>1.6.0.0</Version>
     </PackageReference>
     <PackageReference Include="Xamarin.Forms" Version="2.5.0.280555" />
     <PackageReference Include="Xamarin.Android.Support.Design" Version="25.4.0.2" />
@@ -86,20 +87,20 @@
     </AndroidResource>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\Bit.CSharpClient.All\Bit.CSharpClient.All.csproj">
-      <Project>{9CBE7A88-D05E-4095-B408-26FD28C5758F}</Project>
-      <Name>Bit.CSharpClient.All</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Bit.CSharpClientSample\Bit.CSharpClientSample.csproj">
-      <Project>{CD1203C7-394D-49E6-95B9-52779068DE98}</Project>
-      <Name>Bit.CSharpClientSample</Name>
-    </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
     <Folder Include="Assets\" />
   </ItemGroup>
   <ItemGroup>
     <AndroidResource Include="Resources\values\Strings.xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\Bit.CSharpClient.All\Bit.CSharpClient.All.csproj">
+      <Project>{9cbe7a88-d05e-4095-b408-26fd28c5758f}</Project>
+      <Name>Bit.CSharpClient.All</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Bit.CSharpClientSample\Bit.CSharpClientSample.csproj">
+      <Project>{c2d427d1-3891-43b2-a313-f4fb02f2cd71}</Project>
+      <Name>Bit.CSharpClientSample</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\Android\Xamarin.Android.CSharp.targets" />
 </Project>

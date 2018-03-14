@@ -10,7 +10,6 @@ using Simple.OData.Client;
 using System;
 using System.Net.Http;
 using Xamarin.Auth;
-using Xamarin.Auth.Presenters;
 using Xamarin.Forms;
 using Xamarin.Forms.Xaml;
 
@@ -66,8 +65,6 @@ namespace Bit.CSharpClientSample
                 return httpClient;
             }).SingleInstance();
 
-            containerRegistry.RegisterSingleton<BitOAuth2Authenticator>();
-            containerRegistry.RegisterSingleton<OAuthLoginPresenter>();
             containerRegistry.RegisterSingleton<ISecurityService, DefaultSecurityService>();
             containerRegistry.GetBuilder().Register<IClientAppProfile>(c => new DefaultClientAppProfile
             {

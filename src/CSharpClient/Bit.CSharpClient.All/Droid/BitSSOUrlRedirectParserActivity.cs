@@ -14,7 +14,7 @@ namespace Bit.Droid
 
             Uri uri = new Uri(Intent.Data.ToString());
 
-            DefaultSecurityService.OAuthAuthenticator?.OnPageLoading(uri);
+            DefaultSecurityService.Current?.OnSsoLoginLogoutRedirectCompleted(uri);
 
             Finish();
         }

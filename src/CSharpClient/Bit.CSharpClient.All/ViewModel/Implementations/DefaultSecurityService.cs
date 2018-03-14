@@ -2,34 +2,40 @@
 using IdentityModel.Client;
 using Newtonsoft.Json;
 using System;
+using System.Collections.Generic;
+using System.Collections.Specialized;
+using System.Dynamic;
 using System.Linq;
 using System.Net.Http;
+using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using Xamarin.Auth;
-using Xamarin.Auth.Presenters;
 
 namespace Bit.ViewModel.Implementations
 {
     public class DefaultSecurityService : ISecurityService
     {
+        private static ISecurityService _current;
+
+        public static ISecurityService Current => _current;
+
         public DefaultSecurityService(AccountStore accountStore,
             IClientAppProfile clientAppProfile,
-            BitOAuth2Authenticator bitOAuth2Authenticator,
-            OAuthLoginPresenter oAuthLoginPresenter,
-            IDateTimeProvider dateTimeProvider)
+            IDateTimeProvider dateTimeProvider,
+            IBrowserService browserService)
         {
             _clientAppProfile = clientAppProfile;
             _accountStore = accountStore;
             _dateTimeProvider = dateTimeProvider;
-            OAuthAuthenticator = bitOAuth2Authenticator;
+            _browserService = browserService;
+            _current = this;
         }
 
         private readonly IClientAppProfile _clientAppProfile;
         private readonly AccountStore _accountStore;
         private readonly IDateTimeProvider _dateTimeProvider;
-
-        public static BitOAuth2Authenticator OAuthAuthenticator { get; protected set; }
+        private readonly IBrowserService _browserService;
 
         public virtual bool IsLoggedIn()
         {
@@ -67,7 +73,10 @@ namespace Bit.ViewModel.Implementations
 
         public virtual Task<Token> Login(object state = null, string client_id = null, CancellationToken cancellationToken = default(CancellationToken))
         {
-            return OAuthAuthenticator.Login(GetLoginUrl(state, client_id));
+            CurrentAction = "Login";
+            CurrentLoginTaskCompletionSource = new TaskCompletionSource<Token>();
+            _browserService.OpenUrl(GetLoginUrl(state, client_id));
+            return CurrentLoginTaskCompletionSource.Task;
         }
 
         public virtual async Task<Token> LoginWithCredentials(string username, string password, string client_id, string client_secret, string[] scopes = null, CancellationToken cancellationToken = default(CancellationToken))
@@ -105,7 +114,10 @@ namespace Bit.ViewModel.Implementations
                 await _accountStore.DeleteAsync(account, _clientAppProfile.AppName).ConfigureAwait(false);
                 if (!string.IsNullOrEmpty(token.id_token))
                 {
-                    await OAuthAuthenticator.Logout(GetLogoutUrl(token.id_token, state, client_id));
+                    CurrentAction = "Logout";
+                    CurrentLogoutTaskCompletionSource = new TaskCompletionSource<object>();
+                    _browserService.OpenUrl(GetLogoutUrl(token.id_token, state, client_id));
+                    await CurrentLogoutTaskCompletionSource.Task;
                 }
             }
         }
@@ -155,6 +167,28 @@ namespace Bit.ViewModel.Implementations
                 relativeUri += $"&client_id={client_id}";
 
             return new Uri(_clientAppProfile.HostUri, relativeUri: relativeUri);
+        }
+
+        protected TaskCompletionSource<Token> CurrentLoginTaskCompletionSource { get; set; }
+        protected string CurrentAction { get; set; }
+        protected TaskCompletionSource<object> CurrentLogoutTaskCompletionSource { get; set; }
+
+        public virtual async void OnSsoLoginLogoutRedirectCompleted(Uri url)
+        {
+            Dictionary<string, string> query = (Dictionary<string, string>)WebEx.FormDecode(url.Fragment);
+
+            if (CurrentAction == "Logout")
+                CurrentLogoutTaskCompletionSource.SetResult(null);
+            else
+            {
+                Token token = query;
+
+                Account account = Token.FromTokenToAccount(token);
+
+                await _accountStore.SaveAsync(account, _clientAppProfile.AppName).ConfigureAwait(false);
+
+                CurrentLoginTaskCompletionSource.SetResult(query);
+            }
         }
     }
 }

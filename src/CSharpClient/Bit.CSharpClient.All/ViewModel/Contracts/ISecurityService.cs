@@ -108,5 +108,7 @@ namespace Bit.ViewModel.Contracts
         Uri GetLoginUrl(object state = null, string client_id = null);
 
         Uri GetLogoutUrl(string id_token, object state = null, string client_id = null);
+
+        void OnSsoLoginLogoutRedirectCompleted(Uri url);
     }
 }
