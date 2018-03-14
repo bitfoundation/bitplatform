@@ -2,7 +2,7 @@
 using System.Net.Http;
 using Microsoft.AspNet.SignalR.Client.Http;
 
-namespace Bit.Test.Api.Middlewares.SignalR
+namespace Bit.Test.SignalR
 {
     public class SignalRHttpClient : DefaultHttpClient
     {

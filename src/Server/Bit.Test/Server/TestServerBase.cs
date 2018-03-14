@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Net.Http;
-using Bit.Test.Api.Middlewares.SignalR;
 using IdentityModel.Client;
 using Microsoft.AspNet.SignalR.Client;
 using Microsoft.AspNet.SignalR.Client.Transports;
@@ -12,6 +11,7 @@ using Newtonsoft.Json;
 using System.Threading.Tasks;
 using Bit.Signalr;
 using Bit.Signalr.Implementations;
+using Bit.Test.SignalR;
 
 namespace Bit.Test.Server
 {
