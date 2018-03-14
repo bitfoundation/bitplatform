@@ -32,17 +32,17 @@ namespace Bit.Core.Implementations
             return Path.Combine(GetCurrentAppPath(), path);
         }
 
-        public string GetCurrentStaticFilesPath()
+        public string GetStaticFilesFolderPath()
         {
             return MapPath(DefaultAppEnvironmentsProvider.Current.GetActiveAppEnvironment().GetConfig("StaticFilesRelativePath", "./wwwroot/"));
         }
 
-        public string StaticFileMapPath(string path)
+        public string MapStaticFilePath(string path)
         {
             if (path == null)
                 throw new ArgumentNullException(nameof(path));
 
-            return Path.Combine(GetCurrentStaticFilesPath(), path);
+            return Path.Combine(GetStaticFilesFolderPath(), path);
         }
     }
 }

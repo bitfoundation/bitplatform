@@ -25,7 +25,7 @@ namespace Bit.Owin.Middlewares
 
             IRandomStringProvider randomStringProvider = dependencyResolver.Resolve<IRandomStringProvider>();
 
-            string client_Id = context.Request.Query["client_id"] ?? _App.GetDefaultClientId();
+            string client_Id = context.Request.Query["client_id"] ?? _App.GetSsoDefaultClientId();
             string afterLoginRedirect_uri = context.Request.Query["redirect_uri"] ?? $"{context.Request.Scheme}://{context.Request.Host.Value}{_App.GetHostVirtualPath()}SignIn";
 
             string ssoRedirectUri = $"{_App.GetSsoUrl()}/connect/authorize?scope={string.Join(" ", _App.Security.Scopes)}&client_id={client_Id}&redirect_uri={afterLoginRedirect_uri}&response_type=id_token token";

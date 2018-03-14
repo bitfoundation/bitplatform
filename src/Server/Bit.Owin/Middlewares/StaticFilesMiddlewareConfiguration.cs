@@ -15,7 +15,7 @@ namespace Bit.Owin.Middlewares
 
         public virtual void Configure(IAppBuilder owinApp)
         {
-            string rootFolder = PathProvider.GetCurrentStaticFilesPath();
+            string rootFolder = PathProvider.GetStaticFilesFolderPath();
 
             PhysicalFileSystem fileSystem = new PhysicalFileSystem(rootFolder);
 

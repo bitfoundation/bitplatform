@@ -4,7 +4,7 @@ using System;
 
 namespace Bit.IdentityServer.Contracts
 {
-    public class BitClient
+    public abstract class BitClient
     {
         public virtual string ClientName { get; set; }
 

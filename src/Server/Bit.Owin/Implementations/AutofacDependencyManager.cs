@@ -43,11 +43,18 @@ namespace Bit.Owin.Implementations
 
         public virtual IDependencyManager BuildContainer()
         {
+            if (!IsInited())
+                throw new InvalidOperationException("Container builder is not prepared. Call init first.");
             SetContainer(_containerBuilder.Build());
             return this;
         }
 
         public virtual bool IsInited()
+        {
+            return _containerBuilder != null;
+        }
+
+        public virtual bool ContainerIsBuilt()
         {
             return _container != null;
         }
@@ -59,8 +66,8 @@ namespace Bit.Owin.Implementations
 
         public virtual ILifetimeScope GetContainer()
         {
-            if (!IsInited())
-                throw new InvalidOperationException("Container is not prepared, build it first.");
+            if (!ContainerIsBuilt())
+                throw new InvalidOperationException("Container is not built. Call build first.");
 
             return _container;
         }

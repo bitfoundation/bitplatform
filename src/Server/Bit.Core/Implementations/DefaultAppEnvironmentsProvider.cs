@@ -8,7 +8,7 @@ namespace Bit.Core.Implementations
 {
     public class DefaultAppEnvironmentsProvider : IAppEnvironmentsProvider
     {
-        private AppEnvironment _activeEnvironment;
+        private AppEnvironment _activeAppEnvironment;
         private static IAppEnvironmentsProvider _current;
 
         public virtual IPathProvider PathProvider { get; set; }
@@ -33,8 +33,8 @@ namespace Bit.Core.Implementations
 
         public virtual AppEnvironment GetActiveAppEnvironment()
         {
-            if (_activeEnvironment != null)
-                return _activeEnvironment;
+            if (_activeAppEnvironment != null)
+                return _activeAppEnvironment;
 
             string environmentsAsJson = File.ReadAllText(PathProvider.MapPath("environments.json"));
 
@@ -48,14 +48,14 @@ namespace Bit.Core.Implementations
             if (activeEnvironments.Length > 1)
                 throw new InvalidOperationException("There are more than one active environment");
 
-            _activeEnvironment = activeEnvironments.Single();
+            _activeAppEnvironment = activeEnvironments.Single();
 
-            return _activeEnvironment;
+            return _activeAppEnvironment;
         }
 
         public override string ToString()
         {
-            return _activeEnvironment?.ToString() ?? base.ToString();
+            return _activeAppEnvironment?.ToString() ?? base.ToString();
         }
     }
 }

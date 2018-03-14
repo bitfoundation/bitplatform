@@ -64,7 +64,7 @@ namespace Bit.OwinCore
         public void Configure(IApplicationBuilder aspNetCoreApp, OwinAppStartup owinAppStartup, IEnumerable<IAspNetCoreMiddlewareConfiguration> aspNetCoreMiddlewares)
         {
             if (string.IsNullOrEmpty(_hostingEnvironment.WebRootPath))
-                _hostingEnvironment.WebRootPath = _pathProvider.GetCurrentStaticFilesPath();
+                _hostingEnvironment.WebRootPath = _pathProvider.GetStaticFilesFolderPath();
 
             if (Directory.Exists(_hostingEnvironment.WebRootPath) && (_hostingEnvironment.WebRootFileProvider == null || _hostingEnvironment.WebRootFileProvider is NullFileProvider))
                 _hostingEnvironment.WebRootFileProvider = new PhysicalFileProvider(_hostingEnvironment.WebRootPath);

@@ -26,7 +26,7 @@ namespace Bit.Owin.Middlewares
             IRandomStringProvider randomStringProvider = dependencyResolver.Resolve<IRandomStringProvider>();
 
             string redirectUriHost = $"{context.Request.Scheme}://{context.Request.Host.Value}{_App.GetHostVirtualPath()}SignIn";
-            string redirectUri = $"{_App.GetSsoUrl()}/connect/authorize?scope={string.Join(" ", _App.Security.Scopes)}&client_id={_App.GetDefaultClientId()}&redirect_uri={redirectUriHost}&response_type=id_token token";
+            string redirectUri = $"{_App.GetSsoUrl()}/connect/authorize?scope={string.Join(" ", _App.Security.Scopes)}&client_id={_App.GetSsoDefaultClientId()}&redirect_uri={redirectUriHost}&response_type=id_token token";
 
             string pathname = _App.GetHostVirtualPath() + (context.Request.Path.HasValue ? context.Request.Path.Value.Substring(1) : string.Empty);
 

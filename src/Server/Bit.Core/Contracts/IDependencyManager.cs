@@ -41,7 +41,7 @@ namespace Bit.Core.Contracts
 
         IDependencyManager RegisterAssemblyTypes(Assembly[] assemblies, Predicate<TypeInfo> predicate = null);
 
-        bool IsInited();
+        bool ContainerIsBuilt();
 
         IDependencyManager Register<TService, TImplementation>(string name = null,
             DependencyLifeCycle lifeCycle = DependencyLifeCycle.PerScopeInstance, bool overwriteExciting = true)

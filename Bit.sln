@@ -58,7 +58,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Bit.CSharpClient.All", "src
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Bit.CSharpClientSample.Android", "src\CSharpClient\Bit.CSharpClientSample\Bit.CSharpClientSample.Android\Bit.CSharpClientSample.Android.csproj", "{0708C7EF-6408-4F42-8A86-D1000B85DAD8}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Bit.CSharpClientSample", "src\CSharpClient\Bit.CSharpClientSample\Bit.CSharpClientSample\Bit.CSharpClientSample.csproj", "{C2D427D1-3891-43B2-A313-F4FB02F2CD71}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Bit.CSharpClientSample", "src\CSharpClient\Bit.CSharpClientSample\Bit.CSharpClientSample\Bit.CSharpClientSample.csproj", "{C2D427D1-3891-43B2-A313-F4FB02F2CD71}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

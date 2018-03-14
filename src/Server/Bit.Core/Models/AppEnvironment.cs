@@ -72,7 +72,7 @@ namespace Bit.Core.Models
 
         public virtual string GetSsoUrl()
         {
-            return Security?.SSOServerUrl ?? $"{GetHostVirtualPath()}core";
+            return Security?.SsoServerUrl ?? $"{GetHostVirtualPath()}core";
         }
 
         public virtual string GetSsoIssuerName()
@@ -80,7 +80,7 @@ namespace Bit.Core.Models
             return Security?.IssuerName ?? AppInfo.Name;
         }
 
-        public virtual string GetDefaultClientId()
+        public virtual string GetSsoDefaultClientId()
         {
             return Security?.DefaultClientId ?? AppInfo.Name;
         }
@@ -132,7 +132,7 @@ namespace Bit.Core.Models
     [Serializable]
     public class EnvironmentSecurity
     {
-        public virtual string SSOServerUrl { get; set; }
+        public virtual string SsoServerUrl { get; set; }
 
         public virtual string IssuerName { get; set; }
 
