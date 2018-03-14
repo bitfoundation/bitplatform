@@ -5,6 +5,7 @@ using Bit.Owin.Contracts;
 using IdentityServer3.Core.Configuration;
 using IdentityServer3.Core.Logging;
 using IdentityServer3.Core.Services;
+using Microsoft.Owin;
 using Owin;
 using System;
 using System.Collections.Generic;
@@ -15,8 +16,8 @@ namespace Bit.IdentityServer
 
     public class IdentityServerMiddlewareConfiguration : IOwinMiddlewareConfiguration
     {
-        public virtual IAppEnvironmentProvider AppEnvironmentProvider { get; set; }
-        public virtual ICertificateProvider CertificateProvider { get; set; }
+        public virtual AppEnvironment AppEnvironment { get; set; }
+        public virtual IAppCertificatesProvider AppCertificatesProvider { get; set; }
         public virtual IDependencyManager DependencyManager { get; set; }
         public virtual IScopesProvider ScopesProvider { get; set; }
         public virtual IRedirectUriValidator RedirectUriValidator { get; set; }
@@ -33,33 +34,40 @@ namespace Bit.IdentityServer
             {
                 LogProvider.SetCurrentLogProvider(DependencyManager.Resolve<ILogProvider>());
 
-                AppEnvironment activeAppEnvironment = AppEnvironmentProvider.GetActiveAppEnvironment();
-
                 IdentityServerServiceFactory factory = new IdentityServerServiceFactory()
                     .UseInMemoryClients(DependencyManager.Resolve<IClientProvider>().GetClients().ToArray())
                     .UseInMemoryScopes(ScopesProvider.GetScopes());
 
-                factory.UserService =
-                    new Registration<IUserService>(DependencyManager.Resolve<IUserService>());
+                factory.UserService = new Registration<IUserService>(resolver =>
+                {
+                    OwinEnvironmentService owinEnv = resolver.Resolve<OwinEnvironmentService>();
+                    IOwinContext owinContext = new OwinContext(owinEnv.Environment);
+                    return owinContext.GetDependencyResolver().Resolve<IUserService>();
+                });
 
                 factory.EventService = new Registration<IEventService>(EventService);
 
-                factory.ViewService = new Registration<IViewService>(DependencyManager.Resolve<IViewService>());
+                factory.ViewService = new Registration<IViewService>(resolver =>
+                {
+                    OwinEnvironmentService owinEnv = resolver.Resolve<OwinEnvironmentService>();
+                    IOwinContext owinContext = new OwinContext(owinEnv.Environment);
+                    return owinContext.GetDependencyResolver().Resolve<IViewService>();
+                });
 
                 factory.RedirectUriValidator = new Registration<IRedirectUriValidator>(RedirectUriValidator);
 
-                bool requireSslConfigValue = activeAppEnvironment.GetConfig("RequireSsl", defaultValueOnNotFound: false);
+                bool requireSslConfigValue = AppEnvironment.GetConfig("RequireSsl", defaultValueOnNotFound: false);
 
-                string identityServerSiteName = activeAppEnvironment.GetConfig("IdentityServerSiteName", $"{activeAppEnvironment.AppInfo.Name} Identity Server");
+                string identityServerSiteName = AppEnvironment.GetConfig("IdentityServerSiteName", $"{AppEnvironment.AppInfo.Name} Identity Server");
 
                 IdentityServerOptions identityServerOptions = new IdentityServerOptions
                 {
                     SiteName = identityServerSiteName,
-                    SigningCertificate = CertificateProvider.GetSingleSignOnCertificate(),
+                    SigningCertificate = AppCertificatesProvider.GetSingleSignOnCertificate(),
                     Factory = factory,
                     RequireSsl = requireSslConfigValue,
-                    EnableWelcomePage = activeAppEnvironment.DebugMode == true,
-                    IssuerUri = activeAppEnvironment.GetSsoIssuerName(),
+                    EnableWelcomePage = AppEnvironment.DebugMode == true,
+                    IssuerUri = AppEnvironment.GetSsoIssuerName(),
                     CspOptions = new CspOptions
                     {
                         // Content security policy

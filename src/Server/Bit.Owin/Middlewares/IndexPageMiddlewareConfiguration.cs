@@ -9,25 +9,14 @@ namespace Bit.Owin.Middlewares
 {
     public class IndexPageMiddlewareConfiguration : IOwinMiddlewareConfiguration
     {
-        private AppEnvironment _activeAppEnvironment;
-
-        public virtual IAppEnvironmentProvider AppEnvironmentProvider
-        {
-            set
-            {
-                if (value == null)
-                    throw new ArgumentNullException(nameof(value));
-
-                _activeAppEnvironment = value.GetActiveAppEnvironment();
-            }
-        }
+        public virtual AppEnvironment AppEnvironment { get; set; }
 
         public virtual void Configure(IAppBuilder owinApp)
         {
             if (owinApp == null)
                 throw new ArgumentNullException(nameof(owinApp));
 
-            if (_activeAppEnvironment.GetConfig("RequireSsl", defaultValueOnNotFound: false))
+            if (AppEnvironment.GetConfig("RequireSsl", defaultValueOnNotFound: false))
             {
                 owinApp.UseHsts(config => config.IncludeSubdomains().MaxAge(days: 30));
             }

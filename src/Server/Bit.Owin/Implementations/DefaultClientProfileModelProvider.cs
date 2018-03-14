@@ -1,30 +1,18 @@
-﻿using System;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
-using Bit.Core.Contracts;
+﻿using Bit.Core.Contracts;
 using Bit.Core.Models;
 using Bit.Model.DomainModels;
 using Bit.Owin.Contracts;
 using Bit.Owin.Models;
+using System;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace Bit.Owin.Implementations
 {
     public class DefaultClientProfileModelProvider : IClientProfileModelProvider
     {
-        private IAppEnvironmentProvider _AppEnvironmentProvider;
-        private AppEnvironment _App;
-
-        public virtual IAppEnvironmentProvider AppEnvironmentProvider
-        {
-            get => _AppEnvironmentProvider;
-            set
-            {
-                _AppEnvironmentProvider = value;
-                _App = _AppEnvironmentProvider.GetActiveAppEnvironment();
-            }
-        }
-        
+        public virtual AppEnvironment AppEnvironment { get; set; }
         public virtual IUserSettingProvider UsersSettingsProvider { get; set; }
         public virtual IContentFormatter ContentFormatter { get; set; }
 
@@ -32,19 +20,19 @@ namespace Bit.Owin.Implementations
         {
             ClientProfileModel clientProfileMdoel = new ClientProfileModel
             {
-                AppVersion = _App.AppInfo.Version,
-                DebugMode = _App.DebugMode,
-                AppName = _App.AppInfo.Name
+                AppVersion = AppEnvironment.AppInfo.Version,
+                DebugMode = AppEnvironment.DebugMode,
+                AppName = AppEnvironment.AppInfo.Name
             };
 
             UserSetting userSetting = UsersSettingsProvider?.GetCurrentUserSetting();
 
-            string theme = userSetting?.Theme ?? _App.AppInfo.DefaultTheme;
+            string theme = userSetting?.Theme ?? AppEnvironment.AppInfo.DefaultTheme;
 
-            string culture = userSetting?.Culture ?? _App.AppInfo.DefaultCulture;
+            string culture = userSetting?.Culture ?? AppEnvironment.AppInfo.DefaultCulture;
 
             string desiredTimeZone = userSetting?.DesiredTimeZone ??
-                                           _App.AppInfo.DefaultTimeZone;
+                                           AppEnvironment.AppInfo.DefaultTimeZone;
 
             string desiredTimeZoneValue = null;
 
@@ -55,8 +43,8 @@ namespace Bit.Owin.Implementations
                 !string.Equals(desiredTimeZone, "Auto", StringComparison.CurrentCulture))
                 desiredTimeZoneValue = desiredTimeZone;
 
-            string appTitle = _App.Cultures.Any() ? _App.Cultures
-                .ExtendedSingle($"Finding culture {culture} in environment {_App.Name}", c => c.Name == culture).Values.ExtendedSingle($"Finding AppTitle in culture {culture}", v =>
+            string appTitle = AppEnvironment.Cultures.Any() ? AppEnvironment.Cultures
+                .ExtendedSingle($"Finding culture {culture} in environment {AppEnvironment.Name}", c => c.Name == culture).Values.ExtendedSingle($"Finding AppTitle in culture {culture}", v =>
                       string.Equals(v.Name, "AppTitle", StringComparison.OrdinalIgnoreCase)).Title : string.Empty;
 
             clientProfileMdoel.AppTitle = appTitle;
@@ -64,11 +52,11 @@ namespace Bit.Owin.Implementations
             clientProfileMdoel.DesiredTimeZoneValue = desiredTimeZoneValue;
             clientProfileMdoel.Theme = theme;
 
-            clientProfileMdoel.EnvironmentConfigsJson = ContentFormatter.Serialize(_App
+            clientProfileMdoel.EnvironmentConfigsJson = ContentFormatter.Serialize(AppEnvironment
                 .Configs.Where(c => c.AccessibleInClientSide == true)
                 .Select(c => new { value = c.Value, key = c.Key }));
 
-            clientProfileMdoel.BaseHref = _App.GetHostVirtualPath();
+            clientProfileMdoel.BaseHref = AppEnvironment.GetHostVirtualPath();
 
             return clientProfileMdoel;
         }
@@ -77,19 +65,19 @@ namespace Bit.Owin.Implementations
         {
             ClientProfileModel clientAppProfileModel = new ClientProfileModel
             {
-                AppVersion = _App.AppInfo.Version,
-                DebugMode = _App.DebugMode,
-                AppName = _App.AppInfo.Name
+                AppVersion = AppEnvironment.AppInfo.Version,
+                DebugMode = AppEnvironment.DebugMode,
+                AppName = AppEnvironment.AppInfo.Name
             };
 
             UserSetting userSetting = UsersSettingsProvider == null ? null : await UsersSettingsProvider.GetCurrentUserSettingAsync(cancellationToken).ConfigureAwait(false);
 
-            string theme = userSetting?.Theme ?? _App.AppInfo.DefaultTheme;
+            string theme = userSetting?.Theme ?? AppEnvironment.AppInfo.DefaultTheme;
 
-            string culture = userSetting?.Culture ?? _App.AppInfo.DefaultCulture;
+            string culture = userSetting?.Culture ?? AppEnvironment.AppInfo.DefaultCulture;
 
             string desiredTimeZone = userSetting?.DesiredTimeZone ??
-                                           _App.AppInfo.DefaultTimeZone;
+                                           AppEnvironment.AppInfo.DefaultTimeZone;
 
             string desiredTimeZoneValue = null;
 
@@ -100,8 +88,8 @@ namespace Bit.Owin.Implementations
                 !string.Equals(desiredTimeZone, "Auto", StringComparison.CurrentCulture))
                 desiredTimeZoneValue = desiredTimeZone;
 
-            string appTitle = _App.Cultures.Any() ? _App.Cultures
-                .ExtendedSingle($"Finding culture {culture} in environment {_App.Name}", c => c.Name == culture).Values.ExtendedSingle($"Finding AppTitle in culture {culture}", v =>
+            string appTitle = AppEnvironment.Cultures.Any() ? AppEnvironment.Cultures
+                .ExtendedSingle($"Finding culture {culture} in environment {AppEnvironment.Name}", c => c.Name == culture).Values.ExtendedSingle($"Finding AppTitle in culture {culture}", v =>
                       string.Equals(v.Name, "AppTitle", StringComparison.OrdinalIgnoreCase)).Title : string.Empty;
 
             clientAppProfileModel.AppTitle = appTitle;
@@ -109,11 +97,11 @@ namespace Bit.Owin.Implementations
             clientAppProfileModel.DesiredTimeZoneValue = desiredTimeZoneValue;
             clientAppProfileModel.Theme = theme;
 
-            clientAppProfileModel.EnvironmentConfigsJson = ContentFormatter.Serialize(_App
+            clientAppProfileModel.EnvironmentConfigsJson = ContentFormatter.Serialize(AppEnvironment
                 .Configs.Where(c => c.AccessibleInClientSide == true)
                 .Select(c => new { value = c.Value, key = c.Key }));
 
-            clientAppProfileModel.BaseHref = _App.GetHostVirtualPath();
+            clientAppProfileModel.BaseHref = AppEnvironment.GetHostVirtualPath();
 
             return clientAppProfileModel;
         }

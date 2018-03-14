@@ -1,4 +1,5 @@
-﻿using Bit.Core.Implementations;
+﻿using Bit.Core.Contracts;
+using Bit.Core.Models;
 using Swashbuckle.Swagger;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,6 +11,8 @@ namespace Bit.WebApi.Implementations
 {
     public class DefaultAuthorizationOperationFilter : IOperationFilter
     {
+        public virtual AppEnvironment AppEnvironment { get; internal set; }
+
         public void Apply(Operation operation, SchemaRegistry schemaRegistry, ApiDescription apiDescription)
         {
             bool hasAllowAnonymous = apiDescription.ActionDescriptor.GetCustomAttributes<AllowAnonymousAttribute>().Any();
@@ -27,7 +30,7 @@ namespace Bit.WebApi.Implementations
 
             Dictionary<string, IEnumerable<string>> oAuth2Requirements = new Dictionary<string, IEnumerable<string>>
             {
-                { "oauth2", DefaultAppEnvironmentProvider.Current.GetActiveAppEnvironment().Security.Scopes }
+                { "oauth2", AppEnvironment.Security.Scopes }
             };
 
             operation.security.Add(oAuth2Requirements);

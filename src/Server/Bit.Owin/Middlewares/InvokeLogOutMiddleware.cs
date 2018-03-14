@@ -20,9 +20,7 @@ namespace Bit.Owin.Middlewares
 
             if (_App == null)
             {
-                IAppEnvironmentProvider appEnvironmentProvider = dependencyResolver.Resolve<IAppEnvironmentProvider>();
-
-                _App = appEnvironmentProvider.GetActiveAppEnvironment();
+                _App = dependencyResolver.Resolve<AppEnvironment>();
             }
 
             string afterLogoutRedirect_uri = context.Request.Query["redirect_uri"] ?? $"{context.Request.Scheme}://{context.Request.Host.Value}{_App.GetHostVirtualPath()}SignOut";

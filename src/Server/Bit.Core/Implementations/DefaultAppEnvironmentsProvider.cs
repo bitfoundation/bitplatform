@@ -6,21 +6,21 @@ using Bit.Core.Models;
 
 namespace Bit.Core.Implementations
 {
-    public class DefaultAppEnvironmentProvider : IAppEnvironmentProvider
+    public class DefaultAppEnvironmentsProvider : IAppEnvironmentsProvider
     {
         private AppEnvironment _activeEnvironment;
-        private static IAppEnvironmentProvider _current;
+        private static IAppEnvironmentsProvider _current;
 
         public virtual IPathProvider PathProvider { get; set; }
         public virtual IContentFormatter ContentFormatter { get; set; }
 
-        public static IAppEnvironmentProvider Current
+        public static IAppEnvironmentsProvider Current
         {
             get
             {
                 if (_current == null)
                 {
-                    _current = new DefaultAppEnvironmentProvider
+                    _current = new DefaultAppEnvironmentsProvider
                     {
                         ContentFormatter = DefaultJsonContentFormatter.Current,
                         PathProvider = DefaultPathProvider.Current

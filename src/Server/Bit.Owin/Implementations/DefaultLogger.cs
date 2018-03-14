@@ -12,21 +12,10 @@ namespace Bit.Owin.Implementations
 {
     public class DefaultLogger : ILogger
     {
-        private AppEnvironment _activeAppEnvironment;
-
         public virtual IDateTimeProvider DateTimeProvider { get; set; }
         public virtual IEnumerable<ILogStore> LogStores { get; set; }
 
-        public virtual IAppEnvironmentProvider AppEnvironmentProvider
-        {
-            set
-            {
-                if (value == null)
-                    throw new ArgumentNullException(nameof(AppEnvironmentProvider));
-
-                _activeAppEnvironment = value.GetActiveAppEnvironment();
-            }
-        }
+        public virtual AppEnvironment AppEnvironment { get; set; }
 
         private void SaveLogEntryUsingAllLogStores(LogEntry logEntry)
         {
@@ -209,10 +198,10 @@ namespace Bit.Owin.Implementations
                 Message = message,
                 Severity = severity,
                 LogData = LogData,
-                ApplicationName = _activeAppEnvironment.AppInfo.Name,
-                AppVersion = _activeAppEnvironment.AppInfo.Version,
-                AppEnvironmentName = _activeAppEnvironment.Name,
-                AppWasInDebugMode = _activeAppEnvironment.DebugMode,
+                ApplicationName = AppEnvironment.AppInfo.Name,
+                AppVersion = AppEnvironment.AppInfo.Version,
+                AppEnvironmentName = AppEnvironment.Name,
+                AppWasInDebugMode = AppEnvironment.DebugMode,
                 AppServerName = Environment.MachineName,
                 AppServerDateTime = DateTimeProvider.GetCurrentUtcDateTime(),
                 AppServerOSVersion = Environment.OSVersion.ToString(),

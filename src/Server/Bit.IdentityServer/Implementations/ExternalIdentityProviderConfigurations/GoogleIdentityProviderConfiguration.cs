@@ -11,16 +11,14 @@ namespace Bit.IdentityServer.Implementations.ExternalIdentityProviderConfigurati
 {
     public class GoogleIdentityProviderConfiguration : IExternalIdentityProviderConfiguration
     {
-        public virtual IAppEnvironmentProvider AppEnvironmentProvider { get; set; }
+        public virtual AppEnvironment AppEnvironment { get; set; }
 
         public virtual void ConfiguerExternalIdentityProvider(IAppBuilder owinApp, string signInType)
         {
-            AppEnvironment activeAppEnvironment = AppEnvironmentProvider.GetActiveAppEnvironment();
-
-            if (activeAppEnvironment.HasConfig("GoogleClientId") && activeAppEnvironment.HasConfig("GoogleSecret"))
+            if (AppEnvironment.HasConfig("GoogleClientId") && AppEnvironment.HasConfig("GoogleSecret"))
             {
-                string googleClientId = activeAppEnvironment.GetConfig<string>("GoogleClientId");
-                string googleSecret = activeAppEnvironment.GetConfig<string>("GoogleSecret");
+                string googleClientId = AppEnvironment.GetConfig<string>("GoogleClientId");
+                string googleSecret = AppEnvironment.GetConfig<string>("GoogleSecret");
 
                 owinApp.UseGoogleAuthentication(new GoogleOAuth2AuthenticationOptions
                 {

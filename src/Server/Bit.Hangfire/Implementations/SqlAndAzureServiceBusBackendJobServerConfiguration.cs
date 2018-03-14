@@ -27,7 +27,7 @@ namespace Bit.Hangfire.Implementations
 
         public virtual JobActivator JobActivator { get; set; }
 
-        public virtual IAppEnvironmentProvider AppEnvironmentProvider { get; set; }
+        public virtual AppEnvironment AppEnvironment { get; set; }
 
         public virtual ILogProvider LogProvider { get; set; }
 
@@ -38,24 +38,18 @@ namespace Bit.Hangfire.Implementations
 
         public virtual void OnAppStartup()
         {
-            AppEnvironment activeAppEnvironment = AppEnvironmentProvider.GetActiveAppEnvironment();
-
-            string jobSchedulerDbConnectionString = activeAppEnvironment.GetConfig<string>("JobSchedulerDbConnectionString");
+            string jobSchedulerDbConnectionString = AppEnvironment.GetConfig<string>("JobSchedulerDbConnectionString");
 
             SqlServerStorage storage = new SqlServerStorage(jobSchedulerDbConnectionString, new SqlServerStorageOptions
             {
                 PrepareSchemaIfNecessary = false,
-#if NET461
                 TransactionIsolationLevel = IsolationLevel.ReadCommitted,
-#else
-                TransactionIsolationLevel = System.Data.IsolationLevel.ReadCommitted,
-#endif
                 SchemaName = "Jobs"
             });
 
-            if (activeAppEnvironment.HasConfig("JobSchedulerAzureServiceBusConnectionString"))
+            if (AppEnvironment.HasConfig("JobSchedulerAzureServiceBusConnectionString"))
             {
-                string signalRAzureServiceBusConnectionString = activeAppEnvironment.GetConfig<string>("JobSchedulerAzureServiceBusConnectionString");
+                string signalRAzureServiceBusConnectionString = AppEnvironment.GetConfig<string>("JobSchedulerAzureServiceBusConnectionString");
 
                 storage.UseServiceBusQueues(signalRAzureServiceBusConnectionString);
             }

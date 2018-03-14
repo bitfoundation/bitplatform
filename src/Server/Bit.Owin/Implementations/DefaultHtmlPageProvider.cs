@@ -9,19 +9,6 @@ namespace Bit.Owin.Implementations
 {
     public class DefaultHtmlPageProvider : IHtmlPageProvider
     {
-        private IAppEnvironmentProvider _appEnvironmentProvider;
-        protected AppEnvironment ActiveAppEnvironment { get; set; }
-
-        public virtual IAppEnvironmentProvider AppEnvironmentProvider
-        {
-            get => _appEnvironmentProvider;
-            set
-            {
-                _appEnvironmentProvider = value;
-                ActiveAppEnvironment = _appEnvironmentProvider.GetActiveAppEnvironment();
-            }
-        }
-
         public virtual IClientProfileModelProvider ClientProfileModelProvider { get; set; }
 
         public virtual async Task<string> GetHtmlPageAsync(string htmlPage, CancellationToken cancellationToken)

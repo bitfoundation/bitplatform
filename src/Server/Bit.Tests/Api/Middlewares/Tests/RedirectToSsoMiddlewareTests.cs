@@ -22,7 +22,7 @@ namespace Bit.Tests.Api.Middlewares.Tests
                 {
                     IRandomStringProvider randomStringProvider = A.Fake<IRandomStringProvider>();
 
-                    A.CallTo(() => randomStringProvider.GetRandomNonSecureString(12))
+                    A.CallTo(() => randomStringProvider.GetRandomString(12))
                     .Returns("RandomString");
 
                     manager.RegisterInstance(randomStringProvider);

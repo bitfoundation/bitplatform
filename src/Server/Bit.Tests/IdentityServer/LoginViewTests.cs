@@ -34,12 +34,21 @@ namespace Bit.Tests.IdentityServer
                     driver.FindElementByName("login").Click();
                 }
 
-                TestUserService testUserService = TestDependencyManager.CurrentTestDependencyManager.Objects
-                    .OfType<TestUserService>()
-                    .Single();
+                bool foundAnyCorrectCall = false;
 
-                A.CallTo(() => testUserService.AuthenticateLocalAsync(A<LocalAuthenticationContext>.That.Matches(cntx => cntx.UserName == "ValidUserName" && cntx.Password == "ValidPassword")))
-                    .MustHaveHappened(Repeated.Exactly.Once);
+                foreach (TestUserService userService in TestDependencyManager.CurrentTestDependencyManager.Objects.OfType<TestUserService>())
+                {
+                    try
+                    {
+                        A.CallTo(() => userService.AuthenticateLocalAsync(A<LocalAuthenticationContext>.That.Matches(cntx => cntx.UserName == "ValidUserName" && cntx.Password == "ValidPassword")))
+                            .MustHaveHappened(Repeated.Exactly.Once);
+
+                        foundAnyCorrectCall = true;
+                    }
+                    catch (ExpectationException) { }
+                }
+
+                Assert.IsTrue(foundAnyCorrectCall);
             }
         }
 
@@ -64,12 +73,21 @@ namespace Bit.Tests.IdentityServer
                     Assert.AreEqual("Login failed", driver.FindElementByName("error").GetAttribute("innerText"));
                 }
 
-                TestUserService testUserService = TestDependencyManager.CurrentTestDependencyManager.Objects
-                    .OfType<TestUserService>()
-                    .Single();
+                bool foundAnyCorrectCall = false;
 
-                A.CallTo(() => testUserService.AuthenticateLocalAsync(A<LocalAuthenticationContext>.That.Matches(cntx => cntx.UserName == "InValidUserName" && cntx.Password == "InValidPassword")))
-                    .MustHaveHappened(Repeated.Exactly.Once);
+                foreach (TestUserService userService in TestDependencyManager.CurrentTestDependencyManager.Objects.OfType<TestUserService>())
+                {
+                    try
+                    {
+                        A.CallTo(() => userService.AuthenticateLocalAsync(A<LocalAuthenticationContext>.That.Matches(cntx => cntx.UserName == "InValidUserName" && cntx.Password == "InValidPassword")))
+                            .MustHaveHappened(Repeated.Exactly.Once);
+
+                        foundAnyCorrectCall = true;
+                    }
+                    catch (ExpectationException) { }
+                }
+
+                Assert.IsTrue(foundAnyCorrectCall);
             }
         }
     }

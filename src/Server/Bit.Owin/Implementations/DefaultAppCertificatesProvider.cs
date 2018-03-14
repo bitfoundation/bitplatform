@@ -5,9 +5,9 @@ using Bit.Core.Models;
 
 namespace Bit.Owin.Implementations
 {
-    public class DefaultCertificateProvider : ICertificateProvider
+    public class DefaultAppCertificatesProvider : IAppCertificatesProvider
     {
-        public virtual IAppEnvironmentProvider AppEnvironmentProvider { get; set; }
+        public virtual AppEnvironment AppEnvironment { get; set; }
         public virtual IPathProvider PathProvider { get; set; }
 
         private X509Certificate2 _certificate;
@@ -16,12 +16,10 @@ namespace Bit.Owin.Implementations
         {
             if (_certificate == null)
             {
-                AppEnvironment activeAppEnvironment = AppEnvironmentProvider.GetActiveAppEnvironment();
-
-                string password = activeAppEnvironment
+                string password = AppEnvironment
                     .GetConfig<string>("IdentityCertificatePassword");
 
-                _certificate = new X509Certificate2(File.ReadAllBytes(PathProvider.MapPath(activeAppEnvironment.GetConfig("IdentityServerCertificatePath", "IdentityServerCertificate.pfx"))),
+                _certificate = new X509Certificate2(File.ReadAllBytes(PathProvider.MapPath(AppEnvironment.GetConfig("IdentityServerCertificatePath", "IdentityServerCertificate.pfx"))),
                     password);
             }
 

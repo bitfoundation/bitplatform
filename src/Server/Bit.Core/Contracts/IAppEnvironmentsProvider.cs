@@ -2,7 +2,7 @@
 
 namespace Bit.Core.Contracts
 {
-    public interface IAppEnvironmentProvider
+    public interface IAppEnvironmentsProvider
     {
         AppEnvironment GetActiveAppEnvironment();
     }

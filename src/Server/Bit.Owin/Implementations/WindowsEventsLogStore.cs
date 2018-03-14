@@ -8,19 +8,9 @@ namespace Bit.Owin.Implementations
 {
     public class WindowsEventsLogStore : ILogStore
     {
-        private AppEnvironment _activeAppEnvironment;
+        public virtual AppEnvironment AppEnvironment { get; set; }
 
         public virtual IContentFormatter ContentFormatter { get; set; }
-
-        public virtual IAppEnvironmentProvider AppEnvironmentProvider
-        {
-            set
-            {
-                if (value == null)
-                    throw new ArgumentNullException(nameof(AppEnvironmentProvider));
-                _activeAppEnvironment = value.GetActiveAppEnvironment();
-            }
-        }
 
         public virtual Task SaveLogAsync(LogEntry logEntry)
         {
@@ -36,7 +26,7 @@ namespace Bit.Owin.Implementations
 
             EventLog appLog = new EventLog("Application")
             {
-                Source = _activeAppEnvironment.AppInfo.Name
+                Source = AppEnvironment.AppInfo.Name
             };
 
             EventLogEntryType eventLogsSeverity;
@@ -53,7 +43,7 @@ namespace Bit.Owin.Implementations
             if (logContents.Length >= 30000)
                 logContents = logContents.Substring(0, 29999);
 
-            if (_activeAppEnvironment.TryGetConfig("EventLogId", out long eventLogId))
+            if (AppEnvironment.TryGetConfig("EventLogId", out long eventLogId))
             {
                 appLog.WriteEntry(logContents, eventLogsSeverity, Convert.ToInt32(eventLogId));
             }

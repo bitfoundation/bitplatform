@@ -9,16 +9,14 @@ namespace Bit.IdentityServer.Implementations.ExternalIdentityProviderConfigurati
 {
     public class TwitterIdentityProviderConfiguration : IExternalIdentityProviderConfiguration
     {
-        public virtual IAppEnvironmentProvider AppEnvironmentProvider { get; set; }
+        public virtual AppEnvironment AppEnvironment { get; set; }
 
         public virtual void ConfiguerExternalIdentityProvider(IAppBuilder owinApp, string signInType)
         {
-            AppEnvironment activeAppEnvironment = AppEnvironmentProvider.GetActiveAppEnvironment();
-
-            if (activeAppEnvironment.HasConfig("TwitterClientId") && activeAppEnvironment.HasConfig("TwitterSecret"))
+            if (AppEnvironment.HasConfig("TwitterClientId") && AppEnvironment.HasConfig("TwitterSecret"))
             {
-                string twitterClientId = activeAppEnvironment.GetConfig<string>("TwitterClientId");
-                string twitterSecret = activeAppEnvironment.GetConfig<string>("TwitterSecret");
+                string twitterClientId = AppEnvironment.GetConfig<string>("TwitterClientId");
+                string twitterSecret = AppEnvironment.GetConfig<string>("TwitterSecret");
 
                 TwitterAuthenticationOptions twitterAuthenticationOptions = new TwitterAuthenticationOptions
                 {

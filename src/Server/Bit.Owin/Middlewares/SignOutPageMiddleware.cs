@@ -17,9 +17,7 @@ namespace Bit.Owin.Middlewares
         {
             IDependencyResolver dependencyResolver = context.GetDependencyResolver();
 
-            IAppEnvironmentProvider appEnvironmentProvider = dependencyResolver.Resolve<IAppEnvironmentProvider>();
-
-            AppEnvironment activeAppEnvironment = appEnvironmentProvider.GetActiveAppEnvironment();
+            AppEnvironment activeAppEnvironment = dependencyResolver.Resolve<AppEnvironment>();
 
             string defaultPath = activeAppEnvironment.GetHostVirtualPath();
             string defaultPathWithoutEndingSlashIfIsNotRoot = defaultPath == "/" ? defaultPath : defaultPath.Substring(0, defaultPath.Length - 1);

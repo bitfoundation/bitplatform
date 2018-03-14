@@ -19,7 +19,6 @@ namespace Bit.OData
 {
     public class WebApiODataMiddlewareConfiguration : IOwinMiddlewareConfiguration, IDisposable
     {
-        private AppEnvironment _activeAppEnvironment;
         private HttpConfiguration _webApiConfig;
         private HttpServer _server;
         private ODataBatchHandler _odataBatchHandler;
@@ -31,15 +30,7 @@ namespace Bit.OData
         public virtual IWebApiOwinPipelineInjector WebApiOwinPipelineInjector { get; set; }
         public virtual IContainerBuilder ContainerBuilder { get; set; }
 
-        public virtual IAppEnvironmentProvider AppEnvironmentProvider
-        {
-            set
-            {
-                if (value == null)
-                    throw new ArgumentNullException(nameof(AppEnvironmentProvider));
-                _activeAppEnvironment = value.GetActiveAppEnvironment();
-            }
-        }
+        public virtual AppEnvironment AppEnvironment { get; set; }
 
         public virtual void Configure(IAppBuilder owinApp)
         {
@@ -53,7 +44,7 @@ namespace Bit.OData
 
             _webApiConfig.Formatters.Clear();
 
-            _webApiConfig.IncludeErrorDetailPolicy = _activeAppEnvironment.DebugMode ? IncludeErrorDetailPolicy.LocalOnly : IncludeErrorDetailPolicy.Never;
+            _webApiConfig.IncludeErrorDetailPolicy = AppEnvironment.DebugMode ? IncludeErrorDetailPolicy.LocalOnly : IncludeErrorDetailPolicy.Never;
 
             _webApiConfig.DependencyResolver = WebApiDependencyResolver;
 

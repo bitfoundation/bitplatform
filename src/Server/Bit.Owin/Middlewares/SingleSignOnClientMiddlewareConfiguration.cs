@@ -9,9 +9,9 @@ namespace Bit.Owin.Middlewares
 {
     public class SingleSignOnClientMiddlewareConfiguration : IOwinMiddlewareConfiguration
     {
-        public virtual ICertificateProvider CertificateProvider { get; set; }
+        public virtual IAppCertificatesProvider AppCertificatesProvider { get; set; }
 
-        public virtual IAppEnvironmentProvider AppEnvironmentProvider { get; set; }
+        public virtual AppEnvironment AppEnvironment { get; set; }
 
         public virtual void Configure(IAppBuilder owinApp)
         {
@@ -23,16 +23,14 @@ namespace Bit.Owin.Middlewares
 
         protected virtual void UseJwtBearerAuthentication(IAppBuilder owinApp)
         {
-            AppEnvironment activeAppEnvironment = AppEnvironmentProvider.GetActiveAppEnvironment();
-
-            string issuerName = activeAppEnvironment.GetSsoIssuerName();
+            string issuerName = AppEnvironment.GetSsoIssuerName();
 
             owinApp.UseJwtBearerAuthentication(new JwtBearerAuthenticationOptions
             {
                 AllowedAudiences = new string[] { $"{issuerName}/resources" },
                 IssuerSecurityKeyProviders = new[]
                 {
-                    new X509CertificateSecurityKeyProvider(issuerName, CertificateProvider.GetSingleSignOnCertificate())
+                    new X509CertificateSecurityKeyProvider(issuerName, AppCertificatesProvider.GetSingleSignOnCertificate())
                 }
             });
         }

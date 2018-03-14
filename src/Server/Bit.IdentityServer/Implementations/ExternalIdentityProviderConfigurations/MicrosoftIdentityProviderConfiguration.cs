@@ -11,16 +11,14 @@ namespace Bit.IdentityServer.Implementations.ExternalIdentityProviderConfigurati
 {
     public class MicrosoftIdentityProviderConfiguration : IExternalIdentityProviderConfiguration
     {
-        public virtual IAppEnvironmentProvider AppEnvironmentProvider { get; set; }
+        public virtual AppEnvironment AppEnvironment { get; set; }
 
         public virtual void ConfiguerExternalIdentityProvider(IAppBuilder owinApp, string signInType)
         {
-            AppEnvironment activeAppEnvironment = AppEnvironmentProvider.GetActiveAppEnvironment();
-
-            if (activeAppEnvironment.HasConfig("MicrosoftClientId") && activeAppEnvironment.HasConfig("MicrosoftSecret"))
+            if (AppEnvironment.HasConfig("MicrosoftClientId") && AppEnvironment.HasConfig("MicrosoftSecret"))
             {
-                string microsoftClientId = activeAppEnvironment.GetConfig<string>("MicrosoftClientId");
-                string microsoftSecret = activeAppEnvironment.GetConfig<string>("MicrosoftSecret");
+                string microsoftClientId = AppEnvironment.GetConfig<string>("MicrosoftClientId");
+                string microsoftSecret = AppEnvironment.GetConfig<string>("MicrosoftSecret");
 
                 MicrosoftAccountAuthenticationOptions microsoftAccountAuthenticationOptions = new MicrosoftAccountAuthenticationOptions
                 {

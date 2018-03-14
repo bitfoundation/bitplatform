@@ -11,16 +11,14 @@ namespace Bit.IdentityServer.Implementations.ExternalIdentityProviderConfigurati
 {
     public class FacebookIdentityProviderConfiguration : IExternalIdentityProviderConfiguration
     {
-        public virtual IAppEnvironmentProvider AppEnvironmentProvider { get; set; }
+        public virtual AppEnvironment AppEnvironment { get; set; }
 
         public virtual void ConfiguerExternalIdentityProvider(IAppBuilder owinApp, string signInType)
         {
-            AppEnvironment activeAppEnvironment = AppEnvironmentProvider.GetActiveAppEnvironment();
-
-            if (activeAppEnvironment.HasConfig("FacebookClientId") && activeAppEnvironment.HasConfig("FacebookSecret"))
+            if (AppEnvironment.HasConfig("FacebookClientId") && AppEnvironment.HasConfig("FacebookSecret"))
             {
-                string facebookClientId = activeAppEnvironment.GetConfig<string>("FacebookClientId");
-                string facebookSecret = activeAppEnvironment.GetConfig<string>("FacebookSecret");
+                string facebookClientId = AppEnvironment.GetConfig<string>("FacebookClientId");
+                string facebookSecret = AppEnvironment.GetConfig<string>("FacebookSecret");
 
                 FacebookAuthenticationOptions facebookAuthenticationOptions = new FacebookAuthenticationOptions
                 {

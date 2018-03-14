@@ -10,14 +10,14 @@ namespace Bit.Tests.IdentityServer.Implementations
 {
     public class TestClientProvider : ClientProvider
     {
-        private readonly IAppEnvironmentProvider _appEnvironmentProvider;
+        private readonly IAppEnvironmentsProvider _appEnvironmentsProvider;
 
-        public TestClientProvider(IAppEnvironmentProvider appEnvironmentProvider)
+        public TestClientProvider(IAppEnvironmentsProvider appEnvironmentsProvider)
         {
-            if (appEnvironmentProvider == null)
-                throw new ArgumentNullException(nameof(appEnvironmentProvider));
+            if (appEnvironmentsProvider == null)
+                throw new ArgumentNullException(nameof(appEnvironmentsProvider));
 
-            _appEnvironmentProvider = appEnvironmentProvider;
+            _appEnvironmentsProvider = appEnvironmentsProvider;
         }
 
         protected TestClientProvider()
@@ -27,7 +27,7 @@ namespace Bit.Tests.IdentityServer.Implementations
 
         public override IEnumerable<Client> GetClients()
         {
-            AppEnvironment activeAppEnvironment = _appEnvironmentProvider.GetActiveAppEnvironment();
+            AppEnvironment activeAppEnvironment = _appEnvironmentsProvider.GetActiveAppEnvironment();
 
             return new[]
             {

@@ -1,16 +1,20 @@
-﻿using System;
-using Bit.Core.Contracts;
+﻿using Bit.Core.Contracts;
+using System;
 
 namespace Bit.Owin.Implementations
 {
     public class DefaultRandomStringProvider : IRandomStringProvider
     {
-        public virtual string GetRandomNonSecureString(int length)
+        public virtual string GetRandomString(int length)
         {
-            if (length > 32)
-                throw new NotSupportedException($"Length greater than 32 is not supported. Provided length: {length}");
+            string result = "";
 
-            return Guid.NewGuid().ToString("N").Substring(length);
+            while (result.Length < length)
+            {
+                result += Guid.NewGuid().ToString("N");
+            }
+
+            return result.Substring(length);
         }
     }
 }

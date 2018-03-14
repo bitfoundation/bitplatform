@@ -9,11 +9,11 @@ namespace Bit.Owin.Implementations.Metadata
 {
     public class DefaultAppMetadataProvider : IAppMetadataProvider
     {
-
         private AppMetadata _appMetadata;
 
         public virtual IEnumerable<IMetadataBuilder> MetadataBuilders { get; set; }
-        public virtual IAppEnvironmentProvider AppEnvironmentProvider { get; set; }
+
+        public virtual AppEnvironment AppEnvironment { get; set; }
 
         public virtual async Task<AppMetadata> GetAppMetadata()
         {
@@ -26,11 +26,9 @@ namespace Bit.Owin.Implementations.Metadata
                     allMetadata.AddRange(await metadataBuilder.BuildMetadata().ConfigureAwait(false));
                 }
 
-                AppEnvironment activeAppEnvironment = AppEnvironmentProvider.GetActiveAppEnvironment();
-
                 _appMetadata = new AppMetadata
                 {
-                    Messages = activeAppEnvironment.Cultures.ToList(),
+                    Messages = AppEnvironment.Cultures.ToList(),
                     Views = allMetadata.OfType<ViewMetadata>().ToList(),
                     Dtos = allMetadata.OfType<DtoMetadata>().ToList(),
                     Projects = allMetadata.OfType<ProjectMetadata>().ToList()

@@ -34,7 +34,7 @@ namespace Bit.Core.Implementations
 
         public string GetCurrentStaticFilesPath()
         {
-            return MapPath(DefaultAppEnvironmentProvider.Current.GetActiveAppEnvironment().GetConfig("StaticFilesRelativePath", "./wwwroot/"));
+            return MapPath(DefaultAppEnvironmentsProvider.Current.GetActiveAppEnvironment().GetConfig("StaticFilesRelativePath", "./wwwroot/"));
         }
 
         public string StaticFileMapPath(string path)

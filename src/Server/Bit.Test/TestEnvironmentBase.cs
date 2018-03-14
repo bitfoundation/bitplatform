@@ -33,7 +33,7 @@ namespace Bit.Test
 
         public IAppModulesProvider CustomAppModulesProvider { get; set; } = null;
 
-        public IAppEnvironmentProvider CustomAppEnvironmentProvider { get; set; } = null;
+        public IAppEnvironmentsProvider CustomAppEnvironmentsProvider { get; set; } = null;
 
         public bool UseProxyBasedDependencyManager { get; set; } = true;
 
@@ -65,28 +65,28 @@ namespace Bit.Test
         }
     }
 
-    public class TestAppEnvironmentProvider : IAppEnvironmentProvider
+    public class TestAppEnvironmentsProvider : IAppEnvironmentsProvider
     {
-        private readonly IAppEnvironmentProvider _appEnvironmentProvider;
+        private readonly IAppEnvironmentsProvider _appEnvironmentsProvider;
         private readonly Action<AppEnvironment> _appEnvCustomizer;
 
-        protected TestAppEnvironmentProvider()
+        protected TestAppEnvironmentsProvider()
         {
 
         }
 
-        public TestAppEnvironmentProvider(IAppEnvironmentProvider appEnvironmentProvider, Action<AppEnvironment> appEnvCustomizer = null)
+        public TestAppEnvironmentsProvider(IAppEnvironmentsProvider appEnvironmentProvider, Action<AppEnvironment> appEnvCustomizer = null)
         {
             if (appEnvironmentProvider == null)
                 throw new ArgumentNullException(nameof(appEnvironmentProvider));
 
-            _appEnvironmentProvider = appEnvironmentProvider;
+            _appEnvironmentsProvider = appEnvironmentProvider;
             _appEnvCustomizer = appEnvCustomizer;
         }
 
         public virtual AppEnvironment GetActiveAppEnvironment()
         {
-            AppEnvironment result = _appEnvironmentProvider.GetActiveAppEnvironment();
+            AppEnvironment result = _appEnvironmentsProvider.GetActiveAppEnvironment();
 
             _appEnvCustomizer?.Invoke(result);
 
@@ -115,7 +115,7 @@ namespace Bit.Test
             }
 
             DefaultAppModulesProvider.Current = GetAppModulesProvider(args);
-            DefaultAppEnvironmentProvider.Current = GetAppEnvironmentProvider(args);
+            DefaultAppEnvironmentsProvider.Current = GetAppEnvironmentsProvider(args);
 
             Server = GetTestServer(args);
 
@@ -177,9 +177,9 @@ namespace Bit.Test
             }
         }
 
-        protected virtual IAppEnvironmentProvider GetAppEnvironmentProvider(TestEnvironmentArgs args)
+        protected virtual IAppEnvironmentsProvider GetAppEnvironmentsProvider(TestEnvironmentArgs args)
         {
-            return new TestAppEnvironmentProvider(args.CustomAppEnvironmentProvider ?? DefaultAppEnvironmentProvider.Current, args.ActiveAppEnvironmentCustomizer);
+            return new TestAppEnvironmentsProvider(args.CustomAppEnvironmentsProvider ?? DefaultAppEnvironmentsProvider.Current, args.ActiveAppEnvironmentCustomizer);
         }
 
         protected virtual IAppModulesProvider GetAppModulesProvider(TestEnvironmentArgs args)

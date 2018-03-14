@@ -1,4 +1,5 @@
 ﻿using Bit.Core.Contracts;
+using Bit.Core.Models;
 using Bit.Owin.Exceptions;
 using IdentityServer3.Core.Models;
 using System;
@@ -9,29 +10,19 @@ namespace Bit.IdentityServer.Implementations
 {
     public class ActiveDirectoryUserServiceProvider : UserService
     {
-        private string _activeDirectoryName;
-
-        public virtual IAppEnvironmentProvider AppEnvironmentProvider
-        {
-            set
-            {
-                if (value == null)
-                    throw new ArgumentNullException(nameof(AppEnvironmentProvider));
-                _activeDirectoryName = value.GetActiveAppEnvironment().GetConfig<string>("ActiveDirectoryName");
-            }
-        }
+        public virtual AppEnvironment AppEnvironment { get; set; }
 
         public override Task<string> GetUserIdByLocalAuthenticationContextAsync(LocalAuthenticationContext context)
         {
             string username = context.UserName;
             string password = context.Password;
-
-            using (PrincipalContext principalContext = new PrincipalContext(ContextType.Domain, _activeDirectoryName))
+            string activeDirectoryName = AppEnvironment.GetConfig<string>("ActiveDirectoryName");
+            using (PrincipalContext principalContext = new PrincipalContext(ContextType.Domain, activeDirectoryName))
             {
                 string userNameAsWinUserName = username;
 
-                if (!userNameAsWinUserName.Contains(_activeDirectoryName))
-                    userNameAsWinUserName = $"{_activeDirectoryName}\\{userNameAsWinUserName}";
+                if (!userNameAsWinUserName.Contains(activeDirectoryName))
+                    userNameAsWinUserName = $"{activeDirectoryName}\\{userNameAsWinUserName}";
 
                 if (principalContext.ValidateCredentials(userNameAsWinUserName, password))
                 {
@@ -48,7 +39,9 @@ namespace Bit.IdentityServer.Implementations
 
         public override Task<bool> UserIsActiveAsync(IsActiveContext context, string userId)
         {
-            using (PrincipalContext principalContext = new PrincipalContext(ContextType.Domain, _activeDirectoryName))
+            string activeDirectoryName = AppEnvironment.GetConfig<string>("ActiveDirectoryName");
+
+            using (PrincipalContext principalContext = new PrincipalContext(ContextType.Domain, activeDirectoryName))
             {
                 using (UserPrincipal user = UserPrincipal.FindByIdentity(principalContext, IdentityType.SamAccountName, context.Subject.Identity.Name))
                 {

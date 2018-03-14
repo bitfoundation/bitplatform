@@ -1,4 +1,5 @@
 ﻿using Bit.Core.Contracts;
+using Bit.Core.Models;
 using Bit.Owin.Contracts;
 using Microsoft.Owin;
 using System.IO;
@@ -18,7 +19,7 @@ namespace Bit.Owin.Middlewares
         {
             IDependencyResolver dependencyResolver = context.GetDependencyResolver();
 
-            string htmlPage = File.ReadAllText(dependencyResolver.Resolve<IPathProvider>().StaticFileMapPath(dependencyResolver.Resolve<IAppEnvironmentProvider>().GetActiveAppEnvironment().GetConfig("IndexPagePath", "indexPage.html")));
+            string htmlPage = File.ReadAllText(dependencyResolver.Resolve<IPathProvider>().StaticFileMapPath(dependencyResolver.Resolve<AppEnvironment>().GetConfig("IndexPagePath", "indexPage.html")));
 
             string indexPageContents = await dependencyResolver.Resolve<IHtmlPageProvider>().GetHtmlPageAsync(htmlPage, context.Request.CallCancelled);
 

@@ -9,18 +9,8 @@ namespace Bit.Owin.Middlewares
 {
     public class SignOutPageMiddlewareConfiguration : IOwinMiddlewareConfiguration
     {
-        private AppEnvironment _activeAppEnvironment;
+        public virtual AppEnvironment AppEnvironment { get; set; }
 
-        public virtual IAppEnvironmentProvider AppEnvironmentProvider
-        {
-            set
-            {
-                if (value == null)
-                    throw new ArgumentNullException(nameof(AppEnvironmentProvider));
-
-                _activeAppEnvironment = value.GetActiveAppEnvironment();
-            }
-        }
 
         public virtual void Configure(IAppBuilder owinApp)
         {
@@ -30,7 +20,7 @@ namespace Bit.Owin.Middlewares
             owinApp.Map("/SignOut",
                 innerApp =>
                 {
-                    if (_activeAppEnvironment.GetConfig("RequireSsl", defaultValueOnNotFound: false))
+                    if (AppEnvironment.GetConfig("RequireSsl", defaultValueOnNotFound: false))
                     {
                         innerApp.UseHsts(config => config.IncludeSubdomains().MaxAge(days: 30));
                     }

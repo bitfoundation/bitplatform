@@ -20,9 +20,7 @@ namespace Bit.Owin.Middlewares
 
             if (_App == null)
             {
-                IAppEnvironmentProvider appEnvironmentProvider = dependencyResolver.Resolve<IAppEnvironmentProvider>();
-
-                _App = appEnvironmentProvider.GetActiveAppEnvironment();
+                _App = dependencyResolver.Resolve<AppEnvironment>();
             }
 
             IRandomStringProvider randomStringProvider = dependencyResolver.Resolve<IRandomStringProvider>();
@@ -34,7 +32,7 @@ namespace Bit.Owin.Middlewares
 
             string stateArgs = context.Request.Query["state"] ?? "{}";
 
-            string nonce = randomStringProvider.GetRandomNonSecureString(12);
+            string nonce = randomStringProvider.GetRandomString(12);
 
             context.Response.Redirect($"{ssoRedirectUri}&state={stateArgs}&nonce={nonce}");
 

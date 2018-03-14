@@ -32,9 +32,7 @@ namespace Bit.Owin
             CultureInfo.DefaultThreadCurrentCulture = culture;
             CultureInfo.DefaultThreadCurrentUICulture = culture;
 
-            IAppEnvironmentProvider appEnvironmentProvider = DefaultAppEnvironmentProvider.Current;
-
-            AppEnvironment activeEnvironment = appEnvironmentProvider.GetActiveAppEnvironment();
+            AppEnvironment activeEnvironment = DefaultAppEnvironmentsProvider.Current.GetActiveAppEnvironment();
 
             AppProperties owinAppProps = new AppProperties(owinApp.Properties);
 

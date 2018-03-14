@@ -7,14 +7,14 @@ using Bit.Tests.Properties;
 
 namespace Bit.Tests
 {
-    public class BitTestAppEnvironmentProvider : IAppEnvironmentProvider
+    public class BitTestAppEnvironmentsProvider : IAppEnvironmentsProvider
     {
-        protected BitTestAppEnvironmentProvider()
+        protected BitTestAppEnvironmentsProvider()
         {
 
         }
 
-        public BitTestAppEnvironmentProvider(TestEnvironmentArgs args)
+        public BitTestAppEnvironmentsProvider(TestEnvironmentArgs args)
         {
             _args = args;
         }

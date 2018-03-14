@@ -7,17 +7,15 @@ namespace Bit.Signalr.Implementations
 {
     public class SignalRSqlServerScaleoutConfiguration : ISignalRConfiguration
     {
-        public virtual IAppEnvironmentProvider AppEnvironmentProvider { get; set; }
+        public virtual AppEnvironment AppEnvironment { get; set; }
 
         public virtual void Configure(HubConfiguration signalRConfig)
         {
-            AppEnvironment activeAppEnvironment = AppEnvironmentProvider.GetActiveAppEnvironment();
-
-            string sqlServerConnectionString = activeAppEnvironment.GetConfig<string>("SignalRSqlServerConnectionString");
+            string sqlServerConnectionString = AppEnvironment.GetConfig<string>("SignalRSqlServerConnectionString");
 
             signalRConfig.Resolver.UseSqlServer(new SqlScaleoutConfiguration(sqlServerConnectionString)
             {
-                TableCount = activeAppEnvironment.GetConfig("SignalRSqlServerTableCount", 3)
+                TableCount = AppEnvironment.GetConfig("SignalRSqlServerTableCount", 3)
             });
         }
     }

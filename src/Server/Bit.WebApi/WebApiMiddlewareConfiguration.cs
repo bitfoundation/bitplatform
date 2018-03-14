@@ -16,18 +16,8 @@ namespace Bit.WebApi
         public virtual System.Web.Http.Dependencies.IDependencyResolver WebApiDependencyResolver { get; set; }
         public virtual IWebApiOwinPipelineInjector WebApiOwinPipelineInjector { get; set; }
 
-        public virtual IAppEnvironmentProvider AppEnvironmentProvider
-        {
-            set
-            {
-                if (value == null)
-                    throw new ArgumentNullException(nameof(AppEnvironmentProvider));
+        public virtual AppEnvironment AppEnvironment { get; set; }
 
-                _activeAppEnvironment = value.GetActiveAppEnvironment();
-            }
-        }
-
-        private AppEnvironment _activeAppEnvironment;
         private HttpConfiguration _webApiConfig;
         private HttpServer _server;
 
@@ -39,7 +29,7 @@ namespace Bit.WebApi
             _webApiConfig = new HttpConfiguration();
             _webApiConfig.SuppressHostPrincipal();
 
-            _webApiConfig.IncludeErrorDetailPolicy = _activeAppEnvironment.DebugMode ? IncludeErrorDetailPolicy.LocalOnly : IncludeErrorDetailPolicy.Never;
+            _webApiConfig.IncludeErrorDetailPolicy = AppEnvironment.DebugMode ? IncludeErrorDetailPolicy.LocalOnly : IncludeErrorDetailPolicy.Never;
 
             _webApiConfig.DependencyResolver = WebApiDependencyResolver;
 

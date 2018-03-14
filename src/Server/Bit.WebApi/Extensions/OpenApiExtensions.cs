@@ -1,5 +1,4 @@
-﻿using Bit.Core.Implementations;
-using Bit.Core.Models;
+﻿using Bit.Core.Models;
 using Bit.WebApi;
 using Bit.WebApi.Implementations;
 using System;
@@ -23,9 +22,8 @@ namespace Swashbuckle.Application
             doc.DescribeAllEnumsAsStrings();
             doc.RootUrl(req => new Uri(req.RequestUri, req.GetOwinContext().Request.PathBase.Value).ToString());
             doc.OperationFilter<OpenApiIgnoreParameterTypeOperationFilter<CancellationToken>>();
-            doc.OperationFilter<DefaultAuthorizationOperationFilter>();
-
-            AppEnvironment appEnv = DefaultAppEnvironmentProvider.Current.GetActiveAppEnvironment();
+            AppEnvironment appEnv = (AppEnvironment)webApiConfig.DependencyResolver.GetService(typeof(AppEnvironment));
+            doc.OperationFilter(() => new DefaultAuthorizationOperationFilter { AppEnvironment = appEnv });
 
             doc.OAuth2("oauth2")
                 .Flow("password")

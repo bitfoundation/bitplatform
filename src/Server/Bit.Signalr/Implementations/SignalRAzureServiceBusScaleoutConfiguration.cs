@@ -7,14 +7,12 @@ namespace Bit.Signalr.Implementations
 {
     public class SignalRAzureServiceBusScaleoutConfiguration : ISignalRConfiguration
     {
-        public virtual IAppEnvironmentProvider AppEnvironmentProvider { get; set; }
+        public virtual AppEnvironment AppEnvironment { get; set; }
 
         public virtual void Configure(HubConfiguration signalRConfig)
         {
-            AppEnvironment activeAppEnvironment = AppEnvironmentProvider.GetActiveAppEnvironment();
-
             string signalRAzureServiceBusConnectionString =
-                activeAppEnvironment.GetConfig<string>("SignalRAzureServiceBusConnectionString");
+                AppEnvironment.GetConfig<string>("SignalRAzureServiceBusConnectionString");
 
             signalRConfig.Resolver.UseServiceBus(signalRAzureServiceBusConnectionString, "SignalR");
         }

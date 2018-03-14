@@ -10,18 +10,7 @@ namespace Bit.OwinCore.Implementations
 {
     public class BasicDataProtectionProvider : IDataProtectionProvider
     {
-        private IAppEnvironmentProvider _AppEnvironmentProvider;
-        private AppEnvironment _App;
-
-        public virtual IAppEnvironmentProvider AppEnvironmentProvider
-        {
-            get => _AppEnvironmentProvider;
-            set
-            {
-                _AppEnvironmentProvider = value;
-                _App = _AppEnvironmentProvider.GetActiveAppEnvironment();
-            }
-        }
+        public virtual AppEnvironment AppEnvironment { get; set; }
 
         private readonly ConcurrentDictionary<string, BasicDataProtector> _basicDataProtectors = new ConcurrentDictionary<string, BasicDataProtector>();
 
@@ -30,7 +19,7 @@ namespace Bit.OwinCore.Implementations
             if (purposes == null)
                 throw new ArgumentNullException(nameof(purposes));
 
-            string appName = _App.AppInfo.Name;
+            string appName = AppEnvironment.AppInfo.Name;
 
             string key = $"{appName} => {string.Join(",", purposes)}";
 

@@ -11,16 +11,14 @@ namespace Bit.IdentityServer.Implementations.ExternalIdentityProviderConfigurati
 {
     public class LinkedInIdentityProviderConfiguration : IExternalIdentityProviderConfiguration
     {
-        public virtual IAppEnvironmentProvider AppEnvironmentProvider { get; set; }
+        public virtual AppEnvironment AppEnvironment { get; set; }
 
         public virtual void ConfiguerExternalIdentityProvider(IAppBuilder owinApp, string signInType)
         {
-            AppEnvironment activeAppEnvironment = AppEnvironmentProvider.GetActiveAppEnvironment();
-
-            if (activeAppEnvironment.HasConfig("LinkedInClientId") && activeAppEnvironment.HasConfig("LinkedInSecret"))
+            if (AppEnvironment.HasConfig("LinkedInClientId") && AppEnvironment.HasConfig("LinkedInSecret"))
             {
-                string linkedInClientId = activeAppEnvironment.GetConfig<string>("LinkedInClientId");
-                string linkedInSecret = activeAppEnvironment.GetConfig<string>("LinkedInSecret");
+                string linkedInClientId = AppEnvironment.GetConfig<string>("LinkedInClientId");
+                string linkedInSecret = AppEnvironment.GetConfig<string>("LinkedInSecret");
 
                 LinkedInAuthenticationOptions linkedInAuthenticationOptions = new LinkedInAuthenticationOptions
                 {

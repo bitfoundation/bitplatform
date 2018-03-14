@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using Bit.Core.Contracts;
+using Bit.Core.Models;
 using Bit.Owin.Contracts;
 using Hangfire;
 using Hangfire.Dashboard;
@@ -7,34 +8,18 @@ using Owin;
 
 namespace Bit.Hangfire
 {
-    public class JobSchedulerMiddlewareConfiguration :
-#if NET461
-        IOwinMiddlewareConfiguration
-#else
-        OwinCore.Contracts.IAspNetCoreMiddlewareConfiguration
-#endif
+    public class JobSchedulerMiddlewareConfiguration : IOwinMiddlewareConfiguration
     {
         public virtual IEnumerable<IDashboardAuthorizationFilter> AuthFilters { get; set; }
-        public virtual IAppEnvironmentProvider AppEnvironmentProvider { get; set; }
+        public virtual AppEnvironment AppEnvironment { get; set; }
 
-#if NET461
         public virtual void Configure(IAppBuilder owinApp)
         {
             owinApp.UseHangfireDashboard("/jobs", new DashboardOptions
             {
                 Authorization = AuthFilters,
-                AppPath = AppEnvironmentProvider.GetActiveAppEnvironment().GetHostVirtualPath()
+                AppPath = AppEnvironment.GetHostVirtualPath()
             });
         }
-#else
-        public virtual void Configure(Microsoft.AspNetCore.Builder.IApplicationBuilder aspNetCoreApp)
-        {
-            aspNetCoreApp.UseHangfireDashboard("/jobs", new DashboardOptions
-            {
-                Authorization = AuthFilters,
-                AppPath = AppEnvironmentProvider.GetActiveAppEnvironment().GetHostVirtualPath()
-            });
-        }
-#endif
     }
 }

@@ -1,11 +1,6 @@
-﻿using System;
-using System.IO;
-using System.Linq;
-using System.Net.Http;
-using System.Threading;
-using System.Threading.Tasks;
-using Bit.Core.Contracts;
+﻿using Bit.Core.Contracts;
 using Bit.Core.Implementations;
+using Bit.Core.Models;
 using Bit.Owin.Contracts;
 using IdentityServer3.Core.Models;
 using IdentityServer3.Core.Services;
@@ -13,6 +8,12 @@ using IdentityServer3.Core.Validation;
 using IdentityServer3.Core.ViewModels;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
+using System;
+using System.IO;
+using System.Linq;
+using System.Net.Http;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace Bit.IdentityServer.Implementations
 {
@@ -24,7 +25,7 @@ namespace Bit.IdentityServer.Implementations
 
         public virtual IPathProvider PathProvider { get; set; }
 
-        public virtual IAppEnvironmentProvider AppEnvironmentProvider { get; set; }
+        public virtual AppEnvironment AppEnvironment { get; set; }
 
         public virtual Task<Stream> ClientPermissions(ClientPermissionsViewModel model)
         {
@@ -157,7 +158,7 @@ namespace Bit.IdentityServer.Implementations
                 ReturnUrl = message.ReturnUrl == null ? "" : new Uri(message.ReturnUrl).ParseQueryString()["redirect_uri"]
             }, Formatting.None, jsonSerSettings);
 
-            string loginPageHtmlInitialHtml = File.ReadAllText(PathProvider.StaticFileMapPath(AppEnvironmentProvider.GetActiveAppEnvironment().GetConfig("LoginPagePath", "loginPage.html")));
+            string loginPageHtmlInitialHtml = File.ReadAllText(PathProvider.StaticFileMapPath(AppEnvironment.GetConfig("LoginPagePath", "loginPage.html")));
 
             string loginPageHtmlFinalHtml = (await HtmlPageProvider.GetHtmlPageAsync(loginPageHtmlInitialHtml, CancellationToken.None).ConfigureAwait(false))
                 .Replace("{{model.LoginModel.toJson()}}", Microsoft.Security.Application.Encoder.HtmlEncode(json));

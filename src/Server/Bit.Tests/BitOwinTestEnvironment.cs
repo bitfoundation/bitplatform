@@ -20,9 +20,9 @@ namespace Bit.Tests
             return args.CustomAppModulesProvider ?? (args.UseAspNetCore ? new BitOwinCoreTestAppModulesProvider(args) : (IAppModulesProvider)new BitOwinTestAppModulesProvider(args));
         }
 
-        protected override IAppEnvironmentProvider GetAppEnvironmentProvider(TestEnvironmentArgs args)
+        protected override IAppEnvironmentsProvider GetAppEnvironmentsProvider(TestEnvironmentArgs args)
         {
-            return args.CustomAppEnvironmentProvider ?? new BitTestAppEnvironmentProvider(args);
+            return args.CustomAppEnvironmentsProvider ?? new BitTestAppEnvironmentsProvider(args);
         }
 
         protected override List<Func<TypeInfo, bool>> GetAutoProxyCreationIncludeRules()

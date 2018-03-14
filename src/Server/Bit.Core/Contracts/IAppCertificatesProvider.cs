@@ -3,7 +3,7 @@ using System.Security.Cryptography.X509Certificates;
 
 namespace Bit.Core.Contracts
 {
-    public interface ICertificateProvider : IDisposable
+    public interface IAppCertificatesProvider : IDisposable
     {
         X509Certificate2 GetSingleSignOnCertificate();
     }
