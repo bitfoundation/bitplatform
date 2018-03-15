@@ -65,8 +65,6 @@
     <PackageReference Include="Xamarin.Android.Support.v4" Version="26.1.0.1" />
     <PackageReference Include="Xamarin.Android.Support.v7.CardView" Version="26.1.0.1" />
     <PackageReference Include="Xamarin.Android.Support.v7.MediaRouter" Version="26.1.0.1" />
-    <PackageReference Include="Microsoft.Bcl" Version="1.1.10" ExcludeAssets="All" />
-    <PackageReference Include="Microsoft.Bcl.Build" Version="1.0.21" ExcludeAssets="All" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="MainActivity.cs" />

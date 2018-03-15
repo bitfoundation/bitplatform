@@ -7,7 +7,6 @@ using Bit.ViewModel.Contracts;
 using Bit.ViewModel.Implementations;
 using Prism;
 using Prism.Ioc;
-using Xamarin.Auth.Presenters.XamarinAndroid;
 using Xamarin.Forms;
 using Xamarin.Forms.Platform.Android;
 
@@ -24,8 +23,6 @@ namespace Bit.CSharpClientSample.Droid
             base.OnCreate(bundle);
 
             Forms.Init(this, bundle);
-
-            AuthenticationConfiguration.Init(this, bundle);
 
             LoadApplication(new App(new TestAppInitializer(this)));
         }
