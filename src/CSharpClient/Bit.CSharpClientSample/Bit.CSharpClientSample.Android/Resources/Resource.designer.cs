@@ -26,6 +26,8 @@ namespace Bit.CSharpClientSample.Droid
 		
 		public static void UpdateIdValues()
 		{
+			global::PCLCrypto.Resource.String.ApplicationName = global::Bit.CSharpClientSample.Droid.Resource.String.ApplicationName;
+			global::PCLCrypto.Resource.String.Hello = global::Bit.CSharpClientSample.Droid.Resource.String.Hello;
 			global::Xamarin.Auth.Resource.Animation.slide_in_right = global::Bit.CSharpClientSample.Droid.Resource.Animation.slide_in_right;
 			global::Xamarin.Auth.Resource.Animation.slide_out_left = global::Bit.CSharpClientSample.Droid.Resource.Animation.slide_out_left;
 			global::Xamarin.Auth.Resource.Attribute.font = global::Bit.CSharpClientSample.Droid.Resource.Attribute.font;
@@ -4078,6 +4080,12 @@ namespace Bit.CSharpClientSample.Droid
 		public partial class String
 		{
 			
+			// aapt resource value: 0x7f070040
+			public const int ApplicationName = 2131165248;
+			
+			// aapt resource value: 0x7f07003f
+			public const int Hello = 2131165247;
+			
 			// aapt resource value: 0x7f070016
 			public const int abc_action_bar_home_description = 2131165206;
 			
@@ -4171,8 +4179,8 @@ namespace Bit.CSharpClientSample.Droid
 			// aapt resource value: 0x7f070028
 			public const int abc_toolbar_collapse_description = 2131165224;
 			
-			// aapt resource value: 0x7f070040
-			public const int app_name = 2131165248;
+			// aapt resource value: 0x7f070042
+			public const int app_name = 2131165250;
 			
 			// aapt resource value: 0x7f070037
 			public const int appbar_scrolling_view_behavior = 2131165239;
@@ -4183,8 +4191,8 @@ namespace Bit.CSharpClientSample.Droid
 			// aapt resource value: 0x7f070039
 			public const int character_counter_pattern = 2131165241;
 			
-			// aapt resource value: 0x7f07003f
-			public const int hello = 2131165247;
+			// aapt resource value: 0x7f070041
+			public const int hello = 2131165249;
 			
 			// aapt resource value: 0x7f070001
 			public const int mr_button_content_description = 2131165185;
