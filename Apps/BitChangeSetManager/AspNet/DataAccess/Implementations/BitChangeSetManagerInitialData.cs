@@ -8,12 +8,13 @@ using Bit.Core.Contracts;
 using System.Collections.Generic;
 using Bit.Data.Contracts;
 using BitChangeSetManager.DataAccess.Contracts;
+using Bit.Core.Models;
 
 namespace BitChangeSetManager.DataAccess.Implementations
 {
     public class BitChangeSetManagerInitialData : IAppEvents
     {
-        public virtual IAppEnvironmentProvider AppEnvironmentProvider { get; set; }
+        public virtual AppEnvironment AppEnvironment { get; set; }
         public virtual IDateTimeProvider DateTimeProvider { get; set; }
         public virtual IDependencyManager DependencyManager { get; set; }
 
@@ -26,7 +27,7 @@ namespace BitChangeSetManager.DataAccess.Implementations
         {
             Database.SetInitializer<BitChangeSetManagerDbContext>(null);
 
-            using (SqlConnection dbConnection = new SqlConnection(AppEnvironmentProvider.GetActiveAppEnvironment().GetConfig<string>("BitChangeSetManagerDbConnectionString")))
+            using (SqlConnection dbConnection = new SqlConnection(AppEnvironment.GetConfig<string>("BitChangeSetManagerDbConnectionString")))
             {
                 using (BitChangeSetManagerDbContext dbContext = new BitChangeSetManagerDbContext(dbConnection))
                 {

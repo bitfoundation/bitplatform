@@ -1,6 +1,7 @@
 ﻿using Bit.Core;
 using Bit.Core.Contracts;
 using Bit.Core.Implementations;
+using Bit.Core.Models;
 using Bit.Data;
 using Bit.Data.Contracts;
 using Bit.Data.EntityFrameworkCore.Contracts;
@@ -71,13 +72,13 @@ namespace EntityFrameworkCoreSample
     public class MyAppDbContext : EfCoreDbContextBase
     {
         public MyAppDbContext()
-            : base(new DbContextOptionsBuilder().UseSqlServer(DefaultAppEnvironmentProvider.Current.GetActiveAppEnvironment().GetConfig<string>("AppConnectionString")).Options)
+            : base(new DbContextOptionsBuilder().UseSqlServer(DefaultAppEnvironmentsProvider.Current.GetActiveAppEnvironment().GetConfig<string>("AppConnectionString")).Options)
         {
 
         }
 
-        public MyAppDbContext(IAppEnvironmentProvider appEnvironmentProvider, IDbContextObjectsProvider dbContextCreationOptionsProvider)
-              : base(appEnvironmentProvider.GetActiveAppEnvironment().GetConfig<string>("AppConnectionString"), dbContextCreationOptionsProvider)
+        public MyAppDbContext(AppEnvironment appEnvironment, IDbContextObjectsProvider dbContextCreationOptionsProvider)
+              : base(appEnvironment.GetConfig<string>("AppConnectionString"), dbContextCreationOptionsProvider)
         {
 
         }

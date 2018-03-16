@@ -54,7 +54,7 @@ public class FileController : ApiController
         if (!Request.Content.IsMimeMultipartContent())
             throw new HttpResponseException(HttpStatusCode.UnsupportedMediaType);
 
-        string uploadsFolder = PathProvider.StaticFileMapPath("uploads");
+        string uploadsFolder = PathProvider.MapStaticFilePath("uploads");
 
         Directory.CreateDirectory(uploadsFolder);
 

@@ -4,14 +4,6 @@ module BitChangeSetManager {
 
     const clientAppProfile = Bit.ClientAppProfileManager.getCurrent().getClientAppProfile();
 
-    if (clientAppProfile.culture == "FaIr") {
-        document.body.className += "k-rtl";
-        document.title = "مدیریت تغییرات Bit";
-    }
-    else {
-        document.body.className += "k-ltr";
-    }
-
     const dependencyManager = DependencyManager.getCurrent();
 
     dependencyManager.registerObjectDependency({ name: "AppEvent", type: Bit.Implementations.DefaultKendoExtender });

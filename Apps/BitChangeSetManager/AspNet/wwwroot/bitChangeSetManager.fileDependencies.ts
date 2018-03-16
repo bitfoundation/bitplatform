@@ -37,7 +37,10 @@ module BitChangeSetManager {
         predicate: (appInfo) => {
             return appInfo.screenSize == "DesktopAndTablet" && appInfo.culture == "FaIr";
         },
-        fileDependecyType: "Style"
+        fileDependecyType: "Style",
+        onLoad: () => {
+            document.body.className += "k-rtl";
+        }
     });
 
     dependencyManager.registerFileDependency({

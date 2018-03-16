@@ -10,12 +10,10 @@ namespace BitChangeSetManager.Security
 {
     public class BitChangeSetManagerClientProvider : ClientProvider
     {
-        public virtual IAppEnvironmentProvider AppEnvironmentProvider { get; set; }
+        public virtual AppEnvironment AppEnvironment { get; set; }
 
         public override IEnumerable<Client> GetClients()
         {
-            AppEnvironment activeAppEnvironment = AppEnvironmentProvider.GetActiveAppEnvironment();
-
             return new[]
             {
                 GetImplicitFlowClient(new BitImplicitFlowClient
@@ -24,11 +22,11 @@ namespace BitChangeSetManager.Security
                     ClientName = "BitChangeSetManager",
                     PostLogoutRedirectUris = new List<string>
                     {
-                        $@"^(http|https):\/\/(\S+\.)?(bit-change-set-manager.com|localhost)(:\d+)?\b{activeAppEnvironment.GetHostVirtualPath()}\bSignOut\/?"
+                        $@"^(http|https):\/\/(\S+\.)?(bit-change-set-manager.com|localhost)(:\d+)?\b{AppEnvironment.GetHostVirtualPath()}\bSignOut\/?"
                     },
                     RedirectUris = new List<string>
                     {
-                        $@"^(http|https):\/\/(\S+\.)?(bit-change-set-manager.com|localhost)(:\d+)?\b{activeAppEnvironment.GetHostVirtualPath()}\bSignIn\/?"
+                        $@"^(http|https):\/\/(\S+\.)?(bit-change-set-manager.com|localhost)(:\d+)?\b{AppEnvironment.GetHostVirtualPath()}\bSignIn\/?"
                     },
                     Secret = "secret",
                     TokensLifetime = TimeSpan.FromDays(7),

@@ -11,7 +11,6 @@ using Bit.Owin.Implementations;
 using Microsoft.Owin.Hosting;
 using Newtonsoft.Json;
 using Owin;
-using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -99,6 +98,12 @@ namespace EntityFrameworkOptimizedForNTierScenarios
     {
         public CustomersDbContextForBitRepository()
             : base(new SqlConnection("Data Source=.;Initial Catalog=CustomersDb;Integrated Security=True"), contextOwnsConnection: true)
+        {
+
+        }
+
+        public CustomersDbContextForBitRepository(IDbConnectionProvider dbConnectionProvider)
+            : base("Data Source=.;Initial Catalog=CustomersDb;Integrated Security=True", dbConnectionProvider)
         {
 
         }
