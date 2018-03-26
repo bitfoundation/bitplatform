@@ -58,38 +58,34 @@
                         const metadata = await this.metadataProvider.getMetadata();
 
                         metadata.Dtos
-                            .forEach(dto => {
+                            .forEach(dtoMetadata => {
 
-                                const parts = dto.DtoType.split(".");
                                 let jayDataDtoType: any = window;
 
-                                for (let part of parts) {
-                                    jayDataDtoType = jayDataDtoType[part];
-                                    if (jayDataDtoType == null)
+                                for (const dtoNamePart of dtoMetadata.DtoType.split(".")) {
+                                    jayDataDtoType = jayDataDtoType[dtoNamePart];
+                                    if (jayDataDtoType == null) {
+                                        console.warn(`No dto type could be found for ${dtoMetadata.DtoType}`);
                                         return;
+                                    }
                                 }
 
-                                const memberDefenitions = jayDataDtoType != null ? jayDataDtoType.memberDefinitions : null;
+                                const jayDataMemberDefenitions = jayDataDtoType.memberDefinitions;
 
-                                if (memberDefenitions != null) {
+                                if (jayDataMemberDefenitions != null) {
 
-                                    metadata.Dtos
-                                        .forEach(dto => {
-
-                                            for (let memberName in memberDefenitions) {
-                                                if (memberName.startsWith("$") && memberDefenitions.hasOwnProperty(memberName)) {
-                                                    const memberDefenition = memberDefenitions[memberName];
-                                                    const mem = dto.MembersMetadata.find(m => `$${m.DtoMemberName}` == memberName);
-                                                    if (mem != null) {
-                                                        memberDefenition.required = mem.IsRequired == true;
-                                                        if (mem.Pattern != null) {
-                                                            memberDefenition.regex = mem.Pattern;
-                                                        }
-                                                    }
+                                    for (const jayDataMemberName in jayDataMemberDefenitions) {
+                                        if (jayDataMemberName.startsWith("$") && jayDataMemberDefenitions.hasOwnProperty(jayDataMemberName)) {
+                                            const jayDataMemberDefention = jayDataMemberDefenitions[jayDataMemberName];
+                                            const dtoPropertyMetadata = dtoMetadata.MembersMetadata.find(mem => `$${mem.DtoMemberName}` == jayDataMemberName);
+                                            if (dtoPropertyMetadata != null) {
+                                                jayDataMemberDefention.required = dtoPropertyMetadata.IsRequired == true;
+                                                if (dtoPropertyMetadata.Pattern != null) {
+                                                    jayDataMemberDefention.regex = dtoPropertyMetadata.Pattern;
                                                 }
                                             }
-
-                                        });
+                                        }
+                                    }
 
                                 }
 
