@@ -1,13 +1,12 @@
-﻿using Bit.ViewModel.Contracts;
+﻿using Autofac;
+using Bit.ViewModel.Contracts;
 using IdentityModel.Client;
 using Newtonsoft.Json;
+using Prism.Autofac;
+using Prism.Ioc;
 using System;
 using System.Collections.Generic;
-using System.Collections.Specialized;
-using System.Dynamic;
 using System.Linq;
-using System.Net.Http;
-using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using Xamarin.Auth;
@@ -23,12 +22,14 @@ namespace Bit.ViewModel.Implementations
         public DefaultSecurityService(AccountStore accountStore,
             IClientAppProfile clientAppProfile,
             IDateTimeProvider dateTimeProvider,
-            IBrowserService browserService)
+            IBrowserService browserService,
+            IContainerProvider containerProvider)
         {
             _clientAppProfile = clientAppProfile;
             _accountStore = accountStore;
             _dateTimeProvider = dateTimeProvider;
             _browserService = browserService;
+            _containerProvider = containerProvider;
             _current = this;
         }
 
@@ -36,6 +37,7 @@ namespace Bit.ViewModel.Implementations
         private readonly AccountStore _accountStore;
         private readonly IDateTimeProvider _dateTimeProvider;
         private readonly IBrowserService _browserService;
+        private readonly IContainerProvider _containerProvider;
 
         public virtual bool IsLoggedIn()
         {
@@ -71,37 +73,34 @@ namespace Bit.ViewModel.Implementations
             return (await _accountStore.FindAccountsForServiceAsync(_clientAppProfile.AppName).ConfigureAwait(false)).SingleOrDefault();
         }
 
-        public virtual Task<Token> Login(object state = null, string client_id = null, CancellationToken cancellationToken = default(CancellationToken))
+        public virtual async Task<Token> Login(object state = null, string client_id = null, CancellationToken cancellationToken = default(CancellationToken))
         {
+            await Logout(state, client_id, cancellationToken).ConfigureAwait(false);
             CurrentAction = "Login";
             CurrentLoginTaskCompletionSource = new TaskCompletionSource<Token>();
             _browserService.OpenUrl(GetLoginUrl(state, client_id));
-            return CurrentLoginTaskCompletionSource.Task;
+            return await CurrentLoginTaskCompletionSource.Task;
         }
 
         public virtual async Task<Token> LoginWithCredentials(string username, string password, string client_id, string client_secret, string[] scopes = null, CancellationToken cancellationToken = default(CancellationToken))
         {
+            await Logout(state: null, client_id: client_id, cancellationToken: cancellationToken);
+
             if (scopes == null)
                 scopes = "openid profile user_info".Split(' ');
 
-            using (TokenClient tokenClient = new TokenClient(address: new Uri(_clientAppProfile.HostUri, "core/connect/token").ToString(), clientId: client_id, clientSecret: client_secret, innerHttpMessageHandler: GetHttpMessageHandler()))
-            {
-                TokenResponse tokenResponse = await tokenClient.RequestResourceOwnerPasswordAsync(username, password, scope: string.Join(" ", scopes), cancellationToken: cancellationToken).ConfigureAwait(false);
+            TokenClient tokenClient = _containerProvider.GetContainer().Resolve<TokenClient>(new NamedParameter("clientId", client_id), new NamedParameter("secret", client_secret));
 
-                if (tokenResponse.IsError)
-                    throw tokenResponse.Exception ?? new Exception($"{tokenResponse.Error}");
+            TokenResponse tokenResponse = await tokenClient.RequestResourceOwnerPasswordAsync(username, password, scope: string.Join(" ", scopes), cancellationToken: cancellationToken).ConfigureAwait(false);
 
-                Account account = Token.FromTokenToAccount(tokenResponse);
+            if (tokenResponse.IsError)
+                throw tokenResponse.Exception ?? new Exception($"{tokenResponse.Error}");
 
-                await _accountStore.SaveAsync(account, _clientAppProfile.AppName).ConfigureAwait(false);
+            Account account = Token.FromTokenToAccount(tokenResponse);
 
-                return account;
-            }
-        }
+            await _accountStore.SaveAsync(account, _clientAppProfile.AppName).ConfigureAwait(false);
 
-        protected virtual HttpMessageHandler GetHttpMessageHandler()
-        {
-            return new HttpClientHandler();
+            return account;
         }
 
         public virtual async Task Logout(object state = null, string client_id = null, CancellationToken cancellationToken = default(CancellationToken))
