@@ -3,5 +3,5 @@
 /// <reference path="../Bit.TSClient.Core/bit.model.context.d.ts" />
 /// <reference path="../Bit.TSClient.Core/declarations.d.ts" />
 /// <reference path="../Bit.TSClient.AngularJS/bit.ng1.d.ts" />
-/// <reference path="../Bit.TSClient.AngularJS/typings/declarations.d.ts" />
+/// <reference path="../Bit.TSClient.AngularJS/declarations.d.ts" />
 /// <reference path="../Bit.TSClient.AngularJS.Test/bit.ng1.test.d.ts" />
