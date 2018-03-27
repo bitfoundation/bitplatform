@@ -25,12 +25,12 @@
     "@types/jquery": "^3.3.0",
     "@types/kendo-ui": "^2018.1.1",
     "gulp": "^3.9.1",
-    "gulp-less": "^3.5.0"
+    "gulp-less": "^4.0.0"
   },
   "optionalDependencies": {
     "angular-animate": "^1.6.9",
     "angular-aria": "^1.6.9",
-    "angular-material": "^1.1.7",
+    "angular-material": "^1.1.8",
     "angular-messages": "^1.6.9",
     "angular-translate": "^2.16.0",
     "jquery": "^3.3.1",
