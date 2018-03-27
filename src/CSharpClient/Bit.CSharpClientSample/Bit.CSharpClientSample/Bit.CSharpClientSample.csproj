@@ -8,7 +8,7 @@
     <PackageReference Include="Fody" Version="2.4.6" />
     <PackageReference Include="Prism.Autofac.Forms" Version="7.0.0.396" />
     <PackageReference Include="PropertyChanged.Fody" Version="2.2.9" />
-    <PackageReference Include="Xamarin.Auth" Version="1.6.0.0" />
+    <PackageReference Include="Xamarin.Auth" Version="1.6.0.1" />
     <PackageReference Include="Xamarin.Forms" Version="2.5.0.280555" />
     <PackageReference Include="MSBuild.Sdk.Extras" Version="1.2.2" PrivateAssets="All" />
   </ItemGroup>

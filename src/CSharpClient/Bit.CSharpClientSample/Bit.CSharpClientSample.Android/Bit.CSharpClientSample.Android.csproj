@@ -59,7 +59,7 @@
       <Version>26.1.0.1</Version>
     </PackageReference>
     <PackageReference Include="Xamarin.Auth">
-      <Version>1.6.0.0</Version>
+      <Version>1.6.0.1</Version>
     </PackageReference>
     <PackageReference Include="Xamarin.Forms" Version="2.5.0.280555" />
     <PackageReference Include="Xamarin.Android.Support.Design" Version="26.1.0.1" />
