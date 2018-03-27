@@ -1,10 +1,13 @@
 ﻿using Autofac;
 using Bit.CSharpClientSample.ViewModels;
 using Bit.CSharpClientSample.Views;
+using Bit.Model.Events;
 using Bit.ViewModel.Contracts;
 using Bit.ViewModel.Implementations;
+using IdentityModel.Client;
 using Prism;
 using Prism.Autofac;
+using Prism.Events;
 using Prism.Ioc;
 using Simple.OData.Client;
 using System;
@@ -37,6 +40,10 @@ namespace Bit.CSharpClientSample
             {
                 await NavigationService.NavigateAsync("Login");
             }
+
+            Container.Resolve<IEventAggregator>()
+                .GetEvent<TokenExpiredEvent>()
+                .Subscribe(async tokenExpiredEvent => await NavigationService.NavigateAsync("Login"), ThreadOption.UIThread);
         }
 
         protected override void RegisterTypes(IContainerRegistry containerRegistry)
@@ -48,33 +55,55 @@ namespace Bit.CSharpClientSample
 
             Simple.OData.Client.V4Adapter.Reference();
 
-            containerRegistry.GetBuilder().Register(c =>
+            containerRegistry.GetBuilder()
+                .RegisterType<HttpClientHandler>()
+                .Named<HttpMessageHandler>(ContractKeys.DefaultHttpMessageHandler)
+                .SingleInstance();
+
+            containerRegistry.GetBuilder().Register<HttpMessageHandler>(c =>
             {
-                ISecurityService securityService = c.Resolve<ISecurityService>();
+                return new AuthenticatedHttpMessageHandler(c.Resolve<IEventAggregator>(), c.Resolve<ISecurityService>(), c.ResolveNamed<HttpMessageHandler>(ContractKeys.DefaultHttpMessageHandler));
+            })
+            .Named<HttpMessageHandler>(ContractKeys.AuthenticatedHttpMessageHandler)
+            .SingleInstance();
+
+            containerRegistry.GetBuilder().Register<IODataClient>(c =>
+            {
+                HttpMessageHandler authenticatedHttpMessageHandler = c.ResolveNamed<HttpMessageHandler>(ContractKeys.AuthenticatedHttpMessageHandler);
                 IODataClient odataClient = new ODataClient(new ODataClientSettings(new Uri(c.Resolve<IClientAppProfile>().HostUri, "odata/Test/"))
                 {
-                    OnCreateMessageHandler = () => new TokenHandler(securityService, new HttpClientHandler())
+                    OnCreateMessageHandler = () => authenticatedHttpMessageHandler,
+                    RenewHttpConnection = false
                 });
                 return odataClient;
             });
 
-            containerRegistry.GetBuilder().Register(c =>
+            containerRegistry.GetBuilder().Register<HttpClient>(c =>
             {
-                ISecurityService securityService = c.Resolve<ISecurityService>();
-                HttpClient httpClient = new HttpClient(new TokenHandler(securityService, new HttpClientHandler())) { BaseAddress = c.Resolve<IClientAppProfile>().HostUri };
+                HttpMessageHandler authenticatedHttpMessageHandler = c.ResolveNamed<HttpMessageHandler>(ContractKeys.AuthenticatedHttpMessageHandler);
+                HttpClient httpClient = new HttpClient(authenticatedHttpMessageHandler) { BaseAddress = c.Resolve<IClientAppProfile>().HostUri };
                 return httpClient;
             }).SingleInstance();
 
             containerRegistry.RegisterSingleton<ISecurityService, DefaultSecurityService>();
+
             containerRegistry.GetBuilder().Register<IClientAppProfile>(c => new DefaultClientAppProfile
             {
                 HostUri = new Uri("http://indie-ir001.ngrok.io/"),
                 OAuthRedirectUri = new Uri("Test://oauth2redirect"),
                 AppName = "Test"
-            });
+            }).SingleInstance();
+
             containerRegistry.RegisterSingleton<IDateTimeProvider, DefaultDateTimeProvider>();
 
             containerRegistry.GetBuilder().Register(c => AccountStore.Create()).SingleInstance();
+
+            containerRegistry.GetBuilder().Register<IContainerProvider>(c => Container).SingleInstance();
+
+            containerRegistry.GetBuilder().Register<TokenClient>((c, parameters) =>
+            {
+                return new TokenClient(address: new Uri(c.Resolve<IClientAppProfile>().HostUri, "core/connect/token").ToString(), clientId: parameters.Named<string>("clientId"), clientSecret: parameters.Named<string>("secret"), innerHttpMessageHandler: c.ResolveNamed<HttpMessageHandler>(ContractKeys.DefaultHttpMessageHandler));
+            });
         }
     }
 }
