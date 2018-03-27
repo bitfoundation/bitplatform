@@ -2,7 +2,7 @@
 
     export class EntityContextProviderBase implements Contracts.IEntityContextProvider {
 
-        public constructor(public guidUtils: DefaultGuidUtils, public metadataProvider: Contracts.IMetadataProvider) {
+        public constructor(public guidUtils: DefaultGuidUtils, public metadataProvider: Contracts.IMetadataProvider, public securityService: Contracts.ISecurityService) {
 
         }
 
@@ -14,7 +14,7 @@
 
                 const originalJsonHandlerWrite = odatajs.oData.json.jsonHandler.write;
 
-                odatajs.oData.json.jsonHandler.write = function (request, context) {
+                odatajs.oData.json.jsonHandler.write = function overridedJsonHandlerWrite(request, context) {
 
                     if (request.headers["Content-Type"] == null)
                         request.headers["Content-Type"] = "application/json";
@@ -97,7 +97,7 @@
 
                         const guidUtils = this.guidUtils;
 
-                        odatajs.oData.utils.prepareRequest = function (request, handler, context) {
+                        odatajs.oData.utils.prepareRequest = function overridedPrepareRequest(request, handler, context) {
                             request.headers = request.headers || {};
                             if (clientAppProfile.currentTimeZone != null && clientAppProfile.currentTimeZone != "")
                                 request.headers["Current-Time-Zone"] = clientAppProfile.currentTimeZone;
@@ -136,9 +136,27 @@
                             return results;
                         };
 
+                        const securityService = this.securityService;
+
+                        const original$dataPromiseHandlerBaseDefaultErrorCallback = $data["PromiseHandlerBase"]["defaultErrorCallback"];
+
+                        $data["PromiseHandlerBase"]["defaultErrorCallback"] = function overrided$dataPromiseHandlerBaseDefaultErrorCallback() {
+
+                            try {
+                                const statusCode: number = arguments[0].data[0].response.statusCode;
+                                if (statusCode == 401 && securityService.isLoggedIn() == false) {
+                                    PubSub.publish("TokenExpiredEvent", {} as Model.Events.TokenExpiredEvent);
+                                }
+                            }
+                            catch{ };
+
+                            return original$dataPromiseHandlerBaseDefaultErrorCallback.apply(this, arguments);
+
+                        };
+
                         const originalRead = odatajs.oData.json.jsonHandler.read;
 
-                        odatajs.oData.json.jsonHandler.read = function (response, context) {
+                        odatajs.oData.json.jsonHandler.read = function overridedRead(response, context) {
 
                             if (response.body != null && typeof response.body === "string") {
                                 response.body = (response.body as string).replace(/:\s*(\d{14,}.\d{2,})\s*([,\}])/g, ':"$1"$2');
