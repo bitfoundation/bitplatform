@@ -10,7 +10,7 @@
 
             let isPromise = false;
 
-            descriptor.value = function (...args: any[]) {
+            descriptor.value = function log(...args: any[]) {
 
                 let result = null;
 

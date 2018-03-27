@@ -149,7 +149,7 @@ module Bit.Directives {
                         if (lookup != null) {
                             if (lookup.BaseFilter_JS != null) {
                                 let originalRead = this.originalDataSourceTransportRead;
-                                this.dataSource['transport'].read = function (options) {
+                                this.dataSource['transport'].read = function read(options) {
                                     options.data = options.data || {};
                                     options.data.lookupBaseFilter = lookup.BaseFilter_JS;
                                     return originalRead.apply(this, arguments);

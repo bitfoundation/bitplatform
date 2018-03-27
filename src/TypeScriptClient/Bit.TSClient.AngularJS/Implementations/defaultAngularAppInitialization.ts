@@ -88,7 +88,7 @@
 
                     const originalCompile = directive.compile;
 
-                    directive.compile = function ($element, $attrs) {
+                    directive.compile = function compile($element, $attrs) {
 
                         const result = originalCompile.apply(this, arguments);
 
@@ -138,7 +138,7 @@
 
             app.filter("bitDate", () => {
 
-                return function (date: Date): string {
+                return function getFormattedDate(date: Date): string {
 
                     return dateTimeService.getFormattedDate(date);
 
@@ -147,7 +147,7 @@
 
             app.filter("bitDateTime", () => {
 
-                return function (date: Date): string {
+                return function getFormattedDateTime(date: Date): string {
 
                     return dateTimeService.getFormattedDateTime(date);
 

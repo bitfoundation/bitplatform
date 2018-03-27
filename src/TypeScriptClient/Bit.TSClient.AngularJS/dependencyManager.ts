@@ -614,7 +614,7 @@
 
                 const originalTarget = target;
 
-                target = function () {
+                target = function construct() {
 
                     const dependencyManager = DependencyManager.getCurrent();
 

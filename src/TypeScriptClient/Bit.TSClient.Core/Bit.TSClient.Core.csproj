@@ -12,8 +12,12 @@
     <None Remove="bit.core.js.map" />
     <None Remove="Bit.Model.Context.d.ts" />
     <None Remove="Bit.Model.Context.js" />
+    <None Remove="Model\Events\tokenExpiredEvent.ts" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Properties\" />
+  </ItemGroup>
+  <ItemGroup>
+    <TypeScriptCompile Include="Model\Events\tokenExpiredEvent.ts" />
   </ItemGroup>
 </Project>

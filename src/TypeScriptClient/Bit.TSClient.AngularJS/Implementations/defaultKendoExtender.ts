@@ -24,7 +24,7 @@ module Bit.Implementations {
 
             }
 
-            kendo.data.DataSource.prototype.flatView = function () {
+            kendo.data.DataSource.prototype.flatView = function flatView() {
 
                 const groups = this.group() || [];
 
@@ -38,7 +38,7 @@ module Bit.Implementations {
 
             const originalParseDate = kendo.parseDate;
 
-            kendo.parseDate = function (value: string, format?: string, culture?: string): Date {
+            kendo.parseDate = function parseDate(value: string, format?: string, culture?: string): Date {
                 if (value != null) {
                     const date = new Date(value);
                     if (date.toString() != "Invalid Date")
@@ -47,7 +47,7 @@ module Bit.Implementations {
                 return originalParseDate.apply(this, arguments);
             };
 
-            kendo.data.DataSource.prototype.dataView = function () {
+            kendo.data.DataSource.prototype.dataView = function dataView() {
                 return (this as kendo.data.DataSource)
                     .flatView()
                     .map(vi => {
@@ -76,7 +76,7 @@ module Bit.Implementations {
                 }
             });
 
-            kendo.data.DataSource.prototype.onCurrentChanged = function (action) {
+            kendo.data.DataSource.prototype.onCurrentChanged = function onCurrentChanged(action) {
 
                 const dataSource = this;
 
@@ -98,7 +98,7 @@ module Bit.Implementations {
 
             };
 
-            kendo.destroyWidget = function (widget: kendo.ui.Widget & { wrapper: JQuery }): void {
+            kendo.destroyWidget = function destroyWidget(widget: kendo.ui.Widget & { wrapper: JQuery }): void {
 
                 if (widget != null) {
 
@@ -124,7 +124,7 @@ module Bit.Implementations {
                 }
             }
 
-            kendo.data.DataSource.prototype.asChildOf = function (parentDataSource, childKeys, parentKeys) {
+            kendo.data.DataSource.prototype.asChildOf = function asChildOf(parentDataSource, childKeys, parentKeys) {
 
                 if (parentDataSource == null)
                     throw new Error("parentDataSource is null");
@@ -180,7 +180,7 @@ module Bit.Implementations {
 
                 const originalChildTransportRead = childDataSource["transport"].read;
 
-                childDataSource["transport"].read = function (options) {
+                childDataSource["transport"].read = function read(options) {
 
                     const currentParent = parentDataSource.current;
 
@@ -203,7 +203,7 @@ module Bit.Implementations {
 
                 const originalChildTransportCreate = childDataSource["transport"].create;
 
-                childDataSource["transport"].create = function (options, models): void {
+                childDataSource["transport"].create = function create(options, models): void {
 
                     const currentParent = parentDataSource.current;
 

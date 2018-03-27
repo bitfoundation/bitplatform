@@ -24,7 +24,7 @@
             let isPromise = false;
             let $rootScope: ng.IScope = null;
 
-            descriptor.value = function (...args: any[]) {
+            descriptor.value = function command(...args: any[]) {
 
                 let result = null;
 

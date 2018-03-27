@@ -291,7 +291,7 @@ module Bit.Directives {
 
                                 let jQueryOriginalVal = jQuery.fn.val;
 
-                                jQuery.fn.val = (function (value) {
+                                jQuery.fn.val = (function value(value) {
                                     let result = jQueryOriginalVal.apply(this, arguments);
                                     if (arguments.length == 1 && this.hasClass("persian-date-picker-value")) {
                                         this.trigger("change");
@@ -345,7 +345,7 @@ module Bit.Directives {
 
                                     element.hide();
 
-                                    element.parents("div.k-filterable.k-content").data("kendoFilterMenu")["popup"].bind("close", function (e) {
+                                    element.parents("div.k-filterable.k-content").data("kendoFilterMenu")["popup"].bind("close", function onClose(e) {
                                         if (datePickerInstance.model.view.$container.css("display") == "block") {
                                             e.preventDefault();
                                         }
@@ -385,7 +385,7 @@ module Bit.Directives {
                                 if (lookup != null) {
                                     if (lookup.BaseFilter_JS != null) {
                                         let originalRead = filterDataSource['transport'].read;
-                                        filterDataSource['transport'].read = function (options) {
+                                        filterDataSource['transport'].read = function read(options) {
                                             options.data = options.data || {};
                                             options.data.lookupBaseFilter = lookup.BaseFilter_JS;
                                             return originalRead.apply(this, arguments);

@@ -59,12 +59,12 @@
 
                         if ($.hubConnection.prototype.createHubProxies == null) {
 
-                            $.hubConnection.prototype.createHubProxies = function () {
+                            $.hubConnection.prototype.createHubProxies = function createHubProxies() {
                                 var proxies = {};
-                                this.starting(function () {
+                                this.starting(function onStarting() {
                                     signalRAppPushReceiver.registerHubProxies(proxies, true);
                                     this._registerSubscribedHubs();
-                                }).disconnected(function () {
+                                }).disconnected(function onDisconnected() {
                                     signalRAppPushReceiver.registerHubProxies(proxies, false);
                                 });
 

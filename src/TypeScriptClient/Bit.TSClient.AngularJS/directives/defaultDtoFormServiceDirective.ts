@@ -173,7 +173,7 @@
 
                                 let original$setValidity = propModelController.$setValidity;
 
-                                propModelController.$setValidity = function () {
+                                propModelController.$setValidity = function $setValidity() {
                                     propModelController.validityEvaludated = true;
                                     return original$setValidity.apply(propModelController, arguments);
                                 };

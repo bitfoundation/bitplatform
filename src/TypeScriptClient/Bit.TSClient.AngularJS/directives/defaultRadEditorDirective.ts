@@ -43,7 +43,7 @@
 
                 this.mdInputContainerParent.addClass("md-input-has-value");
 
-                this.mdInputContainer.setHasValue = function () {
+                this.mdInputContainer.setHasValue = function setHasValue() {
 
                 };
             }
