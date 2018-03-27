@@ -23,51 +23,23 @@ namespace Bit.Tests.Api.ApiControllers
 {
     public class TestModelsController : DtoController<TestModel>
     {
-        private readonly Lazy<IRepository<TestModel>> _testModelsRepository;
-        private readonly Lazy<IBackgroundJobWorker> _backgroundJobWorker;
-        private readonly Lazy<IMessageSender> _messageSender;
-        private readonly Lazy<IDateTimeProvider> _dateTimeProvider;
-
-        public TestModelsController(Lazy<IRepository<TestModel>> testModelsRepository, Lazy<IBackgroundJobWorker> backgroundJobWorker, Lazy<IMessageSender> messageSender, Lazy<IDateTimeProvider> dateTimeProvider)
-        {
-            if (testModelsRepository == null)
-                throw new ArgumentNullException(nameof(testModelsRepository));
-
-            _testModelsRepository = testModelsRepository;
-
-            if (backgroundJobWorker == null)
-                throw new ArgumentNullException(nameof(backgroundJobWorker));
-
-            _backgroundJobWorker = backgroundJobWorker;
-
-            if (messageSender == null)
-                throw new ArgumentNullException(nameof(messageSender));
-
-            _messageSender = messageSender;
-
-            if (dateTimeProvider == null)
-                throw new ArgumentNullException(nameof(dateTimeProvider));
-
-            _dateTimeProvider = dateTimeProvider;
-        }
-
-        protected TestModelsController()
-        {
-
-        }
+        public virtual Lazy<IRepository<TestModel>> TestModelsRepository { get; set; }
+        public virtual Lazy<IBackgroundJobWorker> BackgroundJobWorker { get; set; }
+        public virtual Lazy<IMessageSender> MessageSender { get; set; }
+        public virtual Lazy<IDateTimeProvider> DateTimeProvider { get; set; }
 
         [Get]
         [AllowAnonymous]
         public virtual async Task<IQueryable<TestModel>> Get(CancellationToken cancellationToken)
         {
-            return await _testModelsRepository.Value
+            return await TestModelsRepository.Value
                 .GetAllAsync(cancellationToken);
         }
 
         [Get]
         public virtual async Task<TestModel> Get(long key, CancellationToken cancellationToken)
         {
-            TestModel testModel = await (await _testModelsRepository.Value
+            TestModel testModel = await (await TestModelsRepository.Value
                 .GetAllAsync(cancellationToken))
                 .FirstOrDefaultAsync(t => t.Id == key, cancellationToken);
 
@@ -80,7 +52,7 @@ namespace Bit.Tests.Api.ApiControllers
         [Create]
         public virtual async Task<TestModel> Create(TestModel model, CancellationToken cancellationToken)
         {
-            model = await _testModelsRepository.Value.AddAsync(model, cancellationToken);
+            model = await TestModelsRepository.Value.AddAsync(model, cancellationToken);
 
             return model;
         }
@@ -89,7 +61,7 @@ namespace Bit.Tests.Api.ApiControllers
         public virtual async Task<TestModel> PartialUpdate(long key, Delta<TestModel> modelDelta,
             CancellationToken cancellationToken)
         {
-            TestModel model = await (await _testModelsRepository.Value.GetAllAsync(cancellationToken))
+            TestModel model = await (await TestModelsRepository.Value.GetAllAsync(cancellationToken))
                 .FirstOrDefaultAsync(m => m.Id == key, cancellationToken);
 
             if (model == null)
@@ -97,7 +69,7 @@ namespace Bit.Tests.Api.ApiControllers
 
             modelDelta.Patch(model);
 
-            model = await _testModelsRepository.Value.UpdateAsync(model, cancellationToken);
+            model = await TestModelsRepository.Value.UpdateAsync(model, cancellationToken);
 
             return model;
         }
@@ -106,7 +78,7 @@ namespace Bit.Tests.Api.ApiControllers
         public virtual async Task<TestModel> Update(long key, TestModel model,
             CancellationToken cancellationToken)
         {
-            model = await _testModelsRepository.Value.UpdateAsync(model, cancellationToken);
+            model = await TestModelsRepository.Value.UpdateAsync(model, cancellationToken);
 
             if (model.Id != key)
                 throw new BadRequestException();
@@ -117,13 +89,13 @@ namespace Bit.Tests.Api.ApiControllers
         [Delete]
         public virtual async Task Delete(long key, CancellationToken cancellationToken)
         {
-            TestModel model = await (await _testModelsRepository.Value.GetAllAsync(cancellationToken))
+            TestModel model = await (await TestModelsRepository.Value.GetAllAsync(cancellationToken))
                 .FirstOrDefaultAsync(m => m.Id == key, cancellationToken);
 
             if (model == null)
                 throw new ResourceNotFoundException();
 
-            await _testModelsRepository.Value.DeleteAsync(model, cancellationToken);
+            await TestModelsRepository.Value.DeleteAsync(model, cancellationToken);
         }
 
         public class EmailParameters
@@ -142,7 +114,7 @@ namespace Bit.Tests.Api.ApiControllers
             string message = actionParameters.message;
             string to = actionParameters.to;
 
-            string jobId = await _backgroundJobWorker.Value
+            string jobId = await BackgroundJobWorker.Value
                 .PerformBackgroundJobAsync<IEmailService>(emailService => emailService.SendEmail(to, title, message));
 
             return Guid.Parse(jobId);
@@ -155,10 +127,10 @@ namespace Bit.Tests.Api.ApiControllers
             string message = actionParameters.message;
             string to = actionParameters.to;
 
-            string jobId = await _backgroundJobWorker.Value
+            string jobId = await BackgroundJobWorker.Value
                 .PerformBackgroundJobAsync<IEmailService>(emailService => emailService.SendEmail(to, title, message));
 
-            string secondJobId = await _backgroundJobWorker.Value
+            string secondJobId = await BackgroundJobWorker.Value
                 .PerformBackgroundJobWhenAnotherJobSucceededAsync<IMessageSender>(jobId,
                     messageSender => messageSender.SendMessageToUsers("OnEmailSent", new { Title = title }, new[] { to }));
 
@@ -178,7 +150,7 @@ namespace Bit.Tests.Api.ApiControllers
         [Action]
         public virtual async Task PushSomethingWithDateTimeOffset()
         {
-            await _messageSender.Value.SendMessageToUsersAsync("TestTask", new { Date = _dateTimeProvider.Value.GetCurrentUtcDateTime() }, new[] { "SomeUser" });
+            await MessageSender.Value.SendMessageToUsersAsync("TestTask", new { Date = DateTimeProvider.Value.GetCurrentUtcDateTime() }, new[] { "SomeUser" });
         }
 
         public class WordParameters
@@ -194,7 +166,7 @@ namespace Bit.Tests.Api.ApiControllers
             string to = parameters.to;
             string word = parameters.word;
 
-            await _messageSender.Value.SendMessageToUsersAsync("NewWord", new { Word = word }, new[] { to });
+            await MessageSender.Value.SendMessageToUsersAsync("NewWord", new { Word = word }, new[] { to });
         }
 
         [Action]
@@ -203,7 +175,7 @@ namespace Bit.Tests.Api.ApiControllers
             string to = parameters.to;
             string word = parameters.word;
 
-            await _backgroundJobWorker.Value.PerformBackgroundJobAsync<IMessageSender>(messageSender =>
+            await BackgroundJobWorker.Value.PerformBackgroundJobAsync<IMessageSender>(messageSender =>
                         messageSender.SendMessageToUsers("NewWord", new { Word = word }, new[] { to }));
         }
 
@@ -262,7 +234,7 @@ namespace Bit.Tests.Api.ApiControllers
         [Function]
         public virtual async Task<TestModel> CustomActionMethodWithSingleDtoReturnValueTest(CancellationToken cancellationToken)
         {
-            return await (await _testModelsRepository.Value
+            return await (await TestModelsRepository.Value
                 .GetAllAsync(cancellationToken))
                 .FirstAsync(cancellationToken);
         }
@@ -270,7 +242,7 @@ namespace Bit.Tests.Api.ApiControllers
         [Function]
         public virtual async Task<IEnumerable<TestModel>> CustomActionMethodWithArrayOfEntitiesReturnValueTest(CancellationToken cancellationToken)
         {
-            return await (await _testModelsRepository.Value
+            return await (await TestModelsRepository.Value
                 .GetAllAsync(cancellationToken))
                 .ToListAsync(cancellationToken);
         }
@@ -278,7 +250,7 @@ namespace Bit.Tests.Api.ApiControllers
         [Function]
         public virtual async Task<IQueryable<TestModel>> CustomActionMethodWithQueryableOfEntitiesReturnValueTest(CancellationToken cancellationToken)
         {
-            return await _testModelsRepository.Value
+            return await TestModelsRepository.Value
                 .GetAllAsync(cancellationToken);
         }
 

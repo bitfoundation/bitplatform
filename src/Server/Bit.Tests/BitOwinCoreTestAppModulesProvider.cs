@@ -61,7 +61,7 @@ namespace Bit.Tests
 
             dependencyManager.RegisterAspNetCoreSingleSignOnClient();
 
-            services.AddWebApiCore();
+            services.AddWebApiCore(dependencyManager);
             dependencyManager.RegisterAspNetCoreMiddleware<TestWebApiCoreMvcMiddlewareConfiguration>();
 
             dependencyManager.RegisterMetadata();
