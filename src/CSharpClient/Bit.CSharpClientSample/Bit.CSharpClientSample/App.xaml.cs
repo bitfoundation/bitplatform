@@ -67,12 +67,12 @@ namespace Bit.CSharpClientSample
             .Named<HttpMessageHandler>(ContractKeys.AuthenticatedHttpMessageHandler)
             .SingleInstance();
 
+            Simple.OData.Client.HttpConnection.HttpClientFactory = new BitODataHttpClientFactory(Container);
+
             containerRegistry.GetBuilder().Register<IODataClient>(c =>
             {
-                HttpMessageHandler authenticatedHttpMessageHandler = c.ResolveNamed<HttpMessageHandler>(ContractKeys.AuthenticatedHttpMessageHandler);
                 IODataClient odataClient = new ODataClient(new ODataClientSettings(new Uri(c.Resolve<IClientAppProfile>().HostUri, "odata/Test/"))
                 {
-                    OnCreateMessageHandler = () => authenticatedHttpMessageHandler,
                     RenewHttpConnection = false
                 });
                 return odataClient;
