@@ -26,13 +26,13 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Bit.Simple.OData.Client.V4.Adapter" Version="5.0.3" />
     <PackageReference Include="IdentityModel" Version="3.3.1" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="2.0.2" />
     <PackageReference Include="Microsoft.OData.Core" Version="7.4.3" />
     <PackageReference Include="Newtonsoft.Json" Version="11.0.2" />
     <PackageReference Include="PCLCrypto" Version="2.0.147" />
     <PackageReference Include="Prism.Autofac.Forms" Version="7.0.0.396" />
-    <PackageReference Include="Simple.OData.V4.Client" Version="5.0.0-beta2" />
     <PackageReference Include="Xamarin.Auth" Version="1.6.0.1" />
     <PackageReference Include="Xamarin.Forms" Version="2.5.0.280555" />
     <PackageReference Include="MSBuild.Sdk.Extras" Version="1.2.2" PrivateAssets="All" />
@@ -47,9 +47,7 @@
     <PackageReference Include="Xamarin.Android.Support.v4" Version="26.1.0.1" />
     <PackageReference Include="Xamarin.Android.Support.v7.CardView" Version="26.1.0.1" />
     <PackageReference Include="Xamarin.Android.Support.v7.MediaRouter" Version="26.1.0.1" />
-    <PackageReference Include="Xamarin.Android.Support.CustomTabs">
-      <Version>26.1.0.1</Version>
-    </PackageReference>
+    <PackageReference Include="Xamarin.Android.Support.CustomTabs" Version="26.1.0.1" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(TargetFramework)' == 'netcoreapp2.0'">
