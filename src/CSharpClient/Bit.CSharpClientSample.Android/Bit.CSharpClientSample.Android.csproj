@@ -81,12 +81,12 @@
     <AndroidResource Include="Resources\values\Strings.xml" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\Bit.CSharpClient.All\Bit.CSharpClient.All.csproj">
+    <ProjectReference Include="..\Bit.CSharpClient.All\Bit.CSharpClient.All.csproj">
       <Project>{9cbe7a88-d05e-4095-b408-26fd28c5758f}</Project>
       <Name>Bit.CSharpClient.All</Name>
     </ProjectReference>
     <ProjectReference Include="..\Bit.CSharpClientSample\Bit.CSharpClientSample.csproj">
-      <Project>{c2d427d1-3891-43b2-a313-f4fb02f2cd71}</Project>
+      <Project>{67a1702e-8891-4735-8570-145a3bd984d7}</Project>
       <Name>Bit.CSharpClientSample</Name>
     </ProjectReference>
   </ItemGroup>

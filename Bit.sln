@@ -56,9 +56,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "CSharpClient", "CSharpClien
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Bit.CSharpClient.All", "src\CSharpClient\Bit.CSharpClient.All\Bit.CSharpClient.All.csproj", "{9CBE7A88-D05E-4095-B408-26FD28C5758F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Bit.CSharpClientSample.Android", "src\CSharpClient\Bit.CSharpClientSample\Bit.CSharpClientSample.Android\Bit.CSharpClientSample.Android.csproj", "{0708C7EF-6408-4F42-8A86-D1000B85DAD8}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Bit.CSharpClientSample", "src\CSharpClient\Bit.CSharpClientSample\Bit.CSharpClientSample.csproj", "{67A1702E-8891-4735-8570-145A3BD984D7}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Bit.CSharpClientSample", "src\CSharpClient\Bit.CSharpClientSample\Bit.CSharpClientSample\Bit.CSharpClientSample.csproj", "{C2D427D1-3891-43B2-A313-F4FB02F2CD71}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Bit.CSharpClientSample.Android", "src\CSharpClient\Bit.CSharpClientSample.Android\Bit.CSharpClientSample.Android.csproj", "{0708C7EF-6408-4F42-8A86-D1000B85DAD8}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -236,6 +236,14 @@ Global
 		{9CBE7A88-D05E-4095-B408-26FD28C5758F}.Release|Any CPU.Build.0 = Release|Any CPU
 		{9CBE7A88-D05E-4095-B408-26FD28C5758F}.Release|x64.ActiveCfg = Release|Any CPU
 		{9CBE7A88-D05E-4095-B408-26FD28C5758F}.Release|x64.Build.0 = Release|Any CPU
+		{67A1702E-8891-4735-8570-145A3BD984D7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{67A1702E-8891-4735-8570-145A3BD984D7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{67A1702E-8891-4735-8570-145A3BD984D7}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{67A1702E-8891-4735-8570-145A3BD984D7}.Debug|x64.Build.0 = Debug|Any CPU
+		{67A1702E-8891-4735-8570-145A3BD984D7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{67A1702E-8891-4735-8570-145A3BD984D7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{67A1702E-8891-4735-8570-145A3BD984D7}.Release|x64.ActiveCfg = Release|Any CPU
+		{67A1702E-8891-4735-8570-145A3BD984D7}.Release|x64.Build.0 = Release|Any CPU
 		{0708C7EF-6408-4F42-8A86-D1000B85DAD8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{0708C7EF-6408-4F42-8A86-D1000B85DAD8}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{0708C7EF-6408-4F42-8A86-D1000B85DAD8}.Debug|Any CPU.Deploy.0 = Debug|Any CPU
@@ -248,14 +256,6 @@ Global
 		{0708C7EF-6408-4F42-8A86-D1000B85DAD8}.Release|x64.ActiveCfg = Release|Any CPU
 		{0708C7EF-6408-4F42-8A86-D1000B85DAD8}.Release|x64.Build.0 = Release|Any CPU
 		{0708C7EF-6408-4F42-8A86-D1000B85DAD8}.Release|x64.Deploy.0 = Release|Any CPU
-		{C2D427D1-3891-43B2-A313-F4FB02F2CD71}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{C2D427D1-3891-43B2-A313-F4FB02F2CD71}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{C2D427D1-3891-43B2-A313-F4FB02F2CD71}.Debug|x64.ActiveCfg = Debug|Any CPU
-		{C2D427D1-3891-43B2-A313-F4FB02F2CD71}.Debug|x64.Build.0 = Debug|Any CPU
-		{C2D427D1-3891-43B2-A313-F4FB02F2CD71}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{C2D427D1-3891-43B2-A313-F4FB02F2CD71}.Release|Any CPU.Build.0 = Release|Any CPU
-		{C2D427D1-3891-43B2-A313-F4FB02F2CD71}.Release|x64.ActiveCfg = Release|Any CPU
-		{C2D427D1-3891-43B2-A313-F4FB02F2CD71}.Release|x64.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -282,8 +282,8 @@ Global
 		{2DA757D9-B4B1-4DDD-A486-0EEE5894C186} = {C4390E9A-3483-45A8-9A3F-D8DBFF3A38DB}
 		{4716B925-1D32-482F-8439-4CF46D3F0974} = {C4390E9A-3483-45A8-9A3F-D8DBFF3A38DB}
 		{9CBE7A88-D05E-4095-B408-26FD28C5758F} = {DB8D0A54-7638-4839-9FC1-404245D1DE29}
+		{67A1702E-8891-4735-8570-145A3BD984D7} = {DB8D0A54-7638-4839-9FC1-404245D1DE29}
 		{0708C7EF-6408-4F42-8A86-D1000B85DAD8} = {DB8D0A54-7638-4839-9FC1-404245D1DE29}
-		{C2D427D1-3891-43B2-A313-F4FB02F2CD71} = {DB8D0A54-7638-4839-9FC1-404245D1DE29}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {1215D425-A440-4391-A5A7-402ACBF8B4B0}

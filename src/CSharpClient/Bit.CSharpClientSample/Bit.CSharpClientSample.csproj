@@ -12,7 +12,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\Bit.CSharpClient.All\Bit.CSharpClient.All.csproj" />
+    <ProjectReference Include="..\Bit.CSharpClient.All\Bit.CSharpClient.All.csproj" />
   </ItemGroup>
 
   <Import Project="$(MSBuildSDKExtrasTargets)" Condition="Exists('$(MSBuildSDKExtrasTargets)')" />
