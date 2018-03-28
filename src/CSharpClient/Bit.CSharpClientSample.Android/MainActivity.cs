@@ -24,15 +24,15 @@ namespace Bit.CSharpClientSample.Droid
 
             Forms.Init(this, bundle);
 
-            LoadApplication(new App(new TestAppInitializer(this)));
+            LoadApplication(new App(new SampleAppDroidInitializer(this)));
         }
     }
 
-    public class TestAppInitializer : IPlatformInitializer
+    public class SampleAppDroidInitializer : IPlatformInitializer
     {
         private readonly Activity _activity;
 
-        public TestAppInitializer(Activity activity)
+        public SampleAppDroidInitializer(Activity activity)
         {
             _activity = activity;
         }
@@ -46,13 +46,13 @@ namespace Bit.CSharpClientSample.Droid
         }
     }
 
-    [Activity(Label = nameof(TestAppSSOUrlRedirectParserActivity), NoHistory = true, LaunchMode = LaunchMode.SingleTop)]
+    [Activity(Label = nameof(SampleAppSSOUrlRedirectParserActivity), NoHistory = true, LaunchMode = LaunchMode.SingleTop)]
     [IntentFilter(
     new[] { Intent.ActionView },
     Categories = new[] { Intent.CategoryDefault, Intent.CategoryBrowsable },
     DataSchemes = new[] { "test" },
     DataPath = "test://oauth2redirect")]
-    public class TestAppSSOUrlRedirectParserActivity : BitSSOUrlRedirectParserActivity
+    public class SampleAppSSOUrlRedirectParserActivity : BitSSOUrlRedirectParserActivity
     {
     }
 }
