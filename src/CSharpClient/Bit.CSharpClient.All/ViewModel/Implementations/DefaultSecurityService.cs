@@ -156,7 +156,7 @@ namespace Bit.ViewModel.Implementations
         public virtual Uri GetLogoutUrl(string id_token, object state = null, string client_id = null)
         {
             if (string.IsNullOrEmpty(id_token))
-                throw new ArgumentException(nameof(id_token));
+                throw new ArgumentException("Id token may not be empty or null", nameof(id_token));
 
             state = state ?? new { };
 

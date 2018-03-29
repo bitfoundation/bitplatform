@@ -10,7 +10,7 @@ namespace System.Linq
                 throw new ArgumentNullException(nameof(source));
 
             if (string.IsNullOrEmpty(message))
-                throw new ArgumentException(nameof(message));
+                throw new ArgumentException("Message may not be empty or null", nameof(message));
 
             try
             {
@@ -28,7 +28,7 @@ namespace System.Linq
                 throw new ArgumentNullException(nameof(source));
 
             if (string.IsNullOrEmpty(message))
-                throw new ArgumentException(nameof(message));
+                throw new ArgumentException("Message may not be empty or null", nameof(message));
 
             try
             {
