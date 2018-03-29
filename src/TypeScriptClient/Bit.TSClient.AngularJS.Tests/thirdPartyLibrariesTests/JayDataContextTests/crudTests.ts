@@ -31,3 +31,52 @@ let testBatchReadRequest = async (): Promise<void> => {
         throw new Error("There is a problem in batch read");
     }
 };
+
+const testSync = async (): Promise<void> => {
+
+    const contextProvider = Bit.DependencyManager.getCurrent().resolveObject<Bit.Contracts.IEntityContextProvider>("EntityContextProvider");
+    const syncService = Bit.DependencyManager.getCurrent().resolveObject<Bit.Contracts.ISyncService>("SyncService");
+    const guidUtils = Bit.DependencyManager.getCurrent().resolveObject<Bit.Implementations.DefaultGuidUtils>("GuidUtils");
+
+    syncService.init(() => contextProvider.getContext<TestContext>("Test"), () => contextProvider.getContext<TestContext>("Test", { isOffline: true }));
+    syncService.addEntitySetConfig<TestContext>({ name: "testCustomers", dtoType: BitTestsModel.TestCustomerDto });
+
+    const offlineContext = await contextProvider.getContext<TestContext>("Test", { isOffline: true });
+    const onlineContext = await contextProvider.getContext<TestContext>("Test");
+
+    onlineContext.testCustomers.addMany([{
+        Id: guidUtils.newGuid(),
+        Name: "A1",
+        CityId: "EF529174-C497-408B-BB4D-C31C205D46BB"
+    }, {
+        Id: guidUtils.newGuid(),
+        Name: "A2",
+        CityId: "EF529174-C497-408B-BB4D-C31C205D46BB"
+    }]);
+
+    await onlineContext.saveChanges();
+
+    await syncService.syncContext();
+
+    const e = await offlineContext.testCustomers.first();
+
+    offlineContext.attach(e);
+
+    e.Name += "?";
+
+    await offlineContext.saveChanges();
+
+    onlineContext.testCustomers.addMany([{
+        Id: guidUtils.newGuid(),
+        Name: "A3",
+        CityId: "EF529174-C497-408B-BB4D-C31C205D46BB"
+    }, {
+        Id: guidUtils.newGuid(),
+        Name: "A4",
+        CityId: "EF529174-C497-408B-BB4D-C31C205D46BB"
+    }]);
+
+    await onlineContext.saveChanges();
+
+    await syncService.syncContext();
+}
