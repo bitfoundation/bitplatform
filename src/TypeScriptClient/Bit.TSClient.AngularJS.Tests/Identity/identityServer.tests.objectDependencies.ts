@@ -18,6 +18,8 @@
 
     dependencyManager.registerObjectDependency({ name: "DateTimeService", type: Implementations.DefaultDateTimeService });
 
+    dependencyManager.registerObjectDependency({ name: "DateTimeProvider", type: Implementations.DefaultDateTimeProvider });
+
     dependencyManager.registerObjectDependency({ name: "SecurityService", type: Implementations.DefaultSecurityService });
 
     dependencyManager.registerObjectDependency({ name: "GuidUtils", type: Bit.Implementations.DefaultGuidUtils });
