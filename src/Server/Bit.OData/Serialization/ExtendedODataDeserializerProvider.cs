@@ -29,7 +29,8 @@ namespace Bit.OData.Serialization
 
             if (actionDescriptor != null && (actionDescriptor.GetCustomAttributes<ActionAttribute>().Any() ||
                 actionDescriptor.GetCustomAttributes<CreateAttribute>().Any() ||
-                actionDescriptor.GetCustomAttributes<UpdateAttribute>().Any()))
+                actionDescriptor.GetCustomAttributes<UpdateAttribute>().Any() ||
+                actionDescriptor.GetCustomAttributes<PartialUpdateAttribute>().Any()))
             {
                 return _defaultODataParameterDeserializerValue.Value;
             }

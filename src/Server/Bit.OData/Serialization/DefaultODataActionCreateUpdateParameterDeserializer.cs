@@ -13,13 +13,14 @@ using System.Linq;
 using System.Net.Http;
 using System.Reflection;
 using System.Web.Http.Controllers;
+using System.Web.OData;
 using System.Web.OData.Formatter.Deserialization;
 
 namespace Bit.OData.Serialization
 {
     public class DefaultODataActionCreateUpdateParameterDeserializer : ODataDeserializer
     {
-        private readonly ODataJsonDeSerializerStringCorrector _stringFormatterConvert;
+        private readonly ODataJsonDeSerializerStringCorrector _stringCorrectorsConverters;
         private readonly ODataJsonDeSerializerEnumConverter _odataJsonDeserializerEnumConverter;
 
         protected DefaultODataActionCreateUpdateParameterDeserializer()
@@ -34,7 +35,7 @@ namespace Bit.OData.Serialization
             if (dependencyResolver == null)
                 throw new ArgumentNullException(nameof(dependencyResolver));
 
-            _stringFormatterConvert = new ODataJsonDeSerializerStringCorrector(dependencyResolver.GetServices(typeof(IStringCorrector).GetTypeInfo()).Cast<IStringCorrector>().ToArray());
+            _stringCorrectorsConverters = new ODataJsonDeSerializerStringCorrector(dependencyResolver.GetServices(typeof(IStringCorrector).GetTypeInfo()).Cast<IStringCorrector>().ToArray());
             _odataJsonDeserializerEnumConverter = new ODataJsonDeSerializerEnumConverter();
         }
 
@@ -42,8 +43,8 @@ namespace Bit.OData.Serialization
         {
             HttpActionDescriptor actionDescriptor = readContext.Request.GetActionDescriptor();
 
-            if (actionDescriptor != null && !actionDescriptor.GetCustomAttributes<ActionAttribute>().Any() && !actionDescriptor.GetCustomAttributes<CreateAttribute>().Any() && !actionDescriptor.GetCustomAttributes<UpdateAttribute>().Any())
-                throw new InvalidOperationException($"{nameof(DefaultODataActionCreateUpdateParameterDeserializer)} is designed for odata actions|creates|updates only");
+            if (actionDescriptor != null && !actionDescriptor.GetCustomAttributes<ActionAttribute>().Any() && !actionDescriptor.GetCustomAttributes<CreateAttribute>().Any() && !actionDescriptor.GetCustomAttributes<UpdateAttribute>().Any() && !actionDescriptor.GetCustomAttributes<PartialUpdateAttribute>().Any())
+                throw new InvalidOperationException($"{nameof(DefaultODataActionCreateUpdateParameterDeserializer)} is designed for odata actions|creates|updates|partialUpdates only");
 
             TypeInfo typeInfo = type.GetTypeInfo();
 
@@ -54,7 +55,10 @@ namespace Bit.OData.Serialization
 
             using (StreamReader requestStreamReader = new StreamReader(readContext.Request.Content.ReadAsStreamAsync().GetAwaiter().GetResult()))
             {
-                using (JsonTextReader requestJsonReader = new JsonTextReader(requestStreamReader))
+                string requestJsonBody = requestStreamReader.ReadToEnd();
+
+                using (StringReader jsonStringReader = new StringReader(requestJsonBody))
+                using (JsonTextReader requestJsonReader = new JsonTextReader(jsonStringReader))
                 {
                     void Error(object sender, Newtonsoft.Json.Serialization.ErrorEventArgs e)
                     {
@@ -76,7 +80,7 @@ namespace Bit.OData.Serialization
                     settings.Converters = new JsonConverter[]
                     {
                         _odataJsonDeserializerEnumConverter,
-                        _stringFormatterConvert,
+                        _stringCorrectorsConverters,
                         new ODataJsonDeSerializerDateTimeOffsetTimeZone(timeZoneManager)
                     };
 
@@ -88,7 +92,45 @@ namespace Bit.OData.Serialization
 
                     try
                     {
-                        object result = deserilizer.Deserialize(requestJsonReader, typeInfo);
+                        object result = null;
+
+                        if (!typeof(Delta).GetTypeInfo().IsAssignableFrom(typeInfo))
+                            result = deserilizer.Deserialize(requestJsonReader, typeInfo);
+                        else
+                        {
+                            List<string> changedPropNames = new List<string>();
+
+                            using (JsonTextReader jsonReaderForGettingSchema = new JsonTextReader(new StringReader(requestJsonBody)))
+                            {
+                                while (jsonReaderForGettingSchema.Read())
+                                {
+                                    if (jsonReaderForGettingSchema.Value != null && jsonReaderForGettingSchema.TokenType == JsonToken.PropertyName)
+                                    {
+                                        changedPropNames.Add(jsonReaderForGettingSchema.Value.ToString());
+                                    }
+                                    else
+                                    {
+
+                                    }
+                                }
+                            }
+
+                            TypeInfo dtoType = typeInfo.GetGenericArguments().ExtendedSingle("Finding dto type from delta").GetTypeInfo();
+
+                            object modifiedDto = deserilizer.Deserialize(requestJsonReader, dtoType);
+
+                            Delta delta = (Delta)Activator.CreateInstance(typeInfo);
+
+                            if (modifiedDto is IOpenType openTypeDto && openTypeDto.Properties?.Any() == true)
+                                delta.TrySetPropertyValue(nameof(IOpenType.Properties), openTypeDto);
+
+                            foreach (string changedProp in changedPropNames.Where(p => p != nameof(IOpenType.Properties) && dtoType.GetProperty(p) != null))
+                            {
+                                delta.TrySetPropertyValue(changedProp, dtoType.GetProperty(changedProp).GetValue(modifiedDto));
+                            }
+
+                            result = delta;
+                        }
 
                         return result;
                     }
