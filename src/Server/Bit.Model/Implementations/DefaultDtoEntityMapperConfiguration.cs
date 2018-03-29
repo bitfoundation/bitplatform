@@ -10,6 +10,8 @@ namespace Bit.Model.Implementations
     {
         public virtual void Configure(IMapperConfigurationExpression mapperConfigExpression)
         {
+            mapperConfigExpression.ValidateInlineMaps = false;
+
             mapperConfigExpression.CreateMissingTypeMaps = true;
 
             mapperConfigExpression.ForAllPropertyMaps(p => (p.DestinationProperty.GetCustomAttribute<ForeignKeyAttribute>() != null || p.DestinationProperty.GetCustomAttribute<InversePropertyAttribute>() != null)
