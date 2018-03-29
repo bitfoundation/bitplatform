@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Web" ToolsVersion="15.0">
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
-    <TypeScriptToolsVersion>2.7</TypeScriptToolsVersion>
+    <TypeScriptToolsVersion>2.8</TypeScriptToolsVersion>
     <OutputType>Library</OutputType>
     <ApplicationIcon />
     <StartupObject />
@@ -12,12 +12,88 @@
     <None Remove="bit.core.js.map" />
     <None Remove="Bit.Model.Context.d.ts" />
     <None Remove="Bit.Model.Context.js" />
+    <None Remove="clientAppProfileManager.ts" />
+    <None Remove="Contracts\iAppEvents.ts" />
+    <None Remove="Contracts\iAppStartup.ts" />
+    <None Remove="Contracts\iClientAppProfile.ts" />
+    <None Remove="Contracts\iDateTimeProvider.ts" />
+    <None Remove="Contracts\iDateTimeService.ts" />
+    <None Remove="Contracts\Identity\iLoginModelProvider.ts" />
+    <None Remove="Contracts\iEntityContextProvider.ts" />
+    <None Remove="Contracts\iLogger.ts" />
+    <None Remove="Contracts\iMath.ts" />
+    <None Remove="Contracts\iMessageReceiver.ts" />
+    <None Remove="Contracts\iMetadataProvider.ts" />
+    <None Remove="Contracts\iPathProvider.ts" />
+    <None Remove="Contracts\iSecurityService.ts" />
+    <None Remove="Contracts\iSyncService.ts" />
+    <None Remove="declarations.d.ts" />
+    <None Remove="Implementations\appStartupBase.ts" />
+    <None Remove="Implementations\defaultDateTimeProvider.ts" />
+    <None Remove="Implementations\defaultDateTimeService.ts" />
+    <None Remove="Implementations\defaultGuidUtils.ts" />
+    <None Remove="Implementations\defaultMath.ts" />
+    <None Remove="Implementations\defaultMetadataProvider.ts" />
+    <None Remove="Implementations\defaultPathProvider.ts" />
+    <None Remove="Implementations\defaultSecurityService.ts" />
+    <None Remove="Implementations\defaultSyncService.ts" />
+    <None Remove="Implementations\entityContextProviderAppEventBase.ts" />
+    <None Remove="Implementations\entityContextProviderBase.ts" />
+    <None Remove="Implementations\Identity\defaultLoginModelProvider.ts" />
+    <None Remove="Implementations\loggerBase.ts" />
+    <None Remove="Implementations\signalRMessageReceiver.ts" />
+    <None Remove="log.ts" />
     <None Remove="Model\Events\tokenExpiredEvent.ts" />
+    <None Remove="Model\iArchivableDto.ts" />
+    <None Remove="Model\Identity\loginModel.ts" />
+    <None Remove="Model\iDto.ts" />
+    <None Remove="Model\iSyncableDto.ts" />
+    <None Remove="Model\iVersionableDto.ts" />
+    <None Remove="provider.ts" />
+    <None Remove="typings.d.ts" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Properties\" />
   </ItemGroup>
   <ItemGroup>
+    <TypeScriptCompile Include="clientAppProfileManager.ts" />
+    <TypeScriptCompile Include="Contracts\iAppEvents.ts" />
+    <TypeScriptCompile Include="Contracts\iAppStartup.ts" />
+    <TypeScriptCompile Include="Contracts\iClientAppProfile.ts" />
+    <TypeScriptCompile Include="Contracts\iDateTimeService.ts" />
+    <TypeScriptCompile Include="Contracts\iDateTimeProvider.ts" />
+    <TypeScriptCompile Include="Contracts\Identity\iLoginModelProvider.ts" />
+    <TypeScriptCompile Include="Contracts\iEntityContextProvider.ts" />
+    <TypeScriptCompile Include="Contracts\iLogger.ts" />
+    <TypeScriptCompile Include="Contracts\iMath.ts" />
+    <TypeScriptCompile Include="Contracts\iMessageReceiver.ts" />
+    <TypeScriptCompile Include="Contracts\iMetadataProvider.ts" />
+    <TypeScriptCompile Include="Contracts\iPathProvider.ts" />
+    <TypeScriptCompile Include="Contracts\iSecurityService.ts" />
+    <TypeScriptCompile Include="Contracts\iSyncService.ts" />
+    <TypeScriptCompile Include="declarations.d.ts" />
+    <TypeScriptCompile Include="Implementations\appStartupBase.ts" />
+    <TypeScriptCompile Include="Implementations\defaultDateTimeProvider.ts" />
+    <TypeScriptCompile Include="Implementations\defaultDateTimeService.ts" />
+    <TypeScriptCompile Include="Implementations\defaultGuidUtils.ts" />
+    <TypeScriptCompile Include="Implementations\defaultMath.ts" />
+    <TypeScriptCompile Include="Implementations\defaultMetadataProvider.ts" />
+    <TypeScriptCompile Include="Implementations\defaultPathProvider.ts" />
+    <TypeScriptCompile Include="Implementations\defaultSecurityService.ts" />
+    <TypeScriptCompile Include="Implementations\defaultSyncService.ts" />
+    <TypeScriptCompile Include="Implementations\entityContextProviderAppEventBase.ts" />
+    <TypeScriptCompile Include="Implementations\entityContextProviderBase.ts" />
+    <TypeScriptCompile Include="Implementations\Identity\defaultLoginModelProvider.ts" />
+    <TypeScriptCompile Include="Implementations\loggerBase.ts" />
+    <TypeScriptCompile Include="Implementations\signalRMessageReceiver.ts" />
+    <TypeScriptCompile Include="log.ts" />
     <TypeScriptCompile Include="Model\Events\tokenExpiredEvent.ts" />
+    <TypeScriptCompile Include="Model\iArchivableDto.ts" />
+    <TypeScriptCompile Include="Model\Identity\loginModel.ts" />
+    <TypeScriptCompile Include="Model\iDto.ts" />
+    <TypeScriptCompile Include="Model\iSyncableDto.ts" />
+    <TypeScriptCompile Include="Model\iVersionableDto.ts" />
+    <TypeScriptCompile Include="provider.ts" />
+    <TypeScriptCompile Include="typings.d.ts" />
   </ItemGroup>
 </Project>

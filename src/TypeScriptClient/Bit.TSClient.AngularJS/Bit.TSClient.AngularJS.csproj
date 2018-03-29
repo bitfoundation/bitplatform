@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Web" ToolsVersion="15.0">
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
-    <TypeScriptToolsVersion>2.7</TypeScriptToolsVersion>
+    <TypeScriptToolsVersion>2.8</TypeScriptToolsVersion>
     <OutputType>Library</OutputType>
     <ApplicationIcon />
     <StartupObject />
@@ -10,8 +10,90 @@
     <None Remove="bit.ng1.d.ts" />
     <None Remove="bit.ng1.js" />
     <None Remove="bit.ng1.js.map" />
+    <None Remove="command.ts" />
+    <None Remove="components\cacheComponent.ts" />
+    <None Remove="components\Identity\antiForgeryTokenComponent.ts" />
+    <None Remove="components\Identity\loginComponent.ts" />
+    <None Remove="components\persianDatePicker.ts" />
+    <None Remove="Contracts\iAngularConfiguration.ts" />
+    <None Remove="Contracts\iDtoViewModel.ts" />
+    <None Remove="declarations.d.ts" />
+    <None Remove="dependencyManager.ts" />
+    <None Remove="directives\defaultColorViewerDirective.ts" />
+    <None Remove="directives\defaultDtoFormDirective.ts" />
+    <None Remove="directives\defaultDtoFormServiceDirective.ts" />
+    <None Remove="directives\defaultElementMoverDirective.ts" />
+    <None Remove="directives\defaultErrorMessagesDirective.ts" />
+    <None Remove="directives\defaultRadColorPickerDirective.ts" />
+    <None Remove="directives\defaultRadComboBoxDirective.ts" />
+    <None Remove="directives\defaultRadDatePickerDirective.ts" />
+    <None Remove="directives\defaultRadEditorDirective.ts" />
+    <None Remove="directives\defaultRadGridAddButtonDirective.ts" />
+    <None Remove="directives\defaultRadGridCancelButtonDirective.ts" />
+    <None Remove="directives\defaultRadGridDeleteButtonDirective.ts" />
+    <None Remove="directives\defaultRadGridDirective.ts" />
+    <None Remove="directives\defaultRadGridEditButtonDirective.ts" />
+    <None Remove="directives\defaultRadGridSaveButtonDirective.ts" />
+    <None Remove="directives\defaultRadModelItemTemplateDirective.ts" />
+    <None Remove="directives\defaultRadMultiSelectDirective.ts" />
+    <None Remove="directives\defaultRadTreeViewDirective.ts" />
+    <None Remove="Implementations\defaultAngularAppInitialization.ts" />
+    <None Remove="Implementations\defaultAngularTranslateConfiguration.ts" />
+    <None Remove="Implementations\defaultAppStartup.ts" />
+    <None Remove="Implementations\defaultEntityContextProvider.ts" />
+    <None Remove="Implementations\defaultEntityContextProviderAppEvent.ts" />
+    <None Remove="Implementations\defaultKendoExtender.ts" />
+    <None Remove="Implementations\defaultLogger.ts" />
+    <None Remove="Implementations\defaultProvider.ts" />
+    <None Remove="Implementations\dtoRules.ts" />
+    <None Remove="Implementations\Identity\identityserverdefaultangularappinitialization.ts" />
+    <None Remove="scopeManager.ts" />
+    <None Remove="typings.d.ts" />
+    <None Remove="viewModels\dtoViewModel.ts" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Properties\" />
+  </ItemGroup>
+  <ItemGroup>
+    <TypeScriptCompile Include="command.ts" />
+    <TypeScriptCompile Include="components\cacheComponent.ts" />
+    <TypeScriptCompile Include="components\Identity\antiForgeryTokenComponent.ts" />
+    <TypeScriptCompile Include="components\Identity\loginComponent.ts" />
+    <TypeScriptCompile Include="components\persianDatePicker.ts" />
+    <TypeScriptCompile Include="Contracts\iAngularConfiguration.ts" />
+    <TypeScriptCompile Include="Contracts\iDtoViewModel.ts" />
+    <TypeScriptCompile Include="declarations.d.ts" />
+    <TypeScriptCompile Include="dependencyManager.ts" />
+    <TypeScriptCompile Include="directives\defaultColorViewerDirective.ts" />
+    <TypeScriptCompile Include="directives\defaultDtoFormDirective.ts" />
+    <TypeScriptCompile Include="directives\defaultDtoFormServiceDirective.ts" />
+    <TypeScriptCompile Include="directives\defaultElementMoverDirective.ts" />
+    <TypeScriptCompile Include="directives\defaultErrorMessagesDirective.ts" />
+    <TypeScriptCompile Include="directives\defaultRadColorPickerDirective.ts" />
+    <TypeScriptCompile Include="directives\defaultRadComboBoxDirective.ts" />
+    <TypeScriptCompile Include="directives\defaultRadDatePickerDirective.ts" />
+    <TypeScriptCompile Include="directives\defaultRadEditorDirective.ts" />
+    <TypeScriptCompile Include="directives\defaultRadGridAddButtonDirective.ts" />
+    <TypeScriptCompile Include="directives\defaultRadGridCancelButtonDirective.ts" />
+    <TypeScriptCompile Include="directives\defaultRadGridDeleteButtonDirective.ts" />
+    <TypeScriptCompile Include="directives\defaultRadGridDirective.ts" />
+    <TypeScriptCompile Include="directives\defaultRadGridEditButtonDirective.ts" />
+    <TypeScriptCompile Include="directives\defaultRadGridSaveButtonDirective.ts" />
+    <TypeScriptCompile Include="directives\defaultRadModelItemTemplateDirective.ts" />
+    <TypeScriptCompile Include="directives\defaultRadMultiSelectDirective.ts" />
+    <TypeScriptCompile Include="directives\defaultRadTreeViewDirective.ts" />
+    <TypeScriptCompile Include="Implementations\defaultAngularAppInitialization.ts" />
+    <TypeScriptCompile Include="Implementations\defaultAngularTranslateConfiguration.ts" />
+    <TypeScriptCompile Include="Implementations\defaultAppStartup.ts" />
+    <TypeScriptCompile Include="Implementations\defaultEntityContextProvider.ts" />
+    <TypeScriptCompile Include="Implementations\defaultEntityContextProviderAppEvent.ts" />
+    <TypeScriptCompile Include="Implementations\defaultKendoExtender.ts" />
+    <TypeScriptCompile Include="Implementations\defaultLogger.ts" />
+    <TypeScriptCompile Include="Implementations\defaultProvider.ts" />
+    <TypeScriptCompile Include="Implementations\dtoRules.ts" />
+    <TypeScriptCompile Include="Implementations\Identity\identityserverdefaultangularappinitialization.ts" />
+    <TypeScriptCompile Include="scopeManager.ts" />
+    <TypeScriptCompile Include="typings.d.ts" />
+    <TypeScriptCompile Include="viewModels\dtoViewModel.ts" />
   </ItemGroup>
 </Project>
