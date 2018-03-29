@@ -29,12 +29,11 @@ namespace System.Data
                         if (reader.FieldCount != 1)
                             throw new ArgumentException($"SELECT query should not have {reader.FieldCount} columns (expected 1).", nameof(reader));
 
-                        if (reader[0].GetType().Name == "String")
+                        if (reader[0] is string buffer)
                         {
-                            string buffer = reader.GetString(0);
                             await FlushContent(stream, buffer, -1, cancellationToken).ConfigureAwait(false);
                         }
-                        else if (reader[0].GetType().Name == "Byte[]")
+                        else if (reader[0] is byte[])
                         {
                             byte[] binary = new byte[2048];
                             int amount = (int)reader.GetBytes(0, 0, binary, 0, 2048);
