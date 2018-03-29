@@ -112,7 +112,7 @@ namespace Bit.Tests
             if (Settings.Default.UseInMemoryProviderByDefault)
                 dependencyManager.RegisterEfCoreDbContext<TestDbContext, InMemoryDbContextObjectsProvider>();
             else
-                dependencyManager.RegisterEfCoreDbContext<TestDbContext, SqlDbContextObjectsProvider>();
+                dependencyManager.RegisterEfCoreDbContext<TestDbContext, SqlServerDbContextObjectsProvider>();
 
             dependencyManager.RegisterDtoEntityMapper();
 

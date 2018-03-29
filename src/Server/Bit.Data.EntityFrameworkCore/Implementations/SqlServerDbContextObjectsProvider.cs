@@ -5,7 +5,7 @@ using System.Reflection;
 
 namespace Bit.Data.EntityFrameworkCore.Implementations
 {
-    public class SqlDbContextObjectsProvider : DbContextObjectsProvider
+    public class SqlServerDbContextObjectsProvider : DbContextObjectsProvider
     {
         private Lazy<MethodInfo> _UseSqlServerMethod = new Lazy<MethodInfo>(() =>
         {
