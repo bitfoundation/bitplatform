@@ -40,7 +40,7 @@ namespace Bit.Data.EntityFrameworkCore.Implementations
             if (entityToAdd is IVersionableEntity versionableEntity && versionableEntity.Version == default(long))
                 versionableEntity.Version = DateTimeProvider.GetCurrentUtcDateTime().UtcTicks;
 
-            DbContext.Add(entityToAdd);
+            await DbContext.AddAsync(entityToAdd).ConfigureAwait(false);
 
             await SaveChangesAsync(cancellationToken).ConfigureAwait(false);
 
@@ -62,7 +62,7 @@ namespace Bit.Data.EntityFrameworkCore.Implementations
                     versionableEntity.Version = DateTimeProvider.GetCurrentUtcDateTime().UtcTicks;
             }
 
-            DbContext.AddRange(entitiesToAddList);
+            await DbContext.AddRangeAsync(entitiesToAddList).ConfigureAwait(false);
 
             await SaveChangesAsync(cancellationToken).ConfigureAwait(false);
 
