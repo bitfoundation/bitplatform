@@ -18,13 +18,17 @@
         private entitySetConfigs: Array<{ entitySetName: string, keyMembers: string[], getMethod?: (context: $data.EntityContext) => $data.Queryable<Model.Contracts.ISyncableDto>, syncConfig?: { fromServerSync?: boolean | (() => boolean), toServerSync?: boolean | (() => boolean) } }> = [];
 
         @Log()
-        public addEntitySetConfig<TEntityContext extends $data.EntityContext>(entitySet: $data.EntitySet<Model.Contracts.ISyncableDto>, getMethod?: (context: TEntityContext) => $data.Queryable<Model.Contracts.ISyncableDto>, syncConfig?: { fromServerSync?: boolean | (() => boolean), toServerSync?: boolean | (() => boolean) }) {
+        public addEntitySetConfig<TEntityContext extends $data.EntityContext>(entitySet: { name: keyof TEntityContext, dtoType: any }, getMethod?: (context: TEntityContext) => $data.Queryable<Model.Contracts.ISyncableDto>, syncConfig?: { fromServerSync?: boolean | (() => boolean), toServerSync?: boolean | (() => boolean) }) {
 
             if (entitySet == null)
-                throw new Error("entitySetName may not be null");
+                throw new Error("entitySet may not be null");
+            if (entitySet.dtoType == null)
+                throw new Error("entitySet's dto type may not be null");
+            if (entitySet.name == null)
+                throw new Error("entitySet's name may not be null");
 
             if (getMethod == null)
-                getMethod = (cntx) => cntx[entitySet.collectionName];
+                getMethod = (cntx) => cntx[entitySet.name] as any;
 
             if (syncConfig == null)
                 syncConfig = { fromServerSync: true, toServerSync: true };
@@ -33,10 +37,10 @@
             if (syncConfig.toServerSync == null)
                 syncConfig.toServerSync = true;
 
-            let keyMembers = (((entitySet as $data.EntitySet<Model.Contracts.ISyncableDto>).elementType.memberDefinitions as any).getKeyProperties()).map(function (k) { return k.name; });
+            let keyMembers = entitySet.dtoType.memberDefinitions.getKeyProperties().map(function (k) { return k.name; });
 
             let entitySetConfig = {
-                entitySetName: entitySet.collectionName,
+                entitySetName: entitySet.name,
                 getMethod: getMethod,
                 syncConfig: syncConfig,
                 keyMembers: keyMembers
