@@ -9,5 +9,7 @@ namespace Bit.ViewModel.Contracts
         Uri OAuthRedirectUri { get; }
 
         string AppName { get; }
+
+        string ODataRoute { get; set; }
     }
 }

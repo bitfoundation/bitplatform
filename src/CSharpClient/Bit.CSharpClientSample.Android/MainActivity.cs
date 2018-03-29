@@ -28,21 +28,11 @@ namespace Bit.CSharpClientSample.Droid
         }
     }
 
-    public class SampleAppDroidInitializer : IPlatformInitializer
+    public class SampleAppDroidInitializer : BitPlatformInitializer
     {
-        private readonly Activity _activity;
-
         public SampleAppDroidInitializer(Activity activity)
+            : base(activity)
         {
-            _activity = activity;
-        }
-
-        public void RegisterTypes(IContainerRegistry containerRegistry)
-        {
-            containerRegistry.RegisterInstance<Activity>(_activity);
-            containerRegistry.RegisterInstance<Context>(_activity);
-
-            containerRegistry.Register<IBrowserService, DefaultBrowserService>();
         }
     }
 

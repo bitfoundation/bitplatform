@@ -1,9 +1,6 @@
 ﻿using Bit.iOS;
-using Bit.ViewModel.Contracts;
 using Bit.ViewModel.Implementations;
 using Foundation;
-using Prism;
-using Prism.Ioc;
 using UIKit;
 using Xamarin.Forms;
 
@@ -22,11 +19,8 @@ namespace Bit.CSharpClientSample.iOS
         }
     }
 
-    public class SampleAppiOSInitializer : IPlatformInitializer
+    public class SampleAppiOSInitializer : BitPlatformInitializer
     {
-        public void RegisterTypes(IContainerRegistry containerRegistry)
-        {
-            containerRegistry.Register<IBrowserService, DefaultBrowserService>();
-        }
+
     }
 }

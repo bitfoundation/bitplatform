@@ -1,97 +1,106 @@
-﻿using Bit.ViewModel;
+﻿using Autofac;
+using Bit.ViewModel.Contracts;
+using Bit.ViewModel.Implementations;
+using IdentityModel.Client;
+using Plugin.Connectivity;
+using Plugin.Connectivity.Abstractions;
+using Prism.Autofac;
+using Prism.Events;
+using Simple.OData.Client;
 using System;
-using Xamarin.Forms;
+using System.Net.Http;
+using Xamarin.Auth;
 
 namespace Prism.Ioc
 {
     public static class IContainerRegistryExtensions
     {
-        public static void RegisterNavigation<TView, TViewModel>(this IContainerRegistry containerRegistry, string name)
-            where TView : Page
-            where TViewModel : BitViewModelBase
+        public static IContainerRegistry RegisterRequiredServices(this IContainerRegistry containerRegistry)
         {
             if (containerRegistry == null)
                 throw new ArgumentNullException(nameof(containerRegistry));
 
-            if (name == null)
-                throw new ArgumentNullException(nameof(name));
+            containerRegistry.RegisterSingleton<IDateTimeProvider, DefaultDateTimeProvider>();
+            containerRegistry.GetBuilder().Register<IConnectivity>(c => CrossConnectivity.Current).SingleInstance();
 
-            containerRegistry.RegisterForNavigation<TView, TViewModel>(name: name);
-            containerRegistry.Register<TViewModel>();
-            containerRegistry.Register<TView>();
+            return containerRegistry;
         }
 
-        public static void RegisterNavigation<TView>(this IContainerRegistry containerRegistry, string name)
-            where TView : Page
+        public static IContainerRegistry RegisterIdentityClient(this IContainerRegistry containerRegistry)
         {
             if (containerRegistry == null)
                 throw new ArgumentNullException(nameof(containerRegistry));
 
-            if (name == null)
-                throw new ArgumentNullException(nameof(name));
+            containerRegistry.RegisterSingleton<ISecurityService, DefaultSecurityService>();
+            containerRegistry.GetBuilder().Register(c => AccountStore.Create()).SingleInstance();
 
-            containerRegistry.RegisterForNavigation<TView>(name: name);
-            containerRegistry.Register<TView>();
+            containerRegistry.GetBuilder().Register<TokenClient>((c, parameters) =>
+            {
+                return new TokenClient(address: new Uri(c.Resolve<IClientAppProfile>().HostUri, "core/connect/token").ToString(), clientId: parameters.Named<string>("clientId"), clientSecret: parameters.Named<string>("secret"), innerHttpMessageHandler: c.ResolveNamed<HttpMessageHandler>(ContractKeys.DefaultHttpMessageHandler));
+            });
+
+            return containerRegistry;
         }
 
-        public static void RegisterNavigation(this IContainerRegistry containerRegistry, Type viewType, string name)
+        public static IContainerRegistry RegisterHttpClient<THttpMessageHandler>(this IContainerRegistry containerRegistry)
+            where THttpMessageHandler : HttpMessageHandler, new()
         {
             if (containerRegistry == null)
                 throw new ArgumentNullException(nameof(containerRegistry));
 
-            if (name == null)
-                throw new ArgumentNullException(nameof(name));
+            containerRegistry.GetBuilder()
+                .RegisterType<THttpMessageHandler>()
+                .Named<HttpMessageHandler>(ContractKeys.DefaultHttpMessageHandler)
+                .SingleInstance();
 
-            containerRegistry.RegisterForNavigation(viewType: viewType, name: name);
-            containerRegistry.Register(viewType);
+            containerRegistry.GetBuilder().Register<HttpMessageHandler>(c =>
+            {
+                return new AuthenticatedHttpMessageHandler(c.Resolve<IEventAggregator>(), c.Resolve<ISecurityService>(), c.ResolveNamed<HttpMessageHandler>(ContractKeys.DefaultHttpMessageHandler));
+            })
+            .Named<HttpMessageHandler>(ContractKeys.AuthenticatedHttpMessageHandler)
+            .SingleInstance();
+
+            containerRegistry.GetBuilder().Register<HttpClient>(c =>
+            {
+                HttpMessageHandler authenticatedHttpMessageHandler = c.ResolveNamed<HttpMessageHandler>(ContractKeys.AuthenticatedHttpMessageHandler);
+                HttpClient httpClient = new HttpClient(authenticatedHttpMessageHandler) { BaseAddress = c.Resolve<IClientAppProfile>().HostUri };
+                return httpClient;
+            }).SingleInstance();
+
+            return containerRegistry;
         }
 
-        public static void RegisterNavigationOnIdiom<TView, TViewModel>(this IContainerRegistry containerRegistry, string name, Type desktopView = null, Type tabletView = null, Type phoneView = null)
-            where TView : Page
-            where TViewModel : BitViewModelBase
+        public static IContainerRegistry RegisterHttpClient(this IContainerRegistry containerRegistry)
         {
             if (containerRegistry == null)
                 throw new ArgumentNullException(nameof(containerRegistry));
 
-            if (name == null)
-                throw new ArgumentNullException(nameof(name));
-
-            containerRegistry.RegisterForNavigationOnIdiom<TView, TViewModel>(name: name, desktopView: desktopView, tabletView: tabletView, phoneView: phoneView);
-            containerRegistry.Register<TViewModel>();
-            containerRegistry.Register<TView>();
-            if (desktopView != null)
-                containerRegistry.Register(desktopView);
-            if (tabletView != null)
-                containerRegistry.Register(tabletView);
-            if (phoneView != null)
-                containerRegistry.Register(phoneView);
+            return RegisterHttpClient<HttpClientHandler>(containerRegistry);
         }
 
-        public static void RegisterNavigationOnPlatform<TView, TViewModel>(this IContainerRegistry containerRegistry, params IPlatform[] platforms)
-            where TView : Page
-            where TViewModel : BitViewModelBase
+        public static IContainerRegistry RegisterODataClient(this IContainerRegistry containerRegistry)
         {
             if (containerRegistry == null)
                 throw new ArgumentNullException(nameof(containerRegistry));
 
-            containerRegistry.RegisterForNavigationOnPlatform<TView, TViewModel>(platforms: platforms);
-            containerRegistry.Register<TViewModel>();
-            containerRegistry.Register<TView>();
-        }
+            Simple.OData.Client.V4Adapter.Reference();
 
-        public static void RegisterNavigationOnPlatform<TView, TViewModel>(this IContainerRegistry containerRegistry, string name, params IPlatform[] platforms)
-            where TView : Page
-            where TViewModel : BitViewModelBase
-        {
-            if (containerRegistry == null)
-                throw new ArgumentNullException(nameof(containerRegistry));
+            containerRegistry.GetBuilder().Register<IODataClient>(c =>
+            {
+                HttpMessageHandler authenticatedHttpMessageHandler = c.ResolveNamed<HttpMessageHandler>(ContractKeys.AuthenticatedHttpMessageHandler);
 
-            if (name == null)
-                throw new ArgumentNullException(nameof(name));
+                IClientAppProfile clientAppProfile = c.Resolve<IClientAppProfile>();
 
-            containerRegistry.RegisterForNavigationOnPlatform<TView, TViewModel>(name: name, platforms: platforms);
-            containerRegistry.Register<TViewModel>();
-            containerRegistry.Register<TView>();
+                IODataClient odataClient = new ODataClient(new ODataClientSettings(new Uri(clientAppProfile.HostUri, clientAppProfile.ODataRoute))
+                {
+                    RenewHttpConnection = false,
+                    OnCreateMessageHandler = () => authenticatedHttpMessageHandler
+                });
+
+                return odataClient;
+            });
+
+            return containerRegistry;
         }
     }
 }
