@@ -7,7 +7,8 @@ namespace Bit.Core.Contracts
     public enum DependencyLifeCycle
     {
         SingleInstance,
-        PerScopeInstance
+        PerScopeInstance,
+        Transient
     }
 
     public interface IDependencyResolver : IServiceProvider, IDisposable
@@ -39,7 +40,7 @@ namespace Bit.Core.Contracts
 
         IDependencyManager BuildContainer();
 
-        IDependencyManager RegisterAssemblyTypes(Assembly[] assemblies, Predicate<TypeInfo> predicate = null);
+        IDependencyManager RegisterAssemblyTypes(Assembly[] assemblies, Predicate<TypeInfo> predicate = null, DependencyLifeCycle lifeCycle = DependencyLifeCycle.PerScopeInstance);
 
         bool ContainerIsBuilt();
 

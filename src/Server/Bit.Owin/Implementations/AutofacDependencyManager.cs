@@ -191,11 +191,18 @@ namespace Bit.Owin.Implementations
             return RegisterInstance(obj, new[] { typeof(TService).GetTypeInfo() }, overwriteExciting, name);
         }
 
-        public virtual IDependencyManager RegisterAssemblyTypes(Assembly[] assemblies, Predicate<TypeInfo> predicate = null)
+        public virtual IDependencyManager RegisterAssemblyTypes(Assembly[] assemblies, Predicate<TypeInfo> predicate = null, DependencyLifeCycle lifeCycle = DependencyLifeCycle.PerScopeInstance)
         {
-            GetContainerBuidler().RegisterAssemblyTypes(assemblies)
+            IRegistrationBuilder<object, ReflectionActivatorData, DynamicRegistrationStyle> registration = GetContainerBuidler().RegisterAssemblyTypes(assemblies)
                 .Where(t => predicate == null || predicate(t.GetTypeInfo()))
                 .PropertiesAutowired(wiringFlags: PropertyWiringOptions.PreserveSetValues);
+
+            if (lifeCycle == DependencyLifeCycle.Transient)
+                registration = registration.InstancePerDependency();
+            else if (lifeCycle == DependencyLifeCycle.SingleInstance)
+                registration = registration.SingleInstance();
+            else
+                registration = registration.InstancePerLifetimeScope();
 
             return this;
         }
@@ -214,7 +221,9 @@ namespace Bit.Owin.Implementations
                 .PropertiesAutowired(wiringFlags: PropertyWiringOptions.PreserveSetValues)
                 .As(servicesType);
 
-            if (lifeCycle == DependencyLifeCycle.SingleInstance)
+            if (lifeCycle == DependencyLifeCycle.Transient)
+                registration = registration.InstancePerDependency();
+            else if (lifeCycle == DependencyLifeCycle.SingleInstance)
                 registration = registration.SingleInstance();
             else
                 registration = registration.InstancePerLifetimeScope();
@@ -247,7 +256,9 @@ namespace Bit.Owin.Implementations
                     registration = registration.Named(name, serviceType);
             }
 
-            if (lifeCycle == DependencyLifeCycle.SingleInstance)
+            if (lifeCycle == DependencyLifeCycle.Transient)
+                registration = registration.InstancePerDependency();
+            else if (lifeCycle == DependencyLifeCycle.SingleInstance)
                 registration = registration.SingleInstance();
             else
                 registration = registration.InstancePerLifetimeScope();
@@ -281,7 +292,9 @@ namespace Bit.Owin.Implementations
                     registration = registration.Named(name, serviceType);
             }
 
-            if (lifeCycle == DependencyLifeCycle.SingleInstance)
+            if (lifeCycle == DependencyLifeCycle.Transient)
+                registration = registration.InstancePerDependency();
+            else if (lifeCycle == DependencyLifeCycle.SingleInstance)
                 registration = registration.SingleInstance();
             else
                 registration = registration.InstancePerLifetimeScope();

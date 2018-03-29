@@ -29,7 +29,7 @@ namespace Microsoft.Extensions.DependencyInjection
                 builder.AddApplicationPart(asm);
             });
 
-            dependencyManager.RegisterAssemblyTypes(controllersAssemblies, t => t.GetCustomAttribute<ControllerAttribute>() != null);
+            dependencyManager.RegisterAssemblyTypes(controllersAssemblies, t => t.GetCustomAttribute<ControllerAttribute>() != null, lifeCycle: DependencyLifeCycle.Transient);
 
             builder.Services.Replace(ServiceDescriptor.Transient<IControllerActivator, ServiceBasedControllerActivator>());
 
