@@ -1,9 +1,11 @@
 ﻿using Bit.Model.Contracts;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.EntityFrameworkCore.Metadata;
 using System;
 using System.Linq;
 using System.Reflection;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Bit.Data
@@ -53,6 +55,52 @@ namespace Bit.Data
             string sql = $"INSERT OR REPLACE INTO {tableName} ({string.Join(",", props.Select(p => $"[{p.Name}]"))}) VALUES({string.Join(",", props.Select((p, i) => $"{{{i}}}"))})";
 
             await Database.ExecuteSqlCommandAsync(sql, props.Select(p => p.Value)).ConfigureAwait(false);
+        }
+
+        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+        {
+            optionsBuilder.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking);
+
+            base.OnConfiguring(optionsBuilder);
+        }
+
+        public override int SaveChanges(bool acceptAllChangesOnSuccess)
+        {
+            OnSaveChanges();
+
+            return base.SaveChanges(acceptAllChangesOnSuccess);
+        }
+
+        public override Task<int> SaveChangesAsync(bool acceptAllChangesOnSuccess, CancellationToken cancellationToken = default(CancellationToken))
+        {
+            OnSaveChanges();
+
+            return base.SaveChangesAsync(acceptAllChangesOnSuccess, cancellationToken);
+        }
+
+        protected virtual void OnSaveChanges()
+        {
+            ChangeTracker.DetectChanges();
+
+            if (((IsSyncDbContext)this).IsSyncDbContext == false)
+            {
+                foreach (EntityEntry syncableDtoEntry in ChangeTracker.Entries()
+                    .Where(entry => entry.Entity is ISyncableDto))
+                {
+                    ISyncableDto syncableDto = (ISyncableDto)syncableDtoEntry.Entity;
+
+                    if (syncableDtoEntry.State == EntityState.Deleted && syncableDto.Version != 0)
+                    {
+                        syncableDto.IsArchived = true;
+                        syncableDtoEntry.State = EntityState.Modified;
+                    }
+
+                    if (syncableDtoEntry.State == EntityState.Modified)
+                    {
+                        Entry(syncableDto).Property("IsSynced").CurrentValue = false;
+                    }
+                }
+            }
         }
     }
 }
