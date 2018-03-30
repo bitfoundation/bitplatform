@@ -100,6 +100,9 @@ namespace Prism.Ioc
                 return odataClient;
             });
 
+            containerRegistry.GetBuilder()
+                .Register<ODataBatch>(c => new ODataBatch(c.Resolve<IODataClient>(), reuseSession: true));
+
             return containerRegistry;
         }
     }
