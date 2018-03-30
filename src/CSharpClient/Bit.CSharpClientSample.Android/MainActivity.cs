@@ -3,10 +3,7 @@ using Android.Content;
 using Android.Content.PM;
 using Android.OS;
 using Bit.Droid;
-using Bit.ViewModel.Contracts;
 using Bit.ViewModel.Implementations;
-using Prism;
-using Prism.Ioc;
 using Xamarin.Forms;
 using Xamarin.Forms.Platform.Android;
 
@@ -19,6 +16,8 @@ namespace Bit.CSharpClientSample.Droid
         {
             TabLayoutResource = Resource.Layout.Tabbar;
             ToolbarResource = Resource.Layout.Toolbar;
+
+            SQLitePCL.Batteries.Init();
 
             base.OnCreate(bundle);
 

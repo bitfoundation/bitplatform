@@ -1,9 +1,12 @@
 ﻿using Autofac;
+using Bit.CSharpClientSample.Data;
 using Bit.CSharpClientSample.ViewModels;
 using Bit.CSharpClientSample.Views;
 using Bit.Model.Events;
+using Bit.Tests.Model.Dto;
 using Bit.ViewModel.Contracts;
 using Bit.ViewModel.Implementations;
+using Plugin.Connectivity.Abstractions;
 using Prism;
 using Prism.Autofac;
 using Prism.Events;
@@ -62,6 +65,23 @@ namespace Bit.CSharpClientSample
             containerRegistry.RegisterHttpClient();
             containerRegistry.RegisterODataClient();
             containerRegistry.RegisterIdentityClient();
+
+            containerRegistry.Register<SampleDbContext>();
+
+            containerRegistry.GetBuilder().Register(c =>
+            {
+                ISyncService syncService = new DefaultSyncService<SampleDbContext>(c.Resolve<IConnectivity>(), c.Resolve<IContainerProvider>());
+
+                syncService.AddDtoSetSyncConfig(new DtoSetSyncConfig
+                {
+                    DtoSetName = nameof(SampleDbContext.TestCustomers),
+                    OnlineDtoSet = odataClient => odataClient.For(nameof(SampleDbContext.TestCustomers)),
+                    OfflineDtoSet = dbContext => dbContext.Set<TestCustomerDto>()
+                });
+
+                return syncService;
+
+            }).SingleInstance();
 
             base.RegisterTypes(containerRegistry);
         }

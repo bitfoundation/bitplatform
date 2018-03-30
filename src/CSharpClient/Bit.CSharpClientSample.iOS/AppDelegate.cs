@@ -11,6 +11,8 @@ namespace Bit.CSharpClientSample.iOS
     {
         public override bool FinishedLaunching(UIApplication app, NSDictionary options)
         {
+            SQLitePCL.Batteries.Init();
+
             Forms.Init();
 
             LoadApplication(new App(new SampleAppiOSInitializer()));
