@@ -183,7 +183,7 @@ namespace EntityFrameworkCoreSample
             });
 
             dependencyManager.Register<IDbConnectionProvider, DefaultDbConnectionProvider<SqlConnection>>();
-            dependencyManager.RegisterEfCoreDbContext<MyAppDbContext, SqlDbContextObjectsProvider>();
+            dependencyManager.RegisterEfCoreDbContext<MyAppDbContext, SqlServerDbContextObjectsProvider>();
             dependencyManager.RegisterAppEvents<MyAppDbContextInitializer>();
             dependencyManager.RegisterRepository(typeof(MyAppRepository<>).GetTypeInfo());
             dependencyManager.RegisterRepository(typeof(OrdersRepository).GetTypeInfo());
