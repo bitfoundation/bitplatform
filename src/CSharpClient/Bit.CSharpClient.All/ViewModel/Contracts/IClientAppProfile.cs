@@ -4,11 +4,11 @@ namespace Bit.ViewModel.Contracts
 {
     public interface IClientAppProfile
     {
-        Uri HostUri { get; }
+        Uri HostUri { get; set; }
 
-        Uri OAuthRedirectUri { get; }
+        Uri OAuthRedirectUri { get; set; }
 
-        string AppName { get; }
+        string AppName { get; set; }
 
         string ODataRoute { get; set; }
     }
