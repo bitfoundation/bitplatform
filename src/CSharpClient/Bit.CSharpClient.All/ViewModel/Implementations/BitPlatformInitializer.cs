@@ -38,7 +38,7 @@ namespace Bit.ViewModel.Implementations
             _activity = activity;
         }
 
-        public void RegisterTypes(IContainerRegistry containerRegistry)
+        public virtual void RegisterTypes(IContainerRegistry containerRegistry)
         {
             containerRegistry.RegisterInstance<Activity>(_activity);
             containerRegistry.RegisterInstance<Context>(_activity);
