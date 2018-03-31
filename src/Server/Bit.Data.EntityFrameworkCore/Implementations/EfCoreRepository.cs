@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using Bit.Core.Contracts;
@@ -39,6 +40,20 @@ namespace Bit.Data.EntityFrameworkCore.Implementations
                 entityToAddAsEntityWithDefaultGuidKey.Id = Guid.NewGuid();
             if (entityToAdd is IVersionableEntity versionableEntity)
                 versionableEntity.Version = DateTimeProvider.GetCurrentUtcDateTime().UtcTicks;
+
+            if (entityToAdd is ISyncableEntity syncableEntity)
+            {
+                object[] keys = DbContext.Model.FindEntityType(typeof(TEntity).GetTypeInfo())
+                    .FindPrimaryKey()
+                    .Properties
+                    .Select(p => p.PropertyInfo.GetValue(syncableEntity))
+                    .ToArray();
+
+                TEntity entityIfExists = await GetByIdAsync(cancellationToken, keys).ConfigureAwait(false);
+
+                if (entityIfExists != null)
+                    return entityIfExists;
+            }
 
             await DbContext.AddAsync(entityToAdd).ConfigureAwait(false);
 
