@@ -209,18 +209,9 @@ namespace Bit.ViewModel.Implementations
         private List<ISyncableDto> CreateSyncableDtoInstancesFromUnTypedODataResponse(TypeInfo dtoType, List<IDictionary<string, object>> untypedDtos)
         {
             return untypedDtos
-                .Select(unTypedDto =>
-                {
-                    ISyncableDto syncableDto = (ISyncableDto)Activator.CreateInstance(dtoType);
-
-                    foreach (KeyValuePair<string, object> KeyVal in unTypedDto)
-                    {
-                        dtoType.GetProperty(KeyVal.Key).SetValue(syncableDto, KeyVal.Value);
-                    }
-
-                    return syncableDto;
-
-                }).ToList();
+                .Select(unTypedDto => unTypedDto.ToDto(dtoType))
+                .Cast<ISyncableDto>()
+                .ToList();
         }
 
         public void AddDtoSetSyncConfig(DtoSetSyncConfig dtoSetSyncConfig)
