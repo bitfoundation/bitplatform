@@ -118,14 +118,21 @@ namespace Bit.ViewModel.Implementations
                     {
                         IQueryable<ISyncableDto> offlineSet = fromServerSyncConfig.OfflineDtoSet(offlineContextForSyncFrom);
 
-                        long maxVersion = (await offlineSet.Select(e => new { e.Version }).OrderByDescending(e => e.Version).FirstOrDefaultAsync().ConfigureAwait(false))?.Version ?? 0;
+                        var mostRecentOfflineDto = await offlineSet
+                            .IgnoreQueryFilters()
+                            .Select(e => new { e.Version })
+                            .OrderByDescending(e => e.Version)
+                            .FirstOrDefaultAsync()
+                            .ConfigureAwait(false);
+
+                        long maxVersion = mostRecentOfflineDto?.Version ?? 0;
 
                         onlineBatchContext += new Func<IODataClient, Task>(async c => recentlyChangedOnlineDtos.Add(new DtoSyncConfigSyncFromResults
                         {
                             DtoSetSyncConfig = fromServerSyncConfig,
                             RecentlyChangedOnlineDtos = CreateSyncableDtoInstancesFromUnTypedODataResponse(offlineSet.ElementType.GetTypeInfo(), (await (fromServerSyncConfig.OnlineDtoSetForGet ?? fromServerSyncConfig.OnlineDtoSet)(c).Where($"Version gt {maxVersion}").FindEntriesAsync().ConfigureAwait(false)).ToList()),
                             DtoType = offlineSet.ElementType.GetTypeInfo(),
-                            HadOfflineDtoBefore = maxVersion > 0
+                            HadOfflineDtoBefore = mostRecentOfflineDto != null
                         }));
                     }
 
@@ -163,7 +170,7 @@ namespace Bit.ViewModel.Implementations
 
                             }));
 
-                            List<ISyncableDto> equivalentOfflineDtos = await offlineSet.Where(equivalentOfflineDtosQuery, equivalentOfflineDtosParams.ToArray()).ToListAsync().ConfigureAwait(false);
+                            List<ISyncableDto> equivalentOfflineDtos = await offlineSet.Where(equivalentOfflineDtosQuery, equivalentOfflineDtosParams.ToArray()).IgnoreQueryFilters().ToListAsync().ConfigureAwait(false);
 
                             foreach (ISyncableDto recentlyChangedOnlineDto in result.RecentlyChangedOnlineDtos)
                             {

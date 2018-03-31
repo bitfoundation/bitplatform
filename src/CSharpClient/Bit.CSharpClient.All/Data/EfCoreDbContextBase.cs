@@ -95,7 +95,7 @@ namespace Bit.Data
                         syncableDtoEntry.State = EntityState.Modified;
                     }
 
-                    if (syncableDtoEntry.State == EntityState.Modified)
+                    if (syncableDtoEntry.State == EntityState.Modified || syncableDtoEntry.State == EntityState.Added)
                     {
                         Entry(syncableDto).Property("IsSynced").CurrentValue = false;
                     }
