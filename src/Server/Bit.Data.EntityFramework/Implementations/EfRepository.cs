@@ -367,13 +367,13 @@ namespace Bit.Data.EntityFramework.Implementations
         public virtual async Task<TEntity> GetByIdAsync(CancellationToken cancellationToken, params object[] keys)
         {
             return await EfDataProviderSpecificMethodsProvider.ApplyWhereByKeys((await GetAllAsync(CancellationToken.None).ConfigureAwait(false)), keys)
-                .SingleAsync(cancellationToken).ConfigureAwait(false);
+                .SingleOrDefaultAsync(cancellationToken).ConfigureAwait(false);
         }
 
         public virtual TEntity GetById(params object[] keys)
         {
             return EfDataProviderSpecificMethodsProvider.ApplyWhereByKeys(GetAll(), keys)
-                .Single();
+                .SingleOrDefault();
         }
 
         public virtual EfDataProviderSpecificMethodsProvider EfDataProviderSpecificMethodsProvider { get; set; }

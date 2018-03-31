@@ -349,13 +349,13 @@ namespace Bit.Data.EntityFrameworkCore.Implementations
         public virtual async Task<TEntity> GetByIdAsync(CancellationToken cancellationToken, params object[] ids)
         {
             return await EfDataProviderSpecificMethodsProvider.ApplyWhereByKeys((await GetAllAsync(CancellationToken.None).ConfigureAwait(false)), ids)
-                .SingleAsync(cancellationToken).ConfigureAwait(false);
+                .SingleOrDefaultAsync(cancellationToken).ConfigureAwait(false);
         }
 
         public virtual TEntity GetById(params object[] ids)
         {
             return EfDataProviderSpecificMethodsProvider.ApplyWhereByKeys(GetAll(), ids)
-                .Single();
+                .SingleOrDefault();
         }
 
         public virtual EfCoreDataProviderSpecificMethodsProvider EfDataProviderSpecificMethodsProvider { get; set; }
