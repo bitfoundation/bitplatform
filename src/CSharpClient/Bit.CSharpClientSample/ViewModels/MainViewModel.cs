@@ -44,11 +44,11 @@ namespace Bit.CSharpClientSample.ViewModels
                 await dbContext.Database.EnsureCreatedAsync();
 
                 await oDataClient.For<TestCustomerDto>("TestCustomers")
-                     .Set(new TestCustomerDto { Id = Guid.NewGuid(), Name = "A1", CityId = Guid.Parse("EF529174-C497-408B-BB4D-C31C205D46BB") })
+                     .Set(new TestCustomerDto { Id = Guid.NewGuid(), Name = "A1", CityId = Guid.Parse("EF529174-C497-408B-BB4D-C31C205D46BB"), Kind = TestCustomerKind.Type1 })
                      .InsertEntryAsync();
 
                 await oDataClient.For<TestCustomerDto>("TestCustomers")
-                    .Set(new TestCustomerDto { Id = Guid.NewGuid(), Name = "A2", CityId = Guid.Parse("EF529174-C497-408B-BB4D-C31C205D46BB") })
+                    .Set(new TestCustomerDto { Id = Guid.NewGuid(), Name = "A2", CityId = Guid.Parse("EF529174-C497-408B-BB4D-C31C205D46BB"), Kind = TestCustomerKind.Type1 })
                     .InsertEntryAsync();
 
                 await syncService.SyncContext();
@@ -59,12 +59,20 @@ namespace Bit.CSharpClientSample.ViewModels
                 await dbContext.SaveChangesAsync();
 
                 await oDataClient.For<TestCustomerDto>("TestCustomers")
-                     .Set(new TestCustomerDto { Id = Guid.NewGuid(), Name = "A3", CityId = Guid.Parse("EF529174-C497-408B-BB4D-C31C205D46BB") })
+                     .Set(new TestCustomerDto { Id = Guid.NewGuid(), Name = "A3", CityId = Guid.Parse("EF529174-C497-408B-BB4D-C31C205D46BB"), Kind = TestCustomerKind.Type1 })
                      .InsertEntryAsync();
 
                 await oDataClient.For<TestCustomerDto>("TestCustomers")
-                    .Set(new TestCustomerDto { Id = Guid.NewGuid(), Name = "A4", CityId = Guid.Parse("EF529174-C497-408B-BB4D-C31C205D46BB") })
+                    .Set(new TestCustomerDto { Id = Guid.NewGuid(), Name = "A4", CityId = Guid.Parse("EF529174-C497-408B-BB4D-C31C205D46BB"), Kind = TestCustomerKind.Type1 })
                     .InsertEntryAsync();
+
+                await syncService.SyncContext();
+
+                await dbContext.Entry(customer).ReloadAsync();
+
+                dbContext.Remove(customer);
+
+                await dbContext.SaveChangesAsync();
 
                 await syncService.SyncContext();
             });

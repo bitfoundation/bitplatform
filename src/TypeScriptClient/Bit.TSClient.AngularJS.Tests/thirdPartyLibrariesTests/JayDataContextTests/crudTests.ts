@@ -79,4 +79,9 @@ const testSync = async (): Promise<void> => {
     await onlineContext.saveChanges();
 
     await syncService.syncContext();
+
+    offlineContext.remove(e);
+    await offlineContext.saveChanges();
+
+    await syncService.syncContext();
 }

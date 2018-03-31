@@ -37,27 +37,33 @@ namespace Bit.Tests.HtmlClient.ThirdPartyLibrariesTests.JayDataContextTests
                     .OfType<TestCustomersController>()
                     .ToList();
 
-                Assert.AreEqual(7, testCustomersControllers.Count);
+                Assert.AreEqual(9, testCustomersControllers.Count);
 
-                A.CallTo(() => testCustomersControllers.ElementAt(0).Create(A<TestCustomerDto>.That.Matches(c => c.Name == "A1"), A<CancellationToken>.Ignored))
+                A.CallTo(() => testCustomersControllers.ElementAt(0).Create(A<TestCustomerDto>.Ignored, A<CancellationToken>.Ignored))
                     .MustHaveHappened(Repeated.Exactly.Once);
 
-                A.CallTo(() => testCustomersControllers.ElementAt(1).Create(A<TestCustomerDto>.That.Matches(c => c.Name == "A2"), A<CancellationToken>.Ignored))
+                A.CallTo(() => testCustomersControllers.ElementAt(1).Create(A<TestCustomerDto>.Ignored, A<CancellationToken>.Ignored))
                     .MustHaveHappened(Repeated.Exactly.Once);
 
                 A.CallTo(() => testCustomersControllers.ElementAt(2).GetAll(A<CancellationToken>.Ignored))
                     .MustHaveHappened(Repeated.Exactly.Once);
 
-                A.CallTo(() => testCustomersControllers.ElementAt(3).Create(A<TestCustomerDto>.That.Matches(c => c.Name == "A3"), A<CancellationToken>.Ignored))
+                A.CallTo(() => testCustomersControllers.ElementAt(3).Create(A<TestCustomerDto>.Ignored, A<CancellationToken>.Ignored))
                     .MustHaveHappened(Repeated.Exactly.Once);
 
-                A.CallTo(() => testCustomersControllers.ElementAt(4).Create(A<TestCustomerDto>.That.Matches(c => c.Name == "A4"), A<CancellationToken>.Ignored))
+                A.CallTo(() => testCustomersControllers.ElementAt(4).Create(A<TestCustomerDto>.Ignored, A<CancellationToken>.Ignored))
                     .MustHaveHappened(Repeated.Exactly.Once);
 
-                A.CallTo(() => testCustomersControllers.ElementAt(5).PartialUpdate(A<Guid>.Ignored, A<Delta<TestCustomerDto>>.That.Matches(c => c.GetInstance().Name == "A1?"), A<CancellationToken>.Ignored))
+                A.CallTo(() => testCustomersControllers.ElementAt(5).PartialUpdate(A<Guid>.Ignored, A<Delta<TestCustomerDto>>.Ignored, A<CancellationToken>.Ignored))
                     .MustHaveHappened(Repeated.Exactly.Once);
 
                 A.CallTo(() => testCustomersControllers.ElementAt(6).GetAll(A<CancellationToken>.Ignored))
+                    .MustHaveHappened(Repeated.Exactly.Once);
+
+                A.CallTo(() => testCustomersControllers.ElementAt(7).Delete(A<Guid>.Ignored, A<CancellationToken>.Ignored))
+                    .MustHaveHappened(Repeated.Exactly.Once);
+
+                A.CallTo(() => testCustomersControllers.ElementAt(8).GetAll(A<CancellationToken>.Ignored))
                     .MustHaveHappened(Repeated.Exactly.Once);
             }
         }
