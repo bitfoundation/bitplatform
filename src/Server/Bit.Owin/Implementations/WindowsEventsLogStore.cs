@@ -24,32 +24,33 @@ namespace Bit.Owin.Implementations
             if (logEntry == null)
                 throw new ArgumentNullException(nameof(logEntry));
 
-            EventLog appLog = new EventLog("Application")
+            using (EventLog appLog = new EventLog("Application")
             {
                 Source = AppEnvironment.AppInfo.Name
-            };
-
-            EventLogEntryType eventLogsSeverity;
-
-            if (logEntry.Severity == "Warning")
-                eventLogsSeverity = EventLogEntryType.Warning;
-            else if (logEntry.Severity == "Information")
-                eventLogsSeverity = EventLogEntryType.Information;
-            else
-                eventLogsSeverity = EventLogEntryType.Error;
-
-            string logContents = ContentFormatter.Serialize(logEntry);
-
-            if (logContents.Length >= 30000)
-                logContents = logContents.Substring(0, 29999);
-
-            if (AppEnvironment.TryGetConfig("EventLogId", out long eventLogId))
+            })
             {
-                appLog.WriteEntry(logContents, eventLogsSeverity, Convert.ToInt32(eventLogId));
-            }
-            else
-            {
-                appLog.WriteEntry(logContents, eventLogsSeverity);
+                EventLogEntryType eventLogsSeverity;
+
+                if (logEntry.Severity == "Warning")
+                    eventLogsSeverity = EventLogEntryType.Warning;
+                else if (logEntry.Severity == "Information")
+                    eventLogsSeverity = EventLogEntryType.Information;
+                else
+                    eventLogsSeverity = EventLogEntryType.Error;
+
+                string logContents = ContentFormatter.Serialize(logEntry);
+
+                if (logContents.Length >= 30000)
+                    logContents = logContents.Substring(0, 29999);
+
+                if (AppEnvironment.TryGetConfig("EventLogId", out long eventLogId))
+                {
+                    appLog.WriteEntry(logContents, eventLogsSeverity, Convert.ToInt32(eventLogId));
+                }
+                else
+                {
+                    appLog.WriteEntry(logContents, eventLogsSeverity);
+                }
             }
         }
     }

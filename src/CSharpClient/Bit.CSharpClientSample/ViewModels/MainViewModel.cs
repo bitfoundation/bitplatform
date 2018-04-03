@@ -24,7 +24,9 @@ namespace Bit.CSharpClientSample.ViewModels
         {
             SendHttpRequest = new BitDelegateCommand(async () =>
             {
-                HttpResponseMessage response = await httpClient.GetAsync("odata/Test/parentEntities");
+                using (HttpResponseMessage response = await httpClient.GetAsync("odata/Test/parentEntities"))
+                {
+                }
             });
 
             SendODataRequest = new BitDelegateCommand(async () =>

@@ -43,17 +43,18 @@ namespace Bit.ViewModel.Implementations
 
             return;
 #elif iOS
-            var destination = new Foundation.NSUrl(url.ToString());
+            Foundation.NSUrl destination = Foundation.NSUrl.FromString(url.AbsoluteUri);
 
-            var sfViewController = new SafariServices.SFSafariViewController(destination);
+            using (SafariServices.SFSafariViewController sfViewController = new SafariServices.SFSafariViewController(destination))
+            {
+                UIKit.UIWindow window = UIKit.UIApplication.SharedApplication.KeyWindow;
 
-            var window = UIKit.UIApplication.SharedApplication.KeyWindow;
+                UIKit.UIViewController controller = window.RootViewController;
 
-            var controller = window.RootViewController;
+                controller.PresentViewController(sfViewController, true, null);
 
-            controller.PresentViewController(sfViewController, true, null);
-
-            return;
+                return;
+            }
 #else
             if (_deviceService.RuntimePlatform == RuntimePlatform.Android || _deviceService.RuntimePlatform == RuntimePlatform.iOS)
             {
