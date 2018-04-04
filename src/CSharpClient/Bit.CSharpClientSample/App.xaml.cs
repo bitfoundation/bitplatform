@@ -8,10 +8,13 @@ using Bit.ViewModel.Contracts;
 using Bit.ViewModel.Implementations;
 using Plugin.Connectivity.Abstractions;
 using Prism;
+using Prism.AppModel;
 using Prism.Autofac;
 using Prism.Events;
 using Prism.Ioc;
+using Prism.Services;
 using System;
+using System.Threading.Tasks;
 using Xamarin.Forms;
 using Xamarin.Forms.Xaml;
 
@@ -31,7 +34,12 @@ namespace Bit.CSharpClientSample
         {
             InitializeComponent();
 
-            if (await Container.Resolve<ISecurityService>().IsLoggedInAsync())
+            Task<bool> checkIsLoggedInTask = Container.Resolve<ISecurityService>().IsLoggedInAsync();
+
+            if (Container.Resolve<IDeviceService>().RuntimePlatform == RuntimePlatform.UWP)
+                checkIsLoggedInTask.GetAwaiter().GetResult();
+
+            if (await checkIsLoggedInTask)
             {
                 await NavigationService.NavigateAsync("Nav/Main");
             }
