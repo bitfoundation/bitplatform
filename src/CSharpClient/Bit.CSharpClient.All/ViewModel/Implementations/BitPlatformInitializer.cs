@@ -1,7 +1,9 @@
 ﻿#if iOS
 
+using Autofac;
 using Bit.ViewModel.Contracts;
 using Prism;
+using Prism.Autofac;
 using Prism.Ioc;
 
 namespace Bit.ViewModel.Implementations
@@ -10,7 +12,7 @@ namespace Bit.ViewModel.Implementations
     {
         public virtual void RegisterTypes(IContainerRegistry containerRegistry)
         {
-            containerRegistry.Register<IBrowserService, DefaultBrowserService>();
+            containerRegistry.GetBuilder().RegisterType<DefaultBrowserService>().As<IBrowserService>().PreserveExistingDefaults();
         }
     }
 }
@@ -19,8 +21,10 @@ namespace Bit.ViewModel.Implementations
 
 using Android.App;
 using Android.Content;
+using Autofac;
 using Bit.ViewModel.Contracts;
 using Prism;
+using Prism.Autofac;
 using Prism.Ioc;
 using System;
 
@@ -40,18 +44,22 @@ namespace Bit.ViewModel.Implementations
 
         public virtual void RegisterTypes(IContainerRegistry containerRegistry)
         {
-            containerRegistry.RegisterInstance<Activity>(_activity);
-            containerRegistry.RegisterInstance<Context>(_activity);
+            ContainerBuilder containerBuilder = containerRegistry.GetBuilder();
 
-            containerRegistry.Register<IBrowserService, DefaultBrowserService>();
+            containerBuilder.Register(c => (Activity)_activity).SingleInstance().PreserveExistingDefaults();
+            containerBuilder.Register(c => (Context)_activity).SingleInstance().PreserveExistingDefaults();
+
+            containerBuilder.RegisterType<DefaultBrowserService>().As<IBrowserService>().PreserveExistingDefaults();
         }
     }
 }
 
 #else
 
+using Autofac;
 using Bit.ViewModel.Contracts;
 using Prism;
+using Prism.Autofac;
 using Prism.Ioc;
 
 namespace Bit.ViewModel.Implementations
@@ -60,7 +68,7 @@ namespace Bit.ViewModel.Implementations
     {
         public virtual void RegisterTypes(IContainerRegistry containerRegistry)
         {
-            containerRegistry.Register<IBrowserService, DefaultBrowserService>();
+            containerRegistry.GetBuilder().RegisterType<DefaultBrowserService>().As<IBrowserService>().PreserveExistingDefaults();
         }
     }
 }

@@ -31,7 +31,7 @@ namespace Bit
 
         protected override void RegisterTypes(IContainerRegistry containerRegistry)
         {
-            containerRegistry.GetBuilder().Register<IContainerProvider>(c => Container).SingleInstance();
+            containerRegistry.GetBuilder().Register<IContainerProvider>(c => Container).SingleInstance().PreserveExistingDefaults();
         }
     }
 }

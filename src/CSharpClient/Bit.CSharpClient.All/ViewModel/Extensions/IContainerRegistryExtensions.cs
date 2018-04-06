@@ -20,8 +20,10 @@ namespace Prism.Ioc
             if (containerRegistry == null)
                 throw new ArgumentNullException(nameof(containerRegistry));
 
-            containerRegistry.RegisterSingleton<IDateTimeProvider, DefaultDateTimeProvider>();
-            containerRegistry.GetBuilder().Register<IConnectivity>(c => CrossConnectivity.Current).SingleInstance();
+            ContainerBuilder containerBuilder = containerRegistry.GetBuilder();
+
+            containerBuilder.RegisterType<DefaultDateTimeProvider>().As<IDateTimeProvider>().SingleInstance().PreserveExistingDefaults();
+            containerBuilder.Register(c => CrossConnectivity.Current).SingleInstance().PreserveExistingDefaults();
 
             return containerRegistry;
         }
@@ -31,13 +33,16 @@ namespace Prism.Ioc
             if (containerRegistry == null)
                 throw new ArgumentNullException(nameof(containerRegistry));
 
-            containerRegistry.RegisterSingleton<ISecurityService, DefaultSecurityService>();
-            containerRegistry.GetBuilder().Register(c => AccountStore.Create()).SingleInstance();
+            ContainerBuilder containerBuilder = containerRegistry.GetBuilder();
 
-            containerRegistry.GetBuilder().Register<TokenClient>((c, parameters) =>
+            containerBuilder.RegisterType<DefaultSecurityService>().As<ISecurityService>().SingleInstance().PreserveExistingDefaults();
+
+            containerBuilder.Register(c => AccountStore.Create()).SingleInstance().PreserveExistingDefaults();
+
+            containerBuilder.Register((c, parameters) =>
             {
                 return new TokenClient(address: new Uri(c.Resolve<IClientAppProfile>().HostUri, "core/connect/token").ToString(), clientId: parameters.Named<string>("clientId"), clientSecret: parameters.Named<string>("secret"), innerHttpMessageHandler: c.ResolveNamed<HttpMessageHandler>(ContractKeys.DefaultHttpMessageHandler));
-            });
+            }).PreserveExistingDefaults();
 
             return containerRegistry;
         }
@@ -48,24 +53,29 @@ namespace Prism.Ioc
             if (containerRegistry == null)
                 throw new ArgumentNullException(nameof(containerRegistry));
 
-            containerRegistry.GetBuilder()
+            ContainerBuilder containerBuilder = containerRegistry.GetBuilder();
+
+            containerBuilder
                 .RegisterType<THttpMessageHandler>()
                 .Named<HttpMessageHandler>(ContractKeys.DefaultHttpMessageHandler)
-                .SingleInstance();
+                .SingleInstance()
+                .PreserveExistingDefaults();
 
-            containerRegistry.GetBuilder().Register<HttpMessageHandler>(c =>
+            containerBuilder.Register<HttpMessageHandler>(c =>
             {
                 return new AuthenticatedHttpMessageHandler(c.Resolve<IEventAggregator>(), c.Resolve<ISecurityService>(), c.ResolveNamed<HttpMessageHandler>(ContractKeys.DefaultHttpMessageHandler));
             })
             .Named<HttpMessageHandler>(ContractKeys.AuthenticatedHttpMessageHandler)
-            .SingleInstance();
+            .SingleInstance()
+            .PreserveExistingDefaults();
 
-            containerRegistry.GetBuilder().Register<HttpClient>(c =>
+            containerBuilder.Register(c =>
             {
                 HttpMessageHandler authenticatedHttpMessageHandler = c.ResolveNamed<HttpMessageHandler>(ContractKeys.AuthenticatedHttpMessageHandler);
                 HttpClient httpClient = new HttpClient(authenticatedHttpMessageHandler) { BaseAddress = c.Resolve<IClientAppProfile>().HostUri };
                 return httpClient;
-            }).SingleInstance();
+            }).SingleInstance()
+            .PreserveExistingDefaults();
 
             return containerRegistry;
         }
@@ -85,7 +95,9 @@ namespace Prism.Ioc
 
             Simple.OData.Client.V4Adapter.Reference();
 
-            containerRegistry.GetBuilder().Register<IODataClient>(c =>
+            ContainerBuilder containerBuilder = containerRegistry.GetBuilder();
+
+            containerBuilder.Register(c =>
             {
                 HttpMessageHandler authenticatedHttpMessageHandler = c.ResolveNamed<HttpMessageHandler>(ContractKeys.AuthenticatedHttpMessageHandler);
 
@@ -98,10 +110,11 @@ namespace Prism.Ioc
                 });
 
                 return odataClient;
-            });
+            }).PreserveExistingDefaults(); ;
 
-            containerRegistry.GetBuilder()
-                .Register<ODataBatch>(c => new ODataBatch(c.Resolve<IODataClient>(), reuseSession: true));
+            containerBuilder
+                .Register(c => new ODataBatch(c.Resolve<IODataClient>(), reuseSession: true))
+                .PreserveExistingDefaults(); ;
 
             return containerRegistry;
         }
