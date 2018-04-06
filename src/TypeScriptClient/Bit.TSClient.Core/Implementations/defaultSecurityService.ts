@@ -105,7 +105,7 @@
         @Log()
         public logout(state?: any, client_id?: string): void {
             const token = this.getCurrentToken();
-            if (token.id_token != null) {
+            if (token != null && token.id_token != null) {
                 location.assign(this.getLogoutUrl(token.id_token, state, client_id));
             }
             else {
