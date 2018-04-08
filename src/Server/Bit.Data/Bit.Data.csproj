@@ -21,7 +21,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Bit.System.Linq.Dynamic" Version="1.0.9" />
+    <PackageReference Include="Bit.System.Linq.Dynamic" Version="1.1.0" />
     <PackageReference Include="SourceLink.Embed.AllSourceFiles" Version="2.8.0" PrivateAssets="all" />
     <PackageReference Include="SourceLink.Copy.PdbFiles" Version="2.8.0" PrivateAssets="All" />
   </ItemGroup>
