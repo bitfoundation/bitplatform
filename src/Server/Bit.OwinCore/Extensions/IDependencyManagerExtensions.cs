@@ -74,7 +74,7 @@ namespace Bit.Core.Contracts
         /// | <see cref="IExceptionToHttpErrorMapper"/> by <see cref="DefaultExceptionToHttpErrorMapper"/>
         /// | <see cref="ITimeZoneManager"/> by <see cref="DefaultTimeZoneManager"/>
         /// | <see cref="IRequestInformationProvider"/> by <see cref="AspNetCoreRequestInformationProvider"/>
-        /// | On Mono, it registers <see cref="IDataProtectionProvider"/> by <see cref="BasicDataProtectionProvider"/>
+        /// | On Mono, it registers <see cref="IDataProtectionProvider"/> by <see cref="SystemCryptoBasedDataProtectionProvider"/>
         /// </summary>
         public static IDependencyManager RegisterDefaultAspNetCoreApp(this IDependencyManager dependencyManager)
         {
@@ -83,8 +83,7 @@ namespace Bit.Core.Contracts
             dependencyManager.Register<IExceptionToHttpErrorMapper, DefaultExceptionToHttpErrorMapper>(lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExciting: false);
             dependencyManager.Register<ITimeZoneManager, DefaultTimeZoneManager>(overwriteExciting: false);
             dependencyManager.Register<IRequestInformationProvider, AspNetCoreRequestInformationProvider>(overwriteExciting: false);
-            if (PlatformUtilities.IsRunningOnMono || PlatformUtilities.IsRunningOnDotNetCore)
-                dependencyManager.Register<IDataProtectionProvider, BasicDataProtectionProvider>(lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExciting: false);
+            dependencyManager.Register<IDataProtectionProvider, SystemCryptoBasedDataProtectionProvider>(lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExciting: false);
             dependencyManager.Register<IClientProfileModelProvider, DefaultClientProfileModelProvider>(overwriteExciting: false);
             dependencyManager.Register<IHtmlPageProvider, DefaultHtmlPageProvider>(overwriteExciting: false);
             return dependencyManager;
