@@ -24,13 +24,13 @@
   },
   "optionalDependencies": {
     "@bit/encoder": "^1.0.0",
-    "core-js": "^2.5.1",
+    "core-js": "^2.5.5",
     "decimal.js": "^10.0.0",
     "event-source-polyfill": "^0.0.12",
     "pubsub-js": "^1.6.0",
     "regenerator": "^0.12.3",
     "signalr": "^2.2.3",
-    "whatwg-fetch": "^2.0.3"
+    "whatwg-fetch": "^2.0.4"
   },
   "dependencies": {
     "@bit/jaydata": "^1.5.15"
