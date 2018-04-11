@@ -39,13 +39,16 @@ namespace System.Collections.Generic
 
                 object val = KeyVal.Value;
 
-                if (prop.PropertyType.IsEnum && val != null)
-                    val = Enum.Parse(prop.PropertyType, KeyVal.Value.ToString());
-
                 if (prop != null)
+                {
+                    if (prop.PropertyType.IsEnum && val != null)
+                        val = Enum.Parse(prop.PropertyType, KeyVal.Value.ToString());
                     prop.SetValue(dto, val);
-                else if (extraProps != null)
-                    extraProps.Add(KeyVal.Key, val);
+                }
+                else
+                {
+                    extraProps?.Add(KeyVal.Key, val);
+                }
             }
 
             return dto;
