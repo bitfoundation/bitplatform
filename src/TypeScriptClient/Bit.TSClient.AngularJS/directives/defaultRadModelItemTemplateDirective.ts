@@ -17,8 +17,9 @@
                     let parsedNgModel = $parse($attrs.ngModel);
                     let model = parsedNgModel($scope);
 
-                    if (model == null)
+                    if (model == null) {
                         return;
+                    }
 
                     if (model.innerInstance != null) {
                         model = model.innerInstance();

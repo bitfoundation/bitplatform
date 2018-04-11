@@ -1,5 +1,5 @@
 ﻿module Bit.Model.Contracts {
-    export interface IArchivableDto extends IDto {
+    export type IArchivableDto = IDto & {
         IsArchived: boolean;
-    }
+    };
 }

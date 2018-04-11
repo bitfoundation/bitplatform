@@ -8,12 +8,13 @@
             this.clientAppProfile = clientAppProfileManager.getClientAppProfile();
         }
 
-        public logInfo(message: string, additionalInfo ?: string, err ?: Error): void {
-            if(this.clientAppProfile.isDebugMode == true)
+        public logInfo(message: string, additionalInfo?: string, err?: Error): void {
+            if (this.clientAppProfile.isDebugMode == true) {
                 console.trace({ message: message, additionalInfo: additionalInfo, err: err });
+            }
         }
 
-        private createLogInfo(message: string, additionalInfo ?: string, err ?: Error): Model.Dtos.ClientLogDto {
+        private createLogInfo(message: string, additionalInfo?: string, err?: Error): Model.Dtos.ClientLogDto {
 
             const logInfo: any = {
                 Message: message,
@@ -27,8 +28,7 @@
                 logInfo.Error = err.message;
                 logInfo.StackTrace = err["stack"];
                 logInfo.ErrorName = err.name;
-            }
-            else {
+            } else {
                 const fakeErrorToGetStack = new Error();
                 logInfo.StackTrace = fakeErrorToGetStack["stack"];
             }
@@ -45,21 +45,25 @@
         private lastLoggedError: string = null;
 
         protected ingoreLog(logInfo: Model.Dtos.ClientLogDto): boolean {
-            if (logInfo.ErrorName == "HTTP request failed" /*This type of error is handled at server side*/)
+            if (logInfo.ErrorName == "HTTP request failed" /*This type of error is handled at server side*/) {
                 return true;
-            if (logInfo.Error == this.lastLoggedError)
+            }
+            if (logInfo.Error == this.lastLoggedError) {
                 return true;
+            }
             this.lastLoggedError = logInfo.Error;
             return false;
         }
 
         private saveLog(logInfo: Model.Dtos.ClientLogDto) {
 
-            if (logInfo == null)
+            if (logInfo == null) {
                 throw new Error("logInfo is null");
+            }
 
-            if (this.ingoreLog(logInfo))
+            if (this.ingoreLog(logInfo)) {
                 return;
+            }
 
             const logsJson = sessionStorage["logs"];
 
@@ -74,8 +78,8 @@
             this.saveLogsToServer(logs);
         }
 
-        private async saveLogsToServer(logs: Array<Model.Dtos.ClientLogDto>): Promise < void> {
-            if(navigator.onLine) {
+        private async saveLogsToServer(logs: Array<Model.Dtos.ClientLogDto>): Promise<void> {
+            if (navigator.onLine) {
                 try {
                     const context = await this.entityContextProvider.getContext<BitContext>("Bit");
                     for (let log of logs) {
@@ -83,8 +87,7 @@
                     }
                     await context.saveChanges();
                     sessionStorage.removeItem("logs");
-                }
-                catch (e) {
+                } catch (e) {
                     console.error(e);
                     sessionStorage["logs"] = JSON.stringify(logs);
                 }
@@ -92,60 +95,63 @@
 
         }
 
-        public logWarn(message: string, additionalInfo ?: string, err ?: Error): void {
+        public logWarn(message: string, additionalInfo?: string, err?: Error): void {
 
-                const logInfo = this.createLogInfo(message, additionalInfo, err);
+            const logInfo = this.createLogInfo(message, additionalInfo, err);
 
-                logInfo.LogLevel = "Warning";
+            logInfo.LogLevel = "Warning";
 
-                if(this.clientAppProfile.isDebugMode == true)
+            if (this.clientAppProfile.isDebugMode == true) {
                 console.warn(logInfo);
-
-                this.saveLog(logInfo);
             }
 
-        public logError(message: string, additionalInfo ?: string, err ?: any): void {
+            this.saveLog(logInfo);
+        }
 
-                const logInfo = this.createLogInfo(message, additionalInfo, err);
+        public logError(message: string, additionalInfo?: string, err?: any): void {
 
-                logInfo.LogLevel = "Error";
+            const logInfo = this.createLogInfo(message, additionalInfo, err);
 
-                if(this.clientAppProfile.isDebugMode == true)
+            logInfo.LogLevel = "Error";
+
+            if (this.clientAppProfile.isDebugMode == true) {
                 console.error(logInfo);
-
-                this.saveLog(logInfo);
             }
 
-        public logFatal(message: string, additionalInfo ?: string, err ?: Error): void {
+            this.saveLog(logInfo);
+        }
 
-                const logInfo = this.createLogInfo(message, additionalInfo, err);
+        public logFatal(message: string, additionalInfo?: string, err?: Error): void {
 
-                logInfo.LogLevel = "Fatal";
+            const logInfo = this.createLogInfo(message, additionalInfo, err);
 
-                if(this.clientAppProfile.isDebugMode == true)
+            logInfo.LogLevel = "Fatal";
+
+            if (this.clientAppProfile.isDebugMode == true) {
                 console.error(logInfo);
-
-                this.saveLog(logInfo);
             }
+
+            this.saveLog(logInfo);
+        }
 
         public logDetailedError(instance: any, methodName: string, args: any, err: Error) {
 
-                let className = "Unknown";
+            let className = "Unknown";
 
-                if(instance && instance.constructor && instance.constructor.name)
+            if (instance && instance.constructor && instance.constructor.name) {
                 className = instance.constructor.name;
-
-                const simplifiedArgs = args
-                    .map(a => {
-                        try {
-                            return JSON.parse(JSON.stringify(a));
-                        }
-                        catch (e) {
-                            return null;
-                        }
-                    });
-
-                this.logError(`Error at: ${className}.${methodName}`, ` args: ${JSON.stringify(simplifiedArgs)}`, err);
             }
+
+            const simplifiedArgs = args
+                .map(a => {
+                    try {
+                        return JSON.parse(JSON.stringify(a));
+                    } catch (e) {
+                        return null;
+                    }
+                });
+
+            this.logError(`Error at: ${className}.${methodName}`, ` args: ${JSON.stringify(simplifiedArgs)}`, err);
+        }
     }
 }

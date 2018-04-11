@@ -80,7 +80,7 @@ module Bit.Directives {
 
         public static defaultRadComboBoxDirectiveCustomizers: Array<($scope: ng.IScope, attribues: ng.IAttributes, $element: JQuery, comboBoxOptions: kendo.ui.ComboBoxOptions) => void> = [];
 
-        public constructor( @Inject("$element") public $element: JQuery,
+        public constructor(@Inject("$element") public $element: JQuery,
             @Inject("$scope") public $scope: ng.IScope,
             @Inject("$attrs") public $attrs: ng.IAttributes & { ngModel: string, radText: string, radDataSource: string, radValueFieldName: string, radTextFieldName: string, radVirtualEntityLoader: string, radOnInit: string },
             @Inject("MetadataProvider") public metadataProvider: Contracts.IMetadataProvider) {
@@ -138,8 +138,9 @@ module Bit.Directives {
 
             if (this.parentOfNgModel instanceof $data.Entity) {
                 let parentOfNgModelType = this.parentOfNgModel.getType();
-                if (parentOfNgModelType.memberDefinitions[`$${this.bindedMemberName}`] == null)
+                if (parentOfNgModelType.memberDefinitions[`$${this.bindedMemberName}`] == null) {
                     throw new Error(`${parentOfNgModelType['fullName']} has no member named ${this.bindedMemberName}`);
+                }
                 let metadata = this.metadataProvider.getMetadataSync();
                 let dtoMetadata = metadata.Dtos.find(d => d.DtoType == parentOfNgModelType['fullName']);
                 if (dtoMetadata != null) {
@@ -155,26 +156,29 @@ module Bit.Directives {
                                     return originalRead.apply(this, arguments);
                                 }
                             }
-                            if (this.radTextFieldName == null)
+                            if (this.radTextFieldName == null) {
                                 this.radTextFieldName = lookup.DataTextField;
-                            if (this.radValueFieldName == null)
+                            }
+                            if (this.radValueFieldName == null) {
                                 this.radValueFieldName = lookup.DataValueField;
+                            }
                         }
                     }
                 }
             }
 
             if (this.radValueFieldName == null) {
-                if (this.dataSource.options.schema != null && this.dataSource.options.schema.model != null && this.dataSource.options.schema.model.idField != null)
+                if (this.dataSource.options.schema != null && this.dataSource.options.schema.model != null && this.dataSource.options.schema.model.idField != null) {
                     this.radValueFieldName = this.dataSource.options.schema.model.idField;
+                }
             }
 
             if (this.$attrs.radText != null) {
                 this.dataSource.onCurrentChanged(() => {
                     const current = this.dataSource.current;
-                    if (current == null)
+                    if (current == null) {
                         this.radTextValue = "";
-                    else {
+                    } else {
                         this.radTextValue = current[this.radTextFieldName];
                     }
                 });
@@ -199,8 +203,9 @@ module Bit.Directives {
                 open: (e) => {
                     if (e.sender.options.autoBind == false && this.$attrs.radText != null) {
                         e.sender.options.autoBind = true;
-                        if (e.sender.options.dataSource.flatView().length == 0)
+                        if (e.sender.options.dataSource.flatView().length == 0) {
                             (e.sender.options.dataSource as kendo.data.DataSource).fetch();
+                        }
                     }
                 },
                 dataBound: (e) => {
@@ -212,8 +217,9 @@ module Bit.Directives {
                 }
             };
 
-            if (this.radTextValue != null)
+            if (this.radTextValue != null) {
                 comboBoxOptions.text = this.radTextValue;
+            }
 
             if (this.$attrs["itemTemplateId"] != null) {
 
@@ -248,16 +254,18 @@ module Bit.Directives {
                 comboBoxOptions.noDataTemplate = noDataTemplate;
             }
 
-            if (this.dataSource.options.schema.model.fields[comboBoxOptions.dataTextField] == null)
+            if (this.dataSource.options.schema.model.fields[comboBoxOptions.dataTextField] == null) {
                 throw new Error(`Model has no property named ${comboBoxOptions.dataTextField} to be used as text field`);
+            }
 
-            if (this.dataSource.options.schema.model.fields[comboBoxOptions.dataValueField] == null)
+            if (this.dataSource.options.schema.model.fields[comboBoxOptions.dataValueField] == null) {
                 throw new Error(`Model has no property named ${comboBoxOptions.dataValueField} to be used as value field`);
+            }
 
             if (this.$attrs.radVirtualEntityLoader != null) {
 
                 comboBoxOptions.virtual = {
-                    mapValueTo: 'dataItem',
+                    mapValueTo: "dataItem",
                     valueMapper: async (options: { value: string, success: (e: Array<any>) => void }): Promise<void> => {
 
                         try {
@@ -278,8 +286,9 @@ module Bit.Directives {
 
                             setTimeout(() => {
                                 let comboBox = this.comboBox;
-                                if (comboBox == null)
+                                if (comboBox == null) {
                                     return;
+                                }
                                 let input = comboBox.wrapper.find("input");
                                 let item = items[0];
                                 input.text(item[comboBoxOptions.dataTextField]);
@@ -328,10 +337,12 @@ module Bit.Directives {
         }
 
         public syncCurrent() {
-            if (this.dataSource.current == null && this.getCurrent() != null)
+            if (this.dataSource.current == null && this.getCurrent() != null) {
                 this.dataSource["_current"] = this.getCurrent();
-            if (this.dataSource.current != null && this.getCurrent() == null)
+            }
+            if (this.dataSource.current != null && this.getCurrent() == null) {
                 this.setCurrent(this.dataSource.current as $data.Entity);
+            }
         }
 
         public setCurrent(entity: $data.Entity) {
@@ -344,11 +355,13 @@ module Bit.Directives {
                 value = entity[this.radValueFieldName];
             }
 
-            if (comboBox.value() != value)
+            if (comboBox.value() != value) {
                 comboBox.value(value);
+            }
 
-            if (this.ngModel.$isEmpty(value) && !this.ngModel.$isEmpty(comboBox.text()))
+            if (this.ngModel.$isEmpty(value) && !this.ngModel.$isEmpty(comboBox.text())) {
                 comboBox.text(null);
+            }
 
             this.$scope.$applyAsync(() => {
                 this.ngModelValue = value;
@@ -363,10 +376,11 @@ module Bit.Directives {
 
             const dataItem = comboBox.dataItem();
 
-            if (dataItem == null)
+            if (dataItem == null) {
                 newCurrent = null;
-            else
+            } else {
                 newCurrent = dataItem.innerInstance != null ? dataItem.innerInstance() : dataItem;
+            }
 
             if (newCurrent == null && this.$attrs.radText != null && !this.ngModel.$isEmpty(comboBox.value()) && comboBox.options.autoBind == false) {
                 newCurrent = {};
@@ -378,8 +392,9 @@ module Bit.Directives {
         }
 
         public onComboFocusIn() {
-            if (this.$element.is(":disabled"))
+            if (this.$element.is(":disabled")) {
                 return;
+            }
             this.mdInputContainerParent.addClass("md-input-focused");
         }
 

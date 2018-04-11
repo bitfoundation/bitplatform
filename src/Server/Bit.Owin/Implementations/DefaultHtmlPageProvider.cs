@@ -1,6 +1,4 @@
-﻿using Bit.Core.Contracts;
-using Bit.Core.Models;
-using Bit.Owin.Contracts;
+﻿using Bit.Owin.Contracts;
 using Bit.Owin.Models;
 using System.Threading;
 using System.Threading.Tasks;

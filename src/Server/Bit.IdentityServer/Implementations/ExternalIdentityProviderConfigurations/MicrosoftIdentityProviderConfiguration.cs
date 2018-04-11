@@ -1,5 +1,4 @@
-﻿using Bit.Core.Contracts;
-using Bit.Core.Models;
+﻿using Bit.Core.Models;
 using Bit.IdentityServer.Contracts;
 using Microsoft.Owin.Security.MicrosoftAccount;
 using Newtonsoft.Json.Linq;

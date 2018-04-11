@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using Bit.Core.Contracts;
 using Bit.Core.Models;
 using Bit.Owin.Contracts;
 using Hangfire;

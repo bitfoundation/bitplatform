@@ -3,7 +3,6 @@ using Bit.ViewModel.Contracts;
 using Bit.ViewModel.Implementations;
 using IdentityModel.Client;
 using Plugin.Connectivity;
-using Plugin.Connectivity.Abstractions;
 using Prism.Autofac;
 using Prism.Events;
 using Simple.OData.Client;
@@ -110,11 +109,11 @@ namespace Prism.Ioc
                 });
 
                 return odataClient;
-            }).PreserveExistingDefaults(); ;
+            }).PreserveExistingDefaults();
 
             containerBuilder
                 .Register(c => new ODataBatch(c.Resolve<IODataClient>(), reuseSession: true))
-                .PreserveExistingDefaults(); ;
+                .PreserveExistingDefaults();
 
             return containerRegistry;
         }

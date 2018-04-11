@@ -19,7 +19,7 @@
         }
 
         protected async registerValues(app: ng.IModule): Promise<void> {
-            
+
         }
 
         protected async registerComponents(app: ng.IModule): Promise<void> {
@@ -28,8 +28,9 @@
 
             dependencyManager.getAllComponentDependencies().forEach(component => {
 
-                if (component.templateUrl != null)
+                if (component.templateUrl != null) {
                     component.templateUrl = this.pathProvider.getFullPath(component.templateUrl);
+                }
 
                 app.component(component.name, component);
 
@@ -121,8 +122,9 @@
 
             directives.forEach(vm => {
 
-                if (vm.templateUrl != null)
+                if (vm.templateUrl != null) {
                     vm.templateUrl = this.pathProvider.getFullPath(vm.templateUrl);
+                }
 
                 vm.controller = vm.controller || vm.type as any;
 
@@ -142,7 +144,7 @@
 
                     return dateTimeService.getFormattedDate(date);
 
-                }
+                };
             });
 
             app.filter("bitDateTime", () => {
@@ -160,7 +162,7 @@
 
                     return pathProvider.getFullPath(path);
 
-                }
+                };
 
             });
         }
@@ -198,8 +200,7 @@
                         });
 
                         res();
-                    }
-                    catch (e) {
+                    } catch (e) {
                         rej(e);
                         throw e;
                     }

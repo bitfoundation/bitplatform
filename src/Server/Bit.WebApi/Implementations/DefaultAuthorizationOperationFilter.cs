@@ -1,5 +1,4 @@
-﻿using Bit.Core.Contracts;
-using Bit.Core.Models;
+﻿using Bit.Core.Models;
 using Swashbuckle.Swagger;
 using System.Collections.Generic;
 using System.Linq;

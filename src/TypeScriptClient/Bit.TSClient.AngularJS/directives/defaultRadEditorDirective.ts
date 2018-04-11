@@ -16,7 +16,7 @@
     })
     export class DefaultRadEditor {
 
-        public constructor( @Inject("$element") public $element: JQuery, @Inject("$scope") public $scope: ng.IScope) {
+        public constructor(@Inject("$element") public $element: JQuery, @Inject("$scope") public $scope: ng.IScope) {
 
         }
 
@@ -50,8 +50,9 @@
         }
 
         public onEditorFocusIn() {
-            if (this.$element.is(":disabled"))
+            if (this.$element.is(":disabled")) {
                 return;
+            }
             this.mdInputContainerParent.addClass("md-input-focused");
         }
 

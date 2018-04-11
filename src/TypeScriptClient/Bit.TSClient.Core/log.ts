@@ -19,10 +19,11 @@
                 try {
 
                     if (clientAppProfile.isDebugMode == true) {
-                        if (typeof (performance) != "undefined")
+                        if (typeof (performance) != "undefined") {
                             startTime = performance.now();
-                        else
+                        } else {
                             console.time(propertyKey);
+                        }
                     }
 
                     result = originalMethod.apply(this, args);
@@ -35,10 +36,11 @@
 
                         rPromise.then(() => {
                             if (clientAppProfile.isDebugMode == true) {
-                                if (typeof (performance) != "undefined")
+                                if (typeof (performance) != "undefined") {
                                     console.log(`${propertyKey}: ${performance.now() - startTime}ms`);
-                                else
+                                } else {
                                     console.timeEnd(propertyKey);
+                                }
                             }
                         });
 
@@ -51,8 +53,7 @@
 
                     }
 
-                }
-                catch (e) {
+                } catch (e) {
 
                     const iLogger = Provider.loggerProvider();
                     iLogger.logDetailedError(this, propertyKey, args, e);
@@ -61,10 +62,11 @@
                 }
                 finally {
                     if (isPromise == false && clientAppProfile.isDebugMode == true) {
-                        if (typeof (performance) != "undefined")
+                        if (typeof (performance) != "undefined") {
                             console.log(`${propertyKey}: ${performance.now() - startTime}ms`);
-                        else
+                        } else {
                             console.timeEnd(propertyKey);
+                        }
                     }
                 }
 

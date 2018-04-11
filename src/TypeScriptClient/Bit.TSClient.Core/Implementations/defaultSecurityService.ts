@@ -7,8 +7,9 @@
 
             const token = this.getCurrentToken();
 
-            if (token == null)
+            if (token == null) {
                 return false;
+            }
 
             return ((Number(new Date()) - Number(token.login_date)) / 1000) < token.expires_in;
         }
@@ -19,26 +20,31 @@
         }
 
         public getLoginUrl(state?: any, client_id?: string): string {
-            if (state == null)
+            if (state == null) {
                 state = {};
+            }
             state["pathname"] = location.pathname;
             let url = `InvokeLogin?state=${JSON.stringify(state)}`;
-            if (client_id != null)
+            if (client_id != null) {
                 url += `&client_id${client_id}`;
+            }
             return encodeURI(url);
         }
 
         @Log()
         public getCurrentToken(): Contracts.Token {
 
-            let path = ClientAppProfileManager.getCurrent().getClientAppProfile().getConfig("HostVirtualPath", "/");
+            let path = ClientAppProfileManager.getCurrent().getClientAppProfile().getConfig<string>("HostVirtualPath", "/");
 
-            if (localStorage[`${path}access_token`] == null)
+            if (localStorage[`${path}access_token`] == null) {
                 return null;
-            if (localStorage[`${path}login_date`] == null)
+            }
+            if (localStorage[`${path}login_date`] == null) {
                 return null;
-            if (localStorage[`${path}expires_in`] == null)
+            }
+            if (localStorage[`${path}expires_in`] == null) {
                 return null;
+            }
 
             return {
                 access_token: localStorage[`${path}access_token`],
@@ -52,14 +58,18 @@
         @Log()
         public async loginWithCredentials(username: string, password: string, client_id: string, client_secret: string, scopes = ["openid", "profile", "user_info"]): Promise<Contracts.Token> {
 
-            if (username == null)
+            if (username == null) {
                 throw new Error("username is null");
-            if (password == null)
+            }
+            if (password == null) {
                 throw new Error("password is null");
-            if (client_id == null)
+            }
+            if (client_id == null) {
                 throw new Error("client_id is null");
-            if (client_secret == null)
+            }
+            if (client_secret == null) {
                 throw new Error("client_secret is null");
+            }
 
             const loginData = `scope=${scopes.join("+")}&grant_type=password&username=${username}&password=${password}&client_id=${client_id}&client_secret=${client_secret}`;
 
@@ -96,8 +106,7 @@
                 document.cookie = `token_type=${json.token_type}` + ";expires=" + expiresDateAsUTCString + `;path=${defaultPathWithoutEndingSlashIfIsNotRoot}`;
 
                 return json;
-            }
-            else {
+            } else {
                 throw new Error(json.error_description || "LoginFailed");
             }
         }
@@ -107,8 +116,7 @@
             const token = this.getCurrentToken();
             if (token != null && token.id_token != null) {
                 location.assign(this.getLogoutUrl(token.id_token, state, client_id));
-            }
-            else {
+            } else {
 
                 const defaultPath = ClientAppProfileManager.getCurrent().getClientAppProfile().getConfig<string>("HostVirtualPath", "/");
                 const defaultPathWithoutEndingSlashIfIsNotRoot = defaultPath == "/" ? defaultPath : defaultPath.substr(0, defaultPath.length - 1);
@@ -119,25 +127,28 @@
                 localStorage.removeItem(`${defaultPath}scope`);
                 localStorage.removeItem(`${defaultPath}token_type`);
 
-                const cookies = document.cookie.split('; ');
+                const cookies = document.cookie.split("; ");
 
                 for (let i = 0; i < cookies.length; i++) {
                     const cookie = cookies[i];
-                    const eqPos = cookie.indexOf('=');
+                    const eqPos = cookie.indexOf("=");
                     const name = eqPos > -1 ? cookie.substr(0, eqPos) : cookie;
-                    if (name == 'access_token' || name == 'token_type')
+                    if (name == "access_token" || name == "token_type") {
                         document.cookie = name + `=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=${defaultPathWithoutEndingSlashIfIsNotRoot}`;
+                    }
                 }
             }
         }
 
         public getLogoutUrl(id_token: string, state?: any, client_id?: string): string {
-            if (state == null)
+            if (state == null) {
                 state = {};
+            }
             state["pathname"] = location.pathname;
             let url = `InvokeLogout?state=${JSON.stringify(state)}&id_token=${id_token}`;
-            if (client_id != null)
+            if (client_id != null) {
                 url += `&client_id${client_id}`;
+            }
             return encodeURI(url);
         }
     }

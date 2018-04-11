@@ -1,7 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Bit.Core.Contracts;
 using Bit.Core.Models;
 using Bit.Owin.Contracts.Metadata;
 

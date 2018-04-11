@@ -30,15 +30,17 @@
 
             this.$element.append(this.childElement);
             this.childElement.show();
-            if (this.controller.onActivated != null)
+            if (this.controller.onActivated != null) {
                 this.controller.onActivated(isFirstTime);
+            }
         }
 
         public $onDestroy() {
             this.childElement.hide();
             angular.element(document.body).append(this.childElement);
-            if (this.controller.onDeactivated != null)
+            if (this.controller.onDeactivated != null) {
                 this.controller.onDeactivated();
+            }
         }
     }
 

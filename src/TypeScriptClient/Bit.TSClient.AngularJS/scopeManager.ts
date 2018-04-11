@@ -8,9 +8,9 @@
                 setTimeout(() => {
                     $scope.$applyAsync();
                 }, 0);
-            }
-            else if ($scope.$$phase != "$apply" && $scope.$$phase != "$digest" && $scope.$root.$$phase != "$apply" && $scope.$root.$$phase != "$digest")
+            } else if ($scope.$$phase != "$apply" && $scope.$$phase != "$digest" && $scope.$root.$$phase != "$apply" && $scope.$root.$$phase != "$digest") {
                 $scope.$apply();
+            }
 
         }
 

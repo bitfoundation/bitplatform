@@ -28,7 +28,7 @@ module Bit.Directives {
     })
     export class ErrorMessagesTransclude {
 
-        public constructor( @Inject("$transclude") public $transclude: ng.ITranscludeFunction, @Inject("$element") public $element: JQuery) {
+        public constructor(@Inject("$transclude") public $transclude: ng.ITranscludeFunction, @Inject("$element") public $element: JQuery) {
 
         }
 

@@ -55,7 +55,7 @@ namespace Bit.Data.EntityFrameworkCore.Implementations
                     return entityIfExists;
             }
 
-            await DbContext.AddAsync(entityToAdd).ConfigureAwait(false);
+            await DbContext.AddAsync(entityToAdd, cancellationToken).ConfigureAwait(false);
 
             await SaveChangesAsync(cancellationToken).ConfigureAwait(false);
 
@@ -77,7 +77,7 @@ namespace Bit.Data.EntityFrameworkCore.Implementations
                     versionableEntity.Version = DateTimeProvider.GetCurrentUtcDateTime().UtcTicks;
             }
 
-            await DbContext.AddRangeAsync(entitiesToAddList).ConfigureAwait(false);
+            await DbContext.AddRangeAsync(entitiesToAddList, cancellationToken).ConfigureAwait(false);
 
             await SaveChangesAsync(cancellationToken).ConfigureAwait(false);
 

@@ -1,6 +1,5 @@
 ﻿using Bit.ViewModel;
 using Bit.ViewModel.Contracts;
-using Prism.Mvvm;
 using Prism.Navigation;
 using Prism.Services;
 using Simple.OData.Client;

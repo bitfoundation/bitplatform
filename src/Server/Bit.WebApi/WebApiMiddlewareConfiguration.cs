@@ -1,5 +1,4 @@
-﻿using Bit.Core.Contracts;
-using Bit.Core.Models;
+﻿using Bit.Core.Models;
 using Bit.Owin.Contracts;
 using Bit.WebApi.Contracts;
 using Owin;

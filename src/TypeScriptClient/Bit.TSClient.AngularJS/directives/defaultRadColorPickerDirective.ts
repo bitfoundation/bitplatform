@@ -17,7 +17,7 @@
     })
     export class DefaultRadColorPickerDirective {
 
-        public constructor( @Inject("$element") public $element: JQuery) {
+        public constructor(@Inject("$element") public $element: JQuery) {
 
         }
 

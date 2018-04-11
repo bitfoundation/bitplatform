@@ -1,12 +1,12 @@
 ﻿module Bit.Contracts {
 
-    export interface Token {
+    export type Token = {
         access_token: string;
         id_token: string;
         expires_in: number;
         token_type: string;
         login_date: Date;
-    }
+    };
 
     export interface ISecurityService {
         isLoggedIn(): boolean;

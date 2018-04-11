@@ -1,5 +1,3 @@
 ﻿module Bit.Model.Contracts {
-    export interface IDto extends $data.Entity {
-
-    }
+    export type IDto = $data.Entity;
 }

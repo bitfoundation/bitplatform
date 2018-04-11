@@ -1,8 +1,6 @@
 using System;
-using Bit.Core.Contracts;
 using Bit.Core.Models;
 using Bit.Owin.Contracts;
-using NWebsec.Owin;
 using Owin;
 
 namespace Bit.Owin.Middlewares

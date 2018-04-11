@@ -13,9 +13,10 @@ namespace System.Security.Claims
             if (claimType == null)
                 throw new ArgumentNullException(nameof(claimType));
 
-            ClaimsIdentity subject = claims.FirstOrDefault()?.Subject;
+            Claim[] claimsArray = claims as Claim[] ?? claims.ToArray();
+            ClaimsIdentity subject = claimsArray.FirstOrDefault()?.Subject;
 
-            return subject?.FindFirst(claimType)?.Value ?? claims.ExtendedSingleOrDefault($"Finding claim: {claimType}", c => c.Type == claimType)?.Value;
+            return subject?.FindFirst(claimType)?.Value ?? claimsArray.ExtendedSingleOrDefault($"Finding claim: {claimType}", c => c.Type == claimType)?.Value;
         }
     }
 }

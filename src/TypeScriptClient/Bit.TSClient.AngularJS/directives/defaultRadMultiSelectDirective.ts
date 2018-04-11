@@ -82,7 +82,7 @@ module Bit.Directives {
 
         public static defaultRadMultiSelectDirectiveCustomizers: Array<($scope: ng.IScope, attribues: ng.IAttributes, $element: JQuery, multiSelectOptions: kendo.ui.MultiSelectOptions) => void> = [];
 
-        public constructor( @Inject("$element") public $element: JQuery,
+        public constructor(@Inject("$element") public $element: JQuery,
             @Inject("$scope") public $scope: ng.IScope,
             @Inject("$attrs") public $attrs: ng.IAttributes & { ngModel: string, radDataSource: string, radValueFieldName: string, radTextFieldName: string, radOnInit: string },
             @Inject("MetadataProvider") public metadataProvider: Contracts.IMetadataProvider) {
@@ -117,11 +117,12 @@ module Bit.Directives {
 
             let ngModelAndDataSourceWatchDisposal = this.$scope.$watchGroup([this.$attrs.radDataSource, ngModelDataItemFullPropName], (values: Array<any>) => {
 
-                if (values == null || values.length == 0 || values.some(v => v == null))
+                if (values == null || values.length == 0 || values.some(v => v == null)) {
                     return;
+                }
 
                 this.dataSource = values[0];
-                this.originalDataSourceTransportRead = this.dataSource['transport'].read;
+                this.originalDataSourceTransportRead = this.dataSource["transport"].read;
                 this.parentOfNgModel = values[1];
 
                 ngModelAndDataSourceWatchDisposal();
@@ -138,35 +139,39 @@ module Bit.Directives {
 
             if (this.parentOfNgModel instanceof $data.Entity) {
                 let parentOfNgModelType = this.parentOfNgModel.getType();
-                if (parentOfNgModelType.memberDefinitions[`$${this.bindedMemberName}`] == null)
-                    throw new Error(`${parentOfNgModelType['fullName']} has no member named ${this.bindedMemberName}`);
+                if (parentOfNgModelType.memberDefinitions[`$${this.bindedMemberName}`] == null) {
+                    throw new Error(`${parentOfNgModelType["fullName"]} has no member named ${this.bindedMemberName}`);
+                }
                 let metadata = this.metadataProvider.getMetadataSync();
-                let dtoMetadata = metadata.Dtos.find(d => d.DtoType == parentOfNgModelType['fullName']);
+                let dtoMetadata = metadata.Dtos.find(d => d.DtoType == parentOfNgModelType["fullName"]);
                 if (dtoMetadata != null) {
-                    let thisDSMemberType = this.dataSource.options.schema['jayType'];
+                    let thisDSMemberType = this.dataSource.options.schema["jayType"];
                     if (thisDSMemberType != null) {
-                        let lookup = dtoMetadata.MembersLookups.find(l => l.DtoMemberName == this.bindedMemberName && l.LookupDtoType == thisDSMemberType['fullName']);
+                        let lookup = dtoMetadata.MembersLookups.find(l => l.DtoMemberName == this.bindedMemberName && l.LookupDtoType == thisDSMemberType["fullName"]);
                         if (lookup != null) {
                             if (lookup.BaseFilter_JS != null) {
                                 let originalRead = this.originalDataSourceTransportRead;
-                                this.dataSource['transport'].read = function read(options) {
+                                this.dataSource["transport"].read = function read(options) {
                                     options.data = options.data || {};
                                     options.data.lookupBaseFilter = lookup.BaseFilter_JS;
                                     return originalRead.apply(this, arguments);
-                                }
+                                };
                             }
-                            if (this.radTextFieldName == null)
+                            if (this.radTextFieldName == null) {
                                 this.radTextFieldName = lookup.DataTextField;
-                            if (this.radValueFieldName == null)
+                            }
+                            if (this.radValueFieldName == null) {
                                 this.radValueFieldName = lookup.DataValueField;
+                            }
                         }
                     }
                 }
             }
 
             if (this.radValueFieldName == null) {
-                if (this.dataSource.options.schema != null && this.dataSource.options.schema.model != null && this.dataSource.options.schema.model.idField != null)
+                if (this.dataSource.options.schema != null && this.dataSource.options.schema.model != null && this.dataSource.options.schema.model.idField != null) {
                     this.radValueFieldName = this.dataSource.options.schema.model.idField;
+                }
             }
 
             const multiSelectOptions: kendo.ui.MultiSelectOptions = {
@@ -184,7 +189,7 @@ module Bit.Directives {
                 popup: {
                     appendTo: "md-dialog"
                 },
-                autoClose: false // Should be removed
+                autoClose: false // should be removed
             };
 
             if (this.$attrs["itemTemplateId"] != null) {
@@ -220,11 +225,13 @@ module Bit.Directives {
                 multiSelectOptions.headerTemplate = headerTemplate;
             }
 
-            if (this.dataSource.options.schema.model.fields[multiSelectOptions.dataTextField] == null)
+            if (this.dataSource.options.schema.model.fields[multiSelectOptions.dataTextField] == null) {
                 throw new Error(`Model has no property named ${multiSelectOptions.dataTextField} to be used as text field`);
+            }
 
-            if (this.dataSource.options.schema.model.fields[multiSelectOptions.dataValueField] == null)
+            if (this.dataSource.options.schema.model.fields[multiSelectOptions.dataValueField] == null) {
                 throw new Error(`Model has no property named ${multiSelectOptions.dataValueField} to be used as value field`);
+            }
 
             DefaultRadMultiSelectDirective.defaultRadMultiSelectDirectiveCustomizers.forEach(radMultiSelectCustomizer => {
                 radMultiSelectCustomizer(this.$scope, this.$attrs, this.$element, multiSelectOptions);
@@ -258,10 +265,11 @@ module Bit.Directives {
                 multiSelect.wrapper.bind("focusout", this.onMultiSelectFocusOut.bind(this));
 
                 this.$scope.$watchCollection<Array<any>>(this.$attrs.ngModel.replace("::", ""), (newVal, oldVal) => {
-                    if (newVal != null && newVal.length != 0)
+                    if (newVal != null && newVal.length != 0) {
                         this.mdInputContainerParent.addClass("md-input-has-value");
-                    else
+                    } else {
                         this.mdInputContainerParent.removeClass("md-input-has-value");
+                    }
                 });
             }
 
@@ -271,10 +279,11 @@ module Bit.Directives {
         }
 
         public onMultiSelectFocusIn() {
-            if (this.$element.is(":disabled"))
+            if (this.$element.is(":disabled")) {
                 return;
+            }
             this.mdInputContainerParent.addClass("md-input-focused");
-            this.multiSelect.open(); // Should be removed
+            this.multiSelect.open(); // should be removed
         }
 
         public onMultiSelectFocusOut() {
@@ -283,7 +292,7 @@ module Bit.Directives {
 
         public $onDestroy() {
             if (this.dataSource != null) {
-                this.dataSource['transport'].read = this.originalDataSourceTransportRead;
+                this.dataSource["transport"].read = this.originalDataSourceTransportRead;
             }
             if (this.multiSelect != null) {
                 this.multiSelect.wrapper.unbind("focusin", this.onMultiSelectFocusIn);

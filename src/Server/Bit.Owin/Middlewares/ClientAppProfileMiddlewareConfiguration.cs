@@ -2,7 +2,6 @@
 using Bit.Owin.Contracts;
 using Bit.Owin.Models;
 using Microsoft.Owin;
-using NWebsec.Owin;
 using Owin;
 
 namespace Bit.Owin.Middlewares

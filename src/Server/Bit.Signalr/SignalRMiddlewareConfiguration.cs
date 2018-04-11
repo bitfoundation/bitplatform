@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using Bit.Core.Contracts;
 using Bit.Owin.Contracts;
 using Bit.Signalr.Contracts;
 using Microsoft.AspNet.SignalR;

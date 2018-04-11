@@ -1,5 +1,5 @@
 ﻿module Bit.Model.Contracts {
-    export interface IVersionableDto {
+    export type IVersionableDto = IDto & {
         Version: string;
-    }
+    };
 }

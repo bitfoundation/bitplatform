@@ -41,8 +41,9 @@ module Bit.Implementations {
             kendo.parseDate = function parseDate(value: string, format?: string, culture?: string): Date {
                 if (value != null) {
                     const date = new Date(value);
-                    if (date.toString() != "Invalid Date")
+                    if (date.toString() != "Invalid Date") {
                         return date;
+                    }
                 }
                 return originalParseDate.apply(this, arguments);
             };
@@ -66,11 +67,13 @@ module Bit.Implementations {
 
                     this["_current"] = entity;
 
-                    if (this["setHandlers"] == null)
+                    if (this["setHandlers"] == null) {
                         return;
+                    }
 
-                    for (let setHandler of this["setHandlers"])
+                    for (let setHandler of this["setHandlers"]) {
                         setHandler(entity);
+                    }
 
                     this.onCurrentChanged();
                 }
@@ -86,8 +89,9 @@ module Bit.Implementations {
                     dataSource.onCurrentChangedHandlers.push(action);
                     return () => {
                         let index = dataSource.onCurrentChangedHandlers.indexOf(action);
-                        if (index > -1)
+                        if (index > -1) {
                             dataSource.onCurrentChangedHandlers.splice(index, 1);
+                        }
                     };
                 } else {
 
@@ -122,12 +126,13 @@ module Bit.Implementations {
 
                     widget.destroy();
                 }
-            }
+            };
 
             kendo.data.DataSource.prototype.asChildOf = function asChildOf(parentDataSource, childKeys, parentKeys) {
 
-                if (parentDataSource == null)
+                if (parentDataSource == null) {
                     throw new Error("parentDataSource is null");
+                }
 
                 if (childKeys == null || childKeys.length == 0) {
                     throw new Error("childs keys is null or empty");
@@ -163,16 +168,19 @@ module Bit.Implementations {
                         setTimeout(() => resolve(), 350);
                     });
 
-                    if (currentParent != parentDataSource.current)
+                    if (currentParent != parentDataSource.current) {
                         return;
+                    }
 
                     if (childDataSource.current != null) {
                         try {
                             let currentChild = childDataSource.current;
-                            if (currentParent == null || parentKeys.some((pk, i) => currentChild[childKeys[i]] != currentParent[pk]))
+                            if (currentParent == null || parentKeys.some((pk, i) => currentChild[childKeys[i]] != currentParent[pk])) {
                                 childDataSource.current = null;
+                            }
+                        } catch (e) {
+
                         }
-                        catch (e) { }
                     }
 
                     await childDataSource.read();
@@ -186,20 +194,20 @@ module Bit.Implementations {
 
                     if (currentParent == null || parentKeys.some(pk => currentParent[pk] == null)) {
                         options.success({ data: [], length: 0 });
-                    }
-                    else {
+                    } else {
 
                         options.data = options.data || {};
                         options.data.cascadeBaseFilter = childKeys.map((childKey, index) => {
                             let parentVal = currentParent[parentKeys[index]];
-                            if (typeof parentVal == "string")
+                            if (typeof parentVal == "string") {
                                 parentVal = "'" + parentVal + "'";
+                            }
                             return `it.${childKey} == ${parentVal}`;
                         }).join("&&");
 
                         return originalChildTransportRead.apply(this, arguments);
                     }
-                }
+                };
 
                 const originalChildTransportCreate = childDataSource["transport"].create;
 
@@ -219,8 +227,8 @@ module Bit.Implementations {
                     }
 
                     return originalChildTransportCreate.apply(this, arguments);
-                }
-            }
+                };
+            };
         }
     }
 }

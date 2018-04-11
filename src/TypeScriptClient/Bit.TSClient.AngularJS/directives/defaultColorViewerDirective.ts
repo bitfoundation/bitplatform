@@ -15,13 +15,14 @@
     })
     export class DefaultColorViewerDirective {
 
-        public constructor( @Inject("$element") public $element: JQuery) {
+        public constructor(@Inject("$element") public $element: JQuery) {
 
         }
 
         public $onChanges(changes: { color: { currentValue: string } }) {
-            if (changes.color != null)
+            if (changes.color != null) {
                 this.$element.css("background-color", changes.color.currentValue);
+            }
         }
     }
 }

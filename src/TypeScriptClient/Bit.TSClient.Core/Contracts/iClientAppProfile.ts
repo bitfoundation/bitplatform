@@ -1,11 +1,11 @@
 ﻿module Bit.Contracts {
 
-    export interface EnvironmentConfig {
+    export type EnvironmentConfig = {
         key: string;
         value: any;
-    }
+    };
 
-    export interface IClientAppProfile {
+    export type IClientAppProfile = {
         screenSize: "DesktopAndTablet" | "MobileAndPhablet" | "";
         theme: string;
         culture: string;

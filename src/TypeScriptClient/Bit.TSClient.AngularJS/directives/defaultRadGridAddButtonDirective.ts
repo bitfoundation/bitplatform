@@ -10,7 +10,7 @@ module Bit.Directives {
         restrict: "E",
         scope: true,
         template: ($element: JQuery, $attrs: ng.IAttributes & { ngClick: string }) => {
-            delete $attrs.ngClick; // Prevent $compiler from recompiling developer provided custom ng-click (if any)
+            delete $attrs.ngClick; // prevent $compiler from recompiling developer provided custom ng-click (if any)
             return `<button ng-click=";radGridAddButton.radGrid.addDataItem($event)" ng-transclude></button>`;
         },
         replace: true,
@@ -22,7 +22,7 @@ module Bit.Directives {
         public static defaultClasses: string[] = ["md-button", "md-raised", "md-primary"];
         public radGrid: DefaultRadGridDirective;
 
-        public constructor( @Inject("$element") public $element: JQuery) {
+        public constructor(@Inject("$element") public $element: JQuery) {
 
         }
 

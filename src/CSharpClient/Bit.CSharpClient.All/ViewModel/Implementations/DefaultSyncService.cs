@@ -87,15 +87,15 @@ namespace Bit.ViewModel.Implementations
 
                             if (recentlyChangedOfflineDto.IsArchived == true)
                             {
-                                onlineBatchContext += new Func<IODataClient, Task>(c => toServerSyncConfig.OnlineDtoSet(c).Key(keys).DeleteEntryAsync());
+                                onlineBatchContext += c => toServerSyncConfig.OnlineDtoSet(c).Key(keys).DeleteEntryAsync();
                             }
                             else if (recentlyChangedOfflineDto.Version == 0)
                             {
-                                onlineBatchContext += new Func<IODataClient, Task>(c => toServerSyncConfig.OnlineDtoSet(c).Set(recentlyChangedOfflineDto).InsertEntryAsync());
+                                onlineBatchContext += c => toServerSyncConfig.OnlineDtoSet(c).Set(recentlyChangedOfflineDto).InsertEntryAsync();
                             }
                             else
                             {
-                                onlineBatchContext += new Func<IODataClient, Task>(c => toServerSyncConfig.OnlineDtoSet(c).Key(keys).Set(recentlyChangedOfflineDto).UpdateEntryAsync());
+                                onlineBatchContext += c => toServerSyncConfig.OnlineDtoSet(c).Key(keys).Set(recentlyChangedOfflineDto).UpdateEntryAsync();
                             }
                         }
                     }
@@ -127,13 +127,13 @@ namespace Bit.ViewModel.Implementations
 
                         long maxVersion = mostRecentOfflineDto?.Version ?? 0;
 
-                        onlineBatchContext += new Func<IODataClient, Task>(async c => recentlyChangedOnlineDtos.Add(new DtoSyncConfigSyncFromResults
+                        onlineBatchContext += async c => recentlyChangedOnlineDtos.Add(new DtoSyncConfigSyncFromResults
                         {
                             DtoSetSyncConfig = fromServerSyncConfig,
                             RecentlyChangedOnlineDtos = CreateSyncableDtoInstancesFromUnTypedODataResponse(offlineSet.ElementType.GetTypeInfo(), (await (fromServerSyncConfig.OnlineDtoSetForGet ?? fromServerSyncConfig.OnlineDtoSet)(c).Where($"Version gt {maxVersion}").FindEntriesAsync().ConfigureAwait(false)).ToList()),
                             DtoType = offlineSet.ElementType.GetTypeInfo(),
                             HadOfflineDtoBefore = mostRecentOfflineDto != null
-                        }));
+                        });
                     }
 
                     await onlineBatchContext.ExecuteAsync().ConfigureAwait(false);

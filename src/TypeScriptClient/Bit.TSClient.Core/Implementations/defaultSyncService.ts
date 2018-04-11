@@ -7,10 +7,12 @@
 
         @Log()
         public init(onlineContextFactory: () => Promise<$data.EntityContext>, offlineContextFactory: () => Promise<$data.EntityContext>): void {
-            if (onlineContextFactory == null)
+            if (onlineContextFactory == null) {
                 throw new Error("onlineContextFactory may not be null");
-            if (offlineContextFactory == null)
+            }
+            if (offlineContextFactory == null) {
                 throw new Error("offlineContextFactory may not be null");
+            }
             this.offlineContextFactory = offlineContextFactory;
             this.onlineContextFactory = onlineContextFactory;
         }
@@ -20,22 +22,29 @@
         @Log()
         public addEntitySetConfig<TEntityContext extends $data.EntityContext>(entitySet: { name: keyof TEntityContext, dtoType: any }, getMethod?: (context: TEntityContext) => $data.Queryable<Model.Contracts.ISyncableDto>, syncConfig?: { fromServerSync?: boolean | (() => boolean), toServerSync?: boolean | (() => boolean) }) {
 
-            if (entitySet == null)
+            if (entitySet == null) {
                 throw new Error("entitySet may not be null");
-            if (entitySet.dtoType == null)
+            }
+            if (entitySet.dtoType == null) {
                 throw new Error("entitySet's dto type may not be null");
-            if (entitySet.name == null)
+            }
+            if (entitySet.name == null) {
                 throw new Error("entitySet's name may not be null");
+            }
 
-            if (getMethod == null)
+            if (getMethod == null) {
                 getMethod = (cntx) => cntx[entitySet.name] as any;
+            }
 
-            if (syncConfig == null)
+            if (syncConfig == null) {
                 syncConfig = { fromServerSync: true, toServerSync: true };
-            if (syncConfig.fromServerSync == null)
+            }
+            if (syncConfig.fromServerSync == null) {
                 syncConfig.fromServerSync = true;
-            if (syncConfig.toServerSync == null)
+            }
+            if (syncConfig.toServerSync == null) {
                 syncConfig.toServerSync = true;
+            }
 
             let keyMembers = entitySet.dtoType.memberDefinitions.getKeyProperties().map(function (k) { return k.name; });
 
@@ -63,25 +72,30 @@
 
         public async syncEntitySets<TEntityContext extends $data.EntityContext>(entitySetNames: Array<keyof TEntityContext>): Promise<void> {
 
-            if (entitySetNames == null)
+            if (entitySetNames == null) {
                 throw new Error("entitySetNames may not be null");
+            }
 
-            if (entitySetNames.length == 0)
+            if (entitySetNames.length == 0) {
                 throw new Error("entitySetNames may not be empty");
+            }
 
-            if (entitySetNames.some(entitySetName => entitySetName == null))
+            if (entitySetNames.some(entitySetName => entitySetName == null)) {
                 throw new Error("entitySetName may not be null");
+            }
 
             const entitySetConfigs = entitySetNames
                 .map(entitySetName => {
                     const cnfg = this.entitySetConfigs.find(ec => ec.entitySetName.toLowerCase() == entitySetName.toLowerCase());
-                    if (cnfg == null)
+                    if (cnfg == null) {
                         throw new Error(`No entity set config found named ${entitySetName}`);
+                    }
                     return cnfg;
                 });
 
-            if (navigator.onLine == false)
+            if (navigator.onLine == false) {
                 return;
+            }
 
             const onlineContext = await this.onlineContextFactory();
             const offlineContext = await this.offlineContextFactory();
@@ -112,12 +126,13 @@
                     for (const modifiedOfflineEntity of recentlyChangedOfflineEntities) {
                         const clonedEntityToBeSavedInOnlineContext = entitySetSyncMaterial.onlineEntitySet.elementType["create"](modifiedOfflineEntity["initData"]) as Model.Contracts.ISyncableDto;
                         onlineContext.attach(clonedEntityToBeSavedInOnlineContext, $data.EntityAttachMode.AllChanged);
-                        if (clonedEntityToBeSavedInOnlineContext.IsArchived == true)
+                        if (clonedEntityToBeSavedInOnlineContext.IsArchived == true) {
                             clonedEntityToBeSavedInOnlineContext.entityState = $data.EntityState.Deleted;
-                        else if (clonedEntityToBeSavedInOnlineContext.Version == null || clonedEntityToBeSavedInOnlineContext.Version == "0000000000000000000")
+                        } else if (clonedEntityToBeSavedInOnlineContext.Version == null || clonedEntityToBeSavedInOnlineContext.Version == "0000000000000000000") {
                             clonedEntityToBeSavedInOnlineContext.entityState = $data.EntityState.Added;
-                        else
+                        } else {
                             clonedEntityToBeSavedInOnlineContext.entityState = $data.EntityState.Modified;
+                        }
                     }
                 }
 
@@ -136,8 +151,9 @@
 
                     let maxVersion = "0000000000000000000";
 
-                    if (offlineEntitiesOrderedByVersion[0] != null)
+                    if (offlineEntitiesOrderedByVersion[0] != null) {
                         maxVersion = offlineEntitiesOrderedByVersion[0].Version;
+                    }
 
                     const recentlyChangedOnlineEntitiesQuery = entitySetSyncMaterial.entitySetConfig.getMethod(onlineContext).filter((e, ver) => e.Version > ver, { ver: maxVersion });
 
@@ -150,8 +166,9 @@
                 for (let i = 0; i < allRecentlyChangedOnlineEntities.length; i++) {
 
                     const recentlyChangedOnlineEntities = allRecentlyChangedOnlineEntities[i];
-                    if (recentlyChangedOnlineEntities.length == 0)
+                    if (recentlyChangedOnlineEntities.length == 0) {
                         continue;
+                    }
                     const offlineEntitiesOrderedByVersion = allOfflineEntitiesOrderedByVersion[i];
                     const entitySetSyncMaterial = fromServerEntitySetSyncMaterials[i];
 
@@ -161,8 +178,7 @@
                             onlineEntity.Version = onlineEntity.Version.padStart(19, "0");
                         }
                         entitySetSyncMaterial.offlineEntitySet.addMany(recentlyChangedOnlineEntities);
-                    }
-                    else {
+                    } else {
 
                         const mapString = `function(it) { return { ${entitySetSyncMaterial.entitySetConfig.keyMembers.map(function (k) { return `${k}: it.${k}`; }).join(",")} } }`;
 
@@ -190,11 +206,9 @@
 
                                 if (clonedEntity.IsArchived == true) {
                                     clonedEntity.entityState = $data.EntityState.Deleted;
-                                }
-                                else if (hasEquivalentInOfflineContext == true) {
+                                } else if (hasEquivalentInOfflineContext == true) {
                                     clonedEntity.entityState = $data.EntityState.Modified;
-                                }
-                                else if (hasEquivalentInOfflineContext == false) {
+                                } else if (hasEquivalentInOfflineContext == false) {
                                     clonedEntity.entityState = $data.EntityState.Added;
                                 }
                             }

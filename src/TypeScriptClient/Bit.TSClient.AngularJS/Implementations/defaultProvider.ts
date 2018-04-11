@@ -5,18 +5,20 @@
         public static buildProvider(): void {
 
             Provider.getFormattedDateDelegate = (date: Date, culture: string) => {
-                if (culture == "FaIr")
+                if (culture == "FaIr") {
                     return new window["persianDate"](date).format("YYYY/MM/DD") as string;
-                else
+                } else {
                     return kendo.toString(date, "yyyy/dd/MM");
+                }
             };
 
             Provider.getFormattedDateTimeDelegate = (date: Date, culture: string) => {
 
-                if (culture == "FaIr")
+                if (culture == "FaIr") {
                     return new window["persianDate"](date).format("DD MMMM YYYY, hh:mm a") as string;
-                else
+                } else {
                     return kendo.toString(date, "yyyy/dd/MM, hh:mm tt");
+                }
 
             };
 

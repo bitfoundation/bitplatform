@@ -14,7 +14,7 @@ module Bit.Directives {
     })
     export class DefaultElementMoverDirective {
 
-        public constructor( @Inject("$element") public $element: JQuery) {
+        public constructor(@Inject("$element") public $element: JQuery) {
 
         }
 

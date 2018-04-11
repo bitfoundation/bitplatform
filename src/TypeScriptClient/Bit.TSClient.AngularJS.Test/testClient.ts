@@ -9,12 +9,13 @@ let objectResolver = (key, value) => {
         return new Date(value);
     }
     return value;
-}
+};
 
 let executeTest = async (testFunc: Function, args: string | any): Promise<void> => {
 
-    if (testFunc == null)
+    if (testFunc == null) {
         throw new Error("testFunc is null");
+    }
 
     try {
 
@@ -30,9 +31,11 @@ let executeTest = async (testFunc: Function, args: string | any): Promise<void> 
         const jasmineInterface = jasmineReq.interface(jasmine, env);
 
         const extend = (destination, source) => {
-            for (let property in source)
-                if (source.hasOwnProperty(property))
+            for (let property in source) {
+                if (source.hasOwnProperty(property)) {
                     destination[property] = source[property];
+                }
+            }
             return destination;
         };
 
@@ -52,8 +55,7 @@ let executeTest = async (testFunc: Function, args: string | any): Promise<void> 
                         await testFunc.apply(this, typeof args == "string" ? JSON.parse(args, objectResolver) : args);
                         angular.element("#testsConsole").val("Success");
                         resolve();
-                    }
-                    catch (e) {
+                    } catch (e) {
                         reject(e);
                         throw e;
                     }
@@ -75,9 +77,8 @@ let executeTest = async (testFunc: Function, args: string | any): Promise<void> 
             }
             throw new Error(errorMessage);
         }
-    }
-    catch (e) {
+    } catch (e) {
         console.error(e);
         angular.element("#testsConsole").val(e.message);
     }
-}
+};

@@ -3,7 +3,6 @@ using Bit.Core.Models;
 using Bit.Owin.Contracts;
 using Microsoft.Owin.FileSystems;
 using Microsoft.Owin.StaticFiles;
-using NWebsec.Owin;
 using Owin;
 
 namespace Bit.Owin.Middlewares

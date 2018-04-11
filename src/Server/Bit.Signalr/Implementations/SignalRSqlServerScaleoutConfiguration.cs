@@ -1,5 +1,4 @@
-﻿using Bit.Core.Contracts;
-using Bit.Core.Models;
+﻿using Bit.Core.Models;
 using Bit.Signalr.Contracts;
 using Microsoft.AspNet.SignalR;
 

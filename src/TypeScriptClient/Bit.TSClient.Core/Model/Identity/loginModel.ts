@@ -1,6 +1,6 @@
 ﻿module Bit.Models.Identity {
 
-    export interface LoginModel {
+    export type LoginModel = {
         additionalLinks: any;
         allowRememberMe: boolean;
         antiForgery: {
@@ -26,5 +26,5 @@
         autoRedirect: boolean;
         autoRedirectDelay: number;
         returnUrl: string;
-    }
+    };
 }

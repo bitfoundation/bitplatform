@@ -1,5 +1,5 @@
 ﻿module Bit.Model.Events {
-    export interface TokenExpiredEvent {
+    export type TokenExpiredEvent = {
 
-    }
+    };
 }

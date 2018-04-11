@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Web.Http;
 using Bit.WebApi.Contracts;
-using NWebsec.Owin;
 using Owin;
 
 namespace Bit.OData.Implementations

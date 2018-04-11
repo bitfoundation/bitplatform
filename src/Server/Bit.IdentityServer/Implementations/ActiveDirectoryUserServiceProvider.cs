@@ -1,8 +1,6 @@
-﻿using Bit.Core.Contracts;
-using Bit.Core.Models;
+﻿using Bit.Core.Models;
 using Bit.Owin.Exceptions;
 using IdentityServer3.Core.Models;
-using System;
 using System.DirectoryServices.AccountManagement;
 using System.Threading.Tasks;
 
