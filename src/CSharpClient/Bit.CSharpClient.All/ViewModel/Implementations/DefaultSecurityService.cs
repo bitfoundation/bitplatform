@@ -94,7 +94,7 @@ namespace Bit.ViewModel.Implementations
             TokenResponse tokenResponse = await tokenClient.RequestResourceOwnerPasswordAsync(username, password, scope: string.Join(" ", scopes), cancellationToken: cancellationToken).ConfigureAwait(false);
 
             if (tokenResponse.IsError)
-                throw tokenResponse.Exception ?? new Exception($"{tokenResponse.Error}");
+                throw tokenResponse.Exception ?? new Exception($"{tokenResponse.Error} {tokenResponse.Raw}");
 
             Account account = Token.FromTokenToAccount(tokenResponse);
 
@@ -125,18 +125,12 @@ namespace Bit.ViewModel.Implementations
         {
             Account account = GetAccount();
 
-            if (account == null)
-                return null;
-
             return account;
         }
 
         public virtual async Task<Token> GetCurrentTokenAsync(CancellationToken cancellationToken = default(CancellationToken))
         {
             Account account = await GetAccountAsync().ConfigureAwait(false);
-
-            if (account == null)
-                return null;
 
             return account;
         }
