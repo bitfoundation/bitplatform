@@ -18,7 +18,7 @@ namespace Bit.OData.Serialization
         public ExtendedODataDeserializerProvider(IServiceProvider rootContainer)
             : base(rootContainer)
         {
-            _defaultODataParameterDeserializerValue = new Lazy<DefaultODataActionCreateUpdateParameterDeserializer>(() => (DefaultODataActionCreateUpdateParameterDeserializer)rootContainer.GetService(typeof(DefaultODataActionCreateUpdateParameterDeserializer).GetTypeInfo()));
+            _defaultODataParameterDeserializerValue = new Lazy<DefaultODataActionCreateUpdateParameterDeserializer>(() => (DefaultODataActionCreateUpdateParameterDeserializer)rootContainer.GetService(typeof(DefaultODataActionCreateUpdateParameterDeserializer).GetTypeInfo()), isThreadSafe: true);
         }
 
         private readonly Lazy<DefaultODataActionCreateUpdateParameterDeserializer> _defaultODataParameterDeserializerValue;
