@@ -4,7 +4,6 @@ using System.Linq;
 
 namespace Bit.Core.Models
 {
-    [Serializable]
     public class AppEnvironment
     {
         public virtual string Name { get; set; }
@@ -20,9 +19,9 @@ namespace Bit.Core.Models
             Scopes = new[] { "openid", "profile", "user_info" }
         };
 
-        public virtual EnvironmentCulture[] Cultures { get; set; } = new EnvironmentCulture[] { };
+        public virtual EnvironmentCulture[] Cultures { get; set; } = Array.Empty<EnvironmentCulture>();
 
-        public virtual EnvironmentTheme[] Themes { get; set; } = new EnvironmentTheme[] { };
+        public virtual EnvironmentTheme[] Themes { get; set; } = Array.Empty<EnvironmentTheme>();
 
         public virtual List<EnvironmentConfig> Configs { get; set; } = new List<EnvironmentConfig>();
 
@@ -110,7 +109,6 @@ namespace Bit.Core.Models
         }
     }
 
-    [Serializable]
     public class EnvironmentAppInfo
     {
         public virtual string Version { get; set; }
@@ -129,7 +127,6 @@ namespace Bit.Core.Models
         }
     }
 
-    [Serializable]
     public class EnvironmentSecurity
     {
         public virtual string SsoServerUrl { get; set; }
@@ -149,7 +146,6 @@ namespace Bit.Core.Models
         }
     }
 
-    [Serializable]
     public class EnvironmentTheme
     {
         public virtual string Name { get; set; }
@@ -160,7 +156,6 @@ namespace Bit.Core.Models
         }
     }
 
-    [Serializable]
     public class EnvironmentCulture
     {
         public virtual string Name { get; set; }
@@ -173,7 +168,6 @@ namespace Bit.Core.Models
         }
     }
 
-    [Serializable]
     public class EnvironmentCultureValue
     {
         public virtual string Name { get; set; }
@@ -186,7 +180,6 @@ namespace Bit.Core.Models
         }
     }
 
-    [Serializable]
     public class EnvironmentConfig
     {
         public virtual string Key { get; set; }

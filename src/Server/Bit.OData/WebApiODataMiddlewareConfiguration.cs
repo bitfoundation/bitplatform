@@ -105,6 +105,7 @@ namespace Bit.OData
             _odataBatchHandler?.Dispose();
             _webApiConfig?.Dispose();
             _server?.Dispose();
+            GC.SuppressFinalize(this);
         }
     }
 }

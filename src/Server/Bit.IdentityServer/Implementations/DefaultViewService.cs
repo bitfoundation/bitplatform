@@ -161,7 +161,7 @@ namespace Bit.IdentityServer.Implementations
             string loginPageHtmlInitialHtml = File.ReadAllText(PathProvider.MapStaticFilePath(AppEnvironment.GetConfig("LoginPagePath", "loginPage.html")));
 
             string loginPageHtmlFinalHtml = (await HtmlPageProvider.GetHtmlPageAsync(loginPageHtmlInitialHtml, CancellationToken.None).ConfigureAwait(false))
-                .Replace("{{model.LoginModel.toJson()}}", Microsoft.Security.Application.Encoder.HtmlEncode(json));
+                .Replace("{{model.LoginModel.toJson()}}", Microsoft.Security.Application.Encoder.HtmlEncode(json), StringComparison.InvariantCultureIgnoreCase);
 
             return await ReturnHtmlAsync(model, loginPageHtmlFinalHtml, CancellationToken.None).ConfigureAwait(false);
         }

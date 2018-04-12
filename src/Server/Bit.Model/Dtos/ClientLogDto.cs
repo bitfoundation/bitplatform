@@ -4,7 +4,6 @@ using Bit.Model.Contracts;
 
 namespace Bit.Model.Dtos
 {
-    [Serializable]
     public class ClientLogDto : IDto
     {
         [Key]

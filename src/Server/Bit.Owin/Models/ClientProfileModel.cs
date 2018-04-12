@@ -1,8 +1,8 @@
 ﻿using System;
+using System.Globalization;
 
 namespace Bit.Owin.Models
 {
-    [Serializable]
     public class ClientProfileModel
     {
         public virtual string AppTitle { get; set; }
@@ -30,7 +30,7 @@ clientAppProfile = {{
     theme: ""{Theme}"",
     culture: ""{Culture}"",
     version: ""{AppVersion}"",
-    isDebugMode: {DebugMode.ToString().ToLowerInvariant()},
+    isDebugMode: {DebugMode.ToString(CultureInfo.InvariantCulture).ToLowerInvariant()},
     appTitle: ""{AppTitle}"",
     appName: ""{AppName}"",
     desiredTimeZone: ""{DesiredTimeZoneValue}"",

@@ -55,6 +55,7 @@ namespace Bit.WebApi
         {
             _webApiConfig?.Dispose();
             _server?.Dispose();
+            GC.SuppressFinalize(this);
         }
     }
 }

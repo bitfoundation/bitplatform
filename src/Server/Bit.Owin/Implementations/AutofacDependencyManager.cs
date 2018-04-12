@@ -342,6 +342,7 @@ namespace Bit.Owin.Implementations
         public virtual void Dispose()
         {
             _container?.Dispose();
+            GC.SuppressFinalize(this);
         }
     }
 }

@@ -32,6 +32,7 @@ namespace Bit.OwinCore.Implementations.Servers
         public void Dispose()
         {
             _httpListenerServer?.Dispose();
+            GC.SuppressFinalize(this);
         }
     }
 }

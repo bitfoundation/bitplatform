@@ -244,7 +244,7 @@ namespace Bit.OData.Implementations
                                     .GetTypeInfo()
                                     .GetMethod("ReturnsCollection")
                                     .MakeGenericMethod(type)
-                                    .Invoke(operationConfiguration, new object[] { });
+                                    .Invoke(operationConfiguration, Array.Empty<object>());
                             }
                         }
                     }
@@ -274,7 +274,7 @@ namespace Bit.OData.Implementations
         {
             string name = type.Name;
             int index = name.IndexOf('`');
-            return (index == -1 ? name : name.Substring(0, index)).Replace("Controller", string.Empty);
+            return (index == -1 ? name : name.Substring(0, index)).Replace("Controller", string.Empty, StringComparison.InvariantCultureIgnoreCase);
         }
     }
 }

@@ -6,7 +6,6 @@ using Bit.Model.Contracts;
 namespace Bit.Model.DomainModels
 {
     [Table("UsersSettingsView", Schema = "Bit")]
-    [Serializable]
     public class UserSetting : IEntity, IDto
     {
         [Key]

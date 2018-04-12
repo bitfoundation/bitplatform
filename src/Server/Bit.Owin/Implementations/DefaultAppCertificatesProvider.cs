@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using System.Security.Cryptography.X509Certificates;
 using Bit.Core.Contracts;
 using Bit.Core.Models;
@@ -29,6 +30,7 @@ namespace Bit.Owin.Implementations
         public virtual void Dispose()
         {
             _certificate?.Dispose();
+            GC.SuppressFinalize(this);
         }
     }
 }

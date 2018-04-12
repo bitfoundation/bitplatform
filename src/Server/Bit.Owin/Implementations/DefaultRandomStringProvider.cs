@@ -1,5 +1,6 @@
 ﻿using Bit.Core.Contracts;
 using System;
+using System.Globalization;
 
 namespace Bit.Owin.Implementations
 {
@@ -11,7 +12,7 @@ namespace Bit.Owin.Implementations
 
             while (result.Length < length)
             {
-                result += Guid.NewGuid().ToString("N");
+                result += Guid.NewGuid().ToString("N", CultureInfo.InvariantCulture);
             }
 
             return result.Substring(length);

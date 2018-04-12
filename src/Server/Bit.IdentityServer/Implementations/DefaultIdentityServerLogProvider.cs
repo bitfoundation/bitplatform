@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Globalization;
 using Bit.Core.Contracts;
 using IdentityServer3.Core.Logging;
 
@@ -40,7 +41,7 @@ namespace Bit.IdentityServer.Implementations
 
                                     try
                                     {
-                                        message = string.Format(func(), parameters);
+                                        message = string.Format(CultureInfo.InvariantCulture, func(), parameters);
                                     }
                                     catch
                                     {
@@ -84,7 +85,7 @@ namespace Bit.IdentityServer.Implementations
 
         public virtual void Dispose()
         {
-
+            GC.SuppressFinalize(this);
         }
     }
 }

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Globalization;
 using System.Threading.Tasks;
 using Bit.Core.Contracts;
 using Bit.Owin.Contracts;
@@ -40,9 +41,9 @@ namespace Bit.OwinCore.Middlewares
             try
             {
                 await _next.Invoke(context);
-                string statusCode = context.Response.StatusCode.ToString();
-                bool responseStatusCodeIsErrorCodeBecauseOfSomeServerBasedReason = statusCode.StartsWith("5");
-                bool responseStatusCodeIsErrorCodeBecauseOfSomeClientBasedReason = statusCode.StartsWith("4");
+                string statusCode = context.Response.StatusCode.ToString(CultureInfo.InvariantCulture);
+                bool responseStatusCodeIsErrorCodeBecauseOfSomeServerBasedReason = statusCode.StartsWith("5", StringComparison.InvariantCultureIgnoreCase);
+                bool responseStatusCodeIsErrorCodeBecauseOfSomeClientBasedReason = statusCode.StartsWith("4", StringComparison.InvariantCultureIgnoreCase);
                 if (responseStatusCodeIsErrorCodeBecauseOfSomeServerBasedReason ||
                     responseStatusCodeIsErrorCodeBecauseOfSomeClientBasedReason)
                 {
@@ -76,13 +77,13 @@ namespace Bit.OwinCore.Middlewares
                 if (scopeStatusManager.WasSucceeded())
                     scopeStatusManager.MarkAsFailed(exp.Message);
                 await logger.LogExceptionAsync(exp, "Request-Execution-Exception");
-                string statusCode = context.Response.StatusCode.ToString();
-                bool responseStatusCodeIsErrorCodeBecauseOfSomeServerBasedReason = statusCode.StartsWith("5");
-                bool responseStatusCodeIsErrorCodeBecauseOfSomeClientBasedReason = statusCode.StartsWith("4");
+                string statusCode = context.Response.StatusCode.ToString(CultureInfo.InvariantCulture);
+                bool responseStatusCodeIsErrorCodeBecauseOfSomeServerBasedReason = statusCode.StartsWith("5", StringComparison.InvariantCultureIgnoreCase);
+                bool responseStatusCodeIsErrorCodeBecauseOfSomeClientBasedReason = statusCode.StartsWith("4", StringComparison.InvariantCultureIgnoreCase);
                 if (responseStatusCodeIsErrorCodeBecauseOfSomeClientBasedReason == false && responseStatusCodeIsErrorCodeBecauseOfSomeServerBasedReason == false)
                 {
                     IExceptionToHttpErrorMapper exceptionToHttpErrorMapper = context.RequestServices.GetService<IExceptionToHttpErrorMapper>();
-                    context.Response.StatusCode = Convert.ToInt32(exceptionToHttpErrorMapper.GetStatusCode(exp));
+                    context.Response.StatusCode = Convert.ToInt32(exceptionToHttpErrorMapper.GetStatusCode(exp), CultureInfo.InvariantCulture);
                     await context.Response.WriteAsync(exceptionToHttpErrorMapper.GetMessage(exp) , context.RequestAborted);
                     context.Features.Get<IHttpResponseFeature>().ReasonPhrase = exceptionToHttpErrorMapper.GetReasonPhrase(exp);
                 }

@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace Bit.Test
 {
@@ -6,7 +7,7 @@ namespace Bit.Test
     {
         public virtual IEnumerable<string> GetAssemblyFileNamesToScanForExtensions()
         {
-            return new string[] { };
+            return Array.Empty<string>();
         }
     }
 }

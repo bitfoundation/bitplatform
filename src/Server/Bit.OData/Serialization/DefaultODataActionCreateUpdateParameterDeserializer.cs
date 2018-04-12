@@ -62,7 +62,7 @@ namespace Bit.OData.Serialization
                 {
                     void Error(object sender, Newtonsoft.Json.Serialization.ErrorEventArgs e)
                     {
-                        if (e.ErrorContext.Error is JsonSerializationException && e.ErrorContext.Error.Message.StartsWith("Could not find member "))
+                        if (e.ErrorContext.Error is JsonSerializationException && e.ErrorContext.Error.Message.StartsWith("Could not find member ", StringComparison.InvariantCultureIgnoreCase))
                         {
                             if (e.CurrentObject is IOpenType openDto)
                             {
@@ -243,7 +243,7 @@ namespace Bit.OData.Serialization
 
             string enumRawValue = (string)reader.Value;
 
-            enumRawValue = enumRawValue.Replace(fullName, string.Empty).Replace("'", string.Empty);
+            enumRawValue = enumRawValue.Replace(fullName, string.Empty, StringComparison.InvariantCultureIgnoreCase).Replace("'", string.Empty, StringComparison.InvariantCultureIgnoreCase);
 
             return Enum.Parse(unwrappedType, enumRawValue);
         }

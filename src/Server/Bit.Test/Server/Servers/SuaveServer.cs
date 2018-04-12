@@ -31,6 +31,7 @@ namespace Bit.OwinCore.Implementations.Servers
         public void Dispose()
         {
             _suaveServer?.Dispose();
+            GC.SuppressFinalize(this);
         }
     }
 }

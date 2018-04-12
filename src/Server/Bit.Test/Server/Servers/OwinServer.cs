@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Owin;
 using Microsoft.Owin.BuilderProperties;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -48,7 +49,7 @@ namespace Bit.OwinCore.Implementations.Servers
                 ["host.Addresses"] =
                 Features.Get<IServerAddressesFeature>()
                     .Addresses.Select(add => new Uri(add))
-                    .Select(add => new Address(add.Scheme, add.Host, add.Port.ToString(), add.LocalPath).Dictionary)
+                    .Select(add => new Address(add.Scheme, add.Host, add.Port.ToString(CultureInfo.InvariantCulture), add.LocalPath).Dictionary)
                     .ToList()
             };
         }
