@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Bit.Core.Models;
 using Bit.Owin.Contracts;
 using Hangfire;
@@ -14,11 +15,15 @@ namespace Bit.Hangfire
 
         public virtual void Configure(IAppBuilder owinApp)
         {
+#if DotNetCore
+            throw new NotImplementedException();
+#else
             owinApp.UseHangfireDashboard("/jobs", new DashboardOptions
             {
                 Authorization = AuthFilters,
                 AppPath = AppEnvironment.GetHostVirtualPath()
             });
+#endif
         }
     }
 }
