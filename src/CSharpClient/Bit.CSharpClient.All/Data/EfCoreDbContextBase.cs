@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.EntityFrameworkCore.Metadata;
 using System;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Reflection;
 using System.Threading;
@@ -31,7 +32,7 @@ namespace Bit.Data
 
         }
 
-        public async Task UpsertDtoAsync<TDto>(TDto dto) // https://github.com/aspnet/EntityFrameworkCore/issues/9249
+        public virtual async Task UpsertDtoAsync<TDto>(TDto dto) // https://github.com/aspnet/EntityFrameworkCore/issues/9249
             where TDto : class, IDto
         {
             if (dto == null)
@@ -51,6 +52,21 @@ namespace Bit.Data
             var props = efCoreDtoType.GetProperties()
                 .Select(p => new { p.Name, Value = Entry(dto).Property(p.Name).CurrentValue })
                 .ToArray();
+
+            foreach (INavigation nav in efCoreDtoType.GetNavigations())
+            {
+                if (nav.ClrType.GetCustomAttribute<ComplexTypeAttribute>() == null)
+                    continue;
+
+                object navInstance = nav.PropertyInfo.GetValue(dto);
+
+                if (navInstance == null)
+                    continue;
+
+                props = props.Union(nav.ClrType.GetProperties()
+                    .Select(p => new { Name = $"{nav.ClrType.Name}_{p.Name}", Value = p.GetValue(navInstance) }))
+                    .ToArray();
+            }
 
             string sql = $"INSERT OR REPLACE INTO {tableName} ({string.Join(",", props.Select(p => $"[{p.Name}]"))}) VALUES({string.Join(",", props.Select((p, i) => $"{{{i}}}"))})";
 
