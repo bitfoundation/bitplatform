@@ -34,12 +34,9 @@ namespace Bit.CSharpClientSample
         {
             InitializeComponent();
 
-            Task<bool> checkIsLoggedInTask = Container.Resolve<ISecurityService>().IsLoggedInAsync();
+            bool isLoggedIn = Container.Resolve<ISecurityService>().IsLoggedIn();
 
-            if (Container.Resolve<IDeviceService>().RuntimePlatform == RuntimePlatform.UWP)
-                checkIsLoggedInTask.GetAwaiter().GetResult();
-
-            if (await checkIsLoggedInTask)
+            if (isLoggedIn)
             {
                 await NavigationService.NavigateAsync("Nav/Main");
             }
@@ -52,6 +49,8 @@ namespace Bit.CSharpClientSample
 
             eventAggregator.GetEvent<TokenExpiredEvent>()
                 .Subscribe(async tokenExpiredEvent => await NavigationService.NavigateAsync("Login"), ThreadOption.UIThread);
+
+            base.OnInitialized();
         }
 
         protected override void RegisterTypes(IContainerRegistry containerRegistry)
@@ -90,6 +89,10 @@ namespace Bit.CSharpClientSample
                 return syncService;
 
             }).SingleInstance();
+
+            containerRegistry.RegisterPopupService();
+
+            containerRegistry.RegisterForPopup<TestView, TestViewModel>("Test");
 
             base.RegisterTypes(containerRegistry);
         }

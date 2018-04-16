@@ -15,6 +15,8 @@ namespace Bit.CSharpClientSample.ViewModels
 
         public BitDelegateCommand LoginUsingGooglePlus { get; set; }
 
+        public BitDelegateCommand Skip { get; set; }
+
         public string UserName { get; set; } = "ValidUserName";
 
         public string Password { get; set; } = "ValidPassword";
@@ -64,6 +66,11 @@ namespace Bit.CSharpClientSample.ViewModels
                     await pageDialogService.DisplayAlertAsync("Login failed", "Login failed", "Ok");
                     throw;
                 }
+            });
+
+            Skip = new BitDelegateCommand(async () =>
+            {
+                await navigationService.NavigateAsync("/Nav/Main");
             });
         }
     }

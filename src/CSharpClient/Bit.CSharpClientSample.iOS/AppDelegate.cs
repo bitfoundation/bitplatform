@@ -11,6 +11,8 @@ namespace Bit.CSharpClientSample.iOS
     {
         public override bool FinishedLaunching(UIApplication app, NSDictionary options)
         {
+            Rg.Plugins.Popup.Popup.Init();
+
             SQLitePCL.Batteries.Init();
 
             Forms.Init();

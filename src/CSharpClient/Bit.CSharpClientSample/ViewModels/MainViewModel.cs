@@ -20,7 +20,15 @@ namespace Bit.CSharpClientSample.ViewModels
 
         public BitDelegateCommand Logout { get; set; }
 
-        public MainViewModel(INavigationService navigationService, SampleDbContext dbContext, ISyncService syncService, IODataClient oDataClient, HttpClient httpClient, ISecurityService securityService)
+        public BitDelegateCommand ShowPopup { get; set; }
+
+        public MainViewModel(INavigationService navigationService,
+            SampleDbContext dbContext,
+            ISyncService syncService,
+            IODataClient oDataClient,
+            HttpClient httpClient,
+            ISecurityService securityService,
+            IPopupNavigationService popupNavigationService)
         {
             SendHttpRequest = new BitDelegateCommand(async () =>
             {
@@ -38,6 +46,11 @@ namespace Bit.CSharpClientSample.ViewModels
             {
                 await securityService.Logout();
                 await navigationService.NavigateAsync("/Login");
+            });
+
+            ShowPopup = new BitDelegateCommand(async () =>
+            {
+                await popupNavigationService.PushAsync("Test");
             });
 
             Sync = new BitDelegateCommand(async () =>

@@ -7,5 +7,6 @@
         <Button Text="Send http request" Command="{Binding SendHttpRequest}" />
         <Button Text="Send OData request" Command="{Binding SendODataRequest}" />
         <Button Text="Logout" Command="{Binding Logout}" />
+        <Button Text="Show popup" Command="{Binding ShowPopup}" />
     </StackLayout>
 </ContentPage>

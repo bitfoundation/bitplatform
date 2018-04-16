@@ -17,6 +17,8 @@ namespace Bit.CSharpClientSample.Droid
             TabLayoutResource = Resource.Layout.Tabbar;
             ToolbarResource = Resource.Layout.Toolbar;
 
+            Rg.Plugins.Popup.Popup.Init(this, bundle);
+
             SQLitePCL.Batteries.Init();
 
             base.OnCreate(bundle);
