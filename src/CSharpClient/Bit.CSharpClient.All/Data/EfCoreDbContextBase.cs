@@ -64,7 +64,7 @@ namespace Bit.Data
                     continue;
 
                 props = props.Union(nav.ClrType.GetProperties()
-                    .Select(p => new { Name = $"{nav.ClrType.Name}_{p.Name}", Value = p.GetValue(navInstance) }))
+                    .Select(p => new { Name = $"{nav.Name}_{p.Name}", Value = p.GetValue(navInstance) }))
                     .ToArray();
             }
 
