@@ -109,8 +109,8 @@ namespace Bit.ViewModel.Implementations
 
             if (account != null)
             {
-                Token token = account;
                 await _accountStore.DeleteAsync(account, _clientAppProfile.AppName).ConfigureAwait(false);
+                Token token = account;
                 if (!string.IsNullOrEmpty(token.id_token))
                 {
                     CurrentAction = "Logout";
@@ -125,12 +125,18 @@ namespace Bit.ViewModel.Implementations
         {
             Account account = GetAccount();
 
+            if (account == null)
+                return null;
+
             return account;
         }
 
         public virtual async Task<Token> GetCurrentTokenAsync(CancellationToken cancellationToken = default(CancellationToken))
         {
             Account account = await GetAccountAsync().ConfigureAwait(false);
+
+            if (account == null)
+                return null;
 
             return account;
         }

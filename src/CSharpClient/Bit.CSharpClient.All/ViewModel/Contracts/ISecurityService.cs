@@ -14,6 +14,9 @@ namespace Bit.ViewModel.Contracts
     {
         public static Account FromTokenToAccount(Token token)
         {
+            if (token == null)
+                throw new ArgumentNullException(nameof(token));
+
             string[] tokenParts = token.access_token.Split('.');
 
             string fixedString = tokenParts[1].Trim().Replace(" ", "+");
@@ -44,11 +47,17 @@ namespace Bit.ViewModel.Contracts
 
         public static implicit operator Token(Account account)
         {
+            if (account == null)
+                throw new ArgumentNullException(nameof(account));
+
             return account.Properties;
         }
 
         public static implicit operator Token(Dictionary<string, string> props)
         {
+            if (props == null)
+                throw new ArgumentNullException(nameof(props));
+
             Token token = new Token
             {
                 access_token = props[nameof(access_token)],
@@ -69,6 +78,9 @@ namespace Bit.ViewModel.Contracts
 
         public static implicit operator Token(TokenResponse tokenResponse)
         {
+            if (tokenResponse == null)
+                throw new ArgumentNullException(nameof(tokenResponse));
+
             return new Token
             {
                 access_token = tokenResponse.AccessToken,
