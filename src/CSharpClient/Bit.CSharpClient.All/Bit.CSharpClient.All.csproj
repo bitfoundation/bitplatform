@@ -23,6 +23,7 @@
     <DefineConstants Condition=" '$(TargetFramework)' == 'MonoAndroid81' ">Android</DefineConstants>
     <DefineConstants Condition=" '$(TargetFramework)' == 'Xamarin.iOS10' ">iOS</DefineConstants>
     <DefineConstants Condition=" '$(TargetFramework)' == 'netcoreapp2.0' ">DotNetCore</DefineConstants>
+    <DocumentationFile>bin\$(Configuration)\$(TargetFramework)\$(AssemblyName).xml</DocumentationFile>
   </PropertyGroup>
 
   <ItemGroup>

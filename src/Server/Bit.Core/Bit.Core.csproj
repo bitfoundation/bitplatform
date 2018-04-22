@@ -20,6 +20,7 @@
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <DefineConstants Condition=" '$(TargetFramework)' == 'net461' ">DotNet</DefineConstants>
     <DefineConstants Condition=" '$(TargetFramework)' == 'netcoreapp2.0' ">DotNetCore</DefineConstants>
+    <DocumentationFile>bin\$(Configuration)\$(TargetFramework)\$(AssemblyName).xml</DocumentationFile>
   </PropertyGroup>
 
   <ItemGroup>

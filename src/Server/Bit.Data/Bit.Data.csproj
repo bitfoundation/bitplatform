@@ -18,6 +18,7 @@
     <FileVersion>0.0.0.1</FileVersion>
     <PackageTags>Bit Data</PackageTags>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <DocumentationFile>bin\$(Configuration)\$(TargetFramework)\$(AssemblyName).xml</DocumentationFile>
   </PropertyGroup>
 
   <ItemGroup>
