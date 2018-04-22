@@ -29,8 +29,8 @@
     <PackageReference Include="Microsoft.Owin.Security.MicrosoftAccount" Version="4.0.0" />
     <PackageReference Include="Microsoft.Owin.Security.Twitter" Version="4.0.0" />
     <PackageReference Include="Owin.Security.Providers.LinkedIn" Version="2.22.0" />
-    <PackageReference Include="SourceLink.Embed.AllSourceFiles" Version="2.8.0" PrivateAssets="all" />
-    <PackageReference Include="SourceLink.Copy.PdbFiles" Version="2.8.0" PrivateAssets="All" />
+    <PackageReference Include="SourceLink.Embed.AllSourceFiles" Version="2.8.1" PrivateAssets="all" />
+    <PackageReference Include="SourceLink.Copy.PdbFiles" Version="2.8.1" PrivateAssets="All" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(TargetFramework)' == 'netcoreapp2.0'">

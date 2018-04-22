@@ -27,8 +27,8 @@
     <PackageReference Include="Bit.Swashbuckle.OData" Version="3.4.1" />
     <PackageReference Include="LambdaSqlBuilder" Version="0.9.0" />
 	  <PackageReference Include="Microsoft.OData.Core" Version="7.4.4" />
-    <PackageReference Include="SourceLink.Embed.AllSourceFiles" Version="2.8.0" PrivateAssets="all" />
-    <PackageReference Include="SourceLink.Copy.PdbFiles" Version="2.8.0" PrivateAssets="All" />
+    <PackageReference Include="SourceLink.Embed.AllSourceFiles" Version="2.8.1" PrivateAssets="all" />
+    <PackageReference Include="SourceLink.Copy.PdbFiles" Version="2.8.1" PrivateAssets="All" />
   </ItemGroup>
 
   <ItemGroup>

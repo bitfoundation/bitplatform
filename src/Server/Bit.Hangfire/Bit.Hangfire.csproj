@@ -28,8 +28,8 @@
     <PackageReference Include="HangFire.Azure.ServiceBusQueue" Version="2.2.1" />
     <PackageReference Include="Hangfire.MemoryStorage" Version="1.5.2" />
     <PackageReference Include="Hangfire.SqlServer" Version="1.6.19" />
-    <PackageReference Include="SourceLink.Embed.AllSourceFiles" Version="2.8.0" PrivateAssets="all" />
-    <PackageReference Include="SourceLink.Copy.PdbFiles" Version="2.8.0" PrivateAssets="All" />
+    <PackageReference Include="SourceLink.Embed.AllSourceFiles" Version="2.8.1" PrivateAssets="all" />
+    <PackageReference Include="SourceLink.Copy.PdbFiles" Version="2.8.1" PrivateAssets="All" />
   </ItemGroup>
 
   <ItemGroup>
