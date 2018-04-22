@@ -19,7 +19,7 @@ namespace BitChangeSetManager.Security
     {
         public virtual IBitChangeSetManagerRepository<User> UsersRepository { get; set; }
 
-        public override async Task<string> GetUserIdByLocalAuthenticationContextAsync(LocalAuthenticationContext context)
+        public override async Task<string> GetUserIdByLocalAuthenticationContextAsync(LocalAuthenticationContext context, CancellationToken cancellationToken)
         {
             string username = context.UserName;
             string password = context.Password;
@@ -48,7 +48,7 @@ namespace BitChangeSetManager.Security
 
             User user = null;
 
-            user = await (await UsersRepository.GetAllAsync(CancellationToken.None))
+            user = await (await UsersRepository.GetAllAsync(cancellationToken))
                  .SingleOrDefaultAsync(u => u.UserName.ToLower() == username && u.Password == password);
 
             if (user == null)
@@ -57,11 +57,11 @@ namespace BitChangeSetManager.Security
             return user.Id.ToString();
         }
 
-        public override async Task<bool> UserIsActiveAsync(IsActiveContext context, string userId)
+        public override async Task<bool> UserIsActiveAsync(IsActiveContext context, string userId, CancellationToken cancellationToken)
         {
             Guid userIdAsGuid = Guid.Parse(userId);
 
-            return await (await UsersRepository.GetAllAsync(CancellationToken.None))
+            return await (await UsersRepository.GetAllAsync(cancellationToken))
                  .AnyAsync(u => u.Id == userIdAsGuid);
         }
     }

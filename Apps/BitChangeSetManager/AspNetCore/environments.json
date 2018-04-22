@@ -2,7 +2,7 @@
   {
     "Name": "Development",
     "IsActive": true,
-    "DebugMode": true,
+    "DebugMode": false,
     "AppInfo": {
       "Name": "BitChangeSetManager",
       "Version": "1",

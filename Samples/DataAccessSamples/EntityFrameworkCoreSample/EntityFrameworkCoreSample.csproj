@@ -12,8 +12,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Bit.Data.EntityFrameworkCore" Version="1.0.0" />
-    <PackageReference Include="Bit.WebApi" Version="1.0.0" />
+    <PackageReference Include="Bit.Data.EntityFrameworkCore" Version="1.0.3" />
+    <PackageReference Include="Bit.WebApi" Version="1.0.3" />
     <PackageReference Include="BitCodeAnalyzer" Version="1.2.6.2" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="2.0.2" />
     <PackageReference Include="Microsoft.Owin.SelfHost" Version="4.0.0" />
