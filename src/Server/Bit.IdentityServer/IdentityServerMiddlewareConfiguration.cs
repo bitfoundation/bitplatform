@@ -35,7 +35,7 @@ namespace Bit.IdentityServer
                 LogProvider.SetCurrentLogProvider(DependencyManager.Resolve<ILogProvider>());
 
                 IdentityServerServiceFactory factory = new IdentityServerServiceFactory()
-                    .UseInMemoryClients(DependencyManager.Resolve<IClientProvider>().GetClients().ToArray())
+                    .UseInMemoryClients(DependencyManager.Resolve<IOAuthClientsProvider>().GetClients().ToArray())
                     .UseInMemoryScopes(ScopesProvider.GetScopes());
 
                 factory.UserService = new Registration<IUserService>(resolver =>

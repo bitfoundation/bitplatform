@@ -126,7 +126,7 @@ namespace Bit.Tests
             dependencyManager.RegisterDtoEntityMapperConfiguration<DefaultDtoEntityMapperConfiguration>();
             dependencyManager.RegisterDtoEntityMapperConfiguration<TestDtoEntityMapperConfiguration>();
 
-            dependencyManager.RegisterSingleSignOnServer<TestUserService, TestClientProvider>();
+            dependencyManager.RegisterSingleSignOnServer<TestUserService, TestOAuthClientsProvider>();
 
             _args?.AdditionalDependencies?.Invoke(dependencyManager);
 

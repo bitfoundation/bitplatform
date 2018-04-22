@@ -90,7 +90,7 @@ namespace Bit.IdentityServer.Implementations
                                     <title>No redirect url on logout</title>
                                 </head>
                                 <body>
-                                    No redirect url on logout. Perhaps your redirect url is not listed in {nameof(ClientProvider.GetClients)} of {nameof(ClientProvider)}
+                                    No redirect url on logout. Perhaps your redirect url is not listed in {nameof(OAuthClientsProvider.GetClients)} of {nameof(OAuthClientsProvider)}
                                 </body>
                             </html>";
             }

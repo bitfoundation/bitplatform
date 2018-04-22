@@ -10,9 +10,9 @@ namespace Bit.Core.Contracts
 {
     public static class IDependencyManagerExtensions
     {
-        public static IDependencyManager RegisterSingleSignOnServer<TUserService, TClientProvider>(this IDependencyManager dependencyManager, string name = null)
+        public static IDependencyManager RegisterSingleSignOnServer<TUserService, TOAuthClientsProvider>(this IDependencyManager dependencyManager, string name = null)
             where TUserService : class, IUserService
-            where TClientProvider : class, IClientProvider
+            where TOAuthClientsProvider : class, IOAuthClientsProvider
         {
             dependencyManager.Register<IAppCertificatesProvider, DefaultAppCertificatesProvider>(lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExciting: false);
 
@@ -24,7 +24,7 @@ namespace Bit.Core.Contracts
             dependencyManager.Register<IRedirectUriValidator, RegexBasedRedirectUriValidator>(lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExciting: false);
             dependencyManager.Register<IEventService, DefaultEventService>(lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExciting: false);
 
-            dependencyManager.Register<IClientProvider, TClientProvider>(overwriteExciting: false);
+            dependencyManager.Register<IOAuthClientsProvider, TOAuthClientsProvider>(overwriteExciting: false);
             dependencyManager.Register<IUserService, TUserService>(overwriteExciting: false);
 
             dependencyManager.Register<IExternalIdentityProviderConfiguration, GoogleIdentityProviderConfiguration>(overwriteExciting: false);

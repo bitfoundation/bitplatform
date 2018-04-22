@@ -116,7 +116,7 @@ namespace DotNetCoreTestApp
             dependencyManager.RegisterDtoEntityMapperConfiguration<DefaultDtoEntityMapperConfiguration>();
             dependencyManager.RegisterDtoEntityMapperConfiguration<TestDtoEntityMapperConfiguration>();
 
-            dependencyManager.RegisterSingleSignOnServer<TestUserService, TestClientProvider>();
+            dependencyManager.RegisterSingleSignOnServer<TestUserService, TestOAuthClientsProvider>();
         }
     }
 
@@ -136,7 +136,7 @@ namespace DotNetCoreTestApp
         }
     }
 
-    public class TestClientProvider : ClientProvider
+    public class TestOAuthClientsProvider : OAuthClientsProvider
     {
         public override IEnumerable<Client> GetClients()
         {

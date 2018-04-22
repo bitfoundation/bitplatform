@@ -7,7 +7,7 @@ using System.Linq;
 
 namespace Bit.IdentityServer.Implementations
 {
-    public abstract class ClientProvider : IClientProvider
+    public abstract class OAuthClientsProvider : IOAuthClientsProvider
     {
         public abstract IEnumerable<Client> GetClients();
 

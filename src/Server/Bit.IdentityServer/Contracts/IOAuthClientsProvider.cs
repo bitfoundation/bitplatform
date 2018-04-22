@@ -4,7 +4,7 @@ using System;
 
 namespace Bit.IdentityServer.Contracts
 {
-    public abstract class BitClient
+    public abstract class BitOAuthClient
     {
         public virtual string ClientName { get; set; }
 
@@ -22,19 +22,19 @@ namespace Bit.IdentityServer.Contracts
         }
     }
 
-    public class BitImplicitFlowClient : BitClient
+    public class BitImplicitFlowClient : BitOAuthClient
     {
         public virtual IEnumerable<string> RedirectUris { get; set; }
 
         public virtual IEnumerable<string> PostLogoutRedirectUris { get; set; }
     }
 
-    public class BitResourceOwnerFlowClient : BitClient
+    public class BitResourceOwnerFlowClient : BitOAuthClient
     {
 
     }
 
-    public interface IClientProvider
+    public interface IOAuthClientsProvider
     {
         IEnumerable<Client> GetClients();
     }

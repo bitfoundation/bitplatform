@@ -8,11 +8,11 @@ using System.Collections.Generic;
 
 namespace Bit.Tests.IdentityServer.Implementations
 {
-    public class TestClientProvider : ClientProvider
+    public class TestOAuthClientsProvider : OAuthClientsProvider
     {
         private readonly IAppEnvironmentsProvider _appEnvironmentsProvider;
 
-        public TestClientProvider(IAppEnvironmentsProvider appEnvironmentsProvider)
+        public TestOAuthClientsProvider(IAppEnvironmentsProvider appEnvironmentsProvider)
         {
             if (appEnvironmentsProvider == null)
                 throw new ArgumentNullException(nameof(appEnvironmentsProvider));
@@ -20,7 +20,7 @@ namespace Bit.Tests.IdentityServer.Implementations
             _appEnvironmentsProvider = appEnvironmentsProvider;
         }
 
-        protected TestClientProvider()
+        protected TestOAuthClientsProvider()
         {
 
         }
