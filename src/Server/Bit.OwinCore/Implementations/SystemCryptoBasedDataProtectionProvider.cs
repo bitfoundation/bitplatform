@@ -29,12 +29,12 @@ namespace Bit.OwinCore.Implementations
     {
         public virtual byte[] Protect(byte[] userData)
         {
-            return ProtectedData.Protect(userData, null, DataProtectionScope.CurrentUser);
+            return ProtectedData.Protect(userData, null, DataProtectionScope.LocalMachine);
         }
 
         public virtual byte[] Unprotect(byte[] protectedData)
         {
-            return ProtectedData.Unprotect(protectedData, null, DataProtectionScope.CurrentUser);
+            return ProtectedData.Unprotect(protectedData, null, DataProtectionScope.LocalMachine);
         }
     }
 }
