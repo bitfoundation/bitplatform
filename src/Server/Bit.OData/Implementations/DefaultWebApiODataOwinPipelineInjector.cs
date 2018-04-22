@@ -7,7 +7,7 @@ namespace Bit.OData.Implementations
 {
     public class DefaultWebApiODataOwinPipelineInjector : IWebApiOwinPipelineInjector
     {
-        public virtual void UseWebApiOData(IAppBuilder owinApp, HttpServer server, HttpConfiguration webApiConfiguration)
+        public virtual void UseWebApi(IAppBuilder owinApp, HttpServer server, HttpConfiguration webApiConfiguration)
         {
             if (owinApp == null)
                 throw new ArgumentNullException(nameof(owinApp));

@@ -5,6 +5,6 @@ namespace Bit.WebApi.Contracts
 {
     public interface IWebApiOwinPipelineInjector
     {
-        void UseWebApiOData(IAppBuilder owinApp, HttpServer server, HttpConfiguration webApiConfiguration);
+        void UseWebApi(IAppBuilder owinApp, HttpServer server, HttpConfiguration webApiConfiguration);
     }
 }
