@@ -10,6 +10,7 @@ using OpenQA.Selenium;
 using OpenQA.Selenium.Remote;
 using OpenQA.Selenium.Support.UI;
 using System;
+using System.Threading;
 
 namespace Bit.Tests.IdentityServer
 {
@@ -40,7 +41,7 @@ namespace Bit.Tests.IdentityServer
                 {
                     try
                     {
-                        A.CallTo(() => userService.AuthenticateLocalAsync(A<LocalAuthenticationContext>.That.Matches(cntx => cntx.UserName == "ValidUserName" && cntx.Password == "ValidPassword")))
+                        A.CallTo(() => userService.AuthenticateLocalAsync(A<LocalAuthenticationContext>.That.Matches(cntx => cntx.UserName == "ValidUserName" && cntx.Password == "ValidPassword"), A<CancellationToken>.Ignored))
                             .MustHaveHappened(Repeated.Exactly.Once);
 
                         foundAnyCorrectCall = true;
@@ -79,7 +80,7 @@ namespace Bit.Tests.IdentityServer
                 {
                     try
                     {
-                        A.CallTo(() => userService.AuthenticateLocalAsync(A<LocalAuthenticationContext>.That.Matches(cntx => cntx.UserName == "InValidUserName" && cntx.Password == "InValidPassword")))
+                        A.CallTo(() => userService.AuthenticateLocalAsync(A<LocalAuthenticationContext>.That.Matches(cntx => cntx.UserName == "InValidUserName" && cntx.Password == "InValidPassword"), A<CancellationToken>.Ignored))
                             .MustHaveHappened(Repeated.Exactly.Once);
 
                         foundAnyCorrectCall = true;

@@ -1,6 +1,7 @@
 ﻿using Bit.Core.Contracts;
 using Bit.Core.Models;
 using Bit.IdentityServer.Contracts;
+using Bit.IdentityServer.Implementations;
 using Bit.Owin.Contracts;
 using IdentityServer3.Core.Configuration;
 using IdentityServer3.Core.Logging;
@@ -42,7 +43,12 @@ namespace Bit.IdentityServer
                 {
                     OwinEnvironmentService owinEnv = resolver.Resolve<OwinEnvironmentService>();
                     IOwinContext owinContext = new OwinContext(owinEnv.Environment);
-                    return owinContext.GetDependencyResolver().Resolve<IUserService>();
+                    IUserService userService = owinContext.GetDependencyResolver().Resolve<IUserService>();
+
+                    if (userService is UserService bitUserService)
+                        bitUserService.CurrentCancellationToken = owinContext.Request.CallCancelled;
+
+                    return userService;
                 });
 
                 factory.EventService = new Registration<IEventService>(EventService);

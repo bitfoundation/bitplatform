@@ -4,21 +4,29 @@ using IdentityServer3.Core.Services.Default;
 using System;
 using System.Collections.Generic;
 using System.Security.Claims;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Bit.IdentityServer.Implementations
 {
     public abstract class UserService : UserServiceBase
     {
-        public abstract Task<string> GetUserIdByLocalAuthenticationContextAsync(LocalAuthenticationContext context);
+        internal CancellationToken CurrentCancellationToken { get; set; }
+
+        public abstract Task<string> GetUserIdByLocalAuthenticationContextAsync(LocalAuthenticationContext context, CancellationToken cancellationToken);
 
         public virtual IExceptionToHttpErrorMapper ExceptionToHttpErrorMapper { get; set; }
 
-        public override async Task AuthenticateLocalAsync(LocalAuthenticationContext context)
+        public sealed override Task AuthenticateLocalAsync(LocalAuthenticationContext context)
+        {
+            return AuthenticateLocalAsync(context, CurrentCancellationToken);
+        }
+
+        public virtual async Task AuthenticateLocalAsync(LocalAuthenticationContext context, CancellationToken cancellationToken)
         {
             try
             {
-                string userId = await GetUserIdByLocalAuthenticationContextAsync(context).ConfigureAwait(false);
+                string userId = await GetUserIdByLocalAuthenticationContextAsync(context, cancellationToken).ConfigureAwait(false);
 
                 if (context.AuthenticateResult == null)
                 {
@@ -51,6 +59,11 @@ namespace Bit.IdentityServer.Implementations
 
         public sealed override Task GetProfileDataAsync(ProfileDataRequestContext context)
         {
+            return GetProfileDataAsync(context, CurrentCancellationToken);
+        }
+
+        public virtual Task GetProfileDataAsync(ProfileDataRequestContext context, CancellationToken cancellationToken)
+        {
             string userId = context.Subject.Identity.Name;
 
             List<Claim> claims = new List<Claim>
@@ -67,13 +80,13 @@ namespace Bit.IdentityServer.Implementations
             return base.GetProfileDataAsync(context);
         }
 
-        public abstract Task<bool> UserIsActiveAsync(IsActiveContext context, string userId);
+        public abstract Task<bool> UserIsActiveAsync(IsActiveContext context, string userId, CancellationToken cancellationToken);
 
-        public override async Task IsActiveAsync(IsActiveContext context)
+        public sealed override async Task IsActiveAsync(IsActiveContext context)
         {
             try
             {
-                context.IsActive = await UserIsActiveAsync(context, context.Subject.Identity.Name).ConfigureAwait(false);
+                context.IsActive = await UserIsActiveAsync(context, context.Subject.Identity.Name, CurrentCancellationToken).ConfigureAwait(false);
             }
             catch
             {
@@ -87,19 +100,24 @@ namespace Bit.IdentityServer.Implementations
             await base.IsActiveAsync(context).ConfigureAwait(false);
         }
 
-        protected virtual Task<string> GetInternalUserId(ExternalAuthenticationContext context)
+        protected virtual Task<string> GetInternalUserId(ExternalAuthenticationContext context, CancellationToken cancellationToken)
         {
             throw new NotImplementedException();
         }
 
-        public override async Task AuthenticateExternalAsync(ExternalAuthenticationContext context)
+        public sealed override Task AuthenticateExternalAsync(ExternalAuthenticationContext context)
+        {
+            return AuthenticateExternalAsync(context, CurrentCancellationToken);
+        }
+
+        public virtual async Task AuthenticateExternalAsync(ExternalAuthenticationContext context, CancellationToken cancellationToken)
         {
             if (context == null)
                 throw new ArgumentNullException(nameof(context));
 
             if (context.AuthenticateResult == null)
             {
-                string userId = await GetInternalUserId(context).ConfigureAwait(false);
+                string userId = await GetInternalUserId(context, cancellationToken).ConfigureAwait(false);
 
                 List<Claim> claims = new List<Claim>
                 {
@@ -118,6 +136,36 @@ namespace Bit.IdentityServer.Implementations
             }
 
             await base.AuthenticateExternalAsync(context).ConfigureAwait(false);
+        }
+
+        public sealed override Task PostAuthenticateAsync(PostAuthenticationContext context)
+        {
+            return PostAuthenticateAsync(context, CurrentCancellationToken);
+        }
+
+        public sealed override Task PreAuthenticateAsync(PreAuthenticationContext context)
+        {
+            return PreAuthenticateAsync(context, CurrentCancellationToken);
+        }
+
+        public sealed override Task SignOutAsync(SignOutContext context)
+        {
+            return SignOutAsync(context, CurrentCancellationToken);
+        }
+
+        public virtual Task PostAuthenticateAsync(PostAuthenticationContext context, CancellationToken cancellationToken)
+        {
+            return base.PostAuthenticateAsync(context);
+        }
+
+        public virtual Task PreAuthenticateAsync(PreAuthenticationContext context, CancellationToken cancellationToken)
+        {
+            return base.PreAuthenticateAsync(context);
+        }
+
+        public virtual Task SignOutAsync(SignOutContext context, CancellationToken cancellationToken)
+        {
+            return base.SignOutAsync(context);
         }
     }
 }

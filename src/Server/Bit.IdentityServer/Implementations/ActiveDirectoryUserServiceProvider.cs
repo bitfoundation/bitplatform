@@ -2,6 +2,7 @@
 using Bit.Owin.Exceptions;
 using IdentityServer3.Core.Models;
 using System.DirectoryServices.AccountManagement;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Bit.IdentityServer.Implementations
@@ -10,7 +11,7 @@ namespace Bit.IdentityServer.Implementations
     {
         public virtual AppEnvironment AppEnvironment { get; set; }
 
-        public override Task<string> GetUserIdByLocalAuthenticationContextAsync(LocalAuthenticationContext context)
+        public override Task<string> GetUserIdByLocalAuthenticationContextAsync(LocalAuthenticationContext context, CancellationToken cancellationToken)
         {
             string username = context.UserName;
             string password = context.Password;
@@ -35,7 +36,7 @@ namespace Bit.IdentityServer.Implementations
             throw new DomainLogicException("UserInActiveDirectoryCouldNotBeFound");
         }
 
-        public override Task<bool> UserIsActiveAsync(IsActiveContext context, string userId)
+        public override Task<bool> UserIsActiveAsync(IsActiveContext context, string userId, CancellationToken cancellationToken)
         {
             string activeDirectoryName = AppEnvironment.GetConfig<string>("ActiveDirectoryName");
 

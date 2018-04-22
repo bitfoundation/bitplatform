@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Bit.Tests.IdentityServer.Implementations
@@ -24,7 +25,7 @@ namespace Bit.Tests.IdentityServer.Implementations
             new LocalUser { UserId = "User2" , Password = "ValidPassword"}
         };
 
-        public override async Task<string> GetUserIdByLocalAuthenticationContextAsync(LocalAuthenticationContext context)
+        public override async Task<string> GetUserIdByLocalAuthenticationContextAsync(LocalAuthenticationContext context, CancellationToken cancellationToken)
         {
             LocalUser user = _localUsers.SingleOrDefault(u => u.UserId == context.UserName && u.Password == context.Password);
 
@@ -34,12 +35,12 @@ namespace Bit.Tests.IdentityServer.Implementations
             return user.UserId;
         }
 
-        public override async Task<bool> UserIsActiveAsync(IsActiveContext context, string userId)
+        public override async Task<bool> UserIsActiveAsync(IsActiveContext context, string userId, CancellationToken cancellationToken)
         {
             return _localUsers.Any(u => u.UserId == userId);
         }
 
-        protected override async Task<string> GetInternalUserId(ExternalAuthenticationContext context)
+        protected override async Task<string> GetInternalUserId(ExternalAuthenticationContext context, CancellationToken cancellationToken)
         {
             string nameIdentifier = context.ExternalIdentity.Claims.GetClaimValue(ClaimTypes.NameIdentifier);
 

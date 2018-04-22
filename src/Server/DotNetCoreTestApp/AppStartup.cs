@@ -22,6 +22,7 @@ using Swashbuckle.Application;
 using System;
 using System.Collections.Generic;
 using System.Reflection;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Web.Http;
 using System.Web.OData.Builder;
@@ -122,7 +123,7 @@ namespace DotNetCoreTestApp
 
     public class TestUserService : UserService
     {
-        public override Task<string> GetUserIdByLocalAuthenticationContextAsync(LocalAuthenticationContext context)
+        public override Task<string> GetUserIdByLocalAuthenticationContextAsync(LocalAuthenticationContext context, CancellationToken cancellationToken)
         {
             if (context.UserName == context.Password)
                 return Task.FromResult(context.UserName);
@@ -130,7 +131,7 @@ namespace DotNetCoreTestApp
             throw new DomainLogicException("LoginFailed");
         }
 
-        public override Task<bool> UserIsActiveAsync(IsActiveContext context, string userId)
+        public override Task<bool> UserIsActiveAsync(IsActiveContext context, string userId, CancellationToken cancellationToken)
         {
             return Task.FromResult(true);
         }
