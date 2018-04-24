@@ -1,9 +1,9 @@
-﻿using Bit.Core.Contracts;
+using Bit.Core.Contracts;
 using Bit.Core.Models;
 using System.Data.SqlClient;
 using System.Threading.Tasks;
 
-namespace Flawingo.DataAccess.Implementations
+namespace Bit.Owin.Implementations
 {
     public class SqlServerJsonLogStore : ILogStore
     {
@@ -19,7 +19,7 @@ namespace Flawingo.DataAccess.Implementations
             {
                 using (SqlCommand command = connection.CreateCommand())
                 {
-                    command.CommandText = @"INSERT INTO [flawingo].[Logs] ([Contents]) VALUES (@contents)";
+                    command.CommandText = @"INSERT INTO [dbo].[Logs] ([Contents]) VALUES (@contents)";
 
                     command.Parameters.AddWithValue("@contents", Formatter.Serialize(logEntry));
 
@@ -36,7 +36,7 @@ namespace Flawingo.DataAccess.Implementations
             {
                 using (SqlCommand command = connection.CreateCommand())
                 {
-                    command.CommandText = @"INSERT INTO [flawingo].[Logs] ([Contents]) VALUES (@contents)";
+                    command.CommandText = @"INSERT INTO [dbo].[Logs] ([Contents]) VALUES (@contents)";
 
                     command.Parameters.AddWithValue("@contents", Formatter.Serialize(logEntry));
 
