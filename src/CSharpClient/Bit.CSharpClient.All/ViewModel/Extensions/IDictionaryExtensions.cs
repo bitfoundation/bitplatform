@@ -6,18 +6,6 @@ namespace System.Collections.Generic
 {
     public static class IDictionaryExtensions
     {
-        public static NavigationParameters ToNavParams(this IDictionary<string, object> parameters)
-        {
-            NavigationParameters result = new NavigationParameters();
-
-            foreach (KeyValuePair<string, object> param in parameters)
-            {
-                result.Add(param.Key, param.Value);
-            }
-
-            return result;
-        }
-
         public static IDto ToDto(this IDictionary<string, object> unTypedDto, TypeInfo dtoType)
         {
             if (unTypedDto == null)
