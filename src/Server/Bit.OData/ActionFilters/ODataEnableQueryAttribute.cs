@@ -42,12 +42,10 @@ namespace Bit.OData.ActionFilters
 
         public override async Task OnActionExecutedAsync(HttpActionExecutedContext actionExecutedContext, CancellationToken cancellationToken)
         {
-            if (actionExecutedContext.Response?.Content is ObjectContent &&
+            if (actionExecutedContext.Response?.Content is ObjectContent objContent &&
                 actionExecutedContext.Response.IsSuccessStatusCode == true &&
                 !actionExecutedContext.Request.Properties.ContainsKey("IgnoreODataEnableQuery"))
             {
-                ObjectContent objContent = ((ObjectContent)(actionExecutedContext.Response.Content));
-
                 if (objContent.Value == null)
                     return;
 

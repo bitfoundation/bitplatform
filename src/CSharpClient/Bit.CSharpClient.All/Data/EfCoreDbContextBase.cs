@@ -100,20 +100,20 @@ namespace Bit.Data
 
             if (((IsSyncDbContext)this).IsSyncDbContext == false)
             {
-                foreach (EntityEntry syncableDtoEntry in ChangeTracker.Entries()
-                    .Where(entry => entry.Entity is ISyncableDto))
+                foreach (EntityEntry syncableDtoEntry in ChangeTracker.Entries())
                 {
-                    ISyncableDto syncableDto = (ISyncableDto)syncableDtoEntry.Entity;
-
-                    if (syncableDtoEntry.State == EntityState.Deleted && syncableDto.Version != 0)
+                    if (syncableDtoEntry.Entity is ISyncableDto syncableDto)
                     {
-                        syncableDto.IsArchived = true;
-                        syncableDtoEntry.State = EntityState.Modified;
-                    }
+                        if (syncableDtoEntry.State == EntityState.Deleted && syncableDto.Version != 0)
+                        {
+                            syncableDto.IsArchived = true;
+                            syncableDtoEntry.State = EntityState.Modified;
+                        }
 
-                    if (syncableDtoEntry.State == EntityState.Modified || syncableDtoEntry.State == EntityState.Added)
-                    {
-                        Entry(syncableDto).Property("IsSynced").CurrentValue = false;
+                        if (syncableDtoEntry.State == EntityState.Modified || syncableDtoEntry.State == EntityState.Added)
+                        {
+                            Entry(syncableDto).Property("IsSynced").CurrentValue = false;
+                        }
                     }
                 }
             }

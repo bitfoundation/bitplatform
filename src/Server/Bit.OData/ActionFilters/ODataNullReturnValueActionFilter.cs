@@ -16,11 +16,9 @@ namespace Bit.OData.ActionFilters
     {
         public override Task OnActionExecutedAsync(HttpActionExecutedContext actionExecutedContext, CancellationToken cancellationToken)
         {
-            if (actionExecutedContext.Response?.Content is ObjectContent &&
+            if (actionExecutedContext.Response?.Content is ObjectContent objContent &&
                actionExecutedContext.Response.IsSuccessStatusCode == true)
             {
-                ObjectContent objContent = ((ObjectContent)(actionExecutedContext.Response.Content));
-
                 if (objContent.Value != null)
                     return Task.CompletedTask;
 
