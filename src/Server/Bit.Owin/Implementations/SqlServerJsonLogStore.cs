@@ -9,8 +9,6 @@ namespace Bit.Owin.Implementations
     {
         public virtual AppEnvironment ActiveAppEnvironment { get; set; }
 
-        public virtual IDateTimeProvider DateTimeProvider { get; set; }
-
         public virtual IContentFormatter Formatter { get; set; }
 
         public void SaveLog(LogEntry logEntry)
