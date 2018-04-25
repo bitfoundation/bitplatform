@@ -19,11 +19,13 @@ using BitChangeSetManager.DataAccess;
 using BitChangeSetManager.DataAccess.Implementations;
 using BitChangeSetManager.Security;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.Extensions.DependencyInjection;
 using Swashbuckle.Application;
 using System;
 using System.Collections.Generic;
 using System.Data.SqlClient;
+using System.IO.Compression;
 using System.Reflection;
 
 namespace BitChangeSetManager.Core
@@ -62,6 +64,22 @@ namespace BitChangeSetManager.Core
             dependencyManager.RegisterAppEvents<BitChangeSetManagerInitialData>();
 
             dependencyManager.RegisterDefaultAspNetCoreApp();
+
+            services.AddResponseCompression(options =>
+            {
+                options.EnableForHttps = true;
+                options.Providers.Add<GzipCompressionProvider>();
+            });
+
+            services.Configure<GzipCompressionProviderOptions>(options =>
+            {
+                options.Level = CompressionLevel.Optimal;
+            });
+
+            dependencyManager.RegisterAspNetCoreMiddlewareUsing(aspNetCoreApp =>
+            {
+                aspNetCoreApp.UseResponseCompression();
+            });
 
             services.AddCors();
             dependencyManager.RegisterAspNetCoreMiddlewareUsing(aspNetCoreApp =>
