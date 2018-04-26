@@ -32,7 +32,7 @@ namespace Bit.Tests.Api.Middlewares.WebApi.Tests
             {
                 TokenResponse token = await testEnvironment.Server.Login("ValidUserName", "ValidPassword", clientId: "TestResOwner");
 
-                ODataClient client = testEnvironment.Server.BuildODataClient(token: token);
+                IODataClient client = testEnvironment.Server.BuildODataClient(token: token);
 
                 DateTimeOffset date = new DateTimeOffset(2016, 1, 1, 10, 30, 0, TimeSpan.Zero);
 
@@ -86,7 +86,7 @@ namespace Bit.Tests.Api.Middlewares.WebApi.Tests
             {
                 TokenResponse token = await testEnvironment.Server.Login("ValidUserName", "ValidPassword", clientId: "TestResOwner");
 
-                ODataClient client = testEnvironment.Server.BuildODataClient(token: token, beforeRequest: message =>
+                IODataClient client = testEnvironment.Server.BuildODataClient(token: token, beforeRequest: message =>
                 {
                     message.Headers.Add("Desired-Time-Zone", "Iran Standard Time");
                     message.Headers.Add("Current-Time-Zone", "Afghanistan Standard Time");
@@ -136,7 +136,7 @@ namespace Bit.Tests.Api.Middlewares.WebApi.Tests
             {
                 TokenResponse token = await testEnvironment.Server.Login("ValidUserName", "ValidPassword", clientId: "TestResOwner");
 
-                ODataClient client = testEnvironment.Server.BuildODataClient(token: token);
+                IODataClient client = testEnvironment.Server.BuildODataClient(token: token);
 
                 IEnumerable<TestModel> testModels = await client.Controller<TestModelsController, TestModel>()
                      .Filter(tm => tm.DateProperty == new DateTimeOffset(2016, 1, 1, 10, 30, 0, TimeSpan.Zero))
@@ -154,7 +154,7 @@ namespace Bit.Tests.Api.Middlewares.WebApi.Tests
             {
                 TokenResponse token = await testEnvironment.Server.Login("ValidUserName", "ValidPassword", clientId: "TestResOwner");
 
-                ODataClient client = testEnvironment.Server.BuildODataClient(token: token, beforeRequest: message =>
+                IODataClient client = testEnvironment.Server.BuildODataClient(token: token, beforeRequest: message =>
                 {
                     message.Headers.Add("Desired-Time-Zone", "Iran Standard Time");
                     message.Headers.Add("Current-Time-Zone", "Afghanistan Standard Time");

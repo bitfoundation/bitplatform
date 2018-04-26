@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Net.Http;
-using Bit.Test.Api.Middlewares.SignalR;
 using IdentityModel.Client;
 using Microsoft.AspNet.SignalR.Client;
 using Microsoft.AspNet.SignalR.Client.Transports;
@@ -12,6 +11,7 @@ using Newtonsoft.Json;
 using System.Threading.Tasks;
 using Bit.Signalr;
 using Bit.Signalr.Implementations;
+using Bit.Test.SignalR;
 
 namespace Bit.Test.Server
 {
@@ -25,7 +25,7 @@ namespace Bit.Test.Server
             return new ODataBatch(BuildODataClient(beforeRequest, afterResponse, token, odataRouteName));
         }
 
-        public virtual ODataClient BuildODataClient(Action<HttpRequestMessage> beforeRequest = null,
+        public virtual IODataClient BuildODataClient(Action<HttpRequestMessage> beforeRequest = null,
             Action<HttpResponseMessage> afterResponse = null, TokenResponse token = null, string odataRouteName = "Test")
         {
             ODataClient client = new ODataClient(new ODataClientSettings($"{Uri}odata/{odataRouteName}/")
@@ -136,11 +136,11 @@ namespace Bit.Test.Server
             Uri = uri;
         }
 
-        public virtual async Task<TokenResponse> Login(string userName, string password, string clientId, string secret = "secret")
+        public virtual Task<TokenResponse> Login(string userName, string password, string clientId, string secret = "secret")
         {
             TokenClient client = BuildTokenClient(clientId, secret);
 
-            return await client.RequestResourceOwnerPasswordAsync(userName, password, "openid profile user_info");
+            return client.RequestResourceOwnerPasswordAsync(userName, password, "openid profile user_info");
         }
 
         public HttpClient BuildHttpClient(TokenResponse token = null)

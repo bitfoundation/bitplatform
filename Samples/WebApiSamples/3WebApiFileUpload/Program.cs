@@ -54,7 +54,7 @@ public class FileController : ApiController
         if (!Request.Content.IsMimeMultipartContent())
             throw new HttpResponseException(HttpStatusCode.UnsupportedMediaType);
 
-        string uploadsFolder = PathProvider.StaticFileMapPath("uploads");
+        string uploadsFolder = PathProvider.MapStaticFilePath("uploads");
 
         Directory.CreateDirectory(uploadsFolder);
 
@@ -86,16 +86,16 @@ public class FileController : ApiController
     }
 }
 
-public class AppStartup : OwinAppStartup, IOwinDependenciesManager, IDependenciesManagerProvider
+public class AppStartup : OwinAppStartup, IOwinAppModule, IAppModulesProvider
 {
     public override void Configuration(IAppBuilder owinApp)
     {
-        DefaultDependenciesManagerProvider.Current = this;
+        DefaultAppModulesProvider.Current = this;
 
         base.Configuration(owinApp);
     }
 
-    public IEnumerable<IDependenciesManager> GetDependenciesManagers()
+    public IEnumerable<IAppModule> GetAppModules()
     {
         yield return this;
     }

@@ -1,8 +1,8 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFrameworks>net461;netcoreapp2.0</TargetFrameworks>
-    <Version>0.8.8</Version>
+    <Version>0.0.1</Version>
     <Authors>Bit Foundation</Authors>
     <Company>Bit Foundation</Company>
     <Product>Bit Framework</Product>
@@ -14,16 +14,21 @@
     <RepositoryUrl>https://github.com/bit-foundation/bit-framework</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <PackageTags>Bit</PackageTags>
-    <AssemblyVersion>0.8.8.0</AssemblyVersion>
-    <FileVersion>0.8.8.0</FileVersion>
+    <AssemblyVersion>0.0.0.1</AssemblyVersion>
+    <FileVersion>0.0.0.1</FileVersion>
     <PackageReleaseNotes>https://github.com/bit-foundation/bit-framework/releases</PackageReleaseNotes>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <DefineConstants Condition=" '$(TargetFramework)' == 'net461' ">DotNet</DefineConstants>
+    <DefineConstants Condition=" '$(TargetFramework)' == 'netcoreapp2.0' ">DotNetCore</DefineConstants>
+    <DocumentationFile>bin\$(Configuration)\$(TargetFramework)\$(AssemblyName).xml</DocumentationFile>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.NETCore.Platforms" Version="2.0.1" />
+    <PackageReference Include="Microsoft.NETCore.Platforms" Version="2.0.2" />
     <PackageReference Include="NETStandard.Library" Version="2.0.1" />
-    <PackageReference Include="Newtonsoft.Json" Version="11.0.1" />
+    <PackageReference Include="Newtonsoft.Json" Version="11.0.2" />
+    <PackageReference Include="SourceLink.Embed.AllSourceFiles" Version="2.8.1" PrivateAssets="all" />
+    <PackageReference Include="SourceLink.Copy.PdbFiles" Version="2.8.1" PrivateAssets="All" />
   </ItemGroup>
 
 </Project>

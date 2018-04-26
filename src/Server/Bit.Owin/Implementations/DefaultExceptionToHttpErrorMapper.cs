@@ -11,18 +11,7 @@ namespace Bit.Owin.Implementations
 {
     public class DefaultExceptionToHttpErrorMapper : IExceptionToHttpErrorMapper
     {
-        public virtual IAppEnvironmentProvider AppEnvironmentProvider
-        {
-            set
-            {
-                if (value == null)
-                    throw new ArgumentNullException(nameof(AppEnvironmentProvider));
-
-                _activeAppEnvironment = value.GetActiveAppEnvironment();
-            }
-        }
-
-        private AppEnvironment _activeAppEnvironment;
+        public virtual AppEnvironment AppEnvironment { get; set; }
 
         protected virtual Exception UnWrapException(Exception exp)
         {
@@ -43,7 +32,7 @@ namespace Bit.Owin.Implementations
 
             if (IsKnownError(exp))
                 message = exp.Message;
-            else if (_activeAppEnvironment.DebugMode == true)
+            else if (AppEnvironment.DebugMode == true)
                 message = exp.ToString();
 
             return message;

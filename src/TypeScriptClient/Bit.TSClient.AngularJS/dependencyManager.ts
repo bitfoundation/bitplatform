@@ -8,7 +8,7 @@
 
     export interface IFileDependency extends IDependency {
         path: string;
-        loadTime?: "Defered" | "Early";
+        loadTime?: "Deferred" | "Early";
         fileDependecyType?: "Script" | "Style";
         loadStatus?: "IsBeingLoaded" | "NotLoaded" | "Loaded" | "LoadError";
         promise?: Promise<void>;
@@ -56,20 +56,24 @@
         }
 
         public registerCustomObjectResolver(customObjectResolver: ICustomObjectResolver) {
-            if (customObjectResolver == null)
+            if (customObjectResolver == null) {
                 throw new Error("custom object resolver may not be null");
-            if (customObjectResolver.resolve == null)
+            }
+            if (customObjectResolver.resolve == null) {
                 throw new Error("custom object resolver's resolve method may not be null");
+            }
             this.customObjectResolvers.push(customObjectResolver);
         }
 
         public registerFileDependency(fileDependency: IFileDependency): void {
 
-            if (fileDependency == null)
+            if (fileDependency == null) {
                 throw new Error("fileDependency is null");
+            }
 
-            if (fileDependency.name == null || fileDependency.name == "")
+            if (fileDependency.name == null || fileDependency.name == "") {
                 throw new Error("fileDependency's name is null or empty");
+            }
 
             const dependenciesWithThisName = this.fileDependencies.filter(d => d.name.toLowerCase() == fileDependency.name.toLowerCase());
             let dependenciesWithThisNameIndex = -1;
@@ -77,11 +81,13 @@
                 dependenciesWithThisNameIndex = this.fileDependencies.indexOf(dependenciesWithThisName[0]);
             }
 
-            if (fileDependency.loadTime == null)
+            if (fileDependency.loadTime == null) {
                 fileDependency.loadTime = "Early";
+            }
 
-            if (fileDependency.fileDependecyType == null)
+            if (fileDependency.fileDependecyType == null) {
                 fileDependency.fileDependecyType = "Script";
+            }
 
             if (fileDependency.continueOnError == null)
                 fileDependency.continueOnError = true;
@@ -89,10 +95,11 @@
             fileDependency.loadStatus = "NotLoaded";
 
             if (dependenciesWithThisNameIndex != -1) {
-                if (fileDependency.overwriteExisting == true)
+                if (fileDependency.overwriteExisting == true) {
                     this.fileDependencies[dependenciesWithThisNameIndex] = fileDependency;
-                else
+                } else {
                     throw new Error(`Duplicated file dependency ${fileDependency.name}`);
+                }
             }
             else {
                 this.fileDependencies.push(fileDependency);
@@ -101,38 +108,46 @@
 
         public registerInstanceDependency(objectDep: IObjectDependency, instance: any): void {
 
-            if (objectDep == null)
+            if (objectDep == null) {
                 throw new Error("objectDep is null");
+            }
 
-            if (objectDep.name == null)
+            if (objectDep.name == null) {
                 throw new Error("objectDep's name is null or empty");
+            }
 
-            if (instance == null)
+            if (instance == null) {
                 throw new Error("instance may not be null");
+            }
 
-            if (!this.dependencyShouldBeConsidered(objectDep))
+            if (!this.dependencyShouldBeConsidered(objectDep)) {
                 return;
+            }
 
             objectDep.resolver = () => {
                 return instance;
-            }
+            };
 
             this.registerObjectDependency(objectDep);
         }
 
         public registerObjectDependency(objectDependency: IObjectDependency): void {
 
-            if (objectDependency == null)
+            if (objectDependency == null) {
                 throw new Error("objectDependency is null");
+            }
 
-            if (objectDependency.type == null && objectDependency.resolver == null)
+            if (objectDependency.type == null && objectDependency.resolver == null) {
                 throw new Error("Either provide type or resolver for your object dependency");
+            }
 
-            if (objectDependency.name == null || objectDependency.name == "")
+            if (objectDependency.name == null || objectDependency.name == "") {
                 throw new Error("objectDependency's name is null or empty");
+            }
 
-            if (!this.dependencyShouldBeConsidered(objectDependency))
+            if (!this.dependencyShouldBeConsidered(objectDependency)) {
                 return;
+            }
 
             const dependenciesWithThisName = this.objectDependencies.filter(d => d.name.toLowerCase() == objectDependency.name.toLowerCase());
             let dependenciesWithThisNameIndex = -1;
@@ -140,47 +155,51 @@
                 dependenciesWithThisNameIndex = this.objectDependencies.indexOf(dependenciesWithThisName[0]);
             }
 
-            if (objectDependency.lifeCycle == null)
+            if (objectDependency.lifeCycle == null) {
                 objectDependency.lifeCycle = "SingleInstance";
+            }
 
             if (objectDependency.resolver == null) {
                 if (objectDependency.lifeCycle == "SingleInstance") {
                     objectDependency.resolver = () => {
-                        if (objectDependency["instance"] == null)
+                        if (objectDependency["instance"] == null) {
                             objectDependency["instance"] = Reflect.construct(objectDependency.type as Function, []);
+                        }
                         return objectDependency["instance"];
                     };
-                }
-                else if (objectDependency.lifeCycle == "Transient") {
+                } else if (objectDependency.lifeCycle == "Transient") {
                     objectDependency.resolver = () => {
                         return Reflect.construct(objectDependency.type as Function, []);
                     };
-                }
-                else
+                } else {
                     throw new Error(`Lifecycle ${objectDependency.lifeCycle} is not supported for ${objectDependency.name}`);
+                }
             }
 
             if (dependenciesWithThisNameIndex != -1 && objectDependency.overwriteExisting == true) {
                 this.objectDependencies[dependenciesWithThisNameIndex] = objectDependency;
-            }
-            else {
+            } else {
                 this.objectDependencies.push(objectDependency);
             }
         }
 
         public registerDirectiveDependency(directiveDependency: IDirectiveDependency): void {
 
-            if (directiveDependency == null)
+            if (directiveDependency == null) {
                 throw new Error("directiveDependency is null");
+            }
 
-            if (directiveDependency.type == null)
+            if (directiveDependency.type == null) {
                 throw new Error("directive dependency's type may not be null");
+            }
 
-            if (directiveDependency.name == null || directiveDependency.name == "")
+            if (directiveDependency.name == null || directiveDependency.name == "") {
                 throw new Error("directiveDependency's name is null or empty");
+            }
 
-            if (!this.dependencyShouldBeConsidered(directiveDependency))
+            if (!this.dependencyShouldBeConsidered(directiveDependency)) {
                 return;
+            }
 
             directiveDependency.name = camelize(directiveDependency.name);
             directiveDependency.controller = directiveDependency.type as any;
@@ -194,32 +213,37 @@
             }
 
             if (dependenciesWithThisNameIndex != -1) {
-                if (directiveDependency.overwriteExisting == true)
+                if (directiveDependency.overwriteExisting == true) {
                     this.directiveDependencies[dependenciesWithThisNameIndex] = directiveDependency;
-                else
+                } else {
                     throw new Error(`Duplicated directive dependency ${directiveDependency.name}`);
-            }
-            else {
+                }
+            } else {
                 this.directiveDependencies.push(directiveDependency);
             }
         }
 
         public registerComponentDependency(componentDependency: IComponentDependency): void {
 
-            if (componentDependency == null)
+            if (componentDependency == null) {
                 throw new Error("componentDependency is null");
+            }
 
-            if (componentDependency.type == null)
+            if (componentDependency.type == null) {
                 throw new Error("component dependency's type may not be null");
+            }
 
-            if (componentDependency.name == null)
+            if (componentDependency.name == null) {
                 throw new Error("component dependency's name may not be null");
+            }
 
-            if (componentDependency.cache == null)
+            if (componentDependency.cache == null) {
                 componentDependency.cache = false;
+            }
 
-            if (!this.dependencyShouldBeConsidered(componentDependency))
+            if (!this.dependencyShouldBeConsidered(componentDependency)) {
                 return;
+            }
 
             componentDependency.name = camelize(componentDependency.name);
             componentDependency.controller = componentDependency.type as any;
@@ -232,18 +256,18 @@
             }
 
             if (dependenciesWithThisNameIndex != -1) {
-                if (componentDependency.overwriteExisting == true)
+                if (componentDependency.overwriteExisting == true) {
                     this.componentDependencies[dependenciesWithThisNameIndex] = componentDependency;
-                else
+                } else {
                     throw new Error(`Duplicated component dependency ${componentDependency.name}`);
-            }
-            else {
+                }
+            } else {
                 this.componentDependencies.push(componentDependency);
             }
 
             if (componentDependency.cache == true) {
 
-                let cacheComponent: IComponentDependency = { } as any;
+                let cacheComponent: IComponentDependency = {} as any;
 
                 for (const prp in componentDependency) {
                     cacheComponent[prp] = componentDependency[prp];
@@ -304,8 +328,9 @@
 
                     element.onload = null;
 
-                    if (nextFile.onLoad != null)
+                    if (nextFile.onLoad != null) {
                         nextFile.onLoad();
+                    }
 
                     nextFile.loadStatus = "Loaded";
 
@@ -316,13 +341,15 @@
 
                     element.onload = null;
 
-                    if (nextFile.onError != null)
+                    if (nextFile.onError != null) {
                         nextFile.onError();
+                    }
 
                     nextFile.loadStatus = "LoadError";
 
-                    if (nextFile.continueOnError == false)
+                    if (nextFile.continueOnError == false) {
                         throw e;
+                    }
 
                     loadInitialFileDependecy(files.shift());
                 };
@@ -341,7 +368,7 @@
             this.fileDependencies.forEach(fileDependency => {
 
                 let path = fileDependency.path;
-                
+
                 if (!Implementations.PathUtils.isUrlPath(path)) {
                     let ext = "js";
                     if (fileDependency.fileDependecyType == "Style") {
@@ -362,8 +389,9 @@
 
         public resolveFile(fileDependencyName: string): Promise<void> {
 
-            if (fileDependencyName == null || fileDependencyName == "")
+            if (fileDependencyName == null || fileDependencyName == "") {
                 throw new Error("argument exception: fileDependencyName");
+            }
 
             const fileDepsWithThisName = this.fileDependencies
                 .filter(dep => dep.name.toLowerCase() == fileDependencyName.toLowerCase());
@@ -374,11 +402,13 @@
 
             const fileDependency = fileDepsWithThisName[0];
 
-            if (fileDependency.loadTime == "Early")
+            if (fileDependency.loadTime == "Early") {
                 throw new Error(`${fileDependencyName} file dependency was loaded at app startup`);
+            }
 
-            if (fileDependency.loadStatus != "NotLoaded")
+            if (fileDependency.loadStatus != "NotLoaded") {
                 return fileDependency.promise;
+            }
 
             fileDependency.loadStatus = "IsBeingLoaded";
 
@@ -426,12 +456,11 @@
 
                         fileDependency.loadStatus = "LoadError";
                         reject(err);
-                    }
+                    };
 
                     document.head.appendChild(element);
 
-                }
-                catch (e) {
+                } catch (e) {
                     fileDependency.loadStatus = "LoadError";
                     reject(e);
                     throw e;
@@ -444,8 +473,9 @@
 
         public resolveObject<TService>(objectDependencyName: string): TService {
 
-            if (objectDependencyName == null || objectDependencyName == "")
+            if (objectDependencyName == null || objectDependencyName == "") {
                 throw new Error("argument exception: objectDependencyName");
+            }
 
             let result = this.resolveAllObjects<TService>(objectDependencyName)[0];
 
@@ -457,8 +487,9 @@
                     } catch (e) { }
                     if (canResolve == true) {
                         result = customObjectResolver.resolve<TService>(objectDependencyName);
-                        if (result != null)
+                        if (result != null) {
                             break;
+                        }
                     }
                 }
             }
@@ -472,8 +503,9 @@
 
         public resolveAllObjects<TService>(objectDependencyName: string): Array<TService> {
 
-            if (objectDependencyName == null || objectDependencyName == "")
+            if (objectDependencyName == null || objectDependencyName == "") {
                 throw new Error("argument exception: objectDependencyName");
+            }
 
             const objectDepsWithThisName = this.objectDependencies
                 .filter(dep => dep.name.toLowerCase() == objectDependencyName.toLowerCase());
@@ -547,8 +579,9 @@
 
             dtoViewModel.bindings = dtoViewModel.bindings || {};
 
-            if (dtoViewModel.bindings["model"] == null)
+            if (dtoViewModel.bindings["model"] == null) {
                 dtoViewModel.bindings["model"] = "<?";
+            }
 
             dtoViewModel.type = targetDtoViewModel;
 
@@ -576,26 +609,27 @@
 
     export function Inject(name: string, use$inject = name == "$element" || name == "$scope" || name == "$attrs" || name == "$transclude"): ParameterDecorator {
 
-        if (name == null || name == "")
+        if (name == null || name == "") {
             throw new Error("name may not be null or empty");
+        }
 
         return (target: Function, propertyKey: string | symbol): Function => {
             target.injects = target.injects || [];
             target.$inject = target.$inject || [];
             if (use$inject == false) {
                 target.injects.push({ name: name, kind: "Single" });
-            }
-            else {
+            } else {
                 (target.$inject as Array<string>).unshift(name);
             }
             return target;
-        }
+        };
     }
 
     export function InjectAll(name: string): ParameterDecorator {
 
-        if (name == null || name == "")
+        if (name == null || name == "") {
             throw new Error("name may not be null or empty");
+        }
 
         return (target: Function, propertyKey: string | symbol): Function => {
             target.injects = target.injects || [];
@@ -614,17 +648,18 @@
 
                 const originalTarget = target;
 
-                target = function () {
+                target = function construct() {
 
                     const dependencyManager = DependencyManager.getCurrent();
 
                     const args = Array.from(arguments);
 
                     for (let inject of injects.slice(0).reverse()) {
-                        if (inject.kind == "All")
+                        if (inject.kind == "All") {
                             args.push(dependencyManager.resolveAllObjects<any[]>(inject.name));
-                        else
+                        } else {
                             args.push(dependencyManager.resolveObject<any>(inject.name));
+                        }
                     }
 
                     return Reflect.construct(originalTarget, args);

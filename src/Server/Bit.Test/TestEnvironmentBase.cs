@@ -31,62 +31,62 @@ namespace Bit.Test
 
         public Action<AppEnvironment> ActiveAppEnvironmentCustomizer { get; set; }
 
-        public IDependenciesManagerProvider CustomDependenciesManagerProvider { get; set; } = null;
+        public IAppModulesProvider CustomAppModulesProvider { get; set; } = null;
 
-        public IAppEnvironmentProvider CustomAppEnvironmentProvider { get; set; } = null;
+        public IAppEnvironmentsProvider CustomAppEnvironmentsProvider { get; set; } = null;
 
         public bool UseProxyBasedDependencyManager { get; set; } = true;
 
         public int? Port { get; set; } = null;
     }
 
-    public class TestAdditionalDependencies : IAspNetCoreDependenciesManager, IOwinDependenciesManager, IDependenciesManagerProvider
+    public class TestAdditionalDependencies : IAspNetCoreAppModule, IOwinAppModule, IAppModulesProvider
     {
-        private readonly Action<IDependencyManager> _dependenciesManager;
+        private readonly Action<IDependencyManager> _dependencyManagerDelegate;
 
-        public TestAdditionalDependencies(Action<IDependencyManager> dependenciesManager)
+        public TestAdditionalDependencies(Action<IDependencyManager> dependencyManagerDelegate)
         {
-            _dependenciesManager = dependenciesManager;
+            _dependencyManagerDelegate = dependencyManagerDelegate;
         }
 
         public virtual void ConfigureDependencies(IServiceProvider serviceProvider, IServiceCollection services, IDependencyManager dependencyManager)
         {
-            _dependenciesManager?.Invoke(dependencyManager);
+            _dependencyManagerDelegate?.Invoke(dependencyManager);
         }
 
         public virtual void ConfigureDependencies(IDependencyManager dependencyManager)
         {
-            _dependenciesManager?.Invoke(dependencyManager);
+            _dependencyManagerDelegate?.Invoke(dependencyManager);
         }
 
-        public virtual IEnumerable<IDependenciesManager> GetDependenciesManagers()
+        public virtual IEnumerable<IAppModule> GetAppModules()
         {
             yield return this;
         }
     }
 
-    public class TestAppEnvironmentProvider : IAppEnvironmentProvider
+    public class TestAppEnvironmentsProvider : IAppEnvironmentsProvider
     {
-        private readonly IAppEnvironmentProvider _appEnvironmentProvider;
+        private readonly IAppEnvironmentsProvider _appEnvironmentsProvider;
         private readonly Action<AppEnvironment> _appEnvCustomizer;
 
-        protected TestAppEnvironmentProvider()
+        protected TestAppEnvironmentsProvider()
         {
 
         }
 
-        public TestAppEnvironmentProvider(IAppEnvironmentProvider appEnvironmentProvider, Action<AppEnvironment> appEnvCustomizer = null)
+        public TestAppEnvironmentsProvider(IAppEnvironmentsProvider appEnvironmentProvider, Action<AppEnvironment> appEnvCustomizer = null)
         {
             if (appEnvironmentProvider == null)
                 throw new ArgumentNullException(nameof(appEnvironmentProvider));
 
-            _appEnvironmentProvider = appEnvironmentProvider;
+            _appEnvironmentsProvider = appEnvironmentProvider;
             _appEnvCustomizer = appEnvCustomizer;
         }
 
         public virtual AppEnvironment GetActiveAppEnvironment()
         {
-            AppEnvironment result = _appEnvironmentProvider.GetActiveAppEnvironment();
+            AppEnvironment result = _appEnvironmentsProvider.GetActiveAppEnvironment();
 
             _appEnvCustomizer?.Invoke(result);
 
@@ -114,8 +114,8 @@ namespace Bit.Test
                 TestDependencyManager.CurrentTestDependencyManager.AutoProxyCreationIncludeRules.AddRange(GetAutoProxyCreationIncludeRules());
             }
 
-            DefaultDependenciesManagerProvider.Current = GetDependenciesManagerProvider(args);
-            DefaultAppEnvironmentProvider.Current = GetAppEnvironmentProvider(args);
+            DefaultAppModulesProvider.Current = GetAppModulesProvider(args);
+            DefaultAppEnvironmentsProvider.Current = GetAppEnvironmentsProvider(args);
 
             Server = GetTestServer(args);
 
@@ -177,14 +177,14 @@ namespace Bit.Test
             }
         }
 
-        protected virtual IAppEnvironmentProvider GetAppEnvironmentProvider(TestEnvironmentArgs args)
+        protected virtual IAppEnvironmentsProvider GetAppEnvironmentsProvider(TestEnvironmentArgs args)
         {
-            return new TestAppEnvironmentProvider(args.CustomAppEnvironmentProvider ?? DefaultAppEnvironmentProvider.Current, args.ActiveAppEnvironmentCustomizer);
+            return new TestAppEnvironmentsProvider(args.CustomAppEnvironmentsProvider ?? DefaultAppEnvironmentsProvider.Current, args.ActiveAppEnvironmentCustomizer);
         }
 
-        protected virtual IDependenciesManagerProvider GetDependenciesManagerProvider(TestEnvironmentArgs args)
+        protected virtual IAppModulesProvider GetAppModulesProvider(TestEnvironmentArgs args)
         {
-            return new CompositeDependenciesManagerProvider(args.CustomDependenciesManagerProvider ?? DefaultDependenciesManagerProvider.Current, new TestAdditionalDependencies(args.AdditionalDependencies));
+            return new CompositeAppModulesProvider(args.CustomAppModulesProvider ?? DefaultAppModulesProvider.Current, new TestAdditionalDependencies(args.AdditionalDependencies));
         }
 
         public ITestServer Server { get; }
@@ -192,6 +192,7 @@ namespace Bit.Test
         public virtual void Dispose()
         {
             Dispose(true);
+            GC.SuppressFinalize(this);
         }
 
         protected virtual void Dispose(bool disposing)

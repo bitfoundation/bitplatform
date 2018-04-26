@@ -1,27 +1,33 @@
-﻿using System;
-using System.IO;
-using System.Linq;
-using System.Net.Http;
-using System.Threading;
-using System.Threading.Tasks;
+﻿using Bit.Core.Contracts;
 using Bit.Core.Implementations;
-using Bit.IdentityServer.Contracts;
+using Bit.Core.Models;
+using Bit.Owin.Contracts;
 using IdentityServer3.Core.Models;
 using IdentityServer3.Core.Services;
 using IdentityServer3.Core.Validation;
 using IdentityServer3.Core.ViewModels;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
+using System;
+using System.IO;
+using System.Linq;
+using System.Net.Http;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace Bit.IdentityServer.Implementations
 {
     public class DefaultViewService : IViewService
     {
-        public virtual ISsoPageHtmlProvider SsoHtmlPageProvider { get; set; }
+        public virtual IHtmlPageProvider HtmlPageProvider { get; set; }
 
-        public virtual ICustomLoginDataProvider CustomLoginDataProvider { get; set; }
+        public virtual IUrlStateProvider UrlStateProvider { get; set; }
 
-        public virtual async Task<Stream> ClientPermissions(ClientPermissionsViewModel model)
+        public virtual IPathProvider PathProvider { get; set; }
+
+        public virtual AppEnvironment AppEnvironment { get; set; }
+
+        public virtual Task<Stream> ClientPermissions(ClientPermissionsViewModel model)
         {
             string content = @"<!DOCTYPE html>
                             <html>
@@ -31,10 +37,10 @@ namespace Bit.IdentityServer.Implementations
                                 <body>ClientPermissions >> Not Implemented</body>
                             </html>";
 
-            return await ReturnHtmlAsync(model, content, CancellationToken.None).ConfigureAwait(false);
+            return ReturnHtmlAsync(model, content, CancellationToken.None);
         }
 
-        public virtual async Task<Stream> Consent(ConsentViewModel model, ValidatedAuthorizeRequest authorizeRequest)
+        public virtual Task<Stream> Consent(ConsentViewModel model, ValidatedAuthorizeRequest authorizeRequest)
         {
             string content = @"<!DOCTYPE html>
                             <html>
@@ -44,10 +50,10 @@ namespace Bit.IdentityServer.Implementations
                                 <body>Consent >> Not Implemented</body>
                             </html>";
 
-            return await ReturnHtmlAsync(model, content, CancellationToken.None).ConfigureAwait(false);
+            return ReturnHtmlAsync(model, content, CancellationToken.None);
         }
 
-        public virtual async Task<Stream> Error(ErrorViewModel model)
+        public virtual Task<Stream> Error(ErrorViewModel model)
         {
             string content = $@"<!DOCTYPE html>
                             <html>
@@ -57,37 +63,39 @@ namespace Bit.IdentityServer.Implementations
                                 <body>{model.ErrorMessage} <br /> RequestId: {model.RequestId}</body>
                             </html>";
 
-            return await ReturnHtmlAsync(model, content, CancellationToken.None).ConfigureAwait(false);
+            return ReturnHtmlAsync(model, content, CancellationToken.None);
         }
 
-        public virtual async Task<Stream> LoggedOut(LoggedOutViewModel model, SignOutMessage message)
+        public virtual Task<Stream> LoggedOut(LoggedOutViewModel model, SignOutMessage message)
         {
             string content = null;
 
-            if (!string.IsNullOrEmpty(model.RedirectUrl))
+            string url = model?.RedirectUrl ?? message?.ReturnUrl;
+
+            if (!string.IsNullOrEmpty(url))
             {
                 content = $@"<!DOCTYPE html>
                             <html>
                                 <head>
-                                    <meta http-equiv='refresh' content='0;{model.RedirectUrl}'>
+                                    <meta http-equiv='refresh' content='0;{url}'>
                                 </head>
                                 <body></body>
                             </html>";
             }
             else
             {
-                content = @"<!DOCTYPE html>
+                content = $@"<!DOCTYPE html>
                             <html>
                                 <head>
                                     <title>No redirect url on logout</title>
                                 </head>
                                 <body>
-                                    No redirect url on logout
+                                    No redirect url on logout. Perhaps your redirect url is not listed in {nameof(OAuthClientsProvider.GetClients)} of {nameof(OAuthClientsProvider)}
                                 </body>
                             </html>";
             }
 
-            return await ReturnHtmlAsync(model, content, CancellationToken.None).ConfigureAwait(false);
+            return ReturnHtmlAsync(model, content, CancellationToken.None);
         }
 
         public virtual async Task<Stream> Login(LoginViewModel model, SignInMessage message)
@@ -97,13 +105,17 @@ namespace Bit.IdentityServer.Implementations
 
             if (model.Custom == null && message.ReturnUrl != null)
             {
-                string state = new Uri(message.ReturnUrl).ParseQueryString()["state"] ?? "{}";
-
                 try
                 {
-                    dynamic custom = model.Custom = CustomLoginDataProvider.GetCustomData(message);
+                    dynamic custom = model.Custom = UrlStateProvider.GetState(new Uri(message.ReturnUrl));
 
-                    string signInType = custom.SignInType;
+                    string signInType = null;
+
+                    try
+                    {
+                        signInType = custom.SignInType;
+                    }
+                    catch { }
 
                     if (signInType != null && model.ExternalProviders.Any(extProvider => extProvider.Type == signInType))
                     {
@@ -146,10 +158,12 @@ namespace Bit.IdentityServer.Implementations
                 ReturnUrl = message.ReturnUrl == null ? "" : new Uri(message.ReturnUrl).ParseQueryString()["redirect_uri"]
             }, Formatting.None, jsonSerSettings);
 
-            string loginPageHtml = (await SsoHtmlPageProvider.GetSsoPageAsync(CancellationToken.None).ConfigureAwait(false))
-                .Replace("{model}", Microsoft.Security.Application.Encoder.HtmlEncode(json));
+            string loginPageHtmlInitialHtml = File.ReadAllText(PathProvider.MapStaticFilePath(AppEnvironment.GetConfig("LoginPagePath", "loginPage.html")));
 
-            return await ReturnHtmlAsync(model, loginPageHtml, CancellationToken.None).ConfigureAwait(false);
+            string loginPageHtmlFinalHtml = (await HtmlPageProvider.GetHtmlPageAsync(loginPageHtmlInitialHtml, CancellationToken.None).ConfigureAwait(false))
+                .Replace("{{model.LoginModel.toJson()}}", Microsoft.Security.Application.Encoder.HtmlEncode(json), StringComparison.InvariantCultureIgnoreCase);
+
+            return await ReturnHtmlAsync(model, loginPageHtmlFinalHtml, CancellationToken.None).ConfigureAwait(false);
         }
 
         private async Task<Stream> ReturnHtmlAsync(CommonViewModel model, string html, CancellationToken cancellationToken)
@@ -167,9 +181,9 @@ namespace Bit.IdentityServer.Implementations
             return viewStream;
         }
 
-        public virtual async Task<Stream> Logout(LogoutViewModel model, SignOutMessage message)
+        public virtual Task<Stream> Logout(LogoutViewModel model, SignOutMessage message)
         {
-            // Based on current InvokeLogOut Middleware, this method will not be called, because of context.Authentication.SignOut("custom", "Barear"); code.
+            // Based on current InvokeLogOut Middleware, this method will not be called, because of context.Authentication.SignOut("custom", "Bearer"); code.
 
             string content = $@"<!DOCTYPE html>
                             <html>
@@ -183,7 +197,7 @@ namespace Bit.IdentityServer.Implementations
                                 </body>
                             </html>";
 
-            return await ReturnHtmlAsync(model, content, CancellationToken.None).ConfigureAwait(false);
+            return ReturnHtmlAsync(model, content, CancellationToken.None);
         }
     }
 }

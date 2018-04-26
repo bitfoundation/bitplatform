@@ -17,9 +17,9 @@ namespace BitChangeSetManager.Security
 {
     public class BitChangeSetManagerUserService : UserService
     {
-        public virtual IDependencyManager DependencyManager { get; set; }
+        public virtual IBitChangeSetManagerRepository<User> UsersRepository { get; set; }
 
-        public override async Task<string> GetUserIdByLocalAuthenticationContextAsync(LocalAuthenticationContext context)
+        public override async Task<string> GetUserIdByLocalAuthenticationContextAsync(LocalAuthenticationContext context, CancellationToken cancellationToken)
         {
             string username = context.UserName;
             string password = context.Password;
@@ -48,13 +48,8 @@ namespace BitChangeSetManager.Security
 
             User user = null;
 
-            using (IDependencyResolver resolver = DependencyManager.CreateChildDependencyResolver())
-            {
-                IBitChangeSetManagerRepository<User> usersRepository = resolver.Resolve<IBitChangeSetManagerRepository<User>>();
-
-                user = await (await usersRepository.GetAllAsync(CancellationToken.None))
-                     .SingleOrDefaultAsync(u => u.UserName.ToLower() == username && u.Password == password);
-            }
+            user = await (await UsersRepository.GetAllAsync(cancellationToken))
+                 .SingleOrDefaultAsync(u => u.UserName.ToLower() == username && u.Password == password);
 
             if (user == null)
                 throw new DomainLogicException("LoginFailed");
@@ -62,17 +57,12 @@ namespace BitChangeSetManager.Security
             return user.Id.ToString();
         }
 
-        public override async Task<bool> UserIsActiveAsync(IsActiveContext context, string userId)
+        public override async Task<bool> UserIsActiveAsync(IsActiveContext context, string userId, CancellationToken cancellationToken)
         {
-            using (IDependencyResolver resolver = DependencyManager.CreateChildDependencyResolver())
-            {
-                IBitChangeSetManagerRepository<User> usersRepository = resolver.Resolve<IBitChangeSetManagerRepository<User>>();
+            Guid userIdAsGuid = Guid.Parse(userId);
 
-                Guid userIdAsGuid = Guid.Parse(userId);
-
-                return await (await usersRepository.GetAllAsync(CancellationToken.None))
-                     .AnyAsync(u => u.Id == userIdAsGuid);
-            }
+            return await (await UsersRepository.GetAllAsync(cancellationToken))
+                 .AnyAsync(u => u.Id == userIdAsGuid);
         }
     }
 }

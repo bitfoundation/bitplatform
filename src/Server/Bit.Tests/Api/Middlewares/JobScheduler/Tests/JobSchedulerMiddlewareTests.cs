@@ -29,11 +29,11 @@ namespace Bit.Tests.Api.Middlewares.JobScheduler.Tests
             {
                 TokenResponse token = await testEnvironment.Server.Login("ValidUserName", "ValidPassword", clientId: "TestResOwner");
 
-                HttpResponseMessage getDefaultPageResponse = await testEnvironment.Server.BuildHttpClient(token).GetAsync("/jobs");
+                HttpResponseMessage getIndexPageResponse = await testEnvironment.Server.BuildHttpClient(token).GetAsync("/jobs");
 
-                Assert.AreEqual(HttpStatusCode.OK, getDefaultPageResponse.StatusCode);
+                Assert.AreEqual(HttpStatusCode.OK, getIndexPageResponse.StatusCode);
 
-                Assert.AreEqual("text/html", getDefaultPageResponse.Content.Headers.ContentType.MediaType);
+                Assert.AreEqual("text/html", getIndexPageResponse.Content.Headers.ContentType.MediaType);
             }
         }
 
@@ -43,10 +43,10 @@ namespace Bit.Tests.Api.Middlewares.JobScheduler.Tests
         {
             using (BitOwinTestEnvironment testEnvironment = new BitOwinTestEnvironment())
             {
-                HttpResponseMessage getDefaultPageResponse = await testEnvironment.Server.BuildHttpClient()
+                HttpResponseMessage getIndexPageResponse = await testEnvironment.Server.BuildHttpClient()
                     .GetAsync("/jobs");
 
-                Assert.AreEqual(HttpStatusCode.Unauthorized, getDefaultPageResponse.StatusCode);
+                Assert.AreEqual(HttpStatusCode.Unauthorized, getIndexPageResponse.StatusCode);
             }
         }
 
@@ -74,14 +74,14 @@ namespace Bit.Tests.Api.Middlewares.JobScheduler.Tests
             {
                 TokenResponse token = await testEnvironment.Server.Login("ValidUserName", "ValidPassword", clientId: "TestResOwner");
 
-                ODataClient client = testEnvironment.Server.BuildODataClient(token: token);
+                IODataClient client = testEnvironment.Server.BuildODataClient(token: token);
 
                 string jobId = (await client.Controller<TestModelsController, TestModel>()
                     .Action(nameof(TestModelsController.SendEmailUsingBackgroundJobService))
                     .Set(new TestModelsController.EmailParameters { to = "Someone", title = "Email title", message = "Email message" })
                     .ExecuteAsScalarAsync<Guid>()).ToString();
 
-                ODataClient bitODataClient = testEnvironment.Server.BuildODataClient(token: token, odataRouteName: "Bit");
+                IODataClient bitODataClient = testEnvironment.Server.BuildODataClient(token: token, odataRouteName: "Bit");
 
                 JobInfoDto jobInfo = await bitODataClient.Controller<JobsInfoController, JobInfoDto>()
                     .Key(jobId)
@@ -132,14 +132,14 @@ namespace Bit.Tests.Api.Middlewares.JobScheduler.Tests
 
                 TokenResponse token = await testEnvironment.Server.Login("ValidUserName", "ValidPassword", clientId: "TestResOwner");
 
-                ODataClient client = testEnvironment.Server.BuildODataClient(token: token);
+                IODataClient client = testEnvironment.Server.BuildODataClient(token: token);
 
                 string jobId = (await client.Controller<TestModelsController, TestModel>()
                     .Action(nameof(TestModelsController.SendEmailUsingBackgroundJobServiceAndPushAfterThat))
                     .Set(new TestModelsController.EmailParameters { to = "SomeOne", title = "Email title", message = "Email message" })
                     .ExecuteAsScalarAsync<Guid>()).ToString();
 
-                ODataClient bitODataClient = testEnvironment.Server.BuildODataClient(token: token, odataRouteName: "Bit");
+                IODataClient bitODataClient = testEnvironment.Server.BuildODataClient(token: token, odataRouteName: "Bit");
 
                 JobInfoDto jobInfo = await bitODataClient.Controller<JobsInfoController, JobInfoDto>()
                     .Key(jobId)
@@ -193,7 +193,7 @@ namespace Bit.Tests.Api.Middlewares.JobScheduler.Tests
             {
                 TokenResponse token = await testEnvironment.Server.Login("ValidUserName", "ValidPassword", clientId: "TestResOwner");
 
-                ODataClient client = testEnvironment.Server.BuildODataClient(token: token);
+                IODataClient client = testEnvironment.Server.BuildODataClient(token: token);
 
                 string jobId = (await client.Controller<TestModelsController, TestModel>()
                     .Action(nameof(TestModelsController.SendEmailUsingBackgroundJobService))

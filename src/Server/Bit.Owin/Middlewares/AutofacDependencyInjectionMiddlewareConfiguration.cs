@@ -51,14 +51,14 @@ namespace Bit.Owin.Middlewares
         {
         }
 
-        public override async Task Invoke(IOwinContext context)
+        public override Task Invoke(IOwinContext context)
         {
             IAutofacDependencyManager childDependencyManager = new AutofacDependencyManager();
             childDependencyManager.UseContainer(context.GetAutofacLifetimeScope());
 
             context.Set("DependencyResolver", (IDependencyResolver)childDependencyManager);
 
-            await Next.Invoke(context);
+            return Next.Invoke(context);
         }
     }
 }

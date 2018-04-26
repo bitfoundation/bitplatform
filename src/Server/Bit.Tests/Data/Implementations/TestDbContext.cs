@@ -1,4 +1,4 @@
-﻿using Bit.Core.Contracts;
+﻿using Bit.Core.Models;
 using Bit.Data.EntityFrameworkCore.Contracts;
 using Bit.Data.EntityFrameworkCore.Implementations;
 using Bit.Model.DomainModels;
@@ -19,8 +19,8 @@ namespace Bit.Tests.Data.Implementations
         {
         }
 
-        public TestDbContext(IAppEnvironmentProvider appEnvironmentProvider, IDbContextObjectsProvider dbContextCreationOptionsProvider)
-              : base(appEnvironmentProvider.GetActiveAppEnvironment().GetConfig<string>("TestDbConnectionString"), dbContextCreationOptionsProvider)
+        public TestDbContext(AppEnvironment appEnvironment, IDbContextObjectsProvider dbContextCreationOptionsProvider)
+              : base(appEnvironment.GetConfig<string>("TestDbConnectionString"), dbContextCreationOptionsProvider)
         {
 
         }

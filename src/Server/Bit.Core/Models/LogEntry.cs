@@ -3,7 +3,6 @@ using System.Collections.Generic;
 
 namespace Bit.Core.Models
 {
-    [Serializable]
     public class LogEntry
     {
         public virtual Guid? Id { get; set; }

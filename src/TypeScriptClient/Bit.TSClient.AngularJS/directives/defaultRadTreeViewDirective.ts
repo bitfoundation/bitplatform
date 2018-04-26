@@ -43,7 +43,7 @@ module Bit.Directives {
 
         public static defaultRadTreeViewDirectiveCustomizers: Array<($scope: ng.IScope, attribues: ng.IAttributes, $element: JQuery, treeViewOptions: kendo.ui.TreeViewOptions) => void> = [];
 
-        public constructor( @Inject("$element") public $element: JQuery,
+        public constructor(@Inject("$element") public $element: JQuery,
             @Inject("$scope") public $scope: ng.IScope,
             @Inject("$attrs") public $attrs: ng.IAttributes & { ngModel: string, radDataSource: string, radValueFieldName: string, radTextFieldName: string, radOnInit: string },
             @Inject("MetadataProvider") public metadataProvider: Contracts.IMetadataProvider) {
@@ -68,8 +68,9 @@ module Bit.Directives {
 
             let dataSourceWatchDisposal = this.$scope.$watch(this.$attrs.radDataSource, (ds: kendo.data.DataSource) => {
 
-                if (ds == null)
+                if (ds == null) {
                     return;
+                }
 
                 this.dataSource = ds;
 
@@ -106,8 +107,9 @@ module Bit.Directives {
                 treeViewOptions.template = itemTemplate;
             }
 
-            if (this.dataSource.options.schema.model.fields[treeViewOptions.dataTextField] == null)
+            if (this.dataSource.options.schema.model.fields[treeViewOptions.dataTextField] == null) {
                 throw new Error(`Model has no property named ${treeViewOptions.dataTextField} to be used as text field`);
+            }
 
             DefaultRadTreeViewDirective.defaultRadTreeViewDirectiveCustomizers.forEach(radTreeViewCustomizer => {
                 radTreeViewCustomizer(this.$scope, this.$attrs, this.$element, treeViewOptions);
@@ -137,8 +139,9 @@ module Bit.Directives {
         }
 
         public onTreeViewFocusIn() {
-            if (this.$element.is(":disabled"))
+            if (this.$element.is(":disabled")) {
                 return;
+            }
 
             this.mdInputContainerParent.addClass("md-input-focused");
         }

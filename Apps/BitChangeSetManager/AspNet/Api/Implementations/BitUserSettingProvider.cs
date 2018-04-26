@@ -18,26 +18,36 @@ namespace BitChangeSetManager.Api.Implementations
 
         public UserSetting GetCurrentUserSetting()
         {
-            User user = UsersRepository.GetById(Guid.Parse(UserInformationProvider.GetCurrentUserId()));
-
-            UserSetting result = new UserSetting
+            if (UserInformationProvider.IsAuthenticated())
             {
-                Culture = user.Culture.ToString()
-            };
+                User user = UsersRepository.GetById(Guid.Parse(UserInformationProvider.GetCurrentUserId()));
 
-            return result;
+                UserSetting result = new UserSetting
+                {
+                    Culture = user.Culture.ToString()
+                };
+
+                return result;
+            }
+
+            return null;
         }
 
         public async Task<UserSetting> GetCurrentUserSettingAsync(CancellationToken cancellationToken)
         {
-            User user = await UsersRepository.GetByIdAsync(cancellationToken, Guid.Parse(UserInformationProvider.GetCurrentUserId()));
-
-            UserSetting result = new UserSetting
+            if (UserInformationProvider.IsAuthenticated())
             {
-                Culture = user.Culture.ToString()
-            };
+                User user = await UsersRepository.GetByIdAsync(cancellationToken, Guid.Parse(UserInformationProvider.GetCurrentUserId()));
 
-            return result;
+                UserSetting result = new UserSetting
+                {
+                    Culture = user.Culture.ToString()
+                };
+
+                return result;
+            }
+
+            return null;
         }
     }
 }

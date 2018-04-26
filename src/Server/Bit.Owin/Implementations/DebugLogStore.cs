@@ -17,10 +17,11 @@ namespace Bit.Owin.Implementations
                 Debug.WriteLine(Formatter.Serialize(logEntry) + Environment.NewLine);
         }
 
-        public virtual async Task SaveLogAsync(LogEntry logEntry)
+        public virtual Task SaveLogAsync(LogEntry logEntry)
         {
             if (Debugger.IsAttached)
                 Debug.WriteLine(Formatter.Serialize(logEntry) + Environment.NewLine);
+            return Task.CompletedTask;
         }
     }
 }

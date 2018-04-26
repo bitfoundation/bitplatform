@@ -8,7 +8,7 @@ namespace Bit.Owin.Metadata.Views
 {
     public class LoginViewMetadataBuilder : DefaultViewMetadataBuilder
     {
-        public override async Task<IEnumerable<ObjectMetadata>> BuildMetadata()
+        public override Task<IEnumerable<ObjectMetadata>> BuildMetadata()
         {
             AddViewMetadata(new ViewMetadata
             {
@@ -62,7 +62,7 @@ namespace Bit.Owin.Metadata.Views
                 }
             });
 
-            return await base.BuildMetadata().ConfigureAwait(false);
+            return base.BuildMetadata();
         }
     }
 }

@@ -16,10 +16,8 @@ namespace Bit.OData.Serialization
         {
             ODataPrimitiveValue result = base.CreateODataPrimitiveValue(graph, primitiveType, writeContext);
 
-            if (result?.Value is DateTimeOffset)
+            if (result?.Value is DateTimeOffset date)
             {
-                DateTimeOffset date = (DateTimeOffset)result.Value;
-
                 IDependencyResolver dependencyResolver = writeContext.Request.GetOwinContext()
                                     .GetDependencyResolver();
 

@@ -10,7 +10,7 @@ namespace Bit.Owin.Middlewares
         {
         }
 
-        public override async Task Invoke(IOwinContext context)
+        public override Task Invoke(IOwinContext context)
         {
             if (context.Request.Headers != null && !context.Request.Headers.ContainsKey("Authorization"))
             {
@@ -21,7 +21,7 @@ namespace Bit.Owin.Middlewares
                     });
             }
 
-            await Next.Invoke(context);
+            return Next.Invoke(context);
         }
     }
 }

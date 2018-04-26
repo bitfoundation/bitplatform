@@ -195,11 +195,6 @@
     });
 
     dependencyManager.registerFileDependency({
-        name: "odataJS",
-        path: "bit-framework/src/TypeScriptClient/Bit.TSClient.Core/node_modules/@bit/jaydata-odatajs/jaydata-odatajs-4.0.1"
-    });
-
-    dependencyManager.registerFileDependency({
         name: "jayData",
         path: "bit-framework/src/TypeScriptClient/Bit.TSClient.Core/node_modules/@bit/jaydata/jaydata"
     });
@@ -284,7 +279,7 @@
     dependencyManager.registerFileDependency({
         name: "jasmine-jquery",
         path: "bit-framework/src/TypeScriptClient/Bit.TSClient.AngularJS.Test/node_modules/jasmine-jquery/lib/jasmine-jquery",
-        loadTime: "Defered"
+        loadTime: "Deferred"
     });
 
     dependencyManager.registerFileDependency({

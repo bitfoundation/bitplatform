@@ -5,6 +5,7 @@ using System.Data.Entity;
 using System.Data.Entity.ModelConfiguration.Conventions;
 using Bit.Core.Contracts;
 using Bit.Data.Contracts;
+using Bit.Core.Models;
 
 namespace BitChangeSetManager.DataAccess
 {
@@ -17,8 +18,8 @@ namespace BitChangeSetManager.DataAccess
 
         }
 
-        public BitChangeSetManagerDbContext(IAppEnvironmentProvider appEnvironmentProvider, IDbConnectionProvider dbConnectionProvider)
-            : base(appEnvironmentProvider.GetActiveAppEnvironment().GetConfig<string>("BitChangeSetManagerDbConnectionString"), dbConnectionProvider)
+        public BitChangeSetManagerDbContext(AppEnvironment appEnvironment, IDbConnectionProvider dbConnectionProvider)
+            : base(appEnvironment.GetConfig<string>("BitChangeSetManagerDbConnectionString"), dbConnectionProvider)
         {
 
         }

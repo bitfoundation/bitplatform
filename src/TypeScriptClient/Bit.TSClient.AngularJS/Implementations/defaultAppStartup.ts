@@ -3,7 +3,7 @@
     @Injectable()
     export class DefaultAppStartup extends AppStartupBase {
 
-        public constructor( @InjectAll("AppEvent") public appEvents: Contracts.IAppEvents[]) {
+        public constructor(@InjectAll("AppEvent") public appEvents: Contracts.IAppEvents[]) {
             super(appEvents);
         }
 

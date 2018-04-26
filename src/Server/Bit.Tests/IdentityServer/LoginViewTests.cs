@@ -10,6 +10,7 @@ using OpenQA.Selenium;
 using OpenQA.Selenium.Remote;
 using OpenQA.Selenium.Support.UI;
 using System;
+using System.Threading;
 
 namespace Bit.Tests.IdentityServer
 {
@@ -22,7 +23,7 @@ namespace Bit.Tests.IdentityServer
         {
             using (BitOwinTestEnvironment testEnvironment = new BitOwinTestEnvironment(new TestEnvironmentArgs { UseRealServer = true }))
             {
-                using (RemoteWebDriver driver = testEnvironment.Server.BuildWebDriver(new RemoteWebDriverOptions { Uri = @"core/connect/authorize?scope=openid profile user_info&client_id=Test&redirect_uri=http://localhost/SignIn&response_type=id_token token&state={}&nonce=SgPoeilE1Tub", ClientSideTest = false }))
+                using (RemoteWebDriver driver = testEnvironment.Server.BuildWebDriver(new RemoteWebDriverOptions { Uri = @"InvokeLogin", ClientSideTest = false }))
                 {
                     new WebDriverWait(driver, TimeSpan.FromSeconds(3))
                         .Until(ExpectedConditions.ElementExists(By.Name("loginForm")));
@@ -34,12 +35,21 @@ namespace Bit.Tests.IdentityServer
                     driver.FindElementByName("login").Click();
                 }
 
-                TestUserService testUserService = TestDependencyManager.CurrentTestDependencyManager.Objects
-                    .OfType<TestUserService>()
-                    .Single();
+                bool foundAnyCorrectCall = false;
 
-                A.CallTo(() => testUserService.AuthenticateLocalAsync(A<LocalAuthenticationContext>.That.Matches(cntx => cntx.UserName == "ValidUserName" && cntx.Password == "ValidPassword")))
-                    .MustHaveHappened(Repeated.Exactly.Once);
+                foreach (TestUserService userService in TestDependencyManager.CurrentTestDependencyManager.Objects.OfType<TestUserService>())
+                {
+                    try
+                    {
+                        A.CallTo(() => userService.AuthenticateLocalAsync(A<LocalAuthenticationContext>.That.Matches(cntx => cntx.UserName == "ValidUserName" && cntx.Password == "ValidPassword"), A<CancellationToken>.Ignored))
+                            .MustHaveHappened(Repeated.Exactly.Once);
+
+                        foundAnyCorrectCall = true;
+                    }
+                    catch (ExpectationException) { }
+                }
+
+                Assert.IsTrue(foundAnyCorrectCall);
             }
         }
 
@@ -49,7 +59,7 @@ namespace Bit.Tests.IdentityServer
         {
             using (BitOwinTestEnvironment testEnvironment = new BitOwinTestEnvironment(new TestEnvironmentArgs { UseRealServer = true }))
             {
-                using (RemoteWebDriver driver = testEnvironment.Server.BuildWebDriver(new RemoteWebDriverOptions { Uri = @"core/connect/authorize?scope=openid profile user_info&client_id=Test&redirect_uri=http://localhost/SignIn&response_type=id_token token&state={}&nonce=SgPoeilE1Tub", ClientSideTest = false }))
+                using (RemoteWebDriver driver = testEnvironment.Server.BuildWebDriver(new RemoteWebDriverOptions { Uri = @"InvokeLogin", ClientSideTest = false }))
                 {
                     new WebDriverWait(driver, TimeSpan.FromSeconds(3))
                         .Until(ExpectedConditions.ElementExists(By.Name("loginForm")));
@@ -64,12 +74,21 @@ namespace Bit.Tests.IdentityServer
                     Assert.AreEqual("Login failed", driver.FindElementByName("error").GetAttribute("innerText"));
                 }
 
-                TestUserService testUserService = TestDependencyManager.CurrentTestDependencyManager.Objects
-                    .OfType<TestUserService>()
-                    .Single();
+                bool foundAnyCorrectCall = false;
 
-                A.CallTo(() => testUserService.AuthenticateLocalAsync(A<LocalAuthenticationContext>.That.Matches(cntx => cntx.UserName == "InValidUserName" && cntx.Password == "InValidPassword")))
-                    .MustHaveHappened(Repeated.Exactly.Once);
+                foreach (TestUserService userService in TestDependencyManager.CurrentTestDependencyManager.Objects.OfType<TestUserService>())
+                {
+                    try
+                    {
+                        A.CallTo(() => userService.AuthenticateLocalAsync(A<LocalAuthenticationContext>.That.Matches(cntx => cntx.UserName == "InValidUserName" && cntx.Password == "InValidPassword"), A<CancellationToken>.Ignored))
+                            .MustHaveHappened(Repeated.Exactly.Once);
+
+                        foundAnyCorrectCall = true;
+                    }
+                    catch (ExpectationException) { }
+                }
+
+                Assert.IsTrue(foundAnyCorrectCall);
             }
         }
     }

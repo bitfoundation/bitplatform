@@ -23,8 +23,9 @@
                 let jayDataDtoType: any = window;
                 for (let part of parts) {
                     jayDataDtoType = jayDataDtoType[part];
-                    if (jayDataDtoType == null)
+                    if (jayDataDtoType == null) {
                         return;
+                    }
                 }
 
                 dto.MembersMetadata

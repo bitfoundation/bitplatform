@@ -65,7 +65,7 @@ namespace Bit.Tests.Api.Middlewares.Tests
                         .Objects.OfType<IScopeStatusManager>()
                         .Last();
 
-                    A.CallTo(() => scopeStatusManager.MarkAsFailed())
+                    A.CallTo(() => scopeStatusManager.MarkAsFailed("Operation is not valid due to the current state of the object."))
                         .MustHaveHappened(Repeated.Exactly.Once);
 
                     ILogger logger = TestDependencyManager.CurrentTestDependencyManager
@@ -111,7 +111,7 @@ namespace Bit.Tests.Api.Middlewares.Tests
                     .Objects.OfType<IScopeStatusManager>()
                     .Last();
 
-                A.CallTo(() => scopeStatusManager.MarkAsFailed())
+                A.CallTo(() => scopeStatusManager.MarkAsFailed("UnknownReasonPhrase"))
                             .MustHaveHappened(Repeated.Exactly.Once);
 
                 ILogger logger = TestDependencyManager.CurrentTestDependencyManager
@@ -144,7 +144,7 @@ namespace Bit.Tests.Api.Middlewares.Tests
                     .Objects.OfType<IScopeStatusManager>()
                     .Last();
 
-                A.CallTo(() => scopeStatusManager.MarkAsFailed())
+                A.CallTo(() => scopeStatusManager.MarkAsFailed("Not Acceptable"))
                     .MustHaveHappened(Repeated.Exactly.Once);
 
                 ILogger logger = TestDependencyManager.CurrentTestDependencyManager

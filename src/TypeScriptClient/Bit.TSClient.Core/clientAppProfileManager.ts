@@ -12,8 +12,9 @@
 
         public determinateClientScreenSize(): void {
 
-            if (this.clientAppProfile.screenSize == null || this.clientAppProfile.screenSize == "")
+            if (this.clientAppProfile.screenSize == null || this.clientAppProfile.screenSize == "") {
                 this.clientAppProfile.screenSize = "DesktopAndTablet";
+            }
 
         }
 
@@ -50,13 +51,15 @@
 
             this.clientAppProfile = clientAppProfile;
 
-            if (this.clientAppProfile == null)
+            if (this.clientAppProfile == null) {
                 throw new Error("client app profile is null");
+            }
 
             this.clientAppProfile.getConfig = <T>(configKey: string, defaultValueOnNotFound?: T): T => {
 
-                if (configKey == null)
+                if (configKey == null) {
                     throw new Error("config key is null");
+                }
 
                 let value: T = null;
 
@@ -70,10 +73,11 @@
                 }
 
                 if (valueWasFound == false) {
-                    if (defaultValueOnNotFound != null)
+                    if (defaultValueOnNotFound != null) {
                         value = defaultValueOnNotFound;
-                    else
+                    } else {
                         throw new Error(`Config named ${configKey} not found`);
+                    }
                 }
 
                 return value;

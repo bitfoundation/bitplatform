@@ -1,0 +1,13 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Bit.CSharpClientSample.Views.LoginView" Title="Login">
+    <StackLayout>
+        <Entry Text="{Binding UserName}" />
+        <Entry Text="{Binding Password}" />
+        <Button Text="Login using credentials" Command="{Binding LoginUsingCredentionals}" />
+        <Button Text="Login using Browser" Command="{Binding LoginUsingBrowser}" />
+        <Button Text="Login using Google" Command="{Binding LoginUsingGooglePlus}" />
+        <Button Text="Skip" Command="{Binding Skip}" />
+    </StackLayout>
+</ContentPage>

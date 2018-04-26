@@ -47,7 +47,7 @@ namespace Bit.Signalr.Implementations
 
                 if (isDateTimeOffset == true)
                     throw new InvalidOperationException(
-                    "You may not use date time values in task push content formatter");
+                    "You may not use date time values in signalr content formatter");
 
                 return false;
             }

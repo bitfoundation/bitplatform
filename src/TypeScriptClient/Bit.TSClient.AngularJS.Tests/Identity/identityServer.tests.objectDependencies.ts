@@ -2,7 +2,7 @@
 
     let dependencyManager = DependencyManager.getCurrent();
 
-    dependencyManager.registerObjectDependency({ name: "ModelProvider", type: Implementations.Identity.DefaultModelProvider });
+    dependencyManager.registerObjectDependency({ name: "LoginModelProvider", type: Implementations.Identity.DefaultLoginModelProvider });
 
     dependencyManager.registerObjectDependency({ name: "AppEvent", type: Implementations.Identity.IdentityServerDefaultAngularAppInitialization });
 
@@ -17,6 +17,8 @@
     dependencyManager.registerInstanceDependency({ name: "ClientAppProfileManager" }, ClientAppProfileManager.getCurrent());
 
     dependencyManager.registerObjectDependency({ name: "DateTimeService", type: Implementations.DefaultDateTimeService });
+
+    dependencyManager.registerObjectDependency({ name: "DateTimeProvider", type: Implementations.DefaultDateTimeProvider });
 
     dependencyManager.registerObjectDependency({ name: "SecurityService", type: Implementations.DefaultSecurityService });
 

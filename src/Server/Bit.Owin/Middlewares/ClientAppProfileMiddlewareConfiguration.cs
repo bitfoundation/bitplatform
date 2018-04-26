@@ -2,7 +2,6 @@
 using Bit.Owin.Contracts;
 using Bit.Owin.Models;
 using Microsoft.Owin;
-using NWebsec.Owin;
 using Owin;
 
 namespace Bit.Owin.Middlewares
@@ -21,27 +20,15 @@ namespace Bit.Owin.Middlewares
                 {
                     IDependencyResolver dependencyResolver = context.GetDependencyResolver();
 
-                    IDefaultPageModelProvider defaultPageModelProvider = dependencyResolver.Resolve<IDefaultPageModelProvider>();
+                    IClientProfileModelProvider clientProfileModelProvider = dependencyResolver.Resolve<IClientProfileModelProvider>();
 
-                    DefaultPageModel model = await defaultPageModelProvider.GetDefaultPageModelAsync(context.Request.CallCancelled);
+                    ClientProfileModel clientProfileModel = await clientProfileModelProvider.GetClientProfileModelAsync(context.Request.CallCancelled);
 
-                    string clientAppProfile = $@"
-clientAppProfile = {{
-    theme: ""{model.Theme}"",
-    culture: ""{model.Culture}"",
-    version: ""{model.AppVersion}"",
-    isDebugMode: {model.DebugMode.ToString().ToLowerInvariant()},
-    appTitle: ""{model.AppTitle}"",
-    appName: ""{model.AppName}"",
-    desiredTimeZone: ""{model.DesiredTimeZoneValue}"",
-    environmentConfigs: {model.EnvironmentConfigsJson}
-}};
-
-                ";
+                    string clientAppProfileJson = clientProfileModel.ToJavaScriptObject();
 
                     context.Response.ContentType = "text/javascript; charset=utf-8";
 
-                    await context.Response.WriteAsync(clientAppProfile, context.Request.CallCancelled);
+                    await context.Response.WriteAsync(clientAppProfileJson, context.Request.CallCancelled);
                 });
             });
         }

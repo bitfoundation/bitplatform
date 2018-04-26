@@ -44,7 +44,7 @@
 
             uiAutomation.updateUI();
 
-            if (vm.model.TestModel.Id != "2")
+            if (vm.model.TestModel.Id! != "2")
                 throw new Error("rad combo problem");
 
             if (uiAutomation.view.find("#test2").text() != "2")
@@ -55,7 +55,7 @@
 
             await uiAutomation.viewModel.setCurrent();
 
-            if (vm.model.TestModel.Id as any /* see https://github.com/Microsoft/TypeScript/issues/12761#issuecomment-265834364 */ != "1")
+            if (vm.model.TestModel.Id != "1")
                 throw new Error("rad combo problem");
 
             if (uiAutomation.view.find("#test2").text() != "1")

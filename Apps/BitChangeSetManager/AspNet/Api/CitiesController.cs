@@ -1,16 +1,22 @@
 ﻿using Bit.Core.Contracts;
+using Bit.Core.Models;
 using Bit.Data.Contracts;
 using Bit.OData.ActionFilters;
+using Bit.OData.Contents;
 using Bit.OData.Contracts;
 using Bit.OData.ODataControllers;
 using BitChangeSetManager.Dto;
 using Dapper;
 using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Data.Common;
 using System.Linq;
+using System.Net;
+using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Web.Http.Description;
 
 namespace BitChangeSetManager.Api
 {
@@ -22,7 +28,7 @@ namespace BitChangeSetManager.Api
         {
             ODataSqlQuery odataSqlQuery = ODataSqlBuilder.BuildSqlQuery(GetODataQueryOptions(), tableName: "bit.Cities");
 
-            string connectionString = AppEnvironmentProvider.GetActiveAppEnvironment().GetConfig<string>("BitChangeSetManagerDbConnectionString");
+            string connectionString = AppEnvironment.GetConfig<string>("BitChangeSetManagerDbConnectionString");
 
             DbConnection dbConnection = await DbConnectionProvider.GetDbConnectionAsync(connectionString, true, cancellationToken);
 
@@ -43,7 +49,7 @@ namespace BitChangeSetManager.Api
         {
             ODataSqlJsonQuery odataSqlQuery = ODataSqlBuilder.BuildSqlJsonQuery(GetODataQueryOptions(), tableName: "bit.Cities");
 
-            string connectionString = AppEnvironmentProvider.GetActiveAppEnvironment().GetConfig<string>("BitChangeSetManagerDbConnectionString");
+            string connectionString = AppEnvironment.GetConfig<string>("BitChangeSetManagerDbConnectionString");
 
             ODataPushStreamContent responseContent = new ODataPushStreamContent(async (stream) =>
             {
@@ -51,7 +57,9 @@ namespace BitChangeSetManager.Api
 
                 DbTransaction dbTransaction = DbConnectionProvider.GetDbTransaction(connectionString);
 
-                await (await dbConnection.ExecuteReaderAsync(odataSqlQuery.SqlJsonQuery, odataSqlQuery.SqlQuery.Parts.Parameters, transaction: dbTransaction)).PopulateStreamAsync(stream, cancellationToken);
+                DbDataReader dbReader = (DbDataReader)(await dbConnection.ExecuteReaderAsync(odataSqlQuery.SqlJsonQuery, odataSqlQuery.SqlQuery.Parts.Parameters, transaction: dbTransaction));
+
+                await dbReader.PopulateStreamAsync(stream, cancellationToken);
 
             }, cancellationToken);
 
@@ -69,6 +77,6 @@ namespace BitChangeSetManager.Api
 
         public IDbConnectionProvider DbConnectionProvider { get; set; }
 
-        public IAppEnvironmentProvider AppEnvironmentProvider { get; set; }
+        public AppEnvironment AppEnvironment { get; set; }
     }
 }

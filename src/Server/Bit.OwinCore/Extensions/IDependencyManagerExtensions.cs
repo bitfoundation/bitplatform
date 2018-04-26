@@ -1,5 +1,4 @@
-﻿using Bit.Core.Extensions;
-using Bit.Owin.Contracts;
+﻿using Bit.Owin.Contracts;
 using Bit.Owin.Implementations;
 using Bit.Owin.Middlewares;
 using Bit.OwinCore.Contracts;
@@ -7,7 +6,6 @@ using Bit.OwinCore.Implementations;
 using Bit.OwinCore.Middlewares;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Owin.Security.DataProtection;
-using Owin;
 using System;
 
 namespace Bit.Core.Contracts
@@ -48,7 +46,7 @@ namespace Bit.Core.Contracts
             dependencyManager.RegisterOwinMiddleware<InvokeLoginMiddlewareConfiguration>();
             dependencyManager.RegisterAspNetCoreMiddleware<AspNetCoreLogUserInformationMiddlewareConfiguration>();
             dependencyManager.Register<IRandomStringProvider, DefaultRandomStringProvider>(lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExciting: false);
-            dependencyManager.Register<ICertificateProvider, DefaultCertificateProvider>(lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExciting: false);
+            dependencyManager.Register<IAppCertificatesProvider, DefaultAppCertificatesProvider>(lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExciting: false);
             return dependencyManager;
         }
 
@@ -59,6 +57,10 @@ namespace Bit.Core.Contracts
         /// </summary>
         public static IDependencyManager RegisterMinimalAspNetCoreMiddlewares(this IDependencyManager dependencyManager)
         {
+            dependencyManager.RegisterAspNetCoreMiddlewareUsing(aspNetCoreApp =>
+            {
+                aspNetCoreApp.UseMiddleware<AddAcceptCharsetToRequestHeadersIfNotAnyAspNetCoreMiddleware>();
+            });
             dependencyManager.RegisterOwinMiddleware<AspNetCoreAutofacDependencyInjectionMiddlewareConfiguration>();
             dependencyManager.RegisterAspNetCoreMiddleware<AspNetCoreExceptionHandlerMiddlewareConfiguration>();
             dependencyManager.RegisterAspNetCoreMiddleware<AspNetCoreLogRequestInformationMiddlewareConfiguration>();
@@ -71,7 +73,7 @@ namespace Bit.Core.Contracts
         /// | <see cref="IExceptionToHttpErrorMapper"/> by <see cref="DefaultExceptionToHttpErrorMapper"/>
         /// | <see cref="ITimeZoneManager"/> by <see cref="DefaultTimeZoneManager"/>
         /// | <see cref="IRequestInformationProvider"/> by <see cref="AspNetCoreRequestInformationProvider"/>
-        /// | On Mono, it registers <see cref="IDataProtectionProvider"/> by <see cref="BasicDataProtectionProvider"/>
+        /// | On Mono, it registers <see cref="IDataProtectionProvider"/> by <see cref="SystemCryptoBasedDataProtectionProvider"/>
         /// </summary>
         public static IDependencyManager RegisterDefaultAspNetCoreApp(this IDependencyManager dependencyManager)
         {
@@ -80,24 +82,9 @@ namespace Bit.Core.Contracts
             dependencyManager.Register<IExceptionToHttpErrorMapper, DefaultExceptionToHttpErrorMapper>(lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExciting: false);
             dependencyManager.Register<ITimeZoneManager, DefaultTimeZoneManager>(overwriteExciting: false);
             dependencyManager.Register<IRequestInformationProvider, AspNetCoreRequestInformationProvider>(overwriteExciting: false);
-            if (PlatformUtilities.IsRunningOnMono || PlatformUtilities.IsRunningOnDotNetCore)
-                dependencyManager.Register<IDataProtectionProvider, BasicDataProtectionProvider>(lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExciting: false);
-            return dependencyManager;
-        }
-
-        public static IDependencyManager RegisterBasicAuthMiddlewareCore(this IDependencyManager dependencyManager, BasicAuthUserPassValidator userPassValidator)
-        {
-            if (userPassValidator == null)
-                throw new ArgumentNullException(nameof(userPassValidator));
-
-            dependencyManager.RegisterAspNetCoreMiddlewareUsing(aspNetCoreApp =>
-            {
-                aspNetCoreApp.UseOwinApp(owinApp =>
-                {
-                    owinApp.UseBasicAuthentication(userPassValidator);
-                });
-            });
-
+            dependencyManager.Register<IDataProtectionProvider, SystemCryptoBasedDataProtectionProvider>(lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExciting: false);
+            dependencyManager.Register<IClientProfileModelProvider, DefaultClientProfileModelProvider>(overwriteExciting: false);
+            dependencyManager.Register<IHtmlPageProvider, DefaultHtmlPageProvider>(overwriteExciting: false);
             return dependencyManager;
         }
     }

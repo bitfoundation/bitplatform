@@ -38,19 +38,19 @@ namespace Bit.Owin.Implementations
             }
         }
 
-        public virtual async Task OnActionExecutedAsync(IOwinContext owinContext)
+        public virtual Task OnActionExecutedAsync(IOwinContext owinContext)
         {
-
+            return Task.CompletedTask;
         }
 
-        public virtual async Task OnActionExecutingAsync(IOwinContext owinContext)
+        public virtual Task OnActionExecutingAsync(IOwinContext owinContext)
         {
-
+            return Task.CompletedTask;
         }
 
-        public virtual async Task OnExceptionAsync(IOwinContext owinContext, Exception ex)
+        public virtual Task OnExceptionAsync(IOwinContext owinContext, Exception ex)
         {
-
+            return Task.CompletedTask;
         }
     }
 }

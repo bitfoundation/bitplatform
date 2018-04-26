@@ -19,7 +19,7 @@ namespace Bit.Core.Contracts
 
             hubsAssemblies = AssemblyContainer.Current.AssembliesWithDefaultAssemblies(hubsAssemblies).Union(new[] { AssemblyContainer.Current.GetBitSignalRAssembly() }).ToArray();
 
-            dependencyManager.RegisterAssemblyTypes(hubsAssemblies, t => typeof(Hub).GetTypeInfo().IsAssignableFrom(t));
+            dependencyManager.RegisterAssemblyTypes(hubsAssemblies, t => typeof(Hub).GetTypeInfo().IsAssignableFrom(t), lifeCycle: DependencyLifeCycle.Transient);
             dependencyManager.Register<IMessagesHubEvents, TMessagesHubEvents>(overwriteExciting: false);
             dependencyManager.Register<IMessageSender, SignalRMessageSender>(lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExciting: false);
             dependencyManager.Register<IMessageContentFormatter, SignalRMessageContentFormatter>(lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExciting: false);

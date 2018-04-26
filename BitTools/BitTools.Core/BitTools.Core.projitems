@@ -9,10 +9,10 @@
     <Import_RootNamespace>BitTools.Core</Import_RootNamespace>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="$(MSBuildThisFileDirectory)Contracts\HtmlClientProxyGenerator\IDefaultHtmlClientProxyCleaner.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Contracts\HtmlClientProxyGenerator\IDefaultHtmlClientProxyGenerator.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Contracts\HtmlClientProxyGenerator\IHtmlClientContextGenerator.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Contracts\HtmlClientProxyGenerator\IHtmlClientProxyDtosGenerator.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Contracts\TypeScriptClientProxyGenerator\IDefaultTypeScriptClientProxyCleaner.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Contracts\TypeScriptClientProxyGenerator\IDefaultTypeScriptClientProxyGenerator.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Contracts\TypeScriptClientProxyGenerator\ITypeScriptClientContextGenerator.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Contracts\TypeScriptClientProxyGenerator\ITypeScriptClientProxyDtosGenerator.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Contracts\IBitCodeGeneratorOrderedProjectsProvider.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Contracts\IBitConfigProvider.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Contracts\IDtoRulesValidator.cs" />

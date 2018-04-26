@@ -23,7 +23,7 @@ namespace Bit.WebApi.Implementations
                 IScopeStatusManager scopeStatusManager = scopeDependencyResolver.Resolve<IScopeStatusManager>();
 
                 if (scopeStatusManager.WasSucceeded())
-                    scopeStatusManager.MarkAsFailed();
+                    scopeStatusManager.MarkAsFailed(traceRecord.Message ?? traceRecord.Exception?.Message);
 
                 if (traceRecord.Exception != null)
                 {

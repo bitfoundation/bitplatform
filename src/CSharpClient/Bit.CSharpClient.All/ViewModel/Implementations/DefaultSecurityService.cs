@@ -1,37 +1,43 @@
-﻿using Bit.ViewModel.Contracts;
+﻿using Autofac;
+using Bit.ViewModel.Contracts;
 using IdentityModel.Client;
-using Newtonsoft.Json.Linq;
+using Newtonsoft.Json;
+using Prism.Autofac;
+using Prism.Ioc;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Xamarin.Auth;
-using Xamarin.Auth.Presenters;
 
 namespace Bit.ViewModel.Implementations
 {
     public class DefaultSecurityService : ISecurityService
     {
-        public DefaultSecurityService(AccountStore accountStore, IConfigProvider configProvider, BitOAuth2Authenticator bitOAuth2Authenticator, OAuthLoginPresenter oAuthLoginPresenter, TokenClient tokenClient, IDateTimeProvider dateTimeProvider)
+        private static ISecurityService _current;
+
+        public static ISecurityService Current => _current;
+
+        public DefaultSecurityService(AccountStore accountStore,
+            IClientAppProfile clientAppProfile,
+            IDateTimeProvider dateTimeProvider,
+            IBrowserService browserService,
+            IContainerProvider containerProvider)
         {
-            _configProvider = configProvider;
+            _clientAppProfile = clientAppProfile;
             _accountStore = accountStore;
-            _oAuthLoginPresenter = oAuthLoginPresenter;
-            _tokenClient = tokenClient;
             _dateTimeProvider = dateTimeProvider;
-            BitOAuth2Authenticator = _bitOAuth2Authenticator = bitOAuth2Authenticator;
+            _browserService = browserService;
+            _containerProvider = containerProvider;
+            _current = this;
         }
 
-        private readonly IConfigProvider _configProvider;
-        private readonly BitOAuth2Authenticator _bitOAuth2Authenticator;
+        private readonly IClientAppProfile _clientAppProfile;
         private readonly AccountStore _accountStore;
-        private readonly OAuthLoginPresenter _oAuthLoginPresenter;
-        private readonly TokenClient _tokenClient;
         private readonly IDateTimeProvider _dateTimeProvider;
-
-        public static BitOAuth2Authenticator BitOAuth2Authenticator { get; protected set; }
+        private readonly IBrowserService _browserService;
+        private readonly IContainerProvider _containerProvider;
 
         public virtual bool IsLoggedIn()
         {
@@ -47,7 +53,7 @@ namespace Bit.ViewModel.Implementations
 
         public virtual async Task<bool> IsLoggedInAsync(CancellationToken cancellationToken = default(CancellationToken))
         {
-            Account account = await GetAccountAsync();
+            Account account = await GetAccountAsync().ConfigureAwait(false);
 
             if (account == null)
                 return false;
@@ -59,122 +65,59 @@ namespace Bit.ViewModel.Implementations
 
         private Account GetAccount()
         {
-            return (_accountStore.FindAccountsForService(_configProvider.AppName)).SingleOrDefault();
+            return (_accountStore.FindAccountsForService(_clientAppProfile.AppName)).SingleOrDefault();
         }
 
         private async Task<Account> GetAccountAsync()
         {
-            return (await _accountStore.FindAccountsForServiceAsync(_configProvider.AppName)).SingleOrDefault();
+            return (await _accountStore.FindAccountsForServiceAsync(_clientAppProfile.AppName).ConfigureAwait(false)).SingleOrDefault();
         }
 
-        public virtual Task<Token> Login(object state = null, CancellationToken cancellationToken = default(CancellationToken))
+        public virtual async Task<Token> Login(object state = null, string client_id = null, CancellationToken cancellationToken = default(CancellationToken))
         {
-            state = state ?? new { };
-
-            BitOAuth2Authenticator.State = state;
-
-            TaskCompletionSource<Token> taskSource = new TaskCompletionSource<Token>();
-
-            async void completed(object sender, AuthenticatorCompletedEventArgs e)
-            {
-                _bitOAuth2Authenticator.Completed -= completed;
-                _bitOAuth2Authenticator.Error -= error;
-
-                if (e.IsAuthenticated)
-                {
-                    if (e.Account != null)
-                    {
-                        try
-                        {
-                            await Logout(internalAppLogoutOnly: true);
-                        }
-                        catch { }
-
-                        if (!e.Account.Properties.ContainsKey(nameof(Token.login_date)))
-                            e.Account.Properties.Add(nameof(Token.login_date), Convert.ToString(_dateTimeProvider.GetCurrentUtcDateTime()));
-
-                        await _accountStore.SaveAsync(e.Account, _configProvider.AppName);
-                    }
-
-                    taskSource.SetResult(e.Account);
-                }
-                else
-                {
-                    throw new InvalidOperationException("Authentication failed");
-                }
-            };
-
-            void error(object sender, AuthenticatorErrorEventArgs e)
-            {
-                _bitOAuth2Authenticator.Completed -= completed;
-                _bitOAuth2Authenticator.Error -= error;
-
-                taskSource.SetException(e.Exception ?? new Exception(e.Message));
-            };
-
-            _bitOAuth2Authenticator.Completed += completed;
-            _bitOAuth2Authenticator.Error += error;
-
-            _oAuthLoginPresenter.Login(_bitOAuth2Authenticator);
-
-            return taskSource.Task;
+            await Logout(state, client_id, cancellationToken).ConfigureAwait(false);
+            CurrentAction = "Login";
+            CurrentLoginTaskCompletionSource = new TaskCompletionSource<Token>();
+            _browserService.OpenUrl(GetLoginUrl(state, client_id));
+            return await CurrentLoginTaskCompletionSource.Task;
         }
 
-        public virtual async Task<Token> LoginWithCredentials(string username, string password, CancellationToken cancellationToken = default(CancellationToken))
+        public virtual async Task<Token> LoginWithCredentials(string username, string password, string client_id, string client_secret, string[] scopes = null, CancellationToken cancellationToken = default(CancellationToken))
         {
-            TokenResponse tokenResponse = await _tokenClient.RequestResourceOwnerPasswordAsync(username, password, scope: "openid profile user_info");
+            await Logout(state: null, client_id: client_id, cancellationToken: cancellationToken);
+
+            if (scopes == null)
+                scopes = "openid profile user_info".Split(' ');
+
+            TokenClient tokenClient = _containerProvider.GetContainer().Resolve<TokenClient>(new NamedParameter("clientId", client_id), new NamedParameter("secret", client_secret));
+
+            TokenResponse tokenResponse = await tokenClient.RequestResourceOwnerPasswordAsync(username, password, scope: string.Join(" ", scopes), cancellationToken: cancellationToken).ConfigureAwait(false);
 
             if (tokenResponse.IsError)
-                throw tokenResponse.Exception ?? new Exception($"{tokenResponse.Error}");
+                throw tokenResponse.Exception ?? new Exception($"{tokenResponse.Error} {tokenResponse.Raw}");
 
-            try
-            {
-                await Logout(internalAppLogoutOnly: true);
-            }
-            catch { }
+            Account account = Token.FromTokenToAccount(tokenResponse);
 
-            string[] tokenParts = tokenResponse.AccessToken.Split('.');
-
-            string fixedString = tokenParts[1].Trim().Replace(" ", "+");
-            if (fixedString.Length % 4 > 0)
-                fixedString = fixedString.PadRight(fixedString.Length + 4 - fixedString.Length % 4, '=');
-
-            byte[] decodedByteArrayToken = Convert.FromBase64String(fixedString);
-
-            string decodedStringToken = Encoding.UTF8.GetString(decodedByteArrayToken);
-            JObject jwtToken = JObject.Parse(decodedStringToken);
-            string userName = jwtToken["sub"].Value<string>();
-
-            Account account = new Account(username, new Dictionary<string, string>
-            {
-                { "access_token" , tokenResponse.AccessToken },
-                { "expires_in" , tokenResponse.ExpiresIn.ToString()},
-                { "token_type" , tokenResponse.TokenType },
-                { "login_date", Convert.ToString(_dateTimeProvider.GetCurrentUtcDateTime()) }
-            });
-
-            await _accountStore.SaveAsync(account, _configProvider.AppName);
+            await _accountStore.SaveAsync(account, _clientAppProfile.AppName).ConfigureAwait(false);
 
             return account;
         }
 
-        public virtual async Task Logout(CancellationToken cancellationToken = default(CancellationToken))
-        {
-            await Logout(internalAppLogoutOnly: false);
-        }
-
-        private async Task Logout(bool internalAppLogoutOnly)
+        public virtual async Task Logout(object state = null, string client_id = null, CancellationToken cancellationToken = default(CancellationToken))
         {
             Account account = GetAccount();
 
             if (account != null)
             {
-                await _accountStore.DeleteAsync(account, _configProvider.AppName);
-            }
-
-            if (internalAppLogoutOnly == false)
-            {
-                WebAuthenticator.ClearCookies(); // This won't work due security reasons >> We need to store id_token + calling InvokeLogout?id_token=...
+                await _accountStore.DeleteAsync(account, _clientAppProfile.AppName).ConfigureAwait(false);
+                Token token = account;
+                if (!string.IsNullOrEmpty(token.id_token))
+                {
+                    CurrentAction = "Logout";
+                    CurrentLogoutTaskCompletionSource = new TaskCompletionSource<object>();
+                    _browserService.OpenUrl(GetLogoutUrl(token.id_token, state, client_id));
+                    await CurrentLogoutTaskCompletionSource.Task;
+                }
             }
         }
 
@@ -190,12 +133,61 @@ namespace Bit.ViewModel.Implementations
 
         public virtual async Task<Token> GetCurrentTokenAsync(CancellationToken cancellationToken = default(CancellationToken))
         {
-            Account account = await GetAccountAsync();
+            Account account = await GetAccountAsync().ConfigureAwait(false);
 
             if (account == null)
                 return null;
 
             return account;
+        }
+
+        public virtual Uri GetLoginUrl(object state = null, string client_id = null)
+        {
+            state = state ?? new { };
+
+            string relativeUri = $"InvokeLogin?state={JsonConvert.SerializeObject(state)}&redirect_uri={ _clientAppProfile.OAuthRedirectUri}";
+
+            if (!string.IsNullOrEmpty(client_id))
+                relativeUri += $"&client_id={client_id}";
+
+            return new Uri(_clientAppProfile.HostUri, relativeUri: relativeUri);
+        }
+
+        public virtual Uri GetLogoutUrl(string id_token, object state = null, string client_id = null)
+        {
+            if (string.IsNullOrEmpty(id_token))
+                throw new ArgumentException("Id token may not be empty or null", nameof(id_token));
+
+            state = state ?? new { };
+
+            string relativeUri = $"InvokeLogout?state={JsonConvert.SerializeObject(state)}&redirect_uri={_clientAppProfile.OAuthRedirectUri}&id_token={id_token}";
+
+            if (!string.IsNullOrEmpty(client_id))
+                relativeUri += $"&client_id={client_id}";
+
+            return new Uri(_clientAppProfile.HostUri, relativeUri: relativeUri);
+        }
+
+        protected TaskCompletionSource<Token> CurrentLoginTaskCompletionSource { get; set; }
+        protected string CurrentAction { get; set; }
+        protected TaskCompletionSource<object> CurrentLogoutTaskCompletionSource { get; set; }
+
+        public virtual async void OnSsoLoginLogoutRedirectCompleted(Uri url)
+        {
+            Dictionary<string, string> query = (Dictionary<string, string>)WebEx.FormDecode(url.Fragment);
+
+            if (CurrentAction == "Logout")
+                CurrentLogoutTaskCompletionSource.SetResult(null);
+            else
+            {
+                Token token = query;
+
+                Account account = Token.FromTokenToAccount(token);
+
+                await _accountStore.SaveAsync(account, _clientAppProfile.AppName).ConfigureAwait(false);
+
+                CurrentLoginTaskCompletionSource.SetResult(query);
+            }
         }
     }
 }

@@ -6,14 +6,17 @@
 
     export function Command(configuration = Default$scopeConfiguration.currentConfig) {
 
-        if (configuration == null)
+        if (configuration == null) {
             throw new Error("configuration may not be null");
+        }
 
-        if (configuration.$appyMode == null)
+        if (configuration.$appyMode == null) {
             configuration.$appyMode = Default$scopeConfiguration.currentConfig.$appyMode;
+        }
 
-        if (configuration.callUpdate$scope == null)
+        if (configuration.callUpdate$scope == null) {
             configuration.callUpdate$scope = Default$scopeConfiguration.currentConfig.callUpdate$scope;
+        }
 
         return (target: Object, propertyKey: string, descriptor: TypedPropertyDescriptor<any>) => {
 
@@ -24,7 +27,7 @@
             let isPromise = false;
             let $rootScope: ng.IScope = null;
 
-            descriptor.value = function (...args: any[]) {
+            descriptor.value = function command(...args: any[]) {
 
                 let result = null;
 
@@ -33,10 +36,11 @@
                 try {
 
                     if (clientAppProfile.isDebugMode == true) {
-                        if (typeof (performance) != "undefined")
+                        if (typeof (performance) != "undefined") {
                             startTime = performance.now();
-                        else
+                        } else {
                             console.time(propertyKey);
+                        }
                     }
 
                     $rootScope = DependencyManager.getCurrent().resolveObject<ng.IRootScopeService>("$rootScope");
@@ -52,10 +56,11 @@
                         rPromise.then(() => {
 
                             if (clientAppProfile.isDebugMode == true) {
-                                if (typeof (performance) != "undefined")
+                                if (typeof (performance) != "undefined") {
                                     console.log(`${propertyKey}: ${performance.now() - startTime}ms`);
-                                else
+                                } else {
                                     console.timeEnd(propertyKey);
+                                }
                             }
 
                             if (configuration.callUpdate$scope != "Never") {
@@ -86,10 +91,11 @@
                         }
 
                         if (clientAppProfile.isDebugMode == true) {
-                            if (typeof (performance) != "undefined")
+                            if (typeof (performance) != "undefined") {
                                 console.log(`${propertyKey}: ${performance.now() - startTime}ms`);
-                            else
+                            } else {
                                 console.timeEnd(propertyKey);
+                            }
                         }
                     }
                 }

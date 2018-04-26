@@ -2,6 +2,7 @@
 using System.Threading;
 using System.Threading.Tasks;
 using Bit.Core.Contracts;
+using Bit.Core.Models;
 using Bit.Model.Dtos;
 
 namespace Bit.OData.ODataControllers

@@ -1,8 +1,7 @@
-﻿using System.Linq;
-using System.Threading.Tasks;
-using Bit.Core.Contracts;
+﻿using Bit.Core.Contracts;
 using Bit.Core.Models;
 using Microsoft.Owin;
+using System.Threading.Tasks;
 
 namespace Bit.Owin.Middlewares
 {
@@ -15,27 +14,29 @@ namespace Bit.Owin.Middlewares
 
         private AppEnvironment _App;
 
-        public override async Task Invoke(IOwinContext context)
+        public override Task Invoke(IOwinContext context)
         {
             IDependencyResolver dependencyResolver = context.GetDependencyResolver();
 
             if (_App == null)
             {
-                IAppEnvironmentProvider appEnvironmentProvider = dependencyResolver.Resolve<IAppEnvironmentProvider>();
-
-                _App = appEnvironmentProvider.GetActiveAppEnvironment();
+                _App = dependencyResolver.Resolve<AppEnvironment>();
             }
 
             IRandomStringProvider randomStringProvider = dependencyResolver.Resolve<IRandomStringProvider>();
 
-            string redirectUriHost = $"{context.Request.Scheme}://{context.Request.Host.Value}{_App.GetHostVirtualPath()}SignIn";
-            string redirectUri = $"{_App.GetSsoUrl()}/connect/authorize?scope={string.Join(" ", _App.Security.Scopes)}&client_id={_App.Security.ClientId}&redirect_uri={redirectUriHost}&response_type=id_token token";
+            string client_Id = context.Request.Query["client_id"] ?? _App.GetSsoDefaultClientId();
+            string afterLoginRedirect_uri = context.Request.Query["redirect_uri"] ?? $"{context.Request.Scheme}://{context.Request.Host.Value}{_App.GetHostVirtualPath()}SignIn";
 
-            string stateArgs = string.Join(string.Empty, context.Request.Path.Value.SkipWhile(c => c == '/'));
+            string ssoRedirectUri = $"{_App.GetSsoUrl()}/connect/authorize?scope={string.Join(" ", _App.Security.Scopes)}&client_id={client_Id}&redirect_uri={afterLoginRedirect_uri}&response_type=id_token token";
 
-            string nonce = randomStringProvider.GetRandomNonSecureString(12);
+            string stateArgs = context.Request.Query["state"] ?? "{}";
 
-            context.Response.Redirect($"{redirectUri}&state={stateArgs}&nonce={nonce}");
+            string nonce = randomStringProvider.GetRandomString(12);
+
+            context.Response.Redirect($"{ssoRedirectUri}&state={stateArgs}&nonce={nonce}");
+
+            return Task.CompletedTask;
         }
     }
 }

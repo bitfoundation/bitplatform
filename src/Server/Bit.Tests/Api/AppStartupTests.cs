@@ -47,10 +47,10 @@ namespace Bit.Tests.Api
         {
             using (new BitOwinTestEnvironment())
             {
-                foreach (IAppEvents appEventse in
+                foreach (IAppEvents appEvents in
                     TestDependencyManager.CurrentTestDependencyManager.Objects.OfType<IAppEvents>().ToList())
                 {
-                    A.CallTo(() => appEventse.OnAppStartup())
+                    A.CallTo(() => appEvents.OnAppStartup())
                         .MustHaveHappened(Repeated.Exactly.Once);
                 }
             }

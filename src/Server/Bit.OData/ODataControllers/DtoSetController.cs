@@ -95,6 +95,8 @@ namespace Bit.OData.ODataControllers
         public virtual async Task Delete(TKey key, CancellationToken cancellationToken)
         {
             TEntity entity = await Repository.GetByIdAsync(cancellationToken, key);
+            if (entity == null)
+                throw new ResourceNotFoundException();
             await Repository.DeleteAsync(entity, cancellationToken);
         }
 

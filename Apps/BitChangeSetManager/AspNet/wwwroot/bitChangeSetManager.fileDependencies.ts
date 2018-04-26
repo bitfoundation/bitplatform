@@ -2,7 +2,7 @@
 
 module BitChangeSetManager {
 
-    let dependencyManager = DependencyManager.getCurrent();
+    const dependencyManager = DependencyManager.getCurrent();
 
     dependencyManager.registerFileDependency({
         name: "normalize",
@@ -37,7 +37,10 @@ module BitChangeSetManager {
         predicate: (appInfo) => {
             return appInfo.screenSize == "DesktopAndTablet" && appInfo.culture == "FaIr";
         },
-        fileDependecyType: "Style"
+        fileDependecyType: "Style",
+        onLoad: () => {
+            document.body.className += "k-rtl";
+        }
     });
 
     dependencyManager.registerFileDependency({
@@ -148,11 +151,6 @@ module BitChangeSetManager {
         predicate: (appInfo) => {
             return appInfo.screenSize == "DesktopAndTablet" && appInfo.culture == "FaIr";
         }
-    });
-
-    dependencyManager.registerFileDependency({
-        name: "odataJS",
-        path: "node_modules/@bit/jaydata-odatajs/jaydata-odatajs-4.0.1"
     });
 
     dependencyManager.registerFileDependency({

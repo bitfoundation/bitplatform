@@ -17,11 +17,11 @@ namespace Bit.OData.ODataControllers
         }
 
         [Action]
-        public virtual async Task StoreClientLogs(StoreClientLogsParameters actionParameters)
+        public virtual Task StoreClientLogs(StoreClientLogsParameters actionParameters)
         {
             Logger.AddLogData("ClientLogs", actionParameters.clientLogs);
 
-            await Logger.LogWarningAsync("Client-Log");
+            return Logger.LogWarningAsync("Client-Log");
         }
 
         [Create]

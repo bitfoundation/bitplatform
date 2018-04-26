@@ -36,16 +36,16 @@ namespace WebApiSwagger
         }
     }
 
-    public class AppStartup : OwinAppStartup, IOwinDependenciesManager, IDependenciesManagerProvider
+    public class AppStartup : OwinAppStartup, IOwinAppModule, IAppModulesProvider
     {
         public override void Configuration(IAppBuilder owinApp)
         {
-            DefaultDependenciesManagerProvider.Current = this;
+            DefaultAppModulesProvider.Current = this;
 
             base.Configuration(owinApp);
         }
 
-        public IEnumerable<IDependenciesManager> GetDependenciesManagers()
+        public IEnumerable<IAppModule> GetAppModules()
         {
             yield return this;
         }
@@ -75,7 +75,7 @@ namespace WebApiSwagger
                         c.SingleApiVersion("v1", "SwaggerDemoApi");
                         c.IncludeXmlComments(Path.Combine(DefaultPathProvider.Current.GetCurrentAppPath(), "WebApiSwagger.xml"));
                         c.ApplyDefaultApiConfig(httpConfiguration);
-                    }).EnableSwaggerUi();
+                    }).EnableBitSwaggerUi();
                 });
             });
         }

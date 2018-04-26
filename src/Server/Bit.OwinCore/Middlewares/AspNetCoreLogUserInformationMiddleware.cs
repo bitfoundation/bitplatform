@@ -15,7 +15,7 @@ namespace Bit.OwinCore.Middlewares
             _next = next;
         }
 
-        public async Task Invoke(HttpContext context)
+        public Task Invoke(HttpContext context)
         {
             ILogger logger = context.RequestServices.GetService<ILogger>();
 
@@ -23,7 +23,7 @@ namespace Bit.OwinCore.Middlewares
 
             LogUserInformationMiddleware.LogUserInformation(logger, userInformationProvider);
 
-            await _next.Invoke(context);
+            return _next.Invoke(context);
         }
     }
 }

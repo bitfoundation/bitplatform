@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using Bit.Core.Contracts;
@@ -37,10 +38,24 @@ namespace Bit.Data.EntityFrameworkCore.Implementations
 
             if (entityToAdd is IEntityWithDefaultGuidKey entityToAddAsEntityWithDefaultGuidKey && entityToAddAsEntityWithDefaultGuidKey.Id == Guid.Empty)
                 entityToAddAsEntityWithDefaultGuidKey.Id = Guid.NewGuid();
-            if (entityToAdd is IVersionableEntity versionableEntity && versionableEntity.Version == default(long))
+            if (entityToAdd is IVersionableEntity versionableEntity)
                 versionableEntity.Version = DateTimeProvider.GetCurrentUtcDateTime().UtcTicks;
 
-            DbContext.Add(entityToAdd);
+            if (entityToAdd is ISyncableEntity syncableEntity)
+            {
+                object[] keys = DbContext.Model.FindEntityType(typeof(TEntity).GetTypeInfo())
+                    .FindPrimaryKey()
+                    .Properties
+                    .Select(p => p.PropertyInfo.GetValue(syncableEntity))
+                    .ToArray();
+
+                TEntity entityIfExists = await GetByIdAsync(cancellationToken, keys).ConfigureAwait(false);
+
+                if (entityIfExists != null)
+                    return entityIfExists;
+            }
+
+            await DbContext.AddAsync(entityToAdd, cancellationToken).ConfigureAwait(false);
 
             await SaveChangesAsync(cancellationToken).ConfigureAwait(false);
 
@@ -58,11 +73,11 @@ namespace Bit.Data.EntityFrameworkCore.Implementations
             {
                 if (entityToAdd is IEntityWithDefaultGuidKey entityToAddAsEntityWithDefaultGuidKey && entityToAddAsEntityWithDefaultGuidKey.Id == Guid.Empty)
                     entityToAddAsEntityWithDefaultGuidKey.Id = Guid.NewGuid();
-                if (entityToAdd is IVersionableEntity versionableEntity && versionableEntity.Version == default(long))
+                if (entityToAdd is IVersionableEntity versionableEntity)
                     versionableEntity.Version = DateTimeProvider.GetCurrentUtcDateTime().UtcTicks;
             }
 
-            DbContext.AddRange(entitiesToAddList);
+            await DbContext.AddRangeAsync(entitiesToAddList, cancellationToken).ConfigureAwait(false);
 
             await SaveChangesAsync(cancellationToken).ConfigureAwait(false);
 
@@ -73,6 +88,9 @@ namespace Bit.Data.EntityFrameworkCore.Implementations
         {
             if (entityToUpdate == null)
                 throw new ArgumentNullException(nameof(entityToUpdate));
+
+            if (entityToUpdate is IVersionableEntity versionableEntity)
+                versionableEntity.Version = DateTimeProvider.GetCurrentUtcDateTime().UtcTicks;
 
             DbContext.Update(entityToUpdate);
 
@@ -85,6 +103,9 @@ namespace Bit.Data.EntityFrameworkCore.Implementations
         {
             if (entityToDelete == null)
                 throw new ArgumentNullException(nameof(entityToDelete));
+
+            if (entityToDelete is IVersionableEntity versionableEntity)
+                versionableEntity.Version = DateTimeProvider.GetCurrentUtcDateTime().UtcTicks;
 
             if (entityToDelete is IArchivableEntity archivableEntity)
             {
@@ -104,6 +125,8 @@ namespace Bit.Data.EntityFrameworkCore.Implementations
             if (entity == null)
                 throw new ArgumentNullException(nameof(entity));
 
+            DbContext.ChangeTracker.DetectChanges();
+
             Attach(entity);
 
             return DbContext.Entry(entity).Property(prop).IsModified;
@@ -113,6 +136,8 @@ namespace Bit.Data.EntityFrameworkCore.Implementations
         {
             if (entity == null)
                 throw new ArgumentNullException(nameof(entity));
+
+            DbContext.ChangeTracker.DetectChanges();
 
             Attach(entity);
 
@@ -124,6 +149,8 @@ namespace Bit.Data.EntityFrameworkCore.Implementations
             if (entity == null)
                 throw new ArgumentNullException(nameof(entity));
 
+            DbContext.ChangeTracker.DetectChanges();
+
             Attach(entity);
 
             return DbContext.Entry(entity).State == EntityState.Deleted;
@@ -134,6 +161,8 @@ namespace Bit.Data.EntityFrameworkCore.Implementations
             if (entity == null)
                 throw new ArgumentNullException(nameof(entity));
 
+            DbContext.ChangeTracker.DetectChanges();
+
             Attach(entity);
 
             return DbContext.Entry(entity).State == EntityState.Added;
@@ -143,6 +172,8 @@ namespace Bit.Data.EntityFrameworkCore.Implementations
         {
             if (entity == null)
                 throw new ArgumentNullException(nameof(entity));
+
+            DbContext.ChangeTracker.DetectChanges();
 
             Attach(entity);
 
@@ -175,7 +206,7 @@ namespace Bit.Data.EntityFrameworkCore.Implementations
 
             if (entityToAdd is IEntityWithDefaultGuidKey entityToAddAsEntityWithDefaultGuidKey && entityToAddAsEntityWithDefaultGuidKey.Id == Guid.Empty)
                 entityToAddAsEntityWithDefaultGuidKey.Id = Guid.NewGuid();
-            if (entityToAdd is IVersionableEntity versionableEntity && versionableEntity.Version == default(long))
+            if (entityToAdd is IVersionableEntity versionableEntity)
                 versionableEntity.Version = DateTimeProvider.GetCurrentUtcDateTime().UtcTicks;
 
             DbContext.Add(entityToAdd);
@@ -196,7 +227,7 @@ namespace Bit.Data.EntityFrameworkCore.Implementations
             {
                 if (entityToAdd is IEntityWithDefaultGuidKey entityToAddAsEntityWithDefaultGuidKey && entityToAddAsEntityWithDefaultGuidKey.Id == Guid.Empty)
                     entityToAddAsEntityWithDefaultGuidKey.Id = Guid.NewGuid();
-                if (entityToAdd is IVersionableEntity versionableEntity && versionableEntity.Version == default(long))
+                if (entityToAdd is IVersionableEntity versionableEntity)
                     versionableEntity.Version = DateTimeProvider.GetCurrentUtcDateTime().UtcTicks;
             }
 
@@ -212,6 +243,9 @@ namespace Bit.Data.EntityFrameworkCore.Implementations
             if (entityToUpdate == null)
                 throw new ArgumentNullException(nameof(entityToUpdate));
 
+            if (entityToUpdate is IVersionableEntity versionableEntity)
+                versionableEntity.Version = DateTimeProvider.GetCurrentUtcDateTime().UtcTicks;
+
             DbContext.Update(entityToUpdate);
 
             SaveChanges();
@@ -223,6 +257,9 @@ namespace Bit.Data.EntityFrameworkCore.Implementations
         {
             if (entityToDelete == null)
                 throw new ArgumentNullException(nameof(entityToDelete));
+
+            if (entityToDelete is IVersionableEntity versionableEntity)
+                versionableEntity.Version = DateTimeProvider.GetCurrentUtcDateTime().UtcTicks;
 
             if (entityToDelete is IArchivableEntity archivableEntity)
             {
@@ -242,9 +279,9 @@ namespace Bit.Data.EntityFrameworkCore.Implementations
             return Set.AsNoTracking();
         }
 
-        public virtual async Task<IQueryable<TEntity>> GetAllAsync(CancellationToken cancellationToken)
+        public virtual Task<IQueryable<TEntity>> GetAllAsync(CancellationToken cancellationToken)
         {
-            return Set.AsNoTracking();
+            return Task.FromResult(Set.AsNoTracking());
         }
 
         public virtual IQueryable<TChild> GetCollectionQuery<TChild>(TEntity entity, Expression<Func<TEntity, IEnumerable<TChild>>> childs) where TChild : class
@@ -297,10 +334,10 @@ namespace Bit.Data.EntityFrameworkCore.Implementations
                 reference.Load();
         }
 
-        public virtual async Task SaveChangesAsync(CancellationToken cancellationToken)
+        public virtual Task SaveChangesAsync(CancellationToken cancellationToken)
         {
             DbContext.ChangeTracker.DetectChanges();
-            await DbContext.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+            return DbContext.SaveChangesAsync(cancellationToken);
         }
 
         public virtual void SaveChanges()
@@ -312,13 +349,13 @@ namespace Bit.Data.EntityFrameworkCore.Implementations
         public virtual async Task<TEntity> GetByIdAsync(CancellationToken cancellationToken, params object[] ids)
         {
             return await EfDataProviderSpecificMethodsProvider.ApplyWhereByKeys((await GetAllAsync(CancellationToken.None).ConfigureAwait(false)), ids)
-                .SingleAsync(cancellationToken).ConfigureAwait(false);
+                .SingleOrDefaultAsync(cancellationToken).ConfigureAwait(false);
         }
 
         public virtual TEntity GetById(params object[] ids)
         {
             return EfDataProviderSpecificMethodsProvider.ApplyWhereByKeys(GetAll(), ids)
-                .Single();
+                .SingleOrDefault();
         }
 
         public virtual EfCoreDataProviderSpecificMethodsProvider EfDataProviderSpecificMethodsProvider { get; set; }

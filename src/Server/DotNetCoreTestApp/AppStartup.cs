@@ -3,26 +3,33 @@ using Bit.Core;
 using Bit.Core.Contracts;
 using Bit.Data.EntityFrameworkCore.Contracts;
 using Bit.Data.EntityFrameworkCore.Implementations;
+using Bit.IdentityServer.Contracts;
+using Bit.IdentityServer.Implementations;
 using Bit.Model.Contracts;
 using Bit.Model.Implementations;
+using Bit.OData.ActionFilters;
 using Bit.OData.Contracts;
 using Bit.OData.Implementations;
 using Bit.OData.ODataControllers;
+using Bit.Owin.Exceptions;
 using Bit.Owin.Implementations;
 using Bit.OwinCore;
 using Bit.OwinCore.Contracts;
+using IdentityServer3.Core.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Swashbuckle.Application;
 using System;
 using System.Collections.Generic;
 using System.Reflection;
+using System.Threading;
+using System.Threading.Tasks;
 using System.Web.Http;
 using System.Web.OData.Builder;
 
 namespace DotNetCoreTestApp
 {
-    public class AppStartup : AutofacAspNetCoreAppStartup, IAspNetCoreDependenciesManager, IDependenciesManagerProvider
+    public class AppStartup : AutofacAspNetCoreAppStartup, IAspNetCoreAppModule, IAppModulesProvider
     {
         public AppStartup(IServiceProvider serviceProvider)
             : base(serviceProvider)
@@ -32,12 +39,12 @@ namespace DotNetCoreTestApp
 
         public override IServiceProvider ConfigureServices(IServiceCollection services)
         {
-            DefaultDependenciesManagerProvider.Current = this;
+            DefaultAppModulesProvider.Current = this;
 
             return base.ConfigureServices(services);
         }
 
-        public IEnumerable<IDependenciesManager> GetDependenciesManagers()
+        public IEnumerable<IAppModule> GetAppModules()
         {
             yield return this;
         }
@@ -54,17 +61,24 @@ namespace DotNetCoreTestApp
 
             dependencyManager.RegisterMinimalAspNetCoreMiddlewares();
 
+            dependencyManager.RegisterAspNetCoreSingleSignOnClient();
+
             dependencyManager.RegisterDefaultWebApiAndODataConfiguration();
 
             dependencyManager.RegisterWebApiMiddleware(webApiDependencyManager =>
             {
                 webApiDependencyManager.RegisterGlobalWebApiActionFiltersUsing(httpConfiguration =>
                 {
+                    httpConfiguration.Filters.Add(new System.Web.Http.AuthorizeAttribute());
+                });
+
+                webApiDependencyManager.RegisterGlobalWebApiActionFiltersUsing(httpConfiguration =>
+                {
                     httpConfiguration.EnableSwagger(c =>
                     {
                         c.SingleApiVersion("v1", "Test-Api");
                         c.ApplyDefaultApiConfig(httpConfiguration);
-                    }).EnableSwaggerUi();
+                    }).EnableBitSwaggerUi();
                 });
 
                 webApiDependencyManager.RegisterWebApiMiddlewareUsingDefaultConfiguration();
@@ -72,6 +86,11 @@ namespace DotNetCoreTestApp
 
             dependencyManager.RegisterODataMiddleware(odataDependencyManager =>
             {
+                odataDependencyManager.RegisterGlobalWebApiActionFiltersUsing(httpConfiguration =>
+                {
+                    httpConfiguration.Filters.Add(new DefaultODataAuthorizeAttribute());
+                });
+
                 odataDependencyManager.RegisterODataServiceBuilder<BitODataServiceBuilder>();
                 odataDependencyManager.RegisterODataServiceBuilder<TestODataServiceBuilder>();
 
@@ -81,7 +100,7 @@ namespace DotNetCoreTestApp
                     {
                         c.SingleApiVersion("v1", "Test-Api");
                         c.ApplyDefaultODataConfig(httpConfiguration);
-                    }).EnableSwaggerUi();
+                    }).EnableBitSwaggerUi();
                 });
 
                 odataDependencyManager.RegisterWebApiODataMiddlewareUsingDefaultConfiguration();
@@ -97,6 +116,42 @@ namespace DotNetCoreTestApp
 
             dependencyManager.RegisterDtoEntityMapperConfiguration<DefaultDtoEntityMapperConfiguration>();
             dependencyManager.RegisterDtoEntityMapperConfiguration<TestDtoEntityMapperConfiguration>();
+
+            dependencyManager.RegisterSingleSignOnServer<TestUserService, TestOAuthClientsProvider>();
+        }
+    }
+
+    public class TestUserService : UserService
+    {
+        public override Task<string> GetUserIdByLocalAuthenticationContextAsync(LocalAuthenticationContext context, CancellationToken cancellationToken)
+        {
+            if (context.UserName == context.Password)
+                return Task.FromResult(context.UserName);
+
+            throw new DomainLogicException("LoginFailed");
+        }
+
+        public override Task<bool> UserIsActiveAsync(IsActiveContext context, string userId, CancellationToken cancellationToken)
+        {
+            return Task.FromResult(true);
+        }
+    }
+
+    public class TestOAuthClientsProvider : OAuthClientsProvider
+    {
+        public override IEnumerable<Client> GetClients()
+        {
+            return new[]
+            {
+                GetResourceOwnerFlowClient(new BitResourceOwnerFlowClient
+                {
+                    ClientName = "TestResOwner",
+                    ClientId = "TestResOwner",
+                    Secret = "secret",
+                    TokensLifetime = TimeSpan.FromDays(7),
+                    Enabled = true
+                })
+            };
         }
     }
 

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Globalization;
 using System.Linq;
 using System.Security.Claims;
 using Bit.Core.Contracts;
@@ -47,7 +48,7 @@ namespace Bit.Owin.Implementations
                 string clientDateTime = Context.Request?.Headers?.Get("Client-Date-Time");
                 if (clientDateTime == null)
                     return null;
-                return DateTimeOffset.Parse(clientDateTime);
+                return DateTimeOffset.Parse(clientDateTime, CultureInfo.InvariantCulture);
             }
             protected set => throw new InvalidOperationException();
         }

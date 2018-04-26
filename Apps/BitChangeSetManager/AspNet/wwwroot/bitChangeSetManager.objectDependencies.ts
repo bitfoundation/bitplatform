@@ -2,7 +2,9 @@
 
 module BitChangeSetManager {
 
-    let dependencyManager = DependencyManager.getCurrent();
+    const clientAppProfile = Bit.ClientAppProfileManager.getCurrent().getClientAppProfile();
+
+    const dependencyManager = DependencyManager.getCurrent();
 
     dependencyManager.registerObjectDependency({ name: "AppEvent", type: Bit.Implementations.DefaultKendoExtender });
 

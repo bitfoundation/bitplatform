@@ -7,14 +7,14 @@ using Bit.Tests.Properties;
 
 namespace Bit.Tests
 {
-    public class BitTestAppEnvironmentProvider : IAppEnvironmentProvider
+    public class BitTestAppEnvironmentsProvider : IAppEnvironmentsProvider
     {
-        protected BitTestAppEnvironmentProvider()
+        protected BitTestAppEnvironmentsProvider()
         {
 
         }
 
-        public BitTestAppEnvironmentProvider(TestEnvironmentArgs args)
+        public BitTestAppEnvironmentsProvider(TestEnvironmentArgs args)
         {
             _args = args;
         }
@@ -37,12 +37,6 @@ namespace Bit.Tests
                         Version = "1",
                         DefaultTheme = "LightBlue",
                         DefaultCulture = "EnUs"
-                    },
-                    Security = new EnvironmentSecurity
-                    {
-                        Scopes = new[] { "openid", "profile", "user_info" },
-                        ClientId = "Test",
-                        ClientSecret = "secret"
                     },
                     Cultures = new[]
                     {
@@ -73,14 +67,14 @@ namespace Bit.Tests
                     },
                     Configs = new List<EnvironmentConfig>
                     {
-                        new EnvironmentConfig { Key = "DefaultPageTemplatePath", Value = @"./bit-framework/src/Server/Bit.Tests/defaultPageTemplate.cshtml" },
+                        new EnvironmentConfig { Key = "IndexPagePath", Value = @"./bit-framework/src/Server/Bit.Tests/indexPage.html" },
                         new EnvironmentConfig { Key = "IdentityServerCertificatePath", Value = @"../../../IdentityServerCertificate.pfx" },
                         new EnvironmentConfig { Key = "StaticFilesRelativePath", Value = @"../../../../../../../" },
                         new EnvironmentConfig { Key = "TestDbConnectionString", Value = string.Format(Settings.Default.TestDbConnectionString, Guid.NewGuid())  },
                         new EnvironmentConfig { Key = "IdentityCertificatePassword" , Value = "P@ssw0rd" },
                         new EnvironmentConfig { Key = "ClientSideAccessibleConfigTest", Value = true, AccessibleInClientSide = true},
                         new EnvironmentConfig { Key = "HostVirtualPath", Value = "/" , AccessibleInClientSide = true },
-                        new EnvironmentConfig { Key = "SsoPageTemplatePath" , Value = @"bit-framework/src/Server/Bit.Tests/ssoPageTemplate.cshtml" },
+                        new EnvironmentConfig { Key = "LoginPagePath" , Value = @"bit-framework/src/Server/Bit.Tests/loginPage.html" },
                         new EnvironmentConfig { Key = "GoogleClientId" , Value = "563799658385-5vv2jcqml5dv7fosup10e57unahfufdd.apps.googleusercontent.com" },
                         new EnvironmentConfig { Key = "GoogleSecret" , Value = "v8zVdioz7K-rnYjz7MdxL_fQ" }
                     }

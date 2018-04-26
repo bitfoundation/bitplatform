@@ -1,7 +1,7 @@
-﻿using System.Threading.Tasks;
-using Bit.Core.Contracts;
+﻿using Bit.Core.Contracts;
 using Bit.Core.Models;
 using Microsoft.Owin;
+using System.Threading.Tasks;
 
 namespace Bit.Owin.Middlewares
 {
@@ -14,24 +14,26 @@ namespace Bit.Owin.Middlewares
 
         private AppEnvironment _App;
 
-        public override async Task Invoke(IOwinContext context)
+        public override Task Invoke(IOwinContext context)
         {
             IDependencyResolver dependencyResolver = context.GetDependencyResolver();
 
             if (_App == null)
             {
-                IAppEnvironmentProvider appEnvironmentProvider = dependencyResolver.Resolve<IAppEnvironmentProvider>();
-
-                _App = appEnvironmentProvider.GetActiveAppEnvironment();
+                _App = dependencyResolver.Resolve<AppEnvironment>();
             }
 
-            string redirectUriHost = $"{context.Request.Scheme}://{context.Request.Host.Value}{_App.GetHostVirtualPath()}SignOut";
+            string afterLogoutRedirect_uri = context.Request.Query["redirect_uri"] ?? $"{context.Request.Scheme}://{context.Request.Host.Value}{_App.GetHostVirtualPath()}SignOut";
 
-            string redirectUri = $"{_App.GetSsoUrl()}/connect/endsession?post_logout_redirect_uri={redirectUriHost}";
+            string ssoRedirectUri = $"{_App.GetSsoUrl()}/connect/endsession?post_logout_redirect_uri={afterLogoutRedirect_uri}";
 
-            context.Response.Redirect(redirectUri + "&id_token_hint=" + context.Request.Query["id_token"]);
+            string stateArgs = context.Request.Query["state"] ?? "{}";
 
-            context.Authentication.SignOut("custom", "Barear");
+            context.Response.Redirect($"{ssoRedirectUri}&id_token_hint={(context.Request.Query["id_token"])}&state={stateArgs}");
+
+            context.Authentication.SignOut("custom", "Bearer");
+
+            return Task.CompletedTask;
         }
     }
 }

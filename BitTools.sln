@@ -11,8 +11,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BitCodeGenerator.Test", "Bi
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BitVSExtensionV1", "BitTools\BitVSExtensionV1\BitVSExtensionV1.csproj", "{F22F2025-9D98-48EA-B5CC-FFB0E90F3AE7}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BitVSEditorUtils", "BitTools\BitVSEditorUtils\BitVSEditorUtils.csproj", "{BD380C7D-90FB-4A55-BFEE-D3FFD3A94A3B}"
-EndProject
 Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "BitTools.Core", "BitTools\BitTools.Core\BitTools.Core.shproj", "{2C8E2FD6-0DB2-470B-9059-9B0B6DF1562F}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BitTools.Core.VSExtensionBuildVersion", "BitTools\BitTools.Core.VSExtensionBuildVersion\BitTools.Core.VSExtensionBuildVersion.csproj", "{3AA3C219-2D0A-49DD-A025-5B4654BF2CFA}"
@@ -48,10 +46,6 @@ Global
 		{F22F2025-9D98-48EA-B5CC-FFB0E90F3AE7}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F22F2025-9D98-48EA-B5CC-FFB0E90F3AE7}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F22F2025-9D98-48EA-B5CC-FFB0E90F3AE7}.Release|Any CPU.Build.0 = Release|Any CPU
-		{BD380C7D-90FB-4A55-BFEE-D3FFD3A94A3B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{BD380C7D-90FB-4A55-BFEE-D3FFD3A94A3B}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{BD380C7D-90FB-4A55-BFEE-D3FFD3A94A3B}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{BD380C7D-90FB-4A55-BFEE-D3FFD3A94A3B}.Release|Any CPU.Build.0 = Release|Any CPU
 		{3AA3C219-2D0A-49DD-A025-5B4654BF2CFA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{3AA3C219-2D0A-49DD-A025-5B4654BF2CFA}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3AA3C219-2D0A-49DD-A025-5B4654BF2CFA}.Release|Any CPU.ActiveCfg = Release|Any CPU

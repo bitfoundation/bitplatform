@@ -7,7 +7,7 @@ namespace Bit.Tests.Model.DomainModels
 {
     [Table("TestCustomers", Schema = "Test")]
     [Serializable]
-    public class TestCustomer : IEntity
+    public class TestCustomer : IEntity, ISyncableEntity
     {
         [Key]
         public virtual Guid Id { get; set; }
@@ -18,5 +18,9 @@ namespace Bit.Tests.Model.DomainModels
         public virtual TestCity City { get; set; }
 
         public virtual Guid CityId { get; set; }
+
+        public virtual long Version { get; set; }
+
+        public virtual bool IsArchived { get; set; }
     }
 }

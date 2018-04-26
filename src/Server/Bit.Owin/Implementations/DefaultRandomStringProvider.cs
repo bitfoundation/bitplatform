@@ -1,26 +1,21 @@
-﻿using System;
-using Bit.Core.Contracts;
+﻿using Bit.Core.Contracts;
+using System;
+using System.Globalization;
 
 namespace Bit.Owin.Implementations
 {
     public class DefaultRandomStringProvider : IRandomStringProvider
     {
-        private const string Chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-
-        public virtual string GetRandomNonSecureString(int length)
+        public virtual string GetRandomString(int length)
         {
-            char[] stringChars = new char[length];
+            string result = "";
 
-            Random random = new Random();
-
-            for (int i = 0; i < length; i++)
+            while (result.Length < length)
             {
-                stringChars[i] = Chars[random.Next(Chars.Length)];
+                result += Guid.NewGuid().ToString("N", CultureInfo.InvariantCulture);
             }
 
-            string finalString = new string(stringChars);
-
-            return finalString;
+            return result.Substring(length);
         }
     }
 }

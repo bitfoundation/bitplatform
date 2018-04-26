@@ -2,6 +2,6 @@
 {
     public interface IRandomStringProvider
     {
-        string GetRandomNonSecureString(int length);
+        string GetRandomString(int length);
     }
 }

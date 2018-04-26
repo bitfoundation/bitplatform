@@ -19,7 +19,7 @@ namespace Bit.Owin.Middlewares
 
         }
 
-        public override async Task OnActionExecutingAsync(IOwinContext owinContext)
+        public override Task OnActionExecutingAsync(IOwinContext owinContext)
         {
             if (owinContext.Response.Headers.Any(h => string.Equals(h.Key, "Cache-Control", StringComparison.InvariantCultureIgnoreCase)))
                 owinContext.Response.Headers.Remove("Cache-Control");
@@ -33,7 +33,7 @@ namespace Bit.Owin.Middlewares
                 owinContext.Response.Headers.Remove("Expires");
             owinContext.Response.Headers.Add("Expires", new[] { "0" });
 
-            await base.OnActionExecutingAsync(owinContext);
+            return base.OnActionExecutingAsync(owinContext);
         }
     }
 }

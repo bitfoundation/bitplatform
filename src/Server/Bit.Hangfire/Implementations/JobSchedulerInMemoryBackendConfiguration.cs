@@ -1,10 +1,12 @@
 ﻿using Autofac;
 using Bit.Core.Contracts;
+using Bit.Hangfire.Contracts;
 using Bit.Owin.Contracts;
 using Hangfire;
 using Hangfire.Logging;
 using Hangfire.MemoryStorage;
 using System;
+using System.Collections.Generic;
 
 namespace Bit.Hangfire.Implementations
 {
@@ -15,6 +17,8 @@ namespace Bit.Hangfire.Implementations
         private BackgroundJobServer _backgroundJobServer;
 
         public virtual ILogProvider LogProvider { get; set; }
+
+        public virtual IEnumerable<IHangfireOptionsCustomizer> Customizers { get; set; }
 
         public virtual IAutofacDependencyManager DependencyManager
         {
@@ -36,10 +40,17 @@ namespace Bit.Hangfire.Implementations
             GlobalConfiguration.Configuration.UseAutofacActivator(_container);
             GlobalConfiguration.Configuration.UseLogProvider(LogProvider);
 
-            _backgroundJobServer = new BackgroundJobServer(new BackgroundJobServerOptions
+            BackgroundJobServerOptions options = new BackgroundJobServerOptions
             {
                 Activator = JobActivator
-            }, storage);
+            };
+
+            foreach (IHangfireOptionsCustomizer customizer in Customizers)
+            {
+                customizer.Customize(GlobalConfiguration.Configuration, options, storage);
+            }
+
+            _backgroundJobServer = new BackgroundJobServer(options, storage);
         }
 
         public virtual void OnAppEnd()

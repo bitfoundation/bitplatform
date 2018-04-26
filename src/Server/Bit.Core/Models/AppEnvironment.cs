@@ -4,7 +4,6 @@ using System.Linq;
 
 namespace Bit.Core.Models
 {
-    [Serializable]
     public class AppEnvironment
     {
         public virtual string Name { get; set; }
@@ -20,9 +19,9 @@ namespace Bit.Core.Models
             Scopes = new[] { "openid", "profile", "user_info" }
         };
 
-        public virtual EnvironmentCulture[] Cultures { get; set; } = new EnvironmentCulture[] { };
+        public virtual EnvironmentCulture[] Cultures { get; set; } = Array.Empty<EnvironmentCulture>();
 
-        public virtual EnvironmentTheme[] Themes { get; set; } = new EnvironmentTheme[] { };
+        public virtual EnvironmentTheme[] Themes { get; set; } = Array.Empty<EnvironmentTheme>();
 
         public virtual List<EnvironmentConfig> Configs { get; set; } = new List<EnvironmentConfig>();
 
@@ -72,12 +71,17 @@ namespace Bit.Core.Models
 
         public virtual string GetSsoUrl()
         {
-            return Security?.SSOServerUrl ?? $"{GetHostVirtualPath()}core";
+            return Security?.SsoServerUrl ?? $"{GetHostVirtualPath()}core";
         }
 
         public virtual string GetSsoIssuerName()
         {
             return Security?.IssuerName ?? AppInfo.Name;
+        }
+
+        public virtual string GetSsoDefaultClientId()
+        {
+            return Security?.DefaultClientId ?? AppInfo.Name;
         }
 
         public virtual bool HasConfig(string configKey)
@@ -105,7 +109,6 @@ namespace Bit.Core.Models
         }
     }
 
-    [Serializable]
     public class EnvironmentAppInfo
     {
         public virtual string Version { get; set; }
@@ -124,26 +127,25 @@ namespace Bit.Core.Models
         }
     }
 
-    [Serializable]
     public class EnvironmentSecurity
     {
-        public virtual string SSOServerUrl { get; set; }
+        public virtual string SsoServerUrl { get; set; }
 
         public virtual string IssuerName { get; set; }
 
-        public virtual string ClientSecret { get; set; }
-
-        public virtual string ClientId { get; set; }
-
         public virtual string[] Scopes { get; set; }
+
+        /// <summary>
+        /// It's used in redirects of InvokeLogin & RedirectToSsoIfNotLoggedIn middlewares to sso
+        /// </summary>
+        public virtual string DefaultClientId { get; set; }
 
         public override string ToString()
         {
-            return $"{nameof(IssuerName)}: {IssuerName}, {nameof(ClientId)}: {ClientId}";
+            return $"{nameof(IssuerName)}: {IssuerName}, {nameof(DefaultClientId)}: {DefaultClientId}, {nameof(Scopes)}: {Scopes}";
         }
     }
 
-    [Serializable]
     public class EnvironmentTheme
     {
         public virtual string Name { get; set; }
@@ -154,7 +156,6 @@ namespace Bit.Core.Models
         }
     }
 
-    [Serializable]
     public class EnvironmentCulture
     {
         public virtual string Name { get; set; }
@@ -167,7 +168,6 @@ namespace Bit.Core.Models
         }
     }
 
-    [Serializable]
     public class EnvironmentCultureValue
     {
         public virtual string Name { get; set; }
@@ -180,7 +180,6 @@ namespace Bit.Core.Models
         }
     }
 
-    [Serializable]
     public class EnvironmentConfig
     {
         public virtual string Key { get; set; }

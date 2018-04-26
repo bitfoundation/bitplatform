@@ -3,27 +3,24 @@ using Bit.Core.Models;
 using Bit.Owin.Contracts;
 using Microsoft.Owin.FileSystems;
 using Microsoft.Owin.StaticFiles;
-using NWebsec.Owin;
 using Owin;
 
 namespace Bit.Owin.Middlewares
 {
     public class StaticFilesMiddlewareConfiguration : IOwinMiddlewareConfiguration
     {
-        public virtual IAppEnvironmentProvider AppEnvironmentProvider { get; set; }
+        public virtual AppEnvironment AppEnvironment { get; set; }
         public virtual IPathProvider PathProvider { get; set; }
 
         public virtual void Configure(IAppBuilder owinApp)
         {
-            AppEnvironment appEnvironment = AppEnvironmentProvider.GetActiveAppEnvironment();
-
-            string rootFolder = PathProvider.GetCurrentStaticFilesPath();
+            string rootFolder = PathProvider.GetStaticFilesFolderPath();
 
             PhysicalFileSystem fileSystem = new PhysicalFileSystem(rootFolder);
 
             FileServerOptions options = new FileServerOptions
             {
-                EnableDirectoryBrowsing = appEnvironment.DebugMode,
+                EnableDirectoryBrowsing = AppEnvironment.DebugMode,
                 EnableDefaultFiles = false
             };
 
@@ -31,11 +28,11 @@ namespace Bit.Owin.Middlewares
 
             options.FileSystem = fileSystem;
 
-            string path = $@"/Files/V{appEnvironment.AppInfo.Version}";
+            string path = $@"/Files/V{AppEnvironment.AppInfo.Version}";
 
             owinApp.Map(path, innerApp =>
             {
-                if (appEnvironment.DebugMode == true)
+                if (AppEnvironment.DebugMode == true)
                     innerApp.Use<OwinNoCacheResponseMiddleware>();
                 else
                     innerApp.Use<OwinCacheResponseMiddleware>();

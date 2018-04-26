@@ -22,19 +22,19 @@ namespace Bit.Tests.Api.Middlewares.Tests
                 {
                     IRandomStringProvider randomStringProvider = A.Fake<IRandomStringProvider>();
 
-                    A.CallTo(() => randomStringProvider.GetRandomNonSecureString(12))
+                    A.CallTo(() => randomStringProvider.GetRandomString(12))
                     .Returns("RandomString");
 
                     manager.RegisterInstance(randomStringProvider);
                 }
             }))
             {
-                HttpResponseMessage getDefaultPageResponse = await testEnvironment.Server.BuildHttpClient()
+                HttpResponseMessage getIndexPageResponse = await testEnvironment.Server.BuildHttpClient()
                     .GetAsync("/some-page", HttpCompletionOption.ResponseHeadersRead);
 
-                Assert.AreEqual(HttpStatusCode.Redirect, getDefaultPageResponse.StatusCode);
+                Assert.AreEqual(HttpStatusCode.Redirect, getIndexPageResponse.StatusCode);
 
-                Assert.AreEqual(@"/core/connect/authorize?scope=openid profile user_info&client_id=Test&redirect_uri=http://localhost/SignIn&response_type=id_token token&state={""pathname"":""/some-page""}&nonce=RandomString", getDefaultPageResponse.Headers.Location.ToString());
+                Assert.AreEqual(@"/core/connect/authorize?scope=openid profile user_info&client_id=Test&redirect_uri=http://localhost/SignIn&response_type=id_token token&state={""pathname"":""/some-page""}&nonce=RandomString", getIndexPageResponse.Headers.Location.ToString());
             }
         }
 
@@ -46,10 +46,10 @@ namespace Bit.Tests.Api.Middlewares.Tests
             {
                 TokenResponse token = await testEnvironment.Server.Login("ValidUserName", "ValidPassword", clientId: "TestResOwner");
 
-                HttpResponseMessage getDefaultPageResponse = await testEnvironment.Server.BuildHttpClient(token)
+                HttpResponseMessage getIndexPageResponse = await testEnvironment.Server.BuildHttpClient(token)
                     .GetAsync("/");
 
-                Assert.AreNotEqual(HttpStatusCode.Redirect, getDefaultPageResponse.StatusCode);
+                Assert.AreNotEqual(HttpStatusCode.Redirect, getIndexPageResponse.StatusCode);
             }
         }
     }

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Globalization;
 using System.Net.Http;
 using System.Text.RegularExpressions;
 using System.Web.Http.Controllers;
@@ -32,13 +33,13 @@ namespace Bit.OData.ActionFilters
 
                     Regex.Replace(match.Value, isoDateRegExp, (innerMatch) =>
                     {
-                        DateTimeOffset baseDate = DateTimeOffset.Parse(innerMatch.Value);
+                        DateTimeOffset baseDate = DateTimeOffset.Parse(innerMatch.Value, CultureInfo.InvariantCulture);
 
                         DateTimeOffset date = baseDate;
 
                         date = timeZoneManager.MapFromClientToServer(date);
 
-                        result = date.ToString("yyyy-MM-dd");
+                        result = date.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
 
                         return result;
 
@@ -50,11 +51,11 @@ namespace Bit.OData.ActionFilters
 
                 urlAsTextToFix = Regex.Replace(urlAsTextToFix, isoDateRegExp, (match) =>
                 {
-                    DateTimeOffset date = DateTimeOffset.Parse(match.Value);
+                    DateTimeOffset date = DateTimeOffset.Parse(match.Value, CultureInfo.InvariantCulture);
 
                     date = timeZoneManager.MapFromClientToServer(date);
 
-                    return date.ToString("yyyy-MM-ddTHH:mm:ss.00Z");
+                    return date.ToString("yyyy-MM-ddTHH:mm:ss.00Z", CultureInfo.InvariantCulture);
 
                 }, RegexOptions.Compiled | RegexOptions.CultureInvariant | RegexOptions.IgnoreCase);
 

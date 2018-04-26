@@ -14,33 +14,20 @@ namespace Bit.Tests.Api.ApiControllers
 {
     public class ParentEntitiesController : DtoController<ParentEntity>
     {
-        private readonly IRepository<ParentEntity> _parentEntitiesRepository;
-
-        public ParentEntitiesController(IRepository<ParentEntity> parentModelsRepository)
-        {
-            if (parentModelsRepository == null)
-                throw new ArgumentNullException(nameof(parentModelsRepository));
-
-            _parentEntitiesRepository = parentModelsRepository;
-        }
-
-        protected ParentEntitiesController()
-        {
-
-        }
+        public virtual IRepository<ParentEntity> ParentEntitiesRepository { get; set; }
 
         [Get]
         [AllowAnonymous]
         public virtual async Task<IQueryable<ParentEntity>> Get(CancellationToken cancellationToken)
         {
-            return await _parentEntitiesRepository
+            return await ParentEntitiesRepository
                 .GetAllAsync(cancellationToken);
         }
 
         [Get]
         public virtual async Task<ParentEntity> Get(long key, CancellationToken cancellationToken)
         {
-            ParentEntity parentEntity = await (await _parentEntitiesRepository
+            ParentEntity parentEntity = await (await ParentEntitiesRepository
                 .GetAllAsync(cancellationToken))
                 .FirstOrDefaultAsync(t => t.Id == key, cancellationToken);
 
@@ -53,7 +40,7 @@ namespace Bit.Tests.Api.ApiControllers
         [Create]
         public virtual async Task<ParentEntity> Create(ParentEntity model, CancellationToken cancellationToken)
         {
-            model = await _parentEntitiesRepository.AddAsync(model, cancellationToken);
+            model = await ParentEntitiesRepository.AddAsync(model, cancellationToken);
 
             if (model.Name == "KnownError")
                 throw new DomainLogicException(TestMetadataBuilder.SomeError);

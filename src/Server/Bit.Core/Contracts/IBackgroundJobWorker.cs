@@ -1,19 +1,11 @@
-﻿using System;
+﻿using Bit.Core.Models;
+using System;
 using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
 
 namespace Bit.Core.Contracts
 {
-    public class JobInfo
-    {
-        public virtual string Id { get; set; }
-
-        public virtual string State { get; set; }
-
-        public DateTimeOffset CreatedAt { get; set; }
-    }
-
     public interface IBackgroundJobWorker
     {
         Task<string> PerformBackgroundJobAsync<TService>(Expression<Action<TService>> methodCall);

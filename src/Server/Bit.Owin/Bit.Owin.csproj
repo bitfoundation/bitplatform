@@ -3,7 +3,7 @@
   <PropertyGroup>
     <TargetFrameworks>net461;netcoreapp2.0</TargetFrameworks>
     <PackageTags>Bit Microsoft Katana OWIN</PackageTags>
-    <Version>0.8.8</Version>
+    <Version>0.0.1</Version>
     <Authors>Bit Foundation</Authors>
     <Company>Bit Foundation</Company>
     <Product>Bit Framework</Product>
@@ -15,25 +15,25 @@
     <RepositoryUrl>https://github.com/bit-foundation/bit-framework</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <PackageReleaseNotes>https://github.com/bit-foundation/bit-framework/releases</PackageReleaseNotes>
-    <AssemblyVersion>0.8.8.0</AssemblyVersion>
-    <FileVersion>0.8.8.0</FileVersion>
+    <AssemblyVersion>0.0.0.1</AssemblyVersion>
+    <FileVersion>0.0.0.1</FileVersion>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <DocumentationFile>bin\$(Configuration)\$(TargetFramework)\$(AssemblyName).xml</DocumentationFile>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Autofac" Version="4.6.2" />
+    <PackageReference Include="Autofac" Version="4.8.0" />
     <PackageReference Include="Autofac.Owin" Version="4.2.0" />
-    <PackageReference Include="IdentityServer3.AccessTokenValidation" Version="2.15.1" />
+    <PackageReference Include="IdentityModel" Version="3.6.1" />
     <PackageReference Include="Lambda2Js" Version="3.0.1" />
-    <PackageReference Include="Microsoft.AspNet.Razor" Version="3.2.4" />
-    <PackageReference Include="Microsoft.Owin.Security.Jwt" Version="3.1.0" />
-    <PackageReference Include="Microsoft.Owin.StaticFiles" Version="3.1.0" />
-    <PackageReference Include="Newtonsoft.Json" Version="11.0.1" />
-    <PackageReference Include="NWebsec.Owin" Version="2.3.1" />
-    <PackageReference Include="RazorEngine" Version="3.10.0" />
-    <PackageReference Include="System.Configuration.ConfigurationManager" Version="4.4.1" />
+    <PackageReference Include="Microsoft.AspNet.WebApi.Client" Version="5.2.4" />
+    <PackageReference Include="Microsoft.Owin.Security.Jwt" Version="4.0.0" />
+    <PackageReference Include="Microsoft.Owin.StaticFiles" Version="4.0.0" />
+    <PackageReference Include="NWebsec.Core" Version="2.1.0" />
+    <PackageReference Include="NWebsec.Owin" Version="3.1.0" />
     <PackageReference Include="System.Net.Http" Version="4.3.3" />
-    <PackageReference Include="Thinktecture.IdentityModel.Owin.BasicAuthentication" Version="1.0.1" />
+    <PackageReference Include="SourceLink.Embed.AllSourceFiles" Version="2.8.1" PrivateAssets="all" />
+    <PackageReference Include="SourceLink.Copy.PdbFiles" Version="2.8.1" PrivateAssets="All" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(TargetFramework)' == 'netcoreapp2.0'">
@@ -42,6 +42,10 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Bit.Model\Bit.Model.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="System.ServiceModel" />
   </ItemGroup>
 
 </Project>

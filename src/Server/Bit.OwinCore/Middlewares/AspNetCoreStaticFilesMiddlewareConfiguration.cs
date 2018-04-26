@@ -1,5 +1,4 @@
-﻿using Bit.Core.Contracts;
-using Bit.Core.Models;
+﻿using Bit.Core.Models;
 using Bit.OwinCore.Contracts;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -8,16 +7,14 @@ namespace Bit.OwinCore.Middlewares
 {
     public class AspNetCoreStaticFilesMiddlewareConfiguration : IAspNetCoreMiddlewareConfiguration
     {
-        public virtual IAppEnvironmentProvider AppEnvironmentProvider { get; set; }
+        public virtual AppEnvironment AppEnvironment { get; set; }
         public virtual IHostingEnvironment HostingEnvironment { get; set; }
 
         public virtual void Configure(IApplicationBuilder aspNetCoreApp)
         {
-            AppEnvironment appEnvironment = AppEnvironmentProvider.GetActiveAppEnvironment();
-
             FileServerOptions options = new FileServerOptions
             {
-                EnableDirectoryBrowsing = appEnvironment.DebugMode,
+                EnableDirectoryBrowsing = AppEnvironment.DebugMode,
                 EnableDefaultFiles = false
             };
 
@@ -25,11 +22,11 @@ namespace Bit.OwinCore.Middlewares
 
             options.FileProvider = HostingEnvironment.WebRootFileProvider;
 
-            string path = $@"/Files/V{appEnvironment.AppInfo.Version}";
+            string path = $@"/Files/V{AppEnvironment.AppInfo.Version}";
 
             aspNetCoreApp.Map(path, innerApp =>
             {
-                if (appEnvironment.DebugMode == true)
+                if (AppEnvironment.DebugMode == true)
                     innerApp.UseMiddleware<AspNetCoreNoCacheResponseMiddleware>();
                 else
                     innerApp.UseMiddleware<AspNetCoreCacheResponseMiddleware>();

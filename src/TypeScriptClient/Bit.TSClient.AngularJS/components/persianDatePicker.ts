@@ -21,7 +21,7 @@
     })
     export class PersianDateComponent {
 
-        public constructor( @Inject("$scope") public $scope: ng.IScope, @Inject("$element") public $element: JQuery, @Inject("DateTimeService") public dateTimeService: Contracts.IDateTimeService) {
+        public constructor(@Inject("$scope") public $scope: ng.IScope, @Inject("$element") public $element: JQuery, @Inject("DateTimeService") public dateTimeService: Contracts.IDateTimeService) {
         }
 
         public isDateTime: boolean;
@@ -58,26 +58,30 @@
             this.ngModelController.$formatters.push((value: Date): string => {
 
                 if (this.ngModelController.$isEmpty(value)) {
-                    if (this.$display != null)
+                    if (this.$display != null) {
                         this.$display.val(null);
-                    if (this.mdInputContainer != null)
+                    }
+                    if (this.mdInputContainer != null) {
                         this.mdInputContainer.element.removeClass("md-input-has-value");
+                    }
                     return null;
-                }
-                else {
+                } else {
                     const result = new Date(value);
 
                     let formattedResult: string;
 
-                    if (this.isDateTime == true)
+                    if (this.isDateTime == true) {
                         formattedResult = this.dateTimeService.getFormattedDateTime(result, "FaIr");
-                    else
+                    } else {
                         formattedResult = this.dateTimeService.getFormattedDate(result, "FaIr");
+                    }
 
-                    if (this.$display != null)
+                    if (this.$display != null) {
                         this.$display.val(formattedResult);
-                    if (this.mdInputContainer != null)
+                    }
+                    if (this.mdInputContainer != null) {
                         this.mdInputContainer.element.addClass("md-input-has-value");
+                    }
 
                     return formattedResult;
                 }
@@ -101,10 +105,11 @@
                 },
                 formatter: (e) => {
                     const result = new Date(e);
-                    if (isDateTime == true)
+                    if (isDateTime == true) {
                         return dateTimeService.getFormattedDateTime(result, "FaIr");
-                    else
+                    } else {
                         return dateTimeService.getFormattedDate(result, "FaIr");
+                    }
                 },
                 timePicker: {
                     enabled: this.isDateTime == true
@@ -113,9 +118,10 @@
 
             this.$value.val(null); // at first date time picker will initialized with current system date
 
-            this.$display.change(e => { // Clears ngModel when user clears text box
-                if (this.$display.val() == null || this.$display.val() == "")
+            this.$display.change(e => { // clears ngModel when user clears text box
+                if (this.$display.val() == null || this.$display.val() == "") {
                     this.ngModelController.$setViewValue(null);
+                }
             });
 
             this.$value.change((e) => {  // because this input's type is hidden

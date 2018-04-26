@@ -10,10 +10,11 @@ namespace Bit.Model.Implementations
     {
         public virtual void Configure(IMapperConfigurationExpression mapperConfigExpression)
         {
+            mapperConfigExpression.ValidateInlineMaps = false;
+
             mapperConfigExpression.CreateMissingTypeMaps = true;
 
-            mapperConfigExpression.ForAllPropertyMaps(p => p.DestinationProperty.GetCustomAttribute<ForeignKeyAttribute>() != null
-                       && p.DestinationProperty.GetCustomAttribute<InversePropertyAttribute>() != null
+            mapperConfigExpression.ForAllPropertyMaps(p => (p.DestinationProperty.GetCustomAttribute<ForeignKeyAttribute>() != null || p.DestinationProperty.GetCustomAttribute<InversePropertyAttribute>() != null)
                        && !typeof(IEnumerable).IsAssignableFrom(p.DestinationProperty.ReflectedType)
                        && typeof(IDto).IsAssignableFrom(p.DestinationProperty.ReflectedType),
                 (pConfig, member) =>

@@ -1,5 +1,5 @@
 ﻿module Bit.Model.Contracts {
-    export interface ISyncableDto extends IArchivableDto, IVersionableDto {
+    export type ISyncableDto = IArchivableDto & IVersionableDto & {
         IsSynced: boolean;
-    }
+    };
 }

@@ -1,10 +1,4 @@
 {
-  "Schema": {
-    "HtmlSchemaFiles": [
-      "AspNet/wwwroot/node_modules/@bit/bit-framework/html-elements-schema.json",
-      "AspNet/wwwroot/view/html-elements-schema.json"
-    ]
-  },
   "BitCodeGeneratorConfigs": {
     "BitCodeGeneratorMappings": [
       {

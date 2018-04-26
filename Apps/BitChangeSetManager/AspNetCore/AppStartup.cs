@@ -19,16 +19,18 @@ using BitChangeSetManager.DataAccess;
 using BitChangeSetManager.DataAccess.Implementations;
 using BitChangeSetManager.Security;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.Extensions.DependencyInjection;
 using Swashbuckle.Application;
 using System;
 using System.Collections.Generic;
 using System.Data.SqlClient;
+using System.IO.Compression;
 using System.Reflection;
 
 namespace BitChangeSetManager.Core
 {
-    public class AppStartup : AutofacAspNetCoreAppStartup, IAspNetCoreDependenciesManager, IDependenciesManagerProvider
+    public class AppStartup : AutofacAspNetCoreAppStartup, IAspNetCoreAppModule, IAppModulesProvider
     {
         public AppStartup(IServiceProvider serviceProvider)
             : base(serviceProvider)
@@ -38,12 +40,12 @@ namespace BitChangeSetManager.Core
 
         public override IServiceProvider ConfigureServices(IServiceCollection services)
         {
-            DefaultDependenciesManagerProvider.Current = this;
+            DefaultAppModulesProvider.Current = this;
 
             return base.ConfigureServices(services);
         }
 
-        public IEnumerable<IDependenciesManager> GetDependenciesManagers()
+        public IEnumerable<IAppModule> GetAppModules()
         {
             yield return this;
         }
@@ -60,9 +62,24 @@ namespace BitChangeSetManager.Core
             dependencyManager.Register<IDbConnectionProvider, DefaultDbConnectionProvider<SqlConnection>>();
 
             dependencyManager.RegisterAppEvents<BitChangeSetManagerInitialData>();
-            dependencyManager.RegisterAppEvents<RazorViewEngineConfiguration>();
 
             dependencyManager.RegisterDefaultAspNetCoreApp();
+
+            services.AddResponseCompression(options =>
+            {
+                options.EnableForHttps = true;
+                options.Providers.Add<GzipCompressionProvider>();
+            });
+
+            services.Configure<GzipCompressionProviderOptions>(options =>
+            {
+                options.Level = CompressionLevel.Optimal;
+            });
+
+            dependencyManager.RegisterAspNetCoreMiddlewareUsing(aspNetCoreApp =>
+            {
+                aspNetCoreApp.UseResponseCompression();
+            });
 
             services.AddCors();
             dependencyManager.RegisterAspNetCoreMiddlewareUsing(aspNetCoreApp =>
@@ -89,10 +106,10 @@ namespace BitChangeSetManager.Core
                 {
                     httpConfiguration.EnableSwagger(c =>
                     {
-                        EnvironmentAppInfo appInfo = DefaultAppEnvironmentProvider.Current.GetActiveAppEnvironment().AppInfo;
+                        EnvironmentAppInfo appInfo = DefaultAppEnvironmentsProvider.Current.GetActiveAppEnvironment().AppInfo;
                         c.SingleApiVersion($"v{appInfo.Version}", $"{appInfo.Name}-Api");
                         c.ApplyDefaultApiConfig(httpConfiguration);
-                    }).EnableSwaggerUi();
+                    }).EnableBitSwaggerUi();
                 });
 
                 webApiDependencyManager.RegisterWebApiMiddlewareUsingDefaultConfiguration();
@@ -109,10 +126,10 @@ namespace BitChangeSetManager.Core
                 {
                     httpConfiguration.EnableSwagger(c =>
                     {
-                        EnvironmentAppInfo appInfo = DefaultAppEnvironmentProvider.Current.GetActiveAppEnvironment().AppInfo;
+                        EnvironmentAppInfo appInfo = DefaultAppEnvironmentsProvider.Current.GetActiveAppEnvironment().AppInfo;
                         c.SingleApiVersion($"v{appInfo.Version}", $"{appInfo.Name}-Api");
                         c.ApplyDefaultODataConfig(httpConfiguration);
-                    }).EnableSwaggerUi();
+                    }).EnableBitSwaggerUi();
                 });
 
                 odataDependencyManager.RegisterODataServiceBuilder<BitODataServiceBuilder>();
@@ -121,7 +138,7 @@ namespace BitChangeSetManager.Core
 
             });
 
-            if (DefaultAppEnvironmentProvider.Current.GetActiveAppEnvironment().DebugMode == false)
+            if (DefaultAppEnvironmentsProvider.Current.GetActiveAppEnvironment().DebugMode == false)
                 dependencyManager.RegisterSignalRConfiguration<SignalRSqlServerScaleoutConfiguration>();
             dependencyManager.RegisterSignalRConfiguration<SignalRAuthorizeConfiguration>();
             dependencyManager.RegisterSignalRMiddlewareUsingDefaultConfiguration<BitChangeSetManagerAppMessageHubEvents>();
@@ -140,7 +157,7 @@ namespace BitChangeSetManager.Core
 
             dependencyManager.RegisterSingleSignOnServer<BitChangeSetManagerUserService, BitChangeSetManagerClientProvider>();
 
-            dependencyManager.RegisterSecureDefaultPageMiddlewareUsingDefaultConfiguration();
+            dependencyManager.RegisterSecureIndexPageMiddlewareUsingDefaultConfiguration();
 
             dependencyManager.Register<IUserSettingProvider, BitUserSettingProvider>();
         }

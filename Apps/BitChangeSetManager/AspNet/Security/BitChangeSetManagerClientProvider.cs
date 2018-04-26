@@ -8,14 +8,12 @@ using System.Collections.Generic;
 
 namespace BitChangeSetManager.Security
 {
-    public class BitChangeSetManagerClientProvider : ClientProvider
+    public class BitChangeSetManagerClientProvider : OAuthClientsProvider
     {
-        public virtual IAppEnvironmentProvider AppEnvironmentProvider { get; set; }
+        public virtual AppEnvironment AppEnvironment { get; set; }
 
         public override IEnumerable<Client> GetClients()
         {
-            AppEnvironment activeAppEnvironment = AppEnvironmentProvider.GetActiveAppEnvironment();
-
             return new[]
             {
                 GetImplicitFlowClient(new BitImplicitFlowClient
@@ -24,21 +22,23 @@ namespace BitChangeSetManager.Security
                     ClientName = "BitChangeSetManager",
                     PostLogoutRedirectUris = new List<string>
                     {
-                        $@"^(http|https):\/\/(\S+\.)?(bit-change-set-manager.com|localhost)(:\d+)?\b{activeAppEnvironment.GetHostVirtualPath()}\bSignOut\/?"
+                        $@"^(http|https):\/\/(\S+\.)?(bit-change-set-manager.com|localhost)(:\d+)?\b{AppEnvironment.GetHostVirtualPath()}\bSignOut\/?"
                     },
                     RedirectUris = new List<string>
                     {
-                        $@"^(http|https):\/\/(\S+\.)?(bit-change-set-manager.com|localhost)(:\d+)?\b{activeAppEnvironment.GetHostVirtualPath()}\bSignIn\/?"
+                        $@"^(http|https):\/\/(\S+\.)?(bit-change-set-manager.com|localhost)(:\d+)?\b{AppEnvironment.GetHostVirtualPath()}\bSignIn\/?"
                     },
                     Secret = "secret",
-                    TokensLifetime = TimeSpan.FromDays(1)
+                    TokensLifetime = TimeSpan.FromDays(7),
+                    Enabled = true
                 }),
                 GetResourceOwnerFlowClient(new BitResourceOwnerFlowClient
                 {
                     ClientId = "BitChangeSetManager-ResOwner",
                     ClientName = "BitChangeSetManager-ResOwner",
                     Secret = "secret",
-                    TokensLifetime = TimeSpan.FromDays(1)
+                    TokensLifetime = TimeSpan.FromDays(7),
+                    Enabled = true
                 })
 
                 /*  Required nuget packages: IdentityModel + Microsoft.Net.Http

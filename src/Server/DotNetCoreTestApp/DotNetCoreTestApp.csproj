@@ -1,15 +1,22 @@
-<Project Sdk="Microsoft.NET.Sdk.Web">
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
-    <TargetFramework>netcoreapp2.0</TargetFramework>
-    <AssemblyVersion>0.8.8.0</AssemblyVersion>
-    <FileVersion>0.8.8.0</FileVersion>
-    <Version>0.8.8</Version>
+    <TargetFramework>netcoreapp2.1</TargetFramework>
+    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
+    <AssemblyVersion>0.0.0.1</AssemblyVersion>
+    <FileVersion>0.0.0.1</FileVersion>
+    <Version>0.0.1</Version>
+    <PackageConflictPreferredPackages>Microsoft.Private.CoreFx.NETCoreApp;runtime.win-x64.Microsoft.Private.CoreFx.NETCoreApp;$(PackageConflictPreferredPackages)</PackageConflictPreferredPackages>
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="2.0.2" />
+    <PackageReference Include="Microsoft.Private.CoreFx.NETCoreApp" Version="4.5.0-preview3-26513-0" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\Bit.Data.EntityFrameworkCore\Bit.Data.EntityFrameworkCore.csproj" />
-    <ProjectReference Include="..\Bit.Hangfire\Bit.Hangfire.csproj" />
+    <ProjectReference Include="..\Bit.IdentityServer\Bit.IdentityServer.csproj" />
     <ProjectReference Include="..\Bit.OData\Bit.OData.csproj" />
     <ProjectReference Include="..\Bit.OwinCore.AspNetCore2Upgrade\Bit.OwinCore.AspNetCore2Upgrade.csproj" />
     <ProjectReference Include="..\Bit.OwinCore\Bit.OwinCore.csproj" />

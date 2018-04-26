@@ -20,7 +20,7 @@ namespace Bit.Owin.Metadata
 
         public static readonly string BadRequestException = nameof(BadRequestException);
 
-        public override async Task<IEnumerable<ObjectMetadata>> BuildMetadata()
+        public override Task<IEnumerable<ObjectMetadata>> BuildMetadata()
         {
             AddProjectMetadata(new ProjectMetadata
             {
@@ -56,7 +56,7 @@ namespace Bit.Owin.Metadata
                 }
             });
 
-            return await base.BuildMetadata().ConfigureAwait(false);
+            return base.BuildMetadata();
         }
     }
 }

@@ -16,7 +16,7 @@ namespace Bit.Tests.HtmlClient.BrowserTests.Caching
     {
         [TestMethod]
         [TestCategory("HtmlClient"), TestCategory("Caching")]
-        public virtual async Task ResourceLikeDefaultPageWhichInNotCachableMustBeRertivedEverytimeByHtmlClient()
+        public virtual async Task ResourceLikeIndexPageWhichInNotCachableMustBeRertivedEverytimeByHtmlClient()
         {
             using (BitOwinTestEnvironment testEnvironment = new BitOwinTestEnvironment(new TestEnvironmentArgs { UseRealServer = true }))
             {
@@ -27,7 +27,7 @@ namespace Bit.Tests.HtmlClient.BrowserTests.Caching
                     driver.Navigate().Refresh();
                 }
 
-                Assert.AreNotEqual(1, TestDependencyManager.CurrentTestDependencyManager.Objects.OfType<IDefaultHtmlPageProvider>().Count());
+                Assert.AreNotEqual(1, TestDependencyManager.CurrentTestDependencyManager.Objects.OfType<IHtmlPageProvider>().Count());
             }
         }
 

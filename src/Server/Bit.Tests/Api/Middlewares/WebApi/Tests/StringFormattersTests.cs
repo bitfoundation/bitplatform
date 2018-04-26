@@ -29,7 +29,7 @@ namespace Bit.Tests.Api.Middlewares.WebApi.Tests
             A.CallTo(() => stringCorrector1.CorrectString(A<string>.Ignored))
                 .ReturnsLazily(correctString =>
                 {
-                    string arg = correctString.GetArgument<string>("source");
+                    string arg = correctString.GetArgument<string>("input");
 
                     return "ONE" + arg;
                 });
@@ -37,7 +37,7 @@ namespace Bit.Tests.Api.Middlewares.WebApi.Tests
             A.CallTo(() => stringCorrector2.CorrectString(A<string>.Ignored))
                 .ReturnsLazily(correctString =>
                 {
-                    string arg = correctString.GetArgument<string>("source");
+                    string arg = correctString.GetArgument<string>("input");
 
                     return "TWO" + arg;
                 });
@@ -54,7 +54,7 @@ namespace Bit.Tests.Api.Middlewares.WebApi.Tests
             {
                 TokenResponse token = await testEnvironment.Server.Login("ValidUserName", "ValidPassword", clientId: "TestResOwner");
 
-                ODataClient client = testEnvironment.Server.BuildODataClient(token: token);
+                IODataClient client = testEnvironment.Server.BuildODataClient(token: token);
 
                 await client.Controller<TestModelsController, TestModel>()
                     .Action(nameof(TestModelsController.StringFormattersTests))
@@ -106,7 +106,7 @@ namespace Bit.Tests.Api.Middlewares.WebApi.Tests
             A.CallTo(() => stringCorrector.CorrectString(A<string>.Ignored))
                 .ReturnsLazily(correctString =>
                 {
-                    string arg = correctString.GetArgument<string>("source");
+                    string arg = correctString.GetArgument<string>("input");
 
                     return arg.Replace("VALUE", "Test");
                 });
@@ -121,7 +121,7 @@ namespace Bit.Tests.Api.Middlewares.WebApi.Tests
             {
                 TokenResponse token = await testEnvironment.Server.Login("ValidUserName", "ValidPassword", clientId: "TestResOwner");
 
-                ODataClient client = testEnvironment.Server.BuildODataClient(token: token);
+                IODataClient client = testEnvironment.Server.BuildODataClient(token: token);
 
                 IEnumerable<TestModel> testModels = await client.Controller<TestModelsController, TestModel>()
                      .Function(nameof(TestModelsController.GetSomeTestModelsForTest))

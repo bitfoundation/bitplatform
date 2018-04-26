@@ -32,9 +32,7 @@ namespace Bit.Owin
             CultureInfo.DefaultThreadCurrentCulture = culture;
             CultureInfo.DefaultThreadCurrentUICulture = culture;
 
-            IAppEnvironmentProvider appEnvironmentProvider = DefaultAppEnvironmentProvider.Current;
-
-            AppEnvironment activeEnvironment = appEnvironmentProvider.GetActiveAppEnvironment();
+            AppEnvironment activeEnvironment = DefaultAppEnvironmentsProvider.Current.GetActiveAppEnvironment();
 
             AppProperties owinAppProps = new AppProperties(owinApp.Properties);
 
@@ -45,13 +43,13 @@ namespace Bit.Owin
 
             owinAppProps.AppName = activeEnvironment.AppInfo.Name;
 
-            if (DefaultDependencyManager.Current.IsInited() == false)
+            if (DefaultDependencyManager.Current.ContainerIsBuilt() == false)
             {
                 DefaultDependencyManager.Current.Init();
 
-                foreach (IOwinDependenciesManager projectDependenciesManager in DefaultDependenciesManagerProvider.Current.GetDependenciesManagers().OfType<IOwinDependenciesManager>())
+                foreach (IOwinAppModule appModule in DefaultAppModulesProvider.Current.GetAppModules().Cast<IOwinAppModule>())
                 {
-                    projectDependenciesManager.ConfigureDependencies(DefaultDependencyManager.Current);
+                    appModule.ConfigureDependencies(DefaultDependencyManager.Current);
                 }
 
                 DefaultDependencyManager.Current.BuildContainer();

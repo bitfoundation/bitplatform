@@ -23,7 +23,7 @@ namespace BitCodeAnalyzer.SystemAnalyzers
 
         public override void Initialize(AnalysisContext context)
         {
-            context.BitEnableConcurrentExecution();
+            context.EnableConcurrentExecution();
             context.RegisterSyntaxNodeAction(AnalyzeSyntax, SyntaxKind.PropertyDeclaration);
         }
 

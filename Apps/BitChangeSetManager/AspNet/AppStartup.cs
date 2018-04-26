@@ -26,16 +26,16 @@ using Bit.Core.Implementations;
 
 namespace BitChangeSetManager
 {
-    public class AppStartup : OwinAppStartup, IOwinDependenciesManager, IDependenciesManagerProvider
+    public class AppStartup : OwinAppStartup, IOwinAppModule, IAppModulesProvider
     {
         public override void Configuration(IAppBuilder owinApp)
         {
-            DefaultDependenciesManagerProvider.Current = this;
+            DefaultAppModulesProvider.Current = this;
 
             base.Configuration(owinApp);
         }
 
-        public IEnumerable<IDependenciesManager> GetDependenciesManagers()
+        public IEnumerable<IAppModule> GetAppModules()
         {
             yield return this;
         }
@@ -51,7 +51,6 @@ namespace BitChangeSetManager
             dependencyManager.Register<IDbConnectionProvider, DefaultDbConnectionProvider<SqlConnection>>();
 
             dependencyManager.RegisterAppEvents<BitChangeSetManagerInitialData>();
-            dependencyManager.RegisterAppEvents<RazorViewEngineConfiguration>();
 
             dependencyManager.RegisterDefaultOwinApp();
 
@@ -79,10 +78,10 @@ namespace BitChangeSetManager
                 {
                     httpConfiguration.EnableSwagger(c =>
                     {
-                        EnvironmentAppInfo appInfo = DefaultAppEnvironmentProvider.Current.GetActiveAppEnvironment().AppInfo;
+                        EnvironmentAppInfo appInfo = DefaultAppEnvironmentsProvider.Current.GetActiveAppEnvironment().AppInfo;
                         c.SingleApiVersion($"v{appInfo.Version}", $"{appInfo.Name}-Api");
                         c.ApplyDefaultApiConfig(httpConfiguration);
-                    }).EnableSwaggerUi();
+                    }).EnableBitSwaggerUi();
                 });
 
                 webApiDependencyManager.RegisterWebApiMiddlewareUsingDefaultConfiguration();
@@ -99,10 +98,10 @@ namespace BitChangeSetManager
                 {
                     httpConfiguration.EnableSwagger(c =>
                     {
-                        EnvironmentAppInfo appInfo = DefaultAppEnvironmentProvider.Current.GetActiveAppEnvironment().AppInfo;
+                        EnvironmentAppInfo appInfo = DefaultAppEnvironmentsProvider.Current.GetActiveAppEnvironment().AppInfo;
                         c.SingleApiVersion($"v{appInfo.Version}", $"{appInfo.Name}-Api");
                         c.ApplyDefaultODataConfig(httpConfiguration);
-                    }).EnableSwaggerUi();
+                    }).EnableBitSwaggerUi();
                 });
 
                 odataDependencyManager.RegisterODataServiceBuilder<BitODataServiceBuilder>();
@@ -110,7 +109,7 @@ namespace BitChangeSetManager
                 odataDependencyManager.RegisterWebApiODataMiddlewareUsingDefaultConfiguration();
             });
 
-            if (DefaultAppEnvironmentProvider.Current.GetActiveAppEnvironment().DebugMode == false)
+            if (DefaultAppEnvironmentsProvider.Current.GetActiveAppEnvironment().DebugMode == false)
                 dependencyManager.RegisterSignalRConfiguration<SignalRSqlServerScaleoutConfiguration>();
             dependencyManager.RegisterSignalRConfiguration<SignalRAuthorizeConfiguration>();
             dependencyManager.RegisterSignalRMiddlewareUsingDefaultConfiguration<BitChangeSetManagerAppMessageHubEvents>();
@@ -129,7 +128,7 @@ namespace BitChangeSetManager
 
             dependencyManager.RegisterSingleSignOnServer<BitChangeSetManagerUserService, BitChangeSetManagerClientProvider>();
 
-            dependencyManager.RegisterSecureDefaultPageMiddlewareUsingDefaultConfiguration();
+            dependencyManager.RegisterSecureIndexPageMiddlewareUsingDefaultConfiguration();
 
             dependencyManager.Register<IUserSettingProvider, BitUserSettingProvider>();
         }

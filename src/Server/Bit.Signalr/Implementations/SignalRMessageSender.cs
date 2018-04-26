@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Linq;
 using System.Threading.Tasks;
 using Bit.Core.Contracts;
 using Microsoft.AspNet.SignalR;
@@ -37,11 +36,10 @@ namespace Bit.Signalr.Implementations
 
             string objectArgsAsString = messageArgs == null ? string.Empty : Formatter.Serialize(messageArgs);
 
-            userIds.ToList()
-                .ForEach(async u =>
-                {
-                    await hubContext.Clients.Group(u).OnMessageReceived(messageKey, objectArgsAsString);
-                });
+            foreach (string u in userIds)
+            {
+                await hubContext.Clients.Group(u).OnMessageReceived(messageKey, objectArgsAsString).ConfigureAwait(false);
+            }
         }
 
         public virtual void SendMessageToUsers<T>(string messageKey, T messageArgs, string[] userIds)
@@ -57,14 +55,13 @@ namespace Bit.Signalr.Implementations
 
             string objectArgsAsString = messageArgs == null ? string.Empty : Formatter.Serialize(messageArgs);
 
-            userIds.ToList()
-                .ForEach(u =>
-                {
-                    hubContext.Clients.Group(u).OnMessageReceived(messageKey, objectArgsAsString);
-                });
+            foreach (string u in userIds)
+            {
+                hubContext.Clients.Group(u).OnMessageReceived(messageKey, objectArgsAsString);
+            }
         }
 
-        public async Task SendMessageToAllAsync<T>(string messageKey, T messageArgs)
+        public Task SendMessageToAllAsync<T>(string messageKey, T messageArgs)
             where T : class
         {
             if (messageKey == null)
@@ -74,7 +71,7 @@ namespace Bit.Signalr.Implementations
 
             string objectArgsAsString = messageArgs == null ? string.Empty : Formatter.Serialize(messageArgs);
 
-            await hubContext.Clients.All.OnMessageReceived(messageKey, objectArgsAsString);
+            return hubContext.Clients.All.OnMessageReceived(messageKey, objectArgsAsString);
         }
 
         public void SendMessageToAll<T>(string messageKey, T messageArgs)
@@ -90,9 +87,9 @@ namespace Bit.Signalr.Implementations
             hubContext.Clients.All.OnMessageReceived(messageKey, objectArgsAsString);
         }
 
-        public async Task SendMessageToGroupsAsync<T>(string messageKey, T messageArgs, string[] groupNames) where T : class
+        public Task SendMessageToGroupsAsync<T>(string messageKey, T messageArgs, string[] groupNames) where T : class
         {
-            await SendMessageToUsersAsync(messageKey, messageArgs, groupNames);
+            return SendMessageToUsersAsync(messageKey, messageArgs, groupNames);
         }
 
         public void SendMessageToGroups<T>(string messageKey, T messageArgs, string[] groupNames) where T : class

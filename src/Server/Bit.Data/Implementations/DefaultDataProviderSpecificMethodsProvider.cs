@@ -47,20 +47,20 @@ namespace Bit.Data.Implementations
             return source;
         }
 
-        public virtual async Task<T> FirstOrDefaultAsync<T>(IQueryable<T> source, CancellationToken cancellationToken)
+        public virtual Task<T> FirstOrDefaultAsync<T>(IQueryable<T> source, CancellationToken cancellationToken)
         {
             if (source == null)
                 throw new ArgumentNullException(nameof(source));
 
-            return source.FirstOrDefault();
+            return Task.FromResult(source.FirstOrDefault());
         }
 
-        public virtual async Task<long> LongCountAsync<T>(IQueryable<T> source, CancellationToken cancellationToken)
+        public virtual Task<long> LongCountAsync<T>(IQueryable<T> source, CancellationToken cancellationToken)
         {
             if (source == null)
                 throw new ArgumentNullException(nameof(source));
 
-            return source.LongCount();
+            return Task.FromResult(source.LongCount());
         }
 
         public virtual IQueryable<T> Skip<T>(IQueryable<T> source, int count)
@@ -86,12 +86,12 @@ namespace Bit.Data.Implementations
             return source.Take(count);
         }
 
-        public virtual async Task<T[]> ToArrayAsync<T>(IQueryable<T> source, CancellationToken cancellationToken)
+        public virtual Task<T[]> ToArrayAsync<T>(IQueryable<T> source, CancellationToken cancellationToken)
         {
             if (source == null)
                 throw new ArgumentNullException(nameof(source));
 
-            return source.ToArray();
+            return Task.FromResult(source.ToArray());
         }
     }
 }

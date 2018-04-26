@@ -11,17 +11,17 @@ namespace Bit.Signalr.Implementations
         public virtual async Task OnConnected(MessagesHub hub)
         {
             if (UserInformationProvider.IsAuthenticated())
-                await hub.Groups.Add(hub.Context.ConnectionId, UserInformationProvider.GetCurrentUserId());
+                await hub.Groups.Add(hub.Context.ConnectionId, UserInformationProvider.GetCurrentUserId()).ConfigureAwait(false);
         }
 
-        public virtual async Task OnDisconnected(MessagesHub hub, bool stopCalled)
+        public virtual Task OnDisconnected(MessagesHub hub, bool stopCalled)
         {
-
+            return Task.CompletedTask;
         }
 
-        public virtual async Task OnReconnected(MessagesHub hub)
+        public virtual Task OnReconnected(MessagesHub hub)
         {
-
+            return Task.CompletedTask;
         }
     }
 }

@@ -20,7 +20,7 @@ namespace Bit.OData.ActionFilters
                 {
                     string originalQueryString = url.Query;
                     string fixedQueryString = stringCorrector.CorrectString(originalQueryString);
-                    url = new Uri(url.AbsoluteUri.Replace(originalQueryString, fixedQueryString), UriKind.Absolute);
+                    url = new Uri(url.AbsoluteUri.Replace(originalQueryString, fixedQueryString, StringComparison.InvariantCultureIgnoreCase), UriKind.Absolute);
                 }
 
                 actionContext.Request.RequestUri = new Uri(url.ToString(), UriKind.Absolute);

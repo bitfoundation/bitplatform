@@ -9,7 +9,7 @@
 
         public ngModel: ng.INgModelController & { $$parentForm: ViewModels.IDtoFormController };
 
-        public constructor( @Inject("$scope") public $scope: ng.IScope,
+        public constructor(@Inject("$scope") public $scope: ng.IScope,
             @Inject("$attrs") public $attrs: ng.IAttributes,
             @Inject("$element") public $element: JQuery,
             @Inject("$parse") public $parse: ng.IParseService,
@@ -23,7 +23,7 @@
             prevValidationsRollbackHandlers?: Array<{ memberName: string, errorKey: string, handler: () => void }>,
             dtoViewModelPropertyChangedFunction?: (sender?: $data.Entity, e?: $data.Event & { newValue: any, oldValue: any, propertyName: any }) => void,
             dtoViewModelPropertyChangingFunction?: (sender?: $data.Entity, e?: $data.Event & { newValue: any, oldValue: any, propertyName: any }) => void,
-            dtoRulesPropertyChangedFunction?: (sender?: $data.Entity, e?: $data.Event & { newValue: any, oldValue: any, propertyName: any }) => void
+            dtoRulesPropertyChangedFunction?: (sender?: $data.Entity, e?: $data.Event & { newValue: any, oldValue: any, propertyName: any }) => void;
         } = {};
 
         public cleanUp() {
@@ -34,14 +34,12 @@
                     if (this.perDtoFormStorage.dtoViewModelPropertyChangedFunction != null) {
                         try {
                             this.dtoViewModel.model.propertyChanged.detach(this.perDtoFormStorage.dtoViewModelPropertyChangedFunction);
-                        }
-                        catch (e) { }
+                        } catch (e) { }
                     }
                     if (this.perDtoFormStorage.dtoViewModelPropertyChangingFunction != null) {
                         try {
                             this.dtoViewModel.model.propertyChanging.detach(this.perDtoFormStorage.dtoViewModelPropertyChangingFunction);
-                        }
-                        catch (e) { }
+                        } catch (e) { }
                     }
 
                     this.dtoViewModel.form = null;
@@ -55,8 +53,7 @@
 
                     try {
                         this.dtoRules.model.propertyChanged.detach(this.perDtoFormStorage.dtoRulesPropertyChangedFunction);
-                    }
-                    catch (e) { }
+                    } catch (e) { }
 
                     if (this.perDtoFormStorage.prevValidationsRollbackHandlers != null) {
 
@@ -77,25 +74,28 @@
         @Command()
         public async $onInit(): Promise<void> {
 
-            this.ngModel = this.$element.data('$ngModelController');
+            this.ngModel = this.$element.data("$ngModelController");
 
             const clientAppProfile = ClientAppProfileManager.getCurrent().getClientAppProfile();
 
             this.$scope.$watch(this.$attrs.ngModel, (newModel: any, oldModel: any) => {
 
-                if (newModel == null && oldModel == null)
+                if (newModel == null && oldModel == null) {
                     return;
+                }
 
-                if (newModel == oldModel)
+                if (newModel == oldModel) {
                     oldModel = null;
+                }
 
                 if (newModel != null && newModel.innerInstance != null) {
                     newModel = newModel.innerInstance();
                     this.$parse(this.$attrs.ngModel).assign(this.$scope, newModel);
                 }
 
-                if (newModel != null && !(newModel instanceof $data.Entity))
+                if (newModel != null && !(newModel instanceof $data.Entity)) {
                     throw new Error("Can't validate non-entity | non-dto models");
+                }
 
                 let modelType = newModel != null ? newModel.getType() : oldModel.getType();
 
@@ -106,8 +106,9 @@
                 this.ngModel.$$parentForm.isValid = (): boolean => {
                     let isValid = true;
                     propModelControllers.forEach(p => {
-                        if (this.dtoRules != null && newModel != null)
+                        if (this.dtoRules != null && newModel != null) {
                             this.dtoRules.validateMember(p.$name, newModel[p.$name], newModel[p.$name]);
+                        }
                         p.$validate();
                         isValid = isValid && p.$valid;
                     });
@@ -132,14 +133,14 @@
                                 set: (isVisible: boolean) => {
                                     let currentItem = angular.element(this.$element).find(`[name='${propDefenition.name}']`);
                                     const data = currentItem.data();
-                                    if (data != null && data["handler"] != null && data["handler"].wrapper != null)
+                                    if (data != null && data["handler"] != null && data["handler"].wrapper != null) {
                                         currentItem = data["handler"].wrapper;
+                                    }
 
                                     if (isVisible == true) {
                                         currentItem.show();
                                         currentItem.parents("md-input-container").show();
-                                    }
-                                    else {
+                                    } else {
                                         currentItem.hide();
                                         currentItem.parents("md-input-container").hide();
                                     }
@@ -156,8 +157,9 @@
                                     const data = currentItem.data();
                                     if (data != null && data["handler"] != null && data["handler"].wrapper != null) {
                                         currentItem = data["handler"].wrapper;
-                                        if (data["handler"]["readonly"] != null)
+                                        if (data["handler"]["readonly"] != null) {
                                             data["handler"]["readonly"](!isEditable);
+                                        }
                                     }
 
                                     currentItem.prop("readonly", !isEditable);
@@ -173,10 +175,10 @@
 
                                 let original$setValidity = propModelController.$setValidity;
 
-                                propModelController.$setValidity = function () {
+                                propModelController.$setValidity = function $setValidity() {
                                     propModelController.validityEvaludated = true;
                                     return original$setValidity.apply(propModelController, arguments);
-                                }
+                                };
 
                                 if (propDefenition.nullable == true) {
                                     propModelController.$parsers.push((viewValue) => {
@@ -229,20 +231,22 @@
 
                 if (this.$attrs.dtoViewModel != null) {
                     this.dtoViewModel = this.$parse(this.$attrs.dtoViewModel)(this.$scope);
-                }
-                else {
+                } else {
                     let tryToGetDtoViewModel = this.$parse("vm")(this.$scope);
-                    if (tryToGetDtoViewModel instanceof ViewModels.DtoViewModel)
+                    if (tryToGetDtoViewModel instanceof ViewModels.DtoViewModel) {
                         this.dtoViewModel = tryToGetDtoViewModel as ViewModels.DtoViewModel<Model.Contracts.IDto, Implementations.DtoRules<Model.Contracts.IDto>>;
+                    }
                 }
 
-                if (this.$attrs.dtoRules != null)
+                if (this.$attrs.dtoRules != null) {
                     this.dtoRules = this.$parse(this.$attrs.dtoRules)(this.$scope);
-                else if (this.dtoViewModel != null)
+                } else if (this.dtoViewModel != null) {
                     this.dtoRules = this.dtoViewModel.rules;
+                }
 
-                if (oldModel != null)
+                if (oldModel != null) {
                     this.cleanUp();
+                }
 
                 if (this.dtoRules != null) {
 
@@ -250,8 +254,9 @@
                         throw new Error(`dto rules is not instance of dto rules`);
                     }
 
-                    if (this.dtoRules.model == null || this.dtoRules.model == oldModel)
+                    if (this.dtoRules.model == null || this.dtoRules.model == oldModel) {
                         this.dtoRules.model = newModel;
+                    }
 
                     if (this.perDtoFormStorage.dtoRulesPropertyChangedFunction == null) {
                         this.perDtoFormStorage.dtoRulesPropertyChangedFunction = (sender, e) => {
@@ -261,8 +266,9 @@
                         };
                     }
 
-                    if (newModel != null)
+                    if (newModel != null) {
                         newModel.propertyChanged.attach(this.perDtoFormStorage.dtoRulesPropertyChangedFunction);
+                    }
 
                     this.perDtoFormStorage.prevValidationsRollbackHandlers = [];
 
@@ -279,14 +285,13 @@
                                         }
                                     });
                                 }
-                            }
-                            else {
+                            } else {
                                 this.perDtoFormStorage.prevValidationsRollbackHandlers = this.perDtoFormStorage.prevValidationsRollbackHandlers.filter(h => h.memberName != memberName || h.errorKey != errorKey);
                             }
-                        }
-                        else {
-                            if (clientAppProfile.isDebugMode == true)
+                        } else {
+                            if (clientAppProfile.isDebugMode == true) {
                                 console.warn(`No Prop named ${memberName} is in dto form`);
+                            }
                         }
                     };
 
@@ -306,8 +311,9 @@
                         throw new Error(`dto view model ${this.$attrs.dtoViewModel} is not instance of dto view model`);
                     }
 
-                    if (this.dtoViewModel.model == null || this.dtoViewModel.model == oldModel)
+                    if (this.dtoViewModel.model == null || this.dtoViewModel.model == oldModel) {
                         this.dtoViewModel.model = newModel;
+                    }
 
                     this.dtoViewModel.form = this.ngModel.$$parentForm as ViewModels.DtoFormController<Model.Contracts.IDto>;
 
@@ -342,12 +348,15 @@
                     })();
                 }
 
-                if (this.dtoRules != null && this.dtoViewModel != null && this.dtoRules.model != this.dtoViewModel.model)
+                if (this.dtoRules != null && this.dtoViewModel != null && this.dtoRules.model != this.dtoViewModel.model) {
                     throw new Error("Dto rules and forms are not using the same model instance");
-                if (this.dtoRules != null && this.dtoRules.model != newModel)
+                }
+                if (this.dtoRules != null && this.dtoRules.model != newModel) {
                     throw new Error("dto rules's model is not using the same instance of ng-model of dto-form");
-                if (this.dtoViewModel != null && this.dtoViewModel.model != newModel)
+                }
+                if (this.dtoViewModel != null && this.dtoViewModel.model != newModel) {
                     throw new Error("dto view models's model is not using the same instance of ng-model of dto-form");
+                }
             });
         }
 

@@ -1,10 +1,10 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>net461</TargetFrameworks>
-    <AssemblyVersion>0.8.8.0</AssemblyVersion>
-    <FileVersion>0.8.8.0</FileVersion>
-    <Version>0.8.8</Version>
+    <TargetFrameworks>net461;netcoreapp2.0</TargetFrameworks>
+    <AssemblyVersion>0.0.0.1</AssemblyVersion>
+    <FileVersion>0.0.0.1</FileVersion>
+    <Version>0.0.1</Version>
     <Authors>Bit Foundation</Authors>
     <Company>Bit Foundation</Company>
     <Product>Bit Framework</Product>
@@ -18,24 +18,26 @@
     <PackageTags>Bit Test</PackageTags>
     <PackageReleaseNotes>https://github.com/bit-foundation/bit-framework/releases</PackageReleaseNotes>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <DocumentationFile>bin\$(Configuration)\$(TargetFramework)\$(AssemblyName).xml</DocumentationFile>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="FakeItEasy" Version="4.4.0" />
-    <PackageReference Include="Microsoft.AspNet.SignalR.Client" Version="2.2.2" />
-    <PackageReference Include="Microsoft.AspNetCore.TestHost" Version="2.0.1" />
-    <PackageReference Include="Microsoft.Owin.SelfHost" Version="3.1.0" />
-    <PackageReference Include="Microsoft.Owin.Testing" Version="3.1.0" />
-    <PackageReference Include="Selenium.Support" Version="3.9.1" />
-    <PackageReference Include="Selenium.WebDriver" Version="3.9.1" />
-    <PackageReference Include="Selenium.WebDriver.ChromeDriver" Version="2.35.0" />
-    <PackageReference Include="Simple.OData.Client" Version="5.0.0-beta2" />
+    <PackageReference Include="Bit.Simple.OData.Client.V4.Adapter" Version="5.0.3" />
+    <PackageReference Include="FakeItEasy" Version="4.5.1" />
+    <PackageReference Include="Microsoft.AspNet.SignalR.Client" Version="2.2.3" />
+    <PackageReference Include="Microsoft.AspNetCore.TestHost" Version="2.0.2" />
+    <PackageReference Include="Microsoft.Owin.SelfHost" Version="4.0.0" />
+    <PackageReference Include="Microsoft.Owin.Testing" Version="4.0.0" />
+    <PackageReference Include="Selenium.Support" Version="3.11.2" />
+    <PackageReference Include="Selenium.WebDriver" Version="3.11.2" />
+    <PackageReference Include="Selenium.WebDriver.ChromeDriver" Version="2.38.0" />
     <PackageReference Include="Suave" Version="2.2.1" />
+    <PackageReference Include="SourceLink.Embed.AllSourceFiles" Version="2.8.1" PrivateAssets="all" />
+    <PackageReference Include="SourceLink.Copy.PdbFiles" Version="2.8.1" PrivateAssets="All" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\Bit.Data.EntityFrameworkCore\Bit.Data.EntityFrameworkCore.csproj" />
-    <ProjectReference Include="..\Bit.Data.EntityFramework\Bit.Data.EntityFramework.csproj" />
     <ProjectReference Include="..\Bit.Hangfire\Bit.Hangfire.csproj" />
     <ProjectReference Include="..\Bit.IdentityServer\Bit.IdentityServer.csproj" />
     <ProjectReference Include="..\Bit.OData\Bit.OData.csproj" />

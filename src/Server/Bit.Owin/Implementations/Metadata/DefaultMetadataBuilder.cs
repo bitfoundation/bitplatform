@@ -9,9 +9,9 @@ namespace Bit.Owin.Implementations.Metadata
     {
         public virtual ICollection<ObjectMetadata> AllMetadata { get; protected set; } = new Collection<ObjectMetadata>();
 
-        public virtual async Task<IEnumerable<ObjectMetadata>> BuildMetadata()
+        public virtual Task<IEnumerable<ObjectMetadata>> BuildMetadata()
         {
-            return AllMetadata;
+            return Task.FromResult((IEnumerable<ObjectMetadata>)AllMetadata);
         }
     }
 }

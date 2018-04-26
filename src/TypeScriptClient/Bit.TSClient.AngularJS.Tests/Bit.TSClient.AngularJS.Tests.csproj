@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Web" ToolsVersion="15.0">
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
-    <TypeScriptToolsVersion>2.6</TypeScriptToolsVersion>
+    <TypeScriptToolsVersion>2.8</TypeScriptToolsVersion>
     <OutputType>Library</OutputType>
     <ApplicationIcon />
     <StartupObject />
@@ -10,10 +10,92 @@
     <None Remove="bit.ng1.tests.d.ts" />
     <None Remove="bit.ng1.tests.js" />
     <None Remove="bit.ng1.tests.js.map" />
+    <None Remove="Identity\bit.identity.tests.d.ts" />
+    <None Remove="Identity\bit.identity.tests.js" />
+    <None Remove="Identity\bit.identity.tests.js.map" />
+    <None Remove="Identity\identityServer.tests.fileDependencies.ts" />
+    <None Remove="Identity\identityServer.tests.objectDependencies.ts" />
+    <None Remove="Identity\Implementations\identityServerTestPathProvider.ts" />
+    <None Remove="Implementations\bitTestPathProvider.ts" />
+    <None Remove="Implementations\testDefaultAngularAppInitialization.ts" />
+    <None Remove="Implementations\Tests\angularAppInitializationTests.ts" />
+    <None Remove="Implementations\Tests\angularTranslateTests.ts" />
+    <None Remove="Implementations\Tests\environmentConfigsTests.ts" />
+    <None Remove="Implementations\Tests\loggerTests.ts" />
+    <None Remove="Implementations\Tests\radTests.ts" />
+    <None Remove="Implementations\Tests\signalRTests.ts" />
+    <None Remove="Implementations\Tests\uiAutomationTests.ts" />
+    <None Remove="Implementations\Tests\validationTests.ts" />
+    <None Remove="test.fileDependencies.ts" />
     <None Remove="Test.Model.Context.d.ts" />
     <None Remove="Test.Model.Context.js" />
+    <None Remove="test.objectDependencies.ts" />
+    <None Remove="thirdPartyLibrariesTests\JayDataContextTests\complexAndEnumAndSimpleTypeTests.ts" />
+    <None Remove="thirdPartyLibrariesTests\JayDataContextTests\crudTests.ts" />
+    <None Remove="thirdPartyLibrariesTests\JayDataContextTests\functionsAndActions.ts" />
+    <None Remove="thirdPartyLibrariesTests\JayDataContextTests\inheritanceTests.ts" />
+    <None Remove="thirdPartyLibrariesTests\JayDataContextTests\jayDataAndDtoSetControllerTests.ts" />
+    <None Remove="thirdPartyLibrariesTests\KendoDataSourceTests\testKendoDataSourceCreationFromJayData.ts" />
+    <None Remove="typings.d.ts" />
+    <None Remove="viewModels\tests\angularServiceUsageViewModel.ts" />
+    <None Remove="viewModels\tests\angularTranslateViewModel.ts" />
+    <None Remove="viewModels\tests\app.ts" />
+    <None Remove="viewModels\tests\asyncViewModel.ts" />
+    <None Remove="viewModels\tests\dateTimeServiceViewModel.ts" />
+    <None Remove="viewModels\tests\entityContextUsageViewModel.ts" />
+    <None Remove="viewModels\tests\formValidationViewModel.ts" />
+    <None Remove="viewModels\tests\lookupsSearchViewModel.ts" />
+    <None Remove="viewModels\tests\lookupsViewModel.ts" />
+    <None Remove="viewModels\tests\nestedRouteMainViewModel.ts" />
+    <None Remove="viewModels\tests\radComboViewModel.ts" />
+    <None Remove="viewModels\tests\radGridViewModel.ts" />
+    <None Remove="viewModels\tests\repeatViewMdoel.ts" />
+    <None Remove="viewModels\tests\routeParameterViewModel.ts" />
+    <None Remove="viewModels\tests\simpleViewModel.ts" />
+    <None Remove="viewModels\tests\testSyncViewModel.ts" />
+    <None Remove="views\directives\testDirective.ts" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Properties\" />
+  </ItemGroup>
+  <ItemGroup>
+    <TypeScriptCompile Include="Identity\identityServer.tests.fileDependencies.ts" />
+    <TypeScriptCompile Include="Identity\identityServer.tests.objectDependencies.ts" />
+    <TypeScriptCompile Include="Identity\Implementations\identityServerTestPathProvider.ts" />
+    <TypeScriptCompile Include="Implementations\bitTestPathProvider.ts" />
+    <TypeScriptCompile Include="Implementations\testDefaultAngularAppInitialization.ts" />
+    <TypeScriptCompile Include="Implementations\Tests\angularAppInitializationTests.ts" />
+    <TypeScriptCompile Include="Implementations\Tests\angularTranslateTests.ts" />
+    <TypeScriptCompile Include="Implementations\Tests\environmentConfigsTests.ts" />
+    <TypeScriptCompile Include="Implementations\Tests\loggerTests.ts" />
+    <TypeScriptCompile Include="Implementations\Tests\radTests.ts" />
+    <TypeScriptCompile Include="Implementations\Tests\signalRTests.ts" />
+    <TypeScriptCompile Include="Implementations\Tests\uiAutomationTests.ts" />
+    <TypeScriptCompile Include="Implementations\Tests\validationTests.ts" />
+    <TypeScriptCompile Include="test.fileDependencies.ts" />
+    <TypeScriptCompile Include="test.objectDependencies.ts" />
+    <TypeScriptCompile Include="thirdPartyLibrariesTests\JayDataContextTests\complexAndEnumAndSimpleTypeTests.ts" />
+    <TypeScriptCompile Include="thirdPartyLibrariesTests\JayDataContextTests\crudTests.ts" />
+    <TypeScriptCompile Include="thirdPartyLibrariesTests\JayDataContextTests\functionsAndActions.ts" />
+    <TypeScriptCompile Include="thirdPartyLibrariesTests\JayDataContextTests\inheritanceTests.ts" />
+    <TypeScriptCompile Include="thirdPartyLibrariesTests\JayDataContextTests\jayDataAndDtoSetControllerTests.ts" />
+    <TypeScriptCompile Include="thirdPartyLibrariesTests\KendoDataSourceTests\testKendoDataSourceCreationFromJayData.ts" />
+    <TypeScriptCompile Include="typings.d.ts" />
+    <TypeScriptCompile Include="viewModels\tests\angularServiceUsageViewModel.ts" />
+    <TypeScriptCompile Include="viewModels\tests\angularTranslateViewModel.ts" />
+    <TypeScriptCompile Include="viewModels\tests\app.ts" />
+    <TypeScriptCompile Include="viewModels\tests\asyncViewModel.ts" />
+    <TypeScriptCompile Include="viewModels\tests\dateTimeServiceViewModel.ts" />
+    <TypeScriptCompile Include="viewModels\tests\entityContextUsageViewModel.ts" />
+    <TypeScriptCompile Include="viewModels\tests\formValidationViewModel.ts" />
+    <TypeScriptCompile Include="viewModels\tests\lookupsSearchViewModel.ts" />
+    <TypeScriptCompile Include="viewModels\tests\lookupsViewModel.ts" />
+    <TypeScriptCompile Include="viewModels\tests\nestedRouteMainViewModel.ts" />
+    <TypeScriptCompile Include="viewModels\tests\radComboViewModel.ts" />
+    <TypeScriptCompile Include="viewModels\tests\radGridViewModel.ts" />
+    <TypeScriptCompile Include="viewModels\tests\repeatViewMdoel.ts" />
+    <TypeScriptCompile Include="viewModels\tests\routeParameterViewModel.ts" />
+    <TypeScriptCompile Include="viewModels\tests\simpleViewModel.ts" />
+    <TypeScriptCompile Include="views\directives\testDirective.ts" />
   </ItemGroup>
 </Project>

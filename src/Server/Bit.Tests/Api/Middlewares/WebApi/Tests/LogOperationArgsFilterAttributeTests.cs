@@ -38,7 +38,7 @@ namespace Bit.Tests.Api.Middlewares.WebApi.Tests
             {
                 TokenResponse token = await testEnvironment.Server.Login("ValidUserName", "ValidPassword", clientId: "TestResOwner");
 
-                ODataClient client = testEnvironment.Server.BuildODataClient(token: token);
+                IODataClient client = testEnvironment.Server.BuildODataClient(token: token);
 
                 try
                 {

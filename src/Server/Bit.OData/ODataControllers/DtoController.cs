@@ -65,25 +65,25 @@ namespace Bit.OData.ODataControllers
 
         public Collection<HttpMethod> HttpMethods => SupportedMethods;
 
-        private static readonly Lazy<MethodInfo> GenerateODataLinkMethod = new Lazy<MethodInfo>(() =>
+        private static readonly Lazy<GenerateODataLink> GenerateODataLinkMethod = new Lazy<GenerateODataLink>(() =>
         {
-            return typeof(MetadataController).GetTypeInfo()
+            return (GenerateODataLink)Delegate.CreateDelegate(typeof(GenerateODataLink), typeof(MetadataController).GetTypeInfo()
                     .Assembly.GetType("System.Web.OData.Results.ResultHelpers")
-                    .GetMethod("GenerateODataLink");
-        });
+                    .GetMethod("GenerateODataLink"));
+        }, isThreadSafe: true);
+
+        private delegate Uri GenerateODataLink(HttpRequestMessage request, object entity, bool isEntityId);
 
         public override void OnActionExecuted(HttpActionExecutedContext actionExecutedContext)
         {
             if (actionExecutedContext?.Response?.Headers != null && !actionExecutedContext.Response.Headers.Contains(nameof(HttpResponseHeaders.Location))
-                && actionExecutedContext.Response.Content is ObjectContent
+                && actionExecutedContext.Response.Content is ObjectContent objContent
                 && actionExecutedContext.Response.IsSuccessStatusCode == true)
             {
-                ObjectContent objContent = ((ObjectContent)(actionExecutedContext.Response.Content));
-
                 if (objContent.Value == null)
                     return;
 
-                actionExecutedContext.Response.Headers.Location = (Uri)GenerateODataLinkMethod.Value.Invoke(null, new object[] { actionExecutedContext.Request, objContent.Value, false });
+                actionExecutedContext.Response.Headers.Location = GenerateODataLinkMethod.Value.Invoke(actionExecutedContext.Request, objContent.Value, false);
             }
 
             base.OnActionExecuted(actionExecutedContext);

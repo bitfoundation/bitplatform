@@ -1,19 +1,20 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using Bit.Core.Contracts;
 using Bit.Owin.Contracts;
 using Bit.Signalr.Contracts;
 using Microsoft.AspNet.SignalR;
 using Owin;
 using System.Reflection;
 using Bit.Core.Extensions;
+using Bit.Core.Models;
 
 namespace Bit.Signalr
 {
     public class SignalRMiddlewareConfiguration : IOwinMiddlewareConfiguration
     {
-        public virtual IAppEnvironmentProvider AppEnvironmentProvider { get; set; }
+        public virtual AppEnvironment AppEnvironment { get; set; }
+
         public virtual IEnumerable<ISignalRConfiguration> SignalRScaleoutConfigurations { get; set; }
         public virtual Microsoft.AspNet.SignalR.IDependencyResolver DependencyResolver { get; set; }
 
@@ -32,7 +33,7 @@ namespace Bit.Signalr
 
             HubConfiguration signalRConfig = new HubConfiguration
             {
-                EnableDetailedErrors = AppEnvironmentProvider.GetActiveAppEnvironment().DebugMode == true,
+                EnableDetailedErrors = AppEnvironment.DebugMode == true,
                 EnableJavaScriptProxies = true,
                 EnableJSONP = false,
                 Resolver = DependencyResolver

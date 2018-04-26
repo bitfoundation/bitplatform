@@ -18,11 +18,11 @@
         /// <summary>
         /// Returns current app path for static files (wwwroot for example)
         /// </summary>
-        string GetCurrentStaticFilesPath();
+        string GetStaticFilesFolderPath();
 
         /// <summary>
-        /// Combines path with <see cref="GetCurrentStaticFilesPath"/>
+        /// Combines path with <see cref="GetStaticFilesFolderPath"/>
         /// </summary>
-        string StaticFileMapPath(string path);
+        string MapStaticFilePath(string path);
     }
 }

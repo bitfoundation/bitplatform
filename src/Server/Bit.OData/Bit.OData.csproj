@@ -3,7 +3,7 @@
   <PropertyGroup>
     <TargetFrameworks>net461;netcoreapp2.0</TargetFrameworks>
     <PackageTags>Bit Web API OData Rest Microsoft AspNet WebApi AspNetWebApi</PackageTags>
-    <Version>0.8.8</Version>
+    <Version>0.0.1</Version>
     <Authors>Bit Foundation</Authors>
     <Company>Bit Foundation</Company>
     <Product>Bit Framework</Product>
@@ -15,9 +15,10 @@
     <RepositoryUrl>https://github.com/bit-foundation/bit-framework</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <PackageReleaseNotes>https://github.com/bit-foundation/bit-framework/releases</PackageReleaseNotes>
-    <AssemblyVersion>0.8.8.0</AssemblyVersion>
-    <FileVersion>0.8.8.0</FileVersion>
+    <AssemblyVersion>0.0.0.1</AssemblyVersion>
+    <FileVersion>0.0.0.1</FileVersion>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <DocumentationFile>bin\$(Configuration)\$(TargetFramework)\$(AssemblyName).xml</DocumentationFile>
   </PropertyGroup>
 
   <ItemGroup>
@@ -25,7 +26,9 @@
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="1.1.1" />
     <PackageReference Include="Bit.Swashbuckle.OData" Version="3.4.1" />
     <PackageReference Include="LambdaSqlBuilder" Version="0.9.0" />
-	<PackageReference Include="Microsoft.OData.Core" Version="7.4.1" />
+	  <PackageReference Include="Microsoft.OData.Core" Version="7.4.4" />
+    <PackageReference Include="SourceLink.Embed.AllSourceFiles" Version="2.8.1" PrivateAssets="all" />
+    <PackageReference Include="SourceLink.Copy.PdbFiles" Version="2.8.1" PrivateAssets="All" />
   </ItemGroup>
 
   <ItemGroup>

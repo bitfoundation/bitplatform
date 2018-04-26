@@ -24,7 +24,7 @@ module Bit.Implementations {
 
             }
 
-            kendo.data.DataSource.prototype.flatView = function () {
+            kendo.data.DataSource.prototype.flatView = function flatView() {
 
                 const groups = this.group() || [];
 
@@ -38,16 +38,17 @@ module Bit.Implementations {
 
             const originalParseDate = kendo.parseDate;
 
-            kendo.parseDate = function (value: string, format?: string, culture?: string): Date {
+            kendo.parseDate = function parseDate(value: string, format?: string, culture?: string): Date {
                 if (value != null) {
                     const date = new Date(value);
-                    if (date.toString() != "Invalid Date")
+                    if (date.toString() != "Invalid Date") {
                         return date;
+                    }
                 }
                 return originalParseDate.apply(this, arguments);
             };
 
-            kendo.data.DataSource.prototype.dataView = function () {
+            kendo.data.DataSource.prototype.dataView = function dataView() {
                 return (this as kendo.data.DataSource)
                     .flatView()
                     .map(vi => {
@@ -66,17 +67,19 @@ module Bit.Implementations {
 
                     this["_current"] = entity;
 
-                    if (this["setHandlers"] == null)
+                    if (this["setHandlers"] == null) {
                         return;
+                    }
 
-                    for (let setHandler of this["setHandlers"])
+                    for (let setHandler of this["setHandlers"]) {
                         setHandler(entity);
+                    }
 
                     this.onCurrentChanged();
                 }
             });
 
-            kendo.data.DataSource.prototype.onCurrentChanged = function (action) {
+            kendo.data.DataSource.prototype.onCurrentChanged = function onCurrentChanged(action) {
 
                 const dataSource = this;
 
@@ -86,8 +89,9 @@ module Bit.Implementations {
                     dataSource.onCurrentChangedHandlers.push(action);
                     return () => {
                         let index = dataSource.onCurrentChangedHandlers.indexOf(action);
-                        if (index > -1)
+                        if (index > -1) {
                             dataSource.onCurrentChangedHandlers.splice(index, 1);
+                        }
                     };
                 } else {
 
@@ -98,7 +102,7 @@ module Bit.Implementations {
 
             };
 
-            kendo.destroyWidget = function (widget: kendo.ui.Widget & { wrapper: JQuery }): void {
+            kendo.destroyWidget = function destroyWidget(widget: kendo.ui.Widget & { wrapper: JQuery }): void {
 
                 if (widget != null) {
 
@@ -122,12 +126,13 @@ module Bit.Implementations {
 
                     widget.destroy();
                 }
-            }
+            };
 
-            kendo.data.DataSource.prototype.asChildOf = function (parentDataSource, childKeys, parentKeys) {
+            kendo.data.DataSource.prototype.asChildOf = function asChildOf(parentDataSource, childKeys, parentKeys) {
 
-                if (parentDataSource == null)
+                if (parentDataSource == null) {
                     throw new Error("parentDataSource is null");
+                }
 
                 if (childKeys == null || childKeys.length == 0) {
                     throw new Error("childs keys is null or empty");
@@ -163,16 +168,19 @@ module Bit.Implementations {
                         setTimeout(() => resolve(), 350);
                     });
 
-                    if (currentParent != parentDataSource.current)
+                    if (currentParent != parentDataSource.current) {
                         return;
+                    }
 
                     if (childDataSource.current != null) {
                         try {
                             let currentChild = childDataSource.current;
-                            if (currentParent == null || parentKeys.some((pk, i) => currentChild[childKeys[i]] != currentParent[pk]))
+                            if (currentParent == null || parentKeys.some((pk, i) => currentChild[childKeys[i]] != currentParent[pk])) {
                                 childDataSource.current = null;
+                            }
+                        } catch (e) {
+
                         }
-                        catch (e) { }
                     }
 
                     await childDataSource.read();
@@ -180,30 +188,30 @@ module Bit.Implementations {
 
                 const originalChildTransportRead = childDataSource["transport"].read;
 
-                childDataSource["transport"].read = function (options) {
+                childDataSource["transport"].read = function read(options) {
 
                     const currentParent = parentDataSource.current;
 
                     if (currentParent == null || parentKeys.some(pk => currentParent[pk] == null)) {
                         options.success({ data: [], length: 0 });
-                    }
-                    else {
+                    } else {
 
                         options.data = options.data || {};
                         options.data.cascadeBaseFilter = childKeys.map((childKey, index) => {
                             let parentVal = currentParent[parentKeys[index]];
-                            if (typeof parentVal == "string")
+                            if (typeof parentVal == "string") {
                                 parentVal = "'" + parentVal + "'";
+                            }
                             return `it.${childKey} == ${parentVal}`;
                         }).join("&&");
 
                         return originalChildTransportRead.apply(this, arguments);
                     }
-                }
+                };
 
                 const originalChildTransportCreate = childDataSource["transport"].create;
 
-                childDataSource["transport"].create = function (options, models): void {
+                childDataSource["transport"].create = function create(options, models): void {
 
                     const currentParent = parentDataSource.current;
 
@@ -219,8 +227,8 @@ module Bit.Implementations {
                     }
 
                     return originalChildTransportCreate.apply(this, arguments);
-                }
-            }
+                };
+            };
         }
     }
 }

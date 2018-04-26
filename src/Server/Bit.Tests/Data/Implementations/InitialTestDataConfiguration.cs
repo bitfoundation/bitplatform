@@ -91,7 +91,7 @@ namespace Bit.Tests.Data.Implementations
                 {
                     DbContextOptionsBuilder dbContextOptionsBuilder = new DbContextOptionsBuilder();
 
-                    SqlConnection dbConnection = new SqlConnection(DefaultAppEnvironmentProvider.Current.GetActiveAppEnvironment().GetConfig<string>("TestDbConnectionString"));
+                    SqlConnection dbConnection = new SqlConnection(DefaultAppEnvironmentsProvider.Current.GetActiveAppEnvironment().GetConfig<string>("TestDbConnectionString"));
 
                     dbContextOptionsBuilder.UseSqlServer(dbConnection);
 

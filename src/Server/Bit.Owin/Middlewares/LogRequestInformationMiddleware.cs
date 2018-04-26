@@ -11,7 +11,7 @@ namespace Bit.Owin.Middlewares
         {
         }
 
-        public override async Task Invoke(IOwinContext context)
+        public override Task Invoke(IOwinContext context)
         {
             IDependencyResolver dependencyResolver = context.GetDependencyResolver();
 
@@ -22,7 +22,7 @@ namespace Bit.Owin.Middlewares
 
             LogRequest(logger, requestInformationProvider);
 
-            await Next.Invoke(context);
+            return Next.Invoke(context);
         }
 
         public static void LogRequest(ILogger logger, IRequestInformationProvider requestInformationProvider)

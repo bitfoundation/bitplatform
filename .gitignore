@@ -213,7 +213,7 @@ ModelManifest.xml
 # Bit Foundation
 **/bower_components/*
 *.map
-/BitTools/BitCodeGenerator/Implementations/HtmlClientProxyGenerator/Templates/*.cs
+/BitTools/BitCodeGenerator/Implementations/TypeScriptClientProxyGenerator/Templates/*.cs
 /Apps/BitChangeSetManager/AspNet/wwwroot/BitChangeSetManager.Model.Context.js
 /Apps/BitChangeSetManager/AspNet/wwwroot/BitChangeSetManager.Model.Context.d.ts
 /Apps/BitChangeSetManager/AspNet/wwwroot/bitChangeSetManager.ts

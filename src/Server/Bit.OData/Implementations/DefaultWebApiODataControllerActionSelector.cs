@@ -1,6 +1,7 @@
 ﻿using Bit.OData.ODataControllers;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -76,7 +77,7 @@ namespace Bit.OData.Implementations
 
             IDictionary<string, object> routeData = ((HttpRouteData)controllerContext.RouteData).Values;
             routeData.TryGetValue("action", out object actionNameObj);
-            string actionName = Convert.ToString(actionNameObj);
+            string actionName = Convert.ToString(actionNameObj, CultureInfo.InvariantCulture);
 
             HttpActionDescriptor resultAction = null;
 

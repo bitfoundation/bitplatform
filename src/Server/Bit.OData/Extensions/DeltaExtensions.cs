@@ -1,6 +1,7 @@
-﻿using System.Linq;
+﻿using Bit.Model.Contracts;
+using System.Linq;
+using System.Linq.Expressions;
 using System.Reflection;
-using Bit.Model.Contracts;
 
 namespace System.Web.OData
 {
@@ -25,6 +26,20 @@ namespace System.Web.OData
                         return;
                     prop.SetValue(destinationEntity, obj);
                 });
+        }
+
+        public static bool IsChangedProperty<TDto>(this Delta<TDto> dto, Expression<Func<TDto, object>> prop)
+            where TDto : class, IDto
+        {
+            if (dto == null)
+                throw new ArgumentNullException(nameof(dto));
+
+            if (prop == null)
+                throw new ArgumentNullException(nameof(prop));
+
+            string memberName = ((MemberExpression)prop.Body).Member.Name;
+
+            return dto.GetChangedPropertyNames().Any(p => p == memberName);
         }
     }
 }

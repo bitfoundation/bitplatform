@@ -16,7 +16,7 @@
     })
     export class DefaultRadEditor {
 
-        public constructor( @Inject("$element") public $element: JQuery, @Inject("$scope") public $scope: ng.IScope) {
+        public constructor(@Inject("$element") public $element: JQuery, @Inject("$scope") public $scope: ng.IScope) {
 
         }
 
@@ -43,15 +43,16 @@
 
                 this.mdInputContainerParent.addClass("md-input-has-value");
 
-                this.mdInputContainer.setHasValue = function () {
+                this.mdInputContainer.setHasValue = function setHasValue() {
 
                 };
             }
         }
 
         public onEditorFocusIn() {
-            if (this.$element.is(":disabled"))
+            if (this.$element.is(":disabled")) {
                 return;
+            }
             this.mdInputContainerParent.addClass("md-input-focused");
         }
 

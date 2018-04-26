@@ -8,23 +8,15 @@ namespace Bit.Owin.Implementations
 {
     public class WindowsEventsLogStore : ILogStore
     {
-        private AppEnvironment _activeAppEnvironment;
+        public virtual AppEnvironment AppEnvironment { get; set; }
 
         public virtual IContentFormatter ContentFormatter { get; set; }
 
-        public virtual IAppEnvironmentProvider AppEnvironmentProvider
-        {
-            set
-            {
-                if (value == null)
-                    throw new ArgumentNullException(nameof(AppEnvironmentProvider));
-                _activeAppEnvironment = value.GetActiveAppEnvironment();
-            }
-        }
-
-        public virtual async Task SaveLogAsync(LogEntry logEntry)
+        public virtual Task SaveLogAsync(LogEntry logEntry)
         {
             SaveLog(logEntry);
+
+            return Task.CompletedTask;
         }
 
         public virtual void SaveLog(LogEntry logEntry)
@@ -32,32 +24,33 @@ namespace Bit.Owin.Implementations
             if (logEntry == null)
                 throw new ArgumentNullException(nameof(logEntry));
 
-            EventLog appLog = new EventLog("Application")
+            using (EventLog appLog = new EventLog("Application")
             {
-                Source = _activeAppEnvironment.AppInfo.Name
-            };
-
-            EventLogEntryType eventLogsSeverity;
-
-            if (logEntry.Severity == "Warning")
-                eventLogsSeverity = EventLogEntryType.Warning;
-            else if (logEntry.Severity == "Information")
-                eventLogsSeverity = EventLogEntryType.Information;
-            else
-                eventLogsSeverity = EventLogEntryType.Error;
-
-            string logContents = ContentFormatter.Serialize(logEntry);
-
-            if (logContents.Length >= 30000)
-                logContents = logContents.Substring(0, 29999);
-
-            if (_activeAppEnvironment.TryGetConfig("EventLogId", out long eventLogId))
+                Source = AppEnvironment.AppInfo.Name
+            })
             {
-                appLog.WriteEntry(logContents, eventLogsSeverity, Convert.ToInt32(eventLogId));
-            }
-            else
-            {
-                appLog.WriteEntry(logContents, eventLogsSeverity);
+                EventLogEntryType eventLogsSeverity;
+
+                if (logEntry.Severity == "Warning")
+                    eventLogsSeverity = EventLogEntryType.Warning;
+                else if (logEntry.Severity == "Information")
+                    eventLogsSeverity = EventLogEntryType.Information;
+                else
+                    eventLogsSeverity = EventLogEntryType.Error;
+
+                string logContents = ContentFormatter.Serialize(logEntry);
+
+                if (logContents.Length >= 30000)
+                    logContents = logContents.Substring(0, 29999);
+
+                if (AppEnvironment.TryGetConfig("EventLogId", out long eventLogId))
+                {
+                    appLog.WriteEntry(logContents, eventLogsSeverity, Convert.ToInt32(eventLogId));
+                }
+                else
+                {
+                    appLog.WriteEntry(logContents, eventLogsSeverity);
+                }
             }
         }
     }

@@ -1,5 +1,8 @@
-﻿using Bit.Core;
+﻿using AutoMapper;
+using Bit.Core;
 using Bit.Core.Contracts;
+using Bit.Core.Implementations;
+using Bit.Core.Models;
 using Bit.Data;
 using Bit.Data.Contracts;
 using Bit.Data.EntityFramework.Implementations;
@@ -8,6 +11,7 @@ using Bit.Model.Implementations;
 using Bit.OData.Contracts;
 using Bit.OData.Implementations;
 using Bit.OData.ODataControllers;
+using Bit.Owin.Exceptions;
 using Bit.Owin.Implementations;
 using Bit.OwinCore;
 using Bit.OwinCore.Contracts;
@@ -23,15 +27,12 @@ using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Web.Http;
-using System.Web.OData.Builder;
 using System.Web.OData;
-using System.IdentityModel;
-using AutoMapper;
-using Bit.Core.Implementations;
+using System.Web.OData.Builder;
 
 namespace CustomerDtoControllerSample
 {
-    public class AppStartup : AutofacAspNetCoreAppStartup, IAspNetCoreDependenciesManager, IDependenciesManagerProvider
+    public class AppStartup : AutofacAspNetCoreAppStartup, IAspNetCoreAppModule, IAppModulesProvider
     {
         public AppStartup(IServiceProvider serviceProvider)
             : base(serviceProvider)
@@ -41,12 +42,12 @@ namespace CustomerDtoControllerSample
 
         public override IServiceProvider ConfigureServices(IServiceCollection services)
         {
-            DefaultDependenciesManagerProvider.Current = this;
+            DefaultAppModulesProvider.Current = this;
 
             return base.ConfigureServices(services);
         }
 
-        public IEnumerable<IDependenciesManager> GetDependenciesManagers()
+        public IEnumerable<IAppModule> GetAppModules()
         {
             yield return this;
         }
@@ -75,7 +76,7 @@ namespace CustomerDtoControllerSample
                     {
                         c.SingleApiVersion("v1", $"Swagger-Api");
                         c.ApplyDefaultApiConfig(httpConfiguration);
-                    }).EnableSwaggerUi();
+                    }).EnableBitSwaggerUi();
                 });
             });
 
@@ -87,7 +88,7 @@ namespace CustomerDtoControllerSample
                     {
                         c.SingleApiVersion("v1", $"Swagger-Api");
                         c.ApplyDefaultODataConfig(httpConfiguration);
-                    }).EnableSwaggerUi();
+                    }).EnableBitSwaggerUi();
                 });
 
                 odataDependencyManager.RegisterODataServiceBuilder<BitODataServiceBuilder>();
@@ -178,13 +179,13 @@ namespace CustomerDtoControllerSample
     public class MyAppDbContext : EfDbContextBase
     {
         public MyAppDbContext()
-            : base(DefaultAppEnvironmentProvider.Current.GetActiveAppEnvironment().GetConfig<string>("AppConnectionString"))
+            : base(DefaultAppEnvironmentsProvider.Current.GetActiveAppEnvironment().GetConfig<string>("AppConnectionString"))
         {
 
         }
 
-        public MyAppDbContext(IAppEnvironmentProvider appEnvironmentProvider, IDbConnectionProvider dbConnectionProvider)
-            : base(appEnvironmentProvider.GetActiveAppEnvironment().GetConfig<string>("AppConnectionString"), dbConnectionProvider)
+        public MyAppDbContext(AppEnvironment appEnvironment, IDbConnectionProvider dbConnectionProvider)
+            : base(appEnvironment.GetConfig<string>("AppConnectionString"), dbConnectionProvider)
         {
 
         }

@@ -21,6 +21,8 @@ module Bit.Tests {
 
     dependencyManager.registerObjectDependency({ name: "DateTimeService", type: Bit.Implementations.DefaultDateTimeService });
 
+    dependencyManager.registerObjectDependency({ name: "DateTimeProvider", type: Bit.Implementations.DefaultDateTimeProvider });
+
     dependencyManager.registerObjectDependency({ name: "SecurityService", type: Bit.Implementations.DefaultSecurityService });
 
     dependencyManager.registerObjectDependency({ name: "GuidUtils", type: Bit.Implementations.DefaultGuidUtils });

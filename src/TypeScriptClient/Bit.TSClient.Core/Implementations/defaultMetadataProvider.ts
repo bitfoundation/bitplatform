@@ -7,8 +7,9 @@
 
         public getMetadataSync(): Contracts.AppMetadata {
 
-            if (this._appMetadata == null)
+            if (this._appMetadata == null) {
                 throw new Error("Can't load metadata sync");
+            }
 
             return this._appMetadata;
         }
@@ -27,9 +28,8 @@
                         const response = await fetch(`Metadata/V${ClientAppProfileManager.getCurrent().getClientAppProfile().version}`, { credentials: "include" });
                         if (response.ok) {
                             this._appMetadata = await response.json() as any;
-                        }
-                        else {
-                            reject("Error retriving metadata");
+                        } else {
+                            reject("Error retrieving metadata");
                         }
                     } catch (e) {
                         reject(e);

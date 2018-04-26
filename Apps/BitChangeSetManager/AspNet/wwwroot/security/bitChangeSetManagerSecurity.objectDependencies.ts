@@ -2,9 +2,9 @@
 
 module BitChangeSetManagerSecurity {
 
-    let dependencyManager = DependencyManager.getCurrent();
+    const dependencyManager = DependencyManager.getCurrent();
 
-    dependencyManager.registerObjectDependency({ name: "ModelProvider", type: Bit.Implementations.Identity.DefaultModelProvider });
+    dependencyManager.registerObjectDependency({ name: "LoginModelProvider", type: Bit.Implementations.Identity.DefaultLoginModelProvider });
 
     dependencyManager.registerObjectDependency({ name: "AppEvent", type: Bit.Implementations.Identity.IdentityServerDefaultAngularAppInitialization });
 

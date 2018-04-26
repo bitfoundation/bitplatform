@@ -1,26 +1,13 @@
 ﻿using System;
-using Bit.Core.Contracts;
 using Bit.Core.Models;
 using Bit.Owin.Contracts;
-using NWebsec.Owin;
 using Owin;
 
 namespace Bit.Owin.Middlewares
 {
     public class SignInPageMiddlewareConfiguration : IOwinMiddlewareConfiguration
     {
-        private AppEnvironment _activeAppEnvironment;
-
-        public virtual IAppEnvironmentProvider AppEnvironmentProvider
-        {
-            set
-            {
-                if (value == null)
-                    throw new ArgumentNullException(nameof(AppEnvironmentProvider));
-
-                _activeAppEnvironment = value.GetActiveAppEnvironment();
-            }
-        }
+        public virtual AppEnvironment AppEnvironment { get; set; }
 
         public virtual void Configure(IAppBuilder owinApp)
         {
@@ -30,7 +17,7 @@ namespace Bit.Owin.Middlewares
             owinApp.Map("/SignIn",
                 innerApp =>
                 {
-                    if (_activeAppEnvironment.GetConfig("RequireSsl", defaultValueOnNotFound: false))
+                    if (AppEnvironment.GetConfig("RequireSsl", defaultValueOnNotFound: false))
                     {
                         innerApp.UseHsts(config => config.IncludeSubdomains().MaxAge(days: 30));
                     }

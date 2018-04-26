@@ -1,5 +1,4 @@
-﻿using System;
-using System.Linq;
+﻿using System.Linq;
 using System.Threading.Tasks;
 using Bit.Core.Contracts;
 using Bit.Core.Models;
@@ -24,7 +23,7 @@ namespace Bit.Tests.Api.Middlewares.SignalR.Tests
             {
                 TokenResponse token = await testEnvironment.Server.Login("ValidUserName", "ValidPassword", clientId: "TestResOwner");
 
-                ODataClient client = testEnvironment.Server.BuildODataClient(token: token);
+                IODataClient client = testEnvironment.Server.BuildODataClient(token: token);
 
                 try
                 {
@@ -41,7 +40,7 @@ namespace Bit.Tests.Api.Middlewares.SignalR.Tests
 
                     A.CallTo(() => logStore.SaveLogAsync(A<LogEntry>.That.Matches(log =>
                                       log.LogData.Any(logData => logData.Key == "WebException" &&
-                                              ((string)logData.Value).Contains("You may not use date time values in task push content formatter")))))
+                                              ((string)logData.Value).Contains("You may not use date time values in signalr content formatter")))))
                                               .MustHaveHappened(Repeated.Exactly.Once);
                 }
             }

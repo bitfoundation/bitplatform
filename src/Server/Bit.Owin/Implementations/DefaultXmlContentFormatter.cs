@@ -22,7 +22,7 @@ namespace Bit.Owin.Implementations
         {
             XmlSerializer xmlSerializer = new XmlSerializer(typeof (T));
             using (StringReader stringWriter = new StringReader(objAsStr))
-                return (T) xmlSerializer.Deserialize(stringWriter);
+                return (T)xmlSerializer.Deserialize(stringWriter);
         }
     }
 }

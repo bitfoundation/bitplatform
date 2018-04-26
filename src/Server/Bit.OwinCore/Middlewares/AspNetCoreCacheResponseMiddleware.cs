@@ -14,7 +14,7 @@ namespace Bit.OwinCore.Middlewares
             _next = next;
         }
 
-        public async Task Invoke(HttpContext context)
+        public Task Invoke(HttpContext context)
         {
             if (context.Response.Headers.Any(h => string.Equals(h.Key, "Cache-Control", StringComparison.InvariantCultureIgnoreCase)))
                 context.Response.Headers.Remove("Cache-Control");
@@ -28,7 +28,7 @@ namespace Bit.OwinCore.Middlewares
                 context.Response.Headers.Remove("Expires");
             context.Response.Headers.Add("Expires", new[] { "max" });
 
-            await _next.Invoke(context);
+            return _next.Invoke(context);
         }
     }
 }

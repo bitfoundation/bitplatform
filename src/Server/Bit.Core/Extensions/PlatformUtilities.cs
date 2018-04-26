@@ -14,7 +14,7 @@ namespace Bit.Core.Extensions
             {
                 return false;
             }
-        });
+        }, isThreadSafe: true);
 
         private static readonly Lazy<bool> _isRunningOnDotNetCore = new Lazy<bool>(() =>
         {
@@ -26,7 +26,7 @@ namespace Bit.Core.Extensions
             {
                 return false;
             }
-        });
+        }, isThreadSafe: true);
 
         public static bool IsRunningOnMono => _isRunningOnMono.Value;
 

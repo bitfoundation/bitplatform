@@ -41,18 +41,22 @@ namespace Bit.OwinCore
 
             DefaultDependencyManager.Current.Init();
 
-            foreach (IDependenciesManager projectDependenciesManager in DefaultDependenciesManagerProvider.Current.GetDependenciesManagers())
+            foreach (IAppModule appModule in DefaultAppModulesProvider.Current.GetAppModules())
             {
-                if (projectDependenciesManager is IAspNetCoreDependenciesManager aspNetCoreDependenciesManager)
-                    aspNetCoreDependenciesManager.ConfigureDependencies(_serviceProvider, services, DefaultDependencyManager.Current);
+                if (appModule is IAspNetCoreAppModule aspNetCoreAppModule)
+                    aspNetCoreAppModule.ConfigureDependencies(_serviceProvider, services, DefaultDependencyManager.Current);
 
-                else if (projectDependenciesManager is IOwinDependenciesManager)
-                    ((IOwinDependenciesManager)projectDependenciesManager).ConfigureDependencies(DefaultDependencyManager.Current);
+                else if (appModule is IOwinAppModule owinAppModule)
+                    owinAppModule.ConfigureDependencies(DefaultDependencyManager.Current);
             }
+
+            DefaultDependencyManager.Current.RegisterUsing((depManager) => depManager.Resolve<IHttpContextAccessor>().HttpContext);
 
             DefaultDependencyManager.Current.RegisterUsing((depManager) =>
             {
-                HttpContext context = depManager.Resolve<IHttpContextAccessor>().HttpContext;
+                HttpContext context = depManager.Resolve<HttpContext>();
+                if (context == null)
+                    throw new InvalidOperationException("context is null");
                 return (IOwinContext)context.Items["OwinContext"];
             });
         }
@@ -60,7 +64,7 @@ namespace Bit.OwinCore
         public void Configure(IApplicationBuilder aspNetCoreApp, OwinAppStartup owinAppStartup, IEnumerable<IAspNetCoreMiddlewareConfiguration> aspNetCoreMiddlewares)
         {
             if (string.IsNullOrEmpty(_hostingEnvironment.WebRootPath))
-                _hostingEnvironment.WebRootPath = _pathProvider.GetCurrentStaticFilesPath();
+                _hostingEnvironment.WebRootPath = _pathProvider.GetStaticFilesFolderPath();
 
             if (Directory.Exists(_hostingEnvironment.WebRootPath) && (_hostingEnvironment.WebRootFileProvider == null || _hostingEnvironment.WebRootFileProvider is NullFileProvider))
                 _hostingEnvironment.WebRootFileProvider = new PhysicalFileProvider(_hostingEnvironment.WebRootPath);

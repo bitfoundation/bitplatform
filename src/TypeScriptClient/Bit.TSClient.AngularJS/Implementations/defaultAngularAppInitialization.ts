@@ -19,7 +19,7 @@
         }
 
         protected async registerValues(app: ng.IModule): Promise<void> {
-            
+
         }
 
         protected async registerComponents(app: ng.IModule): Promise<void> {
@@ -28,8 +28,9 @@
 
             dependencyManager.getAllComponentDependencies().forEach(component => {
 
-                if (component.templateUrl != null)
+                if (component.templateUrl != null) {
                     component.templateUrl = this.pathProvider.getFullPath(component.templateUrl);
+                }
 
                 app.component(component.name, component);
 
@@ -88,7 +89,7 @@
 
                     const originalCompile = directive.compile;
 
-                    directive.compile = function ($element, $attrs) {
+                    directive.compile = function compile($element, $attrs) {
 
                         const result = originalCompile.apply(this, arguments);
 
@@ -121,8 +122,9 @@
 
             directives.forEach(vm => {
 
-                if (vm.templateUrl != null)
+                if (vm.templateUrl != null) {
                     vm.templateUrl = this.pathProvider.getFullPath(vm.templateUrl);
+                }
 
                 vm.controller = vm.controller || vm.type as any;
 
@@ -138,16 +140,16 @@
 
             app.filter("bitDate", () => {
 
-                return function (date: Date): string {
+                return function getFormattedDate(date: Date): string {
 
                     return dateTimeService.getFormattedDate(date);
 
-                }
+                };
             });
 
             app.filter("bitDateTime", () => {
 
-                return function (date: Date): string {
+                return function getFormattedDateTime(date: Date): string {
 
                     return dateTimeService.getFormattedDateTime(date);
 
@@ -160,7 +162,7 @@
 
                     return pathProvider.getFullPath(path);
 
-                }
+                };
 
             });
         }
@@ -198,8 +200,7 @@
                         });
 
                         res();
-                    }
-                    catch (e) {
+                    } catch (e) {
                         rej(e);
                         throw e;
                     }

@@ -85,7 +85,7 @@ module Bit.Directives {
         public static defaultRadGridDirectiveCustomizers: Array<($scope: ng.IScope, $attrs: ng.IAttributes, $element: JQuery, gridOptions: kendo.ui.GridOptions) => void> = [];
         public static defaultRadGridDirectiveColumnCustomizers: Array<($scope: ng.IScope, $attrs: ng.IAttributes, $element: JQuery, gridOptions: kendo.ui.GridOptions, columnElement: JQuery, gridColumn: kendo.ui.GridColumn) => void> = [];
 
-        public constructor( @Inject("$element") public $element: JQuery,
+        public constructor(@Inject("$element") public $element: JQuery,
             @Inject("$scope") public $scope: ng.IScope,
             @Inject("$attrs") public $attrs: ng.IAttributes & { radDataSource: string, radOnInit: string },
             @Inject("MetadataProvider") public metadataProvider: Contracts.IMetadataProvider,
@@ -111,8 +111,9 @@ module Bit.Directives {
 
             let ngModelAndDataSourceWatchDisposal = this.$scope.$watch(this.$attrs.radDataSource, (ds: kendo.data.DataSource) => {
 
-                if (ds == null)
+                if (ds == null) {
                     return;
+                }
 
                 this.dataSource = ds;
 
@@ -137,8 +138,9 @@ module Bit.Directives {
 
                 let titleAttrValue = editTemplateElement.attr("title");
 
-                if (titleAttrValue != null)
+                if (titleAttrValue != null) {
                     editPopupTitle = this.$interpolate(titleAttrValue)(this.$scope);
+                }
 
                 const editTemplateHtml = angular.element(`<rad-grid-editor rad-model-item-template ng-model='::dataItem'>${editTemplateElement.html()}</rad-grid-editor>`);
 
@@ -225,7 +227,7 @@ module Bit.Directives {
                 detailTemplateHtml.remove();
             }
 
-            let gridDtoType = this.dataSource.options.schema['jayType'];
+            let gridDtoType = this.dataSource.options.schema["jayType"];
 
             let metadata = this.metadataProvider.getMetadataSync();
 
@@ -235,8 +237,9 @@ module Bit.Directives {
 
             let extras = viewTemplateElement.find("extras");
 
-            if (extras.length == 0)
+            if (extras.length == 0) {
                 extras = angular.element("<extras></extras");
+            }
 
             extras.attr("rad-model-item-template", "");
             extras.attr("ng-model", "::dataItem");
@@ -253,8 +256,9 @@ module Bit.Directives {
 
                     if (wrappedItem.attr("name") != null && isFirstDataColumn == true) {
                         isFirstDataColumn = false;
-                        if (template == null || template == "")
+                        if (template == null || template == "") {
                             wrappedItem[0].innerHTML = `{{::dataItem.${wrappedItem.attr("name")}}}`;
+                        }
                         wrappedItem.append(extras);
                         template = item.innerHTML;
                     }
@@ -265,8 +269,9 @@ module Bit.Directives {
                         width: wrappedItem.width() || "auto"
                     };
 
-                    if (template != null && template != "")
+                    if (template != null && template != "") {
                         gridColumn.template = template;
+                    }
 
                     gridColumn["element"] = wrappedItem;
 
@@ -275,13 +280,15 @@ module Bit.Directives {
                         return;
                     }
 
-                    if (wrappedItem.attr("name") == null)
+                    if (wrappedItem.attr("name") == null) {
                         throw new Error("column must have a name attribute");
+                    }
 
                     const fieldInfo = this.dataSource.options.schema.model.fields[gridColumn.field];
 
-                    if (fieldInfo == null)
+                    if (fieldInfo == null) {
                         throw new Error(`Model has no field named ${gridColumn.field} to be used`);
+                    }
 
                     if (fieldInfo.type == "date") {
 
@@ -291,7 +298,7 @@ module Bit.Directives {
 
                                 let jQueryOriginalVal = jQuery.fn.val;
 
-                                jQuery.fn.val = (function (value) {
+                                jQuery.fn.val = (function val(value) {
                                     let result = jQueryOriginalVal.apply(this, arguments);
                                     if (arguments.length == 1 && this.hasClass("persian-date-picker-value")) {
                                         this.trigger("change");
@@ -309,7 +316,7 @@ module Bit.Directives {
 
                                     const val = element.val();
 
-                                    element.after('<input type="button" class="k-button" style="width:100%" />');
+                                    element.after("<input type=\"button\" class=\"k-button\" style=\"width:100%\" />");
 
                                     element.addClass("persian-date-picker-value");
 
@@ -324,10 +331,11 @@ module Bit.Directives {
                                         },
                                         formatter: (e) => {
                                             const result = new Date(e);
-                                            if (fieldInfo.dateType == "DateTime")
+                                            if (fieldInfo.dateType == "DateTime") {
                                                 return this.dateTimeService.getFormattedDateTime(result);
-                                            else
+                                            } else {
                                                 return this.dateTimeService.getFormattedDate(result);
+                                            }
                                         },
                                         timePicker: {
                                             enabled: fieldInfo.dateType == "DateTime"
@@ -336,30 +344,30 @@ module Bit.Directives {
 
                                     let datePickerInstance = datePickerButton["persianDatepicker"](persianDatePickerOptions);
 
-                                    if (val == null || val == "")
+                                    if (val == null || val == "") {
                                         datePickerButton.val(null);
-                                    else
+                                    } else {
                                         datePickerButton.val(persianDatePickerOptions.formatter(val));
+                                    }
 
                                     element.val(val);
 
                                     element.hide();
 
-                                    element.parents("div.k-filterable.k-content").data("kendoFilterMenu")["popup"].bind("close", function (e) {
+                                    element.parents("div.k-filterable.k-content").data("kendoFilterMenu")["popup"].bind("close", function onClose(e) {
                                         if (datePickerInstance.model.view.$container.css("display") == "block") {
                                             e.preventDefault();
                                         }
                                     });
                                 }
-                            }
-                        }
-                        else {
+                            };
+                        } else {
                             if (fieldInfo.viewType == "DateTime") {
                                 gridColumn.filterable = {
                                     ui: (element: JQuery) => {
                                         element.kendoDateTimePicker();
                                     }
-                                }
+                                };
                             }
                         }
                     }
@@ -370,45 +378,51 @@ module Bit.Directives {
 
                         const filterDataSource: kendo.data.DataSource = this.$parse(filterDataSourceAttributeValue)(this.$scope);
 
-                        if (filterDataSource == null)
+                        if (filterDataSource == null) {
                             throw new Error(`data source for ${filterDataSourceAttributeValue} is null`);
+                        }
 
                         let filterTextFieldName = wrappedItem.attr("rad-text-field-name");
                         let filterValueFieldName = wrappedItem.attr("rad-value-field-name");
                         let bindedMemberName = fieldInfo.field;
 
-                        let dtoMetadata = metadata.Dtos.find(d => d.DtoType == gridDtoType['fullName']);
+                        let dtoMetadata = metadata.Dtos.find(d => d.DtoType == gridDtoType["fullName"]);
                         if (dtoMetadata != null) {
-                            let thisDSMemberType = filterDataSource.options.schema['jayType'];
+                            let thisDSMemberType = filterDataSource.options.schema["jayType"];
                             if (thisDSMemberType != null) {
-                                let lookup = dtoMetadata.MembersLookups.find(l => l.DtoMemberName == bindedMemberName && l.LookupDtoType == thisDSMemberType['fullName']);
+                                let lookup = dtoMetadata.MembersLookups.find(l => l.DtoMemberName == bindedMemberName && l.LookupDtoType == thisDSMemberType["fullName"]);
                                 if (lookup != null) {
                                     if (lookup.BaseFilter_JS != null) {
-                                        let originalRead = filterDataSource['transport'].read;
-                                        filterDataSource['transport'].read = function (options) {
+                                        let originalRead = filterDataSource["transport"].read;
+                                        filterDataSource["transport"].read = function read(options) {
                                             options.data = options.data || {};
                                             options.data.lookupBaseFilter = lookup.BaseFilter_JS;
                                             return originalRead.apply(this, arguments);
-                                        }
+                                        };
                                     }
-                                    if (filterTextFieldName == null)
+                                    if (filterTextFieldName == null) {
                                         filterTextFieldName = lookup.DataTextField;
-                                    if (filterValueFieldName == null)
+                                    }
+                                    if (filterValueFieldName == null) {
                                         filterValueFieldName = lookup.DataValueField;
+                                    }
                                 }
                             }
                         }
 
                         if (filterValueFieldName == null) {
-                            if (filterDataSource.options.schema != null && filterDataSource.options.schema.model != null && filterDataSource.options.schema.model.idField != null)
+                            if (filterDataSource.options.schema != null && filterDataSource.options.schema.model != null && filterDataSource.options.schema.model.idField != null) {
                                 filterValueFieldName = filterDataSource.options.schema.model.idField;
+                            }
                         }
 
-                        if (filterDataSource.options.schema.model.fields[filterTextFieldName] == null)
+                        if (filterDataSource.options.schema.model.fields[filterTextFieldName] == null) {
                             throw new Error(`Model has no property named ${filterTextFieldName} to be used as text field`);
+                        }
 
-                        if (filterDataSource.options.schema.model.fields[filterValueFieldName] == null)
+                        if (filterDataSource.options.schema.model.fields[filterValueFieldName] == null) {
                             throw new Error(`Model has no property named ${filterValueFieldName} to be used as value field`);
+                        }
 
                         let comboBoxOptions: kendo.ui.ComboBoxOptions = {
                             dataSource: filterDataSource,
@@ -424,8 +438,9 @@ module Bit.Directives {
                             open: (e) => {
                                 if (e.sender.options.autoBind == false) {
                                     e.sender.options.autoBind = true;
-                                    if (e.sender.options.dataSource.flatView().length == 0)
+                                    if (e.sender.options.dataSource.flatView().length == 0) {
                                         (e.sender.options.dataSource as kendo.data.DataSource).fetch();
+                                    }
                                 }
                             },
                             delay: 300,
@@ -437,8 +452,8 @@ module Bit.Directives {
                                 element.kendoComboBox(comboBoxOptions);
                             },
                             ignoreCase: true
-                        }
-                    };
+                        };
+                    }
 
                     columns.push(gridColumn);
 
@@ -479,10 +494,12 @@ module Bit.Directives {
         }
 
         public syncCurrent() {
-            if (this.dataSource.current == null && this.getCurrent() != null)
+            if (this.dataSource.current == null && this.getCurrent() != null) {
                 this.dataSource["_current"] = this.getCurrent();
-            if (this.dataSource.current != null && this.getCurrent() == null)
+            }
+            if (this.dataSource.current != null && this.getCurrent() == null) {
                 this.setCurrent(this.dataSource.current as $data.Entity);
+            }
         }
 
         public setCurrent(entity: $data.Entity) {
@@ -491,11 +508,11 @@ module Bit.Directives {
 
             if (entity == null) {
                 grid.clearSelection();
-            }
-            else {
+            } else {
                 let _current = this.getCurrent();
-                if (_current == null || _current.uid != entity.uid)
+                if (_current == null || _current.uid != entity.uid) {
                     grid.select(grid.tbody.find(`tr[data-uid='${entity.uid}']`));
+                }
             }
 
         }
@@ -509,17 +526,19 @@ module Bit.Directives {
             const itemBeingInserted = grid.dataSource
                 .flatView().find(i => i["isNew"]() == true);
 
-            if (itemBeingInserted != null)
+            if (itemBeingInserted != null) {
                 current = itemBeingInserted.innerInstance != null ? itemBeingInserted.innerInstance() : itemBeingInserted;
+            }
 
             if (current == null) {
 
                 const selectedDataItem = grid.dataItem(grid.select());
 
-                if (selectedDataItem == null)
+                if (selectedDataItem == null) {
                     current = null;
-                else
+                } else {
                     current = selectedDataItem.innerInstance != null ? selectedDataItem.innerInstance() : itemBeingInserted;
+                }
             }
 
             return current;

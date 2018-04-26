@@ -2,7 +2,7 @@
 
 module BitChangeSetManagerSecurity {
 
-    let dependencyManager = DependencyManager.getCurrent();
+    const dependencyManager = DependencyManager.getCurrent();
 
     dependencyManager.registerFileDependency({
         name: "normalize",
@@ -54,24 +54,8 @@ module BitChangeSetManagerSecurity {
     });
 
     dependencyManager.registerFileDependency({
-        name: "jQuery",
-        path: "node_modules/jquery/dist/jquery",
-        onLoad: () => {
-            // For electron compatibility
-            if (typeof window["require"] != 'undefined' && window["module"] != null && window["module"].exports != null) {
-                window["$"] = window["jQuery"] = window["module"].exports;
-            }
-        }
-    });
-
-    dependencyManager.registerFileDependency({
         name: "angular",
         path: "node_modules/angular/angular"
-    });
-
-    dependencyManager.registerFileDependency({
-        name: "odataJS",
-        path: "node_modules/@bit/jaydata-odatajs/jaydata-odatajs-4.0.1"
     });
 
     dependencyManager.registerFileDependency({

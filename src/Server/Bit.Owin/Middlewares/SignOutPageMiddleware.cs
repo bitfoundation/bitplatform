@@ -1,6 +1,7 @@
 ﻿using System.Threading.Tasks;
 using Bit.Core.Contracts;
 using Bit.Core.Models;
+using Bit.Owin.Contracts;
 using Microsoft.Owin;
 
 namespace Bit.Owin.Middlewares
@@ -12,16 +13,26 @@ namespace Bit.Owin.Middlewares
         {
         }
 
-        public override async Task Invoke(IOwinContext context)
+        public override Task Invoke(IOwinContext context)
         {
             IDependencyResolver dependencyResolver = context.GetDependencyResolver();
 
-            IAppEnvironmentProvider appEnvironmentProvider = dependencyResolver.Resolve<IAppEnvironmentProvider>();
-
-            AppEnvironment activeAppEnvironment = appEnvironmentProvider.GetActiveAppEnvironment();
+            AppEnvironment activeAppEnvironment = dependencyResolver.Resolve<AppEnvironment>();
 
             string defaultPath = activeAppEnvironment.GetHostVirtualPath();
             string defaultPathWithoutEndingSlashIfIsNotRoot = defaultPath == "/" ? defaultPath : defaultPath.Substring(0, defaultPath.Length - 1);
+
+            IUrlStateProvider urlStateProvider = dependencyResolver.Resolve<IUrlStateProvider>();
+
+            dynamic state = urlStateProvider.GetState(context.Request.Uri);
+
+            bool autoCloseIsTrue = false;
+
+            try
+            {
+                autoCloseIsTrue = state.AutoClose == true;
+            }
+            catch { }
 
             string singOutPage = $@"
 <html>
@@ -45,7 +56,7 @@ namespace Bit.Owin.Middlewares
                 if(name == 'access_token' || name == 'token_type')
                     document.cookie = name + '=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path={defaultPathWithoutEndingSlashIfIsNotRoot}';
             }}
-            location = '{defaultPath}';
+            {(autoCloseIsTrue ? "window.close();" : $"location = '{defaultPath}';")}
         </script>
     </head>
     <body>
@@ -56,7 +67,7 @@ namespace Bit.Owin.Middlewares
 
             context.Response.ContentType = "text/html; charset=utf-8";
 
-            await context.Response.WriteAsync(singOutPage, context.Request.CallCancelled);
+            return context.Response.WriteAsync(singOutPage, context.Request.CallCancelled);
         }
     }
 }

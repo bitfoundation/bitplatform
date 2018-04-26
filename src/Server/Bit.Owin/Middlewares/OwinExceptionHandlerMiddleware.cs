@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Globalization;
 using System.Threading.Tasks;
 using Bit.Core.Contracts;
 using Bit.Owin.Contracts;
@@ -25,18 +26,20 @@ namespace Bit.Owin.Middlewares
             try
             {
                 await Next.Invoke(context);
-                string statusCode = context.Response.StatusCode.ToString();
-                bool responseStatusCodeIsErrorCodeBecauseOfSomeServerBasedReason = statusCode.StartsWith("5");
-                bool responseStatusCodeIsErrorCodeBecauseOfSomeClientBasedReason = statusCode.StartsWith("4");
+                string statusCode = context.Response.StatusCode.ToString(CultureInfo.InvariantCulture);
+                bool responseStatusCodeIsErrorCodeBecauseOfSomeServerBasedReason = statusCode.StartsWith("5", StringComparison.InvariantCultureIgnoreCase);
+                bool responseStatusCodeIsErrorCodeBecauseOfSomeClientBasedReason = statusCode.StartsWith("4", StringComparison.InvariantCultureIgnoreCase);
                 if (responseStatusCodeIsErrorCodeBecauseOfSomeServerBasedReason ||
                     responseStatusCodeIsErrorCodeBecauseOfSomeClientBasedReason)
                 {
-                    scopeStatusManager.MarkAsFailed();
+                    string reasonPhrase = context.Response.ReasonPhrase ?? "UnknownReasonPhrase";
+
+                    scopeStatusManager.MarkAsFailed(reasonPhrase);
 
                     logger.AddLogData("ResponseStatusCode", statusCode);
-                    logger.AddLogData("ResponseReasonPhrase", context.Response.ReasonPhrase);
+                    logger.AddLogData("ResponseReasonPhrase", reasonPhrase);
 
-                    if (responseStatusCodeIsErrorCodeBecauseOfSomeClientBasedReason || context.Response.ReasonPhrase == BitMetadataBuilder.KnownError)
+                    if (responseStatusCodeIsErrorCodeBecauseOfSomeClientBasedReason || reasonPhrase == BitMetadataBuilder.KnownError)
                     {
                         await logger.LogWarningAsync("Response has failed status code because of some client side reason");
                     }
@@ -47,7 +50,7 @@ namespace Bit.Owin.Middlewares
                 }
                 else if (!scopeStatusManager.WasSucceeded())
                 {
-                    await logger.LogFatalAsync("Scope was failed");
+                    await logger.LogFatalAsync($"Scope was failed: {scopeStatusManager.FailureReason}");
                 }
                 else
                 {
@@ -57,15 +60,15 @@ namespace Bit.Owin.Middlewares
             catch (Exception exp)
             {
                 if (scopeStatusManager.WasSucceeded())
-                    scopeStatusManager.MarkAsFailed();
+                    scopeStatusManager.MarkAsFailed(exp.Message);
                 await logger.LogExceptionAsync(exp, "Request-Execution-Exception");
-                string statusCode = context.Response.StatusCode.ToString();
-                bool responseStatusCodeIsErrorCodeBecauseOfSomeServerBasedReason = statusCode.StartsWith("5");
-                bool responseStatusCodeIsErrorCodeBecauseOfSomeClientBasedReason = statusCode.StartsWith("4");
+                string statusCode = context.Response.StatusCode.ToString(CultureInfo.InvariantCulture);
+                bool responseStatusCodeIsErrorCodeBecauseOfSomeServerBasedReason = statusCode.StartsWith("5", StringComparison.InvariantCultureIgnoreCase);
+                bool responseStatusCodeIsErrorCodeBecauseOfSomeClientBasedReason = statusCode.StartsWith("4", StringComparison.InvariantCultureIgnoreCase);
                 if (responseStatusCodeIsErrorCodeBecauseOfSomeClientBasedReason == false && responseStatusCodeIsErrorCodeBecauseOfSomeServerBasedReason == false)
                 {
                     IExceptionToHttpErrorMapper exceptionToHttpErrorMapper = dependencyResolver.Resolve<IExceptionToHttpErrorMapper>();
-                    context.Response.StatusCode = Convert.ToInt32(exceptionToHttpErrorMapper.GetStatusCode(exp));
+                    context.Response.StatusCode = Convert.ToInt32(exceptionToHttpErrorMapper.GetStatusCode(exp), CultureInfo.InvariantCulture);
                     await context.Response.WriteAsync(exceptionToHttpErrorMapper.GetMessage(exp), context.Request.CallCancelled);
                     context.Response.ReasonPhrase = exceptionToHttpErrorMapper.GetReasonPhrase(exp);
                 }

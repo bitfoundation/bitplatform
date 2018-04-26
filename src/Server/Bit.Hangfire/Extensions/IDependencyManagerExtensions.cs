@@ -17,11 +17,8 @@ namespace Bit.Core.Contracts
 
             dependencyManager.Register<ILogProvider, HangfireBackgroundJobWorkerLogProvider>(overwriteExciting: false);
             dependencyManager.Register<IDashboardAuthorizationFilter, HangfireJobsDashboardAuthorizationFilter>(lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExciting: false);
-#if NET461
+
             dependencyManager.RegisterOwinMiddleware<JobSchedulerMiddlewareConfiguration>();
-#else
-            dependencyManager.RegisterAspNetCoreMiddleware<JobSchedulerMiddlewareConfiguration>();
-#endif
             dependencyManager.RegisterAppEvents<TJobSchedulerBackendConfiguration>();
             dependencyManager.Register<IBackgroundJobWorker, HangfireBackgroundJobWorker>(lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExciting: false);
             dependencyManager.Register<JobActivator, AutofacJobActivator>(lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExciting: false);

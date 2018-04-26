@@ -12,7 +12,7 @@ namespace Bit.WebApi.ActionFilters
 {
     public class ExceptionHandlerFilterAttribute : ExceptionFilterAttribute
     {
-        public override async Task OnExceptionAsync(HttpActionExecutedContext actionExecutedContext, CancellationToken cancellationToken)
+        public override Task OnExceptionAsync(HttpActionExecutedContext actionExecutedContext, CancellationToken cancellationToken)
         {
             IDependencyResolver scopeDependencyResolver = actionExecutedContext.Request.GetOwinContext().GetDependencyResolver();
 
@@ -25,9 +25,9 @@ namespace Bit.WebApi.ActionFilters
             actionExecutedContext.Response.ReasonPhrase = exceptionToHttpErrorMapper.GetReasonPhrase(exception);
 
             if (scopeStatusManager.WasSucceeded())
-                scopeStatusManager.MarkAsFailed();
+                scopeStatusManager.MarkAsFailed(exception.Message);
 
-            await base.OnExceptionAsync(actionExecutedContext, cancellationToken);
+            return base.OnExceptionAsync(actionExecutedContext, cancellationToken);
         }
 
         protected virtual HttpResponseMessage CreateErrorResponseMessage(HttpActionExecutedContext actionExecutedContext, IExceptionToHttpErrorMapper exceptionToHttpErrorMapper, Exception exception)

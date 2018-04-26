@@ -19,7 +19,7 @@ namespace Bit.OwinCore
         }
 
         /// <summary>
-        /// ASP.NET Core's default ConfigureServices. We recommend you to use <see cref="Contracts.IAspNetCoreDependenciesManager.ConfigureDependencies(IServiceProvider, IServiceCollection, Core.Contracts.IDependencyManager)"/> method which provides you <see cref="IServiceProvider"/>, <see cref="Core.Contracts.IDependencyManager"/> and <see cref="IServiceCollection"/> altogether
+        /// ASP.NET Core's default ConfigureServices. We recommend you to use <see cref="Contracts.IAspNetCoreAppModule.ConfigureDependencies(IServiceProvider, IServiceCollection, Core.Contracts.IDependencyManager)"/> method which provides you <see cref="IServiceProvider"/>, <see cref="Core.Contracts.IDependencyManager"/> and <see cref="IServiceCollection"/> altogether
         /// </summary>
         public virtual IServiceProvider ConfigureServices(IServiceCollection services)
         {

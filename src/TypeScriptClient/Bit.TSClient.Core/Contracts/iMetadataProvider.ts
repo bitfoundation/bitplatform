@@ -1,54 +1,54 @@
 ﻿module Bit.Contracts {
-    export interface EnvironmentCultureValue {
+    export type EnvironmentCultureValue = {
         Name: string;
         Title: string;
-    }
+    };
 
-    export interface EnvironmentCulture {
+    export type EnvironmentCulture = {
         Name: string;
         Values: Array<EnvironmentCultureValue>;
-    }
+    };
 
-    export interface ProjectMetadata {
+    export type ProjectMetadata = {
         ProjectName: string;
         Messages: Array<EnvironmentCulture>;
-    }
+    };
 
-    export interface ViewMetadata {
+    export type ViewMetadata = {
         ViewName: string;
         Messages: Array<EnvironmentCulture>;
-    }
+    };
 
-    export interface DtoMemberMetadata {
+    export type DtoMemberMetadata = {
         IsRequired: boolean;
         Pattern: string;
         DtoMemberName: string;
         Messages: Array<EnvironmentCulture>;
-    }
+    };
 
-    export interface DtoMemberLookup {
+    export type DtoMemberLookup = {
         DtoMemberName: string;
         LookupDtoType: string;
         DataTextField: string;
         DataValueField: string;
         BaseFilter_JS: string;
-    }
+    };
 
-    export interface DtoMetadata {
+    export type DtoMetadata = {
         DtoType: string;
         MembersMetadata: Array<DtoMemberMetadata>;
         MembersLookups: Array<DtoMemberLookup>;
-    }
+    };
 
-    export interface AppMetadata {
+    export type AppMetadata = {
         Dtos: Array<DtoMetadata>;
         Messages: Array<EnvironmentCulture>;
         Projects: Array<ProjectMetadata>;
         Views: Array<ProjectMetadata>;
-    }
+    };
 
-    export interface IMetadataProvider {
+    export type IMetadataProvider = {
         getMetadata(): Promise<AppMetadata>;
         getMetadataSync(): AppMetadata;
-    }
+    };
 }
