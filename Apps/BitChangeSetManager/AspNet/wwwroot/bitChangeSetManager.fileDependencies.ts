@@ -104,7 +104,7 @@ module BitChangeSetManager {
 
     dependencyManager.registerFileDependency({
         name: "event-source-polyfill",
-        path: "node_modules/event-source-polyfill/eventsource",
+        path: "node_modules/event-source-polyfill/src/eventsource",
         predicate: (appInfo) => {
             return typeof (window["EventSource"]) == "undefined";
         }

@@ -4,7 +4,7 @@
 
         public newGuid(): string {
 
-            return $data.Guid.NewGuid().value.toLowerCase();
+            return $data.Guid["NewGuid"]().value.toLowerCase();
 
         }
 
