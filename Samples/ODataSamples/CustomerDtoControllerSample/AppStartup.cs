@@ -330,12 +330,11 @@ namespace CustomerDtoControllerSample
 
         public string Name { get; set; }
 
-        [InverseProperty(nameof(ProductDto.Category))]
         public List<ProductDto> Products { get; set; }
 
         public bool IsActive { get; set; }
 
-        public int ProductsCount { get; set; }
+        public bool HasProduct { get; set; }
     }
 
     public class ProductDto : IDto
@@ -347,7 +346,6 @@ namespace CustomerDtoControllerSample
         public int CategoryId { get; set; }
 
         [ForeignKey(nameof(CategoryId))]
-        [InverseProperty(nameof(CategoryDto.Products))]
         public CategoryDto Category { get; set; }
     }
 
@@ -406,7 +404,7 @@ namespace CustomerDtoControllerSample
         public virtual void Configure(IMapperConfigurationExpression mapperConfigExpression)
         {
             mapperConfigExpression.CreateMap<Category, CategoryDto>()
-                .ForMember(category => category.ProductsCount, config => config.MapFrom(category => category.Products.Count()));
+                .ForMember(category => category.HasProduct, config => config.MapFrom(category => category.Products.Any()));
         }
     }
 }

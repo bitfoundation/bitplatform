@@ -83,7 +83,7 @@ public class CustomerDto : IDto
     public int Id { get;set; }
     public string FirstName { get; set; }
     public string LastName { get; set; }
-    public int OrdersCount { get; set; } // count of orders. You need this in one of your forms for example.
+    public bool HasOrder { get; set; } // You need this in one of your forms for example.
 }
 ```
 
@@ -215,13 +215,14 @@ public class SendEmailToCustomerArgs
     public string message { get; set; }
 }
 
+[Action]
 public async Task SendEmailToCustomer(SendEmailToCustomerArgs args)
 {
     // ...
 }
 ```
 
-As you can see this action has no return value (Task is an async equivalent of void). There is a class called SendEmailToCustomerArgs. Each property of that class describes one of your parameters. It can have a properties such as public Customer[] customers { get; set; } etc.
+As you can see this action has no return value (Task is an async equivalent of void). There is a class called SendEmailToCustomerArgs. **Each property of that class describes one of your parameters.** It can have a properties such as public CustomerDto[] customers { get; set; } etc.
 
 To accept a complex type, you've to define your complex type as following:
 
@@ -241,9 +242,11 @@ public class SendEmailToCustomerParams
 {
     public Location location { get; set; } // complex type parameter
 
-    public Customer[] customers { get; set; } // array of customer dto
+    public CustomerDto[] customers { get; set; } // array of customer dto
 }
 ```
+
+Note that action can have no parameter, or parameters with types of dto/complex type/simple type(string,int,...). **But you may not accept your model as a parameter.** For example, you may not accept a list of your customer models in your action. Try using list of customer dto instead.
 
 **OData Single result:**
 
@@ -288,7 +291,6 @@ public class CategoryDto : IDto
 
     public string Name { get; set; }
 
-    [InverseProperty(nameof(ProductDto.Category))]
     public List<ProductDto> Products { get; set; }
 }
 
@@ -301,7 +303,6 @@ public class ProductDto : IDto
     public int CategoryId { get; set; }
 
     [ForeignKey(nameof(CategoryId))]
-    [InverseProperty(nameof(CategoryDto.Products))]
     public CategoryDto Category { get; set; }
 }
 
@@ -317,9 +318,18 @@ You provide such a details for following reasons:
 
 DtoSetController needs 3 things: Model-Dto-Repository. It gives you Create-Read-Update-Delete over that repository. It's really simple and extendable. You can write actions/functions there and you can override following Create|Read|Update|Delete methods to customize them.
 
+DtoSetController's sample:
+
+```csharp
+public class CategoriesController : DtoSetController<CategoryDto, Category, int /* Key type */>
+{
+
+}
+```
+
 **Custom Dto-Model mapping:**
 
-Imaging CategoryDto has a property called ProductsCount. It's a calculated property by something like this: category => category.Products.Count()
+Imaging CategoryDto has a property called HasProduct. It's a calculated property by something like this: category => category.Products.Any()
 
 To handle this, you've to develop custom mapping using AutoMapper facilities. For example:
 
@@ -330,7 +340,7 @@ public class MyAppDtoEntityMapperConfiguration : IDtoEntityMapperConfiguration
     public virtual void Configure(IMapperConfigurationExpression mapperConfigExpression)
     {
         mapperConfigExpression.CreateMap<Category, CategoryDto>()
-            .ForMember(category => category.ProductsCount, config => config.MapFrom(category => category.Products.Count()));
+            .ForMember(category => category.HasProduct, config => config.MapFrom(category => category.Products.Any()));
     }
 }
 
@@ -341,7 +351,7 @@ dependencyManager.RegisterDtoEntityMapperConfiguration<MyAppDtoEntityMapperConfi
 
 Run the app, you can insert/update/delete/read categories and products using swagger ui. You can invoke OData queries such as $filter there.
 
-C# / JavaScript / TypeScript client
+How to generate C# / JavaScript / TypeScript clients?
 
 Background Job Worker
 
@@ -351,4 +361,4 @@ Identity Server
 
 Automated Tests
 
-Project creation
+Project creation using bit CLI
