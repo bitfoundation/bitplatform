@@ -19,6 +19,22 @@ namespace Bit.IdentityServer.Implementations.ExternalIdentityProviderConfigurati
                 string linkedInClientId = AppEnvironment.GetConfig<string>("LinkedInClientId");
                 string linkedInSecret = AppEnvironment.GetConfig<string>("LinkedInSecret");
 
+                Task LinkedInOnAuthenticated(LinkedInAuthenticatedContext context)
+                {
+                    context.Identity.AddClaim(new System.Security.Claims.Claim("access_token", context.AccessToken));
+
+                    foreach (KeyValuePair<string, JToken> claim in context.User)
+                    {
+                        string claimType = $"{claim.Key}";
+                        string claimValue = claim.Value.ToString();
+
+                        if (!context.Identity.HasClaim(claimType, claimValue))
+                            context.Identity.AddClaim(new System.Security.Claims.Claim(claimType, claimValue, "XmlSchemaString", "LinkedIn"));
+                    }
+
+                    return Task.CompletedTask;
+                }
+
                 LinkedInAuthenticationOptions linkedInAuthenticationOptions = new LinkedInAuthenticationOptions
                 {
                     AuthenticationType = "LinkedIn",
@@ -27,21 +43,7 @@ namespace Bit.IdentityServer.Implementations.ExternalIdentityProviderConfigurati
                     ClientSecret = linkedInSecret,
                     Provider = new LinkedInAuthenticationProvider
                     {
-                        OnAuthenticated = context =>
-                        {
-                            context.Identity.AddClaim(new System.Security.Claims.Claim("access_token", context.AccessToken));
-
-                            foreach (KeyValuePair<string, JToken> claim in context.User)
-                            {
-                                string claimType = $"{claim.Key}";
-                                string claimValue = claim.Value.ToString();
-
-                                if (!context.Identity.HasClaim(claimType, claimValue))
-                                    context.Identity.AddClaim(new System.Security.Claims.Claim(claimType, claimValue, "XmlSchemaString", "LinkedIn"));
-                            }
-
-                            return Task.CompletedTask;
-                        }
+                        OnAuthenticated = LinkedInOnAuthenticated
                     }
                 };
 

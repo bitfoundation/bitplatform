@@ -1,4 +1,5 @@
 ﻿using Bit.Core.Implementations;
+using Bit.Core.Models;
 using Bit.Owin.Contracts;
 using Bit.Owin.Contracts.Metadata;
 using Bit.Owin.Implementations;
@@ -63,11 +64,13 @@ namespace Bit.Core.Contracts
             dependencyManager.RegisterInstance(DefaultAppModulesProvider.Current, overwriteExciting: false)
                 .RegisterInstance(DefaultDependencyManager.Current, overwriteExciting: false);
 
-            dependencyManager.RegisterUsing(resolver =>
+            AppEnvironment RegisterAppEnvironment(IDependencyManager resolver)
             {
                 IAppEnvironmentsProvider appEnvironmentsProvider = resolver.Resolve<IAppEnvironmentsProvider>();
                 return appEnvironmentsProvider.GetActiveAppEnvironment();
-            });
+            }
+
+            dependencyManager.RegisterUsing(RegisterAppEnvironment);
 
             dependencyManager.Register<IDateTimeProvider, DefaultDateTimeProvider>(lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExciting: false);
 

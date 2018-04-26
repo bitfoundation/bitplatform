@@ -26,9 +26,9 @@ namespace Bit.Owin.Implementations
             if (_containerBuilder != null)
                 throw new InvalidOperationException("Container builder has been set already");
             _containerBuilder = builder;
-            _containerBuilder.Register((context, parameter) => (IDependencyManager)this).SingleInstance();
-            _containerBuilder.Register((context, parameter) => (IServiceProvider)this).SingleInstance();
-            _containerBuilder.Register((context, parameter) => (IAutofacDependencyManager)this).SingleInstance();
+            _containerBuilder.Register((context, parameter) => (IDependencyManager)this).SingleInstance().PreserveExistingDefaults();
+            _containerBuilder.Register((context, parameter) => (IServiceProvider)this).SingleInstance().PreserveExistingDefaults();
+            _containerBuilder.Register((context, parameter) => (IAutofacDependencyManager)this).SingleInstance().PreserveExistingDefaults();
         }
 
         private IDependencyManager SetContainer(ILifetimeScope container)

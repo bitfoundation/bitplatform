@@ -39,7 +39,7 @@ namespace Bit.IdentityServer
                     .UseInMemoryClients(DependencyManager.Resolve<IOAuthClientsProvider>().GetClients().ToArray())
                     .UseInMemoryScopes(ScopesProvider.GetScopes());
 
-                factory.UserService = new Registration<IUserService>(resolver =>
+                IUserService ResolveUserService(IdentityServer3.Core.Services.IDependencyResolver resolver)
                 {
                     OwinEnvironmentService owinEnv = resolver.Resolve<OwinEnvironmentService>();
                     IOwinContext owinContext = new OwinContext(owinEnv.Environment);
@@ -49,16 +49,20 @@ namespace Bit.IdentityServer
                         bitUserService.CurrentCancellationToken = owinContext.Request.CallCancelled;
 
                     return userService;
-                });
+                }
+
+                factory.UserService = new Registration<IUserService>(ResolveUserService);
 
                 factory.EventService = new Registration<IEventService>(EventService);
 
-                factory.ViewService = new Registration<IViewService>(resolver =>
+                IViewService ResolveViewService(IdentityServer3.Core.Services.IDependencyResolver resolver)
                 {
                     OwinEnvironmentService owinEnv = resolver.Resolve<OwinEnvironmentService>();
                     IOwinContext owinContext = new OwinContext(owinEnv.Environment);
                     return owinContext.GetDependencyResolver().Resolve<IViewService>();
-                });
+                }
+
+                factory.ViewService = new Registration<IViewService>(ResolveViewService);
 
                 factory.RedirectUriValidator = new Registration<IRedirectUriValidator>(RedirectUriValidator);
 

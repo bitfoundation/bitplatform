@@ -14,13 +14,17 @@ namespace Bit.Model.Implementations
 
             mapperConfigExpression.CreateMissingTypeMaps = true;
 
-            mapperConfigExpression.ForAllPropertyMaps(p => (p.DestinationProperty.GetCustomAttribute<ForeignKeyAttribute>() != null || p.DestinationProperty.GetCustomAttribute<InversePropertyAttribute>() != null)
+            bool MapperPropConfigurationCondition(PropertyMap p)
+            {
+                return (p.DestinationProperty.GetCustomAttribute<ForeignKeyAttribute>() != null || p.DestinationProperty.GetCustomAttribute<InversePropertyAttribute>() != null)
                        && !typeof(IEnumerable).IsAssignableFrom(p.DestinationProperty.ReflectedType)
-                       && typeof(IDto).IsAssignableFrom(p.DestinationProperty.ReflectedType),
-                (pConfig, member) =>
-                {
-                    pConfig.Ignored = true;
-                });
+                       && typeof(IDto).IsAssignableFrom(p.DestinationProperty.ReflectedType);
+            }
+
+            mapperConfigExpression.ForAllPropertyMaps(MapperPropConfigurationCondition, (p, member) =>
+            {
+                p.Ignored = true;
+            });
         }
     }
 }

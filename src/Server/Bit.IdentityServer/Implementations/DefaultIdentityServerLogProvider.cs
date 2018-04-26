@@ -16,11 +16,11 @@ namespace Bit.IdentityServer.Implementations
                 if (dependencyManager == null)
                     throw new ArgumentNullException(nameof(dependencyManager));
 
-                _logger = (level, func, exception, parameters) =>
+                bool IdentityServerLog(LogLevel logLevel, Func<string> messageFunc, Exception exception = null, params object[] formatParameters)
                 {
-                    if (level == LogLevel.Error || level == LogLevel.Fatal || level == LogLevel.Warn || exception != null)
+                    if (logLevel == LogLevel.Error || logLevel == LogLevel.Fatal || logLevel == LogLevel.Warn || exception != null)
                     {
-                        if (func != null)
+                        if (messageFunc != null)
                         {
                             IDependencyResolver scope = null;
 
@@ -41,16 +41,16 @@ namespace Bit.IdentityServer.Implementations
 
                                     try
                                     {
-                                        message = string.Format(CultureInfo.InvariantCulture, func(), parameters);
+                                        message = string.Format(CultureInfo.InvariantCulture, messageFunc(), formatParameters);
                                     }
                                     catch
                                     {
-                                        message = func();
+                                        message = messageFunc();
                                     }
 
                                     if (exception != null)
                                         logger.LogException(exception, message);
-                                    else if (level == LogLevel.Warn)
+                                    else if (logLevel == LogLevel.Warn)
                                         logger.LogWarning(message);
                                     else
                                         logger.LogFatal(message);
@@ -62,7 +62,9 @@ namespace Bit.IdentityServer.Implementations
                     }
 
                     return false;
-                };
+                }
+
+                _logger = IdentityServerLog;
             }
         }
 

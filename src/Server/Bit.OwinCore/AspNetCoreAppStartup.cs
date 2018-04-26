@@ -50,15 +50,34 @@ namespace Bit.OwinCore
                     owinAppModule.ConfigureDependencies(DefaultDependencyManager.Current);
             }
 
-            DefaultDependencyManager.Current.RegisterUsing((depManager) => depManager.Resolve<IHttpContextAccessor>().HttpContext);
+            HttpContext RegisterHttpContext(IDependencyManager depManager)
+            {
+                HttpContext httpContext = depManager.Resolve<IHttpContextAccessor>().HttpContext;
 
-            DefaultDependencyManager.Current.RegisterUsing((depManager) =>
+                if (httpContext == null)
+                    throw new InvalidOperationException("HttpContextIsNull");
+
+                return httpContext;
+            }
+
+            DefaultDependencyManager.Current.RegisterUsing(RegisterHttpContext);
+
+            IOwinContext RegisterOwinContext(IDependencyManager depManager)
             {
                 HttpContext context = depManager.Resolve<HttpContext>();
+
                 if (context == null)
-                    throw new InvalidOperationException("context is null");
-                return (IOwinContext)context.Items["OwinContext"];
-            });
+                    throw new InvalidOperationException("http context is null");
+
+                IOwinContext owinContext = context.Items["OwinContext"] as IOwinContext;
+
+                if (owinContext == null)
+                    throw new InvalidOperationException("OwinContextIsNull");
+
+                return owinContext;
+            }
+
+            DefaultDependencyManager.Current.RegisterUsing(RegisterOwinContext);
         }
 
         public void Configure(IApplicationBuilder aspNetCoreApp, OwinAppStartup owinAppStartup, IEnumerable<IAspNetCoreMiddlewareConfiguration> aspNetCoreMiddlewares)

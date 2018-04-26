@@ -17,6 +17,23 @@ namespace Bit.IdentityServer.Implementations.ExternalIdentityProviderConfigurati
                 string twitterClientId = AppEnvironment.GetConfig<string>("TwitterClientId");
                 string twitterSecret = AppEnvironment.GetConfig<string>("TwitterSecret");
 
+                Task TwitterOnAuthenticated(TwitterAuthenticatedContext context)
+                {
+                    context.Identity.AddClaim(new System.Security.Claims.Claim("access_token", context.AccessToken));
+                    context.Identity.AddClaim(new System.Security.Claims.Claim("access_token_secret", context.AccessTokenSecret));
+
+                    foreach (System.Security.Claims.Claim claim in context.Identity.Claims)
+                    {
+                        string claimType = $"{claim.Type}";
+                        string claimValue = claim.Value;
+
+                        if (!context.Identity.HasClaim(claimType, claimValue))
+                            context.Identity.AddClaim(new System.Security.Claims.Claim(claimType, claimValue, "XmlSchemaString", "Twitter"));
+                    }
+
+                    return Task.CompletedTask;
+                }
+
                 TwitterAuthenticationOptions twitterAuthenticationOptions = new TwitterAuthenticationOptions
                 {
                     AuthenticationType = "Twitter",
@@ -25,22 +42,7 @@ namespace Bit.IdentityServer.Implementations.ExternalIdentityProviderConfigurati
                     ConsumerSecret = twitterSecret,
                     Provider = new TwitterAuthenticationProvider
                     {
-                        OnAuthenticated = context =>
-                        {
-                            context.Identity.AddClaim(new System.Security.Claims.Claim("access_token", context.AccessToken));
-                            context.Identity.AddClaim(new System.Security.Claims.Claim("access_token_secret", context.AccessTokenSecret));
-
-                            foreach (System.Security.Claims.Claim claim in context.Identity.Claims)
-                            {
-                                string claimType = $"{claim.Type}";
-                                string claimValue = claim.Value;
-
-                                if (!context.Identity.HasClaim(claimType, claimValue))
-                                    context.Identity.AddClaim(new System.Security.Claims.Claim(claimType, claimValue, "XmlSchemaString", "Twitter"));
-                            }
-
-                            return Task.CompletedTask;
-                        }
+                        OnAuthenticated = TwitterOnAuthenticated
                     }
                 };
 

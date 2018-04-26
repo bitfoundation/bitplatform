@@ -23,6 +23,9 @@ namespace Bit.Model.Implementations
 
         public virtual bool IsDto(TypeInfo type)
         {
+            if (type == null)
+                throw new ArgumentNullException(nameof(type));
+
             return type.IsClass && type.GetInterface(nameof(IDto)) != null;
         }
 
@@ -30,7 +33,7 @@ namespace Bit.Model.Implementations
         {
             if (type.IsGenericParameter && type.GetGenericParameterConstraints().Any())
             {
-                Type finalDtoType = type.GetGenericParameterConstraints().ExtendedSingleOrDefault($"Finding dto of {type.Name}", t => IsDto(t.GetTypeInfo()));
+                Type finalDtoType = type.GetGenericParameterConstraints().ExtendedSingleOrDefault($"Finding dto of {type.Name}", t => IsDto(t?.GetTypeInfo()));
                 if (finalDtoType != null)
                     return finalDtoType.GetTypeInfo();
                 return null;

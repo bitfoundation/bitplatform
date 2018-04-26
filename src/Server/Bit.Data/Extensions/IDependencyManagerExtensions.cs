@@ -18,20 +18,23 @@ namespace Bit.Core.Contracts
 
             dependencyManager.RegisterGeneric(typeof(IDtoEntityMapper<,>).GetTypeInfo(), typeof(DefaultDtoEntityMapper<,>).GetTypeInfo(), DependencyLifeCycle.SingleInstance);
 
-            dependencyManager.RegisterUsing((depManager) =>
+            IMapper RegisterMapper(IDependencyManager depManager)
             {
                 IEnumerable<IDtoEntityMapperConfiguration> configs = depManager.Resolve<IEnumerable<IDtoEntityMapperConfiguration>>();
 
-                MapperConfiguration mapperConfig = new MapperConfiguration(cfg =>
+                void ConfigureMapper(IMapperConfigurationExpression cfg)
                 {
                     configs.ToList().ForEach(c => c.Configure(cfg));
-                });
+                }
+
+                MapperConfiguration mapperConfig = new MapperConfiguration(ConfigureMapper);
 
                 IMapper mapper = mapperConfig.CreateMapper();
 
                 return mapper;
+            }
 
-            }, lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExciting: false);
+            dependencyManager.RegisterUsing(RegisterMapper, lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExciting: false);
 
             return dependencyManager;
         }
@@ -59,7 +62,7 @@ namespace Bit.Core.Contracts
             GetAllInterfaces(repositoryType, ref interaces);
 
             TypeInfo[] repositoryContracts = interaces
-                .Where(i => i.IsRepositoryContract())
+                .Where(IsRepositoryContract)
                 .Select(i => i.GetTypeInfo())
                 .ToArray();
 

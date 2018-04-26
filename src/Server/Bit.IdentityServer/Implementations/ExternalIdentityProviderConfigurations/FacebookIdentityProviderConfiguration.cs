@@ -19,6 +19,22 @@ namespace Bit.IdentityServer.Implementations.ExternalIdentityProviderConfigurati
                 string facebookClientId = AppEnvironment.GetConfig<string>("FacebookClientId");
                 string facebookSecret = AppEnvironment.GetConfig<string>("FacebookSecret");
 
+                Task FacebookOnAuthenticated(FacebookAuthenticatedContext context)
+                {
+                    context.Identity.AddClaim(new System.Security.Claims.Claim("access_token", context.AccessToken));
+
+                    foreach (KeyValuePair<string, JToken> claim in context.User)
+                    {
+                        string claimType = $"{claim.Key}";
+                        string claimValue = claim.Value.ToString();
+
+                        if (!context.Identity.HasClaim(claimType, claimValue))
+                            context.Identity.AddClaim(new System.Security.Claims.Claim(claimType, claimValue, "XmlSchemaString", "Facebook"));
+                    }
+
+                    return Task.CompletedTask;
+                }
+
                 FacebookAuthenticationOptions facebookAuthenticationOptions = new FacebookAuthenticationOptions
                 {
                     AuthenticationType = "Facebook",
@@ -27,21 +43,7 @@ namespace Bit.IdentityServer.Implementations.ExternalIdentityProviderConfigurati
                     AppSecret = facebookSecret,
                     Provider = new FacebookAuthenticationProvider
                     {
-                        OnAuthenticated = context =>
-                        {
-                            context.Identity.AddClaim(new System.Security.Claims.Claim("access_token", context.AccessToken));
-
-                            foreach (KeyValuePair<string, JToken> claim in context.User)
-                            {
-                                string claimType = $"{claim.Key}";
-                                string claimValue = claim.Value.ToString();
-
-                                if (!context.Identity.HasClaim(claimType, claimValue))
-                                    context.Identity.AddClaim(new System.Security.Claims.Claim(claimType, claimValue, "XmlSchemaString", "Facebook"));
-                            }
-
-                            return Task.CompletedTask;
-                        }
+                        OnAuthenticated = FacebookOnAuthenticated
                     }
                 };
 

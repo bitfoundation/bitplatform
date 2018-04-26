@@ -61,12 +61,17 @@ namespace Bit.Owin.Implementations
             {
                 string bitOwinAssemblyName = AssemblyContainer.Current.GetBitOwinAssembly().GetName().Name;
 
+                object InstantiateAppModule(AppModuleAttribute depManagerAtt)
+                {
+                    return (_args != null && _args.Any()) ? Activator.CreateInstance(depManagerAtt.Type, _args) : Activator.CreateInstance(depManagerAtt.Type);
+                }
+
                 _result = AppDomain.CurrentDomain
                     .GetAssemblies()
                     .Where(asm => !asm.IsDynamic && !asm.GlobalAssemblyCache)
                     .Where(asm => asm.GetReferencedAssemblies().Any(asmRef => asmRef.Name == bitOwinAssemblyName))
                     .SelectMany(asm => asm.GetCustomAttributes<AppModuleAttribute>())
-                    .Select(depManagerAtt => (_args != null && _args.Any()) ? Activator.CreateInstance(depManagerAtt.Type, _args) : Activator.CreateInstance(depManagerAtt.Type))
+                    .Select(InstantiateAppModule)
                     .Cast<IAppModule>()
                     .ToArray();
             }

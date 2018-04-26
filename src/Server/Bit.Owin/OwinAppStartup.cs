@@ -70,7 +70,7 @@ namespace Bit.Owin
 
             if (owinAppProps.OnAppDisposing != CancellationToken.None)
             {
-                owinAppProps.OnAppDisposing.Register(() =>
+                void OnAppDisposing()
                 {
                     try
                     {
@@ -82,7 +82,9 @@ namespace Bit.Owin
                     {
                         DefaultDependencyManager.Current.Dispose();
                     }
-                });
+                }
+
+                owinAppProps.OnAppDisposing.Register(OnAppDisposing);
             }
             else
             {

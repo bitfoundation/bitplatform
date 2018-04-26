@@ -19,6 +19,22 @@ namespace Bit.IdentityServer.Implementations.ExternalIdentityProviderConfigurati
                 string googleClientId = AppEnvironment.GetConfig<string>("GoogleClientId");
                 string googleSecret = AppEnvironment.GetConfig<string>("GoogleSecret");
 
+                Task GoogleOnAuthenticated(GoogleOAuth2AuthenticatedContext context)
+                {
+                    context.Identity.AddClaim(new System.Security.Claims.Claim("access_token", context.AccessToken));
+
+                    foreach (KeyValuePair<string, JToken> claim in context.User)
+                    {
+                        string claimType = $"{claim.Key}";
+                        string claimValue = claim.Value.ToString();
+
+                        if (!context.Identity.HasClaim(claimType, claimValue))
+                            context.Identity.AddClaim(new System.Security.Claims.Claim(claimType, claimValue, "XmlSchemaString", "Google"));
+                    }
+
+                    return Task.CompletedTask;
+                }
+
                 owinApp.UseGoogleAuthentication(new GoogleOAuth2AuthenticationOptions
                 {
                     AuthenticationType = "Google",
@@ -27,21 +43,7 @@ namespace Bit.IdentityServer.Implementations.ExternalIdentityProviderConfigurati
                     ClientSecret = googleSecret,
                     Provider = new GoogleOAuth2AuthenticationProvider
                     {
-                        OnAuthenticated = context =>
-                        {
-                            context.Identity.AddClaim(new System.Security.Claims.Claim("access_token", context.AccessToken));
-
-                            foreach (KeyValuePair<string, JToken> claim in context.User)
-                            {
-                                string claimType = $"{claim.Key}";
-                                string claimValue = claim.Value.ToString();
-
-                                if (!context.Identity.HasClaim(claimType, claimValue))
-                                    context.Identity.AddClaim(new System.Security.Claims.Claim(claimType, claimValue, "XmlSchemaString", "Google"));
-                            }
-
-                            return Task.CompletedTask;
-                        }
+                        OnAuthenticated = GoogleOnAuthenticated
                     }
                 });
             }

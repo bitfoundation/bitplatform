@@ -10,7 +10,7 @@ namespace Bit.Data.EntityFrameworkCore.Implementations
     {
         private readonly IDictionary<string, DbContextObjects> _dbContextObjects = new Dictionary<string, DbContextObjects>();
 
-        private Lazy<MethodInfo> _UseInMemoryDatabaseMethod = new Lazy<MethodInfo>(() =>
+        private MethodInfo GetUseInMemoryDatabaseMethod()
         {
             TypeInfo inMemoryDbContextOptionsExtensionsType = Type.GetType($"Microsoft.EntityFrameworkCore.InMemoryDbContextOptionsExtensions, Microsoft.EntityFrameworkCore.InMemory, Version={typeof(DbContextOptionsBuilder).GetTypeInfo().Assembly.GetName().Version}, Culture=neutral, PublicKeyToken=adb9793829ddae60")?.GetTypeInfo();
 
@@ -18,8 +18,14 @@ namespace Bit.Data.EntityFrameworkCore.Implementations
                 throw new InvalidOperationException("InMemoryDbContextOptionsExtensions type could not be found");
 
             return inMemoryDbContextOptionsExtensionsType.GetMethod("UseInMemoryDatabase", new[] { typeof(DbContextOptionsBuilder), typeof(string), typeof(Action<>).MakeGenericType(Type.GetType($"Microsoft.EntityFrameworkCore.Infrastructure.InMemoryDbContextOptionsBuilder, Microsoft.EntityFrameworkCore.InMemory, Version={typeof(DbContextOptionsBuilder).GetTypeInfo().Assembly.GetName().Version}, Culture=neutral, PublicKeyToken=adb9793829ddae60")) });
+        }
 
-        }, isThreadSafe: true);
+        private readonly Lazy<MethodInfo> _UseInMemoryDatabaseMethod;
+
+        public InMemoryDbContextObjectsProvider()
+        {
+            _UseInMemoryDatabaseMethod = new Lazy<MethodInfo>(GetUseInMemoryDatabaseMethod, isThreadSafe: true);
+        }
 
         public virtual DbContextObjects GetDbContextOptions(string connectionString)
         {
