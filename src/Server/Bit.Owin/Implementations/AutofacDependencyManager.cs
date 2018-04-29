@@ -26,7 +26,7 @@ namespace Bit.Owin.Implementations
             if (_containerBuilder != null)
                 throw new InvalidOperationException("Container builder has been set already");
             _containerBuilder = builder;
-            _containerBuilder.Register((context, parameter) => (IDependencyManager)this).SingleInstance().PreserveExistingDefaults();
+            _containerBuilder.Register((context, parameter) => (IDependencyManager)this /*Remark: We may not use "this" object, and we should use context, but we ignore the rule due being single instance*/).SingleInstance().PreserveExistingDefaults();
             _containerBuilder.Register((context, parameter) => (IServiceProvider)this).SingleInstance().PreserveExistingDefaults();
             _containerBuilder.Register((context, parameter) => (IAutofacDependencyManager)this).SingleInstance().PreserveExistingDefaults();
         }
@@ -231,21 +231,25 @@ namespace Bit.Owin.Implementations
             return this;
         }
 
-        public virtual IDependencyManager RegisterUsing<T>(Func<IDependencyManager, T> factory, string name = null,
+        public virtual IDependencyManager RegisterUsing<T>(Func<IDependencyResolver, T> factory, string name = null,
             DependencyLifeCycle lifeCycle = DependencyLifeCycle.PerScopeInstance, bool overwriteExciting = true)
         {
             return RegisterUsing((depManager) => factory(depManager), new[] { typeof(T).GetTypeInfo() }, name, lifeCycle, overwriteExciting);
         }
 
-        public virtual IDependencyManager RegisterUsing(Func<IDependencyManager, object> factory, TypeInfo serviceType, string name = null, DependencyLifeCycle lifeCycle = DependencyLifeCycle.PerScopeInstance, bool overwriteExciting = true)
+        public virtual IDependencyManager RegisterUsing(Func<IDependencyResolver, object> factory, TypeInfo serviceType, string name = null, DependencyLifeCycle lifeCycle = DependencyLifeCycle.PerScopeInstance, bool overwriteExciting = true)
         {
             return RegisterUsing(factory, new[] { serviceType }, name, lifeCycle, overwriteExciting);
         }
 
-        public virtual IDependencyManager RegisterUsing(Func<IDependencyManager, object> factory, TypeInfo[] servicesType, string name = null, DependencyLifeCycle lifeCycle = DependencyLifeCycle.PerScopeInstance, bool overwriteExciting = true)
+        public virtual IDependencyManager RegisterUsing(Func<IDependencyResolver, object> factory, TypeInfo[] servicesType, string name = null, DependencyLifeCycle lifeCycle = DependencyLifeCycle.PerScopeInstance, bool overwriteExciting = true)
         {
-            IRegistrationBuilder<object, SimpleActivatorData, SingleRegistrationStyle> registration = GetContainerBuidler().Register((context, parameter) => factory.DynamicInvoke(this))
-                .As(servicesType);
+            IRegistrationBuilder<object, SimpleActivatorData, SingleRegistrationStyle> registration = GetContainerBuidler().Register((context, parameter) =>
+            {
+                AutofacDependencyManager currentAutofacDepdencyManager = new AutofacDependencyManager();
+                currentAutofacDepdencyManager.UseContainer(context.Resolve<ILifetimeScope>());
+                return factory.DynamicInvoke(currentAutofacDepdencyManager);
+            }).As(servicesType);
 
             if (overwriteExciting == false)
                 registration = registration.PreserveExistingDefaults();

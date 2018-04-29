@@ -104,7 +104,7 @@ namespace Bit.Core.Contracts
         /// <param name="onConfigure">Everything you perform using this dependency manager, will be applied to this web api only. You can provide any implementation for web api | bit interfaces such as <see cref="System.Web.Http.Tracing.ITraceWriter"/> that affects this web api only.</param>
         public static IDependencyManager RegisterWebApiMiddleware(this IDependencyManager dependencyManager, Action<IDependencyManager> onConfigure)
         {
-            dependencyManager.RegisterUsing((depManager) => depManager.CreateChildDependencyResolver(onConfigure).Resolve<IOwinMiddlewareConfiguration>("WebApi"), lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExciting: false);
+            dependencyManager.RegisterUsing((resolver) => dependencyManager.CreateChildDependencyResolver(onConfigure).Resolve<IOwinMiddlewareConfiguration>("WebApi"), lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExciting: false);
 
             return dependencyManager;
         }

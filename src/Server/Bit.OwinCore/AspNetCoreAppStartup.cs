@@ -50,9 +50,9 @@ namespace Bit.OwinCore
                     owinAppModule.ConfigureDependencies(DefaultDependencyManager.Current);
             }
 
-            HttpContext RegisterHttpContext(IDependencyManager depManager)
+            HttpContext RegisterHttpContext(IDependencyResolver resolver)
             {
-                HttpContext httpContext = depManager.Resolve<IHttpContextAccessor>().HttpContext;
+                HttpContext httpContext = resolver.Resolve<IHttpContextAccessor>().HttpContext;
 
                 if (httpContext == null)
                     throw new InvalidOperationException("HttpContextIsNull");
@@ -62,9 +62,9 @@ namespace Bit.OwinCore
 
             DefaultDependencyManager.Current.RegisterUsing(RegisterHttpContext, overwriteExciting: false);
 
-            IOwinContext RegisterOwinContext(IDependencyManager depManager)
+            IOwinContext RegisterOwinContext(IDependencyResolver resolver)
             {
-                HttpContext context = depManager.Resolve<HttpContext>();
+                HttpContext context = resolver.Resolve<HttpContext>();
 
                 if (context == null)
                     throw new InvalidOperationException("http context is null");

@@ -53,13 +53,13 @@ namespace Bit.Core.Contracts
             dependencyManager.RegisterInstance(DefaultAppModulesProvider.Current, overwriteExciting: false)
                 .RegisterInstance(DefaultDependencyManager.Current, overwriteExciting: false);
 
-            AppEnvironment RegisterAppEnvironment(IDependencyManager resolver)
+            AppEnvironment RegisterAppEnvironment(IDependencyResolver resolver)
             {
                 IAppEnvironmentsProvider appEnvironmentsProvider = resolver.Resolve<IAppEnvironmentsProvider>();
                 return appEnvironmentsProvider.GetActiveAppEnvironment();
             }
 
-            dependencyManager.RegisterUsing(RegisterAppEnvironment, overwriteExciting: false);
+            dependencyManager.RegisterUsing(RegisterAppEnvironment, lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExciting: false);
 
             dependencyManager.Register<IDateTimeProvider, DefaultDateTimeProvider>(lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExciting: false);
 

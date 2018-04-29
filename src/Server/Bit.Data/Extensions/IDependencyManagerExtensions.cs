@@ -18,9 +18,9 @@ namespace Bit.Core.Contracts
 
             dependencyManager.RegisterGeneric(typeof(IDtoEntityMapper<,>).GetTypeInfo(), typeof(DefaultDtoEntityMapper<,>).GetTypeInfo(), DependencyLifeCycle.SingleInstance);
 
-            IMapper RegisterMapper(IDependencyManager depManager)
+            IMapper RegisterMapper(IDependencyResolver resolver)
             {
-                IEnumerable<IDtoEntityMapperConfiguration> configs = depManager.Resolve<IEnumerable<IDtoEntityMapperConfiguration>>();
+                IEnumerable<IDtoEntityMapperConfiguration> configs = resolver.Resolve<IEnumerable<IDtoEntityMapperConfiguration>>();
 
                 void ConfigureMapper(IMapperConfigurationExpression cfg)
                 {
