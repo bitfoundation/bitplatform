@@ -12,7 +12,6 @@ using Bit.OwinCore.Contracts;
 using Bit.OwinCore.Middlewares;
 using Bit.Signalr.Implementations;
 using Bit.Test;
-using Bit.Tests.Api.Implementations.Project;
 using Bit.Tests.Api.Middlewares;
 using Bit.Tests.Data.Implementations;
 using Bit.Tests.IdentityServer.Implementations;
@@ -102,9 +101,6 @@ namespace Bit.Tests
                         c.ApplyDefaultODataConfig(httpConfiguration);
                     }).EnableBitSwaggerUi();
                 });
-
-                odataDependencyManager.RegisterODataServiceBuilder<BitODataServiceBuilder>();
-                odataDependencyManager.RegisterODataServiceBuilder<TestODataServiceBuilder>();
 
                 odataDependencyManager.RegisterWebApiODataMiddlewareUsingDefaultConfiguration();
             });

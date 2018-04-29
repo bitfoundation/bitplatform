@@ -45,13 +45,13 @@ namespace Bit.OData.Implementations
         public bool IsOptional => Type.IsClass || Nullable.GetUnderlyingType(Type) != null;
     }
 
-    public class DefaultAutoODataModelBuilder : IAutoODataModelBuilder
+    public class DefaultODataModuleConfiguration : IODataModuleConfiguration
     {
         private readonly MethodInfo _buildControllerOperations;
         private readonly MethodInfo _buildDto;
         private readonly MethodInfo _collectionParameterMethodInfo;
 
-        public DefaultAutoODataModelBuilder()
+        public DefaultODataModuleConfiguration()
         {
             _buildControllerOperations = GetType().GetTypeInfo().GetMethod(nameof(BuildControllerOperations), BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.DeclaredOnly);
 
@@ -60,17 +60,17 @@ namespace Bit.OData.Implementations
             _collectionParameterMethodInfo = typeof(ActionConfiguration).GetTypeInfo().GetMethod(nameof(ActionConfiguration.CollectionParameter));
         }
 
-        public virtual void AutoBuildODatModelFromAssembly(Assembly assembly, ODataModelBuilder modelBuilder)
+        public virtual void ConfigureODataModule(string odataRouteName, Assembly odataAssembly, ODataModelBuilder odataModelBuilder)
         {
-            List<TypeInfo> controllers = assembly
+            List<TypeInfo> controllers = odataAssembly
                 .GetLoadableExportedTypes()
                 .Where(t => t.IsDtoController())
                 .ToList();
 
-            AutoBuildODataModelFromTypes(controllers, modelBuilder);
+            ConfigureODataModule(controllers, odataModelBuilder);
         }
 
-        public virtual void AutoBuildODataModelFromTypes(IEnumerable<TypeInfo> controllers, ODataModelBuilder odataModelBuilder)
+        protected virtual void ConfigureODataModule(IEnumerable<TypeInfo> controllers, ODataModelBuilder odataModelBuilder)
         {
             var controllersWithDto = controllers
                 .Select(c => new

@@ -8,11 +8,14 @@ using Owin;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Web.Http;
 using System.Web.OData.Batch;
 using System.Web.OData.Builder;
 using System.Web.OData.Extensions;
 using System.Web.OData.Routing.Conventions;
+
+[assembly: ODataModule("Bit")]
 
 namespace Bit.OData
 {
@@ -22,12 +25,14 @@ namespace Bit.OData
         private HttpServer _server;
         private ODataBatchHandler _odataBatchHandler;
 
-        public virtual IEnumerable<IODataServiceBuilder> OdataServiceBuilders { get; set; }
+        public virtual IODataModuleConfiguration ODataModuleConfiguration { get; set; }
         public virtual IEnumerable<IWebApiConfigurationCustomizer> WebApiConfgurationCustomizers { get; set; }
         public virtual System.Web.Http.Dependencies.IDependencyResolver WebApiDependencyResolver { get; set; }
         public virtual IODataModelBuilderProvider ODataModelBuilderProvider { get; set; }
         public virtual IWebApiOwinPipelineInjector WebApiOwinPipelineInjector { get; set; }
         public virtual IContainerBuilder ContainerBuilder { get; set; }
+
+        public virtual IApiAssembliesProvider ApiAssembliesProvider { get; set; }
 
         public virtual AppEnvironment AppEnvironment { get; set; }
 
@@ -57,16 +62,26 @@ namespace Bit.OData
 
             _webApiConfig.UseCustomContainerBuilder(() => ContainerBuilder);
 
-            foreach (IGrouping<string, IODataServiceBuilder> odataServiceBuilders in OdataServiceBuilders.GroupBy(mp => mp.GetODataRoute()))
-            {
-                ODataModelBuilder modelBuilder = ODataModelBuilderProvider.GetODataModelBuilder(_webApiConfig, containerName: $"{odataServiceBuilders.Key}Context", @namespace: odataServiceBuilders.Key);
-
-                foreach (IODataServiceBuilder odataServiceBuilder in odataServiceBuilders)
+            var odataModulesAndAssembliesGroups = ApiAssembliesProvider.GetApiAssemblies()
+                .Select(asm =>
                 {
-                    odataServiceBuilder.BuildModel(modelBuilder);
+                    ODataModuleAttribute odataModuleAttribute = asm.GetCustomAttribute<ODataModuleAttribute>();
+
+                    return new { ODataModule = odataModuleAttribute, Assembly = asm };
+                })
+                .Where(odataModuleAndAssembly => odataModuleAndAssembly.ODataModule != null)
+                .GroupBy(odataModuleAndAssembly => odataModuleAndAssembly.ODataModule.ODataRouteName);
+
+            foreach (var odataModuleAndAssemblyGroup in odataModulesAndAssembliesGroups)
+            {
+                ODataModelBuilder modelBuilder = ODataModelBuilderProvider.GetODataModelBuilder(_webApiConfig, containerName: $"{odataModuleAndAssemblyGroup.Key}Context", @namespace: odataModuleAndAssemblyGroup.Key);
+
+                foreach (var odataModuleAndAssembly in odataModuleAndAssemblyGroup)
+                {
+                    ODataModuleConfiguration.ConfigureODataModule(odataModuleAndAssemblyGroup.Key, odataModuleAndAssembly.Assembly, modelBuilder);
                 }
 
-                string routeName = $"{odataServiceBuilders.Key}-odata";
+                string routeName = $"{odataModuleAndAssemblyGroup.Key}-odata";
 
                 _odataBatchHandler = new DefaultODataBatchHandler(_server);
 
@@ -84,7 +99,7 @@ namespace Bit.OData
 
                 IEdmModel edmModel = modelBuilder.GetEdmModel();
 
-                _webApiConfig.MapODataServiceRoute(routeName, odataServiceBuilders.Key, builder =>
+                _webApiConfig.MapODataServiceRoute(routeName, odataModuleAndAssemblyGroup.Key, builder =>
                 {
                     builder.AddService(ServiceLifetime.Singleton, sp => conventions);
                     builder.AddService(ServiceLifetime.Singleton, sp => edmModel);

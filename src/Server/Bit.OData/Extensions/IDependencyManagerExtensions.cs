@@ -16,17 +16,6 @@ namespace Bit.Core.Contracts
 {
     public static class IDependencyManagerExtensions
     {
-        public static IDependencyManager RegisterODataServiceBuilder<TODataServiceBuilder>(this IDependencyManager dependencyManager)
-            where TODataServiceBuilder : class, IODataServiceBuilder
-        {
-            if (dependencyManager == null)
-                throw new ArgumentNullException(nameof(dependencyManager));
-
-            dependencyManager.Register<IODataServiceBuilder, TODataServiceBuilder>(lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExciting: false);
-
-            return dependencyManager;
-        }
-
         public static IDependencyManager RegisterWebApiODataMiddlewareUsingDefaultConfiguration(this IDependencyManager dependencyManager, string name = "WebApiOData")
         {
             if (dependencyManager == null)
@@ -40,7 +29,7 @@ namespace Bit.Core.Contracts
             dependencyManager.RegisterWebApiConfigurationCustomizer<DefaultGlobalEnableQueryActionFilterProvider>();
             dependencyManager.RegisterWebApiConfigurationCustomizer<GlobalDefaultLogOperationArgsActionFilterProvider<ODataLogOperationArgsFilterAttribute>>();
             dependencyManager.RegisterWebApiConfigurationCustomizer<GlobalDefaultExceptionHandlerActionFilterProvider<ODataExceptionHandlerFilterAttribute>>();
-            dependencyManager.Register<IAutoODataModelBuilder, DefaultAutoODataModelBuilder>(lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExciting: false);
+            dependencyManager.Register<IODataModuleConfiguration, DefaultODataModuleConfiguration>(lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExciting: false);
             dependencyManager.Register<IContainerBuilder, ExtendedContainerBuilder>(lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExciting: false);
             dependencyManager.Register<IODataModelBuilderProvider, DefaultODataModelBuilderProvider>(lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExciting: false);
             dependencyManager.Register<System.Web.Http.Controllers.IHttpActionSelector, DefaultWebApiODataControllerActionSelector>(lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExciting: false);

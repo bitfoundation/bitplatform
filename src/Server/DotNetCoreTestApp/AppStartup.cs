@@ -9,7 +9,6 @@ using Bit.Model.Contracts;
 using Bit.Model.Implementations;
 using Bit.OData.ActionFilters;
 using Bit.OData.Contracts;
-using Bit.OData.Implementations;
 using Bit.OData.ODataControllers;
 using Bit.Owin.Exceptions;
 using Bit.Owin.Implementations;
@@ -25,7 +24,8 @@ using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Web.Http;
-using System.Web.OData.Builder;
+
+[assembly: ODataModule("Test")]
 
 namespace DotNetCoreTestApp
 {
@@ -91,9 +91,6 @@ namespace DotNetCoreTestApp
                     httpConfiguration.Filters.Add(new DefaultODataAuthorizeAttribute());
                 });
 
-                odataDependencyManager.RegisterODataServiceBuilder<BitODataServiceBuilder>();
-                odataDependencyManager.RegisterODataServiceBuilder<TestODataServiceBuilder>();
-
                 odataDependencyManager.RegisterGlobalWebApiActionFiltersUsing(httpConfiguration =>
                 {
                     httpConfiguration.EnableSwagger(c =>
@@ -152,21 +149,6 @@ namespace DotNetCoreTestApp
                     Enabled = true
                 })
             };
-        }
-    }
-
-    public class TestODataServiceBuilder : IODataServiceBuilder
-    {
-        public IAutoODataModelBuilder AutoODataModelBuilder { get; set; }
-
-        public virtual void BuildModel(ODataModelBuilder oDataModelBuilder)
-        {
-            AutoODataModelBuilder.AutoBuildODatModelFromAssembly(typeof(TestODataServiceBuilder).GetTypeInfo().Assembly, oDataModelBuilder);
-        }
-
-        public virtual string GetODataRoute()
-        {
-            return "Test";
         }
     }
 
