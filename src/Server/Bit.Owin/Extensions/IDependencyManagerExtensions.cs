@@ -25,17 +25,6 @@ namespace Bit.Core.Contracts
             return dependencyManager;
         }
 
-        public static IDependencyManager RegisterAppEvents<TAppEvents>(this IDependencyManager dependencyManager)
-            where TAppEvents : class, IAppEvents
-        {
-            if (dependencyManager == null)
-                throw new ArgumentNullException(nameof(dependencyManager));
-
-            dependencyManager.Register<IAppEvents, TAppEvents>(lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExciting: false);
-
-            return dependencyManager;
-        }
-
         public static IDependencyManager RegisterOwinMiddlewareUsing(this IDependencyManager dependencyManager, Action<IAppBuilder> owinAppCustomizer)
         {
             if (dependencyManager == null)
