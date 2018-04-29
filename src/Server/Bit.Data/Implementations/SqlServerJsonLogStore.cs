@@ -38,9 +38,9 @@ namespace Bit.Data.Implementations
 
                     command.Parameters.AddWithValue("@contents", Formatter.Serialize(logEntry));
 
-                    await connection.OpenAsync();
+                    await connection.OpenAsync().ConfigureAwait(false);
 
-                    await command.ExecuteNonQueryAsync();
+                    await command.ExecuteNonQueryAsync().ConfigureAwait(false);
                 }
             }
         }
