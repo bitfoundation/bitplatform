@@ -7,6 +7,9 @@ namespace Bit.Core.Contracts
     /// </summary>
     public interface IAppModulesProvider
     {
+        /// <summary>
+        /// One or multiple implementations of <see cref="IAppModule"/> in <see cref="GetAppModules"/> method />
+        /// </summary>
         IEnumerable<IAppModule> GetAppModules();
     }
 }
