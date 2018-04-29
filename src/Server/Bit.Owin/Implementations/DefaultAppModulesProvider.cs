@@ -66,9 +66,7 @@ namespace Bit.Owin.Implementations
                     return (_args != null && _args.Any()) ? Activator.CreateInstance(depManagerAtt.Type, _args) : Activator.CreateInstance(depManagerAtt.Type);
                 }
 
-                _result = AppDomain.CurrentDomain
-                    .GetAssemblies()
-                    .Where(asm => !asm.IsDynamic && !asm.GlobalAssemblyCache)
+                _result = AssemblyContainer.Current.AssembliesWithDefaultAssemblies()
                     .Where(asm => asm.GetReferencedAssemblies().Any(asmRef => asmRef.Name == bitOwinAssemblyName))
                     .SelectMany(asm => asm.GetCustomAttributes<AppModuleAttribute>())
                     .Select(InstantiateAppModule)
