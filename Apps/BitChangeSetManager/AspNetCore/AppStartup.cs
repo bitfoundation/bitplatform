@@ -132,8 +132,6 @@ namespace BitChangeSetManager.Core
                     }).EnableBitSwaggerUi();
                 });
 
-                odataDependencyManager.RegisterODataServiceBuilder<BitODataServiceBuilder>();
-                odataDependencyManager.RegisterODataServiceBuilder<BitChangeSetManagerODataServiceBuilder>();
                 odataDependencyManager.RegisterWebApiODataMiddlewareUsingDefaultConfiguration();
 
             });

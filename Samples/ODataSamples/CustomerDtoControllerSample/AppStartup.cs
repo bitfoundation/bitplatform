@@ -9,7 +9,6 @@ using Bit.Data.EntityFramework.Implementations;
 using Bit.Model.Contracts;
 using Bit.Model.Implementations;
 using Bit.OData.Contracts;
-using Bit.OData.Implementations;
 using Bit.OData.ODataControllers;
 using Bit.Owin.Exceptions;
 using Bit.Owin.Implementations;
@@ -28,7 +27,8 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Web.Http;
 using System.Web.OData;
-using System.Web.OData.Builder;
+
+[assembly: ODataModule("MyApp")]
 
 namespace CustomerDtoControllerSample
 {
@@ -91,8 +91,6 @@ namespace CustomerDtoControllerSample
                     }).EnableBitSwaggerUi();
                 });
 
-                odataDependencyManager.RegisterODataServiceBuilder<BitODataServiceBuilder>();
-                odataDependencyManager.RegisterODataServiceBuilder<MyAppODataServiceBuilder>();
                 odataDependencyManager.RegisterWebApiODataMiddlewareUsingDefaultConfiguration();
             });
 
@@ -104,22 +102,6 @@ namespace CustomerDtoControllerSample
             dependencyManager.RegisterDtoEntityMapper();
             dependencyManager.RegisterDtoEntityMapperConfiguration<DefaultDtoEntityMapperConfiguration>();
             dependencyManager.RegisterDtoEntityMapperConfiguration<MyAppDtoEntityMapperConfiguration>();
-        }
-    }
-
-    public class MyAppODataServiceBuilder : IODataServiceBuilder
-    {
-        public IAutoODataModelBuilder AutoODataModelBuilder { get; set; }
-
-        public string GetODataRoute()
-        {
-            return "MyApp";
-        }
-
-        public void BuildModel(ODataModelBuilder odataModelBuilder)
-        {
-            // odataModelBuilder is useful for advanced scenarios.
-            AutoODataModelBuilder.AutoBuildODatModelFromAssembly(typeof(MyAppODataServiceBuilder).GetTypeInfo().Assembly, odataModelBuilder);
         }
     }
 

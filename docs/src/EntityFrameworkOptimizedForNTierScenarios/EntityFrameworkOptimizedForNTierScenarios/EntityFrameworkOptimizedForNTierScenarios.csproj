@@ -89,10 +89,10 @@
       <Version>0.10.14</Version>
     </PackageReference>
     <PackageReference Include="Bit.Data.EntityFramework">
-      <Version>1.0.3</Version>
+      <Version>1.0.4</Version>
     </PackageReference>
     <PackageReference Include="Bit.WebApi">
-      <Version>1.0.3</Version>
+      <Version>1.0.4</Version>
     </PackageReference>
     <PackageReference Include="BitCodeAnalyzer">
       <Version>1.2.6.2</Version>

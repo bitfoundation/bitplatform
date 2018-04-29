@@ -1,11 +1,13 @@
 ﻿using Bit.Core;
 using Bit.Core.Contracts;
+using Bit.Core.Implementations;
+using Bit.Core.Models;
 using Bit.Data;
 using Bit.Data.Contracts;
 using Bit.Hangfire.Implementations;
 using Bit.Model.Implementations;
 using Bit.OData.ActionFilters;
-using Bit.OData.Implementations;
+using Bit.OData.Contracts;
 using Bit.Owin;
 using Bit.Owin.Contracts;
 using Bit.Owin.Implementations;
@@ -13,16 +15,16 @@ using Bit.Owin.Middlewares;
 using Bit.Signalr.Implementations;
 using BitChangeSetManager.Api.Implementations;
 using BitChangeSetManager.DataAccess;
+using BitChangeSetManager.DataAccess.Implementations;
 using BitChangeSetManager.Security;
 using Microsoft.Owin.Cors;
 using Owin;
+using Swashbuckle.Application;
 using System.Collections.Generic;
 using System.Data.SqlClient;
 using System.Reflection;
-using Swashbuckle.Application;
-using Bit.Core.Models;
-using BitChangeSetManager.DataAccess.Implementations;
-using Bit.Core.Implementations;
+
+[assembly: ODataModule("BitChangeSetManager")]
 
 namespace BitChangeSetManager
 {
@@ -104,8 +106,6 @@ namespace BitChangeSetManager
                     }).EnableBitSwaggerUi();
                 });
 
-                odataDependencyManager.RegisterODataServiceBuilder<BitODataServiceBuilder>();
-                odataDependencyManager.RegisterODataServiceBuilder<BitChangeSetManagerODataServiceBuilder>();
                 odataDependencyManager.RegisterWebApiODataMiddlewareUsingDefaultConfiguration();
             });
 
