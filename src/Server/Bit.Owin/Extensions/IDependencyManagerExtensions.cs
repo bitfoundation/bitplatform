@@ -59,7 +59,7 @@ namespace Bit.Core.Contracts
                 return appEnvironmentsProvider.GetActiveAppEnvironment();
             }
 
-            dependencyManager.RegisterUsing(RegisterAppEnvironment);
+            dependencyManager.RegisterUsing(RegisterAppEnvironment, overwriteExciting: false);
 
             dependencyManager.Register<IDateTimeProvider, DefaultDateTimeProvider>(lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExciting: false);
 

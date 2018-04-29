@@ -60,7 +60,7 @@ namespace Bit.OwinCore
                 return httpContext;
             }
 
-            DefaultDependencyManager.Current.RegisterUsing(RegisterHttpContext);
+            DefaultDependencyManager.Current.RegisterUsing(RegisterHttpContext, overwriteExciting: false);
 
             IOwinContext RegisterOwinContext(IDependencyManager depManager)
             {
@@ -77,7 +77,7 @@ namespace Bit.OwinCore
                 return owinContext;
             }
 
-            DefaultDependencyManager.Current.RegisterUsing(RegisterOwinContext);
+            DefaultDependencyManager.Current.RegisterUsing(RegisterOwinContext, overwriteExciting: false);
         }
 
         public void Configure(IApplicationBuilder aspNetCoreApp, OwinAppStartup owinAppStartup, IEnumerable<IAspNetCoreMiddlewareConfiguration> aspNetCoreMiddlewares)
