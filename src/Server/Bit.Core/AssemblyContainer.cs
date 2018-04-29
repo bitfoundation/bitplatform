@@ -13,7 +13,7 @@ namespace Bit.Core
     {
         public static AssemblyContainer Current { get; } = new AssemblyContainer();
 
-        protected virtual List<Assembly> AppAssemblies { get; set; } = new List<Assembly>();
+        protected virtual HashSet<Assembly> AppAssemblies { get; set; } = new HashSet<Assembly>();
 
         /// <summary>
         /// Adds calling assembly (Assembly you're calling this method in there) as main app's assembly
@@ -21,7 +21,7 @@ namespace Bit.Core
         [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization)]
         public void Init()
         {
-            AppAssemblies = new List<Assembly> { Assembly.GetCallingAssembly() };
+            AppAssemblies = new HashSet<Assembly> { Assembly.GetCallingAssembly() };
         }
 
         /// <summary>
@@ -29,7 +29,10 @@ namespace Bit.Core
         /// </summary>
         public void AddAppAssemblies(params Assembly[] assemblies)
         {
-            AppAssemblies.AddRange(assemblies);
+            foreach (Assembly asm in assemblies)
+            {
+                AppAssemblies.Add(asm);
+            }
         }
 
         public Assembly[] AssembliesWithDefaultAssemblies(params Assembly[] assembies)
