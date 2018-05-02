@@ -11,7 +11,19 @@ namespace Bit.Core
     /// </summary>
     public class AssemblyContainer
     {
-        public static AssemblyContainer Current { get; } = new AssemblyContainer();
+        private static AssemblyContainer _current;
+
+        public static AssemblyContainer Current
+        {
+            get
+            {
+                if (_current == null)
+                    _current = new AssemblyContainer();
+
+                return _current;
+            }
+            set => _current = value;
+        }
 
         protected virtual HashSet<Assembly> AppAssemblies { get; set; } = new HashSet<Assembly>();
 
@@ -27,7 +39,7 @@ namespace Bit.Core
         /// <summary>
         /// Add another assemblies of your app if you've multiple projects
         /// </summary>
-        public void AddAppAssemblies(params Assembly[] assemblies)
+        public virtual void AddAppAssemblies(params Assembly[] assemblies)
         {
             foreach (Assembly asm in assemblies)
             {
@@ -35,7 +47,7 @@ namespace Bit.Core
             }
         }
 
-        public Assembly[] AssembliesWithDefaultAssemblies(params Assembly[] assembies)
+        public virtual Assembly[] AssembliesWithDefaultAssemblies(params Assembly[] assembies)
         {
             if (assembies == null)
                 throw new ArgumentNullException(nameof(assembies));
