@@ -40,7 +40,11 @@ namespace Prism.Ioc
 
             containerBuilder.RegisterType<DefaultSecurityService>().As<ISecurityService>().SingleInstance().PreserveExistingDefaults();
 
+#if Android
+            containerBuilder.Register(c => AccountStore.Create(c.Resolve<Android.Content.Context>(), c.Resolve<IClientAppProfile>().AppName)).SingleInstance().PreserveExistingDefaults();
+#else
             containerBuilder.Register(c => AccountStore.Create()).SingleInstance().PreserveExistingDefaults();
+#endif
 
             containerBuilder.Register((c, parameters) =>
             {
