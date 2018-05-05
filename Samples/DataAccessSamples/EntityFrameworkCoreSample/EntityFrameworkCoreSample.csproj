@@ -12,7 +12,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="SourceLink.Copy.PdbFiles" Version="2.8.0" PrivateAssets="All" />
+    <PackageReference Include="SourceLink.Copy.PdbFiles" Version="2.8.1" PrivateAssets="All" />
     <PackageReference Include="Bit.Data.EntityFrameworkCore" Version="1.0.5" />
     <PackageReference Include="Bit.WebApi" Version="1.0.5" />
     <PackageReference Include="BitCodeAnalyzer" Version="1.2.6.2" />
