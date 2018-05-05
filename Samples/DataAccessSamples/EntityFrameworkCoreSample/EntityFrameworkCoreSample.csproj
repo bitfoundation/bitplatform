@@ -12,8 +12,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Bit.Data.EntityFrameworkCore" Version="1.0.4" />
-    <PackageReference Include="Bit.WebApi" Version="1.0.4" />
+    <PackageReference Include="SourceLink.Copy.PdbFiles" Version="2.8.0" PrivateAssets="All" />
+    <PackageReference Include="Bit.Data.EntityFrameworkCore" Version="1.0.5" />
+    <PackageReference Include="Bit.WebApi" Version="1.0.5" />
     <PackageReference Include="BitCodeAnalyzer" Version="1.2.6.2" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="2.0.2" />
     <PackageReference Include="Microsoft.Owin.SelfHost" Version="4.0.0" />

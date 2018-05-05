@@ -23,7 +23,7 @@
     "@types/signalr": "^2.2.35"
   },
   "dependencies": {
-    "@bit/bit-framework": "^1.0.4",
+    "@bit/bit-framework": "^1.0.5",
     "@bit/encoder": "^1.0.0",
     "@bit/jaydata": "^1.5.15",
     "@uirouter/angularjs": "^1.0.11",
