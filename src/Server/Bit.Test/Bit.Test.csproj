@@ -31,7 +31,7 @@
     <PackageReference Include="Selenium.Support" Version="3.11.2" />
     <PackageReference Include="Selenium.WebDriver" Version="3.11.2" />
     <PackageReference Include="Selenium.WebDriver.ChromeDriver" Version="2.38.0.1" />
-    <PackageReference Include="Suave" Version="2.2.1" />
+    <PackageReference Include="Suave" Version="2.4.0" />
     <PackageReference Include="SourceLink.Embed.AllSourceFiles" Version="2.8.1" PrivateAssets="all" />
     <PackageReference Include="SourceLink.Copy.PdbFiles" Version="2.8.1" PrivateAssets="All" />
   </ItemGroup>

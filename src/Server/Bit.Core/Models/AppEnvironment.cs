@@ -136,7 +136,7 @@ namespace Bit.Core.Models
         public virtual string[] Scopes { get; set; }
 
         /// <summary>
-        /// It's used in redirects of InvokeLogin & RedirectToSsoIfNotLoggedIn middlewares to sso
+        /// It's used in redirects of InvokeLogin and RedirectToSsoIfNotLoggedIn middlewares to sso
         /// </summary>
         public virtual string DefaultClientId { get; set; }
 
