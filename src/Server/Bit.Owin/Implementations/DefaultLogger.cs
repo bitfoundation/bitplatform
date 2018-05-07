@@ -164,6 +164,7 @@ namespace Bit.Owin.Implementations
             AddLogData("Exception", exp.ToString());
             AddLogData("ExceptionAdditionalMessage", message);
             AddLogData("ExceptionType", exp.GetType().FullName);
+            AddLogData("ExceptionTypeAssemblyQualifiedName", exp.GetType().AssemblyQualifiedName);
 
             return SaveLogEntryUsingAllLogStoresAsync(logEntry);
         }
@@ -186,6 +187,7 @@ namespace Bit.Owin.Implementations
             AddLogData("Exception", exp.ToString());
             AddLogData("ExceptionAdditionalMessage", message);
             AddLogData("ExceptionType", exp.GetType().FullName);
+            AddLogData("ExceptionTypeAssemblyQualifiedName", exp.GetType().AssemblyQualifiedName);
 
             SaveLogEntryUsingAllLogStores(logEntry);
         }
