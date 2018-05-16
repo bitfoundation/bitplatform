@@ -52,8 +52,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Xamarin.Forms" Version="2.5.1.527436" />
-    <PackageReference Include="System.Runtime.CompilerServices.Unsafe" Version="4.0.3" />
+    <PackageReference Include="Xamarin.Forms" Version="3.0.0.482510" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="MainActivity.cs" />
