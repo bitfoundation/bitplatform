@@ -92,7 +92,7 @@ namespace Prism.Ioc
             if (containerRegistry == null)
                 throw new ArgumentNullException(nameof(containerRegistry));
 
-            return RegisterHttpClient<HttpClientHandler>(containerRegistry);
+            return RegisterHttpClient<BitHttpClientHandler>(containerRegistry);
         }
 
         public static IContainerRegistry RegisterODataClient(this IContainerRegistry containerRegistry)
