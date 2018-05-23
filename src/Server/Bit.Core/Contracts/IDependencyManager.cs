@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.Extensions.DependencyInjection;
+using System;
 using System.Collections.Generic;
 using System.Reflection;
 
@@ -31,13 +32,24 @@ namespace Bit.Core.Contracts
         bool IsRegistered(TypeInfo serviceType);
     }
 
+    public interface IDependencyManagerIServiceCollectionAccessor
+    {
+        IServiceCollection ServiceCollection { get; set; }
+    }
+
     /// <summary>
     /// Registers dependencies such as repositories and middlewares such as web api, signalr etc
     /// </summary>
     public interface IDependencyManager : IDependencyResolver
     {
+        /// <summary>
+        /// By calling <see cref="Init"/> you can start registering your services.
+        /// </summary>
         IDependencyManager Init();
 
+        /// <summary>
+        /// By calling <see cref="BuildContainer"/> you can start resolving your services.
+        /// </summary>
         IDependencyManager BuildContainer();
 
         IDependencyManager RegisterAssemblyTypes(Assembly[] assemblies, Predicate<TypeInfo> predicate = null, DependencyLifeCycle lifeCycle = DependencyLifeCycle.PerScopeInstance);
@@ -76,5 +88,7 @@ DependencyLifeCycle lifeCycle = DependencyLifeCycle.PerScopeInstance, bool overw
         IDependencyManager RegisterUsing(Func<IDependencyResolver, object> factory, TypeInfo serviceType, string name = null, DependencyLifeCycle lifeCycle = DependencyLifeCycle.PerScopeInstance, bool overwriteExciting = true);
 
         IDependencyResolver CreateChildDependencyResolver(Action<IDependencyManager> childDependencyManager = null);
+
+        IDependencyManager Populate(IServiceCollection services);
     }
 }

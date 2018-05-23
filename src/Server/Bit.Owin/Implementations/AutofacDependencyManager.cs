@@ -1,17 +1,21 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Reflection;
-using Autofac;
+﻿using Autofac;
 using Autofac.Builder;
+using Autofac.Extensions.DependencyInjection;
 using Bit.Core.Contracts;
 using Bit.Owin.Contracts;
+using Microsoft.Extensions.DependencyInjection;
+using System;
+using System.Collections.Generic;
+using System.Reflection;
 
 namespace Bit.Owin.Implementations
 {
-    public class AutofacDependencyManager : IDependencyManager, IAutofacDependencyManager
+    public class AutofacDependencyManager : IDependencyManager, IAutofacDependencyManager, IDependencyManagerIServiceCollectionAccessor
     {
         private ContainerBuilder _containerBuilder;
         private ILifetimeScope _container;
+
+        IServiceCollection IDependencyManagerIServiceCollectionAccessor.ServiceCollection { get; set; }
 
         public virtual IDependencyManager Init()
         {
@@ -347,6 +351,12 @@ namespace Bit.Owin.Implementations
         {
             _container?.Dispose();
             GC.SuppressFinalize(this);
+        }
+
+        public virtual IDependencyManager Populate(IServiceCollection services)
+        {
+            GetContainerBuidler().Populate(services);
+            return this;
         }
     }
 }

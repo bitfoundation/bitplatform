@@ -1,7 +1,6 @@
 ﻿using Bit.Core.Contracts;
 using Bit.Core.Implementations;
 using Bit.Owin;
-using Bit.Owin.Contracts;
 using Bit.Owin.Implementations;
 using Bit.OwinCore.Contracts;
 using Bit.OwinCore.Implementations;
@@ -41,13 +40,12 @@ namespace Bit.OwinCore
 
             DefaultDependencyManager.Current.Init();
 
+            if (DefaultDependencyManager.Current is IDependencyManagerIServiceCollectionAccessor dependencyManagerIServiceCollectionInterop)
+                dependencyManagerIServiceCollectionInterop.ServiceCollection = services;
+
             foreach (IAppModule appModule in DefaultAppModulesProvider.Current.GetAppModules())
             {
-                if (appModule is IAspNetCoreAppModule aspNetCoreAppModule)
-                    aspNetCoreAppModule.ConfigureDependencies(_serviceProvider, services, DefaultDependencyManager.Current);
-
-                else if (appModule is IOwinAppModule owinAppModule)
-                    owinAppModule.ConfigureDependencies(DefaultDependencyManager.Current);
+                appModule.ConfigureDependencies(services, DefaultDependencyManager.Current);
             }
 
             HttpContext RegisterHttpContext(IDependencyResolver resolver)

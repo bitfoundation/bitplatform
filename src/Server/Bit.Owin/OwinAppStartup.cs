@@ -1,16 +1,17 @@
-﻿using System;
-using System.Globalization;
-using System.Linq;
-using System.Threading;
-using Bit.Core.Contracts;
+﻿using Bit.Core.Contracts;
+using Bit.Core.Implementations;
 using Bit.Core.Models;
 using Bit.Owin.Contracts;
 using Bit.Owin.Implementations;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Owin.BuilderProperties;
 using Microsoft.Owin.Logging;
-using Owin;
 using Microsoft.Owin.Security.DataProtection;
-using Bit.Core.Implementations;
+using Owin;
+using System;
+using System.Globalization;
+using System.Linq;
+using System.Threading;
 
 namespace Bit.Owin
 {
@@ -47,10 +48,17 @@ namespace Bit.Owin
             {
                 DefaultDependencyManager.Current.Init();
 
-                foreach (IOwinAppModule appModule in DefaultAppModulesProvider.Current.GetAppModules().Cast<IOwinAppModule>())
+                IServiceCollection services = new ServiceCollection();
+
+                if (DefaultDependencyManager.Current is IDependencyManagerIServiceCollectionAccessor dependencyManagerIServiceCollectionInterop)
+                    dependencyManagerIServiceCollectionInterop.ServiceCollection = services;
+
+                foreach (IAppModule appModule in DefaultAppModulesProvider.Current.GetAppModules())
                 {
-                    appModule.ConfigureDependencies(DefaultDependencyManager.Current);
+                    appModule.ConfigureDependencies(services, DefaultDependencyManager.Current);
                 }
+
+                DefaultDependencyManager.Current.Populate(services);
 
                 DefaultDependencyManager.Current.BuildContainer();
             }

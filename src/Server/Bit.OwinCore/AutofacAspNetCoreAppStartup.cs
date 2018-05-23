@@ -25,9 +25,7 @@ namespace Bit.OwinCore
         {
             InitServices(services);
 
-            ContainerBuilder builder = ((IAutofacDependencyManager)DefaultDependencyManager.Current).GetContainerBuidler();
-
-            builder.Populate(services);
+            DefaultDependencyManager.Current.Populate(services);
 
             DefaultDependencyManager.Current.BuildContainer();
 

@@ -1,10 +1,11 @@
 ﻿using Bit.Core.Contracts;
+using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Generic;
 
 namespace Bit.Owin.Implementations
 {
-    public class CompositeAppModulesProvider : IAppModulesProvider, IAppModule
+    public class CompositeAppModulesProvider : IAppModulesProvider
     {
         protected CompositeAppModulesProvider()
         {

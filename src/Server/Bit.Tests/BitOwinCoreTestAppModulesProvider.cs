@@ -27,7 +27,7 @@ using System.Web.Http;
 
 namespace Bit.Tests
 {
-    public class BitOwinCoreTestAppModulesProvider : IAspNetCoreAppModule, IAppModulesProvider
+    public class BitOwinCoreTestAppModulesProvider : IAppModule, IAppModulesProvider
     {
         private readonly TestEnvironmentArgs _args;
 
@@ -41,7 +41,7 @@ namespace Bit.Tests
             _args = args;
         }
 
-        public virtual void ConfigureDependencies(IServiceProvider serviceProvider, IServiceCollection services, IDependencyManager dependencyManager)
+        public virtual void ConfigureDependencies(IServiceCollection services, IDependencyManager dependencyManager)
         {
             AssemblyContainer.Current.Init();
 

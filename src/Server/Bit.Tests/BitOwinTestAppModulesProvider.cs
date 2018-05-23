@@ -16,7 +16,9 @@ using Bit.Tests.Data.Implementations;
 using Bit.Tests.IdentityServer.Implementations;
 using Bit.Tests.Model.Implementations;
 using Bit.Tests.Properties;
+using Microsoft.Extensions.DependencyInjection;
 using Swashbuckle.Application;
+using System;
 using System.Collections.Generic;
 using System.Data.SqlClient;
 using System.Reflection;
@@ -24,7 +26,7 @@ using System.Web.Http;
 
 namespace Bit.Tests
 {
-    public class BitOwinTestAppModulesProvider : IOwinAppModule, IAppModulesProvider
+    public class BitOwinTestAppModulesProvider : IAppModule, IAppModulesProvider
     {
         private readonly TestEnvironmentArgs _args;
 
@@ -38,7 +40,7 @@ namespace Bit.Tests
 
         }
 
-        public virtual void ConfigureDependencies(IDependencyManager dependencyManager)
+        public virtual void ConfigureDependencies(IServiceCollection services, IDependencyManager dependencyManager)
         {
             AssemblyContainer.Current.Init();
 

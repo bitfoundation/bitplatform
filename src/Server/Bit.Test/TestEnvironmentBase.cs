@@ -40,7 +40,7 @@ namespace Bit.Test
         public int? Port { get; set; } = null;
     }
 
-    public class TestAdditionalDependencies : IAspNetCoreAppModule, IOwinAppModule, IAppModulesProvider
+    public class TestAdditionalDependencies : IAppModule, IAppModulesProvider
     {
         private readonly Action<IDependencyManager> _dependencyManagerDelegate;
 
@@ -49,7 +49,7 @@ namespace Bit.Test
             _dependencyManagerDelegate = dependencyManagerDelegate;
         }
 
-        public virtual void ConfigureDependencies(IServiceProvider serviceProvider, IServiceCollection services, IDependencyManager dependencyManager)
+        public virtual void ConfigureDependencies(IServiceCollection services, IDependencyManager dependencyManager)
         {
             _dependencyManagerDelegate?.Invoke(dependencyManager);
         }
