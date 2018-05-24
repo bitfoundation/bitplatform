@@ -1,19 +1,23 @@
-# Getting started
+# Getting Started
 
 **Prerequisites:**
 
+1- Install [***Visual Studio***](https://www.visualstudio.com/downloads/):
 
-1- [***Visual Studio***](https://www.visualstudio.com/downloads/):
+For **ASP.NET**:
+- Install **Visual Studio 2015 Update 3** or **Visual Studio 2017**.
 
-To develop traditional **ASP.NET** projects, you can use **Visual Studio 2015 Update 3** or **Visual Studio 2017** with **ASP.NET workload** installed.
+For **ASP.NET Core 1.0**:
+- Install **Visual Studio 2017**.
 
-To develop **ASP.NET Core 1.0** projects, you can use **Visual Studio 2017** with **ASP.NET Core workload** installed.
+For **ASP.NET Core 2.0**:
+- Install **Visual Studio 2017 Update 3+**.
 
-To develop **ASP.NET Core 2.0** projects, you've to install **Visual Studio 2017 Update 3+** with **ASP.NET Core workload** installed.
+In Visual Studio Installer select **ASP.NET workload**.
 
 ___
 
-2- ***[.NET Core 2.0 SDK](https://www.microsoft.com/net/download/core)***
+2- Install ***[.NET Core 2.0 SDK](https://www.microsoft.com/net/download/core)***
 
 ___
 
