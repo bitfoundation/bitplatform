@@ -3,7 +3,7 @@
 **Prerequisites:**
 
 
-1- Install [***Visual Studio***](https://www.visualstudio.com/downloads/):
+### 1- Install [***Visual Studio***](https://www.visualstudio.com/downloads/):
 
 For **ASP.NET**:
 - Install **Visual Studio 2015 Update 3** or **Visual Studio 2017**.
@@ -17,8 +17,7 @@ For **ASP.NET Core 2.0**:
 In Visual Studio Installer select **ASP.NET workload**.
 
 
-
-2- Install ***[.NET Core 2.0 SDK](https://www.microsoft.com/net/download/core)***
+### 2- Install ***[.NET Core 2.0+ SDK](https://www.microsoft.com/net/download/core)***
 
 ___
 
