@@ -14,10 +14,13 @@ For **ASP.NET Core 1.0**:
 For **ASP.NET Core 2.0**:
 - Install **Visual Studio 2017 Update 3+**.
 
+For **ASP.NET Core 2.1**:
+- Install **Visual Studio 2017 Update 7+**.
+
 In Visual Studio Installer select **ASP.NET workload**.
 
 
-### 2- Install ***[.NET Core 2.0+ SDK](https://www.microsoft.com/net/download/core)***
+### 2- Install ***[.NET Core 2.1 SDK](https://www.microsoft.com/net/download/core)***
 
 ___
 
