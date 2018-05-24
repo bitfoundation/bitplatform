@@ -15,7 +15,6 @@ For **ASP.NET Core 2.0**:
 
 In Visual Studio Installer select **ASP.NET workload**.
 
-___
 
 2- Install ***[.NET Core 2.0 SDK](https://www.microsoft.com/net/download/core)***
 
