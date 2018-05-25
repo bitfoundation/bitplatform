@@ -50,7 +50,7 @@ namespace Bit.Owin
 
                 IServiceCollection services = new ServiceCollection();
 
-                if (DefaultDependencyManager.Current is IDependencyManagerIServiceCollectionAccessor dependencyManagerIServiceCollectionInterop)
+                if (DefaultDependencyManager.Current is IServiceCollectionAccessor dependencyManagerIServiceCollectionInterop)
                     dependencyManagerIServiceCollectionInterop.ServiceCollection = services;
 
                 foreach (IAppModule appModule in DefaultAppModulesProvider.Current.GetAppModules())

@@ -40,7 +40,7 @@ namespace Bit.OwinCore
 
             DefaultDependencyManager.Current.Init();
 
-            if (DefaultDependencyManager.Current is IDependencyManagerIServiceCollectionAccessor dependencyManagerIServiceCollectionInterop)
+            if (DefaultDependencyManager.Current is IServiceCollectionAccessor dependencyManagerIServiceCollectionInterop)
                 dependencyManagerIServiceCollectionInterop.ServiceCollection = services;
 
             foreach (IAppModule appModule in DefaultAppModulesProvider.Current.GetAppModules())

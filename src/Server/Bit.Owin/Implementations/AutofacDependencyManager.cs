@@ -10,12 +10,12 @@ using System.Reflection;
 
 namespace Bit.Owin.Implementations
 {
-    public class AutofacDependencyManager : IDependencyManager, IAutofacDependencyManager, IDependencyManagerIServiceCollectionAccessor
+    public class AutofacDependencyManager : IDependencyManager, IAutofacDependencyManager, IServiceCollectionAccessor
     {
         private ContainerBuilder _containerBuilder;
         private ILifetimeScope _container;
 
-        IServiceCollection IDependencyManagerIServiceCollectionAccessor.ServiceCollection { get; set; }
+        IServiceCollection IServiceCollectionAccessor.ServiceCollection { get; set; }
 
         public virtual IDependencyManager Init()
         {

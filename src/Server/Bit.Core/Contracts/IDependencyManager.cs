@@ -32,7 +32,7 @@ namespace Bit.Core.Contracts
         bool IsRegistered(TypeInfo serviceType);
     }
 
-    public interface IDependencyManagerIServiceCollectionAccessor
+    public interface IServiceCollectionAccessor
     {
         IServiceCollection ServiceCollection { get; set; }
     }
