@@ -2,26 +2,29 @@
 
 **Prerequisites:**
 
-
-### 1- Install [***Visual Studio***](https://www.visualstudio.com/downloads/):
+### 1- Install [_**Visual Studio**_](https://www.visualstudio.com/downloads/):
 
 For **ASP.NET**:
-- Install **Visual Studio 2015 Update 3** or **Visual Studio 2017**.
+
+* Install **Visual Studio 2015 Update 3** or **Visual Studio 2017**.
 
 For **ASP.NET Core 1.0**:
-- Install **Visual Studio 2017**.
+
+* Install **Visual Studio 2017**.
 
 For **ASP.NET Core 2.0**:
-- Install **Visual Studio 2017 Update 3+**.
+
+* Install **Visual Studio 2017 Update 3+**.
 
 For **ASP.NET Core 2.1**:
-- Install **Visual Studio 2017 Update 7+**.
+
+* Install **Visual Studio 2017 Update 7+**.
 
 In Visual Studio Installer select **ASP.NET workload**.
 
+### 2- Install [_**.NET Core 2.1 SDK**_](https://www.microsoft.com/net/download/core)
 
-### 2- Install ***[.NET Core 2.1 SDK](https://www.microsoft.com/net/download/core)***
+---
 
-___
+Temporary note: If you're looking for Bit VS Extension's url, [here it is](https://myget.org/F/bit-foundation/vsix). 
 
-Temporary note: If you're looking for Bit VS Extension's url, [here it is](https://myget.org/F/bit-foundation/vsix).
