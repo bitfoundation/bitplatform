@@ -12,8 +12,6 @@ namespace BitChangeSetManager.DataAccess.Implementations
         {
             int customersCount = 0;
 
-            mapperConfigExpression.ValidateInlineMaps = false;
-
             mapperConfigExpression.CreateMap<ChangeSet, ChangeSetDto>()
                 .ForMember(changeSetMember => changeSetMember.IsDeliveredToAll, config => config.MapFrom(changeSet => changeSet.Deliveries.Count() == customersCount));
 

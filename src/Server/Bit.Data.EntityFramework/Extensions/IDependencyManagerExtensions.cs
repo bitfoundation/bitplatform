@@ -25,6 +25,7 @@ namespace Bit.Core.Contracts
             dependencyManager.Register<IDataProviderSpecificMethodsProvider, EfDataProviderSpecificMethodsProvider>(lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExciting: false);
             dependencyManager.Register<EfDataProviderSpecificMethodsProvider, EfDataProviderSpecificMethodsProvider>(lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExciting: false);
             dependencyManager.Register<IUnitOfWork, DefaultUnitOfWork>(overwriteExciting: false);
+            dependencyManager.RegisterDtoEntityMapperConfiguration<EntityFrameworkDtoEntityMapperConfiguration>();
 
             return dependencyManager;
         }
