@@ -3,11 +3,9 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
-using System.Net;
 using System.Net.Http;
 using System.Reflection;
 using System.Threading;
-using System.Web.Http;
 using System.Web.Http.Controllers;
 using System.Web.Http.Routing;
 using System.Web.OData.Query;
@@ -99,10 +97,7 @@ namespace Bit.OData.Implementations
             else
                 resultAction = allActions.ExtendedSingleOrDefault($"Finding odata action/function for {actionName}", action => string.Equals(action.MethodInfo.Name, actionName, StringComparison.InvariantCultureIgnoreCase));
 
-            if (resultAction != null)
-                return resultAction;
-
-            throw new HttpResponseException(HttpStatusCode.NotFound);
+            return resultAction;
         }
     }
 }

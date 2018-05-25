@@ -85,7 +85,7 @@ namespace Bit.Owin.Implementations
             IUserInformationProvider userInformationProvider = null;
             bool isPerRequestTelemetryClient = false;
 
-            try
+            if (logEntry.LogData.Any(ld => ld.Key == nameof(IRequestInformationProvider.RequestUri)))
             {
                 IOwinContext owinContext = OwinContext.Value;
 
@@ -97,11 +97,10 @@ namespace Bit.Owin.Implementations
 
                 isPerRequestTelemetryClient = true;
             }
-            catch { }
 
-            List<KeyVal> keyValues = logEntry.LogData.Select(d =>
+            List<KeyVal> keyValues = logEntry.LogData.Select(ld =>
             {
-                string k = d.Key;
+                string k = ld.Key;
 
                 if (k == nameof(IRequestInformationProvider.HttpMethod)
                 || k == nameof(IRequestInformationProvider.RequestUri)
@@ -109,21 +108,21 @@ namespace Bit.Owin.Implementations
                 || k == "UserId"
                 || k == "ResponseStatusCode"
                 || k == nameof(IRequestInformationProvider.ClientIp)
-                || d.Value == null)
+                || ld.Value == null)
                     return null;
 
                 string v = null;
 
-                if (d.Value is string valueAsStr)
+                if (ld.Value is string valueAsStr)
                     v = valueAsStr;
 
                 if (k == "ClientLogs" || k == "OperationArgs")
                 {
-                    v = Formatter.Serialize(d.Value);
+                    v = Formatter.Serialize(ld.Value);
                 }
                 else
                 {
-                    v = d.Value.ToString();
+                    v = ld.Value.ToString();
                 }
 
                 return new KeyVal { Key = k, Value = v };
@@ -167,7 +166,7 @@ namespace Bit.Owin.Implementations
                     if (userInformationProvider.IsAuthenticated())
                         telemetryClient.Context.User.AccountId = telemetryClient.Context.User.AuthenticatedUserId = userInformationProvider.GetCurrentUserId();
 
-                    LogData userAgent = logEntry.LogData.FirstOrDefault(d => d.Key == nameof(IRequestInformationProvider.UserAgent));
+                    LogData userAgent = logEntry.LogData.FirstOrDefault(ld => ld.Key == nameof(IRequestInformationProvider.UserAgent));
                     if (userAgent != null)
                         telemetryClient.Context.User.UserAgent = (string)userAgent.Value;
 
