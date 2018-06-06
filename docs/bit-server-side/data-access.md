@@ -3,7 +3,7 @@
 You can use Bit Data Access components, or you can use your own preferred way to read/manipulate data. But why you might choose Bit data access anyway?
 
 
-1- True async support. Application with async code gets scaled better, but what does this mean to us? Each server side app has limited workers, and your app works because they work. Workers count is limited, so you've to use them carefully. When a request comes to your web api action, and you get data from database using entity framework (For example), your worker (your valuable worker) waits until database returns data. But that wait is useless (database has its own workers). If you use async-await, your worker handles other requests instead of waiting for a database.
+1- True async support. Application with async code gets scaled better, but what does this mean to you? Each server side app has limited workers, and your app works because they work. Workers count is limited, so you've to use them carefully. When a request comes to your web api action, and you get data from database using entity framework (For example), your worker (your valuable worker) waits until database returns data. But that wait is useless (database has its own workers). If you use async-await, your worker handles other requests instead of waiting for a database.
 
 
 2- True cancellation token support. There is a CancellationToken in every web api action you develop. If user/operator closes its browser, or if you cancel request at client side programmatically, that cancellation token gets notified. Almost all bit framework's methods accept cancellation token, and they stop their work as cancellation token gets notified.
@@ -44,7 +44,7 @@ public class MyAppDbContext : EfDbContextBase
 }
 ```
 
-App environment provider provides you a way to access your configuration. By default, it reads configs from environments.json file. You don't have to use that, your db context just needs a connection string, read it from app environment provider, asp.net core's configuration provider, app/web config files or write connection string there directly.
+App environment provider provides you a way to access your configuration. By default, it reads configs from environments.json file. You don't have to use that, your db context just needs a connection string, read it from app environment provider, asp.net core's app settings, app/web config files or write connection string there directly!
 
 See environments.json file
 
@@ -63,7 +63,7 @@ Then create a repository class for your project as following:
 public class MyAppRepository<TEntity> : EfRepository<TEntity>
     where TEntity : class, IEntity
 {
-
+    // You can override Repository methods here. For example you can override AddAsync
 }
 
 ```
@@ -75,6 +75,8 @@ public class CustomersController : ApiController
 {
     public virtual IRepository<Customer> CustomersRepository { get; set; } // property injection
 
+    // You can also inject DbContext here, which is not recommended.
+
     [Route("customers/get-customers")]
     public virtual async Task<List<Customer>> GetCustomers(CancellationToken cancellationToken)
     {
@@ -84,7 +86,7 @@ public class CustomersController : ApiController
     public virtual async Task AddNewCustomer(CancellationToken cancellationToken, Customer customer)
     {
         await CustomersRepository.AddAsync(customer, cancellationToken);
-        // App has implicit unit of work. If you throw an exception here, we save nothing to database
+        // You can call Add/Remove/Update as many as you want. No need to call SaveChanges, we save everything if no issue is found during processing this request. (Implicit unit of work)
     }
 }
 ```
@@ -107,15 +109,12 @@ public class OrdersRepository : MyAppRepository<Order>, IOrdersRepository
 }
 ```
 
-You can use app events to do something at app startup/end. You can initialize your db context as you see in MyAppDbContextInitializer class.
-
-
 These are AppStartup registrations:
 
 ```csharp
 dependencyManager.Register<IDbConnectionProvider, DefaultDbConnectionProvider<SqlConnection>>(); // Uses Sql connection
 dependencyManager.RegisterEfDbContext<MyAppDbContext>(); // Registers db context class
-dependencyManager.RegisterAppEvents<MyAppDbContextInitializer>(); // App event to initialize db context at startup
+dependencyManager.RegisterAppEvents<MyAppDbContextInitializer>(); // App event to initialize db context at startup. We recommend you to use Entity framework migrations instead.
 dependencyManager.RegisterRepository(typeof(MyAppRepository<>).GetTypeInfo()); // You can inject IRepository<Customer> or IRepository<any class you want>
 dependencyManager.RegisterRepository(typeof(OrdersRepository).GetTypeInfo()); // It registers custom orders repository
 ```

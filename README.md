@@ -6,8 +6,8 @@ You can develop any of following app types using Bit:
 
 * Web Apps \(Single Page web apps using [Angular](http://angular.io/), [AngularJS](https://angularjs.org), [React](https://facebook.github.io/react/), [Aurelia](http://aurelia.io/) and [Vue.js](https://vuejs.org/)\)
 * Cloud/Micro service friendly API
-* Desktop Apps using [Electron](https://electron.atom.io/) / [WPF](https://docs.microsoft.com/en-us/dotnet/framework/wpf/getting-started/) and [Xamarin Forms](https://www.xamarin.com/forms)
-* Hybrid mobile apps using [Apache Cordova](https://cordova.apache.org/)
+* Desktop Apps using [Electron](https://electron.atom.io/) and [Xamarin Forms](https://www.xamarin.com/forms)
+* Hybrid mobile apps using [ionic](https://ionicframework.com/)
 * Native mobile apps using [Xamarin Forms](https://www.xamarin.com/forms) and [React Native](https://facebook.github.io/react-native)
 
 You can develop all these types of apps with **Offline**|**Mobile** first support. You also have access to RAD components such as Data-Grid, MultiSelect etc.

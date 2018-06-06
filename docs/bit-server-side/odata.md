@@ -5,11 +5,11 @@ So, what's OData? following text which is copied from http://odata.org describes
 OData (Open Data Protocol) is an ISO/IEC approved, OASIS standard that defines a set of best practices for building and consuming "RESTful APIs". OData helps you "focus on your business logic" while building RESTful APIs.
 OData RESTful APIs are easy to consume. The OData metadata, a machine-readable description of the data model of the APIs, enables the creation of powerful generic client proxies and tools.
 
-Using bit framework, you can build OData services very easily, and we generate C# - TypeScript - JavaScript clients for you automatically. You can use those no matter you're developing xamarin forms, angular js, angular, react js & native etc. We also have out of the box support for Open-API (Swagger). Using [azure auto rest](https://github.com/Azure/autorest) tools, you can generate client side for almost any language you want.
+Using bit framework, you can build OData services very easily, and we generate C# - TypeScript - JavaScript clients for you automatically. You can use those no matter you're developing xamarin forms, angular js, angular, react js & native etc. We also have out of the box support for Open-API (Swagger). Using [azure auto rest](https://github.com/Azure/autorest) tools, you can generate client side for almost any language you want. You can also send raw http requests to odata services and you can expect raw responses.
 
 **An OData controller has full built-in support for paging/filtering/sorting/projection/grouping and aggregation.**
 
-At client side, use develop LINQ queries using C#/TypeScript/JavaScript, then we send that query to server side and server returns data based on your query. OData supports batch requests as well which results into better performance.
+At client side, develop LINQ queries using C#/TypeScript/JavaScript, then we send that query to server side and server returns data based on your query. OData supports batch requests as well which results into better performance.
 
 In bit apps, you develop odata controllers for your DTO (Data transfer objects) classes.
 
@@ -95,7 +95,7 @@ To follow best practices, keep these rules in your mind:
 
 2- **Do not declare a property with type of your "models/entities" in your DTO classes.** For example, ProductDto has no property of type Category model. Do not use models/enities enums and complex types in your dto clasess too.
 
-3- Develop a DTO for every Task you've. For example, if you want to show customers names and their orders count, create a DTO for this task. And when you want to create a Customer registration form which accepts credit card number, develop a new DTO for that task.
+3- Develop a DTO for every Task you've. For example, if you want to show customers names and their orders count, create a DTO for this task. And when you want to create a Customer registration form which accepts customer data, develop a new DTO for that task.
 
 To send DTO to client side, you develop DtoController. [Examples can be found here](https://github.com/bit-foundation/bit-framework/tree/master/Samples/ODataExamples/).
 
@@ -109,33 +109,19 @@ So, lets take a look at new codes. First you've to configure web api & odata tog
 dependencyManager.RegisterDefaultWebApiAndODataConfiguration(); // instead of dependencyManager.RegisterDefaultWebApiConfiguration();
 ```
 
-You can optionally add web api to your app by following the code as like as what you did before:
-
-```csharp
-dependencyManager.RegisterWebApiMiddleware(webApiDependencyManager =>
-{
-    webApiDependencyManager.RegisterWebApiMiddlewareUsingDefaultConfiguration();
-});
-```
-
-And you can use following code to add OData to your app:
+You can use following code to add OData to your app:
 
 ```csharp
 dependencyManager.RegisterODataMiddleware(odataDependencyManager =>
 {
-    odataDependencyManager.RegisterODataServiceBuilder<BitODataServiceBuilder>();
-    odataDependencyManager.RegisterODataServiceBuilder<MyAppODataServiceBuilder>();
     odataDependencyManager.RegisterWebApiODataMiddlewareUsingDefaultConfiguration();
 });
 ```
 
-In MyAppODataServiceBuilder class, you've access to ODataModelBuilder, which is useful in advanced scenarios. We create OData metadata from your DTO classes automatically, so you don't have to do anything special in most cases. So just configure your odata route:
+Finally add following code to your project:
 
 ```csharp
-public override string GetODataRoute()
-{
-    return "MyApp"; // http://localhost/odata/MyApp/...
-}
+[assembly: ODataModule("MyApp" /*Use any name you prefer to use here. This is a route prefix for your odata requests.*/)]
 ```
 
 In CustomersController you see these codes:
@@ -152,10 +138,10 @@ public virtual async Task<IQueryable<CustomerDto>> GetActiveCustomers(Cancellati
 
 Mapper automatically maps "model/entities" classes to DTO classes. It uses [AutoMapper](http://automapper.org/) by default and the way we use auto mapper will not slow down your app as described [here](https://docs.bit-framework.com/docs/design-backgrounds/why-auto-mapper-has-no-performance-penalty.html).
 
-Note that you don't have to use bit repository here. You don't have to use entity framework either. You can use mongo db, simple array etc. We need some customers only.
+Note that you don't have to use bit repository here. You don't have to use entity framework either. You can use mongo db, simple array etc. We need some customer dto instances only.
 
-[Function] is used to return data, it has to return data, and it accepts simple type parameters like int, string, enum, etc.
-[Action] is used to do something, its return value is optional, and it accepts almost anything.
+**[Function] is used to return data**, it has to return data, and it accepts simple type parameters like int, string, enum, etc.
+**[Action] is used to do something**, its return value is optional, and it accepts almost anything.
 
 Run the app and you're good to go. That's a swagger's console you see by default. By opening http://localhost:9000/odata/MyApp/$metadata you see $metadata. $metadata describes your DTO classes, complex types, enums, actions and functions in a standard format. There are tools in several languages to generate client side proxy for you. You can see the list of libraries and tools [here](http://www.odata.org/libraries/).
 Note that you can call OData controllers using jquery ajax, fetch, etc too, as they're REST APIs.
@@ -164,7 +150,7 @@ Note that you can call OData controllers using jquery ajax, fetch, etc too, as t
 Try GetActiveCustomers, It runs something like this on a database:
 
 ```sql
-select * from Customers inner join Cities on Id = CustomerId where IsActive = 1 /*1 means true. It comes from your server side linq query: Where(c => c.IsActive == true))*/
+select * from Customers inner join Cities on Id = CustomerId where IsActive = 1 /*1 means true for sql server database. It comes from your server side linq query: Where(c => c.IsActive == true))*/
 ```
 
 It accepts several parameters such as $filter, $order by etc. These are standard OData parameters and they work no matter where the data is come from (Bit repository, entity framework's db context, simple array etc).
@@ -191,16 +177,30 @@ select Id,FirstName,LastName from Customers where IsActive = 1 /*true*/
 
 There is no join between customers and cities as we've not requested CityName property. It's smart!
 
+By default server returns all Dto properties and we've to provide $select if we prefer to retrive less columns.
+But **server won't send associations by default**.
+
+Imaging that CustomerDto has a list of OrderDto called Orders.
+
+```csharp
+public class CustomerDto: IDto
+{
+    public List<OrderDto> Orders { get; set; }
+    // ... the rest of other props
+}
+```
+
+If you prefer to load cusotmers by their orders, you've to provide **Orders** to $expand.
+$expand is something similar to Include method of entity framework.
+
 OData supports filtering, ordering, projection, paging etc in a standard way. Almost all UI vendors have support for OData in their rad components such as data grid etc. You can create amazing excel sheets and dashboard using its odata support. In C#/TypeScript/JavaScript you're able to write LINQ queries to consume odata resources. For example:
 
 ```csharp
 context.customers.GetActiveCustomers().Where(c => c.CityId == 1).ToArray(); // C#
 
-// This will be converted to $fitler > CityId eq 1
-```
-
-```javascript
 context.customers.getActiveCustomers().filter(c => c.CityId == 1).toArray(); // JavaScript/TypeScript
+
+// This will be converted to $fitler > CityId eq 1
 ```
 
 **OData action:**
@@ -265,7 +265,7 @@ First, it converts model query to dto query, then it returns customer by id. We 
 
 1- In case no data is found, it returns 404 - NotFound status code.
 
-2- It supports odata queries such as $select, so if you want, you can return some properties of the customer when you call GetCustomerById
+2- It supports $select and $exapnd, so if you want, you can return some properties of the customer when you call GetCustomerById, and you can retrive that customer with or without her orders.
 
 Let's rewrite that as following:
 
@@ -278,6 +278,7 @@ public virtual async Task<SingleResult<CustomerDto>> GetCustomerById2(int custom
 }
 ```
 
+Now you can use $select & $expand.
 
 **Associations:**
 
@@ -310,7 +311,7 @@ public class ProductDto : IDto
 
 You provide such a details for following reasons:
 
-1- OData is a query language, for example, you can execute complicated queries such as "categories without products" ($filter) directly from the client side. You can load categories which are located in the specific city with or without their products ($exapnd).
+1- OData is a query language, for example, you can execute complicated queries such as "categories with 'Test' in their names" ($filter) directly from the client side. You can load categories which are located in the specific city with or without their products ($exapnd).
 
 2- We offer a local (sqlLite-webSql-indexedDb) database creation from your DTO(s) in C#/JavaScript/TypeScript, so you can use linq queries to work with the offline database as like as your odata server. We also offer a sync service to push/pull changes to/from online server and local database. To create that database, we need those information.
 

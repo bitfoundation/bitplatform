@@ -8,19 +8,19 @@ Using bit you'll get more benefits from web api. This includes following:
     - Traditional ASP.NET/IIS on Windows servers + Azure web/app services
     - ASP.NET Core/Kestrel on Windows & Linux Servers + Azure web/app services
     - Self host Windows services + Azure web jobs
-2. We've configured web api on top of [asp.net core/owin request branching](https://docs.microsoft.com/en-us/aspnet/core/fundamentals/middleware). Think about something as fast as node js with power of .NET (-:
-3. We've developed extensive logging infrastructure in bit framework. It logs everything for you in your app, including web api traces.
+2. We've configured web api on top of [asp.net core/owin request branching](https://docs.microsoft.com/en-us/aspnet/core/fundamentals/middleware). By default, all middlewares such as WebApi handle all incoming requests, but each request has one destination, for example signalr, web api, static file etc. By branching web api will handle api requests only which results into better performance.
+3. We've developed extensive logging infrastructure in bit framework. It logs everything for you in your app, including web api traces. We've tons of log stores including but not limited to Windows Event Logs, Application Insights, Sql Server etc.
 4. We've configured headers like [X-Content-Type-Options](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/X-Content-Type-Options), [X-CorrelationId](http://theburningmonk.com/2015/05/a-consistent-approach-to-track-correlation-ids-through-microservices/) etc to improve logging, security etc.
 5. You can protect your web api with bit identity server, a modern single sign on server based on open id/oauth 2.0
 
 ## Getting started
 
-After installing [git for windows](https://git-scm.com/download/win) you can run following command in your command line: 
+Run following command after you installed [git for windows](https://git-scm.com/download/win) (You can use any git clinet)
 ```shell
 git clone https://github.com/bit-foundation/bit-framework.git
 ```
 
-Then open Samples\WebApiSamples\WebApiSamples.sln and go to the 1SimpleWebApi project.
+Then open Samples/WebApiSamples/WebApiSamples.sln and go to the 1SimpleWebApi project.
 
 There are several classes there. Program and ValuesController are get copied from [this microsoft docs article](https://docs.microsoft.com/en-us/aspnet/web-api/overview/hosting-aspnet-web-api/use-owin-to-self-host-web-api). It's a good idea to read that article first.
 
@@ -49,10 +49,8 @@ That code configures web api into your app using the default configuration. Defa
 
 Bit is an extensible framework developed based on best practices. We've extensively used dependency injection in our code base and you can customize default behaviors and conventions based on your requirements.
 
-In following samples, you can find out how to customize web api in bit, but feel free to [drops us an issue in github](https://github.com/bit-foundation/bit-framework/issues), ask a question on [stackoverflow.com](http://stackoverflow.com/questions/tagged/bit-framework) or use comments below if you can't find what you want in these samples.
+In following samples, you can find out how to customize web api in bit, but feel free to [drops us an issue in github](https://github.com/bit-foundation/bit-framework/issues), ask a question on [stackoverflow.com](http://stackoverflow.com/questions/tagged/bit-framework) or use disqus comments below if you can't find what you want in these samples.
 
-
-Note that security samples can be found under [Bit Identity Server](/bit-identity-server.md) (Read them later)
 
 ### Web API - Swagger (Open-API) configuration sample
 
@@ -76,7 +74,7 @@ GlobalConfiguration.Configuration
 [GlobalConfiguration](https://msdn.microsoft.com/en-us/library/system.web.http.globalconfiguration.aspx) uses ASP.NET pipeline directly and it does not work on ASP.NET Core. But bit's config works on both ASP.NET & ASP.NET Core.
 
 
-3- Instead of adding Swashbuckle package, you've to install Swashbuckle.Core package. Swashbuckle package relies on ASP.NET pipeline and it does not work on ASP.NET Core. But our code works on both.
+3- Instead of adding Swashbuckle package, you've to install Swashbuckle.Core package. Swashbuckle package relies on ASP.NET pipeline and it does not work on ASP.NET Core.
 
 
 4- In following code:
@@ -93,7 +91,7 @@ c.ApplyDefaultApiConfig(httpConfiguration);
 ```
 As you see in the article, you open swgger ui by opening http://localhost:51609/swagger/ but in bit's sample, you open http://localhost:9000/api/swagger/. You open /swagger under /api. This is a magic of owin/asp.net core's request branching. Calling method "ApplyDefaultApiConfig" describs that magic to swagger. It also performs a bunch of other recommneded swagger configs for you too.
 
-EnableBitSwaggerUI provides better UX for Swagger UI. As an example, it simplifies your login experience.
+EnableBitSwaggerUI provides better UX for Swagger UI. As an example, it simplifies your login experience. It also stores your token, so you don't have to login everytime you open swagger.
 
 So run the second sample and you're good to go (-:
 
@@ -103,7 +101,7 @@ There is a [question](https://stackoverflow.com/questions/10320232/how-to-accept
 The important thing you've to notice is "You don't have to use System.Web.dll classes in bit world, even when you're hosting your app on traditional asp.net
 
 
-By removing usages of that dll, you're going to make sure that your code works well on both asp.net & asp.net core. So drop using #HttpContext.Current and all other members of System.Web.dll#. Note that if you install Bit.CodeAnalyzer nuget package, we warn you about this automatically. Other System.Web.* assemblies such as System.Web.Http.dll are ok.
+By removing usages of that dll, you're going to make sure that your code works well on both asp.net & asp.net core. So drop using #HttpContext.Current and all other members of System.Web.dll#. Note that if you install Bit.CodeAnalyzer nuget package, we warn you about this automatically.
 
 
 Web API Attribute routing works fine in bit projects, but instead of [Route("api/file-manager/upload")] or [RoutePrefix("api/file-manager")], you've to write [Route("file-manager/upload")] or [RoutePrefix("file-manager)], this means **you should not write /api in your attribute routings**.
@@ -111,7 +109,7 @@ Web API Attribute routing works fine in bit projects, but instead of [Route("api
 
 Remember to use async/await and CancellationToken in your Web API codes at it improves your app overall scalability and performance. Using CancellationToken, bit stops processing requests when user/operator cancels her request. (By closing the browser/mobile app or clicking on cancel button provided by you).
 
-So open 3rd sample. It contains upload methods using Web API attribute routing and uses async/await & CancellationToken.
+Open 3rd sample. It contains upload methods using Web API attribute routing and uses async/await & CancellationToken.
 
 ### Web API - Configuration on traditional "ASP.NET"
 
@@ -128,6 +126,8 @@ In 4th project (4WebApiAspNetHost), you'll find a bit web api project hosted on 
 1- Instead of [Microsoft.Owin.SelfHost] nuget package, we've installed [Bit.OwinCore] nuget package. Using Bit.OwinCore, you can host your app on top of asp.net core. ASP.NET core apps can be hosted almost anywhere.
 
 Web API configuration and web api codes are all the same. (-:
+
+You can easily start using ASP.NET Core 2.0 by installing Bit.OwinCore.AspNetCore2Upgrade nuget package. No code change is required.
 
 ### Web API - Configuration on "ASP.NET Core / .NET Core"
 
@@ -157,7 +157,7 @@ You can also specify life cycle by calling .Register like following:
 dependencyManager.Register<IEmailService, DefaultEmailService>(lifeCycle: DependencyLifeCycle.PerScopeInstance);
 ```
 
-It accepts two life cycles: PerScopeInstance & SingleInstance. PerScopeInstance creates a new instance of your class for every web request, every background job start, etc. But SingleInstance creates one instance and uses that anywhere. Classes which are registered using PerScopeInstance have access to current user, and some classes like Entity framework's db context and repositories should be registered using PerScopeInstance.
+It accepts three life cycles: PerScopeInstance, SingleInstance & Transient. PerScopeInstance creates a new instance of your class for every web request, every background job start, etc. But SingleInstance creates one instance and uses that anywhere. Transient creates a new instance everytime you resolve a service. Classes which are registered using PerScopeInstance have access to current user, and some classes like Entity framework's db context and repositories should be registered using PerScopeInstance.
 
 You've also other Register methods like RegisterGeneric, RegisterInstance, RegisterTypes and RegisterUsing, you're welcomed to use those method if you're a DI ninja ;D
 
@@ -167,7 +167,7 @@ You can also cast dependency manager to IAutofacDependencyManager, and after tha
 ContainerBuilder autofacContainerBuilder = ((IAutofacDependencyManager)dependencyManager).GetContainerBuidler();
 ```
 
-In ASP.NET core projects, you've access to [IServiceCollection](https://docs.microsoft.com/en-us/aspnet/core/fundamentals/dependency-injection) too.
+You also have access to [IServiceCollection](https://docs.microsoft.com/en-us/aspnet/core/fundamentals/dependency-injection) too.
 
 If you've got a complex scenario, simply drops us an [issue on github](https://github.com/bit-foundation/bit-framework/issues) or ask a question on [stackoverflow](https://stackoverflow.com/questions/tagged/bit-framework).
 
@@ -236,7 +236,7 @@ public async Task UpdateCustomer(int customerId, string newName)
 
 Notes:
 
-1- Every response has a header called X-CorrelationId (RequestId). When we log exceptions for you, it has a X-CorrelationId, so you can associate a request/response to an exception.
+1- Every response has a header called X-CorrelationId (RequestId). When we log exceptions for you, it has a X-CorrelationId, so you can associate a request/response to logs.
 
 2- When your app is in debug mode, exceptions details are written into responses. So if "DebugModel" is set to "true" in environments.json, you see exception details, no matter the exception is known or not, but if it is set to "false", then you see "UnKnownException" for unknown exceptions and exception's message for known exceptions.
 
@@ -246,7 +246,7 @@ Pro tip: If you prefer to create new "Known" exception types, [take a look at fo
 
 Everything is being logged in memory, and there are some log stores such as Windows event logs, Visual Studio's console etc to make them permanent.
 
-Log contains lots of important data such as user info, machine info, app info etc. It has a key called "X-CorrelationId" (RequestId). When client receives an error, there is a X-CorrelationId stored in both response and log.
+Log contains lots of important data such as user info, machine info, app info etc.
 
 To add event log stores you can use following code:
 
