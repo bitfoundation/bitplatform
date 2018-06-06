@@ -311,7 +311,7 @@ public class ProductDto : IDto
 
 You provide such a details for following reasons:
 
-1- OData is a query language, for example, you can execute complicated queries such as "categories with 'Test' in their names" ($filter) directly from the client side. You can load categories which are located in the specific city with or without their products ($exapnd).
+1- OData is a query language, for example, you can execute complicated queries such as "categories with 'Test' in their names" ($filter) directly from the client side. You can load customers which are located in the specific city with or without their orders ($exapnd).
 
 2- We offer a local (sqlLite-webSql-indexedDb) database creation from your DTO(s) in C#/JavaScript/TypeScript, so you can use linq queries to work with the offline database as like as your odata server. We also offer a sync service to push/pull changes to/from online server and local database. To create that database, we need those information.
 
