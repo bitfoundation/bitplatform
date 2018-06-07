@@ -370,7 +370,7 @@ namespace BitCodeAnalyzer.Test.Helpers
                 .CurrentSolution
                 .AddProject(projectId, TestProjectName, TestProjectName, language)
                 .AddMetadataReferences(projectId, AppDomain.CurrentDomain.GetAssemblies()
-                    .Where(asm => asm.IsDynamic == false)
+                    .Where(asm => asm.IsDynamic == false && !string.IsNullOrEmpty(asm.Location))
                     .Select(asm => MetadataReference.CreateFromFile(asm.Location)));
 
             int count = 0;

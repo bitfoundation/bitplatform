@@ -18,7 +18,7 @@ namespace BitCodeGenerator.Test.Helpers
             existingSolution = existingSolution.AddProject(projectId, "TestProjectName", "TestProjectName", LanguageNames.CSharp);
 
             AppDomain.CurrentDomain.GetAssemblies()
-                .Where(asm => !asm.IsDynamic)
+                .Where(asm => !asm.IsDynamic && !string.IsNullOrEmpty(asm.Location))
                 .ToList()
                 .ForEach(asm =>
                 {
