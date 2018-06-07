@@ -12,29 +12,32 @@ using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using System;
 using System.Collections.Generic;
-using System.ComponentModel.Design;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.Threading;
 using System.Windows.Forms;
+using IAsyncServiceProvider = Microsoft.VisualStudio.Shell.IAsyncServiceProvider;
 
 namespace BitVSExtensionV1
 {
-    [PackageRegistration(UseManagedResourcesOnly = true)]
+    [PackageRegistration(UseManagedResourcesOnly = true, AllowsBackgroundLoading = true)]
     [InstalledProductRegistration("#110", "#112", "1.0", IconResourceID = 400)]
     [Guid(PackageGuidString)]
-    [ProvideAutoLoad(UIContextGuids80.SolutionExists)]
-    public sealed class BitPacakge : Package
+    [ProvideAutoLoad(UIContextGuids80.SolutionExists, PackageAutoLoadFlags.BackgroundLoad)]
+    public sealed class BitPacakge : AsyncPackage
     {
         private const string PackageGuidString = "F5222FDA-2C19-434B-9343-B0E942816E4C";
         private const string BitVSExtensionName = "Bit VS Extension V1";
 
-        protected override void Initialize()
+        protected async override System.Threading.Tasks.Task InitializeAsync(CancellationToken cancellationToken, IProgress<ServiceProgressData> progress)
         {
-            base.Initialize();
+            await base.InitializeAsync(cancellationToken, progress);
 
-            _serviceContainer = this;
+            await JoinableTaskFactory.SwitchToMainThreadAsync();
+
+            _ayncServiceProvider = (IAsyncServiceProvider)(await GetServiceAsync(typeof(SAsyncServiceProvider)));
 
             _applicationObject = (DTE2)GetGlobalService(typeof(DTE));
 
@@ -66,7 +69,7 @@ namespace BitVSExtensionV1
 
             try
             {
-                _statusBar = (IVsStatusbar)_serviceContainer.GetService(typeof(SVsStatusbar));
+                _statusBar = (IVsStatusbar)(await _ayncServiceProvider.GetServiceAsync(typeof(SVsStatusbar)));
                 if (_statusBar == null)
                     throw new InvalidOperationException("status bar is null");
             }
@@ -76,7 +79,7 @@ namespace BitVSExtensionV1
                 return;
             }
 
-            _componentModel = (IComponentModel)GetService(typeof(SComponentModel));
+            _componentModel = (IComponentModel)(await GetServiceAsync(typeof(SComponentModel)));
 
             if (_componentModel == null)
             {
@@ -95,42 +98,59 @@ namespace BitVSExtensionV1
             }
 
             _buildEvents = _applicationObject.Events.BuildEvents;
-            _applicationObject.Events.BuildEvents.OnBuildProjConfigDone += _buildEvents_OnBuildProjConfigDone;
-            _applicationObject.Events.BuildEvents.OnBuildDone += _buildEvents_OnBuildDone;
-            _applicationObject.Events.BuildEvents.OnBuildBegin += _buildEvents_OnBuildBegin;
-            _applicationObject.Events.SolutionEvents.Opened += SolutionEvents_Opened;
+            _solutionEvents = _applicationObject.Events.SolutionEvents;
+            _buildEvents.OnBuildProjConfigDone += _buildEvents_OnBuildProjConfigDone;
+            _buildEvents.OnBuildDone += _buildEvents_OnBuildDone;
+            _buildEvents.OnBuildBegin += _buildEvents_OnBuildBegin;
+            _solutionEvents.Opened += RunOnEitherSolutionOpenOrFirstPackageInitialize;
+
+            RunOnEitherSolutionOpenOrFirstPackageInitialize();
         }
 
-        private async void SolutionEvents_Opened()
+        private bool _RunOnEitherSolutionOpenOrFirstPackageInitializeIsBeingExecuted = false;
+
+        private async void RunOnEitherSolutionOpenOrFirstPackageInitialize()
         {
-            Func<bool> vsHasASavedSolutionButRoslynWorkspaceHasNoPath = () =>
+            try
             {
-                bool result = _applicationObject.Solution.Saved && string.IsNullOrEmpty(_visualStudioWorkspace.CurrentSolution.FilePath);
-                if (result == false)
-                    LogWarn($"Visual studio has a saved solution, but roslyn's workspace has no file path");
-                return result;
-            };
+                if (_RunOnEitherSolutionOpenOrFirstPackageInitializeIsBeingExecuted == true)
+                    return;
 
-            Func<bool> vsSolutionHasSomeProjectsButRoslynOneNothing = () =>
-            {
-                bool result = _applicationObject.Solution.Projects.Cast<object>().Any() && !_visualStudioWorkspace.CurrentSolution.Projects.Any();
-                if (result == false)
-                    LogWarn($"Visual studio has some projects, but roslyn's workspace has no project");
-                return result;
-            };
+                _RunOnEitherSolutionOpenOrFirstPackageInitializeIsBeingExecuted = true;
 
-            int retryCount = 30;
+                Func<bool> vsHasASavedSolutionButRoslynWorkspaceHasNoPath = () =>
+                {
+                    bool result = _applicationObject.Solution.Saved && string.IsNullOrEmpty(_visualStudioWorkspace.CurrentSolution.FilePath);
+                    if (result == false)
+                        LogWarn($"Visual studio has a saved solution, but roslyn's workspace has no file path");
+                    return result;
+                };
 
-            while (vsHasASavedSolutionButRoslynWorkspaceHasNoPath() || vsSolutionHasSomeProjectsButRoslynOneNothing() || retryCount <= 0)
-            {
-                await System.Threading.Tasks.Task.Delay(500);
-                retryCount--;
+                Func<bool> vsSolutionHasSomeProjectsButRoslynOneNothing = () =>
+                {
+                    bool result = _applicationObject.Solution.Projects.Cast<object>().Any() && !_visualStudioWorkspace.CurrentSolution.Projects.Any();
+                    if (result == false)
+                        LogWarn($"Visual studio has some projects, but roslyn's workspace has no project");
+                    return result;
+                };
+
+                int retryCount = 30;
+
+                while ((vsHasASavedSolutionButRoslynWorkspaceHasNoPath() || vsSolutionHasSomeProjectsButRoslynOneNothing()) && retryCount > 0)
+                {
+                    await System.Threading.Tasks.Task.Delay(500);
+                    retryCount--;
+                }
+
+                if (vsHasASavedSolutionButRoslynWorkspaceHasNoPath() || vsSolutionHasSomeProjectsButRoslynOneNothing())
+                    LogWarn($"15 seconds delay wasn't enough to make Visual Studio's workspace ready.");
+
+                await DoOnSolutionReadyOrChange();
             }
-
-            if (vsHasASavedSolutionButRoslynWorkspaceHasNoPath() || vsSolutionHasSomeProjectsButRoslynOneNothing())
-                LogWarn($"15 seconds delay wasn't enough to make Visual Studio's workspace ready.");
-
-            DoOnSolutionReadyOrChange();
+            finally
+            {
+                _RunOnEitherSolutionOpenOrFirstPackageInitializeIsBeingExecuted = false;
+            }
         }
 
         private void GetWorkspace()
@@ -150,7 +170,7 @@ namespace BitVSExtensionV1
             LogWarn($"{sender.GetType().Name} {e.Diagnostic.Kind} {e.Diagnostic.Message}");
         }
 
-        private async void DoOnSolutionReadyOrChange()
+        private async System.Threading.Tasks.Task DoOnSolutionReadyOrChange()
         {
             if (!File.Exists(_visualStudioWorkspace.CurrentSolution.FilePath))
             {
@@ -247,7 +267,7 @@ namespace BitVSExtensionV1
                 }
                 finally
                 {
-                    if (workspaceForCodeGeneration is MSBuildWorkspace)
+                    if (!(workspaceForCodeGeneration is VisualStudioWorkspace))
                         workspaceForCodeGeneration.Dispose();
                 }
             }
@@ -278,6 +298,11 @@ namespace BitVSExtensionV1
             if (vsWorkspaceIsValid)
                 return _visualStudioWorkspace;
 
+            return await CreateMsBuildWorkspace();
+        }
+
+        private async System.Threading.Tasks.Task<Workspace> CreateMsBuildWorkspace()
+        {
             MSBuildWorkspace msBuildWorkspaace = MSBuildWorkspace.Create(new Dictionary<string, string>(), _visualStudioWorkspace.Services.HostServices);
             msBuildWorkspaace.LoadMetadataForReferencedProjects = msBuildWorkspaace.SkipUnrecognizedProjects = true;
             await msBuildWorkspaace.OpenSolutionAsync(_visualStudioWorkspace.CurrentSolution.FilePath);
@@ -380,16 +405,22 @@ namespace BitVSExtensionV1
                 _visualStudioWorkspace.WorkspaceFailed -= _workspace_WorkspaceFailed;
             }
 
-            if (_applicationObject?.Events != null)
+            try
             {
-                _applicationObject.Events.BuildEvents.OnBuildProjConfigDone -= _buildEvents_OnBuildProjConfigDone;
+                if (_buildEvents != null)
+                {
+                    _buildEvents.OnBuildProjConfigDone -= _buildEvents_OnBuildProjConfigDone;
 
-                _applicationObject.Events.BuildEvents.OnBuildBegin -= _buildEvents_OnBuildBegin;
+                    _buildEvents.OnBuildBegin -= _buildEvents_OnBuildBegin;
 
-                _applicationObject.Events.BuildEvents.OnBuildDone -= _buildEvents_OnBuildDone;
-
-                _applicationObject.Events.SolutionEvents.Opened -= SolutionEvents_Opened;
+                    _buildEvents.OnBuildDone -= _buildEvents_OnBuildDone;
+                }
+                if (_solutionEvents != null)
+                {
+                    _solutionEvents.Opened -= RunOnEitherSolutionOpenOrFirstPackageInitialize;
+                }
             }
+            catch { }
 
             base.Dispose(disposing);
         }
@@ -398,7 +429,7 @@ namespace BitVSExtensionV1
 
         private IComponentModel _componentModel;
 
-        private IServiceContainer _serviceContainer;
+        private IAsyncServiceProvider _ayncServiceProvider;
 
         private OutputWindow _outputWindow;
 
@@ -407,6 +438,8 @@ namespace BitVSExtensionV1
         private DTE2 _applicationObject;
 
         private BuildEvents _buildEvents;
+
+        private SolutionEvents _solutionEvents;
 
         private IVsStatusbar _statusBar;
 
