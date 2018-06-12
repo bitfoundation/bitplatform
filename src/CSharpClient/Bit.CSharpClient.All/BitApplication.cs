@@ -5,6 +5,7 @@ using Prism;
 using Prism.Autofac;
 using Prism.Events;
 using Prism.Ioc;
+using Xamarin.Forms;
 
 namespace Bit
 {
@@ -13,7 +14,7 @@ namespace Bit
         protected BitApplication(IPlatformInitializer platformInitializer = null)
             : base(platformInitializer)
         {
-
+            MainPage = new ContentPage { };
         }
 
         protected override void OnInitialized()

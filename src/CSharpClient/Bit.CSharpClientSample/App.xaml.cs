@@ -8,13 +8,10 @@ using Bit.ViewModel.Contracts;
 using Bit.ViewModel.Implementations;
 using Plugin.Connectivity.Abstractions;
 using Prism;
-using Prism.AppModel;
 using Prism.Autofac;
 using Prism.Events;
 using Prism.Ioc;
-using Prism.Services;
 using System;
-using System.Threading.Tasks;
 using Xamarin.Forms;
 using Xamarin.Forms.Xaml;
 
@@ -34,7 +31,7 @@ namespace Bit.CSharpClientSample
         {
             InitializeComponent();
 
-            bool isLoggedIn = Container.Resolve<ISecurityService>().IsLoggedIn();
+            bool isLoggedIn = await Container.Resolve<ISecurityService>().IsLoggedInAsync();
 
             if (isLoggedIn)
             {
