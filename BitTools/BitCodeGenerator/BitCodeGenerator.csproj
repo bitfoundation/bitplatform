@@ -1,98 +1,56 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
   <PropertyGroup>
-    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{DEBED051-F837-4A0D-A230-02FB4E8533C3}</ProjectGuid>
-    <OutputType>Library</OutputType>
-    <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>BitCodeGenerator</RootNamespace>
-    <AssemblyName>BitCodeGenerator</AssemblyName>
-    <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
-    <FileAlignment>512</FileAlignment>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <Version>1.1.9.9</Version>
+    <AssemblyVersion>1.1.9.9</AssemblyVersion>
+    <FileVersion>1.1.9.9</FileVersion>
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <DebugSymbols>true</DebugSymbols>
-    <DebugType>full</DebugType>
-    <Optimize>false</Optimize>
-    <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <DebugType>pdbonly</DebugType>
-    <Optimize>true</Optimize>
-    <OutputPath>bin\Release\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-  </PropertyGroup>
+
   <ItemGroup>
-    <Reference Include="System" />
-  </ItemGroup>
-  <ItemGroup>
-    <Compile Include="Implementations\DefaultBitCodeGeneratorOrderedProjectsProvider.cs" />
-    <Compile Include="Implementations\DefaultBitConfigProvider.cs" />
-    <Compile Include="Implementations\DefaultDtoRulesValidator.cs" />
-    <Compile Include="Implementations\DefaultProjectDtoControllersProvider.cs" />
-    <Compile Include="Implementations\DefaultProjectDtoRulesProvider.cs" />
-    <Compile Include="Implementations\DefaultProjectDtosProvider.cs" />
-    <Compile Include="Implementations\DefaultProjectEnumTypesProvider.cs" />
-    <Compile Include="Implementations\TypeScriptClientProxyGenerator\DefaultTypeScriptClientContextGenerator.cs" />
-    <Compile Include="Implementations\TypeScriptClientProxyGenerator\DefaultTypeScriptClientProxyCleaner.cs" />
-    <Compile Include="Implementations\TypeScriptClientProxyGenerator\DefaultTypeScriptClientProxyDtoGenerator.cs" />
-    <Compile Include="Implementations\TypeScriptClientProxyGenerator\DefaultTypeScriptClientProxyGenerator.cs" />
-    <Compile Include="Implementations\TypeScriptClientProxyGenerator\Templates\JavaScriptContextGeneratorTemplate1.cs">
-      <AutoGen>True</AutoGen>
+
+    <None Update="Implementations\TypeScriptClientProxyGenerator\Templates\JavaScriptDtosGeneratorTemplate.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>JavaScriptDtosGeneratorTemplate.cs</LastGenOutput>
+    </None>
+    <Compile Update="Implementations\TypeScriptClientProxyGenerator\Templates\JavaScriptDtosGeneratorTemplate.cs">
       <DesignTime>True</DesignTime>
-      <DependentUpon>JavaScriptContextGeneratorTemplate.tt</DependentUpon>
-    </Compile>
-    <Compile Include="Implementations\TypeScriptClientProxyGenerator\Templates\JavaScriptDtosGeneratorTemplate1.cs">
       <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
       <DependentUpon>JavaScriptDtosGeneratorTemplate.tt</DependentUpon>
     </Compile>
-    <Compile Include="Implementations\TypeScriptClientProxyGenerator\Templates\TypeScriptContextGeneratorTemplate1.cs">
-      <AutoGen>True</AutoGen>
+
+    <None Update="Implementations\TypeScriptClientProxyGenerator\Templates\JavaScriptContextGeneratorTemplate.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>JavaScriptContextGeneratorTemplate.cs</LastGenOutput>
+    </None>
+    <Compile Update="Implementations\TypeScriptClientProxyGenerator\Templates\JavaScriptContextGeneratorTemplate.cs">
       <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>JavaScriptContextGeneratorTemplate.tt</DependentUpon>
+    </Compile>
+
+    <None Update="Implementations\TypeScriptClientProxyGenerator\Templates\TypeScriptContextGeneratorTemplate.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>TypeScriptContextGeneratorTemplate.cs</LastGenOutput>
+    </None>
+    <Compile Update="Implementations\TypeScriptClientProxyGenerator\Templates\TypeScriptContextGeneratorTemplate.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
       <DependentUpon>TypeScriptContextGeneratorTemplate.tt</DependentUpon>
     </Compile>
-    <Compile Include="Implementations\TypeScriptClientProxyGenerator\Templates\TypeScriptDtosGeneratorTemplate1.cs">
-      <AutoGen>True</AutoGen>
+
+    <None Update="Implementations\TypeScriptClientProxyGenerator\Templates\TypeScriptDtosGeneratorTemplate.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>TypeScriptDtosGeneratorTemplate.cs</LastGenOutput>
+    </None>
+    <Compile Update="Implementations\TypeScriptClientProxyGenerator\Templates\TypeScriptDtosGeneratorTemplate.cs">
       <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
       <DependentUpon>TypeScriptDtosGeneratorTemplate.tt</DependentUpon>
     </Compile>
-    <Compile Include="Properties\AssemblyInfo.cs" />
+
   </ItemGroup>
-  <ItemGroup>
-    <Content Include="Implementations\TypeScriptClientProxyGenerator\Templates\JavaScriptContextGeneratorTemplate.tt">
-      <Generator>TextTemplatingFilePreprocessor</Generator>
-      <LastGenOutput>JavaScriptContextGeneratorTemplate1.cs</LastGenOutput>
-    </Content>
-    <Content Include="Implementations\TypeScriptClientProxyGenerator\Templates\JavaScriptDtosGeneratorTemplate.tt">
-      <Generator>TextTemplatingFilePreprocessor</Generator>
-      <LastGenOutput>JavaScriptDtosGeneratorTemplate1.cs</LastGenOutput>
-    </Content>
-    <Content Include="Implementations\TypeScriptClientProxyGenerator\Templates\TypeScriptContextGeneratorTemplate.tt">
-      <Generator>TextTemplatingFilePreprocessor</Generator>
-      <LastGenOutput>TypeScriptContextGeneratorTemplate1.cs</LastGenOutput>
-    </Content>
-    <Content Include="Implementations\TypeScriptClientProxyGenerator\Templates\TypeScriptDtosGeneratorTemplate.tt">
-      <Generator>TextTemplatingFilePreprocessor</Generator>
-      <LastGenOutput>TypeScriptDtosGeneratorTemplate1.cs</LastGenOutput>
-    </Content>
-  </ItemGroup>
-  <ItemGroup>
-    <Service Include="{508349B6-6B84-4DF5-91F0-309BEEBAD82D}" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\BitTools.Core.VSExtensionBuildVersion\BitTools.Core.VSExtensionBuildVersion.csproj">
-      <Project>{3aa3c219-2d0a-49dd-a025-5b4654bf2cfa}</Project>
-      <Name>BitTools.Core.VSExtensionBuildVersion</Name>
-    </ProjectReference>
-  </ItemGroup>
+
   <ItemGroup>
     <PackageReference Include="Newtonsoft.Json">
       <Version>5.0.8</Version>
@@ -100,6 +58,15 @@
     <PackageReference Include="Microsoft.CodeAnalysis.Workspaces.Common">
       <Version>1.2.2</Version>
     </PackageReference>
+    <PackageReference Include="System.CodeDom" Version="4.5.0" />
   </ItemGroup>
-  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+
+  <ItemGroup>
+    <ProjectReference Include="..\BitTools.Core.VSExtensionBuildVersion\BitTools.Core.VSExtensionBuildVersion.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Service Include="{508349b6-6b84-4df5-91f0-309beebad82d}" />
+  </ItemGroup>
+
 </Project>
