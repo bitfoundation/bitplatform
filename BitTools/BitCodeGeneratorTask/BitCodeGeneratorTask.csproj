@@ -1,0 +1,39 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net461</TargetFramework>
+    <IsTool>true</IsTool>
+    <AssemblyVersion>1.1.9.9</AssemblyVersion>
+    <FileVersion>1.1.9.9</FileVersion>
+    <Version>1.1.9.9</Version>
+    <Authors>Bit Foundation</Authors>
+    <Product>Bit Framework</Product>
+    <Company>Bit Foundation</Company>
+    <Description>BitCodeGeneratorTask</Description>
+    <Copyright>Copyright © Bit Foundation 2017</Copyright>
+    <PackageLicenseUrl>https://github.com/bit-foundation/bit-framework/blob/master/LICENSE</PackageLicenseUrl>
+    <PackageProjectUrl>https://github.com/bit-foundation/bit-framework</PackageProjectUrl>
+    <PackageIconUrl>https://avatars.githubusercontent.com/u/22663390</PackageIconUrl>
+    <RepositoryUrl>https://github.com/bit-foundation/bit-framework</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageReleaseNotes>https://github.com/bit-foundation/bit-framework/releases</PackageReleaseNotes>
+    <PackageTags>Bit Code Generator Source Generator MsBuild Task</PackageTags>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Uno.SourceGeneration" Version="1.21.0" PrivateAssets="All" />
+    <PackageReference Include="Uno.SourceGenerationTasks" Version="1.21.0" PrivateAssets="None" />
+    <Content Include="build/**/*.*">
+      <Pack>true</Pack>
+      <PackagePath>build</PackagePath>
+    </Content>
+    <None Include="$(OutputPath)\BitCodeGenerator.dll" Pack="true" PackagePath="tools" Visible="false" />
+    <None Include="$(OutputPath)\BitTools.Core.VSExtensionBuildVersion.dll" Pack="true" PackagePath="tools" Visible="false" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\BitCodeGenerator\BitCodeGenerator.csproj" PrivateAssets="All" />
+  </ItemGroup>
+
+</Project>
