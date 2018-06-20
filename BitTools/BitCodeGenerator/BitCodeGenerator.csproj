@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netstandard2.0</TargetFramework>
+    <TargetFramework>net461</TargetFramework>
     <Version>1.1.9.9</Version>
     <AssemblyVersion>1.1.9.9</AssemblyVersion>
     <FileVersion>1.1.9.9</FileVersion>
@@ -58,7 +58,6 @@
     <PackageReference Include="Microsoft.CodeAnalysis.Workspaces.Common">
       <Version>1.2.2</Version>
     </PackageReference>
-    <PackageReference Include="System.CodeDom" Version="4.5.0" />
   </ItemGroup>
 
   <ItemGroup>

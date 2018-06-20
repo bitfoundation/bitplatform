@@ -26,7 +26,7 @@ namespace BitCodeGenerator.Implementations.TypeScriptClientProxyGenerator
             if (workspace == null)
                 throw new ArgumentNullException(nameof(workspace));
 
-            BitConfig bitConfig = _bitConfigProvider.GetConfiguration(workspace.CurrentSolution.FilePath);
+            BitConfig bitConfig = _bitConfigProvider.GetConfiguration(workspace);
 
             foreach (BitCodeGeneratorMapping proxyGeneratorMapping in bitConfig.BitCodeGeneratorConfigs.BitCodeGeneratorMappings)
             {

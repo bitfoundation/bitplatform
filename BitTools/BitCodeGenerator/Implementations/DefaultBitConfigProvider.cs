@@ -1,9 +1,10 @@
-﻿using System;
+﻿using BitTools.Core.Contracts;
+using BitTools.Core.Model;
+using Microsoft.CodeAnalysis;
+using Newtonsoft.Json;
+using System;
 using System.IO;
 using System.Linq;
-using BitTools.Core.Contracts;
-using BitTools.Core.Model;
-using Newtonsoft.Json;
 
 namespace BitCodeGenerator.Implementations
 {
@@ -20,8 +21,10 @@ namespace BitCodeGenerator.Implementations
     {
         public virtual string Version { get; set; } = "V1";
 
-        public virtual BitConfig GetConfiguration(string solutionFilePath)
+        public virtual BitConfig GetConfiguration(Workspace workspace)
         {
+            string solutionFilePath = GetSolutionFilePath(workspace);
+
             DirectoryInfo directoryInfo = Directory.GetParent(solutionFilePath);
 
             if (directoryInfo == null)
@@ -62,6 +65,11 @@ namespace BitCodeGenerator.Implementations
             }
 
             return bitConfig;
+        }
+
+        public virtual string GetSolutionFilePath(Workspace workspace)
+        {
+            return workspace.CurrentSolution.FilePath;
         }
     }
 }

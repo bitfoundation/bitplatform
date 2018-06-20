@@ -192,7 +192,7 @@ namespace BitVSExtensionV1
 
             try
             {
-                config = configProvider.GetConfiguration(_visualStudioWorkspace.CurrentSolution.FilePath);
+                config = configProvider.GetConfiguration(_visualStudioWorkspace);
 
                 foreach (BitCodeGeneratorMapping mapping in config.BitCodeGeneratorConfigs.BitCodeGeneratorMappings)
                 {

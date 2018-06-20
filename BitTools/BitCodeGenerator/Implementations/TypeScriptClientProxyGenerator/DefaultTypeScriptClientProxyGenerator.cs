@@ -1,12 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using BitTools.Core.Contracts;
+﻿using BitTools.Core.Contracts;
 using BitTools.Core.Contracts.TypeScriptClientProxyGenerator;
 using BitTools.Core.Model;
 using Microsoft.CodeAnalysis;
+using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 
 namespace BitCodeGenerator.Implementations.TypeScriptClientProxyGenerator
@@ -58,7 +58,7 @@ namespace BitCodeGenerator.Implementations.TypeScriptClientProxyGenerator
             if (workspace == null)
                 throw new ArgumentNullException(nameof(workspace));
 
-            BitConfig bitConfig = _bitConfigProvider.GetConfiguration(workspace.CurrentSolution.FilePath);
+            BitConfig bitConfig = _bitConfigProvider.GetConfiguration(workspace);
 
             foreach (BitCodeGeneratorMapping proxyGeneratorMapping in bitConfig.BitCodeGeneratorConfigs.BitCodeGeneratorMappings)
             {
