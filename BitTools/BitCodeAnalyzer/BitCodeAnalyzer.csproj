@@ -5,8 +5,20 @@
     <AssemblyVersion>1.1.9.9</AssemblyVersion>
     <FileVersion>1.1.9.9</FileVersion>
     <Version>1.1.9.9</Version>
-    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <IncludeBuildOutput>false</IncludeBuildOutput>
+    <Authors>Bit Foundation</Authors>
+    <Product>Bit Framework</Product>
+    <Company>Bit Foundation</Company>
+    <Description>BitCodeAnalyzer</Description>
+    <Copyright>Copyright © Bit Foundation 2017</Copyright>
+    <PackageLicenseUrl>https://github.com/bit-foundation/bit-framework/blob/master/LICENSE</PackageLicenseUrl>
+    <PackageProjectUrl>https://github.com/bit-foundation/bit-framework</PackageProjectUrl>
+    <PackageIconUrl>https://avatars.githubusercontent.com/u/22663390</PackageIconUrl>
+    <RepositoryUrl>https://github.com/bit-foundation/bit-framework</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageReleaseNotes>https://github.com/bit-foundation/bit-framework/releases</PackageReleaseNotes>
+    <PackageTags>Bit Code Analyzer</PackageTags>
+    <GeneratePackageOnBuild Condition=" '$(Configuration)' == 'Release' ">true</GeneratePackageOnBuild>
   </PropertyGroup>
 
   <ItemGroup>
