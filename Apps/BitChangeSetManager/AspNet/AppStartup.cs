@@ -17,6 +17,7 @@ using BitChangeSetManager.Api.Implementations;
 using BitChangeSetManager.DataAccess;
 using BitChangeSetManager.DataAccess.Implementations;
 using BitChangeSetManager.Security;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Owin.Cors;
 using Owin;
 using Swashbuckle.Application;
@@ -28,7 +29,7 @@ using System.Reflection;
 
 namespace BitChangeSetManager
 {
-    public class AppStartup : OwinAppStartup, IOwinAppModule, IAppModulesProvider
+    public class AppStartup : OwinAppStartup, IAppModule, IAppModulesProvider
     {
         public override void Configuration(IAppBuilder owinApp)
         {
@@ -42,7 +43,7 @@ namespace BitChangeSetManager
             yield return this;
         }
 
-        public void ConfigureDependencies(IDependencyManager dependencyManager)
+        public void ConfigureDependencies(IServiceCollection services, IDependencyManager dependencyManager)
         {
             AssemblyContainer.Current.Init();
 

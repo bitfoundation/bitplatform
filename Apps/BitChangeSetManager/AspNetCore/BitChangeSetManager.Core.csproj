@@ -20,17 +20,17 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Bit.Data.EntityFramework" Version="1.0.6" />
-    <PackageReference Include="Bit.Hangfire" Version="1.0.6" />
-    <PackageReference Include="Bit.IdentityServer" Version="1.0.6" />
-    <PackageReference Include="Bit.OData" Version="1.0.6" />
-    <PackageReference Include="Bit.OwinCore" Version="1.0.6" />
-    <PackageReference Include="Bit.Signalr" Version="1.0.6" />
+    <PackageReference Include="Bit.Data.EntityFramework" Version="1.0.7" />
+    <PackageReference Include="Bit.Hangfire" Version="1.0.7" />
+    <PackageReference Include="Bit.IdentityServer" Version="1.0.7" />
+    <PackageReference Include="Bit.OData" Version="1.0.7" />
+    <PackageReference Include="Bit.OwinCore" Version="1.0.7" />
+    <PackageReference Include="Bit.Signalr" Version="1.0.7" />
     <PackageReference Include="BitCodeAnalyzer" Version="1.2.6.2" />
-    <PackageReference Include="Dapper" Version="1.50.4" />
+    <PackageReference Include="Dapper" Version="1.50.5" />
     <PackageReference Include="Microsoft.AspNetCore.Cors" Version="1.1.2" />
     <PackageReference Include="Microsoft.AspNetCore.ResponseCompression" Version="1.0.4" />
-    <PackageReference Include="SourceLink.Copy.PdbFiles" Version="2.8.1" PrivateAssets="All" />
+    <PackageReference Include="SourceLink.Copy.PdbFiles" Version="2.8.3" PrivateAssets="All" />
   </ItemGroup>
 
   <ItemGroup>

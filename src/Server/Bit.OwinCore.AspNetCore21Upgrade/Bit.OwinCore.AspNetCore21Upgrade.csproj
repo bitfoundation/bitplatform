@@ -1,13 +1,13 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>net461;netcoreapp2.0</TargetFrameworks>
-    <PackageTags>Bit Web API Rest Microsoft AspNet WebApi AspNetWebApi</PackageTags>
+    <TargetFrameworks>net461;netcoreapp2.1</TargetFrameworks>
+    <PackageTags>Bit aspnetcore2.1</PackageTags>
     <Version>0.0.1</Version>
-    <Company>Bit Foundation</Company>
     <Authors>Bit Foundation</Authors>
+    <Company>Bit Foundation</Company>
     <Product>Bit Framework</Product>
-    <Description>Bit.WebApi</Description>
+    <Description>Bit.OwinCore.AspNetCore21Upgrade</Description>
     <Copyright>Copyright © Bit Foundation 2017</Copyright>
     <PackageLicenseUrl>https://github.com/bit-foundation/bit-framework/blob/master/LICENSE</PackageLicenseUrl>
     <PackageProjectUrl>https://github.com/bit-foundation/bit-framework</PackageProjectUrl>
@@ -22,21 +22,12 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <EmbeddedResource Include="Extensions\SwaggerExtender.js" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <PackageReference Include="Autofac.WebApi2" Version="4.2.0" />
-    <PackageReference Include="Autofac.WebApi2.Owin" Version="4.0.0" />
-    <PackageReference Include="Microsoft.AspNet.WebApi.Owin" Version="5.2.6" />
-    <PackageReference Include="Swashbuckle.Core" Version="5.6.0" />
-    <PackageReference Include="WebApiCorrelator" Version="1.1.0" />
-    <PackageReference Include="SourceLink.Embed.AllSourceFiles" Version="2.8.3" PrivateAssets="all" />
-    <PackageReference Include="SourceLink.Copy.PdbFiles" Version="2.8.3" PrivateAssets="All" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="..\Bit.Owin\Bit.Owin.csproj" />
+    <PackageReference Include="Microsoft.AspNetCore" Version="2.1.1" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.Formatters.Json" Version="2.1.1" />
+    <PackageReference Include="Microsoft.AspNetCore.Owin" Version="2.1.1" />
+    <PackageReference Include="Microsoft.AspNetCore.StaticFiles" Version="2.1.1" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="2.1.1" />
+    <PackageReference Include="NWebsec.AspNetCore.Middleware" Version="2.0.0" />
   </ItemGroup>
 
 </Project>

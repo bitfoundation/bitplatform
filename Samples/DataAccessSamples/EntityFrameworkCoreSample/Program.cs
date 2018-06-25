@@ -11,6 +11,7 @@ using Bit.Owin;
 using Bit.Owin.Contracts;
 using Bit.Owin.Implementations;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Owin.Hosting;
 using Owin;
 using System;
@@ -149,7 +150,7 @@ namespace EntityFrameworkCoreSample
         }
     }
 
-    public class AppStartup : OwinAppStartup, IOwinAppModule, IAppModulesProvider
+    public class AppStartup : OwinAppStartup, IAppModule, IAppModulesProvider
     {
         public override void Configuration(IAppBuilder owinApp)
         {
@@ -163,7 +164,7 @@ namespace EntityFrameworkCoreSample
             yield return this;
         }
 
-        public void ConfigureDependencies(IDependencyManager dependencyManager)
+        public void ConfigureDependencies(IServiceCollection services, IDependencyManager dependencyManager)
         {
             AssemblyContainer.Current.Init();
 

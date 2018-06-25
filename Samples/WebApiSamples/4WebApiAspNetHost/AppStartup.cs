@@ -4,6 +4,7 @@ using Bit.Core.Contracts;
 using Bit.Owin;
 using Bit.Owin.Contracts;
 using Bit.Owin.Implementations;
+using Microsoft.Extensions.DependencyInjection;
 using Owin;
 using Swashbuckle.Application;
 using System;
@@ -18,7 +19,7 @@ using System.Web.Http.Description;
 
 namespace WebApiAspNetHost
 {
-    public class AppStartup : OwinAppStartup, IOwinAppModule, IAppModulesProvider
+    public class AppStartup : OwinAppStartup, IAppModule, IAppModulesProvider
     {
         public override void Configuration(IAppBuilder owinApp)
         {
@@ -32,7 +33,7 @@ namespace WebApiAspNetHost
             yield return this;
         }
 
-        public void ConfigureDependencies(IDependencyManager dependencyManager)
+        public void ConfigureDependencies(IServiceCollection services, IDependencyManager dependencyManager)
         {
             AssemblyContainer.Current.Init();
 

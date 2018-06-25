@@ -24,11 +24,11 @@
   },
   "optionalDependencies": {
     "@bit/encoder": "^1.0.0",
-    "core-js": "^2.5.5",
-    "decimal.js": "^10.0.0",
+    "core-js": "^2.5.7",
+    "decimal.js": "^10.0.1",
     "event-source-polyfill": "^0.0.12",
     "pubsub-js": "^1.6.0",
-    "regenerator": "^0.12.3",
+    "regenerator": "^0.13.2",
     "signalr": "^2.2.3",
     "whatwg-fetch": "^2.0.4"
   },

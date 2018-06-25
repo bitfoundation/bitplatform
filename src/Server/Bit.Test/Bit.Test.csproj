@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>net461;netcoreapp2.0</TargetFrameworks>
+    <TargetFrameworks>net461;netcoreapp2.1</TargetFrameworks>
     <AssemblyVersion>0.0.0.1</AssemblyVersion>
     <FileVersion>0.0.0.1</FileVersion>
     <Version>0.0.1</Version>
@@ -25,15 +25,14 @@
     <PackageReference Include="Bit.Simple.OData.Client.V4.Adapter" Version="5.0.3" />
     <PackageReference Include="FakeItEasy" Version="4.6.0" />
     <PackageReference Include="Microsoft.AspNet.SignalR.Client" Version="2.2.3" />
-    <PackageReference Include="Microsoft.AspNetCore.TestHost" Version="2.0.3" />
+    <PackageReference Include="Microsoft.AspNetCore.TestHost" Version="2.1.1" />
     <PackageReference Include="Microsoft.Owin.SelfHost" Version="4.0.0" />
     <PackageReference Include="Microsoft.Owin.Testing" Version="4.0.0" />
-    <PackageReference Include="Selenium.Support" Version="3.12.0" />
-    <PackageReference Include="Selenium.WebDriver" Version="3.12.0" />
-    <PackageReference Include="Selenium.WebDriver.ChromeDriver" Version="2.38.0.1" />
-    <PackageReference Include="Suave" Version="2.4.0" />
-    <PackageReference Include="SourceLink.Embed.AllSourceFiles" Version="2.8.1" PrivateAssets="all" />
-    <PackageReference Include="SourceLink.Copy.PdbFiles" Version="2.8.1" PrivateAssets="All" />
+    <PackageReference Include="Selenium.Support" Version="3.12.1" />
+    <PackageReference Include="Selenium.WebDriver" Version="3.12.1" />
+    <PackageReference Include="Selenium.WebDriver.ChromeDriver" Version="2.40.0" />
+    <PackageReference Include="SourceLink.Embed.AllSourceFiles" Version="2.8.3" PrivateAssets="all" />
+    <PackageReference Include="SourceLink.Copy.PdbFiles" Version="2.8.3" PrivateAssets="All" />
   </ItemGroup>
 
   <ItemGroup>
@@ -41,7 +40,7 @@
     <ProjectReference Include="..\Bit.Hangfire\Bit.Hangfire.csproj" />
     <ProjectReference Include="..\Bit.IdentityServer\Bit.IdentityServer.csproj" />
     <ProjectReference Include="..\Bit.OData\Bit.OData.csproj" />
-    <ProjectReference Include="..\Bit.OwinCore.AspNetCore2Upgrade\Bit.OwinCore.AspNetCore2Upgrade.csproj" />
+    <ProjectReference Include="..\Bit.OwinCore.AspNetCore21Upgrade\Bit.OwinCore.AspNetCore21Upgrade.csproj" />
     <ProjectReference Include="..\Bit.OwinCore\Bit.OwinCore.csproj" />
     <ProjectReference Include="..\Bit.Signalr\Bit.Signalr.csproj" />
   </ItemGroup>

@@ -59,7 +59,7 @@ namespace Bit.CSharpClientSample
 
             containerRegistry.GetBuilder().Register<IClientAppProfile>(c => new DefaultClientAppProfile
             {
-                HostUri = new Uri("http://indie-ir001.ngrok.io/"),
+                HostUri = new Uri("http://127.0.0.1/"),
                 OAuthRedirectUri = new Uri("Test://oauth2redirect"),
                 AppName = "Test",
                 ODataRoute = "odata/Test/"
