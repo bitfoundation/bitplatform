@@ -14,7 +14,8 @@ namespace Bit
         protected BitApplication(IPlatformInitializer platformInitializer = null)
             : base(platformInitializer)
         {
-            MainPage = new ContentPage { };
+            if (MainPage == null)
+                MainPage = new ContentPage { Title = "DefaultPage" };
         }
 
         protected override void OnInitialized()
