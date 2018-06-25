@@ -14,12 +14,11 @@ namespace Bit.Tests
             {
                 UseRealServer = true,
                 UseProxyBasedDependencyManager = false,
-                UseAspNetCore = true/*,
-                HostName = "indie-ir001.ngrok.io"*/
+                UseAspNetCore = true,
+                FullUri = "http://*:80"
             }))
             {
-
-                Process.Start(testEnvironment.Server.Uri);
+                Process.Start("http://localhost/");
 
                 Console.WriteLine(testEnvironment.Server.Uri);
 

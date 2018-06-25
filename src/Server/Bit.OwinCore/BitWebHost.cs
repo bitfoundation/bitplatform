@@ -16,7 +16,7 @@ namespace Bit.OwinCore
 
             TypeInfo webHostType = Type.GetType($"Microsoft.AspNetCore.WebHost, Microsoft.AspNetCore, Version={typeof(WebHost).GetTypeInfo().Assembly.GetName().Version}, Culture=neutral, PublicKeyToken=adb9793829ddae60")?.GetTypeInfo();
 
-            MethodInfo createDefaultBuilderMethod = webHostType?.GetMethod("CreateDefaultBuilder", new Type[] { typeof(string[]).GetTypeInfo() });
+            MethodInfo createDefaultBuilderMethod = webHostType?.GetMethods().ExtendedSingleOrDefault("Finding CreateDefaultBuilder method", m => m.Name == "CreateDefaultBuilder" && m.IsGenericMethod == false && m.GetParameters().Select(p => p.ParameterType).SequenceEqual(new Type[] { typeof(string[]).GetTypeInfo() }));
 
             if (createDefaultBuilderMethod == null)
             {
@@ -52,7 +52,11 @@ namespace Bit.OwinCore
         private static IWebHostBuilder AspNetCore2(string[] args, MethodInfo createDefaultBuilderMethod)
         {
             return ((IWebHostBuilder)createDefaultBuilderMethod.Invoke(null, new object[] { args }))
-                .CaptureStartupErrors(captureStartupErrors: true);
+                .CaptureStartupErrors(captureStartupErrors: true)
+                /*.UseKestrel(options =>
+                {
+                    options.AddServerHeader = false;
+                })*/;
         }
 
         private static IWebHostBuilder AspNetCore1()
