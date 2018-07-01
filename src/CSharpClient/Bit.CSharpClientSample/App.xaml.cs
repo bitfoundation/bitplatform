@@ -12,6 +12,7 @@ using Prism.Autofac;
 using Prism.Events;
 using Prism.Ioc;
 using System;
+using System.Threading.Tasks;
 using Xamarin.Forms;
 using Xamarin.Forms.Xaml;
 
@@ -27,7 +28,7 @@ namespace Bit.CSharpClientSample
 
         }
 
-        protected override async void OnInitialized()
+        protected async override Task OnInitializedAsync()
         {
             InitializeComponent();
 
@@ -45,9 +46,9 @@ namespace Bit.CSharpClientSample
             IEventAggregator eventAggregator = Container.Resolve<IEventAggregator>();
 
             eventAggregator.GetEvent<TokenExpiredEvent>()
-                .Subscribe(async tokenExpiredEvent => await NavigationService.NavigateAsync("Login"), ThreadOption.UIThread);
+                .SubscribeAsync(async tokenExpiredEvent => await NavigationService.NavigateAsync("Login"), ThreadOption.UIThread);
 
-            base.OnInitialized();
+            await base.OnInitializedAsync();
         }
 
         protected override void RegisterTypes(IContainerRegistry containerRegistry)
@@ -59,7 +60,8 @@ namespace Bit.CSharpClientSample
 
             containerRegistry.GetBuilder().Register<IClientAppProfile>(c => new DefaultClientAppProfile
             {
-                HostUri = new Uri("http://127.0.0.1/"),
+                //HostUri = new Uri("http://127.0.0.1/"),
+                HostUri = new Uri("http://10.0.2.2"),
                 OAuthRedirectUri = new Uri("Test://oauth2redirect"),
                 AppName = "Test",
                 ODataRoute = "odata/Test/"

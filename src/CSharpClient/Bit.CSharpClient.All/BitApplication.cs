@@ -1,10 +1,13 @@
 ﻿using Autofac;
 using Bit.Model.Events;
+using Bit.ViewModel;
 using Plugin.Connectivity.Abstractions;
 using Prism;
 using Prism.Autofac;
 using Prism.Events;
 using Prism.Ioc;
+using System;
+using System.Threading.Tasks;
 using Xamarin.Forms;
 
 namespace Bit
@@ -18,7 +21,19 @@ namespace Bit
                 MainPage = new ContentPage { Title = "DefaultPage" };
         }
 
-        protected override void OnInitialized()
+        protected async sealed override void OnInitialized()
+        {
+            try
+            {
+                await OnInitializedAsync().ConfigureAwait(false);
+            }
+            catch (Exception exp)
+            {
+                BitExceptionHandler.Current.OnExceptionReceived(exp);
+            }
+        }
+
+        protected virtual Task OnInitializedAsync()
         {
             IConnectivity connectivity = Container.Resolve<IConnectivity>();
 
@@ -29,6 +44,8 @@ namespace Bit
                 eventAggregator.GetEvent<ConnectivityChangedEvent>()
                     .Publish(new ConnectivityChangedEvent { IsConnected = e.IsConnected });
             };
+
+            return Task.CompletedTask;
         }
 
         protected override void RegisterTypes(IContainerRegistry containerRegistry)
