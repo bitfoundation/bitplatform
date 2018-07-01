@@ -10,7 +10,7 @@ using Xamarin.Forms.Platform.Android;
 namespace Bit.CSharpClientSample.Droid
 {
     [Activity(Label = "Bit.CSharpClientSample", Icon = "@drawable/icon", Theme = "@style/MainTheme", MainLauncher = true, ConfigurationChanges = ConfigChanges.ScreenSize | ConfigChanges.Orientation)]
-    public class MainActivity : FormsAppCompatActivity
+    public class MainActivity : BitFormsAppCompatActivity
     {
         protected override void OnCreate(Bundle bundle)
         {
