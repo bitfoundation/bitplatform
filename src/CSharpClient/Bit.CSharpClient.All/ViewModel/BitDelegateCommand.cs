@@ -61,8 +61,15 @@ namespace Bit.ViewModel
     }
 
     public class BitDelegateCommand<T> : DelegateCommand<T>
-        where T : class
     {
+        static BitDelegateCommand()
+        {
+            Type type = typeof(T);
+
+            if (!type.IsClass && Nullable.GetUnderlyingType(type) == null)
+                throw new InvalidOperationException($"Type {type.FullName} is not supported for BitDelegateCommand. Use either class or nullable strcut");
+        }
+
         private readonly Func<T, Task> _executeMethod;
 
         public virtual async Task ExecuteAsync(T parameter)
