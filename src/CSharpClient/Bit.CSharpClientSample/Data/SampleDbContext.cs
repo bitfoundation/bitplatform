@@ -32,6 +32,8 @@ namespace Bit.CSharpClientSample.Data
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.AddSyncableDto<TestCustomerDto>();
+
+            base.OnModelCreating(modelBuilder);
         }
 
         public virtual DbSet<TestCustomerDto> TestCustomers { get; set; }
