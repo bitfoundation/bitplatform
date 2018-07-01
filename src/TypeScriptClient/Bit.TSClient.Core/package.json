@@ -29,7 +29,7 @@
     "event-source-polyfill": "^0.0.12",
     "pubsub-js": "^1.6.0",
     "regenerator": "^0.13.2",
-    "signalr": "^2.2.3",
+    "signalr": "^2.3.0",
     "whatwg-fetch": "^2.0.4"
   },
   "dependencies": {

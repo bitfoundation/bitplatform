@@ -19,7 +19,7 @@
   ],
   "license": "MIT",
   "devDependencies": {
-    "@types/angular": "^1.6.47",
+    "@types/angular": "^1.6.48",
     "@types/angular-material": "^1.1.59",
     "@types/angular-translate": "^2.16.0",
     "@types/jquery": "^3.3.4",
@@ -30,7 +30,7 @@
   "optionalDependencies": {
     "angular-animate": "^1.7.2",
     "angular-aria": "^1.7.2",
-    "angular-material": "^1.1.9",
+    "angular-material": "^1.1.10",
     "angular-messages": "^1.7.2",
     "angular-translate": "^2.18.1",
     "jquery": "^3.3.1",
