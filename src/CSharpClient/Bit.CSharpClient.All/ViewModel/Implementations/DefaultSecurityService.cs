@@ -79,12 +79,12 @@ namespace Bit.ViewModel.Implementations
             CurrentAction = "Login";
             CurrentLoginTaskCompletionSource = new TaskCompletionSource<Token>();
             _browserService.OpenUrl(GetLoginUrl(state, client_id));
-            return await CurrentLoginTaskCompletionSource.Task;
+            return await CurrentLoginTaskCompletionSource.Task.ConfigureAwait(false);
         }
 
         public virtual async Task<Token> LoginWithCredentials(string username, string password, string client_id, string client_secret, string[] scopes = null, CancellationToken cancellationToken = default(CancellationToken))
         {
-            await Logout(state: null, client_id: client_id, cancellationToken: cancellationToken);
+            await Logout(state: null, client_id: client_id, cancellationToken: cancellationToken).ConfigureAwait(false);
 
             if (scopes == null)
                 scopes = "openid profile user_info".Split(' ');
@@ -116,7 +116,7 @@ namespace Bit.ViewModel.Implementations
                     CurrentAction = "Logout";
                     CurrentLogoutTaskCompletionSource = new TaskCompletionSource<object>();
                     _browserService.OpenUrl(GetLogoutUrl(token.id_token, state, client_id));
-                    await CurrentLogoutTaskCompletionSource.Task;
+                    await CurrentLogoutTaskCompletionSource.Task.ConfigureAwait(false);
                 }
             }
         }
