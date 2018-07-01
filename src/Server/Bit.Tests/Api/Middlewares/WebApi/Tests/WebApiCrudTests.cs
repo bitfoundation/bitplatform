@@ -5,6 +5,7 @@ using Bit.Tests.Core.Contracts;
 using Bit.Tests.Model.DomainModels;
 using FakeItEasy;
 using IdentityModel.Client;
+using Microsoft.AspNet.OData;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Simple.OData.Client;
 using System;
@@ -13,7 +14,6 @@ using System.Linq;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Web.OData;
 
 namespace Bit.Tests.Api.Middlewares.WebApi.Tests
 {

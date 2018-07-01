@@ -30,10 +30,8 @@
     <PackageReference Include="Bit.Simple.OData.Client.V4.Adapter" Version="5.0.3" />
     <PackageReference Include="Bit.System.Linq.Dynamic" Version="1.1.0" />
     <PackageReference Include="IdentityModel" Version="3.7.1" />
-    <PackageReference Include="Microsoft.AspNetCore" Version="2.0.3" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="2.0.3" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="2.0.3" />
-    <PackageReference Include="Microsoft.OData.Core" Version="7.4.4" />
+    <PackageReference Include="Microsoft.OData.Core" Version="7.5.0" />
     <PackageReference Include="Newtonsoft.Json" Version="11.0.2" />
     <PackageReference Include="PCLCrypto" Version="2.0.147" />
     <PackageReference Include="Prism.Autofac.Forms" Version="7.0.0.396" />
@@ -61,7 +59,7 @@
   </ItemGroup>
 
   <ItemGroup Condition="'$(TargetFramework)' == 'netcoreapp2.0'">
-    <PackageReference Include="Microsoft.AspNetCore" Version="2.0.2" />
+    <PackageReference Include="Microsoft.AspNetCore" Version="2.0.3" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="2.0.3" />
   </ItemGroup>
 

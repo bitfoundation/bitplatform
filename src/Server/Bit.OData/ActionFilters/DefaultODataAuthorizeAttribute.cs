@@ -1,7 +1,7 @@
-﻿using System.Reflection;
+﻿using Microsoft.AspNet.OData;
+using System.Reflection;
 using System.Web.Http;
 using System.Web.Http.Controllers;
-using System.Web.OData;
 
 namespace Bit.OData.ActionFilters
 {

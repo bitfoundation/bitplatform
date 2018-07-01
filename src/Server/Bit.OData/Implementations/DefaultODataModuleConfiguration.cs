@@ -1,6 +1,8 @@
 ﻿using Bit.Model.Implementations;
 using Bit.OData.Contracts;
 using Bit.OData.ODataControllers;
+using Microsoft.AspNet.OData.Builder;
+using Microsoft.AspNet.OData.Query;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -10,8 +12,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Web.Http;
 using System.Web.Http.Controllers;
-using System.Web.OData.Builder;
-using System.Web.OData.Query;
 
 namespace System.Reflection
 {
@@ -172,12 +172,11 @@ namespace Bit.OData.Implementations
                             ParameterConfiguration parameter = (ParameterConfiguration)_collectionParameterMethodInfo
                                                                                             .MakeGenericMethod(parameterType)
                                                                                             .Invoke(operationConfiguration, new object[] { operationParameter.Name });
-
-                            parameter.OptionalParameter = operationParameter.IsOptional;
+                            parameter.Nullable = operationParameter.IsOptional;
                         }
                         else
                         {
-                            operationConfiguration.Parameter(parameterType, operationParameter.Name).OptionalParameter = operationParameter.IsOptional;
+                            operationConfiguration.Parameter(parameterType, operationParameter.Name).Nullable = operationParameter.IsOptional;
                         }
                     }
 
@@ -185,7 +184,7 @@ namespace Bit.OData.Implementations
 
                     if (type.Name != "Void" && type.Name != typeof(Task).GetTypeInfo().Name)
                     {
-                        operationConfiguration.OptionalReturn = false;
+                        operationConfiguration.ReturnNullable = false;
 
                         bool isCollection = false;
 
@@ -253,7 +252,7 @@ namespace Bit.OData.Implementations
                         if (isFunction)
                             throw new InvalidOperationException($"Function {method.Name} in {apiController.Name} must have a return type, use action instead");
 
-                        operationConfiguration.OptionalReturn = true;
+                        operationConfiguration.ReturnNullable = true;
                     }
                 }
             }

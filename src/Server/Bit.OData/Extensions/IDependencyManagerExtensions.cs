@@ -6,11 +6,11 @@ using Bit.OData.Implementations;
 using Bit.Owin.Contracts;
 using Bit.WebApi.Contracts;
 using Bit.WebApi.Implementations;
+using Microsoft.AspNet.OData;
 using Microsoft.OData;
 using System;
 using System.Linq;
 using System.Reflection;
-using System.Web.OData;
 
 namespace Bit.Core.Contracts
 {

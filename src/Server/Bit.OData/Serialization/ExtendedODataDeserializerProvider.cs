@@ -1,10 +1,10 @@
 ﻿using Bit.OData.ODataControllers;
+using Microsoft.AspNet.OData.Formatter.Deserialization;
 using System;
 using System.Linq;
 using System.Net.Http;
 using System.Reflection;
 using System.Web.Http.Controllers;
-using System.Web.OData.Formatter.Deserialization;
 
 namespace Bit.OData.Serialization
 {

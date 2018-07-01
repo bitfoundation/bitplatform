@@ -1,13 +1,13 @@
-﻿using System;
+﻿using Microsoft.AspNet.OData;
+using Microsoft.AspNet.OData.Extensions;
+using Microsoft.AspNet.OData.Query;
+using System;
 using System.Collections.ObjectModel;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Reflection;
 using System.Web.Http.Controllers;
 using System.Web.Http.Filters;
-using System.Web.OData;
-using System.Web.OData.Extensions;
-using System.Web.OData.Query;
 
 namespace Bit.OData.ODataControllers
 {
@@ -68,8 +68,8 @@ namespace Bit.OData.ODataControllers
         private static readonly Lazy<GenerateODataLink> GenerateODataLinkMethod = new Lazy<GenerateODataLink>(() =>
         {
             return (GenerateODataLink)Delegate.CreateDelegate(typeof(GenerateODataLink), typeof(MetadataController).GetTypeInfo()
-                    .Assembly.GetType("System.Web.OData.Results.ResultHelpers")
-                    .GetMethod("GenerateODataLink"));
+                    .Assembly.GetType("Microsoft.AspNet.OData.Results.ResultHelpers")
+                    .GetMethod("GenerateODataLink", new[] { typeof(HttpRequestMessage), typeof(object), typeof(bool) }));
         }, isThreadSafe: true);
 
         private delegate Uri GenerateODataLink(HttpRequestMessage request, object entity, bool isEntityId);

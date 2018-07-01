@@ -47,7 +47,7 @@ namespace BitCodeGenerator.Test.Implementations
             const string sourceCodeOfDtoControllerWithActionAndParameter = @"
 using System;
 using System.Threading.Tasks;
-using System.Web.OData;
+using Microsoft.AspNet.OData;
 using Bit.Tests.Model.DomainModels;
 using Bit.OData.ODataControllers;
 

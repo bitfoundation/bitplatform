@@ -1,6 +1,9 @@
 ﻿using Bit.Data.Contracts;
 using Bit.Data.Implementations;
 using Bit.Owin.Exceptions;
+using Microsoft.AspNet.OData;
+using Microsoft.AspNet.OData.Extensions;
+using Microsoft.AspNet.OData.Query;
 using Microsoft.Owin;
 using System;
 using System.Collections;
@@ -13,9 +16,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Web.Http;
 using System.Web.Http.Filters;
-using System.Web.OData;
-using System.Web.OData.Extensions;
-using System.Web.OData.Query;
 
 namespace Bit.OData.ActionFilters
 {
@@ -131,7 +131,7 @@ namespace Bit.OData.ActionFilters
                             getCountAsyncMethodsCache.GetOrAdd(queryElementType, t => typeof(ODataEnableQueryAttribute).GetMethod(nameof(GetCountAsync)).MakeGenericMethod(t))
                             .Invoke(this, new[] { objContent.Value, dataProviderSpecificMethodsProvider, cancellationToken });
 
-                        actionExecutedContext.Request.Properties["System.Web.OData.TotalCountFunc"] = new Func<long>(() => count);
+                        actionExecutedContext.Request.Properties["Microsoft.AspNet.OData.TotalCountFunc"] = new Func<long>(() => count);
                     }
 
                     objContent.Value = currentOdataQueryOptions.ApplyTo(query: (IQueryable)objContent.Value, querySettings: globalODataQuerySettings, ignoreQueryOptions: AllowedQueryOptions.Filter | AllowedQueryOptions.Skip | AllowedQueryOptions.Top);
@@ -154,14 +154,14 @@ namespace Bit.OData.ActionFilters
                             firstAsyncMethodsCache.GetOrAdd(queryElementType, t => typeof(ODataEnableQueryAttribute).GetMethod(nameof(FirstAsync)).MakeGenericMethod(t))
                             .Invoke(this, new[] { objContent.Value, dataProviderSpecificMethodsProvider, cancellationToken });
 
-                        actionExecutedContext.Request.Properties["System.Web.OData.TotalCountFunc"] = new Func<long>(() => 1);
+                        actionExecutedContext.Request.Properties["Microsoft.AspNet.OData.TotalCountFunc"] = new Func<long>(() => 1);
                     }
 
                     if (currentOdataQueryOptions.Count?.Value == true && takeCount.HasValue == false && isSingleResult == false)
                     {
                         // We've no paging because there is no global config for max top and there is no top specified by the client's request, so the returned result of query's length is equivalent to total count of the query
                         long count = ((IList)objContent.Value).Count;
-                        actionExecutedContext.Request.Properties["System.Web.OData.TotalCountFunc"] = new Func<long>(() => count);
+                        actionExecutedContext.Request.Properties["Microsoft.AspNet.OData.TotalCountFunc"] = new Func<long>(() => count);
                     }
                 }
             }

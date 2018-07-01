@@ -1,23 +1,23 @@
-﻿using System;
+﻿using Bit.Core.Contracts;
+using Bit.Data.Contracts;
+using Bit.OData.ActionFilters;
+using Bit.OData.Contracts;
+using Bit.OData.ODataControllers;
+using Bit.Owin.Exceptions;
+using Bit.Tests.Core.Contracts;
+using Bit.Tests.Model.DomainModels;
+using Bit.Tests.Model.Dto;
+using Microsoft.AspNet.OData;
+using Microsoft.AspNet.OData.Query;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Owin;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Web.Http;
-using System.Web.OData;
-using Bit.OData.ODataControllers;
-using Bit.Core.Contracts;
-using Bit.Data.Contracts;
-using Bit.Owin.Exceptions;
-using Bit.Tests.Core.Contracts;
-using Bit.Tests.Model.DomainModels;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Owin;
-using System.Web.OData.Query;
-using Bit.OData.ActionFilters;
-using Bit.OData.Contracts;
-using Bit.Tests.Model.Dto;
 
 namespace Bit.Tests.Api.ApiControllers
 {

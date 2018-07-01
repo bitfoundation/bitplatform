@@ -1,5 +1,5 @@
-﻿using System.Collections.Generic;
-using System.Web.OData.Query;
+﻿using Microsoft.AspNet.OData.Query;
+using System.Collections.Generic;
 
 namespace Bit.OData.Contracts
 {

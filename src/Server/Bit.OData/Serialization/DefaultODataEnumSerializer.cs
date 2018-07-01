@@ -1,8 +1,8 @@
-﻿using Microsoft.OData;
+﻿using Microsoft.AspNet.OData.Formatter.Serialization;
+using Microsoft.OData;
 using Microsoft.OData.Edm;
 using System.Collections.Generic;
 using System.Linq;
-using System.Web.OData.Formatter.Serialization;
 
 namespace Bit.OData.Serialization
 {

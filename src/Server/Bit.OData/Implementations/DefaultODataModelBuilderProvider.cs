@@ -1,6 +1,6 @@
-﻿using System.Web.Http;
-using System.Web.OData.Builder;
-using Bit.OData.Contracts;
+﻿using Bit.OData.Contracts;
+using Microsoft.AspNet.OData.Builder;
+using System.Web.Http;
 
 namespace Bit.OData.Implementations
 {

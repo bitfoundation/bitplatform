@@ -15,8 +15,6 @@ namespace Bit.OData.Implementations
             if (server == null)
                 throw new ArgumentNullException(nameof(server));
 
-            webApiConfiguration.Properties.TryAdd("Owin-Branch-Route-Prefix", "odata");
-
             owinApp.Map("/odata", innerApp =>
             {
                 innerApp.UseXContentTypeOptions();

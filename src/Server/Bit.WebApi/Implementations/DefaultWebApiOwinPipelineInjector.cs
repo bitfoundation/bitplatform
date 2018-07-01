@@ -15,8 +15,6 @@ namespace Bit.WebApi.Implementations
             if (server == null)
                 throw new ArgumentNullException(nameof(server));
 
-            webApiConfiguration.Properties.TryAdd("Owin-Branch-Route-Prefix", "api");
-
             owinApp.Map("/api", innerApp =>
             {
                 innerApp.UseXContentTypeOptions();

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.AspNet.OData.Extensions;
+using System;
 using System.Collections;
 using System.Linq;
 using System.Net.Http;
@@ -8,7 +9,6 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Web.Http.Filters;
-using System.Web.OData.Extensions;
 
 namespace Bit.OData.ActionFilters
 {

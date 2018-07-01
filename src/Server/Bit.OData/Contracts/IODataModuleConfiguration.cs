@@ -1,5 +1,5 @@
-﻿using System.Reflection;
-using System.Web.OData.Builder;
+﻿using Microsoft.AspNet.OData.Builder;
+using System.Reflection;
 
 namespace Bit.OData.Contracts
 {

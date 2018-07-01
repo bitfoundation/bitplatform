@@ -1,12 +1,12 @@
 ﻿using Bit.OData.Serialization;
+using Microsoft.AspNet.OData;
+using Microsoft.AspNet.OData.Formatter.Deserialization;
+using Microsoft.AspNet.OData.Formatter.Serialization;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.OData;
 using Microsoft.OData.UriParser;
 using System;
 using System.Reflection;
-using System.Web.OData;
-using System.Web.OData.Formatter.Deserialization;
-using System.Web.OData.Formatter.Serialization;
 
 namespace Bit.OData.Implementations
 {

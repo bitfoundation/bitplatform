@@ -1,11 +1,11 @@
-﻿using System;
-using System.Net.Http;
-using System.Web.OData.Formatter.Serialization;
-using Bit.Core.Contracts;
+﻿using Bit.Core.Contracts;
 using Bit.Owin.Contracts;
+using Microsoft.AspNet.OData.Formatter.Serialization;
 using Microsoft.OData;
 using Microsoft.OData.Edm;
 using Microsoft.Owin;
+using System;
+using System.Net.Http;
 
 namespace Bit.OData.Serialization
 {

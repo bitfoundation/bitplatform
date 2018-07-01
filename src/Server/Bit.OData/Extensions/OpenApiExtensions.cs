@@ -1,7 +1,7 @@
 ﻿using Bit.WebApi.Implementations;
+using Microsoft.AspNet.OData.Query;
 using Swashbuckle.OData;
 using System.Web.Http;
-using System.Web.OData.Query;
 
 namespace Swashbuckle.Application
 {

@@ -3,6 +3,7 @@ using Bit.Data.Implementations;
 using Bit.Model.Contracts;
 using Bit.Model.Implementations;
 using Bit.Owin.Exceptions;
+using Microsoft.AspNet.OData;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,7 +11,6 @@ using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Web.Http;
-using System.Web.OData;
 
 namespace Bit.OData.ODataControllers
 {

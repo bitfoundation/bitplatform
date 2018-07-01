@@ -1,15 +1,15 @@
-﻿using System.Linq;
-using Bit.Test;
+﻿using Bit.Test;
 using Bit.Test.Core.Implementations;
 using Bit.Test.Server;
 using Bit.Tests.Api.ApiControllers;
+using Bit.Tests.Model.Dto;
 using FakeItEasy;
 using IdentityModel.Client;
+using Microsoft.AspNet.OData.Query;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Remote;
-using System.Web.OData.Query;
-using Bit.Tests.Model.Dto;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace Bit.Tests.HtmlClient.ViewModel.Implementation

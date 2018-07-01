@@ -1,5 +1,5 @@
 ﻿using Bit.WebApi.ActionFilters;
-using System.Web.OData.Query;
+using Microsoft.AspNet.OData.Query;
 
 namespace Bit.OData.ActionFilters
 {

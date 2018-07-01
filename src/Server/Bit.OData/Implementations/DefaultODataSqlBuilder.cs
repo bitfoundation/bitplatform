@@ -1,14 +1,14 @@
-﻿using System;
+﻿using Bit.OData.Contracts;
+using Bit.Owin.Exceptions;
+using LambdaSqlBuilder;
+using LambdaSqlBuilder.ValueObjects;
+using Microsoft.AspNet.OData.Extensions;
+using Microsoft.AspNet.OData.Query;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
-using System.Web.OData.Query;
-using Bit.OData.Contracts;
-using Bit.Owin.Exceptions;
-using LambdaSqlBuilder;
-using LambdaSqlBuilder.ValueObjects;
-using System.Web.OData.Extensions;
 
 namespace Bit.OData.Implementations
 {

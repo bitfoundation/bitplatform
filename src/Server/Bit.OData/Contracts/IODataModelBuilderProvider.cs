@@ -1,11 +1,11 @@
-﻿using System.Web.Http;
-using System.Web.OData.Builder;
+﻿using Microsoft.AspNet.OData.Builder;
+using System.Web.Http;
 
 namespace Bit.OData.Contracts
 {
     /// <summary>
-    /// By implementing this, you can provide your own <see cref="System.Web.OData.Builder.ODataModelBuilder"/>.
-    /// Default implementation <see cref="Implementations.DefaultODataModelBuilderProvider"/> uses <see cref="System.Web.OData.Builder.ODataConventionModelBuilder"/>
+    /// By implementing this, you can provide your own <see cref="Microsoft.AspNet.OData.Builder.ODataModelBuilder"/>.
+    /// Default implementation <see cref="Implementations.DefaultODataModelBuilderProvider"/> uses <see cref="Microsoft.AspNet.OData.Builder.ODataConventionModelBuilder"/>
     /// </summary>
     public interface IODataModelBuilderProvider
     {

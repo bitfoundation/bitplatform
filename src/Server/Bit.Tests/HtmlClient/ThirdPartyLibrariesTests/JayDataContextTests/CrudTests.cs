@@ -6,6 +6,7 @@ using Bit.Tests.Model.DomainModels;
 using Bit.Tests.Model.Dto;
 using FakeItEasy;
 using IdentityModel.Client;
+using Microsoft.AspNet.OData;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Remote;
@@ -13,7 +14,6 @@ using Simple.OData.Client;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Web.OData;
 
 namespace Bit.Tests.HtmlClient.ThirdPartyLibrariesTests.JayDataContextTests
 {

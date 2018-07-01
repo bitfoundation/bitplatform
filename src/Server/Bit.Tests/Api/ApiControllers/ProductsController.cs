@@ -1,6 +1,6 @@
 ﻿using Bit.OData.ODataControllers;
 using Bit.Tests.Model.Dto;
-using System.Web.OData.Query;
+using Microsoft.AspNet.OData.Query;
 
 namespace Bit.Tests.Api.ApiControllers
 {

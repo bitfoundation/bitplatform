@@ -34,14 +34,6 @@
     <PackageReference Include="System.DirectoryServices.AccountManagement" Version="4.5.0" />
   </ItemGroup>
 
-  <ItemGroup Condition="'$(TargetFramework)' == 'netcoreapp2.0'">
-    <PackageReference Include="System.DirectoryServices.AccountManagement" Version="4.5.0-preview1-25914-04" />
-  </ItemGroup>
-
-  <ItemGroup Condition="'$(TargetFramework)' == 'net461'">
-    <Reference Include="System.DirectoryServices.AccountManagement" />
-  </ItemGroup>
-
   <ItemGroup>
     <ProjectReference Include="..\Bit.Owin\Bit.Owin.csproj" />
   </ItemGroup>

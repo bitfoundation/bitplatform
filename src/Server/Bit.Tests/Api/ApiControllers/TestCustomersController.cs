@@ -1,10 +1,10 @@
 ﻿using Bit.OData.ODataControllers;
 using Bit.Tests.Model.DomainModels;
 using Bit.Tests.Model.Dto;
+using Microsoft.AspNet.OData;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Web.OData;
 
 namespace Bit.Tests.Api.ApiControllers
 {

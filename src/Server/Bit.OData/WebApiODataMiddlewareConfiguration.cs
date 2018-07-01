@@ -2,6 +2,10 @@
 using Bit.OData.Contracts;
 using Bit.Owin.Contracts;
 using Bit.WebApi.Contracts;
+using Microsoft.AspNet.OData.Batch;
+using Microsoft.AspNet.OData.Builder;
+using Microsoft.AspNet.OData.Extensions;
+using Microsoft.AspNet.OData.Routing.Conventions;
 using Microsoft.OData;
 using Microsoft.OData.Edm;
 using Owin;
@@ -10,10 +14,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Web.Http;
-using System.Web.OData.Batch;
-using System.Web.OData.Builder;
-using System.Web.OData.Extensions;
-using System.Web.OData.Routing.Conventions;
 
 [assembly: ODataModule("Bit")]
 

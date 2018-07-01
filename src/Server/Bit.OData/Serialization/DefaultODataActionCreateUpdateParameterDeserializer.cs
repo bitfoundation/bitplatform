@@ -3,6 +3,8 @@ using Bit.Core.Implementations;
 using Bit.Model.Contracts;
 using Bit.OData.ODataControllers;
 using Bit.Owin.Contracts;
+using Microsoft.AspNet.OData;
+using Microsoft.AspNet.OData.Formatter.Deserialization;
 using Microsoft.OData;
 using Microsoft.Owin;
 using Newtonsoft.Json;
@@ -13,8 +15,6 @@ using System.Linq;
 using System.Net.Http;
 using System.Reflection;
 using System.Web.Http.Controllers;
-using System.Web.OData;
-using System.Web.OData.Formatter.Deserialization;
 
 namespace Bit.OData.Serialization
 {

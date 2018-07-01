@@ -1,4 +1,5 @@
 ﻿using Bit.OData.ODataControllers;
+using Microsoft.AspNet.OData.Query;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -8,7 +9,6 @@ using System.Reflection;
 using System.Threading;
 using System.Web.Http.Controllers;
 using System.Web.Http.Routing;
-using System.Web.OData.Query;
 
 namespace Bit.OData.Implementations
 {
