@@ -23,13 +23,13 @@
 
   <ItemGroup>
     <PackageReference Include="Bit.Simple.OData.Client.V4.Adapter" Version="5.0.3" />
-    <PackageReference Include="FakeItEasy" Version="4.6.0" />
+    <PackageReference Include="FakeItEasy" Version="4.7.0" />
     <PackageReference Include="Microsoft.AspNet.SignalR.Client" Version="2.3.0" />
     <PackageReference Include="Microsoft.AspNetCore.TestHost" Version="2.1.1" />
     <PackageReference Include="Microsoft.Owin.SelfHost" Version="4.0.0" />
     <PackageReference Include="Microsoft.Owin.Testing" Version="4.0.0" />
-    <PackageReference Include="Selenium.Support" Version="3.13.0" />
-    <PackageReference Include="Selenium.WebDriver" Version="3.13.0" />
+    <PackageReference Include="Selenium.Support" Version="3.13.1" />
+    <PackageReference Include="Selenium.WebDriver" Version="3.13.1" />
     <PackageReference Include="Selenium.WebDriver.ChromeDriver" Version="2.40.0" />
     <PackageReference Include="SourceLink.Embed.AllSourceFiles" Version="2.8.3" PrivateAssets="all" />
     <PackageReference Include="SourceLink.Copy.PdbFiles" Version="2.8.3" PrivateAssets="All" />
