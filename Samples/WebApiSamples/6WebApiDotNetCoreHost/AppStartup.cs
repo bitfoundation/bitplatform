@@ -17,7 +17,7 @@ using System.Web.Http.Description;
 
 namespace WebApiDotNetCoreHost
 {
-    public class AppStartup : AutofacAspNetCoreAppStartup, IAspNetCoreAppModule, IAppModulesProvider
+    public class AppStartup : AutofacAspNetCoreAppStartup, IAppModule, IAppModulesProvider
     {
         public AppStartup(IServiceProvider serviceProvider)
             : base(serviceProvider)
@@ -37,7 +37,7 @@ namespace WebApiDotNetCoreHost
             yield return this;
         }
 
-        public virtual void ConfigureDependencies(IServiceProvider serviceProvider, IServiceCollection services, IDependencyManager dependencyManager)
+        public virtual void ConfigureDependencies(IServiceCollection services, IDependencyManager dependencyManager)
         {
             AssemblyContainer.Current.Init();
 

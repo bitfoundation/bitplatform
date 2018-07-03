@@ -13,7 +13,7 @@ using Bit.OData.ODataControllers;
 using Bit.Owin.Exceptions;
 using Bit.Owin.Implementations;
 using Bit.OwinCore;
-using Bit.OwinCore.Contracts;
+using Microsoft.AspNet.OData;
 using Microsoft.Extensions.DependencyInjection;
 using Swashbuckle.Application;
 using System;
@@ -26,7 +26,6 @@ using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Web.Http;
-using System.Web.OData;
 
 [assembly: ODataModule("MyApp")]
 

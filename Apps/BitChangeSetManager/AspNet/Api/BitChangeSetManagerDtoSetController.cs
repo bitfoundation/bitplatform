@@ -1,12 +1,10 @@
 ﻿using Bit.Model.Contracts;
 using Bit.OData.ODataControllers;
 using Bit.Owin.Exceptions;
-using BitChangeSetManager.DataAccess;
 using BitChangeSetManager.Metadata;
-using System;
+using Microsoft.AspNet.OData;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Web.OData;
 
 namespace BitChangeSetManager.Api
 {

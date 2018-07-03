@@ -12,7 +12,7 @@
   ],
   "license": "MIT",
   "devDependencies": {
-    "@types/angular": "^1.6.47",
+    "@types/angular": "^1.6.48",
     "@types/angular-material": "^1.1.59",
     "@types/angular-translate": "^2.16.0",
     "@types/angular-ui-router": "^1.1.40",
@@ -26,11 +26,11 @@
     "@bit/bit-framework": "^1.0.7",
     "@bit/encoder": "^1.0.0",
     "@bit/jaydata": "^1.5.15",
-    "@uirouter/angularjs": "^1.0.11",
+    "@uirouter/angularjs": "^1.0.18",
     "angular": "^1.7.2",
     "angular-animate": "^1.7.2",
     "angular-aria": "^1.7.2",
-    "angular-material": "^1.1.9",
+    "angular-material": "^1.1.10",
     "angular-messages": "^1.7.2",
     "angular-translate": "^2.18.1",
     "core-js": "^2.5.7",
@@ -41,7 +41,7 @@
     "persian-datepicker": "^1.1.3",
     "pubsub-js": "^1.6.0",
     "regenerator": "^0.13.2",
-    "signalr": "^2.2.3",
+    "signalr": "^2.3.0",
     "whatwg-fetch": "^2.0.4"
   }
 }
