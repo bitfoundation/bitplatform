@@ -1,6 +1,5 @@
 ﻿using Bit.ViewModel;
 using System;
-using System.Diagnostics;
 using System.Threading.Tasks;
 
 namespace Prism.Events
