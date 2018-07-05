@@ -92,9 +92,12 @@ namespace Bit.Data.EntityFrameworkCore.Implementations
             if (entityToUpdate is IVersionableEntity versionableEntity)
                 versionableEntity.Version = DateTimeProvider.GetCurrentUtcDateTime().UtcTicks;
 
-            DbContext.Update(entityToUpdate);
+            Attach(entityToUpdate);
+            DbContext.Entry(entityToUpdate).State = EntityState.Modified;
 
             await SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+
+            Detach(entityToUpdate);
 
             return entityToUpdate;
         }
@@ -246,9 +249,12 @@ namespace Bit.Data.EntityFrameworkCore.Implementations
             if (entityToUpdate is IVersionableEntity versionableEntity)
                 versionableEntity.Version = DateTimeProvider.GetCurrentUtcDateTime().UtcTicks;
 
-            DbContext.Update(entityToUpdate);
+            Attach(entityToUpdate);
+            DbContext.Entry(entityToUpdate).State = EntityState.Modified;
 
             SaveChanges();
+
+            Detach(entityToUpdate);
 
             return entityToUpdate;
         }

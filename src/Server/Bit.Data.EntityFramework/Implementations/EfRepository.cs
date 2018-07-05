@@ -104,6 +104,8 @@ namespace Bit.Data.EntityFramework.Implementations
 
             await SaveChangesAsync(cancellationToken).ConfigureAwait(false);
 
+            Detach(entityToUpdate);
+
             return entityToUpdate;
         }
 
@@ -259,6 +261,8 @@ namespace Bit.Data.EntityFramework.Implementations
             DbContext.Entry(entityToUpdate).State = EntityState.Modified;
 
             SaveChanges();
+
+            Detach(entityToUpdate);
 
             return entityToUpdate;
         }
