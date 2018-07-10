@@ -1,4 +1,5 @@
-﻿using System.Data.Common;
+﻿using System.Buffers;
+using System.Data.Common;
 using System.IO;
 using System.Text;
 using System.Threading;
@@ -35,7 +36,7 @@ namespace System.Data
                         }
                         else if (reader[0] is byte[])
                         {
-                            byte[] binary = new byte[2048];
+                            byte[] binary = ArrayPool<byte>.Shared.Rent(2048);
                             int amount = (int)reader.GetBytes(0, 0, binary, 0, 2048);
                             int pos = amount;
                             do
