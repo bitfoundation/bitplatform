@@ -31,33 +31,9 @@ namespace Bit.Data.Contracts
 
         TEntity Delete(TEntity entityToDelete);
 
-        bool IsChangedProperty<TProperty>(TEntity entity, Expression<Func<TEntity, TProperty>> prop);
-
-        TProperty GetOriginalValue<TProperty>(TEntity entity, Expression<Func<TEntity, TProperty>> prop);
-
-        bool IsDeleted(TEntity entity);
-
-        bool IsAdded(TEntity entity);
-
-        bool IsModified(TEntity entity);
-
-        void Detach(TEntity entity);
-
-        void Attach(TEntity entity);
-
         IQueryable<TEntity> GetAll();
 
         Task<IQueryable<TEntity>> GetAllAsync(CancellationToken cancellationToken);
-
-        /// <summary>
-        /// Returns the query that would be used to load <paramref name="childs"/> collection from the database.
-        /// The returned query can be modified using LINQ to perform filtering or operations
-        /// in the database, such as counting the number of entities in the collection in
-        /// the database without actually loading them
-        /// </summary>
-        /// <returns>A query for the <paramref name="childs"/> collection</returns>
-        IQueryable<TChild> GetCollectionQuery<TChild>(TEntity entity, Expression<Func<TEntity, IEnumerable<TChild>>> childs)
-            where TChild : class;
 
         /// <summary>
         /// Loads the collection of <paramref name="childs"/> entities from the database
@@ -84,10 +60,6 @@ namespace Bit.Data.Contracts
         /// </summary>
         void LoadReference<TProperty>(TEntity entity, Expression<Func<TEntity, TProperty>> member)
             where TProperty : class;
-
-        Task SaveChangesAsync(CancellationToken cancellationToken);
-
-        void SaveChanges();
 
         Task<TEntity> GetByIdAsync(CancellationToken cancellationToken, params object[] ids);
 

@@ -42,31 +42,38 @@ namespace Bit.Data.EntityFramework.Implementations
             if (entityToAdd == null)
                 throw new ArgumentNullException(nameof(entityToAdd));
 
-            if (entityToAdd is IEntityWithDefaultGuidKey entityToAddAsEntityWithDefaultGuidKey && entityToAddAsEntityWithDefaultGuidKey.Id == Guid.Empty)
-                entityToAddAsEntityWithDefaultGuidKey.Id = Guid.NewGuid();
-            if (entityToAdd is IVersionableEntity versionableEntity)
-                versionableEntity.Version = DateTimeProvider.GetCurrentUtcDateTime().UtcTicks;
-
-            if (entityToAdd is ISyncableEntity syncableEntity)
+            try
             {
-                ObjectContext objectContext = ((IObjectContextAdapter)DbContext).ObjectContext;
-                ObjectSet<TEntity> set = objectContext.CreateObjectSet<TEntity>();
-                object[] keys = set.EntitySet.ElementType
-                    .KeyMembers
-                    .Select(k => typeof(TEntity).GetTypeInfo().GetProperty(k.Name).GetValue(syncableEntity))
-                    .ToArray();
+                if (entityToAdd is IEntityWithDefaultGuidKey entityToAddAsEntityWithDefaultGuidKey && entityToAddAsEntityWithDefaultGuidKey.Id == Guid.Empty)
+                    entityToAddAsEntityWithDefaultGuidKey.Id = Guid.NewGuid();
+                if (entityToAdd is IVersionableEntity versionableEntity)
+                    versionableEntity.Version = DateTimeProvider.GetCurrentUtcDateTime().UtcTicks;
 
-                TEntity entityIfExists = await GetByIdAsync(cancellationToken, keys).ConfigureAwait(false);
+                if (entityToAdd is ISyncableEntity syncableEntity)
+                {
+                    ObjectContext objectContext = ((IObjectContextAdapter)DbContext).ObjectContext;
+                    ObjectSet<TEntity> set = objectContext.CreateObjectSet<TEntity>();
+                    object[] keys = set.EntitySet.ElementType
+                        .KeyMembers
+                        .Select(k => typeof(TEntity).GetTypeInfo().GetProperty(k.Name).GetValue(syncableEntity))
+                        .ToArray();
 
-                if (entityIfExists != null)
-                    return entityIfExists;
+                    TEntity entityIfExists = await GetByIdAsync(cancellationToken, keys).ConfigureAwait(false);
+
+                    if (entityIfExists != null)
+                        return entityIfExists;
+                }
+
+                Set.Add(entityToAdd);
+
+                await SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+
+                return entityToAdd;
             }
-
-            Set.Add(entityToAdd);
-
-            await SaveChangesAsync(cancellationToken).ConfigureAwait(false);
-
-            return entityToAdd;
+            finally
+            {
+                Detach(entityToAdd);
+            }
         }
 
         public virtual async Task<IEnumerable<TEntity>> AddRangeAsync(IEnumerable<TEntity> entitiesToAdd, CancellationToken cancellationToken)
@@ -76,19 +83,26 @@ namespace Bit.Data.EntityFramework.Implementations
 
             List<TEntity> entitiesToAddList = entitiesToAdd as List<TEntity> ?? entitiesToAdd.ToList();
 
-            foreach (TEntity entityToAdd in entitiesToAddList)
+            try
             {
-                if (entityToAdd is IEntityWithDefaultGuidKey entityToAddAsEntityWithDefaultGuidKey && entityToAddAsEntityWithDefaultGuidKey.Id == Guid.Empty)
-                    entityToAddAsEntityWithDefaultGuidKey.Id = Guid.NewGuid();
-                if (entityToAdd is IVersionableEntity versionableEntity)
-                    versionableEntity.Version = DateTimeProvider.GetCurrentUtcDateTime().UtcTicks;
+                foreach (TEntity entityToAdd in entitiesToAddList)
+                {
+                    if (entityToAdd is IEntityWithDefaultGuidKey entityToAddAsEntityWithDefaultGuidKey && entityToAddAsEntityWithDefaultGuidKey.Id == Guid.Empty)
+                        entityToAddAsEntityWithDefaultGuidKey.Id = Guid.NewGuid();
+                    if (entityToAdd is IVersionableEntity versionableEntity)
+                        versionableEntity.Version = DateTimeProvider.GetCurrentUtcDateTime().UtcTicks;
+                }
+
+                Set.AddRange(entitiesToAddList);
+
+                await SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+
+                return entitiesToAddList;
             }
-
-            Set.AddRange(entitiesToAddList);
-
-            await SaveChangesAsync(cancellationToken).ConfigureAwait(false);
-
-            return entitiesToAddList;
+            finally
+            {
+                entitiesToAddList.ForEach(Detach);
+            }
         }
 
         public virtual async Task<TEntity> UpdateAsync(TEntity entityToUpdate, CancellationToken cancellationToken)
@@ -96,17 +110,22 @@ namespace Bit.Data.EntityFramework.Implementations
             if (entityToUpdate == null)
                 throw new ArgumentNullException(nameof(entityToUpdate));
 
-            if (entityToUpdate is IVersionableEntity versionableEntity)
-                versionableEntity.Version = DateTimeProvider.GetCurrentUtcDateTime().UtcTicks;
+            try
+            {
+                if (entityToUpdate is IVersionableEntity versionableEntity)
+                    versionableEntity.Version = DateTimeProvider.GetCurrentUtcDateTime().UtcTicks;
 
-            Attach(entityToUpdate);
-            DbContext.Entry(entityToUpdate).State = EntityState.Modified;
+                Attach(entityToUpdate);
+                DbContext.Entry(entityToUpdate).State = EntityState.Modified;
 
-            await SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+                await SaveChangesAsync(cancellationToken).ConfigureAwait(false);
 
-            Detach(entityToUpdate);
-
-            return entityToUpdate;
+                return entityToUpdate;
+            }
+            finally
+            {
+                Detach(entityToUpdate);
+            }
         }
 
         public virtual async Task<TEntity> DeleteAsync(TEntity entityToDelete, CancellationToken cancellationToken)
@@ -114,81 +133,28 @@ namespace Bit.Data.EntityFramework.Implementations
             if (entityToDelete == null)
                 throw new ArgumentNullException(nameof(entityToDelete));
 
-            if (entityToDelete is IVersionableEntity versionableEntity)
-                versionableEntity.Version = DateTimeProvider.GetCurrentUtcDateTime().UtcTicks;
-
-            if (entityToDelete is IArchivableEntity archivableEntity)
+            try
             {
-                archivableEntity.IsArchived = true;
-                return await UpdateAsync(entityToDelete, cancellationToken).ConfigureAwait(false);
+                if (entityToDelete is IVersionableEntity versionableEntity)
+                    versionableEntity.Version = DateTimeProvider.GetCurrentUtcDateTime().UtcTicks;
+
+                if (entityToDelete is IArchivableEntity archivableEntity)
+                {
+                    archivableEntity.IsArchived = true;
+                    return await UpdateAsync(entityToDelete, cancellationToken).ConfigureAwait(false);
+                }
+                else
+                {
+                    Attach(entityToDelete);
+                    DbContext.Entry(entityToDelete).State = EntityState.Deleted;
+                    await SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+                    return entityToDelete;
+                }
             }
-            else
+            finally
             {
-                Attach(entityToDelete);
-                DbContext.Entry(entityToDelete).State = EntityState.Deleted;
-                await SaveChangesAsync(cancellationToken).ConfigureAwait(false);
-                return entityToDelete;
+                Detach(entityToDelete);
             }
-        }
-
-        public virtual bool IsChangedProperty<TProperty>(TEntity entity, Expression<Func<TEntity, TProperty>> prop)
-        {
-            if (entity == null)
-                throw new ArgumentNullException(nameof(entity));
-
-            DbContext.ChangeTracker.DetectChanges();
-
-            Attach(entity);
-
-            return DbContext.Entry(entity).Property(prop).IsModified;
-        }
-
-        public virtual TProperty GetOriginalValue<TProperty>(TEntity entity, Expression<Func<TEntity, TProperty>> prop)
-        {
-            if (entity == null)
-                throw new ArgumentNullException(nameof(entity));
-
-            DbContext.ChangeTracker.DetectChanges();
-
-            Attach(entity);
-
-            return DbContext.Entry(entity).Property(prop).OriginalValue;
-        }
-
-        public virtual bool IsDeleted(TEntity entity)
-        {
-            if (entity == null)
-                throw new ArgumentNullException(nameof(entity));
-
-            DbContext.ChangeTracker.DetectChanges();
-
-            Attach(entity);
-
-            return DbContext.Entry(entity).State == EntityState.Deleted;
-        }
-
-        public virtual bool IsAdded(TEntity entity)
-        {
-            if (entity == null)
-                throw new ArgumentNullException(nameof(entity));
-
-            DbContext.ChangeTracker.DetectChanges();
-
-            Attach(entity);
-
-            return DbContext.Entry(entity).State == EntityState.Added;
-        }
-
-        public virtual bool IsModified(TEntity entity)
-        {
-            if (entity == null)
-                throw new ArgumentNullException(nameof(entity));
-
-            DbContext.ChangeTracker.DetectChanges();
-
-            Attach(entity);
-
-            return DbContext.Entry(entity).State != EntityState.Unchanged;
         }
 
         public virtual void Detach(TEntity entity)
@@ -215,16 +181,23 @@ namespace Bit.Data.EntityFramework.Implementations
             if (entityToAdd == null)
                 throw new ArgumentNullException(nameof(entityToAdd));
 
-            if (entityToAdd is IEntityWithDefaultGuidKey entityToAddAsEntityWithDefaultGuidKey && entityToAddAsEntityWithDefaultGuidKey.Id == Guid.Empty)
-                entityToAddAsEntityWithDefaultGuidKey.Id = Guid.NewGuid();
-            if (entityToAdd is IVersionableEntity versionableEntity)
-                versionableEntity.Version = DateTimeProvider.GetCurrentUtcDateTime().UtcTicks;
+            try
+            {
+                if (entityToAdd is IEntityWithDefaultGuidKey entityToAddAsEntityWithDefaultGuidKey && entityToAddAsEntityWithDefaultGuidKey.Id == Guid.Empty)
+                    entityToAddAsEntityWithDefaultGuidKey.Id = Guid.NewGuid();
+                if (entityToAdd is IVersionableEntity versionableEntity)
+                    versionableEntity.Version = DateTimeProvider.GetCurrentUtcDateTime().UtcTicks;
 
-            Set.Add(entityToAdd);
+                Set.Add(entityToAdd);
 
-            SaveChanges();
+                SaveChanges();
 
-            return entityToAdd;
+                return entityToAdd;
+            }
+            finally
+            {
+                Detach(entityToAdd);
+            }
         }
 
         public virtual IEnumerable<TEntity> AddRange(IEnumerable<TEntity> entitiesToAdd)
@@ -232,21 +205,28 @@ namespace Bit.Data.EntityFramework.Implementations
             if (entitiesToAdd == null)
                 throw new ArgumentNullException(nameof(entitiesToAdd));
 
-            List<TEntity> entityToAddList = entitiesToAdd as List<TEntity> ?? entitiesToAdd.ToList();
+            List<TEntity> entitiesToAddList = entitiesToAdd as List<TEntity> ?? entitiesToAdd.ToList();
 
-            foreach (TEntity entityToAdd in entityToAddList)
+            try
             {
-                if (entityToAdd is IEntityWithDefaultGuidKey entityToAddAsEntityWithDefaultGuidKey && entityToAddAsEntityWithDefaultGuidKey.Id == Guid.Empty)
-                    entityToAddAsEntityWithDefaultGuidKey.Id = Guid.NewGuid();
-                if (entityToAdd is IVersionableEntity versionableEntity)
-                    versionableEntity.Version = DateTimeProvider.GetCurrentUtcDateTime().UtcTicks;
+                foreach (TEntity entityToAdd in entitiesToAddList)
+                {
+                    if (entityToAdd is IEntityWithDefaultGuidKey entityToAddAsEntityWithDefaultGuidKey && entityToAddAsEntityWithDefaultGuidKey.Id == Guid.Empty)
+                        entityToAddAsEntityWithDefaultGuidKey.Id = Guid.NewGuid();
+                    if (entityToAdd is IVersionableEntity versionableEntity)
+                        versionableEntity.Version = DateTimeProvider.GetCurrentUtcDateTime().UtcTicks;
+                }
+
+                Set.AddRange(entitiesToAddList);
+
+                SaveChanges();
+
+                return entitiesToAddList;
             }
-
-            Set.AddRange(entityToAddList);
-
-            SaveChanges();
-
-            return entityToAddList;
+            finally
+            {
+                entitiesToAddList.ForEach(Detach);
+            }
         }
 
         public virtual TEntity Update(TEntity entityToUpdate)
@@ -254,17 +234,22 @@ namespace Bit.Data.EntityFramework.Implementations
             if (entityToUpdate == null)
                 throw new ArgumentNullException(nameof(entityToUpdate));
 
-            if (entityToUpdate is IVersionableEntity versionableEntity)
-                versionableEntity.Version = DateTimeProvider.GetCurrentUtcDateTime().UtcTicks;
+            try
+            {
+                if (entityToUpdate is IVersionableEntity versionableEntity)
+                    versionableEntity.Version = DateTimeProvider.GetCurrentUtcDateTime().UtcTicks;
 
-            Attach(entityToUpdate);
-            DbContext.Entry(entityToUpdate).State = EntityState.Modified;
+                Attach(entityToUpdate);
+                DbContext.Entry(entityToUpdate).State = EntityState.Modified;
 
-            SaveChanges();
+                SaveChanges();
 
-            Detach(entityToUpdate);
-
-            return entityToUpdate;
+                return entityToUpdate;
+            }
+            finally
+            {
+                Detach(entityToUpdate);
+            }
         }
 
         public virtual TEntity Delete(TEntity entityToDelete)
@@ -272,20 +257,27 @@ namespace Bit.Data.EntityFramework.Implementations
             if (entityToDelete == null)
                 throw new ArgumentNullException(nameof(entityToDelete));
 
-            if (entityToDelete is IVersionableEntity versionableEntity)
-                versionableEntity.Version = DateTimeProvider.GetCurrentUtcDateTime().UtcTicks;
+            try
+            {
+                if (entityToDelete is IVersionableEntity versionableEntity)
+                    versionableEntity.Version = DateTimeProvider.GetCurrentUtcDateTime().UtcTicks;
 
-            if (entityToDelete is IArchivableEntity archivableEntity)
-            {
-                archivableEntity.IsArchived = true;
-                return Update(entityToDelete);
+                if (entityToDelete is IArchivableEntity archivableEntity)
+                {
+                    archivableEntity.IsArchived = true;
+                    return Update(entityToDelete);
+                }
+                else
+                {
+                    Attach(entityToDelete);
+                    DbContext.Entry(entityToDelete).State = EntityState.Deleted;
+                    SaveChanges();
+                    return entityToDelete;
+                }
             }
-            else
+            finally
             {
-                Attach(entityToDelete);
-                DbContext.Entry(entityToDelete).State = EntityState.Deleted;
-                SaveChanges();
-                return entityToDelete;
+                Detach(entityToDelete);
             }
         }
 
@@ -299,61 +291,80 @@ namespace Bit.Data.EntityFramework.Implementations
             return Task.FromResult((IQueryable<TEntity>)Set.AsNoTracking());
         }
 
-        public virtual IQueryable<TChild> GetCollectionQuery<TChild>(TEntity entity, Expression<Func<TEntity, IEnumerable<TChild>>> childs) where TChild : class
-        {
-            Expression<Func<TEntity, ICollection<TChild>>> convertedChilds = Expression.Lambda<Func<TEntity, ICollection<TChild>>>(childs.Body, childs.Parameters);
-
-            Attach(entity);
-
-            return DbContext.Entry(entity).Collection(convertedChilds).Query();
-        }
-
         public virtual async Task LoadCollectionAsync<TProperty>(TEntity entity, Expression<Func<TEntity, IEnumerable<TProperty>>> childs, CancellationToken cancellationToken)
             where TProperty : class
         {
-            Expression<Func<TEntity, ICollection<TProperty>>> convertedChilds = Expression.Lambda<Func<TEntity, ICollection<TProperty>>>(childs.Body, childs.Parameters);
+            try
+            {
+                Expression<Func<TEntity, ICollection<TProperty>>> convertedChilds = Expression.Lambda<Func<TEntity, ICollection<TProperty>>>(childs.Body, childs.Parameters);
 
-            Attach(entity);
+                Attach(entity);
 
-            DbCollectionEntry<TEntity, TProperty> collection = DbContext.Entry(entity).Collection(convertedChilds);
+                DbCollectionEntry<TEntity, TProperty> collection = DbContext.Entry(entity).Collection(convertedChilds);
 
-            if (collection.IsLoaded == false)
-                await collection.LoadAsync(cancellationToken).ConfigureAwait(false);
+                if (collection.IsLoaded == false)
+                    await collection.LoadAsync(cancellationToken).ConfigureAwait(false);
+            }
+            finally
+            {
+                Detach(entity);
+            }
         }
 
         public virtual void LoadCollection<TProperty>(TEntity entity, Expression<Func<TEntity, IEnumerable<TProperty>>> childs)
             where TProperty : class
         {
-            Expression<Func<TEntity, ICollection<TProperty>>> convertedChilds = Expression.Lambda<Func<TEntity, ICollection<TProperty>>>(childs.Body, childs.Parameters);
+            try
+            {
+                Expression<Func<TEntity, ICollection<TProperty>>> convertedChilds = Expression.Lambda<Func<TEntity, ICollection<TProperty>>>(childs.Body, childs.Parameters);
 
-            Attach(entity);
+                Attach(entity);
 
-            DbCollectionEntry<TEntity, TProperty> collection = DbContext.Entry(entity).Collection(convertedChilds);
+                DbCollectionEntry<TEntity, TProperty> collection = DbContext.Entry(entity).Collection(convertedChilds);
 
-            if (collection.IsLoaded == false)
-                collection.Load();
+                if (collection.IsLoaded == false)
+                    collection.Load();
+            }
+            finally
+            {
+                Detach(entity);
+            }
         }
 
         public virtual async Task LoadReferenceAsync<TProperty>(TEntity entity, Expression<Func<TEntity, TProperty>> member, CancellationToken cancellationToken)
             where TProperty : class
         {
-            Attach(entity);
+            try
+            {
+                Attach(entity);
 
-            DbReferenceEntry<TEntity, TProperty> reference = DbContext.Entry(entity).Reference(member);
+                DbReferenceEntry<TEntity, TProperty> reference = DbContext.Entry(entity).Reference(member);
 
-            if (reference.IsLoaded == false)
-                await reference.LoadAsync(cancellationToken).ConfigureAwait(false);
+                if (reference.IsLoaded == false)
+                    await reference.LoadAsync(cancellationToken).ConfigureAwait(false);
+            }
+            finally
+            {
+                Detach(entity);
+            }
         }
 
         public virtual void LoadReference<TProperty>(TEntity entity, Expression<Func<TEntity, TProperty>> member)
             where TProperty : class
         {
-            Attach(entity);
+            try
+            {
+                Attach(entity);
 
-            DbReferenceEntry<TEntity, TProperty> reference = DbContext.Entry(entity).Reference(member);
+                DbReferenceEntry<TEntity, TProperty> reference = DbContext.Entry(entity).Reference(member);
 
-            if (reference.IsLoaded == false)
-                reference.Load();
+                if (reference.IsLoaded == false)
+                    reference.Load();
+            }
+            finally
+            {
+                Detach(entity);
+            }
         }
 
         public virtual Task SaveChangesAsync(CancellationToken cancellationToken)
