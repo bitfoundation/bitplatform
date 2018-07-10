@@ -38,7 +38,7 @@ namespace Bit.Tests.Api.Middlewares.Tests
         {
             using (BitOwinTestEnvironment testEnvironment = new BitOwinTestEnvironment(new TestEnvironmentArgs
             {
-                AdditionalDependencies = manager =>
+                AdditionalDependencies = (manager, services) =>
                 {
                     manager.RegisterOwinMiddlewareUsing(owinApp =>
                     {
@@ -90,7 +90,7 @@ namespace Bit.Tests.Api.Middlewares.Tests
         {
             using (BitOwinTestEnvironment testEnvironment = new BitOwinTestEnvironment(new TestEnvironmentArgs
             {
-                AdditionalDependencies = manager =>
+                AdditionalDependencies = (manager, services) =>
                 {
                     manager.RegisterOwinMiddlewareUsing(owinApp =>
                     {

@@ -18,7 +18,7 @@ namespace Bit.Tests.Api.Middlewares.Tests
         {
             using (BitOwinTestEnvironment testEnvironment = new BitOwinTestEnvironment(new TestEnvironmentArgs
             {
-                AdditionalDependencies = manager =>
+                AdditionalDependencies = (manager, services) =>
                 {
                     IRandomStringProvider randomStringProvider = A.Fake<IRandomStringProvider>();
 

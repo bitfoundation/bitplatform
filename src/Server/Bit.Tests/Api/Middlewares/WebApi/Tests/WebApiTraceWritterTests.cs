@@ -51,7 +51,7 @@ namespace Bit.Tests.Api.Middlewares.WebApi.Tests
 
             using (BitOwinTestEnvironment testEnvironment = new BitOwinTestEnvironment(new TestEnvironmentArgs
             {
-                AdditionalDependencies = manager =>
+                AdditionalDependencies = (manager, services) =>
                 {
                     manager.RegisterInstance(emailService);
                 }

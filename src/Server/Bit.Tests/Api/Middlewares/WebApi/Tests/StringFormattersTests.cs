@@ -44,7 +44,7 @@ namespace Bit.Tests.Api.Middlewares.WebApi.Tests
 
             using (BitOwinTestEnvironment testEnvironment = new BitOwinTestEnvironment(new TestEnvironmentArgs
             {
-                AdditionalDependencies = manager =>
+                AdditionalDependencies = (manager, services) =>
                 {
                     manager.RegisterInstance(valueChecker);
                     manager.RegisterInstance(stringCorrector2, overwriteExciting: false);
@@ -113,7 +113,7 @@ namespace Bit.Tests.Api.Middlewares.WebApi.Tests
 
             using (BitOwinTestEnvironment testEnvironment = new BitOwinTestEnvironment(new TestEnvironmentArgs
             {
-                AdditionalDependencies = manager =>
+                AdditionalDependencies = (manager, services) =>
                 {
                     manager.RegisterInstance(stringCorrector, overwriteExciting: false);
                 }

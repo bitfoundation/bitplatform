@@ -27,7 +27,7 @@ namespace Bit.Test
 
         public bool UseHttps { get; set; }
 
-        public Action<IDependencyManager> AdditionalDependencies { get; set; }
+        public Action<IDependencyManager, IServiceCollection> AdditionalDependencies { get; set; }
 
         public Action<AppEnvironment> ActiveAppEnvironmentCustomizer { get; set; }
 
@@ -42,21 +42,16 @@ namespace Bit.Test
 
     public class TestAdditionalDependencies : IAppModule, IAppModulesProvider
     {
-        private readonly Action<IDependencyManager> _dependencyManagerDelegate;
+        private readonly Action<IDependencyManager, IServiceCollection> _dependencyManagerDelegate;
 
-        public TestAdditionalDependencies(Action<IDependencyManager> dependencyManagerDelegate)
+        public TestAdditionalDependencies(Action<IDependencyManager, IServiceCollection> dependencyManagerDelegate)
         {
             _dependencyManagerDelegate = dependencyManagerDelegate;
         }
 
         public virtual void ConfigureDependencies(IServiceCollection services, IDependencyManager dependencyManager)
         {
-            _dependencyManagerDelegate?.Invoke(dependencyManager);
-        }
-
-        public virtual void ConfigureDependencies(IDependencyManager dependencyManager)
-        {
-            _dependencyManagerDelegate?.Invoke(dependencyManager);
+            _dependencyManagerDelegate?.Invoke(dependencyManager, services);
         }
 
         public virtual IEnumerable<IAppModule> GetAppModules()

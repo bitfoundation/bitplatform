@@ -119,7 +119,7 @@ namespace Bit.Tests
 
             dependencyManager.RegisterSingleSignOnServer<TestUserService, TestOAuthClientsProvider>();
 
-            _args?.AdditionalDependencies?.Invoke(dependencyManager);
+            _args?.AdditionalDependencies?.Invoke(dependencyManager, services);
 
             dependencyManager.RegisterSecureIndexPageMiddlewareUsingDefaultConfiguration();
         }
