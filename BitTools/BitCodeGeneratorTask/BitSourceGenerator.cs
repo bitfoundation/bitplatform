@@ -12,11 +12,15 @@ namespace BitCodeGeneratorTask
 {
     public class BitSourceGenerator : SourceGenerator
     {
+        private ISourceGeneratorLogger _logger;
+
         public override void Execute(SourceGeneratorContext context)
         {
 #if DEBUG
             Debugger.Launch();
 #endif
+
+            _logger = context.GetLogger();
 
             DirectoryInfo projDir = new DirectoryInfo(Path.GetDirectoryName(context.Project.FilePath));
 
@@ -70,22 +74,12 @@ namespace BitCodeGeneratorTask
 
         private void Log(string text)
         {
-            Console.WriteLine($"{text} {DateTimeOffset.Now} \n");
+            _logger.Warn($">>>>> {text} {DateTimeOffset.Now} <<<<< \n");
         }
 
         private void LogException(string text, Exception ex)
         {
-            ConsoleColor color = Console.ForegroundColor;
-
-            try
-            {
-                Console.ForegroundColor = ConsoleColor.Red;
-                Console.WriteLine($"{text} {DateTimeOffset.Now} \n {ex} \n");
-            }
-            finally
-            {
-                Console.ForegroundColor = color;
-            }
+            _logger.Error($">>>>> {text} {DateTimeOffset.Now} <<<<< \n {ex} \n", ex);
         }
     }
 }
