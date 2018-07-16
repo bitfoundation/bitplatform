@@ -23,7 +23,7 @@
 
   <ItemGroup>
     <PackageReference Include="Bit.Simple.OData.Client.V4.Adapter" Version="5.0.3" />
-    <PackageReference Include="FakeItEasy" Version="4.7.0" />
+    <PackageReference Include="FakeItEasy" Version="4.7.1" />
     <PackageReference Include="Microsoft.AspNet.SignalR.Client" Version="2.3.0" />
     <PackageReference Include="Microsoft.AspNetCore.TestHost" Version="2.1.1" />
     <PackageReference Include="Microsoft.Owin.SelfHost" Version="4.0.0" />

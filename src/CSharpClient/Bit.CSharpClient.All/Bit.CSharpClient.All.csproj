@@ -29,7 +29,7 @@
   <ItemGroup>
     <PackageReference Include="Bit.Simple.OData.Client.V4.Adapter" Version="5.0.3" />
     <PackageReference Include="Bit.System.Linq.Dynamic" Version="1.1.0" />
-    <PackageReference Include="IdentityModel" Version="3.7.1" />
+    <PackageReference Include="IdentityModel" Version="3.8.0" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="2.0.3" />
     <PackageReference Include="Microsoft.OData.Core" Version="7.5.0" />
     <PackageReference Include="Newtonsoft.Json" Version="11.0.2" />
@@ -39,11 +39,11 @@
     <PackageReference Include="System.Reactive" Version="4.0.0" />
     <PackageReference Include="Xam.Plugin.Connectivity" Version="3.2.0" />
     <PackageReference Include="Xamarin.Auth" Version="1.6.0.2" />
-    <PackageReference Include="Xamarin.Forms" Version="3.1.0.583944" />
+    <PackageReference Include="Xamarin.Forms" Version="3.1.0.637273" />
     <PackageReference Include="MSBuild.Sdk.Extras" Version="1.5.4" PrivateAssets="All" />
     <PackageReference Include="SourceLink.Embed.AllSourceFiles" Version="2.8.3" PrivateAssets="all" />
     <PackageReference Include="SourceLink.Copy.PdbFiles" Version="2.8.3" PrivateAssets="All" />
-    <PackageReference Include="Rg.Plugins.Popup" Version="1.1.4.145-pre" />
+    <PackageReference Include="Rg.Plugins.Popup" Version="1.1.4.168" />
   </ItemGroup>
 
   <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard2.0' ">
