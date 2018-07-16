@@ -12,12 +12,12 @@ namespace Bit.Data.EntityFrameworkCore.Implementations
 
         private MethodInfo GetUseInMemoryDatabaseMethod()
         {
-            TypeInfo inMemoryDbContextOptionsExtensionsType = Type.GetType($"Microsoft.EntityFrameworkCore.InMemoryDbContextOptionsExtensions, Microsoft.EntityFrameworkCore.InMemory, Version={typeof(DbContextOptionsBuilder).GetTypeInfo().Assembly.GetName().Version}, Culture=neutral, PublicKeyToken=adb9793829ddae60")?.GetTypeInfo();
+            TypeInfo inMemoryDbContextOptionsExtensionsType = Assembly.Load("Microsoft.EntityFrameworkCore.InMemory")?.GetType("Microsoft.EntityFrameworkCore.InMemoryDbContextOptionsExtensions")?.GetTypeInfo();
 
             if (inMemoryDbContextOptionsExtensionsType == null)
                 throw new InvalidOperationException("InMemoryDbContextOptionsExtensions type could not be found");
 
-            return inMemoryDbContextOptionsExtensionsType.GetMethod("UseInMemoryDatabase", new[] { typeof(DbContextOptionsBuilder), typeof(string), typeof(Action<>).MakeGenericType(Type.GetType($"Microsoft.EntityFrameworkCore.Infrastructure.InMemoryDbContextOptionsBuilder, Microsoft.EntityFrameworkCore.InMemory, Version={typeof(DbContextOptionsBuilder).GetTypeInfo().Assembly.GetName().Version}, Culture=neutral, PublicKeyToken=adb9793829ddae60")) });
+            return inMemoryDbContextOptionsExtensionsType.GetMethod("UseInMemoryDatabase", new[] { typeof(DbContextOptionsBuilder), typeof(string), typeof(Action<>).MakeGenericType(Assembly.Load("Microsoft.EntityFrameworkCore.InMemory").GetType("Microsoft.EntityFrameworkCore.Infrastructure.InMemoryDbContextOptionsBuilder")) });
         }
 
         private readonly Lazy<MethodInfo> _UseInMemoryDatabaseMethod;

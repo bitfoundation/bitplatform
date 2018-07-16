@@ -14,7 +14,7 @@ namespace Bit.OwinCore
         {
             AppDomain.CurrentDomain.AssemblyResolve += CurrentDomain_AssemblyResolve;
 
-            TypeInfo webHostType = Type.GetType($"Microsoft.AspNetCore.WebHost, Microsoft.AspNetCore, Version={typeof(WebHost).GetTypeInfo().Assembly.GetName().Version}, Culture=neutral, PublicKeyToken=adb9793829ddae60")?.GetTypeInfo();
+            TypeInfo webHostType = Assembly.Load("Microsoft.AspNetCore").GetType($"Microsoft.AspNetCore.WebHost").GetTypeInfo();
 
             MethodInfo createDefaultBuilderMethod = webHostType?.GetMethods().ExtendedSingleOrDefault("Finding CreateDefaultBuilder method", m => m.Name == "CreateDefaultBuilder" && m.IsGenericMethod == false && m.GetParameters().Select(p => p.ParameterType).SequenceEqual(new Type[] { typeof(string[]).GetTypeInfo() }));
 
