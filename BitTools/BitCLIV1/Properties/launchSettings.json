@@ -1,8 +1,0 @@
-{
-  "profiles": {
-    "BitCLIV1": {
-      "commandName": "Project",
-      "commandLineArgs": "-p ..\\..\\..\\..\\..\\Bit.sln"
-    }
-  }
-}
