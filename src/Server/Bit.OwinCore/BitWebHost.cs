@@ -53,6 +53,7 @@ namespace Bit.OwinCore
         {
             return ((IWebHostBuilder)createDefaultBuilderMethod.Invoke(null, new object[] { args }))
                 .CaptureStartupErrors(captureStartupErrors: true)
+                .UseSetting(WebHostDefaults.DetailedErrorsKey, "true")
                 /*.UseKestrel(options =>
                 {
                     options.AddServerHeader = false;
@@ -68,7 +69,8 @@ namespace Bit.OwinCore
                 })
                 .UseContentRoot(Directory.GetCurrentDirectory())
                 .UseIISIntegration()
-                .CaptureStartupErrors(captureStartupErrors: true);
+                .CaptureStartupErrors(captureStartupErrors: true)
+                .UseSetting(WebHostDefaults.DetailedErrorsKey, "true");
         }
     }
 }
