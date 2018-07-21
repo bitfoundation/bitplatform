@@ -11,6 +11,7 @@ using Microsoft.AspNet.OData;
 using Microsoft.AspNet.OData.Query;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Owin;
+using Swashbuckle.Examples;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -277,6 +278,15 @@ namespace Bit.Tests.Api.ApiControllers
             return parameters.firstValue == parameters.secondValue;
         }
 
+        public class SumRequestExample : IExamplesProvider
+        {
+            public object GetExamples()
+            {
+                return new FirstSecondParameters { firstValue = 1, secondValue = 2 };
+            }
+        }
+
+        [SwaggerRequestExample(typeof(FirstSecondParameters), typeof(SumRequestExample))]
         [Action]
         public virtual int Sum(FirstSecondParameters parameters)
         {
