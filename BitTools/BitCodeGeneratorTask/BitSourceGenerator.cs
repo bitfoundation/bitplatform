@@ -74,12 +74,12 @@ namespace BitCodeGeneratorTask
 
         private void Log(string text)
         {
-            _logger.Warn($">>>>> {text} {DateTimeOffset.Now} <<<<< \n");
+            _logger.Warn($">>>>> {text} {DateTimeOffset.Now} {typeof(BitSourceGenerator).Assembly.FullName} <<<<< \n");
         }
 
         private void LogException(string text, Exception ex)
         {
-            _logger.Error($">>>>> {text} {DateTimeOffset.Now} <<<<< \n {ex} \n", ex);
+            _logger.Error($">>>>> {text} {DateTimeOffset.Now} {typeof(BitSourceGenerator).Assembly.FullName}<<<<< \n {ex} \n", ex);
         }
     }
 }
