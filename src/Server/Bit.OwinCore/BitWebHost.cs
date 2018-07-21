@@ -1,6 +1,5 @@
 ﻿using Bit.Core;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Hosting.Internal;
 using System;
 using System.IO;
 using System.Linq;
@@ -15,6 +14,20 @@ namespace Bit.OwinCore
             AppDomain.CurrentDomain.AssemblyResolve += CurrentDomain_AssemblyResolve;
 
             TypeInfo webHostType = Assembly.Load("Microsoft.AspNetCore").GetType($"Microsoft.AspNetCore.WebHost").GetTypeInfo();
+
+            AssemblyName msAspNetCoreAssemblyName = Assembly.Load("Microsoft.AspNetCore").GetName();
+
+            if (msAspNetCoreAssemblyName.Version.Major == 2) // asp.net core 2.X.X
+            {
+                if (msAspNetCoreAssemblyName.Version.Minor == 0) // asp.net core 2.0.X
+                {
+                    Assembly.Load("Bit.OwinCore.AspNetCore2Upgrade");
+                }
+                else if (msAspNetCoreAssemblyName.Version.Minor == 1) // asp.net core 2.1.X
+                {
+                    Assembly.Load("Bit.OwinCore.AspNetCore21Upgrade");
+                }
+            }
 
             MethodInfo createDefaultBuilderMethod = webHostType?.GetMethods().ExtendedSingleOrDefault("Finding CreateDefaultBuilder method", m => m.Name == "CreateDefaultBuilder" && m.IsGenericMethod == false && m.GetParameters().Select(p => p.ParameterType).SequenceEqual(new Type[] { typeof(string[]).GetTypeInfo() }));
 
