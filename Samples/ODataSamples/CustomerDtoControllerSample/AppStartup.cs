@@ -16,6 +16,7 @@ using Bit.OwinCore;
 using Microsoft.AspNet.OData;
 using Microsoft.Extensions.DependencyInjection;
 using Swashbuckle.Application;
+using Swashbuckle.Examples;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -256,6 +257,19 @@ namespace CustomerDtoControllerSample
             public string message { get; set; }
         }
 
+        public class SendEmailToCustomerParamsExample : IExamplesProvider
+        {
+            public object GetExamples()
+            {
+                return new SendEmailToCustomerParams
+                {
+                    customerId = 1,
+                    message = "test"
+                };
+            }
+        }
+
+        [SwaggerRequestExample(typeof(SendEmailToCustomerParams), typeof(SendEmailToCustomerParamsExample))]
         [Action]
         public async Task SendEmailToCustomer(SendEmailToCustomerParams args)
         {
