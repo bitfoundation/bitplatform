@@ -40,7 +40,14 @@ namespace Bit.OData.ODataControllers
 
             TEntity entity = await Repository.AddAsync(FromDtoToEntity(dto), cancellationToken);
 
-            return await GetById(GetKey(DtoEntityMapper.FromEntityToDto(entity)), cancellationToken);
+            try
+            {
+                return await GetById(GetKey(DtoEntityMapper.FromEntityToDto(entity)), cancellationToken);
+            }
+            catch (ResourceNotFoundException)
+            {
+                return DtoEntityMapper.FromEntityToDto(entity);
+            }
         }
 
         protected virtual TKey GetKey(TDto dto)
@@ -129,7 +136,14 @@ namespace Bit.OData.ODataControllers
 
             entity = await Repository.UpdateAsync(entity, cancellationToken);
 
-            return await GetById(key, cancellationToken);
+            try
+            {
+                return await GetById(key, cancellationToken);
+            }
+            catch (ResourceNotFoundException)
+            {
+                return DtoEntityMapper.FromEntityToDto(entity);
+            }
         }
 
         [Get]
