@@ -6,6 +6,7 @@ using IdentityServer3.Core.Models;
 using IdentityServer3.Core.Services;
 using IdentityServer3.Core.Validation;
 using IdentityServer3.Core.ViewModels;
+using Microsoft.Owin;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 using System;
@@ -27,6 +28,8 @@ namespace Bit.IdentityServer.Implementations
 
         public virtual AppEnvironment AppEnvironment { get; set; }
 
+        public virtual IOwinContext OwinContext { get; set; }
+
         public virtual Task<Stream> ClientPermissions(ClientPermissionsViewModel model)
         {
             string content = @"<!DOCTYPE html>
@@ -37,7 +40,7 @@ namespace Bit.IdentityServer.Implementations
                                 <body>ClientPermissions >> Not Implemented</body>
                             </html>";
 
-            return ReturnHtmlAsync(model, content, CancellationToken.None);
+            return ReturnHtmlAsync(model, content, OwinContext.Request.CallCancelled);
         }
 
         public virtual Task<Stream> Consent(ConsentViewModel model, ValidatedAuthorizeRequest authorizeRequest)
@@ -50,7 +53,7 @@ namespace Bit.IdentityServer.Implementations
                                 <body>Consent >> Not Implemented</body>
                             </html>";
 
-            return ReturnHtmlAsync(model, content, CancellationToken.None);
+            return ReturnHtmlAsync(model, content, OwinContext.Request.CallCancelled);
         }
 
         public virtual Task<Stream> Error(ErrorViewModel model)
@@ -63,7 +66,7 @@ namespace Bit.IdentityServer.Implementations
                                 <body>{model.ErrorMessage} <br /> RequestId: {model.RequestId}</body>
                             </html>";
 
-            return ReturnHtmlAsync(model, content, CancellationToken.None);
+            return ReturnHtmlAsync(model, content, OwinContext.Request.CallCancelled);
         }
 
         public virtual Task<Stream> LoggedOut(LoggedOutViewModel model, SignOutMessage message)
@@ -95,7 +98,7 @@ namespace Bit.IdentityServer.Implementations
                             </html>";
             }
 
-            return ReturnHtmlAsync(model, content, CancellationToken.None);
+            return ReturnHtmlAsync(model, content, OwinContext.Request.CallCancelled);
         }
 
         public virtual async Task<Stream> Login(LoginViewModel model, SignInMessage message)
@@ -127,7 +130,7 @@ namespace Bit.IdentityServer.Implementations
                                     <meta http-equiv='refresh' content='0;{redirectUri}'>
                                 </head>
                                 <body></body>
-                            </html>", CancellationToken.None).ConfigureAwait(false);
+                            </html>", OwinContext.Request.CallCancelled).ConfigureAwait(false);
                     }
                 }
                 catch
@@ -160,10 +163,10 @@ namespace Bit.IdentityServer.Implementations
 
             string loginPageHtmlInitialHtml = File.ReadAllText(PathProvider.MapStaticFilePath(AppEnvironment.GetConfig("LoginPagePath", "loginPage.html")));
 
-            string loginPageHtmlFinalHtml = (await HtmlPageProvider.GetHtmlPageAsync(loginPageHtmlInitialHtml, CancellationToken.None).ConfigureAwait(false))
+            string loginPageHtmlFinalHtml = (await HtmlPageProvider.GetHtmlPageAsync(loginPageHtmlInitialHtml, OwinContext.Request.CallCancelled).ConfigureAwait(false))
                 .Replace("{{model.LoginModel.toJson()}}", Microsoft.Security.Application.Encoder.HtmlEncode(json), StringComparison.InvariantCultureIgnoreCase);
 
-            return await ReturnHtmlAsync(model, loginPageHtmlFinalHtml, CancellationToken.None).ConfigureAwait(false);
+            return await ReturnHtmlAsync(model, loginPageHtmlFinalHtml, OwinContext.Request.CallCancelled).ConfigureAwait(false);
         }
 
         private async Task<Stream> ReturnHtmlAsync(CommonViewModel model, string html, CancellationToken cancellationToken)
@@ -197,7 +200,7 @@ namespace Bit.IdentityServer.Implementations
                                 </body>
                             </html>";
 
-            return ReturnHtmlAsync(model, content, CancellationToken.None);
+            return ReturnHtmlAsync(model, content, OwinContext.Request.CallCancelled);
         }
     }
 }

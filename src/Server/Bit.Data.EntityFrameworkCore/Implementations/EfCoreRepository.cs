@@ -371,7 +371,7 @@ namespace Bit.Data.EntityFrameworkCore.Implementations
 
         public virtual async Task<TEntity> GetByIdAsync(CancellationToken cancellationToken, params object[] ids)
         {
-            return await EfDataProviderSpecificMethodsProvider.ApplyWhereByKeys((await GetAllAsync(CancellationToken.None).ConfigureAwait(false)), ids)
+            return await EfDataProviderSpecificMethodsProvider.ApplyWhereByKeys((await GetAllAsync(cancellationToken).ConfigureAwait(false)), ids)
                 .SingleOrDefaultAsync(cancellationToken).ConfigureAwait(false);
         }
 
