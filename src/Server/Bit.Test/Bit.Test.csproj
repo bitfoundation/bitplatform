@@ -30,7 +30,7 @@
     <PackageReference Include="Microsoft.Owin.Testing" Version="4.0.0" />
     <PackageReference Include="Selenium.Support" Version="3.13.1" />
     <PackageReference Include="Selenium.WebDriver" Version="3.13.1" />
-    <PackageReference Include="Selenium.WebDriver.ChromeDriver" Version="2.40.0" />
+    <PackageReference Include="Selenium.WebDriver.ChromeDriver" Version="2.41.0" />
     <PackageReference Include="SourceLink.Embed.AllSourceFiles" Version="2.8.3" PrivateAssets="all" />
     <PackageReference Include="SourceLink.Copy.PdbFiles" Version="2.8.3" PrivateAssets="All" />
   </ItemGroup>
