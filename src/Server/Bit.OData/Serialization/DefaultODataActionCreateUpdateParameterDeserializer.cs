@@ -53,91 +53,88 @@ namespace Bit.OData.Serialization
 
             ITimeZoneManager timeZoneManager = dependencyResolver.Resolve<ITimeZoneManager>();
 
-            using (StreamReader requestStreamReader = new StreamReader(readContext.Request.Content.ReadAsStreamAsync().GetAwaiter().GetResult()))
+            string requestJsonBody = (string)readContext.Request.Properties["ContentStreamAsJson"];
+
+            using (StringReader jsonStringReader = new StringReader(requestJsonBody))
+            using (JsonTextReader requestJsonReader = new JsonTextReader(jsonStringReader))
             {
-                string requestJsonBody = requestStreamReader.ReadToEnd();
-
-                using (StringReader jsonStringReader = new StringReader(requestJsonBody))
-                using (JsonTextReader requestJsonReader = new JsonTextReader(jsonStringReader))
+                void Error(object sender, Newtonsoft.Json.Serialization.ErrorEventArgs e)
                 {
-                    void Error(object sender, Newtonsoft.Json.Serialization.ErrorEventArgs e)
+                    if (e.ErrorContext.Error is JsonSerializationException && e.ErrorContext.Error.Message.StartsWith("Could not find member ", StringComparison.InvariantCultureIgnoreCase))
                     {
-                        if (e.ErrorContext.Error is JsonSerializationException && e.ErrorContext.Error.Message.StartsWith("Could not find member ", StringComparison.InvariantCultureIgnoreCase))
+                        if (e.CurrentObject is IOpenType openDto)
                         {
-                            if (e.CurrentObject is IOpenType openDto)
-                            {
-                                openDto.Properties = openDto.Properties ?? new Dictionary<string, object>();
-                                if (requestJsonReader.Read())
-                                    openDto.Properties.Add((string)e.ErrorContext.Member, requestJsonReader.Value);
-                            }
-
-                            e.ErrorContext.Handled = true;
+                            openDto.Properties = openDto.Properties ?? new Dictionary<string, object>();
+                            if (requestJsonReader.Read())
+                                openDto.Properties.Add((string)e.ErrorContext.Member, requestJsonReader.Value);
                         }
+
+                        e.ErrorContext.Handled = true;
                     }
+                }
 
-                    JsonSerializerSettings settings = DefaultJsonContentFormatter.DeSerializeSettings();
+                JsonSerializerSettings settings = DefaultJsonContentFormatter.DeSerializeSettings();
 
-                    settings.Converters = new JsonConverter[]
-                    {
+                settings.Converters = new JsonConverter[]
+                {
                         _odataJsonDeserializerEnumConverter,
                         _stringCorrectorsConverters,
                         new ODataJsonDeSerializerDateTimeOffsetTimeZone(timeZoneManager)
-                    };
+                };
 
-                    settings.MissingMemberHandling = MissingMemberHandling.Error;
+                settings.MissingMemberHandling = MissingMemberHandling.Error;
 
-                    JsonSerializer deserilizer = JsonSerializer.Create(settings);
+                JsonSerializer deserilizer = JsonSerializer.Create(settings);
 
-                    deserilizer.Error += Error;
+                deserilizer.Error += Error;
 
-                    try
+                try
+                {
+                    object result = null;
+
+                    if (!typeof(Delta).GetTypeInfo().IsAssignableFrom(typeInfo))
+                        result = deserilizer.Deserialize(requestJsonReader, typeInfo);
+                    else
                     {
-                        object result = null;
+                        List<string> changedPropNames = new List<string>();
 
-                        if (!typeof(Delta).GetTypeInfo().IsAssignableFrom(typeInfo))
-                            result = deserilizer.Deserialize(requestJsonReader, typeInfo);
-                        else
+                        using (JsonTextReader jsonReaderForGettingSchema = new JsonTextReader(new StringReader(requestJsonBody)))
                         {
-                            List<string> changedPropNames = new List<string>();
-
-                            using (JsonTextReader jsonReaderForGettingSchema = new JsonTextReader(new StringReader(requestJsonBody)))
+                            while (jsonReaderForGettingSchema.Read())
                             {
-                                while (jsonReaderForGettingSchema.Read())
+                                if (jsonReaderForGettingSchema.Value != null && jsonReaderForGettingSchema.TokenType == JsonToken.PropertyName)
                                 {
-                                    if (jsonReaderForGettingSchema.Value != null && jsonReaderForGettingSchema.TokenType == JsonToken.PropertyName)
-                                    {
-                                        changedPropNames.Add(jsonReaderForGettingSchema.Value.ToString());
-                                    }
-                                    else
-                                    {
+                                    changedPropNames.Add(jsonReaderForGettingSchema.Value.ToString());
+                                }
+                                else
+                                {
 
-                                    }
                                 }
                             }
-
-                            TypeInfo dtoType = typeInfo.GetGenericArguments().ExtendedSingle("Finding dto type from delta").GetTypeInfo();
-
-                            object modifiedDto = deserilizer.Deserialize(requestJsonReader, dtoType);
-
-                            Delta delta = (Delta)Activator.CreateInstance(typeInfo);
-
-                            if (modifiedDto is IOpenType openTypeDto && openTypeDto.Properties?.Any() == true)
-                                delta.TrySetPropertyValue(nameof(IOpenType.Properties), openTypeDto);
-
-                            foreach (string changedProp in changedPropNames.Where(p => p != nameof(IOpenType.Properties) && dtoType.GetProperty(p) != null))
-                            {
-                                delta.TrySetPropertyValue(changedProp, dtoType.GetProperty(changedProp).GetValue(modifiedDto));
-                            }
-
-                            result = delta;
                         }
 
-                        return result;
+                        TypeInfo dtoType = typeInfo.GetGenericArguments().ExtendedSingle("Finding dto type from delta").GetTypeInfo();
+
+                        object modifiedDto = deserilizer.Deserialize(requestJsonReader, dtoType);
+
+                        Delta delta = (Delta)Activator.CreateInstance(typeInfo);
+
+                        if (modifiedDto is IOpenType openTypeDto && openTypeDto.Properties?.Any() == true)
+                            delta.TrySetPropertyValue(nameof(IOpenType.Properties), openTypeDto);
+
+                        foreach (string changedProp in changedPropNames.Where(p => p != nameof(IOpenType.Properties) && dtoType.GetProperty(p) != null))
+                        {
+                            delta.TrySetPropertyValue(changedProp, dtoType.GetProperty(changedProp).GetValue(modifiedDto));
+                        }
+
+                        result = delta;
                     }
-                    finally
-                    {
-                        deserilizer.Error -= Error;
-                    }
+
+                    return result;
+                }
+                finally
+                {
+                    deserilizer.Error -= Error;
                 }
             }
         }
