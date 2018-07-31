@@ -20,8 +20,12 @@ namespace Bit.Owin.Implementations
                     throw new ArgumentNullException(nameof(RequestInformationProvider));
 
                 _currentTimeZoneName = value.CurrentTimeZone;
+                if (_currentTimeZoneName == "British Summer Time")
+                    _currentTimeZoneName = "GMT Daylight Time";
 
                 _desiredTimeZoneName = value.DesiredTimeZone;
+                if (_desiredTimeZoneName == "British Summer Time")
+                    _desiredTimeZoneName = "GMT Daylight Time";
             }
         }
 
