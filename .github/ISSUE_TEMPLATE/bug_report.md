@@ -20,7 +20,7 @@ If applicable, add screenshots / logs / exception details to help explain your p
 - Bit nuget package's version. For example 1.0.6
 - ASP.NET or ASP.NET Core? For example ASP.NET Core 2.1
 - Operating System. For example Windows 10 16299 or Ubuntu 16.04 LTS
-- .NET Core of .Net Framework? For example .NET 4.7.2 or .NET Core 1.1
+- .NET Core, mono or .Net Framework? For example .NET 4.7.2 or .NET Core 1.1
 
 **Bit CSharp client (If applicable)**
 - Bit nuget package's version. For example 1.0.6
@@ -30,7 +30,7 @@ If applicable, add screenshots / logs / exception details to help explain your p
 **Bit TypeScript/JavaScript client (If applicable)**
 - Bit npm package's version. For example 1.0.6
 - Mobile, desktop or web app?
-- Which browser? (If applicable) For example Chrome 59 on Windows 10 16299
+- Which browser? (If applicable) For example Chrome 59
 - Which framework? For example angular 6.0
 
 **Additional context**
