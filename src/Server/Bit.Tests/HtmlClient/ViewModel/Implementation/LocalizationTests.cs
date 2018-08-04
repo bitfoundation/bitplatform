@@ -54,10 +54,7 @@ namespace Bit.Tests.HtmlClient.ViewModel.Implementation
             using (BitOwinTestEnvironment testEnvironment = new BitOwinTestEnvironment(new TestEnvironmentArgs
             {
                 UseRealServer = true,
-                ActiveAppEnvironmentCustomizer = appEnvironment =>
-                {
-                    appEnvironment.AppInfo.DefaultCulture = "FaIr";
-                }
+                ActiveAppEnvironmentCustomizer = appEnvironment => appEnvironment.AppInfo.DefaultCulture = "FaIr"
             }))
             {
                 TokenResponse token = await testEnvironment.Server.Login("ValidUserName", "ValidPassword", clientId: "TestResOwner");

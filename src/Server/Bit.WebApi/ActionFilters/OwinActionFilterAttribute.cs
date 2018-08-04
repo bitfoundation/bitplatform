@@ -1,10 +1,10 @@
-﻿using System;
+﻿using Bit.Owin.Contracts;
+using System;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Web.Http.Controllers;
 using System.Web.Http.Filters;
-using Bit.Owin.Contracts;
 
 namespace Bit.WebApi.ActionFilters
 {

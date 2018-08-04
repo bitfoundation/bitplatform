@@ -33,29 +33,29 @@ namespace Bit.Tests.Api.ApiControllers
         }
 
         [Get]
-        public virtual async Task<TestComplexDto> Get(int key, CancellationToken cancellationToken)
+        public virtual Task<TestComplexDto> Get(int key, CancellationToken cancellationToken)
         {
-            return Get()
-                .Single(t => t.EntityId == key);
+            return Task.FromResult(Get().Single(t => t.EntityId == key));
         }
 
         [Create]
-        public virtual async Task<TestComplexDto> Create(TestComplexDto model, CancellationToken cancellationToken)
+        public virtual Task<TestComplexDto> Create(TestComplexDto model, CancellationToken cancellationToken)
         {
             model.ComplexObj.Name += "?";
-            return model;
+            return Task.FromResult(model);
         }
 
         [PartialUpdate]
-        public virtual async Task<TestComplexDto> PartialUpdate(int key, Delta<TestComplexDto> modelDelta,
+        public virtual Task<TestComplexDto> PartialUpdate(int key, Delta<TestComplexDto> modelDelta,
             CancellationToken cancellationToken)
         {
             TestComplexDto model = modelDelta.GetInstance();
 
             model.ComplexObj.Name += "?";
 
-            return model;
+            return Task.FromResult(model);
         }
+
         public class DoSomeThingWithComplexObjParameters
         {
             public TestComplexDto complexDto { get; set; }
@@ -72,9 +72,9 @@ namespace Bit.Tests.Api.ApiControllers
         }
 
         [Function]
-        public virtual async Task<ComplexObj2[]> GetComplexObjects()
+        public virtual Task<ComplexObj2[]> GetComplexObjects()
         {
-            return new[] { new ComplexObj2 { Name = "Test" } };
+            return Task.FromResult(new[] { new ComplexObj2 { Name = "Test" } });
         }
 
         public class GetValuesParameters
@@ -83,11 +83,11 @@ namespace Bit.Tests.Api.ApiControllers
         }
 
         [Action]
-        public virtual async Task<int[]> GetValues(GetValuesParameters parameters, CancellationToken cancellationToken)
+        public virtual Task<int[]> GetValues(GetValuesParameters parameters, CancellationToken cancellationToken)
         {
             IEnumerable<int> values = parameters.values;
 
-            return values.Reverse().ToArray();
+            return Task.FromResult(values.Reverse().ToArray());
         }
     }
 }

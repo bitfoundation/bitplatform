@@ -87,9 +87,7 @@ namespace Bit.OData.ODataControllers
             if (dataProviderSpecificMethodsProvider == null)
                 dataProviderSpecificMethodsProvider = DefaultDataProviderSpecificMethodsProvider.Current;
 
-            baseQuery = dataProviderSpecificMethodsProvider.ApplyWhereByKeys(baseQuery, key);
-
-            return baseQuery;
+            return dataProviderSpecificMethodsProvider.ApplyWhereByKeys(baseQuery, key);
         }
 
         [Get]

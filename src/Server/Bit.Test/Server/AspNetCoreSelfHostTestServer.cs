@@ -1,6 +1,6 @@
-﻿using System.Net.Http;
-using Bit.OwinCore;
+﻿using Bit.OwinCore;
 using Microsoft.AspNetCore.Hosting;
+using System.Net.Http;
 
 namespace Bit.Test.Server
 {

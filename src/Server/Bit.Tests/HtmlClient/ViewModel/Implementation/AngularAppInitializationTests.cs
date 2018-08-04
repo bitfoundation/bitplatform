@@ -1,5 +1,4 @@
-﻿using System.Linq;
-using Bit.Test;
+﻿using Bit.Test;
 using Bit.Test.Core.Implementations;
 using Bit.Test.Server;
 using Bit.Tests.Api.ApiControllers;
@@ -8,6 +7,7 @@ using IdentityModel.Client;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Remote;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace Bit.Tests.HtmlClient.ViewModel.Implementation
@@ -146,7 +146,7 @@ namespace Bit.Tests.HtmlClient.ViewModel.Implementation
 
                     Assert.AreEqual("Nested View", driver.Title);
 
-                    Assert.IsTrue(driver.Url.ToLowerInvariant().EndsWith("nested-route-page/first-part-page"));
+                    Assert.IsTrue(driver.Url.EndsWith("nested-route-page/first-part-page", System.StringComparison.InvariantCultureIgnoreCase));
                 }
             }
         }

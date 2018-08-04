@@ -12,7 +12,7 @@ namespace Bit.Core.Models
 
         public virtual bool DebugMode { get; set; }
 
-        public virtual EnvironmentAppInfo AppInfo { get; set; } = new EnvironmentAppInfo { };
+        public virtual EnvironmentAppInfo AppInfo { get; set; } = new EnvironmentAppInfo();
 
         public virtual EnvironmentSecurity Security { get; set; } = new EnvironmentSecurity
         {

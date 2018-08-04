@@ -1,8 +1,8 @@
-﻿using System.Data.Common;
+﻿using Bit.Data.Contracts;
+using System.Data.Common;
 using System.Data.Entity;
-using Bit.Data.Contracts;
-using System.Data.Entity.Infrastructure;
 using System.Data.Entity.Core.Objects;
+using System.Data.Entity.Infrastructure;
 
 namespace Bit.Data.EntityFramework.Implementations
 {
@@ -48,7 +48,6 @@ namespace Bit.Data.EntityFramework.Implementations
         }
 
         public EfDbContextBase()
-            : base()
         {
             ApplyDefaultConfig();
         }

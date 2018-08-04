@@ -1,13 +1,13 @@
-﻿using System.Net;
-using System.Net.Http;
-using System.Threading.Tasks;
-using Bit.Core.Models;
+﻿using Bit.Core.Models;
 using Bit.Test;
 using Bit.Test.Server;
 using IdentityModel.Client;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Remote;
+using System.Net;
+using System.Net.Http;
+using System.Threading.Tasks;
 
 namespace Bit.Tests.Api.Middlewares.Tests
 {
@@ -93,10 +93,7 @@ namespace Bit.Tests.Api.Middlewares.Tests
             using (BitOwinTestEnvironment testEnvironment = new BitOwinTestEnvironment(new TestEnvironmentArgs
             {
                 UseHttps = true,
-                ActiveAppEnvironmentCustomizer = environment =>
-                {
-                    environment.AddOrReplace(new EnvironmentConfig { Key = "RequireSsl", Value = true });
-                }
+                ActiveAppEnvironmentCustomizer = environment => environment.AddOrReplace(new EnvironmentConfig { Key = "RequireSsl", Value = true })
             }))
             {
                 TokenResponse token = await testEnvironment.Server.Login("ValidUserName", "ValidPassword", clientId: "TestResOwner");
@@ -120,9 +117,7 @@ namespace Bit.Tests.Api.Middlewares.Tests
                 TokenResponse token = await testEnvironment.Server.Login("ValidUserName", "ValidPassword", clientId: "TestResOwner");
 
                 using (RemoteWebDriver driver = testEnvironment.Server.BuildWebDriver(new RemoteWebDriverOptions { Token = token }))
-                {
                     await driver.ExecuteTest("testDesiredEnvironmentsConfigsArePresentInClientSide");
-                }
             }
         }
     }

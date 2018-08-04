@@ -24,10 +24,7 @@ namespace Microsoft.Extensions.DependencyInjection
             IMvcCoreBuilder builder = services.AddMvcCore()
                 .AddJsonFormatters();
 
-            controllersAssemblies.ToList().ForEach(asm =>
-            {
-                builder.AddApplicationPart(asm);
-            });
+            controllersAssemblies.ToList().ForEach(asm => builder.AddApplicationPart(asm));
 
             dependencyManager.RegisterAssemblyTypes(controllersAssemblies, t => t.GetCustomAttribute<ControllerAttribute>() != null, lifeCycle: DependencyLifeCycle.Transient);
 

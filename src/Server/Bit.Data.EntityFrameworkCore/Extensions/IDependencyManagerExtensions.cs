@@ -1,8 +1,8 @@
-﻿using System;
-using Bit.Data.Contracts;
+﻿using Bit.Data.Contracts;
 using Bit.Data.EntityFrameworkCore.Contracts;
 using Bit.Data.EntityFrameworkCore.Implementations;
 using Bit.Data.Implementations;
+using System;
 using System.Reflection;
 
 namespace Bit.Core.Contracts

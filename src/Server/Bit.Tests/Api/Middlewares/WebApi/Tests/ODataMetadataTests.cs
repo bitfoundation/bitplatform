@@ -1,8 +1,8 @@
-﻿using System.Net;
+﻿using IdentityModel.Client;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
-using IdentityModel.Client;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Bit.Tests.Api.Middlewares.WebApi.Tests
 {
@@ -17,7 +17,7 @@ namespace Bit.Tests.Api.Middlewares.WebApi.Tests
             {
                 TokenResponse token = await testEnvironment.Server.Login("ValidUserName", "ValidPassword", clientId: "TestResOwner");
 
-                string[] odataServicesRoutes = new string[] { "Bit", "Test" };
+                string[] odataServicesRoutes = { "Bit", "Test" };
 
                 foreach (string odataServiceRoute in odataServicesRoutes)
                 {

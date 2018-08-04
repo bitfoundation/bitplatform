@@ -11,7 +11,7 @@ namespace Bit.Core.Implementations
 
         public virtual bool WasSucceeded()
         {
-            return _isFailed == false;
+            return !_isFailed;
         }
 
         public virtual void MarkAsFailed(string reason)

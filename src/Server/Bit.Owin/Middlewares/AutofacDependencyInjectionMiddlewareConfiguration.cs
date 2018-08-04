@@ -1,12 +1,12 @@
-﻿using System;
-using System.Threading.Tasks;
-using Autofac;
+﻿using Autofac;
 using Autofac.Integration.Owin;
 using Bit.Core.Contracts;
 using Bit.Owin.Contracts;
 using Bit.Owin.Implementations;
 using Microsoft.Owin;
 using Owin;
+using System;
+using System.Threading.Tasks;
 
 namespace Bit.Owin.Middlewares
 {

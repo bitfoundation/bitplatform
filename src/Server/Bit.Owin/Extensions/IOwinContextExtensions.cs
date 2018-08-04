@@ -1,6 +1,6 @@
-﻿using System;
-using Bit.Core.Contracts;
+﻿using Bit.Core.Contracts;
 using Bit.Owin.Middlewares;
+using System;
 
 namespace Microsoft.Owin
 {

@@ -13,7 +13,6 @@ namespace Bit.Core.Models
 
         public virtual IEnumerable<LogData> LogData { get; set; }
 
-
         public virtual string ApplicationName { get; set; }
 
         public virtual string AppVersion { get; set; }
@@ -21,7 +20,6 @@ namespace Bit.Core.Models
         public virtual string AppEnvironmentName { get; set; }
 
         public virtual bool? AppWasInDebugMode { get; set; }
-
 
         public virtual string AppServerName { get; set; }
 

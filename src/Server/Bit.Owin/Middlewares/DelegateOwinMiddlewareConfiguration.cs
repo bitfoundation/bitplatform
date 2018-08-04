@@ -1,6 +1,6 @@
-﻿using System;
-using Bit.Owin.Contracts;
+﻿using Bit.Owin.Contracts;
 using Owin;
+using System;
 
 namespace Bit.Owin.Middlewares
 {
@@ -15,10 +15,7 @@ namespace Bit.Owin.Middlewares
 
         public DelegateOwinMiddlewareConfiguration(Action<IAppBuilder> owinAppCustomizer)
         {
-            if (owinAppCustomizer == null)
-                throw new ArgumentNullException(nameof(owinAppCustomizer));
-
-            _owinAppCustomizer = owinAppCustomizer;
+            _owinAppCustomizer = owinAppCustomizer ?? throw new ArgumentNullException(nameof(owinAppCustomizer));
         }
 
         public virtual void Configure(IAppBuilder owinApp)

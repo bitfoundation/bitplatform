@@ -32,7 +32,7 @@ namespace Bit.IdentityServer.Implementations
 
         public virtual Task<Stream> ClientPermissions(ClientPermissionsViewModel model)
         {
-            string content = @"<!DOCTYPE html>
+            const string content = @"<!DOCTYPE html>
                             <html>
                                 <head>
                                     <title>ClientPermissions >> Not Implemented</title>
@@ -45,7 +45,7 @@ namespace Bit.IdentityServer.Implementations
 
         public virtual Task<Stream> Consent(ConsentViewModel model, ValidatedAuthorizeRequest authorizeRequest)
         {
-            string content = @"<!DOCTYPE html>
+            const string content = @"<!DOCTYPE html>
                             <html>
                                 <head>
                                     <title>Consent >> Not Implemented</title>

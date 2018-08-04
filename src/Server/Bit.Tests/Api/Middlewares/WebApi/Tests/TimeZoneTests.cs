@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Bit.Test;
+﻿using Bit.Test;
 using Bit.Tests.Api.ApiControllers;
 using Bit.Tests.Core.Contracts;
 using Bit.Tests.Model.DomainModels;
@@ -10,6 +6,10 @@ using FakeItEasy;
 using IdentityModel.Client;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Simple.OData.Client;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace Bit.Tests.Api.Middlewares.WebApi.Tests
 {
@@ -24,10 +24,7 @@ namespace Bit.Tests.Api.Middlewares.WebApi.Tests
 
             using (BitOwinTestEnvironment testEnvironment = new BitOwinTestEnvironment(new TestEnvironmentArgs
             {
-                AdditionalDependencies = (manager, services) =>
-                {
-                    manager.RegisterInstance(valueChecker);
-                }
+                AdditionalDependencies = (manager, services) => manager.RegisterInstance(valueChecker)
             }))
             {
                 TokenResponse token = await testEnvironment.Server.Login("ValidUserName", "ValidPassword", clientId: "TestResOwner");
@@ -65,7 +62,7 @@ namespace Bit.Tests.Api.Middlewares.WebApi.Tests
                 A.CallTo(() => valueChecker.CheckValue(A<TestModel>.That.Matches(tm => tm.DateProperty == date)))
                     .MustHaveHappened(Repeated.Exactly.Once);
 
-                A.CallTo(() => valueChecker.CheckValue(A<List<TestModel>>.That.Matches(tms => tms.First().DateProperty == date && tms.Last().DateProperty == date)))
+                A.CallTo(() => valueChecker.CheckValue(A<List<TestModel>>.That.Matches(tms => tms[0].DateProperty == date && tms.Last().DateProperty == date)))
                     .MustHaveHappened(Repeated.Exactly.Once);
             }
         }
@@ -78,10 +75,7 @@ namespace Bit.Tests.Api.Middlewares.WebApi.Tests
 
             using (BitOwinTestEnvironment testEnvironment = new BitOwinTestEnvironment(new TestEnvironmentArgs
             {
-                AdditionalDependencies = (manager, services) =>
-                {
-                    manager.RegisterInstance(valueChecker);
-                }
+                AdditionalDependencies = (manager, services) => manager.RegisterInstance(valueChecker)
             }))
             {
                 TokenResponse token = await testEnvironment.Server.Login("ValidUserName", "ValidPassword", clientId: "TestResOwner");
@@ -123,7 +117,7 @@ namespace Bit.Tests.Api.Middlewares.WebApi.Tests
                 A.CallTo(() => valueChecker.CheckValue(A<TestModel>.That.Matches(tm => tm.DateProperty == date.AddHours(1))))
                     .MustHaveHappened(Repeated.Exactly.Once);
 
-                A.CallTo(() => valueChecker.CheckValue(A<List<TestModel>>.That.Matches(tms => tms.First().DateProperty == date.AddHours(1) && tms.Last().DateProperty == date.AddHours(1))))
+                A.CallTo(() => valueChecker.CheckValue(A<List<TestModel>>.That.Matches(tms => tms[0].DateProperty == date.AddHours(1) && tms.Last().DateProperty == date.AddHours(1))))
                     .MustHaveHappened(Repeated.Exactly.Once);
             }
         }

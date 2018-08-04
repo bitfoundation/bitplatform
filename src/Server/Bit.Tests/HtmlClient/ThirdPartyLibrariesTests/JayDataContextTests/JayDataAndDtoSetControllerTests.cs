@@ -29,7 +29,7 @@ namespace Bit.Tests.HtmlClient.ThirdPartyLibrariesTests.JayDataContextTests
 
                 using (RemoteWebDriver driver = testEnvironment.Server.BuildWebDriver(new RemoteWebDriverOptions { Token = token }))
                 {
-                    await driver.ExecuteTest(@"testGetOfDtoSetController");
+                    await driver.ExecuteTest("testGetOfDtoSetController");
                 }
 
                 TestCustomersController testCustomersController = TestDependencyManager.CurrentTestDependencyManager.Objects
@@ -50,9 +50,7 @@ namespace Bit.Tests.HtmlClient.ThirdPartyLibrariesTests.JayDataContextTests
                 TokenResponse token = await testEnvironment.Server.Login("ValidUserName", "ValidPassword", clientId: "TestResOwner");
 
                 using (RemoteWebDriver driver = testEnvironment.Server.BuildWebDriver(new RemoteWebDriverOptions { Token = token }))
-                {
-                    await driver.ExecuteTest(@"testPatchOfDtoSetController");
-                }
+                    await driver.ExecuteTest("testPatchOfDtoSetController");
 
                 TestCustomersController testCustomersController = TestDependencyManager.CurrentTestDependencyManager.Objects
                     .OfType<TestCustomersController>()

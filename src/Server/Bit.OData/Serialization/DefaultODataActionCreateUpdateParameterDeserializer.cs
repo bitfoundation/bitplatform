@@ -43,8 +43,13 @@ namespace Bit.OData.Serialization
         {
             HttpActionDescriptor actionDescriptor = readContext.Request.GetActionDescriptor();
 
-            if (actionDescriptor != null && !actionDescriptor.GetCustomAttributes<ActionAttribute>().Any() && !actionDescriptor.GetCustomAttributes<CreateAttribute>().Any() && !actionDescriptor.GetCustomAttributes<UpdateAttribute>().Any() && !actionDescriptor.GetCustomAttributes<PartialUpdateAttribute>().Any())
+            if (actionDescriptor?.GetCustomAttributes<ActionAttribute>().Count == 0
+                && actionDescriptor.GetCustomAttributes<CreateAttribute>().Count == 0
+                && actionDescriptor.GetCustomAttributes<UpdateAttribute>().Count == 0
+                && actionDescriptor.GetCustomAttributes<PartialUpdateAttribute>().Count == 0)
+            {
                 throw new InvalidOperationException($"{nameof(DefaultODataActionCreateUpdateParameterDeserializer)} is designed for odata actions|creates|updates|partialUpdates only");
+            }
 
             TypeInfo typeInfo = type.GetTypeInfo();
 
@@ -90,47 +95,34 @@ namespace Bit.OData.Serialization
 
                 try
                 {
-                    object result = null;
-
                     if (!typeof(Delta).GetTypeInfo().IsAssignableFrom(typeInfo))
-                        result = deserilizer.Deserialize(requestJsonReader, typeInfo);
-                    else
+                        return deserilizer.Deserialize(requestJsonReader, typeInfo);
+                    List<string> changedPropNames = new List<string>();
+
+                    using (JsonTextReader jsonReaderForGettingSchema = new JsonTextReader(new StringReader(requestJsonBody)))
                     {
-                        List<string> changedPropNames = new List<string>();
-
-                        using (JsonTextReader jsonReaderForGettingSchema = new JsonTextReader(new StringReader(requestJsonBody)))
+                        while (jsonReaderForGettingSchema.Read())
                         {
-                            while (jsonReaderForGettingSchema.Read())
-                            {
-                                if (jsonReaderForGettingSchema.Value != null && jsonReaderForGettingSchema.TokenType == JsonToken.PropertyName)
-                                {
-                                    changedPropNames.Add(jsonReaderForGettingSchema.Value.ToString());
-                                }
-                                else
-                                {
-
-                                }
-                            }
+                            if (jsonReaderForGettingSchema.Value != null && jsonReaderForGettingSchema.TokenType == JsonToken.PropertyName)
+                                changedPropNames.Add(jsonReaderForGettingSchema.Value.ToString());
                         }
-
-                        TypeInfo dtoType = typeInfo.GetGenericArguments().ExtendedSingle("Finding dto type from delta").GetTypeInfo();
-
-                        object modifiedDto = deserilizer.Deserialize(requestJsonReader, dtoType);
-
-                        Delta delta = (Delta)Activator.CreateInstance(typeInfo);
-
-                        if (modifiedDto is IOpenType openTypeDto && openTypeDto.Properties?.Any() == true)
-                            delta.TrySetPropertyValue(nameof(IOpenType.Properties), openTypeDto);
-
-                        foreach (string changedProp in changedPropNames.Where(p => p != nameof(IOpenType.Properties) && dtoType.GetProperty(p) != null))
-                        {
-                            delta.TrySetPropertyValue(changedProp, dtoType.GetProperty(changedProp).GetValue(modifiedDto));
-                        }
-
-                        result = delta;
                     }
 
-                    return result;
+                    TypeInfo dtoType = typeInfo.GetGenericArguments().ExtendedSingle("Finding dto type from delta").GetTypeInfo();
+
+                    object modifiedDto = deserilizer.Deserialize(requestJsonReader, dtoType);
+
+                    Delta delta = (Delta)Activator.CreateInstance(typeInfo);
+
+                    if (modifiedDto is IOpenType openTypeDto && openTypeDto.Properties?.Any() == true)
+                        delta.TrySetPropertyValue(nameof(IOpenType.Properties), openTypeDto);
+
+                    foreach (string changedProp in changedPropNames.Where(p => p != nameof(IOpenType.Properties) && dtoType.GetProperty(p) != null))
+                    {
+                        delta.TrySetPropertyValue(changedProp, dtoType.GetProperty(changedProp).GetValue(modifiedDto));
+                    }
+
+                    return delta;
                 }
                 finally
                 {
@@ -165,9 +157,7 @@ namespace Bit.OData.Serialization
 
             DateTimeOffset objAsDateTimeOffset = (DateTime)reader.Value;
 
-            objAsDateTimeOffset = _timeZoneManager.MapFromClientToServer(objAsDateTimeOffset);
-
-            return objAsDateTimeOffset;
+            return _timeZoneManager.MapFromClientToServer(objAsDateTimeOffset);
         }
 
         public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)

@@ -1,5 +1,4 @@
-﻿using System.Linq;
-using Bit.Core.Contracts;
+﻿using Bit.Core.Contracts;
 using Bit.Owin.Contracts;
 using Bit.Test;
 using Bit.Test.Core.Implementations;
@@ -7,6 +6,8 @@ using Bit.Test.Server;
 using IdentityModel.Client;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using OpenQA.Selenium.Remote;
+using System;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace Bit.Tests.HtmlClient.BrowserTests.Caching
@@ -42,12 +43,11 @@ namespace Bit.Tests.HtmlClient.BrowserTests.Caching
                 using (RemoteWebDriver driver = testEnvironment.Server.BuildWebDriver(new RemoteWebDriverOptions { Token = token }))
                 {
                     await Task.Delay(1000);
-
                     driver.Navigate().Refresh();
                 }
 
                 Assert.AreEqual(1, TestDependencyManager.CurrentTestDependencyManager.Objects.OfType<ILogger>()
-                                    .Count(logger => logger.LogData.Any(ld => ld.Key == nameof(IRequestInformationProvider.RequestUri) && ((string)ld.Value).EndsWith(@"Metadata/V1"))));
+                    .Count(logger => logger.LogData.Any(ld => ld.Key == nameof(IRequestInformationProvider.RequestUri) && ((string)ld.Value).EndsWith("Metadata/V1", StringComparison.OrdinalIgnoreCase))));
             }
         }
     }

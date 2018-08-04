@@ -1,15 +1,15 @@
-﻿using System;
+﻿using Bit.Core.Contracts;
+using Bit.Data.Contracts;
+using Bit.Model.Contracts;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
-using Bit.Core.Contracts;
-using Bit.Data.Contracts;
-using Bit.Model.Contracts;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.ChangeTracking;
 
 namespace Bit.Data.EntityFrameworkCore.Implementations
 {
@@ -17,6 +17,7 @@ namespace Bit.Data.EntityFrameworkCore.Implementations
         where TEntity : class, IEntity
     {
         private EfCoreDbContextBase _dbContext;
+
         public virtual EfCoreDbContextBase DbContext
         {
             get => _dbContext;
@@ -294,7 +295,7 @@ namespace Bit.Data.EntityFrameworkCore.Implementations
 
                 CollectionEntry<TEntity, TProperty> collection = DbContext.Entry(entity).Collection(childs);
 
-                if (collection.IsLoaded == false)
+                if (!collection.IsLoaded)
                     await collection.LoadAsync(cancellationToken).ConfigureAwait(false);
             }
             finally
@@ -312,7 +313,7 @@ namespace Bit.Data.EntityFrameworkCore.Implementations
 
                 CollectionEntry<TEntity, TProperty> collection = DbContext.Entry(entity).Collection(childs);
 
-                if (collection.IsLoaded == false)
+                if (!collection.IsLoaded)
                     collection.Load();
             }
             finally
@@ -330,7 +331,7 @@ namespace Bit.Data.EntityFrameworkCore.Implementations
 
                 ReferenceEntry<TEntity, TProperty> reference = DbContext.Entry(entity).Reference(member);
 
-                if (reference.IsLoaded == false)
+                if (!reference.IsLoaded)
                     await reference.LoadAsync(cancellationToken).ConfigureAwait(false);
             }
             finally
@@ -348,7 +349,7 @@ namespace Bit.Data.EntityFrameworkCore.Implementations
 
                 ReferenceEntry<TEntity, TProperty> reference = DbContext.Entry(entity).Reference(member);
 
-                if (reference.IsLoaded == false)
+                if (!reference.IsLoaded)
                     reference.Load();
             }
             finally
@@ -369,15 +370,15 @@ namespace Bit.Data.EntityFrameworkCore.Implementations
             DbContext.SaveChanges();
         }
 
-        public virtual async Task<TEntity> GetByIdAsync(CancellationToken cancellationToken, params object[] ids)
+        public virtual async Task<TEntity> GetByIdAsync(CancellationToken cancellationToken, params object[] keys)
         {
-            return await EfDataProviderSpecificMethodsProvider.ApplyWhereByKeys((await GetAllAsync(cancellationToken).ConfigureAwait(false)), ids)
+            return await EfDataProviderSpecificMethodsProvider.ApplyWhereByKeys(await GetAllAsync(cancellationToken).ConfigureAwait(false), keys)
                 .SingleOrDefaultAsync(cancellationToken).ConfigureAwait(false);
         }
 
-        public virtual TEntity GetById(params object[] ids)
+        public virtual TEntity GetById(params object[] keys)
         {
-            return EfDataProviderSpecificMethodsProvider.ApplyWhereByKeys(GetAll(), ids)
+            return EfDataProviderSpecificMethodsProvider.ApplyWhereByKeys(GetAll(), keys)
                 .SingleOrDefault();
         }
 

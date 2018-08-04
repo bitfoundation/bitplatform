@@ -1,7 +1,7 @@
-﻿using System;
+﻿using Bit.Core.Models;
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Bit.Core.Models;
 
 namespace Bit.Core.Contracts
 {

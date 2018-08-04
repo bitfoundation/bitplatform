@@ -35,9 +35,7 @@ namespace Bit.Owin.Implementations
                         {
                             Core.Contracts.ILogger logger = scope.Resolve<Core.Contracts.ILogger>();
 
-                            string message = null;
-
-                            message = formatter(state, exception);
+                            string message = formatter(state, exception);
 
                             if (exception != null)
                                 logger.LogException(exception, message);

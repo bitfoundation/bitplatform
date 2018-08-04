@@ -16,8 +16,8 @@ namespace Bit.OData.ActionFilters
     {
         public override Task OnActionExecutedAsync(HttpActionExecutedContext actionExecutedContext, CancellationToken cancellationToken)
         {
-            if (actionExecutedContext.Response?.Content is ObjectContent objContent &&
-               actionExecutedContext.Response.IsSuccessStatusCode == true)
+            if (actionExecutedContext.Response?.Content is ObjectContent objContent
+               && actionExecutedContext.Response.IsSuccessStatusCode)
             {
                 if (objContent.Value != null)
                     return Task.CompletedTask;
@@ -26,7 +26,7 @@ namespace Bit.OData.ActionFilters
 
                 bool isEnumerable = typeof(string) != actionReturnType && typeof(IEnumerable).GetTypeInfo().IsAssignableFrom(actionReturnType);
 
-                if (isEnumerable == true)
+                if (isEnumerable)
                 {
                     TypeInfo queryElementType = actionReturnType.HasElementType ? actionReturnType.GetElementType().GetTypeInfo() : actionReturnType.GetGenericArguments().First().GetTypeInfo();
                     objContent.Value = Array.CreateInstance(queryElementType, 0);

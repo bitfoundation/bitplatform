@@ -1,6 +1,6 @@
-﻿using System;
-using Bit.OwinCore.Contracts;
+﻿using Bit.OwinCore.Contracts;
 using Microsoft.AspNetCore.Builder;
+using System;
 
 namespace Bit.OwinCore.Middlewares
 {
@@ -10,10 +10,7 @@ namespace Bit.OwinCore.Middlewares
 
         public DelegateAspNetCoreMiddlewareConfiguration(Action<IApplicationBuilder> aspNetCoreAppCustomizer)
         {
-            if (aspNetCoreAppCustomizer == null)
-                throw new ArgumentNullException(nameof(aspNetCoreAppCustomizer));
-
-            _aspNetCoreAppCustomizer = aspNetCoreAppCustomizer;
+            _aspNetCoreAppCustomizer = aspNetCoreAppCustomizer ?? throw new ArgumentNullException(nameof(aspNetCoreAppCustomizer));
         }
 
         public virtual void Configure(IApplicationBuilder aspNetCoreApp)

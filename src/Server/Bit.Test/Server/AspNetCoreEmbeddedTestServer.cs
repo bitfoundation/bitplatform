@@ -1,10 +1,10 @@
-﻿using System.IO;
-using System.Net.Http;
-using Bit.OwinCore;
+﻿using Bit.OwinCore;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.TestHost;
 using OpenQA.Selenium.Remote;
 using System;
+using System.IO;
+using System.Net.Http;
 
 namespace Bit.Test.Server
 {

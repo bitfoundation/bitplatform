@@ -1,8 +1,8 @@
-﻿using System;
+﻿using Bit.Core.Contracts;
+using Bit.Core.Models;
+using System;
 using System.IO;
 using System.Linq;
-using Bit.Core.Contracts;
-using Bit.Core.Models;
 
 namespace Bit.Core.Implementations
 {
@@ -18,15 +18,11 @@ namespace Bit.Core.Implementations
         {
             get
             {
-                if (_current == null)
+                return _current ?? (_current = new DefaultAppEnvironmentsProvider
                 {
-                    _current = new DefaultAppEnvironmentsProvider
-                    {
-                        ContentFormatter = DefaultJsonContentFormatter.Current,
-                        PathProvider = DefaultPathProvider.Current
-                    };
-                }
-                return _current;
+                    ContentFormatter = DefaultJsonContentFormatter.Current,
+                    PathProvider = DefaultPathProvider.Current
+                });
             }
             set => _current = value;
         }
@@ -42,7 +38,7 @@ namespace Bit.Core.Implementations
 
             AppEnvironment[] activeEnvironments = allEnvironments.Where(env => env.IsActive).ToArray();
 
-            if (!activeEnvironments.Any())
+            if (activeEnvironments.Length == 0)
                 throw new InvalidOperationException("There is no active environment");
 
             if (activeEnvironments.Length > 1)

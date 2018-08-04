@@ -52,7 +52,7 @@ namespace OpenQA.Selenium
             driver.ExecuteScript(finalTestScript);
 
             string value = consoleValue;
-            await driver.WaitForCondition(d => testsConsole.GetAttribute("value") != value);
+            await driver.WaitForCondition(d => testsConsole.GetAttribute("value") != value).ConfigureAwait(false);
 
             consoleValue = testsConsole.GetAttribute("value");
 
@@ -62,7 +62,7 @@ namespace OpenQA.Selenium
             Console.WriteLine("Url: " + driver.Url);
             Console.WriteLine("Final test script: " + finalTestScript);
 
-            if (testIsPassed != true)
+            if (!testIsPassed)
                 throw new InvalidOperationException(consoleValue);
         }
 
@@ -75,13 +75,13 @@ namespace OpenQA.Selenium
             {
                 try
                 {
-                    if ((condition(driver) == true))
+                    if (condition(driver))
                         return;
                 }
                 catch { }
                 finally
                 {
-                    await Task.Delay(250);
+                    await Task.Delay(250).ConfigureAwait(false);
                     triesCount++;
                 }
             } while (triesCount < 10);

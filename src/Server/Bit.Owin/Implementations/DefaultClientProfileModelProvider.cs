@@ -39,11 +39,10 @@ namespace Bit.Owin.Implementations
             if (culture == null || string.Equals(culture, "Auto", StringComparison.OrdinalIgnoreCase))
                 culture = "EnUs";
 
-            if (desiredTimeZone != null &&
-                !string.Equals(desiredTimeZone, "Auto", StringComparison.CurrentCulture))
+            if (desiredTimeZone != null && !string.Equals(desiredTimeZone, "Auto", StringComparison.CurrentCulture))
                 desiredTimeZoneValue = desiredTimeZone;
 
-            string appTitle = AppEnvironment.Cultures.Any() ? AppEnvironment.Cultures
+            string appTitle = AppEnvironment.Cultures.Length > 0 ? AppEnvironment.Cultures
                 .ExtendedSingle($"Finding culture {culture} in environment {AppEnvironment.Name}", c => c.Name == culture).Values.ExtendedSingle($"Finding AppTitle in culture {culture}", v =>
                       string.Equals(v.Name, "AppTitle", StringComparison.OrdinalIgnoreCase)).Title : string.Empty;
 
@@ -53,7 +52,7 @@ namespace Bit.Owin.Implementations
             clientProfileMdoel.Theme = theme;
 
             clientProfileMdoel.EnvironmentConfigsJson = ContentFormatter.Serialize(AppEnvironment
-                .Configs.Where(c => c.AccessibleInClientSide == true)
+                .Configs.Where(c => c.AccessibleInClientSide)
                 .Select(c => new { value = c.Value, key = c.Key }));
 
             clientProfileMdoel.BaseHref = AppEnvironment.GetHostVirtualPath();
@@ -84,11 +83,10 @@ namespace Bit.Owin.Implementations
             if (culture == null || string.Equals(culture, "Auto", StringComparison.OrdinalIgnoreCase))
                 culture = "EnUs";
 
-            if (desiredTimeZone != null &&
-                !string.Equals(desiredTimeZone, "Auto", StringComparison.CurrentCulture))
+            if (desiredTimeZone != null && !string.Equals(desiredTimeZone, "Auto", StringComparison.CurrentCulture))
                 desiredTimeZoneValue = desiredTimeZone;
 
-            string appTitle = AppEnvironment.Cultures.Any() ? AppEnvironment.Cultures
+            string appTitle = AppEnvironment.Cultures.Length > 0 ? AppEnvironment.Cultures
                 .ExtendedSingle($"Finding culture {culture} in environment {AppEnvironment.Name}", c => c.Name == culture).Values.ExtendedSingle($"Finding AppTitle in culture {culture}", v =>
                       string.Equals(v.Name, "AppTitle", StringComparison.OrdinalIgnoreCase)).Title : string.Empty;
 
@@ -98,7 +96,7 @@ namespace Bit.Owin.Implementations
             clientAppProfileModel.Theme = theme;
 
             clientAppProfileModel.EnvironmentConfigsJson = ContentFormatter.Serialize(AppEnvironment
-                .Configs.Where(c => c.AccessibleInClientSide == true)
+                .Configs.Where(c => c.AccessibleInClientSide)
                 .Select(c => new { value = c.Value, key = c.Key }));
 
             clientAppProfileModel.BaseHref = AppEnvironment.GetHostVirtualPath();

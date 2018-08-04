@@ -33,10 +33,7 @@ namespace Bit.WebApi
             _webApiConfig.DependencyResolver = WebApiDependencyResolver;
 
             WebApiConfgurationCustomizers.ToList()
-                .ForEach(webApiConfigurationCustomizer =>
-                {
-                    webApiConfigurationCustomizer.CustomizeWebApiConfiguration(_webApiConfig);
-                });
+                .ForEach(webApiConfigurationCustomizer => webApiConfigurationCustomizer.CustomizeWebApiConfiguration(_webApiConfig));
 
             _server = new HttpServer(_webApiConfig);
 

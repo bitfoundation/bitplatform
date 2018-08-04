@@ -1,8 +1,4 @@
-﻿using System;
-using System.Linq;
-using System.Net;
-using System.Threading.Tasks;
-using Bit.Core.Contracts;
+﻿using Bit.Core.Contracts;
 using Bit.Owin.Exceptions;
 using Bit.Owin.Metadata;
 using Bit.Test;
@@ -14,6 +10,10 @@ using FakeItEasy;
 using IdentityModel.Client;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Simple.OData.Client;
+using System;
+using System.Linq;
+using System.Net;
+using System.Threading.Tasks;
 
 namespace Bit.Tests.Api.Middlewares.WebApi.Tests
 {
@@ -31,10 +31,7 @@ namespace Bit.Tests.Api.Middlewares.WebApi.Tests
 
             using (BitOwinTestEnvironment testEnvironment = new BitOwinTestEnvironment(new TestEnvironmentArgs
             {
-                AdditionalDependencies = (manager, services) =>
-                {
-                    manager.RegisterInstance(emailService);
-                }
+                AdditionalDependencies = (manager, services) => manager.RegisterInstance(emailService)
             }))
             {
                 TokenResponse token = await testEnvironment.Server.Login("ValidUserName", "ValidPassword", clientId: "TestResOwner");
@@ -83,10 +80,7 @@ namespace Bit.Tests.Api.Middlewares.WebApi.Tests
 
             using (BitOwinTestEnvironment testEnvironment = new BitOwinTestEnvironment(new TestEnvironmentArgs
             {
-                AdditionalDependencies = (manager, services) =>
-                {
-                    manager.RegisterInstance(emailService);
-                }
+                AdditionalDependencies = (manager, services) => manager.RegisterInstance(emailService)
             }))
             {
                 TokenResponse token = await testEnvironment.Server.Login("ValidUserName", "ValidPassword", clientId: "TestResOwner");
@@ -135,14 +129,8 @@ namespace Bit.Tests.Api.Middlewares.WebApi.Tests
 
             using (BitOwinTestEnvironment testEnvironment = new BitOwinTestEnvironment(new TestEnvironmentArgs
             {
-                AdditionalDependencies = (manager, services) =>
-                {
-                    manager.RegisterInstance(emailService);
-                },
-                ActiveAppEnvironmentCustomizer = appEnv =>
-                {
-                    appEnv.DebugMode = false;
-                }
+                AdditionalDependencies = (manager, services) => manager.RegisterInstance(emailService),
+                ActiveAppEnvironmentCustomizer = appEnv => appEnv.DebugMode = false
             }))
             {
                 TokenResponse token = await testEnvironment.Server.Login("ValidUserName", "ValidPassword", clientId: "TestResOwner");

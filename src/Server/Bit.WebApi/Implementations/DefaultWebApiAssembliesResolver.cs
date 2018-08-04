@@ -1,8 +1,8 @@
-﻿using System.Collections.Generic;
+﻿using Bit.WebApi.Contracts;
+using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Web.Http.Dispatcher;
-using Bit.WebApi.Contracts;
 
 namespace Bit.WebApi.Implementations
 {
@@ -14,14 +14,7 @@ namespace Bit.WebApi.Implementations
 
         public virtual ICollection<Assembly> GetAssemblies()
         {
-            if (_result == null)
-            {
-                _result = ApiAssembliesProviders
-                    .SelectMany(asmProvider => asmProvider.GetApiAssemblies())
-                    .ToList();
-            }
-
-            return _result;
+            return _result ?? (_result = ApiAssembliesProviders.SelectMany(asmProvider => asmProvider.GetApiAssemblies()).ToList());
         }
     }
 }

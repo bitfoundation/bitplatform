@@ -1,8 +1,8 @@
-﻿using System;
+﻿using Bit.Core.Contracts;
+using Bit.Owin.Contracts;
+using System;
 using System.Collections.Concurrent;
 using System.Linq;
-using Bit.Core.Contracts;
-using Bit.Owin.Contracts;
 
 namespace Bit.Owin.Implementations
 {
@@ -72,10 +72,7 @@ namespace Bit.Owin.Implementations
 
             if (currentTimeZoneInfo.HasSameRules(desiredTimeZoneInfo))
                 return dateTime;
-            else
-            {
-                return dateTime + (currentTimeZoneInfo.BaseUtcOffset - desiredTimeZoneInfo.BaseUtcOffset);
-            }
+            return dateTime + (currentTimeZoneInfo.BaseUtcOffset - desiredTimeZoneInfo.BaseUtcOffset);
         }
 
         public virtual DateTimeOffset MapFromServerToClient(DateTimeOffset dateTime)
@@ -95,10 +92,7 @@ namespace Bit.Owin.Implementations
 
             if (currentTimeZoneInfo.HasSameRules(desiredTimeZoneInfo))
                 return dateTime;
-            else
-            {
-                return dateTime - (currentTimeZoneInfo.BaseUtcOffset - desiredTimeZoneInfo.BaseUtcOffset);
-            }
+            return dateTime - (currentTimeZoneInfo.BaseUtcOffset - desiredTimeZoneInfo.BaseUtcOffset);
         }
     }
 }

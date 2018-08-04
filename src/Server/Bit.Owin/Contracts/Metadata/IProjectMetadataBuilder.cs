@@ -1,5 +1,5 @@
-﻿using System.Collections.Generic;
-using Bit.Core.Models;
+﻿using Bit.Core.Models;
+using System.Collections.Generic;
 
 namespace Bit.Owin.Contracts.Metadata
 {

@@ -1,4 +1,4 @@
-using Bit.Core.Contracts;
+﻿using Bit.Core.Contracts;
 using Bit.Core.Models;
 using System.Data.SqlClient;
 using System.Threading.Tasks;
@@ -17,7 +17,7 @@ namespace Bit.Data.Implementations
             {
                 using (SqlCommand command = connection.CreateCommand())
                 {
-                    command.CommandText = @"INSERT INTO [dbo].[Logs] ([Contents]) VALUES (@contents)";
+                    command.CommandText = "INSERT INTO [dbo].[Logs] ([Contents]) VALUES (@contents)";
 
                     command.Parameters.AddWithValue("@contents", Formatter.Serialize(logEntry));
 
@@ -34,7 +34,7 @@ namespace Bit.Data.Implementations
             {
                 using (SqlCommand command = connection.CreateCommand())
                 {
-                    command.CommandText = @"INSERT INTO [dbo].[Logs] ([Contents]) VALUES (@contents)";
+                    command.CommandText = "INSERT INTO [dbo].[Logs] ([Contents]) VALUES (@contents)";
 
                     command.Parameters.AddWithValue("@contents", Formatter.Serialize(logEntry));
 

@@ -14,13 +14,11 @@ namespace Bit.OwinCore.Middlewares
 
         public Task Invoke(HttpContext context)
         {
-            if (context.Request.Headers != null && !context.Request.Headers.ContainsKey("Authorization"))
+            if (context.Request.Headers?.ContainsKey("Authorization") == false && context.Request.Cookies?["access_token"] != null)
             {
-                if (context.Request.Cookies?["access_token"] != null)
-                    context.Request.Headers.Add("Authorization", new[]
-                    {
-                        $"{context.Request.Cookies["token_type"]} {context.Request.Cookies["access_token"]}"
-                    });
+                context.Request.Headers.Add("Authorization", new[]  {
+                    $"{context.Request.Cookies["token_type"]} {context.Request.Cookies["access_token"]}"
+                });
             }
 
             return _next.Invoke(context);

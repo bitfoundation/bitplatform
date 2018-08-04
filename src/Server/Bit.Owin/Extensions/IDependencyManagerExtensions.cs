@@ -20,7 +20,7 @@ namespace Bit.Core.Contracts
             if (dependencyManager == null)
                 throw new ArgumentNullException(nameof(dependencyManager));
 
-            dependencyManager.Register<IOwinMiddlewareConfiguration, TMiddleware>(lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExciting: false, name: name);
+            dependencyManager.Register<IOwinMiddlewareConfiguration, TMiddleware>(name, lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExciting: false);
 
             return dependencyManager;
         }
@@ -90,7 +90,6 @@ namespace Bit.Core.Contracts
             if (dependencyManager == null)
                 throw new ArgumentNullException(nameof(dependencyManager));
 
-
             dependencyManager.RegisterOwinMiddleware<ClientAppProfileMiddlewareConfiguration>();
             dependencyManager.RegisterOwinMiddleware<IndexPageMiddlewareConfiguration>();
 
@@ -111,13 +110,10 @@ namespace Bit.Core.Contracts
             metadataAssemblies = AssemblyContainer.Current.AssembliesWithDefaultAssemblies(metadataAssemblies).Union(new[] { AssemblyContainer.Current.GetBitMetadataAssembly() }).ToArray();
 
             metadataAssemblies.SelectMany(asm => asm.GetLoadableExportedTypes())
-                .Where(t => t.IsClass && !t.IsAbstract && !t.IsGenericType)
-                .Where(t => typeof(IMetadataBuilder).GetTypeInfo().IsAssignableFrom(t.GetTypeInfo()))
+                .Where(t => t.IsClass && !t.IsAbstract && !t.IsGenericType
+                    && typeof(IMetadataBuilder).GetTypeInfo().IsAssignableFrom(t.GetTypeInfo()))
                 .ToList()
-                .ForEach(t =>
-                {
-                    dependencyManager.Register(typeof(IMetadataBuilder).GetTypeInfo(), t.GetTypeInfo(), lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExciting: false);
-                });
+                .ForEach(t => dependencyManager.Register(typeof(IMetadataBuilder).GetTypeInfo(), t.GetTypeInfo(), lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExciting: false));
 
             return dependencyManager;
         }
@@ -197,10 +193,7 @@ namespace Bit.Core.Contracts
             dependencyManager.RegisterOwinMiddleware<AutofacDependencyInjectionMiddlewareConfiguration>();
             dependencyManager.RegisterOwinMiddleware<OwinExceptionHandlerMiddlewareConfiguration>();
             dependencyManager.RegisterOwinMiddleware<LogRequestInformationMiddlewareConfiguration>();
-            dependencyManager.RegisterOwinMiddlewareUsing(owinApp =>
-            {
-                owinApp.Use<AddAcceptCharsetToRequestHeadersIfNotAnyMiddleware>();
-            });
+            dependencyManager.RegisterOwinMiddlewareUsing(owinApp => owinApp.Use<AddAcceptCharsetToRequestHeadersIfNotAnyMiddleware>());
             return dependencyManager;
         }
     }

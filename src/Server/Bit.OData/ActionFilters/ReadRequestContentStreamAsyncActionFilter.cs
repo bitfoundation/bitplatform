@@ -2,7 +2,6 @@
 using Bit.OData.Serialization;
 using Bit.WebApi.Contracts;
 using System.IO;
-using System.Linq;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
@@ -26,10 +25,10 @@ namespace Bit.OData.ActionFilters
         {
             HttpActionDescriptor actionDescriptor = actionContext.Request.GetActionDescriptor();
 
-            if (actionDescriptor != null && (actionDescriptor.GetCustomAttributes<ActionAttribute>().Any() ||
-                actionDescriptor.GetCustomAttributes<CreateAttribute>().Any() ||
-                actionDescriptor.GetCustomAttributes<UpdateAttribute>().Any() ||
-                actionDescriptor.GetCustomAttributes<PartialUpdateAttribute>().Any()))
+            if (actionDescriptor != null && (actionDescriptor.GetCustomAttributes<ActionAttribute>().Count > 0
+                || actionDescriptor.GetCustomAttributes<CreateAttribute>().Count > 0
+                || actionDescriptor.GetCustomAttributes<UpdateAttribute>().Count > 0
+                || actionDescriptor.GetCustomAttributes<PartialUpdateAttribute>().Count > 0))
             {
                 using (StreamReader requestStreamReader = new StreamReader(await actionContext.Request.Content.ReadAsStreamAsync().ConfigureAwait(false)))
                 {

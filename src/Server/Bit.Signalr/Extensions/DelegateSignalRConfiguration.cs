@@ -1,6 +1,6 @@
-﻿using System;
-using Bit.Signalr.Contracts;
+﻿using Bit.Signalr.Contracts;
 using Microsoft.AspNet.SignalR;
+using System;
 
 namespace Bit.Core.Contracts
 {

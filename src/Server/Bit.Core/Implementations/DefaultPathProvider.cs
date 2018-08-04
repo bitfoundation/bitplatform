@@ -1,6 +1,6 @@
-﻿using System;
+﻿using Bit.Core.Contracts;
+using System;
 using System.IO;
-using Bit.Core.Contracts;
 
 namespace Bit.Core.Implementations
 {
@@ -10,12 +10,7 @@ namespace Bit.Core.Implementations
 
         public static IPathProvider Current
         {
-            get
-            {
-                if (_current == null)
-                    _current = new DefaultPathProvider();
-                return _current;
-            }
+            get => _current ?? (_current = new DefaultPathProvider());
             set => _current = value;
         }
 

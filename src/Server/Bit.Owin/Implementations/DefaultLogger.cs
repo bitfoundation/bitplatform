@@ -1,12 +1,12 @@
-﻿using System;
+﻿using Bit.Core.Contracts;
+using Bit.Core.Models;
+using Bit.Owin.Exceptions;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
-using Bit.Core.Contracts;
-using Bit.Core.Models;
-using Bit.Owin.Exceptions;
 
 namespace Bit.Owin.Implementations
 {
@@ -33,7 +33,7 @@ namespace Bit.Owin.Implementations
                 }
             }
 
-            if (logExceptions.Any())
+            if (logExceptions.Count > 0)
                 throw new AggregateException(logExceptions);
         }
 
@@ -53,7 +53,7 @@ namespace Bit.Owin.Implementations
                 }
             }
 
-            if (logExceptions.Any())
+            if (logExceptions.Count > 0)
                 throw new AggregateException(logExceptions);
         }
 
@@ -74,7 +74,7 @@ namespace Bit.Owin.Implementations
             });
         }
 
-        public virtual async Task LogWarningAsync(string message)
+        public virtual Task LogWarningAsync(string message)
         {
             if (message == null)
                 throw new ArgumentNullException(nameof(message));
@@ -83,7 +83,7 @@ namespace Bit.Owin.Implementations
 
             LogEntry logEntry = CreateLogEntry(message, severity);
 
-            await SaveLogEntryUsingAllLogStoresAsync(logEntry).ConfigureAwait(false);
+            return SaveLogEntryUsingAllLogStoresAsync(logEntry);
         }
 
         public virtual void LogWarning(string message)
@@ -98,16 +98,16 @@ namespace Bit.Owin.Implementations
             SaveLogEntryUsingAllLogStores(logEntry);
         }
 
-        public virtual async Task LogFatalAsync(string message)
+        public virtual Task LogFatalAsync(string message)
         {
             if (message == null)
                 throw new ArgumentNullException(nameof(message));
 
-            string severity = "Fatal";
+            const string severity = "Fatal";
 
             LogEntry logEntry = CreateLogEntry(message, severity);
 
-            await SaveLogEntryUsingAllLogStoresAsync(logEntry).ConfigureAwait(false);
+            return SaveLogEntryUsingAllLogStoresAsync(logEntry);
         }
 
         public virtual void LogFatal(string message)
@@ -127,7 +127,7 @@ namespace Bit.Owin.Implementations
             if (message == null)
                 throw new ArgumentNullException(nameof(message));
 
-            string severity = "Information";
+            const string severity = "Information";
 
             LogEntry logEntry = CreateLogEntry(message, severity);
 

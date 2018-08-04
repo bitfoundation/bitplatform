@@ -1,10 +1,10 @@
-﻿using System;
-using System.Globalization;
-using System.Threading.Tasks;
-using Bit.Core.Contracts;
+﻿using Bit.Core.Contracts;
 using Bit.Owin.Contracts;
 using Bit.Owin.Metadata;
 using Microsoft.Owin;
+using System;
+using System.Globalization;
+using System.Threading.Tasks;
 
 namespace Bit.Owin.Middlewares
 {
@@ -29,8 +29,8 @@ namespace Bit.Owin.Middlewares
                 string statusCode = context.Response.StatusCode.ToString(CultureInfo.InvariantCulture);
                 bool responseStatusCodeIsErrorCodeBecauseOfSomeServerBasedReason = statusCode.StartsWith("5", StringComparison.InvariantCultureIgnoreCase);
                 bool responseStatusCodeIsErrorCodeBecauseOfSomeClientBasedReason = statusCode.StartsWith("4", StringComparison.InvariantCultureIgnoreCase);
-                if (responseStatusCodeIsErrorCodeBecauseOfSomeServerBasedReason ||
-                    responseStatusCodeIsErrorCodeBecauseOfSomeClientBasedReason)
+                if (responseStatusCodeIsErrorCodeBecauseOfSomeServerBasedReason
+                    || responseStatusCodeIsErrorCodeBecauseOfSomeClientBasedReason)
                 {
                     string reasonPhrase = context.Response.ReasonPhrase ?? "UnknownReasonPhrase";
 
@@ -65,7 +65,7 @@ namespace Bit.Owin.Middlewares
                 string statusCode = context.Response.StatusCode.ToString(CultureInfo.InvariantCulture);
                 bool responseStatusCodeIsErrorCodeBecauseOfSomeServerBasedReason = statusCode.StartsWith("5", StringComparison.InvariantCultureIgnoreCase);
                 bool responseStatusCodeIsErrorCodeBecauseOfSomeClientBasedReason = statusCode.StartsWith("4", StringComparison.InvariantCultureIgnoreCase);
-                if (responseStatusCodeIsErrorCodeBecauseOfSomeClientBasedReason == false && responseStatusCodeIsErrorCodeBecauseOfSomeServerBasedReason == false)
+                if (!responseStatusCodeIsErrorCodeBecauseOfSomeClientBasedReason && !responseStatusCodeIsErrorCodeBecauseOfSomeServerBasedReason)
                 {
                     IExceptionToHttpErrorMapper exceptionToHttpErrorMapper = dependencyResolver.Resolve<IExceptionToHttpErrorMapper>();
                     context.Response.StatusCode = Convert.ToInt32(exceptionToHttpErrorMapper.GetStatusCode(exp), CultureInfo.InvariantCulture);

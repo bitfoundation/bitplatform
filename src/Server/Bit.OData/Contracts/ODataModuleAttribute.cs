@@ -7,10 +7,7 @@ namespace Bit.OData.Contracts
     {
         public ODataModuleAttribute(string odataRouteName)
         {
-            if (odataRouteName == null)
-                throw new ArgumentNullException(odataRouteName);
-
-            ODataRouteName = odataRouteName;
+            ODataRouteName = odataRouteName ?? throw new ArgumentNullException(odataRouteName);
         }
 
         public string ODataRouteName { get; }

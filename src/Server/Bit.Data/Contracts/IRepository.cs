@@ -1,10 +1,10 @@
-﻿using System;
+﻿using Bit.Model.Contracts;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
-using Bit.Model.Contracts;
 
 namespace Bit.Data.Contracts
 {
@@ -61,8 +61,8 @@ namespace Bit.Data.Contracts
         void LoadReference<TProperty>(TEntity entity, Expression<Func<TEntity, TProperty>> member)
             where TProperty : class;
 
-        Task<TEntity> GetByIdAsync(CancellationToken cancellationToken, params object[] ids);
+        Task<TEntity> GetByIdAsync(CancellationToken cancellationToken, params object[] keys);
 
-        TEntity GetById(params object[] ids);
+        TEntity GetById(params object[] keys);
     }
 }

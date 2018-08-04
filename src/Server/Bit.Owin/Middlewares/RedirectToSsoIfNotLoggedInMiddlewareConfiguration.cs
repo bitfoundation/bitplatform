@@ -1,8 +1,8 @@
-﻿using System;
-using Bit.Core.Contracts;
+﻿using Bit.Core.Contracts;
 using Bit.Owin.Contracts;
 using Microsoft.Owin;
 using Owin;
+using System;
 
 namespace Bit.Owin.Middlewares
 {
@@ -23,7 +23,7 @@ namespace Bit.Owin.Middlewares
 
         public virtual bool IfIsNotLoggedIn(IOwinContext cntx)
         {
-            return cntx.GetDependencyResolver().Resolve<IUserInformationProvider>().IsAuthenticated() == false;
+            return !cntx.GetDependencyResolver().Resolve<IUserInformationProvider>().IsAuthenticated();
         }
     }
 }

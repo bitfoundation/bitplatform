@@ -1,7 +1,7 @@
-﻿using System;
-using System.Runtime.Serialization;
-using Bit.Owin.Metadata;
+﻿using Bit.Owin.Metadata;
+using System;
 using System.Net;
+using System.Runtime.Serialization;
 
 namespace Bit.Owin.Exceptions
 {

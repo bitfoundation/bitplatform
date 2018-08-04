@@ -29,7 +29,7 @@ namespace Bit.Owin.Middlewares
 
             string stateArgs = context.Request.Query["state"] ?? "{}";
 
-            context.Response.Redirect($"{ssoRedirectUri}&id_token_hint={(context.Request.Query["id_token"])}&state={stateArgs}");
+            context.Response.Redirect($"{ssoRedirectUri}&id_token_hint={context.Request.Query["id_token"]}&state={stateArgs}");
 
             context.Authentication.SignOut("custom", "Bearer");
 

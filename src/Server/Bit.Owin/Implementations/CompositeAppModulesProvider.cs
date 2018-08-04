@@ -1,5 +1,4 @@
 ﻿using Bit.Core.Contracts;
-using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Generic;
 
@@ -16,10 +15,7 @@ namespace Bit.Owin.Implementations
 
         public CompositeAppModulesProvider(params IAppModulesProvider[] appModulesProviders)
         {
-            if (appModulesProviders == null)
-                throw new ArgumentNullException(nameof(appModulesProviders));
-
-            _appModulesProviders = appModulesProviders;
+            _appModulesProviders = appModulesProviders ?? throw new ArgumentNullException(nameof(appModulesProviders));
         }
 
         public virtual IEnumerable<IAppModule> GetAppModules()

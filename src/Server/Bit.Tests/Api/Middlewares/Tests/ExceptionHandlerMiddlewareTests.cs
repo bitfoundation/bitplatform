@@ -1,7 +1,4 @@
-﻿using System;
-using System.Linq;
-using System.Threading.Tasks;
-using Bit.Core.Contracts;
+﻿using Bit.Core.Contracts;
 using Bit.Core.Models;
 using Bit.Test;
 using Bit.Test.Core.Implementations;
@@ -9,6 +6,9 @@ using FakeItEasy;
 using IdentityModel.Client;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Owin;
+using System;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace Bit.Tests.Api.Middlewares.Tests
 {
@@ -38,16 +38,7 @@ namespace Bit.Tests.Api.Middlewares.Tests
         {
             using (BitOwinTestEnvironment testEnvironment = new BitOwinTestEnvironment(new TestEnvironmentArgs
             {
-                AdditionalDependencies = (manager, services) =>
-                {
-                    manager.RegisterOwinMiddlewareUsing(owinApp =>
-                    {
-                        owinApp.Map("/Exception", innerApp =>
-                        {
-                            innerApp.Use<ExceptionThrownMiddleware>();
-                        });
-                    });
-                }
+                AdditionalDependencies = (manager, services) => manager.RegisterOwinMiddlewareUsing(owinApp => owinApp.Map("/Exception", innerApp => innerApp.Use<ExceptionThrownMiddleware>()))
             }))
             {
                 try
@@ -91,15 +82,7 @@ namespace Bit.Tests.Api.Middlewares.Tests
             using (BitOwinTestEnvironment testEnvironment = new BitOwinTestEnvironment(new TestEnvironmentArgs
             {
                 AdditionalDependencies = (manager, services) =>
-                {
-                    manager.RegisterOwinMiddlewareUsing(owinApp =>
-                    {
-                        owinApp.Map("/InternalServerError", innerApp =>
-                        {
-                            innerApp.Use<InternalServerErrorMiddleware>();
-                        });
-                    });
-                }
+                manager.RegisterOwinMiddlewareUsing(owinApp => owinApp.Map("/InternalServerError", innerApp => innerApp.Use<InternalServerErrorMiddleware>()))
             }))
             {
                 TokenResponse token = await testEnvironment.Server.Login("ValidUserName", "ValidPassword", clientId: "TestResOwner");

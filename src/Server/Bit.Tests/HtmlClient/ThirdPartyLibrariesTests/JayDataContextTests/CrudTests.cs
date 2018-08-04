@@ -133,7 +133,7 @@ namespace Bit.Tests.HtmlClient.ThirdPartyLibrariesTests.JayDataContextTests
         [TestCategory("JayDataContextOData")]
         public virtual async Task EnumTest_CSClient()
         {
-            using (BitOwinTestEnvironment testEnvironment = new BitOwinTestEnvironment(new TestEnvironmentArgs { }))
+            using (BitOwinTestEnvironment testEnvironment = new BitOwinTestEnvironment(new TestEnvironmentArgs()))
             {
                 TokenResponse token = await testEnvironment.Server.Login("ValidUserName", "ValidPassword", clientId: "TestResOwner");
 
@@ -211,7 +211,7 @@ namespace Bit.Tests.HtmlClient.ThirdPartyLibrariesTests.JayDataContextTests
 
                 using (RemoteWebDriver driver = testEnvironment.Server.BuildWebDriver(new RemoteWebDriverOptions { Token = token }))
                 {
-                    await driver.ExecuteTest(@"testGetAllAndFilter");
+                    await driver.ExecuteTest("testGetAllAndFilter");
                 }
 
                 ParentEntitiesController parentEntitiesController = TestDependencyManager.CurrentTestDependencyManager.Objects
@@ -233,7 +233,7 @@ namespace Bit.Tests.HtmlClient.ThirdPartyLibrariesTests.JayDataContextTests
 
                 using (RemoteWebDriver driver = testEnvironment.Server.BuildWebDriver(new RemoteWebDriverOptions { Token = token }))
                 {
-                    await driver.ExecuteTest(@"testBatchReadRequest");
+                    await driver.ExecuteTest("testBatchReadRequest");
                 }
 
                 ParentEntitiesController parentEntitiesController = TestDependencyManager.CurrentTestDependencyManager.Objects

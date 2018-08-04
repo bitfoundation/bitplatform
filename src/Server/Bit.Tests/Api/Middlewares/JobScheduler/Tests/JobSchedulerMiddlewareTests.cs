@@ -1,20 +1,20 @@
-﻿using System.Net;
-using System.Net.Http;
-using System.Threading.Tasks;
+﻿using Bit.Core.Contracts;
+using Bit.Model.Dtos;
+using Bit.OData.ODataControllers;
+using Bit.Test;
+using Bit.Test.Core.Implementations;
+using Bit.Tests.Api.ApiControllers;
+using Bit.Tests.Core.Contracts;
+using Bit.Tests.Model.DomainModels;
+using FakeItEasy;
 using IdentityModel.Client;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Bit.Tests.Core.Contracts;
-using FakeItEasy;
-using Bit.Test;
 using Simple.OData.Client;
-using Bit.Tests.Api.ApiControllers;
-using Bit.Tests.Model.DomainModels;
 using System;
-using Bit.OData.ODataControllers;
-using Bit.Core.Contracts;
-using Bit.Model.Dtos;
-using Bit.Test.Core.Implementations;
 using System.Linq;
+using System.Net;
+using System.Net.Http;
+using System.Threading.Tasks;
 
 namespace Bit.Tests.Api.Middlewares.JobScheduler.Tests
 {
@@ -59,17 +59,11 @@ namespace Bit.Tests.Api.Middlewares.JobScheduler.Tests
             TaskCompletionSource<bool> emailSent = new TaskCompletionSource<bool>();
 
             A.CallTo(() => emailService.SendEmail(A<string>.Ignored, A<string>.Ignored, A<string>.Ignored))
-                .Invokes(() =>
-                {
-                    emailSent.SetResult(true);
-                });
+                .Invokes(() => emailSent.SetResult(true));
 
             using (BitOwinTestEnvironment testEnvironment = new BitOwinTestEnvironment(new TestEnvironmentArgs
             {
-                AdditionalDependencies = (manager, services) =>
-                {
-                    manager.RegisterInstance(emailService);
-                }
+                AdditionalDependencies = (manager, services) => manager.RegisterInstance(emailService)
             }))
             {
                 TokenResponse token = await testEnvironment.Server.Login("ValidUserName", "ValidPassword", clientId: "TestResOwner");
@@ -108,27 +102,18 @@ namespace Bit.Tests.Api.Middlewares.JobScheduler.Tests
             TaskCompletionSource<bool> emailSent = new TaskCompletionSource<bool>();
 
             A.CallTo(() => emailService.SendEmail(A<string>.Ignored, A<string>.Ignored, A<string>.Ignored))
-                .Invokes(() =>
-                {
-                    emailSent.SetResult(true);
-                });
+                .Invokes(() => emailSent.SetResult(true));
 
             using (BitOwinTestEnvironment testEnvironment = new BitOwinTestEnvironment(new TestEnvironmentArgs
             {
-                AdditionalDependencies = (manager, services) =>
-                {
-                    manager.RegisterInstance(emailService);
-                }
+                AdditionalDependencies = (manager, services) => manager.RegisterInstance(emailService)
             }))
             {
                 TokenResponse someoneToken = await testEnvironment.Server.Login("SomeOne", "ValidPassword", clientId: "TestResOwner");
 
                 TaskCompletionSource<bool> onMessageReceivedCalled = new TaskCompletionSource<bool>();
 
-                await testEnvironment.Server.BuildSignalRClient(someoneToken, (messageKey, messageArgs) =>
-                {
-                    onMessageReceivedCalled.SetResult(true);
-                });
+                await testEnvironment.Server.BuildSignalRClient(someoneToken, (messageKey, messageArgs) => onMessageReceivedCalled.SetResult(true));
 
                 TokenResponse token = await testEnvironment.Server.Login("ValidUserName", "ValidPassword", clientId: "TestResOwner");
 
@@ -185,10 +170,7 @@ namespace Bit.Tests.Api.Middlewares.JobScheduler.Tests
 
             using (BitOwinTestEnvironment testEnvironment = new BitOwinTestEnvironment(new TestEnvironmentArgs
             {
-                AdditionalDependencies = (manager, services) =>
-                {
-                    manager.RegisterInstance(emailService);
-                }
+                AdditionalDependencies = (manager, services) => manager.RegisterInstance(emailService)
             }))
             {
                 TokenResponse token = await testEnvironment.Server.Login("ValidUserName", "ValidPassword", clientId: "TestResOwner");

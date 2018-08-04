@@ -1,8 +1,8 @@
-﻿using System.Collections.Generic;
-using System.Threading.Tasks;
-using Bit.Core.Models;
+﻿using Bit.Core.Models;
 using Bit.Owin.Contracts.Metadata;
 using Bit.Owin.Implementations.Metadata;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace Bit.Tests.Owin.Metadata
 {
@@ -10,7 +10,7 @@ namespace Bit.Tests.Owin.Metadata
     {
         public static readonly string SomeError = nameof(SomeError);
 
-        public override async Task<IEnumerable<ObjectMetadata>> BuildMetadata()
+        public override Task<IEnumerable<ObjectMetadata>> BuildMetadata()
         {
             AddProjectMetadata(new ProjectMetadata
             {
@@ -36,7 +36,7 @@ namespace Bit.Tests.Owin.Metadata
                 }
             });
 
-            return await base.BuildMetadata();
+            return base.BuildMetadata();
         }
     }
 }

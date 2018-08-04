@@ -1,5 +1,5 @@
-﻿using System;
-using Bit.Core.Contracts;
+﻿using Bit.Core.Contracts;
+using System;
 
 namespace Bit.Core.Implementations
 {

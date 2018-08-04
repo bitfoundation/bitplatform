@@ -1,6 +1,6 @@
-﻿using System;
+﻿using Bit.WebApi.Contracts;
+using System;
 using System.Web.Http;
-using Bit.WebApi.Contracts;
 
 namespace Bit.WebApi.Implementations
 {
@@ -15,10 +15,7 @@ namespace Bit.WebApi.Implementations
 
         public DelegateGlobalActionFiltersProvider(Action<HttpConfiguration> addGlobalActionFilters)
         {
-            if (addGlobalActionFilters == null)
-                throw new ArgumentNullException(nameof(addGlobalActionFilters));
-
-            _addGlobalActionFilters = addGlobalActionFilters;
+            _addGlobalActionFilters = addGlobalActionFilters ?? throw new ArgumentNullException(nameof(addGlobalActionFilters));
         }
 
         public virtual void CustomizeWebApiConfiguration(HttpConfiguration webApiConfiguration)

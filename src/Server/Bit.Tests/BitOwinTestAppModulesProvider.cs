@@ -1,4 +1,4 @@
-using Bit.Core;
+﻿using Bit.Core;
 using Bit.Core.Contracts;
 using Bit.Data;
 using Bit.Data.Contracts;
@@ -6,8 +6,6 @@ using Bit.Data.EntityFrameworkCore.Implementations;
 using Bit.Hangfire.Implementations;
 using Bit.Model.Implementations;
 using Bit.OData.ActionFilters;
-using Bit.OData.Implementations;
-using Bit.Owin.Contracts;
 using Bit.Owin.Implementations;
 using Bit.Owin.Middlewares;
 using Bit.Signalr.Implementations;
@@ -18,7 +16,6 @@ using Bit.Tests.Model.Implementations;
 using Bit.Tests.Properties;
 using Microsoft.Extensions.DependencyInjection;
 using Swashbuckle.Application;
-using System;
 using System.Collections.Generic;
 using System.Data.SqlClient;
 using System.Reflection;
@@ -64,10 +61,7 @@ namespace Bit.Tests
 
             dependencyManager.RegisterWebApiMiddleware(webApiDependencyManager =>
             {
-                webApiDependencyManager.RegisterGlobalWebApiActionFiltersUsing(httpConfiguration =>
-                {
-                    httpConfiguration.Filters.Add(new AuthorizeAttribute());
-                });
+                webApiDependencyManager.RegisterGlobalWebApiActionFiltersUsing(httpConfiguration => httpConfiguration.Filters.Add(new AuthorizeAttribute()));
 
                 webApiDependencyManager.RegisterGlobalWebApiActionFiltersUsing(httpConfiguration =>
                 {
@@ -83,10 +77,7 @@ namespace Bit.Tests
 
             dependencyManager.RegisterODataMiddleware(odataDependencyManager =>
             {
-                odataDependencyManager.RegisterGlobalWebApiActionFiltersUsing(httpConfiguration =>
-                {
-                    httpConfiguration.Filters.Add(new DefaultODataAuthorizeAttribute());
-                });
+                odataDependencyManager.RegisterGlobalWebApiActionFiltersUsing(httpConfiguration => httpConfiguration.Filters.Add(new DefaultODataAuthorizeAttribute()));
 
                 odataDependencyManager.RegisterGlobalWebApiActionFiltersUsing(httpConfiguration =>
                 {

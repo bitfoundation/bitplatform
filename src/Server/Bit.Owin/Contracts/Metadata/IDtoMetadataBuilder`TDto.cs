@@ -41,9 +41,9 @@ namespace Bit.Owin.Contracts.Metadata
     {
         public virtual string DtoType { get; set; }
 
-        public virtual List<DtoMemberMetadata> MembersMetadata { get; set; } = new List<DtoMemberMetadata> { };
+        public virtual List<DtoMemberMetadata> MembersMetadata { get; set; } = new List<DtoMemberMetadata>();
 
-        public virtual List<DtoMemberLookup> MembersLookups { get; set; } = new List<DtoMemberLookup> { };
+        public virtual List<DtoMemberLookup> MembersLookups { get; set; } = new List<DtoMemberLookup>();
     }
 
     public interface IDtoMetadataBuilder<TDto>

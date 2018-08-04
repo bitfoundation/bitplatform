@@ -4,7 +4,7 @@ using System.Diagnostics;
 
 namespace Bit.Tests
 {
-    public class Program
+    public static class Program
     {
         public static void Main()
         {

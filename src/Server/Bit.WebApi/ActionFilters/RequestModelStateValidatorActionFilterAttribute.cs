@@ -9,11 +9,8 @@ namespace Bit.WebApi.ActionFilters
     {
         public override void OnActionExecuting(HttpActionContext actionContext)
         {
-            if (actionContext.ModelState.IsValid == false)
-            {
-                actionContext.Response = actionContext.Request.CreateErrorResponse(
-                    HttpStatusCode.BadRequest, actionContext.ModelState);
-            }
+            if (!actionContext.ModelState.IsValid)
+                actionContext.Response = actionContext.Request.CreateErrorResponse(HttpStatusCode.BadRequest, actionContext.ModelState);
 
             base.OnActionExecuting(actionContext);
         }

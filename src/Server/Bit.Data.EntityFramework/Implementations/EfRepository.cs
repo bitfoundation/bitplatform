@@ -302,7 +302,7 @@ namespace Bit.Data.EntityFramework.Implementations
 
                 DbCollectionEntry<TEntity, TProperty> collection = DbContext.Entry(entity).Collection(convertedChilds);
 
-                if (collection.IsLoaded == false)
+                if (!collection.IsLoaded)
                     await collection.LoadAsync(cancellationToken).ConfigureAwait(false);
             }
             finally
@@ -322,7 +322,7 @@ namespace Bit.Data.EntityFramework.Implementations
 
                 DbCollectionEntry<TEntity, TProperty> collection = DbContext.Entry(entity).Collection(convertedChilds);
 
-                if (collection.IsLoaded == false)
+                if (!collection.IsLoaded)
                     collection.Load();
             }
             finally
@@ -340,7 +340,7 @@ namespace Bit.Data.EntityFramework.Implementations
 
                 DbReferenceEntry<TEntity, TProperty> reference = DbContext.Entry(entity).Reference(member);
 
-                if (reference.IsLoaded == false)
+                if (!reference.IsLoaded)
                     await reference.LoadAsync(cancellationToken).ConfigureAwait(false);
             }
             finally
@@ -358,7 +358,7 @@ namespace Bit.Data.EntityFramework.Implementations
 
                 DbReferenceEntry<TEntity, TProperty> reference = DbContext.Entry(entity).Reference(member);
 
-                if (reference.IsLoaded == false)
+                if (!reference.IsLoaded)
                     reference.Load();
             }
             finally
@@ -381,7 +381,7 @@ namespace Bit.Data.EntityFramework.Implementations
 
         public virtual async Task<TEntity> GetByIdAsync(CancellationToken cancellationToken, params object[] keys)
         {
-            return await EfDataProviderSpecificMethodsProvider.ApplyWhereByKeys((await GetAllAsync(cancellationToken).ConfigureAwait(false)), keys)
+            return await EfDataProviderSpecificMethodsProvider.ApplyWhereByKeys(await GetAllAsync(cancellationToken).ConfigureAwait(false), keys)
                 .SingleOrDefaultAsync(cancellationToken).ConfigureAwait(false);
         }
 

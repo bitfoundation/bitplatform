@@ -7,7 +7,7 @@ using System.Reflection;
 
 namespace Bit.OwinCore
 {
-    public class BitWebHost
+    public static class BitWebHost
     {
         public static IWebHostBuilder CreateDefaultBuilder(string[] args)
         {
@@ -39,12 +39,10 @@ namespace Bit.OwinCore
             if (!string.IsNullOrEmpty(dllResourceName))
             {
                 using (Stream dllStream = bitOwinCoreAssembly.GetManifestResourceStream(dllResourceName))
+                using (MemoryStream bufferStream = new MemoryStream())
                 {
-                    using (MemoryStream bufferStream = new MemoryStream())
-                    {
-                        dllStream.CopyTo(bufferStream);
-                        return Assembly.Load(bufferStream.ToArray());
-                    }
+                    dllStream.CopyTo(bufferStream);
+                    return Assembly.Load(bufferStream.ToArray());
                 }
             }
 
@@ -54,13 +52,10 @@ namespace Bit.OwinCore
         private static IWebHostBuilder AspNetCore1()
         {
             return new WebHostBuilder()
-                .UseKestrel(options =>
-                {
-                    options.AddServerHeader = false;
-                })
+                .UseKestrel(options => options.AddServerHeader = false)
                 .UseContentRoot(Directory.GetCurrentDirectory())
                 .UseIISIntegration()
-                .CaptureStartupErrors(captureStartupErrors: true)
+                .CaptureStartupErrors(true)
                 .UseSetting(WebHostDefaults.DetailedErrorsKey, "true");
         }
     }

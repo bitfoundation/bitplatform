@@ -77,15 +77,12 @@ namespace Bit.Data
             {
                 try
                 {
-                    if (connectionAndTransaction.RollbackOnScopeStatusFailure == false)
+                    if (!connectionAndTransaction.RollbackOnScopeStatusFailure)
+                        connectionAndTransaction.Transaction.Commit();
+                    else if (wasSucceeded)
                         connectionAndTransaction.Transaction.Commit();
                     else
-                    {
-                        if (wasSucceeded)
-                            connectionAndTransaction.Transaction.Commit();
-                        else
-                            connectionAndTransaction.Transaction.Rollback();
-                    }
+                        connectionAndTransaction.Transaction.Rollback();
                 }
                 finally
                 {

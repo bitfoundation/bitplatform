@@ -23,12 +23,7 @@ namespace Bit.Data.Implementations
 
         public static IDataProviderSpecificMethodsProvider Current
         {
-            get
-            {
-                if (_current == null)
-                    _current = new ExtendedDataProviderSpecificMethodsProvider();
-                return _current;
-            }
+            get => _current ?? (_current = new ExtendedDataProviderSpecificMethodsProvider());
             set => _current = value;
         }
 

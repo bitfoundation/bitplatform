@@ -1,9 +1,9 @@
-﻿using System;
-using System.Net.Http;
-using IdentityModel.Client;
+﻿using IdentityModel.Client;
 using Microsoft.AspNet.SignalR.Client;
 using OpenQA.Selenium.Remote;
 using Simple.OData.Client;
+using System;
+using System.Net.Http;
 using System.Threading.Tasks;
 
 namespace Bit.Test.Server

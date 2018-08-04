@@ -44,7 +44,7 @@ namespace Bit.Owin
 
             owinAppProps.AppName = activeEnvironment.AppInfo.Name;
 
-            if (DefaultDependencyManager.Current.ContainerIsBuilt() == false)
+            if (!DefaultDependencyManager.Current.ContainerIsBuilt())
             {
                 DefaultDependencyManager.Current.Init();
 

@@ -1,8 +1,8 @@
-﻿using System.Collections.Generic;
-using System.Web.Http;
-using Bit.Core.Contracts;
+﻿using Bit.Core.Contracts;
 using Bit.OData.ActionFilters;
 using Bit.WebApi.Contracts;
+using System.Collections.Generic;
+using System.Web.Http;
 
 namespace Bit.OData.Implementations
 {

@@ -1,7 +1,7 @@
-﻿using System;
-using System.Web.Http;
-using Bit.WebApi.Contracts;
+﻿using Bit.WebApi.Contracts;
 using Owin;
+using System;
+using System.Web.Http;
 
 namespace Bit.WebApi.Implementations
 {

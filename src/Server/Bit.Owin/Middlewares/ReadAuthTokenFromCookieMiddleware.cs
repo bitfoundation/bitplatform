@@ -1,5 +1,5 @@
-﻿using System.Threading.Tasks;
-using Microsoft.Owin;
+﻿using Microsoft.Owin;
+using System.Threading.Tasks;
 
 namespace Bit.Owin.Middlewares
 {
@@ -12,13 +12,11 @@ namespace Bit.Owin.Middlewares
 
         public override Task Invoke(IOwinContext context)
         {
-            if (context.Request.Headers != null && !context.Request.Headers.ContainsKey("Authorization"))
+            if (context.Request.Headers?.ContainsKey("Authorization") == false && context.Request.Cookies?["access_token"] != null)
             {
-                if (context.Request.Cookies?["access_token"] != null)
-                    context.Request.Headers.Add("Authorization", new[]
-                    {
-                        $"{context.Request.Cookies["token_type"]} {context.Request.Cookies["access_token"]}"
-                    });
+                context.Request.Headers.Add("Authorization", new[] {
+                    $"{context.Request.Cookies["token_type"]} {context.Request.Cookies["access_token"]}"
+                });
             }
 
             return Next.Invoke(context);

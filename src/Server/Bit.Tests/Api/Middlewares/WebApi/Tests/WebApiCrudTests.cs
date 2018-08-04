@@ -153,10 +153,7 @@ namespace Bit.Tests.Api.Middlewares.WebApi.Tests
 
                 IRequestValidator requestValidator = A.Fake<IRequestValidator>();
 
-                IODataClient client = testEnvironment.Server.BuildODataClient(token: token, beforeRequest: message =>
-                {
-                    requestValidator.ValidateRequestByUri(message.RequestUri);
-                });
+                IODataClient client = testEnvironment.Server.BuildODataClient(token: token, beforeRequest: message => requestValidator.ValidateRequestByUri(message.RequestUri));
 
                 IEnumerable<ParentEntity> parentEntities = await client.Controller<ParentEntitiesController, ParentEntity>()
                     .Filter(p => p.Name == "A")

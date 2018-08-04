@@ -1,9 +1,9 @@
-﻿using System.Net;
-using System.Net.Http;
-using System.Threading.Tasks;
-using Bit.Core.Models;
+﻿using Bit.Core.Models;
 using Bit.Test;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using System.Net;
+using System.Net.Http;
+using System.Threading.Tasks;
 
 namespace Bit.Tests.Api.Middlewares.Tests
 {
@@ -67,10 +67,7 @@ namespace Bit.Tests.Api.Middlewares.Tests
             using (BitOwinTestEnvironment testEnvironment = new BitOwinTestEnvironment(new TestEnvironmentArgs
             {
                 UseHttps = true,
-                ActiveAppEnvironmentCustomizer = environment =>
-                {
-                    environment.AddOrReplace(new EnvironmentConfig { Key = "RequireSsl", Value = true });
-                }
+                ActiveAppEnvironmentCustomizer = environment => environment.AddOrReplace(new EnvironmentConfig { Key = "RequireSsl", Value = true })
             }))
             {
                 HttpResponseMessage getSignInPage = await testEnvironment.Server.BuildHttpClient()

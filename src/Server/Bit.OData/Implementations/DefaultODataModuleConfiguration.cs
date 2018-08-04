@@ -160,8 +160,8 @@ namespace Bit.OData.Implementations
                     {
                         TypeInfo parameterType = operationParameter.Type;
 
-                        if (operationParameter.Type.GetTypeInfo() != typeof(string).GetTypeInfo() &&
-                            typeof(IEnumerable).GetTypeInfo().IsAssignableFrom(operationParameter.Type))
+                        if (operationParameter.Type.GetTypeInfo() != typeof(string).GetTypeInfo()
+                            && typeof(IEnumerable).GetTypeInfo().IsAssignableFrom(operationParameter.Type))
                         {
                             if (parameterType.IsArray)
                                 throw new InvalidOperationException($"Use IEnumerable<{parameterType.GetElementType().GetTypeInfo().Name}> instead of {parameterType.GetElementType().GetTypeInfo().Name}[] for parameter {operationParameter.Name} of {operationParameter.Name} in {controllerName} controller");
@@ -213,7 +213,7 @@ namespace Bit.OData.Implementations
                         {
                             type = DtoMetadataWorkspace.Current.GetFinalDtoType(type);
 
-                            if (isCollection == true)
+                            if (isCollection)
                             {
                                 if (isAction)
                                     ((ActionConfiguration)operationConfiguration).ReturnsCollectionFromEntitySet<TDto>(controllerName);
@@ -230,7 +230,7 @@ namespace Bit.OData.Implementations
                         }
                         else
                         {
-                            if (isCollection == false)
+                            if (!isCollection)
                             {
                                 if (isAction)
                                     ((ActionConfiguration)operationConfiguration).Returns(type);

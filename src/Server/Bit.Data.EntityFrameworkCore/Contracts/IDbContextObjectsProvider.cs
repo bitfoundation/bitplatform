@@ -1,5 +1,5 @@
-﻿using System.Data.Common;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
+using System.Data.Common;
 
 namespace Bit.Data.EntityFrameworkCore.Contracts
 {

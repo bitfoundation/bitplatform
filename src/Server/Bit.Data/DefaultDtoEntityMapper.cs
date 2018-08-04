@@ -1,9 +1,9 @@
-﻿using System;
-using System.Linq;
-using System.Reflection;
-using AutoMapper;
+﻿using AutoMapper;
 using AutoMapper.QueryableExtensions;
 using Bit.Model.Contracts;
+using System;
+using System.Linq;
+using System.Reflection;
 
 namespace Bit.Data
 {
@@ -17,7 +17,7 @@ namespace Bit.Data
 
         public virtual TEntity FromDtoToEntity(TDto dto, TEntity existingEntity)
         {
-            if (_entityTypeAndDtoTypeAreEqual == true)
+            if (_entityTypeAndDtoTypeAreEqual)
                 return dto as TEntity;
 
             return existingEntity == null ? Mapper.Map<TDto, TEntity>(dto) : Mapper.Map(dto, existingEntity);
@@ -28,7 +28,7 @@ namespace Bit.Data
             if (entityQuery == null)
                 throw new ArgumentNullException(nameof(entityQuery));
 
-            if (_entityTypeAndDtoTypeAreEqual == true)
+            if (_entityTypeAndDtoTypeAreEqual)
                 return (IQueryable<TDto>)entityQuery;
 
             return entityQuery.ProjectTo<TDto>(configuration: Mapper.ConfigurationProvider);
@@ -42,7 +42,7 @@ namespace Bit.Data
             if (parameters == null)
                 throw new ArgumentNullException(nameof(parameters));
 
-            if (_entityTypeAndDtoTypeAreEqual == true)
+            if (_entityTypeAndDtoTypeAreEqual)
                 return (IQueryable<TDto>)entityQuery;
 
             return entityQuery.ProjectTo<TDto>(configuration: Mapper.ConfigurationProvider, parameters: parameters);
@@ -50,7 +50,7 @@ namespace Bit.Data
 
         public virtual TDto FromEntityToDto(TEntity entity, TDto existingDto)
         {
-            if (_entityTypeAndDtoTypeAreEqual == true)
+            if (_entityTypeAndDtoTypeAreEqual)
                 return entity as TDto;
 
             return existingDto == null ? Mapper.Map<TEntity, TDto>(entity) : Mapper.Map(entity, existingDto);

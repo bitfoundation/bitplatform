@@ -62,12 +62,12 @@ namespace Bit.Core.Contracts
         /// <summary>
         /// By providing job id (key), you can get access to its info.
         /// </summary>
-        Task<JobInfo> GetJobInfoAsync(string key, CancellationToken cancellationToken);
+        Task<JobInfo> GetJobInfoAsync(string jobId, CancellationToken cancellationToken);
 
         /// <summary>
         /// By providing job id (key), you can get access to its info.
         /// </summary>
-        JobInfo GetJobInfo(string key, CancellationToken cancellationToken);
+        JobInfo GetJobInfo(string jobId, CancellationToken cancellationToken);
 
         /// <summary>
         /// Schedules a job using provided cronExpression. Storing job info in database will be performed async.

@@ -15,13 +15,7 @@ namespace Bit.Core
 
         public static AssemblyContainer Current
         {
-            get
-            {
-                if (_current == null)
-                    _current = new AssemblyContainer();
-
-                return _current;
-            }
+            get => _current ?? (_current = new AssemblyContainer());
             set => _current = value;
         }
 

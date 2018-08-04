@@ -1,9 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Reflection;
-using Bit.Core.Contracts;
+﻿using Bit.Core.Contracts;
 using Bit.Core.Implementations;
 using Newtonsoft.Json;
+using System;
+using System.Collections.Generic;
+using System.Reflection;
 
 namespace Bit.Signalr.Implementations
 {
@@ -45,9 +45,8 @@ namespace Bit.Signalr.Implementations
 
                 bool isDateTimeOffset = objectType.GetTypeInfo() == typeof(DateTimeOffset).GetTypeInfo() || objectType == typeof(DateTimeOffset?).GetTypeInfo();
 
-                if (isDateTimeOffset == true)
-                    throw new InvalidOperationException(
-                    "You may not use date time values in signalr content formatter");
+                if (isDateTimeOffset)
+                    throw new InvalidOperationException("You may not use date time values in signalr content formatter");
 
                 return false;
             }

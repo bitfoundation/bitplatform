@@ -1,7 +1,7 @@
-using System;
-using Bit.Core.Models;
+﻿using Bit.Core.Models;
 using Bit.Owin.Contracts;
 using Owin;
+using System;
 
 namespace Bit.Owin.Middlewares
 {
@@ -23,7 +23,7 @@ namespace Bit.Owin.Middlewares
 
             owinApp.UseXDownloadOptions();
 
-            owinApp.UseXXssProtection(xssProtectionOptions => { xssProtectionOptions.EnabledWithBlockMode(); });
+            owinApp.UseXXssProtection(xssProtectionOptions => xssProtectionOptions.EnabledWithBlockMode());
 
             owinApp.Use<OwinNoCacheResponseMiddleware>();
 

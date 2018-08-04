@@ -1,4 +1,4 @@
-using Bit.Core.Contracts;
+﻿using Bit.Core.Contracts;
 using Bit.Core.Models;
 using Bit.IdentityServer.Contracts;
 using Bit.IdentityServer.Implementations;
@@ -14,10 +14,7 @@ namespace Bit.Tests.IdentityServer.Implementations
 
         public TestOAuthClientsProvider(IAppEnvironmentsProvider appEnvironmentsProvider)
         {
-            if (appEnvironmentsProvider == null)
-                throw new ArgumentNullException(nameof(appEnvironmentsProvider));
-
-            _appEnvironmentsProvider = appEnvironmentsProvider;
+            _appEnvironmentsProvider = appEnvironmentsProvider ?? throw new ArgumentNullException(nameof(appEnvironmentsProvider));
         }
 
         protected TestOAuthClientsProvider()

@@ -1,7 +1,7 @@
-﻿using System;
-using System.Globalization;
-using Bit.Core.Contracts;
+﻿using Bit.Core.Contracts;
 using IdentityServer3.Core.Logging;
+using System;
+using System.Globalization;
 
 namespace Bit.IdentityServer.Implementations
 {

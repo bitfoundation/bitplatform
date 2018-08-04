@@ -1,11 +1,10 @@
-﻿using System;
-using System.Linq;
+﻿using Bit.Owin.Contracts.Metadata;
+using Bit.Test;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+using System;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
-using Bit.Owin.Contracts.Metadata;
-using Bit.Test;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Bit.Tests.Api.Middlewares.Tests
 {
@@ -19,10 +18,7 @@ namespace Bit.Tests.Api.Middlewares.Tests
             using (BitOwinTestEnvironment testEnvironment = new BitOwinTestEnvironment(new TestEnvironmentArgs
             {
                 ActiveAppEnvironmentCustomizer =
-                environment =>
-                {
-                    environment.AppInfo.Version = "2";
-                }
+                environment => environment.AppInfo.Version = "2"
             }))
             {
                 HttpResponseMessage getMetadataForV1 = await testEnvironment.Server.BuildHttpClient()
@@ -50,11 +46,11 @@ namespace Bit.Tests.Api.Middlewares.Tests
 
                 AppMetadata appMetadata = await getMetadataForV1.Content.ReadAsAsync<AppMetadata>();
 
-                Assert.IsTrue(appMetadata.Messages.Any());
+                Assert.IsTrue(appMetadata.Messages.Count > 0);
 
-                Assert.IsTrue(appMetadata.Dtos.Any());
+                Assert.IsTrue(appMetadata.Dtos.Count > 0);
 
-                Assert.IsTrue(appMetadata.Projects.Any());
+                Assert.IsTrue(appMetadata.Projects.Count > 0);
             }
         }
 

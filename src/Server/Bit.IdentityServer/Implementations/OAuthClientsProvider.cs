@@ -50,8 +50,8 @@ namespace Bit.IdentityServer.Implementations
                 ClientId = client.ClientId,
                 ClientName = client.ClientName,
                 Enabled = client.Enabled,
-                PostLogoutRedirectUris = new List<string> { },
-                RedirectUris = new List<string> { },
+                PostLogoutRedirectUris = new List<string>(),
+                RedirectUris = new List<string>(),
                 Secret = client.Secret,
                 TokensLifetime = client.TokensLifetime
             });

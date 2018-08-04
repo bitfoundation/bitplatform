@@ -1,10 +1,10 @@
-﻿using System;
+﻿using Bit.Core.Contracts;
+using Microsoft.Owin;
+using System;
 using System.Linq;
 using System.Net.Http;
 using System.Reflection;
 using System.Web.Http.Tracing;
-using Bit.Core.Contracts;
-using Microsoft.Owin;
 
 namespace Bit.WebApi.Implementations
 {

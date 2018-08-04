@@ -1,5 +1,4 @@
-﻿using System.Threading.Tasks;
-using Bit.Test;
+﻿using Bit.Test;
 using Bit.Tests.Api.ApiControllers;
 using Bit.Tests.Core.Contracts;
 using Bit.Tests.Model.DomainModels;
@@ -7,6 +6,8 @@ using FakeItEasy;
 using IdentityModel.Client;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Simple.OData.Client;
+using System;
+using System.Threading.Tasks;
 
 namespace Bit.Tests.Api.Middlewares.WebApi.Tests
 {
@@ -21,10 +22,7 @@ namespace Bit.Tests.Api.Middlewares.WebApi.Tests
 
             using (BitOwinTestEnvironment testEnvironment = new BitOwinTestEnvironment(new TestEnvironmentArgs
             {
-                AdditionalDependencies = (manager, services) =>
-                {
-                    manager.RegisterInstance(valueChecker);
-                }
+                AdditionalDependencies = (manager, services) => manager.RegisterInstance(valueChecker)
             }))
             {
                 TokenResponse token = await testEnvironment.Server.Login("ValidUserName", "ValidPassword", clientId: "TestResOwner");
@@ -33,7 +31,7 @@ namespace Bit.Tests.Api.Middlewares.WebApi.Tests
 
                 await client.Controller<TestModelsController, TestModel>()
                     .Function(nameof(TestModelsController.TestSqlBuilder))
-                    .Filter(t => (t.Id == 1 && t.StringProperty.ToLower().Contains("Test")) || t.Id == 3)
+                    .Filter(t => (t.Id == 1 && t.StringProperty.IndexOf("Test", StringComparison.OrdinalIgnoreCase) >= 0) || t.Id == 3)
                     .OrderBy(t => t.Id)
                     .ThenByDescending(t => t.StringProperty)
                     .Top(10)

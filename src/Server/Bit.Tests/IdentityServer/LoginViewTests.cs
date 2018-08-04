@@ -1,5 +1,4 @@
-﻿using System.Linq;
-using Bit.Test;
+﻿using Bit.Test;
 using Bit.Test.Core.Implementations;
 using Bit.Test.Server;
 using Bit.Tests.IdentityServer.Implementations;
@@ -10,6 +9,7 @@ using OpenQA.Selenium;
 using OpenQA.Selenium.Remote;
 using OpenQA.Selenium.Support.UI;
 using System;
+using System.Linq;
 using System.Threading;
 
 namespace Bit.Tests.IdentityServer
@@ -23,7 +23,7 @@ namespace Bit.Tests.IdentityServer
         {
             using (BitOwinTestEnvironment testEnvironment = new BitOwinTestEnvironment(new TestEnvironmentArgs { UseRealServer = true }))
             {
-                using (RemoteWebDriver driver = testEnvironment.Server.BuildWebDriver(new RemoteWebDriverOptions { Uri = @"InvokeLogin", ClientSideTest = false }))
+                using (RemoteWebDriver driver = testEnvironment.Server.BuildWebDriver(new RemoteWebDriverOptions { Uri = "InvokeLogin", ClientSideTest = false }))
                 {
                     new WebDriverWait(driver, TimeSpan.FromSeconds(3))
                         .Until(ExpectedConditions.ElementExists(By.Name("loginForm")));
@@ -59,7 +59,7 @@ namespace Bit.Tests.IdentityServer
         {
             using (BitOwinTestEnvironment testEnvironment = new BitOwinTestEnvironment(new TestEnvironmentArgs { UseRealServer = true }))
             {
-                using (RemoteWebDriver driver = testEnvironment.Server.BuildWebDriver(new RemoteWebDriverOptions { Uri = @"InvokeLogin", ClientSideTest = false }))
+                using (RemoteWebDriver driver = testEnvironment.Server.BuildWebDriver(new RemoteWebDriverOptions { Uri = "InvokeLogin", ClientSideTest = false }))
                 {
                     new WebDriverWait(driver, TimeSpan.FromSeconds(3))
                         .Until(ExpectedConditions.ElementExists(By.Name("loginForm")));

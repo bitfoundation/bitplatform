@@ -2,19 +2,13 @@
 
 namespace Bit.Owin.Implementations
 {
-    public class DefaultDependencyManager
+    public static class DefaultDependencyManager
     {
         private static IDependencyManager _current;
 
         public static IDependencyManager Current
         {
-            get
-            {
-                if (_current == null)
-                    _current = new AutofacDependencyManager();
-
-                return _current;
-            }
+            get => _current ?? (_current = new AutofacDependencyManager());
             set => _current = value;
         }
     }

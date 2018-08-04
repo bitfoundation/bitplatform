@@ -1,9 +1,9 @@
-﻿using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
-using Bit.Core.Contracts;
+﻿using Bit.Core.Contracts;
 using Bit.Data.Contracts;
 using Bit.Model.DomainModels;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace Bit.OData.ODataControllers
 {

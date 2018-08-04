@@ -16,10 +16,9 @@ namespace Bit.Tests.Api.ApiControllers
 
         [Get]
         [AllowAnonymous]
-        public virtual async Task<IQueryable<ChildEntity>> Get(CancellationToken cancellationToken)
+        public virtual Task<IQueryable<ChildEntity>> Get(CancellationToken cancellationToken)
         {
-            return await TestRepository
-                .GetAllAsync(cancellationToken);
+            return TestRepository.GetAllAsync(cancellationToken);
         }
 
         [Get]

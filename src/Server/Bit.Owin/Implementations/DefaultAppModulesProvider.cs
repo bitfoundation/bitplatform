@@ -1,9 +1,9 @@
-﻿using System;
+﻿using Bit.Core;
+using Bit.Core.Contracts;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using Bit.Core;
-using Bit.Core.Contracts;
 
 namespace Bit.Owin.Implementations
 {
@@ -12,10 +12,7 @@ namespace Bit.Owin.Implementations
     {
         public AppModuleAttribute(Type type)
         {
-            if (type == null)
-                throw new ArgumentNullException(nameof(type));
-
-            Type = type;
+            Type = type ?? throw new ArgumentNullException(nameof(type));
         }
 
         public Type Type { get; }
@@ -45,13 +42,7 @@ namespace Bit.Owin.Implementations
         /// </summary>
         public static IAppModulesProvider Current
         {
-            get
-            {
-                if (_current == null)
-                    _current = new DefaultAppModulesProvider();
-
-                return _current;
-            }
+            get => _current ?? (_current = new DefaultAppModulesProvider());
             set => _current = value;
         }
 
@@ -63,7 +54,7 @@ namespace Bit.Owin.Implementations
 
                 object InstantiateAppModule(AppModuleAttribute depManagerAtt)
                 {
-                    return (_args != null && _args.Any()) ? Activator.CreateInstance(depManagerAtt.Type, _args) : Activator.CreateInstance(depManagerAtt.Type);
+                    return (_args?.Length > 0) ? Activator.CreateInstance(depManagerAtt.Type, _args) : Activator.CreateInstance(depManagerAtt.Type);
                 }
 
                 _result = AssemblyContainer.Current.AssembliesWithDefaultAssemblies()

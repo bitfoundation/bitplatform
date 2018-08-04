@@ -14,7 +14,6 @@ using System.Linq;
 
 namespace Bit.IdentityServer
 {
-
     public class IdentityServerMiddlewareConfiguration : IOwinMiddlewareConfiguration
     {
         public virtual AppEnvironment AppEnvironment { get; set; }
@@ -76,7 +75,7 @@ namespace Bit.IdentityServer
                     SigningCertificate = AppCertificatesProvider.GetSingleSignOnCertificate(),
                     Factory = factory,
                     RequireSsl = requireSslConfigValue,
-                    EnableWelcomePage = AppEnvironment.DebugMode == true,
+                    EnableWelcomePage = AppEnvironment.DebugMode,
                     IssuerUri = AppEnvironment.GetSsoIssuerName(),
                     CspOptions = new CspOptions
                     {

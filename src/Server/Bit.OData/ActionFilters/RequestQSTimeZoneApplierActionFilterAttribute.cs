@@ -1,12 +1,12 @@
-﻿using System;
+﻿using Bit.Core.Contracts;
+using Bit.Owin.Contracts;
+using Microsoft.Owin;
+using System;
 using System.Globalization;
 using System.Net.Http;
 using System.Text.RegularExpressions;
 using System.Web.Http.Controllers;
 using System.Web.Http.Filters;
-using Bit.Core.Contracts;
-using Bit.Owin.Contracts;
-using Microsoft.Owin;
 
 namespace Bit.OData.ActionFilters
 {
@@ -42,11 +42,9 @@ namespace Bit.OData.ActionFilters
                         result = date.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
 
                         return result;
-
                     }, RegexOptions.Compiled | RegexOptions.CultureInvariant | RegexOptions.IgnoreCase);
 
                     return result;
-
                 }, RegexOptions.Compiled | RegexOptions.CultureInvariant | RegexOptions.IgnoreCase);
 
                 urlAsTextToFix = Regex.Replace(urlAsTextToFix, isoDateRegExp, (match) =>
@@ -56,7 +54,6 @@ namespace Bit.OData.ActionFilters
                     date = timeZoneManager.MapFromClientToServer(date);
 
                     return date.ToString("yyyy-MM-ddTHH:mm:ss.00Z", CultureInfo.InvariantCulture);
-
                 }, RegexOptions.Compiled | RegexOptions.CultureInvariant | RegexOptions.IgnoreCase);
 
                 actionContext.Request.RequestUri = new Uri(urlAsTextToFix, UriKind.Absolute);

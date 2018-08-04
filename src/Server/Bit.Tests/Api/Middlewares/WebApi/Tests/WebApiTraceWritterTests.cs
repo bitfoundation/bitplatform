@@ -1,19 +1,19 @@
-﻿using System;
-using System.Linq;
-using System.Net.Http;
-using System.Threading.Tasks;
+﻿using Bit.Core.Contracts;
+using Bit.Owin.Exceptions;
+using Bit.Test;
+using Bit.Test.Core.Implementations;
+using Bit.Tests.Api.ApiControllers;
+using Bit.Tests.Core.Contracts;
+using Bit.Tests.Model.DomainModels;
+using FakeItEasy;
 using IdentityModel.Client;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Bit.Owin.Exceptions;
-using Bit.Core.Contracts;
-using Bit.Test.Core.Implementations;
 using Simple.OData.Client;
-using Bit.Tests.Api.ApiControllers;
-using Bit.Tests.Model.DomainModels;
-using Bit.Tests.Core.Contracts;
-using FakeItEasy;
-using Bit.Test;
+using System;
+using System.Linq;
+using System.Net.Http;
 using System.Reflection;
+using System.Threading.Tasks;
 
 namespace Bit.Tests.Api.Middlewares.WebApi.Tests
 {
@@ -51,10 +51,7 @@ namespace Bit.Tests.Api.Middlewares.WebApi.Tests
 
             using (BitOwinTestEnvironment testEnvironment = new BitOwinTestEnvironment(new TestEnvironmentArgs
             {
-                AdditionalDependencies = (manager, services) =>
-                {
-                    manager.RegisterInstance(emailService);
-                }
+                AdditionalDependencies = (manager, services) => manager.RegisterInstance(emailService)
             }))
             {
                 TokenResponse token = await testEnvironment.Server.Login("ValidUserName", "ValidPassword", clientId: "TestResOwner");

@@ -9,22 +9,22 @@ namespace Bit.IdentityServer.Implementations
     {
         public virtual IDependencyManager DependencyManager { get; set; }
 
-        public virtual async Task RaiseAsync<T>(Event<T> @event)
+        public virtual async Task RaiseAsync<T>(Event<T> evt)
         {
-            if (@event.EventType == EventTypes.Error || @event.EventType == EventTypes.Failure)
+            if (evt.EventType == EventTypes.Error || evt.EventType == EventTypes.Failure)
             {
                 using (Core.Contracts.IDependencyResolver resolver = DependencyManager.CreateChildDependencyResolver())
                 {
                     ILogger logger = resolver.Resolve<ILogger>();
 
-                    logger.AddLogData(nameof(EventContext.ActivityId), @event.Context.ActivityId);
-                    logger.AddLogData(nameof(EventContext.RemoteIpAddress), @event.Context.RemoteIpAddress);
-                    logger.AddLogData(nameof(EventContext.SubjectId), @event.Context.SubjectId);
-                    logger.AddLogData(nameof(Event<object>.Category), @event.Category);
-                    logger.AddLogData("IdentityServerEventId", @event.Id);
-                    logger.AddLogData(nameof(Event<object>.Name), @event.Name);
+                    logger.AddLogData(nameof(EventContext.ActivityId), evt.Context.ActivityId);
+                    logger.AddLogData(nameof(EventContext.RemoteIpAddress), evt.Context.RemoteIpAddress);
+                    logger.AddLogData(nameof(EventContext.SubjectId), evt.Context.SubjectId);
+                    logger.AddLogData(nameof(Event<object>.Category), evt.Category);
+                    logger.AddLogData("IdentityServerEventId", evt.Id);
+                    logger.AddLogData(nameof(Event<object>.Name), evt.Name);
 
-                    await logger.LogFatalAsync(@event.Message).ConfigureAwait(false);
+                    await logger.LogFatalAsync(evt.Message).ConfigureAwait(false);
                 }
             }
         }

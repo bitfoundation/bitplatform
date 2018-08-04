@@ -9,7 +9,7 @@ namespace Bit.Data.EntityFrameworkCore.Implementations
     {
         public SqlServerDbContextObjectsProvider()
         {
-            _UseSqlServerMethod = new Lazy<MethodInfo>(GetUseSqlServerMethod, isThreadSafe: true);
+            _useSqlServerMethod = new Lazy<MethodInfo>(GetUseSqlServerMethod, isThreadSafe: true);
         }
 
         private MethodInfo GetUseSqlServerMethod()
@@ -22,11 +22,11 @@ namespace Bit.Data.EntityFrameworkCore.Implementations
             return sqlServerDbContextOptionsExtensionsType.GetMethod("UseSqlServer", new[] { typeof(DbContextOptionsBuilder), typeof(DbConnection), typeof(Action<>).MakeGenericType(Assembly.Load("Microsoft.EntityFrameworkCore.SqlServer").GetType("Microsoft.EntityFrameworkCore.Infrastructure.SqlServerDbContextOptionsBuilder")) });
         }
 
-        private Lazy<MethodInfo> _UseSqlServerMethod;
+        private readonly Lazy<MethodInfo> _useSqlServerMethod;
 
         public override void UseDbConnection(DbConnection dbConnection, DbContextOptionsBuilder dbContextOptionsBuilder)
         {
-            _UseSqlServerMethod.Value.Invoke(null, new object[] { dbContextOptionsBuilder, dbConnection, null });
+            _useSqlServerMethod.Value.Invoke(null, new object[] { dbContextOptionsBuilder, dbConnection, null });
         }
     }
 }

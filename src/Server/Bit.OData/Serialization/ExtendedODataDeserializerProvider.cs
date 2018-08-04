@@ -1,7 +1,6 @@
 ﻿using Bit.OData.ODataControllers;
 using Microsoft.AspNet.OData.Formatter.Deserialization;
 using System;
-using System.Linq;
 using System.Net.Http;
 using System.Reflection;
 using System.Web.Http.Controllers;
@@ -27,10 +26,10 @@ namespace Bit.OData.Serialization
         {
             HttpActionDescriptor actionDescriptor = request.GetActionDescriptor();
 
-            if (actionDescriptor != null && (actionDescriptor.GetCustomAttributes<ActionAttribute>().Any() ||
-                actionDescriptor.GetCustomAttributes<CreateAttribute>().Any() ||
-                actionDescriptor.GetCustomAttributes<UpdateAttribute>().Any() ||
-                actionDescriptor.GetCustomAttributes<PartialUpdateAttribute>().Any()))
+            if (actionDescriptor != null && (actionDescriptor.GetCustomAttributes<ActionAttribute>().Count > 0
+                || actionDescriptor.GetCustomAttributes<CreateAttribute>().Count > 0
+                || actionDescriptor.GetCustomAttributes<UpdateAttribute>().Count > 0
+                || actionDescriptor.GetCustomAttributes<PartialUpdateAttribute>().Count > 0))
             {
                 return _defaultODataParameterDeserializerValue.Value;
             }

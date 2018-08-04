@@ -66,7 +66,7 @@ namespace Bit.Core.Contracts
                 .Select(i => i.GetTypeInfo())
                 .ToArray();
 
-            if (!repositoryContracts.Any())
+            if (repositoryContracts.Length == 0)
                 throw new InvalidOperationException($"Type {repositoryType.FullName} has no repository contract");
 
             if (repositoryType.IsGenericType)

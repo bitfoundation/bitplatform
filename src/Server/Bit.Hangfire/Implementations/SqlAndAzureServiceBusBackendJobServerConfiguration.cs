@@ -1,4 +1,4 @@
-using Autofac;
+﻿using Autofac;
 using Bit.Core.Contracts;
 using Bit.Core.Models;
 using Bit.Hangfire.Contracts;

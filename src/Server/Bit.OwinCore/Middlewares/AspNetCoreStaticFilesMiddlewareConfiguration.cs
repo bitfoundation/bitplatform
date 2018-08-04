@@ -22,11 +22,11 @@ namespace Bit.OwinCore.Middlewares
 
             options.FileProvider = HostingEnvironment.WebRootFileProvider;
 
-            string path = $@"/Files/V{AppEnvironment.AppInfo.Version}";
+            string path = $"/Files/V{AppEnvironment.AppInfo.Version}";
 
             aspNetCoreApp.Map(path, innerApp =>
             {
-                if (AppEnvironment.DebugMode == true)
+                if (AppEnvironment.DebugMode)
                     innerApp.UseMiddleware<AspNetCoreNoCacheResponseMiddleware>();
                 else
                     innerApp.UseMiddleware<AspNetCoreCacheResponseMiddleware>();

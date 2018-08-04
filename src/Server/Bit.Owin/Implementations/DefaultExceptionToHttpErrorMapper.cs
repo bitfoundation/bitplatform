@@ -1,11 +1,11 @@
-﻿using System;
-using System.Net;
-using System.Reflection;
-using Bit.Core.Contracts;
+﻿using Bit.Core.Contracts;
 using Bit.Core.Models;
 using Bit.Owin.Contracts;
 using Bit.Owin.Exceptions;
 using Bit.Owin.Metadata;
+using System;
+using System.Net;
+using System.Reflection;
 
 namespace Bit.Owin.Implementations
 {
@@ -28,14 +28,11 @@ namespace Bit.Owin.Implementations
         {
             exp = UnWrapException(exp);
 
-            string message = BitMetadataBuilder.UnKnownError;
-
             if (IsKnownError(exp))
-                message = exp.Message;
-            else if (AppEnvironment.DebugMode == true)
-                message = exp.ToString();
-
-            return message;
+                return exp.Message;
+            if (AppEnvironment.DebugMode)
+                return exp.ToString();
+            return BitMetadataBuilder.UnKnownError;
         }
 
         public virtual string GetReasonPhrase(Exception exp)
@@ -63,11 +60,7 @@ namespace Bit.Owin.Implementations
         public virtual bool IsKnownError(Exception exp)
         {
             exp = UnWrapException(exp);
-
-            if (exp is IKnownException)
-                return true;
-
-            return false;
+            return exp is IKnownException;
         }
     }
 }

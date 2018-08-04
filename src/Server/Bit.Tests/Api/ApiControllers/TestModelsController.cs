@@ -31,9 +31,9 @@ namespace Bit.Tests.Api.ApiControllers
 
         [Get]
         [AllowAnonymous]
-        public virtual async Task<IQueryable<TestModel>> Get(CancellationToken cancellationToken)
+        public virtual Task<IQueryable<TestModel>> Get(CancellationToken cancellationToken)
         {
-            return await TestModelsRepository.Value
+            return TestModelsRepository.Value
                 .GetAllAsync(cancellationToken);
         }
 
@@ -149,9 +149,9 @@ namespace Bit.Tests.Api.ApiControllers
         }
 
         [Action]
-        public virtual async Task PushSomethingWithDateTimeOffset()
+        public virtual Task PushSomethingWithDateTimeOffset()
         {
-            await MessageSender.Value.SendMessageToUsersAsync("TestTask", new { Date = DateTimeProvider.Value.GetCurrentUtcDateTime() }, new[] { "SomeUser" });
+            return MessageSender.Value.SendMessageToUsersAsync("TestTask", new { Date = DateTimeProvider.Value.GetCurrentUtcDateTime() }, new[] { "SomeUser" });
         }
 
         public class WordParameters
@@ -162,22 +162,22 @@ namespace Bit.Tests.Api.ApiControllers
         }
 
         [Action]
-        public virtual async Task PushSomeWordToAnotherUser(WordParameters parameters, CancellationToken cancellationToken)
+        public virtual Task PushSomeWordToAnotherUser(WordParameters parameters, CancellationToken cancellationToken)
         {
             string to = parameters.to;
             string word = parameters.word;
 
-            await MessageSender.Value.SendMessageToUsersAsync("NewWord", new { Word = word }, new[] { to });
+            return MessageSender.Value.SendMessageToUsersAsync("NewWord", new { Word = word }, new[] { to });
         }
 
         [Action]
-        public virtual async Task PushSomeWordToAnotherUsingBackgroundJobWorker(WordParameters parameters, CancellationToken cancellationToken)
+        public virtual Task PushSomeWordToAnotherUsingBackgroundJobWorker(WordParameters parameters, CancellationToken cancellationToken)
         {
             string to = parameters.to;
             string word = parameters.word;
 
-            await BackgroundJobWorker.Value.PerformBackgroundJobAsync<IMessageSender>(messageSender =>
-                        messageSender.SendMessageToUsers("NewWord", new { Word = word }, new[] { to }));
+            return BackgroundJobWorker.Value.PerformBackgroundJobAsync<IMessageSender>(messageSender =>
+                         messageSender.SendMessageToUsers("NewWord", new { Word = word }, new[] { to }));
         }
 
         public class StringFormattersTestsParameters
@@ -249,9 +249,9 @@ namespace Bit.Tests.Api.ApiControllers
         }
 
         [Function]
-        public virtual async Task<IQueryable<TestModel>> CustomActionMethodWithQueryableOfEntitiesReturnValueTest(CancellationToken cancellationToken)
+        public virtual Task<IQueryable<TestModel>> CustomActionMethodWithQueryableOfEntitiesReturnValueTest(CancellationToken cancellationToken)
         {
-            return await TestModelsRepository.Value
+            return TestModelsRepository.Value
                 .GetAllAsync(cancellationToken);
         }
 

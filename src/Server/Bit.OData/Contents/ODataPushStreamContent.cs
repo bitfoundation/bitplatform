@@ -20,7 +20,6 @@ namespace Bit.OData.Contents
                     await onStreamAvailable(stream);
                     await stream.FlushAsync(cancellationToken);
                 }
-
             }, "application/json")
         {
             Headers.ContentType.Parameters.Add(new NameValueHeaderValue("odata.metadata", "minimal"));

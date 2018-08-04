@@ -117,13 +117,9 @@ namespace Bit.Owin.Implementations
                     v = valueAsStr;
 
                 if (k == "ClientLogs" || k == "OperationArgs")
-                {
                     v = Formatter.Serialize(ld.Value);
-                }
                 else
-                {
                     v = ld.Value.ToString();
-                }
 
                 return new KeyVal { Key = k, Value = v };
             })
@@ -161,7 +157,7 @@ namespace Bit.Owin.Implementations
                 if (logEntry.AppServerThreadId.HasValue)
                     keyValues.Add(new KeyVal { Key = nameof(LogEntry.AppServerThreadId), Value = logEntry.AppServerThreadId.ToString() });
 
-                if (isPerRequestTelemetryClient == true)
+                if (isPerRequestTelemetryClient)
                 {
                     if (userInformationProvider.IsAuthenticated())
                         telemetryClient.Context.User.AccountId = telemetryClient.Context.User.AuthenticatedUserId = userInformationProvider.GetCurrentUserId();

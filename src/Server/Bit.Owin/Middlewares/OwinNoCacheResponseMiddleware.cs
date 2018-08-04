@@ -1,8 +1,8 @@
-﻿using System;
+﻿using Bit.Owin.Implementations;
+using Microsoft.Owin;
+using System;
 using System.Linq;
 using System.Threading.Tasks;
-using Bit.Owin.Implementations;
-using Microsoft.Owin;
 
 namespace Bit.Owin.Middlewares
 {

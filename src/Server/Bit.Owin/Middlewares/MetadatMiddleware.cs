@@ -1,7 +1,7 @@
-﻿using System.Threading.Tasks;
-using Bit.Core.Contracts;
+﻿using Bit.Core.Contracts;
 using Bit.Owin.Contracts.Metadata;
 using Microsoft.Owin;
+using System.Threading.Tasks;
 
 namespace Bit.Owin.Middlewares
 {

@@ -1,8 +1,8 @@
-﻿using System;
+﻿using Bit.Core.Contracts;
+using System;
 using System.Collections.Generic;
 using System.Web.Http.Controllers;
 using System.Web.Http.Filters;
-using Bit.Core.Contracts;
 
 namespace Bit.OData.ActionFilters
 {

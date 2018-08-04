@@ -17,10 +17,7 @@ namespace Bit.Data.EntityFramework.Implementations
                        && typeof(IDto).IsAssignableFrom(p.DestinationProperty.ReflectedType);
             }
 
-            mapperConfigExpression.ForAllPropertyMaps(MapperPropConfigurationCondition, (p, member) =>
-            {
-                p.Ignored = true;
-            });
+            mapperConfigExpression.ForAllPropertyMaps(MapperPropConfigurationCondition, (p, member) => p.Ignored = true);
         }
     }
 }

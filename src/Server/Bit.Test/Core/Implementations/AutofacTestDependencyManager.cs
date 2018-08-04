@@ -1,17 +1,16 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
-using Autofac;
+﻿using Autofac;
 using Bit.Core.Contracts;
 using Bit.Owin.Implementations;
 using FakeItEasy;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
 
 namespace Bit.Test.Core.Implementations
 {
     public class AutofacTestDependencyManager : AutofacDependencyManager
     {
-
         public override IDependencyManager Init()
         {
             base.Init();
@@ -30,38 +29,26 @@ namespace Bit.Test.Core.Implementations
 
                         if (constructors.Length == 1)
                         {
-                            if (constructors.Single().GetParameters().Any())
-                            {
+                            if (constructors.Single().GetParameters().Length > 0)
                                 throw new InvalidOperationException($"{implementationType.FullName} has only one constructor which has parameter");
-                            }
                         }
                         else
                         {
-                            if (constructors.All(c => !c.GetParameters().Any()))
-                            {
+                            if (constructors.All(c => c.GetParameters().Length == 0))
                                 throw new InvalidOperationException($"{implementationType.FullName} has more than one constructor, but all without parameter");
-                            }
 
-                            if (constructors.All(c => c.GetParameters().Any()))
-                            {
+                            if (constructors.All(c => c.GetParameters().Length > 0))
                                 throw new InvalidOperationException($"{implementationType.FullName} has more than one constructor, but all with parameter");
-                            }
 
                             if (constructors.GroupBy(c => c.IsPublic).Count() == 1)
-                            {
                                 throw new InvalidOperationException($"{implementationType.FullName} has more than one constructor, all with same visibility level");
-                            }
 
-                            if (constructors.Single(c => !c.IsPublic).GetParameters().Any())
-                            {
+                            if (constructors.Single(c => !c.IsPublic).GetParameters().Length > 0)
                                 throw new InvalidOperationException($"{implementationType.FullName} has more than one constructor, and its non public constructor has parameter");
-                            }
                         }
 
                         if (implementationType.GetMethods(BindingFlags.Instance | BindingFlags.Public | BindingFlags.DeclaredOnly).Any(m => !m.IsVirtual))
-                        {
                             throw new InvalidOperationException($"{implementationType.FullName} has non virtual public instance members");
-                        }
                     }
 
                     args.ComponentRegistration.Activating += ComponentRegistration_Activating;
@@ -71,14 +58,14 @@ namespace Bit.Test.Core.Implementations
             return this;
         }
 
-        public virtual List<Func<TypeInfo, bool>> AutoProxyCreationIncludeRules { get; set; } = new List<Func<TypeInfo, bool>> { };
+        public virtual List<Func<TypeInfo, bool>> AutoProxyCreationIncludeRules { get; set; } = new List<Func<TypeInfo, bool>>();
 
-        public virtual List<Func<TypeInfo, bool>> AutoProxyCreationIgnoreRules { get; set; } = new List<Func<TypeInfo, bool>> { };
+        public virtual List<Func<TypeInfo, bool>> AutoProxyCreationIgnoreRules { get; set; } = new List<Func<TypeInfo, bool>>();
 
         public virtual bool IsGoingToCreateProxyForImplementationType(TypeInfo implementationType)
         {
-            return AutoProxyCreationIncludeRules.Any(rule => rule(implementationType) == true)
-                && AutoProxyCreationIgnoreRules.All(rule => rule(implementationType) == false);
+            return AutoProxyCreationIncludeRules.Any(rule => rule(implementationType))
+                && AutoProxyCreationIgnoreRules.All(rule => !rule(implementationType));
         }
 
         public virtual void ComponentRegistration_Activating(object sender, Autofac.Core.ActivatingEventArgs<object> e)
@@ -102,10 +89,7 @@ namespace Bit.Test.Core.Implementations
         {
             T originalInstance = (T)serviceInstance;
 
-            serviceInstance = A.Fake<T>(x =>
-            {
-                x.Wrapping(originalInstance);
-            });
+            serviceInstance = A.Fake<T>(x => x.Wrapping(originalInstance));
 
             return (T)serviceInstance;
         }

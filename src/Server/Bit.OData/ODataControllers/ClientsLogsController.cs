@@ -1,8 +1,8 @@
-﻿using System.Collections.Generic;
+﻿using Bit.Core.Contracts;
+using Bit.Model.Dtos;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using System.Web.Http;
-using Bit.Core.Contracts;
-using Bit.Model.Dtos;
 
 namespace Bit.OData.ODataControllers
 {

@@ -2,9 +2,7 @@
 using Bit.Core.Contracts;
 using Bit.Core.Implementations;
 using Bit.Core.Models;
-using Bit.Owin.Contracts;
 using Bit.Owin.Implementations;
-using Bit.OwinCore.Contracts;
 using Bit.Test.Core.Implementations;
 using Bit.Test.Server;
 using Microsoft.Extensions.DependencyInjection;
@@ -72,10 +70,7 @@ namespace Bit.Test
 
         public TestAppEnvironmentsProvider(IAppEnvironmentsProvider appEnvironmentProvider, Action<AppEnvironment> appEnvCustomizer = null)
         {
-            if (appEnvironmentProvider == null)
-                throw new ArgumentNullException(nameof(appEnvironmentProvider));
-
-            _appEnvironmentsProvider = appEnvironmentProvider;
+            _appEnvironmentsProvider = appEnvironmentProvider ?? throw new ArgumentNullException(nameof(appEnvironmentProvider));
             _appEnvCustomizer = appEnvCustomizer;
         }
 
@@ -101,7 +96,7 @@ namespace Bit.Test
 
             string uri = args.FullUri ?? new Uri($"{(args.UseHttps ? "https" : "http")}://{args.HostName}:{args.Port}/").ToString();
 
-            if (args.UseProxyBasedDependencyManager == true)
+            if (args.UseProxyBasedDependencyManager)
             {
                 DefaultDependencyManager.Current = new AutofacTestDependencyManager();
 
@@ -119,20 +114,15 @@ namespace Bit.Test
 
         protected virtual ITestServer GetTestServer(TestEnvironmentArgs args)
         {
-            if (args.UseRealServer == true)
+            if (args.UseRealServer)
             {
-                if (args.UseAspNetCore == false)
-                    return new OwinSelfHostTestServer();
-                else
+                if (args.UseAspNetCore)
                     return new AspNetCoreSelfHostTestServer();
+                return new OwinSelfHostTestServer();
             }
-            else
-            {
-                if (args.UseAspNetCore == false)
-                    return new OwinEmbeddedTestServer();
-                else
-                    return new AspNetCoreEmbeddedTestServer();
-            }
+            if (args.UseAspNetCore)
+                return new AspNetCoreEmbeddedTestServer();
+            return new OwinEmbeddedTestServer();
         }
 
         protected virtual List<Func<TypeInfo, bool>> GetAutoProxyCreationIgnoreRules()

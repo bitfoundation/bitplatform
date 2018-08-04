@@ -1,14 +1,14 @@
-﻿using System;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
-using System.Web.Http;
+﻿using Bit.Data.Contracts;
 using Bit.OData.ODataControllers;
-using Bit.Data.Contracts;
 using Bit.Owin.Exceptions;
 using Bit.Tests.Model.DomainModels;
 using Bit.Tests.Owin.Metadata;
 using Microsoft.EntityFrameworkCore;
+using System;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
+using System.Web.Http;
 
 namespace Bit.Tests.Api.ApiControllers
 {
@@ -18,9 +18,9 @@ namespace Bit.Tests.Api.ApiControllers
 
         [Get]
         [AllowAnonymous]
-        public virtual async Task<IQueryable<ParentEntity>> Get(CancellationToken cancellationToken)
+        public virtual Task<IQueryable<ParentEntity>> Get(CancellationToken cancellationToken)
         {
-            return await ParentEntitiesRepository
+            return ParentEntitiesRepository
                 .GetAllAsync(cancellationToken);
         }
 

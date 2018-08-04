@@ -25,13 +25,13 @@ namespace Bit.OData.Implementations
             if (odataQuery == null)
                 throw new ArgumentNullException(nameof(odataQuery));
 
-            string columns = "*";
+            const string columns = "*";
             string orderBy = null, where = null;
             long? top = odataQuery.Top?.Value;
             long? skip = odataQuery.Skip?.Value;
             IDictionary<string, object> parameters = null;
 
-            if (odataQuery.SelectExpand != null && odataQuery.SelectExpand.SelectExpandClause.AllSelected != true)
+            if (odataQuery.SelectExpand?.SelectExpandClause.AllSelected == false)
                 throw new BadRequestException("$select is not supported for this resource");
 
             if (odataQuery.Filter != null)
@@ -55,7 +55,7 @@ namespace Bit.OData.Implementations
 
                 SqlLam<TDto> sqlQuery = new SqlLam<TDto>(whereFinder.Where);
 
-                where = string.Join("", sqlQuery.SqlBuilder.WhereConditions);
+                where = string.Concat(sqlQuery.SqlBuilder.WhereConditions);
                 parameters = sqlQuery.QueryParameters;
             }
 
@@ -94,15 +94,15 @@ namespace Bit.OData.Implementations
             };
         }
 
-        public virtual ODataSqlQuery BuildSqlQuery<TDto>(ODataQueryOptions<TDto> odataQuery, string tableName)
+        public virtual ODataSqlQuery BuildSqlQuery<TDto>(ODataQueryOptions<TDto> queryOptions, string tableName)
             where TDto : class
         {
-            if (odataQuery == null)
-                throw new ArgumentNullException(nameof(odataQuery));
+            if (queryOptions == null)
+                throw new ArgumentNullException(nameof(queryOptions));
 
             TypeInfo dtoType = typeof(TDto).GetTypeInfo();
 
-            ODataSqlQueryParts sqlQueryParts = BuildSqlQueryParts(odataQuery);
+            ODataSqlQueryParts sqlQueryParts = BuildSqlQueryParts(queryOptions);
 
             if (sqlQueryParts.Skip != null)
             {
@@ -146,8 +146,8 @@ namespace Bit.OData.Implementations
             string finalSelectCountQuery = odataSqlQuery.Parts.GetTotalCountFromDb ? $"({odataSqlQuery.SelectTotalCountQuery}) as '@odata.count' ," : "";
 
             string sqlJsonQuery = $@"select * from (select '{edmTypeFullPath}' as '@odata.context', 
-			  {finalSelectCountQuery}
-			  ({odataSqlQuery.SelectQuery} FOR JSON PATH) as 'value') as ODataResult
+              {finalSelectCountQuery}
+              ({odataSqlQuery.SelectQuery} FOR JSON PATH) as 'value') as ODataResult
 FOR JSON AUTO, WITHOUT_ARRAY_WRAPPER";
 
             return new ODataSqlJsonQuery
@@ -158,17 +158,14 @@ FOR JSON AUTO, WITHOUT_ARRAY_WRAPPER";
         }
     }
 
-    class OrderByFinder<TDto> : ExpressionVisitor
+    internal class OrderByFinder<TDto> : ExpressionVisitor
         where TDto : class
     {
         private readonly SqlLam<TDto> _sqlQuery;
 
         public OrderByFinder(SqlLam<TDto> sqlQuery)
         {
-            if (sqlQuery == null)
-                throw new ArgumentNullException(nameof(sqlQuery));
-
-            _sqlQuery = sqlQuery;
+            _sqlQuery = sqlQuery ?? throw new ArgumentNullException(nameof(sqlQuery));
         }
 
         protected override Expression VisitMethodCall(MethodCallExpression node)
@@ -191,7 +188,7 @@ FOR JSON AUTO, WITHOUT_ARRAY_WRAPPER";
         }
     }
 
-    class WhereExpressionFinder<TDto> : ExpressionVisitor
+    internal class WhereExpressionFinder<TDto> : ExpressionVisitor
         where TDto : class
     {
         public Expression<Func<TDto, bool>> Where { get; set; }
@@ -207,7 +204,7 @@ FOR JSON AUTO, WITHOUT_ARRAY_WRAPPER";
         }
     }
 
-    class ExtraMethodCallRemover<TDto> : ExpressionVisitor
+    internal class ExtraMethodCallRemover<TDto> : ExpressionVisitor
         where TDto : class
     {
         protected override Expression VisitUnary(UnaryExpression node)

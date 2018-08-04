@@ -1,10 +1,10 @@
-﻿using System;
-using System.ComponentModel.DataAnnotations;
-using System.Reflection;
-using Bit.Owin.Contracts.Metadata;
-using System.Linq.Expressions;
-using System.Linq;
+﻿using Bit.Owin.Contracts.Metadata;
 using Lambda2Js;
+using System;
+using System.ComponentModel.DataAnnotations;
+using System.Linq;
+using System.Linq.Expressions;
+using System.Reflection;
 
 namespace Bit.Owin.Implementations.Metadata
 {
@@ -15,10 +15,7 @@ namespace Bit.Owin.Implementations.Metadata
 
         public virtual IDtoMetadataBuilder<TDto> AddDtoMetadata(DtoMetadata metadata)
         {
-            if (metadata == null)
-                throw new ArgumentNullException(nameof(metadata));
-
-            _dtoMetadata = metadata;
+            _dtoMetadata = metadata ?? throw new ArgumentNullException(nameof(metadata));
 
             _dtoMetadata.DtoType = typeof(TDto).GetTypeInfo().FullName;
 
@@ -95,7 +92,7 @@ namespace Bit.Owin.Implementations.Metadata
 
             metadata.DtoMemberName = member.Name;
 
-            if (metadata.IsRequired == false)
+            if (!metadata.IsRequired)
                 metadata.IsRequired = member.GetCustomAttribute<RequiredAttribute>() != null;
 
             if (metadata.Pattern == null)

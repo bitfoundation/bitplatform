@@ -1,6 +1,6 @@
-﻿using System;
+﻿using Bit.Model.Contracts;
+using System;
 using System.ComponentModel.DataAnnotations;
-using Bit.Model.Contracts;
 
 namespace Bit.Model.Dtos
 {

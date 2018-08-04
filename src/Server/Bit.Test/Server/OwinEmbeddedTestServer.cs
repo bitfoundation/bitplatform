@@ -1,8 +1,8 @@
-﻿using System;
-using System.Net.Http;
-using Bit.Owin;
+﻿using Bit.Owin;
 using Microsoft.Owin.Testing;
 using OpenQA.Selenium.Remote;
+using System;
+using System.Net.Http;
 
 namespace Bit.Test.Server
 {

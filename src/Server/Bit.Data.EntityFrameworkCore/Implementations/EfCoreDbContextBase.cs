@@ -1,6 +1,6 @@
-﻿using System;
-using Bit.Data.EntityFrameworkCore.Contracts;
+﻿using Bit.Data.EntityFrameworkCore.Contracts;
 using Microsoft.EntityFrameworkCore;
+using System;
 
 namespace Bit.Data.EntityFrameworkCore.Implementations
 {

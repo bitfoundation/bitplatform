@@ -1,5 +1,4 @@
-﻿using System.Linq;
-using Bit.Test;
+﻿using Bit.Test;
 using Bit.Test.Core.Implementations;
 using Bit.Test.Server;
 using Bit.Tests.Api.ApiControllers;
@@ -8,6 +7,7 @@ using IdentityModel.Client;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Remote;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace Bit.Tests.HtmlClient.ThirdPartyLibrariesTests.JayDataContextTests
@@ -25,7 +25,7 @@ namespace Bit.Tests.HtmlClient.ThirdPartyLibrariesTests.JayDataContextTests
 
                 using (RemoteWebDriver driver = testEnvironment.Server.BuildWebDriver(new RemoteWebDriverOptions { Token = token }))
                 {
-                    await driver.ExecuteTest(@"testFunctionCallAndTakeMethodAfterThat");
+                    await driver.ExecuteTest("testFunctionCallAndTakeMethodAfterThat");
                 }
 
                 TestModelsController testModelsController = TestDependencyManager.CurrentTestDependencyManager.Objects
@@ -47,7 +47,7 @@ namespace Bit.Tests.HtmlClient.ThirdPartyLibrariesTests.JayDataContextTests
 
                 using (RemoteWebDriver driver = testEnvironment.Server.BuildWebDriver(new RemoteWebDriverOptions { Token = token }))
                 {
-                    await driver.ExecuteTest(@"testActionCall");
+                    await driver.ExecuteTest("testActionCall");
                 }
 
                 TestModelsController testModelsController = TestDependencyManager.CurrentTestDependencyManager.Objects
@@ -69,7 +69,7 @@ namespace Bit.Tests.HtmlClient.ThirdPartyLibrariesTests.JayDataContextTests
 
                 using (RemoteWebDriver driver = testEnvironment.Server.BuildWebDriver(new RemoteWebDriverOptions { Token = token }))
                 {
-                    await driver.ExecuteTest(@"passNullTests");
+                    await driver.ExecuteTest("passNullTests");
                 }
 
                 TestModelsController actionCallTest = TestDependencyManager.CurrentTestDependencyManager.Objects
@@ -98,7 +98,7 @@ namespace Bit.Tests.HtmlClient.ThirdPartyLibrariesTests.JayDataContextTests
 
                 using (RemoteWebDriver driver = testEnvironment.Server.BuildWebDriver(new RemoteWebDriverOptions { Token = token }))
                 {
-                    await driver.ExecuteTest(@"testBatchCallODataFunctions");
+                    await driver.ExecuteTest("testBatchCallODataFunctions");
                 }
 
                 TestModelsController testModelsController = TestDependencyManager.CurrentTestDependencyManager.Objects
@@ -129,7 +129,7 @@ namespace Bit.Tests.HtmlClient.ThirdPartyLibrariesTests.JayDataContextTests
 
                 using (RemoteWebDriver driver = testEnvironment.Server.BuildWebDriver(new RemoteWebDriverOptions { Token = token }))
                 {
-                    await driver.ExecuteTest(@"testIEEE754Compatibility");
+                    await driver.ExecuteTest("testIEEE754Compatibility");
                 }
 
                 A.CallTo(() => TestDependencyManager.CurrentTestDependencyManager.Objects
@@ -172,7 +172,7 @@ namespace Bit.Tests.HtmlClient.ThirdPartyLibrariesTests.JayDataContextTests
 
                 using (RemoteWebDriver driver = testEnvironment.Server.BuildWebDriver(new RemoteWebDriverOptions { Token = token }))
                 {
-                    await driver.ExecuteTest(@"testPassingArrayOfEntitiesToController");
+                    await driver.ExecuteTest("testPassingArrayOfEntitiesToController");
                 }
 
                 A.CallTo(() => TestDependencyManager.CurrentTestDependencyManager.Objects

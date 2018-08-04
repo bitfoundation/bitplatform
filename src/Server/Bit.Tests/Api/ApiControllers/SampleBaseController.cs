@@ -9,7 +9,7 @@ namespace Bit.Tests.Api.ApiControllers
         [Function]
         public virtual SampleBaseDto GetSampleDto()
         {
-            return new SampleBaseDto() { };
+            return new SampleBaseDto();
         }
     }
 
@@ -18,11 +18,12 @@ namespace Bit.Tests.Api.ApiControllers
         [Function]
         public virtual SampleInheritedDto GetSampleDto()
         {
-            SampleInheritedDto result = new SampleInheritedDto { };
-
-            result.LastName = "1";
-            result.Id = Guid.NewGuid();
-            result.Name = "1";
+            SampleInheritedDto result = new SampleInheritedDto
+            {
+                LastName = "1",
+                Id = Guid.NewGuid(),
+                Name = "1"
+            };
 
             return result;
         }

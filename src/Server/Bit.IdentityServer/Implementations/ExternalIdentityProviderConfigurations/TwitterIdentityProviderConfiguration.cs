@@ -24,7 +24,7 @@ namespace Bit.IdentityServer.Implementations.ExternalIdentityProviderConfigurati
 
                     foreach (System.Security.Claims.Claim claim in context.Identity.Claims)
                     {
-                        string claimType = $"{claim.Type}";
+                        string claimType = claim.Type;
                         string claimValue = claim.Value;
 
                         if (!context.Identity.HasClaim(claimType, claimValue))

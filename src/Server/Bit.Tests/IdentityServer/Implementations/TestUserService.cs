@@ -25,29 +25,29 @@ namespace Bit.Tests.IdentityServer.Implementations
             new LocalUser { UserId = "User2" , Password = "ValidPassword"}
         };
 
-        public override async Task<string> GetUserIdByLocalAuthenticationContextAsync(LocalAuthenticationContext context, CancellationToken cancellationToken)
+        public override Task<string> GetUserIdByLocalAuthenticationContextAsync(LocalAuthenticationContext context, CancellationToken cancellationToken)
         {
             LocalUser user = _localUsers.SingleOrDefault(u => u.UserId == context.UserName && u.Password == context.Password);
 
             if (user == null)
                 throw new DomainLogicException("LoginFailed");
 
-            return user.UserId;
+            return Task.FromResult(user.UserId);
         }
 
-        public override async Task<bool> UserIsActiveAsync(IsActiveContext context, string userId, CancellationToken cancellationToken)
+        public override Task<bool> UserIsActiveAsync(IsActiveContext context, string userId, CancellationToken cancellationToken)
         {
-            return _localUsers.Any(u => u.UserId == userId);
+            return Task.FromResult(_localUsers.Any(u => u.UserId == userId));
         }
 
-        protected override async Task<string> GetInternalUserId(ExternalAuthenticationContext context, CancellationToken cancellationToken)
+        protected override Task<string> GetInternalUserId(ExternalAuthenticationContext context, CancellationToken cancellationToken)
         {
             string nameIdentifier = context.ExternalIdentity.Claims.GetClaimValue(ClaimTypes.NameIdentifier);
 
             if (nameIdentifier == null)
                 throw new InvalidOperationException($"{nameof(nameIdentifier)} is null");
 
-            LocalUser user = _localUsers.FirstOrDefault(u => u.UserId == nameIdentifier);
+            LocalUser user = _localUsers.Find(u => u.UserId == nameIdentifier);
 
             if (user == null)
             {
@@ -55,7 +55,7 @@ namespace Bit.Tests.IdentityServer.Implementations
                 _localUsers.Add(user);
             }
 
-            return user.UserId;
+            return Task.FromResult(user.UserId);
         }
     }
 }

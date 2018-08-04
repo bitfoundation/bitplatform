@@ -1,9 +1,9 @@
-﻿using System;
+﻿using Bit.Core.Contracts;
+using Microsoft.Owin;
+using System;
 using System.Globalization;
 using System.Linq;
 using System.Security.Claims;
-using Bit.Core.Contracts;
-using Microsoft.Owin;
 
 namespace Bit.Owin.Implementations
 {

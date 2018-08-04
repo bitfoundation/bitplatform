@@ -28,11 +28,11 @@ namespace Bit.Owin.Middlewares
 
             options.FileSystem = fileSystem;
 
-            string path = $@"/Files/V{AppEnvironment.AppInfo.Version}";
+            string path = $"/Files/V{AppEnvironment.AppInfo.Version}";
 
             owinApp.Map(path, innerApp =>
             {
-                if (AppEnvironment.DebugMode == true)
+                if (AppEnvironment.DebugMode)
                     innerApp.Use<OwinNoCacheResponseMiddleware>();
                 else
                     innerApp.Use<OwinCacheResponseMiddleware>();

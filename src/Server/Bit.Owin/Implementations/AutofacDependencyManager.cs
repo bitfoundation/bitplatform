@@ -25,11 +25,9 @@ namespace Bit.Owin.Implementations
 
         public void UseContainerBuilder(ContainerBuilder builder)
         {
-            if (builder == null)
-                throw new ArgumentNullException(nameof(builder));
             if (_containerBuilder != null)
                 throw new InvalidOperationException("Container builder has been set already");
-            _containerBuilder = builder;
+            _containerBuilder = builder ?? throw new ArgumentNullException(nameof(builder));
             _containerBuilder.Register((context, parameter) => (IDependencyManager)this /*Remark: We may not use "this" object, and we should use context, but we ignore the rule due being single instance*/).SingleInstance().PreserveExistingDefaults();
             _containerBuilder.Register((context, parameter) => (IServiceProvider)this).SingleInstance().PreserveExistingDefaults();
             _containerBuilder.Register((context, parameter) => (IAutofacDependencyManager)this).SingleInstance().PreserveExistingDefaults();
@@ -37,11 +35,9 @@ namespace Bit.Owin.Implementations
 
         private IDependencyManager SetContainer(ILifetimeScope container)
         {
-            if (container == null)
-                throw new ArgumentNullException(nameof(container));
             if (_container != null)
                 throw new InvalidOperationException("Container has been set already");
-            _container = container;
+            _container = container ?? throw new ArgumentNullException(nameof(container));
             return this;
         }
 
@@ -255,7 +251,7 @@ namespace Bit.Owin.Implementations
                 return factory.DynamicInvoke(currentAutofacDepdencyManager);
             }).As(servicesType);
 
-            if (overwriteExciting == false)
+            if (!overwriteExciting)
                 registration = registration.PreserveExistingDefaults();
 
             if (name != null)
@@ -291,7 +287,7 @@ namespace Bit.Owin.Implementations
                     .PropertiesAutowired(wiringFlags: PropertyWiringOptions.PreserveSetValues)
                     .As(servicesType);
 
-            if (overwriteExciting == false)
+            if (!overwriteExciting)
                 registration = registration.PreserveExistingDefaults();
 
             if (name != null)
@@ -328,7 +324,7 @@ namespace Bit.Owin.Implementations
                     registration = registration.Named(name, serviceType);
             }
 
-            if (overwriteExciting == false)
+            if (!overwriteExciting)
                 registration = registration.PreserveExistingDefaults();
 
             return this;

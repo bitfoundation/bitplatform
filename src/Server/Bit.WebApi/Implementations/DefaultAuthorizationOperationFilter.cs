@@ -14,14 +14,14 @@ namespace Bit.WebApi.Implementations
 
         public void Apply(Operation operation, SchemaRegistry schemaRegistry, ApiDescription apiDescription)
         {
-            bool hasAllowAnonymous = apiDescription.ActionDescriptor.GetCustomAttributes<AllowAnonymousAttribute>().Any();
+            bool hasAllowAnonymous = apiDescription.ActionDescriptor.GetCustomAttributes<AllowAnonymousAttribute>().Count > 0;
 
-            if (hasAllowAnonymous == true)
+            if (hasAllowAnonymous)
                 return;
 
             bool hasAuthAttribute = apiDescription.ActionDescriptor.GetFilterPipeline().Any(e => e.Instance is AuthorizationFilterAttribute);
 
-            if (hasAuthAttribute == false)
+            if (!hasAuthAttribute)
                 return;
 
             if (operation.security == null)

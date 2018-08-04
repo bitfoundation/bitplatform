@@ -42,17 +42,17 @@ namespace Bit.OData.ActionFilters
 
         public override async Task OnActionExecutedAsync(HttpActionExecutedContext actionExecutedContext, CancellationToken cancellationToken)
         {
-            if (actionExecutedContext.Response?.Content is ObjectContent objContent &&
-                actionExecutedContext.Response.IsSuccessStatusCode == true &&
-                !actionExecutedContext.Request.Properties.ContainsKey("IgnoreODataEnableQuery"))
+            if (actionExecutedContext.Response?.Content is ObjectContent objContent
+                && actionExecutedContext.Response.IsSuccessStatusCode
+                && !actionExecutedContext.Request.Properties.ContainsKey("IgnoreODataEnableQuery"))
             {
                 if (objContent.Value == null)
                     return;
 
                 bool isSingleResult = objContent.Value is SingleResult;
-                bool isCountRequest = actionExecutedContext.Request.RequestUri.LocalPath.Contains("/$count") == true;
+                bool isCountRequest = actionExecutedContext.Request.RequestUri.LocalPath.Contains("/$count");
 
-                if (isSingleResult == true)
+                if (isSingleResult)
                     objContent.Value = ((SingleResult)objContent.Value).Queryable;
 
                 TypeInfo actionReturnType = objContent.Value.GetType().GetTypeInfo();
@@ -65,7 +65,7 @@ namespace Bit.OData.ActionFilters
 
                     IDataProviderSpecificMethodsProvider dataProviderSpecificMethodsProvider = null;
 
-                    if (isIQueryable == true)
+                    if (isIQueryable)
                     {
                         IEnumerable<IDataProviderSpecificMethodsProvider> dataProviderSpecificMethodsProviders = actionExecutedContext.Request.GetOwinContext().GetDependencyResolver().ResolveAll<IDataProviderSpecificMethodsProvider>();
                         dataProviderSpecificMethodsProvider = (IDataProviderSpecificMethodsProvider)
@@ -92,7 +92,7 @@ namespace Bit.OData.ActionFilters
                         PageSize = this.DefaultPageSize
                     };
 
-                    if (dataProviderSpecificMethodsProvider.SupportsConstantParameterization() == true)
+                    if (dataProviderSpecificMethodsProvider.SupportsConstantParameterization())
                         globalODataQuerySettings.EnableConstantParameterization = true;
 
                     ValidateQuery(actionExecutedContext.Request, currentOdataQueryOptions);
@@ -104,7 +104,7 @@ namespace Bit.OData.ActionFilters
 
                     if (currentQueryPageSize.HasValue)
                         takeCount = currentQueryPageSize.Value;
-                    else if (globalQuerypageSize.HasValue == true)
+                    else if (globalQuerypageSize.HasValue)
                         takeCount = globalQuerypageSize.Value;
                     else
                         takeCount = null;
@@ -116,7 +116,7 @@ namespace Bit.OData.ActionFilters
                         objContent.Value = currentOdataQueryOptions.Filter.ApplyTo(query: (IQueryable)objContent.Value, querySettings: globalODataQuerySettings);
                     }
 
-                    if (isCountRequest == true)
+                    if (isCountRequest)
                     {
                         objContent.Value = await (Task<long>)
                             getCountAsyncMethodsCache.GetOrAdd(queryElementType, t => typeof(ODataEnableQueryAttribute).GetMethod(nameof(GetCountAsync)).MakeGenericMethod(t))
@@ -125,7 +125,7 @@ namespace Bit.OData.ActionFilters
                         return;
                     }
 
-                    if (currentOdataQueryOptions.Count?.Value == true && takeCount.HasValue == true && isSingleResult == false)
+                    if (currentOdataQueryOptions.Count?.Value == true && takeCount.HasValue && !isSingleResult)
                     {
                         long count = await (Task<long>)
                             getCountAsyncMethodsCache.GetOrAdd(queryElementType, t => typeof(ODataEnableQueryAttribute).GetMethod(nameof(GetCountAsync)).MakeGenericMethod(t))
@@ -142,7 +142,7 @@ namespace Bit.OData.ActionFilters
                         queryElementType = newReturnTypeAfterApplyingSelectOrApply.GetGenericArguments().ExtendedSingle($"Get generic arguments of ${newReturnTypeAfterApplyingSelectOrApply.Name}").GetTypeInfo();
                     }
 
-                    if (isSingleResult == false)
+                    if (!isSingleResult)
                     {
                         objContent.Value = await (Task<object>)
                             toListAsyncMethodsCache.GetOrAdd(queryElementType, t => typeof(ODataEnableQueryAttribute).GetMethod(nameof(ToListAsync)).MakeGenericMethod(t))
@@ -157,7 +157,7 @@ namespace Bit.OData.ActionFilters
                         actionExecutedContext.Request.Properties["Microsoft.AspNet.OData.TotalCountFunc"] = new Func<long>(() => 1);
                     }
 
-                    if (currentOdataQueryOptions.Count?.Value == true && takeCount.HasValue == false && isSingleResult == false)
+                    if (currentOdataQueryOptions.Count?.Value == true && !takeCount.HasValue && !isSingleResult)
                     {
                         // We've no paging because there is no global config for max top and there is no top specified by the client's request, so the returned result of query's length is equivalent to total count of the query
                         long count = ((IList)objContent.Value).Count;
@@ -198,12 +198,12 @@ namespace Bit.OData.ActionFilters
             if (dataProviderSpecificMethodsProvider == null)
                 throw new ArgumentNullException(nameof(dataProviderSpecificMethodsProvider));
 
-            if (skipCount.HasValue == true)
+            if (skipCount.HasValue)
             {
                 query = dataProviderSpecificMethodsProvider.Skip(query, skipCount.Value);
             }
 
-            if (takeCount.HasValue == true)
+            if (takeCount.HasValue)
             {
                 query = dataProviderSpecificMethodsProvider.Take(query, takeCount.Value);
             }

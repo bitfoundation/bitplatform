@@ -15,14 +15,11 @@ namespace Bit.Tests.Data.Implementations
 
         public InitialTestDataConfiguration(IDependencyManager dependencyManager, IDateTimeProvider dateTimeProvider)
         {
-            if (dependencyManager == null)
-                throw new ArgumentNullException(nameof(dependencyManager));
+            _dependencyManager = dependencyManager ?? throw new ArgumentNullException(nameof(dependencyManager));
 
             if (dateTimeProvider == null)
                 throw new ArgumentNullException(nameof(dateTimeProvider));
 
-            _dependencyManager = dependencyManager;
-            var dateTimeProvider1 = dateTimeProvider;
 
             _parentEntities = new List<ParentEntity>
             {
@@ -30,7 +27,7 @@ namespace Bit.Tests.Data.Implementations
                 {
                     Name = "A",
                     Version = 1 ,
-                    Date = dateTimeProvider1.GetCurrentUtcDateTime(),
+                    Date = dateTimeProvider.GetCurrentUtcDateTime(),
                     ChildEntities = new List<ChildEntity>
                     {
                         new ChildEntity { Name = "a1" , Version = 7 },
@@ -42,7 +39,7 @@ namespace Bit.Tests.Data.Implementations
                 {
                     Name = "B",
                     Version = 2,
-                    Date = dateTimeProvider1.GetCurrentUtcDateTime(),
+                    Date = dateTimeProvider.GetCurrentUtcDateTime(),
                     ChildEntities = new List<ChildEntity>
                     {
                         new ChildEntity { Name = "b1" , Version = 4 },
@@ -54,7 +51,7 @@ namespace Bit.Tests.Data.Implementations
                 {
                     Name = "C",
                     Version = 3,
-                    Date = dateTimeProvider1.GetCurrentUtcDateTime(),
+                    Date = dateTimeProvider.GetCurrentUtcDateTime(),
                     ChildEntities = new List<ChildEntity>
                     {
                         new ChildEntity { Name = "c1" , Version = 1 },
@@ -86,7 +83,9 @@ namespace Bit.Tests.Data.Implementations
                 TestDbContext dbContext = null;
 
                 if (Settings.Default.UseInMemoryProviderByDefault)
+                {
                     dbContext = childDependencyResolver.Resolve<TestDbContext>();
+                }
                 else
                 {
                     DbContextOptionsBuilder dbContextOptionsBuilder = new DbContextOptionsBuilder();

@@ -1,6 +1,6 @@
-﻿using System.Threading;
+﻿using Bit.Model.DomainModels;
+using System.Threading;
 using System.Threading.Tasks;
-using Bit.Model.DomainModels;
 
 namespace Bit.Owin.Contracts
 {

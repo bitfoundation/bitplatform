@@ -2,7 +2,7 @@
 
 namespace Bit.Test.Core.Implementations
 {
-    public class TestDependencyManager
+    public static class TestDependencyManager
     {
         public static AutofacTestDependencyManager CurrentTestDependencyManager
         {

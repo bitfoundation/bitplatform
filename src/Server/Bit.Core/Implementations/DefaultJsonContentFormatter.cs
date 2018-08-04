@@ -10,13 +10,7 @@ namespace Bit.Core.Implementations
 
         public static IContentFormatter Current
         {
-            get
-            {
-                if (_current == null)
-                    _current = new DefaultJsonContentFormatter();
-
-                return _current;
-            }
+            get => _current ?? (_current = new DefaultJsonContentFormatter());
             set => _current = value;
         }
 

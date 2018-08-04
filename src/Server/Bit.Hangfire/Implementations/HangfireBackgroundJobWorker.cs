@@ -1,13 +1,13 @@
-﻿using System;
-using System.Linq.Expressions;
-using System.Threading;
-using System.Threading.Tasks;
-using Bit.Core.Contracts;
+﻿using Bit.Core.Contracts;
 using Bit.Core.Models;
 using Bit.Owin.Exceptions;
 using Bit.Owin.Metadata;
 using Hangfire;
 using Hangfire.Storage;
+using System;
+using System.Linq.Expressions;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace Bit.Hangfire.Implementations
 {

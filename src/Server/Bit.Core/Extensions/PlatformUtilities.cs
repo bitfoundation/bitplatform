@@ -2,7 +2,7 @@
 
 namespace Bit.Core.Extensions
 {
-    public class PlatformUtilities
+    public static class PlatformUtilities
     {
         private static readonly Lazy<bool> _isRunningOnMono = new Lazy<bool>(() =>
         {

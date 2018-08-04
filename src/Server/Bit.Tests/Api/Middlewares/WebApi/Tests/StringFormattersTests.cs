@@ -1,7 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Bit.Core.Contracts;
+﻿using Bit.Core.Contracts;
 using Bit.Test;
 using Bit.Tests.Api.ApiControllers;
 using Bit.Tests.Core.Contracts;
@@ -10,6 +7,9 @@ using FakeItEasy;
 using IdentityModel.Client;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Simple.OData.Client;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace Bit.Tests.Api.Middlewares.WebApi.Tests
 {
@@ -86,7 +86,7 @@ namespace Bit.Tests.Api.Middlewares.WebApi.Tests
                 A.CallTo(() => valueChecker.CheckValue(A<TestModel>.That.Matches(tm => tm.StringProperty == "ONETWOStringProperty")))
                     .MustHaveHappened(Repeated.Exactly.Once);
 
-                A.CallTo(() => valueChecker.CheckValue(A<List<TestModel>>.That.Matches(tms => tms.First().StringProperty == "ONETWOStringProperty1" && tms.Last().StringProperty == "ONETWOStringProperty2")))
+                A.CallTo(() => valueChecker.CheckValue(A<List<TestModel>>.That.Matches(tms => tms[0].StringProperty == "ONETWOStringProperty1" && tms.Last().StringProperty == "ONETWOStringProperty2")))
                     .MustHaveHappened(Repeated.Exactly.Once);
 
                 A.CallTo(() => stringCorrector1.CorrectString(A<string>.Ignored))
@@ -113,10 +113,7 @@ namespace Bit.Tests.Api.Middlewares.WebApi.Tests
 
             using (BitOwinTestEnvironment testEnvironment = new BitOwinTestEnvironment(new TestEnvironmentArgs
             {
-                AdditionalDependencies = (manager, services) =>
-                {
-                    manager.RegisterInstance(stringCorrector, overwriteExciting: false);
-                }
+                AdditionalDependencies = (manager, services) => manager.RegisterInstance(stringCorrector, overwriteExciting: false)
             }))
             {
                 TokenResponse token = await testEnvironment.Server.Login("ValidUserName", "ValidPassword", clientId: "TestResOwner");

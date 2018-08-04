@@ -58,9 +58,7 @@ namespace Bit.Core.Contracts
         public static IDependencyManager RegisterMinimalAspNetCoreMiddlewares(this IDependencyManager dependencyManager)
         {
             dependencyManager.RegisterAspNetCoreMiddlewareUsing(aspNetCoreApp =>
-            {
-                aspNetCoreApp.UseMiddleware<AddAcceptCharsetToRequestHeadersIfNotAnyAspNetCoreMiddleware>();
-            });
+                aspNetCoreApp.UseMiddleware<AddAcceptCharsetToRequestHeadersIfNotAnyAspNetCoreMiddleware>());
             dependencyManager.RegisterOwinMiddleware<AspNetCoreAutofacDependencyInjectionMiddlewareConfiguration>();
             dependencyManager.RegisterAspNetCoreMiddleware<AspNetCoreExceptionHandlerMiddlewareConfiguration>();
             dependencyManager.RegisterAspNetCoreMiddleware<AspNetCoreLogRequestInformationMiddlewareConfiguration>();

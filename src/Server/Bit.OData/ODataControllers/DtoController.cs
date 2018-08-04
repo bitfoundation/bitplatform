@@ -78,7 +78,7 @@ namespace Bit.OData.ODataControllers
         {
             if (actionExecutedContext?.Response?.Headers != null && !actionExecutedContext.Response.Headers.Contains(nameof(HttpResponseHeaders.Location))
                 && actionExecutedContext.Response.Content is ObjectContent objContent
-                && actionExecutedContext.Response.IsSuccessStatusCode == true)
+                && actionExecutedContext.Response.IsSuccessStatusCode)
             {
                 if (objContent.Value == null)
                     return;

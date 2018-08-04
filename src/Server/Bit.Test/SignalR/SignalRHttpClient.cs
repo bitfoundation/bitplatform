@@ -1,6 +1,6 @@
-﻿using System;
+﻿using Microsoft.AspNet.SignalR.Client.Http;
+using System;
 using System.Net.Http;
-using Microsoft.AspNet.SignalR.Client.Http;
 
 namespace Bit.Test.SignalR
 {
@@ -10,10 +10,7 @@ namespace Bit.Test.SignalR
 
         public SignalRHttpClient(HttpMessageHandler httpMessageHandler)
         {
-            if (httpMessageHandler == null)
-                throw new ArgumentNullException(nameof(httpMessageHandler));
-
-            _httpMessageHandler = httpMessageHandler;
+            _httpMessageHandler = httpMessageHandler ?? throw new ArgumentNullException(nameof(httpMessageHandler));
         }
 
         protected override HttpMessageHandler CreateHandler()

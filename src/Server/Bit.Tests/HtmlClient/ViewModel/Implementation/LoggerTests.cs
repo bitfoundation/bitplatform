@@ -1,6 +1,5 @@
-﻿using System.Linq;
+﻿using Bit.Model.Dtos;
 using Bit.OData.ODataControllers;
-using Bit.Model.Dtos;
 using Bit.Test;
 using Bit.Test.Core.Implementations;
 using Bit.Test.Server;
@@ -9,6 +8,7 @@ using IdentityModel.Client;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Remote;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace Bit.Tests.HtmlClient.ViewModel.Implementation

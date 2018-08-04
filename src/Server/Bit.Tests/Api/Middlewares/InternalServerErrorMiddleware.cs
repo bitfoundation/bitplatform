@@ -1,5 +1,5 @@
-﻿using System.Threading.Tasks;
-using Microsoft.Owin;
+﻿using Microsoft.Owin;
+using System.Threading.Tasks;
 
 namespace Bit.Tests.Api.Middlewares
 {
@@ -11,11 +11,10 @@ namespace Bit.Tests.Api.Middlewares
 
         }
 
-        public override async Task Invoke(IOwinContext context)
+        public override Task Invoke(IOwinContext context)
         {
             context.Response.StatusCode = 501;
-
-            await context.Response.WriteAsync("NotImplemented");
+            return context.Response.WriteAsync("NotImplemented");
         }
     }
 }

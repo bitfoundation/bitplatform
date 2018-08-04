@@ -10,7 +10,7 @@ namespace Bit.Tests.Owin.Metadata.Dtos
     {
         public override Task<IEnumerable<ObjectMetadata>> BuildMetadata()
         {
-            AddDtoMetadata(new DtoMetadata { });
+            AddDtoMetadata(new DtoMetadata());
 
             AddLookup<CountryDto>(nameof(ProductDto.BuildLocationId_InMemoryTest), nameof(CountryDto.Id), nameof(CountryDto.Name), it => it.SomeProperty == 1 || it.SomeProperty == 2);
             AddLookup<CountryDto>(nameof(ProductDto.BuildLocationId_OnlineTest), nameof(CountryDto.Id), nameof(CountryDto.Name), it => it.SomeProperty == 1 || it.SomeProperty == 3);

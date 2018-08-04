@@ -1,17 +1,17 @@
-﻿using System;
-using System.Net.Http;
+﻿using Bit.Signalr;
+using Bit.Signalr.Implementations;
+using Bit.Test.SignalR;
 using IdentityModel.Client;
 using Microsoft.AspNet.SignalR.Client;
 using Microsoft.AspNet.SignalR.Client.Transports;
+using Newtonsoft.Json;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Chrome;
 using OpenQA.Selenium.Remote;
 using Simple.OData.Client;
-using Newtonsoft.Json;
+using System;
+using System.Net.Http;
 using System.Threading.Tasks;
-using Bit.Signalr;
-using Bit.Signalr.Implementations;
-using Bit.Test.SignalR;
 
 namespace Bit.Test.Server
 {
@@ -40,10 +40,7 @@ namespace Bit.Test.Server
 
                     beforeRequest?.Invoke(message);
                 },
-                AfterResponse = message =>
-                {
-                    afterResponse?.Invoke(message);
-                },
+                AfterResponse = message => afterResponse?.Invoke(message),
                 OnCreateMessageHandler = GetHttpMessageHandler
             });
 
@@ -64,9 +61,7 @@ namespace Bit.Test.Server
             if (onMessageReceived != null)
             {
                 hubProxy.On<string, string>("OnMessageReceived", (key, dataAsJson) =>
-                {
-                    onMessageReceived(key, new TestSignalRMessageContentFormatter().DeSerialize<dynamic>(dataAsJson));
-                });
+                    onMessageReceived(key, new TestSignalRMessageContentFormatter().DeSerialize<dynamic>(dataAsJson)));
             }
 
             await hubConnection.Start(new ServerSentEventsTransport(new SignalRHttpClient(GetHttpMessageHandler())));
@@ -91,10 +86,7 @@ namespace Bit.Test.Server
 
             //FirefoxDriver driver = new FirefoxDriver();
 
-            ChromeOptions chromeOptions = new ChromeOptions
-            {
-
-            };
+            ChromeOptions chromeOptions = new ChromeOptions();
 
             ChromeDriver driver = new ChromeDriver(chromeOptions);
 
@@ -114,13 +106,13 @@ namespace Bit.Test.Server
             try
             {
                 if (options.Uri != null)
-                    driver.Navigate().GoToUrl($@"{Uri}{options.Uri}");
+                    driver.Navigate().GoToUrl($"{Uri}{options.Uri}");
                 else if (options.Token != null)
                     driver.Navigate().GoToUrl($@"{Uri}SignIn#id_token=0&access_token={options.Token.AccessToken}&token_type={options.Token.TokenType}&expires_in=86400&scope=openid profile user_info&state={{""pathname"":""/""}}&session_state=0");
                 else
                     driver.Navigate().GoToUrl(Uri);
 
-                if (options.ClientSideTest == true)
+                if (options.ClientSideTest)
                     driver.GetElementById("testsConsole");
             }
             catch
@@ -131,6 +123,7 @@ namespace Bit.Test.Server
 
             return driver;
         }
+
         public virtual void Initialize(string uri)
         {
             Uri = uri;
@@ -159,9 +152,7 @@ namespace Bit.Test.Server
 
         public virtual TokenClient BuildTokenClient(string clientId, string secret = "secret")
         {
-            TokenClient tokenClient = new TokenClient($@"{Uri}core/connect/token", clientId, secret, innerHttpMessageHandler: GetHttpMessageHandler());
-
-            return tokenClient;
+            return new TokenClient($"{Uri}core/connect/token", clientId, secret, innerHttpMessageHandler: GetHttpMessageHandler());
         }
     }
 }

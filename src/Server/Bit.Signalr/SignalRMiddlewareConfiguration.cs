@@ -1,13 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using Bit.Core.Extensions;
+using Bit.Core.Models;
 using Bit.Owin.Contracts;
 using Bit.Signalr.Contracts;
 using Microsoft.AspNet.SignalR;
 using Owin;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
-using Bit.Core.Extensions;
-using Bit.Core.Models;
 
 namespace Bit.Signalr
 {
@@ -27,28 +27,20 @@ namespace Bit.Signalr
             {
                 TypeInfo type = typeof(HubConfiguration).GetTypeInfo().Assembly.GetType("Microsoft.AspNet.SignalR.Infrastructure.MonoUtility").GetTypeInfo();
                 FieldInfo isRunningMonoField = type.GetField("_isRunningMono", BindingFlags.NonPublic | BindingFlags.Static);
-                if (isRunningMonoField != null)
-                    isRunningMonoField.SetValue(null, new Lazy<bool>(() => true));
+                isRunningMonoField?.SetValue(null, new Lazy<bool>(() => true));
             }
 
             HubConfiguration signalRConfig = new HubConfiguration
             {
-                EnableDetailedErrors = AppEnvironment.DebugMode == true,
+                EnableDetailedErrors = AppEnvironment.DebugMode,
                 EnableJavaScriptProxies = true,
                 EnableJSONP = false,
                 Resolver = DependencyResolver
             };
 
-            SignalRScaleoutConfigurations.ToList()
-                .ForEach(cnfg =>
-                {
-                    cnfg.Configure(signalRConfig);
-                });
+            SignalRScaleoutConfigurations.ToList().ForEach(cnfg => cnfg.Configure(signalRConfig));
 
-            owinApp.Map("/signalr", innerOwinApp =>
-            {
-                innerOwinApp.RunSignalR(signalRConfig);
-            });
+            owinApp.Map("/signalr", innerOwinApp => innerOwinApp.RunSignalR(signalRConfig));
         }
     }
 }

@@ -1,8 +1,8 @@
-﻿using System;
-using System.Threading.Tasks;
-using Bit.Signalr.Contracts;
+﻿using Bit.Signalr.Contracts;
 using Microsoft.AspNet.SignalR;
 using Microsoft.Owin;
+using System;
+using System.Threading.Tasks;
 
 namespace Bit.Signalr
 {

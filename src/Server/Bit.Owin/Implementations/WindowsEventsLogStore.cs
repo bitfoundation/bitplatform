@@ -1,8 +1,8 @@
-﻿using System;
+﻿using Bit.Core.Contracts;
+using Bit.Core.Models;
+using System;
 using System.Diagnostics;
 using System.Threading.Tasks;
-using Bit.Core.Contracts;
-using Bit.Core.Models;
 
 namespace Bit.Owin.Implementations
 {
@@ -54,5 +54,4 @@ namespace Bit.Owin.Implementations
             }
         }
     }
-
 }

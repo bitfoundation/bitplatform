@@ -1,7 +1,7 @@
-﻿using System;
+﻿using Microsoft.AspNet.SignalR.Hubs;
+using System;
 using System.Collections.Generic;
 using System.Reflection;
-using Microsoft.AspNet.SignalR.Hubs;
 
 namespace Bit.Signalr.Implementations
 {
@@ -16,10 +16,7 @@ namespace Bit.Signalr.Implementations
 
         public DefaultSignalRAssemblyLocator(Assembly[] assemblies)
         {
-            if (assemblies == null)
-                throw new ArgumentNullException(nameof(assemblies));
-
-            _assemblies = assemblies;
+            _assemblies = assemblies ?? throw new ArgumentNullException(nameof(assemblies));
         }
 
         public virtual IList<Assembly> GetAssemblies()

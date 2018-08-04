@@ -1,5 +1,4 @@
-﻿using System.Linq;
-using Bit.Core.Contracts;
+﻿using Bit.Core.Contracts;
 using Bit.Test;
 using Bit.Test.Core.Implementations;
 using Bit.Test.Server;
@@ -7,8 +6,9 @@ using IdentityModel.Client;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Remote;
-using System.Threading.Tasks;
 using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace Bit.Tests.HtmlClient.ViewModel.Implementation
 {

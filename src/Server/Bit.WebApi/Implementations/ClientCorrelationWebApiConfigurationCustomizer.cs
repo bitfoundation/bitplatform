@@ -1,6 +1,6 @@
-﻿using System.Web.Http;
-using Bit.WebApi.Contracts;
+﻿using Bit.WebApi.Contracts;
 using Correlator.Handlers;
+using System.Web.Http;
 
 namespace Bit.WebApi.Implementations
 {

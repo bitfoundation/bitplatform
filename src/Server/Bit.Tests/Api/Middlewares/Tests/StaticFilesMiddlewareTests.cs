@@ -1,12 +1,12 @@
-﻿using System;
+﻿using Bit.Core.Contracts;
+using Bit.Test;
+using Bit.Test.Core.Implementations;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+using System;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
-using Bit.Core.Contracts;
-using Bit.Test;
-using Bit.Test.Core.Implementations;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Bit.Tests.Api.Middlewares.Tests
 {
@@ -58,10 +58,7 @@ namespace Bit.Tests.Api.Middlewares.Tests
             using (BitOwinTestEnvironment testEnvironment = new BitOwinTestEnvironment(new TestEnvironmentArgs
             {
                 ActiveAppEnvironmentCustomizer =
-                environment =>
-                {
-                    environment.DebugMode = false;
-                }
+                environment => environment.DebugMode = false
             }))
             {
                 HttpResponseMessage getVirtualPathUrl = await testEnvironment.Server.BuildHttpClient()
@@ -78,10 +75,7 @@ namespace Bit.Tests.Api.Middlewares.Tests
             using (BitOwinTestEnvironment testEnvironment = new BitOwinTestEnvironment(new TestEnvironmentArgs
             {
                 ActiveAppEnvironmentCustomizer =
-                environment =>
-                {
-                    environment.AppInfo.Version = "2";
-                }
+                environment => environment.AppInfo.Version = "2"
             }))
             {
                 HttpResponseMessage getVirtualPathUrlV1 = await testEnvironment.Server.BuildHttpClient()

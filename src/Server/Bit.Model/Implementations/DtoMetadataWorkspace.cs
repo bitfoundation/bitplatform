@@ -12,12 +12,7 @@ namespace Bit.Model.Implementations
 
         public static DtoMetadataWorkspace Current
         {
-            get
-            {
-                if (_current == null)
-                    _current = new DtoMetadataWorkspace();
-                return _current;
-            }
+            get => _current ?? (_current = new DtoMetadataWorkspace());
             set => _current = value;
         }
 
@@ -31,15 +26,13 @@ namespace Bit.Model.Implementations
 
         public virtual TypeInfo GetFinalDtoType(TypeInfo type)
         {
-            if (type.IsGenericParameter && type.GetGenericParameterConstraints().Any())
-            {
-                Type finalDtoType = type.GetGenericParameterConstraints().ExtendedSingleOrDefault($"Finding dto of {type.Name}", t => IsDto(t?.GetTypeInfo()));
-                if (finalDtoType != null)
-                    return finalDtoType.GetTypeInfo();
-                return null;
-            }
-            else
+            if (!type.IsGenericParameter || type.GetGenericParameterConstraints().Length <= 0)
                 return type;
+
+            Type finalDtoType = type.GetGenericParameterConstraints().ExtendedSingleOrDefault($"Finding dto of {type.Name}", t => IsDto(t?.GetTypeInfo()));
+            if (finalDtoType != null)
+                return finalDtoType.GetTypeInfo();
+            return null;
         }
 
         public virtual PropertyInfo[] GetKeyColums(TypeInfo typeInfo)
@@ -50,10 +43,9 @@ namespace Bit.Model.Implementations
                 .Where(p => p.GetCustomAttribute<KeyAttribute>() != null)
                 .ToArray();
 
-            if (keys.Any())
+            if (keys.Length > 0)
                 return keys;
-            else
-                return props.Where(p => p.Name == "Id" || p.Name == $"{typeInfo.Name}Id").ToArray();
+            return props.Where(p => p.Name == "Id" || p.Name == $"{typeInfo.Name}Id").ToArray();
         }
 
         public virtual object[] GetKeys(IDto dto)

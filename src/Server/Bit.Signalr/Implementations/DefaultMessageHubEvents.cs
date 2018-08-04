@@ -1,6 +1,6 @@
-﻿using System.Threading.Tasks;
-using Bit.Core.Contracts;
+﻿using Bit.Core.Contracts;
 using Bit.Signalr.Contracts;
+using System.Threading.Tasks;
 
 namespace Bit.Signalr.Implementations
 {

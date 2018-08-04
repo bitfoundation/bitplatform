@@ -1,6 +1,6 @@
 ﻿namespace Bit.Model.Contracts
 {
-    public interface ISyncableDto : IArchivableDto , IVersionableDto
+    public interface ISyncableDto : IArchivableDto, IVersionableDto
     {
 
     }

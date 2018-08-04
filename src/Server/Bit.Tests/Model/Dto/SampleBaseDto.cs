@@ -1,5 +1,5 @@
-﻿using System;
-using Bit.Model.Contracts;
+﻿using Bit.Model.Contracts;
+using System;
 
 namespace Bit.Tests.Model.Dto
 {

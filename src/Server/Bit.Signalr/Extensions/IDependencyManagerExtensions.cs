@@ -1,11 +1,11 @@
-﻿using System;
-using System.Linq;
-using System.Reflection;
-using Autofac.Integration.SignalR;
+﻿using Autofac.Integration.SignalR;
 using Bit.Signalr;
 using Bit.Signalr.Contracts;
 using Bit.Signalr.Implementations;
 using Microsoft.AspNet.SignalR;
+using System;
+using System.Linq;
+using System.Reflection;
 
 namespace Bit.Core.Contracts
 {

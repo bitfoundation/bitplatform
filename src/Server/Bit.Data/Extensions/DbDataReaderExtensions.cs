@@ -56,7 +56,7 @@ namespace System.Data
         {
             if (amount > -1)
             {
-                await stream.WriteAsync((content as byte[]), 0, amount, cancellationToken).ConfigureAwait(false);
+                await stream.WriteAsync(content as byte[], 0, amount, cancellationToken).ConfigureAwait(false);
                 await stream.FlushAsync(cancellationToken).ConfigureAwait(false);
             }
             else

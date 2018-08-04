@@ -1,10 +1,10 @@
-﻿using System.Threading.Tasks;
+﻿using Bit.Model.Dtos;
 using Bit.OData.ODataControllers;
-using Bit.Model.Dtos;
 using Bit.Owin.Metadata;
 using IdentityModel.Client;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Simple.OData.Client;
+using System.Threading.Tasks;
 
 namespace Bit.Tests.Api.ApiControllers.Tests
 {
