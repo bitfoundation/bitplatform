@@ -31,6 +31,18 @@ namespace System.Collections.Generic
                 {
                     if (prop.PropertyType.IsEnum && val != null)
                         val = Enum.Parse(prop.PropertyType, KeyVal.Value.ToString());
+
+                    if (typeof(IEnumerable).IsAssignableFrom(prop.PropertyType) && prop.PropertyType != typeof(string))
+                    {
+                        // This converts List<object> which contains some Guid values to List<Guid> which contains some Guid values.
+                        IList propertyValue = (IList)Activator.CreateInstance(prop.PropertyType);
+                        foreach (object item in (IEnumerable)val)
+                        {
+                            propertyValue.Add(item);
+                        }
+                        val = propertyValue;
+                    }
+
                     prop.SetValue(dto, val);
                 }
                 else

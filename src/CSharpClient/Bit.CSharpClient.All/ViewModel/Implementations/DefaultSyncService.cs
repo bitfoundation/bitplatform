@@ -2,7 +2,6 @@
 using Bit.Model.Contracts;
 using Bit.ViewModel.Contracts;
 using Microsoft.EntityFrameworkCore;
-using Plugin.Connectivity.Abstractions;
 using Prism.Ioc;
 using Simple.OData.Client;
 using System;
@@ -11,26 +10,22 @@ using System.Linq;
 using System.Linq.Dynamic;
 using System.Reflection;
 using System.Threading.Tasks;
+using Xamarin.Essentials;
 
 namespace Bit.ViewModel.Implementations
 {
     public class DefaultSyncService<TDbContext> : ISyncService
         where TDbContext : EfCoreDbContextBase
     {
-        public DefaultSyncService(IConnectivity connectivity, IContainerProvider containerProvider)
+        public DefaultSyncService(IContainerProvider containerProvider)
         {
             if (containerProvider == null)
                 throw new ArgumentNullException(nameof(containerProvider));
 
-            if (connectivity == null)
-                throw new ArgumentNullException(nameof(connectivity));
-
-            _connectivity = connectivity;
             _containerProvider = containerProvider;
         }
 
         private readonly List<DtoSetSyncConfig> _configs = new List<DtoSetSyncConfig> { };
-        private readonly IConnectivity _connectivity;
         private readonly IContainerProvider _containerProvider;
 
         public Task SyncContext()
@@ -43,7 +38,7 @@ namespace Bit.ViewModel.Implementations
             if (dtoSetNames == null)
                 throw new ArgumentNullException(nameof(dtoSetNames));
 
-            if (_connectivity.IsConnected == false)
+            if (Connectivity.NetworkAccess == NetworkAccess.None)
                 return;
 
             DtoSetSyncConfig[] toServerDtoSetSyncMaterials = _configs.Where(c => c.ToServerSync == true && c.ToServerSyncFunc() == true && dtoSetNames.Any(n => n == c.DtoSetName)).ToArray();
@@ -142,10 +137,9 @@ namespace Bit.ViewModel.Implementations
                     {
                         if (result.HadOfflineDtoBefore == false)
                         {
-                            await offlineContextForSyncFrom.AddRangeAsync(result.RecentlyChangedOnlineDtos).ConfigureAwait(false);
                             foreach (ISyncableDto r in result.RecentlyChangedOnlineDtos)
                             {
-                                offlineContextForSyncFrom.Entry(r).Property("IsSynced").CurrentValue = true;
+                                offlineContextForSyncFrom.Add(r).Property("IsSynced").CurrentValue = true;
                             }
                         }
                         else
@@ -184,13 +178,11 @@ namespace Bit.ViewModel.Implementations
                                     }
                                     else if (hasEquivalentInOfflineDb == true)
                                     {
-                                        offlineContextForSyncFrom.Update(recentlyChangedOnlineDto);
-                                        offlineContextForSyncFrom.Entry(recentlyChangedOnlineDto).Property("IsSynced").CurrentValue = true;
+                                        offlineContextForSyncFrom.Update(recentlyChangedOnlineDto).Property("IsSynced").CurrentValue = true;
                                     }
                                     else
                                     {
-                                        await offlineContextForSyncFrom.AddAsync(recentlyChangedOnlineDto).ConfigureAwait(false);
-                                        offlineContextForSyncFrom.Entry(recentlyChangedOnlineDto).Property("IsSynced").CurrentValue = true;
+                                        offlineContextForSyncFrom.Add(recentlyChangedOnlineDto).Property("IsSynced").CurrentValue = true;
                                     }
                                 }
                             }
