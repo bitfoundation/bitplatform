@@ -9,5 +9,5 @@ namespace Bit.CSharpClientSample.Views
 		{
 			InitializeComponent ();
 		}
-	}
+    }
 }

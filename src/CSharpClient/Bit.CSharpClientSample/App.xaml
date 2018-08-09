@@ -2,5 +2,11 @@
 <bit:BitApplication xmlns="http://xamarin.com/schemas/2014/forms"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:bit="clr-namespace:Bit;assembly=Bit.CSharpClient.All"
+             xmlns:view="clr-namespace:Bit.View;assembly=Bit.CSharpClient.All"
              x:Class="Bit.CSharpClientSample.App">
+    <bit:BitApplication.Resources>
+        <Style TargetType="ContentPage" ApplyToDerivedTypes="True">
+            <Setter Property="view:Screen.OrientationAndScreenSizeAware" Value="True" />
+        </Style>
+    </bit:BitApplication.Resources>
 </bit:BitApplication>

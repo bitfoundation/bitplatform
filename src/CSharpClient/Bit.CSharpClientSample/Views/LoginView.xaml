@@ -1,7 +1,30 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:view="clr-namespace:Bit.View;assembly=Bit.CSharpClient.All"
              x:Class="Bit.CSharpClientSample.Views.LoginView" Title="Login">
+    <ContentPage.Behaviors>
+        <view:AdaptiveBehavior Orientation="Portrait">
+            <view:SetPropertyAction Property="BackgroundColor" Value="LightGreen" />
+            <view:SetPropertyAction Property="BackgroundColor" Value="LightGreen" TargetElement="{x:Reference Test}" />
+        </view:AdaptiveBehavior>
+        <view:AdaptiveBehavior Orientation="Landscape">
+            <view:SetPropertyAction Property="BackgroundColor" Value="LightBlue" />
+            <view:SetPropertyAction Property="BackgroundColor" Value="LightBlue" TargetElement="{x:Reference Test}" />
+        </view:AdaptiveBehavior>
+        <view:AdaptiveBehavior MinWidth="600" MaxWidth="800">
+            <view:SetPropertyAction Property="IsVisible" Value="True" TargetElement="{x:Reference Test}" />
+        </view:AdaptiveBehavior>
+        <view:AdaptiveBehavior MinWidth="800" MaxWidth="1000">
+            <view:SetPropertyAction Property="IsVisible" Value="True" TargetElement="{x:Reference Test}" />
+        </view:AdaptiveBehavior>
+        <view:AdaptiveBehavior MinWidth="1000" MaxWidth="1200">
+            <view:SetPropertyAction Property="IsVisible" Value="True" TargetElement="{x:Reference Test}" />
+        </view:AdaptiveBehavior>
+        <view:AdaptiveBehavior MinWidth="1200">
+            <view:SetPropertyAction Property="IsVisible" Value="False" TargetElement="{x:Reference Test}" />
+        </view:AdaptiveBehavior>
+    </ContentPage.Behaviors>
     <StackLayout>
         <Entry Text="{Binding UserName}" />
         <Entry Text="{Binding Password}" />
@@ -9,5 +32,8 @@
         <Button Text="Login using Browser" Command="{Binding LoginUsingBrowser}" />
         <Button Text="Login using Google" Command="{Binding LoginUsingGooglePlus}" />
         <Button Text="Skip" Command="{Binding Skip}" />
+
+        <Button Text="UI Tests" x:Name="Test" />
+
     </StackLayout>
 </ContentPage>
