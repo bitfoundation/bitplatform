@@ -15,7 +15,7 @@ namespace Bit.Owin.Implementations
                 result += Guid.NewGuid().ToString("N", CultureInfo.InvariantCulture);
             }
 
-            return result.Substring(length);
+            return result.Substring(0, length);
         }
     }
 }
