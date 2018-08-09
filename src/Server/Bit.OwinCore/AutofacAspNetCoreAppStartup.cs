@@ -1,5 +1,6 @@
 ﻿using Autofac;
 using Autofac.Extensions.DependencyInjection;
+using Bit.Core.Contracts;
 using Bit.Owin.Contracts;
 using Bit.Owin.Implementations;
 using Microsoft.Extensions.DependencyInjection;
@@ -19,7 +20,7 @@ namespace Bit.OwinCore
         }
 
         /// <summary>
-        /// ASP.NET Core's default ConfigureServices. We recommend you to use <see cref="Contracts.IAspNetCoreAppModule.ConfigureDependencies(IServiceProvider, IServiceCollection, Core.Contracts.IDependencyManager)"/> method which provides you <see cref="IServiceProvider"/>, <see cref="Core.Contracts.IDependencyManager"/> and <see cref="IServiceCollection"/> altogether
+        /// ASP.NET Core's default ConfigureServices. We recommend you to use <see cref="IAppModule.ConfigureDependencies(IServiceProvider, IServiceCollection, Core.Contracts.IDependencyManager)"/> method which provides you <see cref="IServiceProvider"/>, <see cref="Core.Contracts.IDependencyManager"/> and <see cref="IServiceCollection"/> altogether
         /// </summary>
         public virtual IServiceProvider ConfigureServices(IServiceCollection services)
         {
