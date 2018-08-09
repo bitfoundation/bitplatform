@@ -1,23 +1,4 @@
-﻿#if iOS
-
-using Autofac;
-using Bit.ViewModel.Contracts;
-using Prism;
-using Prism.Autofac;
-using Prism.Ioc;
-
-namespace Bit.ViewModel.Implementations
-{
-    public class BitPlatformInitializer : IPlatformInitializer
-    {
-        public virtual void RegisterTypes(IContainerRegistry containerRegistry)
-        {
-            containerRegistry.GetBuilder().RegisterType<DefaultBrowserService>().As<IBrowserService>().PreserveExistingDefaults();
-        }
-    }
-}
-
-#elif Android
+﻿#if Android
 
 using Android.App;
 using Android.Content;
@@ -48,18 +29,13 @@ namespace Bit.ViewModel.Implementations
 
             containerBuilder.Register(c => (Activity)_activity).SingleInstance().PreserveExistingDefaults();
             containerBuilder.Register(c => (Context)_activity).SingleInstance().PreserveExistingDefaults();
-
-            containerBuilder.RegisterType<DefaultBrowserService>().As<IBrowserService>().PreserveExistingDefaults();
         }
     }
 }
 
 #else
 
-using Autofac;
-using Bit.ViewModel.Contracts;
 using Prism;
-using Prism.Autofac;
 using Prism.Ioc;
 
 namespace Bit.ViewModel.Implementations
@@ -68,7 +44,6 @@ namespace Bit.ViewModel.Implementations
     {
         public virtual void RegisterTypes(IContainerRegistry containerRegistry)
         {
-            containerRegistry.GetBuilder().RegisterType<DefaultBrowserService>().As<IBrowserService>().PreserveExistingDefaults();
         }
     }
 }

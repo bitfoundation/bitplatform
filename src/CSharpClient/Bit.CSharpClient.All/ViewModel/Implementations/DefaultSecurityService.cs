@@ -10,6 +10,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Xamarin.Auth;
+using Xamarin.Essentials;
 
 namespace Bit.ViewModel.Implementations
 {
@@ -22,13 +23,11 @@ namespace Bit.ViewModel.Implementations
         public DefaultSecurityService(AccountStore accountStore,
             IClientAppProfile clientAppProfile,
             IDateTimeProvider dateTimeProvider,
-            IBrowserService browserService,
             IContainerProvider containerProvider)
         {
             _clientAppProfile = clientAppProfile;
             _accountStore = accountStore;
             _dateTimeProvider = dateTimeProvider;
-            _browserService = browserService;
             _containerProvider = containerProvider;
             _current = this;
         }
@@ -36,7 +35,6 @@ namespace Bit.ViewModel.Implementations
         private readonly IClientAppProfile _clientAppProfile;
         private readonly AccountStore _accountStore;
         private readonly IDateTimeProvider _dateTimeProvider;
-        private readonly IBrowserService _browserService;
         private readonly IContainerProvider _containerProvider;
 
         public virtual bool IsLoggedIn()
@@ -78,7 +76,7 @@ namespace Bit.ViewModel.Implementations
             await Logout(state, client_id, cancellationToken).ConfigureAwait(false);
             CurrentAction = "Login";
             CurrentLoginTaskCompletionSource = new TaskCompletionSource<Token>();
-            _browserService.OpenUrl(GetLoginUrl(state, client_id));
+            await Browser.OpenAsync(GetLoginUrl(state, client_id), BrowserLaunchMode.SystemPreferred).ConfigureAwait(false);
             return await CurrentLoginTaskCompletionSource.Task.ConfigureAwait(false);
         }
 
@@ -115,7 +113,7 @@ namespace Bit.ViewModel.Implementations
                 {
                     CurrentAction = "Logout";
                     CurrentLogoutTaskCompletionSource = new TaskCompletionSource<object>();
-                    _browserService.OpenUrl(GetLogoutUrl(token.id_token, state, client_id));
+                    await Browser.OpenAsync(GetLogoutUrl(token.id_token, state, client_id), BrowserLaunchMode.SystemPreferred).ConfigureAwait(false);
                     await CurrentLogoutTaskCompletionSource.Task.ConfigureAwait(false);
                 }
             }

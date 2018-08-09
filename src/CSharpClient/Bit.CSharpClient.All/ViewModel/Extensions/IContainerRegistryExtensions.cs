@@ -3,7 +3,6 @@ using Bit.ViewModel;
 using Bit.ViewModel.Contracts;
 using Bit.ViewModel.Implementations;
 using IdentityModel.Client;
-using Plugin.Connectivity;
 using Prism.Autofac;
 using Prism.Events;
 using Rg.Plugins.Popup.Contracts;
@@ -26,7 +25,6 @@ namespace Prism.Ioc
             ContainerBuilder containerBuilder = containerRegistry.GetBuilder();
 
             containerBuilder.RegisterType<DefaultDateTimeProvider>().As<IDateTimeProvider>().SingleInstance().PreserveExistingDefaults();
-            containerBuilder.Register(c => CrossConnectivity.Current).SingleInstance().PreserveExistingDefaults();
 
             return containerRegistry;
         }

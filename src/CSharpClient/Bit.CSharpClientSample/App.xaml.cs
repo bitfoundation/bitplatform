@@ -6,7 +6,6 @@ using Bit.Model.Events;
 using Bit.Tests.Model.Dto;
 using Bit.ViewModel.Contracts;
 using Bit.ViewModel.Implementations;
-using Plugin.Connectivity.Abstractions;
 using Prism;
 using Prism.Autofac;
 using Prism.Events;
@@ -60,7 +59,7 @@ namespace Bit.CSharpClientSample
 
             containerRegistry.GetBuilder().Register<IClientAppProfile>(c => new DefaultClientAppProfile
             {
-                HostUri = new Uri("http://192.168.1.233/"),
+                HostUri = new Uri("http://192.168.1.60/"),
                 //HostUri = new Uri("http://127.0.0.1/"),
                 //HostUri = new Uri("http://10.0.2.2"),
                 OAuthRedirectUri = new Uri("Test://oauth2redirect"),
@@ -77,7 +76,7 @@ namespace Bit.CSharpClientSample
 
             containerRegistry.GetBuilder().Register(c =>
             {
-                ISyncService syncService = new DefaultSyncService<SampleDbContext>(c.Resolve<IConnectivity>(), c.Resolve<IContainerProvider>());
+                ISyncService syncService = new DefaultSyncService<SampleDbContext>(c.Resolve<IContainerProvider>());
 
                 syncService.AddDtoSetSyncConfig(new DtoSetSyncConfig
                 {
