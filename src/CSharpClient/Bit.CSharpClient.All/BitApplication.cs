@@ -9,7 +9,9 @@ using Prism.Ioc;
 using System;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
+#if !WPF
 using Xamarin.Essentials;
+#endif
 using Xamarin.Forms;
 using Xamarin.Forms.Internals;
 
@@ -88,11 +90,19 @@ namespace Bit
 
         protected virtual Task OnInitializedAsync()
         {
+#if !WPF
             Connectivity.ConnectivityChanged += (sender, e) =>
             {
                 _eventAggregator.Value.GetEvent<ConnectivityChangedEvent>()
                     .Publish(new ConnectivityChangedEvent { IsConnected = e.NetworkAccess != NetworkAccess.None });
             };
+#else
+            System.Net.NetworkInformation.NetworkChange.NetworkAvailabilityChanged += (sender, e) =>
+            {
+                _eventAggregator.Value.GetEvent<ConnectivityChangedEvent>()
+                   .Publish(new ConnectivityChangedEvent { IsConnected = e.IsAvailable });
+            };
+#endif
 
             return Task.CompletedTask;
         }
