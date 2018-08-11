@@ -11,7 +11,6 @@ using Rg.Plugins.Popup.Services;
 using Simple.OData.Client;
 using System;
 using System.Net.Http;
-using Xamarin.Auth;
 
 namespace Prism.Ioc
 {
@@ -37,12 +36,6 @@ namespace Prism.Ioc
             ContainerBuilder containerBuilder = containerRegistry.GetBuilder();
 
             containerBuilder.RegisterType<DefaultSecurityService>().As<ISecurityService>().SingleInstance().PreserveExistingDefaults();
-
-#if Android
-            containerBuilder.Register(c => AccountStore.Create(c.Resolve<Android.Content.Context>(), c.Resolve<IClientAppProfile>().AppName)).SingleInstance().PreserveExistingDefaults();
-#else
-            containerBuilder.Register(c => AccountStore.Create()).SingleInstance().PreserveExistingDefaults();
-#endif
 
             containerBuilder.Register((c, parameters) =>
             {

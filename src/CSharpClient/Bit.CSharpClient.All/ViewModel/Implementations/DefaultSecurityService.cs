@@ -6,78 +6,46 @@ using Prism.Autofac;
 using Prism.Ioc;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Xamarin.Auth;
+#if !WPF
 using Xamarin.Essentials;
+#endif
 
 namespace Bit.ViewModel.Implementations
 {
+#if !WPF
     public class DefaultSecurityService : ISecurityService
     {
-        private static ISecurityService _current;
 
-        public static ISecurityService Current => _current;
+        public static ISecurityService Current { get; private set; }
 
-        public DefaultSecurityService(AccountStore accountStore,
-            IClientAppProfile clientAppProfile,
+        public DefaultSecurityService(IClientAppProfile clientAppProfile,
             IDateTimeProvider dateTimeProvider,
             IContainerProvider containerProvider)
         {
             _clientAppProfile = clientAppProfile;
-            _accountStore = accountStore;
             _dateTimeProvider = dateTimeProvider;
             _containerProvider = containerProvider;
-            _current = this;
+            Current = this;
         }
 
         private readonly IClientAppProfile _clientAppProfile;
-        private readonly AccountStore _accountStore;
         private readonly IDateTimeProvider _dateTimeProvider;
         private readonly IContainerProvider _containerProvider;
 
-        public virtual bool IsLoggedIn()
-        {
-            Account account = GetAccount();
-
-            if (account == null)
-                return false;
-
-            Token token = account;
-
-            return (_dateTimeProvider.GetCurrentUtcDateTime() - token.login_date) < TimeSpan.FromSeconds(token.expires_in);
-        }
+        protected TaskCompletionSource<Token> CurrentLoginTaskCompletionSource { get; set; }
+        protected string CurrentAction { get; set; }
+        protected TaskCompletionSource<object> CurrentLogoutTaskCompletionSource { get; set; }
 
         public virtual async Task<bool> IsLoggedInAsync(CancellationToken cancellationToken = default(CancellationToken))
         {
-            Account account = await GetAccountAsync().ConfigureAwait(false);
+            Token token = await GetCurrentTokenAsync().ConfigureAwait(false);
 
-            if (account == null)
+            if (token == null)
                 return false;
 
-            Token token = account;
-
             return (_dateTimeProvider.GetCurrentUtcDateTime() - token.login_date) < TimeSpan.FromSeconds(token.expires_in);
-        }
-
-        private Account GetAccount()
-        {
-            return (_accountStore.FindAccountsForService(_clientAppProfile.AppName)).SingleOrDefault();
-        }
-
-        private async Task<Account> GetAccountAsync()
-        {
-            return (await _accountStore.FindAccountsForServiceAsync(_clientAppProfile.AppName).ConfigureAwait(false)).SingleOrDefault();
-        }
-
-        public virtual async Task<Token> Login(object state = null, string client_id = null, CancellationToken cancellationToken = default(CancellationToken))
-        {
-            await Logout(state, client_id, cancellationToken).ConfigureAwait(false);
-            CurrentAction = "Login";
-            CurrentLoginTaskCompletionSource = new TaskCompletionSource<Token>();
-            await Browser.OpenAsync(GetLoginUrl(state, client_id), BrowserLaunchMode.SystemPreferred).ConfigureAwait(false);
-            return await CurrentLoginTaskCompletionSource.Task.ConfigureAwait(false);
         }
 
         public virtual async Task<Token> LoginWithCredentials(string username, string password, string client_id, string client_secret, string[] scopes = null, CancellationToken cancellationToken = default(CancellationToken))
@@ -94,21 +62,40 @@ namespace Bit.ViewModel.Implementations
             if (tokenResponse.IsError)
                 throw tokenResponse.Exception ?? new Exception($"{tokenResponse.Error} {tokenResponse.Raw}");
 
-            Account account = Token.FromTokenToAccount(tokenResponse);
+            Token token = tokenResponse;
 
-            await _accountStore.SaveAsync(account, _clientAppProfile.AppName).ConfigureAwait(false);
+            await SecureStorage.SetAsync("Token", JsonConvert.SerializeObject(token)).ConfigureAwait(false);
 
-            return account;
+            return token;
+        }
+
+        public virtual async Task<Token> Login(object state = null, string client_id = null, CancellationToken cancellationToken = default(CancellationToken))
+        {
+            await Logout(state, client_id, cancellationToken).ConfigureAwait(false);
+            CurrentAction = "Login";
+            CurrentLoginTaskCompletionSource = new TaskCompletionSource<Token>();
+            await Browser.OpenAsync(GetLoginUrl(state, client_id), BrowserLaunchMode.SystemPreferred).ConfigureAwait(false);
+            return await CurrentLoginTaskCompletionSource.Task.ConfigureAwait(false);
+        }
+
+        public virtual async Task<Token> GetCurrentTokenAsync(CancellationToken cancellationToken = default(CancellationToken))
+        {
+            string token = await SecureStorage.GetAsync("Token").ConfigureAwait(false);
+
+            if (token == null)
+                return null;
+
+            return JsonConvert.DeserializeObject<Dictionary<string, string>>(token);
         }
 
         public virtual async Task Logout(object state = null, string client_id = null, CancellationToken cancellationToken = default(CancellationToken))
         {
-            Account account = GetAccount();
+            Token token = await GetCurrentTokenAsync().ConfigureAwait(false);
 
-            if (account != null)
+            if (token != null)
             {
-                await _accountStore.DeleteAsync(account, _clientAppProfile.AppName).ConfigureAwait(false);
-                Token token = account;
+                SecureStorage.Remove("Token");
+
                 if (!string.IsNullOrEmpty(token.id_token))
                 {
                     CurrentAction = "Logout";
@@ -117,26 +104,6 @@ namespace Bit.ViewModel.Implementations
                     await CurrentLogoutTaskCompletionSource.Task.ConfigureAwait(false);
                 }
             }
-        }
-
-        public virtual Token GetCurrentToken()
-        {
-            Account account = GetAccount();
-
-            if (account == null)
-                return null;
-
-            return account;
-        }
-
-        public virtual async Task<Token> GetCurrentTokenAsync(CancellationToken cancellationToken = default(CancellationToken))
-        {
-            Account account = await GetAccountAsync().ConfigureAwait(false);
-
-            if (account == null)
-                return null;
-
-            return account;
         }
 
         public virtual Uri GetLoginUrl(object state = null, string client_id = null)
@@ -166,13 +133,9 @@ namespace Bit.ViewModel.Implementations
             return new Uri(_clientAppProfile.HostUri, relativeUri: relativeUri);
         }
 
-        protected TaskCompletionSource<Token> CurrentLoginTaskCompletionSource { get; set; }
-        protected string CurrentAction { get; set; }
-        protected TaskCompletionSource<object> CurrentLogoutTaskCompletionSource { get; set; }
-
-        public virtual async void OnSsoLoginLogoutRedirectCompleted(Uri url)
+        public virtual async Task OnSsoLoginLogoutRedirectCompleted(Uri url)
         {
-            Dictionary<string, string> query = (Dictionary<string, string>)WebEx.FormDecode(url.Fragment);
+            Dictionary<string, string> query = (Dictionary<string, string>)FormDecode(url.Fragment);
 
             if (CurrentAction == "Logout")
                 CurrentLogoutTaskCompletionSource.SetResult(null);
@@ -180,12 +143,97 @@ namespace Bit.ViewModel.Implementations
             {
                 Token token = query;
 
-                Account account = Token.FromTokenToAccount(token);
-
-                await _accountStore.SaveAsync(account, _clientAppProfile.AppName).ConfigureAwait(false);
+                await SecureStorage.SetAsync("Token", JsonConvert.SerializeObject(token)).ConfigureAwait(false);
 
                 CurrentLoginTaskCompletionSource.SetResult(query);
             }
         }
+
+        readonly char[] AmpersandChars = new char[] { '&' };
+
+        IDictionary<string, string> FormDecode(string encodedString)
+        {
+            Dictionary<string, string> inputs = new Dictionary<string, string>();
+
+            if (encodedString.Length > 0)
+            {
+                char firstChar = encodedString[0];
+                if (firstChar == '?' || firstChar == '#')
+                {
+                    encodedString = encodedString.Substring(1);
+                }
+
+                if (encodedString.Length > 0)
+                {
+                    string[] parts = encodedString.Split(AmpersandChars, StringSplitOptions.RemoveEmptyEntries);
+
+                    foreach (string part in parts)
+                    {
+                        int equalsIndex = part.IndexOf('=');
+
+                        string key;
+                        string value;
+                        if (equalsIndex >= 0)
+                        {
+                            key = Uri.UnescapeDataString(part.Substring(0, equalsIndex));
+                            value = Uri.UnescapeDataString(part.Substring(equalsIndex + 1));
+                        }
+                        else
+                        {
+                            key = Uri.UnescapeDataString(part);
+                            value = string.Empty;
+                        }
+
+                        inputs[key] = value;
+                    }
+                }
+            }
+
+            return inputs;
+        }
     }
+#else
+    public class DefaultSecurityService : ISecurityService
+    {
+        public Task<Token> GetCurrentTokenAsync(CancellationToken cancellationToken = default(CancellationToken))
+        {
+            throw new NotImplementedException();
+        }
+
+        public Uri GetLoginUrl(object state = null, string client_id = null)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Uri GetLogoutUrl(string id_token, object state = null, string client_id = null)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<bool> IsLoggedInAsync(CancellationToken cancellationToken = default(CancellationToken))
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<Token> Login(object state = null, string client_id = null, CancellationToken cancellationToken = default(CancellationToken))
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<Token> LoginWithCredentials(string username, string password, string client_id, string client_secret, string[] scopes = null, CancellationToken cancellationToken = default(CancellationToken))
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task Logout(object state = null, string client_id = null, CancellationToken cancellationToken = default(CancellationToken))
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task OnSsoLoginLogoutRedirectCompleted(Uri url)
+        {
+            throw new NotImplementedException();
+        }
+    }
+#endif
 }
