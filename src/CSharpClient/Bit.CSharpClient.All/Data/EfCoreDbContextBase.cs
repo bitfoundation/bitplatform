@@ -1,6 +1,7 @@
 ﻿using Bit.Model.Contracts;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.EntityFrameworkCore.Metadata;
 using System;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -75,7 +76,9 @@ namespace Bit.Data
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
-            optionsBuilder.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking);
+            optionsBuilder
+                .UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking)
+                .ConfigureWarnings(warnings => warnings.Throw(RelationalEventId.QueryClientEvaluationWarning));
 
             base.OnConfiguring(optionsBuilder);
         }

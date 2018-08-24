@@ -1,6 +1,7 @@
-﻿using System;
-using Bit.Data.EntityFrameworkCore.Contracts;
+﻿using Bit.Data.EntityFrameworkCore.Contracts;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
+using System;
 
 namespace Bit.Data.EntityFrameworkCore.Implementations
 {
@@ -50,6 +51,7 @@ namespace Bit.Data.EntityFrameworkCore.Implementations
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
             optionsBuilder.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking);
+            optionsBuilder.ConfigureWarnings(warnings => warnings.Throw(RelationalEventId.QueryClientEvaluationWarning));
 
             base.OnConfiguring(optionsBuilder);
         }
