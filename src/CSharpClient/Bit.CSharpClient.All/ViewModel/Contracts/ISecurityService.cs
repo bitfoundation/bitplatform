@@ -74,5 +74,7 @@ namespace Bit.ViewModel.Contracts
         Uri GetLogoutUrl(string id_token, object state = null, string client_id = null);
 
         Task OnSsoLoginLogoutRedirectCompleted(Uri url);
+
+        bool UseSecureStorage();
     }
 }

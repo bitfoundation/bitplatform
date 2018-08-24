@@ -64,7 +64,16 @@ namespace Bit.ViewModel.Implementations
 
             Token token = tokenResponse;
 
-            await SecureStorage.SetAsync("Token", JsonConvert.SerializeObject(token)).ConfigureAwait(false);
+            string jsonToken = JsonConvert.SerializeObject(token);
+
+            if (UseSecureStorage())
+            {
+                await SecureStorage.SetAsync("Token", jsonToken).ConfigureAwait(false);
+            }
+            else
+            {
+                Preferences.Set("Token", jsonToken);
+            }
 
             return token;
         }
@@ -80,7 +89,12 @@ namespace Bit.ViewModel.Implementations
 
         public virtual async Task<Token> GetCurrentTokenAsync(CancellationToken cancellationToken = default(CancellationToken))
         {
-            string token = await SecureStorage.GetAsync("Token").ConfigureAwait(false);
+            string token = null;
+
+            if (UseSecureStorage())
+                token = await SecureStorage.GetAsync("Token").ConfigureAwait(false);
+            else
+                token = Preferences.Get("Token", (string)null);
 
             if (token == null)
                 return null;
@@ -94,7 +108,10 @@ namespace Bit.ViewModel.Implementations
 
             if (token != null)
             {
-                SecureStorage.Remove("Token");
+                if (UseSecureStorage())
+                    SecureStorage.Remove("Token");
+                else
+                    Preferences.Remove("Token");
 
                 if (!string.IsNullOrEmpty(token.id_token))
                 {
@@ -143,7 +160,16 @@ namespace Bit.ViewModel.Implementations
             {
                 Token token = query;
 
-                await SecureStorage.SetAsync("Token", JsonConvert.SerializeObject(token)).ConfigureAwait(false);
+                string jsonToken = JsonConvert.SerializeObject(token);
+
+                if (UseSecureStorage())
+                {
+                    await SecureStorage.SetAsync("Token", jsonToken).ConfigureAwait(false);
+                }
+                else
+                {
+                    Preferences.Set("Token", jsonToken);
+                }
 
                 CurrentLoginTaskCompletionSource.SetResult(query);
             }
@@ -191,6 +217,11 @@ namespace Bit.ViewModel.Implementations
 
             return inputs;
         }
+
+        public virtual bool UseSecureStorage()
+        {
+            return true;
+        }
     }
 #else
     public class DefaultSecurityService : ISecurityService
@@ -231,6 +262,11 @@ namespace Bit.ViewModel.Implementations
         }
 
         public Task OnSsoLoginLogoutRedirectCompleted(Uri url)
+        {
+            throw new NotImplementedException();
+        }
+
+        public bool UseSecureStorage()
         {
             throw new NotImplementedException();
         }
