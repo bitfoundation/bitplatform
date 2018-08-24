@@ -32,7 +32,7 @@ namespace Bit.Data
 
         }
 
-        public virtual async Task UpsertDtoAsync<TDto>(TDto dto) // https://github.com/aspnet/EntityFrameworkCore/issues/9249
+        public virtual async Task UpsertDtoAsync<TDto>(TDto dto, CancellationToken cancellationToken = default(CancellationToken)) // https://github.com/aspnet/EntityFrameworkCore/issues/9249
             where TDto : class, IDto
         {
             if (dto == null)
@@ -70,7 +70,7 @@ namespace Bit.Data
 
             string sql = $"INSERT OR REPLACE INTO {tableName} ({string.Join(",", props.Select(p => $"[{p.Name}]"))}) VALUES({string.Join(",", props.Select((p, i) => $"{{{i}}}"))})";
 
-            await Database.ExecuteSqlCommandAsync(sql, props.Select(p => p.Value)).ConfigureAwait(false);
+            await Database.ExecuteSqlCommandAsync(sql, props.Select(p => p.Value), cancellationToken).ConfigureAwait(false);
         }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
