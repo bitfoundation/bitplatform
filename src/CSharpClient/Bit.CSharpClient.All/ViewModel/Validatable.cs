@@ -79,9 +79,13 @@ namespace Bit.ViewModel
 
     public class RegexValidationRule : ValidationRuleBase<string>
     {
-        public RegexValidationRule(string validationMessage)
+        public RegexValidationRule(string validationMessage, string pattern)
         {
+            if (string.IsNullOrEmpty(pattern))
+                throw new ArgumentException(nameof(pattern));
+
             ValidationMessage = validationMessage;
+            Pattern = pattern;
         }
 
         public string Pattern { get; set; }
