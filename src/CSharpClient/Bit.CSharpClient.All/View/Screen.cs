@@ -199,6 +199,8 @@ namespace Bit.View
 
         static object ConvertUsingDotNetTypeConverter(Type destinationType, object input)
         {
+            destinationType = Nullable.GetUnderlyingType(destinationType) ?? destinationType;
+
             if (destinationType.IsEnum)
             {
                 return Enum.Parse(destinationType, (string)input);
