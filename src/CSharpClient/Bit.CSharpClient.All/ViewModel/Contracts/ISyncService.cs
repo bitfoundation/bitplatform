@@ -4,6 +4,7 @@ using Simple.OData.Client;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Bit.ViewModel.Contracts
@@ -31,8 +32,8 @@ namespace Bit.ViewModel.Contracts
     {
         void AddDtoSetSyncConfig(DtoSetSyncConfig dtoSetSyncConfig);
 
-        Task SyncContext();
+        Task SyncContext(CancellationToken cancellationToken = default(CancellationToken));
 
-        Task SyncDtoSets(params string[] dtoSetNames);
+        Task SyncDtoSets(CancellationToken cancellationToken = default(CancellationToken), params string[] dtoSetNames);
     }
 }

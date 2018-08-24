@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Dynamic;
 using System.Reflection;
+using System.Threading;
 using System.Threading.Tasks;
 #if !WPF
 using Xamarin.Essentials;
@@ -20,22 +21,28 @@ namespace Bit.ViewModel.Implementations
         where TDbContext : EfCoreDbContextBase
     {
         public DefaultSyncService(IContainerProvider containerProvider)
+            : this(() => containerProvider.Resolve<TDbContext>(), () => containerProvider.Resolve<ODataBatch>())
         {
             if (containerProvider == null)
                 throw new ArgumentNullException(nameof(containerProvider));
+        }
 
-            _containerProvider = containerProvider;
+        public DefaultSyncService(Func<TDbContext> dbContextProvider, Func<ODataBatch> oDataBatchProvider)
+        {
+            _dbContextProvider = dbContextProvider;
+            _oDataBatchProvider = oDataBatchProvider;
         }
 
         private readonly List<DtoSetSyncConfig> _configs = new List<DtoSetSyncConfig> { };
-        private readonly IContainerProvider _containerProvider;
+        private readonly Func<TDbContext> _dbContextProvider;
+        private readonly Func<ODataBatch> _oDataBatchProvider;
 
-        public Task SyncContext()
+        public virtual Task SyncContext(CancellationToken cancellationToken = default(CancellationToken))
         {
-            return SyncDtoSets(_configs.Select(c => c.DtoSetName).ToArray());
+            return SyncDtoSets(cancellationToken, _configs.Select(c => c.DtoSetName).ToArray());
         }
 
-        public async Task SyncDtoSets(params string[] dtoSetNames)
+        public virtual async Task SyncDtoSets(CancellationToken cancellationToken = default(CancellationToken), params string[] dtoSetNames)
         {
             if (dtoSetNames == null)
                 throw new ArgumentNullException(nameof(dtoSetNames));
@@ -52,19 +59,26 @@ namespace Bit.ViewModel.Implementations
 
             DtoSetSyncConfig[] fromServerDtoSetSyncMaterials = _configs.Where(c => c.FromServerSync == true && c.FromServerSyncFunc() == true && dtoSetNames.Any(n => n == c.DtoSetName)).ToArray();
 
+            await CallSyncTo(toServerDtoSetSyncMaterials, cancellationToken);
+
+            await CallSyncFrom(fromServerDtoSetSyncMaterials, cancellationToken);
+        }
+
+        public virtual async Task CallSyncTo(DtoSetSyncConfig[] toServerDtoSetSyncMaterials, CancellationToken cancellationToken)
+        {
             if (toServerDtoSetSyncMaterials.Any())
             {
-                using (TDbContext offlineContextForSyncTo = _containerProvider.Resolve<TDbContext>())
+                using (TDbContext offlineContextForSyncTo = _dbContextProvider())
                 {
                     ((IsSyncDbContext)offlineContextForSyncTo).IsSyncDbContext = true;
 
-                    ODataBatch onlineBatchContext = _containerProvider.Resolve<ODataBatch>();
+                    ODataBatch onlineBatchContext = _oDataBatchProvider();
 
                     foreach (DtoSetSyncConfig toServerSyncConfig in toServerDtoSetSyncMaterials)
                     {
                         IQueryable<ISyncableDto> offlineSet = toServerSyncConfig.OfflineDtoSet(offlineContextForSyncTo);
 
-                        ISyncableDto[] recentlyChangedOfflineDtos = (await offlineSet.IgnoreQueryFilters().Where(s => EF.Property<bool>(s, "IsSynced") == false).AsNoTracking().ToArrayAsync().ConfigureAwait(false))
+                        ISyncableDto[] recentlyChangedOfflineDtos = (await offlineSet.IgnoreQueryFilters().Where(s => EF.Property<bool>(s, "IsSynced") == false).AsNoTracking().ToArrayAsync(cancellationToken).ConfigureAwait(false))
                             .Cast<ISyncableDto>()
                             .ToArray();
 
@@ -102,17 +116,20 @@ namespace Bit.ViewModel.Implementations
                         }
                     }
 
-                    await onlineBatchContext.ExecuteAsync().ConfigureAwait(false);
+                    await onlineBatchContext.ExecuteAsync(cancellationToken).ConfigureAwait(false);
                 }
             }
+        }
 
+        public virtual async Task CallSyncFrom(DtoSetSyncConfig[] fromServerDtoSetSyncMaterials, CancellationToken cancellationToken)
+        {
             if (fromServerDtoSetSyncMaterials.Any())
             {
-                using (TDbContext offlineContextForSyncFrom = _containerProvider.Resolve<TDbContext>())
+                using (TDbContext offlineContextForSyncFrom = _dbContextProvider())
                 {
                     ((IsSyncDbContext)offlineContextForSyncFrom).IsSyncDbContext = true;
 
-                    ODataBatch onlineBatchContext = _containerProvider.Resolve<ODataBatch>();
+                    ODataBatch onlineBatchContext = _oDataBatchProvider();
 
                     List<DtoSyncConfigSyncFromResults> recentlyChangedOnlineDtos = new List<DtoSyncConfigSyncFromResults>();
 
@@ -124,7 +141,7 @@ namespace Bit.ViewModel.Implementations
                             .IgnoreQueryFilters()
                             .Select(e => new { e.Version })
                             .OrderByDescending(e => e.Version)
-                            .FirstOrDefaultAsync()
+                            .FirstOrDefaultAsync(cancellationToken)
                             .ConfigureAwait(false);
 
                         long maxVersion = mostRecentOfflineDto?.Version ?? 0;
@@ -132,13 +149,13 @@ namespace Bit.ViewModel.Implementations
                         onlineBatchContext += async c => recentlyChangedOnlineDtos.Add(new DtoSyncConfigSyncFromResults
                         {
                             DtoSetSyncConfig = fromServerSyncConfig,
-                            RecentlyChangedOnlineDtos = CreateSyncableDtoInstancesFromUnTypedODataResponse(offlineSet.ElementType.GetTypeInfo(), (await (fromServerSyncConfig.OnlineDtoSetForGet ?? fromServerSyncConfig.OnlineDtoSet)(c).Where($"Version gt {maxVersion}").FindEntriesAsync().ConfigureAwait(false)).ToList()),
+                            RecentlyChangedOnlineDtos = CreateSyncableDtoInstancesFromUnTypedODataResponse(offlineSet.ElementType.GetTypeInfo(), (await (fromServerSyncConfig.OnlineDtoSetForGet ?? fromServerSyncConfig.OnlineDtoSet)(c).Where($"Version gt {maxVersion}").FindEntriesAsync(cancellationToken).ConfigureAwait(false)).ToList()),
                             DtoType = offlineSet.ElementType.GetTypeInfo(),
                             HadOfflineDtoBefore = mostRecentOfflineDto != null
                         });
                     }
 
-                    await onlineBatchContext.ExecuteAsync().ConfigureAwait(false);
+                    await onlineBatchContext.ExecuteAsync(cancellationToken).ConfigureAwait(false);
 
                     foreach (DtoSyncConfigSyncFromResults result in recentlyChangedOnlineDtos.Where(r => r.RecentlyChangedOnlineDtos.Any()))
                     {
@@ -171,7 +188,7 @@ namespace Bit.ViewModel.Implementations
 
                             }));
 
-                            List<ISyncableDto> equivalentOfflineDtos = await offlineSet.Where(equivalentOfflineDtosQuery, equivalentOfflineDtosParams.ToArray()).IgnoreQueryFilters().ToListAsync().ConfigureAwait(false);
+                            List<ISyncableDto> equivalentOfflineDtos = await offlineSet.Where(equivalentOfflineDtosQuery, equivalentOfflineDtosParams.ToArray()).IgnoreQueryFilters().ToListAsync(cancellationToken).ConfigureAwait(false);
 
                             foreach (ISyncableDto recentlyChangedOnlineDto in result.RecentlyChangedOnlineDtos)
                             {
@@ -196,12 +213,12 @@ namespace Bit.ViewModel.Implementations
                         }
                     }
 
-                    await offlineContextForSyncFrom.SaveChangesAsync().ConfigureAwait(false);
+                    await offlineContextForSyncFrom.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
                 }
             }
         }
 
-        class DtoSyncConfigSyncFromResults
+        public class DtoSyncConfigSyncFromResults
         {
             public bool HadOfflineDtoBefore { get; set; }
 
@@ -212,7 +229,7 @@ namespace Bit.ViewModel.Implementations
             public List<ISyncableDto> RecentlyChangedOnlineDtos { get; set; }
         }
 
-        private List<ISyncableDto> CreateSyncableDtoInstancesFromUnTypedODataResponse(TypeInfo dtoType, List<IDictionary<string, object>> untypedDtos)
+        protected List<ISyncableDto> CreateSyncableDtoInstancesFromUnTypedODataResponse(TypeInfo dtoType, List<IDictionary<string, object>> untypedDtos)
         {
             return untypedDtos
                 .Select(unTypedDto => unTypedDto.ToDto(dtoType))
@@ -220,7 +237,7 @@ namespace Bit.ViewModel.Implementations
                 .ToList();
         }
 
-        public void AddDtoSetSyncConfig(DtoSetSyncConfig dtoSetSyncConfig)
+        public virtual void AddDtoSetSyncConfig(DtoSetSyncConfig dtoSetSyncConfig)
         {
             if (dtoSetSyncConfig == null)
                 throw new ArgumentNullException(nameof(dtoSetSyncConfig));
