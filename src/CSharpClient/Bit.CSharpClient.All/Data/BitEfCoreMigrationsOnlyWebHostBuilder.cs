@@ -20,10 +20,7 @@ namespace Bit.Data
 
         public void ConfigureServices(IServiceCollection services)
         {
-            typeof(EntityFrameworkServiceCollectionExtensions).GetTypeInfo()
-                .GetMethod(nameof(EntityFrameworkServiceCollectionExtensions.AddDbContext), new Type[] { typeof(IServiceCollection), typeof(Action<DbContextOptionsBuilder>), typeof(ServiceLifetime), typeof(ServiceLifetime) })
-                .MakeGenericMethod(DbContextType)
-                .Invoke(null, new object[] { services, null, ServiceLifetime.Scoped, ServiceLifetime.Scoped });
+            services.AddEntityFrameworkSqlite();
         }
 
         public void Configure(IApplicationBuilder aspNetCoreApp)
