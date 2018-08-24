@@ -1,4 +1,5 @@
 ﻿using Bit.CSharpClientSample.Data;
+using Bit.CSharpClientSample.Dto;
 using Bit.Tests.Model.Dto;
 using Bit.ViewModel;
 using Bit.ViewModel.Contracts;
@@ -40,6 +41,8 @@ namespace Bit.CSharpClientSample.ViewModels
             SendODataRequest = new BitDelegateCommand(async () =>
             {
                 var result = await oDataClient.For("ParentEntities").FindEntriesAsync();
+                var result2 = await oDataClient.For<TestComplexDto>("TestComplex")
+                    .FindEntriesAsync();
             });
 
             Logout = new BitDelegateCommand(async () =>
