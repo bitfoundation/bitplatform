@@ -1,7 +1,6 @@
 ﻿using Prism.Mvvm;
 using Prism.Navigation;
 using System;
-using System.Diagnostics;
 using System.Threading.Tasks;
 
 namespace Bit.ViewModel
@@ -13,6 +12,7 @@ namespace Bit.ViewModel
             try
             {
                 await DestroyAsync().ConfigureAwait(false);
+                await Task.Yield();
             }
             catch (Exception exp)
             {
@@ -30,6 +30,7 @@ namespace Bit.ViewModel
             try
             {
                 await OnNavigatedFromAsync(parameters).ConfigureAwait(false);
+                await Task.Yield();
             }
             catch (Exception exp)
             {
@@ -46,6 +47,7 @@ namespace Bit.ViewModel
         {
             try
             {
+                await Task.Yield();
                 await OnNavigatedToAsync(parameters).ConfigureAwait(false);
             }
             catch (Exception exp)
@@ -63,6 +65,7 @@ namespace Bit.ViewModel
         {
             try
             {
+                await Task.Yield();
                 await OnNavigatingToAsync(parameters).ConfigureAwait(false);
             }
             catch (Exception exp)

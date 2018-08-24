@@ -81,6 +81,7 @@ namespace Bit
             try
             {
                 await OnInitializedAsync().ConfigureAwait(false);
+                await Task.Yield();
             }
             catch (Exception exp)
             {
