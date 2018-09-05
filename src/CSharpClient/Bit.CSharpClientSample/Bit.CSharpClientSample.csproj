@@ -5,11 +5,20 @@
     <OutputType Condition="'$(TargetFramework)' == 'netcoreapp2.0'">Exe</OutputType>
   </PropertyGroup>
 
+  <PropertyGroup>
+    <DebugType>pdbonly</DebugType>
+    <DebugSymbols>true</DebugSymbols>
+    <LangVersion>7.3</LangVersion>
+  </PropertyGroup>
+
   <ItemGroup>
 
     <Reference Include="System.Data" />
 
-    <PackageReference Include="Fody" Version="3.1.4" />
+    <PackageReference Include="Fody" Version="3.2.0">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
+    </PackageReference>
     <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="2.0.3" />
     <PackageReference Include="PropertyChanged.Fody" Version="2.5.9" />
     <PackageReference Include="System.ComponentModel.Annotations" Version="4.5.0" />
