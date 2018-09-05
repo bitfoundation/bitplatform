@@ -1,13 +1,19 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
-<pages:PopupPage xmlns="http://xamarin.com/schemas/2014/forms"
-             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             xmlns:pages="clr-namespace:Rg.Plugins.Popup.Pages;assembly=Rg.Plugins.Popup"
-             x:Class="Bit.CSharpClientSample.Views.TestView">
-    <StackLayout 
-        VerticalOptions="Center" 
-        HorizontalOptions="Center" 
-        Padding="20, 20, 20, 20">
-        <Label Text="Test"/>
-        <Button Text="Close" Command="{Binding Close}" />
+<pages:PopupPage
+    x:Class="Bit.CSharpClientSample.Views.TestView"
+    xmlns="http://xamarin.com/schemas/2014/forms"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:animations="clr-namespace:Rg.Plugins.Popup.Animations;assembly=Rg.Plugins.Popup"
+    xmlns:pages="clr-namespace:Rg.Plugins.Popup.Pages;assembly=Rg.Plugins.Popup">
+    <pages:PopupPage.Animation>
+        <animations:MoveAnimation PositionOut="Right" />
+    </pages:PopupPage.Animation>
+    <StackLayout
+        Padding="10"
+        BackgroundColor="White"
+        HorizontalOptions="End"
+        VerticalOptions="FillAndExpand">
+        <Label Text="Test" />
+        <Button Command="{Binding Close}" Text="Close" />
     </StackLayout>
 </pages:PopupPage>

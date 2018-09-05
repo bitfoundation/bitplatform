@@ -28,8 +28,7 @@ namespace Bit.CSharpClientSample.ViewModels
             ISyncService syncService,
             IODataClient oDataClient,
             HttpClient httpClient,
-            ISecurityService securityService,
-            IPopupNavigationService popupNavigationService)
+            ISecurityService securityService)
         {
             SendHttpRequest = new BitDelegateCommand(async () =>
             {
@@ -53,7 +52,7 @@ namespace Bit.CSharpClientSample.ViewModels
 
             ShowPopup = new BitDelegateCommand(async () =>
             {
-                await popupNavigationService.PushAsync("Test");
+                await navigationService.NavigateAsync("Test", new NavigationParameters { { "Test", "Test" } });
             });
 
             Sync = new BitDelegateCommand(async () =>

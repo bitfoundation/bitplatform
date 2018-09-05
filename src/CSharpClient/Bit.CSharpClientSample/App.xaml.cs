@@ -56,6 +56,7 @@ namespace Bit.CSharpClientSample
 
             containerRegistry.RegisterForNavigation<LoginView, LoginViewModel>("Login");
             containerRegistry.RegisterForNavigation<MainView, MainViewModel>("Main");
+            containerRegistry.RegisterForNavigation<TestView, TestViewModel>("Test");
 
             containerRegistry.GetBuilder().Register<IClientAppProfile>(c => new DefaultClientAppProfile
             {
@@ -88,10 +89,6 @@ namespace Bit.CSharpClientSample
                 return syncService;
 
             }).SingleInstance();
-
-            containerRegistry.RegisterPopupService();
-
-            containerRegistry.RegisterForPopup<TestView, TestViewModel>("Test");
 
             base.RegisterTypes(containerRegistry);
         }

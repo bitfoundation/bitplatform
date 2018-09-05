@@ -1,18 +1,24 @@
 ﻿using Bit.ViewModel;
-using Bit.ViewModel.Contracts;
+using Prism.Navigation;
+using System.Threading.Tasks;
 
 namespace Bit.CSharpClientSample.ViewModels
 {
     public class TestViewModel : BitViewModelBase
     {
-        public TestViewModel(IPopupNavigationService popupNavigationService)
+        public TestViewModel(INavigationService navigationService)
         {
             Close = new BitDelegateCommand(async () =>
             {
-                await popupNavigationService.PopAsync();
+                await navigationService.GoBackAsync();
             });
         }
 
         public virtual BitDelegateCommand Close { get; set; }
+
+        public override Task OnNavigatedToAsync(INavigationParameters parameters)
+        {
+            return base.OnNavigatedToAsync(parameters);
+        }
     }
 }
