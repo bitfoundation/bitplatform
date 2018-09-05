@@ -8,13 +8,10 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-#if !WPF
 using Xamarin.Essentials;
-#endif
 
 namespace Bit.ViewModel.Implementations
 {
-#if !WPF
     public class DefaultSecurityService : ISecurityService
     {
 
@@ -223,53 +220,4 @@ namespace Bit.ViewModel.Implementations
             return true;
         }
     }
-#else
-    public class DefaultSecurityService : ISecurityService
-    {
-        public Task<Token> GetCurrentTokenAsync(CancellationToken cancellationToken = default(CancellationToken))
-        {
-            throw new NotImplementedException();
-        }
-
-        public Uri GetLoginUrl(object state = null, string client_id = null)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Uri GetLogoutUrl(string id_token, object state = null, string client_id = null)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<bool> IsLoggedInAsync(CancellationToken cancellationToken = default(CancellationToken))
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<Token> Login(object state = null, string client_id = null, CancellationToken cancellationToken = default(CancellationToken))
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task<Token> LoginWithCredentials(string username, string password, string client_id, string client_secret, string[] scopes = null, CancellationToken cancellationToken = default(CancellationToken))
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task Logout(object state = null, string client_id = null, CancellationToken cancellationToken = default(CancellationToken))
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task OnSsoLoginLogoutRedirectCompleted(Uri url)
-        {
-            throw new NotImplementedException();
-        }
-
-        public bool UseSecureStorage()
-        {
-            throw new NotImplementedException();
-        }
-    }
-#endif
 }

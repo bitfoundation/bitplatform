@@ -11,9 +11,7 @@ using System.Linq.Dynamic;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
-#if !WPF
 using Xamarin.Essentials;
-#endif
 
 namespace Bit.ViewModel.Implementations
 {
@@ -47,13 +45,8 @@ namespace Bit.ViewModel.Implementations
             if (dtoSetNames == null)
                 throw new ArgumentNullException(nameof(dtoSetNames));
 
-#if !WPF
             if (Connectivity.NetworkAccess == NetworkAccess.None)
                 return;
-#else
-            if (System.Net.NetworkInformation.NetworkInterface.GetIsNetworkAvailable() == false)
-                return;
-#endif
 
             DtoSetSyncConfig[] toServerDtoSetSyncMaterials = _configs.Where(c => c.ToServerSync == true && c.ToServerSyncFunc() == true && dtoSetNames.Any(n => n == c.DtoSetName)).ToArray();
 

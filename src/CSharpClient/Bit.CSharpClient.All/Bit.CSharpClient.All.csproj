@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>MonoAndroid81;Xamarin.iOS10;uap10.0.17134;net472;netstandard2.0;netcoreapp2.0;</TargetFrameworks>
+    <TargetFrameworks>MonoAndroid81;Xamarin.iOS10;uap10.0.17134;netstandard2.0;netcoreapp2.0;</TargetFrameworks>
     <RootNamespace>Bit</RootNamespace>
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
     <GeneratePackageOnBuild Condition=" '$(Configuration)' == 'Release' ">true</GeneratePackageOnBuild>
@@ -25,7 +25,6 @@
     <DefineConstants Condition=" '$(TargetFramework)' == 'netcoreapp2.0' ">DotNetCore</DefineConstants>
     <DefineConstants Condition=" '$(TargetFramework)' == 'uap10.0.17134' ">UWP</DefineConstants>
     <DefineConstants Condition=" '$(TargetFramework)' == 'netstandard2.0' ">DotNetStandard</DefineConstants>
-    <DefineConstants Condition=" '$(TargetFramework)' == 'net472' ">WPF</DefineConstants>
     <DocumentationFile>bin\$(Configuration)\$(TargetFramework)\$(AssemblyName).xml</DocumentationFile>
     <NoWarn>$(NoWarn);NU1605</NoWarn>
     <!-- https://stackoverflow.com/a/46815541/2720104 -->
@@ -38,24 +37,25 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Simple.OData.V4.Client" Version="5.4.0" />
+    <PackageReference Include="Prism.Plugin.Popups" Version="2.0.0.528-pre" />
+    <PackageReference Include="Simple.OData.V4.Client" Version="5.5.0" />
     <PackageReference Include="Bit.System.Linq.Dynamic" Version="1.1.0" />
     <PackageReference Include="IdentityModel" Version="3.9.0" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="2.0.3" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="2.0.3" />
     <PackageReference Include="Microsoft.OData.Core" Version="7.5.0" />
     <PackageReference Include="Newtonsoft.Json" Version="11.0.2" />
-    <PackageReference Include="Prism.Autofac.Forms" Version="7.0.0.396" />
+    <PackageReference Include="Prism.Autofac.Forms" Version="7.1.0.172-pre" />
     <PackageReference Include="System.ComponentModel.Annotations" Version="4.5.0" />
+    <PackageReference Include="System.Memory" Version="4.5.1" />
     <PackageReference Include="System.Reactive" Version="4.0.0" />
-    <PackageReference Include="Xamarin.Essentials" Version="0.9.1-preview" />
+    <PackageReference Include="Xamarin.Essentials" Version="0.10.0-preview" />
     <PackageReference Include="Xamarin.Forms" Version="3.1.0.697729" />
     <PackageReference Include="MSBuild.Sdk.Extras" Version="1.6.47" PrivateAssets="All" />
     <PackageReference Include="SourceLink.Embed.AllSourceFiles" Version="2.8.3" PrivateAssets="all" />
     <PackageReference Include="SourceLink.Copy.PdbFiles" Version="2.8.3" PrivateAssets="All" />
-    <PackageReference Include="Rg.Plugins.Popup" Version="1.1.4.168" />
 
-    <PackageReference Include="Fody" Version="3.1.4">
+    <PackageReference Include="Fody" Version="3.2.0">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
     </PackageReference>
@@ -66,12 +66,6 @@
 
   <ItemGroup Condition=" '$(TargetFramework)' == 'uap10.0.17134' ">
     <PackageReference Include="Microsoft.NETCore.UniversalWindowsPlatform" Version="6.1.7" />
-  </ItemGroup>
-
-  <ItemGroup Condition=" '$(TargetFramework)' == 'net472' ">
-    <PackageReference Include="Xamarin.Forms.Platform.WPF" Version="3.1.0.697729" />
-    <PackageReference Include="Xamarin.Essentials" Version="0.9.1-preview" ExcludeAssets="All" Condition=" '$(Configuration)' == 'Debug' " />
-    <!-- https://github.com/xamarin/Essentials/issues/338 -->
   </ItemGroup>
 
   <ItemGroup Condition=" '$(TargetFramework)' == 'MonoAndroid81' ">
