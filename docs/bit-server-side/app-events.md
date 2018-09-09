@@ -10,6 +10,8 @@ In these situations you can create a class implementing `IAppEvents` interface t
 ``` c#
 public class CacheAppEvents : IAppEvents
 {
+    // You can inject whatever you want using property injection.
+    
     public void OnAppStartup()
     {
         // Initializing your cache.
