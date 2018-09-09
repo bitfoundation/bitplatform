@@ -18,12 +18,13 @@
     <RepositoryType>git</RepositoryType>
     <PackageReleaseNotes>https://github.com/bit-foundation/bit-framework/releases</PackageReleaseNotes>
     <PackageTags>Bit Code Generator Source Generator MsBuild Task</PackageTags>
-    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <GeneratePackageOnBuild Condition=" '$(Configuration)' == 'Release' ">true</GeneratePackageOnBuild>
+    <LangVersion>7.3</LangVersion>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Uno.SourceGeneration" Version="1.23.0-dev.62" PrivateAssets="All" />
-    <PackageReference Include="Uno.SourceGenerationTasks" Version="1.23.0-dev.62" PrivateAssets="None" />
+    <PackageReference Include="Uno.SourceGeneration" Version="1.25.0" PrivateAssets="All" />
+    <PackageReference Include="Uno.SourceGenerationTasks" Version="1.25.0" PrivateAssets="None" />
     <Content Include="build/**/*.*">
       <Pack>true</Pack>
       <PackagePath>build</PackagePath>
