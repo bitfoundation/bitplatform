@@ -19,6 +19,8 @@
     <PackageTags>Bit Data</PackageTags>
     <GeneratePackageOnBuild Condition=" '$(Configuration)' == 'Release' ">true</GeneratePackageOnBuild>
     <DocumentationFile>bin\$(Configuration)\$(TargetFramework)\$(AssemblyName).xml</DocumentationFile>
+    <LangVersion>7.3</LangVersion>
+    <NoWarn>$(NoWarn);CS1591;NU1701</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>

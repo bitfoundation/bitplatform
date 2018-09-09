@@ -26,7 +26,7 @@
     <DefineConstants Condition=" '$(TargetFramework)' == 'uap10.0.17134' ">UWP</DefineConstants>
     <DefineConstants Condition=" '$(TargetFramework)' == 'netstandard2.0' ">DotNetStandard</DefineConstants>
     <DocumentationFile>bin\$(Configuration)\$(TargetFramework)\$(AssemblyName).xml</DocumentationFile>
-    <NoWarn>$(NoWarn);NU1605</NoWarn>
+    <NoWarn>$(NoWarn);NU1605;CS1591;</NoWarn>
     <!-- https://stackoverflow.com/a/46815541/2720104 -->
   </PropertyGroup>
 

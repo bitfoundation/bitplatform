@@ -19,6 +19,8 @@
     <FileVersion>0.0.0.1</FileVersion>
     <GeneratePackageOnBuild Condition=" '$(Configuration)' == 'Release' ">true</GeneratePackageOnBuild>
     <DocumentationFile>bin\$(Configuration)\$(TargetFramework)\$(AssemblyName).xml</DocumentationFile>
+    <LangVersion>7.3</LangVersion>
+    <NoWarn>$(NoWarn);CS1591;NU1701</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
@@ -26,7 +28,7 @@
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="1.1.1" />
     <PackageReference Include="Bit.Swashbuckle.OData" Version="4.0.5" />
     <PackageReference Include="LambdaSqlBuilder" Version="0.9.0" />
-	  <PackageReference Include="Microsoft.OData.Core" Version="7.5.0" />
+    <PackageReference Include="Microsoft.OData.Core" Version="7.5.0" />
     <PackageReference Include="SourceLink.Embed.AllSourceFiles" Version="2.8.3" PrivateAssets="all" />
     <PackageReference Include="SourceLink.Copy.PdbFiles" Version="2.8.3" PrivateAssets="All" />
   </ItemGroup>

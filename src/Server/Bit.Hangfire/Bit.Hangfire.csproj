@@ -21,6 +21,8 @@
     <DefineConstants Condition=" '$(TargetFramework)' == 'net461' ">DotNet</DefineConstants>
     <DefineConstants Condition=" '$(TargetFramework)' == 'netcoreapp2.0' ">DotNetCore</DefineConstants>
     <DocumentationFile>bin\$(Configuration)\$(TargetFramework)\$(AssemblyName).xml</DocumentationFile>
+    <LangVersion>7.3</LangVersion>
+    <NoWarn>$(NoWarn);CS1591;NU1701</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
