@@ -34,13 +34,12 @@ namespace Bit.Data.EntityFrameworkCore.Implementations
             ApplyDefaultConfig();
         }
 
-        private void ApplyDefaultConfig()
+        protected virtual void ApplyDefaultConfig()
         {
             ChangeTracker.AutoDetectChangesEnabled = false;
-            ChangeTracker.QueryTrackingBehavior = QueryTrackingBehavior.NoTracking;
         }
 
-        private void UseTransactionForRelationalDatabases(DbContextObjects dbContextObjects)
+        protected virtual UseTransactionForRelationalDatabases(DbContextObjects dbContextObjects)
         {
             // Although Database is in EntityFramework.Core.dll, but it has a dependency on EntityFramework.Relational.dll
             // We're going to call this method, only in case of relation database usage.
@@ -50,8 +49,8 @@ namespace Bit.Data.EntityFrameworkCore.Implementations
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
-            optionsBuilder.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking);
-            optionsBuilder.ConfigureWarnings(warnings => warnings.Throw(RelationalEventId.QueryClientEvaluationWarning));
+            optionsBuilder.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking)
+                .ConfigureWarnings(warnings => warnings.Throw(RelationalEventId.QueryClientEvaluationWarning));
 
             base.OnConfiguring(optionsBuilder);
         }

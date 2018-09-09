@@ -24,13 +24,18 @@ namespace Bit.Data
         public EfCoreDbContextBase(DbContextOptions options)
             : base(options)
         {
-
+            ApplyDefaultConfig();
         }
 
         public EfCoreDbContextBase()
             : base()
         {
+            ApplyDefaultConfig();
+        }
 
+        protected virtual void ApplyDefaultConfig()
+        {
+            ChangeTracker.AutoDetectChangesEnabled = false;
         }
 
         public virtual async Task UpsertDtoAsync<TDto>(TDto dto, CancellationToken cancellationToken = default(CancellationToken)) // https://github.com/aspnet/EntityFrameworkCore/issues/9249
