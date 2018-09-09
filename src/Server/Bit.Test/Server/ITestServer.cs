@@ -1,9 +1,9 @@
-﻿using System;
-using System.Net.Http;
-using IdentityModel.Client;
+﻿using IdentityModel.Client;
 using Microsoft.AspNet.SignalR.Client;
 using OpenQA.Selenium.Remote;
 using Simple.OData.Client;
+using System;
+using System.Net.Http;
 using System.Threading.Tasks;
 
 namespace Bit.Test.Server
@@ -34,6 +34,8 @@ namespace Bit.Test.Server
         Task<IHubProxy> BuildSignalRClient(TokenResponse token = null, Action<string, dynamic> onMessageReceived = null);
 
         TokenClient BuildTokenClient(string clientId, string secret);
+
+        TService BuildRefitClient<TService>(TokenResponse token = null);
 
         void Initialize(string uri);
 

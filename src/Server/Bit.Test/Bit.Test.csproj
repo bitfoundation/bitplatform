@@ -22,15 +22,16 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="FakeItEasy" Version="4.8.0" />
+    <PackageReference Include="FakeItEasy" Version="4.8.1" />
     <PackageReference Include="Microsoft.AspNet.SignalR.Client" Version="2.3.0" />
     <PackageReference Include="Microsoft.AspNetCore.TestHost" Version="2.1.1" />
     <PackageReference Include="Microsoft.Owin.SelfHost" Version="4.0.0" />
     <PackageReference Include="Microsoft.Owin.Testing" Version="4.0.0" />
+    <PackageReference Include="Refit" Version="4.6.30" />
     <PackageReference Include="Selenium.Support" Version="3.14.0" />
     <PackageReference Include="Selenium.WebDriver" Version="3.14.0" />
     <PackageReference Include="Selenium.WebDriver.ChromeDriver" Version="2.41.0" />
-    <PackageReference Include="Simple.OData.V4.Client" Version="5.4.0" />
+    <PackageReference Include="Simple.OData.V4.Client" Version="5.5.0" />
     <PackageReference Include="SourceLink.Embed.AllSourceFiles" Version="2.8.3" PrivateAssets="all" />
     <PackageReference Include="SourceLink.Copy.PdbFiles" Version="2.8.3" PrivateAssets="All" />
   </ItemGroup>

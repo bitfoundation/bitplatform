@@ -16,6 +16,7 @@
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.8.0" />
     <PackageReference Include="MSTest.TestAdapter" Version="1.3.2" />
     <PackageReference Include="MSTest.TestFramework" Version="1.3.2" />
+    <PackageReference Include="Refit" Version="4.6.30" />
     <PackageReference Include="Selenium.WebDriver.ChromeDriver" Version="2.41.0" />
   </ItemGroup>
 

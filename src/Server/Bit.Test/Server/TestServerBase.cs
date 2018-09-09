@@ -1,17 +1,19 @@
-﻿using System;
-using System.Net.Http;
-using IdentityModel.Client;
-using Microsoft.AspNet.SignalR.Client;
-using Microsoft.AspNet.SignalR.Client.Transports;
-using OpenQA.Selenium;
-using OpenQA.Selenium.Chrome;
-using OpenQA.Selenium.Remote;
-using Simple.OData.Client;
-using Newtonsoft.Json;
-using System.Threading.Tasks;
+﻿using Bit.Core.Implementations;
 using Bit.Signalr;
 using Bit.Signalr.Implementations;
 using Bit.Test.SignalR;
+using IdentityModel.Client;
+using Microsoft.AspNet.SignalR.Client;
+using Microsoft.AspNet.SignalR.Client.Transports;
+using Newtonsoft.Json;
+using OpenQA.Selenium;
+using OpenQA.Selenium.Chrome;
+using OpenQA.Selenium.Remote;
+using Refit;
+using Simple.OData.Client;
+using System;
+using System.Net.Http;
+using System.Threading.Tasks;
 
 namespace Bit.Test.Server
 {
@@ -162,6 +164,14 @@ namespace Bit.Test.Server
             TokenClient tokenClient = new TokenClient($@"{Uri}core/connect/token", clientId, secret, innerHttpMessageHandler: GetHttpMessageHandler());
 
             return tokenClient;
+        }
+
+        public virtual TService BuildRefitClient<TService>(TokenResponse token = null)
+        {
+            return RestService.For<TService>(BuildHttpClient(token), new RefitSettings
+            {
+                JsonSerializerSettings = DefaultJsonContentFormatter.SerializeSettings()
+            });
         }
     }
 }
