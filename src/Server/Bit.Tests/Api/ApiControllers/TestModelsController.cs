@@ -11,6 +11,7 @@ using Microsoft.AspNet.OData;
 using Microsoft.AspNet.OData.Query;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Owin;
+using Newtonsoft.Json.Converters;
 using Swashbuckle.Examples;
 using System;
 using System.Collections.Generic;
