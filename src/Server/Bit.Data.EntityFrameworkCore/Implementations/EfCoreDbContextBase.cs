@@ -39,7 +39,7 @@ namespace Bit.Data.EntityFrameworkCore.Implementations
             ChangeTracker.AutoDetectChangesEnabled = false;
         }
 
-        protected virtual UseTransactionForRelationalDatabases(DbContextObjects dbContextObjects)
+        protected virtual void UseTransactionForRelationalDatabases(DbContextObjects dbContextObjects)
         {
             // Although Database is in EntityFramework.Core.dll, but it has a dependency on EntityFramework.Relational.dll
             // We're going to call this method, only in case of relation database usage.
