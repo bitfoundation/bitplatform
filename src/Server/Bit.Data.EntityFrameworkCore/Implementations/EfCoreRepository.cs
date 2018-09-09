@@ -1,15 +1,15 @@
-﻿using System;
+﻿using Bit.Core.Contracts;
+using Bit.Data.Contracts;
+using Bit.Model.Contracts;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
-using Bit.Core.Contracts;
-using Bit.Data.Contracts;
-using Bit.Model.Contracts;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.ChangeTracking;
 
 namespace Bit.Data.EntityFrameworkCore.Implementations
 {
@@ -65,7 +65,8 @@ namespace Bit.Data.EntityFrameworkCore.Implementations
             }
             finally
             {
-                Detach(entityToAdd);
+                if (DbContext.ChangeTrackingEnabled() == false)
+                    Detach(entityToAdd);
             }
         }
 
@@ -94,7 +95,8 @@ namespace Bit.Data.EntityFrameworkCore.Implementations
             }
             finally
             {
-                entitiesToAddList.ForEach(Detach);
+                if (DbContext.ChangeTrackingEnabled() == false)
+                    entitiesToAddList.ForEach(Detach);
             }
         }
 
@@ -117,7 +119,8 @@ namespace Bit.Data.EntityFrameworkCore.Implementations
             }
             finally
             {
-                Detach(entityToUpdate);
+                if (DbContext.ChangeTrackingEnabled() == false)
+                    Detach(entityToUpdate);
             }
         }
 
@@ -147,7 +150,8 @@ namespace Bit.Data.EntityFrameworkCore.Implementations
             }
             finally
             {
-                Detach(entityToDelete);
+                if (DbContext.ChangeTrackingEnabled() == false)
+                    Detach(entityToDelete);
             }
         }
 
@@ -190,7 +194,8 @@ namespace Bit.Data.EntityFrameworkCore.Implementations
             }
             finally
             {
-                Detach(entityToAdd);
+                if (DbContext.ChangeTrackingEnabled() == false)
+                    Detach(entityToAdd);
             }
         }
 
@@ -219,7 +224,8 @@ namespace Bit.Data.EntityFrameworkCore.Implementations
             }
             finally
             {
-                entitiesToAddList.ForEach(Detach);
+                if (DbContext.ChangeTrackingEnabled() == false)
+                    entitiesToAddList.ForEach(Detach);
             }
         }
 
@@ -242,7 +248,8 @@ namespace Bit.Data.EntityFrameworkCore.Implementations
             }
             finally
             {
-                Detach(entityToUpdate);
+                if (DbContext.ChangeTrackingEnabled() == false)
+                    Detach(entityToUpdate);
             }
         }
 
@@ -272,18 +279,25 @@ namespace Bit.Data.EntityFrameworkCore.Implementations
             }
             finally
             {
-                Detach(entityToDelete);
+                if (DbContext.ChangeTrackingEnabled() == false)
+                    Detach(entityToDelete);
             }
         }
 
         public virtual IQueryable<TEntity> GetAll()
         {
-            return Set.AsNoTracking();
+            if (DbContext.ChangeTrackingEnabled() == false)
+                return Set.AsNoTracking();
+            else
+                return Set;
         }
 
         public virtual Task<IQueryable<TEntity>> GetAllAsync(CancellationToken cancellationToken)
         {
-            return Task.FromResult(Set.AsNoTracking());
+            if (DbContext.ChangeTrackingEnabled() == false)
+                return Task.FromResult(Set.AsNoTracking());
+            else
+                return Task.FromResult((IQueryable<TEntity>)Set);
         }
 
         public virtual async Task LoadCollectionAsync<TProperty>(TEntity entity, Expression<Func<TEntity, IEnumerable<TProperty>>> childs, CancellationToken cancellationToken) where TProperty : class
@@ -299,7 +313,8 @@ namespace Bit.Data.EntityFrameworkCore.Implementations
             }
             finally
             {
-                Detach(entity);
+                if (DbContext.ChangeTrackingEnabled() == false)
+                    Detach(entity);
             }
         }
 
@@ -317,7 +332,8 @@ namespace Bit.Data.EntityFrameworkCore.Implementations
             }
             finally
             {
-                Detach(entity);
+                if (DbContext.ChangeTrackingEnabled() == false)
+                    Detach(entity);
             }
         }
 
@@ -335,7 +351,8 @@ namespace Bit.Data.EntityFrameworkCore.Implementations
             }
             finally
             {
-                Detach(entity);
+                if (DbContext.ChangeTrackingEnabled() == false)
+                    Detach(entity);
             }
         }
 
@@ -353,7 +370,8 @@ namespace Bit.Data.EntityFrameworkCore.Implementations
             }
             finally
             {
-                Detach(entity);
+                if (DbContext.ChangeTrackingEnabled() == false)
+                    Detach(entity);
             }
         }
 

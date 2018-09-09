@@ -34,9 +34,15 @@ namespace Bit.Data.EntityFrameworkCore.Implementations
             ApplyDefaultConfig();
         }
 
+        public virtual bool ChangeTrackingEnabled()
+        {
+            return true;
+        }
+
         protected virtual void ApplyDefaultConfig()
         {
-            ChangeTracker.AutoDetectChangesEnabled = false;
+            if (ChangeTrackingEnabled() == false)
+                ChangeTracker.AutoDetectChangesEnabled = false;
         }
 
         protected virtual void UseTransactionForRelationalDatabases(DbContextObjects dbContextObjects)
@@ -49,8 +55,12 @@ namespace Bit.Data.EntityFrameworkCore.Implementations
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
-            optionsBuilder.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking)
-                .ConfigureWarnings(warnings => warnings.Throw(RelationalEventId.QueryClientEvaluationWarning));
+            if (ChangeTrackingEnabled() == false)
+            {
+                optionsBuilder = optionsBuilder.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking);
+            }
+
+            optionsBuilder.ConfigureWarnings(warnings => warnings.Throw(RelationalEventId.QueryClientEvaluationWarning));
 
             base.OnConfiguring(optionsBuilder);
         }

@@ -33,9 +33,15 @@ namespace Bit.Data
             ApplyDefaultConfig();
         }
 
+        public virtual bool ChangeTrackingEnabled()
+        {
+            return true;
+        }
+
         protected virtual void ApplyDefaultConfig()
         {
-            ChangeTracker.AutoDetectChangesEnabled = false;
+            if (ChangeTrackingEnabled() == false)
+                ChangeTracker.AutoDetectChangesEnabled = false;
         }
 
         public virtual async Task UpsertDtoAsync<TDto>(TDto dto, CancellationToken cancellationToken = default(CancellationToken)) // https://github.com/aspnet/EntityFrameworkCore/issues/9249
@@ -81,9 +87,12 @@ namespace Bit.Data
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
-            optionsBuilder
-                .UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking)
-                .ConfigureWarnings(warnings => warnings.Throw(RelationalEventId.QueryClientEvaluationWarning));
+            if (ChangeTrackingEnabled() == false)
+            {
+                optionsBuilder = optionsBuilder.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking);
+            }
+
+            optionsBuilder.ConfigureWarnings(warnings => warnings.Throw(RelationalEventId.QueryClientEvaluationWarning));
 
             base.OnConfiguring(optionsBuilder);
         }

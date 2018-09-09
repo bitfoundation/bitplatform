@@ -1,6 +1,5 @@
 ﻿using Bit.Data.Contracts;
 using Bit.Model.Contracts;
-using Bit.ViewModel.Contracts;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 using System;
@@ -39,7 +38,8 @@ namespace Bit.Data.Implementations
             }
             finally
             {
-                Detach(dtoToAdd);
+                if (_dbContext.ChangeTrackingEnabled() == false)
+                    Detach(dtoToAdd);
             }
         }
 
@@ -60,7 +60,8 @@ namespace Bit.Data.Implementations
             }
             finally
             {
-                dtosToAddList.ForEach(Detach);
+                if (_dbContext.ChangeTrackingEnabled() == false)
+                    dtosToAddList.ForEach(Detach);
             }
         }
 
@@ -80,7 +81,8 @@ namespace Bit.Data.Implementations
             }
             finally
             {
-                Detach(dtoToUpdate);
+                if (_dbContext.ChangeTrackingEnabled() == false)
+                    Detach(dtoToUpdate);
             }
         }
 
@@ -99,7 +101,8 @@ namespace Bit.Data.Implementations
             }
             finally
             {
-                Detach(dtoToDelete);
+                if (_dbContext.ChangeTrackingEnabled() == false)
+                    Detach(dtoToDelete);
             }
         }
 
@@ -137,7 +140,8 @@ namespace Bit.Data.Implementations
             }
             finally
             {
-                Detach(dtoToAdd);
+                if (_dbContext.ChangeTrackingEnabled() == false)
+                    Detach(dtoToAdd);
             }
         }
 
@@ -158,7 +162,8 @@ namespace Bit.Data.Implementations
             }
             finally
             {
-                dtosToAddList.ForEach(Detach);
+                if (_dbContext.ChangeTrackingEnabled() == false)
+                    dtosToAddList.ForEach(Detach);
             }
         }
 
@@ -178,7 +183,8 @@ namespace Bit.Data.Implementations
             }
             finally
             {
-                Detach(dtoToUpdate);
+                if (_dbContext.ChangeTrackingEnabled() == false)
+                    Detach(dtoToUpdate);
             }
         }
 
@@ -197,18 +203,25 @@ namespace Bit.Data.Implementations
             }
             finally
             {
-                Detach(dtoToDelete);
+                if (_dbContext.ChangeTrackingEnabled() == false)
+                    Detach(dtoToDelete);
             }
         }
 
         public virtual IQueryable<TDto> GetAll()
         {
-            return _set.AsNoTracking();
+            if (_dbContext.ChangeTrackingEnabled() == false)
+                return _set.AsNoTracking();
+            else
+                return _set;
         }
 
         public virtual Task<IQueryable<TDto>> GetAllAsync(CancellationToken cancellationToken = default(CancellationToken))
         {
-            return Task.FromResult(_set.AsNoTracking());
+            if (_dbContext.ChangeTrackingEnabled() == false)
+                return Task.FromResult(_set.AsNoTracking());
+            else
+                return Task.FromResult((IQueryable<TDto>)_set);
         }
 
         public virtual async Task LoadCollectionAsync<TProperty>(TDto dto, Expression<Func<TDto, IEnumerable<TProperty>>> childs, CancellationToken cancellationToken)
@@ -225,7 +238,8 @@ namespace Bit.Data.Implementations
             }
             finally
             {
-                Detach(dto);
+                if (_dbContext.ChangeTrackingEnabled() == false)
+                    Detach(dto);
             }
         }
 
@@ -243,7 +257,8 @@ namespace Bit.Data.Implementations
             }
             finally
             {
-                Detach(dto);
+                if (_dbContext.ChangeTrackingEnabled() == false)
+                    Detach(dto);
             }
         }
 
@@ -261,7 +276,8 @@ namespace Bit.Data.Implementations
             }
             finally
             {
-                Detach(dto);
+                if (_dbContext.ChangeTrackingEnabled() == false)
+                    Detach(dto);
             }
         }
 
@@ -279,7 +295,8 @@ namespace Bit.Data.Implementations
             }
             finally
             {
-                Detach(dto);
+                if (_dbContext.ChangeTrackingEnabled() == false)
+                    Detach(dto);
             }
         }
 
