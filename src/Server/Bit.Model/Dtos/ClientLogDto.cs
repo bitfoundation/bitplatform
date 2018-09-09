@@ -1,6 +1,6 @@
-﻿using System;
+﻿using Bit.Model.Contracts;
+using System;
 using System.ComponentModel.DataAnnotations;
-using Bit.Model.Contracts;
 
 namespace Bit.Model.Dtos
 {
@@ -22,7 +22,7 @@ namespace Bit.Model.Dtos
 
         public virtual string StackTrace { get; set; }
 
-        public virtual bool ClientWasOnlie { get; set; }
+        public virtual bool ClientWasOnline { get; set; }
 
         public virtual string LogLevel { get; set; }
     }

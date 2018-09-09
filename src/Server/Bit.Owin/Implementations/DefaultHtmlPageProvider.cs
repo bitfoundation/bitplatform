@@ -15,10 +15,10 @@ namespace Bit.Owin.Implementations
         {
             ClientProfileModel clientProfileModel = await ClientProfileModelProvider.GetClientProfileModelAsync(cancellationToken);
 
-            return ReplaceDefinedVairables(htmlPage, clientProfileModel);
+            return ReplaceDefinedVariables(htmlPage, clientProfileModel);
         }
 
-        private string ReplaceDefinedVairables(string htmlPage, ClientProfileModel clientProfileModel)
+        private string ReplaceDefinedVariables(string htmlPage, ClientProfileModel clientProfileModel)
         {
             return htmlPage
                                 .Replace("{{model.AppVersion}}", clientProfileModel.AppVersion, StringComparison.InvariantCultureIgnoreCase)
@@ -36,7 +36,7 @@ namespace Bit.Owin.Implementations
         {
             ClientProfileModel clientProfileModel = ClientProfileModelProvider.GetClientProfileModel();
 
-            return ReplaceDefinedVairables(htmlPage, clientProfileModel);
+            return ReplaceDefinedVariables(htmlPage, clientProfileModel);
         }
     }
 }

@@ -22,7 +22,7 @@ namespace BitCodeGeneratorTask
 
             _logger = context.GetLogger();
 
-            DirectoryInfo projDir = new DirectoryInfo(Path.GetDirectoryName(context.Project.FilePath));
+            DirectoryInfo projDir = new DirectoryInfo(Path.GetDirectoryName(context.Project.FilePath) ?? throw new InvalidOperationException("Context's project's file path is null"));
 
             string solutionFullName = null;
 

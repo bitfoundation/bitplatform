@@ -122,7 +122,7 @@ namespace Bit.IdentityServer
         {
             foreach (IExternalIdentityProviderConfiguration externalIdentityProviderConfiguration in ExternalIdentityProviderConfigurations)
             {
-                externalIdentityProviderConfiguration.ConfiguerExternalIdentityProvider(owinApp, signInAsType);
+                externalIdentityProviderConfiguration.ConfigureExternalIdentityProvider(owinApp, signInAsType);
             }
         }
     }

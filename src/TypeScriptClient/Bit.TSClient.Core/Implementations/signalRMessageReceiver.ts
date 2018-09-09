@@ -2,14 +2,14 @@
 
     export class SignalRMessageReceiver implements Contracts.IMessageReceiver {
 
-        private _isInited = false;
+        private _isInitialized = false;
         private _isConnected = false;
         private _stayConnected = false;
 
         @Log()
         public async stop(): Promise<void> {
             this._stayConnected = false;
-            if ($.signalR != null && $.connection != null && this._isInited == true) {
+            if ($.signalR != null && $.connection != null && this._isInitialized == true) {
                 $.connection.hub.stop(true, true);
             }
         }
@@ -44,7 +44,7 @@
 
                     try {
 
-                        if (this._isInited == true) {
+                        if (this._isInitialized == true) {
                             return;
                         }
 
@@ -60,7 +60,7 @@
                             reject("PubSub is not present");
                         }
 
-                        this._isInited = true;
+                        this._isInitialized = true;
 
                         const signalRAppPushReceiver = this;
 

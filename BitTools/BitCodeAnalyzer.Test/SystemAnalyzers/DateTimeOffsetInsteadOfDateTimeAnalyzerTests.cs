@@ -38,7 +38,7 @@ namespace BitCodeAnalyzer.Test.SystemAnalyzers
             {
                 Id = nameof(DateTimeOffsetInsteadOfDateTimeAnalyzer),
                 Message = DateTimeOffsetInsteadOfDateTimeAnalyzer.Message,
-                Severity = DiagnosticSeverity.Error,
+                Severity = DiagnosticSeverity.Warning,
                 Locations = new[] { new DiagnosticResultLocation(15, 17) }
             };
 
@@ -46,7 +46,7 @@ namespace BitCodeAnalyzer.Test.SystemAnalyzers
             {
                 Id = nameof(DateTimeOffsetInsteadOfDateTimeAnalyzer),
                 Message = DateTimeOffsetInsteadOfDateTimeAnalyzer.Message,
-                Severity = DiagnosticSeverity.Error,
+                Severity = DiagnosticSeverity.Warning,
                 Locations = new[] { new DiagnosticResultLocation(15, 30) }
             };
 
@@ -54,7 +54,7 @@ namespace BitCodeAnalyzer.Test.SystemAnalyzers
         }
 
         [TestMethod]
-        [TestCategory("CodeFixeProvider")]
+        [TestCategory("CodeFixProvider")]
         public async Task FixDateTimeUsageTest()
         {
             const string sourceCodeWithDateTimeUsage = @"

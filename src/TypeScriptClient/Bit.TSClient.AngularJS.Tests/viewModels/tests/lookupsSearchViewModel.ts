@@ -13,7 +13,7 @@
 ` })
     export class LookupsSearchViewModel {
 
-        public constructor( @Inject("EntityContextProvider") public entityContextProvider: Contracts.IEntityContextProvider) {
+        public constructor(@Inject("EntityContextProvider") public entityContextProvider: Contracts.IEntityContextProvider) {
 
         }
 
@@ -24,7 +24,7 @@
         @Command()
         public async $onInit(): Promise<void> {
             let onlineContext = await this.entityContextProvider.getContext<TestContext>("Test");
-            this.countriesDataSource = onlineContext.countries.getAllContries().asKendoDataSource();
+            this.countriesDataSource = onlineContext.countries.getAllCountries().asKendoDataSource();
         }
     }
 

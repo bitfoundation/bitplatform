@@ -2,7 +2,7 @@
 
     export class AngularTranslateTests {
 
-        public static async testAngularTransalateViewModel(): Promise<void> {
+        public static async testAngularTranslateViewModel(): Promise<void> {
 
             const uiAutomation = new Bit.Implementations.UIAutomation<ViewModels.AngularTranslateViewModel>(angular.element("#angularTranslateView"));
 

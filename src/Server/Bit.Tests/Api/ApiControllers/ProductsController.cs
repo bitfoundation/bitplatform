@@ -12,9 +12,9 @@ namespace Bit.Tests.Api.ApiControllers
     public class CountriesController : DtoController<CountryDto>
     {
         [Function]
-        public virtual CountryDto[] GetAllContries(ODataQueryOptions<CountryDto> query)
+        public virtual CountryDto[] GetAllCountries(ODataQueryOptions<CountryDto> query)
         {
-            return new []
+            return new[]
             {
                 new CountryDto { Id = 1 , Name = "Test1", SomeProperty = 1 },
                 new CountryDto { Id = 2 , Name = "Test2", SomeProperty = 2 },

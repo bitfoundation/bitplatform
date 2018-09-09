@@ -146,8 +146,8 @@ namespace Bit.OData.Implementations
             string finalSelectCountQuery = odataSqlQuery.Parts.GetTotalCountFromDb ? $"({odataSqlQuery.SelectTotalCountQuery}) as '@odata.count' ," : "";
 
             string sqlJsonQuery = $@"select * from (select '{edmTypeFullPath}' as '@odata.context', 
-			  {finalSelectCountQuery}
-			  ({odataSqlQuery.SelectQuery} FOR JSON PATH) as 'value') as ODataResult
+              {finalSelectCountQuery}
+              ({odataSqlQuery.SelectQuery} FOR JSON PATH) as 'value') as ODataResult
 FOR JSON AUTO, WITHOUT_ARRAY_WRAPPER";
 
             return new ODataSqlJsonQuery
@@ -225,7 +225,7 @@ FOR JSON AUTO, WITHOUT_ARRAY_WRAPPER";
                 if (node.Object is UnaryExpression unaryExpression)
                     return VisitUnary(unaryExpression);
                 else
-                    return node.Object;
+                    return node.Object ?? throw new InvalidOperationException($"{node}'s object is null");
             }
             return base.VisitMethodCall(node);
         }

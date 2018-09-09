@@ -1,7 +1,7 @@
 ﻿module Bit {
 
     export class Default$scopeConfiguration {
-        public static currentConfig: { callUpdate$scope?: "IfAsync" | "Always" | "Never", $appyMode?: "$applyAsync" | "$apply" } = { callUpdate$scope: "IfAsync", $appyMode: "$applyAsync" };
+        public static currentConfig: { callUpdate$scope?: "IfAsync" | "Always" | "Never", $applyMode?: "$applyAsync" | "$apply" } = { callUpdate$scope: "IfAsync", $applyMode: "$applyAsync" };
     }
 
     export function Command(configuration = Default$scopeConfiguration.currentConfig) {
@@ -10,8 +10,8 @@
             throw new Error("configuration may not be null");
         }
 
-        if (configuration.$appyMode == null) {
-            configuration.$appyMode = Default$scopeConfiguration.currentConfig.$appyMode;
+        if (configuration.$applyMode == null) {
+            configuration.$applyMode = Default$scopeConfiguration.currentConfig.$applyMode;
         }
 
         if (configuration.callUpdate$scope == null) {
@@ -64,7 +64,7 @@
                             }
 
                             if (configuration.callUpdate$scope != "Never") {
-                                ScopeManager.update$scope($rootScope, configuration.$appyMode);
+                                ScopeManager.update$scope($rootScope, configuration.$applyMode);
                             }
 
                         });
@@ -72,7 +72,7 @@
                         rPromise.catch((e) => {
 
                             if (configuration.callUpdate$scope != "Never") {
-                                ScopeManager.update$scope($rootScope, configuration.$appyMode);
+                                ScopeManager.update$scope($rootScope, configuration.$applyMode);
                             }
 
                             const iLogger = DependencyManager.getCurrent().resolveObject<Contracts.ILogger>("Logger");
@@ -87,7 +87,7 @@
                     if (isPromise == false) {
 
                         if (configuration.callUpdate$scope == "Always") {
-                            ScopeManager.update$scope($rootScope, configuration.$appyMode);
+                            ScopeManager.update$scope($rootScope, configuration.$applyMode);
                         }
 
                         if (clientAppProfile.isDebugMode == true) {

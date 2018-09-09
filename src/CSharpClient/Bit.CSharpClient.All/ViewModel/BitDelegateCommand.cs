@@ -1,6 +1,5 @@
 ﻿using Prism.Commands;
 using System;
-using System.Diagnostics;
 using System.Threading.Tasks;
 
 namespace Bit.ViewModel

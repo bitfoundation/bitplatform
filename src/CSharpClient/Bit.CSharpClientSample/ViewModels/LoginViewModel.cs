@@ -9,7 +9,7 @@ namespace Bit.CSharpClientSample.ViewModels
 {
     public class LoginViewModel : BitViewModelBase
     {
-        public BitDelegateCommand LoginUsingCredentionals { get; set; }
+        public BitDelegateCommand LoginUsingCredentials { get; set; }
 
         public BitDelegateCommand LoginUsingBrowser { get; set; }
 
@@ -23,7 +23,7 @@ namespace Bit.CSharpClientSample.ViewModels
 
         public LoginViewModel(INavigationService navigationService, IODataClient oDataClient, HttpClient httpClient, IPageDialogService pageDialogService, ISecurityService securityService)
         {
-            LoginUsingCredentionals = new BitDelegateCommand(async () =>
+            LoginUsingCredentials = new BitDelegateCommand(async () =>
             {
                 try
                 {
@@ -37,8 +37,8 @@ namespace Bit.CSharpClientSample.ViewModels
                 }
             }, () => !string.IsNullOrEmpty(UserName) && !string.IsNullOrEmpty(Password));
 
-            LoginUsingCredentionals.ObservesProperty(() => UserName);
-            LoginUsingCredentionals.ObservesProperty(() => Password);
+            LoginUsingCredentials.ObservesProperty(() => UserName);
+            LoginUsingCredentials.ObservesProperty(() => Password);
 
             LoginUsingGooglePlus = new BitDelegateCommand(async () =>
             {

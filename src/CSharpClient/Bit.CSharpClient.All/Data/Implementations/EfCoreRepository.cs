@@ -23,7 +23,7 @@ namespace Bit.Data.Implementations
             _set = _dbContext.Set<TDto>();
         }
 
-        public virtual async Task<TDto> AddAsync(TDto dtoToAdd, CancellationToken cancellationToken = default(CancellationToken))
+        public virtual async Task<TDto> AddAsync(TDto dtoToAdd, CancellationToken cancellationToken = default)
         {
             if (dtoToAdd == null)
                 throw new ArgumentNullException(nameof(dtoToAdd));
@@ -43,7 +43,7 @@ namespace Bit.Data.Implementations
             }
         }
 
-        public virtual async Task<IEnumerable<TDto>> AddRangeAsync(IEnumerable<TDto> dtosToAdd, CancellationToken cancellationToken = default(CancellationToken))
+        public virtual async Task<IEnumerable<TDto>> AddRangeAsync(IEnumerable<TDto> dtosToAdd, CancellationToken cancellationToken = default)
         {
             if (dtosToAdd == null)
                 throw new ArgumentNullException(nameof(dtosToAdd));
@@ -65,7 +65,7 @@ namespace Bit.Data.Implementations
             }
         }
 
-        public virtual async Task<TDto> UpdateAsync(TDto dtoToUpdate, CancellationToken cancellationToken = default(CancellationToken))
+        public virtual async Task<TDto> UpdateAsync(TDto dtoToUpdate, CancellationToken cancellationToken = default)
         {
             if (dtoToUpdate == null)
                 throw new ArgumentNullException(nameof(dtoToUpdate));
@@ -86,7 +86,7 @@ namespace Bit.Data.Implementations
             }
         }
 
-        public virtual async Task<TDto> DeleteAsync(TDto dtoToDelete, CancellationToken cancellationToken = default(CancellationToken))
+        public virtual async Task<TDto> DeleteAsync(TDto dtoToDelete, CancellationToken cancellationToken = default)
         {
             if (dtoToDelete == null)
                 throw new ArgumentNullException(nameof(dtoToDelete));
@@ -216,7 +216,7 @@ namespace Bit.Data.Implementations
                 return _set;
         }
 
-        public virtual Task<IQueryable<TDto>> GetAllAsync(CancellationToken cancellationToken = default(CancellationToken))
+        public virtual Task<IQueryable<TDto>> GetAllAsync(CancellationToken cancellationToken = default)
         {
             if (_dbContext.ChangeTrackingEnabled() == false)
                 return Task.FromResult(_set.AsNoTracking());
@@ -300,7 +300,7 @@ namespace Bit.Data.Implementations
             }
         }
 
-        public virtual Task SaveChangesAsync(CancellationToken cancellationToken = default(CancellationToken))
+        public virtual Task SaveChangesAsync(CancellationToken cancellationToken = default)
         {
             _dbContext.ChangeTracker.DetectChanges();
             return _dbContext.SaveChangesAsync(cancellationToken);

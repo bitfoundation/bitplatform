@@ -17,14 +17,14 @@
             let type = this.model.getType();
             let memberDefs = type.memberDefinitions;
             if (memberDefs[`$${memberName}`].required == true) {
-                this.setMemberValidaty(memberName, "required", modelIsValid == true || this.model["ValidationErrors"] == null || this.model["ValidationErrors"].find(v => v.Type == 'required' && v.PropertyDefinition.name == memberName) == null);
+                this.setMemberValidity(memberName, "required", modelIsValid == true || this.model["ValidationErrors"] == null || this.model["ValidationErrors"].find(v => v.Type == 'required' && v.PropertyDefinition.name == memberName) == null);
             }
             if (memberDefs[`$${memberName}`].regex == true) {
-                this.setMemberValidaty(memberName, "pattern", modelIsValid == true || this.model["ValidationErrors"] == null || this.model["ValidationErrors"].find(v => v.Type == "regex" && v.PropertyDefinition.name == memberName) == null);
+                this.setMemberValidity(memberName, "pattern", modelIsValid == true || this.model["ValidationErrors"] == null || this.model["ValidationErrors"].find(v => v.Type == "regex" && v.PropertyDefinition.name == memberName) == null);
             }
         }
 
-        public setMemberValidaty: (memberName: keyof TDto, errorKey: string, isValid: boolean) => void;
+        public setMemberValidity: (memberName: keyof TDto, errorKey: string, isValid: boolean) => void;
 
         public async onActivated(): Promise<void> {
 

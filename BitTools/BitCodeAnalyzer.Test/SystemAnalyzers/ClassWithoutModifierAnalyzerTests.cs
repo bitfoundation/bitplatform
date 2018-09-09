@@ -41,7 +41,7 @@ namespace BitCodeAnalyzer.Test.SystemAnalyzers
         }
 
         [TestMethod]
-        [TestCategory("CodeFixeProvider")]
+        [TestCategory("CodeFixProvider")]
         public async Task AddPublicModifierTest()
         {
             const string sourceCodeWithClassWithoutModifier = @"
@@ -66,7 +66,7 @@ namespace BitCodeAnalyzer.Test.SystemAnalyzers
 
         }
 
-    public class MyClass
+      public class MyClass
         {   
 
         }

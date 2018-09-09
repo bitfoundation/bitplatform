@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 namespace BitCodeAnalyzer.Test.BitAnalyzers.Dto
 {
     [TestClass]
-    public class DtoAndComplexTypeClassessPublicDefaultCtorAnalyzerTest : DiagnosticVerifier
+    public class DtoAndComplexTypeClassesPublicDefaultCtorAnalyzerTest : DiagnosticVerifier
     {
         [TestMethod]
         [TestCategory("Analyzer")]
@@ -100,20 +100,20 @@ namespace BitCodeAnalyzer.Test.BitAnalyzers.Dto
 
             DiagnosticResult[] errors = new DiagnosticResult[] {
                  new DiagnosticResult {
-                        Id = nameof(DtoAndComplexTypeClassessPublicDefaultCtorAnalyzer),
-                        Message = DtoAndComplexTypeClassessPublicDefaultCtorAnalyzer.Message,
+                        Id = nameof(DtoAndComplexTypeClassesPublicDefaultCtorAnalyzer),
+                        Message = DtoAndComplexTypeClassesPublicDefaultCtorAnalyzer.Message,
                         Severity = DiagnosticSeverity.Error,
                         Locations = new[] { new DiagnosticResultLocation(2, 17) }
                  },
                     new DiagnosticResult {
-                        Id = nameof(DtoAndComplexTypeClassessPublicDefaultCtorAnalyzer),
-                        Message = DtoAndComplexTypeClassessPublicDefaultCtorAnalyzer.Message,
+                        Id = nameof(DtoAndComplexTypeClassesPublicDefaultCtorAnalyzer),
+                        Message = DtoAndComplexTypeClassesPublicDefaultCtorAnalyzer.Message,
                         Severity = DiagnosticSeverity.Error,
                         Locations = new[] { new DiagnosticResultLocation(28, 17) }
                  },
                     new DiagnosticResult {
-                        Id = nameof(DtoAndComplexTypeClassessPublicDefaultCtorAnalyzer),
-                        Message = DtoAndComplexTypeClassessPublicDefaultCtorAnalyzer.Message,
+                        Id = nameof(DtoAndComplexTypeClassesPublicDefaultCtorAnalyzer),
+                        Message = DtoAndComplexTypeClassesPublicDefaultCtorAnalyzer.Message,
                         Severity = DiagnosticSeverity.Error,
                         Locations = new[] { new DiagnosticResultLocation(35, 17) }
                  }
@@ -124,7 +124,7 @@ namespace BitCodeAnalyzer.Test.BitAnalyzers.Dto
 
         protected override DiagnosticAnalyzer GetCSharpDiagnosticAnalyzer()
         {
-            return new DtoAndComplexTypeClassessPublicDefaultCtorAnalyzer();
+            return new DtoAndComplexTypeClassesPublicDefaultCtorAnalyzer();
         }
     }
 }

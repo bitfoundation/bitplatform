@@ -2,9 +2,7 @@
 using Bit.Core.Contracts;
 using Bit.Core.Implementations;
 using Bit.Core.Models;
-using Bit.Owin.Contracts;
 using Bit.Owin.Implementations;
-using Bit.OwinCore.Contracts;
 using Bit.Test.Core.Implementations;
 using Bit.Test.Server;
 using Microsoft.Extensions.DependencyInjection;

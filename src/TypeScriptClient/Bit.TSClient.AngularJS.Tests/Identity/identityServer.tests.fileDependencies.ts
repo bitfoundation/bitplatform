@@ -7,19 +7,19 @@ module Bit.Identity.Tests {
     dependencyManager.registerFileDependency({
         name: "normalize",
         path: "bit-framework/src/TypeScriptClient/Bit.TSClient.AngularJS/node_modules/normalize-css/normalize",
-        fileDependecyType: "Style"
+        fileDependencyType: "Style"
     });
 
     dependencyManager.registerFileDependency({
         name: "angular-material-styles",
         path: "bit-framework/src/TypeScriptClient/Bit.TSClient.AngularJS/node_modules/angular-material/angular-material",
-        fileDependecyType: "Style"
+        fileDependencyType: "Style"
     });
 
     dependencyManager.registerFileDependency({
         name: "controls-styles",
         path: "bit-framework/src/TypeScriptClient/Bit.TSClient.AngularJS/contents/styles/controls",
-        fileDependecyType: "Style"
+        fileDependencyType: "Style"
     });
 
     dependencyManager.registerFileDependency({
@@ -28,7 +28,7 @@ module Bit.Identity.Tests {
         predicate: (appInfo) => {
             return appInfo.culture == "FaIr";
         },
-        fileDependecyType: "Style"
+        fileDependencyType: "Style"
     });
 
     dependencyManager.registerFileDependency({
@@ -37,7 +37,7 @@ module Bit.Identity.Tests {
         predicate: (appInfo) => {
             return appInfo.culture == "EnUs";
         },
-        fileDependecyType: "Style"
+        fileDependencyType: "Style"
     });
 
     dependencyManager.registerFileDependency({

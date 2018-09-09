@@ -20,7 +20,7 @@
                 Message: message,
                 AdditionalInfo: additionalInfo,
                 ClientDate: new Date(),
-                ClientWasOnlie: navigator.onLine,
+                ClientWasOnline: navigator.onLine,
                 Route: document.location.pathname
             };
 
@@ -44,7 +44,7 @@
 
         private lastLoggedError: string = null;
 
-        protected ingoreLog(logInfo: Model.Dtos.ClientLogDto): boolean {
+        protected ignoreLog(logInfo: Model.Dtos.ClientLogDto): boolean {
             if (logInfo.ErrorName == "HTTP request failed" /*This type of error is handled at server side*/) {
                 return true;
             }
@@ -61,7 +61,7 @@
                 throw new Error("logInfo is null");
             }
 
-            if (this.ingoreLog(logInfo)) {
+            if (this.ignoreLog(logInfo)) {
                 return;
             }
 

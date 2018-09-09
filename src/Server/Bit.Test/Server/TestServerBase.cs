@@ -30,7 +30,7 @@ namespace Bit.Test.Server
         public virtual IODataClient BuildODataClient(Action<HttpRequestMessage> beforeRequest = null,
             Action<HttpResponseMessage> afterResponse = null, TokenResponse token = null, string odataRouteName = "Test")
         {
-            ODataClient client = new ODataClient(new ODataClientSettings($"{Uri}odata/{odataRouteName}/")
+            ODataClient client = new ODataClient(new ODataClientSettings(new Uri($"{Uri}odata/{odataRouteName}/"))
             {
                 BeforeRequest = message =>
                 {

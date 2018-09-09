@@ -3,7 +3,6 @@
 using Android.App;
 using Android.Content;
 using Autofac;
-using Bit.ViewModel.Contracts;
 using Prism;
 using Prism.Autofac;
 using Prism.Ioc;

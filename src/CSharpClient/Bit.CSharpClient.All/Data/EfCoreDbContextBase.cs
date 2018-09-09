@@ -44,7 +44,7 @@ namespace Bit.Data
                 ChangeTracker.AutoDetectChangesEnabled = false;
         }
 
-        public virtual async Task UpsertDtoAsync<TDto>(TDto dto, CancellationToken cancellationToken = default(CancellationToken)) // https://github.com/aspnet/EntityFrameworkCore/issues/9249
+        public virtual async Task UpsertDtoAsync<TDto>(TDto dto, CancellationToken cancellationToken = default) // https://github.com/aspnet/EntityFrameworkCore/issues/9249
             where TDto : class, IDto
         {
             if (dto == null)
@@ -104,7 +104,7 @@ namespace Bit.Data
             return base.SaveChanges(acceptAllChangesOnSuccess);
         }
 
-        public override Task<int> SaveChangesAsync(bool acceptAllChangesOnSuccess, CancellationToken cancellationToken = default(CancellationToken))
+        public override Task<int> SaveChangesAsync(bool acceptAllChangesOnSuccess, CancellationToken cancellationToken = default)
         {
             OnSaveChanges();
 

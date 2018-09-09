@@ -58,10 +58,10 @@ namespace Bit.Core.Contracts
             if (repositoryType == null)
                 throw new ArgumentNullException(nameof(repositoryType));
 
-            HashSet<TypeInfo> interaces = new HashSet<TypeInfo>();
-            GetAllInterfaces(repositoryType, ref interaces);
+            HashSet<TypeInfo> interfaces = new HashSet<TypeInfo>();
+            GetAllInterfaces(repositoryType, ref interfaces);
 
-            TypeInfo[] repositoryContracts = interaces
+            TypeInfo[] repositoryContracts = interfaces
                 .Where(IsRepositoryContract)
                 .Select(i => i.GetTypeInfo())
                 .ToArray();

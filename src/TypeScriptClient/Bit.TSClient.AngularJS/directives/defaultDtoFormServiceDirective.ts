@@ -99,7 +99,7 @@
 
                 let modelType = newModel != null ? newModel.getType() : oldModel.getType();
 
-                let memberDefenitions = modelType.memberDefinitions;
+                let memberDefinitions = modelType.memberDefinitions;
 
                 let propModelControllers = [];
 
@@ -122,16 +122,16 @@
 
                     if (this.ngModel.$$parentForm.hasOwnProperty(prp)) {
 
-                        let propDefenition = memberDefenitions[`$${prp}`];
+                        let propDefinition = memberDefinitions[`$${prp}`];
 
-                        if (propDefenition != null && propDefenition.kind == "property") {
+                        if (propDefinition != null && propDefinition.kind == "property") {
 
                             let propModelController = this.ngModel.$$parentForm[prp];
 
                             Object.defineProperty(propModelController, "visible", {
                                 configurable: true,
                                 set: (isVisible: boolean) => {
-                                    let currentItem = angular.element(this.$element).find(`[name='${propDefenition.name}']`);
+                                    let currentItem = angular.element(this.$element).find(`[name='${propDefinition.name}']`);
                                     const data = currentItem.data();
                                     if (data != null && data["handler"] != null && data["handler"].wrapper != null) {
                                         currentItem = data["handler"].wrapper;
@@ -153,7 +153,7 @@
                             Object.defineProperty(propModelController, "editable", {
                                 configurable: true,
                                 set: (isEditable: boolean) => {
-                                    let currentItem = angular.element(this.$element).find(`[name='${propDefenition.name}']`);
+                                    let currentItem = angular.element(this.$element).find(`[name='${propDefinition.name}']`);
                                     const data = currentItem.data();
                                     if (data != null && data["handler"] != null && data["handler"].wrapper != null) {
                                         currentItem = data["handler"].wrapper;
@@ -180,7 +180,7 @@
                                     return original$setValidity.apply(propModelController, arguments);
                                 };
 
-                                if (propDefenition.nullable == true) {
+                                if (propDefinition.nullable == true) {
                                     propModelController.$parsers.push((viewValue) => {
                                         if (viewValue == "") {
                                             viewValue = null;
@@ -189,7 +189,7 @@
                                     });
                                 }
 
-                                if (propDefenition.originalType == "Edm.DateTimeOffset") {
+                                if (propDefinition.originalType == "Edm.DateTimeOffset") {
                                     propModelController.$parsers.push((viewValue) => {
                                         if (viewValue != null && !(viewValue instanceof Date)) {
                                             viewValue = this.dateTimeService.parseDate(viewValue);
@@ -197,7 +197,7 @@
                                         return viewValue;
                                     });
                                 }
-                                if (propDefenition.nullable == false && (propDefenition.originalType == "Edm.Decimal" || propDefenition.originalType == "Edm.Double" || propDefenition.originalType == "Edm.Single" || propDefenition.originalType == "Edm.Int16" || propDefenition.originalType == "Edm.Int32" || propDefenition.originalType == "Edm.Int64")) {
+                                if (propDefinition.nullable == false && (propDefinition.originalType == "Edm.Decimal" || propDefinition.originalType == "Edm.Double" || propDefinition.originalType == "Edm.Single" || propDefinition.originalType == "Edm.Int16" || propDefinition.originalType == "Edm.Int32" || propDefinition.originalType == "Edm.Int64")) {
                                     propModelController.$parsers.push((viewValue) => {
                                         if (viewValue == null || viewValue == "") {
                                             viewValue = "0";
@@ -205,7 +205,7 @@
                                         return viewValue;
                                     });
                                 }
-                                if (propDefenition.originalType == "Edm.Decimal" || propDefenition.originalType == "Edm.Double" || propDefenition.originalType == "Edm.Single") {
+                                if (propDefinition.originalType == "Edm.Decimal" || propDefinition.originalType == "Edm.Double" || propDefinition.originalType == "Edm.Single") {
                                     propModelController.$parsers.push((viewValue) => {
                                         if (viewValue != null && typeof viewValue == "string") {
                                             let viewValueAsString: string = viewValue;
@@ -272,7 +272,7 @@
 
                     this.perDtoFormStorage.prevValidationsRollbackHandlers = [];
 
-                    this.dtoRules.setMemberValidaty = (memberName: string, errorKey: string, isValid: boolean): void => {
+                    this.dtoRules.setMemberValidity = (memberName: string, errorKey: string, isValid: boolean): void => {
                         const propModelCtrl = propModelControllers.find(p => p.$name == memberName);
                         if (propModelCtrl != null) {
                             propModelCtrl.$setValidity(errorKey, isValid);

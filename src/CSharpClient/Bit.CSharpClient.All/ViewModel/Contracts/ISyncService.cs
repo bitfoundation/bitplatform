@@ -32,8 +32,8 @@ namespace Bit.ViewModel.Contracts
     {
         void AddDtoSetSyncConfig(DtoSetSyncConfig dtoSetSyncConfig);
 
-        Task SyncContext(CancellationToken cancellationToken = default(CancellationToken));
+        Task SyncContext(CancellationToken cancellationToken = default);
 
-        Task SyncDtoSets(CancellationToken cancellationToken = default(CancellationToken), params string[] dtoSetNames);
+        Task SyncDtoSets(CancellationToken cancellationToken = default, params string[] dtoSetNames);
     }
 }

@@ -27,7 +27,7 @@ namespace Bit.CSharpClientSample
 
         }
 
-        protected async override Task OnInitializedAsync()
+        protected override async Task OnInitializedAsync()
         {
             InitializeComponent();
 

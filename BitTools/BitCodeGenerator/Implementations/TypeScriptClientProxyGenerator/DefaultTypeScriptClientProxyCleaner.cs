@@ -21,7 +21,7 @@ namespace BitCodeGenerator.Implementations.TypeScriptClientProxyGenerator
             _bitConfigProvider = bitConfigProvider;
         }
 
-        public virtual async Task DeleteCodes(Workspace workspace)
+        public virtual Task DeleteCodes(Workspace workspace)
         {
             if (workspace == null)
                 throw new ArgumentNullException(nameof(workspace));
@@ -41,6 +41,8 @@ namespace BitCodeGenerator.Implementations.TypeScriptClientProxyGenerator
                 DeleteFiles(contextName, jsContextExtension, destProject);
                 DeleteFiles(contextName, tsContextExtension, destProject);
             }
+
+            return Task.CompletedTask;
         }
 
         private static void DeleteFiles(string fileName, string extension, Project destProject)

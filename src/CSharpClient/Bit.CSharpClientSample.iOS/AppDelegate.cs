@@ -7,7 +7,7 @@ using Xamarin.Forms;
 namespace Bit.CSharpClientSample.iOS
 {
     [Register(nameof(AppDelegate))]
-    public partial class AppDelegate : BitFormsApplicationDelegate
+    public class AppDelegate : BitFormsApplicationDelegate
     {
         public override bool FinishedLaunching(UIApplication app, NSDictionary options)
         {

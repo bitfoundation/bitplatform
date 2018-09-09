@@ -59,15 +59,15 @@ namespace Bit.ViewModel.Contracts
 
     public interface ISecurityService
     {
-        Task<bool> IsLoggedInAsync(CancellationToken cancellationToken = default(CancellationToken));
+        Task<bool> IsLoggedInAsync(CancellationToken cancellationToken = default);
 
-        Task<Token> LoginWithCredentials(string username, string password, string client_id, string client_secret, string[] scopes = null, CancellationToken cancellationToken = default(CancellationToken));
+        Task<Token> LoginWithCredentials(string username, string password, string client_id, string client_secret, string[] scopes = null, CancellationToken cancellationToken = default);
 
-        Task<Token> Login(object state = null, string client_id = null, CancellationToken cancellationToken = default(CancellationToken));
+        Task<Token> Login(object state = null, string client_id = null, CancellationToken cancellationToken = default);
 
-        Task<Token> GetCurrentTokenAsync(CancellationToken cancellationToken = default(CancellationToken));
+        Task<Token> GetCurrentTokenAsync(CancellationToken cancellationToken = default);
 
-        Task Logout(object state = null, string client_id = null, CancellationToken cancellationToken = default(CancellationToken));
+        Task Logout(object state = null, string client_id = null, CancellationToken cancellationToken = default);
 
         Uri GetLoginUrl(object state = null, string client_id = null);
 

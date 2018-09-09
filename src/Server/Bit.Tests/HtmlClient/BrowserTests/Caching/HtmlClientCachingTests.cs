@@ -1,5 +1,4 @@
-﻿using System.Linq;
-using Bit.Core.Contracts;
+﻿using Bit.Core.Contracts;
 using Bit.Owin.Contracts;
 using Bit.Test;
 using Bit.Test.Core.Implementations;
@@ -7,6 +6,7 @@ using Bit.Test.Server;
 using IdentityModel.Client;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using OpenQA.Selenium.Remote;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace Bit.Tests.HtmlClient.BrowserTests.Caching
@@ -33,7 +33,7 @@ namespace Bit.Tests.HtmlClient.BrowserTests.Caching
 
         [TestMethod]
         [TestCategory("HtmlClient"), TestCategory("Caching")]
-        public virtual async Task ResourceLikeMetadataWhichAreCachableMustNotBeRertivedEverytimeByHtmlClient()
+        public virtual async Task ResourceLikeMetadataWhichAreCachableMustNotBeRetrievedEverytimeByHtmlClient()
         {
             using (BitOwinTestEnvironment testEnvironment = new BitOwinTestEnvironment(new TestEnvironmentArgs { UseRealServer = true, ActiveAppEnvironmentCustomizer = activeAppEnv => activeAppEnv.DebugMode = false }))
             {

@@ -1,4 +1,4 @@
-using BitCodeAnalyzer.BitAnalyzers.Data.EntityFramework;
+﻿using BitCodeAnalyzer.BitAnalyzers.Data.EntityFramework;
 using BitCodeAnalyzer.Test.Helpers;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Diagnostics;
@@ -23,7 +23,7 @@ namespace BitCodeAnalyzer.Test.BitAnalyzers.Data.EntityFramework
             {
                 Id = nameof(AsNoTrackingAnalyzer),
                 Message = AsNoTrackingAnalyzer.Message,
-                Severity = DiagnosticSeverity.Error,
+                Severity = DiagnosticSeverity.Warning,
                 Locations = new[] { new DiagnosticResultLocation(Path.Combine(basePath, @"EntityFrameworkFullAsNoTrackingCallTests\Program.cs"), 13, 33) }
             };
 
@@ -31,7 +31,7 @@ namespace BitCodeAnalyzer.Test.BitAnalyzers.Data.EntityFramework
             {
                 Id = nameof(AsNoTrackingAnalyzer),
                 Message = AsNoTrackingAnalyzer.Message,
-                Severity = DiagnosticSeverity.Error,
+                Severity = DiagnosticSeverity.Warning,
                 Locations = new[] { new DiagnosticResultLocation(Path.Combine(basePath, @"EntityFrameworkFullAsNoTrackingCallTests\Program.cs"), 15, 33) }
             };
 
@@ -39,7 +39,7 @@ namespace BitCodeAnalyzer.Test.BitAnalyzers.Data.EntityFramework
             {
                 Id = nameof(AsNoTrackingAnalyzer),
                 Message = AsNoTrackingAnalyzer.Message,
-                Severity = DiagnosticSeverity.Error,
+                Severity = DiagnosticSeverity.Warning,
                 Locations = new[] { new DiagnosticResultLocation(Path.Combine(basePath, @"EntityFrameworkFullAsNoTrackingCallTests\Program.cs"), 17, 42) }
             };
 

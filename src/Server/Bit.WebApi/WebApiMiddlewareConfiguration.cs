@@ -11,7 +11,7 @@ namespace Bit.WebApi
 {
     public class WebApiMiddlewareConfiguration : IOwinMiddlewareConfiguration, IDisposable
     {
-        public virtual IEnumerable<IWebApiConfigurationCustomizer> WebApiConfgurationCustomizers { get; set; }
+        public virtual IEnumerable<IWebApiConfigurationCustomizer> WebApiConfigurationCustomizers { get; set; }
         public virtual System.Web.Http.Dependencies.IDependencyResolver WebApiDependencyResolver { get; set; }
         public virtual IWebApiOwinPipelineInjector WebApiOwinPipelineInjector { get; set; }
 
@@ -32,7 +32,7 @@ namespace Bit.WebApi
 
             _webApiConfig.DependencyResolver = WebApiDependencyResolver;
 
-            WebApiConfgurationCustomizers.ToList()
+            WebApiConfigurationCustomizers.ToList()
                 .ForEach(webApiConfigurationCustomizer =>
                 {
                     webApiConfigurationCustomizer.CustomizeWebApiConfiguration(_webApiConfig);

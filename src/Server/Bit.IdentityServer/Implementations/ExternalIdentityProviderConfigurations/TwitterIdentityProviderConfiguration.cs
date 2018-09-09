@@ -10,7 +10,7 @@ namespace Bit.IdentityServer.Implementations.ExternalIdentityProviderConfigurati
     {
         public virtual AppEnvironment AppEnvironment { get; set; }
 
-        public virtual void ConfiguerExternalIdentityProvider(IAppBuilder owinApp, string signInType)
+        public virtual void ConfigureExternalIdentityProvider(IAppBuilder owinApp, string signInType)
         {
             if (AppEnvironment.HasConfig("TwitterClientId") && AppEnvironment.HasConfig("TwitterSecret"))
             {

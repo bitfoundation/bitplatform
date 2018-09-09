@@ -35,7 +35,7 @@ namespace Bit.Tests.HtmlClient.ViewModel.Implementation
                     .OfType<CountriesController>()
                     .Last();
 
-                A.CallTo(() => countriesController.GetAllContries(A<ODataQueryOptions<CountryDto>>.That.Matches(query => query.Filter.RawValue == "((SomeProperty eq 1) or (SomeProperty eq 3))")))
+                A.CallTo(() => countriesController.GetAllCountries(A<ODataQueryOptions<CountryDto>>.That.Matches(query => query.Filter.RawValue == "((SomeProperty eq 1) or (SomeProperty eq 3))")))
                     .MustHaveHappened(Repeated.Exactly.Once);
             }
         }

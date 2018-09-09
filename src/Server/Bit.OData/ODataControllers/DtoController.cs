@@ -68,8 +68,8 @@ namespace Bit.OData.ODataControllers
         private static readonly Lazy<GenerateODataLink> GenerateODataLinkMethod = new Lazy<GenerateODataLink>(() =>
         {
             return (GenerateODataLink)Delegate.CreateDelegate(typeof(GenerateODataLink), typeof(MetadataController).GetTypeInfo()
-                    .Assembly.GetType("Microsoft.AspNet.OData.Results.ResultHelpers")
-                    .GetMethod("GenerateODataLink", new[] { typeof(HttpRequestMessage), typeof(object), typeof(bool) }));
+                                                                                             .Assembly.GetType("Microsoft.AspNet.OData.Results.ResultHelpers")
+                                                                                             .GetMethod("GenerateODataLink", new[] { typeof(HttpRequestMessage), typeof(object), typeof(bool) }) ?? throw new InvalidOperationException("GenerateODataLink could not be found"));
         }, isThreadSafe: true);
 
         private delegate Uri GenerateODataLink(HttpRequestMessage request, object entity, bool isEntityId);

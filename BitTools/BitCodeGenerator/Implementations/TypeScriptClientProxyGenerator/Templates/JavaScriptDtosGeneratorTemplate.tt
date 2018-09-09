@@ -8,11 +8,11 @@
 <# foreach (Dto dto in Dtos)
 {#>
 
-<# List<string> namepsaces = new List<string>(); #>
+<# List<string> namespaces = new List<string>(); #>
 
 <# foreach (SymbolDisplayPart nsPart in dto.DtoSymbol.ContainingNamespace.ToDisplayParts().Where(n => n.Kind ==  SymbolDisplayPartKind.NamespaceName )) { #>
-	<# namepsaces.Add((nsPart.ToString())); #>
-	<# if(namepsaces.Count==1) { #> var  <#}#> <#= string.Join(".", namepsaces) #> = <#= string.Join(".", namepsaces) #> || {};
+	<# namespaces.Add((nsPart.ToString())); #>
+	<# if(namespaces.Count==1) { #> var  <#}#> <#= string.Join(".", namespaces) #> = <#= string.Join(".", namespaces) #> || {};
 <# } #>
 
 <#= dto.DtoSymbol.ToDisplayString() #> = <#= dto.BaseDtoSymbol != null ? dto.BaseDtoSymbol.GetTypescriptTypeName(useArrayForIEnumerableTypes : true) : "$data.Entity" #>.extend("<#= dto.DtoSymbol.ToDisplayString() #>", {
@@ -51,11 +51,11 @@
 <# foreach (EnumType enumType in EnumTypes)
 {#>
 
-<# List<string> namepsaces = new List<string>(); #>
+<# List<string> namespaces = new List<string>(); #>
 
 <# foreach (SymbolDisplayPart nsPart in enumType.EnumTypeSymbol.ContainingNamespace.ToDisplayParts().Where(n => n.Kind ==  SymbolDisplayPartKind.NamespaceName )) { #>
-	<# namepsaces.Add((nsPart.ToString())); #>
-	<# if(namepsaces.Count==1) { #> var  <#}#> <#= string.Join(".", namepsaces) #> = <#= string.Join(".", namepsaces) #> || {};
+	<# namespaces.Add((nsPart.ToString())); #>
+	<# if(namespaces.Count==1) { #> var  <#}#> <#= string.Join(".", namespaces) #> = <#= string.Join(".", namespaces) #> || {};
 <# } #>
 
 <#= enumType.EnumTypeSymbol.ToDisplayString() #> = $data.createEnum("<#= enumType.EnumTypeSymbol.ToDisplayString() #>", null, $data.String, [

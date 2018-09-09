@@ -5,7 +5,6 @@ using Android.OS;
 using Bit.Droid;
 using Bit.ViewModel.Implementations;
 using Xamarin.Forms;
-using Xamarin.Forms.Platform.Android;
 
 namespace Bit.CSharpClientSample.Droid
 {
@@ -47,4 +46,3 @@ namespace Bit.CSharpClientSample.Droid
     {
     }
 }
-

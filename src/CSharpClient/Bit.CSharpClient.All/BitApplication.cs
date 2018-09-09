@@ -75,7 +75,7 @@ namespace Bit
             });
         }
 
-        protected async sealed override void OnInitialized()
+        protected sealed override async void OnInitialized()
         {
             try
             {

@@ -195,7 +195,7 @@ namespace Bit.Owin.Implementations
                         customData.TryGetValue("ExceptionTypeAssemblyQualifiedName", out string exceptionTypeAssemblyQualifiedName);
 
                         if (!string.IsNullOrEmpty(exceptionTypeAssemblyQualifiedName))
-                            ex = (Exception)Activator.CreateInstance(Type.GetType(exceptionTypeAssemblyQualifiedName), args: new object[] { logEntry.Message });
+                            ex = (Exception)Activator.CreateInstance(Type.GetType(exceptionTypeAssemblyQualifiedName) ?? throw new InvalidOperationException($"{exceptionTypeAssemblyQualifiedName} could not be found"), args: new object[] { logEntry.Message });
                     }
                     catch { }
 

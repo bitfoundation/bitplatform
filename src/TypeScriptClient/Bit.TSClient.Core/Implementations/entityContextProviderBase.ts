@@ -71,18 +71,18 @@
                                     }
                                 }
 
-                                const jayDataMemberDefenitions = jayDataDtoType.memberDefinitions;
+                                const jayDataMemberDefinitions = jayDataDtoType.memberDefinitions;
 
-                                if (jayDataMemberDefenitions != null) {
+                                if (jayDataMemberDefinitions != null) {
 
-                                    for (const jayDataMemberName in jayDataMemberDefenitions) {
-                                        if (jayDataMemberName.startsWith("$") && jayDataMemberDefenitions.hasOwnProperty(jayDataMemberName)) {
-                                            const jayDataMemberDefention = jayDataMemberDefenitions[jayDataMemberName];
+                                    for (const jayDataMemberName in jayDataMemberDefinitions) {
+                                        if (jayDataMemberName.startsWith("$") && jayDataMemberDefinitions.hasOwnProperty(jayDataMemberName)) {
+                                            const jayDataMemberDefinition = jayDataMemberDefinitions[jayDataMemberName];
                                             const dtoPropertyMetadata = dtoMetadata.MembersMetadata.find(mem => `$${mem.DtoMemberName}` == jayDataMemberName);
                                             if (dtoPropertyMetadata != null) {
-                                                jayDataMemberDefention.required = dtoPropertyMetadata.IsRequired == true;
+                                                jayDataMemberDefinition.required = dtoPropertyMetadata.IsRequired == true;
                                                 if (dtoPropertyMetadata.Pattern != null) {
-                                                    jayDataMemberDefention.regex = dtoPropertyMetadata.Pattern;
+                                                    jayDataMemberDefinition.regex = dtoPropertyMetadata.Pattern;
                                                 }
                                             }
                                         }
@@ -249,19 +249,19 @@
 
             if (ContextType["eventsListenersAreAdded"] != true && config.isOffline == true) {
 
-                for (let memberDefenitionKey in ContextType.memberDefinitions) {
+                for (let memberDefinitionKey in ContextType.memberDefinitions) {
 
-                    if (!ContextType.memberDefinitions.hasOwnProperty(memberDefenitionKey)) {
+                    if (!ContextType.memberDefinitions.hasOwnProperty(memberDefinitionKey)) {
                         continue;
                     }
 
-                    const memberDefenition = ContextType.memberDefinitions[memberDefenitionKey];
+                    const memberDefinition = ContextType.memberDefinitions[memberDefinitionKey];
 
-                    if (memberDefenition == null || memberDefenition.kind != "property" || memberDefenition.elementType == null) {
+                    if (memberDefinition == null || memberDefinition.kind != "property" || memberDefinition.elementType == null) {
                         continue;
                     }
 
-                    memberDefenition.elementType["addEventListener"]("beforeCreate", (sender: any, e: Model.Contracts.ISyncableDto) => {
+                    memberDefinition.elementType["addEventListener"]("beforeCreate", (sender: any, e: Model.Contracts.ISyncableDto) => {
                         const context = e["context"];
                         const storeToken = e["storeToken"];
                         if (context != null && context.ignoreEntityEvents != true && (this.isOfflineDbProvider(context.storageProvider.name) || (storeToken != null && this.isOfflineDbProvider(storeToken.args.provider)))) {
@@ -289,7 +289,7 @@
                         }
                     });
 
-                    memberDefenition.elementType["addEventListener"]("beforeUpdate", (sender: any, e: Model.Contracts.ISyncableDto) => {
+                    memberDefinition.elementType["addEventListener"]("beforeUpdate", (sender: any, e: Model.Contracts.ISyncableDto) => {
                         const context = e["context"];
                         const storeToken = e["storeToken"];
                         if (context != null && context.ignoreEntityEvents != true && (this.isOfflineDbProvider(context.storageProvider.name) || (storeToken != null && this.isOfflineDbProvider(storeToken.args.provider)))) {
@@ -301,7 +301,7 @@
                         }
                     });
 
-                    memberDefenition.elementType["addEventListener"]("beforeDelete", (sender: any, e: Model.Contracts.ISyncableDto) => {
+                    memberDefinition.elementType["addEventListener"]("beforeDelete", (sender: any, e: Model.Contracts.ISyncableDto) => {
                         const context = e["context"];
                         const storeToken = e["storeToken"];
                         if (context != null && context.ignoreEntityEvents != true && (this.isOfflineDbProvider(context.storageProvider.name) || (storeToken != null && this.isOfflineDbProvider(storeToken.args.provider)))) {

@@ -15,25 +15,25 @@ namespace Bit.Data.Contracts
     public interface IRepository<TDto>
         where TDto : class, IDto
     {
-        Task<TDto> AddAsync(TDto dtoToAdd, CancellationToken cancellationToken = default(CancellationToken));
+        Task<TDto> AddAsync(TDto dtoToAdd, CancellationToken cancellationToken = default);
 
         TDto Add(TDto dtoToAdd);
 
-        Task<IEnumerable<TDto>> AddRangeAsync(IEnumerable<TDto> dtosToAdd, CancellationToken cancellationToken = default(CancellationToken));
+        Task<IEnumerable<TDto>> AddRangeAsync(IEnumerable<TDto> dtosToAdd, CancellationToken cancellationToken = default);
 
         IEnumerable<TDto> AddRange(IEnumerable<TDto> dtosToAdd);
 
-        Task<TDto> UpdateAsync(TDto dtoToUpdate, CancellationToken cancellationToken = default(CancellationToken));
+        Task<TDto> UpdateAsync(TDto dtoToUpdate, CancellationToken cancellationToken = default);
 
         TDto Update(TDto dtoToUpdate);
 
-        Task<TDto> DeleteAsync(TDto dtoToDelete, CancellationToken cancellationToken = default(CancellationToken));
+        Task<TDto> DeleteAsync(TDto dtoToDelete, CancellationToken cancellationToken = default);
 
         TDto Delete(TDto dtoToDelete);
 
         IQueryable<TDto> GetAll();
 
-        Task<IQueryable<TDto>> GetAllAsync(CancellationToken cancellationToken = default(CancellationToken));
+        Task<IQueryable<TDto>> GetAllAsync(CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Loads the collection of <paramref name="childs"/> dtos from the database
@@ -45,14 +45,14 @@ namespace Bit.Data.Contracts
         /// Asynchronously loads the collection of <paramref name="childs"/> dtos from the database
         /// </summary>
         Task LoadCollectionAsync<TProperty>(TDto dto, Expression<Func<TDto, IEnumerable<TProperty>>> childs,
-            CancellationToken cancellationToken = default(CancellationToken))
+            CancellationToken cancellationToken = default)
             where TProperty : class;
 
         /// <summary>
         /// Asynchronously loads the <paramref name="member"/> dto from the database
         /// </summary>
         Task LoadReferenceAsync<TProperty>(TDto dto, Expression<Func<TDto, TProperty>> member,
-            CancellationToken cancellationToken = default(CancellationToken))
+            CancellationToken cancellationToken = default)
             where TProperty : class;
 
         /// <summary>

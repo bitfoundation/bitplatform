@@ -62,7 +62,7 @@ namespace Bit.OData.ODataControllers
             IQueryable<TDto> getByIdQuery = await GetByIdQuery(key, cancellationToken);
 
             if (DataProviderSpecificMethodsProviders != null)
-                dataProviderSpecificMethodsProvider = DataProviderSpecificMethodsProviders.FirstOrDefault(asyncQueryableExecuter => asyncQueryableExecuter.SupportsQueryable<TDto>(getByIdQuery));
+                dataProviderSpecificMethodsProvider = DataProviderSpecificMethodsProviders.FirstOrDefault(asyncQueryableExecutor => asyncQueryableExecutor.SupportsQueryable<TDto>(getByIdQuery));
 
             if (dataProviderSpecificMethodsProvider == null)
                 dataProviderSpecificMethodsProvider = DefaultDataProviderSpecificMethodsProvider.Current;
@@ -82,7 +82,7 @@ namespace Bit.OData.ODataControllers
             IDataProviderSpecificMethodsProvider dataProviderSpecificMethodsProvider = null;
 
             if (DataProviderSpecificMethodsProviders != null)
-                dataProviderSpecificMethodsProvider = DataProviderSpecificMethodsProviders.FirstOrDefault(asyncQueryableExecuter => asyncQueryableExecuter.SupportsQueryable<TDto>(baseQuery));
+                dataProviderSpecificMethodsProvider = DataProviderSpecificMethodsProviders.FirstOrDefault(asyncQueryableExecutor => asyncQueryableExecutor.SupportsQueryable<TDto>(baseQuery));
 
             if (dataProviderSpecificMethodsProvider == null)
                 dataProviderSpecificMethodsProvider = DefaultDataProviderSpecificMethodsProvider.Current;

@@ -1,8 +1,8 @@
-﻿using System.Collections.Generic;
-using System.Threading.Tasks;
-using Bit.Core.Models;
+﻿using Bit.Core.Models;
 using Bit.Owin.Contracts.Metadata;
 using Bit.Owin.Implementations.Metadata;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace Bit.Owin.Metadata
 {
@@ -10,7 +10,7 @@ namespace Bit.Owin.Metadata
     {
         public static readonly string UnKnownError = nameof(UnKnownError);
 
-        public static readonly string ResourceNotFoundaException = nameof(ResourceNotFoundaException);
+        public static readonly string ResourceNotFoundException = nameof(ResourceNotFoundException);
 
         public static readonly string DomainLogicException = nameof(DomainLogicException);
 
@@ -33,7 +33,7 @@ namespace Bit.Owin.Metadata
                         Values = new List<EnvironmentCultureValue>
                         {
                             new EnvironmentCultureValue { Name = UnKnownError,Title = "خطای نامشخص" },
-                            new EnvironmentCultureValue { Name = ResourceNotFoundaException,Title = "موجودیت مورد نظر یافت نشد"},
+                            new EnvironmentCultureValue { Name = ResourceNotFoundException,Title = "موجودیت مورد نظر یافت نشد"},
                             new EnvironmentCultureValue { Name = DomainLogicException,Title = "خطای منطق" },
                             new EnvironmentCultureValue { Name = KnownError,Title = "خطای مشخص" },
                             new EnvironmentCultureValue { Name = JobNotFound,Title = "کار مورد نظر پیدا نشد" },
@@ -46,7 +46,7 @@ namespace Bit.Owin.Metadata
                         Values = new List<EnvironmentCultureValue>
                         {
                             new EnvironmentCultureValue { Name = UnKnownError,Title = "Unknown error" },
-                            new EnvironmentCultureValue { Name = ResourceNotFoundaException,Title = "Resource not found"},
+                            new EnvironmentCultureValue { Name = ResourceNotFoundException,Title = "Resource not found"},
                             new EnvironmentCultureValue { Name = DomainLogicException,Title = "Domain logic error" },
                             new EnvironmentCultureValue { Name = KnownError,Title = "Known error" },
                             new EnvironmentCultureValue { Name = JobNotFound,Title = "Job not found" },

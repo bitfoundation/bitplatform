@@ -205,39 +205,39 @@ namespace Bit.View
             {
                 return Enum.Parse(destinationType, (string)input);
             }
-            else if (destinationType.Equals(typeof(string)))
+            else if (destinationType == typeof(string))
             {
                 return Convert.ToString(input);
             }
-            else if (destinationType.Equals(typeof(bool)))
+            else if (destinationType == typeof(bool))
             {
                 return Convert.ToBoolean(input);
             }
-            else if (destinationType.Equals(typeof(byte)))
+            else if (destinationType == typeof(byte))
             {
                 return Convert.ToByte(input);
             }
-            else if (destinationType.Equals(typeof(short)))
+            else if (destinationType == typeof(short))
             {
                 return Convert.ToInt16(input);
             }
-            else if (destinationType.Equals(typeof(int)))
+            else if (destinationType == typeof(int))
             {
                 return Convert.ToInt32(input);
             }
-            else if (destinationType.Equals(typeof(long)))
+            else if (destinationType == typeof(long))
             {
                 return Convert.ToInt64(input);
             }
-            else if (destinationType.Equals(typeof(double)))
+            else if (destinationType == typeof(double))
             {
                 return Convert.ToDouble(input);
             }
-            else if (destinationType.Equals(typeof(float)))
+            else if (destinationType == typeof(float))
             {
                 return Convert.ToSingle(input);
             }
-            else if (destinationType.Equals(typeof(decimal)))
+            else if (destinationType == typeof(decimal))
             {
                 return Convert.ToDecimal(input);
             }

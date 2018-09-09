@@ -1,4 +1,4 @@
-﻿/// <reference path="implementations/testdefaultangularappinitialization.ts" />
+﻿/// <reference path="implementations/testDefaultAngularAppInitialization.ts" />
 module Bit.Tests {
 
     let dependencyManager = DependencyManager.getCurrent();

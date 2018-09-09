@@ -19,7 +19,7 @@ namespace Bit.ViewModel.Implementations
         where TDbContext : EfCoreDbContextBase
     {
         public DefaultSyncService(IContainerProvider containerProvider)
-            : this(() => containerProvider.Resolve<TDbContext>(), () => containerProvider.Resolve<ODataBatch>())
+            : this(containerProvider.Resolve<TDbContext>, containerProvider.Resolve<ODataBatch>)
         {
             if (containerProvider == null)
                 throw new ArgumentNullException(nameof(containerProvider));
@@ -35,12 +35,12 @@ namespace Bit.ViewModel.Implementations
         private readonly Func<TDbContext> _dbContextProvider;
         private readonly Func<ODataBatch> _oDataBatchProvider;
 
-        public virtual Task SyncContext(CancellationToken cancellationToken = default(CancellationToken))
+        public virtual Task SyncContext(CancellationToken cancellationToken = default)
         {
             return SyncDtoSets(cancellationToken, _configs.Select(c => c.DtoSetName).ToArray());
         }
 
-        public virtual async Task SyncDtoSets(CancellationToken cancellationToken = default(CancellationToken), params string[] dtoSetNames)
+        public virtual async Task SyncDtoSets(CancellationToken cancellationToken = default, params string[] dtoSetNames)
         {
             if (dtoSetNames == null)
                 throw new ArgumentNullException(nameof(dtoSetNames));
@@ -96,15 +96,15 @@ namespace Bit.ViewModel.Implementations
 
                             if (recentlyChangedOfflineDto.IsArchived == true)
                             {
-                                onlineBatchContext += c => toServerSyncConfig.OnlineDtoSet(c).Key(keys).DeleteEntryAsync();
+                                onlineBatchContext += c => toServerSyncConfig.OnlineDtoSet(c).Key(keys).DeleteEntryAsync(cancellationToken);
                             }
                             else if (recentlyChangedOfflineDto.Version == 0)
                             {
-                                onlineBatchContext += c => toServerSyncConfig.OnlineDtoSet(c).Set(recentlyChangedOfflineDto).InsertEntryAsync();
+                                onlineBatchContext += c => toServerSyncConfig.OnlineDtoSet(c).Set(recentlyChangedOfflineDto).InsertEntryAsync(cancellationToken);
                             }
                             else
                             {
-                                onlineBatchContext += c => toServerSyncConfig.OnlineDtoSet(c).Key(keys).Set(recentlyChangedOfflineDto).UpdateEntryAsync();
+                                onlineBatchContext += c => toServerSyncConfig.OnlineDtoSet(c).Key(keys).Set(recentlyChangedOfflineDto).UpdateEntryAsync(cancellationToken);
                             }
                         }
                     }

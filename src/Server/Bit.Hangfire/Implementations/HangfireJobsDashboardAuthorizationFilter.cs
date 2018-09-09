@@ -1,8 +1,8 @@
+﻿using System;
 using Bit.Core.Contracts;
 using Hangfire.Annotations;
 using Hangfire.Dashboard;
 using Microsoft.Owin;
-using System;
 
 namespace Bit.Hangfire.Implementations
 {

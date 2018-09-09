@@ -1,5 +1,4 @@
-using BitCodeAnalyzer.BitAnalyzers.Data.EntityFramework;
-using BitCodeAnalyzer.BitAnalyzers.ViewModel;
+﻿using BitCodeAnalyzer.BitAnalyzers.ViewModel;
 using BitCodeAnalyzer.Test.Helpers;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Diagnostics;

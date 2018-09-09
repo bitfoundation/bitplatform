@@ -26,7 +26,7 @@ namespace Bit.OData
         private ODataBatchHandler _odataBatchHandler;
 
         public virtual IODataModuleConfiguration ODataModuleConfiguration { get; set; }
-        public virtual IEnumerable<IWebApiConfigurationCustomizer> WebApiConfgurationCustomizers { get; set; }
+        public virtual IEnumerable<IWebApiConfigurationCustomizer> WebApiConfigurationCustomizers { get; set; }
         public virtual System.Web.Http.Dependencies.IDependencyResolver WebApiDependencyResolver { get; set; }
         public virtual IODataModelBuilderProvider ODataModelBuilderProvider { get; set; }
         public virtual IWebApiOwinPipelineInjector WebApiOwinPipelineInjector { get; set; }
@@ -52,7 +52,7 @@ namespace Bit.OData
 
             _webApiConfig.DependencyResolver = WebApiDependencyResolver;
 
-            WebApiConfgurationCustomizers.ToList()
+            WebApiConfigurationCustomizers.ToList()
                 .ForEach(webApiConfigurationCustomizer =>
                 {
                     webApiConfigurationCustomizer.CustomizeWebApiConfiguration(_webApiConfig);

@@ -1,13 +1,13 @@
-﻿using System.Threading.Tasks;
-using Bit.Core.Contracts;
+﻿using Bit.Core.Contracts;
 using Bit.Owin.Contracts.Metadata;
 using Microsoft.Owin;
+using System.Threading.Tasks;
 
 namespace Bit.Owin.Middlewares
 {
-    public class MetadatMiddleware : OwinMiddleware
+    public class MetadataMiddleware : OwinMiddleware
     {
-        public MetadatMiddleware(OwinMiddleware next)
+        public MetadataMiddleware(OwinMiddleware next)
             : base(next)
         {
         }

@@ -19,7 +19,7 @@ let executeTest = async (testFunc: Function, args: string | any): Promise<void> 
 
     try {
 
-        Bit.Default$scopeConfiguration.currentConfig.$appyMode = "$apply";
+        Bit.Default$scopeConfiguration.currentConfig.$applyMode = "$apply";
         Bit.Default$scopeConfiguration.currentConfig.callUpdate$scope = "Always";
 
         const jasmineReq = jasmineRequire;

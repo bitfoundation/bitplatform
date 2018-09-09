@@ -3,7 +3,7 @@
     @ComponentDependency({ name: "AngularTranslateViewModel", templateUrl: "|Bit|/Bit.TSClient.AngularJS.Tests/views/tests/angularTranslateview.html" })
     export class AngularTranslateViewModel {
 
-        public constructor( @Inject("$translate") public $translate: ng.translate.ITranslateService) {
+        public constructor(@Inject("$translate") public $translate) {
         }
 
         public text: string = "KnownError";

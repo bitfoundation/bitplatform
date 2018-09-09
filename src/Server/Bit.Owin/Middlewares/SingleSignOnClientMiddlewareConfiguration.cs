@@ -30,7 +30,7 @@ namespace Bit.Owin.Middlewares
 
             JwtBearerAuthenticationOptions jwtBearerAuthenticationOptions = new JwtBearerAuthenticationOptions
             {
-                AllowedAudiences = new string[] { $"{issuerName}/resources" },
+                AllowedAudiences = new[] { $"{issuerName}/resources" },
                 IssuerSecurityKeyProviders = new[]
                 {
                     new X509CertificateSecurityKeyProvider(issuerName, AppCertificatesProvider.GetSingleSignOnCertificate())

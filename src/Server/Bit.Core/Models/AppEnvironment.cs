@@ -38,7 +38,7 @@ namespace Bit.Core.Models
 
             if (config == null)
             {
-                value = default(T);
+                value = default;
                 return false;
             }
             else

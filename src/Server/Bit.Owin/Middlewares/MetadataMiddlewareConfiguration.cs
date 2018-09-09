@@ -20,7 +20,7 @@ namespace Bit.Owin.Middlewares
                     innerApp.Use<OwinCacheResponseMiddleware>();
                 innerApp.UseXContentTypeOptions();
                 innerApp.UseXDownloadOptions();
-                innerApp.Use<MetadatMiddleware>();
+                innerApp.Use<MetadataMiddleware>();
             });
         }
     }

@@ -31,7 +31,7 @@ namespace BitVSExtensionV1
         private const string PackageGuidString = "F5222FDA-2C19-434B-9343-B0E942816E4C";
         private const string BitVSExtensionName = "Bit VS Extension V1";
 
-        protected async override System.Threading.Tasks.Task InitializeAsync(CancellationToken cancellationToken, IProgress<ServiceProgressData> progress)
+        protected override async System.Threading.Tasks.Task InitializeAsync(CancellationToken cancellationToken, IProgress<ServiceProgressData> progress)
         {
             await base.InitializeAsync(cancellationToken, progress);
 
@@ -118,21 +118,21 @@ namespace BitVSExtensionV1
 
                 _RunOnEitherSolutionOpenOrFirstPackageInitializeIsBeingExecuted = true;
 
-                Func<bool> vsHasASavedSolutionButRoslynWorkspaceHasNoPath = () =>
+                bool vsHasASavedSolutionButRoslynWorkspaceHasNoPath()
                 {
                     bool result = _applicationObject.Solution.Saved && string.IsNullOrEmpty(_visualStudioWorkspace.CurrentSolution.FilePath);
                     if (result == false)
-                        LogWarn($"Visual studio has a saved solution, but roslyn's workspace has no file path");
+                        LogWarn("Visual studio has a saved solution, but roslyn's workspace has no file path");
                     return result;
-                };
+                }
 
-                Func<bool> vsSolutionHasSomeProjectsButRoslynOneNothing = () =>
+                bool vsSolutionHasSomeProjectsButRoslynOneNothing()
                 {
                     bool result = _applicationObject.Solution.Projects.Cast<object>().Any() && !_visualStudioWorkspace.CurrentSolution.Projects.Any();
                     if (result == false)
-                        LogWarn($"Visual studio has some projects, but roslyn's workspace has no project");
+                        LogWarn("Visual studio has some projects, but roslyn's workspace has no project");
                     return result;
-                };
+                }
 
                 int retryCount = 30;
 
@@ -143,7 +143,7 @@ namespace BitVSExtensionV1
                 }
 
                 if (vsHasASavedSolutionButRoslynWorkspaceHasNoPath() || vsSolutionHasSomeProjectsButRoslynOneNothing())
-                    LogWarn($"15 seconds delay wasn't enough to make Visual Studio's workspace ready.");
+                    LogWarn("15 seconds delay wasn't enough to make Visual Studio's workspace ready.");
 
                 await DoOnSolutionReadyOrChange();
             }
@@ -188,11 +188,9 @@ namespace BitVSExtensionV1
 
             DefaultBitConfigProvider configProvider = new DefaultBitConfigProvider();
 
-            BitConfig config;
-
             try
             {
-                config = configProvider.GetConfiguration(_visualStudioWorkspace);
+                BitConfig config = configProvider.GetConfiguration(_visualStudioWorkspace);
 
                 foreach (BitCodeGeneratorMapping mapping in config.BitCodeGeneratorConfigs.BitCodeGeneratorMappings)
                 {

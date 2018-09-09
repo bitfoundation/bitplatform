@@ -1,5 +1,4 @@
 ﻿using Bit.Model.Contracts;
-using Prism.Navigation;
 using System.Reflection;
 
 namespace System.Collections.Generic

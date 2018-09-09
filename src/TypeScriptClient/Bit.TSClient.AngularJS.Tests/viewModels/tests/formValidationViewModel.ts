@@ -5,7 +5,7 @@
 
         public validateMember(memberName: keyof Tests.Model.Dto.ValidationSampleDto, newValue: any, oldValue: any): void {
             if (memberName == "RequiredByDtoRulesMember") {
-                this.setMemberValidaty("RequiredByDtoRulesMember", "required", newValue != null);
+                this.setMemberValidity("RequiredByDtoRulesMember", "required", newValue != null);
             }
             super.validateMember(memberName, newValue, oldValue);
         }

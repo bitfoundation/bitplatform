@@ -16,7 +16,7 @@ namespace Bit.ViewModel
         string ValidationMessage { get; set; }
     }
 
-    public interface IValidationRule<T> : IValidationRule
+    public interface IValidationRule<in T> : IValidationRule
     {
         bool IsValid(T value);
     }
@@ -122,13 +122,7 @@ namespace Bit.ViewModel
             }
         }
 
-        public virtual string ErrorMessages
-        {
-            get
-            {
-                return string.Join(Environment.NewLine, Errors);
-            }
-        }
+        public virtual string ErrorMessages => string.Join(Environment.NewLine, Errors);
 
         public virtual bool IsValid
         {
@@ -150,7 +144,7 @@ namespace Bit.ViewModel
 
     public class Validatable<T> : Validatable
     {
-        public Validatable(string notValidErrorMessage, params IValidationRule<T>[] validationRules)
+        public Validatable(string notValidErrorMessage, params IValidationRule[] validationRules)
             : base(notValidErrorMessage, validationRules)
         {
         }

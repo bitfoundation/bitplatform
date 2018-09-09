@@ -47,12 +47,12 @@ namespace Bit.Core
             }
         }
 
-        public virtual Assembly[] AssembliesWithDefaultAssemblies(params Assembly[] assembies)
+        public virtual Assembly[] AssembliesWithDefaultAssemblies(params Assembly[] assemblies)
         {
-            if (assembies == null)
-                throw new ArgumentNullException(nameof(assembies));
+            if (assemblies == null)
+                throw new ArgumentNullException(nameof(assemblies));
 
-            return assembies
+            return assemblies
                 .Union(AppAssemblies)
                 .ToArray();
         }

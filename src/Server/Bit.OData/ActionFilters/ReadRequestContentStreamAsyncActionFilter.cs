@@ -22,7 +22,7 @@ namespace Bit.OData.ActionFilters
         /// <see cref="ExtendedODataDeserializerProvider.GetODataDeserializer(System.Type, HttpRequestMessage)"/>
         /// <see cref="DefaultODataActionCreateUpdateParameterDeserializer.Read(Microsoft.OData.ODataMessageReader, System.Type, Microsoft.AspNet.OData.Formatter.Deserialization.ODataDeserializerContext)"/>
         /// </summary>
-        public async override Task OnAuthorizationAsync(HttpActionContext actionContext, CancellationToken cancellationToken)
+        public override async Task OnAuthorizationAsync(HttpActionContext actionContext, CancellationToken cancellationToken)
         {
             HttpActionDescriptor actionDescriptor = actionContext.Request.GetActionDescriptor();
 

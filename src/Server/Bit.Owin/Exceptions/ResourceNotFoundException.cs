@@ -9,7 +9,7 @@ namespace Bit.Owin.Exceptions
     public class ResourceNotFoundException : AppException, IHttpStatusCodeAwareException
     {
         public ResourceNotFoundException()
-            : this(BitMetadataBuilder.ResourceNotFoundaException)
+            : this(BitMetadataBuilder.ResourceNotFoundException)
         {
 
         }

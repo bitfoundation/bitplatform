@@ -9,7 +9,7 @@
     export interface IFileDependency extends IDependency {
         path: string;
         loadTime?: "Deferred" | "Early";
-        fileDependecyType?: "Script" | "Style";
+        fileDependencyType?: "Script" | "Style";
         loadStatus?: "IsBeingLoaded" | "NotLoaded" | "Loaded" | "LoadError";
         promise?: Promise<void>;
         continueOnError?: boolean;
@@ -85,8 +85,8 @@
                 fileDependency.loadTime = "Early";
             }
 
-            if (fileDependency.fileDependecyType == null) {
-                fileDependency.fileDependecyType = "Script";
+            if (fileDependency.fileDependencyType == null) {
+                fileDependency.fileDependencyType = "Script";
             }
 
             if (fileDependency.continueOnError == null)
@@ -294,7 +294,7 @@
 
         private loadInitialFileDependecies(files: Array<IFileDependency>) {
 
-            const loadInitialFileDependecy = (nextFile: IFileDependency) => {
+            const loadInitialFileDependency = (nextFile: IFileDependency) => {
 
                 if (nextFile == null) {
                     const app = this.resolveObject<Contracts.IAppStartup>("AppStartup");
@@ -303,13 +303,13 @@
                 }
 
                 if (this.dependencyShouldBeConsidered(nextFile) == false) {
-                    loadInitialFileDependecy(files.shift());
+                    loadInitialFileDependency(files.shift());
                     return;
                 }
 
                 let element: HTMLScriptElement & HTMLLinkElement = null;
 
-                if (nextFile.fileDependecyType == "Script") {
+                if (nextFile.fileDependencyType == "Script") {
                     element = document.createElement("script") as HTMLScriptElement & HTMLLinkElement;
                     element.type = "text/javascript";
                     element.src = nextFile.path;
@@ -334,7 +334,7 @@
 
                     nextFile.loadStatus = "Loaded";
 
-                    loadInitialFileDependecy(files.shift());
+                    loadInitialFileDependency(files.shift());
                 };
 
                 element.onerror = (e): void => {
@@ -351,13 +351,13 @@
                         throw e;
                     }
 
-                    loadInitialFileDependecy(files.shift());
+                    loadInitialFileDependency(files.shift());
                 };
 
                 document.head.appendChild(element);
             }
 
-            loadInitialFileDependecy(files.shift());
+            loadInitialFileDependency(files.shift());
 
         }
 
@@ -371,7 +371,7 @@
 
                 if (!Implementations.PathUtils.isUrlPath(path)) {
                     let ext = "js";
-                    if (fileDependency.fileDependecyType == "Style") {
+                    if (fileDependency.fileDependencyType == "Style") {
                         ext = "css";
                     }
                     path += `.${ext}`;
@@ -423,7 +423,7 @@
 
                     let element: HTMLElement = null;
 
-                    if (fileDependency.fileDependecyType == "Script") {
+                    if (fileDependency.fileDependencyType == "Script") {
                         element = document.createElement("script");
                         (element as HTMLScriptElement).type = "text/javascript";
                         (element as HTMLScriptElement).src = fileDependency.path;

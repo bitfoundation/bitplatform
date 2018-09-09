@@ -18,7 +18,7 @@ namespace Bit.Core.Contracts
         /// <summary>
         /// Configures web api. It finds web api controllers in <see cref="AssemblyContainer"/> app assemblies. and it registers <see cref="IApiAssembliesProvider"/> by <see cref="DefaultWebApiAssembliesProvider"/>
         /// | <see cref="System.Web.Http.Dispatcher.IAssembliesResolver"/> by <see cref="DefaultWebApiAssembliesResolver"/>
-        /// | <see cref="System.Web.Http.Tracing.ITraceWriter"/> by <see cref="DefaultWebApiTraceWritter"/>
+        /// | <see cref="System.Web.Http.Tracing.ITraceWriter"/> by <see cref="DefaultWebApiTraceWriter"/>
         /// | It adds <see cref="OwinNoCacheResponseMiddleware"/> middleware and <see cref="AddAcceptCharsetToRequestHeadersIfNotAnyFilterAttribute"/> action filter globally
         /// | It configures web api by <see cref="GlobalHostAuthenticationFilterProvider"/> and <see cref="ClientCorrelationWebApiConfigurationCustomizer"/>
         /// </summary>
@@ -35,7 +35,7 @@ namespace Bit.Core.Contracts
             dependencyManager.RegisterAssemblyTypes(controllersAssemblies, t => typeof(IHttpController).GetTypeInfo().IsAssignableFrom(t) && t.Name.EndsWith("Controller", StringComparison.Ordinal), lifeCycle: DependencyLifeCycle.Transient);
 
             dependencyManager.Register<System.Web.Http.Dispatcher.IAssembliesResolver, DefaultWebApiAssembliesResolver>(lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExciting: false);
-            dependencyManager.Register<System.Web.Http.Tracing.ITraceWriter, DefaultWebApiTraceWritter>(lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExciting: false);
+            dependencyManager.Register<System.Web.Http.Tracing.ITraceWriter, DefaultWebApiTraceWriter>(lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExciting: false);
 
             dependencyManager.RegisterGlobalWebApiActionFiltersUsing(webApiConfig => webApiConfig.Filters.Add(new OwinActionFilterAttribute(typeof(OwinNoCacheResponseMiddleware))));
             dependencyManager.RegisterGlobalWebApiActionFiltersUsing(webApiConfig => webApiConfig.Filters.Add(new AddAcceptCharsetToRequestHeadersIfNotAnyFilterAttribute()));

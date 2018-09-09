@@ -23,7 +23,7 @@ namespace Bit.Tests.HtmlClient.ViewModel.Implementation
                 {
                     await driver.NavigateToRoute("angular-translate-page");
 
-                    await driver.ExecuteTest("Bit.Tests.Implementations.Tests.AngularTranslateTests.testAngularTransalateViewModel");
+                    await driver.ExecuteTest("Bit.Tests.Implementations.Tests.AngularTranslateTests.testAngularTranslateViewModel");
                 }
             }
         }

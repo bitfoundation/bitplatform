@@ -5,13 +5,13 @@
     dependencyManager.registerFileDependency({
         name: "normalize",
         path: "bit-framework/src/TypeScriptClient/Bit.TSClient.AngularJS/node_modules/normalize-css/normalize",
-        fileDependecyType: "Style"
+        fileDependencyType: "Style"
     });
 
     dependencyManager.registerFileDependency({
         name: "angular-material-styles",
         path: "bit-framework/src/TypeScriptClient/Bit.TSClient.AngularJS/node_modules/angular-material/angular-material",
-        fileDependecyType: "Style"
+        fileDependencyType: "Style"
     });
 
     dependencyManager.registerFileDependency({
@@ -20,7 +20,7 @@
         predicate: (appInfo) => {
             return appInfo.screenSize == "DesktopAndTablet";
         },
-        fileDependecyType: "Style",
+        fileDependencyType: "Style",
         onError: () => {
             console.warn("Download professional version of kendo and copy that to bit-framework/src/TypeScriptClient/Bit.TSClient.AngularJS/node_modules/kendo-ui/");
         }
@@ -32,7 +32,7 @@
         predicate: (appInfo) => {
             return appInfo.screenSize == "DesktopAndTablet" && appInfo.theme == "LightGreen";
         },
-        fileDependecyType: "Style"
+        fileDependencyType: "Style"
     });
 
     dependencyManager.registerFileDependency({
@@ -41,7 +41,7 @@
         predicate: (appInfo) => {
             return appInfo.screenSize == "DesktopAndTablet" && appInfo.theme == "LightBlue";
         },
-        fileDependecyType: "Style"
+        fileDependencyType: "Style"
     });
 
     dependencyManager.registerFileDependency({
@@ -50,7 +50,7 @@
         predicate: (appInfo) => {
             return appInfo.screenSize == "DesktopAndTablet" && appInfo.theme == "DarkAmber";
         },
-        fileDependecyType: "Style"
+        fileDependencyType: "Style"
     });
 
     dependencyManager.registerFileDependency({
@@ -59,33 +59,33 @@
         predicate: (appInfo) => {
             return appInfo.screenSize == "DesktopAndTablet" && appInfo.culture == "FaIr";
         },
-        fileDependecyType: "Style"
+        fileDependencyType: "Style"
     });
 
     dependencyManager.registerFileDependency({
         name: "persian-date-picker-styles",
         path: "bit-framework/src/TypeScriptClient/Bit.TSClient.AngularJS/node_modules/persian-datepicker/dist/css/persian-datepicker.min",
-        fileDependecyType: "Style",
+        fileDependencyType: "Style",
         predicate: (appInfo) => appInfo.culture == "FaIr"
     });
 
     dependencyManager.registerFileDependency({
         name: "persian-date-picker-blue-styles",
         path: "bit-framework/src/TypeScriptClient/Bit.TSClient.AngularJS/node_modules/persian-datepicker/dist/css/theme/persian-datepicker-blue.min",
-        fileDependecyType: "Style",
+        fileDependencyType: "Style",
         predicate: (appInfo) => appInfo.culture == "FaIr"
     });
 
     dependencyManager.registerFileDependency({
         name: "controls-styles",
         path: "bit-framework/src/TypeScriptClient/Bit.TSClient.AngularJS/contents/styles/controls",
-        fileDependecyType: "Style"
+        fileDependencyType: "Style"
     });
 
     dependencyManager.registerFileDependency({
         name: "dark-amber-theme-custom-styles",
         path: "bit-framework/src/TypeScriptClient/Bit.TSClient.AngularJS/contents/styles/theme.dark.amber",
-        fileDependecyType: "Style",
+        fileDependencyType: "Style",
         predicate: (appInfo) => {
             return appInfo.theme == "DarkAmber";
         }
@@ -97,7 +97,7 @@
         predicate: (appInfo) => {
             return appInfo.theme == "LightBlue";
         },
-        fileDependecyType: "Style"
+        fileDependencyType: "Style"
     });
 
     dependencyManager.registerFileDependency({
@@ -106,7 +106,7 @@
         predicate: (appInfo) => {
             return appInfo.theme == "LightGreen";
         },
-        fileDependecyType: "Style"
+        fileDependencyType: "Style"
     });
 
     dependencyManager.registerFileDependency({
@@ -115,7 +115,7 @@
         predicate: (appInfo) => {
             return appInfo.culture == "FaIr";
         },
-        fileDependecyType: "Style"
+        fileDependencyType: "Style"
     });
 
     dependencyManager.registerFileDependency({
@@ -124,7 +124,7 @@
         predicate: (appInfo) => {
             return appInfo.culture == "EnUs";
         },
-        fileDependecyType: "Style"
+        fileDependencyType: "Style"
     });
 
     dependencyManager.registerFileDependency({
@@ -300,12 +300,12 @@
     dependencyManager.registerFileDependency({
         name: "bit-model-context",
         path: "bit-framework/src/TypeScriptClient/Bit.TSClient.Core/Bit.Model.Context",
-        fileDependecyType: "Script"
+        fileDependencyType: "Script"
     });
 
     dependencyManager.registerFileDependency({
         name: "bit-test-context",
         path: "bit-framework/src/TypeScriptClient/Bit.TSClient.AngularJS.Tests/Test.Model.Context",
-        fileDependecyType: "Script"
+        fileDependencyType: "Script"
     });
 }

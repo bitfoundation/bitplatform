@@ -2,7 +2,7 @@
 
     export class ScopeManager {
 
-        public static update$scope($scope: ng.IScope, $applyMode: "$applyAsync" | "$apply" = Default$scopeConfiguration.currentConfig.$appyMode): void {
+        public static update$scope($scope: ng.IScope, $applyMode: "$applyAsync" | "$apply" = Default$scopeConfiguration.currentConfig.$applyMode): void {
 
             if ($applyMode == "$applyAsync") {
                 setTimeout(() => {

@@ -78,7 +78,7 @@ module Bit.Directives {
     })
     export class DefaultRadComboBoxDirective {
 
-        public static defaultRadComboBoxDirectiveCustomizers: Array<($scope: ng.IScope, attribues: ng.IAttributes, $element: JQuery, comboBoxOptions: kendo.ui.ComboBoxOptions) => void> = [];
+        public static defaultRadComboBoxDirectiveCustomizers: Array<($scope: ng.IScope, attributes: ng.IAttributes, $element: JQuery, comboBoxOptions: kendo.ui.ComboBoxOptions) => void> = [];
 
         public constructor(@Inject("$element") public $element: JQuery,
             @Inject("$scope") public $scope: ng.IScope,

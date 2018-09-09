@@ -8,19 +8,19 @@ namespace Bit.ViewModel.Implementations
 {
     public class BitHttpClientHandler : HttpClientHandler
     {
-        protected async override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+        protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {
             // ToDo:
-                // Current-Time-Zone
-                // Desired-Time-Zone
-                // Client-App-Version
-                // Client-Culture
-                // Client-Route
-                // Client-Theme
-                // Client-Debug-Mode
-                // System-Language
-                // Client-Sys-Language
-                // Client-Platform
+            // Current-Time-Zone
+            // Desired-Time-Zone
+            // Client-App-Version
+            // Client-Culture
+            // Client-Route
+            // Client-Theme
+            // Client-Debug-Mode
+            // System-Language
+            // Client-Sys-Language
+            // Client-Platform
 
             // ToDo: Use IDeviceService & IDateTimeProvider
 

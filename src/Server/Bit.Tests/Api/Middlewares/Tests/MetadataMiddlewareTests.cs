@@ -1,11 +1,11 @@
-﻿using System;
+﻿using Bit.Owin.Contracts.Metadata;
+using Bit.Test;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+using System;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
-using Bit.Owin.Contracts.Metadata;
-using Bit.Test;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Bit.Tests.Api.Middlewares.Tests
 {
@@ -39,7 +39,7 @@ namespace Bit.Tests.Api.Middlewares.Tests
 
         [TestMethod]
         [TestCategory("Metadata")]
-        public async Task MetadataMiddlewareResponseMustBeDeSerializeableForSimpleCSharpClient()
+        public async Task MetadataMiddlewareResponseMustBeDeSerializableForSimpleCSharpClient()
         {
             using (BitOwinTestEnvironment testEnvironment = new BitOwinTestEnvironment())
             {

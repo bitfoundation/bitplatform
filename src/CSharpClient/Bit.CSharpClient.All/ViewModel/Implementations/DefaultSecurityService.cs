@@ -35,9 +35,9 @@ namespace Bit.ViewModel.Implementations
         protected string CurrentAction { get; set; }
         protected TaskCompletionSource<object> CurrentLogoutTaskCompletionSource { get; set; }
 
-        public virtual async Task<bool> IsLoggedInAsync(CancellationToken cancellationToken = default(CancellationToken))
+        public virtual async Task<bool> IsLoggedInAsync(CancellationToken cancellationToken = default)
         {
-            Token token = await GetCurrentTokenAsync().ConfigureAwait(false);
+            Token token = await GetCurrentTokenAsync(cancellationToken).ConfigureAwait(false);
 
             if (token == null)
                 return false;
@@ -45,7 +45,7 @@ namespace Bit.ViewModel.Implementations
             return (_dateTimeProvider.GetCurrentUtcDateTime() - token.login_date) < TimeSpan.FromSeconds(token.expires_in);
         }
 
-        public virtual async Task<Token> LoginWithCredentials(string username, string password, string client_id, string client_secret, string[] scopes = null, CancellationToken cancellationToken = default(CancellationToken))
+        public virtual async Task<Token> LoginWithCredentials(string username, string password, string client_id, string client_secret, string[] scopes = null, CancellationToken cancellationToken = default)
         {
             await Logout(state: null, client_id: client_id, cancellationToken: cancellationToken).ConfigureAwait(false);
 
@@ -75,7 +75,7 @@ namespace Bit.ViewModel.Implementations
             return token;
         }
 
-        public virtual async Task<Token> Login(object state = null, string client_id = null, CancellationToken cancellationToken = default(CancellationToken))
+        public virtual async Task<Token> Login(object state = null, string client_id = null, CancellationToken cancellationToken = default)
         {
             await Logout(state, client_id, cancellationToken).ConfigureAwait(false);
             CurrentAction = "Login";
@@ -84,7 +84,7 @@ namespace Bit.ViewModel.Implementations
             return await CurrentLoginTaskCompletionSource.Task.ConfigureAwait(false);
         }
 
-        public virtual async Task<Token> GetCurrentTokenAsync(CancellationToken cancellationToken = default(CancellationToken))
+        public virtual async Task<Token> GetCurrentTokenAsync(CancellationToken cancellationToken = default)
         {
             string token = null;
 
@@ -99,9 +99,9 @@ namespace Bit.ViewModel.Implementations
             return JsonConvert.DeserializeObject<Dictionary<string, string>>(token);
         }
 
-        public virtual async Task Logout(object state = null, string client_id = null, CancellationToken cancellationToken = default(CancellationToken))
+        public virtual async Task Logout(object state = null, string client_id = null, CancellationToken cancellationToken = default)
         {
-            Token token = await GetCurrentTokenAsync().ConfigureAwait(false);
+            Token token = await GetCurrentTokenAsync(cancellationToken).ConfigureAwait(false);
 
             if (token != null)
             {

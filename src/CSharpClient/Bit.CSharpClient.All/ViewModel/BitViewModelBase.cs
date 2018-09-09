@@ -16,7 +16,7 @@ namespace Bit.ViewModel
 
         public struct NoContextYieldAwaiter : INotifyCompletion
         {
-            public bool IsCompleted { get { return false; } }
+            public bool IsCompleted => false;
 
             public void OnCompleted(Action continuation)
             {

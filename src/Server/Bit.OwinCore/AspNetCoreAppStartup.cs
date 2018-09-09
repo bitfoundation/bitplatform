@@ -19,7 +19,6 @@ namespace Bit.OwinCore
 {
     public class AspNetCoreAppStartup
     {
-        private readonly IServiceProvider _serviceProvider;
         private readonly IHostingEnvironment _hostingEnvironment;
         private readonly IPathProvider _pathProvider;
 
@@ -28,8 +27,7 @@ namespace Bit.OwinCore
             if (serviceProvider == null)
                 throw new ArgumentNullException(nameof(serviceProvider));
 
-            _serviceProvider = serviceProvider;
-            _hostingEnvironment = _serviceProvider.GetService<IHostingEnvironment>();
+            _hostingEnvironment = serviceProvider.GetService<IHostingEnvironment>();
             DefaultPathProvider.Current = _pathProvider = new AspNetCorePathProvider(_hostingEnvironment);
         }
 
@@ -67,9 +65,7 @@ namespace Bit.OwinCore
                 if (context == null)
                     throw new InvalidOperationException("http context is null");
 
-                IOwinContext owinContext = context.Items["OwinContext"] as IOwinContext;
-
-                if (owinContext == null)
+                if (!(context.Items["OwinContext"] is IOwinContext owinContext))
                     throw new InvalidOperationException("OwinContextIsNull");
 
                 return owinContext;

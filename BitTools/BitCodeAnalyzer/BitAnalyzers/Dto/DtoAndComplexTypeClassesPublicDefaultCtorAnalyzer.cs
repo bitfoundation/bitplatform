@@ -9,9 +9,9 @@ using System.Linq;
 namespace BitCodeAnalyzer.BitAnalyzers.Dto
 {
     [DiagnosticAnalyzer(LanguageNames.CSharp)]
-    public class DtoAndComplexTypeClassessPublicDefaultCtorAnalyzer : DiagnosticAnalyzer
+    public class DtoAndComplexTypeClassesPublicDefaultCtorAnalyzer : DiagnosticAnalyzer
     {
-        public const string DiagnosticId = nameof(DtoAndComplexTypeClassessPublicDefaultCtorAnalyzer);
+        public const string DiagnosticId = nameof(DtoAndComplexTypeClassesPublicDefaultCtorAnalyzer);
 
         public const string Title = "Complex Type | Dtos must have a default public constructor.";
         public const string Message = Title;

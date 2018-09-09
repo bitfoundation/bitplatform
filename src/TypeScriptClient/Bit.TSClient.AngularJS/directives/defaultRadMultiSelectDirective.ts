@@ -80,7 +80,7 @@ module Bit.Directives {
     })
     export class DefaultRadMultiSelectDirective {
 
-        public static defaultRadMultiSelectDirectiveCustomizers: Array<($scope: ng.IScope, attribues: ng.IAttributes, $element: JQuery, multiSelectOptions: kendo.ui.MultiSelectOptions) => void> = [];
+        public static defaultRadMultiSelectDirectiveCustomizers: Array<($scope: ng.IScope, attributes: ng.IAttributes, $element: JQuery, multiSelectOptions: kendo.ui.MultiSelectOptions) => void> = [];
 
         public constructor(@Inject("$element") public $element: JQuery,
             @Inject("$scope") public $scope: ng.IScope,
