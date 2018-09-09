@@ -1,8 +1,8 @@
-﻿using System;
-using System.Threading.Tasks;
-using Bit.Signalr.Contracts;
+﻿using Bit.Signalr.Contracts;
 using Microsoft.AspNet.SignalR;
 using Microsoft.Owin;
+using System;
+using System.Threading.Tasks;
 
 namespace Bit.Signalr
 {
@@ -32,7 +32,8 @@ namespace Bit.Signalr
 
                 Core.Contracts.IDependencyResolver dependencyResolver = context.Get<Core.Contracts.IDependencyResolver>("DependencyResolver");
 
-                await dependencyResolver.Resolve<IMessagesHubEvents>().OnDisconnected(this, stopCalled);
+                if (dependencyResolver != null)
+                    await dependencyResolver?.Resolve<IMessagesHubEvents>().OnDisconnected(this, stopCalled);
             }
             catch (ObjectDisposedException) { /* https://github.com/SignalR/SignalR/issues/2972 */ }
             finally

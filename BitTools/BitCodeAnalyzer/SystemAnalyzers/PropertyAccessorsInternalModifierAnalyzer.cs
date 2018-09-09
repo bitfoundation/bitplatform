@@ -1,8 +1,8 @@
-﻿using System.Collections.Immutable;
-using Microsoft.CodeAnalysis;
+﻿using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Diagnostics;
+using System.Collections.Immutable;
 using System.Linq;
 
 namespace BitCodeAnalyzer.SystemAnalyzers
@@ -36,7 +36,7 @@ namespace BitCodeAnalyzer.SystemAnalyzers
 
             PropertyDeclarationSyntax propDec = (PropertyDeclarationSyntax)context.Node;
 
-            if (propDec.AccessorList.Accessors.Any(acc => acc.Modifiers.Any(m => m.ValueText == "internal")))
+            if (propDec.AccessorList?.Accessors.Any(acc => acc.Modifiers.Any(m => m.ValueText == "internal")) == true)
             {
                 Diagnostic diagn = Diagnostic.Create(Rule, root.GetLocation(), Message);
                 context.ReportDiagnostic(diagn);
