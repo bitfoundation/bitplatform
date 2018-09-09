@@ -286,7 +286,7 @@ namespace Bit.Tests.Api.ApiControllers
             }
         }
 
-        [SwaggerRequestExample(typeof(FirstSecondParameters), typeof(SumRequestExample))]
+        [SwaggerRequestExample(typeof(FirstSecondParameters), typeof(SumRequestExample), jsonConverter: typeof(StringEnumConverter))]
         [Action]
         public virtual int Sum(FirstSecondParameters parameters)
         {

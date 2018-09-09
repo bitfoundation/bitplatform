@@ -269,7 +269,7 @@ namespace CustomerDtoControllerSample
             }
         }
 
-        [SwaggerRequestExample(typeof(SendEmailToCustomerParams), typeof(SendEmailToCustomerParamsExample))]
+        [SwaggerRequestExample(typeof(SendEmailToCustomerParams), typeof(SendEmailToCustomerParamsExample), jsonConverter: typeof(StringEnumConverter))]
         [Action]
         public async Task SendEmailToCustomer(SendEmailToCustomerParams args)
         {
