@@ -23,15 +23,15 @@
     "@types/signalr": "^2.2.35"
   },
   "dependencies": {
-    "@bit/bit-framework": "^1.0.9",
+    "@bit/bit-framework": "^1.1.2",
     "@bit/encoder": "^1.0.0",
     "@bit/jaydata": "^1.5.15",
     "@uirouter/angularjs": "^1.0.20",
-    "angular": "^1.7.3",
-    "angular-animate": "^1.7.3",
-    "angular-aria": "^1.7.3",
+    "angular": "^1.7.4",
+    "angular-animate": "^1.7.4",
+    "angular-aria": "^1.7.4",
     "angular-material": "^1.1.10",
-    "angular-messages": "^1.7.3",
+    "angular-messages": "^1.7.4",
     "angular-translate": "^2.18.1",
     "core-js": "^2.5.7",
     "decimal.js": "^10.0.1",
@@ -42,6 +42,6 @@
     "pubsub-js": "^1.6.1",
     "regenerator": "^0.13.2",
     "signalr": "^2.3.0",
-    "whatwg-fetch": "^2.0.4"
+    "whatwg-fetch": "^3.0.0"
   }
 }

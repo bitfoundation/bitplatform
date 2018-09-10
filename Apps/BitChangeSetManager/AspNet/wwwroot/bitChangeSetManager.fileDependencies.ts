@@ -7,19 +7,19 @@ module BitChangeSetManager {
     dependencyManager.registerFileDependency({
         name: "normalize",
         path: "node_modules/normalize-css/normalize",
-        fileDependecyType: "Style"
+        fileDependencyType: "Style"
     });
 
     dependencyManager.registerFileDependency({
         name: "angular-material-styles",
         path: "node_modules/angular-material/angular-material",
-        fileDependecyType: "Style"
+        fileDependencyType: "Style"
     });
 
     dependencyManager.registerFileDependency({
         name: "kendo-common-styles",
         path: "node_modules/kendo-ui/styles/kendo.common.min",
-        fileDependecyType: "Style",
+        fileDependencyType: "Style",
         onError: () => {
             console.warn("Download professional version of kendo and copy that to node_modules/kendo-ui/")
         }
@@ -28,7 +28,7 @@ module BitChangeSetManager {
     dependencyManager.registerFileDependency({
         name: "kendo-light-blue-theme-styles",
         path: "node_modules/kendo-ui/styles/kendo.material.min",
-        fileDependecyType: "Style"
+        fileDependencyType: "Style"
     });
 
     dependencyManager.registerFileDependency({
@@ -37,7 +37,7 @@ module BitChangeSetManager {
         predicate: (appInfo) => {
             return appInfo.screenSize == "DesktopAndTablet" && appInfo.culture == "FaIr";
         },
-        fileDependecyType: "Style",
+        fileDependencyType: "Style",
         onLoad: () => {
             document.body.className += "k-rtl";
         }
@@ -46,47 +46,47 @@ module BitChangeSetManager {
     dependencyManager.registerFileDependency({
         name: "persian-date-picker-styles",
         path: "node_modules/persian-datepicker/dist/css/persian-datepicker.min",
-        fileDependecyType: "Style",
+        fileDependencyType: "Style",
         predicate: (appInfo) => appInfo.culture == "FaIr"
     });
 
     dependencyManager.registerFileDependency({
         name: "persian-date-picker-blue-styles",
         path: "node_modules/persian-datepicker/dist/css/theme/persian-datepicker-blue.min",
-        fileDependecyType: "Style",
+        fileDependencyType: "Style",
         predicate: (appInfo) => appInfo.culture == "FaIr"
     });
 
     dependencyManager.registerFileDependency({
         name: "controls-styles",
         path: "node_modules/@bit/bit-framework/contents/styles/controls",
-        fileDependecyType: "Style"
+        fileDependencyType: "Style"
     });
 
     dependencyManager.registerFileDependency({
         name: "light-blue-theme-custom-styles",
         path: "node_modules/@bit/bit-framework/contents/styles/theme.light.blue",
-        fileDependecyType: "Style"
+        fileDependencyType: "Style"
     });
 
     dependencyManager.registerFileDependency({
         name: "en-US-styles",
         path: "node_modules/@bit/bit-framework/contents/styles/en-US",
-        fileDependecyType: "Style",
+        fileDependencyType: "Style",
         predicate: appEnvProvider => appEnvProvider.culture == "EnUs"
     });
 
     dependencyManager.registerFileDependency({
         name: "fa-IR-styles",
         path: "node_modules/@bit/bit-framework/contents/styles/fa-IR",
-        fileDependecyType: "Style",
+        fileDependencyType: "Style",
         predicate: appEnvProvider => appEnvProvider.culture == "FaIr"
     });
 
     dependencyManager.registerFileDependency({
         name: "bit-change-set-manager-styles",
         path: "view/styles/bitChangeSetManagerStyles",
-        fileDependecyType: "Style"
+        fileDependencyType: "Style"
     });
 
     dependencyManager.registerFileDependency({

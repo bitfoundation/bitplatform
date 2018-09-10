@@ -6,9 +6,9 @@
         public validateMember(memberName: keyof BitChangeSetManagerModel.ChangeSetDto, newValue: any, oldValue: any): void {
 
             if (memberName == "Title")
-                this.setMemberValidaty("Title", "max-length", newValue == null || (newValue as string).length < 50);
+                this.setMemberValidity("Title", "max-length", newValue == null || (newValue as string).length < 50);
             else if (memberName == "Description")
-                this.setMemberValidaty("Description", "max-length", newValue == null || (newValue as string).length < 200);
+                this.setMemberValidity("Description", "max-length", newValue == null || (newValue as string).length < 200);
 
             super.validateMember(memberName, newValue, oldValue);
         }

@@ -15,6 +15,7 @@ using Bit.Owin.Implementations;
 using Bit.OwinCore;
 using Microsoft.AspNet.OData;
 using Microsoft.Extensions.DependencyInjection;
+using Newtonsoft.Json.Converters;
 using Swashbuckle.Application;
 using Swashbuckle.Examples;
 using System;

@@ -7,32 +7,32 @@ module BitChangeSetManagerSecurity {
     dependencyManager.registerFileDependency({
         name: "normalize",
         path: "node_modules/normalize-css/normalize",
-        fileDependecyType: "Style"
+        fileDependencyType: "Style"
     });
 
     dependencyManager.registerFileDependency({
         name: "angular-material-styles",
         path: "node_modules/angular-material/angular-material",
-        fileDependecyType: "Style"
+        fileDependencyType: "Style"
     });
 
     dependencyManager.registerFileDependency({
         name: "controls-styles",
         path: "node_modules/@bit/bit-framework/contents/styles/controls",
-        fileDependecyType: "Style"
+        fileDependencyType: "Style"
     });
 
     dependencyManager.registerFileDependency({
         name: "en-US-styles",
         path: "node_modules/@bit/bit-framework/contents/styles/en-US",
-        fileDependecyType: "Style",
+        fileDependencyType: "Style",
         predicate: appEnvProvider => appEnvProvider.culture == "EnUs"
     });
 
     dependencyManager.registerFileDependency({
         name: "bit-change-set-manager-styles",
         path: "view/styles/bitChangeSetManagerStyles",
-        fileDependecyType: "Style"
+        fileDependencyType: "Style"
     });
 
     dependencyManager.registerFileDependency({

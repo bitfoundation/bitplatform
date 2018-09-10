@@ -6,7 +6,6 @@ using Bit.Data.Contracts;
 using Bit.Data.EntityFramework.Implementations;
 using Bit.Model.Contracts;
 using Bit.Owin;
-using Bit.Owin.Contracts;
 using Bit.Owin.Implementations;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Owin.Hosting;
@@ -21,6 +20,8 @@ using System.Linq;
 using System.Net.Http;
 using System.Reflection;
 using System.Web.Http;
+
+[assembly: InProcess]
 
 namespace EntityFrameworkOptimizedForNTierScenarios
 {
