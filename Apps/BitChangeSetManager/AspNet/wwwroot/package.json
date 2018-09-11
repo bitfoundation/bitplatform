@@ -25,7 +25,7 @@
   "dependencies": {
     "@bit/bit-framework": "^1.1.2",
     "@bit/encoder": "^1.0.0",
-    "@bit/jaydata": "^1.5.15",
+    "@bit/jaydata": "^1.5.16",
     "@uirouter/angularjs": "^1.0.20",
     "angular": "^1.7.4",
     "angular-animate": "^1.7.4",
