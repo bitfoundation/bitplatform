@@ -1,12 +1,24 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
-<ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
-             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             x:Class="Bit.CSharpClientSample.Views.MainView" Title="Main">
+<ContentPage
+    x:Class="Bit.CSharpClientSample.Views.MainView"
+    xmlns="http://xamarin.com/schemas/2014/forms"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:view="clr-namespace:Bit.View;assembly=Bit.CSharpClient.All"
+    Title="Test">
+    <view:BitNavigationPage.NavBar>
+        <Grid BackgroundColor="White">
+            <Label Text="This is a label in navbar for show popup">
+                <Label.GestureRecognizers>
+                    <TapGestureRecognizer Command="{Binding ShowPopup}" />
+                </Label.GestureRecognizers>
+            </Label>
+        </Grid>
+    </view:BitNavigationPage.NavBar>
     <StackLayout>
-        <Button Text="Sync" Command="{Binding Sync}" />
-        <Button Text="Send http request" Command="{Binding SendHttpRequest}" />
-        <Button Text="Send OData request" Command="{Binding SendODataRequest}" />
-        <Button Text="Logout" Command="{Binding Logout}" />
-        <Button Text="Show popup" Command="{Binding ShowPopup}" />
+        <Button Command="{Binding Sync}" Text="Sync" />
+        <Button Command="{Binding SendHttpRequest}" Text="Send http request" />
+        <Button Command="{Binding SendODataRequest}" Text="Send OData request" />
+        <Button Command="{Binding Logout}" Text="Logout" />
+        <Button Command="{Binding ShowPopup}" Text="Show popup" />
     </StackLayout>
 </ContentPage>

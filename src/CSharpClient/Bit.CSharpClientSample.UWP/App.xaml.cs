@@ -40,7 +40,7 @@ namespace Bit.CSharpClientSample.UWP
 
                 Rg.Plugins.Popup.Popup.Init();
 
-                Xamarin.Forms.Forms.Init(e);
+                Xamarin.Forms.Forms.Init(e, new[] { typeof(BitApplication).Assembly });
 
                 if (e.PreviousExecutionState == ApplicationExecutionState.Terminated)
                 {
