@@ -79,8 +79,8 @@ namespace Bit
         {
             try
             {
-                await OnInitializedAsync().ConfigureAwait(false);
-                await new NoContextYieldAwaitable();
+                await OnInitializedAsync();
+                await Task.Yield();
             }
             catch (Exception exp)
             {

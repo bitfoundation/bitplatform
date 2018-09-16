@@ -12,7 +12,7 @@ namespace Prism.Events
             {
                 try
                 {
-                    await action(payload).ConfigureAwait(false);
+                    await action(payload);
                 }
                 catch (Exception exp)
                 {
@@ -27,7 +27,7 @@ namespace Prism.Events
             {
                 try
                 {
-                    await action(payload).ConfigureAwait(false);
+                    await action(payload);
                 }
                 catch (Exception exp)
                 {
@@ -42,7 +42,7 @@ namespace Prism.Events
             {
                 try
                 {
-                    await action(payload).ConfigureAwait(false);
+                    await action(payload);
                 }
                 catch (Exception exp)
                 {
@@ -57,7 +57,7 @@ namespace Prism.Events
             {
                 try
                 {
-                    await action(payload).ConfigureAwait(false);
+                    await action(payload);
                 }
                 catch (Exception exp)
                 {
@@ -72,7 +72,7 @@ namespace Prism.Events
             {
                 try
                 {
-                    await action(payload).ConfigureAwait(false);
+                    await action(payload);
                 }
                 catch (Exception exp)
                 {

@@ -12,7 +12,7 @@ namespace Bit.ViewModel
         {
             try
             {
-                await _executeMethod().ConfigureAwait(false);
+                await _executeMethod();
             }
             catch (Exception exp)
             {
@@ -25,7 +25,7 @@ namespace Bit.ViewModel
             {
                 try
                 {
-                    await executeMethod().ConfigureAwait(false);
+                    await executeMethod();
                 }
                 catch (Exception exp)
                 {
@@ -44,7 +44,7 @@ namespace Bit.ViewModel
             {
                 try
                 {
-                    await executeMethod().ConfigureAwait(false);
+                    await executeMethod();
                 }
                 catch (Exception exp)
                 {
@@ -75,7 +75,7 @@ namespace Bit.ViewModel
         {
             try
             {
-                await _executeMethod(parameter).ConfigureAwait(false);
+                await _executeMethod(parameter);
             }
             catch (Exception exp)
             {
@@ -88,7 +88,7 @@ namespace Bit.ViewModel
             {
                 try
                 {
-                    await executeMethod(parameter).ConfigureAwait(false);
+                    await executeMethod(parameter);
                 }
                 catch (Exception exp)
                 {
@@ -107,7 +107,7 @@ namespace Bit.ViewModel
             {
                 try
                 {
-                    await executeMethod(parameter).ConfigureAwait(false);
+                    await executeMethod(parameter);
                 }
                 catch (Exception exp)
                 {

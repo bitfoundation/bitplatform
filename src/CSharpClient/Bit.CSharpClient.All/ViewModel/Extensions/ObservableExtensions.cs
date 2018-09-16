@@ -12,7 +12,7 @@ namespace System
             {
                 try
                 {
-                    await onNext(arg).ConfigureAwait(false);
+                    await onNext(arg);
                 }
                 catch (Exception exp)
                 {
@@ -27,7 +27,7 @@ namespace System
             {
                 try
                 {
-                    await onNext(arg).ConfigureAwait(false);
+                    await onNext(arg);
                 }
                 catch (Exception exp)
                 {
@@ -37,7 +37,7 @@ namespace System
             {
                 try
                 {
-                    await onError(originalExp).ConfigureAwait(false);
+                    await onError(originalExp);
                 }
                 catch (Exception exp)
                 {
@@ -52,7 +52,7 @@ namespace System
             {
                 try
                 {
-                    await onNext(arg).ConfigureAwait(false);
+                    await onNext(arg);
                 }
                 catch (Exception exp)
                 {
@@ -62,7 +62,7 @@ namespace System
             {
                 try
                 {
-                    await onCompleted().ConfigureAwait(false);
+                    await onCompleted();
                 }
                 catch (Exception exp)
                 {
@@ -77,7 +77,7 @@ namespace System
             {
                 try
                 {
-                    await onNext(arg).ConfigureAwait(false);
+                    await onNext(arg);
                 }
                 catch (Exception exp)
                 {
@@ -87,7 +87,7 @@ namespace System
             {
                 try
                 {
-                    await onError(originalExp).ConfigureAwait(false);
+                    await onError(originalExp);
                 }
                 catch (Exception exp)
                 {
@@ -97,7 +97,7 @@ namespace System
             {
                 try
                 {
-                    await onCompleted().ConfigureAwait(false);
+                    await onCompleted();
                 }
                 catch (Exception exp)
                 {
@@ -112,7 +112,7 @@ namespace System
             {
                 try
                 {
-                    await onNext(arg).ConfigureAwait(false);
+                    await onNext(arg);
                 }
                 catch (Exception exp)
                 {
@@ -127,7 +127,7 @@ namespace System
             {
                 try
                 {
-                    await onNext(arg).ConfigureAwait(false);
+                    await onNext(arg);
                 }
                 catch (Exception exp)
                 {
@@ -137,7 +137,7 @@ namespace System
             {
                 try
                 {
-                    await onError(originalExp).ConfigureAwait(false);
+                    await onError(originalExp);
                 }
                 catch (Exception exp)
                 {
@@ -152,7 +152,7 @@ namespace System
             {
                 try
                 {
-                    await onNext(arg).ConfigureAwait(false);
+                    await onNext(arg);
                 }
                 catch (Exception exp)
                 {
@@ -162,7 +162,7 @@ namespace System
             {
                 try
                 {
-                    await onCompleted().ConfigureAwait(false);
+                    await onCompleted();
                 }
                 catch (Exception exp)
                 {
@@ -177,7 +177,7 @@ namespace System
             {
                 try
                 {
-                    await onNext(arg).ConfigureAwait(false);
+                    await onNext(arg);
                 }
                 catch (Exception exp)
                 {
@@ -187,7 +187,7 @@ namespace System
             {
                 try
                 {
-                    await onError(originalExp).ConfigureAwait(false);
+                    await onError(originalExp);
                 }
                 catch (Exception exp)
                 {
@@ -197,7 +197,7 @@ namespace System
             {
                 try
                 {
-                    await onCompleted().ConfigureAwait(false);
+                    await onCompleted();
                 }
                 catch (Exception exp)
                 {

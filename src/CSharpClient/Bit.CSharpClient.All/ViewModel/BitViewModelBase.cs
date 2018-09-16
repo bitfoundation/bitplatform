@@ -1,55 +1,18 @@
 ﻿using Prism.Mvvm;
 using Prism.Navigation;
 using System;
-using System.Runtime.CompilerServices;
-using System.Threading;
 using System.Threading.Tasks;
 
 namespace Bit.ViewModel
 {
-    public struct NoContextYieldAwaitable
-    {
-        public NoContextYieldAwaiter GetAwaiter()
-        {
-            return new NoContextYieldAwaiter();
-        }
-
-        public struct NoContextYieldAwaiter : INotifyCompletion
-        {
-            public bool IsCompleted => false;
-
-            public void OnCompleted(Action continuation)
-            {
-                TaskScheduler scheduler = TaskScheduler.Current;
-                if (scheduler == TaskScheduler.Default)
-                {
-                    ThreadPool.QueueUserWorkItem(RunAction, continuation);
-                }
-                else
-                {
-                    Task.Factory.StartNew(continuation, CancellationToken.None, TaskCreationOptions.PreferFairness, scheduler);
-                }
-            }
-
-            public void GetResult()
-            {
-            }
-
-            private static void RunAction(object state)
-            {
-                ((Action)state)();
-            }
-        }
-    }
-
     public class BitViewModelBase : BindableBase, INavigatedAware, INavigatingAware, INavigationAware, IDestructible
     {
         public async void Destroy()
         {
             try
             {
-                await DestroyAsync().ConfigureAwait(false);
-                await new NoContextYieldAwaitable();
+                await DestroyAsync();
+                await Task.Yield();
             }
             catch (Exception exp)
             {
@@ -66,8 +29,8 @@ namespace Bit.ViewModel
         {
             try
             {
-                await OnNavigatedFromAsync(parameters).ConfigureAwait(false);
-                await new NoContextYieldAwaitable();
+                await OnNavigatedFromAsync(parameters);
+                await Task.Yield();
             }
             catch (Exception exp)
             {
@@ -84,8 +47,8 @@ namespace Bit.ViewModel
         {
             try
             {
-                await new NoContextYieldAwaitable();
-                await OnNavigatedToAsync(parameters).ConfigureAwait(false);
+                await Task.Yield();
+                await OnNavigatedToAsync(parameters);
             }
             catch (Exception exp)
             {
@@ -102,8 +65,8 @@ namespace Bit.ViewModel
         {
             try
             {
-                await new NoContextYieldAwaitable();
-                await OnNavigatingToAsync(parameters).ConfigureAwait(false);
+                await Task.Yield();
+                await OnNavigatingToAsync(parameters);
             }
             catch (Exception exp)
             {
