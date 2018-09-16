@@ -35,17 +35,17 @@ namespace Bit.CSharpClientSample
 
             if (isLoggedIn)
             {
-                await NavigationService.NavigateAsync("Nav/Main");
+                await NavigationService.NavigateAsync("/Nav/Main");
             }
             else
             {
-                await NavigationService.NavigateAsync("Login");
+                await NavigationService.NavigateAsync("/Login");
             }
 
             IEventAggregator eventAggregator = Container.Resolve<IEventAggregator>();
 
             eventAggregator.GetEvent<TokenExpiredEvent>()
-                .SubscribeAsync(async tokenExpiredEvent => await NavigationService.NavigateAsync("Login"), ThreadOption.UIThread);
+                .SubscribeAsync(async tokenExpiredEvent => await NavigationService.NavigateAsync("/Login"), ThreadOption.UIThread);
 
             await base.OnInitializedAsync();
         }
