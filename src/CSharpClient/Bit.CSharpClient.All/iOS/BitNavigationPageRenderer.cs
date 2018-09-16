@@ -37,6 +37,7 @@ namespace Bit.iOS
             if (_navBarRenderer != null)
             {
                 _navBarRenderer.NativeView.RemoveFromSuperview();
+                _navBarRenderer.Dispose();
                 _navBarRenderer = null;
             }
 
@@ -58,10 +59,10 @@ namespace Bit.iOS
         {
             base.ViewDidLayoutSubviews();
 
-            if (NavBar == null)
+            if (NavBar == null || _navBarRenderer == null)
                 return;
 
-            Thickness margin = ((Xamarin.Forms.View)NavBar).Margin;
+            Thickness margin = NavBar.Margin;
 
             _navBarRenderer.NativeView.Frame = new CoreGraphics.CGRect(
                 margin.Left,

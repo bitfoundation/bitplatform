@@ -43,7 +43,7 @@ namespace Bit.UWP
                 CurrentPageChanged();
             }
 
-            if ((NavBar != null && ContainerElement != null) && (e.PropertyName == "Width" || e.PropertyName == "Height"))
+            if ((NavPage?.CurrentPage != null && NavBar != null && ContainerElement != null) && (e.PropertyName == "Width" || e.PropertyName == "Height"))
                 Layout.LayoutChildIntoBoundingRegion(NavBar, new Rectangle(0, 0, ContainerElement.Width, ContainerElement.Height));
         }
 

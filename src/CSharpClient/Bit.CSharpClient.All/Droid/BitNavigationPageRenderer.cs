@@ -51,6 +51,7 @@ namespace Bit.Droid
             if (_navBarRenderer != null)
             {
                 ToolBar.RemoveView(_navBarRenderer.View);
+                _navBarRenderer.Dispose();
                 _navBarRenderer = null;
             }
 
