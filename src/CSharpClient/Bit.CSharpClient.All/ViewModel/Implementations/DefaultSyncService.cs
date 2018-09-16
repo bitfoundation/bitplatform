@@ -75,12 +75,10 @@ namespace Bit.ViewModel.Implementations
                             .Cast<ISyncableDto>()
                             .ToArray();
 
-                        ISyncableDto firstRecentlyChangedOfflineDto = recentlyChangedOfflineDtos.FirstOrDefault();
-
-                        if (firstRecentlyChangedOfflineDto == null)
+                        if (recentlyChangedOfflineDtos.Any() == false)
                             continue;
 
-                        TypeInfo dtoType = firstRecentlyChangedOfflineDto.GetType().GetTypeInfo();
+                        TypeInfo dtoType = offlineSet.ElementType.GetTypeInfo();
 
                         PropertyInfo[] keyProps = offlineContextForSyncTo
                             .Model
@@ -132,6 +130,7 @@ namespace Bit.ViewModel.Implementations
 
                         var mostRecentOfflineDto = await offlineSet
                             .IgnoreQueryFilters()
+                            .AsNoTracking()
                             .Select(e => new { e.Version })
                             .OrderByDescending(e => e.Version)
                             .FirstOrDefaultAsync(cancellationToken)
@@ -139,13 +138,16 @@ namespace Bit.ViewModel.Implementations
 
                         long maxVersion = mostRecentOfflineDto?.Version ?? 0;
 
-                        onlineBatchContext += async c => recentlyChangedOnlineDtos.Add(new DtoSyncConfigSyncFromResults
+                        DtoSyncConfigSyncFromResults dtoSyncConfigSyncFromResults = new DtoSyncConfigSyncFromResults
                         {
                             DtoSetSyncConfig = fromServerSyncConfig,
-                            RecentlyChangedOnlineDtos = CreateSyncableDtoInstancesFromUnTypedODataResponse(offlineSet.ElementType.GetTypeInfo(), (await (fromServerSyncConfig.OnlineDtoSetForGet ?? fromServerSyncConfig.OnlineDtoSet)(c).Where($"Version gt {maxVersion}").FindEntriesAsync(cancellationToken).ConfigureAwait(false)).ToList()),
                             DtoType = offlineSet.ElementType.GetTypeInfo(),
                             HadOfflineDtoBefore = mostRecentOfflineDto != null
-                        });
+                        };
+
+                        recentlyChangedOnlineDtos.Add(dtoSyncConfigSyncFromResults);
+
+                        onlineBatchContext += async c => CreateSyncableDtoInstancesFromUnTypedODataResponse(dtoSyncConfigSyncFromResults, (await (fromServerSyncConfig.OnlineDtoSetForGet ?? fromServerSyncConfig.OnlineDtoSet)(c).Where($"Version gt {maxVersion}").FindEntriesAsync(cancellationToken).ConfigureAwait(false)).ToList());
                     }
 
                     await onlineBatchContext.ExecuteAsync(cancellationToken).ConfigureAwait(false);
@@ -181,7 +183,12 @@ namespace Bit.ViewModel.Implementations
 
                             }));
 
-                            List<ISyncableDto> equivalentOfflineDtos = await offlineSet.Where(equivalentOfflineDtosQuery, equivalentOfflineDtosParams.ToArray()).IgnoreQueryFilters().ToListAsync(cancellationToken).ConfigureAwait(false);
+                            List<ISyncableDto> equivalentOfflineDtos = await offlineSet
+                                .Where(equivalentOfflineDtosQuery, equivalentOfflineDtosParams.ToArray())
+                                .IgnoreQueryFilters()
+                                .AsNoTracking()
+                                .ToListAsync(cancellationToken)
+                                .ConfigureAwait(false);
 
                             foreach (ISyncableDto recentlyChangedOnlineDto in result.RecentlyChangedOnlineDtos)
                             {
@@ -222,12 +229,12 @@ namespace Bit.ViewModel.Implementations
             public List<ISyncableDto> RecentlyChangedOnlineDtos { get; set; }
         }
 
-        protected List<ISyncableDto> CreateSyncableDtoInstancesFromUnTypedODataResponse(TypeInfo dtoType, List<IDictionary<string, object>> untypedDtos)
+        protected List<ISyncableDto> CreateSyncableDtoInstancesFromUnTypedODataResponse(DtoSyncConfigSyncFromResults dtoSyncConfigSyncFromResults, List<IDictionary<string, object>> untypedDtos)
         {
-            return untypedDtos
-                .Select(unTypedDto => unTypedDto.ToDto(dtoType))
-                .Cast<ISyncableDto>()
-                .ToList();
+            return dtoSyncConfigSyncFromResults.RecentlyChangedOnlineDtos = untypedDtos
+                 .Select(unTypedDto => unTypedDto.ToDto(dtoSyncConfigSyncFromResults.DtoType))
+                 .Cast<ISyncableDto>()
+                 .ToList();
         }
 
         public virtual void AddDtoSetSyncConfig(DtoSetSyncConfig dtoSetSyncConfig)
