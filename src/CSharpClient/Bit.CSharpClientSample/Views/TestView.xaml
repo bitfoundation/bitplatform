@@ -4,7 +4,9 @@
     xmlns="http://xamarin.com/schemas/2014/forms"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     xmlns:animations="clr-namespace:Rg.Plugins.Popup.Animations;assembly=Rg.Plugins.Popup"
-    xmlns:pages="clr-namespace:Rg.Plugins.Popup.Pages;assembly=Rg.Plugins.Popup">
+    xmlns:pages="clr-namespace:Rg.Plugins.Popup.Pages;assembly=Rg.Plugins.Popup"
+    xmlns:vm="clr-namespace:Bit.CSharpClientSample.ViewModels"
+    x:DataType="vm:TestViewModel">
     <pages:PopupPage.Animation>
         <animations:MoveAnimation PositionOut="Right" />
     </pages:PopupPage.Animation>

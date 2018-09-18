@@ -3,17 +3,21 @@
     x:Class="Bit.CSharpClientSample.Views.MainView"
     xmlns="http://xamarin.com/schemas/2014/forms"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-    xmlns:view="clr-namespace:Bit.View;assembly=Bit.CSharpClient.All"
-    Title="Test">
-    <view:BitNavigationPage.NavBar>
+    xmlns:vm="clr-namespace:Bit.CSharpClientSample.ViewModels"
+    x:Name="Main"
+    x:DataType="vm:MainViewModel">
+    <NavigationPage.TitleView>
         <Grid BackgroundColor="White">
+            <Grid.BindingContext>
+                <Binding Path="BindingContext" Source="{x:Reference Main}" />
+            </Grid.BindingContext>
             <Label Text="This is a label in navbar for show popup">
                 <Label.GestureRecognizers>
                     <TapGestureRecognizer Command="{Binding ShowPopup}" />
                 </Label.GestureRecognizers>
             </Label>
         </Grid>
-    </view:BitNavigationPage.NavBar>
+    </NavigationPage.TitleView>
     <StackLayout>
         <Button Command="{Binding Sync}" Text="Sync" />
         <Button Command="{Binding SendHttpRequest}" Text="Send http request" />
