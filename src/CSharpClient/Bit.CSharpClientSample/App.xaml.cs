@@ -4,7 +4,6 @@ using Bit.CSharpClientSample.ViewModels;
 using Bit.CSharpClientSample.Views;
 using Bit.Model.Events;
 using Bit.Tests.Model.Dto;
-using Bit.View;
 using Bit.ViewModel.Contracts;
 using Bit.ViewModel.Implementations;
 using Prism;
@@ -13,6 +12,7 @@ using Prism.Events;
 using Prism.Ioc;
 using System;
 using System.Threading.Tasks;
+using Xamarin.Forms;
 using Xamarin.Forms.Xaml;
 
 [assembly: XamlCompilation(XamlCompilationOptions.Compile)]
@@ -52,7 +52,7 @@ namespace Bit.CSharpClientSample
 
         protected override void RegisterTypes(IContainerRegistry containerRegistry)
         {
-            containerRegistry.RegisterForNavigation<BitNavigationPage>("Nav");
+            containerRegistry.RegisterForNavigation<NavigationPage>("Nav");
 
             containerRegistry.RegisterForNavigation<LoginView, LoginViewModel>("Login");
             containerRegistry.RegisterForNavigation<MainView, MainViewModel>("Main");
