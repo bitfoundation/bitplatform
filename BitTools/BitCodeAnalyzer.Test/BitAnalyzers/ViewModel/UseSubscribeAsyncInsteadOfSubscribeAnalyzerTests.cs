@@ -1,5 +1,6 @@
 ﻿using BitCodeAnalyzer.BitAnalyzers.ViewModel;
 using BitCodeAnalyzer.Test.Helpers;
+using Microsoft.Build.Locator;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.CodeAnalysis.MSBuild;
@@ -42,6 +43,9 @@ namespace BitCodeAnalyzer.Test.BitAnalyzers.ViewModel
 
         public override async Task<Project> CreateProject(string[] sources, string language = LanguageNames.CSharp)
         {
+            if (!MSBuildLocator.IsRegistered)
+                MSBuildLocator.RegisterDefaults();
+
             MSBuildWorkspace workspace = MSBuildWorkspace.Create(new Dictionary<string, string>()
             {
                 { "TargetFramework", "net461" }

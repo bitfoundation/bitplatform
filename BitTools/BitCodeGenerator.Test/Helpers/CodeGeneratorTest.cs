@@ -1,8 +1,10 @@
-﻿using Microsoft.CodeAnalysis;
+﻿using Microsoft.Build.Locator;
+using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.MSBuild;
 using Microsoft.CodeAnalysis.Text;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -47,6 +49,9 @@ namespace BitCodeGenerator.Test.Helpers
         {
             string solutionPath = Path.Combine(Environment.CurrentDirectory, @"..\..\..\..\..\Bit.sln");
 
+            if (!MSBuildLocator.IsRegistered)
+                MSBuildLocator.RegisterDefaults();
+
             MSBuildWorkspace workspace = MSBuildWorkspace.Create(new Dictionary<string, string>()
             {
                 { "TargetFramework", "net461" }
@@ -62,7 +67,7 @@ namespace BitCodeGenerator.Test.Helpers
         private void Workspace_WorkspaceFailed(object sender, WorkspaceDiagnosticEventArgs e)
         {
             if (e.Diagnostic.Kind == WorkspaceDiagnosticKind.Failure)
-                throw new InvalidOperationException(e.Diagnostic.Message);
+                Debug.WriteLine(e.Diagnostic.Message);
         }
     }
 }
