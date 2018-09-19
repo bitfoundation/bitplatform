@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Linq;
 using System.Reflection;
 using Xamarin.Forms;
 using Xamarin.Forms.Xaml;
@@ -12,15 +11,22 @@ namespace Bit.View
     {
         private static readonly FieldInfo _objectAndParentsField = typeof(SimpleValueTargetProvider).GetField("objectAndParents", BindingFlags.NonPublic | BindingFlags.Instance);
 
+        public Type ParentType { get; set; } = typeof(Page);
+
         protected override object GetSource(IServiceProvider serviceProvider)
         {
+            if (ParentType == null)
+                throw new InvalidOperationException($"{nameof(ParentType)} may not be null");
+
             SimpleValueTargetProvider providedValueTarget = (SimpleValueTargetProvider)serviceProvider.GetService<IReferenceProvider>();
 
-            Page parentPage = ((object[])_objectAndParentsField.GetValue(providedValueTarget))
-                .OfType<Page>()
-                .LastOrDefault();
+            foreach (object parent in (object[])_objectAndParentsField.GetValue(providedValueTarget))
+            {
+                if (ParentType.IsAssignableFrom(parent.GetType()))
+                    return parent;
+            }
 
-            return parentPage;
+            return null;
         }
     }
 }
