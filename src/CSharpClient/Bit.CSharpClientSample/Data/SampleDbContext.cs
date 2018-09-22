@@ -10,18 +10,13 @@ namespace Bit.CSharpClientSample.Data
 {
     public class SampleDbContext : EfCoreDbContextBase
     {
-        private readonly IDeviceService _deviceService;
-
-        public SampleDbContext(IDeviceService deviceService)
-        {
-            _deviceService = deviceService;
-        }
+        public IDeviceService DeviceService { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
             string dbFileName = "Sample.db";
 
-            if (_deviceService.RuntimePlatform != RuntimePlatform.UWP)
+            if (DeviceService.RuntimePlatform != RuntimePlatform.UWP)
                 dbFileName = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Personal), dbFileName);
 
             optionsBuilder.UseSqlite($"Filename={dbFileName}");

@@ -52,6 +52,8 @@ namespace Bit.CSharpClientSample
 
         protected override void RegisterTypes(IContainerRegistry containerRegistry)
         {
+            ContainerBuilder containerBuilder = containerRegistry.GetBuilder();
+
             containerRegistry.RegisterForNavigation<NavigationPage>("Nav");
 
             containerRegistry.RegisterForNavigation<LoginView, LoginViewModel>("Login");
@@ -68,16 +70,16 @@ namespace Bit.CSharpClientSample
                 ODataRoute = "odata/Test/"
             }).SingleInstance();
 
-            containerRegistry.RegisterRequiredServices();
-            containerRegistry.RegisterHttpClient();
-            containerRegistry.RegisterODataClient();
-            containerRegistry.RegisterIdentityClient();
+            containerBuilder.RegisterRequiredServices();
+            containerBuilder.RegisterHttpClient();
+            containerBuilder.RegisterODataClient();
+            containerBuilder.RegisterIdentityClient();
 
-            containerRegistry.Register<SampleDbContext>();
+            containerBuilder.RegisterDbContext<SampleDbContext>();
 
             containerRegistry.GetBuilder().Register(c =>
             {
-                ISyncService syncService = new DefaultSyncService<SampleDbContext>(c.Resolve<IContainerProvider>());
+                ISyncService syncService = new DefaultSyncService<SampleDbContext>(c.Resolve<IContainer>());
 
                 syncService.AddDtoSetSyncConfig(new DtoSetSyncConfig
                 {

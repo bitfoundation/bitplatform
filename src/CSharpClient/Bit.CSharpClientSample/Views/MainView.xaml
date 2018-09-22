@@ -7,20 +7,20 @@
     xmlns:vm="clr-namespace:Bit.CSharpClientSample.ViewModels"
     x:Name="Main"
     x:DataType="vm:MainViewModel">
-    <NavigationPage.TitleView>
-        <Grid BackgroundColor="White" BindingContext="{bitView:ViewModelBinding}">
-            <Label Text="This is a label in navbar for show popup">
-                <Label.GestureRecognizers>
-                    <TapGestureRecognizer Command="{Binding ShowPopup}" />
-                </Label.GestureRecognizers>
-            </Label>
-        </Grid>
-    </NavigationPage.TitleView>
-    <StackLayout>
-        <Button Command="{Binding Sync}" Text="Sync" />
-        <Button Command="{Binding SendHttpRequest}" Text="Send http request" />
-        <Button Command="{Binding SendODataRequest}" Text="Send OData request" />
-        <Button Command="{Binding Logout}" Text="Logout" />
-        <Button Command="{Binding ShowPopup}" Text="Show popup" />
-    </StackLayout>
+  <NavigationPage.TitleView>
+    <Grid BackgroundColor="White" BindingContext="{bitView:ViewModelBinding}">
+      <Label Text="This is a label in navbar for show popup">
+        <Label.GestureRecognizers>
+          <TapGestureRecognizer Command="{Binding ShowPopupCommand}" />
+        </Label.GestureRecognizers>
+      </Label>
+    </Grid>
+  </NavigationPage.TitleView>
+  <StackLayout>
+    <Button Command="{Binding SyncCommand}" Text="Sync" />
+    <Button Command="{Binding SendHttpRequestCommand}" Text="Send http request" />
+    <Button Command="{Binding SendODataRequestCommand}" Text="Send OData request" />
+    <Button Command="{Binding LogoutCommand}" Text="Logout" />
+    <Button Command="{Binding ShowPopupCommand}" Text="Show popup" />
+  </StackLayout>
 </ContentPage>

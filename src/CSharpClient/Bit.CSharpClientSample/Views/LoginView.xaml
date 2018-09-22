@@ -6,55 +6,55 @@
     xmlns:view="clr-namespace:Bit.View;assembly=Bit.CSharpClient.All"
     xmlns:vm="clr-namespace:Bit.CSharpClientSample.ViewModels"
     x:DataType="vm:LoginViewModel">
-    <ContentPage.Behaviors>
-        <view:AdaptiveBehavior Orientation="Portrait">
-            <view:SetPropertyAction Property="BackgroundColor" Value="LightGreen" />
-            <view:SetPropertyAction
-                TargetElement="{x:Reference Test}"
-                Property="BackgroundColor"
-                Value="LightGreen" />
-        </view:AdaptiveBehavior>
-        <view:AdaptiveBehavior Orientation="Landscape">
-            <view:SetPropertyAction Property="BackgroundColor" Value="LightBlue" />
-            <view:SetPropertyAction
-                TargetElement="{x:Reference Test}"
-                Property="BackgroundColor"
-                Value="LightBlue" />
-        </view:AdaptiveBehavior>
-        <view:AdaptiveBehavior MinWidth="600" MaxWidth="800">
-            <view:SetPropertyAction
-                TargetElement="{x:Reference Test}"
-                Property="IsVisible"
-                Value="True" />
-        </view:AdaptiveBehavior>
-        <view:AdaptiveBehavior MinWidth="800" MaxWidth="1000">
-            <view:SetPropertyAction
-                TargetElement="{x:Reference Test}"
-                Property="IsVisible"
-                Value="True" />
-        </view:AdaptiveBehavior>
-        <view:AdaptiveBehavior MinWidth="1000" MaxWidth="1200">
-            <view:SetPropertyAction
-                TargetElement="{x:Reference Test}"
-                Property="IsVisible"
-                Value="True" />
-        </view:AdaptiveBehavior>
-        <view:AdaptiveBehavior MinWidth="1200">
-            <view:SetPropertyAction
-                TargetElement="{x:Reference Test}"
-                Property="IsVisible"
-                Value="False" />
-        </view:AdaptiveBehavior>
-    </ContentPage.Behaviors>
-    <StackLayout>
-        <Entry Text="{Binding UserName}" />
-        <Entry Text="{Binding Password}" />
-        <Button Command="{Binding LoginUsingCredentials}" Text="Login using credentials" />
-        <Button Command="{Binding LoginUsingBrowser}" Text="Login using Browser" />
-        <Button Command="{Binding LoginUsingGooglePlus}" Text="Login using Google" />
-        <Button Command="{Binding Skip}" Text="Skip" />
+  <ContentPage.Behaviors>
+    <view:AdaptiveBehavior Orientation="Portrait">
+      <view:SetPropertyAction Property="BackgroundColor" Value="LightGreen" />
+      <view:SetPropertyAction
+          TargetElement="{x:Reference Test}"
+          Property="BackgroundColor"
+          Value="LightGreen" />
+    </view:AdaptiveBehavior>
+    <view:AdaptiveBehavior Orientation="Landscape">
+      <view:SetPropertyAction Property="BackgroundColor" Value="LightBlue" />
+      <view:SetPropertyAction
+          TargetElement="{x:Reference Test}"
+          Property="BackgroundColor"
+          Value="LightBlue" />
+    </view:AdaptiveBehavior>
+    <view:AdaptiveBehavior MinWidth="600" MaxWidth="800">
+      <view:SetPropertyAction
+          TargetElement="{x:Reference Test}"
+          Property="IsVisible"
+          Value="True" />
+    </view:AdaptiveBehavior>
+    <view:AdaptiveBehavior MinWidth="800" MaxWidth="1000">
+      <view:SetPropertyAction
+          TargetElement="{x:Reference Test}"
+          Property="IsVisible"
+          Value="True" />
+    </view:AdaptiveBehavior>
+    <view:AdaptiveBehavior MinWidth="1000" MaxWidth="1200">
+      <view:SetPropertyAction
+          TargetElement="{x:Reference Test}"
+          Property="IsVisible"
+          Value="True" />
+    </view:AdaptiveBehavior>
+    <view:AdaptiveBehavior MinWidth="1200">
+      <view:SetPropertyAction
+          TargetElement="{x:Reference Test}"
+          Property="IsVisible"
+          Value="False" />
+    </view:AdaptiveBehavior>
+  </ContentPage.Behaviors>
+  <StackLayout>
+    <Entry Text="{Binding UserName}" />
+    <Entry Text="{Binding Password}" />
+    <Button Command="{Binding LoginUsingCredentialsCommand}" Text="Login using credentials" />
+    <Button Command="{Binding LoginUsingBrowserCommand}" Text="Login using Browser" />
+    <Button Command="{Binding LoginUsingGooglePlusCommand}" Text="Login using Google" />
+    <Button Command="{Binding SkipCommand}" Text="Skip" />
 
-        <Button x:Name="Test" Text="UI Tests" />
+    <Button x:Name="Test" Text="UI Tests" />
 
-    </StackLayout>
+  </StackLayout>
 </ContentPage>

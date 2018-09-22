@@ -2,7 +2,6 @@
 using Bit.ViewModel.Contracts;
 using IdentityModel.Client;
 using Newtonsoft.Json;
-using Prism.Autofac;
 using Prism.Ioc;
 using System;
 using System.Collections.Generic;
@@ -19,17 +18,17 @@ namespace Bit.ViewModel.Implementations
 
         public DefaultSecurityService(IClientAppProfile clientAppProfile,
             IDateTimeProvider dateTimeProvider,
-            IContainerProvider containerProvider)
+            IContainer container)
         {
             _clientAppProfile = clientAppProfile;
             _dateTimeProvider = dateTimeProvider;
-            _containerProvider = containerProvider;
+            _container = container;
             Current = this;
         }
 
         private readonly IClientAppProfile _clientAppProfile;
         private readonly IDateTimeProvider _dateTimeProvider;
-        private readonly IContainerProvider _containerProvider;
+        private readonly IContainer _container;
 
         protected TaskCompletionSource<Token> CurrentLoginTaskCompletionSource { get; set; }
         protected string CurrentAction { get; set; }
@@ -52,7 +51,7 @@ namespace Bit.ViewModel.Implementations
             if (scopes == null)
                 scopes = "openid profile user_info".Split(' ');
 
-            TokenClient tokenClient = _containerProvider.GetContainer().Resolve<TokenClient>(new NamedParameter("clientId", client_id), new NamedParameter("secret", client_secret));
+            TokenClient tokenClient = _container.Resolve<TokenClient>(new NamedParameter("clientId", client_id), new NamedParameter("secret", client_secret));
 
             TokenResponse tokenResponse = await tokenClient.RequestResourceOwnerPasswordAsync(username, password, scope: string.Join(" ", scopes), cancellationToken: cancellationToken).ConfigureAwait(false);
 

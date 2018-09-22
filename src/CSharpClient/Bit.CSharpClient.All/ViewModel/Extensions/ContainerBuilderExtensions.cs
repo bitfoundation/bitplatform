@@ -1,35 +1,32 @@
 ﻿using Autofac;
+using Bit.Data;
 using Bit.ViewModel.Contracts;
 using Bit.ViewModel.Implementations;
 using IdentityModel.Client;
-using Prism.Autofac;
 using Prism.Events;
 using Simple.OData.Client;
 using System;
 using System.Net.Http;
+using System.Reflection;
 
 namespace Prism.Ioc
 {
-    public static class IContainerRegistryExtensions
+    public static class ContainerBuilderExtensions
     {
-        public static IContainerRegistry RegisterRequiredServices(this IContainerRegistry containerRegistry)
+        public static ContainerBuilder RegisterRequiredServices(this ContainerBuilder containerBuilder)
         {
-            if (containerRegistry == null)
-                throw new ArgumentNullException(nameof(containerRegistry));
-
-            ContainerBuilder containerBuilder = containerRegistry.GetBuilder();
+            if (containerBuilder == null)
+                throw new ArgumentNullException(nameof(containerBuilder));
 
             containerBuilder.RegisterType<DefaultDateTimeProvider>().As<IDateTimeProvider>().SingleInstance().PreserveExistingDefaults();
 
-            return containerRegistry;
+            return containerBuilder;
         }
 
-        public static IContainerRegistry RegisterIdentityClient(this IContainerRegistry containerRegistry)
+        public static ContainerBuilder RegisterIdentityClient(this ContainerBuilder containerBuilder)
         {
-            if (containerRegistry == null)
-                throw new ArgumentNullException(nameof(containerRegistry));
-
-            ContainerBuilder containerBuilder = containerRegistry.GetBuilder();
+            if (containerBuilder == null)
+                throw new ArgumentNullException(nameof(containerBuilder));
 
             containerBuilder.RegisterType<DefaultSecurityService>().As<ISecurityService>().SingleInstance().PreserveExistingDefaults();
 
@@ -38,16 +35,14 @@ namespace Prism.Ioc
                 return new TokenClient(address: new Uri(c.Resolve<IClientAppProfile>().HostUri, "core/connect/token").ToString(), clientId: parameters.Named<string>("clientId"), clientSecret: parameters.Named<string>("secret"), innerHttpMessageHandler: c.ResolveNamed<HttpMessageHandler>(ContractKeys.DefaultHttpMessageHandler));
             }).PreserveExistingDefaults();
 
-            return containerRegistry;
+            return containerBuilder;
         }
 
-        public static IContainerRegistry RegisterHttpClient<THttpMessageHandler>(this IContainerRegistry containerRegistry)
+        public static ContainerBuilder RegisterHttpClient<THttpMessageHandler>(this ContainerBuilder containerBuilder)
             where THttpMessageHandler : HttpMessageHandler, new()
         {
-            if (containerRegistry == null)
-                throw new ArgumentNullException(nameof(containerRegistry));
-
-            ContainerBuilder containerBuilder = containerRegistry.GetBuilder();
+            if (containerBuilder == null)
+                throw new ArgumentNullException(nameof(containerBuilder));
 
             containerBuilder
                 .RegisterType<THttpMessageHandler>()
@@ -71,25 +66,23 @@ namespace Prism.Ioc
             }).SingleInstance()
             .PreserveExistingDefaults();
 
-            return containerRegistry;
+            return containerBuilder;
         }
 
-        public static IContainerRegistry RegisterHttpClient(this IContainerRegistry containerRegistry)
+        public static ContainerBuilder RegisterHttpClient(this ContainerBuilder containerBuilder)
         {
-            if (containerRegistry == null)
-                throw new ArgumentNullException(nameof(containerRegistry));
+            if (containerBuilder == null)
+                throw new ArgumentNullException(nameof(containerBuilder));
 
-            return RegisterHttpClient<BitHttpClientHandler>(containerRegistry);
+            return RegisterHttpClient<BitHttpClientHandler>(containerBuilder);
         }
 
-        public static IContainerRegistry RegisterODataClient(this IContainerRegistry containerRegistry)
+        public static ContainerBuilder RegisterODataClient(this ContainerBuilder containerBuilder)
         {
-            if (containerRegistry == null)
-                throw new ArgumentNullException(nameof(containerRegistry));
+            if (containerBuilder == null)
+                throw new ArgumentNullException(nameof(containerBuilder));
 
             Simple.OData.Client.V4Adapter.Reference();
-
-            ContainerBuilder containerBuilder = containerRegistry.GetBuilder();
 
             containerBuilder.Register(c =>
             {
@@ -110,7 +103,21 @@ namespace Prism.Ioc
                 .Register(c => new ODataBatch(c.Resolve<IODataClient>(), reuseSession: true))
                 .PreserveExistingDefaults();
 
-            return containerRegistry;
+            return containerBuilder;
+        }
+
+        public static ContainerBuilder RegisterDbContext<TDbContext>(this ContainerBuilder containerBuilder)
+            where TDbContext : EfCoreDbContextBase
+        {
+            if (containerBuilder == null)
+                throw new ArgumentNullException(nameof(containerBuilder));
+
+            containerBuilder
+                .RegisterType<TDbContext>()
+                .As(new[] { typeof(EfCoreDbContextBase).GetTypeInfo(), typeof(TDbContext).GetTypeInfo() })
+                .PropertiesAutowired(PropertyWiringOptions.PreserveSetValues);
+
+            return containerBuilder;
         }
     }
 }

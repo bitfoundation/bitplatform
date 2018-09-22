@@ -8,91 +8,96 @@ using Prism.Navigation;
 using Simple.OData.Client;
 using System;
 using System.Net.Http;
+using System.Threading.Tasks;
 
 namespace Bit.CSharpClientSample.ViewModels
 {
     public class MainViewModel : BitViewModelBase
     {
-        public BitDelegateCommand Sync { get; set; }
+        public SampleDbContext DbContext { get; set; }
+        public ISyncService SyncService { get; set; }
+        public IODataClient ODataClient { get; set; }
+        public HttpClient HttpClient { get; set; }
+        public ISecurityService SecurityService { get; set; }
+        public INavigationService NavigationService { get; set; }
 
-        public BitDelegateCommand SendHttpRequest { get; set; }
+        public BitDelegateCommand SyncCommand { get; set; }
+        public BitDelegateCommand SendHttpRequestCommand { get; set; }
+        public BitDelegateCommand SendODataRequestCommand { get; set; }
+        public BitDelegateCommand LogoutCommand { get; set; }
+        public BitDelegateCommand ShowPopupCommand { get; set; }
 
-        public BitDelegateCommand SendODataRequest { get; set; }
-
-        public BitDelegateCommand Logout { get; set; }
-
-        public BitDelegateCommand ShowPopup { get; set; }
-
-        public MainViewModel(INavigationService navigationService,
-            SampleDbContext dbContext,
-            ISyncService syncService,
-            IODataClient oDataClient,
-            HttpClient httpClient,
-            ISecurityService securityService)
+        public MainViewModel()
         {
-            SendHttpRequest = new BitDelegateCommand(async () =>
+            SyncCommand = new BitDelegateCommand(Sync);
+            SendHttpRequestCommand = new BitDelegateCommand(SendHttpRequest);
+            SendODataRequestCommand = new BitDelegateCommand(SendODataRequest);
+            LogoutCommand = new BitDelegateCommand(Logout);
+            ShowPopupCommand = new BitDelegateCommand(ShowPopup);
+        }
+
+        async Task Sync()
+        {
+            await DbContext.Database.EnsureDeletedAsync();
+            await DbContext.Database.EnsureCreatedAsync();
+
+            await ODataClient.For<TestCustomerDto>("TestCustomers")
+                 .Set(new TestCustomerDto { Id = Guid.NewGuid(), Name = "A1", CityId = Guid.Parse("EF529174-C497-408B-BB4D-C31C205D46BB"), Kind = TestCustomerKind.Type1 })
+                 .InsertEntryAsync();
+
+            await ODataClient.For<TestCustomerDto>("TestCustomers")
+                .Set(new TestCustomerDto { Id = Guid.NewGuid(), Name = "A2", CityId = Guid.Parse("EF529174-C497-408B-BB4D-C31C205D46BB"), Kind = TestCustomerKind.Type1 })
+                .InsertEntryAsync();
+
+            await SyncService.SyncContext();
+
+            TestCustomerDto customer = await DbContext.TestCustomers.FirstAsync();
+            customer.Name += "?";
+            DbContext.Update(customer);
+            await DbContext.SaveChangesAsync();
+
+            await ODataClient.For<TestCustomerDto>("TestCustomers")
+                 .Set(new TestCustomerDto { Id = Guid.NewGuid(), Name = "A3", CityId = Guid.Parse("EF529174-C497-408B-BB4D-C31C205D46BB"), Kind = TestCustomerKind.Type1 })
+                 .InsertEntryAsync();
+
+            await ODataClient.For<TestCustomerDto>("TestCustomers")
+                .Set(new TestCustomerDto { Id = Guid.NewGuid(), Name = "A4", CityId = Guid.Parse("EF529174-C497-408B-BB4D-C31C205D46BB"), Kind = TestCustomerKind.Type1 })
+                .InsertEntryAsync();
+
+            await SyncService.SyncContext();
+
+            await DbContext.Entry(customer).ReloadAsync();
+
+            DbContext.Remove(customer);
+
+            await DbContext.SaveChangesAsync();
+
+            await SyncService.SyncContext();
+        }
+
+        async Task SendHttpRequest()
+        {
+            using (HttpResponseMessage response = await HttpClient.GetAsync("odata/Test/parentEntities"))
             {
-                using (HttpResponseMessage response = await httpClient.GetAsync("odata/Test/parentEntities"))
-                {
-                }
-            });
+            }
+        }
 
-            SendODataRequest = new BitDelegateCommand(async () =>
-            {
-                var result = await oDataClient.For("ParentEntities").FindEntriesAsync();
-                var result2 = await oDataClient.For<TestComplexDto>("TestComplex")
-                    .FindEntriesAsync();
-            });
+        async Task SendODataRequest()
+        {
+            var result = await ODataClient.For("ParentEntities").FindEntriesAsync();
+            var result2 = await ODataClient.For<TestComplexDto>("TestComplex")
+                .FindEntriesAsync();
+        }
 
-            Logout = new BitDelegateCommand(async () =>
-            {
-                await securityService.Logout();
-                await navigationService.NavigateAsync("/Login");
-            });
+        async Task Logout()
+        {
+            await SecurityService.Logout();
+            await NavigationService.NavigateAsync("/Login");
+        }
 
-            ShowPopup = new BitDelegateCommand(async () =>
-            {
-                await navigationService.NavigateAsync("Test", new NavigationParameters { { "Test", "Test" } });
-            });
-
-            Sync = new BitDelegateCommand(async () =>
-            {
-                await dbContext.Database.EnsureDeletedAsync();
-                await dbContext.Database.EnsureCreatedAsync();
-
-                await oDataClient.For<TestCustomerDto>("TestCustomers")
-                     .Set(new TestCustomerDto { Id = Guid.NewGuid(), Name = "A1", CityId = Guid.Parse("EF529174-C497-408B-BB4D-C31C205D46BB"), Kind = TestCustomerKind.Type1 })
-                     .InsertEntryAsync();
-
-                await oDataClient.For<TestCustomerDto>("TestCustomers")
-                    .Set(new TestCustomerDto { Id = Guid.NewGuid(), Name = "A2", CityId = Guid.Parse("EF529174-C497-408B-BB4D-C31C205D46BB"), Kind = TestCustomerKind.Type1 })
-                    .InsertEntryAsync();
-
-                await syncService.SyncContext();
-
-                TestCustomerDto customer = await dbContext.TestCustomers.FirstAsync();
-                customer.Name += "?";
-                dbContext.Update(customer);
-                await dbContext.SaveChangesAsync();
-
-                await oDataClient.For<TestCustomerDto>("TestCustomers")
-                     .Set(new TestCustomerDto { Id = Guid.NewGuid(), Name = "A3", CityId = Guid.Parse("EF529174-C497-408B-BB4D-C31C205D46BB"), Kind = TestCustomerKind.Type1 })
-                     .InsertEntryAsync();
-
-                await oDataClient.For<TestCustomerDto>("TestCustomers")
-                    .Set(new TestCustomerDto { Id = Guid.NewGuid(), Name = "A4", CityId = Guid.Parse("EF529174-C497-408B-BB4D-C31C205D46BB"), Kind = TestCustomerKind.Type1 })
-                    .InsertEntryAsync();
-
-                await syncService.SyncContext();
-
-                await dbContext.Entry(customer).ReloadAsync();
-
-                dbContext.Remove(customer);
-
-                await dbContext.SaveChangesAsync();
-
-                await syncService.SyncContext();
-            });
+        async Task ShowPopup()
+        {
+            await NavigationService.NavigateAsync("Test", new NavigationParameters { { "Test", "Test" } });
         }
     }
 }

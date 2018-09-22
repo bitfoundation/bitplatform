@@ -101,7 +101,22 @@ namespace Bit
 
         protected override void RegisterTypes(IContainerRegistry containerRegistry)
         {
-            containerRegistry.GetBuilder().Register<IContainerProvider>(c => Container).SingleInstance().PreserveExistingDefaults();
+            ContainerBuilder containerBuilder = containerRegistry.GetBuilder();
+
+            containerBuilder.RegisterCallback(componentRegistry =>
+            {
+                componentRegistry.Registered += (_, registeredArgs) =>
+                {
+                    registeredArgs.ComponentRegistration.Activated += (__, activatedArgs) =>
+                    {
+                        if (activatedArgs.Instance is BitViewModelBase)
+                            activatedArgs.Context.InjectUnsetProperties(activatedArgs.Instance, activatedArgs.Parameters);
+                    };
+                };
+            });
+
+            containerBuilder.Register(c => Container).SingleInstance().PreserveExistingDefaults();
+            containerBuilder.Register(c => Container.GetContainer()).PreserveExistingDefaults();
             containerRegistry.RegisterPopupNavigationService();
         }
     }

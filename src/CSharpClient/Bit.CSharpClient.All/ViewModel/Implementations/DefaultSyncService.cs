@@ -1,4 +1,5 @@
-﻿using Bit.Data;
+﻿using Autofac;
+using Bit.Data;
 using Bit.Model.Contracts;
 using Bit.ViewModel.Contracts;
 using Microsoft.EntityFrameworkCore;
@@ -18,11 +19,11 @@ namespace Bit.ViewModel.Implementations
     public class DefaultSyncService<TDbContext> : ISyncService
         where TDbContext : EfCoreDbContextBase
     {
-        public DefaultSyncService(IContainerProvider containerProvider)
-            : this(containerProvider.Resolve<TDbContext>, containerProvider.Resolve<ODataBatch>)
+        public DefaultSyncService(IContainer container)
+            : this(container.Resolve<TDbContext>, container.Resolve<ODataBatch>)
         {
-            if (containerProvider == null)
-                throw new ArgumentNullException(nameof(containerProvider));
+            if (container == null)
+                throw new ArgumentNullException(nameof(container));
         }
 
         public DefaultSyncService(Func<TDbContext> dbContextProvider, Func<ODataBatch> oDataBatchProvider)

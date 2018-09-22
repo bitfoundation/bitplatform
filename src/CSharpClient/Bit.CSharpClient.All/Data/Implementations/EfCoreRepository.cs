@@ -14,14 +14,19 @@ namespace Bit.Data.Implementations
     public class EfCoreRepository<TDto> : IRepository<TDto>
            where TDto : class, IDto
     {
-        private readonly EfCoreDbContextBase _dbContext;
-        private readonly DbSet<TDto> _set;
+        private EfCoreDbContextBase _DbContext;
 
-        public EfCoreRepository(EfCoreDbContextBase dbContext)
+        public virtual EfCoreDbContextBase DbContext
         {
-            _dbContext = dbContext;
-            _set = _dbContext.Set<TDto>();
+            get => _DbContext;
+            set
+            {
+                _DbContext = value;
+                Set = _DbContext.Set<TDto>();
+            }
         }
+
+        public virtual DbSet<TDto> Set { get; protected set; }
 
         public virtual async Task<TDto> AddAsync(TDto dtoToAdd, CancellationToken cancellationToken = default)
         {
@@ -30,7 +35,7 @@ namespace Bit.Data.Implementations
 
             try
             {
-                await _dbContext.AddAsync(dtoToAdd, cancellationToken).ConfigureAwait(false);
+                await DbContext.AddAsync(dtoToAdd, cancellationToken).ConfigureAwait(false);
 
                 await SaveChangesAsync(cancellationToken).ConfigureAwait(false);
 
@@ -38,7 +43,7 @@ namespace Bit.Data.Implementations
             }
             finally
             {
-                if (_dbContext.ChangeTrackingEnabled() == false)
+                if (DbContext.ChangeTrackingEnabled() == false)
                     Detach(dtoToAdd);
             }
         }
@@ -52,7 +57,7 @@ namespace Bit.Data.Implementations
 
             try
             {
-                await _dbContext.AddRangeAsync(dtosToAddList, cancellationToken).ConfigureAwait(false);
+                await DbContext.AddRangeAsync(dtosToAddList, cancellationToken).ConfigureAwait(false);
 
                 await SaveChangesAsync(cancellationToken).ConfigureAwait(false);
 
@@ -60,7 +65,7 @@ namespace Bit.Data.Implementations
             }
             finally
             {
-                if (_dbContext.ChangeTrackingEnabled() == false)
+                if (DbContext.ChangeTrackingEnabled() == false)
                     dtosToAddList.ForEach(Detach);
             }
         }
@@ -73,7 +78,7 @@ namespace Bit.Data.Implementations
             try
             {
                 Attach(dtoToUpdate);
-                _dbContext.Entry(dtoToUpdate).State = EntityState.Modified;
+                DbContext.Entry(dtoToUpdate).State = EntityState.Modified;
 
                 await SaveChangesAsync(cancellationToken).ConfigureAwait(false);
 
@@ -81,7 +86,7 @@ namespace Bit.Data.Implementations
             }
             finally
             {
-                if (_dbContext.ChangeTrackingEnabled() == false)
+                if (DbContext.ChangeTrackingEnabled() == false)
                     Detach(dtoToUpdate);
             }
         }
@@ -94,14 +99,14 @@ namespace Bit.Data.Implementations
             try
             {
                 Attach(dtoToDelete);
-                _dbContext.Entry(dtoToDelete).State = EntityState.Deleted;
+                DbContext.Entry(dtoToDelete).State = EntityState.Deleted;
 
                 await SaveChangesAsync(cancellationToken).ConfigureAwait(false);
                 return dtoToDelete;
             }
             finally
             {
-                if (_dbContext.ChangeTrackingEnabled() == false)
+                if (DbContext.ChangeTrackingEnabled() == false)
                     Detach(dtoToDelete);
             }
         }
@@ -113,7 +118,7 @@ namespace Bit.Data.Implementations
 
             Attach(dto);
 
-            _dbContext.Entry(dto).State = EntityState.Detached;
+            DbContext.Entry(dto).State = EntityState.Detached;
         }
 
         public virtual void Attach(TDto dto)
@@ -121,8 +126,8 @@ namespace Bit.Data.Implementations
             if (dto == null)
                 throw new ArgumentNullException(nameof(dto));
 
-            if (_dbContext.Entry(dto).State == EntityState.Detached)
-                _set.Attach(dto);
+            if (DbContext.Entry(dto).State == EntityState.Detached)
+                Set.Attach(dto);
         }
 
         public virtual TDto Add(TDto dtoToAdd)
@@ -132,7 +137,7 @@ namespace Bit.Data.Implementations
 
             try
             {
-                _dbContext.Add(dtoToAdd);
+                DbContext.Add(dtoToAdd);
 
                 SaveChanges();
 
@@ -140,7 +145,7 @@ namespace Bit.Data.Implementations
             }
             finally
             {
-                if (_dbContext.ChangeTrackingEnabled() == false)
+                if (DbContext.ChangeTrackingEnabled() == false)
                     Detach(dtoToAdd);
             }
         }
@@ -154,7 +159,7 @@ namespace Bit.Data.Implementations
 
             try
             {
-                _dbContext.AddRange(dtosToAddList);
+                DbContext.AddRange(dtosToAddList);
 
                 SaveChanges();
 
@@ -162,7 +167,7 @@ namespace Bit.Data.Implementations
             }
             finally
             {
-                if (_dbContext.ChangeTrackingEnabled() == false)
+                if (DbContext.ChangeTrackingEnabled() == false)
                     dtosToAddList.ForEach(Detach);
             }
         }
@@ -175,7 +180,7 @@ namespace Bit.Data.Implementations
             try
             {
                 Attach(dtoToUpdate);
-                _dbContext.Entry(dtoToUpdate).State = EntityState.Modified;
+                DbContext.Entry(dtoToUpdate).State = EntityState.Modified;
 
                 SaveChanges();
 
@@ -183,7 +188,7 @@ namespace Bit.Data.Implementations
             }
             finally
             {
-                if (_dbContext.ChangeTrackingEnabled() == false)
+                if (DbContext.ChangeTrackingEnabled() == false)
                     Detach(dtoToUpdate);
             }
         }
@@ -196,32 +201,32 @@ namespace Bit.Data.Implementations
             try
             {
                 Attach(dtoToDelete);
-                _dbContext.Entry(dtoToDelete).State = EntityState.Deleted;
+                DbContext.Entry(dtoToDelete).State = EntityState.Deleted;
 
                 SaveChanges();
                 return dtoToDelete;
             }
             finally
             {
-                if (_dbContext.ChangeTrackingEnabled() == false)
+                if (DbContext.ChangeTrackingEnabled() == false)
                     Detach(dtoToDelete);
             }
         }
 
         public virtual IQueryable<TDto> GetAll()
         {
-            if (_dbContext.ChangeTrackingEnabled() == false)
-                return _set.AsNoTracking();
+            if (DbContext.ChangeTrackingEnabled() == false)
+                return Set.AsNoTracking();
             else
-                return _set;
+                return Set;
         }
 
         public virtual Task<IQueryable<TDto>> GetAllAsync(CancellationToken cancellationToken = default)
         {
-            if (_dbContext.ChangeTrackingEnabled() == false)
-                return Task.FromResult(_set.AsNoTracking());
+            if (DbContext.ChangeTrackingEnabled() == false)
+                return Task.FromResult(Set.AsNoTracking());
             else
-                return Task.FromResult((IQueryable<TDto>)_set);
+                return Task.FromResult((IQueryable<TDto>)Set);
         }
 
         public virtual async Task LoadCollectionAsync<TProperty>(TDto dto, Expression<Func<TDto, IEnumerable<TProperty>>> childs, CancellationToken cancellationToken)
@@ -231,14 +236,14 @@ namespace Bit.Data.Implementations
             {
                 Attach(dto);
 
-                CollectionEntry<TDto, TProperty> collection = _dbContext.Entry(dto).Collection(childs);
+                CollectionEntry<TDto, TProperty> collection = DbContext.Entry(dto).Collection(childs);
 
                 if (collection.IsLoaded == false)
                     await collection.LoadAsync(cancellationToken).ConfigureAwait(false);
             }
             finally
             {
-                if (_dbContext.ChangeTrackingEnabled() == false)
+                if (DbContext.ChangeTrackingEnabled() == false)
                     Detach(dto);
             }
         }
@@ -250,14 +255,14 @@ namespace Bit.Data.Implementations
             {
                 Attach(dto);
 
-                CollectionEntry<TDto, TProperty> collection = _dbContext.Entry(dto).Collection(childs);
+                CollectionEntry<TDto, TProperty> collection = DbContext.Entry(dto).Collection(childs);
 
                 if (collection.IsLoaded == false)
                     collection.Load();
             }
             finally
             {
-                if (_dbContext.ChangeTrackingEnabled() == false)
+                if (DbContext.ChangeTrackingEnabled() == false)
                     Detach(dto);
             }
         }
@@ -269,14 +274,14 @@ namespace Bit.Data.Implementations
             {
                 Attach(dto);
 
-                ReferenceEntry<TDto, TProperty> reference = _dbContext.Entry(dto).Reference(member);
+                ReferenceEntry<TDto, TProperty> reference = DbContext.Entry(dto).Reference(member);
 
                 if (reference.IsLoaded == false)
                     await reference.LoadAsync(cancellationToken).ConfigureAwait(false);
             }
             finally
             {
-                if (_dbContext.ChangeTrackingEnabled() == false)
+                if (DbContext.ChangeTrackingEnabled() == false)
                     Detach(dto);
             }
         }
@@ -288,28 +293,28 @@ namespace Bit.Data.Implementations
             {
                 Attach(dto);
 
-                ReferenceEntry<TDto, TProperty> reference = _dbContext.Entry(dto).Reference(member);
+                ReferenceEntry<TDto, TProperty> reference = DbContext.Entry(dto).Reference(member);
 
                 if (reference.IsLoaded == false)
                     reference.Load();
             }
             finally
             {
-                if (_dbContext.ChangeTrackingEnabled() == false)
+                if (DbContext.ChangeTrackingEnabled() == false)
                     Detach(dto);
             }
         }
 
         public virtual Task SaveChangesAsync(CancellationToken cancellationToken = default)
         {
-            _dbContext.ChangeTracker.DetectChanges();
-            return _dbContext.SaveChangesAsync(cancellationToken);
+            DbContext.ChangeTracker.DetectChanges();
+            return DbContext.SaveChangesAsync(cancellationToken);
         }
 
         public virtual void SaveChanges()
         {
-            _dbContext.ChangeTracker.DetectChanges();
-            _dbContext.SaveChanges();
+            DbContext.ChangeTracker.DetectChanges();
+            DbContext.SaveChanges();
         }
     }
 }

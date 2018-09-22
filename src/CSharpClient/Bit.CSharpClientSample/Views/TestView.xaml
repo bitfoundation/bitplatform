@@ -16,6 +16,6 @@
         HorizontalOptions="End"
         VerticalOptions="FillAndExpand">
         <Label Text="Test" />
-        <Button Command="{Binding Close}" Text="Close" />
+        <Button Command="{Binding CloseCommand}" Text="Close" />
     </StackLayout>
 </pages:PopupPage>

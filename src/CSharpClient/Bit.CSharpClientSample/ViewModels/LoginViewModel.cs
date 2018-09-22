@@ -2,76 +2,79 @@
 using Bit.ViewModel.Contracts;
 using Prism.Navigation;
 using Prism.Services;
-using Simple.OData.Client;
-using System.Net.Http;
+using System.Threading.Tasks;
 
 namespace Bit.CSharpClientSample.ViewModels
 {
     public class LoginViewModel : BitViewModelBase
     {
-        public BitDelegateCommand LoginUsingCredentials { get; set; }
+        public ISecurityService SecurityService { get; set; }
+        public IPageDialogService PageDialogService { get; set; }
+        public INavigationService NavigationService { get; set; }
 
-        public BitDelegateCommand LoginUsingBrowser { get; set; }
+        public BitDelegateCommand LoginUsingCredentialsCommand { get; set; }
+        public BitDelegateCommand LoginUsingBrowserCommand { get; set; }
+        public BitDelegateCommand LoginUsingGooglePlusCommand { get; set; }
+        public BitDelegateCommand SkipCommand { get; set; }
 
-        public BitDelegateCommand LoginUsingGooglePlus { get; set; }
-
-        public BitDelegateCommand Skip { get; set; }
+        public LoginViewModel()
+        {
+            LoginUsingCredentialsCommand = new BitDelegateCommand(LoginUsingCredentials, () => !string.IsNullOrEmpty(UserName) && !string.IsNullOrEmpty(Password));
+            LoginUsingCredentialsCommand.ObservesProperty(() => UserName);
+            LoginUsingCredentialsCommand.ObservesProperty(() => Password);
+            LoginUsingBrowserCommand = new BitDelegateCommand(LoginUsingBrowser);
+            LoginUsingGooglePlusCommand = new BitDelegateCommand(LoginUsingGooglePlus);
+            SkipCommand = new BitDelegateCommand(Skip);
+        }
 
         public string UserName { get; set; } = "ValidUserName";
-
         public string Password { get; set; } = "ValidPassword";
 
-        public LoginViewModel(INavigationService navigationService, IODataClient oDataClient, HttpClient httpClient, IPageDialogService pageDialogService, ISecurityService securityService)
+        async Task LoginUsingCredentials()
         {
-            LoginUsingCredentials = new BitDelegateCommand(async () =>
+            try
             {
-                try
-                {
-                    await securityService.LoginWithCredentials(UserName, Password, client_id: "TestResOwner", client_secret: "secret");
-                    await navigationService.NavigateAsync("/Nav/Main");
-                }
-                catch
-                {
-                    await pageDialogService.DisplayAlertAsync("Login failed", "Login failed", "Ok");
-                    throw;
-                }
-            }, () => !string.IsNullOrEmpty(UserName) && !string.IsNullOrEmpty(Password));
-
-            LoginUsingCredentials.ObservesProperty(() => UserName);
-            LoginUsingCredentials.ObservesProperty(() => Password);
-
-            LoginUsingGooglePlus = new BitDelegateCommand(async () =>
+                await SecurityService.LoginWithCredentials(UserName, Password, client_id: "TestResOwner", client_secret: "secret");
+                await NavigationService.NavigateAsync("/Nav/Main");
+            }
+            catch
             {
-                try
-                {
-                    await securityService.Login(new { SignInType = "Google" });
-                    await navigationService.NavigateAsync("/Nav/Main");
-                }
-                catch
-                {
-                    await pageDialogService.DisplayAlertAsync("Login failed", "Login failed", "Ok");
-                    throw;
-                }
-            });
+                await PageDialogService.DisplayAlertAsync("Login failed", "Login failed", "Ok");
+                throw;
+            }
+        }
 
-            LoginUsingBrowser = new BitDelegateCommand(async () =>
+        async Task LoginUsingBrowser()
+        {
+            try
             {
-                try
-                {
-                    await securityService.Login();
-                    await navigationService.NavigateAsync("/Nav/Main");
-                }
-                catch
-                {
-                    await pageDialogService.DisplayAlertAsync("Login failed", "Login failed", "Ok");
-                    throw;
-                }
-            });
+                await SecurityService.Login();
+                await NavigationService.NavigateAsync("/Nav/Main");
+            }
+            catch
+            {
+                await PageDialogService.DisplayAlertAsync("Login failed", "Login failed", "Ok");
+                throw;
+            }
+        }
 
-            Skip = new BitDelegateCommand(async () =>
+        async Task LoginUsingGooglePlus()
+        {
+            try
             {
-                await navigationService.NavigateAsync("/Nav/Main");
-            });
+                await SecurityService.Login(new { SignInType = "Google" });
+                await NavigationService.NavigateAsync("/Nav/Main");
+            }
+            catch
+            {
+                await PageDialogService.DisplayAlertAsync("Login failed", "Login failed", "Ok");
+                throw;
+            }
+        }
+
+        async Task Skip()
+        {
+            await NavigationService.NavigateAsync("/Nav/Main");
         }
     }
 }
