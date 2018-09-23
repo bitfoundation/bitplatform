@@ -103,21 +103,14 @@ namespace Bit
         {
             ContainerBuilder containerBuilder = containerRegistry.GetBuilder();
 
-            containerBuilder.RegisterCallback(componentRegistry =>
-            {
-                componentRegistry.Registered += (_, registeredArgs) =>
-                {
-                    registeredArgs.ComponentRegistration.Activated += (__, activatedArgs) =>
-                    {
-                        if (activatedArgs.Instance is BitViewModelBase)
-                            activatedArgs.Context.InjectUnsetProperties(activatedArgs.Instance, activatedArgs.Parameters);
-                    };
-                };
-            });
-
             containerBuilder.Register(c => Container).SingleInstance().PreserveExistingDefaults();
             containerBuilder.Register(c => Container.GetContainer()).PreserveExistingDefaults();
             containerRegistry.RegisterPopupNavigationService();
+        }
+
+        protected override IContainerExtension CreateContainerExtension()
+        {
+            return new BitAutofacContainerExtension(new ContainerBuilder());
         }
     }
 }

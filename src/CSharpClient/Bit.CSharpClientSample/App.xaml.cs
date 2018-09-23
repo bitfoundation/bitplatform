@@ -54,11 +54,11 @@ namespace Bit.CSharpClientSample
         {
             ContainerBuilder containerBuilder = containerRegistry.GetBuilder();
 
-            containerRegistry.RegisterForNavigation<NavigationPage>("Nav");
+            containerRegistry.RegisterForNav<NavigationPage>("Nav");
 
-            containerRegistry.RegisterForNavigation<LoginView, LoginViewModel>("Login");
-            containerRegistry.RegisterForNavigation<MainView, MainViewModel>("Main");
-            containerRegistry.RegisterForNavigation<TestView, TestViewModel>("Test");
+            containerRegistry.RegisterForNav<LoginView, LoginViewModel>("Login");
+            containerRegistry.RegisterForNav<MainView, MainViewModel>("Main");
+            containerRegistry.RegisterForNav<TestView, TestViewModel>("Test");
 
             containerRegistry.GetBuilder().Register<IClientAppProfile>(c => new DefaultClientAppProfile
             {
