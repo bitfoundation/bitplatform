@@ -2,10 +2,12 @@
 using BitCodeGenerator.Implementations.TypeScriptClientProxyGenerator;
 using BitTools.Core.Contracts;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.MSBuild;
 using System;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using Uno.SourceGeneration;
 
 namespace BitCodeGeneratorTask
@@ -13,6 +15,7 @@ namespace BitCodeGeneratorTask
     public class BitSourceGenerator : SourceGenerator
     {
         private ISourceGeneratorLogger _logger;
+        private MSBuildWorkspace _mSBuildWorkspace;
 
         public override void Execute(SourceGeneratorContext context)
         {
@@ -39,16 +42,21 @@ namespace BitCodeGeneratorTask
                 projDir = projDir.Parent;
             }
 
-            CallGenerateCodes(context.Project.Solution.Workspace, solutionFullName);
+            Task.Run(() => CallGenerateCodes((MSBuildWorkspace)context.Project.Solution.Workspace, solutionFullName));
         }
 
-        private async void CallGenerateCodes(Workspace workspace, string solutionFullName)
+        private async Task CallGenerateCodes(MSBuildWorkspace workspace, string solutionFullName)
         {
             Stopwatch sw = null;
 
             try
             {
                 sw = Stopwatch.StartNew();
+
+                _mSBuildWorkspace = MSBuildWorkspace.Create(workspace.Properties, workspace.Services.HostServices);
+                _mSBuildWorkspace.WorkspaceFailed += MSBuildWorkspace_WorkspaceFailed;
+                _mSBuildWorkspace.SkipUnrecognizedProjects = true;
+                await _mSBuildWorkspace.OpenSolutionAsync(solutionFullName);
 
                 IProjectDtoControllersProvider controllersProvider = new DefaultProjectDtoControllersProvider();
                 IProjectDtosProvider dtosProvider = new DefaultProjectDtosProvider(controllersProvider);
@@ -57,9 +65,9 @@ namespace BitCodeGeneratorTask
                     new BitSourceGeneratorBitConfigProvider(solutionFullName), dtosProvider
                     , new DefaultTypeScriptClientProxyDtoGenerator(), new DefaultTypeScriptClientContextGenerator(), controllersProvider, new DefaultProjectEnumTypesProvider(controllersProvider, dtosProvider));
 
-                await generator.GenerateCodes(workspace);
+                await generator.GenerateCodes(_mSBuildWorkspace);
 
-                Log($"Code Generation Completed in {sw.ElapsedMilliseconds} ms using {workspace.GetType().Name}");
+                Log($"Code Generation Completed in {sw.ElapsedMilliseconds} ms using {_mSBuildWorkspace.GetType().Name}.");
             }
             catch (Exception ex)
             {
@@ -69,17 +77,33 @@ namespace BitCodeGeneratorTask
             finally
             {
                 sw?.Stop();
+                if (_mSBuildWorkspace != null)
+                    _mSBuildWorkspace.WorkspaceFailed -= MSBuildWorkspace_WorkspaceFailed;
             }
+        }
+
+        private void MSBuildWorkspace_WorkspaceFailed(object sender, WorkspaceDiagnosticEventArgs e)
+        {
+            if (e.Diagnostic.Kind == WorkspaceDiagnosticKind.Failure)
+                Log(e.Diagnostic.Message);
         }
 
         private void Log(string text)
         {
-            _logger.Warn($">>>>> {text} {DateTimeOffset.Now} {typeof(BitSourceGenerator).Assembly.FullName} <<<<< \n");
+            text = $">>>>> {text} {DateTimeOffset.Now} {typeof(BitSourceGenerator).Assembly.FullName} <<<<< \n";
+
+            _logger.Warn(text);
+
+            File.WriteAllText(Path.Combine(Path.GetTempPath(), $"Bit-Source-Generator-Log-Log{Guid.NewGuid()}.log"), text);
         }
 
         private void LogException(string text, Exception ex)
         {
-            _logger.Error($">>>>> {text} {DateTimeOffset.Now} {typeof(BitSourceGenerator).Assembly.FullName}<<<<< \n {ex} \n", ex);
+            text = $">>>>> {text} {DateTimeOffset.Now} {typeof(BitSourceGenerator).Assembly.FullName}<<<<< \n {ex} \n";
+
+            _logger.Error(text, ex);
+
+            File.WriteAllText(Path.Combine(Path.GetTempPath(), $"Bit-Source-Generator-Log-Log{Guid.NewGuid()}.log"), text);
         }
     }
 }
