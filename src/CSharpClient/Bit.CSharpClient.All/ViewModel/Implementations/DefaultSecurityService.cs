@@ -13,22 +13,16 @@ namespace Bit.ViewModel.Implementations
 {
     public class DefaultSecurityService : ISecurityService
     {
-
         public static ISecurityService Current { get; private set; }
 
-        public DefaultSecurityService(IClientAppProfile clientAppProfile,
-            IDateTimeProvider dateTimeProvider,
-            IContainer container)
+        public DefaultSecurityService()
         {
-            _clientAppProfile = clientAppProfile;
-            _dateTimeProvider = dateTimeProvider;
-            _container = container;
             Current = this;
         }
 
-        private readonly IClientAppProfile _clientAppProfile;
-        private readonly IDateTimeProvider _dateTimeProvider;
-        private readonly IContainer _container;
+        public virtual IClientAppProfile ClientAppProfile { get; set; }
+        public virtual IDateTimeProvider DateTimeProvider { get; set; }
+        public virtual IContainer Container { get; set; }
 
         protected TaskCompletionSource<Token> CurrentLoginTaskCompletionSource { get; set; }
         protected string CurrentAction { get; set; }
@@ -41,7 +35,7 @@ namespace Bit.ViewModel.Implementations
             if (token == null)
                 return false;
 
-            return (_dateTimeProvider.GetCurrentUtcDateTime() - token.login_date) < TimeSpan.FromSeconds(token.expires_in);
+            return (DateTimeProvider.GetCurrentUtcDateTime() - token.login_date) < TimeSpan.FromSeconds(token.expires_in);
         }
 
         public virtual async Task<Token> LoginWithCredentials(string username, string password, string client_id, string client_secret, string[] scopes = null, CancellationToken cancellationToken = default)
@@ -51,7 +45,7 @@ namespace Bit.ViewModel.Implementations
             if (scopes == null)
                 scopes = "openid profile user_info".Split(' ');
 
-            TokenClient tokenClient = _container.Resolve<TokenClient>(new NamedParameter("clientId", client_id), new NamedParameter("secret", client_secret));
+            TokenClient tokenClient = Container.Resolve<TokenClient>(new NamedParameter("clientId", client_id), new NamedParameter("secret", client_secret));
 
             TokenResponse tokenResponse = await tokenClient.RequestResourceOwnerPasswordAsync(username, password, scope: string.Join(" ", scopes), cancellationToken: cancellationToken).ConfigureAwait(false);
 
@@ -123,12 +117,12 @@ namespace Bit.ViewModel.Implementations
         {
             state = state ?? new { };
 
-            string relativeUri = $"InvokeLogin?state={JsonConvert.SerializeObject(state)}&redirect_uri={ _clientAppProfile.OAuthRedirectUri}";
+            string relativeUri = $"InvokeLogin?state={JsonConvert.SerializeObject(state)}&redirect_uri={ ClientAppProfile.OAuthRedirectUri}";
 
             if (!string.IsNullOrEmpty(client_id))
                 relativeUri += $"&client_id={client_id}";
 
-            return new Uri(_clientAppProfile.HostUri, relativeUri: relativeUri);
+            return new Uri(ClientAppProfile.HostUri, relativeUri: relativeUri);
         }
 
         public virtual Uri GetLogoutUrl(string id_token, object state = null, string client_id = null)
@@ -138,12 +132,12 @@ namespace Bit.ViewModel.Implementations
 
             state = state ?? new { };
 
-            string relativeUri = $"InvokeLogout?state={JsonConvert.SerializeObject(state)}&redirect_uri={_clientAppProfile.OAuthRedirectUri}&id_token={id_token}";
+            string relativeUri = $"InvokeLogout?state={JsonConvert.SerializeObject(state)}&redirect_uri={ClientAppProfile.OAuthRedirectUri}&id_token={id_token}";
 
             if (!string.IsNullOrEmpty(client_id))
                 relativeUri += $"&client_id={client_id}";
 
-            return new Uri(_clientAppProfile.HostUri, relativeUri: relativeUri);
+            return new Uri(ClientAppProfile.HostUri, relativeUri: relativeUri);
         }
 
         public virtual async Task OnSsoLoginLogoutRedirectCompleted(Uri url)
