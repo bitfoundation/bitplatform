@@ -60,7 +60,7 @@ namespace Bit.CSharpClientSample
             containerRegistry.RegisterForNav<MainView, MainViewModel>("Main");
             containerRegistry.RegisterForNav<TestView, TestViewModel>("Test");
 
-            containerRegistry.GetBuilder().Register<IClientAppProfile>(c => new DefaultClientAppProfile
+            containerBuilder.Register<IClientAppProfile>(c => new DefaultClientAppProfile
             {
                 HostUri = new Uri("http://192.168.1.60/"),
                 //HostUri = new Uri("http://127.0.0.1/"),
@@ -77,20 +77,15 @@ namespace Bit.CSharpClientSample
 
             containerBuilder.RegisterDbContext<SampleDbContext>();
 
-            containerRegistry.GetBuilder().Register(c =>
+            containerBuilder.RegisterDefaultSyncService(syncService =>
             {
-                ISyncService syncService = new DefaultSyncService<SampleDbContext>(c.Resolve<IContainer>());
-
                 syncService.AddDtoSetSyncConfig(new DtoSetSyncConfig
                 {
                     DtoSetName = nameof(SampleDbContext.TestCustomers),
                     OnlineDtoSet = odataClient => odataClient.For(nameof(SampleDbContext.TestCustomers)),
                     OfflineDtoSet = dbContext => dbContext.Set<TestCustomerDto>()
                 });
-
-                return syncService;
-
-            }).SingleInstance();
+            });
 
             base.RegisterTypes(containerRegistry);
         }
