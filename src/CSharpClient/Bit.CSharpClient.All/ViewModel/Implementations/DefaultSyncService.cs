@@ -3,12 +3,16 @@ using Bit.Data;
 using Bit.Model.Contracts;
 using Bit.ViewModel.Contracts;
 using Microsoft.EntityFrameworkCore;
-using Prism.Ioc;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using Simple.OData.Client;
 using System;
+using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Linq.Dynamic;
+using System.Net.Http;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
@@ -16,25 +20,15 @@ using Xamarin.Essentials;
 
 namespace Bit.ViewModel.Implementations
 {
-    public class DefaultSyncService<TDbContext> : ISyncService
-        where TDbContext : EfCoreDbContextBase
+    public class DefaultSyncService : ISyncService
     {
-        public DefaultSyncService(IContainer container)
-            : this(container.Resolve<TDbContext>, container.Resolve<ODataBatch>)
-        {
-            if (container == null)
-                throw new ArgumentNullException(nameof(container));
-        }
+        public virtual IContainer Container { get; set; }
+        public virtual IClientAppProfile ClientAppProfile { get; set; }
+        public virtual HttpClient HttpClient { get; set; }
+        public virtual IODataClient ODataClient { get; set; }
 
-        public DefaultSyncService(Func<TDbContext> dbContextProvider, Func<ODataBatch> oDataBatchProvider)
-        {
-            _dbContextProvider = dbContextProvider;
-            _oDataBatchProvider = oDataBatchProvider;
-        }
 
         private readonly List<DtoSetSyncConfig> _configs = new List<DtoSetSyncConfig> { };
-        private readonly Func<TDbContext> _dbContextProvider;
-        private readonly Func<ODataBatch> _oDataBatchProvider;
 
         public virtual Task SyncContext(CancellationToken cancellationToken = default)
         {
@@ -62,11 +56,11 @@ namespace Bit.ViewModel.Implementations
         {
             if (toServerDtoSetSyncMaterials.Any())
             {
-                using (TDbContext offlineContextForSyncTo = _dbContextProvider())
+                using (EfCoreDbContextBase offlineContextForSyncTo = Container.Resolve<EfCoreDbContextBase>())
                 {
                     ((IsSyncDbContext)offlineContextForSyncTo).IsSyncDbContext = true;
 
-                    ODataBatch onlineBatchContext = _oDataBatchProvider();
+                    ODataBatch onlineBatchContext = Container.Resolve<ODataBatch>();
 
                     foreach (DtoSetSyncConfig toServerSyncConfig in toServerDtoSetSyncMaterials)
                     {
@@ -117,11 +111,9 @@ namespace Bit.ViewModel.Implementations
         {
             if (fromServerDtoSetSyncMaterials.Any())
             {
-                using (TDbContext offlineContextForSyncFrom = _dbContextProvider())
+                using (EfCoreDbContextBase offlineContextForSyncFrom = Container.Resolve<EfCoreDbContextBase>())
                 {
                     ((IsSyncDbContext)offlineContextForSyncFrom).IsSyncDbContext = true;
-
-                    ODataBatch onlineBatchContext = _oDataBatchProvider();
 
                     List<DtoSyncConfigSyncFromResults> recentlyChangedOnlineDtos = new List<DtoSyncConfigSyncFromResults>();
 
@@ -143,15 +135,16 @@ namespace Bit.ViewModel.Implementations
                         {
                             DtoSetSyncConfig = fromServerSyncConfig,
                             DtoType = offlineSet.ElementType.GetTypeInfo(),
-                            HadOfflineDtoBefore = mostRecentOfflineDto != null
+                            HadOfflineDtoBefore = mostRecentOfflineDto != null,
+                            MaxVersion = maxVersion
                         };
 
-                        recentlyChangedOnlineDtos.Add(dtoSyncConfigSyncFromResults);
+                        dtoSyncConfigSyncFromResults.RetriveDataTask = BuildRetriveDataTask(dtoSyncConfigSyncFromResults, cancellationToken);
 
-                        onlineBatchContext += async c => CreateSyncableDtoInstancesFromUnTypedODataResponse(dtoSyncConfigSyncFromResults, (await (fromServerSyncConfig.OnlineDtoSetForGet ?? fromServerSyncConfig.OnlineDtoSet)(c).Where($"Version gt {maxVersion}").FindEntriesAsync(cancellationToken).ConfigureAwait(false)).ToList());
+                        recentlyChangedOnlineDtos.Add(dtoSyncConfigSyncFromResults);
                     }
 
-                    await onlineBatchContext.ExecuteAsync(cancellationToken).ConfigureAwait(false);
+                    await Task.WhenAll(recentlyChangedOnlineDtos.Select(r => r.RetriveDataTask));
 
                     foreach (DtoSyncConfigSyncFromResults result in recentlyChangedOnlineDtos.Where(r => r.RecentlyChangedOnlineDtos.Any()))
                     {
@@ -219,26 +212,50 @@ namespace Bit.ViewModel.Implementations
             }
         }
 
+        protected virtual async Task BuildRetriveDataTask(DtoSyncConfigSyncFromResults dtoSyncConfigSyncFromResults, CancellationToken cancellationToken)
+        {
+            string oDataGetAndVersionFilter = await (dtoSyncConfigSyncFromResults.DtoSetSyncConfig.OnlineDtoSetForGet ?? dtoSyncConfigSyncFromResults.DtoSetSyncConfig.OnlineDtoSet)(ODataClient).Where($"{nameof(ISyncableDto.Version)} gt {dtoSyncConfigSyncFromResults.MaxVersion}").GetCommandTextAsync(cancellationToken).ConfigureAwait(false);
+
+            string oDataUri = $"{ClientAppProfile.ODataRoute}{oDataGetAndVersionFilter}";
+
+            HttpResponseMessage response = await HttpClient.GetAsync(oDataUri, cancellationToken).ConfigureAwait(false);
+
+            if (response.IsSuccessStatusCode == true)
+            {
+                using (Stream stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false))
+                {
+                    using (StreamReader reader = new StreamReader(stream))
+                    {
+                        using (JsonReader jsonReader = new JsonTextReader(reader))
+                        {
+                            JToken jToken = await JToken.LoadAsync(jsonReader, new JsonLoadSettings
+                            {
+                                CommentHandling = CommentHandling.Ignore,
+                                LineInfoHandling = LineInfoHandling.Ignore
+                            }, cancellationToken).ConfigureAwait(false);
+
+                            dtoSyncConfigSyncFromResults.RecentlyChangedOnlineDtos = ((IEnumerable)(jToken)["value"].ToObject(typeof(List<>).MakeGenericType(dtoSyncConfigSyncFromResults.DtoType))).Cast<ISyncableDto>().ToArray();
+                        }
+                    }
+                }
+            }
+        }
+
         public class DtoSyncConfigSyncFromResults
         {
             public bool HadOfflineDtoBefore { get; set; }
+
+            public Task RetriveDataTask { get; set; }
 
             public DtoSetSyncConfig DtoSetSyncConfig { get; set; }
 
             public TypeInfo DtoType { get; set; }
 
-            public List<ISyncableDto> RecentlyChangedOnlineDtos { get; set; }
+            public ISyncableDto[] RecentlyChangedOnlineDtos { get; set; }
+            public long MaxVersion { get; set; }
         }
 
-        protected List<ISyncableDto> CreateSyncableDtoInstancesFromUnTypedODataResponse(DtoSyncConfigSyncFromResults dtoSyncConfigSyncFromResults, List<IDictionary<string, object>> untypedDtos)
-        {
-            return dtoSyncConfigSyncFromResults.RecentlyChangedOnlineDtos = untypedDtos
-                 .Select(unTypedDto => unTypedDto.ToDto(dtoSyncConfigSyncFromResults.DtoType))
-                 .Cast<ISyncableDto>()
-                 .ToList();
-        }
-
-        public virtual void AddDtoSetSyncConfig(DtoSetSyncConfig dtoSetSyncConfig)
+        public virtual ISyncService AddDtoSetSyncConfig(DtoSetSyncConfig dtoSetSyncConfig)
         {
             if (dtoSetSyncConfig == null)
                 throw new ArgumentNullException(nameof(dtoSetSyncConfig));
@@ -247,6 +264,8 @@ namespace Bit.ViewModel.Implementations
                 throw new ArgumentException($"{nameof(DtoSetSyncConfig.DtoSetName)} of {nameof(dtoSetSyncConfig)} may not be null or empty");
 
             _configs.Add(dtoSetSyncConfig);
+
+            return this;
         }
     }
 }

@@ -28,7 +28,7 @@ namespace Prism.Ioc
             if (containerBuilder == null)
                 throw new ArgumentNullException(nameof(containerBuilder));
 
-            containerBuilder.RegisterType<DefaultSecurityService>().As<ISecurityService>().SingleInstance().PreserveExistingDefaults();
+            containerBuilder.RegisterType<DefaultSecurityService>().As<ISecurityService>().SingleInstance().PropertiesAutowired(PropertyWiringOptions.PreserveSetValues).PreserveExistingDefaults();
 
             containerBuilder.Register((c, parameters) =>
             {
@@ -61,7 +61,11 @@ namespace Prism.Ioc
             containerBuilder.Register(c =>
             {
                 HttpMessageHandler authenticatedHttpMessageHandler = c.ResolveNamed<HttpMessageHandler>(ContractKeys.AuthenticatedHttpMessageHandler);
-                HttpClient httpClient = new HttpClient(authenticatedHttpMessageHandler) { BaseAddress = c.Resolve<IClientAppProfile>().HostUri };
+                HttpClient httpClient = new HttpClient(authenticatedHttpMessageHandler)
+                {
+                    BaseAddress = c.Resolve<IClientAppProfile>().HostUri,
+                    Timeout = TimeSpan.FromMinutes(45)
+                };
                 return httpClient;
             }).SingleInstance()
             .PreserveExistingDefaults();
@@ -116,6 +120,18 @@ namespace Prism.Ioc
                 .RegisterType<TDbContext>()
                 .As(new[] { typeof(EfCoreDbContextBase).GetTypeInfo(), typeof(TDbContext).GetTypeInfo() })
                 .PropertiesAutowired(PropertyWiringOptions.PreserveSetValues);
+
+            return containerBuilder;
+        }
+
+        public static ContainerBuilder RegisterDefaultSyncService(this ContainerBuilder containerBuilder, Action<ISyncService> configureDtoSetSyncConfigs)
+        {
+            containerBuilder.RegisterType<DefaultSyncService>().As<ISyncService>()
+                .PropertiesAutowired(PropertyWiringOptions.PreserveSetValues)
+                .OnActivated(config =>
+                {
+                    configureDtoSetSyncConfigs?.Invoke(config.Instance);
+                }).SingleInstance();
 
             return containerBuilder;
         }

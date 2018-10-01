@@ -30,7 +30,7 @@ namespace Bit.ViewModel.Contracts
 
     public interface ISyncService
     {
-        void AddDtoSetSyncConfig(DtoSetSyncConfig dtoSetSyncConfig);
+        ISyncService AddDtoSetSyncConfig(DtoSetSyncConfig dtoSetSyncConfig);
 
         Task SyncContext(CancellationToken cancellationToken = default);
 
