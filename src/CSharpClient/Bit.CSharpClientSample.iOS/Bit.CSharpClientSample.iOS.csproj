@@ -108,7 +108,7 @@
     <Reference Include="Xamarin.iOS" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Xamarin.Forms" Version="3.2.0.839982" />
+    <PackageReference Include="Xamarin.Forms" Version="3.2.0.871581" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Bit.CSharpClient.All\Bit.CSharpClient.All.csproj">

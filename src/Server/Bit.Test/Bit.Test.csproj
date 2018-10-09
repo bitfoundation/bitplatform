@@ -24,12 +24,12 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="FakeItEasy" Version="4.8.1" />
+    <PackageReference Include="FakeItEasy" Version="4.9.1" />
     <PackageReference Include="Microsoft.AspNet.SignalR.Client" Version="2.3.0" />
     <PackageReference Include="Microsoft.AspNetCore.TestHost" Version="2.1.1" />
     <PackageReference Include="Microsoft.Owin.SelfHost" Version="4.0.0" />
     <PackageReference Include="Microsoft.Owin.Testing" Version="4.0.0" />
-    <PackageReference Include="Refit" Version="4.6.30" />
+    <PackageReference Include="Refit" Version="4.6.48" />
     <PackageReference Include="Selenium.Support" Version="3.14.0" />
     <PackageReference Include="Selenium.WebDriver" Version="3.14.0" />
     <PackageReference Include="Selenium.WebDriver.ChromeDriver" Version="2.42.0.1" />
