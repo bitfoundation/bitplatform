@@ -1,9 +1,4 @@
-﻿using System;
-using System.Linq;
-using System.Net;
-using System.Threading;
-using System.Threading.Tasks;
-using Bit.Core.Contracts;
+﻿using Bit.Core.Contracts;
 using Bit.Data.Contracts;
 using Bit.Test;
 using Bit.Test.Core.Implementations;
@@ -14,6 +9,11 @@ using FakeItEasy;
 using IdentityModel.Client;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Simple.OData.Client;
+using System;
+using System.Linq;
+using System.Net;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace Bit.Tests.Api.Middlewares.WebApi.Tests
 {
@@ -40,7 +40,7 @@ namespace Bit.Tests.Api.Middlewares.WebApi.Tests
 
                 batchClient += bc => bc.Controller<TestModelsController, TestModel>()
                     .Set(modelBeforeInsert)
-                    .InsertEntryAsync();
+                    .CreateEntryAsync();
 
                 long modelBeforeUpdateId = await client.Controller<TestModelsController, TestModel>()
                         .Top(1)

@@ -1,11 +1,37 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq.Expressions;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace Simple.OData.Client
 {
     public static class IFluentClientExtensions
     {
+        public static Task<T> CreateEntryAsync<T>(this IBoundClient<T> client, bool resultRequired, CancellationToken cancellationToken)
+            where T : class
+        {
+            return client.InsertEntryAsync(resultRequired, cancellationToken);
+        }
+
+        public static Task<T> CreateEntryAsync<T>(this IBoundClient<T> client)
+            where T : class
+        {
+            return client.InsertEntryAsync();
+        }
+
+        public static Task<T> CreateEntryAsync<T>(this IBoundClient<T> client, CancellationToken cancellationToken)
+            where T : class
+        {
+            return client.InsertEntryAsync(cancellationToken);
+        }
+
+        public static Task<T> CreateEntryAsync<T>(this IBoundClient<T> client, bool resultRequired)
+            where T : class
+        {
+            return client.InsertEntryAsync(resultRequired);
+        }
+
         public static IBoundClient<T> Include<T>(this IBoundClient<T> client, ODataExpandOptions includeOptions, Expression<Func<T, object>> expression)
             where T : class
         {

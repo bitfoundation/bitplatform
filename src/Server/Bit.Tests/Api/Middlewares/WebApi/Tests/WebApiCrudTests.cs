@@ -38,7 +38,7 @@ namespace Bit.Tests.Api.Middlewares.WebApi.Tests
 
                 TestModel modelAfterInsert = await client.Controller<TestModelsController, TestModel>()
                     .Set(modelBeforeInsert)
-                    .InsertEntryAsync();
+                    .CreateEntryAsync();
 
                 Assert.AreNotEqual(0, modelAfterInsert.Id);
 
@@ -159,7 +159,7 @@ namespace Bit.Tests.Api.Middlewares.WebApi.Tests
                 });
 
                 IEnumerable<ParentEntity> parentEntities = await client.Controller<ParentEntitiesController, ParentEntity>()
-                    .Filter(p => p.Name == "A")
+                    .Where(p => p.Name == "A")
                     .FindEntriesAsync();
 
                 Assert.AreEqual(1, parentEntities.Count());

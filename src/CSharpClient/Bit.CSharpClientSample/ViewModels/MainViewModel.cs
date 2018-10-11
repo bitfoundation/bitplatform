@@ -43,11 +43,11 @@ namespace Bit.CSharpClientSample.ViewModels
 
             await ODataClient.For<TestCustomerDto>("TestCustomers")
                  .Set(new TestCustomerDto { Id = Guid.NewGuid(), Name = "A1", CityId = Guid.Parse("EF529174-C497-408B-BB4D-C31C205D46BB"), Kind = TestCustomerKind.Type1 })
-                 .InsertEntryAsync();
+                 .CreateEntryAsync();
 
             await ODataClient.For<TestCustomerDto>("TestCustomers")
                 .Set(new TestCustomerDto { Id = Guid.NewGuid(), Name = "A2", CityId = Guid.Parse("EF529174-C497-408B-BB4D-C31C205D46BB"), Kind = TestCustomerKind.Type1 })
-                .InsertEntryAsync();
+                .CreateEntryAsync();
 
             await SyncService.SyncContext();
 
@@ -58,11 +58,11 @@ namespace Bit.CSharpClientSample.ViewModels
 
             await ODataClient.For<TestCustomerDto>("TestCustomers")
                  .Set(new TestCustomerDto { Id = Guid.NewGuid(), Name = "A3", CityId = Guid.Parse("EF529174-C497-408B-BB4D-C31C205D46BB"), Kind = TestCustomerKind.Type1 })
-                 .InsertEntryAsync();
+                 .CreateEntryAsync();
 
             await ODataClient.For<TestCustomerDto>("TestCustomers")
                 .Set(new TestCustomerDto { Id = Guid.NewGuid(), Name = "A4", CityId = Guid.Parse("EF529174-C497-408B-BB4D-C31C205D46BB"), Kind = TestCustomerKind.Type1 })
-                .InsertEntryAsync();
+                .CreateEntryAsync();
 
             await SyncService.SyncContext();
 

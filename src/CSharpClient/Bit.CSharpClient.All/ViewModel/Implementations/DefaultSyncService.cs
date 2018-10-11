@@ -93,7 +93,7 @@ namespace Bit.ViewModel.Implementations
                             }
                             else if (recentlyChangedOfflineDto.Version == 0)
                             {
-                                onlineBatchContext += c => toServerSyncConfig.OnlineDtoSet(c).Set(recentlyChangedOfflineDto).InsertEntryAsync(cancellationToken);
+                                onlineBatchContext += c => toServerSyncConfig.OnlineDtoSet(c).Set(recentlyChangedOfflineDto).CreateEntryAsync(cancellationToken);
                             }
                             else
                             {

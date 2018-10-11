@@ -1,7 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Bit.Core.Contracts;
+﻿using Bit.Core.Contracts;
 using Bit.Test;
 using Bit.Tests.Api.ApiControllers;
 using Bit.Tests.Core.Contracts;
@@ -10,6 +7,9 @@ using FakeItEasy;
 using IdentityModel.Client;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Simple.OData.Client;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace Bit.Tests.Api.Middlewares.WebApi.Tests
 {
@@ -125,7 +125,7 @@ namespace Bit.Tests.Api.Middlewares.WebApi.Tests
 
                 IEnumerable<TestModel> testModels = await client.Controller<TestModelsController, TestModel>()
                      .Function(nameof(TestModelsController.GetSomeTestModelsForTest))
-                     .Filter(tm => tm.StringProperty == "VALUE")
+                     .Where(tm => tm.StringProperty == "VALUE")
                      .FindEntriesAsync();
 
                 Assert.AreEqual(1, testModels.Count());

@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Bit.Test;
+﻿using Bit.Test;
 using Bit.Tests.Api.ApiControllers;
 using Bit.Tests.Core.Contracts;
 using Bit.Tests.Model.DomainModels;
@@ -10,6 +6,10 @@ using FakeItEasy;
 using IdentityModel.Client;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Simple.OData.Client;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace Bit.Tests.Api.Middlewares.WebApi.Tests
 {
@@ -139,7 +139,7 @@ namespace Bit.Tests.Api.Middlewares.WebApi.Tests
                 IODataClient client = testEnvironment.Server.BuildODataClient(token: token);
 
                 IEnumerable<TestModel> testModels = await client.Controller<TestModelsController, TestModel>()
-                     .Filter(tm => tm.DateProperty == new DateTimeOffset(2016, 1, 1, 10, 30, 0, TimeSpan.Zero))
+                     .Where(tm => tm.DateProperty == new DateTimeOffset(2016, 1, 1, 10, 30, 0, TimeSpan.Zero))
                      .FindEntriesAsync();
 
                 Assert.AreEqual(1, testModels.Count());
@@ -161,7 +161,7 @@ namespace Bit.Tests.Api.Middlewares.WebApi.Tests
                 });
 
                 IEnumerable<TestModel> testModels = await client.Controller<TestModelsController, TestModel>()
-                     .Filter(tm => tm.DateProperty == new DateTimeOffset(2016, 1, 1, 9, 30, 0, TimeSpan.Zero))
+                     .Where(tm => tm.DateProperty == new DateTimeOffset(2016, 1, 1, 9, 30, 0, TimeSpan.Zero))
                      .FindEntriesAsync();
 
                 Assert.AreEqual(1, testModels.Count());
