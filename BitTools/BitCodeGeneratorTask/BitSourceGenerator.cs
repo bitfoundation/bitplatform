@@ -1,9 +1,12 @@
 ﻿using BitCodeGenerator.Implementations;
 using BitCodeGenerator.Implementations.TypeScriptClientProxyGenerator;
 using BitTools.Core.Contracts;
+using BitTools.Core.Model;
+using Microsoft.Build.Construction;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.MSBuild;
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -15,7 +18,6 @@ namespace BitCodeGeneratorTask
     public class BitSourceGenerator : SourceGenerator
     {
         private ISourceGeneratorLogger _logger;
-        private MSBuildWorkspace _mSBuildWorkspace;
 
         public override void Execute(SourceGeneratorContext context)
         {
@@ -42,10 +44,10 @@ namespace BitCodeGeneratorTask
                 projDir = projDir.Parent;
             }
 
-            Task.Run(() => CallGenerateCodes((MSBuildWorkspace)context.Project.Solution.Workspace, solutionFullName));
+            CallGenerateCodes((MSBuildWorkspace)context.Project.Solution.Workspace, context.Project, solutionFullName).GetAwaiter().GetResult();
         }
 
-        private async Task CallGenerateCodes(MSBuildWorkspace workspace, string solutionFullName)
+        private async Task CallGenerateCodes(MSBuildWorkspace workspace, Project beingCompiledProject, string solutionFullName)
         {
             Stopwatch sw = null;
 
@@ -53,21 +55,34 @@ namespace BitCodeGeneratorTask
             {
                 sw = Stopwatch.StartNew();
 
-                _mSBuildWorkspace = MSBuildWorkspace.Create(workspace.Properties, workspace.Services.HostServices);
-                _mSBuildWorkspace.WorkspaceFailed += MSBuildWorkspace_WorkspaceFailed;
-                _mSBuildWorkspace.SkipUnrecognizedProjects = true;
-                await _mSBuildWorkspace.OpenSolutionAsync(solutionFullName);
+                workspace.WorkspaceFailed += MSBuildWorkspace_WorkspaceFailed;
+                workspace.SkipUnrecognizedProjects = workspace.LoadMetadataForReferencedProjects = true;
+
+                IReadOnlyList<ProjectInSolution> allProjects = SolutionFile.Parse(solutionFullName).ProjectsInOrder;
+
+                BitSourceGeneratorBitConfigProvider bitConfigProvider = new BitSourceGeneratorBitConfigProvider(solutionFullName);
+
+                foreach (BitCodeGeneratorMapping mapping in bitConfigProvider.GetConfiguration(workspace).BitCodeGeneratorConfigs.BitCodeGeneratorMappings.Where(config => config.SourceProjects.Any(sp => sp.Name == beingCompiledProject.Name)))
+                {
+                    foreach (BitTools.Core.Model.ProjectInfo proj in mapping.SourceProjects)
+                    {
+                        if (workspace.CurrentSolution.Projects.Any(p => p.Name == proj.Name))
+                            continue; /*It's already loaded*/
+
+                        await workspace.OpenProjectAsync(allProjects.Single(p => p.ProjectName == proj.Name).AbsolutePath);
+                    }
+                }
 
                 IProjectDtoControllersProvider controllersProvider = new DefaultProjectDtoControllersProvider();
                 IProjectDtosProvider dtosProvider = new DefaultProjectDtosProvider(controllersProvider);
 
                 DefaultTypeScriptClientProxyGenerator generator = new DefaultTypeScriptClientProxyGenerator(new DefaultBitCodeGeneratorOrderedProjectsProvider(),
-                    new BitSourceGeneratorBitConfigProvider(solutionFullName), dtosProvider
+                    bitConfigProvider, dtosProvider
                     , new DefaultTypeScriptClientProxyDtoGenerator(), new DefaultTypeScriptClientContextGenerator(), controllersProvider, new DefaultProjectEnumTypesProvider(controllersProvider, dtosProvider));
 
-                await generator.GenerateCodes(_mSBuildWorkspace);
+                await generator.GenerateCodes(workspace);
 
-                Log($"Code Generation Completed in {sw.ElapsedMilliseconds} ms using {_mSBuildWorkspace.GetType().Name}.");
+                Log($"Code Generation Completed in {sw.ElapsedMilliseconds} ms using {workspace.GetType().Name}.");
             }
             catch (Exception ex)
             {
@@ -77,8 +92,7 @@ namespace BitCodeGeneratorTask
             finally
             {
                 sw?.Stop();
-                if (_mSBuildWorkspace != null)
-                    _mSBuildWorkspace.WorkspaceFailed -= MSBuildWorkspace_WorkspaceFailed;
+                workspace.WorkspaceFailed -= MSBuildWorkspace_WorkspaceFailed;
             }
         }
 
