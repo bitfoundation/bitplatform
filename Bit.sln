@@ -54,7 +54,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Bit.OwinCore.AspNetCore2Upg
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "CSharpClient", "CSharpClient", "{DB8D0A54-7638-4839-9FC1-404245D1DE29}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Bit.CSharpClient.All", "src\CSharpClient\Bit.CSharpClient.All\Bit.CSharpClient.All.csproj", "{9CBE7A88-D05E-4095-B408-26FD28C5758F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Bit.CSharpClient.Prism", "src\CSharpClient\Bit.CSharpClient.Prism\Bit.CSharpClient.Prism.csproj", "{9CBE7A88-D05E-4095-B408-26FD28C5758F}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Bit.CSharpClientSample", "src\CSharpClient\Bit.CSharpClientSample\Bit.CSharpClientSample.csproj", "{67A1702E-8891-4735-8570-145A3BD984D7}"
 EndProject

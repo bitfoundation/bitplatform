@@ -1,7 +1,7 @@
 ﻿#if iOS 
-using Bit.ViewModel.Implementations;
 using Foundation;
 using System;
+using System.Threading.Tasks;
 using UIKit;
 using Xamarin.Forms.Platform.iOS;
 
@@ -13,10 +13,12 @@ namespace Bit.iOS
         {
             Uri uri = new Uri(url.AbsoluteString);
 
-            DefaultSecurityService.Current.OnSsoLoginLogoutRedirectCompleted(uri);
+            OnSsoLoginLogoutRedirectCompleted?.Invoke(uri);
 
             return true;
         }
+
+        public static Func<Uri, Task> OnSsoLoginLogoutRedirectCompleted;
     }
 }
 #endif
