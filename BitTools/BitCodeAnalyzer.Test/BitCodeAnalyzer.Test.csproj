@@ -11,11 +11,11 @@
 
   <ItemGroup>
     <Compile Remove="BitAnalyzers\Data\EntityFramework\EntityFrameworkFullAsNoTrackingCallTests\**" />
-    <Compile Remove="BitAnalyzers\ViewModel\SubscribeAsyncTestProj\**" />
+    <Compile Remove="BitAnalyzers\ViewModel\BitPrismTestsProj\**" />
     <EmbeddedResource Remove="BitAnalyzers\Data\EntityFramework\EntityFrameworkFullAsNoTrackingCallTests\**" />
-    <EmbeddedResource Remove="BitAnalyzers\ViewModel\SubscribeAsyncTestProj\**" />
+    <EmbeddedResource Remove="BitAnalyzers\ViewModel\BitPrismTestsProj\**" />
     <None Remove="BitAnalyzers\Data\EntityFramework\EntityFrameworkFullAsNoTrackingCallTests\**" />
-    <None Remove="BitAnalyzers\ViewModel\SubscribeAsyncTestProj\**" />
+    <None Remove="BitAnalyzers\ViewModel\BitPrismTestsProj\**" />
   </ItemGroup>
 
   <ItemGroup>

@@ -7,11 +7,11 @@ using System.Collections.Immutable;
 namespace BitCodeAnalyzer.BitAnalyzers.ViewModel
 {
     [DiagnosticAnalyzer(LanguageNames.CSharp)]
-    public class UseSubscribeAsyncInsteadOfSubscribeAnalyzer : DiagnosticAnalyzer
+    public class UseRegisterForNavInsteadOfRegisterForNavigation : DiagnosticAnalyzer
     {
-        public const string DiagnosticId = nameof(UseSubscribeAsyncInsteadOfSubscribeAnalyzer);
+        public const string DiagnosticId = nameof(UseRegisterForNavInsteadOfRegisterForNavigation);
 
-        public const string Title = "Use SubscribeAsync instead of Subscribe";
+        public const string Title = "Use RegisterForNav instead of RegisterForNavigation";
         public const string Message = Title;
         public const string Description = Title;
         private const string Category = "Bit";
@@ -37,12 +37,12 @@ namespace BitCodeAnalyzer.BitAnalyzers.ViewModel
 
             IMethodSymbol symbol = (IMethodSymbol)context.SemanticModel.GetSymbolInfo(invocation).Symbol;
 
-            if (symbol == null || symbol.Name != "Subscribe")
+            if (symbol == null || symbol.Name != "RegisterForNavigation")
                 return;
 
             string symbolName = symbol.ContainingType.ToDisplayString();
 
-            if (symbolName.StartsWith("Prism.Events.PubSubEvent"))
+            if (symbolName.StartsWith("Prism.Ioc.IContainerRegistryExtensions"))
             {
                 Diagnostic diagn = Diagnostic.Create(Rule, root.GetLocation(), Message);
 
