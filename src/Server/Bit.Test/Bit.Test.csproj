@@ -24,7 +24,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="..\..\CSharpClient\Bit.CSharpClient.All\ViewModel\Extensions\IFluentClientExtensions.cs" Link="Extensions\IFluentClientExtensions.cs" />
+    <Compile Include="..\..\CSharpClient\Bit.CSharpClient.OData\ViewModel\Extensions\IFluentClientExtensions.cs" Link="Extensions\IFluentClientExtensions.cs" />
   </ItemGroup>
 
   <ItemGroup>
