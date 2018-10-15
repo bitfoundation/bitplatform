@@ -27,6 +27,10 @@ namespace Prism.Ioc
 
             containerBuilder.RegisterType<DefaultSecurityService>().As<ISecurityService>().SingleInstance().PropertiesAutowired(PropertyWiringOptions.PreserveSetValues).PreserveExistingDefaults();
 
+#if iOS
+            Bit.iOS.BitFormsApplicationDelegate.OnSsoLoginLogoutRedirectCompleted = DefaultSecurityService.Current.OnSsoLoginLogoutRedirectCompleted;
+#endif
+
             containerBuilder.Register((c, parameters) =>
             {
                 return new TokenClient(address: new Uri(c.Resolve<IClientAppProfile>().HostUri, "core/connect/token").ToString(), clientId: parameters.Named<string>("clientId"), clientSecret: parameters.Named<string>("secret"), innerHttpMessageHandler: c.ResolveNamed<HttpMessageHandler>(ContractKeys.DefaultHttpMessageHandler));

@@ -37,16 +37,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <!--<PackageReference Include="Simple.OData.V4.Client" Version="5.5.0" />-->
-    <!--<PackageReference Include="Bit.System.Linq.Dynamic" Version="1.1.0" />-->
     <PackageReference Include="IdentityModel" Version="3.10.0" />
-    <!--<PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="2.1.4" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="2.1.4" />-->
-    <!--<PackageReference Include="Microsoft.OData.Core" Version="7.5.1" />-->
     <PackageReference Include="Newtonsoft.Json" Version="11.0.2" />
-    <!--<PackageReference Include="System.Buffers" Version="4.5.0" />-->
-    <!--<PackageReference Include="System.ComponentModel.Annotations" Version="4.5.0" />-->
-    <!--<PackageReference Include="System.Memory" Version="4.5.1" />-->
     <PackageReference Include="MSBuild.Sdk.Extras" Version="1.6.47" PrivateAssets="All" />
     <PackageReference Include="SourceLink.Embed.AllSourceFiles" Version="2.8.3" PrivateAssets="all" />
     <PackageReference Include="SourceLink.Copy.PdbFiles" Version="2.8.3" PrivateAssets="All" />
@@ -61,23 +53,6 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
     </PackageReference>
 
-  </ItemGroup>
-
-  <ItemGroup Condition=" '$(TargetFramework)' == 'uap10.0.17134' ">
-    <PackageReference Include="Microsoft.NETCore.UniversalWindowsPlatform" Version="6.1.7" />
-  </ItemGroup>
-
-  <ItemGroup Condition=" '$(TargetFramework)' == 'MonoAndroid81' ">
-    <!--<Reference Include="System.ComponentModel.DataAnnotations" />-->
-  </ItemGroup>
-
-  <!--<ItemGroup Condition="'$(TargetFramework)' == 'netcoreapp2.0'">
-    <PackageReference Include="Microsoft.AspNetCore" Version="2.1.4" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="2.1.4" />
-  </ItemGroup>-->
-
-  <ItemGroup Condition=" '$(TargetFramework)' == 'Xamarin.iOS10' ">
-    <!--<Reference Include="System.ComponentModel.DataAnnotations" />-->
   </ItemGroup>
 
   <ItemGroup>
