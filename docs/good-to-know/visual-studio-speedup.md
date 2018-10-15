@@ -21,6 +21,8 @@ Note that you should run this script with administrator privileges
 # Requires -RunAsAdministrator
 # Visual Studio & tools
 
+Add-MpPreference -ExclusionPath "C:\Program Files (x86)\Microsoft Visual Studio\2017\Professional\MSBuild\15.0\Bin\amd64\MSBuild.exe"
+Add-MpPreference -ExclusionPath "C:\Program Files (x86)\Microsoft Visual Studio\2017\Professional\MSBuild\15.0\Bin\MSBuild.exe"
 Add-MpPreference -ExclusionPath "C:\Program Files (x86)\Microsoft Visual Studio\2017\Professional\Common7\IDE\devenv.exe"
 Add-MpPreference -ExclusionPath "C:\Windows\Microsoft.NET\Framework\v4.0.30319\MSBuild.exe"
 Add-MpPreference -ExclusionPath "C:\Windows\Microsoft.NET\Framework64\v4.0.30319\MSBuild.exe"
