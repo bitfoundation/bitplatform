@@ -1,11 +1,11 @@
-﻿using Prism.Mvvm;
+﻿using Bit.Model;
 using Prism.Navigation;
 using System;
 using System.Threading.Tasks;
 
 namespace Bit.ViewModel
 {
-    public class BitViewModelBase : BindableBase, INavigatedAware, INavigatingAware, INavigationAware, IDestructible
+    public class BitViewModelBase : Bindable, INavigatedAware, INavigatingAware, INavigationAware, IDestructible
     {
         public async void Destroy()
         {

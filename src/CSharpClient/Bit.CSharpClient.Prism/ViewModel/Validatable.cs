@@ -1,4 +1,4 @@
-﻿using Prism.Mvvm;
+﻿using Bit.Model;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -101,7 +101,7 @@ namespace Bit.ViewModel
 
     #endregion
 
-    public class Validatable : BindableBase
+    public class Validatable : Bindable
     {
         public Validatable(string notValidErrorMessage, params IValidationRule[] validationRules)
         {
@@ -150,7 +150,7 @@ namespace Bit.ViewModel
         }
     }
 
-    public class ValidatablesGroup : BindableBase
+    public class ValidatablesGroup : Bindable
     {
         public Validatable[] Validatables { get; set; }
 
