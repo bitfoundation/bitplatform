@@ -1,0 +1,89 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>MonoAndroid81;Xamarin.iOS10;uap10.0.17134;netstandard2.0;netcoreapp2.0;</TargetFrameworks>
+    <RootNamespace>Bit</RootNamespace>
+    <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
+    <GeneratePackageOnBuild Condition=" '$(Configuration)' == 'Release' ">true</GeneratePackageOnBuild>
+    <Version>0.0.1</Version>
+    <Authors>Bit Foundation</Authors>
+    <Company>Bit Foundation</Company>
+    <Product>Bit Framework</Product>
+    <Description>Bit.CSharpClient.Rest</Description>
+    <Copyright>Copyright © Bit Foundation 2017</Copyright>
+    <PackageLicenseUrl>https://github.com/bit-foundation/bit-framework/blob/master/LICENSE</PackageLicenseUrl>
+    <PackageProjectUrl>https://github.com/bit-foundation/bit-framework</PackageProjectUrl>
+    <PackageIconUrl>https://avatars.githubusercontent.com/u/22663390</PackageIconUrl>
+    <RepositoryUrl>https://github.com/bit-foundation/bit-framework</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageTags>Bit</PackageTags>
+    <PackageReleaseNotes>https://github.com/bit-foundation/bit-framework/releases</PackageReleaseNotes>
+    <AssemblyVersion>0.0.0.1</AssemblyVersion>
+    <FileVersion>0.0.0.1</FileVersion>
+    <DefineConstants Condition=" '$(TargetFramework)' == 'MonoAndroid81' ">Android</DefineConstants>
+    <DefineConstants Condition=" '$(TargetFramework)' == 'Xamarin.iOS10' ">iOS</DefineConstants>
+    <DefineConstants Condition=" '$(TargetFramework)' == 'netcoreapp2.0' ">DotNetCore</DefineConstants>
+    <DefineConstants Condition=" '$(TargetFramework)' == 'uap10.0.17134' ">UWP</DefineConstants>
+    <DefineConstants Condition=" '$(TargetFramework)' == 'netstandard2.0' ">DotNetStandard</DefineConstants>
+    <DocumentationFile>bin\$(Configuration)\$(TargetFramework)\$(AssemblyName).xml</DocumentationFile>
+    <NoWarn>$(NoWarn);NU1605;CS1591;</NoWarn>
+    <!-- https://stackoverflow.com/a/46815541/2720104 -->
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <DebugType>pdbonly</DebugType>
+    <DebugSymbols>true</DebugSymbols>
+    <LangVersion>7.3</LangVersion>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!--<PackageReference Include="Simple.OData.V4.Client" Version="5.5.0" />-->
+    <!--<PackageReference Include="Bit.System.Linq.Dynamic" Version="1.1.0" />-->
+    <PackageReference Include="IdentityModel" Version="3.10.0" />
+    <!--<PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="2.1.4" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="2.1.4" />-->
+    <!--<PackageReference Include="Microsoft.OData.Core" Version="7.5.1" />-->
+    <PackageReference Include="Newtonsoft.Json" Version="11.0.2" />
+    <!--<PackageReference Include="System.Buffers" Version="4.5.0" />-->
+    <!--<PackageReference Include="System.ComponentModel.Annotations" Version="4.5.0" />-->
+    <!--<PackageReference Include="System.Memory" Version="4.5.1" />-->
+    <PackageReference Include="MSBuild.Sdk.Extras" Version="1.6.47" PrivateAssets="All" />
+    <PackageReference Include="SourceLink.Embed.AllSourceFiles" Version="2.8.3" PrivateAssets="all" />
+    <PackageReference Include="SourceLink.Copy.PdbFiles" Version="2.8.3" PrivateAssets="All" />
+
+    <PackageReference Include="Fody" Version="3.2.9">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
+    </PackageReference>
+
+    <PackageReference Include="PropertyChanged.Fody" Version="2.5.13">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
+    </PackageReference>
+
+  </ItemGroup>
+
+  <ItemGroup Condition=" '$(TargetFramework)' == 'uap10.0.17134' ">
+    <PackageReference Include="Microsoft.NETCore.UniversalWindowsPlatform" Version="6.1.7" />
+  </ItemGroup>
+
+  <ItemGroup Condition=" '$(TargetFramework)' == 'MonoAndroid81' ">
+    <!--<Reference Include="System.ComponentModel.DataAnnotations" />-->
+  </ItemGroup>
+
+  <!--<ItemGroup Condition="'$(TargetFramework)' == 'netcoreapp2.0'">
+    <PackageReference Include="Microsoft.AspNetCore" Version="2.1.4" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="2.1.4" />
+  </ItemGroup>-->
+
+  <ItemGroup Condition=" '$(TargetFramework)' == 'Xamarin.iOS10' ">
+    <!--<Reference Include="System.ComponentModel.DataAnnotations" />-->
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Bit.CSharpClient.Prism\Bit.CSharpClient.Prism.csproj" />
+  </ItemGroup>
+
+  <Import Project="$(MSBuildSDKExtrasTargets)" Condition="Exists('$(MSBuildSDKExtrasTargets)')" />
+
+</Project>
