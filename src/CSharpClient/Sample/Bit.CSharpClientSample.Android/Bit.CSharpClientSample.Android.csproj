@@ -89,12 +89,16 @@
     <AndroidResource Include="Resources\values\Strings.xml" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Bit.CSharpClient.All\Bit.CSharpClient.All.csproj">
-      <Project>{9cbe7a88-d05e-4095-b408-26fd28c5758f}</Project>
-      <Name>Bit.CSharpClient.All</Name>
+    <ProjectReference Include="..\..\Bit.CSharpClient.Prism\Bit.CSharpClient.Prism.csproj">
+      <Project>{9CBE7A88-D05E-4095-B408-26FD28C5758F}</Project>
+      <Name>Bit.CSharpClient.Prism</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\Bit.CSharpClient.Rest\Bit.CSharpClient.Rest.csproj">
+      <Project>{5e85a77d-4c47-4ea5-b671-2b58654adc3a}</Project>
+      <Name>Bit.CSharpClient.Rest</Name>
     </ProjectReference>
     <ProjectReference Include="..\Bit.CSharpClientSample\Bit.CSharpClientSample.csproj">
-      <Project>{67a1702e-8891-4735-8570-145a3bd984d7}</Project>
+      <Project>{857d284d-5bec-403f-8d46-1e830baaa5f5}</Project>
       <Name>Bit.CSharpClientSample</Name>
     </ProjectReference>
   </ItemGroup>

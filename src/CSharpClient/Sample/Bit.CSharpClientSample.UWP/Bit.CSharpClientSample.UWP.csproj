@@ -128,17 +128,21 @@
     <PackageReference Include="Xamarin.Forms" Version="3.2.0.871581" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Bit.CSharpClient.All\Bit.CSharpClient.All.csproj">
-      <Project>{9cbe7a88-d05e-4095-b408-26fd28c5758f}</Project>
-      <Name>Bit.CSharpClient.All</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Bit.CSharpClientSample\Bit.CSharpClientSample.csproj">
-      <Project>{67a1702e-8891-4735-8570-145a3bd984d7}</Project>
-      <Name>Bit.CSharpClientSample</Name>
-    </ProjectReference>
+    <None Include="Bit.CSharpClientSample.UWP_TemporaryKey.pfx" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Bit.CSharpClientSample.UWP_TemporaryKey.pfx" />
+    <ProjectReference Include="..\..\Bit.CSClient.Data.EntityFrameworkCore\Bit.CSClient.Data.EntityFrameworkCore.csproj">
+      <Project>{facf93e3-efdf-4d56-b414-be2734ad7fef}</Project>
+      <Name>Bit.CSClient.Data.EntityFrameworkCore</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\Bit.CSharpClient.Prism\Bit.CSharpClient.Prism.csproj">
+      <Project>{9CBE7A88-D05E-4095-B408-26FD28C5758F}</Project>
+      <Name>Bit.CSharpClient.Prism</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Bit.CSharpClientSample\Bit.CSharpClientSample.csproj">
+      <Project>{857d284d-5bec-403f-8d46-1e830baaa5f5}</Project>
+      <Name>Bit.CSharpClientSample</Name>
+    </ProjectReference>
   </ItemGroup>
   <PropertyGroup Condition=" '$(VisualStudioVersion)' == '' or '$(VisualStudioVersion)' &lt; '14.0' ">
     <VisualStudioVersion>14.0</VisualStudioVersion>

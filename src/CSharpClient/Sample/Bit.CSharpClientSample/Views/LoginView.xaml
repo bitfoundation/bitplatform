@@ -1,0 +1,64 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage
+    x:Class="Bit.CSharpClientSample.Views.LoginView"
+    xmlns="http://xamarin.com/schemas/2014/forms"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:bitView="clr-namespace:Bit.View;assembly=Bit.CSharpClient.Prism"
+    xmlns:vm="clr-namespace:Bit.CSharpClientSample.ViewModels"
+    x:DataType="vm:LoginViewModel">
+  <ContentPage.Behaviors>
+    <bitView:AdaptiveBehavior Orientation="Portrait">
+      <bitView:SetPropertyAction Property="BackgroundColor" Value="LightGreen" />
+      <bitView:SetPropertyAction
+          TargetElement="{x:Reference Test}"
+          Property="BackgroundColor"
+          Value="LightGreen" />
+    </bitView:AdaptiveBehavior>
+    <bitView:AdaptiveBehavior Orientation="Landscape">
+      <bitView:SetPropertyAction Property="BackgroundColor" Value="LightBlue" />
+      <bitView:SetPropertyAction
+          TargetElement="{x:Reference Test}"
+          Property="BackgroundColor"
+          Value="LightBlue" />
+    </bitView:AdaptiveBehavior>
+    <bitView:AdaptiveBehavior MinWidth="600" MaxWidth="800">
+      <bitView:SetPropertyAction
+          TargetElement="{x:Reference Test}"
+          Property="IsVisible"
+          Value="True" />
+    </bitView:AdaptiveBehavior>
+    <bitView:AdaptiveBehavior MinWidth="800" MaxWidth="1000">
+      <bitView:SetPropertyAction
+          TargetElement="{x:Reference Test}"
+          Property="IsVisible"
+          Value="True" />
+    </bitView:AdaptiveBehavior>
+    <bitView:AdaptiveBehavior MinWidth="1000" MaxWidth="1200">
+      <bitView:SetPropertyAction
+          TargetElement="{x:Reference Test}"
+          Property="IsVisible"
+          Value="True" />
+    </bitView:AdaptiveBehavior>
+    <bitView:AdaptiveBehavior MinWidth="1200">
+      <bitView:SetPropertyAction
+          TargetElement="{x:Reference Test}"
+          Property="IsVisible"
+          Value="False" />
+    </bitView:AdaptiveBehavior>
+  </ContentPage.Behaviors>
+
+  <StackLayout>
+    <Entry Text="{Binding UserName}" />
+    <Entry Text="{Binding Password}" />
+    <Button Command="{Binding LoginUsingCredentialsCommand}" Text="Login using credentials" />
+    <Button Command="{Binding LoginUsingBrowserCommand}" Text="Login using Browser" />
+    <Button Command="{Binding LoginUsingGooglePlusCommand}" Text="Login using Google" />
+    <Button Command="{Binding SkipCommand}" Text="Skip" />
+
+    <Button x:Name="Test" Text="UI Tests" />
+
+    <bitView:Checkbox Text="Test" />
+    <bitView:Checkbox IsEnabled="False" Text="Test" />
+
+  </StackLayout>
+</ContentPage>
