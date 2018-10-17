@@ -111,9 +111,9 @@
     <PackageReference Include="Xamarin.Forms" Version="3.2.0.871581" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\Bit.CSClient.Data.EntityFrameworkCore\Bit.CSClient.Data.EntityFrameworkCore.csproj">
+    <ProjectReference Include="..\..\Bit.CSharpClient.Data.EntityFrameworkCore\Bit.CSharpClient.Data.EntityFrameworkCore.csproj">
       <Project>{facf93e3-efdf-4d56-b414-be2734ad7fef}</Project>
-      <Name>Bit.CSClient.Data.EntityFrameworkCore</Name>
+      <Name>Bit.CSharpClient.Data.EntityFrameworkCore</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\Bit.CSharpClient.Prism\Bit.CSharpClient.Prism.csproj">
       <Project>{9CBE7A88-D05E-4095-B408-26FD28C5758F}</Project>

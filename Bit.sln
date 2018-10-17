@@ -62,9 +62,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Bit.CSharpClient.Rest", "sr
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Bit.CSharpClient.OData", "src\CSharpClient\Bit.CSharpClient.OData\Bit.CSharpClient.OData.csproj", "{D1D4AAB4-CAC0-4C29-AADD-2FF6858FF0FE}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Bit.CSClient.Data.EntityFrameworkCore", "src\CSharpClient\Bit.CSClient.Data.EntityFrameworkCore\Bit.CSClient.Data.EntityFrameworkCore.csproj", "{FACF93E3-EFDF-4D56-B414-BE2734AD7FEF}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Bit.CSharpClient.Data.EntityFrameworkCore", "src\CSharpClient\Bit.CSharpClient.Data.EntityFrameworkCore\Bit.CSharpClient.Data.EntityFrameworkCore.csproj", "{FACF93E3-EFDF-4D56-B414-BE2734AD7FEF}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Bit.CSClient.Sync", "src\CSharpClient\Bit.CSClient.Sync\Bit.CSClient.Sync.csproj", "{1949F7A5-667C-4E74-961F-15A593C30799}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Bit.CSharpClient.Sync", "src\CSharpClient\Bit.CSharpClient.Sync\Bit.CSharpClient.Sync.csproj", "{1949F7A5-667C-4E74-961F-15A593C30799}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Sample", "Sample", "{C81E8A37-72CF-477C-845F-5CFAD5E96088}"
 EndProject

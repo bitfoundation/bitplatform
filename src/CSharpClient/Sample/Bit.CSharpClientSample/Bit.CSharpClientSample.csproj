@@ -42,7 +42,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\Bit.CSClient.Sync\Bit.CSClient.Sync.csproj" />
+    <ProjectReference Include="..\..\Bit.CSharpClient.Sync\Bit.CSharpClient.Sync.csproj" />
   </ItemGroup>
 
   <Import Project="$(MSBuildSDKExtrasTargets)" Condition="Exists('$(MSBuildSDKExtrasTargets)')" />

@@ -9,7 +9,7 @@
     <Authors>Bit Foundation</Authors>
     <Company>Bit Foundation</Company>
     <Product>Bit Framework</Product>
-    <Description>Bit.CSClient.Sync</Description>
+    <Description>Bit.CSharpClient.Data.EntityFrameworkCore</Description>
     <Copyright>Copyright © Bit Foundation 2017</Copyright>
     <PackageLicenseUrl>https://github.com/bit-foundation/bit-framework/blob/master/LICENSE</PackageLicenseUrl>
     <PackageProjectUrl>https://github.com/bit-foundation/bit-framework</PackageProjectUrl>
@@ -37,10 +37,14 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="2.1.4" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="2.1.4" />
+    <PackageReference Include="System.Buffers" Version="4.5.0" />
+    <PackageReference Include="System.ComponentModel.Annotations" Version="4.5.0" />
+    <PackageReference Include="System.Memory" Version="4.5.1" />
     <PackageReference Include="MSBuild.Sdk.Extras" Version="1.6.47" PrivateAssets="All" />
     <PackageReference Include="SourceLink.Embed.AllSourceFiles" Version="2.8.3" PrivateAssets="all" />
     <PackageReference Include="SourceLink.Copy.PdbFiles" Version="2.8.3" PrivateAssets="All" />
-    <PackageReference Include="Bit.System.Linq.Dynamic" Version="1.1.0" />
 
     <PackageReference Include="Fody" Version="3.2.9">
       <PrivateAssets>all</PrivateAssets>
@@ -54,9 +58,21 @@
 
   </ItemGroup>
 
+  <ItemGroup Condition=" '$(TargetFramework)' == 'MonoAndroid81' ">
+    <Reference Include="System.ComponentModel.DataAnnotations" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(TargetFramework)' == 'netcoreapp2.0'">
+    <PackageReference Include="Microsoft.AspNetCore" Version="2.1.4" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="2.1.4" />
+  </ItemGroup>
+
+  <ItemGroup Condition=" '$(TargetFramework)' == 'Xamarin.iOS10' ">
+    <Reference Include="System.ComponentModel.DataAnnotations" />
+  </ItemGroup>
+
   <ItemGroup>
-    <ProjectReference Include="..\Bit.CSClient.Data.EntityFrameworkCore\Bit.CSClient.Data.EntityFrameworkCore.csproj" />
-    <ProjectReference Include="..\Bit.CSharpClient.OData\Bit.CSharpClient.OData.csproj" />
+    <ProjectReference Include="..\Bit.CSharpClient.Prism\Bit.CSharpClient.Prism.csproj" />
   </ItemGroup>
 
   <Import Project="$(MSBuildSDKExtrasTargets)" Condition="Exists('$(MSBuildSDKExtrasTargets)')" />
