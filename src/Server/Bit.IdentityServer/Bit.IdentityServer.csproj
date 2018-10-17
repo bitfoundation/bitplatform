@@ -25,7 +25,7 @@
 
   <ItemGroup>
     <PackageReference Include="AntiXSS" Version="4.3.0" />
-    <PackageReference Include="IdentityServer3" Version="2.6.2" />
+    <PackageReference Include="IdentityServer3" Version="2.6.3" />
     <PackageReference Include="Microsoft.Owin.Security.Facebook" Version="4.0.0" />
     <PackageReference Include="Microsoft.Owin.Security.Google" Version="4.0.0" />
     <PackageReference Include="Microsoft.Owin.Security.MicrosoftAccount" Version="4.0.0" />
