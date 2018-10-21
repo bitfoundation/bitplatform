@@ -27,10 +27,10 @@
     "core-js": "^2.5.7",
     "decimal.js": "^10.0.1",
     "event-source-polyfill": "^0.0.16",
-    "pubsub-js": "^1.6.1",
+    "pubsub-js": "^1.7.0",
     "regenerator": "^0.13.2",
     "signalr": "^2.3.0",
-    "whatwg-fetch": "^2.0.4"
+    "whatwg-fetch": "^3.0.0"
   },
   "dependencies": {
     "@bit/jaydata": "^1.5.16"
