@@ -1,5 +1,7 @@
 ﻿using Autofac;
+using Bit.ViewModel;
 using Prism.Autofac;
+using Prism.Mvvm;
 using System;
 using Xamarin.Forms;
 
@@ -7,6 +9,16 @@ namespace Prism.Ioc
 {
     public static class IContainerRegistryExtensions
     {
+        public static IContainerRegistry RegisterPartialView<TPartialView, TPartialViewModel>(this IContainerRegistry containerRegistry)
+            where TPartialView : TemplatedView
+            where TPartialViewModel : BitViewModelBase
+        {
+            ViewModelLocationProvider.Register<TPartialView>(() => containerRegistry.GetContainer().Resolve<TPartialViewModel>());
+            containerRegistry.GetBuilder().RegisterType<TPartialViewModel>().AsSelf().PropertiesAutowired(PropertyWiringOptions.PreserveSetValues);
+
+            return containerRegistry;
+        }
+
         public static void RegisterForNav<TView>(this IContainerRegistry containerRegistry, string name = null)
             where TView : Page
         {

@@ -78,5 +78,7 @@ namespace Bit.ViewModel
         {
             return Task.CompletedTask;
         }
+
+        public INavigationService NavigationService { get; set; }
     }
 }
