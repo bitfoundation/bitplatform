@@ -26,7 +26,7 @@
     <MtouchArch>x86_64</MtouchArch>
     <MtouchLink>None</MtouchLink>
     <MtouchDebug>true</MtouchDebug>
-    <MtouchExtraArgs>--time --time --dsym=false</MtouchExtraArgs>
+    <MtouchExtraArgs>--time --time --dsym=false -v -v -v -v</MtouchExtraArgs>
     <DeviceSpecificBuild>true</DeviceSpecificBuild>
     <MtouchFastDev>true</MtouchFastDev>
     <CodesignEntitlements>Entitlements.plist</CodesignEntitlements>
@@ -115,9 +115,21 @@
       <Project>{facf93e3-efdf-4d56-b414-be2734ad7fef}</Project>
       <Name>Bit.CSharpClient.Data.EntityFrameworkCore</Name>
     </ProjectReference>
+    <ProjectReference Include="..\..\Bit.CSharpClient.OData\Bit.CSharpClient.OData.csproj">
+      <Project>{d1d4aab4-cac0-4c29-aadd-2ff6858ff0fe}</Project>
+      <Name>Bit.CSharpClient.OData</Name>
+    </ProjectReference>
     <ProjectReference Include="..\..\Bit.CSharpClient.Prism\Bit.CSharpClient.Prism.csproj">
-      <Project>{9CBE7A88-D05E-4095-B408-26FD28C5758F}</Project>
+      <Project>{9cbe7a88-d05e-4095-b408-26fd28c5758f}</Project>
       <Name>Bit.CSharpClient.Prism</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\Bit.CSharpClient.Rest\Bit.CSharpClient.Rest.csproj">
+      <Project>{5e85a77d-4c47-4ea5-b671-2b58654adc3a}</Project>
+      <Name>Bit.CSharpClient.Rest</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\Bit.CSharpClient.Sync\Bit.CSharpClient.Sync.csproj">
+      <Project>{1949f7a5-667c-4e74-961f-15a593c30799}</Project>
+      <Name>Bit.CSharpClient.Sync</Name>
     </ProjectReference>
     <ProjectReference Include="..\Bit.CSharpClientSample\Bit.CSharpClientSample.csproj">
       <Project>{857d284d-5bec-403f-8d46-1e830baaa5f5}</Project>
