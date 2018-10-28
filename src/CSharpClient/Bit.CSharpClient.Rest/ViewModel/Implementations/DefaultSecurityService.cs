@@ -22,7 +22,7 @@ namespace Bit.ViewModel.Implementations
 
         public virtual IClientAppProfile ClientAppProfile { get; set; }
         public virtual IDateTimeProvider DateTimeProvider { get; set; }
-        public virtual IContainer Container { get; set; }
+        public virtual Lazy<IContainer> ContainerProvider { get; set; }
 
         protected TaskCompletionSource<Token> CurrentLoginTaskCompletionSource { get; set; }
         protected string CurrentAction { get; set; }
@@ -45,7 +45,7 @@ namespace Bit.ViewModel.Implementations
             if (scopes == null)
                 scopes = "openid profile user_info".Split(' ');
 
-            TokenClient tokenClient = Container.Resolve<TokenClient>(new NamedParameter("clientId", client_id), new NamedParameter("secret", client_secret));
+            TokenClient tokenClient = ContainerProvider.Value.Resolve<TokenClient>(new NamedParameter("clientId", client_id), new NamedParameter("secret", client_secret));
 
             TokenResponse tokenResponse = await tokenClient.RequestResourceOwnerPasswordAsync(username, password, scope: string.Join(" ", scopes), cancellationToken: cancellationToken).ConfigureAwait(false);
 

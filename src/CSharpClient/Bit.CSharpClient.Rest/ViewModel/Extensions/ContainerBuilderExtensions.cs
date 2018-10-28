@@ -15,11 +15,15 @@ namespace Prism.Ioc
             if (containerBuilder == null)
                 throw new ArgumentNullException(nameof(containerBuilder));
 
-            containerBuilder.RegisterType<DefaultSecurityService>().As<ISecurityService>().SingleInstance().PropertiesAutowired(PropertyWiringOptions.PreserveSetValues).PreserveExistingDefaults();
-
+            containerBuilder.RegisterType<DefaultSecurityService>().As<ISecurityService>().SingleInstance().PropertiesAutowired(PropertyWiringOptions.PreserveSetValues).PreserveExistingDefaults()
+                .OnActivated(activatedEventArgs =>
+                {
 #if iOS
-            Bit.iOS.BitFormsApplicationDelegate.OnSsoLoginLogoutRedirectCompleted = DefaultSecurityService.Current.OnSsoLoginLogoutRedirectCompleted;
+                    if (Bit.iOS.BitFormsApplicationDelegate.OnSsoLoginLogoutRedirectCompleted == null)
+                        Bit.iOS.BitFormsApplicationDelegate.OnSsoLoginLogoutRedirectCompleted = activatedEventArgs.Instance.OnSsoLoginLogoutRedirectCompleted;
 #endif
+                })
+                .AutoActivate();
 
             containerBuilder.Register((c, parameters) =>
             {
