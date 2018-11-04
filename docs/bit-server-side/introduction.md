@@ -1,4 +1,4 @@
-# Bit server side Introduction
+# Bit server side introduction
 
 You can develop server side apps using Bit framework.
 
