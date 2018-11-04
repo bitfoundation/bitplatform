@@ -2,10 +2,12 @@
 using Bit.Model.Events;
 using Bit.View;
 using Bit.ViewModel;
+using Bit.ViewModel.Implementations;
 using Prism;
 using Prism.Autofac;
 using Prism.Events;
 using Prism.Ioc;
+using Prism.Logging;
 using Prism.Plugin.Popups;
 using System;
 using System.Runtime.CompilerServices;
@@ -106,6 +108,7 @@ namespace Bit
         {
             ContainerBuilder containerBuilder = containerRegistry.GetBuilder();
 
+            containerRegistry.Register<ILoggerFacade, BitPrismLogger>();
             containerBuilder.Register(c => Container).SingleInstance().PreserveExistingDefaults();
             containerBuilder.Register(c => Container.GetContainer()).PreserveExistingDefaults();
             containerRegistry.RegisterPopupNavigationService();
