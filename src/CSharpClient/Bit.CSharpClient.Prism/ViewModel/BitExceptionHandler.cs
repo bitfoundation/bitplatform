@@ -14,7 +14,7 @@ namespace Bit.ViewModel
         {
             properties = properties ?? new Dictionary<string, string>();
 
-            if (exp != null)
+            if (exp != null && Debugger.IsAttached)
             {
                 Debug.WriteLine($"DateTime: {DateTime.Now.ToLongTimeString()} Message: {exp}", category: "ApplicationException");
             }
