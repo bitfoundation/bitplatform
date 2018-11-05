@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>MonoAndroid81;Xamarin.iOS10;netstandard2.0;netcoreapp2.0;</TargetFrameworks>
+    <TargetFrameworks>netstandard2.0;netcoreapp2.0;</TargetFrameworks>
     <OutputType Condition="'$(TargetFramework)' == 'netcoreapp2.0'">Exe</OutputType>
   </PropertyGroup>
 
@@ -32,15 +32,7 @@
   <ItemGroup Condition="'$(TargetFramework)' != 'netcoreapp2.0'">
     <Compile Remove="Program.cs" />
   </ItemGroup>
-
-  <ItemGroup Condition="'$(TargetFramework)' == 'Xamarin.iOS10'">
-    <Reference Include="System.ComponentModel.DataAnnotations" />
-  </ItemGroup>
-
-  <ItemGroup Condition="'$(TargetFramework)' == 'MonoAndroid81'">
-    <Reference Include="System.ComponentModel.DataAnnotations" />
-  </ItemGroup>
-
+  
   <ItemGroup>
     <ProjectReference Include="..\..\Bit.CSharpClient.Sync\Bit.CSharpClient.Sync.csproj" />
   </ItemGroup>
