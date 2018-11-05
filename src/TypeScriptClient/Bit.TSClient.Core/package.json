@@ -26,7 +26,7 @@
     "@bit/encoder": "^1.0.0",
     "core-js": "^2.5.7",
     "decimal.js": "^10.0.1",
-    "event-source-polyfill": "^0.0.16",
+    "event-source-polyfill": "^1.0.3",
     "pubsub-js": "^1.7.0",
     "regenerator": "^0.13.2",
     "signalr": "^2.3.0",

@@ -23,7 +23,7 @@
     "@types/jasmine-jquery": "^1.5.32"
   },
   "dependencies": {
-    "jasmine": "^3.2.0",
+    "jasmine": "^3.3.0",
     "jasmine-jquery": "^2.1.1"
   }
 }
