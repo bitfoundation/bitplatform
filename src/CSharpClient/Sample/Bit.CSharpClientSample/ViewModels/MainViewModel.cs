@@ -19,7 +19,6 @@ namespace Bit.CSharpClientSample.ViewModels
         public IODataClient ODataClient { get; set; }
         public HttpClient HttpClient { get; set; }
         public ISecurityService SecurityService { get; set; }
-        public INavigationService NavigationService { get; set; }
 
         public BitDelegateCommand SyncCommand { get; set; }
         public BitDelegateCommand SendHttpRequestCommand { get; set; }

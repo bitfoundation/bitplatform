@@ -10,7 +10,6 @@ namespace Bit.CSharpClientSample.ViewModels
     {
         public ISecurityService SecurityService { get; set; }
         public IPageDialogService PageDialogService { get; set; }
-        public INavigationService NavigationService { get; set; }
 
         public BitDelegateCommand LoginUsingCredentialsCommand { get; set; }
         public BitDelegateCommand LoginUsingBrowserCommand { get; set; }
