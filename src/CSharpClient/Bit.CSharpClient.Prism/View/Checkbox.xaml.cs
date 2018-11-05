@@ -102,7 +102,7 @@ namespace Bit.View
         }
 
         [EditorBrowsable(EditorBrowsableState.Never)]
-        public ICommand CheckTappedCommand { get; set; }
+        public ICommand CheckTappedCommand { get; protected set; }
 
         public virtual Xamarin.Forms.View Content { get; set; }
 
