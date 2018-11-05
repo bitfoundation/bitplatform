@@ -23,6 +23,12 @@ namespace Bit
 {
     public abstract class BitApplication : PrismApplication
     {
+        public BitApplication() 
+            : this(null)
+        {
+
+        }
+
         protected BitApplication(IPlatformInitializer platformInitializer = null)
             : base(platformInitializer)
         {

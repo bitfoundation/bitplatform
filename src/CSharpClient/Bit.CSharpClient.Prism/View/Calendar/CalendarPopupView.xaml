@@ -1,0 +1,309 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<pages:PopupPage
+    x:Class="Bit.View.Calendar.CalendarPopupView"
+    xmlns="http://xamarin.com/schemas/2014/forms"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:calendar="clr-namespace:Bit.View.Calendar"
+    xmlns:pages="clr-namespace:Rg.Plugins.Popup.Pages;assembly=Rg.Plugins.Popup">
+
+    <pages:PopupPage.Resources>
+
+        <Style TargetType="calendar:CalendarPopupView">
+            <Setter Property="ControlTemplate">
+                <ControlTemplate>
+                    <StackLayout
+                        Margin="5,0"
+                        BackgroundColor="White"
+                        BindingContext="{TemplateBinding}"
+                        HorizontalOptions="Center"
+                        Spacing="0"
+                        VerticalOptions="Center"
+                        WidthRequest="400">
+                        <StackLayout.Resources>
+
+                            <Style TargetType="Label">
+                                <Setter Property="VerticalTextAlignment" Value="Center" />
+                                <Setter Property="HorizontalTextAlignment" Value="Center" />
+                                <Setter Property="VerticalOptions" Value="CenterAndExpand" />
+                                <Setter Property="TextColor" Value="DimGray" />
+                                <Setter Property="BackgroundColor" Value="WhiteSmoke" />
+                                <Setter Property="FontFamily" Value="{Binding FontFamily}" />
+                                <Setter Property="FontSize" Value="Micro" />
+                                <Setter Property="Margin" Value="0,1" />
+                            </Style>
+
+                            <Style BaseResourceKey="DefaultCalendarDayViewStyle" TargetType="calendar:CalendarDayView">
+                                <Setter Property="SelectDateCommand" Value="{Binding SelectDateCommand}" />
+                                <Setter Property="FontFamily" Value="{Binding FontFamily}" />
+                                <Setter Property="SelectedColor" Value="{Binding SelectedColor}" />
+                                <Setter Property="TodayColor" Value="{Binding TodayColor}" />
+                            </Style>
+
+                        </StackLayout.Resources>
+
+                        <StackLayout
+                            Padding="15,5"
+                            CompressedLayout.IsHeadless="True"
+                            FlowDirection="LeftToRight"
+                            Orientation="Horizontal">
+                            <StackLayout.Resources>
+                                <Style TargetType="Button">
+                                    <Setter Property="FontSize" Value="20" />
+                                    <Setter Property="BackgroundColor" Value="Transparent" />
+                                    <Setter Property="TextColor" Value="DimGray" />
+                                </Style>
+                            </StackLayout.Resources>
+                            <Button
+                                Command="{Binding ShowNextMonthCommand}"
+                                HorizontalOptions="Start"
+                                Text="&lt;" />
+                            <Label
+                                BackgroundColor="Transparent"
+                                FontSize="Medium"
+                                HorizontalOptions="CenterAndExpand"
+                                Text="{Binding CalendarTitle}"
+                                TextColor="DimGray" />
+                            <Button
+                                Command="{Binding ShowPreviousMonthCommand}"
+                                HorizontalOptions="End"
+                                Text="&gt;" />
+                        </StackLayout>
+
+                        <Grid
+                            ColumnSpacing="0"
+                            CompressedLayout.IsHeadless="True"
+                            RowSpacing="0">
+
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="1" />
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="2" />
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                            </Grid.RowDefinitions>
+
+                            <BoxView
+                                Grid.Row="0"
+                                Grid.ColumnSpan="7"
+                                BackgroundColor="LightGray" />
+                            <BoxView
+                                Grid.Row="2"
+                                Grid.ColumnSpan="7"
+                                BackgroundColor="LightGray"
+                                HeightRequest="1"
+                                VerticalOptions="StartAndExpand" />
+
+                            <Label
+                                Grid.Row="1"
+                                Grid.Column="0"
+                                Text="{Binding DaysOfWeekNames[0]}" />
+                            <Label
+                                Grid.Row="1"
+                                Grid.Column="1"
+                                Text="{Binding DaysOfWeekNames[1]}" />
+                            <Label
+                                Grid.Row="1"
+                                Grid.Column="2"
+                                Text="{Binding DaysOfWeekNames[2]}" />
+                            <Label
+                                Grid.Row="1"
+                                Grid.Column="3"
+                                Text="{Binding DaysOfWeekNames[3]}" />
+                            <Label
+                                Grid.Row="1"
+                                Grid.Column="4"
+                                Text="{Binding DaysOfWeekNames[4]}" />
+                            <Label
+                                Grid.Row="1"
+                                Grid.Column="5"
+                                Text="{Binding DaysOfWeekNames[5]}" />
+                            <Label
+                                Grid.Row="1"
+                                Grid.Column="6"
+                                Text="{Binding DaysOfWeekNames[6]}" />
+
+                            <calendar:CalendarDayView
+                                Grid.Row="3"
+                                Grid.Column="0"
+                                Day="{Binding Days[0]}" />
+                            <calendar:CalendarDayView
+                                Grid.Row="3"
+                                Grid.Column="1"
+                                Day="{Binding Days[1]}" />
+                            <calendar:CalendarDayView
+                                Grid.Row="3"
+                                Grid.Column="2"
+                                Day="{Binding Days[2]}" />
+                            <calendar:CalendarDayView
+                                Grid.Row="3"
+                                Grid.Column="3"
+                                Day="{Binding Days[3]}" />
+                            <calendar:CalendarDayView
+                                Grid.Row="3"
+                                Grid.Column="4"
+                                Day="{Binding Days[4]}" />
+                            <calendar:CalendarDayView
+                                Grid.Row="3"
+                                Grid.Column="5"
+                                Day="{Binding Days[5]}" />
+                            <calendar:CalendarDayView
+                                Grid.Row="3"
+                                Grid.Column="6"
+                                Day="{Binding Days[6]}" />
+
+                            <calendar:CalendarDayView
+                                Grid.Row="4"
+                                Grid.Column="0"
+                                Day="{Binding Days[7]}" />
+                            <calendar:CalendarDayView
+                                Grid.Row="4"
+                                Grid.Column="1"
+                                Day="{Binding Days[8]}" />
+                            <calendar:CalendarDayView
+                                Grid.Row="4"
+                                Grid.Column="2"
+                                Day="{Binding Days[9]}" />
+                            <calendar:CalendarDayView
+                                Grid.Row="4"
+                                Grid.Column="3"
+                                Day="{Binding Days[10]}" />
+                            <calendar:CalendarDayView
+                                Grid.Row="4"
+                                Grid.Column="4"
+                                Day="{Binding Days[11]}" />
+                            <calendar:CalendarDayView
+                                Grid.Row="4"
+                                Grid.Column="5"
+                                Day="{Binding Days[12]}" />
+                            <calendar:CalendarDayView
+                                Grid.Row="4"
+                                Grid.Column="6"
+                                Day="{Binding Days[13]}" />
+                            <calendar:CalendarDayView
+                                Grid.Row="5"
+                                Grid.Column="0"
+                                Day="{Binding Days[14]}" />
+                            <calendar:CalendarDayView
+                                Grid.Row="5"
+                                Grid.Column="1"
+                                Day="{Binding Days[15]}" />
+                            <calendar:CalendarDayView
+                                Grid.Row="5"
+                                Grid.Column="2"
+                                Day="{Binding Days[16]}" />
+                            <calendar:CalendarDayView
+                                Grid.Row="5"
+                                Grid.Column="3"
+                                Day="{Binding Days[17]}" />
+                            <calendar:CalendarDayView
+                                Grid.Row="5"
+                                Grid.Column="4"
+                                Day="{Binding Days[18]}" />
+                            <calendar:CalendarDayView
+                                Grid.Row="5"
+                                Grid.Column="5"
+                                Day="{Binding Days[19]}" />
+                            <calendar:CalendarDayView
+                                Grid.Row="5"
+                                Grid.Column="6"
+                                Day="{Binding Days[20]}" />
+
+                            <calendar:CalendarDayView
+                                Grid.Row="6"
+                                Grid.Column="0"
+                                Day="{Binding Days[21]}" />
+                            <calendar:CalendarDayView
+                                Grid.Row="6"
+                                Grid.Column="1"
+                                Day="{Binding Days[22]}" />
+                            <calendar:CalendarDayView
+                                Grid.Row="6"
+                                Grid.Column="2"
+                                Day="{Binding Days[23]}" />
+                            <calendar:CalendarDayView
+                                Grid.Row="6"
+                                Grid.Column="3"
+                                Day="{Binding Days[24]}" />
+                            <calendar:CalendarDayView
+                                Grid.Row="6"
+                                Grid.Column="4"
+                                Day="{Binding Days[25]}" />
+                            <calendar:CalendarDayView
+                                Grid.Row="6"
+                                Grid.Column="5"
+                                Day="{Binding Days[26]}" />
+                            <calendar:CalendarDayView
+                                Grid.Row="6"
+                                Grid.Column="6"
+                                Day="{Binding Days[27]}" />
+
+                            <calendar:CalendarDayView
+                                Grid.Row="7"
+                                Grid.Column="0"
+                                Day="{Binding Days[28]}" />
+                            <calendar:CalendarDayView
+                                Grid.Row="7"
+                                Grid.Column="1"
+                                Day="{Binding Days[29]}" />
+                            <calendar:CalendarDayView
+                                Grid.Row="7"
+                                Grid.Column="2"
+                                Day="{Binding Days[30]}" />
+                            <calendar:CalendarDayView
+                                Grid.Row="7"
+                                Grid.Column="3"
+                                Day="{Binding Days[31]}" />
+                            <calendar:CalendarDayView
+                                Grid.Row="7"
+                                Grid.Column="4"
+                                Day="{Binding Days[32]}" />
+                            <calendar:CalendarDayView
+                                Grid.Row="7"
+                                Grid.Column="5"
+                                Day="{Binding Days[33]}" />
+                            <calendar:CalendarDayView
+                                Grid.Row="7"
+                                Grid.Column="6"
+                                BindingContext="{Binding}"
+                                Day="{Binding Days[34]}" />
+
+                            <calendar:CalendarDayView
+                                Grid.Row="8"
+                                Grid.Column="0"
+                                Day="{Binding Days[35]}" />
+                            <calendar:CalendarDayView
+                                Grid.Row="8"
+                                Grid.Column="1"
+                                Day="{Binding Days[36]}" />
+                            <calendar:CalendarDayView
+                                Grid.Row="8"
+                                Grid.Column="2"
+                                Day="{Binding Days[37]}" />
+                            <calendar:CalendarDayView
+                                Grid.Row="8"
+                                Grid.Column="3"
+                                Day="{Binding Days[38]}" />
+                            <calendar:CalendarDayView
+                                Grid.Row="8"
+                                Grid.Column="4"
+                                Day="{Binding Days[39]}" />
+                            <calendar:CalendarDayView
+                                Grid.Row="8"
+                                Grid.Column="5"
+                                Day="{Binding Days[40]}" />
+                            <calendar:CalendarDayView
+                                Grid.Row="8"
+                                Grid.Column="6"
+                                Day="{Binding Days[41]}" />
+                        </Grid>
+
+                    </StackLayout>
+                </ControlTemplate>
+            </Setter>
+        </Style>
+    </pages:PopupPage.Resources>
+</pages:PopupPage>

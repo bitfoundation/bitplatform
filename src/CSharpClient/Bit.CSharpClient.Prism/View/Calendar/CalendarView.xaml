@@ -1,0 +1,19 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<TemplatedView
+    x:Class="Bit.View.Calendar.CalendarView"
+    xmlns="http://xamarin.com/schemas/2014/forms"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:calendar="clr-namespace:Bit.View.Calendar">
+    <TemplatedView.Resources>
+        <Style TargetType="calendar:CalendarView">
+            <Setter Property="ControlTemplate">
+                <ControlTemplate>
+                    <Button
+                        Command="{TemplateBinding OpenPopupCommand}"
+                        FontFamily="{TemplateBinding FontFamily}"
+                        Text="{TemplateBinding DisplayText}" />
+                </ControlTemplate>
+            </Setter>
+        </Style>
+    </TemplatedView.Resources>
+</TemplatedView>

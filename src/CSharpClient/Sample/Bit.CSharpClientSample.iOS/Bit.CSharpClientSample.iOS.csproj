@@ -79,6 +79,9 @@
   <ItemGroup>
     <Compile Include="Main.cs" />
     <Compile Include="AppDelegate.cs" />
+    <BundleResource Include="..\Bit.CSharpClientSample.Android\Assets\Vazir-Light-FD-WOL.ttf">
+      <Link>Resources\Vazir-Light-FD-WOL.ttf</Link>
+    </BundleResource>
     <None Include="Entitlements.plist" />
     <None Include="Info.plist" />
     <Compile Include="Properties\AssemblyInfo.cs" />

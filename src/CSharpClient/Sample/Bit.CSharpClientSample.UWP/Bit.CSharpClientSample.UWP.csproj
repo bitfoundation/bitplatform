@@ -127,6 +127,9 @@
     <PackageReference Include="Xamarin.Forms" Version="3.3.0.967583" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="..\Bit.CSharpClientSample.Android\Assets\Vazir-Light-FD-WOL.ttf">
+      <Link>Assets\Vazir-Light-FD-WOL.ttf</Link>
+    </Content>
     <None Include="Bit.CSharpClientSample.UWP_TemporaryKey.pfx" />
   </ItemGroup>
   <ItemGroup>

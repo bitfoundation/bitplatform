@@ -37,6 +37,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="NodaTime" Version="2.4.1" />
     <PackageReference Include="Prism.Plugin.Logging.Common" Version="1.1.1.230" />
     <PackageReference Include="Prism.Plugin.Popups" Version="2.1.0.228" />
     <PackageReference Include="Prism.Autofac.Forms" Version="7.1.0.431" />
@@ -72,6 +73,18 @@
     <PackageReference Include="Xamarin.Android.Support.v7.MediaRouter" Version="27.0.2.1" />
     <PackageReference Include="Xamarin.Android.Support.CustomTabs" Version="27.0.2.1" />
     <PackageReference Include="Xamarin.Android.Support.Core.Utils" Version="27.0.2.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Update="View\Calendar\CalendarDayView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </EmbeddedResource>
+    <EmbeddedResource Update="View\Calendar\CalendarPopupView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </EmbeddedResource>
+    <EmbeddedResource Update="View\Calendar\CalendarView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </EmbeddedResource>
   </ItemGroup>
 
   <Import Project="$(MSBuildSDKExtrasTargets)" Condition="Exists('$(MSBuildSDKExtrasTargets)')" />
