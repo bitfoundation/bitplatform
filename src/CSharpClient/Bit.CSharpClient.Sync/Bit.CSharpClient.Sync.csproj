@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>MonoAndroid81;Xamarin.iOS10;uap10.0.17134;netstandard2.0;netcoreapp2.0;</TargetFrameworks>
+    <TargetFrameworks>MonoAndroid81;Xamarin.iOS10;uap10.0.16299;netstandard2.0;netcoreapp2.0;</TargetFrameworks>
     <RootNamespace>Bit</RootNamespace>
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
     <GeneratePackageOnBuild Condition=" '$(Configuration)' == 'Release' ">true</GeneratePackageOnBuild>
@@ -23,7 +23,7 @@
     <DefineConstants Condition=" '$(TargetFramework)' == 'MonoAndroid81' ">Android</DefineConstants>
     <DefineConstants Condition=" '$(TargetFramework)' == 'Xamarin.iOS10' ">iOS</DefineConstants>
     <DefineConstants Condition=" '$(TargetFramework)' == 'netcoreapp2.0' ">DotNetCore</DefineConstants>
-    <DefineConstants Condition=" '$(TargetFramework)' == 'uap10.0.17134' ">UWP</DefineConstants>
+    <DefineConstants Condition=" '$(TargetFramework)' == 'uap10.0.16299' ">UWP</DefineConstants>
     <DefineConstants Condition=" '$(TargetFramework)' == 'netstandard2.0' ">DotNetStandard</DefineConstants>
     <DocumentationFile>bin\$(Configuration)\$(TargetFramework)\$(AssemblyName).xml</DocumentationFile>
     <NoWarn>$(NoWarn);NU1605;CS1591;</NoWarn>
