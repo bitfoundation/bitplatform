@@ -26,7 +26,7 @@
   <ItemGroup>
     <PackageReference Include="Autofac" Version="4.8.1" />
     <PackageReference Include="Autofac.Owin" Version="4.2.0" />
-    <PackageReference Include="IdentityModel" Version="3.10.0" />
+    <PackageReference Include="IdentityModel" Version="3.10.1" />
     <PackageReference Include="Lambda2Js" Version="3.1.1" />
     <PackageReference Include="Microsoft.ApplicationInsights" Version="2.8.1" />
     <PackageReference Include="Microsoft.AspNet.WebApi.Client" Version="5.2.6" />

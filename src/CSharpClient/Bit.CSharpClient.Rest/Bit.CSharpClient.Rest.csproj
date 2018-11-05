@@ -37,13 +37,13 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="IdentityModel" Version="3.10.0" />
+    <PackageReference Include="IdentityModel" Version="3.10.1" />
     <PackageReference Include="Newtonsoft.Json" Version="11.0.2" />
-    <PackageReference Include="MSBuild.Sdk.Extras" Version="1.6.55" PrivateAssets="All" />
+    <PackageReference Include="MSBuild.Sdk.Extras" Version="1.6.60" PrivateAssets="All" />
     <PackageReference Include="SourceLink.Embed.AllSourceFiles" Version="2.8.3" PrivateAssets="all" />
     <PackageReference Include="SourceLink.Copy.PdbFiles" Version="2.8.3" PrivateAssets="All" />
 
-    <PackageReference Include="Fody" Version="3.2.12">
+    <PackageReference Include="Fody" Version="3.2.16">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
     </PackageReference>

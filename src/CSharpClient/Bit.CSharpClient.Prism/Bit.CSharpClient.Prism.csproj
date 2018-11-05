@@ -42,12 +42,13 @@
     <PackageReference Include="Prism.Autofac.Forms" Version="7.1.0.431" />
     <PackageReference Include="Xamanimation" Version="1.2.0" />
     <PackageReference Include="Xamarin.Essentials" Version="0.11.0-preview" />
-    <PackageReference Include="Xamarin.Forms" Version="3.3.0.912540" />
-    <PackageReference Include="MSBuild.Sdk.Extras" Version="1.6.55" PrivateAssets="All" />
+    <PackageReference Include="Rg.Plugins.Popup" Version="1.1.4.168" />
+    <PackageReference Include="Xamarin.Forms" Version="3.3.0.967583" />
+    <PackageReference Include="MSBuild.Sdk.Extras" Version="1.6.60" PrivateAssets="All" />
     <PackageReference Include="SourceLink.Embed.AllSourceFiles" Version="2.8.3" PrivateAssets="all" />
     <PackageReference Include="SourceLink.Copy.PdbFiles" Version="2.8.3" PrivateAssets="All" />
 
-    <PackageReference Include="Fody" Version="3.2.12">
+    <PackageReference Include="Fody" Version="3.2.16">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
     </PackageReference>
