@@ -23,8 +23,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Uno.SourceGeneration" Version="1.26.0" PrivateAssets="All" />
-    <PackageReference Include="Uno.SourceGenerationTasks" Version="1.26.0" PrivateAssets="None" />
+    <PackageReference Include="Uno.SourceGeneration" Version="1.28.0-dev.145" PrivateAssets="All" />
+    <PackageReference Include="Uno.SourceGenerationTasks" Version="1.28.0-dev.145" PrivateAssets="None" />
     <Content Include="build/**/*.*">
       <Pack>true</Pack>
       <PackagePath>build</PackagePath>
