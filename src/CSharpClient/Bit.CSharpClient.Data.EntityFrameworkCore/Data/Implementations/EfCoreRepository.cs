@@ -305,13 +305,16 @@ namespace Bit.Data.Implementations
             }
         }
 
-        public virtual Task SaveChangesAsync(CancellationToken cancellationToken = default)
+        /// <summary>
+        /// Unit of work is being handled by implicit unit of work implementation. SaveChanges is a non public method which is not present in Repository contract.
+        /// </summary>
+        protected virtual Task SaveChangesAsync(CancellationToken cancellationToken = default)
         {
             DbContext.ChangeTracker.DetectChanges();
             return DbContext.SaveChangesAsync(cancellationToken);
         }
 
-        public virtual void SaveChanges()
+        protected virtual void SaveChanges()
         {
             DbContext.ChangeTracker.DetectChanges();
             DbContext.SaveChanges();
