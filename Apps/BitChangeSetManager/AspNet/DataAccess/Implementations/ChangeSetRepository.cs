@@ -10,14 +10,14 @@ namespace BitChangeSetManager.DataAccess.Implementations
 {
     public class ChangeSetRepository : BitChangeSetManagerEfRepository<ChangeSet>, IChangeSetsRepository
     {
-        public override void SaveChanges()
+        protected override void SaveChanges()
         {
             SetCreatedOnValue();
 
             base.SaveChanges();
         }
 
-        public override async Task SaveChangesAsync(CancellationToken cancellationToken)
+        protected override async Task SaveChangesAsync(CancellationToken cancellationToken)
         {
             SetCreatedOnValue();
 
