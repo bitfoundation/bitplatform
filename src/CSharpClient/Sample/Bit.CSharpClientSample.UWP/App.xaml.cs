@@ -17,8 +17,8 @@ namespace Bit.CSharpClientSample.UWP
             {
                 rootFrame = new Frame();
 
-                Xamarin.Forms.Forms.Init(e);
                 UseDefaultConfiguration();
+                Xamarin.Forms.Forms.Init(e);
 
                 Window.Current.Content = rootFrame;
             }

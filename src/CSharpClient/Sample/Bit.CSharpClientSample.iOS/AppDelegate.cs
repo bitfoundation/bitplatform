@@ -13,8 +13,8 @@ namespace Bit.CSharpClientSample.iOS
         {
             SQLitePCL.Batteries.Init();
 
-            Forms.Init();
             UseDefaultConfiguration();
+            Forms.Init();
 
             LoadApplication(new App(new SampleAppiOSInitializer()));
 

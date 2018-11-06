@@ -11,17 +11,17 @@ namespace Bit.CSharpClientSample.Droid
     [Activity(Label = "Bit.CSharpClientSample", Icon = "@drawable/icon", Theme = "@style/MainTheme", MainLauncher = true, ConfigurationChanges = ConfigChanges.ScreenSize | ConfigChanges.Orientation)]
     public class MainActivity : BitFormsAppCompatActivity
     {
-        protected override void OnCreate(Bundle bundle)
+        protected override void OnCreate(Bundle savedInstanceState)
         {
             TabLayoutResource = Resource.Layout.Tabbar;
             ToolbarResource = Resource.Layout.Toolbar;
 
             SQLitePCL.Batteries.Init();
 
-            base.OnCreate(bundle);
+            base.OnCreate(savedInstanceState);
 
-            Forms.Init(this, bundle);
-            UseDefaultConfiguration(bundle);
+            UseDefaultConfiguration(savedInstanceState);
+            Forms.Init(this, savedInstanceState);
 
             LoadApplication(new App(new SampleAppDroidInitializer(this)));
         }
