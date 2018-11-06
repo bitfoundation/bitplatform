@@ -9,17 +9,13 @@ namespace Bit.UWP
 {
     public class BitApplication : Windows.UI.Xaml.Application
     {
-        private bool _useDefaultConfiguration = false;
-
         /// <summary>
-        /// Configures VersionTracking | RgPluginsPopup | Xamarin Forms
+        /// Configures VersionTracking | RgPluginsPopup
         /// </summary>
-        protected virtual void UseDefaultConfiguration(IActivatedEventArgs launchActivatedEventArgs, IEnumerable<Assembly> rendererAssemblies = null)
+        protected virtual void UseDefaultConfiguration()
         {
             VersionTracking.Track();
             Rg.Plugins.Popup.Popup.Init();
-            Forms.Init(launchActivatedEventArgs, rendererAssemblies);
-            _useDefaultConfiguration = true;
         }
     }
 }

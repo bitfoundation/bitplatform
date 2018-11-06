@@ -4,6 +4,7 @@ using Android.Content.PM;
 using Android.OS;
 using Bit.Droid;
 using Bit.ViewModel.Implementations;
+using Xamarin.Forms;
 
 namespace Bit.CSharpClientSample.Droid
 {
@@ -19,6 +20,7 @@ namespace Bit.CSharpClientSample.Droid
 
             base.OnCreate(bundle);
 
+            Forms.Init(this, bundle);
             UseDefaultConfiguration(bundle);
 
             LoadApplication(new App(new SampleAppDroidInitializer(this)));

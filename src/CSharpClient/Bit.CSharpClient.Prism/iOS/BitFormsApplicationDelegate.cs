@@ -14,14 +14,13 @@ namespace Bit.iOS
         private bool _useDefaultConfiguration = false;
 
         /// <summary>
-        /// Configures VersionTracking | RgPluginsPopup | Xamarin Forms
+        /// Configures VersionTracking | RgPluginsPopup
         /// </summary>
         protected virtual void UseDefaultConfiguration()
         {
             _useDefaultConfiguration = true;
             VersionTracking.Track();
             Rg.Plugins.Popup.Popup.Init();
-            Forms.Init();
         }
 
         public override bool OpenUrl(UIApplication app, NSUrl url, NSDictionary options)

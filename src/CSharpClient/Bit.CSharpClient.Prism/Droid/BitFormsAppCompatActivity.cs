@@ -14,14 +14,13 @@ namespace Bit.Droid
         private bool _useDefaultConfiguration = false;
 
         /// <summary>
-        /// Configures VersionTracking | RgPluginsPopup | Xamarin Forms | Fast Renderers
+        /// Configures VersionTracking | RgPluginsPopup | Fast Renderers
         /// </summary>
         protected virtual void UseDefaultConfiguration(Bundle savedInstanceState)
         {
             _useDefaultConfiguration = true;
             Forms.SetFlags("FastRenderers_Experimental");
             Rg.Plugins.Popup.Popup.Init(this, savedInstanceState);
-            Forms.Init(this, savedInstanceState);
             Xamarin.Essentials.Platform.Init(this, savedInstanceState);
             VersionTracking.Track();
         }
