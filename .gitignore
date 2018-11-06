@@ -237,6 +237,5 @@ ModelManifest.xml
 _book
 /BitTools/BitODataCSProxyGeneratorItemTemplate/ODataT4Template.cs
 *yarn.lock
-*package-lock.json
 *.edmx
 /BitTools/BitCLIV1Task/buildtask/ps_modules/VstsTaskSdk/
