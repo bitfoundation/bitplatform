@@ -22,14 +22,18 @@ namespace Microsoft.Extensions.DependencyInjection
             controllersAssemblies = AssemblyContainer.Current.AssembliesWithDefaultAssemblies(controllersAssemblies);
 
             IMvcCoreBuilder builder = services.AddMvcCore()
-                .AddJsonFormatters();
+                .AddJsonFormatters()
+                .AddAuthorization() // ToDo: Needs enhancements!
+                .AddFormatterMappings()
+                //.SetCompatibilityVersion(CompatibilityVersion.Version_2_1) // ToDo
+                .AddDataAnnotations();
 
-            controllersAssemblies.ToList().ForEach(asm =>
+            foreach (Assembly asm in controllersAssemblies)
             {
                 builder.AddApplicationPart(asm);
-            });
+            }
 
-            dependencyManager.RegisterAssemblyTypes(controllersAssemblies, t => t.GetCustomAttribute<ControllerAttribute>() != null, lifeCycle: DependencyLifeCycle.Transient);
+            dependencyManager.RegisterAssemblyTypes(controllersAssemblies, t => (t.GetCustomAttribute<ControllerAttribute>(inherit: true /*ApiControllerAttribute*/) != null || t.GetCustomAttribute<RouteAttribute>() != null) && t.GetCustomAttribute<NonControllerAttribute>() == null, lifeCycle: DependencyLifeCycle.Transient);
 
             builder.Services.Replace(ServiceDescriptor.Transient<IControllerActivator, ServiceBasedControllerActivator>());
 
