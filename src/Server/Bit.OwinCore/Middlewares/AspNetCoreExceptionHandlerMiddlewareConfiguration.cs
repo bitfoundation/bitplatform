@@ -84,8 +84,8 @@ namespace Bit.OwinCore.Middlewares
                 {
                     IExceptionToHttpErrorMapper exceptionToHttpErrorMapper = context.RequestServices.GetService<IExceptionToHttpErrorMapper>();
                     context.Response.StatusCode = Convert.ToInt32(exceptionToHttpErrorMapper.GetStatusCode(exp), CultureInfo.InvariantCulture);
-                    await context.Response.WriteAsync(exceptionToHttpErrorMapper.GetMessage(exp) , context.RequestAborted);
                     context.Features.Get<IHttpResponseFeature>().ReasonPhrase = exceptionToHttpErrorMapper.GetReasonPhrase(exp);
+                    await context.Response.WriteAsync(exceptionToHttpErrorMapper.GetMessage(exp) , context.RequestAborted);
                 }
                 throw;
             }
