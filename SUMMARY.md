@@ -7,6 +7,8 @@
   * [Data Access](/docs/bit-server-side/data-access.md)
   * [OData](/docs/bit-server-side/odata.md)
   * [AppEvents](/docs/bit-server-side/app-events.md)
+* [Bit csharp client introduction](docs/bit-csharp-client/introduction.md)
+  * [Date Picker](/docs/bit-csharp-client/date-picker.md)
 * [Design backgrounds](docs/design-backgrounds/introduction.md)
   * [Server sent events or Web Sockets?](docs/design-backgrounds/server-sent-events-or-web-sockets.md)
   * [Optimized entity framework for N-Tier applications](docs/design-backgrounds/optimized-entity-framework-for-n-tier-apps.md)
