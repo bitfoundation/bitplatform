@@ -33,6 +33,7 @@
     <CodesignKey>iPhone Developer</CodesignKey>
     <CodesignProvision>
     </CodesignProvision>
+    <MtouchEnableSGenConc>true</MtouchEnableSGenConc>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|iPhoneSimulator' ">
     <DebugType>none</DebugType>
@@ -61,7 +62,8 @@
     <MtouchNoSymbolStrip>false</MtouchNoSymbolStrip>
     <MtouchFastDev>true</MtouchFastDev>
     <DeviceSpecificBuild>true</DeviceSpecificBuild>
-    <MtouchExtraArgs>--time --time --dsym=false</MtouchExtraArgs>
+    <MtouchExtraArgs>--time --time --dsym=false -v -v -v -v</MtouchExtraArgs>
+    <MtouchEnableSGenConc>true</MtouchEnableSGenConc>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|iPhone' ">
     <DebugType>none</DebugType>
@@ -72,6 +74,9 @@
     <MtouchArch>ARM64</MtouchArch>
     <ConsolePause>false</ConsolePause>
     <CodesignEntitlements>Entitlements.plist</CodesignEntitlements>
+    <MtouchExtraArgs>--dsym=false</MtouchExtraArgs>
+    <MtouchEnableSGenConc>true</MtouchEnableSGenConc>
+    <MtouchLink>Full</MtouchLink>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(RunConfiguration)' == 'Default' ">
     <AppExtensionDebugBundleId />
@@ -111,7 +116,7 @@
     <Reference Include="Xamarin.iOS" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Xamarin.Forms" Version="3.3.0.967583" />
+    <PackageReference Include="Xamarin.Forms" Version="3.4.0.1008975" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\Bit.CSharpClient.Data.EntityFrameworkCore\Bit.CSharpClient.Data.EntityFrameworkCore.csproj">

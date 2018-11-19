@@ -15,16 +15,16 @@
 
     <Reference Include="System.Data" />
 
-    <PackageReference Include="Fody" Version="3.2.16">
+    <PackageReference Include="Fody" Version="3.3.0">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="PropertyChanged.Fody" Version="2.5.13">
+    <PackageReference Include="PropertyChanged.Fody" Version="2.5.14">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
     </PackageReference>
     <PackageReference Include="System.ComponentModel.Annotations" Version="4.5.0" />
-    <PackageReference Include="Xamarin.Forms" Version="3.3.0.967583" />
+    <PackageReference Include="Xamarin.Forms" Version="3.4.0.1008975" />
     <PackageReference Include="MSBuild.Sdk.Extras" Version="1.6.61" PrivateAssets="All" />
 
   </ItemGroup>

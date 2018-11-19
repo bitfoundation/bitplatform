@@ -31,7 +31,7 @@
     <PackageReference Include="Microsoft.ApplicationInsights" Version="2.8.1" />
     <PackageReference Include="Microsoft.AspNet.WebApi.Client" Version="5.2.6" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="1.1.1" />
-    <PackageReference Include="Autofac.Extensions.DependencyInjection" Version="4.3.0" />
+    <PackageReference Include="Autofac.Extensions.DependencyInjection" Version="4.3.1" />
     <PackageReference Include="Microsoft.Owin.Security.Jwt" Version="4.0.0" />
     <PackageReference Include="Microsoft.Owin.StaticFiles" Version="4.0.0" />
     <PackageReference Include="NWebsec.Core" Version="2.1.0" />

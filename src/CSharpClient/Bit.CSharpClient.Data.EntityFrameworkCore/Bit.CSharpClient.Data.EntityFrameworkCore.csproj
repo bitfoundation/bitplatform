@@ -46,12 +46,12 @@
     <PackageReference Include="SourceLink.Embed.AllSourceFiles" Version="2.8.3" PrivateAssets="all" />
     <PackageReference Include="SourceLink.Copy.PdbFiles" Version="2.8.3" PrivateAssets="All" />
 
-    <PackageReference Include="Fody" Version="3.2.16">
+    <PackageReference Include="Fody" Version="3.3.0">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
     </PackageReference>
 
-    <PackageReference Include="PropertyChanged.Fody" Version="2.5.13">
+    <PackageReference Include="PropertyChanged.Fody" Version="2.5.14">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
     </PackageReference>
@@ -63,7 +63,7 @@
   </ItemGroup>
 
   <ItemGroup Condition="'$(TargetFramework)' == 'netcoreapp2.0'">
-    <PackageReference Include="Microsoft.AspNetCore" Version="2.1.4" />
+    <PackageReference Include="Microsoft.AspNetCore" Version="2.1.6" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="2.1.4" />
   </ItemGroup>
 

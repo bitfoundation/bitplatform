@@ -12,9 +12,9 @@ namespace Bit.Data.EntityFramework.Implementations
         {
             bool MapperPropConfigurationCondition(PropertyMap p)
             {
-                return (p.DestinationProperty.GetCustomAttribute<ForeignKeyAttribute>() != null || p.DestinationProperty.GetCustomAttribute<InversePropertyAttribute>() != null)
-                       && !typeof(IEnumerable).IsAssignableFrom(p.DestinationProperty.ReflectedType)
-                       && typeof(IDto).IsAssignableFrom(p.DestinationProperty.ReflectedType);
+                return (p.DestinationMember.GetCustomAttribute<ForeignKeyAttribute>() != null || p.DestinationMember.GetCustomAttribute<InversePropertyAttribute>() != null)
+                       && !typeof(IEnumerable).IsAssignableFrom(p.DestinationMember.ReflectedType)
+                       && typeof(IDto).IsAssignableFrom(p.DestinationMember.ReflectedType);
             }
 
             mapperConfigExpression.ForAllPropertyMaps(MapperPropConfigurationCondition, (p, member) =>

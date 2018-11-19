@@ -9,13 +9,13 @@ namespace Bit.ViewModel.Implementations
 {
     public class BitPrismLogger : ILogger
     {
-        public void Log(string message, IDictionary<string, string> properties)
+        public virtual void Log(string message, IDictionary<string, string> properties)
         {
             if (Debugger.IsAttached)
                 Debug.WriteLine(message);
         }
 
-        public void Log(string message, Category category, Priority priority)
+        public virtual void Log(string message, Category category, Priority priority)
         {
             if (category == Category.Exception)
             {
@@ -31,9 +31,14 @@ namespace Bit.ViewModel.Implementations
             }
         }
 
-        public void Report(Exception ex, IDictionary<string, string> properties)
+        public virtual void Report(Exception ex, IDictionary<string, string> properties)
         {
             BitExceptionHandler.Current.OnExceptionReceived(ex, properties);
+        }
+
+        public virtual void TrackEvent(string name, IDictionary<string, string> properties)
+        {
+            
         }
     }
 }
