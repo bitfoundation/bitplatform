@@ -26,10 +26,10 @@
     "@bit/encoder": "^1.0.0",
     "core-js": "^2.5.7",
     "decimal.js": "^10.0.1",
-    "event-source-polyfill": "^1.0.3",
+    "event-source-polyfill": "^1.0.4",
     "pubsub-js": "^1.7.0",
-    "regenerator": "^0.13.2",
-    "signalr": "^2.3.0",
+    "regenerator": "^0.13.3",
+    "signalr": "^2.4.0",
     "whatwg-fetch": "^3.0.0"
   },
   "dependencies": {
