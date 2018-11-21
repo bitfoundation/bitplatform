@@ -2,6 +2,7 @@
 using System.Net.Http;
 using System.Threading.Tasks;
 using Bit.Test;
+using IdentityModel.Client;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Bit.Tests.Api.ApiControllers.Tests
@@ -15,7 +16,11 @@ namespace Bit.Tests.Api.ApiControllers.Tests
         {
             using (BitOwinTestEnvironment testEnvironment = new BitOwinTestEnvironment(new TestEnvironmentArgs { UseRealServer = false , UseAspNetCore = true }))
             {
-                HttpResponseMessage response = await testEnvironment.Server.BuildHttpClient()
+                TokenResponse token = await testEnvironment.Server.Login("ValidUserName", "ValidPassword", clientId: "TestResOwner");
+
+                HttpClient client = testEnvironment.Server.BuildHttpClient(token: token);
+
+                HttpResponseMessage response = await client
                     .GetAsync("api-core/People/GetData");
 
                 response.EnsureSuccessStatusCode();
