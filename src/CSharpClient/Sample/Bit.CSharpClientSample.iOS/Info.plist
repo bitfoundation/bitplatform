@@ -70,9 +70,5 @@
 		<key>NSAllowsArbitraryLoads</key>
 		<true/>
 	</dict>
-	<key>UIAppFonts</key>
-    <array>
-      <string>Vazir-Light-FD-WOL.ttf</string>
-    </array>
 </dict>
 </plist>

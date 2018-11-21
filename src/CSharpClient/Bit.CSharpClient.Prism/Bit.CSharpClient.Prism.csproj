@@ -37,11 +37,9 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="NodaTime" Version="2.4.2" />
     <PackageReference Include="Prism.Plugin.Logging.Common" Version="1.1.1.275" />
     <PackageReference Include="Prism.Plugin.Popups" Version="2.1.0.228" />
     <PackageReference Include="Prism.Autofac.Forms" Version="7.1.0.431" />
-    <PackageReference Include="Xamanimation" Version="1.2.0" />
     <PackageReference Include="Xamarin.Essentials" Version="0.11.0-preview" />
     <PackageReference Include="Rg.Plugins.Popup" Version="1.1.4.168" />
     <PackageReference Include="Xamarin.Forms" Version="3.4.0.1008975" />

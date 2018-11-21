@@ -4,24 +4,11 @@
     xmlns="http://xamarin.com/schemas/2014/forms"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     xmlns:bit="clr-namespace:Bit;assembly=Bit.CSharpClient.Prism"
-    xmlns:calendar="clr-namespace:Bit.View.Calendar;assembly=Bit.CSharpClient.Prism"
-    xmlns:noda="clr-namespace:NodaTime;assembly=NodaTime"
     xmlns:view="clr-namespace:Bit.View;assembly=Bit.CSharpClient.Prism">
     <bit:BitApplication.Resources>
         <ResourceDictionary>
             <Style ApplyToDerivedTypes="True" TargetType="ContentPage">
                 <Setter Property="view:Screen.OrientationAndScreenSizeAware" Value="True" />
-            </Style>
-            <Style x:Key="Persian-Solar-Calendar" TargetType="calendar:CalendarView">
-                <Setter Property="FontFamily" Value="{OnPlatform Android='Vazir-Light-FD-WOL.ttf#Vazir FD-WOL', UWP='Assets/Vazir-Light-FD-WOL.ttf#Vazir FD-WOL', iOS='Vazir FD-WOL'}" />
-                <Setter Property="FlowDirection" Value="RightToLeft" />
-                <Setter Property="CalendarSystem" Value="{x:Static noda:CalendarSystem.PersianArithmetic}" />
-                <Setter Property="Culture" Value="Fa" />
-            </Style>
-            <Style x:Key="Islamic-Calendar" TargetType="calendar:CalendarView">
-                <Setter Property="FlowDirection" Value="RightToLeft" />
-                <Setter Property="CalendarSystem" Value="{x:Static noda:CalendarSystem.IslamicBcl}" />
-                <Setter Property="Culture" Value="Ar" />
             </Style>
         </ResourceDictionary>
     </bit:BitApplication.Resources>

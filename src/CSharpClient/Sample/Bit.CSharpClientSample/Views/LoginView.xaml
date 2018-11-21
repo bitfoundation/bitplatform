@@ -4,7 +4,6 @@
     xmlns="http://xamarin.com/schemas/2014/forms"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     xmlns:bitView="clr-namespace:Bit.View;assembly=Bit.CSharpClient.Prism"
-    xmlns:calendar="clr-namespace:Bit.View.Calendar;assembly=Bit.CSharpClient.Prism"
     xmlns:vm="clr-namespace:Bit.CSharpClientSample.ViewModels"
     x:DataType="vm:LoginViewModel">
     <ContentPage.Behaviors>
@@ -57,47 +56,6 @@
         <Button Command="{Binding SkipCommand}" Text="Skip" />
 
         <Button x:Name="Test" Text="UI Tests" />
-
-        <bitView:Checkbox Text="Test" />
-        <bitView:Checkbox IsEnabled="False" Text="Test" />
-
-        <calendar:CalendarView Style="{StaticResource Persian-Solar-Calendar}" Text="لطفا تاریخ پرواز را انتخاب کنید" />
-
-        <calendar:CalendarView
-            DateDisplayFormat="dd MMM yyyy"
-            FlowDirection="RightToLeft"
-            SelectedColor="LightBlue"
-            Style="{StaticResource Persian-Solar-Calendar}"
-            Text="لطفا تاریخ پرواز را انتخاب کنید"
-            TodayColor="Blue" />
-
-        <calendar:CalendarView
-            DateDisplayFormat="dd MMM yyyy"
-            FlowDirection="RightToLeft"
-            SelectedColor="LightBlue"
-            Style="{StaticResource Persian-Solar-Calendar}"
-            Text="لطفا تاریخ پرواز را انتخاب کنید"
-            TodayColor="Blue">
-            <calendar:CalendarView.ControlTemplate>
-                <ControlTemplate>
-                    <Label
-                        FontFamily="{TemplateBinding FontFamily}"
-                        HorizontalOptions="Center"
-                        Text="{TemplateBinding DisplayText}">
-                        <Label.GestureRecognizers>
-                            <TapGestureRecognizer Command="{TemplateBinding OpenPopupCommand}" NumberOfTapsRequired="2" />
-                        </Label.GestureRecognizers>
-                    </Label>
-                </ControlTemplate>
-            </calendar:CalendarView.ControlTemplate>
-        </calendar:CalendarView>
-
-        <calendar:CalendarView
-            FlowDirection="RightToLeft"
-            Style="{StaticResource Islamic-Calendar}"
-            Text="يرجى تحديد تاريخ الرحلة" />
-
-        <calendar:CalendarView FlowDirection="LeftToRight" Text="Please select a flight date" />
 
     </StackLayout>
 </ContentPage>

@@ -1,3 +1,0 @@
-﻿https://github.com/rastikerdar/vazir-font
-FD => Farsi Digit
-WOL => Without Latin
