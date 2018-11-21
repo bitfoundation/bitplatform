@@ -20,7 +20,7 @@
         private entitySetConfigs: Array<{ entitySetName: string, keyMembers: string[], getMethod?: (context: $data.EntityContext) => $data.Queryable<Model.Contracts.ISyncableDto>, syncConfig?: { fromServerSync?: boolean | (() => boolean), toServerSync?: boolean | (() => boolean) } }> = [];
 
         @Log()
-        public addEntitySetConfig<TEntityContext extends $data.EntityContext>(entitySet: { name: keyof TEntityContext, dtoType: any }, getMethod?: (context: TEntityContext) => $data.Queryable<Model.Contracts.ISyncableDto>, syncConfig?: { fromServerSync?: boolean | (() => boolean), toServerSync?: boolean | (() => boolean) }) {
+        public addEntitySetConfig<TEntityContext extends $data.EntityContext>(entitySet: { name: keyof TEntityContext & string, dtoType: any }, getMethod?: (context: TEntityContext) => $data.Queryable<Model.Contracts.ISyncableDto>, syncConfig?: { fromServerSync?: boolean | (() => boolean), toServerSync?: boolean | (() => boolean) }) {
 
             if (entitySet == null) {
                 throw new Error("entitySet may not be null");
@@ -64,13 +64,13 @@
         }
 
         @Log()
-        public async syncEntitySet<TEntityContext extends $data.EntityContext>(entitySetName: keyof TEntityContext): Promise<void> {
+        public async syncEntitySet<TEntityContext extends $data.EntityContext>(entitySetName: keyof TEntityContext & string): Promise<void> {
 
             await this.syncEntitySets<TEntityContext>([entitySetName]);
 
         }
 
-        public async syncEntitySets<TEntityContext extends $data.EntityContext>(entitySetNames: Array<keyof TEntityContext>): Promise<void> {
+        public async syncEntitySets<TEntityContext extends $data.EntityContext>(entitySetNames: Array<keyof TEntityContext & string>): Promise<void> {
 
             if (entitySetNames == null) {
                 throw new Error("entitySetNames may not be null");
