@@ -9,7 +9,7 @@
     <Company>Bit Foundation</Company>
     <Product>Bit Framework</Product>
     <Description>Bit.CSharpClient.Sync</Description>
-    <Copyright>Copyright © Bit Foundation 2017</Copyright>
+    <Copyright>Copyright © Bit Foundation 2019</Copyright>
     <PackageLicenseUrl>https://github.com/bit-foundation/bit-framework/blob/master/LICENSE</PackageLicenseUrl>
     <PackageProjectUrl>https://github.com/bit-foundation/bit-framework</PackageProjectUrl>
     <PackageIconUrl>https://avatars.githubusercontent.com/u/22663390</PackageIconUrl>
@@ -28,12 +28,12 @@
     <DocumentationFile>bin\$(Configuration)\$(TargetFramework)\$(AssemblyName).xml</DocumentationFile>
     <NoWarn>$(NoWarn);NU1605;CS1591;</NoWarn>
     <!-- https://stackoverflow.com/a/46815541/2720104 -->
+    <LangVersion>7.3</LangVersion>
   </PropertyGroup>
 
-  <PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)'=='Debug'">
     <DebugType>pdbonly</DebugType>
     <DebugSymbols>true</DebugSymbols>
-    <LangVersion>7.3</LangVersion>
   </PropertyGroup>
 
   <ItemGroup>
