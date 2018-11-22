@@ -74,7 +74,7 @@ namespace Bit.OData
 
             foreach (var odataModuleAndAssemblyGroup in odataModulesAndAssembliesGroups)
             {
-                ODataModelBuilder modelBuilder = ODataModelBuilderProvider.GetODataModelBuilder(_webApiConfig, containerName: $"{odataModuleAndAssemblyGroup.Key}Context", @namespace: odataModuleAndAssemblyGroup.Key);
+                ODataModelBuilder modelBuilder = ODataModelBuilderProvider.GetODataModelBuilder(_webApiConfig, containerName: $"{odataModuleAndAssemblyGroup.Key}Context", @namespace: null);
 
                 foreach (var odataModuleAndAssembly in odataModuleAndAssemblyGroup)
                 {

@@ -14,8 +14,6 @@
     {
         public virtual string Route { get; set; }
 
-        public virtual string Namespace { get; set; }
-
         public virtual ProjectInfo[] SourceProjects { get; set; }
 
         public virtual ProjectInfo DestinationProject { get; set; }

@@ -57,9 +57,6 @@ namespace BitCodeGenerator.Implementations
                 if (mapping.SourceProjects == null || !mapping.SourceProjects.Any() || !mapping.SourceProjects.All(sp => !string.IsNullOrEmpty(sp?.Name)))
                     throw new InvalidOperationException($"No {nameof(BitCodeGeneratorMapping.SourceProjects)} is not provided");
 
-                if (string.IsNullOrEmpty(mapping.Namespace))
-                    throw new InvalidOperationException($"{nameof(BitCodeGeneratorMapping.Namespace)} is not provided");
-
                 if (string.IsNullOrEmpty(mapping.Route))
                     throw new InvalidOperationException($"{nameof(BitCodeGeneratorMapping.Route)} is not provided");
             }

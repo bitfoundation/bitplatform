@@ -3,7 +3,7 @@
     "BitCodeGeneratorMappings": [
       {
         "Route": "Bit",
-        "Namespace": "Bit",
+        "Namespace": "Default" /*Temporary. Code generator won't use namespace in its next release.*/,
         "DestinationFileName": "Bit.Model.Context",
         "TypingsPath": "typings.d.ts",
         "SourceProjects": [
@@ -26,7 +26,7 @@
       },
       {
         "Route": "Test",
-        "Namespace": "Test",
+        "Namespace": "Default" /*Temporary. Code generator won't use namespace in its next release.*/,
         "DestinationFileName": "Test.Model.Context",
         "TypingsPath": "typings.d.ts",
         "SourceProjects": [
