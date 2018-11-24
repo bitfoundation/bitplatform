@@ -18,6 +18,7 @@
 						{ #>
 							"<#= operation.Method.Name.AsCamelCase() #>": {
 								"type": "<#= operation.Kind == ODataOperationKind.Action ? "$data.ServiceAction" : "$data.ServiceFunction" #>",
+								"namespace": "<#= !string.IsNullOrWhiteSpace(Mapping.Namespace) ? Mapping.Namespace : "Default" #>",
 								"returnType": <# if(!operation.Method.ReturnType.IsVoid()) { #> "<#= operation.Method.ReturnType.GetEdmTypeName(useArrayForIEnumerableTypes:false) #>" <# } else { #> null <# } #>,
 								<# if (operation.Method.ReturnType.IsCollectionType() || operation.Method.ReturnType.IsQueryableType())
 								{

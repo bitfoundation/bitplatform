@@ -1,4 +1,6 @@
-﻿namespace BitTools.Core.Model
+﻿using System;
+
+namespace BitTools.Core.Model
 {
     public class BitConfig
     {
@@ -13,6 +15,9 @@
     public class BitCodeGeneratorMapping
     {
         public virtual string Route { get; set; }
+
+        [Obsolete("Bit 1.3.80 and above are using default odata namespace. There is no need to customize this anymore.")]
+        public virtual string Namespace { get; set; }
 
         public virtual ProjectInfo[] SourceProjects { get; set; }
 
