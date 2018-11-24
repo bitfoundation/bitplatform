@@ -14,7 +14,7 @@ namespace Bit.Droid
         private bool _useDefaultConfiguration = false;
 
         /// <summary>
-        /// Configures VersionTracking | RgPluginsPopup | Fast Renderers
+        /// Configures VersionTracking | RgPluginsPopup | Fast Renderers | Xamarin Essentials' Permissions
         /// </summary>
         protected virtual void UseDefaultConfiguration(Bundle savedInstanceState)
         {
