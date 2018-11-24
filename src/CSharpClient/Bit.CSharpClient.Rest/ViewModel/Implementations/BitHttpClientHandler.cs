@@ -6,7 +6,14 @@ using Xamarin.Forms;
 
 namespace Bit.ViewModel.Implementations
 {
-    public class BitHttpClientHandler : HttpClientHandler
+    public class BitHttpClientHandler :
+#if Android
+        Xamarin.Android.Net.AndroidClientHandler
+#elif iOS
+        NSUrlSessionHandler
+#else
+        HttpClientHandler
+#endif
     {
         protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {
