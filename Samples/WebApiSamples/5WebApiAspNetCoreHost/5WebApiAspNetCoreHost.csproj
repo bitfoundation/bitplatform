@@ -8,9 +8,9 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Bit.OwinCore" Version="1.3.70" />
-    <PackageReference Include="Bit.WebApi" Version="1.3.70" />
-    <PackageReference Include="BitCodeAnalyzer" Version="1.3.70" />
+    <PackageReference Include="Bit.OwinCore" Version="1.3.80" />
+    <PackageReference Include="Bit.WebApi" Version="1.3.80" />
+    <PackageReference Include="BitCodeAnalyzer" Version="1.3.80" />
     <PackageReference Include="SourceLink.Copy.PdbFiles" Version="2.8.3" PrivateAssets="All" />
   </ItemGroup>
   <ItemGroup>
