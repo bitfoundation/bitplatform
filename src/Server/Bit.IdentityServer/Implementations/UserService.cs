@@ -1,6 +1,8 @@
-﻿using Bit.Owin.Contracts;
+﻿using Bit.Core.Contracts;
+using Bit.Owin.Contracts;
 using IdentityServer3.Core.Models;
 using IdentityServer3.Core.Services.Default;
+using Microsoft.Owin;
 using System;
 using System.Collections.Generic;
 using System.Security.Claims;
@@ -11,7 +13,9 @@ namespace Bit.IdentityServer.Implementations
 {
     public abstract class UserService : UserServiceBase
     {
-        internal CancellationToken CurrentCancellationToken { get; set; }
+        public virtual IOwinContext OwinContext { get; set; }
+
+        public virtual IUserInformationProvider UserInformationProvider { get; set; }
 
         public abstract Task<string> GetUserIdByLocalAuthenticationContextAsync(LocalAuthenticationContext context, CancellationToken cancellationToken);
 
@@ -19,7 +23,7 @@ namespace Bit.IdentityServer.Implementations
 
         public sealed override Task AuthenticateLocalAsync(LocalAuthenticationContext context)
         {
-            return AuthenticateLocalAsync(context, CurrentCancellationToken);
+            return AuthenticateLocalAsync(context, OwinContext.Request.CallCancelled);
         }
 
         public virtual async Task AuthenticateLocalAsync(LocalAuthenticationContext context, CancellationToken cancellationToken)
@@ -59,7 +63,7 @@ namespace Bit.IdentityServer.Implementations
 
         public sealed override Task GetProfileDataAsync(ProfileDataRequestContext context)
         {
-            return GetProfileDataAsync(context, CurrentCancellationToken);
+            return GetProfileDataAsync(context, OwinContext.Request.CallCancelled);
         }
 
         public virtual Task GetProfileDataAsync(ProfileDataRequestContext context, CancellationToken cancellationToken)
@@ -86,7 +90,14 @@ namespace Bit.IdentityServer.Implementations
         {
             try
             {
-                context.IsActive = await UserIsActiveAsync(context, context.Subject.Identity.Name, CurrentCancellationToken).ConfigureAwait(false);
+                if (UserInformationProvider.IsAuthenticated() == false)
+                {
+                    context.IsActive = false;
+                }
+                else
+                {
+                    context.IsActive = await UserIsActiveAsync(context, UserInformationProvider.GetCurrentUserId(), OwinContext.Request.CallCancelled).ConfigureAwait(false);
+                }
             }
             catch
             {
@@ -107,7 +118,7 @@ namespace Bit.IdentityServer.Implementations
 
         public sealed override Task AuthenticateExternalAsync(ExternalAuthenticationContext context)
         {
-            return AuthenticateExternalAsync(context, CurrentCancellationToken);
+            return AuthenticateExternalAsync(context, OwinContext.Request.CallCancelled);
         }
 
         public virtual async Task AuthenticateExternalAsync(ExternalAuthenticationContext context, CancellationToken cancellationToken)
@@ -140,17 +151,17 @@ namespace Bit.IdentityServer.Implementations
 
         public sealed override Task PostAuthenticateAsync(PostAuthenticationContext context)
         {
-            return PostAuthenticateAsync(context, CurrentCancellationToken);
+            return PostAuthenticateAsync(context, OwinContext.Request.CallCancelled);
         }
 
         public sealed override Task PreAuthenticateAsync(PreAuthenticationContext context)
         {
-            return PreAuthenticateAsync(context, CurrentCancellationToken);
+            return PreAuthenticateAsync(context, OwinContext.Request.CallCancelled);
         }
 
         public sealed override Task SignOutAsync(SignOutContext context)
         {
-            return SignOutAsync(context, CurrentCancellationToken);
+            return SignOutAsync(context, OwinContext.Request.CallCancelled);
         }
 
         public virtual Task PostAuthenticateAsync(PostAuthenticationContext context, CancellationToken cancellationToken)
