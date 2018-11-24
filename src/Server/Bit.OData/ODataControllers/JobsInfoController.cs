@@ -1,9 +1,9 @@
-﻿using System;
-using System.Threading;
-using System.Threading.Tasks;
-using Bit.Core.Contracts;
+﻿using Bit.Core.Contracts;
 using Bit.Core.Models;
 using Bit.Model.Dtos;
+using System;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace Bit.OData.ODataControllers
 {
@@ -16,6 +16,9 @@ namespace Bit.OData.ODataControllers
         {
             if (key == null)
                 throw new ArgumentNullException(nameof(key));
+
+            if (BackgroundJobWorker == null)
+                throw new InvalidOperationException("No background job worker is configured");
 
             JobInfo jobInfo = await BackgroundJobWorker.GetJobInfoAsync(key, cancellationToken);
 
