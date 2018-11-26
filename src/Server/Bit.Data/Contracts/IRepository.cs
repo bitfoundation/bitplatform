@@ -1,10 +1,10 @@
-﻿using System;
+﻿using Bit.Model.Contracts;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
-using Bit.Model.Contracts;
 
 namespace Bit.Data.Contracts
 {
@@ -64,5 +64,19 @@ namespace Bit.Data.Contracts
         Task<TEntity> GetByIdAsync(CancellationToken cancellationToken, params object[] ids);
 
         TEntity GetById(params object[] ids);
+
+        Task ReloadAsync(TEntity entity, CancellationToken cancellationToken);
+
+        void Reload(TEntity entity);
+
+        /// <summary>
+        /// Returns the query that would be used to load <paramref name="childs"/> collection from the database.
+        /// The returned query can be modified using LINQ to perform filtering or operations
+        /// in the database, such as counting the number of entities in the collection in
+        /// the database without actually loading them
+        /// </summary>
+        /// <returns>A query for the <paramref name="childs"/> collection</returns>
+        IQueryable<TChild> GetCollectionQuery<TChild>(TEntity entity, Expression<Func<TEntity, IEnumerable<TChild>>> childs)
+            where TChild : class;
     }
 }

@@ -402,6 +402,46 @@ namespace Bit.Data.EntityFrameworkCore.Implementations
                 .SingleOrDefault();
         }
 
+        public virtual async Task ReloadAsync(TEntity entity, CancellationToken cancellationToken)
+        {
+            try
+            {
+                Attach(entity);
+
+                await DbContext.Entry(entity).ReloadAsync(cancellationToken);
+            }
+            finally
+            {
+                if (DbContext.ChangeTrackingEnabled() == false)
+                    Detach(entity);
+            }
+        }
+
+        public virtual void Reload(TEntity entity)
+        {
+            try
+            {
+                Attach(entity);
+
+                DbContext.Entry(entity).Reload();
+            }
+            finally
+            {
+                if (DbContext.ChangeTrackingEnabled() == false)
+                    Detach(entity);
+            }
+        }
+
+        public virtual IQueryable<TChild> GetCollectionQuery<TChild>(TEntity entity, Expression<Func<TEntity, IEnumerable<TChild>>> childs) where TChild : class
+        {
+            if (DbContext.ChangeTrackingEnabled() == false)
+                throw new InvalidOperationException("This operation is valid for db context with change tracking enabled");
+
+            Attach(entity);
+
+            return DbContext.Entry(entity).Collection(childs).Query();
+        }
+
         public virtual EfCoreDataProviderSpecificMethodsProvider EfDataProviderSpecificMethodsProvider { get; set; }
 
         public virtual IDateTimeProvider DateTimeProvider { get; set; }

@@ -319,5 +319,45 @@ namespace Bit.Data.Implementations
             DbContext.ChangeTracker.DetectChanges();
             DbContext.SaveChanges();
         }
+
+        public virtual async Task ReloadAsync(TDto dto, CancellationToken cancellationToken)
+        {
+            try
+            {
+                Attach(dto);
+
+                await DbContext.Entry(dto).ReloadAsync(cancellationToken);
+            }
+            finally
+            {
+                if (DbContext.ChangeTrackingEnabled() == false)
+                    Detach(dto);
+            }
+        }
+
+        public virtual void Reload(TDto dto)
+        {
+            try
+            {
+                Attach(dto);
+
+                DbContext.Entry(dto).Reload();
+            }
+            finally
+            {
+                if (DbContext.ChangeTrackingEnabled() == false)
+                    Detach(dto);
+            }
+        }
+
+        public virtual IQueryable<TChild> GetCollectionQuery<TChild>(TDto dto, Expression<Func<TDto, IEnumerable<TChild>>> childs) where TChild : class
+        {
+            if (DbContext.ChangeTrackingEnabled() == false)
+                throw new InvalidOperationException("This operation is valid for db context with change tracking enabled");
+
+            Attach(dto);
+
+            return DbContext.Entry(dto).Collection(childs).Query();
+        }
     }
 }

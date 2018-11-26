@@ -60,5 +60,19 @@ namespace Bit.Data.Contracts
         /// </summary>
         void LoadReference<TProperty>(TDto dto, Expression<Func<TDto, TProperty>> member)
             where TProperty : class;
+
+        Task ReloadAsync(TDto dto, CancellationToken cancellationToken);
+
+        void Reload(TDto dto);
+
+        /// <summary>
+        /// Returns the query that would be used to load <paramref name="childs"/> collection from the database.
+        /// The returned query can be modified using LINQ to perform filtering or operations
+        /// in the database, such as counting the number of entities in the collection in
+        /// the database without actually loading them
+        /// </summary>
+        /// <returns>A query for the <paramref name="childs"/> collection</returns>
+        IQueryable<TChild> GetCollectionQuery<TChild>(TDto dto, Expression<Func<TDto, IEnumerable<TChild>>> childs)
+            where TChild : class;
     }
 }
