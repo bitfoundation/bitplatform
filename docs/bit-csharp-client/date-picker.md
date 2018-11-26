@@ -6,6 +6,19 @@
 
 In order to use BitDatePicker, install "Bit.CSharpClient.Controls" nuget package.
 
+in **iOS** project add following code into AppDelegate:
+```
+Rg.Plugins.Popup.Popup.Init();
+```
+in **Android** project add following code into MainActivity:
+```
+Rg.Plugins.Popup.Popup.Init(this, savedInstanceState);
+```
+in **UWP** project add following code into App.Xaml.cs:
+```
+Rg.Plugins.Popup.Popup.Init();
+```
+
 ### Use BitDatePicker in Xaml
 
 First of all, add a namepsace to your page:
@@ -17,7 +30,7 @@ xmlns:bitControls="clr-namespace:Bit.CSharpClient.Controls;assembly=Bit.CSharpCl
 And you're ready to go! No extra configuration is required!
 
 ```xml
-<bitControls:BitCalendarPicker
+<bitControls:BitDatePicker
     Text="Please select a date" 
     SelectedColor="LightBlue" 
     TodayColor="Blue" />
@@ -29,7 +42,7 @@ You can also customize **FontFamily**, **DateDisplayFormat**, **CalendarSystem**
 
 xmlns:noda="clr-namespace:NodaTime;assembly=NodaTime"
 
-<bitControls:BitCalendarPicker
+<bitControls:BitDatePicker
     Text="لطفا یک روز را انتخاب کنید" 
     Culture="Fa"
     DateDisplayFormat="dd MMM yyyy"
@@ -44,24 +57,27 @@ There is a **SelectedDate** property which is bindable.
 In order to customize picker's button you can have followings:
 
 ```xml
-    <bitControls:BitCalendarPicker Text="Please Select a date">
-            <bitControls:BitCalendarPicker.ControlTemplate>
+    <bitControls:BitDatePicker Text="Please Select a date">
+            <bitControls:BitDatePicker.ControlTemplate>
                 <ControlTemplate>
-                    <StackLayout Orientation="Horizontal">
-                        <StackLayout.GestureRecognizers>
-                            <TapGestureRecognizer Command="{TemplateBinding OpenPopupCommand}" />
-                        </StackLayout.GestureRecognizers>
-                        <Image
-                            HeightRequest="15"
-                            Source="Calendar.png"
-                            WidthRequest="15" />
-                        <Label FontFamily="{TemplateBinding FontFamily}" Text="{TemplateBinding DisplayText}" />
-                    </StackLayout>
+                    <Frame HasShadow="False" Padding="5" BorderColor="LightGray">
+                        <StackLayout Orientation="Horizontal">
+                            <StackLayout.GestureRecognizers>
+                              <TapGestureRecognizer Command="{TemplateBinding OpenPopupCommand}"/>
+                            </StackLayout.GestureRecognizers>
+                            <Image
+                                HeightRequest="15"
+                                Source="Calendar.png"
+                                WidthRequest="15" />
+                             <Label FontFamily="{TemplateBinding FontFamily}" 
+                                Text="{TemplateBinding DisplayText}" />
+                         </StackLayout>
+                    </Frame>
                 </ControlTemplate>
-            </bitControls:BitCalendarPicker.ControlTemplate>
-    </bitControls:BitCalendarPicker>
+            </bitControls:BitDatePicker.ControlTemplate>
+    </bitControls:BitDatePicker>
 ```
 
 To have better understanding see samples. Feedbacks/issues/questions are also welcomed in [stackoverflow](http://stackoverflow.com/questions/tagged/bit-framework) or [github](https://github.com/bit-foundation/bit-framework/issues/new?labels=&template=bug_report.md).
-
+[](SolarCalendar.PNG)
 ToDo => Take some photos from BitDatePicker + move stuffs to bit repository + Create samples project!
