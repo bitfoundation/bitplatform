@@ -26,10 +26,10 @@
   <ItemGroup>
     <PackageReference Include="Autofac" Version="4.8.1" />
     <PackageReference Include="Autofac.Owin" Version="4.2.0" />
-    <PackageReference Include="IdentityModel" Version="3.10.1" />
+    <PackageReference Include="IdentityModel" Version="3.10.2" />
     <PackageReference Include="Lambda2Js" Version="3.1.2" />
     <PackageReference Include="Microsoft.ApplicationInsights" Version="2.8.1" />
-    <PackageReference Include="Microsoft.AspNet.WebApi.Client" Version="5.2.6" />
+    <PackageReference Include="Microsoft.AspNet.WebApi.Client" Version="5.2.7" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="1.1.1" />
     <PackageReference Include="Autofac.Extensions.DependencyInjection" Version="4.3.1" />
     <PackageReference Include="Microsoft.Owin.Security.Jwt" Version="4.0.0" />
