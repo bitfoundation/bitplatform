@@ -8,6 +8,7 @@
     <Authors>Bit Foundation</Authors>
     <Company>Bit Foundation</Company>
     <Product>Bit Framework</Product>
+    <Title>Bit.CSharpClient.Controls</Title>
     <Description>Bit.CSharpClient.Controls</Description>
     <Copyright>Copyright © Bit Foundation 2019</Copyright>
     <PackageLicenseUrl>https://github.com/bit-foundation/bit-framework/blob/master/LICENSE</PackageLicenseUrl>
@@ -15,7 +16,7 @@
     <PackageIconUrl>https://avatars.githubusercontent.com/u/22663390</PackageIconUrl>
     <RepositoryUrl>https://github.com/bit-foundation/bit-framework</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
-    <PackageTags>Bit</PackageTags>
+    <PackageTags>Bit Framework Xamarin Forms Xaml Checkbox Date Picker Radio Button</PackageTags>
     <PackageReleaseNotes>https://github.com/bit-foundation/bit-framework/releases</PackageReleaseNotes>
     <AssemblyVersion>0.0.0.1</AssemblyVersion>
     <FileVersion>0.0.0.1</FileVersion>
