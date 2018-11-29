@@ -8,7 +8,7 @@
   * [OData](/docs/bit-server-side/odata.md)
   * [AppEvents](/docs/bit-server-side/app-events.md)
 * [Bit csharp client introduction](docs/bit-csharp-client/intro.md)
-  * [Getting started](/docs/bit-csharp-client/getting-started.md)
+  * [Controls Config](/docs/bit-csharp-client/config.md)
   * [Date Picker](/docs/bit-csharp-client/date-picker.md)
   * [Radio Button](/docs/bit-csharp-client/radio-button.md)
   * [Checkbox](/docs/bit-csharp-client/check-box.md)
