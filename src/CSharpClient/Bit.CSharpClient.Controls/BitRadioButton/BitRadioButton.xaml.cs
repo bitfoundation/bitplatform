@@ -20,6 +20,7 @@ namespace Bit.CSharpClient.Controls
                 }
             }
         }
+
         public BitRadioButton()
         {
             BitRadioButtons.Add(new WeakReference<BitRadioButton>(this));
@@ -39,7 +40,7 @@ namespace Bit.CSharpClient.Controls
             if (Value.Equals(Key))
             {
                 IsSelected = true;
-            }               
+            }
         }
 
         public virtual View Content { get; set; }
@@ -96,7 +97,7 @@ namespace Bit.CSharpClient.Controls
 
         public virtual object Value
         {
-            get =>  (object)GetValue(ValueProperty);
+            get => GetValue(ValueProperty);
             set => SetValue(ValueProperty, value);
         }
     }
