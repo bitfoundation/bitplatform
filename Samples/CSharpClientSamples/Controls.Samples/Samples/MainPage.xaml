@@ -1,0 +1,13 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:bitControls="clr-namespace:Bit.CSharpClient.Controls;assembly=Bit.CSharpClient.Controls"
+             x:Class="Bit.CSharpClient.Controls.Samples.MainPage">
+    <bitControls:BitFrame BorderWidth="2" CornerRadius="1" BorderColor="LightGray" Margin="10">
+        <StackLayout HorizontalOptions="Center" VerticalOptions="Center">
+            <Button Text="RadioButton" Clicked="RadioButton_Clicked" />
+            <Button Text="Checkbox" Clicked="Checkbox_Clicked" />
+            <Button Text="DatePicker" Clicked="DatePicker_Clicked"/>
+        </StackLayout>
+    </bitControls:BitFrame>
+</ContentPage>
