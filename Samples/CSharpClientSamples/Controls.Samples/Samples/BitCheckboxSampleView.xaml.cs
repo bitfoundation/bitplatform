@@ -1,12 +1,10 @@
-﻿using Xamarin.Forms;
-
-namespace Bit.CSharpClient.Controls.Samples
+﻿namespace Bit.CSharpClient.Controls.Samples
 {
-    public partial class BitCheckboxSampleView : ContentPage
-	{
-		public BitCheckboxSampleView ()
-		{
-			InitializeComponent ();
-		}
-	}
+    public partial class BitCheckboxSampleView
+    {
+        public BitCheckboxSampleView()
+        {
+            InitializeComponent();
+        }
+    }
 }

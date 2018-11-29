@@ -1,33 +1,38 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
-<ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
-             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             x:Class="Bit.CSharpClient.Controls.Samples.BitRadioButtonSampleView"
-             xmlns:bitControls="clr-namespace:Bit.CSharpClient.Controls;assembly=Bit.CSharpClient.Controls"
-             xmlns:app="clr-namespace:Bit.CSharpClient.Controls.Samples">
+<ContentPage
+    x:Class="Bit.CSharpClient.Controls.Samples.BitRadioButtonSampleView"
+    xmlns="http://xamarin.com/schemas/2014/forms"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:app="clr-namespace:Bit.CSharpClient.Controls.Samples"
+    xmlns:bitControls="clr-namespace:Bit.CSharpClient.Controls;assembly=Bit.CSharpClient.Controls">
+
     <ContentPage.BindingContext>
-      <app:BitRadioButtonSampleViewModel/>
+        <app:BitRadioButtonSampleViewModel />
     </ContentPage.BindingContext>
+
     <ContentPage.Resources>
         <ResourceDictionary>
-            <Style TargetType="bitControls:BitRadioButton" x:Key="BitRadioButtonStyles">
-                <Setter Property="BorderColor" Value="HotPink"/>
-                <Setter Property="InerCircleColor" Value="HotPink"/>
-                <Setter Property="Value" Value="{Binding Person.Gender}"/>
+            <Style x:Key="BitRadioButtonStyles" TargetType="bitControls:BitRadioButton">
+                <Setter Property="BorderColor" Value="HotPink" />
+                <Setter Property="InerCircleColor" Value="HotPink" />
+                <Setter Property="Value" Value="{Binding Person.Gender}" />
             </Style>
         </ResourceDictionary>
     </ContentPage.Resources>
+
     <StackLayout Padding="10">
         <bitControls:BitRadioButton
             Key="{x:Static app:Gender.Man}"
-            Text="Man"
-            Style="{StaticResource BitRadioButtonStyles}"/>
+            Style="{StaticResource BitRadioButtonStyles}"
+            Text="Man" />
         <bitControls:BitRadioButton
             Key="{x:Static app:Gender.Woman}"
-            Text="Woman"
-            Style="{StaticResource BitRadioButtonStyles}"/>
+            Style="{StaticResource BitRadioButtonStyles}"
+            Text="Woman" />
         <bitControls:BitRadioButton
             Key="{x:Static app:Gender.Other}"
-            Text="Other"
-            Style="{StaticResource BitRadioButtonStyles}"/>
+            Style="{StaticResource BitRadioButtonStyles}"
+            Text="Other" />
     </StackLayout>
+
 </ContentPage>

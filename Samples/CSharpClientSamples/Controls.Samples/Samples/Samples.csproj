@@ -18,26 +18,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Bit.CSharpClient.Controls" Version="0.0.1" />
+    <PackageReference Include="Bit.CSharpClient.Controls" Version="1.3.80" />
     <PackageReference Include="Xamarin.Forms" Version="3.4.0.1008975" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Compile Update="BitCheckboxSampleView.xaml.cs">
-      <DependentUpon>BitCheckboxSampleView.xaml</DependentUpon>
-    </Compile>
-    <Compile Update="BitDatePickerSampleView.xaml.cs">
-      <DependentUpon>BitDatePickerSampleView.xaml</DependentUpon>
-    </Compile>
-  </ItemGroup>
-
-  <ItemGroup>
-    <EmbeddedResource Update="BitRadioButtonSampleView.xaml">
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
-    <EmbeddedResource Update="MainPage.xaml">
-      <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
-    </EmbeddedResource>
   </ItemGroup>
 
 </Project>

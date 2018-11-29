@@ -85,6 +85,7 @@
     <Folder Include="Resources\drawable-xhdpi\" />
     <Folder Include="Resources\drawable-xxhdpi\" />
     <Folder Include="Resources\drawable-xxxhdpi\" />
+    <Folder Include="Resources\drawable\" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Samples\Samples.csproj">
@@ -96,9 +97,6 @@
     <AndroidAsset Include="..\Samples.UWP\Assets\Vazir-Light-FD-WOL.txt">
       <Link>Assets\Vazir-Light-FD-WOL.txt</Link>
     </AndroidAsset>
-  </ItemGroup>
-  <ItemGroup>
-    <AndroidResource Include="Resources\drawable\Calendar.png" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\Android\Xamarin.Android.CSharp.targets" />
 </Project>

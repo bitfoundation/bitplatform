@@ -1,17 +1,20 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
-<ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
-             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             x:Class="Bit.CSharpClient.Controls.Samples.BitCheckboxSampleView"
-             xmlns:bitControls="clr-namespace:Bit.CSharpClient.Controls;assembly=Bit.CSharpClient.Controls"
-             xmlns:xamanimation="clr-namespace:Xamanimation;assembly=Xamanimation"
-             xmlns:viewModel="clr-namespace:Bit.CSharpClient.Controls.Samples">
+<ContentPage
+    x:Class="Bit.CSharpClient.Controls.Samples.BitCheckboxSampleView"
+    xmlns="http://xamarin.com/schemas/2014/forms"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:bitControls="clr-namespace:Bit.CSharpClient.Controls;assembly=Bit.CSharpClient.Controls"
+    xmlns:viewModel="clr-namespace:Bit.CSharpClient.Controls.Samples"
+    xmlns:xamanimation="clr-namespace:Xamanimation;assembly=Xamanimation">
+
     <ContentPage.BindingContext>
-        <viewModel:BitCheckboxSampleViewModel/>
+        <viewModel:BitCheckboxSampleViewModel />
     </ContentPage.BindingContext>
+
     <ContentPage.Resources>
         <Style x:Key="ExtendedCheckboxUI" TargetType="bitControls:BitCheckbox">
             <Setter Property="FillColor" Value="LightPink" />
-            <Setter Property="OutlineColor" Value="Red"/>
+            <Setter Property="OutlineColor" Value="Red" />
             <Setter Property="CheckColor" Value="DeepPink" />
             <Setter Property="VisualStateManager.VisualStateGroups">
                 <VisualStateGroupList>
@@ -21,7 +24,7 @@
                             <VisualState.Setters>
                                 <Setter Property="FillColor" Value="HotPink" />
                                 <Setter Property="CheckColor" Value="Transparent" />
-                                <Setter Property="OutlineColor" Value="HotPink"/>
+                                <Setter Property="OutlineColor" Value="HotPink" />
                             </VisualState.Setters>
                         </VisualState>
                     </VisualStateGroup>
@@ -38,11 +41,11 @@
                             Padding="0"
                             BackgroundColor="{Binding FillColor}"
                             BorderColor="{Binding OutlineColor}"
+                            BorderWidth="1.5"
                             HasShadow="True"
                             HeightRequest="20"
                             VerticalOptions="Center"
-                            WidthRequest="20"
-                            BorderWidth="1.5">
+                            WidthRequest="20">
                             <bitControls:BitFrame.Triggers>
                                 <DataTrigger
                                     Binding="{Binding Shape}"
@@ -131,46 +134,85 @@
     </ContentPage.Resources>
 
     <StackLayout Padding="10">
-        
-        <Label Text="Difrent Shape Whitch are supported" FontSize="Micro" TextColor="Gray"/>
+
+        <Label
+            FontSize="Micro"
+            Text="Different Shape Whitch are supported"
+            TextColor="Gray" />
+
         <StackLayout Orientation="Horizontal">
-            <bitControls:BitCheckbox
-            IsChecked="False"
-            Shape="Native"
-            Text="Native checkbox" />
 
             <bitControls:BitCheckbox
-            IsChecked="False"
-            Shape="Circle"
-            Text="Circle checkbox"/>
+                IsChecked="False"
+                Shape="Native"
+                Text="Native checkbox" />
 
             <bitControls:BitCheckbox
-            IsChecked="False"
-            Shape="Rectangle"
-            Text="Rectangle checkbox" />
+                IsChecked="False"
+                Shape="Circle"
+                Text="Circle checkbox" />
+
+            <bitControls:BitCheckbox
+                IsChecked="False"
+                Shape="Rectangle"
+                Text="Rectangle checkbox" />
+
         </StackLayout>
-        
-        <BoxView HeightRequest="1" BackgroundColor="Gray" WidthRequest="50"/>
 
-        <Label Text="Disabled check box with check color gray instead of purple" FontSize="Micro" TextColor="Gray"/>
-        
+        <BoxView
+            BackgroundColor="Gray"
+            HeightRequest="1"
+            WidthRequest="50" />
+
+        <Label
+            FontSize="Micro"
+            Text="Disabled check box with check color gray instead of purple"
+            TextColor="Gray" />
+
         <bitControls:BitCheckbox
             CheckColor="Purple"
             IsEnabled="False"
             Text="Disabled checkbox" />
 
-        <BoxView HeightRequest="1" BackgroundColor="Gray" WidthRequest="50"/>
-        <Label Text="custom label for check box. You can also put any custom control here!" FontSize="Micro" TextColor="Gray"/>
-        <bitControls:BitCheckbox OutlineColor="Green" FillColor="GreenYellow" CheckColor="Green">
-            <Label Text="custom label" FontAttributes="Bold"/>
+        <BoxView
+            BackgroundColor="Gray"
+            HeightRequest="1"
+            WidthRequest="50" />
+
+        <Label
+            FontSize="Micro"
+            Text="custom label for check box. You can also put any custom control here!"
+            TextColor="Gray" />
+
+        <bitControls:BitCheckbox
+            CheckColor="Green"
+            FillColor="GreenYellow"
+            OutlineColor="Green">
+            <Label FontAttributes="Bold" Text="custom label" />
         </bitControls:BitCheckbox>
 
-        <BoxView HeightRequest="1" BackgroundColor="Gray" WidthRequest="50"/>
-        <Label Text="Fully customized checkbox" FontSize="Micro" TextColor="Gray"/>
+        <BoxView
+            BackgroundColor="Gray"
+            HeightRequest="1"
+            WidthRequest="50" />
+
+        <Label
+            FontSize="Micro"
+            Text="Fully customized checkbox"
+            TextColor="Gray" />
+
         <bitControls:BitCheckbox Style="{StaticResource ExtendedCheckboxUI}" Text="customized checkbox" />
 
-        <BoxView HeightRequest="1" BackgroundColor="Gray" WidthRequest="50"/>
-        <Label Text="IsChecked is binding to viewModel" FontSize="Micro" TextColor="Gray"/>
+        <BoxView
+            BackgroundColor="Gray"
+            HeightRequest="1"
+            WidthRequest="50" />
+
+        <Label
+            FontSize="Micro"
+            Text="IsChecked is binding to viewModel"
+            TextColor="Gray" />
+
         <bitControls:BitCheckbox IsChecked="{Binding IsChecked}" Text="checkbox" />
 
     </StackLayout>

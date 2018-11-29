@@ -1,9 +1,10 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
-<Application xmlns="http://xamarin.com/schemas/2014/forms"
-             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             x:Class="Bit.CSharpClient.Controls.Samples.App">
+<Application
+    x:Class="Bit.CSharpClient.Controls.Samples.App"
+    xmlns="http://xamarin.com/schemas/2014/forms"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml">
     <Application.Resources>
-        
+
         <ResourceDictionary>
             <OnPlatform x:Key="Persian-Solar-Calendar-FontFamily" x:TypeArguments="x:String">
                 <On Platform="iOS" Value="Vazir FD-WOL" />
@@ -13,4 +14,5 @@
         </ResourceDictionary>
 
     </Application.Resources>
+
 </Application>
