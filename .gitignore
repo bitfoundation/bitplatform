@@ -239,3 +239,4 @@ _book
 *yarn.lock
 *.edmx
 /BitTools/BitCLIV1Task/buildtask/ps_modules/VstsTaskSdk/
+*Resource.designer.cs
