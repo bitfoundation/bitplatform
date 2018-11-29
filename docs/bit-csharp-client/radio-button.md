@@ -2,10 +2,6 @@
 
 **BitRadioButton** is a fully customizable control .It supports all Xamarin Forms backends, including but not limited to Android-iOS-Windows(UWP) etc.
 
-### Getting Started
-
-In order to use BitRadioButton, install "Bit.CSharpClient.Controls" nuget package.
-
 ### PROPERTIES:
 **Key** : (object) 
 
@@ -23,14 +19,7 @@ In order to use BitRadioButton, install "Bit.CSharpClient.Controls" nuget packag
 
 **OuterCircleRadius** : (double) radius of RadioButton
 
-### Use BitRadioButton in Xaml
-
-First of all, add a namepsace to your page:
-
-```
-xmlns:bitControls="clr-namespace:Bit.CSharpClient.Controls;assembly=Bit.CSharpClient.Controls"
-```
-Then use this tag
+### How to use BitRadioButton in Xaml:
 
 ```xml
 <bitControls:BitRadioButton
@@ -46,4 +35,4 @@ In order to customise text of RadioButton :
         Text="custom label for Radio button. You can also put any custom control here!" />
 </bitControls:BitRadioButton>
 ```
-To have better understanding see samples. Feedbacks/issues/questions are also welcomed in [stackoverflow](http://stackoverflow.com/questions/tagged/bit-framework) or [github](https://github.com/bit-foundation/bit-framework/issues/new?labels=&template=bug_report.md).
+To have better understanding see [samples](/Samples/CSharpClientSamples/Controls.Samples). Feedbacks/issues/questions are also welcomed in [stackoverflow](http://stackoverflow.com/questions/tagged/bit-framework) or [github](https://github.com/bit-foundation/bit-framework/issues/new?labels=&template=bug_report.md).

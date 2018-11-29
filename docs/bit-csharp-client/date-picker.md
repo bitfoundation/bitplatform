@@ -2,9 +2,6 @@
 
 **BitDatePicker** is a fully customizable control that supports any calendar system that [noda time supports](https://nodatime.org/1.3.x/userguide/calendars) and any locale that .NET supports. It supports all Xamarin Forms backends, including but not limited to Android-iOS-Windows(UWP) etc.
 
-### Getting Started
-
-In order to use BitDatePicker, install "Bit.CSharpClient.Controls" nuget package.
 
 in **iOS** project add following code into AppDelegate:
 ```
@@ -19,15 +16,7 @@ in **UWP** project add following code into App.Xaml.cs:
 Rg.Plugins.Popup.Popup.Init();
 ```
 
-### Use BitDatePicker in Xaml
-
-First of all, add a namepsace to your page:
-
-```
-xmlns:bitControls="clr-namespace:Bit.CSharpClient.Controls;assembly=Bit.CSharpClient.Controls"
-```
-
-And you're ready to go! No extra configuration is required!
+### How to Use BitDatePicker in Xaml:
 
 ```xml
 <bitControls:BitDatePicker
@@ -78,6 +67,5 @@ In order to customize picker's button you can have followings:
     </bitControls:BitDatePicker>
 ```
 
-To have better understanding see samples. Feedbacks/issues/questions are also welcomed in [stackoverflow](http://stackoverflow.com/questions/tagged/bit-framework) or [github](https://github.com/bit-foundation/bit-framework/issues/new?labels=&template=bug_report.md).
-[](SolarCalendar.PNG)
+To have better understanding see [samples](/Samples/CSharpClientSamples/Controls.Samples). Feedbacks/issues/questions are also welcomed in [stackoverflow](http://stackoverflow.com/questions/tagged/bit-framework) or [github](https://github.com/bit-foundation/bit-framework/issues/new?labels=&template=bug_report.md).
 ToDo => Take some photos from BitDatePicker + move stuffs to bit repository + Create samples project!
