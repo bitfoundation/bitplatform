@@ -111,6 +111,8 @@ namespace Bit.ViewModel.Implementations
         {
             if (fromServerDtoSetSyncMaterials.Any())
             {
+                await GetMetadataIfNotRetrievedAlready(cancellationToken).ConfigureAwait(false);
+
                 using (EfCoreDbContextBase offlineContextForSyncFrom = Container.Resolve<EfCoreDbContextBase>())
                 {
                     ((IsSyncDbContext)offlineContextForSyncFrom).IsSyncDbContext = true;
@@ -210,6 +212,15 @@ namespace Bit.ViewModel.Implementations
                     await offlineContextForSyncFrom.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
                 }
             }
+        }
+
+        /// <summary>
+        /// <see cref="BuildRetriveDataTask"/> is being called in parallel because of Task.WhenAll. That method calls GetCommandTextAsync which retrieves $metadata if it's not retrieved already.
+        /// Due race condition, ODataClient might retrieve $metadata multiple times, but if we get $metadata here (before Task.WhenAll), we can bypass the issue.
+        /// </summary>
+        private async Task GetMetadataIfNotRetrievedAlready(CancellationToken cancellationToken)
+        {
+            await ODataClient.GetMetadataAsync(cancellationToken).ConfigureAwait(false);
         }
 
         protected virtual async Task BuildRetriveDataTask(DtoSyncConfigSyncFromResults dtoSyncConfigSyncFromResults, CancellationToken cancellationToken)
