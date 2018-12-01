@@ -3,8 +3,7 @@
     x:Class="Bit.CSharpClient.Controls.BitCheckbox"
     xmlns="http://xamarin.com/schemas/2014/forms"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-    xmlns:bitControls="clr-namespace:Bit.CSharpClient.Controls"
-    xmlns:xamanimation="clr-namespace:Xamanimation;assembly=Xamanimation">
+    xmlns:bitControls="clr-namespace:Bit.CSharpClient.Controls">
     <TemplatedView.Resources>
         <Style TargetType="bitControls:BitCheckbox">
 
@@ -41,10 +40,10 @@
                             <ColumnDefinition Width="Auto" />
                         </Grid.ColumnDefinitions>
                         <bitControls:BitFrame
-                            BorderWidth="1.5"
                             Padding="0"
                             BackgroundColor="{Binding FillColor}"
                             BorderColor="{Binding OutlineColor}"
+                            BorderWidth="1.5"
                             HasShadow="False"
                             HeightRequest="20"
                             VerticalOptions="Center"
@@ -69,50 +68,11 @@
                                     <Setter Property="CornerRadius" Value="{OnPlatform Default=2, iOS=10}" />
                                 </DataTrigger>
                             </bitControls:BitFrame.Triggers>
-                            <Grid>
-                                <Label
-                                    HorizontalOptions="Center"
-                                    Text="✓"
-                                    TextColor="{Binding CheckColor}"
-                                    VerticalOptions="Center" />
-                                <BoxView
-                                    x:Name="BoxView"
-                                    BackgroundColor="{Binding FillColor}"
-                                    HeightRequest="14"
-                                    HorizontalOptions="Center"
-                                    VerticalOptions="Center"
-                                    WidthRequest="14">
-                                    <BoxView.Triggers>
-                                        <DataTrigger
-                                            Binding="{Binding IsChecked}"
-                                            TargetType="BoxView"
-                                            Value="True">
-                                            <DataTrigger.EnterActions>
-                                                <xamanimation:BeginAnimation>
-                                                    <xamanimation:BeginAnimation.Animation>
-                                                        <xamanimation:TranslateToAnimation
-                                                            Easing="SpringIn"
-                                                            Target="{x:Reference BoxView}"
-                                                            TranslateX="17"
-                                                            Duration="170" />
-                                                    </xamanimation:BeginAnimation.Animation>
-                                                </xamanimation:BeginAnimation>
-                                            </DataTrigger.EnterActions>
-                                            <DataTrigger.ExitActions>
-                                                <!--  Workaround, because setting translate x to zero using 'Setter' is not working!  -->
-                                                <xamanimation:BeginAnimation>
-                                                    <xamanimation:BeginAnimation.Animation>
-                                                        <xamanimation:TranslateToAnimation
-                                                            Target="{x:Reference BoxView}"
-                                                            TranslateX="0"
-                                                            Duration="1" />
-                                                    </xamanimation:BeginAnimation.Animation>
-                                                </xamanimation:BeginAnimation>
-                                            </DataTrigger.ExitActions>
-                                        </DataTrigger>
-                                    </BoxView.Triggers>
-                                </BoxView>
-                            </Grid>
+                            <Label
+                                HorizontalOptions="Center"
+                                Text="✓"
+                                TextColor="{Binding CheckColor}"
+                                VerticalOptions="Center" />
                         </bitControls:BitFrame>
                         <ContentView Grid.Column="1">
                             <ContentView.Content>
