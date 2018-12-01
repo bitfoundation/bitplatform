@@ -25,9 +25,6 @@
                             CornerRadius="10"
                             HeightRequest="20"
                             WidthRequest="20">
-                            <bitControls:BitFrame.GestureRecognizers>
-                                <TapGestureRecognizer Command="{Binding SelectedTappedCommand}" CommandParameter="{Binding}" />
-                            </bitControls:BitFrame.GestureRecognizers>
                             <bitControls:BitFrame
                                 BackgroundColor="Transparent"
                                 CornerRadius="5"
@@ -55,6 +52,9 @@
                                 </Binding>
                             </ContentView.Content>
                         </ContentView>
+                        <Grid.GestureRecognizers>
+                            <TapGestureRecognizer Command="{Binding SelectedTappedCommand}" CommandParameter="{Binding}" />
+                        </Grid.GestureRecognizers>
                     </Grid>
                 </ControlTemplate>
             </Setter>
