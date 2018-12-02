@@ -22,6 +22,19 @@
                         FontFamily="{Binding FontFamily}"
                         Text="{Binding Day.LocalDate.Day}"
                         TextColor="DimGray">
+                        <VisualStateManager.VisualStateGroups>
+                            <VisualStateGroupList>
+                                <VisualStateGroup x:Name="NormalStates">
+                                    <VisualState x:Name="Focused" />
+                                    <VisualState x:Name="Normal" />
+                                    <VisualState x:Name="Disabled">
+                                        <VisualState.Setters>
+                                            <Setter Property="IsVisible" Value="False" />
+                                        </VisualState.Setters>
+                                    </VisualState>
+                                </VisualStateGroup>
+                            </VisualStateGroupList>
+                        </VisualStateManager.VisualStateGroups>
                         <Button.Triggers>
                             <DataTrigger
                                 Binding="{Binding Day.IsToday}"
