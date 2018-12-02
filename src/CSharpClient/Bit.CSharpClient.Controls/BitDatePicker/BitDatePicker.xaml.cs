@@ -22,6 +22,7 @@ namespace Bit.CSharpClient.Controls
             BitCalendarPopupView.SetBinding(BitCalendarPopupView.TodayColorProperty, new Binding(nameof(TodayColor), source: this));
             BitCalendarPopupView.SetBinding(BitCalendarPopupView.SelectedDateProperty, new Binding(nameof(SelectedDate), source: this));
             BitCalendarPopupView.SetBinding(BitCalendarPopupView.FontFamilyProperty, new Binding(nameof(FontFamily), source: this));
+            BitCalendarPopupView.SetBinding(BitCalendarPopupView.AutoCloseProperty, new Binding(nameof(AutoClose), source: this));
             BitCalendarPopupView.SetBinding(FlowDirectionProperty, new Binding(nameof(FlowDirection), source: this));
 
             OpenPopupCommand = new Command(OpenPopup);
@@ -87,6 +88,13 @@ namespace Bit.CSharpClient.Controls
         {
             get { return (string)GetValue(DateDisplayFormatProperty); }
             set { SetValue(DateDisplayFormatProperty, value); }
+        }
+
+        public static BindableProperty AutoCloseProperty = BindableProperty.Create(nameof(AutoClose), typeof(bool), typeof(BitDatePicker), defaultValue: false, defaultBindingMode: BindingMode.OneWay);
+        public virtual bool AutoClose
+        {
+            get { return (bool)GetValue(AutoCloseProperty); }
+            set { SetValue(AutoCloseProperty, value); }
         }
 
         public virtual string Text { get; set; }

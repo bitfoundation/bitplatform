@@ -1,5 +1,6 @@
 ﻿using NodaTime;
 using Rg.Plugins.Popup.Pages;
+using Rg.Plugins.Popup.Services;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -19,7 +20,7 @@ namespace Bit.CSharpClient.Controls
         {
             InitializeComponent();
 
-            SelectDateCommand = new Command<CalendarDay>(SyncViewModelWithView);
+            SelectDateCommand = new Command<CalendarDay>(SyncViewModelWithView, selectedDate => selectedDate != null);
 
             ShowNextMonthCommand = new Command(ShowNextMonth);
 
@@ -54,6 +55,9 @@ namespace Bit.CSharpClient.Controls
                 if (isSelected)
                     SelectedDate = day.LocalDate.ToDateTimeUnspecified();
             }
+
+            if (AutoClose == true)
+                PopupNavigation.Instance.PopAsync();
         }
 
         protected virtual void SyncViewWithViewModel()
@@ -72,6 +76,9 @@ namespace Bit.CSharpClient.Controls
                     day.IsSelected = day.LocalDate.ToDateTimeUnspecified() == SelectedDate.Value ? true : false;
                 }
             }
+
+            if (AutoClose == true)
+                PopupNavigation.Instance.PopAsync();
         }
 
         public virtual void CalcCurrentMonthDays()
@@ -198,6 +205,13 @@ namespace Bit.CSharpClient.Controls
         {
             get { return (Color)GetValue(SelectedColorProperty); }
             set { SetValue(SelectedColorProperty, value); }
+        }
+
+        public static BindableProperty AutoCloseProperty = BindableProperty.Create(nameof(AutoClose), typeof(bool), typeof(BitCalendarPopupView), defaultValue: false, defaultBindingMode: BindingMode.OneWay);
+        public virtual bool AutoClose
+        {
+            get { return (bool)GetValue(AutoCloseProperty); }
+            set { SetValue(AutoCloseProperty, value); }
         }
     }
 

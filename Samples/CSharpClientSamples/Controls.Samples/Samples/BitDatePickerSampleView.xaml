@@ -8,51 +8,53 @@
     xmlns:view="clr-namespace:Bit.CSharpClient.Controls.Samples"
     xmlns:viewModel="clr-namespace:Bit.CSharpClient.Controls.Samples">
 
-    <ContentPage.BindingContext>
-        <viewModel:BitDatePickerSampleViewModel />
-    </ContentPage.BindingContext>
+  <ContentPage.BindingContext>
+    <viewModel:BitDatePickerSampleViewModel />
+  </ContentPage.BindingContext>
 
-    <StackLayout Padding="10,20">
+  <StackLayout Padding="10,20">
 
-        <bitControls:BitDatePicker Text="Please select a date!" />
+    <bitControls:BitDatePicker Text="Please select a date!" AutoClose="False"/>
 
-        <bitControls:BitDatePicker
-            CalendarSystem="{x:Static noda:CalendarSystem.PersianArithmetic}"
-            Culture="Fa"
-            DateDisplayFormat="dd MMM yyyy"
-            FlowDirection="RightToLeft"
-            FontFamily="{StaticResource Persian-Solar-Calendar-FontFamily}"
-            Text="لطفا یک روز را انتخاب کنید" />
+    <bitControls:BitDatePicker Text="Please select a date!" AutoClose="True"/>
 
-        <bitControls:BitDatePicker
-            CalendarSystem="{x:Static noda:CalendarSystem.IslamicBcl}"
-            Culture="Ar"
-            FlowDirection="RightToLeft"
-            Text="يرجى تحديد تاريخ الرحلة" />
+    <bitControls:BitDatePicker
+          CalendarSystem="{x:Static noda:CalendarSystem.PersianArithmetic}"
+          Culture="Fa"
+          DateDisplayFormat="dd MMM yyyy"
+          FlowDirection="RightToLeft"
+          FontFamily="{StaticResource Persian-Solar-Calendar-FontFamily}"
+          Text="لطفا یک روز را انتخاب کنید" />
 
-        <bitControls:BitDatePicker Text="Please Select a date">
-            <bitControls:BitDatePicker.ControlTemplate>
-                <ControlTemplate>
-                    <Frame
-                        Padding="5"
-                        BorderColor="LightGray"
-                        CornerRadius="5"
-                        HasShadow="False">
-                        <StackLayout HorizontalOptions="CenterAndExpand" Orientation="Horizontal">
-                            <StackLayout.GestureRecognizers>
-                                <TapGestureRecognizer Command="{TemplateBinding OpenPopupCommand}" />
-                            </StackLayout.GestureRecognizers>
-                            <Image
-                                HeightRequest="15"
-                                Source="{view:ImageResource Source='Samples.Calendar.png'}"
-                                WidthRequest="15" />
-                            <Label FontFamily="{TemplateBinding FontFamily}" Text="{TemplateBinding DisplayText}" />
-                        </StackLayout>
-                    </Frame>
-                </ControlTemplate>
-            </bitControls:BitDatePicker.ControlTemplate>
-        </bitControls:BitDatePicker>
+    <bitControls:BitDatePicker
+        CalendarSystem="{x:Static noda:CalendarSystem.IslamicBcl}"
+        Culture="Ar"
+        FlowDirection="RightToLeft"
+        Text="يرجى تحديد تاريخ الرحلة" />
 
-        <bitControls:BitDatePicker SelectedDate="{Binding SelectedDate}" Text="Please select a date!" />
-    </StackLayout>
+    <bitControls:BitDatePicker Text="Please Select a date">
+      <bitControls:BitDatePicker.ControlTemplate>
+        <ControlTemplate>
+          <Frame
+              Padding="5"
+              BorderColor="LightGray"
+              CornerRadius="5"
+              HasShadow="False">
+            <StackLayout HorizontalOptions="CenterAndExpand" Orientation="Horizontal">
+              <StackLayout.GestureRecognizers>
+                <TapGestureRecognizer Command="{TemplateBinding OpenPopupCommand}" />
+              </StackLayout.GestureRecognizers>
+              <Image
+                  HeightRequest="15"
+                  Source="{view:ImageResource Source='Samples.Calendar.png'}"
+                  WidthRequest="15" />
+              <Label FontFamily="{TemplateBinding FontFamily}" Text="{TemplateBinding DisplayText}" />
+            </StackLayout>
+          </Frame>
+        </ControlTemplate>
+      </bitControls:BitDatePicker.ControlTemplate>
+    </bitControls:BitDatePicker>
+
+    <bitControls:BitDatePicker SelectedDate="{Binding SelectedDate}" Text="Please select a date!" />
+  </StackLayout>
 </ContentPage>
