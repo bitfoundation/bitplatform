@@ -1,4 +1,4 @@
-﻿{
+{
   "name": "bit-change-set-manager",
   "version": "0.0.1",
   "description": "Bit change set manager sample app",
@@ -23,7 +23,7 @@
     "@types/signalr": "^2.2.35"
   },
   "dependencies": {
-    "@bit/bit-framework": "^1.3.80",
+    "@bit/bit-framework": "^1.3.90",
     "@bit/encoder": "^1.0.0",
     "@bit/jaydata": "^1.5.17",
     "@uirouter/angularjs": "^1.0.20",
