@@ -2,10 +2,11 @@
 
   <PropertyGroup>
     <TargetFrameworks>net461;netcoreapp2.0</TargetFrameworks>
-    <PackageTags>Bit Web API Rest Microsoft AspNet WebApi AspNetWebApi</PackageTags>
+    <PackageTags>Bit Web-API Rest Microsoft AspNet WebApi AspNetWebApi</PackageTags>
     <Company>Bit Foundation</Company>
     <Authors>Bit Foundation</Authors>
     <Product>Bit Framework</Product>
+    <Title>Bit.WebApi</Title>
     <Description>Bit.WebApi</Description>
     <Copyright>Copyright © Bit Foundation 2019</Copyright>
     <PackageLicenseUrl>https://github.com/bit-foundation/bit-framework/blob/master/LICENSE</PackageLicenseUrl>

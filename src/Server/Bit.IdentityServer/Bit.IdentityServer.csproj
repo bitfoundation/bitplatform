@@ -2,10 +2,11 @@
 
   <PropertyGroup>
     <TargetFrameworks>net461;netcoreapp2.0</TargetFrameworks>
-    <PackageTags>Bit OAuth2 OAuth OpenID Security 2.0 Connect Identity IdentityServer</PackageTags>
+    <PackageTags>Bit OAuth2 OAuth OpenID Security Connect Identity IdentityServer</PackageTags>
     <Authors>Bit Foundation</Authors>
     <Company>Bit Foundation</Company>
     <Product>Bit Framework</Product>
+    <Title>Bit.IdentityServer</Title>
     <Description>Bit.IdentityServer</Description>
     <Copyright>Copyright © Bit Foundation 2019</Copyright>
     <PackageLicenseUrl>https://github.com/bit-foundation/bit-framework/blob/master/LICENSE</PackageLicenseUrl>

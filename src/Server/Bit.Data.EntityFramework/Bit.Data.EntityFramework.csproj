@@ -2,10 +2,11 @@
 
   <PropertyGroup>
     <TargetFramework>net461</TargetFramework>
-    <PackageTags>Bit EntityFramework Entity Framework EF Database Microsoft Data O/RM ADO.NET</PackageTags>
+    <PackageTags>Bit Entity-Framework EF Database Microsoft Data O/RM ADO.NET</PackageTags>
     <Authors>Bit Foundation</Authors>
     <Company>Bit Foundation</Company>
     <Product>Bit Framework</Product>
+    <Title>Bit.Data.EntityFramework</Title>
     <Description>Bit.Data.EntityFramework</Description>
     <Copyright>Copyright © Bit Foundation 2019</Copyright>
     <PackageLicenseUrl>https://github.com/bit-foundation/bit-framework/blob/master/LICENSE</PackageLicenseUrl>

@@ -5,6 +5,7 @@
     <Authors>Bit Foundation</Authors>
     <Product>Bit Framework</Product>
     <Company>Bit Foundation</Company>
+    <Title>Bit.Data</Title>
     <Description>Bit.Data</Description>
     <Copyright>Copyright © Bit Foundation 2019</Copyright>
     <PackageLicenseUrl>https://github.com/bit-foundation/bit-framework/blob/master/LICENSE</PackageLicenseUrl>
