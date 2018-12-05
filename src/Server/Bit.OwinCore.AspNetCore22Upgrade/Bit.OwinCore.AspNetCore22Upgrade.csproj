@@ -1,12 +1,13 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>net461;netcoreapp2.0</TargetFrameworks>
+    <TargetFrameworks>net461;netcoreapp2.1</TargetFrameworks>
+    <PackageTags>Bit aspnetcore2.1</PackageTags>
     <Authors>Bit Foundation</Authors>
-    <Product>Bit Framework</Product>
     <Company>Bit Foundation</Company>
-    <Title>Bit.Data</Title>
-    <Description>Bit.Data</Description>
+    <Product>Bit Framework</Product>
+    <Title>Bit.OwinCore.AspNetCore22Upgrade</Title>
+    <Description>Bit.OwinCore.AspNetCore22Upgrade</Description>
     <Copyright>Copyright © Bit Foundation 2019</Copyright>
     <PackageLicenseUrl>https://github.com/bit-foundation/bit-framework/blob/master/LICENSE</PackageLicenseUrl>
     <PackageProjectUrl>https://github.com/bit-foundation/bit-framework</PackageProjectUrl>
@@ -17,7 +18,6 @@
     <AssemblyVersion>0.0.0.1</AssemblyVersion>
     <FileVersion>0.0.0.1</FileVersion>
     <Version>0.0.1</Version>
-    <PackageTags>Bit Data</PackageTags>
     <GeneratePackageOnBuild Condition=" '$(Configuration)' == 'Release' ">true</GeneratePackageOnBuild>
     <DocumentationFile>bin\$(Configuration)\$(TargetFramework)\$(AssemblyName).xml</DocumentationFile>
     <LangVersion>7.3</LangVersion>
@@ -25,15 +25,13 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Bit.System.Linq.Dynamic" Version="1.1.0" />
-    <PackageReference Include="SourceLink.Embed.AllSourceFiles" Version="2.8.3" PrivateAssets="all" />
-    <PackageReference Include="SourceLink.Copy.PdbFiles" Version="2.8.3" PrivateAssets="All" />
-    <PackageReference Include="System.Buffers" Version="4.5.0" />
-    <PackageReference Include="System.Data.SqlClient" Version="4.6.0" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="..\Bit.Model\Bit.Model.csproj" />
+    <PackageReference Include="Microsoft.AspNetCore" Version="2.2.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.Formatters.Json" Version="2.2.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.DataAnnotations" Version="2.2.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Owin" Version="2.2.0" />
+    <PackageReference Include="Microsoft.AspNetCore.StaticFiles" Version="2.2.0" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="2.2.0" />
+    <PackageReference Include="NWebsec.AspNetCore.Middleware" Version="2.0.0" />
   </ItemGroup>
 
 </Project>

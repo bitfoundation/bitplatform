@@ -15,7 +15,7 @@
     <ProjectReference Include="..\Bit.Data.EntityFrameworkCore\Bit.Data.EntityFrameworkCore.csproj" />
     <ProjectReference Include="..\Bit.IdentityServer\Bit.IdentityServer.csproj" />
     <ProjectReference Include="..\Bit.OData\Bit.OData.csproj" />
-    <ProjectReference Include="..\Bit.OwinCore.AspNetCore21Upgrade\Bit.OwinCore.AspNetCore21Upgrade.csproj" />
+    <ProjectReference Include="..\Bit.OwinCore.AspNetCore22Upgrade\Bit.OwinCore.AspNetCore22Upgrade.csproj" />
     <ProjectReference Include="..\Bit.OwinCore\Bit.OwinCore.csproj" />
     <ProjectReference Include="..\Bit.Signalr\Bit.Signalr.csproj" />
   </ItemGroup>

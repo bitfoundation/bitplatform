@@ -17,7 +17,7 @@ namespace Bit.OwinCore
 
             if (aspNetCoreVersion.Major > 1) // asp.net core 2.0+
             {
-                string bitOwinCoreAsmName = aspNetCoreVersion.Minor == 0 ? "Bit.OwinCore.AspNetCore2Upgrade" : "Bit.OwinCore.AspNetCore21Upgrade";
+                string bitOwinCoreAsmName = aspNetCoreVersion.Minor == 0 ? "Bit.OwinCore.AspNetCore2Upgrade" : $"Bit.OwinCore.AspNetCore2{aspNetCoreVersion.Minor}Upgrade";
 
                 return (IWebHostBuilder)Assembly.Load(bitOwinCoreAsmName)
                     .GetType($"{bitOwinCoreAsmName}.BitWebHost")

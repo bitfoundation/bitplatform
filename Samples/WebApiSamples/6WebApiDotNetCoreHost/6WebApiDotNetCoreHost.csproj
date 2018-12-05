@@ -9,7 +9,7 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.Private.CoreFx.NETCoreApp" Version="4.5.0-preview3-26513-0" />
     <PackageReference Include="Bit.OwinCore" Version="1.3.90" />
-    <PackageReference Include="Bit.OwinCore.AspNetCore21Upgrade" Version="1.3.90" />
+    <PackageReference Include="Bit.OwinCore.AspNetCore22Upgrade" Version="1.3.90" />
     <PackageReference Include="Bit.WebApi" Version="1.3.90" />
     <PackageReference Include="BitCodeAnalyzer" Version="1.3.90" />
   </ItemGroup>

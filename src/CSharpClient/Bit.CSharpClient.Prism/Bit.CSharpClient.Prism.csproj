@@ -38,10 +38,10 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Prism.Plugin.Logging.Common" Version="1.1.1.275" />
-    <PackageReference Include="Prism.Plugin.Popups" Version="2.1.0.228" />
+    <PackageReference Include="Prism.Plugin.Logging.Common" Version="1.2.0.288" />
+    <PackageReference Include="Prism.Plugin.Popups" Version="2.2.0.293" />
     <PackageReference Include="Prism.Autofac.Forms" Version="7.1.0.431" />
-    <PackageReference Include="Xamarin.Essentials" Version="0.11.0-preview" />
+    <PackageReference Include="Xamarin.Essentials" Version="1.0.0" />
     <PackageReference Include="MSBuild.Sdk.Extras" Version="1.6.65" PrivateAssets="All" />
     <PackageReference Include="SourceLink.Embed.AllSourceFiles" Version="2.8.3" PrivateAssets="all" />
     <PackageReference Include="SourceLink.Copy.PdbFiles" Version="2.8.3" PrivateAssets="All" />
