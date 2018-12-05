@@ -1,13 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using Bit.Core.Extensions;
+using Bit.Core.Models;
 using Bit.Owin.Contracts;
 using Bit.Signalr.Contracts;
 using Microsoft.AspNet.SignalR;
 using Owin;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
-using Bit.Core.Extensions;
-using Bit.Core.Models;
 
 namespace Bit.Signalr
 {
@@ -15,7 +15,7 @@ namespace Bit.Signalr
     {
         public virtual AppEnvironment AppEnvironment { get; set; }
 
-        public virtual IEnumerable<ISignalRConfiguration> SignalRScaleoutConfigurations { get; set; }
+        public virtual IEnumerable<ISignalRConfiguration> SignalRConfigurations { get; set; }
         public virtual Microsoft.AspNet.SignalR.IDependencyResolver DependencyResolver { get; set; }
 
         public virtual void Configure(IAppBuilder owinApp)
@@ -39,7 +39,7 @@ namespace Bit.Signalr
                 Resolver = DependencyResolver
             };
 
-            SignalRScaleoutConfigurations.ToList()
+            SignalRConfigurations.ToList()
                 .ForEach(cnfg =>
                 {
                     cnfg.Configure(signalRConfig);
