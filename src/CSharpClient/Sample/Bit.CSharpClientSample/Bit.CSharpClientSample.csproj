@@ -15,7 +15,7 @@
 
     <Reference Include="System.Data" />
 
-    <PackageReference Include="Fody" Version="3.3.2">
+    <PackageReference Include="Fody" Version="3.3.3">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
     </PackageReference>
