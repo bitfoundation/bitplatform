@@ -73,13 +73,13 @@ namespace Bit.Core.Contracts
         /// Schedules a job using provided cronExpression. Storing job info in database will be performed async.
         /// </summary>
         /// <param name="jobId">You've to provide your own meaningful job id, so you can use that in <see cref="StopRecurringBackgroundJob(string)"/> and <see cref="TriggerRecurringBackgroundJob(string)"/> </param>
-        Task PerformRecurringBackgroundJobAsync<TService>(string jobId, Expression<Action<TService>> methodCall, string cronExpression);
+        Task PerformRecurringBackgroundJobAsync<TService>(string jobId, Expression<Action<TService>> methodCall, string cronExpression, TimeZoneInfo timeZoneInfo = null);
 
         /// <summary>
         /// Schedules a job using provided cronExpression.
         /// </summary>
         /// <param name="jobId">You've to provide your own meaningful job id, so you can use that in <see cref="StopRecurringBackgroundJob(string)"/> and <see cref="TriggerRecurringBackgroundJob(string)"/> </param>
-        void PerformRecurringBackgroundJob<TService>(string jobId, Expression<Action<TService>> methodCall, string cronExpression);
+        void PerformRecurringBackgroundJob<TService>(string jobId, Expression<Action<TService>> methodCall, string cronExpression, TimeZoneInfo timeZoneInfo = null);
 
         /// <summary>
         /// You can cancel job schedule you have defined using <see cref="PerformRecurringBackgroundJob{TService}(string, Expression{Action{TService}}, string)"/>. Storing job cancellation info in database will be performed async.

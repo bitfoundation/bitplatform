@@ -1,13 +1,13 @@
-﻿using System;
-using System.Linq.Expressions;
-using System.Threading;
-using System.Threading.Tasks;
-using Bit.Core.Contracts;
+﻿using Bit.Core.Contracts;
 using Bit.Core.Models;
 using Bit.Owin.Exceptions;
 using Bit.Owin.Metadata;
 using Hangfire;
 using Hangfire.Storage;
+using System;
+using System.Linq.Expressions;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace Bit.Hangfire.Implementations
 {
@@ -51,7 +51,7 @@ namespace Bit.Hangfire.Implementations
             return Task.FromResult(BackgroundJob.Schedule(methodCall, when));
         }
 
-        public virtual Task PerformRecurringBackgroundJobAsync<TService>(string jobId, Expression<Action<TService>> methodCall, string cronExpression)
+        public virtual Task PerformRecurringBackgroundJobAsync<TService>(string jobId, Expression<Action<TService>> methodCall, string cronExpression, TimeZoneInfo timeZoneInfo = null)
         {
             if (methodCall == null)
                 throw new ArgumentNullException(nameof(methodCall));
@@ -62,7 +62,7 @@ namespace Bit.Hangfire.Implementations
             if (jobId == null)
                 throw new ArgumentNullException(nameof(jobId));
 
-            RecurringJob.AddOrUpdate(recurringJobId: jobId, methodCall: methodCall, cronExpression: cronExpression);
+            RecurringJob.AddOrUpdate(recurringJobId: jobId, methodCall: methodCall, cronExpression: cronExpression, timeZone: timeZoneInfo);
 
             return Task.CompletedTask;
         }
@@ -171,7 +171,7 @@ namespace Bit.Hangfire.Implementations
             }
         }
 
-        public virtual void PerformRecurringBackgroundJob<TService>(string jobId, Expression<Action<TService>> methodCall, string cronExpression)
+        public virtual void PerformRecurringBackgroundJob<TService>(string jobId, Expression<Action<TService>> methodCall, string cronExpression, TimeZoneInfo timeZoneInfo = null)
         {
             if (methodCall == null)
                 throw new ArgumentNullException(nameof(methodCall));
@@ -182,7 +182,7 @@ namespace Bit.Hangfire.Implementations
             if (jobId == null)
                 throw new ArgumentNullException(nameof(jobId));
 
-            RecurringJob.AddOrUpdate(recurringJobId: jobId, methodCall: methodCall, cronExpression: cronExpression);
+            RecurringJob.AddOrUpdate(recurringJobId: jobId, methodCall: methodCall, cronExpression: cronExpression, timeZone: timeZoneInfo);
         }
 
         public virtual void StopRecurringBackgroundJob(string jobId)
