@@ -1,6 +1,7 @@
 ﻿using Autofac;
 using Bit.Model.Events;
 using Bit.View;
+using Bit.View.Contracts;
 using Bit.ViewModel;
 using Bit.ViewModel.Implementations;
 using Prism;
@@ -21,9 +22,9 @@ using Xamarin.Forms.Xaml;
 
 namespace Bit
 {
-    public abstract class BitApplication : PrismApplication
+    public abstract class BitApplication : PrismApplication, IAdaptiveBehaviorService
     {
-        public BitApplication() 
+        public BitApplication()
             : this(null)
         {
 
@@ -118,11 +119,20 @@ namespace Bit
             containerBuilder.Register(c => Container).SingleInstance().PreserveExistingDefaults();
             containerBuilder.Register(c => Container.GetContainer()).PreserveExistingDefaults();
             containerRegistry.RegisterPopupNavigationService();
+            containerBuilder.Register<IAdaptiveBehaviorService>(c => this).SingleInstance().PreserveExistingDefaults();
         }
 
         protected override IContainerExtension CreateContainerExtension()
         {
             return new BitAutofacContainerExtension(new ContainerBuilder());
+        }
+
+        public virtual void InvalidateAllAdptiveBehaviors()
+        {
+            _eventAggregator.Value.GetEvent<InvalidateAllAdaptiveBehaviors>()
+                .Publish(new InvalidateAllAdaptiveBehaviors { });
+
+            PublishOrientationAndOrSizeChangedEvent();
         }
     }
 }

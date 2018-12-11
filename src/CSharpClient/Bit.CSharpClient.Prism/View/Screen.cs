@@ -46,6 +46,11 @@ namespace Bit.View
             }
         }
 
+        internal void Invalidate()
+        {
+            isValid = false;
+        }
+
         protected override void OnAttachedTo(VisualElement bindable)
         {
             base.OnAttachedTo(bindable);
@@ -83,6 +88,11 @@ namespace Bit.View
         }
     }
 
+    public class InvalidateAllAdaptiveBehaviors : PubSubEvent<InvalidateAllAdaptiveBehaviors>
+    {
+
+    }
+
     public class OrientationAndOrSizeChanged : PubSubEvent<OrientationAndOrSizeChanged>
     {
         public DeviceOrientation NewOrientation { get; set; }
@@ -107,17 +117,18 @@ namespace Bit.View
 
             IEventAggregator eventAggregator = ((BitApplication)Application.Current).Container.Resolve<IEventAggregator>();
 
-            SubscriptionToken token = eventAggregator.GetEvent<OrientationAndOrSizeChanged>()
-                .SubscribeAsync(implementation.OnOrientationChanged, keepSubscriberReferenceAlive: true, threadOption: ThreadOption.UIThread);
+            implementation.Tokens.Add(eventAggregator.GetEvent<OrientationAndOrSizeChanged>()
+                .SubscribeAsync(implementation.OnOrientationChanged, keepSubscriberReferenceAlive: true, threadOption: ThreadOption.UIThread));
 
-            implementation.Token = token;
+            implementation.Tokens.Add(eventAggregator.GetEvent<InvalidateAllAdaptiveBehaviors>()
+                .SubscribeAsync(implementation.OnInvalidateAllAdaptiveBehaviors, keepSubscriberReferenceAlive: true, threadOption: ThreadOption.UIThread));
         }
     }
 
     internal class OrientationAndScreenSizeAwareBehaviorImplementation
     {
         public WeakReference<VisualElement> ElementRef { get; set; }
-        public SubscriptionToken Token { get; set; }
+        public List<SubscriptionToken> Tokens { get; set; } = new List<SubscriptionToken>();
 
         public Task OnOrientationChanged(OrientationAndOrSizeChanged newOrientationEvent)
         {
@@ -130,7 +141,24 @@ namespace Bit.View
             }
             else // Element is detached from visual tree. It might be garbage collected too.
             {
-                Token.Dispose();
+                Tokens.ForEach(t => t.Dispose());
+            }
+
+            return Task.CompletedTask;
+        }
+
+        public Task OnInvalidateAllAdaptiveBehaviors(InvalidateAllAdaptiveBehaviors @event)
+        {
+            if (ElementRef.TryGetTarget(out VisualElement vsElement) && vsElement.BindingContext != null)
+            {
+                foreach (AdaptiveBehavior adaptiveBehavior in vsElement.Behaviors.OfType<AdaptiveBehavior>())
+                {
+                    adaptiveBehavior.Invalidate();
+                }
+            }
+            else // Element is detached from visual tree. It might be garbage collected too.
+            {
+                Tokens.ForEach(t => t.Dispose());
             }
 
             return Task.CompletedTask;
