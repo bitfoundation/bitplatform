@@ -1,11 +1,13 @@
 ﻿using Bit.Core.Models;
 using Bit.Owin.Contracts;
 using Bit.WebApi.Contracts;
+using Microsoft.Web.Http.Routing;
 using Owin;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Web.Http;
+using System.Web.Http.Routing;
 
 namespace Bit.WebApi
 {
@@ -40,10 +42,28 @@ namespace Bit.WebApi
 
             _server = new HttpServer(_webApiConfig);
 
+#if DotNet
+            DefaultInlineConstraintResolver constraintResolver = new DefaultInlineConstraintResolver()
+            {
+                ConstraintMap = { ["apiVersion"] = typeof(ApiVersionRouteConstraint) }
+            };
+
+            _webApiConfig.AddApiVersioning(apiVerOptions =>
+            {
+                apiVerOptions.ReportApiVersions = true;
+                apiVerOptions.AssumeDefaultVersionWhenUnspecified = true;
+            });
+
+            _webApiConfig.MapHttpAttributeRoutes(constraintResolver);
+
+            if (_webApiConfig.Properties.TryGetValue("MultiVersionSwaggerConfiguration", out object actionObj))
+            {
+                ((Action)actionObj).Invoke();
+            }
+
+#else
             _webApiConfig.MapHttpAttributeRoutes();
-
-            _webApiConfig.Routes.MapHttpRoute(name: "default", routeTemplate: "{controller}/{action}", defaults: new { action = RouteParameter.Optional });
-
+#endif
             owinApp.UseAutofacWebApi(_webApiConfig);
 
             WebApiOwinPipelineInjector.UseWebApi(owinApp, _server, _webApiConfig);

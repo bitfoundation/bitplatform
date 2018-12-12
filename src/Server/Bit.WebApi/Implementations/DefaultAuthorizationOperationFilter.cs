@@ -39,11 +39,12 @@ namespace Bit.WebApi.Implementations
 
             bool hasAuthAttribute = apiDescription.ActionDescriptor.GetFilterPipeline().Any(e =>
             {
-                bool isAuthorizeFilter = e.Instance is AuthorizationFilterAttribute;
-                if (isAuthorizeFilter)
+                bool isInstanceOfAuthorizeFilter = e.Instance is AuthorizationFilterAttribute;
+                if (isInstanceOfAuthorizeFilter)
                 {
-                    IFilter innerActionFilter = (IFilter)InnerProperty.Value.GetValue(e.Instance);
-                    return innerActionFilter.GetType().GetCustomAttribute<SwaggerIgnoreAuthorizeAttribute>() == null;
+                    bool isAuthorizeFilter = e.Instance.GetType() == typeof(AuthorizeAttribute);
+                    IFilter actionFilter = isAuthorizeFilter ? e.Instance : (IFilter)InnerProperty.Value.GetValue(e.Instance);
+                    return actionFilter.GetType().GetCustomAttribute<SwaggerIgnoreAuthorizeAttribute>() == null;
                 }
                 return false;
             });

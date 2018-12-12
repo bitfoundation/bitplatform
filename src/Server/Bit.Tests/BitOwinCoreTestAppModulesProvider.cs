@@ -73,11 +73,7 @@ namespace Bit.Tests
 
                 webApiDependencyManager.RegisterGlobalWebApiActionFiltersUsing(httpConfiguration =>
                 {
-                    httpConfiguration.EnableSwagger(c =>
-                    {
-                        c.SingleApiVersion("v1", "Swagger-Api");
-                        c.ApplyDefaultApiConfig(httpConfiguration);
-                    }).EnableBitSwaggerUi();
+                    httpConfiguration.EnableMultiVersionSwaggr();
                 });
 
                 webApiDependencyManager.RegisterWebApiMiddlewareUsingDefaultConfiguration();

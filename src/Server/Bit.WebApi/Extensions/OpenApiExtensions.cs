@@ -25,6 +25,7 @@ namespace Swashbuckle.Application
             doc.OperationFilter<OpenApiIgnoreParameterTypeOperationFilter<CancellationToken>>();
             AppEnvironment appEnv = (AppEnvironment)webApiConfig.DependencyResolver.GetService(typeof(AppEnvironment));
             doc.OperationFilter(() => new DefaultAuthorizationOperationFilter { AppEnvironment = appEnv });
+            doc.OperationFilter<SwaggerDefaultValuesOperationFilter>();
             doc.OperationFilter<ExamplesOperationFilter>();
             doc.OperationFilter<DescriptionOperationFilter>();
 
@@ -47,11 +48,13 @@ namespace Swashbuckle.Application
 
         private static Action<SwaggerUiConfig> GetBitSwaggerUiConfig(Action<SwaggerUiConfig> configure = null)
         {
-            void CreateBitSwaggerUiConfig(SwaggerUiConfig c)
+            void CreateBitSwaggerUiConfig(SwaggerUiConfig swagger)
             {
-                c.InjectJavaScript(typeof(WebApiMiddlewareConfiguration).GetTypeInfo().Assembly, "Bit.WebApi.Extensions.SwaggerExtender.js", isTemplate: false);
+                swagger.InjectJavaScript(typeof(WebApiMiddlewareConfiguration).GetTypeInfo().Assembly, "Bit.WebApi.Extensions.SwaggerExtender.js", isTemplate: false);
 
-                configure?.Invoke(c);
+                swagger.EnableDiscoveryUrlSelector();
+
+                configure?.Invoke(swagger);
             }
 
             return CreateBitSwaggerUiConfig;
