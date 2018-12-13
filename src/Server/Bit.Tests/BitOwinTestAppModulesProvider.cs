@@ -70,7 +70,7 @@ namespace Bit.Tests
 
                 webApiDependencyManager.RegisterGlobalWebApiActionFiltersUsing(httpConfiguration =>
                 {
-                    httpConfiguration.EnableMultiVersionSwaggr();
+                    httpConfiguration.EnableMultiVersionWebApiSwaggr();
                 });
             });
 
