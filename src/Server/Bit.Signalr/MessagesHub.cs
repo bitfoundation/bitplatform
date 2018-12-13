@@ -14,7 +14,10 @@ namespace Bit.Signalr
             {
                 IOwinContext context = new OwinContext(Context.Request.Environment);
 
-                Core.Contracts.IDependencyResolver dependencyResolver = context.Get<Core.Contracts.IDependencyResolver>("DependencyResolver");
+                if (context.Request.CallCancelled.IsCancellationRequested == true)
+                    return;
+
+                Core.Contracts.IDependencyResolver dependencyResolver = context.GetDependencyResolver();
 
                 await dependencyResolver.Resolve<IMessagesHubEvents>().OnConnected(this);
             }
@@ -30,7 +33,10 @@ namespace Bit.Signalr
             {
                 IOwinContext context = new OwinContext(Context.Request.Environment);
 
-                Core.Contracts.IDependencyResolver dependencyResolver = context.Get<Core.Contracts.IDependencyResolver>("DependencyResolver");
+                if (context.Request.CallCancelled.IsCancellationRequested == true)
+                    return;
+
+                Core.Contracts.IDependencyResolver dependencyResolver = context.GetDependencyResolver();
 
                 if (dependencyResolver != null)
                     await dependencyResolver?.Resolve<IMessagesHubEvents>().OnDisconnected(this, stopCalled);
@@ -48,7 +54,10 @@ namespace Bit.Signalr
             {
                 IOwinContext context = new OwinContext(Context.Request.Environment);
 
-                Core.Contracts.IDependencyResolver dependencyResolver = context.Get<Core.Contracts.IDependencyResolver>("DependencyResolver");
+                if (context.Request.CallCancelled.IsCancellationRequested == true)
+                    return;
+
+                Core.Contracts.IDependencyResolver dependencyResolver = context.GetDependencyResolver();
 
                 await dependencyResolver.Resolve<IMessagesHubEvents>().OnReconnected(this);
             }
