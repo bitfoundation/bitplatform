@@ -22,8 +22,7 @@
     <DocumentationFile>bin\$(Configuration)\$(TargetFramework)\$(AssemblyName).xml</DocumentationFile>
     <LangVersion>7.3</LangVersion>
     <NoWarn>$(NoWarn);CS1591;NU1701</NoWarn>
-    <DefineConstants Condition=" '$(TargetFramework)' == 'netcoreapp2.0' ">DotNetCore</DefineConstants>
-    <DefineConstants Condition=" '$(TargetFramework)' == 'net461' ">DotNet</DefineConstants>
+    <AssetTargetFallback Condition=" '$(TargetFramework)' == 'netcoreapp2.0' ">net45</AssetTargetFallback>
   </PropertyGroup>
 
   <ItemGroup>
@@ -34,7 +33,9 @@
     <PackageReference Include="Autofac.WebApi2" Version="4.2.0" />
     <PackageReference Include="Autofac.WebApi2.Owin" Version="4.0.0" />
     <PackageReference Include="Microsoft.AspNet.WebApi.Owin" Version="5.2.7" />
+    <PackageReference Include="Microsoft.AspNet.WebApi.Core" Version="5.2.7" />
     <PackageReference Include="Microsoft.AspNet.WebApi.Versioning.ApiExplorer" Version="1.2.1" />
+    <PackageReference Include="Microsoft.AspNet.WebApi.Versioning" Version="2.3.0" />
     <PackageReference Include="Swashbuckle.Core" Version="5.6.0" />
     <PackageReference Include="Swashbuckle.Examples" Version="3.10.0" />
     <PackageReference Include="WebApiCorrelator" Version="1.1.0" />

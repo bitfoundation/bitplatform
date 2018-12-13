@@ -42,7 +42,6 @@ namespace Bit.WebApi
 
             _server = new HttpServer(_webApiConfig);
 
-#if DotNet
             DefaultInlineConstraintResolver constraintResolver = new DefaultInlineConstraintResolver()
             {
                 ConstraintMap = { ["apiVersion"] = typeof(ApiVersionRouteConstraint) }
@@ -61,9 +60,8 @@ namespace Bit.WebApi
                 ((Action)actionObj).Invoke();
             }
 
-#else
-            _webApiConfig.MapHttpAttributeRoutes();
-#endif
+            _webApiConfig.Routes.MapHttpRoute(name: "default", routeTemplate: "{controller}/{action}", defaults: new { action = RouteParameter.Optional });
+
             owinApp.UseAutofacWebApi(_webApiConfig);
 
             WebApiOwinPipelineInjector.UseWebApi(owinApp, _server, _webApiConfig);

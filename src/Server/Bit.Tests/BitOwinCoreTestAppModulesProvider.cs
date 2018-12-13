@@ -66,6 +66,8 @@ namespace Bit.Tests
 
             dependencyManager.RegisterWebApiMiddleware(webApiDependencyManager =>
             {
+                webApiDependencyManager.RegisterWebApiMiddlewareUsingDefaultConfiguration();
+
                 webApiDependencyManager.RegisterGlobalWebApiActionFiltersUsing(httpConfiguration =>
                 {
                     httpConfiguration.Filters.Add(new AuthorizeAttribute());
@@ -75,12 +77,12 @@ namespace Bit.Tests
                 {
                     httpConfiguration.EnableMultiVersionSwaggr();
                 });
-
-                webApiDependencyManager.RegisterWebApiMiddlewareUsingDefaultConfiguration();
             });
 
             dependencyManager.RegisterODataMiddleware(odataDependencyManager =>
             {
+                odataDependencyManager.RegisterWebApiODataMiddlewareUsingDefaultConfiguration();
+
                 odataDependencyManager.RegisterGlobalWebApiActionFiltersUsing(httpConfiguration =>
                 {
                     httpConfiguration.Filters.Add(new DefaultODataAuthorizeAttribute());
@@ -94,8 +96,6 @@ namespace Bit.Tests
                         c.ApplyDefaultODataConfig(httpConfiguration);
                     }).EnableBitSwaggerUi();
                 });
-
-                odataDependencyManager.RegisterWebApiODataMiddlewareUsingDefaultConfiguration();
             });
 
             dependencyManager.RegisterSignalRConfiguration<SignalRAuthorizeConfiguration>();

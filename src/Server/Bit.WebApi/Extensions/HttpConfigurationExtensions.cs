@@ -6,7 +6,6 @@ namespace System.Web.Http
 {
     public static class HttpConfigurationExtensions
     {
-#if DotNet
         public static void EnableMultiVersionSwaggr(this HttpConfiguration httpConfiguration,
             Action<SwaggerDocsConfig> customizeSwagger = null,
             Action<SwaggerUiConfig> customizeSwaggerUi = null,
@@ -41,6 +40,5 @@ namespace System.Web.Http
 
             }));
         }
-#endif
     }
 }

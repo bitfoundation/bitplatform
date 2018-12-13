@@ -66,6 +66,19 @@ namespace Bit.Tests.Api.ApiControllers.Tests
                 Assert.AreEqual(2, await (await httpClient.GetAsync("api/customers/operations/sum/1/1?api-version=1.0")).Content.ReadAsAsync<int>());
             }
         }
-    }
 
+        [TestMethod]
+        [TestCategory("WebApi")]
+        public virtual async Task TestWebApiDefaultRouting()
+        {
+            using (BitOwinTestEnvironment testEnvironment = new BitOwinTestEnvironment())
+            {
+                TokenResponse token = await testEnvironment.Server.Login("ValidUserName", "ValidPassword", clientId: "TestResOwner");
+
+                HttpClient httpClient = testEnvironment.Server.BuildHttpClient(token);
+
+                (await httpClient.GetAsync("api/values")).EnsureSuccessStatusCode();
+            }
+        }
+    }
 }
