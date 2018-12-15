@@ -92,7 +92,7 @@ namespace Bit.Tests
                 {
                     httpConfiguration.EnableSwagger(c =>
                     {
-                        c.SingleApiVersion("v1", "Swagger-OData");
+                        c.SingleApiVersion("All", "Swagger-OData");
                         c.ApplyDefaultODataConfig(httpConfiguration);
                     }).EnableBitSwaggerUi();
                 });
