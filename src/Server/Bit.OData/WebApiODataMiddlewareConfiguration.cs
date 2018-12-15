@@ -1,5 +1,6 @@
 ﻿using Bit.Core.Models;
 using Bit.OData.Contracts;
+using Bit.OData.Implementations;
 using Bit.Owin.Contracts;
 using Bit.WebApi.Contracts;
 using Microsoft.AspNet.OData.Batch;
@@ -14,6 +15,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Web.Http;
+using System.Web.Http.Dispatcher;
 
 [assembly: ODataModule("Bit")]
 
@@ -51,6 +53,8 @@ namespace Bit.OData
             _webApiConfig.IncludeErrorDetailPolicy = AppEnvironment.DebugMode ? IncludeErrorDetailPolicy.LocalOnly : IncludeErrorDetailPolicy.Never;
 
             _webApiConfig.DependencyResolver = WebApiDependencyResolver;
+
+            _webApiConfig.Services.Replace(typeof(IHttpControllerSelector), new DefaultODataHttpControllerSelector(_webApiConfig));
 
             WebApiConfigurationCustomizers.ToList()
                 .ForEach(webApiConfigurationCustomizer =>
