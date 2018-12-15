@@ -20,7 +20,7 @@ namespace Bit.Core.Contracts
 
             IMapper RegisterMapper(IDependencyResolver resolver)
             {
-                IEnumerable<IDtoEntityMapperConfiguration> configs = resolver.Resolve<IEnumerable<IDtoEntityMapperConfiguration>>();
+                IEnumerable<IMapperConfiguration> configs = resolver.Resolve<IEnumerable<IMapperConfiguration>>();
 
                 void ConfigureMapper(IMapperConfigurationExpression cfg)
                 {
@@ -39,13 +39,13 @@ namespace Bit.Core.Contracts
             return dependencyManager;
         }
 
-        public static IDependencyManager RegisterDtoEntityMapperConfiguration<TDtoEntityMapperConfiguration>(this IDependencyManager dependencyManager)
-            where TDtoEntityMapperConfiguration : class, IDtoEntityMapperConfiguration
+        public static IDependencyManager RegisterMapperConfiguration<TMapperConfiguration>(this IDependencyManager dependencyManager)
+            where TMapperConfiguration : class, IMapperConfiguration
         {
             if (dependencyManager == null)
                 throw new ArgumentNullException(nameof(dependencyManager));
 
-            dependencyManager.Register<IDtoEntityMapperConfiguration, TDtoEntityMapperConfiguration>(lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExciting: false);
+            dependencyManager.Register<IMapperConfiguration, TMapperConfiguration>(lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExciting: false);
 
             return dependencyManager;
         }

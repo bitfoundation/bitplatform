@@ -107,8 +107,8 @@ namespace Bit.Tests
 
             dependencyManager.RegisterDtoEntityMapper();
 
-            dependencyManager.RegisterDtoEntityMapperConfiguration<DefaultDtoEntityMapperConfiguration>();
-            dependencyManager.RegisterDtoEntityMapperConfiguration<TestDtoEntityMapperConfiguration>();
+            dependencyManager.RegisterMapperConfiguration<DefaultMapperConfiguration>();
+            dependencyManager.RegisterMapperConfiguration<TestMapperConfiguration>();
 
             dependencyManager.RegisterSingleSignOnServer<TestUserService, TestOAuthClientsProvider>();
 

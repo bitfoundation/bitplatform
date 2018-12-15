@@ -6,7 +6,7 @@ using System.Reflection;
 
 namespace Bit.Data.EntityFramework.Implementations
 {
-    public class EntityFrameworkDtoEntityMapperConfiguration : IDtoEntityMapperConfiguration
+    public class EntityFrameworkMapperConfiguration : IMapperConfiguration
     {
         public virtual void Configure(IMapperConfigurationExpression mapperConfigExpression)
         {
