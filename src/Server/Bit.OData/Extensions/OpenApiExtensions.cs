@@ -1,4 +1,5 @@
-﻿using Bit.WebApi.Implementations;
+﻿using Bit.OData.Implementations;
+using Bit.WebApi.Implementations;
 using Microsoft.AspNet.OData.Query;
 using Microsoft.AspNet.OData.Routing;
 using Swashbuckle.OData;
@@ -15,6 +16,7 @@ namespace Swashbuckle.Application
         /// </summary>
         public static SwaggerDocsConfig ApplyDefaultODataConfig(this SwaggerDocsConfig doc, HttpConfiguration webApiConfig)
         {
+            doc.DocumentFilter<RemoveDefaultODataNamespaceFromSwaggerDocumentFilter>();
             doc.ApplyDefaultApiConfig(webApiConfig);
             doc.OperationFilter<OpenApiIgnoreParameterTypeOperationFilter<ODataQueryOptions>>();
             doc.CustomProvider(defaultProvider => new ODataSwaggerProvider(defaultProvider, doc, webApiConfig).Configure(odataConfig =>
