@@ -1,12 +1,12 @@
-﻿using System;
+﻿using Bit.Core.Contracts;
+using Bit.Owin.Contracts;
+using Microsoft.Owin;
+using System;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Web.Http;
 using System.Web.Http.Filters;
-using Bit.Core.Contracts;
-using Bit.Owin.Contracts;
-using Microsoft.Owin;
 
 namespace Bit.WebApi.ActionFilters
 {
@@ -22,7 +22,10 @@ namespace Bit.WebApi.ActionFilters
             Exception exception = actionExecutedContext.Exception;
             actionExecutedContext.Response = CreateErrorResponseMessage(actionExecutedContext, exceptionToHttpErrorMapper, exception);
 
-            actionExecutedContext.Response.ReasonPhrase = exceptionToHttpErrorMapper.GetReasonPhrase(exception);
+            string reasonPhrase = exceptionToHttpErrorMapper.GetReasonPhrase(exception);
+            actionExecutedContext.Response.ReasonPhrase = reasonPhrase;
+            if (!actionExecutedContext.Response.Headers.Contains("Reason-Phrase"))
+                actionExecutedContext.Response.Headers.Add("Reason-Phrase", reasonPhrase);
 
             if (scopeStatusManager.WasSucceeded())
                 scopeStatusManager.MarkAsFailed(exception.Message);

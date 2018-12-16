@@ -1,10 +1,10 @@
-﻿using System;
-using System.Globalization;
-using System.Threading.Tasks;
-using Bit.Core.Contracts;
+﻿using Bit.Core.Contracts;
 using Bit.Owin.Contracts;
 using Bit.Owin.Metadata;
 using Microsoft.Owin;
+using System;
+using System.Globalization;
+using System.Threading.Tasks;
 
 namespace Bit.Owin.Middlewares
 {
@@ -25,7 +25,16 @@ namespace Bit.Owin.Middlewares
 
             try
             {
+                context.Response.OnSendingHeaders((state) =>
+                {
+                    // Create a backup header for reason phrase.
+                    string reasonPhrase = context.Response.ReasonPhrase;
+                    if (!string.IsNullOrEmpty(reasonPhrase) && !context.Response.Headers.ContainsKey("Reason-Phrase"))
+                        context.Response.Headers.Add("Reason-Phrase", new[] { reasonPhrase });
+                }, state: null);
+
                 await Next.Invoke(context);
+
                 string statusCode = context.Response.StatusCode.ToString(CultureInfo.InvariantCulture);
                 bool responseStatusCodeIsErrorCodeBecauseOfSomeServerBasedReason = statusCode.StartsWith("5", StringComparison.InvariantCultureIgnoreCase);
                 bool responseStatusCodeIsErrorCodeBecauseOfSomeClientBasedReason = statusCode.StartsWith("4", StringComparison.InvariantCultureIgnoreCase);
@@ -69,8 +78,8 @@ namespace Bit.Owin.Middlewares
                 {
                     IExceptionToHttpErrorMapper exceptionToHttpErrorMapper = dependencyResolver.Resolve<IExceptionToHttpErrorMapper>();
                     context.Response.StatusCode = Convert.ToInt32(exceptionToHttpErrorMapper.GetStatusCode(exp), CultureInfo.InvariantCulture);
-                    await context.Response.WriteAsync(exceptionToHttpErrorMapper.GetMessage(exp), context.Request.CallCancelled);
                     context.Response.ReasonPhrase = exceptionToHttpErrorMapper.GetReasonPhrase(exp);
+                    await context.Response.WriteAsync(exceptionToHttpErrorMapper.GetMessage(exp), context.Request.CallCancelled);
                 }
                 throw;
             }

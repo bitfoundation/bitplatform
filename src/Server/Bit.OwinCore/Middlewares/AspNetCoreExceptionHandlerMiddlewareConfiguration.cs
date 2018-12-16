@@ -1,7 +1,4 @@
-﻿using System;
-using System.Globalization;
-using System.Threading.Tasks;
-using Bit.Core.Contracts;
+﻿using Bit.Core.Contracts;
 using Bit.Owin.Contracts;
 using Bit.Owin.Metadata;
 using Bit.OwinCore.Contracts;
@@ -9,6 +6,9 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.Extensions.DependencyInjection;
+using System;
+using System.Globalization;
+using System.Threading.Tasks;
 
 namespace Bit.OwinCore.Middlewares
 {
@@ -40,7 +40,17 @@ namespace Bit.OwinCore.Middlewares
 
             try
             {
+                context.Response.OnStarting(() =>
+                {
+                    // Create a backup header for reason phrase.
+                    string reasonPhrase = context.Features.Get<IHttpResponseFeature>().ReasonPhrase;
+                    if (!string.IsNullOrEmpty(reasonPhrase) && !context.Response.Headers.ContainsKey("Reason-Phrase"))
+                        context.Response.Headers.Add("Reason-Phrase", reasonPhrase);
+                    return Task.CompletedTask;
+                });
+
                 await _next.Invoke(context);
+
                 string statusCode = context.Response.StatusCode.ToString(CultureInfo.InvariantCulture);
                 bool responseStatusCodeIsErrorCodeBecauseOfSomeServerBasedReason = statusCode.StartsWith("5", StringComparison.InvariantCultureIgnoreCase);
                 bool responseStatusCodeIsErrorCodeBecauseOfSomeClientBasedReason = statusCode.StartsWith("4", StringComparison.InvariantCultureIgnoreCase);
@@ -85,7 +95,7 @@ namespace Bit.OwinCore.Middlewares
                     IExceptionToHttpErrorMapper exceptionToHttpErrorMapper = context.RequestServices.GetService<IExceptionToHttpErrorMapper>();
                     context.Response.StatusCode = Convert.ToInt32(exceptionToHttpErrorMapper.GetStatusCode(exp), CultureInfo.InvariantCulture);
                     context.Features.Get<IHttpResponseFeature>().ReasonPhrase = exceptionToHttpErrorMapper.GetReasonPhrase(exp);
-                    await context.Response.WriteAsync(exceptionToHttpErrorMapper.GetMessage(exp) , context.RequestAborted);
+                    await context.Response.WriteAsync(exceptionToHttpErrorMapper.GetMessage(exp), context.RequestAborted);
                 }
                 throw;
             }

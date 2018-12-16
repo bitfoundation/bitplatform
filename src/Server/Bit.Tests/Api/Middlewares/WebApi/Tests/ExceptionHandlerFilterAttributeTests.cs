@@ -44,6 +44,7 @@ namespace Bit.Tests.Api.Middlewares.WebApi.Tests
                     if (message.StatusCode == HttpStatusCode.InternalServerError)
                     {
                         Assert.AreEqual(BitMetadataBuilder.KnownError, message.ReasonPhrase);
+                        Assert.IsTrue(message.Headers.Any(h => h.Key == "Reason-Phrase" && h.Value.Any(v => v == BitMetadataBuilder.KnownError)));
 
                         ILogger logger = TestDependencyManager.CurrentTestDependencyManager.Objects
                             .OfType<ILogger>().Last();
@@ -96,6 +97,7 @@ namespace Bit.Tests.Api.Middlewares.WebApi.Tests
                     if (message.StatusCode == HttpStatusCode.NotFound)
                     {
                         Assert.AreEqual(BitMetadataBuilder.KnownError, message.ReasonPhrase);
+                        Assert.IsTrue(message.Headers.Any(h => h.Key == "Reason-Phrase" && h.Value.Any(v => v == BitMetadataBuilder.KnownError)));
 
                         ILogger logger = TestDependencyManager.CurrentTestDependencyManager.Objects
                             .OfType<ILogger>().Last();
@@ -152,6 +154,7 @@ namespace Bit.Tests.Api.Middlewares.WebApi.Tests
                     if (message.StatusCode == HttpStatusCode.InternalServerError)
                     {
                         Assert.AreEqual(BitMetadataBuilder.UnKnownError, message.ReasonPhrase);
+                        Assert.IsTrue(message.Headers.Any(h => h.Key == "Reason-Phrase" && h.Value.Any(v => v == BitMetadataBuilder.UnKnownError)));
 
                         ILogger logger = TestDependencyManager.CurrentTestDependencyManager.Objects
                             .OfType<ILogger>().Last();

@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
@@ -42,7 +44,14 @@ namespace Bit.ViewModel.Implementations
 
             request.Headers.Add("Bit-Client-Type", "CS-Client");
 
-            return await base.SendAsync(request, cancellationToken).ConfigureAwait(false);
+            HttpResponseMessage response = await base.SendAsync(request, cancellationToken).ConfigureAwait(false);
+
+            if (string.IsNullOrEmpty(response.ReasonPhrase) && response.Headers.TryGetValues("Reason-Phrase", out IEnumerable<string> reasonPhrases) && reasonPhrases.Any())
+            {
+                response.ReasonPhrase = reasonPhrases.Single();
+            }
+
+            return response;
         }
     }
 }
