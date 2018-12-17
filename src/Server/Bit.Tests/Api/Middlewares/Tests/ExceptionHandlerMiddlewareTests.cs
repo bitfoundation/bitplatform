@@ -111,7 +111,7 @@ namespace Bit.Tests.Api.Middlewares.Tests
                     .Objects.OfType<IScopeStatusManager>()
                     .Last();
 
-                A.CallTo(() => scopeStatusManager.MarkAsFailed("UnknownReasonPhrase"))
+                A.CallTo(() => scopeStatusManager.MarkAsFailed("UnKnownError"))
                             .MustHaveHappened(Repeated.Exactly.Once);
 
                 ILogger logger = TestDependencyManager.CurrentTestDependencyManager
@@ -123,7 +123,7 @@ namespace Bit.Tests.Api.Middlewares.Tests
 
                 LogData[] logData = logger.LogData.ToArray();
 
-                logData.Single(c => c.Key == "ResponseStatusCode" && (string)c.Value == "501");
+                logData.Single(c => c.Key == "ResponseStatusCode" && (int)c.Value == 501);
                 logData.Single(c => c.Key == nameof(IRequestInformationProvider.HttpMethod) && (string)c.Value == "GET");
                 logData.Single(c => c.Key == "UserId" && (string)c.Value == "ValidUserName");
             }
@@ -156,7 +156,7 @@ namespace Bit.Tests.Api.Middlewares.Tests
 
                 LogData[] logData = logger.LogData.ToArray();
 
-                logData.Single(c => c.Key == "ResponseStatusCode" && (string)c.Value == "406");
+                logData.Single(c => c.Key == "ResponseStatusCode" && (int)c.Value == 406);
                 logData.Single(c => c.Key == nameof(IRequestInformationProvider.HttpMethod) && (string)c.Value == "GET");
                 logData.Single(c => c.Key == "UserId" && (string)c.Value == "ValidUserName");
             }

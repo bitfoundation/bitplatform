@@ -1,8 +1,4 @@
-﻿using System;
-using System.Linq;
-using System.Net;
-using System.Threading.Tasks;
-using Bit.Core.Contracts;
+﻿using Bit.Core.Contracts;
 using Bit.Owin.Exceptions;
 using Bit.Owin.Metadata;
 using Bit.Test;
@@ -14,6 +10,11 @@ using FakeItEasy;
 using IdentityModel.Client;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Simple.OData.Client;
+using System;
+using System.Linq;
+using System.Net;
+using System.Net.Http;
+using System.Threading.Tasks;
 
 namespace Bit.Tests.Api.Middlewares.WebApi.Tests
 {
@@ -180,6 +181,22 @@ namespace Bit.Tests.Api.Middlewares.WebApi.Tests
 
                     Assert.AreEqual(HttpStatusCode.InternalServerError, ex.Code);
                 }
+            }
+        }
+
+        [TestMethod]
+        [TestCategory("WebApi"), TestCategory("Logging")]
+        public virtual async Task WebApiRoutingNotFoundReasonPhraseMustGetsReturnedAsUnknownError_NotFound()
+        {
+            using (BitOwinTestEnvironment testEnvironment = new BitOwinTestEnvironment())
+            {
+                TokenResponse token = await testEnvironment.Server.Login("ValidUserName", "ValidPassword", clientId: "TestResOwner");
+
+                HttpClient client = testEnvironment.Server.BuildHttpClient(token: token);
+
+                HttpResponseMessage response = await client.DeleteAsync("odata/Test/parentEntities(3)"); // no route for this url!
+
+                Assert.AreEqual("UnKnownError:Not Found", response.ReasonPhrase);
             }
         }
     }

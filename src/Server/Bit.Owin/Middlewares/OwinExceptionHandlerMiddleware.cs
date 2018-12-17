@@ -15,6 +15,14 @@ namespace Bit.Owin.Middlewares
         {
         }
 
+        private (bool responseStatusCodeIsErrorCodeBecauseOfSomeServerBasedReason, bool responseStatusCodeIsErrorCodeBecauseOfSomeClientBasedReason, bool responseIsOk) GetResponseStatus(IOwinContext context)
+        {
+            string statusCode = context.Response.StatusCode.ToString(CultureInfo.InvariantCulture);
+            bool responseStatusCodeIsErrorCodeBecauseOfSomeServerBasedReason = statusCode.StartsWith("5", StringComparison.InvariantCultureIgnoreCase);
+            bool responseStatusCodeIsErrorCodeBecauseOfSomeClientBasedReason = statusCode.StartsWith("4", StringComparison.InvariantCultureIgnoreCase);
+            return (responseStatusCodeIsErrorCodeBecauseOfSomeServerBasedReason, responseStatusCodeIsErrorCodeBecauseOfSomeClientBasedReason, responseIsOk: !responseStatusCodeIsErrorCodeBecauseOfSomeServerBasedReason && !responseStatusCodeIsErrorCodeBecauseOfSomeClientBasedReason);
+        }
+
         public override async Task Invoke(IOwinContext context)
         {
             IDependencyResolver dependencyResolver = context.GetDependencyResolver();
@@ -27,32 +35,53 @@ namespace Bit.Owin.Middlewares
             {
                 context.Response.OnSendingHeaders((state) =>
                 {
-                    // Create a backup header for reason phrase.
+                    // Create a backup header for reason phrase + enhance its value if possible.
+                    // We're able to modify reason phrase and other headers in this callback and in catch part of this class only.
+                    // We may not change response headers after await Next.Invoke(context); Codes after Next.Invoke gets invoked after OnSendingHeaders.
                     string reasonPhrase = context.Response.ReasonPhrase;
-                    if (!string.IsNullOrEmpty(reasonPhrase) && !context.Response.Headers.ContainsKey("Reason-Phrase"))
-                        context.Response.Headers.Add("Reason-Phrase", new[] { reasonPhrase });
+                    // It can gets filled by
+                    // 1- WebApi's routing, when no routing gets matched with value "Not Found".
+                    // 2- In catch part of this class with either "KnownError" & "UnknownError" values.
+                    // 3- In ExceptionHandlerFilterAttribute class with either "KnownError" & "UnknownError" values.
+                    // 4- Other codes! It might be empty too!
+
+                    bool responseIsOk = GetResponseStatus(context).responseIsOk;
+
+                    if (!responseIsOk)
+                    {
+                        if (string.IsNullOrEmpty(reasonPhrase))
+                            reasonPhrase = BitMetadataBuilder.UnKnownError;
+                        else if (!string.Equals(reasonPhrase, BitMetadataBuilder.KnownError, StringComparison.CurrentCultureIgnoreCase) && !string.Equals(reasonPhrase, BitMetadataBuilder.UnKnownError, StringComparison.CurrentCultureIgnoreCase))
+                            reasonPhrase = $"{BitMetadataBuilder.UnKnownError}:{reasonPhrase}";
+                    }
+                    if (!responseIsOk)
+                    {
+                        context.Response.ReasonPhrase = reasonPhrase;
+                        if (!context.Response.Headers.ContainsKey("Reason-Phrase"))
+                        {
+                            context.Response.Headers.Add("Reason-Phrase", new[] { reasonPhrase });
+                        }
+                    }
                 }, state: null);
 
                 await Next.Invoke(context);
 
-                string statusCode = context.Response.StatusCode.ToString(CultureInfo.InvariantCulture);
-                bool responseStatusCodeIsErrorCodeBecauseOfSomeServerBasedReason = statusCode.StartsWith("5", StringComparison.InvariantCultureIgnoreCase);
-                bool responseStatusCodeIsErrorCodeBecauseOfSomeClientBasedReason = statusCode.StartsWith("4", StringComparison.InvariantCultureIgnoreCase);
-                if (responseStatusCodeIsErrorCodeBecauseOfSomeServerBasedReason ||
-                    responseStatusCodeIsErrorCodeBecauseOfSomeClientBasedReason)
+                var status = GetResponseStatus(context);
+                if (status.responseStatusCodeIsErrorCodeBecauseOfSomeServerBasedReason ||
+                    status.responseStatusCodeIsErrorCodeBecauseOfSomeClientBasedReason)
                 {
-                    string reasonPhrase = context.Response.ReasonPhrase ?? "UnknownReasonPhrase";
+                    string reasonPhrase = context.Response.ReasonPhrase;
 
                     scopeStatusManager.MarkAsFailed(reasonPhrase);
 
-                    logger.AddLogData("ResponseStatusCode", statusCode);
+                    logger.AddLogData("ResponseStatusCode", context.Response.StatusCode);
                     logger.AddLogData("ResponseReasonPhrase", reasonPhrase);
 
-                    if (responseStatusCodeIsErrorCodeBecauseOfSomeClientBasedReason || reasonPhrase == BitMetadataBuilder.KnownError)
+                    if (status.responseStatusCodeIsErrorCodeBecauseOfSomeClientBasedReason || reasonPhrase == BitMetadataBuilder.KnownError)
                     {
                         await logger.LogWarningAsync("Response has failed status code because of some client side reason");
                     }
-                    else if (responseStatusCodeIsErrorCodeBecauseOfSomeServerBasedReason)
+                    else if (status.responseStatusCodeIsErrorCodeBecauseOfSomeServerBasedReason)
                     {
                         await logger.LogFatalAsync("Response has failed status code because of some server side reason");
                     }
