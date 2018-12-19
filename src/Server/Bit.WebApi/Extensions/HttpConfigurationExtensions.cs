@@ -6,7 +6,7 @@ namespace System.Web.Http
 {
     public static class HttpConfigurationExtensions
     {
-        public static void EnableMultiVersionWebApiSwaggr(this HttpConfiguration httpConfiguration,
+        public static void EnableMultiVersionWebApiSwagger(this HttpConfiguration httpConfiguration,
             Action<SwaggerDocsConfig> customizeSwagger = null,
             Action<SwaggerUiConfig> customizeSwaggerUi = null,
             Action<VersionedApiExplorer> customizeApiExplorer = null)
