@@ -26,8 +26,13 @@ namespace Bit.WebApi.Implementations
 
             foreach (Parameter parameter in operation.parameters)
             {
-                ApiParameterDescription description = apiDescription.ParameterDescriptions.First(p => p.Name == parameter.name);
+                var parameterName = parameter.name;
 
+                if (parameterName.Contains('.'))
+                    parameterName = parameter.name.Split('.')[0];
+                
+                ApiParameterDescription description = apiDescription.ParameterDescriptions.First(p => p.Name == parameterName);
+                
                 // REF: https://github.com/domaindrivendev/Swashbuckle/issues/1101
                 if (parameter.description == null)
                 {
