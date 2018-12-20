@@ -101,8 +101,8 @@ namespace CustomerDtoControllerSample
             dependencyManager.RegisterRepository(typeof(MyAppRepository<>).GetTypeInfo());
 
             dependencyManager.RegisterDtoEntityMapper();
-            dependencyManager.RegisterDtoEntityMapperConfiguration<DefaultDtoEntityMapperConfiguration>();
-            dependencyManager.RegisterDtoEntityMapperConfiguration<MyAppDtoEntityMapperConfiguration>();
+            dependencyManager.RegisterMapperConfiguration<DefaultMapperConfiguration>();
+            dependencyManager.RegisterMapperConfiguration<MyAppDtoEntityMapperConfiguration>();
         }
     }
 
@@ -396,7 +396,7 @@ namespace CustomerDtoControllerSample
 
     #endregion
 
-    public class MyAppDtoEntityMapperConfiguration : IDtoEntityMapperConfiguration
+    public class MyAppDtoEntityMapperConfiguration : IMapperConfiguration
     {
         public virtual void Configure(IMapperConfigurationExpression mapperConfigExpression)
         {

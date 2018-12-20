@@ -150,8 +150,8 @@ namespace BitChangeSetManager.Core
 
             dependencyManager.RegisterDtoEntityMapper();
 
-            dependencyManager.RegisterDtoEntityMapperConfiguration<DefaultDtoEntityMapperConfiguration>();
-            dependencyManager.RegisterDtoEntityMapperConfiguration<BitChangeSetManagerDtoEntityMapperConfiguration>();
+            dependencyManager.RegisterMapperConfiguration<DefaultMapperConfiguration>();
+            dependencyManager.RegisterMapperConfiguration<BitChangeSetManagerMapperConfiguration>();
 
             dependencyManager.RegisterSingleSignOnServer<BitChangeSetManagerUserService, BitChangeSetManagerClientProvider>();
 
