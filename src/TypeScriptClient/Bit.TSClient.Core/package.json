@@ -24,8 +24,8 @@
   },
   "optionalDependencies": {
     "@bit/encoder": "^1.0.0",
-    "core-js": "^2.6.0",
-    "decimal.js": "^10.0.1",
+    "core-js": "^2.6.1",
+    "decimal.js": "^10.0.2",
     "event-source-polyfill": "^1.0.5",
     "pubsub-js": "^1.7.0",
     "regenerator": "^0.13.3",
