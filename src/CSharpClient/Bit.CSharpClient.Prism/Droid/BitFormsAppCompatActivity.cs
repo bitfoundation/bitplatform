@@ -14,7 +14,7 @@ namespace Bit.Droid
         private bool _useDefaultConfiguration = false;
 
         /// <summary>
-        /// Configures VersionTracking | RgPluginsPopup | Fast Renderers | Xamarin Essentials' Permissions
+        /// Configures VersionTracking | RgPluginsPopup | Fast Renderers | Xamarin Essentials' Permissions  | BitCSharpClientControls (DatePicker, Checkbox, RadioButton, Frame)
         /// </summary>
         protected virtual void UseDefaultConfiguration(Bundle savedInstanceState)
         {
@@ -23,6 +23,7 @@ namespace Bit.Droid
             Rg.Plugins.Popup.Popup.Init(this, savedInstanceState);
             Xamarin.Essentials.Platform.Init(this, savedInstanceState);
             VersionTracking.Track();
+            BitCSharpClientControls.Init();
         }
 
         public override void OnBackPressed()

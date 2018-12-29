@@ -1,4 +1,6 @@
-﻿using Windows.ApplicationModel.Activation;
+﻿using System.Linq;
+using System.Reflection;
+using Windows.ApplicationModel.Activation;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 
@@ -18,7 +20,10 @@ namespace Bit.CSharpClientSample.UWP
                 rootFrame = new Frame();
 
                 UseDefaultConfiguration();
-                Xamarin.Forms.Forms.Init(e);
+                Xamarin.Forms.Forms.Init(e, new Assembly[]
+                {
+
+                }.Union(GetBitRendererAssemblies()));
 
                 Window.Current.Content = rootFrame;
             }
