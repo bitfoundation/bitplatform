@@ -1,4 +1,5 @@
 ﻿using Bit.Model;
+using Bit.ViewModel.Contracts;
 using Prism.Navigation;
 using System;
 using System.Threading.Tasks;
@@ -79,6 +80,6 @@ namespace Bit.ViewModel
             return Task.CompletedTask;
         }
 
-        public INavigationService NavigationService { get; set; }
+        public virtual INavService NavigationService { get; set; }
     }
 }

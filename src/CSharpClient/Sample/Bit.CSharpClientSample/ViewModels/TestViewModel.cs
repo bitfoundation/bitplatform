@@ -1,5 +1,4 @@
 ﻿using Bit.ViewModel;
-using Prism.Navigation;
 using System.Threading.Tasks;
 
 namespace Bit.CSharpClientSample.ViewModels

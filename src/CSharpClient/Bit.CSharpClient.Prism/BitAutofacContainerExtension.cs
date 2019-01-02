@@ -1,9 +1,13 @@
 ﻿using Autofac;
 using Autofac.Core;
+using Bit.ViewModel;
+using Bit.ViewModel.Contracts;
+using Bit.ViewModel.Implementations;
 using Prism.Autofac;
 using Prism.Ioc;
 using Prism.Navigation;
 using System;
+using System.Collections.Generic;
 using Xamarin.Forms;
 
 namespace Bit
@@ -58,14 +62,27 @@ namespace Bit
 
         public object ResolveViewModelForView(object view, Type viewModelType)
         {
-            Parameter parameter = null;
+            List<Parameter> parameters = new List<Parameter> { };
 
             if (view is Page page)
             {
-                parameter = new TypedParameter(typeof(INavigationService), this.CreateNavigationService(page));
+                INavigationService prismNavigationService = this.CreateNavigationService(page);
+
+                INavService navService = new DefaultNavService
+                {
+                    PrismNavigationService = prismNavigationService
+                };
+
+                // ctor
+                parameters.Add(new TypedParameter(typeof(INavigationService), prismNavigationService));
+                parameters.Add(new TypedParameter(typeof(INavService), navService));
+
+                // prop
+                parameters.Add(new NamedPropertyParameter(nameof(DefaultNavService.PrismNavigationService), prismNavigationService));
+                parameters.Add(new NamedPropertyParameter(nameof(BitViewModelBase.NavigationService), navService));
             }
 
-            return Instance.Resolve(viewModelType, parameter);
+            return Instance.Resolve(viewModelType, parameters: parameters);
         }
     }
 }
