@@ -38,14 +38,14 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="NodaTime" Version="2.4.2" />
+    <PackageReference Include="NodaTime" Version="2.4.4" />
     <PackageReference Include="Rg.Plugins.Popup" Version="1.1.5.180" />
     <PackageReference Include="Xamarin.Forms" Version="3.4.0.1008975" />
     <PackageReference Include="MSBuild.Sdk.Extras" Version="1.6.65" PrivateAssets="All" />
     <PackageReference Include="SourceLink.Embed.AllSourceFiles" Version="2.8.3" PrivateAssets="all" />
     <PackageReference Include="SourceLink.Copy.PdbFiles" Version="2.8.3" PrivateAssets="All" />
 
-    <PackageReference Include="Fody" Version="3.3.4">
+    <PackageReference Include="Fody" Version="3.3.5">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
     </PackageReference>
