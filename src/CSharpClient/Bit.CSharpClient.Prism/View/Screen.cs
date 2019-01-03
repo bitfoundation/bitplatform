@@ -27,7 +27,7 @@ namespace Bit.View
 
         private bool isValid = false;
 
-        internal void ExecuteActionsIfRequired(VisualElement vsElement, double newScreenWidth, double newScreenHeight, DeviceOrientation newOrientation)
+        internal async void ExecuteActionsIfRequired(VisualElement vsElement, double newScreenWidth, double newScreenHeight, DeviceOrientation newOrientation)
         {
             if (Actions == null)
                 throw new InvalidOperationException($"{nameof(Actions)} may not be null");
@@ -42,7 +42,11 @@ namespace Bit.View
 
             if (isValid && !wasValid)
             {
-                Actions.ForEach(action => action.InvokeAction(vsElement));
+                foreach (var action in Actions)
+                {
+                    await Task.Yield();
+                    action.InvokeAction(vsElement);
+                }
             }
         }
 
