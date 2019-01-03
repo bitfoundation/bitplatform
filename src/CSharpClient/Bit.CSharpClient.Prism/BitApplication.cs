@@ -108,6 +108,11 @@ namespace Bit
                     .Publish(new ConnectivityChangedEvent { IsConnected = e.NetworkAccess != NetworkAccess.None });
             };
 
+            DefaultNavService.Current = new DefaultNavService
+            {
+                PrismNavigationService = NavigationService
+            };
+
             return Task.CompletedTask;
         }
 
@@ -118,7 +123,7 @@ namespace Bit
             containerRegistry.Register<ILoggerFacade, BitPrismLogger>();
             containerBuilder.Register(c => Container).SingleInstance().PreserveExistingDefaults();
             containerBuilder.Register(c => Container.GetContainer()).PreserveExistingDefaults();
-            containerRegistry.RegisterPopupNavigationService();
+            containerRegistry.RegisterPopupNavigationService<BitPopupPageNavigationService>();
             containerBuilder.Register<IAdaptiveBehaviorService>(c => this).SingleInstance().PreserveExistingDefaults();
         }
 
