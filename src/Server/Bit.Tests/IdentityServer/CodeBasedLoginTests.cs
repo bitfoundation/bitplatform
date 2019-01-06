@@ -14,8 +14,7 @@ namespace Bit.Tests.IdentityServer
         {
             using (BitOwinTestEnvironment testEnvironment = new BitOwinTestEnvironment(new TestEnvironmentArgs { UseRealServer = false }))
             {
-                TokenClient tokenClient = testEnvironment.Server.BuildTokenClient("TestResOwner", "secret");
-                TokenResponse tokenResponse = await tokenClient.RequestResourceOwnerPasswordAsync("ValidUserName", "ValidPassword", scope: "openid profile user_info");
+                TokenResponse tokenResponse = await testEnvironment.Server.Login("ValidUserName", "ValidPassword", "TestResOwner");
 
                 Assert.IsFalse(tokenResponse.IsError);
             }
@@ -27,8 +26,7 @@ namespace Bit.Tests.IdentityServer
         {
             using (BitOwinTestEnvironment testEnvironment = new BitOwinTestEnvironment(new TestEnvironmentArgs { UseRealServer = false }))
             {
-                TokenClient tokenClient = testEnvironment.Server.BuildTokenClient("TestResOwner", "secret");
-                TokenResponse tokenResponse = await tokenClient.RequestResourceOwnerPasswordAsync("InValidUser", "InvalidPassword", scope: "openid profile user_info");
+                TokenResponse tokenResponse = await testEnvironment.Server.Login("InValidUser", "InvalidPassword", "TestResOwner");
 
                 Assert.IsTrue(tokenResponse.IsError);
             }

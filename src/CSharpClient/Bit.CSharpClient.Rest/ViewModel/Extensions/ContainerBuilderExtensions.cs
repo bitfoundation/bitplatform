@@ -1,7 +1,6 @@
 ﻿using Autofac;
 using Bit.ViewModel.Contracts;
 using Bit.ViewModel.Implementations;
-using IdentityModel.Client;
 using Prism.Events;
 using System;
 using System.Net.Http;
@@ -24,11 +23,6 @@ namespace Prism.Ioc
 #endif
                 })
                 .AutoActivate();
-
-            containerBuilder.Register((c, parameters) =>
-            {
-                return new TokenClient(address: new Uri(c.Resolve<IClientAppProfile>().HostUri, "core/connect/token").ToString(), clientId: parameters.Named<string>("clientId"), clientSecret: parameters.Named<string>("secret"), innerHttpMessageHandler: c.ResolveNamed<HttpMessageHandler>(ContractKeys.DefaultHttpMessageHandler));
-            }).PreserveExistingDefaults();
 
             return containerBuilder;
         }

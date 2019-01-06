@@ -5,6 +5,7 @@ using Newtonsoft.Json;
 using Prism.Ioc;
 using System;
 using System.Collections.Generic;
+using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using Xamarin.Essentials;
@@ -38,16 +39,24 @@ namespace Bit.ViewModel.Implementations
             return (DateTimeProvider.GetCurrentUtcDateTime() - token.login_date) < TimeSpan.FromSeconds(token.expires_in);
         }
 
-        public virtual async Task<Token> LoginWithCredentials(string username, string password, string client_id, string client_secret, string[] scopes = null, CancellationToken cancellationToken = default)
+        public virtual async Task<Token> LoginWithCredentials(string userName, string password, string client_id, string client_secret, string[] scopes = null, CancellationToken cancellationToken = default)
         {
             await Logout(state: null, client_id: client_id, cancellationToken: cancellationToken).ConfigureAwait(false);
 
             if (scopes == null)
                 scopes = "openid profile user_info".Split(' ');
 
-            TokenClient tokenClient = ContainerProvider.Value.Resolve<TokenClient>(new NamedParameter("clientId", client_id), new NamedParameter("secret", client_secret));
+            HttpClient httpClient = ContainerProvider.Value.Resolve<HttpClient>();
 
-            TokenResponse tokenResponse = await tokenClient.RequestResourceOwnerPasswordAsync(username, password, scope: string.Join(" ", scopes), cancellationToken: cancellationToken).ConfigureAwait(false);
+            TokenResponse tokenResponse = await httpClient.RequestPasswordTokenAsync(new PasswordTokenRequest
+            {
+                Address = "core/connect/token",
+                ClientSecret = client_secret,
+                ClientId = client_id,
+                Scope = string.Join(" ", scopes),
+                UserName = userName,
+                Password = password
+            }, cancellationToken).ConfigureAwait(false);
 
             if (tokenResponse.IsError)
                 throw tokenResponse.Exception ?? new Exception($"{tokenResponse.Error} {tokenResponse.Raw}");

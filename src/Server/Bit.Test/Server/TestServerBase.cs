@@ -140,9 +140,17 @@ namespace Bit.Test.Server
 
         public virtual Task<TokenResponse> Login(string userName, string password, string clientId, string secret = "secret")
         {
-            TokenClient client = BuildTokenClient(clientId, secret);
+            HttpClient client = BuildHttpClient();
 
-            return client.RequestResourceOwnerPasswordAsync(userName, password, "openid profile user_info");
+            return client.RequestPasswordTokenAsync(new PasswordTokenRequest
+            {
+                Address = "core/connect/token",
+                ClientSecret = secret,
+                ClientId = clientId,
+                Scope = "openid profile user_info",
+                UserName = userName,
+                Password = password
+            });
         }
 
         public HttpClient BuildHttpClient(TokenResponse token = null)
@@ -157,13 +165,6 @@ namespace Bit.Test.Server
             client.BaseAddress = new Uri(Uri);
 
             return client;
-        }
-
-        public virtual TokenClient BuildTokenClient(string clientId, string secret = "secret")
-        {
-            TokenClient tokenClient = new TokenClient($@"{Uri}core/connect/token", clientId, secret, innerHttpMessageHandler: GetHttpMessageHandler());
-
-            return tokenClient;
         }
 
         public virtual TService BuildRefitClient<TService>(TokenResponse token = null)

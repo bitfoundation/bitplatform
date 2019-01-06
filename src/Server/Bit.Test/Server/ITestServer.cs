@@ -33,8 +33,6 @@ namespace Bit.Test.Server
 
         Task<IHubProxy> BuildSignalRClient(TokenResponse token = null, Action<string, dynamic> onMessageReceived = null);
 
-        TokenClient BuildTokenClient(string clientId, string secret);
-
         TService BuildRefitClient<TService>(TokenResponse token = null);
 
         void Initialize(string uri);
