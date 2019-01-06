@@ -1,4 +1,4 @@
-{
+﻿{
   "name": "bit-change-set-manager",
   "version": "0.0.1",
   "description": "Bit change set manager sample app",
@@ -12,25 +12,25 @@
   ],
   "license": "MIT",
   "devDependencies": {
-    "@types/angular": "^1.6.52",
+    "@types/angular": "^1.6.53",
     "@types/angular-material": "^1.1.62",
     "@types/angular-translate": "^2.16.0",
     "@types/angular-ui-router": "^1.1.40",
     "@types/decimal.js": "^7.4.0",
-    "@types/jquery": "^3.3.28",
+    "@types/jquery": "^3.3.29",
     "@types/kendo-ui": "^2018.3.0",
     "@types/pubsub-js": "^1.5.18",
     "@types/signalr": "^2.2.35"
   },
   "dependencies": {
-    "@bit/bit-framework": "^1.5.0",
+    "@bit/bit-framework": "^1.6.0",
     "@bit/encoder": "^1.0.0",
     "@bit/jaydata": "^1.5.17",
     "@uirouter/angularjs": "^1.0.20",
     "angular": "^1.7.5",
     "angular-animate": "^1.7.5",
     "angular-aria": "^1.7.5",
-    "angular-material": "^1.1.10",
+    "angular-material": "^1.1.12",
     "angular-messages": "^1.7.5",
     "angular-translate": "^2.18.1",
     "core-js": "^2.6.1",

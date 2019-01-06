@@ -1,5 +1,4 @@
-﻿using Bit.Core.Contracts;
-using Bit.Core.Models;
+﻿using Bit.Core.Models;
 using Bit.IdentityServer.Contracts;
 using Bit.IdentityServer.Implementations;
 using IdentityServer3.Core.Models;
@@ -45,21 +44,23 @@ namespace BitChangeSetManager.Security
                      
                 public async Task<string> CallSecureApiSample()
                 {
-                    string baseAddress = "http://localhost:9090/bit-change-set-manager";
-
-                    using (TokenClient identityClient = new TokenClient($"{baseAddress}/core/connect/token", "BitChangeSetManager-ResOwner", "secret"))
+                    using (HttpClient httpClient = new HttpClient { BaseAddress = new Uri("http://localhost:9090/") }) // Use services.AddHttpClient()
                     {
-                        TokenResponse tokenResponse = await identityClient.RequestResourceOwnerPasswordAsync("test1", "test", "openid profile user_info");
-
-                        using (HttpClient httpClient = new HttpClient { })
+                        TokenResponse tokenResponse = await httpClient.RequestPasswordTokenAsync(new PasswordTokenRequest
                         {
-                            httpClient.SetBearerToken(tokenResponse.AccessToken);
+                            Address = "core/connect/token",
+                            ClientSecret = "secret",
+                            ClientId = "BitChangeSetManager-ResOwner",
+                            Scope = "openid profile user_info",
+                            UserName = "test1",
+                            Password = "test"
+                        });
 
-                            string response = await httpClient.GetStringAsync($"{baseAddress}/odata/BitChangeSetManager/changeSets");
+                    httpClient.SetBearerToken(tokenResponse.AccessToken);
 
-                            return response;
-                        }
-                    }
+                    string response = await httpClient.GetStringAsync($"odata/BitChangeSetManager/changeSets");
+
+                    return response;
                 }
 
                 */
