@@ -82,5 +82,21 @@ namespace Bit.Tests.Api.ApiControllers.Tests
                 (await httpClient.GetAsync("api/values")).EnsureSuccessStatusCode();
             }
         }
+
+        [TestMethod]
+        [TestCategory("WebApi")]
+        public virtual async Task GetSwaggerShouldWork()
+        {
+            using (BitOwinTestEnvironment testEnvironment = new BitOwinTestEnvironment())
+            {
+                TokenResponse token = await testEnvironment.Server.Login("ValidUserName", "ValidPassword", clientId: "TestResOwner");
+
+                HttpClient client = testEnvironment.Server.BuildHttpClient(token: token);
+
+                HttpResponseMessage response = await client.GetAsync("api/v1/swagger");
+
+                response.EnsureSuccessStatusCode();
+            }
+        }
     }
 }

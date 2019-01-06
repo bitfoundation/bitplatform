@@ -1,4 +1,6 @@
 ﻿using Refit;
+using System.Net;
+using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Web.Http;
@@ -27,5 +29,19 @@ namespace Bit.Tests.Api.ApiControllers
         {
             return firstNumber + secondNumber;
         }
+
+        [Route("test")]
+        public virtual HttpResponseMessage Test([FromUri]Filter filter)
+        {
+            return Request.CreateResponse(HttpStatusCode.OK);
+        }
+    }
+
+    public class Filter
+    {
+        public string Name { get; set; }
+        public int MaxResultCount { get; set; } = 10;
+        public int SkipCount { get; set; } = 0;
+        public string Sorting { get; set; } = "Name";
     }
 }
