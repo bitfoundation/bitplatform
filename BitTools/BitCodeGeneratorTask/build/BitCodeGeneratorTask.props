@@ -1,0 +1,8 @@
+﻿<Project>
+  <ItemGroup>
+    <SourceGenerator Include="$(MSBuildThisFileDirectory)..\bin\$(Configuration)\net461\BitCodeGeneratorTask.dll"
+            Condition="Exists('$(MSBuildThisFileDirectory)..\bin')" />
+    <SourceGenerator Include="$(MSBuildThisFileDirectory)..\tools\BitCodeGeneratorTask.dll"
+            Condition="Exists('$(MSBuildThisFileDirectory)..\tools')" />
+  </ItemGroup>
+</Project>
