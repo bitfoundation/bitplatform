@@ -1,12 +1,12 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net461</TargetFramework>
+    <TargetFramework>netstandard2.0</TargetFramework>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="BitCodeAnalyzer" Version="1.5.0" />
-    <PackageReference Include="Prism.Autofac.Forms" Version="7.1.0.279-pre" />
+    <PackageReference Include="Prism.Autofac.Forms" Version="7.1.0.431" />
   </ItemGroup>
 
 </Project>

@@ -25,7 +25,7 @@ namespace BitCodeAnalyzer.Test.BitAnalyzers.ViewModel
                 Id = nameof(UseSubscribeAsyncInsteadOfSubscribeAnalyzer),
                 Message = UseSubscribeAsyncInsteadOfSubscribeAnalyzer.Message,
                 Severity = DiagnosticSeverity.Error,
-                Locations = new[] { new DiagnosticResultLocation(Path.Combine(basePath, @"Tests.cs"), 10, 13) }
+                Locations = new[] { new DiagnosticResultLocation(Path.Combine(basePath, @"Tests.cs"), 11, 13) }
             };
 
             await VerifyCSharpDiagnostic(subscribeUsage1);
@@ -40,7 +40,7 @@ namespace BitCodeAnalyzer.Test.BitAnalyzers.ViewModel
 
             MSBuildWorkspace workspace = MSBuildWorkspace.Create(new Dictionary<string, string>()
             {
-                { "TargetFramework", "net461" }
+                { "TargetFramework", "netstandard2.0" }
             });
 
             await workspace.OpenSolutionAsync(Path.Combine(basePath, "BitPrismTestsProj.sln"));

@@ -1,5 +1,6 @@
 ﻿using Prism.Events;
 using Prism.Ioc;
+using Prism.Navigation;
 
 namespace BitPrismTestsProj
 {
@@ -10,6 +11,8 @@ namespace BitPrismTestsProj
             new EventAggregator().GetEvent<TestEvent>().Subscribe(arg => { });
 
             IContainerRegistry containerRegistry = null;
+
+            INavigationService navgationService = null;
 
             containerRegistry.RegisterForNavigation(typeof(object), string.Empty);
         }

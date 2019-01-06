@@ -14,21 +14,21 @@ using System.Threading.Tasks;
 namespace BitCodeAnalyzer.Test.BitAnalyzers.ViewModel
 {
     [TestClass]
-    public class UseRegisterForNavInsteadOfRegisterForNavigationTests : DiagnosticVerifier
+    public class UseINavServiceInsteadOfINavigationServiceTests : DiagnosticVerifier
     {
         [TestMethod]
         [TestCategory("Analyzer")]
-        public async Task UseRegisterForNavInsteadOfRegisterForNavigationTest()
+        public async Task UseINavServiceInsteadOfINavigationServiceTest()
         {
-            DiagnosticResult registerForNavigationUsage1 = new DiagnosticResult
+            DiagnosticResult navServiceUsage1 = new DiagnosticResult
             {
-                Id = nameof(UseRegisterForNavInsteadOfRegisterForNavigation),
-                Message = UseRegisterForNavInsteadOfRegisterForNavigation.Message,
+                Id = nameof(UseINavServiceInsteadOfINavigationService),
+                Message = UseINavServiceInsteadOfINavigationService.Message,
                 Severity = DiagnosticSeverity.Error,
-                Locations = new[] { new DiagnosticResultLocation(Path.Combine(basePath, @"Tests.cs"), 17, 13) }
+                Locations = new[] { new DiagnosticResultLocation(Path.Combine(basePath, @"Tests.cs"), 15, 13) }
             };
 
-            await VerifyCSharpDiagnostic(registerForNavigationUsage1);
+            await VerifyCSharpDiagnostic(navServiceUsage1);
         }
 
         private readonly string basePath = new DirectoryInfo(Path.Combine(Environment.CurrentDirectory, @"..\..\..\BitAnalyzers\ViewModel\BitPrismTestsProj")).FullName;
@@ -50,7 +50,7 @@ namespace BitCodeAnalyzer.Test.BitAnalyzers.ViewModel
 
         protected override DiagnosticAnalyzer GetCSharpDiagnosticAnalyzer()
         {
-            return new UseRegisterForNavInsteadOfRegisterForNavigation();
+            return new UseINavServiceInsteadOfINavigationService();
         }
     }
 }
