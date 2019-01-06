@@ -20,7 +20,7 @@
         requestId: string;
         siteName: string;
         siteUrl: string;
-        username: string;
+        userName: string;
         password: string;
         redirectUrl: any;
         autoRedirect: boolean;

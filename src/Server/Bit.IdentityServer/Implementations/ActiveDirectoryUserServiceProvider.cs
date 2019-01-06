@@ -13,12 +13,12 @@ namespace Bit.IdentityServer.Implementations
 
         public override Task<string> GetUserIdByLocalAuthenticationContextAsync(LocalAuthenticationContext context, CancellationToken cancellationToken)
         {
-            string username = context.UserName;
+            string userName = context.UserName;
             string password = context.Password;
             string activeDirectoryName = AppEnvironment.GetConfig<string>("ActiveDirectoryName");
             using (PrincipalContext principalContext = new PrincipalContext(ContextType.Domain, activeDirectoryName))
             {
-                string userNameAsWinUserName = username;
+                string userNameAsWinUserName = userName;
 
                 if (!userNameAsWinUserName.Contains(activeDirectoryName))
                     userNameAsWinUserName = $"{activeDirectoryName}\\{userNameAsWinUserName}";
