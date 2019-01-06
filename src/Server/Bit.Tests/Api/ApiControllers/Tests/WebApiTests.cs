@@ -23,6 +23,8 @@ namespace Bit.Tests.Api.ApiControllers.Tests
                 HttpResponseMessage response = await client.GetAsync("api/customers/1/orders");
 
                 response.EnsureSuccessStatusCode();
+
+                Assert.AreEqual(1, await response.Content.ReadAsAsync<int>());
             }
         }
 
