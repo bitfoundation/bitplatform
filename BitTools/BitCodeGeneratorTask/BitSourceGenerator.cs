@@ -69,8 +69,11 @@ namespace BitCodeGeneratorTask
                         if (workspace.CurrentSolution.Projects.Any(p => p.Name == proj.Name))
                             continue; /*It's already loaded*/
 
-                        await workspace.OpenProjectAsync(allProjects.Single(p => p.ProjectName == proj.Name).AbsolutePath);
+                        await workspace.OpenProjectAsync(allProjects.ExtendedSingle($"Trying to find source project {proj.Name}", p => p.ProjectName == proj.Name).AbsolutePath);
                     }
+
+                    if (!workspace.CurrentSolution.Projects.Any(p => p.Name == mapping.DestinationProject.Name))
+                        await workspace.OpenProjectAsync(allProjects.ExtendedSingle($"Trying to find destination project {mapping.DestinationProject.Name}", p => p.ProjectName == mapping.DestinationProject.Name).AbsolutePath);
                 }
 
                 IProjectDtoControllersProvider controllersProvider = new DefaultProjectDtoControllersProvider();
