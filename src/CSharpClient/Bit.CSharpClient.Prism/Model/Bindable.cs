@@ -30,7 +30,7 @@ namespace Bit.Model
             RaisePropertyChanged(".");
         }
 
-        private List<(string propName, object originalPropValue)> changedProps = null;
+        private Dictionary<string, object> changedProps = null;
 
         private bool IsBeingTracked => changedProps != null;
 
@@ -38,8 +38,10 @@ namespace Bit.Model
         {
             if (IsBeingTracked)
             {
-                if (!changedProps.Any(p => p.propName == propertyName))
-                    changedProps.Add((propertyName, before));
+                if (!changedProps.Any(p => p.Key == propertyName))
+                    changedProps.Add(propertyName, before);
+                else if (changedProps.Any(p => p.Key == propertyName && p.Value == after))
+                    changedProps.Remove(propertyName);
             }
         }
 
@@ -48,7 +50,7 @@ namespace Bit.Model
             if (IsBeingTracked)
                 throw new InvalidOperationException("Object is being tracked");
 
-            changedProps = new List<(string propName, object originalPropValue)>();
+            changedProps = new Dictionary<string, object> { };
         }
 
         void ITrackable.AcceptChanges()
@@ -64,25 +66,25 @@ namespace Bit.Model
             if (!IsBeingTracked)
                 throw new InvalidOperationException("Object isn't being tracked");
 
-            List<(string propName, object originalPropValue)> localProps = changedProps;
+            Dictionary<string, object> localProps = changedProps;
 
             try
             {
                 changedProps = null; // To prevent calling OnPropertyChanged with IsBeingTracked value true.
-                foreach ((string propName, object originalPropValue) in localProps)
+                foreach (KeyValuePair<string, object> prp in localProps)
                 {
-                    PropertyInfo propInfo = GetType().GetProperty(propName);
+                    PropertyInfo propInfo = GetType().GetProperty(prp.Key);
 
                     if (propInfo == null)
-                        throw new InvalidOperationException($"Property {propName} could not be found");
+                        throw new InvalidOperationException($"Property {prp.Key} could not be found");
 
                     if (propInfo.CanWrite)
-                        propInfo.SetValue(this, originalPropValue);
+                        propInfo.SetValue(this, prp.Value);
                 }
             }
             finally
             {
-                changedProps = new List<(string propName, object originalPropValue)>();
+                changedProps = new Dictionary<string, object> { };
             }
         }
 
