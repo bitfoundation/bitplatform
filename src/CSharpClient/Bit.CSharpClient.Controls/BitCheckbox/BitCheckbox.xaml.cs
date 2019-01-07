@@ -6,7 +6,7 @@ using Xamarin.Forms;
 namespace Bit.CSharpClient.Controls
 {
     [ContentProperty(nameof(Content))]
-    public partial class BitCheckbox : TemplatedView
+    public partial class BitCheckbox
     {
         public BitCheckbox()
         {

@@ -8,7 +8,7 @@ using Xamarin.Forms;
 
 namespace Bit.CSharpClient.Controls
 {
-    public partial class BitDatePicker : TemplatedView
+    public partial class BitDatePicker
     {
         public BitDatePicker()
         {

@@ -5,7 +5,7 @@ using Xamarin.Forms;
 
 namespace Bit.CSharpClient.Controls
 {
-    public partial class BitCalendarDayView : TemplatedView
+    public partial class BitCalendarDayView
     {
         public BitCalendarDayView()
         {

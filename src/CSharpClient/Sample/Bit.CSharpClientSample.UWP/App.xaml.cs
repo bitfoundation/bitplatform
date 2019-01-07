@@ -6,7 +6,7 @@ using Windows.UI.Xaml.Controls;
 
 namespace Bit.CSharpClientSample.UWP
 {
-    public partial class App : Bit.UWP.BitApplication
+    public partial class App
     {
         public App()
         {

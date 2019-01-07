@@ -6,7 +6,7 @@ using Xamarin.Forms;
 namespace Bit.CSharpClient.Controls
 {
     [ContentProperty(nameof(Content))]
-    public partial class BitRadioButton : TemplatedView
+    public partial class BitRadioButton
     {
         internal static List<WeakReference<BitRadioButton>> BitRadioButtons = new List<WeakReference<BitRadioButton>>();
 

@@ -1,5 +1,4 @@
 ﻿using NodaTime;
-using Rg.Plugins.Popup.Pages;
 using Rg.Plugins.Popup.Services;
 using System;
 using System.Collections.Generic;
@@ -14,7 +13,7 @@ using Xamarin.Forms.Xaml;
 
 namespace Bit.CSharpClient.Controls
 {
-    public partial class BitCalendarPopupView : PopupPage
+    public partial class BitCalendarPopupView
     {
         public BitCalendarPopupView()
         {
@@ -232,4 +231,3 @@ namespace Bit.CSharpClient.Controls
         public virtual event PropertyChangedEventHandler PropertyChanged;
     }
 }
-

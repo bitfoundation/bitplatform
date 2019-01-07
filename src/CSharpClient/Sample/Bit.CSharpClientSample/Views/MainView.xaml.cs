@@ -1,12 +1,10 @@
-﻿using Xamarin.Forms;
-
-namespace Bit.CSharpClientSample.Views
+﻿namespace Bit.CSharpClientSample.Views
 {
-    public partial class MainView : ContentPage
-	{
-		public MainView ()
-		{
-			InitializeComponent ();
-		}
-	}
+    public partial class MainView
+    {
+        public MainView()
+        {
+            InitializeComponent();
+        }
+    }
 }
