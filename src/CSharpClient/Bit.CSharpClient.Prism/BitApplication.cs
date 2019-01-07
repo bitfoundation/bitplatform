@@ -3,13 +3,18 @@ using Bit.Model.Events;
 using Bit.View;
 using Bit.View.Contracts;
 using Bit.ViewModel;
+using Bit.ViewModel.Contracts;
 using Bit.ViewModel.Implementations;
 using Prism;
 using Prism.Autofac;
+using Prism.Behaviors;
 using Prism.Events;
 using Prism.Ioc;
 using Prism.Logging;
+using Prism.Navigation;
 using Prism.Plugin.Popups;
+using Rg.Plugins.Popup.Contracts;
+using Rg.Plugins.Popup.Services;
 using System;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
@@ -108,13 +113,16 @@ namespace Bit
                     .Publish(new ConnectivityChangedEvent { IsConnected = e.NetworkAccess != NetworkAccess.None });
             };
 
-            DefaultNavService.Current = new DefaultNavService
-            {
-                PrismNavigationService = NavigationService
-            };
-
             return Task.CompletedTask;
         }
+
+        private INavService _navService;
+
+        public new INavService NavigationService => _navService ?? (_navService = new DefaultNavService { PrismNavigationService = base.NavigationService });
+
+        public INavigationService PrismNavigationService => base.NavigationService;
+
+        public static new BitApplication Current => (PrismApplicationBase.Current as BitApplication);
 
         protected override void RegisterTypes(IContainerRegistry containerRegistry)
         {
@@ -123,8 +131,15 @@ namespace Bit
             containerRegistry.Register<ILoggerFacade, BitPrismLogger>();
             containerBuilder.Register(c => Container).SingleInstance().PreserveExistingDefaults();
             containerBuilder.Register(c => Container.GetContainer()).PreserveExistingDefaults();
-            containerRegistry.RegisterPopupNavigationService<BitPopupPageNavigationService>();
+            RegisterPopupNavigationService(containerRegistry);
             containerBuilder.Register<IAdaptiveBehaviorService>(c => this).SingleInstance().PreserveExistingDefaults();
+        }
+
+        void RegisterPopupNavigationService(IContainerRegistry containerRegistry)
+        {
+            containerRegistry.RegisterInstance<IPopupNavigation>(PopupNavigation.Instance);
+            containerRegistry.RegisterSingleton<IPageBehaviorFactory, PopupPageBehaviorFactory>();
+            containerRegistry.Register<INavigationService, BitPopupPageNavigationService>(NavigationServiceName);
         }
 
         protected override IContainerExtension CreateContainerExtension()

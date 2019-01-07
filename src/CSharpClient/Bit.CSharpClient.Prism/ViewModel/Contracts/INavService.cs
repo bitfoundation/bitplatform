@@ -18,5 +18,7 @@ namespace Bit.ViewModel.Contracts
         Task GoBackToRootAsync(INavigationParameters parameters = null);
 
         string GetNavigationUriPath();
+
+        INavigationService PrismNavigationService { get; set; }
     }
 }

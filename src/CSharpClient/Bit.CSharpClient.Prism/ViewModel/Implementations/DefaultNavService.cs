@@ -7,8 +7,6 @@ namespace Bit.ViewModel.Implementations
 {
     public class DefaultNavService : INavService
     {
-        public static DefaultNavService Current { get; set; }
-
         public virtual INavigationService PrismNavigationService { get; set; }
 
         public virtual async Task NavigateAsync(string name, INavigationParameters parameters = null)
@@ -37,14 +35,16 @@ namespace Bit.ViewModel.Implementations
 
         public virtual async Task GoBackAsync(INavigationParameters parameters = null)
         {
-            if (Current?.PrismNavigationService == null)
-                throw new InvalidOperationException($"Current nav service is not initialized.");
+            INavigationResult navigationResult = await PrismNavigationService.GoBackAsync(parameters, useModalNavigation: false, animated: false);
 
-            // We use application level nav service (Current), because its GoBackAsync works across both pages & popups.
-            // For example, if a popup calls GoBackAsync two times, the first one closes the popup itself, but the second one won't close the behind page.
-            // Note that ../.. is not working in popup pages at the moment.
+            if (!navigationResult.Success && navigationResult.Exception is ArgumentOutOfRangeException && BitApplication.Current?.PrismNavigationService != null)
+            {
+                // We use application level nav service (Current), because its GoBackAsync works across both pages & popups.
+                // For example, if a popup calls GoBackAsync two times, the first one closes the popup itself, but the second one won't close the behind page.
+                // Note that ../.. is not working in popup pages at the moment.
 
-            INavigationResult navigationResult = await Current.PrismNavigationService.GoBackAsync(parameters, useModalNavigation: false, animated: false);
+                navigationResult = await BitApplication.Current.PrismNavigationService.GoBackAsync(parameters, useModalNavigation: false, animated: false);
+            }
 
             if (!navigationResult.Success)
                 throw navigationResult.Exception;

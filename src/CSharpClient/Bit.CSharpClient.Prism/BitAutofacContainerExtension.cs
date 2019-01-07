@@ -68,21 +68,26 @@ namespace Bit
             {
                 INavigationService prismNavigationService = this.CreateNavigationService(page);
 
-                INavService navService = new DefaultNavService
-                {
-                    PrismNavigationService = prismNavigationService
-                };
+                INavService navService = BuildNavService(prismNavigationService);
 
                 // ctor
                 parameters.Add(new TypedParameter(typeof(INavigationService), prismNavigationService));
                 parameters.Add(new TypedParameter(typeof(INavService), navService));
 
                 // prop
-                parameters.Add(new NamedPropertyParameter(nameof(DefaultNavService.PrismNavigationService), prismNavigationService));
+                parameters.Add(new NamedPropertyParameter(nameof(INavService.PrismNavigationService), prismNavigationService));
                 parameters.Add(new NamedPropertyParameter(nameof(BitViewModelBase.NavigationService), navService));
             }
 
             return Instance.Resolve(viewModelType, parameters: parameters);
+        }
+
+        public virtual INavService BuildNavService(INavigationService prismNavigationService)
+        {
+            return new DefaultNavService
+            {
+                PrismNavigationService = prismNavigationService
+            };
         }
     }
 }
