@@ -12,5 +12,11 @@ namespace Bit.ViewModel.Implementations
         public virtual string AppName { get; set; }
 
         public virtual string ODataRoute { get; set; }
+
+        public virtual string TokenEndpoint { get; set; } = "core/connect/token";
+
+        public virtual string LoginEndpoint { get; set; } = "InvokeLogin";
+
+        public virtual string LogoutEndpint { get; set; } = "InvokeLogout";
     }
 }

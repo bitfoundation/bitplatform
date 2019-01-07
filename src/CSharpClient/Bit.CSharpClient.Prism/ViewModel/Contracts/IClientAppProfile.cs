@@ -11,5 +11,11 @@ namespace Bit.ViewModel.Contracts
         string AppName { get; set; }
 
         string ODataRoute { get; set; }
+
+        string TokenEndpoint { get; set; }
+
+        string LoginEndpoint { get; set; }
+
+        string LogoutEndpint { get; set; }
     }
 }

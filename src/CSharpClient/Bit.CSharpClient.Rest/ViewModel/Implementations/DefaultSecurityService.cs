@@ -50,7 +50,7 @@ namespace Bit.ViewModel.Implementations
 
             TokenResponse tokenResponse = await httpClient.RequestPasswordTokenAsync(new PasswordTokenRequest
             {
-                Address = "core/connect/token",
+                Address = ClientAppProfile.TokenEndpoint,
                 ClientSecret = client_secret,
                 ClientId = client_id,
                 Scope = string.Join(" ", scopes),
@@ -126,7 +126,7 @@ namespace Bit.ViewModel.Implementations
         {
             state = state ?? new { };
 
-            string relativeUri = $"InvokeLogin?state={JsonConvert.SerializeObject(state)}&redirect_uri={ ClientAppProfile.OAuthRedirectUri}";
+            string relativeUri = $"{ClientAppProfile.LoginEndpoint}?state={JsonConvert.SerializeObject(state)}&redirect_uri={ ClientAppProfile.OAuthRedirectUri}";
 
             if (!string.IsNullOrEmpty(client_id))
                 relativeUri += $"&client_id={client_id}";
@@ -141,7 +141,7 @@ namespace Bit.ViewModel.Implementations
 
             state = state ?? new { };
 
-            string relativeUri = $"InvokeLogout?state={JsonConvert.SerializeObject(state)}&redirect_uri={ClientAppProfile.OAuthRedirectUri}&id_token={id_token}";
+            string relativeUri = $"{ClientAppProfile.LogoutEndpint}?state={JsonConvert.SerializeObject(state)}&redirect_uri={ClientAppProfile.OAuthRedirectUri}&id_token={id_token}";
 
             if (!string.IsNullOrEmpty(client_id))
                 relativeUri += $"&client_id={client_id}";
