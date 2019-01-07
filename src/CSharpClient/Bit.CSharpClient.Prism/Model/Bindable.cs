@@ -43,6 +43,8 @@ namespace Bit.Model
                 else if (changedProps.Any(p => p.Key == propertyName && p.Value == after))
                     changedProps.Remove(propertyName);
             }
+
+            RaisePropertyChanged(propertyName);
         }
 
         void ITrackable.BeginTrack()

@@ -7,9 +7,19 @@ namespace Bit.CSharpClientSample.ViewModels
     {
         public virtual BitDelegateCommand CloseCommand { get; set; }
 
+        public virtual BitDelegateCommand IncreaseStepsCountCommand { get; set; }
+
+        public int StepsCount { get; set; }
+
         public TestViewModel()
         {
             CloseCommand = new BitDelegateCommand(Close);
+            IncreaseStepsCountCommand = new BitDelegateCommand(IncreaseSteps);
+        }
+
+        async Task IncreaseSteps()
+        {
+            StepsCount++;
         }
 
         async Task Close()
