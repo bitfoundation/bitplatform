@@ -18,7 +18,7 @@ namespace Bit.Model
         bool HasChanges { get; }
     }
 
-    public class Bindable : BindableBase, ITrackable
+    public class Bindable : BindableBase
     {
         public virtual void RaiseMemberChanged([CallerMemberName] string memberName = null)
         {
@@ -29,14 +29,17 @@ namespace Bit.Model
         {
             RaisePropertyChanged(".");
         }
+    }
 
-        private Dictionary<string, object> changedProps = null;
+    public class TrackableBindable : BindableBase
+    {
+        Dictionary<string, object> changedProps = null;
 
-        private bool IsBeingTracked => changedProps != null;
+        bool IsBeingTracked => changedProps != null;
 
         public virtual void OnPropertyChanged(string propertyName, object before, object after)
         {
-            if (IsBeingTracked)
+            if (IsBeingTracked && GetType().GetProperty(propertyName).CanWrite == true)
             {
                 if (!changedProps.Any(p => p.Key == propertyName))
                     changedProps.Add(propertyName, before);
@@ -47,7 +50,7 @@ namespace Bit.Model
             RaisePropertyChanged(propertyName);
         }
 
-        void ITrackable.BeginTrack()
+        public virtual void BeginTrack()
         {
             if (IsBeingTracked)
                 throw new InvalidOperationException("Object is being tracked");
@@ -55,7 +58,7 @@ namespace Bit.Model
             changedProps = new Dictionary<string, object> { };
         }
 
-        void ITrackable.AcceptChanges()
+        public virtual void AcceptChanges()
         {
             if (!IsBeingTracked)
                 throw new InvalidOperationException("Object isn't being tracked");
@@ -63,7 +66,7 @@ namespace Bit.Model
             changedProps.Clear();
         }
 
-        void ITrackable.RevertChanges()
+        public virtual void RevertChanges()
         {
             if (!IsBeingTracked)
                 throw new InvalidOperationException("Object isn't being tracked");
@@ -80,8 +83,7 @@ namespace Bit.Model
                     if (propInfo == null)
                         throw new InvalidOperationException($"Property {prp.Key} could not be found");
 
-                    if (propInfo.CanWrite)
-                        propInfo.SetValue(this, prp.Value);
+                    propInfo.SetValue(this, prp.Value);
                 }
             }
             finally
@@ -90,6 +92,6 @@ namespace Bit.Model
             }
         }
 
-        bool ITrackable.HasChanges => IsBeingTracked && changedProps.Any();
+        public virtual bool HasChanges => IsBeingTracked && changedProps.Any();
     }
 }
