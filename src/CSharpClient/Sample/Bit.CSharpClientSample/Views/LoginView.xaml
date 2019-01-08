@@ -5,7 +5,8 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     xmlns:bitView="clr-namespace:Bit.View;assembly=Bit.CSharpClient.Prism"
     xmlns:vm="clr-namespace:Bit.CSharpClientSample.ViewModels"
-    x:DataType="vm:LoginViewModel">
+    x:DataType="vm:LoginViewModel"
+    NavigationPage.HasNavigationBar="False">
     <ContentPage.Behaviors>
         <bitView:AdaptiveBehavior Orientation="Portrait">
             <bitView:SetPropertyAction Property="BackgroundColor" Value="LightGreen" />

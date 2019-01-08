@@ -39,13 +39,13 @@ namespace Bit.CSharpClientSample
             }
             else
             {
-                await NavigationService.NavigateAsync("/Login");
+                await NavigationService.NavigateAsync("/Nav/Login");
             }
 
             IEventAggregator eventAggregator = Container.Resolve<IEventAggregator>();
 
             eventAggregator.GetEvent<TokenExpiredEvent>()
-                .SubscribeAsync(async tokenExpiredEvent => await NavigationService.NavigateAsync("/Login"), ThreadOption.UIThread);
+                .SubscribeAsync(async tokenExpiredEvent => await NavigationService.NavigateAsync("/Nav/Login"), ThreadOption.UIThread);
 
             await base.OnInitializedAsync();
         }

@@ -33,7 +33,7 @@ namespace Bit.CSharpClientSample.ViewModels
             try
             {
                 await SecurityService.LoginWithCredentials(UserName, Password, client_id: "TestResOwner", client_secret: "secret");
-                await NavigationService.NavigateAsync("/Nav/Main");
+                await NavigationService.NavigateAsync("Main");
             }
             catch
             {
@@ -47,7 +47,7 @@ namespace Bit.CSharpClientSample.ViewModels
             try
             {
                 await SecurityService.Login();
-                await NavigationService.NavigateAsync("/Nav/Main");
+                await NavigationService.NavigateAsync("Main");
             }
             catch
             {
@@ -61,7 +61,7 @@ namespace Bit.CSharpClientSample.ViewModels
             try
             {
                 await SecurityService.Login(new { SignInType = "Google" });
-                await NavigationService.NavigateAsync("/Nav/Main");
+                await NavigationService.NavigateAsync("Main");
             }
             catch
             {
@@ -72,7 +72,7 @@ namespace Bit.CSharpClientSample.ViewModels
 
         async Task Skip()
         {
-            await NavigationService.NavigateAsync("/Nav/Main");
+            await NavigationService.NavigateAsync("Main");
         }
     }
 }
