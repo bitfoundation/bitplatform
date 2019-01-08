@@ -116,13 +116,11 @@ namespace Bit
             return Task.CompletedTask;
         }
 
-        private INavService _navService;
-
-        public new INavService NavigationService => _navService ?? (_navService = new DefaultNavService { PrismNavigationService = base.NavigationService });
-
-        public INavigationService PrismNavigationService => base.NavigationService;
+        public new INavService NavigationService => PrismNavigationService == null ? null : new DefaultNavService { PrismNavigationService = PrismNavigationService };
 
         public static new BitApplication Current => (PrismApplicationBase.Current as BitApplication);
+
+        public INavigationService PrismNavigationService => base.NavigationService;
 
         protected override void RegisterTypes(IContainerRegistry containerRegistry)
         {

@@ -37,13 +37,13 @@ namespace Bit.ViewModel.Implementations
         {
             INavigationResult navigationResult = await PrismNavigationService.GoBackAsync(parameters, useModalNavigation: false, animated: false);
 
-            if (!navigationResult.Success && navigationResult.Exception is ArgumentOutOfRangeException && BitApplication.Current?.PrismNavigationService != null)
+            if (!navigationResult.Success && navigationResult.Exception is ArgumentOutOfRangeException && BitApplication.Current?.NavigationService != null)
             {
                 // We use application level nav service (Current), because its GoBackAsync works across both pages & popups.
                 // For example, if a popup calls GoBackAsync two times, the first one closes the popup itself, but the second one won't close the behind page.
                 // Note that ../.. is not working in popup pages at the moment.
 
-                navigationResult = await BitApplication.Current.PrismNavigationService.GoBackAsync(parameters, useModalNavigation: false, animated: false);
+                await BitApplication.Current.NavigationService.GoBackAsync(parameters);
             }
 
             if (!navigationResult.Success)
