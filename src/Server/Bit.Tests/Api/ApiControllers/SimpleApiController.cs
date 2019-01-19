@@ -9,7 +9,7 @@ namespace Bit.Tests.Api.ApiControllers
 {
     public interface ICustomersService
     {
-        [Get("/api/operations/sum/{firstNumber}/{secondNumber}")]
+        [Get("/api/customers/sum/{firstNumber}/{secondNumber}")]
         Task<int> Sum(int firstNumber, int secondNumber, CancellationToken cancellationToken);
     }
 
@@ -23,7 +23,7 @@ namespace Bit.Tests.Api.ApiControllers
             return Ok(customerId);
         }
 
-        [Route("operations/sum/{firstNumber}/{secondNumber}")]
+        [Route("sum/{firstNumber}/{secondNumber}")]
         [HttpGet]
         public async Task<int> Sum(int firstNumber, int secondNumber, CancellationToken cancellationToken)
         {

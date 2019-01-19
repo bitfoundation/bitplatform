@@ -65,7 +65,7 @@ namespace Bit.Tests.Api.ApiControllers.Tests
                 {
 
                 }
-                Assert.AreEqual(2, await (await httpClient.GetAsync("api/customers/operations/sum/1/1?api-version=1.0")).Content.ReadAsAsync<int>());
+                Assert.AreEqual(2, await (await httpClient.GetAsync("api/customers/sum/1/1?api-version=1.0")).Content.ReadAsAsync<int>());
             }
         }
 

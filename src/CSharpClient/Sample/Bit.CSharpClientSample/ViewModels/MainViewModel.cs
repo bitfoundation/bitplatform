@@ -91,7 +91,7 @@ namespace Bit.CSharpClientSample.ViewModels
         async Task Logout()
         {
             await SecurityService.Logout();
-            await NavigationService.NavigateAsync("/Login");
+            await NavigationService.NavigateAsync("/Nav/Login");
         }
 
         async Task ShowPopup()
