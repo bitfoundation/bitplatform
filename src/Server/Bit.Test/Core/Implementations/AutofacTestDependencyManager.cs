@@ -1,11 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
-using Autofac;
+﻿using Autofac;
 using Bit.Core.Contracts;
 using Bit.Owin.Implementations;
 using FakeItEasy;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
 
 namespace Bit.Test.Core.Implementations
 {
@@ -99,6 +99,7 @@ namespace Bit.Test.Core.Implementations
         private readonly MethodInfo _createProxyForService = typeof(AutofacTestDependencyManager).GetTypeInfo().GetMethod(nameof(CreateProxyForService));
 
         public virtual T CreateProxyForService<T>(object serviceInstance)
+            where T : class
         {
             T originalInstance = (T)serviceInstance;
 
