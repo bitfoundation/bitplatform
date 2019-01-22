@@ -2,6 +2,8 @@
 using Bit.ViewModel;
 using System.Linq;
 using System.Reflection;
+using Windows.Foundation;
+using Windows.UI.ViewManagement;
 using Windows.UI.Xaml;
 using Xamarin.Essentials;
 
@@ -21,13 +23,18 @@ namespace Bit.UWP
         }
 
         /// <summary>
-        /// Configures VersionTracking | RgPluginsPopup | BitCSharpClientControls (DatePicker, Checkbox, RadioButton, Frame)
+        /// Configures VersionTracking | RgPluginsPopup | BitCSharpClientControls (DatePicker, Checkbox, RadioButton, Frame) | Set Min Width & Height
         /// </summary>
         protected virtual void UseDefaultConfiguration()
         {
             VersionTracking.Track();
             Rg.Plugins.Popup.Popup.Init();
             BitCSharpClientControls.Init();
+            ApplicationView.GetForCurrentView().SetPreferredMinSize(new Size
+            {
+                Height = 1,
+                Width = 1
+            });
         }
 
         /// <summary>
