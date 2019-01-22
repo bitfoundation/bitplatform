@@ -5,7 +5,7 @@ using System.Runtime.Serialization;
 namespace Bit.Owin.Exceptions
 {
     [Serializable]
-    public class AppException : Exception, IKnownException
+    public class AppException : ApplicationException, IKnownException
     {
         public AppException()
         {
