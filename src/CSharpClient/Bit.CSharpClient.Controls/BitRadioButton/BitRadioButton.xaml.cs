@@ -43,7 +43,7 @@ namespace Bit.CSharpClient.Controls
             }
         }
 
-        public virtual View Content { get; set; }
+        public virtual Xamarin.Forms.View Content { get; set; }
 
         public bool IsSelected { get; protected set; }
 

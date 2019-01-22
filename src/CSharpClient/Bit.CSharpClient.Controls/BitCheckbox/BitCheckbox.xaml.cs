@@ -104,7 +104,7 @@ namespace Bit.CSharpClient.Controls
         [EditorBrowsable(EditorBrowsableState.Never)]
         public ICommand CheckTappedCommand { get; set; }
 
-        public virtual View Content { get; set; }
+        public virtual Xamarin.Forms.View Content { get; set; }
 
         public event EventHandler<IsCheckChangedEventArgs> IsCheckedChanged;
     }
