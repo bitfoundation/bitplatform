@@ -1,5 +1,6 @@
 ﻿using Autofac;
 using Bit.ViewModel.Contracts;
+using Bit.ViewModel.Exceptions;
 using IdentityModel.Client;
 using Newtonsoft.Json;
 using Prism.Ioc;
@@ -59,7 +60,16 @@ namespace Bit.ViewModel.Implementations
             }, cancellationToken).ConfigureAwait(false);
 
             if (tokenResponse.IsError)
-                throw tokenResponse.Exception ?? new Exception($"{tokenResponse.Error} {tokenResponse.Raw}");
+            {
+                if (tokenResponse.Error == "invalid_grant" && !string.IsNullOrEmpty(tokenResponse.ErrorDescription))
+                {
+                    throw new LoginFailureException(tokenResponse.ErrorDescription, (tokenResponse.Exception ?? new Exception($"{tokenResponse.Error} {tokenResponse.Raw}")));
+                }
+                else
+                {
+                    throw tokenResponse.Exception ?? new Exception($"{tokenResponse.Error} {tokenResponse.Raw}");
+                }
+            }
 
             Token token = tokenResponse;
 
