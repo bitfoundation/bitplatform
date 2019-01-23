@@ -1,9 +1,11 @@
 ﻿using Autofac;
 using Bit.ViewModel.Contracts;
 using Bit.ViewModel.Implementations;
+using Microsoft.Extensions.DependencyInjection;
 using Prism.Events;
 using System;
 using System.Net.Http;
+using System.Threading;
 
 namespace Prism.Ioc
 {
@@ -47,17 +49,22 @@ namespace Prism.Ioc
             .SingleInstance()
             .PreserveExistingDefaults();
 
-            containerBuilder.Register(c =>
-            {
-                HttpMessageHandler authenticatedHttpMessageHandler = c.ResolveNamed<HttpMessageHandler>(ContractKeys.AuthenticatedHttpMessageHandler);
-                HttpClient httpClient = new HttpClient(authenticatedHttpMessageHandler)
+            IServiceCollection services = (IServiceCollection)containerBuilder.Properties[nameof(services)];
+
+            services.AddHttpClient(ContractKeys.DefaultHttpClientName)
+                .ConfigureHttpClient((serviceProvider, httpClient) =>
                 {
-                    BaseAddress = c.Resolve<IClientAppProfile>().HostUri,
-                    Timeout = TimeSpan.FromMinutes(45)
-                };
-                return httpClient;
-            }).SingleInstance()
-            .PreserveExistingDefaults();
+                    httpClient.BaseAddress = serviceProvider.GetRequiredService<IClientAppProfile>().HostUri;
+                })
+                .ConfigurePrimaryHttpMessageHandler((serviceProvider) =>
+                {
+                    return serviceProvider.GetRequiredService<IContainer>().ResolveNamed<HttpMessageHandler>(ContractKeys.AuthenticatedHttpMessageHandler);
+                })
+                .SetHandlerLifetime(Timeout.InfiniteTimeSpan);
+
+            containerBuilder.Register(c => c.Resolve<IHttpClientFactory>().CreateClient(ContractKeys.DefaultHttpClientName))
+                .SingleInstance()
+                .PreserveExistingDefaults();
 
             return containerBuilder;
         }

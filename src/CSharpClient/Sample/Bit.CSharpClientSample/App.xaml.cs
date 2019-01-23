@@ -6,6 +6,7 @@ using Bit.Model.Events;
 using Bit.Tests.Model.Dto;
 using Bit.ViewModel.Contracts;
 using Bit.ViewModel.Implementations;
+using Microsoft.Extensions.DependencyInjection;
 using Prism;
 using Prism.Autofac;
 using Prism.Events;
@@ -50,10 +51,8 @@ namespace Bit.CSharpClientSample
             await base.OnInitializedAsync();
         }
 
-        protected override void RegisterTypes(IContainerRegistry containerRegistry)
+        protected override void RegisterTypes(IContainerRegistry containerRegistry, ContainerBuilder containerBuilder, IServiceCollection services)
         {
-            ContainerBuilder containerBuilder = containerRegistry.GetBuilder();
-
             containerRegistry.RegisterForNav<NavigationPage>("Nav");
 
             containerRegistry.RegisterForNav<LoginView, LoginViewModel>("Login");
@@ -87,7 +86,7 @@ namespace Bit.CSharpClientSample
                 });
             });
 
-            base.RegisterTypes(containerRegistry);
+            base.RegisterTypes(containerRegistry, containerBuilder, services);
         }
     }
 }

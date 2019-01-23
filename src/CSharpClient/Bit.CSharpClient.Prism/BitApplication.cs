@@ -1,10 +1,12 @@
 ﻿using Autofac;
+using Autofac.Extensions.DependencyInjection;
 using Bit.Model.Events;
 using Bit.View;
 using Bit.View.Contracts;
 using Bit.ViewModel;
 using Bit.ViewModel.Contracts;
 using Bit.ViewModel.Implementations;
+using Microsoft.Extensions.DependencyInjection;
 using Prism;
 using Prism.Autofac;
 using Prism.Behaviors;
@@ -122,10 +124,22 @@ namespace Bit
 
         public INavigationService PrismNavigationService => base.NavigationService;
 
-        protected override void RegisterTypes(IContainerRegistry containerRegistry)
+        protected sealed override void RegisterTypes(IContainerRegistry containerRegistry)
         {
             ContainerBuilder containerBuilder = containerRegistry.GetBuilder();
 
+            IServiceCollection services = new ServiceCollection();
+
+            containerBuilder.Properties[nameof(services)] = services;
+            containerBuilder.Properties[nameof(containerBuilder)] = containerBuilder;
+
+            RegisterTypes(containerRegistry, containerBuilder, services);
+
+            containerBuilder.Populate(services);
+        }
+
+        protected virtual void RegisterTypes(IContainerRegistry containerRegistry, ContainerBuilder containerBuilder, IServiceCollection services)
+        {
             containerRegistry.Register<ILoggerFacade, BitPrismLogger>();
             containerBuilder.Register(c => Container).SingleInstance().PreserveExistingDefaults();
             containerBuilder.Register(c => Container.GetContainer()).PreserveExistingDefaults();
