@@ -15,14 +15,14 @@ namespace Bit.OData.Implementations
     public class DefaultODataHttpControllerSelector : DefaultHttpControllerSelector
     {
         private readonly HttpConfiguration _httpConfiguration;
-        private readonly Dictionary<string, List<(string oDataRoute, Type controllerType)>> _controllersGroupedByName;
+        private readonly Dictionary<string, List<(string[] oDataRoutes, Type controllerType)>> _controllersGroupedByName;
 
         public DefaultODataHttpControllerSelector(HttpConfiguration httpConfiguration)
             : base(httpConfiguration)
         {
             _httpConfiguration = httpConfiguration;
             ICollection<Type> controllerTypes = _httpConfiguration.Services.GetHttpControllerTypeResolver().GetControllerTypes(_httpConfiguration.Services.GetAssembliesResolver());
-            _controllersGroupedByName = controllerTypes.GroupBy(controller => controller.Name).ToDictionary(controller => controller.Key, controller => controller.Select(c => (c.Assembly.GetCustomAttribute<ODataModuleAttribute>()?.ODataRouteName, c)).ToList());
+            _controllersGroupedByName = controllerTypes.GroupBy(controller => controller.Name).ToDictionary(controller => controller.Key, controller => controller.Select(c => (c.Assembly.GetCustomAttributes<ODataModuleAttribute>().Select(oma => oma.ODataRouteName).ToArray(), c)).ToList());
         }
 
         public override HttpControllerDescriptor SelectController(HttpRequestMessage request)
@@ -30,7 +30,7 @@ namespace Bit.OData.Implementations
             string controllerName = GetControllerName(request);
             string controllerFullName = $"{controllerName}{ControllerSuffix}";
 
-            if (_controllersGroupedByName.TryGetValue(controllerFullName, out List<(string oDataRoute, Type controllerType)> controllers) && controllers.Count > 1)
+            if (_controllersGroupedByName.TryGetValue(controllerFullName, out List<(string[] oDataRoutes, Type controllerType)> controllers) && controllers.Count > 1)
             {
                 HttpRouteData httpRouteData = (HttpRouteData)request.GetRouteData();
 
@@ -38,7 +38,7 @@ namespace Bit.OData.Implementations
                 {
                     string routePrefix = ((ODataRoute)httpRouteData.Route).RoutePrefix;
 
-                    Type controllerType = controllers.ExtendedSingle($"Finding exact match controller for {controllerFullName}", t => t.oDataRoute == routePrefix && t.controllerType.Name == controllerFullName).controllerType;
+                    Type controllerType = controllers.ExtendedSingle($"Finding exact match controller for {controllerFullName}", t => t.oDataRoutes.Contains(routePrefix) && t.controllerType.Name == controllerFullName).controllerType;
 
                     return new HttpControllerDescriptor(_httpConfiguration, controllerName, controllerType);
                 }

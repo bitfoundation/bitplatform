@@ -6,6 +6,7 @@ using Bit.OData.Contracts;
 using Bit.Test;
 using Bit.Tests.Properties;
 
+[assembly: ODataModule("v1")]
 [assembly: ODataModule("Test")]
 
 namespace Bit.Tests

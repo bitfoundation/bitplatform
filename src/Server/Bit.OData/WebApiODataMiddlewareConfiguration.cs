@@ -67,13 +67,12 @@ namespace Bit.OData
             _webApiConfig.UseCustomContainerBuilder(() => ContainerBuilder);
 
             var odataModulesAndAssembliesGroups = ApiAssembliesProvider.GetApiAssemblies()
-                .Select(asm =>
+                .SelectMany(asm =>
                 {
-                    ODataModuleAttribute odataModuleAttribute = asm.GetCustomAttribute<ODataModuleAttribute>();
+                    ODataModuleAttribute[] odataModuleAttributes = asm.GetCustomAttributes<ODataModuleAttribute>().ToArray();
 
-                    return new { ODataModule = odataModuleAttribute, Assembly = asm };
+                    return odataModuleAttributes.Select(oma => new { ODataModule = oma, Assembly = asm });
                 })
-                .Where(odataModuleAndAssembly => odataModuleAndAssembly.ODataModule != null)
                 .GroupBy(odataModuleAndAssembly => odataModuleAndAssembly.ODataModule.ODataRouteName);
 
             foreach (var odataModuleAndAssemblyGroup in odataModulesAndAssembliesGroups)
