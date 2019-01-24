@@ -75,7 +75,7 @@ namespace Bit.Tests
 
                 webApiDependencyManager.RegisterGlobalWebApiActionFiltersUsing(httpConfiguration =>
                 {
-                    httpConfiguration.EnableMultiVersionWebApiSwagger();
+                    httpConfiguration.EnableMultiVersionWebApiSwaggerWithUI();
                 });
             });
 
