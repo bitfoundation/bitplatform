@@ -1,9 +1,40 @@
 ﻿using Bit.Core.Contracts;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Serialization;
 using System;
+using System.ComponentModel.DataAnnotations.Schema;
+using System.Reflection;
 
 namespace Bit.Core.Implementations
 {
+    public class BitCamelCasePropertyNamesContractResolver : CamelCasePropertyNamesContractResolver
+    {
+        protected override JsonProperty CreateProperty(MemberInfo member, MemberSerialization memberSerialization)
+        {
+            JsonProperty property = base.CreateProperty(member, memberSerialization);
+            bool hasNotMappedAttribute = member.GetCustomAttribute<NotMappedAttribute>() != null;
+            if (hasNotMappedAttribute == true)
+            {
+                property.ShouldSerialize = _ => false;
+            }
+            return property;
+        }
+    }
+
+    public class BitContractResolver : DefaultContractResolver
+    {
+        protected override JsonProperty CreateProperty(MemberInfo member, MemberSerialization memberSerialization)
+        {
+            JsonProperty property = base.CreateProperty(member, memberSerialization);
+            bool hasNotMappedAttribute = member.GetCustomAttribute<NotMappedAttribute>() != null;
+            if (hasNotMappedAttribute == true)
+            {
+                property.ShouldSerialize = _ => false;
+            }
+            return property;
+        }
+    }
+
     public class DefaultJsonContentFormatter : IContentFormatter
     {
         private static IContentFormatter _current;
@@ -30,13 +61,17 @@ namespace Bit.Core.Implementations
             ReferenceLoopHandling = ReferenceLoopHandling.Ignore,
             DateFormatHandling = DateFormatHandling.IsoDateFormat,
             TypeNameAssemblyFormatHandling = TypeNameAssemblyFormatHandling.Simple,
-            TypeNameHandling = TypeNameHandling.All
+            TypeNameHandling = TypeNameHandling.All,
+            ContractResolver = BitContractResolver
         };
+
+        private static readonly BitContractResolver BitContractResolver = new BitContractResolver();
 
         public static Func<JsonSerializerSettings> SerializeSettings { get; set; } = () => new JsonSerializerSettings
         {
             ReferenceLoopHandling = ReferenceLoopHandling.Ignore,
-            DateFormatHandling = DateFormatHandling.IsoDateFormat
+            DateFormatHandling = DateFormatHandling.IsoDateFormat,
+            ContractResolver = BitContractResolver
         };
 
         public virtual string Serialize<T>(T obj)

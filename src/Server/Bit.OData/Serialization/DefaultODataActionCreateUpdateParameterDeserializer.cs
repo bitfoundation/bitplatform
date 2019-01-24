@@ -8,6 +8,7 @@ using Microsoft.AspNet.OData.Formatter.Deserialization;
 using Microsoft.OData;
 using Microsoft.Owin;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -53,10 +54,9 @@ namespace Bit.OData.Serialization
 
             ITimeZoneManager timeZoneManager = dependencyResolver.Resolve<ITimeZoneManager>();
 
-            string requestJsonBody = (string)readContext.Request.Properties["ContentStreamAsJson"];
+            JToken requestJsonBody = (JToken)readContext.Request.Properties["ContentStreamAsJson"];
 
-            using (StringReader jsonStringReader = new StringReader(requestJsonBody))
-            using (JsonTextReader requestJsonReader = new JsonTextReader(jsonStringReader))
+            using (JsonReader requestJsonReader = requestJsonBody.CreateReader())
             {
                 void Error(object sender, Newtonsoft.Json.Serialization.ErrorEventArgs e)
                 {
@@ -98,17 +98,13 @@ namespace Bit.OData.Serialization
                     {
                         List<string> changedPropNames = new List<string>();
 
-                        using (JsonTextReader jsonReaderForGettingSchema = new JsonTextReader(new StringReader(requestJsonBody)))
+                        using (JsonReader jsonReaderForGettingSchema = requestJsonBody.CreateReader())
                         {
                             while (jsonReaderForGettingSchema.Read())
                             {
                                 if (jsonReaderForGettingSchema.Value != null && jsonReaderForGettingSchema.TokenType == JsonToken.PropertyName)
                                 {
                                     changedPropNames.Add(jsonReaderForGettingSchema.Value.ToString());
-                                }
-                                else
-                                {
-
                                 }
                             }
                         }

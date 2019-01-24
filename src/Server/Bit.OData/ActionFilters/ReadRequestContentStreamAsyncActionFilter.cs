@@ -2,6 +2,8 @@
 using Bit.OData.Serialization;
 using Bit.WebApi.Contracts;
 using Bit.WebApi.Implementations;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
@@ -28,14 +30,17 @@ namespace Bit.OData.ActionFilters
         {
             HttpActionDescriptor actionDescriptor = actionContext.Request.GetActionDescriptor();
 
-            if (actionDescriptor != null && (actionDescriptor.GetCustomAttributes<ActionAttribute>().Any() ||
+            if (actionDescriptor != null && actionContext.Request?.Content?.Headers?.ContentLength != 0 && (actionDescriptor.GetCustomAttributes<ActionAttribute>().Any() ||
                 actionDescriptor.GetCustomAttributes<CreateAttribute>().Any() ||
                 actionDescriptor.GetCustomAttributes<UpdateAttribute>().Any() ||
                 actionDescriptor.GetCustomAttributes<PartialUpdateAttribute>().Any()))
             {
                 using (StreamReader requestStreamReader = new StreamReader(await actionContext.Request.Content.ReadAsStreamAsync().ConfigureAwait(false)))
                 {
-                    actionContext.Request.Properties["ContentStreamAsJson"] = await requestStreamReader.ReadToEndAsync().ConfigureAwait(false);
+                    using (JsonReader jsonReader = new JsonTextReader(requestStreamReader))
+                    {
+                        actionContext.Request.Properties["ContentStreamAsJson"] = await JToken.LoadAsync(jsonReader, cancellationToken).ConfigureAwait(false);
+                    }
                 }
             }
 

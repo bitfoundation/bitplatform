@@ -104,7 +104,7 @@ namespace Bit.IdentityServer.Implementations
         public virtual async Task<Stream> Login(LoginViewModel model, SignInMessage message)
         {
             JsonSerializerSettings jsonSerSettings = DefaultJsonContentFormatter.SerializeSettings();
-            jsonSerSettings.ContractResolver = new CamelCasePropertyNamesContractResolver();
+            jsonSerSettings.ContractResolver = new BitCamelCasePropertyNamesContractResolver();
 
             if (model.Custom == null && message.ReturnUrl != null)
             {
