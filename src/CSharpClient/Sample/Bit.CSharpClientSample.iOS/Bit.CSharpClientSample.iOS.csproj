@@ -115,7 +115,7 @@
     <Reference Include="Xamarin.iOS" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Xamarin.Forms" Version="3.4.0.1009999" />
+    <PackageReference Include="Xamarin.Forms" Version="3.4.0.1029999" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\Bit.CSharpClient.Data.EntityFrameworkCore\Bit.CSharpClient.Data.EntityFrameworkCore.csproj">
