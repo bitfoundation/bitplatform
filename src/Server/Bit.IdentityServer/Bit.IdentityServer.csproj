@@ -27,10 +27,10 @@
   <ItemGroup>
     <PackageReference Include="AntiXSS" Version="4.3.0" />
     <PackageReference Include="IdentityServer3" Version="2.6.3" />
-    <PackageReference Include="Microsoft.Owin.Security.Facebook" Version="4.0.0" />
-    <PackageReference Include="Microsoft.Owin.Security.Google" Version="4.0.0" />
-    <PackageReference Include="Microsoft.Owin.Security.MicrosoftAccount" Version="4.0.0" />
-    <PackageReference Include="Microsoft.Owin.Security.Twitter" Version="4.0.0" />
+    <PackageReference Include="Microsoft.Owin.Security.Facebook" Version="4.0.1" />
+    <PackageReference Include="Microsoft.Owin.Security.Google" Version="4.0.1" />
+    <PackageReference Include="Microsoft.Owin.Security.MicrosoftAccount" Version="4.0.1" />
+    <PackageReference Include="Microsoft.Owin.Security.Twitter" Version="4.0.1" />
     <PackageReference Include="Owin.Security.Providers.LinkedIn" Version="2.25.0" />
     <PackageReference Include="SourceLink.Embed.AllSourceFiles" Version="2.8.3" PrivateAssets="all" />
     <PackageReference Include="SourceLink.Copy.PdbFiles" Version="2.8.3" PrivateAssets="All" />
