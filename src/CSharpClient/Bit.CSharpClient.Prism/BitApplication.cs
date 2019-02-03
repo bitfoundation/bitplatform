@@ -18,6 +18,7 @@ using Prism.Plugin.Popups;
 using Rg.Plugins.Popup.Contracts;
 using Rg.Plugins.Popup.Services;
 using System;
+using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using Xamarin.Essentials;
@@ -128,7 +129,7 @@ namespace Bit
         {
             ContainerBuilder containerBuilder = containerRegistry.GetBuilder();
 
-            IServiceCollection services = new ServiceCollection();
+            IServiceCollection services = new BitServiceCollection();
 
             containerBuilder.Properties[nameof(services)] = services;
             containerBuilder.Properties[nameof(containerBuilder)] = containerBuilder;
@@ -166,5 +167,10 @@ namespace Bit
 
             PublishOrientationAndOrSizeChangedEvent();
         }
+    }
+
+    public class BitServiceCollection : List<ServiceDescriptor>, IServiceCollection
+    {
+
     }
 }

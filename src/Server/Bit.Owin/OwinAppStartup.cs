@@ -9,6 +9,7 @@ using Microsoft.Owin.Logging;
 using Microsoft.Owin.Security.DataProtection;
 using Owin;
 using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Threading;
@@ -26,7 +27,9 @@ namespace Bit.Owin
         public virtual void Configuration(IAppBuilder owinApp)
         {
             if (owinApp == null)
+            {
                 throw new ArgumentNullException(nameof(owinApp));
+            }
 
             CultureInfo culture = new CultureInfo("en-US");
 
@@ -38,9 +41,13 @@ namespace Bit.Owin
             AppProperties owinAppProps = new AppProperties(owinApp.Properties);
 
             if (activeEnvironment.DebugMode)
+            {
                 owinApp.Properties["host.AppMode"] = "development";
+            }
             else
+            {
                 owinApp.Properties["host.AppMode"] = "production";
+            }
 
             owinAppProps.AppName = activeEnvironment.AppInfo.Name;
 
@@ -48,10 +55,12 @@ namespace Bit.Owin
             {
                 DefaultDependencyManager.Current.Init();
 
-                IServiceCollection services = new ServiceCollection();
+                IServiceCollection services = new BitServiceCollection();
 
                 if (DefaultDependencyManager.Current is IServiceCollectionAccessor dependencyManagerIServiceCollectionInterop)
+                {
                     dependencyManagerIServiceCollectionInterop.ServiceCollection = services;
+                }
 
                 foreach (IAppModule appModule in DefaultAppModulesProvider.Current.GetAppModules())
                 {
@@ -66,7 +75,9 @@ namespace Bit.Owin
             owinApp.SetLoggerFactory(DefaultDependencyManager.Current.Resolve<ILoggerFactory>());
 
             if (DefaultDependencyManager.Current.IsRegistered<IDataProtectionProvider>())
+            {
                 owinApp.SetDataProtectionProvider(DefaultDependencyManager.Current.Resolve<IDataProtectionProvider>());
+            }
 
             DefaultDependencyManager.Current.ResolveAll<IAppEvents>()
                 .ToList()
@@ -99,5 +110,10 @@ namespace Bit.Owin
                 throw new InvalidOperationException("owinAppProps.OnAppDisposing is not provided");
             }
         }
+    }
+
+    public class BitServiceCollection : List<ServiceDescriptor>, IServiceCollection
+    {
+
     }
 }
