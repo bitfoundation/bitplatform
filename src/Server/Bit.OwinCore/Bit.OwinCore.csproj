@@ -32,6 +32,7 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore" Version="1.1.7" />
+    <PackageReference Include="Microsoft.AspNetCore.Http.Extensions" Version="1.1.2" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc.Formatters.Json" Version="1.1.8" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc.DataAnnotations" Version="1.1.8" />
     <PackageReference Include="Microsoft.AspNetCore.Owin" Version="1.1.2" />

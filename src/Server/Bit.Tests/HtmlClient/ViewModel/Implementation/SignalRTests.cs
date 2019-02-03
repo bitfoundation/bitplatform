@@ -32,7 +32,7 @@ namespace Bit.Tests.HtmlClient.ViewModel.Implementation
                                     .OfType<ILogger>()
                                     .ToList();
 
-                Assert.IsTrue(loggers.SelectMany(l => l.LogData).Any(ld => ld.Key == nameof(IRequestInformationProvider.RequestUri) && ((string)ld.Value).Contains("signalr/start")));
+                Assert.IsTrue(loggers.SelectMany(l => l.LogData).Any(ld => ld.Key == nameof(IRequestInformationProvider.DisplayUrl) && ((string)ld.Value).Contains("signalr/start")));
             }
         }
 
@@ -51,7 +51,7 @@ namespace Bit.Tests.HtmlClient.ViewModel.Implementation
 
                 Assert.IsFalse(TestDependencyManager.CurrentTestDependencyManager
                 .Objects.OfType<ILogger>()
-                .Any(logger => logger.LogData.Any(ld => ld.Key == nameof(IRequestInformationProvider.RequestUri) && ((string)ld.Value).Contains("SignalR/start"))));
+                .Any(logger => logger.LogData.Any(ld => ld.Key == nameof(IRequestInformationProvider.DisplayUrl) && ((string)ld.Value).Contains("SignalR/start"))));
             }
         }
     }

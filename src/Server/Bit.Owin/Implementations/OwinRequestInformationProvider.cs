@@ -112,7 +112,7 @@ namespace Bit.Owin.Implementations
             protected set => throw new InvalidOperationException();
         }
 
-        public virtual string RequestUri
+        public virtual string DisplayUrl
         {
             get => GetOwinContext().Request?.Uri?.ToString();
             protected set => throw new InvalidOperationException();

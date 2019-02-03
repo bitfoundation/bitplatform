@@ -42,7 +42,7 @@ namespace Bit.Tests.HtmlClient.ThirdPartyLibrariesTests.KendoDataSourceTests
                     .OfType<ILogger>()
                     .ToList();
 
-                Assert.IsTrue((loggers.SelectMany(l => l.LogData).Any(ld => ld.Key == nameof(IRequestInformationProvider.RequestUri) && ((string)ld.Value).Contains("?$filter=(StringProperty eq 'Test')"))));
+                Assert.IsTrue((loggers.SelectMany(l => l.LogData).Any(ld => ld.Key == nameof(IRequestInformationProvider.DisplayUrl) && ((string)ld.Value).Contains("?$filter=(StringProperty eq 'Test')"))));
             }
         }
 
@@ -70,7 +70,7 @@ namespace Bit.Tests.HtmlClient.ThirdPartyLibrariesTests.KendoDataSourceTests
                     .OfType<ILogger>()
                     .ToList();
 
-                Assert.IsTrue((loggers.SelectMany(l => l.LogData).Any(ld => ld.Key == nameof(IRequestInformationProvider.RequestUri) && ((string)ld.Value).Contains("?$filter=(StringProperty eq 'String1')"))));
+                Assert.IsTrue((loggers.SelectMany(l => l.LogData).Any(ld => ld.Key == nameof(IRequestInformationProvider.DisplayUrl) && ((string)ld.Value).Contains("?$filter=(StringProperty eq 'String1')"))));
             }
         }
     }

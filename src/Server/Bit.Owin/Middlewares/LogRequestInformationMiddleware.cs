@@ -28,7 +28,7 @@ namespace Bit.Owin.Middlewares
         public static void LogRequest(ILogger logger, IRequestInformationProvider requestInformationProvider)
         {
             logger.AddLogData(nameof(IRequestInformationProvider.HttpMethod), requestInformationProvider.HttpMethod);
-            logger.AddLogData(nameof(IRequestInformationProvider.RequestUri), requestInformationProvider.RequestUri);
+            logger.AddLogData(nameof(IRequestInformationProvider.DisplayUrl), requestInformationProvider.DisplayUrl);
 
             if (requestInformationProvider.ClientAppVersion != null)
                 logger.AddLogData(nameof(IRequestInformationProvider.ClientAppVersion), requestInformationProvider.ClientAppVersion);

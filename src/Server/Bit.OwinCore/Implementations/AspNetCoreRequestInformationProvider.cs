@@ -1,5 +1,6 @@
 ﻿using Bit.Core.Contracts;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Extensions;
 using System;
 using System.Globalization;
 using System.Linq;
@@ -112,9 +113,9 @@ namespace Bit.Owin.Implementations
             protected set => throw new InvalidOperationException();
         }
 
-        public virtual string RequestUri
+        public virtual string DisplayUrl
         {
-            get => new Uri($"{GetHttpContext().Request.Scheme}://{GetHttpContext().Request.Host}{GetHttpContext().Request.Path}{GetHttpContext().Request.QueryString}").ToString();
+            get => new Uri(GetHttpContext().Request.GetDisplayUrl()).ToString();
             protected set => throw new InvalidOperationException();
         }
 

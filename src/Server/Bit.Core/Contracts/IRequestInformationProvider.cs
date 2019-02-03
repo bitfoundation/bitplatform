@@ -33,7 +33,7 @@ namespace Bit.Core.Contracts
 
         bool? ClientDebugMode { get; }
 
-        string RequestUri { get; }
+        string DisplayUrl { get; }
 
         ClaimsIdentity Identity { get; }
 

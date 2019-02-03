@@ -47,7 +47,7 @@ namespace Bit.Tests.HtmlClient.BrowserTests.Caching
                 }
 
                 Assert.AreEqual(1, TestDependencyManager.CurrentTestDependencyManager.Objects.OfType<ILogger>()
-                                    .Count(logger => logger.LogData.Any(ld => ld.Key == nameof(IRequestInformationProvider.RequestUri) && ((string)ld.Value).EndsWith(@"Metadata/V1"))));
+                                    .Count(logger => logger.LogData.Any(ld => ld.Key == nameof(IRequestInformationProvider.DisplayUrl) && ((string)ld.Value).EndsWith(@"Metadata/V1"))));
             }
         }
     }

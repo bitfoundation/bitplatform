@@ -85,7 +85,7 @@ namespace Bit.Owin.Implementations
             IUserInformationProvider userInformationProvider = null;
             bool isPerRequestTelemetryClient = false;
 
-            if (logEntry.LogData.Any(ld => ld.Key == nameof(IRequestInformationProvider.RequestUri)))
+            if (logEntry.LogData.Any(ld => ld.Key == nameof(IRequestInformationProvider.DisplayUrl)))
             {
                 IOwinContext owinContext = OwinContext.Value;
 
@@ -103,7 +103,7 @@ namespace Bit.Owin.Implementations
                 string k = ld.Key;
 
                 if (k == nameof(IRequestInformationProvider.HttpMethod)
-                || k == nameof(IRequestInformationProvider.RequestUri)
+                || k == nameof(IRequestInformationProvider.DisplayUrl)
                 || k == nameof(IRequestInformationProvider.UserAgent)
                 || k == "UserId"
                 || k == "ResponseStatusCode"
