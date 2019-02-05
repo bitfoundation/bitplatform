@@ -16,9 +16,8 @@ namespace Bit.Test.Server
         {
             base.Initialize(uri);
 
-            _server = new TestServer(new WebHostBuilder()
+            _server = new TestServer(BitWebHost.CreateDefaultBuilder(new string[] { })
                 .UseUrls(uri)
-                .UseContentRoot(Directory.GetCurrentDirectory())
                 .UseStartup<AutofacAspNetCoreAppStartup>());
         }
 

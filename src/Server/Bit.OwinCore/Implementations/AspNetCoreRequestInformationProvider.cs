@@ -115,7 +115,7 @@ namespace Bit.Owin.Implementations
 
         public virtual string DisplayUrl
         {
-            get => new Uri(GetHttpContext().Request.GetDisplayUrl()).ToString();
+            get => Uri.UnescapeDataString(GetHttpContext().Request.GetDisplayUrl());
             protected set => throw new InvalidOperationException();
         }
 

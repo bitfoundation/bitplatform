@@ -3,6 +3,7 @@
   <PropertyGroup>
     <TargetFramework>net461</TargetFramework>
     <ApplicationIcon />
+    <GenerateProgramFile>false</GenerateProgramFile>
     <OutputType>Exe</OutputType>
     <StartupObject />
   </PropertyGroup>
@@ -15,6 +16,7 @@
     <PackageReference Include="MSTest.TestFramework" Version="1.4.0" />
     <PackageReference Include="Refit" Version="4.6.58" />
     <PackageReference Include="Selenium.WebDriver.ChromeDriver" Version="2.46.0" />
+    <PackageReference Include="System.Configuration.ConfigurationManager" Version="4.5.0" /> 
   </ItemGroup>
 
   <ItemGroup>

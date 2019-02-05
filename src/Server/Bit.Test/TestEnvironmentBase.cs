@@ -21,7 +21,11 @@ namespace Bit.Test
 
         public bool UseRealServer { get; set; }
 
-        public bool UseAspNetCore { get; set; }
+#if DotNet
+        public bool UseAspNetCore { get; set; } = false;
+#else
+        public bool UseAspNetCore { get; set; } = true;
+#endif
 
         public bool UseHttps { get; set; }
 

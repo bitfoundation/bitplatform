@@ -164,7 +164,7 @@ namespace Bit.Tests.Api.Middlewares.WebApi.Tests
 
                 Assert.AreEqual(1, parentEntities.Count());
 
-                A.CallTo(() => requestValidator.ValidateRequestByUri(A<Uri>.That.Matches(uri => uri.ToString().Contains("$filter=Name eq 'A'"))))
+                A.CallTo(() => requestValidator.ValidateRequestByUri(A<Uri>.That.Matches(uri => Uri.UnescapeDataString(uri.ToString()).Contains("$filter=Name eq 'A'"))))
                     .MustHaveHappened(Repeated.Exactly.Once);
             }
         }

@@ -13,7 +13,6 @@ using Bit.OData.ODataControllers;
 using Bit.Owin.Exceptions;
 using Bit.Owin.Implementations;
 using Bit.OwinCore;
-using Bit.OwinCore.Contracts;
 using IdentityServer3.Core.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -111,8 +110,8 @@ namespace DotNetCoreTestApp
 
             dependencyManager.RegisterDtoEntityMapper();
 
-            dependencyManager.RegisterDtoEntityMapperConfiguration<DefaultDtoEntityMapperConfiguration>();
-            dependencyManager.RegisterDtoEntityMapperConfiguration<TestDtoEntityMapperConfiguration>();
+            dependencyManager.RegisterMapperConfiguration<DefaultMapperConfiguration>();
+            dependencyManager.RegisterMapperConfiguration<TestMapperConfiguration>();
 
             dependencyManager.RegisterSingleSignOnServer<TestUserService, TestOAuthClientsProvider>();
         }
@@ -185,7 +184,7 @@ namespace DotNetCoreTestApp
         public virtual string FullName { get; set; }
     }
 
-    public class TestDtoEntityMapperConfiguration : IDtoEntityMapperConfiguration
+    public class TestMapperConfiguration : IMapperConfiguration
     {
         public virtual void Configure(IMapperConfigurationExpression mapperConfigExpression)
         {

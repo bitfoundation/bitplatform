@@ -17,7 +17,20 @@ namespace Bit.OwinCore
 
             if (aspNetCoreVersion.Major > 1) // asp.net core 2.0+
             {
-                string bitOwinCoreAsmName = aspNetCoreVersion.Minor == 0 ? "Bit.OwinCore.AspNetCore2Upgrade" : $"Bit.OwinCore.AspNetCore2{aspNetCoreVersion.Minor}Upgrade";
+                string bitOwinCoreAsmName = null;
+
+                if (aspNetCoreVersion.Major == 3) // asp.net core 3.0
+                {
+                    bitOwinCoreAsmName = "Bit.OwinCore.AspNetCore22Upgrade";
+                }
+                else if (aspNetCoreVersion.Major == 2) // asp.net core 2.0
+                {
+                    bitOwinCoreAsmName = aspNetCoreVersion.Minor == 0 ? "Bit.OwinCore.AspNetCore2Upgrade" : $"Bit.OwinCore.AspNetCore2{aspNetCoreVersion.Minor}Upgrade";
+                }
+                else
+                {
+                    throw new NotSupportedException($"ASP.NET Core {aspNetCoreVersion.Major}.{aspNetCoreVersion.Minor} is not supported.");
+                }
 
                 return (IWebHostBuilder)Assembly.Load(bitOwinCoreAsmName)
                     .GetType($"{bitOwinCoreAsmName}.BitWebHost")

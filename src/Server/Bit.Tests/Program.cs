@@ -1,4 +1,5 @@
-﻿using Bit.Test;
+﻿using Bit.Core.Extensions;
+using Bit.Test;
 using System;
 using System.Diagnostics;
 
@@ -18,7 +19,8 @@ namespace Bit.Tests
                 FullUri = "http://*:80"
             }))
             {
-                Process.Start("http://localhost/");
+                if (!PlatformUtilities.IsRunningOnDotNetCore)
+                    Process.Start("http://localhost/");
 
                 Console.WriteLine(testEnvironment.Server.Uri);
 

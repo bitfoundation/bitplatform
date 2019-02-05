@@ -23,7 +23,7 @@ namespace Bit.OData.ActionFilters
                     url = new Uri(url.AbsoluteUri.Replace(originalQueryString, fixedQueryString, StringComparison.InvariantCultureIgnoreCase), UriKind.Absolute);
                 }
 
-                actionContext.Request.RequestUri = new Uri(url.ToString(), UriKind.Absolute);
+                actionContext.Request.RequestUri = new Uri(Uri.UnescapeDataString(url.ToString()), UriKind.Absolute);
             }
 
             base.OnActionExecuting(actionContext);

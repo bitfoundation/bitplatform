@@ -10,15 +10,11 @@ namespace Bit.Hangfire.Implementations
     {
         public virtual bool Authorize([NotNull] DashboardContext context)
         {
-#if DotNetCore
-            throw new NotImplementedException();
-#else
             IUserInformationProvider userInformationProvider = null;
             IOwinContext owinContext = new OwinContext(context.GetOwinEnvironment());
             userInformationProvider = owinContext.GetDependencyResolver().Resolve<IUserInformationProvider>();
             bool isAuthenticated = userInformationProvider.IsAuthenticated();
             return isAuthenticated;
-#endif
         }
     }
 }

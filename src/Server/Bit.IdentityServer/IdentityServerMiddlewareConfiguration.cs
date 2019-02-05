@@ -1,4 +1,5 @@
 ﻿using Bit.Core.Contracts;
+using Bit.Core.Extensions;
 using Bit.Core.Models;
 using Bit.IdentityServer.Contracts;
 using Bit.Owin.Contracts;
@@ -115,6 +116,9 @@ namespace Bit.IdentityServer
 
         protected virtual void ConfigureIdentityProviders(IAppBuilder owinApp, string signInAsType)
         {
+            if (PlatformUtilities.IsRunningOnDotNetCore)
+                return;
+
             foreach (IExternalIdentityProviderConfiguration externalIdentityProviderConfiguration in ExternalIdentityProviderConfigurations)
             {
                 externalIdentityProviderConfiguration.ConfigureExternalIdentityProvider(owinApp, signInAsType);

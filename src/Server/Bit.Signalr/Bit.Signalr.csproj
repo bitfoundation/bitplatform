@@ -31,6 +31,7 @@
     <PackageReference Include="Microsoft.AspNet.SignalR.SqlServer" Version="2.4.0" />
     <PackageReference Include="SourceLink.Embed.AllSourceFiles" Version="2.8.3" PrivateAssets="all" />
     <PackageReference Include="SourceLink.Copy.PdbFiles" Version="2.8.3" PrivateAssets="All" />
+    <PackageReference Include="System.Diagnostics.PerformanceCounter" Version="4.5.0" />
   </ItemGroup>
 
   <ItemGroup>
