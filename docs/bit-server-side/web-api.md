@@ -137,8 +137,6 @@ You can easily start using ASP.NET Core 2.0 by installing Bit.OwinCore.AspNetCor
 
 Web API configuration and web api codes are all the same. (-:
 
-Note that upcoming articles have no .net core sample as we've not officially supported .net core yet, but after [we officially supported .net core](https://github.com/bit-foundation/bit-framework/issues/59), you can start an easy/safe migration.
-
 ### Web API - Dependency Injection samples:
 
 Bit's dependency injection covers you anywhere, from web api to signalr, background job workers, etc. As you see in AppStartup class of samples, there is a dependencyManager variable in both ASP.NET & ASP.NET Core projects. Classes you register/add are accessible using constructor and property injection anywhere you need them. Let's take a look at  [sample](https://github.com/bit-foundation/bit-framework/tree/master/Samples/WebApiSamples/7WebApiDependencyInjection)

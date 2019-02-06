@@ -20,9 +20,13 @@ For **ASP.NET Core 2.1**:
 
 * Install **Visual Studio 2017 Update 7+**.
 
+For **ASP.NET Core 3.0**:
+
+* Install **Visual Studio 2019**.
+
 In Visual Studio Installer select **ASP.NET workload**.
 
-### 2- Install [_**.NET Core 2.1 SDK**_](https://www.microsoft.com/net/download/core)
+### 2- Install [_**.NET Core 2.2 SDK**_](https://www.microsoft.com/net/download/core)
 
 ---
 
