@@ -4,6 +4,6 @@
     "@types/angular-ui-router": "^1.1.40"
   },
   "dependencies": {
-    "@uirouter/angularjs": "^1.0.21"
+    "@uirouter/angularjs": "^1.0.22"
   }
 }
