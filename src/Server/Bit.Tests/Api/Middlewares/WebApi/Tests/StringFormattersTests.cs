@@ -78,22 +78,22 @@ namespace Bit.Tests.Api.Middlewares.WebApi.Tests
                     }).ExecuteAsync();
 
                 A.CallTo(() => valueChecker.CheckValue("ONETWOsimpleString"))
-                    .MustHaveHappened(Repeated.Exactly.Once);
+                    .MustHaveHappenedOnceExactly();
 
                 A.CallTo(() => valueChecker.CheckValue(A<List<string>>.That.Matches(strs => strs.SequenceEqual(new List<string> { "ONETWOstringsArray1", "ONETWOstringsArray2" }))))
-                    .MustHaveHappened(Repeated.Exactly.Once);
+                    .MustHaveHappenedOnceExactly();
 
                 A.CallTo(() => valueChecker.CheckValue(A<TestModel>.That.Matches(tm => tm.StringProperty == "ONETWOStringProperty")))
-                    .MustHaveHappened(Repeated.Exactly.Once);
+                    .MustHaveHappenedOnceExactly();
 
                 A.CallTo(() => valueChecker.CheckValue(A<List<TestModel>>.That.Matches(tms => tms.First().StringProperty == "ONETWOStringProperty1" && tms.Last().StringProperty == "ONETWOStringProperty2")))
-                    .MustHaveHappened(Repeated.Exactly.Once);
+                    .MustHaveHappenedOnceExactly();
 
                 A.CallTo(() => stringCorrector1.CorrectString(A<string>.Ignored))
-                    .MustHaveHappened(Repeated.Exactly.Times(8));
+                    .MustHaveHappenedANumberOfTimesMatching(times => times == 8);
 
                 A.CallTo(() => stringCorrector2.CorrectString(A<string>.Ignored))
-                    .MustHaveHappened(Repeated.Exactly.Times(8));
+                    .MustHaveHappenedANumberOfTimesMatching(times => times == 8);
             }
         }
 

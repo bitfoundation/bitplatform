@@ -37,7 +37,7 @@ namespace Bit.Tests.HtmlClient.ViewModel.Implementation
                     .Single();
 
                 A.CallTo(() => testModelsController.GetTestModelsByStringPropertyValue(1))
-                    .MustHaveHappened(Repeated.Exactly.Once);
+                    .MustHaveHappenedOnceExactly();
             }
         }
 

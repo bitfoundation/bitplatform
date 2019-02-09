@@ -43,7 +43,7 @@ namespace Bit.Tests.HtmlClient.ViewModel.Implementation
                         .Objects.OfType<ClientsLogsController>().Single();
 
                     A.CallTo(() => clientsLogsController.Create(A<ClientLogDto>.That.Matches(cl => cl.ErrorName == "TypeError")))
-                        .MustHaveHappened(Repeated.Exactly.Once);
+                        .MustHaveHappenedOnceExactly();
                 }
             }
         }

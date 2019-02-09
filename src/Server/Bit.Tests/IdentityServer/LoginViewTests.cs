@@ -42,7 +42,7 @@ namespace Bit.Tests.IdentityServer
                     try
                     {
                         A.CallTo(() => userService.AuthenticateLocalAsync(A<LocalAuthenticationContext>.That.Matches(cntx => cntx.UserName == "ValidUserName" && cntx.Password == "ValidPassword"), A<CancellationToken>.Ignored))
-                            .MustHaveHappened(Repeated.Exactly.Once);
+                            .MustHaveHappenedOnceExactly();
 
                         foundAnyCorrectCall = true;
                     }
@@ -81,7 +81,7 @@ namespace Bit.Tests.IdentityServer
                     try
                     {
                         A.CallTo(() => userService.AuthenticateLocalAsync(A<LocalAuthenticationContext>.That.Matches(cntx => cntx.UserName == "InValidUserName" && cntx.Password == "InValidPassword"), A<CancellationToken>.Ignored))
-                            .MustHaveHappened(Repeated.Exactly.Once);
+                            .MustHaveHappenedOnceExactly();
 
                         foundAnyCorrectCall = true;
                     }

@@ -207,7 +207,7 @@ namespace Bit.Tests.Api.Middlewares.JobScheduler.Tests
                    .Last();
 
                 A.CallTo(() => logger.LogException(A<Exception>.That.Matches(e => e is InvalidOperationException), A<string>.That.Matches(errMsg => errMsg.Contains(jobId))))
-                    .MustHaveHappened(Repeated.Exactly.Once);
+                    .MustHaveHappenedOnceExactly();
 
                 Assert.AreEqual(2, tryCount);
             }

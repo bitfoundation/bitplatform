@@ -55,7 +55,7 @@ namespace Bit.Tests.Api.Middlewares.WebApi.Tests
                         .OfType<ILogStore>().Last();
 
                     A.CallTo(() => logStore.SaveLogAsync(A<LogEntry>.That.Matches(log => ((TestModelsController.EmailParameters)((KeyValuePair<string,object>[])log.LogData.Single(ld => ld.Key == "OperationArgs").Value)[0].Value).to == "Someone")))
-                        .MustHaveHappened(Repeated.Exactly.Once);
+                        .MustHaveHappenedOnceExactly();
                 }
             }
         }

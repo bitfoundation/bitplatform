@@ -40,31 +40,31 @@ namespace Bit.Tests.HtmlClient.ThirdPartyLibrariesTests.JayDataContextTests
                 Assert.AreEqual(9, testCustomersControllers.Count);
 
                 A.CallTo(() => testCustomersControllers.ElementAt(0).Create(A<TestCustomerDto>.Ignored, A<CancellationToken>.Ignored))
-                    .MustHaveHappened(Repeated.Exactly.Once);
+                    .MustHaveHappenedOnceExactly();
 
                 A.CallTo(() => testCustomersControllers.ElementAt(1).Create(A<TestCustomerDto>.Ignored, A<CancellationToken>.Ignored))
-                    .MustHaveHappened(Repeated.Exactly.Once);
+                    .MustHaveHappenedOnceExactly();
 
                 A.CallTo(() => testCustomersControllers.ElementAt(2).GetAll(A<CancellationToken>.Ignored))
-                    .MustHaveHappened(Repeated.Exactly.Once);
+                    .MustHaveHappenedOnceExactly();
 
                 A.CallTo(() => testCustomersControllers.ElementAt(3).Create(A<TestCustomerDto>.Ignored, A<CancellationToken>.Ignored))
-                    .MustHaveHappened(Repeated.Exactly.Once);
+                    .MustHaveHappenedOnceExactly();
 
                 A.CallTo(() => testCustomersControllers.ElementAt(4).Create(A<TestCustomerDto>.Ignored, A<CancellationToken>.Ignored))
-                    .MustHaveHappened(Repeated.Exactly.Once);
+                    .MustHaveHappenedOnceExactly();
 
                 A.CallTo(() => testCustomersControllers.ElementAt(5).PartialUpdate(A<Guid>.Ignored, A<Delta<TestCustomerDto>>.Ignored, A<CancellationToken>.Ignored))
-                    .MustHaveHappened(Repeated.Exactly.Once);
+                    .MustHaveHappenedOnceExactly();
 
                 A.CallTo(() => testCustomersControllers.ElementAt(6).GetAll(A<CancellationToken>.Ignored))
-                    .MustHaveHappened(Repeated.Exactly.Once);
+                    .MustHaveHappenedOnceExactly();
 
                 A.CallTo(() => testCustomersControllers.ElementAt(7).Delete(A<Guid>.Ignored, A<CancellationToken>.Ignored))
-                    .MustHaveHappened(Repeated.Exactly.Once);
+                    .MustHaveHappenedOnceExactly();
 
                 A.CallTo(() => testCustomersControllers.ElementAt(8).GetAll(A<CancellationToken>.Ignored))
-                    .MustHaveHappened(Repeated.Exactly.Once);
+                    .MustHaveHappenedOnceExactly();
             }
         }
     }

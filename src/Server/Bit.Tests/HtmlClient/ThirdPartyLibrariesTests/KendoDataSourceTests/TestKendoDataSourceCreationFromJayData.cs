@@ -36,7 +36,7 @@ namespace Bit.Tests.HtmlClient.ThirdPartyLibrariesTests.KendoDataSourceTests
                     .Single();
 
                 A.CallTo(() => testModelsController.Get(A<CancellationToken>.Ignored))
-                    .MustHaveHappened(Repeated.Exactly.Once);
+                    .MustHaveHappenedOnceExactly();
 
                 IEnumerable<ILogger> loggers = TestDependencyManager.CurrentTestDependencyManager.Objects
                     .OfType<ILogger>()
@@ -64,7 +64,7 @@ namespace Bit.Tests.HtmlClient.ThirdPartyLibrariesTests.KendoDataSourceTests
                     .Single();
 
                 A.CallTo(() => testModelsController.GetTestModelsByStringPropertyValue(1))
-                    .MustHaveHappened(Repeated.Exactly.Once);
+                    .MustHaveHappenedOnceExactly();
 
                 IEnumerable<ILogger> loggers = TestDependencyManager.CurrentTestDependencyManager.Objects
                     .OfType<ILogger>()

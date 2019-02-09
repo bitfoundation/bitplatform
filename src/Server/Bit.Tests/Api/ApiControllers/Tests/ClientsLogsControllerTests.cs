@@ -35,10 +35,10 @@ namespace Bit.Tests.Api.ApiControllers.Tests
                     .Last();
 
                 A.CallTo(() => logger.LogWarningAsync("Client-Log"))
-                    .MustHaveHappened(Repeated.Exactly.Once);
+                    .MustHaveHappenedOnceExactly();
 
                 A.CallTo(() => logger.AddLogData("ClientLogs", A<IEnumerable<ClientLogDto>>.That.Matches(logs => logs.Single().Message == "1")))
-                    .MustHaveHappened(Repeated.Exactly.Once);
+                    .MustHaveHappenedOnceExactly();
             }
         }
     }

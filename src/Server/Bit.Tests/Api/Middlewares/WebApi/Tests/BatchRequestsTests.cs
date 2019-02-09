@@ -62,10 +62,10 @@ namespace Bit.Tests.Api.Middlewares.WebApi.Tests
                 A.CallTo(() => testModelsRepository.UpdateAsync(
                             A<TestModel>.That.Matches(testModel => testModel.StringProperty == "Test2"),
                             A<CancellationToken>.Ignored))
-                    .MustHaveHappened(Repeated.Exactly.Once);
+                    .MustHaveHappenedOnceExactly();
 
                 A.CallTo(() => testModelsRepository.AddAsync(A<TestModel>.That.Matches(testModel => testModel.StringProperty == "Test"), A<CancellationToken>.Ignored))
-                    .MustHaveHappened(Repeated.Exactly.Once);
+                    .MustHaveHappenedOnceExactly();
             }
         }
 
@@ -131,10 +131,10 @@ namespace Bit.Tests.Api.Middlewares.WebApi.Tests
                         .OfType<ILogger>().Last();
 
                     A.CallTo(() => controller.SendEmail(A<TestModelsController.EmailParameters>.Ignored))
-                                            .MustHaveHappened(Repeated.Exactly.Once);
+                                            .MustHaveHappenedOnceExactly();
 
                     A.CallTo(() => logger.LogFatalAsync(A<string>.That.Matches(msg => msg == "Scope was failed: Operation is not valid due to the current state of the object.")))
-                                            .MustHaveHappened(Repeated.Exactly.Once);
+                                            .MustHaveHappenedOnceExactly();
                 }
             }
         }

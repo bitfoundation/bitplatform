@@ -128,7 +128,7 @@ namespace Bit.Tests.HtmlClient.ViewModel.Implementation
                     .Single();
 
                 A.CallTo(() => testModelsController.Sum(A<TestModelsController.FirstSecondParameters>.That.Matches(parameters => parameters.firstValue == 10 && parameters.secondValue == 20)))
-                    .MustHaveHappened(Repeated.Exactly.Once);
+                    .MustHaveHappenedOnceExactly();
             }
         }
 

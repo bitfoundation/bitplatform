@@ -28,7 +28,7 @@ namespace Bit.Tests.Api.Middlewares.Tests
                     .Single();
 
                 A.CallTo(() => scopeStatusManager.MarkAsSucceeded())
-                    .MustHaveHappened(Repeated.Exactly.Once);
+                    .MustHaveHappenedOnceExactly();
             }
         }
 
@@ -66,14 +66,14 @@ namespace Bit.Tests.Api.Middlewares.Tests
                         .Last();
 
                     A.CallTo(() => scopeStatusManager.MarkAsFailed("Operation is not valid due to the current state of the object."))
-                        .MustHaveHappened(Repeated.Exactly.Once);
+                        .MustHaveHappenedOnceExactly();
 
                     ILogger logger = TestDependencyManager.CurrentTestDependencyManager
                         .Objects.OfType<ILogger>()
                         .Last();
 
                     A.CallTo(() => logger.LogExceptionAsync(A<Exception>.That.Matches(e => e is InvalidOperationException), A<string>.Ignored))
-                        .MustHaveHappened(Repeated.Exactly.Once);
+                        .MustHaveHappenedOnceExactly();
 
                     LogData[] logData = logger.LogData.ToArray();
 
@@ -112,14 +112,14 @@ namespace Bit.Tests.Api.Middlewares.Tests
                     .Last();
 
                 A.CallTo(() => scopeStatusManager.MarkAsFailed("UnKnownError"))
-                            .MustHaveHappened(Repeated.Exactly.Once);
+                            .MustHaveHappenedOnceExactly();
 
                 ILogger logger = TestDependencyManager.CurrentTestDependencyManager
                     .Objects.OfType<ILogger>()
                     .Last();
 
                 A.CallTo(() => logger.LogFatalAsync(A<string>.Ignored))
-                            .MustHaveHappened(Repeated.Exactly.Once);
+                            .MustHaveHappenedOnceExactly();
 
                 LogData[] logData = logger.LogData.ToArray();
 
@@ -145,14 +145,14 @@ namespace Bit.Tests.Api.Middlewares.Tests
                     .Last();
 
                 A.CallTo(() => scopeStatusManager.MarkAsFailed("Not Acceptable"))
-                    .MustHaveHappened(Repeated.Exactly.Once);
+                    .MustHaveHappenedOnceExactly();
 
                 ILogger logger = TestDependencyManager.CurrentTestDependencyManager
                     .Objects.OfType<ILogger>()
                     .Last();
 
                 A.CallTo(() => logger.LogWarningAsync(A<string>.Ignored))
-                    .MustHaveHappened(Repeated.Exactly.Once);
+                    .MustHaveHappenedOnceExactly();
 
                 LogData[] logData = logger.LogData.ToArray();
 
