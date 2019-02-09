@@ -21,5 +21,13 @@ namespace System
             return str.Replace(oldValue, newValue);
 #endif
         }
+
+        public static string AsUnescaped(this string source)
+        {
+            if (string.IsNullOrEmpty(source))
+                return source;
+
+            return Uri.UnescapeDataString(source);
+        }
     }
 }

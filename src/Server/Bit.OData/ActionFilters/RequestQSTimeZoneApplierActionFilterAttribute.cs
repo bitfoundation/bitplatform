@@ -14,7 +14,7 @@ namespace Bit.OData.ActionFilters
     {
         public override void OnActionExecuting(HttpActionContext actionContext)
         {
-            Uri url = actionContext.Request.RequestUri;
+            Uri url = new Uri(actionContext.Request.RequestUri.ToString().AsUnescaped());
 
             if (!string.IsNullOrEmpty(url.Query))
             {
@@ -23,7 +23,7 @@ namespace Bit.OData.ActionFilters
 
                 ITimeZoneManager timeZoneManager = dependencyResolver.Resolve<ITimeZoneManager>();
 
-                string urlAsTextToFix = Uri.UnescapeDataString(url.ToString());
+                string urlAsTextToFix = url.ToString();
 
                 const string isoDateRegExp = "(\\d{4}-[01]\\d-[0-3]\\dT[0-2]\\d:[0-5]\\d:[0-5]\\d\\.\\d+([+-][0-2]\\d:[0-5]\\d|Z))|(\\d{4}-[01]\\d-[0-3]\\dT[0-2]\\d:[0-5]\\d:[0-5]\\d([+-][0-2]\\d:[0-5]\\d|Z))|(\\d{4}-[01]\\d-[0-3]\\dT[0-2]\\d:[0-5]\\d([+-][0-2]\\d:[0-5]\\d|Z))";
 

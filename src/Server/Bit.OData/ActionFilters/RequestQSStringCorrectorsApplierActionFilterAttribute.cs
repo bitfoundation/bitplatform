@@ -12,7 +12,7 @@ namespace Bit.OData.ActionFilters
 
         public override void OnActionExecuting(HttpActionContext actionContext)
         {
-            Uri url = actionContext.Request.RequestUri;
+            Uri url = new Uri(actionContext.Request.RequestUri.ToString().AsUnescaped());
 
             if (!string.IsNullOrEmpty(url.Query))
             {
@@ -23,7 +23,7 @@ namespace Bit.OData.ActionFilters
                     url = new Uri(url.AbsoluteUri.Replace(originalQueryString, fixedQueryString, StringComparison.InvariantCultureIgnoreCase), UriKind.Absolute);
                 }
 
-                actionContext.Request.RequestUri = new Uri(Uri.UnescapeDataString(url.ToString()), UriKind.Absolute);
+                actionContext.Request.RequestUri = new Uri(url.ToString(), UriKind.Absolute);
             }
 
             base.OnActionExecuting(actionContext);
