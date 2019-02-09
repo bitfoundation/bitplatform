@@ -82,22 +82,22 @@ namespace Bit.Core.Contracts
         void PerformRecurringBackgroundJob<TService>(string jobId, Expression<Action<TService>> methodCall, string cronExpression, TimeZoneInfo timeZoneInfo = null);
 
         /// <summary>
-        /// You can cancel job schedule you have defined using <see cref="PerformRecurringBackgroundJob{TService}(string, Expression{Action{TService}}, string)"/>. Storing job cancellation info in database will be performed async.
+        /// You can cancel job schedule you have defined using <see cref="PerformRecurringBackgroundJob{TService}(string, Expression{Action{TService}}, string, TimeZoneInfo)"/>. Storing job cancellation info in database will be performed async.
         /// </summary>
         Task StopRecurringBackgroundJobAsync(string jobId);
 
         /// <summary>
-        /// You can cancel job schedule you have defined using <see cref="PerformRecurringBackgroundJob{TService}(string, Expression{Action{TService}}, string)"/>.
+        /// You can cancel job schedule you have defined using <see cref="PerformRecurringBackgroundJob{TService}(string, Expression{Action{TService}}, string, TimeZoneInfo)"/>.
         /// </summary>
         void StopRecurringBackgroundJob(string jobId);
 
         /// <summary>
-        /// Runs the job you have defined using <see cref="PerformRecurringBackgroundJob{TService}(string, Expression{Action{TService}}, string)"/> immediately. Storing job info in database will be performed async.
+        /// Runs the job you have defined using <see cref="PerformRecurringBackgroundJob{TService}(string, Expression{Action{TService}}, string, TimeZoneInfo)"/> immediately. Storing job info in database will be performed async.
         /// </summary>
         Task TriggerRecurringBackgroundJobAsync(string jobId);
 
         /// <summary>
-        /// Runs the job you have defined using <see cref="PerformRecurringBackgroundJob{TService}(string, Expression{Action{TService}}, string)"/> immediately.
+        /// Runs the job you have defined using <see cref="PerformRecurringBackgroundJob{TService}(string, Expression{Action{TService}}, string, TimeZoneInfo)"/> immediately.
         /// </summary>
         void TriggerRecurringBackgroundJob(string jobId);
     }
