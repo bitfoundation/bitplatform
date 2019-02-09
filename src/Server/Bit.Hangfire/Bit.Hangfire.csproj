@@ -19,7 +19,6 @@
     <FileVersion>0.0.0.1</FileVersion>
     <Version>0.0.1</Version>
     <GeneratePackageOnBuild Condition=" '$(Configuration)' == 'Release' ">true</GeneratePackageOnBuild>
-    <DefineConstants Condition=" '$(TargetFramework)' == 'net461' ">DotNet</DefineConstants>
     <DocumentationFile>bin\$(Configuration)\$(TargetFramework)\$(AssemblyName).xml</DocumentationFile>
     <LangVersion>7.3</LangVersion>
     <NoWarn>$(NoWarn);CS1591;NU1701</NoWarn>

@@ -43,11 +43,7 @@ namespace Bit.Hangfire.Implementations
             SqlServerStorage storage = new SqlServerStorage(jobSchedulerDbConnectionString, new SqlServerStorageOptions
             {
                 PrepareSchemaIfNecessary = false,
-#if DotNet
                 TransactionIsolationLevel = IsolationLevel.ReadCommitted,
-#else
-                TransactionIsolationLevel = System.Data.IsolationLevel.ReadCommitted,
-#endif
                 SchemaName = "Jobs"
             });
 
@@ -58,6 +54,7 @@ namespace Bit.Hangfire.Implementations
                 storage.UseServiceBusQueues(signalRAzureServiceBusConnectionString);
             }
 
+            JobStorage.Current = storage;
             GlobalConfiguration.Configuration.UseStorage(storage);
             GlobalConfiguration.Configuration.UseAutofacActivator(_lifetimeScope);
             GlobalConfiguration.Configuration.UseLogProvider(LogProvider);

@@ -7,6 +7,7 @@ using Hangfire.Logging;
 using Hangfire.MemoryStorage;
 using System;
 using System.Collections.Generic;
+using System.Reflection;
 
 namespace Bit.Hangfire.Implementations
 {
@@ -36,6 +37,11 @@ namespace Bit.Hangfire.Implementations
         {
             MemoryStorage storage = new MemoryStorage();
 
+            typeof(BackgroundJob)
+                .GetField("CachedClient", BindingFlags.NonPublic | BindingFlags.Static)
+                .SetValue(null, new Lazy<IBackgroundJobClient>(() => new BackgroundJobClient()));
+
+            JobStorage.Current = storage;
             GlobalConfiguration.Configuration.UseStorage(storage);
             GlobalConfiguration.Configuration.UseAutofacActivator(_container);
             GlobalConfiguration.Configuration.UseLogProvider(LogProvider);
