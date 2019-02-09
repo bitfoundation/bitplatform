@@ -19,6 +19,8 @@ namespace Bit.Core.Contracts
 
         string ClientType { get; }
 
+        string BitClientType { get; }
+
         string ClientCulture { get; }
 
         string ClientScreenSize { get; }

@@ -42,6 +42,9 @@ namespace Bit.Owin.Middlewares
             if (requestInformationProvider.ClientType != null)
                 logger.AddLogData(nameof(IRequestInformationProvider.ClientType), requestInformationProvider.ClientType);
 
+            if (requestInformationProvider.BitClientType != null)
+                logger.AddLogData(nameof(IRequestInformationProvider.BitClientType), requestInformationProvider.BitClientType);
+
             if (requestInformationProvider.ClientDateTime != null)
                 logger.AddLogData(nameof(IRequestInformationProvider.ClientDateTime), requestInformationProvider.ClientDateTime);
 

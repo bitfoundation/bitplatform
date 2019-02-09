@@ -1,8 +1,9 @@
-﻿using Microsoft.AspNet.OData.Formatter.Serialization;
+﻿using Bit.Core.Contracts;
+using Microsoft.AspNet.OData.Formatter.Serialization;
 using Microsoft.OData;
 using Microsoft.OData.Edm;
-using System.Collections.Generic;
-using System.Linq;
+using Microsoft.Owin;
+using System.Net.Http;
 
 namespace Bit.OData.Serialization
 {
@@ -17,7 +18,9 @@ namespace Bit.OData.Serialization
         {
             ODataEnumValue result = base.CreateODataEnumValue(graph, enumType, writeContext);
 
-            if (writeContext.Request.Headers.TryGetValues("Bit-Client-Type", out IEnumerable<string> values) && values.Any(v => string.Equals(v, "TS-Client", System.StringComparison.InvariantCultureIgnoreCase)))
+            string clientType = writeContext.Request.GetOwinContext().GetDependencyResolver().Resolve<IRequestInformationProvider>().BitClientType;
+
+            if (string.Equals(clientType, "TS-Client", System.StringComparison.InvariantCultureIgnoreCase))
             {
                 if (!string.IsNullOrEmpty(result?.Value) && !string.IsNullOrEmpty(result.TypeName))
                 {
