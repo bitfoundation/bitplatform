@@ -98,6 +98,8 @@ namespace Bit.Test.Server
 
             };
 
+            //chromeOptions.AddArguments("--lang=fa");
+
             ChromeDriver driver = new ChromeDriver(chromeOptions);
 
             //InternetExplorerDriver driver = new InternetExplorerDriver();
