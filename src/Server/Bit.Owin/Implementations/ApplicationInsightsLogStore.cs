@@ -138,6 +138,9 @@ namespace Bit.Owin.Implementations
                     keyValues.Add(new KeyVal { Key = nameof(LogEntry.AppServerProcessId), Value = logEntry.AppServerProcessId.ToString() });
 
                 keyValues.Add(new KeyVal { Key = nameof(LogEntry.AppServerAppDomainName), Value = logEntry.AppServerAppDomainName });
+                keyValues.Add(new KeyVal { Key = nameof(LogEntry.AppServerWas64Bit), Value = logEntry.AppServerWas64Bit.ToString() });
+                keyValues.Add(new KeyVal { Key = nameof(LogEntry.AppWas64Bit), Value = logEntry.AppWas64Bit.ToString() });
+                keyValues.Add(new KeyVal { Key = nameof(LogEntry.MemoryUsage), Value = logEntry.MemoryUsage.ToString() });
 
                 keyValues.Add(new KeyVal { Key = nameof(LogEntry.AppServerOSVersion), Value = logEntry.AppServerOSVersion });
 
@@ -172,8 +175,8 @@ namespace Bit.Owin.Implementations
 
                     foreach (KeyVal keyVal in keyValues.OrderBy(kv => kv.Key))
                     {
-                        if (!telemetryClient.Context.Properties.ContainsKey(keyVal.Key))
-                            telemetryClient.Context.Properties.Add(keyVal.Key, keyVal.Value);
+                        if (!telemetryClient.Context.GlobalProperties.ContainsKey(keyVal.Key))
+                            telemetryClient.Context.GlobalProperties.Add(keyVal.Key, keyVal.Value);
                     }
                 }
                 else

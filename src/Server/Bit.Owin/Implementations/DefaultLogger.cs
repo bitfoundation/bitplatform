@@ -194,6 +194,8 @@ namespace Bit.Owin.Implementations
 
         private LogEntry CreateLogEntry(string message, string severity)
         {
+            Process currentProcess = Process.GetCurrentProcess();
+
             LogEntry logEntry = new LogEntry
             {
                 Id = Guid.NewGuid(),
@@ -208,9 +210,12 @@ namespace Bit.Owin.Implementations
                 AppServerDateTime = DateTimeProvider.GetCurrentUtcDateTime(),
                 AppServerOSVersion = Environment.OSVersion.ToString(),
                 AppServerAppDomainName = AppDomain.CurrentDomain.FriendlyName,
-                AppServerProcessId = Process.GetCurrentProcess().Id,
+                AppServerProcessId = currentProcess.Id,
                 AppServerThreadId = Environment.CurrentManagedThreadId,
-                AppServerUserAccountName = $"{Environment.UserDomainName}\\{Environment.UserName}"
+                AppServerUserAccountName = $"{Environment.UserDomainName}\\{Environment.UserName}",
+                AppServerWas64Bit = Environment.Is64BitOperatingSystem,
+                AppWas64Bit = Environment.Is64BitProcess,
+                MemoryUsage = currentProcess.PrivateMemorySize64
             };
 
             return logEntry;

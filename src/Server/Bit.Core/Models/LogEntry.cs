@@ -37,6 +37,12 @@ namespace Bit.Core.Models
 
         public virtual string AppServerUserAccountName { get; set; }
 
+        public virtual bool AppServerWas64Bit { get; set; }
+
+        public virtual bool AppWas64Bit { get; set; }
+
+        public virtual long MemoryUsage { get; set; }
+
         public override string ToString()
         {
             return $"{nameof(Message)}: {Message}, {nameof(Severity)}: {Severity}";
