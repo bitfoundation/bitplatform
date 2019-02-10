@@ -4,6 +4,7 @@ using Bit.Owin.Middlewares;
 using Bit.OwinCore.Contracts;
 using Bit.OwinCore.Implementations;
 using Bit.OwinCore.Middlewares;
+using Microsoft.ApplicationInsights.Extensibility;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Owin.Security.DataProtection;
 using System;
@@ -12,6 +13,14 @@ namespace Bit.Core.Contracts
 {
     public static class IDependencyManagerExtensions
     {
+        public static IDependencyManager RegisterApplicationInsights(this IDependencyManager dependencyManager)
+        {
+            dependencyManager.Register<ITelemetryInitializer, BitTelemetryInitializer>(lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExciting: false);
+            dependencyManager.RegisterLogStore<ApplicationInsightsLogStore>();
+
+            return dependencyManager;
+        }
+
         public static IDependencyManager RegisterAspNetCoreMiddleware<TMiddleware>(this IDependencyManager dependencyManager)
             where TMiddleware : class, IAspNetCoreMiddlewareConfiguration
         {

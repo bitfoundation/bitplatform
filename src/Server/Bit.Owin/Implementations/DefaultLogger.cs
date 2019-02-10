@@ -194,6 +194,7 @@ namespace Bit.Owin.Implementations
 
         private LogEntry CreateLogEntry(string message, string severity)
         {
+            LogEntryAppLevelConstantInfo logEntryAppLevelConstantInfo = LogEntryAppLevelConstantInfo.GetAppConstantInfo();
             Process currentProcess = Process.GetCurrentProcess();
 
             LogEntry logEntry = new LogEntry
@@ -202,20 +203,21 @@ namespace Bit.Owin.Implementations
                 Message = message,
                 Severity = severity,
                 LogData = LogData,
-                ApplicationName = AppEnvironment.AppInfo.Name,
-                AppVersion = AppEnvironment.AppInfo.Version,
-                AppEnvironmentName = AppEnvironment.Name,
-                AppWasInDebugMode = AppEnvironment.DebugMode,
-                AppServerName = Environment.MachineName,
                 AppServerDateTime = DateTimeProvider.GetCurrentUtcDateTime(),
-                AppServerOSVersion = Environment.OSVersion.ToString(),
-                AppServerAppDomainName = AppDomain.CurrentDomain.FriendlyName,
-                AppServerProcessId = currentProcess.Id,
                 AppServerThreadId = Environment.CurrentManagedThreadId,
-                AppServerUserAccountName = $"{Environment.UserDomainName}\\{Environment.UserName}",
-                AppServerWas64Bit = Environment.Is64BitOperatingSystem,
-                AppWas64Bit = Environment.Is64BitProcess,
-                MemoryUsage = currentProcess.PrivateMemorySize64
+                MemoryUsage = currentProcess.PrivateMemorySize64,
+
+                AppEnvironmentName = logEntryAppLevelConstantInfo.AppEnvironmentName,
+                ApplicationName = logEntryAppLevelConstantInfo.ApplicationName,
+                AppServerAppDomainName = logEntryAppLevelConstantInfo.AppServerAppDomainName,
+                AppServerName = logEntryAppLevelConstantInfo.AppServerName,
+                AppServerOSVersion = logEntryAppLevelConstantInfo.AppServerOSVersion,
+                AppServerProcessId = logEntryAppLevelConstantInfo.AppServerProcessId,
+                AppServerUserAccountName = logEntryAppLevelConstantInfo.AppServerUserAccountName,
+                AppServerWas64Bit = logEntryAppLevelConstantInfo.AppServerWas64Bit,
+                AppVersion = logEntryAppLevelConstantInfo.AppVersion,
+                AppWas64Bit = logEntryAppLevelConstantInfo.AppWas64Bit,
+                AppWasInDebugMode = logEntryAppLevelConstantInfo.AppWasInDebugMode
             };
 
             return logEntry;
