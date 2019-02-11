@@ -6,6 +6,7 @@ using Bit.ViewModel.Implementations;
 using Prism.Autofac;
 using Prism.Ioc;
 using Prism.Navigation;
+using Rg.Plugins.Popup.Services;
 using System;
 using System.Collections.Generic;
 using Xamarin.Forms;
@@ -86,7 +87,8 @@ namespace Bit
         {
             return new DefaultNavService
             {
-                PrismNavigationService = prismNavigationService
+                PrismNavigationService = prismNavigationService,
+                PopupNavigation = PopupNavigation.Instance
             };
         }
     }

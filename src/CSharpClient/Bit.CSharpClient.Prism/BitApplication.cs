@@ -19,6 +19,7 @@ using Rg.Plugins.Popup.Contracts;
 using Rg.Plugins.Popup.Services;
 using System;
 using System.Collections.Generic;
+using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using Xamarin.Essentials;
@@ -119,7 +120,11 @@ namespace Bit
             return Task.CompletedTask;
         }
 
-        public new INavService NavigationService => PrismNavigationService == null ? null : new DefaultNavService { PrismNavigationService = PrismNavigationService };
+        public new INavService NavigationService => PrismNavigationService == null ? null : new DefaultNavService
+        {
+            PrismNavigationService = PrismNavigationService,
+            PopupNavigation = PopupNavigation.Instance
+        };
 
         public static new BitApplication Current => (PrismApplicationBase.Current as BitApplication);
 
@@ -150,6 +155,11 @@ namespace Bit
 
         void RegisterPopupNavigationService(IContainerRegistry containerRegistry)
         {
+            typeof(PopupNavigation).GetField("_popupNavigation", BindingFlags.Static | BindingFlags.NonPublic).SetValue(null, new BitPopupNavigation
+            {
+                OriginalImplementation = PopupNavigation.Instance
+            });
+
             containerRegistry.RegisterInstance<IPopupNavigation>(PopupNavigation.Instance);
             containerRegistry.RegisterSingleton<IPageBehaviorFactory, PopupPageBehaviorFactory>();
             containerRegistry.Register<INavigationService, BitPopupPageNavigationService>(NavigationServiceName);

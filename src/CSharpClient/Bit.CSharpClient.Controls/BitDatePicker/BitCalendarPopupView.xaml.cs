@@ -1,5 +1,5 @@
 ﻿using NodaTime;
-using Rg.Plugins.Popup.Services;
+using Rg.Plugins.Popup.Extensions;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -56,7 +56,7 @@ namespace Bit.CSharpClient.Controls
             }
 
             if (AutoClose == true)
-                PopupNavigation.Instance.PopAsync();
+                Navigation.PopPopupAsync();
         }
 
         protected virtual void SyncViewWithViewModel()
@@ -77,7 +77,7 @@ namespace Bit.CSharpClient.Controls
             }
 
             if (AutoClose == true)
-                PopupNavigation.Instance.PopAsync();
+                Navigation.PopPopupAsync();
         }
 
         public virtual void CalcCurrentMonthDays()

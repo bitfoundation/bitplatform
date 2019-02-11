@@ -1,5 +1,6 @@
 ﻿using Bit.ViewModel.Contracts;
 using Prism.Navigation;
+using Rg.Plugins.Popup.Contracts;
 using Rg.Plugins.Popup.Services;
 using System;
 using System.Collections.Generic;
@@ -97,7 +98,7 @@ namespace Bit.ViewModel.Implementations
             if (!navigationResult.Success)
                 throw navigationResult.Exception;
 
-            await PopupNavigation.Instance.PopAllAsync(animate: false); // all popups which are not managed by prism's nav service.
+            await PopupNavigation.PopAllAsync(animate: false); // all popups which are not managed by prism's nav service.
         }
 
         public virtual async Task GoBackToAsync(string name, params (string, object)[] parameters)
@@ -130,6 +131,8 @@ namespace Bit.ViewModel.Implementations
         }
 
         public virtual INavigationService PrismNavigationService { get; set; }
+
+        public virtual IPopupNavigation PopupNavigation { get; set; }
 
         public virtual INavService AppNavService
         {

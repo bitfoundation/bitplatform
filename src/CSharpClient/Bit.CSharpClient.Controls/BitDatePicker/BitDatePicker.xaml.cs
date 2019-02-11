@@ -1,4 +1,5 @@
 ﻿using NodaTime;
+using Rg.Plugins.Popup.Extensions;
 using Rg.Plugins.Popup.Services;
 using System;
 using System.Collections.Generic;
@@ -30,7 +31,7 @@ namespace Bit.CSharpClient.Controls
 
         public virtual void OpenPopup()
         {
-            PopupNavigation.Instance.PushAsync(BitCalendarPopupView);
+            Navigation.PushPopupAsync(BitCalendarPopupView);
         }
 
         public virtual BitCalendarPopupView BitCalendarPopupView { get; protected set; }
