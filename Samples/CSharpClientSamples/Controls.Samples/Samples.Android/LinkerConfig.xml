@@ -1,0 +1,24 @@
+﻿<linker>
+  <assembly fullname="Bit.CSharpClient.Controls">
+    <type fullname="*" />
+  </assembly>
+  <assembly fullname="System.Core">
+    <type fullname="*" />
+  </assembly>
+  <assembly fullname="Rg.Plugins.Popup">
+    <type fullname="*" />
+  </assembly>
+  <assembly fullname="Samples">
+    <type fullname="*" />
+  </assembly>
+  <assembly fullname="mscorlib">
+    <type fullname="System.DateTime">
+      <method name="AddYears"></method>
+      <method name="AddMonths"></method>
+      <method name="AddDays"></method>
+      <method name="AddHours"></method>
+      <method name="AddMinutes"></method>
+      <method name="AddSeconds"></method>
+    </type>
+  </assembly>
+</linker>
