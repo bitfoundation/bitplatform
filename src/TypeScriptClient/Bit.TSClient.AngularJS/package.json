@@ -19,8 +19,8 @@
   ],
   "license": "MIT",
   "devDependencies": {
-    "@types/angular": "^1.6.53",
-    "@types/angular-material": "^1.1.63",
+    "@types/angular": "^1.6.54",
+    "@types/angular-material": "^1.1.64",
     "@types/angular-translate": "^2.16.0",
     "@types/jquery": "^3.3.29",
     "@types/kendo-ui": "^2019.1.0",

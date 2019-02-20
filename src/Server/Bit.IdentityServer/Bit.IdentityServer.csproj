@@ -32,7 +32,7 @@
     <PackageReference Include="Microsoft.Owin.Security.Google" Version="4.0.1" />
     <PackageReference Include="Microsoft.Owin.Security.MicrosoftAccount" Version="4.0.1" />
     <PackageReference Include="Microsoft.Owin.Security.Twitter" Version="4.0.1" />
-    <PackageReference Include="Owin.Security.Providers.LinkedIn" Version="2.25.0" />
+    <PackageReference Include="Owin.Security.Providers.LinkedIn" Version="2.26.0" />
     <PackageReference Include="SourceLink.Embed.AllSourceFiles" Version="2.8.3" PrivateAssets="all" />
     <PackageReference Include="SourceLink.Copy.PdbFiles" Version="2.8.3" PrivateAssets="All" />
     <PackageReference Include="System.DirectoryServices.AccountManagement" Version="4.5.0" />
