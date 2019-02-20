@@ -13,6 +13,7 @@ using Xamarin.Forms.Xaml;
 
 namespace Bit.CSharpClient.Controls
 {
+    [IgnoreMeInNavigationStatck]
     public partial class BitCalendarPopupView
     {
         public BitCalendarPopupView()
@@ -72,7 +73,7 @@ namespace Bit.CSharpClient.Controls
                 }
                 else
                 {
-                    day.IsSelected = day.LocalDate.ToDateTimeUnspecified() == SelectedDate.Value ? true : false;
+                    day.IsSelected = day.LocalDate.ToDateTimeUnspecified().Date == SelectedDate.Value.Date ? true : false;
                 }
             }
 
