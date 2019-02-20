@@ -3,54 +3,54 @@
     x:Class="Bit.CSharpClientSample.Views.LoginView"
     xmlns="http://xamarin.com/schemas/2014/forms"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-    xmlns:bitView="clr-namespace:Bit.View;assembly=Bit.CSharpClient.Prism"
+    xmlns:bit="https://bit-framework.com"
     xmlns:vm="clr-namespace:Bit.CSharpClientSample.ViewModels"
     x:DataType="vm:LoginViewModel"
     NavigationPage.HasNavigationBar="False">
     <ContentPage.Behaviors>
-        <bitView:AdaptiveBehavior Orientation="Portrait">
-            <bitView:SetPropertyAction Property="BackgroundColor" Value="LightGreen" />
-            <bitView:SetPropertyAction
+        <bit:AdaptiveBehavior Orientation="Portrait">
+            <bit:SetPropertyAction Property="BackgroundColor" Value="LightGreen" />
+            <bit:SetPropertyAction
                 TargetElement="{x:Reference Test}"
                 Property="BackgroundColor"
                 Value="LightGreen" />
-        </bitView:AdaptiveBehavior>
-        <bitView:AdaptiveBehavior Orientation="Landscape">
-            <bitView:SetPropertyAction Property="BackgroundColor" Value="LightBlue" />
-            <bitView:SetPropertyAction
+        </bit:AdaptiveBehavior>
+        <bit:AdaptiveBehavior Orientation="Landscape">
+            <bit:SetPropertyAction Property="BackgroundColor" Value="LightBlue" />
+            <bit:SetPropertyAction
                 TargetElement="{x:Reference Test}"
                 Property="BackgroundColor"
                 Value="LightBlue" />
-        </bitView:AdaptiveBehavior>
-        <bitView:AdaptiveBehavior MinWidth="600" MaxWidth="800">
-            <bitView:SetPropertyAction
+        </bit:AdaptiveBehavior>
+        <bit:AdaptiveBehavior MinWidth="600" MaxWidth="800">
+            <bit:SetPropertyAction
                 TargetElement="{x:Reference Test}"
                 Property="IsVisible"
                 Value="True" />
-        </bitView:AdaptiveBehavior>
-        <bitView:AdaptiveBehavior MinWidth="800" MaxWidth="1000">
-            <bitView:SetPropertyAction
+        </bit:AdaptiveBehavior>
+        <bit:AdaptiveBehavior MinWidth="800" MaxWidth="1000">
+            <bit:SetPropertyAction
                 TargetElement="{x:Reference Test}"
                 Property="IsVisible"
                 Value="True" />
-        </bitView:AdaptiveBehavior>
-        <bitView:AdaptiveBehavior MinWidth="1000" MaxWidth="1200">
-            <bitView:SetPropertyAction
+        </bit:AdaptiveBehavior>
+        <bit:AdaptiveBehavior MinWidth="1000" MaxWidth="1200">
+            <bit:SetPropertyAction
                 TargetElement="{x:Reference Test}"
                 Property="IsVisible"
                 Value="True" />
-        </bitView:AdaptiveBehavior>
-        <bitView:AdaptiveBehavior MinWidth="1200">
-            <bitView:SetPropertyAction
+        </bit:AdaptiveBehavior>
+        <bit:AdaptiveBehavior MinWidth="1200">
+            <bit:SetPropertyAction
                 TargetElement="{x:Reference Test}"
                 Property="IsVisible"
                 Value="False" />
-        </bitView:AdaptiveBehavior>
+        </bit:AdaptiveBehavior>
     </ContentPage.Behaviors>
 
     <StackLayout>
-        <Entry Text="{Binding UserName}" />
-        <Entry Text="{Binding Password}" />
+        <Entry Text="{Binding UserName}" ReturnType="Next" ReturnCommand="{bit:GoToNextViewCommand Next={x:Reference Password}}" />
+        <Entry x:Name="Password" Text="{Binding Password}" />
         <Button Command="{Binding LoginUsingCredentialsCommand}" Text="Login using credentials" />
         <Button Command="{Binding LoginUsingBrowserCommand}" Text="Login using Browser" />
         <Button Command="{Binding LoginUsingGooglePlusCommand}" Text="Login using Google" />
