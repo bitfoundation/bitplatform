@@ -111,7 +111,7 @@ namespace Bit.Tests.Api.Middlewares.Tests
                     .Objects.OfType<IScopeStatusManager>()
                     .Last();
 
-                A.CallTo(() => scopeStatusManager.MarkAsFailed("UnKnownError"))
+                A.CallTo(() => scopeStatusManager.MarkAsFailed("UnknownError"))
                             .MustHaveHappenedOnceExactly();
 
                 ILogger logger = TestDependencyManager.CurrentTestDependencyManager

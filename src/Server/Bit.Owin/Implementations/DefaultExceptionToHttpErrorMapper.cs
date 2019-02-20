@@ -28,7 +28,7 @@ namespace Bit.Owin.Implementations
         {
             exp = UnWrapException(exp);
 
-            string message = BitMetadataBuilder.UnKnownError;
+            string message = BitMetadataBuilder.UnknownError;
 
             if (IsKnownError(exp))
                 message = exp.Message;
@@ -42,7 +42,7 @@ namespace Bit.Owin.Implementations
         {
             exp = UnWrapException(exp);
 
-            string reasonPhrase = BitMetadataBuilder.UnKnownError;
+            string reasonPhrase = BitMetadataBuilder.UnknownError;
 
             if (IsKnownError(exp))
                 reasonPhrase = BitMetadataBuilder.KnownError;

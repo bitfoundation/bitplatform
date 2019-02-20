@@ -8,7 +8,7 @@ namespace Bit.Owin.Metadata
 {
     public class BitMetadataBuilder : DefaultProjectMetadataBuilder
     {
-        public static readonly string UnKnownError = nameof(UnKnownError);
+        public static readonly string UnknownError = nameof(UnknownError);
 
         public static readonly string ResourceNotFoundException = nameof(ResourceNotFoundException);
 
@@ -32,7 +32,7 @@ namespace Bit.Owin.Metadata
                         Name = "FaIr",
                         Values = new List<EnvironmentCultureValue>
                         {
-                            new EnvironmentCultureValue { Name = UnKnownError,Title = "خطای نامشخص" },
+                            new EnvironmentCultureValue { Name = UnknownError,Title = "خطای نامشخص" },
                             new EnvironmentCultureValue { Name = ResourceNotFoundException,Title = "موجودیت مورد نظر یافت نشد"},
                             new EnvironmentCultureValue { Name = DomainLogicException,Title = "خطای منطق" },
                             new EnvironmentCultureValue { Name = KnownError,Title = "خطای مشخص" },
@@ -45,7 +45,7 @@ namespace Bit.Owin.Metadata
                         Name = "EnUs",
                         Values = new List<EnvironmentCultureValue>
                         {
-                            new EnvironmentCultureValue { Name = UnKnownError,Title = "Unknown error" },
+                            new EnvironmentCultureValue { Name = UnknownError,Title = "Unknown error" },
                             new EnvironmentCultureValue { Name = ResourceNotFoundException,Title = "Resource not found"},
                             new EnvironmentCultureValue { Name = DomainLogicException,Title = "Domain logic error" },
                             new EnvironmentCultureValue { Name = KnownError,Title = "Known error" },

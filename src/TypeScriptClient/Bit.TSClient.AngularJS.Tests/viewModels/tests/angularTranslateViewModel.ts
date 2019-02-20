@@ -10,7 +10,7 @@
 
         @Command()
         public changeText(): void {
-            this.text = this.$translate.instant("UnKnownError");
+            this.text = this.$translate.instant("UnknownError");
         }
 
         @Command()

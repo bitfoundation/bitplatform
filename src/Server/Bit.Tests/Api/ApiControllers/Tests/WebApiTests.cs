@@ -61,7 +61,7 @@ namespace Bit.Tests.Api.ApiControllers.Tests
                     (await httpClient.GetAsync("api/v3/version-test/get-value")).EnsureSuccessStatusCode();
                     Assert.Fail();
                 }
-                catch (Exception ex) when (ex.Message == "Response status code does not indicate success: 400 (UnKnownError:Bad Request).")
+                catch (Exception ex) when (ex.Message == "Response status code does not indicate success: 400 (UnknownError:Bad Request).")
                 {
 
                 }
