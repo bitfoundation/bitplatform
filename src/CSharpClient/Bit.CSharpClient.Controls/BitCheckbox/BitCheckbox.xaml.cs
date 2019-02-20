@@ -69,6 +69,14 @@ namespace Bit.CSharpClient.Controls
             set { SetValue(IsCheckedChangedCommandProperty, value); }
         }
 
+        public static BindableProperty IsCheckedChangedCommandParameterProperty = BindableProperty.Create(nameof(IsCheckedChangedCommandParameter), typeof(object), typeof(BitCheckbox), defaultValue: null, defaultBindingMode: BindingMode.OneTime);
+
+        public object IsCheckedChangedCommandParameter
+        {
+            get { return GetValue(IsCheckedChangedCommandParameterProperty); }
+            set { SetValue(IsCheckedChangedCommandParameterProperty, value); }
+        }
+
         public static BindableProperty ShapeProperty = BindableProperty.Create(nameof(Shape), typeof(Shape), typeof(BitCheckbox), defaultValue: Shape.Native, defaultBindingMode: BindingMode.OneTime);
 
         public Shape Shape
@@ -90,8 +98,8 @@ namespace Bit.CSharpClient.Controls
 
                 checkbox.IsCheckedChanged?.Invoke(checkbox, new IsCheckChangedEventArgs { IsChecked = newValueAsBool });
 
-                if (checkbox.IsCheckedChangedCommand?.CanExecute(newValueAsBool) == true)
-                    checkbox.IsCheckedChangedCommand?.Execute(newValueAsBool);
+                if (checkbox.IsCheckedChangedCommand?.CanExecute(checkbox.IsCheckedChangedCommandParameter ?? newValueAsBool) == true)
+                    checkbox.IsCheckedChangedCommand?.Execute(checkbox.IsCheckedChangedCommandParameter ?? newValueAsBool);
             }
         });
 
