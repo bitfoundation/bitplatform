@@ -68,23 +68,23 @@
     <Reference Include="AutoMapper, Version=8.0.0.0, Culture=neutral, PublicKeyToken=be96cd2c38ef1005, processorArchitecture=MSIL">
       <HintPath>..\packages\AutoMapper.8.0.0\lib\net461\AutoMapper.dll</HintPath>
     </Reference>
-    <Reference Include="Bit.Core, Version=1.8.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Bit.Core.1.8.0\lib\net461\Bit.Core.dll</HintPath>
+    <Reference Include="Bit.Core, Version=1.9.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Bit.Core.1.9.0\lib\net461\Bit.Core.dll</HintPath>
     </Reference>
-    <Reference Include="Bit.Model, Version=1.8.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Bit.Model.1.8.0\lib\net461\Bit.Model.dll</HintPath>
+    <Reference Include="Bit.Model, Version=1.9.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Bit.Model.1.9.0\lib\net461\Bit.Model.dll</HintPath>
     </Reference>
-    <Reference Include="Bit.Owin, Version=1.8.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Bit.Owin.1.8.0\lib\net461\Bit.Owin.dll</HintPath>
+    <Reference Include="Bit.Owin, Version=1.9.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Bit.Owin.1.9.0\lib\net461\Bit.Owin.dll</HintPath>
     </Reference>
-    <Reference Include="Bit.WebApi, Version=1.8.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Bit.WebApi.1.8.0\lib\net461\Bit.WebApi.dll</HintPath>
+    <Reference Include="Bit.WebApi, Version=1.9.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Bit.WebApi.1.9.0\lib\net461\Bit.WebApi.dll</HintPath>
     </Reference>
     <Reference Include="Correlator, Version=1.1.0.0, Culture=neutral, PublicKeyToken=ad71b95c30d52163, processorArchitecture=MSIL">
       <HintPath>..\packages\WebApiCorrelator.1.1.0.0\lib\net452\Correlator.dll</HintPath>
     </Reference>
-    <Reference Include="IdentityModel, Version=3.10.5.0, Culture=neutral, PublicKeyToken=e7877f4675df049f, processorArchitecture=MSIL">
-      <HintPath>..\packages\IdentityModel.3.10.5\lib\net452\IdentityModel.dll</HintPath>
+    <Reference Include="IdentityModel, Version=3.10.6.0, Culture=neutral, PublicKeyToken=e7877f4675df049f, processorArchitecture=MSIL">
+      <HintPath>..\packages\IdentityModel.3.10.6\lib\net452\IdentityModel.dll</HintPath>
     </Reference>
     <Reference Include="Lambda2Js, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\Lambda2Js.3.1.2\lib\net40\Lambda2Js.dll</HintPath>
@@ -159,8 +159,8 @@
     <Reference Include="Swashbuckle.Core, Version=1.0.0.0, Culture=neutral, PublicKeyToken=cd1bb07a5ac7c7bc, processorArchitecture=MSIL">
       <HintPath>..\packages\Swashbuckle.Core.5.6.0\lib\net40\Swashbuckle.Core.dll</HintPath>
     </Reference>
-    <Reference Include="Swashbuckle.Examples, Version=3.11.0.0, Culture=neutral, PublicKeyToken=aa1e9c5053bfbe95, processorArchitecture=MSIL">
-      <HintPath>..\packages\Swashbuckle.Examples.3.11.0\lib\net40\Swashbuckle.Examples.dll</HintPath>
+    <Reference Include="Swashbuckle.Examples, Version=3.12.0.0, Culture=neutral, PublicKeyToken=aa1e9c5053bfbe95, processorArchitecture=MSIL">
+      <HintPath>..\packages\Swashbuckle.Examples.3.12.0\lib\net40\Swashbuckle.Examples.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.AppContext, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
@@ -268,7 +268,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Analyzer Include="..\packages\BitCodeAnalyzer.1.8.0\analyzers\dotnet\cs\BitCodeAnalyzer.dll" />
+    <Analyzer Include="..\packages\BitCodeAnalyzer.1.9.0\analyzers\dotnet\cs\BitCodeAnalyzer.dll" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

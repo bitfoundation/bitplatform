@@ -5,7 +5,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="BitCodeAnalyzer" Version="1.8.0" />
+    <PackageReference Include="BitCodeAnalyzer" Version="1.9.0" />
     <PackageReference Include="Prism.Autofac.Forms" Version="7.1.0.431" />
   </ItemGroup>
 
