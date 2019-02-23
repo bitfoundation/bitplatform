@@ -3,8 +3,8 @@
     x:Class="Bit.CSharpClient.Controls.Samples.MainPage"
     xmlns="http://xamarin.com/schemas/2014/forms"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-    xmlns:bit="https://bit-framework.com">
-    <bit:BitFrame
+    xmlns:bitControls="clr-namespace:Bit.CSharpClient.Controls;assembly=Bit.CSharpClient.Controls">
+    <bitControls:BitFrame
         Margin="10"
         BorderColor="LightGray"
         BorderWidth="2"
@@ -14,5 +14,5 @@
             <Button Clicked="Checkbox_Clicked" Text="Checkbox" />
             <Button Clicked="DatePicker_Clicked" Text="Date Picker" />
         </StackLayout>
-    </bit:BitFrame>
+    </bitControls:BitFrame>
 </ContentPage>

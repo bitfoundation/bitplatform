@@ -4,7 +4,7 @@
     xmlns="http://xamarin.com/schemas/2014/forms"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     xmlns:app="clr-namespace:Bit.CSharpClient.Controls.Samples"
-    xmlns:bit="https://bit-framework.com">
+    xmlns:bitControls="clr-namespace:Bit.CSharpClient.Controls;assembly=Bit.CSharpClient.Controls">
 
     <ContentPage.BindingContext>
         <app:BitRadioButtonSampleViewModel />
@@ -12,7 +12,7 @@
 
     <ContentPage.Resources>
         <ResourceDictionary>
-            <Style x:Key="BitRadioButtonStyles" TargetType="bit:BitRadioButton">
+            <Style x:Key="BitRadioButtonStyles" TargetType="bitControls:BitRadioButton">
                 <Setter Property="BorderColor" Value="HotPink" />
                 <Setter Property="InerCircleColor" Value="HotPink" />
                 <Setter Property="Value" Value="{Binding Person.Gender}" />
@@ -21,15 +21,15 @@
     </ContentPage.Resources>
 
     <StackLayout Padding="10">
-        <bit:BitRadioButton
+        <bitControls:BitRadioButton
             Key="{x:Static app:Gender.Man}"
             Style="{StaticResource BitRadioButtonStyles}"
             Text="Man" />
-        <bit:BitRadioButton
+        <bitControls:BitRadioButton
             Key="{x:Static app:Gender.Woman}"
             Style="{StaticResource BitRadioButtonStyles}"
             Text="Woman" />
-        <bit:BitRadioButton
+        <bitControls:BitRadioButton
             Key="{x:Static app:Gender.Other}"
             Style="{StaticResource BitRadioButtonStyles}"
             Text="Other" />
