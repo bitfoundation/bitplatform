@@ -7,9 +7,9 @@ using System.Collections.Immutable;
 namespace BitCodeAnalyzer.BitAnalyzers.ViewModel
 {
     [DiagnosticAnalyzer(LanguageNames.CSharp)]
-    public class UseINavServiceInsteadOfINavigationService : DiagnosticAnalyzer
+    public class UseINavServiceInsteadOfINavigationServiceAnalyzer : DiagnosticAnalyzer
     {
-        public const string DiagnosticId = nameof(UseINavServiceInsteadOfINavigationService);
+        public const string DiagnosticId = nameof(UseINavServiceInsteadOfINavigationServiceAnalyzer);
 
         public const string Title = "Use INavService instead of INavigationService";
         public const string Message = Title;

@@ -14,21 +14,21 @@ using System.Threading.Tasks;
 namespace BitCodeAnalyzer.Test.BitAnalyzers.ViewModel
 {
     [TestClass]
-    public class UseSubscribeAsyncInsteadOfSubscribeAnalyzerTests : DiagnosticVerifier
+    public class UseRegisterForNavInsteadOfRegisterForNavigationAnalyzerTests : DiagnosticVerifier
     {
         [TestMethod]
         [TestCategory("Analyzer")]
-        public async Task UseSubscribeAsyncInsteadOfSubscribeAnalyzerTest()
+        public async Task UseRegisterForNavInsteadOfRegisterForNavigationTest()
         {
-            DiagnosticResult subscribeUsage1 = new DiagnosticResult
+            DiagnosticResult registerForNavigationUsage1 = new DiagnosticResult
             {
-                Id = nameof(UseSubscribeAsyncInsteadOfSubscribeAnalyzer),
-                Message = UseSubscribeAsyncInsteadOfSubscribeAnalyzer.Message,
+                Id = nameof(UseRegisterForNavInsteadOfRegisterForNavigationAnalyzer),
+                Message = UseRegisterForNavInsteadOfRegisterForNavigationAnalyzer.Message,
                 Severity = DiagnosticSeverity.Error,
-                Locations = new[] { new DiagnosticResultLocation(Path.Combine(basePath, @"Tests.cs"), 11, 13) }
+                Locations = new[] { new DiagnosticResultLocation(Path.Combine(basePath, @"Tests.cs"), 18, 13) }
             };
 
-            await VerifyCSharpDiagnostic(subscribeUsage1);
+            await VerifyCSharpDiagnostic(registerForNavigationUsage1);
         }
 
         private readonly string basePath = new DirectoryInfo(Path.Combine(Environment.CurrentDirectory, @"..\..\..\BitAnalyzers\ViewModel\BitPrismTestsProj")).FullName;
@@ -50,7 +50,7 @@ namespace BitCodeAnalyzer.Test.BitAnalyzers.ViewModel
 
         protected override DiagnosticAnalyzer GetCSharpDiagnosticAnalyzer()
         {
-            return new UseSubscribeAsyncInsteadOfSubscribeAnalyzer();
+            return new UseRegisterForNavInsteadOfRegisterForNavigationAnalyzer();
         }
     }
 }

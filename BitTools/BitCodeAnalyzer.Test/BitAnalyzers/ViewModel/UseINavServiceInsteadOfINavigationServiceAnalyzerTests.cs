@@ -14,7 +14,7 @@ using System.Threading.Tasks;
 namespace BitCodeAnalyzer.Test.BitAnalyzers.ViewModel
 {
     [TestClass]
-    public class UseINavServiceInsteadOfINavigationServiceTests : DiagnosticVerifier
+    public class UseINavServiceInsteadOfINavigationServiceAnalyzerTests : DiagnosticVerifier
     {
         [TestMethod]
         [TestCategory("Analyzer")]
@@ -22,10 +22,10 @@ namespace BitCodeAnalyzer.Test.BitAnalyzers.ViewModel
         {
             DiagnosticResult navServiceUsage1 = new DiagnosticResult
             {
-                Id = nameof(UseINavServiceInsteadOfINavigationService),
-                Message = UseINavServiceInsteadOfINavigationService.Message,
+                Id = nameof(UseINavServiceInsteadOfINavigationServiceAnalyzer),
+                Message = UseINavServiceInsteadOfINavigationServiceAnalyzer.Message,
                 Severity = DiagnosticSeverity.Error,
-                Locations = new[] { new DiagnosticResultLocation(Path.Combine(basePath, @"Tests.cs"), 15, 13) }
+                Locations = new[] { new DiagnosticResultLocation(Path.Combine(basePath, @"Tests.cs"), 16, 13) }
             };
 
             await VerifyCSharpDiagnostic(navServiceUsage1);
@@ -50,7 +50,7 @@ namespace BitCodeAnalyzer.Test.BitAnalyzers.ViewModel
 
         protected override DiagnosticAnalyzer GetCSharpDiagnosticAnalyzer()
         {
-            return new UseINavServiceInsteadOfINavigationService();
+            return new UseINavServiceInsteadOfINavigationServiceAnalyzer();
         }
     }
 }
