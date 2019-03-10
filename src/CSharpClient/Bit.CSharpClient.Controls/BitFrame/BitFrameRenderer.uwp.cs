@@ -23,6 +23,11 @@ namespace Bit.CSharpClient.Controls.UWP
                 }
             }
         }
+
+        public static void Init()
+        {
+            
+        }
     }
 }
 #endif

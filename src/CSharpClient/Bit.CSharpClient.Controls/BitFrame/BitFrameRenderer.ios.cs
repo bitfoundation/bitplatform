@@ -11,6 +11,10 @@ namespace Bit.CSharpClient.Controls.iOS
 {
     public class BitFrameRenderer : FrameRenderer
     {
+        public static void Init()
+        {
+            
+        }
     }
 }
 

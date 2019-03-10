@@ -4,6 +4,7 @@ using Android.Content;
 using Android.Graphics.Drawables;
 using Bit.CSharpClient.Controls;
 using Bit.CSharpClient.Controls.Android;
+using System;
 using System.Reflection;
 using Xamarin.Forms;
 using Xamarin.Forms.Platform.Android;
@@ -17,6 +18,11 @@ namespace Bit.CSharpClient.Controls.Android
         public BitFrameRenderer(Context context)
             : base(context)
         {
+        }
+
+        public static void Init()
+        {
+            
         }
 
         protected override void OnElementChanged(ElementChangedEventArgs<Frame> e)
