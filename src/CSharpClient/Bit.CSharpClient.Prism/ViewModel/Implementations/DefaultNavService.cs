@@ -115,9 +115,9 @@ namespace Bit.ViewModel.Implementations
 
         public virtual async Task GoBackToAsync(string name, INavigationParameters parameters = null)
         {
-            await CurrentPageNavService.ClearPopupStackAsync(parameters); // TODO
+            await ClearPopupStackAsync(parameters); // TODO
 
-            string navigationStack = CurrentPageNavService.GetNavigationUriPath();
+            string navigationStack = GetNavigationUriPath();
             List<string> pagesInStack = navigationStack.Split('/').ToList();
             int timesToGoBack = (pagesInStack.Count - 1) - pagesInStack.IndexOf(name);
 
@@ -128,7 +128,7 @@ namespace Bit.ViewModel.Implementations
 
             string backUri = GenerateBackUri(timesToGoBack);
 
-            await CurrentPageNavService.NavigateAsync(backUri, parameters);
+            await NavigateAsync(backUri, parameters);
         }
 
         string GenerateBackUri(int timesToGoBack)
