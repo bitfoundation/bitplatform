@@ -1,6 +1,7 @@
 ﻿using Prism.Events;
 using Prism.Ioc;
 using Prism.Navigation;
+using Prism.Services;
 
 namespace BitPrismTestsProj
 {
@@ -15,6 +16,10 @@ namespace BitPrismTestsProj
             INavigationService navgationService = null;
 
             containerRegistry.RegisterForNavigation(typeof(object), string.Empty);
+
+            IDeviceService devService = null;
+
+            devService.BeginInvokeOnMainThread(() => { });
         }
     }
 
