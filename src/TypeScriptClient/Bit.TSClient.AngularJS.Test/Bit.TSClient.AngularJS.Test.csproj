@@ -6,24 +6,4 @@
     <ApplicationIcon />
     <StartupObject />
   </PropertyGroup>
-  <ItemGroup>
-    <None Remove="bit.ng1.test.d.ts" />
-    <None Remove="bit.ng1.test.js" />
-    <None Remove="bit.ng1.test.js.map" />
-    <None Remove="Implementations\testEnvironmentConfigurationAppEvents.ts" />
-    <None Remove="Implementations\uiAutomation.ts" />
-    <None Remove="testClient.ts" />
-    <None Remove="typings.d.ts" />
-    <None Remove="typings\declarations.d.ts" />
-  </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Properties\" />
-  </ItemGroup>
-  <ItemGroup>
-    <TypeScriptCompile Include="Implementations\testEnvironmentConfigurationAppEvents.ts" />
-    <TypeScriptCompile Include="Implementations\uiAutomation.ts" />
-    <TypeScriptCompile Include="testClient.ts" />
-    <TypeScriptCompile Include="typings.d.ts" />
-    <TypeScriptCompile Include="typings\declarations.d.ts" />
-  </ItemGroup>
 </Project>
