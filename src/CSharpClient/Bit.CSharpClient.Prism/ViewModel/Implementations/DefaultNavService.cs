@@ -38,7 +38,7 @@ namespace Bit.ViewModel.Implementations
 
         public virtual async Task GoBackAsync(INavigationParameters parameters = null)
         {
-            bool ignoreMeInNavStack = PopupNavigation.PopupStack.LastOrDefault()?.GetType().GetCustomAttribute<IgnoreMeInNavigationStatckAttribute>() != null;
+            bool ignoreMeInNavStack = PopupNavigation.PopupStack.LastOrDefault()?.GetType().GetCustomAttribute<IgnoreMeInNavigationStackAttribute>() != null;
 
             INavigationResult navigationResult = await PrismNavigationService.GoBackAsync(parameters, useModalNavigation: false, animated: false);
 

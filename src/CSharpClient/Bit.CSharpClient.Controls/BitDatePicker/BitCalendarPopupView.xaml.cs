@@ -13,7 +13,7 @@ using Xamarin.Forms.Xaml;
 
 namespace Bit.CSharpClient.Controls
 {
-    [IgnoreMeInNavigationStatck]
+    [IgnoreMeInNavigationStack]
     public partial class BitCalendarPopupView
     {
         public BitCalendarPopupView()

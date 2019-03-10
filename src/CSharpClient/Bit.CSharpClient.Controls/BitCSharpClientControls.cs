@@ -3,9 +3,8 @@
 namespace Bit
 {
     [AttributeUsage(AttributeTargets.Class, AllowMultiple = false)]
-    public sealed class IgnoreMeInNavigationStatckAttribute : Attribute
+    public sealed class IgnoreMeInNavigationStackAttribute : Attribute
     {
-
     }
 
     public static class BitCSharpClientControls
