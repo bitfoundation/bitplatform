@@ -4,6 +4,9 @@
     <OutputType>Exe</OutputType>
     <TargetFramework>net461</TargetFramework>
     <DisableMSBuildAssemblyCopyCheck>True</DisableMSBuildAssemblyCopyCheck>
+    <AssemblyVersion>0.0.0.1</AssemblyVersion>
+    <FileVersion>0.0.0.1</FileVersion>
+    <Version>0.0.1</Version>
   </PropertyGroup>
 
   <ItemGroup>
