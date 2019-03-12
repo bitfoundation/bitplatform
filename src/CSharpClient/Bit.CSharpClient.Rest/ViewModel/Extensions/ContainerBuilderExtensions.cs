@@ -29,7 +29,7 @@ namespace Prism.Ioc
             return containerBuilder;
         }
 
-        public static ContainerBuilder RegisterHttpClient<THttpMessageHandler>(this ContainerBuilder containerBuilder)
+        public static IHttpClientBuilder RegisterHttpClient<THttpMessageHandler>(this ContainerBuilder containerBuilder)
             where THttpMessageHandler : HttpMessageHandler, new()
         {
             if (containerBuilder == null)
@@ -51,25 +51,24 @@ namespace Prism.Ioc
 
             IServiceCollection services = (IServiceCollection)containerBuilder.Properties[nameof(services)];
 
-            services.AddHttpClient(ContractKeys.DefaultHttpClientName)
+            containerBuilder.Register(c => c.Resolve<IHttpClientFactory>().CreateClient(ContractKeys.DefaultHttpClientName))
+                .SingleInstance()
+                .PreserveExistingDefaults();
+
+            return services.AddHttpClient(ContractKeys.DefaultHttpClientName)
                 .ConfigureHttpClient((serviceProvider, httpClient) =>
                 {
                     httpClient.BaseAddress = serviceProvider.GetRequiredService<IClientAppProfile>().HostUri;
+                    httpClient.Timeout = Timeout.InfiniteTimeSpan;
                 })
                 .ConfigurePrimaryHttpMessageHandler((serviceProvider) =>
                 {
                     return serviceProvider.GetRequiredService<IContainer>().ResolveNamed<HttpMessageHandler>(ContractKeys.AuthenticatedHttpMessageHandler);
                 })
                 .SetHandlerLifetime(Timeout.InfiniteTimeSpan);
-
-            containerBuilder.Register(c => c.Resolve<IHttpClientFactory>().CreateClient(ContractKeys.DefaultHttpClientName))
-                .SingleInstance()
-                .PreserveExistingDefaults();
-
-            return containerBuilder;
         }
 
-        public static ContainerBuilder RegisterHttpClient(this ContainerBuilder containerBuilder)
+        public static IHttpClientBuilder RegisterHttpClient(this ContainerBuilder containerBuilder)
         {
             if (containerBuilder == null)
                 throw new ArgumentNullException(nameof(containerBuilder));
