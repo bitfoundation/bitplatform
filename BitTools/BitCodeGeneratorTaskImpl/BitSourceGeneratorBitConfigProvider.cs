@@ -1,7 +1,7 @@
 ﻿using BitCodeGenerator.Implementations;
 using Microsoft.CodeAnalysis;
 
-namespace BitCodeGeneratorTask
+namespace BitCodeGeneratorTaskImpl
 {
     public class BitSourceGeneratorBitConfigProvider : DefaultBitConfigProvider
     {

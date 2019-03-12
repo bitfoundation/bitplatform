@@ -31,27 +31,22 @@
   <ItemGroup>
     <Content Include="build\*" PackagePath="build\" />
     <Content Include="buildMultiTargeting\*" PackagePath="buildMultiTargeting\" />
-    <None Include="$(OutputPath)\BitCodeGenerator.dll" Pack="true" PackagePath="tasks" Visible="false" />
-    <None Include="$(OutputPath)\BitTools.Core.VSExtensionBuildVersion.dll" Pack="true" PackagePath="tasks" Visible="false" />
-    <None Include="$(OutputPath)\Microsoft.CodeAnalysis.Workspaces.Desktop.dll" Pack="true" PackagePath="tasks" Visible="false" />
-    <None Include="$(OutputPath)\Microsoft.CodeAnalysis.Workspaces.dll" Pack="true" PackagePath="tasks" Visible="false" />
-    <None Include="$(OutputPath)\Microsoft.CodeAnalysis.dll" Pack="true" PackagePath="tasks" Visible="false" />
-    <None Include="$(OutputPath)\System.Collections.Immutable.dll" Pack="true" PackagePath="tasks" Visible="false" />
-    <None Include="$(OutputPath)\Microsoft.CodeAnalysis.CSharp.dll" Pack="true" PackagePath="tasks" Visible="false" />
-    <None Include="$(OutputPath)\Microsoft.CodeAnalysis.CSharp.Workspaces.dll" Pack="true" PackagePath="tasks" Visible="false" />
-    <None Include="$(OutputPath)\System.Composition.TypedParts.dll" Pack="true" PackagePath="tasks" Visible="false" />
-    <None Include="$(OutputPath)\System.Composition.Hosting.dll" Pack="true" PackagePath="tasks" Visible="false" />
-    <None Include="$(OutputPath)\System.Composition.Runtime.dll" Pack="true" PackagePath="tasks" Visible="false" />
-    <None Include="$(OutputPath)\System.Composition.AttributedModel.dll" Pack="true" PackagePath="tasks" Visible="false" />
-    <None Include="$(OutputPath)\System.Reflection.Metadata.dll" Pack="true" PackagePath="tasks" Visible="false" />
-    <None Include="$(OutputPath)\Newtonsoft.Json.dll" Pack="true" PackagePath="tasks" Visible="false" />
+    
+    <None Include="$(OutputPath)\..\..\..\..\BitCodeGeneratorTaskImpl\bin\$(Configuration)\$(TargetFramework)\*.dll" Pack="true" PackagePath="implementation" Visible="false" />
+    
+    <!-- Remove large unused files -->
+    <None Remove="$(OutputPath)\..\..\..\..\BitCodeGeneratorTaskImpl\bin\$(Configuration)\$(TargetFramework)\Microsoft.CodeAnalysis.VisualBasic.*" />
+    <None Remove="$(OutputPath)\..\..\..\..\BitCodeGeneratorTaskImpl\bin\$(Configuration)\$(TargetFramework)\e_sqlite3.dll" />
+    <None Remove="$(OutputPath)\..\..\..\..\BitCodeGeneratorTaskImpl\bin\$(Configuration)\$(TargetFramework)\Microsoft.Build.dll" />
+    <None Remove="$(OutputPath)\..\..\..\..\BitCodeGeneratorTaskImpl\bin\$(Configuration)\$(TargetFramework)\System.Text.Encoding.CodePages.dll" />
+    
+    <None Include="$(OutputPath)\..\..\..\..\BitCodeGeneratorTaskImpl\bin\$(Configuration)\$(TargetFramework)\BitCodeGeneratorTaskImpl.exe" Pack="true" PackagePath="implementation" Visible="false" />
+    <None Include="$(OutputPath)\..\..\..\..\BitCodeGeneratorTaskImpl\bin\$(Configuration)\$(TargetFramework)\BitCodeGeneratorTaskImpl.exe.config" Pack="true" PackagePath="implementation" Visible="false" />
   </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Microsoft.Build.Utilities.Core" Version="14.3.0" PrivateAssets="All" />
-    <PackageReference Include="Microsoft.Build" Version="14.3.0" PrivateAssets="All" />
-    <PackageReference Include="Microsoft.CodeAnalysis" Version="1.2.2" PrivateAssets="All" />
-    <ProjectReference Include="..\BitCodeGenerator\BitCodeGenerator.csproj" PrivateAssets="All" />
+    <ProjectReference Include="..\BitCodeGeneratorTaskImpl\BitCodeGeneratorTaskImpl.csproj" PrivateAssets="All" />
   </ItemGroup>
 
 </Project>

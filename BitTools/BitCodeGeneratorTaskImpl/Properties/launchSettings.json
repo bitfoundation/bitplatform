@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "BitCodeGeneratorTaskImpl": {
+      "commandName": "Project",
+      "commandLineArgs": "-projectPath \"D:\\bit-foundation\\BitSampleApp\\SampleApp\\SampleApp.csproj\" -solutionPath \"D:\\bit-foundation\\BitSampleApp\\SampleApp.sln\""
+    }
+  }
+}

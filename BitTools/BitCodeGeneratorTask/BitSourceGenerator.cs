@@ -1,18 +1,8 @@
-﻿using BitCodeGenerator.Implementations;
-using BitCodeGenerator.Implementations.TypeScriptClientProxyGenerator;
-using BitTools.Core.Contracts;
-using BitTools.Core.Model;
-using Microsoft.Build.Construction;
-using Microsoft.Build.Framework;
-using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.MSBuild;
+﻿using Microsoft.Build.Framework;
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using System.Linq;
-using System.Reflection;
-using System.Threading.Tasks;
+using System.Threading;
 
 namespace BitCodeGeneratorTask
 {
@@ -20,112 +10,60 @@ namespace BitCodeGeneratorTask
     {
         public override bool Execute()
         {
+            Stopwatch sw = null;
+
             try
             {
-#if DEBUG
-                System.Diagnostics.Debugger.Launch();
-#endif
+                LogMessage($"Code generation started for project: {ProjectPath}");
 
-                LogMessage($"ProjectPath: {ProjectPath}");
+                sw = Stopwatch.StartNew();
 
-                if (SolutionPath == "*Undefined*") // dotnet build
+                using (AutoResetEvent outputWaitHandle = new AutoResetEvent(false))
+                using (AutoResetEvent errorWaitHandle = new AutoResetEvent(false))
                 {
-                    DirectoryInfo projDir = new DirectoryInfo(Path.GetDirectoryName(ProjectPath));
-
-                    while (projDir.Parent != null)
+                    using (Process bitCodeGeneratorImplProcess = new Process())
                     {
-                        string filePath = Path.Combine(projDir.FullName, "BitConfigV1.json");
-
-                        if (File.Exists(filePath))
+                        bitCodeGeneratorImplProcess.StartInfo.UseShellExecute = false;
+                        bitCodeGeneratorImplProcess.StartInfo.RedirectStandardOutput = bitCodeGeneratorImplProcess.StartInfo.RedirectStandardError = true;
+                        bitCodeGeneratorImplProcess.StartInfo.FileName = Path.Combine(Path.GetDirectoryName(typeof(BitSourceGenerator).Assembly.Location), "..",  @"implementation\BitCodeGeneratorTaskImpl.exe"); // Not supported on Mac/Linux at the moment.
+                        bitCodeGeneratorImplProcess.StartInfo.Arguments = $"-p {ProjectPath} -s {SolutionPath}";
+                        bitCodeGeneratorImplProcess.StartInfo.CreateNoWindow = true;
+                        bitCodeGeneratorImplProcess.StartInfo.WorkingDirectory = Path.GetDirectoryName(bitCodeGeneratorImplProcess.StartInfo.FileName);
+                        bitCodeGeneratorImplProcess.OutputDataReceived += (sender, e) =>
                         {
-                            SolutionPath = Directory.EnumerateFiles(projDir.FullName, "*.sln").FirstOrDefault();
-                            break;
-                        }
-
-                        projDir = projDir.Parent;
+                            if (e.Data != null)
+                                LogMessage(e.Data);
+                            else
+                                outputWaitHandle.Set();
+                        };
+                        bitCodeGeneratorImplProcess.ErrorDataReceived += (sender, e) =>
+                        {
+                            if (e.Data != null)
+                                LogError(e.Data, new Exception(e.Data));
+                            else
+                                errorWaitHandle.Set();
+                        };
+                        bitCodeGeneratorImplProcess.Start();
+                        bitCodeGeneratorImplProcess.BeginOutputReadLine();
+                        bitCodeGeneratorImplProcess.BeginErrorReadLine();
+                        bitCodeGeneratorImplProcess.WaitForExit();
+                        outputWaitHandle.WaitOne();
+                        errorWaitHandle.WaitOne();
                     }
                 }
 
-                LogMessage($"SolutionPath: {SolutionPath}");
-
-                MSBuildWorkspace workspace = MSBuildWorkspace.Create();
-
-                workspace.SkipUnrecognizedProjects = workspace.LoadMetadataForReferencedProjects = true;
-
-                workspace.WorkspaceFailed += MSBuildWorkspace_WorkspaceFailed;
-
-                workspace.OpenProjectAsync(ProjectPath).GetAwaiter().GetResult();
-
-                CallGenerateCodes(workspace, workspace.CurrentSolution.Projects.Single()).GetAwaiter().GetResult();
-            }
-            catch (ReflectionTypeLoadException exp)
-            {
-                foreach (Exception e in exp.LoaderExceptions)
-                {
-                    LogError(e.Message, e);
-                }
+                LogMessage($"Code Generation Completed in {sw.ElapsedMilliseconds} ms.");
             }
             catch (Exception exp)
             {
                 LogError(exp.Message, exp);
             }
-
-            return true;
-        }
-
-        private async Task CallGenerateCodes(MSBuildWorkspace workspace, Project beingCompiledProject)
-        {
-            Stopwatch sw = null;
-
-            try
-            {
-                sw = Stopwatch.StartNew();
-
-                IReadOnlyList<ProjectInSolution> allProjects = SolutionFile.Parse(SolutionPath).ProjectsInOrder;
-
-                BitSourceGeneratorBitConfigProvider bitConfigProvider = new BitSourceGeneratorBitConfigProvider(SolutionPath);
-
-                foreach (BitCodeGeneratorMapping mapping in bitConfigProvider.GetConfiguration(workspace).BitCodeGeneratorConfigs.BitCodeGeneratorMappings.Where(config => config.SourceProjects.Any(sp => sp.Name == beingCompiledProject.Name)))
-                {
-                    foreach (BitTools.Core.Model.ProjectInfo proj in mapping.SourceProjects)
-                    {
-                        if (workspace.CurrentSolution.Projects.Any(p => p.Name == proj.Name))
-                            continue; /*It's already loaded*/
-
-                        await workspace.OpenProjectAsync(allProjects.ExtendedSingle($"Trying to find source project {proj.Name}", p => p.ProjectName == proj.Name).AbsolutePath);
-                    }
-
-                    if (!workspace.CurrentSolution.Projects.Any(p => p.Name == mapping.DestinationProject.Name))
-                        await workspace.OpenProjectAsync(allProjects.ExtendedSingle($"Trying to find destination project {mapping.DestinationProject.Name}", p => p.ProjectName == mapping.DestinationProject.Name).AbsolutePath);
-                }
-
-                IProjectDtoControllersProvider controllersProvider = new DefaultProjectDtoControllersProvider();
-                IProjectDtosProvider dtosProvider = new DefaultProjectDtosProvider(controllersProvider);
-
-                DefaultTypeScriptClientProxyGenerator generator = new DefaultTypeScriptClientProxyGenerator(new DefaultBitCodeGeneratorOrderedProjectsProvider(),
-                    bitConfigProvider, dtosProvider
-                    , new DefaultTypeScriptClientProxyDtoGenerator(), new DefaultTypeScriptClientContextGenerator(), controllersProvider, new DefaultProjectEnumTypesProvider(controllersProvider, dtosProvider));
-
-                await generator.GenerateCodes(workspace);
-
-                LogMessage($"Code Generation Completed in {sw.ElapsedMilliseconds} ms using {workspace.GetType().Name}.");
-            }
-            catch (Exception ex)
-            {
-                LogError("Code Generation failed.", ex);
-                throw;
-            }
             finally
             {
                 sw?.Stop();
-                workspace.WorkspaceFailed -= MSBuildWorkspace_WorkspaceFailed;
             }
-        }
 
-        private void MSBuildWorkspace_WorkspaceFailed(object sender, WorkspaceDiagnosticEventArgs e)
-        {
-            if (e.Diagnostic.Kind == WorkspaceDiagnosticKind.Failure)
-                LogMessage(e.Diagnostic.Message);
+            return true;
         }
 
         private void LogMessage(string text)
