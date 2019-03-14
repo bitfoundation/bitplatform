@@ -12,6 +12,7 @@ namespace Bit.OwinCore.AspNetCore21Upgrade
                 .UseSetting(WebHostDefaults.DetailedErrorsKey, "true")
                 .UseKestrel(options =>
                 {
+                    options.AllowSynchronousIO = false;
                     options.AddServerHeader = false;
                 });
         }

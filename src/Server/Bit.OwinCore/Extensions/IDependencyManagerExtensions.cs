@@ -68,6 +68,24 @@ namespace Bit.Core.Contracts
         {
             dependencyManager.RegisterAspNetCoreMiddlewareUsing(aspNetCoreApp =>
             {
+                aspNetCoreApp.Use(async (context, next) =>
+                {
+                    if (context.Request.Path.HasValue)
+                    {
+                        string path = context.Request.Path.Value;
+
+                        if (path.StartsWith("/core", StringComparison.InvariantCultureIgnoreCase) || path.StartsWith("/signalr", StringComparison.InvariantCultureIgnoreCase) || path.EndsWith("$batch" , StringComparison.InvariantCultureIgnoreCase))
+                        {
+                            context.Features.GetType().GetProperty("AllowSynchronousIO")?.SetValue(context.Features, true);
+                        }
+                    }
+
+                    await next.Invoke();
+                });
+            });
+
+            dependencyManager.RegisterAspNetCoreMiddlewareUsing(aspNetCoreApp =>
+            {
                 aspNetCoreApp.UseMiddleware<AddAcceptCharsetToRequestHeadersIfNotAnyAspNetCoreMiddleware>();
             });
             dependencyManager.RegisterOwinMiddleware<AspNetCoreAutofacDependencyInjectionMiddlewareConfiguration>();
