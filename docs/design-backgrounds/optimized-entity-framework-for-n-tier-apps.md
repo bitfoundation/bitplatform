@@ -21,16 +21,16 @@ But when you apply those configurations, most repositories won't work properly a
 You're free to use your preferred repository, but let's take a look at some benchmarks: [You can find codes here](https://github.com/bit-foundation/bit-framework/tree/master/docs/src/EntityFrameworkOptimizedForNTierScenarios)
 
 ``` ini
-BenchmarkDotNet=v0.10.9, OS=Windows 10 Redstone 2 (10.0.15063)
-Processor=Intel Core i7-7700K CPU 4.20GHz (Kaby Lake), ProcessorCount=8
-  [Host]     : .NET Framework 4.7 (CLR 4.0.30319.42000), 64bit RyuJIT-v4.7.2101.1
+BenchmarkDotNet=v0.11.3, OS=Windows 10.0.17763.316 (1809/October2018Update/Redstone5)
+Intel Core i7-7700K CPU 4.20GHz (Kaby Lake), 1 CPU, 8 logical and 4 physical cores
+  [Host] : .NET Framework 4.7.2 (CLR 4.0.30319.42000), 64bit RyuJIT-v4.7.3324.0
 ```
 
- | Method             | Mean        | Error      | StdDev    |
- |--------------------|-------------|------------|-----------|
- | Return Empty list  | 505.5 μs    | 8.637 μs   | 8.079 μs  |
- | BitRepository      | 20.00 ms    | 0.3654 ms  | 0.3418 ms |
- | SharpRepository    | 1,965.27 ms | 38.8008 ms | 65.887 ms |
+ | Method             | Mean        | Error      | StdDev     |
+ |--------------------|-------------|------------|------------|
+ | Return Empty list  | 372.4 us    | 7.817 us   | 17.32 us   |
+ | BitRepository      | 36.38 ms    | 0.4320 ms  | 0.4041 ms  |
+ | SharpRepository    | 9,419.51 ms | 75.1165 ms | 62.7256 ms |
 
  
  [This script](https://github.com/bit-foundation/bit-framework/blob/master/docs/src/EntityFrameworkOptimizedForNTierScenarios/EntityFrameworkOptimizedForNTierScenarios/CreateTestDatabaseScript.sql) creates a database which has 10.000 customers, and each customer has 3 orders. As you can see in benchmarks, returning empty list is very fast. It's all about **micro seconds**. BitRepository has Mean with value (20.00 ms) which is acceptable as it's returning whole 10.000 customers in every request. And finally, you see Sharp repository's result which is about seconds! "It's not because of SharpRepository itself", it is because of the default configuration of entity framework.

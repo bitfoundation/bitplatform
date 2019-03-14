@@ -129,6 +129,15 @@ namespace EntityFrameworkOptimizedForNTierScenarios
         }
     }
 
+    public class CustomersEmptyListController : ApiController
+    {
+        [Route("customers/get-customers-empty")]
+        public List<Customer> GetCustomersByBitRepository()
+        {
+            return new List<Customer> { };
+        }
+    }
+
     #endregion
 
     public class RepositoriesBenchmarkTest
@@ -141,6 +150,9 @@ namespace EntityFrameworkOptimizedForNTierScenarios
 
         [Benchmark]
         public void SharpRepository() => client.GetAsync($"{baseAddress}/api/customers/get-customers-by-sharp-repository").GetAwaiter().GetResult().EnsureSuccessStatusCode();
+
+        [Benchmark]
+        public void EmptyList() => client.GetAsync($"{baseAddress}/api/customers/get-customers-empty").GetAwaiter().GetResult().EnsureSuccessStatusCode();
     }
 
     public class Program
