@@ -4,9 +4,9 @@
     <TargetFramework>netstandard2.0</TargetFramework>
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
     <GeneratePackageOnBuild Condition=" '$(Configuration)' == 'Release' ">true</GeneratePackageOnBuild>
-    <AssemblyVersion>0.0.0.1</AssemblyVersion>
-    <FileVersion>0.0.0.1</FileVersion>
-    <Version>0.0.1</Version>
+    <Version>$(Bit-Package-Version)</Version>
+    <AssemblyVersion>$(Bit-Assembly-Version)</AssemblyVersion>
+    <PackageVersion>$(Bit-Package-Version)</PackageVersion>
     <Authors>Bit Foundation</Authors>
     <Product>Bit Framework</Product>
     <Company>Bit Foundation</Company>

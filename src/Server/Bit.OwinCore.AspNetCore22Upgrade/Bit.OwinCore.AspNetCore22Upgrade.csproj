@@ -15,9 +15,9 @@
     <RepositoryUrl>https://github.com/bit-foundation/bit-framework</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <PackageReleaseNotes>https://github.com/bit-foundation/bit-framework/releases</PackageReleaseNotes>
-    <AssemblyVersion>0.0.0.1</AssemblyVersion>
-    <FileVersion>0.0.0.1</FileVersion>
-    <Version>0.0.1</Version>
+    <Version>$(Bit-Package-Version)</Version>
+    <AssemblyVersion>$(Bit-Assembly-Version)</AssemblyVersion>
+    <PackageVersion>$(Bit-Package-Version)</PackageVersion>
     <GeneratePackageOnBuild Condition=" '$(Configuration)' == 'Release' ">true</GeneratePackageOnBuild>
     <DocumentationFile>bin\$(Configuration)\$(TargetFramework)\$(AssemblyName).xml</DocumentationFile>
     <LangVersion>7.3</LangVersion>
