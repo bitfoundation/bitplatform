@@ -49,9 +49,10 @@ namespace BitCodeGeneratorTaskImpl
             }
             else
             {
-                InitProps(commandLineParser);
+                SolutionPath = commandLineParser.Object.SolutionPath;
+                ProjectPath = commandLineParser.Object.ProjectPath;
 
-                if (SolutionPath == "*Undefined*") // dotnet commands using portable msbuild of dotnet sdk-cli will pass solution name like that! But Visual Studio's msbuild passes solution path correctly!
+                if (SolutionPath == "*Undefined*" || SolutionPath == null) // dotnet commands using portable msbuild of dotnet sdk-cli will pass solution name like that! But Visual Studio's msbuild passes solution path correctly!
                 {
                     DirectoryInfo projDir = new DirectoryInfo(Path.GetDirectoryName(ProjectPath));
 
@@ -69,6 +70,8 @@ namespace BitCodeGeneratorTaskImpl
                     }
                 }
 
+                InitPropjects(commandLineParser);
+
                 MSBuildWorkspace workspace = MSBuildWorkspace.Create();
 
                 workspace.SkipUnrecognizedProjects = workspace.LoadMetadataForReferencedProjects = true;
@@ -79,10 +82,8 @@ namespace BitCodeGeneratorTaskImpl
             }
         }
 
-        static void InitProps(FluentCommandLineParser<BitCodeGeneratorTaskImplArgs> commandLineParser)
+        static void InitPropjects(FluentCommandLineParser<BitCodeGeneratorTaskImplArgs> commandLineParser)
         {
-            SolutionPath = commandLineParser.Object.SolutionPath;
-            ProjectPath = commandLineParser.Object.ProjectPath;
             SolutionProjects = SolutionFile.Parse(SolutionPath).ProjectsInOrder;
             ProjectName = SolutionProjects.ExtendedSingle($"Finding {ProjectPath}'s name in solution.", p => p.AbsolutePath == ProjectPath).ProjectName;
         }
