@@ -15,10 +15,13 @@ using Bit.Tests.Data.Implementations;
 using Bit.Tests.IdentityServer.Implementations;
 using Bit.Tests.Model.Implementations;
 using Bit.Tests.Properties;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.Extensions.DependencyInjection;
 using Swashbuckle.Application;
 using System.Collections.Generic;
 using System.Data.SqlClient;
+using System.IO.Compression;
 using System.Reflection;
 using System.Web.Http;
 
@@ -51,6 +54,20 @@ namespace Bit.Tests
             dependencyManager.RegisterAppEvents<InitialTestDataConfiguration>();
 
             dependencyManager.RegisterDefaultAspNetCoreApp();
+
+            services.AddResponseCompression(options =>
+            {
+                options.EnableForHttps = true;
+                options.Providers.Add<GzipCompressionProvider>();
+            }).Configure<GzipCompressionProviderOptions>(options =>
+            {
+                options.Level = CompressionLevel.Optimal;
+            });
+
+            dependencyManager.RegisterAspNetCoreMiddlewareUsing(aspNetCoreApp =>
+            {
+                aspNetCoreApp.UseResponseCompression();
+            });
 
             dependencyManager.RegisterAspNetCoreMiddleware<AspNetCoreStaticFilesMiddlewareConfiguration>();
             dependencyManager.RegisterMinimalAspNetCoreMiddlewares();
