@@ -4,8 +4,6 @@
     xmlns="http://xamarin.com/schemas/2014/forms"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     xmlns:bitView="clr-namespace:Bit.View;assembly=Bit.CSharpClient.Prism"
-    xmlns:vm="clr-namespace:Bit.CSharpClientSample.ViewModels"
-    x:DataType="vm:LoginViewModel"
     NavigationPage.HasNavigationBar="False">
     <ContentPage.Behaviors>
         <bitView:AdaptiveBehavior Orientation="Portrait">
