@@ -7,8 +7,8 @@ using Bit.Tests.Model.Dto;
 using Bit.ViewModel.Contracts;
 using Bit.ViewModel.Implementations;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Prism;
-using Prism.Autofac;
 using Prism.Events;
 using Prism.Ioc;
 using System;
@@ -61,7 +61,7 @@ namespace Bit.CSharpClientSample
 
             containerBuilder.Register<IClientAppProfile>(c => new DefaultClientAppProfile
             {
-                HostUri = new Uri("http://192.168.1.28/"),
+                HostUri = new Uri("http://192.168.1.215/"),
                 //HostUri = new Uri("http://127.0.0.1/"),
                 //HostUri = new Uri("http://10.0.2.2"),
                 OAuthRedirectUri = new Uri("Test://oauth2redirect"),
@@ -85,6 +85,13 @@ namespace Bit.CSharpClientSample
                     OfflineDtoSet = dbContext => dbContext.Set<TestCustomerDto>()
                 });
             });
+
+#if DEBUG
+            services.AddLogging(loggingBuilder =>
+            {
+                loggingBuilder.AddDebug();
+            });
+#endif
 
             base.RegisterTypes(containerRegistry, containerBuilder, services);
         }

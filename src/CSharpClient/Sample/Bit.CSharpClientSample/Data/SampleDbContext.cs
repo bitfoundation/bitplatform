@@ -10,7 +10,8 @@ namespace Bit.CSharpClientSample.Data
 {
     public class SampleDbContext : EfCoreDbContextBase
     {
-        public SampleDbContext(IDeviceService deviceService)
+        public SampleDbContext(DbContextOptions options, IDeviceService deviceService)
+            : base(options)
         {
             DeviceService = deviceService;
         }
