@@ -20,7 +20,7 @@
   "license": "MIT",
   "devDependencies": {
     "@types/angular": "^1.6.54",
-    "@types/angular-material": "^1.1.66",
+    "@types/angular-material": "^1.1.67",
     "@types/angular-translate": "^2.16.0",
     "@types/jquery": "^3.3.29",
     "@types/kendo-ui": "^2019.1.1",
@@ -30,7 +30,7 @@
   "optionalDependencies": {
     "angular-animate": "^1.7.8",
     "angular-aria": "^1.7.8",
-    "angular-material": "^1.1.13",
+    "angular-material": "^1.1.14",
     "angular-messages": "^1.7.8",
     "angular-translate": "^2.18.1",
     "jquery": "^3.3.1",
