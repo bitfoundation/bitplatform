@@ -7,6 +7,6 @@ You can use ASP.NET Core with Full .NET Framework 4.6.1+ or with .NET Core 3.0+
 
 By the abstraction we provide to you, **you develop no matter you choose ASP.NET Core, ASP.NET Traditional or ASP.NET Core with .NET Core.** You develop on ASP.NET Core the same way as you develop on ASP.NET Traditional. Only configurations between those platforms are different.
 
-We also watch your codes at realtime to inform you about common mistakes. For example, if you use some classes which are not part of ASP.NET Core / .NET Core, you'll see something like this:
+We also watch your code in real time to inform you about common mistakes. For example, if you use some classes which are not part of ASP.NET Core / .NET Core, you'll see something like this:
 
 ![](/assets/WarnAboutNonASPNETCoreCompatilbeCodeUsage.png)
