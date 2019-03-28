@@ -30,13 +30,10 @@ namespace Bit.OData.Serialization
 
         }
 
-        public DefaultODataActionCreateUpdateParameterDeserializer(System.Web.Http.Dependencies.IDependencyResolver dependencyResolver)
+        public DefaultODataActionCreateUpdateParameterDeserializer(IEnumerable<IStringCorrector> stringCorrectors)
             : base(ODataPayloadKind.Parameter)
         {
-            if (dependencyResolver == null)
-                throw new ArgumentNullException(nameof(dependencyResolver));
-
-            _stringCorrectorsConverters = new ODataJsonDeSerializerStringCorrector(dependencyResolver.GetServices(typeof(IStringCorrector).GetTypeInfo()).Cast<IStringCorrector>().ToArray());
+            _stringCorrectorsConverters = new ODataJsonDeSerializerStringCorrector(stringCorrectors.ToArray());
             _odataJsonDeserializerEnumConverter = new ODataJsonDeSerializerEnumConverter();
         }
 

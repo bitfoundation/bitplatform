@@ -6,7 +6,6 @@ using Bit.WebApi.Contracts;
 using Microsoft.AspNet.OData.Batch;
 using Microsoft.AspNet.OData.Builder;
 using Microsoft.AspNet.OData.Extensions;
-using Microsoft.AspNet.OData.Routing.Conventions;
 using Microsoft.OData;
 using Microsoft.OData.Edm;
 using Owin;
@@ -32,8 +31,6 @@ namespace Bit.OData
         public virtual System.Web.Http.Dependencies.IDependencyResolver WebApiDependencyResolver { get; set; }
         public virtual IODataModelBuilderProvider ODataModelBuilderProvider { get; set; }
         public virtual IWebApiOwinPipelineInjector WebApiOwinPipelineInjector { get; set; }
-        public virtual IContainerBuilder ContainerBuilder { get; set; }
-
         public virtual IApiAssembliesProvider ApiAssembliesProvider { get; set; }
 
         public virtual AppEnvironment AppEnvironment { get; set; }
@@ -64,7 +61,7 @@ namespace Bit.OData
 
             _server = new HttpServer(_webApiConfig);
 
-            _webApiConfig.UseCustomContainerBuilder(() => ContainerBuilder);
+            _webApiConfig.UseCustomContainerBuilder(() => (IContainerBuilder)WebApiDependencyResolver.GetService(typeof(IContainerBuilder)));
 
             var odataModulesAndAssembliesGroups = ApiAssembliesProvider.GetApiAssemblies()
                 .SelectMany(asm =>
@@ -98,16 +95,12 @@ namespace Bit.OData
 
                 _odataBatchHandler.ODataRouteName = routeName;
 
-                IEnumerable<IODataRoutingConvention> conventions = ODataRoutingConventions.CreateDefault();
-
                 IEdmModel edmModel = modelBuilder.GetEdmModel();
 
                 _webApiConfig.MapODataServiceRoute(routeName, odataModuleAndAssemblyGroup.Key, builder =>
                 {
-                    builder.AddService(ServiceLifetime.Singleton, sp => conventions);
                     builder.AddService(ServiceLifetime.Singleton, sp => edmModel);
                     builder.AddService(ServiceLifetime.Singleton, sp => _odataBatchHandler);
-                    builder.AddService(ServiceLifetime.Singleton, sp => WebApiDependencyResolver);
                 });
             }
 
