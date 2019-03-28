@@ -3,5 +3,5 @@
 	<uses-sdk android:minSdkVersion="15" android:targetSdkVersion="28" />
 	<uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
 	<uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
-	<application android:label="Bit.CSharpClientSample.Android"></application>
+	<application android:label="Bit.CSharpClientSample.Android" android:usesCleartextTraffic="true"></application>
 </manifest>
