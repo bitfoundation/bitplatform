@@ -2,7 +2,6 @@
 using BitCodeGenerator.Implementations.TypeScriptClientProxyGenerator;
 using BitTools.Core.Contracts;
 using BitTools.Core.Model;
-using Fclp;
 using Microsoft.Build.Construction;
 using Microsoft.Build.Locator;
 using Microsoft.CodeAnalysis;
@@ -15,13 +14,6 @@ using System.Threading.Tasks;
 
 namespace BitCodeGeneratorTaskImpl
 {
-    public class BitCodeGeneratorTaskImplArgs
-    {
-        public string SolutionPath { get; set; }
-
-        public string ProjectPath { get; set; }
-    }
-
     public class Program
     {
         public static async Task Main(string[] args)
@@ -31,61 +23,36 @@ namespace BitCodeGeneratorTaskImpl
             if (!MSBuildLocator.IsRegistered)
                 MSBuildLocator.RegisterDefaults();
 
-            FluentCommandLineParser<BitCodeGeneratorTaskImplArgs> commandLineParser = new FluentCommandLineParser<BitCodeGeneratorTaskImplArgs>();
+            SolutionPath = args[1];
+            ProjectPath = args[3];
 
-            commandLineParser.Setup(arg => arg.SolutionPath)
-                .As('s', "solutionPath")
-                .Required();
-
-            commandLineParser.Setup(arg => arg.ProjectPath)
-                .As('p', "projectPath")
-                .Required();
-
-            ICommandLineParserResult result = commandLineParser.Parse(args);
-
-            if (result.HasErrors == true)
+            if (SolutionPath == "*Undefined*") // dotnet commands using portable msbuild of dotnet sdk-cli will pass solution name like that! But Visual Studio's msbuild passes solution path correctly!
             {
-                throw new Exception(result.ErrorText);
-            }
-            else
-            {
-                SolutionPath = commandLineParser.Object.SolutionPath;
-                ProjectPath = commandLineParser.Object.ProjectPath;
+                DirectoryInfo projDir = new DirectoryInfo(Path.GetDirectoryName(ProjectPath));
 
-                if (SolutionPath == "*Undefined*" || SolutionPath == null) // dotnet commands using portable msbuild of dotnet sdk-cli will pass solution name like that! But Visual Studio's msbuild passes solution path correctly!
+                while (projDir.Parent != null)
                 {
-                    DirectoryInfo projDir = new DirectoryInfo(Path.GetDirectoryName(ProjectPath));
+                    string filePath = Path.Combine(projDir.FullName, "BitConfigV1.json");
 
-                    while (projDir.Parent != null)
+                    if (File.Exists(filePath))
                     {
-                        string filePath = Path.Combine(projDir.FullName, "BitConfigV1.json");
-
-                        if (File.Exists(filePath))
-                        {
-                            SolutionPath = Directory.EnumerateFiles(projDir.FullName, "*.sln").ExtendedSingleOrDefault($"Finding solution for project {ProjectName} {ProjectPath}");
-                            break;
-                        }
-
-                        projDir = projDir.Parent;
+                        SolutionPath = Directory.EnumerateFiles(projDir.FullName, "*.sln").ExtendedSingleOrDefault($"Finding solution for project {ProjectName} {ProjectPath}");
+                        break;
                     }
+
+                    projDir = projDir.Parent;
                 }
-
-                InitPropjects(commandLineParser);
-
-                MSBuildWorkspace workspace = MSBuildWorkspace.Create();
-
-                workspace.SkipUnrecognizedProjects = workspace.LoadMetadataForReferencedProjects = true;
-
-                workspace.WorkspaceFailed += MSBuildWorkspace_WorkspaceFailed;
-
-                await CallGenerateCodes(workspace, ProjectName);
             }
+
+            InitPropjects();
+
+            await CallGenerateCodes(beingCompiledProjectName: ProjectName);
         }
 
-        static void InitPropjects(FluentCommandLineParser<BitCodeGeneratorTaskImplArgs> commandLineParser)
+        static void InitPropjects()
         {
             SolutionProjects = SolutionFile.Parse(SolutionPath).ProjectsInOrder;
-            ProjectName = SolutionProjects.ExtendedSingle($"Finding {ProjectPath}'s name in solution.", p => p.AbsolutePath == ProjectPath).ProjectName;
+            ProjectName = SolutionProjects.ExtendedSingle($"Finding {ProjectPath}'s name in solution.", p => string.Equals(Path.GetFullPath(p.AbsolutePath), Path.GetFullPath(ProjectPath), StringComparison.InvariantCultureIgnoreCase)).ProjectName;
         }
 
         public static IReadOnlyList<ProjectInSolution> SolutionProjects { get; set; }
@@ -93,15 +60,19 @@ namespace BitCodeGeneratorTaskImpl
         public static string ProjectPath { get; set; }
         public static string ProjectName { get; set; }
 
-        static async Task CallGenerateCodes(MSBuildWorkspace workspace, string beingCompiledProjectName)
+        static async Task CallGenerateCodes(string beingCompiledProjectName)
         {
-            try
+            BitSourceGeneratorBitConfigProvider bitConfigProvider = new BitSourceGeneratorBitConfigProvider(SolutionPath, beingCompiledProjectName);
+
+            BitConfig bitConfig = bitConfigProvider.GetConfiguration();
+
+            using (MSBuildWorkspace workspace = MSBuildWorkspace.Create())
             {
-                BitSourceGeneratorBitConfigProvider bitConfigProvider = new BitSourceGeneratorBitConfigProvider(SolutionPath, beingCompiledProjectName);
+                workspace.SkipUnrecognizedProjects = workspace.LoadMetadataForReferencedProjects = true;
 
-                BitConfig bitConfig = bitConfigProvider.GetConfiguration(workspace);
+                workspace.WorkspaceFailed += MSBuildWorkspace_WorkspaceFailed;
 
-                foreach (BitCodeGeneratorMapping mapping in bitConfigProvider.GetConfiguration(workspace).BitCodeGeneratorConfigs.BitCodeGeneratorMappings)
+                foreach (BitCodeGeneratorMapping mapping in bitConfigProvider.GetConfiguration().BitCodeGeneratorConfigs.BitCodeGeneratorMappings)
                 {
                     foreach (BitTools.Core.Model.ProjectInfo proj in mapping.SourceProjects)
                     {
@@ -123,10 +94,6 @@ namespace BitCodeGeneratorTaskImpl
                     , new DefaultTypeScriptClientProxyDtoGenerator(), new DefaultTypeScriptClientContextGenerator(), controllersProvider, new DefaultProjectEnumTypesProvider(controllersProvider, dtosProvider));
 
                 await generator.GenerateCodes(workspace);
-            }
-            finally
-            {
-                workspace.WorkspaceFailed -= MSBuildWorkspace_WorkspaceFailed;
             }
         }
 

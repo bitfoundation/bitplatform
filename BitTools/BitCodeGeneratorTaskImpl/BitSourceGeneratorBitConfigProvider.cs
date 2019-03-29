@@ -16,12 +16,12 @@ namespace BitCodeGeneratorTaskImpl
             _beingCompiledProjectName = beingCompiledProjectName;
         }
 
-        public override string GetSolutionFilePath(Workspace workspace)
+        public override string GetSolutionFilePath(Workspace workspace = null)
         {
             return _solutionFilePath;
         }
 
-        public override BitConfig GetConfiguration(Workspace workspace)
+        public override BitConfig GetConfiguration(Workspace workspace = null)
         {
             BitConfig bitConfig = base.GetConfiguration(workspace);
 

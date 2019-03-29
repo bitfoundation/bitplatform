@@ -45,7 +45,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.Build.Utilities.Core" Version="14.3.0" PrivateAssets="All" />
     <ProjectReference Include="..\BitCodeGeneratorTaskImpl\BitCodeGeneratorTaskImpl.csproj" PrivateAssets="All" />
   </ItemGroup>
 
