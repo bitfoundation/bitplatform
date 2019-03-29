@@ -2,6 +2,7 @@
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
     <TypeScriptToolsVersion>3.3</TypeScriptToolsVersion>
+    <TypeScriptBuildMode>true</TypeScriptBuildMode>
     <OutputType>Library</OutputType>
     <ApplicationIcon />
     <StartupObject />

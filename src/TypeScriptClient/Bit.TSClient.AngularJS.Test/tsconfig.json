@@ -2,6 +2,7 @@
   "compileOnSave": true,
   "compilerOptions": {
     "allowUnreachableCode": true,
+    "composite": true,
     "charset": "utf8",
     "declaration": true,
     "diagnostics": false,
@@ -18,5 +19,8 @@
     "target": "es5",
     "typeRoots": [ "node_modules/@types", "../Bit.TSClient.Core/node_modules/@types", "../Bit.TSClient.AngularJS/node_modules/@types" ]
   },
+  "references": [
+    { "path": "../Bit.TSClient.AngularJS" }
+  ],
   "exclude": [ "bit.ng1.test.d.ts", "node_modules", "bin", "obj" ]
 }

@@ -1,6 +1,7 @@
 ﻿{
   "compileOnSave": true,
   "compilerOptions": {
+    "composite": true,
     "allowUnreachableCode": true,
     "charset": "utf8",
     "declaration": true,

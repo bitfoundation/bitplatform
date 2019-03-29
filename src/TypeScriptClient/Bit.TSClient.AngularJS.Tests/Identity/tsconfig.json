@@ -2,6 +2,7 @@
   "compileOnSave": true,
   "compilerOptions": {
     "allowUnreachableCode": true,
+    "composite": true,
     "declaration": true,
     "emitDecoratorMetadata": false,
     "experimentalDecorators": true,
@@ -16,5 +17,8 @@
     "removeComments": false,
     "skipLibCheck": true
   },
+  "references": [
+    { "path": "../../Bit.TSClient.AngularJS.Test" }
+  ],
   "exclude": [ "bit.identity.tests.d.ts", "node_modules", "bin", "obj" ]
 }
