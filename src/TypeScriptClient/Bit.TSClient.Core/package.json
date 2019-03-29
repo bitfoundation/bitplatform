@@ -23,7 +23,6 @@
     "@types/signalr": "^2.2.35"
   },
   "optionalDependencies": {
-    "@bit/encoder": "^1.0.0",
     "core-js": "^2.6.5",
     "decimal.js": "^10.1.1",
     "event-source-polyfill": "^1.0.5",

@@ -87,9 +87,4 @@ module Bit.Identity.Tests {
         name: "angular-translate",
         path: "bit-framework/src/TypeScriptClient/Bit.TSClient.AngularJS/node_modules/angular-translate/dist/angular-translate"
     });
-
-    dependencyManager.registerFileDependency({
-        name: "encoderjs",
-        path: "bit-framework/src/TypeScriptClient/Bit.TSClient.Core/node_modules/@bit/encoder/encoder"
-    });
 }
