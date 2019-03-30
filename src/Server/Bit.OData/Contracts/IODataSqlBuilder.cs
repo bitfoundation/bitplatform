@@ -1,10 +1,23 @@
-﻿using Microsoft.AspNet.OData.Query;
+﻿using Bit.Core.Contracts;
+using Microsoft.AspNet.OData.Query;
+using Microsoft.Owin;
 using System.Collections.Generic;
+using System.Net.Http;
 
 namespace Bit.OData.Contracts
 {
     public class ODataSqlQueryParts
     {
+        public static implicit operator ODataSqlQueryParts(ODataQueryOptions odataQuery)
+        {
+            IDependencyResolver dependencyResolver = odataQuery.Request.GetOwinContext().GetDependencyResolver();
+            IODataSqlBuilder odataSqlBuilder = dependencyResolver.Resolve<IODataSqlBuilder>();
+            ODataSqlQueryParts sqlParts = (ODataSqlQueryParts)odataSqlBuilder.GetType().GetMethod(nameof(IODataSqlBuilder.BuildSqlQueryParts))
+                .MakeGenericMethod(odataQuery.Context.ElementClrType)
+                .Invoke(odataSqlBuilder, new object[] { odataQuery });
+            return sqlParts;
+        }
+
         public string SelectionClause { get; set; }
 
         public string WhereClause { get; set; }
@@ -39,7 +52,7 @@ namespace Bit.OData.Contracts
     public interface IODataSqlBuilder
     {
         ODataSqlQueryParts BuildSqlQueryParts<TDto>(ODataQueryOptions<TDto> odataQuery)
-            where TDto : class;
+                    where TDto : class;
 
         ODataSqlQuery BuildSqlQuery<TDto>(ODataQueryOptions<TDto> queryOptions, string tableName)
             where TDto : class;
