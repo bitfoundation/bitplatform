@@ -75,7 +75,7 @@ namespace Bit.OData.Implementations
             var controllersWithDto = controllers
                 .Select(c => new
                 {
-                    DtoType = DtoMetadataWorkspace.Current.GetFinalDtoType(c.BaseType?.GetGenericArguments().ExtendedSingleOrDefault($"Finding dto in {c.Name}", t => DtoMetadataWorkspace.Current.IsDto(t.GetTypeInfo())).GetTypeInfo()),
+                    DtoType = DtoMetadataWorkspace.Current.GetFinalDtoType(c.BaseType?.GetGenericArguments().ExtendedSingle($"Finding dto in {c.Name}", t => DtoMetadataWorkspace.Current.IsDto(t.GetTypeInfo())).GetTypeInfo()),
                     Controller = c
                 })
                 .Where(c => c.DtoType != null)
