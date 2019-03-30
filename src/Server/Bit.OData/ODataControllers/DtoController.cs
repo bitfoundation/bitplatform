@@ -117,10 +117,7 @@ namespace Bit.OData.ODataControllers
     {
         protected virtual ODataQueryOptions<TDto> GetODataQueryOptions()
         {
-            HttpRequestMessageProperties requestODataProps = Request.ODataProperties();
-            ODataQueryContext currentOdataQueryContext = new ODataQueryContext(Request.GetModel(), typeof(TDto).GetTypeInfo(), requestODataProps.Path);
-            ODataQueryOptions<TDto> currentOdataQueryOptions = new ODataQueryOptions<TDto>(currentOdataQueryContext, Request);
-            return currentOdataQueryOptions;
+            return Request.GetODataQueryOptions<TDto>();
         }
     }
 }
