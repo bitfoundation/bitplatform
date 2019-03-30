@@ -36,6 +36,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\Bit.CSharpClient.Signalr\Bit.CSharpClient.Signalr.csproj" />
     <ProjectReference Include="..\..\Bit.CSharpClient.Sync\Bit.CSharpClient.Sync.csproj" />
   </ItemGroup>
 

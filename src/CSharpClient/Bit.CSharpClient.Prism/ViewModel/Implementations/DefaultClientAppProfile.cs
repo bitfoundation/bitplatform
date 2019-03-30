@@ -18,5 +18,7 @@ namespace Bit.ViewModel.Implementations
         public virtual string LoginEndpoint { get; set; } = "InvokeLogin";
 
         public virtual string LogoutEndpint { get; set; } = "InvokeLogout";
+
+        public virtual string SignalrEndpint { get; set; } = "signalr";
     }
 }

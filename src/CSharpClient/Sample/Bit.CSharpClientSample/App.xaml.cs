@@ -93,6 +93,8 @@ namespace Bit.CSharpClientSample
             });
 #endif
 
+            containerBuilder.RegisterSignalr();
+
             base.RegisterTypes(containerRegistry, containerBuilder, services);
         }
     }

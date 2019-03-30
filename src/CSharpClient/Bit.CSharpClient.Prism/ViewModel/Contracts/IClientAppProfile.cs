@@ -17,5 +17,7 @@ namespace Bit.ViewModel.Contracts
         string LoginEndpoint { get; set; }
 
         string LogoutEndpint { get; set; }
+
+        string SignalrEndpint { get; set; }
     }
 }
