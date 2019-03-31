@@ -60,7 +60,6 @@ namespace Bit.ViewModel.Implementations
                 _hubConnection.ConnectionSlow += OnConnectionSlow;
                 _hubConnection.Reconnected += OnReconnected;
                 _hubConnection.Closed += OnClosed;
-                _hubConnection.Reconnected += OnReconnected;
                 _hubConnection.Reconnecting += OnReconnecting;
                 _hubConnection.StateChanged += OnStateChanged;
 
