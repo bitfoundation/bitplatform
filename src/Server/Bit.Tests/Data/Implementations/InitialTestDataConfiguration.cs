@@ -107,8 +107,8 @@ namespace Bit.Tests.Data.Implementations
                     dbContext.TestModels.Add(_testModel);
                     dbContext.ParentEntities.AddRange(_parentEntities);
 
-                    TestCity city = new TestCity { Id = Guid.Parse("EF529174-C497-408B-BB4D-C31C205D46BB"), Name = "TestCity" };
-                    TestCustomer customer = new TestCustomer { Id = Guid.Parse("28E1FF65-DA41-4FA3-8AEB-5196494B407D"), City = city, CityId = city.Id, Name = "TestCustomer" };
+                    TestCity city = new TestCity { Id = Guid.Parse("EF529174-C497-408B-BB4D-C31C205D46BB"), Name = "TestCity", Version = DateTimeOffset.UtcNow.Ticks };
+                    TestCustomer customer = new TestCustomer { Id = Guid.Parse("28E1FF65-DA41-4FA3-8AEB-5196494B407D"), City = city, CityId = city.Id, Name = "TestCustomer", Version = DateTimeOffset.UtcNow.Ticks };
 
                     dbContext.TestCities.Add(city);
                     dbContext.TestCustomers.Add(customer);

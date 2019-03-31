@@ -21,6 +21,8 @@ namespace Bit.Tests.Model.Dto
 
         public virtual long Version { get; set; }
 
+        public virtual long CityVersion { get; set; }
+
         public virtual bool IsArchived { get; set; }
 
         public virtual TestCustomerKind Kind { get; set; }
