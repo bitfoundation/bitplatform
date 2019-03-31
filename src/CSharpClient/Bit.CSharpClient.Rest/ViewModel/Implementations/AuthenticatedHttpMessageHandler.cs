@@ -22,10 +22,13 @@ namespace Bit.ViewModel.Implementations
 
         protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {
-            Token token = await _securityService.GetCurrentTokenAsync(cancellationToken).ConfigureAwait(false);
+            if (request.Headers.Authorization != null)
+            {
+                Token token = await _securityService.GetCurrentTokenAsync(cancellationToken).ConfigureAwait(false);
 
-            if (token != null)
-                request.Headers.Authorization = new AuthenticationHeaderValue(token.token_type, token.access_token);
+                if (token != null)
+                    request.Headers.Authorization = new AuthenticationHeaderValue(token.token_type, token.access_token);
+            }
 
             HttpResponseMessage response = await base.SendAsync(request, cancellationToken).ConfigureAwait(false);
 
