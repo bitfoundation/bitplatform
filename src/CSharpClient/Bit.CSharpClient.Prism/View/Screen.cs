@@ -2,6 +2,7 @@
 using Prism.Ioc;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
@@ -239,7 +240,7 @@ namespace Bit.View
             }
             else if (destinationType == typeof(string))
             {
-                return Convert.ToString(input);
+                return Convert.ToString(input, CultureInfo.InvariantCulture);
             }
             else if (destinationType == typeof(bool))
             {
