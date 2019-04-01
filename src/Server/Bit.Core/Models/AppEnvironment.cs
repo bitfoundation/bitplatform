@@ -64,6 +64,14 @@ namespace Bit.Core.Models
                 return value;
         }
 
+        public virtual T GetConfig<T>(string configKey, Func<T> defaultValueOnNotFoundProvider)
+        {
+            if (!TryGetConfig(configKey, out T value))
+                return defaultValueOnNotFoundProvider();
+            else
+                return value;
+        }
+
         public virtual string GetHostVirtualPath()
         {
             return GetConfig("HostVirtualPath", "/");
