@@ -38,8 +38,8 @@ namespace Bit.Hangfire.Implementations
             MemoryStorage storage = new MemoryStorage();
 
             typeof(BackgroundJob)
-                .GetField("CachedClient", BindingFlags.NonPublic | BindingFlags.Static)
-                .SetValue(null, new Lazy<IBackgroundJobClient>(() => new BackgroundJobClient()));
+                .GetProperty("ClientFactory", BindingFlags.NonPublic | BindingFlags.Static)
+                .SetValue(null, new Func<IBackgroundJobClient>(() => new BackgroundJobClient()));
 
             JobStorage.Current = storage;
             GlobalConfiguration.Configuration.UseStorage(storage);
