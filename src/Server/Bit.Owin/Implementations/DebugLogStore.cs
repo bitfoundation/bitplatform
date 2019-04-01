@@ -14,13 +14,13 @@ namespace Bit.Owin.Implementations
         public virtual void SaveLog(LogEntry logEntry)
         {
             if (Debugger.IsAttached)
-                Debug.WriteLine(Formatter.Serialize(logEntry) + Environment.NewLine);
+                Debug.WriteLine(Formatter.Serialize(logEntry.ToDictionary()) + Environment.NewLine);
         }
 
         public virtual Task SaveLogAsync(LogEntry logEntry)
         {
             if (Debugger.IsAttached)
-                Debug.WriteLine(Formatter.Serialize(logEntry) + Environment.NewLine);
+                Debug.WriteLine(Formatter.Serialize(logEntry.ToDictionary()) + Environment.NewLine);
             return Task.CompletedTask;
         }
     }

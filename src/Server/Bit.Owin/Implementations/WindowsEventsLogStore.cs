@@ -38,7 +38,7 @@ namespace Bit.Owin.Implementations
                 else
                     eventLogsSeverity = EventLogEntryType.Error;
 
-                string logContents = ContentFormatter.Serialize(logEntry);
+                string logContents = ContentFormatter.Serialize(logEntry.ToDictionary());
 
                 if (logContents.Length >= 30000)
                     logContents = logContents.Substring(0, 29999);

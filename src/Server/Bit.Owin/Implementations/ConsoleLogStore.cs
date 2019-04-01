@@ -28,7 +28,7 @@ namespace Bit.Owin.Implementations
                         break;
                 }
 
-                Console.WriteLine(Formatter.Serialize(logEntry) + Environment.NewLine);
+                Console.WriteLine(Formatter.Serialize(logEntry.ToDictionary()) + Environment.NewLine);
             }
             finally
             {
