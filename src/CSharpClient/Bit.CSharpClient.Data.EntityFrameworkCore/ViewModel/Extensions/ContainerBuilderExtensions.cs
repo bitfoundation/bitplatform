@@ -1,11 +1,9 @@
-﻿using Autofac;
-using Bit.Data;
+﻿using Bit.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using System;
-using System.Reflection;
 
-namespace Prism.Ioc
+namespace Autofac
 {
     public static class ContainerBuilderExtensions
     {

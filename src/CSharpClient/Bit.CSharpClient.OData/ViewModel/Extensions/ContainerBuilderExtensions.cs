@@ -1,10 +1,9 @@
-﻿using Autofac;
-using Bit.ViewModel.Contracts;
+﻿using Bit.ViewModel.Contracts;
 using Simple.OData.Client;
 using System;
 using System.Net.Http;
 
-namespace Prism.Ioc
+namespace Autofac
 {
     public static class ContainerBuilderExtensions
     {

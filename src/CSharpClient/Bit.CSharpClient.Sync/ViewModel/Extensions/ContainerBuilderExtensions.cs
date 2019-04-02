@@ -1,9 +1,8 @@
-﻿using Autofac;
-using Bit.ViewModel.Contracts;
+﻿using Bit.ViewModel.Contracts;
 using Bit.ViewModel.Implementations;
 using System;
 
-namespace Prism.Ioc
+namespace Autofac
 {
     public static class ContainerBuilderExtensions
     {
