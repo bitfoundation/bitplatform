@@ -173,7 +173,7 @@ namespace Bit.Test.Server
         {
             return RestService.For<TService>(BuildHttpClient(token), new RefitSettings
             {
-                JsonSerializerSettings = DefaultJsonContentFormatter.SerializeSettings()
+                ContentSerializer = new JsonContentSerializer(DefaultJsonContentFormatter.SerializeSettings())
             });
         }
     }
