@@ -1,9 +1,9 @@
-﻿using Autofac;
-using Bit.ViewModel.Contracts;
+﻿using Bit.ViewModel.Contracts;
 using Bit.ViewModel.Implementations;
 using Microsoft.Extensions.DependencyInjection;
 using Polly;
 using Prism.Events;
+using Refit;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,10 +11,37 @@ using System.Net;
 using System.Net.Http;
 using System.Threading;
 
-namespace Prism.Ioc
+namespace Autofac
 {
     public static class ContainerBuilderExtensions
     {
+        public static ContainerBuilder RegisterRefitClient(this ContainerBuilder containerBuilder)
+        {
+            if (containerBuilder == null)
+                throw new ArgumentNullException(nameof(containerBuilder));
+
+            containerBuilder.RegisterType<BitRefitJsonContentSerializer>() // This needs to be registered once, but using current approach it will be registered multiple times, but this is fine!
+                .As<IContentSerializer>()
+                .SingleInstance()
+                .PropertiesAutowired()
+                .PreserveExistingDefaults();
+
+            return containerBuilder;
+        }
+
+        public static ContainerBuilder RegisterRefitService<TService>(this ContainerBuilder containerBuilder)
+        {
+            if (containerBuilder == null)
+                throw new ArgumentNullException(nameof(containerBuilder));
+
+            containerBuilder.Register(c => RestService.For<TService>(c.Resolve<HttpClient>(), new RefitSettings
+            {
+                ContentSerializer = c.Resolve<IContentSerializer>()
+            }));
+
+            return containerBuilder;
+        }
+
         public static ContainerBuilder RegisterIdentityClient(this ContainerBuilder containerBuilder)
         {
             if (containerBuilder == null)
