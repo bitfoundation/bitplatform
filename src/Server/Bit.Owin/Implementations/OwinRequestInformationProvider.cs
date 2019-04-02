@@ -141,15 +141,11 @@ namespace Bit.Owin.Implementations
             protected set => throw new InvalidOperationException();
         }
 
-        private string _currentTimeZone;
-
         public virtual string CurrentTimeZone
         {
             get => GetHeaderValue("Current-Time-Zone");
             protected set => throw new InvalidOperationException();
         }
-
-        private string _desiredTimeZone;
 
         public virtual string DesiredTimeZone
         {
