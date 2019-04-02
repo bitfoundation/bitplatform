@@ -73,6 +73,8 @@ namespace Bit.CSharpClientSample
             containerBuilder.RegisterHttpClient();
             containerBuilder.RegisterODataClient();
             containerBuilder.RegisterIdentityClient();
+            containerBuilder.RegisterRefitClient();
+            containerBuilder.RegisterRefitService<ISimpleApi>();
 
             containerBuilder.RegisterDbContext<SampleDbContext>();
 

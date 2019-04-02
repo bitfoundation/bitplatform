@@ -5,13 +5,21 @@ using Bit.ViewModel;
 using Bit.ViewModel.Contracts;
 using Microsoft.EntityFrameworkCore;
 using Prism.Navigation;
+using Refit;
 using Simple.OData.Client;
 using System;
 using System.Net.Http;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Bit.CSharpClientSample.ViewModels
 {
+    public interface ISimpleApi
+    {
+        [Post("/api/customers/some-action")]
+        Task<TestCustomerDto> SomeAction(TestCustomerDto customer, CancellationToken cancellationToken);
+    }
+
     public class MainViewModel : BitViewModelBase
     {
         public SampleDbContext DbContext { get; set; }
@@ -19,9 +27,11 @@ namespace Bit.CSharpClientSample.ViewModels
         public IODataClient ODataClient { get; set; }
         public HttpClient HttpClient { get; set; }
         public ISecurityService SecurityService { get; set; }
+        public ISimpleApi SimpleApi { get; set; }
 
         public BitDelegateCommand SyncCommand { get; set; }
         public BitDelegateCommand SendHttpRequestCommand { get; set; }
+        public BitDelegateCommand SendRefitRequestCommand { get; set; }
         public BitDelegateCommand SendODataRequestCommand { get; set; }
         public BitDelegateCommand LogoutCommand { get; set; }
         public BitDelegateCommand ShowPopupCommand { get; set; }
@@ -30,6 +40,7 @@ namespace Bit.CSharpClientSample.ViewModels
         {
             SyncCommand = new BitDelegateCommand(Sync);
             SendHttpRequestCommand = new BitDelegateCommand(SendHttpRequest);
+            SendRefitRequestCommand = new BitDelegateCommand(SendRefitRequest);
             SendODataRequestCommand = new BitDelegateCommand(SendODataRequest);
             LogoutCommand = new BitDelegateCommand(Logout);
             ShowPopupCommand = new BitDelegateCommand(ShowPopup);
@@ -79,6 +90,11 @@ namespace Bit.CSharpClientSample.ViewModels
             using (HttpResponseMessage response = await HttpClient.GetAsync("odata/Test/parentEntities"))
             {
             }
+        }
+
+        async Task SendRefitRequest()
+        {
+            TestCustomerDto customer = await SimpleApi.SomeAction(new TestCustomerDto { Id = Guid.NewGuid(), Name = "Test" }, CancellationToken.None);
         }
 
         async Task SendODataRequest()

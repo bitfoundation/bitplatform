@@ -15,7 +15,8 @@
     </NavigationPage.TitleView>
     <StackLayout>
         <Button Command="{Binding SyncCommand}" Text="Sync" />
-        <Button Command="{Binding SendHttpRequestCommand}" Text="Send http request" />
+        <Button Command="{Binding SendHttpRequestCommand}" Text="Send Http request" />
+        <Button Command="{Binding SendRefitRequestCommand}" Text="Send Refit request" />
         <Button Command="{Binding SendODataRequestCommand}" Text="Send OData request" />
         <Button Command="{Binding LogoutCommand}" Text="Logout" />
         <Button Command="{Binding ShowPopupCommand}" Text="Show popup" />
