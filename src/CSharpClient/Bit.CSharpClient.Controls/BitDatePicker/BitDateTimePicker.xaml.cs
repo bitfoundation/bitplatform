@@ -1,6 +1,5 @@
 ﻿using NodaTime;
 using Rg.Plugins.Popup.Extensions;
-using Rg.Plugins.Popup.Services;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -9,9 +8,9 @@ using Xamarin.Forms;
 
 namespace Bit.CSharpClient.Controls
 {
-    public partial class BitDatePicker
+    public partial class BitDateTimePicker
     {
-        public BitDatePicker()
+        public BitDateTimePicker()
         {
             InitializeComponent();
 
@@ -21,9 +20,10 @@ namespace Bit.CSharpClient.Controls
             BitCalendarPopupView.SetBinding(BitCalendarPopupView.CalendarSystemProperty, new Binding(nameof(CalendarSystem), source: this));
             BitCalendarPopupView.SetBinding(BitCalendarPopupView.SelectedColorProperty, new Binding(nameof(SelectedColor), source: this));
             BitCalendarPopupView.SetBinding(BitCalendarPopupView.TodayColorProperty, new Binding(nameof(TodayColor), source: this));
-            BitCalendarPopupView.SetBinding(BitCalendarPopupView.SelectedDateProperty, new Binding(nameof(SelectedDate), source: this));
+            BitCalendarPopupView.SetBinding(BitCalendarPopupView.SelectedDateTimeProperty, new Binding(nameof(SelectedDateTime), source: this));
             BitCalendarPopupView.SetBinding(BitCalendarPopupView.FontFamilyProperty, new Binding(nameof(FontFamily), source: this));
             BitCalendarPopupView.SetBinding(BitCalendarPopupView.AutoCloseProperty, new Binding(nameof(AutoClose), source: this));
+            BitCalendarPopupView.SetBinding(BitCalendarPopupView.ShowTimePickerProperty, new Binding(nameof(ShowTimePicker), source: this));
             BitCalendarPopupView.SetBinding(FlowDirectionProperty, new Binding(nameof(FlowDirection), source: this));
 
             OpenPopupCommand = new Command(OpenPopup);
@@ -37,7 +37,7 @@ namespace Bit.CSharpClient.Controls
         public virtual BitCalendarPopupView BitCalendarPopupView { get; protected set; }
         public virtual ICommand OpenPopupCommand { get; protected set; }
 
-        public static BindableProperty CultureProperty = BindableProperty.Create(nameof(Culture), typeof(CultureInfo), typeof(BitDatePicker), defaultValue: CultureInfo.CurrentUICulture, defaultBindingMode: BindingMode.OneWay);
+        public static BindableProperty CultureProperty = BindableProperty.Create(nameof(Culture), typeof(CultureInfo), typeof(BitDateTimePicker), defaultValue: CultureInfo.CurrentUICulture, defaultBindingMode: BindingMode.OneWay);
         [TypeConverter(typeof(StringToCultureInfoConverter))]
         public virtual CultureInfo Culture
         {
@@ -45,53 +45,53 @@ namespace Bit.CSharpClient.Controls
             set { SetValue(CultureProperty, value); }
         }
 
-        public static BindableProperty CalendarSystemProperty = BindableProperty.Create(nameof(CalendarSystem), typeof(CalendarSystem), typeof(BitDatePicker), defaultValue: CalendarSystem.Gregorian, defaultBindingMode: BindingMode.OneWay);
+        public static BindableProperty CalendarSystemProperty = BindableProperty.Create(nameof(CalendarSystem), typeof(CalendarSystem), typeof(BitDateTimePicker), defaultValue: CalendarSystem.Gregorian, defaultBindingMode: BindingMode.OneWay);
         public virtual CalendarSystem CalendarSystem
         {
             get { return (CalendarSystem)GetValue(CalendarSystemProperty); }
             set { SetValue(CalendarSystemProperty, value); }
         }
 
-        public static readonly BindableProperty FontFamilyProperty = BindableProperty.Create(nameof(FontFamily), typeof(string), typeof(BitDatePicker), defaultValue: null, defaultBindingMode: BindingMode.OneWay);
+        public static readonly BindableProperty FontFamilyProperty = BindableProperty.Create(nameof(FontFamily), typeof(string), typeof(BitDateTimePicker), defaultValue: null, defaultBindingMode: BindingMode.OneWay);
         public virtual string FontFamily
         {
             get { return (string)GetValue(FontFamilyProperty); }
             set { SetValue(FontFamilyProperty, value); }
         }
 
-        public static BindableProperty SelectedDateProperty = BindableProperty.Create(nameof(SelectedDate), typeof(DateTime?), typeof(BitDatePicker), defaultValue: null, defaultBindingMode: BindingMode.TwoWay, propertyChanged: (sender, oldValue, newValue) =>
+        public static BindableProperty SelectedDateTimeProperty = BindableProperty.Create(nameof(SelectedDateTime), typeof(DateTime?), typeof(BitDateTimePicker), defaultValue: null, defaultBindingMode: BindingMode.TwoWay, propertyChanged: (sender, oldValue, newValue) =>
         {
-            BitDatePicker BitDatePicker = (BitDatePicker)sender;
-            BitDatePicker.RaiseDisplayTextChanged();
+            BitDateTimePicker dateTimePicker = (BitDateTimePicker)sender;
+            dateTimePicker.RaiseDisplayTextChanged();
         });
-        public virtual DateTime? SelectedDate
+        public virtual DateTime? SelectedDateTime
         {
-            get { return (DateTime?)GetValue(SelectedDateProperty); }
-            set { SetValue(SelectedDateProperty, value); }
+            get { return (DateTime?)GetValue(SelectedDateTimeProperty); }
+            set { SetValue(SelectedDateTimeProperty, value); }
         }
 
-        public static BindableProperty TodayColorProperty = BindableProperty.Create(nameof(TodayColor), typeof(Color), typeof(BitDatePicker), defaultValue: Color.DeepPink, defaultBindingMode: BindingMode.OneWay);
+        public static BindableProperty TodayColorProperty = BindableProperty.Create(nameof(TodayColor), typeof(Color), typeof(BitDateTimePicker), defaultValue: Color.DeepPink, defaultBindingMode: BindingMode.OneWay);
         public virtual Color TodayColor
         {
             get { return (Color)GetValue(TodayColorProperty); }
             set { SetValue(TodayColorProperty, value); }
         }
 
-        public static BindableProperty SelectedColorProperty = BindableProperty.Create(nameof(SelectedColor), typeof(Color), typeof(BitDatePicker), defaultValue: Color.DeepPink, defaultBindingMode: BindingMode.OneWay);
+        public static BindableProperty SelectedColorProperty = BindableProperty.Create(nameof(SelectedColor), typeof(Color), typeof(BitDateTimePicker), defaultValue: Color.DeepPink, defaultBindingMode: BindingMode.OneWay);
         public virtual Color SelectedColor
         {
             get { return (Color)GetValue(SelectedColorProperty); }
             set { SetValue(SelectedColorProperty, value); }
         }
 
-        public static readonly BindableProperty DateDisplayFormatProperty = BindableProperty.Create(nameof(DateDisplayFormat), typeof(string), typeof(BitDatePicker), defaultValue: null, defaultBindingMode: BindingMode.OneWay);
-        public virtual string DateDisplayFormat
+        public static readonly BindableProperty DateTimeDisplayFormatProperty = BindableProperty.Create(nameof(DateTimeDisplayFormat), typeof(string), typeof(BitDateTimePicker), defaultValue: null, defaultBindingMode: BindingMode.OneWay);
+        public virtual string DateTimeDisplayFormat
         {
-            get { return (string)GetValue(DateDisplayFormatProperty); }
-            set { SetValue(DateDisplayFormatProperty, value); }
+            get { return (string)GetValue(DateTimeDisplayFormatProperty); }
+            set { SetValue(DateTimeDisplayFormatProperty, value); }
         }
 
-        public static BindableProperty AutoCloseProperty = BindableProperty.Create(nameof(AutoClose), typeof(bool), typeof(BitDatePicker), defaultValue: false, defaultBindingMode: BindingMode.OneWay);
+        public static BindableProperty AutoCloseProperty = BindableProperty.Create(nameof(AutoClose), typeof(bool), typeof(BitDateTimePicker), defaultValue: false, defaultBindingMode: BindingMode.OneWay);
         public virtual bool AutoClose
         {
             get { return (bool)GetValue(AutoCloseProperty); }
@@ -99,6 +99,13 @@ namespace Bit.CSharpClient.Controls
         }
 
         public virtual string Text { get; set; }
+
+        public static BindableProperty ShowTimePickerProperty = BindableProperty.Create(nameof(ShowTimePicker), typeof(bool), typeof(BitCalendarPopupView), defaultValue: true, defaultBindingMode: BindingMode.OneWay);
+        public virtual bool ShowTimePicker
+        {
+            get { return (bool)GetValue(ShowTimePickerProperty); }
+            set { SetValue(ShowTimePickerProperty, value); }
+        }
 
         protected void RaiseDisplayTextChanged()
         {
@@ -109,11 +116,13 @@ namespace Bit.CSharpClient.Controls
         {
             get
             {
-                if (SelectedDate != null)
+                if (SelectedDateTime != null)
                 {
-                    return new LocalDate(SelectedDate.Value.Year, SelectedDate.Value.Month, SelectedDate.Value.Day, CalendarSystem.Gregorian)
+                    DateTime selectedDateTime = SelectedDateTime.Value;
+                    return new LocalDateTime(selectedDateTime.Year, selectedDateTime.Month, selectedDateTime.Day, selectedDateTime.Hour, selectedDateTime.Minute, selectedDateTime.Second, CalendarSystem.Gregorian)
                          .WithCalendar(CalendarSystem)
-                         .ToString(DateDisplayFormat ?? Culture.DateTimeFormat.ShortDatePattern, Culture);
+                         .ToDateTimeUnspecified()
+                         .ToString(DateTimeDisplayFormat ?? Culture.DateTimeFormat.FullDateTimePattern, Culture);
                 }
                 else
                 {

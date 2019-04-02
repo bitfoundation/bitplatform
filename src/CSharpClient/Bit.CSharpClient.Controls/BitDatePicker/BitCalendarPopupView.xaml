@@ -4,9 +4,11 @@
     xmlns="http://xamarin.com/schemas/2014/forms"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     xmlns:bitControls="clr-namespace:Bit.CSharpClient.Controls"
-    xmlns:pages="clr-namespace:Rg.Plugins.Popup.Pages;assembly=Rg.Plugins.Popup">
+    xmlns:pages="clr-namespace:Rg.Plugins.Popup.Pages;assembly=Rg.Plugins.Popup" x:Name="This">
 
     <pages:PopupPage.Resources>
+
+        <bitControls:DateTimeToTimeSpanConverter x:Key="DateTimeToTimeSpanConverter" />
 
         <Style TargetType="bitControls:BitCalendarPopupView">
             <Setter Property="ControlTemplate">
@@ -32,8 +34,17 @@
                                 <Setter Property="Margin" Value="0,1" />
                             </Style>
 
+                            <Style TargetType="TimePicker">
+                                <Setter Property="BackgroundColor" Value="WhiteSmoke" />
+                                <Setter Property="FontFamily" Value="{Binding FontFamily}" />
+                                <Setter Property="FontSize" Value="Micro" />
+                                <Setter Property="Margin" Value="5" />
+                                <Setter Property="IsVisible" Value="{Binding ShowTimePicker}" />
+                                <Setter Property="Time" Value="{Binding SelectedDateTime, Converter={x:StaticResource DateTimeToTimeSpanConverter}, ConverterParameter={x:Reference This}}" />
+                            </Style>
+
                             <Style BaseResourceKey="DefaultBitCalendarDayViewStyle" TargetType="bitControls:BitCalendarDayView">
-                                <Setter Property="SelectDateCommand" Value="{Binding SelectDateCommand}" />
+                                <Setter Property="SelectDateCommand" Value="{Binding SelectDateTimeCommand}" />
                                 <Setter Property="FontFamily" Value="{Binding FontFamily}" />
                                 <Setter Property="SelectedColor" Value="{Binding SelectedColor}" />
                                 <Setter Property="TodayColor" Value="{Binding TodayColor}" />
@@ -300,6 +311,8 @@
                                 Grid.Column="6"
                                 Day="{Binding Days[41]}" />
                         </Grid>
+
+                        <TimePicker />
 
                     </StackLayout>
                 </ControlTemplate>
