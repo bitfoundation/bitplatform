@@ -1,9 +1,8 @@
-﻿using Autofac;
-using Bit.ViewModel.Contracts;
+﻿using Bit.ViewModel.Contracts;
 using Bit.ViewModel.Implementations;
 using System;
 
-namespace Prism.Ioc
+namespace Autofac
 {
     public static class ContainerBuilderExtensions
     {
@@ -12,7 +11,16 @@ namespace Prism.Ioc
             if (containerBuilder == null)
                 throw new ArgumentNullException(nameof(containerBuilder));
 
-            containerBuilder.RegisterType<DefaultDateTimeProvider>().As<IDateTimeProvider>().SingleInstance().PreserveExistingDefaults();
+            containerBuilder.RegisterType<DefaultDateTimeProvider>()
+                .As<IDateTimeProvider>()
+                .SingleInstance()
+                .PreserveExistingDefaults();
+
+            containerBuilder.RegisterType<DefaultJsonContentFormatter>()
+                .As<IContentFormatter>()
+                .SingleInstance()
+                .PropertiesAutowired()
+                .PreserveExistingDefaults();
 
             return containerBuilder;
         }
