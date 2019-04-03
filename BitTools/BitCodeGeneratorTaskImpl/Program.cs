@@ -1,4 +1,5 @@
 ﻿using BitCodeGenerator.Implementations;
+using BitCodeGenerator.Implementations.CSharpClientProxyGenerator;
 using BitCodeGenerator.Implementations.TypeScriptClientProxyGenerator;
 using BitTools.Core.Contracts;
 using BitTools.Core.Model;
@@ -7,7 +8,6 @@ using Microsoft.Build.Locator;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.MSBuild;
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -16,53 +16,57 @@ namespace BitCodeGeneratorTaskImpl
 {
     public class Program
     {
+        public const string BitConfigFileName = "BitConfig.json";
+
         public static async Task Main(string[] args)
         {
-            Console.WriteLine("Bit Code Generator implementation started...");
-
             if (!MSBuildLocator.IsRegistered)
                 MSBuildLocator.RegisterDefaults();
 
-            SolutionPath = args[1];
-            ProjectPath = args[3];
+            ProjectPath = args.ElementAt(1);
 
-            if (SolutionPath == "*Undefined*") // dotnet commands using portable msbuild of dotnet sdk-cli will pass solution name like that! But Visual Studio's msbuild passes solution path correctly!
+            DirectoryInfo projDir = new DirectoryInfo(Path.GetDirectoryName(ProjectPath));
+
+            while (projDir.Parent != null)
             {
-                DirectoryInfo projDir = new DirectoryInfo(Path.GetDirectoryName(ProjectPath));
+                SolutionPaths = SolutionPaths.Union(Directory.EnumerateFiles(projDir.FullName, "*.sln")).ToArray();
 
-                while (projDir.Parent != null)
-                {
-                    string filePath = Path.Combine(projDir.FullName, "BitConfigV1.json");
+                _bitConfigFilePath = Path.Combine(projDir.FullName, BitConfigFileName);
 
-                    if (File.Exists(filePath))
-                    {
-                        SolutionPath = Directory.EnumerateFiles(projDir.FullName, "*.sln").ExtendedSingleOrDefault($"Finding solution for project {ProjectName} {ProjectPath}");
-                        break;
-                    }
+                if (File.Exists(_bitConfigFilePath))
+                    break;
 
-                    projDir = projDir.Parent;
-                }
+                projDir = projDir.Parent;
             }
+
+            BeingCompiledProjectName = Path.GetFileNameWithoutExtension(ProjectPath);
 
             InitPropjects();
 
-            await CallGenerateCodes(beingCompiledProjectName: ProjectName);
+            await GenerateCodes();
         }
 
         static void InitPropjects()
         {
-            SolutionProjects = SolutionFile.Parse(SolutionPath).ProjectsInOrder;
-            ProjectName = SolutionProjects.ExtendedSingle($"Finding {ProjectPath}'s name in solution.", p => string.Equals(Path.GetFullPath(p.AbsolutePath), Path.GetFullPath(ProjectPath), StringComparison.InvariantCultureIgnoreCase)).ProjectName;
+            if (string.IsNullOrEmpty(_bitConfigFilePath))
+                throw new BitConfigNotFoundException("Could not find bit config");
+
+            foreach (string solutionPath in SolutionPaths)
+            {
+                AllProjectsPaths = AllProjectsPaths.Union(SolutionFile.Parse(solutionPath).ProjectsInOrder.Select(p => Path.GetFullPath(p.AbsolutePath))).ToArray();
+            }
         }
 
-        public static IReadOnlyList<ProjectInSolution> SolutionProjects { get; set; }
-        public static string SolutionPath { get; set; }
+        public static string[] AllProjectsPaths { get; set; } = new string[] { };
+        public static string[] SolutionPaths { get; set; } = new string[] { };
         public static string ProjectPath { get; set; }
-        public static string ProjectName { get; set; }
+        public static string BeingCompiledProjectName { get; set; }
 
-        static async Task CallGenerateCodes(string beingCompiledProjectName)
+        private static string _bitConfigFilePath;
+
+        static async Task GenerateCodes()
         {
-            BitSourceGeneratorBitConfigProvider bitConfigProvider = new BitSourceGeneratorBitConfigProvider(SolutionPath, beingCompiledProjectName);
+            BitSourceGeneratorBitConfigProvider bitConfigProvider = new BitSourceGeneratorBitConfigProvider(_bitConfigFilePath, BeingCompiledProjectName);
 
             BitConfig bitConfig = bitConfigProvider.GetConfiguration();
 
@@ -79,21 +83,30 @@ namespace BitCodeGeneratorTaskImpl
                         if (workspace.CurrentSolution.Projects.Any(p => p.Name == proj.Name))
                             continue; /*It's already loaded*/
 
-                        await workspace.OpenProjectAsync(SolutionProjects.ExtendedSingle($"Trying to find source project {proj.Name}", p => p.ProjectName == proj.Name).AbsolutePath);
+                        string sourceProjetctPath = proj.Name == BeingCompiledProjectName ? ProjectPath : (AllProjectsPaths ?? throw new InvalidOperationException($"There is no solution project and we're unsable to find {proj.Name}")).ExtendedSingle($"Trying to find source project {proj.Name}", projPath => Path.GetFileNameWithoutExtension(projPath) == proj.Name);
+
+                        await workspace.OpenProjectAsync(sourceProjetctPath);
                     }
 
                     if (!workspace.CurrentSolution.Projects.Any(p => p.Name == mapping.DestinationProject.Name))
-                        await workspace.OpenProjectAsync(SolutionProjects.ExtendedSingle($"Trying to find destination project {mapping.DestinationProject.Name}", p => p.ProjectName == mapping.DestinationProject.Name).AbsolutePath);
+                    {
+                        string DestProjetctPath = mapping.DestinationProject.Name == BeingCompiledProjectName ? ProjectPath : (AllProjectsPaths ?? throw new InvalidOperationException($"There is no solution project and we're unsable to find {mapping.DestinationProject.Name}")).ExtendedSingle($"Trying to find destination project {mapping.DestinationProject.Name}", projPath => Path.GetFileNameWithoutExtension(projPath) == mapping.DestinationProject.Name);
+                        await workspace.OpenProjectAsync(DestProjetctPath);
+                    }
                 }
 
                 IProjectDtoControllersProvider controllersProvider = new DefaultProjectDtoControllersProvider();
                 IProjectDtosProvider dtosProvider = new DefaultProjectDtosProvider(controllersProvider);
 
-                DefaultTypeScriptClientProxyGenerator generator = new DefaultTypeScriptClientProxyGenerator(new DefaultBitCodeGeneratorOrderedProjectsProvider(),
+                DefaultTypeScriptClientProxyGenerator tsGenerator = new DefaultTypeScriptClientProxyGenerator(new DefaultBitCodeGeneratorOrderedProjectsProvider(),
                     bitConfigProvider, dtosProvider
                     , new DefaultTypeScriptClientProxyDtoGenerator(), new DefaultTypeScriptClientContextGenerator(), controllersProvider, new DefaultProjectEnumTypesProvider(controllersProvider, dtosProvider));
 
-                await generator.GenerateCodes(workspace);
+                await tsGenerator.GenerateCodes(workspace);
+
+                DefaultCSharpClientProxyGenerator csGenerator = new DefaultCSharpClientProxyGenerator(bitConfigProvider);
+
+                await csGenerator.GenerateCodes(workspace);
             }
         }
 

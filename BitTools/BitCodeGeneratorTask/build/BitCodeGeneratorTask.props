@@ -4,6 +4,6 @@
   </PropertyGroup>
   <UsingTask TaskName="BitSourceGenerator" AssemblyFile="$(TaskAssembly)" />
   <Target Name="BitCodeGeneratorTask" BeforeTargets="Build">
-    <BitSourceGenerator SolutionPath="$(SolutionPath)" ProjectPath="$(ProjectPath)" />
+    <BitSourceGenerator ProjectPath="$(ProjectPath)" />
   </Target>
 </Project>

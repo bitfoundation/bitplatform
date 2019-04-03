@@ -7,6 +7,6 @@ namespace BitTools.Core.Contracts
     public interface IBitCodeGeneratorOrderedProjectsProvider
     {
         IList<Project> GetInvolveableProjects(Workspace workspace, IList<Project> projects,
-            BitCodeGeneratorMapping typescriptClientProxyGeneratorMapping);
+            BitCodeGeneratorMapping bitCodeGeneratorMapping);
     }
 }

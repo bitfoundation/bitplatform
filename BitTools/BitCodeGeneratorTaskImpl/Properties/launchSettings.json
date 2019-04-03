@@ -2,7 +2,7 @@
   "profiles": {
     "BitCodeGeneratorTaskImpl": {
       "commandName": "Project",
-      "commandLineArgs": "-solutionPath \"D:\\bit-foundation\\ToDoLine\\ToDoLine.Web.sln\" -projectPath \"D:\\bit-foundation\\ToDoLine\\ToDoLine\\ToDoLine.csproj\""
+      "commandLineArgs": "-projectPath \"D:\\bit-foundation\\ToDoLine\\ToDoLine\\ToDoLine.csproj\""
     }
   }
 }

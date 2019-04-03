@@ -5,27 +5,31 @@ using System.Linq;
 
 namespace BitCodeGeneratorTaskImpl
 {
-    public class BitSourceGeneratorBitConfigProvider : DefaultBitConfigProvider
+    public class BitSourceGeneratorBitConfigProvider : BitConfigProviderBase
     {
-        private readonly string _solutionFilePath;
+        private readonly string _bitConfigFilePath;
         private readonly string _beingCompiledProjectName;
 
-        public BitSourceGeneratorBitConfigProvider(string solutionFilePath, string beingCompiledProjectName)
+        public BitSourceGeneratorBitConfigProvider(string bitConfigFilePath, string beingCompiledProjectName)
         {
-            _solutionFilePath = solutionFilePath;
+            _bitConfigFilePath = bitConfigFilePath;
             _beingCompiledProjectName = beingCompiledProjectName;
         }
 
-        public override string GetSolutionFilePath(Workspace workspace = null)
+        public override string GetBitConfigFilePath()
         {
-            return _solutionFilePath;
+            return _bitConfigFilePath;
         }
 
-        public override BitConfig GetConfiguration(Workspace workspace = null)
+        public override BitConfig GetConfiguration()
         {
-            BitConfig bitConfig = base.GetConfiguration(workspace);
+            BitConfig bitConfig = base.GetConfiguration();
 
-            bitConfig.BitCodeGeneratorConfigs.BitCodeGeneratorMappings = bitConfig.BitCodeGeneratorConfigs.BitCodeGeneratorMappings.Where(config => config.SourceProjects.Any(sp => sp.Name == _beingCompiledProjectName)).ToArray();
+            bitConfig.BitCodeGeneratorConfigs.BitCodeGeneratorMappings = bitConfig
+                .BitCodeGeneratorConfigs
+                .BitCodeGeneratorMappings
+                .Where(config => config.SourceProjects.Any(sp => sp.Name == _beingCompiledProjectName))
+                .ToArray();
 
             return bitConfig;
         }

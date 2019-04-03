@@ -13,7 +13,7 @@ namespace BitCodeGenerator.Implementations.TypeScriptClientProxyGenerator
 {
     public class DefaultTypeScriptClientProxyGenerator : IDefaultTypeScriptClientProxyGenerator
     {
-        private readonly IBitCodeGeneratorOrderedProjectsProvider _solutionProjectsSelector;
+        private readonly IBitCodeGeneratorOrderedProjectsProvider _bitCodeGeneratorOrderedProjectsProvider;
         private readonly IBitConfigProvider _bitConfigProvider;
         private readonly IProjectDtosProvider _dtosProvider;
         private readonly IProjectEnumTypesProvider _projectEnumTypesProvider;
@@ -21,10 +21,10 @@ namespace BitCodeGenerator.Implementations.TypeScriptClientProxyGenerator
         private readonly ITypeScriptClientProxyDtosGenerator _dtoGenerator;
         private readonly ITypeScriptClientContextGenerator _contextGenerator;
 
-        public DefaultTypeScriptClientProxyGenerator(IBitCodeGeneratorOrderedProjectsProvider solutionProjectsSelector, IBitConfigProvider bitConfigProvider, IProjectDtosProvider dtosProvider, ITypeScriptClientProxyDtosGenerator dtoGenerator, ITypeScriptClientContextGenerator contextGenerator, IProjectDtoControllersProvider dtoControllersProvider, IProjectEnumTypesProvider projectEnumTypesProvider)
+        public DefaultTypeScriptClientProxyGenerator(IBitCodeGeneratorOrderedProjectsProvider bitCodeGeneratorOrderedProjectsProvider, IBitConfigProvider bitConfigProvider, IProjectDtosProvider dtosProvider, ITypeScriptClientProxyDtosGenerator dtoGenerator, ITypeScriptClientContextGenerator contextGenerator, IProjectDtoControllersProvider dtoControllersProvider, IProjectEnumTypesProvider projectEnumTypesProvider)
         {
-            if (solutionProjectsSelector == null)
-                throw new ArgumentNullException(nameof(solutionProjectsSelector));
+            if (bitCodeGeneratorOrderedProjectsProvider == null)
+                throw new ArgumentNullException(nameof(bitCodeGeneratorOrderedProjectsProvider));
 
             if (bitConfigProvider == null)
                 throw new ArgumentNullException(nameof(bitConfigProvider));
@@ -44,7 +44,7 @@ namespace BitCodeGenerator.Implementations.TypeScriptClientProxyGenerator
             if (dtoControllersProvider == null)
                 throw new ArgumentNullException(nameof(dtoControllersProvider));
 
-            _solutionProjectsSelector = solutionProjectsSelector;
+            _bitCodeGeneratorOrderedProjectsProvider = bitCodeGeneratorOrderedProjectsProvider;
             _bitConfigProvider = bitConfigProvider;
             _dtosProvider = dtosProvider;
             _dtoGenerator = dtoGenerator;
@@ -58,9 +58,9 @@ namespace BitCodeGenerator.Implementations.TypeScriptClientProxyGenerator
             if (workspace == null)
                 throw new ArgumentNullException(nameof(workspace));
 
-            BitConfig bitConfig = _bitConfigProvider.GetConfiguration(workspace);
+            BitConfig bitConfig = _bitConfigProvider.GetConfiguration();
 
-            foreach (BitCodeGeneratorMapping proxyGeneratorMapping in bitConfig.BitCodeGeneratorConfigs.BitCodeGeneratorMappings)
+            foreach (BitCodeGeneratorMapping proxyGeneratorMapping in bitConfig.BitCodeGeneratorConfigs.BitCodeGeneratorMappings.Where(m => m.GenerationType == GenerationType.TypeScript))
             {
                 string generatedContextName = proxyGeneratorMapping.DestinationFileName;
 
@@ -73,7 +73,7 @@ namespace BitCodeGenerator.Implementations.TypeScriptClientProxyGenerator
                 Project destProject = workspace.CurrentSolution.Projects.Where(p => p.Language == LanguageNames.CSharp)
                     .ExtendedSingle($"Trying to find project with name: {proxyGeneratorMapping.DestinationProject.Name}", p => p.Name == proxyGeneratorMapping.DestinationProject.Name);
 
-                IList<Project> involveableProjects = _solutionProjectsSelector.GetInvolveableProjects(workspace, workspace.CurrentSolution.Projects.Where(p => p.Language == LanguageNames.CSharp).ToList(), proxyGeneratorMapping);
+                IList<Project> involveableProjects = _bitCodeGeneratorOrderedProjectsProvider.GetInvolveableProjects(workspace, workspace.CurrentSolution.Projects.Where(p => p.Language == LanguageNames.CSharp).ToList(), proxyGeneratorMapping);
 
                 List<Dto> dtos = new List<Dto>();
 

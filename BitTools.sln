@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.27130.0
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.28729.10
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BitCodeAnalyzer", "BitTools\BitCodeAnalyzer\BitCodeAnalyzer.csproj", "{D3606CAF-481E-4632-9060-A9367A5D4F6A}"
 EndProject
@@ -9,22 +9,17 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BitCodeAnalyzer.Test", "Bit
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BitCodeGenerator.Test", "BitTools\BitCodeGenerator.Test\BitCodeGenerator.Test.csproj", "{68E603AF-2472-4B68-9BC6-9772AFCA9579}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BitVSExtensionV1", "BitTools\BitVSExtensionV1\BitVSExtensionV1.csproj", "{F22F2025-9D98-48EA-B5CC-FFB0E90F3AE7}"
-EndProject
 Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "BitTools.Core", "BitTools\BitTools.Core\BitTools.Core.shproj", "{2C8E2FD6-0DB2-470B-9059-9B0B6DF1562F}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BitTools.Core.VSExtensionBuildVersion", "BitTools\BitTools.Core.VSExtensionBuildVersion\BitTools.Core.VSExtensionBuildVersion.csproj", "{3AA3C219-2D0A-49DD-A025-5B4654BF2CFA}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BitCodeGenerator", "BitTools\BitCodeGenerator\BitCodeGenerator.csproj", "{DEBED051-F837-4A0D-A230-02FB4E8533C3}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BitCodeGeneratorTask", "BitTools\BitCodeGeneratorTask\BitCodeGeneratorTask.csproj", "{8A1557DB-1E6A-4FF0-8BE4-3B7C3BC0251A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BitCodeGeneratorTaskImpl", "BitTools\BitCodeGeneratorTaskImpl\BitCodeGeneratorTaskImpl.csproj", "{F8367259-1C80-47A6-AA69-4E37AC3479E0}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BitCodeGeneratorTaskImpl", "BitTools\BitCodeGeneratorTaskImpl\BitCodeGeneratorTaskImpl.csproj", "{F8367259-1C80-47A6-AA69-4E37AC3479E0}"
 EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
 		BitTools\BitTools.Core\BitTools.Core.projitems*{2c8e2fd6-0db2-470b-9059-9b0b6df1562f}*SharedItemsImports = 13
-		BitTools\BitTools.Core\BitTools.Core.projitems*{3aa3c219-2d0a-49dd-a025-5b4654bf2cfa}*SharedItemsImports = 4
 		BitTools\BitTools.Core\BitTools.Core.projitems*{d3606caf-481e-4632-9060-a9367a5d4f6a}*SharedItemsImports = 4
 	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -44,14 +39,6 @@ Global
 		{68E603AF-2472-4B68-9BC6-9772AFCA9579}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{68E603AF-2472-4B68-9BC6-9772AFCA9579}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{68E603AF-2472-4B68-9BC6-9772AFCA9579}.Release|Any CPU.Build.0 = Release|Any CPU
-		{F22F2025-9D98-48EA-B5CC-FFB0E90F3AE7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{F22F2025-9D98-48EA-B5CC-FFB0E90F3AE7}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{F22F2025-9D98-48EA-B5CC-FFB0E90F3AE7}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{F22F2025-9D98-48EA-B5CC-FFB0E90F3AE7}.Release|Any CPU.Build.0 = Release|Any CPU
-		{3AA3C219-2D0A-49DD-A025-5B4654BF2CFA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{3AA3C219-2D0A-49DD-A025-5B4654BF2CFA}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{3AA3C219-2D0A-49DD-A025-5B4654BF2CFA}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{3AA3C219-2D0A-49DD-A025-5B4654BF2CFA}.Release|Any CPU.Build.0 = Release|Any CPU
 		{DEBED051-F837-4A0D-A230-02FB4E8533C3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{DEBED051-F837-4A0D-A230-02FB4E8533C3}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{DEBED051-F837-4A0D-A230-02FB4E8533C3}.Release|Any CPU.ActiveCfg = Release|Any CPU

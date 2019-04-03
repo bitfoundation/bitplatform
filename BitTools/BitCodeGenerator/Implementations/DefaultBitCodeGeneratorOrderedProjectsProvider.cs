@@ -9,7 +9,7 @@ namespace BitCodeGenerator.Implementations
 {
     public class DefaultBitCodeGeneratorOrderedProjectsProvider : IBitCodeGeneratorOrderedProjectsProvider
     {
-        public virtual IList<Project> GetInvolveableProjects(Workspace workspace, IList<Project> projects, BitCodeGeneratorMapping typescriptClientProxyGeneratorMapping)
+        public virtual IList<Project> GetInvolveableProjects(Workspace workspace, IList<Project> projects, BitCodeGeneratorMapping bitCodeGeneratorMapping)
         {
             if (workspace == null)
                 throw new ArgumentNullException(nameof(workspace));
@@ -17,11 +17,11 @@ namespace BitCodeGenerator.Implementations
             if (projects == null)
                 throw new ArgumentNullException(nameof(projects));
 
-            if (typescriptClientProxyGeneratorMapping == null)
-                throw new ArgumentNullException(nameof(typescriptClientProxyGeneratorMapping));
+            if (bitCodeGeneratorMapping == null)
+                throw new ArgumentNullException(nameof(bitCodeGeneratorMapping));
 
-            return typescriptClientProxyGeneratorMapping.SourceProjects
-                .Select(projInfo => projects.ExtendedSingleOrDefault($"Looking for {projInfo.Name} in [ {string.Join(",", typescriptClientProxyGeneratorMapping.SourceProjects.Select(p => p.Name))} ]", p => p.Name == projInfo.Name && p.Language == LanguageNames.CSharp))
+            return bitCodeGeneratorMapping.SourceProjects
+                .Select(projInfo => projects.ExtendedSingleOrDefault($"Looking for {projInfo.Name} in [ {string.Join(",", bitCodeGeneratorMapping.SourceProjects.Select(p => p.Name))} ]", p => p.Name == projInfo.Name && p.Language == LanguageNames.CSharp))
                 .Where(p => p != null)
                 .ToList();
         }

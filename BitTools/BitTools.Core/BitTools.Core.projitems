@@ -9,7 +9,7 @@
     <Import_RootNamespace>BitTools.Core</Import_RootNamespace>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="$(MSBuildThisFileDirectory)Contracts\TypeScriptClientProxyGenerator\IDefaultTypeScriptClientProxyCleaner.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Contracts\CSharpClientProxyGenerator\IDefaultCSharpClientProxyGenerator.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Contracts\TypeScriptClientProxyGenerator\IDefaultTypeScriptClientProxyGenerator.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Contracts\TypeScriptClientProxyGenerator\ITypeScriptClientContextGenerator.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Contracts\TypeScriptClientProxyGenerator\ITypeScriptClientProxyDtosGenerator.cs" />

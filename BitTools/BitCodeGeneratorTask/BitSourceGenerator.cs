@@ -26,7 +26,7 @@ namespace BitCodeGeneratorTask
                         bitCodeGeneratorImplProcess.StartInfo.UseShellExecute = false;
                         bitCodeGeneratorImplProcess.StartInfo.RedirectStandardOutput = bitCodeGeneratorImplProcess.StartInfo.RedirectStandardError = true;
                         bitCodeGeneratorImplProcess.StartInfo.FileName = Path.Combine(Path.GetDirectoryName(typeof(BitSourceGenerator).Assembly.Location), "..", @"implementation\BitCodeGeneratorTaskImpl.exe"); // Not supported on Mac/Linux at the moment.
-                        bitCodeGeneratorImplProcess.StartInfo.Arguments = $"-solutionPath {SolutionPath} -projectPath {ProjectPath}";
+                        bitCodeGeneratorImplProcess.StartInfo.Arguments = $"-projectPath {ProjectPath}";
                         bitCodeGeneratorImplProcess.StartInfo.CreateNoWindow = true;
                         bitCodeGeneratorImplProcess.StartInfo.WorkingDirectory = Path.GetDirectoryName(bitCodeGeneratorImplProcess.StartInfo.FileName);
                         bitCodeGeneratorImplProcess.OutputDataReceived += (sender, e) =>
@@ -52,7 +52,7 @@ namespace BitCodeGeneratorTask
                     }
                 }
 
-                LogMessage($"Code Generation Completed in {sw.ElapsedMilliseconds} ms.");
+                LogMessage($"Code Generation completed in {sw.ElapsedMilliseconds} ms.");
             }
             catch (Exception exp)
             {
@@ -66,14 +66,14 @@ namespace BitCodeGeneratorTask
             return true;
         }
 
-        private void LogMessage(string text)
+        void LogMessage(string text)
         {
             text = $">>>>> {text} {DateTimeOffset.Now} {typeof(BitSourceGenerator).Assembly.FullName} <<<<< \n";
 
             Log.LogMessage(MessageImportance.High, text);
         }
 
-        private void LogError(string text, Exception ex)
+        void LogError(string text, Exception ex)
         {
             text = $">>>>> {text} {DateTimeOffset.Now} {typeof(BitSourceGenerator).Assembly.FullName}<<<<< \n {ex} \n";
 
@@ -81,9 +81,6 @@ namespace BitCodeGeneratorTask
         }
 
         [Required]
-        public string SolutionPath { get; set; }
-
-        [Required]
-        public string ProjectPath { get; set; }
+        public virtual string ProjectPath { get; set; }
     }
 }

@@ -22,7 +22,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\BitCodeGenerator\BitCodeGenerator.csproj" />
-    <ProjectReference Include="..\BitTools.Core.VSExtensionBuildVersion\BitTools.Core.VSExtensionBuildVersion.csproj" />
   </ItemGroup>
 
 </Project>

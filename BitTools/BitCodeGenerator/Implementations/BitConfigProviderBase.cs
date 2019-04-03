@@ -17,39 +17,20 @@ namespace BitCodeGenerator.Implementations
         }
     }
 
-    public class DefaultBitConfigProvider : IBitConfigProvider
+    public abstract class BitConfigProviderBase : IBitConfigProvider
     {
-        public virtual string Version { get; set; } = "V1";
+        public abstract string GetBitConfigFilePath();
 
-        public virtual BitConfig GetConfiguration(Workspace workspace)
+        public virtual BitConfig GetConfiguration()
         {
-            string solutionFilePath = GetSolutionFilePath(workspace);
-
-            DirectoryInfo directoryInfo = Directory.GetParent(solutionFilePath);
-
-            if (directoryInfo == null)
-                throw new InvalidOperationException($"Could not find directory of {solutionFilePath}");
-
-            string bitConfigFileName = $"BitConfig{Version}.json";
-
-            FileInfo bitConfigFileInfo =
-                directoryInfo.GetFiles(bitConfigFileName)
-                    .ExtendedSingleOrDefault($"Looking for {bitConfigFileName}");
-
-            if (bitConfigFileInfo == null)
-                throw new BitConfigNotFoundException($"No {bitConfigFileName} found in {directoryInfo.FullName}");
-
             BitConfig bitConfig = JsonConvert
                 .DeserializeObject<BitConfig>(
-                    File.ReadAllText(bitConfigFileInfo.FullName));
+                    File.ReadAllText(GetBitConfigFilePath()));
 
             foreach (BitCodeGeneratorMapping mapping in bitConfig.BitCodeGeneratorConfigs.BitCodeGeneratorMappings)
             {
                 if (string.IsNullOrEmpty(mapping.DestinationFileName))
                     throw new InvalidOperationException($"{nameof(BitCodeGeneratorMapping.DestinationFileName)} is not provided");
-
-                if (string.IsNullOrEmpty(mapping.TypingsPath))
-                    throw new InvalidOperationException($"{nameof(BitCodeGeneratorMapping.TypingsPath)} is not provided");
 
                 if (string.IsNullOrEmpty(mapping.DestinationProject?.Name))
                     throw new InvalidOperationException($"{nameof(BitCodeGeneratorMapping.DestinationProject)} is not provided");
@@ -62,11 +43,6 @@ namespace BitCodeGenerator.Implementations
             }
 
             return bitConfig;
-        }
-
-        public virtual string GetSolutionFilePath(Workspace workspace)
-        {
-            return workspace.CurrentSolution.FilePath;
         }
     }
 }
