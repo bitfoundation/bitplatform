@@ -9,7 +9,7 @@
   * [AppEvents](/docs/bit-server-side/app-events.md)
 * [Bit csharp client introduction](docs/bit-csharp-client/csharp-client-intro.md)
   * [Controls Config](/docs/bit-csharp-client/config.md)
-  * [Date Picker](/docs/bit-csharp-client/date-picker.md)
+  * [Date Time Picker](/docs/bit-csharp-client/date-time-picker.md)
   * [Radio Button](/docs/bit-csharp-client/radio-button.md)
   * [Checkbox](/docs/bit-csharp-client/check-box.md)
 * [Design backgrounds](docs/design-backgrounds/introduction.md)

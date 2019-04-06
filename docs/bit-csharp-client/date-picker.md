@@ -1,15 +1,16 @@
 # Bit Date Picker
 
-**BitDatePicker** is a fully customizable control that supports any calendar system that [noda time supports](https://nodatime.org/1.3.x/userguide/calendars) and any locale that .NET supports. It supports Android/iOS/UWP.
+**BitDateTimePicker** is a fully customizable control that supports any calendar system that [noda time supports](https://nodatime.org/1.3.x/userguide/calendars) and any locale that .NET supports. It supports Android/iOS/UWP.
 
 This calendar is dependent on [RgPluginsPopup](https://github.com/rotorgames/Rg.Plugins.Popup/wiki/Getting-started).
 
-### How to Use BitDatePicker in Xaml:
+### How to Use BitDateTimePicker in Xaml:
 
 ```xml
-<bitControls:BitDatePicker
-    Text="Please select a date" 
-    SelectedColor="LightBlue" 
+<bitControls:BitDateTimePicker
+    Text="Please select a date time" 
+    SelectedColor="LightBlue"
+    ShowTimePicker="True" 
     TodayColor="Blue" />
 ```
 
@@ -19,8 +20,8 @@ You can also customize **FontFamily**, **DateDisplayFormat**, **CalendarSystem**
 
 xmlns:noda="clr-namespace:NodaTime;assembly=NodaTime"
 
-<bitControls:BitDatePicker
-    Text="لطفا یک روز را انتخاب کنید" 
+<bitControls:BitDateTimePicker
+    Text="لطفا یک روز و ساعت را انتخاب کنید" 
     Culture="Fa"
     DateDisplayFormat="dd MMM yyyy"
     CalendarSystem="{x:Static noda:CalendarSystem.PersianArithmetic}"
@@ -34,8 +35,8 @@ There is a **SelectedDate** property which is bindable.
 In order to customize picker's button you can have followings:
 
 ```xml
-<bitControls:BitDatePicker Text="Please Select a date">
-    <bitControls:BitDatePicker.ControlTemplate>
+<bitControls:BitDateTimePicker Text="Please Select a date">
+    <bitControls:BitDateTimePicker.ControlTemplate>
         <ControlTemplate>
             <Frame HasShadow="False" Padding="5" BorderColor="LightGray">
                 <StackLayout Orientation="Horizontal">
@@ -51,6 +52,6 @@ In order to customize picker's button you can have followings:
                     </StackLayout>
             </Frame>
         </ControlTemplate>
-    </bitControls:BitDatePicker.ControlTemplate>
-</bitControls:BitDatePicker>
+    </bitControls:BitDateTimePicker.ControlTemplate>
+</bitControls:BitDateTimePicker>
 ```
