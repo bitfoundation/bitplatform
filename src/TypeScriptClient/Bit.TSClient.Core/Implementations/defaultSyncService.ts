@@ -60,7 +60,18 @@
 
         @Log()
         public async syncContext(): Promise<void> {
-            await this.syncEntitySets(this.entitySetConfigs.map(entitySetConfig => { return entitySetConfig.entitySetName as any; }));
+            if (typeof (performance) != "undefined") {
+                performance.mark("sync-start");
+            }
+            try {
+                await this.syncEntitySets(this.entitySetConfigs.map(entitySetConfig => { return entitySetConfig.entitySetName as any; }));
+            }
+            finally {
+                if (typeof (performance) != "undefined") {
+                    performance.mark("sync-finish");
+                    performance.measure("bit-sync", "sync-start", "sync-finish");
+                }
+            }
         }
 
         @Log()

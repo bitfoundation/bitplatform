@@ -15,14 +15,25 @@
         }
 
         public async start(config: { preferWebSockets?: boolean } = { preferWebSockets: false }): Promise<void> {
-            this._stayConnected = true;
-            await this.getInitPromise();
-            await new Promise<void>((res, rej) => {
-                return $.connection.hub.start({
-                    transport: config.preferWebSockets == true ? ["webSockets", "serverSentEvents"] : ["serverSentEvents", "webSockets"]
-                }).then(() => res()).fail((e) => rej(e));
-            });
-            this._isConnected = true;
+            try {
+                if (typeof (performance) != "undefined") {
+                    performance.mark("signalr-connect-start");
+                }
+                this._stayConnected = true;
+                await this.getInitPromise();
+                await new Promise<void>((res, rej) => {
+                    return $.connection.hub.start({
+                        transport: config.preferWebSockets == true ? ["webSockets", "serverSentEvents"] : ["serverSentEvents", "webSockets"]
+                    }).then(() => res()).fail((e) => rej(e));
+                });
+                this._isConnected = true;
+            }
+            finally {
+                if (typeof (performance) != "undefined") {
+                    performance.mark("signalr-connect-finish");
+                    performance.measure("signalr-connect", "signalr-connect-start", "signalr-connect-finish");
+                }
+            }
         }
 
         protected async callListeners(messageKey: string, messageArgs: any) {
