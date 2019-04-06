@@ -32,8 +32,8 @@ namespace BitCodeGenerator.Implementations.TypeScriptClientProxyGenerator
             if (dtosProvider == null)
                 throw new ArgumentNullException(nameof(dtosProvider));
 
-            if (dtosProvider == null)
-                throw new ArgumentNullException(nameof(dtosProvider));
+            if (dtoGenerator == null)
+                throw new ArgumentNullException(nameof(dtoGenerator));
 
             if (projectEnumTypesProvider == null)
                 throw new ArgumentNullException(nameof(projectEnumTypesProvider));

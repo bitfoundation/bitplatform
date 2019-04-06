@@ -97,14 +97,17 @@ namespace BitCodeGeneratorTaskImpl
 
                 IProjectDtoControllersProvider controllersProvider = new DefaultProjectDtoControllersProvider();
                 IProjectDtosProvider dtosProvider = new DefaultProjectDtosProvider(controllersProvider);
+                IBitCodeGeneratorOrderedProjectsProvider bitCodeGeneratorOrderedProjectsProvider = new DefaultBitCodeGeneratorOrderedProjectsProvider();
+                IProjectEnumTypesProvider projectEnumTypesProvider = new DefaultProjectEnumTypesProvider(controllersProvider, dtosProvider);
 
-                DefaultTypeScriptClientProxyGenerator tsGenerator = new DefaultTypeScriptClientProxyGenerator(new DefaultBitCodeGeneratorOrderedProjectsProvider(),
+                DefaultTypeScriptClientProxyGenerator tsGenerator = new DefaultTypeScriptClientProxyGenerator(bitCodeGeneratorOrderedProjectsProvider,
                     bitConfigProvider, dtosProvider
-                    , new DefaultTypeScriptClientProxyDtoGenerator(), new DefaultTypeScriptClientContextGenerator(), controllersProvider, new DefaultProjectEnumTypesProvider(controllersProvider, dtosProvider));
+                    , new DefaultTypeScriptClientProxyDtoGenerator(), new DefaultTypeScriptClientContextGenerator(), controllersProvider, projectEnumTypesProvider);
 
                 await tsGenerator.GenerateCodes(workspace);
 
-                DefaultCSharpClientProxyGenerator csGenerator = new DefaultCSharpClientProxyGenerator(bitConfigProvider);
+                DefaultCSharpClientProxyGenerator csGenerator = new DefaultCSharpClientProxyGenerator(bitCodeGeneratorOrderedProjectsProvider,
+                    bitConfigProvider, controllersProvider, new DefaultCSharpClientContextGenerator());
 
                 await csGenerator.GenerateCodes(workspace);
             }

@@ -1,0 +1,34 @@
+﻿<#@ template language="C#" #>
+<#@ parameter type="System.Collections.Generic.IList<DtoController>" name="Controllers" #>
+<#@ parameter type="BitTools.Core.Model.BitCodeGeneratorMapping" name="Mapping" #>
+<#@ import namespace="BitTools.Core.Model" #>
+<#@ import namespace="Microsoft.CodeAnalysis" #>
+<#@ import namespace="System.Linq" #>
+
+namespace Simple.OData.Client
+{
+    public static class <#= Mapping.Route #>ContextExt
+    {
+		<# foreach (DtoController controller in Controllers) { #>
+
+			public static IBoundClient<<#= controller.ModelSymbol.ToDisplayString() #>> <#= controller.Name #>(this IODataClient odataClient)
+			{
+				return odataClient.For<<#= controller.ModelSymbol.ToDisplayString() #>>("<#= controller.Name #>");
+			}
+
+			<# foreach (ODataOperation operation in controller.Operations) { #>
+
+				public static IBoundClient<<#= controller.ModelSymbol.ToDisplayString() #>> <#= operation.Method.Name #>(this <#= string.Join(",", new string[]{ $@"IBoundClient<{controller.ModelSymbol.ToDisplayString()}> {controller.Name.AsCamelCase()}" }.Union(operation.Parameters.Select(parameter =>  $@"{parameter.Type.ToDisplayString()} {parameter.Name}" ))) #>)
+				{
+					return <#= controller.Name.AsCamelCase() #>.<#= operation.Kind == ODataOperationKind.Action ? "Action" : "Function" #>("<#= operation.Method.Name #>").Set(new 
+					{ 
+						<#= string.Join(",", operation.Parameters.Select(parameter =>  $"{parameter.Name}" )) #>
+					});
+				}
+
+			<# } #>
+
+
+		<# } #>
+    }
+}

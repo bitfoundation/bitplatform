@@ -40,6 +40,16 @@
       <DependentUpon>TypeScriptContextGeneratorTemplate.tt</DependentUpon>
     </Compile>
 
+	<None Update="Implementations\CSharpClientProxyGenerator\Templates\CSharpContextGeneratorTemplate.tt">
+      <Generator>TextTemplatingFilePreprocessor</Generator>
+      <LastGenOutput>CSharpContextGeneratorTemplate.cs</LastGenOutput>
+    </None>
+    <Compile Update="Implementations\CSharpClientProxyGenerator\Templates\CSharpContextGeneratorTemplate.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>CSharpContextGeneratorTemplate.tt</DependentUpon>
+    </Compile>
+
     <None Update="Implementations\TypeScriptClientProxyGenerator\Templates\TypeScriptDtosGeneratorTemplate.tt">
       <Generator>TextTemplatingFilePreprocessor</Generator>
       <LastGenOutput>TypeScriptDtosGeneratorTemplate.cs</LastGenOutput>
