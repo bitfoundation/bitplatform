@@ -61,24 +61,33 @@
         @Log()
         public async syncContext(): Promise<void> {
             if (typeof (performance) != "undefined") {
-                performance.mark("sync-start");
+                performance.mark("bit-sync-start");
             }
             try {
                 await this.syncEntitySets(this.entitySetConfigs.map(entitySetConfig => { return entitySetConfig.entitySetName as any; }));
             }
             finally {
                 if (typeof (performance) != "undefined") {
-                    performance.mark("sync-finish");
-                    performance.measure("bit-sync", "sync-start", "sync-finish");
+                    performance.mark("bit-sync-finish");
+                    performance.measure("bit-sync", "bit-sync-start", "bit-sync-finish");
                 }
             }
         }
 
         @Log()
         public async syncEntitySet<TEntityContext extends $data.EntityContext>(entitySetName: keyof TEntityContext & string): Promise<void> {
-
-            await this.syncEntitySets<TEntityContext>([entitySetName]);
-
+            if (typeof (performance) != "undefined") {
+                performance.mark(`bit-sync-${entitySetName}-start`);
+            }
+            try {
+                await this.syncEntitySets<TEntityContext>([entitySetName]);
+            }
+            finally {
+                if (typeof (performance) != "undefined") {
+                    performance.mark(`bit-sync-${entitySetName}-finish`);
+                    performance.measure(`bit-sync-${entitySetName}`, `bit-sync-${entitySetName}-start`, `bit-sync-${entitySetName}-finish`);
+                }
+            }
         }
 
         public async syncEntitySets<TEntityContext extends $data.EntityContext>(entitySetNames: Array<keyof TEntityContext & string>): Promise<void> {
