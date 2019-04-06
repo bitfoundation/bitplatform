@@ -1,0 +1,65 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage
+    x:Class="Bit.CSharpClient.Controls.Samples.BitDateTimePickerSampleView"
+    xmlns="http://xamarin.com/schemas/2014/forms"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:bitControls="clr-namespace:Bit.CSharpClient.Controls;assembly=Bit.CSharpClient.Controls"
+    xmlns:noda="clr-namespace:NodaTime;assembly=NodaTime"
+    xmlns:view="clr-namespace:Bit.CSharpClient.Controls.Samples"
+    xmlns:viewModel="clr-namespace:Bit.CSharpClient.Controls.Samples">
+
+  <ContentPage.BindingContext>
+    <viewModel:BitDateTimePickerSampleViewModel />
+  </ContentPage.BindingContext>
+
+  <StackLayout Padding="10,20">
+
+    <bitControls:BitDateTimePicker AutoClose="False" Text="Please select a date!" />
+
+    <bitControls:BitDateTimePicker AutoClose="True" Text="Please select a date!" />
+
+    <bitControls:BitDateTimePicker
+        CalendarSystem="{x:Static noda:CalendarSystem.PersianArithmetic}"
+        Culture="Fa"
+        DateTimeDisplayFormat="dd MMM yyyy"
+        FlowDirection="RightToLeft"
+        FontFamily="{StaticResource Persian-Solar-Calendar-FontFamily}"
+        Text="لطفا یک روز را انتخاب کنید" />
+
+    <bitControls:BitDateTimePicker
+        CalendarSystem="{x:Static noda:CalendarSystem.IslamicBcl}"
+        Culture="Ar"
+        FlowDirection="RightToLeft"
+        Text="يرجى تحديد تاريخ الرحلة" />
+
+    <bitControls:BitDateTimePicker Text="Please Select a date">
+      <bitControls:BitDateTimePicker.ControlTemplate>
+        <ControlTemplate>
+          <Frame
+              Padding="5"
+              BorderColor="LightGray"
+              CornerRadius="5"
+              HasShadow="False">
+            <StackLayout HorizontalOptions="CenterAndExpand" Orientation="Horizontal">
+              <StackLayout.GestureRecognizers>
+                <TapGestureRecognizer Command="{TemplateBinding OpenPopupCommand}" />
+              </StackLayout.GestureRecognizers>
+              <Image
+                  HeightRequest="15"
+                  Source="{view:ImageResource Source='Samples.Calendar.png'}"
+                  WidthRequest="15" />
+              <Label FontFamily="{TemplateBinding FontFamily}" Text="{TemplateBinding DisplayText}" />
+            </StackLayout>
+          </Frame>
+        </ControlTemplate>
+      </bitControls:BitDateTimePicker.ControlTemplate>
+    </bitControls:BitDateTimePicker>
+
+    <bitControls:BitDateTimePicker SelectedDateTime="{Binding SelectedDateTime}" Text="Please select a date!" />
+
+    <Button Command="{Binding ChangeSelecedDate}" Text="Change date!" />
+
+    <bitControls:BitDateTimePicker ShowTimePicker="False" Text="Without time picker!" />
+
+  </StackLayout>
+</ContentPage>

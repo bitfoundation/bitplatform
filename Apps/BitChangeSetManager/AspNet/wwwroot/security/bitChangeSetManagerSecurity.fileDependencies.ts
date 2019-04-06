@@ -94,11 +94,6 @@ module BitChangeSetManagerSecurity {
     });
 
     dependencyManager.registerFileDependency({
-        name: "encoderjs",
-        path: "node_modules/@bit/encoder/encoder"
-    });
-
-    dependencyManager.registerFileDependency({
         name: "bit-model-context",
         path: "node_modules/@bit/bit-framework/Bit.Model.Context"
     });

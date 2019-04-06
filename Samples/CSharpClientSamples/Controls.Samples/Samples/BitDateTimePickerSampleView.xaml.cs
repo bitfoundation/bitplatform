@@ -5,9 +5,9 @@ using Xamarin.Forms.Xaml;
 
 namespace Bit.CSharpClient.Controls.Samples
 {
-    public partial class BitDatePickerSampleView
+    public partial class BitDateTimePickerSampleView
     {
-        public BitDatePickerSampleView()
+        public BitDateTimePickerSampleView()
         {
             InitializeComponent();
         }

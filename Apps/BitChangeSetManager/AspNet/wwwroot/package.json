@@ -23,9 +23,8 @@
     "@types/signalr": "^2.2.35"
   },
   "dependencies": {
-    "@bit/bit-framework": "^1.9.3",
-    "@bit/encoder": "^1.0.0",
-    "@bit/jaydata": "^1.5.17",
+    "@bit/bit-framework": "^2.0.0",
+    "@bit/jaydata": "^1.5.18",
     "@uirouter/angularjs": "^1.0.22",
     "angular": "^1.7.8",
     "angular-animate": "^1.7.8",

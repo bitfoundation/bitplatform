@@ -12,7 +12,7 @@
         <StackLayout HorizontalOptions="Center" VerticalOptions="Center">
             <Button Clicked="RadioButton_Clicked" Text="Radio Button" />
             <Button Clicked="Checkbox_Clicked" Text="Checkbox" />
-            <Button Clicked="DatePicker_Clicked" Text="Date Picker" />
+            <Button Clicked="DateTimePicker_Clicked" Text="Date Time Picker" />
         </StackLayout>
     </bitControls:BitFrame>
 </ContentPage>

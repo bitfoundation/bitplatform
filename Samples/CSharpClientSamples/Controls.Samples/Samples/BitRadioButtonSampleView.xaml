@@ -23,16 +23,22 @@
     <StackLayout Padding="10">
         <bitControls:BitRadioButton
             Key="{x:Static app:Gender.Man}"
+            Value="{Binding Person.Gender}"
             Style="{StaticResource BitRadioButtonStyles}"
             Text="Man" />
         <bitControls:BitRadioButton
             Key="{x:Static app:Gender.Woman}"
+            Value="{Binding Person.Gender}"
             Style="{StaticResource BitRadioButtonStyles}"
             Text="Woman" />
         <bitControls:BitRadioButton
             Key="{x:Static app:Gender.Other}"
+            Value="{Binding Person.Gender}"
             Style="{StaticResource BitRadioButtonStyles}"
             Text="Other" />
+
+        <Label Text="{Binding Person.Gender}" />
+
     </StackLayout>
 
 </ContentPage>

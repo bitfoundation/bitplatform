@@ -11,9 +11,9 @@ namespace Bit.CSharpClient.Controls.Samples
             InitializeComponent();
         }
 
-        private async void DatePicker_Clicked(object sender, EventArgs e)
+        private async void DateTimePicker_Clicked(object sender, EventArgs e)
         {
-            await Navigation.PushAsync(new BitDatePickerSampleView());
+            await Navigation.PushAsync(new BitDateTimePickerSampleView());
         }
 
         private async void Checkbox_Clicked(object sender, EventArgs e)
