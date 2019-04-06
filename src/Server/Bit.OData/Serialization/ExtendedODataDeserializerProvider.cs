@@ -26,7 +26,7 @@ namespace Bit.OData.Serialization
         {
             HttpActionDescriptor actionDescriptor = request.GetActionDescriptor();
 
-            if (actionDescriptor != null && (actionDescriptor.GetCustomAttributes<ActionAttribute>().Any() ||
+            if (actionDescriptor != null && request?.Content?.Headers?.ContentLength != 0 && (actionDescriptor.GetCustomAttributes<ActionAttribute>().Any() ||
                 actionDescriptor.GetCustomAttributes<CreateAttribute>().Any() ||
                 actionDescriptor.GetCustomAttributes<UpdateAttribute>().Any() ||
                 actionDescriptor.GetCustomAttributes<PartialUpdateAttribute>().Any()))
