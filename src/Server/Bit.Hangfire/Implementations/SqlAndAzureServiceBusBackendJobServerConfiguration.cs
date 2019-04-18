@@ -43,7 +43,7 @@ namespace Bit.Hangfire.Implementations
             SqlServerStorage storage = new SqlServerStorage(jobSchedulerDbConnectionString, new SqlServerStorageOptions
             {
                 PrepareSchemaIfNecessary = false,
-                TransactionIsolationLevel = IsolationLevel.ReadCommitted,
+                UseRecommendedIsolationLevel = true,
                 SchemaName = "Jobs"
             });
 
