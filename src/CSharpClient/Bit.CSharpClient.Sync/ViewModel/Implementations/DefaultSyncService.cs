@@ -229,7 +229,7 @@ namespace Bit.ViewModel.Implementations
 
             string oDataUri = $"{ClientAppProfile.ODataRoute}{oDataGetAndVersionFilter}";
 
-            HttpResponseMessage response = await HttpClient.GetAsync(oDataUri, cancellationToken).ConfigureAwait(false);
+            HttpResponseMessage response = await HttpClient.GetAsync(oDataUri, HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false);
 
             if (response.IsSuccessStatusCode == true)
             {
