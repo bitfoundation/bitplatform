@@ -34,7 +34,7 @@ namespace Bit.OwinCore.Middlewares
 
             aspNetCoreContext.Items["OwinContext"] = context;
 
-            ILifetimeScope autofacScope = aspNetCoreContext.RequestServices.GetService<ILifetimeScope>();
+            ILifetimeScope autofacScope = aspNetCoreContext.RequestServices.GetRequiredService<ILifetimeScope>();
 
             context.SetAutofacLifetimeScope(autofacScope);
 

@@ -17,9 +17,9 @@ namespace Bit.OwinCore.Middlewares
 
         public Task Invoke(HttpContext context)
         {
-            ILogger logger = context.RequestServices.GetService<ILogger>();
+            ILogger logger = context.RequestServices.GetRequiredService<ILogger>();
 
-            IRequestInformationProvider requestInformationProvider = context.RequestServices.GetService<IRequestInformationProvider>();
+            IRequestInformationProvider requestInformationProvider = context.RequestServices.GetRequiredService<IRequestInformationProvider>();
 
             LogRequestInformationMiddleware.LogRequest(logger, requestInformationProvider);
 
