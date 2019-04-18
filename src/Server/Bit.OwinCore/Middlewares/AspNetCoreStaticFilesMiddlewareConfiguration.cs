@@ -7,6 +7,8 @@ namespace Bit.OwinCore.Middlewares
 {
     public class AspNetCoreStaticFilesMiddlewareConfiguration : IAspNetCoreMiddlewareConfiguration
     {
+        public virtual MiddlewarePosition MiddlewarePosition => MiddlewarePosition.BeforeOwinMiddlewares;
+
         public virtual AppEnvironment AppEnvironment { get; set; }
         public virtual IHostingEnvironment HostingEnvironment { get; set; }
 

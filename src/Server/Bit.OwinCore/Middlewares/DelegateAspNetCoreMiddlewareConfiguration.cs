@@ -6,6 +6,8 @@ namespace Bit.OwinCore.Middlewares
 {
     public class DelegateAspNetCoreMiddlewareConfiguration : IAspNetCoreMiddlewareConfiguration
     {
+        public virtual MiddlewarePosition MiddlewarePosition { get; set; } = MiddlewarePosition.BeforeOwinMiddlewares;
+
         private readonly Action<IApplicationBuilder> _aspNetCoreAppCustomizer;
 
         public DelegateAspNetCoreMiddlewareConfiguration(Action<IApplicationBuilder> aspNetCoreAppCustomizer)

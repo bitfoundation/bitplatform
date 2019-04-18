@@ -13,14 +13,6 @@ namespace Bit.Core.Contracts
 {
     public static class IDependencyManagerExtensions
     {
-        public static IDependencyManager RegisterApplicationInsights(this IDependencyManager dependencyManager)
-        {
-            dependencyManager.Register<ITelemetryInitializer, BitTelemetryInitializer>(lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExciting: false);
-            dependencyManager.RegisterLogStore<ApplicationInsightsLogStore>();
-
-            return dependencyManager;
-        }
-
         public static IDependencyManager RegisterAspNetCoreMiddleware<TMiddleware>(this IDependencyManager dependencyManager)
             where TMiddleware : class, IAspNetCoreMiddlewareConfiguration
         {
@@ -32,7 +24,7 @@ namespace Bit.Core.Contracts
             return dependencyManager;
         }
 
-        public static IDependencyManager RegisterAspNetCoreMiddlewareUsing(this IDependencyManager dependencyManager, Action<IApplicationBuilder> aspNetCoreAppCustomizer)
+        public static IDependencyManager RegisterAspNetCoreMiddlewareUsing(this IDependencyManager dependencyManager, Action<IApplicationBuilder> aspNetCoreAppCustomizer, MiddlewarePosition middlewarePosition = MiddlewarePosition.BeforeOwinMiddlewares)
         {
             if (dependencyManager == null)
                 throw new ArgumentNullException(nameof(dependencyManager));
@@ -40,7 +32,18 @@ namespace Bit.Core.Contracts
             if (aspNetCoreAppCustomizer == null)
                 throw new ArgumentNullException(nameof(aspNetCoreAppCustomizer));
 
-            dependencyManager.RegisterInstance<IAspNetCoreMiddlewareConfiguration>(new DelegateAspNetCoreMiddlewareConfiguration(aspNetCoreAppCustomizer), overwriteExciting: false);
+            dependencyManager.RegisterInstance<IAspNetCoreMiddlewareConfiguration>(new DelegateAspNetCoreMiddlewareConfiguration(aspNetCoreAppCustomizer)
+            {
+                MiddlewarePosition = middlewarePosition
+            }, overwriteExciting: false);
+
+            return dependencyManager;
+        }
+
+        public static IDependencyManager RegisterApplicationInsights(this IDependencyManager dependencyManager)
+        {
+            dependencyManager.Register<ITelemetryInitializer, BitTelemetryInitializer>(lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExciting: false);
+            dependencyManager.RegisterLogStore<ApplicationInsightsLogStore>();
 
             return dependencyManager;
         }
@@ -74,7 +77,7 @@ namespace Bit.Core.Contracts
                     {
                         string path = context.Request.Path.Value;
 
-                        if (path.StartsWith("/core", StringComparison.InvariantCultureIgnoreCase) || path.StartsWith("/signalr", StringComparison.InvariantCultureIgnoreCase) || path.EndsWith("$batch" , StringComparison.InvariantCultureIgnoreCase))
+                        if (path.StartsWith("/core", StringComparison.InvariantCultureIgnoreCase) || path.StartsWith("/signalr", StringComparison.InvariantCultureIgnoreCase) || path.EndsWith("$batch", StringComparison.InvariantCultureIgnoreCase))
                         {
                             context.Features.GetType().GetProperty("AllowSynchronousIO")?.SetValue(context.Features, true);
                         }

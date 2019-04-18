@@ -6,6 +6,8 @@ namespace Bit.Tests.Api.Middlewares
 {
     public class TestWebApiCoreMvcMiddlewareConfiguration : IAspNetCoreMiddlewareConfiguration
     {
+        public virtual MiddlewarePosition MiddlewarePosition => MiddlewarePosition.BeforeOwinMiddlewares;
+
         public virtual void Configure(IApplicationBuilder aspNetCoreApp)
         {
             aspNetCoreApp.Map("/api-core", innerAspNetCoreApp =>

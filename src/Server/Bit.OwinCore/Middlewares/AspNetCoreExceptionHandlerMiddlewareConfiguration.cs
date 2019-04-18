@@ -14,6 +14,8 @@ namespace Bit.OwinCore.Middlewares
 {
     public class AspNetCoreExceptionHandlerMiddlewareConfiguration : IAspNetCoreMiddlewareConfiguration
     {
+        public virtual MiddlewarePosition MiddlewarePosition => MiddlewarePosition.BeforeOwinMiddlewares;
+
         public virtual void Configure(IApplicationBuilder aspNetCoreApp)
         {
             if (aspNetCoreApp == null)
@@ -42,9 +44,9 @@ namespace Bit.OwinCore.Middlewares
 
         public async Task Invoke(HttpContext context)
         {
-            IScopeStatusManager scopeStatusManager = context.RequestServices.GetService<IScopeStatusManager>();
+            IScopeStatusManager scopeStatusManager = context.RequestServices.GetRequiredService<IScopeStatusManager>();
 
-            ILogger logger = context.RequestServices.GetService<ILogger>();
+            ILogger logger = context.RequestServices.GetRequiredService<ILogger>();
 
             try
             {
@@ -115,7 +117,7 @@ namespace Bit.OwinCore.Middlewares
                 bool responseStatusCodeIsErrorCodeBecauseOfSomeClientBasedReason = statusCode.StartsWith("4", StringComparison.InvariantCultureIgnoreCase);
                 if (responseStatusCodeIsErrorCodeBecauseOfSomeClientBasedReason == false && responseStatusCodeIsErrorCodeBecauseOfSomeServerBasedReason == false)
                 {
-                    IExceptionToHttpErrorMapper exceptionToHttpErrorMapper = context.RequestServices.GetService<IExceptionToHttpErrorMapper>();
+                    IExceptionToHttpErrorMapper exceptionToHttpErrorMapper = context.RequestServices.GetRequiredService<IExceptionToHttpErrorMapper>();
                     context.Response.StatusCode = Convert.ToInt32(exceptionToHttpErrorMapper.GetStatusCode(exp), CultureInfo.InvariantCulture);
                     context.Features.Get<IHttpResponseFeature>().ReasonPhrase = exceptionToHttpErrorMapper.GetReasonPhrase(exp);
                     await context.Response.WriteAsync(exceptionToHttpErrorMapper.GetMessage(exp), context.RequestAborted);

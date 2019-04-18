@@ -6,6 +6,8 @@ namespace Bit.OwinCore.Middlewares
 {
     public class AspNetCoreLogUserInformationMiddlewareConfiguration : IAspNetCoreMiddlewareConfiguration
     {
+        public virtual MiddlewarePosition MiddlewarePosition => MiddlewarePosition.BeforeOwinMiddlewares;
+
         public virtual void Configure(IApplicationBuilder aspNetCoreApp)
         {
             if (aspNetCoreApp == null)
