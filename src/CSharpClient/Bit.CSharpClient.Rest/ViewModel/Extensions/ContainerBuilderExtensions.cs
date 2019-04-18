@@ -71,7 +71,7 @@ namespace Autofac
                 .SingleInstance()
                 .PreserveExistingDefaults();
 
-            IAsyncPolicy<HttpResponseMessage> policy = BuildHttpPollyPolicy();
+            IAsyncPolicy<HttpResponseMessage> policy = containerBuilder.BuildHttpPollyPolicy();
 
             return services.AddHttpClient(ContractKeys.DefaultHttpClientName)
                 .ConfigureHttpClient((serviceProvider, httpClient) =>
@@ -87,7 +87,7 @@ namespace Autofac
                 .AddPolicyHandler(policy);
         }
 
-        public static IAsyncPolicy<HttpResponseMessage> BuildHttpPollyPolicy()
+        public static IAsyncPolicy<HttpResponseMessage> BuildHttpPollyPolicy(this ContainerBuilder containerBuilder)
         {
             // https://github.com/App-vNext/Polly.Extensions.Http/blob/master/src/Polly.Extensions.Http/HttpPolicyExtensions.cs
 
