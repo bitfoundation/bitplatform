@@ -1,16 +1,15 @@
 ﻿using Bit.Core.Contracts;
-using Bit.Core.Implementations;
+using Bit.Core.Models;
 using Bit.Tests.Model.DomainModels;
-using Bit.Tests.Properties;
-using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
-using System.Data.SqlClient;
 
 namespace Bit.Tests.Data.Implementations
 {
     public class InitialTestDataConfiguration : IAppEvents
     {
+        public virtual AppEnvironment AppEnvironment { get; set; }
+
         private readonly IDependencyManager _dependencyManager;
 
         public InitialTestDataConfiguration(IDependencyManager dependencyManager, IDateTimeProvider dateTimeProvider)
@@ -83,38 +82,22 @@ namespace Bit.Tests.Data.Implementations
         {
             using (IDependencyResolver childDependencyResolver = _dependencyManager.CreateChildDependencyResolver())
             {
-                TestDbContext dbContext = null;
+                TestDbContext dbContext = childDependencyResolver.Resolve<TestDbContext>();
 
-                if (Settings.Default.UseInMemoryProviderByDefault)
-                    dbContext = childDependencyResolver.Resolve<TestDbContext>();
-                else
-                {
-                    DbContextOptionsBuilder dbContextOptionsBuilder = new DbContextOptionsBuilder();
+                dbContext.Database.EnsureDeleted();
 
-                    SqlConnection dbConnection = new SqlConnection(DefaultAppEnvironmentsProvider.Current.GetActiveAppEnvironment().GetConfig<string>("TestDbConnectionString"));
+                dbContext.Database.EnsureCreated();
 
-                    dbContextOptionsBuilder.UseSqlServer(dbConnection);
+                dbContext.TestModels.Add(_testModel);
+                dbContext.ParentEntities.AddRange(_parentEntities);
 
-                    dbContext = new TestDbContext(dbContextOptionsBuilder.Options);
-                }
+                TestCity city = new TestCity { Id = Guid.Parse("EF529174-C497-408B-BB4D-C31C205D46BB"), Name = "TestCity", Version = DateTimeOffset.UtcNow.Ticks };
+                TestCustomer customer = new TestCustomer { Id = Guid.Parse("28E1FF65-DA41-4FA3-8AEB-5196494B407D"), City = city, CityId = city.Id, Name = "TestCustomer", Version = DateTimeOffset.UtcNow.Ticks };
 
-                using (dbContext)
-                {
-                    dbContext.Database.EnsureDeleted();
+                dbContext.TestCities.Add(city);
+                dbContext.TestCustomers.Add(customer);
 
-                    dbContext.Database.EnsureCreated();
-
-                    dbContext.TestModels.Add(_testModel);
-                    dbContext.ParentEntities.AddRange(_parentEntities);
-
-                    TestCity city = new TestCity { Id = Guid.Parse("EF529174-C497-408B-BB4D-C31C205D46BB"), Name = "TestCity", Version = DateTimeOffset.UtcNow.Ticks };
-                    TestCustomer customer = new TestCustomer { Id = Guid.Parse("28E1FF65-DA41-4FA3-8AEB-5196494B407D"), City = city, CityId = city.Id, Name = "TestCustomer", Version = DateTimeOffset.UtcNow.Ticks };
-
-                    dbContext.TestCities.Add(city);
-                    dbContext.TestCustomers.Add(customer);
-
-                    dbContext.SaveChanges();
-                }
+                dbContext.SaveChanges();
             }
         }
 

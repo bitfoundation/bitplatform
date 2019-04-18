@@ -1,5 +1,6 @@
 ﻿using Bit.Core;
 using Bit.Core.Contracts;
+using Bit.Core.Models;
 using Bit.Data;
 using Bit.Data.Contracts;
 using Bit.Data.EntityFrameworkCore.Implementations;
@@ -14,9 +15,11 @@ using Bit.Tests.Data.Implementations;
 using Bit.Tests.IdentityServer.Implementations;
 using Bit.Tests.Model.Implementations;
 using Bit.Tests.Properties;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Swashbuckle.Application;
 using System.Collections.Generic;
+using System.Data.Common;
 using System.Data.SqlClient;
 using System.Reflection;
 using System.Web.Http;
@@ -100,10 +103,15 @@ namespace Bit.Tests
 
             dependencyManager.RegisterRepository(typeof(TestEfRepository<>).GetTypeInfo());
 
-            if (Settings.Default.UseInMemoryProviderByDefault)
-                dependencyManager.RegisterEfCoreDbContext<TestDbContext, InMemoryDbContextObjectsProvider>();
-            else
-                dependencyManager.RegisterEfCoreDbContext<TestDbContext, SqlServerDbContextObjectsProvider>();
+            dependencyManager.RegisterEfCoreDbContext<TestDbContext>((serviceProvider, optionsBuilder) =>
+            {
+                string connectionStringOrDatabaseName = serviceProvider.GetRequiredService<AppEnvironment>().GetConfig<string>("TestDbConnectionString");
+
+                if (Settings.Default.UseInMemoryProviderByDefault)
+                    optionsBuilder.UseInMemoryDatabase(connectionStringOrDatabaseName);
+                else
+                    optionsBuilder.UseSqlServer(serviceProvider.GetService<IDbConnectionProvider>().GetDbConnection(connectionStringOrDatabaseName, rollbackOnScopeStatusFailure: true));
+            });
 
             dependencyManager.RegisterDtoEntityMapper();
 
