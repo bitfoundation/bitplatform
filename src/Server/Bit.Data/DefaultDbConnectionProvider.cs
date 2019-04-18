@@ -17,6 +17,8 @@ namespace Bit.Data
 
         public virtual IScopeStatusManager ScopeStatusManager { get; set; }
 
+        public virtual IsolationLevel IsolationLevel => IsolationLevel.ReadCommitted;
+
         public virtual DbTransaction GetDbTransaction(string connectionString)
         {
             if (connectionString == null)
@@ -38,8 +40,13 @@ namespace Bit.Data
             if (!_connections.ContainsKey(connectionString))
             {
                 TDbConnection newConnection = new TDbConnection { ConnectionString = connectionString };
-                newConnection.Open();
-                DbTransaction transaction = newConnection.BeginTransaction(IsolationLevel.ReadCommitted);
+                DbTransaction transaction = null;
+                try
+                {
+                    newConnection.Open();
+                    transaction = newConnection.BeginTransaction(IsolationLevel);
+                }
+                catch { }
                 _connections.Add(connectionString, new DbConnectionAndTransactionPair(newConnection, transaction, rollbackOnScopeStatusFailure));
             }
 
@@ -55,8 +62,13 @@ namespace Bit.Data
             if (!_connections.ContainsKey(connectionString))
             {
                 TDbConnection newDbConnection = new TDbConnection { ConnectionString = connectionString };
-                await newDbConnection.OpenAsync(cancellationToken).ConfigureAwait(false);
-                DbTransaction transaction = newDbConnection.BeginTransaction(IsolationLevel.ReadCommitted);
+                DbTransaction transaction = null;
+                try
+                {
+                    await newDbConnection.OpenAsync(cancellationToken).ConfigureAwait(false);
+                    transaction = newDbConnection.BeginTransaction(IsolationLevel);
+                }
+                catch { }
                 _connections.Add(connectionString, new DbConnectionAndTransactionPair(newDbConnection, transaction, rollbackOnScopeStatusFailure));
             }
 
@@ -78,13 +90,13 @@ namespace Bit.Data
                 try
                 {
                     if (connectionAndTransaction.RollbackOnScopeStatusFailure == false)
-                        connectionAndTransaction.Transaction.Commit();
+                        connectionAndTransaction.Transaction?.Commit();
                     else
                     {
                         if (wasSucceeded)
-                            connectionAndTransaction.Transaction.Commit();
+                            connectionAndTransaction.Transaction?.Commit();
                         else
-                            connectionAndTransaction.Transaction.Rollback();
+                            connectionAndTransaction.Transaction?.Rollback();
                     }
                 }
                 finally
@@ -94,7 +106,7 @@ namespace Bit.Data
             }
         }
 
-        private class DbConnectionAndTransactionPair
+        public class DbConnectionAndTransactionPair
         {
             public DbConnectionAndTransactionPair(TDbConnection connection, DbTransaction transaction, bool rollbackOnScopeStatusFailure)
             {
