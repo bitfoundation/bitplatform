@@ -38,7 +38,7 @@ namespace Bit.Tests.Api.Middlewares.WebApi.Tests
                     .ThenByDescending(t => t.StringProperty)
                     .Top(10)
                     .Skip(7)
-                    .FindEntriesAsync();
+                    .ExecuteAsEnumerableAsync();
 
                 A.CallTo(() => valueChecker.CheckValue((long?)10))
                     .MustHaveHappenedOnceExactly();

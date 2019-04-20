@@ -156,12 +156,12 @@ namespace Bit.Tests.HtmlClient.ThirdPartyLibrariesTests.JayDataContextTests
                 batchClient += bc => bc.Controller<DtoWithEnumController, DtoWithEnum>()
                     .Function(nameof(DtoWithEnumController.GetDtoWithEnumsByGender2))
                     .Set(new { gender = TestGender2.Man })
-                    .FindEntriesAsync();
+                    .ExecuteAsEnumerableAsync();
 
                 batchClient += bc => bc.Controller<DtoWithEnumController, DtoWithEnum>()
                     .Function(nameof(DtoWithEnumController.GetDtoWithEnumsByGender))
                     .Set(new { gender = TestGender.Man })
-                    .FindEntriesAsync();
+                    .ExecuteAsEnumerableAsync();
 
                 await batchClient.ExecuteAsync();
 

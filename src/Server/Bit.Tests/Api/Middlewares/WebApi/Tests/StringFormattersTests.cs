@@ -126,7 +126,7 @@ namespace Bit.Tests.Api.Middlewares.WebApi.Tests
                 IEnumerable<TestModel> testModels = await client.Controller<TestModelsController, TestModel>()
                      .Function(nameof(TestModelsController.GetSomeTestModelsForTest))
                      .Where(tm => tm.StringProperty == "VALUE")
-                     .FindEntriesAsync();
+                     .ExecuteAsEnumerableAsync();
 
                 Assert.AreEqual(1, testModels.Count());
             }
