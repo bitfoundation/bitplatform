@@ -45,13 +45,13 @@ namespace Bit.Core.Contracts
             return dependencyManager;
         }
 
-        public static IDependencyManager RegisterWebApiConfigurationCustomizer<TActionFilter>(this IDependencyManager dependencyManager)
-            where TActionFilter : class, IWebApiConfigurationCustomizer
+        public static IDependencyManager RegisterWebApiConfigurationCustomizer<TWebApiConfigurationCustomizer>(this IDependencyManager dependencyManager)
+            where TWebApiConfigurationCustomizer : class, IWebApiConfigurationCustomizer
         {
             if (dependencyManager == null)
                 throw new ArgumentNullException(nameof(dependencyManager));
 
-            dependencyManager.Register<IWebApiConfigurationCustomizer, TActionFilter>(lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExciting: false);
+            dependencyManager.Register<IWebApiConfigurationCustomizer, TWebApiConfigurationCustomizer>(lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExciting: false);
 
             return dependencyManager;
         }
