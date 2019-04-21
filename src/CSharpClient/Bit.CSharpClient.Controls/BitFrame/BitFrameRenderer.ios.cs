@@ -26,7 +26,7 @@ namespace Bit.View.iOS
             }
         }
 
-        public static void Init()
+        public new static void Init()
         {
 
         }
