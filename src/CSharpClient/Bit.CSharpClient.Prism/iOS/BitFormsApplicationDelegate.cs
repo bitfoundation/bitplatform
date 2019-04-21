@@ -1,4 +1,5 @@
 ﻿#if iOS 
+using Bit.View;
 using Foundation;
 using System;
 using System.Threading.Tasks;

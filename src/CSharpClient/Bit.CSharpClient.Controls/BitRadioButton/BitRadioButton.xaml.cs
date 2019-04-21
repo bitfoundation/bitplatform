@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Windows.Input;
 using Xamarin.Forms;
 
-namespace Bit.CSharpClient.Controls
+namespace Bit.View.Controls
 {
     [ContentProperty(nameof(Content))]
     public partial class BitRadioButton

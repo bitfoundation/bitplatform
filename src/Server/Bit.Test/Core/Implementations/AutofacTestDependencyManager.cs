@@ -7,7 +7,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 
-namespace Bit.Test.Core.Implementations
+namespace Bit.Test.Implementations
 {
     public class AutofacTestDependencyManager : AutofacDependencyManager
     {

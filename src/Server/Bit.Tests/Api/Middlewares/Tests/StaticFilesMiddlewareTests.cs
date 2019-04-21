@@ -5,7 +5,7 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using Bit.Core.Contracts;
 using Bit.Test;
-using Bit.Test.Core.Implementations;
+using Bit.Test.Implementations;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Bit.Tests.Api.Middlewares.Tests

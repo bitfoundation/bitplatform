@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Linq;
 using Bit.Test;
-using Bit.Test.Core.Implementations;
+using Bit.Test.Implementations;
 using Bit.Test.Server;
 using Bit.Tests.Api.ApiControllers;
 using FakeItEasy;

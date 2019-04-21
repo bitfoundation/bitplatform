@@ -1,7 +1,7 @@
 ﻿using Bit.Core.Contracts;
 using Bit.Owin.Exceptions;
 using Bit.Test;
-using Bit.Test.Core.Implementations;
+using Bit.Test.Implementations;
 using Bit.Tests.Api.ApiControllers;
 using Bit.Tests.Core.Contracts;
 using Bit.Tests.Model.DomainModels;

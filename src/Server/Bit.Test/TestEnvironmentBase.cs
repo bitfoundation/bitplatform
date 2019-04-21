@@ -3,7 +3,7 @@ using Bit.Core.Contracts;
 using Bit.Core.Implementations;
 using Bit.Core.Models;
 using Bit.Owin.Implementations;
-using Bit.Test.Core.Implementations;
+using Bit.Test.Implementations;
 using Bit.Test.Server;
 using Microsoft.Extensions.DependencyInjection;
 using System;

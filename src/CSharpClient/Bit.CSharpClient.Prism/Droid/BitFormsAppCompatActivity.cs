@@ -3,11 +3,12 @@
 using Android.Content.PM;
 using Android.OS;
 using Android.Runtime;
+using Bit.View;
 using Xamarin.Essentials;
 using Xamarin.Forms;
 using Xamarin.Forms.Platform.Android;
 
-namespace Bit.Droid
+namespace Bit.Android
 {
     public class BitFormsAppCompatActivity : FormsAppCompatActivity
     {

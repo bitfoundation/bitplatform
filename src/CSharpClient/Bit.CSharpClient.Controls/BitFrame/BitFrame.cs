@@ -1,6 +1,6 @@
 ﻿using Xamarin.Forms;
 
-namespace Bit.CSharpClient.Controls
+namespace Bit.View.Controls
 {
     public class BitFrame : Frame
     {

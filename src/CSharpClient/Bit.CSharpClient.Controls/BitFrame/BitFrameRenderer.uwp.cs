@@ -1,12 +1,12 @@
 ﻿#if UWP
-using Bit.CSharpClient.Controls;
-using Bit.CSharpClient.Controls.UWP;
+using Bit.View.Controls;
+using Bit.View.UWP;
 using Xamarin.Forms;
 using Xamarin.Forms.Platform.UWP;
 
 [assembly: ExportRenderer(typeof(BitFrame), typeof(BitFrameRenderer))]
 
-namespace Bit.CSharpClient.Controls.UWP
+namespace Bit.View.UWP
 {
     public class BitFrameRenderer : FrameRenderer
     {

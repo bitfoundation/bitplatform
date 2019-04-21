@@ -1,4 +1,5 @@
 ﻿#if UWP
+using Bit.View;
 using Bit.ViewModel;
 using System.Linq;
 using System.Reflection;

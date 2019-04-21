@@ -2,8 +2,8 @@
 
 using Android.Content;
 using Android.Graphics.Drawables;
-using Bit.CSharpClient.Controls;
-using Bit.CSharpClient.Controls.Android;
+using Bit.View.Android;
+using Bit.View.Controls;
 using System;
 using System.Reflection;
 using Xamarin.Forms;
@@ -11,7 +11,7 @@ using Xamarin.Forms.Platform.Android;
 
 [assembly: ExportRenderer(typeof(BitFrame), typeof(BitFrameRenderer))]
 
-namespace Bit.CSharpClient.Controls.Android
+namespace Bit.View.Android
 {
     public class BitFrameRenderer : Xamarin.Forms.Platform.Android.FastRenderers.FrameRenderer
     {

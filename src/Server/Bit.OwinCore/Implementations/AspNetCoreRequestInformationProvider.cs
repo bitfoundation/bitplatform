@@ -4,10 +4,9 @@ using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.Extensions.Primitives;
 using System;
 using System.Globalization;
-using System.Linq;
 using System.Security.Claims;
 
-namespace Bit.Owin.Implementations
+namespace Bit.OwinCore.Implementations
 {
     public class AspNetCoreRequestInformationProvider : IRequestInformationProvider
     {

@@ -4,7 +4,7 @@ using Android.OS;
 using Bit.ViewModel.Implementations;
 using System;
 
-namespace Bit.Droid
+namespace Bit.Android
 {
     public class BitSSOUrlRedirectParserActivity : Activity
     {

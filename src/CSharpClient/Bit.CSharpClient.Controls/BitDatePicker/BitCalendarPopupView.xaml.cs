@@ -11,7 +11,7 @@ using Xamarin.Forms.Xaml;
 
 [assembly: XamlCompilation(XamlCompilationOptions.Compile)]
 
-namespace Bit.CSharpClient.Controls
+namespace Bit.View.Controls
 {
     [IgnoreMeInNavigationStack]
     public partial class BitCalendarPopupView

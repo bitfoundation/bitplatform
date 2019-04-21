@@ -6,7 +6,7 @@ using System.Globalization;
 using System.Windows.Input;
 using Xamarin.Forms;
 
-namespace Bit.CSharpClient.Controls
+namespace Bit.View.Controls
 {
     public partial class BitDateTimePicker
     {

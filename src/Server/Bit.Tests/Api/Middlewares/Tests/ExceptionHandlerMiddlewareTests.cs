@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 using Bit.Core.Contracts;
 using Bit.Core.Models;
 using Bit.Test;
-using Bit.Test.Core.Implementations;
+using Bit.Test.Implementations;
 using FakeItEasy;
 using IdentityModel.Client;
 using Microsoft.VisualStudio.TestTools.UnitTesting;

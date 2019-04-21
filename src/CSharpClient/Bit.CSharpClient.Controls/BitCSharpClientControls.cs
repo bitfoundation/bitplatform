@@ -1,22 +1,25 @@
 ﻿using System;
 
-namespace Bit
+namespace Bit.View
 {
     [AttributeUsage(AttributeTargets.Class, AllowMultiple = false)]
     public sealed class IgnoreMeInNavigationStackAttribute : Attribute
     {
     }
+}
 
+namespace Bit.View
+{
     public static class BitCSharpClientControls
     {
         public static void Init()
         {
 #if iOS
-            Bit.CSharpClient.Controls.iOS.BitFrameRenderer.Init();
+            Bit.View.iOS.BitFrameRenderer.Init();
 #elif UWP
-            CSharpClient.Controls.UWP.BitFrameRenderer.Init();
+            Bit.View.UWP.BitFrameRenderer.Init();
 #elif Android
-            Bit.CSharpClient.Controls.Android.BitFrameRenderer.Init();
+            Bit.View.Android.BitFrameRenderer.Init();
 #endif
         }
     }

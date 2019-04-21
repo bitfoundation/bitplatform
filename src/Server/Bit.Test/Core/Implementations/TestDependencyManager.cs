@@ -1,6 +1,6 @@
 ﻿using Bit.Owin.Implementations;
 
-namespace Bit.Test.Core.Implementations
+namespace Bit.Test.Implementations
 {
     public class TestDependencyManager
     {

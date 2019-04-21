@@ -2,7 +2,7 @@
 using Bit.OData.ODataControllers;
 using Bit.Model.Dtos;
 using Bit.Test;
-using Bit.Test.Core.Implementations;
+using Bit.Test.Implementations;
 using Bit.Test.Server;
 using FakeItEasy;
 using IdentityModel.Client;

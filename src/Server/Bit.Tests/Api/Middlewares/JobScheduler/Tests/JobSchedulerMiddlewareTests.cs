@@ -13,7 +13,7 @@ using System;
 using Bit.OData.ODataControllers;
 using Bit.Core.Contracts;
 using Bit.Model.Dtos;
-using Bit.Test.Core.Implementations;
+using Bit.Test.Implementations;
 using System.Linq;
 
 namespace Bit.Tests.Api.Middlewares.JobScheduler.Tests

@@ -1,4 +1,5 @@
-﻿using Bit.ViewModel.Contracts;
+﻿using Bit.View;
+using Bit.ViewModel.Contracts;
 using Prism.Navigation;
 using Rg.Plugins.Popup.Contracts;
 using System;
