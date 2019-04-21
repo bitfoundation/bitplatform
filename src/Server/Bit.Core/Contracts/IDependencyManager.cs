@@ -56,6 +56,10 @@ namespace Bit.Core.Contracts
 
         bool ContainerIsBuilt();
 
+        IDependencyManager Register<T>(string name = null,
+            DependencyLifeCycle lifeCycle = DependencyLifeCycle.PerScopeInstance, bool overwriteExciting = true)
+            where T : class;
+
         IDependencyManager Register<TService, TImplementation>(string name = null,
             DependencyLifeCycle lifeCycle = DependencyLifeCycle.PerScopeInstance, bool overwriteExciting = true)
             where TImplementation : class, TService;

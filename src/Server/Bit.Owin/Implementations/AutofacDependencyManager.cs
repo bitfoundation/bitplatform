@@ -182,6 +182,13 @@ namespace Bit.Owin.Implementations
             return GetContainer().ResolveOptional(serviceType);
         }
 
+        public virtual IDependencyManager Register<T>(string name = null,
+            DependencyLifeCycle lifeCycle = DependencyLifeCycle.PerScopeInstance, bool overwriteExciting = true)
+            where T : class
+        {
+            return Register<T, T>(name, lifeCycle, overwriteExciting);
+        }
+
         public virtual IDependencyManager Register<TService, TImplementation>(string name = null,
             DependencyLifeCycle lifeCycle = DependencyLifeCycle.PerScopeInstance, bool overwriteExciting = true)
             where TImplementation : class, TService
