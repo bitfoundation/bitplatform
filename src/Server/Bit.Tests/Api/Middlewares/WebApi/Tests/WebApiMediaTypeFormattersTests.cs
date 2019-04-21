@@ -1,5 +1,8 @@
-﻿using System.Net.Http;
+﻿using System.Linq;
+using System.Net.Http;
 using System.Threading.Tasks;
+using Bit.Tests.Model.Dto;
+using Bit.WebApi.Contracts;
 using IdentityModel.Client;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -68,6 +71,38 @@ namespace Bit.Tests.Api.Middlewares.WebApi.Tests
                     .GetAsync("/odata/Test/TestModels");
 
                 Assert.AreEqual("application/json; odata.metadata=minimal; odata.streaming=true; charset=utf-8", getTestModelsResponse.Content.Headers.ContentType.ToString());
+            }
+        }
+
+        [TestMethod]
+        [TestCategory("WebApi")]
+        public virtual async Task ODataResponseTest()
+        {
+            using (BitOwinTestEnvironment testEnvironment = new BitOwinTestEnvironment())
+            {
+                TokenResponse token = await testEnvironment.Server.Login("ValidUserName", "ValidPassword", clientId: "TestResOwner");
+
+                {
+                    HttpResponseMessage getCustomersResponse = await testEnvironment.Server.BuildHttpClient(token)
+                        .GetAsync("odata/v1/TestCustomers?$count=true");
+
+                    var odataResponse = await getCustomersResponse.Content.ReadAsAsync<ODataResponse<TestCustomerDto[]>>();
+
+                    Assert.AreEqual(1, odataResponse.TotalCount);
+                    Assert.AreEqual("TestCustomer", odataResponse.Value.Single().Name);
+                    Assert.AreEqual("http://localhost/odata/v1/$metadata#TestCustomers", odataResponse.Context);
+                }
+
+                {
+                    HttpResponseMessage getCustomersResponse = await testEnvironment.Server.BuildHttpClient(token)
+                        .GetAsync("odata/v1/TestCustomers");
+
+                    var odataResponse = await getCustomersResponse.Content.ReadAsAsync<ODataResponse<TestCustomerDto[]>>();
+
+                    Assert.AreEqual(null, odataResponse.TotalCount);
+                    Assert.AreEqual("TestCustomer", odataResponse.Value.Single().Name);
+                    Assert.AreEqual("http://localhost/odata/v1/$metadata#TestCustomers", odataResponse.Context);
+                }
             }
         }
     }

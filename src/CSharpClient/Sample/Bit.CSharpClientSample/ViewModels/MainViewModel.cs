@@ -4,6 +4,7 @@ using Bit.Tests.Model.Dto;
 using Bit.ViewModel;
 using Bit.ViewModel.Contracts;
 using Microsoft.EntityFrameworkCore;
+using Newtonsoft.Json;
 using Prism.Navigation;
 using Refit;
 using Simple.OData.Client;
@@ -87,8 +88,16 @@ namespace Bit.CSharpClientSample.ViewModels
 
         async Task SendHttpRequest()
         {
-            using (HttpResponseMessage response = await HttpClient.GetAsync("odata/Test/parentEntities"))
+            using (HttpResponseMessage response = await HttpClient.GetAsync("odata/v1/TestCustomers?$count=true"))
             {
+                string responseAsString = await response.Content.ReadAsStringAsync();
+
+                ODataResponse<TestCustomerDto[]> odataResponse = JsonConvert.DeserializeObject<ODataResponse<TestCustomerDto[]>>(responseAsString);
+
+                foreach (TestCustomerDto customer in odataResponse.Value)
+                {
+
+                }
             }
         }
 
