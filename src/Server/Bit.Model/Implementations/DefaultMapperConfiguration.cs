@@ -11,7 +11,6 @@ namespace Bit.Model.Implementations
 
         public virtual void Configure(IMapperConfigurationExpression mapperConfigExpression)
         {
-            mapperConfigExpression.ConstructServicesUsing(type => DependencyManager.Resolve(type.GetTypeInfo()));
             mapperConfigExpression.ValidateInlineMaps = false;
             mapperConfigExpression.CreateMissingTypeMaps = true;
         }

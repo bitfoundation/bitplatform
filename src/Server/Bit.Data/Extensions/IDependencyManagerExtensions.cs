@@ -16,38 +16,8 @@ namespace Bit.Core.Contracts
             if (dependencyManager == null)
                 throw new ArgumentNullException(nameof(dependencyManager));
 
-            dependencyManager.RegisterGeneric(typeof(IDtoEntityMapper<,>).GetTypeInfo(), typeof(DefaultDtoEntityMapper<,>).GetTypeInfo(), DependencyLifeCycle.SingleInstance);
-
-            IMapper RegisterMapper(IDependencyResolver resolver)
-            {
-                IEnumerable<IMapperConfiguration> configs = resolver.Resolve<IEnumerable<IMapperConfiguration>>();
-
-                void ConfigureMapper(IMapperConfigurationExpression cfg)
-                {
-                    configs.ToList().ForEach(c => c.Configure(cfg));
-                }
-
-                MapperConfiguration mapperConfig = new MapperConfiguration(ConfigureMapper);
-
-                IMapper mapper = mapperConfig.CreateMapper();
-
-                return mapper;
-            }
-
-            dependencyManager.RegisterUsing(RegisterMapper, lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExciting: false);
-
-            return dependencyManager;
-        }
-
-        public static IDependencyManager RegisterMapperConfiguration<TMapperConfiguration>(this IDependencyManager dependencyManager)
-            where TMapperConfiguration : class, IMapperConfiguration
-        {
-            if (dependencyManager == null)
-                throw new ArgumentNullException(nameof(dependencyManager));
-
-            dependencyManager.Register<IMapperConfiguration, TMapperConfiguration>(lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExciting: false);
-
-            return dependencyManager;
+            dependencyManager.RegisterGeneric(typeof(IDtoEntityMapper<,>).GetTypeInfo(), typeof(DefaultDtoEntityMapper<,>).GetTypeInfo(), DependencyLifeCycle.PerScopeInstance);
+            return dependencyManager.RegisterAutoMapper();
         }
 
         public static IDependencyManager RegisterRepository(this IDependencyManager dependencyManager, TypeInfo repositoryType)
