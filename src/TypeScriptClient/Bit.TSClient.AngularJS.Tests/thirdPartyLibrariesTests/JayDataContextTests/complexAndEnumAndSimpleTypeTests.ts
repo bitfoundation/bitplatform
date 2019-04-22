@@ -24,6 +24,10 @@
     expect(complexDtoLoadedFromServer.ComplexObj.Name).toBe("Test??");
 
     expect((await context.testComplex.getComplexObjects().first()).Name).toBe("Test");
+
+    const testDtoWithNullComplex = (await context.testComplex.getObjectsWithNullCompexTypes().toArray())[0];
+
+    expect(testDtoWithNullComplex.ComplexObj.Name).toBeNull(); // This covers #146 but not #52. It needs more work.
 };
 
 let testComplexTypeWithOfflineDb = async (): Promise<void> => {

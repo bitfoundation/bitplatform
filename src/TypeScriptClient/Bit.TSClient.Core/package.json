@@ -19,7 +19,7 @@
   ],
   "license": "MIT",
   "devDependencies": {
-    "@types/pubsub-js": "^1.5.18",
+    "@types/pubsub-js": "^1.5.19",
     "@types/signalr": "^2.2.35"
   },
   "optionalDependencies": {

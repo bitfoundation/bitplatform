@@ -77,6 +77,15 @@ namespace Bit.Tests.Api.ApiControllers
             return new[] { new ComplexObj2 { Name = "Test" } };
         }
 
+        [Function]
+        public virtual TestComplexDto[] GetObjectsWithNullCompexTypes()
+        {
+            return new[]
+            {
+                new TestComplexDto { EntityId = 1, ComplexObj = null }
+            };
+        }
+
         public class GetValuesParameters
         {
             public IEnumerable<int> values { get; set; }
