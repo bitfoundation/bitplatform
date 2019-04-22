@@ -100,6 +100,11 @@ namespace Bit.Core.Models
             return Configs.Any(c => string.Equals(c.Key, configKey, StringComparison.OrdinalIgnoreCase));
         }
 
+        public virtual void AddOrReplace<T>(string key, T value)
+        {
+            AddOrReplace(new EnvironmentConfig { Key = key, Value = value });
+        }
+
         public virtual void AddOrReplace(EnvironmentConfig config)
         {
             if (config == null)
