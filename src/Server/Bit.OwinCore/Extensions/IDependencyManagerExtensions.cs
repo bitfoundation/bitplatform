@@ -77,7 +77,7 @@ namespace Bit.Core.Contracts
                     {
                         string path = context.Request.Path.Value;
 
-                        if (path.StartsWith("/core", StringComparison.InvariantCultureIgnoreCase) || path.StartsWith("/signalr", StringComparison.InvariantCultureIgnoreCase) || path.EndsWith("$batch", StringComparison.InvariantCultureIgnoreCase))
+                        if (path.StartsWith("/core", StringComparison.InvariantCultureIgnoreCase) || path.StartsWith("/signalr", StringComparison.InvariantCultureIgnoreCase) || path.StartsWith("/jobs", StringComparison.InvariantCultureIgnoreCase) || path.EndsWith("$batch", StringComparison.InvariantCultureIgnoreCase))
                         {
                             context.Features.GetType().GetProperty("AllowSynchronousIO")?.SetValue(context.Features, true);
                         }
