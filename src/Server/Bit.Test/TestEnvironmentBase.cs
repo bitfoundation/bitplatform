@@ -143,6 +143,7 @@ namespace Bit.Test
             {
                 implementationType => GetBaseTypes(implementationType).Any(t => t.Name == "DbContext"),
                 implementationType => GetBaseTypes(implementationType).Any(t => t.Name == "Hub"),
+                implementationType => GetBaseTypes(implementationType).Any(t => t.Name == "Profile"), /*AutoMapper*/
                 implementationType => implementationType.IsArray
             };
         }

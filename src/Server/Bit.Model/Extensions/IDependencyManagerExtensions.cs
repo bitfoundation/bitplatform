@@ -11,6 +11,17 @@ namespace Bit.Core.Contracts
     {
         public static IDependencyManager RegisterAutoMapper(this IDependencyManager dependencyManager)
         {
+            TypeInfo[] allTypes = AssemblyContainer.Current.AssembliesWithDefaultAssemblies()
+                .SelectMany(asm => asm.GetLoadableExportedTypes())
+                .Where(t => t.IsClass && !t.IsAbstract)
+                .ToArray();
+
+            TypeInfo profileTypeInfo = typeof(Profile).GetTypeInfo();
+
+            TypeInfo[] profiles = allTypes
+                .Where(t => profileTypeInfo.IsAssignableFrom(t))
+                .ToArray();
+
             IConfigurationProvider RegisterMapperConfiguration(IDependencyResolver resolver)
             {
                 IEnumerable<IMapperConfiguration> configs = resolver.Resolve<IEnumerable<IMapperConfiguration>>();
@@ -18,6 +29,11 @@ namespace Bit.Core.Contracts
                 void ConfigureMapper(IMapperConfigurationExpression cfg)
                 {
                     configs.ToList().ForEach(c => c.Configure(cfg));
+
+                    foreach (TypeInfo profileType in profiles)
+                    {
+                        cfg.AddProfile((Profile)resolver.Resolve(profileType));
+                    }
                 }
 
                 MapperConfiguration mapperConfig = new MapperConfiguration(ConfigureMapper);
@@ -38,30 +54,32 @@ namespace Bit.Core.Contracts
             dependencyManager.RegisterUsing(RegisterMapperConfiguration, lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExciting: false);
             dependencyManager.RegisterUsing(RegisterMapper, lifeCycle: DependencyLifeCycle.PerScopeInstance, overwriteExciting: false);
 
-            Type[] openTypes = new[]
+            TypeInfo[] openTypes = new[]
             {
-                typeof(IValueResolver<,,>),
-                typeof(IMemberValueResolver<,,,>),
-                typeof(ITypeConverter<,>),
-                typeof(IValueConverter<,>),
-                typeof(IMappingAction<,>)
+                typeof(IValueResolver<,,>).GetTypeInfo(),
+                typeof(IMemberValueResolver<,,,>).GetTypeInfo(),
+                typeof(ITypeConverter<,>).GetTypeInfo(),
+                typeof(IValueConverter<,>).GetTypeInfo(),
+                typeof(IMappingAction<,>).GetTypeInfo()
             };
 
-            foreach (TypeInfo type in openTypes.SelectMany(openType => AssemblyContainer.Current.AssembliesWithDefaultAssemblies().SelectMany(asm => asm.GetLoadableExportedTypes())
-                .Where(t => t.IsClass
-                    && !t.IsAbstract
-                    && t.AsType().ImplementsGenericInterface(openType))))
+            foreach (TypeInfo type in openTypes.SelectMany(openType => allTypes.Where(t => t.ImplementsGenericInterface(openType))))
             {
                 dependencyManager.Register(type, type, lifeCycle: DependencyLifeCycle.Transient, overwriteExciting: false);
+            }
+
+            foreach (TypeInfo profileType in profiles)
+            {
+                dependencyManager.Register(profileType, profileType, lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExciting: false);
             }
 
             return dependencyManager;
         }
 
-        static bool ImplementsGenericInterface(this Type type, Type interfaceType)
-            => type.IsGenericType(interfaceType) || type.GetTypeInfo().ImplementedInterfaces.Any(@interface => @interface.IsGenericType(interfaceType));
+        static bool ImplementsGenericInterface(this TypeInfo type, TypeInfo interfaceType)
+            => type.IsGenericType(interfaceType) || type.GetTypeInfo().ImplementedInterfaces.Select(@interface => @interface.GetTypeInfo()).Any(@interface => @interface.IsGenericType(interfaceType));
 
-        static bool IsGenericType(this Type type, Type genericType)
+        static bool IsGenericType(this TypeInfo type, TypeInfo genericType)
             => type.GetTypeInfo().IsGenericType && type.GetGenericTypeDefinition() == genericType;
 
         public static IDependencyManager RegisterMapperConfiguration<TMapperConfiguration>(this IDependencyManager dependencyManager)
