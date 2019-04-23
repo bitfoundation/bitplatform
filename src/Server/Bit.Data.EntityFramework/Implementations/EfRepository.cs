@@ -18,12 +18,13 @@ namespace Bit.Data.EntityFramework.Implementations
     /// Entity Framework implementation of <see cref="Bit.Data.Contracts.IRepository{TEntity}"/> which uses <see cref="Bit.Data.EntityFramework.Implementations.EfDbContextBase"/>
     /// </summary>
     /// <typeparam name="TEntity">Entity class with <see cref="Bit.Model.Contracts.IEntity"/> marker</typeparam>
-    public class EfRepository<TEntity> : IRepository<TEntity>
+    public class EfRepository<TDbContext, TEntity> : IRepository<TEntity>
         where TEntity : class, IEntity
+        where TDbContext : DbContext
     {
-        private EfDbContextBase _dbContext;
+        private TDbContext _dbContext;
 
-        public virtual EfDbContextBase DbContext
+        public virtual TDbContext DbContext
         {
             get => _dbContext;
             set
@@ -72,7 +73,7 @@ namespace Bit.Data.EntityFramework.Implementations
             }
             finally
             {
-                if (DbContext.ChangeTrackingEnabled() == false)
+                if (DbContext is EfDbContextBase dbContextBase && dbContextBase.ChangeTrackingEnabled() == false)
                     Detach(entityToAdd);
             }
         }
@@ -102,7 +103,7 @@ namespace Bit.Data.EntityFramework.Implementations
             }
             finally
             {
-                if (DbContext.ChangeTrackingEnabled() == false)
+                if (DbContext is EfDbContextBase dbContextBase && dbContextBase.ChangeTrackingEnabled() == false)
                     entitiesToAddList.ForEach(Detach);
             }
         }
@@ -126,7 +127,7 @@ namespace Bit.Data.EntityFramework.Implementations
             }
             finally
             {
-                if (DbContext.ChangeTrackingEnabled() == false)
+                if (DbContext is EfDbContextBase dbContextBase && dbContextBase.ChangeTrackingEnabled() == false)
                     Detach(entityToUpdate);
             }
         }
@@ -156,7 +157,7 @@ namespace Bit.Data.EntityFramework.Implementations
             }
             finally
             {
-                if (DbContext.ChangeTrackingEnabled() == false)
+                if (DbContext is EfDbContextBase dbContextBase && dbContextBase.ChangeTrackingEnabled() == false)
                     Detach(entityToDelete);
             }
         }
@@ -200,7 +201,7 @@ namespace Bit.Data.EntityFramework.Implementations
             }
             finally
             {
-                if (DbContext.ChangeTrackingEnabled() == false)
+                if (DbContext is EfDbContextBase dbContextBase && dbContextBase.ChangeTrackingEnabled() == false)
                     Detach(entityToAdd);
             }
         }
@@ -230,7 +231,7 @@ namespace Bit.Data.EntityFramework.Implementations
             }
             finally
             {
-                if (DbContext.ChangeTrackingEnabled() == false)
+                if (DbContext is EfDbContextBase dbContextBase && dbContextBase.ChangeTrackingEnabled() == false)
                     entitiesToAddList.ForEach(Detach);
             }
         }
@@ -254,7 +255,7 @@ namespace Bit.Data.EntityFramework.Implementations
             }
             finally
             {
-                if (DbContext.ChangeTrackingEnabled() == false)
+                if (DbContext is EfDbContextBase dbContextBase && dbContextBase.ChangeTrackingEnabled() == false)
                     Detach(entityToUpdate);
             }
         }
@@ -284,14 +285,14 @@ namespace Bit.Data.EntityFramework.Implementations
             }
             finally
             {
-                if (DbContext.ChangeTrackingEnabled() == false)
+                if (DbContext is EfDbContextBase dbContextBase && dbContextBase.ChangeTrackingEnabled() == false)
                     Detach(entityToDelete);
             }
         }
 
         public virtual IQueryable<TEntity> GetAll()
         {
-            if (DbContext.ChangeTrackingEnabled() == false)
+            if (DbContext is EfDbContextBase dbContextBase && dbContextBase.ChangeTrackingEnabled() == false)
                 return Set.AsNoTracking();
             else
                 return Set;
@@ -299,7 +300,7 @@ namespace Bit.Data.EntityFramework.Implementations
 
         public virtual Task<IQueryable<TEntity>> GetAllAsync(CancellationToken cancellationToken)
         {
-            if (DbContext.ChangeTrackingEnabled() == false)
+            if (DbContext is EfDbContextBase dbContextBase && dbContextBase.ChangeTrackingEnabled() == false)
                 return Task.FromResult((IQueryable<TEntity>)Set.AsNoTracking());
             else
                 return Task.FromResult((IQueryable<TEntity>)Set);
@@ -321,7 +322,7 @@ namespace Bit.Data.EntityFramework.Implementations
             }
             finally
             {
-                if (DbContext.ChangeTrackingEnabled() == false)
+                if (DbContext is EfDbContextBase dbContextBase && dbContextBase.ChangeTrackingEnabled() == false)
                     Detach(entity);
             }
         }
@@ -342,7 +343,7 @@ namespace Bit.Data.EntityFramework.Implementations
             }
             finally
             {
-                if (DbContext.ChangeTrackingEnabled() == false)
+                if (DbContext is EfDbContextBase dbContextBase && dbContextBase.ChangeTrackingEnabled() == false)
                     Detach(entity);
             }
         }
@@ -361,7 +362,7 @@ namespace Bit.Data.EntityFramework.Implementations
             }
             finally
             {
-                if (DbContext.ChangeTrackingEnabled() == false)
+                if (DbContext is EfDbContextBase dbContextBase && dbContextBase.ChangeTrackingEnabled() == false)
                     Detach(entity);
             }
         }
@@ -380,7 +381,7 @@ namespace Bit.Data.EntityFramework.Implementations
             }
             finally
             {
-                if (DbContext.ChangeTrackingEnabled() == false)
+                if (DbContext is EfDbContextBase dbContextBase && dbContextBase.ChangeTrackingEnabled() == false)
                     Detach(entity);
             }
         }
@@ -422,7 +423,7 @@ namespace Bit.Data.EntityFramework.Implementations
             }
             finally
             {
-                if (DbContext.ChangeTrackingEnabled() == false)
+                if (DbContext is EfDbContextBase dbContextBase && dbContextBase.ChangeTrackingEnabled() == false)
                     Detach(entity);
             }
         }
@@ -437,14 +438,14 @@ namespace Bit.Data.EntityFramework.Implementations
             }
             finally
             {
-                if (DbContext.ChangeTrackingEnabled() == false)
+                if (DbContext is EfDbContextBase dbContextBase && dbContextBase.ChangeTrackingEnabled() == false)
                     Detach(entity);
             }
         }
 
         public virtual IQueryable<TChild> GetCollectionQuery<TChild>(TEntity entity, Expression<Func<TEntity, IEnumerable<TChild>>> childs) where TChild : class
         {
-            if (DbContext.ChangeTrackingEnabled() == false)
+            if (DbContext is EfDbContextBase dbContextBase && dbContextBase.ChangeTrackingEnabled() == false)
                 throw new InvalidOperationException("This operation is valid for db context with change tracking enabled");
 
             Attach(entity);
@@ -457,5 +458,11 @@ namespace Bit.Data.EntityFramework.Implementations
         public virtual EfDataProviderSpecificMethodsProvider EfDataProviderSpecificMethodsProvider { get; set; }
 
         public virtual IDateTimeProvider DateTimeProvider { get; set; }
+    }
+
+    public class EfRepository<TEntity> : EfRepository<EfDbContextBase, TEntity>, IRepository<TEntity>
+        where TEntity : class, IEntity
+    {
+
     }
 }

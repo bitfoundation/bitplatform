@@ -11,12 +11,13 @@ using System.Threading.Tasks;
 
 namespace Bit.Data.Implementations
 {
-    public class EfCoreRepository<TDto> : IRepository<TDto>
-           where TDto : class, IDto
+    public class EfCoreRepository<TDbContext, TDto> : IRepository<TDto>
+        where TDto : class, IDto
+        where TDbContext : DbContext
     {
-        private EfCoreDbContextBase _DbContext;
+        private TDbContext _DbContext;
 
-        public virtual EfCoreDbContextBase DbContext
+        public virtual TDbContext DbContext
         {
             get => _DbContext;
             set
@@ -43,7 +44,7 @@ namespace Bit.Data.Implementations
             }
             finally
             {
-                if (DbContext.ChangeTrackingEnabled() == false)
+                if (DbContext is EfCoreDbContextBase dbContextBase && dbContextBase.ChangeTrackingEnabled() == false)
                     Detach(dtoToAdd);
             }
         }
@@ -65,7 +66,7 @@ namespace Bit.Data.Implementations
             }
             finally
             {
-                if (DbContext.ChangeTrackingEnabled() == false)
+                if (DbContext is EfCoreDbContextBase dbContextBase && dbContextBase.ChangeTrackingEnabled() == false)
                     dtosToAddList.ForEach(Detach);
             }
         }
@@ -86,7 +87,7 @@ namespace Bit.Data.Implementations
             }
             finally
             {
-                if (DbContext.ChangeTrackingEnabled() == false)
+                if (DbContext is EfCoreDbContextBase dbContextBase && dbContextBase.ChangeTrackingEnabled() == false)
                     Detach(dtoToUpdate);
             }
         }
@@ -106,7 +107,7 @@ namespace Bit.Data.Implementations
             }
             finally
             {
-                if (DbContext.ChangeTrackingEnabled() == false)
+                if (DbContext is EfCoreDbContextBase dbContextBase && dbContextBase.ChangeTrackingEnabled() == false)
                     Detach(dtoToDelete);
             }
         }
@@ -145,7 +146,7 @@ namespace Bit.Data.Implementations
             }
             finally
             {
-                if (DbContext.ChangeTrackingEnabled() == false)
+                if (DbContext is EfCoreDbContextBase dbContextBase && dbContextBase.ChangeTrackingEnabled() == false)
                     Detach(dtoToAdd);
             }
         }
@@ -167,7 +168,7 @@ namespace Bit.Data.Implementations
             }
             finally
             {
-                if (DbContext.ChangeTrackingEnabled() == false)
+                if (DbContext is EfCoreDbContextBase dbContextBase && dbContextBase.ChangeTrackingEnabled() == false)
                     dtosToAddList.ForEach(Detach);
             }
         }
@@ -188,7 +189,7 @@ namespace Bit.Data.Implementations
             }
             finally
             {
-                if (DbContext.ChangeTrackingEnabled() == false)
+                if (DbContext is EfCoreDbContextBase dbContextBase && dbContextBase.ChangeTrackingEnabled() == false)
                     Detach(dtoToUpdate);
             }
         }
@@ -208,14 +209,14 @@ namespace Bit.Data.Implementations
             }
             finally
             {
-                if (DbContext.ChangeTrackingEnabled() == false)
+                if (DbContext is EfCoreDbContextBase dbContextBase && dbContextBase.ChangeTrackingEnabled() == false)
                     Detach(dtoToDelete);
             }
         }
 
         public virtual IQueryable<TDto> GetAll()
         {
-            if (DbContext.ChangeTrackingEnabled() == false)
+            if (DbContext is EfCoreDbContextBase dbContextBase && dbContextBase.ChangeTrackingEnabled() == false)
                 return Set.AsNoTracking();
             else
                 return Set;
@@ -223,7 +224,7 @@ namespace Bit.Data.Implementations
 
         public virtual Task<IQueryable<TDto>> GetAllAsync(CancellationToken cancellationToken = default)
         {
-            if (DbContext.ChangeTrackingEnabled() == false)
+            if (DbContext is EfCoreDbContextBase dbContextBase && dbContextBase.ChangeTrackingEnabled() == false)
                 return Task.FromResult(Set.AsNoTracking());
             else
                 return Task.FromResult((IQueryable<TDto>)Set);
@@ -243,7 +244,7 @@ namespace Bit.Data.Implementations
             }
             finally
             {
-                if (DbContext.ChangeTrackingEnabled() == false)
+                if (DbContext is EfCoreDbContextBase dbContextBase && dbContextBase.ChangeTrackingEnabled() == false)
                     Detach(dto);
             }
         }
@@ -262,7 +263,7 @@ namespace Bit.Data.Implementations
             }
             finally
             {
-                if (DbContext.ChangeTrackingEnabled() == false)
+                if (DbContext is EfCoreDbContextBase dbContextBase && dbContextBase.ChangeTrackingEnabled() == false)
                     Detach(dto);
             }
         }
@@ -281,7 +282,7 @@ namespace Bit.Data.Implementations
             }
             finally
             {
-                if (DbContext.ChangeTrackingEnabled() == false)
+                if (DbContext is EfCoreDbContextBase dbContextBase && dbContextBase.ChangeTrackingEnabled() == false)
                     Detach(dto);
             }
         }
@@ -300,7 +301,7 @@ namespace Bit.Data.Implementations
             }
             finally
             {
-                if (DbContext.ChangeTrackingEnabled() == false)
+                if (DbContext is EfCoreDbContextBase dbContextBase && dbContextBase.ChangeTrackingEnabled() == false)
                     Detach(dto);
             }
         }
@@ -330,7 +331,7 @@ namespace Bit.Data.Implementations
             }
             finally
             {
-                if (DbContext.ChangeTrackingEnabled() == false)
+                if (DbContext is EfCoreDbContextBase dbContextBase && dbContextBase.ChangeTrackingEnabled() == false)
                     Detach(dto);
             }
         }
@@ -345,19 +346,25 @@ namespace Bit.Data.Implementations
             }
             finally
             {
-                if (DbContext.ChangeTrackingEnabled() == false)
+                if (DbContext is EfCoreDbContextBase dbContextBase && dbContextBase.ChangeTrackingEnabled() == false)
                     Detach(dto);
             }
         }
 
         public virtual IQueryable<TChild> GetCollectionQuery<TChild>(TDto dto, Expression<Func<TDto, IEnumerable<TChild>>> childs) where TChild : class
         {
-            if (DbContext.ChangeTrackingEnabled() == false)
+            if (DbContext is EfCoreDbContextBase dbContextBase && dbContextBase.ChangeTrackingEnabled() == false)
                 throw new InvalidOperationException("This operation is valid for db context with change tracking enabled");
 
             Attach(dto);
 
             return DbContext.Entry(dto).Collection(childs).Query();
         }
+    }
+
+    public class EfCoreRepository<TDto> : EfCoreRepository<EfCoreDbContextBase, TDto>, IRepository<TDto>
+        where TDto : class, IDto
+    {
+
     }
 }
