@@ -19,7 +19,7 @@
   ],
   "license": "MIT",
   "devDependencies": {
-    "@types/pubsub-js": "^1.5.19",
+    "@types/pubsub-js": "^1.5.18",
     "@types/signalr": "^2.2.35"
   },
   "optionalDependencies": {
@@ -28,10 +28,10 @@
     "event-source-polyfill": "^1.0.5",
     "pubsub-js": "^1.7.0",
     "regenerator": "^0.13.3",
-    "signalr": "^2.4.0",
+    "signalr": "^2.4.1",
     "whatwg-fetch": "^3.0.0"
   },
   "dependencies": {
-    "@bit/jaydata": "^1.5.18"
+    "@bit/jaydata": "^1.5.19"
   }
 }

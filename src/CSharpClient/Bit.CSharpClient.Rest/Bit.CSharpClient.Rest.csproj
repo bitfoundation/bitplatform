@@ -38,20 +38,20 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="IdentityModel" Version="3.10.6" />
+    <PackageReference Include="IdentityModel" Version="3.10.7" />
     <PackageReference Include="Microsoft.Extensions.Http" Version="2.2.0" />
     <PackageReference Include="Microsoft.Extensions.Http.Polly" Version="2.2.0" />
     <PackageReference Include="MSBuild.Sdk.Extras" Version="1.6.68" PrivateAssets="All" />
-    <PackageReference Include="Refit" Version="4.6.99" />
+    <PackageReference Include="Refit" Version="4.6.107" />
     <PackageReference Include="SourceLink.Embed.AllSourceFiles" Version="2.8.3" PrivateAssets="all" />
     <PackageReference Include="SourceLink.Copy.PdbFiles" Version="2.8.3" PrivateAssets="All" />
 
-    <PackageReference Include="Fody" Version="4.2.1">
+    <PackageReference Include="Fody" Version="5.0.0">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
     </PackageReference>
 
-    <PackageReference Include="PropertyChanged.Fody" Version="2.6.0">
+    <PackageReference Include="PropertyChanged.Fody" Version="3.0.0">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
     </PackageReference>
