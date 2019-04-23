@@ -6,7 +6,7 @@ using Xamarin.Essentials;
 
 namespace Bit.ViewModel.Implementations
 {
-    public abstract class TelementryServiceBase : ITelemetryService
+    public abstract class TelemetryServiceBase : ITelemetryService
     {
         public virtual IMessageReceiver MessageReceiver { get; set; }
 

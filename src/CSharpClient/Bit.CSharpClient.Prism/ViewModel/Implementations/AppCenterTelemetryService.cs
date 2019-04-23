@@ -6,23 +6,25 @@ using System.Collections.Generic;
 
 namespace Bit.ViewModel.Implementations
 {
-    public class AppCenterTelementryService : TelementryServiceBase, ITelemetryService
+    public class AppCenterTelemetryService : TelemetryServiceBase, ITelemetryService
     {
         private bool _isInited = false;
 
-        private static AppCenterTelementryService _current;
+        private static AppCenterTelemetryService _current;
 
-        public static AppCenterTelementryService Current
+        public static AppCenterTelemetryService Current
         {
-            get => _current ?? (_current = new AppCenterTelementryService());
+            get => _current ?? (_current = new AppCenterTelemetryService());
             set => _current = value;
         }
 
+#if UWP || Android || iOS
         public virtual void Init(string appSecret, params Type[] services)
         {
             AppCenter.Start(appSecret, services);
             _isInited = true;
         }
+#endif
 
         public override bool IsConfigured()
         {

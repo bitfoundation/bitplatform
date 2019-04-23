@@ -21,9 +21,9 @@ namespace Bit.ViewModel
             }
 
 #if UWP
-            ApplicationInsightsTelementryService.Current.TrackException(exp, properties);
+            ApplicationInsightsTelemetryService.Current.TrackException(exp, properties);
 #else
-            AppCenterTelementryService.Current.TrackException(exp, properties);
+            AppCenterTelemetryService.Current.TrackException(exp, properties);
 #endif
         }
     }

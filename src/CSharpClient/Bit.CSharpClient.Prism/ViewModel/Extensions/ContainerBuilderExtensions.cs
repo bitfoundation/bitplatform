@@ -23,9 +23,9 @@ namespace Autofac
                 .PreserveExistingDefaults();
 
 #if UWP
-            containerBuilder.RegisterInstance<ITelemetryService>(ApplicationInsightsTelementryService.Current);
+            containerBuilder.RegisterInstance<ITelemetryService>(ApplicationInsightsTelemetryService.Current);
 #endif
-            containerBuilder.RegisterInstance<ITelemetryService>(AppCenterTelementryService.Current);
+            containerBuilder.RegisterInstance<ITelemetryService>(AppCenterTelemetryService.Current);
 
             containerBuilder.RegisterBuildCallback(container =>
             {
@@ -33,9 +33,9 @@ namespace Autofac
                 if (messageReceiver != null)
                 {
 #if UWP
-                    ApplicationInsightsTelementryService.Current.MessageReceiver = messageReceiver;
+                    ApplicationInsightsTelemetryService.Current.MessageReceiver = messageReceiver;
 #endif
-                    AppCenterTelementryService.Current.MessageReceiver = messageReceiver;
+                    AppCenterTelemetryService.Current.MessageReceiver = messageReceiver;
                 }
             });
 

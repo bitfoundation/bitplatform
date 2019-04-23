@@ -8,15 +8,15 @@ using System.Collections.Generic;
 
 namespace Bit.ViewModel.Implementations
 {
-    public class ApplicationInsightsTelementryService : TelementryServiceBase, ITelemetryService
+    public class ApplicationInsightsTelemetryService : TelemetryServiceBase, ITelemetryService
     {
         private TelemetryClient _client;
         private bool _isInited = false;
-        private static ApplicationInsightsTelementryService _current;
+        private static ApplicationInsightsTelemetryService _current;
 
-        public static ApplicationInsightsTelementryService Current
+        public static ApplicationInsightsTelemetryService Current
         {
-            get => _current ?? (_current = new ApplicationInsightsTelementryService());
+            get => _current ?? (_current = new ApplicationInsightsTelemetryService());
             set => _current = value;
         }
 
