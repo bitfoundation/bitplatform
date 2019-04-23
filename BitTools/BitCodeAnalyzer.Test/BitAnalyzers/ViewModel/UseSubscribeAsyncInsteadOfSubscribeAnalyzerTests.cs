@@ -25,7 +25,7 @@ namespace BitCodeAnalyzer.Test.BitAnalyzers.ViewModel
                 Id = nameof(UseSubscribeAsyncInsteadOfSubscribeAnalyzer),
                 Message = UseSubscribeAsyncInsteadOfSubscribeAnalyzer.Message,
                 Severity = DiagnosticSeverity.Error,
-                Locations = new[] { new DiagnosticResultLocation(Path.Combine(basePath, @"Tests.cs"), 12, 13) }
+                Locations = new[] { new DiagnosticResultLocation(Path.Combine(basePath, @"Tests.cs"), 15, 13) }
             };
 
             await VerifyCSharpDiagnostic(subscribeUsage1);

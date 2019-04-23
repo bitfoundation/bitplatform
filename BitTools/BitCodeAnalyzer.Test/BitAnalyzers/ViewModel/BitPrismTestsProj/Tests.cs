@@ -1,4 +1,7 @@
-﻿using Prism.Events;
+﻿using Microsoft.AppCenter;
+using Microsoft.AppCenter.Analytics;
+using Microsoft.AppCenter.Crashes;
+using Prism.Events;
 using Prism.Ioc;
 using Prism.Navigation;
 using Prism.Services;
@@ -20,6 +23,10 @@ namespace BitPrismTestsProj
             IDeviceService devService = null;
 
             devService.BeginInvokeOnMainThread(() => { });
+
+            AppCenter.Configure(appSecret: "");
+            Crashes.TrackError(exception: null);
+            Analytics.TrackEvent(name: "");
         }
     }
 

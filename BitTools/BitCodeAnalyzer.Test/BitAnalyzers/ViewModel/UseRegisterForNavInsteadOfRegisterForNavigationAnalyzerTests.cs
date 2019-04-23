@@ -25,7 +25,7 @@ namespace BitCodeAnalyzer.Test.BitAnalyzers.ViewModel
                 Id = nameof(UseRegisterForNavInsteadOfRegisterForNavigationAnalyzer),
                 Message = UseRegisterForNavInsteadOfRegisterForNavigationAnalyzer.Message,
                 Severity = DiagnosticSeverity.Error,
-                Locations = new[] { new DiagnosticResultLocation(Path.Combine(basePath, @"Tests.cs"), 18, 13) }
+                Locations = new[] { new DiagnosticResultLocation(Path.Combine(basePath, @"Tests.cs"), 21, 13) }
             };
 
             await VerifyCSharpDiagnostic(registerForNavigationUsage1);

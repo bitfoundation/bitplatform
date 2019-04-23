@@ -25,7 +25,7 @@ namespace BitCodeAnalyzer.Test.BitAnalyzers.ViewModel
                 Id = nameof(UseBeginInvokeOnMainThreadAsyncInsteadOfBeginInvokeOnMainThreadAnalyzer),
                 Message = UseBeginInvokeOnMainThreadAsyncInsteadOfBeginInvokeOnMainThreadAnalyzer.Message,
                 Severity = DiagnosticSeverity.Error,
-                Locations = new[] { new DiagnosticResultLocation(Path.Combine(basePath, @"Tests.cs"), 22, 13) }
+                Locations = new[] { new DiagnosticResultLocation(Path.Combine(basePath, @"Tests.cs"), 25, 13) }
             };
 
             await VerifyCSharpDiagnostic(deviceServiceUsage);
