@@ -84,7 +84,12 @@ namespace Bit.Tests.Data.Implementations
             {
                 TestDbContext dbContext = childDependencyResolver.Resolve<TestDbContext>();
 
-                dbContext.Database.EnsureDeleted();
+                dbContext.Database.EnsureDeleted(); // after delete, scope and it's transaction are not much usable!
+            }
+
+            using (IDependencyResolver childDependencyResolver = _dependencyManager.CreateChildDependencyResolver())
+            {
+                TestDbContext dbContext = childDependencyResolver.Resolve<TestDbContext>();
 
                 dbContext.Database.EnsureCreated();
 

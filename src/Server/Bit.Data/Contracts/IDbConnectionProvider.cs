@@ -11,6 +11,6 @@ namespace Bit.Data.Contracts
 
         DbConnection GetDbConnection(string connectionString, bool rollbackOnScopeStatusFailure);
 
-        DbTransaction GetDbTransaction(string connectionString);
+        DbTransaction GetDbTransaction(DbConnection dbConnection);
     }
 }

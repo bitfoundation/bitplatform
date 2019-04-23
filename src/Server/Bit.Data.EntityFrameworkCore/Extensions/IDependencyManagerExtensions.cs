@@ -41,20 +41,18 @@ namespace Bit.Core.Contracts
             {
                 DbContextOptions options = c.Resolve<DbContextOptions>();
 
-                string connectionString = null;
                 DbConnection dbConnectionFromDbContextOptionsBuilder = null;
 
                 foreach (RelationalOptionsExtension ext in options.Extensions.OfType<RelationalOptionsExtension>())
                 {
                     dbConnectionFromDbContextOptionsBuilder = dbConnectionFromDbContextOptionsBuilder ?? ext.Connection;
-                    connectionString = connectionString ?? dbConnectionFromDbContextOptionsBuilder?.ConnectionString;
                 }
 
                 TDbContext dbContext = (TDbContext)ActivatorUtilities.CreateInstance(c, typeof(TDbContext).GetTypeInfo());
 
-                if (connectionString != null) // It's not a relation db, for example UseInMemoryDatabase
+                if (dbConnectionFromDbContextOptionsBuilder != null) // It's not a relation db, for example UseInMemoryDatabase
                 {
-                    DbTransaction transaction = c.Resolve<IDbConnectionProvider>().GetDbTransaction(connectionString);
+                    DbTransaction transaction = c.Resolve<IDbConnectionProvider>().GetDbTransaction(dbConnectionFromDbContextOptionsBuilder);
 
                     if (transaction != null) // When DbConnectionProvider has failed to open a connection to db due connection open timeout or any other reasons such as database does not exist, it won't provide any transaction too.
                     {

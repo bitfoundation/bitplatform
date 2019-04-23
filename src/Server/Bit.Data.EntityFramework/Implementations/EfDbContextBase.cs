@@ -56,7 +56,7 @@ namespace Bit.Data.EntityFramework.Implementations
         public EfDbContextBase(string connectionString, IDbConnectionProvider dbConnectionProvider)
             : this(dbConnectionProvider.GetDbConnection(connectionString, rollbackOnScopeStatusFailure: true), contextOwnsConnection: false)
         {
-            Database.UseTransaction(dbConnectionProvider.GetDbTransaction(connectionString));
+            Database.UseTransaction(dbConnectionProvider.GetDbTransaction(Database.Connection));
         }
 
         public virtual bool ChangeTrackingEnabled()
