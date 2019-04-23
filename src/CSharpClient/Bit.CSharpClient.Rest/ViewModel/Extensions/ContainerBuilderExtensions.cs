@@ -117,6 +117,7 @@ namespace Autofac
             containerBuilder
                 .RegisterType<THttpMessageHandler>()
                 .Named<HttpMessageHandler>(ContractKeys.DefaultHttpMessageHandler)
+                .PropertiesAutowired(PropertyWiringOptions.PreserveSetValues)
                 .SingleInstance()
                 .PreserveExistingDefaults();
 

@@ -22,6 +22,23 @@ namespace Autofac
                 .PropertiesAutowired()
                 .PreserveExistingDefaults();
 
+#if UWP
+            containerBuilder.RegisterInstance<ITelemetryService>(ApplicationInsightsTelementryService.Current);
+#endif
+            containerBuilder.RegisterInstance<ITelemetryService>(AppCenterTelementryService.Current);
+
+            containerBuilder.RegisterBuildCallback(container =>
+            {
+                IMessageReceiver messageReceiver = container.ResolveOptional<IMessageReceiver>();
+                if (messageReceiver != null)
+                {
+#if UWP
+                    ApplicationInsightsTelementryService.Current.MessageReceiver = messageReceiver;
+#endif
+                    AppCenterTelementryService.Current.MessageReceiver = messageReceiver;
+                }
+            });
+
             return containerBuilder;
         }
     }

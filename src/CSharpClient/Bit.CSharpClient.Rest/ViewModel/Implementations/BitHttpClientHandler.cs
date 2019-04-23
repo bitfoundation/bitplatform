@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Bit.ViewModel.Contracts;
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
@@ -48,6 +49,8 @@ namespace Bit.ViewModel.Implementations
                 request.Headers.Add("Bit-Client-Type", "CS-Client");
             }
 
+            DateTimeOffset startDate = DateTimeOffset.Now;
+
             HttpResponseMessage response = await base.SendAsync(request, cancellationToken).ConfigureAwait(false);
 
             if (string.IsNullOrEmpty(response.ReasonPhrase) && response.Headers.TryGetValues("Reason-Phrase", out IEnumerable<string> reasonPhrases) && reasonPhrases.Any())
@@ -55,7 +58,23 @@ namespace Bit.ViewModel.Implementations
                 response.ReasonPhrase = reasonPhrases.Single();
             }
 
+            Dictionary<string, string> properties = new Dictionary<string, string>
+            {
+                { "ReasonPhrase", response.ReasonPhrase }
+            };
+
+            if (response.Headers.TryGetValues("X-CorrelationId", out IEnumerable<string> values) && values.Any())
+            {
+                properties.Add("X-CorrelationId", values.First());
+            }
+
+            TimeSpan duration = DateTimeOffset.Now - startDate;
+
+            TelemetryServices.All().TrackRequest(request.RequestUri.LocalPath, startDate, duration, response.StatusCode.ToString(), response.IsSuccessStatusCode, request.RequestUri, request.Method.ToString(), properties);
+
             return response;
         }
+
+        public virtual IEnumerable<ITelemetryService> TelemetryServices { get; set; }
     }
 }
