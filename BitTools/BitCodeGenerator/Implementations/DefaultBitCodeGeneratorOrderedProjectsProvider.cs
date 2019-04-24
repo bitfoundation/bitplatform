@@ -21,7 +21,7 @@ namespace BitCodeGenerator.Implementations
                 throw new ArgumentNullException(nameof(bitCodeGeneratorMapping));
 
             return bitCodeGeneratorMapping.SourceProjects
-                .Select(projInfo => projects.ExtendedSingleOrDefault($"Looking for {projInfo.Name} in [ {string.Join(",", bitCodeGeneratorMapping.SourceProjects.Select(p => p.Name))} ]", p => p.Name == projInfo.Name && p.Language == LanguageNames.CSharp))
+                .Select(projInfo => projects.FirstOrDefault(p => projInfo.IsThisProject(p) && p.Language == LanguageNames.CSharp))
                 .Where(p => p != null)
                 .ToList();
         }

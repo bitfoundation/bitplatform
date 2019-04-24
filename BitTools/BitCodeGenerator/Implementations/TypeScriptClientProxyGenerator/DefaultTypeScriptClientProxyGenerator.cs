@@ -71,7 +71,7 @@ namespace BitCodeGenerator.Implementations.TypeScriptClientProxyGenerator
                 string generatedTsContextExtension = ".d.ts";
 
                 Project destProject = workspace.CurrentSolution.Projects.Where(p => p.Language == LanguageNames.CSharp)
-                    .ExtendedSingle($"Trying to find project with name: {proxyGeneratorMapping.DestinationProject.Name}", p => p.Name == proxyGeneratorMapping.DestinationProject.Name);
+                    .ExtendedSingle($"Trying to find project with name: {proxyGeneratorMapping.DestinationProject.Name}", p => proxyGeneratorMapping.DestinationProject.IsThisProject(p));
 
                 IList<Project> involveableProjects = _bitCodeGeneratorOrderedProjectsProvider.GetInvolveableProjects(workspace, workspace.CurrentSolution.Projects.Where(p => p.Language == LanguageNames.CSharp).ToList(), proxyGeneratorMapping);
 

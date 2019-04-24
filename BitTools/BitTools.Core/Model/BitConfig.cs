@@ -1,4 +1,6 @@
-﻿using System;
+﻿using Microsoft.CodeAnalysis;
+using System;
+using System.IO;
 
 namespace BitTools.Core.Model
 {
@@ -40,6 +42,11 @@ namespace BitTools.Core.Model
     public class ProjectInfo
     {
         public virtual string Name { get; set; }
+
+        public bool IsThisProject(Project p)
+        {
+            return p.Name == Name || Path.GetFileNameWithoutExtension(p.FilePath) == Name;
+        }
     }
 
     public class NamespaceAlias
