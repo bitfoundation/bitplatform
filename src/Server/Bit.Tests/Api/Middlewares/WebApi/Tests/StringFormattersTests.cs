@@ -56,14 +56,11 @@ namespace Bit.Tests.Api.Middlewares.WebApi.Tests
 
                 IODataClient client = testEnvironment.Server.BuildODataClient(token: token);
 
-                await client.Controller<TestModelsController, TestModel>()
-                    .Action(nameof(TestModelsController.StringFormattersTests))
-                    .Set(new TestModelsController.StringFormattersTestsParameters
-                    {
-                        simpleString = "simpleString",
-                        stringsArray = new[] { "stringsArray1", "stringsArray2" },
-                        stringsArray2 = new[] { "stringsArray1", "stringsArray2" },
-                        entitiesArray = new[]
+                await client.TestModels()
+                    .StringFormattersTests(simpleString: "simpleString",
+                        stringsArray: new[] { "stringsArray1", "stringsArray2" },
+                        stringsArray2: new[] { "stringsArray1", "stringsArray2" },
+                        entitiesArray: new[]
                         {
                             new TestModel
                             {
@@ -74,8 +71,8 @@ namespace Bit.Tests.Api.Middlewares.WebApi.Tests
                                 StringProperty = "StringProperty2", Id = 3, Version = 3
                             }
                         },
-                        simpleDto = new TestModel { StringProperty = "StringProperty", Id = 1, Version = 1 }
-                    }).ExecuteAsync();
+                        simpleDto: new TestModel { StringProperty = "StringProperty", Id = 1, Version = 1 })
+                    .ExecuteAsync();
 
                 A.CallTo(() => valueChecker.CheckValue("ONETWOsimpleString"))
                     .MustHaveHappenedOnceExactly();
@@ -123,8 +120,8 @@ namespace Bit.Tests.Api.Middlewares.WebApi.Tests
 
                 IODataClient client = testEnvironment.Server.BuildODataClient(token: token);
 
-                IEnumerable<TestModel> testModels = await client.Controller<TestModelsController, TestModel>()
-                     .Function(nameof(TestModelsController.GetSomeTestModelsForTest))
+                IEnumerable<TestModel> testModels = await client.TestModels()
+                     .GetSomeTestModelsForTest()
                      .Where(tm => tm.StringProperty == "VALUE")
                      .ExecuteAsEnumerableAsync();
 

@@ -30,9 +30,8 @@ namespace Bit.Tests.Api.Middlewares.SignalR.Tests
                         onMessageReceivedCalled.SetResult(true);
                 });
 
-                await odataClientOfUser1.Controller<TestModelsController, TestModel>()
-                    .Action(nameof(TestModelsController.PushSomeWordToAnotherUser))
-                    .Set(new TestModelsController.WordParameters { to = "User2", word = "Some word" })
+                await odataClientOfUser1.TestModels()
+                    .PushSomeWordToAnotherUser(to: "User2", word: "Some word")
                     .ExecuteAsync();
 
                 Assert.AreEqual(true, await onMessageReceivedCalled.Task);
@@ -58,9 +57,8 @@ namespace Bit.Tests.Api.Middlewares.SignalR.Tests
                     onMessageReceivedCalled.SetResult(true);
                 });
 
-                await odataClientOfUser1.Controller<TestModelsController, TestModel>()
-                    .Action(nameof(TestModelsController.PushSomeWordToAnotherUsingBackgroundJobWorker))
-                    .Set(new TestModelsController.WordParameters { to = "User2", word = "Some word" })
+                await odataClientOfUser1.TestModels()
+                    .PushSomeWordToAnotherUsingBackgroundJobWorker(to : "User2", word : "Some word")
                     .ExecuteAsync();
 
                 Assert.AreEqual(true, await onMessageReceivedCalled.Task);

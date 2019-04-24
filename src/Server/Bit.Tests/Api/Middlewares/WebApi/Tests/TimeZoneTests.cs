@@ -36,14 +36,11 @@ namespace Bit.Tests.Api.Middlewares.WebApi.Tests
 
                 DateTimeOffset date = new DateTimeOffset(2016, 1, 1, 10, 30, 0, TimeSpan.Zero);
 
-                await client.Controller<TestModelsController, TestModel>()
-                    .Action(nameof(TestModelsController.TimeZoneTests))
-                    .Set(new TestModelsController.TimeZoneTestsParameters
-                    {
-                        simpleDate = date,
-                        datesArray = new[] { date, date },
-                        simpleDto = new TestModel { StringProperty = " ", DateProperty = date, Id = 1, Version = 1 },
-                        entitiesArray = new[]
+                await client.TestModels()
+                    .TimeZoneTests(simpleDate: date,
+                        datesArray: new[] { date, date },
+                        simpleDto: new TestModel { StringProperty = " ", DateProperty = date, Id = 1, Version = 1 },
+                        entitiesArray: new[]
                         {
                             new TestModel
                             {
@@ -53,8 +50,7 @@ namespace Bit.Tests.Api.Middlewares.WebApi.Tests
                             {
                                 StringProperty = " ", DateProperty = date, Id = 3, Version = 3
                             }
-                        }
-                    }).ExecuteAsync();
+                        }).ExecuteAsync();
 
                 A.CallTo(() => valueChecker.CheckValue(A<DateTimeOffset>.That.Matches(dt => dt.Year == 2016)))
                     .MustHaveHappenedOnceExactly();
@@ -94,14 +90,11 @@ namespace Bit.Tests.Api.Middlewares.WebApi.Tests
 
                 DateTimeOffset date = new DateTimeOffset(2016, 1, 1, 10, 30, 0, TimeSpan.Zero);
 
-                await client.Controller<TestModelsController, TestModel>()
-                    .Action(nameof(TestModelsController.TimeZoneTests))
-                    .Set(new TestModelsController.TimeZoneTestsParameters
-                    {
-                        simpleDate = date,
-                        datesArray = new[] { date, date },
-                        simpleDto = new TestModel { StringProperty = " ", DateProperty = date, Id = 1, Version = 1 },
-                        entitiesArray = new[]
+                await client.TestModels()
+                    .TimeZoneTests(simpleDate: date,
+                        datesArray: new[] { date, date },
+                        simpleDto: new TestModel { StringProperty = " ", DateProperty = date, Id = 1, Version = 1 },
+                        entitiesArray: new[]
                         {
                             new TestModel
                             {
@@ -111,8 +104,7 @@ namespace Bit.Tests.Api.Middlewares.WebApi.Tests
                             {
                                 StringProperty = " ", DateProperty = date, Id = 3, Version = 3
                             }
-                        }
-                    }).ExecuteAsync();
+                        }).ExecuteAsync();
 
                 A.CallTo(() => valueChecker.CheckValue(A<DateTimeOffset>.That.Matches(dt => dt.Year == 2016)))
                     .MustHaveHappenedOnceExactly();
@@ -138,7 +130,7 @@ namespace Bit.Tests.Api.Middlewares.WebApi.Tests
 
                 IODataClient client = testEnvironment.Server.BuildODataClient(token: token);
 
-                IEnumerable<TestModel> testModels = await client.Controller<TestModelsController, TestModel>()
+                IEnumerable<TestModel> testModels = await client.TestModels()
                      .Where(tm => tm.DateProperty == new DateTimeOffset(2016, 1, 1, 10, 30, 0, TimeSpan.Zero))
                      .FindEntriesAsync();
 
@@ -160,7 +152,7 @@ namespace Bit.Tests.Api.Middlewares.WebApi.Tests
                     message.Headers.Add("Current-Time-Zone", "Afghanistan Standard Time");
                 });
 
-                IEnumerable<TestModel> testModels = await client.Controller<TestModelsController, TestModel>()
+                IEnumerable<TestModel> testModels = await client.TestModels()
                      .Where(tm => tm.DateProperty == new DateTimeOffset(2016, 1, 1, 9, 30, 0, TimeSpan.Zero))
                      .FindEntriesAsync();
 

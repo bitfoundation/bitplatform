@@ -36,7 +36,7 @@ namespace Bit.Tests.Api.Middlewares.WebApi.Tests
                     Version = 1
                 };
 
-                TestModel modelAfterInsert = await client.Controller<TestModelsController, TestModel>()
+                TestModel modelAfterInsert = await client.TestModels()
                     .Set(modelBeforeInsert)
                     .CreateEntryAsync();
 
@@ -70,12 +70,12 @@ namespace Bit.Tests.Api.Middlewares.WebApi.Tests
 
                 IODataClient client = testEnvironment.Server.BuildODataClient(token: token);
 
-                long modelBeforeUpdateId = await client.Controller<TestModelsController, TestModel>()
+                long modelBeforeUpdateId = await client.TestModels()
                     .Top(1)
                     .Select(t => t.Id)
                     .FindScalarAsync<long>();
 
-                TestModel modelAfterUpdate = await client.Controller<TestModelsController, TestModel>()
+                TestModel modelAfterUpdate = await client.TestModels()
                     .Key(modelBeforeUpdateId)
                     .Set(new { StringProperty = "Test2" })
                     .UpdateEntryAsync();
@@ -115,12 +115,12 @@ namespace Bit.Tests.Api.Middlewares.WebApi.Tests
 
                 IODataClient client = testEnvironment.Server.BuildODataClient(token: token);
 
-                long modelIdForDelete = await client.Controller<TestModelsController, TestModel>()
+                long modelIdForDelete = await client.TestModels()
                     .Top(1)
                     .Select(t => t.Id)
                     .FindScalarAsync<long>();
 
-                await client.Controller<TestModelsController, TestModel>()
+                await client.TestModels()
                     .Key(modelIdForDelete)
                     .DeleteEntryAsync();
 
@@ -158,7 +158,7 @@ namespace Bit.Tests.Api.Middlewares.WebApi.Tests
                     requestValidator.ValidateRequestByUri(message.RequestUri);
                 });
 
-                IEnumerable<ParentEntity> parentEntities = await client.Controller<ParentEntitiesController, ParentEntity>()
+                IEnumerable<ParentEntity> parentEntities = await client.ParentEntities()
                     .Where(p => p.Name == "A")
                     .FindEntriesAsync();
 

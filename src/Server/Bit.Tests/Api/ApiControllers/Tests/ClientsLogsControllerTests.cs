@@ -25,9 +25,8 @@ namespace Bit.Tests.Api.ApiControllers.Tests
 
                 IODataClient client = testEnvironment.Server.BuildODataClient(token: token, odataRouteName: "Bit");
 
-                await client.Controller<ClientsLogsController, ClientLogDto>()
-                    .Action(nameof(ClientsLogsController.StoreClientLogs))
-                    .Set(new ClientsLogsController.StoreClientLogsParameters { clientLogs = new[] { new ClientLogDto { Message = "1", Route = "R" } } })
+                await client.ClientsLogs()
+                    .StoreClientLogs(new[] { new ClientLogDto { Message = "1", Route = "R" } })
                     .ExecuteAsync();
 
                 ILogger logger = TestDependencyManager.CurrentTestDependencyManager

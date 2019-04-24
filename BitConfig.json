@@ -7,14 +7,35 @@
         "TypingsPath": "typings.d.ts",
         "SourceProjects": [
           {
-            "Name": "Bit.Model(net461)"
+            "Name": "Bit.Model"
           },
           {
-            "Name": "Bit.OData(net461)"
+            "Name": "Bit.OData"
           }
         ],
         "DestinationProject": {
           "Name": "Bit.TSClient.Core"
+        },
+        "NamespaceAliases": [
+          {
+            "Namespace": "Bit.Model.Dtos",
+            "Alias": "BitModel"
+          }
+        ]
+      },
+      {
+        "Route": "Bit",
+        "DestinationFileName": "Bit.Model.Context",
+        "SourceProjects": [
+          {
+            "Name": "Bit.Model"
+          },
+          {
+            "Name": "Bit.OData"
+          }
+        ],
+        "DestinationProject": {
+          "Name": "Bit.Tests"
         },
         "NamespaceAliases": [
           {
@@ -34,6 +55,24 @@
         ],
         "DestinationProject": {
           "Name": "Bit.TSClient.AngularJS.Tests"
+        },
+        "NamespaceAliases": [
+          {
+            "Namespace": "Bit.Tests.Model.Dto",
+            "Alias": "BitTestsModel"
+          }
+        ]
+      },
+      {
+        "Route": "Test",
+        "DestinationFileName": "Test.Model.Context",
+        "SourceProjects": [
+          {
+            "Name": "Bit.Tests"
+          }
+        ],
+        "DestinationProject": {
+          "Name": "Bit.Tests"
         },
         "NamespaceAliases": [
           {

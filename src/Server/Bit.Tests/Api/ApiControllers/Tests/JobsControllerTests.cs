@@ -23,7 +23,7 @@ namespace Bit.Tests.Api.ApiControllers.Tests
 
                 try
                 {
-                    await client.Controller<JobsInfoController, JobInfoDto>()
+                    await client.JobsInfo()
                         .Key("1")
                         .FindEntryAsync();
 

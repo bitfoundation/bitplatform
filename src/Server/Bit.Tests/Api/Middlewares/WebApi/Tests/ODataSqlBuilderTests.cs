@@ -31,8 +31,8 @@ namespace Bit.Tests.Api.Middlewares.WebApi.Tests
 
                 IODataClient client = testEnvironment.Server.BuildODataClient(token: token);
 
-                await client.Controller<TestModelsController, TestModel>()
-                    .Function(nameof(TestModelsController.TestSqlBuilder))
+                await client.TestModels()
+                    .TestSqlBuilder()
                     .Where(t => (t.Id == 1 && t.StringProperty.ToLower().Contains("Test")) || t.Id == 3)
                     .OrderBy(t => t.Id)
                     .ThenByDescending(t => t.StringProperty)

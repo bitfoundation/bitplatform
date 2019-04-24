@@ -58,9 +58,8 @@ namespace Bit.Tests.Api.Middlewares.WebApi.Tests
 
                 try
                 {
-                    await client.Controller<TestModelsController, TestModel>()
-                        .Action(nameof(TestModelsController.SendEmail))
-                        .Set(new TestModelsController.EmailParameters { to = "Someone", title = "Email title", message = "Email message" })
+                    await client.TestModels()
+                        .SendEmail(to : "Someone", title : "Email title", message : "Email message")
                         .ExecuteAsync();
 
                     Assert.Fail();
@@ -111,9 +110,8 @@ namespace Bit.Tests.Api.Middlewares.WebApi.Tests
 
                 try
                 {
-                    await client.Controller<TestModelsController, TestModel>()
-                        .Action(nameof(TestModelsController.SendEmail))
-                        .Set(new TestModelsController.EmailParameters { to = "Someone", title = "Email title", message = "Email message" })
+                    await client.TestModels()
+                        .SendEmail(to : "Someone", title : "Email title", message : "Email message")
                         .ExecuteAsync();
 
                     Assert.Fail();
@@ -168,9 +166,8 @@ namespace Bit.Tests.Api.Middlewares.WebApi.Tests
 
                 try
                 {
-                    await client.Controller<TestModelsController, TestModel>()
-                        .Action(nameof(TestModelsController.SendEmail))
-                        .Set(new TestModelsController.EmailParameters { to = "Someone", title = "Email title", message = "Email message" })
+                    await client.TestModels()
+                        .SendEmail(to: "Someone", title: "Email title", message: "Email message")
                         .ExecuteAsync();
 
                     Assert.Fail();

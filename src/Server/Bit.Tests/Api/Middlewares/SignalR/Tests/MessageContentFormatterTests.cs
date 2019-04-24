@@ -27,8 +27,8 @@ namespace Bit.Tests.Api.Middlewares.SignalR.Tests
 
                 try
                 {
-                    await client.Controller<TestModelsController, TestModel>()
-                        .Action(nameof(TestModelsController.PushSomethingWithDateTimeOffset))
+                    await client.TestModels()
+                        .PushSomethingWithDateTimeOffset()
                         .ExecuteAsync();
 
                     Assert.Fail();

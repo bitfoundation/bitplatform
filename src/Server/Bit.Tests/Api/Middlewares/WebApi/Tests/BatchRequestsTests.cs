@@ -38,16 +38,16 @@ namespace Bit.Tests.Api.Middlewares.WebApi.Tests
                     Version = 1
                 };
 
-                batchClient += bc => bc.Controller<TestModelsController, TestModel>()
+                batchClient += bc => bc.TestModels()
                     .Set(modelBeforeInsert)
                     .CreateEntryAsync();
 
-                long modelBeforeUpdateId = await client.Controller<TestModelsController, TestModel>()
+                long modelBeforeUpdateId = await client.TestModels()
                         .Top(1)
                         .Select(t => t.Id)
                         .FindScalarAsync<long>();
 
-                batchClient += bc => bc.Controller<TestModelsController, TestModel>()
+                batchClient += bc => bc.TestModels()
                      .Key(modelBeforeUpdateId)
                      .Set(new { StringProperty = "Test2" })
                      .UpdateEntryAsync();
@@ -102,14 +102,12 @@ namespace Bit.Tests.Api.Middlewares.WebApi.Tests
 
                 try
                 {
-                    client += c => c.Controller<TestModelsController, TestModel>()
-                        .Action(nameof(TestModelsController.SendEmail))
-                        .Set(new TestModelsController.EmailParameters { to = "Exception", title = "Email title", message = "Email message" })
+                    client += c => c.TestModels()
+                        .SendEmail(to : "Exception", title : "Email title", message : "Email message")
                         .ExecuteAsync();
 
-                    client += c => c.Controller<TestModelsController, TestModel>()
-                                        .Action(nameof(TestModelsController.SendEmail))
-                                        .Set(new TestModelsController.EmailParameters { to = "Work", title = "Email title", message = "Email message" })
+                    client += c => c.TestModels()
+                                        .SendEmail(to : "Work", title : "Email title", message : "Email message")
                                         .ExecuteAsync();
 
                     await client.ExecuteAsync();

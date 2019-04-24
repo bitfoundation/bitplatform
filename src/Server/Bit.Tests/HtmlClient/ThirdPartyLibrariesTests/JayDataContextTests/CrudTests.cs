@@ -139,35 +139,30 @@ namespace Bit.Tests.HtmlClient.ThirdPartyLibrariesTests.JayDataContextTests
 
                 IODataClient client = testEnvironment.Server.BuildODataClient(token: token);
 
-                DtoWithEnum dtoWithEnum = await client.Controller<DtoWithEnumController, DtoWithEnum>()
-                    .Function(nameof(DtoWithEnumController.GetDtoWithEnumsByGender))
-                    .Set(new { gender = TestGender.Man })
+                DtoWithEnum dtoWithEnum = await client.DtoWithEnum()
+                    .GetDtoWithEnumsByGender(TestGender.Man)
                     .ExecuteAsSingleAsync();
 
                 Assert.AreEqual(TestGender.Man, dtoWithEnum.Gender);
 
-                Assert.AreEqual(true, await client.Controller<DtoWithEnumController, DtoWithEnum>()
-                    .Action(nameof(DtoWithEnumController.PostDtoWithEnum))
-                    .Set(new DtoWithEnumController.PostDtoWithEnumParameters { dto = dtoWithEnum })
+                Assert.AreEqual(true, await client.DtoWithEnum()
+                    .PostDtoWithEnum(dtoWithEnum)
                     .ExecuteAsScalarAsync<bool>());
 
                 ODataBatch batchClient = testEnvironment.Server.BuildODataBatchClient(token: token);
 
-                batchClient += bc => bc.Controller<DtoWithEnumController, DtoWithEnum>()
-                    .Function(nameof(DtoWithEnumController.GetDtoWithEnumsByGender2))
-                    .Set(new { gender = TestGender2.Man })
+                batchClient += bc => bc.DtoWithEnum()
+                    .GetDtoWithEnumsByGender2(TestGender2.Man)
                     .ExecuteAsEnumerableAsync();
 
-                batchClient += bc => bc.Controller<DtoWithEnumController, DtoWithEnum>()
-                    .Function(nameof(DtoWithEnumController.GetDtoWithEnumsByGender))
-                    .Set(new { gender = TestGender.Man })
+                batchClient += bc => bc.DtoWithEnum()
+                    .GetDtoWithEnumsByGender(TestGender.Man)
                     .ExecuteAsEnumerableAsync();
 
                 await batchClient.ExecuteAsync();
 
-                /*Assert.AreEqual(true, await client.Controller<DtoWithEnumController, DtoWithEnum>()
-                    .Action(nameof(DtoWithEnumController.TestEnumsArray))
-                    .Set(new DtoWithEnumController.TestEnumsArrayParameters { enums = new[] { TestGender2.Man, TestGender2.Woman } })
+                /*Assert.AreEqual(true, await client.DtoWithEnum()
+                    .TestEnumsArray(new[] { TestGender2.Man, TestGender2.Woman })
                     .ExecuteAsScalarAsync<bool>());*/
 
                 DtoWithEnumController firstCallController = TestDependencyManager.CurrentTestDependencyManager.Objects
