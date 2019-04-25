@@ -44,8 +44,13 @@ namespace Bit.Hangfire.Implementations
             {
                 PrepareSchemaIfNecessary = false,
                 UseRecommendedIsolationLevel = true,
-                SchemaName = "Jobs"
-            });
+                SchemaName = "HangFire",
+                CommandBatchMaxTimeout = TimeSpan.FromMinutes(5),
+                SlidingInvisibilityTimeout = TimeSpan.FromMinutes(5),
+                QueuePollInterval = TimeSpan.Zero,
+                UsePageLocksOnDequeue = true,
+                DisableGlobalLocks = true
+            }); // https://docs.hangfire.io/en/latest/configuration/using-sql-server.html#configuration
 
             if (AppEnvironment.HasConfig("JobSchedulerAzureServiceBusConnectionString"))
             {
