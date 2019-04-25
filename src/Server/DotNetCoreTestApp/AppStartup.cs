@@ -105,6 +105,7 @@ namespace DotNetCoreTestApp
             dependencyManager.RegisterSignalRMiddlewareUsingDefaultConfiguration();
 
             dependencyManager.RegisterRepository(typeof(TestEfRepository<>).GetTypeInfo());
+            dependencyManager.RegisterRepository(typeof(CustomersRepository).GetTypeInfo());
 
             dependencyManager.RegisterEfCoreDbContext<TestDbContext>((sp, optionsBuilder) => optionsBuilder.UseInMemoryDatabase("TestDb"));
 
@@ -186,8 +187,24 @@ namespace DotNetCoreTestApp
         }
     }
 
-    public class TestEfRepository<TEntity> : EfCoreRepository<TestDbContext, TEntity>
+    public class TestEfRepository<TEntity> : EfCoreRepository<TestDbContext, TEntity>, ITestRepository<TEntity>
         where TEntity : class, IEntity
+    {
+
+    }
+
+    public interface ITestRepository<TEntity> : IRepository<TEntity>
+        where TEntity : class, IEntity
+    {
+
+    }
+
+    public interface ICustomersRepository : ITestRepository<Customer>
+    {
+
+    }
+
+    public class CustomersRepository : TestEfRepository<Customer>, ICustomersRepository
     {
 
     }
@@ -204,9 +221,16 @@ namespace DotNetCoreTestApp
     {
         public virtual IRepository<Customer> CustomersRepository { get; set; }
 
+        public virtual ITestRepository<Customer> CustomersRepository2 { get; set; }
+
+        public virtual ICustomersRepository CustomersRepository3 { get; set; }
+
         [Function]
         public int Sum(int firstNumber, int secondNumber)
         {
+            if (CustomersRepository != CustomersRepository2 || CustomersRepository != CustomersRepository3)
+                throw new InvalidOperationException();
+
             return firstNumber + secondNumber;
         }
     }
