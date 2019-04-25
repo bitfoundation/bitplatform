@@ -1,4 +1,5 @@
-﻿using Bit.Core.Models;
+﻿using Bit.Core.Implementations;
+using Bit.Core.Models;
 using Bit.Owin.Contracts;
 using Bit.WebApi.Contracts;
 using Microsoft.Web.Http.Routing;
@@ -33,6 +34,8 @@ namespace Bit.WebApi
             _webApiConfig.IncludeErrorDetailPolicy = AppEnvironment.DebugMode ? IncludeErrorDetailPolicy.LocalOnly : IncludeErrorDetailPolicy.Never;
 
             _webApiConfig.DependencyResolver = WebApiDependencyResolver;
+
+            _webApiConfig.Formatters.JsonFormatter.SerializerSettings.ContractResolver = DefaultJsonContentFormatter.SerializeSettings().ContractResolver;
 
             WebApiConfigurationCustomizers.ToList()
                 .ForEach(webApiConfigurationCustomizer =>
