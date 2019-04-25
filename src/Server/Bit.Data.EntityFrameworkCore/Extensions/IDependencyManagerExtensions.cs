@@ -39,7 +39,7 @@ namespace Bit.Core.Contracts
 
             dependencyManager.RegisterUsing(c =>
             {
-                DbContextOptions options = c.Resolve<DbContextOptions>();
+                DbContextOptions options = c.Resolve<DbContextOptions<TDbContext>>();
 
                 DbConnection dbConnectionFromDbContextOptionsBuilder = null;
 
