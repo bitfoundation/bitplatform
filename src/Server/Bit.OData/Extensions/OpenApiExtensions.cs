@@ -26,7 +26,6 @@ namespace Swashbuckle.Application
                 odataConfig.SetAssembliesResolver((System.Web.Http.Dispatcher.IAssembliesResolver)webApiConfig.DependencyResolver.GetService(typeof(System.Web.Http.Dispatcher.IAssembliesResolver)));
             }));
 
-            doc.SchemaId(type => type.AssemblyQualifiedName);
             doc.GroupActionsBy(apiDesc => $"[{((ODataRoute)apiDesc.Route).RoutePrefix}] {apiDesc.ActionDescriptor.ControllerDescriptor.ControllerName}");
 
             return doc;
