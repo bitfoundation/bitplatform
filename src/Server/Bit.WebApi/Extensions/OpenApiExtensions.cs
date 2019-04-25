@@ -28,6 +28,7 @@ namespace Swashbuckle.Application
             doc.OperationFilter<SwaggerDefaultValuesOperationFilter>();
             doc.OperationFilter<ExamplesOperationFilter>();
             doc.OperationFilter<DescriptionOperationFilter>();
+            doc.UseFullTypeNameInSchemaIds();
 
             doc.OAuth2("oauth2")
                 .Flow("password")
