@@ -1,0 +1,24 @@
+﻿<Project TreatAsLocalProperty="TaskFolder;TaskAssembly">
+  <ItemGroup>
+    <Reference Include="Hangfire.Core">
+      <HintPath>$(NuGetPackageRoot)hangfire.core\1.7.1\lib\net46\Hangfire.Core.dll</HintPath>
+      <Private>true</Private>
+    </Reference>
+    <Reference Include="Hangfire.Autofac">
+      <HintPath>$(NuGetPackageRoot)hangfire.autofac\2.3.1\lib\net45\Hangfire.Autofac.dll</HintPath>
+      <Private>true</Private>
+    </Reference>
+    <Reference Include="Hangfire.MemoryStorage">
+      <HintPath>$(NuGetPackageRoot)hangfire.memorystorage\1.6.0\lib\net40\Hangfire.MemoryStorage.dll</HintPath>
+      <Private>true</Private>
+    </Reference>
+    <Reference Include="Hangfire.Azure.ServiceBusQueue">
+      <HintPath>$(NuGetPackageRoot)hangfire.Azure.ServiceBusQueue\4.0.0\lib\net45\Hangfire.Azure.ServiceBusQueue.dll</HintPath>
+      <Private>true</Private>
+    </Reference>
+    <Reference Include="Hangfire.SqlServer">
+      <HintPath>$(NuGetPackageRoot)hangfire.SqlServer\1.7.1\lib\net45\Hangfire.SqlServer.dll</HintPath>
+      <Private>true</Private>
+    </Reference>
+  </ItemGroup>
+</Project>
