@@ -1,6 +1,7 @@
 ﻿using Bit.Test;
 using IdentityModel.Client;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using System.Net.Http;
 using System.Threading.Tasks;
 
 namespace Bit.Tests.IdentityServer
@@ -14,9 +15,11 @@ namespace Bit.Tests.IdentityServer
         {
             using (BitOwinTestEnvironment testEnvironment = new BitOwinTestEnvironment(new TestEnvironmentArgs { UseRealServer = false }))
             {
-                TokenResponse tokenResponse = await testEnvironment.Server.Login("ValidUserName", "ValidPassword", "TestResOwner");
+                TokenResponse token = await testEnvironment.Server.Login("ValidUserName", "ValidPassword", "TestResOwner");
 
-                Assert.IsFalse(tokenResponse.IsError);
+                Assert.AreEqual("test", await (await testEnvironment.Server.BuildHttpClient(token).GetAsync("api/customers/get-custom-data?api-version=1.0")).Content.ReadAsAsync<string>()); // see TestUserService
+
+                Assert.IsFalse(token.IsError);
             }
         }
 
@@ -26,9 +29,9 @@ namespace Bit.Tests.IdentityServer
         {
             using (BitOwinTestEnvironment testEnvironment = new BitOwinTestEnvironment(new TestEnvironmentArgs { UseRealServer = false }))
             {
-                TokenResponse tokenResponse = await testEnvironment.Server.Login("InValidUser", "InvalidPassword", "TestResOwner");
+                TokenResponse token = await testEnvironment.Server.Login("InValidUser", "InvalidPassword", "TestResOwner");
 
-                Assert.IsTrue(tokenResponse.IsError);
+                Assert.IsTrue(token.IsError);
             }
         }
     }

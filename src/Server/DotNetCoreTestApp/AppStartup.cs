@@ -120,17 +120,12 @@ namespace DotNetCoreTestApp
 
     public class TestUserService : UserService
     {
-        public override Task<string> GetUserIdByLocalAuthenticationContextAsync(LocalAuthenticationContext context, CancellationToken cancellationToken)
+        public override Task<BitJwtToken> LocalLogin(LocalAuthenticationContext context, CancellationToken cancellationToken)
         {
             if (context.UserName == context.Password)
-                return Task.FromResult(context.UserName);
+                return Task.FromResult(new BitJwtToken { UserId = context.UserName });
 
             throw new DomainLogicException("LoginFailed");
-        }
-
-        public override Task<bool> UserIsActiveAsync(IsActiveContext context, string userId, CancellationToken cancellationToken)
-        {
-            return Task.FromResult(true);
         }
     }
 

@@ -1,4 +1,5 @@
-﻿using Bit.Core.Models;
+﻿using Bit.Core.Contracts;
+using Bit.Core.Models;
 using Bit.Owin.Exceptions;
 using IdentityServer3.Core.Models;
 using System.DirectoryServices.AccountManagement;
@@ -11,7 +12,7 @@ namespace Bit.IdentityServer.Implementations
     {
         public virtual AppEnvironment AppEnvironment { get; set; }
 
-        public override Task<string> GetUserIdByLocalAuthenticationContextAsync(LocalAuthenticationContext context, CancellationToken cancellationToken)
+        public override Task<BitJwtToken> LocalLogin(LocalAuthenticationContext context, CancellationToken cancellationToken)
         {
             string userName = context.UserName;
             string password = context.Password;
@@ -28,7 +29,7 @@ namespace Bit.IdentityServer.Implementations
                     using (UserPrincipal user = UserPrincipal.FindByIdentity(principalContext, IdentityType.SamAccountName, userNameAsWinUserName))
                     {
                         if (user != null)
-                            return Task.FromResult(user.Sid.Value);
+                            return Task.FromResult(new BitJwtToken { UserId = user.Sid.Value });
                     }
                 }
             }
@@ -36,7 +37,7 @@ namespace Bit.IdentityServer.Implementations
             throw new DomainLogicException("UserInActiveDirectoryCouldNotBeFound");
         }
 
-        public override Task<bool> UserIsActiveAsync(IsActiveContext context, string userId, CancellationToken cancellationToken)
+        public override Task<bool> UserIsActiveAsync(IsActiveContext context, BitJwtToken bitJwtToken, CancellationToken cancellationToken)
         {
             string activeDirectoryName = AppEnvironment.GetConfig<string>("ActiveDirectoryName");
 

@@ -1,4 +1,5 @@
-﻿using Bit.IdentityServer.Implementations;
+﻿using Bit.Core.Contracts;
+using Bit.IdentityServer.Implementations;
 using Bit.Owin.Exceptions;
 using IdentityServer3.Core.Models;
 using System;
@@ -25,22 +26,24 @@ namespace Bit.Tests.IdentityServer.Implementations
             new LocalUser { UserId = "User2" , Password = "ValidPassword"}
         };
 
-        public override async Task<string> GetUserIdByLocalAuthenticationContextAsync(LocalAuthenticationContext context, CancellationToken cancellationToken)
+        public async override Task<BitJwtToken> LocalLogin(LocalAuthenticationContext context, CancellationToken cancellationToken)
         {
             LocalUser user = _localUsers.SingleOrDefault(u => u.UserId == context.UserName && u.Password == context.Password);
 
             if (user == null)
                 throw new DomainLogicException("LoginFailed");
 
-            return user.UserId;
+            BitJwtToken jwtToken = new BitJwtToken { UserId = user.UserId };
+            jwtToken.CustomProps.Add("custom-data", "test");
+            return jwtToken;
         }
 
-        public override async Task<bool> UserIsActiveAsync(IsActiveContext context, string userId, CancellationToken cancellationToken)
+        public override async Task<bool> UserIsActiveAsync(IsActiveContext context, BitJwtToken bitJwtToken, CancellationToken cancellationToken)
         {
-            return _localUsers.Any(u => u.UserId == userId);
+            return _localUsers.Any(u => u.UserId == bitJwtToken.UserId);
         }
 
-        protected override async Task<string> GetInternalUserId(ExternalAuthenticationContext context, CancellationToken cancellationToken)
+        protected override async Task<BitJwtToken> ExternalLogin(ExternalAuthenticationContext context, CancellationToken cancellationToken)
         {
             string nameIdentifier = context.ExternalIdentity.Claims.GetClaimValue(ClaimTypes.NameIdentifier);
 
@@ -55,7 +58,7 @@ namespace Bit.Tests.IdentityServer.Implementations
                 _localUsers.Add(user);
             }
 
-            return user.UserId;
+            return new BitJwtToken { UserId = user.UserId };
         }
     }
 }

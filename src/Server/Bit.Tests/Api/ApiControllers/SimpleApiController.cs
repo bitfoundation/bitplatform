@@ -1,4 +1,5 @@
-﻿using Bit.Tests.Model.Dto;
+﻿using Bit.Core.Contracts;
+using Bit.Tests.Model.Dto;
 using Refit;
 using System.Net;
 using System.Net.Http;
@@ -42,6 +43,15 @@ namespace Bit.Tests.Api.ApiControllers
         public virtual TestCustomerDto SomeAction(TestCustomerDto customer)
         {
             return customer;
+        }
+
+       public virtual IUserInformationProvider UserInformationProvider { get; set; }
+
+        [HttpGet]
+        [Route("get-custom-data")]
+        public virtual string GetCustomData()
+        {
+            return UserInformationProvider.GetBitJwtToken().CustomProps["custom-data"];
         }
     }
 

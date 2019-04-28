@@ -1,4 +1,5 @@
 ﻿using Bit.Core.Contracts;
+using Bit.Core.Implementations;
 using Bit.Owin.Contracts;
 using IdentityServer3.Core.Models;
 using IdentityServer3.Core.Services.Default;
@@ -17,7 +18,10 @@ namespace Bit.IdentityServer.Implementations
 
         public virtual IUserInformationProvider UserInformationProvider { get; set; }
 
-        public abstract Task<string> GetUserIdByLocalAuthenticationContextAsync(LocalAuthenticationContext context, CancellationToken cancellationToken);
+        public virtual Task<BitJwtToken> LocalLogin(LocalAuthenticationContext context, CancellationToken cancellationToken)
+        {
+            throw new NotImplementedException();
+        }
 
         public virtual IExceptionToHttpErrorMapper ExceptionToHttpErrorMapper { get; set; }
 
@@ -26,25 +30,28 @@ namespace Bit.IdentityServer.Implementations
             return AuthenticateLocalAsync(context, OwinContext.Request.CallCancelled);
         }
 
+        protected virtual List<Claim> BuildClaimsFromBitJwtToken(BitJwtToken bitJwtToken)
+        {
+            Claim primary_sid = new Claim("primary_sid", BitJwtToken.ToJson(bitJwtToken));
+
+            List<Claim> claims = new List<Claim>
+            {
+                primary_sid
+            };
+
+            return claims;
+        }
+
         public virtual async Task AuthenticateLocalAsync(LocalAuthenticationContext context, CancellationToken cancellationToken)
         {
             try
             {
-                string userId = await GetUserIdByLocalAuthenticationContextAsync(context, cancellationToken).ConfigureAwait(false);
+                BitJwtToken bitJwtToken = await LocalLogin(context, cancellationToken).ConfigureAwait(false);
 
                 if (context.AuthenticateResult == null)
                 {
-                    List<Claim> claims = new List<Claim>
-                    {
-                        new Claim("sub", userId),
-                        new Claim("primary_sid", userId),
-                        new Claim("upn", userId),
-                        new Claim("name", userId),
-                        new Claim("given_name", userId)
-                    };
-
-                    AuthenticateResult result = new AuthenticateResult(userId, userId,
-                        claims,
+                    AuthenticateResult result = new AuthenticateResult(bitJwtToken.UserId, bitJwtToken.UserId,
+                        BuildClaimsFromBitJwtToken(bitJwtToken),
                         authenticationMethod: "custom");
 
                     context.AuthenticateResult = result;
@@ -68,23 +75,17 @@ namespace Bit.IdentityServer.Implementations
 
         public virtual Task GetProfileDataAsync(ProfileDataRequestContext context, CancellationToken cancellationToken)
         {
-            string userId = context.Subject.Identity.Name;
+            BitJwtToken bitJwtToken = BitJwtToken.FromJson(context.Subject.Claims.GetClaimValue("primary_sid"));
 
-            List<Claim> claims = new List<Claim>
-            {
-                new Claim("sub", userId),
-                new Claim("primary_sid", userId),
-                new Claim("upn", userId),
-                new Claim("name", userId),
-                new Claim("given_name", userId)
-            };
-
-            context.IssuedClaims = claims;
+            context.IssuedClaims = BuildClaimsFromBitJwtToken(bitJwtToken);
 
             return base.GetProfileDataAsync(context);
         }
 
-        public abstract Task<bool> UserIsActiveAsync(IsActiveContext context, string userId, CancellationToken cancellationToken);
+        public virtual Task<bool> UserIsActiveAsync(IsActiveContext context, BitJwtToken jwtToken, CancellationToken cancellationToken)
+        {
+            return Task.FromResult(true);
+        }
 
         public sealed override async Task IsActiveAsync(IsActiveContext context)
         {
@@ -96,7 +97,7 @@ namespace Bit.IdentityServer.Implementations
                 }
                 else
                 {
-                    context.IsActive = await UserIsActiveAsync(context, UserInformationProvider.GetCurrentUserId(), OwinContext.Request.CallCancelled).ConfigureAwait(false);
+                    context.IsActive = await UserIsActiveAsync(context, UserInformationProvider.GetBitJwtToken(), OwinContext.Request.CallCancelled).ConfigureAwait(false);
                 }
             }
             catch
@@ -111,7 +112,7 @@ namespace Bit.IdentityServer.Implementations
             await base.IsActiveAsync(context).ConfigureAwait(false);
         }
 
-        protected virtual Task<string> GetInternalUserId(ExternalAuthenticationContext context, CancellationToken cancellationToken)
+        protected virtual Task<BitJwtToken> ExternalLogin(ExternalAuthenticationContext context, CancellationToken cancellationToken)
         {
             throw new NotImplementedException();
         }
@@ -128,19 +129,10 @@ namespace Bit.IdentityServer.Implementations
 
             if (context.AuthenticateResult == null)
             {
-                string userId = await GetInternalUserId(context, cancellationToken).ConfigureAwait(false);
+                BitJwtToken jwtToken = await ExternalLogin(context, cancellationToken).ConfigureAwait(false);
 
-                List<Claim> claims = new List<Claim>
-                {
-                    new Claim("sub", userId),
-                    new Claim("primary_sid", userId),
-                    new Claim("upn", userId),
-                    new Claim("name", userId),
-                    new Claim("given_name", userId)
-                };
-
-                AuthenticateResult result = new AuthenticateResult(userId, userId,
-                    claims,
+                AuthenticateResult result = new AuthenticateResult(jwtToken.UserId, jwtToken.UserId,
+                    BuildClaimsFromBitJwtToken(jwtToken),
                     authenticationMethod: context.ExternalIdentity.Provider);
 
                 context.AuthenticateResult = result;

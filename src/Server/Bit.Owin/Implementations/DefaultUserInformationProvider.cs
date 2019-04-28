@@ -1,8 +1,9 @@
-﻿using System;
+﻿using Bit.Core.Contracts;
+using Newtonsoft.Json.Linq;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
-using Bit.Core.Contracts;
 
 namespace Bit.Owin.Implementations
 {
@@ -22,9 +23,7 @@ namespace Bit.Owin.Implementations
 
         public virtual string GetCurrentUserId()
         {
-            return GetClaims()
-                .ExtendedSingle("Finding primary_sid in claims", claim => string.Equals(claim.Type, "primary_sid", StringComparison.OrdinalIgnoreCase))
-                .Value;
+            return GetBitJwtToken().UserId;
         }
 
         public virtual string GetAuthenticationType()
@@ -57,6 +56,23 @@ namespace Bit.Owin.Implementations
             return GetClaims()
                 .ExtendedSingle("Finding client_id in claims", claim => string.Equals(claim.Type, "client_id", StringComparison.OrdinalIgnoreCase))
                 .Value;
+        }
+
+        public virtual BitJwtToken GetBitJwtToken()
+        {
+            string primary_sid = GetClaims()
+                .ExtendedSingle("Finding primary_sid in claims", claim => string.Equals(claim.Type, "primary_sid", StringComparison.OrdinalIgnoreCase))
+                .Value;
+
+            try
+            {
+                JToken json = JToken.Parse(primary_sid);
+                return new BitJwtToken { UserId = (json[nameof(BitJwtToken.UserId)] ?? throw new InvalidOperationException("UserId_Could_Not_Be_Found_In_Bit_Jwt_Token")).ToObject<string>(), CustomProps = (json[nameof(BitJwtToken.CustomProps)] ?? throw new InvalidOperationException("CustomProps_Could_Not_Be_Found_In_Bit_Jwt_Token")).ToObject<Dictionary<string, string>>() };
+            }
+            catch (InvalidOperationException exp) when (exp.Message.EndsWith("_Could_Not_Be_Found_In_Bit_Jwt_Token"))
+            {
+                return new BitJwtToken { UserId = primary_sid };
+            }
         }
     }
 }
