@@ -76,6 +76,7 @@ namespace Bit.ViewModel
         public async void OnNavigatingTo(INavigationParameters parameters)
         {
             DateTimeOffset startDate = DateTimeOffset.Now;
+            bool success = true;
 
             try
             {
@@ -85,6 +86,7 @@ namespace Bit.ViewModel
             }
             catch (Exception exp)
             {
+                success = false;
                 BitExceptionHandler.Current.OnExceptionReceived(exp);
             }
             finally
@@ -100,6 +102,8 @@ namespace Bit.ViewModel
                         if (ShouldLogNavParam(prp.Key))
                             properties.Add(prp.Key, prp.Value?.ToString() ?? "NULL");
                     }
+
+                    properties.Add("PageViewSucceeded", success.ToString());
 
                     TimeSpan duration = DateTimeOffset.Now - startDate;
 
