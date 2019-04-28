@@ -26,7 +26,7 @@ namespace BitCodeGeneratorTask
                         bitCodeGeneratorImplProcess.StartInfo.UseShellExecute = false;
                         bitCodeGeneratorImplProcess.StartInfo.RedirectStandardOutput = bitCodeGeneratorImplProcess.StartInfo.RedirectStandardError = true;
                         bitCodeGeneratorImplProcess.StartInfo.FileName = Path.Combine(Path.GetDirectoryName(typeof(BitSourceGenerator).Assembly.Location), "..", @"implementation\BitCodeGeneratorTaskImpl.exe"); // Not supported on Mac/Linux at the moment.
-                        bitCodeGeneratorImplProcess.StartInfo.Arguments = $"-projectPath {ProjectPath}";
+                        bitCodeGeneratorImplProcess.StartInfo.Arguments = $"-projectPath \"{ProjectPath}\"";
                         bitCodeGeneratorImplProcess.StartInfo.CreateNoWindow = true;
                         bitCodeGeneratorImplProcess.StartInfo.WorkingDirectory = Path.GetDirectoryName(bitCodeGeneratorImplProcess.StartInfo.FileName);
                         bitCodeGeneratorImplProcess.OutputDataReceived += (sender, e) =>
