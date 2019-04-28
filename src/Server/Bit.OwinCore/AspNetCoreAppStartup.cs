@@ -22,8 +22,6 @@ namespace Bit.OwinCore
     {
         public IHostingEnvironment HostingEnvironment { get; }
 
-        public IConfiguration Configuration { get; }
-
         private readonly IPathProvider _pathProvider;
 
         public AspNetCoreAppStartup(IServiceProvider serviceProvider)
@@ -32,7 +30,6 @@ namespace Bit.OwinCore
                 throw new ArgumentNullException(nameof(serviceProvider));
 
             HostingEnvironment = serviceProvider.GetRequiredService<IHostingEnvironment>();
-            Configuration = serviceProvider.GetRequiredService<IConfiguration>();
 
             DefaultPathProvider.Current = _pathProvider = new AspNetCorePathProvider(HostingEnvironment);
         }
