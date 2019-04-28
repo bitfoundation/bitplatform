@@ -1,5 +1,5 @@
 ﻿<Project TreatAsLocalProperty="TaskFolder;TaskAssembly">
-  <ItemGroup>
+  <ItemGroup Condition=" '$(TargetFramework)' == 'netcoreapp3.0' ">
     <Reference Include="Hangfire.Core">
       <HintPath>$(NuGetPackageRoot)hangfire.core\1.7.1\lib\net46\Hangfire.Core.dll</HintPath>
       <Private>true</Private>
