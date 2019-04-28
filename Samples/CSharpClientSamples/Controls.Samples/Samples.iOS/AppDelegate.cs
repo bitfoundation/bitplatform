@@ -1,4 +1,5 @@
-﻿using Foundation;
+﻿using Bit.View;
+using Foundation;
 using UIKit;
 using Xamarin.Forms;
 using Xamarin.Forms.Platform.iOS;

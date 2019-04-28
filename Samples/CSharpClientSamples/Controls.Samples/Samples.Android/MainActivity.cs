@@ -1,6 +1,7 @@
 ﻿using Android.App;
 using Android.Content.PM;
 using Android.OS;
+using Bit.View;
 using Xamarin.Forms;
 using Xamarin.Forms.Platform.Android;
 

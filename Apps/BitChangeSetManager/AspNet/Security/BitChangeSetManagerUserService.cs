@@ -1,8 +1,6 @@
 ﻿using Bit.Core.Contracts;
-using Bit.Data.Contracts;
 using Bit.IdentityServer.Implementations;
 using Bit.Owin.Exceptions;
-using BitChangeSetManager.DataAccess;
 using BitChangeSetManager.DataAccess.Contracts;
 using BitChangeSetManager.Model;
 using IdentityServer3.Core.Models;
@@ -19,7 +17,7 @@ namespace BitChangeSetManager.Security
     {
         public virtual IBitChangeSetManagerRepository<User> UsersRepository { get; set; }
 
-        public override async Task<string> GetUserIdByLocalAuthenticationContextAsync(LocalAuthenticationContext context, CancellationToken cancellationToken)
+        public async override Task<BitJwtToken> LocalLogin(LocalAuthenticationContext context, CancellationToken cancellationToken)
         {
             string username = context.UserName;
             string password = context.Password;
@@ -54,12 +52,12 @@ namespace BitChangeSetManager.Security
             if (user == null)
                 throw new DomainLogicException("LoginFailed");
 
-            return user.Id.ToString();
+            return new BitJwtToken { UserId = user.Id.ToString() };
         }
 
-        public override async Task<bool> UserIsActiveAsync(IsActiveContext context, string userId, CancellationToken cancellationToken)
+        public async override Task<bool> UserIsActiveAsync(IsActiveContext context, BitJwtToken jwtToken, CancellationToken cancellationToken)
         {
-            Guid userIdAsGuid = Guid.Parse(userId);
+            Guid userIdAsGuid = Guid.Parse(jwtToken.UserId);
 
             return await (await UsersRepository.GetAllAsync(cancellationToken))
                  .AnyAsync(u => u.Id == userIdAsGuid);

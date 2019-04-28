@@ -4,11 +4,9 @@ using Bit.Core.Implementations;
 using Bit.Core.Models;
 using Bit.Data;
 using Bit.Data.Contracts;
-using Bit.Data.EntityFrameworkCore.Contracts;
 using Bit.Data.EntityFrameworkCore.Implementations;
 using Bit.Model.Contracts;
 using Bit.Owin;
-using Bit.Owin.Contracts;
 using Bit.Owin.Implementations;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -72,16 +70,9 @@ namespace EntityFrameworkCoreSample
 
     public class MyAppDbContext : EfCoreDbContextBase
     {
-        public MyAppDbContext()
-            : base(new DbContextOptionsBuilder().UseSqlServer(DefaultAppEnvironmentsProvider.Current.GetActiveAppEnvironment().GetConfig<string>("AppConnectionString")).Options)
+        public MyAppDbContext(DbContextOptions<MyAppDbContext> options)
+            : base(options)
         {
-
-        }
-
-        public MyAppDbContext(AppEnvironment appEnvironment, IDbContextObjectsProvider dbContextCreationOptionsProvider)
-              : base(appEnvironment.GetConfig<string>("AppConnectionString"), dbContextCreationOptionsProvider)
-        {
-
         }
 
         public virtual DbSet<Customer> Customers { get; set; }
@@ -136,10 +127,13 @@ namespace EntityFrameworkCoreSample
 
     public class MyAppDbContextInitializer : IAppEvents
     {
+        public virtual IDependencyManager DependencyManager { get; set; }
+
         public virtual void OnAppStartup()
         {
-            using (MyAppDbContext dbContext = new MyAppDbContext())
+            using (IDependencyResolver dependencyResolver = DependencyManager.CreateChildDependencyResolver())
             {
+                MyAppDbContext dbContext = dependencyResolver.Resolve<MyAppDbContext>();
                 dbContext.Database.EnsureCreated();
             }
         }
@@ -184,7 +178,10 @@ namespace EntityFrameworkCoreSample
             });
 
             dependencyManager.Register<IDbConnectionProvider, DefaultDbConnectionProvider<SqlConnection>>();
-            dependencyManager.RegisterEfCoreDbContext<MyAppDbContext, SqlServerDbContextObjectsProvider>();
+            dependencyManager.RegisterEfCoreDbContext<MyAppDbContext>((serviceProvider, options) =>
+            {
+                options.UseSqlServer(serviceProvider.GetRequiredService<IDbConnectionProvider>().GetDbConnection(serviceProvider.GetRequiredService<AppEnvironment>().GetConfig<string>("AppConnectionString"), rollbackOnScopeStatusFailure: true));
+            });
             dependencyManager.RegisterAppEvents<MyAppDbContextInitializer>();
             dependencyManager.RegisterRepository(typeof(MyAppRepository<>).GetTypeInfo());
             dependencyManager.RegisterRepository(typeof(OrdersRepository).GetTypeInfo());

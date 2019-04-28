@@ -32,7 +32,7 @@ namespace BitChangeSetManager.Api
 
             DbConnection dbConnection = await DbConnectionProvider.GetDbConnectionAsync(connectionString, true, cancellationToken);
 
-            DbTransaction dbTransaction = DbConnectionProvider.GetDbTransaction(connectionString);
+            DbTransaction dbTransaction = DbConnectionProvider.GetDbTransaction(dbConnection);
 
             IEnumerable<CityDto> cities = await dbConnection.QueryAsync<CityDto>(odataSqlQuery.SelectQuery, odataSqlQuery.Parts.Parameters, transaction: dbTransaction);
 
