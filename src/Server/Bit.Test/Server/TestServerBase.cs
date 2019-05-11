@@ -46,7 +46,8 @@ namespace Bit.Test.Server
                 {
                     afterResponse?.Invoke(message);
                 },
-                OnCreateMessageHandler = GetHttpMessageHandler
+                OnCreateMessageHandler = GetHttpMessageHandler,
+                NameMatchResolver = ODataNameMatchResolver.AlpahumericCaseInsensitive
             });
 
             return client;

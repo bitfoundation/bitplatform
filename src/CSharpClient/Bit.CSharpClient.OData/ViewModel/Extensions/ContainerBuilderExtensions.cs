@@ -20,7 +20,8 @@ namespace Autofac
 
                 IODataClient odataClient = new ODataClient(new ODataClientSettings(httpClient: c.Resolve<HttpClient>(), new Uri(clientAppProfile.ODataRoute, uriKind: UriKind.Relative))
                 {
-                    RenewHttpConnection = false
+                    RenewHttpConnection = false,
+                    NameMatchResolver = ODataNameMatchResolver.AlpahumericCaseInsensitive
                 });
 
                 return odataClient;
