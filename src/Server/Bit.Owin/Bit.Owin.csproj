@@ -22,12 +22,14 @@
     <DocumentationFile>bin\$(Configuration)\$(TargetFramework)\$(AssemblyName).xml</DocumentationFile>
     <LangVersion>7.3</LangVersion>
     <NoWarn>$(NoWarn);CS1591;NU1701</NoWarn>
+    <DefineConstants Condition=" '$(TargetFramework)' == 'netcoreapp2.0' ">DotNetCore</DefineConstants>
+    <DefineConstants Condition=" '$(TargetFramework)' == 'net461' ">DotNet</DefineConstants>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="Autofac" Version="4.8.1" />
     <PackageReference Include="Autofac.Owin" Version="4.2.0" />
-    <PackageReference Include="IdentityModel" Version="3.10.7" />
+    <PackageReference Include="IdentityModel" Version="3.10.10" />
     <PackageReference Include="Lambda2Js" Version="3.1.2" />
     <PackageReference Include="Microsoft.AspNet.WebApi.Client" Version="5.2.7" />
     <PackageReference Include="Autofac.Extensions.DependencyInjection" Version="4.3.1" />

@@ -5,11 +5,6 @@ VisualStudioVersion = 16.0.28527.54
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Server", "Server", "{C4390E9A-3483-45A8-9A3F-D8DBFF3A38DB}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Bit", "Bit", "{3B9BD8FE-95D6-4720-9FA9-ACBED0C6363F}"
-	ProjectSection(SolutionItems) = preProject
-		BitConfigV1.json = BitConfigV1.json
-	EndProjectSection
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Bit.Model", "src\Server\Bit.Model\Bit.Model.csproj", "{5FAC42F7-1179-440D-8BE0-FFD364639943}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Bit.Data", "src\Server\Bit.Data\Bit.Data.csproj", "{722D443E-450D-4C7B-94CF-AC8C553DD8FF}"
