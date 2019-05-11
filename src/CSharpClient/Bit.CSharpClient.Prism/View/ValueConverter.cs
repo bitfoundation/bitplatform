@@ -1,4 +1,5 @@
 ﻿using System;
+using System.ComponentModel;
 using System.Globalization;
 using Xamarin.Forms;
 using Xamarin.Forms.Xaml;
@@ -9,12 +10,12 @@ namespace Bit.View
     {
         protected virtual TTarget Convert(TSource value, Type targetType, TParameter parameter, CultureInfo culture)
         {
-            throw new NotImplementedException();
+            throw new NotImplementedException($"Override {nameof(Convert)} in {GetType().Name} class and provide required implementation there. Do not call base.Convert, it's not required at all.");
         }
 
         protected virtual TSource ConvertBack(TTarget value, Type targetType, TParameter parameter, CultureInfo culture)
         {
-            throw new NotImplementedException();
+            throw new NotImplementedException($"Override {nameof(ConvertBack)} in {GetType().Name} class and provide required implementation there. Do not call base.ConvertBack, it's not required at all.");
         }
 
         object IValueConverter.Convert(object value, Type targetType, object parameter, CultureInfo culture)
