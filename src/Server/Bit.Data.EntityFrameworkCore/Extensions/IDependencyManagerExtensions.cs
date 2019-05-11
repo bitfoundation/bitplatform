@@ -23,6 +23,9 @@ namespace Bit.Core.Contracts
             if (optionsAction == null)
                 throw new ArgumentNullException(nameof(optionsAction));
 
+            if (typeof(TDbContext).GetConstructors().SelectMany(ctor => ctor.GetParameters().Select(p => p.ParameterType)).Any(t => t == typeof(DbContextOptions)))
+                throw new InvalidOperationException($"Use DbContextOptions<{typeof(TDbContext).Name}> instead of DbContextOptions in constructor.");
+
             IServiceCollection services = ((IServiceCollectionAccessor)dependencyManager).ServiceCollection;
 
             services.AddDbContext<TDbContext>((sp, optionsBuilder) =>

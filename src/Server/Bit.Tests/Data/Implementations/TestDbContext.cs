@@ -7,7 +7,7 @@ namespace Bit.Tests.Data.Implementations
 {
     public class TestDbContext : EfCoreDbContextBase
     {
-        public TestDbContext(DbContextOptions options)
+        public TestDbContext(DbContextOptions<TestDbContext> options)
             : base(options)
         {
         }

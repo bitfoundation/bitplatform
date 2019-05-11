@@ -149,7 +149,7 @@ namespace DotNetCoreTestApp
 
     public class TestDbContext : DbContext
     {
-        public TestDbContext(DbContextOptions options)
+        public TestDbContext(DbContextOptions<TestDbContext> options)
             : base(options)
         {
         }
