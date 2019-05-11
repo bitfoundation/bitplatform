@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net461</TargetFramework>
+    <TargetFrameworks>netcoreapp2.0</TargetFrameworks>
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
     <IsTool>true</IsTool>
     <Version>$(Bit-Package-Version)</Version>
@@ -29,10 +29,6 @@
   <ItemGroup>
     <Content Include="build\*" PackagePath="build\" />
     <Content Include="buildMultiTargeting\*" PackagePath="buildMultiTargeting\" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="..\Bit.Hangfire\Bit.Hangfire.csproj" />
   </ItemGroup>
 
 </Project>
