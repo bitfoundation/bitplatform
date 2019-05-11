@@ -1,11 +1,18 @@
-﻿using Microsoft.AspNet.OData;
+﻿using Bit.Owin.Contracts;
+using Microsoft.AspNet.OData;
 using Microsoft.AspNet.OData.Extensions;
 using Microsoft.AspNet.OData.Query;
+using Microsoft.OData.UriParser;
+using Microsoft.Owin;
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Reflection;
+using System.Web;
+using System.Web.Http;
 using System.Web.Http.Controllers;
 using System.Web.Http.Filters;
 
@@ -118,6 +125,64 @@ namespace Bit.OData.ODataControllers
         protected virtual ODataQueryOptions<TDto> GetODataQueryOptions()
         {
             return Request.GetODataQueryOptions<TDto>();
+        }
+
+        protected virtual SingleResult<T> SingleResult<T>(IQueryable<T> queryable)
+        {
+            return System.Web.Http.SingleResult.Create(queryable);
+        }
+
+        protected virtual SingleResult<T> SingleResult<T>(T obj)
+        {
+            return SingleResult(new[] { obj }.AsQueryable());
+        }
+
+        protected virtual string CreateODataLink(string odataModule = null, string controller = null, string action = null, object routeValues = null)
+        {
+            IDictionary<string, object> routeValuesDictionary = Request
+                .GetOwinContext()
+                .GetDependencyResolver()
+                .Resolve<IRouteValuesProvider>()
+                .PopulateRouteValuesDictionary(routeValues ?? new { });
+
+            return CreateODataLink(odataModule, controller, action, routeValuesDictionary);
+        }
+
+        protected virtual string CreateODataLink(string odataModule = null, string controller = null, string action = null, IDictionary<string, object> routeValues = null)
+        {
+            HttpRequestMessageProperties odataProps = Request.ODataProperties();
+
+            if (odataModule == null)
+            {
+                odataModule = odataProps.RouteName.Replace("-odata", string.Empty);
+            }
+            if (controller == null)
+            {
+                controller = odataProps.Path.Segments.OfType<EntitySetSegment>().ExtendedSingle($"Finding entity set name from {odataProps.Path}").EntitySet.Name;
+            }
+            if (action == null)
+            {
+                action = odataProps.Path.Segments.OfType<OperationSegment>().ExtendedSingle($"Finding operation segment from {odataProps.Path}").Operations.ExtendedSingle($"Finding operation name from {odataProps.Path}").Name;
+            }
+
+            string url = RequestContext.Url.Link($"{odataModule}-odata", new { odataPath = $"{controller}/{action}", controller, action });
+
+            url += "(";
+
+            if (routeValues != null)
+            {
+                url += string.Join(",", routeValues.Select(routeValueItem =>
+                {
+                    object value = routeValueItem.Value;
+                    if (value is string strValue)
+                        value = HttpUtility.UrlEncode($"'{strValue}'");
+                    return $"{routeValueItem.Key}={value}";
+                }));
+            }
+
+            url += ")";
+
+            return url;
         }
     }
 }

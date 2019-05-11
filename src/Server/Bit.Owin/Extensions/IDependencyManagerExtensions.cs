@@ -165,6 +165,9 @@ namespace Bit.Core.Contracts
             dependencyManager.Register<IRequestInformationProvider, OwinRequestInformationProvider>(overwriteExciting: false);
             dependencyManager.Register<IClientProfileModelProvider, DefaultClientProfileModelProvider>(overwriteExciting: false);
             dependencyManager.Register<IHtmlPageProvider, DefaultHtmlPageProvider>(overwriteExciting: false);
+#if DotNet
+            dependencyManager.Register<IRouteValuesProvider, AspNetRouteValuesProvider>(lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExciting: false);
+#endif
 
             return dependencyManager;
         }

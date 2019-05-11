@@ -103,6 +103,7 @@ namespace Bit.Core.Contracts
         /// | <see cref="IExceptionToHttpErrorMapper"/> by <see cref="DefaultExceptionToHttpErrorMapper"/>
         /// | <see cref="ITimeZoneManager"/> by <see cref="DefaultTimeZoneManager"/>
         /// | <see cref="IRequestInformationProvider"/> by <see cref="AspNetCoreRequestInformationProvider"/>
+        /// | <see cref="IRouteValuesProvider"/> by <see cref="AspNetCoreRouteValuesProvider"/>
         /// | On Mono, it registers <see cref="IDataProtectionProvider"/> by <see cref="SystemCryptoBasedDataProtectionProvider"/>
         /// </summary>
         public static IDependencyManager RegisterDefaultAspNetCoreApp(this IDependencyManager dependencyManager)
@@ -115,6 +116,7 @@ namespace Bit.Core.Contracts
             dependencyManager.Register<IDataProtectionProvider, SystemCryptoBasedDataProtectionProvider>(lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExciting: false);
             dependencyManager.Register<IClientProfileModelProvider, DefaultClientProfileModelProvider>(overwriteExciting: false);
             dependencyManager.Register<IHtmlPageProvider, DefaultHtmlPageProvider>(overwriteExciting: false);
+            dependencyManager.Register<IRouteValuesProvider, AspNetCoreRouteValuesProvider>(lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExciting: false);
             return dependencyManager;
         }
     }

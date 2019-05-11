@@ -95,7 +95,7 @@ namespace Bit.OData.ODataControllers
         [Get]
         public virtual async Task<SingleResult<TDto>> Get(TKey key, CancellationToken cancellationToken)
         {
-            return SingleResult.Create(await GetByIdQuery(key, cancellationToken));
+            return SingleResult(await GetByIdQuery(key, cancellationToken));
         }
 
         [Delete]
