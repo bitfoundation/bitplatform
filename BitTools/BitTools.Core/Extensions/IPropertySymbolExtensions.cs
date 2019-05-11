@@ -89,7 +89,20 @@ namespace Microsoft.CodeAnalysis
             if (inversePropertyAtt != null)
                 return inversePropertyAtt.ConstructorArguments.Single().Value.ToString();
             else
-                return "$$unbound";
+            {
+                ITypeSymbol thisClass = prop.ContainingType;
+
+                ITypeSymbol otherClass = prop.Type.IsCollectionType() ? prop.Type.GetElementType() : prop.Type;
+
+                string otherPropName = otherClass
+                    .GetMembers()
+                    .OfType<IPropertySymbol>()
+                    .Select(p => new { p.Name, p.Type })
+                    .Select(p => new { p.Name, Type = p.Type.IsCollectionType() ? p.Type.GetElementType() : p.Type })
+                    .ExtendedSingleOrDefault($"Finding inverse property for {prop.Name} of {thisClass.Name}", p => p.Type == thisClass)?.Name;
+
+                return otherPropName ?? "$$unbound";
+            }
         }
     }
 }

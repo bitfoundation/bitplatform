@@ -20,7 +20,6 @@ namespace Bit.Tests.Model.DomainModels
         public virtual long Version { get; set; }
 
         [ForeignKey(nameof(ParentEntityId))]
-        [InverseProperty(nameof(DomainModels.ParentEntity.ChildEntities))]
         public virtual ParentEntity ParentEntity { get; set; }
 
         public virtual long ParentEntityId { get; set; }

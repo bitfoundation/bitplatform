@@ -23,7 +23,6 @@ namespace Bit.Tests.Model.DomainModels
         [ConcurrencyCheck]
         public virtual long Version { get; set; }
 
-        [InverseProperty(nameof(ChildEntity.ParentEntity))]
         public virtual List<ChildEntity> ChildEntities { get; set; } = new List<ChildEntity>();
 
         public virtual TestModel TestModel { get; set; }
