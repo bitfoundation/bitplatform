@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Web.Http;
 
 namespace Bit.Tests.Api.ApiControllers
 {
@@ -56,19 +57,13 @@ namespace Bit.Tests.Api.ApiControllers
 
             return model;
         }
-        public class DoSomeThingWithComplexObjParameters
-        {
-            public TestComplexDto complexDto { get; set; }
-        }
 
         [Action]
-        public virtual TestComplexDto DoSomeThingWithComplexObj(DoSomeThingWithComplexObjParameters parameters)
+        public virtual SingleResult<TestComplexDto> DoSomeThingWithComplexObj(TestComplexDto complexDto)
         {
-            TestComplexDto complexDto = parameters.complexDto;
-
             complexDto.ComplexObj.Name += "?";
 
-            return complexDto;
+            return SingleResult(complexDto);
         }
 
         [Function]
@@ -86,16 +81,9 @@ namespace Bit.Tests.Api.ApiControllers
             };
         }
 
-        public class GetValuesParameters
-        {
-            public IEnumerable<int> values { get; set; }
-        }
-
         [Action]
-        public virtual async Task<int[]> GetValues(GetValuesParameters parameters, CancellationToken cancellationToken)
+        public virtual async Task<int[]> GetValues(IEnumerable<int> values, CancellationToken cancellationToken)
         {
-            IEnumerable<int> values = parameters.values;
-
             return values.Reverse().ToArray();
         }
     }

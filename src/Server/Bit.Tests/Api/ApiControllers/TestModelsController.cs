@@ -234,11 +234,11 @@ namespace Bit.Tests.Api.ApiControllers
         }
 
         [Function]
-        public virtual async Task<TestModel> CustomActionMethodWithSingleDtoReturnValueTest(CancellationToken cancellationToken)
+        public virtual async Task<SingleResult<TestModel>> CustomActionMethodWithSingleDtoReturnValueTest(CancellationToken cancellationToken)
         {
-            return await (await TestModelsRepository.Value
+            return SingleResult(await (await TestModelsRepository.Value
                 .GetAllAsync(cancellationToken))
-                .FirstAsync(cancellationToken);
+                .FirstAsync(cancellationToken));
         }
 
         [Function]
@@ -431,6 +431,18 @@ namespace Bit.Tests.Api.ApiControllers
             valueChecker.CheckValue(sql.Parts.GetTotalCountFromDb);
 
             return new TestModel[] { }.AsQueryable();
+        }
+
+        [Function]
+        public virtual string CreateODataLinkSample()
+        {
+            return CreateODataLink(action: "SumFunction", routeValues: new { n1 = 1, n2 = 2 });
+        }
+
+        [Function]
+        public virtual int SumFunction(int n1, int n2)
+        {
+            return n1 + n2;
         }
     }
 }

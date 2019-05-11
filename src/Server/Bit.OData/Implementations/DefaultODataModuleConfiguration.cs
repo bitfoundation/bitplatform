@@ -104,6 +104,11 @@ namespace Bit.OData.Implementations
                 entitySet.EntityType.DerivesFromNothing();
         }
 
+        private bool IsIEnumerable(TypeInfo type)
+        {
+            return type != typeof(string).GetTypeInfo() && typeof(IEnumerable).GetTypeInfo().IsAssignableFrom(type);
+        }
+
         private void BuildControllerOperations<TDto>(ODataModelBuilder odataModelBuilder, TypeInfo apiController)
             where TDto : class
         {
@@ -113,9 +118,25 @@ namespace Bit.OData.Implementations
             foreach (MethodInfo method in apiController.GetMethods(BindingFlags.Instance | BindingFlags.Public | BindingFlags.DeclaredOnly))
             {
                 IActionHttpMethodProvider actionHttpMethodProvider =
-                    method.GetCustomAttributes().OfType<FunctionAttribute>().Cast<IActionHttpMethodProvider>()
-                    .Union(method.GetCustomAttributes().OfType<ActionAttribute>().Cast<IActionHttpMethodProvider>())
+                    method.GetCustomAttributes().OfType<IActionHttpMethodProvider>()
                     .ExtendedSingleOrDefault($"Finding ${nameof(IActionHttpMethodProvider)} attribute in {method.Name}");
+
+                if (actionHttpMethodProvider is DeleteAttribute || actionHttpMethodProvider is UpdateAttribute || actionHttpMethodProvider is PartialUpdateAttribute)
+                {
+                    if (!method.GetParameters().Any(p => p.Name == "key"))
+                    {
+                        string dtoTypeName = typeof(TDto).Name;
+                        string keyColumnTypeName = DtoMetadataWorkspace.Current.GetKeyColums(typeof(TDto).GetTypeInfo()).ExtendedSingle($"Getting key columns for {dtoTypeName}").PropertyType.Name;
+                        string methodDeclartion = null;
+                        if (actionHttpMethodProvider is DeleteAttribute)
+                            methodDeclartion = $"public virtual async Task Delete({keyColumnTypeName} key, CancellationToken cancellationToken)";
+                        else if (actionHttpMethodProvider is PartialUpdateAttribute)
+                            methodDeclartion = $"public virtual async Task<{dtoTypeName}> PartialUpdate({keyColumnTypeName} key, Delta<{dtoTypeName}>, CancellationToken cancellationToken)";
+                        else if (actionHttpMethodProvider is UpdateAttribute)
+                            methodDeclartion = $"public virtual async Task<{dtoTypeName}> Update({keyColumnTypeName} key, {dtoTypeName}, CancellationToken cancellationToken)";
+                        throw new InvalidOperationException($"{apiController.Name}.{method.Name} must have a signature 'like' followings: {methodDeclartion}");
+                    }
+                }
 
                 if (actionHttpMethodProvider != null)
                 {
@@ -140,12 +161,25 @@ namespace Bit.OData.Implementations
                     {
                         ParameterInfo parameter = method
                             .GetParameters()
-                            .ExtendedSingleOrDefault($"Finding parameter of {method.Name}", p => p.ParameterType.GetTypeInfo() != typeof(CancellationToken).GetTypeInfo() && !typeof(ODataQueryOptions).IsAssignableFrom(p.ParameterType.GetTypeInfo()));
+                            .ExtendedSingleOrDefault($"Finding parameter of {apiController.Name}.{method.Name}. It's expected to see 0 or 1 parameter only.", p => p.ParameterType.GetTypeInfo() != typeof(CancellationToken).GetTypeInfo() && !typeof(ODataQueryOptions).IsAssignableFrom(p.ParameterType.GetTypeInfo()));
 
                         if (parameter != null)
                         {
-                            foreach (PropertyInfo prop in parameter.ParameterType.GetProperties(BindingFlags.Public | BindingFlags.Instance))
-                                operationParameters.Add(new DefaultAutoODataModelBuilderParameterInfo { Name = prop.Name, Type = prop.PropertyType.GetTypeInfo() });
+                            TypeInfo parameterType = parameter.ParameterType.GetTypeInfo();
+
+                            if (DtoMetadataWorkspace.Current.IsDto(parameterType) || DtoMetadataWorkspace.Current.IsComplexType(parameterType) || IsIEnumerable(parameterType))
+                            {
+                                operationParameters.Add(new DefaultAutoODataModelBuilderParameterInfo { Name = parameter.Name, Type = parameterType });
+                            }
+                            else if (Nullable.GetUnderlyingType(parameterType) != null || parameterType.IsPrimitive || typeof(string).GetTypeInfo() == parameterType || parameter.ParameterType == typeof(DateTime).GetTypeInfo() || parameter.ParameterType == typeof(DateTimeOffset).GetTypeInfo() || parameter.ParameterType.IsEnum)
+                            {
+                                throw new InvalidOperationException($"Allowed parameter types for {apiController.Name}.{method.Name} action: | Dto | Complex Type | Classes like pulic class {method.Name}Args {{ public {parameter.ParameterType.Name} {parameter.Name} {{ get; set; }} }} | IEnumerable<T> (For example IEnumerable<int> or IEnumerable<MyDtoClass> | You may not define a parameter of type {parameter.ParameterType.Name}.");
+                            }
+                            else
+                            {
+                                foreach (PropertyInfo prop in parameter.ParameterType.GetProperties(BindingFlags.Public | BindingFlags.Instance))
+                                    operationParameters.Add(new DefaultAutoODataModelBuilderParameterInfo { Name = prop.Name, Type = prop.PropertyType.GetTypeInfo() });
+                            }
                         }
                     }
 
@@ -160,8 +194,7 @@ namespace Bit.OData.Implementations
                     {
                         TypeInfo parameterType = operationParameter.Type;
 
-                        if (operationParameter.Type.GetTypeInfo() != typeof(string).GetTypeInfo() &&
-                            typeof(IEnumerable).GetTypeInfo().IsAssignableFrom(operationParameter.Type))
+                        if (IsIEnumerable(operationParameter.Type))
                         {
                             if (parameterType.IsArray)
                                 throw new InvalidOperationException($"Use IEnumerable<{parameterType.GetElementType().GetTypeInfo().Name}> instead of {parameterType.GetElementType().GetTypeInfo().Name}[] for parameter {operationParameter.Name} of {operationParameter.Name} in {controllerName} controller");
@@ -194,13 +227,16 @@ namespace Bit.OData.Implementations
                                 type = type.GetGenericArguments().ExtendedSingle($"Finding Return type of {method.Name}").GetTypeInfo();
                         }
 
+                        if (DtoMetadataWorkspace.Current.IsDto(type))
+                            throw new InvalidOperationException($"Use SingleResult<{type.Name}> to return one {type.Name} in {apiController.Name}.{method.Name}");
+
                         if (typeof(SingleResult).GetTypeInfo().IsAssignableFrom(type))
                         {
                             if (type.IsGenericType)
                                 type = type.GetGenericArguments().ExtendedSingle($"Finding Return type of {method.Name}").GetTypeInfo();
                         }
 
-                        if (typeof(string) != type && typeof(IEnumerable).IsAssignableFrom(type))
+                        if (IsIEnumerable(type))
                         {
                             if (type.IsGenericType)
                                 type = type.GetGenericArguments().ExtendedSingle($"Finding Return type of {method.Name}").GetTypeInfo();

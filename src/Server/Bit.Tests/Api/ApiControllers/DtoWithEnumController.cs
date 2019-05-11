@@ -13,15 +13,10 @@ namespace Bit.Tests.Api.ApiControllers
             return new List<DtoWithEnum> { new DtoWithEnum { Id = 1, Gender = gender } };
         }
 
-        public class PostDtoWithEnumParameters
-        {
-            public DtoWithEnum dto { get; set; }
-        }
-
         [Action]
-        public virtual bool PostDtoWithEnum(PostDtoWithEnumParameters actionParameters)
+        public virtual bool PostDtoWithEnum(DtoWithEnum dto)
         {
-            return actionParameters.dto.Gender == TestGender.Man;
+            return dto.Gender == TestGender.Man;
         }
 
         [Function]
@@ -30,15 +25,10 @@ namespace Bit.Tests.Api.ApiControllers
             return new List<DtoWithEnum> { new DtoWithEnum { Id = 1, Test = gender.ToString() } };
         }
 
-        public class TestEnumsArrayParameters
-        {
-            public IEnumerable<TestGender2> enums { get; set; }
-        }
-
         [Action]
-        public virtual bool TestEnumsArray(TestEnumsArrayParameters parameters)
+        public virtual bool TestEnumsArray(IEnumerable<TestGender2> enums)
         {
-            return parameters.enums.Count() == 2;
+            return enums.Count() == 2;
         }
     }
 }

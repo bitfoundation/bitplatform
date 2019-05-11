@@ -118,17 +118,32 @@ namespace BitCodeGenerator.Implementations
                         {
                             IParameterSymbol actionParameterContainer = operation.Method.Parameters
                                    .Where(p => p.Type.Name != "CancellationToken" && p.Type.Name != "ODataQueryOptions")
-                                   .ExtendedSingleOrDefault($"Looking for one parameter other than cancellation token or odata query options on {operation.Method.Name}");
+                                   .ExtendedSingleOrDefault($"Finding parameter of {operation.Method.ContainingType.Name}.{operation.Method.Name}. It's expected to see 0 or 1 parameter only.");
 
                             if (actionParameterContainer != null)
                             {
-                                operation.Parameters = actionParameterContainer.Type.GetMembers()
-                                       .OfType<IPropertySymbol>()
-                                       .Select(prop => new ODataOperationParameter
-                                       {
-                                           Name = prop.Name,
-                                           Type = prop.Type
-                                       }).ToList();
+                                if (actionParameterContainer.Type.IsDto() || actionParameterContainer.Type.IsComplexType() || actionParameterContainer.Type.IsCollectionType())
+                                {
+                                    operation.Parameters = new List<ODataOperationParameter>
+                                    {
+                                        new ODataOperationParameter
+                                        {
+                                            Name = actionParameterContainer.Name,
+                                            Type = actionParameterContainer.Type
+                                        }
+                                    };
+                                }
+                                // ToDo: else if (parameter is string or primitive or enum or date time or date time offset) { throw an exception; }
+                                else
+                                {
+                                    operation.Parameters = actionParameterContainer.Type.GetMembers()
+                                           .OfType<IPropertySymbol>()
+                                           .Select(prop => new ODataOperationParameter
+                                           {
+                                               Name = prop.Name,
+                                               Type = prop.Type
+                                           }).ToList();
+                                }
                             }
                         }
 

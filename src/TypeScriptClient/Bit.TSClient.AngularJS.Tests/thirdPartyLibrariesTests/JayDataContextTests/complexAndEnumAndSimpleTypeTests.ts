@@ -19,7 +19,7 @@
 
     expect(complexDtoLoadedFromServer.ComplexObj.Name).toBe("Test?");
 
-    complexDtoLoadedFromServer = await context.testComplex.doSomeThingWithComplexObj(complexDtoLoadedFromServer);
+    complexDtoLoadedFromServer = await context.testComplex.doSomeThingWithComplexObj(complexDtoLoadedFromServer).getValue();
 
     expect(complexDtoLoadedFromServer.ComplexObj.Name).toBe("Test??");
 

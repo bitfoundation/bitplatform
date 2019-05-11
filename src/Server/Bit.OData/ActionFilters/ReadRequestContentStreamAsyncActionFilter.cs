@@ -39,7 +39,14 @@ namespace Bit.OData.ActionFilters
                 {
                     using (JsonReader jsonReader = new JsonTextReader(requestStreamReader))
                     {
-                        actionContext.Request.Properties["ContentStreamAsJson"] = await JToken.LoadAsync(jsonReader, cancellationToken).ConfigureAwait(false);
+                        JToken contentStreamAsJson = await JToken.LoadAsync(jsonReader, cancellationToken).ConfigureAwait(false);
+
+                        if (contentStreamAsJson.First is JProperty prop && actionDescriptor.GetParameters().Any(p => p.ParameterName == prop.Name))
+                        {
+                            contentStreamAsJson = contentStreamAsJson[prop.Name];
+                        }
+
+                        actionContext.Request.Properties["ContentStreamAsJson"] = contentStreamAsJson;
                     }
                 }
             }

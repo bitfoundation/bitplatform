@@ -11,6 +11,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Remote;
 using Simple.OData.Client;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -73,7 +74,7 @@ namespace Bit.Tests.HtmlClient.ThirdPartyLibrariesTests.JayDataContextTests
                 A.CallTo(() => controllerForUpdate.PartialUpdate(1, A<Delta<TestComplexDto>>.That.Matches(dto => dto.GetInstance().ComplexObj.Name == "Test?"), A<CancellationToken>.Ignored))
                     .MustHaveHappenedOnceExactly();
 
-                A.CallTo(() => controllerForAction.DoSomeThingWithComplexObj(A<TestComplexController.DoSomeThingWithComplexObjParameters>.That.Matches(parameters => parameters.complexDto.ComplexObj.Name == "Test??")))
+                A.CallTo(() => controllerForAction.DoSomeThingWithComplexObj(A<TestComplexDto>.That.Matches(complexDto => complexDto.ComplexObj.Name == "Test??")))
                     .MustHaveHappenedOnceExactly();
             }
         }
@@ -95,7 +96,7 @@ namespace Bit.Tests.HtmlClient.ThirdPartyLibrariesTests.JayDataContextTests
                     .OfType<TestComplexController>()
                     .Single();
 
-                A.CallTo(() => controllerForSimpleValuesArray.GetValues(A<TestComplexController.GetValuesParameters>.That.Matches(parameters => parameters.values != null), A<CancellationToken>.Ignored))
+                A.CallTo(() => controllerForSimpleValuesArray.GetValues(A<IEnumerable<int>>.That.Matches(values => values != null), A<CancellationToken>.Ignored))
                     .MustHaveHappenedOnceExactly();
             }
         }

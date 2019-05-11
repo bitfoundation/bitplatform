@@ -37,7 +37,7 @@ namespace BitCodeGenerator.Test.Implementations
                 IList<DtoController> controllers = await new DefaultProjectDtoControllersProvider()
                     .GetProjectDtoControllersWithTheirOperations(solution.Projects.Single(p => p.Name == "Bit.Tests"));
 
-                Assert.AreEqual(11, controllers.Count);
+                Assert.AreEqual(12, controllers.Count);
             }
         }
 
@@ -109,6 +109,11 @@ namespace Bit.Tests.Api.ApiControllers
         public virtual async System.Threading.Tasks.Task<ComplexObj3[]> Do3(Do3Parameters parameters)
         {
         }
+
+        [Action]
+        public virtual async System.Threading.Tasks.Task Do4(TestModel testModel)
+        {
+        }
     }
 }
 ";
@@ -127,6 +132,10 @@ namespace Bit.Tests.Api.ApiControllers
             Assert.AreEqual("Edm.Int32", controllers.Single()
                 .Operations.ElementAt(2)
                 .Parameters.Single().Type.GetEdmElementTypeName());
+
+            Assert.AreEqual("TestModel", controllers.Single()
+                .Operations.ElementAt(3)
+                .Parameters.Single().Type.GetEdmTypeName(useArrayForIEnumerableTypes: false));
         }
     }
 }

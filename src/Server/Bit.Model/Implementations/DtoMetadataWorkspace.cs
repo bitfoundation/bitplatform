@@ -1,6 +1,7 @@
 ﻿using Bit.Model.Contracts;
 using System;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Reflection;
 
@@ -27,6 +28,14 @@ namespace Bit.Model.Implementations
                 throw new ArgumentNullException(nameof(type));
 
             return type.IsClass && type.GetInterface(nameof(IDto)) != null;
+        }
+
+        public virtual bool IsComplexType(TypeInfo type)
+        {
+            if (type == null)
+                throw new ArgumentNullException(nameof(type));
+
+            return type.IsClass && type.GetCustomAttribute<ComplexTypeAttribute>() != null;
         }
 
         public virtual TypeInfo GetFinalDtoType(TypeInfo type)

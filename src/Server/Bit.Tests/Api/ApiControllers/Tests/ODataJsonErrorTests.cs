@@ -27,15 +27,12 @@ namespace Bit.Tests.Api.ApiControllers.Tests
 
                 HttpResponseMessage response = await httpClient.PostAsJsonAsync("odata/Test/DtoWithEnum", new
                 {
-                    dto = new
-                    {
-                        Id = "SOME_STRING_INSTEAD_OF_INT",
-                        Gender = "Man",
-                        Test = "string"
-                    }
+                    Id = "SOME_STRING_INSTEAD_OF_INT",
+                    Gender = "Man",
+                    Test = "string"
                 });
 
-                const string expectedErrorMessage = "Newtonsoft.Json.JsonReaderException: Could not convert string to integer: SOME_STRING_INSTEAD_OF_INT. Path 'dto.Id', line 1, position 41.";
+                const string expectedErrorMessage = "Newtonsoft.Json.JsonReaderException: Could not convert string to integer: SOME_STRING_INSTEAD_OF_INT. Path 'Id', line 1, position 34.";
 
                 Assert.AreEqual(false, response.IsSuccessStatusCode);
                 using (StreamReader reader = new StreamReader(await response.Content.ReadAsStreamAsync()))

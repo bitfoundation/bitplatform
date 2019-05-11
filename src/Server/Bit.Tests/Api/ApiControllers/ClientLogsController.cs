@@ -1,5 +1,6 @@
 ﻿using Bit.Model.Contracts;
 using Bit.OData.ODataControllers;
+using System.Web.Http;
 
 namespace Bit.Tests.Api.ApiControllers_JustForTestDuplicateSchemaIdInSwagger
 {
@@ -11,9 +12,9 @@ namespace Bit.Tests.Api.ApiControllers_JustForTestDuplicateSchemaIdInSwagger
     public class ClientLogsController : DtoController<ClientLogDto>
     {
         [Function]
-        public virtual ClientLogDto Test()
+        public virtual SingleResult<ClientLogDto> Test()
         {
-            return new ClientLogDto { Id = 1 };
+            return SingleResult(new ClientLogDto { Id = 1 });
         }
     }
 }

@@ -8,7 +8,7 @@
 
     expect(newInheritedDtoInstance instanceof Bit.Tests.Model.Dto.SampleBaseDto).toBeTruthy();
 
-    newInheritedDtoInstance = (await odataContext.sampleInherited.getSampleDto());
+    newInheritedDtoInstance = await odataContext.sampleInherited.getSampleDto().getValue();
 
     expect(newInheritedDtoInstance instanceof Bit.Tests.Model.Dto.SampleBaseDto).toBeTruthy();
     expect(newInheritedDtoInstance instanceof Bit.Tests.Model.Dto.SampleInheritedDto).toBeTruthy();

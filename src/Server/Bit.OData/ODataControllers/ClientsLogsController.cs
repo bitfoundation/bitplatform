@@ -11,15 +11,10 @@ namespace Bit.OData.ODataControllers
     {
         public virtual ILogger Logger { get; set; }
 
-        public class StoreClientLogsParameters
-        {
-            public IEnumerable<ClientLogDto> clientLogs { get; set; }
-        }
-
         [Action]
-        public virtual Task StoreClientLogs(StoreClientLogsParameters actionParameters)
+        public virtual Task StoreClientLogs(IEnumerable<ClientLogDto> clientLogs)
         {
-            Logger.AddLogData("ClientLogs", actionParameters.clientLogs);
+            Logger.AddLogData("ClientLogs", clientLogs);
 
             return Logger.LogWarningAsync("Client-Log");
         }

@@ -1,22 +1,23 @@
 ﻿using Bit.OData.ODataControllers;
 using Bit.Tests.Model.Dto;
 using System;
+using System.Web.Http;
 
 namespace Bit.Tests.Api.ApiControllers
 {
     public class SampleBaseController : DtoController<SampleBaseDto>
     {
         [Function]
-        public virtual SampleBaseDto GetSampleDto()
+        public virtual SingleResult<SampleBaseDto> GetSampleDto()
         {
-            return new SampleBaseDto() { };
+            return SingleResult(new SampleBaseDto() { });
         }
     }
 
     public class SampleInheritedController : DtoController<SampleInheritedDto>
     {
         [Function]
-        public virtual SampleInheritedDto GetSampleDto()
+        public virtual SingleResult<SampleInheritedDto> GetSampleDto()
         {
             SampleInheritedDto result = new SampleInheritedDto { };
 
@@ -24,7 +25,7 @@ namespace Bit.Tests.Api.ApiControllers
             result.Id = Guid.NewGuid();
             result.Name = "1";
 
-            return result;
+            return SingleResult(result);
         }
     }
 }
