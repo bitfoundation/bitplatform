@@ -32,16 +32,16 @@
     <Content Include="build\*" PackagePath="build\" />
     <Content Include="buildMultiTargeting\*" PackagePath="buildMultiTargeting\" />
     
-    <None Include="$(OutputPath)\..\..\..\..\BitCodeGeneratorTaskImpl\bin\$(Configuration)\$(TargetFramework)\*.dll" Pack="true" PackagePath="implementation" Visible="false" />
+    <None Include="$(OutputPath)\..\..\..\..\BitCodeGeneratorTaskImpl\bin\$(Configuration)\net472\*.dll" Pack="true" PackagePath="implementation" Visible="false" />
     
     <!-- Remove large unused files -->
-    <None Remove="$(OutputPath)\..\..\..\..\BitCodeGeneratorTaskImpl\bin\$(Configuration)\$(TargetFramework)\Microsoft.CodeAnalysis.VisualBasic.*" />
-    <None Remove="$(OutputPath)\..\..\..\..\BitCodeGeneratorTaskImpl\bin\$(Configuration)\$(TargetFramework)\e_sqlite3.dll" />
-    <None Remove="$(OutputPath)\..\..\..\..\BitCodeGeneratorTaskImpl\bin\$(Configuration)\$(TargetFramework)\Microsoft.Build.dll" />
-    <None Remove="$(OutputPath)\..\..\..\..\BitCodeGeneratorTaskImpl\bin\$(Configuration)\$(TargetFramework)\System.Text.Encoding.CodePages.dll" />
+    <None Remove="$(OutputPath)\..\..\..\..\BitCodeGeneratorTaskImpl\bin\$(Configuration)\net472\Microsoft.CodeAnalysis.VisualBasic.*" />
+    <None Remove="$(OutputPath)\..\..\..\..\BitCodeGeneratorTaskImpl\bin\$(Configuration)\net472\e_sqlite3.dll" />
+    <None Remove="$(OutputPath)\..\..\..\..\BitCodeGeneratorTaskImpl\bin\$(Configuration)\net472\Microsoft.Build.dll" />
+    <None Remove="$(OutputPath)\..\..\..\..\BitCodeGeneratorTaskImpl\bin\$(Configuration)\net472\System.Text.Encoding.CodePages.dll" />
     
-    <None Include="$(OutputPath)\..\..\..\..\BitCodeGeneratorTaskImpl\bin\$(Configuration)\$(TargetFramework)\BitCodeGeneratorTaskImpl.exe" Pack="true" PackagePath="implementation" Visible="false" />
-    <None Include="$(OutputPath)\..\..\..\..\BitCodeGeneratorTaskImpl\bin\$(Configuration)\$(TargetFramework)\BitCodeGeneratorTaskImpl.exe.config" Pack="true" PackagePath="implementation" Visible="false" />
+    <None Include="$(OutputPath)\..\..\..\..\BitCodeGeneratorTaskImpl\bin\$(Configuration)\net472\BitCodeGeneratorTaskImpl.exe" Pack="true" PackagePath="implementation" Visible="false" />
+    <None Include="$(OutputPath)\..\..\..\..\BitCodeGeneratorTaskImpl\bin\$(Configuration)\net472\BitCodeGeneratorTaskImpl.exe.config" Pack="true" PackagePath="implementation" Visible="false" />
 
     <PackageReference Include="Microsoft.Build.Utilities.Core" Version="14.3.0" />
     
