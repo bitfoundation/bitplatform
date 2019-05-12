@@ -265,5 +265,18 @@ namespace Microsoft.CodeAnalysis
 
             return symbol.GetUnderlyingTypeSymbol()?.BaseType?.Name == "Enum";
         }
+
+        public static bool IsDtoController(this INamedTypeSymbol type)
+        {
+            while (type != null)
+            {
+                if (type.BaseType?.Name == "DtoController")
+                    return true;
+
+                type = type.BaseType;
+            }
+
+            return false;
+        }
     }
 }

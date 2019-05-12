@@ -38,19 +38,7 @@ namespace BitCodeGenerator.Implementations
 
                     INamedTypeSymbol controllerSymbol = (INamedTypeSymbol)semanticModel.GetDeclaredSymbol(classDeclarationSyntax);
 
-                    INamedTypeSymbol type = controllerSymbol;
-
-                    bool isController = false;
-
-                    while (type != null)
-                    {
-                        isController = type.BaseType?.Name == "DtoController";
-
-                        if (isController == true)
-                            break;
-
-                        type = type.BaseType;
-                    }
+                    bool isController = controllerSymbol.IsDtoController();
 
                     if (isController == true)
                         dtoControllersClassDecs.Add(classDeclarationSyntax);
