@@ -43,7 +43,7 @@
     <None Include="$(OutputPath)\..\..\..\..\BitCodeGeneratorTaskImpl\bin\$(Configuration)\net472\BitCodeGeneratorTaskImpl.exe" Pack="true" PackagePath="implementation" Visible="false" />
     <None Include="$(OutputPath)\..\..\..\..\BitCodeGeneratorTaskImpl\bin\$(Configuration)\net472\BitCodeGeneratorTaskImpl.exe.config" Pack="true" PackagePath="implementation" Visible="false" />
 
-    <PackageReference Include="Microsoft.Build.Utilities.Core" Version="14.3.0" />
+    <PackageReference Include="Microsoft.Build.Utilities.Core" Version="14.3.0" PrivateAssets="All" />
     
   </ItemGroup>
 
