@@ -32,50 +32,12 @@ namespace Bit.OData.ODataControllers
             return DtoEntityMapper.FromDtoToEntity(dto);
         }
 
-        [Create]
-        public virtual async Task<TDto> Create(TDto dto, CancellationToken cancellationToken)
-        {
-            if (dto == null)
-                throw new ArgumentNullException(nameof(dto));
-
-            TEntity entity = await Repository.AddAsync(FromDtoToEntity(dto), cancellationToken);
-
-            try
-            {
-                return await GetById(GetKey(DtoEntityMapper.FromEntityToDto(entity)), cancellationToken);
-            }
-            catch (ResourceNotFoundException)
-            {
-                return DtoEntityMapper.FromEntityToDto(entity);
-            }
-        }
-
         protected virtual TKey GetKey(TDto dto)
         {
             return (TKey)DtoMetadataWorkspace.Current.GetKeys(dto).ExtendedSingle($"Finding keys of ${typeof(TDto).GetTypeInfo().Name}");
         }
 
-        protected virtual async Task<TDto> GetById(TKey key, CancellationToken cancellationToken)
-        {
-            IDataProviderSpecificMethodsProvider dataProviderSpecificMethodsProvider = null;
-
-            IQueryable<TDto> getByIdQuery = await GetByIdQuery(key, cancellationToken);
-
-            if (DataProviderSpecificMethodsProviders != null)
-                dataProviderSpecificMethodsProvider = DataProviderSpecificMethodsProviders.FirstOrDefault(asyncQueryableExecutor => asyncQueryableExecutor.SupportsQueryable<TDto>(getByIdQuery));
-
-            if (dataProviderSpecificMethodsProvider == null)
-                dataProviderSpecificMethodsProvider = DefaultDataProviderSpecificMethodsProvider.Current;
-
-            TDto result = await dataProviderSpecificMethodsProvider.FirstOrDefaultAsync(getByIdQuery, cancellationToken);
-
-            if (result == null)
-                throw new ResourceNotFoundException();
-
-            return result;
-        }
-
-        private async Task<IQueryable<TDto>> GetByIdQuery(TKey key, CancellationToken cancellationToken)
+        protected async Task<IQueryable<TDto>> GetQueryById(TKey key, CancellationToken cancellationToken)
         {
             IQueryable<TDto> baseQuery = await GetAll(cancellationToken);
 
@@ -92,10 +54,38 @@ namespace Bit.OData.ODataControllers
             return baseQuery;
         }
 
+        protected virtual async Task<TDto> GetDtoById(TKey key, CancellationToken cancellationToken)
+        {
+            IQueryable<TDto> getByIdQuery = await GetQueryById(key, cancellationToken);
+
+            IDataProviderSpecificMethodsProvider dataProviderSpecificMethodsProvider = null;
+
+            if (DataProviderSpecificMethodsProviders != null)
+                dataProviderSpecificMethodsProvider = DataProviderSpecificMethodsProviders.FirstOrDefault(asyncQueryableExecutor => asyncQueryableExecutor.SupportsQueryable<TDto>(getByIdQuery));
+
+            if (dataProviderSpecificMethodsProvider == null)
+                dataProviderSpecificMethodsProvider = DefaultDataProviderSpecificMethodsProvider.Current;
+
+            TDto dto = await dataProviderSpecificMethodsProvider.FirstOrDefaultAsync(getByIdQuery, cancellationToken);
+
+            return dto;
+        }
+
+        [Create]
+        public virtual async Task<SingleResult<TDto>> Create(TDto dto, CancellationToken cancellationToken)
+        {
+            if (dto == null)
+                throw new ArgumentNullException(nameof(dto));
+
+            TEntity entity = await Repository.AddAsync(FromDtoToEntity(dto), cancellationToken);
+
+            return SingleResult(await GetQueryById(GetKey(DtoEntityMapper.FromEntityToDto(entity)), cancellationToken));
+        }
+
         [Get]
         public virtual async Task<SingleResult<TDto>> Get(TKey key, CancellationToken cancellationToken)
         {
-            return SingleResult(await GetByIdQuery(key, cancellationToken));
+            return SingleResult(await GetQueryById(key, cancellationToken));
         }
 
         [Delete]
@@ -108,12 +98,12 @@ namespace Bit.OData.ODataControllers
         }
 
         [PartialUpdate]
-        public virtual async Task<TDto> PartialUpdate(TKey key, Delta<TDto> modifiedDtoDelta, CancellationToken cancellationToken)
+        public virtual async Task<SingleResult<TDto>> PartialUpdate(TKey key, Delta<TDto> modifiedDtoDelta, CancellationToken cancellationToken)
         {
             if (modifiedDtoDelta == null)
                 throw new ArgumentNullException(nameof(modifiedDtoDelta));
 
-            TDto originalDto = await GetById(key, cancellationToken);
+            TDto originalDto = await GetDtoById(key, cancellationToken);
 
             if (originalDto == null)
                 throw new ResourceNotFoundException();
@@ -124,7 +114,7 @@ namespace Bit.OData.ODataControllers
         }
 
         [Update]
-        public virtual async Task<TDto> Update(TKey key, TDto dto, CancellationToken cancellationToken)
+        public virtual async Task<SingleResult<TDto>> Update(TKey key, TDto dto, CancellationToken cancellationToken)
         {
             if (dto == null)
                 throw new ArgumentNullException(nameof(dto));
@@ -136,14 +126,7 @@ namespace Bit.OData.ODataControllers
 
             entity = await Repository.UpdateAsync(entity, cancellationToken);
 
-            try
-            {
-                return await GetById(key, cancellationToken);
-            }
-            catch (ResourceNotFoundException)
-            {
-                return DtoEntityMapper.FromEntityToDto(entity);
-            }
+            return SingleResult(await GetQueryById(key, cancellationToken));
         }
 
         [Get]

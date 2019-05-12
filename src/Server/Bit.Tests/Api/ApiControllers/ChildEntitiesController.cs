@@ -23,24 +23,19 @@ namespace Bit.Tests.Api.ApiControllers
         }
 
         [Get]
-        public virtual async Task<ChildEntity> Get(long key, CancellationToken cancellationToken)
+        public virtual async Task<SingleResult<ChildEntity>> Get(long key, CancellationToken cancellationToken)
         {
-            ChildEntity childEntity = await (await TestRepository
+            return SingleResult((await TestRepository
                 .GetAllAsync(cancellationToken))
-                .FirstOrDefaultAsync(t => t.Id == key, cancellationToken);
-
-            if (childEntity == null)
-                throw new ResourceNotFoundException();
-
-            return childEntity;
+                .Where(t => t.Id == key));
         }
 
         [Create]
-        public virtual async Task<ChildEntity> Create(ChildEntity model, CancellationToken cancellationToken)
+        public virtual async Task<SingleResult<ChildEntity>> Create(ChildEntity model, CancellationToken cancellationToken)
         {
             model = await TestRepository.AddAsync(model, cancellationToken);
 
-            return model;
+            return SingleResult(model);
         }
     }
 }

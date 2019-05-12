@@ -5,19 +5,20 @@ using Microsoft.AspNet.OData;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Web.Http;
 
 namespace Bit.Tests.Api.ApiControllers
 {
     public class TestCustomersController : DtoSetController<TestCustomerDto, TestCustomer, Guid>
     {
-        public override Task<TestCustomerDto> Create(TestCustomerDto dto, CancellationToken cancellationToken)
+        public override Task<SingleResult<TestCustomerDto>> Create(TestCustomerDto dto, CancellationToken cancellationToken)
         {
             dto.Name += "#";
 
             return base.Create(dto, cancellationToken);
         }
 
-        public override Task<TestCustomerDto> PartialUpdate(Guid key, Delta<TestCustomerDto> modifiedDtoDelta, CancellationToken cancellationToken)
+        public override Task<SingleResult<TestCustomerDto>> PartialUpdate(Guid key, Delta<TestCustomerDto> modifiedDtoDelta, CancellationToken cancellationToken)
         {
             TestCustomerDto dto = modifiedDtoDelta.GetInstance();
             dto.Name += "#";

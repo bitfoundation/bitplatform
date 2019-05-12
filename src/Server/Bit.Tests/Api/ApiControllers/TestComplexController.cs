@@ -34,28 +34,28 @@ namespace Bit.Tests.Api.ApiControllers
         }
 
         [Get]
-        public virtual async Task<TestComplexDto> Get(int key, CancellationToken cancellationToken)
+        public virtual async Task<SingleResult<TestComplexDto>> Get(int key, CancellationToken cancellationToken)
         {
-            return Get()
-                .Single(t => t.EntityId == key);
+            return SingleResult(Get()
+                .Where(t => t.EntityId == key));
         }
 
         [Create]
-        public virtual async Task<TestComplexDto> Create(TestComplexDto model, CancellationToken cancellationToken)
+        public virtual async Task<SingleResult<TestComplexDto>> Create(TestComplexDto model, CancellationToken cancellationToken)
         {
             model.ComplexObj.Name += "?";
-            return model;
+            return SingleResult(model);
         }
 
         [PartialUpdate]
-        public virtual async Task<TestComplexDto> PartialUpdate(int key, Delta<TestComplexDto> modelDelta,
+        public virtual async Task<SingleResult<TestComplexDto>> PartialUpdate(int key, Delta<TestComplexDto> modelDelta,
             CancellationToken cancellationToken)
         {
             TestComplexDto model = modelDelta.GetInstance();
 
             model.ComplexObj.Name += "?";
 
-            return model;
+            return SingleResult(model);
         }
 
         [Action]

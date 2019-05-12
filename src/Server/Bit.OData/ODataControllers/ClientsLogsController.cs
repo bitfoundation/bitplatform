@@ -20,13 +20,13 @@ namespace Bit.OData.ODataControllers
         }
 
         [Create]
-        public virtual async Task<ClientLogDto> Create(ClientLogDto clientLog)
+        public virtual async Task<SingleResult<ClientLogDto>> Create(ClientLogDto clientLog)
         {
             Logger.AddLogData("ClientLogs", clientLog);
 
             await Logger.LogWarningAsync("Client-Log");
 
-            return clientLog;
+            return SingleResult(clientLog);
         }
     }
 }

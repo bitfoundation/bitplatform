@@ -26,6 +26,7 @@ namespace Swashbuckle.Application
             AppEnvironment appEnv = (AppEnvironment)webApiConfig.DependencyResolver.GetService(typeof(AppEnvironment));
             doc.OperationFilter(() => new DefaultAuthorizationOperationFilter { AppEnvironment = appEnv });
             doc.OperationFilter<SwaggerDefaultValuesOperationFilter>();
+            doc.OperationFilter<AddExpandAndSelectToNonGetOperationFilter>();
             doc.OperationFilter<ExamplesOperationFilter>();
             doc.OperationFilter<DescriptionOperationFilter>();
             doc.SchemaId(type => $"{type.FullName}, {type.Assembly.GetName().Name}");

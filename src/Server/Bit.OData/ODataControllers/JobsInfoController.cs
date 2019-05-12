@@ -4,6 +4,7 @@ using Bit.Model.Dtos;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Web.Http;
 
 namespace Bit.OData.ODataControllers
 {
@@ -12,7 +13,7 @@ namespace Bit.OData.ODataControllers
         public virtual IBackgroundJobWorker BackgroundJobWorker { get; set; }
 
         [Get]
-        public virtual async Task<JobInfoDto> Get(string key, CancellationToken cancellationToken)
+        public virtual async Task<SingleResult<JobInfoDto>> Get(string key, CancellationToken cancellationToken)
         {
             if (key == null)
                 throw new ArgumentNullException(nameof(key));
@@ -22,12 +23,12 @@ namespace Bit.OData.ODataControllers
 
             JobInfo jobInfo = await BackgroundJobWorker.GetJobInfoAsync(key, cancellationToken);
 
-            return new JobInfoDto
+            return SingleResult(new JobInfoDto
             {
                 Id = jobInfo.Id,
                 CreatedAt = jobInfo.CreatedAt,
                 State = jobInfo.State
-            };
+            });
         }
     }
 }

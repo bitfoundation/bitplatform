@@ -10,7 +10,6 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
-using System.Reflection;
 using System.Web;
 using System.Web.Http;
 using System.Web.Http.Controllers;
@@ -72,25 +71,13 @@ namespace Bit.OData.ODataControllers
 
         public Collection<HttpMethod> HttpMethods => SupportedMethods;
 
-        private static readonly Lazy<GenerateODataLink> GenerateODataLinkMethod = new Lazy<GenerateODataLink>(() =>
-        {
-            return (GenerateODataLink)Delegate.CreateDelegate(typeof(GenerateODataLink), typeof(MetadataController).GetTypeInfo()
-                                                                                             .Assembly.GetType("Microsoft.AspNet.OData.Results.ResultHelpers")
-                                                                                             .GetMethod("GenerateODataLink", new[] { typeof(HttpRequestMessage), typeof(object), typeof(bool) }) ?? throw new InvalidOperationException("GenerateODataLink could not be found"));
-        }, isThreadSafe: true);
-
-        private delegate Uri GenerateODataLink(HttpRequestMessage request, object entity, bool isEntityId);
-
         public override void OnActionExecuted(HttpActionExecutedContext actionExecutedContext)
         {
             if (actionExecutedContext?.Response?.Headers != null && !actionExecutedContext.Response.Headers.Contains(nameof(HttpResponseHeaders.Location))
                 && actionExecutedContext.Response.Content is ObjectContent objContent
                 && actionExecutedContext.Response.IsSuccessStatusCode == true)
             {
-                if (objContent.Value == null)
-                    return;
-
-                actionExecutedContext.Response.Headers.Location = GenerateODataLinkMethod.Value.Invoke(actionExecutedContext.Request, objContent.Value, false);
+                actionExecutedContext.Response.Headers.Location = new Uri("https://tempuri.org/");
             }
 
             base.OnActionExecuted(actionExecutedContext);
@@ -132,9 +119,14 @@ namespace Bit.OData.ODataControllers
             return System.Web.Http.SingleResult.Create(queryable);
         }
 
+        protected virtual SingleResult<T> SingleResult<T>(IEnumerable<T> values)
+        {
+            return SingleResult(queryable: values.AsQueryable());
+        }
+
         protected virtual SingleResult<T> SingleResult<T>(T obj)
         {
-            return SingleResult(new[] { obj }.AsQueryable());
+            return SingleResult(values: new[] { obj });
         }
 
         protected virtual string CreateODataLink(string odataModule = null, string controller = null, string action = null, object routeValues = null)
