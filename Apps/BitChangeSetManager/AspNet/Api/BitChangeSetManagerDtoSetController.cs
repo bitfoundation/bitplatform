@@ -5,6 +5,7 @@ using BitChangeSetManager.Metadata;
 using Microsoft.AspNet.OData;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Web.Http;
 
 namespace BitChangeSetManager.Api
 {
@@ -13,7 +14,7 @@ namespace BitChangeSetManager.Api
         where TModel : class, IEntity
     {
         [Create]
-        public override async Task<TDto> Create(TDto dto, CancellationToken cancellationToken)
+        public override async Task<SingleResult<TDto>> Create(TDto dto, CancellationToken cancellationToken)
         {
             if (IsReadOnly())
                 throw new AppException(BitChangeSetManagerMetadata.InsertIsDeined);
@@ -22,7 +23,7 @@ namespace BitChangeSetManager.Api
         }
 
         [PartialUpdate]
-        public override async Task<TDto> PartialUpdate(TKey key, Delta<TDto> modifiedDtoDelta, CancellationToken cancellationToken)
+        public override async Task<SingleResult<TDto>> PartialUpdate(TKey key, Delta<TDto> modifiedDtoDelta, CancellationToken cancellationToken)
         {
             if (IsReadOnly())
                 throw new AppException(BitChangeSetManagerMetadata.UpdateIsDeined);
@@ -40,7 +41,7 @@ namespace BitChangeSetManager.Api
         }
 
         [Update]
-        public override Task<TDto> Update(TKey key, TDto dto, CancellationToken cancellationToken)
+        public override Task<SingleResult<TDto>> Update(TKey key, TDto dto, CancellationToken cancellationToken)
         {
             if (IsReadOnly())
                 throw new AppException(BitChangeSetManagerMetadata.DeleteIsDeined);

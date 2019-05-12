@@ -1,11 +1,11 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.27130.0
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.28729.10
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Bit", "Bit", "{FEC2451A-227B-463C-A04A-FB015CDAB1A4}"
 	ProjectSection(SolutionItems) = preProject
-		BitConfigV1.json = BitConfigV1.json
+		BitConfig.json = BitConfig.json
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BitChangeSetManager", "AspNet\BitChangeSetManager.csproj", "{C2319E3E-7670-492B-BA7F-67B095367461}"

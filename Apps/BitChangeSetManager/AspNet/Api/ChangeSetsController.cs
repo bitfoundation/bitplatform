@@ -10,6 +10,7 @@ using Bit.Core.Contracts;
 using Bit.Data.Contracts;
 using System.Web.OData;
 using BitChangeSetManager.DataAccess.Contracts;
+using System.Web.Http;
 
 namespace BitChangeSetManager.Api
 {
@@ -34,13 +35,13 @@ namespace BitChangeSetManager.Api
             return DtoEntityMapper.FromEntityQueryToDtoQuery((await Repository.GetAllAsync(cancellationToken)), parameters: new { customersCount = customersCount });
         }
 
-        public override async Task<ChangeSetDto> Create(ChangeSetDto dto, CancellationToken cancellationToken)
+        public override async Task<SingleResult<ChangeSetDto>> Create(ChangeSetDto dto, CancellationToken cancellationToken)
         {
-            ChangeSetDto insertedChangeSet = await base.Create(dto, cancellationToken);
+            SingleResult<ChangeSetDto> insertedChangeSet = await base.Create(dto, cancellationToken);
 
             User user = await UsersRepository.GetByIdAsync(cancellationToken, Guid.Parse(UserInformationProvider.GetCurrentUserId()));
 
-            MessageSender.SendMessageToGroups("ChangeSetHasBeenInsertedByUser", new { userName = user.UserName, title = insertedChangeSet.Title }, groupNames: new[] { user.Culture.ToString() });
+            MessageSender.SendMessageToGroups("ChangeSetHasBeenInsertedByUser", new { userName = user.UserName, title = dto.Title }, groupNames: new[] { user.Culture.ToString() });
 
             return insertedChangeSet;
         }

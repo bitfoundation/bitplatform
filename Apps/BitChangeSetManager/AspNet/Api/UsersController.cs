@@ -1,8 +1,6 @@
 ﻿using Bit.Core.Contracts;
-using Bit.Data.Contracts;
 using Bit.Model.Contracts;
 using Bit.OData.ODataControllers;
-using BitChangeSetManager.DataAccess;
 using BitChangeSetManager.DataAccess.Contracts;
 using BitChangeSetManager.Dto;
 using BitChangeSetManager.Model;
@@ -27,7 +25,7 @@ namespace BitChangeSetManager.Api
         {
             Guid userId = Guid.Parse(UserInformationProvider.GetCurrentUserId());
 
-            return SingleResult.Create(DtoModelMapper.FromEntityQueryToDtoQuery((await UsersRepository.GetAllAsync(cancellationToken)))
+            return SingleResult(DtoModelMapper.FromEntityQueryToDtoQuery((await UsersRepository.GetAllAsync(cancellationToken)))
                  .Where(u => u.Id == userId));
         }
     }

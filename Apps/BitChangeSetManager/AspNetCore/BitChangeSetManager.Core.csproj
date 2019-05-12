@@ -20,13 +20,13 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Bit.Data.EntityFramework" Version="2.2.0" />
-    <PackageReference Include="Bit.Hangfire" Version="2.2.0" />
-    <PackageReference Include="Bit.IdentityServer" Version="2.2.0" />
-    <PackageReference Include="Bit.OData" Version="2.2.0" />
-    <PackageReference Include="Bit.OwinCore" Version="2.2.0" />
-    <PackageReference Include="Bit.Signalr" Version="2.2.0" />
-    <PackageReference Include="BitCodeAnalyzer" Version="2.2.0" />
+    <PackageReference Include="Bit.Data.EntityFramework" Version="2.3.0" />
+    <PackageReference Include="Bit.Hangfire" Version="2.3.0" />
+    <PackageReference Include="Bit.IdentityServer" Version="2.3.0" />
+    <PackageReference Include="Bit.OData" Version="2.3.0" />
+    <PackageReference Include="Bit.OwinCore" Version="2.3.0" />
+    <PackageReference Include="Bit.Signalr" Version="2.3.0" />
+    <PackageReference Include="BitCodeAnalyzer" Version="2.3.0" />
     <PackageReference Include="Dapper" Version="1.50.5" />
     <PackageReference Include="Microsoft.AspNetCore.Cors" Version="1.1.2" />
     <PackageReference Include="Microsoft.AspNetCore.ResponseCompression" Version="1.0.4" />

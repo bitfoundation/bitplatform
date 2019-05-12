@@ -278,16 +278,16 @@ namespace CustomerDtoControllerSample
         }
 
         [Function]
-        public virtual async Task<CustomerDto> GetCustomerById(int customerId, CancellationToken cancellationToken)
+        public virtual async Task<SingleResult<CustomerDto>> GetCustomerById(int customerId, CancellationToken cancellationToken)
         {
-            return await Mapper.FromEntityQueryToDtoQuery((await CustomersRepository.GetAllAsync(cancellationToken)))
-                .FirstAsync(c => c.Id == customerId, cancellationToken);
+            return SingleResult(Mapper.FromEntityQueryToDtoQuery(await CustomersRepository.GetAllAsync(cancellationToken))
+                .Where(c => c.Id == customerId));
         }
 
         [Function]
         public virtual async Task<SingleResult<CustomerDto>> GetCustomerById2(int customerId, CancellationToken cancellationToken)
         {
-            return SingleResult.Create(Mapper.FromEntityQueryToDtoQuery((await CustomersRepository.GetAllAsync(cancellationToken)))
+            return SingleResult(Mapper.FromEntityQueryToDtoQuery((await CustomersRepository.GetAllAsync(cancellationToken)))
                 .Where(c => c.Id == customerId));
         }
     }
@@ -352,21 +352,21 @@ namespace CustomerDtoControllerSample
 
     public class CategoriesController : DtoSetController<CategoryDto, Category, int /* Key type */>
     {
-        public async override Task<CategoryDto> Create(CategoryDto dto, CancellationToken cancellationToken)
+        public async override Task<SingleResult<CategoryDto>> Create(CategoryDto dto, CancellationToken cancellationToken)
         {
             // custom logic ...
 
             return await base.Create(dto, cancellationToken);
         }
 
-        public async override Task<CategoryDto> Update(int key, CategoryDto dto, CancellationToken cancellationToken)
+        public async override Task<SingleResult<CategoryDto>> Update(int key, CategoryDto dto, CancellationToken cancellationToken)
         {
             // custom logic ...
 
             return await base.Update(key, dto, cancellationToken);
         }
 
-        public async override Task<CategoryDto> PartialUpdate(int key, Delta<CategoryDto> modifiedDtoDelta, CancellationToken cancellationToken)
+        public async override Task<SingleResult<CategoryDto>> PartialUpdate(int key, Delta<CategoryDto> modifiedDtoDelta, CancellationToken cancellationToken)
         {
             // custom logic ...
 
