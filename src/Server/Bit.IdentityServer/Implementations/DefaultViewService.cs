@@ -116,7 +116,7 @@ namespace Bit.IdentityServer.Implementations
 
                     try
                     {
-                        signInType = custom.SignInType;
+                        signInType = custom.SignInType ?? message.IdP;
                     }
                     catch { }
 

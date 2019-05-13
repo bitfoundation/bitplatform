@@ -61,7 +61,10 @@ namespace Bit.ViewModel.Contracts
     {
         Task<bool> IsLoggedInAsync(CancellationToken cancellationToken = default);
 
-        Task<Token> LoginWithCredentials(string userName, string password, string client_id, string client_secret, string[] scopes = null, CancellationToken cancellationToken = default);
+        /// <summary>
+        /// Sample for optional parameters: { "acr_values", "idp:X tenant:Y" }
+        /// </summary>
+        Task<Token> LoginWithCredentials(string userName, string password, string client_id, string client_secret, string[] scopes = null, IDictionary<string, string> optionalParameters = null, CancellationToken cancellationToken = default);
 
         Task<Token> Login(object state = null, string client_id = null, CancellationToken cancellationToken = default);
 

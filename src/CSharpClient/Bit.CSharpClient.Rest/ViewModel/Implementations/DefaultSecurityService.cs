@@ -40,7 +40,7 @@ namespace Bit.ViewModel.Implementations
             return (DateTimeProvider.GetCurrentUtcDateTime() - token.login_date) < TimeSpan.FromSeconds(token.expires_in);
         }
 
-        public virtual async Task<Token> LoginWithCredentials(string userName, string password, string client_id, string client_secret, string[] scopes = null, CancellationToken cancellationToken = default)
+        public virtual async Task<Token> LoginWithCredentials(string userName, string password, string client_id, string client_secret, string[] scopes = null, IDictionary<string, string> optionalParameters = null, CancellationToken cancellationToken = default)
         {
             await Logout(state: null, client_id: client_id, cancellationToken: cancellationToken).ConfigureAwait(false);
 
@@ -56,7 +56,8 @@ namespace Bit.ViewModel.Implementations
                 ClientId = client_id,
                 Scope = string.Join(" ", scopes),
                 UserName = userName,
-                Password = password
+                Password = password,
+                Parameters = optionalParameters ?? new Dictionary<string, string> { }
             }, cancellationToken).ConfigureAwait(false);
 
             if (tokenResponse.IsError)
