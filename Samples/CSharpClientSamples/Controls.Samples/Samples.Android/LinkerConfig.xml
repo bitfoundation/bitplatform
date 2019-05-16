@@ -8,10 +8,11 @@
   <assembly fullname="Rg.Plugins.Popup">
     <type fullname="*" />
   </assembly>
-  <assembly fullname="Samples">
+  <assembly fullname="NodaTime">
     <type fullname="*" />
   </assembly>
   <assembly fullname="mscorlib">
+    <type fullname="System.Globalization.*" />
     <type fullname="System.DateTime">
       <method name="AddYears"></method>
       <method name="AddMonths"></method>
