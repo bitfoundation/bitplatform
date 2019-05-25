@@ -135,7 +135,7 @@
             if (toServerEntitySetSyncMaterials.length > 0) {
 
                 const allRecentlyChangedOfflineEntities = await offlineContext.batchExecuteQuery(toServerEntitySetSyncMaterials.map(entitySetSyncMaterial => {
-                    return entitySetSyncMaterial.offlineEntitySet.filter(e => e.IsSynced == false);
+                    return entitySetSyncMaterial.offlineEntitySet.filter(`e => e.IsSynced == false`);
                 }));
 
                 for (let i = 0; i < toServerEntitySetSyncMaterials.length; i++) {
@@ -162,7 +162,7 @@
             if (fromServerEntitySetSyncMaterials.length > 0) {
 
                 const allOfflineEntitiesOrderedByVersion = await offlineContext.batchExecuteQuery(fromServerEntitySetSyncMaterials.map(entitySetSyncMaterial => {
-                    return entitySetSyncMaterial.offlineEntitySet.orderByDescending(e => e.Version).map(function (it) { return { Version: it.Version }; }).take(1);
+                    return entitySetSyncMaterial.offlineEntitySet.orderByDescending(`e => e.Version`).map(function (it) { return { Version: it.Version }; }).take(1);
                 })) as Model.Contracts.ISyncableDto[][];
 
                 const loadRecentlyChangedOnlineEntitiesQueries = fromServerEntitySetSyncMaterials.map((entitySetSyncMaterial, i) => {
@@ -175,7 +175,7 @@
                         maxVersion = offlineEntitiesOrderedByVersion[0].Version;
                     }
 
-                    const recentlyChangedOnlineEntitiesQuery = entitySetSyncMaterial.entitySetConfig.getMethod(onlineContext).filter((e, ver) => e.Version > ver, { ver: maxVersion });
+                    const recentlyChangedOnlineEntitiesQuery = entitySetSyncMaterial.entitySetConfig.getMethod(onlineContext).filter(`(e, ver) => e.Version > ver`, { ver: maxVersion });
 
                     return recentlyChangedOnlineEntitiesQuery;
 
