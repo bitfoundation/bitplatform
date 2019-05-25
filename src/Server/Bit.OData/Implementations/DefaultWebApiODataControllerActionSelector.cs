@@ -82,20 +82,20 @@ namespace Bit.OData.Implementations
             if (string.Equals(actionName, HttpMethod.Get.Method, StringComparison.InvariantCultureIgnoreCase) && controllerContext.Request.Method == HttpMethod.Get)
             {
                 if (routeData.ContainsKey("key")) // get by key
-                    resultAction = allActions.ExtendedSingleOrDefault("Finding Get by key action", action => action.MethodInfo.GetCustomAttribute<GetAttribute>() != null && action.MethodInfo.GetParameters().Any(p => p.Name == "key"));
+                    resultAction = allActions.ExtendedSingleOrDefault($"Finding Get by key action in {controllerContext.ControllerDescriptor.ControllerName} controller", action => action.MethodInfo.GetCustomAttribute<GetAttribute>() != null && action.MethodInfo.GetParameters().Any(p => p.Name == "key"));
                 else // get all
-                    resultAction = allActions.ExtendedSingleOrDefault("Finding Get all action", action => action.MethodInfo.GetCustomAttribute<GetAttribute>() != null && action.MethodInfo.GetParameters().All(p => typeof(CancellationToken).IsAssignableFrom(p.ParameterType) || typeof(ODataQueryOptions).IsAssignableFrom(p.ParameterType)));
+                    resultAction = allActions.ExtendedSingleOrDefault($"Finding Get all action in {controllerContext.ControllerDescriptor.ControllerName} controller", action => action.MethodInfo.GetCustomAttribute<GetAttribute>() != null && action.MethodInfo.GetParameters().All(p => typeof(CancellationToken).IsAssignableFrom(p.ParameterType) || typeof(ODataQueryOptions).IsAssignableFrom(p.ParameterType)));
             }
             else if (string.Equals(actionName, HttpMethod.Post.Method, StringComparison.InvariantCultureIgnoreCase) && controllerContext.Request.Method == HttpMethod.Post)
-                resultAction = allActions.ExtendedSingleOrDefault("Finding create action", action => action.MethodInfo.GetCustomAttribute<CreateAttribute>() != null);
+                resultAction = allActions.ExtendedSingleOrDefault($"Finding create action in {controllerContext.ControllerDescriptor.ControllerName} controller", action => action.MethodInfo.GetCustomAttribute<CreateAttribute>() != null);
             else if (string.Equals(actionName, HttpMethod.Put.Method, StringComparison.InvariantCultureIgnoreCase) && controllerContext.Request.Method == HttpMethod.Put)
-                resultAction = allActions.ExtendedSingleOrDefault("Finding update action", action => action.MethodInfo.GetCustomAttribute<UpdateAttribute>() != null);
+                resultAction = allActions.ExtendedSingleOrDefault($"Finding update action in {controllerContext.ControllerDescriptor.ControllerName} controller", action => action.MethodInfo.GetCustomAttribute<UpdateAttribute>() != null);
             else if (string.Equals(actionName, "Patch", StringComparison.InvariantCultureIgnoreCase) && controllerContext.Request.Method == new HttpMethod("Patch"))
-                resultAction = allActions.ExtendedSingleOrDefault("Finding partial update action", action => action.MethodInfo.GetCustomAttribute<PartialUpdateAttribute>() != null);
+                resultAction = allActions.ExtendedSingleOrDefault($"Finding partial update action in {controllerContext.ControllerDescriptor.ControllerName} controller", action => action.MethodInfo.GetCustomAttribute<PartialUpdateAttribute>() != null);
             else if (string.Equals(actionName, HttpMethod.Delete.Method, StringComparison.InvariantCultureIgnoreCase) && controllerContext.Request.Method == HttpMethod.Delete)
-                resultAction = allActions.ExtendedSingleOrDefault("Finding delete action", action => action.MethodInfo.GetCustomAttribute<DeleteAttribute>() != null);
+                resultAction = allActions.ExtendedSingleOrDefault($"Finding delete action in {controllerContext.ControllerDescriptor.ControllerName} controller", action => action.MethodInfo.GetCustomAttribute<DeleteAttribute>() != null);
             else
-                resultAction = allActions.ExtendedSingleOrDefault($"Finding odata action/function for {actionName}", action => string.Equals(action.MethodInfo.Name, actionName, StringComparison.InvariantCultureIgnoreCase));
+                resultAction = allActions.ExtendedSingleOrDefault($"Finding odata action/function for {actionName} in {controllerContext.ControllerDescriptor.ControllerName} controller", action => string.Equals(action.MethodInfo.Name, actionName, StringComparison.InvariantCultureIgnoreCase));
 
             return resultAction;
         }
