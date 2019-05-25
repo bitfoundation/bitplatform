@@ -25,6 +25,8 @@ namespace Bit.OData.ODataControllers
             HttpMethod.Post
         });
 
+        public bool HasSideEffects { get; set; } = true;
+
         public Collection<HttpMethod> HttpMethods => SupportedMethods;
     }
 
@@ -35,6 +37,8 @@ namespace Bit.OData.ODataControllers
         {
             HttpMethod.Get
         });
+
+        public bool HasSideEffects { get; set; } = false;
 
         public Collection<HttpMethod> HttpMethods => SupportedMethods;
     }
