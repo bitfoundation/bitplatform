@@ -7,6 +7,7 @@ using Hangfire.Logging;
 using Hangfire.MemoryStorage;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 
 namespace Bit.Hangfire.Implementations
@@ -45,6 +46,12 @@ namespace Bit.Hangfire.Implementations
             GlobalConfiguration.Configuration.UseStorage(storage);
             GlobalConfiguration.Configuration.UseAutofacActivator(_container);
             GlobalConfiguration.Configuration.UseLogProvider(LogProvider);
+
+            if (GlobalJobFilters.Filters.Any(f => f.Instance is AutomaticRetryAttribute))
+            {
+                GlobalConfiguration.Configuration.UseFilter(new DefaultAutomaticRetryAttribute { });
+                GlobalJobFilters.Filters.Remove(GlobalJobFilters.Filters.ExtendedSingle("Finding automatic retry job filter attribute to remove it from global job filters", f => f.Instance is AutomaticRetryAttribute).Instance);
+            }
 
             BackgroundJobServerOptions options = new BackgroundJobServerOptions
             {

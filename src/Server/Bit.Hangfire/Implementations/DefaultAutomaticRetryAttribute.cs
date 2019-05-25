@@ -9,7 +9,7 @@ using System.Linq;
 
 namespace Bit.Hangfire.Implementations
 {
-    public sealed class AutomaticRetryAttribute : JobFilterAttribute, IElectStateFilter, IApplyStateFilter
+    public sealed class DefaultAutomaticRetryAttribute : JobFilterAttribute, IElectStateFilter, IApplyStateFilter
     {
         /// <summary>
         /// Represents the default number of retry attempts. This field is read-only.
@@ -26,7 +26,7 @@ namespace Bit.Hangfire.Implementations
                 Math.Pow(attempt - 1, 4) + 15 + random.Next(30) * attempt);
         };
 
-        private readonly ILog _logger = LogProvider.For<AutomaticRetryAttribute>();
+        private readonly ILog _logger = LogProvider.For<DefaultAutomaticRetryAttribute>();
 
         private readonly object _lockObject = new object();
         private int _attempts;
@@ -39,7 +39,7 @@ namespace Bit.Hangfire.Implementations
         /// Initializes a new instance of the <see cref="AutomaticRetryAttribute"/>
         /// class with <see cref="DefaultRetryAttempts"/> number.
         /// </summary>
-        public AutomaticRetryAttribute()
+        public DefaultAutomaticRetryAttribute()
         {
             Attempts = DefaultRetryAttempts;
             DelayInSecondsByAttemptFunc = DefaultDelayInSecondsByAttemptFunc;
@@ -133,11 +133,13 @@ namespace Bit.Hangfire.Implementations
 
             var retryAttempt = context.GetJobParameter<int>("RetryCount") + 1;
 
-            if (retryAttempt <= Attempts)
+            bool shouldRetry = retryAttempt <= Attempts && !(failedState.Exception is IKnownException);
+
+            if (shouldRetry)
             {
                 ScheduleAgainLater(context, retryAttempt, failedState);
             }
-            else if (retryAttempt > Attempts && OnAttemptsExceeded == AttemptsExceededAction.Delete)
+            else if (!shouldRetry && OnAttemptsExceeded == AttemptsExceededAction.Delete)
             {
                 TransitionToDeleted(context, failedState);
             }
