@@ -20,6 +20,11 @@ namespace Bit.Core.Contracts
             return dependencyManager.RegisterAutoMapper();
         }
 
+        public static IDependencyManager RegisterRepository<TRepository>(this IDependencyManager dependencyManager)
+        {
+            return dependencyManager.RegisterRepository(typeof(TRepository).GetTypeInfo());
+        }
+
         public static IDependencyManager RegisterRepository(this IDependencyManager dependencyManager, TypeInfo repositoryType)
         {
             if (dependencyManager == null)
