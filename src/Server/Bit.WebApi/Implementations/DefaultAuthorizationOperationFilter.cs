@@ -20,12 +20,12 @@ namespace Bit.WebApi.Implementations
     {
         public virtual AppEnvironment AppEnvironment { get; internal set; }
 
-        private static Lazy<TypeInfo> AuthorizationFilterAttributeTracer = new Lazy<TypeInfo>(() =>
+        private static readonly Lazy<TypeInfo> AuthorizationFilterAttributeTracer = new Lazy<TypeInfo>(() =>
         {
             return typeof(AuthorizationFilterAttribute).Assembly.GetType("System.Web.Http.Tracing.Tracers.AuthorizationFilterAttributeTracer").GetTypeInfo();
         }, isThreadSafe: true);
 
-        private static Lazy<PropertyInfo> InnerProperty = new Lazy<PropertyInfo>(() =>
+        private static readonly Lazy<PropertyInfo> InnerProperty = new Lazy<PropertyInfo>(() =>
         {
             return AuthorizationFilterAttributeTracer.Value.GetProperty("Inner");
         }, isThreadSafe: true);

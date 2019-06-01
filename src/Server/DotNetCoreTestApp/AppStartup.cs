@@ -105,7 +105,7 @@ namespace DotNetCoreTestApp
             dependencyManager.RegisterSignalRMiddlewareUsingDefaultConfiguration();
 
             dependencyManager.RegisterRepository(typeof(TestEfRepository<>).GetTypeInfo());
-            dependencyManager.RegisterRepository(typeof(CustomersRepository).GetTypeInfo());
+            dependencyManager.RegisterRepository<CustomersRepository>();
 
             dependencyManager.RegisterEfCoreDbContext<TestDbContext>((sp, optionsBuilder) => optionsBuilder.UseInMemoryDatabase("TestDb"));
 
