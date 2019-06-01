@@ -20,11 +20,11 @@
   "license": "MIT",
   "devDependencies": {
     "@types/angular": "^1.6.54",
-    "@types/angular-material": "^1.1.67",
+    "@types/angular-material": "^1.1.68",
     "@types/angular-translate": "^2.16.0",
     "@types/jquery": "^3.3.29",
     "@types/kendo-ui": "^2019.1.2",
-    "gulp": "^4.0.1",
+    "gulp": "^4.0.2",
     "gulp-less": "^4.0.1"
   },
   "optionalDependencies": {
@@ -33,7 +33,7 @@
     "angular-material": "^1.1.18",
     "angular-messages": "^1.7.8",
     "angular-translate": "^2.18.1",
-    "jquery": "^3.4.0",
+    "jquery": "^3.4.1",
     "normalize-css": "^2.3.1",
     "persian-datepicker": "^1.1.5"
   },
