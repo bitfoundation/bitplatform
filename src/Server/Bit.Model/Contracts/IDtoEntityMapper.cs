@@ -3,7 +3,7 @@
 namespace Bit.Model.Contracts
 {
     public interface IDtoEntityMapper<TDto, TEntity>
-        where TDto : class, IDto
+        where TDto : class
         where TEntity : class, IEntity
     {
         TEntity FromDtoToEntity(TDto dto, TEntity existingEntity = null);
