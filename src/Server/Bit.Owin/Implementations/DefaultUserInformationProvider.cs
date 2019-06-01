@@ -1,4 +1,5 @@
 ﻿using Bit.Core.Contracts;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
@@ -67,9 +68,9 @@ namespace Bit.Owin.Implementations
             try
             {
                 JToken json = JToken.Parse(primary_sid);
-                return new BitJwtToken { UserId = (json[nameof(BitJwtToken.UserId)] ?? throw new InvalidOperationException("UserId_Could_Not_Be_Found_In_Bit_Jwt_Token")).ToObject<string>(), CustomProps = (json[nameof(BitJwtToken.CustomProps)] ?? throw new InvalidOperationException("CustomProps_Could_Not_Be_Found_In_Bit_Jwt_Token")).ToObject<Dictionary<string, string>>() };
+                return json.ToObject<BitJwtToken>();
             }
-            catch (InvalidOperationException exp) when (exp.Message.EndsWith("_Could_Not_Be_Found_In_Bit_Jwt_Token"))
+            catch (JsonReaderException)
             {
                 return new BitJwtToken { UserId = primary_sid };
             }
