@@ -4,6 +4,7 @@ using Bit.Owin.Implementations;
 using FakeItEasy;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Reflection;
 
@@ -93,7 +94,8 @@ namespace Bit.Test.Implementations
                 e.ReplaceInstance(instance);
             }
 
-            Objects.Add(instance);
+            lock (this)
+                ObjectsValues.Add(instance);
         }
 
         private readonly MethodInfo _createProxyForService = typeof(AutofacTestDependencyManager).GetTypeInfo().GetMethod(nameof(CreateProxyForService));
@@ -111,7 +113,16 @@ namespace Bit.Test.Implementations
             return (T)serviceInstance;
         }
 
-        public readonly List<object> Objects = new List<object>();
+        protected readonly List<object> ObjectsValues = new List<object> { };
+
+        public virtual IEnumerable<object> Objects
+        {
+            get
+            {
+                lock (this)
+                    return new Collection<object>(ObjectsValues);
+            }
+        }
 
         public virtual string ReportObjects
         {
