@@ -56,7 +56,7 @@
         }
 
         @Log()
-        public async loginWithCredentials(userName: string, password: string, client_id: string, client_secret: string, scopes = ["openid", "profile", "user_info"]): Promise<Contracts.Token> {
+        public async loginWithCredentials(userName: string, password: string, client_id: string, client_secret: string, parameters: { key: string, value: string }[] = null, scopes = ["openid", "profile", "user_info"]): Promise<Contracts.Token> {
 
             if (userName == null) {
                 throw new Error("userName is null");
@@ -71,7 +71,13 @@
                 throw new Error("client_secret is null");
             }
 
-            const loginData = `scope=${scopes.join("+")}&grant_type=password&username=${userName}&password=${password}&client_id=${client_id}&client_secret=${client_secret}`;
+            let loginData = `scope=${scopes.join("+")}&grant_type=password&username=${userName}&password=${password}&client_id=${client_id}&client_secret=${client_secret}`;
+
+            if (parameters != null) {
+                loginData += `&acr_values=${parameters.map(p => `${p.key}:${p.value}`).join(' ')}`;
+            }
+
+            loginData = encodeURI(loginData);
 
             const loginHeaders = new Headers({
                 "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8",

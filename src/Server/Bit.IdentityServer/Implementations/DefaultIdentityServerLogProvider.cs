@@ -37,16 +37,13 @@ namespace Bit.IdentityServer.Implementations
                                 {
                                     ILogger logger = scope.Resolve<ILogger>();
 
-                                    string message = null;
+                                    string message = messageFunc(); ;
 
                                     try
                                     {
-                                        message = string.Format(CultureInfo.InvariantCulture, messageFunc(), formatParameters);
+                                        message = string.Format(CultureInfo.InvariantCulture, message, formatParameters);
                                     }
-                                    catch
-                                    {
-                                        message = messageFunc();
-                                    }
+                                    catch (FormatException) { }
 
                                     if (exception != null)
                                         logger.LogException(exception, message);
