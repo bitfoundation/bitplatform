@@ -1,11 +1,11 @@
 ﻿using Bit.Core.Contracts;
-using Bit.Core.Implementations;
 using Bit.Owin.Contracts;
 using IdentityServer3.Core.Models;
 using IdentityServer3.Core.Services.Default;
 using Microsoft.Owin;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Security.Claims;
 using System.Threading;
 using System.Threading.Tasks;
@@ -15,6 +15,10 @@ namespace Bit.IdentityServer.Implementations
     public abstract class UserService : UserServiceBase
     {
         public virtual IOwinContext OwinContext { get; set; }
+
+        public virtual ILogger Logger { get; set; }
+
+        public virtual IScopeStatusManager ScopeStatusManager { get; set; }
 
         public virtual IUserInformationProvider UserInformationProvider { get; set; }
 
@@ -46,10 +50,12 @@ namespace Bit.IdentityServer.Implementations
         {
             try
             {
-                BitJwtToken bitJwtToken = await LocalLogin(context, cancellationToken).ConfigureAwait(false);
+                LogLocalAuthContext(context);
 
                 if (context.AuthenticateResult == null)
                 {
+                    BitJwtToken bitJwtToken = await LocalLogin(context, cancellationToken).ConfigureAwait(false);
+
                     AuthenticateResult result = new AuthenticateResult(bitJwtToken.UserId, bitJwtToken.UserId,
                         BuildClaimsFromBitJwtToken(bitJwtToken),
                         authenticationMethod: "custom");
@@ -59,6 +65,7 @@ namespace Bit.IdentityServer.Implementations
             }
             catch (Exception ex)
             {
+                ScopeStatusManager.MarkAsFailed("LocalLogin_Failed");
                 if (context.AuthenticateResult == null && ExceptionToHttpErrorMapper.IsKnownError(ex))
                     context.AuthenticateResult = new AuthenticateResult(ExceptionToHttpErrorMapper.GetMessage(ex));
                 else
@@ -66,6 +73,25 @@ namespace Bit.IdentityServer.Implementations
             }
 
             await base.AuthenticateLocalAsync(context).ConfigureAwait(false);
+        }
+
+        void LogLocalAuthContext(LocalAuthenticationContext context)
+        {
+            Logger.AddLogData("ClientId", context.SignInMessage.ClientId);
+
+            Logger.AddLogData("UserName", context.UserName);
+
+            if (context.SignInMessage.AcrValues != null && context.SignInMessage.AcrValues.Any())
+                Logger.AddLogData("AcrValues", context.SignInMessage.AcrValues);
+
+            if (context.SignInMessage.ReturnUrl != null)
+                Logger.AddLogData("ReturnUrl", context.SignInMessage.ReturnUrl);
+
+            if (context.SignInMessage.IdP != null)
+                Logger.AddLogData("IdP", context.SignInMessage.IdP);
+
+            if (context.SignInMessage.Tenant != null)
+                Logger.AddLogData("Tenant", context.SignInMessage.Tenant);
         }
 
         public sealed override Task GetProfileDataAsync(ProfileDataRequestContext context)
@@ -127,18 +153,50 @@ namespace Bit.IdentityServer.Implementations
             if (context == null)
                 throw new ArgumentNullException(nameof(context));
 
-            if (context.AuthenticateResult == null)
+            try
             {
-                BitJwtToken jwtToken = await ExternalLogin(context, cancellationToken).ConfigureAwait(false);
+                LogExternalAuthContext(context);
 
-                AuthenticateResult result = new AuthenticateResult(jwtToken.UserId, jwtToken.UserId,
-                    BuildClaimsFromBitJwtToken(jwtToken),
-                    authenticationMethod: context.ExternalIdentity.Provider);
+                if (context.AuthenticateResult == null)
+                {
+                    BitJwtToken jwtToken = await ExternalLogin(context, cancellationToken).ConfigureAwait(false);
 
-                context.AuthenticateResult = result;
+                    AuthenticateResult result = new AuthenticateResult(jwtToken.UserId, jwtToken.UserId,
+                        BuildClaimsFromBitJwtToken(jwtToken),
+                        authenticationMethod: context.ExternalIdentity.Provider);
+
+                    context.AuthenticateResult = result;
+                }
+            }
+            catch (Exception ex)
+            {
+                ScopeStatusManager.MarkAsFailed("ExternalLogin_Failed");
+                if (context.AuthenticateResult == null && ExceptionToHttpErrorMapper.IsKnownError(ex))
+                    context.AuthenticateResult = new AuthenticateResult(ExceptionToHttpErrorMapper.GetMessage(ex));
+                else
+                    throw;
             }
 
             await base.AuthenticateExternalAsync(context).ConfigureAwait(false);
+        }
+
+        void LogExternalAuthContext(ExternalAuthenticationContext context)
+        {
+            Logger.AddLogData("ClientId", context.SignInMessage.ClientId);
+            Logger.AddLogData("Provider", context.ExternalIdentity.Provider);
+            Logger.AddLogData("ProviderId", context.ExternalIdentity.ProviderId);
+
+            if (context.SignInMessage.AcrValues != null && context.SignInMessage.AcrValues.Any())
+                Logger.AddLogData("AcrValues", context.SignInMessage.AcrValues);
+
+            if (context.SignInMessage.ReturnUrl != null)
+                Logger.AddLogData("ReturnUrl", context.SignInMessage.ReturnUrl);
+
+            if (context.SignInMessage.IdP != null)
+                Logger.AddLogData("IdP", context.SignInMessage.IdP);
+
+            if (context.SignInMessage.Tenant != null)
+                Logger.AddLogData("Tenant", context.SignInMessage.Tenant);
         }
 
         public sealed override Task PostAuthenticateAsync(PostAuthenticationContext context)
