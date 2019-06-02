@@ -18,9 +18,9 @@ namespace Bit.View.Controls
 
         public virtual object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            if (value is TimeSpan timeSpan && parameter is BitCalendarPopupView calendarPopupView && calendarPopupView.SelectedDateTime.HasValue)
+            if (value is TimeSpan timeSpan && parameter is BitCalendarPopupView calendarPopupView)
             {
-                DateTime selectedDateTime = calendarPopupView.SelectedDateTime.Value;
+                DateTime selectedDateTime = calendarPopupView.SelectedDateTime ?? DateTime.Today;
                 DateTime dateTime = new DateTime(selectedDateTime.Year, selectedDateTime.Month, selectedDateTime.Day, timeSpan.Hours, timeSpan.Minutes, timeSpan.Seconds);
                 return dateTime;
             }
