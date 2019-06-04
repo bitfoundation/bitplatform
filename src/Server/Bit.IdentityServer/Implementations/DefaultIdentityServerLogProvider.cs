@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Globalization;
+using System.Linq;
 using Bit.Core.Contracts;
 using IdentityServer3.Core.Logging;
 
@@ -41,7 +42,8 @@ namespace Bit.IdentityServer.Implementations
 
                                     try
                                     {
-                                        message = string.Format(CultureInfo.InvariantCulture, message, formatParameters);
+                                        if (formatParameters.Any())
+                                            message = string.Format(CultureInfo.InvariantCulture, message, formatParameters);
                                     }
                                     catch (FormatException) { }
 

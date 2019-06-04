@@ -2,6 +2,7 @@
 using Bit.Core.Extensions;
 using Bit.Core.Models;
 using Bit.IdentityServer.Contracts;
+using Bit.IdentityServer.Implementations;
 using Bit.Owin.Contracts;
 using IdentityServer3.Core.Configuration;
 using IdentityServer3.Core.Logging;
@@ -14,7 +15,6 @@ using System.Linq;
 
 namespace Bit.IdentityServer
 {
-
     public class IdentityServerMiddlewareConfiguration : IOwinMiddlewareConfiguration
     {
         public virtual AppEnvironment AppEnvironment { get; set; }
@@ -22,7 +22,6 @@ namespace Bit.IdentityServer
         public virtual IDependencyManager DependencyManager { get; set; }
         public virtual IScopesProvider ScopesProvider { get; set; }
         public virtual IRedirectUriValidator RedirectUriValidator { get; set; }
-        public virtual IEventService EventService { get; set; }
         public virtual IEnumerable<IExternalIdentityProviderConfiguration> ExternalIdentityProviderConfigurations { get; set; }
         public virtual IEnumerable<IIdentityServerOptionsCustomizer> Customizers { get; set; }
 
@@ -49,7 +48,23 @@ namespace Bit.IdentityServer
 
                 factory.UserService = new Registration<IUserService>(ResolveUserService);
 
-                factory.EventService = new Registration<IEventService>(EventService);
+                IEventService ResolveEventService(IdentityServer3.Core.Services.IDependencyResolver resolver)
+                {
+                    OwinEnvironmentService owinEnv = resolver.Resolve<OwinEnvironmentService>();
+                    IOwinContext owinContext = new OwinContext(owinEnv.Environment);
+                    if (owinContext.TryGetDependencyResolver(out Core.Contracts.IDependencyResolver dependencyResolver))
+                    {
+                        IRequestInformationProvider requestInformationProvider = dependencyResolver.Resolve<IRequestInformationProvider>();
+                        owinEnv.Environment["server.RemoteIpAddress"] = requestInformationProvider.ClientIp ?? "::1"; // some test hosts won't provide remote ip address request feature and idSrv requires it in event sevice decorator.
+                        return dependencyResolver.Resolve<IEventService>();
+                    }
+                    else
+                    {
+                        return new FakeEventService { };
+                    }
+                }
+
+                factory.EventService = new Registration<IEventService>(ResolveEventService);
 
                 IViewService ResolveViewService(IdentityServer3.Core.Services.IDependencyResolver resolver)
                 {

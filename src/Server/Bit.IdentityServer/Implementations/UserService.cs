@@ -50,8 +50,6 @@ namespace Bit.IdentityServer.Implementations
         {
             try
             {
-                LogLocalAuthContext(context);
-
                 if (context.AuthenticateResult == null)
                 {
                     BitJwtToken bitJwtToken = await LocalLogin(context, cancellationToken).ConfigureAwait(false);
@@ -73,25 +71,6 @@ namespace Bit.IdentityServer.Implementations
             }
 
             await base.AuthenticateLocalAsync(context).ConfigureAwait(false);
-        }
-
-        void LogLocalAuthContext(LocalAuthenticationContext context)
-        {
-            Logger.AddLogData("ClientId", context.SignInMessage.ClientId);
-
-            Logger.AddLogData("UserName", context.UserName);
-
-            if (context.SignInMessage.AcrValues != null && context.SignInMessage.AcrValues.Any())
-                Logger.AddLogData("AcrValues", context.SignInMessage.AcrValues);
-
-            if (context.SignInMessage.ReturnUrl != null)
-                Logger.AddLogData("ReturnUrl", context.SignInMessage.ReturnUrl);
-
-            if (context.SignInMessage.IdP != null)
-                Logger.AddLogData("IdP", context.SignInMessage.IdP);
-
-            if (context.SignInMessage.Tenant != null)
-                Logger.AddLogData("Tenant", context.SignInMessage.Tenant);
         }
 
         public sealed override Task GetProfileDataAsync(ProfileDataRequestContext context)
@@ -155,8 +134,6 @@ namespace Bit.IdentityServer.Implementations
 
             try
             {
-                LogExternalAuthContext(context);
-
                 if (context.AuthenticateResult == null)
                 {
                     BitJwtToken jwtToken = await ExternalLogin(context, cancellationToken).ConfigureAwait(false);
@@ -178,25 +155,6 @@ namespace Bit.IdentityServer.Implementations
             }
 
             await base.AuthenticateExternalAsync(context).ConfigureAwait(false);
-        }
-
-        void LogExternalAuthContext(ExternalAuthenticationContext context)
-        {
-            Logger.AddLogData("ClientId", context.SignInMessage.ClientId);
-            Logger.AddLogData("Provider", context.ExternalIdentity.Provider);
-            Logger.AddLogData("ProviderId", context.ExternalIdentity.ProviderId);
-
-            if (context.SignInMessage.AcrValues != null && context.SignInMessage.AcrValues.Any())
-                Logger.AddLogData("AcrValues", context.SignInMessage.AcrValues);
-
-            if (context.SignInMessage.ReturnUrl != null)
-                Logger.AddLogData("ReturnUrl", context.SignInMessage.ReturnUrl);
-
-            if (context.SignInMessage.IdP != null)
-                Logger.AddLogData("IdP", context.SignInMessage.IdP);
-
-            if (context.SignInMessage.Tenant != null)
-                Logger.AddLogData("Tenant", context.SignInMessage.Tenant);
         }
 
         public sealed override Task PostAuthenticateAsync(PostAuthenticationContext context)

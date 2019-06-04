@@ -22,7 +22,7 @@ namespace Bit.Core.Contracts
             dependencyManager.RegisterOwinMiddleware<IdentityServerMiddlewareConfiguration>(name: name);
             dependencyManager.Register<IViewService, DefaultViewService>(overwriteExciting: false);
             dependencyManager.Register<IRedirectUriValidator, RegexBasedRedirectUriValidator>(lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExciting: false);
-            dependencyManager.Register<IEventService, DefaultEventService>(lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExciting: false);
+            dependencyManager.Register<IEventService, DefaultEventService>(overwriteExciting: false);
 
             dependencyManager.Register<IOAuthClientsProvider, TOAuthClientsProvider>(overwriteExciting: false);
             dependencyManager.Register<IUserService, TUserService>(overwriteExciting: false);

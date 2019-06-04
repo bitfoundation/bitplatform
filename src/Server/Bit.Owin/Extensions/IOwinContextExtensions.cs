@@ -8,17 +8,23 @@ namespace Microsoft.Owin
     {
         public static IDependencyResolver GetDependencyResolver(this IOwinContext context)
         {
+            if (context.TryGetDependencyResolver(out IDependencyResolver dependencyResolver))
+                return dependencyResolver;
+            throw new InvalidOperationException($"DependencyResolver not found in owin context, See {nameof(AutofacScopeBasedDependencyResolverMiddleware)}");
+        }
+
+        public static bool TryGetDependencyResolver(this IOwinContext context, out IDependencyResolver dependencyResolver)
+        {
             if (context == null)
                 throw new ArgumentNullException(nameof(context));
 
             context.Request.CallCancelled.ThrowIfCancellationRequested();
 
-            IDependencyResolver dependencyResolver = context.Get<IDependencyResolver>("DependencyResolver");
+            dependencyResolver = context.Get<IDependencyResolver>("DependencyResolver");
 
             if (dependencyResolver == default(IDependencyResolver))
-                throw new InvalidOperationException($"DependencyResolver not found in owin context, See {nameof(AutofacScopeBasedDependencyResolverMiddleware)}");
-
-            return dependencyResolver;
+                return false;
+            return true;
         }
     }
 }
