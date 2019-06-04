@@ -42,6 +42,18 @@ namespace Bit.ViewModel.Implementations
 
         public virtual async Task<Token> LoginWithCredentials(string userName, string password, string client_id, string client_secret, string[] scopes = null, IDictionary<string, string> optionalParameters = null, CancellationToken cancellationToken = default)
         {
+            if (userName == null)
+                throw new ArgumentNullException(nameof(userName));
+
+            if (password == null)
+                throw new ArgumentNullException(nameof(password));
+
+            if (client_id == null)
+                throw new ArgumentNullException(nameof(client_id));
+
+            if (client_secret == null)
+                throw new ArgumentNullException(nameof(client_secret));
+
             await Logout(state: null, client_id: client_id, cancellationToken: cancellationToken).ConfigureAwait(false);
 
             if (scopes == null)

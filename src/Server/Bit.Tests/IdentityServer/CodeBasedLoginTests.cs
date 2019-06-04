@@ -6,6 +6,7 @@ using IdentityModel.Client;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Remote;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
@@ -36,9 +37,12 @@ namespace Bit.Tests.IdentityServer
         {
             using (BitOwinTestEnvironment testEnvironment = new BitOwinTestEnvironment(new TestEnvironmentArgs { UseRealServer = false }))
             {
-                TokenResponse token = await testEnvironment.Server.Login("InValidUser", "InvalidPassword", "TestResOwner");
-
-                Assert.IsTrue(token.IsError);
+                try
+                {
+                    await testEnvironment.Server.Login("InValidUser", "InvalidPassword", "TestResOwner");
+                    Assert.Fail();
+                }
+                catch (Exception exp) when (exp.Message == "invalid_grant {\"error\":\"invalid_grant\",\"error_description\":\"LoginFailed\"}") { }
             }
         }
 
@@ -48,12 +52,16 @@ namespace Bit.Tests.IdentityServer
         {
             using (BitOwinTestEnvironment testEnvironment = new BitOwinTestEnvironment(new TestEnvironmentArgs { UseRealServer = false }))
             {
-                TokenResponse token = await testEnvironment.Server.Login("InValidUser", "InvalidPassword", "TestResOwner", parameters: new Dictionary<string, string>
+                try
                 {
-                    { "acr_values", "x:1 y:2" }
-                });
+                    await testEnvironment.Server.Login("InValidUser", "InvalidPassword", "TestResOwner", parameters: new Dictionary<string, string>
+                    {
+                        { "acr_values", "x:1 y:2" }
+                    });
 
-                Assert.IsTrue(token.IsError);
+                    Assert.Fail();
+                }
+                catch (Exception exp) when (exp.Message == "invalid_grant {\"error\":\"invalid_grant\",\"error_description\":\"LoginFailed\"}") { }
 
                 bool acr_values_are_logged = TestDependencyManager.CurrentTestDependencyManager
                      .Objects

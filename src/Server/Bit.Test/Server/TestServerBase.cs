@@ -142,11 +142,23 @@ namespace Bit.Test.Server
             Uri = uri;
         }
 
-        public virtual Task<TokenResponse> Login(string userName, string password, string clientId, string secret = "secret", IDictionary<string,string> parameters = null)
+        public virtual async Task<TokenResponse> Login(string userName, string password, string clientId, string secret = "secret", IDictionary<string, string> parameters = null)
         {
+            if (userName == null)
+                throw new ArgumentNullException(nameof(userName));
+
+            if (password == null)
+                throw new ArgumentNullException(nameof(password));
+
+            if (clientId == null)
+                throw new ArgumentNullException(nameof(clientId));
+
+            if (secret == null)
+                throw new ArgumentNullException(nameof(secret));
+
             HttpClient client = BuildHttpClient();
 
-            return client.RequestPasswordTokenAsync(new PasswordTokenRequest
+            TokenResponse tokenResponse = await client.RequestPasswordTokenAsync(new PasswordTokenRequest
             {
                 Address = "core/connect/token",
                 ClientSecret = secret,
@@ -156,6 +168,13 @@ namespace Bit.Test.Server
                 Password = password,
                 Parameters = parameters ?? new Dictionary<string, string> { }
             });
+
+            if (tokenResponse.IsError)
+            {
+                throw tokenResponse.Exception ?? new Exception($"{tokenResponse.Error} {tokenResponse.Raw}");
+            }
+
+            return tokenResponse;
         }
 
         public HttpClient BuildHttpClient(TokenResponse token = null)
