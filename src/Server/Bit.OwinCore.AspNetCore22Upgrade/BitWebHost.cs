@@ -1,5 +1,7 @@
 ﻿using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Server.Kestrel.Core;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Bit.OwinCore.AspNetCore22Upgrade
 {
@@ -10,9 +12,9 @@ namespace Bit.OwinCore.AspNetCore22Upgrade
             return WebHost.CreateDefaultBuilder(args)
                 .CaptureStartupErrors(captureStartupErrors: true)
                 .UseSetting(WebHostDefaults.DetailedErrorsKey, "true")
-                .UseKestrel(options =>
+                .ConfigureServices(services =>
                 {
-                    options.AddServerHeader = false;
+                    services.Configure<KestrelServerOptions>(options => options.AddServerHeader = false);
                 });
         }
     }
