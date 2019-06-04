@@ -60,7 +60,7 @@
 
         <md-input-container class="md-block" md-no-float="false">
             <label>{{::"UserName" | translate }}</label>
-            <input style="direction:ltr" ng-required="true" name="username" type="text" ng-model="::vm.loginModel.username" autofocus />
+            <input style="direction:ltr" ng-required="true" name="username" type="text" ng-model="::vm.loginModel.userName" autofocus />
             <div ng-messages="loginForm.userName.$error"
                  ng-show="loginForm.userName.$invalid ">
                 <div ng-message="required">{{:: "UserNameIsRequired" | translate}}</div>

@@ -31,6 +31,9 @@
                         location.assign(this.model.redirectUrl);
                     }, this.model.autoRedirectDelay * 1000);
                 }
+
+                if (this.model.userName == null)
+                    this.model.userName = this.model["username"];
             }
 
             return this.model;
