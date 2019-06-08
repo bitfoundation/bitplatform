@@ -29,7 +29,7 @@ namespace Bit.Hangfire.Implementations
             if (anotherJobId == null)
                 throw new ArgumentNullException(nameof(anotherJobId));
 
-            return Task.FromResult(BackgroundJob.ContinueWith(anotherJobId, methodCall, JobContinuationOptions.OnAnyFinishedState));
+            return Task.FromResult(BackgroundJob.ContinueJobWith(anotherJobId, methodCall, JobContinuationOptions.OnAnyFinishedState));
         }
 
         public virtual Task<string> PerformBackgroundJobWhenAnotherJobSucceededAsync<TService>(string anotherJobId, Expression<Action<TService>> methodCall)
@@ -40,7 +40,7 @@ namespace Bit.Hangfire.Implementations
             if (anotherJobId == null)
                 throw new ArgumentNullException(nameof(anotherJobId));
 
-            return Task.FromResult(BackgroundJob.ContinueWith(anotherJobId, methodCall, JobContinuationOptions.OnlyOnSucceededState));
+            return Task.FromResult(BackgroundJob.ContinueJobWith(anotherJobId, methodCall, JobContinuationOptions.OnlyOnSucceededState));
         }
 
         public virtual Task<string> PerformBackgroundJobAsync<TService>(Expression<Action<TService>> methodCall, TimeSpan when)
@@ -126,7 +126,7 @@ namespace Bit.Hangfire.Implementations
             if (anotherJobId == null)
                 throw new ArgumentNullException(nameof(anotherJobId));
 
-            return BackgroundJob.ContinueWith(anotherJobId, methodCall, JobContinuationOptions.OnAnyFinishedState);
+            return BackgroundJob.ContinueJobWith(anotherJobId, methodCall, JobContinuationOptions.OnAnyFinishedState);
         }
 
         public virtual string PerformBackgroundJobWhenAnotherJobSucceeded<TService>(string anotherJobId, Expression<Action<TService>> methodCall)
@@ -137,7 +137,7 @@ namespace Bit.Hangfire.Implementations
             if (anotherJobId == null)
                 throw new ArgumentNullException(nameof(anotherJobId));
 
-            return BackgroundJob.ContinueWith(anotherJobId, methodCall, JobContinuationOptions.OnlyOnSucceededState);
+            return BackgroundJob.ContinueJobWith(anotherJobId, methodCall, JobContinuationOptions.OnlyOnSucceededState);
         }
 
         public virtual string PerformBackgroundJob<TService>(Expression<Action<TService>> methodCall, TimeSpan when)

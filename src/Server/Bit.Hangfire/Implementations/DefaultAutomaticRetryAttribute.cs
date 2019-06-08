@@ -124,7 +124,7 @@ namespace Bit.Hangfire.Implementations
         /// <inheritdoc />
         public void OnStateElection(ElectStateContext context)
         {
-            var failedState = context.CandidateState as FailedState;
+            FailedState failedState = context.CandidateState as FailedState;
             if (failedState == null)
             {
                 // This filter accepts only failed job state.
