@@ -29,7 +29,15 @@ namespace Bit.Owin.Middlewares
         {
             if (userInformationProvider.IsAuthenticated())
             {
-                logger.AddLogData("UserId", userInformationProvider.GetCurrentUserId());
+                BitJwtToken bitJwtToken = userInformationProvider.GetBitJwtToken();
+                logger.AddLogData("UserId", bitJwtToken.UserId);
+                if (bitJwtToken.CustomProps != null)
+                {
+                    foreach (var keyVal in bitJwtToken.CustomProps)
+                    {
+                        logger.AddLogData(keyVal.Key, keyVal.Value);
+                    }
+                }
                 logger.AddLogData("AuthenticationType", userInformationProvider.GetAuthenticationType());
                 logger.AddLogData("ClientId", userInformationProvider.GetClientId());
             }
