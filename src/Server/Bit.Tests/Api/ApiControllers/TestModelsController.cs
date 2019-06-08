@@ -439,5 +439,11 @@ namespace Bit.Tests.Api.ApiControllers
         {
             return n1 + n2;
         }
+
+        [Action]
+        public virtual void JustToTestCodeGenerator(IEnumerable<TestModel> testModels)
+        {
+
+        }
     }
 }

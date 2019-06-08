@@ -19,9 +19,9 @@ namespace Simple.OData.Client
 
 			<# foreach (ODataOperation operation in controller.Operations) { #>
 
-				public static IBoundClient<<#= controller.ModelSymbol.ToDisplayString() #>> <#= operation.Method.Name #>(this <#= string.Join(",", new string[]{ $@"IBoundClient<{controller.ModelSymbol.ToDisplayString()}> {controller.Name.AsCamelCase()}" }.Union(operation.Parameters.Select(parameter =>  $@"{parameter.Type.ToDisplayString()} {parameter.Name}" ))) #>)
+				public static IBoundClient<<#= controller.ModelSymbol.ToDisplayString() #>> <#= operation.Method.Name #>(this <#= string.Join(",", new string[]{ $@"IBoundClient<{controller.ModelSymbol.ToDisplayString()}> {controller.Name.AsCamelCase()}Controller" }.Union(operation.Parameters.Select(parameter =>  $@"{parameter.Type.ToDisplayString()} {parameter.Name}" ))) #>)
 				{
-					return <#= controller.Name.AsCamelCase() #>.<#= operation.Kind == ODataOperationKind.Action ? "Action" : "Function" #>("<#= operation.Method.Name #>").Set(new 
+					return <#= $"{controller.Name.AsCamelCase()}Controller" #>.<#= operation.Kind == ODataOperationKind.Action ? "Action" : "Function" #>("<#= operation.Method.Name #>").Set(new 
 					{ 
 						<#= string.Join(",", operation.Parameters.Select(parameter =>  $"{parameter.Name}" )) #>
 					});
