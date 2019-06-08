@@ -9,14 +9,15 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <!--<PackageReference Include="BitCodeGeneratorTask" Version="2.3.0" />-->
     <PackageReference Include="Microsoft.AspNetCore.ResponseCompression" Version="2.2.0" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="2.2.4" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="2.2.4" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.1.1" />
     <PackageReference Include="MSTest.TestAdapter" Version="1.4.0" />
     <PackageReference Include="MSTest.TestFramework" Version="1.4.0" />
-    <PackageReference Include="Refit" Version="4.6.107" />
-    <PackageReference Include="Selenium.WebDriver.ChromeDriver" Version="74.0.3729.6" />
+    <PackageReference Include="Refit" Version="4.7.9" />
+    <PackageReference Include="Selenium.WebDriver.ChromeDriver" Version="75.0.3770.8" />
     <PackageReference Include="System.Configuration.ConfigurationManager" Version="4.5.0" /> 
   </ItemGroup>
 
