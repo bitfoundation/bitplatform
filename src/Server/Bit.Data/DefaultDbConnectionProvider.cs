@@ -13,8 +13,7 @@ namespace Bit.Data
     public class DefaultDbConnectionProvider<TDbConnection> : IDbConnectionProvider
         where TDbConnection : DbConnection, new()
     {
-        private readonly ICollection<DbConnectionAndTransactionPair> _dbConnectionAndTransactions =
-            new List<DbConnectionAndTransactionPair>();
+        protected ICollection<DbConnectionAndTransactionPair> DbConnectionAndTransactions { get; private set; } = new List<DbConnectionAndTransactionPair>();
 
         public virtual IScopeStatusManager ScopeStatusManager { get; set; }
 
@@ -25,7 +24,7 @@ namespace Bit.Data
             if (dbConnection == null)
                 throw new ArgumentNullException(nameof(dbConnection));
 
-            return _dbConnectionAndTransactions.ExtendedSingle($"Getting db transaction for db connection", dbAndTran => dbAndTran.Connection == dbConnection).Transaction;
+            return DbConnectionAndTransactions.ExtendedSingle($"Getting db transaction for db connection", dbAndTran => dbAndTran.Connection == dbConnection).Transaction;
         }
 
         public virtual DbConnection GetDbConnection(string connectionString, bool rollbackOnScopeStatusFailure)
@@ -33,7 +32,7 @@ namespace Bit.Data
             if (connectionString == null)
                 throw new ArgumentNullException(nameof(connectionString));
 
-            if (!_dbConnectionAndTransactions.Any(dbAndTran => dbAndTran.ConnectionString != connectionString))
+            if (!DbConnectionAndTransactions.Any(dbAndTran => dbAndTran.ConnectionString != connectionString))
             {
                 TDbConnection newConnection = new TDbConnection { ConnectionString = connectionString };
                 DbTransaction transaction = null;
@@ -43,10 +42,10 @@ namespace Bit.Data
                     transaction = newConnection.BeginTransaction(IsolationLevel);
                 }
                 catch { }
-                _dbConnectionAndTransactions.Add(new DbConnectionAndTransactionPair(connectionString, newConnection, transaction, rollbackOnScopeStatusFailure));
+                DbConnectionAndTransactions.Add(new DbConnectionAndTransactionPair(connectionString, newConnection, transaction, rollbackOnScopeStatusFailure));
             }
 
-            return _dbConnectionAndTransactions.ExtendedSingle($"Getting db connection for {connectionString}", dbAndTran => dbAndTran.ConnectionString == connectionString).Connection;
+            return DbConnectionAndTransactions.ExtendedSingle($"Getting db connection for {connectionString}", dbAndTran => dbAndTran.ConnectionString == connectionString).Connection;
         }
 
         public virtual async Task<DbConnection> GetDbConnectionAsync(string connectionString, bool rollbackOnScopeStatusFailure,
@@ -55,7 +54,7 @@ namespace Bit.Data
             if (connectionString == null)
                 throw new ArgumentNullException(nameof(connectionString));
 
-            if (!_dbConnectionAndTransactions.Any(dbAndTran => dbAndTran.ConnectionString != connectionString))
+            if (!DbConnectionAndTransactions.Any(dbAndTran => dbAndTran.ConnectionString != connectionString))
             {
                 TDbConnection newConnection = new TDbConnection { ConnectionString = connectionString };
                 DbTransaction transaction = null;
@@ -65,10 +64,10 @@ namespace Bit.Data
                     transaction = newConnection.BeginTransaction(IsolationLevel);
                 }
                 catch { }
-                _dbConnectionAndTransactions.Add(new DbConnectionAndTransactionPair(connectionString, newConnection, transaction, rollbackOnScopeStatusFailure));
+                DbConnectionAndTransactions.Add(new DbConnectionAndTransactionPair(connectionString, newConnection, transaction, rollbackOnScopeStatusFailure));
             }
 
-            return _dbConnectionAndTransactions.ExtendedSingle($"Getting db connection for {connectionString}", dbAndTran => dbAndTran.ConnectionString == connectionString).Connection;
+            return DbConnectionAndTransactions.ExtendedSingle($"Getting db connection for {connectionString}", dbAndTran => dbAndTran.ConnectionString == connectionString).Connection;
         }
 
         public virtual void Dispose()
@@ -81,7 +80,7 @@ namespace Bit.Data
         {
             bool wasSucceeded = ScopeStatusManager.WasSucceeded();
 
-            foreach (DbConnectionAndTransactionPair dbAndTran in _dbConnectionAndTransactions)
+            foreach (DbConnectionAndTransactionPair dbAndTran in DbConnectionAndTransactions)
             {
                 try
                 {
@@ -119,7 +118,7 @@ namespace Bit.Data
 
             public virtual string ConnectionString { get; }
 
-            public bool RollbackOnScopeStatusFailure { get; }
+            public bool RollbackOnScopeStatusFailure { get; set; }
         }
     }
 }
