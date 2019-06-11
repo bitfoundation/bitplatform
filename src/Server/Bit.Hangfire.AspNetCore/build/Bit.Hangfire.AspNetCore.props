@@ -1,5 +1,12 @@
 ﻿<Project TreatAsLocalProperty="TaskFolder;TaskAssembly">
   <ItemGroup>
+
+    <PackageReference Include="Hangfire.Core" Version="1.7.3" ExcludeAssets="all" />
+    <PackageReference Include="Hangfire.Autofac" Version="2.3.1" ExcludeAssets="all" />
+    <PackageReference Include="HangFire.Azure.ServiceBusQueue" Version="4.1.0" ExcludeAssets="all" />
+    <PackageReference Include="Hangfire.MemoryStorage" Version="1.6.0" ExcludeAssets="all" />
+    <PackageReference Include="Hangfire.SqlServer" Version="1.7.3" ExcludeAssets="all" />
+
     <Reference Include="Hangfire.Core">
       <HintPath>$(NuGetPackageRoot)hangfire.core\1.7.3\lib\net46\Hangfire.Core.dll</HintPath>
       <Private>true</Private>
@@ -20,5 +27,6 @@
       <HintPath>$(NuGetPackageRoot)hangfire.SqlServer\1.7.3\lib\net45\Hangfire.SqlServer.dll</HintPath>
       <Private>true</Private>
     </Reference>
+
   </ItemGroup>
 </Project>
