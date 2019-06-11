@@ -131,9 +131,6 @@ namespace Bit.IdentityServer
 
         protected virtual void ConfigureIdentityProviders(IAppBuilder owinApp, string signInAsType)
         {
-            if (PlatformUtilities.IsRunningOnDotNetCore)
-                return;
-
             foreach (IExternalIdentityProviderConfiguration externalIdentityProviderConfiguration in ExternalIdentityProviderConfigurations)
             {
                 externalIdentityProviderConfiguration.ConfigureExternalIdentityProvider(owinApp, signInAsType);

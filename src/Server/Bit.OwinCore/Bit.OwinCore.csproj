@@ -28,6 +28,7 @@
     <EmbeddedResource Include="Assemblies\System.Data.Linq.dll" />
     <EmbeddedResource Include="Assemblies\System.IdentityModel.dll" />
     <EmbeddedResource Include="Assemblies\System.ServiceModel.dll" />
+    <EmbeddedResource Include="Assemblies\System.Net.Http.WebRequest.dll" />
   </ItemGroup>
 
   <ItemGroup>
