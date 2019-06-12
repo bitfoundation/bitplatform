@@ -29,6 +29,10 @@ using Xamarin.Forms.Xaml;
 
 [assembly: XamlCompilation(XamlCompilationOptions.Compile)]
 
+[assembly: XmlnsDefinition("https://bit-framework.com", "Bit")]
+[assembly: XmlnsDefinition("https://bit-framework.com", "Bit.View")]
+[assembly: XmlnsDefinition("https://bit-framework.com", "Bit.View.Props")]
+
 namespace Bit
 {
     public abstract class BitApplication : PrismApplication, IAdaptiveBehaviorService

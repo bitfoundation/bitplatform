@@ -1,9 +1,9 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <bit:BitApplication
+    xmlns:bit="https://bit-framework.com"
     x:Class="Bit.CSharpClientSample.App"
     xmlns="http://xamarin.com/schemas/2014/forms"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-    xmlns:bit="clr-namespace:Bit;assembly=Bit.CSharpClient.Prism"
     xmlns:view="clr-namespace:Bit.View;assembly=Bit.CSharpClient.Prism">
     <bit:BitApplication.Resources>
         <ResourceDictionary>

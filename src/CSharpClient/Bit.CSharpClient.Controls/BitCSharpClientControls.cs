@@ -1,4 +1,8 @@
 ﻿using System;
+using Xamarin.Forms;
+
+[assembly: XmlnsDefinition("https://bit-framework.com", "Bit.View")]
+[assembly: XmlnsDefinition("https://bit-framework.com", "Bit.View.Controls")]
 
 namespace Bit.View
 {
