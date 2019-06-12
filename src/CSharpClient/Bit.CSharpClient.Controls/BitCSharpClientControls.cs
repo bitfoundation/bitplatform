@@ -1,8 +1,8 @@
 ﻿using System;
 using Xamarin.Forms;
 
-[assembly: XmlnsDefinition("https://bit-framework.com", "Bit.View")]
-[assembly: XmlnsDefinition("https://bit-framework.com", "Bit.View.Controls")]
+[assembly: XmlnsDefinition("https://bit-framework.com", "Bit.View", AssemblyName = "Bit.CSharpClient.Controls")]
+[assembly: XmlnsDefinition("https://bit-framework.com", "Bit.View.Controls", AssemblyName = "Bit.CSharpClient.Controls")]
 
 namespace Bit.View
 {
@@ -16,6 +16,18 @@ namespace Bit.View
 {
     public static class BitCSharpClientControls
     {
+        /// <summary>
+        /// To be called in shared/net-standard project.
+        /// https://docs.microsoft.com/bg-bg/xamarin/xamarin-forms/xaml/custom-namespace-schemas#consuming-a-custom-namespace-schema
+        /// </summary>
+        public static void XamlInit()
+        {
+
+        }
+
+        /// <summary>
+        /// To be called in platform specific project.
+        /// </summary>
         public static void Init()
         {
 #if iOS

@@ -29,14 +29,23 @@ using Xamarin.Forms.Xaml;
 
 [assembly: XamlCompilation(XamlCompilationOptions.Compile)]
 
-[assembly: XmlnsDefinition("https://bit-framework.com", "Bit")]
-[assembly: XmlnsDefinition("https://bit-framework.com", "Bit.View")]
-[assembly: XmlnsDefinition("https://bit-framework.com", "Bit.View.Props")]
+[assembly: XmlnsDefinition("https://bit-framework.com", "Bit", AssemblyName = "Bit.CSharpClient.Prism")]
+[assembly: XmlnsDefinition("https://bit-framework.com", "Bit.View", AssemblyName = "Bit.CSharpClient.Prism")]
+[assembly: XmlnsDefinition("https://bit-framework.com", "Bit.View.Props", AssemblyName = "Bit.CSharpClient.Prism")]
 
 namespace Bit
 {
     public abstract class BitApplication : PrismApplication, IAdaptiveBehaviorService
     {
+        /// <summary>
+        /// To be called in shared/net-standard project.
+        /// https://docs.microsoft.com/bg-bg/xamarin/xamarin-forms/xaml/custom-namespace-schemas#consuming-a-custom-namespace-schema
+        /// </summary>
+        public static void XamlInit()
+        {
+
+        }
+
         public BitApplication()
             : this(null)
         {
