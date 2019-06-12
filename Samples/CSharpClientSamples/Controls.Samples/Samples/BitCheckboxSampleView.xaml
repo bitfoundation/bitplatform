@@ -3,7 +3,7 @@
     x:Class="Bit.CSharpClient.Controls.Samples.BitCheckboxSampleView"
     xmlns="http://xamarin.com/schemas/2014/forms"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-    xmlns:bitControls="clr-namespace:Bit.View.Controls;assembly=Bit.CSharpClient.Controls"
+    xmlns:bit="https://bit-framework.com"
     xmlns:viewModel="clr-namespace:Bit.CSharpClient.Controls.Samples">
 
     <ContentPage.BindingContext>
@@ -11,7 +11,7 @@
     </ContentPage.BindingContext>
 
     <ContentPage.Resources>
-        <Style x:Key="ExtendedCheckboxUI" TargetType="bitControls:BitCheckbox">
+        <Style x:Key="ExtendedCheckboxUI" TargetType="bit:BitCheckbox">
             <Setter Property="FillColor" Value="LightPink" />
             <Setter Property="OutlineColor" Value="Red" />
             <Setter Property="CheckColor" Value="DeepPink" />
@@ -36,7 +36,7 @@
                             <ColumnDefinition Width="Auto" />
                             <ColumnDefinition Width="Auto" />
                         </Grid.ColumnDefinitions>
-                        <bitControls:BitFrame
+                        <bit:BitFrame
                             Padding="0"
                             BackgroundColor="{Binding FillColor}"
                             BorderColor="{Binding OutlineColor}"
@@ -45,7 +45,7 @@
                             HeightRequest="20"
                             VerticalOptions="Center"
                             WidthRequest="20">
-                            <bitControls:BitFrame.Triggers>
+                            <bit:BitFrame.Triggers>
                                 <DataTrigger
                                     Binding="{Binding Shape}"
                                     TargetType="Frame"
@@ -64,16 +64,16 @@
                                     Value="Native">
                                     <Setter Property="CornerRadius" Value="{OnPlatform Default=2, iOS=10}" />
                                 </DataTrigger>
-                            </bitControls:BitFrame.Triggers>
-                            <bitControls:BitFrame.GestureRecognizers>
+                            </bit:BitFrame.Triggers>
+                            <bit:BitFrame.GestureRecognizers>
                                 <TapGestureRecognizer Command="{Binding CheckTappedCommand}" CommandParameter="{Binding}" />
-                            </bitControls:BitFrame.GestureRecognizers>
+                            </bit:BitFrame.GestureRecognizers>
                             <Label
                                 HorizontalOptions="Center"
                                 Text="✓"
                                 TextColor="{Binding CheckColor}"
                                 VerticalOptions="Center" />
-                        </bitControls:BitFrame>
+                        </bit:BitFrame>
                         <ContentView Grid.Column="1">
                             <ContentView.Content>
                                 <Binding Mode="OneWay" Path="Content">
@@ -102,17 +102,17 @@
 
         <StackLayout Orientation="Horizontal">
 
-            <bitControls:BitCheckbox
+            <bit:BitCheckbox
                 IsChecked="False"
                 Shape="Native"
                 Text="Native checkbox" />
 
-            <bitControls:BitCheckbox
+            <bit:BitCheckbox
                 IsChecked="False"
                 Shape="Circle"
                 Text="Circle checkbox" />
 
-            <bitControls:BitCheckbox
+            <bit:BitCheckbox
                 IsChecked="False"
                 Shape="Rectangle"
                 Text="Rectangle checkbox" />
@@ -129,7 +129,7 @@
             Text="Disabled check box with check color gray instead of purple"
             TextColor="Gray" />
 
-        <bitControls:BitCheckbox
+        <bit:BitCheckbox
             CheckColor="Purple"
             IsEnabled="False"
             Text="Disabled checkbox" />
@@ -144,12 +144,12 @@
             Text="custom label for check box. You can also put any custom control here!"
             TextColor="Gray" />
 
-        <bitControls:BitCheckbox
+        <bit:BitCheckbox
             CheckColor="Green"
             FillColor="GreenYellow"
             OutlineColor="Green">
             <Label FontAttributes="Bold" Text="custom label" />
-        </bitControls:BitCheckbox>
+        </bit:BitCheckbox>
 
         <BoxView
             BackgroundColor="Gray"
@@ -161,7 +161,7 @@
             Text="Fully customized checkbox"
             TextColor="Gray" />
 
-        <bitControls:BitCheckbox Style="{StaticResource ExtendedCheckboxUI}" Text="customized checkbox" />
+        <bit:BitCheckbox Style="{StaticResource ExtendedCheckboxUI}" Text="customized checkbox" />
 
         <BoxView
             BackgroundColor="Gray"
@@ -173,21 +173,21 @@
             Text="IsChecked is binding to viewModel"
             TextColor="Gray" />
 
-        <bitControls:BitCheckbox IsChecked="{Binding IsChecked}" Text="checkbox" />
+        <bit:BitCheckbox IsChecked="{Binding IsChecked}" Text="checkbox" />
 
-        <bitControls:BitCheckbox
+        <bit:BitCheckbox
             IsChecked="{Binding IsChecked}"
             IsCheckedChangedCommand="{Binding IsCheckedChanged}"
             Text="Test command" />
 
-        <bitControls:BitCheckbox
+        <bit:BitCheckbox
             IsChecked="{Binding IsChecked}"
             IsCheckedChangedCommand="{Binding IsCheckedChanged}"
             Text="Test command 2">
-            <bitControls:BitCheckbox.IsCheckedChangedCommandParameter>
+            <bit:BitCheckbox.IsCheckedChangedCommandParameter>
                 <x:Boolean>False</x:Boolean>
-            </bitControls:BitCheckbox.IsCheckedChangedCommandParameter>
-        </bitControls:BitCheckbox>
+            </bit:BitCheckbox.IsCheckedChangedCommandParameter>
+        </bit:BitCheckbox>
 
     </StackLayout>
 </ContentPage>

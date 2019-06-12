@@ -3,7 +3,7 @@
     x:Class="Bit.CSharpClient.Controls.Samples.BitDateTimePickerSampleView"
     xmlns="http://xamarin.com/schemas/2014/forms"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-    xmlns:bitControls="clr-namespace:Bit.View.Controls;assembly=Bit.CSharpClient.Controls"
+    xmlns:bit="https://bit-framework.com"
     xmlns:noda="clr-namespace:NodaTime;assembly=NodaTime"
     xmlns:view="clr-namespace:Bit.CSharpClient.Controls.Samples"
     xmlns:viewModel="clr-namespace:Bit.CSharpClient.Controls.Samples">
@@ -14,11 +14,11 @@
 
   <StackLayout Padding="10,20">
 
-    <bitControls:BitDateTimePicker AutoClose="False" Text="Please select a date!" />
+    <bit:BitDateTimePicker AutoClose="False" Text="Please select a date!" />
 
-    <bitControls:BitDateTimePicker AutoClose="True" Text="Please select a date!" />
+    <bit:BitDateTimePicker AutoClose="True" Text="Please select a date!" />
 
-    <bitControls:BitDateTimePicker
+    <bit:BitDateTimePicker
         CalendarSystem="{x:Static noda:CalendarSystem.PersianArithmetic}"
         Culture="Fa"
         DateTimeDisplayFormat="dd MMM yyyy"
@@ -26,14 +26,14 @@
         FontFamily="{StaticResource Persian-Solar-Calendar-FontFamily}"
         Text="لطفا یک روز را انتخاب کنید" />
 
-    <bitControls:BitDateTimePicker
+    <bit:BitDateTimePicker
         CalendarSystem="{x:Static noda:CalendarSystem.IslamicBcl}"
         Culture="Ar"
         FlowDirection="RightToLeft"
         Text="يرجى تحديد تاريخ الرحلة" />
 
-    <bitControls:BitDateTimePicker Text="Please Select a date">
-      <bitControls:BitDateTimePicker.ControlTemplate>
+    <bit:BitDateTimePicker Text="Please Select a date">
+      <bit:BitDateTimePicker.ControlTemplate>
         <ControlTemplate>
           <Frame
               Padding="5"
@@ -52,14 +52,14 @@
             </StackLayout>
           </Frame>
         </ControlTemplate>
-      </bitControls:BitDateTimePicker.ControlTemplate>
-    </bitControls:BitDateTimePicker>
+      </bit:BitDateTimePicker.ControlTemplate>
+    </bit:BitDateTimePicker>
 
-    <bitControls:BitDateTimePicker SelectedDateTime="{Binding SelectedDateTime}" Text="Please select a date!" />
+    <bit:BitDateTimePicker SelectedDateTime="{Binding SelectedDateTime}" Text="Please select a date!" />
 
     <Button Command="{Binding ChangeSelecedDate}" Text="Change date!" />
 
-    <bitControls:BitDateTimePicker ShowTimePicker="False" Text="Without time picker!" />
+    <bit:BitDateTimePicker AutoClose="True" ShowTimePicker="False" Text="Without time picker!" />
 
   </StackLayout>
 </ContentPage>
