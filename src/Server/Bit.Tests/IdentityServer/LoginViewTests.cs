@@ -11,6 +11,8 @@ using OpenQA.Selenium.Remote;
 using OpenQA.Selenium.Support.UI;
 using System;
 using System.Threading;
+using System.Collections.Generic;
+using Bit.Core.Contracts;
 
 namespace Bit.Tests.IdentityServer
 {
@@ -23,7 +25,7 @@ namespace Bit.Tests.IdentityServer
         {
             using (BitOwinTestEnvironment testEnvironment = new BitOwinTestEnvironment(new TestEnvironmentArgs { UseRealServer = true }))
             {
-                using (RemoteWebDriver driver = testEnvironment.Server.BuildWebDriver(new RemoteWebDriverOptions { Uri = @"InvokeLogin", ClientSideTest = false }))
+                using (RemoteWebDriver driver = testEnvironment.Server.BuildWebDriver(new RemoteWebDriverOptions { Uri = testEnvironment.Server.GetLoginUrl(), ClientSideTest = false }))
                 {
                     new WebDriverWait(driver, TimeSpan.FromSeconds(3))
                         .Until(ExpectedConditions.ElementExists(By.Name("loginForm")));
@@ -59,10 +61,14 @@ namespace Bit.Tests.IdentityServer
         {
             using (BitOwinTestEnvironment testEnvironment = new BitOwinTestEnvironment(new TestEnvironmentArgs { UseRealServer = true }))
             {
-                using (RemoteWebDriver driver = testEnvironment.Server.BuildWebDriver(new RemoteWebDriverOptions { Uri = @"InvokeLogin", ClientSideTest = false }))
+                using (RemoteWebDriver driver = testEnvironment.Server.BuildWebDriver(new RemoteWebDriverOptions
+                {
+                    Uri = testEnvironment.Server.GetLoginUrl(acr_values: new Dictionary<string, string> { { "x", "1" }, { "y", "2" } }),
+                    ClientSideTest = false
+                }))
                 {
                     new WebDriverWait(driver, TimeSpan.FromSeconds(3))
-                        .Until(ExpectedConditions.ElementExists(By.Name("loginForm")));
+                    .Until(ExpectedConditions.ElementExists(By.Name("loginForm")));
 
                     driver.FindElementByName("username").SendKeys("InValidUserName");
                     driver.FindElementByName("password").SendKeys("InValidPassword");
@@ -89,6 +95,13 @@ namespace Bit.Tests.IdentityServer
                 }
 
                 Assert.IsTrue(foundAnyCorrectCall);
+
+                bool acr_values_are_logged = TestDependencyManager.CurrentTestDependencyManager
+                     .Objects
+                     .OfType<ILogger>()
+                     .Any(l => l.LogData.Any(ld => ld.Key == "AcrValues" && ((string[])ld.Value).SequenceEqual(new[] { "x:1", "y:2" })));
+
+                Assert.IsTrue(acr_values_are_logged);
             }
         }
     }

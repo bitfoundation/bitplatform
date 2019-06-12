@@ -61,18 +61,15 @@ namespace Bit.ViewModel.Contracts
     {
         Task<bool> IsLoggedInAsync(CancellationToken cancellationToken = default);
 
-        /// <summary>
-        /// Sample for optional parameters: { "acr_values", "idp:X tenant:Y" }
-        /// </summary>
-        Task<Token> LoginWithCredentials(string userName, string password, string client_id, string client_secret, string[] scopes = null, IDictionary<string, string> optionalParameters = null, CancellationToken cancellationToken = default);
+        Task<Token> LoginWithCredentials(string userName, string password, string client_id, string client_secret, string[] scopes = null, IDictionary<string, string> acr_values = null, CancellationToken cancellationToken = default);
 
-        Task<Token> Login(object state = null, string client_id = null, CancellationToken cancellationToken = default);
+        Task<Token> Login(object state = null, string client_id = null, IDictionary<string, string> acr_values = null, CancellationToken cancellationToken = default);
 
         Task<Token> GetCurrentTokenAsync(CancellationToken cancellationToken = default);
 
         Task Logout(object state = null, string client_id = null, CancellationToken cancellationToken = default);
 
-        Uri GetLoginUrl(object state = null, string client_id = null);
+        Uri GetLoginUrl(object state = null, string client_id = null, IDictionary<string, string> acr_values = null);
 
         Uri GetLogoutUrl(string id_token, object state = null, string client_id = null);
 

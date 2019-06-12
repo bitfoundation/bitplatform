@@ -1,6 +1,7 @@
 ﻿using Bit.ViewModel;
 using Bit.ViewModel.Contracts;
 using Prism.Services;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace Bit.CSharpClientSample.ViewModels
@@ -32,7 +33,7 @@ namespace Bit.CSharpClientSample.ViewModels
         {
             try
             {
-                await SecurityService.LoginWithCredentials(UserName, Password, client_id: "TestResOwner", client_secret: "secret");
+                await SecurityService.LoginWithCredentials(UserName, Password, client_id: "TestResOwner", client_secret: "secret", acr_values: new Dictionary<string, string> { { "x", "1" } });
                 await NavigationService.NavigateAsync("Main");
             }
             catch
@@ -46,7 +47,7 @@ namespace Bit.CSharpClientSample.ViewModels
         {
             try
             {
-                await SecurityService.Login();
+                await SecurityService.Login(acr_values: new Dictionary<string, string> { { "x", "1" } });
                 await NavigationService.NavigateAsync("Main");
             }
             catch
@@ -60,7 +61,7 @@ namespace Bit.CSharpClientSample.ViewModels
         {
             try
             {
-                await SecurityService.Login(new { SignInType = "Google" });
+                await SecurityService.Login(new { SignInType = "Google" }, acr_values: new Dictionary<string, string> { { "x", "1" } });
                 await NavigationService.NavigateAsync("Main");
             }
             catch

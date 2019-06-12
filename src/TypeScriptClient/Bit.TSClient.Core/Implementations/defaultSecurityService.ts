@@ -15,11 +15,11 @@
         }
 
         @Log()
-        public login(state?: any, client_id?: string): void {
-            location.assign(this.getLoginUrl(state, client_id));
+        public login(state?: any, client_id?: string, acr_values?: { key: string, value: string }[]): void {
+            location.assign(this.getLoginUrl(state, client_id, acr_values));
         }
 
-        public getLoginUrl(state?: any, client_id?: string): string {
+        public getLoginUrl(state?: any, client_id?: string, acr_values?: { key: string, value: string }[]): string {
             if (state == null) {
                 state = {};
             }
@@ -28,6 +28,8 @@
             if (client_id != null) {
                 url += `&client_id${client_id}`;
             }
+            if (acr_values != null)
+                url += `&acr_values=${acr_values.map(p => `${p.key}:${p.value}`).join(' ')}`;
             return encodeURI(url);
         }
 
@@ -56,7 +58,7 @@
         }
 
         @Log()
-        public async loginWithCredentials(userName: string, password: string, client_id: string, client_secret: string, parameters: { key: string, value: string }[] = null, scopes = ["openid", "profile", "user_info"]): Promise<Contracts.Token> {
+        public async loginWithCredentials(userName: string, password: string, client_id: string, client_secret: string, acr_values: { key: string, value: string }[] = null, scopes = ["openid", "profile", "user_info"]): Promise<Contracts.Token> {
 
             if (userName == null) {
                 throw new Error("userName is null");
@@ -73,8 +75,8 @@
 
             let loginData = `scope=${scopes.join("+")}&grant_type=password&username=${userName}&password=${password}&client_id=${client_id}&client_secret=${client_secret}`;
 
-            if (parameters != null) {
-                loginData += `&acr_values=${parameters.map(p => `${p.key}:${p.value}`).join(' ')}`;
+            if (acr_values != null) {
+                loginData += `&acr_values=${acr_values.map(p => `${p.key}:${p.value}`).join(' ')}`;
             }
 
             loginData = encodeURI(loginData);

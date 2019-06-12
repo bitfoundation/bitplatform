@@ -22,10 +22,9 @@ namespace Bit.Test.Server
     {
         RemoteWebDriver BuildWebDriver(RemoteWebDriverOptions options = null);
 
-        /// <summary>
-        /// Sample for optional parameters: { "acr_values", "idp:X tenant:Y" }
-        /// </summary>
-        Task<TokenResponse> Login(string userName, string password, string clientId, string secret = "secret", IDictionary<string, string> parameters = null);
+        Task<TokenResponse> Login(string userName, string password, string clientId, string secret = "secret", IDictionary<string, string> acr_values = null);
+
+        string GetLoginUrl(string client_id = null, Uri redirect_uri = null, object state = null, IDictionary<string, string> acr_values = null);
 
         IODataClient BuildODataClient(Action<HttpRequestMessage> beforeRequest = null,
             Action<HttpResponseMessage> afterResponse = null, TokenResponse token = null, string odataRouteName = "Test");

@@ -54,9 +54,10 @@ namespace Bit.Tests.IdentityServer
             {
                 try
                 {
-                    await testEnvironment.Server.Login("InValidUser", "InvalidPassword", "TestResOwner", parameters: new Dictionary<string, string>
+                    await testEnvironment.Server.Login("InValidUser", "InvalidPassword", "TestResOwner", acr_values: new Dictionary<string, string>
                     {
-                        { "acr_values", "x:1 y:2" }
+                        { "x",  "1" },
+                        { "y",  "2" }
                     });
 
                     Assert.Fail();

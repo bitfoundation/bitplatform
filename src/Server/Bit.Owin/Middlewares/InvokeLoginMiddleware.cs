@@ -34,7 +34,12 @@ namespace Bit.Owin.Middlewares
 
             string nonce = randomStringProvider.GetRandomString(12);
 
-            context.Response.Redirect($"{ssoRedirectUri}&state={stateArgs}&nonce={nonce}");
+            string url = $"{ssoRedirectUri}&state={stateArgs}&nonce={nonce}";
+
+            if (context.Request.Query["acr_values"] != null)
+                url += $"&acr_values={context.Request.Query["acr_values"]}";
+
+            context.Response.Redirect(url);
 
             return Task.CompletedTask;
         }

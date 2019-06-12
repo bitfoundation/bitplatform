@@ -6,6 +6,7 @@ using Newtonsoft.Json;
 using Prism.Ioc;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
@@ -40,7 +41,7 @@ namespace Bit.ViewModel.Implementations
             return (DateTimeProvider.GetCurrentUtcDateTime() - token.login_date) < TimeSpan.FromSeconds(token.expires_in);
         }
 
-        public virtual async Task<Token> LoginWithCredentials(string userName, string password, string client_id, string client_secret, string[] scopes = null, IDictionary<string, string> optionalParameters = null, CancellationToken cancellationToken = default)
+        public virtual async Task<Token> LoginWithCredentials(string userName, string password, string client_id, string client_secret, string[] scopes = null, IDictionary<string, string> acr_values = null, CancellationToken cancellationToken = default)
         {
             if (userName == null)
                 throw new ArgumentNullException(nameof(userName));
@@ -61,6 +62,13 @@ namespace Bit.ViewModel.Implementations
 
             HttpClient httpClient = ContainerProvider.Value.Resolve<HttpClient>();
 
+            var parameters = new Dictionary<string, string> { };
+
+            if (acr_values != null)
+            {
+                parameters.Add("acr_values", string.Join(" ", acr_values.Select(p => $"{p.Key}:{p.Value}")));
+            }
+
             TokenResponse tokenResponse = await httpClient.RequestPasswordTokenAsync(new PasswordTokenRequest
             {
                 Address = ClientAppProfile.TokenEndpoint,
@@ -69,7 +77,7 @@ namespace Bit.ViewModel.Implementations
                 Scope = string.Join(" ", scopes),
                 UserName = userName,
                 Password = password,
-                Parameters = optionalParameters ?? new Dictionary<string, string> { }
+                Parameters = parameters
             }, cancellationToken).ConfigureAwait(false);
 
             if (tokenResponse.IsError)
@@ -100,12 +108,12 @@ namespace Bit.ViewModel.Implementations
             return token;
         }
 
-        public virtual async Task<Token> Login(object state = null, string client_id = null, CancellationToken cancellationToken = default)
+        public virtual async Task<Token> Login(object state = null, string client_id = null, IDictionary<string, string> acr_values = null, CancellationToken cancellationToken = default)
         {
             await Logout(state, client_id, cancellationToken).ConfigureAwait(false);
             CurrentAction = "Login";
             CurrentLoginTaskCompletionSource = new TaskCompletionSource<Token>();
-            await Browser.OpenAsync(GetLoginUrl(state, client_id), BrowserLaunchMode.SystemPreferred).ConfigureAwait(false);
+            await Browser.OpenAsync(GetLoginUrl(state, client_id, acr_values), BrowserLaunchMode.SystemPreferred).ConfigureAwait(false);
             return await CurrentLoginTaskCompletionSource.Task.ConfigureAwait(false);
         }
 
@@ -145,14 +153,16 @@ namespace Bit.ViewModel.Implementations
             }
         }
 
-        public virtual Uri GetLoginUrl(object state = null, string client_id = null)
+        public virtual Uri GetLoginUrl(object state = null, string client_id = null, IDictionary<string, string> acr_values = null)
         {
             state = state ?? new { };
 
-            string relativeUri = $"{ClientAppProfile.LoginEndpoint}?state={JsonConvert.SerializeObject(state)}&redirect_uri={ ClientAppProfile.OAuthRedirectUri}";
+            string relativeUri = $"{ClientAppProfile.LoginEndpoint}?state={JsonConvert.SerializeObject(state)}&redirect_uri={ClientAppProfile.OAuthRedirectUri}";
 
             if (!string.IsNullOrEmpty(client_id))
                 relativeUri += $"&client_id={client_id}";
+            if (acr_values != null)
+                relativeUri += $"&acr_values={string.Join(" ", acr_values.Select(p => $"{p.Key}:{p.Value}"))}";
 
             return new Uri(ClientAppProfile.HostUri, relativeUri: relativeUri);
         }

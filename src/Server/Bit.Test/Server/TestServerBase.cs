@@ -13,6 +13,7 @@ using Refit;
 using Simple.OData.Client;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
 
@@ -137,12 +138,13 @@ namespace Bit.Test.Server
 
             return driver;
         }
+
         public virtual void Initialize(string uri)
         {
             Uri = uri;
         }
 
-        public virtual async Task<TokenResponse> Login(string userName, string password, string clientId, string secret = "secret", IDictionary<string, string> parameters = null)
+        public virtual async Task<TokenResponse> Login(string userName, string password, string clientId, string secret = "secret", IDictionary<string, string> acr_values = null)
         {
             if (userName == null)
                 throw new ArgumentNullException(nameof(userName));
@@ -158,6 +160,13 @@ namespace Bit.Test.Server
 
             HttpClient client = BuildHttpClient();
 
+            var parameters = new Dictionary<string, string> { };
+
+            if (acr_values != null)
+            {
+                parameters.Add("acr_values", string.Join(" ", acr_values.Select(p => $"{p.Key}:{p.Value}")));
+            }
+
             TokenResponse tokenResponse = await client.RequestPasswordTokenAsync(new PasswordTokenRequest
             {
                 Address = "core/connect/token",
@@ -166,7 +175,7 @@ namespace Bit.Test.Server
                 Scope = "openid profile user_info",
                 UserName = userName,
                 Password = password,
-                Parameters = parameters ?? new Dictionary<string, string> { }
+                Parameters = parameters
             });
 
             if (tokenResponse.IsError)
@@ -177,7 +186,23 @@ namespace Bit.Test.Server
             return tokenResponse;
         }
 
-        public HttpClient BuildHttpClient(TokenResponse token = null)
+        public virtual string GetLoginUrl(string client_id = null, Uri redirect_uri = null, object state = null, IDictionary<string, string> acr_values = null)
+        {
+            state = state ?? new { };
+
+            string relativeUri = $"InvokeLogin?state={JsonConvert.SerializeObject(state)}";
+
+            if (redirect_uri != null)
+                relativeUri += $"&redirect_uri={redirect_uri}";
+            if (!string.IsNullOrEmpty(client_id))
+                relativeUri += $"&client_id={client_id}";
+            if (acr_values != null)
+                relativeUri += $"&acr_values={string.Join(" ", acr_values.Select(p => $"{p.Key}:{p.Value}"))}";
+
+            return relativeUri;
+        }
+
+        public virtual HttpClient BuildHttpClient(TokenResponse token = null)
         {
             HttpClient client = HttpClientFactory.Create(GetHttpMessageHandler());
 
