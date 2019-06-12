@@ -20,7 +20,6 @@ namespace Bit.Android
         protected virtual void UseDefaultConfiguration(Bundle savedInstanceState)
         {
             _useDefaultConfiguration = true;
-            Forms.SetFlags("FastRenderers_Experimental");
             Rg.Plugins.Popup.Popup.Init(this, savedInstanceState);
             Xamarin.Essentials.Platform.Init(this, savedInstanceState);
             VersionTracking.Track();

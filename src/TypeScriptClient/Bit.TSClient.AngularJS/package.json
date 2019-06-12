@@ -30,7 +30,7 @@
   "optionalDependencies": {
     "angular-animate": "^1.7.8",
     "angular-aria": "^1.7.8",
-    "angular-material": "^1.1.18",
+    "angular-material": "^1.1.19",
     "angular-messages": "^1.7.8",
     "angular-translate": "^2.18.1",
     "jquery": "^3.4.1",

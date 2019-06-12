@@ -26,7 +26,7 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
     </PackageReference>
     <PackageReference Include="System.ComponentModel.Annotations" Version="4.5.0" />
-    <PackageReference Include="Xamarin.Forms" Version="3.6.0.344457" />
+    <PackageReference Include="Xamarin.Forms" Version="4.0.0.482894" />
     <PackageReference Include="MSBuild.Sdk.Extras" Version="2.0.24" PrivateAssets="All" />
 
   </ItemGroup>
