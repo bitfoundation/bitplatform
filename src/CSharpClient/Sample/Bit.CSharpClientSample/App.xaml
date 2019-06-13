@@ -5,6 +5,8 @@
     x:Class="Bit.CSharpClientSample.App"
     xmlns="http://xamarin.com/schemas/2014/forms"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml">
+    <!-- Don't use xmlns:bit="https://bit-framework.com" in App.xaml. Using that in other xaml files is fine. -->
+    <!-- Don't forget to call BitCSharpClientControls.XamlInit(); in your shared/.net-standard project. -->
     <bit:BitApplication.Resources>
         <ResourceDictionary>
             <Style ApplyToDerivedTypes="True" TargetType="ContentPage">
