@@ -6,7 +6,7 @@ using Xamarin.Forms.Xaml;
 
 namespace Bit.View
 {
-    public class ValueConverter<TSource, TTarget, TParameter> : IMarkupExtension, IValueConverter
+    public class ValueConverter<TSource, TTarget, TParameter> : BindableObject, IMarkupExtension, IValueConverter
     {
         protected virtual TTarget Convert(TSource value, Type targetType, TParameter parameter, CultureInfo culture)
         {
