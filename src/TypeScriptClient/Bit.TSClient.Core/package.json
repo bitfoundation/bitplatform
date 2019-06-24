@@ -32,6 +32,6 @@
     "whatwg-fetch": "^3.0.0"
   },
   "dependencies": {
-    "@bit/jaydata": "^1.5.19"
+    "@bit/jaydata": "^1.5.20"
   }
 }
