@@ -55,8 +55,6 @@ namespace Bit.ViewModel.Implementations
             if (client_secret == null)
                 throw new ArgumentNullException(nameof(client_secret));
 
-            await Logout(state: null, client_id: client_id, cancellationToken: cancellationToken).ConfigureAwait(false);
-
             if (scopes == null)
                 scopes = "openid profile user_info".Split(' ');
 
@@ -110,7 +108,6 @@ namespace Bit.ViewModel.Implementations
 
         public virtual async Task<Token> Login(object state = null, string client_id = null, IDictionary<string, string> acr_values = null, CancellationToken cancellationToken = default)
         {
-            await Logout(state, client_id, cancellationToken).ConfigureAwait(false);
             CurrentAction = "Login";
             CurrentLoginTaskCompletionSource = new TaskCompletionSource<Token>();
             await Browser.OpenAsync(GetLoginUrl(state, client_id, acr_values), BrowserLaunchMode.SystemPreferred).ConfigureAwait(false);
