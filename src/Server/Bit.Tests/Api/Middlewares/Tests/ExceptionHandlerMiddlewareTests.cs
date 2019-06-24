@@ -23,8 +23,7 @@ namespace Bit.Tests.Api.Middlewares.Tests
             {
                 await testEnvironment.Server.Login("ValidUserName", "ValidPassword", clientId: "TestResOwner");
 
-                IScopeStatusManager scopeStatusManager = TestDependencyManager.CurrentTestDependencyManager
-                    .Objects.OfType<IScopeStatusManager>()
+                IScopeStatusManager scopeStatusManager = testEnvironment.GetObjects<IScopeStatusManager>()
                     .Single();
 
                 A.CallTo(() => scopeStatusManager.MarkAsSucceeded())
@@ -61,15 +60,13 @@ namespace Bit.Tests.Api.Middlewares.Tests
                 }
                 catch
                 {
-                    IScopeStatusManager scopeStatusManager = TestDependencyManager.CurrentTestDependencyManager
-                        .Objects.OfType<IScopeStatusManager>()
+                    IScopeStatusManager scopeStatusManager = testEnvironment.GetObjects<IScopeStatusManager>()
                         .Last();
 
                     A.CallTo(() => scopeStatusManager.MarkAsFailed("Operation is not valid due to the current state of the object."))
                         .MustHaveHappenedOnceExactly();
 
-                    ILogger logger = TestDependencyManager.CurrentTestDependencyManager
-                        .Objects.OfType<ILogger>()
+                    ILogger logger = testEnvironment.GetObjects<ILogger>()
                         .Last();
 
                     A.CallTo(() => logger.LogExceptionAsync(A<Exception>.That.Matches(e => e is InvalidOperationException), A<string>.Ignored))
@@ -107,15 +104,13 @@ namespace Bit.Tests.Api.Middlewares.Tests
                 await testEnvironment.Server.BuildHttpClient(token)
                             .GetAsync("/InternalServerError");
 
-                IScopeStatusManager scopeStatusManager = TestDependencyManager.CurrentTestDependencyManager
-                    .Objects.OfType<IScopeStatusManager>()
+                IScopeStatusManager scopeStatusManager = testEnvironment.GetObjects<IScopeStatusManager>()
                     .Last();
 
                 A.CallTo(() => scopeStatusManager.MarkAsFailed("UnknownError"))
                             .MustHaveHappenedOnceExactly();
 
-                ILogger logger = TestDependencyManager.CurrentTestDependencyManager
-                    .Objects.OfType<ILogger>()
+                ILogger logger = testEnvironment.GetObjects<ILogger>()
                     .Last();
 
                 A.CallTo(() => logger.LogFatalAsync(A<string>.Ignored))
@@ -140,8 +135,7 @@ namespace Bit.Tests.Api.Middlewares.Tests
                 await testEnvironment.Server.BuildHttpClient(token)
                     .GetAsync("/odata/Test/XYZ");
 
-                IScopeStatusManager scopeStatusManager = TestDependencyManager.CurrentTestDependencyManager
-                    .Objects.OfType<IScopeStatusManager>()
+                IScopeStatusManager scopeStatusManager = testEnvironment.GetObjects<IScopeStatusManager>()
                     .Last();
 
                 A.CallTo(() => scopeStatusManager.MarkAsFailed("Not Acceptable"))

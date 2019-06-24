@@ -27,7 +27,7 @@ namespace Bit.Tests.HtmlClient.BrowserTests.Caching
                     driver.Navigate().Refresh();
                 }
 
-                Assert.AreNotEqual(1, TestDependencyManager.CurrentTestDependencyManager.Objects.OfType<IHtmlPageProvider>().Count());
+                Assert.AreNotEqual(1, testEnvironment.GetObjects<IHtmlPageProvider>().Count());
             }
         }
 
@@ -46,7 +46,7 @@ namespace Bit.Tests.HtmlClient.BrowserTests.Caching
                     driver.Navigate().Refresh();
                 }
 
-                Assert.AreEqual(1, TestDependencyManager.CurrentTestDependencyManager.Objects.OfType<ILogger>()
+                Assert.AreEqual(1, testEnvironment.GetObjects<ILogger>()
                                     .Count(logger => logger.LogData.Any(ld => ld.Key == nameof(IRequestInformationProvider.DisplayUrl) && ((string)ld.Value).EndsWith(@"Metadata/V1"))));
             }
         }

@@ -28,8 +28,7 @@ namespace Bit.Tests.HtmlClient.ThirdPartyLibrariesTests.JayDataContextTests
                     await driver.ExecuteTest(@"testFunctionCallAndTakeMethodAfterThat");
                 }
 
-                TestModelsController testModelsController = TestDependencyManager.CurrentTestDependencyManager.Objects
-                    .OfType<TestModelsController>()
+                TestModelsController testModelsController = testEnvironment.GetObjects<TestModelsController>()
                     .Single();
 
                 A.CallTo(() => testModelsController.GetTestModelsByStringPropertyValue(1))
@@ -50,8 +49,7 @@ namespace Bit.Tests.HtmlClient.ThirdPartyLibrariesTests.JayDataContextTests
                     await driver.ExecuteTest(@"testActionCall");
                 }
 
-                TestModelsController testModelsController = TestDependencyManager.CurrentTestDependencyManager.Objects
-                    .OfType<TestModelsController>()
+                TestModelsController testModelsController = testEnvironment.GetObjects<TestModelsController>()
                     .Single();
 
                 A.CallTo(() => testModelsController.AreEqual(A<TestModelsController.FirstSecondParameters>.That.Matches(parameters => parameters.firstValue == 10 && parameters.secondValue == 10)))
@@ -72,15 +70,13 @@ namespace Bit.Tests.HtmlClient.ThirdPartyLibrariesTests.JayDataContextTests
                     await driver.ExecuteTest(@"passNullTests");
                 }
 
-                TestModelsController actionCallTest = TestDependencyManager.CurrentTestDependencyManager.Objects
-                    .OfType<TestModelsController>()
+                TestModelsController actionCallTest = testEnvironment.GetObjects<TestModelsController>()
                     .First();
 
                 A.CallTo(() => actionCallTest.ActionForNullArg(A<TestModelsController.ActionForNullArgParameters>.Ignored))
                     .MustHaveHappenedOnceExactly();
 
-                TestModelsController functionCallTest = TestDependencyManager.CurrentTestDependencyManager.Objects
-                    .OfType<TestModelsController>()
+                TestModelsController functionCallTest = testEnvironment.GetObjects<TestModelsController>()
                     .Last();
 
                 A.CallTo(() => functionCallTest.FunctionForNullArg(null, "test"))
@@ -101,15 +97,13 @@ namespace Bit.Tests.HtmlClient.ThirdPartyLibrariesTests.JayDataContextTests
                     await driver.ExecuteTest(@"testBatchCallODataFunctions");
                 }
 
-                TestModelsController testModelsController = TestDependencyManager.CurrentTestDependencyManager.Objects
-                    .OfType<TestModelsController>()
+                TestModelsController testModelsController = testEnvironment.GetObjects<TestModelsController>()
                     .First();
 
                 A.CallTo(() => testModelsController.GetTestModelsByStringPropertyValue(1))
                     .MustHaveHappenedOnceExactly();
 
-                TestModelsController testModelsController2 = TestDependencyManager.CurrentTestDependencyManager.Objects
-                    .OfType<TestModelsController>()
+                TestModelsController testModelsController2 = testEnvironment.GetObjects<TestModelsController>()
                     .Last();
 
                 A.CallTo(() => testModelsController2.GetTestModelsByStringPropertyValue(2))
@@ -132,32 +126,25 @@ namespace Bit.Tests.HtmlClient.ThirdPartyLibrariesTests.JayDataContextTests
                     await driver.ExecuteTest(@"testIEEE754Compatibility");
                 }
 
-                A.CallTo(() => TestDependencyManager.CurrentTestDependencyManager.Objects
-                    .OfType<TestModelsController>().ElementAt(0).TestIEEE754Compatibility(A<TestModelsController.TestIEEE754CompatibilityParameters>.That.Matches(p => p.val == decimal.MaxValue)))
+                A.CallTo(() => testEnvironment.GetObjects<TestModelsController>().ElementAt(0).TestIEEE754Compatibility(A<TestModelsController.TestIEEE754CompatibilityParameters>.That.Matches(p => p.val == decimal.MaxValue)))
                     .MustHaveHappenedOnceExactly();
 
-                A.CallTo(() => TestDependencyManager.CurrentTestDependencyManager.Objects
-                    .OfType<TestModelsController>().ElementAt(1).TestIEEE754Compatibility2(A<TestModelsController.TestIEEE754Compatibility2Parameters>.That.Matches(p => p.val == int.MaxValue)))
+                A.CallTo(() => testEnvironment.GetObjects<TestModelsController>().ElementAt(1).TestIEEE754Compatibility2(A<TestModelsController.TestIEEE754Compatibility2Parameters>.That.Matches(p => p.val == int.MaxValue)))
                     .MustHaveHappenedOnceExactly();
 
-                A.CallTo(() => TestDependencyManager.CurrentTestDependencyManager.Objects
-                    .OfType<TestModelsController>().ElementAt(2).TestIEEE754Compatibility3(A<TestModelsController.TestIEEE754Compatibility3Parameters>.That.Matches(p => p.val == long.MaxValue)))
+                A.CallTo(() => testEnvironment.GetObjects<TestModelsController>().ElementAt(2).TestIEEE754Compatibility3(A<TestModelsController.TestIEEE754Compatibility3Parameters>.That.Matches(p => p.val == long.MaxValue)))
                     .MustHaveHappenedOnceExactly();
 
-                A.CallTo(() => TestDependencyManager.CurrentTestDependencyManager.Objects
-                    .OfType<TestModelsController>().ElementAt(3).TestIEEE754Compatibility(A<TestModelsController.TestIEEE754CompatibilityParameters>.That.Matches(p => p.val == 12.2M)))
+                A.CallTo(() => testEnvironment.GetObjects<TestModelsController>().ElementAt(3).TestIEEE754Compatibility(A<TestModelsController.TestIEEE754CompatibilityParameters>.That.Matches(p => p.val == 12.2M)))
                     .MustHaveHappenedOnceExactly();
 
-                A.CallTo(() => TestDependencyManager.CurrentTestDependencyManager.Objects
-                    .OfType<TestModelsController>().ElementAt(4).TestIEEE754Compatibility(A<TestModelsController.TestIEEE754CompatibilityParameters>.That.Matches(p => p.val == 214748364711111.2M)))
+                A.CallTo(() => testEnvironment.GetObjects<TestModelsController>().ElementAt(4).TestIEEE754Compatibility(A<TestModelsController.TestIEEE754CompatibilityParameters>.That.Matches(p => p.val == 214748364711111.2M)))
                     .MustHaveHappenedOnceExactly();
 
-                A.CallTo(() => TestDependencyManager.CurrentTestDependencyManager.Objects
-                    .OfType<TestModelsController>().ElementAt(5).TestIEEE754Compatibility(A<TestModelsController.TestIEEE754CompatibilityParameters>.That.Matches(p => p.val == 214748364711111M)))
+                A.CallTo(() => testEnvironment.GetObjects<TestModelsController>().ElementAt(5).TestIEEE754Compatibility(A<TestModelsController.TestIEEE754CompatibilityParameters>.That.Matches(p => p.val == 214748364711111M)))
                     .MustHaveHappenedOnceExactly();
 
-                A.CallTo(() => TestDependencyManager.CurrentTestDependencyManager.Objects
-                    .OfType<TestModelsController>().ElementAt(6).TestDecimalSum(A<TestModelsController.FirstSecondValueDecimalParameters>.That.Matches(p => p.firstValue == 123456789123456789M && p.secondValue == 123456789123456789M)))
+                A.CallTo(() => testEnvironment.GetObjects<TestModelsController>().ElementAt(6).TestDecimalSum(A<TestModelsController.FirstSecondValueDecimalParameters>.That.Matches(p => p.firstValue == 123456789123456789M && p.secondValue == 123456789123456789M)))
                     .MustHaveHappenedOnceExactly();
             }
         }
@@ -175,11 +162,11 @@ namespace Bit.Tests.HtmlClient.ThirdPartyLibrariesTests.JayDataContextTests
                     await driver.ExecuteTest(@"testPassingArrayOfEntitiesToController");
                 }
 
-                A.CallTo(() => TestDependencyManager.CurrentTestDependencyManager.Objects
-                    .OfType<ValidationSamplesController>().ElementAt(0).SubmitValidations(A<ValidationSamplesController.SubmitValidationsParameters>.That.Matches(parameters => parameters.validations.Count() == 2))).MustHaveHappenedOnceExactly();
+                A.CallTo(() => testEnvironment.GetObjects<ValidationSamplesController>().ElementAt(0)
+                    .SubmitValidations(A<ValidationSamplesController.SubmitValidationsParameters>.That.Matches(parameters => parameters.validations.Count() == 2))).MustHaveHappenedOnceExactly();
 
-                A.CallTo(() => TestDependencyManager.CurrentTestDependencyManager.Objects
-                    .OfType<ValidationSamplesController>().ElementAt(1).SubmitValidations(A<ValidationSamplesController.SubmitValidationsParameters>.That.Matches(parameters => (parameters.arg == "A")))).MustHaveHappenedOnceExactly();
+                A.CallTo(() => testEnvironment.GetObjects<ValidationSamplesController>().ElementAt(1)
+                    .SubmitValidations(A<ValidationSamplesController.SubmitValidationsParameters>.That.Matches(parameters => (parameters.arg == "A")))).MustHaveHappenedOnceExactly();
             }
         }
     }

@@ -42,8 +42,7 @@ namespace Bit.Tests.Api.ApiControllers.Tests
                     Assert.IsTrue(errMessage.Contains(expectedErrorMessage));
                 }
 
-                ILogger logger = TestDependencyManager.CurrentTestDependencyManager
-                    .Objects.OfType<ILogger>()
+                ILogger logger = testEnvironment.GetObjects<ILogger>()
                     .Last();
 
                 A.CallTo(() => logger.AddLogData("WebException", A<string>.That.Matches(exp => exp.Contains(expectedErrorMessage))))

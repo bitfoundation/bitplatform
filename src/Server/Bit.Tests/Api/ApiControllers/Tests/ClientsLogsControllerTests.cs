@@ -28,8 +28,7 @@ namespace Bit.Tests.Api.ApiControllers.Tests
                     .StoreClientLogs(new[] { new ClientLogDto { Message = "1", Route = "R" } })
                     .ExecuteAsync();
 
-                ILogger logger = TestDependencyManager.CurrentTestDependencyManager
-                    .Objects.OfType<ILogger>()
+                ILogger logger = testEnvironment.GetObjects<ILogger>()
                     .Last();
 
                 A.CallTo(() => logger.LogWarningAsync("Client-Log"))

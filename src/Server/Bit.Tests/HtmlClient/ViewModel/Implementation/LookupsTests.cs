@@ -31,8 +31,7 @@ namespace Bit.Tests.HtmlClient.ViewModel.Implementation
                     await driver.WaitForCondition(d => d.Url.Contains("lookups-page"));
                 }
 
-                CountriesController countriesController = TestDependencyManager.CurrentTestDependencyManager.Objects
-                    .OfType<CountriesController>()
+                CountriesController countriesController = testEnvironment.GetObjects<CountriesController>()
                     .Last();
 
                 A.CallTo(() => countriesController.GetAllCountries(A<ODataQueryOptions<CountryDto>>.That.Matches(query => query.Filter.RawValue == "((SomeProperty eq 1) or (SomeProperty eq 3))")))

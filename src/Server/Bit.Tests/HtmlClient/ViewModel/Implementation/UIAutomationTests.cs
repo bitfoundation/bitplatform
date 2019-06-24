@@ -32,8 +32,7 @@ namespace Bit.Tests.HtmlClient.ViewModel.Implementation
                     await driver.ExecuteTest("Bit.Tests.Implementations.Tests.UiAutomationTests.testGetBindingContextAndGetViewModel");
                 }
 
-                TestModelsController testModelsController = TestDependencyManager.CurrentTestDependencyManager.Objects
-                    .OfType<TestModelsController>()
+                TestModelsController testModelsController = testEnvironment.GetObjects<TestModelsController>()
                     .Single();
 
                 A.CallTo(() => testModelsController.GetTestModelsByStringPropertyValue(1))

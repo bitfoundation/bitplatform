@@ -32,15 +32,13 @@ namespace Bit.Tests.HtmlClient.ViewModel.Implementation
                     await driver.ExecuteTest("Bit.Tests.Implementations.Tests.RadTests.testRadComboViewModel");
                 }
 
-                TestModelsController testModelsController = TestDependencyManager.CurrentTestDependencyManager.Objects
-                    .OfType<TestModelsController>()
+                TestModelsController testModelsController = testEnvironment.GetObjects<TestModelsController>()
                     .Single();
 
                 A.CallTo(() => testModelsController.GetTestModelsByStringPropertyValue(1))
                     .MustHaveHappenedOnceExactly();
 
-                ParentEntitiesController parentEntitiesController = TestDependencyManager.CurrentTestDependencyManager.Objects
-                    .OfType<ParentEntitiesController>()
+                ParentEntitiesController parentEntitiesController = testEnvironment.GetObjects<ParentEntitiesController>()
                     .Single();
 
                 A.CallTo(() => parentEntitiesController.GetTestData())
@@ -63,8 +61,7 @@ namespace Bit.Tests.HtmlClient.ViewModel.Implementation
                     await driver.ExecuteTest("Bit.Tests.Implementations.Tests.RadTests.testRadGridViewModelAdd");
                 }
 
-                ParentEntitiesController parentEntitiesController = TestDependencyManager.CurrentTestDependencyManager.Objects
-                    .OfType<ParentEntitiesController>()
+                ParentEntitiesController parentEntitiesController = testEnvironment.GetObjects<ParentEntitiesController>()
                     .Last();
 
                 A.CallTo(() => parentEntitiesController.Create(A<ParentEntity>.That.Matches(p => p.Name == "!"), A<CancellationToken>.Ignored))

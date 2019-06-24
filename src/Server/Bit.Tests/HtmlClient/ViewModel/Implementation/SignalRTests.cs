@@ -28,8 +28,7 @@ namespace Bit.Tests.HtmlClient.ViewModel.Implementation
                     await driver.ExecuteTest("testSignalRConnection");
                 }
 
-                IEnumerable<ILogger> loggers = TestDependencyManager.CurrentTestDependencyManager.Objects
-                                    .OfType<ILogger>()
+                IEnumerable<ILogger> loggers = testEnvironment.GetObjects<ILogger>()
                                     .ToList();
 
                 Assert.IsTrue(loggers.SelectMany(l => l.LogData).Any(ld => ld.Key == nameof(IRequestInformationProvider.DisplayUrl) && ((string)ld.Value).Contains("signalr/start")));
@@ -49,9 +48,8 @@ namespace Bit.Tests.HtmlClient.ViewModel.Implementation
 
                 }
 
-                Assert.IsFalse(TestDependencyManager.CurrentTestDependencyManager
-                .Objects.OfType<ILogger>()
-                .Any(logger => logger.LogData.Any(ld => ld.Key == nameof(IRequestInformationProvider.DisplayUrl) && ((string)ld.Value).Contains("SignalR/start"))));
+                Assert.IsFalse(testEnvironment.GetObjects<ILogger>()
+                    .Any(logger => logger.LogData.Any(ld => ld.Key == nameof(IRequestInformationProvider.DisplayUrl) && ((string)ld.Value).Contains("SignalR/start"))));
             }
         }
     }

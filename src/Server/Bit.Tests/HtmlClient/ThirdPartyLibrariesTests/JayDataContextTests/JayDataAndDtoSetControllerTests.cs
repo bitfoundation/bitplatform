@@ -32,8 +32,7 @@ namespace Bit.Tests.HtmlClient.ThirdPartyLibrariesTests.JayDataContextTests
                     await driver.ExecuteTest(@"testGetOfDtoSetController");
                 }
 
-                TestCustomersController testCustomersController = TestDependencyManager.CurrentTestDependencyManager.Objects
-                    .OfType<TestCustomersController>()
+                TestCustomersController testCustomersController = testEnvironment.GetObjects<TestCustomersController>()
                     .Single();
 
                 A.CallTo(() => testCustomersController.GetAll(A<CancellationToken>.Ignored))
@@ -54,8 +53,7 @@ namespace Bit.Tests.HtmlClient.ThirdPartyLibrariesTests.JayDataContextTests
                     await driver.ExecuteTest(@"testPatchOfDtoSetController");
                 }
 
-                TestCustomersController testCustomersController = TestDependencyManager.CurrentTestDependencyManager.Objects
-                    .OfType<TestCustomersController>()
+                TestCustomersController testCustomersController = testEnvironment.GetObjects<TestCustomersController>()
                     .ElementAt(1);
 
                 A.CallTo(() => testCustomersController.PartialUpdate(Guid.Parse("28e1ff65-da41-4fa3-8aeb-5196494b407d"), A<Delta<TestCustomerDto>>.That.Matches(d => d.GetInstance().Name == "TestCustomer?"), A<CancellationToken>.Ignored))

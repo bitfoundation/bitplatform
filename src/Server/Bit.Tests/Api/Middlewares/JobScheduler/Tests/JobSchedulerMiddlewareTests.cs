@@ -199,8 +199,7 @@ namespace Bit.Tests.Api.Middlewares.JobScheduler.Tests
 
                 Assert.AreEqual(true, await emailSent.Task);
 
-                ILogger logger = TestDependencyManager.CurrentTestDependencyManager
-                   .Objects.OfType<ILogger>()
+                ILogger logger = testEnvironment.GetObjects<ILogger>()
                    .Last();
 
                 A.CallTo(() => logger.LogException(A<Exception>.That.Matches(e => e is InvalidOperationException), A<string>.That.Matches(errMsg => errMsg.Contains(jobId))))

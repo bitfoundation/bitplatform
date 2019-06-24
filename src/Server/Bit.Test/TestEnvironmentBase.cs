@@ -187,6 +187,13 @@ namespace Bit.Test
 
         public ITestServer Server { get; }
 
+        public IEnumerable<T> GetObjects<T>()
+        {
+            return TestDependencyManager.CurrentTestDependencyManager
+                .Objects
+                .OfType<T>();
+        }
+
         public virtual void Dispose()
         {
             Dispose(true);

@@ -35,8 +35,7 @@ namespace Bit.Tests.Api.Middlewares.SignalR.Tests
                 }
                 catch (WebRequestException)
                 {
-                    ILogStore logStore = TestDependencyManager.CurrentTestDependencyManager
-                        .Objects.OfType<ILogStore>().Last();
+                    ILogStore logStore = testEnvironment.GetObjects<ILogStore>().Last();
 
                     A.CallTo(() => logStore.SaveLogAsync(A<LogEntry>.That.Matches(log =>
                                       log.LogData.Any(logData => logData.Key == "WebException" &&

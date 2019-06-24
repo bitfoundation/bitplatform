@@ -50,8 +50,7 @@ namespace Bit.Tests.Api.Middlewares.WebApi.Tests
                 }
                 catch (WebRequestException)
                 {
-                    ILogStore logStore = TestDependencyManager.CurrentTestDependencyManager.Objects
-                        .OfType<ILogStore>().Last();
+                    ILogStore logStore = testEnvironment.GetObjects<ILogStore>().Last();
 
                     A.CallTo(() => logStore.SaveLogAsync(A<LogEntry>.That.Matches(log => ((TestModelsController.EmailParameters)((KeyValuePair<string,object>[])log.LogData.Single(ld => ld.Key == "OperationArgs").Value)[0].Value).to == "Someone")))
                         .MustHaveHappenedOnceExactly();

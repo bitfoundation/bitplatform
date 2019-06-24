@@ -39,8 +39,7 @@ namespace Bit.Tests.HtmlClient.ViewModel.Implementation
                 }
                 catch
                 {
-                    ClientsLogsController clientsLogsController = TestDependencyManager.CurrentTestDependencyManager
-                        .Objects.OfType<ClientsLogsController>().Single();
+                    ClientsLogsController clientsLogsController = testEnvironment.GetObjects<ClientsLogsController>().Single();
 
                     A.CallTo(() => clientsLogsController.Create(A<ClientLogDto>.That.Matches(cl => cl.ErrorName == "TypeError")))
                         .MustHaveHappenedOnceExactly();

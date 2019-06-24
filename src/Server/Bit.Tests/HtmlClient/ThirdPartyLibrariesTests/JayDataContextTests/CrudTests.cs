@@ -34,8 +34,7 @@ namespace Bit.Tests.HtmlClient.ThirdPartyLibrariesTests.JayDataContextTests
                     await driver.ExecuteTest("testInsert");
                 }
 
-                TestModelsController testModelsController = TestDependencyManager.CurrentTestDependencyManager.Objects
-                    .OfType<TestModelsController>()
+                TestModelsController testModelsController = testEnvironment.GetObjects<TestModelsController>()
                     .Single();
 
                 A.CallTo(() => testModelsController.Create(A<TestModel>.That.Matches(m => m.StringProperty == "Test"), A<CancellationToken>.Ignored))
@@ -56,16 +55,13 @@ namespace Bit.Tests.HtmlClient.ThirdPartyLibrariesTests.JayDataContextTests
                     await driver.ExecuteTest("testComplexTypeWithOData");
                 }
 
-                TestComplexController controllerForInsert = TestDependencyManager.CurrentTestDependencyManager.Objects
-                    .OfType<TestComplexController>()
+                TestComplexController controllerForInsert = testEnvironment.GetObjects<TestComplexController>()
                     .ElementAt(0);
 
-                TestComplexController controllerForUpdate = TestDependencyManager.CurrentTestDependencyManager.Objects
-                    .OfType<TestComplexController>()
+                TestComplexController controllerForUpdate = testEnvironment.GetObjects<TestComplexController>()
                     .ElementAt(2);
 
-                TestComplexController controllerForAction = TestDependencyManager.CurrentTestDependencyManager.Objects
-                    .OfType<TestComplexController>()
+                TestComplexController controllerForAction = testEnvironment.GetObjects<TestComplexController>()
                     .ElementAt(3);
 
                 A.CallTo(() => controllerForInsert.Create(A<TestComplexDto>.That.Matches(dto => dto.ComplexObj.Name == "Test?"), A<CancellationToken>.Ignored))
@@ -92,8 +88,7 @@ namespace Bit.Tests.HtmlClient.ThirdPartyLibrariesTests.JayDataContextTests
                     await driver.ExecuteTest("simpleArrayValuesTest");
                 }
 
-                TestComplexController controllerForSimpleValuesArray = TestDependencyManager.CurrentTestDependencyManager.Objects
-                    .OfType<TestComplexController>()
+                TestComplexController controllerForSimpleValuesArray = testEnvironment.GetObjects<TestComplexController>()
                     .Single();
 
                 A.CallTo(() => controllerForSimpleValuesArray.GetValues(A<IEnumerable<int>>.That.Matches(values => values != null), A<CancellationToken>.Ignored))
@@ -114,12 +109,10 @@ namespace Bit.Tests.HtmlClient.ThirdPartyLibrariesTests.JayDataContextTests
                     await driver.ExecuteTest("enumTest");
                 }
 
-                DtoWithEnumController firstCallController = TestDependencyManager.CurrentTestDependencyManager.Objects
-                    .OfType<DtoWithEnumController>()
+                DtoWithEnumController firstCallController = testEnvironment.GetObjects<DtoWithEnumController>()
                     .First();
 
-                DtoWithEnumController secondCallController = TestDependencyManager.CurrentTestDependencyManager.Objects
-                    .OfType<DtoWithEnumController>()
+                DtoWithEnumController secondCallController = testEnvironment.GetObjects<DtoWithEnumController>()
                     .ElementAt(1);
 
                 A.CallTo(() => firstCallController.GetDtoWithEnumsByGender(TestGender.Man))
@@ -166,12 +159,10 @@ namespace Bit.Tests.HtmlClient.ThirdPartyLibrariesTests.JayDataContextTests
                     .TestEnumsArray(new[] { TestGender2.Man, TestGender2.Woman })
                     .ExecuteAsScalarAsync<bool>());*/
 
-                DtoWithEnumController firstCallController = TestDependencyManager.CurrentTestDependencyManager.Objects
-                    .OfType<DtoWithEnumController>()
+                DtoWithEnumController firstCallController = testEnvironment.GetObjects<DtoWithEnumController>()
                     .First();
 
-                DtoWithEnumController secondCallController = TestDependencyManager.CurrentTestDependencyManager.Objects
-                    .OfType<DtoWithEnumController>()
+                DtoWithEnumController secondCallController = testEnvironment.GetObjects<DtoWithEnumController>()
                     .ElementAt(2);
 
                 A.CallTo(() => firstCallController.GetDtoWithEnumsByGender(TestGender.Man))
@@ -210,8 +201,7 @@ namespace Bit.Tests.HtmlClient.ThirdPartyLibrariesTests.JayDataContextTests
                     await driver.ExecuteTest(@"testGetAllAndFilter");
                 }
 
-                ParentEntitiesController parentEntitiesController = TestDependencyManager.CurrentTestDependencyManager.Objects
-                    .OfType<ParentEntitiesController>()
+                ParentEntitiesController parentEntitiesController = testEnvironment.GetObjects<ParentEntitiesController>()
                     .Single();
 
                 A.CallTo(() => parentEntitiesController.Get(A<CancellationToken>.Ignored))
@@ -232,15 +222,13 @@ namespace Bit.Tests.HtmlClient.ThirdPartyLibrariesTests.JayDataContextTests
                     await driver.ExecuteTest(@"testBatchReadRequest");
                 }
 
-                ParentEntitiesController parentEntitiesController = TestDependencyManager.CurrentTestDependencyManager.Objects
-                    .OfType<ParentEntitiesController>()
+                ParentEntitiesController parentEntitiesController = testEnvironment.GetObjects<ParentEntitiesController>()
                     .Single();
 
                 A.CallTo(() => parentEntitiesController.Get(A<CancellationToken>.Ignored))
                     .MustHaveHappenedOnceExactly();
 
-                TestModelsController testModelsController = TestDependencyManager.CurrentTestDependencyManager.Objects
-                    .OfType<TestModelsController>()
+                TestModelsController testModelsController = testEnvironment.GetObjects<TestModelsController>()
                     .Single();
 
                 A.CallTo(() => testModelsController.Get(A<CancellationToken>.Ignored))

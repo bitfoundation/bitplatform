@@ -31,15 +31,13 @@ namespace Bit.Tests.HtmlClient.ThirdPartyLibrariesTests.KendoDataSourceTests
                     await driver.ExecuteTest("testKendoDataSourceCreationFromJayDataEntitySet");
                 }
 
-                TestModelsController testModelsController = TestDependencyManager.CurrentTestDependencyManager.Objects
-                    .OfType<TestModelsController>()
+                TestModelsController testModelsController = testEnvironment.GetObjects<TestModelsController>()
                     .Single();
 
                 A.CallTo(() => testModelsController.Get(A<CancellationToken>.Ignored))
                     .MustHaveHappenedOnceExactly();
 
-                IEnumerable<ILogger> loggers = TestDependencyManager.CurrentTestDependencyManager.Objects
-                    .OfType<ILogger>()
+                IEnumerable<ILogger> loggers = testEnvironment.GetObjects<ILogger>()
                     .ToList();
 
                 Assert.IsTrue((loggers.SelectMany(l => l.LogData).Any(ld => ld.Key == nameof(IRequestInformationProvider.DisplayUrl) && ((string)ld.Value).Contains("?$filter=(StringProperty eq 'Test')"))));
@@ -59,15 +57,13 @@ namespace Bit.Tests.HtmlClient.ThirdPartyLibrariesTests.KendoDataSourceTests
                     await driver.ExecuteTest("testKendoDataSourceCreationFromJayDataODataFunctionCall");
                 }
 
-                TestModelsController testModelsController = TestDependencyManager.CurrentTestDependencyManager.Objects
-                    .OfType<TestModelsController>()
+                TestModelsController testModelsController = testEnvironment.GetObjects<TestModelsController>()
                     .Single();
 
                 A.CallTo(() => testModelsController.GetTestModelsByStringPropertyValue(1))
                     .MustHaveHappenedOnceExactly();
 
-                IEnumerable<ILogger> loggers = TestDependencyManager.CurrentTestDependencyManager.Objects
-                    .OfType<ILogger>()
+                IEnumerable<ILogger> loggers = testEnvironment.GetObjects<ILogger>()
                     .ToList();
 
                 Assert.IsTrue((loggers.SelectMany(l => l.LogData).Any(ld => ld.Key == nameof(IRequestInformationProvider.DisplayUrl) && ((string)ld.Value).Contains("?$filter=(StringProperty eq 'String1')"))));

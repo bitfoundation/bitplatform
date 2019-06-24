@@ -47,8 +47,7 @@ namespace Bit.Tests.Api.Middlewares.WebApi.Tests
                         Assert.AreEqual(BitMetadataBuilder.KnownError, message.ReasonPhrase);
                         Assert.IsTrue(message.Headers.Any(h => h.Key == "Reason-Phrase" && h.Value.Any(v => v == BitMetadataBuilder.KnownError)));
 
-                        ILogger logger = TestDependencyManager.CurrentTestDependencyManager.Objects
-                            .OfType<ILogger>().Last();
+                        ILogger logger = testEnvironment.GetObjects<ILogger>().Last();
 
                         Guid correlationId = (Guid)logger.LogData.Single(logData => logData.Key == "X-CorrelationId").Value;
 
@@ -99,8 +98,7 @@ namespace Bit.Tests.Api.Middlewares.WebApi.Tests
                         Assert.AreEqual(BitMetadataBuilder.KnownError, message.ReasonPhrase);
                         Assert.IsTrue(message.Headers.Any(h => h.Key == "Reason-Phrase" && h.Value.Any(v => v == BitMetadataBuilder.KnownError)));
 
-                        ILogger logger = TestDependencyManager.CurrentTestDependencyManager.Objects
-                            .OfType<ILogger>().Last();
+                        ILogger logger = testEnvironment.GetObjects<ILogger>().Last();
 
                         Guid correlationId = (Guid)logger.LogData.Single(logData => logData.Key == "X-CorrelationId").Value;
 
@@ -155,8 +153,7 @@ namespace Bit.Tests.Api.Middlewares.WebApi.Tests
                         Assert.AreEqual(BitMetadataBuilder.UnknownError, message.ReasonPhrase);
                         Assert.IsTrue(message.Headers.Any(h => h.Key == "Reason-Phrase" && h.Value.Any(v => v == BitMetadataBuilder.UnknownError)));
 
-                        ILogger logger = TestDependencyManager.CurrentTestDependencyManager.Objects
-                            .OfType<ILogger>().Last();
+                        ILogger logger = testEnvironment.GetObjects<ILogger>().Last();
 
                         Guid correlationId = (Guid)logger.LogData.Single(logData => logData.Key == "X-CorrelationId").Value;
 

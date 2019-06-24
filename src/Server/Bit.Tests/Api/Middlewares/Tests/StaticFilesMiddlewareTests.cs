@@ -104,8 +104,7 @@ namespace Bit.Tests.Api.Middlewares.Tests
             {
                 await testEnvironment.Server.BuildHttpClient().GetAsync("/Files/V1");
 
-                Assert.IsFalse(TestDependencyManager.CurrentTestDependencyManager.Objects
-                    .OfType<IScopeStatusManager>().Any());
+                Assert.IsFalse(testEnvironment.GetObjects<IScopeStatusManager>().Any());
             }
         }
     }

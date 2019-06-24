@@ -123,8 +123,7 @@ namespace Bit.Tests.HtmlClient.ViewModel.Implementation
                     await driver.ExecuteTest("Bit.Tests.Implementations.Tests.AngularAppInitializationTests.testAsyncViewModel");
                 }
 
-                TestModelsController testModelsController = TestDependencyManager.CurrentTestDependencyManager.Objects
-                    .OfType<TestModelsController>()
+                TestModelsController testModelsController = testEnvironment.GetObjects<TestModelsController>()
                     .Single();
 
                 A.CallTo(() => testModelsController.Sum(A<TestModelsController.FirstSecondParameters>.That.Matches(parameters => parameters.firstValue == 10 && parameters.secondValue == 20)))

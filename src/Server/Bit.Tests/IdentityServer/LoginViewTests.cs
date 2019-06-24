@@ -39,7 +39,7 @@ namespace Bit.Tests.IdentityServer
 
                 bool foundAnyCorrectCall = false;
 
-                foreach (TestUserService userService in TestDependencyManager.CurrentTestDependencyManager.Objects.OfType<TestUserService>())
+                foreach (TestUserService userService in testEnvironment.GetObjects<TestUserService>())
                 {
                     try
                     {
@@ -82,7 +82,7 @@ namespace Bit.Tests.IdentityServer
 
                 bool foundAnyCorrectCall = false;
 
-                foreach (TestUserService userService in TestDependencyManager.CurrentTestDependencyManager.Objects.OfType<TestUserService>())
+                foreach (TestUserService userService in testEnvironment.GetObjects<TestUserService>())
                 {
                     try
                     {
@@ -96,9 +96,7 @@ namespace Bit.Tests.IdentityServer
 
                 Assert.IsTrue(foundAnyCorrectCall);
 
-                bool acr_values_are_logged = TestDependencyManager.CurrentTestDependencyManager
-                     .Objects
-                     .OfType<ILogger>()
+                bool acr_values_are_logged = testEnvironment.GetObjects<ILogger>()
                      .Any(l => l.LogData.Any(ld => ld.Key == "AcrValues" && ((string[])ld.Value).SequenceEqual(new[] { "x:1", "y:2" })));
 
                 Assert.IsTrue(acr_values_are_logged);

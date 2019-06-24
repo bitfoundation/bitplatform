@@ -42,8 +42,7 @@ namespace Bit.Tests.Api.Middlewares.WebApi.Tests
 
                 Assert.AreNotEqual(0, modelAfterInsert.Id);
 
-                TestModelsController testModelsController = TestDependencyManager.CurrentTestDependencyManager.Objects
-                    .OfType<TestModelsController>()
+                TestModelsController testModelsController = testEnvironment.GetObjects<TestModelsController>()
                     .Last();
 
                 A.CallTo(() => testModelsController.Create(A<TestModel>.That.Matches(testModel => testModel.StringProperty == "Test"),
@@ -51,8 +50,7 @@ namespace Bit.Tests.Api.Middlewares.WebApi.Tests
                     .MustHaveHappenedOnceExactly();
 
                 IRepository<TestModel> testModelsRepository =
-                    TestDependencyManager.CurrentTestDependencyManager.Objects
-                        .OfType<IRepository<TestModel>>()
+                    testEnvironment.GetObjects<IRepository<TestModel>>()
                         .Single();
 
                 A.CallTo(() => testModelsRepository.AddAsync(A<TestModel>.That.Matches(testModel => testModel.StringProperty == "Test"), A<CancellationToken>.Ignored))
@@ -82,8 +80,7 @@ namespace Bit.Tests.Api.Middlewares.WebApi.Tests
 
                 Assert.AreEqual("Test2", modelAfterUpdate.StringProperty);
 
-                TestModelsController testModelsController = TestDependencyManager.CurrentTestDependencyManager.Objects
-                    .OfType<TestModelsController>()
+                TestModelsController testModelsController = testEnvironment.GetObjects<TestModelsController>()
                     .Last();
 
                 A.CallTo(() => testModelsController.PartialUpdate(modelBeforeUpdateId,
@@ -94,8 +91,7 @@ namespace Bit.Tests.Api.Middlewares.WebApi.Tests
                     .MustHaveHappenedOnceExactly();
 
                 IRepository<TestModel> testModelsRepository =
-                    TestDependencyManager.CurrentTestDependencyManager.Objects
-                        .OfType<IRepository<TestModel>>()
+                    testEnvironment.GetObjects<IRepository<TestModel>>()
                         .Last();
 
                 A.CallTo(() => testModelsRepository.UpdateAsync(
@@ -124,16 +120,14 @@ namespace Bit.Tests.Api.Middlewares.WebApi.Tests
                     .Key(modelIdForDelete)
                     .DeleteEntryAsync();
 
-                TestModelsController testModelsController = TestDependencyManager.CurrentTestDependencyManager.Objects
-                    .OfType<TestModelsController>()
+                TestModelsController testModelsController = testEnvironment.GetObjects<TestModelsController>()
                     .Last();
 
                 A.CallTo(() => testModelsController.Delete(modelIdForDelete, A<CancellationToken>.Ignored))
                     .MustHaveHappenedOnceExactly();
 
                 IRepository<TestModel> testModelsRepository =
-                    TestDependencyManager.CurrentTestDependencyManager.Objects
-                        .OfType<IRepository<TestModel>>()
+                    testEnvironment.GetObjects<IRepository<TestModel>>()
                         .Last();
 
                 A.CallTo(() => testModelsRepository.DeleteAsync(

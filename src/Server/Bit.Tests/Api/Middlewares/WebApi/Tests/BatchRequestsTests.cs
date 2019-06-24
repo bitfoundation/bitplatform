@@ -55,8 +55,7 @@ namespace Bit.Tests.Api.Middlewares.WebApi.Tests
                 await batchClient.ExecuteAsync();
 
                 IRepository<TestModel> testModelsRepository =
-                    TestDependencyManager.CurrentTestDependencyManager.Objects
-                        .OfType<IRepository<TestModel>>()
+                    testEnvironment.GetObjects<IRepository<TestModel>>()
                         .Last();
 
                 A.CallTo(() => testModelsRepository.UpdateAsync(
@@ -122,11 +121,9 @@ namespace Bit.Tests.Api.Middlewares.WebApi.Tests
                     A.CallTo(() => emailService.SendEmail(A<string>.That.Matches(s => s == "Work"), A<string>.Ignored, A<string>.Ignored))
                                             .MustNotHaveHappened();
 
-                    TestModelsController controller = TestDependencyManager.CurrentTestDependencyManager.Objects
-                        .OfType<TestModelsController>().Single();
+                    TestModelsController controller = testEnvironment.GetObjects<TestModelsController>().Single();
 
-                    ILogger logger = TestDependencyManager.CurrentTestDependencyManager.Objects
-                        .OfType<ILogger>().Last();
+                    ILogger logger = testEnvironment.GetObjects<ILogger>().Last();
 
                     A.CallTo(() => controller.SendEmail(A<TestModelsController.EmailParameters>.Ignored))
                                             .MustHaveHappenedOnceExactly();

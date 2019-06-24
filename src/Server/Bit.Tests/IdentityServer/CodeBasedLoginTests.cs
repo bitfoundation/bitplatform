@@ -64,9 +64,7 @@ namespace Bit.Tests.IdentityServer
                 }
                 catch (Exception exp) when (exp.Message == "invalid_grant {\"error\":\"invalid_grant\",\"error_description\":\"LoginFailed\"}") { }
 
-                bool acr_values_are_logged = TestDependencyManager.CurrentTestDependencyManager
-                     .Objects
-                     .OfType<ILogger>()
+                bool acr_values_are_logged = testEnvironment.GetObjects<ILogger>()
                      .Any(l => l.LogData.Any(ld => ld.Key == "AcrValues" && ((List<string>)ld.Value).SequenceEqual(new[] { "x:1", "y:2" })));
 
                 Assert.IsTrue(acr_values_are_logged);
@@ -90,9 +88,7 @@ namespace Bit.Tests.IdentityServer
                 }
                 catch { }
 
-                bool acr_values_are_logged = TestDependencyManager.CurrentTestDependencyManager
-                     .Objects
-                     .OfType<ILogger>()
+                bool acr_values_are_logged = testEnvironment.GetObjects<ILogger>()
                      .Any(l => l.LogData.Any(ld => ld.Key == "AcrValues" && ((List<string>)ld.Value).SequenceEqual(new[] { "x:1", "y:2" })));
 
                 Assert.IsTrue(acr_values_are_logged);

@@ -33,8 +33,7 @@ namespace Bit.Tests.HtmlClient.ThirdPartyLibrariesTests.JayDataContextTests
                     await driver.ExecuteTest("testSync");
                 }
 
-                List<TestCustomersController> testCustomersControllers = TestDependencyManager.CurrentTestDependencyManager.Objects
-                    .OfType<TestCustomersController>()
+                List<TestCustomersController> testCustomersControllers = testEnvironment.GetObjects<TestCustomersController>()
                     .ToList();
 
                 Assert.AreEqual(9, testCustomersControllers.Count);

@@ -45,10 +45,9 @@ namespace Bit.Tests.Api
         [TestCategory("Hosting")]
         public virtual void AllOnAppStartsMustBeCalledOnceAtStartup()
         {
-            using (new BitOwinTestEnvironment())
+            using (BitOwinTestEnvironment testEnvironment = new BitOwinTestEnvironment())
             {
-                foreach (IAppEvents appEvents in
-                    TestDependencyManager.CurrentTestDependencyManager.Objects.OfType<IAppEvents>().ToList())
+                foreach (IAppEvents appEvents in testEnvironment.GetObjects<IAppEvents>())
                 {
                     A.CallTo(() => appEvents.OnAppStartup())
                         .MustHaveHappenedOnceExactly();

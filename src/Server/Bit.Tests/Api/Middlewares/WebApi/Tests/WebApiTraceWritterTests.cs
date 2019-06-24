@@ -71,8 +71,7 @@ namespace Bit.Tests.Api.Middlewares.WebApi.Tests
                 }
                 catch (WebRequestException)
                 {
-                    ILogger logger = TestDependencyManager.CurrentTestDependencyManager.Objects
-                            .OfType<ILogger>().Last();
+                    ILogger logger = testEnvironment.GetObjects<ILogger>().Last();
 
                     Assert.IsTrue(logger.LogData.Single(ld => ld.Key == "X-CorrelationId").Value is Guid);
                     Assert.AreEqual(typeof(AppException).GetTypeInfo().FullName, logger.LogData.Single(ld => ld.Key == "WebExceptionType").Value);
