@@ -44,10 +44,16 @@ namespace Autofac
 
         public static ContainerBuilder RegisterIdentityClient(this ContainerBuilder containerBuilder)
         {
+            return containerBuilder.RegisterIdentityClient<DefaultSecurityService>();
+        }
+
+        public static ContainerBuilder RegisterIdentityClient<TSecurityService>(this ContainerBuilder containerBuilder)
+            where TSecurityService : ISecurityService
+        {
             if (containerBuilder == null)
                 throw new ArgumentNullException(nameof(containerBuilder));
 
-            containerBuilder.RegisterType<DefaultSecurityService>().As<ISecurityService>().SingleInstance().PropertiesAutowired(PropertyWiringOptions.PreserveSetValues).PreserveExistingDefaults()
+            containerBuilder.RegisterType<TSecurityService>().As<ISecurityService>().SingleInstance().PropertiesAutowired(PropertyWiringOptions.PreserveSetValues).PreserveExistingDefaults()
                 .OnActivated(activatedEventArgs =>
                 {
 #if iOS
@@ -58,6 +64,14 @@ namespace Autofac
                 .AutoActivate();
 
             return containerBuilder;
+        }
+
+        public static IHttpClientBuilder RegisterHttpClient(this ContainerBuilder containerBuilder)
+        {
+            if (containerBuilder == null)
+                throw new ArgumentNullException(nameof(containerBuilder));
+
+            return RegisterHttpClient<BitHttpClientHandler>(containerBuilder);
         }
 
         public static IHttpClientBuilder RegisterHttpClient<THttpMessageHandler>(this ContainerBuilder containerBuilder)
@@ -128,14 +142,6 @@ namespace Autofac
             .Named<HttpMessageHandler>(ContractKeys.AuthenticatedHttpMessageHandler)
             .SingleInstance()
             .PreserveExistingDefaults();
-        }
-
-        public static IHttpClientBuilder RegisterHttpClient(this ContainerBuilder containerBuilder)
-        {
-            if (containerBuilder == null)
-                throw new ArgumentNullException(nameof(containerBuilder));
-
-            return RegisterHttpClient<BitHttpClientHandler>(containerBuilder);
         }
     }
 }
