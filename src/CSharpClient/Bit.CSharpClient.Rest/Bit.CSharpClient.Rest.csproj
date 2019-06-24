@@ -1,4 +1,4 @@
-﻿<Project Sdk="MSBuild.Sdk.Extras/2.0.24">
+﻿<Project Sdk="MSBuild.Sdk.Extras/2.0.29">
 
   <PropertyGroup>
     <TargetFrameworks>MonoAndroid90;Xamarin.iOS10;uap10.0.16299;netstandard2.0;netcoreapp2.0;</TargetFrameworks>
@@ -41,12 +41,12 @@
     <PackageReference Include="IdentityModel" Version="3.10.10" />
     <PackageReference Include="Microsoft.Extensions.Http" Version="2.2.0" />
     <PackageReference Include="Microsoft.Extensions.Http.Polly" Version="2.2.0" />
-    <PackageReference Include="MSBuild.Sdk.Extras" Version="2.0.24" PrivateAssets="All" />
+    <PackageReference Include="MSBuild.Sdk.Extras" Version="2.0.29" PrivateAssets="All" />
     <PackageReference Include="Refit" Version="4.7.9" />
     <PackageReference Include="SourceLink.Embed.AllSourceFiles" Version="2.8.3" PrivateAssets="all" />
     <PackageReference Include="SourceLink.Copy.PdbFiles" Version="2.8.3" PrivateAssets="All" />
 
-    <PackageReference Include="Fody" Version="5.0.6">
+    <PackageReference Include="Fody" Version="5.1.0">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
     </PackageReference>

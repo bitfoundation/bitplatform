@@ -1,4 +1,4 @@
-﻿<Project Sdk="MSBuild.Sdk.Extras/2.0.24">
+﻿<Project Sdk="MSBuild.Sdk.Extras/2.0.29">
 
   <PropertyGroup>
     <TargetFrameworks>MonoAndroid90;Xamarin.iOS10;uap10.0.16299;netstandard2.0;netcoreapp2.0;</TargetFrameworks>
@@ -49,11 +49,11 @@
     <PackageReference Include="System.ComponentModel.Annotations" Version="4.5.0" />
     <PackageReference Include="Xamarin.Essentials" Version="1.1.0" />
     <PackageReference Include="Microsoft.ApplicationInsights.WindowsApps" Condition=" '$(TargetFramework)' == 'uap10.0.16299' " Version="1.1.1" />
-    <PackageReference Include="MSBuild.Sdk.Extras" Version="2.0.24" PrivateAssets="All" />
+    <PackageReference Include="MSBuild.Sdk.Extras" Version="2.0.29" PrivateAssets="All" />
     <PackageReference Include="SourceLink.Embed.AllSourceFiles" Version="2.8.3" PrivateAssets="all" />
     <PackageReference Include="SourceLink.Copy.PdbFiles" Version="2.8.3" PrivateAssets="All" />
 
-    <PackageReference Include="Fody" Version="5.0.6">
+    <PackageReference Include="Fody" Version="5.1.0">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
     </PackageReference>

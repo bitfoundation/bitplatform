@@ -39,8 +39,8 @@
     <PackageReference Include="Refit" Version="4.7.9" />
     <PackageReference Include="Selenium.Support" Version="3.141.0" />
     <PackageReference Include="Selenium.WebDriver" Version="3.141.0" />
-    <PackageReference Include="Selenium.WebDriver.ChromeDriver" Version="75.0.3770.8" />
-    <PackageReference Include="Simple.OData.V4.Client" Version="5.7.0" />
+    <PackageReference Include="Selenium.WebDriver.ChromeDriver" Version="75.0.3770.90" />
+    <PackageReference Include="Simple.OData.V4.Client" Version="5.7.1" />
     <PackageReference Include="SourceLink.Embed.AllSourceFiles" Version="2.8.3" PrivateAssets="all" />
     <PackageReference Include="SourceLink.Copy.PdbFiles" Version="2.8.3" PrivateAssets="All" />
   </ItemGroup>
