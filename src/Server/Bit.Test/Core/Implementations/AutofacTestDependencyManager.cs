@@ -3,8 +3,8 @@ using Bit.Core.Contracts;
 using Bit.Owin.Implementations;
 using FakeItEasy;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Linq;
 using System.Reflection;
 
@@ -94,8 +94,12 @@ namespace Bit.Test.Implementations
                 e.ReplaceInstance(instance);
             }
 
-            lock (this)
-                ObjectsValues.Add(instance);
+            if (Objects is BlockingCollection<object> blockingCollection)
+                blockingCollection.Add(instance); 
+            else if (Objects is ICollection<object> collection)
+                collection.Add(instance);
+            else
+                throw new NotSupportedException($"Provide compatible collection type for {nameof(Objects)}");
         }
 
         private readonly MethodInfo _createProxyForService = typeof(AutofacTestDependencyManager).GetTypeInfo().GetMethod(nameof(CreateProxyForService));
@@ -113,16 +117,7 @@ namespace Bit.Test.Implementations
             return (T)serviceInstance;
         }
 
-        protected readonly List<object> ObjectsValues = new List<object> { };
-
-        public virtual IEnumerable<object> Objects
-        {
-            get
-            {
-                lock (this)
-                    return new Collection<object>(ObjectsValues);
-            }
-        }
+        public virtual IEnumerable<object> Objects { get; } = new BlockingCollection<object> { };
 
         public virtual string ReportObjects
         {
