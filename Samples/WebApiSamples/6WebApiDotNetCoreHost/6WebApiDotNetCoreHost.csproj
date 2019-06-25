@@ -5,10 +5,10 @@
     <RootNamespace>WebApiDotNetCoreHost</RootNamespace>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="Bit.OwinCore" Version="2.4.3" />
-    <PackageReference Include="Bit.OwinCore.AspNetCore22Upgrade" Version="2.4.3" />
-    <PackageReference Include="Bit.WebApi" Version="2.4.3" />
-    <PackageReference Include="BitCodeAnalyzer" Version="2.4.3" />
+    <PackageReference Include="Bit.OwinCore" Version="2.4.4" />
+    <PackageReference Include="Bit.OwinCore.AspNetCore22Upgrade" Version="2.4.4" />
+    <PackageReference Include="Bit.WebApi" Version="2.4.4" />
+    <PackageReference Include="BitCodeAnalyzer" Version="2.4.4" />
   </ItemGroup>
   <ItemGroup>
     <Content Update="environments.json">
