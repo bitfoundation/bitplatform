@@ -1,29 +1,10 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
+  <Import Project="../Server.Build.props"/>
+
   <PropertyGroup>
     <TargetFrameworks>net461;netcoreapp2.0</TargetFrameworks>
-    <PackageTags>Bit Microsoft Katana OWIN</PackageTags>
-    <Authors>Bit Foundation</Authors>
-    <Company>Bit Foundation</Company>
-    <Product>Bit Framework</Product>
-    <Title>Bit.Owin</Title>
-    <Description>Bit.Owin</Description>
-    <Copyright>Copyright © Bit Foundation 2019</Copyright>
-    <PackageLicenseUrl>https://github.com/bit-foundation/bit-framework/blob/master/LICENSE</PackageLicenseUrl>
-    <PackageProjectUrl>https://github.com/bit-foundation/bit-framework</PackageProjectUrl>
-    <PackageIconUrl>https://avatars.githubusercontent.com/u/22663390</PackageIconUrl>
-    <RepositoryUrl>https://github.com/bit-foundation/bit-framework</RepositoryUrl>
-    <RepositoryType>git</RepositoryType>
-    <PackageReleaseNotes>https://github.com/bit-foundation/bit-framework/releases</PackageReleaseNotes>
-    <Version>$(Bit-Package-Version)</Version>
-    <AssemblyVersion>$(Bit-Assembly-Version)</AssemblyVersion>
-    <PackageVersion>$(Bit-Package-Version)</PackageVersion>
-    <GeneratePackageOnBuild Condition=" '$(Configuration)' == 'Release' ">true</GeneratePackageOnBuild>
-    <DocumentationFile>bin\$(Configuration)\$(TargetFramework)\$(AssemblyName).xml</DocumentationFile>
-    <LangVersion>7.3</LangVersion>
-    <NoWarn>$(NoWarn);CS1591;NU1701</NoWarn>
-    <DefineConstants Condition=" '$(TargetFramework)' == 'netcoreapp2.0' ">DotNetCore</DefineConstants>
-    <DefineConstants Condition=" '$(TargetFramework)' == 'net461' ">DotNet</DefineConstants>
+    <PackageTags>$(PackageTags) Microsoft Katana OWIN</PackageTags>
   </PropertyGroup>
 
   <ItemGroup>
@@ -39,8 +20,6 @@
     <PackageReference Include="NWebsec.Owin" Version="3.1.0" />
     <PackageReference Include="System.Diagnostics.EventLog" Version="4.5.0" />
     <PackageReference Include="System.Net.Http" Version="4.3.4" />
-    <PackageReference Include="SourceLink.Embed.AllSourceFiles" Version="2.8.3" PrivateAssets="all" />
-    <PackageReference Include="SourceLink.Copy.PdbFiles" Version="2.8.3" PrivateAssets="All" />
   </ItemGroup>
 
   <ItemGroup>

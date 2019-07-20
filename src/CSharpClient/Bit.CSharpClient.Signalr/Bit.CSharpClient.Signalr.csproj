@@ -1,64 +1,18 @@
 ﻿<Project Sdk="MSBuild.Sdk.Extras/2.0.31">
 
+  <Import Project="../CSharpClient.Build.props"/>
+
   <PropertyGroup>
     <TargetFrameworks>MonoAndroid90;Xamarin.iOS10;uap10.0.16299;netstandard2.0;netcoreapp2.0;</TargetFrameworks>
-    <RootNamespace>Bit</RootNamespace>
-    <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
-    <GeneratePackageOnBuild Condition=" '$(Configuration)' == 'Release' ">true</GeneratePackageOnBuild>
-    <Authors>Bit Foundation</Authors>
-    <Company>Bit Foundation</Company>
-    <Product>Bit Framework</Product>
-    <Title>Bit.CSharpClient.Signalr</Title>
-    <Description>Bit.CSharpClient.Signalr</Description>
-    <Copyright>Copyright © Bit Foundation 2019</Copyright>
-    <PackageLicenseUrl>https://github.com/bit-foundation/bit-framework/blob/master/LICENSE</PackageLicenseUrl>
-    <PackageProjectUrl>https://github.com/bit-foundation/bit-framework</PackageProjectUrl>
-    <PackageIconUrl>https://avatars.githubusercontent.com/u/22663390</PackageIconUrl>
-    <RepositoryUrl>https://github.com/bit-foundation/bit-framework</RepositoryUrl>
-    <RepositoryType>git</RepositoryType>
-    <PackageTags>Bit</PackageTags>
-    <PackageReleaseNotes>https://github.com/bit-foundation/bit-framework/releases</PackageReleaseNotes>
-    <Version>$(Bit-Package-Version)</Version>
-    <AssemblyVersion>$(Bit-Assembly-Version)</AssemblyVersion>
-    <PackageVersion>$(Bit-Package-Version)</PackageVersion>
-    <DefineConstants Condition=" '$(TargetFramework)' == 'MonoAndroid90' ">Android</DefineConstants>
-    <DefineConstants Condition=" '$(TargetFramework)' == 'Xamarin.iOS10' ">iOS</DefineConstants>
-    <DefineConstants Condition=" '$(TargetFramework)' == 'netcoreapp2.0' ">DotNetCore</DefineConstants>
-    <DefineConstants Condition=" '$(TargetFramework)' == 'uap10.0.16299' ">UWP</DefineConstants>
-    <DefineConstants Condition=" '$(TargetFramework)' == 'netstandard2.0' ">DotNetStandard</DefineConstants>
-    <DocumentationFile>bin\$(Configuration)\$(TargetFramework)\$(AssemblyName).xml</DocumentationFile>
-    <NoWarn>$(NoWarn);NU1605;CS1591;</NoWarn>
-    <!-- https://stackoverflow.com/a/46815541/2720104 -->
-    <LangVersion>7.3</LangVersion>
-  </PropertyGroup>
-
-  <PropertyGroup Condition="'$(Configuration)'=='Debug'">
-    <DebugType>pdbonly</DebugType>
-    <DebugSymbols>true</DebugSymbols>
+    <PackageTags>$(PackageTags) Signalr</PackageTags>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNet.SignalR.Client" Version="2.4.1" />
-    <PackageReference Include="MSBuild.Sdk.Extras" Version="2.0.31" PrivateAssets="All" />
-    <PackageReference Include="SourceLink.Embed.AllSourceFiles" Version="2.8.3" PrivateAssets="all" />
-    <PackageReference Include="SourceLink.Copy.PdbFiles" Version="2.8.3" PrivateAssets="All" />
-
-    <PackageReference Include="Fody" Version="5.1.1">
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
-    </PackageReference>
-
-    <PackageReference Include="PropertyChanged.Fody" Version="3.0.1">
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
-    </PackageReference>
-
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\Bit.CSharpClient.Prism\Bit.CSharpClient.Prism.csproj" />
   </ItemGroup>
-
-  <Import Project="$(MSBuildSDKExtrasTargets)" Condition="Exists('$(MSBuildSDKExtrasTargets)')" />
 
 </Project>

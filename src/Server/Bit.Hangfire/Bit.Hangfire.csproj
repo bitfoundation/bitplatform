@@ -1,27 +1,10 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
+  <Import Project="../Server.Build.props"/>
+
   <PropertyGroup>
     <TargetFramework>net461</TargetFramework>
-    <PackageTags>Bit Hangfire AspNet OWIN SqlServer Long-Running Background Fire-And-Forget Delayed Recurring Tasks Scheduler Threading Queues Jobs</PackageTags>
-    <Authors>Bit Foundation</Authors>
-    <Company>Bit Foundation</Company>
-    <Product>Bit Framework</Product>
-    <Title>Bit.Hangfire</Title>
-    <Description>Bit.Hangfire</Description>
-    <Copyright>Copyright © Bit Foundation 2019</Copyright>
-    <PackageLicenseUrl>https://github.com/bit-foundation/bit-framework/blob/master/LICENSE</PackageLicenseUrl>
-    <PackageProjectUrl>https://github.com/bit-foundation/bit-framework</PackageProjectUrl>
-    <PackageIconUrl>https://avatars.githubusercontent.com/u/22663390</PackageIconUrl>
-    <RepositoryUrl>https://github.com/bit-foundation/bit-framework</RepositoryUrl>
-    <RepositoryType>git</RepositoryType>
-    <PackageReleaseNotes>https://github.com/bit-foundation/bit-framework/releases</PackageReleaseNotes>
-    <Version>$(Bit-Package-Version)</Version>
-    <AssemblyVersion>$(Bit-Assembly-Version)</AssemblyVersion>
-    <PackageVersion>$(Bit-Package-Version)</PackageVersion>
-    <GeneratePackageOnBuild Condition=" '$(Configuration)' == 'Release' ">true</GeneratePackageOnBuild>
-    <DocumentationFile>bin\$(Configuration)\$(TargetFramework)\$(AssemblyName).xml</DocumentationFile>
-    <LangVersion>7.3</LangVersion>
-    <NoWarn>$(NoWarn);CS1591;NU1701</NoWarn>
+    <PackageTags>$(PackageTags) Hangfire AspNet OWIN SqlServer Long-Running Background Fire-And-Forget Delayed Recurring Tasks Scheduler Threading Queues Jobs</PackageTags>
   </PropertyGroup>
 
   <ItemGroup>
@@ -34,8 +17,6 @@
     <PackageReference Include="HangFire.Azure.ServiceBusQueue" Version="4.1.0" />
     <PackageReference Include="Hangfire.MemoryStorage" Version="1.6.1" />
     <PackageReference Include="Hangfire.SqlServer" Version="1.7.5" />
-    <PackageReference Include="SourceLink.Embed.AllSourceFiles" Version="2.8.3" PrivateAssets="all" />
-    <PackageReference Include="SourceLink.Copy.PdbFiles" Version="2.8.3" PrivateAssets="All" />
   </ItemGroup>
 
   <ItemGroup>

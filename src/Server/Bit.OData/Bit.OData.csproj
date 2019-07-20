@@ -1,37 +1,17 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
+  <Import Project="../Server.Build.props"/>
+
   <PropertyGroup>
     <TargetFrameworks>net461;netcoreapp2.0</TargetFrameworks>
-    <PackageTags>Bit Web API OData Rest Microsoft AspNet WebApi AspNetWebApi</PackageTags>
-    <Authors>Bit Foundation</Authors>
-    <Company>Bit Foundation</Company>
-    <Product>Bit Framework</Product>
-    <Title>Bit.OData</Title>
-    <Description>Bit.OData</Description>
-    <Copyright>Copyright © Bit Foundation 2019</Copyright>
-    <PackageLicenseUrl>https://github.com/bit-foundation/bit-framework/blob/master/LICENSE</PackageLicenseUrl>
-    <PackageProjectUrl>https://github.com/bit-foundation/bit-framework</PackageProjectUrl>
-    <PackageIconUrl>https://avatars.githubusercontent.com/u/22663390</PackageIconUrl>
-    <RepositoryUrl>https://github.com/bit-foundation/bit-framework</RepositoryUrl>
-    <RepositoryType>git</RepositoryType>
-    <PackageReleaseNotes>https://github.com/bit-foundation/bit-framework/releases</PackageReleaseNotes>
-    <Version>$(Bit-Package-Version)</Version>
-    <AssemblyVersion>$(Bit-Assembly-Version)</AssemblyVersion>
-    <PackageVersion>$(Bit-Package-Version)</PackageVersion>
-    <GeneratePackageOnBuild Condition=" '$(Configuration)' == 'Release' ">true</GeneratePackageOnBuild>
-    <DocumentationFile>bin\$(Configuration)\$(TargetFramework)\$(AssemblyName).xml</DocumentationFile>
-    <LangVersion>7.3</LangVersion>
-    <NoWarn>$(NoWarn);CS1591;NU1701</NoWarn>
+    <PackageTags>$(PackageTags) Web API OData Rest Microsoft AspNet WebApi AspNetWebApi</PackageTags>
   </PropertyGroup>
 
   <ItemGroup>
-    <!--<PackageReference Include="BitCodeGeneratorTask" Version="2.3.0" />-->
     <PackageReference Include="Microsoft.AspNet.OData" Version="7.1.0" />
     <PackageReference Include="Bit.Swashbuckle.OData" Version="4.0.5" />
     <PackageReference Include="LambdaSqlBuilder" Version="0.9.0" />
     <PackageReference Include="Microsoft.OData.Core" Version="7.6.0" />
-    <PackageReference Include="SourceLink.Embed.AllSourceFiles" Version="2.8.3" PrivateAssets="all" />
-    <PackageReference Include="SourceLink.Copy.PdbFiles" Version="2.8.3" PrivateAssets="All" />
   </ItemGroup>
 
   <ItemGroup>

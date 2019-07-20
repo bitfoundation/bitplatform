@@ -1,27 +1,10 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
+  <Import Project="../Server.Build.props"/>
+
   <PropertyGroup>
     <TargetFrameworks>net461;netcoreapp2.0</TargetFrameworks>
-    <PackageTags>Bit Web-API Rest Microsoft AspNet WebApi AspNetWebApi</PackageTags>
-    <Company>Bit Foundation</Company>
-    <Authors>Bit Foundation</Authors>
-    <Product>Bit Framework</Product>
-    <Title>Bit.WebApi</Title>
-    <Description>Bit.WebApi</Description>
-    <Copyright>Copyright © Bit Foundation 2019</Copyright>
-    <PackageLicenseUrl>https://github.com/bit-foundation/bit-framework/blob/master/LICENSE</PackageLicenseUrl>
-    <PackageProjectUrl>https://github.com/bit-foundation/bit-framework</PackageProjectUrl>
-    <PackageIconUrl>https://avatars.githubusercontent.com/u/22663390</PackageIconUrl>
-    <RepositoryUrl>https://github.com/bit-foundation/bit-framework</RepositoryUrl>
-    <RepositoryType>git</RepositoryType>
-    <PackageReleaseNotes>https://github.com/bit-foundation/bit-framework/releases</PackageReleaseNotes>
-    <Version>$(Bit-Package-Version)</Version>
-    <AssemblyVersion>$(Bit-Assembly-Version)</AssemblyVersion>
-    <PackageVersion>$(Bit-Package-Version)</PackageVersion>
-    <GeneratePackageOnBuild Condition=" '$(Configuration)' == 'Release' ">true</GeneratePackageOnBuild>
-    <DocumentationFile>bin\$(Configuration)\$(TargetFramework)\$(AssemblyName).xml</DocumentationFile>
-    <LangVersion>7.3</LangVersion>
-    <NoWarn>$(NoWarn);CS1591;NU1701</NoWarn>
+    <PackageTags>$(PackageTags) Web-API Rest Microsoft AspNet WebApi AspNetWebApi</PackageTags>
     <AssetTargetFallback Condition=" '$(TargetFramework)' == 'netcoreapp2.0' ">net45</AssetTargetFallback>
   </PropertyGroup>
 
@@ -39,8 +22,6 @@
     <PackageReference Include="Swashbuckle.Core" Version="5.6.0" />
     <PackageReference Include="Swashbuckle.Examples" Version="3.12.0" />
     <PackageReference Include="WebApiCorrelator" Version="1.1.0" />
-    <PackageReference Include="SourceLink.Embed.AllSourceFiles" Version="2.8.3" PrivateAssets="all" />
-    <PackageReference Include="SourceLink.Copy.PdbFiles" Version="2.8.3" PrivateAssets="All" />
   </ItemGroup>
 
   <ItemGroup>

@@ -1,27 +1,10 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
+  <Import Project="../Server.Build.props"/>
+
   <PropertyGroup>
     <TargetFrameworks>net461;netcoreapp2.0</TargetFrameworks>
-    <PackageTags>Bit aspnetcore</PackageTags>
-    <Authors>Bit Foundation</Authors>
-    <Company>Bit Foundation</Company>
-    <Product>Bit Framework</Product>
-    <Title>Bit.OwinCore</Title>
-    <Description>Bit.OwinCore</Description>
-    <Copyright>Copyright © Bit Foundation 2019</Copyright>
-    <PackageLicenseUrl>https://github.com/bit-foundation/bit-framework/blob/master/LICENSE</PackageLicenseUrl>
-    <PackageProjectUrl>https://github.com/bit-foundation/bit-framework</PackageProjectUrl>
-    <PackageIconUrl>https://avatars.githubusercontent.com/u/22663390</PackageIconUrl>
-    <RepositoryUrl>https://github.com/bit-foundation/bit-framework</RepositoryUrl>
-    <RepositoryType>git</RepositoryType>
-    <PackageReleaseNotes>https://github.com/bit-foundation/bit-framework/releases</PackageReleaseNotes>
-    <Version>$(Bit-Package-Version)</Version>
-    <AssemblyVersion>$(Bit-Assembly-Version)</AssemblyVersion>
-    <PackageVersion>$(Bit-Package-Version)</PackageVersion>
-    <GeneratePackageOnBuild Condition=" '$(Configuration)' == 'Release' ">true</GeneratePackageOnBuild>
-    <DocumentationFile>bin\$(Configuration)\$(TargetFramework)\$(AssemblyName).xml</DocumentationFile>
-    <LangVersion>7.3</LangVersion>
-    <NoWarn>$(NoWarn);CS1591;NU1701</NoWarn>
+    <PackageTags>$(PackageTags) aspnetcore</PackageTags>
   </PropertyGroup>
 
   <ItemGroup Condition="'$(TargetFramework)' == 'netcoreapp2.0'">
@@ -41,8 +24,6 @@
     <PackageReference Include="Microsoft.AspNetCore.StaticFiles" Version="1.1.3" />
     <PackageReference Include="NWebsec.AspNetCore.Middleware" Version="1.1.0" />
     <PackageReference Include="System.Security.Cryptography.ProtectedData" Version="4.5.0" />
-    <PackageReference Include="SourceLink.Embed.AllSourceFiles" Version="2.8.3" PrivateAssets="all" />
-    <PackageReference Include="SourceLink.Copy.PdbFiles" Version="2.8.3" PrivateAssets="All" />
   </ItemGroup>
 
   <ItemGroup>

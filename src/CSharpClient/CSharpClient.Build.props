@@ -1,0 +1,28 @@
+<Project>
+
+  <Import Project="../Bit.Build.props"/>
+
+  <PropertyGroup>
+    <RootNamespace>Bit</RootNamespace>
+    <DefineConstants Condition=" '$(TargetFramework)' == 'MonoAndroid90' ">Android</DefineConstants>
+    <DefineConstants Condition=" '$(TargetFramework)' == 'Xamarin.iOS10' ">iOS</DefineConstants>
+    <DefineConstants Condition=" '$(TargetFramework)' == 'netcoreapp2.0' ">DotNetCore</DefineConstants>
+    <DefineConstants Condition=" '$(TargetFramework)' == 'uap10.0.16299' ">UWP</DefineConstants>
+    <DefineConstants Condition=" '$(TargetFramework)' == 'netstandard2.0' ">DotNetStandard</DefineConstants>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="MSBuild.Sdk.Extras" Version="2.0.31" PrivateAssets="All" />
+    <PackageReference Include="Fody" Version="5.1.1">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="PropertyChanged.Fody" Version="3.0.1">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
+    </PackageReference>
+  </ItemGroup>
+
+  <Import Project="$(MSBuildSDKExtrasTargets)" Condition="Exists('$(MSBuildSDKExtrasTargets)')" />
+
+</Project>
