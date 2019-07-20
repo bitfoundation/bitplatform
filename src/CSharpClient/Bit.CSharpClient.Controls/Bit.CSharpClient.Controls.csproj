@@ -1,4 +1,4 @@
-﻿<Project Sdk="MSBuild.Sdk.Extras/2.0.29">
+﻿<Project Sdk="MSBuild.Sdk.Extras/2.0.31">
 
   <PropertyGroup>
     <TargetFrameworks>MonoAndroid90;Xamarin.iOS10;uap10.0.16299;netstandard2.0;netcoreapp2.0;</TargetFrameworks>
@@ -38,14 +38,14 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="NodaTime" Version="2.4.5" />
+    <PackageReference Include="NodaTime" Version="2.4.6" />
     <PackageReference Include="Rg.Plugins.Popup" Version="1.1.5.188" />
-    <PackageReference Include="Xamarin.Forms" Version="4.0.0.497661" />
-    <PackageReference Include="MSBuild.Sdk.Extras" Version="2.0.29" PrivateAssets="All" />
+    <PackageReference Include="Xamarin.Forms" Version="4.1.0.581479" />
+    <PackageReference Include="MSBuild.Sdk.Extras" Version="2.0.31" PrivateAssets="All" />
     <PackageReference Include="SourceLink.Embed.AllSourceFiles" Version="2.8.3" PrivateAssets="all" />
     <PackageReference Include="SourceLink.Copy.PdbFiles" Version="2.8.3" PrivateAssets="All" />
 
-    <PackageReference Include="Fody" Version="5.1.0">
+    <PackageReference Include="Fody" Version="5.1.1">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
     </PackageReference>

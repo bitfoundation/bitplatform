@@ -25,7 +25,7 @@
   "optionalDependencies": {
     "core-js": "^2.6.5",
     "decimal.js": "^10.2.0",
-    "event-source-polyfill": "^1.0.5",
+    "event-source-polyfill": "^1.0.7",
     "pubsub-js": "^1.7.0",
     "regenerator": "^0.14.1",
     "signalr": "^2.4.1",
