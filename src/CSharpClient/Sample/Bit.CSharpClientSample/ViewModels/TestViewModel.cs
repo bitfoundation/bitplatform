@@ -72,14 +72,14 @@ namespace Bit.CSharpClientSample.ViewModels
             }
         }
 
-        public async override Task DestroyAsync()
+        public async override Task OnDestroyAsync()
         {
             signalr_MessageReceived_token?.Dispose();
             server_ConnectivityChanged_token?.Dispose();
             await MessageReceiver.Stop(CancellationToken.None);
             MessageReceiver.Dispose();
 
-            await base.DestroyAsync();
+            await base.OnDestroyAsync();
         }
     }
 }
