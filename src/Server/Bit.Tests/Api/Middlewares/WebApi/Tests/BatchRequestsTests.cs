@@ -92,21 +92,24 @@ namespace Bit.Tests.Api.Middlewares.WebApi.Tests
             {
                 TokenResponse token = await testEnvironment.Server.Login("ValidUserName", "ValidPassword", clientId: "TestResOwner");
 
-                ODataBatch client = testEnvironment.Server.BuildODataBatchClient(token: token, afterResponse: message =>
+                ODataBatch client = testEnvironment.Server.BuildODataBatchClient(token: token, odataClientSettings: new ODataClientSettings
                 {
-                    Assert.AreEqual(HttpStatusCode.OK, message.StatusCode);
-                    // status code of batch request will be ok all the time, it will be something other than ok,
-                    // when the request itself is invalid (BadRequestException).
+                    AfterResponse = message =>
+                    {
+                        Assert.AreEqual(HttpStatusCode.OK, message.StatusCode);
+                        // status code of batch request will be ok all the time, it will be something other than ok,
+                        // when the request itself is invalid (BadRequestException).
+                    }
                 });
 
                 try
                 {
                     client += c => c.TestModels()
-                        .SendEmail(to : "Exception", title : "Email title", message : "Email message")
+                        .SendEmail(to: "Exception", title: "Email title", message: "Email message")
                         .ExecuteAsync();
 
                     client += c => c.TestModels()
-                                        .SendEmail(to : "Work", title : "Email title", message : "Email message")
+                                        .SendEmail(to: "Work", title: "Email title", message: "Email message")
                                         .ExecuteAsync();
 
                     await client.ExecuteAsync();

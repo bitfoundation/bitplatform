@@ -26,11 +26,9 @@ namespace Bit.Test.Server
 
         string GetLoginUrl(string client_id = null, Uri redirect_uri = null, object state = null, IDictionary<string, string> acr_values = null);
 
-        IODataClient BuildODataClient(Action<HttpRequestMessage> beforeRequest = null,
-            Action<HttpResponseMessage> afterResponse = null, TokenResponse token = null, string odataRouteName = "Test");
+        IODataClient BuildODataClient(TokenResponse token = null, string odataRouteName = "Test", ODataClientSettings odataClientSettings = null);
 
-        ODataBatch BuildODataBatchClient(Action<HttpRequestMessage> beforeRequest = null,
-           Action<HttpResponseMessage> afterResponse = null, TokenResponse token = null, string odataRouteName = "Test");
+        ODataBatch BuildODataBatchClient(TokenResponse token = null, string odataRouteName = "Test", ODataClientSettings odataClientSettings = null);
 
         HttpClient BuildHttpClient(TokenResponse token = null);
 

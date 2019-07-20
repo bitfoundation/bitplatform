@@ -40,25 +40,28 @@ namespace Bit.Tests.Api.Middlewares.WebApi.Tests
             {
                 TokenResponse token = await testEnvironment.Server.Login("ValidUserName", "ValidPassword", clientId: "TestResOwner");
 
-                IODataClient client = testEnvironment.Server.BuildODataClient(token: token, afterResponse: message =>
+                IODataClient client = testEnvironment.Server.BuildODataClient(token: token, odataClientSettings: new ODataClientSettings
                 {
-                    if (message.StatusCode == HttpStatusCode.InternalServerError)
+                    AfterResponse = message =>
                     {
-                        Assert.AreEqual(BitMetadataBuilder.KnownError, message.ReasonPhrase);
-                        Assert.IsTrue(message.Headers.Any(h => h.Key == "Reason-Phrase" && h.Value.Any(v => v == BitMetadataBuilder.KnownError)));
+                        if (message.StatusCode == HttpStatusCode.InternalServerError)
+                        {
+                            Assert.AreEqual(BitMetadataBuilder.KnownError, message.ReasonPhrase);
+                            Assert.IsTrue(message.Headers.Any(h => h.Key == "Reason-Phrase" && h.Value.Any(v => v == BitMetadataBuilder.KnownError)));
 
-                        ILogger logger = testEnvironment.GetObjects<ILogger>().Last();
+                            ILogger logger = testEnvironment.GetObjects<ILogger>().Last();
 
-                        Guid correlationId = (Guid)logger.LogData.Single(logData => logData.Key == "X-CorrelationId").Value;
+                            Guid correlationId = (Guid)logger.LogData.Single(logData => logData.Key == "X-CorrelationId").Value;
 
-                        Assert.AreEqual(correlationId.ToString(), message.Headers.Single(h => h.Key == "X-CorrelationId").Value.Single());
+                            Assert.AreEqual(correlationId.ToString(), message.Headers.Single(h => h.Key == "X-CorrelationId").Value.Single());
+                        }
                     }
                 });
 
                 try
                 {
                     await client.TestModels()
-                        .SendEmail(to : "Someone", title : "Email title", message : "Email message")
+                        .SendEmail(to: "Someone", title: "Email title", message: "Email message")
                         .ExecuteAsync();
 
                     Assert.Fail();
@@ -91,25 +94,28 @@ namespace Bit.Tests.Api.Middlewares.WebApi.Tests
             {
                 TokenResponse token = await testEnvironment.Server.Login("ValidUserName", "ValidPassword", clientId: "TestResOwner");
 
-                IODataClient client = testEnvironment.Server.BuildODataClient(token: token, afterResponse: message =>
+                IODataClient client = testEnvironment.Server.BuildODataClient(token: token, odataClientSettings: new ODataClientSettings
                 {
-                    if (message.StatusCode == HttpStatusCode.NotFound)
+                    AfterResponse = message =>
                     {
-                        Assert.AreEqual(BitMetadataBuilder.KnownError, message.ReasonPhrase);
-                        Assert.IsTrue(message.Headers.Any(h => h.Key == "Reason-Phrase" && h.Value.Any(v => v == BitMetadataBuilder.KnownError)));
+                        if (message.StatusCode == HttpStatusCode.NotFound)
+                        {
+                            Assert.AreEqual(BitMetadataBuilder.KnownError, message.ReasonPhrase);
+                            Assert.IsTrue(message.Headers.Any(h => h.Key == "Reason-Phrase" && h.Value.Any(v => v == BitMetadataBuilder.KnownError)));
 
-                        ILogger logger = testEnvironment.GetObjects<ILogger>().Last();
+                            ILogger logger = testEnvironment.GetObjects<ILogger>().Last();
 
-                        Guid correlationId = (Guid)logger.LogData.Single(logData => logData.Key == "X-CorrelationId").Value;
+                            Guid correlationId = (Guid)logger.LogData.Single(logData => logData.Key == "X-CorrelationId").Value;
 
-                        Assert.AreEqual(correlationId.ToString(), message.Headers.Single(h => h.Key == "X-CorrelationId").Value.Single());
+                            Assert.AreEqual(correlationId.ToString(), message.Headers.Single(h => h.Key == "X-CorrelationId").Value.Single());
+                        }
                     }
                 });
 
                 try
                 {
                     await client.TestModels()
-                        .SendEmail(to : "Someone", title : "Email title", message : "Email message")
+                        .SendEmail(to: "Someone", title: "Email title", message: "Email message")
                         .ExecuteAsync();
 
                     Assert.Fail();
@@ -146,18 +152,21 @@ namespace Bit.Tests.Api.Middlewares.WebApi.Tests
             {
                 TokenResponse token = await testEnvironment.Server.Login("ValidUserName", "ValidPassword", clientId: "TestResOwner");
 
-                IODataClient client = testEnvironment.Server.BuildODataClient(token: token, afterResponse: message =>
+                IODataClient client = testEnvironment.Server.BuildODataClient(token: token, odataClientSettings: new ODataClientSettings
                 {
-                    if (message.StatusCode == HttpStatusCode.InternalServerError)
+                    AfterResponse = message =>
                     {
-                        Assert.AreEqual(BitMetadataBuilder.UnknownError, message.ReasonPhrase);
-                        Assert.IsTrue(message.Headers.Any(h => h.Key == "Reason-Phrase" && h.Value.Any(v => v == BitMetadataBuilder.UnknownError)));
+                        if (message.StatusCode == HttpStatusCode.InternalServerError)
+                        {
+                            Assert.AreEqual(BitMetadataBuilder.UnknownError, message.ReasonPhrase);
+                            Assert.IsTrue(message.Headers.Any(h => h.Key == "Reason-Phrase" && h.Value.Any(v => v == BitMetadataBuilder.UnknownError)));
 
-                        ILogger logger = testEnvironment.GetObjects<ILogger>().Last();
+                            ILogger logger = testEnvironment.GetObjects<ILogger>().Last();
 
-                        Guid correlationId = (Guid)logger.LogData.Single(logData => logData.Key == "X-CorrelationId").Value;
+                            Guid correlationId = (Guid)logger.LogData.Single(logData => logData.Key == "X-CorrelationId").Value;
 
-                        Assert.AreEqual(correlationId.ToString(), message.Headers.Single(h => h.Key == "X-CorrelationId").Value.Single());
+                            Assert.AreEqual(correlationId.ToString(), message.Headers.Single(h => h.Key == "X-CorrelationId").Value.Single());
+                        }
                     }
                 });
 

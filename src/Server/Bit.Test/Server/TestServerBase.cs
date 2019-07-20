@@ -23,36 +23,37 @@ namespace Bit.Test.Server
     {
         public virtual string Uri { get; protected set; }
 
-        public virtual ODataBatch BuildODataBatchClient(Action<HttpRequestMessage> beforeRequest = null,
-                  Action<HttpResponseMessage> afterResponse = null, TokenResponse token = null, string odataRouteName = "Test")
+        public virtual ODataBatch BuildODataBatchClient(TokenResponse token = null, string odataRouteName = "Test", ODataClientSettings odataClientSettings = null)
         {
-            return new ODataBatch(BuildODataClient(beforeRequest, afterResponse, token, odataRouteName));
+            return new ODataBatch(BuildODataClient(token, odataRouteName, odataClientSettings));
         }
 
-        public virtual IODataClient BuildODataClient(Action<HttpRequestMessage> beforeRequest = null,
-            Action<HttpResponseMessage> afterResponse = null, TokenResponse token = null, string odataRouteName = "Test")
+        public virtual IODataClient BuildODataClient(TokenResponse token = null, string odataRouteName = "Test", ODataClientSettings odataClientSettings = null)
         {
-            ODataClient client = new ODataClient(new ODataClientSettings(new Uri($"{Uri}odata/{odataRouteName}/"))
+            Action<HttpRequestMessage> originalBeforeRequest = odataClientSettings?.BeforeRequest;
+
+            odataClientSettings = odataClientSettings ?? new ODataClientSettings { };
+
+            if (odataClientSettings.BaseUri == default)
+                odataClientSettings.BaseUri = new Uri($"{Uri}odata/{odataRouteName}/");
+
+            odataClientSettings.BeforeRequest = (message) =>
             {
-                BeforeRequest = message =>
+                if (token != null)
                 {
-                    if (token != null)
-                    {
-                        message.Headers.Add("Authorization",
-                            $"{token.TokenType} {token.AccessToken}");
-                    }
+                    message.Headers.Add("Authorization",
+                        $"{token.TokenType} {token.AccessToken}");
+                }
 
-                    beforeRequest?.Invoke(message);
-                },
-                AfterResponse = message =>
-                {
-                    afterResponse?.Invoke(message);
-                },
-                OnCreateMessageHandler = GetHttpMessageHandler,
-                NameMatchResolver = ODataNameMatchResolver.AlpahumericCaseInsensitive
-            });
+                originalBeforeRequest?.Invoke(message);
+            };
 
-            return client;
+            if (odataClientSettings.OnCreateMessageHandler == default)
+                odataClientSettings.OnCreateMessageHandler = GetHttpMessageHandler;
+
+            odataClientSettings.NameMatchResolver = ODataNameMatchResolver.AlpahumericCaseInsensitive;
+
+            return new ODataClient(odataClientSettings);
         }
 
         protected abstract HttpMessageHandler GetHttpMessageHandler();

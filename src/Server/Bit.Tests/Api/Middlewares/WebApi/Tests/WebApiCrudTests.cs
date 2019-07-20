@@ -147,9 +147,12 @@ namespace Bit.Tests.Api.Middlewares.WebApi.Tests
 
                 IRequestValidator requestValidator = A.Fake<IRequestValidator>();
 
-                IODataClient client = testEnvironment.Server.BuildODataClient(token: token, beforeRequest: message =>
+                IODataClient client = testEnvironment.Server.BuildODataClient(token: token, odataClientSettings: new ODataClientSettings
                 {
-                    requestValidator.ValidateRequestByUri(message.RequestUri);
+                    BeforeRequest = message =>
+                    {
+                        requestValidator.ValidateRequestByUri(message.RequestUri);
+                    }
                 });
 
                 IEnumerable<ParentEntity> parentEntities = await client.ParentEntities()
