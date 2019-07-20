@@ -9,13 +9,11 @@ using Bit.ViewModel.Implementations;
 using Microsoft.Extensions.DependencyInjection;
 using Prism;
 using Prism.Autofac;
-using Prism.Behaviors;
 using Prism.Events;
 using Prism.Ioc;
 using Prism.Logging;
 using Prism.Navigation;
 using Prism.Plugin.Popups;
-using Rg.Plugins.Popup.Contracts;
 using Rg.Plugins.Popup.Services;
 using System;
 using System.Collections.Generic;
@@ -162,25 +160,17 @@ namespace Bit
             containerRegistry.Register<ILoggerFacade, BitPrismLogger>();
             containerBuilder.Register(c => Container).SingleInstance().PreserveExistingDefaults();
             containerBuilder.Register(c => Container.GetContainer()).PreserveExistingDefaults();
-            RegisterPopupNavigationService(containerRegistry);
             containerBuilder.Register<IAdaptiveBehaviorService>(c => this).SingleInstance().PreserveExistingDefaults();
-        }
-
-        void RegisterPopupNavigationService(IContainerRegistry containerRegistry)
-        {
             typeof(PopupNavigation).GetField("_popupNavigation", BindingFlags.Static | BindingFlags.NonPublic).SetValue(null, new BitPopupNavigation
             {
                 OriginalImplementation = PopupNavigation.Instance
             });
-
-            containerRegistry.RegisterInstance<IPopupNavigation>(PopupNavigation.Instance);
-            containerRegistry.RegisterSingleton<IPageBehaviorFactory, PopupPageBehaviorFactory>();
-            containerRegistry.Register<INavigationService, BitPopupPageNavigationService>(NavigationServiceName);
+            containerRegistry.RegisterPopupNavigationService();
         }
 
         protected override IContainerExtension CreateContainerExtension()
         {
-            return new BitAutofacContainerExtension(new ContainerBuilder());
+            return new AutofacContainerExtension(new ContainerBuilder());
         }
 
         public virtual void InvalidateAllAdptiveBehaviors()

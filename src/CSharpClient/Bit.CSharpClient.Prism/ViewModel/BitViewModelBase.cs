@@ -7,13 +7,13 @@ using System.Threading.Tasks;
 
 namespace Bit.ViewModel
 {
-    public class BitViewModelBase : Bindable, INavigatedAware, INavigatingAware, INavigationAware, IDestructible
+    public class BitViewModelBase : Bindable, INavigatedAware, IInitializeAsync, INavigationAware, IDestructible
     {
         public async void Destroy()
         {
             try
             {
-                await DestroyAsync();
+                await OnDestroyAsync();
                 await Task.Yield();
             }
             catch (Exception exp)
@@ -22,7 +22,7 @@ namespace Bit.ViewModel
             }
         }
 
-        public virtual Task DestroyAsync()
+        public virtual Task OnDestroyAsync()
         {
             return Task.CompletedTask;
         }
@@ -45,24 +45,6 @@ namespace Bit.ViewModel
             return Task.CompletedTask;
         }
 
-        public async void OnNavigatedTo(INavigationParameters parameters)
-        {
-            try
-            {
-                await Task.Yield();
-                await OnNavigatedToAsync(parameters);
-            }
-            catch (Exception exp)
-            {
-                BitExceptionHandler.Current.OnExceptionReceived(exp);
-            }
-        }
-
-        public virtual Task OnNavigatedToAsync(INavigationParameters parameters)
-        {
-            return Task.CompletedTask;
-        }
-
         protected virtual string GetViewModelName()
         {
             return GetType().Name.Replace("ViewModel", string.Empty);
@@ -73,7 +55,7 @@ namespace Bit.ViewModel
             return false;
         }
 
-        public async void OnNavigatingTo(INavigationParameters parameters)
+        public async void OnNavigatedTo(INavigationParameters parameters)
         {
             DateTimeOffset startDate = DateTimeOffset.Now;
             bool success = true;
@@ -81,7 +63,7 @@ namespace Bit.ViewModel
             try
             {
                 await Task.Yield();
-                await OnNavigatingToAsync(parameters);
+                await OnNavigatedToAsync(parameters);
                 await Task.Yield();
             }
             catch (Exception exp)
@@ -112,7 +94,25 @@ namespace Bit.ViewModel
             }
         }
 
-        public virtual Task OnNavigatingToAsync(INavigationParameters parameters)
+        public virtual Task OnNavigatedToAsync(INavigationParameters parameters)
+        {
+            return Task.CompletedTask;
+        }
+
+        public async Task InitializeAsync(INavigationParameters parameters)
+        {
+            try
+            {
+                await Task.Yield();
+                await OnInitializeAsync(parameters);
+            }
+            catch (Exception exp)
+            {
+                BitExceptionHandler.Current.OnExceptionReceived(exp);
+            }
+        }
+
+        public virtual Task OnInitializeAsync(INavigationParameters parameters)
         {
             return Task.CompletedTask;
         }
