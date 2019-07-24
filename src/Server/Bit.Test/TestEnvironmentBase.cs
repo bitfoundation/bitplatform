@@ -185,9 +185,11 @@ namespace Bit.Test
             return new CompositeAppModulesProvider(args.CustomAppModulesProvider ?? DefaultAppModulesProvider.Current, new TestAdditionalDependencies(args.AdditionalDependencies));
         }
 
-        public ITestServer Server { get; }
+        public virtual ITestServer Server { get; }
 
-        public IEnumerable<T> GetObjects<T>()
+        public virtual IDependencyResolver DependencyResolver => DefaultDependencyManager.Current;
+
+        public virtual IEnumerable<T> GetObjects<T>()
         {
             return TestDependencyManager.CurrentTestDependencyManager
                 .Objects
