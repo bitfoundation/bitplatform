@@ -35,7 +35,7 @@ namespace BitCodeAnalyzer.BitAnalyzers.Dto
 
             IMethodSymbol method = (IMethodSymbol)context.SemanticModel.GetDeclaredSymbol(methodDec);
 
-            if (method.ContainingType.IsDtoController())
+            if (method.ContainingType.IsDtoController() && method.IsOperation(out AttributeData _))
             {
                 ITypeSymbol returnType = method.ReturnType.GetUnderlyingTypeSymbol();
 

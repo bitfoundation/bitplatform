@@ -76,19 +76,14 @@ namespace BitCodeGenerator.Implementations
                     {
                         IMethodSymbol methodSymbol = (IMethodSymbol)semanticModel.GetDeclaredSymbol(methodDecSyntax);
 
-                        ImmutableArray<AttributeData> attrs = methodSymbol.GetAttributes();
 
-                        AttributeData actionAttribute = attrs.ExtendedSingleOrDefault($"Looking for action attribute on {methodSymbol.Name}", att => att.AttributeClass.Name == "ActionAttribute");
-
-                        AttributeData functionAttribute = attrs.ExtendedSingleOrDefault($"Looking for function attribute on {methodSymbol.Name}", att => att.AttributeClass.Name == "FunctionAttribute");
-
-                        if (actionAttribute == null && functionAttribute == null)
+                        if (!methodSymbol.IsOperation(out AttributeData operationAttribute))
                             continue;
 
                         ODataOperation operation = new ODataOperation
                         {
                             Method = methodSymbol,
-                            Kind = actionAttribute != null ? ODataOperationKind.Action : ODataOperationKind.Function,
+                            Kind = operationAttribute.AttributeClass.Name == "ActionAttribute" ? ODataOperationKind.Action : ODataOperationKind.Function,
                             ReturnType = methodSymbol.ReturnType
                         };
 

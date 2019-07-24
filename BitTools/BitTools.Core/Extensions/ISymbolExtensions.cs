@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Immutable;
 using System.Linq;
 using System.Xml.Linq;
 
@@ -34,6 +35,15 @@ namespace Microsoft.CodeAnalysis
             }
 
             return !string.IsNullOrEmpty(summary) ? "/**" + summary + "*/" : string.Empty;
+        }
+
+        public static bool IsOperation(this IMethodSymbol methodSymbol, out AttributeData operationAttribute)
+        {
+            ImmutableArray<AttributeData> attrs = methodSymbol.GetAttributes();
+
+            operationAttribute = attrs.ExtendedSingleOrDefault($"Looking for action/function attribute on {methodSymbol.Name}", att => att.AttributeClass.Name == "ActionAttribute" || att.AttributeClass.Name == "FunctionAttribute");
+
+            return operationAttribute != null;
         }
     }
 }
