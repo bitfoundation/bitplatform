@@ -15,7 +15,7 @@
     <PackageReference Include="Newtonsoft.Json" Version="12.0.2" />
     <PackageReference Include="Prism.Plugin.Logging.Common" Version="1.4.0.342-pre" />
     <PackageReference Include="Prism.Plugin.Popups" Version="2.4.0.417-pre" />
-    <PackageReference Include="Prism.Forms" Version="7.2.0.1347-pre" />
+    <PackageReference Include="Prism.Forms" Version="7.2.0.1367" />
     <PackageReference Include="System.ComponentModel.Annotations" Version="4.6.0-preview7.19362.9" />
     <PackageReference Include="Xamarin.Essentials" Version="1.2.0" />
     <PackageReference Include="Microsoft.ApplicationInsights.WindowsApps" Condition=" '$(TargetFramework)' == 'uap10.0.16299' " Version="1.1.1" />
