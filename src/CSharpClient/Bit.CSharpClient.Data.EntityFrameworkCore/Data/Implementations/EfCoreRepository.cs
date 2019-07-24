@@ -78,8 +78,7 @@ namespace Bit.Data.Implementations
 
             try
             {
-                Attach(dtoToUpdate);
-                DbContext.Entry(dtoToUpdate).State = EntityState.Modified;
+                DbContext.Update(dtoToUpdate);
 
                 await SaveChangesAsync(cancellationToken).ConfigureAwait(false);
 
@@ -99,8 +98,7 @@ namespace Bit.Data.Implementations
 
             try
             {
-                Attach(dtoToDelete);
-                DbContext.Entry(dtoToDelete).State = EntityState.Deleted;
+                DbContext.Remove(dtoToDelete);
 
                 await SaveChangesAsync(cancellationToken).ConfigureAwait(false);
                 return dtoToDelete;
@@ -180,8 +178,7 @@ namespace Bit.Data.Implementations
 
             try
             {
-                Attach(dtoToUpdate);
-                DbContext.Entry(dtoToUpdate).State = EntityState.Modified;
+                DbContext.Update(dtoToUpdate);
 
                 SaveChanges();
 
@@ -201,8 +198,7 @@ namespace Bit.Data.Implementations
 
             try
             {
-                Attach(dtoToDelete);
-                DbContext.Entry(dtoToDelete).State = EntityState.Deleted;
+                DbContext.Remove(dtoToDelete);
 
                 SaveChanges();
                 return dtoToDelete;

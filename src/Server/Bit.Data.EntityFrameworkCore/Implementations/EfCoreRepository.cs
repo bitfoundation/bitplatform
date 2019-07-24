@@ -111,8 +111,7 @@ namespace Bit.Data.EntityFrameworkCore.Implementations
                 if (entityToUpdate is IVersionableEntity versionableEntity)
                     versionableEntity.Version = DateTimeProvider.GetCurrentUtcDateTime().UtcTicks;
 
-                Attach(entityToUpdate);
-                DbContext.Entry(entityToUpdate).State = EntityState.Modified;
+                DbContext.Update(entityToUpdate);
 
                 await SaveChangesAsync(cancellationToken).ConfigureAwait(false);
 
@@ -142,8 +141,7 @@ namespace Bit.Data.EntityFrameworkCore.Implementations
                 }
                 else
                 {
-                    Attach(entityToDelete);
-                    DbContext.Entry(entityToDelete).State = EntityState.Deleted;
+                    DbContext.Remove(entityToDelete);
 
                     await SaveChangesAsync(cancellationToken).ConfigureAwait(false);
                     return entityToDelete;
@@ -240,8 +238,7 @@ namespace Bit.Data.EntityFrameworkCore.Implementations
                 if (entityToUpdate is IVersionableEntity versionableEntity)
                     versionableEntity.Version = DateTimeProvider.GetCurrentUtcDateTime().UtcTicks;
 
-                Attach(entityToUpdate);
-                DbContext.Entry(entityToUpdate).State = EntityState.Modified;
+                DbContext.Update(entityToUpdate);
 
                 SaveChanges();
 
@@ -271,8 +268,7 @@ namespace Bit.Data.EntityFrameworkCore.Implementations
                 }
                 else
                 {
-                    Attach(entityToDelete);
-                    DbContext.Entry(entityToDelete).State = EntityState.Deleted;
+                    DbContext.Remove(entityToDelete);
 
                     SaveChanges();
                     return entityToDelete;
