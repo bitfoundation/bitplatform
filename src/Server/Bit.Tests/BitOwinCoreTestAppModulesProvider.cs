@@ -10,7 +10,6 @@ using Bit.Owin.Implementations;
 using Bit.OwinCore.Middlewares;
 using Bit.Signalr.Implementations;
 using Bit.Test;
-using Bit.Tests.Api.Middlewares;
 using Bit.Tests.Data.Implementations;
 using Bit.Tests.IdentityServer.Implementations;
 using Bit.Tests.Model.Implementations;
@@ -21,7 +20,6 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Swashbuckle.Application;
 using System.Collections.Generic;
-using System.Data.Common;
 using System.Data.SqlClient;
 using System.IO.Compression;
 using System.Reflection;
@@ -76,8 +74,10 @@ namespace Bit.Tests
 
             dependencyManager.RegisterAspNetCoreSingleSignOnClient();
 
+#if DotNet // This is not working with .net core 3 prev 7+
             services.AddWebApiCore(dependencyManager);
-            dependencyManager.RegisterAspNetCoreMiddleware<TestWebApiCoreMvcMiddlewareConfiguration>();
+            dependencyManager.RegisterAspNetCoreMiddleware<Api.Middlewares.TestWebApiCoreMvcMiddlewareConfiguration>();
+#endif
 
             dependencyManager.RegisterMetadata();
 

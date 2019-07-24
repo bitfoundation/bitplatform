@@ -6,8 +6,10 @@ using Bit.OwinCore.Implementations;
 using Bit.OwinCore.Middlewares;
 using Microsoft.ApplicationInsights.Extensibility;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.Owin.Security.DataProtection;
 using System;
+using System.Reflection;
 
 namespace Bit.Core.Contracts
 {
@@ -69,23 +71,32 @@ namespace Bit.Core.Contracts
         /// </summary>
         public static IDependencyManager RegisterMinimalAspNetCoreMiddlewares(this IDependencyManager dependencyManager)
         {
-            dependencyManager.RegisterAspNetCoreMiddlewareUsing(aspNetCoreApp =>
+            TypeInfo httpBodyControlFeatureType = Type.GetType($"Microsoft.AspNetCore.Http.Features.IHttpBodyControlFeature, Microsoft.AspNetCore.Http.Features, Version={typeof(IFeatureCollection).Assembly.GetName().Version}, Culture=neutral, PublicKeyToken=adb9793829ddae60", throwOnError: false)?.GetTypeInfo();
+
+            if (httpBodyControlFeatureType != null)
             {
-                aspNetCoreApp.Use(async (context, next) =>
+                PropertyInfo allowSynchronousIOProp = httpBodyControlFeatureType.GetProperty("AllowSynchronousIO");
+
+                dependencyManager.RegisterAspNetCoreMiddlewareUsing(aspNetCoreApp =>
                 {
-                    if (context.Request.Path.HasValue)
+                    aspNetCoreApp.Use(async (context, next) =>
                     {
-                        string path = context.Request.Path.Value;
-
-                        if (path.StartsWith("/core", StringComparison.InvariantCultureIgnoreCase) || path.StartsWith("/signalr", StringComparison.InvariantCultureIgnoreCase) || path.StartsWith("/jobs", StringComparison.InvariantCultureIgnoreCase) || path.EndsWith("$batch", StringComparison.InvariantCultureIgnoreCase))
+                        if (context.Request.Path.HasValue)
                         {
-                            context.Features.GetType().GetProperty("AllowSynchronousIO")?.SetValue(context.Features, true);
-                        }
-                    }
+                            string path = context.Request.Path.Value;
 
-                    await next.Invoke();
+                            if (path.StartsWith("/core", StringComparison.InvariantCultureIgnoreCase) || path.StartsWith("/signalr", StringComparison.InvariantCultureIgnoreCase) || path.StartsWith("/jobs", StringComparison.InvariantCultureIgnoreCase) || path.EndsWith("$batch", StringComparison.InvariantCultureIgnoreCase))
+                            {
+                                object httpBodyControlFeature = context.Features[httpBodyControlFeatureType];
+                                if (httpBodyControlFeature != null)
+                                    allowSynchronousIOProp.SetValue(httpBodyControlFeature, true);
+                            }
+                        }
+
+                        await next.Invoke();
+                    });
                 });
-            });
+            }
 
             dependencyManager.RegisterAspNetCoreMiddlewareUsing(aspNetCoreApp =>
             {

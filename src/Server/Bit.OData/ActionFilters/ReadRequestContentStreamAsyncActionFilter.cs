@@ -7,6 +7,7 @@ using Newtonsoft.Json.Linq;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Web.Http;
@@ -30,23 +31,31 @@ namespace Bit.OData.ActionFilters
         {
             HttpActionDescriptor actionDescriptor = actionContext.Request.GetActionDescriptor();
 
-            if (actionDescriptor != null && actionContext.Request?.Content?.Headers?.ContentLength != 0 && (actionDescriptor.GetCustomAttributes<ActionAttribute>().Any() ||
-                actionDescriptor.GetCustomAttributes<CreateAttribute>().Any() ||
-                actionDescriptor.GetCustomAttributes<UpdateAttribute>().Any() ||
-                actionDescriptor.GetCustomAttributes<PartialUpdateAttribute>().Any()))
+            HttpContentHeaders requestContentHeaders = actionContext?.Request?.Content?.Headers;
+
+            if (requestContentHeaders != null)
             {
-                using (StreamReader requestStreamReader = new StreamReader(await actionContext.Request.Content.ReadAsStreamAsync().ConfigureAwait(false)))
+                bool contentLengthHasValue = requestContentHeaders.ContentLength.HasValue && requestContentHeaders.ContentLength.Value > 0;
+                bool contentTypeIsJson = requestContentHeaders.ContentType?.MediaType?.Contains("json") == true; // https://github.com/aspnet/AspNetWebStack/issues/232
+
+                if ((contentLengthHasValue || contentTypeIsJson) && (actionDescriptor.GetCustomAttributes<ActionAttribute>().Any() ||
+                    actionDescriptor.GetCustomAttributes<CreateAttribute>().Any() ||
+                    actionDescriptor.GetCustomAttributes<UpdateAttribute>().Any() ||
+                    actionDescriptor.GetCustomAttributes<PartialUpdateAttribute>().Any()))
                 {
-                    using (JsonReader jsonReader = new JsonTextReader(requestStreamReader))
+                    using (StreamReader requestStreamReader = new StreamReader(await actionContext.Request.Content.ReadAsStreamAsync().ConfigureAwait(false)))
                     {
-                        JToken contentStreamAsJson = await JToken.LoadAsync(jsonReader, cancellationToken).ConfigureAwait(false);
-
-                        if (contentStreamAsJson.First is JProperty prop && actionDescriptor.GetParameters().Any(p => p.ParameterName == prop.Name))
+                        using (JsonReader jsonReader = new JsonTextReader(requestStreamReader))
                         {
-                            contentStreamAsJson = contentStreamAsJson[prop.Name];
-                        }
+                            JToken contentStreamAsJson = await JToken.LoadAsync(jsonReader, cancellationToken).ConfigureAwait(false);
 
-                        actionContext.Request.Properties["ContentStreamAsJson"] = contentStreamAsJson;
+                            if (contentStreamAsJson.First is JProperty prop && actionDescriptor.GetParameters().Any(p => p.ParameterName == prop.Name))
+                            {
+                                contentStreamAsJson = contentStreamAsJson[prop.Name];
+                            }
+
+                            actionContext.Request.Properties["ContentStreamAsJson"] = contentStreamAsJson;
+                        }
                     }
                 }
             }

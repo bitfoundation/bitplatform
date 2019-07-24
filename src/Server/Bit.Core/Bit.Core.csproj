@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <Import Project="../Server.Build.props"/>
+  <Import Project="../Server.Build.props" />
 
   <PropertyGroup>
     <TargetFrameworks>net461;netcoreapp2.0</TargetFrameworks>
@@ -10,7 +10,8 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="1.1.1" />
     <PackageReference Include="Newtonsoft.Json" Version="12.0.2" />
-    <PackageReference Include="System.ComponentModel.Annotations" Version="4.5.0" />
+    <PackageReference Include="System.ComponentModel.Annotations" Version="4.6.0-preview7.19362.9" />
+    <PackageReference Include="System.Configuration.ConfigurationManager" Version="4.6.0-preview7.19362.9" />
   </ItemGroup>
 
 </Project>

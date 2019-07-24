@@ -6,9 +6,14 @@
     <GenerateProgramFile>false</GenerateProgramFile>
     <OutputType>Exe</OutputType>
     <StartupObject />
+    <DefineConstants Condition=" '$(TargetFramework)' == 'net461' ">DotNet</DefineConstants>
+    <DefineConstants Condition=" '$(TargetFramework)' == 'netcoreapp3.0' ">DotNetCore</DefineConstants>
   </PropertyGroup>
 
   <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" Condition=" '$(TargetFramework)' == 'netcoreapp3.0' " />
+    <PackageReference Include="Microsoft.AspNetCore.TestHost" Version="3.0.0-preview7.19365.7" Condition=" '$(TargetFramework)' == 'netcoreapp3.0' " />
+    <PackageReference Include="Microsoft.AspNetCore.Owin" Version="3.0.0-preview7.19365.7" Condition=" '$(TargetFramework)' == 'netcoreapp3.0' " />
     <PackageReference Include="Microsoft.AspNetCore.ResponseCompression" Version="2.2.0" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="2.2.6" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="2.2.6" />
@@ -17,7 +22,6 @@
     <PackageReference Include="MSTest.TestFramework" Version="1.4.0" />
     <PackageReference Include="Refit" Version="4.7.9" />
     <PackageReference Include="Selenium.WebDriver.ChromeDriver" Version="75.0.3770.140" />
-    <PackageReference Include="System.Configuration.ConfigurationManager" Version="4.5.0" /> 
   </ItemGroup>
 
   <ItemGroup>
