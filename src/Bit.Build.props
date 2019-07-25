@@ -1,28 +1,30 @@
 <Project>
 
   <PropertyGroup>
-    <PackageTags>Bit</PackageTags>
-    <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
-    <GeneratePackageOnBuild Condition=" '$(Configuration)' == 'Release' ">true</GeneratePackageOnBuild>
     <Authors>Bit Foundation</Authors>
     <Company>Bit Foundation</Company>
     <Product>Bit Framework</Product>
-    <Title>$(ProjectName)</Title>
-    <Description>$(ProjectName)</Description>
+    <Title>$(MSBuildProjectName)</Title>
+    <Description>$(MSBuildProjectName)</Description>
     <Copyright>Copyright © Bit Foundation 2019</Copyright>
-    <PackageLicenseUrl>https://github.com/bit-foundation/bit-framework/blob/master/LICENSE</PackageLicenseUrl>
-    <PackageProjectUrl>https://github.com/bit-foundation/bit-framework</PackageProjectUrl>
-    <PackageIconUrl>https://avatars.githubusercontent.com/u/22663390</PackageIconUrl>
     <RepositoryUrl>https://github.com/bit-foundation/bit-framework</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
-    <PackageReleaseNotes>https://github.com/bit-foundation/bit-framework/releases</PackageReleaseNotes>
-    <Version>2.5.0</Version>
-    <AssemblyVersion>2.5.0.0</AssemblyVersion>
-    <PackageVersion>2.5.0</PackageVersion>
+    <Version>2.6.0</Version>
+    <AssemblyVersion>2.6.0.0</AssemblyVersion>
     <DocumentationFile>bin\$(Configuration)\$(TargetFramework)\$(AssemblyName).xml</DocumentationFile>
     <NoWarn>$(NoWarn);NU1605;CS1591;NU1701;</NoWarn>
     <!-- https://stackoverflow.com/a/46815541/2720104 -->
     <LangVersion>7.3</LangVersion>
+    <PackageTags>Bit</PackageTags>
+    <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
+    <GeneratePackageOnBuild Condition=" '$(Configuration)' == 'Release' ">true</GeneratePackageOnBuild>
+    <PackageId>$(MSBuildProjectName)</PackageId>
+    <PackageDescription>$(MSBuildProjectName)</PackageDescription>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageProjectUrl>https://github.com/bit-foundation/bit-framework</PackageProjectUrl>
+    <PackageIconUrl>https://avatars.githubusercontent.com/u/22663390</PackageIconUrl>
+    <PackageReleaseNotes>https://github.com/bit-foundation/bit-framework/releases/tag/v2.6.0</PackageReleaseNotes>
+    <PackageVersion>2.6.0</PackageVersion>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)'=='Debug'">
