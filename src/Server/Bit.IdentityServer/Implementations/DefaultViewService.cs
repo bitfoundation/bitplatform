@@ -157,7 +157,7 @@ namespace Bit.IdentityServer.Implementations
                 model.RequestId,
                 model.SiteName,
                 model.SiteUrl,
-                model.Username,
+                UserName = model.Username, // https://docs.microsoft.com/en-us/dotnet/standard/design-guidelines/capitalization-conventions#capitalizing-compound-words-and-common-terms
                 ReturnUrl = message.ReturnUrl == null ? "" : new Uri(message.ReturnUrl).ParseQueryString()["redirect_uri"]
             }, Formatting.None, jsonSerSettings);
 
