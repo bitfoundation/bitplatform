@@ -78,7 +78,8 @@ namespace Bit.Test.Implementations
 
         public virtual bool IsGoingToCreateProxyForImplementationType(TypeInfo implementationType)
         {
-            return AutoProxyCreationIncludeRules.Any(rule => rule(implementationType) == true)
+            return implementationType.IsClass
+                && AutoProxyCreationIncludeRules.Any(rule => rule(implementationType) == true)
                 && AutoProxyCreationIgnoreRules.All(rule => rule(implementationType) == false);
         }
 
@@ -95,7 +96,7 @@ namespace Bit.Test.Implementations
             }
 
             if (Objects is BlockingCollection<object> blockingCollection)
-                blockingCollection.Add(instance); 
+                blockingCollection.Add(instance);
             else if (Objects is ICollection<object> collection)
                 collection.Add(instance);
             else
