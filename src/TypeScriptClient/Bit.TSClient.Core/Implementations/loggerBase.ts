@@ -45,6 +45,8 @@
         private lastLoggedError: string = null;
 
         protected ignoreLog(logInfo: Model.Dtos.ClientLogDto): boolean {
+            if (typeof sessionStorage == "undefined")
+                return true;
             if (logInfo.ErrorName == "HTTP request failed" /*This type of error is handled at server side*/) {
                 return true;
             }
