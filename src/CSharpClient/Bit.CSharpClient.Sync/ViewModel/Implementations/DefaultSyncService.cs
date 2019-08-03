@@ -225,30 +225,47 @@ namespace Bit.ViewModel.Implementations
 
         protected virtual async Task BuildRetriveDataTask(DtoSyncConfigSyncFromResults dtoSyncConfigSyncFromResults, CancellationToken cancellationToken)
         {
-            string oDataGetAndVersionFilter = await (dtoSyncConfigSyncFromResults.DtoSetSyncConfig.OnlineDtoSetForGet ?? dtoSyncConfigSyncFromResults.DtoSetSyncConfig.OnlineDtoSet)(ODataClient).Where($"{nameof(ISyncableDto.Version)} gt {dtoSyncConfigSyncFromResults.MaxVersion}").GetCommandTextAsync(cancellationToken).ConfigureAwait(false);
-
-            string oDataUri = $"{ClientAppProfile.ODataRoute}{oDataGetAndVersionFilter}";
-
-            HttpResponseMessage response = await HttpClient.GetAsync(oDataUri, HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false);
-
-            if (response.IsSuccessStatusCode == true)
+            try
             {
-                using (Stream stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false))
-                {
-                    using (StreamReader reader = new StreamReader(stream))
-                    {
-                        using (JsonReader jsonReader = new JsonTextReader(reader))
-                        {
-                            JToken jToken = await JToken.LoadAsync(jsonReader, new JsonLoadSettings
-                            {
-                                CommentHandling = CommentHandling.Ignore,
-                                LineInfoHandling = LineInfoHandling.Ignore
-                            }, cancellationToken).ConfigureAwait(false);
+                IBoundClient<IDictionary<string, object>> query = (dtoSyncConfigSyncFromResults.DtoSetSyncConfig.OnlineDtoSetForGet ?? dtoSyncConfigSyncFromResults.DtoSetSyncConfig.OnlineDtoSet)(ODataClient);
 
-                            dtoSyncConfigSyncFromResults.RecentlyChangedOnlineDtos = ((IEnumerable)(jToken)["value"].ToObject(typeof(List<>).MakeGenericType(dtoSyncConfigSyncFromResults.DtoType))).Cast<ISyncableDto>().ToArray();
+                if (dtoSyncConfigSyncFromResults.MaxVersion == 0)
+                    query = query.Where($"{nameof(ISyncableDto.IsArchived)} eq false");
+                else
+                    query = query.Where($"{nameof(ISyncableDto.Version)} gt {dtoSyncConfigSyncFromResults.MaxVersion}");
+
+                string oDataGetAndVersionFilter = await query
+                    .GetCommandTextAsync(cancellationToken)
+                    .ConfigureAwait(false);
+
+                string oDataUri = $"{ClientAppProfile.ODataRoute}{oDataGetAndVersionFilter}";
+
+                using (HttpResponseMessage response = await HttpClient.GetAsync(oDataUri, HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false))
+                {
+                    response.EnsureSuccessStatusCode();
+
+                    using (Stream stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false))
+                    {
+                        using (StreamReader reader = new StreamReader(stream))
+                        {
+                            using (JsonReader jsonReader = new JsonTextReader(reader))
+                            {
+                                JToken jToken = await JToken.LoadAsync(jsonReader, new JsonLoadSettings
+                                {
+                                    CommentHandling = CommentHandling.Ignore,
+                                    LineInfoHandling = LineInfoHandling.Ignore
+                                }, cancellationToken).ConfigureAwait(false);
+
+                                dtoSyncConfigSyncFromResults.RecentlyChangedOnlineDtos = ((IEnumerable)(jToken)["value"].ToObject(typeof(List<>).MakeGenericType(dtoSyncConfigSyncFromResults.DtoType))).Cast<ISyncableDto>().ToArray();
+                            }
                         }
                     }
                 }
+            }
+            catch (Exception exp)
+            {
+                dtoSyncConfigSyncFromResults.RecentlyChangedOnlineDtos = new ISyncableDto[] { };
+                BitExceptionHandler.Current.OnExceptionReceived(exp);
             }
         }
 

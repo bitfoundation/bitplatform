@@ -175,7 +175,12 @@
                         maxVersion = offlineEntitiesOrderedByVersion[0].Version;
                     }
 
-                    const recentlyChangedOnlineEntitiesQuery = entitySetSyncMaterial.entitySetConfig.getMethod(onlineContext).filter(`(e, ver) => e.Version > ver`, { ver: maxVersion });
+                    let recentlyChangedOnlineEntitiesQuery = entitySetSyncMaterial.entitySetConfig.getMethod(onlineContext);
+
+                    if (maxVersion == "0000000000000000000")
+                        recentlyChangedOnlineEntitiesQuery = recentlyChangedOnlineEntitiesQuery.filter(`(e) => e.IsArchived == false`);
+                    else
+                        recentlyChangedOnlineEntitiesQuery = recentlyChangedOnlineEntitiesQuery.filter(`(e, ver) => e.Version > ver`, { ver: maxVersion });
 
                     return recentlyChangedOnlineEntitiesQuery;
 
