@@ -76,6 +76,11 @@ namespace Bit.Data.Implementations
             return false;
         }
 
+        public virtual bool SupportsExpand()
+        {
+            return true;
+        }
+
         public abstract bool SupportsQueryable<T>(IQueryable source);
 
         public virtual IQueryable<T> Take<T>(IQueryable<T> source, int count)

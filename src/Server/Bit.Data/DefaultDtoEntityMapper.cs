@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using AutoMapper;
@@ -23,7 +24,7 @@ namespace Bit.Data
             return existingEntity == null ? Mapper.Map<TDto, TEntity>(dto) : Mapper.Map(dto, existingEntity);
         }
 
-        public virtual IQueryable<TDto> FromEntityQueryToDtoQuery(IQueryable<TEntity> entityQuery)
+        public IQueryable<TDto> FromEntityQueryToDtoQuery(IQueryable<TEntity> entityQuery, object parameters = null, string[] membersToExpand = null)
         {
             if (entityQuery == null)
                 throw new ArgumentNullException(nameof(entityQuery));
@@ -31,21 +32,17 @@ namespace Bit.Data
             if (_entityTypeAndDtoTypeAreEqual == true)
                 return (IQueryable<TDto>)entityQuery;
 
-            return entityQuery.ProjectTo<TDto>(configuration: Mapper.ConfigurationProvider);
-        }
+            Dictionary<string, object> @params = new Dictionary<string, object> { };
 
-        public IQueryable<TDto> FromEntityQueryToDtoQuery(IQueryable<TEntity> entityQuery, object parameters)
-        {
-            if (entityQuery == null)
-                throw new ArgumentNullException(nameof(entityQuery));
+            if (parameters != null)
+            {
+                foreach (PropertyInfo prop in parameters.GetType().GetProperties())
+                {
+                    @params.Add(prop.Name, prop.GetValue(parameters));
+                }
+            }
 
-            if (parameters == null)
-                throw new ArgumentNullException(nameof(parameters));
-
-            if (_entityTypeAndDtoTypeAreEqual == true)
-                return (IQueryable<TDto>)entityQuery;
-
-            return entityQuery.ProjectTo<TDto>(configuration: Mapper.ConfigurationProvider, parameters: parameters);
+            return entityQuery.ProjectTo<TDto>(configuration: Mapper.ConfigurationProvider, parameters: @params, membersToExpand: membersToExpand ?? new string[] { });
         }
 
         public virtual TDto FromEntityToDto(TEntity entity, TDto existingDto)

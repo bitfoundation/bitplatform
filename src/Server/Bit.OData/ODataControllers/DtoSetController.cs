@@ -4,6 +4,7 @@ using Bit.Model.Contracts;
 using Bit.Model.Implementations;
 using Bit.Owin.Exceptions;
 using Microsoft.AspNet.OData;
+using Microsoft.AspNet.OData.Query;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -132,7 +133,7 @@ namespace Bit.OData.ODataControllers
         [Get]
         public virtual async Task<IQueryable<TDto>> GetAll(CancellationToken cancellationToken)
         {
-            return DtoEntityMapper.FromEntityQueryToDtoQuery(await Repository.GetAllAsync(cancellationToken));
+            return DtoEntityMapper.FromEntityQueryToDtoQuery(await Repository.GetAllAsync(cancellationToken), membersToExpand: GetODataQueryOptions().GetExpandedProperties());
         }
     }
 }

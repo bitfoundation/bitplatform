@@ -37,7 +37,7 @@ namespace Bit.OData.ActionFilters
         private readonly ConcurrentDictionary<Type, MethodInfo> getCountAsyncMethodsCache = new ConcurrentDictionary<Type, MethodInfo>();
         private readonly ConcurrentDictionary<Type, MethodInfo> findDataProviderSpecificMethodsProviderMethodsCache = new ConcurrentDictionary<Type, MethodInfo>();
         private readonly ConcurrentDictionary<Type, MethodInfo> toQueryableMethodsCache = new ConcurrentDictionary<Type, MethodInfo>();
-        private readonly ConcurrentDictionary<Type, MethodInfo> toListAsyncMethodsCache = new ConcurrentDictionary<Type, MethodInfo>();
+        private readonly ConcurrentDictionary<Type, MethodInfo> getResultMethodsCache = new ConcurrentDictionary<Type, MethodInfo>();
         private readonly ConcurrentDictionary<Type, MethodInfo> firstAsyncMethodsCache = new ConcurrentDictionary<Type, MethodInfo>();
 
         public override async Task OnActionExecutedAsync(HttpActionExecutedContext actionExecutedContext, CancellationToken cancellationToken)
@@ -84,6 +84,8 @@ namespace Bit.OData.ActionFilters
                     HttpRequestMessageProperties requestODataProps = actionExecutedContext.Request.ODataProperties();
                     ODataQueryContext currentOdataQueryContext = new ODataQueryContext(actionExecutedContext.Request.GetModel(), queryElementType, requestODataProps.Path);
                     ODataQueryOptions currentOdataQueryOptions = new ODataQueryOptions(currentOdataQueryContext, actionExecutedContext.Request);
+                    if (currentOdataQueryOptions.SelectExpand?.SelectExpandClause != null && requestODataProps.SelectExpandClause == null)
+                        requestODataProps.SelectExpandClause = currentOdataQueryOptions.SelectExpand.SelectExpandClause;
                     ODataQuerySettings globalODataQuerySettings = new ODataQuerySettings
                     {
                         EnableConstantParameterization = this.EnableConstantParameterization,
@@ -109,7 +111,7 @@ namespace Bit.OData.ActionFilters
                     else
                         takeCount = null;
 
-                    globalODataQuerySettings.PageSize = null; // ApplyTo will enumerates the query for values other than null. We are gonna apply take in ToList & ToListAsync methods.
+                    globalODataQuerySettings.PageSize = null; // ApplyTo will enumerates the query for values other than null. We are gonna apply take in getResult method.
 
                     if (currentOdataQueryOptions.Filter != null)
                     {
@@ -134,7 +136,9 @@ namespace Bit.OData.ActionFilters
                         actionExecutedContext.Request.Properties["Microsoft.AspNet.OData.TotalCountFunc"] = new Func<long>(() => count);
                     }
 
-                    objContent.Value = currentOdataQueryOptions.ApplyTo(query: (IQueryable)objContent.Value, querySettings: globalODataQuerySettings, ignoreQueryOptions: AllowedQueryOptions.Filter | AllowedQueryOptions.Skip | AllowedQueryOptions.Top);
+                    AllowedQueryOptions ignoreQueryOptions = dataProviderSpecificMethodsProvider.SupportsExpand() ? (AllowedQueryOptions.Filter | AllowedQueryOptions.Skip | AllowedQueryOptions.Top) : (AllowedQueryOptions.Filter | AllowedQueryOptions.Skip | AllowedQueryOptions.Top | AllowedQueryOptions.Expand);
+
+                    objContent.Value = currentOdataQueryOptions.ApplyTo(query: (IQueryable)objContent.Value, querySettings: globalODataQuerySettings, ignoreQueryOptions: ignoreQueryOptions);
 
                     if (currentOdataQueryOptions.SelectExpand != null || currentOdataQueryOptions.Apply != null)
                     {
@@ -145,7 +149,7 @@ namespace Bit.OData.ActionFilters
                     if (isSingleResult == false)
                     {
                         objContent.Value = await (Task<object>)
-                            toListAsyncMethodsCache.GetOrAdd(queryElementType, t => typeof(ODataEnableQueryAttribute).GetMethod(nameof(ToListAsync)).MakeGenericMethod(t))
+                            getResultMethodsCache.GetOrAdd(queryElementType, t => typeof(ODataEnableQueryAttribute).GetMethod(nameof(GetResult)).MakeGenericMethod(t))
                             .Invoke(this, new[] { objContent.Value, dataProviderSpecificMethodsProvider, takeCount, skipCount, cancellationToken });
                     }
                     else
@@ -190,7 +194,7 @@ namespace Bit.OData.ActionFilters
             return dataProviderSpecificMethodsProvider.LongCountAsync(query, cancellationToken);
         }
 
-        public virtual async Task<object> ToListAsync<T>(IQueryable<T> query, IDataProviderSpecificMethodsProvider dataProviderSpecificMethodsProvider, int? takeCount, int? skipCount, CancellationToken cancellationToken)
+        public virtual async Task<object> GetResult<T>(IQueryable<T> query, IDataProviderSpecificMethodsProvider dataProviderSpecificMethodsProvider, int? takeCount, int? skipCount, CancellationToken cancellationToken)
         {
             if (query == null)
                 throw new ArgumentNullException(nameof(query));

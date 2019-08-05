@@ -33,6 +33,11 @@ namespace Bit.Data.EntityFrameworkCore.Implementations
             return true;
         }
 
+        public override bool SupportsExpand()
+        {
+            return false;
+        }
+
         public override bool SupportsQueryable<T>(IQueryable source)
         {
             if (source == null)

@@ -10,8 +10,6 @@ namespace Bit.Model.Contracts
 
         TDto FromEntityToDto(TEntity entity, TDto existingDto = null);
 
-        IQueryable<TDto> FromEntityQueryToDtoQuery(IQueryable<TEntity> entityQuery);
-
-        IQueryable<TDto> FromEntityQueryToDtoQuery(IQueryable<TEntity> entityQuery, object parameters);
+        IQueryable<TDto> FromEntityQueryToDtoQuery(IQueryable<TEntity> entityQuery, object parameters = null, string[] membersToExpand = null);
     }
 }
