@@ -1,8 +1,6 @@
-﻿using Xamarin.Forms;
-
-namespace Bit.CSharpClient.Controls.Samples
+﻿namespace Bit.CSharpClient.Controls.Samples
 {
-    public partial class BitRadioButtonSampleView : ContentPage
+    public partial class BitRadioButtonSampleView
     {
         public BitRadioButtonSampleView()
         {

@@ -1,6 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="..\packages\BitCodeGeneratorTask.2.6.0\build\BitCodeGeneratorTask.props" Condition="Exists('..\packages\BitCodeGeneratorTask.2.6.0\build\BitCodeGeneratorTask.props')" />
+  <Import Project="..\packages\BitCodeGeneratorTask.2.6.5\build\BitCodeGeneratorTask.props" Condition="Exists('..\packages\BitCodeGeneratorTask.2.6.5\build\BitCodeGeneratorTask.props')" />
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\TypeScript\Microsoft.TypeScript.Default.props" Condition="Exists('$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\TypeScript\Microsoft.TypeScript.Default.props')" />
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
@@ -174,35 +174,35 @@
     <Reference Include="AutoMapper, Version=8.1.1.0, Culture=neutral, PublicKeyToken=be96cd2c38ef1005, processorArchitecture=MSIL">
       <HintPath>..\packages\AutoMapper.8.1.1\lib\net461\AutoMapper.dll</HintPath>
     </Reference>
-    <Reference Include="Bit.Core, Version=2.6.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Bit.Core.2.6.0\lib\net461\Bit.Core.dll</HintPath>
+    <Reference Include="Bit.Core, Version=2.6.5.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Bit.Core.2.6.5\lib\net461\Bit.Core.dll</HintPath>
     </Reference>
-    <Reference Include="Bit.Data, Version=2.6.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Bit.Data.2.6.0\lib\net461\Bit.Data.dll</HintPath>
+    <Reference Include="Bit.Data, Version=2.6.5.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Bit.Data.2.6.5\lib\net461\Bit.Data.dll</HintPath>
     </Reference>
-    <Reference Include="Bit.Data.EntityFramework, Version=2.6.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Bit.Data.EntityFramework.2.6.0\lib\net461\Bit.Data.EntityFramework.dll</HintPath>
+    <Reference Include="Bit.Data.EntityFramework, Version=2.6.5.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Bit.Data.EntityFramework.2.6.5\lib\net461\Bit.Data.EntityFramework.dll</HintPath>
     </Reference>
-    <Reference Include="Bit.Hangfire, Version=2.6.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Bit.Hangfire.2.6.0\lib\net461\Bit.Hangfire.dll</HintPath>
+    <Reference Include="Bit.Hangfire, Version=2.6.5.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Bit.Hangfire.2.6.5\lib\net461\Bit.Hangfire.dll</HintPath>
     </Reference>
-    <Reference Include="Bit.IdentityServer, Version=2.6.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Bit.IdentityServer.2.6.0\lib\net461\Bit.IdentityServer.dll</HintPath>
+    <Reference Include="Bit.IdentityServer, Version=2.6.5.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Bit.IdentityServer.2.6.5\lib\net461\Bit.IdentityServer.dll</HintPath>
     </Reference>
-    <Reference Include="Bit.Model, Version=2.6.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Bit.Model.2.6.0\lib\net461\Bit.Model.dll</HintPath>
+    <Reference Include="Bit.Model, Version=2.6.5.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Bit.Model.2.6.5\lib\net461\Bit.Model.dll</HintPath>
     </Reference>
-    <Reference Include="Bit.OData, Version=2.6.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Bit.OData.2.6.0\lib\net461\Bit.OData.dll</HintPath>
+    <Reference Include="Bit.OData, Version=2.6.5.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Bit.OData.2.6.5\lib\net461\Bit.OData.dll</HintPath>
     </Reference>
-    <Reference Include="Bit.Owin, Version=2.6.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Bit.Owin.2.6.0\lib\net461\Bit.Owin.dll</HintPath>
+    <Reference Include="Bit.Owin, Version=2.6.5.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Bit.Owin.2.6.5\lib\net461\Bit.Owin.dll</HintPath>
     </Reference>
-    <Reference Include="Bit.Signalr, Version=2.6.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Bit.Signalr.2.6.0\lib\net461\Bit.Signalr.dll</HintPath>
+    <Reference Include="Bit.Signalr, Version=2.6.5.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Bit.Signalr.2.6.5\lib\net461\Bit.Signalr.dll</HintPath>
     </Reference>
-    <Reference Include="Bit.WebApi, Version=2.6.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Bit.WebApi.2.6.0\lib\net461\Bit.WebApi.dll</HintPath>
+    <Reference Include="Bit.WebApi, Version=2.6.5.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Bit.WebApi.2.6.5\lib\net461\Bit.WebApi.dll</HintPath>
     </Reference>
     <Reference Include="Correlator, Version=1.1.0.0, Culture=neutral, PublicKeyToken=ad71b95c30d52163, processorArchitecture=MSIL">
       <HintPath>..\packages\WebApiCorrelator.1.1.0.0\lib\net452\Correlator.dll</HintPath>
@@ -520,7 +520,7 @@
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
-    <Analyzer Include="..\packages\BitCodeAnalyzer.2.6.0\analyzers\dotnet\cs\BitCodeAnalyzer.dll" />
+    <Analyzer Include="..\packages\BitCodeAnalyzer.2.6.5\analyzers\dotnet\cs\BitCodeAnalyzer.dll" />
   </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>
@@ -552,6 +552,6 @@
     <PropertyGroup>
       <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
     </PropertyGroup>
-    <Error Condition="!Exists('..\packages\BitCodeGeneratorTask.2.6.0\build\BitCodeGeneratorTask.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\BitCodeGeneratorTask.2.6.0\build\BitCodeGeneratorTask.props'))" />
+    <Error Condition="!Exists('..\packages\BitCodeGeneratorTask.2.6.5\build\BitCodeGeneratorTask.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\BitCodeGeneratorTask.2.6.5\build\BitCodeGeneratorTask.props'))" />
   </Target>
 </Project>

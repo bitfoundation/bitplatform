@@ -28,7 +28,7 @@
     "decimal.js": "^10.2.0",
     "event-source-polyfill": "^1.0.7",
     "pubsub-js": "^1.7.0",
-    "regenerator": "^0.14.1",
+    "regenerator": "^0.14.2",
     "signalr": "^2.4.1",
     "whatwg-fetch": "^3.0.0"
   },

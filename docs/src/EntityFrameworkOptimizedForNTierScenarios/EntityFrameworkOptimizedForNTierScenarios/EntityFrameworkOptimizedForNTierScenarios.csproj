@@ -89,13 +89,13 @@
       <Version>0.11.5</Version>
     </PackageReference>
     <PackageReference Include="Bit.Data.EntityFramework">
-      <Version>2.6.0</Version>
+      <Version>2.6.5</Version>
     </PackageReference>
     <PackageReference Include="Bit.WebApi">
-      <Version>2.6.0</Version>
+      <Version>2.6.5</Version>
     </PackageReference>
     <PackageReference Include="BitCodeAnalyzer">
-      <Version>2.6.0</Version>
+      <Version>2.6.5</Version>
     </PackageReference>
     <PackageReference Include="Microsoft.Owin.SelfHost">
       <Version>4.0.1</Version>

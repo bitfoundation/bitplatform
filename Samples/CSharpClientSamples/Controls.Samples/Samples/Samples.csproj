@@ -10,15 +10,11 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <None Remove="Calendar.png" />
-  </ItemGroup>
-
-  <ItemGroup>
     <EmbeddedResource Include="Calendar.png" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Bit.CSharpClient.Controls" Version="2.6.0" />
+    <PackageReference Include="Bit.CSharpClient.Controls" Version="2.6.5" />
     <PackageReference Include="Fody" Version="5.1.1">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
