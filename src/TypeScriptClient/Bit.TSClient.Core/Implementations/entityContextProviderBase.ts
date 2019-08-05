@@ -61,7 +61,7 @@
                         metadata.Dtos
                             .forEach(dtoMetadata => {
 
-                                let jayDataDtoType: any = window;
+                                let jayDataDtoType: any = typeof window != "undefined" ? window : global;
 
                                 for (const dtoNamePart of dtoMetadata.DtoType.split(".")) {
                                     jayDataDtoType = jayDataDtoType[dtoNamePart];
@@ -222,7 +222,7 @@
 
             let cfg = null;
 
-            const baseVal = document.getElementsByTagName("base")[0];
+            const baseVal = typeof document == "undefined" ? null : document.getElementsByTagName("base")[0];
 
             const oDataServiceHost = `${baseVal != null ? baseVal.getAttribute("href") : "/"}odata/${contextName}`;
 
@@ -241,7 +241,7 @@
 
             cfg = Object.assign(cfg, config.jayDataConfig || {});
 
-            const ContextType = window[`${contextName}Context`];
+            const ContextType = (typeof window != "undefined" ? window : global)[`${contextName}Context`];
 
             if (ContextType == null) {
                 throw new Error(`No entity context could be found named ${contextName}`);
