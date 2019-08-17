@@ -1,4 +1,5 @@
 ﻿using Bit.Core.Contracts;
+using Bit.Core.Models;
 using Bit.Data.Contracts;
 using System;
 using System.Collections.Generic;
@@ -17,7 +18,15 @@ namespace Bit.Data
 
         public virtual IScopeStatusManager ScopeStatusManager { get; set; }
 
-        public virtual IsolationLevel IsolationLevel => IsolationLevel.ReadCommitted;
+        public virtual AppEnvironment AppEnvironment { get; set; }
+
+        public virtual IsolationLevel IsolationLevel
+        {
+            get
+            {
+                return (IsolationLevel)Enum.Parse(typeof(IsolationLevel), AppEnvironment.GetConfig(AppEnvironment.KeyValues.Data.DbIsolationLevel, AppEnvironment.KeyValues.Data.DbIsolationLevelDefaultValue));
+            }
+        }
 
         public virtual DbTransaction GetDbTransaction(DbConnection dbConnection)
         {
@@ -32,7 +41,7 @@ namespace Bit.Data
             if (connectionString == null)
                 throw new ArgumentNullException(nameof(connectionString));
 
-            if (!DbConnectionAndTransactions.Any(dbAndTran => dbAndTran.ConnectionString != connectionString))
+            if (!DbConnectionAndTransactions.Any(dbAndTran => dbAndTran.ConnectionString == connectionString))
             {
                 TDbConnection newConnection = new TDbConnection { ConnectionString = connectionString };
                 DbTransaction transaction = null;
@@ -54,7 +63,7 @@ namespace Bit.Data
             if (connectionString == null)
                 throw new ArgumentNullException(nameof(connectionString));
 
-            if (!DbConnectionAndTransactions.Any(dbAndTran => dbAndTran.ConnectionString != connectionString))
+            if (!DbConnectionAndTransactions.Any(dbAndTran => dbAndTran.ConnectionString == connectionString))
             {
                 TDbConnection newConnection = new TDbConnection { ConnectionString = connectionString };
                 DbTransaction transaction = null;

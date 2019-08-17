@@ -8,7 +8,7 @@ namespace Microsoft.EntityFrameworkCore.Migrations
     public static class MigrationBuilderExtensions
     {
         /// <summary>
-        /// <seealso cref="SqlServerJsonLogStore"/>
+        /// <seealso cref="DbJsonLogStore"/>
         /// </summary>
         public static void CreateSqlServerJsonLogStoreTable(this MigrationBuilder migrationBuilder)
         {
@@ -16,9 +16,9 @@ namespace Microsoft.EntityFrameworkCore.Migrations
                 name: "Logs",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(nullable: false, defaultValueSql: "NEWSEQUENTIALID()"),
+                    Id = table.Column<Guid>(nullable: false, defaultValueSql: "NewSequentialId()"),
                     Contents = table.Column<string>(nullable: false),
-                    Date = table.Column<DateTimeOffset>(nullable: false, defaultValueSql: "GETDATE()")
+                    Date = table.Column<DateTimeOffset>(nullable: false, defaultValueSql: "GetUTCDate()")
                 },
                 constraints: table =>
                 {
