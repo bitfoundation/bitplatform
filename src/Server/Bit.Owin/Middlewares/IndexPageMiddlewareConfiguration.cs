@@ -14,7 +14,7 @@ namespace Bit.Owin.Middlewares
             if (owinApp == null)
                 throw new ArgumentNullException(nameof(owinApp));
 
-            if (AppEnvironment.GetConfig("RequireSsl", defaultValueOnNotFound: false))
+            if (AppEnvironment.GetConfig(AppEnvironment.KeyValues.RequireSsl, defaultValueOnNotFound: false))
             {
                 owinApp.UseHsts(config => config.IncludeSubdomains().MaxAge(days: 30));
             }

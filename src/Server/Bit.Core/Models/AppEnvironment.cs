@@ -1,11 +1,84 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Linq;
 
 namespace Bit.Core.Models
 {
     public class AppEnvironment
     {
+        public class KeyValues
+        {
+            public static readonly string HostVirtualPath = nameof(HostVirtualPath);
+            public static readonly string HostVirtualPathDefaultValue = "/";
+
+            public static readonly string IndexPagePath = nameof(IndexPagePath);
+            public static readonly string IndexPagePathDefaultValue = "indexPage.html";
+
+            public static readonly string StaticFilesRelativePath = nameof(StaticFilesRelativePath);
+            public static readonly string StaticFilesRelativePathDefaultValue = "./wwwroot/";
+
+            public static readonly string IdentityCertificatePassword = nameof(IdentityCertificatePassword);
+
+            public static readonly string IdentityServerCertificatePath = nameof(IdentityServerCertificatePath);
+            public static readonly string IdentityServerCertificatePathDefaultValue = "IdentityServerCertificate.pfx";
+
+            public static readonly string RequireSsl = nameof(RequireSsl);
+            public static readonly bool RequireSslDefaultValue = false;
+
+            public static readonly string EventLogId = nameof(EventLogId);
+
+            public class Data
+            {
+                public static readonly string DbIsolationLevel = nameof(DbIsolationLevel);
+                public static readonly string DbIsolationLevelDefaultValue = nameof(IsolationLevel.ReadCommitted);
+
+                public static readonly string LogDbConnectionstring = nameof(LogDbConnectionstring);
+            }
+
+            public class Signalr
+            {
+                public static readonly string SignalRAzureServiceBusConnectionString = nameof(SignalRAzureServiceBusConnectionString);
+
+                public static readonly string SignalRSqlServerConnectionString = nameof(SignalRSqlServerConnectionString);
+
+                public static readonly string SignalRSqlServerTableCount = nameof(SignalRSqlServerTableCount);
+                public static readonly int SignalRSqlServerTableCountDefaultValue = 3;
+            }
+
+            public class IdentityServer
+            {
+                public static readonly string IdentityServerSiteName = nameof(IdentityServerSiteName);
+
+                public static readonly string ActiveDirectoryName = nameof(ActiveDirectoryName);
+
+                public static readonly string LoginPagePath = nameof(LoginPagePath);
+                public static readonly string LoginPagePathDefaultValue = "loginPage.html";
+
+                public static readonly string FacebookClientId = nameof(FacebookClientId);
+                public static readonly string FacebookSecret = nameof(FacebookSecret);
+
+                public static readonly string GoogleClientId = nameof(GoogleClientId);
+                public static readonly string GoogleSecret = nameof(GoogleSecret);
+
+                public static readonly string TwitterClientId = nameof(TwitterClientId);
+                public static readonly string TwitterSecret = nameof(TwitterSecret);
+
+                public static readonly string LinkedInClientId = nameof(LinkedInClientId);
+                public static readonly string LinkedInSecret = nameof(LinkedInSecret);
+
+                public static readonly string MicrosoftClientId = nameof(MicrosoftClientId);
+                public static readonly string MicrosoftSecret = nameof(MicrosoftSecret);
+            }
+
+            public class Hangfire
+            {
+                public static readonly string JobSchedulerDbConnectionString = nameof(JobSchedulerDbConnectionString);
+
+                public static readonly string JobSchedulerAzureServiceBusConnectionString = nameof(JobSchedulerAzureServiceBusConnectionString);
+            }
+        }
+
         public virtual string Name { get; set; }
 
         public virtual bool IsActive { get; set; }
@@ -74,7 +147,7 @@ namespace Bit.Core.Models
 
         public virtual string GetHostVirtualPath()
         {
-            return GetConfig("HostVirtualPath", "/");
+            return GetConfig(KeyValues.HostVirtualPath, KeyValues.HostVirtualPathDefaultValue);
         }
 
         public virtual string GetSsoUrl()

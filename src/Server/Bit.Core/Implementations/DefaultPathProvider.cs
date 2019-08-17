@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using Bit.Core.Contracts;
+using Bit.Core.Models;
 
 namespace Bit.Core.Implementations
 {
@@ -34,7 +35,7 @@ namespace Bit.Core.Implementations
 
         public string GetStaticFilesFolderPath()
         {
-            return MapPath(DefaultAppEnvironmentsProvider.Current.GetActiveAppEnvironment().GetConfig("StaticFilesRelativePath", "./wwwroot/"));
+            return MapPath(DefaultAppEnvironmentsProvider.Current.GetActiveAppEnvironment().GetConfig(AppEnvironment.KeyValues.StaticFilesRelativePath, AppEnvironment.KeyValues.StaticFilesRelativePathDefaultValue));
         }
 
         public string MapStaticFilePath(string path)

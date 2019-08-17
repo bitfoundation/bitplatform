@@ -38,7 +38,7 @@ namespace Bit.Hangfire.Implementations
 
         public virtual void OnAppStartup()
         {
-            string jobSchedulerDbConnectionString = AppEnvironment.GetConfig<string>("JobSchedulerDbConnectionString");
+            string jobSchedulerDbConnectionString = AppEnvironment.GetConfig<string>(AppEnvironment.KeyValues.Hangfire.JobSchedulerDbConnectionString);
 
             SqlServerStorage storage = new SqlServerStorage(jobSchedulerDbConnectionString, new SqlServerStorageOptions
             {
@@ -52,10 +52,8 @@ namespace Bit.Hangfire.Implementations
                 DisableGlobalLocks = true
             }); // https://docs.hangfire.io/en/latest/configuration/using-sql-server.html#configuration
 
-            if (AppEnvironment.HasConfig("JobSchedulerAzureServiceBusConnectionString"))
+            if (AppEnvironment.TryGetConfig(AppEnvironment.KeyValues.Hangfire.JobSchedulerAzureServiceBusConnectionString, out string signalRAzureServiceBusConnectionString))
             {
-                string signalRAzureServiceBusConnectionString = AppEnvironment.GetConfig<string>("JobSchedulerAzureServiceBusConnectionString");
-
                 storage.UseServiceBusQueues(signalRAzureServiceBusConnectionString);
             }
 

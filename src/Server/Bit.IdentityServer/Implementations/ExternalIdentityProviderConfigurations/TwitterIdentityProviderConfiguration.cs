@@ -12,11 +12,8 @@ namespace Bit.IdentityServer.Implementations.ExternalIdentityProviderConfigurati
 
         public virtual void ConfigureExternalIdentityProvider(IAppBuilder owinApp, string signInType)
         {
-            if (AppEnvironment.HasConfig("TwitterClientId") && AppEnvironment.HasConfig("TwitterSecret"))
+            if (AppEnvironment.TryGetConfig(AppEnvironment.KeyValues.IdentityServer.TwitterClientId, out string twitterClientId) && AppEnvironment.TryGetConfig(AppEnvironment.KeyValues.IdentityServer.TwitterSecret, out string twitterSecret))
             {
-                string twitterClientId = AppEnvironment.GetConfig<string>("TwitterClientId");
-                string twitterSecret = AppEnvironment.GetConfig<string>("TwitterSecret");
-
                 Task TwitterOnAuthenticated(TwitterAuthenticatedContext context)
                 {
                     context.Identity.AddClaim(new System.Security.Claims.Claim("access_token", context.AccessToken));

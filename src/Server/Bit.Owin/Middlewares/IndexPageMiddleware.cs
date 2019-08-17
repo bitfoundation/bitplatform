@@ -19,7 +19,7 @@ namespace Bit.Owin.Middlewares
         {
             IDependencyResolver dependencyResolver = context.GetDependencyResolver();
 
-            string htmlPage = File.ReadAllText(dependencyResolver.Resolve<IPathProvider>().MapStaticFilePath(dependencyResolver.Resolve<AppEnvironment>().GetConfig("IndexPagePath", "indexPage.html")));
+            string htmlPage = File.ReadAllText(dependencyResolver.Resolve<IPathProvider>().MapStaticFilePath(dependencyResolver.Resolve<AppEnvironment>().GetConfig(AppEnvironment.KeyValues.IndexPagePath, AppEnvironment.KeyValues.IndexPagePathDefaultValue)));
 
             string indexPageContents = await dependencyResolver.Resolve<IHtmlPageProvider>().GetHtmlPageAsync(htmlPage, context.Request.CallCancelled);
 

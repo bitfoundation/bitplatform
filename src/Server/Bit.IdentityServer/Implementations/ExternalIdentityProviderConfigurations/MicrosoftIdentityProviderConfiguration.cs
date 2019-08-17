@@ -14,11 +14,8 @@ namespace Bit.IdentityServer.Implementations.ExternalIdentityProviderConfigurati
 
         public virtual void ConfigureExternalIdentityProvider(IAppBuilder owinApp, string signInType)
         {
-            if (AppEnvironment.HasConfig("MicrosoftClientId") && AppEnvironment.HasConfig("MicrosoftSecret"))
+            if (AppEnvironment.TryGetConfig(AppEnvironment.KeyValues.IdentityServer.MicrosoftClientId, out string microsoftClientId) && AppEnvironment.TryGetConfig(AppEnvironment.KeyValues.IdentityServer.MicrosoftSecret, out string microsoftSecret))
             {
-                string microsoftClientId = AppEnvironment.GetConfig<string>("MicrosoftClientId");
-                string microsoftSecret = AppEnvironment.GetConfig<string>("MicrosoftSecret");
-
                 Task MicrosoftOnAuthenticated(MicrosoftAccountAuthenticatedContext context)
                 {
                     context.Identity.AddClaim(new System.Security.Claims.Claim("access_token", context.AccessToken));

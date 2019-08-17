@@ -77,9 +77,9 @@ namespace Bit.IdentityServer
 
                 factory.RedirectUriValidator = new Registration<IRedirectUriValidator>(RedirectUriValidator);
 
-                bool requireSslConfigValue = AppEnvironment.GetConfig("RequireSsl", defaultValueOnNotFound: false);
+                bool requireSslConfigValue = AppEnvironment.GetConfig(AppEnvironment.KeyValues.RequireSsl, defaultValueOnNotFound: AppEnvironment.KeyValues.RequireSslDefaultValue);
 
-                string identityServerSiteName = AppEnvironment.GetConfig("IdentityServerSiteName", $"{AppEnvironment.AppInfo.Name} Identity Server");
+                string identityServerSiteName = AppEnvironment.GetConfig(AppEnvironment.KeyValues.IdentityServer.IdentityServerSiteName, $"{AppEnvironment.AppInfo.Name} Identity Server");
 
                 IdentityServerOptions identityServerOptions = new IdentityServerOptions
                 {

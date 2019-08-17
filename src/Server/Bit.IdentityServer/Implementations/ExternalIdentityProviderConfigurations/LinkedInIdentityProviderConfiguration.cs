@@ -14,11 +14,8 @@ namespace Bit.IdentityServer.Implementations.ExternalIdentityProviderConfigurati
 
         public virtual void ConfigureExternalIdentityProvider(IAppBuilder owinApp, string signInType)
         {
-            if (AppEnvironment.HasConfig("LinkedInClientId") && AppEnvironment.HasConfig("LinkedInSecret"))
+            if (AppEnvironment.TryGetConfig(AppEnvironment.KeyValues.IdentityServer.LinkedInClientId, out string linkedInClientId) && AppEnvironment.TryGetConfig(AppEnvironment.KeyValues.IdentityServer.LinkedInSecret, out string linkedInSecret))
             {
-                string linkedInClientId = AppEnvironment.GetConfig<string>("LinkedInClientId");
-                string linkedInSecret = AppEnvironment.GetConfig<string>("LinkedInSecret");
-
                 Task LinkedInOnAuthenticated(LinkedInAuthenticatedContext context)
                 {
                     context.Identity.AddClaim(new System.Security.Claims.Claim("access_token", context.AccessToken));

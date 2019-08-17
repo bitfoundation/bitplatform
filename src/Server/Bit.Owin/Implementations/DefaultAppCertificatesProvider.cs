@@ -18,9 +18,9 @@ namespace Bit.Owin.Implementations
             if (_certificate == null)
             {
                 string password = AppEnvironment
-                    .GetConfig<string>("IdentityCertificatePassword");
+                    .GetConfig<string>(AppEnvironment.KeyValues.IdentityCertificatePassword);
 
-                _certificate = new X509Certificate2(File.ReadAllBytes(PathProvider.MapPath(AppEnvironment.GetConfig("IdentityServerCertificatePath", "IdentityServerCertificate.pfx"))),
+                _certificate = new X509Certificate2(File.ReadAllBytes(PathProvider.MapPath(AppEnvironment.GetConfig(AppEnvironment.KeyValues.IdentityServerCertificatePath, AppEnvironment.KeyValues.IdentityServerCertificatePathDefaultValue))),
                     password);
             }
 

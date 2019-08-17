@@ -14,11 +14,8 @@ namespace Bit.IdentityServer.Implementations.ExternalIdentityProviderConfigurati
 
         public virtual void ConfigureExternalIdentityProvider(IAppBuilder owinApp, string signInType)
         {
-            if (AppEnvironment.HasConfig("FacebookClientId") && AppEnvironment.HasConfig("FacebookSecret"))
+            if (AppEnvironment.TryGetConfig(AppEnvironment.KeyValues.IdentityServer.FacebookClientId, out string facebookClientId) && AppEnvironment.TryGetConfig(AppEnvironment.KeyValues.IdentityServer.FacebookSecret, out string facebookSecret))
             {
-                string facebookClientId = AppEnvironment.GetConfig<string>("FacebookClientId");
-                string facebookSecret = AppEnvironment.GetConfig<string>("FacebookSecret");
-
                 Task FacebookOnAuthenticated(FacebookAuthenticatedContext context)
                 {
                     context.Identity.AddClaim(new System.Security.Claims.Claim("access_token", context.AccessToken));

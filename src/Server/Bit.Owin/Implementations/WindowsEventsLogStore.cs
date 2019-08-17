@@ -43,7 +43,7 @@ namespace Bit.Owin.Implementations
                 if (logContents.Length >= 30000)
                     logContents = logContents.Substring(0, 29999);
 
-                if (AppEnvironment.TryGetConfig("EventLogId", out long eventLogId))
+                if (AppEnvironment.TryGetConfig(AppEnvironment.KeyValues.EventLogId, out long eventLogId))
                 {
                     appLog.WriteEntry(logContents, eventLogsSeverity, Convert.ToInt32(eventLogId));
                 }

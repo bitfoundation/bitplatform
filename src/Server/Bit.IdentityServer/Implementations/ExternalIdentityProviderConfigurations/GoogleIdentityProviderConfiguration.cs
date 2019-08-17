@@ -14,11 +14,8 @@ namespace Bit.IdentityServer.Implementations.ExternalIdentityProviderConfigurati
 
         public virtual void ConfigureExternalIdentityProvider(IAppBuilder owinApp, string signInType)
         {
-            if (AppEnvironment.HasConfig("GoogleClientId") && AppEnvironment.HasConfig("GoogleSecret"))
+            if (AppEnvironment.TryGetConfig(AppEnvironment.KeyValues.IdentityServer.GoogleClientId, out string googleClientId) && AppEnvironment.TryGetConfig(AppEnvironment.KeyValues.IdentityServer.GoogleSecret, out string googleSecret))
             {
-                string googleClientId = AppEnvironment.GetConfig<string>("GoogleClientId");
-                string googleSecret = AppEnvironment.GetConfig<string>("GoogleSecret");
-
                 Task GoogleOnAuthenticated(GoogleOAuth2AuthenticatedContext context)
                 {
                     context.Identity.AddClaim(new System.Security.Claims.Claim("access_token", context.AccessToken));

@@ -69,7 +69,7 @@ namespace Bit.Tests.Api.Middlewares.Tests
                 UseHttps = true,
                 ActiveAppEnvironmentCustomizer = environment =>
                 {
-                    environment.AddOrReplace(new EnvironmentConfig { Key = "RequireSsl", Value = true });
+                    environment.AddOrReplace(new EnvironmentConfig { Key = AppEnvironment.KeyValues.RequireSsl, Value = true });
                 }
             }))
             {

@@ -11,7 +11,7 @@ namespace Bit.Signalr.Implementations
         public virtual void Configure(HubConfiguration signalRConfig)
         {
             string signalRAzureServiceBusConnectionString =
-                AppEnvironment.GetConfig<string>("SignalRAzureServiceBusConnectionString");
+                AppEnvironment.GetConfig<string>(AppEnvironment.KeyValues.Signalr.SignalRAzureServiceBusConnectionString);
 
             signalRConfig.Resolver.UseServiceBus(signalRAzureServiceBusConnectionString, "SignalR");
         }

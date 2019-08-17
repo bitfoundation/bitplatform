@@ -161,7 +161,7 @@ namespace Bit.IdentityServer.Implementations
                 ReturnUrl = message.ReturnUrl == null ? "" : new Uri(message.ReturnUrl).ParseQueryString()["redirect_uri"]
             }, Formatting.None, jsonSerSettings);
 
-            string loginPageHtmlInitialHtml = File.ReadAllText(PathProvider.MapStaticFilePath(AppEnvironment.GetConfig("LoginPagePath", "loginPage.html")));
+            string loginPageHtmlInitialHtml = File.ReadAllText(PathProvider.MapStaticFilePath(AppEnvironment.GetConfig(AppEnvironment.KeyValues.IdentityServer.LoginPagePath, AppEnvironment.KeyValues.IdentityServer.LoginPagePathDefaultValue)));
 
             string loginPageHtmlFinalHtml = (await HtmlPageProvider.GetHtmlPageAsync(loginPageHtmlInitialHtml, OwinContext.Request.CallCancelled).ConfigureAwait(false))
                 .Replace("{{model.LoginModel.toJson()}}", Microsoft.Security.Application.Encoder.HtmlEncode(json), StringComparison.InvariantCultureIgnoreCase);

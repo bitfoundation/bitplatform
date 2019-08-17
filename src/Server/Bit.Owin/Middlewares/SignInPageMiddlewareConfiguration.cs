@@ -17,7 +17,7 @@ namespace Bit.Owin.Middlewares
             owinApp.Map("/SignIn",
                 innerApp =>
                 {
-                    if (AppEnvironment.GetConfig("RequireSsl", defaultValueOnNotFound: false))
+                    if (AppEnvironment.GetConfig(AppEnvironment.KeyValues.RequireSsl, defaultValueOnNotFound: false))
                     {
                         innerApp.UseHsts(config => config.IncludeSubdomains().MaxAge(days: 30));
                     }

@@ -16,7 +16,7 @@ namespace Bit.IdentityServer.Implementations
         {
             string userName = context.UserName;
             string password = context.Password;
-            string activeDirectoryName = AppEnvironment.GetConfig<string>("ActiveDirectoryName");
+            string activeDirectoryName = AppEnvironment.GetConfig<string>(AppEnvironment.KeyValues.IdentityServer.ActiveDirectoryName);
             using (PrincipalContext principalContext = new PrincipalContext(ContextType.Domain, activeDirectoryName))
             {
                 string userNameAsWinUserName = userName;
@@ -39,7 +39,7 @@ namespace Bit.IdentityServer.Implementations
 
         public override Task<bool> UserIsActiveAsync(IsActiveContext context, BitJwtToken bitJwtToken, CancellationToken cancellationToken)
         {
-            string activeDirectoryName = AppEnvironment.GetConfig<string>("ActiveDirectoryName");
+            string activeDirectoryName = AppEnvironment.GetConfig<string>(AppEnvironment.KeyValues.IdentityServer.ActiveDirectoryName);
 
             using (PrincipalContext principalContext = new PrincipalContext(ContextType.Domain, activeDirectoryName))
             {

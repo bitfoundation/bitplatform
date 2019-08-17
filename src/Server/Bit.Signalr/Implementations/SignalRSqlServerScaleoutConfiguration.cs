@@ -10,11 +10,11 @@ namespace Bit.Signalr.Implementations
 
         public virtual void Configure(HubConfiguration signalRConfig)
         {
-            string sqlServerConnectionString = AppEnvironment.GetConfig<string>("SignalRSqlServerConnectionString");
+            string sqlServerConnectionString = AppEnvironment.GetConfig<string>(AppEnvironment.KeyValues.Signalr.SignalRSqlServerConnectionString);
 
             signalRConfig.Resolver.UseSqlServer(new SqlScaleoutConfiguration(sqlServerConnectionString)
             {
-                TableCount = AppEnvironment.GetConfig("SignalRSqlServerTableCount", 3)
+                TableCount = AppEnvironment.GetConfig(AppEnvironment.KeyValues.Signalr.SignalRSqlServerTableCount, AppEnvironment.KeyValues.Signalr.SignalRSqlServerTableCountDefaultValue)
             });
         }
     }
