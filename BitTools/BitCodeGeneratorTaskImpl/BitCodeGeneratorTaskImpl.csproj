@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <Import Project="../../src/Bit.Build.props"/>
+  <Import Project="../../src/Bit.Build.props" />
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
@@ -12,11 +12,11 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.Build" Version="14.3.0" PrivateAssets="All" />
-    <PackageReference Include="Microsoft.CodeAnalysis" Version="3.2.0" />
-    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="3.2.0" />
-    <PackageReference Include="Microsoft.CodeAnalysis.Workspaces.MSBuild" Version="3.2.0" />
+    <PackageReference Include="Microsoft.CodeAnalysis" Version="3.2.1" />
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="3.2.1" />
+    <PackageReference Include="Microsoft.CodeAnalysis.Workspaces.MSBuild" Version="3.2.1" />
     <PackageReference Include="Microsoft.Build.Utilities.Core" Version="14.3.0" />
-    <PackageReference Include="Microsoft.Build.Locator" Version="1.2.2" />
+    <PackageReference Include="Microsoft.Build.Locator" Version="1.2.6" />
   </ItemGroup>
 
   <ItemGroup>
