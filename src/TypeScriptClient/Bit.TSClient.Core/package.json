@@ -19,14 +19,14 @@
   ],
   "license": "MIT",
   "devDependencies": {
-    "@types/node": "^12.6.9",
+    "@types/node": "^12.7.2",
     "@types/pubsub-js": "^1.5.18",
     "@types/signalr": "^2.2.35"
   },
   "optionalDependencies": {
-    "core-js": "^2.6.5",
+    "core-js": "^2.6.9",
     "decimal.js": "^10.2.0",
-    "event-source-polyfill": "^1.0.7",
+    "event-source-polyfill": "^1.0.8",
     "pubsub-js": "^1.7.0",
     "regenerator": "^0.14.2",
     "signalr": "^2.4.1",
