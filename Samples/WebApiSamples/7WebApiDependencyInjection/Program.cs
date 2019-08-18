@@ -10,7 +10,6 @@ using Owin;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Net.Http;
 using System.Reflection;
 using System.Web.Http;
 

@@ -1,6 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="..\packages\BitCodeGeneratorTask.2.6.5\build\BitCodeGeneratorTask.props" Condition="Exists('..\packages\BitCodeGeneratorTask.2.6.5\build\BitCodeGeneratorTask.props')" />
+  <Import Project="..\packages\BitCodeGeneratorTask.2.7.0\build\BitCodeGeneratorTask.props" Condition="Exists('..\packages\BitCodeGeneratorTask.2.7.0\build\BitCodeGeneratorTask.props')" />
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\TypeScript\Microsoft.TypeScript.Default.props" Condition="Exists('$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\TypeScript\Microsoft.TypeScript.Default.props')" />
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
@@ -24,7 +24,7 @@
     <UseGlobalApplicationHostFile />
     <NuGetPackageImportStamp>
     </NuGetPackageImportStamp>
-    <TypeScriptToolsVersion>3.3</TypeScriptToolsVersion>
+    <TypeScriptToolsVersion>3.5</TypeScriptToolsVersion>
     <TypeScriptCompileBlocked>True</TypeScriptCompileBlocked>
     <TargetFrameworkProfile />
     <Use64BitIISExpress />
@@ -153,8 +153,8 @@
     <Reference Include="AntiXssLibrary, Version=4.3.0.0, Culture=neutral, PublicKeyToken=d127efab8a9c114f, processorArchitecture=MSIL">
       <HintPath>..\packages\AntiXSS.4.3.0\lib\net40\AntiXssLibrary.dll</HintPath>
     </Reference>
-    <Reference Include="Autofac, Version=4.9.3.0, Culture=neutral, PublicKeyToken=17863af14b0044da, processorArchitecture=MSIL">
-      <HintPath>..\packages\Autofac.4.9.3\lib\net45\Autofac.dll</HintPath>
+    <Reference Include="Autofac, Version=4.9.4.0, Culture=neutral, PublicKeyToken=17863af14b0044da, processorArchitecture=MSIL">
+      <HintPath>..\packages\Autofac.4.9.4\lib\net45\Autofac.dll</HintPath>
     </Reference>
     <Reference Include="Autofac.Extensions.DependencyInjection, Version=4.4.0.0, Culture=neutral, PublicKeyToken=17863af14b0044da, processorArchitecture=MSIL">
       <HintPath>..\packages\Autofac.Extensions.DependencyInjection.4.4.0\lib\netstandard2.0\Autofac.Extensions.DependencyInjection.dll</HintPath>
@@ -165,8 +165,8 @@
     <Reference Include="Autofac.Integration.SignalR, Version=4.0.0.0, Culture=neutral, PublicKeyToken=17863af14b0044da, processorArchitecture=MSIL">
       <HintPath>..\packages\Autofac.SignalR2.4.0.0\lib\net45\Autofac.Integration.SignalR.dll</HintPath>
     </Reference>
-    <Reference Include="Autofac.Integration.WebApi, Version=4.2.1.0, Culture=neutral, PublicKeyToken=17863af14b0044da, processorArchitecture=MSIL">
-      <HintPath>..\packages\Autofac.WebApi2.4.2.1\lib\net45\Autofac.Integration.WebApi.dll</HintPath>
+    <Reference Include="Autofac.Integration.WebApi, Version=4.3.0.0, Culture=neutral, PublicKeyToken=17863af14b0044da, processorArchitecture=MSIL">
+      <HintPath>..\packages\Autofac.WebApi2.4.3.0\lib\net45\Autofac.Integration.WebApi.dll</HintPath>
     </Reference>
     <Reference Include="Autofac.Integration.WebApi.Owin, Version=4.0.0.0, Culture=neutral, PublicKeyToken=17863af14b0044da, processorArchitecture=MSIL">
       <HintPath>..\packages\Autofac.WebApi2.Owin.4.0.0\lib\net45\Autofac.Integration.WebApi.Owin.dll</HintPath>
@@ -174,35 +174,35 @@
     <Reference Include="AutoMapper, Version=8.1.1.0, Culture=neutral, PublicKeyToken=be96cd2c38ef1005, processorArchitecture=MSIL">
       <HintPath>..\packages\AutoMapper.8.1.1\lib\net461\AutoMapper.dll</HintPath>
     </Reference>
-    <Reference Include="Bit.Core, Version=2.6.5.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Bit.Core.2.6.5\lib\net461\Bit.Core.dll</HintPath>
+    <Reference Include="Bit.Core, Version=2.7.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Bit.Core.2.7.0\lib\net461\Bit.Core.dll</HintPath>
     </Reference>
-    <Reference Include="Bit.Data, Version=2.6.5.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Bit.Data.2.6.5\lib\net461\Bit.Data.dll</HintPath>
+    <Reference Include="Bit.Data, Version=2.7.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Bit.Data.2.7.0\lib\net461\Bit.Data.dll</HintPath>
     </Reference>
-    <Reference Include="Bit.Data.EntityFramework, Version=2.6.5.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Bit.Data.EntityFramework.2.6.5\lib\net461\Bit.Data.EntityFramework.dll</HintPath>
+    <Reference Include="Bit.Data.EntityFramework, Version=2.7.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Bit.Data.EntityFramework.2.7.0\lib\net461\Bit.Data.EntityFramework.dll</HintPath>
     </Reference>
-    <Reference Include="Bit.Hangfire, Version=2.6.5.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Bit.Hangfire.2.6.5\lib\net461\Bit.Hangfire.dll</HintPath>
+    <Reference Include="Bit.Hangfire, Version=2.7.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Bit.Hangfire.2.7.0\lib\net461\Bit.Hangfire.dll</HintPath>
     </Reference>
-    <Reference Include="Bit.IdentityServer, Version=2.6.5.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Bit.IdentityServer.2.6.5\lib\net461\Bit.IdentityServer.dll</HintPath>
+    <Reference Include="Bit.IdentityServer, Version=2.7.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Bit.IdentityServer.2.7.0\lib\net461\Bit.IdentityServer.dll</HintPath>
     </Reference>
-    <Reference Include="Bit.Model, Version=2.6.5.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Bit.Model.2.6.5\lib\net461\Bit.Model.dll</HintPath>
+    <Reference Include="Bit.Model, Version=2.7.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Bit.Model.2.7.0\lib\net461\Bit.Model.dll</HintPath>
     </Reference>
-    <Reference Include="Bit.OData, Version=2.6.5.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Bit.OData.2.6.5\lib\net461\Bit.OData.dll</HintPath>
+    <Reference Include="Bit.OData, Version=2.7.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Bit.OData.2.7.0\lib\net461\Bit.OData.dll</HintPath>
     </Reference>
-    <Reference Include="Bit.Owin, Version=2.6.5.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Bit.Owin.2.6.5\lib\net461\Bit.Owin.dll</HintPath>
+    <Reference Include="Bit.Owin, Version=2.7.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Bit.Owin.2.7.0\lib\net461\Bit.Owin.dll</HintPath>
     </Reference>
-    <Reference Include="Bit.Signalr, Version=2.6.5.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Bit.Signalr.2.6.5\lib\net461\Bit.Signalr.dll</HintPath>
+    <Reference Include="Bit.Signalr, Version=2.7.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Bit.Signalr.2.7.0\lib\net461\Bit.Signalr.dll</HintPath>
     </Reference>
-    <Reference Include="Bit.WebApi, Version=2.6.5.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Bit.WebApi.2.6.5\lib\net461\Bit.WebApi.dll</HintPath>
+    <Reference Include="Bit.WebApi, Version=2.7.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Bit.WebApi.2.7.0\lib\net461\Bit.WebApi.dll</HintPath>
     </Reference>
     <Reference Include="Correlator, Version=1.1.0.0, Culture=neutral, PublicKeyToken=ad71b95c30d52163, processorArchitecture=MSIL">
       <HintPath>..\packages\WebApiCorrelator.1.1.0.0\lib\net452\Correlator.dll</HintPath>
@@ -222,14 +222,14 @@
     <Reference Include="Hangfire.Azure.ServiceBusQueue, Version=4.1.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\Hangfire.Azure.ServiceBusQueue.4.1.0\lib\net45\Hangfire.Azure.ServiceBusQueue.dll</HintPath>
     </Reference>
-    <Reference Include="Hangfire.Core, Version=1.7.5.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Hangfire.Core.1.7.5\lib\net46\Hangfire.Core.dll</HintPath>
+    <Reference Include="Hangfire.Core, Version=1.7.6.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Hangfire.Core.1.7.6\lib\net46\Hangfire.Core.dll</HintPath>
     </Reference>
     <Reference Include="Hangfire.MemoryStorage, Version=1.6.1.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\Hangfire.MemoryStorage.1.6.1\lib\net40\Hangfire.MemoryStorage.dll</HintPath>
     </Reference>
-    <Reference Include="Hangfire.SqlServer, Version=1.7.5.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Hangfire.SqlServer.1.7.5\lib\net45\Hangfire.SqlServer.dll</HintPath>
+    <Reference Include="Hangfire.SqlServer, Version=1.7.6.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Hangfire.SqlServer.1.7.6\lib\net45\Hangfire.SqlServer.dll</HintPath>
     </Reference>
     <Reference Include="HtmlSanitizationLibrary, Version=4.3.0.0, Culture=neutral, PublicKeyToken=d127efab8a9c114f, processorArchitecture=MSIL">
       <HintPath>..\packages\AntiXSS.4.3.0\lib\net40\HtmlSanitizationLibrary.dll</HintPath>
@@ -249,8 +249,8 @@
     <Reference Include="Microsoft.ApplicationInsights, Version=2.9.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.ApplicationInsights.2.9.0\lib\net46\Microsoft.ApplicationInsights.dll</HintPath>
     </Reference>
-    <Reference Include="Microsoft.AspNet.OData, Version=7.1.0.21120, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>..\packages\Microsoft.AspNet.OData.7.1.0\lib\net45\Microsoft.AspNet.OData.dll</HintPath>
+    <Reference Include="Microsoft.AspNet.OData, Version=7.2.1.30805, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.AspNet.OData.7.2.1\lib\net45\Microsoft.AspNet.OData.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.AspNet.SignalR.Core, Version=2.4.1.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.AspNet.SignalR.Core.2.4.1\lib\net45\Microsoft.AspNet.SignalR.Core.dll</HintPath>
@@ -262,7 +262,7 @@
       <HintPath>..\packages\Microsoft.AspNet.SignalR.SqlServer.2.4.1\lib\net45\Microsoft.AspNet.SignalR.SqlServer.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.AspNet.WebApi.Versioning, Version=3.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
-      <HintPath>..\packages\Microsoft.AspNet.WebApi.Versioning.3.0.2\lib\net45\Microsoft.AspNet.WebApi.Versioning.dll</HintPath>
+      <HintPath>..\packages\Microsoft.AspNet.WebApi.Versioning.3.0.3\lib\net45\Microsoft.AspNet.WebApi.Versioning.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.AspNet.WebApi.Versioning.ApiExplorer, Version=3.1.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.AspNet.WebApi.Versioning.ApiExplorer.3.1.0\lib\net45\Microsoft.AspNet.WebApi.Versioning.ApiExplorer.dll</HintPath>
@@ -520,7 +520,7 @@
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
-    <Analyzer Include="..\packages\BitCodeAnalyzer.2.6.5\analyzers\dotnet\cs\BitCodeAnalyzer.dll" />
+    <Analyzer Include="..\packages\BitCodeAnalyzer.2.7.0\analyzers\dotnet\cs\BitCodeAnalyzer.dll" />
   </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>
@@ -552,6 +552,6 @@
     <PropertyGroup>
       <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
     </PropertyGroup>
-    <Error Condition="!Exists('..\packages\BitCodeGeneratorTask.2.6.5\build\BitCodeGeneratorTask.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\BitCodeGeneratorTask.2.6.5\build\BitCodeGeneratorTask.props'))" />
+    <Error Condition="!Exists('..\packages\BitCodeGeneratorTask.2.7.0\build\BitCodeGeneratorTask.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\BitCodeGeneratorTask.2.7.0\build\BitCodeGeneratorTask.props'))" />
   </Target>
 </Project>

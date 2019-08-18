@@ -1,7 +1,6 @@
 ﻿using Bit.Core;
 using Bit.Core.Contracts;
 using Bit.Owin;
-using Bit.Owin.Contracts;
 using Bit.Owin.Implementations;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Owin.Hosting;

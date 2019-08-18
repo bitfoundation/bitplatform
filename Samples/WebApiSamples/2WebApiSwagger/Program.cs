@@ -2,10 +2,9 @@
 using Bit.Core;
 using Bit.Core.Contracts;
 using Bit.Core.Implementations;
+using Bit.Model.Implementations;
 using Bit.Owin;
-using Bit.Owin.Contracts;
 using Bit.Owin.Implementations;
-using Bit.Owin.Middlewares;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Owin.Hosting;
 using Owin;
@@ -79,6 +78,9 @@ namespace WebApiSwagger
                     }).EnableBitSwaggerUi();
                 });
             });
+
+            dependencyManager.RegisterAutoMapper();
+            dependencyManager.RegisterMapperConfiguration<DefaultMapperConfiguration>();
         }
     }
 
@@ -178,23 +180,25 @@ namespace WebApiSwagger
     /// </summary>
     public class SuperHeroesController : ApiController
     {
+        public IMapper Mapper { get; set; }
+
         private static readonly List<Superhero> Superheroes = new List<Superhero>
+        {
+            new Superhero
             {
-                new Superhero
-                {
-                    Id = Guid.NewGuid(),
-                    Name = "Batman",
-                    RealName = "Bruce Wayne",
-                    Universe = Universe.Dc
-                },
-                new Superhero
-                {
-                    Id = Guid.NewGuid(),
-                    Name = "Wolverine",
-                    RealName = "Logan",
-                    Universe = Universe.Marvel
-                }
-            };
+                Id = Guid.NewGuid(),
+                Name = "Batman",
+                RealName = "Bruce Wayne",
+                Universe = Universe.Dc
+            },
+            new Superhero
+            {
+                Id = Guid.NewGuid(),
+                Name = "Wolverine",
+                RealName = "Logan",
+                Universe = Universe.Marvel
+            }
+        };
 
         /// <summary>
         /// Get all superheroes
@@ -239,7 +243,6 @@ namespace WebApiSwagger
         /// <param name="postSuperheroModel">Superhero to add</param>
         /// <returns></returns>
         /// <response code="201">Superhero created</response>
-        [Authorize(Roles = "write")]
         [ResponseType(typeof(Superhero))]
         public HttpResponseMessage Post(PostSuperheroModel postSuperheroModel)
         {
@@ -259,8 +262,6 @@ namespace WebApiSwagger
         /// <returns></returns>
         /// <response code="200">Superhero updated</response>
         /// <response code="404">Superhero not found</response>
-        [Authorize(Roles = "write")]
-        //[Authorize]
         [ResponseType(typeof(Superhero))]
         public HttpResponseMessage Put(PutSuperheroModel putSuperheroModel)
         {

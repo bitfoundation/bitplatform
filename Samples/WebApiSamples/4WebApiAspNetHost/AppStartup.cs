@@ -1,8 +1,8 @@
 ﻿using AutoMapper;
 using Bit.Core;
 using Bit.Core.Contracts;
+using Bit.Model.Implementations;
 using Bit.Owin;
-using Bit.Owin.Contracts;
 using Bit.Owin.Implementations;
 using Microsoft.Extensions.DependencyInjection;
 using Owin;
@@ -13,7 +13,6 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Reflection;
-using System.Web;
 using System.Web.Http;
 using System.Web.Http.Description;
 
@@ -60,6 +59,9 @@ namespace WebApiAspNetHost
                     }).EnableBitSwaggerUi();
                 });
             });
+
+            dependencyManager.RegisterAutoMapper();
+            dependencyManager.RegisterMapperConfiguration<DefaultMapperConfiguration>();
         }
     }
 
@@ -159,23 +161,25 @@ namespace WebApiAspNetHost
     /// </summary>
     public class SuperHeroesController : ApiController
     {
+        public IMapper Mapper { get; set; }
+
         private static readonly List<Superhero> Superheroes = new List<Superhero>
+        {
+            new Superhero
             {
-                new Superhero
-                {
-                    Id = Guid.NewGuid(),
-                    Name = "Batman",
-                    RealName = "Bruce Wayne",
-                    Universe = Universe.Dc
-                },
-                new Superhero
-                {
-                    Id = Guid.NewGuid(),
-                    Name = "Wolverine",
-                    RealName = "Logan",
-                    Universe = Universe.Marvel
-                }
-            };
+                Id = Guid.NewGuid(),
+                Name = "Batman",
+                RealName = "Bruce Wayne",
+                Universe = Universe.Dc
+            },
+            new Superhero
+            {
+                Id = Guid.NewGuid(),
+                Name = "Wolverine",
+                RealName = "Logan",
+                Universe = Universe.Marvel
+            }
+        };
 
         /// <summary>
         /// Get all superheroes
@@ -220,7 +224,6 @@ namespace WebApiAspNetHost
         /// <param name="postSuperheroModel">Superhero to add</param>
         /// <returns></returns>
         /// <response code="201">Superhero created</response>
-        [Authorize(Roles = "write")]
         [ResponseType(typeof(Superhero))]
         public HttpResponseMessage Post(PostSuperheroModel postSuperheroModel)
         {
@@ -240,8 +243,6 @@ namespace WebApiAspNetHost
         /// <returns></returns>
         /// <response code="200">Superhero updated</response>
         /// <response code="404">Superhero not found</response>
-        [Authorize(Roles = "write")]
-        //[Authorize]
         [ResponseType(typeof(Superhero))]
         public HttpResponseMessage Put(PutSuperheroModel putSuperheroModel)
         {
