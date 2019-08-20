@@ -12,6 +12,7 @@
     <PackageReference Include="Newtonsoft.Json" Version="12.0.2" />
     <PackageReference Include="System.ComponentModel.Annotations" Version="4.6.0-preview7.19362.9" />
     <PackageReference Include="System.Configuration.ConfigurationManager" Version="4.6.0-preview7.19362.9" />
+    <PackageReference Include="Autofac" Version="4.9.4" />
   </ItemGroup>
 
 </Project>

@@ -8,7 +8,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Autofac" Version="4.9.4" />
     <PackageReference Include="Autofac.Owin" Version="4.2.0" />
     <PackageReference Include="IdentityModel" Version="3.10.10" />
     <PackageReference Include="Lambda2Js" Version="3.1.3" />
