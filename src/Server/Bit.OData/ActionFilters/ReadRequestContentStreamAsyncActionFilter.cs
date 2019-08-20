@@ -35,10 +35,10 @@ namespace Bit.OData.ActionFilters
 
             if (requestContentHeaders != null)
             {
-                bool contentLengthHasValue = requestContentHeaders.ContentLength.HasValue && requestContentHeaders.ContentLength.Value > 0;
+                bool contentLengthHasValue = requestContentHeaders.ContentLength.HasValue;
                 bool contentTypeIsJson = requestContentHeaders.ContentType?.MediaType?.Contains("json") == true; // https://github.com/aspnet/AspNetWebStack/issues/232
 
-                if ((contentLengthHasValue || contentTypeIsJson) && (actionDescriptor.GetCustomAttributes<ActionAttribute>().Any() ||
+                if (((contentLengthHasValue && requestContentHeaders.ContentLength > 0) || (!contentLengthHasValue && contentTypeIsJson)) && (actionDescriptor.GetCustomAttributes<ActionAttribute>().Any() ||
                     actionDescriptor.GetCustomAttributes<CreateAttribute>().Any() ||
                     actionDescriptor.GetCustomAttributes<UpdateAttribute>().Any() ||
                     actionDescriptor.GetCustomAttributes<PartialUpdateAttribute>().Any()))
