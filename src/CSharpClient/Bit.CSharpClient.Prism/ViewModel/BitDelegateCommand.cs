@@ -1,5 +1,6 @@
 ﻿using Prism.Commands;
 using System;
+using System.Globalization;
 using System.Threading.Tasks;
 
 namespace Bit.ViewModel
@@ -119,6 +120,32 @@ namespace Bit.ViewModel
                 throw new ArgumentNullException(nameof(executeMethod));
 
             _executeMethod = executeMethod;
+        }
+
+        protected override void Execute(object parameter)
+        {
+            parameter = ConvertParameterTypeIfRequired(parameter);
+
+            base.Execute(parameter);
+        }
+
+        protected override bool CanExecute(object parameter)
+        {
+            parameter = ConvertParameterTypeIfRequired(parameter);
+
+            return base.CanExecute(parameter);
+        }
+
+        protected object ConvertParameterTypeIfRequired(object parameter)
+        {
+            if (parameter != null && !(parameter is T) && parameter is IConvertible convertible)
+            {
+                Type type = typeof(T);
+                type = Nullable.GetUnderlyingType(type) ?? type;
+                parameter = convertible.ToType(type, provider: CultureInfo.InvariantCulture);
+            }
+
+            return parameter;
         }
     }
 }
