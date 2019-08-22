@@ -34,8 +34,27 @@ namespace Bit.View.Controls
             Navigation.PushPopupAsync(BitCalendarPopupView);
         }
 
-        public virtual BitCalendarPopupView BitCalendarPopupView { get; protected set; }
-        public virtual ICommand OpenPopupCommand { get; protected set; }
+        private BitCalendarPopupView _BitCalendarPopupView;
+        public virtual BitCalendarPopupView BitCalendarPopupView
+        {
+            get => _BitCalendarPopupView;
+            protected set
+            {
+                _BitCalendarPopupView = value;
+                OnPropertyChanged(nameof(BitCalendarPopupView));
+            }
+        }
+
+        private ICommand _OpenCommand;
+        public virtual ICommand OpenPopupCommand
+        {
+            get => _OpenCommand;
+            protected set
+            {
+                _OpenCommand = value;
+                OnPropertyChanged(nameof(OpenPopupCommand));
+            }
+        }
 
         public static BindableProperty CultureProperty = BindableProperty.Create(nameof(Culture), typeof(CultureInfo), typeof(BitDateTimePicker), defaultValue: CultureInfo.CurrentUICulture, defaultBindingMode: BindingMode.OneWay);
         [TypeConverter(typeof(StringToCultureInfoConverter))]
@@ -98,7 +117,17 @@ namespace Bit.View.Controls
             set { SetValue(AutoCloseProperty, value); }
         }
 
-        public virtual string Text { get; set; }
+        private string _Text;
+        public virtual string Text
+        {
+            get => _Text;
+            set
+            {
+                _Text = value;
+                OnPropertyChanged(nameof(Text));
+                OnPropertyChanged(nameof(DisplayText));
+            }
+        }
 
         public static BindableProperty ShowTimePickerProperty = BindableProperty.Create(nameof(ShowTimePicker), typeof(bool), typeof(BitCalendarPopupView), defaultValue: true, defaultBindingMode: BindingMode.OneWay);
         public virtual bool ShowTimePicker

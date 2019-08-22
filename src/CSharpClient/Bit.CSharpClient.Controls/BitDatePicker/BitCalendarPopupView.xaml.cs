@@ -120,18 +120,18 @@ namespace Bit.View.Controls
             int prevMonthDaysInCurrentMonthView = (firstDayOfMonthDayOfWeek.DayOfWeekNumber - 1);
             int nextMonthDaysInCurrentMonthView = 42 - thisMonthDaysCount - prevMonthDaysInCurrentMonthView;
 
-            Days = new List<CalendarDay>(42);
+            List<CalendarDay> days = new List<CalendarDay>(42);
 
             LocalDate today = new LocalDate(DateTimeOffset.Now.Year, DateTimeOffset.Now.Month, DateTimeOffset.Now.Day, CalendarSystem.Gregorian).WithCalendar(CalendarSystem);
 
             for (int i = 0; i < prevMonthDaysInCurrentMonthView; i++)
             {
-                Days.Add(null);
+                days.Add(null);
             }
 
             for (int i = 1; i <= thisMonthDaysCount; i++)
             {
-                Days.Add(new CalendarDay
+                days.Add(new CalendarDay
                 {
                     LocalDate = new LocalDate(CurrentDay.Year, CurrentDay.Month, i, CurrentDay.Calendar),
                     IsToday = today.Year == CurrentDay.Year && today.Month == CurrentDay.Month && today.Day == i ? true : false
@@ -140,21 +140,91 @@ namespace Bit.View.Controls
 
             for (int i = 0; i < nextMonthDaysInCurrentMonthView; i++)
             {
-                Days.Add(null);
+                days.Add(null);
             }
 
-            if (Days.Count != 42)
-                throw new InvalidOperationException($"{nameof(Days)}'s count is {Days.Count}, but it should be 42");
+            if (days.Count != 42)
+                throw new InvalidOperationException($"{nameof(days)}'s count is {days.Count}, but it should be 42");
+
+            Days = days;
         }
 
-        public virtual string CalendarTitle { get; protected set; }
-        public virtual string[] DaysOfWeekNames { get; protected set; }
-        public virtual List<CalendarDay> Days { get; protected set; }
-        public virtual LocalDate CurrentDay { get; protected set; }
+        private string _CalendarTitle;
+        public virtual string CalendarTitle
+        {
+            get => _CalendarTitle;
+            protected set
+            {
+                _CalendarTitle = value;
+                OnPropertyChanged(nameof(CalendarTitle));
+            }
+        }
 
-        public virtual ICommand SelectDateTimeCommand { get; protected set; }
-        public virtual ICommand ShowNextMonthCommand { get; protected set; }
-        public virtual ICommand ShowPreviousMonthCommand { get; protected set; }
+        private string[] _DaysOfWeekNames;
+        public virtual string[] DaysOfWeekNames
+        {
+            get => _DaysOfWeekNames;
+            protected set
+            {
+                _DaysOfWeekNames = value;
+                OnPropertyChanged(nameof(DaysOfWeekNames));
+            }
+        }
+
+        private List<CalendarDay> _Days;
+        public virtual List<CalendarDay> Days
+        {
+            get => _Days;
+            protected set
+            {
+                _Days = value;
+                OnPropertyChanged(nameof(Days));
+            }
+        }
+
+        private LocalDate _CurrentDay;
+        public virtual LocalDate CurrentDay
+        {
+            get => _CurrentDay;
+            protected set
+            {
+                _CurrentDay = value;
+                OnPropertyChanged(nameof(CurrentDay));
+            }
+        }
+
+        private ICommand _SelectDateTimeCommand;
+        public virtual ICommand SelectDateTimeCommand
+        {
+            get => _SelectDateTimeCommand;
+            protected set
+            {
+                _SelectDateTimeCommand = value;
+                OnPropertyChanged(nameof(SelectDateTimeCommand));
+            }
+        }
+
+        private ICommand _ShowNextMonthCommand;
+        public virtual ICommand ShowNextMonthCommand
+        {
+            get => _ShowNextMonthCommand;
+            protected set
+            {
+                _ShowNextMonthCommand = value;
+                OnPropertyChanged(nameof(ShowNextMonthCommand));
+            }
+        }
+
+        private ICommand _ShowPreviousMonthCommand;
+        public virtual ICommand ShowPreviousMonthCommand
+        {
+            get => _ShowPreviousMonthCommand;
+            protected set
+            {
+                _ShowPreviousMonthCommand = value;
+                OnPropertyChanged(nameof(ShowPreviousMonthCommand));
+            }
+        }
 
         public static BindableProperty CultureProperty = BindableProperty.Create(nameof(Culture), typeof(CultureInfo), typeof(BitCalendarPopupView), defaultValue: CultureInfo.CurrentUICulture, defaultBindingMode: BindingMode.OneWay, propertyChanged: (sender, oldValue, newValue) =>
         {

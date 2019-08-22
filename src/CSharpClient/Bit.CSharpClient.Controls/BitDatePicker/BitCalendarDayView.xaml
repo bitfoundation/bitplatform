@@ -12,6 +12,7 @@
             <Setter Property="ControlTemplate">
                 <ControlTemplate>
                     <Button
+                        x:DataType="bitControls:BitCalendarDayView"
                         BackgroundColor="Transparent"
                         BindingContext="{TemplateBinding}"
                         BorderColor="Transparent"
@@ -22,19 +23,6 @@
                         FontFamily="{Binding FontFamily}"
                         Text="{Binding Day.LocalDate.Day}"
                         TextColor="DimGray">
-                        <VisualStateManager.VisualStateGroups>
-                            <VisualStateGroupList>
-                                <VisualStateGroup x:Name="NormalStates">
-                                    <VisualState x:Name="Focused" />
-                                    <VisualState x:Name="Normal" />
-                                    <VisualState x:Name="Disabled">
-                                        <VisualState.Setters>
-                                            <Setter Property="IsVisible" Value="False" />
-                                        </VisualState.Setters>
-                                    </VisualState>
-                                </VisualStateGroup>
-                            </VisualStateGroupList>
-                        </VisualStateManager.VisualStateGroups>
                         <Button.Triggers>
                             <DataTrigger
                                 Binding="{Binding Day.IsToday}"
@@ -63,6 +51,17 @@
                                 <Setter Property="BorderColor" Value="Transparent" />
                             </DataTrigger>
                         </Button.Triggers>
+                        <VisualStateManager.VisualStateGroups>
+                            <VisualStateGroup x:Name="CommonStates">
+                                <VisualState x:Name="Focused" />
+                                <VisualState x:Name="Normal" />
+                                <VisualState x:Name="Disabled">
+                                    <VisualState.Setters>
+                                        <Setter Property="IsVisible" Value="False" />
+                                    </VisualState.Setters>
+                                </VisualState>
+                            </VisualStateGroup>
+                        </VisualStateManager.VisualStateGroups>
                     </Button>
                 </ControlTemplate>
             </Setter>

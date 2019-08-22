@@ -4,7 +4,8 @@
     xmlns="http://xamarin.com/schemas/2014/forms"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     xmlns:bitControls="clr-namespace:Bit.View.Controls"
-    xmlns:pages="clr-namespace:Rg.Plugins.Popup.Pages;assembly=Rg.Plugins.Popup" x:Name="This">
+    xmlns:pages="clr-namespace:Rg.Plugins.Popup.Pages;assembly=Rg.Plugins.Popup"
+    x:Name="This">
 
     <pages:PopupPage.Resources>
 
@@ -15,6 +16,7 @@
                 <ControlTemplate>
                     <StackLayout
                         Margin="5,0"
+                        x:DataType="bitControls:BitCalendarPopupView"
                         BackgroundColor="White"
                         BindingContext="{TemplateBinding}"
                         HorizontalOptions="Center"
