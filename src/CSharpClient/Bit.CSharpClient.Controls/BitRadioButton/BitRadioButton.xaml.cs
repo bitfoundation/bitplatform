@@ -43,11 +43,38 @@ namespace Bit.View.Controls
             }
         }
 
-        public virtual Xamarin.Forms.View Content { get; set; }
+        private Xamarin.Forms.View _Content;
+        public virtual Xamarin.Forms.View Content
+        {
+            get => _Content;
+            set
+            {
+                _Content = value;
+                OnPropertyChanged(nameof(Content));
+            }
+        }
 
-        public bool IsSelected { get; protected set; }
+        private bool _IsSelected;
+        public bool IsSelected
+        {
+            get => _IsSelected;
+            protected set
+            {
+                _IsSelected = value;
+                OnPropertyChanged(nameof(IsSelected));
+            }
+        }
 
-        public ICommand SelectedTappedCommand { get; protected set; }
+        private ICommand _SelectedTappedCommand;
+        public ICommand SelectedTappedCommand
+        {
+            get => _SelectedTappedCommand;
+            protected set
+            {
+                _SelectedTappedCommand = value;
+                OnPropertyChanged(nameof(SelectedTappedCommand));
+            }
+        }
 
         public static BindableProperty BorderColorProperty = BindableProperty.Create(nameof(BorderColor), typeof(Color), typeof(BitRadioButton), defaultValue: Color.Gray, defaultBindingMode: BindingMode.OneWay);
 
@@ -57,12 +84,12 @@ namespace Bit.View.Controls
             set => SetValue(BorderColorProperty, value);
         }
 
-        public static BindableProperty InerCircleColorProperty = BindableProperty.Create(nameof(InerCircleColor), typeof(Color), typeof(BitRadioButton), defaultValue: Color.Blue, defaultBindingMode: BindingMode.OneWay);
+        public static BindableProperty InnerCircleColorProperty = BindableProperty.Create(nameof(InnerCircleColor), typeof(Color), typeof(BitRadioButton), defaultValue: Color.Blue, defaultBindingMode: BindingMode.OneWay);
 
-        public virtual Color InerCircleColor
+        public virtual Color InnerCircleColor
         {
-            get => (Color)GetValue(InerCircleColorProperty);
-            set => SetValue(InerCircleColorProperty, value);
+            get => (Color)GetValue(InnerCircleColorProperty);
+            set => SetValue(InnerCircleColorProperty, value);
         }
 
         public static BindableProperty TextProperty = BindableProperty.Create(nameof(Text), typeof(string), typeof(BitRadioButton), defaultValue: null, defaultBindingMode: BindingMode.OneWay);

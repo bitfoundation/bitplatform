@@ -14,7 +14,7 @@
         <Style TargetType="bitControls:BitRadioButton">
             <Setter Property="ControlTemplate">
                 <ControlTemplate>
-                    <Grid BindingContext="{TemplateBinding}">
+                    <Grid x:DataType="bitControls:BitRadioButton" BindingContext="{TemplateBinding}">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="Auto" />
                             <ColumnDefinition Width="Auto" />
@@ -35,7 +35,7 @@
                                         Binding="{Binding IsSelected}"
                                         TargetType="Frame"
                                         Value="True">
-                                        <Setter Property="BackgroundColor" Value="{Binding InerCircleColor}" />
+                                        <Setter Property="BackgroundColor" Value="{Binding InnerCircleColor}" />
                                     </DataTrigger>
                                 </bitControls:BitFrame.Triggers>
                             </bitControls:BitFrame>
