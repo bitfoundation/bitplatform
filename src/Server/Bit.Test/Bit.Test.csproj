@@ -17,10 +17,10 @@
     <PackageReference Include="Microsoft.AspNetCore.TestHost" Version="2.2.0" />
     <PackageReference Include="Microsoft.Owin.SelfHost" Version="4.0.1" />
     <PackageReference Include="Microsoft.Owin.Testing" Version="4.0.1" />
-    <PackageReference Include="Refit" Version="4.7.9" />
+    <PackageReference Include="Refit" Version="4.7.51" />
     <PackageReference Include="Selenium.Support" Version="3.141.0" />
     <PackageReference Include="Selenium.WebDriver" Version="3.141.0" />
-    <PackageReference Include="Selenium.WebDriver.ChromeDriver" Version="76.0.3809.6801" />
+    <PackageReference Include="Selenium.WebDriver.ChromeDriver" Version="76.0.3809.12600" />
     <PackageReference Include="Simple.OData.V4.Client" Version="5.8.1" />
   </ItemGroup>
 
