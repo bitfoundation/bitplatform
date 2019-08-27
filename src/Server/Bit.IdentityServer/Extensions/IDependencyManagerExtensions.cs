@@ -18,7 +18,6 @@ namespace Bit.Core.Contracts
 
             dependencyManager.Register<IScopesProvider, DefaultScopesProvider>(lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExciting: false);
             dependencyManager.Register<IdentityServer3.Core.Logging.ILogProvider, DefaultIdentityServerLogProvider>(lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExciting: false);
-            dependencyManager.RegisterOwinMiddleware<ClientAppProfileMiddlewareConfiguration>();
             dependencyManager.RegisterOwinMiddleware<IdentityServerMiddlewareConfiguration>(name: name);
             dependencyManager.Register<IViewService, DefaultViewService>(overwriteExciting: false);
             dependencyManager.Register<IRedirectUriValidator, RegexBasedRedirectUriValidator>(lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExciting: false);

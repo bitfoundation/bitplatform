@@ -91,7 +91,6 @@ namespace Bit.Core.Contracts
                 throw new ArgumentNullException(nameof(dependencyManager));
 
 
-            dependencyManager.RegisterOwinMiddleware<ClientAppProfileMiddlewareConfiguration>();
             dependencyManager.RegisterOwinMiddleware<IndexPageMiddlewareConfiguration>();
 
             return dependencyManager;
@@ -106,6 +105,7 @@ namespace Bit.Core.Contracts
                 throw new ArgumentNullException(nameof(metadataAssemblies));
 
             dependencyManager.RegisterOwinMiddleware<MetadataMiddlewareConfiguration>();
+            dependencyManager.RegisterOwinMiddleware<ClientAppProfileMiddlewareConfiguration>();
             dependencyManager.Register<IAppMetadataProvider, DefaultAppMetadataProvider>(lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExciting: false);
 
             metadataAssemblies = AssemblyContainer.Current.AssembliesWithDefaultAssemblies(metadataAssemblies).Union(new[] { AssemblyContainer.Current.GetBitMetadataAssembly() }).ToArray();
