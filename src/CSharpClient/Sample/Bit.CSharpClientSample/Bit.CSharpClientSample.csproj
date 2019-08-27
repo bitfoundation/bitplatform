@@ -16,7 +16,7 @@
     <Reference Include="System.Data" />
 
     <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="2.2.0" />
-    <PackageReference Include="PropertyChanged.Fody" Version="3.1.0">
+    <PackageReference Include="PropertyChanged.Fody" Version="3.1.1">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
     </PackageReference>
