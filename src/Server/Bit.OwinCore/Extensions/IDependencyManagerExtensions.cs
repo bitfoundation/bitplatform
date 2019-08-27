@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.Owin.Security.DataProtection;
 using System;
+using System.Linq;
 using System.Reflection;
 
 namespace Bit.Core.Contracts
@@ -85,7 +86,9 @@ namespace Bit.Core.Contracts
                         {
                             string path = context.Request.Path.Value;
 
-                            if (path.StartsWith("/core", StringComparison.InvariantCultureIgnoreCase) || path.StartsWith("/signalr", StringComparison.InvariantCultureIgnoreCase) || path.StartsWith("/jobs", StringComparison.InvariantCultureIgnoreCase) || path.EndsWith("$batch", StringComparison.InvariantCultureIgnoreCase))
+                            string[] toBeIgnoredPaths = new[] { "/core", "/signalr", "/jobs", "/api" };
+
+                            if (toBeIgnoredPaths.Any(p => path.StartsWith(p, StringComparison.InvariantCultureIgnoreCase)) || path.EndsWith("$batch", StringComparison.InvariantCultureIgnoreCase))
                             {
                                 object httpBodyControlFeature = context.Features[httpBodyControlFeatureType];
                                 if (httpBodyControlFeature != null)
