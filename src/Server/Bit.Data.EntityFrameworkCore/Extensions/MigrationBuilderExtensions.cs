@@ -37,5 +37,11 @@ namespace Microsoft.EntityFrameworkCore.Migrations
                 }
             }
         }
+
+        public static void AllowSnapshotIsolation(this MigrationBuilder migrationBuilder)
+        {
+            migrationBuilder.Sql("DECLARE @dbname sysname = db_name();" +
+                                 "EXEC('ALTER DATABASE [' + @dbname + '] SET ALLOW_SNAPSHOT_ISOLATION ON');", true);
+        }
     }
 }
