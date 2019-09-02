@@ -17,7 +17,7 @@
     <PackageReference Include="Prism.Plugin.Popups" Version="7.2.0.573" />
     <PackageReference Include="Prism.Forms" Version="7.2.0.1367" />
     <PackageReference Include="System.ComponentModel.Annotations" Version="4.6.0-preview8.19405.3" />
-    <PackageReference Include="Xamarin.Essentials" Version="1.2.0" />
+    <PackageReference Include="Xamarin.Essentials" Version="1.3.0" />
     <PackageReference Include="Microsoft.ApplicationInsights.WindowsApps" Condition=" '$(TargetFramework)' == 'uap10.0.16299' " Version="1.1.1" />
   </ItemGroup>
 
