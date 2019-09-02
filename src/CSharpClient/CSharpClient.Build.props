@@ -11,6 +11,8 @@
     <DefineConstants Condition=" '$(TargetFramework)' == 'netstandard2.0' ">DotNetStandard</DefineConstants>
     <DesignTimeBuild>True</DesignTimeBuild>
     <AndroidResgenFile>False</AndroidResgenFile>
+    <AndroidUseIntermediateDesignerFile>False</AndroidUseIntermediateDesignerFile>
+    <TargetFrameworkVersion Condition=" '$(TargetFramework)' == 'MonoAndroid90' ">v9.0</TargetFrameworkVersion>
   </PropertyGroup>
 
   <ItemGroup>
