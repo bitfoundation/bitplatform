@@ -4,6 +4,7 @@ using Bit.CSharpClientSample.ViewModels;
 using Bit.CSharpClientSample.Views;
 using Bit.Model.Events;
 using Bit.Tests.Model.Dto;
+using Bit.View;
 using Bit.ViewModel.Contracts;
 using Bit.ViewModel.Implementations;
 using Microsoft.Extensions.DependencyInjection;
@@ -22,6 +23,12 @@ namespace Bit.CSharpClientSample
 {
     public partial class App : BitApplication
     {
+        static App()
+        {
+            BitCSharpClientControls.XamlInit();
+            BitApplication.XamlInit();
+        }
+
         public App(IPlatformInitializer initializer)
                     : base(initializer)
         {
@@ -61,7 +68,7 @@ namespace Bit.CSharpClientSample
 
             containerBuilder.Register<IClientAppProfile>(c => new DefaultClientAppProfile
             {
-                HostUri = new Uri("http://192.168.1.215/"),
+                HostUri = new Uri("http://192.168.50.215/"),
                 //HostUri = new Uri("http://127.0.0.1/"),
                 //HostUri = new Uri("http://10.0.2.2"),
                 OAuthRedirectUri = new Uri("Test://oauth2redirect"),
