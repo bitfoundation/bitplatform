@@ -13,7 +13,7 @@
     <PackageReference Include="Microsoft.AppCenter.Analytics" Version="2.1.1" />
     <PackageReference Include="Microsoft.AppCenter.Crashes" Version="2.1.1" Condition=" '$(TargetFramework)' != 'uap10.0.16299' " />
     <PackageReference Include="Newtonsoft.Json" Version="12.0.2" />
-    <PackageReference Include="Prism.Plugin.Logging.Common" Version="7.2.0.560" />
+    <PackageReference Include="Prism.Plugin.Logging.Common" Version="7.2.0.616" />
     <PackageReference Include="Prism.Plugin.Popups" Version="7.2.0.573" />
     <PackageReference Include="Prism.Forms" Version="7.2.0.1367" />
     <PackageReference Include="System.ComponentModel.Annotations" Version="4.6.0-preview8.19405.3" />

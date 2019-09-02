@@ -26,7 +26,7 @@
       <Private>true</Private>
     </Reference>
     <Reference Include="Hangfire.MemoryStorage">
-      <HintPath>$(NuGetPackageRoot)hangfire.memorystorage\1.6.1\lib\net40\Hangfire.MemoryStorage.dll</HintPath>
+      <HintPath>$(NuGetPackageRoot)hangfire.memorystorage\1.6.2\lib\net40\Hangfire.MemoryStorage.dll</HintPath>
       <Private>true</Private>
     </Reference>
     <Reference Include="Hangfire.Azure.ServiceBusQueue">
