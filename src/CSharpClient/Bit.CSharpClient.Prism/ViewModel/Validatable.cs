@@ -132,7 +132,17 @@ namespace Bit.ViewModel
             }
         }
 
-        public virtual object Value { get; set; }
+        private object _Value;
+
+        public virtual object Value
+        {
+            get => _Value;
+            set
+            {
+                if (SetProperty(ref _Value, value))
+                    OnValueChanged();
+            }
+        }
 
         public virtual void OnValueChanged()
         {
@@ -152,7 +162,7 @@ namespace Bit.ViewModel
 
     public class ValidatablesGroup : Bindable
     {
-        public Validatable[] Validatables { get; set; }
+        public Validatable[] Validatables { get; protected set; }
 
         public ValidatablesGroup(string notValidErrorMessage, params Validatable[] validatables)
         {

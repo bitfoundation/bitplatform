@@ -14,17 +14,71 @@ namespace Bit.View
     [ContentProperty(nameof(Actions))]
     public class AdaptiveBehavior : Behavior<VisualElement>
     {
-        public double? MaxWidth { get; set; }
+        private double? _MaxWidth;
+        public double? MaxWidth
+        {
+            get => _MaxWidth;
+            set
+            {
+                _MaxWidth = value;
+                OnPropertyChanged(nameof(MaxWidth));
+            }
+        }
 
-        public double? MaxHeight { get; set; }
+        private double? _MaxHeight;
+        public double? MaxHeight
+        {
+            get => _MaxHeight;
+            set
+            {
+                _MaxHeight = value;
+                OnPropertyChanged(nameof(MaxHeight));
+            }
+        }
 
-        public double? MinWidth { get; set; }
+        private double? _MinWidth;
+        public double? MinWidth
+        {
+            get => _MinWidth;
+            set
+            {
+                _MinWidth = value;
+                OnPropertyChanged(nameof(MinWidth));
+            }
+        }
 
-        public double? MinHeight { get; set; }
+        private double? _MinHeight;
+        public double? MinHeight
+        {
+            get => _MinHeight;
+            set
+            {
+                _MinHeight = value;
+                OnPropertyChanged(nameof(MinHeight));
+            }
+        }
 
-        public DeviceOrientation? Orientation { get; set; }
+        private DeviceOrientation? _Orientation;
+        public DeviceOrientation? Orientation
+        {
+            get => _Orientation;
+            set
+            {
+                _Orientation = value;
+                OnPropertyChanged(nameof(Orientation));
+            }
+        }
 
-        public List<SetPropertyAction> Actions { get; set; } = new List<SetPropertyAction>(); // With SetPropertyAction type for now.
+        private List<SetPropertyAction> _Actions = new List<SetPropertyAction>();
+        public List<SetPropertyAction> Actions // With SetPropertyAction type for now.
+        {
+            get => _Actions;
+            set
+            {
+                _Actions = value;
+                OnPropertyChanged(nameof(Actions));
+            }
+        }
 
         private bool isValid = false;
 

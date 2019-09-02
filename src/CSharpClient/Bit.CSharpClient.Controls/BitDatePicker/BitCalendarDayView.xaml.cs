@@ -50,11 +50,40 @@ namespace Bit.View.Controls
 
     public class CalendarDay : INotifyPropertyChanged
     {
-        public virtual LocalDate LocalDate { get; set; }
+        private LocalDate _LocalDate;
+        public virtual LocalDate LocalDate
+        {
+            get => _LocalDate;
+            set
+            {
+                _LocalDate = value;
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(LocalDate)));
+            }
+        }
 
-        public virtual bool IsToday { get; set; }
+        private bool _IsToday;
 
-        public virtual bool IsSelected { get; set; }
+        public virtual bool IsToday
+        {
+            get => _IsToday;
+            set
+            {
+                _IsToday = value;
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsToday)));
+            }
+        }
+
+        private bool _IsSelected;
+
+        public virtual bool IsSelected
+        {
+            get => _IsSelected;
+            set
+            {
+                _IsSelected = value;
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsSelected)));
+            }
+        }
 
         public virtual event PropertyChangedEventHandler PropertyChanged;
     }

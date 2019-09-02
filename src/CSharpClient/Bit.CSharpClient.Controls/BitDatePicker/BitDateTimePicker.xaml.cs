@@ -45,13 +45,13 @@ namespace Bit.View.Controls
             }
         }
 
-        private ICommand _OpenCommand;
+        private ICommand _OpenPopupCommand;
         public virtual ICommand OpenPopupCommand
         {
-            get => _OpenCommand;
+            get => _OpenPopupCommand;
             protected set
             {
-                _OpenCommand = value;
+                _OpenPopupCommand = value;
                 OnPropertyChanged(nameof(OpenPopupCommand));
             }
         }

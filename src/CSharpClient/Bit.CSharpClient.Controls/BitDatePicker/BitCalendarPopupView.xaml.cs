@@ -297,17 +297,44 @@ namespace Bit.View.Controls
 
     internal class DayOfWeekInfo : INotifyPropertyChanged
     {
-        public virtual IsoDayOfWeek IsoDayOfWeek { get; set; }
+        private IsoDayOfWeek _IsoDayOfWeek;
+        public virtual IsoDayOfWeek IsoDayOfWeek
+        {
+            get => _IsoDayOfWeek;
+            set
+            {
+                _IsoDayOfWeek = value;
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(IsoDayOfWeek)));
+            }
+        }
 
+        private string _DayOfWeekName;
         /// <summary>
         /// Based on current culture.
         /// </summary>
-        public virtual string DayOfWeekName { get; set; }
+        public virtual string DayOfWeekName
+        {
+            get => _DayOfWeekName;
+            set
+            {
+                _DayOfWeekName = value;
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(DayOfWeekName)));
+            }
+        }
 
+        private int _DayOfWeekNumber;
         /// <summary>
         /// Based on current culture.
         /// </summary>
-        public virtual int DayOfWeekNumber { get; set; }
+        public virtual int DayOfWeekNumber
+        {
+            get => _DayOfWeekNumber;
+            set
+            {
+                _DayOfWeekNumber = value;
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(DayOfWeekNumber)));
+            }
+        }
 
         public virtual event PropertyChangedEventHandler PropertyChanged;
     }

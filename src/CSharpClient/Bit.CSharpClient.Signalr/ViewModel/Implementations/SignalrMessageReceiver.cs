@@ -19,14 +19,25 @@ namespace Bit.ViewModel.Implementations
 
         public virtual IDeviceService DeviceService { get; set; }
 
-        public virtual bool IsConnected { get; set; }
-
         public virtual IClientAppProfile ClientAppProfile { get; set; }
+
+        private bool _IsConnected;
+        public virtual bool IsConnected
+        {
+            get => _IsConnected;
+            set => SetProperty(ref _IsConnected, value);
+        }
+
+        private bool _ShouldBeConnected;
 
         /// <summary>
         /// <see cref="IMessageReceiver.ShouldBeConnected"/>
         /// </summary>
-        public virtual bool ShouldBeConnected { get; set; }
+        public virtual bool ShouldBeConnected
+        {
+            get => _ShouldBeConnected;
+            set => SetProperty(ref _ShouldBeConnected, value);
+        }
 
         HubConnection _hubConnection;
         IDisposable _listener;
