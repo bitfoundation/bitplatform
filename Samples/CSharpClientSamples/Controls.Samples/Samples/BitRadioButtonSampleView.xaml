@@ -14,7 +14,7 @@
         <ResourceDictionary>
             <Style x:Key="BitRadioButtonStyles" TargetType="bit:BitRadioButton">
                 <Setter Property="BorderColor" Value="HotPink" />
-                <Setter Property="InerCircleColor" Value="HotPink" />
+                <Setter Property="InnerCircleColor" Value="HotPink" />
                 <Setter Property="Value" Value="{Binding Person.Gender}" />
             </Style>
         </ResourceDictionary>
@@ -23,19 +23,19 @@
     <StackLayout Padding="10">
         <bit:BitRadioButton
             Key="{x:Static app:Gender.Man}"
-            Value="{Binding Person.Gender}"
             Style="{StaticResource BitRadioButtonStyles}"
-            Text="Man" />
+            Text="Man"
+            Value="{Binding Person.Gender}" />
         <bit:BitRadioButton
             Key="{x:Static app:Gender.Woman}"
-            Value="{Binding Person.Gender}"
             Style="{StaticResource BitRadioButtonStyles}"
-            Text="Woman" />
+            Text="Woman"
+            Value="{Binding Person.Gender}" />
         <bit:BitRadioButton
             Key="{x:Static app:Gender.Other}"
-            Value="{Binding Person.Gender}"
             Style="{StaticResource BitRadioButtonStyles}"
-            Text="Other" />
+            Text="Other"
+            Value="{Binding Person.Gender}" />
 
         <Label Text="{Binding Person.Gender}" />
 
