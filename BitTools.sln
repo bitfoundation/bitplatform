@@ -17,6 +17,11 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BitCodeGeneratorTask", "Bit
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BitCodeGeneratorTaskImpl", "BitTools\BitCodeGeneratorTaskImpl\BitCodeGeneratorTaskImpl.csproj", "{F8367259-1C80-47A6-AA69-4E37AC3479E0}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Files", "Files", "{DB43A9E9-685A-4228-8DA9-528D145B7737}"
+	ProjectSection(SolutionItems) = preProject
+		src\Bit.Build.props = src\Bit.Build.props
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
 		BitTools\BitTools.Core\BitTools.Core.projitems*{2c8e2fd6-0db2-470b-9059-9b0b6df1562f}*SharedItemsImports = 13
