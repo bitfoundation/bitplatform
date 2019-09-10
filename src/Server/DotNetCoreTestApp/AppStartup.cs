@@ -13,6 +13,7 @@ using Bit.OData.ODataControllers;
 using Bit.Owin.Exceptions;
 using Bit.Owin.Implementations;
 using Bit.OwinCore;
+using Bit.OwinCore.Implementations;
 using IdentityServer3.Core.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -33,7 +34,7 @@ namespace DotNetCoreTestApp
         public AppStartup(IServiceProvider serviceProvider)
             : base(serviceProvider)
         {
-
+            AspNetCoreAppEnvironmentsProvider.Current.Init();
         }
 
         public override IServiceProvider ConfigureServices(IServiceCollection services)

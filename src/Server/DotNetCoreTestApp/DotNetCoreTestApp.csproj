@@ -17,10 +17,4 @@
     <ProjectReference Include="..\Bit.Signalr\Bit.Signalr.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Content Update="environments.json">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-  </ItemGroup>
-
 </Project>
