@@ -1,0 +1,16 @@
+daysUntilLock: 30
+
+skipCreatedBefore: false
+
+# Issues and pull requests with these labels will be ignored. Set to `[]` to disable
+exemptLabels: []
+
+lockLabel: 'outdated'
+
+lockComment: >
+  This issue has been automatically locked due to inactivity.
+  Please file a new issue if you are encountering a similar or related problem.
+
+  Read more about our [automatic conversation locking policy](docs/GITHUB_PROCESS.md).
+
+setLockReason: true
