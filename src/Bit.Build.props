@@ -12,7 +12,7 @@
     <Version>2.6.4</Version>
     <AssemblyVersion>2.6.4.0</AssemblyVersion>
     <DocumentationFile>bin\$(Configuration)\$(TargetFramework)\$(AssemblyName).xml</DocumentationFile>
-    <NoWarn>$(NoWarn);NU1605;CS1591;NU1701;</NoWarn>
+    <NoWarn>$(NoWarn);NU1605;CS1591;NU1701;NU1605</NoWarn>
     <!-- https://stackoverflow.com/a/46815541/2720104 -->
     <LangVersion>7.3</LangVersion>
     <EmbedAllSources>True</EmbedAllSources>
