@@ -10,6 +10,7 @@ let testGetOfDtoSetController = async (): Promise<void> => {
     expect(model.Name).toBe("TestCustomer");
     expect(model.CityId).toBe("ef529174-c497-408b-bb4d-c31c205d46bb");
     expect(model.CityName).toBe("TestCity");
+    expect(model.Name2).toBe("testcustomer");
 
 };
 

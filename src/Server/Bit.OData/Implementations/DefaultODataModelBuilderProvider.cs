@@ -8,7 +8,7 @@ namespace Bit.OData.Implementations
     {
         public virtual ODataModelBuilder GetODataModelBuilder(HttpConfiguration webApiConfig, string containerName, string @namespace)
         {
-            return new ODataConventionModelBuilder(webApiConfig)
+            return new ODataConventionModelBuilder(webApiConfig, isQueryCompositionMode: true)
             {
                 ContainerName = containerName,
                 Namespace = @namespace

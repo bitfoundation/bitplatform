@@ -17,6 +17,8 @@ namespace Bit.Tests.Model.Dto
 
         public virtual string Name { get; set; }
 
+        public virtual string Name2 => Name?.ToLowerInvariant();
+
         public virtual Guid CityId { get; set; }
 
         public virtual string CityName { get; set; }
