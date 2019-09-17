@@ -1,5 +1,6 @@
 ﻿using Bit.OwinCore;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.Configuration;
 
 namespace CustomerDtoControllerSample
 {
@@ -12,6 +13,7 @@ namespace CustomerDtoControllerSample
 
         public static IWebHost BuildWebHost(string[] args) =>
             BitWebHost.CreateDefaultBuilder(args)
+            .UseConfiguration(new ConfigurationBuilder().AddEnvironmentVariables().Build())
                 .UseStartup<AppStartup>()
                 .Build();
     }

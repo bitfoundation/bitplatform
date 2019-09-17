@@ -20,16 +20,17 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Bit.Data.EntityFramework" Version="2.7.1" />
-    <PackageReference Include="Bit.Hangfire" Version="2.7.1" />
-    <PackageReference Include="Bit.IdentityServer" Version="2.7.1" />
-    <PackageReference Include="Bit.OData" Version="2.7.1" />
-    <PackageReference Include="Bit.OwinCore" Version="2.7.1" />
-    <PackageReference Include="Bit.Signalr" Version="2.7.1" />
-    <PackageReference Include="BitCodeAnalyzer" Version="2.7.1" />
-    <PackageReference Include="Dapper" Version="1.60.6" />
-    <PackageReference Include="Microsoft.AspNetCore.Cors" Version="1.1.2" />
-    <PackageReference Include="Microsoft.AspNetCore.ResponseCompression" Version="1.0.4" />
+    <PackageReference Include="Bit.Data.EntityFramework" Version="2.8.0" />
+    <PackageReference Include="Bit.Hangfire" Version="2.8.0" />
+    <PackageReference Include="Bit.IdentityServer" Version="2.8.0" />
+    <PackageReference Include="Bit.OData" Version="2.8.0" />
+    <PackageReference Include="Bit.OwinCore" Version="2.8.0" />
+    <PackageReference Include="Bit.OwinCore.AspNetCore22Upgrade" Version="2.8.0" />
+    <PackageReference Include="Bit.Signalr" Version="2.8.0" />
+    <PackageReference Include="BitCodeAnalyzer" Version="2.8.0" />
+    <PackageReference Include="Dapper" Version="2.0.4" />
+    <PackageReference Include="Microsoft.AspNetCore.Cors" Version="2.2.0" />
+    <PackageReference Include="Microsoft.AspNetCore.ResponseCompression" Version="2.2.0" />
     <PackageReference Include="SourceLink.Copy.PdbFiles" Version="2.8.3" PrivateAssets="All" />
   </ItemGroup>
 
@@ -38,9 +39,6 @@
   </ItemGroup>
   <ItemGroup>
     <Content Update="App_Data\templates.json">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Update="environments.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>

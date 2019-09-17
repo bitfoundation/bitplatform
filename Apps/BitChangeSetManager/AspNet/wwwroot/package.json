@@ -18,12 +18,12 @@
     "@types/angular-ui-router": "^1.1.40",
     "@types/decimal.js": "^7.4.0",
     "@types/jquery": "^3.3.31",
-    "@types/kendo-ui": "^2019.1.2",
+    "@types/kendo-ui": "^2019.2.0",
     "@types/pubsub-js": "^1.5.18",
     "@types/signalr": "^2.2.35"
   },
   "dependencies": {
-    "@bit/bit-framework": "^2.7.1",
+    "@bit/bit-framework": "^2.8.0",
     "@bit/jaydata": "^1.5.20",
     "@uirouter/angularjs": "^1.0.22",
     "angular": "^1.7.8",
