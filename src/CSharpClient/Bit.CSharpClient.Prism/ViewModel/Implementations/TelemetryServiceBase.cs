@@ -1,8 +1,11 @@
-﻿using Bit.ViewModel.Contracts;
+﻿using Bit.View;
+using Bit.ViewModel.Contracts;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
 using Xamarin.Essentials;
+using Xamarin.Forms;
+using System.Reflection;
 
 namespace Bit.ViewModel.Implementations
 {
@@ -34,6 +37,12 @@ namespace Bit.ViewModel.Implementations
 
             if (MessageReceiver != null && !initialProps.ContainsKey("MessageReceiverWasConnected"))
                 initialProps.Add("MessageReceiverWasConnected", MessageReceiver.IsConnected.ToString());
+
+            if (!initialProps.ContainsKey("XamarinFormsVersion"))
+                initialProps.Add("XamarinFormsVersion", typeof(Binding).Assembly.GetCustomAttribute<AssemblyFileVersionAttribute>().Version);
+
+            if (!initialProps.ContainsKey("BitVersion"))
+                initialProps.Add("BitVersion", typeof(BitCSharpClientControls).Assembly.GetName().Version.ToString());
 
             return initialProps;
         }
