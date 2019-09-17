@@ -1,12 +1,14 @@
 ﻿#if UWP
 using Bit.View;
 using Bit.ViewModel;
+using Bit.ViewModel.Implementations;
 using System.Linq;
 using System.Reflection;
-using Windows.Foundation;
+using System.Threading.Tasks;
 using Windows.UI.ViewManagement;
 using Windows.UI.Xaml;
 using Xamarin.Essentials;
+using Xamarin.Forms;
 
 namespace Bit.UWP
 {
@@ -31,11 +33,28 @@ namespace Bit.UWP
             VersionTracking.Track();
             Rg.Plugins.Popup.Popup.Init();
             BitCSharpClientControls.Init();
-            ApplicationView.GetForCurrentView().SetPreferredMinSize(new Size
+            ApplicationView.GetForCurrentView().SetPreferredMinSize(new Windows.Foundation.Size
             {
                 Height = 1,
                 Width = 1
             });
+            SetBitPlatformServices();
+        }
+
+        protected virtual async void SetBitPlatformServices()
+        {
+            while (true)
+            {
+                await Task.Delay(25);
+                if (Forms.IsInitialized)
+                {
+                    Device.PlatformServices = new BitPlatformServices
+                    {
+                        OriginalPlatformService = Device.PlatformServices
+                    };
+                    break;
+                }
+            }
         }
 
         /// <summary>

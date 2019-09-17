@@ -1,5 +1,6 @@
 ﻿#if iOS 
 using Bit.View;
+using Bit.ViewModel.Implementations;
 using Foundation;
 using System;
 using System.Threading.Tasks;
@@ -23,6 +24,23 @@ namespace Bit.iOS
             VersionTracking.Track();
             Rg.Plugins.Popup.Popup.Init();
             BitCSharpClientControls.Init();
+            SetBitPlatformServices();
+        }
+
+        protected virtual async void SetBitPlatformServices()
+        {
+            while (true)
+            {
+                await Task.Delay(25);
+                if (Forms.IsInitialized)
+                {
+                    Device.PlatformServices = new BitPlatformServices
+                    {
+                        OriginalPlatformService = Device.PlatformServices
+                    };
+                    break;
+                }
+            }
         }
 
         public override bool OpenUrl(UIApplication app, NSUrl url, NSDictionary options)

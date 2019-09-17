@@ -4,6 +4,8 @@ using Android.Content.PM;
 using Android.OS;
 using Android.Runtime;
 using Bit.View;
+using Bit.ViewModel.Implementations;
+using System.Threading.Tasks;
 using Xamarin.Essentials;
 using Xamarin.Forms;
 using Xamarin.Forms.Platform.Android;
@@ -24,6 +26,23 @@ namespace Bit.Android
             Xamarin.Essentials.Platform.Init(this, savedInstanceState);
             VersionTracking.Track();
             BitCSharpClientControls.Init();
+            SetBitPlatformServices();
+        }
+
+        protected virtual async void SetBitPlatformServices()
+        {
+            while (true)
+            {
+                await Task.Delay(25);
+                if (Forms.IsInitialized)
+                {
+                    Device.PlatformServices = new BitPlatformServices
+                    {
+                        OriginalPlatformService = Device.PlatformServices
+                    };
+                    break;
+                }
+            }
         }
 
         public override void OnBackPressed()
