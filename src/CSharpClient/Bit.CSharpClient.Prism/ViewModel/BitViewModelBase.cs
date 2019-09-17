@@ -3,18 +3,36 @@ using Bit.ViewModel.Contracts;
 using Prism.Navigation;
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Bit.ViewModel
 {
     public class BitViewModelBase : Bindable, INavigatedAware, IInitializeAsync, INavigationAware, IDestructible
     {
+        public virtual CancellationTokenSource CancellationTokenSource { get; set; }
+
+        public virtual CancellationToken CurrentCancellationToken { get; set; }
+
+        public BitViewModelBase()
+        {
+            CancellationTokenSource = new CancellationTokenSource();
+            CurrentCancellationToken = CancellationTokenSource.Token;
+        }
+
         public async void Destroy()
         {
             try
             {
-                await OnDestroyAsync();
-                await Task.Yield();
+                try
+                {
+                    CancellationTokenSource.Cancel();
+                }
+                finally // make sure that OnDestroyAsync gets called.
+                {
+                    await OnDestroyAsync();
+                    await Task.Yield();
+                }
             }
             catch (Exception exp)
             {
