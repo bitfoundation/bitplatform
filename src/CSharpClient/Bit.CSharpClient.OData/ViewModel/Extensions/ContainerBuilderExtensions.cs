@@ -18,7 +18,7 @@ namespace Autofac
             {
                 IClientAppProfile clientAppProfile = c.Resolve<IClientAppProfile>();
 
-                ODataClientSettings settings = new ODataClientSettings(httpClient: c.Resolve<HttpClient>(), new Uri(clientAppProfile.ODataRoute, uriKind: UriKind.Relative))
+                ODataClientSettings settings = new ODataClientSettings(httpClient: c.Resolve<HttpClient>(), new Uri(clientAppProfile.ODataRoute, uriKind: UriKind.RelativeOrAbsolute))
                 {
                     RenewHttpConnection = false,
                     NameMatchResolver = ODataNameMatchResolver.AlpahumericCaseInsensitive
