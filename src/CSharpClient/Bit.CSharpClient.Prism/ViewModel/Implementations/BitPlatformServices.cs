@@ -21,14 +21,17 @@ namespace Bit.ViewModel.Implementations
             if (action == null)
                 throw new ArgumentNullException(nameof(action));
 
-            try
+            OriginalPlatformService.BeginInvokeOnMainThread(() =>
             {
-                OriginalPlatformService.BeginInvokeOnMainThread(action);
-            }
-            catch (Exception exp)
-            {
-                BitExceptionHandler.Current.OnExceptionReceived(exp);
-            }
+                try
+                {
+                    action();
+                }
+                catch (Exception exp)
+                {
+                    BitExceptionHandler.Current.OnExceptionReceived(exp);
+                }
+            });
         }
 
         public Ticker CreateTicker()
