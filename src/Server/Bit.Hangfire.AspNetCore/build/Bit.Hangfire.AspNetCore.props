@@ -10,7 +10,7 @@
     <PackageReference Include="HangFire.Azure.ServiceBusQueue" Version="4.1.0">
       <ExcludeAssets>all</ExcludeAssets>
     </PackageReference>
-    <PackageReference Include="Hangfire.MemoryStorage" Version="1.6.1">
+    <PackageReference Include="Hangfire.MemoryStorage" Version="1.6.3">
       <ExcludeAssets>all</ExcludeAssets>
     </PackageReference>
     <PackageReference Include="Hangfire.SqlServer" Version="1.7.6">
@@ -26,7 +26,7 @@
       <Private>true</Private>
     </Reference>
     <Reference Include="Hangfire.MemoryStorage">
-      <HintPath>$(NuGetPackageRoot)hangfire.memorystorage\1.6.2\lib\net40\Hangfire.MemoryStorage.dll</HintPath>
+      <HintPath>$(NuGetPackageRoot)hangfire.memorystorage\1.6.3\lib\net40\Hangfire.MemoryStorage.dll</HintPath>
       <Private>true</Private>
     </Reference>
     <Reference Include="Hangfire.Azure.ServiceBusQueue">
