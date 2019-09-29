@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <Import Project="../Server.Build.props"/>
+  <Import Project="../Server.Build.props" />
 
   <PropertyGroup>
     <TargetFramework>net461</TargetFramework> 
@@ -8,7 +8,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="EntityFramework" Version="6.2.0" />
+    <PackageReference Include="EntityFramework" Version="6.3.0" />
   </ItemGroup>
 
   <ItemGroup>
