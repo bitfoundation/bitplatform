@@ -193,11 +193,11 @@ namespace Bit.ViewModel.Implementations
                 ReportStatus(isConnected: false);
         }
 
-        public Task Stop(CancellationToken cancellationToken)
+        public async Task Stop(CancellationToken cancellationToken)
         {
             ShouldBeConnected = false;
-            _hubConnection?.Stop();
-            return Task.CompletedTask;
+            if (_hubConnection != null)
+                await Task.Run(_hubConnection.Stop);
         }
 
         public void Dispose()
