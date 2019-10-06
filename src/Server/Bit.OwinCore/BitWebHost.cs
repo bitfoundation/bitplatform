@@ -1,9 +1,12 @@
 ﻿using Bit.Core;
+using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Server.Kestrel.Core;
 using System;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Bit.OwinCore
 {
@@ -13,34 +16,13 @@ namespace Bit.OwinCore
         {
             AppDomain.CurrentDomain.AssemblyResolve += CurrentDomain_AssemblyResolve;
 
-            Version aspNetCoreVersion = typeof(IWebHostBuilder).Assembly.GetName().Version;
-
-            if (aspNetCoreVersion.Major > 1) // asp.net core 2.0+
-            {
-                string bitOwinCoreAsmName = null;
-
-                if (aspNetCoreVersion.Major == 3) // asp.net core 3.0
+            return WebHost.CreateDefaultBuilder(args)
+                .CaptureStartupErrors(captureStartupErrors: true)
+                .UseSetting(WebHostDefaults.DetailedErrorsKey, "true")
+                .ConfigureServices(services =>
                 {
-                    bitOwinCoreAsmName = "Bit.OwinCore.AspNetCore22Upgrade";
-                }
-                else if (aspNetCoreVersion.Major == 2) // asp.net core 2.0
-                {
-                    bitOwinCoreAsmName = aspNetCoreVersion.Minor == 0 ? "Bit.OwinCore.AspNetCore2Upgrade" : $"Bit.OwinCore.AspNetCore2{aspNetCoreVersion.Minor}Upgrade";
-                }
-                else
-                {
-                    throw new NotSupportedException($"ASP.NET Core {aspNetCoreVersion.Major}.{aspNetCoreVersion.Minor} is not supported.");
-                }
-
-                return (IWebHostBuilder)Assembly.Load(bitOwinCoreAsmName)
-                    .GetType($"{bitOwinCoreAsmName}.BitWebHost")
-                    .GetMethod("CreateDefaultBuilder")
-                    .Invoke(null, new object[] { args });
-            }
-            else // asp.net core 1.0
-            {
-                return AspNetCore1();
-            }
+                    services.Configure<KestrelServerOptions>(options => options.AddServerHeader = false);
+                });
         }
 
         private static Assembly CurrentDomain_AssemblyResolve(object sender, ResolveEventArgs args)
@@ -62,19 +44,6 @@ namespace Bit.OwinCore
             }
 
             return null;
-        }
-
-        private static IWebHostBuilder AspNetCore1()
-        {
-            return new WebHostBuilder()
-                .UseKestrel(options =>
-                {
-                    options.AddServerHeader = false;
-                })
-                .UseContentRoot(Directory.GetCurrentDirectory())
-                .UseIISIntegration()
-                .CaptureStartupErrors(captureStartupErrors: true)
-                .UseSetting(WebHostDefaults.DetailedErrorsKey, "true");
         }
     }
 }

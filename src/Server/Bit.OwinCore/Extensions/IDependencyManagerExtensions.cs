@@ -72,34 +72,25 @@ namespace Bit.Core.Contracts
         /// </summary>
         public static IDependencyManager RegisterMinimalAspNetCoreMiddlewares(this IDependencyManager dependencyManager)
         {
-            TypeInfo httpBodyControlFeatureType = Type.GetType($"Microsoft.AspNetCore.Http.Features.IHttpBodyControlFeature, Microsoft.AspNetCore.Http.Features, Version={typeof(IFeatureCollection).Assembly.GetName().Version}, Culture=neutral, PublicKeyToken=adb9793829ddae60", throwOnError: false)?.GetTypeInfo();
-
-            if (httpBodyControlFeatureType != null)
+            dependencyManager.RegisterAspNetCoreMiddlewareUsing(aspNetCoreApp =>
             {
-                PropertyInfo allowSynchronousIOProp = httpBodyControlFeatureType.GetProperty("AllowSynchronousIO");
-
-                dependencyManager.RegisterAspNetCoreMiddlewareUsing(aspNetCoreApp =>
+                aspNetCoreApp.Use(async (context, next) =>
                 {
-                    aspNetCoreApp.Use(async (context, next) =>
+                    if (context.Request.Path.HasValue)
                     {
-                        if (context.Request.Path.HasValue)
+                        string path = context.Request.Path.Value;
+
+                        string[] toBeIgnoredPaths = new[] { "/core", "/signalr", "/jobs", "/api" };
+
+                        if (toBeIgnoredPaths.Any(p => path.StartsWith(p, StringComparison.InvariantCultureIgnoreCase)) || path.EndsWith("$batch", StringComparison.InvariantCultureIgnoreCase))
                         {
-                            string path = context.Request.Path.Value;
-
-                            string[] toBeIgnoredPaths = new[] { "/core", "/signalr", "/jobs", "/api" };
-
-                            if (toBeIgnoredPaths.Any(p => path.StartsWith(p, StringComparison.InvariantCultureIgnoreCase)) || path.EndsWith("$batch", StringComparison.InvariantCultureIgnoreCase))
-                            {
-                                object httpBodyControlFeature = context.Features[httpBodyControlFeatureType];
-                                if (httpBodyControlFeature != null)
-                                    allowSynchronousIOProp.SetValue(httpBodyControlFeature, true);
-                            }
+                            context.Features.Get<IHttpBodyControlFeature>().AllowSynchronousIO = true;
                         }
+                    }
 
-                        await next.Invoke();
-                    });
+                    await next.Invoke();
                 });
-            }
+            });
 
             dependencyManager.RegisterAspNetCoreMiddlewareUsing(aspNetCoreApp =>
             {
