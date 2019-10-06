@@ -1,4 +1,5 @@
 ﻿using Rg.Plugins.Popup.Contracts;
+using Rg.Plugins.Popup.Events;
 using Rg.Plugins.Popup.Pages;
 using System;
 using System.Collections.Generic;
@@ -12,13 +13,37 @@ namespace Bit.ViewModel.Implementations
 
         public IReadOnlyList<PopupPage> PopupStack => OriginalImplementation.PopupStack;
 
+        public event EventHandler<PopupNavigationEventArgs> Pushing
+        {
+            add => OriginalImplementation.Pushing += value;
+            remove => OriginalImplementation.Pushing -= value;
+        }
+
+        public event EventHandler<PopupNavigationEventArgs> Pushed
+        {
+            add => OriginalImplementation.Pushed += value;
+            remove => OriginalImplementation.Pushed -= value;
+        }
+
+        public event EventHandler<PopupNavigationEventArgs> Popping
+        {
+            add => OriginalImplementation.Popping += value;
+            remove => OriginalImplementation.Popping -= value;
+        }
+
+        public event EventHandler<PopupNavigationEventArgs> Popped
+        {
+            add => OriginalImplementation.Popped += value;
+            remove => OriginalImplementation.Popped -= value;
+        }
+
         public async Task PopAllAsync(bool animate = true)
         {
             try
             {
                 await OriginalImplementation.PopAllAsync(animate);
             }
-            catch (IndexOutOfRangeException exp) when (exp.Message == "There is not page in PopupStack")
+            catch (IndexOutOfRangeException exp) when (exp.Message == "No Page in PopupStack")
             {
 
             }
@@ -30,7 +55,7 @@ namespace Bit.ViewModel.Implementations
             {
                 await OriginalImplementation.PopAsync(animate);
             }
-            catch (IndexOutOfRangeException exp) when (exp.Message == "There is not page in PopupStack")
+            catch (IndexOutOfRangeException exp) when (exp.Message == "No Page in PopupStack")
             {
 
             }

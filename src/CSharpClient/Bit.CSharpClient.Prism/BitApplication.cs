@@ -17,7 +17,6 @@ using Prism.Plugin.Popups;
 using Rg.Plugins.Popup.Services;
 using System;
 using System.Collections.Generic;
-using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using Xamarin.Essentials;
@@ -161,7 +160,7 @@ namespace Bit
             containerBuilder.Register(c => Container).SingleInstance().PreserveExistingDefaults();
             containerBuilder.Register(c => Container.GetContainer()).PreserveExistingDefaults();
             containerBuilder.Register<IAdaptiveBehaviorService>(c => this).SingleInstance().PreserveExistingDefaults();
-            typeof(PopupNavigation).GetField("_popupNavigation", BindingFlags.Static | BindingFlags.NonPublic).SetValue(null, new BitPopupNavigation
+            PopupNavigation.SetInstance(new BitPopupNavigation
             {
                 OriginalImplementation = PopupNavigation.Instance
             });

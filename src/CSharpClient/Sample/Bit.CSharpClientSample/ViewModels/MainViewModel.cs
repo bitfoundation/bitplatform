@@ -121,7 +121,7 @@ namespace Bit.CSharpClientSample.ViewModels
 
         async Task ShowPopup()
         {
-            await NavigationService.NavigateAsync("Test", new NavigationParameters { { "Test", "Test" } });
+            await NavigationService.NavigateAsync("Test", ("Test", "Test"));
         }
     }
 }
