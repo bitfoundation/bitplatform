@@ -28,43 +28,36 @@
 
         public cleanUp() {
 
-            if (this.dtoViewModel != null) {
-
-                if (this.dtoViewModel.model != null && this.dtoViewModel.form != null) {
-                    if (this.perDtoFormStorage.dtoViewModelPropertyChangedFunction != null) {
-                        try {
-                            this.dtoViewModel.model.propertyChanged.detach(this.perDtoFormStorage.dtoViewModelPropertyChangedFunction);
-                        } catch (e) { }
-                    }
-                    if (this.perDtoFormStorage.dtoViewModelPropertyChangingFunction != null) {
-                        try {
-                            this.dtoViewModel.model.propertyChanging.detach(this.perDtoFormStorage.dtoViewModelPropertyChangingFunction);
-                        } catch (e) { }
-                    }
-
-                    this.dtoViewModel.form = null;
+            if (this.dtoViewModel?.model != null && this.dtoViewModel.form != null) {
+                if (this.perDtoFormStorage.dtoViewModelPropertyChangedFunction != null) {
+                    try {
+                        this.dtoViewModel.model.propertyChanged.detach(this.perDtoFormStorage.dtoViewModelPropertyChangedFunction);
+                    } catch (e) { }
+                }
+                if (this.perDtoFormStorage.dtoViewModelPropertyChangingFunction != null) {
+                    try {
+                        this.dtoViewModel.model.propertyChanging.detach(this.perDtoFormStorage.dtoViewModelPropertyChangingFunction);
+                    } catch (e) { }
                 }
 
+                this.dtoViewModel.form = null;
             }
 
-            if (this.dtoRules != null) {
+            if (this.dtoRules?.model != null && this.perDtoFormStorage.dtoRulesPropertyChangedFunction != null) {
 
-                if (this.dtoRules.model != null && this.perDtoFormStorage.dtoRulesPropertyChangedFunction != null) {
+                try {
+                    this.dtoRules.model.propertyChanged.detach(this.perDtoFormStorage.dtoRulesPropertyChangedFunction);
+                } catch (e) { }
 
-                    try {
-                        this.dtoRules.model.propertyChanged.detach(this.perDtoFormStorage.dtoRulesPropertyChangedFunction);
-                    } catch (e) { }
+                if (this.perDtoFormStorage.prevValidationsRollbackHandlers != null) {
 
-                    if (this.perDtoFormStorage.prevValidationsRollbackHandlers != null) {
-
-                        for (let prevValidationsRollbackHandler of this.perDtoFormStorage.prevValidationsRollbackHandlers) {
-                            prevValidationsRollbackHandler.handler();
-                        }
-
-                        this.perDtoFormStorage.prevValidationsRollbackHandlers = null;
+                    for (let prevValidationsRollbackHandler of this.perDtoFormStorage.prevValidationsRollbackHandlers) {
+                        prevValidationsRollbackHandler.handler();
                     }
 
+                    this.perDtoFormStorage.prevValidationsRollbackHandlers = null;
                 }
+
             }
 
             this.perDtoFormStorage = {};
@@ -88,7 +81,7 @@
                     oldModel = null;
                 }
 
-                if (newModel != null && newModel.innerInstance != null) {
+                if (newModel?.innerInstance != null) {
                     newModel = newModel.innerInstance();
                     this.$parse(this.$attrs.ngModel).assign(this.$scope, newModel);
                 }
@@ -124,7 +117,7 @@
 
                         let propDefinition = memberDefinitions[`$${prp}`];
 
-                        if (propDefinition != null && propDefinition.kind == "property") {
+                        if (propDefinition?.kind == "property") {
 
                             let propModelController = this.ngModel.$$parentForm[prp];
 
@@ -155,10 +148,10 @@
                                 set: (isEditable: boolean) => {
                                     let currentItem = angular.element(this.$element).find(`[name='${propDefinition.name}']`);
                                     const data = currentItem.data();
-                                    if (data != null && data["handler"] != null && data["handler"].wrapper != null) {
-                                        currentItem = data["handler"].wrapper;
-                                        if (data["handler"]["readonly"] != null) {
-                                            data["handler"]["readonly"](!isEditable);
+                                    if (data?.handler?.wrapper != null) {
+                                        currentItem = data.handler.wrapper;
+                                        if (data.handler.readonly != null) {
+                                            data.handler.readonly(!isEditable);
                                         }
                                     }
 

@@ -168,7 +168,7 @@ module Bit.Directives {
             }
 
             if (this.radValueFieldName == null) {
-                if (this.dataSource.options.schema != null && this.dataSource.options.schema.model != null && this.dataSource.options.schema.model.idField != null) {
+                if (this.dataSource.options.schema?.model?.idField != null) {
                     this.radValueFieldName = this.dataSource.options.schema.model.idField;
                 }
             }

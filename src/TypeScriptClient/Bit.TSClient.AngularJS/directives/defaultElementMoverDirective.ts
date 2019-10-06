@@ -19,7 +19,7 @@ module Bit.Directives {
         }
 
         public $onChanges(changesObj: { predicate: { currentValue: boolean } }) {
-            if (changesObj.predicate != null && changesObj.predicate.currentValue == true) {
+            if (changesObj.predicate?.currentValue == true) {
                 angular.element(this.elementSelector)
                     .appendTo(this.$element);
             }

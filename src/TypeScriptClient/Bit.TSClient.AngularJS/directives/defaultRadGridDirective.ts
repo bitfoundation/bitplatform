@@ -411,7 +411,7 @@ module Bit.Directives {
                         }
 
                         if (filterValueFieldName == null) {
-                            if (filterDataSource.options.schema != null && filterDataSource.options.schema.model != null && filterDataSource.options.schema.model.idField != null) {
+                            if (filterDataSource.options.schema?.model?.idField != null) {
                                 filterValueFieldName = filterDataSource.options.schema.model.idField;
                             }
                         }

@@ -119,7 +119,8 @@
             this.$value.val(null); // at first date time picker will initialized with current system date
 
             this.$display.change(e => { // clears ngModel when user clears text box
-                if (this.$display.val() == null || this.$display.val() == "") {
+                const val = this.$display.val();
+                if (val == null || val == "") {
                     this.ngModelController.$setViewValue(null);
                 }
             });
