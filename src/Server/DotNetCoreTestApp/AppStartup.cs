@@ -17,6 +17,7 @@ using Bit.OwinCore.Implementations;
 using IdentityServer3.Core.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Serilog;
 using Swashbuckle.Application;
 using System;
 using System.Collections.Generic;
@@ -55,11 +56,16 @@ namespace DotNetCoreTestApp
 
             dependencyManager.RegisterMinimalDependencies();
 
-            dependencyManager.RegisterDefaultLogger(typeof(DebugLogStore).GetTypeInfo(), typeof(ConsoleLogStore).GetTypeInfo());
+            dependencyManager.RegisterDefaultLogger(typeof(SerilogLogStore).GetTypeInfo());
 
             dependencyManager.RegisterDefaultAspNetCoreApp();
 
             dependencyManager.RegisterMinimalAspNetCoreMiddlewares();
+
+            dependencyManager.RegisterAspNetCoreMiddlewareUsing(aspNetCoreApp =>
+            {
+                aspNetCoreApp.UseSerilogRequestLogging();
+            });
 
             dependencyManager.RegisterAspNetCoreSingleSignOnClient();
 
