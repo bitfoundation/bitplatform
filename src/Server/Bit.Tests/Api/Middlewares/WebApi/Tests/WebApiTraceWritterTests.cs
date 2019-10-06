@@ -1,10 +1,8 @@
 ﻿using Bit.Core.Contracts;
+using Bit.Core.Models;
 using Bit.Owin.Exceptions;
 using Bit.Test;
-using Bit.Test.Implementations;
-using Bit.Tests.Api.ApiControllers;
 using Bit.Tests.Core.Contracts;
-using Bit.Tests.Model.DomainModels;
 using FakeItEasy;
 using IdentityModel.Client;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -64,7 +62,7 @@ namespace Bit.Tests.Api.Middlewares.WebApi.Tests
                 try
                 {
                     await client.TestModels()
-                        .SendEmail(to : "Someone", title : "Email title", message : "Email message")
+                        .SendEmail(to: "Someone", title: "Email title", message: "Email message")
                         .ExecuteAsync();
 
                     Assert.Fail();
@@ -77,6 +75,48 @@ namespace Bit.Tests.Api.Middlewares.WebApi.Tests
                     Assert.AreEqual(typeof(AppException).GetTypeInfo().FullName, logger.LogData.Single(ld => ld.Key == "WebExceptionType").Value);
                     Assert.IsTrue(((string)(logger.LogData.Single(ld => ld.Key == "WebException").Value)).Contains("Bit.Owin.Exceptions.AppException: Test"));
                 }
+            }
+        }
+
+        public class FakeLogStore : ILogStore
+        {
+            public static int LogEntriesCount = 0;
+
+            public void SaveLog(LogEntry logEntry)
+            {
+                if (logEntry.LogData.Any(ld => ld.Key == "Test"))
+                    LogEntriesCount++;
+            }
+
+            public Task SaveLogAsync(LogEntry logEntry)
+            {
+                if (logEntry.LogData.Any(ld => ld.Key == "Test"))
+                    LogEntriesCount++;
+
+                return Task.CompletedTask;
+            }
+        }
+
+        [TestMethod]
+        [TestCategory("WebApi"), TestCategory("Logging")]
+        public virtual async Task RequestShouldGetsLoggedAnywayIfLoggerPolicyDemandsIt()
+        {
+            using (BitOwinTestEnvironment testEnvironment = new BitOwinTestEnvironment(new TestEnvironmentArgs
+            {
+                AdditionalDependencies = (dependencyManager, services) =>
+                {
+                    dependencyManager.RegisterLogStore<FakeLogStore>();
+                }
+            }))
+            {
+                TokenResponse token = await testEnvironment.Server.Login("ValidUserName", "ValidPassword", clientId: "TestResOwner");
+
+                HttpClient client = testEnvironment.Server.BuildHttpClient(token: token);
+
+                await client.GetAsync("api/actions/some-action/log=true");
+                await client.GetAsync("api/actions/some-action/log=false");
+
+                Assert.AreEqual(1, FakeLogStore.LogEntriesCount);
             }
         }
     }

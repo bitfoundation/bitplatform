@@ -59,6 +59,8 @@ namespace Bit.Owin.Implementations
 
         public virtual IEnumerable<LogData> LogData { get; protected set; } = new Collection<LogData>();
 
+        public LogPolicy Policy { get; set; } = LogPolicy.InCaseOfScopeFailure;
+
         public virtual void AddLogData(string key, object value)
         {
             if (key == null)

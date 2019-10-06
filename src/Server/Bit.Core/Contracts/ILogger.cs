@@ -5,6 +5,18 @@ using Bit.Core.Models;
 
 namespace Bit.Core.Contracts
 {
+    public enum LogPolicy
+    {
+        /// <summary>
+        /// Performs log only when there is an error. For example when a response is not succeded.
+        /// </summary>
+        InCaseOfScopeFailure,
+        /// <summary>
+        /// Store logs anyway. (Default)
+        /// </summary>
+        Always
+    }
+
     public interface ILogger
     {
         Task LogExceptionAsync(Exception exp, string message);
@@ -26,5 +38,10 @@ namespace Bit.Core.Contracts
         IEnumerable<LogData> LogData { get; }
 
         void AddLogData(string key, object value);
+
+        /// <summary>
+        /// Default <see cref="LogPolicy.InCaseOfScopeFailure"/>
+        /// </summary>
+        LogPolicy Policy { get; set; }
     }
 }

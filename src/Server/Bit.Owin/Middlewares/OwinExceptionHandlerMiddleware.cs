@@ -93,6 +93,9 @@ namespace Bit.Owin.Middlewares
                 else
                 {
                     scopeStatusManager.MarkAsSucceeded();
+
+                    if (logger.Policy == LogPolicy.Always)
+                        await logger.LogInformationAsync("Response succeded.");
                 }
             }
             catch (Exception exp)
