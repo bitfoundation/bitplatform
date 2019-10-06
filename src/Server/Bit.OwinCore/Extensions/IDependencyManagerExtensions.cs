@@ -84,7 +84,9 @@ namespace Bit.Core.Contracts
 
                         if (toBeIgnoredPaths.Any(p => path.StartsWith(p, StringComparison.InvariantCultureIgnoreCase)) || path.EndsWith("$batch", StringComparison.InvariantCultureIgnoreCase))
                         {
-                            context.Features.Get<IHttpBodyControlFeature>().AllowSynchronousIO = true;
+                            IHttpBodyControlFeature httpBodyControlFeature = context.Features.Get<IHttpBodyControlFeature>();
+                            if (httpBodyControlFeature != null)
+                                httpBodyControlFeature.AllowSynchronousIO = true;
                         }
                     }
 
