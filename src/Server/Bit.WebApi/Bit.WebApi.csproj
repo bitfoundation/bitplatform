@@ -3,9 +3,9 @@
   <Import Project="../Server.Build.props" />
 
   <PropertyGroup>
-    <TargetFrameworks>net461;netcoreapp2.0</TargetFrameworks>
+    <TargetFrameworks>net461;netcoreapp3.0</TargetFrameworks>
     <PackageTags>$(PackageTags) Web-API Rest Microsoft AspNet WebApi AspNetWebApi</PackageTags>
-    <AssetTargetFallback Condition=" '$(TargetFramework)' == 'netcoreapp2.0' ">net45</AssetTargetFallback>
+    <AssetTargetFallback Condition=" '$(TargetFramework)' == 'netcoreapp3.0' ">net45</AssetTargetFallback>
   </PropertyGroup>
 
   <ItemGroup>

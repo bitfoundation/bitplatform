@@ -3,7 +3,7 @@
   <Import Project="../Server.Build.props"/>
 
   <PropertyGroup>
-    <TargetFrameworks>net461;netcoreapp2.1</TargetFrameworks>
+    <TargetFrameworks>net461;netcoreapp3.0</TargetFrameworks>
     <PackageTags>$(PackageTags) aspnetcore2.1</PackageTags>
   </PropertyGroup>
 

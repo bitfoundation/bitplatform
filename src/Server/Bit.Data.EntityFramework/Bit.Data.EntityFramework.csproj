@@ -3,7 +3,7 @@
   <Import Project="../Server.Build.props" />
 
   <PropertyGroup>
-    <TargetFramework>net461</TargetFramework> 
+    <TargetFrameworks>net461;netcoreapp3.0</TargetFrameworks>
     <PackageTags>$(PackageTags) Entity-Framework EF Database Microsoft Data O/RM ADO.NET</PackageTags>
   </PropertyGroup>
 

@@ -3,7 +3,7 @@
   <Import Project="../Server.Build.props" />
 
   <PropertyGroup>
-    <TargetFrameworks>net461;netcoreapp2.0</TargetFrameworks>
+    <TargetFrameworks>net461;netcoreapp3.0</TargetFrameworks>
     <PackageTags>$(PackageTags) Web API OData Rest Microsoft AspNet WebApi AspNetWebApi</PackageTags>
   </PropertyGroup>
 
@@ -11,7 +11,7 @@
     <PackageReference Include="Microsoft.AspNet.OData" Version="7.2.1" />
     <PackageReference Include="Bit.Swashbuckle.OData" Version="4.0.5" />
     <PackageReference Include="LambdaSqlBuilder" Version="0.9.0" />
-    <PackageReference Include="Microsoft.OData.Core" Version="7.6.0" />
+    <PackageReference Include="Microsoft.OData.Core" Version="7.6.1" />
   </ItemGroup>
 
   <ItemGroup>

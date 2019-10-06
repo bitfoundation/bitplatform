@@ -3,11 +3,11 @@
   <Import Project="../Server.Build.props" />
 
   <PropertyGroup>
-    <TargetFrameworks>net461;netcoreapp2.0</TargetFrameworks>
+    <TargetFrameworks>net461;netcoreapp3.0</TargetFrameworks>
     <PackageTags>$(PackageTags) aspnetcore</PackageTags>
   </PropertyGroup>
 
-  <ItemGroup Condition="'$(TargetFramework)' == 'netcoreapp2.0'">
+  <ItemGroup Condition="'$(TargetFramework)' == 'netcoreapp3.0'">
     <EmbeddedResource Include="Assemblies\System.Data.Linq.dll" />
     <EmbeddedResource Include="Assemblies\System.IdentityModel.dll" />
     <EmbeddedResource Include="Assemblies\System.ServiceModel.dll" />
