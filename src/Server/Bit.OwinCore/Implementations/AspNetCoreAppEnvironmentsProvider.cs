@@ -110,9 +110,24 @@ namespace Bit.OwinCore.Implementations
             DefaultAppEnvironmentsProvider.Current = this;
         }
 
+        public virtual (bool success, string message) TryGetActiveAppEnvironment(out AppEnvironment activeAppEnvironment)
+        {
+            activeAppEnvironment = _appEnvironment;
+
+            if (activeAppEnvironment != null)
+                return (true, null);
+
+            return (false, $"Call {nameof(Init)} first");
+        }
+
         public virtual AppEnvironment GetActiveAppEnvironment()
         {
-            return _appEnvironment ?? throw new InvalidOperationException($"Call {nameof(Init)} first");
+            var (success, message) = TryGetActiveAppEnvironment(out _appEnvironment);
+
+            if (success == true)
+                return _appEnvironment;
+
+            throw new InvalidOperationException(message);
         }
     }
 }

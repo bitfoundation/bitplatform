@@ -83,11 +83,27 @@ namespace Bit.Test
 
         public virtual AppEnvironment GetActiveAppEnvironment()
         {
-            AppEnvironment result = _appEnvironmentsProvider.GetActiveAppEnvironment();
+            var (success, message) = TryGetActiveAppEnvironment(out AppEnvironment activeAppEnvironment);
+            if (success == true)
+                return activeAppEnvironment;
+            throw new InvalidOperationException(message);
+        }
 
-            _appEnvCustomizer?.Invoke(result);
+        public virtual (bool success, string message) TryGetActiveAppEnvironment(out AppEnvironment activeAppEnvironment)
+        {
+            try
+            {
+                activeAppEnvironment = _appEnvironmentsProvider.GetActiveAppEnvironment();
 
-            return result;
+                _appEnvCustomizer?.Invoke(activeAppEnvironment);
+
+                return (true, null);
+            }
+            catch (Exception exp)
+            {
+                activeAppEnvironment = null;
+                return (false, exp.Message);
+            }
         }
     }
 

@@ -28,6 +28,14 @@ namespace Bit.Tests
 
         public virtual AppEnvironment GetActiveAppEnvironment()
         {
+            var (success, message) = TryGetActiveAppEnvironment(out AppEnvironment activeAppEnvironment);
+            if (success == true)
+                return activeAppEnvironment;
+            throw new InvalidOperationException(message);
+        }
+
+        public virtual (bool success, string message) TryGetActiveAppEnvironment(out AppEnvironment activeAppEnvironment)
+        {
             if (_activeAppEnvironment == null)
             {
                 _activeAppEnvironment = new AppEnvironment
@@ -87,7 +95,9 @@ namespace Bit.Tests
 
             _args?.ActiveAppEnvironmentCustomizer?.Invoke(_activeAppEnvironment);
 
-            return _activeAppEnvironment;
+            activeAppEnvironment = _activeAppEnvironment;
+
+            return (true, null);
         }
     }
 }

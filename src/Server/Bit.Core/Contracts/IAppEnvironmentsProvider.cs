@@ -11,5 +11,7 @@ namespace Bit.Core.Contracts
         /// Return active app environment. An <see cref="AppEnvironment"/> with <see cref="AppEnvironment.IsActive"/> equals true.
         /// </summary>
         AppEnvironment GetActiveAppEnvironment();
+
+        (bool success, string message) TryGetActiveAppEnvironment(out AppEnvironment activeAppEnvironment);
     }
 }
