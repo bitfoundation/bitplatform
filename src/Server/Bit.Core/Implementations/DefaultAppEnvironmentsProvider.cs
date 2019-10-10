@@ -33,24 +33,46 @@ namespace Bit.Core.Implementations
 
         public virtual AppEnvironment GetActiveAppEnvironment()
         {
+            var (success, message) = TryGetActiveAppEnvironment(out AppEnvironment activeAppEnvironment);
+            if (success == true)
+                return activeAppEnvironment;
+            throw new InvalidOperationException(message);
+        }
+
+        public virtual (bool success, string message) TryGetActiveAppEnvironment(out AppEnvironment activeAppEnvironment)
+        {
+            activeAppEnvironment = null;
+
             if (_activeAppEnvironment != null)
-                return _activeAppEnvironment;
+            {
+                activeAppEnvironment = _activeAppEnvironment;
+                return (true, null);
+            }
 
-            string environmentsAsJson = File.ReadAllText(PathProvider.MapPath("environments.json"));
+            string path = PathProvider.MapPath("environments.json");
 
-            AppEnvironment[] allEnvironments = ContentFormatter.DeSerialize<AppEnvironment[]>(environmentsAsJson);
+            if (File.Exists(path))
+            {
+                string environmentsAsJson = File.ReadAllText(PathProvider.MapPath("environments.json"));
 
-            AppEnvironment[] activeEnvironments = allEnvironments.Where(env => env.IsActive).ToArray();
+                AppEnvironment[] allEnvironments = ContentFormatter.DeSerialize<AppEnvironment[]>(environmentsAsJson);
 
-            if (!activeEnvironments.Any())
-                throw new InvalidOperationException("There is no active environment");
+                AppEnvironment[] activeEnvironments = allEnvironments.Where(env => env.IsActive).ToArray();
 
-            if (activeEnvironments.Length > 1)
-                throw new InvalidOperationException("There are more than one active environment");
+                if (!activeEnvironments.Any())
+                    return (false, "There is no active environment");
 
-            _activeAppEnvironment = activeEnvironments.Single();
+                if (activeEnvironments.Length > 1)
+                    return (false, "There are more than one active environment");
 
-            return _activeAppEnvironment;
+                activeAppEnvironment = _activeAppEnvironment = activeEnvironments.Single();
+
+                return (true, null);
+            }
+            else
+            {
+                return (false, $"environment.json could not be found at {path}");
+            }
         }
 
         public override string ToString()

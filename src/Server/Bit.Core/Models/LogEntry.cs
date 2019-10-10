@@ -32,15 +32,15 @@ namespace Bit.Core.Models
 
         public static LogEntryAppLevelConstantInfo GetAppConstantInfo()
         {
-            AppEnvironment appEnvironment = DefaultAppEnvironmentsProvider.Current.GetActiveAppEnvironment();
+            DefaultAppEnvironmentsProvider.Current.TryGetActiveAppEnvironment(out AppEnvironment appEnvironment);
             Process currentProcess = Process.GetCurrentProcess();
 
             return new LogEntryAppLevelConstantInfo
             {
-                ApplicationName = appEnvironment.AppInfo.Name,
-                AppVersion = appEnvironment.AppInfo.Version,
-                AppEnvironmentName = appEnvironment.Name,
-                AppWasInDebugMode = appEnvironment.DebugMode,
+                ApplicationName = appEnvironment?.AppInfo.Name ?? "AppEnvIsNotReady",
+                AppVersion = appEnvironment?.AppInfo.Version ?? "0.0.0.0",
+                AppEnvironmentName = appEnvironment?.Name ?? "AppEnvIsNotReady",
+                AppWasInDebugMode = appEnvironment?.DebugMode,
                 AppServerName = Environment.MachineName,
                 AppServerOSVersion = Environment.OSVersion.ToString(),
                 AppServerAppDomainName = AppDomain.CurrentDomain.FriendlyName,

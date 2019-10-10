@@ -6,7 +6,6 @@
     <OutputType>Exe</OutputType>
     <TargetFramework>net472</TargetFramework>
     <DisableMSBuildAssemblyCopyCheck>True</DisableMSBuildAssemblyCopyCheck>
-    <LangVersion>7.3</LangVersion>
     <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
   </PropertyGroup>
 
