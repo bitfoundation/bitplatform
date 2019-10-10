@@ -66,4 +66,9 @@ namespace Bit.View
     {
 
     }
+
+    public class ValueConverter : ValueConverter<object, object, object>
+    {
+
+    }
 }
