@@ -51,28 +51,43 @@ namespace Bit.ViewModel.Implementations
 
             DateTimeOffset startDate = DateTimeOffset.Now;
 
-            HttpResponseMessage response = await base.SendAsync(request, cancellationToken).ConfigureAwait(false);
-
-            if (string.IsNullOrEmpty(response.ReasonPhrase) && response.Headers.TryGetValues("Reason-Phrase", out IEnumerable<string> reasonPhrases) && reasonPhrases.Any())
+#if Android // https://github.com/xamarin/xamarin-android/issues/3216
+            try
+#endif
             {
-                response.ReasonPhrase = reasonPhrases.Single();
+                HttpResponseMessage response = await base.SendAsync(request, cancellationToken).ConfigureAwait(false);
+
+                if (string.IsNullOrEmpty(response.ReasonPhrase) && response.Headers.TryGetValues("Reason-Phrase", out IEnumerable<string> reasonPhrases) && reasonPhrases.Any())
+                {
+                    response.ReasonPhrase = reasonPhrases.Single();
+                }
+
+                Dictionary<string, string> properties = new Dictionary<string, string>
+                {
+                    { "ReasonPhrase", response.ReasonPhrase }
+                };
+
+                if (response.Headers.TryGetValues("X-CorrelationId", out IEnumerable<string> values) && values.Any())
+                {
+                    properties.Add("X-CorrelationId", values.First());
+                }
+
+                TimeSpan duration = DateTimeOffset.Now - startDate;
+
+                TelemetryServices.All().TrackRequest(request.RequestUri.LocalPath, startDate, duration, response.StatusCode.ToString(), response.IsSuccessStatusCode, request.RequestUri, request.Method.ToString(), properties);
+
+                return response;
             }
-
-            Dictionary<string, string> properties = new Dictionary<string, string>
+#if Android
+            catch (Java.Lang.Throwable exp)
             {
-                { "ReasonPhrase", response.ReasonPhrase }
-            };
-
-            if (response.Headers.TryGetValues("X-CorrelationId", out IEnumerable<string> values) && values.Any())
-            {
-                properties.Add("X-CorrelationId", values.First());
+                throw exp switch
+                {
+                    Java.IO.IOException _ => new System.IO.IOException(exp.Message, exp),
+                    _ => new Exception(exp.Message, exp),
+                };
             }
-
-            TimeSpan duration = DateTimeOffset.Now - startDate;
-
-            TelemetryServices.All().TrackRequest(request.RequestUri.LocalPath, startDate, duration, response.StatusCode.ToString(), response.IsSuccessStatusCode, request.RequestUri, request.Method.ToString(), properties);
-
-            return response;
+#endif
         }
 
         public virtual IEnumerable<ITelemetryService> TelemetryServices { get; set; }
