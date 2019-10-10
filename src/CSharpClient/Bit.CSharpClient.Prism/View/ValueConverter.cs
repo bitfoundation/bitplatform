@@ -1,5 +1,5 @@
-﻿using System;
-using System.ComponentModel;
+﻿using Bit.ViewModel;
+using System;
 using System.Globalization;
 using Xamarin.Forms;
 using Xamarin.Forms.Xaml;
@@ -21,23 +21,39 @@ namespace Bit.View
         object IValueConverter.Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
             if (value is null && !typeof(TSource).IsClass && Nullable.GetUnderlyingType(typeof(TSource)) == null)
-                throw new NotSupportedException();
+                throw new NotSupportedException($"Source of type {typeof(TSource).Name} may not be null");
 
             if (parameter is null && !typeof(TParameter).IsClass && Nullable.GetUnderlyingType(typeof(TParameter)) == null)
-                throw new NotSupportedException();
+                throw new NotSupportedException($"Parameter of type {typeof(TParameter).Name} may not be null");
 
-            return Convert((TSource)value, targetType, (TParameter)parameter, culture);
+            try
+            {
+                return Convert((TSource)value, targetType, (TParameter)parameter, culture);
+            }
+            catch (Exception exp)
+            {
+                BitExceptionHandler.Current.OnExceptionReceived(exp);
+                return default;
+            }
         }
 
         object IValueConverter.ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
         {
             if (value is null && !typeof(TTarget).IsClass && Nullable.GetUnderlyingType(typeof(TTarget)) == null)
-                throw new NotSupportedException();
+                throw new NotSupportedException($"Source of type {typeof(TSource).Name} may not be null");
 
             if (parameter is null && !typeof(TParameter).IsClass && Nullable.GetUnderlyingType(typeof(TParameter)) == null)
-                throw new NotSupportedException();
+                throw new NotSupportedException($"Parameter of type {typeof(TParameter).Name} may not be null");
 
-            return ConvertBack((TTarget)value, targetType, (TParameter)parameter, culture);
+            try
+            {
+                return ConvertBack((TTarget)value, targetType, (TParameter)parameter, culture);
+            }
+            catch (Exception exp)
+            {
+                BitExceptionHandler.Current.OnExceptionReceived(exp);
+                return default;
+            }
         }
 
         public object ProvideValue(IServiceProvider serviceProvider)
