@@ -10,11 +10,11 @@ namespace Bit.OwinCore.Implementations
 {
     public class AspNetCoreRequestInformationProvider : IRequestInformationProvider
     {
-        public virtual HttpContext Context { get; set; }
+        public virtual IHttpContextAccessor HttpContextAccessor { get; set; }
 
         protected virtual HttpContext GetHttpContext()
         {
-            return Context ?? throw new InvalidOperationException("HttpContextIsNull");
+            return HttpContextAccessor.HttpContext ?? throw new InvalidOperationException("HttpContextAccessor.HttpContextIsNull");
         }
 
         protected virtual string GetHeaderValue(string key)

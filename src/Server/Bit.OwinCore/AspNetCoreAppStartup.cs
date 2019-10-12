@@ -57,19 +57,14 @@ namespace Bit.OwinCore
 
             HttpContext RegisterHttpContext(IDependencyResolver resolver)
             {
-                HttpContext httpContext = resolver.Resolve<IHttpContextAccessor>().HttpContext;
-
-                if (httpContext == null)
-                    throw new InvalidOperationException("HttpContextIsNull");
-
-                return httpContext;
+                throw new InvalidOperationException($"Please inject {nameof(IHttpContextAccessor)} instead of {nameof(HttpContext)}. See https://docs.microsoft.com/en-us/aspnet/core/performance/performance-best-practices?view=aspnetcore-3.0#do-not-store-ihttpcontextaccessorhttpcontext-in-a-field");
             }
 
             DefaultDependencyManager.Current.RegisterUsing(RegisterHttpContext, overwriteExciting: false);
 
             IOwinContext RegisterOwinContext(IDependencyResolver resolver)
             {
-                HttpContext context = resolver.Resolve<HttpContext>();
+                HttpContext context = resolver.Resolve<IHttpContextAccessor>().HttpContext;
 
                 if (context == null)
                     throw new InvalidOperationException("http context is null");
