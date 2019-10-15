@@ -9,7 +9,7 @@
 
   <ItemGroup>
     <PackageReference Include="Autofac" Version="4.9.4" />
-    <PackageReference Include="Autofac.Extensions.DependencyInjection" Version="5.0.0" />
+    <PackageReference Include="Autofac.Extensions.DependencyInjection" Version="5.0.1" />
     <PackageReference Include="Microsoft.AppCenter.Analytics" Version="2.4.0-preview" />
     <PackageReference Include="Microsoft.AppCenter.Crashes" Version="2.4.0-preview" Condition=" '$(TargetFramework)' != 'uap10.0.16299' " />
     <PackageReference Include="Newtonsoft.Json" Version="12.0.2" />
