@@ -16,7 +16,7 @@ namespace Bit.Core.Contracts
             if (json == null)
                 throw new ArgumentNullException(nameof(json));
 
-            return DefaultJsonContentFormatter.Current.DeSerialize<BitJwtToken>(json);
+            return DefaultJsonContentFormatter.Current.Deserialize<BitJwtToken>(json);
         }
 
         public static string ToJson(BitJwtToken bitJwtToken)

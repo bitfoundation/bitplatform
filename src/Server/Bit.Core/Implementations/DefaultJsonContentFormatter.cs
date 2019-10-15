@@ -1,7 +1,9 @@
 ﻿using Bit.Core.Contracts;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
 using Newtonsoft.Json.Serialization;
 using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Reflection;
 
@@ -51,7 +53,7 @@ namespace Bit.Core.Implementations
             set => _current = value;
         }
 
-        public virtual T DeSerialize<T>(string objAsStr)
+        public virtual T Deserialize<T>(string objAsStr)
         {
             return JsonConvert.DeserializeObject<T>(objAsStr, DeSerializeSettings());
         }
@@ -62,7 +64,8 @@ namespace Bit.Core.Implementations
             DateFormatHandling = DateFormatHandling.IsoDateFormat,
             TypeNameAssemblyFormatHandling = TypeNameAssemblyFormatHandling.Simple,
             TypeNameHandling = TypeNameHandling.All,
-            ContractResolver = BitContractResolver
+            ContractResolver = BitContractResolver,
+            Converters = new List<JsonConverter> { new StringEnumConverter { } }
         };
 
         private static readonly BitContractResolver BitContractResolver = new BitContractResolver();
@@ -71,7 +74,8 @@ namespace Bit.Core.Implementations
         {
             ReferenceLoopHandling = ReferenceLoopHandling.Ignore,
             DateFormatHandling = DateFormatHandling.IsoDateFormat,
-            ContractResolver = BitContractResolver
+            ContractResolver = BitContractResolver,
+            Converters = new List<JsonConverter> { new StringEnumConverter { } }
         };
 
         public virtual string Serialize<T>(T obj)

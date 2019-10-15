@@ -11,7 +11,7 @@ namespace Bit.Signalr.Implementations
     {
         private JsonSerializerSettings _settingsCache;
 
-        public virtual T DeSerialize<T>(string objAsStr)
+        public virtual T Deserialize<T>(string objAsStr)
         {
             throw new InvalidOperationException("This content formatter must be used only for serialization purposes");
         }

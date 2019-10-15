@@ -8,6 +8,6 @@
     {
         string Serialize<T>(T obj);
 
-        T DeSerialize<T>(string objAsStr);
+        T Deserialize<T>(string objAsStr);
     }
 }

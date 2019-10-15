@@ -18,7 +18,7 @@ namespace Bit.Owin.Implementations
             }
         }
 
-        public virtual T DeSerialize<T>(string objAsStr)
+        public virtual T Deserialize<T>(string objAsStr)
         {
             XmlSerializer xmlSerializer = new XmlSerializer(typeof (T));
             using (StringReader stringWriter = new StringReader(objAsStr))

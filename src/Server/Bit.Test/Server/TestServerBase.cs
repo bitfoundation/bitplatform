@@ -71,7 +71,7 @@ namespace Bit.Test.Server
             {
                 hubProxy.On<string, string>("OnMessageReceived", (key, dataAsJson) =>
                 {
-                    onMessageReceived(key, new TestSignalRMessageContentFormatter().DeSerialize<dynamic>(dataAsJson));
+                    onMessageReceived(key, new TestSignalRMessageContentFormatter().Deserialize<dynamic>(dataAsJson));
                 });
             }
 
@@ -82,7 +82,7 @@ namespace Bit.Test.Server
 
         public class TestSignalRMessageContentFormatter : SignalRMessageContentFormatter
         {
-            public override T DeSerialize<T>(string objAsStr)
+            public override T Deserialize<T>(string objAsStr)
             {
                 return JsonConvert.DeserializeObject<T>(objAsStr, GetSettings());
             }

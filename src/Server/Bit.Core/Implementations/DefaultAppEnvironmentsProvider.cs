@@ -55,7 +55,7 @@ namespace Bit.Core.Implementations
             {
                 string environmentsAsJson = File.ReadAllText(PathProvider.MapPath("environments.json"));
 
-                AppEnvironment[] allEnvironments = ContentFormatter.DeSerialize<AppEnvironment[]>(environmentsAsJson);
+                AppEnvironment[] allEnvironments = ContentFormatter.Deserialize<AppEnvironment[]>(environmentsAsJson);
 
                 AppEnvironment[] activeEnvironments = allEnvironments.Where(env => env.IsActive).ToArray();
 
