@@ -70,7 +70,7 @@ namespace Bit.Owin.Implementations
             if (LogData.Any(ld => ld.Value == value))
                 return;
 
-            ((Collection<LogData>)LogData).Add(new LogData
+            ((BlockingCollection<LogData>)LogData).Add(new LogData
             {
                 Key = key,
                 Value = value
