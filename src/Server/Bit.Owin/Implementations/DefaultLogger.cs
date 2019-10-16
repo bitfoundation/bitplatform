@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
@@ -57,7 +58,7 @@ namespace Bit.Owin.Implementations
                 throw new AggregateException(logExceptions);
         }
 
-        public virtual IEnumerable<LogData> LogData { get; protected set; } = new Collection<LogData>();
+        public virtual IEnumerable<LogData> LogData { get; protected set; } = new BlockingCollection<LogData> { };
 
         public LogPolicy Policy { get; set; } = LogPolicy.InCaseOfScopeFailure;
 
