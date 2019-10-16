@@ -9,7 +9,6 @@
 
   <ItemGroup Condition="'$(TargetFramework)' == 'netcoreapp3.0'">
     <EmbeddedResource Include="Assemblies\System.Data.Linq.dll" />
-    <EmbeddedResource Include="Assemblies\System.ServiceModel.dll" />
     <EmbeddedResource Include="Assemblies\System.Net.Http.WebRequest.dll" />
   </ItemGroup>
 
