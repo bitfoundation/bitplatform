@@ -33,8 +33,8 @@ namespace Bit.OwinCore.Implementations
 
             void TryReadConfig<T>(IConfiguration configuration, string key)
             {
-                if (Configuration[key] != null)
-                    configs.Add(new EnvironmentConfig { Key = key, Value = Configuration.GetValue<T>(key) });
+                if (configuration != null && configuration[key] != null)
+                    configs.Add(new EnvironmentConfig { Key = key, Value = configuration.GetValue<T>(key) });
             }
 
             TryReadConfig<string>(Configuration, AppEnvironment.KeyValues.HostVirtualPath);
