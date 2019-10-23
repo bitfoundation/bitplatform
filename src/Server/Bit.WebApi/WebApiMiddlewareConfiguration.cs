@@ -35,7 +35,7 @@ namespace Bit.WebApi
 
             _webApiConfig.DependencyResolver = WebApiDependencyResolver;
 
-            _webApiConfig.Formatters.JsonFormatter.SerializerSettings.ContractResolver = DefaultJsonContentFormatter.SerializeSettings().ContractResolver;
+            _webApiConfig.Formatters.JsonFormatter.SerializerSettings = DefaultJsonContentFormatter.SerializeSettings();
 
             WebApiConfigurationCustomizers.ToList()
                 .ForEach(webApiConfigurationCustomizer =>
