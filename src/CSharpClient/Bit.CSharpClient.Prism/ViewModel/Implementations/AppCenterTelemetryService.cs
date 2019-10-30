@@ -44,10 +44,8 @@ namespace Bit.ViewModel.Implementations
         {
             if (IsConfigured())
             {
-#if !UWP
-            properties = PopulateProperties(properties);
-            Microsoft.AppCenter.Crashes.Crashes.TrackError(exception, properties);
-#endif
+                properties = PopulateProperties(properties);
+                Microsoft.AppCenter.Crashes.Crashes.TrackError(exception, properties);
             }
         }
 

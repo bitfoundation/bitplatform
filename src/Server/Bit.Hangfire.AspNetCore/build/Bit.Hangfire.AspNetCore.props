@@ -1,7 +1,7 @@
 ﻿<Project TreatAsLocalProperty="TaskFolder;TaskAssembly">
   <ItemGroup>
 
-    <PackageReference Include="Hangfire.Core" Version="1.7.6">
+    <PackageReference Include="Hangfire.Core" Version="1.7.7">
       <ExcludeAssets>all</ExcludeAssets>
     </PackageReference>
     <PackageReference Include="Hangfire.Autofac" Version="2.3.1">
@@ -13,7 +13,7 @@
     <PackageReference Include="Hangfire.MemoryStorage" Version="1.6.3">
       <ExcludeAssets>all</ExcludeAssets>
     </PackageReference>
-    <PackageReference Include="Hangfire.SqlServer" Version="1.7.6">
+    <PackageReference Include="Hangfire.SqlServer" Version="1.7.7">
       <ExcludeAssets>all</ExcludeAssets>
     </PackageReference>
 
