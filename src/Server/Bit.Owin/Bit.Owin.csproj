@@ -24,9 +24,5 @@
   <ItemGroup>
     <ProjectReference Include="..\Bit.Model\Bit.Model.csproj" />
   </ItemGroup>
-
-  <ItemGroup>
-    <Reference Include="System.ServiceModel" />
-  </ItemGroup>
-
+  
 </Project>
