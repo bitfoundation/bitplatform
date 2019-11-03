@@ -17,6 +17,10 @@
     <PackageReference Include="HangFire.Azure.ServiceBusQueue" Version="4.1.0" />
     <PackageReference Include="Hangfire.MemoryStorage" Version="1.6.3" />
     <PackageReference Include="Hangfire.SqlServer" Version="1.7.7" />
+    <PackageReference Include="Microsoft.CodeAnalysis.FxCopAnalyzers" Version="2.9.7">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
   </ItemGroup>
 
   <ItemGroup>

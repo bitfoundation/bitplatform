@@ -11,6 +11,10 @@
     <PackageReference Include="AntiXSS" Version="4.3.0" />
     <PackageReference Include="IdentityServer3" Version="2.6.3" Condition="'$(TargetFramework)' == 'net461'" />
     <PackageReference Include="Bit.IdSrv3" Version="0.0.3" Condition="'$(TargetFramework)' == 'netcoreapp3.0'" />
+    <PackageReference Include="Microsoft.CodeAnalysis.FxCopAnalyzers" Version="2.9.7">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
     <PackageReference Include="Microsoft.Owin.Security.Facebook" Version="4.0.1" />
     <PackageReference Include="Microsoft.Owin.Security.Google" Version="4.0.1" />
     <PackageReference Include="Microsoft.Owin.Security.MicrosoftAccount" Version="4.0.1" />
