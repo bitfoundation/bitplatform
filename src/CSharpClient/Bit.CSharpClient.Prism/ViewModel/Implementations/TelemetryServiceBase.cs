@@ -15,7 +15,7 @@ namespace Bit.ViewModel.Implementations
 
         public virtual IDictionary<string, string> PopulateProperties(IDictionary<string, string> initialProps)
         {
-            initialProps = initialProps ?? new Dictionary<string, string> { };
+            initialProps ??= new Dictionary<string, string> { };
 
             if (!initialProps.ContainsKey("MemoryUsage"))
                 initialProps.Add("MemoryUsage", $"{GC.GetTotalMemory(forceFullCollection: false):#,##0} bytes");
@@ -27,16 +27,16 @@ namespace Bit.ViewModel.Implementations
                 initialProps.Add("VersionHistory", string.Join(",", VersionTracking.VersionHistory));
 
             if (!initialProps.ContainsKey("IsFirstLaunchEver"))
-                initialProps.Add("IsFirstLaunchEver", VersionTracking.IsFirstLaunchEver.ToString());
+                initialProps.Add("IsFirstLaunchEver", VersionTracking.IsFirstLaunchEver.ToString(CultureInfo.InvariantCulture));
 
             if (!initialProps.ContainsKey("IsFirstLaunchForCurrentVersion"))
-                initialProps.Add("IsFirstLaunchForCurrentVersion", VersionTracking.IsFirstLaunchForCurrentVersion.ToString());
+                initialProps.Add("IsFirstLaunchForCurrentVersion", VersionTracking.IsFirstLaunchForCurrentVersion.ToString(CultureInfo.InvariantCulture));
 
             if (!initialProps.ContainsKey("NetworkAccess"))
                 initialProps.Add("NetworkAccess", Connectivity.NetworkAccess.ToString());
 
             if (MessageReceiver != null && !initialProps.ContainsKey("MessageReceiverWasConnected"))
-                initialProps.Add("MessageReceiverWasConnected", MessageReceiver.IsConnected.ToString());
+                initialProps.Add("MessageReceiverWasConnected", MessageReceiver.IsConnected.ToString(CultureInfo.InvariantCulture));
 
             if (!initialProps.ContainsKey("XamarinFormsVersion"))
                 initialProps.Add("XamarinFormsVersion", typeof(Binding).Assembly.GetCustomAttribute<AssemblyFileVersionAttribute>().Version);

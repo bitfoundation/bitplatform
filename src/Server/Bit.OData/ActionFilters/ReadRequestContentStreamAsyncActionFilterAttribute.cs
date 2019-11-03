@@ -16,7 +16,7 @@ using System.Web.Http.Controllers;
 namespace Bit.OData.ActionFilters
 {
     [SwaggerIgnoreAuthorizeAttribute] // It's just for async reading of request body which is possible in AuthorizeActionFilter. Following codes will gets executed before OData DeSerializers.
-    public class ReadRequestContentStreamAsyncActionFilter : AuthorizeAttribute, IWebApiConfigurationCustomizer
+    public class ReadRequestContentStreamAsyncActionFilterAttribute : AuthorizeAttribute, IWebApiConfigurationCustomizer
     {
         public virtual void CustomizeWebApiConfiguration(HttpConfiguration webApiConfiguration)
         {

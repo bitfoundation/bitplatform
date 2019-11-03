@@ -169,7 +169,7 @@ namespace Bit.View
         {
             base.OnAttachedTo(bindable);
 
-            implementation = implementation ?? new OrientationAndScreenSizeAwareBehaviorImplementation()
+            implementation ??= new OrientationAndScreenSizeAwareBehaviorImplementation()
             {
                 ElementRef = new WeakReference<VisualElement>(bindable)
             };
@@ -298,35 +298,35 @@ namespace Bit.View
             }
             else if (destinationType == typeof(bool))
             {
-                return Convert.ToBoolean(input);
+                return Convert.ToBoolean(input, CultureInfo.InvariantCulture);
             }
             else if (destinationType == typeof(byte))
             {
-                return Convert.ToByte(input);
+                return Convert.ToByte(input, CultureInfo.InvariantCulture);
             }
             else if (destinationType == typeof(short))
             {
-                return Convert.ToInt16(input);
+                return Convert.ToInt16(input, CultureInfo.InvariantCulture);
             }
             else if (destinationType == typeof(int))
             {
-                return Convert.ToInt32(input);
+                return Convert.ToInt32(input, CultureInfo.InvariantCulture);
             }
             else if (destinationType == typeof(long))
             {
-                return Convert.ToInt64(input);
+                return Convert.ToInt64(input, CultureInfo.InvariantCulture);
             }
             else if (destinationType == typeof(double))
             {
-                return Convert.ToDouble(input);
+                return Convert.ToDouble(input, CultureInfo.InvariantCulture);
             }
             else if (destinationType == typeof(float))
             {
-                return Convert.ToSingle(input);
+                return Convert.ToSingle(input, CultureInfo.InvariantCulture);
             }
             else if (destinationType == typeof(decimal))
             {
-                return Convert.ToDecimal(input);
+                return Convert.ToDecimal(input, CultureInfo.InvariantCulture);
             }
 
             throw new InvalidCastException($"Value {input} is not convertible to {destinationType}");

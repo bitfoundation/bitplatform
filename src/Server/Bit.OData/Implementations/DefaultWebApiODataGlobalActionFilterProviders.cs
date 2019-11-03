@@ -28,7 +28,7 @@ namespace Bit.OData.Implementations
     {
         public virtual void CustomizeWebApiConfiguration(HttpConfiguration webApiConfiguration)
         {
-            webApiConfiguration.Filters.Add(new ODataNullReturnValueActionFilter());
+            webApiConfiguration.Filters.Add(new ODataNullReturnValueActionFilterAttribute());
         }
     }
 }

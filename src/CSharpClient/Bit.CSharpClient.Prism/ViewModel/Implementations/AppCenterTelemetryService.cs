@@ -3,6 +3,7 @@ using Microsoft.AppCenter;
 using Microsoft.AppCenter.Analytics;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 
 namespace Bit.ViewModel.Implementations
 {
@@ -53,10 +54,10 @@ namespace Bit.ViewModel.Implementations
         {
             if (IsConfigured())
             {
-                properties = properties ?? new Dictionary<string, string>();
+                properties ??= new Dictionary<string, string>();
 
                 if (!properties.ContainsKey("Value"))
-                    properties.Add("Value", value.ToString());
+                    properties.Add("Value", value.ToString(CultureInfo.InvariantCulture));
 
                 TrackEvent($"Metric_{name}", properties);
             }
@@ -66,7 +67,7 @@ namespace Bit.ViewModel.Implementations
         {
             if (IsConfigured())
             {
-                properties = properties ?? new Dictionary<string, string>();
+                properties ??= new Dictionary<string, string>();
 
                 if (!properties.ContainsKey("Name"))
                     properties.Add("Name", name);
@@ -81,16 +82,16 @@ namespace Bit.ViewModel.Implementations
         {
             if (IsConfigured())
             {
-                properties = properties ?? new Dictionary<string, string>();
+                properties ??= new Dictionary<string, string>();
 
                 if (!properties.ContainsKey("Name"))
                     properties.Add("Name", name);
                 if (!properties.ContainsKey("Timestamp"))
-                    properties.Add("Timestamp", startTime.ToString()); /*Based on Microsoft.ApplicationInsights.DataContracts.RequestTelemetry*/
+                    properties.Add("Timestamp", startTime.ToString(CultureInfo.InvariantCulture)); /*Based on Microsoft.ApplicationInsights.DataContracts.RequestTelemetry*/
                 if (!properties.ContainsKey("Duration"))
                     properties.Add("Duration", responseCode);
                 if (!properties.ContainsKey("Success"))
-                    properties.Add("Success", success.ToString());
+                    properties.Add("Success", success.ToString(CultureInfo.InvariantCulture));
                 if (!properties.ContainsKey("Url"))
                     properties.Add("Url", url.ToString());
                 if (!properties.ContainsKey("httpMethod")) /*Based on Microsoft.ApplicationInsights.DataContracts.RequestTelemetry*/

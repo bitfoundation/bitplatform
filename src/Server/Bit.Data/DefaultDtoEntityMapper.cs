@@ -42,7 +42,7 @@ namespace Bit.Data
                 }
             }
 
-            return entityQuery.ProjectTo<TDto>(configuration: Mapper.ConfigurationProvider, parameters: @params, membersToExpand: membersToExpand ?? new string[] { });
+            return entityQuery.ProjectTo<TDto>(configuration: Mapper.ConfigurationProvider, parameters: @params, membersToExpand: membersToExpand ?? Array.Empty<string>());
         }
 
         public virtual TDto FromEntityToDto(TEntity entity, TDto existingDto)

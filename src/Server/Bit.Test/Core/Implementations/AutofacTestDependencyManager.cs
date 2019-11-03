@@ -78,6 +78,9 @@ namespace Bit.Test.Implementations
 
         public virtual bool IsGoingToCreateProxyForImplementationType(TypeInfo implementationType)
         {
+            if (implementationType == null)
+                throw new ArgumentNullException(nameof(implementationType));
+
             return implementationType.IsClass
                 && AutoProxyCreationIncludeRules.Any(rule => rule(implementationType) == true)
                 && AutoProxyCreationIgnoreRules.All(rule => rule(implementationType) == false);

@@ -173,7 +173,7 @@ namespace Bit.IdentityServer.Implementations
         {
             MemoryStream viewStream = new MemoryStream();
 
-            StreamWriter writer = new StreamWriter(viewStream);
+            using StreamWriter writer = new StreamWriter(viewStream);
 
             await writer.WriteAsync(html).ConfigureAwait(false);
 

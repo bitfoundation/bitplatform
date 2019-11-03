@@ -12,7 +12,7 @@ using System.Web.Http.Filters;
 
 namespace Bit.OData.ActionFilters
 {
-    public class ODataNullReturnValueActionFilter : ActionFilterAttribute
+    public class ODataNullReturnValueActionFilterAttribute : ActionFilterAttribute
     {
         public override Task OnActionExecutedAsync(HttpActionExecutedContext actionExecutedContext, CancellationToken cancellationToken)
         {

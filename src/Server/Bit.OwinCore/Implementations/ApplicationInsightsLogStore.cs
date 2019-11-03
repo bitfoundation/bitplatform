@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -42,9 +43,9 @@ namespace Bit.OwinCore.Implementations
             if (!telemetry.Context.GlobalProperties.ContainsKey(nameof(LogEntry.AppServerUserAccountName)))
                 telemetry.Context.GlobalProperties.Add(nameof(LogEntry.AppServerUserAccountName), logEntryAppLevelConstantInfo.AppServerUserAccountName);
             if (!telemetry.Context.GlobalProperties.ContainsKey(nameof(LogEntry.AppServerWas64Bit)))
-                telemetry.Context.GlobalProperties.Add(nameof(LogEntry.AppServerWas64Bit), logEntryAppLevelConstantInfo.AppServerWas64Bit.ToString());
+                telemetry.Context.GlobalProperties.Add(nameof(LogEntry.AppServerWas64Bit), logEntryAppLevelConstantInfo.AppServerWas64Bit.ToString(CultureInfo.InvariantCulture));
             if (!telemetry.Context.GlobalProperties.ContainsKey(nameof(LogEntry.AppWas64Bit)))
-                telemetry.Context.GlobalProperties.Add(nameof(LogEntry.AppWas64Bit), logEntryAppLevelConstantInfo.AppWas64Bit.ToString());
+                telemetry.Context.GlobalProperties.Add(nameof(LogEntry.AppWas64Bit), logEntryAppLevelConstantInfo.AppWas64Bit.ToString(CultureInfo.InvariantCulture));
 
             if (telemetry is RequestTelemetry requestTelemetry && HttpContextAccessor.HttpContext != null)
             {
@@ -68,42 +69,78 @@ namespace Bit.OwinCore.Implementations
         }
 
         [Serializable]
-        private class FatalException : Exception
+        public class FatalException : Exception
         {
             public FatalException(string message)
                 : base(message)
             {
 
             }
+
+            public FatalException()
+            {
+            }
+
+            public FatalException(string message, Exception innerException) 
+                : base(message, innerException)
+            {
+            }
         }
 
         [Serializable]
-        private class ErrorException : Exception
+        public class ErrorException : Exception
         {
             public ErrorException(string message)
                 : base(message)
             {
 
             }
+
+            public ErrorException()
+            {
+            }
+
+            public ErrorException(string message, Exception innerException)
+                : base(message, innerException)
+            {
+            }
         }
 
         [Serializable]
-        private class WarningException : Exception
+        public class WarningException : Exception
         {
             public WarningException(string message)
                 : base(message)
             {
 
             }
+
+            public WarningException()
+            {
+            }
+
+            public WarningException(string message, Exception innerException) 
+                : base(message, innerException)
+            {
+            }
         }
 
         [Serializable]
-        private class InformationException : Exception
+        public class InformationException : Exception
         {
             public InformationException(string message)
                 : base(message)
             {
 
+            }
+
+            public InformationException()
+            {
+            }
+
+            public InformationException(string message, Exception innerException) 
+                : base(message, innerException)
+            {
             }
         }
 
@@ -174,7 +211,7 @@ namespace Bit.OwinCore.Implementations
             .Where(d => d != null)
             .ToList();
 
-            keyValues.Add(new KeyVal { Key = nameof(LogEntry.MemoryUsage), Value = logEntry.MemoryUsage.ToString() });
+            keyValues.Add(new KeyVal { Key = nameof(LogEntry.MemoryUsage), Value = logEntry.MemoryUsage.ToString(CultureInfo.InvariantCulture) });
 
             if (logEntry.AppServerDateTime.HasValue)
                 keyValues.Add(new KeyVal { Key = nameof(LogEntry.AppServerDateTime), Value = logEntry.AppServerDateTime.ToString() });
@@ -202,7 +239,7 @@ namespace Bit.OwinCore.Implementations
             }
             else
             {
-                TelemetryClient telemetryClient = new TelemetryClient();
+                TelemetryClient telemetryClient = new TelemetryClient(TelemetryConfiguration.Active);
 
                 Dictionary<string, string> customData = new Dictionary<string, string>();
 
@@ -225,24 +262,14 @@ namespace Bit.OwinCore.Implementations
 
                 if (ex == null)
                 {
-                    switch (logEntry.Severity)
+                    ex = logEntry.Severity switch
                     {
-                        case "Information":
-                            ex = new InformationException(logEntry.Message);
-                            break;
-                        case "Warning":
-                            ex = new WarningException(logEntry.Message);
-                            break;
-                        case "Error":
-                            ex = new ErrorException(logEntry.Message);
-                            break;
-                        case "Fatal":
-                            ex = new FatalException(logEntry.Message);
-                            break;
-                        default:
-                            ex = new Exception(logEntry.Message);
-                            break;
-                    }
+                        "Information" => new InformationException(logEntry.Message),
+                        "Warning" => new WarningException(logEntry.Message),
+                        "Error" => new ErrorException(logEntry.Message),
+                        "Fatal" => new FatalException(logEntry.Message),
+                        _ => new Exception(logEntry.Message),
+                    };
                 }
 
                 telemetryClient.TrackException(ex, customData);

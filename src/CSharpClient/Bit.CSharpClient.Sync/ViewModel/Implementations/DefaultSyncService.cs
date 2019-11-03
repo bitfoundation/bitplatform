@@ -264,7 +264,7 @@ namespace Bit.ViewModel.Implementations
             }
             catch (Exception exp)
             {
-                dtoSyncConfigSyncFromResults.RecentlyChangedOnlineDtos = new ISyncableDto[] { };
+                dtoSyncConfigSyncFromResults.RecentlyChangedOnlineDtos = Array.Empty<ISyncableDto>();
                 BitExceptionHandler.Current.OnExceptionReceived(exp);
             }
         }

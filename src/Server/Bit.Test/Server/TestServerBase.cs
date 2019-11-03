@@ -32,7 +32,7 @@ namespace Bit.Test.Server
         {
             Action<HttpRequestMessage> originalBeforeRequest = odataClientSettings?.BeforeRequest;
 
-            odataClientSettings = odataClientSettings ?? new ODataClientSettings { };
+            odataClientSettings ??= new ODataClientSettings { };
 
             if (odataClientSettings.BaseUri == default)
                 odataClientSettings.BaseUri = new Uri($"{Uri}odata/{odataRouteName}/");
@@ -189,7 +189,7 @@ namespace Bit.Test.Server
 
         public virtual string GetLoginUrl(string client_id = null, Uri redirect_uri = null, object state = null, IDictionary<string, string> acr_values = null)
         {
-            state = state ?? new { };
+            state ??= new { };
 
             string relativeUri = $"InvokeLogin?state={JsonConvert.SerializeObject(state)}";
 

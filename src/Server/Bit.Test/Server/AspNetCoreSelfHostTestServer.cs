@@ -1,4 +1,5 @@
-﻿using System.Net.Http;
+﻿using System;
+using System.Net.Http;
 using Bit.OwinCore;
 using Microsoft.AspNetCore.Hosting;
 
@@ -12,7 +13,7 @@ namespace Bit.Test.Server
         {
             base.Initialize(uri);
 
-            _host = BitWebHost.CreateDefaultBuilder(new string[] { })
+            _host = BitWebHost.CreateDefaultBuilder(Array.Empty<string>())
                 .UseUrls(uri)
                 .UseStartup<AutofacAspNetCoreAppStartup>()
                 .Build();

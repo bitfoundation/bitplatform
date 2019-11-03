@@ -203,7 +203,7 @@ namespace Bit.View.Controls
         {
             get
             {
-                _Current = _Current ?? new CultureInfoProvider { };
+                _Current ??= new CultureInfoProvider { };
                 return _Current;
             }
             set

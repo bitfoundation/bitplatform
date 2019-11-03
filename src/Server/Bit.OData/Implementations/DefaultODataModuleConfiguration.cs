@@ -19,6 +19,9 @@ namespace System.Reflection
     {
         public static bool IsDtoController(this TypeInfo controllerType)
         {
+            if (controllerType == null)
+                throw new ArgumentNullException(nameof(controllerType));
+
             TypeInfo baseGenericType = (controllerType.BaseType?.GetTypeInfo()?.IsGenericType == true ? controllerType.BaseType?.GetTypeInfo()?.GetGenericTypeDefinition() : null)?.GetTypeInfo();
 
             while (baseGenericType != null)

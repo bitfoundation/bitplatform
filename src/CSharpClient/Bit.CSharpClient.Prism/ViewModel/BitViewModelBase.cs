@@ -3,6 +3,7 @@ using Bit.ViewModel.Contracts;
 using Prism.Navigation;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -103,7 +104,7 @@ namespace Bit.ViewModel
                             properties.Add(prp.Key, prp.Value?.ToString() ?? "NULL");
                     }
 
-                    properties.Add("PageViewSucceeded", success.ToString());
+                    properties.Add("PageViewSucceeded", success.ToString(CultureInfo.InvariantCulture));
 
                     TimeSpan duration = DateTimeOffset.Now - startDate;
 

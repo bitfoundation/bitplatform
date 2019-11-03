@@ -20,7 +20,7 @@ namespace Bit.View
 
         BindingBase IMarkupExtension<BindingBase>.ProvideValue(IServiceProvider serviceProvider)
         {
-            Source = Source ?? GetSource(serviceProvider);
+            Source ??= GetSource(serviceProvider);
 
             return new Binding(Path, Mode, Converter, ConverterParameter, StringFormat, Source)
             {

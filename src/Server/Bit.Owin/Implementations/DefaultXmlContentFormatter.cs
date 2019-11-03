@@ -10,19 +10,17 @@ namespace Bit.Owin.Implementations
         public virtual string Serialize<T>(T obj)
         {
             XmlSerializer xmlSerializer = new XmlSerializer(typeof (T));
-            using (StringWriter stringWriter = new StringWriter())
-            using (XmlWriter xmlWriter = XmlWriter.Create(stringWriter))
-            {
-                xmlSerializer.Serialize(xmlWriter, obj);
-                return stringWriter.ToString();
-            }
+            using StringWriter stringWriter = new StringWriter();
+            using XmlWriter xmlWriter = XmlWriter.Create(stringWriter);
+            xmlSerializer.Serialize(xmlWriter, obj);
+            return stringWriter.ToString();
         }
 
         public virtual T Deserialize<T>(string objAsStr)
         {
             XmlSerializer xmlSerializer = new XmlSerializer(typeof (T));
-            using (StringReader stringWriter = new StringReader(objAsStr))
-                return (T)xmlSerializer.Deserialize(stringWriter);
+            using StringReader stringWriter = new StringReader(objAsStr);
+            return (T)xmlSerializer.Deserialize(stringWriter);
         }
     }
 }
