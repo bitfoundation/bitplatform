@@ -9,18 +9,21 @@ using Bit.Model.Contracts;
 using Bit.Model.Implementations;
 using Bit.OData.ActionFilters;
 using Bit.OData.Contracts;
+using Bit.OData.Implementations;
 using Bit.OData.ODataControllers;
 using Bit.Owin.Exceptions;
 using Bit.Owin.Implementations;
 using Bit.OwinCore;
 using Bit.OwinCore.Implementations;
 using IdentityServer3.Core.Models;
+using Microsoft.AspNet.OData.Builder;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Serilog;
 using Swashbuckle.Application;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
@@ -68,6 +71,8 @@ namespace DotNetCoreTestApp
             });
 
             dependencyManager.RegisterAspNetCoreSingleSignOnClient();
+
+            dependencyManager.Register<IODataModelBuilderProvider, AppODataModelBuilderProvider>(lifeCycle: DependencyLifeCycle.SingleInstance);
 
             dependencyManager.RegisterDefaultWebApiAndODataConfiguration();
 
@@ -219,6 +224,19 @@ namespace DotNetCoreTestApp
         }
     }
 
+    public class AppODataModelBuilderProvider : DefaultODataModelBuilderProvider
+    {
+        public override ODataModelBuilder GetODataModelBuilder(HttpConfiguration webApiConfig, string containerName, string @namespace)
+        {
+            var builder = ((ODataConventionModelBuilder)base.GetODataModelBuilder(webApiConfig, containerName, @namespace))
+                .EnableLowerCamelCase();
+
+            builder.ComplexType<NestedComplexType>(); // too nested!
+
+            return builder;
+        }
+    }
+
     public class CustomersController : DtoSetController<CustomerDto, Customer, int>
     {
         public virtual IRepository<Customer> CustomersRepository { get; set; }
@@ -234,6 +252,44 @@ namespace DotNetCoreTestApp
                 throw new InvalidOperationException();
 
             return firstNumber + secondNumber;
+        }
+    }
+
+    public class MainDto : IDto
+    {
+        public int Id { get; set; } = 1;
+
+        [AutoExpand]
+        public List<MainComplexType> ComplexTypes { get; set; } = new List<MainComplexType>
+        {
+            new MainComplexType { }
+        };
+    }
+
+    [ComplexType]
+    public class MainComplexType
+    {
+        public string Value { get; set; } = "Test";
+
+        [AutoExpand]
+        public List<NestedComplexType> ComplexTypes { get; set; } = new List<NestedComplexType>
+        {
+            new NestedComplexType { }
+        };
+    }
+
+    [ComplexType]
+    public class NestedComplexType
+    {
+        public string Value { get; set; } = "Test";
+    }
+
+    public class SampleController : DtoController<MainDto>
+    {
+        [Function, AllowAnonymous]
+        public SingleResult<MainDto> GetInstance()
+        {
+            return SingleResult(new MainDto { });
         }
     }
 }
