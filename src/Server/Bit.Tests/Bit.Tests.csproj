@@ -12,8 +12,8 @@
 
   <ItemGroup>
     <FrameworkReference Include="Microsoft.AspNetCore.App" Condition=" '$(TargetFramework)' == 'netcoreapp3.0' " />
-    <PackageReference Include="Microsoft.AspNetCore.TestHost" Version="3.0.0-preview8.19405.7" Condition=" '$(TargetFramework)' == 'netcoreapp3.0' " />
-    <PackageReference Include="Microsoft.AspNetCore.Owin" Version="3.0.0-preview8.19405.7" Condition=" '$(TargetFramework)' == 'netcoreapp3.0' " />
+    <PackageReference Include="Microsoft.AspNetCore.TestHost" Version="3.0.0" Condition=" '$(TargetFramework)' == 'netcoreapp3.0' " />
+    <PackageReference Include="Microsoft.AspNetCore.Owin" Version="3.0.0" Condition=" '$(TargetFramework)' == 'netcoreapp3.0' " />
     <PackageReference Include="Microsoft.AspNetCore.ResponseCompression" Version="2.2.0" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="2.2.6" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="2.2.6" />
