@@ -42,7 +42,7 @@ namespace Bit.WebApi.Implementations
                 bool isInstanceOfAuthorizeFilter = e.Instance is AuthorizationFilterAttribute;
                 if (isInstanceOfAuthorizeFilter)
                 {
-                    bool isAuthorizeFilter = e.Instance.GetType() == typeof(AuthorizeAttribute);
+                    bool isAuthorizeFilter = e.Instance is AuthorizeAttribute;
                     IFilter actionFilter = isAuthorizeFilter ? e.Instance : (IFilter)InnerProperty.Value.GetValue(e.Instance);
                     return actionFilter.GetType().GetCustomAttribute<SwaggerIgnoreAuthorizeAttribute>() == null;
                 }
