@@ -109,14 +109,17 @@ namespace Bit.ViewModel.Implementations
         {
             if (IsConnected != isConnected)
             {
-                IsConnected = isConnected;
+                MainThread.BeginInvokeOnMainThread(() =>
+                {
+                    IsConnected = isConnected;
 
-                EventAggregator
-                    .GetEvent<ServerConnectivityChangedEvent>()
-                    .Publish(new ServerConnectivityChangedEvent
-                    {
-                        IsConnected = IsConnected
-                    });
+                    EventAggregator
+                        .GetEvent<ServerConnectivityChangedEvent>()
+                        .Publish(new ServerConnectivityChangedEvent
+                        {
+                            IsConnected = IsConnected
+                        });
+                });
             }
         }
 
