@@ -37,6 +37,15 @@ namespace Bit.OwinCore.Implementations
                     configs.Add(new EnvironmentConfig { Key = key, Value = configuration.GetValue<T>(key) });
             }
 
+            void TryReadConnectionString(string key)
+            {
+                if (configs.Any(c => c.Key == key))
+                    return;
+                string connectionString = Configuration.GetConnectionString(key);
+                if (connectionString != null)
+                    configs.Add(new EnvironmentConfig { Key = key, Value = connectionString });
+            }
+
             TryReadConfig<string>(Configuration, AppEnvironment.KeyValues.HostVirtualPath);
             TryReadConfig<string>(Configuration, AppEnvironment.KeyValues.IndexPagePath);
             TryReadConfig<string>(Configuration, AppEnvironment.KeyValues.StaticFilesRelativePath);
@@ -83,6 +92,10 @@ namespace Bit.OwinCore.Implementations
                 TryReadConfig<string>(hangfire, AppEnvironment.KeyValues.Hangfire.JobSchedulerDbConnectionString);
                 TryReadConfig<string>(hangfire, AppEnvironment.KeyValues.Hangfire.JobSchedulerAzureServiceBusConnectionString);
             }
+
+            TryReadConnectionString(AppEnvironment.KeyValues.Signalr.SignalRSqlServerConnectionString);
+            TryReadConnectionString(AppEnvironment.KeyValues.Hangfire.JobSchedulerDbConnectionString);
+            TryReadConnectionString(AppEnvironment.KeyValues.Data.LogDbConnectionstring);
 
             IConfiguration appInfo = Configuration.GetChildren().ExtendedSingleOrDefault("Finding appInfo config", c => c.Key == nameof(AppEnvironment.AppInfo));
 
