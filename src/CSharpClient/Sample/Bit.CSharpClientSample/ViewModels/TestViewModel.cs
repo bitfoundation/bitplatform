@@ -77,8 +77,6 @@ namespace Bit.CSharpClientSample.ViewModels
             signalr_MessageReceived_token?.Dispose();
             server_ConnectivityChanged_token?.Dispose();
             await MessageReceiver.Stop(CancellationToken.None);
-            MessageReceiver.Dispose();
-
             await base.OnDestroyAsync();
         }
     }
