@@ -9,8 +9,14 @@ namespace Bit.Tests
 {
     public class BitOwinTestEnvironment : TestEnvironmentBase
     {
+        static TestEnvironmentArgs ConfigureArgs(TestEnvironmentArgs args)
+        {
+            args ??= new TestEnvironmentArgs { };
+            return args;
+        }
+
         public BitOwinTestEnvironment(TestEnvironmentArgs args = null)
-            : base(args)
+            : base(ConfigureArgs(args))
         {
 
         }
