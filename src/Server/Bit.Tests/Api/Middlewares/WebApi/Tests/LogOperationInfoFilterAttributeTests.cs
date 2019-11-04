@@ -17,7 +17,7 @@ using Simple.OData.Client;
 namespace Bit.Tests.Api.Middlewares.WebApi.Tests
 {
     [TestClass]
-    public class LogOperationArgsFilterAttributeTests
+    public class LogOperationInfoFilterAttributeTests
     {
         [TestMethod]
         [TestCategory("WebApi"), TestCategory("Logging")]
@@ -52,7 +52,11 @@ namespace Bit.Tests.Api.Middlewares.WebApi.Tests
                 {
                     ILogStore logStore = testEnvironment.GetObjects<ILogStore>().Last();
 
-                    A.CallTo(() => logStore.SaveLogAsync(A<LogEntry>.That.Matches(log => ((TestModelsController.EmailParameters)((KeyValuePair<string,object>[])log.LogData.Single(ld => ld.Key == "OperationArgs").Value)[0].Value).to == "Someone")))
+                    A.CallTo(() => logStore.SaveLogAsync(A<LogEntry>.That.Matches(log => ((TestModelsController.EmailParameters)((KeyValuePair<string, object>[])log.LogData.Single(ld => ld.Key == "OperationArgs").Value)[0].Value).to == "Someone")))
+                        .MustHaveHappenedOnceExactly();
+                    A.CallTo(() => logStore.SaveLogAsync(A<LogEntry>.That.Matches(log => ((string)log.LogData.Single(ld => ld.Key == "OperationName").Value) == "SendEmail")))
+                        .MustHaveHappenedOnceExactly();
+                    A.CallTo(() => logStore.SaveLogAsync(A<LogEntry>.That.Matches(log => ((string)log.LogData.Single(ld => ld.Key == "ControllerName").Value) == "TestModels")))
                         .MustHaveHappenedOnceExactly();
                 }
             }
