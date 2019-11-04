@@ -1,5 +1,4 @@
 ﻿using Autofac;
-using Bit.Core.Contracts;
 using Bit.Hangfire.Contracts;
 using Bit.Owin.Contracts;
 using Hangfire;
@@ -12,7 +11,7 @@ using System.Reflection;
 
 namespace Bit.Hangfire.Implementations
 {
-    public class JobSchedulerInMemoryBackendConfiguration : IAppEvents
+    public class JobSchedulerInMemoryBackendConfiguration : IJobSchedulerBackendConfiguration
     {
         private ILifetimeScope _container;
 
@@ -34,7 +33,7 @@ namespace Bit.Hangfire.Implementations
 
         public virtual JobActivator JobActivator { get; set; }
 
-        public virtual void OnAppStartup()
+        public virtual void Init()
         {
             MemoryStorage storage = new MemoryStorage();
 
@@ -66,7 +65,7 @@ namespace Bit.Hangfire.Implementations
             _backgroundJobServer = new BackgroundJobServer(options, storage);
         }
 
-        public virtual void OnAppEnd()
+        public virtual void Dispose()
         {
             _backgroundJobServer?.Dispose();
         }
