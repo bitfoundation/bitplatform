@@ -20,7 +20,11 @@ namespace Bit.OwinCore
 {
     public class AspNetCoreAppStartup
     {
+#if DotNet
         public IHostingEnvironment HostingEnvironment { get; }
+#else
+        public IWebHostEnvironment WebHostEnvironment { get; }
+#endif
 
         public IConfiguration Configuration { get; set; }
 
@@ -31,13 +35,25 @@ namespace Bit.OwinCore
             if (serviceProvider == null)
                 throw new ArgumentNullException(nameof(serviceProvider));
 
+#if DotNet
             HostingEnvironment = serviceProvider.GetRequiredService<IHostingEnvironment>();
+#else
+            WebHostEnvironment = serviceProvider.GetRequiredService<IWebHostEnvironment>();
+#endif
             Configuration = serviceProvider.GetRequiredService<IConfiguration>();
 
             AspNetCoreAppEnvironmentsProvider.Current.Configuration = Configuration;
+#if DotNet
             AspNetCoreAppEnvironmentsProvider.Current.HostingEnvironment = HostingEnvironment;
+#else
+            AspNetCoreAppEnvironmentsProvider.Current.WebHostEnvironment = WebHostEnvironment;
+#endif
 
+#if DotNet
             DefaultPathProvider.Current = _pathProvider = new AspNetCorePathProvider(HostingEnvironment);
+#else
+            DefaultPathProvider.Current = _pathProvider = new AspNetCorePathProvider(WebHostEnvironment);
+#endif
         }
 
         public virtual void InitServices(IServiceCollection services)
@@ -80,11 +96,19 @@ namespace Bit.OwinCore
 
         public void Configure(IApplicationBuilder aspNetCoreApp, OwinAppStartup owinAppStartup, IEnumerable<IAspNetCoreMiddlewareConfiguration> aspNetCoreMiddlewares)
         {
+#if DotNet
             if (string.IsNullOrEmpty(HostingEnvironment.WebRootPath))
                 HostingEnvironment.WebRootPath = _pathProvider.GetStaticFilesFolderPath();
 
             if (Directory.Exists(HostingEnvironment.WebRootPath) && (HostingEnvironment.WebRootFileProvider == null || HostingEnvironment.WebRootFileProvider is NullFileProvider))
                 HostingEnvironment.WebRootFileProvider = new PhysicalFileProvider(HostingEnvironment.WebRootPath);
+#else
+            if (string.IsNullOrEmpty(WebHostEnvironment.WebRootPath))
+                WebHostEnvironment.WebRootPath = _pathProvider.GetStaticFilesFolderPath();
+
+            if (Directory.Exists(WebHostEnvironment.WebRootPath) && (WebHostEnvironment.WebRootFileProvider == null || WebHostEnvironment.WebRootFileProvider is NullFileProvider))
+                WebHostEnvironment.WebRootFileProvider = new PhysicalFileProvider(WebHostEnvironment.WebRootPath);
+#endif
 
             ConfigureBitAspNetCoreApp(aspNetCoreApp, owinAppStartup, aspNetCoreMiddlewares);
         }

@@ -1,10 +1,10 @@
-﻿using Bit.Core;
+﻿#if DotNet
+using Bit.Core;
 using Bit.Core.Contracts;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using System;
-using System.Linq;
 using System.Reflection;
 
 namespace Microsoft.Extensions.DependencyInjection
@@ -41,3 +41,4 @@ namespace Microsoft.Extensions.DependencyInjection
         }
     }
 }
+#endif
