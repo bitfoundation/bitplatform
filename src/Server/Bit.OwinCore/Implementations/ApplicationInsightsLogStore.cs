@@ -5,7 +5,6 @@ using Microsoft.ApplicationInsights.Channel;
 using Microsoft.ApplicationInsights.DataContracts;
 using Microsoft.ApplicationInsights.Extensibility;
 using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -14,6 +13,18 @@ using System.Threading.Tasks;
 
 namespace Bit.OwinCore.Implementations
 {
+    internal class AppInsightsLogKeyVal
+    {
+        public string Key { get; set; }
+
+        public string Value { get; set; }
+
+        public override string ToString()
+        {
+            return $"Key: {Key}, Value: {Value}";
+        }
+    }
+
     public class BitTelemetryInitializer : ITelemetryInitializer
     {
         public virtual IHttpContextAccessor HttpContextAccessor { get; set; }
@@ -49,25 +60,34 @@ namespace Bit.OwinCore.Implementations
 
             if (telemetry is RequestTelemetry requestTelemetry && HttpContextAccessor.HttpContext != null)
             {
-                HttpContextAccessor.HttpContext.Items[nameof(RequestTelemetry)] = requestTelemetry;
+                if (!HttpContextAccessor.HttpContext.Items.TryGetValue("LogKeyValues", out object logKeyValuesAsObj))
+                    return; // based on logger's policy, requests without any issue (ok responses) won't have log key values and we don't have anything to provide to app insights here.
+
+                List<AppInsightsLogKeyVal> logKeyValues = (List<AppInsightsLogKeyVal>)logKeyValuesAsObj;
+
+                AppInsightsLogKeyVal userAgent = logKeyValues.FirstOrDefault(ld => ld.Key == nameof(IRequestInformationProvider.UserAgent));
+
+                if (userAgent != null)
+                    requestTelemetry.Context.User.UserAgent = userAgent.Value;
+
+                AppInsightsLogKeyVal userId = logKeyValues.FirstOrDefault(ld => ld.Key == "UserId");
+
+                if (userId != null)
+                    requestTelemetry.Context.User.AccountId = requestTelemetry.Context.User.Id = requestTelemetry.Context.User.AuthenticatedUserId = requestTelemetry.Context.User.AuthenticatedUserId = userId.Value;
+
+                foreach (AppInsightsLogKeyVal keyVal in logKeyValues.OrderBy(kv => kv.Key))
+                {
+                    if (keyVal.Key == nameof(IRequestInformationProvider.UserAgent) || keyVal.Key == "UserId")
+                        continue;
+                    if (!requestTelemetry.Properties.ContainsKey(keyVal.Key))
+                        requestTelemetry.Properties.Add(keyVal.Key, keyVal.Value);
+                }
             }
         }
     }
 
     public class ApplicationInsightsLogStore : ILogStore
     {
-        private class KeyVal
-        {
-            public string Key { get; set; }
-
-            public string Value { get; set; }
-
-            public override string ToString()
-            {
-                return $"Key: {Key}, Value: {Value}";
-            }
-        }
-
         [Serializable]
         public class FatalException : Exception
         {
@@ -81,7 +101,7 @@ namespace Bit.OwinCore.Implementations
             {
             }
 
-            public FatalException(string message, Exception innerException) 
+            public FatalException(string message, Exception innerException)
                 : base(message, innerException)
             {
             }
@@ -119,7 +139,7 @@ namespace Bit.OwinCore.Implementations
             {
             }
 
-            public WarningException(string message, Exception innerException) 
+            public WarningException(string message, Exception innerException)
                 : base(message, innerException)
             {
             }
@@ -138,7 +158,7 @@ namespace Bit.OwinCore.Implementations
             {
             }
 
-            public InformationException(string message, Exception innerException) 
+            public InformationException(string message, Exception innerException)
                 : base(message, innerException)
             {
             }
@@ -147,6 +167,8 @@ namespace Bit.OwinCore.Implementations
         public virtual IHttpContextAccessor HttpContextAccessor { get; set; }
 
         public virtual IContentFormatter Formatter { get; set; }
+
+        public TelemetryClient TelemetryClient { get; set; }
 
         public virtual void SaveLog(LogEntry logEntry)
         {
@@ -162,31 +184,57 @@ namespace Bit.OwinCore.Implementations
 
         private void PerformLog(LogEntry logEntry)
         {
-            RequestTelemetry requestTelemetry = null;
+            List<AppInsightsLogKeyVal> logKeyValues = PopulateLogKeyValues(logEntry);
 
             if (logEntry.LogData.Any(ld => ld.Key == nameof(IRequestInformationProvider.DisplayUrl)) && HttpContextAccessor.HttpContext != null)
             {
-                HttpContext httpContext = HttpContextAccessor.HttpContext;
-
-                if (!httpContext.Items.ContainsKey(nameof(RequestTelemetry)))
-                    throw new InvalidOperationException($"Register app insight logger using dependencyManager.{nameof(IDependencyManagerExtensions.RegisterApplicationInsights)}();");
-
-                requestTelemetry = (RequestTelemetry)httpContext.Items[nameof(RequestTelemetry)];
-
-                IUserInformationProvider userInformationProvider = httpContext.RequestServices.GetRequiredService<IUserInformationProvider>();
-
-                if (userInformationProvider.IsAuthenticated())
-                    requestTelemetry.Context.User.AccountId = requestTelemetry.Context.User.AuthenticatedUserId = userInformationProvider.GetCurrentUserId();
+                if (!HttpContextAccessor.HttpContext.Items.ContainsKey("LogKeyValues"))
+                    HttpContextAccessor.HttpContext.Items.Add("LogKeyValues", logKeyValues); // someone might register app insights logger multiple times!
+                return; // The rest of things will be handled with BitTelemetryInitializer.
             }
 
-            List<KeyVal> keyValues = logEntry.LogData.Select(ld =>
+            Dictionary<string, string> customData = new Dictionary<string, string>();
+
+            foreach (AppInsightsLogKeyVal keyVal in logKeyValues.OrderBy(kv => kv.Key))
+            {
+                if (!customData.ContainsKey(keyVal.Key))
+                    customData.Add(keyVal.Key, keyVal.Value);
+            }
+
+            Exception ex = null;
+
+            try
+            {
+                customData.TryGetValue("ExceptionTypeAssemblyQualifiedName", out string exceptionTypeAssemblyQualifiedName);
+
+                if (!string.IsNullOrEmpty(exceptionTypeAssemblyQualifiedName))
+                    ex = (Exception)Activator.CreateInstance(Type.GetType(exceptionTypeAssemblyQualifiedName) ?? throw new InvalidOperationException($"{exceptionTypeAssemblyQualifiedName} could not be found"), args: new object[] { logEntry.Message });
+            }
+            catch { }
+
+            if (ex == null)
+            {
+                ex = logEntry.Severity switch
+                {
+                    "Information" => new InformationException(logEntry.Message),
+                    "Warning" => new WarningException(logEntry.Message),
+                    "Error" => new ErrorException(logEntry.Message),
+                    "Fatal" => new FatalException(logEntry.Message),
+                    _ => new Exception(logEntry.Message),
+                };
+            }
+
+            TelemetryClient.TrackException(ex, customData);
+        }
+
+        List<AppInsightsLogKeyVal> PopulateLogKeyValues(LogEntry logEntry)
+        {
+            List<AppInsightsLogKeyVal> keyValues = logEntry.LogData.Select(ld =>
             {
                 string k = ld.Key;
 
                 if (k == nameof(IRequestInformationProvider.HttpMethod)
                 || k == nameof(IRequestInformationProvider.DisplayUrl)
-                || k == nameof(IRequestInformationProvider.UserAgent)
-                || k == "UserId"
                 || k == "ResponseStatusCode"
                 || k == nameof(IRequestInformationProvider.ClientIp)
                 || ld.Value == null)
@@ -206,74 +254,26 @@ namespace Bit.OwinCore.Implementations
                     v = ld.Value.ToString();
                 }
 
-                return new KeyVal { Key = k, Value = v };
+                return new AppInsightsLogKeyVal { Key = k, Value = v };
             })
             .Where(d => d != null)
             .ToList();
 
-            keyValues.Add(new KeyVal { Key = nameof(LogEntry.MemoryUsage), Value = logEntry.MemoryUsage.ToString(CultureInfo.InvariantCulture) });
+            keyValues.Add(new AppInsightsLogKeyVal { Key = nameof(LogEntry.MemoryUsage), Value = logEntry.MemoryUsage.ToString(CultureInfo.InvariantCulture) });
 
             if (logEntry.AppServerDateTime.HasValue)
-                keyValues.Add(new KeyVal { Key = nameof(LogEntry.AppServerDateTime), Value = logEntry.AppServerDateTime.ToString() });
+                keyValues.Add(new AppInsightsLogKeyVal { Key = nameof(LogEntry.AppServerDateTime), Value = logEntry.AppServerDateTime.ToString() });
 
-            keyValues.Add(new KeyVal { Key = nameof(LogEntry.Severity), Value = logEntry.Severity });
-            keyValues.Add(new KeyVal { Key = nameof(LogEntry.Message), Value = logEntry.Message });
+            keyValues.Add(new AppInsightsLogKeyVal { Key = nameof(LogEntry.Severity), Value = logEntry.Severity });
+            keyValues.Add(new AppInsightsLogKeyVal { Key = nameof(LogEntry.Message), Value = logEntry.Message });
 
             if (logEntry.Id.HasValue)
-                keyValues.Add(new KeyVal { Key = nameof(LogEntry.Id), Value = logEntry.Id.ToString() });
+                keyValues.Add(new AppInsightsLogKeyVal { Key = nameof(LogEntry.Id), Value = logEntry.Id.ToString() });
 
             if (logEntry.AppServerThreadId.HasValue)
-                keyValues.Add(new KeyVal { Key = nameof(LogEntry.AppServerThreadId), Value = logEntry.AppServerThreadId.ToString() });
+                keyValues.Add(new AppInsightsLogKeyVal { Key = nameof(LogEntry.AppServerThreadId), Value = logEntry.AppServerThreadId.ToString() });
 
-            if (requestTelemetry != null)
-            {
-                LogData userAgent = logEntry.LogData.FirstOrDefault(ld => ld.Key == nameof(IRequestInformationProvider.UserAgent));
-                if (userAgent != null)
-                    requestTelemetry.Context.User.UserAgent = (string)userAgent.Value;
-
-                foreach (KeyVal keyVal in keyValues.OrderBy(kv => kv.Key))
-                {
-                    if (!requestTelemetry.Properties.ContainsKey(keyVal.Key))
-                        requestTelemetry.Properties.Add(keyVal.Key, keyVal.Value);
-                }
-            }
-            else
-            {
-                TelemetryClient telemetryClient = new TelemetryClient(TelemetryConfiguration.Active);
-
-                Dictionary<string, string> customData = new Dictionary<string, string>();
-
-                foreach (KeyVal keyVal in keyValues.OrderBy(kv => kv.Key))
-                {
-                    if (!customData.ContainsKey(keyVal.Key))
-                        customData.Add(keyVal.Key, keyVal.Value);
-                }
-
-                Exception ex = null;
-
-                try
-                {
-                    customData.TryGetValue("ExceptionTypeAssemblyQualifiedName", out string exceptionTypeAssemblyQualifiedName);
-
-                    if (!string.IsNullOrEmpty(exceptionTypeAssemblyQualifiedName))
-                        ex = (Exception)Activator.CreateInstance(Type.GetType(exceptionTypeAssemblyQualifiedName) ?? throw new InvalidOperationException($"{exceptionTypeAssemblyQualifiedName} could not be found"), args: new object[] { logEntry.Message });
-                }
-                catch { }
-
-                if (ex == null)
-                {
-                    ex = logEntry.Severity switch
-                    {
-                        "Information" => new InformationException(logEntry.Message),
-                        "Warning" => new WarningException(logEntry.Message),
-                        "Error" => new ErrorException(logEntry.Message),
-                        "Fatal" => new FatalException(logEntry.Message),
-                        _ => new Exception(logEntry.Message),
-                    };
-                }
-
-                telemetryClient.TrackException(ex, customData);
-            }
+            return keyValues;
         }
     }
 }

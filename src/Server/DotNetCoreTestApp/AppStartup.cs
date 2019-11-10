@@ -59,6 +59,8 @@ namespace DotNetCoreTestApp
 
             dependencyManager.RegisterMinimalDependencies();
 
+            /*services.AddApplicationInsightsTelemetry("");
+            dependencyManager.RegisterApplicationInsights();*/
             dependencyManager.RegisterDefaultLogger(typeof(SerilogLogStore).GetTypeInfo());
 
             dependencyManager.RegisterDefaultAspNetCoreApp();
