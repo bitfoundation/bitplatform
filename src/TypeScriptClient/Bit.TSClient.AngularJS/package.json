@@ -21,7 +21,7 @@
   "devDependencies": {
     "@types/angular": "^1.6.56",
     "@types/angular-material": "^1.1.69",
-    "@types/angular-translate": "^2.16.0",
+    "@types/angular-translate": "^2.16.1",
     "@types/jquery": "^3.3.31",
     "@types/kendo-ui": "^2019.3.1",
     "gulp": "^4.0.2",
