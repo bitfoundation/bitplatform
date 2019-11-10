@@ -21,7 +21,7 @@ namespace BitCodeGeneratorTaskImpl
         public static async Task Main(string[] args)
         {
             if (!MSBuildLocator.IsRegistered)
-                MSBuildLocator.RegisterDefaults();
+                MSBuildLocator.RegisterInstance(MSBuildLocator.QueryVisualStudioInstances().OrderByDescending(vs => vs.Version).FirstOrDefault() ?? throw new InvalidOperationException("Visual studio could not be found. Please install visual studio build tools."));
 
             ProjectPath = args.ElementAt(1);
 
