@@ -2,6 +2,7 @@
 using Bit.Core.Contracts;
 using Hangfire.Annotations;
 using Hangfire.Dashboard;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Owin;
 
 namespace Bit.Hangfire.Implementations
@@ -10,10 +11,21 @@ namespace Bit.Hangfire.Implementations
     {
         public virtual bool Authorize([NotNull] DashboardContext context)
         {
-            IOwinContext owinContext = new OwinContext(context.GetOwinEnvironment());
-            IUserInformationProvider userInformationProvider = owinContext.GetDependencyResolver().Resolve<IUserInformationProvider>();
+            IServiceProvider serviceProvider = GetServiceProvider(context);
+            IUserInformationProvider userInformationProvider = serviceProvider.GetRequiredService<IUserInformationProvider>();
             bool isAuthenticated = userInformationProvider.IsAuthenticated();
             return isAuthenticated;
+        }
+
+        protected virtual IServiceProvider GetServiceProvider(DashboardContext context)
+        {
+#if DotNet
+            return new OwinContext(context.GetOwinEnvironment())
+                .GetDependencyResolver()
+                .Resolve<IServiceProvider>();
+#else
+            return context.GetHttpContext().RequestServices;
+#endif
         }
     }
 }

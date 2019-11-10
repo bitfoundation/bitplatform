@@ -1,5 +1,4 @@
 using Autofac;
-using Bit.Core.Contracts;
 using Bit.Core.Models;
 using Bit.Hangfire.Contracts;
 using Bit.Owin.Contracts;
@@ -13,7 +12,7 @@ using System.Linq;
 
 namespace Bit.Hangfire.Implementations
 {
-    public class SqlAndAzureServiceBusBackendJobServerConfiguration : IAppEvents
+    public class SqlAndAzureServiceBusBackendJobServerConfiguration : IJobSchedulerBackendConfiguration
     {
         public virtual IAutofacDependencyManager DependencyManager
         {
@@ -36,7 +35,7 @@ namespace Bit.Hangfire.Implementations
         private BackgroundJobServer _backgroundJobServer;
         private ILifetimeScope _lifetimeScope;
 
-        public virtual void OnAppStartup()
+        public virtual void Init()
         {
             string jobSchedulerDbConnectionString = AppEnvironment.GetConfig<string>(AppEnvironment.KeyValues.Hangfire.JobSchedulerDbConnectionString);
 
@@ -81,7 +80,7 @@ namespace Bit.Hangfire.Implementations
             _backgroundJobServer = new BackgroundJobServer(options, storage);
         }
 
-        public virtual void OnAppEnd()
+        public virtual void Dispose()
         {
             _backgroundJobServer?.Dispose();
         }

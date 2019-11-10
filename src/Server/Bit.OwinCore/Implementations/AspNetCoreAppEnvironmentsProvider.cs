@@ -3,6 +3,7 @@ using Bit.Core.Implementations;
 using Bit.Core.Models;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Hosting;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -22,7 +23,11 @@ namespace Bit.OwinCore.Implementations
 
         public IConfiguration Configuration { get; set; }
 
-        public IHostingEnvironment HostingEnvironment { get; set; }
+#if DotNet
+        public Microsoft.AspNetCore.Hosting.IHostingEnvironment HostingEnvironment { get; set; }
+#else
+        public IWebHostEnvironment WebHostEnvironment { get; set; }
+#endif
 
         private AppEnvironment _appEnvironment;
 
@@ -101,12 +106,24 @@ namespace Bit.OwinCore.Implementations
 
             _appEnvironment = new AppEnvironment
             {
+#if DotNet
                 Name = HostingEnvironment.EnvironmentName,
+#else
+                Name = WebHostEnvironment.EnvironmentName,
+#endif
                 IsActive = true,
+#if DotNet
                 DebugMode = HostingEnvironment.IsDevelopment(),
+#else
+                DebugMode = WebHostEnvironment.IsDevelopment(),
+#endif
                 AppInfo = new EnvironmentAppInfo
                 {
+#if DotNet
                     Name = HostingEnvironment.ApplicationName,
+#else
+                    Name = WebHostEnvironment.ApplicationName,
+#endif
                     Version = Assembly.GetCallingAssembly().GetCustomAttribute<AssemblyFileVersionAttribute>().Version,
                     DefaultTimeZone = appInfo?.GetValue<string>(nameof(EnvironmentAppInfo.DefaultTimeZone), defaultValue: null)
                 },

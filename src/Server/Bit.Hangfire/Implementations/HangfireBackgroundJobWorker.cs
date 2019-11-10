@@ -92,22 +92,21 @@ namespace Bit.Hangfire.Implementations
             if (jobId == null)
                 throw new ArgumentNullException(nameof(jobId));
 
-            using (IStorageConnection connection = JobStorage.Current.GetConnection())
+            using IStorageConnection connection = JobStorage.Current.GetConnection();
+
+            JobData jobData = connection.GetJobData(jobId);
+
+            if (jobData == null)
             {
-                JobData jobData = connection.GetJobData(jobId);
-
-                if (jobData == null)
-                {
-                    throw new AppException(BitMetadataBuilder.JobNotFound);
-                }
-
-                return Task.FromResult(new JobInfo
-                {
-                    Id = jobId,
-                    CreatedAt = jobData.CreatedAt,
-                    State = jobData.State
-                });
+                throw new AppException(BitMetadataBuilder.JobNotFound);
             }
+
+            return Task.FromResult(new JobInfo
+            {
+                Id = jobId,
+                CreatedAt = jobData.CreatedAt,
+                State = jobData.State
+            });
         }
 
         public virtual string PerformBackgroundJob<TService>(Expression<Action<TService>> methodCall)
@@ -153,22 +152,21 @@ namespace Bit.Hangfire.Implementations
             if (jobId == null)
                 throw new ArgumentNullException(nameof(jobId));
 
-            using (IStorageConnection connection = JobStorage.Current.GetConnection())
+            using IStorageConnection connection = JobStorage.Current.GetConnection();
+
+            JobData jobData = connection.GetJobData(jobId);
+
+            if (jobData == null)
             {
-                JobData jobData = connection.GetJobData(jobId);
-
-                if (jobData == null)
-                {
-                    throw new AppException(BitMetadataBuilder.JobNotFound);
-                }
-
-                return new JobInfo
-                {
-                    Id = jobId,
-                    CreatedAt = jobData.CreatedAt,
-                    State = jobData.State
-                };
+                throw new AppException(BitMetadataBuilder.JobNotFound);
             }
+
+            return new JobInfo
+            {
+                Id = jobId,
+                CreatedAt = jobData.CreatedAt,
+                State = jobData.State
+            };
         }
 
         public virtual void PerformRecurringBackgroundJob<TService>(string jobId, Expression<Action<TService>> methodCall, string cronExpression, TimeZoneInfo timeZoneInfo = null)
