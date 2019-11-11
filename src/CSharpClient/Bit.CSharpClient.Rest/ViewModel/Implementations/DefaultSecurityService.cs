@@ -6,6 +6,7 @@ using Newtonsoft.Json;
 using Prism.Ioc;
 using System;
 using System.Collections.Generic;
+using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
 using System.Net.Http;
 using System.Threading;
@@ -25,6 +26,7 @@ namespace Bit.ViewModel.Implementations
 
         public virtual IClientAppProfile ClientAppProfile { get; set; }
         public virtual IDateTimeProvider DateTimeProvider { get; set; }
+        public virtual IEnumerable<ITelemetryService> TelemetryServices { get; set; }
         public virtual Lazy<IContainer> ContainerProvider { get; set; }
 
         protected TaskCompletionSource<Token> CurrentLoginTaskCompletionSource { get; set; }
@@ -94,14 +96,7 @@ namespace Bit.ViewModel.Implementations
 
             string jsonToken = JsonConvert.SerializeObject(token);
 
-            if (UseSecureStorage())
-            {
-                await SecureStorage.SetAsync("Token", jsonToken).ConfigureAwait(false);
-            }
-            else
-            {
-                Preferences.Set("Token", jsonToken);
-            }
+            await StoreToken(jsonToken, cancellationToken).ConfigureAwait(false);
 
             return token;
         }
@@ -191,17 +186,24 @@ namespace Bit.ViewModel.Implementations
 
                 string jsonToken = JsonConvert.SerializeObject(token);
 
-                if (UseSecureStorage())
-                {
-                    await SecureStorage.SetAsync("Token", jsonToken).ConfigureAwait(false);
-                }
-                else
-                {
-                    Preferences.Set("Token", jsonToken);
-                }
+                await StoreToken(jsonToken, default).ConfigureAwait(false);
 
                 CurrentLoginTaskCompletionSource.SetResult(query);
             }
+        }
+
+        async Task StoreToken(string jsonToken, CancellationToken cancellationToken)
+        {
+            if (UseSecureStorage())
+            {
+                await SecureStorage.SetAsync("Token", jsonToken).ConfigureAwait(false);
+            }
+            else
+            {
+                Preferences.Set("Token", jsonToken);
+            }
+
+            TelemetryServices.All().SetUserId((await GetBitJwtToken(cancellationToken).ConfigureAwait(false)).UserId);
         }
 
         readonly char[] AmpersandChars = new char[] { '&' };
@@ -250,6 +252,22 @@ namespace Bit.ViewModel.Implementations
         public virtual bool UseSecureStorage()
         {
             return true;
+        }
+
+        public virtual async Task<BitJwtToken> GetBitJwtToken(CancellationToken cancellationToken)
+        {
+            if (!await IsLoggedInAsync(cancellationToken).ConfigureAwait(false))
+                throw new InvalidOperationException("User is not logged in.");
+
+            Token token = await GetCurrentTokenAsync(cancellationToken).ConfigureAwait(false);
+
+            var handler = new JwtSecurityTokenHandler();
+
+            var jwtToken = (JwtSecurityToken)handler.ReadToken(token.access_token);
+
+            var primary_sid = jwtToken.Claims.First(c => c.Type == "primary_sid").Value;
+
+            return BitJwtToken.FromJson(primary_sid);
         }
     }
 }
