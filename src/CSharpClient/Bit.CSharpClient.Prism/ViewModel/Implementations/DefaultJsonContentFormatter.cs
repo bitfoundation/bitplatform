@@ -51,7 +51,7 @@ namespace Bit.ViewModel.Implementations
             set => _current = value;
         }
 
-        public virtual T DeSerialize<T>(string objAsStr)
+        public virtual T Deserialize<T>(string objAsStr)
         {
             return JsonConvert.DeserializeObject<T>(objAsStr, DeSerializeSettings());
         }
