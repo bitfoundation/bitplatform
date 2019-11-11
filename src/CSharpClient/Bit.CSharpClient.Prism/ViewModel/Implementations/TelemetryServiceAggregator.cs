@@ -35,6 +35,14 @@ namespace Bit.ViewModel.Implementations
             return initialProps;
         }
 
+        public void SetUserId(string userId)
+        {
+            foreach (ITelemetryService telemetryService in _telemetryServices)
+            {
+                telemetryService.SetUserId(userId);
+            }
+        }
+
         public virtual void TrackEvent(string eventName, IDictionary<string, string> properties = null)
         {
             foreach (ITelemetryService telemetryService in _telemetryServices)

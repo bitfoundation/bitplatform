@@ -108,5 +108,10 @@ namespace Bit.ViewModel.Implementations
                 TrackEvent($"Trace_{message}", properties);
             }
         }
+
+        public override void SetUserId(string userId)
+        {
+            AppCenter.SetUserId(userId);
+        }
     }
 }

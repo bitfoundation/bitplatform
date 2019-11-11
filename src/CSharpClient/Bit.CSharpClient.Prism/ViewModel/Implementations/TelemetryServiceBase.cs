@@ -60,5 +60,7 @@ namespace Bit.ViewModel.Implementations
         public abstract void TrackRequest(string name, DateTimeOffset startTime, TimeSpan duration, string responseCode, bool success, Uri url, string httpMethod, IDictionary<string, string> properties = null);
 
         public abstract void TrackTrace(string message, IDictionary<string, string> properties);
+
+        public abstract void SetUserId(string userId);
     }
 }

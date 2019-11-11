@@ -20,5 +20,7 @@ namespace Bit.ViewModel.Contracts
         void TrackRequest(string name, DateTimeOffset startTime, TimeSpan duration, string responseCode, bool success, Uri url, string httpMethod, IDictionary<string, string> properties = null);
 
         void TrackTrace(string message, IDictionary<string, string> properties);
+
+        void SetUserId(string userId);
     }
 }

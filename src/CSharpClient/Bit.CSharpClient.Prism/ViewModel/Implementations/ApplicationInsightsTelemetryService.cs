@@ -109,6 +109,11 @@ namespace Bit.ViewModel.Implementations
                 Client.TrackTrace(message, properties);
             }
         }
+
+        public override void SetUserId(string userId)
+        {
+            Client.Context.User.Id = Client.Context.User.AccountId = userId;
+        }
     }
 }
 #endif
