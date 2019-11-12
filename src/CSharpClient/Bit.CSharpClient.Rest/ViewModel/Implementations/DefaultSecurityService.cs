@@ -135,6 +135,8 @@ namespace Bit.ViewModel.Implementations
                 else
                     Preferences.Remove("Token");
 
+                TelemetryServices.All().SetUserId(null);
+
                 if (!string.IsNullOrEmpty(token.id_token))
                 {
                     CurrentAction = "Logout";
