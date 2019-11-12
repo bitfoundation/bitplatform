@@ -19,7 +19,7 @@ namespace BitChangeSetManager.Api
 
             using (StreamReader reader = File.OpenText(templatesFilePath))
             {
-                return Formatter.DeSerialize<ChangeSetDescriptionTemplateDto[]>(await reader.ReadToEndAsync());
+                return Formatter.Deserialize<ChangeSetDescriptionTemplateDto[]>(await reader.ReadToEndAsync());
             }
         }
     }
