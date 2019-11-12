@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using Bit.ViewModel.Implementations;
+using System.Linq;
 using System.Reflection;
 using Windows.ApplicationModel.Activation;
 using Windows.UI.Xaml;
@@ -8,6 +9,11 @@ namespace Bit.CSharpClientSample.UWP
 {
     public partial class App
     {
+        static App()
+        {
+            // ApplicationInsightsTelemetryService.Current.Init("");
+        }
+
         public App()
         {
             InitializeComponent();

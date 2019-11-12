@@ -13,6 +13,7 @@
 
   <ItemGroup>
     <FrameworkReference Include="Microsoft.AspNetCore.App" Condition=" '$(TargetFramework)' == 'netcoreapp3.0' " />
+    <PackageReference Include="Microsoft.ApplicationInsights.AspNetCore" Version="2.8.2" />
     <PackageReference Include="Microsoft.AspNetCore.TestHost" Version="3.0.0" Condition=" '$(TargetFramework)' == 'netcoreapp3.0' " />
     <PackageReference Include="Microsoft.AspNetCore.Owin" Version="3.0.0" Condition=" '$(TargetFramework)' == 'netcoreapp3.0' " />
     <PackageReference Include="Microsoft.AspNetCore.ResponseCompression" Version="2.2.0" />

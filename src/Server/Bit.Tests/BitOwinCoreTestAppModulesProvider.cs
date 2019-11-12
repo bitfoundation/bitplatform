@@ -47,6 +47,8 @@ namespace Bit.Tests
 
             dependencyManager.RegisterMinimalDependencies();
 
+            /*services.AddApplicationInsightsTelemetry("");
+            dependencyManager.RegisterApplicationInsights();*/
             dependencyManager.RegisterDefaultLogger(typeof(ConsoleLogStore).GetTypeInfo(), typeof(DebugLogStore).GetTypeInfo());
 
             dependencyManager.Register<IDbConnectionProvider, DefaultDbConnectionProvider<SqlConnection>>();
