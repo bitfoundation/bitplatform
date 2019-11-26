@@ -1,5 +1,4 @@
-﻿#if UWP
-using Bit.ViewModel.Contracts;
+﻿using Bit.ViewModel.Contracts;
 using Microsoft.ApplicationInsights;
 using Microsoft.ApplicationInsights.DataContracts;
 using Microsoft.ApplicationInsights.Extensibility;
@@ -8,10 +7,16 @@ using System.Collections.Generic;
 
 namespace Bit.ViewModel.Implementations
 {
+    /// <summary>
+    /// Uses app insights to track things. Note that it reports crashes on UWP only. For Android/iOS you've to use <see cref="AppCenterTelemetryService"/> side by side.
+    /// </summary>
     public class ApplicationInsightsTelemetryService : TelemetryServiceBase, ITelemetryService
     {
         private TelemetryClient _client;
         private bool _isInited = false;
+#if !UWP
+        private TelemetryConfiguration _configuration;
+#endif
         private static ApplicationInsightsTelemetryService _current;
 
         public static ApplicationInsightsTelemetryService Current
@@ -22,15 +27,44 @@ namespace Bit.ViewModel.Implementations
 
         public virtual void Init(string instrumentationKey)
         {
+#if UWP
             WindowsAppInitializer.InitializeAsync(instrumentationKey: instrumentationKey);
+#else
+            _configuration = TelemetryConfiguration.CreateDefault();
+            _configuration.InstrumentationKey = instrumentationKey;
+#endif
             _isInited = true;
         }
 
+#if UWP
         protected virtual TelemetryClient Client => _client ?? (_client = new TelemetryClient(TelemetryConfiguration.Active));
+#else
+        protected virtual TelemetryClient Client
+        {
+            get
+            {
+                if (_client == null)
+                {
+                    _client = new TelemetryClient(_configuration)
+                    {
+                        InstrumentationKey = _configuration.InstrumentationKey
+                    };
+
+                    _client.Context.Device.Model = Xamarin.Essentials.DeviceInfo.Model;
+                    _client.Context.Device.OperatingSystem = Xamarin.Forms.Device.RuntimePlatform;
+                }
+                return _client;
+            }
+        }
+#endif
 
         public override bool IsConfigured()
         {
+#if UWP
             return _isInited && TelemetryConfiguration.Active != null;
+#else
+            return _isInited && _configuration != null;
+#endif
         }
 
         public override void TrackEvent(string eventName, IDictionary<string, string> properties = null)
@@ -97,6 +131,11 @@ namespace Bit.ViewModel.Implementations
                     requestTelemetry.Properties.Add(prp.Key, prp.Value);
                 }
 
+                if (properties.TryGetValue("X-CorrelationId", out string xCorrelationId))
+                {
+                    requestTelemetry.Id = xCorrelationId;
+                }
+
                 Client.TrackRequest(requestTelemetry);
             }
         }
@@ -112,8 +151,12 @@ namespace Bit.ViewModel.Implementations
 
         public override void SetUserId(string userId)
         {
+#if UWP
             Client.Context.User.Id = Client.Context.User.AccountId = userId;
+#else
+            Client.Context.User.Id = Client.Context.User.AccountId = Client.Context.User.AuthenticatedUserId = userId;
+#endif
+
         }
     }
 }
-#endif

@@ -22,9 +22,7 @@ namespace Autofac
                 .PropertiesAutowired()
                 .PreserveExistingDefaults();
 
-#if UWP
             containerBuilder.RegisterInstance<ITelemetryService>(ApplicationInsightsTelemetryService.Current);
-#endif
             containerBuilder.RegisterInstance<ITelemetryService>(AppCenterTelemetryService.Current);
 
             containerBuilder.RegisterBuildCallback(container =>

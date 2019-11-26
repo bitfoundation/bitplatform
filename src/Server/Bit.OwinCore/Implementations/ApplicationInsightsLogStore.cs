@@ -31,6 +31,8 @@ namespace Bit.OwinCore.Implementations
 
         public virtual AppEnvironment AppEnvironment { get; set; }
 
+        public virtual IDependencyManager DependencyManager { get; set; }
+
         public virtual void Initialize(ITelemetry telemetry)
         {
             LogEntryAppLevelConstantInfo logEntryAppLevelConstantInfo = LogEntryAppLevelConstantInfo.GetAppConstantInfo();
@@ -60,10 +62,29 @@ namespace Bit.OwinCore.Implementations
 
             if (telemetry is RequestTelemetry requestTelemetry && HttpContextAccessor.HttpContext != null)
             {
-                if (!HttpContextAccessor.HttpContext.Items.TryGetValue("LogKeyValues", out object logKeyValuesAsObj))
-                    return; // based on logger's policy, requests without any issue (ok responses) won't have log key values and we don't have anything to provide to app insights here.
+                List<AppInsightsLogKeyVal> logKeyValues;
 
-                List<AppInsightsLogKeyVal> logKeyValues = (List<AppInsightsLogKeyVal>)logKeyValuesAsObj;
+                if (HttpContextAccessor.HttpContext.Items.TryGetValue("LogKeyValues", out object logKeyValuesAsObj))
+                {
+                    logKeyValues = (List<AppInsightsLogKeyVal>)logKeyValuesAsObj;
+                }
+                else // in ok responses, we've no LogKeyValues because ApplicationInsightsLogStore won't gets called.
+                {
+                    using IDependencyResolver childResolver = DependencyManager.CreateChildDependencyResolver(); // HttpContextAccessor.HttpContext.RequestServices is null because scope is gets disposed at this time.
+
+                    IRequestInformationProvider requestInformationProvider = childResolver.Resolve<IRequestInformationProvider>();
+                    IUserInformationProvider userInformationProvider = childResolver.Resolve<IUserInformationProvider>();
+
+                    logKeyValues = new List<AppInsightsLogKeyVal> { };
+
+                    if (userInformationProvider.IsAuthenticated())
+                        logKeyValues.Add(new AppInsightsLogKeyVal { Key = "UserId", Value = userInformationProvider.GetCurrentUserId() });
+
+                    logKeyValues.Add(new AppInsightsLogKeyVal { Key = nameof(IRequestInformationProvider.UserAgent), Value = requestInformationProvider.UserAgent });
+
+                    if (requestInformationProvider.CorrelationId.HasValue)
+                        logKeyValues.Add(new AppInsightsLogKeyVal { Key = "X-CorrelationId", Value = requestInformationProvider.CorrelationId.Value.ToString() });
+                }
 
                 AppInsightsLogKeyVal userAgent = logKeyValues.FirstOrDefault(ld => ld.Key == nameof(IRequestInformationProvider.UserAgent));
 
@@ -82,6 +103,11 @@ namespace Bit.OwinCore.Implementations
                     if (!requestTelemetry.Properties.ContainsKey(keyVal.Key))
                         requestTelemetry.Properties.Add(keyVal.Key, keyVal.Value);
                 }
+
+                AppInsightsLogKeyVal xCorrelationId = logKeyValues.FirstOrDefault(ld => ld.Key == "X-CorrelationId");
+
+                if (xCorrelationId != null)
+                    requestTelemetry.Id = xCorrelationId.Value;
             }
         }
     }
