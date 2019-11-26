@@ -253,7 +253,7 @@ namespace Bit.ViewModel.Implementations
 
         public virtual bool UseSecureStorage()
         {
-            return true;
+            return false;
         }
 
         public virtual async Task<BitJwtToken> GetBitJwtToken(CancellationToken cancellationToken)
