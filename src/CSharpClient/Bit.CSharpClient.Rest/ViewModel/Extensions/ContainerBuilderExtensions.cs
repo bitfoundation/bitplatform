@@ -1,6 +1,7 @@
 ﻿using Bit.ViewModel.Contracts;
 using Bit.ViewModel.Implementations;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.IdentityModel.Logging;
 using Polly;
 using Prism.Events;
 using Refit;
@@ -50,6 +51,8 @@ namespace Autofac
         public static ContainerBuilder RegisterIdentityClient<TSecurityService>(this ContainerBuilder containerBuilder)
             where TSecurityService : ISecurityService
         {
+            IdentityModelEventSource.ShowPII = true;
+
             if (containerBuilder == null)
                 throw new ArgumentNullException(nameof(containerBuilder));
 
