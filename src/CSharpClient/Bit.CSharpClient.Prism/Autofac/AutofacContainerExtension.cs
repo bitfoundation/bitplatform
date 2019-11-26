@@ -66,7 +66,7 @@ namespace Prism.Autofac
 
         public bool IsRegistered(Type type)
         {
-            return Instance.IsRegistered(type);
+            return Instance?.IsRegistered(type) == true; // workaround for prism's rg plugin popup
         }
 
         public bool IsRegistered(Type type, string name)
