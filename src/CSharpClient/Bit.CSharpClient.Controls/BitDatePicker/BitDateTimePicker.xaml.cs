@@ -150,7 +150,6 @@ namespace Bit.View.Controls
                     DateTime selectedDateTime = SelectedDateTime.Value;
                     return new LocalDateTime(selectedDateTime.Year, selectedDateTime.Month, selectedDateTime.Day, selectedDateTime.Hour, selectedDateTime.Minute, selectedDateTime.Second, CalendarSystem.Gregorian)
                          .WithCalendar(CalendarSystem)
-                         .ToDateTimeUnspecified()
                          .ToString(DateTimeDisplayFormat ?? Culture.DateTimeFormat.FullDateTimePattern, Culture);
                 }
                 else
