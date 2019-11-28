@@ -36,7 +36,8 @@ namespace Bit.Hangfire
             app.UseHangfireDashboard("/jobs", new DashboardOptions
             {
                 Authorization = AuthFilters,
-                AppPath = AppEnvironment.GetHostVirtualPath()
+                AppPath = AppEnvironment.GetHostVirtualPath(),
+                DashboardTitle = $"Hangfire dashboard - {AppEnvironment.Name} environment"
             });
         }
     }
