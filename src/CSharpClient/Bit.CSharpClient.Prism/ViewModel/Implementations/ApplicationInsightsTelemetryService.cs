@@ -151,11 +151,14 @@ namespace Bit.ViewModel.Implementations
 
         public override void SetUserId(string userId)
         {
+            if (IsConfigured())
+            {
 #if UWP
-            Client.Context.User.Id = Client.Context.User.AccountId = userId;
+                Client.Context.User.Id = Client.Context.User.AccountId = userId;
 #else
-            Client.Context.User.Id = Client.Context.User.AccountId = Client.Context.User.AuthenticatedUserId = userId;
+                Client.Context.User.Id = Client.Context.User.AccountId = Client.Context.User.AuthenticatedUserId = userId;
 #endif
+            }
 
         }
     }

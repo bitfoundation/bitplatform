@@ -111,7 +111,10 @@ namespace Bit.ViewModel.Implementations
 
         public override void SetUserId(string userId)
         {
-            AppCenter.SetUserId(userId);
+            if (IsConfigured())
+            {
+                AppCenter.SetUserId(userId);
+            }
         }
     }
 }
