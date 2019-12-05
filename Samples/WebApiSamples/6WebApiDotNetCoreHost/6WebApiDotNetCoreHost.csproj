@@ -3,11 +3,12 @@
     <TargetFramework>netcoreapp3.0</TargetFramework>
     <AssemblyName>WebApiDotNetCoreHost</AssemblyName>
     <RootNamespace>WebApiDotNetCoreHost</RootNamespace>
+    <UserSecretsId>075bb9c1-05ff-404a-ac1f-5670bb5bd331</UserSecretsId>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="Bit.OwinCore" Version="3.0.0" />
-    <PackageReference Include="Bit.WebApi" Version="3.0.0" />
-    <PackageReference Include="BitCodeAnalyzer" Version="3.0.0" />
+    <PackageReference Include="Bit.OwinCore" Version="3.2.0" />
+    <PackageReference Include="Bit.WebApi" Version="3.2.0" />
+    <PackageReference Include="BitCodeAnalyzer" Version="3.2.0" />
   </ItemGroup>
   <ItemGroup>
     <Content Update="environments.json">
