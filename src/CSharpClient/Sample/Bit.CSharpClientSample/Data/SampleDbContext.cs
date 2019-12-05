@@ -5,6 +5,7 @@ using Prism.AppModel;
 using Prism.Services;
 using System;
 using System.IO;
+using Xamarin.Essentials;
 
 namespace Bit.CSharpClientSample.Data
 {
@@ -20,8 +21,7 @@ namespace Bit.CSharpClientSample.Data
         {
             string dbFileName = "Sample.db";
 
-            if (DeviceService.RuntimePlatform != RuntimePlatform.UWP)
-                dbFileName = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Personal), dbFileName);
+            dbFileName = Path.Combine(FileSystem.AppDataDirectory, dbFileName);
 
             optionsBuilder.UseSqlite($"Filename={dbFileName}");
 

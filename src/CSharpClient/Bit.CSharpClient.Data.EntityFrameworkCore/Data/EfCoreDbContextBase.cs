@@ -57,9 +57,7 @@ namespace Bit.Data
 
             IEntityType efCoreDtoType = Model.FindEntityType(dtoType);
 
-            IRelationalEntityTypeAnnotations dtoTypeRelationalInfo = efCoreDtoType.Relational();
-
-            string tableName = $"[{dtoTypeRelationalInfo.TableName}]"; // No schema support
+            string tableName = $"[{efCoreDtoType.GetTableName()}]"; // No schema support
 
             var props = efCoreDtoType.GetProperties()
                 .Select(p => new { p.Name, Value = Entry(dto).Property(p.Name).CurrentValue })
@@ -117,7 +115,7 @@ namespace Bit.Data
 
             if (((IsSyncDbContext)this).IsSyncDbContext == false)
             {
-                foreach (EntityEntry syncableDtoEntry in ChangeTracker.Entries())
+                foreach (EntityEntry syncableDtoEntry in ChangeTracker.Entries().ToList())
                 {
                     if (syncableDtoEntry.Entity is ISyncableDto syncableDto)
                     {
