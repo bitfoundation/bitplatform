@@ -68,7 +68,7 @@ namespace Bit.CSharpClientSample
 
             containerBuilder.Register<IClientAppProfile>(c => new DefaultClientAppProfile
             {
-                HostUri = new Uri("http://192.168.50.215/"),
+                HostUri = new Uri("http://192.168.50.39/"),
                 //HostUri = new Uri("http://127.0.0.1/"),
                 //HostUri = new Uri("http://10.0.2.2"),
                 OAuthRedirectUri = new Uri("Test://oauth2redirect"),

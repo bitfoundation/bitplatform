@@ -1,7 +1,8 @@
-﻿using Bit.Core.Extensions;
-using Bit.Test;
+﻿using Bit.Test;
 using System;
 using System.Diagnostics;
+using static System.Runtime.InteropServices.RuntimeInformation;
+using static System.Runtime.InteropServices.OSPlatform;
 
 namespace Bit.Tests
 {
@@ -19,8 +20,13 @@ namespace Bit.Tests
                 FullUri = "http://*:80"
             }))
             {
-                if (!PlatformUtilities.IsRunningOnDotNetCore)
-                    Process.Start("http://localhost/");
+                const string url = "http://localhost/";
+
+                var browser = IsOSPlatform(Windows) ? new ProcessStartInfo("cmd", $"/c start {url}") :
+                              IsOSPlatform(OSX) ? new ProcessStartInfo("open", url) :
+                                                        new ProcessStartInfo("xdg-open", url); //linux, unix-like
+
+                Process.Start(browser);
 
                 Console.WriteLine(testEnvironment.Server.Uri);
 
