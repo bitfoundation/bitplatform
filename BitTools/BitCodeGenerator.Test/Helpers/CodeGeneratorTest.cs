@@ -54,7 +54,7 @@ namespace BitCodeGenerator.Test.Helpers
 
             MSBuildWorkspace workspace = MSBuildWorkspace.Create(new Dictionary<string, string>()
             {
-                { "TargetFramework", "net461" }
+                { "TargetFramework", "netcoreapp3.0" }
             });
 
             workspace.WorkspaceFailed += Workspace_WorkspaceFailed;
