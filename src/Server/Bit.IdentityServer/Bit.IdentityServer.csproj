@@ -16,7 +16,7 @@
     <PackageReference Include="Microsoft.Owin.Security.MicrosoftAccount" Version="4.1.0" />
     <PackageReference Include="Microsoft.Owin.Security.Twitter" Version="4.1.0" />
     <PackageReference Include="Owin.Security.Providers.LinkedIn" Version="2.26.0" />
-    <PackageReference Include="System.DirectoryServices.AccountManagement" Version="4.6.0" />
+    <PackageReference Include="System.DirectoryServices.AccountManagement" Version="4.7.0" />
     <PackageReference Include="Microsoft.AspNet.WebApi.Tracing" Version="5.2.7" />
     <PackageReference Include="Microsoft.Owin.Cors" Version="4.1.0" />
     <PackageReference Include="Microsoft.Owin.Security.Cookies" Version="4.1.0" />
