@@ -18,6 +18,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Swashbuckle.Application;
 using System.Collections.Generic;
 using System.Data.SqlClient;
@@ -43,6 +44,10 @@ namespace Bit.Tests
 
         public virtual void ConfigureDependencies(IServiceCollection services, IDependencyManager dependencyManager)
         {
+#if DotNet
+            services.AddLogging(loggingBuilder => loggingBuilder.ClearProviders());
+#endif
+
             AssemblyContainer.Current.Init();
 
             dependencyManager.RegisterMinimalDependencies();

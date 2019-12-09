@@ -17,6 +17,13 @@
     <PackageReference Include="Microsoft.NETCore.UniversalWindowsPlatform" Version="6.2.9" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Content Include="Bit.CSharpClient.Controls\Bit.CSharpClient.Controls.xr.xml" PackagePath="lib\uap10.0.16299\Bit.CSharpClient.Controls\">
+      <Pack>true</Pack>
+      <PackageCopyToOutput>true</PackageCopyToOutput>
+    </Content>
+  </ItemGroup>
+
   <ItemGroup Condition=" '$(TargetFramework)' == 'MonoAndroid90'">
     <PackageReference Include="Xamarin.Android.Support.Design" Version="28.0.0.3" />
     <PackageReference Include="Xamarin.Android.Support.v7.AppCompat" Version="28.0.0.3" />
