@@ -20,6 +20,7 @@ namespace BitChangeSetManager.Api
         public virtual IUserInformationProvider UserInformationProvider { get; set; }
         public virtual IBitChangeSetManagerRepository<User> UsersRepository { get; set; }
         public virtual IBitChangeSetManagerRepository<Customer> CustomersRepository { get; set; }
+        public virtual IBackgroundJobWorker BackgroundJobWorker { get; set; }
 
         public override async Task<IQueryable<ChangeSetDto>> GetAll(CancellationToken cancellationToken)
         {
@@ -42,6 +43,8 @@ namespace BitChangeSetManager.Api
             User user = await UsersRepository.GetByIdAsync(cancellationToken, Guid.Parse(UserInformationProvider.GetCurrentUserId()));
 
             MessageSender.SendMessageToGroups("ChangeSetHasBeenInsertedByUser", new { userName = user.UserName, title = dto.Title }, groupNames: new[] { user.Culture.ToString() });
+
+            await BackgroundJobWorker.PerformBackgroundJobAsync<IMessageSender>(messageSender => messageSender.SendMessageToGroups("ChangeSetHasBeenInsertedByUser", new { userName = user.UserName, title = dto.Title }, new[] { user.Culture.ToString() })); // to test background job worker & message sender together!
 
             return insertedChangeSet;
         }
