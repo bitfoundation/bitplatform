@@ -55,10 +55,10 @@ namespace Bit.Core.Implementations
 
         public virtual T Deserialize<T>(string objAsStr)
         {
-            return JsonConvert.DeserializeObject<T>(objAsStr, DeSerializeSettings());
+            return JsonConvert.DeserializeObject<T>(objAsStr, DeserializeSettings());
         }
 
-        public static Func<JsonSerializerSettings> DeSerializeSettings { get; set; } = () => new JsonSerializerSettings
+        public static Func<JsonSerializerSettings> DeserializeSettings { get; set; } = () => new JsonSerializerSettings
         {
             ReferenceLoopHandling = ReferenceLoopHandling.Ignore,
             DateFormatHandling = DateFormatHandling.IsoDateFormat,

@@ -74,7 +74,7 @@ namespace Bit.OData.Serialization
                     }
                 }
 
-                JsonSerializerSettings settings = DefaultJsonContentFormatter.DeSerializeSettings();
+                JsonSerializerSettings settings = DefaultJsonContentFormatter.DeserializeSettings();
 
                 settings.Converters = new JsonConverter[]
                 {

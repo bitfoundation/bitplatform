@@ -14,7 +14,7 @@ namespace Bit.ViewModel.Implementations
         private readonly JsonSerializerSettings _jsonDeserializeSettings;
 
         public BitRefitJsonContentSerializer() :
-            this(DefaultJsonContentFormatter.SerializeSettings(), DefaultJsonContentFormatter.DeSerializeSettings())
+            this(DefaultJsonContentFormatter.SerializeSettings(), DefaultJsonContentFormatter.DeserializeSettings())
         {
 
         }

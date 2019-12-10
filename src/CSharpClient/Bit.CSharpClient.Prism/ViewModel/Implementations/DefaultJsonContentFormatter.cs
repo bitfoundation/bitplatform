@@ -1,7 +1,9 @@
 ﻿using Bit.ViewModel.Contracts;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
 using Newtonsoft.Json.Serialization;
 using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Reflection;
 
@@ -53,16 +55,17 @@ namespace Bit.ViewModel.Implementations
 
         public virtual T Deserialize<T>(string objAsStr)
         {
-            return JsonConvert.DeserializeObject<T>(objAsStr, DeSerializeSettings());
+            return JsonConvert.DeserializeObject<T>(objAsStr, DeserializeSettings());
         }
 
-        public static Func<JsonSerializerSettings> DeSerializeSettings { get; set; } = () => new JsonSerializerSettings
+        public static Func<JsonSerializerSettings> DeserializeSettings { get; set; } = () => new JsonSerializerSettings
         {
             ReferenceLoopHandling = ReferenceLoopHandling.Ignore,
             DateFormatHandling = DateFormatHandling.IsoDateFormat,
             TypeNameAssemblyFormatHandling = TypeNameAssemblyFormatHandling.Simple,
             TypeNameHandling = TypeNameHandling.All,
-            ContractResolver = BitContractResolver
+            ContractResolver = BitContractResolver,
+            Converters = new List<JsonConverter> { new StringEnumConverter { } }
         };
 
         private static readonly BitContractResolver BitContractResolver = new BitContractResolver();
@@ -71,7 +74,8 @@ namespace Bit.ViewModel.Implementations
         {
             ReferenceLoopHandling = ReferenceLoopHandling.Ignore,
             DateFormatHandling = DateFormatHandling.IsoDateFormat,
-            ContractResolver = BitContractResolver
+            ContractResolver = BitContractResolver,
+            Converters = new List<JsonConverter> { new StringEnumConverter { } }
         };
 
         public virtual string Serialize<T>(T obj)
