@@ -41,7 +41,7 @@ namespace Bit.Data
             if (connectionString == null)
                 throw new ArgumentNullException(nameof(connectionString));
 
-            if (!DbConnectionAndTransactions.Any(dbAndTran => dbAndTran.ConnectionString == connectionString))
+            if (!DbConnectionAndTransactions.Any(dbAndTran => dbAndTran.ConnectionString == connectionString && dbAndTran.RollbackOnScopeStatusFailure == rollbackOnScopeStatusFailure))
             {
                 TDbConnection newConnection = new TDbConnection { ConnectionString = connectionString };
                 DbTransaction transaction = null;
@@ -63,7 +63,7 @@ namespace Bit.Data
             if (connectionString == null)
                 throw new ArgumentNullException(nameof(connectionString));
 
-            if (!DbConnectionAndTransactions.Any(dbAndTran => dbAndTran.ConnectionString == connectionString))
+            if (!DbConnectionAndTransactions.Any(dbAndTran => dbAndTran.ConnectionString == connectionString && dbAndTran.RollbackOnScopeStatusFailure == rollbackOnScopeStatusFailure))
             {
                 TDbConnection newConnection = new TDbConnection { ConnectionString = connectionString };
                 DbTransaction transaction = null;
