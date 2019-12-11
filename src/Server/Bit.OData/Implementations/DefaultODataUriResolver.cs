@@ -1,8 +1,8 @@
-﻿using Microsoft.OData.UriParser;
+﻿using Microsoft.AspNet.OData;
 
 namespace Bit.OData.Implementations
 {
-    public class DefaultODataUriResolver : UnqualifiedODataUriResolver
+    public class DefaultODataUriResolver : UnqualifiedCallAndEnumPrefixFreeResolver
     {
         public override bool EnableCaseInsensitive
         {
