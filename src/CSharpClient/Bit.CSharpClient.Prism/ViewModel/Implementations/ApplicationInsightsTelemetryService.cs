@@ -27,6 +27,12 @@ namespace Bit.ViewModel.Implementations
 
         public virtual void Init(string instrumentationKey)
         {
+#if Android
+            ((AppDomainSetup)AppDomain.CurrentDomain.GetType().GetProperty("SetupInformationNoCopy", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)
+                .GetValue(AppDomain.CurrentDomain))
+                .ApplicationBase = "/"; // workaround for app insight which tries to read app config file.
+#endif
+
 #if UWP
             WindowsAppInitializer.InitializeAsync(instrumentationKey: instrumentationKey);
 #else

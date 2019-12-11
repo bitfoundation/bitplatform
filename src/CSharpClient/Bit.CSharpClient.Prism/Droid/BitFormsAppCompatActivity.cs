@@ -5,8 +5,6 @@ using Android.OS;
 using Android.Runtime;
 using Bit.View;
 using Bit.ViewModel.Implementations;
-using System;
-using System.Reflection;
 using System.Threading.Tasks;
 using Xamarin.Essentials;
 using Xamarin.Forms;
@@ -23,10 +21,6 @@ namespace Bit.Android
         /// </summary>
         protected virtual void UseDefaultConfiguration(Bundle savedInstanceState)
         {
-            ((AppDomainSetup)AppDomain.CurrentDomain.GetType().GetProperty("SetupInformationNoCopy", BindingFlags.Instance | BindingFlags.NonPublic)
-                .GetValue(AppDomain.CurrentDomain))
-                .ApplicationBase = "/"; // workaround for app insight which tries to read app config file.
-
             _useDefaultConfiguration = true;
             Rg.Plugins.Popup.Popup.Init(this, savedInstanceState);
             Xamarin.Essentials.Platform.Init(this, savedInstanceState);
