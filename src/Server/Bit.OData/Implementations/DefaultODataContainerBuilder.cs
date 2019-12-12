@@ -36,7 +36,7 @@ namespace Bit.OData.Implementations
 
         protected virtual void AddDefaultServices()
         {
-            this.AddService<ODataUriResolver, DefaultODataUriResolver>(Microsoft.OData.ServiceLifetime.Singleton);
+            this.AddService<ODataUriResolver, BitUnqualifiedCallAndEnumPrefixFreeResolver>(Microsoft.OData.ServiceLifetime.Singleton);
             this.AddService<ODataPrimitiveSerializer, DefaultODataPrimitiveSerializer>(Microsoft.OData.ServiceLifetime.Singleton);
             this.AddService<ODataDeserializerProvider, ExtendedODataDeserializerProvider>(Microsoft.OData.ServiceLifetime.Singleton);
             this.AddService<ODataEnumSerializer, DefaultODataEnumSerializer>(Microsoft.OData.ServiceLifetime.Singleton);
