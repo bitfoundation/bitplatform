@@ -1,5 +1,4 @@
-﻿
--- This file is part of Hangfire.
+﻿-- This file is part of Hangfire.
 -- Copyright © 2013-2014 Sergey Odinokov.
 -- 
 -- Hangfire is free software: you can redistribute it and/or modify
@@ -58,7 +57,7 @@ ELSE
 DECLARE @CURRENT_SCHEMA_VERSION int;
 SELECT @CURRENT_SCHEMA_VERSION = [Version] FROM [HangFire].[Schema];
 
-PRINT 'Current Hangfire schema version: ' + CASE @CURRENT_SCHEMA_VERSION WHEN NULL THEN 'none' ELSE CONVERT(nvarchar, @CURRENT_SCHEMA_VERSION) END;
+PRINT 'Current Hangfire schema version: ' + CASE WHEN @CURRENT_SCHEMA_VERSION IS NULL THEN 'none' ELSE CONVERT(nvarchar, @CURRENT_SCHEMA_VERSION) END;
 
 IF @CURRENT_SCHEMA_VERSION IS NOT NULL AND @CURRENT_SCHEMA_VERSION > @TARGET_SCHEMA_VERSION
 BEGIN
