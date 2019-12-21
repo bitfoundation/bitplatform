@@ -1,6 +1,4 @@
-﻿using Autofac;
-using Bit.Hangfire.Contracts;
-using Bit.Owin.Contracts;
+﻿using Bit.Hangfire.Contracts;
 using Hangfire;
 using Hangfire.Logging;
 using Hangfire.MemoryStorage;
@@ -13,23 +11,11 @@ namespace Bit.Hangfire.Implementations
 {
     public class JobSchedulerInMemoryBackendConfiguration : IJobSchedulerBackendConfiguration
     {
-        private ILifetimeScope _container;
-
         private BackgroundJobServer _backgroundJobServer;
 
         public virtual ILogProvider LogProvider { get; set; }
 
         public virtual IEnumerable<IHangfireOptionsCustomizer> Customizers { get; set; }
-
-        public virtual IAutofacDependencyManager DependencyManager
-        {
-            set
-            {
-                if (value == null)
-                    throw new ArgumentNullException(nameof(DependencyManager));
-                _container = value.GetContainer();
-            }
-        }
 
         public virtual JobActivator JobActivator { get; set; }
 
@@ -42,9 +28,12 @@ namespace Bit.Hangfire.Implementations
                 .SetValue(null, new Func<IBackgroundJobClient>(() => new BackgroundJobClient()));
 
             JobStorage.Current = storage;
-            GlobalConfiguration.Configuration.UseStorage(storage);
-            GlobalConfiguration.Configuration.UseAutofacActivator(_container);
-            GlobalConfiguration.Configuration.UseLogProvider(LogProvider);
+            GlobalConfiguration.Configuration
+                .SetDataCompatibilityLevel(CompatibilityLevel.Version_170)
+                .UseSimpleAssemblyNameTypeSerializer()
+                .UseRecommendedSerializerSettings()
+                .UseStorage(storage)
+                .UseLogProvider(LogProvider);
 
             if (GlobalJobFilters.Filters.Any(f => f.Instance is AutomaticRetryAttribute))
             {
@@ -67,6 +56,7 @@ namespace Bit.Hangfire.Implementations
 
         public virtual void Dispose()
         {
+            _backgroundJobServer?.Stop(force: true);
             _backgroundJobServer?.Dispose();
         }
     }

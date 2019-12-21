@@ -1,7 +1,5 @@
-using Autofac;
 using Bit.Core.Models;
 using Bit.Hangfire.Contracts;
-using Bit.Owin.Contracts;
 using Hangfire;
 using Hangfire.Azure.ServiceBusQueue;
 using Hangfire.Logging;
@@ -14,16 +12,6 @@ namespace Bit.Hangfire.Implementations
 {
     public class SqlAndAzureServiceBusBackendJobServerConfiguration : IJobSchedulerBackendConfiguration
     {
-        public virtual IAutofacDependencyManager DependencyManager
-        {
-            set
-            {
-                if (value == null)
-                    throw new ArgumentNullException(nameof(DependencyManager));
-                _lifetimeScope = value.GetContainer();
-            }
-        }
-
         public virtual JobActivator JobActivator { get; set; }
 
         public virtual AppEnvironment AppEnvironment { get; set; }
@@ -33,7 +21,6 @@ namespace Bit.Hangfire.Implementations
         public virtual IEnumerable<IHangfireOptionsCustomizer> Customizers { get; set; }
 
         private BackgroundJobServer _backgroundJobServer;
-        private ILifetimeScope _lifetimeScope;
 
         public virtual void Init()
         {
@@ -57,9 +44,12 @@ namespace Bit.Hangfire.Implementations
             }
 
             JobStorage.Current = storage;
-            GlobalConfiguration.Configuration.UseStorage(storage);
-            GlobalConfiguration.Configuration.UseAutofacActivator(_lifetimeScope);
-            GlobalConfiguration.Configuration.UseLogProvider(LogProvider);
+            GlobalConfiguration.Configuration
+                .SetDataCompatibilityLevel(CompatibilityLevel.Version_170)
+                .UseSimpleAssemblyNameTypeSerializer()
+                .UseRecommendedSerializerSettings()
+                .UseStorage(storage)
+                .UseLogProvider(LogProvider);
 
             if (GlobalJobFilters.Filters.Any(f => f.Instance is AutomaticRetryAttribute))
             {
@@ -82,6 +72,7 @@ namespace Bit.Hangfire.Implementations
 
         public virtual void Dispose()
         {
+            _backgroundJobServer?.Stop(force: true);
             _backgroundJobServer?.Dispose();
         }
     }
