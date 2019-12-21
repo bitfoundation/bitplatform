@@ -132,7 +132,7 @@
     </Page>
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Xamarin.Forms" Version="4.3.0.991221" />
+    <PackageReference Include="Xamarin.Forms" Version="4.3.0.991250" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Bit.CSharpClientSample.UWP_TemporaryKey.pfx" />

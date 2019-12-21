@@ -10,8 +10,8 @@
   <ItemGroup>
     <PackageReference Include="Autofac" Version="4.9.2" />
     <PackageReference Include="Autofac.Extensions.DependencyInjection" Version="5.0.1" />
-    <PackageReference Include="Microsoft.AppCenter.Analytics" Version="2.6.2" />
-    <PackageReference Include="Microsoft.AppCenter.Crashes" Version="2.6.2" />
+    <PackageReference Include="Microsoft.AppCenter.Analytics" Version="2.6.4" />
+    <PackageReference Include="Microsoft.AppCenter.Crashes" Version="2.6.4" />
     <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
     <PackageReference Include="Prism.Plugin.Logging.Common" Version="7.2.0.700" />
     <PackageReference Include="Prism.Plugin.Popups" Version="7.2.0.759" />
@@ -19,7 +19,7 @@
     <PackageReference Include="System.ComponentModel.Annotations" Version="4.7.0" />
     <PackageReference Include="Xamarin.Essentials" Version="1.3.1" />
     <PackageReference Include="Microsoft.ApplicationInsights.WindowsApps" Condition=" '$(TargetFramework)' == 'uap10.0.16299' " Version="1.1.1" />
-    <PackageReference Include="Microsoft.ApplicationInsights" Condition=" '$(TargetFramework)' != 'uap10.0.16299' " Version="2.11.0" />
+    <PackageReference Include="Microsoft.ApplicationInsights" Condition=" '$(TargetFramework)' != 'uap10.0.16299' " Version="2.12.0" />
   </ItemGroup>
 
   <ItemGroup Condition=" '$(TargetFramework)' == 'MonoAndroid90'">
