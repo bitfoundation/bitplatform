@@ -2,6 +2,8 @@
 using System.Net.Http;
 using Bit.OwinCore;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 
 namespace Bit.Test.Server
 {
@@ -23,6 +25,9 @@ namespace Bit.Test.Server
 
         public override void Dispose()
         {
+#if DotNetCore
+            _host.Services.GetRequiredService<IHostApplicationLifetime>().StopApplication();
+#endif
             _host.Dispose();
         }
 

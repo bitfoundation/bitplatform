@@ -1,10 +1,11 @@
-﻿using System.IO;
-using System.Net.Http;
+﻿using System.Net.Http;
 using Bit.OwinCore;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.TestHost;
 using OpenQA.Selenium.Remote;
 using System;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 
 namespace Bit.Test.Server
 {
@@ -23,6 +24,9 @@ namespace Bit.Test.Server
 
         public override void Dispose()
         {
+#if DotNetCore
+            _server.Services.GetRequiredService<IHostApplicationLifetime>().StopApplication();
+#endif
             _server.Dispose();
         }
 
