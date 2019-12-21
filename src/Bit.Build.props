@@ -9,8 +9,8 @@
     <Copyright>Copyright © Bit Foundation 2019</Copyright>
     <RepositoryUrl>https://github.com/bit-foundation/bit-framework</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
-    <Version>3.3.0</Version>
-    <AssemblyVersion>3.3.0.0</AssemblyVersion>
+    <Version>3.4.0</Version>
+    <AssemblyVersion>3.4.0.0</AssemblyVersion>
     <DocumentationFile>bin\$(Configuration)\$(TargetFramework)\$(AssemblyName).xml</DocumentationFile>
     <NoWarn>$(NoWarn);NU1605;CS1591;NU1701;NU1605</NoWarn>
     <!-- https://stackoverflow.com/a/46815541/2720104 -->
@@ -25,8 +25,8 @@
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageProjectUrl>https://github.com/bit-foundation/bit-framework</PackageProjectUrl>
     <PackageIconUrl>https://avatars.githubusercontent.com/u/22663390</PackageIconUrl>
-    <PackageReleaseNotes>https://github.com/bit-foundation/bit-framework/releases/tag/v3.3.0</PackageReleaseNotes>
-    <PackageVersion>3.3.0</PackageVersion>
+    <PackageReleaseNotes>https://github.com/bit-foundation/bit-framework/releases/tag/v3.4.0</PackageReleaseNotes>
+    <PackageVersion>3.4.0</PackageVersion>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)'=='Debug'">
