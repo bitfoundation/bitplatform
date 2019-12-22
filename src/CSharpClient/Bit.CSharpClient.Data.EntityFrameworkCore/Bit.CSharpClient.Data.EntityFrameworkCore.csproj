@@ -3,7 +3,7 @@
   <Import Project="../CSharpClient.Build.props" />
 
   <PropertyGroup>
-    <TargetFrameworks>MonoAndroid90;Xamarin.iOS10;uap10.0.16299;netstandard2.0;netcoreapp2.0;</TargetFrameworks>
+    <TargetFrameworks>MonoAndroid90;Xamarin.iOS10;uap10.0.18362;netstandard2.0;netcoreapp2.0;</TargetFrameworks>
     <PackageTags>$(PackageTags) entity-framework-core EF Data O/RM</PackageTags>
   </PropertyGroup>
 

@@ -7,7 +7,7 @@
     <DefineConstants Condition=" '$(TargetFramework)' == 'MonoAndroid90' ">Android</DefineConstants>
     <DefineConstants Condition=" '$(TargetFramework)' == 'Xamarin.iOS10' ">iOS</DefineConstants>
     <DefineConstants Condition=" '$(TargetFramework)' == 'netcoreapp2.0' ">DotNetCore</DefineConstants>
-    <DefineConstants Condition=" '$(TargetFramework)' == 'uap10.0.16299' ">UWP</DefineConstants>
+    <DefineConstants Condition=" '$(TargetFramework)' == 'uap10.0.18362' ">UWP</DefineConstants>
     <DefineConstants Condition=" '$(TargetFramework)' == 'netstandard2.0' ">DotNetStandard</DefineConstants>
     <DesignTimeBuild>True</DesignTimeBuild>
     <AndroidResgenFile>False</AndroidResgenFile>
