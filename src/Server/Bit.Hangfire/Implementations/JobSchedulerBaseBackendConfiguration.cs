@@ -1,49 +1,31 @@
-using Bit.Core.Models;
+﻿using Bit.Core.Models;
 using Bit.Hangfire.Contracts;
 using Hangfire;
-using Hangfire.Azure.ServiceBusQueue;
 using Hangfire.Logging;
-using Hangfire.SqlServer;
-using System;
 using System.Collections.Generic;
 using System.Linq;
 
 namespace Bit.Hangfire.Implementations
 {
-    public class SqlAndAzureServiceBusBackendJobServerConfiguration : IJobSchedulerBackendConfiguration
+    public abstract class JobSchedulerBaseBackendConfiguration<TStorage> : IJobSchedulerBackendConfiguration
+        where TStorage : JobStorage
     {
         public virtual JobActivator JobActivator { get; set; }
-
-        public virtual AppEnvironment AppEnvironment { get; set; }
 
         public virtual ILogProvider LogProvider { get; set; }
 
         public virtual IEnumerable<IHangfireOptionsCustomizer> Customizers { get; set; }
 
-        private BackgroundJobServer _backgroundJobServer;
+        protected virtual BackgroundJobServer BackgroundJobServer { get; set; }
+
+        protected abstract TStorage BuildStorage();
 
         public virtual void Init()
         {
-            string jobSchedulerDbConnectionString = AppEnvironment.GetConfig<string>(AppEnvironment.KeyValues.Hangfire.JobSchedulerDbConnectionString);
-
-            SqlServerStorage storage = new SqlServerStorage(jobSchedulerDbConnectionString, new SqlServerStorageOptions
-            {
-                PrepareSchemaIfNecessary = false,
-                UseRecommendedIsolationLevel = true,
-                SchemaName = "HangFire",
-                CommandBatchMaxTimeout = TimeSpan.FromMinutes(5),
-                SlidingInvisibilityTimeout = TimeSpan.FromMinutes(5),
-                QueuePollInterval = TimeSpan.Zero,
-                UsePageLocksOnDequeue = true,
-                DisableGlobalLocks = true
-            }); // https://docs.hangfire.io/en/latest/configuration/using-sql-server.html#configuration
-
-            if (AppEnvironment.TryGetConfig(AppEnvironment.KeyValues.Hangfire.JobSchedulerAzureServiceBusConnectionString, out string signalRAzureServiceBusConnectionString))
-            {
-                storage.UseServiceBusQueues(signalRAzureServiceBusConnectionString);
-            }
+            var storage = BuildStorage();
 
             JobStorage.Current = storage;
+
             GlobalConfiguration.Configuration
                 .SetDataCompatibilityLevel(CompatibilityLevel.Version_170)
                 .UseSimpleAssemblyNameTypeSerializer()
@@ -67,13 +49,13 @@ namespace Bit.Hangfire.Implementations
                 customizer.Customize(GlobalConfiguration.Configuration, options, storage);
             }
 
-            _backgroundJobServer = new BackgroundJobServer(options, storage);
+            BackgroundJobServer = new BackgroundJobServer(options, storage);
         }
 
         public virtual void Dispose()
         {
-            _backgroundJobServer?.Stop(force: true);
-            _backgroundJobServer?.Dispose();
+            BackgroundJobServer?.Stop(force: true);
+            BackgroundJobServer?.Dispose();
         }
     }
 }
