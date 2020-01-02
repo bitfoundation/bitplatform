@@ -15,22 +15,30 @@ namespace Bit.Hangfire.Implementations
 
         public virtual bool Log(LogLevel logLevel, Func<string> messageFunc, Exception exception = null)
         {
-            string message = messageFunc?.Invoke() ?? "";
-
-            if ((exception != null || !string.IsNullOrEmpty(message)) && (logLevel != LogLevel.Debug && logLevel != LogLevel.Trace && logLevel != LogLevel.Info))
+            try
             {
-                using (IDependencyResolver childResolver = DependencyManager.CreateChildDependencyResolver())
+                string message = messageFunc?.Invoke() ?? "";
+
+                if ((exception != null || !string.IsNullOrEmpty(message)) && (logLevel != LogLevel.Debug && logLevel != LogLevel.Trace && logLevel != LogLevel.Info))
                 {
-                    ILogger logger = childResolver.Resolve<ILogger>();
-                    if (exception != null)
-                        logger.LogException(exception, message);
-                    else if (logLevel == LogLevel.Warn)
-                        logger.LogWarning(message);
-                    else
-                        logger.LogFatal(message);
+                    using (IDependencyResolver childResolver = DependencyManager.CreateChildDependencyResolver())
+                    {
+                        ILogger logger = childResolver.Resolve<ILogger>();
+                        if (exception != null)
+                            logger.LogException(exception, message);
+                        else if (logLevel == LogLevel.Warn)
+                            logger.LogWarning(message);
+                        else
+                            logger.LogFatal(message);
+                    }
                 }
+
+                return true;
             }
-            return true;
+            catch
+            {
+                return false;
+            }
         }
     }
 }
