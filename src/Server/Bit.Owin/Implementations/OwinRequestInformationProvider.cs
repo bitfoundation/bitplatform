@@ -41,7 +41,16 @@ namespace Bit.Owin.Implementations
 
         public virtual string ClientIp
         {
-            get => GetOwinContext().Request?.RemoteIpAddress;
+            get
+            {
+                var owinContext = GetOwinContext();
+                var headers = owinContext.Request.Headers;
+
+                if (headers.TryGetValue("X-Forwarded-For", out string[] X_Forwarded_For))
+                    return X_Forwarded_For.ExtendedSingle("Getting value of X-Forwarded-For").Split(',').ExtendedSingle("Getting value of X-Forwarded-For after split").Trim();
+                else
+                    return owinContext.Request?.RemoteIpAddress;
+            }
             protected set => throw new InvalidOperationException();
         }
 

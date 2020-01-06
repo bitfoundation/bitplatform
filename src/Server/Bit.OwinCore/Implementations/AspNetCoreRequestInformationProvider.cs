@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.Extensions.Primitives;
 using System;
 using System.Globalization;
+using System.Linq;
 using System.Security.Claims;
 
 namespace Bit.OwinCore.Implementations
@@ -41,7 +42,16 @@ namespace Bit.OwinCore.Implementations
 
         public virtual string ClientIp
         {
-            get => GetHttpContext().Connection?.RemoteIpAddress?.ToString();
+            get
+            {
+                var httpContext = GetHttpContext();
+                var headers = httpContext.Request.Headers;
+
+                if (headers.TryGetValue("X-Forwarded-For", out StringValues X_Forwarded_For))
+                    return X_Forwarded_For.ExtendedSingle("Getting value of X-Forwarded-For").Split(',').ExtendedSingle("Getting value of X-Forwarded-For after split").Trim();
+                else
+                    return httpContext.Connection?.RemoteIpAddress?.ToString();
+            }
             protected set => throw new InvalidOperationException();
         }
 
