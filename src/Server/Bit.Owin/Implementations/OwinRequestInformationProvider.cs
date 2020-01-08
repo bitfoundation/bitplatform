@@ -47,7 +47,7 @@ namespace Bit.Owin.Implementations
                 var headers = owinContext.Request.Headers;
 
                 if (headers.TryGetValue("X-Forwarded-For", out string[] X_Forwarded_For))
-                    return X_Forwarded_For.ExtendedSingle("Getting value of X-Forwarded-For").Split(',').ExtendedSingle("Getting value of X-Forwarded-For after split").Trim();
+                    return string.Join<string>(",", values: X_Forwarded_For);
                 else
                     return owinContext.Request?.RemoteIpAddress;
             }
