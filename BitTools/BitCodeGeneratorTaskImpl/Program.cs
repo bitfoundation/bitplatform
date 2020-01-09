@@ -83,14 +83,14 @@ namespace BitCodeGeneratorTaskImpl
                         if (workspace.CurrentSolution.Projects.Any(p => proj.IsThisProject(p)))
                             continue; /*It's already loaded*/
 
-                        string sourceProjetctPath = proj.Name == BeingCompiledProjectName ? ProjectPath : (AllProjectsPaths ?? throw new InvalidOperationException($"There is no solution project and we're unsable to find {proj.Name}")).ExtendedSingle($"Trying to find source project {proj.Name}", projPath => Path.GetFileNameWithoutExtension(projPath) == proj.Name);
+                        string sourceProjetctPath = proj.Name == BeingCompiledProjectName ? ProjectPath : (AllProjectsPaths ?? throw new InvalidOperationException($"There is no solution project and we're unable to find {proj.Name}")).ExtendedSingle($"Trying to find source project {proj.Name}", projPath => Path.GetFileNameWithoutExtension(projPath) == proj.Name);
 
                         await workspace.OpenProjectAsync(sourceProjetctPath);
                     }
 
                     if (!workspace.CurrentSolution.Projects.Any(p => mapping.DestinationProject.IsThisProject(p)))
                     {
-                        string DestProjetctPath = mapping.DestinationProject.Name == BeingCompiledProjectName ? ProjectPath : (AllProjectsPaths ?? throw new InvalidOperationException($"There is no solution project and we're unsable to find {mapping.DestinationProject.Name}")).ExtendedSingle($"Trying to find destination project {mapping.DestinationProject.Name}", projPath => Path.GetFileNameWithoutExtension(projPath) == mapping.DestinationProject.Name);
+                        string DestProjetctPath = mapping.DestinationProject.Name == BeingCompiledProjectName ? ProjectPath : (AllProjectsPaths ?? throw new InvalidOperationException($"There is no solution project and we're unable to find {mapping.DestinationProject.Name}")).ExtendedSingle($"Trying to find destination project {mapping.DestinationProject.Name}", projPath => Path.GetFileNameWithoutExtension(projPath) == mapping.DestinationProject.Name);
                         await workspace.OpenProjectAsync(DestProjetctPath);
                     }
                 }
