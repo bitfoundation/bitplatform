@@ -49,6 +49,11 @@ namespace Bit.Hangfire.Implementations
                 customizer.Customize(GlobalConfiguration.Configuration, options, storage);
             }
 
+            BuildBackgroundJobServer(storage, options);
+        }
+
+        protected virtual void BuildBackgroundJobServer(TStorage storage, BackgroundJobServerOptions options)
+        {
             BackgroundJobServer = new BackgroundJobServer(options, storage);
         }
 
