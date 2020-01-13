@@ -3,9 +3,9 @@
   <Import Project="../Bit.Build.props"/>
 
   <PropertyGroup>
-    <DefineConstants Condition=" '$(TargetFramework)' == 'net461' ">DotNet</DefineConstants>
-    <DefineConstants Condition=" '$(TargetFramework)' == 'netcoreapp2.0' ">DotNetCore</DefineConstants>
-    <DefineConstants Condition=" '$(TargetFramework)' == 'netcoreapp3.0' ">DotNetCore</DefineConstants>
+    <DefineConstants Condition=" '$(TargetFramework)' == 'net461' ">$(DefineConstants);DotNet</DefineConstants>
+    <DefineConstants Condition=" '$(TargetFramework)' == 'netcoreapp2.0' ">$(DefineConstants);DotNetCore</DefineConstants>
+    <DefineConstants Condition=" '$(TargetFramework)' == 'netcoreapp3.0' ">$(DefineConstants);DotNetCore</DefineConstants>
   </PropertyGroup>
 
 </Project>
