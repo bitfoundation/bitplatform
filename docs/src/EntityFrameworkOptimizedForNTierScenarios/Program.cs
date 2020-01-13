@@ -160,8 +160,8 @@ namespace EntityFrameworkOptimizedForNTierScenarios
         public static void Main(string[] args)
         {
 #if DEBUG
-            Console.ForegroundColor = ConsoleColor.Yellow;
-            Console.WriteLine("*****To achieve accurate results, set project configuration to release mode.*****");
+            System.Console.ForegroundColor = System.ConsoleColor.Yellow;
+            System.Console.WriteLine("*****To achieve accurate results, set project configuration to release mode.*****");
             return;
 #endif
 
