@@ -14,34 +14,34 @@ namespace Bit.View.Controls
         {
             InitializeComponent();
 
-            BitCalendarPopupView = new BitCalendarPopupView() { };
+            BitDateTimePopupView = new BitDateTimePopupView() { };
 
-            BitCalendarPopupView.SetBinding(BitCalendarPopupView.CultureProperty, new Binding(nameof(Culture), source: this));
-            BitCalendarPopupView.SetBinding(BitCalendarPopupView.CalendarSystemProperty, new Binding(nameof(CalendarSystem), source: this));
-            BitCalendarPopupView.SetBinding(BitCalendarPopupView.SelectedColorProperty, new Binding(nameof(SelectedColor), source: this));
-            BitCalendarPopupView.SetBinding(BitCalendarPopupView.TodayColorProperty, new Binding(nameof(TodayColor), source: this));
-            BitCalendarPopupView.SetBinding(BitCalendarPopupView.SelectedDateTimeProperty, new Binding(nameof(SelectedDateTime), source: this));
-            BitCalendarPopupView.SetBinding(BitCalendarPopupView.FontFamilyProperty, new Binding(nameof(FontFamily), source: this));
-            BitCalendarPopupView.SetBinding(BitCalendarPopupView.AutoCloseProperty, new Binding(nameof(AutoClose), source: this));
-            BitCalendarPopupView.SetBinding(BitCalendarPopupView.ShowTimePickerProperty, new Binding(nameof(ShowTimePicker), source: this));
-            BitCalendarPopupView.SetBinding(FlowDirectionProperty, new Binding(nameof(FlowDirection), source: this));
+            BitDateTimePopupView.SetBinding(BitDateTimePopupView.CultureProperty, new Binding(nameof(Culture), source: this));
+            BitDateTimePopupView.SetBinding(BitDateTimePopupView.CalendarSystemProperty, new Binding(nameof(CalendarSystem), source: this));
+            BitDateTimePopupView.SetBinding(BitDateTimePopupView.SelectedColorProperty, new Binding(nameof(SelectedColor), source: this));
+            BitDateTimePopupView.SetBinding(BitDateTimePopupView.TodayColorProperty, new Binding(nameof(TodayColor), source: this));
+            BitDateTimePopupView.SetBinding(BitDateTimePopupView.SelectedDateTimeProperty, new Binding(nameof(SelectedDateTime), source: this));
+            BitDateTimePopupView.SetBinding(BitDateTimePopupView.FontFamilyProperty, new Binding(nameof(FontFamily), source: this));
+            BitDateTimePopupView.SetBinding(BitDateTimePopupView.AutoCloseProperty, new Binding(nameof(AutoClose), source: this));
+            BitDateTimePopupView.SetBinding(BitDateTimePopupView.ShowTimePickerProperty, new Binding(nameof(ShowTimePicker), source: this));
+            BitDateTimePopupView.SetBinding(FlowDirectionProperty, new Binding(nameof(FlowDirection), source: this));
 
             OpenPopupCommand = new Command(OpenPopup);
         }
 
         public virtual void OpenPopup()
         {
-            Navigation.PushPopupAsync(BitCalendarPopupView);
+            Navigation.PushPopupAsync(BitDateTimePopupView);
         }
 
-        private BitCalendarPopupView _BitCalendarPopupView;
-        public virtual BitCalendarPopupView BitCalendarPopupView
+        private BitDateTimePopupView _BitDateTimePopupView;
+        public virtual BitDateTimePopupView BitDateTimePopupView
         {
-            get => _BitCalendarPopupView;
+            get => _BitDateTimePopupView;
             protected set
             {
-                _BitCalendarPopupView = value;
-                OnPropertyChanged(nameof(BitCalendarPopupView));
+                _BitDateTimePopupView = value;
+                OnPropertyChanged(nameof(BitDateTimePopupView));
             }
         }
 
@@ -129,7 +129,7 @@ namespace Bit.View.Controls
             }
         }
 
-        public static BindableProperty ShowTimePickerProperty = BindableProperty.Create(nameof(ShowTimePicker), typeof(bool), typeof(BitCalendarPopupView), defaultValue: true, defaultBindingMode: BindingMode.OneWay);
+        public static BindableProperty ShowTimePickerProperty = BindableProperty.Create(nameof(ShowTimePicker), typeof(bool), typeof(BitDateTimePicker), defaultValue: true, defaultBindingMode: BindingMode.OneWay);
         public virtual bool ShowTimePicker
         {
             get { return (bool)GetValue(ShowTimePickerProperty); }

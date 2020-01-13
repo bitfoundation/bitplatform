@@ -1,22 +1,21 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
-<pages:PopupPage
-    x:Class="Bit.View.Controls.BitCalendarPopupView"
+<TemplatedView
+    x:Class="Bit.View.Controls.BitDateTimeView"
     xmlns="http://xamarin.com/schemas/2014/forms"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     xmlns:bitControls="clr-namespace:Bit.View.Controls"
-    xmlns:pages="clr-namespace:Rg.Plugins.Popup.Pages;assembly=Rg.Plugins.Popup"
     x:Name="This">
 
-    <pages:PopupPage.Resources>
+    <TemplatedView.Resources>
 
         <bitControls:DateTimeToTimeSpanConverter x:Key="DateTimeToTimeSpanConverter" />
 
-        <Style TargetType="bitControls:BitCalendarPopupView">
+        <Style TargetType="bitControls:BitDateTimeView">
             <Setter Property="ControlTemplate">
                 <ControlTemplate>
                     <StackLayout
                         Margin="5,0"
-                        x:DataType="bitControls:BitCalendarPopupView"
+                        x:DataType="bitControls:BitDateTimeView"
                         BackgroundColor="White"
                         BindingContext="{TemplateBinding}"
                         HorizontalOptions="Center"
@@ -320,5 +319,5 @@
                 </ControlTemplate>
             </Setter>
         </Style>
-    </pages:PopupPage.Resources>
-</pages:PopupPage>
+    </TemplatedView.Resources>
+</TemplatedView>
