@@ -7,11 +7,11 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Remove="BitAnalyzers\Data\EntityFramework\EntityFrameworkFullAsNoTrackingCallTests\**" />
+    <Compile Remove="BitAnalyzers\Data\EntityFramework\TestSolution\**" />
     <Compile Remove="BitAnalyzers\ViewModel\BitPrismTestsProj\**" />
-    <EmbeddedResource Remove="BitAnalyzers\Data\EntityFramework\EntityFrameworkFullAsNoTrackingCallTests\**" />
+    <EmbeddedResource Remove="BitAnalyzers\Data\EntityFramework\TestSolution\**" />
     <EmbeddedResource Remove="BitAnalyzers\ViewModel\BitPrismTestsProj\**" />
-    <None Remove="BitAnalyzers\Data\EntityFramework\EntityFrameworkFullAsNoTrackingCallTests\**" />
+    <None Remove="BitAnalyzers\Data\EntityFramework\TestSolution\**" />
     <None Remove="BitAnalyzers\ViewModel\BitPrismTestsProj\**" />
   </ItemGroup>
 

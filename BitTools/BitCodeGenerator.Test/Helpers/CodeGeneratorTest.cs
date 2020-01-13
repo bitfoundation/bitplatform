@@ -45,7 +45,7 @@ namespace BitCodeGenerator.Test.Helpers
             return CreateProjectFromSourceCodesWithExistingSolution(solution, sourceCodes);
         }
 
-        public virtual async Task<Workspace> GetWorkspace()
+        public virtual async Task<Workspace> GetWorkspace(string targetFramework)
         {
             string solutionPath = Path.Combine(Environment.CurrentDirectory, @"..\..\..\..\..\Bit.sln");
 
@@ -54,7 +54,7 @@ namespace BitCodeGenerator.Test.Helpers
 
             MSBuildWorkspace workspace = MSBuildWorkspace.Create(new Dictionary<string, string>()
             {
-                { "TargetFramework", "netcoreapp3.0" }
+                { "TargetFramework", targetFramework }
             });
 
             workspace.WorkspaceFailed += Workspace_WorkspaceFailed;

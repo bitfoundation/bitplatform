@@ -25,7 +25,7 @@ namespace BitCodeAnalyzer.Test.BitAnalyzers.Data.EntityFramework
                 Id = nameof(AsNoTrackingAnalyzer),
                 Message = AsNoTrackingAnalyzer.Message,
                 Severity = DiagnosticSeverity.Warning,
-                Locations = new[] { new DiagnosticResultLocation(Path.Combine(basePath, @"EntityFrameworkFullAsNoTrackingCallTests\Program.cs"), 13, 33) }
+                Locations = new[] { new DiagnosticResultLocation(Path.Combine(basePath, @"Program.cs"), 13, 33) }
             };
 
             DiagnosticResult notCalledAsNoTracking2 = new DiagnosticResult
@@ -33,7 +33,7 @@ namespace BitCodeAnalyzer.Test.BitAnalyzers.Data.EntityFramework
                 Id = nameof(AsNoTrackingAnalyzer),
                 Message = AsNoTrackingAnalyzer.Message,
                 Severity = DiagnosticSeverity.Warning,
-                Locations = new[] { new DiagnosticResultLocation(Path.Combine(basePath, @"EntityFrameworkFullAsNoTrackingCallTests\Program.cs"), 15, 33) }
+                Locations = new[] { new DiagnosticResultLocation(Path.Combine(basePath, @"Program.cs"), 15, 33) }
             };
 
             DiagnosticResult notCalledAsNoTracking3 = new DiagnosticResult
@@ -41,13 +41,13 @@ namespace BitCodeAnalyzer.Test.BitAnalyzers.Data.EntityFramework
                 Id = nameof(AsNoTrackingAnalyzer),
                 Message = AsNoTrackingAnalyzer.Message,
                 Severity = DiagnosticSeverity.Warning,
-                Locations = new[] { new DiagnosticResultLocation(Path.Combine(basePath, @"EntityFrameworkFullAsNoTrackingCallTests\Program.cs"), 17, 42) }
+                Locations = new[] { new DiagnosticResultLocation(Path.Combine(basePath, @"Program.cs"), 17, 42) }
             };
 
             await VerifyCSharpDiagnostic(notCalledAsNoTracking1, notCalledAsNoTracking2, notCalledAsNoTracking3);
         }
 
-        private readonly string basePath = new DirectoryInfo(Path.Combine(Environment.CurrentDirectory, @"..\..\..\BitAnalyzers\Data\EntityFramework\EntityFrameworkFullAsNoTrackingCallTests")).FullName;
+        private readonly string basePath = new DirectoryInfo(Path.Combine(Environment.CurrentDirectory, @"..\..\..\BitAnalyzers\Data\EntityFramework\TestSolution")).FullName;
 
         public override async Task<Project> CreateProject(string[] sources, string language = LanguageNames.CSharp)
         {
