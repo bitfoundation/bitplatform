@@ -23,11 +23,7 @@ namespace Bit.Tests.Api.Middlewares.WebApi.Tests
 
                 Assert.AreEqual(null, getTestModels.Headers.CacheControl.MaxAge);
 
-                Assert.AreEqual(true, getTestModels.Headers.CacheControl.NoCache);
-
                 Assert.AreEqual(true, getTestModels.Headers.CacheControl.NoStore);
-
-                Assert.AreEqual(true, getTestModels.Headers.CacheControl.MustRevalidate);
             }
         }
     }

@@ -18,15 +18,7 @@ namespace Bit.OwinCore.Middlewares
         {
             if (context.Response.Headers.Any(h => string.Equals(h.Key, "Cache-Control", StringComparison.InvariantCultureIgnoreCase)))
                 context.Response.Headers.Remove("Cache-Control");
-            context.Response.Headers.Add("Cache-Control", new[] { "no-cache, no-store, must-revalidate" });
-
-            if (context.Response.Headers.Any(h => string.Equals(h.Key, "Pragma", StringComparison.InvariantCultureIgnoreCase)))
-                context.Response.Headers.Remove("Pragma");
-            context.Response.Headers.Add("Pragma", new[] { "no-cache" });
-
-            if (context.Response.Headers.Any(h => string.Equals(h.Key, "Expires", StringComparison.InvariantCultureIgnoreCase)))
-                context.Response.Headers.Remove("Expires");
-            context.Response.Headers.Add("Expires", new[] { "0" });
+            context.Response.Headers.Add("Cache-Control", new[] { "no-store, no-transform" });
 
             return _next.Invoke(context);
         }

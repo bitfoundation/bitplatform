@@ -95,11 +95,7 @@ namespace Bit.Tests.Api.Middlewares.Tests
 
                 Assert.AreEqual(null, getMetadataForV1.Headers.CacheControl.MaxAge);
 
-                Assert.AreEqual(true, getMetadataForV1.Headers.CacheControl.NoCache);
-
                 Assert.AreEqual(true, getMetadataForV1.Headers.CacheControl.NoStore);
-
-                Assert.AreEqual(true, getMetadataForV1.Headers.CacheControl.MustRevalidate);
             }
         }
 

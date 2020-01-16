@@ -36,11 +36,7 @@ namespace Bit.Tests.Api.Middlewares.Tests
 
                 Assert.AreEqual(null, getSignInPage.Headers.CacheControl.MaxAge);
 
-                Assert.AreEqual(true, getSignInPage.Headers.CacheControl.NoCache);
-
                 Assert.AreEqual(true, getSignInPage.Headers.CacheControl.NoStore);
-
-                Assert.AreEqual(true, getSignInPage.Headers.CacheControl.MustRevalidate);
             }
         }
 
