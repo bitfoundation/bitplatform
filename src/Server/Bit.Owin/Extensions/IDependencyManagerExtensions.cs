@@ -202,7 +202,7 @@ namespace Bit.Core.Contracts
             dependencyManager.RegisterOwinMiddleware<LogRequestInformationMiddlewareConfiguration>();
             dependencyManager.RegisterOwinMiddlewareUsing(owinApp =>
             {
-                owinApp.Use<AddAcceptCharsetToRequestHeadersIfNotAnyMiddleware>();
+                owinApp.Use<AddRequiredHeadersIfNotAnyMiddleware>();
             });
             return dependencyManager;
         }

@@ -83,7 +83,7 @@ namespace Bit.OwinCore.Implementations
                     logKeyValues.Add(new AppInsightsLogKeyVal { Key = nameof(IRequestInformationProvider.UserAgent), Value = requestInformationProvider.UserAgent });
 
                     if (requestInformationProvider.CorrelationId.HasValue)
-                        logKeyValues.Add(new AppInsightsLogKeyVal { Key = "X-CorrelationId", Value = requestInformationProvider.CorrelationId.Value.ToString() });
+                        logKeyValues.Add(new AppInsightsLogKeyVal { Key = "X-Correlation-ID", Value = requestInformationProvider.CorrelationId.Value.ToString() });
                 }
 
                 AppInsightsLogKeyVal userAgent = logKeyValues.FirstOrDefault(ld => ld.Key == nameof(IRequestInformationProvider.UserAgent));
@@ -104,7 +104,7 @@ namespace Bit.OwinCore.Implementations
                         requestTelemetry.Properties.Add(keyVal.Key, keyVal.Value);
                 }
 
-                AppInsightsLogKeyVal xCorrelationId = logKeyValues.FirstOrDefault(ld => ld.Key == "X-CorrelationId");
+                AppInsightsLogKeyVal xCorrelationId = logKeyValues.FirstOrDefault(ld => ld.Key == "X-Correlation-ID");
 
                 if (xCorrelationId != null)
                     requestTelemetry.Id = xCorrelationId.Value;

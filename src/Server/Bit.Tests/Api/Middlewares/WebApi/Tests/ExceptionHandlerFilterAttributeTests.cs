@@ -51,9 +51,9 @@ namespace Bit.Tests.Api.Middlewares.WebApi.Tests
 
                             ILogger logger = testEnvironment.GetObjects<ILogger>().Last();
 
-                            Guid correlationId = (Guid)logger.LogData.Single(logData => logData.Key == "X-CorrelationId").Value;
+                            Guid correlationId = (Guid)logger.LogData.Single(logData => logData.Key == "X-Correlation-ID").Value;
 
-                            Assert.AreEqual(correlationId.ToString(), message.Headers.Single(h => h.Key == "X-CorrelationId").Value.Single());
+                            Assert.AreEqual(correlationId.ToString(), message.Headers.Single(h => h.Key == "X-Correlation-ID").Value.Single());
                         }
                     }
                 });
@@ -105,9 +105,9 @@ namespace Bit.Tests.Api.Middlewares.WebApi.Tests
 
                             ILogger logger = testEnvironment.GetObjects<ILogger>().Last();
 
-                            Guid correlationId = (Guid)logger.LogData.Single(logData => logData.Key == "X-CorrelationId").Value;
+                            Guid correlationId = (Guid)logger.LogData.Single(logData => logData.Key == "X-Correlation-ID").Value;
 
-                            Assert.AreEqual(correlationId.ToString(), message.Headers.Single(h => h.Key == "X-CorrelationId").Value.Single());
+                            Assert.AreEqual(correlationId.ToString(), message.Headers.Single(h => h.Key == "X-Correlation-ID").Value.Single());
                         }
                     }
                 });
@@ -163,9 +163,9 @@ namespace Bit.Tests.Api.Middlewares.WebApi.Tests
 
                             ILogger logger = testEnvironment.GetObjects<ILogger>().Last();
 
-                            Guid correlationId = (Guid)logger.LogData.Single(logData => logData.Key == "X-CorrelationId").Value;
+                            Guid correlationId = (Guid)logger.LogData.Single(logData => logData.Key == "X-Correlation-ID").Value;
 
-                            Assert.AreEqual(correlationId.ToString(), message.Headers.Single(h => h.Key == "X-CorrelationId").Value.Single());
+                            Assert.AreEqual(correlationId.ToString(), message.Headers.Single(h => h.Key == "X-Correlation-ID").Value.Single());
                         }
                     }
                 });

@@ -10,7 +10,7 @@ Using bit you'll get more benefits from web api. This includes following:
     - Self host Windows services + Azure web jobs
 2. We've configured web api on top of [asp.net core/owin request branching](https://docs.microsoft.com/en-us/aspnet/core/fundamentals/middleware). By default, all middlewares such as WebApi handle all incoming requests, but each request has one destination, for example signalr, web api, static file etc. By branching web api will handle api requests only which results into better performance.
 3. We've developed extensive logging infrastructure in bit framework. It logs everything for you in your app, including web api traces. We've tons of log stores including but not limited to Windows Event Logs, Application Insights, Sql Server etc.
-4. We've configured headers like [X-Content-Type-Options](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/X-Content-Type-Options), [X-CorrelationId](http://theburningmonk.com/2015/05/a-consistent-approach-to-track-correlation-ids-through-microservices/) etc to improve logging, security etc.
+4. We've configured headers like [X-Content-Type-Options](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/X-Content-Type-Options), [X-Correlation-ID](http://theburningmonk.com/2015/05/a-consistent-approach-to-track-correlation-ids-through-microservices/) etc to improve logging, security etc.
 5. You can protect your web api with bit identity server, a modern single sign on server based on open id/oauth 2.0
 
 ## Getting started
@@ -234,7 +234,7 @@ public async Task UpdateCustomer(int customerId, string newName)
 
 Notes:
 
-1- Every response has a header called X-CorrelationId (RequestId). When we log exceptions for you, it has a X-CorrelationId, so you can associate a request/response to logs.
+1- Every response has a header called X-Correlation-ID (RequestId). When we log exceptions for you, it has a X-Correlation-ID, so you can associate a request/response to logs.
 
 2- When your app is in debug mode, exceptions details are written into responses. So if "DebugModel" is set to "true" in environments.json, you see exception details, no matter the exception is known or not, but if it is set to "false", then you see "UnKnownException" for unknown exceptions and exception's message for known exceptions.
 

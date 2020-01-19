@@ -137,7 +137,7 @@ namespace Bit.ViewModel.Implementations
                     requestTelemetry.Properties.Add(prp.Key, prp.Value);
                 }
 
-                if (properties.TryGetValue("X-CorrelationId", out string xCorrelationId))
+                if (properties.TryGetValue("X-Correlation-ID", out string xCorrelationId))
                 {
                     requestTelemetry.Id = xCorrelationId;
                 }

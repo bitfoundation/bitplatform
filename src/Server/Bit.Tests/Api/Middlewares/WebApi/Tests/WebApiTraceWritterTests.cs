@@ -30,11 +30,11 @@ namespace Bit.Tests.Api.Middlewares.WebApi.Tests
 
                 Guid correlationId = Guid.NewGuid();
 
-                client.DefaultRequestHeaders.Add("X-CorrelationId", correlationId.ToString());
+                client.DefaultRequestHeaders.Add("X-Correlation-ID", correlationId.ToString());
 
                 HttpResponseMessage response = await client.GetAsync("/odata/Test/$metadata");
 
-                Assert.AreEqual(correlationId, Guid.Parse(response.Headers.GetValues("X-CorrelationId").Single()));
+                Assert.AreEqual(correlationId, Guid.Parse(response.Headers.GetValues("X-Correlation-ID").Single()));
             }
         }
 
@@ -71,7 +71,7 @@ namespace Bit.Tests.Api.Middlewares.WebApi.Tests
                 {
                     ILogger logger = testEnvironment.GetObjects<ILogger>().Last();
 
-                    Assert.IsTrue(logger.LogData.Single(ld => ld.Key == "X-CorrelationId").Value is Guid);
+                    Assert.IsTrue(logger.LogData.Single(ld => ld.Key == "X-Correlation-ID").Value is Guid);
                     Assert.AreEqual(typeof(AppException).GetTypeInfo().FullName, logger.LogData.Single(ld => ld.Key == "WebExceptionType").Value);
                     Assert.IsTrue(((string)(logger.LogData.Single(ld => ld.Key == "WebException").Value)).Contains("Bit.Owin.Exceptions.AppException: Test"));
                 }

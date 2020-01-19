@@ -185,7 +185,7 @@ namespace Bit.OwinCore.Implementations
         {
             get
             {
-                string correlationId = GetHeaderValue("X-CorrelationId");
+                string correlationId = GetHeaderValue("X-Correlation-ID");
                 if (correlationId != null)
                     return Guid.Parse(correlationId);
                 else

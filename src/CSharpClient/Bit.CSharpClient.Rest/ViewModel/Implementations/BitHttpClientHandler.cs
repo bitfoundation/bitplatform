@@ -44,7 +44,7 @@ namespace Bit.ViewModel.Implementations
 
                 request.Headers.Add("Client-Date-Time", DefaultDateTimeProvider.Current.GetCurrentUtcDateTime().UtcDateTime.ToString("o", CultureInfo.InvariantCulture));
 
-                request.Headers.Add("X-CorrelationId", Guid.NewGuid().ToString());
+                request.Headers.Add("X-Correlation-ID", Guid.NewGuid().ToString());
 
                 request.Headers.Add("Bit-Client-Type", "CS-Client");
             }
@@ -67,9 +67,9 @@ namespace Bit.ViewModel.Implementations
                     { "ReasonPhrase", response.ReasonPhrase }
                 };
 
-                if (response.Headers.TryGetValues("X-CorrelationId", out IEnumerable<string> values) && values.Any())
+                if (response.Headers.TryGetValues("X-Correlation-ID", out IEnumerable<string> values) && values.Any())
                 {
-                    properties.Add("X-CorrelationId", values.First());
+                    properties.Add("X-Correlation-ID", values.First());
                 }
 
                 TimeSpan duration = DateTimeOffset.Now - startDate;

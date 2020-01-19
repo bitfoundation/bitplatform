@@ -144,8 +144,8 @@
                             if (!request.headers["Content-Type"].includes(";IEEE754Compatible=true")) {
                                 request.headers["Content-Type"] += ";IEEE754Compatible=true";
                             }
-                            if (request.headers["X-CorrelationId"] == null) {
-                                request.headers["X-CorrelationId"] = guidUtils.newGuid();
+                            if (request.headers["X-Correlation-ID"] == null) {
+                                request.headers["X-Correlation-ID"] = guidUtils.newGuid();
                             }
                             if (request.headers["Bit-Client-Type"] == null) {
                                 request.headers["Bit-Client-Type"] = "TS-Client";
