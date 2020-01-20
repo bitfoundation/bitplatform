@@ -82,7 +82,7 @@ namespace Bit.Tests
             dependencyManager.RegisterAspNetCoreSingleSignOnClient();
 
 #if DotNet // This is not working with .net core 3 prev 7+
-            services.AddWebApiCore(dependencyManager);
+            dependencyManager.AddWebApiCore();
             dependencyManager.RegisterAspNetCoreMiddleware<Api.Middlewares.TestWebApiCoreMvcMiddlewareConfiguration>();
 #endif
 

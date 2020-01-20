@@ -11,15 +11,17 @@ namespace Microsoft.Extensions.DependencyInjection
 {
     public static class IServiceCollectionExtensions
     {
-        public static IMvcCoreBuilder AddWebApiCore(this IServiceCollection services, IDependencyManager dependencyManager, params Assembly[] controllersAssemblies)
+        public static IMvcCoreBuilder AddWebApiCore(this IDependencyManager dependencyManager, params Assembly[] controllersAssemblies)
         {
-            if (services == null)
-                throw new ArgumentNullException(nameof(services));
+            if (dependencyManager == null)
+                throw new ArgumentNullException(nameof(dependencyManager));
 
             if (controllersAssemblies == null)
                 throw new ArgumentNullException(nameof(controllersAssemblies));
 
             controllersAssemblies = AssemblyContainer.Current.AssembliesWithDefaultAssemblies(controllersAssemblies);
+
+            IServiceCollection services = ((IServiceCollectionAccessor)dependencyManager).ServiceCollection;
 
             IMvcCoreBuilder builder = services.AddMvcCore()
                 .AddJsonFormatters()
