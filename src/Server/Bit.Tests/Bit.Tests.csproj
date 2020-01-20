@@ -7,6 +7,8 @@
     <GenerateProgramFile>false</GenerateProgramFile>
     <OutputType>Exe</OutputType>
     <StartupObject />
+    <DefineConstants Condition=" '$(TargetFramework)' == 'net461' ">$(DefineConstants);DotNet</DefineConstants>
+    <DefineConstants Condition=" '$(TargetFramework)' == 'netcoreapp3.1' ">$(DefineConstants);DotNetCore</DefineConstants>
   </PropertyGroup>
 
   <ItemGroup>
