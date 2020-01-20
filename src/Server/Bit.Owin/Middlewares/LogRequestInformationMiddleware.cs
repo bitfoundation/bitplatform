@@ -80,8 +80,7 @@ namespace Bit.Owin.Middlewares
             if (requestInformationProvider.UserAgent != null)
                 logger.AddLogData(nameof(IRequestInformationProvider.UserAgent), requestInformationProvider.UserAgent);
 
-            if (requestInformationProvider.CorrelationId != null)
-                logger.AddLogData("X-Correlation-ID", requestInformationProvider.CorrelationId);
+            logger.AddLogData("X-Correlation-ID", requestInformationProvider.XCorrelationId);
         }
     }
 }

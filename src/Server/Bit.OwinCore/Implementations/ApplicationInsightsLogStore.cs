@@ -82,8 +82,7 @@ namespace Bit.OwinCore.Implementations
 
                     logKeyValues.Add(new AppInsightsLogKeyVal { Key = nameof(IRequestInformationProvider.UserAgent), Value = requestInformationProvider.UserAgent });
 
-                    if (requestInformationProvider.CorrelationId.HasValue)
-                        logKeyValues.Add(new AppInsightsLogKeyVal { Key = "X-Correlation-ID", Value = requestInformationProvider.CorrelationId.Value.ToString() });
+                    logKeyValues.Add(new AppInsightsLogKeyVal { Key = "X-Correlation-ID", Value = requestInformationProvider.XCorrelationId });
                 }
 
                 AppInsightsLogKeyVal userAgent = logKeyValues.FirstOrDefault(ld => ld.Key == nameof(IRequestInformationProvider.UserAgent));

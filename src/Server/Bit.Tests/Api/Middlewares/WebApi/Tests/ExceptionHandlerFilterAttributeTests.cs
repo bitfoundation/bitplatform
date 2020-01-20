@@ -23,7 +23,7 @@ namespace Bit.Tests.Api.Middlewares.WebApi.Tests
     {
         [TestMethod]
         [TestCategory("WebApi"), TestCategory("Logging")]
-        public virtual async Task WebApiExceptionHandlerFilterAttributeMustReturnKnownErrorReasonPhraseAndInternalServerErrorStatusCodeAndCorrelationIdInResponseWhenAppExceptionThrownsInWebApi()
+        public virtual async Task WebApiExceptionHandlerFilterAttributeMustReturnKnownErrorReasonPhraseAndInternalServerErrorStatusCodeAndXCorrelationIdInResponseWhenAppExceptionThrownsInWebApi()
         {
             IEmailService emailService = A.Fake<IEmailService>();
 
@@ -51,7 +51,7 @@ namespace Bit.Tests.Api.Middlewares.WebApi.Tests
 
                             ILogger logger = testEnvironment.GetObjects<ILogger>().Last();
 
-                            Guid correlationId = (Guid)logger.LogData.Single(logData => logData.Key == "X-Correlation-ID").Value;
+                            string correlationId = (string)logger.LogData.Single(logData => logData.Key == "X-Correlation-ID").Value;
 
                             Assert.AreEqual(correlationId.ToString(), message.Headers.Single(h => h.Key == "X-Correlation-ID").Value.Single());
                         }
@@ -77,7 +77,7 @@ namespace Bit.Tests.Api.Middlewares.WebApi.Tests
 
         [TestMethod]
         [TestCategory("WebApi"), TestCategory("Logging")]
-        public virtual async Task WebApiExceptionHandlerFilterAttributeMustReturnKnownErrorReasonPhraseAndNotFoundStatusCodeAndCorrelationIdInResponseWhenResourceNotFoundExceptionThrownsInWebApi()
+        public virtual async Task WebApiExceptionHandlerFilterAttributeMustReturnKnownErrorReasonPhraseAndNotFoundStatusCodeAndXCorrelationIdInResponseWhenResourceNotFoundExceptionThrownsInWebApi()
         {
             IEmailService emailService = A.Fake<IEmailService>();
 
@@ -105,9 +105,9 @@ namespace Bit.Tests.Api.Middlewares.WebApi.Tests
 
                             ILogger logger = testEnvironment.GetObjects<ILogger>().Last();
 
-                            Guid correlationId = (Guid)logger.LogData.Single(logData => logData.Key == "X-Correlation-ID").Value;
+                            string xCorrelationId = (string)logger.LogData.Single(logData => logData.Key == "X-Correlation-ID").Value;
 
-                            Assert.AreEqual(correlationId.ToString(), message.Headers.Single(h => h.Key == "X-Correlation-ID").Value.Single());
+                            Assert.AreEqual(xCorrelationId.ToString(), message.Headers.Single(h => h.Key == "X-Correlation-ID").Value.Single());
                         }
                     }
                 });
@@ -163,9 +163,9 @@ namespace Bit.Tests.Api.Middlewares.WebApi.Tests
 
                             ILogger logger = testEnvironment.GetObjects<ILogger>().Last();
 
-                            Guid correlationId = (Guid)logger.LogData.Single(logData => logData.Key == "X-Correlation-ID").Value;
+                            string xCorrelationId = (string)logger.LogData.Single(logData => logData.Key == "X-Correlation-ID").Value;
 
-                            Assert.AreEqual(correlationId.ToString(), message.Headers.Single(h => h.Key == "X-Correlation-ID").Value.Single());
+                            Assert.AreEqual(xCorrelationId.ToString(), message.Headers.Single(h => h.Key == "X-Correlation-ID").Value.Single());
                         }
                     }
                 });

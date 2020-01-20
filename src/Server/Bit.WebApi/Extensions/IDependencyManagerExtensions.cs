@@ -20,7 +20,7 @@ namespace Bit.Core.Contracts
         /// | <see cref="System.Web.Http.Dispatcher.IAssembliesResolver"/> by <see cref="DefaultWebApiAssembliesResolver"/>
         /// | <see cref="System.Web.Http.Tracing.ITraceWriter"/> by <see cref="DefaultWebApiTraceWriter"/>
         /// | It adds <see cref="OwinNoCacheResponseMiddleware"/> middleware and <see cref="AddAcceptCharsetToRequestHeadersIfNotAnyFilterAttribute"/> action filter globally
-        /// | It configures web api by <see cref="GlobalHostAuthenticationFilterProvider"/> and <see cref="ClientCorrelationWebApiConfigurationCustomizer"/>
+        /// | It configures web api by <see cref="GlobalHostAuthenticationFilterProvider"/> and <see cref="XCorrelationWebApiConfigurationCustomizer"/>
         /// </summary>
         /// <param name="controllersAssemblies">Bit finds web api controllers in these assemblies too</param>
         public static IDependencyManager RegisterDefaultWebApiConfiguration(this IDependencyManager dependencyManager, params Assembly[] controllersAssemblies)
@@ -40,7 +40,7 @@ namespace Bit.Core.Contracts
             dependencyManager.RegisterGlobalWebApiActionFiltersUsing(webApiConfig => webApiConfig.Filters.Add(new OwinActionFilterAttribute(typeof(OwinNoCacheResponseMiddleware))));
             dependencyManager.RegisterGlobalWebApiActionFiltersUsing(webApiConfig => webApiConfig.Filters.Add(new AddAcceptCharsetToRequestHeadersIfNotAnyFilterAttribute()));
             dependencyManager.RegisterWebApiConfigurationCustomizer<GlobalHostAuthenticationFilterProvider>();
-            dependencyManager.RegisterWebApiConfigurationCustomizer<ClientCorrelationWebApiConfigurationCustomizer>();
+            dependencyManager.RegisterWebApiConfigurationCustomizer<XCorrelationWebApiConfigurationCustomizer>();
 
             return dependencyManager;
         }

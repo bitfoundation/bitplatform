@@ -49,6 +49,9 @@ namespace Bit.Core.Contracts
 
         string Referer { get; }
 
-        Guid? CorrelationId { get; }
+        /// <summary>
+        /// X-Correlation-Id header
+        /// </summary>
+        string XCorrelationId { get; }
     }
 }

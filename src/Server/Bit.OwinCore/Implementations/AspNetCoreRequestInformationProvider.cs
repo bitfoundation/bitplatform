@@ -181,15 +181,11 @@ namespace Bit.OwinCore.Implementations
             protected set => throw new InvalidOperationException();
         }
 
-        public virtual Guid? CorrelationId
+        public virtual string XCorrelationId
         {
             get
             {
-                string correlationId = GetHeaderValue("X-Correlation-ID");
-                if (correlationId != null)
-                    return Guid.Parse(correlationId);
-                else
-                    return null;
+                return GetHeaderValue("X-Correlation-ID");
             }
             protected set => throw new InvalidOperationException();
         }
