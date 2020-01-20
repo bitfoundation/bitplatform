@@ -202,7 +202,8 @@ namespace Bit.Test
         {
             return TestDependencyManager.CurrentTestDependencyManager
                 .Objects
-                .OfType<T>();
+                .OfType<T>()
+                .Distinct();
         }
 
         public virtual void Dispose()
