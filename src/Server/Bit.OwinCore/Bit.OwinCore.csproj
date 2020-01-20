@@ -3,11 +3,11 @@
   <Import Project="../Server.Build.props" />
 
   <PropertyGroup>
-    <TargetFrameworks>net461;netcoreapp3.0</TargetFrameworks>
+    <TargetFrameworks>net461;netcoreapp3.1</TargetFrameworks>
     <PackageTags>$(PackageTags) aspnetcore</PackageTags>
   </PropertyGroup>
 
-  <ItemGroup Condition="'$(TargetFramework)' == 'netcoreapp3.0'">
+  <ItemGroup Condition="'$(TargetFramework)' == 'netcoreapp3.1'">
     <EmbeddedResource Include="Assemblies\System.Data.Linq.dll" />
     <EmbeddedResource Include="Assemblies\System.Net.Http.WebRequest.dll" />
   </ItemGroup>
@@ -19,7 +19,6 @@
   <ItemGroup>
     <PackageReference Include="Serilog.AspNetCore" Version="3.2.0" />
     <PackageReference Include="System.Security.Cryptography.ProtectedData" Version="4.7.0" />
-    <PackageReference Include="NWebsec.AspNetCore.Middleware" Version="2.0.0" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(TargetFramework)' == 'net461'">
@@ -29,10 +28,12 @@
     <PackageReference Include="Microsoft.AspNetCore.Owin" Version="2.2.0" />
     <PackageReference Include="Microsoft.AspNetCore.StaticFiles" Version="2.2.0" />
     <PackageReference Include="Microsoft.AspNetCore.Http.Extensions" Version="2.2.0" />
+    <PackageReference Include="NWebsec.AspNetCore.Middleware" Version="2.0.0" />
   </ItemGroup>
 
-  <ItemGroup Condition="'$(TargetFramework)' == 'netcoreapp3.0'">
-    <PackageReference Include="Microsoft.AspNetCore.Owin" Version="3.0.0" />
+  <ItemGroup Condition="'$(TargetFramework)' == 'netcoreapp3.1'">
+    <PackageReference Include="NWebsec.AspNetCore.Middleware" Version="3.0.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Owin" Version="3.1.1" />
   </ItemGroup>
 
   <ItemGroup>

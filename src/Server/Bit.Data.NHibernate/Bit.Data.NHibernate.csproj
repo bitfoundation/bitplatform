@@ -3,12 +3,12 @@
   <Import Project="../Server.Build.props" />
 
   <PropertyGroup>
-    <TargetFrameworks>net461;netcoreapp3.0</TargetFrameworks>
+    <TargetFrameworks>net461;netcoreapp3.1</TargetFrameworks>
     <PackageTags>$(PackageTags) nhibernate</PackageTags>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="NHibernate" Version="5.2.6" />
+    <PackageReference Include="NHibernate" Version="5.2.7" />
   </ItemGroup>
 
   <ItemGroup>

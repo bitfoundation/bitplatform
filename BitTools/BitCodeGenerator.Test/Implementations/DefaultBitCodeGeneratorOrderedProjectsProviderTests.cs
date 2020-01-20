@@ -15,7 +15,7 @@ namespace BitCodeGenerator.Test.Implementations
         [TestMethod, TestCategory("BitCodeGenerator")]
         public async Task DefaultBitCodeGeneratorOrderedProjectsProviderTestsShouldReturnProjectsAsDesired()
         {
-            using (Workspace workspace = await GetWorkspace(targetFramework: "netcoreapp3.0"))
+            using (Workspace workspace = await GetWorkspace())
             {
                 Solution solution = workspace.CurrentSolution;
 

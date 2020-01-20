@@ -4,8 +4,7 @@
 
   <PropertyGroup>
     <DefineConstants Condition=" '$(TargetFramework)' == 'net461' ">$(DefineConstants);DotNet</DefineConstants>
-    <DefineConstants Condition=" '$(TargetFramework)' == 'netcoreapp2.0' ">$(DefineConstants);DotNetCore</DefineConstants>
-    <DefineConstants Condition=" '$(TargetFramework)' == 'netcoreapp3.0' ">$(DefineConstants);DotNetCore</DefineConstants>
+    <DefineConstants Condition=" '$(TargetFramework)' == 'netcoreapp3.1' ">$(DefineConstants);DotNetCore</DefineConstants>
   </PropertyGroup>
 
 </Project>

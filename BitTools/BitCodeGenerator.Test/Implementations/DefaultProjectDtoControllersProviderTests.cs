@@ -15,7 +15,7 @@ namespace BitCodeGenerator.Test.Implementations
         [TestMethod]
         public virtual async Task DefaultProjectDtoControllersProviderShouldReturnDtoControllersAsDesired()
         {
-            using (Workspace workspace = await GetWorkspace(targetFramework: "netcoreapp3.0"))
+            using (Workspace workspace = await GetWorkspace())
             {
                 Solution solution = workspace.CurrentSolution;
 
@@ -30,7 +30,7 @@ namespace BitCodeGenerator.Test.Implementations
         [TestMethod]
         public virtual async Task DefaultProjectDtoControllersProviderShouldReturnDtoControllersOfTestProjectAsDesired()
         {
-            using (Workspace workspace = await GetWorkspace(targetFramework: "netcoreapp3.1"))
+            using (Workspace workspace = await GetWorkspace())
             {
                 Solution solution = workspace.CurrentSolution;
 
