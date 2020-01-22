@@ -2,7 +2,6 @@
 using Bit.OData.ODataControllers;
 using Bit.Model.Dtos;
 using Bit.Test;
-using Bit.Test.Implementations;
 using Bit.Test.Server;
 using FakeItEasy;
 using IdentityModel.Client;
@@ -10,6 +9,8 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Remote;
 using System.Threading.Tasks;
+using System.Net.Http;
+using System;
 
 namespace Bit.Tests.HtmlClient.ViewModel.Implementation
 {
@@ -44,6 +45,32 @@ namespace Bit.Tests.HtmlClient.ViewModel.Implementation
                     A.CallTo(() => clientsLogsController.Create(A<ClientLogDto>.That.Matches(cl => cl.ErrorName == "TypeError")))
                         .MustHaveHappenedOnceExactly();
                 }
+            }
+        }
+
+        [TestMethod]
+        [TestCategory("Logging")]
+        public async Task XCorrelationIdTests()
+        {
+            using (BitOwinTestEnvironment testEnvironment = new BitOwinTestEnvironment())
+            {
+                TokenResponse token = await testEnvironment.Server.Login("ValidUserName", "ValidPassword", clientId: "TestResOwner");
+
+                HttpResponseMessage getIndexPageResponse = await testEnvironment.Server.BuildHttpClient(token)
+                    .GetAsync("/");
+
+                Assert.IsTrue(Guid.TryParse(getIndexPageResponse.Headers.GetValues("X-Correlation-ID").Single(), out Guid _));
+
+                HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Get, "/");
+
+                var xCorrelationId = Guid.NewGuid();
+
+                request.Headers.Add("X-Correlation-ID", xCorrelationId.ToString());
+
+                getIndexPageResponse = await testEnvironment.Server.BuildHttpClient(token)
+                    .SendAsync(request);
+
+                Assert.IsTrue(Guid.TryParse(getIndexPageResponse.Headers.GetValues("X-Correlation-ID").Single(), out Guid returnedXCorrelationId) && xCorrelationId == returnedXCorrelationId);
             }
         }
     }

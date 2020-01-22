@@ -73,6 +73,9 @@ namespace Bit.OwinCore.Middlewares
                         }
                     }
 
+                    if (!context.Response.Headers.ContainsKey("X-Correlation-ID"))
+                        context.Response.Headers.Add("X-Correlation-ID", context.RequestServices.GetRequiredService<IRequestInformationProvider>().XCorrelationId);
+
                     return Task.CompletedTask;
                 });
 

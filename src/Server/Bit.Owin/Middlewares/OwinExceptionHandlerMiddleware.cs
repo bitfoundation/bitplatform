@@ -62,6 +62,10 @@ namespace Bit.Owin.Middlewares
                             context.Response.Headers.Add("Reason-Phrase", new[] { reasonPhrase });
                         }
                     }
+
+                    if (!context.Response.Headers.ContainsKey("X-Correlation-ID"))
+                        context.Response.Headers.Add("X-Correlation-ID", new[] { context.GetDependencyResolver().Resolve<IRequestInformationProvider>().XCorrelationId });
+
                 }, state: null);
 
                 await Next.Invoke(context);
