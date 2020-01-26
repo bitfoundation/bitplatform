@@ -50,7 +50,7 @@ namespace Bit.Core.Contracts
         string Referer { get; }
 
         /// <summary>
-        /// X-Correlation-Id header
+        /// X-Correlation-ID header
         /// </summary>
         string XCorrelationId { get; }
     }
