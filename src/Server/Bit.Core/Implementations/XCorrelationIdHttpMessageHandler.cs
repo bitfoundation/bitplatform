@@ -22,7 +22,7 @@ namespace Bit.Core.Implementations
 
         protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {
-            if (!request.Headers.Contains("X-Correlation-ID"))
+            if (!request.Headers.Contains("X-Correlation-ID") && _requestInformationProvider.ContextIsPresent)
                 request.Headers.Add("X-Correlation-ID", _requestInformationProvider.XCorrelationId);
 
             return base.SendAsync(request, cancellationToken);
