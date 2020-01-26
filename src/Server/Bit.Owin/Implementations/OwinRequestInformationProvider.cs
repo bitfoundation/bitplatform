@@ -1,7 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Globalization;
-using System.Linq;
 using System.Security.Claims;
 using Bit.Core.Contracts;
 using Microsoft.Owin;
@@ -11,6 +9,8 @@ namespace Bit.Owin.Implementations
     public class OwinRequestInformationProvider : IRequestInformationProvider
     {
         public virtual IOwinContext Context { get; set; }
+
+        public virtual bool ContextIsPresent => Context != null;
 
         protected virtual IOwinContext GetOwinContext()
         {

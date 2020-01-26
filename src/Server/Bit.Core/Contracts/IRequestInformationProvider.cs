@@ -53,5 +53,10 @@ namespace Bit.Core.Contracts
         /// X-Correlation-ID header
         /// </summary>
         string XCorrelationId { get; }
+
+        /// <summary>
+        /// In background jobs, there is no http context.
+        /// </summary>
+        bool ContextIsPresent { get; }
     }
 }
