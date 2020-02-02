@@ -32,7 +32,7 @@ namespace Bit.WebApi.Implementations
                     if (exception is TargetInvocationException && exception.InnerException != null)
                         exception = exception.InnerException;
                     if (!logger.LogData.Any(d => d.Key == "X-Correlation-ID"))
-                        logger.AddLogData("X-Correlation-ID", request.GetCorrelationId());
+                        logger.AddLogData("X-Correlation-ID", scopeDependencyResolver.Resolve<IRequestInformationProvider>().XCorrelationId);
                     if (!logger.LogData.Any(d => d.Key == "WebExceptionType"))
                         logger.AddLogData("WebExceptionType", exception.GetType().FullName);
                     if (!logger.LogData.Any(d => d.Key == "WebException"))
