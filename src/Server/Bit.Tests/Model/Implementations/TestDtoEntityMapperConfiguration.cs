@@ -3,10 +3,20 @@ using Bit.Core.Contracts;
 using Bit.Core.Models;
 using Bit.Model.Contracts;
 using Bit.Tests.Api.ApiControllers;
+using Bit.Tests.Model.DomainModels;
+using Bit.Tests.Model.Dto;
 using System;
 
 namespace Bit.Tests.Model.Implementations
 {
+    public class AllMappingsConfiguration : IMapperConfiguration
+    {
+        public void Configure(IMapperConfigurationExpression mapperConfigExpression)
+        {
+            mapperConfigExpression.CreateMap<TestCustomerDto, TestCustomer>().ReverseMap();
+        }
+    }
+
     public class TestMapperConfiguration : IMapperConfiguration
     {
         public virtual AppEnvironment AppEnvironment { get; set; }

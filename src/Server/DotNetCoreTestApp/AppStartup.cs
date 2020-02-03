@@ -192,7 +192,8 @@ namespace DotNetCoreTestApp
         public virtual void Configure(IMapperConfigurationExpression mapperConfigExpression)
         {
             mapperConfigExpression.CreateMap<Customer, CustomerDto>()
-                .ForMember(c => c.FullName, cnfg => cnfg.MapFrom(c => c.FirstName + " " + c.LastName));
+                .ForMember(c => c.FullName, cnfg => cnfg.MapFrom(c => c.FirstName + " " + c.LastName))
+                .ReverseMap();
         }
     }
 

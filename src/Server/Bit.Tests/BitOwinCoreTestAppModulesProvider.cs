@@ -145,6 +145,7 @@ namespace Bit.Tests
 
             dependencyManager.RegisterMapperConfiguration<DefaultMapperConfiguration>();
             dependencyManager.RegisterMapperConfiguration<TestMapperConfiguration>();
+            dependencyManager.RegisterMapperConfiguration<AllMappingsConfiguration>();
 
             dependencyManager.RegisterSingleSignOnServer<TestUserService, TestOAuthClientsProvider>();
 
