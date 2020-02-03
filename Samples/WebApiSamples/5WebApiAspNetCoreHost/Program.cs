@@ -1,13 +1,15 @@
 ﻿using Bit.OwinCore;
 using Microsoft.AspNetCore.Hosting;
+using System.Threading.Tasks;
 
 namespace WebApiAspNetCoreHost
 {
     public class Program
     {
-        public static void Main(string[] args)
+        public static async Task Main(string[] args)
         {
-            BuildWebHost(args).Run();
+            await BuildWebHost(args)
+                .RunAsync();
         }
 
         public static IWebHost BuildWebHost(string[] args) =>

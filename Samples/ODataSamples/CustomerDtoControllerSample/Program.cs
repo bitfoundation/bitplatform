@@ -1,14 +1,16 @@
 ﻿using Bit.OwinCore;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
+using System.Threading.Tasks;
 
 namespace CustomerDtoControllerSample
 {
     public class Program
     {
-        public static void Main(string[] args)
+        public static async Task Main(string[] args)
         {
-            BuildWebHost(args).Run();
+            await BuildWebHost(args)
+                .RunAsync();
         }
 
         public static IWebHost BuildWebHost(string[] args) =>

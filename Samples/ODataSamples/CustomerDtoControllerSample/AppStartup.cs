@@ -401,7 +401,11 @@ namespace CustomerDtoControllerSample
         public virtual void Configure(IMapperConfigurationExpression mapperConfigExpression)
         {
             mapperConfigExpression.CreateMap<Category, CategoryDto>()
-                .ForMember(category => category.HasProduct, config => config.MapFrom(category => category.Products.Any()));
+                .ForMember(category => category.HasProduct, config => config.MapFrom(category => category.Products.Any()))
+                .ReverseMap();
+
+            mapperConfigExpression.CreateMap<ProductDto, Product>()
+                .ReverseMap();
         }
     }
 }
