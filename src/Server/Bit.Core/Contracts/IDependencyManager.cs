@@ -12,7 +12,7 @@ namespace Bit.Core.Contracts
         Transient
     }
 
-    public interface IDependencyResolver : IServiceProvider, IDisposable
+    public interface IDependencyResolver : IServiceProvider, IDisposable, IAsyncDisposable
     {
         TService Resolve<TService>(string name = null);
 

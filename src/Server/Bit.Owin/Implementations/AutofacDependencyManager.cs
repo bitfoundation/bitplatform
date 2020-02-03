@@ -7,6 +7,7 @@ using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Generic;
 using System.Reflection;
+using System.Threading.Tasks;
 
 namespace Bit.Owin.Implementations
 {
@@ -354,6 +355,12 @@ namespace Bit.Owin.Implementations
         {
             _container?.Dispose();
             GC.SuppressFinalize(this);
+        }
+
+        public async ValueTask DisposeAsync()
+        {
+            if (_container != null)
+                await _container.DisposeAsync();
         }
 
         public virtual IDependencyManager Populate(IServiceCollection services)
