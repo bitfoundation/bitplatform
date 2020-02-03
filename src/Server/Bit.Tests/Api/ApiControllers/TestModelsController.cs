@@ -5,6 +5,7 @@ using Bit.OData.Contracts;
 using Bit.OData.ODataControllers;
 using Bit.Owin.Exceptions;
 using Bit.Tests.Core.Contracts;
+using Bit.Tests.Data.Contracts;
 using Bit.Tests.Model.DomainModels;
 using Bit.Tests.Model.Dto;
 using Microsoft.AspNet.OData;
@@ -25,7 +26,7 @@ namespace Bit.Tests.Api.ApiControllers
 {
     public class TestModelsController : DtoController<TestModel>
     {
-        public virtual Lazy<IRepository<TestModel>> TestModelsRepository { get; set; }
+        public virtual Lazy<ITestModelsRepository> TestModelsRepository { get; set; }
         public virtual Lazy<IBackgroundJobWorker> BackgroundJobWorker { get; set; }
         public virtual Lazy<IMessageSender> MessageSender { get; set; }
         public virtual Lazy<IDateTimeProvider> DateTimeProvider { get; set; }

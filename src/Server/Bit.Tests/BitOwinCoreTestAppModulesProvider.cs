@@ -130,6 +130,7 @@ namespace Bit.Tests
             dependencyManager.RegisterHangfireBackgroundJobWorkerUsingDefaultConfiguration<JobSchedulerInMemoryBackendConfiguration>();
 
             dependencyManager.RegisterRepository(typeof(TestEfRepository<>).GetTypeInfo());
+            dependencyManager.RegisterRepository<TestModelsRepository>();
 
             dependencyManager.RegisterEfCoreDbContext<TestDbContext>((serviceProvider, optionsBuilder) =>
             {
