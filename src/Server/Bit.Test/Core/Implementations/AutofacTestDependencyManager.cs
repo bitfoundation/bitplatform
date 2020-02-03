@@ -125,7 +125,7 @@ namespace Bit.Test.Implementations
 
         public virtual string ReportObjects
         {
-            get { return string.Join(Environment.NewLine, Objects.Select(o => o.GetType().FullName)); }
+            get { return string.Join(Environment.NewLine, Objects.Select(o => o.GetType().FullName).OrderBy(o => o)); }
         }
     }
 }
