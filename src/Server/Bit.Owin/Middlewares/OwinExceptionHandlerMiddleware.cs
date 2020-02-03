@@ -33,6 +33,8 @@ namespace Bit.Owin.Middlewares
 
             try
             {
+                string xCorrelationId = context.GetDependencyResolver().Resolve<IRequestInformationProvider>().XCorrelationId;
+
                 context.Response.OnSendingHeaders((state) =>
                 {
                     // Create a backup header for reason phrase + enhance its value if possible.
@@ -64,7 +66,7 @@ namespace Bit.Owin.Middlewares
                     }
 
                     if (!context.Response.Headers.ContainsKey("X-Correlation-ID"))
-                        context.Response.Headers.Add("X-Correlation-ID", new[] { context.GetDependencyResolver().Resolve<IRequestInformationProvider>().XCorrelationId });
+                        context.Response.Headers.Add("X-Correlation-ID", new[] { xCorrelationId });
 
                 }, state: null);
 

@@ -198,11 +198,11 @@ namespace Bit.Core.Contracts
         public static IDependencyManager RegisterMinimalOwinMiddlewares(this IDependencyManager dependencyManager)
         {
             dependencyManager.RegisterOwinMiddleware<AutofacDependencyInjectionMiddlewareConfiguration>();
-            dependencyManager.RegisterOwinMiddleware<OwinExceptionHandlerMiddlewareConfiguration>();
             dependencyManager.RegisterOwinMiddlewareUsing(owinApp =>
             {
                 owinApp.Use<AddRequiredHeadersIfNotAnyMiddleware>();
             });
+            dependencyManager.RegisterOwinMiddleware<OwinExceptionHandlerMiddlewareConfiguration>();
             dependencyManager.RegisterOwinMiddleware<LogRequestInformationMiddlewareConfiguration>();
             return dependencyManager;
         }

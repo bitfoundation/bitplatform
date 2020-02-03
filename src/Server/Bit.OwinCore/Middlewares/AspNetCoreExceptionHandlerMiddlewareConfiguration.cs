@@ -50,6 +50,8 @@ namespace Bit.OwinCore.Middlewares
 
             try
             {
+                string xCorrelationId = context.RequestServices.GetRequiredService<IRequestInformationProvider>().XCorrelationId;
+
                 context.Response.OnStarting(() =>
                 {
                     // See OnSendingHeaders of OwinExceptionHandlerMiddleware for more info.
@@ -74,7 +76,7 @@ namespace Bit.OwinCore.Middlewares
                     }
 
                     if (!context.Response.Headers.ContainsKey("X-Correlation-ID"))
-                        context.Response.Headers.Add("X-Correlation-ID", context.RequestServices.GetRequiredService<IRequestInformationProvider>().XCorrelationId);
+                        context.Response.Headers.Add("X-Correlation-ID", xCorrelationId);
 
                     return Task.CompletedTask;
                 });
