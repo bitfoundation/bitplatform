@@ -20,19 +20,19 @@
   "license": "MIT",
   "devDependencies": {
     "@types/angular": "^1.6.57",
-    "@types/angular-material": "^1.1.69",
-    "@types/angular-translate": "^2.16.1",
+    "@types/angular-material": "^1.1.70",
+    "@types/angular-translate": "^2.16.2",
     "@types/jquery": "^3.3.31",
-    "@types/kendo-ui": "^2019.3.1",
+    "@types/kendo-ui": "^2020.1.0",
     "gulp": "^4.0.2",
     "gulp-less": "^4.0.1"
   },
   "optionalDependencies": {
     "angular-animate": "^1.7.9",
     "angular-aria": "^1.7.9",
-    "angular-material": "^1.1.20",
+    "angular-material": "^1.1.21",
     "angular-messages": "^1.7.9",
-    "angular-translate": "^2.18.1",
+    "angular-translate": "^2.18.2",
     "jquery": "^3.4.1",
     "normalize-css": "^2.3.1",
     "persian-datepicker": "^1.2.0"
