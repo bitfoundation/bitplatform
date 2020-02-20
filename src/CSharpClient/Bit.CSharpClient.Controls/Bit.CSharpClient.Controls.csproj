@@ -15,7 +15,7 @@
 
   <ItemGroup Condition=" '$(TargetFramework)' == 'uap10.0.18362' ">
     <PackageReference Include="Microsoft.NETCore.UniversalWindowsPlatform" Version="6.2.9" />
-    <PackageReference Include="Microsoft.UI.Xaml" Version="2.3.191211002" />
+    <PackageReference Include="Microsoft.UI.Xaml" Version="2.3.200213001" />
   </ItemGroup>
 
   <ItemGroup>

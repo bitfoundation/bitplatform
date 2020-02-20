@@ -15,7 +15,7 @@
     <PackageReference Include="Autofac.Extensions.DependencyInjection" Version="6.0.0" />
     <PackageReference Include="Microsoft.Owin.Security.Jwt" Version="4.1.0" />
     <PackageReference Include="Microsoft.Owin.StaticFiles" Version="4.1.0" />
-    <PackageReference Include="NWebsec.Core" Version="3.0.0" />
+    <PackageReference Include="NWebsec.Core" Version="3.0.1" />
     <PackageReference Include="NWebsec.Owin" Version="4.0.0" />
     <PackageReference Include="System.Diagnostics.EventLog" Version="4.7.0" />
     <PackageReference Include="System.Net.Http" Version="4.3.4" />
