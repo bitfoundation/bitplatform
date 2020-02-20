@@ -34,8 +34,6 @@ namespace Bit.Core.Contracts
 
                 if (!optionsBuilder.IsConfigured)
                     throw new InvalidOperationException("optionsBuilder is not configured.");
-
-                optionsBuilder.ConfigureWarnings(warnings => warnings.Throw(RelationalEventId.QueryClientEvaluationWarning));
             });
 
             services.Remove(services.ExtendedSingle($"Finding {typeof(TDbContext).Name}'s service descriptor", s => s.ServiceType == typeof(TDbContext)));

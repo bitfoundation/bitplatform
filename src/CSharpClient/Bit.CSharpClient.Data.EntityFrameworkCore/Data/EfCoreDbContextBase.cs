@@ -89,9 +89,6 @@ namespace Bit.Data
             {
                 optionsBuilder = optionsBuilder.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking);
             }
-
-            optionsBuilder.ConfigureWarnings(warnings => warnings.Throw(RelationalEventId.QueryClientEvaluationWarning));
-
             base.OnConfiguring(optionsBuilder);
         }
 
