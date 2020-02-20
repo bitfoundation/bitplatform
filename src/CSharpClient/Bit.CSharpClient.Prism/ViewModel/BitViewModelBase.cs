@@ -92,7 +92,7 @@ namespace Bit.ViewModel
             }
             finally
             {
-                if (parameters.GetNavigationMode() == NavigationMode.New)
+                if (parameters.TryGetNavigationMode(out NavigationMode navigationMode) && navigationMode == NavigationMode.New)
                 {
                     string pageName = GetViewModelName();
 
