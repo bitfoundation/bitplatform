@@ -406,6 +406,9 @@ namespace CustomerDtoControllerSample
 
             mapperConfigExpression.CreateMap<ProductDto, Product>()
                 .ReverseMap();
+
+            mapperConfigExpression.CreateMap<CustomerDto, Customer>()
+                .ReverseMap();
         }
     }
 }
