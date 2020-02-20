@@ -323,7 +323,7 @@ namespace Bit.Data.Implementations
             {
                 Attach(dto);
 
-                await DbContext.Entry(dto).ReloadAsync(cancellationToken);
+                await DbContext.Entry(dto).ReloadAsync(cancellationToken).ConfigureAwait(false);
             }
             finally
             {

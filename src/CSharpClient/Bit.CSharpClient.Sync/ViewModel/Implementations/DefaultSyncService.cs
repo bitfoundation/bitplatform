@@ -47,9 +47,9 @@ namespace Bit.ViewModel.Implementations
 
             DtoSetSyncConfig[] fromServerDtoSetSyncMaterials = _configs.Where(c => c.FromServerSync == true && c.FromServerSyncFunc() == true && dtoSetNames.Any(n => n == c.DtoSetName)).ToArray();
 
-            await CallSyncTo(toServerDtoSetSyncMaterials, cancellationToken);
+            await CallSyncTo(toServerDtoSetSyncMaterials, cancellationToken).ConfigureAwait(false);
 
-            await CallSyncFrom(fromServerDtoSetSyncMaterials, cancellationToken);
+            await CallSyncFrom(fromServerDtoSetSyncMaterials, cancellationToken).ConfigureAwait(false);
         }
 
         public virtual async Task CallSyncTo(DtoSetSyncConfig[] toServerDtoSetSyncMaterials, CancellationToken cancellationToken)
@@ -146,7 +146,7 @@ namespace Bit.ViewModel.Implementations
                         recentlyChangedOnlineDtos.Add(dtoSyncConfigSyncFromResults);
                     }
 
-                    await Task.WhenAll(recentlyChangedOnlineDtos.Select(r => r.RetriveDataTask));
+                    await Task.WhenAll(recentlyChangedOnlineDtos.Select(r => r.RetriveDataTask)).ConfigureAwait(false);
 
                     foreach (DtoSyncConfigSyncFromResults result in recentlyChangedOnlineDtos.Where(r => r.RecentlyChangedOnlineDtos.Any()))
                     {
