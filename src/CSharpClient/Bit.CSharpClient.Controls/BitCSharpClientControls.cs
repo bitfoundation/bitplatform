@@ -2,8 +2,8 @@
 using Xamarin.Forms;
 
 #if !UWP
-[assembly: XmlnsDefinition("https://bit-framework.com", "Bit.View", AssemblyName = "Bit.CSharpClient.Controls")]
-[assembly: XmlnsDefinition("https://bit-framework.com", "Bit.View.Controls", AssemblyName = "Bit.CSharpClient.Controls")]
+[assembly: XmlnsDefinition("https://bitframework.com", "Bit.View", AssemblyName = "Bit.CSharpClient.Controls")]
+[assembly: XmlnsDefinition("https://bitframework.com", "Bit.View.Controls", AssemblyName = "Bit.CSharpClient.Controls")]
 #endif
 
 namespace Bit.View

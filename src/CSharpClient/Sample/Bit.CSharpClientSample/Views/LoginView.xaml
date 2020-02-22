@@ -3,7 +3,7 @@
     x:Class="Bit.CSharpClientSample.Views.LoginView"
     xmlns="http://xamarin.com/schemas/2014/forms"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-    xmlns:bit="https://bit-framework.com"
+    xmlns:bit="https://bitframework.com"
     NavigationPage.HasNavigationBar="False">
     <ContentPage.Behaviors>
         <bit:AdaptiveBehavior Orientation="Portrait">

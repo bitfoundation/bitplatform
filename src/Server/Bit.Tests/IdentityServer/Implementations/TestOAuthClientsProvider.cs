@@ -38,12 +38,12 @@ namespace Bit.Tests.IdentityServer.Implementations
                     Secret = "secret",
                     RedirectUris = new List<string>
                     {
-                        $@"^(http|https):\/\/(\S+\.)?(bit-framework.com|localhost|127.0.0.1|indie-ir001.ngrok.io|indie-ir002.ngrok.io)(:\d+)?\b{activeAppEnvironment.GetHostVirtualPath()}\bSignIn\/?",
+                        $@"^(http|https):\/\/(\S+\.)?(bitframework.com|localhost|127.0.0.1|indie-ir001.ngrok.io|indie-ir002.ngrok.io)(:\d+)?\b{activeAppEnvironment.GetHostVirtualPath()}\bSignIn\/?",
                         "Test://oauth2redirect"
                     },
                     PostLogoutRedirectUris = new List<string>
                     {
-                        $@"^(http|https):\/\/(\S+\.)?(bit-framework.com|localhost|127.0.0.1)(:\d+)?\b{activeAppEnvironment.GetHostVirtualPath()}\bSignOut\/?",
+                        $@"^(http|https):\/\/(\S+\.)?(bitframework.com|localhost|127.0.0.1)(:\d+)?\b{activeAppEnvironment.GetHostVirtualPath()}\bSignOut\/?",
                         "Test://oauth2redirect"
                     },
                     TokensLifetime = TimeSpan.FromDays(7),

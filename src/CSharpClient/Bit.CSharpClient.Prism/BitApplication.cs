@@ -27,9 +27,9 @@ using Xamarin.Forms.Xaml;
 [assembly: XamlCompilation(XamlCompilationOptions.Compile)]
 
 #if !UWP
-[assembly: XmlnsDefinition("https://bit-framework.com", "Bit", AssemblyName = "Bit.CSharpClient.Prism")]
-[assembly: XmlnsDefinition("https://bit-framework.com", "Bit.View", AssemblyName = "Bit.CSharpClient.Prism")]
-[assembly: XmlnsDefinition("https://bit-framework.com", "Bit.View.Props", AssemblyName = "Bit.CSharpClient.Prism")]
+[assembly: XmlnsDefinition("https://bitframework.com", "Bit", AssemblyName = "Bit.CSharpClient.Prism")]
+[assembly: XmlnsDefinition("https://bitframework.com", "Bit.View", AssemblyName = "Bit.CSharpClient.Prism")]
+[assembly: XmlnsDefinition("https://bitframework.com", "Bit.View.Props", AssemblyName = "Bit.CSharpClient.Prism")]
 #endif
 
 namespace Bit

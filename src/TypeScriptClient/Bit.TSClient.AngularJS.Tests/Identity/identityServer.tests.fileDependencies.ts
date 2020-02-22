@@ -6,25 +6,25 @@ module Bit.Identity.Tests {
 
     dependencyManager.registerFileDependency({
         name: "normalize",
-        path: "bit-framework/src/TypeScriptClient/Bit.TSClient.AngularJS/node_modules/normalize-css/normalize",
+        path: "bitframework/src/TypeScriptClient/Bit.TSClient.AngularJS/node_modules/normalize-css/normalize",
         fileDependencyType: "Style"
     });
 
     dependencyManager.registerFileDependency({
         name: "angular-material-styles",
-        path: "bit-framework/src/TypeScriptClient/Bit.TSClient.AngularJS/node_modules/angular-material/angular-material",
+        path: "bitframework/src/TypeScriptClient/Bit.TSClient.AngularJS/node_modules/angular-material/angular-material",
         fileDependencyType: "Style"
     });
 
     dependencyManager.registerFileDependency({
         name: "controls-styles",
-        path: "bit-framework/src/TypeScriptClient/Bit.TSClient.AngularJS/contents/styles/controls",
+        path: "bitframework/src/TypeScriptClient/Bit.TSClient.AngularJS/contents/styles/controls",
         fileDependencyType: "Style"
     });
 
     dependencyManager.registerFileDependency({
         name: "fa-IR-styles",
-        path: "bit-framework/src/TypeScriptClient/Bit.TSClient.AngularJS/contents/styles/fa-IR",
+        path: "bitframework/src/TypeScriptClient/Bit.TSClient.AngularJS/contents/styles/fa-IR",
         predicate: (appInfo) => {
             return appInfo.culture == "FaIr";
         },
@@ -33,7 +33,7 @@ module Bit.Identity.Tests {
 
     dependencyManager.registerFileDependency({
         name: "en-US-styles",
-        path: "bit-framework/src/TypeScriptClient/Bit.TSClient.AngularJS/contents/styles/en-US",
+        path: "bitframework/src/TypeScriptClient/Bit.TSClient.AngularJS/contents/styles/en-US",
         predicate: (appInfo) => {
             return appInfo.culture == "EnUs";
         },
@@ -42,12 +42,12 @@ module Bit.Identity.Tests {
 
     dependencyManager.registerFileDependency({
         name: "Core-js",
-        path: "bit-framework/src/TypeScriptClient/Bit.TSClient.Core/node_modules/Core-js/client/Core"
+        path: "bitframework/src/TypeScriptClient/Bit.TSClient.Core/node_modules/Core-js/client/Core"
     });
 
     dependencyManager.registerFileDependency({
         name: "fetch",
-        path: "bit-framework/src/TypeScriptClient/Bit.TSClient.Core/node_modules/whatwg-fetch/fetch",
+        path: "bitframework/src/TypeScriptClient/Bit.TSClient.Core/node_modules/whatwg-fetch/fetch",
         predicate: (appInfo) => {
             return typeof (fetch) == "undefined";
         }
@@ -55,36 +55,36 @@ module Bit.Identity.Tests {
 
     dependencyManager.registerFileDependency({
         name: "runtime",
-        path: "bit-framework/src/TypeScriptClient/Bit.TSClient.Core/node_modules/regenerator-runtime/runtime"
+        path: "bitframework/src/TypeScriptClient/Bit.TSClient.Core/node_modules/regenerator-runtime/runtime"
     });
 
     dependencyManager.registerFileDependency({
         name: "angular",
-        path: "bit-framework/src/TypeScriptClient/Bit.TSClient.AngularJS/node_modules/angular/angular"
+        path: "bitframework/src/TypeScriptClient/Bit.TSClient.AngularJS/node_modules/angular/angular"
     });
 
     dependencyManager.registerFileDependency({
         name: "angular-animate",
-        path: "bit-framework/src/TypeScriptClient/Bit.TSClient.AngularJS/node_modules/angular-animate/angular-animate"
+        path: "bitframework/src/TypeScriptClient/Bit.TSClient.AngularJS/node_modules/angular-animate/angular-animate"
     });
 
     dependencyManager.registerFileDependency({
         name: "angular-area",
-        path: "bit-framework/src/TypeScriptClient/Bit.TSClient.AngularJS/node_modules/angular-aria/angular-aria"
+        path: "bitframework/src/TypeScriptClient/Bit.TSClient.AngularJS/node_modules/angular-aria/angular-aria"
     });
 
     dependencyManager.registerFileDependency({
         name: "angular-material",
-        path: "bit-framework/src/TypeScriptClient/Bit.TSClient.AngularJS/node_modules/angular-material/angular-material"
+        path: "bitframework/src/TypeScriptClient/Bit.TSClient.AngularJS/node_modules/angular-material/angular-material"
     });
 
     dependencyManager.registerFileDependency({
         name: "angular-messages",
-        path: "bit-framework/src/TypeScriptClient/Bit.TSClient.AngularJS/node_modules/angular-messages/angular-messages"
+        path: "bitframework/src/TypeScriptClient/Bit.TSClient.AngularJS/node_modules/angular-messages/angular-messages"
     });
 
     dependencyManager.registerFileDependency({
         name: "angular-translate",
-        path: "bit-framework/src/TypeScriptClient/Bit.TSClient.AngularJS/node_modules/angular-translate/dist/angular-translate"
+        path: "bitframework/src/TypeScriptClient/Bit.TSClient.AngularJS/node_modules/angular-translate/dist/angular-translate"
     });
 }
