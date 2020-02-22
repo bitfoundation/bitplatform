@@ -6,7 +6,7 @@
     <RootNamespace>Bit</RootNamespace>
     <DefineConstants Condition=" '$(TargetFramework)' == 'MonoAndroid90' ">$(DefineConstants);Android</DefineConstants>
     <DefineConstants Condition=" '$(TargetFramework)' == 'Xamarin.iOS10' ">$(DefineConstants);iOS</DefineConstants>
-    <DefineConstants Condition=" '$(TargetFramework)' == 'netcoreapp2.0' ">$(DefineConstants);DotNetCore</DefineConstants>
+    <DefineConstants Condition=" '$(TargetFramework)' == 'netcoreapp3.1' ">$(DefineConstants);DotNetCore</DefineConstants>
     <DefineConstants Condition=" '$(TargetFramework)' == 'uap10.0.18362' ">$(DefineConstants);UWP</DefineConstants>
     <DefineConstants Condition=" '$(TargetFramework)' == 'netstandard2.0' ">$(DefineConstants);DotNetStandard</DefineConstants>
     <DesignTimeBuild>True</DesignTimeBuild>

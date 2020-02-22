@@ -1,8 +1,8 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>netstandard2.0;netcoreapp2.0;</TargetFrameworks>
-    <OutputType Condition="'$(TargetFramework)' == 'netcoreapp2.0'">Exe</OutputType>
+    <TargetFrameworks>netstandard2.0;netcoreapp3.1;</TargetFrameworks>
+    <OutputType Condition="'$(TargetFramework)' == 'netcoreapp3.1'">Exe</OutputType>
     <LangVersion>8.0</LangVersion>
   </PropertyGroup>
 
@@ -25,7 +25,7 @@
 
   </ItemGroup>
 
-  <ItemGroup Condition="'$(TargetFramework)' != 'netcoreapp2.0'">
+  <ItemGroup Condition="'$(TargetFramework)' != 'netcoreapp3.1'">
     <Compile Remove="Program.cs" />
   </ItemGroup>
 

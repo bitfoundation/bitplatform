@@ -3,7 +3,7 @@
   <Import Project="../CSharpClient.Build.props" />
 
   <PropertyGroup>
-    <TargetFrameworks>MonoAndroid90;Xamarin.iOS10;uap10.0.18362;netstandard2.0;netcoreapp2.0;</TargetFrameworks>
+    <TargetFrameworks>MonoAndroid90;Xamarin.iOS10;uap10.0.18362;netstandard2.0;netcoreapp3.1;</TargetFrameworks>
     <PackageTags>$(PackageTags) entity-framework-core EF Data O/RM</PackageTags>
   </PropertyGroup>
 
@@ -13,7 +13,7 @@
     <PackageReference Include="System.Memory" Version="4.5.3" />
   </ItemGroup>
 
-  <ItemGroup Condition="'$(TargetFramework)' == 'netcoreapp2.0'">
+  <ItemGroup Condition="'$(TargetFramework)' == 'netcoreapp3.1'">
     <PackageReference Include="Microsoft.AspNetCore" Version="2.2.0" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="3.1.2">
       <PrivateAssets>all</PrivateAssets>
