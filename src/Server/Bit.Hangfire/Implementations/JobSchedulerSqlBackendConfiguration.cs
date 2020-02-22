@@ -1,11 +1,10 @@
 using Bit.Core.Models;
-using Hangfire.Azure.ServiceBusQueue;
 using Hangfire.SqlServer;
 using System;
 
 namespace Bit.Hangfire.Implementations
 {
-    public class JobSchedulerSqlAndAzureServiceBusBackendConfiguration : JobSchedulerBaseBackendConfiguration<SqlServerStorage>
+    public class JobSchedulerSqlBackendConfiguration : JobSchedulerBaseBackendConfiguration<SqlServerStorage>
     {
         public virtual AppEnvironment AppEnvironment { get; set; }
 
@@ -24,11 +23,6 @@ namespace Bit.Hangfire.Implementations
                 UsePageLocksOnDequeue = true,
                 DisableGlobalLocks = true
             }); // https://docs.hangfire.io/en/latest/configuration/using-sql-server.html#configuration
-
-            if (AppEnvironment.TryGetConfig(AppEnvironment.KeyValues.Hangfire.JobSchedulerAzureServiceBusConnectionString, out string signalRAzureServiceBusConnectionString))
-            {
-                storage.UseServiceBusQueues(signalRAzureServiceBusConnectionString);
-            }
 
             return storage;
         }

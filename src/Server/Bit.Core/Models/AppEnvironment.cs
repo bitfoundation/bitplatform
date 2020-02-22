@@ -74,8 +74,6 @@ namespace Bit.Core.Models
             public class Hangfire
             {
                 public static readonly string JobSchedulerDbConnectionString = nameof(JobSchedulerDbConnectionString);
-
-                public static readonly string JobSchedulerAzureServiceBusConnectionString = nameof(JobSchedulerAzureServiceBusConnectionString);
             }
         }
 

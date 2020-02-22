@@ -95,7 +95,6 @@ namespace Bit.OwinCore.Implementations
             if (hangfire != null)
             {
                 TryReadConfig<string>(hangfire, AppEnvironment.KeyValues.Hangfire.JobSchedulerDbConnectionString);
-                TryReadConfig<string>(hangfire, AppEnvironment.KeyValues.Hangfire.JobSchedulerAzureServiceBusConnectionString);
             }
 
             TryReadConnectionString(AppEnvironment.KeyValues.Signalr.SignalRSqlServerConnectionString);
