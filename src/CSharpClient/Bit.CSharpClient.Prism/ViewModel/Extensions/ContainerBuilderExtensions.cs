@@ -1,5 +1,7 @@
-﻿using Bit.ViewModel.Contracts;
+﻿using Bit.View;
+using Bit.ViewModel.Contracts;
 using Bit.ViewModel.Implementations;
+using Prism.Ioc;
 using System;
 
 namespace Autofac
@@ -24,6 +26,9 @@ namespace Autofac
 
             containerBuilder.RegisterInstance<ITelemetryService>(ApplicationInsightsTelemetryService.Current);
             containerBuilder.RegisterInstance<ITelemetryService>(AppCenterTelemetryService.Current);
+            containerBuilder.RegisterInstance(LocalTelemetryService.Current).As<LocalTelemetryService, ITelemetryService>();
+            IContainerRegistry containerRegistry = (IContainerRegistry)containerBuilder.Properties[nameof(containerRegistry)];
+            containerRegistry.RegisterForNav<BitConsoleView>("BitConsole");
 
             containerBuilder.RegisterBuildCallback(container =>
             {
