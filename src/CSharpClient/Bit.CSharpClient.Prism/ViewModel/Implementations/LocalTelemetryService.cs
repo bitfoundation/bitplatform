@@ -193,7 +193,7 @@ namespace Bit.ViewModel.Implementations
             });
         }
 
-        public virtual async Task OpenBitConsole()
+        public virtual async Task OpenConsole()
         {
             try
             {

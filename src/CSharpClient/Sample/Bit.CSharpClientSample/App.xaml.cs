@@ -43,7 +43,7 @@ namespace Bit.CSharpClientSample
             Accelerometer.Start(SensorSpeed.UI);
             Accelerometer.ShakeDetected += async delegate
             {
-                await LocalTelemetryService.Current.OpenBitConsole();
+                await LocalTelemetryService.Current.OpenConsole();
             };
 
             bool isLoggedIn = await Container.Resolve<ISecurityService>().IsLoggedInAsync();
