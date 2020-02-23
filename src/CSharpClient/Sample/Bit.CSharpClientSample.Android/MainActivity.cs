@@ -13,6 +13,8 @@ namespace Bit.CSharpClientSample.Droid
     {
         protected override void OnCreate(Bundle savedInstanceState)
         {
+            LocalTelemetryService.Current.Init();
+
             TabLayoutResource = Resource.Layout.Tabbar;
             ToolbarResource = Resource.Layout.Toolbar;
 

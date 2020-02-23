@@ -11,6 +11,8 @@ namespace Bit.CSharpClientSample.iOS
     {
         public override bool FinishedLaunching(UIApplication app, NSDictionary options)
         {
+            LocalTelemetryService.Current.Init();
+
             SQLitePCL.Batteries.Init();
 
             UseDefaultConfiguration();

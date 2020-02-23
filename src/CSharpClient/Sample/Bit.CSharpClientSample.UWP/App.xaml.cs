@@ -11,6 +11,7 @@ namespace Bit.CSharpClientSample.UWP
     {
         static App()
         {
+            LocalTelemetryService.Current.Init();
             // ApplicationInsightsTelemetryService.Current.Init("");
         }
 

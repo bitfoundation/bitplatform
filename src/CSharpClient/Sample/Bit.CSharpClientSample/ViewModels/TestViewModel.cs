@@ -3,6 +3,7 @@ using Bit.ViewModel;
 using Bit.ViewModel.Contracts;
 using Prism.Events;
 using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -31,6 +32,11 @@ namespace Bit.CSharpClientSample.ViewModels
         async Task IncreaseSteps()
         {
             StepsCount++;
+            TelemetryServices.All()
+                .TrackEvent("StepsCountChanged", new Dictionary<string, string>
+                {
+                    { "NewValue", StepsCount.ToString() }
+                });
         }
 
         async Task Close()
