@@ -20,11 +20,9 @@ namespace Bit.ViewModel
                 Debug.WriteLine($"DateTime: {DateTime.Now.ToLongTimeString()} Message: {exp}", category: "ApplicationException");
             }
 
-#if UWP
             ApplicationInsightsTelemetryService.Current.TrackException(exp, properties);
-#else
             AppCenterTelemetryService.Current.TrackException(exp, properties);
-#endif
+            LocalTelemetryService.Current.TrackException(exp, properties);
         }
     }
 }
