@@ -149,7 +149,7 @@ namespace Bit
             IServiceCollection services = new BitServiceCollection();
 
             containerBuilder.Properties[nameof(services)] = services;
-            containerBuilder.Properties[nameof(containerBuilder)] = containerBuilder;
+            containerBuilder.Properties[nameof(containerRegistry)] = containerRegistry;
 
             RegisterTypes(containerRegistry, containerBuilder, services);
 
