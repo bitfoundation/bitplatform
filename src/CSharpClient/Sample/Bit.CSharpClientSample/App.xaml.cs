@@ -40,11 +40,14 @@ namespace Bit.CSharpClientSample
         {
             InitializeComponent();
 
-            Accelerometer.Start(SensorSpeed.UI);
-            Accelerometer.ShakeDetected += async delegate
+            if (Device.RuntimePlatform != Device.UWP)
             {
-                await LocalTelemetryService.Current.OpenConsole();
-            };
+                Accelerometer.Start(SensorSpeed.UI);
+                Accelerometer.ShakeDetected += async delegate
+                {
+                    await LocalTelemetryService.Current.OpenConsole();
+                };
+            }
 
             bool isLoggedIn = await Container.Resolve<ISecurityService>().IsLoggedInAsync();
 
@@ -75,7 +78,7 @@ namespace Bit.CSharpClientSample
 
             containerBuilder.Register<IClientAppProfile>(c => new DefaultClientAppProfile
             {
-                HostUri = new Uri("http://192.168.50.87/"),
+                HostUri = new Uri("http://localhost/"),
                 //HostUri = new Uri("http://127.0.0.1/"),
                 //HostUri = new Uri("http://10.0.2.2"),
                 OAuthRedirectUri = new Uri("Test://oauth2redirect"),

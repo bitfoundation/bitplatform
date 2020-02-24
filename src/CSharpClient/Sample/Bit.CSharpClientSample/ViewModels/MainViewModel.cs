@@ -3,9 +3,9 @@ using Bit.CSharpClientSample.Dto;
 using Bit.Tests.Model.Dto;
 using Bit.ViewModel;
 using Bit.ViewModel.Contracts;
+using Bit.ViewModel.Implementations;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
-using Prism.Navigation;
 using Refit;
 using Simple.OData.Client;
 using System;
@@ -29,6 +29,7 @@ namespace Bit.CSharpClientSample.ViewModels
         public HttpClient HttpClient { get; set; }
         public ISecurityService SecurityService { get; set; }
         public ISimpleApi SimpleApi { get; set; }
+        public LocalTelemetryService LocalTelemetryService { get; set; }
 
         public BitDelegateCommand SyncCommand { get; set; }
         public BitDelegateCommand SendHttpRequestCommand { get; set; }
@@ -36,6 +37,7 @@ namespace Bit.CSharpClientSample.ViewModels
         public BitDelegateCommand SendODataRequestCommand { get; set; }
         public BitDelegateCommand LogoutCommand { get; set; }
         public BitDelegateCommand ShowPopupCommand { get; set; }
+        public BitDelegateCommand OpenConsoleCommand { get; set; }
 
         public MainViewModel()
         {
@@ -45,6 +47,12 @@ namespace Bit.CSharpClientSample.ViewModels
             SendODataRequestCommand = new BitDelegateCommand(SendODataRequest);
             LogoutCommand = new BitDelegateCommand(Logout);
             ShowPopupCommand = new BitDelegateCommand(ShowPopup);
+            OpenConsoleCommand = new BitDelegateCommand(OpenConsole);
+        }
+
+        async Task OpenConsole()
+        {
+            await LocalTelemetryService.OpenConsole();
         }
 
         async Task Sync()
