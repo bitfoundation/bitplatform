@@ -133,7 +133,14 @@ namespace Bit.ViewModel
         {
             parameter = ConvertParameterTypeIfRequired(parameter);
 
-            return base.CanExecute(parameter);
+            try
+            {
+                return base.CanExecute(parameter);
+            }
+            catch (InvalidCastException)
+            {
+                return false;
+            }
         }
 
         protected object ConvertParameterTypeIfRequired(object parameter)
