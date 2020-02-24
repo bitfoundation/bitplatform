@@ -17,17 +17,34 @@ namespace Bit.ViewModel.Implementations
 
     public class TrackedThing
     {
-        public ThingProperty[] Properties { get; set; }
+        public ThingProperty[] Properties { get; set; } = new ThingProperty[] { };
+
+        public override string ToString()
+        {
+            return string.Join(Environment.NewLine, Properties.Select(p => $"{p.Key} : {p.Value}"));
+        }
     }
 
     public class TrackedEvent : TrackedThing
     {
         public string Name { get; set; }
+
+        public override string ToString()
+        {
+            return $@"{Name}
+{base.ToString()}";
+        }
     }
 
     public class TrackedException : TrackedThing
     {
         public Exception Exception { get; set; }
+
+        public override string ToString()
+        {
+            return $@"{Exception}
+{base.ToString()}";
+        }
     }
 
     public class TrackedMetric : TrackedThing
@@ -35,6 +52,12 @@ namespace Bit.ViewModel.Implementations
         public string Name { get; set; }
 
         public double Value { get; set; }
+
+        public override string ToString()
+        {
+            return $@"{Name} : {Value}
+{base.ToString()}";
+        }
     }
 
     public class TrackedPageView : TrackedThing
@@ -42,6 +65,12 @@ namespace Bit.ViewModel.Implementations
         public string Name { get; set; }
 
         public TimeSpan Duration { get; set; }
+
+        public override string ToString()
+        {
+            return $@"{Name} : {Duration}
+{base.ToString()}";
+        }
     }
 
     public class TrackedRequest : TrackedThing
@@ -57,11 +86,28 @@ namespace Bit.ViewModel.Implementations
         public bool Success { get; set; }
 
         public string HttpMethod { get; set; }
+
+        public override string ToString()
+        {
+            return $@"{Name}
+Start time: {StartTime}
+Duration: {Duration}
+Response code: {ResponseCode}
+Success: {Success}
+Http method: {HttpMethod}
+{base.ToString()}";
+        }
     }
 
     public class TrackedTrace : TrackedThing
     {
         public string Message { get; set; }
+
+        public override string ToString()
+        {
+            return $@"{Message}
+{base.ToString()}";
+        }
     }
 
     public class LocalTelemetryService : TelemetryServiceBase, ITelemetryService
