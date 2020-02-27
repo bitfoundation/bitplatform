@@ -13,7 +13,7 @@ namespace Bit.Hangfire.Implementations
 {
     public class HangfireBackgroundJobWorker : IBackgroundJobWorker
     {
-        public virtual Task<string> PerformBackgroundJobAsync<TService>(Expression<Action<TService>> methodCall)
+        public virtual Task<string> PerformBackgroundJobAsync<TService>(Expression<Func<TService, Task>> methodCall)
         {
             if (methodCall == null)
                 throw new ArgumentNullException(nameof(methodCall));
@@ -21,7 +21,7 @@ namespace Bit.Hangfire.Implementations
             return Task.FromResult(BackgroundJob.Enqueue(methodCall));
         }
 
-        public virtual Task<string> PerformBackgroundJobWhenAnotherJobFinishedAsync<TService>(string anotherJobId, Expression<Action<TService>> methodCall)
+        public virtual Task<string> PerformBackgroundJobWhenAnotherJobFinishedAsync<TService>(string anotherJobId, Expression<Func<TService, Task>> methodCall)
         {
             if (methodCall == null)
                 throw new ArgumentNullException(nameof(methodCall));
@@ -32,7 +32,7 @@ namespace Bit.Hangfire.Implementations
             return Task.FromResult(BackgroundJob.ContinueJobWith(anotherJobId, methodCall, JobContinuationOptions.OnAnyFinishedState));
         }
 
-        public virtual Task<string> PerformBackgroundJobWhenAnotherJobSucceededAsync<TService>(string anotherJobId, Expression<Action<TService>> methodCall)
+        public virtual Task<string> PerformBackgroundJobWhenAnotherJobSucceededAsync<TService>(string anotherJobId, Expression<Func<TService, Task>> methodCall)
         {
             if (methodCall == null)
                 throw new ArgumentNullException(nameof(methodCall));
@@ -43,7 +43,7 @@ namespace Bit.Hangfire.Implementations
             return Task.FromResult(BackgroundJob.ContinueJobWith(anotherJobId, methodCall, JobContinuationOptions.OnlyOnSucceededState));
         }
 
-        public virtual Task<string> PerformBackgroundJobAsync<TService>(Expression<Action<TService>> methodCall, TimeSpan when)
+        public virtual Task<string> PerformBackgroundJobAsync<TService>(Expression<Func<TService, Task>> methodCall, TimeSpan when)
         {
             if (methodCall == null)
                 throw new ArgumentNullException(nameof(methodCall));
@@ -51,7 +51,7 @@ namespace Bit.Hangfire.Implementations
             return Task.FromResult(BackgroundJob.Schedule(methodCall, when));
         }
 
-        public virtual Task PerformRecurringBackgroundJobAsync<TService>(string jobId, Expression<Action<TService>> methodCall, string cronExpression, TimeZoneInfo timeZoneInfo = null)
+        public virtual Task PerformRecurringBackgroundJobAsync<TService>(string jobId, Expression<Func<TService, Task>> methodCall, string cronExpression, TimeZoneInfo timeZoneInfo = null)
         {
             if (methodCall == null)
                 throw new ArgumentNullException(nameof(methodCall));
@@ -109,7 +109,7 @@ namespace Bit.Hangfire.Implementations
             });
         }
 
-        public virtual string PerformBackgroundJob<TService>(Expression<Action<TService>> methodCall)
+        public virtual string PerformBackgroundJob<TService>(Expression<Func<TService, Task>> methodCall)
         {
             if (methodCall == null)
                 throw new ArgumentNullException(nameof(methodCall));
@@ -117,7 +117,7 @@ namespace Bit.Hangfire.Implementations
             return BackgroundJob.Enqueue(methodCall);
         }
 
-        public virtual string PerformBackgroundJobWhenAnotherJobFinished<TService>(string anotherJobId, Expression<Action<TService>> methodCall)
+        public virtual string PerformBackgroundJobWhenAnotherJobFinished<TService>(string anotherJobId, Expression<Func<TService, Task>> methodCall)
         {
             if (methodCall == null)
                 throw new ArgumentNullException(nameof(methodCall));
@@ -128,7 +128,7 @@ namespace Bit.Hangfire.Implementations
             return BackgroundJob.ContinueJobWith(anotherJobId, methodCall, JobContinuationOptions.OnAnyFinishedState);
         }
 
-        public virtual string PerformBackgroundJobWhenAnotherJobSucceeded<TService>(string anotherJobId, Expression<Action<TService>> methodCall)
+        public virtual string PerformBackgroundJobWhenAnotherJobSucceeded<TService>(string anotherJobId, Expression<Func<TService, Task>> methodCall)
         {
             if (methodCall == null)
                 throw new ArgumentNullException(nameof(methodCall));
@@ -139,7 +139,7 @@ namespace Bit.Hangfire.Implementations
             return BackgroundJob.ContinueJobWith(anotherJobId, methodCall, JobContinuationOptions.OnlyOnSucceededState);
         }
 
-        public virtual string PerformBackgroundJob<TService>(Expression<Action<TService>> methodCall, TimeSpan when)
+        public virtual string PerformBackgroundJob<TService>(Expression<Func<TService, Task>> methodCall, TimeSpan when)
         {
             if (methodCall == null)
                 throw new ArgumentNullException(nameof(methodCall));
@@ -169,7 +169,7 @@ namespace Bit.Hangfire.Implementations
             };
         }
 
-        public virtual void PerformRecurringBackgroundJob<TService>(string jobId, Expression<Action<TService>> methodCall, string cronExpression, TimeZoneInfo timeZoneInfo = null)
+        public virtual void PerformRecurringBackgroundJob<TService>(string jobId, Expression<Func<TService, Task>> methodCall, string cronExpression, TimeZoneInfo timeZoneInfo = null)
         {
             if (methodCall == null)
                 throw new ArgumentNullException(nameof(methodCall));
