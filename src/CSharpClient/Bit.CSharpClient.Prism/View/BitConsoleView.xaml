@@ -8,7 +8,8 @@
     xmlns:bit="clr-namespace:Bit.View"
     x:DataType="vm:BitConsoleViewModel"
     x:Name="This"
-    BackgroundColor="White">
+    BackgroundColor="White" FlowDirection="LeftToRight">
+    
     <pages:PopupPage.Resources>
         <DataTemplate x:Key="PropertiesDataTemplate">
             <Label>
