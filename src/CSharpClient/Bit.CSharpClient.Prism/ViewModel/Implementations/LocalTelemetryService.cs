@@ -146,6 +146,11 @@ Http method: {HttpMethod}
             set { }
         }
 
+        public virtual void ClearThings()
+        {
+            _TrackedThings.Clear();
+        }
+
         protected virtual void AddNewThing(TrackedThing trackedThing)
         {
             if (IsConfigured())

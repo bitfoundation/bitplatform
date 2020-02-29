@@ -4,7 +4,9 @@ using Android.Content.PM;
 using Android.OS;
 using Android.Runtime;
 using Bit.View;
+using Bit.ViewModel;
 using Bit.ViewModel.Implementations;
+using System;
 using System.Threading.Tasks;
 using Xamarin.Essentials;
 using Xamarin.Forms;
@@ -65,6 +67,23 @@ namespace Bit.Android
             }
 
             base.OnRequestPermissionsResult(requestCode, permissions, grantResults);
+        }
+
+        public override void OnLowMemory()
+        {
+            try
+            {
+                if (LocalTelemetryService.Current.IsConfigured())
+                    LocalTelemetryService.Current.ClearThings();
+            }
+            catch (Exception exp)
+            {
+                BitExceptionHandler.Current.OnExceptionReceived(exp);
+            }
+            finally
+            {
+                base.OnLowMemory();
+            }
         }
     }
 }
