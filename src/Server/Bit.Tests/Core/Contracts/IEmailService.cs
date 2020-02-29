@@ -1,7 +1,9 @@
-﻿namespace Bit.Tests.Core.Contracts
+﻿using System.Threading.Tasks;
+
+namespace Bit.Tests.Core.Contracts
 {
     public interface IEmailService
     {
-        void SendEmail(string to, string title, string message);
+        Task SendEmail(string to, string title, string message);
     }
 }

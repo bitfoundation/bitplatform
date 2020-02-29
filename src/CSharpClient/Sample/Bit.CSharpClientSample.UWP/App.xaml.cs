@@ -27,6 +27,7 @@ namespace Bit.CSharpClientSample.UWP
                 rootFrame = new Frame();
 
                 UseDefaultConfiguration();
+                Xamarin.Forms.Forms.SetFlags("StateTriggers_Experimental");
                 Xamarin.Forms.Forms.Init(e, new Assembly[]
                 {
 

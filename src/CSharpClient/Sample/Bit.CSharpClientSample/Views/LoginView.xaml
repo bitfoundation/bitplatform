@@ -4,48 +4,48 @@
     xmlns="http://xamarin.com/schemas/2014/forms"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     xmlns:bit="https://bitframework.com"
-    NavigationPage.HasNavigationBar="False">
-    <ContentPage.Behaviors>
-        <bit:AdaptiveBehavior Orientation="Portrait">
-            <bit:SetPropertyAction Property="BackgroundColor" Value="LightGreen" />
-            <bit:SetPropertyAction
-                TargetElement="{x:Reference Test}"
-                Property="BackgroundColor"
-                Value="LightGreen" />
-        </bit:AdaptiveBehavior>
-        <bit:AdaptiveBehavior Orientation="Landscape">
-            <bit:SetPropertyAction Property="BackgroundColor" Value="LightBlue" />
-            <bit:SetPropertyAction
-                TargetElement="{x:Reference Test}"
-                Property="BackgroundColor"
-                Value="LightBlue" />
-        </bit:AdaptiveBehavior>
-        <bit:AdaptiveBehavior MinWidth="600" MaxWidth="800">
-            <bit:SetPropertyAction
-                TargetElement="{x:Reference Test}"
-                Property="IsVisible"
-                Value="True" />
-        </bit:AdaptiveBehavior>
-        <bit:AdaptiveBehavior MinWidth="800" MaxWidth="1000">
-            <bit:SetPropertyAction
-                TargetElement="{x:Reference Test}"
-                Property="IsVisible"
-                Value="True" />
-        </bit:AdaptiveBehavior>
-        <bit:AdaptiveBehavior MinWidth="1000" MaxWidth="1200">
-            <bit:SetPropertyAction
-                TargetElement="{x:Reference Test}"
-                Property="IsVisible"
-                Value="True" />
-        </bit:AdaptiveBehavior>
-        <bit:AdaptiveBehavior MinWidth="1200">
-            <bit:SetPropertyAction
-                TargetElement="{x:Reference Test}"
-                Property="IsVisible"
-                Value="False" />
-        </bit:AdaptiveBehavior>
-    </ContentPage.Behaviors>
-
+    NavigationPage.HasNavigationBar="False" x:Name="This">
+    <VisualStateManager.VisualStateGroups>
+        <VisualStateGroupList>
+            <VisualStateGroup>
+                <VisualState x:Name="Portrait">
+                    <VisualState.StateTriggers>
+                        <OrientationStateTrigger Orientation="Portrait" />
+                    </VisualState.StateTriggers>
+                    <VisualState.Setters>
+                        <Setter Property="BackgroundColor" Value="LightGreen" TargetName="This" />
+                        <Setter Property="BackgroundColor" Value="LightGreen" TargetName="Test" />
+                    </VisualState.Setters>
+                </VisualState>
+                <VisualState x:Name="Landscape">
+                    <VisualState.StateTriggers>
+                        <OrientationStateTrigger Orientation="Landscape" />
+                    </VisualState.StateTriggers>
+                    <VisualState.Setters>
+                        <Setter Property="BackgroundColor" Value="LightBlue" TargetName="This" />
+                        <Setter Property="BackgroundColor" Value="LightBlue" TargetName="Test" />
+                    </VisualState.Setters>
+                </VisualState>
+                <VisualState x:Name="MinWindowWidth600">
+                    <VisualState.StateTriggers>
+                        <AdaptiveTrigger MinWindowWidth="600" />
+                    </VisualState.StateTriggers>
+                    <VisualState.Setters>
+                        <Setter Property="IsVisible" Value="True" TargetName="Test" />
+                    </VisualState.Setters>
+                </VisualState>
+                <VisualState x:Name="MinWindowWidth1200">
+                    <VisualState.StateTriggers>
+                        <AdaptiveTrigger MinWindowWidth="1200" />
+                    </VisualState.StateTriggers>
+                    <VisualState.Setters>
+                        <Setter Property="IsVisible" Value="False" TargetName="Test" />
+                    </VisualState.Setters>
+                </VisualState>
+            </VisualStateGroup>
+        </VisualStateGroupList>
+    </VisualStateManager.VisualStateGroups>
+    
     <StackLayout>
         <Entry Text="{Binding UserName}" ReturnType="Next" ReturnCommand="{bit:GoToNextViewCommand Next={x:Reference Password}}" />
         <Entry x:Name="Password" Text="{Binding Password}" />

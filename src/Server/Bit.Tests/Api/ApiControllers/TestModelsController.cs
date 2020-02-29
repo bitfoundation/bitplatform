@@ -130,7 +130,7 @@ namespace Bit.Tests.Api.ApiControllers
 
             string secondJobId = await BackgroundJobWorker.Value
                 .PerformBackgroundJobWhenAnotherJobSucceededAsync<IMessageSender>(jobId,
-                    messageSender => messageSender.SendMessageToUsers("OnEmailSent", new { Title = title }, new[] { to }));
+                    messageSender => messageSender.SendMessageToUsersAsync("OnEmailSent", new { Title = title }, new[] { to }));
 
             return Guid.Parse(secondJobId);
         }
@@ -174,7 +174,7 @@ namespace Bit.Tests.Api.ApiControllers
             string word = parameters.word;
 
             await BackgroundJobWorker.Value.PerformBackgroundJobAsync<IMessageSender>(messageSender =>
-                        messageSender.SendMessageToUsers("NewWord", new { Word = word }, new[] { to }));
+                        messageSender.SendMessageToUsersAsync("NewWord", new { Word = word }, new[] { to }));
         }
 
         public class StringFormattersTestsParameters

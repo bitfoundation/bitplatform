@@ -16,6 +16,7 @@ namespace Bit.CSharpClientSample.iOS
             SQLitePCL.Batteries.Init();
 
             UseDefaultConfiguration();
+            Forms.SetFlags("StateTriggers_Experimental");
             Forms.Init();
 
             LoadApplication(new App(new SampleAppiOSInitializer()));

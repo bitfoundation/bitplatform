@@ -23,6 +23,7 @@ namespace Bit.CSharpClientSample.Droid
             base.OnCreate(savedInstanceState);
 
             UseDefaultConfiguration(savedInstanceState);
+            Forms.SetFlags("StateTriggers_Experimental");
             Forms.Init(this, savedInstanceState);
 
             LoadApplication(new App(new SampleAppDroidInitializer(this)));

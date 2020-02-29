@@ -1,8 +1,6 @@
 ﻿using Autofac;
 using Autofac.Extensions.DependencyInjection;
 using Bit.Model.Events;
-using Bit.View;
-using Bit.View.Contracts;
 using Bit.ViewModel;
 using Bit.ViewModel.Contracts;
 using Bit.ViewModel.Implementations;
@@ -17,11 +15,9 @@ using Prism.Plugin.Popups;
 using Rg.Plugins.Popup.Services;
 using System;
 using System.Collections.Generic;
-using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using Xamarin.Essentials;
 using Xamarin.Forms;
-using Xamarin.Forms.Internals;
 using Xamarin.Forms.Xaml;
 
 [assembly: XamlCompilation(XamlCompilationOptions.Compile)]
@@ -34,8 +30,10 @@ using Xamarin.Forms.Xaml;
 
 namespace Bit
 {
-    public abstract class BitApplication : PrismApplication, IAdaptiveBehaviorService
+    public abstract class BitApplication : PrismApplication
     {
+        private readonly Lazy<IEventAggregator> _eventAggregator;
+
         /// <summary>
         /// To be called in shared/net-standard project.
         /// https://docs.microsoft.com/bg-bg/xamarin/xamarin-forms/xaml/custom-namespace-schemas#consuming-a-custom-namespace-schema
@@ -61,51 +59,6 @@ namespace Bit
 
             if (MainPage == null)
                 MainPage = new ContentPage { Title = "DefaultPage" };
-        }
-
-        protected override void OnPropertyChanging([CallerMemberName] string propertyName = null)
-        {
-            base.OnPropertyChanging(propertyName);
-
-            if (propertyName == nameof(MainPage) && MainPage != null)
-            {
-                MainPage.SizeChanged -= MainPage_SizeChanged;
-            }
-        }
-
-        protected override void OnPropertyChanged([CallerMemberName] string propertyName = null)
-        {
-            base.OnPropertyChanged(propertyName);
-
-            if (propertyName == nameof(MainPage) && MainPage != null)
-            {
-                MainPage.SizeChanged += MainPage_SizeChanged;
-            }
-        }
-
-        private readonly Lazy<IEventAggregator> _eventAggregator;
-
-        private void MainPage_SizeChanged(object sender, EventArgs e)
-        {
-            PublishOrientationAndOrSizeChangedEvent();
-        }
-
-        protected virtual void PublishOrientationAndOrSizeChangedEvent()
-        {
-            double width = MainPage.Width;
-            double height = MainPage.Height;
-
-            if (width == 0 || height == 0)
-                return;
-
-            DeviceOrientation newOrientation = (width < height) ? DeviceOrientation.Portrait : DeviceOrientation.Landscape;
-
-            _eventAggregator?.Value.GetEvent<OrientationAndOrSizeChanged>().Publish(new OrientationAndOrSizeChanged
-            {
-                NewOrientation = newOrientation,
-                NewWidth = width,
-                NewHeight = height
-            });
         }
 
         protected sealed override async void OnInitialized()
@@ -161,7 +114,6 @@ namespace Bit
             containerRegistry.Register<ILoggerFacade, BitPrismLogger>();
             containerBuilder.Register(c => Container).SingleInstance().PreserveExistingDefaults();
             containerBuilder.Register(c => Container.GetContainer()).PreserveExistingDefaults();
-            containerBuilder.Register<IAdaptiveBehaviorService>(c => this).SingleInstance().PreserveExistingDefaults();
             PopupNavigation.SetInstance(new BitPopupNavigation
             {
                 OriginalImplementation = PopupNavigation.Instance
@@ -172,14 +124,6 @@ namespace Bit
         protected override IContainerExtension CreateContainerExtension()
         {
             return new AutofacContainerExtension(new ContainerBuilder());
-        }
-
-        public virtual void InvalidateAllAdptiveBehaviors()
-        {
-            _eventAggregator.Value.GetEvent<InvalidateAllAdaptiveBehaviors>()
-                .Publish(new InvalidateAllAdaptiveBehaviors { });
-
-            PublishOrientationAndOrSizeChangedEvent();
         }
     }
 

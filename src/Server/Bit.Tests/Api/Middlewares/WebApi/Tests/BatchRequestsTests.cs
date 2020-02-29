@@ -80,7 +80,7 @@ namespace Bit.Tests.Api.Middlewares.WebApi.Tests
                 .Throws<InvalidOperationException>();
 
             A.CallTo(() => emailService.SendEmail(A<string>.That.Matches(s => s == "Work"), A<string>.Ignored, A<string>.Ignored))
-                .DoesNothing();
+                .Returns(Task.CompletedTask);
 
             using (BitOwinTestEnvironment testEnvironment = new BitOwinTestEnvironment(new TestEnvironmentArgs
             {
