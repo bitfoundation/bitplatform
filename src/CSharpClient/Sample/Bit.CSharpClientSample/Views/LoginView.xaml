@@ -4,7 +4,7 @@
     xmlns="http://xamarin.com/schemas/2014/forms"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     xmlns:bit="https://bitframework.com"
-    NavigationPage.HasNavigationBar="False" x:Name="This">
+    NavigationPage.HasNavigationBar="False">
     <VisualStateManager.VisualStateGroups>
         <VisualStateGroupList>
             <VisualStateGroup>
@@ -13,7 +13,7 @@
                         <OrientationStateTrigger Orientation="Portrait" />
                     </VisualState.StateTriggers>
                     <VisualState.Setters>
-                        <Setter Property="BackgroundColor" Value="LightGreen" TargetName="This" />
+                        <Setter Property="BackgroundColor" Value="LightGreen" />
                         <Setter Property="BackgroundColor" Value="LightGreen" TargetName="Test" />
                     </VisualState.Setters>
                 </VisualState>
@@ -22,7 +22,7 @@
                         <OrientationStateTrigger Orientation="Landscape" />
                     </VisualState.StateTriggers>
                     <VisualState.Setters>
-                        <Setter Property="BackgroundColor" Value="LightBlue" TargetName="This" />
+                        <Setter Property="BackgroundColor" Value="LightBlue" />
                         <Setter Property="BackgroundColor" Value="LightBlue" TargetName="Test" />
                     </VisualState.Setters>
                 </VisualState>
