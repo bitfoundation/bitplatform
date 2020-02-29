@@ -6,9 +6,9 @@
     <UserSecretsId>075bb9c1-05ff-404a-ac1f-5670bb5bd331</UserSecretsId>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="Bit.OwinCore" Version="3.8.0" />
-    <PackageReference Include="Bit.WebApi" Version="3.8.0" />
-    <PackageReference Include="BitCodeAnalyzer" Version="3.8.0" />
+    <PackageReference Include="Bit.OwinCore" Version="3.9.0" />
+    <PackageReference Include="Bit.WebApi" Version="3.9.0" />
+    <PackageReference Include="BitCodeAnalyzer" Version="3.9.0" />
   </ItemGroup>
   <ItemGroup>
     <Content Update="environments.json">

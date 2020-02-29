@@ -44,7 +44,7 @@ namespace BitChangeSetManager.Api
 
             MessageSender.SendMessageToGroups("ChangeSetHasBeenInsertedByUser", new { userName = user.UserName, title = dto.Title }, groupNames: new[] { user.Culture.ToString() });
 
-            await BackgroundJobWorker.PerformBackgroundJobAsync<IMessageSender>(messageSender => messageSender.SendMessageToGroups("ChangeSetHasBeenInsertedByUser", new { userName = user.UserName, title = dto.Title }, new[] { user.Culture.ToString() })); // to test background job worker & message sender together!
+            await BackgroundJobWorker.PerformBackgroundJobAsync<IMessageSender>(messageSender => messageSender.SendMessageToGroupsAsync("ChangeSetHasBeenInsertedByUser", new { userName = user.UserName, title = dto.Title }, new[] { user.Culture.ToString() })); // to test background job worker & message sender together!
 
             return insertedChangeSet;
         }

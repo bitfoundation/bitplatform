@@ -25,7 +25,8 @@ EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
 		BitTools\BitTools.Core\BitTools.Core.projitems*{2c8e2fd6-0db2-470b-9059-9b0b6df1562f}*SharedItemsImports = 13
-		BitTools\BitTools.Core\BitTools.Core.projitems*{d3606caf-481e-4632-9060-a9367a5d4f6a}*SharedItemsImports = 4
+		BitTools\BitTools.Core\BitTools.Core.projitems*{d3606caf-481e-4632-9060-a9367a5d4f6a}*SharedItemsImports = 5
+		BitTools\BitTools.Core\BitTools.Core.projitems*{debed051-f837-4a0d-a230-02fb4e8533c3}*SharedItemsImports = 5
 	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
