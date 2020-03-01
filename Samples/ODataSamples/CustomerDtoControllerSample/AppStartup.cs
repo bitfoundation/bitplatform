@@ -1,8 +1,6 @@
 ﻿using AutoMapper;
 using Bit.Core;
 using Bit.Core.Contracts;
-using Bit.Core.Implementations;
-using Bit.Core.Models;
 using Bit.Data;
 using Bit.Data.Contracts;
 using Bit.Data.EntityFramework.Implementations;
@@ -13,7 +11,9 @@ using Bit.OData.ODataControllers;
 using Bit.Owin.Exceptions;
 using Bit.Owin.Implementations;
 using Bit.OwinCore;
+using Bit.OwinCore.Implementations;
 using Microsoft.AspNet.OData;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json.Converters;
 using Swashbuckle.Application;
@@ -38,7 +38,7 @@ namespace CustomerDtoControllerSample
         public AppStartup(IServiceProvider serviceProvider)
             : base(serviceProvider)
         {
-
+            AspNetCoreAppEnvironmentsProvider.Current.Init();
         }
 
         public override IServiceProvider ConfigureServices(IServiceCollection services)
@@ -162,13 +162,13 @@ namespace CustomerDtoControllerSample
     public class MyAppDbContext : EfDbContextBase
     {
         public MyAppDbContext()
-            : base(DefaultAppEnvironmentsProvider.Current.GetActiveAppEnvironment().GetConfig<string>("AppConnectionString"))
+            : base(AspNetCoreAppEnvironmentsProvider.Current.Configuration.GetConnectionString("AppConnectionString"))
         {
 
         }
 
-        public MyAppDbContext(AppEnvironment appEnvironment, IDbConnectionProvider dbConnectionProvider)
-            : base(appEnvironment.GetConfig<string>("AppConnectionString"), dbConnectionProvider)
+        public MyAppDbContext(IConfiguration configuration, IDbConnectionProvider dbConnectionProvider)
+            : base(configuration.GetConnectionString("AppConnectionString"), dbConnectionProvider)
         {
 
         }
