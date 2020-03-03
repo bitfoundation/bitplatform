@@ -89,7 +89,7 @@ namespace Bit.ViewModel.Implementations
                 if (!properties.ContainsKey("Timestamp"))
                     properties.Add("Timestamp", startTime.ToString(CultureInfo.InvariantCulture)); /*Based on Microsoft.ApplicationInsights.DataContracts.RequestTelemetry*/
                 if (!properties.ContainsKey("Duration"))
-                    properties.Add("Duration", responseCode);
+                    properties.Add("Duration", duration.ToString());
                 if (!properties.ContainsKey("Success"))
                     properties.Add("Success", success.ToString(CultureInfo.InvariantCulture));
                 if (!properties.ContainsKey("Url"))
