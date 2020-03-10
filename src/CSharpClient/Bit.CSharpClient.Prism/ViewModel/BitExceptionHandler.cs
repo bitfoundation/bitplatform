@@ -1,5 +1,6 @@
 ﻿#define Debug
 
+using Bit.ViewModel.Contracts;
 using Bit.ViewModel.Implementations;
 using System;
 using System.Collections.Generic;
@@ -7,9 +8,9 @@ using System.Diagnostics;
 
 namespace Bit.ViewModel
 {
-    public class BitExceptionHandler
+    public class BitExceptionHandler : IExceptionHandler
     {
-        public static BitExceptionHandler Current { get; set; } = new BitExceptionHandler();
+        public static IExceptionHandler Current { get; set; } = new BitExceptionHandler();
 
         public virtual void OnExceptionReceived(Exception exp, IDictionary<string, string> properties = null)
         {

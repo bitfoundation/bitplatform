@@ -13,6 +13,8 @@ namespace Bit.ViewModel.Implementations
 {
     public class SignalrMessageReceiver : Bindable, IMessageReceiver, IDisposable
     {
+        public IExceptionHandler ExceptionHandler { get; set; }
+
         public virtual SignalRHttpClient SignalRHttpClient { get; set; }
 
         public virtual IEventAggregator EventAggregator { get; set; }
@@ -139,7 +141,7 @@ namespace Bit.ViewModel.Implementations
                     }
                     catch (Exception exp)
                     {
-                        BitExceptionHandler.Current.OnExceptionReceived(exp);
+                        ExceptionHandler.OnExceptionReceived(exp);
                     }
 
                     try
@@ -148,7 +150,7 @@ namespace Bit.ViewModel.Implementations
                     }
                     catch (Exception exp)
                     {
-                        BitExceptionHandler.Current.OnExceptionReceived(exp);
+                        ExceptionHandler.OnExceptionReceived(exp);
                     }
                     finally
                     {

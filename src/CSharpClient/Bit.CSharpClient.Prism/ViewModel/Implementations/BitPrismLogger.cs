@@ -1,5 +1,6 @@
 ﻿#define Debug
 
+using Bit.ViewModel.Contracts;
 using Prism.Logging;
 using System;
 using System.Collections.Generic;
@@ -9,6 +10,8 @@ namespace Bit.ViewModel.Implementations
 {
     public class BitPrismLogger : ILogger
     {
+        public virtual IExceptionHandler ExceptionHandler { get; set; }
+
         public virtual void Log(string message, IDictionary<string, string> properties)
         {
             if (Debugger.IsAttached)
@@ -33,7 +36,7 @@ namespace Bit.ViewModel.Implementations
 
         public virtual void Report(Exception ex, IDictionary<string, string> properties)
         {
-            BitExceptionHandler.Current.OnExceptionReceived(ex, properties);
+            ExceptionHandler.OnExceptionReceived(ex, properties);
         }
 
         public virtual void TrackEvent(string name, IDictionary<string, string> properties)

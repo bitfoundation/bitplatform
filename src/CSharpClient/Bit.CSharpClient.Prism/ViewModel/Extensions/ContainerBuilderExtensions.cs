@@ -25,6 +25,7 @@ namespace Autofac
                 .PropertiesAutowired()
                 .PreserveExistingDefaults();
 
+            containerBuilder.RegisterInstance<IExceptionHandler>(BitExceptionHandler.Current);
             containerBuilder.RegisterInstance<ITelemetryService>(ApplicationInsightsTelemetryService.Current);
             containerBuilder.RegisterInstance<ITelemetryService>(AppCenterTelemetryService.Current);
             containerBuilder.RegisterInstance(LocalTelemetryService.Current).As<LocalTelemetryService, ITelemetryService>();

@@ -26,6 +26,7 @@ namespace Bit.ViewModel.Implementations
         public virtual IClientAppProfile ClientAppProfile { get; set; }
         public virtual HttpClient HttpClient { get; set; }
         public virtual IODataClient ODataClient { get; set; }
+        public virtual IExceptionHandler ExceptionHandler { get; set; }
 
 
         private readonly List<DtoSetSyncConfig> _configs = new List<DtoSetSyncConfig> { };
@@ -265,7 +266,7 @@ namespace Bit.ViewModel.Implementations
             catch (Exception exp)
             {
                 dtoSyncConfigSyncFromResults.RecentlyChangedOnlineDtos = Array.Empty<ISyncableDto>();
-                BitExceptionHandler.Current.OnExceptionReceived(exp);
+                ExceptionHandler.OnExceptionReceived(exp);
             }
         }
 

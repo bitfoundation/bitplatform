@@ -15,6 +15,8 @@ namespace Bit.ViewModel
 
         public virtual CancellationToken CurrentCancellationToken { get; set; }
 
+        public virtual IExceptionHandler ExceptionHandler { get; set; }
+
         public BitViewModelBase()
         {
             CancellationTokenSource = new CancellationTokenSource();
@@ -37,7 +39,7 @@ namespace Bit.ViewModel
             }
             catch (Exception exp)
             {
-                BitExceptionHandler.Current.OnExceptionReceived(exp);
+                ExceptionHandler.OnExceptionReceived(exp);
             }
         }
 
@@ -55,7 +57,7 @@ namespace Bit.ViewModel
             }
             catch (Exception exp)
             {
-                BitExceptionHandler.Current.OnExceptionReceived(exp);
+                ExceptionHandler.OnExceptionReceived(exp);
             }
         }
 
@@ -88,7 +90,7 @@ namespace Bit.ViewModel
             catch (Exception exp)
             {
                 success = false;
-                BitExceptionHandler.Current.OnExceptionReceived(exp);
+                ExceptionHandler.OnExceptionReceived(exp);
             }
             finally
             {
@@ -127,7 +129,7 @@ namespace Bit.ViewModel
             }
             catch (Exception exp)
             {
-                BitExceptionHandler.Current.OnExceptionReceived(exp);
+                ExceptionHandler.OnExceptionReceived(exp);
             }
         }
 
