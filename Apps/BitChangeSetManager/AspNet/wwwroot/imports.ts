@@ -1,4 +1,4 @@
-﻿/// <reference path="node_modules/@bit/bit-framework/typings.all.d.ts" />
+﻿/// <reference path="node_modules/@bit/bitframework/typings.all.d.ts" />
 
 import DtoViewModelDependency = Bit.DtoViewModelDependency;
 import DtoRulesDependency = Bit.DtoRulesDependency;

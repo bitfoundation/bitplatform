@@ -5,7 +5,7 @@
   "author": "Bit Foundation",
   "repository": {
     "type": "git",
-    "url": "https://github.com/bit-foundation/bit-framework/"
+    "url": "https://github.com/bitfoundation/bitframework/"
   },
   "keywords": [
     "bit"
@@ -23,8 +23,8 @@
     "@types/signalr": "^2.2.36"
   },
   "dependencies": {
-    "@bit/bit-framework": "^2.9.0",
-    "@bit/jaydata": "^1.5.20",
+    "@bit/bitframework": "^3.9.1",
+    "@bit/jaydata": "^1.5.22",
     "@uirouter/angularjs": "^1.0.24",
     "angular": "^1.7.9",
     "angular-animate": "^1.7.9",

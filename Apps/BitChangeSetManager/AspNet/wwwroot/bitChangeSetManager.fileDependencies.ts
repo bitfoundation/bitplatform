@@ -59,26 +59,26 @@ module BitChangeSetManager {
 
     dependencyManager.registerFileDependency({
         name: "controls-styles",
-        path: "node_modules/@bit/bit-framework/contents/styles/controls",
+        path: "node_modules/@bit/bitframework/contents/styles/controls",
         fileDependencyType: "Style"
     });
 
     dependencyManager.registerFileDependency({
         name: "light-blue-theme-custom-styles",
-        path: "node_modules/@bit/bit-framework/contents/styles/theme.light.blue",
+        path: "node_modules/@bit/bitframework/contents/styles/theme.light.blue",
         fileDependencyType: "Style"
     });
 
     dependencyManager.registerFileDependency({
         name: "en-US-styles",
-        path: "node_modules/@bit/bit-framework/contents/styles/en-US",
+        path: "node_modules/@bit/bitframework/contents/styles/en-US",
         fileDependencyType: "Style",
         predicate: appEnvProvider => appEnvProvider.culture == "EnUs"
     });
 
     dependencyManager.registerFileDependency({
         name: "fa-IR-styles",
-        path: "node_modules/@bit/bit-framework/contents/styles/fa-IR",
+        path: "node_modules/@bit/bitframework/contents/styles/fa-IR",
         fileDependencyType: "Style",
         predicate: appEnvProvider => appEnvProvider.culture == "FaIr"
     });
@@ -242,7 +242,7 @@ module BitChangeSetManager {
 
     dependencyManager.registerFileDependency({
         name: "bit-model-context",
-        path: "node_modules/@bit/bit-framework/Bit.Model.Context"
+        path: "node_modules/@bit/bitframework/Bit.Model.Context"
     });
 
     dependencyManager.registerFileDependency({

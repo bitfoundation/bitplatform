@@ -18,13 +18,13 @@ module BitChangeSetManagerSecurity {
 
     dependencyManager.registerFileDependency({
         name: "controls-styles",
-        path: "node_modules/@bit/bit-framework/contents/styles/controls",
+        path: "node_modules/@bit/bitframework/contents/styles/controls",
         fileDependencyType: "Style"
     });
 
     dependencyManager.registerFileDependency({
         name: "en-US-styles",
-        path: "node_modules/@bit/bit-framework/contents/styles/en-US",
+        path: "node_modules/@bit/bitframework/contents/styles/en-US",
         fileDependencyType: "Style",
         predicate: appEnvProvider => appEnvProvider.culture == "EnUs"
     });
@@ -95,6 +95,6 @@ module BitChangeSetManagerSecurity {
 
     dependencyManager.registerFileDependency({
         name: "bit-model-context",
-        path: "node_modules/@bit/bit-framework/Bit.Model.Context"
+        path: "node_modules/@bit/bitframework/Bit.Model.Context"
     });
 }
