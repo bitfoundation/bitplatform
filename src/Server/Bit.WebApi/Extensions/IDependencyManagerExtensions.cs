@@ -30,12 +30,12 @@ namespace Bit.Core.Contracts
 
             controllersAssemblies = AssemblyContainer.Current.AssembliesWithDefaultAssemblies(controllersAssemblies).Union(new[] { AssemblyContainer.Current.GetBitWebApiAssembly() }).ToArray();
 
-            dependencyManager.RegisterInstance<IApiAssembliesProvider>(new DefaultWebApiAssembliesProvider(controllersAssemblies), overwriteExciting: false);
+            dependencyManager.RegisterInstance<IApiAssembliesProvider>(new DefaultWebApiAssembliesProvider(controllersAssemblies), overwriteExisting: false);
 
             dependencyManager.RegisterAssemblyTypes(controllersAssemblies, t => typeof(IHttpController).GetTypeInfo().IsAssignableFrom(t) && t.Name.EndsWith("Controller", StringComparison.Ordinal), lifeCycle: DependencyLifeCycle.Transient);
 
-            dependencyManager.Register<System.Web.Http.Dispatcher.IAssembliesResolver, DefaultWebApiAssembliesResolver>(lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExciting: false);
-            dependencyManager.Register<System.Web.Http.Tracing.ITraceWriter, DefaultWebApiTraceWriter>(lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExciting: false);
+            dependencyManager.Register<System.Web.Http.Dispatcher.IAssembliesResolver, DefaultWebApiAssembliesResolver>(lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExisting: false);
+            dependencyManager.Register<System.Web.Http.Tracing.ITraceWriter, DefaultWebApiTraceWriter>(lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExisting: false);
 
             dependencyManager.RegisterGlobalWebApiActionFiltersUsing(webApiConfig => webApiConfig.Filters.Add(new OwinActionFilterAttribute(typeof(OwinNoCacheResponseMiddleware))));
             dependencyManager.RegisterGlobalWebApiActionFiltersUsing(webApiConfig => webApiConfig.Filters.Add(new AddAcceptCharsetToRequestHeadersIfNotAnyFilterAttribute()));
@@ -51,7 +51,7 @@ namespace Bit.Core.Contracts
             if (dependencyManager == null)
                 throw new ArgumentNullException(nameof(dependencyManager));
 
-            dependencyManager.Register<IWebApiConfigurationCustomizer, TWebApiConfigurationCustomizer>(lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExciting: false);
+            dependencyManager.Register<IWebApiConfigurationCustomizer, TWebApiConfigurationCustomizer>(lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExisting: false);
 
             return dependencyManager;
         }
@@ -68,7 +68,7 @@ namespace Bit.Core.Contracts
             if (webApiCustomizer == null)
                 throw new ArgumentNullException(nameof(webApiCustomizer));
 
-            dependencyManager.RegisterInstance<IWebApiConfigurationCustomizer>(new DelegateGlobalActionFiltersProvider(webApiCustomizer), overwriteExciting: false);
+            dependencyManager.RegisterInstance<IWebApiConfigurationCustomizer>(new DelegateGlobalActionFiltersProvider(webApiCustomizer), overwriteExisting: false);
 
             return dependencyManager;
         }
@@ -89,8 +89,8 @@ namespace Bit.Core.Contracts
             if (dependencyManager == null)
                 throw new ArgumentNullException(nameof(dependencyManager));
 
-            dependencyManager.Register<System.Web.Http.Dependencies.IDependencyResolver, AutofacWebApiDependencyResolver>(lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExciting: false);
-            dependencyManager.Register<IWebApiOwinPipelineInjector, DefaultWebApiOwinPipelineInjector>(lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExciting: false);
+            dependencyManager.Register<System.Web.Http.Dependencies.IDependencyResolver, AutofacWebApiDependencyResolver>(lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExisting: false);
+            dependencyManager.Register<IWebApiOwinPipelineInjector, DefaultWebApiOwinPipelineInjector>(lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExisting: false);
             dependencyManager.RegisterWebApiConfigurationCustomizer<GlobalDefaultLogOperationInfoActionFilterProvider<LogOperationInfoFilterAttribute>>();
             dependencyManager.RegisterWebApiConfigurationCustomizer<GlobalDefaultExceptionHandlerActionFilterProvider<ExceptionHandlerFilterAttribute>>();
             dependencyManager.RegisterOwinMiddleware<WebApiMiddlewareConfiguration>(name);
@@ -104,7 +104,7 @@ namespace Bit.Core.Contracts
         /// <param name="onConfigure">Everything you perform using this dependency manager, will be applied to this web api only. You can provide any implementation for web api | bit interfaces such as <see cref="System.Web.Http.Tracing.ITraceWriter"/> that affects this web api only.</param>
         public static IDependencyManager RegisterWebApiMiddleware(this IDependencyManager dependencyManager, Action<IDependencyManager> onConfigure)
         {
-            dependencyManager.RegisterUsing((resolver) => dependencyManager.CreateChildDependencyResolver(onConfigure).Resolve<IOwinMiddlewareConfiguration>("WebApi"), lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExciting: false);
+            dependencyManager.RegisterUsing((resolver) => dependencyManager.CreateChildDependencyResolver(onConfigure).Resolve<IOwinMiddlewareConfiguration>("WebApi"), lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExisting: false);
 
             return dependencyManager;
         }

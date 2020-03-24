@@ -57,25 +57,25 @@ namespace Bit.Core.Contracts
         bool ContainerIsBuilt();
 
         IDependencyManager Register<T>(string name = null,
-            DependencyLifeCycle lifeCycle = DependencyLifeCycle.PerScopeInstance, bool overwriteExciting = true)
+            DependencyLifeCycle lifeCycle = DependencyLifeCycle.PerScopeInstance, bool overwriteExisting = true)
             where T : class;
 
         IDependencyManager Register<TService, TImplementation>(string name = null,
-            DependencyLifeCycle lifeCycle = DependencyLifeCycle.PerScopeInstance, bool overwriteExciting = true)
+            DependencyLifeCycle lifeCycle = DependencyLifeCycle.PerScopeInstance, bool overwriteExisting = true)
             where TImplementation : class, TService;
 
         IDependencyManager Register(TypeInfo[] servicesType, TypeInfo implementationType, string name = null,
-    DependencyLifeCycle lifeCycle = DependencyLifeCycle.PerScopeInstance, bool overwriteExciting = true);
+    DependencyLifeCycle lifeCycle = DependencyLifeCycle.PerScopeInstance, bool overwriteExisting = true);
 
         IDependencyManager Register(TypeInfo serviceType, TypeInfo implementationType, string name = null,
-DependencyLifeCycle lifeCycle = DependencyLifeCycle.PerScopeInstance, bool overwriteExciting = true);
+DependencyLifeCycle lifeCycle = DependencyLifeCycle.PerScopeInstance, bool overwriteExisting = true);
 
-        IDependencyManager RegisterInstance<TService>(TService implementationInstance, bool overwriteExciting = true, string name = null)
+        IDependencyManager RegisterInstance<TService>(TService implementationInstance, bool overwriteExisting = true, string name = null)
             where TService : class;
 
-        IDependencyManager RegisterInstance(object obj, TypeInfo[] servicesType, bool overwriteExciting = true, string name = null);
+        IDependencyManager RegisterInstance(object obj, TypeInfo[] servicesType, bool overwriteExisting = true, string name = null);
 
-        IDependencyManager RegisterInstance(object obj, TypeInfo serviceType, bool overwriteExciting = true, string name = null);
+        IDependencyManager RegisterInstance(object obj, TypeInfo serviceType, bool overwriteExisting = true, string name = null);
 
         /// <summary>
         /// Register an unparameterized generic type, e.g. IRepository&lt;&gt;. Concrete types will be made as they are requested, e.g. with IRepository&lt;Customer&gt;
@@ -85,11 +85,11 @@ DependencyLifeCycle lifeCycle = DependencyLifeCycle.PerScopeInstance, bool overw
         IDependencyManager RegisterGeneric(TypeInfo serviceType, TypeInfo implementationType, DependencyLifeCycle lifeCycle = DependencyLifeCycle.PerScopeInstance);
 
         IDependencyManager RegisterUsing<TService>(Func<IDependencyResolver, TService> factory, string name = null,
-            DependencyLifeCycle lifeCycle = DependencyLifeCycle.PerScopeInstance, bool overwriteExciting = true);
+            DependencyLifeCycle lifeCycle = DependencyLifeCycle.PerScopeInstance, bool overwriteExisting = true);
 
-        IDependencyManager RegisterUsing(Func<IDependencyResolver, object> factory, TypeInfo[] servicesType, string name = null, DependencyLifeCycle lifeCycle = DependencyLifeCycle.PerScopeInstance, bool overwriteExciting = true);
+        IDependencyManager RegisterUsing(Func<IDependencyResolver, object> factory, TypeInfo[] servicesType, string name = null, DependencyLifeCycle lifeCycle = DependencyLifeCycle.PerScopeInstance, bool overwriteExisting = true);
 
-        IDependencyManager RegisterUsing(Func<IDependencyResolver, object> factory, TypeInfo serviceType, string name = null, DependencyLifeCycle lifeCycle = DependencyLifeCycle.PerScopeInstance, bool overwriteExciting = true);
+        IDependencyManager RegisterUsing(Func<IDependencyResolver, object> factory, TypeInfo serviceType, string name = null, DependencyLifeCycle lifeCycle = DependencyLifeCycle.PerScopeInstance, bool overwriteExisting = true);
 
         IDependencyResolver CreateChildDependencyResolver(Action<IDependencyManager> childDependencyManager = null);
 

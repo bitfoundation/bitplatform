@@ -21,8 +21,8 @@ namespace Bit.Core.Contracts
             if (dependencyManager == null)
                 throw new ArgumentNullException(nameof(dependencyManager));
 
-            dependencyManager.Register<System.Web.Http.Dependencies.IDependencyResolver, AutofacWebApiDependencyResolver>(lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExciting: false);
-            dependencyManager.Register<IWebApiOwinPipelineInjector, DefaultWebApiODataOwinPipelineInjector>(lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExciting: false);
+            dependencyManager.Register<System.Web.Http.Dependencies.IDependencyResolver, AutofacWebApiDependencyResolver>(lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExisting: false);
+            dependencyManager.Register<IWebApiOwinPipelineInjector, DefaultWebApiODataOwinPipelineInjector>(lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExisting: false);
             dependencyManager.RegisterWebApiConfigurationCustomizer<ReadRequestContentStreamAsyncActionFilterAttribute>();
             dependencyManager.RegisterWebApiConfigurationCustomizer<GlobalDefaultRequestQSStringCorrectorsApplierActionFilterProvider>();
             dependencyManager.RegisterWebApiConfigurationCustomizer<GlobalDefaultRequestQSTimeZoneApplierActionFilterProvider>();
@@ -31,10 +31,10 @@ namespace Bit.Core.Contracts
             dependencyManager.RegisterWebApiConfigurationCustomizer<GlobalDefaultLogOperationInfoActionFilterProvider<ODataLogOperationInfoFilterAttribute>>();
             dependencyManager.RegisterWebApiConfigurationCustomizer<ThrowAnExceptionForRequestBodyJsonParseEerrorActionFilter>();
             dependencyManager.RegisterWebApiConfigurationCustomizer<GlobalDefaultExceptionHandlerActionFilterProvider<ODataExceptionHandlerFilterAttribute>>();
-            dependencyManager.Register<IODataModuleConfiguration, DefaultODataModuleConfiguration>(lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExciting: false);
-            dependencyManager.Register<IContainerBuilder, DefaultODataContainerBuilder>(lifeCycle: DependencyLifeCycle.Transient, overwriteExciting: false);
-            dependencyManager.Register<IODataModelBuilderProvider, DefaultODataModelBuilderProvider>(lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExciting: false);
-            dependencyManager.Register<System.Web.Http.Controllers.IHttpActionSelector, DefaultWebApiODataControllerActionSelector>(lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExciting: false);
+            dependencyManager.Register<IODataModuleConfiguration, DefaultODataModuleConfiguration>(lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExisting: false);
+            dependencyManager.Register<IContainerBuilder, DefaultODataContainerBuilder>(lifeCycle: DependencyLifeCycle.Transient, overwriteExisting: false);
+            dependencyManager.Register<IODataModelBuilderProvider, DefaultODataModelBuilderProvider>(lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExisting: false);
+            dependencyManager.Register<System.Web.Http.Controllers.IHttpActionSelector, DefaultWebApiODataControllerActionSelector>(lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExisting: false);
             dependencyManager.RegisterOwinMiddleware<WebApiODataMiddlewareConfiguration>(name);
 
             return dependencyManager;
@@ -42,13 +42,13 @@ namespace Bit.Core.Contracts
 
         public static IDependencyManager RegisterDefaultWebApiAndODataConfiguration(this IDependencyManager dependencyManager, params Assembly[] controllersAssemblies)
         {
-            dependencyManager.Register<IODataSqlBuilder, DefaultODataSqlBuilder>(lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExciting: false);
+            dependencyManager.Register<IODataSqlBuilder, DefaultODataSqlBuilder>(lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExisting: false);
             return dependencyManager.RegisterDefaultWebApiConfiguration(AssemblyContainer.Current.AssembliesWithDefaultAssemblies(controllersAssemblies).Union(new[] { AssemblyContainer.Current.GetBitWebApiAssembly(), AssemblyContainer.Current.GetBitODataAssembly(), typeof(MetadataController).GetTypeInfo().Assembly }).ToArray());
         }
 
         public static IDependencyManager RegisterODataMiddleware(this IDependencyManager dependencyManager, Action<IDependencyManager> onConfigure)
         {
-            dependencyManager.RegisterUsing((resolver) => dependencyManager.CreateChildDependencyResolver(onConfigure).Resolve<IOwinMiddlewareConfiguration>("WebApiOData"), lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExciting: false);
+            dependencyManager.RegisterUsing((resolver) => dependencyManager.CreateChildDependencyResolver(onConfigure).Resolve<IOwinMiddlewareConfiguration>("WebApiOData"), lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExisting: false);
 
             return dependencyManager;
         }

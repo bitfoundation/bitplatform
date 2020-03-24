@@ -22,8 +22,8 @@ namespace Bit.Core.Contracts
         static IDependencyManager RegisterHangfireBackgroundJobWorkerUsingDefaultConfigurationInternal<TJobSchedulerBackendConfiguration>(this IDependencyManager dependencyManager)
             where TJobSchedulerBackendConfiguration : class, IJobSchedulerBackendConfiguration
         {
-            dependencyManager.Register<ILogProvider, HangfireBackgroundJobWorkerLogProvider>(overwriteExciting: false);
-            dependencyManager.Register<IDashboardAuthorizationFilter, HangfireJobsDashboardAuthorizationFilter>(lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExciting: false);
+            dependencyManager.Register<ILogProvider, HangfireBackgroundJobWorkerLogProvider>(overwriteExisting: false);
+            dependencyManager.Register<IDashboardAuthorizationFilter, HangfireJobsDashboardAuthorizationFilter>(lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExisting: false);
 
 #if DotNet
             dependencyManager.RegisterOwinMiddleware<JobSchedulerMiddlewareConfiguration>();
@@ -39,8 +39,8 @@ namespace Bit.Core.Contracts
 
             dependencyManager.Register<IJobSchedulerBackendConfiguration, TJobSchedulerBackendConfiguration>(lifeCycle: DependencyLifeCycle.SingleInstance);
 
-            dependencyManager.Register<IBackgroundJobWorker, HangfireBackgroundJobWorker>(lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExciting: false);
-            dependencyManager.Register<JobActivator, AutofacJobActivator>(lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExciting: false);
+            dependencyManager.Register<IBackgroundJobWorker, HangfireBackgroundJobWorker>(lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExisting: false);
+            dependencyManager.Register<JobActivator, AutofacJobActivator>(lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExisting: false);
 
             return dependencyManager;
         }

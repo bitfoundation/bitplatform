@@ -66,11 +66,11 @@ namespace Bit.Core.Contracts
                 }
 
                 return dbContext;
-            }, servicesType: new[] { typeof(EfCoreDbContextBase).GetTypeInfo(), typeof(TDbContext).GetTypeInfo() }, overwriteExciting: false);
+            }, servicesType: new[] { typeof(EfCoreDbContextBase).GetTypeInfo(), typeof(TDbContext).GetTypeInfo() }, overwriteExisting: false);
 
-            dependencyManager.Register<IDataProviderSpecificMethodsProvider, EfCoreDataProviderSpecificMethodsProvider>(lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExciting: false);
-            dependencyManager.Register<EfCoreDataProviderSpecificMethodsProvider, EfCoreDataProviderSpecificMethodsProvider>(lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExciting: false);
-            dependencyManager.Register<IUnitOfWork, DefaultUnitOfWork>(overwriteExciting: false);
+            dependencyManager.Register<IDataProviderSpecificMethodsProvider, EfCoreDataProviderSpecificMethodsProvider>(lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExisting: false);
+            dependencyManager.Register<EfCoreDataProviderSpecificMethodsProvider, EfCoreDataProviderSpecificMethodsProvider>(lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExisting: false);
+            dependencyManager.Register<IUnitOfWork, DefaultUnitOfWork>(overwriteExisting: false);
             dependencyManager.RegisterMapperConfiguration<EntityFrameworkCoreMapperConfiguration>();
 
             return dependencyManager;

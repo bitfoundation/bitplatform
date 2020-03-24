@@ -51,8 +51,8 @@ namespace Bit.Core.Contracts
             }
 
             // See https://github.com/AutoMapper/AutoMapper.Extensions.Microsoft.DependencyInjection
-            dependencyManager.RegisterUsing(RegisterMapperConfiguration, lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExciting: false);
-            dependencyManager.RegisterUsing(RegisterMapper, lifeCycle: DependencyLifeCycle.PerScopeInstance, overwriteExciting: false);
+            dependencyManager.RegisterUsing(RegisterMapperConfiguration, lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExisting: false);
+            dependencyManager.RegisterUsing(RegisterMapper, lifeCycle: DependencyLifeCycle.PerScopeInstance, overwriteExisting: false);
 
             TypeInfo[] openTypes = new[]
             {
@@ -65,12 +65,12 @@ namespace Bit.Core.Contracts
 
             foreach (TypeInfo type in openTypes.SelectMany(openType => allTypes.Where(t => t.ImplementsGenericInterface(openType))))
             {
-                dependencyManager.Register(type, type, lifeCycle: DependencyLifeCycle.Transient, overwriteExciting: false);
+                dependencyManager.Register(type, type, lifeCycle: DependencyLifeCycle.Transient, overwriteExisting: false);
             }
 
             foreach (TypeInfo profileType in profiles)
             {
-                dependencyManager.Register(profileType, profileType, lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExciting: false);
+                dependencyManager.Register(profileType, profileType, lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExisting: false);
             }
 
             return dependencyManager;
@@ -88,7 +88,7 @@ namespace Bit.Core.Contracts
             if (dependencyManager == null)
                 throw new ArgumentNullException(nameof(dependencyManager));
 
-            dependencyManager.Register<IMapperConfiguration, TMapperConfiguration>(lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExciting: false);
+            dependencyManager.Register<IMapperConfiguration, TMapperConfiguration>(lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExisting: false);
 
             return dependencyManager;
         }

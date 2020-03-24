@@ -14,23 +14,23 @@ namespace Bit.Core.Contracts
             where TUserService : class, IUserService
             where TOAuthClientsProvider : class, IOAuthClientsProvider
         {
-            dependencyManager.Register<IAppCertificatesProvider, DefaultAppCertificatesProvider>(lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExciting: false);
+            dependencyManager.Register<IAppCertificatesProvider, DefaultAppCertificatesProvider>(lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExisting: false);
 
-            dependencyManager.Register<IScopesProvider, DefaultScopesProvider>(lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExciting: false);
-            dependencyManager.Register<IdentityServer3.Core.Logging.ILogProvider, DefaultIdentityServerLogProvider>(lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExciting: false);
+            dependencyManager.Register<IScopesProvider, DefaultScopesProvider>(lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExisting: false);
+            dependencyManager.Register<IdentityServer3.Core.Logging.ILogProvider, DefaultIdentityServerLogProvider>(lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExisting: false);
             dependencyManager.RegisterOwinMiddleware<IdentityServerMiddlewareConfiguration>(name: name);
-            dependencyManager.Register<IViewService, DefaultViewService>(overwriteExciting: false);
-            dependencyManager.Register<IRedirectUriValidator, RegexBasedRedirectUriValidator>(lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExciting: false);
-            dependencyManager.Register<IEventService, DefaultEventService>(overwriteExciting: false);
+            dependencyManager.Register<IViewService, DefaultViewService>(overwriteExisting: false);
+            dependencyManager.Register<IRedirectUriValidator, RegexBasedRedirectUriValidator>(lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExisting: false);
+            dependencyManager.Register<IEventService, DefaultEventService>(overwriteExisting: false);
 
-            dependencyManager.Register<IOAuthClientsProvider, TOAuthClientsProvider>(overwriteExciting: false);
-            dependencyManager.Register<IUserService, TUserService>(overwriteExciting: false);
+            dependencyManager.Register<IOAuthClientsProvider, TOAuthClientsProvider>(overwriteExisting: false);
+            dependencyManager.Register<IUserService, TUserService>(overwriteExisting: false);
 
-            dependencyManager.Register<IExternalIdentityProviderConfiguration, GoogleIdentityProviderConfiguration>(overwriteExciting: false);
-            dependencyManager.Register<IExternalIdentityProviderConfiguration, FacebookIdentityProviderConfiguration>(overwriteExciting: false);
-            dependencyManager.Register<IExternalIdentityProviderConfiguration, TwitterIdentityProviderConfiguration>(overwriteExciting: false);
-            dependencyManager.Register<IExternalIdentityProviderConfiguration, MicrosoftIdentityProviderConfiguration>(overwriteExciting: false);
-            dependencyManager.Register<IExternalIdentityProviderConfiguration, LinkedInIdentityProviderConfiguration>(overwriteExciting: false);
+            dependencyManager.Register<IExternalIdentityProviderConfiguration, GoogleIdentityProviderConfiguration>(overwriteExisting: false);
+            dependencyManager.Register<IExternalIdentityProviderConfiguration, FacebookIdentityProviderConfiguration>(overwriteExisting: false);
+            dependencyManager.Register<IExternalIdentityProviderConfiguration, TwitterIdentityProviderConfiguration>(overwriteExisting: false);
+            dependencyManager.Register<IExternalIdentityProviderConfiguration, MicrosoftIdentityProviderConfiguration>(overwriteExisting: false);
+            dependencyManager.Register<IExternalIdentityProviderConfiguration, LinkedInIdentityProviderConfiguration>(overwriteExisting: false);
 
             return dependencyManager;
         }

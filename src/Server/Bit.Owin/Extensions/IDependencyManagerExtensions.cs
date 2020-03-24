@@ -20,7 +20,7 @@ namespace Bit.Core.Contracts
             if (dependencyManager == null)
                 throw new ArgumentNullException(nameof(dependencyManager));
 
-            dependencyManager.Register<IOwinMiddlewareConfiguration, TMiddleware>(lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExciting: false, name: name);
+            dependencyManager.Register<IOwinMiddlewareConfiguration, TMiddleware>(lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExisting: false, name: name);
 
             return dependencyManager;
         }
@@ -33,7 +33,7 @@ namespace Bit.Core.Contracts
             if (owinAppCustomizer == null)
                 throw new ArgumentNullException(nameof(owinAppCustomizer));
 
-            dependencyManager.RegisterInstance<IOwinMiddlewareConfiguration>(new DelegateOwinMiddlewareConfiguration(owinAppCustomizer), overwriteExciting: false);
+            dependencyManager.RegisterInstance<IOwinMiddlewareConfiguration>(new DelegateOwinMiddlewareConfiguration(owinAppCustomizer), overwriteExisting: false);
 
             return dependencyManager;
         }
@@ -50,8 +50,8 @@ namespace Bit.Core.Contracts
             if (dependencyManager == null)
                 throw new ArgumentNullException(nameof(dependencyManager));
 
-            dependencyManager.RegisterInstance(DefaultAppModulesProvider.Current, overwriteExciting: false)
-                .RegisterInstance(DefaultDependencyManager.Current, overwriteExciting: false);
+            dependencyManager.RegisterInstance(DefaultAppModulesProvider.Current, overwriteExisting: false)
+                .RegisterInstance(DefaultDependencyManager.Current, overwriteExisting: false);
 
             AppEnvironment RegisterAppEnvironment(IDependencyResolver resolver)
             {
@@ -59,16 +59,16 @@ namespace Bit.Core.Contracts
                 return appEnvironmentsProvider.GetActiveAppEnvironment();
             }
 
-            dependencyManager.RegisterUsing(RegisterAppEnvironment, lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExciting: false);
+            dependencyManager.RegisterUsing(RegisterAppEnvironment, lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExisting: false);
 
-            dependencyManager.Register<IDateTimeProvider, DefaultDateTimeProvider>(lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExciting: false);
+            dependencyManager.Register<IDateTimeProvider, DefaultDateTimeProvider>(lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExisting: false);
 
-            dependencyManager.RegisterInstance(DefaultAppEnvironmentsProvider.Current, overwriteExciting: false);
-            dependencyManager.RegisterInstance(DefaultJsonContentFormatter.Current, overwriteExciting: false);
-            dependencyManager.RegisterInstance(DefaultPathProvider.Current, overwriteExciting: false);
-            dependencyManager.Register<IUrlStateProvider, DefaultUrlStateProvider>(lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExciting: false);
+            dependencyManager.RegisterInstance(DefaultAppEnvironmentsProvider.Current, overwriteExisting: false);
+            dependencyManager.RegisterInstance(DefaultJsonContentFormatter.Current, overwriteExisting: false);
+            dependencyManager.RegisterInstance(DefaultPathProvider.Current, overwriteExisting: false);
+            dependencyManager.Register<IUrlStateProvider, DefaultUrlStateProvider>(lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExisting: false);
 
-            dependencyManager.Register<IScopeStatusManager, DefaultScopeStatusManager>(overwriteExciting: false);
+            dependencyManager.Register<IScopeStatusManager, DefaultScopeStatusManager>(overwriteExisting: false);
 
             return dependencyManager;
         }
@@ -106,7 +106,7 @@ namespace Bit.Core.Contracts
 
             dependencyManager.RegisterOwinMiddleware<MetadataMiddlewareConfiguration>();
             dependencyManager.RegisterOwinMiddleware<ClientAppProfileMiddlewareConfiguration>();
-            dependencyManager.Register<IAppMetadataProvider, DefaultAppMetadataProvider>(lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExciting: false);
+            dependencyManager.Register<IAppMetadataProvider, DefaultAppMetadataProvider>(lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExisting: false);
 
             metadataAssemblies = AssemblyContainer.Current.AssembliesWithDefaultAssemblies(metadataAssemblies).Union(new[] { AssemblyContainer.Current.GetBitMetadataAssembly() }).ToArray();
 
@@ -116,7 +116,7 @@ namespace Bit.Core.Contracts
                 .ToList()
                 .ForEach(t =>
                 {
-                    dependencyManager.Register(typeof(IMetadataBuilder).GetTypeInfo(), t.GetTypeInfo(), lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExciting: false);
+                    dependencyManager.Register(typeof(IMetadataBuilder).GetTypeInfo(), t.GetTypeInfo(), lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExisting: false);
                 });
 
             return dependencyManager;
@@ -131,8 +131,8 @@ namespace Bit.Core.Contracts
             dependencyManager.RegisterOwinMiddleware<SignInPageMiddlewareConfiguration>();
             dependencyManager.RegisterOwinMiddleware<InvokeLoginMiddlewareConfiguration>();
             dependencyManager.RegisterOwinMiddleware<LogUserInformationMiddlewareConfiguration>();
-            dependencyManager.Register<IRandomStringProvider, DefaultRandomStringProvider>(lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExciting: false);
-            dependencyManager.Register<IAppCertificatesProvider, DefaultAppCertificatesProvider>(lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExciting: false);
+            dependencyManager.Register<IRandomStringProvider, DefaultRandomStringProvider>(lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExisting: false);
+            dependencyManager.Register<IAppCertificatesProvider, DefaultAppCertificatesProvider>(lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExisting: false);
             return dependencyManager;
         }
 
@@ -145,7 +145,7 @@ namespace Bit.Core.Contracts
 
         public static IDependencyManager RegisterLogStore(this IDependencyManager dependencyManager, TypeInfo logStore)
         {
-            dependencyManager.Register(typeof(ILogStore).GetTypeInfo(), logStore, overwriteExciting: false);
+            dependencyManager.Register(typeof(ILogStore).GetTypeInfo(), logStore, overwriteExisting: false);
             return dependencyManager;
         }
 
@@ -158,15 +158,15 @@ namespace Bit.Core.Contracts
         /// </summary>
         public static IDependencyManager RegisterDefaultOwinApp(this IDependencyManager dependencyManager)
         {
-            dependencyManager.Register<Microsoft.Owin.Logging.ILoggerFactory, DefaultOwinLoggerFactory>(overwriteExciting: false);
-            dependencyManager.Register<IUserInformationProvider, DefaultUserInformationProvider>(overwriteExciting: false);
-            dependencyManager.Register<IExceptionToHttpErrorMapper, DefaultExceptionToHttpErrorMapper>(lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExciting: false);
-            dependencyManager.Register<ITimeZoneManager, DefaultTimeZoneManager>(overwriteExciting: false);
-            dependencyManager.Register<IRequestInformationProvider, OwinRequestInformationProvider>(overwriteExciting: false);
-            dependencyManager.Register<IClientProfileModelProvider, DefaultClientProfileModelProvider>(overwriteExciting: false);
-            dependencyManager.Register<IHtmlPageProvider, DefaultHtmlPageProvider>(overwriteExciting: false);
+            dependencyManager.Register<Microsoft.Owin.Logging.ILoggerFactory, DefaultOwinLoggerFactory>(overwriteExisting: false);
+            dependencyManager.Register<IUserInformationProvider, DefaultUserInformationProvider>(overwriteExisting: false);
+            dependencyManager.Register<IExceptionToHttpErrorMapper, DefaultExceptionToHttpErrorMapper>(lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExisting: false);
+            dependencyManager.Register<ITimeZoneManager, DefaultTimeZoneManager>(overwriteExisting: false);
+            dependencyManager.Register<IRequestInformationProvider, OwinRequestInformationProvider>(overwriteExisting: false);
+            dependencyManager.Register<IClientProfileModelProvider, DefaultClientProfileModelProvider>(overwriteExisting: false);
+            dependencyManager.Register<IHtmlPageProvider, DefaultHtmlPageProvider>(overwriteExisting: false);
 #if DotNet
-            dependencyManager.Register<IRouteValuesProvider, AspNetRouteValuesProvider>(lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExciting: false);
+            dependencyManager.Register<IRouteValuesProvider, AspNetRouteValuesProvider>(lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExisting: false);
 #endif
 
             return dependencyManager;

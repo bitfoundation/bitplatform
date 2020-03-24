@@ -76,7 +76,7 @@ namespace Bit.OwinCore
                 throw new InvalidOperationException($"Please inject {nameof(IHttpContextAccessor)} instead of {nameof(HttpContext)}. See https://docs.microsoft.com/en-us/aspnet/core/performance/performance-best-practices?view=aspnetcore-3.0#do-not-store-ihttpcontextaccessorhttpcontext-in-a-field");
             }
 
-            DefaultDependencyManager.Current.RegisterUsing(RegisterHttpContext, overwriteExciting: false);
+            DefaultDependencyManager.Current.RegisterUsing(RegisterHttpContext, overwriteExisting: false);
 
             IOwinContext RegisterOwinContext(IDependencyResolver resolver)
             {
@@ -91,7 +91,7 @@ namespace Bit.OwinCore
                 return owinContext;
             }
 
-            DefaultDependencyManager.Current.RegisterUsing(RegisterOwinContext, overwriteExciting: false);
+            DefaultDependencyManager.Current.RegisterUsing(RegisterOwinContext, overwriteExisting: false);
         }
 
         public void Configure(IApplicationBuilder aspNetCoreApp, OwinAppStartup owinAppStartup, IEnumerable<IAspNetCoreMiddlewareConfiguration> aspNetCoreMiddlewares)

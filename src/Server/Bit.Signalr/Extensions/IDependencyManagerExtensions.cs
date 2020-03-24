@@ -20,11 +20,11 @@ namespace Bit.Core.Contracts
             hubsAssemblies = AssemblyContainer.Current.AssembliesWithDefaultAssemblies(hubsAssemblies).Union(new[] { AssemblyContainer.Current.GetBitSignalRAssembly() }).ToArray();
 
             dependencyManager.RegisterAssemblyTypes(hubsAssemblies, t => typeof(Hub).GetTypeInfo().IsAssignableFrom(t), lifeCycle: DependencyLifeCycle.Transient);
-            dependencyManager.Register<IMessagesHubEvents, TMessagesHubEvents>(overwriteExciting: false);
-            dependencyManager.Register<IMessageSender, SignalRMessageSender>(lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExciting: false);
-            dependencyManager.Register<IMessageContentFormatter, SignalRMessageContentFormatter>(lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExciting: false);
-            dependencyManager.Register<Microsoft.AspNet.SignalR.IDependencyResolver, AutofacDependencyResolver>(lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExciting: false);
-            dependencyManager.RegisterInstance<Microsoft.AspNet.SignalR.Hubs.IAssemblyLocator>(new DefaultSignalRAssemblyLocator(hubsAssemblies), overwriteExciting: false);
+            dependencyManager.Register<IMessagesHubEvents, TMessagesHubEvents>(overwriteExisting: false);
+            dependencyManager.Register<IMessageSender, SignalRMessageSender>(lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExisting: false);
+            dependencyManager.Register<IMessageContentFormatter, SignalRMessageContentFormatter>(lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExisting: false);
+            dependencyManager.Register<Microsoft.AspNet.SignalR.IDependencyResolver, AutofacDependencyResolver>(lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExisting: false);
+            dependencyManager.RegisterInstance<Microsoft.AspNet.SignalR.Hubs.IAssemblyLocator>(new DefaultSignalRAssemblyLocator(hubsAssemblies), overwriteExisting: false);
 
             dependencyManager.RegisterOwinMiddleware<SignalRMiddlewareConfiguration>();
 
@@ -42,7 +42,7 @@ namespace Bit.Core.Contracts
             if (dependencyManager == null)
                 throw new ArgumentNullException(nameof(dependencyManager));
 
-            dependencyManager.Register<ISignalRConfiguration, TSignalRConfiguration>(lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExciting: false);
+            dependencyManager.Register<ISignalRConfiguration, TSignalRConfiguration>(lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExisting: false);
 
             return dependencyManager;
         }
@@ -55,7 +55,7 @@ namespace Bit.Core.Contracts
             if (signalrHubCustomizer == null)
                 throw new ArgumentNullException(nameof(signalrHubCustomizer));
 
-            dependencyManager.RegisterInstance<ISignalRConfiguration>(new DelegateSignalRConfiguration(signalrHubCustomizer), overwriteExciting: false);
+            dependencyManager.RegisterInstance<ISignalRConfiguration>(new DelegateSignalRConfiguration(signalrHubCustomizer), overwriteExisting: false);
 
             return dependencyManager;
         }

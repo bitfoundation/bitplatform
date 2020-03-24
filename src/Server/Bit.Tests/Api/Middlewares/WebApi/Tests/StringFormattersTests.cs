@@ -47,8 +47,8 @@ namespace Bit.Tests.Api.Middlewares.WebApi.Tests
                 AdditionalDependencies = (manager, services) =>
                 {
                     manager.RegisterInstance(valueChecker);
-                    manager.RegisterInstance(stringCorrector2, overwriteExciting: false);
-                    manager.RegisterInstance(stringCorrector1, overwriteExciting: false);
+                    manager.RegisterInstance(stringCorrector2, overwriteExisting: false);
+                    manager.RegisterInstance(stringCorrector1, overwriteExisting: false);
                 }
             }))
             {
@@ -112,7 +112,7 @@ namespace Bit.Tests.Api.Middlewares.WebApi.Tests
             {
                 AdditionalDependencies = (manager, services) =>
                 {
-                    manager.RegisterInstance(stringCorrector, overwriteExciting: false);
+                    manager.RegisterInstance(stringCorrector, overwriteExisting: false);
                 }
             }))
             {

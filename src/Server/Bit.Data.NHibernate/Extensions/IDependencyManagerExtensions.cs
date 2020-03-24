@@ -28,9 +28,9 @@ namespace Bit.Core.Contracts
                 ContractResolver = new NHibernateContractResolver { }
             };
 
-            dependencyManager.Register<IDataProviderSpecificMethodsProvider, NHibernateDataProviderSpecificMethodsProvider>(lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExciting: false);
-            dependencyManager.Register<NHibernateDataProviderSpecificMethodsProvider, NHibernateDataProviderSpecificMethodsProvider>(lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExciting: false);
-            dependencyManager.Register<IUnitOfWork, DefaultUnitOfWork>(overwriteExciting: false);
+            dependencyManager.Register<IDataProviderSpecificMethodsProvider, NHibernateDataProviderSpecificMethodsProvider>(lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExisting: false);
+            dependencyManager.Register<NHibernateDataProviderSpecificMethodsProvider, NHibernateDataProviderSpecificMethodsProvider>(lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExisting: false);
+            dependencyManager.Register<IUnitOfWork, DefaultUnitOfWork>(overwriteExisting: false);
 
             ((IAutofacDependencyManager)dependencyManager)
                 .GetContainerBuidler()
