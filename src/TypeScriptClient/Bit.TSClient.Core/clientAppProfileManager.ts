@@ -43,20 +43,24 @@
             if (!this.currentTimeZoneHasValue()) {
                 const date = new Date();
                 try {
-                    if (typeof (date.toLocaleDateString) == "undefined")
-                        throw new Error("Browser has no support for toLocaleDateString. Go to catch to try another apporach!");
 
-                    this.clientAppProfile.currentTimeZone = date.toLocaleDateString("en-US", { timeZoneName: "long" }).split(", ")[1]; // Ignore browser's current culture if it supports locales & options in its toLocaleDateString method.
+                    if (typeof (Intl) != "undefined" && typeof (Intl.DateTimeFormat) == "function" && typeof (Intl.DateTimeFormat().resolvedOptions) == "function" && Intl.DateTimeFormat().resolvedOptions().timeZone != null) {
+                        this.clientAppProfile.currentTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+                    }
+                    else if (typeof (date.toLocaleDateString) != "undefined") {
+                        this.clientAppProfile.currentTimeZone = date.toLocaleDateString("en-US", { timeZoneName: "long" }).split(", ")[1]; // Ignore browser's current culture if it supports locales & options in its toLocaleDateString method.
+                    }
 
                     if (!this.currentTimeZoneHasValue())
-                        throw new Error("Browser has no support for options in toLocaleDateString method. Go to catch to try another apporach!"); // Old browsers may return "MM/DD/YYYY" instead of "MM/DD/YYYY, TimeZoneLongName" due lack of support for { timeZoneName: "long" } option.
+                        throw new Error("Browser has no support for options in toLocaleDateString or Intl.DateTimeFormat. Go to catch to try another apporach!"); // Old browsers may return "MM/DD/YYYY" instead of "MM/DD/YYYY, TimeZoneLongName" due lack of support for { timeZoneName: "long" } option.
+
                 }
                 catch (e) {
                     this.clientAppProfile.currentTimeZone = String(String(date).split("(")[1]).split(")")[0]; // It returns invalid value in non en-US browsers!
                 }
 
                 if (this.currentTimeZoneHasValue() && !this.isAllASCII(this.clientAppProfile.currentTimeZone))
-                    this.clientAppProfile = null; // We're unable to find time zone name's name in en-US culture. Having no currentTimeZone is better than having currentTimeZone with invalid value!
+                    this.clientAppProfile.currentTimeZone = null; // We're unable to find time zone name's name in en-US culture. Having no currentTimeZone is better than having currentTimeZone with invalid value!
             }
             if ((this.clientAppProfile.desiredTimeZone == null || this.clientAppProfile.desiredTimeZone == "") && this.currentTimeZoneHasValue()) {
                 this.clientAppProfile.desiredTimeZone = this.clientAppProfile.currentTimeZone;

@@ -19,6 +19,7 @@
     <PackageReference Include="NWebsec.Owin" Version="4.0.0" />
     <PackageReference Include="System.Diagnostics.EventLog" Version="4.7.0" />
     <PackageReference Include="System.Net.Http" Version="4.3.4" />
+    <PackageReference Include="TimeZoneConverter" Version="3.2.0" />
   </ItemGroup>
 
   <ItemGroup>

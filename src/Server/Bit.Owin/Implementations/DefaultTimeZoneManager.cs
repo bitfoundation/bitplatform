@@ -3,6 +3,7 @@ using System.Collections.Concurrent;
 using System.Linq;
 using Bit.Core.Contracts;
 using Bit.Owin.Contracts;
+using TimeZoneConverter;
 
 namespace Bit.Owin.Implementations
 {
@@ -29,30 +30,36 @@ namespace Bit.Owin.Implementations
             }
         }
 
-        public virtual TimeZoneInfo GetClientCurrentTimeZone()
+        protected virtual TimeZoneInfo GetTimeZoneInfoByName(string timeZoneName)
         {
-            if (!_timeZonesCache.ContainsKey(_currentTimeZoneName))
+            TimeZoneInfo timeZoneInfo = null;
+
+            if (!_timeZonesCache.ContainsKey(timeZoneName))
             {
-                _timeZonesCache.TryAdd(_currentTimeZoneName,
-                    TimeZoneInfo.GetSystemTimeZones().ExtendedSingle($"Finding {_currentTimeZoneName} in {nameof(TimeZoneInfo)}.{nameof(TimeZoneInfo.GetSystemTimeZones)}", t => t.Id == _currentTimeZoneName || t.StandardName == _currentTimeZoneName || t.DaylightName == _currentTimeZoneName || t.DaylightName == _currentTimeZoneName));
+                timeZoneInfo = TimeZoneInfo.GetSystemTimeZones().ExtendedSingleOrDefault($"Finding {timeZoneName} in {nameof(TimeZoneInfo)}.{nameof(TimeZoneInfo.GetSystemTimeZones)}",
+                    t => t.Id == timeZoneName || t.StandardName == timeZoneName || t.DaylightName == timeZoneName || t.DisplayName == timeZoneName);
+
+                if (timeZoneInfo == null)
+                    TZConvert.TryGetTimeZoneInfo(timeZoneName, out timeZoneInfo);
+
+                _timeZonesCache.TryAdd(timeZoneName, timeZoneInfo ?? throw new InvalidOperationException($"Time zone {timeZoneName} could not be found"));
+            }
+            else
+            {
+                timeZoneInfo = _timeZonesCache[timeZoneName];
             }
 
-            TimeZoneInfo currentTimeZoneInfo = _timeZonesCache[_currentTimeZoneName];
+            return timeZoneInfo;
+        }
 
-            return currentTimeZoneInfo;
+        public virtual TimeZoneInfo GetClientCurrentTimeZone()
+        {
+            return GetTimeZoneInfoByName(_currentTimeZoneName);
         }
 
         public virtual TimeZoneInfo GetClientDesiredTimeZone()
         {
-            if (!_timeZonesCache.ContainsKey(_desiredTimeZoneName))
-            {
-                _timeZonesCache.TryAdd(_desiredTimeZoneName,
-                    TimeZoneInfo.GetSystemTimeZones().ExtendedSingle($"Finding {_currentTimeZoneName} in {nameof(TimeZoneInfo)}.{nameof(TimeZoneInfo.GetSystemTimeZones)}", t => t.Id == _desiredTimeZoneName || t.StandardName == _desiredTimeZoneName || t.DaylightName == _desiredTimeZoneName || t.DaylightName == _desiredTimeZoneName));
-            }
-
-            TimeZoneInfo desiredTimeZoneInfo = _timeZonesCache[_desiredTimeZoneName];
-
-            return desiredTimeZoneInfo;
+            return GetTimeZoneInfoByName(_desiredTimeZoneName);
         }
 
         public virtual DateTimeOffset MapFromClientToServer(DateTimeOffset dateTime)
