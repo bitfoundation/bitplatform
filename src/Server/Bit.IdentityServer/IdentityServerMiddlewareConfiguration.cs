@@ -1,5 +1,4 @@
 ﻿using Bit.Core.Contracts;
-using Bit.Core.Extensions;
 using Bit.Core.Models;
 using Bit.IdentityServer.Contracts;
 using Bit.IdentityServer.Implementations;
@@ -12,6 +11,7 @@ using Owin;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 
 namespace Bit.IdentityServer
 {
@@ -55,7 +55,12 @@ namespace Bit.IdentityServer
                     if (owinContext.TryGetDependencyResolver(out Core.Contracts.IDependencyResolver dependencyResolver))
                     {
                         IRequestInformationProvider requestInformationProvider = dependencyResolver.Resolve<IRequestInformationProvider>();
-                        owinEnv.Environment["server.RemoteIpAddress"] = requestInformationProvider.ClientIp ?? "::1"; // some test hosts won't provide remote ip address request feature and idSrv requires it in event sevice decorator.
+
+                        if (IPAddress.TryParse(requestInformationProvider.ClientIp, out IPAddress _))
+                            owinContext.Request.RemoteIpAddress = requestInformationProvider.ClientIp;
+                        else
+                            owinContext.Request.RemoteIpAddress = "::1";
+
                         return dependencyResolver.Resolve<IEventService>();
                     }
                     else
