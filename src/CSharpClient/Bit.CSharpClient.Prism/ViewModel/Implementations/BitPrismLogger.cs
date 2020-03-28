@@ -36,7 +36,7 @@ namespace Bit.ViewModel.Implementations
 
         public virtual void Report(Exception ex, IDictionary<string, string> properties)
         {
-            ExceptionHandler.OnExceptionReceived(ex, properties);
+            BitExceptionHandler.Current.OnExceptionReceived(ex, properties);
         }
 
         public virtual void TrackEvent(string name, IDictionary<string, string> properties)
