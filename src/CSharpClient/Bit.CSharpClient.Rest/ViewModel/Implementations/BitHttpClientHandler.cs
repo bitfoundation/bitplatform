@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Threading;
@@ -19,6 +20,18 @@ namespace Bit.ViewModel.Implementations
         HttpClientHandler
 #endif
     {
+#if Android
+        protected override async Task WriteRequestContentToOutput(HttpRequestMessage request, Java.Net.HttpURLConnection httpConnection, CancellationToken cancellationToken)
+        {
+            var stream = await request.Content.ReadAsStreamAsync().ConfigureAwait(false);
+
+            await stream.CopyToAsync(httpConnection.OutputStream, 4096, cancellationToken).ConfigureAwait(false);
+
+            if (stream.CanSeek)
+                stream.Seek(0, SeekOrigin.Begin);
+        }
+#endif
+
         protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {
             // ToDo:
