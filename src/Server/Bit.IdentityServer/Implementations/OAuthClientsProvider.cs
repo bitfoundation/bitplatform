@@ -11,7 +11,7 @@ namespace Bit.IdentityServer.Implementations
     {
         public abstract IEnumerable<Client> GetClients();
 
-        protected Client GetImplicitFlowClient(BitImplicitFlowClient client)
+        protected virtual Client GetImplicitFlowClient(BitImplicitFlowClient client)
         {
             return new Client
             {
@@ -43,7 +43,7 @@ namespace Bit.IdentityServer.Implementations
             };
         }
 
-        protected Client GetResourceOwnerFlowClient(BitResourceOwnerFlowClient client)
+        protected virtual Client GetResourceOwnerFlowClient(BitResourceOwnerFlowClient client)
         {
             Client result = GetImplicitFlowClient(new BitImplicitFlowClient
             {

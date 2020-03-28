@@ -42,6 +42,8 @@ namespace Bit.Core.Contracts
             dependencyManager.Register<IBackgroundJobWorker, HangfireBackgroundJobWorker>(lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExisting: false);
             dependencyManager.Register<JobActivator, AutofacJobActivator>(lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExisting: false);
 
+            dependencyManager.RegisterHangfireFactories();
+
             return dependencyManager;
         }
     }

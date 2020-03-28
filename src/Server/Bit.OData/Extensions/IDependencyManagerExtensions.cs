@@ -36,6 +36,7 @@ namespace Bit.Core.Contracts
             dependencyManager.Register<IODataModelBuilderProvider, DefaultODataModelBuilderProvider>(lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExisting: false);
             dependencyManager.Register<System.Web.Http.Controllers.IHttpActionSelector, DefaultWebApiODataControllerActionSelector>(lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExisting: false);
             dependencyManager.RegisterOwinMiddleware<WebApiODataMiddlewareConfiguration>(name);
+            dependencyManager.RegisterODataFactories();
 
             return dependencyManager;
         }

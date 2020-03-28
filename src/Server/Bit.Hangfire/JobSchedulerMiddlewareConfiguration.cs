@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-using Bit.Core.Models;
-using Bit.Hangfire.Contracts;
+﻿using Bit.Hangfire.Contracts;
 using Bit.Owin.Contracts;
 using Hangfire;
 using Hangfire.Dashboard;
@@ -19,8 +17,7 @@ namespace Bit.Hangfire
         IAspNetCoreMiddlewareConfiguration
 #endif
     {
-        public virtual IEnumerable<IDashboardAuthorizationFilter> AuthFilters { get; set; }
-        public virtual AppEnvironment AppEnvironment { get; set; }
+        public virtual DashboardOptionsFactory DashboardOptionsFactory { get; set; }
         public virtual IJobSchedulerBackendConfiguration JobSchedulerBackendConfiguration { get; set; }
 
 #if DotNetCore
@@ -33,12 +30,7 @@ namespace Bit.Hangfire
         {
             JobSchedulerBackendConfiguration.Init();
 
-            app.UseHangfireDashboard("/jobs", new DashboardOptions
-            {
-                Authorization = AuthFilters,
-                AppPath = AppEnvironment.GetHostVirtualPath(),
-                DashboardTitle = $"Hangfire dashboard - {AppEnvironment.Name} environment"
-            });
+            app.UseHangfireDashboard("/jobs", DashboardOptionsFactory());
         }
     }
 }

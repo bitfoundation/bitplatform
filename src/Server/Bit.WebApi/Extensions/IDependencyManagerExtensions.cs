@@ -94,6 +94,7 @@ namespace Bit.Core.Contracts
             dependencyManager.RegisterWebApiConfigurationCustomizer<GlobalDefaultLogOperationInfoActionFilterProvider<LogOperationInfoFilterAttribute>>();
             dependencyManager.RegisterWebApiConfigurationCustomizer<GlobalDefaultExceptionHandlerActionFilterProvider<ExceptionHandlerFilterAttribute>>();
             dependencyManager.RegisterOwinMiddleware<WebApiMiddlewareConfiguration>(name);
+            dependencyManager.RegisterWebApiFactories();
 
             return dependencyManager;
         }

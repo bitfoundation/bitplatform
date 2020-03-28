@@ -32,6 +32,9 @@ namespace Bit.OData
         public virtual IODataModelBuilderProvider ODataModelBuilderProvider { get; set; }
         public virtual IWebApiOwinPipelineInjector WebApiOwinPipelineInjector { get; set; }
         public virtual IApiAssembliesProvider ApiAssembliesProvider { get; set; }
+        public virtual ODataBatchHandlerHandlerFactory ODataBatchHandlerHandlerFactory { get; set; }
+        public virtual ODataHttpControllerSelectorFactory ODataHttpControllerSelectorFactory { get; set; }
+        public virtual ODataHttpServerFactory ODataHttpServerFactory { get; set; }
 
         public virtual AppEnvironment AppEnvironment { get; set; }
 
@@ -51,7 +54,7 @@ namespace Bit.OData
 
             _webApiConfig.DependencyResolver = WebApiDependencyResolver;
 
-            _webApiConfig.Services.Replace(typeof(IHttpControllerSelector), new DefaultODataHttpControllerSelector(_webApiConfig));
+            _webApiConfig.Services.Replace(typeof(IHttpControllerSelector), ODataHttpControllerSelectorFactory(_webApiConfig));
 
             WebApiConfigurationCustomizers.ToList()
                 .ForEach(webApiConfigurationCustomizer =>
@@ -59,7 +62,7 @@ namespace Bit.OData
                     webApiConfigurationCustomizer.CustomizeWebApiConfiguration(_webApiConfig);
                 });
 
-            _server = new HttpServer(_webApiConfig);
+            _server = ODataHttpServerFactory(_webApiConfig);
 
             _webApiConfig.UseCustomContainerBuilder(() => (IContainerBuilder)WebApiDependencyResolver.GetService(typeof(IContainerBuilder)));
 
@@ -83,17 +86,7 @@ namespace Bit.OData
 
                 string routeName = $"{odataModuleAndAssemblyGroup.Key}-odata";
 
-                _odataBatchHandler = new DefaultODataBatchHandler(_server);
-
-                _odataBatchHandler.MessageQuotas.MaxOperationsPerChangeset = int.MaxValue;
-
-                _odataBatchHandler.MessageQuotas.MaxPartsPerBatch = int.MaxValue;
-
-                _odataBatchHandler.MessageQuotas.MaxNestingDepth = int.MaxValue;
-
-                _odataBatchHandler.MessageQuotas.MaxReceivedMessageSize = long.MaxValue;
-
-                _odataBatchHandler.ODataRouteName = routeName;
+                _odataBatchHandler = ODataBatchHandlerHandlerFactory(_server, routeName);
 
                 IEdmModel edmModel = modelBuilder.GetEdmModel();
 

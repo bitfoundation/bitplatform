@@ -1,4 +1,5 @@
-﻿using Microsoft.Web.Http.Description;
+﻿using Bit.WebApi.Contracts;
+using Microsoft.Web.Http.Description;
 using Swashbuckle.Application;
 using System.Web.Http.Description;
 
@@ -13,11 +14,7 @@ namespace System.Web.Http
         {
             httpConfiguration.Properties.TryAdd("MultiVersionSwaggerConfiguration", new Action(() =>
             {
-                VersionedApiExplorer apiExplorer = httpConfiguration.AddVersionedApiExplorer(options =>
-                {
-                    options.GroupNameFormat = "'v'VVV";
-                    options.SubstituteApiVersionInUrl = true;
-                });
+                VersionedApiExplorer apiExplorer = ((WebApiExplorerFactory)httpConfiguration.DependencyResolver.GetService(typeof(WebApiExplorerFactory)))(httpConfiguration);
 
                 customizeApiExplorer?.Invoke(apiExplorer);
 

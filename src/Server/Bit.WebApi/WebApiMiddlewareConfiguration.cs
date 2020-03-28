@@ -17,8 +17,9 @@ namespace Bit.WebApi
         public virtual IEnumerable<IWebApiConfigurationCustomizer> WebApiConfigurationCustomizers { get; set; }
         public virtual System.Web.Http.Dependencies.IDependencyResolver WebApiDependencyResolver { get; set; }
         public virtual IWebApiOwinPipelineInjector WebApiOwinPipelineInjector { get; set; }
-
         public virtual AppEnvironment AppEnvironment { get; set; }
+        public virtual WebApiHttpServerFactory WebApiHttpServerFactory { get; set; }
+        public virtual WebApiInlineConstraintResolverFactory WebApiInlineConstraintResolverFactory { get; set; }
 
         private HttpConfiguration _webApiConfig;
         private HttpServer _server;
@@ -43,12 +44,9 @@ namespace Bit.WebApi
                     webApiConfigurationCustomizer.CustomizeWebApiConfiguration(_webApiConfig);
                 });
 
-            _server = new HttpServer(_webApiConfig);
+            _server = WebApiHttpServerFactory(_webApiConfig);
 
-            DefaultInlineConstraintResolver constraintResolver = new DefaultInlineConstraintResolver()
-            {
-                ConstraintMap = { ["apiVersion"] = typeof(ApiVersionRouteConstraint) }
-            };
+            IInlineConstraintResolver constraintResolver = WebApiInlineConstraintResolverFactory();
 
             _webApiConfig.AddApiVersioning(apiVerOptions =>
             {
