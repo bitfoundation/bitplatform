@@ -85,7 +85,6 @@ namespace Autofac
             IServiceCollection services = (IServiceCollection)containerBuilder.Properties[nameof(services)];
 
             containerBuilder.Register(c => c.Resolve<IHttpClientFactory>().CreateClient(ContractKeys.DefaultHttpClientName))
-                .SingleInstance()
                 .PreserveExistingDefaults();
 
             IAsyncPolicy<HttpResponseMessage> policy = containerBuilder.BuildHttpPollyPolicy();
