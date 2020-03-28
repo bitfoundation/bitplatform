@@ -23,6 +23,8 @@ namespace Bit.ViewModel.Implementations
 #if Android
         protected override async Task WriteRequestContentToOutput(HttpRequestMessage request, Java.Net.HttpURLConnection httpConnection, CancellationToken cancellationToken)
         {
+            // https://github.com/xamarin/xamarin-android/issues/4476
+
             var stream = await request.Content.ReadAsStreamAsync().ConfigureAwait(false);
 
             await stream.CopyToAsync(httpConnection.OutputStream, 4096, cancellationToken).ConfigureAwait(false);
