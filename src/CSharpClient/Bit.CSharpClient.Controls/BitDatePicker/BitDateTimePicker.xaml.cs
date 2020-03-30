@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Windows.Input;
 using Xamarin.Forms;
+using Xamarin.Forms.Internals;
 
 namespace Bit.View.Controls
 {
@@ -16,15 +17,26 @@ namespace Bit.View.Controls
 
             BitDateTimePopupView = new BitDateTimePopupView() { };
 
-            BitDateTimePopupView.SetBinding(BitDateTimePopupView.CultureProperty, new Binding(nameof(Culture), source: this));
-            BitDateTimePopupView.SetBinding(BitDateTimePopupView.CalendarSystemProperty, new Binding(nameof(CalendarSystem), source: this));
-            BitDateTimePopupView.SetBinding(BitDateTimePopupView.SelectedColorProperty, new Binding(nameof(SelectedColor), source: this));
-            BitDateTimePopupView.SetBinding(BitDateTimePopupView.TodayColorProperty, new Binding(nameof(TodayColor), source: this));
-            BitDateTimePopupView.SetBinding(BitDateTimePopupView.SelectedDateTimeProperty, new Binding(nameof(SelectedDateTime), source: this));
-            BitDateTimePopupView.SetBinding(BitDateTimePopupView.FontFamilyProperty, new Binding(nameof(FontFamily), source: this));
-            BitDateTimePopupView.SetBinding(BitDateTimePopupView.AutoCloseProperty, new Binding(nameof(AutoClose), source: this));
-            BitDateTimePopupView.SetBinding(BitDateTimePopupView.ShowTimePickerProperty, new Binding(nameof(ShowTimePicker), source: this));
-            BitDateTimePopupView.SetBinding(FlowDirectionProperty, new Binding(nameof(FlowDirection), source: this));
+            void ApplyBinding<TProp>(BindableProperty bindableProp, Func<BitDateTimePicker, TProp> getter, Action<BitDateTimePicker, TProp> setter)
+            {
+                BitDateTimePopupView.SetBinding(bindableProp, new TypedBinding<BitDateTimePicker, TProp>(_this => (getter.Invoke(_this), true), setter, new[]
+                {
+                    new Tuple<Func<BitDateTimePicker, object>, string>(mvm => mvm, bindableProp.PropertyName)
+                })
+                {
+                    Source = this
+                });
+            }
+
+            ApplyBinding(BitDateTimePopupView.SelectedDateTimeProperty, _this => _this.SelectedDateTime, (_this, val) => _this.SelectedDateTime = val);
+            ApplyBinding(BitDateTimePopupView.CultureProperty, _this => _this.Culture, (_this, val) => _this.Culture = val);
+            ApplyBinding(BitDateTimePopupView.CalendarSystemProperty, _this => _this.CalendarSystem, (_this, val) => _this.CalendarSystem = val);
+            ApplyBinding(BitDateTimePopupView.SelectedColorProperty, _this => _this.SelectedColor, (_this, val) => _this.SelectedColor = val);
+            ApplyBinding(BitDateTimePopupView.TodayColorProperty, _this => _this.TodayColor, (_this, val) => _this.TodayColor = val);
+            ApplyBinding(BitDateTimePopupView.FontFamilyProperty, _this => _this.FontFamily, (_this, val) => _this.FontFamily = val);
+            ApplyBinding(BitDateTimePopupView.AutoCloseProperty, _this => _this.AutoClose, (_this, val) => _this.AutoClose = val);
+            ApplyBinding(BitDateTimePopupView.ShowTimePickerProperty, _this => _this.ShowTimePicker, (_this, val) => _this.ShowTimePicker = val);
+            ApplyBinding(BitDateTimePopupView.FlowDirectionProperty, _this => _this.FlowDirection, (_this, val) => _this.FlowDirection = val);
 
             OpenPopupCommand = new Command(OpenPopup);
         }
