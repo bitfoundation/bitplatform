@@ -18,11 +18,4 @@
     <PackageReference Include="Microsoft.UI.Xaml" Version="2.3.200213001" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Content Include="Bit.CSharpClient.Controls\Bit.CSharpClient.Controls.xr.xml" PackagePath="lib\uap10.0.18362\Bit.CSharpClient.Controls\">
-      <Pack>true</Pack>
-      <PackageCopyToOutput>true</PackageCopyToOutput>
-    </Content>
-  </ItemGroup>
-
 </Project>

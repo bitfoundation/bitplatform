@@ -37,11 +37,4 @@
     <ProjectReference Include="..\Bit.CSharpClient.Prism\Bit.CSharpClient.Prism.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Content Include="..\Bit.CSharpClient.Controls\Bit.CSharpClient.Controls\Bit.CSharpClient.Controls.xr.xml" PackagePath="lib\uap10.0.18362\Bit.CSharpClient.Controls\">
-      <Pack>true</Pack>
-      <PackageCopyToOutput>true</PackageCopyToOutput>
-    </Content>
-  </ItemGroup>
-
 </Project>

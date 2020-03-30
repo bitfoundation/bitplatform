@@ -9,6 +9,7 @@
     <DefineConstants Condition=" '$(TargetFramework)' == 'netcoreapp3.1' ">$(DefineConstants);DotNetCore</DefineConstants>
     <DefineConstants Condition=" '$(TargetFramework)' == 'uap10.0.18362' ">$(DefineConstants);UWP</DefineConstants>
     <DefineConstants Condition=" '$(TargetFramework)' == 'netstandard2.0' ">$(DefineConstants);DotNetStandard</DefineConstants>
+    <GenerateLibraryLayout Condition=" '$(TargetFramework)' == 'uap10.0.18362' ">true</GenerateLibraryLayout>
     <DesignTimeBuild>True</DesignTimeBuild>
     <AndroidResgenFile>False</AndroidResgenFile>
     <AndroidUseIntermediateDesignerFile>False</AndroidUseIntermediateDesignerFile>
