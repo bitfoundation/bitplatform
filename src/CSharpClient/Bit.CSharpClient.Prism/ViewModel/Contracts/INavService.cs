@@ -1,9 +1,12 @@
 ﻿using Prism.Navigation;
+using Rg.Plugins.Popup.Contracts;
 using System;
 using System.Threading.Tasks;
 
 namespace Bit.ViewModel.Contracts
 {
+    public delegate INavService INavServiceFactory(INavigationService navigationService, IPopupNavigation popupNavigation);
+
     /// <summary>
     /// It can be easily mocked.
     /// Its go back async works better in popup pages.

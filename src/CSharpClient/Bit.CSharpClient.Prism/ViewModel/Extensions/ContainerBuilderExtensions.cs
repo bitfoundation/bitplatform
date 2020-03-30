@@ -25,6 +25,8 @@ namespace Autofac
                 .PropertiesAutowired()
                 .PreserveExistingDefaults();
 
+            containerBuilder.Register(context => new INavServiceFactory((prismNavService, popupNav) => DefaultNavService.INavServiceFactory<DefaultNavService>(prismNavService, popupNav)));
+
             containerBuilder.RegisterInstance<IExceptionHandler>(BitExceptionHandler.Current);
             containerBuilder.RegisterInstance<ITelemetryService>(ApplicationInsightsTelemetryService.Current);
             containerBuilder.RegisterInstance<ITelemetryService>(AppCenterTelemetryService.Current);

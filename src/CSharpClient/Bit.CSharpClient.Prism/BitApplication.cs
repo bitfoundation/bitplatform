@@ -12,6 +12,7 @@ using Prism.Ioc;
 using Prism.Logging;
 using Prism.Navigation;
 using Prism.Plugin.Popups;
+using Rg.Plugins.Popup.Contracts;
 using Rg.Plugins.Popup.Services;
 using System;
 using System.Collections.Generic;
@@ -85,11 +86,7 @@ namespace Bit
             return Task.CompletedTask;
         }
 
-        public new INavService NavigationService => PrismNavigationService == null ? null : new DefaultNavService
-        {
-            PrismNavigationService = PrismNavigationService,
-            PopupNavigation = PopupNavigation.Instance
-        };
+        public new INavService NavigationService => PrismNavigationService == null ? null : Container.Resolve<INavServiceFactory>()(PrismNavigationService, Container.Resolve<IPopupNavigation>());
 
         public static new BitApplication Current => (PrismApplicationBase.Current as BitApplication);
 

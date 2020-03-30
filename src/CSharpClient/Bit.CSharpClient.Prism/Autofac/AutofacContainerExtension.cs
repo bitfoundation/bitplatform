@@ -2,10 +2,9 @@
 using Autofac.Core;
 using Bit.ViewModel;
 using Bit.ViewModel.Contracts;
-using Bit.ViewModel.Implementations;
 using Prism.Ioc;
 using Prism.Navigation;
-using Rg.Plugins.Popup.Services;
+using Rg.Plugins.Popup.Contracts;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -117,11 +116,7 @@ namespace Prism.Autofac
 
         public virtual INavService BuildNavService(INavigationService prismNavigationService)
         {
-            return new DefaultNavService
-            {
-                PrismNavigationService = prismNavigationService,
-                PopupNavigation = PopupNavigation.Instance
-            };
+            return Instance.Resolve<INavServiceFactory>()(prismNavigationService, Instance.Resolve<IPopupNavigation>());
         }
     }
 }

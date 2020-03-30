@@ -13,6 +13,18 @@ namespace Bit.ViewModel.Implementations
 {
     public class DefaultNavService : INavService
     {
+        public static TINavService INavServiceFactory<TINavService>(INavigationService prismNavService, IPopupNavigation popupNavigation)
+            where TINavService : DefaultNavService, new()
+        {
+            var navService = new TINavService
+            {
+                PrismNavigationService = prismNavService,
+                PopupNavigation = popupNavigation
+            };
+
+            return navService;
+        }
+
         public virtual async Task NavigateAsync(string name, INavigationParameters parameters = null)
         {
             INavigationResult navigationResult = await PrismNavigationService.NavigateAsync(name, parameters, useModalNavigation: false, animated: false);
@@ -83,7 +95,7 @@ namespace Bit.ViewModel.Implementations
             return PrismNavigationService.GetNavigationUriPath();
         }
 
-        INavigationParameters ConvertToINavigationParameters(params (string, object)[] parameters)
+        protected virtual INavigationParameters ConvertToINavigationParameters(params (string, object)[] parameters)
         {
             INavigationParameters navigationParameters = new NavigationParameters();
 
@@ -132,7 +144,7 @@ namespace Bit.ViewModel.Implementations
             await NavigateAsync(backUri, parameters);
         }
 
-        string GenerateBackUri(int timesToGoBack)
+        protected virtual string GenerateBackUri(int timesToGoBack)
         {
             return string.Concat(Enumerable
                 .Repeat("../", timesToGoBack));
