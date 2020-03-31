@@ -13,7 +13,7 @@ namespace Autofac
                 .OnActivated(config =>
                 {
                     configureDtoSetSyncConfigs?.Invoke(config.Instance);
-                }).SingleInstance();
+                }).SingleInstance().PreserveExistingDefaults();
 
             return containerBuilder;
         }

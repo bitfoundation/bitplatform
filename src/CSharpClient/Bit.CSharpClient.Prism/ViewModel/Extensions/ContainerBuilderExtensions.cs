@@ -25,7 +25,7 @@ namespace Autofac
                 .PropertiesAutowired()
                 .PreserveExistingDefaults();
 
-            containerBuilder.Register(context => new INavServiceFactory((prismNavService, popupNav) => DefaultNavService.INavServiceFactory<DefaultNavService>(prismNavService, popupNav)));
+            containerBuilder.Register(context => new INavServiceFactory((prismNavService, popupNav) => DefaultNavService.INavServiceFactory<DefaultNavService>(prismNavService, popupNav))).PreserveExistingDefaults();
 
             containerBuilder.RegisterInstance<IExceptionHandler>(BitExceptionHandler.Current);
             containerBuilder.RegisterInstance<ITelemetryService>(ApplicationInsightsTelemetryService.Current);
@@ -39,10 +39,9 @@ namespace Autofac
                 IMessageReceiver messageReceiver = container.ResolveOptional<IMessageReceiver>();
                 if (messageReceiver != null)
                 {
-#if UWP
                     ApplicationInsightsTelemetryService.Current.MessageReceiver = messageReceiver;
-#endif
                     AppCenterTelemetryService.Current.MessageReceiver = messageReceiver;
+                    LocalTelemetryService.Current.MessageReceiver = messageReceiver;
                 }
             });
 

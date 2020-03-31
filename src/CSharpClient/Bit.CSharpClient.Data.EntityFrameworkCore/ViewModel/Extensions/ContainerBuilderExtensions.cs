@@ -18,7 +18,7 @@ namespace Autofac
             services.AddEntityFrameworkSqlite();
             services.AddDbContext<TDbContext>(optionsAction, contextLifetime: ServiceLifetime.Transient, optionsLifetime: ServiceLifetime.Transient);
 
-            containerBuilder.Register(c => (EfCoreDbContextBase)c.Resolve<TDbContext>());
+            containerBuilder.Register(c => (EfCoreDbContextBase)c.Resolve<TDbContext>()).PreserveExistingDefaults();
 
             return containerBuilder;
         }
