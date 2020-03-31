@@ -1,4 +1,5 @@
 ﻿using Bit.ViewModel.Contracts;
+using Prism.AppModel;
 using Prism.Services;
 using System;
 using System.Collections.Generic;
@@ -38,13 +39,16 @@ namespace Bit.ViewModel.Implementations
         }
 #endif
 
-        public virtual bool IsAssemblyDebugBuild()
+        public virtual bool IsInDebugMode()
         {
             try
             {
-                return Assembly.GetEntryAssembly().GetCustomAttributes(false).OfType<DebuggableAttribute>().Any(da => da.IsJITTrackingEnabled);
+                if (DeviceService.RuntimePlatform == RuntimePlatform.UWP)
+                    return Assembly.GetEntryAssembly().GetCustomAttributes(false).OfType<DebuggableAttribute>().Any(da => da.IsJITTrackingEnabled);
+                else
+                    return Debugger.IsAttached;
             }
-            catch
+            catch (Exception exp)
             {
                 return Debugger.IsAttached;
             }
@@ -84,11 +88,11 @@ namespace Bit.ViewModel.Implementations
 
                 request.Headers.Add("Client-Platform", DeviceInfo.Platform.ToString());
 
-                request.Headers.Add("Current-Time-Zone", TimeZoneInfo.Local.StandardName);
+                request.Headers.Add("Current-Time-Zone", TimeZoneInfo.Local.Id);
 
                 request.Headers.Add("Client-Theme", AppInfo.RequestedTheme.ToString());
 
-                request.Headers.Add("Client-Debug-Mode", IsAssemblyDebugBuild().ToString(CultureInfo.InvariantCulture));
+                request.Headers.Add("Client-Debug-Mode", IsInDebugMode().ToString(CultureInfo.InvariantCulture));
             }
 
             DateTimeOffset startDate = DateTimeProvider.GetCurrentUtcDateTime();
