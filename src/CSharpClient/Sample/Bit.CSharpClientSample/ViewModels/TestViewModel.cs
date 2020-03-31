@@ -1,6 +1,7 @@
 ﻿using Bit.Model.Events;
 using Bit.ViewModel;
 using Bit.ViewModel.Contracts;
+using Bit.ViewModel.Exceptions;
 using Prism.Events;
 using System;
 using System.Collections.Generic;
@@ -14,6 +15,7 @@ namespace Bit.CSharpClientSample.ViewModels
         public virtual BitDelegateCommand CloseCommand { get; set; }
 
         public virtual BitDelegateCommand IncreaseStepsCountCommand { get; set; }
+        public virtual BitDelegateCommand ThrowExceptionCommand { get; set; }
         public virtual BitDelegateCommand TestSignalrCommand { get; set; }
 
         public virtual IMessageReceiver MessageReceiver { get; set; }
@@ -25,8 +27,14 @@ namespace Bit.CSharpClientSample.ViewModels
         public TestViewModel()
         {
             CloseCommand = new BitDelegateCommand(Close);
+            ThrowExceptionCommand = new BitDelegateCommand(ThrowException);
             IncreaseStepsCountCommand = new BitDelegateCommand(IncreaseSteps);
             TestSignalrCommand = new BitDelegateCommand(TestSignalr);
+        }
+
+        async Task ThrowException()
+        {
+            throw new DomainLogicException("It's not good!");
         }
 
         async Task IncreaseSteps()

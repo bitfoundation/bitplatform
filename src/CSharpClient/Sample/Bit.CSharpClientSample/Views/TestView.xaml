@@ -18,6 +18,7 @@
         <Button Command="{Binding CloseCommand}" Text="Close" />
         <Button Command="{Binding IncreaseStepsCountCommand}" Text="{Binding StepsCount, StringFormat='{} Tapped {0} times!', Converter={view:TestConverter}}" />
         <Button Command="{Binding TestSignalrCommand}" Text="Test signalr!" />
+        <Button Command="{Binding ThrowExceptionCommand}" Text="Throw an exception!" />
         <Label Text="{Binding MessageReceiver.IsConnected, StringFormat='{} IsConnected: {0}'}" />
     </StackLayout>
 </pages:PopupPage>

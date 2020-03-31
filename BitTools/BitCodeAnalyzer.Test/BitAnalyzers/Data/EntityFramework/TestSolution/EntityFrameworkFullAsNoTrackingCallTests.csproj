@@ -55,7 +55,7 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="BitCodeAnalyzer">
-      <Version>3.9.2</Version>
+      <Version>3.9.3</Version>
     </PackageReference>
     <PackageReference Include="EntityFramework">
       <Version>6.4.0</Version>
