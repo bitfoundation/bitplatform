@@ -81,7 +81,7 @@ namespace Bit.CSharpClientSample
                 HostUri = new Uri("http://localhost/"),
                 //HostUri = new Uri("http://127.0.0.1/"),
                 //HostUri = new Uri("http://10.0.2.2"),
-                OAuthRedirectUri = new Uri("Test://oauth2redirect"),
+                OAuthRedirectUri = new Uri("test-oauth://"),
                 AppName = "Test",
                 ODataRoute = "odata/Test/"
             }).SingleInstance();

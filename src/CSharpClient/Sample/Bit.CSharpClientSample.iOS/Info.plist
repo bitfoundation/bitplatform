@@ -59,7 +59,7 @@
 			<string>Test</string>
 			<key>CFBundleURLSchemes</key>
 			<array>
-				<string>Test</string>
+				<string>test-oauth</string>
 			</array>
 			<key>CFBundleURLTypes</key>
 			<string>Viewer</string>

@@ -69,6 +69,16 @@ namespace Bit.Android
             base.OnRequestPermissionsResult(requestCode, permissions, grantResults);
         }
 
+        protected override void OnResume()
+        {
+            base.OnResume();
+
+            if (_useDefaultConfiguration)
+            {
+                Xamarin.Essentials.Platform.OnResume();
+            }
+        }
+
         public override void OnLowMemory()
         {
             try

@@ -30,21 +30,17 @@ namespace Bit.CSharpClientSample.Droid
         }
     }
 
+    [Activity(NoHistory = true, LaunchMode = LaunchMode.SingleTop)]
+    [IntentFilter(new[] { Intent.ActionView }, Categories = new[] { Intent.CategoryDefault, Intent.CategoryBrowsable }, DataScheme = "test-oauth")]
+    public class WebAuthenticationCallbackActivity : Xamarin.Essentials.WebAuthenticatorCallbackActivity
+    {
+    }
+
     public class SampleAppDroidInitializer : BitPlatformInitializer
     {
         public SampleAppDroidInitializer(Activity activity)
             : base(activity)
         {
         }
-    }
-
-    [Activity(Label = nameof(SampleAppSSOUrlRedirectParserActivity), NoHistory = true, LaunchMode = LaunchMode.SingleTop)]
-    [IntentFilter(
-    new[] { Intent.ActionView },
-    Categories = new[] { Intent.CategoryDefault, Intent.CategoryBrowsable },
-    DataSchemes = new[] { "test" },
-    DataPath = "test://oauth2redirect")]
-    public class SampleAppSSOUrlRedirectParserActivity : BitSSOUrlRedirectParserActivity
-    {
     }
 }

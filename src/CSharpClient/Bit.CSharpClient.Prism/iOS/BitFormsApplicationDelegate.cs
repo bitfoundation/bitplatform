@@ -45,11 +45,8 @@ namespace Bit.iOS
 
         public override bool OpenUrl(UIApplication app, NSUrl url, NSDictionary options)
         {
-            if (_useDefaultConfiguration == true)
+            if (_useDefaultConfiguration == true && Xamarin.Essentials.Platform.OpenUrl(app, url, options))
             {
-                Uri uri = new Uri(url.AbsoluteString);
-                OnSsoLoginLogoutRedirectCompleted?.Invoke(uri);
-
                 return true;
             }
             else
@@ -57,8 +54,6 @@ namespace Bit.iOS
                 return base.OpenUrl(app, url, options);
             }
         }
-
-        public static Func<Uri, Task> OnSsoLoginLogoutRedirectCompleted;
     }
 }
 #endif

@@ -11,6 +11,9 @@ using System.Linq;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Xml;
+using System.Xml.Linq;
+using System.Xml.XPath;
 using Xamarin.Essentials;
 
 namespace Bit.ViewModel.Implementations
@@ -28,10 +31,6 @@ namespace Bit.ViewModel.Implementations
         public virtual IDateTimeProvider DateTimeProvider { get; set; }
         public virtual IEnumerable<ITelemetryService> TelemetryServices { get; set; }
         public virtual Lazy<IContainer> ContainerProvider { get; set; }
-
-        protected TaskCompletionSource<Token> CurrentLoginTaskCompletionSource { get; set; }
-        protected string CurrentAction { get; set; }
-        protected TaskCompletionSource<object> CurrentLogoutTaskCompletionSource { get; set; }
 
         public virtual async Task<bool> IsLoggedInAsync(CancellationToken cancellationToken = default)
         {
@@ -103,10 +102,15 @@ namespace Bit.ViewModel.Implementations
 
         public virtual async Task<Token> Login(object state = null, string client_id = null, IDictionary<string, string> acr_values = null, CancellationToken cancellationToken = default)
         {
-            CurrentAction = "Login";
-            CurrentLoginTaskCompletionSource = new TaskCompletionSource<Token>();
-            await Browser.OpenAsync(GetLoginUrl(state, client_id, acr_values), BrowserLaunchMode.SystemPreferred).ConfigureAwait(false);
-            return await CurrentLoginTaskCompletionSource.Task.ConfigureAwait(false);
+            var authResult = await WebAuthenticator.AuthenticateAsync(GetLoginUrl(state, client_id, acr_values), ClientAppProfile.OAuthRedirectUri).ConfigureAwait(false);
+
+            Token token = authResult.Properties;
+
+            string jsonToken = JsonConvert.SerializeObject(token);
+
+            await StoreToken(jsonToken, cancellationToken).ConfigureAwait(false);
+
+            return token;
         }
 
         public virtual async Task<Token> GetCurrentTokenAsync(CancellationToken cancellationToken = default)
@@ -139,10 +143,7 @@ namespace Bit.ViewModel.Implementations
 
                 if (!string.IsNullOrEmpty(token.id_token))
                 {
-                    CurrentAction = "Logout";
-                    CurrentLogoutTaskCompletionSource = new TaskCompletionSource<object>();
-                    await Browser.OpenAsync(GetLogoutUrl(token.id_token, state, client_id), BrowserLaunchMode.SystemPreferred).ConfigureAwait(false);
-                    await CurrentLogoutTaskCompletionSource.Task.ConfigureAwait(false);
+                    await WebAuthenticator.AuthenticateAsync(GetLogoutUrl(token.id_token, state, client_id), ClientAppProfile.OAuthRedirectUri).ConfigureAwait(false);
                 }
             }
         }
@@ -176,24 +177,6 @@ namespace Bit.ViewModel.Implementations
             return new Uri(ClientAppProfile.HostUri, relativeUri: relativeUri);
         }
 
-        public virtual async Task OnSsoLoginLogoutRedirectCompleted(Uri url)
-        {
-            Dictionary<string, string> query = (Dictionary<string, string>)FormDecode(url.Fragment);
-
-            if (CurrentAction == "Logout")
-                CurrentLogoutTaskCompletionSource.SetResult(null);
-            else
-            {
-                Token token = query;
-
-                string jsonToken = JsonConvert.SerializeObject(token);
-
-                await StoreToken(jsonToken, default).ConfigureAwait(false);
-
-                CurrentLoginTaskCompletionSource.SetResult(query);
-            }
-        }
-
         async Task StoreToken(string jsonToken, CancellationToken cancellationToken)
         {
             if (UseSecureStorage())
@@ -209,47 +192,6 @@ namespace Bit.ViewModel.Implementations
         }
 
         readonly char[] AmpersandChars = new char[] { '&' };
-
-        IDictionary<string, string> FormDecode(string encodedString)
-        {
-            Dictionary<string, string> inputs = new Dictionary<string, string>();
-
-            if (encodedString.Length > 0)
-            {
-                char firstChar = encodedString[0];
-                if (firstChar == '?' || firstChar == '#')
-                {
-                    encodedString = encodedString.Substring(1);
-                }
-
-                if (encodedString.Length > 0)
-                {
-                    string[] parts = encodedString.Split(AmpersandChars, StringSplitOptions.RemoveEmptyEntries);
-
-                    foreach (string part in parts)
-                    {
-                        int equalsIndex = part.IndexOf('=');
-
-                        string key;
-                        string value;
-                        if (equalsIndex >= 0)
-                        {
-                            key = Uri.UnescapeDataString(part.Substring(0, equalsIndex));
-                            value = Uri.UnescapeDataString(part.Substring(equalsIndex + 1));
-                        }
-                        else
-                        {
-                            key = Uri.UnescapeDataString(part);
-                            value = string.Empty;
-                        }
-
-                        inputs[key] = value;
-                    }
-                }
-            }
-
-            return inputs;
-        }
 
         public virtual bool UseSecureStorage()
         {

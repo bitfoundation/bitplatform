@@ -56,15 +56,7 @@ namespace Autofac
             if (containerBuilder == null)
                 throw new ArgumentNullException(nameof(containerBuilder));
 
-            containerBuilder.RegisterType<TSecurityService>().As<ISecurityService>().SingleInstance().PropertiesAutowired(PropertyWiringOptions.PreserveSetValues).PreserveExistingDefaults()
-                .OnActivated(activatedEventArgs =>
-                {
-#if iOS
-                    if (Bit.iOS.BitFormsApplicationDelegate.OnSsoLoginLogoutRedirectCompleted == null)
-                        Bit.iOS.BitFormsApplicationDelegate.OnSsoLoginLogoutRedirectCompleted = activatedEventArgs.Instance.OnSsoLoginLogoutRedirectCompleted;
-#endif
-                })
-                .AutoActivate();
+            containerBuilder.RegisterType<TSecurityService>().As<ISecurityService>().SingleInstance().PropertiesAutowired(PropertyWiringOptions.PreserveSetValues).PreserveExistingDefaults();
 
             return containerBuilder;
         }
