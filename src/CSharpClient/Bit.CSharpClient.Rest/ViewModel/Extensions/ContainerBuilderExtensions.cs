@@ -27,6 +27,11 @@ namespace Autofac
                 .PropertiesAutowired()
                 .PreserveExistingDefaults();
 
+            containerBuilder.Register(context => new RefitSettings
+            {
+                ContentSerializer = context.Resolve<IContentSerializer>()
+            });
+
             return containerBuilder;
         }
 
@@ -35,10 +40,7 @@ namespace Autofac
             if (containerBuilder == null)
                 throw new ArgumentNullException(nameof(containerBuilder));
 
-            containerBuilder.Register(c => RestService.For<TService>(c.Resolve<HttpClient>(), new RefitSettings
-            {
-                ContentSerializer = c.Resolve<IContentSerializer>()
-            }));
+            containerBuilder.Register(c => RestService.For<TService>(c.Resolve<HttpClient>(), c.Resolve<RefitSettings>()));
 
             return containerBuilder;
         }
@@ -79,7 +81,7 @@ namespace Autofac
             containerBuilder.Register(c => c.Resolve<IHttpClientFactory>().CreateClient(ContractKeys.DefaultHttpClientName))
                 .PreserveExistingDefaults();
 
-            IAsyncPolicy<HttpResponseMessage> policy = containerBuilder.BuildHttpPollyPolicy();
+            containerBuilder.Register(context => new IPollyHttpResponseMessagePolicyFactory(request => DefaultRestFactories.BuildHttpPollyPolicy(request)));
 
             return services.AddHttpClient(ContractKeys.DefaultHttpClientName)
                 .ConfigureHttpClient((serviceProvider, httpClient) =>
@@ -92,28 +94,7 @@ namespace Autofac
                     return serviceProvider.GetRequiredService<IContainer>().ResolveNamed<HttpMessageHandler>(ContractKeys.AuthenticatedHttpMessageHandler);
                 })
                 .SetHandlerLifetime(Timeout.InfiniteTimeSpan)
-                .AddPolicyHandler(policy);
-        }
-
-        public static IAsyncPolicy<HttpResponseMessage> BuildHttpPollyPolicy(this ContainerBuilder containerBuilder)
-        {
-            // https://github.com/App-vNext/Polly.Extensions.Http/blob/master/src/Polly.Extensions.Http/HttpPolicyExtensions.cs
-
-            IAsyncPolicy<HttpResponseMessage> policy = Policy.Handle<HttpRequestException>() // HandleTransientHttpError
-                .OrResult<HttpResponseMessage>((response) =>
-                {
-                    if (response.ReasonPhrase == "KnownError" || (response.Headers.TryGetValues("Reason-Phrase", out IEnumerable<string> reasonPhrases) && reasonPhrases.Any(rp => rp == "KnownError"))) // Bit Policy
-                        return false;
-                    return (int)response.StatusCode >= 500 || response.StatusCode == HttpStatusCode.RequestTimeout; // TransientHttpStatusCodePredicate
-                })
-                .WaitAndRetryAsync(new[]
-                {
-                    TimeSpan.FromSeconds(1),
-                    TimeSpan.FromSeconds(5),
-                    TimeSpan.FromSeconds(10)
-                });
-
-            return policy;
+                .AddPolicyHandler((serviceProvider, request) => serviceProvider.GetRequiredService<IPollyHttpResponseMessagePolicyFactory>()(request));
         }
 
         public static void RegisterHttpMessageHandler<THttpMessageHandler>(this ContainerBuilder containerBuilder)

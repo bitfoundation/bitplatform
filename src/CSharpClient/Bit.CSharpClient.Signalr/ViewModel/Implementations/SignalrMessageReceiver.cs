@@ -11,7 +11,7 @@ using Xamarin.Essentials;
 
 namespace Bit.ViewModel.Implementations
 {
-    public class SignalrMessageReceiver : Bindable, IMessageReceiver, IDisposable
+    public class SignalrMessageReceiver : Bindable, IMessageReceiver
     {
         public IExceptionHandler ExceptionHandler { get; set; }
 
@@ -22,6 +22,10 @@ namespace Bit.ViewModel.Implementations
         public virtual IDeviceService DeviceService { get; set; }
 
         public virtual IClientAppProfile ClientAppProfile { get; set; }
+
+        public IHubConnectionFactory HubConnectionFactory { get; set; }
+
+        public IClientTransportFactory ClientTransportFactory { get; set; }
 
         private bool _IsConnected;
         public virtual bool IsConnected
@@ -52,10 +56,7 @@ namespace Bit.ViewModel.Implementations
 
             if (_hubConnection == null)
             {
-                _hubConnection = new HubConnection($"{ClientAppProfile.HostUri}{ClientAppProfile.SignalrEndpint}")
-                {
-                    TransportConnectTimeout = TimeSpan.FromSeconds(3)
-                };
+                _hubConnection = HubConnectionFactory(ClientAppProfile);
 
                 IHubProxy hubProxy = _hubConnection.CreateHubProxy("MessagesHub");
 
@@ -98,10 +99,7 @@ namespace Bit.ViewModel.Implementations
             }
             finally
             {
-                _serverSentEventsTransport = new DefaultServerSentEventsTransport(SignalRHttpClient)
-                {
-                    ReconnectDelay = TimeSpan.FromSeconds(3)
-                };
+                _serverSentEventsTransport = ClientTransportFactory(SignalRHttpClient);
 
                 _serverSentEventsTransport.OnDisconnected += OnDisconnected;
             }
