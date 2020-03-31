@@ -27,7 +27,11 @@ namespace Bit.ViewModel.Implementations
 
         public virtual async Task<T> DeserializeAsync<T>(HttpContent content)
         {
+#if DotNetStandard || UWP
+            using Stream stream = await content.ReadAsStreamAsync().ConfigureAwait(false);
+#else
             await using Stream stream = await content.ReadAsStreamAsync().ConfigureAwait(false);
+#endif
             using StreamReader reader = new StreamReader(stream);
             using JsonTextReader jsonTextReader = new JsonTextReader(reader);
             return (await JToken.LoadAsync(jsonTextReader).ConfigureAwait(false)).ToObject<T>(JsonSerializer.Create(_jsonDeserializeSettings));
