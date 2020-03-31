@@ -3,14 +3,17 @@
 using Android.Content.PM;
 using Android.OS;
 using Android.Runtime;
+using Bit.Model.Events;
 using Bit.View;
 using Bit.ViewModel;
 using Bit.ViewModel.Implementations;
+using Prism.Events;
 using System;
 using System.Threading.Tasks;
 using Xamarin.Essentials;
 using Xamarin.Forms;
 using Xamarin.Forms.Platform.Android;
+using Prism.Ioc;
 
 namespace Bit.Android
 {
@@ -83,7 +86,9 @@ namespace Bit.Android
         {
             try
             {
-                if (LocalTelemetryService.Current.IsConfigured())
+                BitApplication.Current.Container.Resolve<IEventAggregator>().GetEvent<LowMemoryEvent>().Publish(new LowMemoryEvent { });
+
+                if (LocalTelemetryService.Current.IsConfigured()) // LocalTelemetryService is not DI friendly.
                     LocalTelemetryService.Current.ClearThings();
             }
             catch (Exception exp)
