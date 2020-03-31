@@ -10,10 +10,11 @@ using Microsoft.OData.UriParser;
 using System;
 using System.Collections.Generic;
 using System.Reflection;
+using System.Threading.Tasks;
 
 namespace Bit.OData.Implementations
 {
-    public class DefaultODataContainerBuilder : IContainerBuilder, IDisposable
+    public class DefaultODataContainerBuilder : IContainerBuilder, IDisposable, IAsyncDisposable
     {
         private readonly DefaultContainerBuilder _defaultContainerBuilder = new DefaultContainerBuilder();
         private IDependencyResolver _childDependencyResolver;
@@ -48,6 +49,12 @@ namespace Bit.OData.Implementations
         public virtual void Dispose()
         {
             _childDependencyResolver?.Dispose();
+        }
+
+        public async ValueTask DisposeAsync()
+        {
+            if (_childDependencyResolver != null)
+                await _childDependencyResolver.DisposeAsync();
         }
 
         public virtual IContainerBuilder AddService(Microsoft.OData.ServiceLifetime lifetime, Type serviceType, Type implementationType)

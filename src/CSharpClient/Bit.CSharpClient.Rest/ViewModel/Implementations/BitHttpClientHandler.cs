@@ -1,12 +1,16 @@
 ﻿using Bit.ViewModel.Contracts;
+using Prism.Services;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
+using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
+using Xamarin.Essentials;
 using Xamarin.Forms;
 
 namespace Bit.ViewModel.Implementations
@@ -34,37 +38,60 @@ namespace Bit.ViewModel.Implementations
         }
 #endif
 
+        public virtual bool IsAssemblyDebugBuild()
+        {
+            try
+            {
+                return Assembly.GetEntryAssembly().GetCustomAttributes(false).OfType<DebuggableAttribute>().Any(da => da.IsJITTrackingEnabled);
+            }
+            catch
+            {
+                return Debugger.IsAttached;
+            }
+        }
+
         protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {
             // ToDo:
-            // Current-Time-Zone
             // Desired-Time-Zone
-            // Client-App-Version
-            // Client-Culture
-            // Client-Route
-            // Client-Theme
-            // Client-Debug-Mode
-            // System-Language
-            // Client-Sys-Language
-            // Client-Platform
-
-            // ToDo: Use IDeviceService & IDateTimeProvider
 
             if (!request.Headers.Any(h => h.Key == "Client-Type"))
             {
                 request.Headers.Add("Client-Type", "Xamarin");
 
-                if (Device.Idiom != TargetIdiom.Unsupported)
+                if (DeviceService.Idiom != TargetIdiom.Unsupported)
                     request.Headers.Add("Client-Screen-Size", Device.Idiom == TargetIdiom.Phone ? "MobileAndPhablet" : "DesktopAndTablet");
 
-                request.Headers.Add("Client-Date-Time", DefaultDateTimeProvider.Current.GetCurrentUtcDateTime().UtcDateTime.ToString("o", CultureInfo.InvariantCulture));
+                request.Headers.Add("Client-Date-Time", DateTimeProvider.GetCurrentUtcDateTime().UtcDateTime.ToString("o", CultureInfo.InvariantCulture));
 
                 request.Headers.Add("X-Correlation-ID", Guid.NewGuid().ToString());
 
                 request.Headers.Add("Bit-Client-Type", "CS-Client");
+
+                request.Headers.Add("Client-App-Version", AppInfo.VersionString);
+
+                request.Headers.Add("Client-Culture", CultureInfo.CurrentUICulture.Name);
+
+                request.Headers.Add("System-Language", CultureInfo.CurrentUICulture.ThreeLetterISOLanguageName);
+
+                request.Headers.Add("Client-Sys-Language", CultureInfo.CurrentUICulture.ThreeLetterISOLanguageName);
+
+                try
+                {
+                    request.Headers.Add("Client-Route", BitApplication.Current.NavigationService.CurrentPageNavService.GetNavigationUriPath());
+                }
+                catch { }
+
+                request.Headers.Add("Client-Platform", DeviceInfo.Platform.ToString());
+
+                request.Headers.Add("Current-Time-Zone", TimeZoneInfo.Local.StandardName);
+
+                request.Headers.Add("Client-Theme", AppInfo.RequestedTheme.ToString());
+
+                request.Headers.Add("Client-Debug-Mode", IsAssemblyDebugBuild().ToString(CultureInfo.InvariantCulture));
             }
 
-            DateTimeOffset startDate = DateTimeOffset.Now;
+            DateTimeOffset startDate = DateTimeProvider.GetCurrentUtcDateTime();
 
 #if Android // https://github.com/xamarin/xamarin-android/issues/3216
             try
@@ -106,5 +133,9 @@ namespace Bit.ViewModel.Implementations
         }
 
         public virtual IEnumerable<ITelemetryService> TelemetryServices { get; set; }
+
+        public virtual IDateTimeProvider DateTimeProvider { get; set; }
+
+        public virtual IDeviceService DeviceService { get; set; }
     }
 }

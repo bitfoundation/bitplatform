@@ -40,7 +40,11 @@ namespace Bit.Data.Implementations
         {
             DbConnection connection = await DbConnectionProvider.GetDbConnectionAsync(ActiveAppEnvironment.GetConfig(AppEnvironment.KeyValues.Data.LogDbConnectionstring, defaultValueOnNotFoundProvider: () => ActiveAppEnvironment.GetConfig<string>("AppConnectionstring")), rollbackOnScopeStatusFailure: false, cancellationToken: CancellationToken.None).ConfigureAwait(false);
 
+#if DotNet
             using (DbCommand command = connection.CreateCommand())
+#else
+            await using (DbCommand command = connection.CreateCommand())
+#endif
             {
                 command.Transaction = DbConnectionProvider.GetDbTransaction(connection);
 

@@ -111,6 +111,35 @@ namespace Bit.Data
             }
         }
 
+#if DotNetCore
+        public async ValueTask DisposeAsync()
+        {
+            bool wasSucceeded = ScopeStatusManager.WasSucceeded();
+
+            foreach (DbConnectionAndTransactionPair dbAndTran in DbConnectionAndTransactions)
+            {
+                try
+                {
+                    if (dbAndTran.RollbackOnScopeStatusFailure == false)
+                        await dbAndTran.Transaction?.CommitAsync();
+                    else
+                    {
+                        if (wasSucceeded)
+                            await dbAndTran.Transaction?.CommitAsync();
+                        else
+                            await dbAndTran.Transaction?.RollbackAsync();
+                    }
+                }
+                finally
+                {
+                    if (dbAndTran.Transaction != null)
+                        await dbAndTran.Transaction.DisposeAsync();
+                    await dbAndTran.Connection.DisposeAsync();
+                }
+            }
+        }
+#endif
+
         public class DbConnectionAndTransactionPair
         {
             public DbConnectionAndTransactionPair(string connectionString, TDbConnection connection, DbTransaction transaction, bool rollbackOnScopeStatusFailure)

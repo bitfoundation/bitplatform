@@ -15,7 +15,11 @@ namespace Bit.OData.Contents
                 if (onStreamAvailable == null)
                     throw new ArgumentNullException(nameof(onStreamAvailable));
 
+#if DotNet
                 using (stream)
+#else
+                await using (stream)
+#endif
                 {
                     await onStreamAvailable(stream);
                     await stream.FlushAsync(cancellationToken);

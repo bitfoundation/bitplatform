@@ -57,7 +57,7 @@ namespace Bit.ViewModel.Implementations
         {
             if (toServerDtoSetSyncMaterials.Any())
             {
-                using (EfCoreDbContextBase offlineContextForSyncTo = Container.Resolve<EfCoreDbContextBase>())
+                await using (EfCoreDbContextBase offlineContextForSyncTo = Container.Resolve<EfCoreDbContextBase>())
                 {
                     ((IsSyncDbContext)offlineContextForSyncTo).IsSyncDbContext = true;
 
@@ -114,7 +114,7 @@ namespace Bit.ViewModel.Implementations
             {
                 await GetMetadataIfNotRetrievedAlready(cancellationToken).ConfigureAwait(false);
 
-                using (EfCoreDbContextBase offlineContextForSyncFrom = Container.Resolve<EfCoreDbContextBase>())
+                await using (EfCoreDbContextBase offlineContextForSyncFrom = Container.Resolve<EfCoreDbContextBase>())
                 {
                     ((IsSyncDbContext)offlineContextForSyncFrom).IsSyncDbContext = true;
 
@@ -245,7 +245,11 @@ namespace Bit.ViewModel.Implementations
                 {
                     response.EnsureSuccessStatusCode();
 
+#if UWP || DotNetStandard
                     using (Stream stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false))
+#else
+                    await using (Stream stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false))
+#endif
                     {
                         using (StreamReader reader = new StreamReader(stream))
                         {

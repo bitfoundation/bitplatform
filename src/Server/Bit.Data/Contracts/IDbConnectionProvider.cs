@@ -6,6 +6,9 @@ using System.Threading.Tasks;
 namespace Bit.Data.Contracts
 {
     public interface IDbConnectionProvider : IDisposable
+#if DotNetCore
+        , IAsyncDisposable
+#endif
     {
         Task<DbConnection> GetDbConnectionAsync(string connectionString, bool rollbackOnScopeStatusFailure, CancellationToken cancellationToken);
 
