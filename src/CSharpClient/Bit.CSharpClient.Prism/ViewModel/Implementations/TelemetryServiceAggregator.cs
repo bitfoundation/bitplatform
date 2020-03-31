@@ -30,6 +30,14 @@ namespace Bit.ViewModel.Implementations
             return true;
         }
 
+        public void LogPreviousSessionCrashIfAny()
+        {
+            foreach (ITelemetryService telemetryService in _telemetryServices)
+            {
+                telemetryService.LogPreviousSessionCrashIfAny();
+            }
+        }
+
         public virtual IDictionary<string, string> PopulateProperties(IDictionary<string, string> initialProps)
         {
             return initialProps;

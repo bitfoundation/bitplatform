@@ -22,5 +22,7 @@ namespace Bit.ViewModel.Contracts
         void TrackTrace(string message, IDictionary<string, string> properties);
 
         void SetUserId(string userId);
+
+        void LogPreviousSessionCrashIfAny();
     }
 }

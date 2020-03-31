@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Threading;
 using System.Threading.Tasks;
+using Xamarin.Essentials;
 
 namespace Bit.ViewModel
 {
@@ -86,6 +87,12 @@ namespace Bit.ViewModel
                 await Task.Yield();
                 await OnNavigatedToAsync(parameters);
                 await Task.Yield();
+
+                try
+                {
+                    Preferences.Set("LastVisitedUri", NavigationService.GetNavigationUriPath());
+                }
+                catch { }
             }
             catch (Exception exp)
             {
@@ -94,7 +101,7 @@ namespace Bit.ViewModel
             }
             finally
             {
-                if (parameters.TryGetNavigationMode(out NavigationMode navigationMode) && navigationMode == NavigationMode.New)
+                if (parameters.TryGetNavigationMode(out Prism.Navigation.NavigationMode navigationMode) && navigationMode == Prism.Navigation.NavigationMode.New)
                 {
                     string pageName = GetViewModelName();
 

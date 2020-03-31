@@ -1,15 +1,22 @@
-﻿using Bit.ViewModel.Contracts;
+﻿using Bit.View;
+using Bit.ViewModel.Contracts;
+using Bit.ViewModel.Exceptions;
 using Microsoft.AppCenter;
 using Microsoft.AppCenter.Analytics;
+using Microsoft.AppCenter.Crashes;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Reflection;
+using Xamarin.Essentials;
+using Xamarin.Forms;
 
 namespace Bit.ViewModel.Implementations
 {
     public class AppCenterTelemetryService : TelemetryServiceBase, ITelemetryService
     {
         private bool _isInited = false;
+        private bool _trackEventsEnabled = false; // app center events are not much useful at the moment!
 
         private static AppCenterTelemetryService _current;
 
@@ -27,6 +34,11 @@ namespace Bit.ViewModel.Implementations
         }
 #endif
 
+        public virtual void EnableTrackEvents()
+        {
+            _trackEventsEnabled = true;
+        }
+
         public override bool IsConfigured()
         {
             return _isInited;
@@ -34,7 +46,7 @@ namespace Bit.ViewModel.Implementations
 
         public override void TrackEvent(string eventName, IDictionary<string, string> properties = null)
         {
-            if (IsConfigured())
+            if (IsConfigured() && _trackEventsEnabled)
             {
                 properties = PopulateProperties(properties);
                 Analytics.TrackEvent(eventName, properties);
@@ -46,7 +58,7 @@ namespace Bit.ViewModel.Implementations
             if (IsConfigured())
             {
                 properties = PopulateProperties(properties);
-                Microsoft.AppCenter.Crashes.Crashes.TrackError(exception, properties);
+                Crashes.TrackError(exception, properties);
             }
         }
 
@@ -114,6 +126,41 @@ namespace Bit.ViewModel.Implementations
             if (IsConfigured())
             {
                 AppCenter.SetUserId(userId);
+            }
+        }
+
+        public override async void LogPreviousSessionCrashIfAny()
+        {
+            if (IsConfigured())
+            {
+                try
+                {
+                    if (await Crashes.HasCrashedInLastSessionAsync().ConfigureAwait(false))
+                    {
+                        var crashReport = await Crashes.GetLastSessionCrashReportAsync().ConfigureAwait(false);
+
+                        var hasReceivedMemoryWarningInLastSession = await Crashes.HasReceivedMemoryWarningInLastSessionAsync().ConfigureAwait(false);
+
+                        var exp = new CrashReportException { };
+
+                        var items = new Dictionary<string, string>
+                        {
+                            { "CrashReportId", crashReport?.Id },
+                            { "LastVisitedUri", Preferences.Get("LastVisitedUri", null) },
+                            { "HasReceivedMemoryWarningInLastSession", hasReceivedMemoryWarningInLastSession.ToString(CultureInfo.InvariantCulture) },
+                            { "VersionHistory", string.Join(",", VersionTracking.VersionHistory) },
+                            { "XamarinFormsVersion", typeof(Binding).Assembly.GetCustomAttribute<AssemblyFileVersionAttribute>().Version },
+                            { "BitVersion", typeof(BitCSharpClientControls).Assembly.GetName().Version.ToString() },
+                            { "CurrentUICulture", CultureInfo.CurrentUICulture.Name }
+                        };
+
+                        Crashes.TrackError(exp, items);
+                    }
+                }
+                catch (Exception exp)
+                {
+                    BitExceptionHandler.Current.OnExceptionReceived(exp);
+                }
             }
         }
     }

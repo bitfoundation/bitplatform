@@ -47,7 +47,7 @@ namespace Bit
         public BitApplication()
             : this(null)
         {
-            
+
         }
 
         protected BitApplication(IPlatformInitializer platformInitializer = null)
@@ -66,6 +66,7 @@ namespace Bit
         {
             try
             {
+                Container.Resolve<IEnumerable<ITelemetryService>>().All().LogPreviousSessionCrashIfAny();
                 await OnInitializedAsync();
                 await Task.Yield();
             }

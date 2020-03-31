@@ -62,5 +62,10 @@ namespace Bit.ViewModel.Implementations
         public abstract void TrackTrace(string message, IDictionary<string, string> properties);
 
         public abstract void SetUserId(string userId);
+
+        public virtual void LogPreviousSessionCrashIfAny()
+        {
+            
+        }
     }
 }
