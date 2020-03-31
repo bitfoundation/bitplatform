@@ -72,7 +72,7 @@ namespace Prism.Autofac
     /// Creates the <see cref="IAutofacContainerExtension"/>
     /// </summary>
     /// <returns></returns>
-    protected override IContainerExtension CreateContainerExtension()
+        protected override IContainerExtension CreateContainerExtension()
         {
             return new AutofacContainerExtension(new ContainerBuilder());
         }

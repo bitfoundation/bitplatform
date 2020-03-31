@@ -117,11 +117,6 @@ namespace Bit
             });
             containerRegistry.RegisterPopupNavigationService();
         }
-
-        protected override IContainerExtension CreateContainerExtension()
-        {
-            return new AutofacContainerExtension(new ContainerBuilder());
-        }
     }
 
     public class BitServiceCollection : List<ServiceDescriptor>, IServiceCollection
