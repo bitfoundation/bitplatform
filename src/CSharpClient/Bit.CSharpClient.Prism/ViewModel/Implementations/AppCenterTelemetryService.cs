@@ -16,7 +16,6 @@ namespace Bit.ViewModel.Implementations
     public class AppCenterTelemetryService : TelemetryServiceBase, ITelemetryService
     {
         private bool _isInited = false;
-        private bool _trackEventsEnabled = false; // app center events are not much useful at the moment!
 
         private static AppCenterTelemetryService _current;
 
@@ -34,11 +33,6 @@ namespace Bit.ViewModel.Implementations
         }
 #endif
 
-        public virtual void EnableTrackEvents()
-        {
-            _trackEventsEnabled = true;
-        }
-
         public override bool IsConfigured()
         {
             return _isInited;
@@ -46,7 +40,7 @@ namespace Bit.ViewModel.Implementations
 
         public override void TrackEvent(string eventName, IDictionary<string, string> properties = null)
         {
-            if (IsConfigured() && _trackEventsEnabled)
+            if (IsConfigured())
             {
                 properties = PopulateProperties(properties);
                 Analytics.TrackEvent(eventName, properties);
@@ -146,7 +140,7 @@ namespace Bit.ViewModel.Implementations
                         var items = new Dictionary<string, string>
                         {
                             { "CrashReportId", crashReport?.Id },
-                            { "LastVisitedUri", Preferences.Get("LastVisitedUri", null) },
+                            { "LastNavigationUriPath", Preferences.Get("LastNavigationUriPath", null) },
                             { "HasReceivedMemoryWarningInLastSession", hasReceivedMemoryWarningInLastSession.ToString(CultureInfo.InvariantCulture) },
                             { "VersionHistory", string.Join(",", VersionTracking.VersionHistory) },
                             { "XamarinFormsVersion", typeof(Binding).Assembly.GetCustomAttribute<AssemblyFileVersionAttribute>().Version },

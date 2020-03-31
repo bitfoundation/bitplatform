@@ -90,7 +90,7 @@ namespace Bit.ViewModel
 
                 try
                 {
-                    Preferences.Set("LastVisitedUri", NavigationService.GetNavigationUriPath());
+                    Preferences.Set("LastNavigationUriPath", NavigationService.GetNavigationUriPath());
                 }
                 catch { }
             }
