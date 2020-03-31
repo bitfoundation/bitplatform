@@ -4,6 +4,7 @@ using Prism.Navigation;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Xamarin.Essentials;
@@ -74,13 +75,14 @@ namespace Bit.ViewModel
 
         protected virtual bool ShouldLogNavParam(string navParamName)
         {
-            return false;
+            return true;
         }
 
         public async void OnNavigatedTo(INavigationParameters parameters)
         {
             DateTimeOffset startDate = DateTimeOffset.Now;
             bool success = true;
+            string navUri = null;
 
             try
             {
@@ -90,9 +92,16 @@ namespace Bit.ViewModel
 
                 try
                 {
-                    Preferences.Set("LastNavigationUriPath", NavigationService.GetNavigationUriPath());
+                    navUri = NavigationService.GetNavigationUriPath();
                 }
-                catch { }
+                catch
+                {
+                    navUri = GetType().Name;
+                }
+
+                string lastNavState = $"Path: {navUri}; {(string.Join("; ", parameters.Where(parameter => ShouldLogNavParam(parameter.Key)).Select(parameter => $" {parameter.Key} : {parameter.Value ?? "NULL"}")))}";
+
+                Preferences.Set("LastNavState", lastNavState);
             }
             catch (Exception exp)
             {
@@ -114,6 +123,7 @@ namespace Bit.ViewModel
                     }
 
                     properties.Add("PageViewSucceeded", success.ToString(CultureInfo.InvariantCulture));
+                    properties.Add("NavUri", navUri);
 
                     TimeSpan duration = DateTimeOffset.Now - startDate;
 

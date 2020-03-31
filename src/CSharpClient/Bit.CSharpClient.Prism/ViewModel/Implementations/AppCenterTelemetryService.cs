@@ -140,7 +140,7 @@ namespace Bit.ViewModel.Implementations
                         var items = new Dictionary<string, string>
                         {
                             { "CrashReportId", crashReport?.Id },
-                            { "LastNavigationUriPath", Preferences.Get("LastNavigationUriPath", null) },
+                            { "LastNavState", Preferences.Get("LastNavState", null) },
                             { "HasReceivedMemoryWarningInLastSession", hasReceivedMemoryWarningInLastSession.ToString(CultureInfo.InvariantCulture) },
                             { "VersionHistory", string.Join(",", VersionTracking.VersionHistory) },
                             { "XamarinFormsVersion", typeof(Binding).Assembly.GetCustomAttribute<AssemblyFileVersionAttribute>().Version },

@@ -44,9 +44,6 @@ namespace Bit.ViewModel.Implementations
             if (!initialProps.ContainsKey("BitVersion"))
                 initialProps.Add("BitVersion", typeof(BitCSharpClientControls).Assembly.GetName().Version.ToString());
 
-            if (!initialProps.ContainsKey("LastNavigationUriPath"))
-                initialProps.Add("LastNavigationUriPath", Preferences.Get("LastNavigationUriPath", null));
-
             return initialProps;
         }
 
