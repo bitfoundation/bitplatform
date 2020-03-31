@@ -122,6 +122,8 @@ Http method: {HttpMethod}
             set => _current = value;
         }
 
+        private string _UserId;
+
 #if UWP || Android || iOS
         public virtual void Init()
         {
@@ -136,6 +138,7 @@ Http method: {HttpMethod}
 
         public override void SetUserId(string userId)
         {
+            _UserId = userId;
         }
 
         private readonly ConcurrentDictionary<DateTimeOffset, TrackedThing> _TrackedThings = new ConcurrentDictionary<DateTimeOffset, TrackedThing>();
@@ -159,8 +162,20 @@ Http method: {HttpMethod}
             }
         }
 
+        public override IDictionary<string, string> PopulateProperties(IDictionary<string, string> initialProps)
+        {
+            var props = base.PopulateProperties(initialProps);
+
+            if (!props.ContainsKey("UserId") && _UserId != null)
+                props.Add("UserId", _UserId);
+
+            return props;
+        }
+
         public override void TrackEvent(string eventName, IDictionary<string, string> properties = null)
         {
+            properties = PopulateProperties(properties);
+
             AddNewThing(new TrackedEvent
             {
                 Name = eventName,
@@ -174,6 +189,8 @@ Http method: {HttpMethod}
 
         public override void TrackException(Exception exception, IDictionary<string, string> properties = null)
         {
+            properties = PopulateProperties(properties);
+
             AddNewThing(new TrackedException
             {
                 Exception = exception,
@@ -187,6 +204,8 @@ Http method: {HttpMethod}
 
         public override void TrackMetric(string name, double value, IDictionary<string, string> properties = null)
         {
+            properties = PopulateProperties(properties);
+
             AddNewThing(new TrackedMetric
             {
                 Name = name,
@@ -201,6 +220,8 @@ Http method: {HttpMethod}
 
         public override void TrackPageView(string name, TimeSpan duration, IDictionary<string, string> properties = null)
         {
+            properties = PopulateProperties(properties);
+
             AddNewThing(new TrackedPageView
             {
                 Name = name,
@@ -215,6 +236,8 @@ Http method: {HttpMethod}
 
         public override void TrackRequest(string name, DateTimeOffset startTime, TimeSpan duration, string responseCode, bool success, Uri url, string httpMethod, IDictionary<string, string> properties = null)
         {
+            properties = PopulateProperties(properties);
+
             AddNewThing(new TrackedRequest
             {
                 Duration = duration,
@@ -233,6 +256,8 @@ Http method: {HttpMethod}
 
         public override void TrackTrace(string message, IDictionary<string, string> properties)
         {
+            properties = PopulateProperties(properties);
+
             AddNewThing(new TrackedTrace
             {
                 Message = message,
