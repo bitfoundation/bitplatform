@@ -16,6 +16,14 @@ namespace Bit.ViewModel
         {
             properties = properties ?? new Dictionary<string, string>();
 
+            if (exp is IExceptionData exceptionData && exceptionData.Items != null)
+            {
+                foreach (var item in exceptionData.Items)
+                {
+                    properties.Add(item);
+                }
+            }
+
             if (exp != null && Debugger.IsAttached)
             {
                 Debug.WriteLine($"DateTime: {DateTime.Now.ToLongTimeString()} Message: {exp}", category: "ApplicationException");

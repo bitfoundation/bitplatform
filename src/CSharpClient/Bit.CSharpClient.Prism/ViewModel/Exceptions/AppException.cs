@@ -1,11 +1,12 @@
 ﻿using Bit.ViewModel.Contracts;
 using System;
+using System.Collections.Generic;
 using System.Runtime.Serialization;
 
 namespace Bit.ViewModel.Exceptions
 {
     [Serializable]
-    public class AppException : ApplicationException, IKnownException
+    public class AppException : ApplicationException, IKnownException, IExceptionData
     {
         public AppException()
         {
@@ -25,5 +26,7 @@ namespace Bit.ViewModel.Exceptions
             : base(info, context)
         {
         }
+
+        public virtual IDictionary<string, string> Items { get; set; } = new Dictionary<string, string> { };
     }
 }
