@@ -30,7 +30,7 @@ namespace Autofac
             containerBuilder.Register(context => new RefitSettings
             {
                 ContentSerializer = context.Resolve<IContentSerializer>()
-            });
+            }).PreserveExistingDefaults();
 
             return containerBuilder;
         }
@@ -40,7 +40,7 @@ namespace Autofac
             if (containerBuilder == null)
                 throw new ArgumentNullException(nameof(containerBuilder));
 
-            containerBuilder.Register(c => RestService.For<TService>(c.Resolve<HttpClient>(), c.Resolve<RefitSettings>()));
+            containerBuilder.Register(c => RestService.For<TService>(c.Resolve<HttpClient>(), c.Resolve<RefitSettings>())).PreserveExistingDefaults();
 
             return containerBuilder;
         }
@@ -59,6 +59,23 @@ namespace Autofac
                 throw new ArgumentNullException(nameof(containerBuilder));
 
             containerBuilder.RegisterType<TSecurityService>().As<ISecurityService>().SingleInstance().PropertiesAutowired(PropertyWiringOptions.PreserveSetValues).PreserveExistingDefaults();
+
+            containerBuilder.RegisterBuildCallback(async scope =>
+            {
+                try
+                {
+                    ISecurityService securityService = scope.Resolve<ISecurityService>();
+                    if (await securityService.IsLoggedInAsync().ConfigureAwait(false))
+                    {
+                        ITelemetryService allTelemetryServices = scope.Resolve<IEnumerable<ITelemetryService>>().All();
+                        allTelemetryServices.SetUserId((await securityService.GetBitJwtToken(default).ConfigureAwait(false)).UserId);
+                    }
+                }
+                catch (Exception exp)
+                {
+                    scope.Resolve<IExceptionHandler>().OnExceptionReceived(exp);
+                }
+            });
 
             return containerBuilder;
         }
@@ -81,7 +98,7 @@ namespace Autofac
             containerBuilder.Register(c => c.Resolve<IHttpClientFactory>().CreateClient(ContractKeys.DefaultHttpClientName))
                 .PreserveExistingDefaults();
 
-            containerBuilder.Register(context => new IPollyHttpResponseMessagePolicyFactory(request => DefaultRestFactories.BuildHttpPollyPolicy(request)));
+            containerBuilder.Register(context => new IPollyHttpResponseMessagePolicyFactory(request => DefaultRestFactories.BuildHttpPollyPolicy(request))).PreserveExistingDefaults();
 
             return services.AddHttpClient(ContractKeys.DefaultHttpClientName)
                 .ConfigureHttpClient((serviceProvider, httpClient) =>
