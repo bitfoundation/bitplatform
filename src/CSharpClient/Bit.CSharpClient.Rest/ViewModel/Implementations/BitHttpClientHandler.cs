@@ -90,7 +90,8 @@ namespace Bit.ViewModel.Implementations
 
                 request.Headers.Add("Current-Time-Zone", TimeZoneInfo.Local.Id);
 
-                request.Headers.Add("Client-Theme", AppInfo.RequestedTheme.ToString());
+                if (DeviceService.RuntimePlatform != RuntimePlatform.UWP)
+                    request.Headers.Add("Client-Theme", AppInfo.RequestedTheme.ToString());
 
                 request.Headers.Add("Client-Debug-Mode", IsInDebugMode().ToString(CultureInfo.InvariantCulture));
             }
