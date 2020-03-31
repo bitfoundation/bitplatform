@@ -3,7 +3,6 @@ using Bit.Core.Contracts;
 using Bit.Core.Models;
 using Bit.Data;
 using Bit.Data.Contracts;
-using Bit.Data.EntityFrameworkCore.Implementations;
 using Bit.Hangfire.Implementations;
 using Bit.Model.Implementations;
 using Bit.OData.ActionFilters;
@@ -19,8 +18,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Swashbuckle.Application;
 using System.Collections.Generic;
-using System.Data.Common;
-using System.Data.SqlClient;
+using Microsoft.Data.SqlClient;
 using System.Reflection;
 using System.Web.Http;
 

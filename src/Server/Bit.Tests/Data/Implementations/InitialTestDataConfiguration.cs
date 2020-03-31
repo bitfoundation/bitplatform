@@ -1,6 +1,7 @@
 ﻿using Bit.Core.Contracts;
 using Bit.Core.Models;
 using Bit.Tests.Model.DomainModels;
+using Microsoft.Data.SqlClient;
 using System;
 using System.Collections.Generic;
 
@@ -80,11 +81,17 @@ namespace Bit.Tests.Data.Implementations
 
         public virtual void OnAppStartup()
         {
-            using (IDependencyResolver childDependencyResolver = _dependencyManager.CreateChildDependencyResolver())
+            try
             {
-                TestDbContext dbContext = childDependencyResolver.Resolve<TestDbContext>();
+                using (IDependencyResolver childDependencyResolver = _dependencyManager.CreateChildDependencyResolver())
+                {
+                    TestDbContext dbContext = childDependencyResolver.Resolve<TestDbContext>();
 
-                dbContext.Database.EnsureDeleted(); // after delete, scope and it's transaction are not much usable!
+                    dbContext.Database.EnsureDeleted(); // after delete, scope and it's transaction are not much usable!
+                }
+            }
+            catch (SqlException)
+            {
             }
 
             using (IDependencyResolver childDependencyResolver = _dependencyManager.CreateChildDependencyResolver())
