@@ -6,7 +6,7 @@ Stay tuned!
 
 [Getting started](getting-started.md)
 
-[Date time picker](date-picker.md)
+[Date time picker](date-time-picker.md)
 
 [Frame](frame.md)
 

@@ -38,4 +38,4 @@ In order to customise text of RadioButton :
 </bit:BitRadioButton>
 ```
 
-![Bit radio button](bit-radio-button.jpg)
+![Bit radio button](radio-button.jpg)

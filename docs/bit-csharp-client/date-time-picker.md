@@ -62,4 +62,4 @@ You can also use BitDateTimePickerView without its popup to show it in your own 
 <bit:BitDateTimeView />
 ```
 
-![Bit date time picker](bit-date-time-picker.jpg)
+![Bit date time picker](date-time-picker.jpg)
