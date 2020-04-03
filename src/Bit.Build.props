@@ -6,7 +6,7 @@
     <Product>Bit Framework</Product>
     <Title>$(MSBuildProjectName)</Title>
     <Description>$(MSBuildProjectName)</Description>
-    <Copyright>Copyright © Bit Foundation 2019</Copyright>
+    <Copyright>Copyright © Bit Foundation 2020</Copyright>
     <RepositoryUrl>https://github.com/bitfoundation/bitframework</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <Version>3.9.3</Version>
