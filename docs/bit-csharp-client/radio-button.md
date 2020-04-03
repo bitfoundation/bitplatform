@@ -23,7 +23,7 @@
 ### How to use BitRadioButton in Xaml:
 
 ```xml
-<bitControls:BitRadioButton
+<bit:BitRadioButton
     Key="{x:Static app:Gender.Man}"
     Text="Man"
     Value="{Binding Person.Gender}" />
@@ -32,8 +32,8 @@
 In order to customise text of RadioButton :
 
 ```xml
-<bitControls:BitRadioButton>
+<bit:BitRadioButton>
     <Label FontAttributes="Bold" 
         Text="custom label for Radio button. You can also put any custom control here!" />
-</bitControls:BitRadioButton>
+</bit:BitRadioButton>
 ```

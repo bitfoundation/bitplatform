@@ -7,7 +7,7 @@ This calendar is dependent on [RgPluginsPopup](https://github.com/rotorgames/Rg.
 ### How to Use BitDateTimePicker in Xaml:
 
 ```xml
-<bitControls:BitDateTimePicker
+<bit:BitDateTimePicker
     Text="Please select a date time" 
     SelectedColor="LightBlue"
     ShowTimePicker="True" 
@@ -20,7 +20,7 @@ You can also customize **FontFamily**, **DateDisplayFormat**, **CalendarSystem**
 
 xmlns:noda="clr-namespace:NodaTime;assembly=NodaTime"
 
-<bitControls:BitDateTimePicker
+<bit:BitDateTimePicker
     Text="لطفا یک روز و ساعت را انتخاب کنید" 
     Culture="Fa"
     DateDisplayFormat="dd MMM yyyy"
@@ -35,8 +35,8 @@ There is a **SelectedDate** property which is bindable.
 In order to customize picker's button you can have followings:
 
 ```xml
-<bitControls:BitDateTimePicker Text="Please Select a date">
-    <bitControls:BitDateTimePicker.ControlTemplate>
+<bit:BitDateTimePicker Text="Please Select a date">
+    <bit:BitDateTimePicker.ControlTemplate>
         <ControlTemplate>
             <Frame HasShadow="False" Padding="5" BorderColor="LightGray">
                 <StackLayout Orientation="Horizontal">
@@ -52,6 +52,12 @@ In order to customize picker's button you can have followings:
                     </StackLayout>
             </Frame>
         </ControlTemplate>
-    </bitControls:BitDateTimePicker.ControlTemplate>
-</bitControls:BitDateTimePicker>
+    </bit:BitDateTimePicker.ControlTemplate>
+</bit:BitDateTimePicker>
+```
+
+You can also use BitDateTimePickerView without its popup to show it in your own popup or page as followings:
+
+```xml
+<bit:BitDateTimeView />
 ```

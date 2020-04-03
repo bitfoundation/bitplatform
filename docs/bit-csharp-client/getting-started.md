@@ -36,6 +36,34 @@ protected override void OnCreate(Bundle savedInstanceState)
 }
 ```
 
+You'll also need following LinkerConfig.xml
+
+```xml
+<assembly fullname="Bit.CSharpClient.Controls">
+    <type fullname="*" />
+  </assembly>
+  <assembly fullname="System.Core">
+    <type fullname="*" />
+  </assembly>
+  <assembly fullname="Rg.Plugins.Popup">
+    <type fullname="*" />
+  </assembly>
+  <assembly fullname="NodaTime">
+    <type fullname="*" />
+  </assembly>
+  <assembly fullname="mscorlib">
+    <type fullname="System.Globalization.*" />
+    <type fullname="System.DateTime">
+      <method name="AddYears"></method>
+      <method name="AddMonths"></method>
+      <method name="AddDays"></method>
+      <method name="AddHours"></method>
+      <method name="AddMinutes"></method>
+      <method name="AddSeconds"></method>
+    </type>
+  </assembly>
+```
+
 ## Launching the controls in Windows(UWP)
 
 To launch the controls in UWP, call the BitCSharpClientControls.Init(); method in the OnLaunched overridden method of the App.xaml.cs class.
@@ -51,8 +79,14 @@ protected override void OnLaunched(LaunchActivatedEventArgs e)
 
 In xaml page add following namepsace to your page:
 
+```xml
+xmlns:bit="https://bitframework.com"
 ```
-xmlns:bitControls="clr-namespace:Bit.CSharpClient.Controls;assembly=Bit.CSharpClient.Controls"
+
+And put following in App.xaml.cs after InitializeComponent();
+
+```cs
+BitCSharpClientControls.XamlInit();
 ```
 
 To have better understanding see [samples](/Samples/CSharpClientSamples/Controls.Samples).
