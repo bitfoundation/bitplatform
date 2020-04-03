@@ -37,3 +37,5 @@ In order to customise text of RadioButton :
         Text="custom label for Radio button. You can also put any custom control here!" />
 </bit:BitRadioButton>
 ```
+
+![Bit radio button](bit-radio-button.jpg)

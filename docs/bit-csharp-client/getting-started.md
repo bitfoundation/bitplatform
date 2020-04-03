@@ -21,7 +21,7 @@ public override bool FinishedLaunching(UIApplication app, NSDictionary options)
 
 ## Launching the controls in Android
 
-To launch the controls in iOS, call the  BitCSharpClientControls.Init(); method in the OnCreate overridden method of the MainActivity class after the Xamarin.Forms framework has been initialized.
+To launch the controls in Android, call the  BitCSharpClientControls.Init(); method in the OnCreate overridden method of the MainActivity class after the Xamarin.Forms framework has been initialized.
 
 ```cs
 protected override void OnCreate(Bundle savedInstanceState)
