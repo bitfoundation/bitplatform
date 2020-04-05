@@ -59,6 +59,13 @@ namespace Bit.ViewModel.Implementations
             // ToDo:
             // Desired-Time-Zone
 
+            Dictionary<string, string> properties = new Dictionary<string, string>
+            {
+
+            };
+
+            Guid xCorrelationID;
+
             if (!request.Headers.Any(h => h.Key == "Client-Type"))
             {
                 request.Headers.Add("Client-Type", "Xamarin");
@@ -68,7 +75,9 @@ namespace Bit.ViewModel.Implementations
 
                 request.Headers.Add("Client-Date-Time", DateTimeProvider.GetCurrentUtcDateTime().UtcDateTime.ToString("o", CultureInfo.InvariantCulture));
 
-                request.Headers.Add("X-Correlation-ID", Guid.NewGuid().ToString());
+                xCorrelationID = Guid.NewGuid();
+
+                request.Headers.Add("X-Correlation-ID", xCorrelationID.ToString());
 
                 request.Headers.Add("Bit-Client-Type", "CS-Client");
 
@@ -95,38 +104,23 @@ namespace Bit.ViewModel.Implementations
 
                 request.Headers.Add("Client-Debug-Mode", IsInDebugMode().ToString(CultureInfo.InvariantCulture));
             }
+            else
+            {
+                xCorrelationID = Guid.Parse(request.Headers.ExtendedSingle("Finding X-Correlation-ID", h => h.Key == "X-Correlation-ID").Value.ExtendedSingle("Getting X-Correlation-ID value"));
+            }
 
             DateTimeOffset startDate = DateTimeProvider.GetCurrentUtcDateTime();
 
-#if Android // https://github.com/xamarin/xamarin-android/issues/3216
+            HttpResponseMessage response = null;
+
             try
-#endif
             {
-                HttpResponseMessage response = await base.SendAsync(request, cancellationToken).ConfigureAwait(false);
-
-                if (string.IsNullOrEmpty(response.ReasonPhrase) && response.Headers.TryGetValues("Reason-Phrase", out IEnumerable<string> reasonPhrases) && reasonPhrases.Any())
-                {
-                    response.ReasonPhrase = reasonPhrases.Single();
-                }
-
-                Dictionary<string, string> properties = new Dictionary<string, string>
-                {
-                    { "ReasonPhrase", response.ReasonPhrase }
-                };
-
-                if (response.Headers.TryGetValues("X-Correlation-ID", out IEnumerable<string> values) && values.Any())
-                {
-                    properties.Add("X-Correlation-ID", values.First());
-                }
-
-                TimeSpan duration = DateTimeOffset.Now - startDate;
-
-                TelemetryServices.All().TrackRequest(request.RequestUri.LocalPath, startDate, duration, response.StatusCode.ToString(), response.IsSuccessStatusCode, request.RequestUri, request.Method.ToString(), properties);
+                response = await base.SendAsync(request, cancellationToken).ConfigureAwait(false);
 
                 return response;
             }
 #if Android
-            catch (Java.Lang.Throwable exp)
+            catch (Java.Lang.Throwable exp) // https://github.com/xamarin/xamarin-android/issues/3216
             {
                 throw exp switch
                 {
@@ -135,6 +129,29 @@ namespace Bit.ViewModel.Implementations
                 };
             }
 #endif
+            catch (HttpRequestException exp)
+            {
+                properties.Add("RequestException", exp.ToString());
+                throw;
+            }
+            finally
+            {
+                if (response != null)
+                {
+                    if (string.IsNullOrEmpty(response.ReasonPhrase) && response.Headers.TryGetValues("Reason-Phrase", out IEnumerable<string> reasonPhrases) && reasonPhrases.Any())
+                    {
+                        response.ReasonPhrase = reasonPhrases.Single();
+                    }
+                }
+
+                properties.Add("ReasonPhrase", response?.ReasonPhrase ?? "UnknownError");
+
+                properties.Add("X-Correlation-ID", xCorrelationID.ToString());
+
+                TimeSpan duration = DateTimeOffset.Now - startDate;
+
+                TelemetryServices.All().TrackRequest(request.RequestUri.LocalPath, startDate, duration, response?.StatusCode.ToString() ?? "UnknownStatusCode", response?.IsSuccessStatusCode ?? false, request.RequestUri, request.Method.ToString(), properties);
+            }
         }
 
         public virtual IEnumerable<ITelemetryService> TelemetryServices { get; set; }

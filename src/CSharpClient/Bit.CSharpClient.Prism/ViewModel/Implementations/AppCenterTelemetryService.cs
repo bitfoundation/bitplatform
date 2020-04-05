@@ -7,6 +7,7 @@ using Microsoft.AppCenter.Crashes;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
 using System.Reflection;
 using Xamarin.Essentials;
 using Xamarin.Forms;
@@ -142,7 +143,8 @@ namespace Bit.ViewModel.Implementations
                             { "CrashReportId", crashReport?.Id },
                             { "LastNavState", Preferences.Get("LastNavState", null) },
                             { "HasReceivedMemoryWarningInLastSession", hasReceivedMemoryWarningInLastSession.ToString(CultureInfo.InvariantCulture) },
-                            { "VersionHistory", string.Join(",", VersionTracking.VersionHistory) },
+                            { "VersionHistory", string.Join(",", VersionTracking.VersionHistory.OrderByDescending(vh => vh)) },
+                            { "Version", string.Join(",", VersionTracking.CurrentVersion) },
                             { "XamarinFormsVersion", typeof(Binding).Assembly.GetCustomAttribute<AssemblyFileVersionAttribute>().Version },
                             { "BitVersion", typeof(BitCSharpClientControls).Assembly.GetName().Version.ToString() },
                             { "CurrentUICulture", CultureInfo.CurrentUICulture.Name }

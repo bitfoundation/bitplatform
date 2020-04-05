@@ -6,6 +6,7 @@ using System.Globalization;
 using Xamarin.Essentials;
 using Xamarin.Forms;
 using System.Reflection;
+using System.Linq;
 
 namespace Bit.ViewModel.Implementations
 {
@@ -24,7 +25,10 @@ namespace Bit.ViewModel.Implementations
                 initialProps.Add("CurrentUICulture", CultureInfo.CurrentUICulture.Name);
 
             if (!initialProps.ContainsKey("VersionHistory"))
-                initialProps.Add("VersionHistory", string.Join(",", VersionTracking.VersionHistory));
+                initialProps.Add("VersionHistory", string.Join(",", VersionTracking.VersionHistory.OrderByDescending(vh => vh)));
+
+            if (!initialProps.ContainsKey("Version"))
+                initialProps.Add("Version", string.Join(",", VersionTracking.CurrentVersion));
 
             if (!initialProps.ContainsKey("IsFirstLaunchEver"))
                 initialProps.Add("IsFirstLaunchEver", VersionTracking.IsFirstLaunchEver.ToString(CultureInfo.InvariantCulture));
