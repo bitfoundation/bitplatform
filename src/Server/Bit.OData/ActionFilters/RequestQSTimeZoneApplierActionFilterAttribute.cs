@@ -55,7 +55,7 @@ namespace Bit.OData.ActionFilters
 
                     date = timeZoneManager.MapFromClientToServer(date);
 
-                    return date.ToString("yyyy-MM-ddTHH:mm:ss.00Z", CultureInfo.InvariantCulture);
+                    return date.UtcDateTime.ToString("yyyy-MM-ddTHH:mm:ss.00Z", CultureInfo.InvariantCulture);
 
                 }, RegexOptions.Compiled | RegexOptions.CultureInvariant | RegexOptions.IgnoreCase);
 
