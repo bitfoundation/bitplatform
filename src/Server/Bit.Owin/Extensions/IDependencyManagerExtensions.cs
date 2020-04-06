@@ -204,6 +204,8 @@ namespace Bit.Core.Contracts
             });
             dependencyManager.RegisterOwinMiddleware<OwinExceptionHandlerMiddlewareConfiguration>();
             dependencyManager.RegisterOwinMiddleware<LogRequestInformationMiddlewareConfiguration>();
+            dependencyManager.RegisterOwinMiddleware<GetRequestInfoMiddlewareConfiguration>();
+
             return dependencyManager;
         }
     }

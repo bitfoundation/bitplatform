@@ -24,6 +24,7 @@ using Microsoft.Data.SqlClient;
 using System.IO.Compression;
 using System.Reflection;
 using System.Web.Http;
+using Microsoft.Extensions.Logging;
 
 namespace Bit.Tests
 {

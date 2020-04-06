@@ -101,6 +101,8 @@ namespace Bit.Core.Contracts
             dependencyManager.RegisterOwinMiddleware<AspNetCoreAutofacDependencyInjectionMiddlewareConfiguration>();
             dependencyManager.RegisterAspNetCoreMiddleware<AspNetCoreExceptionHandlerMiddlewareConfiguration>();
             dependencyManager.RegisterAspNetCoreMiddleware<AspNetCoreLogRequestInformationMiddlewareConfiguration>();
+            dependencyManager.RegisterAspNetCoreMiddleware<AspNetCoreGetRequestInfoMiddlewareConfiguration>();
+
             return dependencyManager;
         }
 
