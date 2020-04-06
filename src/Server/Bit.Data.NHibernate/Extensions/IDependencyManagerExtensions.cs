@@ -6,10 +6,12 @@ using Bit.Data.Implementations;
 using Bit.Data.NHibernate.Implementations;
 using Bit.Owin.Contracts;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
 using NHibernate;
 using NHibernate.Impl;
 using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Data;
 
 namespace Bit.Core.Contracts
@@ -25,7 +27,8 @@ namespace Bit.Core.Contracts
             {
                 ReferenceLoopHandling = ReferenceLoopHandling.Ignore,
                 DateFormatHandling = DateFormatHandling.IsoDateFormat,
-                ContractResolver = new NHibernateContractResolver { }
+                ContractResolver = new NHibernateContractResolver { },
+                Converters = new List<JsonConverter> { new StringEnumConverter { } }
             };
 
             dependencyManager.Register<IDataProviderSpecificMethodsProvider, NHibernateDataProviderSpecificMethodsProvider>(lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExisting: false);
