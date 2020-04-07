@@ -7,6 +7,7 @@ using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Net.Http;
 using System.Reflection;
 using System.Threading;
@@ -56,6 +57,9 @@ namespace Bit.ViewModel.Implementations
 
         protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {
+            if (request.RequestUri.Segments?.Last() == "$ref")
+                return new HttpResponseMessage(HttpStatusCode.OK);
+
             // ToDo:
             // Desired-Time-Zone
 
