@@ -244,3 +244,4 @@ _book
 /src/Server/Bit.Tests/Bit.Model.Context.cs
 /src/Server/Bit.Tests/Test.Model.Context.cs
 *.tsbuildinfo
+/src/CSharpClient/Sample/Bit.CSharpClientSample.Android/google-services.json

@@ -29,9 +29,15 @@ namespace Bit.ViewModel
                 Debug.WriteLine($"DateTime: {DateTime.Now.ToLongTimeString()} Message: {exp}", category: "ApplicationException");
             }
 
+            CallTelemetryServices(exp, properties);
+        }
+
+        protected virtual void CallTelemetryServices(Exception exp, IDictionary<string, string> properties)
+        {
             ApplicationInsightsTelemetryService.Current.TrackException(exp, properties);
             AppCenterTelemetryService.Current.TrackException(exp, properties);
             LocalTelemetryService.Current.TrackException(exp, properties);
+            FirebaseTelemetryService.Current.TrackException(exp, properties);
         }
     }
 }

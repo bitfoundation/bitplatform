@@ -7,9 +7,6 @@ using System.Collections.Generic;
 
 namespace Bit.ViewModel.Implementations
 {
-    /// <summary>
-    /// Uses app insights to track things. Note that it reports crashes on UWP only. For Android/iOS you've to use <see cref="AppCenterTelemetryService"/> side by side.
-    /// </summary>
     public class ApplicationInsightsTelemetryService : TelemetryServiceBase, ITelemetryService
     {
         private TelemetryClient _client;

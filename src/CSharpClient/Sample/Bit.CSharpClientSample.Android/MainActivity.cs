@@ -14,6 +14,7 @@ namespace Bit.CSharpClientSample.Droid
         protected override void OnCreate(Bundle savedInstanceState)
         {
             LocalTelemetryService.Current.Init();
+            FirebaseTelemetryService.Current.Init(this);
 
             TabLayoutResource = Resource.Layout.Tabbar;
             ToolbarResource = Resource.Layout.Toolbar;

@@ -2,4 +2,5 @@
 <resources>
 	<string name="hello">Hello World, Click Me!</string>
 	<string name="app_name">Bit.CSharpClientSample.Droid</string>
+  <string name="com.crashlytics.android.build_id">1</string>
 </resources>

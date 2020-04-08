@@ -3,7 +3,7 @@
   <Import Project="../CSharpClient.Build.props" />
 
   <PropertyGroup>
-    <TargetFrameworks>MonoAndroid90;Xamarin.iOS10;uap10.0.18362;netstandard2.0;netcoreapp3.1;</TargetFrameworks>
+    <TargetFrameworks>monoandroid10.0;Xamarin.iOS10;uap10.0.18362;netstandard2.0;netcoreapp3.1;</TargetFrameworks>
     <PackageTags>$(PackageTags) Prism</PackageTags>
   </PropertyGroup>
 
@@ -26,11 +26,15 @@
     </EmbeddedResource>
   </ItemGroup>
 
-  <ItemGroup Condition=" '$(TargetFramework)' == 'MonoAndroid90'">
+  <ItemGroup Condition=" '$(TargetFramework)' == 'monoandroid10.0'">
     <Reference Include="System.ComponentModel.DataAnnotations" />
+    <PackageReference Include="Xamarin.Android.Crashlytics" Version="2.9.4.4" />
   </ItemGroup>
 
   <ItemGroup Condition=" '$(TargetFramework)' == 'Xamarin.iOS10' ">
+    <PackageReference Include="Xamarin.Firebase.iOS.Core" Version="6.6.0" />
+    <PackageReference Include="Xamarin.Firebase.iOS.Crashlytics" Version="3.14.0.3" />
+    <PackageReference Include="Xamarin.Firebase.iOS.Analytics" Version="6.2.1" />
     <Reference Include="System.ComponentModel.DataAnnotations" />
   </ItemGroup>
 

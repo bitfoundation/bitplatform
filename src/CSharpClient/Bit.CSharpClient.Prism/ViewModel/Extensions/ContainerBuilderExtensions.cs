@@ -4,6 +4,8 @@ using Bit.ViewModel.Contracts;
 using Bit.ViewModel.Implementations;
 using Prism.Ioc;
 using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace Autofac
 {
@@ -30,6 +32,7 @@ namespace Autofac
             containerBuilder.RegisterInstance<IExceptionHandler>(BitExceptionHandler.Current);
             containerBuilder.RegisterInstance<ITelemetryService>(ApplicationInsightsTelemetryService.Current);
             containerBuilder.RegisterInstance<ITelemetryService>(AppCenterTelemetryService.Current);
+            containerBuilder.RegisterInstance<ITelemetryService>(FirebaseTelemetryService.Current);
             containerBuilder.RegisterInstance(LocalTelemetryService.Current).As<LocalTelemetryService, ITelemetryService>();
             IContainerRegistry containerRegistry = (IContainerRegistry)containerBuilder.Properties[nameof(containerRegistry)];
             containerRegistry.RegisterForNav<BitConsoleView, BitConsoleViewModel>("BitConsole");
@@ -39,9 +42,10 @@ namespace Autofac
                 IMessageReceiver messageReceiver = container.ResolveOptional<IMessageReceiver>();
                 if (messageReceiver != null)
                 {
-                    ApplicationInsightsTelemetryService.Current.MessageReceiver = messageReceiver;
-                    AppCenterTelemetryService.Current.MessageReceiver = messageReceiver;
-                    LocalTelemetryService.Current.MessageReceiver = messageReceiver;
+                    foreach (TelemetryServiceBase telemetryService in container.Resolve<IEnumerable<ITelemetryService>>().OfType<TelemetryServiceBase>())
+                    {
+                        telemetryService.MessageReceiver = messageReceiver;
+                    }
                 }
             });
 
