@@ -3,7 +3,7 @@
   <Import Project="../CSharpClient.Build.props" />
 
   <PropertyGroup>
-    <TargetFrameworks>MonoAndroid90;Xamarin.iOS10;uap10.0.18362;netstandard2.0;netcoreapp3.1;</TargetFrameworks>
+    <TargetFrameworks>monoandroid10.0;Xamarin.iOS10;uap10.0.18362;netstandard2.0;netcoreapp3.1;</TargetFrameworks>
     <PackageTags>$(PackageTags) entity-framework-core EF Data O/RM</PackageTags>
   </PropertyGroup>
 
@@ -25,7 +25,7 @@
     </PackageReference>
   </ItemGroup>
 
-  <ItemGroup Condition=" '$(TargetFramework)' == 'MonoAndroid90'">
+  <ItemGroup Condition=" '$(TargetFramework)' == 'monoandroid10.0'">
     <Reference Include="System.ComponentModel.DataAnnotations" />
   </ItemGroup>
 

@@ -4,7 +4,7 @@
 
   <PropertyGroup>
     <RootNamespace>Bit</RootNamespace>
-    <DefineConstants Condition=" '$(TargetFramework)' == 'MonoAndroid90' ">$(DefineConstants);Android</DefineConstants>
+    <DefineConstants Condition=" '$(TargetFramework)' == 'monoandroid10.0' ">$(DefineConstants);Android</DefineConstants>
     <DefineConstants Condition=" '$(TargetFramework)' == 'Xamarin.iOS10' ">$(DefineConstants);iOS</DefineConstants>
     <DefineConstants Condition=" '$(TargetFramework)' == 'netcoreapp3.1' ">$(DefineConstants);DotNetCore</DefineConstants>
     <DefineConstants Condition=" '$(TargetFramework)' == 'uap10.0.18362' ">$(DefineConstants);UWP</DefineConstants>
@@ -13,7 +13,7 @@
     <DesignTimeBuild>True</DesignTimeBuild>
     <AndroidResgenFile>False</AndroidResgenFile>
     <AndroidUseIntermediateDesignerFile>False</AndroidUseIntermediateDesignerFile>
-    <TargetFrameworkVersion Condition=" '$(TargetFramework)' == 'MonoAndroid90' ">v9.0</TargetFrameworkVersion>
+    <TargetFrameworkVersion Condition=" '$(TargetFramework)' == 'monoandroid10.0' ">v10.0</TargetFrameworkVersion>
   </PropertyGroup>
 
   <ItemGroup>
