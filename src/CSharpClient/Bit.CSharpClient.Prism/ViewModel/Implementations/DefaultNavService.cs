@@ -27,7 +27,14 @@ namespace Bit.ViewModel.Implementations
 
         public virtual async Task NavigateAsync(string name, INavigationParameters parameters = null)
         {
+            if (name == null)
+                throw new ArgumentNullException(nameof(name));
+
+            if (name.StartsWith("/"))
+                await ClearPopupStackAsync(parameters);
+
             INavigationResult navigationResult = await PrismNavigationService.NavigateAsync(name, parameters, useModalNavigation: false, animated: false);
+
             if (!navigationResult.Success)
                 throw navigationResult.Exception;
         }
@@ -39,7 +46,14 @@ namespace Bit.ViewModel.Implementations
 
         public virtual async Task NavigateAsync(Uri uri, INavigationParameters parameters = null)
         {
+            if (uri == null)
+                throw new ArgumentNullException(nameof(uri));
+
+            if (uri.LocalPath.StartsWith("/"))
+                await ClearPopupStackAsync(parameters);
+
             INavigationResult navigationResult = await PrismNavigationService.NavigateAsync(uri, parameters, useModalNavigation: false, animated: false);
+
             if (!navigationResult.Success)
                 throw navigationResult.Exception;
         }
