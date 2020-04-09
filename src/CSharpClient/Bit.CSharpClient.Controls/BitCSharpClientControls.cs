@@ -30,6 +30,9 @@ namespace Bit.View
         /// <summary>
         /// To be called in platform specific project.
         /// </summary>
+#if Android9
+            [Obsolete("Bit is going to drop support for Android 9 Sdk. It's recommended to use Android 10 Sdk.")]
+#endif
         public static void Init()
         {
 #if iOS
