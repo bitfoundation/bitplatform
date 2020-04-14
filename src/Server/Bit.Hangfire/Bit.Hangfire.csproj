@@ -14,7 +14,7 @@
   <ItemGroup>
     <PackageReference Include="Hangfire.AspNetCore" Version="1.7.10" Condition=" '$(TargetFramework)' == 'netcoreapp3.1' " />
     <PackageReference Include="Hangfire.Core" Version="1.7.10" />
-    <PackageReference Include="Hangfire.Autofac" Version="2.3.1" />
+    <PackageReference Include="Hangfire.Autofac" Version="2.3.1" Condition=" '$(TargetFramework)' == 'net461' " />
     <PackageReference Include="Hangfire.MemoryStorage" Version="1.7.0" />
     <PackageReference Include="HangFire.Redis.StackExchange" Version="1.8.1" />
     <PackageReference Include="Hangfire.SqlServer" Version="1.7.10" />

@@ -40,7 +40,12 @@ namespace Bit.Core.Contracts
             dependencyManager.Register<IJobSchedulerBackendConfiguration, TJobSchedulerBackendConfiguration>(lifeCycle: DependencyLifeCycle.SingleInstance);
 
             dependencyManager.Register<IBackgroundJobWorker, HangfireBackgroundJobWorker>(lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExisting: false);
+
+#if DotNetCore
+            dependencyManager.Register<JobActivator, global::Hangfire.AspNetCore.AspNetCoreJobActivator>(lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExisting: false);
+#else
             dependencyManager.Register<JobActivator, AutofacJobActivator>(lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExisting: false);
+#endif
 
             dependencyManager.RegisterHangfireFactories();
 
