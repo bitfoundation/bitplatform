@@ -39,7 +39,7 @@ namespace Bit.Signalr
                 Core.Contracts.IDependencyResolver dependencyResolver = context.GetDependencyResolver();
 
                 if (dependencyResolver != null)
-                    await dependencyResolver?.Resolve<IMessagesHubEvents>().OnDisconnected(this, stopCalled);
+                    await dependencyResolver.Resolve<IMessagesHubEvents>().OnDisconnected(this, stopCalled);
             }
             catch (ObjectDisposedException) { /* https://github.com/SignalR/SignalR/issues/2972 */ }
             finally

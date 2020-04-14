@@ -121,13 +121,22 @@ namespace Bit.Data
                 try
                 {
                     if (dbAndTran.RollbackOnScopeStatusFailure == false)
-                        await dbAndTran.Transaction?.CommitAsync();
+                    {
+                        if (dbAndTran.Transaction != null)
+                            await dbAndTran.Transaction.CommitAsync();
+                    }
                     else
                     {
                         if (wasSucceeded)
-                            await dbAndTran.Transaction?.CommitAsync();
+                        {
+                            if (dbAndTran.Transaction != null)
+                                await dbAndTran.Transaction.CommitAsync();
+                        }
                         else
-                            await dbAndTran.Transaction?.RollbackAsync();
+                        {
+                            if (dbAndTran.Transaction != null)
+                                await dbAndTran.Transaction.RollbackAsync();
+                        }
                     }
                 }
                 finally
