@@ -10,7 +10,7 @@
   <ItemGroup>
     <PackageReference Include="NodaTime" Version="2.4.7" />
     <PackageReference Include="Rg.Plugins.Popup" Version="2.0.0.2" />
-    <PackageReference Include="Xamarin.Forms" Version="4.5.0.530" />
+    <PackageReference Include="Xamarin.Forms" Version="4.5.0.617" />
   </ItemGroup>
 
   <ItemGroup Condition=" '$(TargetFramework)' == 'uap10.0.18362' ">

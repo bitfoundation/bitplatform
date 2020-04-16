@@ -20,7 +20,7 @@
     <PackageReference Include="Xamarin.Essentials" Version="1.5.2" />
     <PackageReference Include="Microsoft.ApplicationInsights.WindowsApps" Condition=" '$(TargetFramework)' == 'uap10.0.18362' " Version="1.1.1" />
     <PackageReference Include="Microsoft.ApplicationInsights" Condition=" '$(TargetFramework)' != 'uap10.0.18362' " Version="2.13.1" />
-    <PackageReference Include="Xamarin.Forms" Version="4.5.0.530" />
+    <PackageReference Include="Xamarin.Forms" Version="4.5.0.617" />
     <EmbeddedResource Update="**\*.xaml">
       <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
     </EmbeddedResource>
@@ -32,9 +32,9 @@
   </ItemGroup>
 
   <ItemGroup Condition=" '$(TargetFramework)' == 'Xamarin.iOS10' ">
-    <PackageReference Include="Xamarin.Firebase.iOS.Core" Version="6.6.0" />
+    <PackageReference Include="Xamarin.Firebase.iOS.Core" Version="6.6.6" />
     <PackageReference Include="Xamarin.Firebase.iOS.Crashlytics" Version="3.14.0.3" />
-    <PackageReference Include="Xamarin.Firebase.iOS.Analytics" Version="6.2.1" />
+    <PackageReference Include="Xamarin.Firebase.iOS.Analytics" Version="6.4.1" />
     <Reference Include="System.ComponentModel.DataAnnotations" />
   </ItemGroup>
 
