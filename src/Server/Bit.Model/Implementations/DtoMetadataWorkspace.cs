@@ -9,7 +9,7 @@ namespace Bit.Model.Implementations
 {
     public class DtoMetadataWorkspace
     {
-        private static DtoMetadataWorkspace _current;
+        private static DtoMetadataWorkspace _current = default!;
 
         public static DtoMetadataWorkspace Current
         {
@@ -38,11 +38,14 @@ namespace Bit.Model.Implementations
             return type.IsClass && type.GetCustomAttribute<ComplexTypeAttribute>() != null;
         }
 
-        public virtual TypeInfo GetFinalDtoType(TypeInfo type)
+        public virtual TypeInfo? GetFinalDtoType(TypeInfo type)
         {
+            if (type == null)
+                throw new ArgumentNullException(nameof(type));
+
             if (type.IsGenericParameter && type.GetGenericParameterConstraints().Any())
             {
-                Type finalDtoType = type.GetGenericParameterConstraints().ExtendedSingleOrDefault($"Finding dto of {type.Name}", t => IsDto(t?.GetTypeInfo()));
+                Type? finalDtoType = type.GetGenericParameterConstraints().ExtendedSingleOrDefault($"Finding dto of {type.Name}", t => IsDto(t.GetTypeInfo()));
                 if (finalDtoType != null)
                     return finalDtoType.GetTypeInfo();
                 return null;
@@ -53,6 +56,9 @@ namespace Bit.Model.Implementations
 
         public virtual PropertyInfo[] GetKeyColums(TypeInfo typeInfo)
         {
+            if (typeInfo == null)
+                throw new ArgumentNullException(nameof(typeInfo));
+
             PropertyInfo[] props = typeInfo.GetProperties();
 
             PropertyInfo[] keys = props
@@ -74,7 +80,7 @@ namespace Bit.Model.Implementations
 
             PropertyInfo[] props = GetKeyColums(dtoType);
 
-            return props.Select(p => p.GetValue(dto)).ToArray();
+            return props.Select(p => p.GetValue(dto)).ToArray()!;
         }
     }
 }

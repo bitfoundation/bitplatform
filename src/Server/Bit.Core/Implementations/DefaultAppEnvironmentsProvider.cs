@@ -8,11 +8,11 @@ namespace Bit.Core.Implementations
 {
     public class DefaultAppEnvironmentsProvider : IAppEnvironmentsProvider
     {
-        private AppEnvironment _activeAppEnvironment;
-        private static IAppEnvironmentsProvider _current;
+        private AppEnvironment? _activeAppEnvironment;
+        private static IAppEnvironmentsProvider _current = default!;
 
-        public virtual IPathProvider PathProvider { get; set; }
-        public virtual IContentFormatter ContentFormatter { get; set; }
+        public virtual IPathProvider PathProvider { get; set; } = default!;
+        public virtual IContentFormatter ContentFormatter { get; set; } = default!;
 
         public static IAppEnvironmentsProvider Current
         {
@@ -33,13 +33,13 @@ namespace Bit.Core.Implementations
 
         public virtual AppEnvironment GetActiveAppEnvironment()
         {
-            var (success, message) = TryGetActiveAppEnvironment(out AppEnvironment activeAppEnvironment);
-            if (success == true)
+            var (success, message) = TryGetActiveAppEnvironment(out AppEnvironment? activeAppEnvironment);
+            if (success == true && activeAppEnvironment != null)
                 return activeAppEnvironment;
             throw new InvalidOperationException(message);
         }
 
-        public virtual (bool success, string message) TryGetActiveAppEnvironment(out AppEnvironment activeAppEnvironment)
+        public virtual (bool success, string? message) TryGetActiveAppEnvironment(out AppEnvironment? activeAppEnvironment)
         {
             activeAppEnvironment = null;
 
@@ -75,7 +75,7 @@ namespace Bit.Core.Implementations
             }
         }
 
-        public override string ToString()
+        public override string? ToString()
         {
             return _activeAppEnvironment?.ToString() ?? base.ToString();
         }

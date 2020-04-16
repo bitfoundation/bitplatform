@@ -1,4 +1,6 @@
-﻿namespace Bit.Core.Contracts
+﻿using System.Diagnostics.CodeAnalysis;
+
+namespace Bit.Core.Contracts
 {
     /// <summary>
     /// You can register as many as <see cref="IStringCorrector"/> as you want.
@@ -6,6 +8,7 @@
     /// </summary>
     public interface IStringCorrector
     {
-        string CorrectString(string input);
+        [return: NotNullIfNotNull("input")]
+        string CorrectString(string? input);
     }
 }

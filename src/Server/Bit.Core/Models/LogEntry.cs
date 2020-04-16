@@ -8,23 +8,23 @@ namespace Bit.Core.Models
 {
     public class LogEntryAppLevelConstantInfo
     {
-        public virtual string ApplicationName { get; set; }
+        public virtual string ApplicationName { get; set; } = default!;
 
-        public virtual string AppVersion { get; set; }
+        public virtual string AppVersion { get; set; } = default!;
 
-        public virtual string AppEnvironmentName { get; set; }
+        public virtual string AppEnvironmentName { get; set; } = default!;
 
         public virtual bool? AppWasInDebugMode { get; set; }
 
-        public virtual string AppServerName { get; set; }
+        public virtual string AppServerName { get; set; } = default!;
 
-        public virtual string AppServerOSVersion { get; set; }
+        public virtual string AppServerOSVersion { get; set; } = default!;
 
-        public virtual string AppServerAppDomainName { get; set; }
+        public virtual string AppServerAppDomainName { get; set; } = default!;
 
         public virtual int? AppServerProcessId { get; set; }
 
-        public virtual string AppServerUserAccountName { get; set; }
+        public virtual string AppServerUserAccountName { get; set; } = default!;
 
         public virtual bool AppServerWas64Bit { get; set; }
 
@@ -32,7 +32,8 @@ namespace Bit.Core.Models
 
         public static LogEntryAppLevelConstantInfo GetAppConstantInfo()
         {
-            DefaultAppEnvironmentsProvider.Current.TryGetActiveAppEnvironment(out AppEnvironment appEnvironment);
+            DefaultAppEnvironmentsProvider.Current.TryGetActiveAppEnvironment(out AppEnvironment? appEnvironment);
+
             Process currentProcess = Process.GetCurrentProcess();
 
             return new LogEntryAppLevelConstantInfo
@@ -56,11 +57,11 @@ namespace Bit.Core.Models
     {
         public virtual Guid? Id { get; set; }
 
-        public virtual string Message { get; set; }
+        public virtual string Message { get; set; } = default!;
 
-        public virtual string Severity { get; set; }
+        public virtual string Severity { get; set; } = default!;
 
-        public virtual IEnumerable<LogData> LogData { get; set; }
+        public virtual IEnumerable<LogData> LogData { get; set; } = Array.Empty<LogData>();
 
         public virtual DateTimeOffset? AppServerDateTime { get; set; }
 
@@ -73,9 +74,9 @@ namespace Bit.Core.Models
             return $"{nameof(Message)}: {Message}, {nameof(Severity)}: {Severity}";
         }
 
-        public virtual Dictionary<string, object> ToDictionary()
+        public virtual Dictionary<string, object?> ToDictionary()
         {
-            Dictionary<string, object> values = new Dictionary<string, object>
+            Dictionary<string, object?> values = new Dictionary<string, object?>
             {
                 { nameof(Id), Id },
                 { nameof(Severity), Severity },

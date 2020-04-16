@@ -23,7 +23,7 @@ namespace Bit.Core.Implementations
             return _appEnvironment;
         }
 
-        public virtual (bool success, string message) TryGetActiveAppEnvironment(out AppEnvironment activeAppEnvironment)
+        public virtual (bool success, string? message) TryGetActiveAppEnvironment(out AppEnvironment activeAppEnvironment)
         {
             activeAppEnvironment = _appEnvironment;
             return (true, null);

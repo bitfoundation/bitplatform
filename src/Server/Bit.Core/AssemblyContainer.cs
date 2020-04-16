@@ -11,7 +11,7 @@ namespace Bit.Core
     /// </summary>
     public class AssemblyContainer
     {
-        private static AssemblyContainer _current;
+        private static AssemblyContainer _current = default!;
 
         public static AssemblyContainer Current
         {

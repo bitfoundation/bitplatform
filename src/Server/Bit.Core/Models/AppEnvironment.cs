@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 
 namespace Bit.Core.Models
@@ -77,7 +78,7 @@ namespace Bit.Core.Models
             }
         }
 
-        public virtual string Name { get; set; }
+        public virtual string Name { get; set; } = default!;
 
         public virtual bool IsActive { get; set; }
 
@@ -96,7 +97,7 @@ namespace Bit.Core.Models
 
         public virtual List<EnvironmentConfig> Configs { get; set; } = new List<EnvironmentConfig>();
 
-        public virtual bool TryGetConfig<T>(string configKey, out T value)
+        public virtual bool TryGetConfig<T>(string configKey, [MaybeNull] out T value)
         {
             if (configKey == null)
                 throw new ArgumentNullException(nameof(configKey));
@@ -104,12 +105,12 @@ namespace Bit.Core.Models
             if (Configs == null)
                 throw new InvalidOperationException("App environment is not valid");
 
-            EnvironmentConfig config = Configs.ExtendedSingleOrDefault($"Finding {configKey}", c =>
+            EnvironmentConfig? config = Configs.ExtendedSingleOrDefault($"Finding {configKey}", c =>
                  string.Equals(c.Key, configKey, StringComparison.OrdinalIgnoreCase));
 
             if (config == null)
             {
-                value = default;
+                value = default!;
                 return false;
             }
             else
@@ -119,6 +120,7 @@ namespace Bit.Core.Models
             }
         }
 
+        [return: MaybeNull]
         public virtual T GetConfig<T>(string configKey)
         {
             if (!TryGetConfig(configKey, out T value))
@@ -127,6 +129,7 @@ namespace Bit.Core.Models
             return value;
         }
 
+        [return: MaybeNull]
         public virtual T GetConfig<T>(string configKey, T defaultValueOnNotFound)
         {
             if (!TryGetConfig(configKey, out T value))
@@ -135,30 +138,34 @@ namespace Bit.Core.Models
                 return value;
         }
 
+        [return: MaybeNull]
         public virtual T GetConfig<T>(string configKey, Func<T> defaultValueOnNotFoundProvider)
         {
+            if (defaultValueOnNotFoundProvider == null)
+                throw new ArgumentNullException(nameof(defaultValueOnNotFoundProvider));
+
             if (!TryGetConfig(configKey, out T value))
                 return defaultValueOnNotFoundProvider();
             else
                 return value;
         }
 
-        public virtual string GetHostVirtualPath()
+        public virtual string? GetHostVirtualPath()
         {
             return GetConfig(KeyValues.HostVirtualPath, KeyValues.HostVirtualPathDefaultValue);
         }
 
-        public virtual string GetSsoUrl()
+        public virtual string? GetSsoUrl()
         {
             return Security?.SsoServerUrl ?? $"{GetHostVirtualPath()}core";
         }
 
-        public virtual string GetSsoIssuerName()
+        public virtual string? GetSsoIssuerName()
         {
             return Security?.IssuerName ?? AppInfo.Name;
         }
 
-        public virtual string GetSsoDefaultClientId()
+        public virtual string? GetSsoDefaultClientId()
         {
             return Security?.DefaultClientId ?? AppInfo.Name;
         }
@@ -171,8 +178,11 @@ namespace Bit.Core.Models
             return Configs.Any(c => string.Equals(c.Key, configKey, StringComparison.OrdinalIgnoreCase));
         }
 
-        public virtual void AddOrReplace<T>(string key, T value)
+        public virtual void AddOrReplace<T>(string key, [MaybeNull] T value)
         {
+            if (key == null)
+                throw new ArgumentNullException(nameof(key));
+
             AddOrReplace(new EnvironmentConfig { Key = key, Value = value });
         }
 
@@ -184,7 +194,7 @@ namespace Bit.Core.Models
             if (!HasConfig(config.Key))
                 Configs.Add(config);
             else
-                Configs.Find(c => string.Equals(c.Key, config.Key, StringComparison.OrdinalIgnoreCase)).Value = config.Value;
+                Configs.ExtendedSingle($"Trying to find config with key: {config.Key}", c => string.Equals(c.Key, config.Key, StringComparison.OrdinalIgnoreCase)).Value = config.Value;
         }
 
         public override string ToString()
@@ -195,15 +205,15 @@ namespace Bit.Core.Models
 
     public class EnvironmentAppInfo
     {
-        public virtual string Version { get; set; }
+        public virtual string? Version { get; set; }
 
-        public virtual string Name { get; set; }
+        public virtual string Name { get; set; } = default!;
 
-        public virtual string DefaultTimeZone { get; set; }
+        public virtual string? DefaultTimeZone { get; set; }
 
-        public virtual string DefaultTheme { get; set; }
+        public virtual string? DefaultTheme { get; set; }
 
-        public virtual string DefaultCulture { get; set; }
+        public virtual string? DefaultCulture { get; set; }
 
         public override string ToString()
         {
@@ -213,16 +223,16 @@ namespace Bit.Core.Models
 
     public class EnvironmentSecurity
     {
-        public virtual string SsoServerUrl { get; set; }
+        public virtual string? SsoServerUrl { get; set; }
 
-        public virtual string IssuerName { get; set; }
+        public virtual string? IssuerName { get; set; }
 
-        public virtual string[] Scopes { get; set; }
+        public virtual string[] Scopes { get; set; } = Array.Empty<string>();
 
         /// <summary>
         /// It's used in redirects of InvokeLogin and RedirectToSsoIfNotLoggedIn middlewares to sso
         /// </summary>
-        public virtual string DefaultClientId { get; set; }
+        public virtual string? DefaultClientId { get; set; }
 
         public override string ToString()
         {
@@ -232,7 +242,7 @@ namespace Bit.Core.Models
 
     public class EnvironmentTheme
     {
-        public virtual string Name { get; set; }
+        public virtual string? Name { get; set; }
 
         public override string ToString()
         {
@@ -242,7 +252,7 @@ namespace Bit.Core.Models
 
     public class EnvironmentCulture
     {
-        public virtual string Name { get; set; }
+        public virtual string? Name { get; set; }
 
         public virtual List<EnvironmentCultureValue> Values { get; set; } = new List<EnvironmentCultureValue>();
 
@@ -254,9 +264,9 @@ namespace Bit.Core.Models
 
     public class EnvironmentCultureValue
     {
-        public virtual string Name { get; set; }
+        public virtual string? Name { get; set; }
 
-        public virtual string Title { get; set; }
+        public virtual string? Title { get; set; }
 
         public override string ToString()
         {
@@ -266,9 +276,9 @@ namespace Bit.Core.Models
 
     public class EnvironmentConfig
     {
-        public virtual string Key { get; set; }
+        public virtual string Key { get; set; } = default!;
 
-        public virtual object Value { get; set; }
+        public virtual object? Value { get; set; }
 
         public virtual bool AccessibleInClientSide { get; set; }
 

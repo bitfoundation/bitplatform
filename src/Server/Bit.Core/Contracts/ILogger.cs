@@ -37,7 +37,7 @@ namespace Bit.Core.Contracts
 
         IEnumerable<LogData> LogData { get; }
 
-        void AddLogData(string key, object value);
+        void AddLogData(string key, object? value);
 
         /// <summary>
         /// Default <see cref="LogPolicy.InCaseOfScopeFailure"/>

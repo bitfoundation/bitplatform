@@ -11,6 +11,9 @@ namespace Bit.Core.Contracts
     {
         public static IDependencyManager RegisterAutoMapper(this IDependencyManager dependencyManager)
         {
+            if (dependencyManager == null)
+                throw new ArgumentNullException(nameof(dependencyManager));
+
             TypeInfo[] allTypes = AssemblyContainer.Current.AssembliesWithDefaultAssemblies()
                 .SelectMany(asm => asm.GetLoadableExportedTypes())
                 .Where(t => t.IsClass && !t.IsAbstract)

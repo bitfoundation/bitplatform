@@ -61,9 +61,9 @@ namespace Bit.Data.Contracts
         void LoadReference<TProperty>(TEntity entity, Expression<Func<TEntity, TProperty>> member)
             where TProperty : class;
 
-        Task<TEntity> GetByIdAsync(CancellationToken cancellationToken, params object[] ids);
+        Task<TEntity?> GetByIdAsync(CancellationToken cancellationToken, params object[] ids);
 
-        TEntity GetById(params object[] ids);
+        TEntity? GetById(params object[] ids);
 
         Task ReloadAsync(TEntity entity, CancellationToken cancellationToken);
 

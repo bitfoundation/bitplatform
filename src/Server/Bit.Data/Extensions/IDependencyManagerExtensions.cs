@@ -51,10 +51,10 @@ namespace Bit.Core.Contracts
             return dependencyManager;
         }
 
-        private static bool IsRepositoryContract(this TypeInfo type)
+        static bool IsRepositoryContract(this TypeInfo type)
         {
             if (type == null)
-                throw new NullReferenceException();
+                throw new ArgumentNullException(nameof(type));
 
             return type.GetInterfaces()
                 .Select(p => p.GetTypeInfo()).Concat(new[] { type })

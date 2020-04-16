@@ -2,9 +2,9 @@
 {
     public class LogData
     {
-        public virtual string Key { get; set; }
+        public virtual string Key { get; set; } = default!;
 
-        public virtual object Value { get; set; }
+        public virtual object? Value { get; set; }
 
         public override string ToString()
         {

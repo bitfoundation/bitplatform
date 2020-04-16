@@ -19,7 +19,7 @@ namespace System.Data
             return FlushSqlResultsToStream(reader, stream, cancellationToken);
         }
 
-        private static async Task FlushSqlResultsToStream(DbDataReader reader, Stream stream, CancellationToken cancellationToken)
+        static async Task FlushSqlResultsToStream(DbDataReader reader, Stream stream, CancellationToken cancellationToken)
         {
             using (reader)
             {
@@ -52,11 +52,11 @@ namespace System.Data
             }
         }
 
-        private static async Task FlushContent(Stream stream, object content, int amount, CancellationToken cancellationToken)
+        static async Task FlushContent(Stream stream, object content, int amount, CancellationToken cancellationToken)
         {
             if (amount > -1)
             {
-                await stream.WriteAsync((content as byte[]), 0, amount, cancellationToken).ConfigureAwait(false);
+                await stream.WriteAsync((content as byte[])!, 0, amount, cancellationToken).ConfigureAwait(false);
                 await stream.FlushAsync(cancellationToken).ConfigureAwait(false);
             }
             else

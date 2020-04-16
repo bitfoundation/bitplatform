@@ -1,10 +1,12 @@
 ﻿using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 
 namespace System.Linq
 {
     public static class IEnumerableExtensions
     {
-        public static TElement ExtendedSingleOrDefault<TElement>(this IEnumerable<TElement> source, string message, Func<TElement, bool> predicate = null)
+        [return: MaybeNull]
+        public static TElement ExtendedSingleOrDefault<TElement>(this IEnumerable<TElement> source, string message, Func<TElement, bool>? predicate = null)
         {
             if (source == null)
                 throw new ArgumentNullException(nameof(source));
@@ -22,7 +24,7 @@ namespace System.Linq
             }
         }
 
-        public static TElement ExtendedSingle<TElement>(this IEnumerable<TElement> source, string message, Func<TElement, bool> predicate = null)
+        public static TElement ExtendedSingle<TElement>(this IEnumerable<TElement> source, string message, Func<TElement, bool>? predicate = null)
         {
             if (source == null)
                 throw new ArgumentNullException(nameof(source));

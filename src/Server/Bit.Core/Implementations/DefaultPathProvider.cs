@@ -7,7 +7,7 @@ namespace Bit.Core.Implementations
 {
     public class DefaultPathProvider : IPathProvider
     {
-        private static IPathProvider _current;
+        private static IPathProvider _current = default!;
 
         public static IPathProvider Current
         {
@@ -35,7 +35,7 @@ namespace Bit.Core.Implementations
 
         public string GetStaticFilesFolderPath()
         {
-            return MapPath(DefaultAppEnvironmentsProvider.Current.GetActiveAppEnvironment().GetConfig(AppEnvironment.KeyValues.StaticFilesRelativePath, AppEnvironment.KeyValues.StaticFilesRelativePathDefaultValue));
+            return MapPath(DefaultAppEnvironmentsProvider.Current.GetActiveAppEnvironment().GetConfig(AppEnvironment.KeyValues.StaticFilesRelativePath, AppEnvironment.KeyValues.StaticFilesRelativePathDefaultValue)!);
         }
 
         public string MapStaticFilePath(string path)

@@ -14,7 +14,7 @@ namespace Bit.Data.Implementations
 
     public class DefaultUnitOfWork : IUnitOfWork
     {
-        public virtual IScopeStatusManager ScopeStatusManager { get; set; }
+        public virtual IScopeStatusManager ScopeStatusManager { get; set; } = default!;
 
         public IDisposable BeginWork()
         {

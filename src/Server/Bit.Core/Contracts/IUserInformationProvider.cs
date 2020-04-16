@@ -7,9 +7,9 @@ namespace Bit.Core.Contracts
 {
     public class BitJwtToken
     {
-        public virtual string UserId { get; set; }
+        public virtual string? UserId { get; set; }
 
-        public virtual Dictionary<string, string> CustomProps { get; set; } = new Dictionary<string, string> { };
+        public virtual Dictionary<string, string?> CustomProps { get; set; } = new Dictionary<string, string?> { };
 
         public static BitJwtToken FromJson(string json)
         {
@@ -32,11 +32,11 @@ namespace Bit.Core.Contracts
     {
         bool IsAuthenticated();
 
-        string GetCurrentUserId();
+        string? GetCurrentUserId();
 
-        string GetAuthenticationType();
+        string? GetAuthenticationType();
 
-        string GetClientId();
+        string? GetClientId();
 
         IEnumerable<Claim> GetClaims();
 

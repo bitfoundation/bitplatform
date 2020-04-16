@@ -8,6 +8,6 @@
 
         void MarkAsSucceeded();
 
-        string FailureReason { get; }
+        string? FailureReason { get; }
     }
 }

@@ -11,16 +11,16 @@ namespace Bit.Model.DomainModels
         public virtual long Id { get; set; }
 
         [MaxLength(50)]
-        public virtual string Theme { get; set; }
+        public virtual string? Theme { get; set; }
 
         [MaxLength(50)]
-        public virtual string Culture { get; set; }
+        public virtual string? Culture { get; set; }
 
         [MaxLength(50)]
-        public virtual string DesiredTimeZone { get; set; }
+        public virtual string? DesiredTimeZone { get; set; }
 
         [Required]
-        public virtual string UserId { get; set; }
+        public virtual string UserId { get; set; } = default!;
 
         [ConcurrencyCheck]
         public virtual long Version { get; set; }

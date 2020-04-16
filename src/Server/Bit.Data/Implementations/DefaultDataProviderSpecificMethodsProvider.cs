@@ -19,7 +19,7 @@ namespace Bit.Data.Implementations
 
     public abstract class DefaultDataProviderSpecificMethodsProvider : IDataProviderSpecificMethodsProvider
     {
-        private static IDataProviderSpecificMethodsProvider _current;
+        private static IDataProviderSpecificMethodsProvider _current = default!;
 
         public static IDataProviderSpecificMethodsProvider Current
         {

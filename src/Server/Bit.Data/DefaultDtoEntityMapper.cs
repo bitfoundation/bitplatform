@@ -14,17 +14,20 @@ namespace Bit.Data
     {
         private static readonly bool _entityTypeAndDtoTypeAreEqual = typeof(TEntity).GetTypeInfo() == typeof(TDto).GetTypeInfo();
 
-        public virtual IMapper Mapper { get; set; }
+        public virtual IMapper Mapper { get; set; } = default!;
 
-        public virtual TEntity FromDtoToEntity(TDto dto, TEntity existingEntity)
+        public virtual TEntity FromDtoToEntity(TDto dto, TEntity? existingEntity)
         {
+            if (dto == null)
+                throw new ArgumentNullException(nameof(dto));
+
             if (_entityTypeAndDtoTypeAreEqual == true)
-                return dto as TEntity;
+                return (dto as TEntity)!;
 
             return existingEntity == null ? Mapper.Map<TDto, TEntity>(dto) : Mapper.Map(dto, existingEntity);
         }
 
-        public IQueryable<TDto> FromEntityQueryToDtoQuery(IQueryable<TEntity> entityQuery, object parameters = null, string[] membersToExpand = null)
+        public IQueryable<TDto> FromEntityQueryToDtoQuery(IQueryable<TEntity> entityQuery, object? parameters = null, string[]? membersToExpand = null)
         {
             if (entityQuery == null)
                 throw new ArgumentNullException(nameof(entityQuery));
@@ -32,7 +35,7 @@ namespace Bit.Data
             if (_entityTypeAndDtoTypeAreEqual == true)
                 return (IQueryable<TDto>)entityQuery;
 
-            Dictionary<string, object> @params = new Dictionary<string, object> { };
+            Dictionary<string, object?> @params = new Dictionary<string, object?> { };
 
             if (parameters != null)
             {
@@ -45,10 +48,10 @@ namespace Bit.Data
             return entityQuery.ProjectTo<TDto>(configuration: Mapper.ConfigurationProvider, parameters: @params, membersToExpand: membersToExpand ?? Array.Empty<string>());
         }
 
-        public virtual TDto FromEntityToDto(TEntity entity, TDto existingDto)
+        public virtual TDto FromEntityToDto(TEntity entity, TDto? existingDto)
         {
             if (_entityTypeAndDtoTypeAreEqual == true)
-                return entity as TDto;
+                return (entity as TDto)!;
 
             return existingDto == null ? Mapper.Map<TEntity, TDto>(entity) : Mapper.Map(entity, existingDto);
         }

@@ -1,6 +1,7 @@
 using Bit.Core.Contracts;
 using Bit.Core.Models;
 using Bit.Data.Contracts;
+using System;
 using System.Data.Common;
 using System.Threading;
 using System.Threading.Tasks;
@@ -14,15 +15,18 @@ namespace Bit.Data.Implementations
     /// </summary>
     public class DbJsonLogStore : ILogStore
     {
-        public virtual AppEnvironment ActiveAppEnvironment { get; set; }
+        public virtual AppEnvironment ActiveAppEnvironment { get; set; } = default!;
 
-        public virtual IDbConnectionProvider DbConnectionProvider { get; set; }
+        public virtual IDbConnectionProvider DbConnectionProvider { get; set; } = default!;
 
-        public virtual IContentFormatter Formatter { get; set; }
+        public virtual IContentFormatter ContentFormatter { get; set; } = default!;
 
         public void SaveLog(LogEntry logEntry)
         {
-            DbConnection connection = DbConnectionProvider.GetDbConnection(ActiveAppEnvironment.GetConfig(AppEnvironment.KeyValues.Data.LogDbConnectionstring, defaultValueOnNotFoundProvider: () => ActiveAppEnvironment.GetConfig<string>("AppConnectionstring")), rollbackOnScopeStatusFailure: false);
+            if (logEntry == null)
+                throw new ArgumentNullException(nameof(logEntry));
+
+            DbConnection connection = DbConnectionProvider.GetDbConnection(ActiveAppEnvironment.GetConfig(AppEnvironment.KeyValues.Data.LogDbConnectionstring, defaultValueOnNotFoundProvider: () => ActiveAppEnvironment.GetConfig<string>("AppConnectionstring")) ?? throw new InvalidOperationException("Log connection string could not be found."), rollbackOnScopeStatusFailure: false);
 
             using (DbCommand command = connection.CreateCommand())
             {
@@ -30,7 +34,7 @@ namespace Bit.Data.Implementations
 
                 command.CommandText = @"INSERT INTO [dbo].[Logs] ([Contents]) VALUES (@contents)";
 
-                command.AddParameterWithValue("@contents", Formatter.Serialize(logEntry.ToDictionary()));
+                command.AddParameterWithValue("@contents", ContentFormatter.Serialize(logEntry.ToDictionary()));
 
                 command.ExecuteNonQuery();
             }
@@ -38,7 +42,10 @@ namespace Bit.Data.Implementations
 
         public virtual async Task SaveLogAsync(LogEntry logEntry)
         {
-            DbConnection connection = await DbConnectionProvider.GetDbConnectionAsync(ActiveAppEnvironment.GetConfig(AppEnvironment.KeyValues.Data.LogDbConnectionstring, defaultValueOnNotFoundProvider: () => ActiveAppEnvironment.GetConfig<string>("AppConnectionstring")), rollbackOnScopeStatusFailure: false, cancellationToken: CancellationToken.None).ConfigureAwait(false);
+            if (logEntry == null)
+                throw new ArgumentNullException(nameof(logEntry));
+
+            DbConnection connection = await DbConnectionProvider.GetDbConnectionAsync(ActiveAppEnvironment.GetConfig(AppEnvironment.KeyValues.Data.LogDbConnectionstring, defaultValueOnNotFoundProvider: () => ActiveAppEnvironment.GetConfig<string>("AppConnectionstring")) ?? throw new InvalidOperationException("Log connection string could not be found."), rollbackOnScopeStatusFailure: false, cancellationToken: CancellationToken.None).ConfigureAwait(false);
 
 #if DotNet
             using (DbCommand command = connection.CreateCommand())
@@ -50,7 +57,7 @@ namespace Bit.Data.Implementations
 
                 command.CommandText = @"INSERT INTO [dbo].[Logs] ([Contents]) VALUES (@contents)";
 
-                command.AddParameterWithValue("@contents", Formatter.Serialize(logEntry.ToDictionary()));
+                command.AddParameterWithValue("@contents", ContentFormatter.Serialize(logEntry.ToDictionary()));
 
                 await command.ExecuteNonQueryAsync().ConfigureAwait(false);
             }

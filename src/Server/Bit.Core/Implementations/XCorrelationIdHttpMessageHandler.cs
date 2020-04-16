@@ -1,4 +1,5 @@
 ﻿using Bit.Core.Contracts;
+using System;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
@@ -22,6 +23,9 @@ namespace Bit.Core.Implementations
 
         protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {
+            if (request == null)
+                throw new ArgumentNullException(nameof(request));
+
             if (!request.Headers.Contains("X-Correlation-ID") && _requestInformationProvider.ContextIsPresent)
                 request.Headers.Add("X-Correlation-ID", _requestInformationProvider.XCorrelationId);
 

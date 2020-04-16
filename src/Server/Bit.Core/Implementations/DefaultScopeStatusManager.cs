@@ -5,9 +5,9 @@ namespace Bit.Core.Implementations
     public class DefaultScopeStatusManager : IScopeStatusManager
     {
         private bool _isFailed;
-        private string _failureReason;
+        private string? _failureReason;
 
-        public virtual string FailureReason => _failureReason;
+        public virtual string? FailureReason => _failureReason;
 
         public virtual bool WasSucceeded()
         {

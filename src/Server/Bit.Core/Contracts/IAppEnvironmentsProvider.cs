@@ -12,6 +12,6 @@ namespace Bit.Core.Contracts
         /// </summary>
         AppEnvironment GetActiveAppEnvironment();
 
-        (bool success, string message) TryGetActiveAppEnvironment(out AppEnvironment activeAppEnvironment);
+        (bool success, string? message) TryGetActiveAppEnvironment(out AppEnvironment? activeAppEnvironment);
     }
 }

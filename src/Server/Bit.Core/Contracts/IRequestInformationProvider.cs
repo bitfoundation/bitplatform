@@ -5,33 +5,33 @@ namespace Bit.Core.Contracts
 {
     public interface IRequestInformationProvider
     {
-        string UserAgent { get; }
+        string? UserAgent { get; }
 
         string HttpMethod { get; }
 
         string ClientIp { get; }
 
-        string ClientAppVersion { get; }
+        string? ClientAppVersion { get; }
 
-        string SystemLanguage { get; }
+        string? SystemLanguage { get; }
 
         DateTimeOffset? ClientDateTime { get; }
 
-        string ClientType { get; }
+        string? ClientType { get; }
 
-        string BitClientType { get; }
+        string? BitClientType { get; }
 
-        string ClientCulture { get; }
+        string? ClientCulture { get; }
 
-        string ClientScreenSize { get; }
+        string? ClientScreenSize { get; }
 
-        string ClientPlatform { get; }
+        string? ClientPlatform { get; }
 
-        string ClientRoute { get; }
+        string? ClientRoute { get; }
 
-        string ClientSysLanguage { get; }
+        string? ClientSysLanguage { get; }
 
-        string ClientTheme { get; }
+        string? ClientTheme { get; }
 
         bool? ClientDebugMode { get; }
 
@@ -39,20 +39,20 @@ namespace Bit.Core.Contracts
 
         ClaimsIdentity Identity { get; }
 
-        string CurrentTimeZone { get; }
+        string? CurrentTimeZone { get; }
 
-        string DesiredTimeZone { get; }
+        string? DesiredTimeZone { get; }
 
         string ContentType { get; }
 
-        string Origin { get; }
+        string? Origin { get; }
 
-        string Referer { get; }
+        string? Referer { get; }
 
         /// <summary>
         /// X-Correlation-ID header
         /// </summary>
-        string XCorrelationId { get; }
+        string? XCorrelationId { get; }
 
         /// <summary>
         /// In background jobs, there is no http context.
