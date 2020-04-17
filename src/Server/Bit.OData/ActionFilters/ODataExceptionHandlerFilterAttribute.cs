@@ -12,6 +12,12 @@ namespace Bit.OData.ActionFilters
     {
         protected override HttpResponseMessage CreateErrorResponseMessage(HttpActionExecutedContext actionExecutedContext, IExceptionToHttpErrorMapper exceptionToHttpErrorMapper, Exception exception)
         {
+            if (actionExecutedContext == null)
+                throw new ArgumentNullException(nameof(actionExecutedContext));
+
+            if (exceptionToHttpErrorMapper == null)
+                throw new ArgumentNullException(nameof(exceptionToHttpErrorMapper));
+
             return actionExecutedContext.Request.CreateErrorResponse(exceptionToHttpErrorMapper.GetStatusCode(exception), new ODataError() { Message = exceptionToHttpErrorMapper.GetMessage(exception) });
         }
     }

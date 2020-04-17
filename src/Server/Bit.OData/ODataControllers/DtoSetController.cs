@@ -19,14 +19,14 @@ namespace Bit.OData.ODataControllers
         where TDto : class, IDto
         where TEntity : class, IEntity
     {
-        public virtual IRepository<TEntity> Repository { get; set; }
+        public virtual IRepository<TEntity> Repository { get; set; } = default!;
 
         /// <summary>
         /// Optional Dependency. You can override FromDtoToModel and GetAll.
         /// </summary>
-        public virtual IDtoEntityMapper<TDto, TEntity> DtoEntityMapper { get; set; }
+        public virtual IDtoEntityMapper<TDto, TEntity> DtoEntityMapper { get; set; } = default!;
 
-        public virtual IEnumerable<IDataProviderSpecificMethodsProvider> DataProviderSpecificMethodsProviders { get; set; }
+        public virtual IEnumerable<IDataProviderSpecificMethodsProvider> DataProviderSpecificMethodsProviders { get; set; } = default!;
 
         protected virtual TEntity FromDtoToEntity(TDto dto)
         {
@@ -42,7 +42,7 @@ namespace Bit.OData.ODataControllers
         {
             IQueryable<TDto> baseQuery = await GetAll(cancellationToken);
 
-            IDataProviderSpecificMethodsProvider dataProviderSpecificMethodsProvider = null;
+            IDataProviderSpecificMethodsProvider? dataProviderSpecificMethodsProvider = null;
 
             if (DataProviderSpecificMethodsProviders != null)
                 dataProviderSpecificMethodsProvider = DataProviderSpecificMethodsProviders.FirstOrDefault(asyncQueryableExecutor => asyncQueryableExecutor.SupportsQueryable<TDto>(baseQuery));
@@ -50,7 +50,7 @@ namespace Bit.OData.ODataControllers
             if (dataProviderSpecificMethodsProvider == null)
                 dataProviderSpecificMethodsProvider = DefaultDataProviderSpecificMethodsProvider.Current;
 
-            baseQuery = dataProviderSpecificMethodsProvider.ApplyWhereByKeys(baseQuery, key);
+            baseQuery = dataProviderSpecificMethodsProvider.ApplyWhereByKeys(baseQuery, key!);
 
             return baseQuery;
         }
@@ -59,7 +59,7 @@ namespace Bit.OData.ODataControllers
         {
             IQueryable<TDto> getByIdQuery = await GetQueryById(key, cancellationToken);
 
-            IDataProviderSpecificMethodsProvider dataProviderSpecificMethodsProvider = null;
+            IDataProviderSpecificMethodsProvider? dataProviderSpecificMethodsProvider = null;
 
             if (DataProviderSpecificMethodsProviders != null)
                 dataProviderSpecificMethodsProvider = DataProviderSpecificMethodsProviders.FirstOrDefault(asyncQueryableExecutor => asyncQueryableExecutor.SupportsQueryable<TDto>(getByIdQuery));
@@ -92,7 +92,7 @@ namespace Bit.OData.ODataControllers
         [Delete]
         public virtual async Task Delete(TKey key, CancellationToken cancellationToken)
         {
-            TEntity entity = await Repository.GetByIdAsync(cancellationToken, key);
+            TEntity? entity = await Repository.GetByIdAsync(cancellationToken, key!);
             if (entity == null)
                 throw new ResourceNotFoundException();
             await Repository.DeleteAsync(entity, cancellationToken);

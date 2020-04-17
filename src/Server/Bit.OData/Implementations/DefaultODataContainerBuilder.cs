@@ -17,9 +17,9 @@ namespace Bit.OData.Implementations
     public class DefaultODataContainerBuilder : IContainerBuilder, IDisposable, IAsyncDisposable
     {
         private readonly DefaultContainerBuilder _defaultContainerBuilder = new DefaultContainerBuilder();
-        private IDependencyResolver _childDependencyResolver;
+        private IDependencyResolver? _childDependencyResolver;
 
-        public virtual IDependencyManager DependencyManager { get; set; }
+        public virtual IDependencyManager DependencyManager { get; set; } = default!;
 
         public virtual IServiceProvider BuildContainer()
         {
@@ -27,7 +27,7 @@ namespace Bit.OData.Implementations
 
             _childDependencyResolver = DependencyManager.CreateChildDependencyResolver(childDependencyManager =>
             {
-                IServiceCollection services = (IServiceCollection)typeof(DefaultContainerBuilder).GetTypeInfo().GetField(nameof(services), BindingFlags.NonPublic | BindingFlags.Instance).GetValue(_defaultContainerBuilder);
+                IServiceCollection services = (IServiceCollection)(typeof(DefaultContainerBuilder).GetTypeInfo().GetField(nameof(services), BindingFlags.NonPublic | BindingFlags.Instance)?.GetValue(_defaultContainerBuilder) ?? throw new InvalidOperationException($"{nameof(services)} field could not be found in {typeof(DefaultContainerBuilder).FullName}"));
 
                 childDependencyManager.Populate(services);
             });

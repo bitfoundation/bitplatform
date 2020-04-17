@@ -26,7 +26,7 @@ namespace Bit.Data.Implementations
             if (logEntry == null)
                 throw new ArgumentNullException(nameof(logEntry));
 
-            DbConnection connection = DbConnectionProvider.GetDbConnection(ActiveAppEnvironment.GetConfig(AppEnvironment.KeyValues.Data.LogDbConnectionstring, defaultValueOnNotFoundProvider: () => ActiveAppEnvironment.GetConfig<string>("AppConnectionstring")) ?? throw new InvalidOperationException("Log connection string could not be found."), rollbackOnScopeStatusFailure: false);
+            DbConnection connection = DbConnectionProvider.GetDbConnection(ActiveAppEnvironment.GetConfig(AppEnvironment.KeyValues.Data.LogDbConnectionstring, defaultValueOnNotFoundProvider: () => ActiveAppEnvironment.GetConfig<string>("AppConnectionstring")) ?? throw new InvalidOperationException($"{nameof(AppEnvironment.KeyValues.Data.LogDbConnectionstring)} is null."), rollbackOnScopeStatusFailure: false);
 
             using (DbCommand command = connection.CreateCommand())
             {
@@ -45,7 +45,7 @@ namespace Bit.Data.Implementations
             if (logEntry == null)
                 throw new ArgumentNullException(nameof(logEntry));
 
-            DbConnection connection = await DbConnectionProvider.GetDbConnectionAsync(ActiveAppEnvironment.GetConfig(AppEnvironment.KeyValues.Data.LogDbConnectionstring, defaultValueOnNotFoundProvider: () => ActiveAppEnvironment.GetConfig<string>("AppConnectionstring")) ?? throw new InvalidOperationException("Log connection string could not be found."), rollbackOnScopeStatusFailure: false, cancellationToken: CancellationToken.None).ConfigureAwait(false);
+            DbConnection connection = await DbConnectionProvider.GetDbConnectionAsync(ActiveAppEnvironment.GetConfig(AppEnvironment.KeyValues.Data.LogDbConnectionstring, defaultValueOnNotFoundProvider: () => ActiveAppEnvironment.GetConfig<string>("AppConnectionstring")) ?? throw new InvalidOperationException($"{nameof(AppEnvironment.KeyValues.Data.LogDbConnectionstring)} is null."), rollbackOnScopeStatusFailure: false, cancellationToken: CancellationToken.None).ConfigureAwait(false);
 
 #if DotNet
             using (DbCommand command = connection.CreateCommand())

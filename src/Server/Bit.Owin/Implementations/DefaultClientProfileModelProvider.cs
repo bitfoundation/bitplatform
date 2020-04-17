@@ -36,16 +36,16 @@ namespace Bit.Owin.Implementations
 
             string? desiredTimeZoneValue = null;
 
-            if (culture == null || string.Equals(culture, "Auto", StringComparison.OrdinalIgnoreCase))
+            if (culture == null || string.Equals(culture, "Auto", StringComparison.InvariantCultureIgnoreCase))
                 culture = "EnUs";
 
             if (desiredTimeZone != null &&
-                !string.Equals(desiredTimeZone, "Auto", StringComparison.CurrentCulture))
+                !string.Equals(desiredTimeZone, "Auto", StringComparison.InvariantCultureIgnoreCase))
                 desiredTimeZoneValue = desiredTimeZone;
 
             string appTitle = AppEnvironment.Cultures.Any() ? (AppEnvironment.Cultures
                 .ExtendedSingle($"Finding culture {culture} in environment {AppEnvironment.Name}", c => c.Name == culture).Values
-                    .ExtendedSingle($"Finding AppTitle in culture {culture}", v => string.Equals(v.Name, "AppTitle", StringComparison.OrdinalIgnoreCase)).Title) : string.Empty;
+                    .ExtendedSingle($"Finding AppTitle in culture {culture}", v => string.Equals(v.Name, "AppTitle", StringComparison.InvariantCultureIgnoreCase)).Title) : string.Empty;
 
             clientProfileMdoel.AppTitle = appTitle;
             clientProfileMdoel.Culture = culture;
@@ -81,16 +81,16 @@ namespace Bit.Owin.Implementations
 
             string? desiredTimeZoneValue = null;
 
-            if (culture == null || string.Equals(culture, "Auto", StringComparison.OrdinalIgnoreCase))
+            if (culture == null || string.Equals(culture, "Auto", StringComparison.InvariantCultureIgnoreCase))
                 culture = "EnUs";
 
             if (desiredTimeZone != null &&
-                !string.Equals(desiredTimeZone, "Auto", StringComparison.CurrentCulture))
+                !string.Equals(desiredTimeZone, "Auto", StringComparison.InvariantCultureIgnoreCase))
                 desiredTimeZoneValue = desiredTimeZone;
 
             string appTitle = AppEnvironment.Cultures.Any() ? AppEnvironment.Cultures
                 .ExtendedSingle($"Finding culture {culture} in environment {AppEnvironment.Name}", c => c.Name == culture).Values.ExtendedSingle($"Finding AppTitle in culture {culture}", v =>
-                      string.Equals(v.Name, "AppTitle", StringComparison.OrdinalIgnoreCase)).Title : string.Empty;
+                      string.Equals(v.Name, "AppTitle", StringComparison.InvariantCultureIgnoreCase)).Title : string.Empty;
 
             clientAppProfileModel.AppTitle = appTitle;
             clientAppProfileModel.Culture = culture;

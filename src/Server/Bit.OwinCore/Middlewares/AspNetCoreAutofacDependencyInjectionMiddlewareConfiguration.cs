@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Owin;
 using Owin;
+using System;
 using System.Threading.Tasks;
 
 namespace Bit.OwinCore.Middlewares
@@ -30,6 +31,9 @@ namespace Bit.OwinCore.Middlewares
 
         public override Task Invoke(IOwinContext context)
         {
+            if (context == null)
+                throw new ArgumentNullException(nameof(context));
+
             HttpContext aspNetCoreContext = (HttpContext)context.Environment["Microsoft.AspNetCore.Http.HttpContext"];
 
             aspNetCoreContext.Items["OwinContext"] = context;

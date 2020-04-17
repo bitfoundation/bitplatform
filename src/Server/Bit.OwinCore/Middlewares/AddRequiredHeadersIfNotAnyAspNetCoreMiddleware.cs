@@ -15,6 +15,9 @@ namespace Bit.OwinCore.Middlewares
 
         public Task Invoke(HttpContext httpContext)
         {
+            if (httpContext == null)
+                throw new ArgumentNullException(nameof(httpContext));
+
             // See https://github.com/odata/odata.net/issues/165
 
             if (!httpContext.Request.Headers.ContainsKey("Accept-Charset"))

@@ -21,14 +21,14 @@ namespace Bit.OwinCore
     public class AspNetCoreAppStartup
     {
 #if DotNet
-        public IHostingEnvironment HostingEnvironment { get; }
+        public IHostingEnvironment HostingEnvironment { get; } = default!;
 #else
-        public IWebHostEnvironment WebHostEnvironment { get; }
+        public IWebHostEnvironment WebHostEnvironment { get; } = default!;
 #endif
 
-        public IConfiguration Configuration { get; set; }
+        public IConfiguration Configuration { get; set; } = default!;
 
-        private readonly IPathProvider _pathProvider;
+        private readonly IPathProvider _pathProvider = default!;
 
         public AspNetCoreAppStartup(IServiceProvider serviceProvider)
         {

@@ -11,15 +11,15 @@ namespace Bit.OwinCore.Middlewares
 {
     public class GetRequestInfoMiddleware
     {
-        private readonly RequestDelegate _next;
-
         public GetRequestInfoMiddleware(RequestDelegate next)
         {
-            _next = next;
         }
 
         public async Task Invoke(HttpContext context)
         {
+            if (context == null)
+                throw new ArgumentNullException(nameof(context));
+
             await context.Response.WriteAsync(GetRequestInfo(context.RequestServices), context.RequestAborted);
         }
 

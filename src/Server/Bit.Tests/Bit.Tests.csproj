@@ -9,6 +9,7 @@
     <StartupObject />
     <DefineConstants Condition=" '$(TargetFramework)' == 'net461' ">$(DefineConstants);DotNet</DefineConstants>
     <DefineConstants Condition=" '$(TargetFramework)' == 'netcoreapp3.1' ">$(DefineConstants);DotNetCore</DefineConstants>
+    <Nullable>disable</Nullable>
   </PropertyGroup>
 
   <ItemGroup>

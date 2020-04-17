@@ -20,10 +20,13 @@ namespace Bit.OData.Serialization
             _defaultODataActionCreateUpdateParameterDeserializer = defaultODataActionCreateUpdateParameterDeserializer;
         }
 
-        readonly DefaultODataActionCreateUpdateParameterDeserializer _defaultODataActionCreateUpdateParameterDeserializer;
+        readonly DefaultODataActionCreateUpdateParameterDeserializer _defaultODataActionCreateUpdateParameterDeserializer = default!;
 
         public override ODataDeserializer GetODataDeserializer(Type type, HttpRequestMessage request)
         {
+            if (request == null)
+                throw new ArgumentNullException(nameof(request));
+
             HttpActionDescriptor actionDescriptor = request.GetActionDescriptor();
 
             if (actionDescriptor != null && request?.Content?.Headers?.ContentLength != 0 && (actionDescriptor.GetCustomAttributes<ActionAttribute>().Any() ||

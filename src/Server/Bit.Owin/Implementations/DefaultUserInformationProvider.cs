@@ -55,14 +55,14 @@ namespace Bit.Owin.Implementations
         public virtual string GetClientId()
         {
             return GetClaims()
-                .ExtendedSingle("Finding client_id in claims", claim => string.Equals(claim.Type, "client_id", StringComparison.OrdinalIgnoreCase))
+                .ExtendedSingle("Finding client_id in claims", claim => string.Equals(claim.Type, "client_id", StringComparison.InvariantCultureIgnoreCase))
                 .Value;
         }
 
         public virtual BitJwtToken GetBitJwtToken()
         {
             string primary_sid = GetClaims()
-                .ExtendedSingle("Finding primary_sid in claims", claim => string.Equals(claim.Type, "primary_sid", StringComparison.OrdinalIgnoreCase))
+                .ExtendedSingle("Finding primary_sid in claims", claim => string.Equals(claim.Type, "primary_sid", StringComparison.InvariantCultureIgnoreCase))
                 .Value;
 
             try

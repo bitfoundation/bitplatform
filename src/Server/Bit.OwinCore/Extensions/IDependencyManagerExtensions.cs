@@ -10,7 +10,6 @@ using Microsoft.AspNetCore.Http.Features;
 using Microsoft.Owin.Security.DataProtection;
 using System;
 using System.Linq;
-using System.Reflection;
 
 namespace Bit.Core.Contracts
 {

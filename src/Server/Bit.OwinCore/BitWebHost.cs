@@ -25,15 +25,18 @@ namespace Bit.OwinCore
                 });
         }
 
-        private static Assembly CurrentDomain_AssemblyResolve(object sender, ResolveEventArgs args)
+        static Assembly? CurrentDomain_AssemblyResolve(object? sender, ResolveEventArgs args)
         {
+            if (args == null)
+                throw new ArgumentNullException(nameof(args));
+
             Assembly bitOwinCoreAssembly = AssemblyContainer.Current.GetBitOwinCoreAssembly();
 
-            string dllResourceName = bitOwinCoreAssembly.GetManifestResourceNames().ExtendedSingleOrDefault($"Finding equivalent resource for {args.Name}", resName => resName == $"Bit.OwinCore.Assemblies.{new AssemblyName(args.Name).Name}.dll");
+            string? dllResourceName = bitOwinCoreAssembly.GetManifestResourceNames().ExtendedSingleOrDefault($"Finding equivalent resource for {args.Name}", resName => resName == $"Bit.OwinCore.Assemblies.{new AssemblyName(args.Name!).Name}.dll");
 
             if (!string.IsNullOrEmpty(dllResourceName))
             {
-                using (Stream dllStream = bitOwinCoreAssembly.GetManifestResourceStream(dllResourceName))
+                using (Stream dllStream = bitOwinCoreAssembly.GetManifestResourceStream(dllResourceName)!)
                 {
                     using (MemoryStream bufferStream = new MemoryStream())
                     {

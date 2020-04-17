@@ -16,9 +16,9 @@ namespace Bit.OwinCore.Implementations
 {
     internal class AppInsightsLogKeyVal
     {
-        public string Key { get; set; }
+        public string Key { get; set; } = default!;
 
-        public string Value { get; set; }
+        public string? Value { get; set; }
 
         public override string ToString()
         {
@@ -28,14 +28,17 @@ namespace Bit.OwinCore.Implementations
 
     public class BitTelemetryInitializer : ITelemetryInitializer
     {
-        public virtual IHttpContextAccessor HttpContextAccessor { get; set; }
+        public virtual IHttpContextAccessor HttpContextAccessor { get; set; } = default!;
 
-        public virtual AppEnvironment AppEnvironment { get; set; }
+        public virtual AppEnvironment AppEnvironment { get; set; } = default!;
 
-        public virtual IDependencyManager DependencyManager { get; set; }
+        public virtual IDependencyManager DependencyManager { get; set; } = default!;
 
         public virtual void Initialize(ITelemetry telemetry)
         {
+            if (telemetry == null)
+                throw new ArgumentNullException(nameof(telemetry));
+
             LogEntryAppLevelConstantInfo logEntryAppLevelConstantInfo = LogEntryAppLevelConstantInfo.GetAppConstantInfo();
 
             if (!telemetry.Context.GlobalProperties.ContainsKey(nameof(LogEntry.ApplicationName)))
@@ -65,7 +68,7 @@ namespace Bit.OwinCore.Implementations
             {
                 List<AppInsightsLogKeyVal> logKeyValues;
 
-                if (HttpContextAccessor.HttpContext.Items.TryGetValue("LogKeyValues", out object logKeyValuesAsObj))
+                if (HttpContextAccessor.HttpContext.Items.TryGetValue("LogKeyValues", out object? logKeyValuesAsObj))
                 {
                     logKeyValues = (List<AppInsightsLogKeyVal>)logKeyValuesAsObj;
                 }
@@ -214,25 +217,31 @@ namespace Bit.OwinCore.Implementations
             }
         }
 
-        public virtual IHttpContextAccessor HttpContextAccessor { get; set; }
+        public virtual IHttpContextAccessor HttpContextAccessor { get; set; } = default!;
 
-        public virtual IContentFormatter Formatter { get; set; }
+        public virtual IContentFormatter ContentFormatter { get; set; } = default!;
 
-        public TelemetryClient TelemetryClient { get; set; }
+        public TelemetryClient TelemetryClient { get; set; } = default!;
 
         public virtual void SaveLog(LogEntry logEntry)
         {
+            if (logEntry == null)
+                throw new ArgumentNullException(nameof(logEntry));
+
             PerformLog(logEntry);
         }
 
         public virtual Task SaveLogAsync(LogEntry logEntry)
         {
+            if (logEntry == null)
+                throw new ArgumentNullException(nameof(logEntry));
+
             PerformLog(logEntry);
 
             return Task.CompletedTask;
         }
 
-        private void PerformLog(LogEntry logEntry)
+        void PerformLog(LogEntry logEntry)
         {
             List<AppInsightsLogKeyVal> logKeyValues = PopulateLogKeyValues(logEntry);
 
@@ -243,7 +252,7 @@ namespace Bit.OwinCore.Implementations
                 return; // The rest of things will be handled with BitTelemetryInitializer.
             }
 
-            Dictionary<string, string> customData = new Dictionary<string, string>();
+            Dictionary<string, string?> customData = new Dictionary<string, string?>();
 
             foreach (AppInsightsLogKeyVal keyVal in logKeyValues.OrderBy(kv => kv.Key))
             {
@@ -251,14 +260,14 @@ namespace Bit.OwinCore.Implementations
                     customData.Add(keyVal.Key, keyVal.Value);
             }
 
-            Exception ex = null;
+            Exception? ex = null;
 
             try
             {
-                customData.TryGetValue("ExceptionTypeAssemblyQualifiedName", out string exceptionTypeAssemblyQualifiedName);
+                customData.TryGetValue("ExceptionTypeAssemblyQualifiedName", out string? exceptionTypeAssemblyQualifiedName);
 
                 if (!string.IsNullOrEmpty(exceptionTypeAssemblyQualifiedName))
-                    ex = (Exception)Activator.CreateInstance(Type.GetType(exceptionTypeAssemblyQualifiedName) ?? throw new InvalidOperationException($"{exceptionTypeAssemblyQualifiedName} could not be found"), args: new object[] { logEntry.Message });
+                    ex = (Exception?)Activator.CreateInstance(Type.GetType(exceptionTypeAssemblyQualifiedName) ?? throw new InvalidOperationException($"{exceptionTypeAssemblyQualifiedName} could not be found"), args: new object[] { logEntry.Message });
             }
             catch { }
 
@@ -279,7 +288,7 @@ namespace Bit.OwinCore.Implementations
 
         List<AppInsightsLogKeyVal> PopulateLogKeyValues(LogEntry logEntry)
         {
-            List<AppInsightsLogKeyVal> keyValues = logEntry.LogData.Select(ld =>
+            List<AppInsightsLogKeyVal?> keyValues = logEntry.LogData.Select(ld =>
             {
                 string k = ld.Key;
 
@@ -290,14 +299,14 @@ namespace Bit.OwinCore.Implementations
                 || ld.Value == null)
                     return null; // Already being logged by app insights!
 
-                string v = null;
+                string? v = null;
 
                 if (ld.Value is string valueAsStr)
                     v = valueAsStr;
 
                 if (k == "ClientLogs" || k == "OperationArgs")
                 {
-                    v = Formatter.Serialize(ld.Value);
+                    v = ContentFormatter.Serialize(ld.Value);
                 }
                 else
                 {
@@ -323,7 +332,7 @@ namespace Bit.OwinCore.Implementations
             if (logEntry.AppServerThreadId.HasValue)
                 keyValues.Add(new AppInsightsLogKeyVal { Key = nameof(LogEntry.AppServerThreadId), Value = logEntry.AppServerThreadId.ToString() });
 
-            return keyValues;
+            return keyValues!;
         }
     }
 }

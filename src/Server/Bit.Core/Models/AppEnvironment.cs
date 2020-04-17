@@ -106,7 +106,7 @@ namespace Bit.Core.Models
                 throw new InvalidOperationException("App environment is not valid");
 
             EnvironmentConfig? config = Configs.ExtendedSingleOrDefault($"Finding {configKey}", c =>
-                 string.Equals(c.Key, configKey, StringComparison.OrdinalIgnoreCase));
+                 string.Equals(c.Key, configKey, StringComparison.InvariantCultureIgnoreCase));
 
             if (config == null)
             {
@@ -175,7 +175,7 @@ namespace Bit.Core.Models
             if (configKey == null)
                 throw new ArgumentNullException(nameof(configKey));
 
-            return Configs.Any(c => string.Equals(c.Key, configKey, StringComparison.OrdinalIgnoreCase));
+            return Configs.Any(c => string.Equals(c.Key, configKey, StringComparison.InvariantCultureIgnoreCase));
         }
 
         public virtual void AddOrReplace<T>(string key, [MaybeNull] T value)
@@ -194,7 +194,7 @@ namespace Bit.Core.Models
             if (!HasConfig(config.Key))
                 Configs.Add(config);
             else
-                Configs.ExtendedSingle($"Trying to find config with key: {config.Key}", c => string.Equals(c.Key, config.Key, StringComparison.OrdinalIgnoreCase)).Value = config.Value;
+                Configs.ExtendedSingle($"Trying to find config with key: {config.Key}", c => string.Equals(c.Key, config.Key, StringComparison.InvariantCultureIgnoreCase)).Value = config.Value;
         }
 
         public override string ToString()

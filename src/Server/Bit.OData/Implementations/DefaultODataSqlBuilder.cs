@@ -26,10 +26,10 @@ namespace Bit.OData.Implementations
                 throw new ArgumentNullException(nameof(odataQuery));
 
             string columns = "*";
-            string orderBy = null, where = null;
+            string? orderBy = null, where = null;
             long? top = odataQuery.Top?.Value;
             long? skip = odataQuery.Skip?.Value;
-            IDictionary<string, object> parameters = null;
+            IDictionary<string, object?>? parameters = null;
 
             if (odataQuery.SelectExpand != null && odataQuery.SelectExpand.SelectExpandClause.AllSelected != true)
                 throw new BadRequestException("$select is not supported for this resource");
@@ -139,6 +139,9 @@ namespace Bit.OData.Implementations
 
         public virtual ODataSqlJsonQuery BuildSqlJsonQuery<TDto>(ODataQueryOptions<TDto> odataQueryOptions, string tableName) where TDto : class
         {
+            if (odataQueryOptions == null)
+                throw new ArgumentNullException(nameof(odataQueryOptions));
+
             ODataSqlQuery odataSqlQuery = BuildSqlQuery(odataQueryOptions, tableName: tableName);
 
             string edmTypeFullPath = $"{odataQueryOptions.Request.GetReaderSettings().BaseUri}$metadata#{odataQueryOptions.Context.Path}";
@@ -194,7 +197,7 @@ FOR JSON AUTO, WITHOUT_ARRAY_WRAPPER";
     class WhereExpressionFinder<TDto> : ExpressionVisitor
         where TDto : class
     {
-        public Expression<Func<TDto, bool>> Where { get; set; }
+        public Expression<Func<TDto, bool>>? Where { get; set; }
 
         protected override Expression VisitLambda<T>(Expression<T> node)
         {

@@ -11,10 +11,13 @@ namespace Bit.OData.Serialization
 {
     public class DefaultODataPrimitiveSerializer : ODataPrimitiveSerializer
     {
-        public override ODataPrimitiveValue CreateODataPrimitiveValue(object graph,
+        public override ODataPrimitiveValue? CreateODataPrimitiveValue(object graph,
             IEdmPrimitiveTypeReference primitiveType, ODataSerializerContext writeContext)
         {
-            ODataPrimitiveValue result = base.CreateODataPrimitiveValue(graph, primitiveType, writeContext);
+            if (writeContext == null)
+                throw new ArgumentNullException(nameof(writeContext));
+
+            ODataPrimitiveValue? result = base.CreateODataPrimitiveValue(graph, primitiveType, writeContext);
 
             if (result?.Value is DateTimeOffset date)
             {

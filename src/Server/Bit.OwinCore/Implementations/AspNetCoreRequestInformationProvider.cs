@@ -10,7 +10,7 @@ namespace Bit.OwinCore.Implementations
 {
     public class AspNetCoreRequestInformationProvider : IRequestInformationProvider
     {
-        public virtual IHttpContextAccessor HttpContextAccessor { get; set; }
+        public virtual IHttpContextAccessor HttpContextAccessor { get; set; } = default!;
 
         public virtual bool ContextIsPresent => HttpContextAccessor.HttpContext != null;
 
@@ -19,7 +19,7 @@ namespace Bit.OwinCore.Implementations
             return HttpContextAccessor.HttpContext ?? throw new InvalidOperationException("HttpContextAccessor.HttpContextIsNull");
         }
 
-        protected virtual string GetHeaderValue(string key)
+        protected virtual string? GetHeaderValue(string key)
         {
             HttpContext httpContext = GetHttpContext();
             if (httpContext.Request?.Headers == null)
@@ -29,7 +29,7 @@ namespace Bit.OwinCore.Implementations
             return null;
         }
 
-        public virtual string UserAgent
+        public virtual string? UserAgent
         {
             get => GetHeaderValue("user-agent");
             protected set => throw new InvalidOperationException();
@@ -37,7 +37,7 @@ namespace Bit.OwinCore.Implementations
 
         public virtual string HttpMethod
         {
-            get => GetHttpContext().Request?.Method;
+            get => GetHttpContext().Request.Method;
             protected set => throw new InvalidOperationException();
         }
 
@@ -51,18 +51,18 @@ namespace Bit.OwinCore.Implementations
                 if (headers.TryGetValue("X-Forwarded-For", out StringValues X_Forwarded_For))
                     return string.Join<string>(",", values: X_Forwarded_For);
                 else
-                    return httpContext.Connection?.RemoteIpAddress?.ToString();
+                    return httpContext.Connection?.RemoteIpAddress?.ToString() ?? "::1";
             }
             protected set => throw new InvalidOperationException();
         }
 
-        public virtual string ClientAppVersion
+        public virtual string? ClientAppVersion
         {
             get => GetHeaderValue("Client-App-Version");
             protected set => throw new InvalidOperationException();
         }
 
-        public virtual string SystemLanguage
+        public virtual string? SystemLanguage
         {
             get => GetHeaderValue("System-Language");
             protected set => throw new InvalidOperationException();
@@ -72,7 +72,7 @@ namespace Bit.OwinCore.Implementations
         {
             get
             {
-                string clientDateTime = GetHeaderValue("Client-Date-Time");
+                string? clientDateTime = GetHeaderValue("Client-Date-Time");
                 if (clientDateTime == null)
                     return null;
                 return DateTimeOffset.Parse(clientDateTime, CultureInfo.InvariantCulture);
@@ -80,49 +80,49 @@ namespace Bit.OwinCore.Implementations
             protected set => throw new InvalidOperationException();
         }
 
-        public virtual string ClientType
+        public virtual string? ClientType
         {
             get => GetHeaderValue("Client-Type");
             protected set => throw new InvalidOperationException();
         }
 
-        public virtual string BitClientType
+        public virtual string? BitClientType
         {
             get => GetHeaderValue("Bit-Client-Type");
             protected set => throw new InvalidOperationException();
         }
 
-        public virtual string ClientCulture
+        public virtual string? ClientCulture
         {
             get => GetHeaderValue("Client-Culture");
             protected set => throw new InvalidOperationException();
         }
 
-        public virtual string ClientScreenSize
+        public virtual string? ClientScreenSize
         {
             get => GetHeaderValue("Client-Screen-Size");
             protected set => throw new InvalidOperationException();
         }
 
-        public virtual string ClientPlatform
+        public virtual string? ClientPlatform
         {
             get => GetHeaderValue("Client-Platform");
             protected set => throw new InvalidOperationException();
         }
 
-        public virtual string ClientRoute
+        public virtual string? ClientRoute
         {
             get => GetHeaderValue("Client-Route");
             protected set => throw new InvalidOperationException();
         }
 
-        public virtual string ClientSysLanguage
+        public virtual string? ClientSysLanguage
         {
             get => GetHeaderValue("Client-Sys-Language");
             protected set => throw new InvalidOperationException();
         }
 
-        public virtual string ClientTheme
+        public virtual string? ClientTheme
         {
             get => GetHeaderValue("Client-Theme");
             protected set => throw new InvalidOperationException();
@@ -132,7 +132,7 @@ namespace Bit.OwinCore.Implementations
         {
             get
             {
-                string clientDebugMode = GetHeaderValue("Client-Debug-Mode");
+                string? clientDebugMode = GetHeaderValue("Client-Debug-Mode");
                 if (clientDebugMode == null)
                     return null;
                 return bool.Parse(clientDebugMode);
@@ -142,47 +142,47 @@ namespace Bit.OwinCore.Implementations
 
         public virtual string DisplayUrl
         {
-            get => GetHttpContext().Request.GetDisplayUrl()?.AsUnescaped();
+            get => GetHttpContext().Request.GetDisplayUrl().AsUnescaped();
             protected set => throw new InvalidOperationException();
         }
 
-        public virtual ClaimsIdentity Identity
+        public virtual ClaimsIdentity? Identity
         {
             get => GetHttpContext().User?.Identity as ClaimsIdentity;
             protected set => throw new InvalidOperationException();
         }
 
-        public virtual string CurrentTimeZone
+        public virtual string? CurrentTimeZone
         {
             get => GetHeaderValue("Current-Time-Zone");
             protected set => throw new InvalidOperationException();
         }
 
-        public virtual string DesiredTimeZone
+        public virtual string? DesiredTimeZone
         {
             get => GetHeaderValue("Desired-Time-Zone");
             protected set => throw new InvalidOperationException();
         }
 
-        public virtual string ContentType
+        public virtual string? ContentType
         {
             get => GetHeaderValue("Content-Type");
             protected set => throw new InvalidOperationException();
         }
 
-        public virtual string Origin
+        public virtual string? Origin
         {
             get => GetHeaderValue("Origin");
             protected set => throw new InvalidOperationException();
         }
 
-        public virtual string Referer
+        public virtual string? Referer
         {
             get => GetHeaderValue("Referer");
             protected set => throw new InvalidOperationException();
         }
 
-        public virtual string XCorrelationId
+        public virtual string? XCorrelationId
         {
             get
             {

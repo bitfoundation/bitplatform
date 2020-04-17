@@ -20,6 +20,9 @@ namespace Bit.OData.Implementations
         public DefaultODataHttpControllerSelector(HttpConfiguration httpConfiguration)
             : base(httpConfiguration)
         {
+            if (httpConfiguration == null)
+                throw new ArgumentNullException(nameof(httpConfiguration));
+
             _httpConfiguration = httpConfiguration;
             ICollection<Type> controllerTypes = _httpConfiguration.Services.GetHttpControllerTypeResolver().GetControllerTypes(_httpConfiguration.Services.GetAssembliesResolver());
             _controllersGroupedByName = controllerTypes.GroupBy(controller => controller.Name).ToDictionary(controller => controller.Key, controller => controller.Select(c => (c.Assembly.GetCustomAttributes<ODataModuleAttribute>().Select(oma => oma.ODataRouteName).ToArray(), c)).ToList());
@@ -30,7 +33,7 @@ namespace Bit.OData.Implementations
             string controllerName = GetControllerName(request);
             string controllerFullName = $"{controllerName}{ControllerSuffix}";
 
-            if (_controllersGroupedByName.TryGetValue(controllerFullName, out List<(string[] oDataRoutes, Type controllerType)> controllers) && controllers.Count > 1)
+            if (_controllersGroupedByName.TryGetValue(controllerFullName, out List<(string[] oDataRoutes, Type controllerType)>? controllers) && controllers.Count > 1)
             {
                 HttpRouteData httpRouteData = (HttpRouteData)request.GetRouteData();
 

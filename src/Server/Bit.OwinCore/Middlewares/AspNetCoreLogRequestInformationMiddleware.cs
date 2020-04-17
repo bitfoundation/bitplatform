@@ -3,6 +3,7 @@ using Bit.Core.Contracts;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Bit.Owin.Middlewares;
+using System;
 
 namespace Bit.OwinCore.Middlewares
 {
@@ -17,6 +18,9 @@ namespace Bit.OwinCore.Middlewares
 
         public Task Invoke(HttpContext context)
         {
+            if (context == null)
+                throw new ArgumentNullException(nameof(context));
+
             ILogger logger = context.RequestServices.GetRequiredService<ILogger>();
 
             IRequestInformationProvider requestInformationProvider = context.RequestServices.GetRequiredService<IRequestInformationProvider>();

@@ -24,6 +24,9 @@ namespace Bit.OwinCore
         /// </summary>
         public virtual IServiceProvider ConfigureServices(IServiceCollection services)
         {
+            if (services == null)
+                throw new ArgumentNullException(nameof(services));
+
             InitServices(services);
 
             DefaultDependencyManager.Current.Populate(services);

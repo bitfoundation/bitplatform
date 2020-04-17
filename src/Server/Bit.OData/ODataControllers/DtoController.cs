@@ -78,7 +78,7 @@ namespace Bit.OData.ODataControllers
         public override void OnActionExecuted(HttpActionExecutedContext actionExecutedContext)
         {
             if (actionExecutedContext?.Response?.Headers != null && !actionExecutedContext.Response.Headers.Contains(nameof(HttpResponseHeaders.Location))
-                && actionExecutedContext.Response.Content is ObjectContent objContent
+                && actionExecutedContext.Response.Content is ObjectContent
                 && actionExecutedContext.Response.IsSuccessStatusCode == true)
             {
                 actionExecutedContext.Response.Headers.Location = new Uri("https://tempuri.org/");
@@ -133,9 +133,9 @@ namespace Bit.OData.ODataControllers
             return SingleResult(values: new[] { obj });
         }
 
-        protected virtual string CreateODataLink(string odataModule = null, string controller = null, string action = null, object routeValues = null)
+        protected virtual string CreateODataLink(string? odataModule = null, string? controller = null, string? action = null, object? routeValues = null)
         {
-            IDictionary<string, object> routeValuesDictionary = Request
+            IDictionary<string, object?> routeValuesDictionary = Request
                 .GetOwinContext()
                 .GetDependencyResolver()
                 .Resolve<IRouteValuesProvider>()
@@ -144,13 +144,13 @@ namespace Bit.OData.ODataControllers
             return CreateODataLink(odataModule, controller, action, routeValuesDictionary);
         }
 
-        protected virtual string CreateODataLink(string odataModule = null, string controller = null, string action = null, IDictionary<string, object> routeValues = null)
+        protected virtual string CreateODataLink(string? odataModule = null, string? controller = null, string? action = null, IDictionary<string, object?>? routeValues = null)
         {
             HttpRequestMessageProperties odataProps = Request.ODataProperties();
 
             if (odataModule == null)
             {
-                odataModule = odataProps.RouteName.Replace("-odata", string.Empty);
+                odataModule = odataProps.RouteName.Replace("-odata", string.Empty, StringComparison.InvariantCultureIgnoreCase);
             }
             if (controller == null)
             {
@@ -169,7 +169,7 @@ namespace Bit.OData.ODataControllers
             {
                 url += string.Join(",", routeValues.Select(routeValueItem =>
                 {
-                    object value = routeValueItem.Value;
+                    object? value = routeValueItem.Value;
                     if (value is string strValue)
                         value = HttpUtility.UrlEncode($"'{strValue}'");
                     return $"{routeValueItem.Key}={value}";

@@ -20,8 +20,8 @@ namespace Bit.OData.Serialization
 {
     public class DefaultODataActionCreateUpdateParameterDeserializer : ODataDeserializer
     {
-        private readonly ODataJsonDeSerializerStringCorrector _stringCorrectorsConverters;
-        private readonly ODataJsonDeSerializerEnumConverter _odataJsonDeserializerEnumConverter;
+        private readonly ODataJsonDeSerializerStringCorrector _stringCorrectorsConverters = default!;
+        private readonly ODataJsonDeSerializerEnumConverter _odataJsonDeserializerEnumConverter = default!;
 
         protected DefaultODataActionCreateUpdateParameterDeserializer()
             : base(ODataPayloadKind.Parameter)
@@ -38,6 +38,9 @@ namespace Bit.OData.Serialization
 
         public override object Read(ODataMessageReader messageReader, Type type, ODataDeserializerContext readContext)
         {
+            if (readContext == null)
+                throw new ArgumentNullException(nameof(readContext));
+
             HttpActionDescriptor actionDescriptor = readContext.Request.GetActionDescriptor();
 
             if (actionDescriptor != null && !actionDescriptor.GetCustomAttributes<ActionAttribute>().Any() && !actionDescriptor.GetCustomAttributes<CreateAttribute>().Any() && !actionDescriptor.GetCustomAttributes<UpdateAttribute>().Any() && !actionDescriptor.GetCustomAttributes<PartialUpdateAttribute>().Any())
@@ -54,15 +57,15 @@ namespace Bit.OData.Serialization
 
             using (JsonReader requestJsonReader = requestJsonBody.CreateReader())
             {
-                void Error(object sender, Newtonsoft.Json.Serialization.ErrorEventArgs e)
+                void Error(object? sender, Newtonsoft.Json.Serialization.ErrorEventArgs e)
                 {
                     if (e.ErrorContext.Error is JsonSerializationException && e.ErrorContext.Error.Message.StartsWith("Could not find member ", StringComparison.InvariantCultureIgnoreCase))
                     {
                         if (e.CurrentObject is IOpenType openDto)
                         {
-                            openDto.Properties = openDto.Properties ?? new Dictionary<string, object>();
+                            openDto.Properties = openDto.Properties ?? new Dictionary<string, object?>();
                             if (requestJsonReader.Read())
-                                openDto.Properties.Add((string)e.ErrorContext.Member, requestJsonReader.Value);
+                                openDto.Properties.Add((string)(e.ErrorContext.Member ?? "UnknownMember"), requestJsonReader.Value);
                         }
 
                         e.ErrorContext.Handled = true;
@@ -91,10 +94,10 @@ namespace Bit.OData.Serialization
 
                 try
                 {
-                    object result = null;
+                    object? result = null;
 
                     if (!typeof(Delta).GetTypeInfo().IsAssignableFrom(typeInfo))
-                        result = deserilizer.Deserialize(requestJsonReader, typeInfo);
+                        result = deserilizer.Deserialize(requestJsonReader, typeInfo)!;
                     else
                     {
                         List<string> changedPropNames = new List<string>();
@@ -105,23 +108,23 @@ namespace Bit.OData.Serialization
                             {
                                 if (jsonReaderForGettingSchema.Value != null && jsonReaderForGettingSchema.TokenType == JsonToken.PropertyName)
                                 {
-                                    changedPropNames.Add(jsonReaderForGettingSchema.Value.ToString());
+                                    changedPropNames.Add(jsonReaderForGettingSchema.Value.ToString()!);
                                 }
                             }
                         }
 
                         TypeInfo dtoType = typeInfo.GetGenericArguments().ExtendedSingle("Finding dto type from delta").GetTypeInfo();
 
-                        object modifiedDto = deserilizer.Deserialize(requestJsonReader, dtoType);
+                        object? modifiedDto = deserilizer.Deserialize(requestJsonReader, dtoType);
 
-                        Delta delta = (Delta)Activator.CreateInstance(typeInfo);
+                        Delta delta = (Delta)(Activator.CreateInstance(typeInfo)!);
 
                         if (modifiedDto is IOpenType openTypeDto && openTypeDto.Properties?.Any() == true)
                             delta.TrySetPropertyValue(nameof(IOpenType.Properties), openTypeDto);
 
                         foreach (string changedProp in changedPropNames.Where(p => p != nameof(IOpenType.Properties) && dtoType.GetProperty(p) != null))
                         {
-                            delta.TrySetPropertyValue(changedProp, dtoType.GetProperty(changedProp).GetValue(modifiedDto));
+                            delta.TrySetPropertyValue(changedProp, (dtoType.GetProperty(changedProp) ?? throw new InvalidOperationException($"{changedProp} could not be found in {dtoType.FullName}")).GetValue(modifiedDto));
                         }
 
                         result = delta;
@@ -155,7 +158,7 @@ namespace Bit.OData.Serialization
 
         public override bool CanWrite => false;
 
-        public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
+        public override object? ReadJson(JsonReader reader, Type objectType, object? existingValue, JsonSerializer serializer)
         {
             if (reader.TokenType == JsonToken.Null || reader.Value == null)
                 return null;
@@ -167,7 +170,7 @@ namespace Bit.OData.Serialization
             return objAsDateTimeOffset;
         }
 
-        public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
+        public override void WriteJson(JsonWriter writer, object? value, JsonSerializer serializer)
         {
             throw new NotImplementedException();
         }
@@ -191,7 +194,7 @@ namespace Bit.OData.Serialization
 
         public override bool CanWrite => false;
 
-        public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
+        public override object? ReadJson(JsonReader reader, Type objectType, object? existingValue, JsonSerializer serializer)
         {
             if (reader.TokenType == JsonToken.Null || reader.Value == null)
                 return null;
@@ -206,7 +209,7 @@ namespace Bit.OData.Serialization
             return rawString;
         }
 
-        public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
+        public override void WriteJson(JsonWriter writer, object? value, JsonSerializer serializer)
         {
             throw new NotImplementedException();
         }
@@ -223,17 +226,17 @@ namespace Bit.OData.Serialization
 
         public override bool CanWrite => false;
 
-        public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
+        public override object? ReadJson(JsonReader reader, Type objectType, object? existingValue, JsonSerializer serializer)
         {
             if (reader.TokenType == JsonToken.Null || reader.Value == null)
                 return null;
 
-            Type unwrappedType = objectType.IsEnum ? objectType : Nullable.GetUnderlyingType(objectType);
+            Type unwrappedType = objectType.IsEnum ? objectType : Nullable.GetUnderlyingType(objectType)!;
 
             if (unwrappedType == null)
                 throw new InvalidOperationException($"{nameof(unwrappedType)} is null");
 
-            string fullName = unwrappedType.FullName;
+            string fullName = unwrappedType.FullName!;
 
             string enumRawValue = (string)reader.Value;
 
@@ -242,7 +245,7 @@ namespace Bit.OData.Serialization
             return Enum.Parse(unwrappedType, enumRawValue);
         }
 
-        public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
+        public override void WriteJson(JsonWriter writer, object? value, JsonSerializer serializer)
         {
             throw new NotImplementedException();
         }

@@ -6,6 +6,8 @@ using Serilog;
 using Serilog.Core;
 using Serilog.Events;
 using System;
+using System.Diagnostics;
+using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -13,16 +15,19 @@ namespace Bit.OwinCore.Implementations
 {
     public class SerilogLogStore : ILogStore, ILogEventEnricher
     {
-        public virtual IDiagnosticContext DiagnosticContext { get; set; }
+        public virtual IDiagnosticContext DiagnosticContext { get; set; } = default!;
 
-        public virtual IHttpContextAccessor HttpContextAccessor { get; set; }
+        public virtual IHttpContextAccessor HttpContextAccessor { get; set; } = default!;
 
-        public Serilog.ILogger SerilogLogger { get; set; }
+        public Serilog.ILogger SerilogLogger { get; set; } = default!;
 
-        public virtual IContentFormatter Formatter { get; set; }
+        public virtual IContentFormatter ContentFormatter { get; set; } = default!;
 
         public void Enrich(LogEvent logEvent, ILogEventPropertyFactory propertyFactory)
         {
+            if (logEvent == null)
+                throw new ArgumentNullException(nameof(logEvent));
+
             LogEntryAppLevelConstantInfo logEntryAppLevelConstantInfo = LogEntryAppLevelConstantInfo.GetAppConstantInfo();
 
             logEvent.AddOrUpdateProperty(new LogEventProperty(nameof(LogEntry.ApplicationName), new ScalarValue(logEntryAppLevelConstantInfo.ApplicationName)));
@@ -40,11 +45,17 @@ namespace Bit.OwinCore.Implementations
 
         public virtual void SaveLog(LogEntry logEntry)
         {
+            if (logEntry == null)
+                throw new ArgumentNullException(nameof(logEntry));
+
             PerformLog(logEntry);
         }
 
         public virtual Task SaveLogAsync(LogEntry logEntry)
         {
+            if (logEntry == null)
+                throw new ArgumentNullException(nameof(logEntry));
+
             PerformLog(logEntry);
 
             return Task.CompletedTask;
@@ -74,16 +85,16 @@ namespace Bit.OwinCore.Implementations
                 || k == nameof(IRequestInformationProvider.DisplayUrl)
                 || k == "ResponseStatusCode"
                 || ld.Value == null)
-                    return (Key: null, Value: null); // Already being logged by serilog!
+                    return (Key: (string?)null, Value: (string?)null); // Already being logged by serilog!
 
-                string v = null;
+                string? v = null;
 
                 if (ld.Value is string valueAsStr)
                     v = valueAsStr;
 
                 if (k == "ClientLogs" || k == "OperationArgs")
                 {
-                    v = Formatter.Serialize(ld.Value);
+                    v = ContentFormatter.Serialize(ld.Value);
                 }
                 else
                 {
@@ -95,7 +106,7 @@ namespace Bit.OwinCore.Implementations
             .Where(d => d.Key != null)
             .ToList();
 
-            keyValues.Add((Key: nameof(LogEntry.MemoryUsage), Value: logEntry.MemoryUsage.ToString()));
+            keyValues.Add((Key: nameof(LogEntry.MemoryUsage), Value: logEntry.MemoryUsage.ToString(CultureInfo.InvariantCulture)));
 
             if (logEntry.AppServerDateTime.HasValue)
                 keyValues.Add((Key: nameof(LogEntry.AppServerDateTime), Value: logEntry.AppServerDateTime.ToString()));
@@ -123,14 +134,14 @@ namespace Bit.OwinCore.Implementations
             }
             else
             {
-                Exception ex = null;
+                Exception? ex = null;
 
                 try
                 {
                     var (Key, Value) = keyValues.ExtendedSingleOrDefault("Finding ExceptionTypeAssemblyQualifiedName...", kv => kv.Key == "ExceptionTypeAssemblyQualifiedName");
 
                     if (!string.IsNullOrEmpty(Value))
-                        ex = (Exception)Activator.CreateInstance(Type.GetType(Value) ?? throw new InvalidOperationException($"{Value} could not be found"), args: new object[] { logEntry.Message });
+                        ex = (Exception?)Activator.CreateInstance(Type.GetType(Value) ?? throw new InvalidOperationException($"{Value} could not be found"), args: new object[] { logEntry.Message });
                 }
                 catch { }
 

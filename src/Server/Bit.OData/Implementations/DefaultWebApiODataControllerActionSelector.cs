@@ -44,10 +44,13 @@ namespace Bit.OData.Implementations
 
         public virtual ILookup<string, HttpActionDescriptor> GetActionMapping(HttpControllerDescriptor controllerDescriptor)
         {
+            if (controllerDescriptor == null)
+                throw new ArgumentNullException(nameof(controllerDescriptor));
+
             if (!controllerDescriptor.ControllerType.GetTypeInfo().IsDtoController())
                 return _webApiControllerActionSelector.GetActionMapping(controllerDescriptor);
 
-            if (!controllerDescriptor.Properties.TryGetValue("CachedActions", out object cachedActions))
+            if (!controllerDescriptor.Properties.TryGetValue("CachedActions", out object? cachedActions))
             {
                 List<MethodInfo> allActions = controllerDescriptor.ControllerType.GetMethods(BindingFlags.Public | BindingFlags.Instance)
                     .Where(m => m.GetCustomAttributes().OfType<IActionHttpMethodProvider>().Any())
@@ -66,18 +69,21 @@ namespace Bit.OData.Implementations
             }
         }
 
-        public virtual HttpActionDescriptor SelectAction(HttpControllerContext controllerContext)
+        public virtual HttpActionDescriptor? SelectAction(HttpControllerContext controllerContext)
         {
+            if (controllerContext == null)
+                throw new ArgumentNullException(nameof(controllerContext));
+
             if (!controllerContext.ControllerDescriptor.ControllerType.GetTypeInfo().IsDtoController())
                 return _webApiControllerActionSelector.SelectAction(controllerContext);
 
             List<ReflectedHttpActionDescriptor> allActions = (List<ReflectedHttpActionDescriptor>)controllerContext.ControllerDescriptor.Properties["CachedActionsList"];
 
             IDictionary<string, object> routeData = ((HttpRouteData)controllerContext.RouteData).Values;
-            routeData.TryGetValue("action", out object actionNameObj);
-            string actionName = Convert.ToString(actionNameObj, CultureInfo.InvariantCulture);
+            routeData.TryGetValue("action", out object? actionNameObj);
+            string? actionName = Convert.ToString(actionNameObj, CultureInfo.InvariantCulture);
 
-            HttpActionDescriptor resultAction = null;
+            HttpActionDescriptor? resultAction = null;
 
             if (string.Equals(actionName, HttpMethod.Get.Method, StringComparison.InvariantCultureIgnoreCase) && controllerContext.Request.Method == HttpMethod.Get)
             {

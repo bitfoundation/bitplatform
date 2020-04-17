@@ -22,7 +22,7 @@ namespace Bit.Owin.Implementations
             IOwinContext owinContext = GetOwinContext();
             if (owinContext.Request?.Headers == null)
                 return null;
-            if (owinContext.Request.Headers.TryGetValue(key, out string[] values))
+            if (owinContext.Request.Headers.TryGetValue(key, out string[]? values))
                 return string.Join(",", values);
             return null;
         }
@@ -46,10 +46,10 @@ namespace Bit.Owin.Implementations
                 var owinContext = GetOwinContext();
                 var headers = owinContext.Request.Headers;
 
-                if (headers.TryGetValue("X-Forwarded-For", out string[] X_Forwarded_For))
+                if (headers.TryGetValue("X-Forwarded-For", out string[]? X_Forwarded_For))
                     return string.Join<string>(",", values: X_Forwarded_For);
                 else
-                    return owinContext.Request.RemoteIpAddress;
+                    return owinContext.Request.RemoteIpAddress ?? "::1";
             }
             protected set => throw new InvalidOperationException();
         }

@@ -21,15 +21,15 @@ namespace Bit.OwinCore.Implementations
 
         }
 
-        public IConfiguration Configuration { get; set; }
+        public IConfiguration Configuration { get; set; } = default!;
 
 #if DotNet
-        public Microsoft.AspNetCore.Hosting.IHostingEnvironment HostingEnvironment { get; set; }
+        public Microsoft.AspNetCore.Hosting.IHostingEnvironment HostingEnvironment { get; set; } = default!;
 #else
-        public IWebHostEnvironment WebHostEnvironment { get; set; }
+        public IWebHostEnvironment WebHostEnvironment { get; set; } = default!;
 #endif
 
-        private AppEnvironment _appEnvironment;
+        private AppEnvironment? _appEnvironment;
 
         [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization)]
         public virtual void Init()
@@ -58,14 +58,14 @@ namespace Bit.OwinCore.Implementations
             TryReadConfig<bool>(Configuration, AppEnvironment.KeyValues.RequireSsl);
             TryReadConfig<long>(Configuration, AppEnvironment.KeyValues.EventLogId);
 
-            IConfiguration data = Configuration.GetChildren().ExtendedSingleOrDefault("Finding data config", c => c.Key == nameof(AppEnvironment.KeyValues.Data));
+            IConfiguration? data = Configuration.GetChildren().ExtendedSingleOrDefault("Finding data config", c => c.Key == nameof(AppEnvironment.KeyValues.Data));
             if (data != null)
             {
                 TryReadConfig<string>(data, AppEnvironment.KeyValues.Data.DbIsolationLevel);
                 TryReadConfig<string>(data, AppEnvironment.KeyValues.Data.LogDbConnectionstring);
             }
 
-            IConfiguration signalr = Configuration.GetChildren().ExtendedSingleOrDefault("Finding signalr config", c => c.Key == nameof(AppEnvironment.KeyValues.Signalr));
+            IConfiguration? signalr = Configuration.GetChildren().ExtendedSingleOrDefault("Finding signalr config", c => c.Key == nameof(AppEnvironment.KeyValues.Signalr));
             if (signalr != null)
             {
                 TryReadConfig<string>(signalr, AppEnvironment.KeyValues.Signalr.SignalRAzureServiceBusConnectionString);
@@ -73,7 +73,7 @@ namespace Bit.OwinCore.Implementations
                 TryReadConfig<int>(signalr, AppEnvironment.KeyValues.Signalr.SignalRSqlServerTableCount);
             }
 
-            IConfiguration identityServer = Configuration.GetChildren().ExtendedSingleOrDefault("Finding identityServer config", c => c.Key == nameof(AppEnvironment.KeyValues.IdentityServer));
+            IConfiguration? identityServer = Configuration.GetChildren().ExtendedSingleOrDefault("Finding identityServer config", c => c.Key == nameof(AppEnvironment.KeyValues.IdentityServer));
             if (identityServer != null)
             {
                 TryReadConfig<string>(identityServer, AppEnvironment.KeyValues.IdentityServer.IdentityServerSiteName);
@@ -91,7 +91,7 @@ namespace Bit.OwinCore.Implementations
                 TryReadConfig<string>(identityServer, AppEnvironment.KeyValues.IdentityServer.MicrosoftSecret);
             }
 
-            IConfiguration hangfire = Configuration.GetChildren().ExtendedSingleOrDefault("Finding hangfire config", c => c.Key == nameof(AppEnvironment.KeyValues.Hangfire));
+            IConfiguration? hangfire = Configuration.GetChildren().ExtendedSingleOrDefault("Finding hangfire config", c => c.Key == nameof(AppEnvironment.KeyValues.Hangfire));
             if (hangfire != null)
             {
                 TryReadConfig<string>(hangfire, AppEnvironment.KeyValues.Hangfire.JobSchedulerDbConnectionString);
@@ -101,7 +101,7 @@ namespace Bit.OwinCore.Implementations
             TryReadConnectionString(AppEnvironment.KeyValues.Hangfire.JobSchedulerDbConnectionString);
             TryReadConnectionString(AppEnvironment.KeyValues.Data.LogDbConnectionstring);
 
-            IConfiguration appInfo = Configuration.GetChildren().ExtendedSingleOrDefault("Finding appInfo config", c => c.Key == nameof(AppEnvironment.AppInfo));
+            IConfiguration? appInfo = Configuration.GetChildren().ExtendedSingleOrDefault("Finding appInfo config", c => c.Key == nameof(AppEnvironment.AppInfo));
 
             _appEnvironment = new AppEnvironment
             {
@@ -123,23 +123,23 @@ namespace Bit.OwinCore.Implementations
 #else
                     Name = WebHostEnvironment.ApplicationName,
 #endif
-                    Version = Assembly.GetCallingAssembly().GetCustomAttribute<AssemblyFileVersionAttribute>().Version,
-                    DefaultTimeZone = appInfo?.GetValue<string>(nameof(EnvironmentAppInfo.DefaultTimeZone), defaultValue: null)
+                    Version = (Assembly.GetCallingAssembly().GetCustomAttribute<AssemblyFileVersionAttribute>()!).Version,
+                    DefaultTimeZone = appInfo?.GetValue<string?>(nameof(EnvironmentAppInfo.DefaultTimeZone), defaultValue: null)
                 },
                 Configs = configs
             };
 
-            IConfiguration security = Configuration.GetChildren().ExtendedSingleOrDefault("Finding security config", c => c.Key == nameof(AppEnvironment.Security));
+            IConfiguration? security = Configuration.GetChildren().ExtendedSingleOrDefault("Finding security config", c => c.Key == nameof(AppEnvironment.Security));
 
-            _appEnvironment.Security.DefaultClientId = security?.GetValue<string>(nameof(EnvironmentSecurity.DefaultClientId), defaultValue: null) ?? _appEnvironment.Security.DefaultClientId;
-            _appEnvironment.Security.IssuerName = security?.GetValue<string>(nameof(EnvironmentSecurity.IssuerName), defaultValue: null) ?? _appEnvironment.Security.IssuerName;
-            _appEnvironment.Security.Scopes = security?.GetValue<string[]>(nameof(EnvironmentSecurity.Scopes), defaultValue: null) ?? _appEnvironment.Security.Scopes;
-            _appEnvironment.Security.SsoServerUrl = security?.GetValue<string>(nameof(EnvironmentSecurity.SsoServerUrl), defaultValue: null) ?? _appEnvironment.Security.SsoServerUrl;
+            _appEnvironment.Security.DefaultClientId = security?.GetValue<string?>(nameof(EnvironmentSecurity.DefaultClientId), defaultValue: null) ?? _appEnvironment.Security.DefaultClientId;
+            _appEnvironment.Security.IssuerName = security?.GetValue<string?>(nameof(EnvironmentSecurity.IssuerName), defaultValue: null) ?? _appEnvironment.Security.IssuerName;
+            _appEnvironment.Security.Scopes = security?.GetValue<string[]?>(nameof(EnvironmentSecurity.Scopes), defaultValue: null) ?? _appEnvironment.Security.Scopes;
+            _appEnvironment.Security.SsoServerUrl = security?.GetValue<string?>(nameof(EnvironmentSecurity.SsoServerUrl), defaultValue: null) ?? _appEnvironment.Security.SsoServerUrl;
 
             DefaultAppEnvironmentsProvider.Current = this;
         }
 
-        public virtual (bool success, string message) TryGetActiveAppEnvironment(out AppEnvironment activeAppEnvironment)
+        public virtual (bool success, string? message) TryGetActiveAppEnvironment(out AppEnvironment? activeAppEnvironment)
         {
             activeAppEnvironment = _appEnvironment;
 
@@ -154,7 +154,7 @@ namespace Bit.OwinCore.Implementations
             var (success, message) = TryGetActiveAppEnvironment(out _appEnvironment);
 
             if (success == true)
-                return _appEnvironment;
+                return _appEnvironment!;
 
             throw new InvalidOperationException(message);
         }

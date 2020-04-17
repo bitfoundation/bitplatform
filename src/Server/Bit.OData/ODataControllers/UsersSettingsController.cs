@@ -9,13 +9,13 @@ namespace Bit.OData.ODataControllers
 {
     public class UsersSettingsController : DtoController<UserSetting>
     {
-        public virtual IUserInformationProvider UserInformationProvider { get; set; }
-        public virtual IRepository<UserSetting> UsersSettingsRepository { get; set; }
+        public virtual IUserInformationProvider UserInformationProvider { get; set; } = default!;
+        public virtual IRepository<UserSetting> UsersSettingsRepository { get; set; } = default!;
 
         [Get]
         public virtual async Task<IQueryable<UserSetting>> Get(CancellationToken cancellationToken)
         {
-            string userId = UserInformationProvider.GetCurrentUserId();
+            string userId = UserInformationProvider.GetCurrentUserId()!;
 
             return (await UsersSettingsRepository
                 .GetAllAsync(cancellationToken))

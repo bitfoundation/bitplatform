@@ -9,7 +9,7 @@ namespace Bit.OData.ODataControllers
     [AllowAnonymous]
     public class ClientsLogsController : DtoController<ClientLogDto>
     {
-        public virtual ILogger Logger { get; set; }
+        public virtual ILogger Logger { get; set; } = default!;
 
         [Action]
         public virtual Task StoreClientLogs(IEnumerable<ClientLogDto> clientLogs)

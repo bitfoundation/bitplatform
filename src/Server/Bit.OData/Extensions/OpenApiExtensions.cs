@@ -3,6 +3,7 @@ using Bit.WebApi.Implementations;
 using Microsoft.AspNet.OData.Query;
 using Microsoft.AspNet.OData.Routing;
 using Swashbuckle.OData;
+using System;
 using System.Web.Http;
 
 namespace Swashbuckle.Application
@@ -16,6 +17,12 @@ namespace Swashbuckle.Application
         /// </summary>
         public static SwaggerDocsConfig ApplyDefaultODataConfig(this SwaggerDocsConfig doc, HttpConfiguration webApiConfig)
         {
+            if (doc == null)
+                throw new ArgumentNullException(nameof(doc));
+
+            if (webApiConfig == null)
+                throw new ArgumentNullException(nameof(webApiConfig));
+
             doc.DocumentFilter<RemoveDefaultODataNamespaceFromSwaggerDocumentFilter>();
             doc.ApplyDefaultApiConfig(webApiConfig);
             doc.OperationFilter<OpenApiIgnoreParameterTypeOperationFilter<ODataQueryOptions>>();

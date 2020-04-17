@@ -9,8 +9,8 @@ namespace Bit.OwinCore.Middlewares
     {
         public virtual MiddlewarePosition MiddlewarePosition => MiddlewarePosition.BeforeOwinMiddlewares;
 
-        public virtual AppEnvironment AppEnvironment { get; set; }
-        public virtual IHostingEnvironment HostingEnvironment { get; set; }
+        public virtual AppEnvironment AppEnvironment { get; set; } = default!;
+        public virtual IHostingEnvironment HostingEnvironment { get; set; } = default!;
 
         public virtual void Configure(IApplicationBuilder aspNetCoreApp)
         {

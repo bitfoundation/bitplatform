@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Web.Http;
 using Bit.Core.Contracts;
 using Bit.OData.ActionFilters;
@@ -8,10 +9,13 @@ namespace Bit.OData.Implementations
 {
     public class GlobalDefaultRequestQSStringCorrectorsApplierActionFilterProvider : IWebApiConfigurationCustomizer
     {
-        public virtual IEnumerable<IStringCorrector> StringCorrectors { get; set; }
+        public virtual IEnumerable<IStringCorrector> StringCorrectors { get; set; } = default!;
 
         public virtual void CustomizeWebApiConfiguration(HttpConfiguration webApiConfiguration)
         {
+            if (webApiConfiguration == null)
+                throw new ArgumentNullException(nameof(webApiConfiguration));
+
             webApiConfiguration.Filters.Add(new RequestQSStringCorrectorsApplierActionFilterAttribute() { StringCorrectors = StringCorrectors });
         }
     }
@@ -20,6 +24,9 @@ namespace Bit.OData.Implementations
     {
         public virtual void CustomizeWebApiConfiguration(HttpConfiguration webApiConfiguration)
         {
+            if (webApiConfiguration == null)
+                throw new ArgumentNullException(nameof(webApiConfiguration));
+
             webApiConfiguration.Filters.Add(new RequestQSTimeZoneApplierActionFilterAttribute());
         }
     }
@@ -28,6 +35,9 @@ namespace Bit.OData.Implementations
     {
         public virtual void CustomizeWebApiConfiguration(HttpConfiguration webApiConfiguration)
         {
+            if (webApiConfiguration == null)
+                throw new ArgumentNullException(nameof(webApiConfiguration));
+
             webApiConfiguration.Filters.Add(new ODataNullReturnValueActionFilterAttribute());
         }
     }

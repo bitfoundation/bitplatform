@@ -13,6 +13,9 @@ namespace Microsoft.AspNetCore.Builder
     {
         public static IApplicationBuilder UseOwinApp(this IApplicationBuilder aspNetCoreApp, Action<IAppBuilder> owinAppConfiguration)
         {
+            if (aspNetCoreApp == null)
+                throw new ArgumentNullException(nameof(aspNetCoreApp));
+
             return aspNetCoreApp.UseOwin(setup => setup(aspNetCoreOwinPipeline =>
             {
                 AppBuilder owinAppBuilder = new AppBuilder();

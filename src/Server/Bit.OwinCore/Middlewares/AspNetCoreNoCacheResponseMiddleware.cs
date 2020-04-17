@@ -16,6 +16,9 @@ namespace Bit.OwinCore.Middlewares
 
         public Task Invoke(HttpContext context)
         {
+            if (context == null)
+                throw new ArgumentNullException(nameof(context));
+
             if (context.Response.Headers.Any(h => string.Equals(h.Key, "Cache-Control", StringComparison.InvariantCultureIgnoreCase)))
                 context.Response.Headers.Remove("Cache-Control");
             context.Response.Headers.Add("Cache-Control", new[] { "no-store, no-transform" });

@@ -28,7 +28,7 @@ namespace Bit.IdentityServer.Implementations
 #if DotNet
                 if (!userNameAsWinUserName.Contains(activeDirectoryName))
 #else
-                if (!userNameAsWinUserName.Contains(activeDirectoryName, StringComparison.InvariantCulture))
+                if (!userNameAsWinUserName.Contains(activeDirectoryName, StringComparison.InvariantCultureIgnoreCase))
 #endif
                     userNameAsWinUserName = $"{activeDirectoryName}\\{userNameAsWinUserName}";
 

@@ -1,4 +1,5 @@
-﻿using System.Web.Http;
+﻿using System;
+using System.Web.Http;
 using Bit.WebApi.Contracts;
 using Microsoft.AspNet.OData.Extensions;
 using Microsoft.AspNet.OData.Query;
@@ -9,6 +10,9 @@ namespace Bit.OData.ActionFilters
     {
         public virtual void CustomizeWebApiConfiguration(HttpConfiguration webApiConfiguration)
         {
+            if (webApiConfiguration == null)
+                throw new ArgumentNullException(nameof(webApiConfiguration));
+
             ODataEnableQueryAttribute enableQueryOptions = new ODataEnableQueryAttribute
             {
                 DefaultPageSize = null,

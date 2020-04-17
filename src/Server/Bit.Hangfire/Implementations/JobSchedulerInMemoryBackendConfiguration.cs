@@ -12,7 +12,7 @@ namespace Bit.Hangfire.Implementations
             MemoryStorage storage = new MemoryStorage();
 
             (typeof(BackgroundJob)
-                .GetProperty("ClientFactory", BindingFlags.NonPublic | BindingFlags.Static) ?? throw new InvalidOperationException("Member ClientFactory could not be found in BackgroudJob"))
+                .GetProperty("ClientFactory", BindingFlags.NonPublic | BindingFlags.Static) ?? throw new InvalidOperationException($"Member ClientFactory could not be found in {nameof(BackgroundJob)}"))
                 .SetValue(null, new Func<IBackgroundJobClient>(() => new BackgroundJobClient()));
 
             return storage;

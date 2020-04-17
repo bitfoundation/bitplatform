@@ -18,7 +18,7 @@ namespace Bit.Owin.Implementations
             if (_certificate == null)
             {
                 string password = AppEnvironment
-                    .GetConfig<string>(AppEnvironment.KeyValues.IdentityCertificatePassword) ?? throw new InvalidOperationException($"{nameof(AppEnvironment.KeyValues.IdentityCertificatePassword)} could not be found.");
+                    .GetConfig<string>(AppEnvironment.KeyValues.IdentityCertificatePassword) ?? throw new InvalidOperationException($"{nameof(AppEnvironment.KeyValues.IdentityCertificatePassword)} is null.");
 
                 _certificate = new X509Certificate2(File.ReadAllBytes(PathProvider.MapPath(AppEnvironment.GetConfig(AppEnvironment.KeyValues.IdentityServerCertificatePath, AppEnvironment.KeyValues.IdentityServerCertificatePathDefaultValue)!)),
                     password);

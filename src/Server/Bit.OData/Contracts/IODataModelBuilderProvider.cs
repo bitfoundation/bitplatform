@@ -9,6 +9,6 @@ namespace Bit.OData.Contracts
     /// </summary>
     public interface IODataModelBuilderProvider
     {
-        ODataModelBuilder GetODataModelBuilder(HttpConfiguration webApiConfig, string containerName, string @namespace);
+        ODataModelBuilder GetODataModelBuilder(HttpConfiguration webApiConfig, string containerName, string? @namespace);
     }
 }

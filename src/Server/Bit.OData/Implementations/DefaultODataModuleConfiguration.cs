@@ -22,7 +22,7 @@ namespace System.Reflection
             if (controllerType == null)
                 throw new ArgumentNullException(nameof(controllerType));
 
-            TypeInfo baseGenericType = (controllerType.BaseType?.GetTypeInfo()?.IsGenericType == true ? controllerType.BaseType?.GetTypeInfo()?.GetGenericTypeDefinition() : null)?.GetTypeInfo();
+            TypeInfo? baseGenericType = (controllerType.BaseType?.GetTypeInfo()?.IsGenericType == true ? controllerType.BaseType?.GetTypeInfo()?.GetGenericTypeDefinition() : null)?.GetTypeInfo();
 
             while (baseGenericType != null)
             {
@@ -41,9 +41,9 @@ namespace Bit.OData.Implementations
 {
     public class DefaultAutoODataModelBuilderParameterInfo
     {
-        public string Name { get; set; }
+        public string Name { get; set; } = default!;
 
-        public TypeInfo Type { get; set; }
+        public TypeInfo Type { get; set; } = default!;
 
         public bool IsOptional => Type.IsClass || Nullable.GetUnderlyingType(Type) != null;
     }
@@ -56,11 +56,11 @@ namespace Bit.OData.Implementations
 
         public DefaultODataModuleConfiguration()
         {
-            _buildControllerOperations = GetType().GetTypeInfo().GetMethod(nameof(BuildControllerOperations), BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.DeclaredOnly);
+            _buildControllerOperations = GetType().GetTypeInfo().GetMethod(nameof(BuildControllerOperations), BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.DeclaredOnly)!;
 
-            _buildDto = GetType().GetTypeInfo().GetMethod(nameof(BuildDto), BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.DeclaredOnly);
+            _buildDto = GetType().GetTypeInfo().GetMethod(nameof(BuildDto), BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.DeclaredOnly)!;
 
-            _collectionParameterMethodInfo = typeof(ActionConfiguration).GetTypeInfo().GetMethod(nameof(ActionConfiguration.CollectionParameter));
+            _collectionParameterMethodInfo = typeof(ActionConfiguration).GetTypeInfo().GetMethod(nameof(ActionConfiguration.CollectionParameter))!;
         }
 
         public virtual void ConfigureODataModule(string odataRouteName, Assembly odataAssembly, ODataModelBuilder odataModelBuilder)
@@ -76,9 +76,10 @@ namespace Bit.OData.Implementations
         protected virtual void ConfigureODataModule(IEnumerable<TypeInfo> controllers, ODataModelBuilder odataModelBuilder)
         {
             var controllersWithDto = controllers
+                .Where(c => c.BaseType != null)
                 .Select(c => new
                 {
-                    DtoType = DtoMetadataWorkspace.Current.GetFinalDtoType(c.BaseType?.GetGenericArguments().ExtendedSingle($"Finding dto in {c.Name}", t => DtoMetadataWorkspace.Current.IsDto(t.GetTypeInfo())).GetTypeInfo()),
+                    DtoType = DtoMetadataWorkspace.Current.GetFinalDtoType(c.BaseType!.GetGenericArguments().ExtendedSingle($"Finding dto in {c.Name}", t => DtoMetadataWorkspace.Current.IsDto(t.GetTypeInfo())).GetTypeInfo())!,
                     Controller = c
                 })
                 .Where(c => c.DtoType != null)
@@ -120,7 +121,7 @@ namespace Bit.OData.Implementations
 
             foreach (MethodInfo method in apiController.GetMethods(BindingFlags.Instance | BindingFlags.Public | BindingFlags.DeclaredOnly))
             {
-                IActionHttpMethodProvider actionHttpMethodProvider =
+                IActionHttpMethodProvider? actionHttpMethodProvider =
                     method.GetCustomAttributes().OfType<IActionHttpMethodProvider>()
                     .ExtendedSingleOrDefault($"Finding ${nameof(IActionHttpMethodProvider)} attribute in {method.Name}");
 
@@ -130,7 +131,7 @@ namespace Bit.OData.Implementations
                     {
                         string dtoTypeName = typeof(TDto).Name;
                         string keyColumnTypeName = DtoMetadataWorkspace.Current.GetKeyColums(typeof(TDto).GetTypeInfo()).ExtendedSingle($"Getting key columns for {dtoTypeName}").PropertyType.Name;
-                        string methodDeclartion = null;
+                        string? methodDeclartion = null;
                         if (actionHttpMethodProvider is DeleteAttribute)
                             methodDeclartion = $"public virtual async Task Delete({keyColumnTypeName} key, CancellationToken cancellationToken)";
                         else if (actionHttpMethodProvider is PartialUpdateAttribute)
@@ -174,12 +175,12 @@ namespace Bit.OData.Implementations
                                 // some types which are known to be problematic in functions if you accept them in function parameters. This types list is not complete for sure!
                                 throw new InvalidOperationException($"Parameter {parameter.Name} of type {parameter.ParameterType.Name} is not allowed in {apiController.Name}.{method.Name} function.");
                             }
-                            operationParameters.Add(new DefaultAutoODataModelBuilderParameterInfo { Name = parameter.Name, Type = parameterType });
+                            operationParameters.Add(new DefaultAutoODataModelBuilderParameterInfo { Name = parameter.Name!, Type = parameterType });
                         }
                     }
                     else if (isAction)
                     {
-                        ParameterInfo parameter = method
+                        ParameterInfo? parameter = method
                             .GetParameters()
                             .ExtendedSingleOrDefault($"Finding parameter of {apiController.Name}.{method.Name}. It's expected to see 0 or 1 parameter only.", p => p.ParameterType.GetTypeInfo() != typeof(CancellationToken).GetTypeInfo() && !typeof(ODataQueryOptions).IsAssignableFrom(p.ParameterType.GetTypeInfo()));
 
@@ -189,7 +190,7 @@ namespace Bit.OData.Implementations
 
                             if (DtoMetadataWorkspace.Current.IsDto(parameterType) || DtoMetadataWorkspace.Current.IsComplexType(parameterType) || IsIEnumerable(parameterType))
                             {
-                                operationParameters.Add(new DefaultAutoODataModelBuilderParameterInfo { Name = parameter.Name, Type = parameterType });
+                                operationParameters.Add(new DefaultAutoODataModelBuilderParameterInfo { Name = parameter.Name!, Type = parameterType });
                             }
                             else if (Nullable.GetUnderlyingType(parameterType) != null || parameterType.IsPrimitive || typeof(string).GetTypeInfo() == parameterType || parameter.ParameterType == typeof(DateTime).GetTypeInfo() || parameter.ParameterType == typeof(DateTimeOffset).GetTypeInfo() || parameter.ParameterType.IsEnum)
                             {
@@ -204,7 +205,7 @@ namespace Bit.OData.Implementations
                         }
                     }
 
-                    OperationConfiguration operationConfiguration = null;
+                    OperationConfiguration operationConfiguration = null!;
 
                     if (isAction)
                         operationConfiguration = entitySet.EntityType.Collection.Action(method.Name);
@@ -218,14 +219,14 @@ namespace Bit.OData.Implementations
                         if (IsIEnumerable(operationParameter.Type))
                         {
                             if (parameterType.IsArray)
-                                throw new InvalidOperationException($"Use IEnumerable<{parameterType.GetElementType().GetTypeInfo().Name}> instead of {parameterType.GetElementType().GetTypeInfo().Name}[] for parameter {operationParameter.Name} of {operationParameter.Name} in {controllerName} controller");
+                                throw new InvalidOperationException($"Use IEnumerable<{parameterType.GetElementType()!.GetTypeInfo().Name}> instead of {parameterType.GetElementType()!.GetTypeInfo().Name}[] for parameter {operationParameter.Name} of {operationParameter.Name} in {controllerName} controller");
 
                             if (parameterType.IsGenericType)
                                 parameterType = parameterType.GetGenericArguments().ExtendedSingle($"Finding parameter type from generic arguments of {parameterType.Name}").GetTypeInfo();
 
                             ParameterConfiguration parameter = (ParameterConfiguration)_collectionParameterMethodInfo
                                                                                             .MakeGenericMethod(parameterType)
-                                                                                            .Invoke(operationConfiguration, new object[] { operationParameter.Name });
+                                                                                            .Invoke(operationConfiguration, new object[] { operationParameter.Name })!;
                             parameter.Nullable = operationParameter.IsOptional;
                         }
                         else
@@ -251,13 +252,13 @@ namespace Bit.OData.Implementations
                             if (returnType.IsGenericType)
                                 returnType = returnType.GetGenericArguments().ExtendedSingle($"Finding Return type of {method.Name}").GetTypeInfo();
                             else if (returnType.IsArray)
-                                returnType = returnType.GetElementType().GetTypeInfo();
+                                returnType = returnType.GetElementType()!.GetTypeInfo();
                             isCollection = true;
                         }
 
                         if (DtoMetadataWorkspace.Current.IsDto(returnType))
                         {
-                            returnType = DtoMetadataWorkspace.Current.GetFinalDtoType(returnType);
+                            returnType = DtoMetadataWorkspace.Current.GetFinalDtoType(returnType)!;
 
                             if (isCollection == true)
                             {
@@ -287,7 +288,7 @@ namespace Bit.OData.Implementations
                             {
                                 operationConfiguration.GetType()
                                     .GetTypeInfo()
-                                    .GetMethod("ReturnsCollection")
+                                    .GetMethod("ReturnsCollection")!
                                     .MakeGenericMethod(returnType)
                                     .Invoke(operationConfiguration, Array.Empty<object>());
                             }
@@ -304,12 +305,12 @@ namespace Bit.OData.Implementations
             }
         }
 
-        public virtual TypeInfo GetBaseType(TypeInfo dtoType)
+        public virtual TypeInfo? GetBaseType(TypeInfo dtoType)
         {
             if (dtoType == null)
                 throw new ArgumentNullException(nameof(dtoType));
 
-            if (DtoMetadataWorkspace.Current.IsDto(dtoType.BaseType.GetTypeInfo()))
+            if (dtoType.BaseType != null && DtoMetadataWorkspace.Current.IsDto(dtoType.BaseType.GetTypeInfo()))
                 return dtoType.BaseType.GetTypeInfo();
             else
                 return null;
@@ -317,8 +318,15 @@ namespace Bit.OData.Implementations
 
         public virtual string GetControllerName(TypeInfo type)
         {
+            if (type == null)
+                throw new ArgumentNullException(nameof(type));
+
             string name = type.Name;
+#if DotNetCore
+            int index = name.IndexOf('`', StringComparison.InvariantCulture);
+#else
             int index = name.IndexOf('`');
+#endif
             return (index == -1 ? name : name.Substring(0, index)).Replace("Controller", string.Empty, StringComparison.InvariantCultureIgnoreCase);
         }
     }

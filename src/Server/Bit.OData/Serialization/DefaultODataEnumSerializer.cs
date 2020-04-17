@@ -3,6 +3,7 @@ using Microsoft.AspNet.OData.Formatter.Serialization;
 using Microsoft.OData;
 using Microsoft.OData.Edm;
 using Microsoft.Owin;
+using System;
 using System.Net.Http;
 
 namespace Bit.OData.Serialization
@@ -20,15 +21,18 @@ namespace Bit.OData.Serialization
         {
         }
 
-        public override ODataEnumValue CreateODataEnumValue(object graph, IEdmEnumTypeReference enumType, ODataSerializerContext writeContext)
+        public override ODataEnumValue? CreateODataEnumValue(object graph, IEdmEnumTypeReference enumType, ODataSerializerContext writeContext)
         {
-            ODataEnumValue result = base.CreateODataEnumValue(graph, enumType, writeContext);
+            if (writeContext == null)
+                throw new ArgumentNullException(nameof(writeContext));
 
-            string clientType = writeContext.Request.GetOwinContext().GetDependencyResolver().Resolve<IRequestInformationProvider>().BitClientType;
+            ODataEnumValue? result = base.CreateODataEnumValue(graph, enumType, writeContext);
 
-            if (string.Equals(clientType, "TS-Client", System.StringComparison.InvariantCultureIgnoreCase))
+            string? clientType = writeContext.Request.GetOwinContext().GetDependencyResolver().Resolve<IRequestInformationProvider>().BitClientType;
+
+            if (string.Equals(clientType, "TS-Client", StringComparison.InvariantCultureIgnoreCase))
             {
-                if (!string.IsNullOrEmpty(result?.Value) && !string.IsNullOrEmpty(result.TypeName))
+                if (!string.IsNullOrEmpty(result?.Value) && !string.IsNullOrEmpty(result!.TypeName))
                 {
                     // EnumKey >> "Namespace.EnumType'EnumKey'"
                     result = new ODataEnumValue($"{result.TypeName}'{result.Value}'");

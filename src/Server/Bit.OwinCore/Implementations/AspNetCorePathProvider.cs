@@ -1,6 +1,7 @@
 ﻿using Bit.Core.Contracts;
 using Bit.Core.Implementations;
 using Microsoft.AspNetCore.Hosting;
+using System;
 
 namespace Bit.OwinCore.Implementations
 {
@@ -11,6 +12,9 @@ namespace Bit.OwinCore.Implementations
 
         public AspNetCorePathProvider(IHostingEnvironment hostingEnvironment)
         {
+            if (hostingEnvironment == null)
+                throw new ArgumentNullException(nameof(hostingEnvironment));
+
             _hostingEnvironment = hostingEnvironment;
         }
 
@@ -26,6 +30,9 @@ namespace Bit.OwinCore.Implementations
 
         public AspNetCorePathProvider(IWebHostEnvironment webHostEnvironment)
         {
+            if (webHostEnvironment == null)
+                throw new ArgumentNullException(nameof(webHostEnvironment));
+
             _webHostEnvironment = webHostEnvironment;
         }
 

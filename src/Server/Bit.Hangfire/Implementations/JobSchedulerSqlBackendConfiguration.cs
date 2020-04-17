@@ -10,7 +10,7 @@ namespace Bit.Hangfire.Implementations
 
         protected override SqlServerStorage BuildStorage()
         {
-            string jobSchedulerDbConnectionString = AppEnvironment.GetConfig<string>(AppEnvironment.KeyValues.Hangfire.JobSchedulerDbConnectionString) ?? throw new InvalidOperationException("JobSchedulerDbConnectionString could not be found");
+            string jobSchedulerDbConnectionString = AppEnvironment.GetConfig<string>(AppEnvironment.KeyValues.Hangfire.JobSchedulerDbConnectionString) ?? throw new InvalidOperationException($"{AppEnvironment.KeyValues.Hangfire.JobSchedulerDbConnectionString} is null");
 
             SqlServerStorage storage = new SqlServerStorage(jobSchedulerDbConnectionString, new SqlServerStorageOptions
             {

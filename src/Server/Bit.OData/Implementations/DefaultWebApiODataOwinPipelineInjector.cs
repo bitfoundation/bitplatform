@@ -15,6 +15,9 @@ namespace Bit.OData.Implementations
             if (server == null)
                 throw new ArgumentNullException(nameof(server));
 
+            if (webApiConfiguration == null)
+                throw new ArgumentNullException(nameof(webApiConfiguration));
+
             owinApp.Map("/odata", innerApp =>
             {
                 innerApp.UseXContentTypeOptions();

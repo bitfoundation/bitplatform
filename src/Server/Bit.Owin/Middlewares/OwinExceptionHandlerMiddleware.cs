@@ -56,7 +56,7 @@ namespace Bit.Owin.Middlewares
                     {
                         if (string.IsNullOrEmpty(reasonPhrase))
                             reasonPhrase = BitMetadataBuilder.UnknownError;
-                        else if (!string.Equals(reasonPhrase, BitMetadataBuilder.KnownError, StringComparison.CurrentCultureIgnoreCase) && !string.Equals(reasonPhrase, BitMetadataBuilder.UnknownError, StringComparison.CurrentCultureIgnoreCase))
+                        else if (!string.Equals(reasonPhrase, BitMetadataBuilder.KnownError, StringComparison.InvariantCultureIgnoreCase) && !string.Equals(reasonPhrase, BitMetadataBuilder.UnknownError, StringComparison.InvariantCultureIgnoreCase))
                             reasonPhrase = $"{BitMetadataBuilder.UnknownError}:{reasonPhrase}";
                     }
                     if (!responseIsOk)

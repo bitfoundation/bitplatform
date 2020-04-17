@@ -32,7 +32,7 @@ namespace Bit.Core.Contracts
 
             dependencyManager.RegisterInstance<IApiAssembliesProvider>(new DefaultWebApiAssembliesProvider(controllersAssemblies), overwriteExisting: false);
 
-            dependencyManager.RegisterAssemblyTypes(controllersAssemblies, t => typeof(IHttpController).GetTypeInfo().IsAssignableFrom(t) && t.Name.EndsWith("Controller", StringComparison.Ordinal), lifeCycle: DependencyLifeCycle.Transient);
+            dependencyManager.RegisterAssemblyTypes(controllersAssemblies, t => typeof(IHttpController).GetTypeInfo().IsAssignableFrom(t) && t.Name.EndsWith("Controller", StringComparison.InvariantCultureIgnoreCase), lifeCycle: DependencyLifeCycle.Transient);
 
             dependencyManager.Register<System.Web.Http.Dispatcher.IAssembliesResolver, DefaultWebApiAssembliesResolver>(lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExisting: false);
             dependencyManager.Register<System.Web.Http.Tracing.ITraceWriter, DefaultWebApiTraceWriter>(lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExisting: false);

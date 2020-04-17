@@ -22,21 +22,20 @@ namespace Bit.OData
 {
     public class WebApiODataMiddlewareConfiguration : IOwinMiddlewareConfiguration, IDisposable
     {
-        private HttpConfiguration _webApiConfig;
-        private HttpServer _server;
-        private ODataBatchHandler _odataBatchHandler;
+        private HttpConfiguration? _webApiConfig;
+        private HttpServer? _server;
+        private ODataBatchHandler? _odataBatchHandler;
 
-        public virtual IODataModuleConfiguration ODataModuleConfiguration { get; set; }
-        public virtual IEnumerable<IWebApiConfigurationCustomizer> WebApiConfigurationCustomizers { get; set; }
-        public virtual System.Web.Http.Dependencies.IDependencyResolver WebApiDependencyResolver { get; set; }
-        public virtual IODataModelBuilderProvider ODataModelBuilderProvider { get; set; }
-        public virtual IWebApiOwinPipelineInjector WebApiOwinPipelineInjector { get; set; }
-        public virtual IApiAssembliesProvider ApiAssembliesProvider { get; set; }
-        public virtual ODataBatchHandlerHandlerFactory ODataBatchHandlerHandlerFactory { get; set; }
-        public virtual ODataHttpControllerSelectorFactory ODataHttpControllerSelectorFactory { get; set; }
-        public virtual ODataHttpServerFactory ODataHttpServerFactory { get; set; }
-
-        public virtual AppEnvironment AppEnvironment { get; set; }
+        public virtual IODataModuleConfiguration ODataModuleConfiguration { get; set; } = default!;
+        public virtual IEnumerable<IWebApiConfigurationCustomizer> WebApiConfigurationCustomizers { get; set; } = default!;
+        public virtual System.Web.Http.Dependencies.IDependencyResolver WebApiDependencyResolver { get; set; } = default!;
+        public virtual IODataModelBuilderProvider ODataModelBuilderProvider { get; set; } = default!;
+        public virtual IWebApiOwinPipelineInjector WebApiOwinPipelineInjector { get; set; } = default!;
+        public virtual IApiAssembliesProvider ApiAssembliesProvider { get; set; } = default!;
+        public virtual ODataBatchHandlerHandlerFactory ODataBatchHandlerHandlerFactory { get; set; } = default!;
+        public virtual ODataHttpControllerSelectorFactory ODataHttpControllerSelectorFactory { get; set; } = default!;
+        public virtual ODataHttpServerFactory ODataHttpServerFactory { get; set; } = default!;
+        public virtual AppEnvironment AppEnvironment { get; set; } = default!;
 
         public virtual void Configure(IAppBuilder owinApp)
         {

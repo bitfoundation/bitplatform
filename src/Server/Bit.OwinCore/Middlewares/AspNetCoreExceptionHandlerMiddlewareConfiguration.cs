@@ -44,13 +44,16 @@ namespace Bit.OwinCore.Middlewares
 
         public async Task Invoke(HttpContext context)
         {
+            if (context == null)
+                throw new ArgumentNullException(nameof(context));
+
             IScopeStatusManager scopeStatusManager = context.RequestServices.GetRequiredService<IScopeStatusManager>();
 
             ILogger logger = context.RequestServices.GetRequiredService<ILogger>();
 
             try
             {
-                string xCorrelationId = context.RequestServices.GetRequiredService<IRequestInformationProvider>().XCorrelationId;
+                string? xCorrelationId = context.RequestServices.GetRequiredService<IRequestInformationProvider>().XCorrelationId;
 
                 context.Response.OnStarting(() =>
                 {
@@ -63,7 +66,7 @@ namespace Bit.OwinCore.Middlewares
                     {
                         if (string.IsNullOrEmpty(reasonPhrase))
                             reasonPhrase = BitMetadataBuilder.UnknownError;
-                        else if (!string.Equals(reasonPhrase, BitMetadataBuilder.KnownError, StringComparison.CurrentCultureIgnoreCase) && !string.Equals(reasonPhrase, BitMetadataBuilder.UnknownError, StringComparison.CurrentCultureIgnoreCase))
+                        else if (!string.Equals(reasonPhrase, BitMetadataBuilder.KnownError, StringComparison.InvariantCultureIgnoreCase) && !string.Equals(reasonPhrase, BitMetadataBuilder.UnknownError, StringComparison.InvariantCultureIgnoreCase))
                             reasonPhrase = $"{BitMetadataBuilder.UnknownError}:{reasonPhrase}";
                     }
                     if (!responseIsOk)

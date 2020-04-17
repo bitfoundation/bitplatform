@@ -42,6 +42,9 @@ namespace Bit.OData.ActionFilters
 
         public override async Task OnActionExecutedAsync(HttpActionExecutedContext actionExecutedContext, CancellationToken cancellationToken)
         {
+            if (actionExecutedContext == null)
+                throw new ArgumentNullException(nameof(actionExecutedContext));
+
             if (actionExecutedContext.Response?.Content is ObjectContent objContent &&
                 actionExecutedContext.Response.IsSuccessStatusCode == true &&
                 !actionExecutedContext.Request.Properties.ContainsKey("IgnoreODataEnableQuery"))
@@ -50,7 +53,7 @@ namespace Bit.OData.ActionFilters
                     return;
 
                 bool isSingleResult = objContent.Value is SingleResult;
-                bool isCountRequest = actionExecutedContext.Request.RequestUri.LocalPath.Contains("/$count") == true;
+                bool isCountRequest = actionExecutedContext.Request.RequestUri.LocalPath.DoesContain("/$count") == true;
 
                 if (isSingleResult == true)
                     objContent.Value = ((SingleResult)objContent.Value).Queryable;
@@ -59,22 +62,22 @@ namespace Bit.OData.ActionFilters
 
                 if (typeof(string) != actionReturnType && typeof(IEnumerable).GetTypeInfo().IsAssignableFrom(actionReturnType))
                 {
-                    TypeInfo queryElementType = actionReturnType.HasElementType ? actionReturnType.GetElementType().GetTypeInfo() : actionReturnType.GetGenericArguments().First() /* Why not calling Single() ? http://stackoverflow.com/questions/41718323/why-variable-of-type-ienumerablesomething-gettype-getgenericargsuments-c */.GetTypeInfo();
+                    TypeInfo queryElementType = actionReturnType.HasElementType ? actionReturnType.GetElementType()!.GetTypeInfo() : actionReturnType.GetGenericArguments().First() /* Why not calling Single() ? http://stackoverflow.com/questions/41718323/why-variable-of-type-ienumerablesomething-gettype-getgenericargsuments-c */.GetTypeInfo();
 
                     bool isIQueryable = typeof(IQueryable).GetTypeInfo().IsAssignableFrom(actionReturnType);
 
-                    IDataProviderSpecificMethodsProvider dataProviderSpecificMethodsProvider = null;
+                    IDataProviderSpecificMethodsProvider? dataProviderSpecificMethodsProvider = null;
 
                     if (isIQueryable == true)
                     {
                         IEnumerable<IDataProviderSpecificMethodsProvider> dataProviderSpecificMethodsProviders = actionExecutedContext.Request.GetOwinContext().GetDependencyResolver().ResolveAll<IDataProviderSpecificMethodsProvider>();
                         dataProviderSpecificMethodsProvider = (IDataProviderSpecificMethodsProvider)
-                            findDataProviderSpecificMethodsProviderMethodsCache.GetOrAdd(queryElementType, t => typeof(ODataEnableQueryAttribute).GetMethod(nameof(FindDataProviderSpecificMethodsProvider)).MakeGenericMethod(t))
-                            .Invoke(this, new[] { objContent.Value, dataProviderSpecificMethodsProviders });
+                            findDataProviderSpecificMethodsProviderMethodsCache.GetOrAdd(queryElementType, t => typeof(ODataEnableQueryAttribute).GetMethod(nameof(FindDataProviderSpecificMethodsProvider))!.MakeGenericMethod(t))
+                            .Invoke(this, new[] { objContent.Value, dataProviderSpecificMethodsProviders })!;
                     }
                     else
                     {
-                        objContent.Value = toQueryableMethodsCache.GetOrAdd(queryElementType, t => typeof(ODataEnableQueryAttribute).GetMethod(nameof(ToQueryable)).MakeGenericMethod(t))
+                        objContent.Value = toQueryableMethodsCache.GetOrAdd(queryElementType, t => typeof(ODataEnableQueryAttribute).GetMethod(nameof(ToQueryable))!.MakeGenericMethod(t))
                             .Invoke(this, new[] { objContent.Value });
                     }
 
@@ -107,7 +110,7 @@ namespace Bit.OData.ActionFilters
                     if (currentQueryPageSize.HasValue)
                         takeCount = currentQueryPageSize.Value;
                     else if (globalQuerypageSize.HasValue == true)
-                        takeCount = globalQuerypageSize.Value;
+                        takeCount = globalQuerypageSize!.Value;
                     else
                         takeCount = null;
 
@@ -115,14 +118,14 @@ namespace Bit.OData.ActionFilters
 
                     if (currentOdataQueryOptions.Filter != null)
                     {
-                        objContent.Value = currentOdataQueryOptions.Filter.ApplyTo(query: (IQueryable)objContent.Value, querySettings: globalODataQuerySettings);
+                        objContent.Value = currentOdataQueryOptions.Filter.ApplyTo(query: (IQueryable)objContent.Value!, querySettings: globalODataQuerySettings);
                     }
 
                     if (isCountRequest == true)
                     {
                         objContent.Value = await (Task<long>)
-                            getCountAsyncMethodsCache.GetOrAdd(queryElementType, t => typeof(ODataEnableQueryAttribute).GetMethod(nameof(GetCountAsync)).MakeGenericMethod(t))
-                            .Invoke(this, new[] { objContent.Value, dataProviderSpecificMethodsProvider, cancellationToken });
+                            getCountAsyncMethodsCache.GetOrAdd(queryElementType, t => typeof(ODataEnableQueryAttribute).GetMethod(nameof(GetCountAsync))!.MakeGenericMethod(t))
+                            .Invoke(this, new[] { objContent.Value, dataProviderSpecificMethodsProvider, cancellationToken })!;
 
                         return;
                     }
@@ -130,15 +133,15 @@ namespace Bit.OData.ActionFilters
                     if (currentOdataQueryOptions.Count?.Value == true && takeCount.HasValue == true && isSingleResult == false)
                     {
                         long count = await (Task<long>)
-                            getCountAsyncMethodsCache.GetOrAdd(queryElementType, t => typeof(ODataEnableQueryAttribute).GetMethod(nameof(GetCountAsync)).MakeGenericMethod(t))
-                            .Invoke(this, new[] { objContent.Value, dataProviderSpecificMethodsProvider, cancellationToken });
+                            getCountAsyncMethodsCache.GetOrAdd(queryElementType, t => typeof(ODataEnableQueryAttribute).GetMethod(nameof(GetCountAsync))!.MakeGenericMethod(t))
+                            .Invoke(this, new[] { objContent.Value, dataProviderSpecificMethodsProvider, cancellationToken })!;
 
                         actionExecutedContext.Request.Properties["Microsoft.AspNet.OData.TotalCountFunc"] = new Func<long>(() => count);
                     }
 
                     AllowedQueryOptions ignoreQueryOptions = dataProviderSpecificMethodsProvider.SupportsExpand() ? (AllowedQueryOptions.Filter | AllowedQueryOptions.Skip | AllowedQueryOptions.Top) : (AllowedQueryOptions.Filter | AllowedQueryOptions.Skip | AllowedQueryOptions.Top | AllowedQueryOptions.Expand);
 
-                    objContent.Value = currentOdataQueryOptions.ApplyTo(query: (IQueryable)objContent.Value, querySettings: globalODataQuerySettings, ignoreQueryOptions: ignoreQueryOptions);
+                    objContent.Value = currentOdataQueryOptions.ApplyTo(query: (IQueryable)objContent.Value!, querySettings: globalODataQuerySettings, ignoreQueryOptions: ignoreQueryOptions);
 
                     if (currentOdataQueryOptions.SelectExpand != null || currentOdataQueryOptions.Apply != null)
                     {
@@ -149,14 +152,14 @@ namespace Bit.OData.ActionFilters
                     if (isSingleResult == false)
                     {
                         objContent.Value = await (Task<object>)
-                            getResultMethodsCache.GetOrAdd(queryElementType, t => typeof(ODataEnableQueryAttribute).GetMethod(nameof(GetResult)).MakeGenericMethod(t))
-                            .Invoke(this, new[] { objContent.Value, dataProviderSpecificMethodsProvider, takeCount, skipCount, cancellationToken });
+                            getResultMethodsCache.GetOrAdd(queryElementType, t => typeof(ODataEnableQueryAttribute).GetMethod(nameof(GetResult))!.MakeGenericMethod(t))
+                            .Invoke(this, new[] { objContent.Value, dataProviderSpecificMethodsProvider, takeCount, skipCount, cancellationToken })!;
                     }
                     else
                     {
                         objContent.Value = await (Task<object>)
-                            firstAsyncMethodsCache.GetOrAdd(queryElementType, t => typeof(ODataEnableQueryAttribute).GetMethod(nameof(FirstAsync)).MakeGenericMethod(t))
-                            .Invoke(this, new[] { objContent.Value, dataProviderSpecificMethodsProvider, cancellationToken });
+                            firstAsyncMethodsCache.GetOrAdd(queryElementType, t => typeof(ODataEnableQueryAttribute).GetMethod(nameof(FirstAsync))!.MakeGenericMethod(t))
+                            .Invoke(this, new[] { objContent.Value, dataProviderSpecificMethodsProvider, cancellationToken })!;
 
                         actionExecutedContext.Request.Properties["Microsoft.AspNet.OData.TotalCountFunc"] = new Func<long>(() => 1);
                     }
@@ -204,12 +207,12 @@ namespace Bit.OData.ActionFilters
 
             if (skipCount.HasValue == true)
             {
-                query = dataProviderSpecificMethodsProvider.Skip(query, skipCount.Value);
+                query = dataProviderSpecificMethodsProvider.Skip(query, skipCount!.Value);
             }
 
             if (takeCount.HasValue == true)
             {
-                query = dataProviderSpecificMethodsProvider.Take(query, takeCount.Value);
+                query = dataProviderSpecificMethodsProvider.Take(query, takeCount!.Value);
             }
 
             return await dataProviderSpecificMethodsProvider.ToArrayAsync(query, cancellationToken).ConfigureAwait(false);
@@ -223,7 +226,7 @@ namespace Bit.OData.ActionFilters
             if (dataProviderSpecificMethodsProvider == null)
                 throw new ArgumentNullException(nameof(dataProviderSpecificMethodsProvider));
 
-            object result = await dataProviderSpecificMethodsProvider.FirstOrDefaultAsync(query, cancellationToken).ConfigureAwait(false);
+            object? result = await dataProviderSpecificMethodsProvider.FirstOrDefaultAsync(query, cancellationToken).ConfigureAwait(false);
 
             if (result == null)
                 throw new ResourceNotFoundException();

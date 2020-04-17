@@ -10,7 +10,7 @@ namespace Bit.OData.ODataControllers
 {
     public class JobsInfoController : DtoController<JobInfoDto>
     {
-        public virtual IBackgroundJobWorker BackgroundJobWorker { get; set; }
+        public virtual IBackgroundJobWorker BackgroundJobWorker { get; set; } = default!;
 
         [Get]
         public virtual async Task<SingleResult<JobInfoDto>> Get(string key, CancellationToken cancellationToken)

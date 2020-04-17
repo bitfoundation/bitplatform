@@ -8,6 +8,9 @@ namespace Microsoft.AspNet.OData.Query
     {
         public static string[] GetExpandedProperties(this ODataQueryOptions oDataQueryOptions)
         {
+            if (oDataQueryOptions == null)
+                throw new ArgumentNullException(nameof(oDataQueryOptions));
+
             return oDataQueryOptions.SelectExpand?.SelectExpandClause
                 ?.SelectedItems?.OfType<ExpandedReferenceSelectItem>()?.SelectMany(i => i.PathToNavigationProperty)?.Select(i => i.Identifier)?.ToArray() ?? Array.Empty<string>();
         }

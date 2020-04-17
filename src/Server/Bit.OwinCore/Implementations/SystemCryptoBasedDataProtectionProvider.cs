@@ -8,7 +8,7 @@ namespace Bit.OwinCore.Implementations
 {
     public class SystemCryptoBasedDataProtectionProvider : IDataProtectionProvider
     {
-        public virtual AppEnvironment AppEnvironment { get; set; }
+        public virtual AppEnvironment AppEnvironment { get; set; } = default!;
 
         private readonly ConcurrentDictionary<string, SystemCryptoBasedDataProtection> _basicDataProtectors = new ConcurrentDictionary<string, SystemCryptoBasedDataProtection>();
 

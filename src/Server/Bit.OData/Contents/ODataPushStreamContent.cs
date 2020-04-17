@@ -15,6 +15,9 @@ namespace Bit.OData.Contents
                 if (onStreamAvailable == null)
                     throw new ArgumentNullException(nameof(onStreamAvailable));
 
+                if (stream == null)
+                    throw new ArgumentNullException(nameof(stream));
+
 #if DotNet
                 using (stream)
 #else

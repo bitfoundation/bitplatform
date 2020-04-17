@@ -14,6 +14,9 @@ namespace Bit.OData.ActionFilters
     {
         public override void OnActionExecuting(HttpActionContext actionContext)
         {
+            if (actionContext == null)
+                throw new ArgumentNullException(nameof(actionContext));
+
             Uri url = new Uri(actionContext.Request.RequestUri.ToString().AsUnescaped());
 
             if (!string.IsNullOrEmpty(url.Query))
@@ -29,7 +32,7 @@ namespace Bit.OData.ActionFilters
 
                 urlAsTextToFix = Regex.Replace(urlAsTextToFix, "\'date\"(.*?)\"\'", (match) =>
                 {
-                    string result = null;
+                    string? result = null;
 
                     Regex.Replace(match.Value, isoDateRegExp, (innerMatch) =>
                     {
