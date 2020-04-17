@@ -13,10 +13,9 @@ namespace Bit.Signalr
 {
     public class SignalRMiddlewareConfiguration : IOwinMiddlewareConfiguration
     {
-        public virtual AppEnvironment AppEnvironment { get; set; }
-
-        public virtual IEnumerable<ISignalRConfiguration> SignalRConfigurations { get; set; }
-        public virtual Microsoft.AspNet.SignalR.IDependencyResolver DependencyResolver { get; set; }
+        public virtual AppEnvironment AppEnvironment { get; set; } = default!;
+        public virtual IEnumerable<ISignalRConfiguration> SignalRConfigurations { get; set; } = default!;
+        public virtual Microsoft.AspNet.SignalR.IDependencyResolver DependencyResolver { get; set; } = default!;
 
         public virtual void Configure(IAppBuilder owinApp)
         {
@@ -25,8 +24,8 @@ namespace Bit.Signalr
 
             if (PlatformUtilities.IsRunningOnDotNetCore && !PlatformUtilities.IsRunningOnMono)
             {
-                TypeInfo type = typeof(HubConfiguration).GetTypeInfo().Assembly.GetType("Microsoft.AspNet.SignalR.Infrastructure.MonoUtility").GetTypeInfo();
-                FieldInfo isRunningMonoField = type.GetField("_isRunningMono", BindingFlags.NonPublic | BindingFlags.Static);
+                TypeInfo type = typeof(HubConfiguration).GetTypeInfo().Assembly.GetType("Microsoft.AspNet.SignalR.Infrastructure.MonoUtility")!.GetTypeInfo();
+                FieldInfo isRunningMonoField = type.GetField("_isRunningMono", BindingFlags.NonPublic | BindingFlags.Static)!;
                 if (isRunningMonoField != null)
                 {
                     try

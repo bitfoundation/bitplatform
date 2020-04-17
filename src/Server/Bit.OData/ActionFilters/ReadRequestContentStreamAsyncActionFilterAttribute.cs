@@ -42,8 +42,12 @@ namespace Bit.OData.ActionFilters
 
             if (requestContentHeaders != null)
             {
-                bool contentLengthHasValue = requestContentHeaders.ContentLength.HasValue;
-                bool contentTypeIsJson = requestContentHeaders.ContentType?.MediaType?.DoesContain("json") == true; // https://github.com/aspnet/AspNetWebStack/issues/232
+                bool contentLengthHasValue = requestContentHeaders.ContentLength != null;
+#if DotNetCore
+                bool contentTypeIsJson = requestContentHeaders.ContentType?.MediaType?.Contains("json", StringComparison.InvariantCultureIgnoreCase) == true; // https://github.com/aspnet/AspNetWebStack/issues/232
+#else
+                bool contentTypeIsJson = requestContentHeaders.ContentType?.MediaType?.Contains("json") == true; // https://github.com/aspnet/AspNetWebStack/issues/232
+#endif
 
                 if (((contentLengthHasValue && requestContentHeaders.ContentLength > 0) || (!contentLengthHasValue && contentTypeIsJson)) && (actionDescriptor.GetCustomAttributes<ActionAttribute>().Any() ||
                     actionDescriptor.GetCustomAttributes<CreateAttribute>().Any() ||

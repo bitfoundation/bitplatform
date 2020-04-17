@@ -15,9 +15,9 @@ namespace Bit.Test
 {
     public class TestEnvironmentArgs
     {
-        public string FullUri { get; set; } = null;
+        public string? FullUri { get; set; } = null;
 
-        public string HostName { get; set; }
+        public string? HostName { get; set; }
 
         public bool UseRealServer { get; set; }
 
@@ -25,13 +25,13 @@ namespace Bit.Test
 
         public bool UseHttps { get; set; }
 
-        public Action<IDependencyManager, IServiceCollection> AdditionalDependencies { get; set; }
+        public Action<IDependencyManager, IServiceCollection>? AdditionalDependencies { get; set; }
 
-        public Action<AppEnvironment> ActiveAppEnvironmentCustomizer { get; set; }
+        public Action<AppEnvironment>? ActiveAppEnvironmentCustomizer { get; set; }
 
-        public IAppModulesProvider CustomAppModulesProvider { get; set; } = null;
+        public IAppModulesProvider? CustomAppModulesProvider { get; set; } = null;
 
-        public IAppEnvironmentsProvider CustomAppEnvironmentsProvider { get; set; } = null;
+        public IAppEnvironmentsProvider? CustomAppEnvironmentsProvider { get; set; } = null;
 
         public bool UseProxyBasedDependencyManager { get; set; } = true;
 
@@ -40,9 +40,9 @@ namespace Bit.Test
 
     public class TestAdditionalDependencies : IAppModule, IAppModulesProvider
     {
-        private readonly Action<IDependencyManager, IServiceCollection> _dependencyManagerDelegate;
+        private readonly Action<IDependencyManager, IServiceCollection>? _dependencyManagerDelegate;
 
-        public TestAdditionalDependencies(Action<IDependencyManager, IServiceCollection> dependencyManagerDelegate)
+        public TestAdditionalDependencies(Action<IDependencyManager, IServiceCollection>? dependencyManagerDelegate)
         {
             _dependencyManagerDelegate = dependencyManagerDelegate;
         }
@@ -60,15 +60,15 @@ namespace Bit.Test
 
     public class TestAppEnvironmentsProvider : IAppEnvironmentsProvider
     {
-        private readonly IAppEnvironmentsProvider _appEnvironmentsProvider;
-        private readonly Action<AppEnvironment> _appEnvCustomizer;
+        private readonly IAppEnvironmentsProvider _appEnvironmentsProvider = default!;
+        private readonly Action<AppEnvironment>? _appEnvCustomizer;
 
         protected TestAppEnvironmentsProvider()
         {
 
         }
 
-        public TestAppEnvironmentsProvider(IAppEnvironmentsProvider appEnvironmentProvider, Action<AppEnvironment> appEnvCustomizer = null)
+        public TestAppEnvironmentsProvider(IAppEnvironmentsProvider appEnvironmentProvider, Action<AppEnvironment>? appEnvCustomizer = null)
         {
             _appEnvironmentsProvider = appEnvironmentProvider ?? throw new ArgumentNullException(nameof(appEnvironmentProvider));
             _appEnvCustomizer = appEnvCustomizer;
@@ -76,13 +76,13 @@ namespace Bit.Test
 
         public virtual AppEnvironment GetActiveAppEnvironment()
         {
-            var (success, message) = TryGetActiveAppEnvironment(out AppEnvironment activeAppEnvironment);
+            var (success, message) = TryGetActiveAppEnvironment(out AppEnvironment? activeAppEnvironment);
             if (success == true)
-                return activeAppEnvironment;
+                return activeAppEnvironment!;
             throw new InvalidOperationException(message);
         }
 
-        public virtual (bool success, string message) TryGetActiveAppEnvironment(out AppEnvironment activeAppEnvironment)
+        public virtual (bool success, string? message) TryGetActiveAppEnvironment(out AppEnvironment? activeAppEnvironment)
         {
             try
             {
@@ -102,7 +102,7 @@ namespace Bit.Test
 
     public class TestEnvironmentBase : IDisposable
     {
-        public TestEnvironmentBase(TestEnvironmentArgs args = null)
+        public TestEnvironmentBase(TestEnvironmentArgs? args = null)
         {
             if (args == null)
                 args = new TestEnvironmentArgs();
@@ -182,7 +182,7 @@ namespace Bit.Test
             if (type == null)
                 throw new ArgumentNullException(nameof(type));
 
-            Type baseType = type.BaseType;
+            Type? baseType = type.BaseType;
             while (baseType != null)
             {
                 yield return baseType;

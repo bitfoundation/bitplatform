@@ -1,5 +1,6 @@
 ﻿using Bit.Core.Contracts;
 using Microsoft.Owin;
+using System;
 using System.Linq;
 using System.Net.Http;
 using System.Threading;
@@ -12,6 +13,9 @@ namespace Bit.WebApi.ActionFilters
     {
         public override void OnActionExecuting(HttpActionContext actionContext)
         {
+            if (actionContext == null)
+                throw new ArgumentNullException(nameof(actionContext));
+
             ILogger logger = actionContext.Request.GetOwinContext()
                 .GetDependencyResolver()
                 .Resolve<ILogger>();
@@ -23,7 +27,7 @@ namespace Bit.WebApi.ActionFilters
             base.OnActionExecuting(actionContext);
         }
 
-        protected virtual bool LogParameter(object parameter)
+        protected virtual bool LogParameter(object? parameter)
         {
             return parameter != null && !(parameter is CancellationToken);
         }

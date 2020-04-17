@@ -7,11 +7,11 @@ namespace Bit.Test.Server
 {
     public class OwinSelfHostTestServer : TestServerBase
     {
-        private IDisposable _server;
+        private IDisposable? _server;
 
         public override void Dispose()
         {
-            _server.Dispose();
+            _server?.Dispose();
         }
 
         public override void Initialize(string uri)

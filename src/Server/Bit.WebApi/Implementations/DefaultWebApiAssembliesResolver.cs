@@ -8,9 +8,9 @@ namespace Bit.WebApi.Implementations
 {
     public class DefaultWebApiAssembliesResolver : IAssembliesResolver
     {
-        public virtual IEnumerable<IApiAssembliesProvider> ApiAssembliesProviders { get; set; }
+        public virtual IEnumerable<IApiAssembliesProvider> ApiAssembliesProviders { get; set; } = default!;
 
-        private ICollection<Assembly> _result;
+        private ICollection<Assembly>? _result;
 
         public virtual ICollection<Assembly> GetAssemblies()
         {

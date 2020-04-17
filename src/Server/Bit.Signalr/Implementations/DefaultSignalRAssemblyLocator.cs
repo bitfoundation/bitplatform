@@ -12,7 +12,7 @@ namespace Bit.Signalr.Implementations
 
         }
 
-        private readonly Assembly[] _assemblies;
+        private readonly Assembly[] _assemblies = default!;
 
         public DefaultSignalRAssemblyLocator(Assembly[] assemblies)
         {

@@ -53,7 +53,11 @@ namespace Bit.OData.ActionFilters
                     return;
 
                 bool isSingleResult = objContent.Value is SingleResult;
-                bool isCountRequest = actionExecutedContext.Request.RequestUri.LocalPath.DoesContain("/$count") == true;
+#if DotNetCore
+                bool isCountRequest = actionExecutedContext.Request.RequestUri.LocalPath.Contains("/$count", StringComparison.InvariantCultureIgnoreCase) == true;
+#else
+                bool isCountRequest = actionExecutedContext.Request.RequestUri.LocalPath.Contains("/$count") == true;
+#endif
 
                 if (isSingleResult == true)
                     objContent.Value = ((SingleResult)objContent.Value).Queryable;
@@ -107,10 +111,10 @@ namespace Bit.OData.ActionFilters
                     int? takeCount = null;
                     int? skipCount = currentOdataQueryOptions.Skip?.Value;
 
-                    if (currentQueryPageSize.HasValue)
+                    if (currentQueryPageSize != null)
                         takeCount = currentQueryPageSize.Value;
-                    else if (globalQuerypageSize.HasValue == true)
-                        takeCount = globalQuerypageSize!.Value;
+                    else if (globalQuerypageSize != null)
+                        takeCount = globalQuerypageSize.Value;
                     else
                         takeCount = null;
 
@@ -130,7 +134,7 @@ namespace Bit.OData.ActionFilters
                         return;
                     }
 
-                    if (currentOdataQueryOptions.Count?.Value == true && takeCount.HasValue == true && isSingleResult == false)
+                    if (currentOdataQueryOptions.Count?.Value == true && takeCount != null && isSingleResult == false)
                     {
                         long count = await (Task<long>)
                             getCountAsyncMethodsCache.GetOrAdd(queryElementType, t => typeof(ODataEnableQueryAttribute).GetMethod(nameof(GetCountAsync))!.MakeGenericMethod(t))
@@ -164,7 +168,7 @@ namespace Bit.OData.ActionFilters
                         actionExecutedContext.Request.Properties["Microsoft.AspNet.OData.TotalCountFunc"] = new Func<long>(() => 1);
                     }
 
-                    if (currentOdataQueryOptions.Count?.Value == true && takeCount.HasValue == false && isSingleResult == false)
+                    if (currentOdataQueryOptions.Count?.Value == true && takeCount == null && isSingleResult == false)
                     {
                         // We've no paging because there is no global config for max top and there is no top specified by the client's request, so the returned result of query's length is equivalent to total count of the query
                         long count = ((IList)objContent.Value).Count;
@@ -205,14 +209,14 @@ namespace Bit.OData.ActionFilters
             if (dataProviderSpecificMethodsProvider == null)
                 throw new ArgumentNullException(nameof(dataProviderSpecificMethodsProvider));
 
-            if (skipCount.HasValue == true)
+            if (skipCount != null)
             {
-                query = dataProviderSpecificMethodsProvider.Skip(query, skipCount!.Value);
+                query = dataProviderSpecificMethodsProvider.Skip(query, skipCount.Value);
             }
 
-            if (takeCount.HasValue == true)
+            if (takeCount != null)
             {
-                query = dataProviderSpecificMethodsProvider.Take(query, takeCount!.Value);
+                query = dataProviderSpecificMethodsProvider.Take(query, takeCount.Value);
             }
 
             return await dataProviderSpecificMethodsProvider.ToArrayAsync(query, cancellationToken).ConfigureAwait(false);

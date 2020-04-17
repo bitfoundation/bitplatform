@@ -18,20 +18,26 @@ namespace Bit.WebApi.Implementations
 
     public class DefaultAuthorizationOperationFilter : IOperationFilter
     {
-        public virtual AppEnvironment AppEnvironment { get; internal set; }
+        public virtual AppEnvironment AppEnvironment { get; internal set; } = default!;
 
         private static readonly Lazy<TypeInfo> AuthorizationFilterAttributeTracer = new Lazy<TypeInfo>(() =>
         {
-            return typeof(AuthorizationFilterAttribute).Assembly.GetType("System.Web.Http.Tracing.Tracers.AuthorizationFilterAttributeTracer").GetTypeInfo();
+            return typeof(AuthorizationFilterAttribute).Assembly.GetType("System.Web.Http.Tracing.Tracers.AuthorizationFilterAttributeTracer")!.GetTypeInfo();
         }, isThreadSafe: true);
 
         private static readonly Lazy<PropertyInfo> InnerProperty = new Lazy<PropertyInfo>(() =>
         {
-            return AuthorizationFilterAttributeTracer.Value.GetProperty("Inner");
+            return AuthorizationFilterAttributeTracer.Value.GetProperty("Inner")!;
         }, isThreadSafe: true);
 
         public void Apply(Operation operation, SchemaRegistry schemaRegistry, ApiDescription apiDescription)
         {
+            if (apiDescription == null)
+                throw new ArgumentNullException(nameof(apiDescription));
+
+            if (operation == null)
+                throw new ArgumentNullException(nameof(operation));
+
             bool hasAllowAnonymous = apiDescription.ActionDescriptor.GetCustomAttributes<AllowAnonymousAttribute>().Any();
 
             if (hasAllowAnonymous == true)
@@ -43,7 +49,7 @@ namespace Bit.WebApi.Implementations
                 if (isInstanceOfAuthorizeFilter)
                 {
                     bool isAuthorizeFilter = e.Instance is AuthorizeAttribute;
-                    IFilter actionFilter = isAuthorizeFilter ? e.Instance : (IFilter)InnerProperty.Value.GetValue(e.Instance);
+                    IFilter actionFilter = isAuthorizeFilter ? e.Instance : (IFilter)InnerProperty.Value.GetValue(e.Instance)!;
                     return actionFilter.GetType().GetCustomAttribute<SwaggerIgnoreAuthorizeAttribute>() == null;
                 }
                 return false;

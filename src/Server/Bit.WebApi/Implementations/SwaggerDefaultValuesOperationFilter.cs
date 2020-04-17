@@ -1,4 +1,5 @@
 ﻿using Swashbuckle.Swagger;
+using System;
 using System.Linq;
 using System.Web.Http.Description;
 
@@ -19,6 +20,15 @@ namespace Bit.WebApi.Implementations
         /// <param name="apiDescription">The API description being filtered.</param>
         public void Apply(Operation operation, SchemaRegistry schemaRegistry, ApiDescription apiDescription)
         {
+            if (operation == null)
+                throw new ArgumentNullException(nameof(operation));
+
+            if (schemaRegistry == null)
+                throw new ArgumentNullException(nameof(schemaRegistry));
+
+            if (apiDescription == null)
+                throw new ArgumentNullException(nameof(apiDescription));
+
             if (operation.parameters == null)
             {
                 return;
@@ -28,11 +38,15 @@ namespace Bit.WebApi.Implementations
             {
                 var parameterName = parameter.name;
 
+#if DotNetCore
+                if (parameterName.Contains('.', StringComparison.InvariantCultureIgnoreCase))
+#else
                 if (parameterName.Contains('.'))
+#endif
                     parameterName = parameter.name.Split('.')[0];
-                
+
                 ApiParameterDescription description = apiDescription.ParameterDescriptions.First(p => p.Name == parameterName);
-                
+
                 // REF: https://github.com/domaindrivendev/Swashbuckle/issues/1101
                 if (parameter.description == null)
                 {

@@ -84,7 +84,7 @@ namespace Bit.Core.Contracts
             {
                 aspNetCoreApp.Use(async (context, next) =>
                 {
-                    if (context.Request.Path.HasValue)
+                    if (context.Request.Path != null)
                     {
                         string path = context.Request.Path.Value;
 

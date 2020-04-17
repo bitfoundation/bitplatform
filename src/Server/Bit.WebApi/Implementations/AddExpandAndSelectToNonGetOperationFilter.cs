@@ -1,4 +1,5 @@
 ﻿using Swashbuckle.Swagger;
+using System;
 using System.Net.Http;
 using System.Web.Http;
 using System.Web.Http.Description;
@@ -9,6 +10,15 @@ namespace Bit.WebApi.Implementations
     {
         public virtual void Apply(Operation operation, SchemaRegistry schemaRegistry, ApiDescription apiDescription)
         {
+            if (operation == null)
+                throw new ArgumentNullException(nameof(operation));
+
+            if (schemaRegistry == null)
+                throw new ArgumentNullException(nameof(schemaRegistry));
+
+            if (apiDescription == null)
+                throw new ArgumentNullException(nameof(apiDescription));
+
             if (typeof(SingleResult).IsAssignableFrom(apiDescription.ResponseType()) && apiDescription.HttpMethod != HttpMethod.Get)
             {
                 operation.parameters.Add(new Parameter { name = "$expand", @in = "query", description = "Expands related entities inline.", type = "string", required = false });

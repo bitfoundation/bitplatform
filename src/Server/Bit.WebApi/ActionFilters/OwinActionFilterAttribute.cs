@@ -17,7 +17,7 @@ namespace Bit.WebApi.ActionFilters
             if (owinMiddlewareActionFilter == null)
                 throw new ArgumentNullException(nameof(owinMiddlewareActionFilter));
 
-            OwinActionFilter = (IOwinActionFilter)Activator.CreateInstance(owinMiddlewareActionFilter);
+            OwinActionFilter = (IOwinActionFilter)(Activator.CreateInstance(owinMiddlewareActionFilter)!);
         }
 
         public override bool AllowMultiple => true;
@@ -29,17 +29,26 @@ namespace Bit.WebApi.ActionFilters
 
         public virtual Task OnExceptionAsync(HttpActionExecutedContext actionExecutedContext)
         {
+            if (actionExecutedContext == null)
+                throw new ArgumentNullException(nameof(actionExecutedContext));
+
             return OwinActionFilter.OnExceptionAsync(actionExecutedContext.Request.GetOwinContext(), actionExecutedContext.Exception);
         }
 
         public override async Task OnActionExecutingAsync(HttpActionContext actionContext, CancellationToken cancellationToken)
         {
+            if (actionContext == null)
+                throw new ArgumentNullException(nameof(actionContext));
+
             await OwinActionFilter.OnActionExecutingAsync(actionContext.Request.GetOwinContext());
             await base.OnActionExecutingAsync(actionContext, cancellationToken);
         }
 
         public override async Task OnActionExecutedAsync(HttpActionExecutedContext actionExecutedContext, CancellationToken cancellationToken)
         {
+            if (actionExecutedContext == null)
+                throw new ArgumentNullException(nameof(actionExecutedContext));
+
             await OwinActionFilter.OnActionExecutedAsync(actionExecutedContext.Request.GetOwinContext());
             await base.OnActionExecutedAsync(actionExecutedContext, cancellationToken);
         }

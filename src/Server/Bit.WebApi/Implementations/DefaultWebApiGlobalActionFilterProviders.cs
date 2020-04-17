@@ -1,4 +1,5 @@
-﻿using System.Web.Http;
+﻿using System;
+using System.Web.Http;
 using Bit.WebApi.ActionFilters;
 using Bit.WebApi.Contracts;
 
@@ -8,6 +9,9 @@ namespace Bit.WebApi.Implementations
     {
         public virtual void CustomizeWebApiConfiguration(HttpConfiguration webApiConfiguration)
         {
+            if (webApiConfiguration == null)
+                throw new ArgumentNullException(nameof(webApiConfiguration));
+
             webApiConfiguration.Filters.Add(new HostAuthenticationFilter("Bearer"));
         }
     }
@@ -17,6 +21,9 @@ namespace Bit.WebApi.Implementations
     {
         public virtual void CustomizeWebApiConfiguration(HttpConfiguration webApiConfiguration)
         {
+            if (webApiConfiguration == null)
+                throw new ArgumentNullException(nameof(webApiConfiguration));
+
             webApiConfiguration.Filters.Add(new TExceptionHandlerFilterAttribute());
         }
     }
@@ -26,6 +33,9 @@ namespace Bit.WebApi.Implementations
     {
         public virtual void CustomizeWebApiConfiguration(HttpConfiguration webApiConfiguration)
         {
+            if (webApiConfiguration == null)
+                throw new ArgumentNullException(nameof(webApiConfiguration));
+
             webApiConfiguration.Filters.Add(new TOperationInfoArgs());
         }
     }
@@ -34,6 +44,9 @@ namespace Bit.WebApi.Implementations
     {
         public virtual void CustomizeWebApiConfiguration(HttpConfiguration webApiConfiguration)
         {
+            if (webApiConfiguration == null)
+                throw new ArgumentNullException(nameof(webApiConfiguration));
+
             webApiConfiguration.Filters.Add(new RequestModelStateValidatorActionFilterAttribute());
         }
     }

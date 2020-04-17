@@ -21,16 +21,16 @@ namespace Bit.Test.Server
 {
     public abstract class TestServerBase : ITestServer
     {
-        public virtual string Uri { get; protected set; }
+        public virtual string Uri { get; protected set; } = default!;
 
-        public virtual ODataBatch BuildODataBatchClient(TokenResponse token = null, string odataRouteName = "Test", ODataClientSettings odataClientSettings = null)
+        public virtual ODataBatch BuildODataBatchClient(TokenResponse? token = null, string odataRouteName = "Test", ODataClientSettings? odataClientSettings = null)
         {
             return new ODataBatch(BuildODataClient(token, odataRouteName, odataClientSettings));
         }
 
-        public virtual IODataClient BuildODataClient(TokenResponse token = null, string odataRouteName = "Test", ODataClientSettings odataClientSettings = null)
+        public virtual IODataClient BuildODataClient(TokenResponse? token = null, string odataRouteName = "Test", ODataClientSettings? odataClientSettings = null)
         {
-            Action<HttpRequestMessage> originalBeforeRequest = odataClientSettings?.BeforeRequest;
+            Action<HttpRequestMessage>? originalBeforeRequest = odataClientSettings?.BeforeRequest;
 
             odataClientSettings ??= new ODataClientSettings { };
 
@@ -58,7 +58,7 @@ namespace Bit.Test.Server
 
         protected abstract HttpMessageHandler GetHttpMessageHandler();
 
-        public virtual async Task<IHubProxy> BuildSignalRClient(TokenResponse token = null, Action<string, dynamic> onMessageReceived = null)
+        public virtual async Task<IHubProxy> BuildSignalRClient(TokenResponse? token = null, Action<string, dynamic>? onMessageReceived = null)
         {
             HubConnection hubConnection = new HubConnection(Uri);
 
@@ -84,13 +84,13 @@ namespace Bit.Test.Server
         {
             public override T Deserialize<T>(string objAsStr)
             {
-                return JsonConvert.DeserializeObject<T>(objAsStr, GetSettings());
+                return JsonConvert.DeserializeObject<T>(objAsStr, GetSettings())!;
             }
         }
 
         public abstract void Dispose();
 
-        public virtual RemoteWebDriver BuildWebDriver(RemoteWebDriverOptions options = null)
+        public virtual RemoteWebDriver BuildWebDriver(RemoteWebDriverOptions? options = null)
         {
             if (options == null)
                 options = new RemoteWebDriverOptions();
@@ -145,7 +145,7 @@ namespace Bit.Test.Server
             Uri = uri;
         }
 
-        public virtual async Task<TokenResponse> Login(string userName, string password, string clientId, string secret = "secret", IDictionary<string, string> acr_values = null)
+        public virtual async Task<TokenResponse> Login(string userName, string password, string clientId, string secret = "secret", IDictionary<string, string?>? acr_values = null)
         {
             if (userName == null)
                 throw new ArgumentNullException(nameof(userName));
@@ -187,7 +187,7 @@ namespace Bit.Test.Server
             return tokenResponse;
         }
 
-        public virtual string GetLoginUrl(string client_id = null, Uri redirect_uri = null, object state = null, IDictionary<string, string> acr_values = null)
+        public virtual string GetLoginUrl(string? client_id = null, Uri? redirect_uri = null, object? state = null, IDictionary<string, string?>? acr_values = null)
         {
             state ??= new { };
 
@@ -203,7 +203,7 @@ namespace Bit.Test.Server
             return relativeUri;
         }
 
-        public virtual HttpClient BuildHttpClient(TokenResponse token = null)
+        public virtual HttpClient BuildHttpClient(TokenResponse? token = null)
         {
             HttpClient client = HttpClientFactory.Create(GetHttpMessageHandler());
 
@@ -217,7 +217,7 @@ namespace Bit.Test.Server
             return client;
         }
 
-        public virtual TService BuildRefitClient<TService>(TokenResponse token = null)
+        public virtual TService BuildRefitClient<TService>(TokenResponse? token = null)
         {
             return RestService.For<TService>(BuildHttpClient(token), new RefitSettings
             {

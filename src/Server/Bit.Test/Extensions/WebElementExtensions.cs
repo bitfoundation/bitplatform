@@ -45,6 +45,9 @@ namespace OpenQA.Selenium
             if (testScript == null)
                 throw new ArgumentNullException(nameof(testScript));
 
+            if (args == null)
+                throw new ArgumentNullException(nameof(args));
+
             IWebElement testsConsole = driver.GetElementById("testsConsole");
 
             const string success = "Success";
@@ -75,6 +78,12 @@ namespace OpenQA.Selenium
         [DebuggerNonUserCode]
         public static async Task WaitForCondition(this RemoteWebDriver driver, Func<RemoteWebDriver, bool> condition)
         {
+            if (driver == null)
+                throw new ArgumentNullException(nameof(driver));
+
+            if (condition == null)
+                throw new ArgumentNullException(nameof(condition));
+
             int triesCount = 0;
 
             do

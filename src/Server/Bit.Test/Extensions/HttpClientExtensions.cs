@@ -10,6 +10,7 @@ namespace System.Net.Http
                 throw new ArgumentNullException(nameof(client));
 
             client.DefaultRequestHeaders.Add(key, value);
+
             return client;
         }
 
@@ -17,6 +18,9 @@ namespace System.Net.Http
         {
             if (client == null)
                 throw new ArgumentNullException(nameof(client));
+
+            if (values == null)
+                throw new ArgumentNullException(nameof(values));
 
             client.DefaultRequestHeaders.Add(key, values);
             return client;

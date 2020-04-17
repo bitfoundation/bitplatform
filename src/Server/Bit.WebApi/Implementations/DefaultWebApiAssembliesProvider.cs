@@ -12,7 +12,7 @@ namespace Bit.WebApi.Implementations
 
         }
 
-        private readonly IEnumerable<Assembly> _assemblies;
+        private readonly IEnumerable<Assembly> _assemblies = default!;
 
         public DefaultWebApiAssembliesProvider(IEnumerable<Assembly> assemblies)
         {

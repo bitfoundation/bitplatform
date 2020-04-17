@@ -12,6 +12,9 @@ namespace Bit.WebApi.Implementations
     {
         public virtual void Trace(HttpRequestMessage request, string category, TraceLevel level, Action<TraceRecord> traceAction)
         {
+            if (traceAction == null)
+                throw new ArgumentNullException(nameof(traceAction));
+
             if (request?.GetOwinContext() != null && (level == TraceLevel.Fatal || level == TraceLevel.Warn || level == TraceLevel.Error))
             {
                 TraceRecord traceRecord = new TraceRecord(request, category, level);
@@ -23,7 +26,7 @@ namespace Bit.WebApi.Implementations
                 IScopeStatusManager scopeStatusManager = scopeDependencyResolver.Resolve<IScopeStatusManager>();
 
                 if (scopeStatusManager.WasSucceeded())
-                    scopeStatusManager.MarkAsFailed(traceRecord.Message ?? traceRecord.Exception?.Message);
+                    scopeStatusManager.MarkAsFailed(traceRecord.Message ?? traceRecord.Exception.Message);
 
                 if (traceRecord.Exception != null)
                 {

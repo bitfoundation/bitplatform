@@ -17,6 +17,9 @@ namespace Bit.Core.Contracts
             if (dependencyManager == null)
                 throw new ArgumentNullException(nameof(dependencyManager));
 
+            if (hubsAssemblies == null)
+                throw new ArgumentNullException(nameof(hubsAssemblies));
+
             hubsAssemblies = AssemblyContainer.Current.AssembliesWithDefaultAssemblies(hubsAssemblies).Union(new[] { AssemblyContainer.Current.GetBitSignalRAssembly() }).ToArray();
 
             dependencyManager.RegisterAssemblyTypes(hubsAssemblies, t => typeof(Hub).GetTypeInfo().IsAssignableFrom(t), lifeCycle: DependencyLifeCycle.Transient);
@@ -33,6 +36,12 @@ namespace Bit.Core.Contracts
 
         public static IDependencyManager RegisterSignalRMiddlewareUsingDefaultConfiguration(this IDependencyManager dependencyManager, params Assembly[] hubsAssemblies)
         {
+            if (dependencyManager == null)
+                throw new ArgumentNullException(nameof(dependencyManager));
+
+            if (hubsAssemblies == null)
+                throw new ArgumentNullException(nameof(hubsAssemblies));
+
             return RegisterSignalRMiddlewareUsingDefaultConfiguration<DefaultMessageHubEvents>(dependencyManager, hubsAssemblies);
         }
 

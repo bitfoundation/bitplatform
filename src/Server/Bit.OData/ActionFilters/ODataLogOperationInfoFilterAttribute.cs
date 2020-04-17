@@ -5,7 +5,7 @@ namespace Bit.OData.ActionFilters
 {
     public class ODataLogOperationInfoFilterAttribute : LogOperationInfoFilterAttribute
     {
-        protected override bool LogParameter(object parameter)
+        protected override bool LogParameter(object? parameter)
         {
             return base.LogParameter(parameter) && !(parameter is ODataQueryOptions);
         }

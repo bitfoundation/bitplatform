@@ -8,9 +8,9 @@ namespace Bit.Signalr.Implementations
 {
     public class SignalRMessageSender : IMessageSender
     {
-        public virtual IMessageContentFormatter Formatter { get; set; }
+        public virtual IMessageContentFormatter ContentFormatter { get; set; } = default!;
 
-        private IConnectionManager _connectionManager;
+        private IConnectionManager _connectionManager = default!;
 
         public virtual Microsoft.AspNet.SignalR.IDependencyResolver SignalrDependencyResolver
         {
@@ -23,7 +23,7 @@ namespace Bit.Signalr.Implementations
             }
         }
 
-        public virtual async Task SendMessageToUsersAsync<T>(string messageKey, T messageArgs, string[] userIds)
+        public virtual async Task SendMessageToUsersAsync<T>(string messageKey, T? messageArgs, string[] userIds)
             where T : class
         {
             if (userIds == null)
@@ -34,7 +34,7 @@ namespace Bit.Signalr.Implementations
 
             IHubContext hubContext = _connectionManager.GetHubContext<MessagesHub>();
 
-            string objectArgsAsString = messageArgs == null ? string.Empty : Formatter.Serialize(messageArgs);
+            string objectArgsAsString = messageArgs == null ? string.Empty : ContentFormatter.Serialize(messageArgs);
 
             foreach (string u in userIds)
             {
@@ -42,7 +42,7 @@ namespace Bit.Signalr.Implementations
             }
         }
 
-        public virtual void SendMessageToUsers<T>(string messageKey, T messageArgs, string[] userIds)
+        public virtual void SendMessageToUsers<T>(string messageKey, T? messageArgs, string[] userIds)
             where T : class
         {
             if (userIds == null)
@@ -53,7 +53,7 @@ namespace Bit.Signalr.Implementations
 
             IHubContext hubContext = _connectionManager.GetHubContext<MessagesHub>();
 
-            string objectArgsAsString = messageArgs == null ? string.Empty : Formatter.Serialize(messageArgs);
+            string objectArgsAsString = messageArgs == null ? string.Empty : ContentFormatter.Serialize(messageArgs);
 
             foreach (string u in userIds)
             {
@@ -61,7 +61,7 @@ namespace Bit.Signalr.Implementations
             }
         }
 
-        public Task SendMessageToAllAsync<T>(string messageKey, T messageArgs)
+        public virtual Task SendMessageToAllAsync<T>(string messageKey, T? messageArgs)
             where T : class
         {
             if (messageKey == null)
@@ -69,12 +69,12 @@ namespace Bit.Signalr.Implementations
 
             IHubContext hubContext = _connectionManager.GetHubContext<MessagesHub>();
 
-            string objectArgsAsString = messageArgs == null ? string.Empty : Formatter.Serialize(messageArgs);
+            string objectArgsAsString = messageArgs == null ? string.Empty : ContentFormatter.Serialize(messageArgs);
 
             return hubContext.Clients.All.OnMessageReceived(messageKey, objectArgsAsString);
         }
 
-        public void SendMessageToAll<T>(string messageKey, T messageArgs)
+        public virtual void SendMessageToAll<T>(string messageKey, T? messageArgs)
             where T : class
         {
             if (messageKey == null)
@@ -82,17 +82,17 @@ namespace Bit.Signalr.Implementations
 
             IHubContext hubContext = _connectionManager.GetHubContext<MessagesHub>();
 
-            string objectArgsAsString = messageArgs == null ? string.Empty : Formatter.Serialize(messageArgs);
+            string objectArgsAsString = messageArgs == null ? string.Empty : ContentFormatter.Serialize(messageArgs);
 
             hubContext.Clients.All.OnMessageReceived(messageKey, objectArgsAsString);
         }
 
-        public Task SendMessageToGroupsAsync<T>(string messageKey, T messageArgs, string[] groupNames) where T : class
+        public virtual Task SendMessageToGroupsAsync<T>(string messageKey, T? messageArgs, string[] groupNames) where T : class
         {
             return SendMessageToUsersAsync(messageKey, messageArgs, groupNames);
         }
 
-        public void SendMessageToGroups<T>(string messageKey, T messageArgs, string[] groupNames) where T : class
+        public virtual void SendMessageToGroups<T>(string messageKey, T? messageArgs, string[] groupNames) where T : class
         {
             SendMessageToUsers(messageKey, messageArgs, groupNames);
         }

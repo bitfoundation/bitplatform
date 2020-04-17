@@ -20,6 +20,12 @@ namespace Swashbuckle.Application
         /// </summary>
         public static SwaggerDocsConfig ApplyDefaultApiConfig(this SwaggerDocsConfig doc, HttpConfiguration webApiConfig)
         {
+            if (doc == null)
+                throw new ArgumentNullException(nameof(doc));
+
+            if (webApiConfig == null)
+                throw new ArgumentNullException(nameof(webApiConfig));
+
             doc.DescribeAllEnumsAsStrings();
             doc.RootUrl(req => new Uri(req.RequestUri, req.GetOwinContext().Request.PathBase.Value).ToString());
             doc.OperationFilter<OpenApiIgnoreParameterTypeOperationFilter<CancellationToken>>();
@@ -48,7 +54,7 @@ namespace Swashbuckle.Application
             return doc;
         }
 
-        private static Action<SwaggerUiConfig> GetBitSwaggerUiConfig(Action<SwaggerUiConfig> configure = null)
+        private static Action<SwaggerUiConfig> GetBitSwaggerUiConfig(Action<SwaggerUiConfig>? configure = null)
         {
             void CreateBitSwaggerUiConfig(SwaggerUiConfig swagger)
             {
@@ -62,13 +68,19 @@ namespace Swashbuckle.Application
             return CreateBitSwaggerUiConfig;
         }
 
-        public static void EnableBitSwaggerUi(this SwaggerEnabledConfiguration doc, Action<SwaggerUiConfig> configure = null)
+        public static void EnableBitSwaggerUi(this SwaggerEnabledConfiguration doc, Action<SwaggerUiConfig>? configure = null)
         {
+            if (doc == null)
+                throw new ArgumentNullException(nameof(doc));
+
             doc.EnableSwaggerUi(GetBitSwaggerUiConfig(configure));
         }
 
-        public static void EnableBitSwaggerUi(this SwaggerEnabledConfiguration doc, string routeTemplate, Action<SwaggerUiConfig> configure = null)
+        public static void EnableBitSwaggerUi(this SwaggerEnabledConfiguration doc, string routeTemplate, Action<SwaggerUiConfig>? configure = null)
         {
+            if (doc == null)
+                throw new ArgumentNullException(nameof(doc));
+
             doc.EnableSwaggerUi(routeTemplate, GetBitSwaggerUiConfig(configure));
         }
     }

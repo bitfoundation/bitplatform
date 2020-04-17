@@ -9,7 +9,7 @@ namespace Bit.Test.Server
 {
     public class AspNetCoreSelfHostTestServer : TestServerBase
     {
-        private IWebHost _host;
+        private IWebHost? _host;
 
         public override void Initialize(string uri)
         {
@@ -26,9 +26,9 @@ namespace Bit.Test.Server
         public override void Dispose()
         {
 #if DotNetCore
-            _host.Services.GetRequiredService<IHostApplicationLifetime>().StopApplication();
+            _host?.Services.GetRequiredService<IHostApplicationLifetime>().StopApplication();
 #endif
-            _host.Dispose();
+            _host?.Dispose();
         }
 
         protected override HttpMessageHandler GetHttpMessageHandler()

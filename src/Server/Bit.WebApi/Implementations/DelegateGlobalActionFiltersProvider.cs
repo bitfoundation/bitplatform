@@ -11,7 +11,7 @@ namespace Bit.WebApi.Implementations
 
         }
 
-        private readonly Action<HttpConfiguration> _addGlobalActionFilters;
+        private readonly Action<HttpConfiguration> _addGlobalActionFilters = default!;
 
         public DelegateGlobalActionFiltersProvider(Action<HttpConfiguration> addGlobalActionFilters)
         {

@@ -14,15 +14,15 @@ namespace Bit.WebApi
 {
     public class WebApiMiddlewareConfiguration : IOwinMiddlewareConfiguration, IDisposable
     {
-        public virtual IEnumerable<IWebApiConfigurationCustomizer> WebApiConfigurationCustomizers { get; set; }
-        public virtual System.Web.Http.Dependencies.IDependencyResolver WebApiDependencyResolver { get; set; }
-        public virtual IWebApiOwinPipelineInjector WebApiOwinPipelineInjector { get; set; }
-        public virtual AppEnvironment AppEnvironment { get; set; }
-        public virtual WebApiHttpServerFactory WebApiHttpServerFactory { get; set; }
-        public virtual WebApiInlineConstraintResolverFactory WebApiInlineConstraintResolverFactory { get; set; }
+        public virtual IEnumerable<IWebApiConfigurationCustomizer> WebApiConfigurationCustomizers { get; set; } = default!;
+        public virtual System.Web.Http.Dependencies.IDependencyResolver WebApiDependencyResolver { get; set; } = default!;
+        public virtual IWebApiOwinPipelineInjector WebApiOwinPipelineInjector { get; set; } = default!;
+        public virtual AppEnvironment AppEnvironment { get; set; } = default!;
+        public virtual WebApiHttpServerFactory WebApiHttpServerFactory { get; set; } = default!;
+        public virtual WebApiInlineConstraintResolverFactory WebApiInlineConstraintResolverFactory { get; set; } = default!;
 
-        private HttpConfiguration _webApiConfig;
-        private HttpServer _server;
+        private HttpConfiguration? _webApiConfig;
+        private HttpServer? _server;
 
         public virtual void Configure(IAppBuilder owinApp)
         {
@@ -56,7 +56,7 @@ namespace Bit.WebApi
 
             _webApiConfig.MapHttpAttributeRoutes(constraintResolver);
 
-            if (_webApiConfig.Properties.TryGetValue("MultiVersionSwaggerConfiguration", out object actionObj))
+            if (_webApiConfig.Properties.TryGetValue("MultiVersionSwaggerConfiguration", out object? actionObj))
             {
                 ((Action)actionObj).Invoke();
             }

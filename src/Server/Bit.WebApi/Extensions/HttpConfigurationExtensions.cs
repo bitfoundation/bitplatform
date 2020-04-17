@@ -8,10 +8,13 @@ namespace System.Web.Http
     public static class HttpConfigurationExtensions
     {
         public static void EnableMultiVersionWebApiSwaggerWithUI(this HttpConfiguration httpConfiguration,
-            Action<SwaggerDocsConfig> customizeSwagger = null,
-            Action<SwaggerUiConfig> customizeSwaggerUi = null,
-            Action<VersionedApiExplorer> customizeApiExplorer = null)
+            Action<SwaggerDocsConfig>? customizeSwagger = null,
+            Action<SwaggerUiConfig>? customizeSwaggerUi = null,
+            Action<VersionedApiExplorer>? customizeApiExplorer = null)
         {
+            if (httpConfiguration == null)
+                throw new ArgumentNullException(nameof(httpConfiguration));
+
             httpConfiguration.Properties.TryAdd("MultiVersionSwaggerConfiguration", new Action(() =>
             {
                 VersionedApiExplorer apiExplorer = ((WebApiExplorerFactory)httpConfiguration.DependencyResolver.GetService(typeof(WebApiExplorerFactory)))(httpConfiguration);

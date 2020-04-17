@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using Bit.Core.Contracts;
 using Bit.Core.Implementations;
@@ -9,14 +10,14 @@ namespace Bit.Signalr.Implementations
 {
     public class SignalRMessageContentFormatter : IMessageContentFormatter
     {
-        private JsonSerializerSettings _settingsCache;
+        private JsonSerializerSettings? _settingsCache;
 
         public virtual T Deserialize<T>(string objAsStr)
         {
             throw new InvalidOperationException("This content formatter must be used only for serialization purposes");
         }
 
-        public virtual string Serialize<T>(T obj)
+        public virtual string Serialize<T>([AllowNull]T obj)
         {
             return JsonConvert.SerializeObject(obj, GetSettings());
         }
@@ -52,13 +53,13 @@ namespace Bit.Signalr.Implementations
                 return false;
             }
 
-            public override object ReadJson(JsonReader reader, Type objectType, object existingValue,
+            public override object? ReadJson(JsonReader reader, Type objectType, object? existingValue,
                 JsonSerializer serializer)
             {
                 throw new NotImplementedException();
             }
 
-            public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
+            public override void WriteJson(JsonWriter writer, object? value, JsonSerializer serializer)
             {
                 throw new NotImplementedException();
             }

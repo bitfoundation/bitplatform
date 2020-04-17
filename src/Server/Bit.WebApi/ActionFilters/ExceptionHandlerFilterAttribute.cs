@@ -14,6 +14,9 @@ namespace Bit.WebApi.ActionFilters
     {
         public override Task OnExceptionAsync(HttpActionExecutedContext actionExecutedContext, CancellationToken cancellationToken)
         {
+            if (actionExecutedContext == null)
+                throw new ArgumentNullException(nameof(actionExecutedContext));
+
             IDependencyResolver scopeDependencyResolver = actionExecutedContext.Request.GetOwinContext().GetDependencyResolver();
 
             IScopeStatusManager scopeStatusManager = scopeDependencyResolver.Resolve<IScopeStatusManager>();
@@ -35,6 +38,15 @@ namespace Bit.WebApi.ActionFilters
 
         protected virtual HttpResponseMessage CreateErrorResponseMessage(HttpActionExecutedContext actionExecutedContext, IExceptionToHttpErrorMapper exceptionToHttpErrorMapper, Exception exception)
         {
+            if (actionExecutedContext == null)
+                throw new ArgumentNullException(nameof(actionExecutedContext));
+
+            if (exceptionToHttpErrorMapper == null)
+                throw new ArgumentNullException(nameof(exceptionToHttpErrorMapper));
+
+            if (exception == null)
+                throw new ArgumentNullException(nameof(exception));
+
             return actionExecutedContext.Request.CreateErrorResponse(exceptionToHttpErrorMapper.GetStatusCode(exception), new HttpError() { Message = exceptionToHttpErrorMapper.GetMessage(exception) });
         }
     }

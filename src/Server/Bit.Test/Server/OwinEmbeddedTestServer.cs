@@ -8,11 +8,11 @@ namespace Bit.Test.Server
 {
     public class OwinEmbeddedTestServer : TestServerBase
     {
-        private TestServer _server;
+        private TestServer? _server;
 
         public override void Dispose()
         {
-            _server.Dispose();
+            _server?.Dispose();
         }
 
         public override void Initialize(string uri)
@@ -23,10 +23,10 @@ namespace Bit.Test.Server
 
         protected override HttpMessageHandler GetHttpMessageHandler()
         {
-            return _server.Handler;
+            return _server!.Handler;
         }
 
-        public override RemoteWebDriver BuildWebDriver(RemoteWebDriverOptions options = null)
+        public override RemoteWebDriver BuildWebDriver(RemoteWebDriverOptions? options = null)
         {
             throw new NotSupportedException();
         }

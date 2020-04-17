@@ -28,6 +28,9 @@ namespace Bit.Core.Contracts
             if (dependencyManager == null)
                 throw new ArgumentNullException(nameof(dependencyManager));
 
+            if (controllersAssemblies == null)
+                throw new ArgumentNullException(nameof(controllersAssemblies));
+
             controllersAssemblies = AssemblyContainer.Current.AssembliesWithDefaultAssemblies(controllersAssemblies).Union(new[] { AssemblyContainer.Current.GetBitWebApiAssembly() }).ToArray();
 
             dependencyManager.RegisterInstance<IApiAssembliesProvider>(new DefaultWebApiAssembliesProvider(controllersAssemblies), overwriteExisting: false);
@@ -75,6 +78,9 @@ namespace Bit.Core.Contracts
 
         public static IDependencyManager RegisterGlobalWebApiActionFiltersUsing(this IDependencyManager dependencyManager, Action<HttpConfiguration> addGlobalActionFilters)
         {
+            if (dependencyManager == null)
+                throw new ArgumentNullException(nameof(dependencyManager));
+
             return dependencyManager.RegisterGlobalWebApiCustomizerUsing(addGlobalActionFilters);
         }
 
@@ -103,8 +109,11 @@ namespace Bit.Core.Contracts
         /// Adds WebApi middleware
         /// </summary>
         /// <param name="onConfigure">Everything you perform using this dependency manager, will be applied to this web api only. You can provide any implementation for web api | bit interfaces such as <see cref="System.Web.Http.Tracing.ITraceWriter"/> that affects this web api only.</param>
-        public static IDependencyManager RegisterWebApiMiddleware(this IDependencyManager dependencyManager, Action<IDependencyManager> onConfigure)
+        public static IDependencyManager RegisterWebApiMiddleware(this IDependencyManager dependencyManager, Action<IDependencyManager>? onConfigure)
         {
+            if (dependencyManager == null)
+                throw new ArgumentNullException(nameof(dependencyManager));
+
             dependencyManager.RegisterUsing((resolver) => dependencyManager.CreateChildDependencyResolver(onConfigure).Resolve<IOwinMiddlewareConfiguration>("WebApi"), lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExisting: false);
 
             return dependencyManager;

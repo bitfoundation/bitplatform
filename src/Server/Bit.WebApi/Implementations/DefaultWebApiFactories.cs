@@ -13,6 +13,9 @@ namespace Bit.WebApi.Implementations
     {
         public static IDependencyManager RegisterWebApiFactories(this IDependencyManager dependencyManager)
         {
+            if (dependencyManager == null)
+                throw new ArgumentNullException(nameof(dependencyManager));
+
             dependencyManager.RegisterUsing(resolver => new WebApiHttpServerFactory((webApiConfiguration) => WebApiHttpServerFactory<HttpServer>(resolver, webApiConfiguration)), lifeCycle: DependencyLifeCycle.Transient, overwriteExisting: false);
             dependencyManager.RegisterUsing(resolver => new WebApiInlineConstraintResolverFactory(() => WebApiInlineConstraintResolverFactory<DefaultInlineConstraintResolver>(resolver)), lifeCycle: DependencyLifeCycle.Transient, overwriteExisting: false);
             dependencyManager.RegisterUsing(resolver => new WebApiExplorerFactory((webApiConfiguration) => WebApiExplorerFactory(webApiConfiguration)), lifeCycle: DependencyLifeCycle.Transient, overwriteExisting: false);
@@ -23,12 +26,18 @@ namespace Bit.WebApi.Implementations
         public static THttpServer WebApiHttpServerFactory<THttpServer>(IDependencyResolver resolver, HttpConfiguration webApiConfiguration)
             where THttpServer : HttpServer
         {
+            if (resolver == null)
+                throw new ArgumentNullException(nameof(resolver));
+
             return ActivatorUtilities.CreateInstance<THttpServer>(resolver.Resolve<IServiceProvider>(), new object[] { webApiConfiguration });
         }
 
         public static TDefaultInlineConstraintResolver WebApiInlineConstraintResolverFactory<TDefaultInlineConstraintResolver>(IDependencyResolver resolver)
             where TDefaultInlineConstraintResolver : DefaultInlineConstraintResolver
         {
+            if (resolver == null)
+                throw new ArgumentNullException(nameof(resolver));
+
             var inlineConstraintResolver = ActivatorUtilities.CreateInstance<TDefaultInlineConstraintResolver>(resolver.Resolve<IServiceProvider>(), Array.Empty<object>());
 
             inlineConstraintResolver.ConstraintMap.Add("apiVersion", typeof(ApiVersionRouteConstraint));
@@ -38,6 +47,9 @@ namespace Bit.WebApi.Implementations
 
         public static VersionedApiExplorer WebApiExplorerFactory(HttpConfiguration webApiConfiguration)
         {
+            if (webApiConfiguration == null)
+                throw new ArgumentNullException(nameof(webApiConfiguration));
+
             VersionedApiExplorer apiExplorer = webApiConfiguration.AddVersionedApiExplorer(options =>
             {
                 options.GroupNameFormat = "'v'VVV";

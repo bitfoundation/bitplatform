@@ -11,7 +11,7 @@ namespace Bit.Test.Server
 {
     public class AspNetCoreEmbeddedTestServer : TestServerBase
     {
-        private TestServer _server;
+        private TestServer? _server;
 
         public override void Initialize(string uri)
         {
@@ -25,17 +25,17 @@ namespace Bit.Test.Server
         public override void Dispose()
         {
 #if DotNetCore
-            _server.Services.GetRequiredService<IHostApplicationLifetime>().StopApplication();
+            _server?.Services.GetRequiredService<IHostApplicationLifetime>().StopApplication();
 #endif
-            _server.Dispose();
+            _server?.Dispose();
         }
 
         protected override HttpMessageHandler GetHttpMessageHandler()
         {
-            return _server.CreateHandler();
+            return _server!.CreateHandler();
         }
 
-        public override RemoteWebDriver BuildWebDriver(RemoteWebDriverOptions options = null)
+        public override RemoteWebDriver BuildWebDriver(RemoteWebDriverOptions? options = null)
         {
             throw new NotSupportedException();
         }

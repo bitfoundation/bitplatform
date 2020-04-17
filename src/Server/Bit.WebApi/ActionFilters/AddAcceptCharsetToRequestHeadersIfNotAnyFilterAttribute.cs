@@ -1,4 +1,5 @@
-﻿using System.Web.Http.Controllers;
+﻿using System;
+using System.Web.Http.Controllers;
 using System.Web.Http.Filters;
 
 namespace Bit.WebApi.ActionFilters
@@ -10,6 +11,9 @@ namespace Bit.WebApi.ActionFilters
     {
         public override void OnActionExecuting(HttpActionContext actionContext)
         {
+            if (actionContext == null)
+                throw new ArgumentNullException(nameof(actionContext));
+
             if (!actionContext.Request.Headers.Contains("Accept-Charset"))
                 actionContext.Request.Headers.Add("Accept-Charset", new[] { "utf-8" });
 

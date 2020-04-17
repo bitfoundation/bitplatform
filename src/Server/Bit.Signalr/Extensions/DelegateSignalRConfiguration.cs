@@ -10,6 +10,9 @@ namespace Bit.Core.Contracts
 
         public DelegateSignalRConfiguration(Action<HubConfiguration> signalrHubCustomizer)
         {
+            if (signalrHubCustomizer == null)
+                throw new ArgumentNullException(nameof(signalrHubCustomizer));
+
             _signalrHubCustomizer = signalrHubCustomizer;
         }
 

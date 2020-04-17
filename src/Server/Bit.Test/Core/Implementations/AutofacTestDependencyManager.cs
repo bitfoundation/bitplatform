@@ -86,7 +86,7 @@ namespace Bit.Test.Implementations
                 && AutoProxyCreationIgnoreRules.All(rule => rule(implementationType) == false);
         }
 
-        public virtual void ComponentRegistration_Activating(object sender, Autofac.Core.ActivatingEventArgs<object> e)
+        public virtual void ComponentRegistration_Activating(object? sender, Autofac.Core.ActivatingEventArgs<object> e)
         {
             if (e == null)
                 throw new ArgumentNullException(nameof(e));
@@ -97,7 +97,7 @@ namespace Bit.Test.Implementations
 
             if (IsGoingToCreateProxyForImplementationType(instanceType))
             {
-                instance = _createProxyForService.MakeGenericMethod(instanceType).Invoke(this, new[] { instance });
+                instance = _createProxyForService.MakeGenericMethod(instanceType).Invoke(this, new[] { instance })!;
                 e.ReplaceInstance(instance);
             }
 
@@ -109,7 +109,7 @@ namespace Bit.Test.Implementations
                 throw new NotSupportedException($"Provide compatible collection type for {nameof(Objects)}");
         }
 
-        private readonly MethodInfo _createProxyForService = typeof(AutofacTestDependencyManager).GetTypeInfo().GetMethod(nameof(CreateProxyForService));
+        private readonly MethodInfo _createProxyForService = typeof(AutofacTestDependencyManager).GetTypeInfo().GetMethod(nameof(CreateProxyForService))!;
 
         public virtual T CreateProxyForService<T>(object serviceInstance)
             where T : class

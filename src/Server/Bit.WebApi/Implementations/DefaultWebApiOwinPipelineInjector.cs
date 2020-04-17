@@ -15,6 +15,9 @@ namespace Bit.WebApi.Implementations
             if (server == null)
                 throw new ArgumentNullException(nameof(server));
 
+            if (webApiConfiguration == null)
+                throw new ArgumentNullException(nameof(webApiConfiguration));
+
             owinApp.Map("/api", innerApp =>
             {
                 innerApp.UseXContentTypeOptions();

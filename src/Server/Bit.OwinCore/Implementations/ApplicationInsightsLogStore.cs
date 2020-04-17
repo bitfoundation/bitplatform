@@ -320,16 +320,16 @@ namespace Bit.OwinCore.Implementations
 
             keyValues.Add(new AppInsightsLogKeyVal { Key = nameof(LogEntry.MemoryUsage), Value = logEntry.MemoryUsage.ToString(CultureInfo.InvariantCulture) });
 
-            if (logEntry.AppServerDateTime.HasValue)
+            if (logEntry.AppServerDateTime != null)
                 keyValues.Add(new AppInsightsLogKeyVal { Key = nameof(LogEntry.AppServerDateTime), Value = logEntry.AppServerDateTime.ToString() });
 
             keyValues.Add(new AppInsightsLogKeyVal { Key = nameof(LogEntry.Severity), Value = logEntry.Severity });
             keyValues.Add(new AppInsightsLogKeyVal { Key = nameof(LogEntry.Message), Value = logEntry.Message });
 
-            if (logEntry.Id.HasValue)
+            if (logEntry.Id != null)
                 keyValues.Add(new AppInsightsLogKeyVal { Key = nameof(LogEntry.Id), Value = logEntry.Id.ToString() });
 
-            if (logEntry.AppServerThreadId.HasValue)
+            if (logEntry.AppServerThreadId != null)
                 keyValues.Add(new AppInsightsLogKeyVal { Key = nameof(LogEntry.AppServerThreadId), Value = logEntry.AppServerThreadId.ToString() });
 
             return keyValues!;
