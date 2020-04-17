@@ -7,7 +7,7 @@ namespace Bit.ViewModel.Implementations
 {
     public class DefaultServerSentEventsTransport : ServerSentEventsTransport
     {
-        public event Action OnDisconnected;
+        public event Action? OnDisconnected;
 
         public DefaultServerSentEventsTransport(IHttpClient httpClient)
             : base(httpClient)

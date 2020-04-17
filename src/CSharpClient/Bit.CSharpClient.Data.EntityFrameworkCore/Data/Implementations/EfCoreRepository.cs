@@ -15,19 +15,22 @@ namespace Bit.Data.Implementations
         where TDto : class, IDto
         where TDbContext : DbContext
     {
-        private TDbContext _DbContext;
+        private TDbContext _DbContext = default!;
 
         public virtual TDbContext DbContext
         {
             get => _DbContext;
             set
             {
+                if (value == null)
+                    throw new ArgumentNullException(nameof(value));
+
                 _DbContext = value;
                 Set = _DbContext.Set<TDto>();
             }
         }
 
-        public virtual DbSet<TDto> Set { get; protected set; }
+        public virtual DbSet<TDto> Set { get; protected set; } = default!;
 
         public virtual async Task<TDto> AddAsync(TDto dtoToAdd, CancellationToken cancellationToken = default)
         {
@@ -229,6 +232,12 @@ namespace Bit.Data.Implementations
         public virtual async Task LoadCollectionAsync<TProperty>(TDto dto, Expression<Func<TDto, IEnumerable<TProperty>>> childs, CancellationToken cancellationToken)
             where TProperty : class
         {
+            if (dto == null)
+                throw new ArgumentNullException(nameof(dto));
+
+            if (childs == null)
+                throw new ArgumentNullException(nameof(childs));
+
             try
             {
                 Attach(dto);
@@ -248,6 +257,12 @@ namespace Bit.Data.Implementations
         public virtual void LoadCollection<TProperty>(TDto dto, Expression<Func<TDto, IEnumerable<TProperty>>> childs)
             where TProperty : class
         {
+            if (dto == null)
+                throw new ArgumentNullException(nameof(dto));
+
+            if (childs == null)
+                throw new ArgumentNullException(nameof(childs));
+
             try
             {
                 Attach(dto);
@@ -267,6 +282,12 @@ namespace Bit.Data.Implementations
         public virtual async Task LoadReferenceAsync<TProperty>(TDto dto, Expression<Func<TDto, TProperty>> member, CancellationToken cancellationToken)
             where TProperty : class
         {
+            if (dto == null)
+                throw new ArgumentNullException(nameof(dto));
+
+            if (member == null)
+                throw new ArgumentNullException(nameof(member));
+
             try
             {
                 Attach(dto);
@@ -286,6 +307,12 @@ namespace Bit.Data.Implementations
         public virtual void LoadReference<TProperty>(TDto dto, Expression<Func<TDto, TProperty>> member)
             where TProperty : class
         {
+            if (dto == null)
+                throw new ArgumentNullException(nameof(dto));
+
+            if (member == null)
+                throw new ArgumentNullException(nameof(member));
+
             try
             {
                 Attach(dto);
@@ -319,6 +346,9 @@ namespace Bit.Data.Implementations
 
         public virtual async Task ReloadAsync(TDto dto, CancellationToken cancellationToken)
         {
+            if (dto == null)
+                throw new ArgumentNullException(nameof(dto));
+
             try
             {
                 Attach(dto);
@@ -334,6 +364,9 @@ namespace Bit.Data.Implementations
 
         public virtual void Reload(TDto dto)
         {
+            if (dto == null)
+                throw new ArgumentNullException(nameof(dto));
+
             try
             {
                 Attach(dto);
@@ -347,8 +380,15 @@ namespace Bit.Data.Implementations
             }
         }
 
-        public virtual IQueryable<TChild> GetCollectionQuery<TChild>(TDto dto, Expression<Func<TDto, IEnumerable<TChild>>> childs) where TChild : class
+        public virtual IQueryable<TChild> GetCollectionQuery<TChild>(TDto dto, Expression<Func<TDto, IEnumerable<TChild>>> childs) 
+            where TChild : class
         {
+            if (dto == null)
+                throw new ArgumentNullException(nameof(dto));
+
+            if (childs == null)
+                throw new ArgumentNullException(nameof(childs));
+
             if (DbContext is EfCoreDbContextBase dbContextBase && dbContextBase.ChangeTrackingEnabled() == false)
                 throw new InvalidOperationException("This operation is valid for db context with change tracking enabled");
 

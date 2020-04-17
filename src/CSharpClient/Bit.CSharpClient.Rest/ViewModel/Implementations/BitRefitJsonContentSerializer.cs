@@ -1,6 +1,7 @@
 ﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Refit;
+using System;
 using System.IO;
 using System.Net.Http;
 using System.Text;
@@ -27,6 +28,9 @@ namespace Bit.ViewModel.Implementations
 
         public virtual async Task<T> DeserializeAsync<T>(HttpContent content)
         {
+            if (content == null)
+                throw new ArgumentNullException(nameof(content));
+
 #if DotNetStandard || UWP
             using Stream stream = await content.ReadAsStreamAsync().ConfigureAwait(false);
 #else
@@ -34,7 +38,7 @@ namespace Bit.ViewModel.Implementations
 #endif
             using StreamReader reader = new StreamReader(stream);
             using JsonTextReader jsonTextReader = new JsonTextReader(reader);
-            return (await JToken.LoadAsync(jsonTextReader).ConfigureAwait(false)).ToObject<T>(JsonSerializer.Create(_jsonDeserializeSettings));
+            return (await JToken.LoadAsync(jsonTextReader).ConfigureAwait(false)).ToObject<T>(JsonSerializer.Create(_jsonDeserializeSettings))!;
         }
 
         public virtual Task<HttpContent> SerializeAsync<T>(T item)

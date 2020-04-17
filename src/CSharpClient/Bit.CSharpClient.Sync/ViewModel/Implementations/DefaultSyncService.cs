@@ -22,11 +22,11 @@ namespace Bit.ViewModel.Implementations
 {
     public class DefaultSyncService : ISyncService
     {
-        public virtual IContainer Container { get; set; }
-        public virtual IClientAppProfile ClientAppProfile { get; set; }
-        public virtual HttpClient HttpClient { get; set; }
-        public virtual IODataClient ODataClient { get; set; }
-        public virtual IExceptionHandler ExceptionHandler { get; set; }
+        public virtual IContainer Container { get; set; } = default!;
+        public virtual IClientAppProfile ClientAppProfile { get; set; } = default!;
+        public virtual HttpClient HttpClient { get; set; } = default!;
+        public virtual IODataClient ODataClient { get; set; } = default!;
+        public virtual IExceptionHandler ExceptionHandler { get; set; } = default!;
 
 
         private readonly List<DtoSetSyncConfig> _configs = new List<DtoSetSyncConfig> { };
@@ -55,6 +55,9 @@ namespace Bit.ViewModel.Implementations
 
         public virtual async Task CallSyncTo(DtoSetSyncConfig[] toServerDtoSetSyncMaterials, CancellationToken cancellationToken)
         {
+            if (toServerDtoSetSyncMaterials == null)
+                throw new ArgumentNullException(nameof(toServerDtoSetSyncMaterials));
+
             if (toServerDtoSetSyncMaterials.Any())
             {
                 await using (EfCoreDbContextBase offlineContextForSyncTo = Container.Resolve<EfCoreDbContextBase>())
@@ -82,11 +85,11 @@ namespace Bit.ViewModel.Implementations
                             .FindPrimaryKey()
                             .Properties
                             .Select(x => dtoType.GetProperty(x.Name))
-                            .ToArray();
+                            .ToArray()!;
 
                         foreach (ISyncableDto recentlyChangedOfflineDto in recentlyChangedOfflineDtos)
                         {
-                            object[] keys = keyProps.Select(p => p.GetValue(recentlyChangedOfflineDto, null)).ToArray();
+                            object[] keys = keyProps.Select(p => p.GetValue(recentlyChangedOfflineDto, null)).ToArray()!;
 
                             if (recentlyChangedOfflineDto.IsArchived == true)
                             {
@@ -110,6 +113,9 @@ namespace Bit.ViewModel.Implementations
 
         public virtual async Task CallSyncFrom(DtoSetSyncConfig[] fromServerDtoSetSyncMaterials, CancellationToken cancellationToken)
         {
+            if (fromServerDtoSetSyncMaterials == null)
+                throw new ArgumentNullException(nameof(fromServerDtoSetSyncMaterials));
+
             if (fromServerDtoSetSyncMaterials.Any())
             {
                 await GetMetadataIfNotRetrievedAlready(cancellationToken).ConfigureAwait(false);
@@ -165,7 +171,7 @@ namespace Bit.ViewModel.Implementations
                                 .FindEntityType(result.DtoType)
                                 .FindPrimaryKey()
                                 .Properties.Select(x => result.DtoType.GetProperty(x.Name))
-                                .ToArray();
+                                .ToArray()!;
 
                             IQueryable<ISyncableDto> offlineSet = result.DtoSetSyncConfig.OfflineDtoSet(offlineContextForSyncFrom);
 
@@ -176,7 +182,7 @@ namespace Bit.ViewModel.Implementations
                             equivalentOfflineDtosQuery = string.Join(" || ", result.RecentlyChangedOnlineDtos.Select(s =>
                             {
 
-                                return $" ( {string.Join(" && ", keyProps.Select(k => { equivalentOfflineDtosParams.Add(k.GetValue(s)); return $"{k.Name} == @{parameterIndex++}"; }))} )";
+                                return $" ( {string.Join(" && ", keyProps.Select(k => { equivalentOfflineDtosParams.Add(k.GetValue(s)!); return $"{k.Name} == @{parameterIndex++}"; }))} )";
 
                             }));
 
@@ -189,7 +195,7 @@ namespace Bit.ViewModel.Implementations
 
                             foreach (ISyncableDto recentlyChangedOnlineDto in result.RecentlyChangedOnlineDtos)
                             {
-                                bool hasEquivalentInOfflineDb = equivalentOfflineDtos.Any(d => keyProps.All(k => k.GetValue(d).Equals(k.GetValue(recentlyChangedOnlineDto))));
+                                bool hasEquivalentInOfflineDb = equivalentOfflineDtos.Any(d => keyProps.All(k => k.GetValue(d)!.Equals(k.GetValue(recentlyChangedOnlineDto))));
 
                                 if (recentlyChangedOnlineDto.IsArchived == false || hasEquivalentInOfflineDb == true)
                                 {
@@ -226,6 +232,9 @@ namespace Bit.ViewModel.Implementations
 
         protected virtual async Task BuildRetriveDataTask(DtoSyncConfigSyncFromResults dtoSyncConfigSyncFromResults, CancellationToken cancellationToken)
         {
+            if (dtoSyncConfigSyncFromResults == null)
+                throw new ArgumentNullException(nameof(dtoSyncConfigSyncFromResults));
+
             try
             {
                 IBoundClient<IDictionary<string, object>> query = (dtoSyncConfigSyncFromResults.DtoSetSyncConfig.OnlineDtoSetForGet ?? dtoSyncConfigSyncFromResults.DtoSetSyncConfig.OnlineDtoSet)(ODataClient);
@@ -261,7 +270,7 @@ namespace Bit.ViewModel.Implementations
                                     LineInfoHandling = LineInfoHandling.Ignore
                                 }, cancellationToken).ConfigureAwait(false);
 
-                                dtoSyncConfigSyncFromResults.RecentlyChangedOnlineDtos = ((IEnumerable)(jToken)["value"].ToObject(typeof(List<>).MakeGenericType(dtoSyncConfigSyncFromResults.DtoType))).Cast<ISyncableDto>().ToArray();
+                                dtoSyncConfigSyncFromResults.RecentlyChangedOnlineDtos = ((IEnumerable)(jToken)["value"]!.ToObject(typeof(List<>).MakeGenericType(dtoSyncConfigSyncFromResults.DtoType))!).Cast<ISyncableDto>().ToArray();
                             }
                         }
                     }
@@ -278,13 +287,14 @@ namespace Bit.ViewModel.Implementations
         {
             public bool HadOfflineDtoBefore { get; set; }
 
-            public Task RetriveDataTask { get; set; }
+            public Task RetriveDataTask { get; set; } = default!;
 
-            public DtoSetSyncConfig DtoSetSyncConfig { get; set; }
+            public DtoSetSyncConfig DtoSetSyncConfig { get; set; } = default!;
 
-            public TypeInfo DtoType { get; set; }
+            public TypeInfo DtoType { get; set; } = default!;
 
-            public ISyncableDto[] RecentlyChangedOnlineDtos { get; set; }
+            public ISyncableDto[] RecentlyChangedOnlineDtos { get; set; } = default!;
+
             public long MaxVersion { get; set; }
         }
 

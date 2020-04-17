@@ -2,6 +2,7 @@
 using IdentityModel.Client;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -17,7 +18,7 @@ namespace Bit.ViewModel.Contracts
             Token token = new Token
             {
                 access_token = props[nameof(access_token)],
-                expires_in = Convert.ToInt64(props[nameof(expires_in)]),
+                expires_in = Convert.ToInt64(props[nameof(expires_in)], CultureInfo.InvariantCulture),
                 token_type = props[nameof(token_type)]
             };
 
@@ -27,7 +28,7 @@ namespace Bit.ViewModel.Contracts
             if (!props.ContainsKey(nameof(token.login_date)))
                 token.login_date = DefaultDateTimeProvider.Current.GetCurrentUtcDateTime();
             else
-                token.login_date = Convert.ToDateTime(props[nameof(login_date)]);
+                token.login_date = Convert.ToDateTime(props[nameof(login_date)], CultureInfo.InvariantCulture);
 
             return token;
         }
@@ -46,11 +47,11 @@ namespace Bit.ViewModel.Contracts
             };
         }
 
-        public string access_token { get; set; }
+        public string access_token { get; set; } = default!;
 
-        public string id_token { get; set; }
+        public string? id_token { get; set; }
 
-        public string token_type { get; set; }
+        public string token_type { get; set; } = default!;
 
         public long expires_in { get; set; }
 
@@ -59,9 +60,9 @@ namespace Bit.ViewModel.Contracts
 
     public class BitJwtToken
     {
-        public virtual string UserId { get; set; }
+        public virtual string? UserId { get; set; }
 
-        public virtual Dictionary<string, string> CustomProps { get; set; } = new Dictionary<string, string> { };
+        public virtual Dictionary<string, string?> CustomProps { get; set; } = new Dictionary<string, string?> { };
 
         public static BitJwtToken FromJson(string json)
         {
@@ -84,17 +85,17 @@ namespace Bit.ViewModel.Contracts
     {
         Task<bool> IsLoggedInAsync(CancellationToken cancellationToken = default);
 
-        Task<Token> LoginWithCredentials(string userName, string password, string client_id, string client_secret, string[] scopes = null, IDictionary<string, string> acr_values = null, CancellationToken cancellationToken = default);
+        Task<Token> LoginWithCredentials(string userName, string password, string client_id, string client_secret, string[]? scopes = null, IDictionary<string, string?>? acr_values = null, CancellationToken cancellationToken = default);
 
-        Task<Token> Login(object state = null, string client_id = null, IDictionary<string, string> acr_values = null, CancellationToken cancellationToken = default);
+        Task<Token> Login(object? state = null, string? client_id = null, IDictionary<string, string?>? acr_values = null, CancellationToken cancellationToken = default);
 
-        Task<Token> GetCurrentTokenAsync(CancellationToken cancellationToken = default);
+        Task<Token?> GetCurrentTokenAsync(CancellationToken cancellationToken = default);
 
-        Task Logout(object state = null, string client_id = null, CancellationToken cancellationToken = default);
+        Task Logout(object? state = null, string? client_id = null, CancellationToken cancellationToken = default);
 
-        Uri GetLoginUrl(object state = null, string client_id = null, IDictionary<string, string> acr_values = null);
+        Uri GetLoginUrl(object? state = null, string? client_id = null, IDictionary<string, string?>? acr_values = null);
 
-        Uri GetLogoutUrl(string id_token, object state = null, string client_id = null);
+        Uri GetLogoutUrl(string id_token, object? state = null, string? client_id = null);
 
         bool UseSecureStorage();
 

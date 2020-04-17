@@ -5,6 +5,7 @@ using Newtonsoft.Json.Serialization;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 
 namespace Bit.ViewModel.Implementations
@@ -39,7 +40,7 @@ namespace Bit.ViewModel.Implementations
 
     public class DefaultJsonContentFormatter : IContentFormatter
     {
-        private static IContentFormatter _current;
+        private static IContentFormatter _current = default!;
 
         public static IContentFormatter Current
         {
@@ -55,7 +56,7 @@ namespace Bit.ViewModel.Implementations
 
         public virtual T Deserialize<T>(string objAsStr)
         {
-            return JsonConvert.DeserializeObject<T>(objAsStr, DeserializeSettings());
+            return JsonConvert.DeserializeObject<T>(objAsStr, DeserializeSettings())!;
         }
 
         public static Func<JsonSerializerSettings> DeserializeSettings { get; set; } = () => new JsonSerializerSettings
@@ -78,7 +79,7 @@ namespace Bit.ViewModel.Implementations
             Converters = new List<JsonConverter> { new StringEnumConverter { } }
         };
 
-        public virtual string Serialize<T>(T obj)
+        public virtual string Serialize<T>([MaybeNull] T obj)
         {
             JsonSerializerSettings jsonSerializerSettings = SerializeSettings();
 

@@ -4,6 +4,7 @@
     <TargetFrameworks>netstandard2.0;netcoreapp3.1;</TargetFrameworks>
     <OutputType Condition="'$(TargetFramework)' == 'netcoreapp3.1'">Exe</OutputType>
     <LangVersion>8.0</LangVersion>
+    <Nullable>disable</Nullable>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)'=='Debug'">

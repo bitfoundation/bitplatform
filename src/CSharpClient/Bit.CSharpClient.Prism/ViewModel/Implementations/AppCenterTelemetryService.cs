@@ -18,7 +18,7 @@ namespace Bit.ViewModel.Implementations
     {
         private bool _isInited = false;
 
-        private static AppCenterTelemetryService _current;
+        private static AppCenterTelemetryService _current = default!;
 
         public static AppCenterTelemetryService Current
         {
@@ -39,7 +39,7 @@ namespace Bit.ViewModel.Implementations
             return _isInited;
         }
 
-        public override void TrackEvent(string eventName, IDictionary<string, string> properties = null)
+        public override void TrackEvent(string eventName, IDictionary<string, string?>? properties = null)
         {
             if (IsConfigured())
             {
@@ -48,7 +48,7 @@ namespace Bit.ViewModel.Implementations
             }
         }
 
-        public override void TrackException(Exception exception, IDictionary<string, string> properties = null)
+        public override void TrackException(Exception exception, IDictionary<string, string?>? properties = null)
         {
             if (IsConfigured())
             {
@@ -57,11 +57,11 @@ namespace Bit.ViewModel.Implementations
             }
         }
 
-        public override void TrackMetric(string name, double value, IDictionary<string, string> properties = null)
+        public override void TrackMetric(string name, double value, IDictionary<string, string?>? properties = null)
         {
             if (IsConfigured())
             {
-                properties ??= new Dictionary<string, string>();
+                properties ??= new Dictionary<string, string?>();
 
                 if (!properties.ContainsKey("Value"))
                     properties.Add("Value", value.ToString(CultureInfo.InvariantCulture));
@@ -70,11 +70,11 @@ namespace Bit.ViewModel.Implementations
             }
         }
 
-        public override void TrackPageView(string name, TimeSpan duration, IDictionary<string, string> properties = null)
+        public override void TrackPageView(string name, TimeSpan duration, IDictionary<string, string?>? properties = null)
         {
             if (IsConfigured())
             {
-                properties ??= new Dictionary<string, string>();
+                properties ??= new Dictionary<string, string?>();
 
                 if (!properties.ContainsKey("Name"))
                     properties.Add("Name", name);
@@ -85,11 +85,11 @@ namespace Bit.ViewModel.Implementations
             }
         }
 
-        public override void TrackRequest(string name, DateTimeOffset startTime, TimeSpan duration, string responseCode, bool success, Uri url, string httpMethod, IDictionary<string, string> properties = null)
+        public override void TrackRequest(string name, DateTimeOffset startTime, TimeSpan duration, string responseCode, bool success, Uri url, string httpMethod, IDictionary<string, string?>? properties = null)
         {
             if (IsConfigured())
             {
-                properties ??= new Dictionary<string, string>();
+                properties ??= new Dictionary<string, string?>();
 
                 if (!properties.ContainsKey("Name"))
                     properties.Add("Name", name);
@@ -99,7 +99,7 @@ namespace Bit.ViewModel.Implementations
                     properties.Add("Duration", duration.ToString());
                 if (!properties.ContainsKey("Success"))
                     properties.Add("Success", success.ToString(CultureInfo.InvariantCulture));
-                if (!properties.ContainsKey("Url"))
+                if (!properties.ContainsKey("Url") && url != null)
                     properties.Add("Url", url.ToString());
                 if (!properties.ContainsKey("httpMethod")) /*Based on Microsoft.ApplicationInsights.DataContracts.RequestTelemetry*/
                     properties.Add("httpMethod", httpMethod);
@@ -108,7 +108,7 @@ namespace Bit.ViewModel.Implementations
             }
         }
 
-        public override void TrackTrace(string message, IDictionary<string, string> properties)
+        public override void TrackTrace(string message, IDictionary<string, string?>? properties)
         {
             if (IsConfigured())
             {
@@ -116,7 +116,7 @@ namespace Bit.ViewModel.Implementations
             }
         }
 
-        public override void SetUserId(string userId)
+        public override void SetUserId(string? userId)
         {
             if (IsConfigured())
             {
@@ -138,15 +138,15 @@ namespace Bit.ViewModel.Implementations
 
                         var exp = new CrashReportException { };
 
-                        var items = new Dictionary<string, string>
+                        var items = new Dictionary<string, string?>
                         {
                             { "CrashReportId", crashReport?.Id },
                             { "LastNavState", Preferences.Get("LastNavState", null) },
                             { "HasReceivedMemoryWarningInLastSession", hasReceivedMemoryWarningInLastSession.ToString(CultureInfo.InvariantCulture) },
                             { "VersionHistory", string.Join(",", VersionTracking.VersionHistory.OrderByDescending(vh => vh)) },
                             { "Version", string.Join(",", VersionTracking.CurrentVersion) },
-                            { "XamarinFormsVersion", typeof(Binding).Assembly.GetCustomAttribute<AssemblyFileVersionAttribute>().Version },
-                            { "BitVersion", typeof(BitCSharpClientControls).Assembly.GetName().Version.ToString() },
+                            { "XamarinFormsVersion", typeof(Binding).Assembly.GetCustomAttribute<AssemblyFileVersionAttribute>().Version! },
+                            { "BitVersion", typeof(BitCSharpClientControls).Assembly.GetName().Version.ToString()! },
                             { "CurrentUICulture", CultureInfo.CurrentUICulture.Name }
                         };
 

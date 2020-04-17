@@ -7,7 +7,10 @@ namespace Prism.Services
     {
         public static Task BeginInvokeOnMainThreadAsync(this IDeviceService deviceService, Func<Task> func)
         {
-            TaskCompletionSource<object> tcs = new TaskCompletionSource<object>();
+            if (deviceService == null)
+                throw new ArgumentNullException(nameof(deviceService));
+
+            TaskCompletionSource<object?> tcs = new TaskCompletionSource<object?>();
 
             deviceService.BeginInvokeOnMainThread(async () =>
             {

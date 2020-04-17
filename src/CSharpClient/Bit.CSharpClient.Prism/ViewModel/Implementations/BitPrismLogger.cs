@@ -10,7 +10,7 @@ namespace Bit.ViewModel.Implementations
 {
     public class BitPrismLogger : ILogger
     {
-        public virtual IExceptionHandler ExceptionHandler { get; set; }
+        public virtual IExceptionHandler ExceptionHandler { get; set; } = default!;
 
         public virtual void Log(string message, IDictionary<string, string> properties)
         {
@@ -22,7 +22,7 @@ namespace Bit.ViewModel.Implementations
         {
             if (category == Category.Exception)
             {
-                Report(new Exception(message), new Dictionary<string, string>
+                Report(new Exception(message), new Dictionary<string, string?>
                 {
                     { nameof(category), category.ToString() },
                     { nameof(priority), priority.ToString() }
@@ -34,7 +34,7 @@ namespace Bit.ViewModel.Implementations
             }
         }
 
-        public virtual void Report(Exception ex, IDictionary<string, string> properties)
+        public virtual void Report(Exception ex, IDictionary<string, string?>? properties)
         {
             BitExceptionHandler.Current.OnExceptionReceived(ex, properties);
         }

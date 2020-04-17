@@ -5,11 +5,11 @@ namespace Bit.Model.Events
 {
     public class MessageReceivedEvent : PubSubEvent<MessageReceivedEvent>
     {
-        public string Key { get; set; }
+        public string Key { get; set; } = default!;
 
-        public string Body { get; set; }
+        public string Body { get; set; } = default!;
 
-        JObject _jObject;
+        JObject _jObject = default!;
 
         public JObject AsJObject()
         {
@@ -17,7 +17,7 @@ namespace Bit.Model.Events
             return _jObject;
         }
 
-        JToken _jToken;
+        JToken _jToken = default!;
 
         public JToken AsJToken()
         {
@@ -25,7 +25,7 @@ namespace Bit.Model.Events
             return _jToken;
         }
 
-        JArray _jArray;
+        JArray _jArray = default!;
 
         public JArray AsJArray()
         {
@@ -33,11 +33,11 @@ namespace Bit.Model.Events
             return _jArray;
         }
 
-        object _t;
+        object _t = default!;
 
         public T As<T>()
         {
-            _t = _t ?? AsJToken().Value<T>();
+            _t = _t ?? AsJToken().Value<T>()!;
             return (T)_t;
         }
     }

@@ -1,6 +1,7 @@
 ﻿#if UWP
 using Bit.View.Controls;
 using Bit.View.UWP;
+using System;
 using Xamarin.Forms;
 using Xamarin.Forms.Platform.UWP;
 
@@ -13,6 +14,9 @@ namespace Bit.View.UWP
         protected override void OnElementChanged(ElementChangedEventArgs<Frame> e)
         {
             base.OnElementChanged(e);
+
+            if (e == null)
+                throw new ArgumentNullException(nameof(e));
 
             if (e.NewElement != null)
             {

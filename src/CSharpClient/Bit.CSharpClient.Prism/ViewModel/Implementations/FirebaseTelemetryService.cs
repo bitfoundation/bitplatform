@@ -10,10 +10,10 @@ namespace Bit.ViewModel.Implementations
         private bool _isInited = false;
 
 #if Android
-        private global::Android.Content.Context _context;
+        private global::Android.Content.Context _context = default!;
 #endif
 
-        private static FirebaseTelemetryService _current;
+        private static FirebaseTelemetryService _current = default!;
 
         public static FirebaseTelemetryService Current
         {
@@ -43,7 +43,7 @@ namespace Bit.ViewModel.Implementations
             return _isInited;
         }
 
-        public override void TrackEvent(string eventName, IDictionary<string, string> properties = null)
+        public override void TrackEvent(string eventName, IDictionary<string, string?>? properties = null)
         {
             if (IsConfigured())
             {
@@ -81,11 +81,14 @@ namespace Bit.ViewModel.Implementations
             }
         }
 
-        public override void TrackException(Exception exception, IDictionary<string, string> properties = null)
+        public override void TrackException(Exception exception, IDictionary<string, string?>? properties = null)
         {
             if (IsConfigured())
             {
-                properties ??= new Dictionary<string, string>();
+                if (exception == null)
+                    throw new ArgumentNullException(nameof(exception));
+
+                properties ??= new Dictionary<string, string?>();
 
                 if (!properties.ContainsKey("Message"))
                     properties.Add("Message", exception.ToString());
@@ -94,11 +97,11 @@ namespace Bit.ViewModel.Implementations
             }
         }
 
-        public override void TrackMetric(string name, double value, IDictionary<string, string> properties = null)
+        public override void TrackMetric(string name, double value, IDictionary<string, string?>? properties = null)
         {
             if (IsConfigured())
             {
-                properties ??= new Dictionary<string, string>();
+                properties ??= new Dictionary<string, string?>();
 
                 if (!properties.ContainsKey("Value"))
                     properties.Add("Value", value.ToString(CultureInfo.InvariantCulture));
@@ -107,11 +110,11 @@ namespace Bit.ViewModel.Implementations
             }
         }
 
-        public override void TrackPageView(string name, TimeSpan duration, IDictionary<string, string> properties = null)
+        public override void TrackPageView(string name, TimeSpan duration, IDictionary<string, string?>? properties = null)
         {
             if (IsConfigured())
             {
-                properties ??= new Dictionary<string, string>();
+                properties ??= new Dictionary<string, string?>();
 
                 if (!properties.ContainsKey("Name"))
                     properties.Add("Name", name);
@@ -122,11 +125,14 @@ namespace Bit.ViewModel.Implementations
             }
         }
 
-        public override void TrackRequest(string name, DateTimeOffset startTime, TimeSpan duration, string responseCode, bool success, Uri url, string httpMethod, IDictionary<string, string> properties = null)
+        public override void TrackRequest(string name, DateTimeOffset startTime, TimeSpan duration, string responseCode, bool success, Uri url, string httpMethod, IDictionary<string, string?>? properties = null)
         {
             if (IsConfigured())
             {
-                properties ??= new Dictionary<string, string>();
+                if (url == null)
+                    throw new ArgumentNullException(nameof(url));
+
+                properties ??= new Dictionary<string, string?>();
 
                 if (!properties.ContainsKey("Name"))
                     properties.Add("Name", name);
@@ -145,7 +151,7 @@ namespace Bit.ViewModel.Implementations
             }
         }
 
-        public override void TrackTrace(string message, IDictionary<string, string> properties)
+        public override void TrackTrace(string message, IDictionary<string, string?>? properties)
         {
             if (IsConfigured())
             {
@@ -153,7 +159,7 @@ namespace Bit.ViewModel.Implementations
             }
         }
 
-        public override void SetUserId(string userId)
+        public override void SetUserId(string? userId)
         {
             if (IsConfigured())
             {

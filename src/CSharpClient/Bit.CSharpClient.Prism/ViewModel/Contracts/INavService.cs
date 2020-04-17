@@ -16,24 +16,24 @@ namespace Bit.ViewModel.Contracts
     /// </summary>
     public interface INavService
     {
-        Task NavigateAsync(string name, INavigationParameters parameters = null);
+        Task NavigateAsync(string name, INavigationParameters? parameters = null);
         Task NavigateAsync(string name, params (string, object)[] parameters);
-        Task NavigateAsync(Uri uri, INavigationParameters parameters = null);
+        Task NavigateAsync(Uri uri, INavigationParameters? parameters = null);
         Task NavigateAsync(Uri uri, params (string, object)[] parameters);
 
         Task GoBackAsync(params (string, object)[] parameters);
-        Task GoBackAsync(INavigationParameters parameters = null);
+        Task GoBackAsync(INavigationParameters? parameters = null);
 
         Task GoBackToRootAsync(params (string, object)[] parameters);
-        Task GoBackToRootAsync(INavigationParameters parameters = null);
+        Task GoBackToRootAsync(INavigationParameters? parameters = null);
 
         string GetNavigationUriPath();
 
         Task ClearPopupStackAsync(params (string, object)[] parameters);
-        Task ClearPopupStackAsync(INavigationParameters parameters = null);
+        Task ClearPopupStackAsync(INavigationParameters? parameters = null);
 
         Task GoBackToAsync(string name, params (string, object)[] parameters);
-        Task GoBackToAsync(string name, INavigationParameters parameters = null);
+        Task GoBackToAsync(string name, INavigationParameters? parameters = null);
 
         INavigationService PrismNavigationService { get; }
 

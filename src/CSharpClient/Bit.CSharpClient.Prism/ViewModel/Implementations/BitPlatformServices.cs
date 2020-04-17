@@ -10,7 +10,7 @@ namespace Bit.ViewModel.Implementations
 {
     public class BitPlatformServices : IPlatformServices
     {
-        public IPlatformServices OriginalPlatformService { get; set; }
+        public IPlatformServices OriginalPlatformService { get; set; } = default!;
 
         public bool IsInvokeRequired => OriginalPlatformService.IsInvokeRequired;
 

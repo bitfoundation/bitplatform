@@ -7,9 +7,9 @@ namespace Bit.View
     [ContentProperty(nameof(Template))]
     public class InlineDataTemplate
     {
-        public Type ItemType { get; set; }
+        public Type ItemType { get; set; } = default!;
 
-        public DataTemplate Template { get; set; }
+        public DataTemplate Template { get; set; } = default!;
     }
 
     public class InlineDataTemplateSelector : DataTemplateSelector
@@ -18,6 +18,9 @@ namespace Bit.View
 
         protected override DataTemplate OnSelectTemplate(object item, BindableObject container)
         {
+            if (item == null)
+                throw new ArgumentNullException(nameof(item));
+
             foreach (InlineDataTemplate inlineDataTemplate in Templates)
             {
                 if (item.GetType() == inlineDataTemplate.ItemType)

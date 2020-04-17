@@ -7,7 +7,7 @@ namespace Bit.ViewModel
 {
     public class BitDelegateCommand : DelegateCommand
     {
-        private readonly Func<Task> _executeMethod;
+        private readonly Func<Task> _executeMethod = default!;
 
         public virtual async Task ExecuteAsync()
         {
@@ -70,7 +70,7 @@ namespace Bit.ViewModel
                 throw new InvalidOperationException($"Type {type.FullName} is not supported for BitDelegateCommand. Use either class or nullable strcut");
         }
 
-        private readonly Func<T, Task> _executeMethod;
+        private readonly Func<T, Task> _executeMethod = default!;
 
         public virtual async Task ExecuteAsync(T parameter)
         {
@@ -122,14 +122,14 @@ namespace Bit.ViewModel
             _executeMethod = executeMethod;
         }
 
-        protected override void Execute(object parameter)
+        protected override void Execute(object? parameter)
         {
             parameter = ConvertParameterTypeIfRequired(parameter);
 
             base.Execute(parameter);
         }
 
-        protected override bool CanExecute(object parameter)
+        protected override bool CanExecute(object? parameter)
         {
             parameter = ConvertParameterTypeIfRequired(parameter);
 
@@ -143,7 +143,7 @@ namespace Bit.ViewModel
             }
         }
 
-        protected object ConvertParameterTypeIfRequired(object parameter)
+        protected object? ConvertParameterTypeIfRequired(object? parameter)
         {
             if (parameter != null && !(parameter is T) && parameter is IConvertible convertible)
             {

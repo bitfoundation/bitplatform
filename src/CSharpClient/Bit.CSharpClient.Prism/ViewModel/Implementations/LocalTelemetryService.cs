@@ -10,9 +10,9 @@ namespace Bit.ViewModel.Implementations
 {
     public class ThingProperty
     {
-        public string Key { get; set; }
+        public string Key { get; set; } = default!;
 
-        public string Value { get; set; }
+        public string? Value { get; set; }
     }
 
     public class TrackedThing
@@ -27,7 +27,7 @@ namespace Bit.ViewModel.Implementations
 
     public class TrackedEvent : TrackedThing
     {
-        public string Name { get; set; }
+        public string Name { get; set; } = default!;
 
         public override string ToString()
         {
@@ -38,7 +38,7 @@ namespace Bit.ViewModel.Implementations
 
     public class TrackedException : TrackedThing
     {
-        public Exception Exception { get; set; }
+        public Exception Exception { get; set; } = default!;
 
         public override string ToString()
         {
@@ -49,7 +49,7 @@ namespace Bit.ViewModel.Implementations
 
     public class TrackedMetric : TrackedThing
     {
-        public string Name { get; set; }
+        public string Name { get; set; } = default!;
 
         public double Value { get; set; }
 
@@ -62,7 +62,7 @@ namespace Bit.ViewModel.Implementations
 
     public class TrackedPageView : TrackedThing
     {
-        public string Name { get; set; }
+        public string Name { get; set; } = default!;
 
         public TimeSpan Duration { get; set; }
 
@@ -75,17 +75,17 @@ namespace Bit.ViewModel.Implementations
 
     public class TrackedRequest : TrackedThing
     {
-        public string Name { get; set; }
+        public string Name { get; set; } = default!;
 
         public DateTimeOffset StartTime { get; set; }
 
         public TimeSpan Duration { get; set; }
 
-        public string ResponseCode { get; set; }
+        public string ResponseCode { get; set; } = default!;
 
         public bool Success { get; set; }
 
-        public string HttpMethod { get; set; }
+        public string HttpMethod { get; set; } = default!;
 
         public override string ToString()
         {
@@ -101,7 +101,7 @@ Http method: {HttpMethod}
 
     public class TrackedTrace : TrackedThing
     {
-        public string Message { get; set; }
+        public string Message { get; set; } = default!;
 
         public override string ToString()
         {
@@ -114,7 +114,7 @@ Http method: {HttpMethod}
     {
         private bool _isInited = false;
 
-        private static LocalTelemetryService _current;
+        private static LocalTelemetryService _current = default!;
 
         public static LocalTelemetryService Current
         {
@@ -122,7 +122,7 @@ Http method: {HttpMethod}
             set => _current = value;
         }
 
-        private string _UserId;
+        private string? _UserId;
 
 #if UWP || Android || iOS
         public virtual void Init()
@@ -136,7 +136,7 @@ Http method: {HttpMethod}
             return _isInited;
         }
 
-        public override void SetUserId(string userId)
+        public override void SetUserId(string? userId)
         {
             _UserId = userId;
         }
@@ -162,7 +162,7 @@ Http method: {HttpMethod}
             }
         }
 
-        public override IDictionary<string, string> PopulateProperties(IDictionary<string, string> initialProps)
+        public override IDictionary<string, string?> PopulateProperties(IDictionary<string, string?>? initialProps)
         {
             var props = base.PopulateProperties(initialProps);
 
@@ -172,7 +172,7 @@ Http method: {HttpMethod}
             return props;
         }
 
-        public override void TrackEvent(string eventName, IDictionary<string, string> properties = null)
+        public override void TrackEvent(string eventName, IDictionary<string, string?>? properties = null)
         {
             properties = PopulateProperties(properties);
 
@@ -187,7 +187,7 @@ Http method: {HttpMethod}
             });
         }
 
-        public override void TrackException(Exception exception, IDictionary<string, string> properties = null)
+        public override void TrackException(Exception exception, IDictionary<string, string?>? properties = null)
         {
             properties = PopulateProperties(properties);
 
@@ -202,7 +202,7 @@ Http method: {HttpMethod}
             });
         }
 
-        public override void TrackMetric(string name, double value, IDictionary<string, string> properties = null)
+        public override void TrackMetric(string name, double value, IDictionary<string, string?>? properties = null)
         {
             properties = PopulateProperties(properties);
 
@@ -218,7 +218,7 @@ Http method: {HttpMethod}
             });
         }
 
-        public override void TrackPageView(string name, TimeSpan duration, IDictionary<string, string> properties = null)
+        public override void TrackPageView(string name, TimeSpan duration, IDictionary<string, string?>? properties = null)
         {
             properties = PopulateProperties(properties);
 
@@ -234,7 +234,7 @@ Http method: {HttpMethod}
             });
         }
 
-        public override void TrackRequest(string name, DateTimeOffset startTime, TimeSpan duration, string responseCode, bool success, Uri url, string httpMethod, IDictionary<string, string> properties = null)
+        public override void TrackRequest(string name, DateTimeOffset startTime, TimeSpan duration, string responseCode, bool success, Uri url, string httpMethod, IDictionary<string, string?>? properties = null)
         {
             properties = PopulateProperties(properties);
 
@@ -254,7 +254,7 @@ Http method: {HttpMethod}
             });
         }
 
-        public override void TrackTrace(string message, IDictionary<string, string> properties)
+        public override void TrackTrace(string message, IDictionary<string, string?>? properties)
         {
             properties = PopulateProperties(properties);
 

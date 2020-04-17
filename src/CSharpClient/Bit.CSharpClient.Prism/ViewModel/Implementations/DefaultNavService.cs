@@ -25,12 +25,12 @@ namespace Bit.ViewModel.Implementations
             return navService;
         }
 
-        public virtual async Task NavigateAsync(string name, INavigationParameters parameters = null)
+        public virtual async Task NavigateAsync(string name, INavigationParameters? parameters = null)
         {
             if (name == null)
                 throw new ArgumentNullException(nameof(name));
 
-            if (name.StartsWith("/"))
+            if (name.StartsWith("/", StringComparison.InvariantCultureIgnoreCase))
                 await ClearPopupStackAsync(parameters);
 
             INavigationResult navigationResult = await PrismNavigationService.NavigateAsync(name, parameters, useModalNavigation: false, animated: false);
@@ -44,12 +44,12 @@ namespace Bit.ViewModel.Implementations
             await NavigateAsync(name, ConvertToINavigationParameters(parameters));
         }
 
-        public virtual async Task NavigateAsync(Uri uri, INavigationParameters parameters = null)
+        public virtual async Task NavigateAsync(Uri uri, INavigationParameters? parameters = null)
         {
             if (uri == null)
                 throw new ArgumentNullException(nameof(uri));
 
-            if (uri.LocalPath.StartsWith("/"))
+            if (uri.LocalPath.StartsWith("/", StringComparison.InvariantCultureIgnoreCase))
                 await ClearPopupStackAsync(parameters);
 
             INavigationResult navigationResult = await PrismNavigationService.NavigateAsync(uri, parameters, useModalNavigation: false, animated: false);
@@ -63,7 +63,7 @@ namespace Bit.ViewModel.Implementations
             await NavigateAsync(uri, ConvertToINavigationParameters(parameters));
         }
 
-        public virtual async Task GoBackAsync(INavigationParameters parameters = null)
+        public virtual async Task GoBackAsync(INavigationParameters? parameters = null)
         {
             bool ignoreMeInNavStack = PopupNavigation.PopupStack.LastOrDefault()?.GetType().GetCustomAttribute<IgnoreMeInNavigationStackAttribute>() != null;
 
@@ -92,7 +92,7 @@ namespace Bit.ViewModel.Implementations
             await GoBackAsync(ConvertToINavigationParameters(parameters));
         }
 
-        public virtual async Task GoBackToRootAsync(INavigationParameters parameters = null)
+        public virtual async Task GoBackToRootAsync(INavigationParameters? parameters = null)
         {
             INavigationResult navigationResult = await PrismNavigationService.GoBackToRootAsync(parameters);
             if (!navigationResult.Success)
@@ -126,7 +126,7 @@ namespace Bit.ViewModel.Implementations
             await ClearPopupStackAsync(parameters: ConvertToINavigationParameters(parameters));
         }
 
-        public virtual async Task ClearPopupStackAsync(INavigationParameters parameters = null)
+        public virtual async Task ClearPopupStackAsync(INavigationParameters? parameters = null)
         {
             INavigationResult navigationResult = await PrismNavigationService.ClearPopupStackAsync(parameters: parameters, animated: false);
             if (!navigationResult.Success)
@@ -140,7 +140,7 @@ namespace Bit.ViewModel.Implementations
             await GoBackToAsync(name, ConvertToINavigationParameters(parameters));
         }
 
-        public virtual async Task GoBackToAsync(string name, INavigationParameters parameters = null)
+        public virtual async Task GoBackToAsync(string name, INavigationParameters? parameters = null)
         {
             await ClearPopupStackAsync(parameters); // TODO
 
@@ -164,15 +164,15 @@ namespace Bit.ViewModel.Implementations
                 .Repeat("../", timesToGoBack));
         }
 
-        public virtual INavigationService PrismNavigationService { get; set; }
+        public virtual INavigationService PrismNavigationService { get; set; } = default!;
 
-        public virtual IPopupNavigation PopupNavigation { get; set; }
+        public virtual IPopupNavigation PopupNavigation { get; set; } = default!;
 
         public virtual INavService AppNavService
         {
             get
             {
-                return BitApplication.Current?.NavigationService;
+                return BitApplication.Current.NavigationService;
             }
         }
 
@@ -180,14 +180,14 @@ namespace Bit.ViewModel.Implementations
         {
             get
             {
-                NavigationPage appNavPage = BitApplication.Current?.MainPage as NavigationPage;
+                NavigationPage? appNavPage = BitApplication.Current?.MainPage as NavigationPage;
 
                 if (appNavPage == null)
                     appNavPage = (BitApplication.Current?.MainPage as MasterDetailPage)?.Detail as NavigationPage;
 
-                INavService navService = (appNavPage?.CurrentPage?.BindingContext as BitViewModelBase)?.NavigationService;
+                INavService? navService = (appNavPage?.CurrentPage?.BindingContext as BitViewModelBase)?.NavigationService;
 
-                return navService;
+                return navService!;
             }
         }
     }

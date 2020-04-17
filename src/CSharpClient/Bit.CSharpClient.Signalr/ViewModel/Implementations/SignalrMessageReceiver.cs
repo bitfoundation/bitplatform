@@ -13,19 +13,19 @@ namespace Bit.ViewModel.Implementations
 {
     public class SignalrMessageReceiver : Bindable, IMessageReceiver
     {
-        public IExceptionHandler ExceptionHandler { get; set; }
+        public IExceptionHandler ExceptionHandler { get; set; } = default!;
 
-        public virtual SignalRHttpClient SignalRHttpClient { get; set; }
+        public virtual SignalRHttpClient SignalRHttpClient { get; set; } = default!;
 
-        public virtual IEventAggregator EventAggregator { get; set; }
+        public virtual IEventAggregator EventAggregator { get; set; } = default!;
 
-        public virtual IDeviceService DeviceService { get; set; }
+        public virtual IDeviceService DeviceService { get; set; } = default!;
 
-        public virtual IClientAppProfile ClientAppProfile { get; set; }
+        public virtual IClientAppProfile ClientAppProfile { get; set; } = default!;
 
-        public IHubConnectionFactory HubConnectionFactory { get; set; }
+        public IHubConnectionFactory HubConnectionFactory { get; set; } = default!;
 
-        public IClientTransportFactory ClientTransportFactory { get; set; }
+        public IClientTransportFactory ClientTransportFactory { get; set; } = default!;
 
         private bool _IsConnected;
         public virtual bool IsConnected
@@ -45,10 +45,10 @@ namespace Bit.ViewModel.Implementations
             set => SetProperty(ref _ShouldBeConnected, value);
         }
 
-        HubConnection _hubConnection;
-        IDisposable _listener;
+        HubConnection? _hubConnection;
+        IDisposable? _listener;
         bool _continueWork = true;
-        DefaultServerSentEventsTransport _serverSentEventsTransport;
+        DefaultServerSentEventsTransport? _serverSentEventsTransport;
 
         public virtual async Task Start(CancellationToken cancellationToken)
         {

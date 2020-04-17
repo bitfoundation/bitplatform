@@ -46,7 +46,7 @@ namespace Bit.View.Controls
             Navigation.PushPopupAsync(BitDateTimePopupView);
         }
 
-        private BitDateTimePopupView _BitDateTimePopupView;
+        private BitDateTimePopupView _BitDateTimePopupView = default!;
         public virtual BitDateTimePopupView BitDateTimePopupView
         {
             get => _BitDateTimePopupView;
@@ -57,8 +57,8 @@ namespace Bit.View.Controls
             }
         }
 
-        private ICommand _OpenPopupCommand;
-        public virtual ICommand OpenPopupCommand
+        private ICommand? _OpenPopupCommand;
+        public virtual ICommand? OpenPopupCommand
         {
             get => _OpenPopupCommand;
             protected set
@@ -84,9 +84,9 @@ namespace Bit.View.Controls
         }
 
         public static readonly BindableProperty FontFamilyProperty = BindableProperty.Create(nameof(FontFamily), typeof(string), typeof(BitDateTimePicker), defaultValue: null, defaultBindingMode: BindingMode.OneWay);
-        public virtual string FontFamily
+        public virtual string? FontFamily
         {
-            get { return (string)GetValue(FontFamilyProperty); }
+            get { return (string?)GetValue(FontFamilyProperty); }
             set { SetValue(FontFamilyProperty, value); }
         }
 
@@ -116,9 +116,9 @@ namespace Bit.View.Controls
         }
 
         public static readonly BindableProperty DateTimeDisplayFormatProperty = BindableProperty.Create(nameof(DateTimeDisplayFormat), typeof(string), typeof(BitDateTimePicker), defaultValue: null, defaultBindingMode: BindingMode.OneWay);
-        public virtual string DateTimeDisplayFormat
+        public virtual string? DateTimeDisplayFormat
         {
-            get { return (string)GetValue(DateTimeDisplayFormatProperty); }
+            get { return (string?)GetValue(DateTimeDisplayFormatProperty); }
             set { SetValue(DateTimeDisplayFormatProperty, value); }
         }
 
@@ -129,8 +129,8 @@ namespace Bit.View.Controls
             set { SetValue(AutoCloseProperty, value); }
         }
 
-        private string _Text;
-        public virtual string Text
+        private string? _Text;
+        public virtual string? Text
         {
             get => _Text;
             set
@@ -153,7 +153,7 @@ namespace Bit.View.Controls
             OnPropertyChanged((nameof(DisplayText)));
         }
 
-        public virtual string DisplayText
+        public virtual string? DisplayText
         {
             get
             {
@@ -208,7 +208,7 @@ namespace Bit.View.Controls
             return _CultureInfoCache.ContainsKey(cultureName) ? _CultureInfoCache[cultureName] : CultureInfo.GetCultureInfo(cultureName);
         }
 
-        private static CultureInfoProvider _Current;
+        private static CultureInfoProvider? _Current;
 
         public static CultureInfoProvider Current
         {

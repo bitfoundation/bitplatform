@@ -34,12 +34,12 @@ namespace Autofac
             containerBuilder.RegisterInstance<ITelemetryService>(AppCenterTelemetryService.Current);
             containerBuilder.RegisterInstance<ITelemetryService>(FirebaseTelemetryService.Current);
             containerBuilder.RegisterInstance(LocalTelemetryService.Current).As<LocalTelemetryService, ITelemetryService>();
-            IContainerRegistry containerRegistry = (IContainerRegistry)containerBuilder.Properties[nameof(containerRegistry)];
+            IContainerRegistry containerRegistry = (IContainerRegistry)containerBuilder.Properties[nameof(containerRegistry)]!;
             containerRegistry.RegisterForNav<BitConsoleView, BitConsoleViewModel>("BitConsole");
 
             containerBuilder.RegisterBuildCallback(container =>
             {
-                IMessageReceiver messageReceiver = container.ResolveOptional<IMessageReceiver>();
+                IMessageReceiver? messageReceiver = container.ResolveOptional<IMessageReceiver>();
                 if (messageReceiver != null)
                 {
                     foreach (TelemetryServiceBase telemetryService in container.Resolve<IEnumerable<ITelemetryService>>().OfType<TelemetryServiceBase>())

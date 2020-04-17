@@ -60,7 +60,7 @@ namespace Bit.Data
             string tableName = $"[{efCoreDtoType.GetTableName()}]"; // No schema support
 
             var props = efCoreDtoType.GetProperties()
-                .Select(p => new { p.Name, Value = Entry(dto).Property(p.Name).CurrentValue })
+                .Select(p => new { p.Name, Value = (object?)Entry(dto).Property(p.Name).CurrentValue })
                 .ToArray();
 
             foreach (INavigation nav in efCoreDtoType.GetNavigations())
@@ -68,7 +68,7 @@ namespace Bit.Data
                 if (nav.ClrType.GetCustomAttribute<ComplexTypeAttribute>() == null)
                     continue;
 
-                object navInstance = nav.PropertyInfo.GetValue(dto);
+                object? navInstance = nav.PropertyInfo.GetValue(dto);
 
                 if (navInstance == null)
                     continue;
@@ -85,10 +85,14 @@ namespace Bit.Data
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
+            if (optionsBuilder == null)
+                throw new ArgumentNullException(nameof(optionsBuilder));
+
             if (ChangeTrackingEnabled() == false)
             {
                 optionsBuilder = optionsBuilder.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking);
             }
+
             base.OnConfiguring(optionsBuilder);
         }
 

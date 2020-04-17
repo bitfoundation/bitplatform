@@ -11,13 +11,13 @@ namespace Bit.ViewModel.Contracts
 {
     public class DtoSetSyncConfig
     {
-        public virtual string DtoSetName { get; set; }
+        public virtual string DtoSetName { get; set; } = default!;
 
-        public virtual Func<IODataClient, IBoundClient<IDictionary<string, object>>> OnlineDtoSet { get; set; }
+        public virtual Func<IODataClient, IBoundClient<IDictionary<string, object>>> OnlineDtoSet { get; set; } = default!;
 
-        public virtual Func<IODataClient, IBoundClient<IDictionary<string, object>>> OnlineDtoSetForGet { get; set; }
+        public virtual Func<IODataClient, IBoundClient<IDictionary<string, object>>>? OnlineDtoSetForGet { get; set; }
 
-        public virtual Func<DbContext, IQueryable<ISyncableDto>> OfflineDtoSet { get; set; }
+        public virtual Func<DbContext, IQueryable<ISyncableDto>> OfflineDtoSet { get; set; } = default!;
 
         public virtual bool FromServerSync { get; set; } = true;
 

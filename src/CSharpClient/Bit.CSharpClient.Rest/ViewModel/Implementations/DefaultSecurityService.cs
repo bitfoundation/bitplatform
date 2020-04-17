@@ -17,21 +17,21 @@ namespace Bit.ViewModel.Implementations
 {
     public class DefaultSecurityService : ISecurityService
     {
-        public static ISecurityService Current { get; private set; }
+        public static ISecurityService Current { get; private set; } = default!;
 
         public DefaultSecurityService()
         {
             Current = this;
         }
 
-        public virtual IClientAppProfile ClientAppProfile { get; set; }
-        public virtual IDateTimeProvider DateTimeProvider { get; set; }
-        public virtual IEnumerable<ITelemetryService> TelemetryServices { get; set; }
-        public virtual Lazy<IContainer> ContainerProvider { get; set; }
+        public virtual IClientAppProfile ClientAppProfile { get; set; } = default!;
+        public virtual IDateTimeProvider DateTimeProvider { get; set; } = default!;
+        public virtual IEnumerable<ITelemetryService> TelemetryServices { get; set; } = default!;
+        public virtual Lazy<IContainer> ContainerProvider { get; set; } = default!;
 
         public virtual async Task<bool> IsLoggedInAsync(CancellationToken cancellationToken = default)
         {
-            Token token = await GetCurrentTokenAsync(cancellationToken).ConfigureAwait(false);
+            Token? token = await GetCurrentTokenAsync(cancellationToken).ConfigureAwait(false);
 
             if (token == null)
                 return false;
@@ -39,7 +39,7 @@ namespace Bit.ViewModel.Implementations
             return (DateTimeProvider.GetCurrentUtcDateTime() - token.login_date) < TimeSpan.FromSeconds(token.expires_in);
         }
 
-        public virtual async Task<Token> LoginWithCredentials(string userName, string password, string client_id, string client_secret, string[] scopes = null, IDictionary<string, string> acr_values = null, CancellationToken cancellationToken = default)
+        public virtual async Task<Token> LoginWithCredentials(string userName, string password, string client_id, string client_secret, string[]? scopes = null, IDictionary<string, string?>? acr_values = null, CancellationToken cancellationToken = default)
         {
             if (userName == null)
                 throw new ArgumentNullException(nameof(userName));
@@ -97,7 +97,7 @@ namespace Bit.ViewModel.Implementations
             return token;
         }
 
-        public virtual async Task<Token> Login(object state = null, string client_id = null, IDictionary<string, string> acr_values = null, CancellationToken cancellationToken = default)
+        public virtual async Task<Token> Login(object? state = null, string? client_id = null, IDictionary<string, string?>? acr_values = null, CancellationToken cancellationToken = default)
         {
             var authResult = await WebAuthenticator.AuthenticateAsync(GetLoginUrl(state, client_id, acr_values), ClientAppProfile.OAuthRedirectUri).ConfigureAwait(false);
 
@@ -110,14 +110,14 @@ namespace Bit.ViewModel.Implementations
             return token;
         }
 
-        public virtual async Task<Token> GetCurrentTokenAsync(CancellationToken cancellationToken = default)
+        public virtual async Task<Token?> GetCurrentTokenAsync(CancellationToken cancellationToken = default)
         {
-            string token = null;
+            string? token = null;
 
             if (UseSecureStorage())
                 token = await SecureStorage.GetAsync("Token").ConfigureAwait(false);
             else
-                token = Preferences.Get("Token", (string)null);
+                token = Preferences.Get("Token", (string?)null);
 
             if (token == null)
                 return null;
@@ -125,9 +125,9 @@ namespace Bit.ViewModel.Implementations
             return JsonConvert.DeserializeObject<Dictionary<string, string>>(token);
         }
 
-        public virtual async Task Logout(object state = null, string client_id = null, CancellationToken cancellationToken = default)
+        public virtual async Task Logout(object? state = null, string? client_id = null, CancellationToken cancellationToken = default)
         {
-            Token token = await GetCurrentTokenAsync(cancellationToken).ConfigureAwait(false);
+            Token? token = await GetCurrentTokenAsync(cancellationToken).ConfigureAwait(false);
 
             if (token != null)
             {
@@ -140,38 +140,38 @@ namespace Bit.ViewModel.Implementations
 
                 if (!string.IsNullOrEmpty(token.id_token))
                 {
-                    await WebAuthenticator.AuthenticateAsync(GetLogoutUrl(token.id_token, state, client_id), ClientAppProfile.OAuthRedirectUri).ConfigureAwait(false);
+                    await WebAuthenticator.AuthenticateAsync(GetLogoutUrl(token.id_token!, state, client_id), ClientAppProfile.OAuthRedirectUri).ConfigureAwait(false);
                 }
             }
         }
 
-        public virtual Uri GetLoginUrl(object state = null, string client_id = null, IDictionary<string, string> acr_values = null)
+        public virtual Uri GetLoginUrl(object? state = null, string? client_id = null, IDictionary<string, string?>? acr_values = null)
         {
             state = state ?? new { };
 
-            string relativeUri = $"{ClientAppProfile.LoginEndpoint}?state={JsonConvert.SerializeObject(state)}&redirect_uri={ClientAppProfile.OAuthRedirectUri}";
+            string relativeUri = $"{ClientAppProfile.LoginEndpoint ?? throw new InvalidOperationException($"{nameof(IClientAppProfile.LoginEndpoint)} is null.")}?state={JsonConvert.SerializeObject(state)}&redirect_uri={ClientAppProfile.OAuthRedirectUri ?? throw new InvalidOperationException($"{nameof(IClientAppProfile.OAuthRedirectUri)} is null.")}";
 
             if (!string.IsNullOrEmpty(client_id))
                 relativeUri += $"&client_id={client_id}";
             if (acr_values != null)
                 relativeUri += $"&acr_values={string.Join(" ", acr_values.Select(p => $"{p.Key}:{p.Value}"))}";
 
-            return new Uri(ClientAppProfile.HostUri, relativeUri: relativeUri);
+            return new Uri(ClientAppProfile.HostUri ?? throw new InvalidOperationException($"{nameof(IClientAppProfile.HostUri)} is null."), relativeUri: relativeUri);
         }
 
-        public virtual Uri GetLogoutUrl(string id_token, object state = null, string client_id = null)
+        public virtual Uri GetLogoutUrl(string id_token, object? state = null, string? client_id = null)
         {
             if (string.IsNullOrEmpty(id_token))
                 throw new ArgumentException("Id token may not be empty or null", nameof(id_token));
 
             state = state ?? new { };
 
-            string relativeUri = $"{ClientAppProfile.LogoutEndpint}?state={JsonConvert.SerializeObject(state)}&redirect_uri={ClientAppProfile.OAuthRedirectUri}&id_token={id_token}";
+            string relativeUri = $"{ClientAppProfile.LogoutEndpint ?? throw new InvalidOperationException($"{nameof(IClientAppProfile.LogoutEndpint)} is null.")}?state={JsonConvert.SerializeObject(state)}&redirect_uri={ClientAppProfile.OAuthRedirectUri ?? throw new InvalidOperationException($"{nameof(IClientAppProfile.OAuthRedirectUri)} is null.")}&id_token={id_token}";
 
             if (!string.IsNullOrEmpty(client_id))
                 relativeUri += $"&client_id={client_id}";
 
-            return new Uri(ClientAppProfile.HostUri, relativeUri: relativeUri);
+            return new Uri(ClientAppProfile.HostUri ?? throw new InvalidOperationException($"{nameof(IClientAppProfile.HostUri)} is null."), relativeUri: relativeUri);
         }
 
         async Task StoreToken(string jsonToken, CancellationToken cancellationToken)
@@ -198,7 +198,7 @@ namespace Bit.ViewModel.Implementations
             if (!await IsLoggedInAsync(cancellationToken).ConfigureAwait(false))
                 throw new InvalidOperationException("User is not logged in.");
 
-            Token token = await GetCurrentTokenAsync(cancellationToken).ConfigureAwait(false);
+            Token token = (await GetCurrentTokenAsync(cancellationToken).ConfigureAwait(false))!;
 
             var handler = new JwtSecurityTokenHandler();
 

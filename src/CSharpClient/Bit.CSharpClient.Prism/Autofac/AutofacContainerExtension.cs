@@ -15,10 +15,13 @@ namespace Prism.Autofac
     {
         public ContainerBuilder Builder { get; }
 
-        public IContainer Instance { get; private set; }
+        public IContainer? Instance { get; private set; }
 
         public AutofacContainerExtension(ContainerBuilder builder)
         {
+            if (builder == null)
+                throw new ArgumentNullException(nameof(builder));
+
             Builder = builder;
         }
 
@@ -70,22 +73,22 @@ namespace Prism.Autofac
 
         public bool IsRegistered(Type type, string name)
         {
-            return Instance.IsRegisteredWithName(name, type);
+            return Instance!.IsRegisteredWithName(name, type) == true;
         }
 
         public object Resolve(Type type)
         {
-            return Instance.Resolve(type);
+            return Instance!.Resolve(type);
         }
 
         public object Resolve(Type type, string name)
         {
-            return Instance.ResolveNamed(name, type);
+            return Instance!.ResolveNamed(name, type);
         }
 
         public object Resolve(Type type, params (Type Type, object Instance)[] parameters)
         {
-            return Instance.Resolve(type, PrepareParameters(parameters));
+            return Instance!.Resolve(type, PrepareParameters(parameters));
         }
 
         List<Parameter> PrepareParameters((Type Type, object Instance)[] parameters)
@@ -111,12 +114,12 @@ namespace Prism.Autofac
 
         public object Resolve(Type type, string name, params (Type Type, object Instance)[] parameters)
         {
-            return Instance.ResolveNamed(name, type, PrepareParameters(parameters));
+            return Instance!.ResolveNamed(name, type, PrepareParameters(parameters));
         }
 
         public virtual INavService BuildNavService(INavigationService prismNavigationService)
         {
-            return Instance.Resolve<INavServiceFactory>()(prismNavigationService, Instance.Resolve<IPopupNavigation>());
+            return Instance!.Resolve<INavServiceFactory>()(prismNavigationService, Instance!.Resolve<IPopupNavigation>());
         }
     }
 }

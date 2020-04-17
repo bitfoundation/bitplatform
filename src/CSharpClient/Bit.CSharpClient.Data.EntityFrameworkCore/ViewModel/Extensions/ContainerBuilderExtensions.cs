@@ -7,13 +7,13 @@ namespace Autofac
 {
     public static class ContainerBuilderExtensions
     {
-        public static ContainerBuilder RegisterDbContext<TDbContext>(this ContainerBuilder containerBuilder, Action<DbContextOptionsBuilder> optionsAction = null)
+        public static ContainerBuilder RegisterDbContext<TDbContext>(this ContainerBuilder containerBuilder, Action<DbContextOptionsBuilder>? optionsAction = null)
             where TDbContext : EfCoreDbContextBase
         {
             if (containerBuilder == null)
                 throw new ArgumentNullException(nameof(containerBuilder));
 
-            IServiceCollection services = (IServiceCollection)containerBuilder.Properties[nameof(services)];
+            IServiceCollection services = (IServiceCollection)containerBuilder.Properties[nameof(services)]!;
 
             services.AddEntityFrameworkSqlite();
             services.AddDbContext<TDbContext>(optionsAction, contextLifetime: ServiceLifetime.Transient, optionsLifetime: ServiceLifetime.Transient);

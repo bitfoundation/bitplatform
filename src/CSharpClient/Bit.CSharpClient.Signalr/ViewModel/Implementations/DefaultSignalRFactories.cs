@@ -10,12 +10,18 @@ namespace Bit.ViewModel.Implementations
     {
         public static SignalRHttpClient SignalRHttpClientFactory(HttpMessageHandler httpMessageHandler)
         {
+            if (httpMessageHandler == null)
+                throw new ArgumentNullException(nameof(httpMessageHandler));
+
             return new SignalRHttpClient(httpMessageHandler);
         }
 
         public static HubConnection IHubConnectionFactory(IClientAppProfile clientAppProfile)
         {
-            return new HubConnection($"{clientAppProfile.HostUri}{clientAppProfile.SignalrEndpint}")
+            if (clientAppProfile == null)
+                throw new ArgumentNullException(nameof(clientAppProfile));
+
+            return new HubConnection($"{clientAppProfile.HostUri ?? throw new InvalidOperationException($"{nameof(IClientAppProfile.HostUri)} is null")}{clientAppProfile.SignalrEndpint ?? throw new InvalidOperationException($"{nameof(IClientAppProfile.SignalrEndpint)} is null")}")
             {
                 TransportConnectTimeout = TimeSpan.FromSeconds(3)
             };
@@ -23,6 +29,9 @@ namespace Bit.ViewModel.Implementations
 
         public static DefaultServerSentEventsTransport IClientTransportFactory(IHttpClient signalRHttpClient)
         {
+            if (signalRHttpClient == null)
+                throw new ArgumentNullException(nameof(signalRHttpClient));
+
             return new DefaultServerSentEventsTransport(signalRHttpClient)
             {
                 ReconnectDelay = TimeSpan.FromSeconds(3)

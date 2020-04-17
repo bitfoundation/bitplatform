@@ -14,7 +14,7 @@ namespace Bit.View.Controls
         {
             foreach (WeakReference<BitRadioButton> radioButtonWeakReference in BitRadioButtons)
             {
-                if (radioButtonWeakReference.TryGetTarget(out BitRadioButton radioButtonView) && radioButtonView != currentRadioButtonView && radioButtonView.Key.GetType() == currentRadioButtonView.Key.GetType())
+                if (radioButtonWeakReference.TryGetTarget(out BitRadioButton? radioButtonView) && radioButtonView != currentRadioButtonView && radioButtonView.Key!.GetType() == currentRadioButtonView.Key!.GetType())
                 {
                     radioButtonView.IsSelected = false;
                 }
@@ -37,13 +37,13 @@ namespace Bit.View.Controls
 
         public virtual void SelectedItemChanged()
         {
-            if (Value.Equals(Key))
+            if (Value?.Equals(Key) == true)
             {
                 IsSelected = true;
             }
         }
 
-        private Xamarin.Forms.View _Content;
+        private Xamarin.Forms.View _Content = default!;
         public virtual Xamarin.Forms.View Content
         {
             get => _Content;
@@ -54,7 +54,7 @@ namespace Bit.View.Controls
             }
         }
 
-        private bool _IsSelected;
+        private bool _IsSelected = default!;
         public bool IsSelected
         {
             get => _IsSelected;
@@ -65,7 +65,7 @@ namespace Bit.View.Controls
             }
         }
 
-        private ICommand _SelectedTappedCommand;
+        private ICommand _SelectedTappedCommand = default!;
         public ICommand SelectedTappedCommand
         {
             get => _SelectedTappedCommand;
@@ -94,9 +94,9 @@ namespace Bit.View.Controls
 
         public static BindableProperty TextProperty = BindableProperty.Create(nameof(Text), typeof(string), typeof(BitRadioButton), defaultValue: null, defaultBindingMode: BindingMode.OneWay);
 
-        public virtual string Text
+        public virtual string? Text
         {
-            get => (string)GetValue(TextProperty);
+            get => (string?)GetValue(TextProperty);
             set => SetValue(TextProperty, value);
         }
 
@@ -110,7 +110,7 @@ namespace Bit.View.Controls
 
         public static BindableProperty KeyProperty = BindableProperty.Create(nameof(Key), typeof(object), typeof(BitRadioButton), defaultValue: null, defaultBindingMode: BindingMode.OneWay);
 
-        public virtual object Key
+        public virtual object? Key
         {
             get => GetValue(KeyProperty);
             set => SetValue(KeyProperty, value);
@@ -122,7 +122,7 @@ namespace Bit.View.Controls
             bitRadioButton.SelectedItemChanged();
         });
 
-        public virtual object Value
+        public virtual object? Value
         {
             get => GetValue(ValueProperty);
             set => SetValue(ValueProperty, value);

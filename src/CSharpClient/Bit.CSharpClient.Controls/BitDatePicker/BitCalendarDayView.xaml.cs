@@ -13,16 +13,16 @@ namespace Bit.View.Controls
         }
 
         public static BindableProperty DayProperty = BindableProperty.Create(nameof(Day), typeof(CalendarDay), typeof(BitCalendarDayView), defaultValue: null, defaultBindingMode: BindingMode.OneWay);
-        public virtual CalendarDay Day
+        public virtual CalendarDay? Day
         {
-            get { return (CalendarDay)GetValue(DayProperty); }
+            get { return (CalendarDay?)GetValue(DayProperty); }
             set { SetValue(DayProperty, value); }
         }
 
         public static BindableProperty SelectDateCommandProperty = BindableProperty.Create(nameof(SelectDateCommand), typeof(ICommand), typeof(BitCalendarDayView), defaultValue: null, defaultBindingMode: BindingMode.OneWay);
-        public virtual ICommand SelectDateCommand
+        public virtual ICommand? SelectDateCommand
         {
-            get { return (ICommand)GetValue(SelectDateCommandProperty); }
+            get { return (ICommand?)GetValue(SelectDateCommandProperty); }
             set { SetValue(SelectDateCommandProperty, value); }
         }
 
@@ -41,9 +41,9 @@ namespace Bit.View.Controls
         }
 
         public static readonly BindableProperty FontFamilyProperty = BindableProperty.Create(nameof(FontFamily), typeof(string), typeof(BitCalendarDayView), default(string), defaultBindingMode: BindingMode.OneWay);
-        public virtual string FontFamily
+        public virtual string? FontFamily
         {
-            get { return (string)GetValue(FontFamilyProperty); }
+            get { return (string?)GetValue(FontFamilyProperty); }
             set { SetValue(FontFamilyProperty, value); }
         }
     }
@@ -85,6 +85,6 @@ namespace Bit.View.Controls
             }
         }
 
-        public virtual event PropertyChangedEventHandler PropertyChanged;
+        public virtual event PropertyChangedEventHandler PropertyChanged = default!;
     }
 }

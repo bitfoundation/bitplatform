@@ -45,7 +45,7 @@ namespace Bit.View.Controls
 
         protected virtual void SyncViewModelWithView(CalendarDay selectedDay)
         {
-            foreach (CalendarDay day in Days)
+            foreach (CalendarDay? day in Days)
             {
                 if (day == null)
                     continue;
@@ -65,7 +65,7 @@ namespace Bit.View.Controls
 
         protected virtual void SyncViewWithViewModel()
         {
-            foreach (CalendarDay day in Days)
+            foreach (CalendarDay? day in Days)
             {
                 if (day == null)
                     continue;
@@ -120,7 +120,7 @@ namespace Bit.View.Controls
             int prevMonthDaysInCurrentMonthView = (firstDayOfMonthDayOfWeek.DayOfWeekNumber - 1);
             int nextMonthDaysInCurrentMonthView = 42 - thisMonthDaysCount - prevMonthDaysInCurrentMonthView;
 
-            List<CalendarDay> days = new List<CalendarDay>(42);
+            List<CalendarDay?> days = new List<CalendarDay?>(42);
 
             LocalDate today = new LocalDate(DateTimeOffset.Now.Year, DateTimeOffset.Now.Month, DateTimeOffset.Now.Day, CalendarSystem.Gregorian).WithCalendar(CalendarSystem);
 
@@ -149,7 +149,7 @@ namespace Bit.View.Controls
             Days = days;
         }
 
-        private string _CalendarTitle;
+        private string _CalendarTitle = default!;
         public virtual string CalendarTitle
         {
             get => _CalendarTitle;
@@ -160,7 +160,7 @@ namespace Bit.View.Controls
             }
         }
 
-        private string[] _DaysOfWeekNames;
+        private string[] _DaysOfWeekNames = default!;
         public virtual string[] DaysOfWeekNames
         {
             get => _DaysOfWeekNames;
@@ -171,8 +171,8 @@ namespace Bit.View.Controls
             }
         }
 
-        private List<CalendarDay> _Days;
-        public virtual List<CalendarDay> Days
+        private List<CalendarDay?> _Days = default!;
+        public virtual List<CalendarDay?> Days
         {
             get => _Days;
             protected set
@@ -193,7 +193,7 @@ namespace Bit.View.Controls
             }
         }
 
-        private ICommand _SelectDateTimeCommand;
+        private ICommand _SelectDateTimeCommand = default!;
         public virtual ICommand SelectDateTimeCommand
         {
             get => _SelectDateTimeCommand;
@@ -204,7 +204,7 @@ namespace Bit.View.Controls
             }
         }
 
-        private ICommand _ShowNextMonthCommand;
+        private ICommand _ShowNextMonthCommand = default!;
         public virtual ICommand ShowNextMonthCommand
         {
             get => _ShowNextMonthCommand;
@@ -215,7 +215,7 @@ namespace Bit.View.Controls
             }
         }
 
-        private ICommand _ShowPreviousMonthCommand;
+        private ICommand _ShowPreviousMonthCommand = default!;
         public virtual ICommand ShowPreviousMonthCommand
         {
             get => _ShowPreviousMonthCommand;
@@ -249,9 +249,9 @@ namespace Bit.View.Controls
         }
 
         public static readonly BindableProperty FontFamilyProperty = BindableProperty.Create(nameof(FontFamily), typeof(string), typeof(BitDateTimePopupView), defaultValue: null, defaultBindingMode: BindingMode.OneWay);
-        public string FontFamily
+        public string? FontFamily
         {
-            get { return (string)GetValue(FontFamilyProperty); }
+            get { return (string?)GetValue(FontFamilyProperty); }
             set { SetValue(FontFamilyProperty, value); }
         }
 
@@ -308,7 +308,7 @@ namespace Bit.View.Controls
             }
         }
 
-        private string _DayOfWeekName;
+        private string _DayOfWeekName = default!;
         /// <summary>
         /// Based on current culture.
         /// </summary>
@@ -336,6 +336,6 @@ namespace Bit.View.Controls
             }
         }
 
-        public virtual event PropertyChangedEventHandler PropertyChanged;
+        public virtual event PropertyChangedEventHandler PropertyChanged = default!;
     }
 }

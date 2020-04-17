@@ -9,12 +9,12 @@ namespace Bit.ViewModel.Implementations
 {
     public class ApplicationInsightsTelemetryService : TelemetryServiceBase, ITelemetryService
     {
-        private TelemetryClient _client;
+        private TelemetryClient? _client;
         private bool _isInited = false;
 #if !UWP
-        private TelemetryConfiguration _configuration;
+        private TelemetryConfiguration _configuration = default!;
 #endif
-        private static ApplicationInsightsTelemetryService _current;
+        private static ApplicationInsightsTelemetryService _current = default!;
 
         public static ApplicationInsightsTelemetryService Current
         {
@@ -70,7 +70,7 @@ namespace Bit.ViewModel.Implementations
 #endif
         }
 
-        public override void TrackEvent(string eventName, IDictionary<string, string> properties = null)
+        public override void TrackEvent(string eventName, IDictionary<string, string?>? properties = null)
         {
             if (IsConfigured())
             {
@@ -79,7 +79,7 @@ namespace Bit.ViewModel.Implementations
             }
         }
 
-        public override void TrackException(Exception exception, IDictionary<string, string> properties = null)
+        public override void TrackException(Exception exception, IDictionary<string, string?>? properties = null)
         {
             if (IsConfigured())
             {
@@ -88,7 +88,7 @@ namespace Bit.ViewModel.Implementations
             }
         }
 
-        public override void TrackMetric(string name, double value, IDictionary<string, string> properties = null)
+        public override void TrackMetric(string name, double value, IDictionary<string, string?>? properties = null)
         {
             if (IsConfigured())
             {
@@ -97,7 +97,7 @@ namespace Bit.ViewModel.Implementations
             }
         }
 
-        public override void TrackPageView(string name, TimeSpan duration, IDictionary<string, string> properties = null)
+        public override void TrackPageView(string name, TimeSpan duration, IDictionary<string, string?>? properties = null)
         {
             if (IsConfigured())
             {
@@ -108,7 +108,7 @@ namespace Bit.ViewModel.Implementations
                     Duration = duration
                 };
 
-                foreach (KeyValuePair<string, string> prp in properties)
+                foreach (KeyValuePair<string, string?> prp in properties)
                 {
                     pageViewTelemetry.Properties.Add(prp.Key, prp.Value);
                 }
@@ -117,7 +117,7 @@ namespace Bit.ViewModel.Implementations
             }
         }
 
-        public override void TrackRequest(string name, DateTimeOffset startTime, TimeSpan duration, string responseCode, bool success, Uri url, string httpMethod, IDictionary<string, string> properties = null)
+        public override void TrackRequest(string name, DateTimeOffset startTime, TimeSpan duration, string responseCode, bool success, Uri url, string httpMethod, IDictionary<string, string?>? properties = null)
         {
             if (IsConfigured())
             {
@@ -129,12 +129,12 @@ namespace Bit.ViewModel.Implementations
                     Url = url
                 };
 
-                foreach (KeyValuePair<string, string> prp in properties)
+                foreach (KeyValuePair<string, string?> prp in properties)
                 {
                     requestTelemetry.Properties.Add(prp.Key, prp.Value);
                 }
 
-                if (properties.TryGetValue("X-Correlation-ID", out string xCorrelationId))
+                if (properties.TryGetValue("X-Correlation-ID", out string? xCorrelationId))
                 {
                     requestTelemetry.Id = xCorrelationId;
                 }
@@ -143,7 +143,7 @@ namespace Bit.ViewModel.Implementations
             }
         }
 
-        public override void TrackTrace(string message, IDictionary<string, string> properties)
+        public override void TrackTrace(string message, IDictionary<string, string?>? properties)
         {
             if (IsConfigured())
             {
@@ -152,7 +152,7 @@ namespace Bit.ViewModel.Implementations
             }
         }
 
-        public override void SetUserId(string userId)
+        public override void SetUserId(string? userId)
         {
             if (IsConfigured())
             {

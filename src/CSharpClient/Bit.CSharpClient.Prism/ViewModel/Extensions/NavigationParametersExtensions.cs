@@ -6,6 +6,9 @@ namespace Prism.Navigation
     {
         public static bool TryGetNavigationMode(this INavigationParameters parameters, out NavigationMode navigationMode)
         {
+            if (parameters == null)
+                throw new ArgumentNullException(nameof(parameters));
+
             try
             {
                 navigationMode = parameters.GetNavigationMode();

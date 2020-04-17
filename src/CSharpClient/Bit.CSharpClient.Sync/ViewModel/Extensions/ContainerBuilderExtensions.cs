@@ -8,6 +8,9 @@ namespace Autofac
     {
         public static ContainerBuilder RegisterDefaultSyncService(this ContainerBuilder containerBuilder, Action<ISyncService> configureDtoSetSyncConfigs)
         {
+            if (containerBuilder == null)
+                throw new ArgumentNullException(nameof(containerBuilder));
+
             containerBuilder.RegisterType<DefaultSyncService>().As<ISyncService>()
                 .PropertiesAutowired(PropertyWiringOptions.PreserveSetValues)
                 .OnActivated(config =>

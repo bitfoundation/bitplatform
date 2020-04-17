@@ -27,6 +27,6 @@ namespace Bit.ViewModel.Exceptions
         {
         }
 
-        public virtual IDictionary<string, string> Items { get; set; } = new Dictionary<string, string> { };
+        public virtual IDictionary<string, string?> Items { get; set; } = new Dictionary<string, string?> { };
     }
 }

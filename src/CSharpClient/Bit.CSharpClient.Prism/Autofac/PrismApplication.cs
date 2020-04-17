@@ -26,7 +26,7 @@ namespace Prism.Autofac
         /// Used when there are specific types that need to be registered on the platform.
         /// </summary>
         /// <param name="platformInitializer">The <see cref="IPlatformInitializer"/>.</param>
-        protected PrismApplication(IPlatformInitializer platformInitializer)
+        protected PrismApplication(IPlatformInitializer? platformInitializer)
             : base(platformInitializer) { }
 
         /// <summary>
@@ -36,7 +36,7 @@ namespace Prism.Autofac
         /// </summary>
         /// <param name="platformInitializer">The <see cref="IPlatformInitializer"/>.</param>
         /// <param name="setFormsDependencyResolver">Should <see cref="PrismApplication" /> set the <see cref="DependencyResolver" />.</param>
-        protected PrismApplication(IPlatformInitializer platformInitializer, bool setFormsDependencyResolver)
+        protected PrismApplication(IPlatformInitializer? platformInitializer, bool setFormsDependencyResolver)
             : base(platformInitializer, setFormsDependencyResolver) { }
 
 #if Android

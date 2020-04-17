@@ -27,6 +27,7 @@
     <PackageIconUrl>https://avatars.githubusercontent.com/u/22663390</PackageIconUrl>
     <PackageReleaseNotes>https://github.com/bitfoundation/bitframework/releases/tag/v4.0.0</PackageReleaseNotes>
     <PackageVersion>4.0.0</PackageVersion>
+    <Nullable>enable</Nullable>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)'=='Debug'">

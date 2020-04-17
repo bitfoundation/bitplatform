@@ -1,8 +1,10 @@
-﻿namespace Bit.ViewModel.Contracts
+﻿using System.Diagnostics.CodeAnalysis;
+
+namespace Bit.ViewModel.Contracts
 {
     public interface IContentFormatter
     {
-        string Serialize<T>(T obj);
+        string Serialize<T>([MaybeNull]T obj);
 
         T Deserialize<T>(string objAsStr);
     }

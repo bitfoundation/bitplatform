@@ -11,7 +11,7 @@ namespace Bit.ViewModel
 
     public interface IValidationRule
     {
-        bool IsValid(object value);
+        bool IsValid(object? value);
 
         string ValidationMessage { get; set; }
     }
@@ -23,16 +23,16 @@ namespace Bit.ViewModel
 
     public abstract class ValidationRuleBase : IValidationRule
     {
-        public virtual string ValidationMessage { get; set; }
+        public virtual string ValidationMessage { get; set; } = default!;
 
-        public abstract bool IsValid(object value);
+        public abstract bool IsValid(object? value);
     }
 
     public abstract class ValidationRuleBase<T> : ValidationRuleBase, IValidationRule<T>
     {
-        public override bool IsValid(object value)
+        public override bool IsValid(object? value)
         {
-            return IsValid((T)value);
+            return IsValid((T)value!);
         }
 
         public abstract bool IsValid(T value);
@@ -109,7 +109,7 @@ namespace Bit.ViewModel
             ValidationRules = validationRules;
         }
 
-        public virtual IValidationRule[] ValidationRules { get; }
+        public virtual IValidationRule[] ValidationRules { get; } = default!;
 
         public string NotValidErrorMessage { get; }
 
@@ -132,9 +132,9 @@ namespace Bit.ViewModel
             }
         }
 
-        private object _Value;
+        private object? _Value;
 
-        public virtual object Value
+        public virtual object? Value
         {
             get => _Value;
             set

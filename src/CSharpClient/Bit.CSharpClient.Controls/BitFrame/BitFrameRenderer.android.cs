@@ -29,6 +29,9 @@ namespace Bit.View.Android
         {
             base.OnElementChanged(e);
 
+            if (e == null)
+                throw new ArgumentNullException(nameof(e));
+
             if (e.NewElement != null)
             {
                 double borderWidth = ((BitFrame)e.NewElement).BorderWidth;

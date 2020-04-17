@@ -19,7 +19,7 @@ namespace Prism.Ioc
             return containerRegistry;
         }
 
-        public static void RegisterForNav<TView>(this IContainerRegistry containerRegistry, string name = null)
+        public static void RegisterForNav<TView>(this IContainerRegistry containerRegistry, string? name = null)
             where TView : Page
         {
             containerRegistry.RegisterForNavigation<TView>(name);
@@ -30,7 +30,7 @@ namespace Prism.Ioc
             containerRegistry.RegisterForNavigation(viewType, name);
         }
 
-        public static void RegisterForNav<TView, TViewModel>(this IContainerRegistry containerRegistry, string name = null)
+        public static void RegisterForNav<TView, TViewModel>(this IContainerRegistry containerRegistry, string? name = null)
             where TView : Page
             where TViewModel : class
         {
@@ -38,7 +38,7 @@ namespace Prism.Ioc
             containerRegistry.GetBuilder().RegisterType<TViewModel>().PropertiesAutowired(PropertyWiringOptions.PreserveSetValues);
         }
 
-        public static void RegisterForNavOnIdiom<TView, TViewModel>(this IContainerRegistry containerRegistry, string name = null, Type desktopView = null, Type tabletView = null, Type phoneView = null)
+        public static void RegisterForNavOnIdiom<TView, TViewModel>(this IContainerRegistry containerRegistry, string? name = null, Type? desktopView = null, Type? tabletView = null, Type? phoneView = null)
             where TView : Page
             where TViewModel : class
         {

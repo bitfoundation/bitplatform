@@ -16,14 +16,14 @@ namespace Bit.Data
 {
     internal class BitEfCoreMigrationsOnlyWebHostBuilder
     {
-        internal static TypeInfo DbContextType { get; set; }
+        internal static TypeInfo DbContextType { get; set; } = default!;
 
-        public void ConfigureServices(IServiceCollection services)
+        internal void ConfigureServices(IServiceCollection services)
         {
             services.AddEntityFrameworkSqlite();
         }
 
-        public void Configure(IApplicationBuilder aspNetCoreApp)
+        internal void Configure(IApplicationBuilder aspNetCoreApp)
         {
 
         }
@@ -32,7 +32,7 @@ namespace Bit.Data
     public class BitEfCoreMigrationsOnlyWebHostBuilder<TDbContext>
         where TDbContext : DbContext
     {
-        public static IWebHost BuildWebHost(string[] args)
+        public static IWebHost BuildWebHost(string[]? args)
         {
             BitEfCoreMigrationsOnlyWebHostBuilder.DbContextType = typeof(TDbContext).GetTypeInfo();
 

@@ -12,9 +12,12 @@ namespace Bit.ViewModel
     {
         public static IExceptionHandler Current { get; set; } = new BitExceptionHandler();
 
-        public virtual void OnExceptionReceived(Exception exp, IDictionary<string, string> properties = null)
+        public virtual void OnExceptionReceived(Exception exp, IDictionary<string, string?>? properties = null)
         {
-            properties = properties ?? new Dictionary<string, string>();
+            if (exp == null)
+                throw new ArgumentNullException(nameof(exp));
+
+            properties = properties ?? new Dictionary<string, string?>();
 
             if (exp is IExceptionData exceptionData && exceptionData.Items != null)
             {
@@ -24,7 +27,7 @@ namespace Bit.ViewModel
                 }
             }
 
-            if (exp != null && Debugger.IsAttached)
+            if (Debugger.IsAttached)
             {
                 Debug.WriteLine($"DateTime: {DateTime.Now.ToLongTimeString()} Message: {exp}", category: "ApplicationException");
             }
@@ -32,7 +35,7 @@ namespace Bit.ViewModel
             CallTelemetryServices(exp, properties);
         }
 
-        protected virtual void CallTelemetryServices(Exception exp, IDictionary<string, string> properties)
+        protected virtual void CallTelemetryServices(Exception exp, IDictionary<string, string?>? properties)
         {
             ApplicationInsightsTelemetryService.Current.TrackException(exp, properties);
             AppCenterTelemetryService.Current.TrackException(exp, properties);

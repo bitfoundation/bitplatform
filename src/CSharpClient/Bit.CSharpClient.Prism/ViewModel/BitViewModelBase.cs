@@ -17,7 +17,7 @@ namespace Bit.ViewModel
 
         public virtual CancellationToken CurrentCancellationToken { get; set; }
 
-        public virtual IExceptionHandler ExceptionHandler { get; set; }
+        public virtual IExceptionHandler ExceptionHandler { get; set; } = default!;
 
         public BitViewModelBase()
         {
@@ -70,7 +70,11 @@ namespace Bit.ViewModel
 
         protected virtual string GetViewModelName()
         {
+#if DotNet || UWP || NETSTANDARD2_0
             return GetType().Name.Replace("ViewModel", string.Empty);
+#else
+            return GetType().Name.Replace("ViewModel", string.Empty, StringComparison.InvariantCultureIgnoreCase);
+#endif
         }
 
         protected virtual bool ShouldLogNavParam(string navParamName)
@@ -82,7 +86,7 @@ namespace Bit.ViewModel
         {
             DateTimeOffset startDate = DateTimeOffset.Now;
             bool success = true;
-            string navUri = null;
+            string? navUri = null;
 
             try
             {
@@ -114,7 +118,7 @@ namespace Bit.ViewModel
                 {
                     string pageName = GetViewModelName();
 
-                    Dictionary<string, string> properties = new Dictionary<string, string> { };
+                    Dictionary<string, string?> properties = new Dictionary<string, string?> { };
 
                     foreach (KeyValuePair<string, object> prp in parameters)
                     {
@@ -155,8 +159,8 @@ namespace Bit.ViewModel
             return Task.CompletedTask;
         }
 
-        public virtual INavService NavigationService { get; set; }
+        public virtual INavService NavigationService { get; set; } = default!;
 
-        public virtual IEnumerable<ITelemetryService> TelemetryServices { get; set; }
+        public virtual IEnumerable<ITelemetryService> TelemetryServices { get; set; } = default!;
     }
 }

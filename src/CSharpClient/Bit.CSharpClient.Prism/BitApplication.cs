@@ -33,7 +33,7 @@ namespace Bit
 {
     public abstract class BitApplication : PrismApplication
     {
-        private readonly Lazy<IEventAggregator> _eventAggregator;
+        private readonly Lazy<IEventAggregator> _eventAggregator = default!;
 
         /// <summary>
         /// To be called in shared/net-standard project.
@@ -50,7 +50,7 @@ namespace Bit
 
         }
 
-        protected BitApplication(IPlatformInitializer platformInitializer = null)
+        protected BitApplication(IPlatformInitializer? platformInitializer = null)
             : base(platformInitializer)
         {
             _eventAggregator = new Lazy<IEventAggregator>(() =>
@@ -87,9 +87,9 @@ namespace Bit
             return Task.CompletedTask;
         }
 
-        public new INavService NavigationService => PrismNavigationService == null ? null : Container.Resolve<INavServiceFactory>()(PrismNavigationService, Container.Resolve<IPopupNavigation>());
+        public new INavService NavigationService => (PrismNavigationService == null ? null : Container.Resolve<INavServiceFactory>()(PrismNavigationService, Container.Resolve<IPopupNavigation>()))!;
 
-        public static new BitApplication Current => (PrismApplicationBase.Current as BitApplication);
+        public static new BitApplication Current => (PrismApplicationBase.Current as BitApplication)!;
 
         public INavigationService PrismNavigationService => base.NavigationService;
 

@@ -1,5 +1,6 @@
 ﻿using Bit.ViewModel;
 using Prism.Mvvm;
+using System;
 using System.Threading.Tasks;
 using Xamarin.Forms;
 
@@ -27,11 +28,17 @@ namespace Bit.View.Props
 
         public static Page GetPartialViewParentPage(BindableObject view)
         {
+            if (view == null)
+                throw new ArgumentNullException(nameof(view));
+
             return (Page)view.GetValue(PartialViewParentPageProperty);
         }
 
         public static void SetPartialViewParentPage(BindableObject view, Page value)
         {
+            if (view == null)
+                throw new ArgumentNullException(nameof(view));
+
             view.SetValue(PartialViewParentPageProperty, value);
         }
     }

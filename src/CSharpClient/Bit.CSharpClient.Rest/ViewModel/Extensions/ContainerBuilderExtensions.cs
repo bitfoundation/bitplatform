@@ -36,6 +36,7 @@ namespace Autofac
         }
 
         public static ContainerBuilder RegisterRefitService<TService>(this ContainerBuilder containerBuilder)
+            where TService : notnull
         {
             if (containerBuilder == null)
                 throw new ArgumentNullException(nameof(containerBuilder));
@@ -68,7 +69,7 @@ namespace Autofac
                     if (await securityService.IsLoggedInAsync().ConfigureAwait(false))
                     {
                         ITelemetryService allTelemetryServices = scope.Resolve<IEnumerable<ITelemetryService>>().All();
-                        allTelemetryServices.SetUserId((await securityService.GetBitJwtToken(default).ConfigureAwait(false)).UserId);
+                        allTelemetryServices.SetUserId((await securityService.GetBitJwtToken(default).ConfigureAwait(false)).UserId!);
                     }
                 }
                 catch (Exception exp)
@@ -93,7 +94,7 @@ namespace Autofac
         {
             containerBuilder.RegisterHttpMessageHandler<THttpMessageHandler>();
 
-            IServiceCollection services = (IServiceCollection)containerBuilder.Properties[nameof(services)];
+            IServiceCollection services = (IServiceCollection)containerBuilder.Properties[nameof(services)]!;
 
             containerBuilder.Register(c => c.Resolve<IHttpClientFactory>().CreateClient(ContractKeys.DefaultHttpClientName))
                 .PreserveExistingDefaults();

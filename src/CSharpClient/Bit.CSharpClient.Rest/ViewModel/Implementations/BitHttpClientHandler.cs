@@ -29,6 +29,12 @@ namespace Bit.ViewModel.Implementations
 #if Android
         protected override async Task WriteRequestContentToOutput(HttpRequestMessage request, Java.Net.HttpURLConnection httpConnection, CancellationToken cancellationToken)
         {
+            if (request == null)
+                throw new ArgumentNullException(nameof(request));
+
+            if (httpConnection == null)
+                throw new ArgumentNullException(nameof(httpConnection));
+
             // https://github.com/xamarin/xamarin-android/issues/4476
 
             var stream = await request.Content.ReadAsStreamAsync().ConfigureAwait(false);
@@ -45,11 +51,11 @@ namespace Bit.ViewModel.Implementations
             try
             {
                 if (DeviceService.RuntimePlatform == RuntimePlatform.UWP)
-                    return Assembly.GetEntryAssembly().GetCustomAttributes(false).OfType<DebuggableAttribute>().Any(da => da.IsJITTrackingEnabled);
+                    return Assembly.GetEntryAssembly().GetCustomAttributes(false).OfType<DebuggableAttribute>().Any(da => da.IsJITTrackingEnabled)!;
                 else
                     return Debugger.IsAttached;
             }
-            catch (Exception exp)
+            catch
             {
                 return Debugger.IsAttached;
             }
@@ -57,13 +63,16 @@ namespace Bit.ViewModel.Implementations
 
         protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {
+            if (request == null)
+                throw new ArgumentNullException(nameof(request));
+
             if (request.RequestUri.Segments?.Last() == "$ref")
                 return new HttpResponseMessage(HttpStatusCode.OK);
 
             // ToDo:
             // Desired-Time-Zone
 
-            Dictionary<string, string> properties = new Dictionary<string, string>
+            Dictionary<string, string?> properties = new Dictionary<string, string?>
             {
 
             };
@@ -115,7 +124,7 @@ namespace Bit.ViewModel.Implementations
 
             DateTimeOffset startDate = DateTimeProvider.GetCurrentUtcDateTime();
 
-            HttpResponseMessage response = null;
+            HttpResponseMessage? response = null;
 
             try
             {
@@ -128,7 +137,7 @@ namespace Bit.ViewModel.Implementations
             {
                 throw exp switch
                 {
-                    Java.IO.IOException _ => new System.IO.IOException(exp.Message, exp),
+                    Java.IO.IOException _ => new IOException(exp.Message, exp),
                     _ => new Exception(exp.Message, exp),
                 };
             }
@@ -158,10 +167,10 @@ namespace Bit.ViewModel.Implementations
             }
         }
 
-        public virtual IEnumerable<ITelemetryService> TelemetryServices { get; set; }
+        public virtual IEnumerable<ITelemetryService> TelemetryServices { get; set; } = default!;
 
-        public virtual IDateTimeProvider DateTimeProvider { get; set; }
+        public virtual IDateTimeProvider DateTimeProvider { get; set; } = default!;
 
-        public virtual IDeviceService DeviceService { get; set; }
+        public virtual IDeviceService DeviceService { get; set; } = default!;
     }
 }

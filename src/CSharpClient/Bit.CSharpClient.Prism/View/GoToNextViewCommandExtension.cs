@@ -6,9 +6,9 @@ namespace Bit.View
 {
     public class GoToNextViewCommandExtension : ICommand, IMarkupExtension<ICommand>
     {
-        public Xamarin.Forms.View Next { get; set; }
+        public Xamarin.Forms.View? Next { get; set; }
 
-        public event EventHandler CanExecuteChanged;
+        public event EventHandler CanExecuteChanged = default!;
 
         public bool CanExecute(object parameter)
         {

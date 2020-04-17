@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Reflection;
 using System.Threading.Tasks;
@@ -14,13 +15,13 @@ namespace Bit.View
             Invoke(sender);
         }
 
-        public VisualElement TargetElement { get; set; }
+        public VisualElement? TargetElement { get; set; }
 
-        public string Property { get; set; }
+        public string Property { get; set; } = default!;
 
-        public object Value { get; set; }
+        public object? Value { get; set; }
 
-        public object Delay { get; set; }
+        public object? Delay { get; set; }
 
         static readonly Dictionary<Type, ConvertFromInvariantString> xamlTypeConvertersCache = new Dictionary<Type, ConvertFromInvariantString>();
 
@@ -34,12 +35,11 @@ namespace Bit.View
             if (Value == null)
                 throw new InvalidOperationException($"{nameof(Value)} may not be null");
 
-            if (TargetElement == null)
-                TargetElement = sender;
+            TargetElement = TargetElement ?? sender ?? throw new ArgumentNullException(nameof(sender));
 
             Type targetElementType = TargetElement.GetType();
 
-            PropertyInfo propertyInfo = targetElementType.GetProperty(Property);
+            PropertyInfo? propertyInfo = targetElementType.GetProperty(Property);
 
             if (propertyInfo == null)
                 throw new ArgumentException($"Could not find property {Property} in {targetElementType}");
@@ -48,9 +48,9 @@ namespace Bit.View
 
             if (propertyType != Value.GetType())
             {
-                if (ConvertUsingXamlTypeConverter(propertyInfo, Value, out object resultValue))
+                if (ConvertUsingXamlTypeConverter(propertyInfo, Value, out object? resultValue))
                 {
-                    Value = resultValue;
+                    Value = resultValue!;
                 }
                 else
                 {
@@ -60,14 +60,14 @@ namespace Bit.View
 
             if (Delay != null)
             {
-                int delay = Convert.ToInt32(Delay);
+                int delay = Convert.ToInt32(Delay, CultureInfo.InvariantCulture);
                 await Task.Delay(delay);
             }
 
             propertyInfo.SetValue(TargetElement, Value);
         }
 
-        static object ConvertUsingDotNetTypeConverter(Type destinationType, object input)
+        static object? ConvertUsingDotNetTypeConverter(Type destinationType, object input)
         {
             destinationType = Nullable.GetUnderlyingType(destinationType) ?? destinationType;
 
@@ -115,16 +115,16 @@ namespace Bit.View
             throw new InvalidCastException($"Value {input} is not convertible to {destinationType}");
         }
 
-        static bool ConvertUsingXamlTypeConverter(PropertyInfo propertyInfo, object inputValue, out object resultValue)
+        static bool ConvertUsingXamlTypeConverter(PropertyInfo propertyInfo, object inputValue, [MaybeNullWhen(returnValue: false)] out object? resultValue)
         {
             if (propertyInfo.GetCustomAttribute(typeof(TypeConverterAttribute)) is TypeConverterAttribute propertyAttr)
             {
-                resultValue = UseXamlTypeConverter(Type.GetType(propertyAttr.ConverterTypeName), inputValue);
+                resultValue = UseXamlTypeConverter(Type.GetType(propertyAttr.ConverterTypeName)!, inputValue);
                 return true;
             }
             else if (propertyInfo.PropertyType.GetCustomAttribute(typeof(TypeConverterAttribute)) is TypeConverterAttribute classAttr)
             {
-                resultValue = UseXamlTypeConverter(Type.GetType(classAttr.ConverterTypeName), inputValue);
+                resultValue = UseXamlTypeConverter(Type.GetType(classAttr.ConverterTypeName)!, inputValue);
                 return true;
             }
 
@@ -137,9 +137,9 @@ namespace Bit.View
         {
             if (!xamlTypeConvertersCache.ContainsKey(converterType))
             {
-                object converter = Activator.CreateInstance(converterType);
+                object converter = Activator.CreateInstance(converterType)!;
 
-                MethodInfo methodInfo = converterType.GetMethod(nameof(ConvertFromInvariantString));
+                MethodInfo methodInfo = converterType.GetMethod(nameof(ConvertFromInvariantString))!;
 
                 ConvertFromInvariantString converterDelegate = ((ConvertFromInvariantString)methodInfo
                     .CreateDelegate(typeof(ConvertFromInvariantString), converter));

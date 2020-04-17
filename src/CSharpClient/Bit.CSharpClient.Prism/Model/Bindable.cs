@@ -5,7 +5,7 @@ namespace Bit.Model
 {
     public class Bindable : BindableBase
     {
-        public virtual void RaiseMemberChanged([CallerMemberName] string memberName = null)
+        public virtual void RaiseMemberChanged([CallerMemberName] string? memberName = null)
         {
             RaisePropertyChanged(memberName);
         }

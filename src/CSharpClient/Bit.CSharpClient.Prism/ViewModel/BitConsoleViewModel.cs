@@ -8,11 +8,11 @@ namespace Bit.ViewModel
 {
     public class BitConsoleViewModel : Bindable
     {
-        public LocalTelemetryService LocalTelemetryService { get; set; }
+        public LocalTelemetryService LocalTelemetryService { get; set; } = default!;
+
+        public IPopupNavigation PopupNavigation { get; set; } = default!;
 
         public BitDelegateCommand<TrackedThing> CopyCommand { get; set; }
-
-        public IPopupNavigation PopupNavigation { get; set; }
 
         public BitDelegateCommand CloseCommand { get; set; }
 

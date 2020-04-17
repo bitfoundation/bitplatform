@@ -9,7 +9,7 @@ namespace Bit.ViewModel.Implementations
 {
     public class BitPopupNavigation : IPopupNavigation
     {
-        public IPopupNavigation OriginalImplementation { get; set; }
+        public IPopupNavigation OriginalImplementation { get; set; } = default!;
 
         public IReadOnlyList<PopupPage> PopupStack => OriginalImplementation.PopupStack;
 

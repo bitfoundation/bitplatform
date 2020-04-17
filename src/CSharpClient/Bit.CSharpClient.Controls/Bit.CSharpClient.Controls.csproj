@@ -8,6 +8,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Include="..\..\Server\Bit.Core\Implementations\System.Diagnostics.CodeAnalysis.Shim.cs" Link="System.Diagnostics.CodeAnalysis.Shim.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="NodaTime" Version="2.4.7" />
     <PackageReference Include="Rg.Plugins.Popup" Version="2.0.0.2" />
     <PackageReference Include="Xamarin.Forms" Version="4.5.0.617" />

@@ -38,12 +38,12 @@ namespace Bit.ViewModel.Implementations
             }
         }
 
-        public virtual IDictionary<string, string> PopulateProperties(IDictionary<string, string> initialProps)
+        public virtual IDictionary<string, string?> PopulateProperties(IDictionary<string, string?>? initialProps)
         {
-            return initialProps;
+            return initialProps ?? new Dictionary<string, string?>();
         }
 
-        public void SetUserId(string userId)
+        public void SetUserId(string? userId)
         {
             foreach (ITelemetryService telemetryService in _telemetryServices)
             {
@@ -51,7 +51,7 @@ namespace Bit.ViewModel.Implementations
             }
         }
 
-        public virtual void TrackEvent(string eventName, IDictionary<string, string> properties = null)
+        public virtual void TrackEvent(string eventName, IDictionary<string, string?>? properties = null)
         {
             foreach (ITelemetryService telemetryService in _telemetryServices)
             {
@@ -59,7 +59,7 @@ namespace Bit.ViewModel.Implementations
             }
         }
 
-        public virtual void TrackException(Exception exception, IDictionary<string, string> properties = null)
+        public virtual void TrackException(Exception exception, IDictionary<string, string?>? properties = null)
         {
             foreach (ITelemetryService telemetryService in _telemetryServices)
             {
@@ -67,7 +67,7 @@ namespace Bit.ViewModel.Implementations
             }
         }
 
-        public virtual void TrackMetric(string name, double value, IDictionary<string, string> properties = null)
+        public virtual void TrackMetric(string name, double value, IDictionary<string, string?>? properties = null)
         {
             foreach (ITelemetryService telemetryService in _telemetryServices)
             {
@@ -75,7 +75,7 @@ namespace Bit.ViewModel.Implementations
             }
         }
 
-        public virtual void TrackPageView(string name, TimeSpan duration, IDictionary<string, string> properties = null)
+        public virtual void TrackPageView(string name, TimeSpan duration, IDictionary<string, string?>? properties = null)
         {
             foreach (ITelemetryService telemetryService in _telemetryServices)
             {
@@ -83,7 +83,7 @@ namespace Bit.ViewModel.Implementations
             }
         }
 
-        public virtual void TrackRequest(string name, DateTimeOffset startTime, TimeSpan duration, string responseCode, bool success, Uri url, string httpMethod, IDictionary<string, string> properties = null)
+        public virtual void TrackRequest(string name, DateTimeOffset startTime, TimeSpan duration, string responseCode, bool success, Uri url, string httpMethod, IDictionary<string, string?>? properties = null)
         {
             foreach (ITelemetryService telemetryService in _telemetryServices)
             {
@@ -91,7 +91,7 @@ namespace Bit.ViewModel.Implementations
             }
         }
 
-        public virtual void TrackTrace(string message, IDictionary<string, string> properties)
+        public virtual void TrackTrace(string message, IDictionary<string, string?>? properties)
         {
             foreach (ITelemetryService telemetryService in _telemetryServices)
             {

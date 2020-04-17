@@ -12,11 +12,11 @@ namespace Bit.ViewModel.Implementations
 {
     public abstract class TelemetryServiceBase : ITelemetryService
     {
-        public virtual IMessageReceiver MessageReceiver { get; set; }
+        public virtual IMessageReceiver MessageReceiver { get; set; } = default!;
 
-        public virtual IDictionary<string, string> PopulateProperties(IDictionary<string, string> initialProps)
+        public virtual IDictionary<string, string?> PopulateProperties(IDictionary<string, string?>? initialProps)
         {
-            initialProps ??= new Dictionary<string, string> { };
+            initialProps ??= new Dictionary<string, string?> { };
 
             if (!initialProps.ContainsKey("MemoryUsage"))
                 initialProps.Add("MemoryUsage", $"{GC.GetTotalMemory(forceFullCollection: false):#,##0} bytes");
@@ -53,19 +53,19 @@ namespace Bit.ViewModel.Implementations
 
         public abstract bool IsConfigured();
 
-        public abstract void TrackEvent(string eventName, IDictionary<string, string> properties = null);
+        public abstract void TrackEvent(string eventName, IDictionary<string, string?>? properties = null);
 
-        public abstract void TrackException(Exception exception, IDictionary<string, string> properties = null);
+        public abstract void TrackException(Exception exception, IDictionary<string, string?>? properties = null);
 
-        public abstract void TrackMetric(string name, double value, IDictionary<string, string> properties = null);
+        public abstract void TrackMetric(string name, double value, IDictionary<string, string?>? properties = null);
 
-        public abstract void TrackPageView(string name, TimeSpan duration, IDictionary<string, string> properties = null);
+        public abstract void TrackPageView(string name, TimeSpan duration, IDictionary<string, string?>? properties = null);
 
-        public abstract void TrackRequest(string name, DateTimeOffset startTime, TimeSpan duration, string responseCode, bool success, Uri url, string httpMethod, IDictionary<string, string> properties = null);
+        public abstract void TrackRequest(string name, DateTimeOffset startTime, TimeSpan duration, string responseCode, bool success, Uri url, string httpMethod, IDictionary<string, string?>? properties = null);
 
-        public abstract void TrackTrace(string message, IDictionary<string, string> properties);
+        public abstract void TrackTrace(string message, IDictionary<string, string?>? properties);
 
-        public abstract void SetUserId(string userId);
+        public abstract void SetUserId(string? userId);
 
         public virtual void LogPreviousSessionCrashIfAny()
         {

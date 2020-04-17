@@ -10,7 +10,7 @@ namespace Bit.ViewModel.Implementations
             return DateTimeOffset.UtcNow;
         }
 
-        private static IDateTimeProvider _current;
+        private static IDateTimeProvider _current = default!;
 
         public static IDateTimeProvider Current
         {
