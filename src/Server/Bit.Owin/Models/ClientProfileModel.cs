@@ -4,23 +4,23 @@ namespace Bit.Owin.Models
 {
     public class ClientProfileModel
     {
-        public virtual string AppTitle { get; set; }
+        public virtual string AppTitle { get; set; } = default!;
 
-        public virtual string Theme { get; set; }
+        public virtual string? Theme { get; set; }
 
-        public virtual string Culture { get; set; }
+        public virtual string Culture { get; set; } = default!;
 
-        public virtual string AppVersion { get; set; }
+        public virtual string AppVersion { get; set; } = default!;
 
         public virtual bool DebugMode { get; set; }
 
-        public virtual string AppName { get; set; }
+        public virtual string AppName { get; set; } = default!;
 
-        public virtual string DesiredTimeZoneValue { get; set; }
+        public virtual string? DesiredTimeZoneValue { get; set; }
 
-        public virtual string EnvironmentConfigsJson { get; set; }
+        public virtual string? EnvironmentConfigsJson { get; set; }
 
-        public virtual string BaseHref { get; set; }
+        public virtual string? BaseHref { get; set; }
 
         internal string ToJavaScriptObject()
         {

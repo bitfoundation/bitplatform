@@ -7,7 +7,7 @@ namespace Bit.Owin.Implementations
 {
     public class DefaultOwinLoggerFactory : ILoggerFactory, Microsoft.Owin.Logging.ILogger
     {
-        public virtual IDependencyManager DependencyManager { get; set; }
+        public virtual IDependencyManager DependencyManager { get; set; } = default!;
 
         public Microsoft.Owin.Logging.ILogger Create(string name)
         {
@@ -20,7 +20,7 @@ namespace Bit.Owin.Implementations
             {
                 if (formatter != null)
                 {
-                    IDependencyResolver scope = null;
+                    IDependencyResolver? scope = null;
 
                     try
                     {
@@ -35,9 +35,7 @@ namespace Bit.Owin.Implementations
                         {
                             Core.Contracts.ILogger logger = scope.Resolve<Core.Contracts.ILogger>();
 
-                            string message = null;
-
-                            message = formatter(state, exception);
+                            string message = formatter(state, exception);
 
                             if (exception != null)
                                 logger.LogException(exception, message);

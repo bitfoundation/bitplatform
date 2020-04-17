@@ -17,13 +17,13 @@ namespace Bit.IdentityServer
 {
     public class IdentityServerMiddlewareConfiguration : IOwinMiddlewareConfiguration
     {
-        public virtual AppEnvironment AppEnvironment { get; set; }
-        public virtual IAppCertificatesProvider AppCertificatesProvider { get; set; }
-        public virtual IDependencyManager DependencyManager { get; set; }
-        public virtual IScopesProvider ScopesProvider { get; set; }
-        public virtual IRedirectUriValidator RedirectUriValidator { get; set; }
-        public virtual IEnumerable<IExternalIdentityProviderConfiguration> ExternalIdentityProviderConfigurations { get; set; }
-        public virtual IEnumerable<IIdentityServerOptionsCustomizer> Customizers { get; set; }
+        public virtual AppEnvironment AppEnvironment { get; set; } = default!;
+        public virtual IAppCertificatesProvider AppCertificatesProvider { get; set; } = default!;
+        public virtual IDependencyManager DependencyManager { get; set; } = default!;
+        public virtual IScopesProvider ScopesProvider { get; set; } = default!;
+        public virtual IRedirectUriValidator RedirectUriValidator { get; set; } = default!;
+        public virtual IEnumerable<IExternalIdentityProviderConfiguration> ExternalIdentityProviderConfigurations { get; set; } = default!;
+        public virtual IEnumerable<IIdentityServerOptionsCustomizer> Customizers { get; set; } = default!;
 
         public virtual void Configure(IAppBuilder owinApp)
         {
@@ -52,7 +52,7 @@ namespace Bit.IdentityServer
                 {
                     OwinEnvironmentService owinEnv = resolver.Resolve<OwinEnvironmentService>();
                     IOwinContext owinContext = new OwinContext(owinEnv.Environment);
-                    if (owinContext.TryGetDependencyResolver(out Core.Contracts.IDependencyResolver dependencyResolver))
+                    if (owinContext.TryGetDependencyResolver(out Core.Contracts.IDependencyResolver? dependencyResolver))
                     {
                         IRequestInformationProvider requestInformationProvider = dependencyResolver.Resolve<IRequestInformationProvider>();
 
@@ -84,7 +84,7 @@ namespace Bit.IdentityServer
 
                 bool requireSslConfigValue = AppEnvironment.GetConfig(AppEnvironment.KeyValues.RequireSsl, defaultValueOnNotFound: AppEnvironment.KeyValues.RequireSslDefaultValue);
 
-                string identityServerSiteName = AppEnvironment.GetConfig(AppEnvironment.KeyValues.IdentityServer.IdentityServerSiteName, $"{AppEnvironment.AppInfo.Name} Identity Server");
+                string identityServerSiteName = AppEnvironment.GetConfig(AppEnvironment.KeyValues.IdentityServer.IdentityServerSiteName, $"{AppEnvironment.AppInfo.Name} Identity Server")!;
 
                 IdentityServerOptions identityServerOptions = new IdentityServerOptions
                 {

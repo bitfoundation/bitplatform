@@ -10,20 +10,20 @@ namespace Bit.IdentityServer.Implementations.ExternalIdentityProviderConfigurati
 {
     public class MicrosoftIdentityProviderConfiguration : IExternalIdentityProviderConfiguration
     {
-        public virtual AppEnvironment AppEnvironment { get; set; }
+        public virtual AppEnvironment AppEnvironment { get; set; } = default!;
 
         public virtual void ConfigureExternalIdentityProvider(IAppBuilder owinApp, string signInType)
         {
-            if (AppEnvironment.TryGetConfig(AppEnvironment.KeyValues.IdentityServer.MicrosoftClientId, out string microsoftClientId) && AppEnvironment.TryGetConfig(AppEnvironment.KeyValues.IdentityServer.MicrosoftSecret, out string microsoftSecret))
+            if (AppEnvironment.TryGetConfig(AppEnvironment.KeyValues.IdentityServer.MicrosoftClientId, out string? microsoftClientId) && AppEnvironment.TryGetConfig(AppEnvironment.KeyValues.IdentityServer.MicrosoftSecret, out string? microsoftSecret) && microsoftClientId != null && microsoftSecret != null)
             {
                 Task MicrosoftOnAuthenticated(MicrosoftAccountAuthenticatedContext context)
                 {
                     context.Identity.AddClaim(new System.Security.Claims.Claim("access_token", context.AccessToken));
 
-                    foreach (KeyValuePair<string, JToken> claim in context.User)
+                    foreach (KeyValuePair<string, JToken?> claim in context.User)
                     {
                         string claimType = $"{claim.Key}";
-                        string claimValue = claim.Value.ToString();
+                        string? claimValue = claim.Value?.ToString();
 
                         if (!context.Identity.HasClaim(claimType, claimValue))
                             context.Identity.AddClaim(new System.Security.Claims.Claim(claimType, claimValue, "XmlSchemaString", "Microsoft"));

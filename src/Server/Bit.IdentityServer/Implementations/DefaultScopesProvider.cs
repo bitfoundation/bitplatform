@@ -6,7 +6,7 @@ namespace Bit.IdentityServer.Implementations
 {
     public class DefaultScopesProvider : IScopesProvider
     {
-        private Scope[] _result;
+        private Scope[]? _result;
 
         public virtual IEnumerable<Scope> GetScopes()
         {

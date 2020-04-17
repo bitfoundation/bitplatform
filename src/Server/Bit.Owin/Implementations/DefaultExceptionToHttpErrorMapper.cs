@@ -11,7 +11,7 @@ namespace Bit.Owin.Implementations
 {
     public class DefaultExceptionToHttpErrorMapper : IExceptionToHttpErrorMapper
     {
-        public virtual AppEnvironment AppEnvironment { get; set; }
+        public virtual AppEnvironment AppEnvironment { get; set; } = default!;
 
         protected virtual Exception UnWrapException(Exception exp)
         {
@@ -19,7 +19,7 @@ namespace Bit.Owin.Implementations
                 throw new ArgumentNullException(nameof(exp));
 
             if (exp is TargetInvocationException)
-                return exp.InnerException;
+                return exp.InnerException ?? exp;
 
             return exp;
         }

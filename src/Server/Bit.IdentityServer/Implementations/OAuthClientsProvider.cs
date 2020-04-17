@@ -13,6 +13,9 @@ namespace Bit.IdentityServer.Implementations
 
         protected virtual Client GetImplicitFlowClient(BitImplicitFlowClient client)
         {
+            if (client == null)
+                throw new ArgumentNullException(nameof(client));
+
             return new Client
             {
                 ClientName = client.ClientName,
@@ -45,6 +48,9 @@ namespace Bit.IdentityServer.Implementations
 
         protected virtual Client GetResourceOwnerFlowClient(BitResourceOwnerFlowClient client)
         {
+            if (client == null)
+                throw new ArgumentNullException(nameof(client));
+
             Client result = GetImplicitFlowClient(new BitImplicitFlowClient
             {
                 ClientId = client.ClientId,

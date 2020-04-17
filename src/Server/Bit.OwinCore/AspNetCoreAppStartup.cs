@@ -115,6 +115,9 @@ namespace Bit.OwinCore
 
         public virtual void ConfigureBitAspNetCoreApp(IApplicationBuilder aspNetCoreApp, OwinAppStartup owinAppStartup, IEnumerable<IAspNetCoreMiddlewareConfiguration> aspNetCoreMiddlewares)
         {
+            if (owinAppStartup == null)
+                throw new ArgumentNullException(nameof(owinAppStartup));
+
             aspNetCoreMiddlewares
                 .Where(m => m.MiddlewarePosition == MiddlewarePosition.BeforeOwinMiddlewares)
                 .ToList()

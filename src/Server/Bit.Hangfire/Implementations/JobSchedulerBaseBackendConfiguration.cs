@@ -10,13 +10,13 @@ namespace Bit.Hangfire.Implementations
     public abstract class JobSchedulerBaseBackendConfiguration<TStorage> : IJobSchedulerBackendConfiguration
         where TStorage : JobStorage
     {
-        public virtual JobActivator JobActivator { get; set; }
+        public virtual JobActivator JobActivator { get; set; } = default!;
 
-        public virtual ILogProvider LogProvider { get; set; }
+        public virtual ILogProvider LogProvider { get; set; } = default!;
 
-        public virtual IEnumerable<IHangfireOptionsCustomizer> Customizers { get; set; }
+        public virtual IEnumerable<IHangfireOptionsCustomizer> Customizers { get; set; } = default!;
 
-        protected virtual BackgroundJobServer BackgroundJobServer { get; set; }
+        protected virtual BackgroundJobServer? BackgroundJobServer { get; set; }
 
         protected abstract TStorage BuildStorage();
 

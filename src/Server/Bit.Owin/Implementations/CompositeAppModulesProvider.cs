@@ -11,7 +11,7 @@ namespace Bit.Owin.Implementations
 
         }
 
-        private readonly IAppModulesProvider[] _appModulesProviders;
+        private readonly IAppModulesProvider[] _appModulesProviders = default!;
 
         public CompositeAppModulesProvider(params IAppModulesProvider[] appModulesProviders)
         {

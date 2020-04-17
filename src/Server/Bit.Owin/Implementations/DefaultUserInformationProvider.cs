@@ -10,11 +10,11 @@ namespace Bit.Owin.Implementations
 {
     public class DefaultUserInformationProvider : IUserInformationProvider
     {
-        public virtual IRequestInformationProvider RequestInformationProvider { get; set; }
+        public virtual IRequestInformationProvider RequestInformationProvider { get; set; } = default!;
 
         public virtual bool IsAuthenticated()
         {
-            ClaimsIdentity identity = GetIdentity();
+            ClaimsIdentity? identity = GetIdentity();
 
             if (identity == null)
                 return false;
@@ -22,14 +22,14 @@ namespace Bit.Owin.Implementations
             return identity.IsAuthenticated;
         }
 
-        public virtual string GetCurrentUserId()
+        public virtual string? GetCurrentUserId()
         {
             return GetBitJwtToken().UserId;
         }
 
         public virtual string GetAuthenticationType()
         {
-            ClaimsIdentity claimsIdentity = GetIdentity();
+            ClaimsIdentity? claimsIdentity = GetIdentity();
 
             if (claimsIdentity == null)
                 throw new InvalidOperationException("Principal identity is not ClaimsIdentity or user is not authenticated");
@@ -39,7 +39,7 @@ namespace Bit.Owin.Implementations
 
         public virtual IEnumerable<Claim> GetClaims()
         {
-            ClaimsIdentity claimsIdentity = GetIdentity();
+            ClaimsIdentity? claimsIdentity = GetIdentity();
 
             if (claimsIdentity == null)
                 throw new InvalidOperationException("Principal identity is not ClaimsIdentity or user is not authenticated");
@@ -47,7 +47,7 @@ namespace Bit.Owin.Implementations
             return claimsIdentity.Claims;
         }
 
-        public virtual ClaimsIdentity GetIdentity()
+        public virtual ClaimsIdentity? GetIdentity()
         {
             return RequestInformationProvider.Identity;
         }
@@ -68,7 +68,7 @@ namespace Bit.Owin.Implementations
             try
             {
                 JToken json = JToken.Parse(primary_sid);
-                return json.ToObject<BitJwtToken>();
+                return json.ToObject<BitJwtToken>()!;
             }
             catch (JsonReaderException)
             {

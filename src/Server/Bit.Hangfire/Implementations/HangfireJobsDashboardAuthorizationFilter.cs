@@ -11,6 +11,9 @@ namespace Bit.Hangfire.Implementations
     {
         public virtual bool Authorize([NotNull] DashboardContext context)
         {
+            if (context == null)
+                throw new ArgumentNullException(nameof(context));
+
             IServiceProvider serviceProvider = GetServiceProvider(context);
             IUserInformationProvider userInformationProvider = serviceProvider.GetRequiredService<IUserInformationProvider>();
             bool isAuthenticated = userInformationProvider.IsAuthenticated();
@@ -19,6 +22,9 @@ namespace Bit.Hangfire.Implementations
 
         protected virtual IServiceProvider GetServiceProvider(DashboardContext context)
         {
+            if (context == null)
+                throw new ArgumentNullException(nameof(context));
+
 #if DotNet
             return new OwinContext(context.GetOwinEnvironment())
                 .GetDependencyResolver()

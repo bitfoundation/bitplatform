@@ -11,24 +11,36 @@ namespace Simple.OData.Client
         public static Task<T> CreateEntryAsync<T>(this IBoundClient<T> client, bool resultRequired, CancellationToken cancellationToken)
             where T : class
         {
+            if (client == null)
+                throw new ArgumentNullException(nameof(client));
+
             return client.InsertEntryAsync(resultRequired, cancellationToken);
         }
 
         public static Task<T> CreateEntryAsync<T>(this IBoundClient<T> client)
             where T : class
         {
+            if (client == null)
+                throw new ArgumentNullException(nameof(client));
+
             return client.InsertEntryAsync();
         }
 
         public static Task<T> CreateEntryAsync<T>(this IBoundClient<T> client, CancellationToken cancellationToken)
             where T : class
         {
+            if (client == null)
+                throw new ArgumentNullException(nameof(client));
+
             return client.InsertEntryAsync(cancellationToken);
         }
 
         public static Task<T> CreateEntryAsync<T>(this IBoundClient<T> client, bool resultRequired)
             where T : class
         {
+            if (client == null)
+                throw new ArgumentNullException(nameof(client));
+
             return client.InsertEntryAsync(resultRequired);
         }
 

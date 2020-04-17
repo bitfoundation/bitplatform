@@ -12,6 +12,9 @@ namespace OpenQA.Selenium
     {
         public static Task NavigateToRoute(this RemoteWebDriver driver, string route)
         {
+            if (driver == null)
+                throw new ArgumentNullException(nameof(driver));
+
             Uri uri = new Uri(driver.Url);
 
             driver.Url = $"{uri.Scheme}://{uri.Host}:{uri.Port}/{route}";
@@ -24,6 +27,9 @@ namespace OpenQA.Selenium
         [DebuggerNonUserCode]
         public static IWebElement GetElementById(this RemoteWebDriver driver, string id)
         {
+            if (driver == null)
+                throw new ArgumentNullException(nameof(driver));
+
             new WebDriverWait(driver, TimeSpan.FromSeconds(2.5))
                 .Until(ExpectedConditions.ElementExists(By.Id(id)));
 

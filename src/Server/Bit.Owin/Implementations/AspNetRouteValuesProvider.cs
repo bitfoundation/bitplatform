@@ -7,7 +7,7 @@ namespace Bit.Owin.Implementations
 {
     public class AspNetRouteValuesProvider : IRouteValuesProvider
     {
-        public virtual IDictionary<string, object> PopulateRouteValuesDictionary(object routeValuesObj)
+        public virtual IDictionary<string, object?> PopulateRouteValuesDictionary(object routeValuesObj)
         {
             return new RouteValueDictionary(routeValuesObj);
         }

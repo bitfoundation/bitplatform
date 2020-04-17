@@ -14,20 +14,20 @@ namespace Bit.IdentityServer.Implementations
 {
     public abstract class UserService : UserServiceBase
     {
-        public virtual IOwinContext OwinContext { get; set; }
+        public virtual IOwinContext OwinContext { get; set; } = default!;
 
-        public virtual ILogger Logger { get; set; }
+        public virtual ILogger Logger { get; set; } = default!;
 
-        public virtual IScopeStatusManager ScopeStatusManager { get; set; }
+        public virtual IScopeStatusManager ScopeStatusManager { get; set; } = default!;
 
-        public virtual IUserInformationProvider UserInformationProvider { get; set; }
+        public virtual IUserInformationProvider UserInformationProvider { get; set; } = default!;
 
         public virtual Task<BitJwtToken> LocalLogin(LocalAuthenticationContext context, CancellationToken cancellationToken)
         {
             throw new NotImplementedException();
         }
 
-        public virtual IExceptionToHttpErrorMapper ExceptionToHttpErrorMapper { get; set; }
+        public virtual IExceptionToHttpErrorMapper ExceptionToHttpErrorMapper { get; set; } = default!;
 
         public sealed override Task AuthenticateLocalAsync(LocalAuthenticationContext context)
         {
@@ -48,6 +48,9 @@ namespace Bit.IdentityServer.Implementations
 
         public virtual async Task AuthenticateLocalAsync(LocalAuthenticationContext context, CancellationToken cancellationToken)
         {
+            if (context == null)
+                throw new ArgumentNullException(nameof(context));
+
             try
             {
                 if (context.AuthenticateResult == null)
@@ -80,7 +83,10 @@ namespace Bit.IdentityServer.Implementations
 
         public virtual Task GetProfileDataAsync(ProfileDataRequestContext context, CancellationToken cancellationToken)
         {
-            BitJwtToken bitJwtToken = BitJwtToken.FromJson(context.Subject.Claims.GetClaimValue("primary_sid"));
+            if (context == null)
+                throw new ArgumentNullException(nameof(context));
+
+            BitJwtToken bitJwtToken = BitJwtToken.FromJson(context.Subject.Claims.GetClaimValue("primary_sid") ?? throw new InvalidOperationException("primary_sid could not be found"));
 
             context.IssuedClaims = BuildClaimsFromBitJwtToken(bitJwtToken);
 
@@ -94,6 +100,9 @@ namespace Bit.IdentityServer.Implementations
 
         public sealed override async Task IsActiveAsync(IsActiveContext context)
         {
+            if (context == null)
+                throw new ArgumentNullException(nameof(context));
+
             try
             {
                 if (UserInformationProvider.IsAuthenticated() == false)

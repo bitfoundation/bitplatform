@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 using Bit.Core.Contracts;
 using Bit.Core.Models;
 using Bit.Owin.Contracts;
@@ -15,6 +16,9 @@ namespace Bit.Owin.Middlewares
 
         public override Task Invoke(IOwinContext context)
         {
+            if (context == null)
+                throw new ArgumentNullException(nameof(context));
+
             IDependencyResolver dependencyResolver = context.GetDependencyResolver();
 
             AppEnvironment activeAppEnvironment = dependencyResolver.Resolve<AppEnvironment>();

@@ -2,6 +2,7 @@
 using Bit.Core.Models;
 using Bit.Owin.Exceptions;
 using IdentityServer3.Core.Models;
+using System;
 using System.DirectoryServices.AccountManagement;
 using System.Threading;
 using System.Threading.Tasks;
@@ -10,18 +11,25 @@ namespace Bit.IdentityServer.Implementations
 {
     public class ActiveDirectoryUserServiceProvider : UserService
     {
-        public virtual AppEnvironment AppEnvironment { get; set; }
+        public virtual AppEnvironment AppEnvironment { get; set; } = default!;
 
         public override Task<BitJwtToken> LocalLogin(LocalAuthenticationContext context, CancellationToken cancellationToken)
         {
+            if (context == null)
+                throw new ArgumentNullException(nameof(context));
+
             string userName = context.UserName;
             string password = context.Password;
-            string activeDirectoryName = AppEnvironment.GetConfig<string>(AppEnvironment.KeyValues.IdentityServer.ActiveDirectoryName);
+            string activeDirectoryName = AppEnvironment.GetConfig<string>(AppEnvironment.KeyValues.IdentityServer.ActiveDirectoryName) ?? throw new InvalidOperationException($"{nameof(AppEnvironment.KeyValues.IdentityServer.ActiveDirectoryName)} is null");
             using (PrincipalContext principalContext = new PrincipalContext(ContextType.Domain, activeDirectoryName))
             {
                 string userNameAsWinUserName = userName;
 
+#if DotNet
                 if (!userNameAsWinUserName.Contains(activeDirectoryName))
+#else
+                if (!userNameAsWinUserName.Contains(activeDirectoryName, StringComparison.InvariantCulture))
+#endif
                     userNameAsWinUserName = $"{activeDirectoryName}\\{userNameAsWinUserName}";
 
                 if (principalContext.ValidateCredentials(userNameAsWinUserName, password))
@@ -39,7 +47,10 @@ namespace Bit.IdentityServer.Implementations
 
         public override Task<bool> UserIsActiveAsync(IsActiveContext context, BitJwtToken bitJwtToken, CancellationToken cancellationToken)
         {
-            string activeDirectoryName = AppEnvironment.GetConfig<string>(AppEnvironment.KeyValues.IdentityServer.ActiveDirectoryName);
+            if (context == null)
+                throw new ArgumentNullException(nameof(context));
+
+            string activeDirectoryName = AppEnvironment.GetConfig<string>(AppEnvironment.KeyValues.IdentityServer.ActiveDirectoryName) ?? throw new InvalidOperationException($"{nameof(AppEnvironment.KeyValues.IdentityServer.ActiveDirectoryName)} is null");
 
             using (PrincipalContext principalContext = new PrincipalContext(ContextType.Domain, activeDirectoryName))
             {

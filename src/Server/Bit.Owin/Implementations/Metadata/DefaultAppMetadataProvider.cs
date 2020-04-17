@@ -8,11 +8,11 @@ namespace Bit.Owin.Implementations.Metadata
 {
     public class DefaultAppMetadataProvider : IAppMetadataProvider
     {
-        private AppMetadata _appMetadata;
+        private AppMetadata? _appMetadata;
 
-        public virtual IEnumerable<IMetadataBuilder> MetadataBuilders { get; set; }
+        public virtual IEnumerable<IMetadataBuilder> MetadataBuilders { get; set; } = default!;
 
-        public virtual AppEnvironment AppEnvironment { get; set; }
+        public virtual AppEnvironment AppEnvironment { get; set; } = default!;
 
         public virtual async Task<AppMetadata> GetAppMetadata()
         {

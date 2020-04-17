@@ -150,9 +150,9 @@ namespace Bit.Core.Models
                 return value;
         }
 
-        public virtual string? GetHostVirtualPath()
+        public virtual string GetHostVirtualPath()
         {
-            return GetConfig(KeyValues.HostVirtualPath, KeyValues.HostVirtualPathDefaultValue);
+            return GetConfig(KeyValues.HostVirtualPath, KeyValues.HostVirtualPathDefaultValue)!;
         }
 
         public virtual string? GetSsoUrl()
@@ -160,12 +160,12 @@ namespace Bit.Core.Models
             return Security?.SsoServerUrl ?? $"{GetHostVirtualPath()}core";
         }
 
-        public virtual string? GetSsoIssuerName()
+        public virtual string GetSsoIssuerName()
         {
             return Security?.IssuerName ?? AppInfo.Name;
         }
 
-        public virtual string? GetSsoDefaultClientId()
+        public virtual string GetSsoDefaultClientId()
         {
             return Security?.DefaultClientId ?? AppInfo.Name;
         }
@@ -205,7 +205,7 @@ namespace Bit.Core.Models
 
     public class EnvironmentAppInfo
     {
-        public virtual string? Version { get; set; }
+        public virtual string Version { get; set; } = default!;
 
         public virtual string Name { get; set; } = default!;
 
@@ -264,9 +264,9 @@ namespace Bit.Core.Models
 
     public class EnvironmentCultureValue
     {
-        public virtual string? Name { get; set; }
+        public virtual string Name { get; set; } = default!;
 
-        public virtual string? Title { get; set; }
+        public virtual string Title { get; set; } = default!;
 
         public override string ToString()
         {

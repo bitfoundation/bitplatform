@@ -5,7 +5,7 @@ namespace Bit.Owin.Contracts.Metadata
 {
     public class ProjectMetadata : ObjectMetadata
     {
-        public virtual string ProjectName { get; set; }
+        public virtual string ProjectName { get; set; } = default!;
 
         public virtual List<EnvironmentCulture> Messages { get; set; } = new List<EnvironmentCulture>();
     }

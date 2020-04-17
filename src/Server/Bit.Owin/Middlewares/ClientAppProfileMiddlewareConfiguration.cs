@@ -3,6 +3,7 @@ using Bit.Owin.Contracts;
 using Bit.Owin.Models;
 using Microsoft.Owin;
 using Owin;
+using System;
 
 namespace Bit.Owin.Middlewares
 {
@@ -10,6 +11,9 @@ namespace Bit.Owin.Middlewares
     {
         public virtual void Configure(IAppBuilder owinApp)
         {
+            if (owinApp == null)
+                throw new ArgumentNullException(nameof(owinApp));
+
             owinApp.Map("/ClientAppProfile", innerOwinApp =>
             {
                 innerOwinApp.UseXContentTypeOptions();
@@ -18,6 +22,9 @@ namespace Bit.Owin.Middlewares
 
                 innerOwinApp.Run(async context =>
                 {
+                    if (context == null)
+                        throw new ArgumentNullException(nameof(context));
+
                     IDependencyResolver dependencyResolver = context.GetDependencyResolver();
 
                     IClientProfileModelProvider clientProfileModelProvider = dependencyResolver.Resolve<IClientProfileModelProvider>();

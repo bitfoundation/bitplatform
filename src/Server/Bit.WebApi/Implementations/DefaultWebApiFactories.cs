@@ -29,7 +29,7 @@ namespace Bit.WebApi.Implementations
         public static TDefaultInlineConstraintResolver WebApiInlineConstraintResolverFactory<TDefaultInlineConstraintResolver>(IDependencyResolver resolver)
             where TDefaultInlineConstraintResolver : DefaultInlineConstraintResolver
         {
-            var inlineConstraintResolver = ActivatorUtilities.CreateInstance<TDefaultInlineConstraintResolver>(resolver.Resolve<IServiceProvider>(), new object[] { });
+            var inlineConstraintResolver = ActivatorUtilities.CreateInstance<TDefaultInlineConstraintResolver>(resolver.Resolve<IServiceProvider>(), Array.Empty<object>());
 
             inlineConstraintResolver.ConstraintMap.Add("apiVersion", typeof(ApiVersionRouteConstraint));
 

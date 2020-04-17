@@ -9,8 +9,8 @@ namespace Bit.Owin.Middlewares
 {
     public class StaticFilesMiddlewareConfiguration : IOwinMiddlewareConfiguration
     {
-        public virtual AppEnvironment AppEnvironment { get; set; }
-        public virtual IPathProvider PathProvider { get; set; }
+        public virtual AppEnvironment AppEnvironment { get; set; } = default!;
+        public virtual IPathProvider PathProvider { get; set; } = default!;
 
         public virtual void Configure(IAppBuilder owinApp)
         {

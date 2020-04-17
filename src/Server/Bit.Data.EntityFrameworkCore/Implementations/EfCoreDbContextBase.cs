@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using System;
 
 namespace Bit.Data.EntityFrameworkCore.Implementations
 {
@@ -21,6 +22,9 @@ namespace Bit.Data.EntityFrameworkCore.Implementations
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
+            if (optionsBuilder == null)
+                throw new ArgumentNullException(nameof(optionsBuilder));
+
             if (ChangeTrackingEnabled() == false)
             {
                 optionsBuilder = optionsBuilder.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking);

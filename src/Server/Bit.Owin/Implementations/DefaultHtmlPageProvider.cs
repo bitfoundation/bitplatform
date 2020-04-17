@@ -9,16 +9,19 @@ namespace Bit.Owin.Implementations
 {
     public class DefaultHtmlPageProvider : IHtmlPageProvider
     {
-        public virtual IClientProfileModelProvider ClientProfileModelProvider { get; set; }
+        public virtual IClientProfileModelProvider ClientProfileModelProvider { get; set; } = default!;
 
         public virtual async Task<string> GetHtmlPageAsync(string htmlPage, CancellationToken cancellationToken)
         {
-            ClientProfileModel clientProfileModel = await ClientProfileModelProvider.GetClientProfileModelAsync(cancellationToken);
+            if (htmlPage == null)
+                throw new ArgumentNullException(nameof(htmlPage));
+
+            ClientProfileModel clientProfileModel = await ClientProfileModelProvider.GetClientProfileModelAsync(cancellationToken).ConfigureAwait(false);
 
             return ReplaceDefinedVariables(htmlPage, clientProfileModel);
         }
 
-        private string ReplaceDefinedVariables(string htmlPage, ClientProfileModel clientProfileModel)
+        string ReplaceDefinedVariables(string htmlPage, ClientProfileModel clientProfileModel)
         {
             return htmlPage
                                 .Replace("{{model.AppVersion}}", clientProfileModel.AppVersion, StringComparison.InvariantCultureIgnoreCase)
@@ -34,6 +37,9 @@ namespace Bit.Owin.Implementations
 
         public virtual string GetIndexPageHtmlContents(string htmlPage)
         {
+            if (htmlPage == null)
+                throw new ArgumentNullException(nameof(htmlPage));
+
             ClientProfileModel clientProfileModel = ClientProfileModelProvider.GetClientProfileModel();
 
             return ReplaceDefinedVariables(htmlPage, clientProfileModel);

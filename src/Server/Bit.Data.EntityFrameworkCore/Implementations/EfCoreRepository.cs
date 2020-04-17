@@ -17,18 +17,21 @@ namespace Bit.Data.EntityFrameworkCore.Implementations
         where TEntity : class, IEntity
         where TDbContext : DbContext
     {
-        private TDbContext _dbContext;
+        private TDbContext _dbContext = default!;
         public virtual TDbContext DbContext
         {
             get => _dbContext;
             set
             {
+                if (value == null)
+                    throw new ArgumentNullException(nameof(value));
+
                 _dbContext = value;
                 _set = _dbContext.Set<TEntity>();
             }
         }
 
-        private DbSet<TEntity> _set;
+        private DbSet<TEntity> _set = default!;
 
         protected virtual DbSet<TEntity> Set => _set;
 
@@ -49,10 +52,10 @@ namespace Bit.Data.EntityFrameworkCore.Implementations
                     object[] keys = DbContext.Model.FindEntityType(typeof(TEntity).GetTypeInfo())
                         .FindPrimaryKey()
                         .Properties
-                        .Select(p => p.PropertyInfo.GetValue(syncableEntity))
+                        .Select(p => p.PropertyInfo.GetValue(syncableEntity)!)
                         .ToArray();
 
-                    TEntity entityIfExists = await GetByIdAsync(cancellationToken, keys).ConfigureAwait(false);
+                    TEntity? entityIfExists = await GetByIdAsync(cancellationToken, keys).ConfigureAwait(false);
 
                     if (entityIfExists != null)
                         return entityIfExists;
@@ -299,6 +302,12 @@ namespace Bit.Data.EntityFrameworkCore.Implementations
 
         public virtual async Task LoadCollectionAsync<TProperty>(TEntity entity, Expression<Func<TEntity, IEnumerable<TProperty>>> childs, CancellationToken cancellationToken) where TProperty : class
         {
+            if (entity == null)
+                throw new ArgumentNullException(nameof(entity));
+
+            if (childs == null)
+                throw new ArgumentNullException(nameof(childs));
+
             try
             {
                 Attach(entity);
@@ -318,6 +327,12 @@ namespace Bit.Data.EntityFrameworkCore.Implementations
         public virtual void LoadCollection<TProperty>(TEntity entity, Expression<Func<TEntity, IEnumerable<TProperty>>> childs)
             where TProperty : class
         {
+            if (entity == null)
+                throw new ArgumentNullException(nameof(entity));
+
+            if (childs == null)
+                throw new ArgumentNullException(nameof(childs));
+
             try
             {
                 Attach(entity);
@@ -337,6 +352,12 @@ namespace Bit.Data.EntityFrameworkCore.Implementations
         public virtual async Task LoadReferenceAsync<TProperty>(TEntity entity, Expression<Func<TEntity, TProperty>> member, CancellationToken cancellationToken)
             where TProperty : class
         {
+            if (entity == null)
+                throw new ArgumentNullException(nameof(entity));
+
+            if (member == null)
+                throw new ArgumentNullException(nameof(member));
+
             try
             {
                 Attach(entity);
@@ -356,6 +377,12 @@ namespace Bit.Data.EntityFrameworkCore.Implementations
         public virtual void LoadReference<TProperty>(TEntity entity, Expression<Func<TEntity, TProperty>> member)
             where TProperty : class
         {
+            if (entity == null)
+                throw new ArgumentNullException(nameof(entity));
+
+            if (member == null)
+                throw new ArgumentNullException(nameof(member));
+
             try
             {
                 Attach(entity);
@@ -387,25 +414,34 @@ namespace Bit.Data.EntityFrameworkCore.Implementations
             DbContext.SaveChanges();
         }
 
-        public virtual async Task<TEntity> GetByIdAsync(CancellationToken cancellationToken, params object[] ids)
+        public virtual async Task<TEntity?> GetByIdAsync(CancellationToken cancellationToken, params object[] ids)
         {
+            if (ids == null)
+                throw new ArgumentNullException(nameof(ids));
+
             return await EfDataProviderSpecificMethodsProvider.ApplyWhereByKeys((await GetAllAsync(cancellationToken).ConfigureAwait(false)), ids)
                 .SingleOrDefaultAsync(cancellationToken).ConfigureAwait(false);
         }
 
-        public virtual TEntity GetById(params object[] ids)
+        public virtual TEntity? GetById(params object[] ids)
         {
+            if (ids == null)
+                throw new ArgumentNullException(nameof(ids));
+
             return EfDataProviderSpecificMethodsProvider.ApplyWhereByKeys(GetAll(), ids)
                 .SingleOrDefault();
         }
 
         public virtual async Task ReloadAsync(TEntity entity, CancellationToken cancellationToken)
         {
+            if (entity == null)
+                throw new ArgumentNullException(nameof(entity));
+
             try
             {
                 Attach(entity);
 
-                await DbContext.Entry(entity).ReloadAsync(cancellationToken);
+                await DbContext.Entry(entity).ReloadAsync(cancellationToken).ConfigureAwait(false);
             }
             finally
             {
@@ -416,6 +452,9 @@ namespace Bit.Data.EntityFrameworkCore.Implementations
 
         public virtual void Reload(TEntity entity)
         {
+            if (entity == null)
+                throw new ArgumentNullException(nameof(entity));
+
             try
             {
                 Attach(entity);
@@ -431,6 +470,12 @@ namespace Bit.Data.EntityFrameworkCore.Implementations
 
         public virtual IQueryable<TChild> GetCollectionQuery<TChild>(TEntity entity, Expression<Func<TEntity, IEnumerable<TChild>>> childs) where TChild : class
         {
+            if (entity == null)
+                throw new ArgumentNullException(nameof(entity));
+
+            if (childs == null)
+                throw new ArgumentNullException(nameof(childs));
+
             if (DbContext is EfCoreDbContextBase dbContextBase && dbContextBase.ChangeTrackingEnabled() == false)
                 throw new InvalidOperationException("This operation is valid for db context with change tracking enabled");
 
@@ -439,9 +484,9 @@ namespace Bit.Data.EntityFrameworkCore.Implementations
             return DbContext.Entry(entity).Collection(childs).Query();
         }
 
-        public virtual EfCoreDataProviderSpecificMethodsProvider EfDataProviderSpecificMethodsProvider { get; set; }
+        public virtual EfCoreDataProviderSpecificMethodsProvider EfDataProviderSpecificMethodsProvider { get; set; } = default!;
 
-        public virtual IDateTimeProvider DateTimeProvider { get; set; }
+        public virtual IDateTimeProvider DateTimeProvider { get; set; } = default!;
     }
 
     public class EfCoreRepository<TEntity> : EfCoreRepository<EfCoreDbContextBase, TEntity>, IRepository<TEntity>

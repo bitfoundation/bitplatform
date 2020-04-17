@@ -5,6 +5,7 @@ using Hangfire.Logging;
 using Hangfire.States;
 using Hangfire.Storage;
 using System;
+using System.Globalization;
 using System.Linq;
 
 namespace Bit.Hangfire.Implementations
@@ -30,8 +31,8 @@ namespace Bit.Hangfire.Implementations
 
         private readonly object _lockObject = new object();
         private int _attempts;
-        private int[] _delaysInSeconds;
-        private Func<long, int> _delayInSecondsByAttemptFunc;
+        private int[]? _delaysInSeconds;
+        private Func<long, int> _delayInSecondsByAttemptFunc = default!;
         private AttemptsExceededAction _onAttemptsExceeded;
         private bool _logEvents;
 
@@ -76,7 +77,7 @@ namespace Bit.Hangfire.Implementations
         /// <value>An array of non-negative numbers.</value>
         /// <exception cref="ArgumentNullException">The value in a set operation is null.</exception>
         /// <exception cref="ArgumentException">The value contain one or more negative numbers.</exception>
-        public int[] DelaysInSeconds
+        public int[]? DelaysInSeconds
         {
             get { lock (_lockObject) { return _delaysInSeconds; } }
             set
@@ -124,7 +125,10 @@ namespace Bit.Hangfire.Implementations
         /// <inheritdoc />
         public void OnStateElection(ElectStateContext context)
         {
-            FailedState failedState = context.CandidateState as FailedState;
+            if (context == null)
+                throw new ArgumentNullException(nameof(context));
+
+            FailedState? failedState = context.CandidateState as FailedState;
             if (failedState == null)
             {
                 // This filter accepts only failed job state.
@@ -157,9 +161,15 @@ namespace Bit.Hangfire.Implementations
         /// <inheritdoc />
         public void OnStateApplied(ApplyStateContext context, IWriteOnlyTransaction transaction)
         {
+            if (context == null)
+                throw new ArgumentNullException(nameof(context));
+
+            if (transaction == null)
+                throw new ArgumentNullException(nameof(transaction));
+
             if (context.NewState is ScheduledState &&
                 context.NewState.Reason != null &&
-                context.NewState.Reason.StartsWith("Retry attempt"))
+                context.NewState.Reason.StartsWith("Retry attempt", StringComparison.InvariantCulture))
             {
                 transaction.AddToSet("retries", context.BackgroundJob.Id);
             }
@@ -168,6 +178,12 @@ namespace Bit.Hangfire.Implementations
         /// <inheritdoc />
         public void OnStateUnapplied(ApplyStateContext context, IWriteOnlyTransaction transaction)
         {
+            if (context == null)
+                throw new ArgumentNullException(nameof(context));
+
+            if (transaction == null)
+                throw new ArgumentNullException(nameof(transaction));
+
             if (context.OldStateName == ScheduledState.StateName)
             {
                 transaction.RemoveFromSet("retries", context.BackgroundJob.Id);

@@ -21,9 +21,12 @@ namespace Bit.Owin.Middlewares
                 });
         }
 
-        public virtual bool IfIsNotLoggedIn(IOwinContext cntx)
+        public virtual bool IfIsNotLoggedIn(IOwinContext context)
         {
-            return cntx.GetDependencyResolver().Resolve<IUserInformationProvider>().IsAuthenticated() == false;
+            if (context == null)
+                throw new ArgumentNullException(nameof(context));
+
+            return context.GetDependencyResolver().Resolve<IUserInformationProvider>().IsAuthenticated() == false;
         }
     }
 }

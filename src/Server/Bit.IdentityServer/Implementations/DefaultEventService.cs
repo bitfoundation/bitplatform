@@ -18,10 +18,13 @@ namespace Bit.IdentityServer.Implementations
 
     public class DefaultEventService : IEventService
     {
-        public virtual ILogger Logger { get; set; }
+        public virtual ILogger Logger { get; set; } = default!;
 
         public virtual async Task RaiseAsync<T>(Event<T> @event)
         {
+            if (@event == null)
+                throw new ArgumentNullException(nameof(@event));
+
             if (@event.EventType == EventTypes.Error || @event.EventType == EventTypes.Failure)
             {
                 Logger.AddLogData("IdentityServerEventId", @event.Id);
@@ -53,6 +56,9 @@ namespace Bit.IdentityServer.Implementations
 
         protected virtual void LogSignInMessage(SignInMessage signInMessage)
         {
+            if (signInMessage == null)
+                throw new ArgumentNullException(nameof(signInMessage));
+
             Logger.AddLogData("ClientId", signInMessage.ClientId);
 
             if (signInMessage.AcrValues != null && signInMessage.AcrValues.Any())

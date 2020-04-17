@@ -14,6 +14,9 @@ namespace Bit.Owin.Middlewares
 
         public override Task Invoke(IOwinContext context)
         {
+            if (context == null)
+                throw new ArgumentNullException(nameof(context));
+
             // See https://github.com/odata/odata.net/issues/165
             if (!context.Request.Headers.ContainsKey("Accept-Charset"))
                 context.Request.Headers.Add("Accept-Charset", new[] { "utf-8" });

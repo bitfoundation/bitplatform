@@ -25,6 +25,9 @@ namespace Bit.Owin.Middlewares
 
         public override async Task Invoke(IOwinContext context)
         {
+            if (context == null)
+                throw new ArgumentNullException(nameof(context));
+
             IDependencyResolver dependencyResolver = context.GetDependencyResolver();
 
             IScopeStatusManager scopeStatusManager = dependencyResolver.Resolve<IScopeStatusManager>();
@@ -33,7 +36,7 @@ namespace Bit.Owin.Middlewares
 
             try
             {
-                string xCorrelationId = context.GetDependencyResolver().Resolve<IRequestInformationProvider>().XCorrelationId;
+                string? xCorrelationId = context.GetDependencyResolver().Resolve<IRequestInformationProvider>().XCorrelationId;
 
                 context.Response.OnSendingHeaders((state) =>
                 {

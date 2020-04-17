@@ -14,12 +14,14 @@ namespace Bit.Core.Contracts
 
     public interface IDependencyResolver : IServiceProvider, IDisposable, IAsyncDisposable
     {
-        TService Resolve<TService>(string? name = null);
+        TService Resolve<TService>(string? name = null)
+            where TService : notnull;
 
-        TService ResolveOptional<TService>(string? name = null)
+        TService? ResolveOptional<TService>(string? name = null)
             where TService : class;
 
-        IEnumerable<TService> ResolveAll<TService>(string? name = null);
+        IEnumerable<TService> ResolveAll<TService>(string? name = null)
+            where TService : notnull;
 
         object Resolve(TypeInfo serviceType, string? name = null);
 
@@ -27,7 +29,8 @@ namespace Bit.Core.Contracts
 
         IEnumerable<object> ResolveAll(TypeInfo serviceType, string? name = null);
 
-        bool IsRegistered<TService>();
+        bool IsRegistered<TService>()
+            where TService : notnull;
 
         bool IsRegistered(TypeInfo serviceType);
     }

@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 using Microsoft.Owin;
 
 namespace Bit.Owin.Middlewares
@@ -12,6 +13,9 @@ namespace Bit.Owin.Middlewares
 
         public override Task Invoke(IOwinContext context)
         {
+            if (context == null)
+                throw new ArgumentNullException(nameof(context));
+
             if (context.Request.Headers != null && !context.Request.Headers.ContainsKey("Authorization"))
             {
                 if (context.Request.Cookies?["access_token"] != null)

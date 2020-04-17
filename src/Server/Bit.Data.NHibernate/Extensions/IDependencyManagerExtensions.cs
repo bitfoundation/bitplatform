@@ -40,7 +40,7 @@ namespace Bit.Core.Contracts
                 .Register(context =>
                 {
                     ISession session = context.Resolve<ISessionFactory>().OpenSession();
-                    session.BeginTransaction((IsolationLevel)Enum.Parse(typeof(IsolationLevel), context.Resolve<AppEnvironment>().GetConfig(AppEnvironment.KeyValues.Data.DbIsolationLevel, AppEnvironment.KeyValues.Data.DbIsolationLevelDefaultValue)));
+                    session.BeginTransaction((IsolationLevel)Enum.Parse(typeof(IsolationLevel), context.Resolve<AppEnvironment>().GetConfig(AppEnvironment.KeyValues.Data.DbIsolationLevel, AppEnvironment.KeyValues.Data.DbIsolationLevelDefaultValue)!));
                     Scopes.TryAdd(((SessionImpl)session).SessionId, context.Resolve<IScopeStatusManager>());
                     return session;
                 })
@@ -49,7 +49,7 @@ namespace Bit.Core.Contracts
                 {
                     try
                     {
-                        if (Scopes.TryRemove(((SessionImpl)session).SessionId, out IScopeStatusManager scopeStatusManager) && scopeStatusManager.WasSucceeded())
+                        if (Scopes.TryRemove(((SessionImpl)session).SessionId, out IScopeStatusManager? scopeStatusManager) && scopeStatusManager.WasSucceeded())
                             session.Transaction.Commit();
                         else
                             session.Transaction.Rollback();

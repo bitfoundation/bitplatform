@@ -7,10 +7,13 @@ namespace Bit.Owin.Implementations
 {
     public class ConsoleLogStore : ILogStore
     {
-        public virtual IContentFormatter Formatter { get; set; }
+        public virtual IContentFormatter ContentFormatter { get; set; } = default!;
 
         public virtual void SaveLog(LogEntry logEntry)
         {
+            if (logEntry == null)
+                throw new ArgumentNullException(nameof(logEntry));
+
             ConsoleColor originalColor = Console.ForegroundColor;
 
             try
@@ -28,7 +31,7 @@ namespace Bit.Owin.Implementations
                         break;
                 }
 
-                Console.WriteLine(Formatter.Serialize(logEntry.ToDictionary()) + Environment.NewLine);
+                Console.WriteLine(ContentFormatter.Serialize(logEntry.ToDictionary()) + Environment.NewLine);
             }
             finally
             {

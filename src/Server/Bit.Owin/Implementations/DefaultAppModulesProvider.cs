@@ -12,16 +12,16 @@ namespace Bit.Owin.Implementations
     /// </summary>
     public class DefaultAppModulesProvider : IAppModulesProvider
     {
-        private static IAppModulesProvider _current;
+        private static IAppModulesProvider _current = default!;
 
-        private IAppModule[] _result;
-        private readonly object[] _args;
+        private IAppModule[]? _result;
+        private readonly object[]? _args;
 
         protected DefaultAppModulesProvider()
         {
         }
 
-        public DefaultAppModulesProvider(params object[] args)
+        public DefaultAppModulesProvider(params object[]? args)
         {
             _args = args;
         }
@@ -47,7 +47,7 @@ namespace Bit.Owin.Implementations
             {
                 object InstantiateAppModule(AppModuleAttribute depManagerAtt)
                 {
-                    return (_args != null && _args.Any()) ? Activator.CreateInstance(depManagerAtt.Type, _args) : Activator.CreateInstance(depManagerAtt.Type);
+                    return ((_args != null && _args.Any()) ? Activator.CreateInstance(depManagerAtt.Type, _args) : Activator.CreateInstance(depManagerAtt.Type)) ?? throw new InvalidOperationException($"Unable to create instance of {depManagerAtt.Type}");
                 }
 
                 _result = AssemblyContainer.Current.AssembliesWithDefaultAssemblies()

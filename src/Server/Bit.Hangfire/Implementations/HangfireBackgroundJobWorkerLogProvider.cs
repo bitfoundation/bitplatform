@@ -6,14 +6,14 @@ namespace Bit.Hangfire.Implementations
 {
     public class HangfireBackgroundJobWorkerLogProvider : ILog, ILogProvider
     {
-        public virtual IDependencyManager DependencyManager { get; set; }
+        public virtual IDependencyManager DependencyManager { get; set; } = default!;
 
         public virtual ILog GetLogger(string name)
         {
             return this;
         }
 
-        public virtual bool Log(LogLevel logLevel, Func<string> messageFunc, Exception exception = null)
+        public virtual bool Log(LogLevel logLevel, Func<string>? messageFunc, Exception? exception = null)
         {
             try
             {

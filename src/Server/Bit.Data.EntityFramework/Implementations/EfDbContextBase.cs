@@ -1,4 +1,5 @@
 ﻿using Bit.Data.Contracts;
+using System;
 using System.Data.Common;
 using System.Data.Entity;
 using System.Data.Entity.Core.Objects;
@@ -54,7 +55,7 @@ namespace Bit.Data.EntityFramework.Implementations
         }
 
         public EfDbContextBase(string connectionString, IDbConnectionProvider dbConnectionProvider)
-            : this(dbConnectionProvider.GetDbConnection(connectionString, rollbackOnScopeStatusFailure: true), contextOwnsConnection: false)
+            : this((dbConnectionProvider ?? throw new ArgumentNullException(nameof(dbConnectionProvider))).GetDbConnection(connectionString, rollbackOnScopeStatusFailure: true), contextOwnsConnection: false)
         {
             Database.UseTransaction(dbConnectionProvider.GetDbTransaction(Database.Connection));
         }

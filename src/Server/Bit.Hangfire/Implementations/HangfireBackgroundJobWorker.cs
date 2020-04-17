@@ -51,7 +51,7 @@ namespace Bit.Hangfire.Implementations
             return Task.FromResult(BackgroundJob.Schedule(methodCall, when));
         }
 
-        public virtual Task PerformRecurringBackgroundJobAsync<TService>(string jobId, Expression<Func<TService, Task>> methodCall, string cronExpression, TimeZoneInfo timeZoneInfo = null)
+        public virtual Task PerformRecurringBackgroundJobAsync<TService>(string jobId, Expression<Func<TService, Task>> methodCall, string cronExpression, TimeZoneInfo? timeZoneInfo = null)
         {
             if (methodCall == null)
                 throw new ArgumentNullException(nameof(methodCall));
@@ -169,7 +169,7 @@ namespace Bit.Hangfire.Implementations
             };
         }
 
-        public virtual void PerformRecurringBackgroundJob<TService>(string jobId, Expression<Func<TService, Task>> methodCall, string cronExpression, TimeZoneInfo timeZoneInfo = null)
+        public virtual void PerformRecurringBackgroundJob<TService>(string jobId, Expression<Func<TService, Task>> methodCall, string cronExpression, TimeZoneInfo? timeZoneInfo = null)
         {
             if (methodCall == null)
                 throw new ArgumentNullException(nameof(methodCall));

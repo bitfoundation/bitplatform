@@ -1,6 +1,7 @@
 ﻿using Bit.Core.Contracts;
 using Bit.Owin.Contracts.Metadata;
 using Microsoft.Owin;
+using System;
 using System.Threading.Tasks;
 
 namespace Bit.Owin.Middlewares
@@ -14,6 +15,9 @@ namespace Bit.Owin.Middlewares
 
         public override async Task Invoke(IOwinContext context)
         {
+            if (context == null)
+                throw new ArgumentNullException(nameof(context));
+
             IContentFormatter contentFormatter =
                 context.GetDependencyResolver().Resolve<IContentFormatter>();
 

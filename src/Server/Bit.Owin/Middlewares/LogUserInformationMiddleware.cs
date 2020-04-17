@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 using Bit.Core.Contracts;
 using Microsoft.Owin;
 
@@ -27,6 +28,12 @@ namespace Bit.Owin.Middlewares
 
         public static void LogUserInformation(ILogger logger, IUserInformationProvider userInformationProvider)
         {
+            if (userInformationProvider == null)
+                throw new ArgumentNullException(nameof(userInformationProvider));
+
+            if (logger == null)
+                throw new ArgumentNullException(nameof(logger));
+
             if (userInformationProvider.IsAuthenticated())
             {
                 BitJwtToken bitJwtToken = userInformationProvider.GetBitJwtToken();

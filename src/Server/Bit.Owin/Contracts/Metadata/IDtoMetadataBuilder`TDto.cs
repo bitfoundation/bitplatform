@@ -8,38 +8,38 @@ namespace Bit.Owin.Contracts.Metadata
 {
     public class DtoMemberMetadata : ObjectMetadata
     {
-        public virtual string DtoMemberName { get; set; }
+        public virtual string DtoMemberName { get; set; } = default!;
 
         public virtual List<EnvironmentCulture> Messages { get; set; } = new List<EnvironmentCulture>();
 
         public virtual bool IsRequired { get; set; }
 
-        public virtual string Pattern { get; set; }
+        public virtual string? Pattern { get; set; }
     }
 
     public class DtoMemberLookup
     {
-        public virtual string DtoMemberName { get; set; }
+        public virtual string DtoMemberName { get; set; } = default!;
 
-        public virtual string LookupDtoType { get; set; }
+        public virtual string? LookupDtoType { get; set; }
 
-        public virtual string DataTextField { get; set; }
+        public virtual string? DataTextField { get; set; }
 
-        public virtual string DataValueField { get; set; }
+        public virtual string DataValueField { get; set; } = default!;
 
-        public virtual string BaseFilter_JS { get; set; }
+        public virtual string? BaseFilter_JS { get; set; }
     }
 
     public class DtoMemberCultureTitle
     {
-        public virtual string CultureName { get; set; }
+        public virtual string CultureName { get; set; } = default!;
 
-        public virtual string Title { get; set; }
+        public virtual string? Title { get; set; }
     }
 
     public class DtoMetadata : ObjectMetadata
     {
-        public virtual string DtoType { get; set; }
+        public virtual string DtoType { get; set; } = default!;
 
         public virtual List<DtoMemberMetadata> MembersMetadata { get; set; } = new List<DtoMemberMetadata> { };
 
@@ -55,7 +55,7 @@ namespace Bit.Owin.Contracts.Metadata
 
         IDtoMetadataBuilder<TDto> AddMemberMetadata(PropertyInfo member, DtoMemberMetadata metadata);
 
-        IDtoMetadataBuilder<TDto> AddLookup<TLookupDto>(string memberName, string dataValueField, string dataTextField, Expression<Func<TLookupDto, bool>> baseFilter = null, string lookupName = null)
+        IDtoMetadataBuilder<TDto> AddLookup<TLookupDto>(string memberName, string dataValueField, string? dataTextField, Expression<Func<TLookupDto, bool>>? baseFilter = null, string? lookupName = null)
             where TLookupDto : class;
     }
 }

@@ -12,6 +12,9 @@ namespace Microsoft.EntityFrameworkCore.Migrations
         /// </summary>
         public static void CreateSqlServerJsonLogStoreTable(this MigrationBuilder migrationBuilder)
         {
+            if (migrationBuilder == null)
+                throw new ArgumentNullException(nameof(migrationBuilder));
+
             migrationBuilder.CreateTable(
                 name: "Logs",
                 columns: table => new
@@ -28,7 +31,10 @@ namespace Microsoft.EntityFrameworkCore.Migrations
 
         public static void CreateHangfireSqlObjects(this MigrationBuilder migrationBuilder)
         {
-            using (Stream hangfireJobsDatabaseStream = Assembly.Load("Bit.Hangfire").GetManifestResourceStream("Bit.Hangfire.Hangfire-Database-Script.sql"))
+            if (migrationBuilder == null)
+                throw new ArgumentNullException(nameof(migrationBuilder));
+
+            using (Stream hangfireJobsDatabaseStream = Assembly.Load("Bit.Hangfire").GetManifestResourceStream("Bit.Hangfire.Hangfire-Database-Script.sql")!)
             {
                 using (StreamReader reader = new StreamReader(hangfireJobsDatabaseStream))
                 {
@@ -40,6 +46,9 @@ namespace Microsoft.EntityFrameworkCore.Migrations
 
         public static void AllowSnapshotIsolation(this MigrationBuilder migrationBuilder)
         {
+            if (migrationBuilder == null)
+                throw new ArgumentNullException(nameof(migrationBuilder));
+
             migrationBuilder.Sql("DECLARE @dbname sysname = db_name();" +
                                  "EXEC('ALTER DATABASE [' + @dbname + '] SET ALLOW_SNAPSHOT_ISOLATION ON');", true);
         }

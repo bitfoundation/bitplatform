@@ -8,8 +8,8 @@ namespace Bit.Owin.Contracts
 
         DateTimeOffset MapFromClientToServer(DateTimeOffset date);
 
-        TimeZoneInfo GetClientCurrentTimeZone();
+        TimeZoneInfo? GetClientCurrentTimeZone();
 
-        TimeZoneInfo GetClientDesiredTimeZone();
+        TimeZoneInfo? GetClientDesiredTimeZone();
     }
 }

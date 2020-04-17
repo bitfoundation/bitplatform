@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 using Bit.Core.Contracts;
 using Microsoft.Owin;
 
@@ -13,6 +14,9 @@ namespace Bit.Owin.Middlewares
 
         public override Task Invoke(IOwinContext context)
         {
+            if (context == null)
+                throw new ArgumentNullException(nameof(context));
+
             IDependencyResolver dependencyResolver = context.GetDependencyResolver();
 
             ILogger logger = dependencyResolver.Resolve<ILogger>();
@@ -27,6 +31,12 @@ namespace Bit.Owin.Middlewares
 
         public static void LogRequest(ILogger logger, IRequestInformationProvider requestInformationProvider)
         {
+            if (logger == null)
+                throw new ArgumentNullException(nameof(logger));
+
+            if (requestInformationProvider == null)
+                throw new ArgumentNullException(nameof(requestInformationProvider));
+
             logger.AddLogData(nameof(IRequestInformationProvider.HttpMethod), requestInformationProvider.HttpMethod);
             logger.AddLogData(nameof(IRequestInformationProvider.DisplayUrl), requestInformationProvider.DisplayUrl);
 

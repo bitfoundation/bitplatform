@@ -10,8 +10,8 @@ namespace Bit.Owin.Implementations
     public class DefaultTimeZoneManager : ITimeZoneManager
     {
         private static readonly ConcurrentDictionary<string, TimeZoneInfo> _timeZonesCache = new ConcurrentDictionary<string, TimeZoneInfo>();
-        private string _currentTimeZoneName;
-        private string _desiredTimeZoneName;
+        private string? _currentTimeZoneName;
+        private string? _desiredTimeZoneName;
 
         public virtual IRequestInformationProvider RequestInformationProvider
         {
@@ -30,9 +30,12 @@ namespace Bit.Owin.Implementations
             }
         }
 
-        protected virtual TimeZoneInfo GetTimeZoneInfoByName(string timeZoneName)
+        protected virtual TimeZoneInfo? GetTimeZoneInfoByName(string? timeZoneName)
         {
-            TimeZoneInfo timeZoneInfo = null;
+            if (timeZoneName == null)
+                return null;
+
+            TimeZoneInfo? timeZoneInfo = null;
 
             if (!_timeZonesCache.ContainsKey(timeZoneName))
             {
@@ -52,12 +55,12 @@ namespace Bit.Owin.Implementations
             return timeZoneInfo;
         }
 
-        public virtual TimeZoneInfo GetClientCurrentTimeZone()
+        public virtual TimeZoneInfo? GetClientCurrentTimeZone()
         {
             return GetTimeZoneInfoByName(_currentTimeZoneName);
         }
 
-        public virtual TimeZoneInfo GetClientDesiredTimeZone()
+        public virtual TimeZoneInfo? GetClientDesiredTimeZone()
         {
             return GetTimeZoneInfoByName(_desiredTimeZoneName);
         }
@@ -73,9 +76,9 @@ namespace Bit.Owin.Implementations
             if (_currentTimeZoneName == _desiredTimeZoneName)
                 return dateTime;
 
-            TimeZoneInfo currentTimeZoneInfo = GetClientCurrentTimeZone();
+            TimeZoneInfo? currentTimeZoneInfo = GetClientCurrentTimeZone()!;
 
-            TimeZoneInfo desiredTimeZoneInfo = GetClientDesiredTimeZone();
+            TimeZoneInfo? desiredTimeZoneInfo = GetClientDesiredTimeZone()!;
 
             if (currentTimeZoneInfo.HasSameRules(desiredTimeZoneInfo))
                 return dateTime;
@@ -96,9 +99,9 @@ namespace Bit.Owin.Implementations
             if (_currentTimeZoneName == _desiredTimeZoneName)
                 return dateTime;
 
-            TimeZoneInfo currentTimeZoneInfo = GetClientCurrentTimeZone();
+            TimeZoneInfo currentTimeZoneInfo = GetClientCurrentTimeZone()!;
 
-            TimeZoneInfo desiredTimeZoneInfo = GetClientDesiredTimeZone();
+            TimeZoneInfo desiredTimeZoneInfo = GetClientDesiredTimeZone()!;
 
             if (currentTimeZoneInfo.HasSameRules(desiredTimeZoneInfo))
                 return dateTime;

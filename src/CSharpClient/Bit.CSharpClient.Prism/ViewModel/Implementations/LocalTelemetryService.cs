@@ -17,7 +17,7 @@ namespace Bit.ViewModel.Implementations
 
     public class TrackedThing
     {
-        public ThingProperty[] Properties { get; set; } = new ThingProperty[] { };
+        public ThingProperty[] Properties { get; set; } = Array.Empty<ThingProperty>();
 
         public override string ToString()
         {

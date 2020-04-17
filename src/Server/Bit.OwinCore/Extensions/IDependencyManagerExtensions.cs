@@ -45,6 +45,9 @@ namespace Bit.Core.Contracts
 
         public static IDependencyManager RegisterApplicationInsights(this IDependencyManager dependencyManager)
         {
+            if (dependencyManager == null)
+                throw new ArgumentNullException(nameof(dependencyManager));
+
             dependencyManager.Register<ITelemetryInitializer, BitTelemetryInitializer>(lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExisting: false);
             dependencyManager.RegisterLogStore<ApplicationInsightsLogStore>();
 
@@ -53,6 +56,9 @@ namespace Bit.Core.Contracts
 
         public static IDependencyManager RegisterAspNetCoreSingleSignOnClient(this IDependencyManager dependencyManager)
         {
+            if (dependencyManager == null)
+                throw new ArgumentNullException(nameof(dependencyManager));
+
             dependencyManager.RegisterAspNetCoreMiddleware<AspNetCoreReadAuthTokenFromCookieMiddlewareConfiguration>();
             dependencyManager.RegisterAspNetCoreMiddleware<AspNetCoreSingleSignOnClientMiddlewareConfiguration>();
             dependencyManager.RegisterOwinMiddleware<SignOutPageMiddlewareConfiguration>();
@@ -72,6 +78,9 @@ namespace Bit.Core.Contracts
         /// </summary>
         public static IDependencyManager RegisterMinimalAspNetCoreMiddlewares(this IDependencyManager dependencyManager)
         {
+            if (dependencyManager == null)
+                throw new ArgumentNullException(nameof(dependencyManager));
+
             dependencyManager.RegisterAspNetCoreMiddlewareUsing(aspNetCoreApp =>
             {
                 aspNetCoreApp.Use(async (context, next) =>
@@ -117,6 +126,9 @@ namespace Bit.Core.Contracts
         /// </summary>
         public static IDependencyManager RegisterDefaultAspNetCoreApp(this IDependencyManager dependencyManager)
         {
+            if (dependencyManager == null)
+                throw new ArgumentNullException(nameof(dependencyManager));
+
             dependencyManager.Register<Microsoft.Owin.Logging.ILoggerFactory, DefaultOwinLoggerFactory>(overwriteExisting: false);
             dependencyManager.Register<IUserInformationProvider, DefaultUserInformationProvider>(overwriteExisting: false);
             dependencyManager.Register<IExceptionToHttpErrorMapper, DefaultExceptionToHttpErrorMapper>(lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExisting: false);

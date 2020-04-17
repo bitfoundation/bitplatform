@@ -17,7 +17,7 @@ namespace Bit.Owin.Middlewares
     /// </summary>
     public class AutofacDependencyInjectionMiddlewareConfiguration : IOwinMiddlewareConfiguration
     {
-        private ILifetimeScope _lifetimeScope;
+        private ILifetimeScope _lifetimeScope = default!;
 
         public virtual IAutofacDependencyManager DependencyManager
         {
@@ -53,7 +53,11 @@ namespace Bit.Owin.Middlewares
 
         public override Task Invoke(IOwinContext context)
         {
+            if (context == null)
+                throw new ArgumentNullException(nameof(context));
+
             IAutofacDependencyManager childDependencyManager = new AutofacDependencyManager();
+
             childDependencyManager.UseContainer(context.GetAutofacLifetimeScope());
 
             context.Set("DependencyResolver", (IDependencyResolver)childDependencyManager);

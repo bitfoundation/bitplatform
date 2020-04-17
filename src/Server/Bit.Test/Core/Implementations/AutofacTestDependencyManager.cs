@@ -88,6 +88,9 @@ namespace Bit.Test.Implementations
 
         public virtual void ComponentRegistration_Activating(object sender, Autofac.Core.ActivatingEventArgs<object> e)
         {
+            if (e == null)
+                throw new ArgumentNullException(nameof(e));
+
             object instance = e.Instance;
 
             TypeInfo instanceType = instance.GetType().GetTypeInfo();

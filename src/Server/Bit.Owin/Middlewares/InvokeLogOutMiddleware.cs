@@ -1,6 +1,7 @@
 ﻿using Bit.Core.Contracts;
 using Bit.Core.Models;
 using Microsoft.Owin;
+using System;
 using System.Threading.Tasks;
 
 namespace Bit.Owin.Middlewares
@@ -12,10 +13,13 @@ namespace Bit.Owin.Middlewares
         {
         }
 
-        private AppEnvironment _App;
+        private AppEnvironment? _App;
 
         public override Task Invoke(IOwinContext context)
         {
+            if (context == null)
+                throw new ArgumentNullException(nameof(context));
+
             IDependencyResolver dependencyResolver = context.GetDependencyResolver();
 
             if (_App == null)

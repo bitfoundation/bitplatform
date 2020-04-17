@@ -130,6 +130,9 @@ namespace Bit.Test
 
         protected virtual ITestServer GetTestServer(TestEnvironmentArgs args)
         {
+            if (args == null)
+                throw new ArgumentNullException(nameof(args));
+
             if (args.UseRealServer == true)
             {
                 if (args.UseAspNetCore == false)
@@ -176,6 +179,9 @@ namespace Bit.Test
 
         protected virtual IEnumerable<Type> GetBaseTypes(Type type)
         {
+            if (type == null)
+                throw new ArgumentNullException(nameof(type));
+
             Type baseType = type.BaseType;
             while (baseType != null)
             {
@@ -186,11 +192,17 @@ namespace Bit.Test
 
         protected virtual IAppEnvironmentsProvider GetAppEnvironmentsProvider(TestEnvironmentArgs args)
         {
+            if (args == null)
+                throw new ArgumentNullException(nameof(args));
+
             return new TestAppEnvironmentsProvider(args.CustomAppEnvironmentsProvider ?? DefaultAppEnvironmentsProvider.Current, args.ActiveAppEnvironmentCustomizer);
         }
 
         protected virtual IAppModulesProvider GetAppModulesProvider(TestEnvironmentArgs args)
         {
+            if (args == null)
+                throw new ArgumentNullException(nameof(args));
+
             return new CompositeAppModulesProvider(args.CustomAppModulesProvider ?? DefaultAppModulesProvider.Current, new TestAdditionalDependencies(args.AdditionalDependencies));
         }
 

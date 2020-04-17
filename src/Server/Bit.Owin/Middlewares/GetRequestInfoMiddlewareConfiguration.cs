@@ -10,12 +10,16 @@ namespace Bit.Owin.Middlewares
 {
     public class GetRequestInfoMiddleware : OwinMiddleware
     {
-        public GetRequestInfoMiddleware(OwinMiddleware next) : base(next)
+        public GetRequestInfoMiddleware(OwinMiddleware next)
+            : base(next)
         {
         }
 
         public override async Task Invoke(IOwinContext context)
         {
+            if (context == null)
+                throw new ArgumentNullException(nameof(context));
+
             await context.Response.WriteAsync(GetRequestInfo(context.GetDependencyResolver().Resolve<IServiceProvider>()), context.Request.CallCancelled);
         }
 
@@ -36,6 +40,9 @@ namespace Bit.Owin.Middlewares
     {
         public void Configure(IAppBuilder owinApp)
         {
+            if (owinApp == null)
+                throw new ArgumentNullException(nameof(owinApp));
+
             owinApp.Map("/get-request-info", innerOwinApp =>
             {
                 innerOwinApp.Use<GetRequestInfoMiddleware>();

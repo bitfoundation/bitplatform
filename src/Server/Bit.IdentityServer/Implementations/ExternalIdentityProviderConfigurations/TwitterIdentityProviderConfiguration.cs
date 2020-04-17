@@ -8,11 +8,11 @@ namespace Bit.IdentityServer.Implementations.ExternalIdentityProviderConfigurati
 {
     public class TwitterIdentityProviderConfiguration : IExternalIdentityProviderConfiguration
     {
-        public virtual AppEnvironment AppEnvironment { get; set; }
+        public virtual AppEnvironment AppEnvironment { get; set; } = default!;
 
         public virtual void ConfigureExternalIdentityProvider(IAppBuilder owinApp, string signInType)
         {
-            if (AppEnvironment.TryGetConfig(AppEnvironment.KeyValues.IdentityServer.TwitterClientId, out string twitterClientId) && AppEnvironment.TryGetConfig(AppEnvironment.KeyValues.IdentityServer.TwitterSecret, out string twitterSecret))
+            if (AppEnvironment.TryGetConfig(AppEnvironment.KeyValues.IdentityServer.TwitterClientId, out string? twitterClientId) && AppEnvironment.TryGetConfig(AppEnvironment.KeyValues.IdentityServer.TwitterSecret, out string? twitterSecret) && twitterClientId != null && twitterSecret != null)
             {
                 Task TwitterOnAuthenticated(TwitterAuthenticatedContext context)
                 {

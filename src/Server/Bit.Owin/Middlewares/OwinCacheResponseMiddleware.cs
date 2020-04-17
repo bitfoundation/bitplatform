@@ -19,21 +19,24 @@ namespace Bit.Owin.Middlewares
 
         }
 
-        public override Task OnActionExecutingAsync(IOwinContext owinContext)
+        public override Task OnActionExecutingAsync(IOwinContext context)
         {
-            if (owinContext.Response.Headers.Any(h => string.Equals(h.Key, "Cache-Control", StringComparison.InvariantCultureIgnoreCase)))
-                owinContext.Response.Headers.Remove("Cache-Control");
-            owinContext.Response.Headers.Add("Cache-Control", new[] { "public", "max-age=31536000" });
+            if (context == null)
+                throw new ArgumentNullException(nameof(context));
 
-            if (owinContext.Response.Headers.Any(h => string.Equals(h.Key, "Pragma", StringComparison.InvariantCultureIgnoreCase)))
-                owinContext.Response.Headers.Remove("Pragma");
-            owinContext.Response.Headers.Add("Pragma", new[] { "public" });
+            if (context.Response.Headers.Any(h => string.Equals(h.Key, "Cache-Control", StringComparison.InvariantCultureIgnoreCase)))
+                context.Response.Headers.Remove("Cache-Control");
+            context.Response.Headers.Add("Cache-Control", new[] { "public", "max-age=31536000" });
 
-            if (owinContext.Response.Headers.Any(h => string.Equals(h.Key, "Expires", StringComparison.InvariantCultureIgnoreCase)))
-                owinContext.Response.Headers.Remove("Expires");
-            owinContext.Response.Headers.Add("Expires", new[] { "max" });
+            if (context.Response.Headers.Any(h => string.Equals(h.Key, "Pragma", StringComparison.InvariantCultureIgnoreCase)))
+                context.Response.Headers.Remove("Pragma");
+            context.Response.Headers.Add("Pragma", new[] { "public" });
 
-            return base.OnActionExecutingAsync(owinContext);
+            if (context.Response.Headers.Any(h => string.Equals(h.Key, "Expires", StringComparison.InvariantCultureIgnoreCase)))
+                context.Response.Headers.Remove("Expires");
+            context.Response.Headers.Add("Expires", new[] { "max" });
+
+            return base.OnActionExecutingAsync(context);
         }
     }
 }

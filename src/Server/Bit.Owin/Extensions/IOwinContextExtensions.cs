@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 using Bit.Core.Contracts;
 using Bit.Owin.Middlewares;
 
@@ -8,12 +9,12 @@ namespace Microsoft.Owin
     {
         public static IDependencyResolver GetDependencyResolver(this IOwinContext context)
         {
-            if (context.TryGetDependencyResolver(out IDependencyResolver dependencyResolver))
+            if (context.TryGetDependencyResolver(out IDependencyResolver? dependencyResolver))
                 return dependencyResolver;
             throw new InvalidOperationException($"DependencyResolver not found in owin context, See {nameof(AutofacScopeBasedDependencyResolverMiddleware)}");
         }
 
-        public static bool TryGetDependencyResolver(this IOwinContext context, out IDependencyResolver dependencyResolver)
+        public static bool TryGetDependencyResolver(this IOwinContext context, [MaybeNullWhen(returnValue: false)] out IDependencyResolver dependencyResolver)
         {
             if (context == null)
                 throw new ArgumentNullException(nameof(context));
@@ -24,6 +25,7 @@ namespace Microsoft.Owin
 
             if (dependencyResolver == default(IDependencyResolver))
                 return false;
+
             return true;
         }
     }

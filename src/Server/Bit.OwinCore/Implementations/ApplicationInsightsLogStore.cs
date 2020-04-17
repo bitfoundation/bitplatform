@@ -9,6 +9,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Runtime.Serialization;
 using System.Threading.Tasks;
 
 namespace Bit.OwinCore.Implementations
@@ -130,6 +131,12 @@ namespace Bit.OwinCore.Implementations
                 : base(message, innerException)
             {
             }
+
+            protected FatalException(SerializationInfo serializationInfo, StreamingContext streamingContext)
+                : base(serializationInfo, streamingContext)
+            {
+
+            }
         }
 
         [Serializable]
@@ -148,6 +155,12 @@ namespace Bit.OwinCore.Implementations
             public ErrorException(string message, Exception innerException)
                 : base(message, innerException)
             {
+            }
+
+            protected ErrorException(SerializationInfo serializationInfo, StreamingContext streamingContext)
+                : base(serializationInfo, streamingContext)
+            {
+
             }
         }
 
@@ -168,6 +181,12 @@ namespace Bit.OwinCore.Implementations
                 : base(message, innerException)
             {
             }
+
+            protected WarningException(SerializationInfo serializationInfo, StreamingContext streamingContext)
+                : base(serializationInfo, streamingContext)
+            {
+                
+            }
         }
 
         [Serializable]
@@ -186,6 +205,12 @@ namespace Bit.OwinCore.Implementations
             public InformationException(string message, Exception innerException)
                 : base(message, innerException)
             {
+            }
+
+            protected InformationException(SerializationInfo serializationInfo, StreamingContext streamingContext)
+                : base(serializationInfo, streamingContext)
+            {
+                throw new NotImplementedException();
             }
         }
 

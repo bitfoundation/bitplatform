@@ -4,7 +4,7 @@ namespace Bit.Owin.Implementations
 {
     public class DefaultDependencyManager
     {
-        private static IDependencyManager _current;
+        private static IDependencyManager? _current;
 
         public static IDependencyManager Current
         {

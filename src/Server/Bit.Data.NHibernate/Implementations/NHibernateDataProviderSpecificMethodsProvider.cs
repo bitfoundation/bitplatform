@@ -49,7 +49,7 @@ namespace Bit.Data.NHibernate.Implementations
             if (source == null)
                 throw new ArgumentNullException(nameof(source));
 
-            return (await source.ToListAsync(cancellationToken)).ToArray();
+            return (await source.ToListAsync(cancellationToken).ConfigureAwait(false)).ToArray();
         }
     }
 }

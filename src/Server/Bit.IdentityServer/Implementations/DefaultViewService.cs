@@ -8,11 +8,11 @@ using IdentityServer3.Core.Validation;
 using IdentityServer3.Core.ViewModels;
 using Microsoft.Owin;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Serialization;
 using System;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -20,15 +20,15 @@ namespace Bit.IdentityServer.Implementations
 {
     public class DefaultViewService : IViewService
     {
-        public virtual IHtmlPageProvider HtmlPageProvider { get; set; }
+        public virtual IHtmlPageProvider HtmlPageProvider { get; set; } = default!;
 
-        public virtual IUrlStateProvider UrlStateProvider { get; set; }
+        public virtual IUrlStateProvider UrlStateProvider { get; set; } = default!;
 
-        public virtual IPathProvider PathProvider { get; set; }
+        public virtual IPathProvider PathProvider { get; set; } = default!;
 
-        public virtual AppEnvironment AppEnvironment { get; set; }
+        public virtual AppEnvironment AppEnvironment { get; set; } = default!;
 
-        public virtual IOwinContext OwinContext { get; set; }
+        public virtual IOwinContext OwinContext { get; set; } = default!;
 
         public virtual Task<Stream> ClientPermissions(ClientPermissionsViewModel model)
         {
@@ -40,7 +40,7 @@ namespace Bit.IdentityServer.Implementations
                                 <body>ClientPermissions >> Not Implemented</body>
                             </html>";
 
-            return ReturnHtmlAsync(model, content, OwinContext.Request.CallCancelled);
+            return ReturnHtmlAsync(content, OwinContext.Request.CallCancelled);
         }
 
         public virtual Task<Stream> Consent(ConsentViewModel model, ValidatedAuthorizeRequest authorizeRequest)
@@ -53,11 +53,14 @@ namespace Bit.IdentityServer.Implementations
                                 <body>Consent >> Not Implemented</body>
                             </html>";
 
-            return ReturnHtmlAsync(model, content, OwinContext.Request.CallCancelled);
+            return ReturnHtmlAsync(content, OwinContext.Request.CallCancelled);
         }
 
         public virtual Task<Stream> Error(ErrorViewModel model)
         {
+            if (model == null)
+                throw new ArgumentNullException(nameof(model));
+
             string content = $@"<!DOCTYPE html>
                             <html>
                                 <head>
@@ -66,14 +69,14 @@ namespace Bit.IdentityServer.Implementations
                                 <body>{model.ErrorMessage} <br /> RequestId: {model.RequestId}</body>
                             </html>";
 
-            return ReturnHtmlAsync(model, content, OwinContext.Request.CallCancelled);
+            return ReturnHtmlAsync(content, OwinContext.Request.CallCancelled);
         }
 
         public virtual Task<Stream> LoggedOut(LoggedOutViewModel model, SignOutMessage message)
         {
-            string content = null;
+            string? content = null;
 
-            string url = model?.RedirectUrl ?? message?.ReturnUrl;
+            string? url = model?.RedirectUrl ?? message?.ReturnUrl;
 
             if (!string.IsNullOrEmpty(url))
             {
@@ -98,7 +101,7 @@ namespace Bit.IdentityServer.Implementations
                             </html>";
             }
 
-            return ReturnHtmlAsync(model, content, OwinContext.Request.CallCancelled);
+            return ReturnHtmlAsync(content, OwinContext.Request.CallCancelled);
         }
 
         public virtual async Task<Stream> Login(LoginViewModel model, SignInMessage message)
@@ -112,7 +115,7 @@ namespace Bit.IdentityServer.Implementations
                 {
                     dynamic custom = model.Custom = UrlStateProvider.GetState(new Uri(message.ReturnUrl));
 
-                    string signInType = null;
+                    string? signInType = null;
 
                     try
                     {
@@ -124,7 +127,7 @@ namespace Bit.IdentityServer.Implementations
                     {
                         string redirectUri = model.ExternalProviders.Single(extProvider => extProvider.Type == signInType).Href;
 
-                        return await ReturnHtmlAsync(model, $@"<!DOCTYPE html>
+                        return await ReturnHtmlAsync($@"<!DOCTYPE html>
                             <html>
                                 <head>
                                     <meta http-equiv='refresh' content='0;{redirectUri}'>
@@ -161,19 +164,23 @@ namespace Bit.IdentityServer.Implementations
                 ReturnUrl = message.ReturnUrl == null ? "" : new Uri(message.ReturnUrl).ParseQueryString()["redirect_uri"]
             }, Formatting.None, jsonSerSettings);
 
-            string loginPageHtmlInitialHtml = File.ReadAllText(PathProvider.MapStaticFilePath(AppEnvironment.GetConfig(AppEnvironment.KeyValues.IdentityServer.LoginPagePath, AppEnvironment.KeyValues.IdentityServer.LoginPagePathDefaultValue)));
+            string loginPageHtmlInitialHtml = File.ReadAllText(PathProvider.MapStaticFilePath(AppEnvironment.GetConfig(AppEnvironment.KeyValues.IdentityServer.LoginPagePath, AppEnvironment.KeyValues.IdentityServer.LoginPagePathDefaultValue)!));
 
             string loginPageHtmlFinalHtml = (await HtmlPageProvider.GetHtmlPageAsync(loginPageHtmlInitialHtml, OwinContext.Request.CallCancelled).ConfigureAwait(false))
                 .Replace("{{model.LoginModel.toJson()}}", Microsoft.Security.Application.Encoder.HtmlEncode(json), StringComparison.InvariantCultureIgnoreCase);
 
-            return await ReturnHtmlAsync(model, loginPageHtmlFinalHtml, OwinContext.Request.CallCancelled).ConfigureAwait(false);
+            return await ReturnHtmlAsync(loginPageHtmlFinalHtml, OwinContext.Request.CallCancelled).ConfigureAwait(false);
         }
 
-        private async Task<Stream> ReturnHtmlAsync(CommonViewModel model, string html, CancellationToken cancellationToken)
+        async Task<Stream> ReturnHtmlAsync(string html, CancellationToken cancellationToken)
         {
             MemoryStream viewStream = new MemoryStream();
 
-            StreamWriter writer = new StreamWriter(viewStream);
+#if DotNet
+            using StreamWriter writer = new StreamWriter(viewStream, Encoding.UTF8, bufferSize: 1024, leaveOpen: true);
+#else
+            await using StreamWriter writer = new StreamWriter(viewStream, Encoding.UTF8, bufferSize: -1, leaveOpen: true);
+#endif
 
             await writer.WriteAsync(html).ConfigureAwait(false);
 
@@ -186,6 +193,9 @@ namespace Bit.IdentityServer.Implementations
 
         public virtual Task<Stream> Logout(LogoutViewModel model, SignOutMessage message)
         {
+            if (model == null)
+                throw new ArgumentNullException(nameof(model));
+
             // Based on current InvokeLogOut Middleware, this method will not be called, because of context.Authentication.SignOut("custom", "Bearer"); code.
 
             string content = $@"<!DOCTYPE html>
@@ -200,7 +210,7 @@ namespace Bit.IdentityServer.Implementations
                                 </body>
                             </html>";
 
-            return ReturnHtmlAsync(model, content, OwinContext.Request.CallCancelled);
+            return ReturnHtmlAsync(content, OwinContext.Request.CallCancelled);
         }
     }
 }

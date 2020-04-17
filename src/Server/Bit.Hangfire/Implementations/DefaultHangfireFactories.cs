@@ -3,6 +3,7 @@ using Bit.Core.Models;
 using Bit.Hangfire.Contracts;
 using Hangfire;
 using Hangfire.Dashboard;
+using System;
 
 namespace Bit.Hangfire.Implementations
 {
@@ -10,6 +11,9 @@ namespace Bit.Hangfire.Implementations
     {
         public static IDependencyManager RegisterHangfireFactories(this IDependencyManager dependencyManager)
         {
+            if (dependencyManager == null)
+                throw new ArgumentNullException(nameof(dependencyManager));
+
             dependencyManager.RegisterUsing(resolver => new DashboardOptionsFactory(() => DashboardOptionsFactory(resolver)), lifeCycle: DependencyLifeCycle.Transient, overwriteExisting: false);
 
             return dependencyManager;
@@ -17,6 +21,9 @@ namespace Bit.Hangfire.Implementations
 
         public static DashboardOptions DashboardOptionsFactory(IDependencyResolver resolver)
         {
+            if (resolver == null)
+                throw new ArgumentNullException(nameof(resolver));
+
             var appEnv = resolver.Resolve<AppEnvironment>();
 
             return new DashboardOptions

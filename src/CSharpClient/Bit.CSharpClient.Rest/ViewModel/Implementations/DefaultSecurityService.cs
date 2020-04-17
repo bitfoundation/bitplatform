@@ -188,8 +188,6 @@ namespace Bit.ViewModel.Implementations
             TelemetryServices.All().SetUserId((await GetBitJwtToken(cancellationToken).ConfigureAwait(false)).UserId);
         }
 
-        readonly char[] AmpersandChars = new char[] { '&' };
-
         public virtual bool UseSecureStorage()
         {
             return false;

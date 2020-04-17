@@ -18,7 +18,7 @@ namespace Bit.Owin.Implementations
             if (string.IsNullOrEmpty(state))
                 return new { };
 
-            return JsonConvert.DeserializeObject<dynamic>(state, DefaultJsonContentFormatter.DeserializeSettings());
+            return JsonConvert.DeserializeObject<dynamic>(state, DefaultJsonContentFormatter.DeserializeSettings())!;
         }
     }
 }

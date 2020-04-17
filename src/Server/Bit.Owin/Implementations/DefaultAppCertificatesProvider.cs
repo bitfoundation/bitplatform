@@ -8,19 +8,19 @@ namespace Bit.Owin.Implementations
 {
     public class DefaultAppCertificatesProvider : IAppCertificatesProvider
     {
-        public virtual AppEnvironment AppEnvironment { get; set; }
-        public virtual IPathProvider PathProvider { get; set; }
+        public virtual AppEnvironment AppEnvironment { get; set; } = default!;
+        public virtual IPathProvider PathProvider { get; set; } = default!;
 
-        private X509Certificate2 _certificate;
+        private X509Certificate2? _certificate;
 
         public virtual X509Certificate2 GetSingleSignOnCertificate()
         {
             if (_certificate == null)
             {
                 string password = AppEnvironment
-                    .GetConfig<string>(AppEnvironment.KeyValues.IdentityCertificatePassword);
+                    .GetConfig<string>(AppEnvironment.KeyValues.IdentityCertificatePassword) ?? throw new InvalidOperationException($"{nameof(AppEnvironment.KeyValues.IdentityCertificatePassword)} could not be found.");
 
-                _certificate = new X509Certificate2(File.ReadAllBytes(PathProvider.MapPath(AppEnvironment.GetConfig(AppEnvironment.KeyValues.IdentityServerCertificatePath, AppEnvironment.KeyValues.IdentityServerCertificatePathDefaultValue))),
+                _certificate = new X509Certificate2(File.ReadAllBytes(PathProvider.MapPath(AppEnvironment.GetConfig(AppEnvironment.KeyValues.IdentityServerCertificatePath, AppEnvironment.KeyValues.IdentityServerCertificatePathDefaultValue)!)),
                     password);
             }
 

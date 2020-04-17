@@ -37,13 +37,13 @@ namespace Bit.Core.Contracts
 
         string DisplayUrl { get; }
 
-        ClaimsIdentity Identity { get; }
+        ClaimsIdentity? Identity { get; }
 
         string? CurrentTimeZone { get; }
 
         string? DesiredTimeZone { get; }
 
-        string ContentType { get; }
+        string? ContentType { get; }
 
         string? Origin { get; }
 

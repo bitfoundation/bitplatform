@@ -11,7 +11,7 @@ namespace Bit.Owin.Implementations.Metadata
     public class DefaultDtoMetadataBuilder<TDto> : DefaultMetadataBuilder, IDtoMetadataBuilder<TDto>
         where TDto : class
     {
-        private DtoMetadata _dtoMetadata;
+        private DtoMetadata? _dtoMetadata;
 
         public virtual IDtoMetadataBuilder<TDto> AddDtoMetadata(DtoMetadata metadata)
         {
@@ -20,21 +20,18 @@ namespace Bit.Owin.Implementations.Metadata
 
             _dtoMetadata = metadata;
 
-            _dtoMetadata.DtoType = typeof(TDto).GetTypeInfo().FullName;
+            _dtoMetadata.DtoType = typeof(TDto).GetTypeInfo().FullName!;
 
             AllMetadata.Add(_dtoMetadata);
 
             return this;
         }
 
-        public virtual IDtoMetadataBuilder<TDto> AddLookup<TLookupDto>(string memberName, string dataValueField, string dataTextField, Expression<Func<TLookupDto, bool>> baseFilter = null, string lookupName = null)
+        public virtual IDtoMetadataBuilder<TDto> AddLookup<TLookupDto>(string memberName, string dataValueField, string? dataTextField, Expression<Func<TLookupDto, bool>>? baseFilter = null, string? lookupName = null)
             where TLookupDto : class
         {
             if (memberName == null)
                 throw new ArgumentNullException(nameof(memberName));
-
-            if (dataTextField == null)
-                throw new ArgumentNullException(nameof(dataTextField));
 
             if (dataValueField == null)
                 throw new ArgumentNullException(nameof(dataValueField));
@@ -65,6 +62,9 @@ namespace Bit.Owin.Implementations.Metadata
         protected virtual string BuildLookupJsFilterFromLambdaExpression<TLookupDto>(Expression<Func<TLookupDto, bool>> baseFilter, DtoMemberLookup lookup)
             where TLookupDto : class
         {
+            if (baseFilter == null)
+                throw new ArgumentNullException(nameof(baseFilter));
+
             if (baseFilter.Parameters.ExtendedSingle("Finding base filter parameters").Name != "it")
                 throw new Exception("base filter's parameter name must be 'it'. For example it => it.Id == 1");
 
@@ -79,7 +79,7 @@ namespace Bit.Owin.Implementations.Metadata
             if (metadata == null)
                 throw new ArgumentNullException(nameof(metadata));
 
-            return AddMemberMetadata(typeof(TDto).GetTypeInfo().GetProperty(memberName), metadata);
+            return AddMemberMetadata(typeof(TDto).GetTypeInfo().GetProperty(memberName) ?? throw new InvalidOperationException($"Member {memberName} could not be found in {typeof(TDto).FullName}"), metadata);
         }
 
         public virtual IDtoMetadataBuilder<TDto> AddMemberMetadata(PropertyInfo member, DtoMemberMetadata metadata)

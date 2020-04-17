@@ -13,12 +13,11 @@ namespace Bit.Owin.Implementations
 {
     public class DefaultLogger : ILogger
     {
-        public virtual IDateTimeProvider DateTimeProvider { get; set; }
-        public virtual IEnumerable<ILogStore> LogStores { get; set; }
+        public virtual IDateTimeProvider DateTimeProvider { get; set; } = default!;
+        public virtual IEnumerable<ILogStore> LogStores { get; set; } = default!;
+        public virtual AppEnvironment AppEnvironment { get; set; } = default!;
 
-        public virtual AppEnvironment AppEnvironment { get; set; }
-
-        private void SaveLogEntryUsingAllLogStores(LogEntry logEntry)
+        void SaveLogEntryUsingAllLogStores(LogEntry logEntry)
         {
             List<Exception> logExceptions = new List<Exception>();
 
@@ -38,7 +37,7 @@ namespace Bit.Owin.Implementations
                 throw new AggregateException(logExceptions);
         }
 
-        private async Task SaveLogEntryUsingAllLogStoresAsync(LogEntry logEntry)
+        async Task SaveLogEntryUsingAllLogStoresAsync(LogEntry logEntry)
         {
             List<Exception> logExceptions = new List<Exception>();
 
@@ -62,7 +61,7 @@ namespace Bit.Owin.Implementations
 
         public LogPolicy Policy { get; set; } = LogPolicy.InCaseOfScopeFailure;
 
-        public virtual void AddLogData(string key, object value)
+        public virtual void AddLogData(string key, object? value)
         {
             if (key == null)
                 throw new ArgumentNullException(nameof(key));

@@ -34,13 +34,13 @@ namespace Bit.Core.Contracts
 
         string? GetCurrentUserId();
 
-        string? GetAuthenticationType();
+        string GetAuthenticationType();
 
-        string? GetClientId();
+        string GetClientId();
 
         IEnumerable<Claim> GetClaims();
 
-        ClaimsIdentity GetIdentity();
+        ClaimsIdentity? GetIdentity();
 
         BitJwtToken GetBitJwtToken();
     }

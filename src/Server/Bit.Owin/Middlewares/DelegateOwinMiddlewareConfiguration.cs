@@ -11,7 +11,7 @@ namespace Bit.Owin.Middlewares
 
         }
 
-        private readonly Action<IAppBuilder> _owinAppCustomizer;
+        private readonly Action<IAppBuilder> _owinAppCustomizer = default!;
 
         public DelegateOwinMiddlewareConfiguration(Action<IAppBuilder> owinAppCustomizer)
         {

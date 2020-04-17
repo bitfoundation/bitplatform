@@ -14,7 +14,10 @@ namespace Bit.Data.NHibernate.Implementations
     {
         protected override JsonContract CreateContract(Type objectType)
         {
-            if (typeof(INHibernateProxy).IsAssignableFrom(objectType))
+            if (objectType == null)
+                throw new ArgumentNullException(nameof(objectType));
+
+            if (typeof(INHibernateProxy).IsAssignableFrom(objectType) && objectType.BaseType != null)
                 return base.CreateContract(objectType.BaseType);
             else
                 return base.CreateContract(objectType);
@@ -32,10 +35,10 @@ namespace Bit.Data.NHibernate.Implementations
                     {
                         if (prop.PropertyType != typeof(string) && typeof(IEnumerable).IsAssignableFrom(prop.PropertyType))
                         {
-                            FieldInfo backingField = entity.GetType().GetField($"<{member.Name}>k__BackingField", BindingFlags.NonPublic | BindingFlags.Instance);
+                            FieldInfo? backingField = entity.GetType().GetField($"<{member.Name}>k__BackingField", BindingFlags.NonPublic | BindingFlags.Instance);
                             if (backingField != null)
                             {
-                                object backingFieldValue = backingField.GetValue(entity);
+                                object? backingFieldValue = backingField.GetValue(entity);
                                 if (backingFieldValue is IPersistentCollection persistentCollection)
                                     return persistentCollection.WasInitialized;
                             }

@@ -12,9 +12,9 @@ namespace Bit.Owin.Implementations
 {
     public class DefaultClientProfileModelProvider : IClientProfileModelProvider
     {
-        public virtual AppEnvironment AppEnvironment { get; set; }
-        public virtual IUserSettingProvider UsersSettingsProvider { get; set; }
-        public virtual IContentFormatter ContentFormatter { get; set; }
+        public virtual AppEnvironment AppEnvironment { get; set; } = default!;
+        public virtual IUserSettingProvider? UsersSettingsProvider { get; set; }
+        public virtual IContentFormatter ContentFormatter { get; set; } = default!;
 
         public virtual ClientProfileModel GetClientProfileModel()
         {
@@ -25,16 +25,16 @@ namespace Bit.Owin.Implementations
                 AppName = AppEnvironment.AppInfo.Name
             };
 
-            UserSetting userSetting = UsersSettingsProvider?.GetCurrentUserSetting();
+            UserSetting? userSetting = UsersSettingsProvider?.GetCurrentUserSetting();
 
-            string theme = userSetting?.Theme ?? AppEnvironment.AppInfo.DefaultTheme;
+            string? theme = userSetting?.Theme ?? AppEnvironment.AppInfo.DefaultTheme;
 
-            string culture = userSetting?.Culture ?? AppEnvironment.AppInfo.DefaultCulture;
+            string? culture = userSetting?.Culture ?? AppEnvironment.AppInfo.DefaultCulture;
 
-            string desiredTimeZone = userSetting?.DesiredTimeZone ??
+            string? desiredTimeZone = userSetting?.DesiredTimeZone ??
                                            AppEnvironment.AppInfo.DefaultTimeZone;
 
-            string desiredTimeZoneValue = null;
+            string? desiredTimeZoneValue = null;
 
             if (culture == null || string.Equals(culture, "Auto", StringComparison.OrdinalIgnoreCase))
                 culture = "EnUs";
@@ -43,9 +43,9 @@ namespace Bit.Owin.Implementations
                 !string.Equals(desiredTimeZone, "Auto", StringComparison.CurrentCulture))
                 desiredTimeZoneValue = desiredTimeZone;
 
-            string appTitle = AppEnvironment.Cultures.Any() ? AppEnvironment.Cultures
-                .ExtendedSingle($"Finding culture {culture} in environment {AppEnvironment.Name}", c => c.Name == culture).Values.ExtendedSingle($"Finding AppTitle in culture {culture}", v =>
-                      string.Equals(v.Name, "AppTitle", StringComparison.OrdinalIgnoreCase)).Title : string.Empty;
+            string appTitle = AppEnvironment.Cultures.Any() ? (AppEnvironment.Cultures
+                .ExtendedSingle($"Finding culture {culture} in environment {AppEnvironment.Name}", c => c.Name == culture).Values
+                    .ExtendedSingle($"Finding AppTitle in culture {culture}", v => string.Equals(v.Name, "AppTitle", StringComparison.OrdinalIgnoreCase)).Title) : string.Empty;
 
             clientProfileMdoel.AppTitle = appTitle;
             clientProfileMdoel.Culture = culture;
@@ -70,16 +70,16 @@ namespace Bit.Owin.Implementations
                 AppName = AppEnvironment.AppInfo.Name
             };
 
-            UserSetting userSetting = UsersSettingsProvider == null ? null : await UsersSettingsProvider.GetCurrentUserSettingAsync(cancellationToken).ConfigureAwait(false);
+            UserSetting? userSetting = UsersSettingsProvider == null ? null : await UsersSettingsProvider.GetCurrentUserSettingAsync(cancellationToken).ConfigureAwait(false);
 
-            string theme = userSetting?.Theme ?? AppEnvironment.AppInfo.DefaultTheme;
+            string? theme = userSetting?.Theme ?? AppEnvironment.AppInfo.DefaultTheme;
 
-            string culture = userSetting?.Culture ?? AppEnvironment.AppInfo.DefaultCulture;
+            string? culture = userSetting?.Culture ?? AppEnvironment.AppInfo.DefaultCulture;
 
-            string desiredTimeZone = userSetting?.DesiredTimeZone ??
+            string? desiredTimeZone = userSetting?.DesiredTimeZone ??
                                            AppEnvironment.AppInfo.DefaultTimeZone;
 
-            string desiredTimeZoneValue = null;
+            string? desiredTimeZoneValue = null;
 
             if (culture == null || string.Equals(culture, "Auto", StringComparison.OrdinalIgnoreCase))
                 culture = "EnUs";

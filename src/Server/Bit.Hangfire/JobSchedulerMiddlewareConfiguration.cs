@@ -17,8 +17,8 @@ namespace Bit.Hangfire
         IAspNetCoreMiddlewareConfiguration
 #endif
     {
-        public virtual DashboardOptionsFactory DashboardOptionsFactory { get; set; }
-        public virtual IJobSchedulerBackendConfiguration JobSchedulerBackendConfiguration { get; set; }
+        public virtual DashboardOptionsFactory DashboardOptionsFactory { get; set; } = default!;
+        public virtual IJobSchedulerBackendConfiguration JobSchedulerBackendConfiguration { get; set; } = default!;
 
 #if DotNetCore
         public MiddlewarePosition MiddlewarePosition => MiddlewarePosition.BeforeOwinMiddlewares;

@@ -14,7 +14,7 @@ namespace Simple.OData.Client
             if (client == null)
                 throw new ArgumentNullException(nameof(client));
 
-            return client.For<TDto>(typeof(TController).GetTypeInfo().Name.Replace("Controller", string.Empty));
+            return client.For<TDto>(typeof(TController).GetTypeInfo().Name.Replace("Controller", string.Empty, StringComparison.InvariantCulture));
         }
     }
 }

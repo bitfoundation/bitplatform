@@ -8,9 +8,9 @@ namespace Bit.Owin.Implementations
 {
     public class WindowsEventsLogStore : ILogStore
     {
-        public virtual AppEnvironment AppEnvironment { get; set; }
+        public virtual AppEnvironment AppEnvironment { get; set; } = default!;
 
-        public virtual IContentFormatter ContentFormatter { get; set; }
+        public virtual IContentFormatter ContentFormatter { get; set; } = default!;
 
         public virtual Task SaveLogAsync(LogEntry logEntry)
         {

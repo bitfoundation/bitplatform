@@ -19,13 +19,16 @@ namespace Bit.Owin.Middlewares
 
         }
 
-        public override Task OnActionExecutingAsync(IOwinContext owinContext)
+        public override Task OnActionExecutingAsync(IOwinContext context)
         {
-            if (owinContext.Response.Headers.Any(h => string.Equals(h.Key, "Cache-Control", StringComparison.InvariantCultureIgnoreCase)))
-                owinContext.Response.Headers.Remove("Cache-Control");
-            owinContext.Response.Headers.Add("Cache-Control", new[] { "no-store, no-transform" });
+            if (context == null)
+                throw new ArgumentNullException(nameof(context));
 
-            return base.OnActionExecutingAsync(owinContext);
+            if (context.Response.Headers.Any(h => string.Equals(h.Key, "Cache-Control", StringComparison.InvariantCultureIgnoreCase)))
+                context.Response.Headers.Remove("Cache-Control");
+            context.Response.Headers.Add("Cache-Control", new[] { "no-store, no-transform" });
+
+            return base.OnActionExecutingAsync(context);
         }
     }
 }

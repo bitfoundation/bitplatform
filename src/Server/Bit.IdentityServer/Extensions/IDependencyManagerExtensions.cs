@@ -5,15 +5,19 @@ using Bit.IdentityServer.Implementations.ExternalIdentityProviderConfigurations;
 using Bit.Owin.Implementations;
 using Bit.Owin.Middlewares;
 using IdentityServer3.Core.Services;
+using System;
 
 namespace Bit.Core.Contracts
 {
     public static class IDependencyManagerExtensions
     {
-        public static IDependencyManager RegisterSingleSignOnServer<TUserService, TOAuthClientsProvider>(this IDependencyManager dependencyManager, string name = null)
+        public static IDependencyManager RegisterSingleSignOnServer<TUserService, TOAuthClientsProvider>(this IDependencyManager dependencyManager, string? name = null)
             where TUserService : class, IUserService
             where TOAuthClientsProvider : class, IOAuthClientsProvider
         {
+            if (dependencyManager == null)
+                throw new ArgumentNullException(nameof(dependencyManager));
+
             dependencyManager.Register<IAppCertificatesProvider, DefaultAppCertificatesProvider>(lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExisting: false);
 
             dependencyManager.Register<IScopesProvider, DefaultScopesProvider>(lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExisting: false);

@@ -6,8 +6,8 @@ namespace Bit.Owin.Contracts
 {
     public interface IUserSettingProvider
     {
-        Task<UserSetting> GetCurrentUserSettingAsync(CancellationToken cancellationToken);
+        Task<UserSetting?> GetCurrentUserSettingAsync(CancellationToken cancellationToken);
 
-        UserSetting GetCurrentUserSetting();
+        UserSetting? GetCurrentUserSetting();
     }
 }

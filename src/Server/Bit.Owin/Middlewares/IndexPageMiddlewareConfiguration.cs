@@ -7,7 +7,7 @@ namespace Bit.Owin.Middlewares
 {
     public class IndexPageMiddlewareConfiguration : IOwinMiddlewareConfiguration
     {
-        public virtual AppEnvironment AppEnvironment { get; set; }
+        public virtual AppEnvironment AppEnvironment { get; set; } = default!;
 
         public virtual void Configure(IAppBuilder owinApp)
         {

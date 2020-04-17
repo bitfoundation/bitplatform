@@ -17,13 +17,13 @@ namespace Bit.IdentityServer.Implementations
                 if (dependencyManager == null)
                     throw new ArgumentNullException(nameof(dependencyManager));
 
-                bool IdentityServerLog(LogLevel logLevel, Func<string> messageFunc, Exception exception = null, params object[] formatParameters)
+                bool IdentityServerLog(LogLevel logLevel, Func<string>? messageFunc, Exception? exception = null, params object[] formatParameters)
                 {
                     if (logLevel == LogLevel.Error || logLevel == LogLevel.Fatal || logLevel == LogLevel.Warn || exception != null)
                     {
                         if (messageFunc != null)
                         {
-                            IDependencyResolver scope = null;
+                            IDependencyResolver? scope = null;
 
                             try
                             {
@@ -38,7 +38,7 @@ namespace Bit.IdentityServer.Implementations
                                 {
                                     ILogger logger = scope.Resolve<ILogger>();
 
-                                    string message = messageFunc(); ;
+                                    string message = messageFunc();
 
                                     try
                                     {
@@ -67,7 +67,7 @@ namespace Bit.IdentityServer.Implementations
             }
         }
 
-        private Logger _logger;
+        private Logger _logger = default!;
 
         public virtual Logger GetLogger(string name)
         {

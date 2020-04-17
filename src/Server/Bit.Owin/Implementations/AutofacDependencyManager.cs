@@ -13,10 +13,10 @@ namespace Bit.Owin.Implementations
 {
     public class AutofacDependencyManager : IDependencyManager, IAutofacDependencyManager, IServiceCollectionAccessor
     {
-        private ContainerBuilder _containerBuilder;
-        private ILifetimeScope _container;
+        private ContainerBuilder? _containerBuilder;
+        private ILifetimeScope? _container;
 
-        IServiceCollection IServiceCollectionAccessor.ServiceCollection { get; set; }
+        IServiceCollection IServiceCollectionAccessor.ServiceCollection { get; set; } = default!;
 
         public virtual IDependencyManager Init()
         {
@@ -46,7 +46,7 @@ namespace Bit.Owin.Implementations
         {
             if (!IsInited())
                 throw new InvalidOperationException("Container builder is not prepared. Call init first.");
-            SetContainer(_containerBuilder.Build());
+            SetContainer((_containerBuilder!).Build());
             return this;
         }
 
@@ -70,7 +70,7 @@ namespace Bit.Owin.Implementations
             if (!ContainerIsBuilt())
                 throw new InvalidOperationException("Container is not built. Call build first.");
 
-            return _container;
+            return _container!;
         }
 
         public virtual ContainerBuilder GetContainerBuidler()
@@ -81,7 +81,7 @@ namespace Bit.Owin.Implementations
             return _containerBuilder;
         }
 
-        public virtual IDependencyResolver CreateChildDependencyResolver(Action<IDependencyManager> childDependencyManagerCustomizer = null)
+        public virtual IDependencyResolver CreateChildDependencyResolver(Action<IDependencyManager>? childDependencyManagerCustomizer = null)
         {
             IAutofacDependencyManager childDependencyManager = new AutofacDependencyManager();
 
@@ -99,7 +99,8 @@ namespace Bit.Owin.Implementations
             return (IDependencyResolver)childDependencyManager;
         }
 
-        public virtual TService Resolve<TService>(string name = null)
+        public virtual TService Resolve<TService>(string? name = null)
+            where TService : notnull
         {
             ILifetimeScope container = GetContainer();
 
@@ -109,7 +110,8 @@ namespace Bit.Owin.Implementations
             return container.Resolve<TService>();
         }
 
-        public virtual IEnumerable<TService> ResolveAll<TService>(string name = null)
+        public virtual IEnumerable<TService> ResolveAll<TService>(string? name = null)
+            where TService : notnull
         {
             ILifetimeScope container = GetContainer();
 
@@ -119,7 +121,7 @@ namespace Bit.Owin.Implementations
             return container.Resolve<IEnumerable<TService>>();
         }
 
-        public virtual TService ResolveOptional<TService>(string name = null)
+        public virtual TService? ResolveOptional<TService>(string? name = null)
             where TService : class
         {
             ILifetimeScope container = GetContainer();
@@ -130,7 +132,7 @@ namespace Bit.Owin.Implementations
             return container.ResolveOptional<TService>();
         }
 
-        public virtual object Resolve(TypeInfo serviceType, string name = null)
+        public virtual object Resolve(TypeInfo serviceType, string? name = null)
         {
             if (serviceType == null)
                 throw new ArgumentNullException(nameof(serviceType));
@@ -143,7 +145,7 @@ namespace Bit.Owin.Implementations
             return container.Resolve(serviceType);
         }
 
-        public virtual object ResolveOptional(TypeInfo serviceType, string name = null)
+        public virtual object? ResolveOptional(TypeInfo serviceType, string? name = null)
         {
             if (serviceType == null)
                 throw new ArgumentNullException(nameof(serviceType));
@@ -156,7 +158,7 @@ namespace Bit.Owin.Implementations
             return container.ResolveOptional(serviceType);
         }
 
-        public virtual IEnumerable<object> ResolveAll(TypeInfo serviceType, string name = null)
+        public virtual IEnumerable<object> ResolveAll(TypeInfo serviceType, string? name = null)
         {
             if (serviceType == null)
                 throw new ArgumentNullException(nameof(serviceType));
@@ -169,37 +171,37 @@ namespace Bit.Owin.Implementations
             return (IEnumerable<object>)container.Resolve(serviceType);
         }
 
-        public virtual object GetService(TypeInfo serviceType)
+        public virtual object? GetService(TypeInfo serviceType)
         {
             return GetContainer().ResolveOptional(serviceType);
         }
 
-        public virtual object GetService(Type serviceType)
+        public virtual object? GetService(Type serviceType)
         {
             return GetContainer().ResolveOptional(serviceType);
         }
 
-        public virtual IDependencyManager Register<T>(string name = null,
+        public virtual IDependencyManager Register<T>(string? name = null,
             DependencyLifeCycle lifeCycle = DependencyLifeCycle.PerScopeInstance, bool overwriteExisting = true)
             where T : class
         {
             return Register<T, T>(name, lifeCycle, overwriteExisting);
         }
 
-        public virtual IDependencyManager Register<TService, TImplementation>(string name = null,
+        public virtual IDependencyManager Register<TService, TImplementation>(string? name = null,
             DependencyLifeCycle lifeCycle = DependencyLifeCycle.PerScopeInstance, bool overwriteExisting = true)
             where TImplementation : class, TService
         {
             return Register(new[] { typeof(TService).GetTypeInfo() }, typeof(TImplementation).GetTypeInfo(), name, lifeCycle, overwriteExisting);
         }
 
-        public virtual IDependencyManager RegisterInstance<TService>(TService obj, bool overwriteExisting = true, string name = null)
+        public virtual IDependencyManager RegisterInstance<TService>(TService obj, bool overwriteExisting = true, string? name = null)
             where TService : class
         {
             return RegisterInstance(obj, new[] { typeof(TService).GetTypeInfo() }, overwriteExisting, name);
         }
 
-        public virtual IDependencyManager RegisterAssemblyTypes(Assembly[] assemblies, Predicate<TypeInfo> predicate = null, DependencyLifeCycle lifeCycle = DependencyLifeCycle.PerScopeInstance)
+        public virtual IDependencyManager RegisterAssemblyTypes(Assembly[] assemblies, Predicate<TypeInfo>? predicate = null, DependencyLifeCycle lifeCycle = DependencyLifeCycle.PerScopeInstance)
         {
             IRegistrationBuilder<object, ReflectionActivatorData, DynamicRegistrationStyle> registration = GetContainerBuidler().RegisterAssemblyTypes(assemblies)
                 .Where(t => predicate == null || predicate(t.GetTypeInfo()))
@@ -239,24 +241,30 @@ namespace Bit.Owin.Implementations
             return this;
         }
 
-        public virtual IDependencyManager RegisterUsing<T>(Func<IDependencyResolver, T> factory, string name = null,
+        public virtual IDependencyManager RegisterUsing<T>(Func<IDependencyResolver, T> factory, string? name = null,
             DependencyLifeCycle lifeCycle = DependencyLifeCycle.PerScopeInstance, bool overwriteExisting = true)
         {
-            return RegisterUsing((depManager) => factory(depManager), new[] { typeof(T).GetTypeInfo() }, name, lifeCycle, overwriteExisting);
+            if (factory == null)
+                throw new ArgumentNullException(nameof(factory));
+
+            return RegisterUsing((depManager) => factory(depManager)!, new[] { typeof(T).GetTypeInfo() }, name, lifeCycle, overwriteExisting);
         }
 
-        public virtual IDependencyManager RegisterUsing(Func<IDependencyResolver, object> factory, TypeInfo serviceType, string name = null, DependencyLifeCycle lifeCycle = DependencyLifeCycle.PerScopeInstance, bool overwriteExisting = true)
+        public virtual IDependencyManager RegisterUsing(Func<IDependencyResolver, object> factory, TypeInfo serviceType, string? name = null, DependencyLifeCycle lifeCycle = DependencyLifeCycle.PerScopeInstance, bool overwriteExisting = true)
         {
             return RegisterUsing(factory, new[] { serviceType }, name, lifeCycle, overwriteExisting);
         }
 
-        public virtual IDependencyManager RegisterUsing(Func<IDependencyResolver, object> factory, TypeInfo[] servicesType, string name = null, DependencyLifeCycle lifeCycle = DependencyLifeCycle.PerScopeInstance, bool overwriteExisting = true)
+        public virtual IDependencyManager RegisterUsing(Func<IDependencyResolver, object> factory, TypeInfo[] servicesType, string? name = null, DependencyLifeCycle lifeCycle = DependencyLifeCycle.PerScopeInstance, bool overwriteExisting = true)
         {
+            if (servicesType == null)
+                throw new ArgumentNullException(nameof(servicesType));
+
             IRegistrationBuilder<object, SimpleActivatorData, SingleRegistrationStyle> registration = GetContainerBuidler().Register((context, parameter) =>
             {
                 AutofacDependencyManager currentAutofacDepdencyManager = new AutofacDependencyManager();
                 currentAutofacDepdencyManager.UseContainer(context.Resolve<ILifetimeScope>());
-                return factory.DynamicInvoke(currentAutofacDepdencyManager);
+                return factory.DynamicInvoke(currentAutofacDepdencyManager)!;
             }).As(servicesType);
 
             if (overwriteExisting == false)
@@ -278,12 +286,12 @@ namespace Bit.Owin.Implementations
             return this;
         }
 
-        public virtual IDependencyManager Register(TypeInfo serviceType, TypeInfo implementationType, string name = null, DependencyLifeCycle lifeCycle = DependencyLifeCycle.PerScopeInstance, bool overwriteExisting = true)
+        public virtual IDependencyManager Register(TypeInfo serviceType, TypeInfo implementationType, string? name = null, DependencyLifeCycle lifeCycle = DependencyLifeCycle.PerScopeInstance, bool overwriteExisting = true)
         {
             return Register(new[] { serviceType }, implementationType, name, lifeCycle, overwriteExisting);
         }
 
-        public virtual IDependencyManager Register(TypeInfo[] servicesType, TypeInfo implementationType, string name = null, DependencyLifeCycle lifeCycle = DependencyLifeCycle.PerScopeInstance, bool overwriteExisting = true)
+        public virtual IDependencyManager Register(TypeInfo[] servicesType, TypeInfo implementationType, string? name = null, DependencyLifeCycle lifeCycle = DependencyLifeCycle.PerScopeInstance, bool overwriteExisting = true)
         {
             if (implementationType == null)
                 throw new ArgumentNullException(nameof(implementationType));
@@ -314,15 +322,18 @@ namespace Bit.Owin.Implementations
             return this;
         }
 
-        public virtual IDependencyManager RegisterInstance(object obj, TypeInfo serviceType, bool overwriteExisting = true, string name = null)
+        public virtual IDependencyManager RegisterInstance(object obj, TypeInfo serviceType, bool overwriteExisting = true, string? name = null)
         {
             return RegisterInstance(obj, new[] { serviceType }, overwriteExisting, name);
         }
 
-        public virtual IDependencyManager RegisterInstance(object obj, TypeInfo[] servicesType, bool overwriteExisting = true, string name = null)
+        public virtual IDependencyManager RegisterInstance(object obj, TypeInfo[] servicesType, bool overwriteExisting = true, string? name = null)
         {
             if (obj == null)
                 throw new ArgumentNullException(nameof(obj));
+
+            if (servicesType == null)
+                throw new ArgumentNullException(nameof(servicesType));
 
             IRegistrationBuilder<object, SimpleActivatorData, SingleRegistrationStyle> registration = GetContainerBuidler().RegisterInstance(obj).As(servicesType);
 
@@ -339,6 +350,7 @@ namespace Bit.Owin.Implementations
         }
 
         public virtual bool IsRegistered<TService>()
+            where TService : notnull
         {
             return GetContainer().IsRegistered<TService>();
         }

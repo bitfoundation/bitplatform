@@ -5,7 +5,7 @@ namespace Bit.Hangfire.Implementations
 {
     public class JobSchedulerRedisBackendConfiguration : JobSchedulerBaseBackendConfiguration<RedisStorage>
     {
-        public virtual IConnectionMultiplexer ConnectionMultiplexer { get; set; }
+        public virtual IConnectionMultiplexer ConnectionMultiplexer { get; set; } = default!;
 
         protected override RedisStorage BuildStorage()
         {

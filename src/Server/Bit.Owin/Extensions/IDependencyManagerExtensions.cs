@@ -14,7 +14,7 @@ namespace Bit.Core.Contracts
 {
     public static class IDependencyManagerExtensions
     {
-        public static IDependencyManager RegisterOwinMiddleware<TMiddleware>(this IDependencyManager dependencyManager, string name = null)
+        public static IDependencyManager RegisterOwinMiddleware<TMiddleware>(this IDependencyManager dependencyManager, string? name = null)
             where TMiddleware : class, IOwinMiddlewareConfiguration
         {
             if (dependencyManager == null)
@@ -90,7 +90,6 @@ namespace Bit.Core.Contracts
             if (dependencyManager == null)
                 throw new ArgumentNullException(nameof(dependencyManager));
 
-
             dependencyManager.RegisterOwinMiddleware<IndexPageMiddlewareConfiguration>();
 
             return dependencyManager;
@@ -124,6 +123,9 @@ namespace Bit.Core.Contracts
 
         public static IDependencyManager RegisterSingleSignOnClient(this IDependencyManager dependencyManager)
         {
+            if (dependencyManager == null)
+                throw new ArgumentNullException(nameof(dependencyManager));
+
             dependencyManager.RegisterOwinMiddleware<ReadAuthTokenFromCookieMiddlewareConfiguration>();
             dependencyManager.RegisterOwinMiddleware<SingleSignOnClientMiddlewareConfiguration>();
             dependencyManager.RegisterOwinMiddleware<SignOutPageMiddlewareConfiguration>();
@@ -139,12 +141,18 @@ namespace Bit.Core.Contracts
         public static IDependencyManager RegisterLogStore<TLogStore>(this IDependencyManager dependencyManager)
             where TLogStore : class, ILogStore
         {
+            if (dependencyManager == null)
+                throw new ArgumentNullException(nameof(dependencyManager));
+
             dependencyManager.RegisterLogStore(typeof(TLogStore).GetTypeInfo());
             return dependencyManager;
         }
 
         public static IDependencyManager RegisterLogStore(this IDependencyManager dependencyManager, TypeInfo logStore)
         {
+            if (dependencyManager == null)
+                throw new ArgumentNullException(nameof(dependencyManager));
+
             dependencyManager.Register(typeof(ILogStore).GetTypeInfo(), logStore, overwriteExisting: false);
             return dependencyManager;
         }
@@ -158,6 +166,9 @@ namespace Bit.Core.Contracts
         /// </summary>
         public static IDependencyManager RegisterDefaultOwinApp(this IDependencyManager dependencyManager)
         {
+            if (dependencyManager == null)
+                throw new ArgumentNullException(nameof(dependencyManager));
+
             dependencyManager.Register<Microsoft.Owin.Logging.ILoggerFactory, DefaultOwinLoggerFactory>(overwriteExisting: false);
             dependencyManager.Register<IUserInformationProvider, DefaultUserInformationProvider>(overwriteExisting: false);
             dependencyManager.Register<IExceptionToHttpErrorMapper, DefaultExceptionToHttpErrorMapper>(lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExisting: false);
@@ -179,6 +190,9 @@ namespace Bit.Core.Contracts
         /// <param name="logStores">Class types which implemented <see cref="ILogStore"/></param>
         public static IDependencyManager RegisterDefaultLogger(this IDependencyManager dependencyManager, params TypeInfo[] logStores)
         {
+            if (dependencyManager == null)
+                throw new ArgumentNullException(nameof(dependencyManager));
+
             dependencyManager.Register<Microsoft.Owin.Logging.ILoggerFactory, DefaultOwinLoggerFactory>();
             dependencyManager.Register<ILogger, DefaultLogger>();
 
@@ -197,6 +211,9 @@ namespace Bit.Core.Contracts
         /// </summary>
         public static IDependencyManager RegisterMinimalOwinMiddlewares(this IDependencyManager dependencyManager)
         {
+            if (dependencyManager == null)
+                throw new ArgumentNullException(nameof(dependencyManager));
+
             dependencyManager.RegisterOwinMiddleware<AutofacDependencyInjectionMiddlewareConfiguration>();
             dependencyManager.RegisterOwinMiddlewareUsing(owinApp =>
             {

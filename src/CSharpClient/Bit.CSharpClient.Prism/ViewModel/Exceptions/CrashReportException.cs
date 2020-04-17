@@ -3,6 +3,7 @@ using System.Runtime.Serialization;
 
 namespace Bit.ViewModel.Exceptions
 {
+    [Serializable]
     public class CrashReportException : AppException
     {
         public CrashReportException()

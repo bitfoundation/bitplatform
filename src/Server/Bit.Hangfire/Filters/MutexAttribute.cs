@@ -4,6 +4,8 @@ using Hangfire.States;
 using Hangfire.Storage;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.Globalization;
 using System.Linq;
 
 namespace Bit.Hangfire.Filters
@@ -20,6 +22,8 @@ namespace Bit.Hangfire.Filters
 
         public MutexAttribute(string resource)
         {
+            if (resource == null)
+                throw new ArgumentNullException(resource);
             _resource = resource;
             RetryInSeconds = 15;
         }
@@ -29,6 +33,9 @@ namespace Bit.Hangfire.Filters
 
         public void OnStateElection(ElectStateContext context)
         {
+            if (context == null)
+                throw new ArgumentNullException(nameof(context));
+
             // We are intercepting transitions to the Processed state, that is performed by
             // a worker just before processing a job. During the state election phase we can
             // change the target state to another one, causing a worker not to process the
@@ -46,7 +53,7 @@ namespace Bit.Hangfire.Filters
                 throw new NotSupportedException("This version of storage doesn't support extended methods. Please try to update to the latest version.");
             }
 
-            string blockedBy;
+            string? blockedBy;
 
             try
             {
@@ -115,6 +122,9 @@ namespace Bit.Hangfire.Filters
 
         public void OnStateApplied(ApplyStateContext context, IWriteOnlyTransaction transaction)
         {
+            if (context == null)
+                throw new ArgumentNullException(nameof(context));
+
             if (context.BackgroundJob.Job == null) return;
 
             if (context.OldStateName == ProcessingState.StateName)
@@ -173,7 +183,7 @@ namespace Bit.Hangfire.Filters
 
         private static string GetKeyFormat(IEnumerable<object> args, string keyFormat)
         {
-            return string.Format(keyFormat, args.ToArray());
+            return string.Format(CultureInfo.InvariantCulture, keyFormat, args.ToArray());
         }
     }
 }
