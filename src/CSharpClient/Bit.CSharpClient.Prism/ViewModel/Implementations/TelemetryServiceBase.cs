@@ -53,15 +53,45 @@ namespace Bit.ViewModel.Implementations
 
         public abstract bool IsConfigured();
 
+        public virtual void TrackEvent(string eventName, (string key, string? value)[] properties)
+        {
+            TrackEvent(eventName, properties.ToDictionary(item => item.key, item => item.value));
+        }
+
         public abstract void TrackEvent(string eventName, IDictionary<string, string?>? properties = null);
+
+        public virtual void TrackException(Exception exception, (string key, string? value)[] properties)
+        {
+            TrackException(exception, properties.ToDictionary(item => item.key, item => item.value));
+        }
 
         public abstract void TrackException(Exception exception, IDictionary<string, string?>? properties = null);
 
+        public virtual void TrackMetric(string name, double value, (string key, string? value)[] properties)
+        {
+            TrackMetric(name, value, properties.ToDictionary(item => item.key, item => item.value));
+        }
+
         public abstract void TrackMetric(string name, double value, IDictionary<string, string?>? properties = null);
+
+        public virtual void TrackPageView(string name, TimeSpan duration, (string key, string? value)[] properties)
+        {
+            TrackPageView(name, duration, properties.ToDictionary(item => item.key, item => item.value));
+        }
 
         public abstract void TrackPageView(string name, TimeSpan duration, IDictionary<string, string?>? properties = null);
 
+        public virtual void TrackRequest(string name, DateTimeOffset startTime, TimeSpan duration, string responseCode, bool success, Uri url, string httpMethod, (string key, string? value)[] properties)
+        {
+            TrackRequest(name, startTime, duration, responseCode, success, url, httpMethod, properties.ToDictionary(item => item.key, item => item.value));
+        }
+
         public abstract void TrackRequest(string name, DateTimeOffset startTime, TimeSpan duration, string responseCode, bool success, Uri url, string httpMethod, IDictionary<string, string?>? properties = null);
+
+        public virtual void TrackTrace(string message, (string key, string? value)[] properties)
+        {
+            TrackTrace(message, properties.ToDictionary(item => item.key, item => item.value));
+        }
 
         public abstract void TrackTrace(string message, IDictionary<string, string?>? properties);
 

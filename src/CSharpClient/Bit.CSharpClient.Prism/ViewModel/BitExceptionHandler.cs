@@ -5,12 +5,18 @@ using Bit.ViewModel.Implementations;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 
 namespace Bit.ViewModel
 {
     public class BitExceptionHandler : IExceptionHandler
     {
         public static IExceptionHandler Current { get; set; } = new BitExceptionHandler();
+
+        public virtual void OnExceptionReceived(Exception exp, (string key, string? value)[] properties)
+        {
+            OnExceptionReceived(exp, properties.ToDictionary(item => item.key, item => item.value));
+        }
 
         public virtual void OnExceptionReceived(Exception exp, IDictionary<string, string?>? properties = null)
         {

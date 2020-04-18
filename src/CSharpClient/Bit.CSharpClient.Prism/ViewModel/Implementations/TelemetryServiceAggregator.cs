@@ -2,6 +2,7 @@
 using Bit.ViewModel.Implementations;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Bit.ViewModel.Contracts
 {
@@ -97,6 +98,36 @@ namespace Bit.ViewModel.Implementations
             {
                 telemetryService.TrackTrace(message, properties);
             }
+        }
+
+        public virtual void TrackEvent(string eventName, (string key, string? value)[] properties)
+        {
+            TrackEvent(eventName, properties.ToDictionary(item => item.key, item => item.value));
+        }
+
+        public virtual void TrackException(Exception exception, (string key, string? value)[] properties)
+        {
+            TrackException(exception, properties.ToDictionary(item => item.key, item => item.value));
+        }
+
+        public virtual void TrackMetric(string name, double value, (string key, string? value)[] properties)
+        {
+            TrackMetric(name, value, properties.ToDictionary(item => item.key, item => item.value));
+        }
+
+        public virtual void TrackPageView(string name, TimeSpan duration, (string key, string? value)[] properties)
+        {
+            TrackPageView(name, duration, properties.ToDictionary(item => item.key, item => item.value));
+        }
+
+        public virtual void TrackRequest(string name, DateTimeOffset startTime, TimeSpan duration, string responseCode, bool success, Uri url, string httpMethod, (string key, string? value)[] properties)
+        {
+            TrackRequest(name, startTime, duration, responseCode, success, url, httpMethod, properties.ToDictionary(item => item.key, item => item.value));
+        }
+
+        public virtual void TrackTrace(string message, (string key, string? value)[] properties)
+        {
+            TrackTrace(message, properties.ToDictionary(item => item.key, item => item.value));
         }
     }
 }
