@@ -57,16 +57,16 @@ namespace BitCodeGeneratorTaskImpl
             }
         }
 
-        public static string[] AllProjectsPaths { get; set; } = new string[] { };
-        public static string[] SolutionPaths { get; set; } = new string[] { };
-        public static string ProjectPath { get; set; }
-        public static string BeingCompiledProjectName { get; set; }
+        public static string[] AllProjectsPaths { get; set; } = Array.Empty<string>();
+        public static string[] SolutionPaths { get; set; } = Array.Empty<string>();
+        public static string ProjectPath { get; set; } = default!;
+        public static string BeingCompiledProjectName { get; set; } = default!;
 
-        private static string _bitConfigFilePath;
+        private static string? _bitConfigFilePath;
 
         static async Task GenerateCodes()
         {
-            BitSourceGeneratorBitConfigProvider bitConfigProvider = new BitSourceGeneratorBitConfigProvider(_bitConfigFilePath, BeingCompiledProjectName);
+            BitSourceGeneratorBitConfigProvider bitConfigProvider = new BitSourceGeneratorBitConfigProvider(_bitConfigFilePath!, BeingCompiledProjectName);
 
             BitConfig bitConfig = bitConfigProvider.GetConfiguration();
 

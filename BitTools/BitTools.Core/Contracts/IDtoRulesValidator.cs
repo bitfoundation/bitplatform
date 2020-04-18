@@ -6,6 +6,6 @@ namespace BitTools.Core.Contracts
 {
     public interface IDtoRulesValidator
     {
-        void Validate(DtoRules dtoRules, IList<Project> allSourceProjects = null);
+        void Validate(DtoRules dtoRules, IList<Project>? allSourceProjects = null);
     }
 }

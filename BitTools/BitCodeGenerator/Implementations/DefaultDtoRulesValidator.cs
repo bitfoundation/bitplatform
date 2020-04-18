@@ -11,8 +11,11 @@ namespace BitCodeGenerator.Implementations
 {
     public class DefaultDtoRulesValidator : IDtoRulesValidator
     {
-        public virtual void Validate(DtoRules dtoRules, IList<Project> allSourceProjects = null)
+        public virtual void Validate(DtoRules dtoRules, IList<Project>? allSourceProjects = null)
         {
+            if (dtoRules == null)
+                throw new ArgumentNullException(nameof(dtoRules));
+
             if (dtoRules.DtoRulesSymbol
                 .Constructors.Length > 1)
             {
@@ -76,6 +79,9 @@ namespace BitCodeGenerator.Implementations
 
         public override void VisitFieldDeclaration(FieldDeclarationSyntax node)
         {
+            if (node == null)
+                throw new ArgumentNullException(nameof(node));
+
             if (node.Modifiers.Any(m => m.ValueText == "volatile"))
                 throw new NotSupportedException("Volatile keyword is not supported");
 
@@ -149,6 +155,9 @@ namespace BitCodeGenerator.Implementations
 
         public override void VisitParameter(ParameterSyntax node)
         {
+            if (node == null)
+                throw new ArgumentNullException(nameof(node));
+
             if (node.Modifiers.Any(m => m.ValueText == "ref"))
                 throw new NotSupportedException("Ref parameter is not supported");
 
@@ -160,6 +169,9 @@ namespace BitCodeGenerator.Implementations
 
         public override void VisitCatchDeclaration(CatchDeclarationSyntax node)
         {
+            if (node == null)
+                throw new ArgumentNullException(nameof(node));
+
             ISymbol exceptionSymbol = _semanticModel.GetSymbolInfo(node.Type).Symbol;
 
             if (exceptionSymbol.ToString() != "System.Exception")

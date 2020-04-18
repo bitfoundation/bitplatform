@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Globalization;
 using System.Linq;
 
 namespace Microsoft.CodeAnalysis
@@ -43,7 +44,7 @@ namespace Microsoft.CodeAnalysis
             return prop.GetAttributes().Any(att => att.AttributeClass.Name == "ConcurrencyCheckAttribute");
         }
 
-        public static string GetViewType(this IPropertySymbol prop)
+        public static string? GetViewType(this IPropertySymbol prop)
         {
             if (prop == null)
                 throw new ArgumentNullException(nameof(prop));
@@ -56,15 +57,18 @@ namespace Microsoft.CodeAnalysis
 
             TypedConstant dataTypeAttributeValue = dataTypeAtt.ConstructorArguments.ExtendedSingle("Getting parameter of DataTypeAttribute");
 
-            int value = Convert.ToInt32(dataTypeAttributeValue.Value);
+            int value = Convert.ToInt32(dataTypeAttributeValue.Value, CultureInfo.InvariantCulture);
 
             return dataTypeAttributeValue.Type.GetMembers()
                 .OfType<IFieldSymbol>()
-                .ExtendedSingle($"Looking for {value} in DataTypeAttribute field members", fld => Convert.ToInt32(fld.ConstantValue) == value).Name;
+                .ExtendedSingle($"Looking for {value} in DataTypeAttribute field members", fld => Convert.ToInt32(fld.ConstantValue, CultureInfo.InvariantCulture) == value).Name;
         }
 
         public static bool IsAssociationProperty(this IPropertySymbol prop)
         {
+            if (prop == null)
+                throw new ArgumentNullException(nameof(prop));
+
             if (prop.Type.IsCollectionType() || prop.Type.IsQueryableType())
             {
                 return IsAssociationProperty_Internal(prop.Type.GetElementType()); // List<CustomerDto>
@@ -78,12 +82,15 @@ namespace Microsoft.CodeAnalysis
         private static bool IsAssociationProperty_Internal(this ITypeSymbol symbol)
         {
             string typeEdmName = symbol.GetEdmTypeName(useArrayForIEnumerableTypes: true);
-            bool typeIsSimpleType = typeEdmName.StartsWith("$data") || typeEdmName.StartsWith("Edm");
+            bool typeIsSimpleType = typeEdmName.StartsWith("$data", StringComparison.InvariantCultureIgnoreCase) || typeEdmName.StartsWith("Edm", StringComparison.InvariantCultureIgnoreCase);
             return !typeIsSimpleType && !symbol.IsEnum() && !symbol.IsComplexType();
         }
 
         public static string GetInversePropertyName(this IPropertySymbol prop)
         {
+            if (prop == null)
+                throw new ArgumentNullException(nameof(prop));
+
             AttributeData inversePropertyAtt = prop.GetAttributes().SingleOrDefault(att => att.AttributeClass.Name == "InversePropertyAttribute");
 
             if (inversePropertyAtt != null)
@@ -94,7 +101,7 @@ namespace Microsoft.CodeAnalysis
 
                 ITypeSymbol otherClass = prop.Type.IsCollectionType() ? prop.Type.GetElementType() : prop.Type;
 
-                string otherPropName = otherClass
+                string? otherPropName = otherClass
                     .GetMembers()
                     .OfType<IPropertySymbol>()
                     .Select(p => new { p.Name, p.Type })

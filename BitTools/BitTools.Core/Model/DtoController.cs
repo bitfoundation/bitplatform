@@ -5,13 +5,13 @@ namespace BitTools.Core.Model
 {
     public class DtoController
     {
-        public virtual string Name { get; set; }
+        public virtual string Name { get; set; } = default!;
 
-        public virtual IList<ODataOperation> Operations { get; set; }
+        public virtual IList<ODataOperation> Operations { get; set; } = default!;
 
-        public virtual INamedTypeSymbol ControllerSymbol { get; set; }
+        public virtual INamedTypeSymbol ControllerSymbol { get; set; } = default!;
 
-        public virtual ITypeSymbol ModelSymbol { get; set; }
+        public virtual ITypeSymbol ModelSymbol { get; set; } = default!;
 
         public override string ToString()
         {

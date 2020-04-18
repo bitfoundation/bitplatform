@@ -5,16 +5,16 @@ namespace BitTools.Core.Model
 {
     public class EnumType
     {
-        public virtual ITypeSymbol EnumTypeSymbol { get; set; }
+        public virtual ITypeSymbol EnumTypeSymbol { get; set; } = default!;
 
-        public virtual IList<EnumMember> Members { get; set; }
+        public virtual IList<EnumMember> Members { get; set; } = default!;
     }
 
     public class EnumMember
     {
-        public virtual string Name { get; set; }
+        public virtual string Name { get; set; } = default!;
 
-        public virtual ISymbol Symbol { get; set; }
+        public virtual ISymbol Symbol { get; set; } = default!;
 
         public virtual int Index { get; set; }
     

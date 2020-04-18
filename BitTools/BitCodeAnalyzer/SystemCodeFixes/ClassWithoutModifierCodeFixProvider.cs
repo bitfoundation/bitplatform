@@ -44,7 +44,7 @@ namespace BitCodeAnalyzer.SystemCodeFixes
 
             ClassDeclarationSyntax convertedNode = (ClassDeclarationSyntax)node;
 
-            ClassDeclarationSyntax newNode = convertedNode?.AddModifiers(SyntaxFactory.Token(SyntaxKind.PublicKeyword));
+            ClassDeclarationSyntax? newNode = convertedNode?.AddModifiers(SyntaxFactory.Token(SyntaxKind.PublicKeyword));
 
             SyntaxNode newRoot = root.ReplaceNode(node, newNode);
 

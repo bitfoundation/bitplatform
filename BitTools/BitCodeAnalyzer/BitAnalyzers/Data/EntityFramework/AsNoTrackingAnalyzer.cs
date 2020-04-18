@@ -2,6 +2,7 @@
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Diagnostics;
+using System;
 using System.Collections.Immutable;
 using System.Linq;
 
@@ -23,6 +24,9 @@ namespace BitCodeAnalyzer.BitAnalyzers.Data.EntityFramework
 
         public override void Initialize(AnalysisContext context)
         {
+            if (context == null)
+                throw new ArgumentNullException(nameof(context));
+
             context.EnableConcurrentExecution();
             context.RegisterSyntaxNodeAction(AnalyzeSyntax, SyntaxKind.InvocationExpression);
         }
@@ -46,7 +50,7 @@ namespace BitCodeAnalyzer.BitAnalyzers.Data.EntityFramework
             {
                 if (invocation.Expression is MemberAccessExpressionSyntax memberAccess && memberAccess.Expression != null)
                 {
-                    INamedTypeSymbol instanceType = (context.SemanticModel.GetTypeInfo(memberAccess.Expression).Type as INamedTypeSymbol)?.ConstructedFrom;
+                    INamedTypeSymbol? instanceType = (context.SemanticModel.GetTypeInfo(memberAccess.Expression).Type as INamedTypeSymbol)?.ConstructedFrom;
 
                     if (instanceType != null &&
                         (instanceType.ToString() == "System.Data.Entity.Infrastructure.DbQuery<TEntity>" ||

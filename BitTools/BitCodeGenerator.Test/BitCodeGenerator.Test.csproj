@@ -4,6 +4,7 @@
     <TargetFrameworks>net472</TargetFrameworks>
     <AutoGenerateBindingRedirects>True</AutoGenerateBindingRedirects>
     <IsPackable>false</IsPackable>
+    <Nullable>disable</Nullable>
   </PropertyGroup>
 
   <ItemGroup>

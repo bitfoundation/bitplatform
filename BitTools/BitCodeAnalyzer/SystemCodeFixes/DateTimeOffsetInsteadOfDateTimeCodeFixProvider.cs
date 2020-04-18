@@ -44,7 +44,7 @@ namespace BitCodeAnalyzer.SystemCodeFixes
 
             IdentifierNameSyntax convertedNode = (IdentifierNameSyntax)node;
 
-            IdentifierNameSyntax newNode = convertedNode?.WithIdentifier(SyntaxFactory.ParseToken("DateTimeOffset")).WithLeadingTrivia(node.GetLeadingTrivia()).WithTrailingTrivia(node.GetTrailingTrivia());
+            IdentifierNameSyntax? newNode = convertedNode?.WithIdentifier(SyntaxFactory.ParseToken("DateTimeOffset")).WithLeadingTrivia(node.GetLeadingTrivia()).WithTrailingTrivia(node.GetTrailingTrivia());
 
             SyntaxNode newRoot = root.ReplaceNode(node, newNode);
 

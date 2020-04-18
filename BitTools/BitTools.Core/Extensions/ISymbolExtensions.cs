@@ -13,7 +13,7 @@ namespace Microsoft.CodeAnalysis
                 throw new ArgumentNullException(nameof(symbol));
 
             string docXml = symbol.GetDocumentationCommentXml();
-            string summary = null;
+            string? summary = null;
 
             if (!string.IsNullOrEmpty(docXml))
             {
@@ -39,6 +39,9 @@ namespace Microsoft.CodeAnalysis
 
         public static bool IsOperation(this IMethodSymbol methodSymbol, out AttributeData operationAttribute)
         {
+            if (methodSymbol == null)
+                throw new ArgumentNullException(nameof(methodSymbol));
+
             ImmutableArray<AttributeData> attrs = methodSymbol.GetAttributes();
 
             operationAttribute = attrs.ExtendedSingleOrDefault($"Looking for action/function attribute on {methodSymbol.Name}", att => att.AttributeClass.Name == "ActionAttribute" || att.AttributeClass.Name == "FunctionAttribute");

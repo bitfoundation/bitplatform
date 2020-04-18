@@ -2,6 +2,7 @@
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Diagnostics;
+using System;
 using System.Collections.Immutable;
 
 namespace BitCodeAnalyzer.BitAnalyzers.Dto
@@ -22,13 +23,16 @@ namespace BitCodeAnalyzer.BitAnalyzers.Dto
 
         public override void Initialize(AnalysisContext context)
         {
+            if (context == null)
+                throw new ArgumentNullException(nameof(context));
+
             context.EnableConcurrentExecution();
             context.RegisterSyntaxNodeAction(AnalyzeSyntaxAsync, SyntaxKind.MethodDeclaration);
         }
 
         private void AnalyzeSyntaxAsync(SyntaxNodeAnalysisContext context)
         {
-            SyntaxNode methodDec = context.Node as MethodDeclarationSyntax;
+            SyntaxNode? methodDec = context.Node as MethodDeclarationSyntax;
 
             if (methodDec == null)
                 return;

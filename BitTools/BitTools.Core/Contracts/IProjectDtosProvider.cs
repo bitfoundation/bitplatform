@@ -7,6 +7,6 @@ namespace BitTools.Core.Contracts
 {
     public interface IProjectDtosProvider
     {
-        Task<IList<Dto>> GetProjectDtos(Project project, IList<Project> allSourceProjects = null);
+        Task<IList<Dto>> GetProjectDtos(Project project, IList<Project>? allSourceProjects = null);
     }
 }

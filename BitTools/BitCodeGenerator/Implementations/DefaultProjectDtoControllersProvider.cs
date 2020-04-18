@@ -12,7 +12,7 @@ namespace BitCodeGenerator.Implementations
 {
     public class DefaultProjectDtoControllersProvider : IProjectDtoControllersProvider
     {
-        public virtual async Task<IList<DtoController>> GetProjectDtoControllersWithTheirOperations(Project project, IList<Project> allSourceProjects = null)
+        public virtual async Task<IList<DtoController>> GetProjectDtoControllersWithTheirOperations(Project project, IList<Project>? allSourceProjects = null)
         {
             if (project == null)
                 throw new ArgumentNullException(nameof(project));

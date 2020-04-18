@@ -51,7 +51,7 @@ public class IsSyncedClass
 
         private static readonly Lazy<Task<IPropertySymbol>> _isSyncedPropertyForISyncableDtos;
 
-        public virtual async Task<IList<Dto>> GetProjectDtos(Project project, IList<Project> allSourceProjects = null)
+        public virtual async Task<IList<Dto>> GetProjectDtos(Project project, IList<Project>? allSourceProjects = null)
         {
             if (project == null)
                 throw new ArgumentNullException(nameof(project));

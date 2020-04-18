@@ -11,7 +11,7 @@ namespace BitCodeGeneratorTask
     {
         public override bool Execute()
         {
-            Stopwatch sw = null;
+            Stopwatch? sw = null;
 
             try
             {
@@ -90,6 +90,6 @@ namespace BitCodeGeneratorTask
         }
 
         [Required]
-        public virtual string ProjectPath { get; set; }
+        public virtual string ProjectPath { get; set; } = default!;
     }
 }

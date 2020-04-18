@@ -5,13 +5,30 @@ using Newtonsoft.Json;
 using System;
 using System.IO;
 using System.Linq;
+using System.Runtime.Serialization;
 
 namespace BitCodeGenerator.Implementations
 {
+    [Serializable]
     public class BitConfigNotFoundException : Exception
     {
         public BitConfigNotFoundException(string message)
             : base(message)
+        {
+
+        }
+
+        public BitConfigNotFoundException()
+        {
+        }
+
+        public BitConfigNotFoundException(string message, Exception innerException)
+            : base(message, innerException)
+        {
+        }
+
+        protected BitConfigNotFoundException(SerializationInfo serializationInfo, StreamingContext streamingContext) 
+            : base(serializationInfo, streamingContext)
         {
 
         }

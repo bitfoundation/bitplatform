@@ -2,6 +2,7 @@
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Diagnostics;
+using System;
 using System.Collections.Immutable;
 
 namespace BitCodeAnalyzer.BitAnalyzers.ViewModel
@@ -22,6 +23,9 @@ namespace BitCodeAnalyzer.BitAnalyzers.ViewModel
 
         public override void Initialize(AnalysisContext context)
         {
+            if (context == null)
+                throw new ArgumentNullException(nameof(context));
+
             context.EnableConcurrentExecution();
             context.RegisterSyntaxNodeAction(AnalyzeSyntax, SyntaxKind.InvocationExpression);
         }
@@ -45,7 +49,7 @@ namespace BitCodeAnalyzer.BitAnalyzers.ViewModel
 
             string symbolName = symbol.ContainingType.ToDisplayString();
 
-            if (symbolName.StartsWith("Microsoft.AppCenter.AppCenter") || symbolName.StartsWith("Microsoft.AppCenter.Analytics.Analytics") || symbolName.StartsWith("Microsoft.AppCenter.Crashes.Crashes"))
+            if (symbolName.StartsWith("Microsoft.AppCenter.AppCenter", StringComparison.InvariantCultureIgnoreCase) || symbolName.StartsWith("Microsoft.AppCenter.Analytics.Analytics", StringComparison.InvariantCultureIgnoreCase) || symbolName.StartsWith("Microsoft.AppCenter.Crashes.Crashes", StringComparison.InvariantCultureIgnoreCase))
             {
                 Diagnostic diagn = Diagnostic.Create(Rule, root.GetLocation(), Message);
 

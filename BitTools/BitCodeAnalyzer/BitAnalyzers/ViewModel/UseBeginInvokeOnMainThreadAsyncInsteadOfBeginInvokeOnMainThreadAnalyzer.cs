@@ -2,6 +2,7 @@
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Diagnostics;
+using System;
 using System.Collections.Immutable;
 
 namespace BitCodeAnalyzer.BitAnalyzers.ViewModel
@@ -22,6 +23,9 @@ namespace BitCodeAnalyzer.BitAnalyzers.ViewModel
 
         public override void Initialize(AnalysisContext context)
         {
+            if (context == null)
+                throw new ArgumentNullException(nameof(context));
+
             context.EnableConcurrentExecution();
             context.RegisterSyntaxNodeAction(AnalyzeSyntax, SyntaxKind.InvocationExpression);
         }
@@ -42,7 +46,7 @@ namespace BitCodeAnalyzer.BitAnalyzers.ViewModel
 
             string symbolName = symbol.ContainingType.ToDisplayString();
 
-            if (symbolName.StartsWith("Prism.Services.IDeviceService"))
+            if (symbolName.StartsWith("Prism.Services.IDeviceService", StringComparison.InvariantCultureIgnoreCase))
             {
                 Diagnostic diagn = Diagnostic.Create(Rule, root.GetLocation(), Message);
 

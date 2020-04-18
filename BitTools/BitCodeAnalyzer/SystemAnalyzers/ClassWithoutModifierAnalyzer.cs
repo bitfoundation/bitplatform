@@ -2,6 +2,7 @@
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Diagnostics;
+using System;
 using System.Collections.Immutable;
 using System.Linq;
 
@@ -23,6 +24,9 @@ namespace BitCodeAnalyzer.SystemAnalyzers
 
         public override void Initialize(AnalysisContext context)
         {
+            if (context == null)
+                throw new ArgumentNullException(nameof(context));
+
             context.EnableConcurrentExecution();
             context.RegisterSyntaxNodeAction(AnalyzeSyntax, SyntaxKind.ClassDeclaration);
         }

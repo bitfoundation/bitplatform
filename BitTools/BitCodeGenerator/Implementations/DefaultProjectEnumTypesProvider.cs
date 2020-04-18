@@ -3,6 +3,7 @@ using BitTools.Core.Model;
 using Microsoft.CodeAnalysis;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -25,7 +26,7 @@ namespace BitCodeGenerator.Implementations
             _dtosProvider = dtosProvider;
         }
 
-        public async Task<IList<EnumType>> GetProjectEnumTypes(Project project, IList<Project> allSourceProjects = null)
+        public async Task<IList<EnumType>> GetProjectEnumTypes(Project project, IList<Project>? allSourceProjects = null)
         {
             if (project == null)
                 throw new ArgumentNullException(nameof(project));
@@ -64,7 +65,7 @@ namespace BitCodeGenerator.Implementations
                             Name = m.Name,
                             Symbol = m,
                             Index = i,
-                            Value = Convert.ToInt32(m.ConstantValue)
+                            Value = Convert.ToInt32(m.ConstantValue, CultureInfo.InvariantCulture)
                         }).ToList()
                     });
                 });

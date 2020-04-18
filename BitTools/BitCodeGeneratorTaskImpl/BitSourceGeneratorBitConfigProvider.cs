@@ -1,6 +1,7 @@
 ﻿using BitCodeGenerator.Implementations;
 using BitTools.Core.Model;
 using Microsoft.CodeAnalysis;
+using System;
 using System.Linq;
 
 namespace BitCodeGeneratorTaskImpl
@@ -12,6 +13,12 @@ namespace BitCodeGeneratorTaskImpl
 
         public BitSourceGeneratorBitConfigProvider(string bitConfigFilePath, string beingCompiledProjectName)
         {
+            if (bitConfigFilePath == null)
+                throw new ArgumentNullException(nameof(bitConfigFilePath));
+
+            if (beingCompiledProjectName == null)
+                throw new ArgumentNullException(nameof(beingCompiledProjectName));
+
             _bitConfigFilePath = bitConfigFilePath;
             _beingCompiledProjectName = beingCompiledProjectName;
         }

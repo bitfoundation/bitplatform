@@ -7,6 +7,6 @@ namespace BitTools.Core.Contracts
 {
     public interface IProjectEnumTypesProvider
     {
-        Task<IList<EnumType>> GetProjectEnumTypes(Project project, IList<Project> allSourceProjects = null);
+        Task<IList<EnumType>> GetProjectEnumTypes(Project project, IList<Project>? allSourceProjects = null);
     }
 }
