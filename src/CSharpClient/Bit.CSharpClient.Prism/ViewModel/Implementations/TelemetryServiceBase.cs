@@ -48,6 +48,11 @@ namespace Bit.ViewModel.Implementations
             if (!initialProps.ContainsKey("BitVersion"))
                 initialProps.Add("BitVersion", typeof(BitCSharpClientControls).Assembly.GetName().Version.ToString());
 
+#if Android || iOS
+            if (!initialProps.ContainsKey("Mono"))
+                initialProps.Add("Mono", Mono.Runtime.GetDisplayName());
+#endif
+
             return initialProps;
         }
 
