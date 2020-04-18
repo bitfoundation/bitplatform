@@ -70,11 +70,7 @@ namespace Bit.ViewModel
 
         protected virtual string GetViewModelName()
         {
-#if DotNet || UWP || NETSTANDARD2_0
             return GetType().Name.Replace("ViewModel", string.Empty);
-#else
-            return GetType().Name.Replace("ViewModel", string.Empty, StringComparison.InvariantCultureIgnoreCase);
-#endif
         }
 
         protected virtual bool ShouldLogNavParam(string navParamName)
