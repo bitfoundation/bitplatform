@@ -102,10 +102,6 @@ namespace Bit.ViewModel
                 {
                     navUri = GetType().Name;
                 }
-
-                string lastNavState = $"Path: {navUri}; {(string.Join("; ", parameters.Where(parameter => ShouldLogNavParam(parameter.Key)).Select(parameter => $" {parameter.Key} : {parameter.Value ?? "NULL"}")))}";
-
-                Preferences.Set("LastNavState", lastNavState);
             }
             catch (Exception exp)
             {

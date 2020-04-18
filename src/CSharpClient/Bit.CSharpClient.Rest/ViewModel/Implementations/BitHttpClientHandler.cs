@@ -51,7 +51,7 @@ namespace Bit.ViewModel.Implementations
             try
             {
                 if (DeviceService.RuntimePlatform == RuntimePlatform.UWP)
-                    return Assembly.GetEntryAssembly().GetCustomAttributes(false).OfType<DebuggableAttribute>().Any(da => da.IsJITTrackingEnabled)!;
+                    return Assembly.GetEntryAssembly()!.GetCustomAttributes(false).OfType<DebuggableAttribute>().Any(da => da.IsJITTrackingEnabled);
                 else
                     return Debugger.IsAttached;
             }

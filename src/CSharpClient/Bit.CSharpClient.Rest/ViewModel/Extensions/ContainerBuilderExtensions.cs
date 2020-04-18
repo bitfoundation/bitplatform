@@ -66,10 +66,15 @@ namespace Autofac
                 try
                 {
                     ISecurityService securityService = scope.Resolve<ISecurityService>();
+                    ITelemetryService allTelemetryServices = scope.Resolve<IEnumerable<ITelemetryService>>().All();
+
                     if (await securityService.IsLoggedInAsync().ConfigureAwait(false))
                     {
-                        ITelemetryService allTelemetryServices = scope.Resolve<IEnumerable<ITelemetryService>>().All();
                         allTelemetryServices.SetUserId((await securityService.GetBitJwtToken(default).ConfigureAwait(false)).UserId!);
+                    }
+                    else
+                    {
+                        allTelemetryServices.SetUserId(null);
                     }
                 }
                 catch (Exception exp)

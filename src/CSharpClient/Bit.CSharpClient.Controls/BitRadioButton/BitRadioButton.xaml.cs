@@ -54,7 +54,7 @@ namespace Bit.View.Controls
             }
         }
 
-        private bool _IsSelected = default!;
+        private bool _IsSelected;
         public bool IsSelected
         {
             get => _IsSelected;

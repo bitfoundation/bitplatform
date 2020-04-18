@@ -12,7 +12,7 @@ namespace Bit.ViewModel.Implementations
         private TelemetryClient? _client;
         private bool _isInited = false;
 #if !UWP
-        private TelemetryConfiguration _configuration = default!;
+        private TelemetryConfiguration? _configuration;
 #endif
         private static ApplicationInsightsTelemetryService _current = default!;
 
@@ -50,7 +50,7 @@ namespace Bit.ViewModel.Implementations
                 {
                     _client = new TelemetryClient(_configuration)
                     {
-                        InstrumentationKey = _configuration.InstrumentationKey
+                        InstrumentationKey = _configuration!.InstrumentationKey
                     };
 
                     _client.Context.Device.Model = Xamarin.Essentials.DeviceInfo.Model;

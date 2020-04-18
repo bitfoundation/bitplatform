@@ -10,10 +10,10 @@ namespace Bit.ViewModel.Implementations
         private bool _isInited = false;
 
 #if Android
-        private global::Android.Content.Context _context = default!;
+        private global::Android.Content.Context? _context;
 #endif
 
-        private static FirebaseTelemetryService _current = default!;
+        private static FirebaseTelemetryService? _current;
 
         public static FirebaseTelemetryService Current
         {

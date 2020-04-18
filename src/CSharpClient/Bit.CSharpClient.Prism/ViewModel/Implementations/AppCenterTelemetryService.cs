@@ -141,12 +141,11 @@ namespace Bit.ViewModel.Implementations
                         var items = new Dictionary<string, string?>
                         {
                             { "CrashReportId", crashReport?.Id },
-                            { "LastNavState", Preferences.Get("LastNavState", null) },
                             { "HasReceivedMemoryWarningInLastSession", hasReceivedMemoryWarningInLastSession.ToString(CultureInfo.InvariantCulture) },
                             { "VersionHistory", string.Join(",", VersionTracking.VersionHistory.OrderByDescending(vh => vh)) },
                             { "Version", string.Join(",", VersionTracking.CurrentVersion) },
-                            { "XamarinFormsVersion", typeof(Binding).Assembly.GetCustomAttribute<AssemblyFileVersionAttribute>().Version! },
-                            { "BitVersion", typeof(BitCSharpClientControls).Assembly.GetName().Version.ToString()! },
+                            { "XamarinFormsVersion", typeof(Binding).Assembly.GetCustomAttribute<AssemblyFileVersionAttribute>()!.Version },
+                            { "BitVersion", typeof(BitCSharpClientControls).Assembly.GetName().Version!.ToString() },
                             { "CurrentUICulture", CultureInfo.CurrentUICulture.Name }
                         };
 
