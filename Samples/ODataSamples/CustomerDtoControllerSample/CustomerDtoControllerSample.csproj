@@ -10,10 +10,10 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Bit.Data.EntityFramework" Version="4.0.0" />
-    <PackageReference Include="Bit.OData" Version="4.0.0" />
-    <PackageReference Include="Bit.OwinCore" Version="4.0.0" />
-    <PackageReference Include="BitCodeAnalyzer" Version="4.0.0" />
+    <PackageReference Include="Bit.Data.EntityFramework" Version="4.1.0" />
+    <PackageReference Include="Bit.OData" Version="4.1.0" />
+    <PackageReference Include="Bit.OwinCore" Version="4.1.0" />
+    <PackageReference Include="BitCodeAnalyzer" Version="4.1.0" />
     <PackageReference Include="SourceLink.Copy.PdbFiles" Version="2.8.3" PrivateAssets="All" />
   </ItemGroup>
 
