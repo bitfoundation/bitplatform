@@ -77,6 +77,8 @@ protected override void OnLaunched(LaunchActivatedEventArgs e)
 }
 ```
 
+## Shared project / .NET Standard project config:
+
 In xaml page add following namepsace to your page:
 
 ```xml
