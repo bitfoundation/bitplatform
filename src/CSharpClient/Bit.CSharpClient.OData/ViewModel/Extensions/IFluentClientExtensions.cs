@@ -44,7 +44,7 @@ namespace Simple.OData.Client
             return client.InsertEntryAsync(resultRequired);
         }
 
-        public static IBoundClient<T> Include<T>(this IBoundClient<T> client, ODataExpandOptions includeOptions, Expression<Func<T, object>> expression)
+        public static IBoundClient<T> Include<T>(this IBoundClient<T> client, ODataExpandOptions includeOptions, Expression<Func<T, object?>> expression)
             where T : class
         {
             if (client == null)
@@ -53,7 +53,7 @@ namespace Simple.OData.Client
             return client.Expand(expandOptions: includeOptions, expression: expression);
         }
 
-        public static IBoundClient<T> Include<T>(this IBoundClient<T> client, Expression<Func<T, object>> expression)
+        public static IBoundClient<T> Include<T>(this IBoundClient<T> client, Expression<Func<T, object?>> expression)
             where T : class
         {
             if (client == null)

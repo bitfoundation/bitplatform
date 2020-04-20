@@ -9,19 +9,18 @@ namespace Bit.View
 {
     public class ValueConverter<TSource, TTarget, TParameter> : BindableObject, IMarkupExtension, IValueConverter
     {
-        [return: MaybeNull]
-        protected virtual TTarget Convert([MaybeNull]TSource value, Type? targetType, [MaybeNull]TParameter parameter, CultureInfo? culture)
+        protected virtual TTarget Convert(TSource value, Type targetType, TParameter parameter, CultureInfo culture)
         {
             throw new NotImplementedException($"Override {nameof(Convert)} in {GetType().Name} class and provide required implementation there. Do not call base.Convert, it's not required at all.");
         }
 
         [return: MaybeNull]
-        protected virtual TSource ConvertBack([MaybeNull] TTarget value, Type? targetType, [MaybeNull] TParameter parameter, CultureInfo? culture)
+        protected virtual TSource ConvertBack(TTarget value, Type targetType, TParameter parameter, CultureInfo culture)
         {
             throw new NotImplementedException($"Override {nameof(ConvertBack)} in {GetType().Name} class and provide required implementation there. Do not call base.ConvertBack, it's not required at all.");
         }
 
-        object? IValueConverter.Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        object? IValueConverter.Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
         {
             if (value is null && !typeof(TSource).IsClass && Nullable.GetUnderlyingType(typeof(TSource)) == null)
                 throw new NotSupportedException($"Source of type {typeof(TSource).Name} may not be null");
@@ -40,7 +39,7 @@ namespace Bit.View
             }
         }
 
-        object? IValueConverter.ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        object? IValueConverter.ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
         {
             if (value is null && !typeof(TTarget).IsClass && Nullable.GetUnderlyingType(typeof(TTarget)) == null)
                 throw new NotSupportedException($"Source of type {typeof(TSource).Name} may not be null");
