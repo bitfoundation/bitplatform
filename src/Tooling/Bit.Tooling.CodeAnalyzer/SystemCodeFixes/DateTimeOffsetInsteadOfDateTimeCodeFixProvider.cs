@@ -1,16 +1,16 @@
-﻿using System.Collections.Immutable;
-using System.Composition;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
+﻿using Bit.Tooling.CodeAnalyzer.SystemAnalyzers;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CodeActions;
 using Microsoft.CodeAnalysis.CodeFixes;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using BitCodeAnalyzer.SystemAnalyzers;
+using System.Collections.Immutable;
+using System.Composition;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 
-namespace BitCodeAnalyzer.SystemCodeFixes
+namespace Bit.Tooling.CodeAnalyzer.SystemCodeFixes
 {
     [ExportCodeFixProvider(LanguageNames.CSharp, Name = nameof(DateTimeOffsetInsteadOfDateTimeCodeFixProvider)), Shared]
     public class DateTimeOffsetInsteadOfDateTimeCodeFixProvider : CodeFixProvider

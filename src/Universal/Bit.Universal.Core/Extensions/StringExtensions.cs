@@ -1,4 +1,5 @@
 ﻿using System.Globalization;
+using System.Linq;
 
 namespace System
 {
@@ -48,6 +49,14 @@ namespace System
         public static bool DoesEndWith(this string source, string suffix)
         {
             return CultureInfo.InvariantCulture.CompareInfo.IsSuffix(source, suffix, CompareOptions.IgnoreCase | CompareOptions.IgnoreSymbols | CompareOptions.IgnoreNonSpace);
+        }
+
+        public static string AsCamelCase(this string value)
+        {
+            if (value == null)
+                throw new ArgumentNullException(nameof(value));
+
+            return string.Join(string.Empty, value.ToCharArray().Select((c, i) => { if (i == 0) return char.ToLowerInvariant(c); else return c; }));
         }
     }
 }

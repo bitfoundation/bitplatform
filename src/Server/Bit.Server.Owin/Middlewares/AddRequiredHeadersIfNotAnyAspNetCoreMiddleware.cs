@@ -2,7 +2,7 @@
 using System;
 using System.Threading.Tasks;
 
-namespace Bit.OwinCore.Middlewares
+namespace Bit.Owin.Middlewares
 {
     public class AddRequiredHeadersIfNotAnyAspNetCoreMiddleware
     {

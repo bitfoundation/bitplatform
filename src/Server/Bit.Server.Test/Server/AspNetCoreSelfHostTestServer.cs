@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Net.Http;
-using Bit.OwinCore;
+using Bit.Owin;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;

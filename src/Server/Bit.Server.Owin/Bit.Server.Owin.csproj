@@ -5,6 +5,7 @@
   <PropertyGroup>
     <TargetFramework>netcoreapp3.1</TargetFramework>
     <PackageTags>$(PackageTags) Microsoft Katana OWIN aspnetcore</PackageTags>
+    <RootNamespace>Bit.Owin</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>

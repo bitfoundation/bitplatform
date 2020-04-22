@@ -1,9 +1,7 @@
 ﻿using Bit.Core.Contracts;
 using Bit.Core.Implementations;
-using Bit.Owin;
 using Bit.Owin.Implementations;
-using Bit.OwinCore.Contracts;
-using Bit.OwinCore.Implementations;
+using Bit.Owin.Contracts;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -16,7 +14,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 
-namespace Bit.OwinCore
+namespace Bit.Owin
 {
     public class AspNetCoreAppStartup
     {

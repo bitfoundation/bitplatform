@@ -1,6 +1,6 @@
 ﻿using System.Reflection;
 using Bit.Owin.Contracts;
-using Bit.OwinCore;
+using Bit.Owin;
 
 namespace Bit.Core
 {

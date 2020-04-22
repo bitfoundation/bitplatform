@@ -1,5 +1,5 @@
-﻿using BitTools.Core.Contracts;
-using BitTools.Core.Model;
+﻿using Bit.Tooling.Core.Contracts;
+using Bit.Tooling.Core.Model;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using System;
@@ -7,7 +7,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace BitCodeGenerator.Implementations
+namespace Bit.Tooling.CodeGenerator.Implementations
 {
     public class DefaultProjectDtoRulesProvider : IProjectDtoRulesProvider
     {

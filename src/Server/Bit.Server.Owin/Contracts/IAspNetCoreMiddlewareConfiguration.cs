@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Builder;
 
-namespace Bit.OwinCore.Contracts
+namespace Bit.Owin.Contracts
 {
     public enum MiddlewarePosition
     {

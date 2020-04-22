@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 
-namespace BitTools.Core.Model
+namespace Bit.Tooling.Core.Model
 {
     public class ODataOperationParameter
     {

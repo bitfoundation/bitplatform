@@ -1,13 +1,13 @@
-﻿using System.Collections.Generic;
-using System.Linq;
+﻿using Bit.Tooling.Core.Model;
+using Bit.Tooling.CodeGenerator.Implementations;
+using Bit.Tooling.CodeGenerator.Test.Helpers;
 using Microsoft.CodeAnalysis;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using BitCodeGenerator.Test.Helpers;
-using BitTools.Core.Model;
-using BitCodeGenerator.Implementations;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
-namespace BitCodeGenerator.Test.DtoRulesGenerator
+namespace Bit.Tooling.CodeGenerator.Test.DtoRulesGenerator
 {
     [TestClass]
     public class DtoRulesProviderTests : CodeGeneratorTest

@@ -3,7 +3,7 @@ using Bit.Owin.Contracts;
 using Hangfire;
 using Hangfire.Dashboard;
 using Owin;
-using Bit.OwinCore.Contracts;
+using Bit.Owin.Contracts;
 using Microsoft.AspNetCore.Builder;
 
 namespace Bit.Hangfire

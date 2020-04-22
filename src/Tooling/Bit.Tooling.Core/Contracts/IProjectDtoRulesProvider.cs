@@ -1,9 +1,9 @@
-﻿using BitTools.Core.Model;
+﻿using Bit.Tooling.Core.Model;
 using Microsoft.CodeAnalysis;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace BitTools.Core.Contracts
+namespace Bit.Tooling.Core.Contracts
 {
     public interface IProjectDtoRulesProvider
     {

@@ -5,6 +5,7 @@
   <PropertyGroup>
     <TargetFramework>netcoreapp3.1</TargetFramework>
     <PackageTags>$(PackageTags) Data</PackageTags>
+    <RootNamespace>Bit.Data</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>

@@ -5,7 +5,7 @@ using Microsoft.CodeAnalysis.Diagnostics;
 using System;
 using System.Collections.Immutable;
 
-namespace BitCodeAnalyzer.SystemAnalyzers
+namespace Bit.Tooling.CodeAnalyzer.SystemAnalyzers
 {
     [DiagnosticAnalyzer(LanguageNames.CSharp)]
     public class DateTimeOffsetInsteadOfDateTimeAnalyzer : DiagnosticAnalyzer

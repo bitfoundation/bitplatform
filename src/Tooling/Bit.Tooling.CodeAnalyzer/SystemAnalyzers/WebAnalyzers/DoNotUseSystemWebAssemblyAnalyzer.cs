@@ -5,7 +5,7 @@ using Microsoft.CodeAnalysis.Diagnostics;
 using System;
 using System.Collections.Immutable;
 
-namespace BitCodeAnalyzer.SystemAnalyzers.WebAnalyzers
+namespace Bit.Tooling.CodeAnalyzer.SystemAnalyzers.WebAnalyzers
 {
     [DiagnosticAnalyzer(LanguageNames.CSharp)]
     public class DoNotUseSystemWebAssemblyAnalyzer : DiagnosticAnalyzer

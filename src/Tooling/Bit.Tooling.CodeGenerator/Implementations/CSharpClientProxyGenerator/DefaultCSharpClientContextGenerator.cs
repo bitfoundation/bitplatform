@@ -1,10 +1,10 @@
 ﻿using Bit.Tooling.CodeGenerator.Implementations.CSharpClientProxyGenerator.Templates;
-using BitTools.Core.Contracts.CSharpClientProxyGenerator;
-using BitTools.Core.Model;
+using Bit.Tooling.Core.Contracts.CSharpClientProxyGenerator;
+using Bit.Tooling.Core.Model;
 using System;
 using System.Collections.Generic;
 
-namespace BitCodeGenerator.Implementations.CSharpClientProxyGenerator
+namespace Bit.Tooling.CodeGenerator.Implementations.CSharpClientProxyGenerator
 {
     public class DefaultCSharpClientContextGenerator : ICSharpClientContextGenerator
     {

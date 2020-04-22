@@ -1,12 +1,12 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System.Linq;
+﻿using Bit.Tooling.Core.Model;
+using Bit.Tooling.CodeGenerator.Implementations;
+using Bit.Tooling.CodeGenerator.Test.Helpers;
 using Microsoft.CodeAnalysis;
-using BitCodeGenerator.Test.Helpers;
-using BitCodeGenerator.Implementations;
-using BitTools.Core.Model;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+using System.Linq;
 using System.Threading.Tasks;
 
-namespace BitCodeGenerator.Test.Extensions
+namespace Bit.Tooling.CodeGenerator.Test.Extensions
 {
     [TestClass]
     public class IPropertySymbolExtensionsTests : CodeGeneratorTest

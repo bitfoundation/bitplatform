@@ -1,11 +1,11 @@
-﻿using BitTools.Core.Contracts;
-using BitTools.Core.Model;
+﻿using Bit.Tooling.Core.Contracts;
+using Bit.Tooling.Core.Model;
 using Microsoft.CodeAnalysis;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace BitCodeGenerator.Implementations
+namespace Bit.Tooling.CodeGenerator.Implementations
 {
     public class DefaultBitCodeGeneratorOrderedProjectsProvider : IBitCodeGeneratorOrderedProjectsProvider
     {

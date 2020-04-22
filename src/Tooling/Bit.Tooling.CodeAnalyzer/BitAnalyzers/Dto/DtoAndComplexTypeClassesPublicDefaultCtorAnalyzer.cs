@@ -7,7 +7,7 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 
-namespace BitCodeAnalyzer.BitAnalyzers.Dto
+namespace Bit.Tooling.CodeAnalyzer.BitAnalyzers.Dto
 {
     [DiagnosticAnalyzer(LanguageNames.CSharp)]
     public class DtoAndComplexTypeClassesPublicDefaultCtorAnalyzer : DiagnosticAnalyzer

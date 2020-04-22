@@ -12,7 +12,7 @@ using System.Linq;
 using System.Runtime.Serialization;
 using System.Threading.Tasks;
 
-namespace Bit.OwinCore.Implementations
+namespace Bit.Owin.Implementations
 {
     internal class AppInsightsLogKeyVal
     {

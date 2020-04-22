@@ -1,14 +1,14 @@
-﻿using BitCodeGenerator.Implementations;
-using BitCodeGenerator.Test.Helpers;
-using BitTools.Core.Contracts;
-using BitTools.Core.Model;
+﻿using Bit.Tooling.Core.Contracts;
+using Bit.Tooling.Core.Model;
+using Bit.Tooling.CodeGenerator.Implementations;
+using Bit.Tooling.CodeGenerator.Test.Helpers;
 using Microsoft.CodeAnalysis;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace BitCodeGenerator.Test.Implementations
+namespace Bit.Tooling.CodeGenerator.Test.Implementations
 {
     [TestClass]
     public class DefaultProjectEnumTypesProviderTests : CodeGeneratorTest

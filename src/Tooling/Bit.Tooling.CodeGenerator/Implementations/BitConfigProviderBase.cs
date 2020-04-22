@@ -1,5 +1,5 @@
-﻿using BitTools.Core.Contracts;
-using BitTools.Core.Model;
+﻿using Bit.Tooling.Core.Contracts;
+using Bit.Tooling.Core.Model;
 using Microsoft.CodeAnalysis;
 using Newtonsoft.Json;
 using System;
@@ -7,7 +7,7 @@ using System.IO;
 using System.Linq;
 using System.Runtime.Serialization;
 
-namespace BitCodeGenerator.Implementations
+namespace Bit.Tooling.CodeGenerator.Implementations
 {
     [Serializable]
     public class BitConfigNotFoundException : Exception
@@ -27,7 +27,7 @@ namespace BitCodeGenerator.Implementations
         {
         }
 
-        protected BitConfigNotFoundException(SerializationInfo serializationInfo, StreamingContext streamingContext) 
+        protected BitConfigNotFoundException(SerializationInfo serializationInfo, StreamingContext streamingContext)
             : base(serializationInfo, streamingContext)
         {
 

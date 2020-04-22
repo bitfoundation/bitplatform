@@ -1,4 +1,4 @@
-﻿using BitCodeAnalyzer.SystemAnalyzers;
+﻿using Bit.Tooling.CodeAnalyzer.SystemAnalyzers;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CodeActions;
 using Microsoft.CodeAnalysis.CodeFixes;
@@ -10,7 +10,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace BitCodeAnalyzer.SystemCodeFixes
+namespace Bit.Tooling.CodeAnalyzer.SystemCodeFixes
 {
     [ExportCodeFixProvider(LanguageNames.CSharp, Name = nameof(ClassWithoutModifierAnalyzer)), Shared]
     public class ClassWithoutModifierCodeFixProvider : CodeFixProvider

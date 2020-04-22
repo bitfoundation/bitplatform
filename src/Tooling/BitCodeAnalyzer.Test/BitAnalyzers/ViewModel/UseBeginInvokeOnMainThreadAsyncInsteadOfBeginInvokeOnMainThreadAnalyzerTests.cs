@@ -1,5 +1,5 @@
-﻿using BitCodeAnalyzer.BitAnalyzers.ViewModel;
-using BitCodeAnalyzer.Test.Helpers;
+﻿using Bit.Tooling.CodeAnalyzer.BitAnalyzers.ViewModel;
+using Bit.Tooling.CodeAnalyzer.Test.Helpers;
 using Microsoft.Build.Locator;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Diagnostics;
@@ -11,7 +11,7 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace BitCodeAnalyzer.Test.BitAnalyzers.ViewModel
+namespace Bit.Tooling.CodeAnalyzer.Test.BitAnalyzers.ViewModel
 {
     [TestClass]
     public class UseBeginInvokeOnMainThreadAsyncInsteadOfBeginInvokeOnMainThreadAnalyzerTests : DiagnosticVerifier

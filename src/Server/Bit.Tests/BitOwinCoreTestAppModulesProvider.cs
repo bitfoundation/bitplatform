@@ -7,7 +7,7 @@ using Bit.Hangfire.Implementations;
 using Bit.Model.Implementations;
 using Bit.OData.ActionFilters;
 using Bit.Owin.Implementations;
-using Bit.OwinCore.Middlewares;
+using Bit.Owin.Middlewares;
 using Bit.Signalr.Implementations;
 using Bit.Test;
 using Bit.Tests.Data.Implementations;

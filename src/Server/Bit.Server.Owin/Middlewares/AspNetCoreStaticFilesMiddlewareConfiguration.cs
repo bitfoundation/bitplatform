@@ -1,9 +1,9 @@
 ﻿using Bit.Core.Models;
-using Bit.OwinCore.Contracts;
+using Bit.Owin.Contracts;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 
-namespace Bit.OwinCore.Middlewares
+namespace Bit.Owin.Middlewares
 {
     public class AspNetCoreStaticFilesMiddlewareConfiguration : IAspNetCoreMiddlewareConfiguration
     {

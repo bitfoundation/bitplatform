@@ -5,7 +5,7 @@ using Microsoft.CodeAnalysis.Diagnostics;
 using System;
 using System.Collections.Immutable;
 
-namespace BitCodeAnalyzer.BitAnalyzers.Dto
+namespace Bit.Tooling.CodeAnalyzer.BitAnalyzers.Dto
 {
     [DiagnosticAnalyzer(LanguageNames.CSharp)]
     public class ODataOperationsCanNotReturnADtoWithoutSingleResultAnalyzer : DiagnosticAnalyzer

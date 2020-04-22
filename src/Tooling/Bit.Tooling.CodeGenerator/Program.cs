@@ -1,8 +1,8 @@
-﻿using BitCodeGenerator.Implementations;
-using BitCodeGenerator.Implementations.CSharpClientProxyGenerator;
-using BitCodeGenerator.Implementations.TypeScriptClientProxyGenerator;
-using BitTools.Core.Contracts;
-using BitTools.Core.Model;
+﻿using Bit.Tooling.Core.Contracts;
+using Bit.Tooling.Core.Model;
+using Bit.Tooling.CodeGenerator.Implementations;
+using Bit.Tooling.CodeGenerator.Implementations.CSharpClientProxyGenerator;
+using Bit.Tooling.CodeGenerator.Implementations.TypeScriptClientProxyGenerator;
 using Microsoft.Build.Construction;
 using Microsoft.Build.Locator;
 using Microsoft.CodeAnalysis;
@@ -82,7 +82,7 @@ namespace BitCodeGeneratorTaskImpl
 
                 foreach (BitCodeGeneratorMapping mapping in bitConfigProvider.GetConfiguration().BitCodeGeneratorConfigs.BitCodeGeneratorMappings)
                 {
-                    foreach (BitTools.Core.Model.ProjectInfo proj in mapping.SourceProjects)
+                    foreach (Bit.Tooling.Core.Model.ProjectInfo proj in mapping.SourceProjects)
                     {
                         if (workspace.CurrentSolution.Projects.Any(p => proj.IsThisProject(p)))
                             continue; /*It's already loaded*/

@@ -5,7 +5,7 @@ using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Threading.Tasks;
 
-namespace Bit.OwinCore.Middlewares
+namespace Bit.Owin.Middlewares
 {
     public class AspNetCoreLogUserInformationMiddleware
     {

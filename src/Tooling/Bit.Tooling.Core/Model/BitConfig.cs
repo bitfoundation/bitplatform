@@ -2,7 +2,7 @@
 using System;
 using System.IO;
 
-namespace BitTools.Core.Model
+namespace Bit.Tooling.Core.Model
 {
     public class BitConfig
     {

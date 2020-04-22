@@ -1,7 +1,7 @@
 ﻿using Microsoft.CodeAnalysis;
 using System.Collections.Generic;
 
-namespace BitTools.Core.Model
+namespace Bit.Tooling.Core.Model
 {
     public class EnumType
     {
@@ -17,7 +17,7 @@ namespace BitTools.Core.Model
         public virtual ISymbol Symbol { get; set; } = default!;
 
         public virtual int Index { get; set; }
-    
+
         public virtual int Value { get; set; }
     }
 }

@@ -1,5 +1,5 @@
 ﻿using Bit.Core.Contracts;
-using Bit.OwinCore.Contracts;
+using Bit.Owin.Contracts;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Owin;
@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using System;
 
-namespace Bit.OwinCore.Middlewares
+namespace Bit.Owin.Middlewares
 {
     public class GetRequestInfoMiddleware
     {

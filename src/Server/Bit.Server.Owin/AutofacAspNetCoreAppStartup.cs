@@ -6,7 +6,7 @@ using Bit.Owin.Implementations;
 using Microsoft.Extensions.DependencyInjection;
 using System;
 
-namespace Bit.OwinCore
+namespace Bit.Owin
 {
     /// <summary>
     /// Startup class for your asp.net core based apps which configures autofac by default

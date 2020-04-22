@@ -1,7 +1,7 @@
-﻿using BitTools.Core.Model;
+﻿using Bit.Tooling.Core.Model;
 using System.Collections.Generic;
 
-namespace BitTools.Core.Contracts.CSharpClientProxyGenerator
+namespace Bit.Tooling.Core.Contracts.CSharpClientProxyGenerator
 {
     public interface ICSharpClientContextGenerator
     {

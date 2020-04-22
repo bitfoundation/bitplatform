@@ -1,5 +1,5 @@
 ﻿using System.Net.Http;
-using Bit.OwinCore;
+using Bit.Owin;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.TestHost;
 using OpenQA.Selenium.Remote;

@@ -1,7 +1,7 @@
-﻿using System.Collections.Generic;
-using BitTools.Core.Model;
+﻿using Bit.Tooling.Core.Model;
+using System.Collections.Generic;
 
-namespace BitTools.Core.Contracts.TypeScriptClientProxyGenerator
+namespace Bit.Tooling.Core.Contracts.TypeScriptClientProxyGenerator
 {
     public interface ITypeScriptClientProxyDtosGenerator
     {

@@ -11,7 +11,7 @@ using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace Bit.OwinCore.Implementations
+namespace Bit.Owin.Implementations
 {
     public class SerilogLogStore : ILogStore, ILogEventEnricher
     {

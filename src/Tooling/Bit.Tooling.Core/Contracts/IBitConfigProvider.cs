@@ -1,6 +1,6 @@
-﻿using BitTools.Core.Model;
+﻿using Bit.Tooling.Core.Model;
 
-namespace BitTools.Core.Contracts
+namespace Bit.Tooling.Core.Contracts
 {
     public interface IBitConfigProvider
     {

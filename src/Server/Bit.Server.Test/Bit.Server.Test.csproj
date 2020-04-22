@@ -6,6 +6,7 @@
     <TargetFramework>netcoreapp3.1</TargetFramework>
     <PackageTags>$(PackageTags) Test</PackageTags>
     <AssetTargetFallback>net45</AssetTargetFallback>
+    <RootNamespace>Bit.Test</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>
@@ -21,6 +22,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\Universal\Bit.Universal.OData\Bit.Universal.OData.csproj" />
+    <ProjectReference Include="..\..\Universal\Bit.Universal.SignalR\Bit.Universal.SignalR.csproj" />
     <ProjectReference Include="..\Bit.Server.Data.EntityFrameworkCore\Bit.Server.Data.EntityFrameworkCore.csproj" />
     <ProjectReference Include="..\Bit.Server.Hangfire\Bit.Server.Hangfire.csproj" />
     <ProjectReference Include="..\Bit.Server.IdentityServer\Bit.Server.IdentityServer.csproj" />

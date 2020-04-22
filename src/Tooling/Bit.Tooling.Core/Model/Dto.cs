@@ -1,7 +1,7 @@
-﻿using System.Collections.Generic;
-using Microsoft.CodeAnalysis;
+﻿using Microsoft.CodeAnalysis;
+using System.Collections.Generic;
 
-namespace BitTools.Core.Model
+namespace Bit.Tooling.Core.Model
 {
     public class Dto
     {

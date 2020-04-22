@@ -1,11 +1,11 @@
-﻿using BitCodeAnalyzer.BitAnalyzers.Dto;
-using BitCodeAnalyzer.Test.Helpers;
+﻿using Bit.Tooling.CodeAnalyzer.BitAnalyzers.Dto;
+using Bit.Tooling.CodeAnalyzer.Test.Helpers;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Threading.Tasks;
 
-namespace BitCodeAnalyzer.Test.BitAnalyzers.Dto
+namespace Bit.Tooling.CodeAnalyzer.Test.BitAnalyzers.Dto
 {
     [TestClass]
     public class DtoAndComplexTypeClassesPublicDefaultCtorAnalyzerTest : DiagnosticVerifier

@@ -1,5 +1,5 @@
 ﻿<#@ template language="C#" #>
-<#@ import namespace="BitTools.Core.Model" #>
+<#@ import namespace="Bit.Tooling.Core.Model" #>
 <#@ import namespace="Microsoft.CodeAnalysis" #>
 <#@ import namespace="System.Collections.Generic" #>
 <#@ import namespace="System.Linq" #>

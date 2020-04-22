@@ -2,7 +2,7 @@
 using Microsoft.AspNetCore.Routing;
 using System.Collections.Generic;
 
-namespace Bit.OwinCore.Implementations
+namespace Bit.Owin.Implementations
 {
     public class AspNetCoreRouteValuesProvider : IRouteValuesProvider
     {

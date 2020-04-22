@@ -4,7 +4,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Security.Cryptography;
 
-namespace Bit.OwinCore.Implementations
+namespace Bit.Owin.Implementations
 {
     public class SystemCryptoBasedDataProtectionProvider : IDataProtectionProvider
     {

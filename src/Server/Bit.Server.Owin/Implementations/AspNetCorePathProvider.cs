@@ -3,7 +3,7 @@ using Bit.Core.Implementations;
 using Microsoft.AspNetCore.Hosting;
 using System;
 
-namespace Bit.OwinCore.Implementations
+namespace Bit.Owin.Implementations
 {
     public class AspNetCorePathProvider : DefaultPathProvider, IPathProvider
     {

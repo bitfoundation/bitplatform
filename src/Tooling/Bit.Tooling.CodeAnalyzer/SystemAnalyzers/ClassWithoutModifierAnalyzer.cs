@@ -6,7 +6,7 @@ using System;
 using System.Collections.Immutable;
 using System.Linq;
 
-namespace BitCodeAnalyzer.SystemAnalyzers
+namespace Bit.Tooling.CodeAnalyzer.SystemAnalyzers
 {
     [DiagnosticAnalyzer(LanguageNames.CSharp)]
     public class ClassWithoutModifierAnalyzer : DiagnosticAnalyzer

@@ -1,10 +1,10 @@
-﻿using System;
+﻿using Bit.Tooling.CodeGenerator.Implementations.TypeScriptClientProxyGenerator.Templates;
+using Bit.Tooling.Core.Contracts.TypeScriptClientProxyGenerator;
+using Bit.Tooling.Core.Model;
+using System;
 using System.Collections.Generic;
-using Bit.Tooling.CodeGenerator.Implementations.TypeScriptClientProxyGenerator.Templates;
-using BitTools.Core.Contracts.TypeScriptClientProxyGenerator;
-using BitTools.Core.Model;
 
-namespace BitCodeGenerator.Implementations.TypeScriptClientProxyGenerator
+namespace Bit.Tooling.CodeGenerator.Implementations.TypeScriptClientProxyGenerator
 {
     public class DefaultTypeScriptClientContextGenerator : ITypeScriptClientContextGenerator
     {

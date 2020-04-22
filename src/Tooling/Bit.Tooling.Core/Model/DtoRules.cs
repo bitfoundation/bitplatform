@@ -1,7 +1,7 @@
 ﻿using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
-namespace BitTools.Core.Model
+namespace Bit.Tooling.Core.Model
 {
     public class DtoRules
     {

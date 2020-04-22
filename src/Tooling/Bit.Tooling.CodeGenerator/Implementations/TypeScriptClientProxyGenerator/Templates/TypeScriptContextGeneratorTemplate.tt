@@ -1,7 +1,7 @@
 ﻿<#@ template language="C#" #>
 <#@ parameter type="System.Collections.Generic.IList<DtoController>" name="Controllers" #>
-<#@ parameter type="BitTools.Core.Model.BitCodeGeneratorMapping" name="Mapping" #>
-<#@ import namespace="BitTools.Core.Model" #>
+<#@ parameter type="Bit.Tooling.Core.Model.BitCodeGeneratorMapping" name="Mapping" #>
+<#@ import namespace="Bit.Tooling.Core.Model" #>
 <#@ import namespace="Microsoft.CodeAnalysis" #>
 <#@ import namespace="System.Linq" #>
 

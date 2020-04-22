@@ -3,15 +3,15 @@ using Microsoft.CodeAnalysis.CodeActions;
 using Microsoft.CodeAnalysis.CodeFixes;
 using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.CodeAnalysis.Formatting;
+using Microsoft.CodeAnalysis.Simplification;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 using System.Threading;
-using Microsoft.CodeAnalysis.Simplification;
 using System.Threading.Tasks;
 
-namespace BitCodeAnalyzer.Test.Helpers
+namespace Bit.Tooling.CodeAnalyzer.Test.Helpers
 {
     public abstract class CodeFixVerifier : DiagnosticVerifier
     {

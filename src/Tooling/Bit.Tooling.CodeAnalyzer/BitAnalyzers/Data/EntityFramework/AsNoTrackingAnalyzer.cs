@@ -6,7 +6,7 @@ using System;
 using System.Collections.Immutable;
 using System.Linq;
 
-namespace BitCodeAnalyzer.BitAnalyzers.Data.EntityFramework
+namespace Bit.Tooling.CodeAnalyzer.BitAnalyzers.Data.EntityFramework
 {
     [DiagnosticAnalyzer(LanguageNames.CSharp)]
     public class AsNoTrackingAnalyzer : DiagnosticAnalyzer

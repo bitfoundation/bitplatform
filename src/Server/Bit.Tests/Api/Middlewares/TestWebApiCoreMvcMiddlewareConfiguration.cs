@@ -1,5 +1,5 @@
-﻿using Bit.OwinCore.Contracts;
-using Bit.OwinCore.Middlewares;
+﻿using Bit.Owin.Contracts;
+using Bit.Owin.Middlewares;
 using Microsoft.AspNetCore.Builder;
 
 namespace Bit.Tests.Api.Middlewares

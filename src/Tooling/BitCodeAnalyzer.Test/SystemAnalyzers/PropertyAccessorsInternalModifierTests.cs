@@ -1,11 +1,11 @@
-﻿using BitCodeAnalyzer.SystemAnalyzers;
-using BitCodeAnalyzer.Test.Helpers;
+﻿using Bit.Tooling.CodeAnalyzer.SystemAnalyzers;
+using Bit.Tooling.CodeAnalyzer.Test.Helpers;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Threading.Tasks;
 
-namespace BitCodeAnalyzer.Test.SystemAnalyzers
+namespace Bit.Tooling.CodeAnalyzer.Test.SystemAnalyzers
 {
     [TestClass]
     public class PropertyAccessorsInternalModifierTests : DiagnosticVerifier

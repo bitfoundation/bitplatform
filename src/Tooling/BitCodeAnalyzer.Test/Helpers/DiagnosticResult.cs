@@ -1,7 +1,7 @@
 ﻿using Microsoft.CodeAnalysis;
 using System;
 
-namespace BitCodeAnalyzer.Test.Helpers
+namespace Bit.Tooling.CodeAnalyzer.Test.Helpers
 {
     /// <summary>
     /// Location where the diagnostic appears, as determined by path, line number, and column number.

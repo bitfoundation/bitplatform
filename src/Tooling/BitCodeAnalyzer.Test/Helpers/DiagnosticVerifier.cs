@@ -9,7 +9,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace BitCodeAnalyzer.Test.Helpers
+namespace Bit.Tooling.CodeAnalyzer.Test.Helpers
 {
     public abstract class DiagnosticVerifier
     {

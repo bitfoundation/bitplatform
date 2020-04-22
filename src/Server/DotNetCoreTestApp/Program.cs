@@ -1,5 +1,5 @@
-﻿using Bit.OwinCore;
-using Bit.OwinCore.Implementations;
+﻿using Bit.Owin;
+using Bit.Owin.Implementations;
 using Microsoft.AspNetCore.Hosting;
 using Serilog;
 using Serilog.Formatting.Compact;

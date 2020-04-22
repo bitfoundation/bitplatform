@@ -1,9 +1,9 @@
 ﻿using Bit.Owin.Middlewares;
-using Bit.OwinCore.Contracts;
+using Bit.Owin.Contracts;
 using Microsoft.AspNetCore.Builder;
 using System;
 
-namespace Bit.OwinCore.Middlewares
+namespace Bit.Owin.Middlewares
 {
     public class AspNetCoreSingleSignOnClientMiddlewareConfiguration : SingleSignOnClientMiddlewareConfiguration, IAspNetCoreMiddlewareConfiguration
     {

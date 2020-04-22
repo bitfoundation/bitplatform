@@ -5,6 +5,7 @@
   <PropertyGroup>
     <TargetFramework>netcoreapp3.1</TargetFramework>
     <PackageTags>$(PackageTags) OAuth2 OAuth OpenID Security Connect Identity IdentityServer</PackageTags>
+    <RootNamespace>Bit.IdentityServer</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>

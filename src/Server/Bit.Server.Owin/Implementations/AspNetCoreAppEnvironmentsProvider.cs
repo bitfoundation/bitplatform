@@ -10,7 +10,7 @@ using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 
-namespace Bit.OwinCore.Implementations
+namespace Bit.Owin.Implementations
 {
     public class AspNetCoreAppEnvironmentsProvider : IAppEnvironmentsProvider
     {

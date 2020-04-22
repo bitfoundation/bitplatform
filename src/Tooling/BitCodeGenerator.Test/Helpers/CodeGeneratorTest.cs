@@ -9,7 +9,7 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace BitCodeGenerator.Test.Helpers
+namespace Bit.Tooling.CodeGenerator.Test.Helpers
 {
     public class CodeGeneratorTest
     {

@@ -1,7 +1,7 @@
 ﻿using Bit.Core.Contracts;
 using Bit.Owin.Contracts;
 using Bit.Owin.Metadata;
-using Bit.OwinCore.Contracts;
+using Bit.Owin.Contracts;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
@@ -10,7 +10,7 @@ using System;
 using System.Globalization;
 using System.Threading.Tasks;
 
-namespace Bit.OwinCore.Middlewares
+namespace Bit.Owin.Middlewares
 {
     public class AspNetCoreExceptionHandlerMiddlewareConfiguration : IAspNetCoreMiddlewareConfiguration
     {

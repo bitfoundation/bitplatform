@@ -5,7 +5,7 @@ using Microsoft.CodeAnalysis.Diagnostics;
 using System;
 using System.Collections.Immutable;
 
-namespace BitCodeAnalyzer.BitAnalyzers.ViewModel
+namespace Bit.Tooling.CodeAnalyzer.BitAnalyzers.ViewModel
 {
     [DiagnosticAnalyzer(LanguageNames.CSharp)]
     public class UseBitTelemetryServicesInsteadOfUsingAppCenterCrashesAndAnalyticsDirectlyAnalyzer : DiagnosticAnalyzer

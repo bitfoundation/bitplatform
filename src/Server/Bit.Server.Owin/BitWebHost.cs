@@ -8,7 +8,7 @@ using System.Linq;
 using System.Reflection;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Bit.OwinCore
+namespace Bit.Owin
 {
     public class BitWebHost
     {

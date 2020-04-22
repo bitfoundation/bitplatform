@@ -1,14 +1,14 @@
-﻿using System;
-using System.Reflection;
-using BitCodeAnalyzer.SystemAnalyzers.WebAnalyzers;
-using BitCodeAnalyzer.Test.Helpers;
+﻿using Bit.Tooling.CodeAnalyzer.SystemAnalyzers.WebAnalyzers;
+using Bit.Tooling.CodeAnalyzer.Test.Helpers;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CodeFixes;
 using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using System;
+using System.Reflection;
 using System.Threading.Tasks;
 
-namespace BitCodeAnalyzer.Test.SystemAnalyzers.WebAnalyzers
+namespace Bit.Tooling.CodeAnalyzer.Test.SystemAnalyzers.WebAnalyzers
 {
     [TestClass]
     public class DoNotUseSystemWebAssemblyAnalyzerTests : CodeFixVerifier

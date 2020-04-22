@@ -1,6 +1,6 @@
-﻿using BitTools.Core.Contracts;
-using BitTools.Core.Contracts.TypeScriptClientProxyGenerator;
-using BitTools.Core.Model;
+﻿using Bit.Tooling.Core.Contracts;
+using Bit.Tooling.Core.Contracts.TypeScriptClientProxyGenerator;
+using Bit.Tooling.Core.Model;
 using Microsoft.CodeAnalysis;
 using System;
 using System.Collections.Generic;
@@ -9,7 +9,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace BitCodeGenerator.Implementations.TypeScriptClientProxyGenerator
+namespace Bit.Tooling.CodeGenerator.Implementations.TypeScriptClientProxyGenerator
 {
     public class DefaultTypeScriptClientProxyGenerator : IDefaultTypeScriptClientProxyGenerator
     {

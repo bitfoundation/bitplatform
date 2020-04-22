@@ -1,13 +1,13 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using Bit.Tooling.Core.Model;
+using Bit.Tooling.CodeGenerator.Implementations;
+using Bit.Tooling.CodeGenerator.Test.Helpers;
 using Microsoft.CodeAnalysis;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using BitCodeGenerator.Test.Helpers;
-using BitTools.Core.Model;
-using BitCodeGenerator.Implementations;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
-namespace BitCodeGenerator.Test.Implementations
+namespace Bit.Tooling.CodeGenerator.Test.Implementations
 {
     [TestClass]
     public class DefaultBitCodeGeneratorOrderedProjectsProviderTests : CodeGeneratorTest
@@ -22,7 +22,7 @@ namespace BitCodeGenerator.Test.Implementations
                 List<Project> projects = solution.Projects.ToList();
 
                 IList<Project> orderedProjects = (new DefaultBitCodeGeneratorOrderedProjectsProvider().GetInvolveableProjects(workspace, projects,
-                        new BitCodeGeneratorMapping { SourceProjects = new[] { new BitTools.Core.Model.ProjectInfo { Name = "Bit.Universal.Model" }, new BitTools.Core.Model.ProjectInfo { Name = "Bit.Server.OData" } } }));
+                        new BitCodeGeneratorMapping { SourceProjects = new[] { new Bit.Tooling.Core.Model.ProjectInfo { Name = "Bit.Universal.Model" }, new Bit.Tooling.Core.Model.ProjectInfo { Name = "Bit.Server.OData" } } }));
 
                 Assert.AreEqual(2, orderedProjects.Count);
 

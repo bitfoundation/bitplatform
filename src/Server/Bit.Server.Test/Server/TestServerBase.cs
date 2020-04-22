@@ -1,7 +1,6 @@
 ﻿using Bit.Core.Implementations;
 using Bit.Signalr;
 using Bit.Signalr.Implementations;
-using Bit.Test.SignalR;
 using IdentityModel.Client;
 using Microsoft.AspNet.SignalR.Client;
 using Microsoft.AspNet.SignalR.Client.Transports;

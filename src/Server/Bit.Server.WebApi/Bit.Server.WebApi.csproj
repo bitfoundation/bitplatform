@@ -6,6 +6,7 @@
     <TargetFramework>netcoreapp3.1</TargetFramework>
     <PackageTags>$(PackageTags) Web-API Rest Microsoft AspNet WebApi AspNetWebApi</PackageTags>
     <AssetTargetFallback>net45</AssetTargetFallback>
+    <RootNamespace>Bit.WebApi</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>

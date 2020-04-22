@@ -1,7 +1,7 @@
 ﻿using Microsoft.CodeAnalysis;
 using System.Threading.Tasks;
 
-namespace BitTools.Core.Contracts.CSharpClientProxyGenerator
+namespace Bit.Tooling.Core.Contracts.CSharpClientProxyGenerator
 {
     public interface IDefaultCSharpClientProxyGenerator
     {

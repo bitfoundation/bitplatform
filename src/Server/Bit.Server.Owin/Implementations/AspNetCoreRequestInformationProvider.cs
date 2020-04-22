@@ -6,7 +6,7 @@ using System;
 using System.Globalization;
 using System.Security.Claims;
 
-namespace Bit.OwinCore.Implementations
+namespace Bit.Owin.Implementations
 {
     public class AspNetCoreRequestInformationProvider : IRequestInformationProvider
     {

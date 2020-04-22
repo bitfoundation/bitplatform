@@ -1,6 +1,6 @@
-﻿using BitTools.Core.Contracts;
-using BitTools.Core.Contracts.CSharpClientProxyGenerator;
-using BitTools.Core.Model;
+﻿using Bit.Tooling.Core.Contracts;
+using Bit.Tooling.Core.Contracts.CSharpClientProxyGenerator;
+using Bit.Tooling.Core.Model;
 using Microsoft.CodeAnalysis;
 using System;
 using System.Collections.Generic;
@@ -9,7 +9,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace BitCodeGenerator.Implementations.CSharpClientProxyGenerator
+namespace Bit.Tooling.CodeGenerator.Implementations.CSharpClientProxyGenerator
 {
     public class DefaultCSharpClientProxyGenerator : IDefaultCSharpClientProxyGenerator
     {

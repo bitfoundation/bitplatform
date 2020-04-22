@@ -1,4 +1,4 @@
-﻿namespace BitCodeGenerator.Test.DtoRulesGenerator
+﻿namespace Bit.Tooling.CodeGenerator.Test.DtoRulesGenerator
 {
     public class Codes
     {
