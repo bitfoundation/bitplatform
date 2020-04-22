@@ -1,14 +1,14 @@
 ﻿#if iOS
 
+using Bit.iOS;
 using Bit.View.Controls;
-using Bit.View.iOS;
 using System;
 using Xamarin.Forms;
 using Xamarin.Forms.Platform.iOS;
 
 [assembly: ExportRenderer(typeof(BitFrame), typeof(BitFrameRenderer))]
 
-namespace Bit.View.iOS
+namespace Bit.iOS
 {
     public class BitFrameRenderer : FrameRenderer
     {

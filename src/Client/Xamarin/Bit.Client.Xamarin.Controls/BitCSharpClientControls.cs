@@ -36,11 +36,11 @@ namespace Bit.View
         public static void Init()
         {
 #if iOS
-            Bit.View.iOS.BitFrameRenderer.Init();
+            Bit.iOS.BitFrameRenderer.Init();
 #elif UWP
-            Bit.View.UWP.BitFrameRenderer.Init();
+            Bit.UWP.BitFrameRenderer.Init();
 #elif Android
-            Bit.View.Android.BitFrameRenderer.Init();
+            Bit.Android.BitFrameRenderer.Init();
 #endif
         }
     }

@@ -4,7 +4,7 @@ using System;
 using System.Threading.Tasks;
 using Xamarin.Forms;
 
-namespace Bit.View.Props
+namespace Bit.View
 {
     public class PartialViewProps
     {
