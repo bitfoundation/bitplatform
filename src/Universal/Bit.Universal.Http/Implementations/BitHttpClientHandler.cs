@@ -1,5 +1,4 @@
 ﻿using Bit.Core.Contracts;
-using Bit.ViewModel.Contracts;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -12,7 +11,7 @@ using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Bit.ViewModel.Implementations
+namespace Bit.Http.Implementations
 {
     public class BitHttpClientHandler :
 #if Android

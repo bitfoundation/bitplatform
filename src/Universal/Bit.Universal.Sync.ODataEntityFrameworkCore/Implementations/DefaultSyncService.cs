@@ -1,9 +1,8 @@
 ﻿using Autofac;
 using Bit.Core.Contracts;
-using Bit.Data;
 using Bit.Data.EntityFrameworkCore.Implementations;
 using Bit.Model.Contracts;
-using Bit.ViewModel.Contracts;
+using Bit.Sync.ODataEntityFrameworkCore.Contracts;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -19,7 +18,7 @@ using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Bit.ViewModel.Implementations
+namespace Bit.Sync.ODataEntityFrameworkCore.Implementations
 {
     public class DefaultSyncService : ISyncService
     {

@@ -2,7 +2,7 @@
 using System;
 using System.Net.Http;
 
-namespace Bit.ViewModel.Implementations
+namespace Bit.Signalr.Implementations
 {
     public class SignalRHttpClient : DefaultHttpClient
     {

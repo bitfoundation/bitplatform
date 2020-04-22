@@ -5,6 +5,8 @@ using Bit.Core.Models.Events;
 using Bit.CSharpClientSample.Data;
 using Bit.CSharpClientSample.ViewModels;
 using Bit.CSharpClientSample.Views;
+using Bit.Http.Contracts;
+using Bit.Sync.ODataEntityFrameworkCore.Contracts;
 using Bit.Tests.Model.Dto;
 using Bit.View;
 using Bit.ViewModel.Contracts;

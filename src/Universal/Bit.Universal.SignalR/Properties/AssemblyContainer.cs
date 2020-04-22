@@ -1,4 +1,4 @@
-﻿using Bit.ViewModel.Implementations;
+﻿using Bit.Signalr.Implementations;
 using System.Reflection;
 
 namespace Bit.Core

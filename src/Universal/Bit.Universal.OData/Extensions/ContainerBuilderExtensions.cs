@@ -1,5 +1,4 @@
 ﻿using Bit.Core.Contracts;
-using Bit.ViewModel.Contracts;
 using Simple.OData.Client;
 using System;
 using System.Net.Http;

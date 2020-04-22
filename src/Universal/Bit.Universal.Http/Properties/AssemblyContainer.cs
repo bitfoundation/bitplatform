@@ -1,4 +1,4 @@
-﻿using Bit.ViewModel.Contracts;
+﻿using Bit.Http.Contracts;
 using System.Reflection;
 
 namespace Bit.Core

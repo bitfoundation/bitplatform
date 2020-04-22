@@ -1,11 +1,10 @@
 ﻿using Bit.Core.Contracts;
-using Bit.ViewModel.Contracts;
 using Microsoft.AspNet.SignalR.Client;
 using Microsoft.AspNet.SignalR.Client.Http;
 using System;
 using System.Net.Http;
 
-namespace Bit.ViewModel.Implementations
+namespace Bit.Signalr.Implementations
 {
     public static class DefaultSignalRFactories
     {

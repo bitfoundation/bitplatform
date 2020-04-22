@@ -1,5 +1,7 @@
 ﻿using Bit.CSharpClientSample.Data;
 using Bit.CSharpClientSample.Dto;
+using Bit.Http.Contracts;
+using Bit.Sync.ODataEntityFrameworkCore.Contracts;
 using Bit.Tests.Model.Dto;
 using Bit.ViewModel;
 using Bit.ViewModel.Contracts;

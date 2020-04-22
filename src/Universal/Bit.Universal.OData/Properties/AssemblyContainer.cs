@@ -1,5 +1,4 @@
-﻿using Bit.ViewModel.Contracts;
-using Simple.OData.Client;
+﻿using Simple.OData.Client;
 using System.Reflection;
 
 namespace Bit.Core

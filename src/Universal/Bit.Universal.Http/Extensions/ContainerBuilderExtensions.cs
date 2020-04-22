@@ -1,6 +1,6 @@
 ﻿using Bit.Core.Contracts;
-using Bit.ViewModel.Contracts;
-using Bit.ViewModel.Implementations;
+using Bit.Http.Contracts;
+using Bit.Http.Implementations;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Logging;
 using Prism.Events;

@@ -1,5 +1,4 @@
-﻿using Bit.Core.Contracts;
-using Bit.Core.Implementations;
+﻿using Bit.Core.Implementations;
 using Bit.Core.Models;
 using IdentityModel.Client;
 using System;
@@ -8,7 +7,7 @@ using System.Globalization;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Bit.ViewModel.Contracts
+namespace Bit.Http.Contracts
 {
     public class Token
     {

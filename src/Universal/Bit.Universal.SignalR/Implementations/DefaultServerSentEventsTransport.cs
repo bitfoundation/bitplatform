@@ -3,7 +3,7 @@ using Microsoft.AspNet.SignalR.Client.Http;
 using Microsoft.AspNet.SignalR.Client.Transports;
 using System;
 
-namespace Bit.ViewModel.Implementations
+namespace Bit.Signalr.Implementations
 {
     public class DefaultServerSentEventsTransport : ServerSentEventsTransport
     {

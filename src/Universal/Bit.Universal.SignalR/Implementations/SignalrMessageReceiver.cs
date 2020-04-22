@@ -1,14 +1,14 @@
 ﻿using Bit.Core.Contracts;
 using Bit.Core.Models;
 using Bit.Core.Models.Events;
-using Bit.ViewModel.Contracts;
+using Bit.Signalr.Contracts;
 using Microsoft.AspNet.SignalR.Client;
 using Prism.Events;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Bit.ViewModel.Implementations
+namespace Bit.Signalr.Implementations
 {
     public class SignalrMessageReceiver : Bindable, IMessageReceiver
     {

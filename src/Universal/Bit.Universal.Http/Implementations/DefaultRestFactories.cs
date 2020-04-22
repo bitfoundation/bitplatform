@@ -5,7 +5,7 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 
-namespace Bit.ViewModel.Implementations
+namespace Bit.Http.Implementations
 {
     public static class DefaultRestFactories
     {

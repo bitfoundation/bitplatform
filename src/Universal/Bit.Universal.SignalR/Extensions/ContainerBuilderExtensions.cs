@@ -1,6 +1,6 @@
 ﻿using Bit.Core.Contracts;
-using Bit.ViewModel.Contracts;
-using Bit.ViewModel.Implementations;
+using Bit.Signalr.Contracts;
+using Bit.Signalr.Implementations;
 using System;
 using System.Net.Http;
 

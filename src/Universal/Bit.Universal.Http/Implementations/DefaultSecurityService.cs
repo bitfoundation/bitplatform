@@ -2,7 +2,7 @@
 using Bit.Core.Contracts;
 using Bit.Core.Exceptions;
 using Bit.Core.Models;
-using Bit.ViewModel.Contracts;
+using Bit.Http.Contracts;
 using IdentityModel.Client;
 using Newtonsoft.Json;
 using Prism.Ioc;
@@ -14,7 +14,7 @@ using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Bit.ViewModel.Implementations
+namespace Bit.Http.Implementations
 {
     public class DefaultSecurityService : ISecurityService
     {

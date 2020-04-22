@@ -7,7 +7,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Bit.ViewModel.Contracts
+namespace Bit.Sync.ODataEntityFrameworkCore.Contracts
 {
     public class DtoSetSyncConfig
     {

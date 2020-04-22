@@ -1,5 +1,4 @@
-﻿using Bit.Data.Contracts;
-using Bit.Data.EntityFrameworkCore.Implementations;
+﻿using Bit.Data.EntityFrameworkCore.Implementations;
 using System.Reflection;
 
 namespace Bit.Core

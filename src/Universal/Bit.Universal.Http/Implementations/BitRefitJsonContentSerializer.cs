@@ -8,7 +8,7 @@ using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Bit.ViewModel.Implementations
+namespace Bit.Http.Implementations
 {
     public class BitRefitJsonContentSerializer : IContentSerializer
     {

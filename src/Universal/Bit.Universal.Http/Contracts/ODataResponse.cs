@@ -1,6 +1,6 @@
 ﻿using Newtonsoft.Json;
 
-namespace Bit.ViewModel.Contracts
+namespace Bit.Http.Contracts
 {
     public class ODataResponse<T>
     {

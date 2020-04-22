@@ -1,5 +1,5 @@
 ﻿using Bit.Core.Models.Events;
-using Bit.ViewModel.Contracts;
+using Bit.Http.Contracts;
 using Prism.Events;
 using System;
 using System.Net.Http;
@@ -7,7 +7,7 @@ using System.Net.Http.Headers;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Bit.ViewModel.Implementations
+namespace Bit.Http.Implementations
 {
     public class AuthenticatedHttpMessageHandler : DelegatingHandler
     {

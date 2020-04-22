@@ -1,5 +1,5 @@
-﻿using Bit.ViewModel.Contracts;
-using Bit.ViewModel.Implementations;
+﻿using Bit.Sync.ODataEntityFrameworkCore.Contracts;
+using Bit.Sync.ODataEntityFrameworkCore.Implementations;
 using System;
 
 namespace Autofac
