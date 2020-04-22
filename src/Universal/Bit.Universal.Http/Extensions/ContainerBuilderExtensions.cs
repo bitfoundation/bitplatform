@@ -15,52 +15,48 @@ namespace Autofac
 {
     public static class ContainerBuilderExtensions
     {
-        public static ContainerBuilder RegisterRefitClient(this ContainerBuilder containerBuilder)
+        public static IDependencyManager RegisterRefitClient(this IDependencyManager dependencyManager)
         {
-            if (containerBuilder == null)
-                throw new ArgumentNullException(nameof(containerBuilder));
+            if (dependencyManager == null)
+                throw new ArgumentNullException(nameof(dependencyManager));
 
-            containerBuilder.RegisterType<BitRefitJsonContentSerializer>() // This needs to be registered once, but using current approach it will be registered multiple times, but this is fine!
-                .As<IContentSerializer>()
-                .SingleInstance()
-                .PropertiesAutowired()
-                .PreserveExistingDefaults();
+            dependencyManager.Register<IContentSerializer, BitRefitJsonContentSerializer>(lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExisting: false); // This needs to be registered once, but using current approach it will be registered multiple times, but this is fine!
 
-            containerBuilder.Register(context => new RefitSettings
+            dependencyManager.RegisterUsing(resolver => new RefitSettings
             {
-                ContentSerializer = context.Resolve<IContentSerializer>()
-            }).PreserveExistingDefaults();
+                ContentSerializer = resolver.Resolve<IContentSerializer>()
+            }, overwriteExisting: false, lifeCycle: DependencyLifeCycle.Transient);
 
-            return containerBuilder;
+            return dependencyManager;
         }
 
-        public static ContainerBuilder RegisterRefitService<TService>(this ContainerBuilder containerBuilder)
+        public static IDependencyManager RegisterRefitService<TService>(this IDependencyManager dependencyManager)
             where TService : notnull
         {
-            if (containerBuilder == null)
-                throw new ArgumentNullException(nameof(containerBuilder));
+            if (dependencyManager == null)
+                throw new ArgumentNullException(nameof(dependencyManager));
 
-            containerBuilder.Register(c => RestService.For<TService>(c.Resolve<HttpClient>(), c.Resolve<RefitSettings>())).PreserveExistingDefaults();
+            dependencyManager.RegisterUsing(c => RestService.For<TService>(c.Resolve<HttpClient>(), c.Resolve<RefitSettings>()), overwriteExisting: false, lifeCycle: DependencyLifeCycle.Transient);
 
-            return containerBuilder;
+            return dependencyManager;
         }
 
-        public static ContainerBuilder RegisterIdentityClient(this ContainerBuilder containerBuilder)
+        public static IDependencyManager RegisterIdentityClient(this IDependencyManager dependencyManager)
         {
-            return containerBuilder.RegisterIdentityClient<DefaultSecurityService>();
+            return dependencyManager.RegisterIdentityClient<DefaultSecurityService>();
         }
 
-        public static ContainerBuilder RegisterIdentityClient<TSecurityService>(this ContainerBuilder containerBuilder)
-            where TSecurityService : ISecurityService
+        public static IDependencyManager RegisterIdentityClient<TSecurityService>(this IDependencyManager dependencyManager)
+            where TSecurityService : class, ISecurityService
         {
             IdentityModelEventSource.ShowPII = true;
 
-            if (containerBuilder == null)
-                throw new ArgumentNullException(nameof(containerBuilder));
+            if (dependencyManager == null)
+                throw new ArgumentNullException(nameof(dependencyManager));
 
-            containerBuilder.RegisterType<TSecurityService>().As<ISecurityService>().SingleInstance().PropertiesAutowired(PropertyWiringOptions.PreserveSetValues).PreserveExistingDefaults();
+            dependencyManager.Register<ISecurityService, TSecurityService>(lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExisting: false);
 
-            containerBuilder.RegisterBuildCallback(async scope =>
+            dependencyManager.GetContainerBuilder().RegisterBuildCallback(async scope =>
             {
                 try
                 {
@@ -82,28 +78,27 @@ namespace Autofac
                 }
             });
 
-            return containerBuilder;
+            return dependencyManager;
         }
 
-        public static IHttpClientBuilder RegisterHttpClient(this ContainerBuilder containerBuilder)
+        public static IHttpClientBuilder RegisterHttpClient(this IDependencyManager dependencyManager)
         {
-            if (containerBuilder == null)
-                throw new ArgumentNullException(nameof(containerBuilder));
+            if (dependencyManager == null)
+                throw new ArgumentNullException(nameof(dependencyManager));
 
-            return RegisterHttpClient<BitHttpClientHandler>(containerBuilder);
+            return RegisterHttpClient<BitHttpClientHandler>(dependencyManager);
         }
 
-        public static IHttpClientBuilder RegisterHttpClient<THttpMessageHandler>(this ContainerBuilder containerBuilder)
+        public static IHttpClientBuilder RegisterHttpClient<THttpMessageHandler>(this IDependencyManager dependencyManager)
             where THttpMessageHandler : HttpMessageHandler, new()
         {
-            containerBuilder.RegisterHttpMessageHandler<THttpMessageHandler>();
+            dependencyManager.RegisterHttpMessageHandler<THttpMessageHandler>();
 
-            IServiceCollection services = (IServiceCollection)containerBuilder.Properties[nameof(services)]!;
+            IServiceCollection services = (IServiceCollection)dependencyManager.GetServiceCollection();
 
-            containerBuilder.Register(c => c.Resolve<IHttpClientFactory>().CreateClient(ContractKeys.DefaultHttpClientName))
-                .PreserveExistingDefaults();
+            dependencyManager.RegisterUsing(resolver => resolver.Resolve<IHttpClientFactory>().CreateClient(ContractKeys.DefaultHttpClientName), lifeCycle: DependencyLifeCycle.Transient, overwriteExisting: false);
 
-            containerBuilder.Register(context => new IPollyHttpResponseMessagePolicyFactory(request => DefaultRestFactories.BuildHttpPollyPolicy(request))).PreserveExistingDefaults();
+            dependencyManager.RegisterUsing(resolver => new IPollyHttpResponseMessagePolicyFactory(request => DefaultRestFactories.BuildHttpPollyPolicy(request)), lifeCycle: DependencyLifeCycle.Transient, overwriteExisting: false);
 
             return services.AddHttpClient(ContractKeys.DefaultHttpClientName)
                 .ConfigureHttpClient((serviceProvider, httpClient) =>
@@ -119,23 +114,24 @@ namespace Autofac
                 .AddPolicyHandler((serviceProvider, request) => serviceProvider.GetRequiredService<IPollyHttpResponseMessagePolicyFactory>()(request));
         }
 
-        public static void RegisterHttpMessageHandler<THttpMessageHandler>(this ContainerBuilder containerBuilder)
+        public static void RegisterHttpMessageHandler<THttpMessageHandler>(this IDependencyManager dependencyManager)
             where THttpMessageHandler : HttpMessageHandler, new()
         {
-            if (containerBuilder == null)
-                throw new ArgumentNullException(nameof(containerBuilder));
+            if (dependencyManager == null)
+                throw new ArgumentNullException(nameof(dependencyManager));
 
-            containerBuilder
-                .RegisterType<THttpMessageHandler>()
+            ContainerBuilder containerBuilder = dependencyManager.GetContainerBuilder();
+
+            containerBuilder.RegisterType<THttpMessageHandler>()
                 .Named<HttpMessageHandler>(ContractKeys.DefaultHttpMessageHandler)
                 .PropertiesAutowired(PropertyWiringOptions.PreserveSetValues)
                 .SingleInstance()
                 .PreserveExistingDefaults();
 
-            containerBuilder.Register<HttpMessageHandler>(c =>
+            containerBuilder.Register((Func<IComponentContext, HttpMessageHandler>)(c =>
             {
                 return new AuthenticatedHttpMessageHandler(c.Resolve<IEventAggregator>(), c.Resolve<ISecurityService>(), c.ResolveNamed<HttpMessageHandler>(ContractKeys.DefaultHttpMessageHandler));
-            })
+            }))
             .Named<HttpMessageHandler>(ContractKeys.AuthenticatedHttpMessageHandler)
             .SingleInstance()
             .PreserveExistingDefaults();

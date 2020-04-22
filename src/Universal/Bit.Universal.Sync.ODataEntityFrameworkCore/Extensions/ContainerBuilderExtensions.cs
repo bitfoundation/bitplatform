@@ -1,4 +1,5 @@
-﻿using Bit.Sync.ODataEntityFrameworkCore.Contracts;
+﻿using Bit.Core.Contracts;
+using Bit.Sync.ODataEntityFrameworkCore.Contracts;
 using Bit.Sync.ODataEntityFrameworkCore.Implementations;
 using System;
 
@@ -6,19 +7,19 @@ namespace Autofac
 {
     public static class ContainerBuilderExtensions
     {
-        public static ContainerBuilder RegisterDefaultSyncService(this ContainerBuilder containerBuilder, Action<ISyncService> configureDtoSetSyncConfigs)
+        public static IDependencyManager RegisterDefaultSyncService(this IDependencyManager dependencyManager, Action<ISyncService> configureDtoSetSyncConfigs)
         {
-            if (containerBuilder == null)
-                throw new ArgumentNullException(nameof(containerBuilder));
+            if (dependencyManager == null)
+                throw new ArgumentNullException(nameof(dependencyManager));
 
-            containerBuilder.RegisterType<DefaultSyncService>().As<ISyncService>()
+            dependencyManager.GetContainerBuilder().RegisterType<DefaultSyncService>().As<ISyncService>()
                 .PropertiesAutowired(PropertyWiringOptions.PreserveSetValues)
                 .OnActivated(config =>
                 {
                     configureDtoSetSyncConfigs?.Invoke(config.Instance);
                 }).SingleInstance().PreserveExistingDefaults();
 
-            return containerBuilder;
+            return dependencyManager;
         }
     }
 }

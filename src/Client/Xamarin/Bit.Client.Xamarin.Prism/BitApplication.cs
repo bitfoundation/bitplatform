@@ -1,6 +1,7 @@
 ﻿using Autofac;
 using Autofac.Extensions.DependencyInjection;
 using Bit.Core.Contracts;
+using Bit.Core.Implementations;
 using Bit.Core.Models.Events;
 using Bit.ViewModel;
 using Bit.ViewModel.Contracts;
@@ -13,6 +14,7 @@ using Prism.Ioc;
 using Prism.Logging;
 using Prism.Navigation;
 using Prism.Plugin.Popups;
+using Prism.Services;
 using Rg.Plugins.Popup.Contracts;
 using Rg.Plugins.Popup.Services;
 using System;
@@ -66,6 +68,9 @@ namespace Bit
             try
             {
                 Container.Resolve<IEnumerable<ITelemetryService>>().All().LogPreviousSessionCrashIfAny();
+                var deviceService = Container.Resolve<IDeviceService>();
+                DependencyDelegates.Current.StartTimer = (interval, callback) => deviceService.StartTimer(interval, () => callback());
+                DependencyDelegates.Current.GetNavigationUriPath = () => Current.NavigationService.CurrentPageNavService.GetNavigationUriPath();
                 await OnInitializedAsync();
                 await Task.Yield();
             }
@@ -103,12 +108,16 @@ namespace Bit
             containerBuilder.Properties[nameof(services)] = services;
             containerBuilder.Properties[nameof(containerRegistry)] = containerRegistry;
 
-            RegisterTypes(containerRegistry, containerBuilder, services);
+            AutofacDependencyManager dependencyManager = new AutofacDependencyManager();
+            dependencyManager.UseContainerBuilder(containerBuilder);
+            ((IServiceCollectionAccessor)dependencyManager).ServiceCollection = services;
+
+            RegisterTypes(dependencyManager, containerRegistry, containerBuilder, services);
 
             containerBuilder.Populate(services);
         }
 
-        protected virtual void RegisterTypes(IContainerRegistry containerRegistry, ContainerBuilder containerBuilder, IServiceCollection services)
+        protected virtual void RegisterTypes(IDependencyManager dependencyManager, IContainerRegistry containerRegistry, ContainerBuilder containerBuilder, IServiceCollection services)
         {
             containerRegistry.Register<ILoggerFacade, BitPrismLogger>();
             containerBuilder.Register(c => Container).SingleInstance().PreserveExistingDefaults();

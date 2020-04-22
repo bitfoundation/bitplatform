@@ -32,7 +32,7 @@ namespace Bit.Owin
 
             Assembly bitOwinCoreAssembly = AssemblyContainer.Current.GetServerOwinAssembly();
 
-            string? dllResourceName = bitOwinCoreAssembly.GetManifestResourceNames().ExtendedSingleOrDefault($"Finding equivalent resource for {args.Name}", resName => resName == $"Bit.Server.Owin.Assemblies.{new AssemblyName(args.Name!).Name}.dll");
+            string? dllResourceName = bitOwinCoreAssembly.GetManifestResourceNames().ExtendedSingleOrDefault($"Finding equivalent resource for {args.Name}", resName => resName == $"Bit.Owin.Assemblies.{new AssemblyName(args.Name!).Name}.dll");
 
             if (!string.IsNullOrEmpty(dllResourceName))
             {

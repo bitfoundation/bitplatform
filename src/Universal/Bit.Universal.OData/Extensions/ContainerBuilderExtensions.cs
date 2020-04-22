@@ -7,18 +7,18 @@ namespace Autofac
 {
     public static class ContainerBuilderExtensions
     {
-        public static ContainerBuilder RegisterODataClient(this ContainerBuilder containerBuilder, Action<ODataClientSettings>? odataClientSettingsCustomizer = null)
+        public static IDependencyManager RegisterODataClient(this IDependencyManager dependencyManager, Action<ODataClientSettings>? odataClientSettingsCustomizer = null)
         {
-            if (containerBuilder == null)
-                throw new ArgumentNullException(nameof(containerBuilder));
+            if (dependencyManager == null)
+                throw new ArgumentNullException(nameof(dependencyManager));
 
             Simple.OData.Client.V4Adapter.Reference();
 
-            containerBuilder.Register(c =>
+            dependencyManager.RegisterUsing(resolver =>
             {
-                IClientAppProfile clientAppProfile = c.Resolve<IClientAppProfile>();
+                IClientAppProfile clientAppProfile = resolver.Resolve<IClientAppProfile>();
 
-                ODataClientSettings settings = new ODataClientSettings(httpClient: c.Resolve<HttpClient>(), new Uri(clientAppProfile.ODataRoute ?? throw new InvalidOperationException($"{nameof(IClientAppProfile.ODataRoute)} is null."), uriKind: UriKind.RelativeOrAbsolute))
+                ODataClientSettings settings = new ODataClientSettings(httpClient: resolver.Resolve<HttpClient>(), new Uri(clientAppProfile.ODataRoute ?? throw new InvalidOperationException($"{nameof(IClientAppProfile.ODataRoute)} is null."), uriKind: UriKind.RelativeOrAbsolute))
                 {
                     RenewHttpConnection = false,
                     NameMatchResolver = ODataNameMatchResolver.AlpahumericCaseInsensitive
@@ -29,13 +29,12 @@ namespace Autofac
                 IODataClient odataClient = new ODataClient(settings);
 
                 return odataClient;
-            }).PreserveExistingDefaults();
+            }, overwriteExisting: false, lifeCycle: DependencyLifeCycle.Transient);
 
-            containerBuilder
-                .Register(c => new ODataBatch(c.Resolve<IODataClient>(), reuseSession: true))
-                .PreserveExistingDefaults();
+            dependencyManager
+                .RegisterUsing(resolver => new ODataBatch(resolver.Resolve<IODataClient>(), reuseSession: true), lifeCycle: DependencyLifeCycle.Transient, overwriteExisting: false);
 
-            return containerBuilder;
+            return dependencyManager;
         }
     }
 }

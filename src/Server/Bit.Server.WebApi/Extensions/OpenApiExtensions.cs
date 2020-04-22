@@ -58,7 +58,7 @@ namespace Swashbuckle.Application
         {
             void CreateBitSwaggerUiConfig(SwaggerUiConfig swagger)
             {
-                swagger.InjectJavaScript(typeof(WebApiMiddlewareConfiguration).GetTypeInfo().Assembly, "Bit.Server.WebApi.Extensions.SwaggerExtender.js", isTemplate: false);
+                swagger.InjectJavaScript(typeof(WebApiMiddlewareConfiguration).GetTypeInfo().Assembly, "Bit.WebApi.Extensions.SwaggerExtender.js", isTemplate: false);
 
                 swagger.EnableDiscoveryUrlSelector();
 

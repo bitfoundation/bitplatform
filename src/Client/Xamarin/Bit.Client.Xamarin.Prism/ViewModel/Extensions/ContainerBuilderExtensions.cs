@@ -8,38 +8,32 @@ using Prism.Ioc;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 
 namespace Autofac
 {
     public static class ContainerBuilderExtensions
     {
-        public static ContainerBuilder RegisterRequiredServices(this ContainerBuilder containerBuilder)
+        public static IDependencyManager RegisterRequiredServices(this IDependencyManager dependencyManager)
         {
-            if (containerBuilder == null)
-                throw new ArgumentNullException(nameof(containerBuilder));
+            if (dependencyManager == null)
+                throw new ArgumentNullException(nameof(dependencyManager));
 
-            containerBuilder.RegisterType<DefaultDateTimeProvider>()
-                .As<IDateTimeProvider>()
-                .SingleInstance()
-                .PreserveExistingDefaults();
+            dependencyManager.Register<IDateTimeProvider, DefaultDateTimeProvider>(lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExisting: false);
 
-            containerBuilder.RegisterType<DefaultJsonContentFormatter>()
-                .As<IContentFormatter>()
-                .SingleInstance()
-                .PropertiesAutowired()
-                .PreserveExistingDefaults();
+            dependencyManager.Register<IContentFormatter, DefaultJsonContentFormatter>(lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExisting: false);
 
-            containerBuilder.Register(context => new INavServiceFactory((prismNavService, popupNav) => DefaultNavService.INavServiceFactory<DefaultNavService>(prismNavService, popupNav))).PreserveExistingDefaults();
+            dependencyManager.RegisterUsing(resolver => new INavServiceFactory((prismNavService, popupNav) => DefaultNavService.INavServiceFactory<DefaultNavService>(prismNavService, popupNav)), overwriteExisting: false, lifeCycle: DependencyLifeCycle.Transient);
 
-            containerBuilder.RegisterInstance<IExceptionHandler>(BitExceptionHandler.Current);
-            containerBuilder.RegisterInstance<ITelemetryService>(ApplicationInsightsTelemetryService.Current);
-            containerBuilder.RegisterInstance<ITelemetryService>(AppCenterTelemetryService.Current);
-            containerBuilder.RegisterInstance<ITelemetryService>(FirebaseTelemetryService.Current);
-            containerBuilder.RegisterInstance(LocalTelemetryService.Current).As<LocalTelemetryService, ITelemetryService>();
-            IContainerRegistry containerRegistry = (IContainerRegistry)containerBuilder.Properties[nameof(containerRegistry)]!;
+            dependencyManager.RegisterInstance<IExceptionHandler>(BitExceptionHandler.Current);
+            dependencyManager.RegisterInstance<ITelemetryService>(ApplicationInsightsTelemetryService.Current);
+            dependencyManager.RegisterInstance<ITelemetryService>(AppCenterTelemetryService.Current);
+            dependencyManager.RegisterInstance<ITelemetryService>(FirebaseTelemetryService.Current);
+            dependencyManager.RegisterInstance(LocalTelemetryService.Current, servicesType: new[] { typeof(LocalTelemetryService).GetTypeInfo(), typeof(ITelemetryService).GetTypeInfo() });
+            IContainerRegistry containerRegistry = dependencyManager.GetContainerRegistry();
             containerRegistry.RegisterForNav<BitConsoleView, BitConsoleViewModel>("BitConsole");
 
-            containerBuilder.RegisterBuildCallback(container =>
+            dependencyManager.GetContainerBuilder().RegisterBuildCallback(container =>
             {
                 IMessageReceiver? messageReceiver = container.ResolveOptional<IMessageReceiver>();
                 if (messageReceiver != null)
@@ -51,7 +45,7 @@ namespace Autofac
                 }
             });
 
-            return containerBuilder;
+            return dependencyManager;
         }
     }
 }

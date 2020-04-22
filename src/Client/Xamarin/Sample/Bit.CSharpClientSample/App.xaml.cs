@@ -72,7 +72,7 @@ namespace Bit.CSharpClientSample
             await base.OnInitializedAsync();
         }
 
-        protected override void RegisterTypes(IContainerRegistry containerRegistry, ContainerBuilder containerBuilder, IServiceCollection services)
+        protected override void RegisterTypes(IDependencyManager dependencyManager, IContainerRegistry containerRegistry, ContainerBuilder containerBuilder, IServiceCollection services)
         {
             containerRegistry.RegisterForNav<NavigationPage>("Nav");
 
@@ -90,16 +90,16 @@ namespace Bit.CSharpClientSample
                 ODataRoute = "odata/Test/"
             }).SingleInstance();
 
-            containerBuilder.RegisterRequiredServices();
-            containerBuilder.RegisterHttpClient();
-            containerBuilder.RegisterODataClient();
-            containerBuilder.RegisterIdentityClient();
-            containerBuilder.RegisterRefitClient();
-            containerBuilder.RegisterRefitService<ISimpleApi>();
+            dependencyManager.RegisterRequiredServices();
+            dependencyManager.RegisterHttpClient();
+            dependencyManager.RegisterODataClient();
+            dependencyManager.RegisterIdentityClient();
+            dependencyManager.RegisterRefitClient();
+            dependencyManager.RegisterRefitService<ISimpleApi>();
 
-            containerBuilder.RegisterDbContext<SampleDbContext>();
+            dependencyManager.RegisterDbContext<SampleDbContext>();
 
-            containerBuilder.RegisterDefaultSyncService(syncService =>
+            dependencyManager.RegisterDefaultSyncService(syncService =>
             {
                 syncService.AddDtoSetSyncConfig(new DtoSetSyncConfig
                 {
@@ -116,9 +116,9 @@ namespace Bit.CSharpClientSample
             });
 #endif
 
-            containerBuilder.RegisterSignalr();
+            dependencyManager.RegisterSignalr();
 
-            base.RegisterTypes(containerRegistry, containerBuilder, services);
+            base.RegisterTypes(dependencyManager, containerRegistry, containerBuilder, services);
         }
     }
 }

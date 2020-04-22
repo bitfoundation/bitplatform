@@ -34,7 +34,7 @@ namespace Microsoft.EntityFrameworkCore.Migrations
             if (migrationBuilder == null)
                 throw new ArgumentNullException(nameof(migrationBuilder));
 
-            using (Stream hangfireJobsDatabaseStream = Assembly.Load("Bit.Server.Hangfire").GetManifestResourceStream("Bit.Server.Hangfire.Hangfire-Database-Script.sql")!)
+            using (Stream hangfireJobsDatabaseStream = Assembly.Load("Bit.Server.Hangfire").GetManifestResourceStream("Bit.Hangfire.Hangfire-Database-Script.sql")!)
             {
                 using (StreamReader reader = new StreamReader(hangfireJobsDatabaseStream))
                 {

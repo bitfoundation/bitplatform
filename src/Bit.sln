@@ -19,7 +19,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 	ProjectSection(SolutionItems) = preProject
 		Bit.Build.props = Bit.Build.props
 		BitConfig.json = BitConfig.json
-		ToDo.txt = ToDo.txt
 	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Bit.Universal.Model", "Universal\Bit.Universal.Model\Bit.Universal.Model.csproj", "{C4F6CBDA-14C4-4B31-9DED-7D9451F38592}"

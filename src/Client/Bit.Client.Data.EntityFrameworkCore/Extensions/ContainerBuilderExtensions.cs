@@ -1,4 +1,5 @@
-﻿using Bit.Data;
+﻿using Bit.Core.Contracts;
+using Bit.Data;
 using Bit.Data.EntityFrameworkCore.Implementations;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -8,20 +9,20 @@ namespace Autofac
 {
     public static class ContainerBuilderExtensions
     {
-        public static ContainerBuilder RegisterDbContext<TDbContext>(this ContainerBuilder containerBuilder, Action<DbContextOptionsBuilder>? optionsAction = null)
+        public static IDependencyManager RegisterDbContext<TDbContext>(this IDependencyManager dependencyManager, Action<DbContextOptionsBuilder>? optionsAction = null)
             where TDbContext : EfCoreDbContextBase
         {
-            if (containerBuilder == null)
-                throw new ArgumentNullException(nameof(containerBuilder));
+            if (dependencyManager == null)
+                throw new ArgumentNullException(nameof(dependencyManager));
 
-            IServiceCollection services = (IServiceCollection)containerBuilder.Properties[nameof(services)]!;
+            IServiceCollection services = ((IServiceCollectionAccessor)dependencyManager).ServiceCollection;
 
             services.AddEntityFrameworkSqlite();
             services.AddDbContext<TDbContext>(optionsAction, contextLifetime: ServiceLifetime.Transient, optionsLifetime: ServiceLifetime.Transient);
 
-            containerBuilder.Register(c => (EfCoreDbContextBase)c.Resolve<TDbContext>()).PreserveExistingDefaults();
+            dependencyManager.RegisterUsing(resolver => (EfCoreDbContextBase)resolver.Resolve<TDbContext>(), overwriteExisting: false, lifeCycle: DependencyLifeCycle.Transient);
 
-            return containerBuilder;
+            return dependencyManager;
         }
     }
 }

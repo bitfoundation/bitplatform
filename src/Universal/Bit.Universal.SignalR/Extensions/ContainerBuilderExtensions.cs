@@ -8,26 +8,25 @@ namespace Autofac
 {
     public static class ContainerBuilderExtensions
     {
-        public static ContainerBuilder RegisterSignalr(this ContainerBuilder containerBuilder)
+        public static IDependencyManager RegisterSignalr(this IDependencyManager dependencyManager)
         {
-            if (containerBuilder == null)
-                throw new ArgumentNullException(nameof(containerBuilder));
+            if (dependencyManager == null)
+                throw new ArgumentNullException(nameof(dependencyManager));
 
-            containerBuilder.Register(context => new ISignalRHttpClientFactory(httpMessageHandler => DefaultSignalRFactories.SignalRHttpClientFactory(httpMessageHandler)));
-            containerBuilder.Register(context => new IHubConnectionFactory(clientAppProfile => DefaultSignalRFactories.IHubConnectionFactory(clientAppProfile))).PreserveExistingDefaults();
-            containerBuilder.Register(context => new IClientTransportFactory(signalRHttpClient => DefaultSignalRFactories.IClientTransportFactory(signalRHttpClient))).PreserveExistingDefaults();
+            dependencyManager.GetContainerBuilder().Register(context => new ISignalRHttpClientFactory(httpMessageHandler => DefaultSignalRFactories.SignalRHttpClientFactory(httpMessageHandler)));
+            dependencyManager.RegisterUsing(context => new IHubConnectionFactory(clientAppProfile => DefaultSignalRFactories.IHubConnectionFactory(clientAppProfile)), lifeCycle: DependencyLifeCycle.Transient, overwriteExisting: false);
+            dependencyManager.RegisterUsing(context => new IClientTransportFactory(signalRHttpClient => DefaultSignalRFactories.IClientTransportFactory(signalRHttpClient)), lifeCycle: DependencyLifeCycle.Transient, overwriteExisting: false);
 
-            containerBuilder.Register(c =>
+            dependencyManager.RegisterUsing(resolve =>
             {
-                HttpMessageHandler authenticatedHttpMessageHandler = c.ResolveNamed<HttpMessageHandler>(ContractKeys.AuthenticatedHttpMessageHandler);
-                SignalRHttpClient signalRHttpClient = c.Resolve<ISignalRHttpClientFactory>()(authenticatedHttpMessageHandler);
+                HttpMessageHandler authenticatedHttpMessageHandler = resolve.Resolve<HttpMessageHandler>(name: ContractKeys.AuthenticatedHttpMessageHandler);
+                SignalRHttpClient signalRHttpClient = resolve.Resolve<ISignalRHttpClientFactory>()(authenticatedHttpMessageHandler);
                 return signalRHttpClient;
-            }).SingleInstance().PreserveExistingDefaults();
+            }, lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExisting: false);
 
-            containerBuilder.RegisterType<SignalrMessageReceiver>().PropertiesAutowired(PropertyWiringOptions.PreserveSetValues)
-                    .As<IMessageReceiver>().SingleInstance().PreserveExistingDefaults();
+            dependencyManager.Register<IMessageReceiver, SignalrMessageReceiver>(lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExisting: false);
 
-            return containerBuilder;
+            return dependencyManager;
         }
     }
 }
