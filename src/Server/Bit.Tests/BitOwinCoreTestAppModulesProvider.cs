@@ -44,10 +44,6 @@ namespace Bit.Tests
 
         public virtual void ConfigureDependencies(IServiceCollection services, IDependencyManager dependencyManager)
         {
-#if DotNet
-            services.AddLogging(loggingBuilder => loggingBuilder.ClearProviders());
-#endif
-
             AssemblyContainer.Current.Init();
 
             dependencyManager.RegisterMinimalDependencies();
@@ -80,11 +76,6 @@ namespace Bit.Tests
             dependencyManager.RegisterMinimalAspNetCoreMiddlewares();
 
             dependencyManager.RegisterAspNetCoreSingleSignOnClient();
-
-#if DotNet // This is not working with .net core 3 prev 7+
-            dependencyManager.AddWebApiCore();
-            dependencyManager.RegisterAspNetCoreMiddleware<Api.Middlewares.TestWebApiCoreMvcMiddlewareConfiguration>();
-#endif
 
             dependencyManager.RegisterMetadata();
 

@@ -1,0 +1,15 @@
+﻿<Project Sdk="MSBuild.Sdk.Extras/2.0.54">
+
+  <Import Project="../../Bit.Build.props" />
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <PackageTags>$(PackageTags) Hangfire AspNet OWIN SqlServer Long-Running Background Fire-And-Forget Delayed Recurring Tasks Scheduler Threading Queues Jobs</PackageTags>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Bit.Server.Data\Bit.Server.Data.csproj" />
+    <PackageReference Include="NHibernate" Version="5.2.7" />
+  </ItemGroup>
+
+</Project>

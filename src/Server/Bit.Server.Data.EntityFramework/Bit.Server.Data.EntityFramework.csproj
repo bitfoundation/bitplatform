@@ -1,0 +1,15 @@
+﻿<Project Sdk="MSBuild.Sdk.Extras/2.0.54">
+
+  <Import Project="../../Bit.Build.props" />
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <PackageTags>$(PackageTags) Entity-Framework EF Database Microsoft Data O/RM ADO.NET</PackageTags>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Bit.Server.Data\Bit.Server.Data.csproj" />
+    <PackageReference Include="EntityFramework" Version="6.4.0" />
+  </ItemGroup>
+
+</Project>

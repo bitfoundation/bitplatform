@@ -16,7 +16,6 @@ namespace Bit.Tests
             {
                 UseRealServer = true,
                 UseProxyBasedDependencyManager = false,
-                UseAspNetCore = true,
                 FullUri = "http://*:80"
             }))
             {

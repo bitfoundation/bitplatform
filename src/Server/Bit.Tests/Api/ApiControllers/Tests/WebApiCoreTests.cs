@@ -14,7 +14,7 @@ namespace Bit.Tests.Api.ApiControllers.Tests
         [TestCategory("WebApiCore")]
         public virtual async Task WebApiCoreControllerShouldReturnOkStatusCode()
         {
-            using (BitOwinTestEnvironment testEnvironment = new BitOwinTestEnvironment(new TestEnvironmentArgs { UseRealServer = false , UseAspNetCore = true }))
+            using (BitOwinTestEnvironment testEnvironment = new BitOwinTestEnvironment(new TestEnvironmentArgs { UseRealServer = false }))
             {
                 TokenResponse token = await testEnvironment.Server.Login("ValidUserName", "ValidPassword", clientId: "TestResOwner");
 

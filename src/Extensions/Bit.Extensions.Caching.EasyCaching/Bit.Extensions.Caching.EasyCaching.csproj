@@ -8,10 +8,9 @@
     <Version>0.8.8</Version>
     <AssemblyVersion>0.8.8.0</AssemblyVersion>
     <PackageVersion>0.8.8</PackageVersion>    
-    <RepositoryUrl>https://github.com/bitfoundation/Bit.Extensions.Caching.EasyCaching</RepositoryUrl>
-    <PackageProjectUrl>https://github.com/bitfoundation/Bit.Extensions.Caching.EasyCaching</PackageProjectUrl>
-    <PackageReleaseNotes>https://github.com/bitfoundation/Bit.Extensions.Caching.EasyCaching/releases/tag/v0.8.8</PackageReleaseNotes>    
-    <Nullable>enable</Nullable>
+    <RepositoryUrl>https://github.com/bitfoundation/bitframework</RepositoryUrl>
+    <PackageProjectUrl>https://github.com/bitfoundation/bitframework</PackageProjectUrl>
+    <PackageReleaseNotes>https://github.com/bitfoundation/bitframework/releases/tag/v0.8.8</PackageReleaseNotes>    
   </PropertyGroup>
   
   <ItemGroup>

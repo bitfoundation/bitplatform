@@ -1,0 +1,22 @@
+﻿<Project Sdk="MSBuild.Sdk.Extras/2.0.54">
+
+  <Import Project="../../Bit.Build.props" />
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <PackageTags>$(PackageTags) AspNet Microsoft SignalR AspNetSignalR websockets real-time realtime comet HTTP streaming</PackageTags>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Autofac.SignalR2" Version="5.0.0" />
+    <PackageReference Include="Microsoft.AspNet.SignalR.Core" Version="2.4.1" />
+    <PackageReference Include="Microsoft.AspNet.SignalR.ServiceBus" Version="2.4.1" />
+    <PackageReference Include="Microsoft.AspNet.SignalR.SqlServer" Version="2.4.1" />
+    <PackageReference Include="System.Diagnostics.PerformanceCounter" Version="4.7.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Bit.Server.Owin\Bit.Server.Owin.csproj" />
+  </ItemGroup>
+
+</Project>

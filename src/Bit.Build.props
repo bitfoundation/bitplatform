@@ -1,33 +1,61 @@
 <Project>
 
   <PropertyGroup>
+    
+    <!-- Info -->
     <Authors>Bit Foundation</Authors>
     <Company>Bit Foundation</Company>
     <Product>Bit Framework</Product>
     <Title>$(MSBuildProjectName)</Title>
     <Description>$(MSBuildProjectName)</Description>
     <Copyright>Copyright © Bit Foundation 2020</Copyright>
+    
+    <!-- Repo -->
     <RepositoryUrl>https://github.com/bitfoundation/bitframework</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
-    <Version>4.1.0</Version>
-    <AssemblyVersion>4.1.0.0</AssemblyVersion>
-    <DocumentationFile>bin\$(Configuration)\$(TargetFramework)\$(AssemblyName).xml</DocumentationFile>
-    <NoWarn>$(NoWarn);NU1605;CS1591;NU1701;NU1605</NoWarn>
-    <!-- https://stackoverflow.com/a/46815541/2720104 -->
-    <LangVersion>8.0</LangVersion>
-    <EmbedAllSources>True</EmbedAllSources>
-    <DebugType>portable</DebugType>
+    
+    <!-- nupkg -->
+    <PackageId>$(MSBuildProjectName)</PackageId>
     <PackageTags>Bit</PackageTags>
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
     <GeneratePackageOnBuild Condition=" '$(Configuration)' == 'Release' ">true</GeneratePackageOnBuild>
-    <PackageId>$(MSBuildProjectName)</PackageId>
+    <AllowedOutputExtensionsInPackageBuildOutputFolder Condition=" '$(Configuration)' == 'Release' ">$(AllowedOutputExtensionsInPackageBuildOutputFolder);.pdb</AllowedOutputExtensionsInPackageBuildOutputFolder>
     <PackageDescription>$(MSBuildProjectName)</PackageDescription>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageProjectUrl>https://github.com/bitfoundation/bitframework</PackageProjectUrl>
     <PackageIconUrl>https://avatars.githubusercontent.com/u/22663390</PackageIconUrl>
-    <PackageReleaseNotes>https://github.com/bitfoundation/bitframework/releases/tag/v4.1.0</PackageReleaseNotes>
-    <PackageVersion>4.1.0</PackageVersion>
+    <PackageReleaseNotes>https://github.com/bitfoundation/bitframework/releases/tag/v5.0.0</PackageReleaseNotes>
+    <PackageVersion>5.0.0</PackageVersion>
+    
+    <!-- Version -->    
+    <Version>5.0.0</Version>
+    <AssemblyVersion>5.0.0</AssemblyVersion>
+    
+    <!-- Compile -->
+    <NeutralLanguage>en</NeutralLanguage>
+    <LangVersion>8.0</LangVersion>
     <Nullable>enable</Nullable>
+    <NoWarn>$(NoWarn);NU1605;CS1591;NU1701;NU1605;CA1303</NoWarn>
+    <!-- https://stackoverflow.com/a/46815541/2720104 -->
+    <DocumentationFile>bin\$(Configuration)\$(TargetFramework)\$(AssemblyName).xml</DocumentationFile>
+    <EmbedAllSources>True</EmbedAllSources>
+    <DebugType>portable</DebugType>
+    <DefineConstants Condition=" '$(TargetFramework)' == 'monoandroid10.0' OR '$(TargetFramework)' == 'monoandroid9.0' ">$(DefineConstants);Android</DefineConstants>
+    <DefineConstants Condition=" '$(TargetFramework)' == 'monoandroid10.0'">$(DefineConstants);Android10</DefineConstants>
+    <DefineConstants Condition=" '$(TargetFramework)' == 'monoandroid9.0' ">$(DefineConstants);Android9</DefineConstants>
+    <DefineConstants Condition=" '$(TargetFramework)' == 'Xamarin.iOS10' ">$(DefineConstants);iOS</DefineConstants>
+    <DefineConstants Condition=" '$(TargetFramework)' == 'netcoreapp3.1' ">$(DefineConstants);DotNetCore</DefineConstants>
+    <DefineConstants Condition=" '$(TargetFramework)' == 'uap10.0.17763' ">$(DefineConstants);UWP</DefineConstants>
+    <DefineConstants Condition=" '$(TargetFramework)' == 'netstandard2.0' ">$(DefineConstants);DotNetStandard</DefineConstants>
+    <DefineConstants Condition=" '$(TargetFramework)' == 'netstandard2.1' ">$(DefineConstants);DotNetStandard</DefineConstants>
+    <DefineConstants Condition=" '$(TargetFramework)' == 'monoandroid10.0' OR '$(TargetFramework)' == 'monoandroid9.0' OR '$(TargetFramework)' == 'Xamarin.iOS10' OR '$(TargetFramework)' == 'uap10.0.17763' ">$(DefineConstants);XamarinEssentials</DefineConstants>
+    <GenerateLibraryLayout Condition=" '$(TargetFramework)' == 'uap10.0.17763' ">true</GenerateLibraryLayout>
+    <DesignTimeBuild>True</DesignTimeBuild>
+    <AndroidResgenFile>False</AndroidResgenFile>
+    <AndroidUseIntermediateDesignerFile>False</AndroidUseIntermediateDesignerFile>
+    <TargetFrameworkVersion Condition=" '$(TargetFramework)' == 'monoandroid10.0' ">v10.0</TargetFrameworkVersion>
+    <TargetFrameworkVersion Condition=" '$(TargetFramework)' == 'monoandroid9.0' ">v9.0</TargetFrameworkVersion>
+    
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)'=='Debug'">
@@ -41,6 +69,22 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
+    <PackageReference Include="MSBuild.Sdk.Extras" Version="2.0.54" PrivateAssets="All" />
   </ItemGroup>
+
+  <ItemGroup Condition=" '$(TargetFramework)' == 'monoandroid10.0' OR '$(TargetFramework)' == 'monoandroid9.0'">
+    <Reference Include="System.ComponentModel.DataAnnotations" />
+    <Reference Include="System.Data" />
+  </ItemGroup>
+
+  <ItemGroup Condition=" '$(TargetFramework)' == 'Xamarin.iOS10' ">
+    <Reference Include="System.ComponentModel.DataAnnotations" />
+    <Reference Include="System.Data" />
+    <PackageReference Include="System.Reflection.Emit" Version="4.3.0" ExcludeAssets="All">
+      <IncludeAssets>none</IncludeAssets>
+    </PackageReference>
+  </ItemGroup>
+
+  <Import Project="$(MSBuildSDKExtrasTargets)" Condition="Exists('$(MSBuildSDKExtrasTargets)')" />
 
 </Project>

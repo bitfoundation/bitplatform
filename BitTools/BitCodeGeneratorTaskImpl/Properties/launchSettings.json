@@ -1,8 +1,0 @@
-{
-  "profiles": {
-    "BitCodeGeneratorTaskImpl": {
-      "commandName": "Project",
-      "commandLineArgs": "-projectPath \"D:\\bit-foundation\\ToDoLine\\ToDoLine\\ToDoLine.csproj\""
-    }
-  }
-}

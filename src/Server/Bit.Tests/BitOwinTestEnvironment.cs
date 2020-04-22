@@ -23,7 +23,7 @@ namespace Bit.Tests
 
         protected override IAppModulesProvider GetAppModulesProvider(TestEnvironmentArgs args)
         {
-            return args.CustomAppModulesProvider ?? (args.UseAspNetCore ? new BitOwinCoreTestAppModulesProvider(args) : (IAppModulesProvider)new BitOwinTestAppModulesProvider(args));
+            return args.CustomAppModulesProvider ?? new BitOwinCoreTestAppModulesProvider(args);
         }
 
         protected override IAppEnvironmentsProvider GetAppEnvironmentsProvider(TestEnvironmentArgs args)
