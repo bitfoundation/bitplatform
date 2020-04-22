@@ -2,7 +2,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace Bit.Core.Contracts
+namespace Bit.Core.Models
 {
     public class BitJwtToken
     {

@@ -1,5 +1,6 @@
 ﻿#define Debug
 
+using Bit.Core.Contracts;
 using Bit.ViewModel.Contracts;
 using Prism.Logging;
 using System;

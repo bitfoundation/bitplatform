@@ -1,9 +1,9 @@
-﻿using Bit.ViewModel.Contracts;
+﻿using Bit.Core.Contracts;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Bit.ViewModel.Implementations
+namespace Bit.Core.Implementations
 {
     public class TelemetryServiceAggregator : ITelemetryService
     {

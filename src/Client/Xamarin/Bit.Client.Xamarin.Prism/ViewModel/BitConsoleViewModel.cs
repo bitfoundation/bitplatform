@@ -1,7 +1,7 @@
-﻿using Bit.Model;
-using Bit.ViewModel.Implementations;
+﻿using Bit.ViewModel.Implementations;
 using System.Threading.Tasks;
 using Rg.Plugins.Popup.Contracts;
+using Bit.Core.Models;
 
 namespace Bit.ViewModel
 {

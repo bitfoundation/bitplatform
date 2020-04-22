@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Runtime.Serialization;
 
-namespace Bit.Owin.Exceptions
+namespace Bit.Core.Exceptions
 {
     [Serializable]
     public class UnknownException : ApplicationException

@@ -1,6 +1,8 @@
 ﻿using AutoMapper;
 using Bit.Core;
 using Bit.Core.Contracts;
+using Bit.Core.Exceptions;
+using Bit.Core.Models;
 using Bit.Data.Contracts;
 using Bit.Data.EntityFrameworkCore.Implementations;
 using Bit.IdentityServer.Contracts;
@@ -11,7 +13,6 @@ using Bit.OData.ActionFilters;
 using Bit.OData.Contracts;
 using Bit.OData.Implementations;
 using Bit.OData.ODataControllers;
-using Bit.Owin.Exceptions;
 using Bit.Owin.Implementations;
 using Bit.OwinCore;
 using Bit.OwinCore.Implementations;

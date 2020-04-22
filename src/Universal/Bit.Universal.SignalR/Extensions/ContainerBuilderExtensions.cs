@@ -1,4 +1,5 @@
-﻿using Bit.ViewModel.Contracts;
+﻿using Bit.Core.Contracts;
+using Bit.ViewModel.Contracts;
 using Bit.ViewModel.Implementations;
 using System;
 using System.Net.Http;

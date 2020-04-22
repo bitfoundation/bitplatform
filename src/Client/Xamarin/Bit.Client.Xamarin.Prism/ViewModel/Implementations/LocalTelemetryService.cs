@@ -1,4 +1,5 @@
-﻿using Bit.ViewModel.Contracts;
+﻿using Bit.Core.Contracts;
+using Bit.ViewModel.Contracts;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;

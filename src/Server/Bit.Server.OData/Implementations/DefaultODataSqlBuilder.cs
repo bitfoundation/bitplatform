@@ -1,5 +1,5 @@
-﻿using Bit.OData.Contracts;
-using Bit.Owin.Exceptions;
+﻿using Bit.Core.Exceptions;
+using Bit.OData.Contracts;
 using LambdaSqlBuilder;
 using LambdaSqlBuilder.ValueObjects;
 using Microsoft.AspNet.OData.Extensions;

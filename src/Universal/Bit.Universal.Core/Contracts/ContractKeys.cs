@@ -1,4 +1,4 @@
-﻿namespace Bit.ViewModel.Contracts
+﻿namespace Bit.Core.Contracts
 {
     public static class ContractKeys
     {

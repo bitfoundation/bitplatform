@@ -1,5 +1,7 @@
 ﻿#define Debug
 
+using Bit.Core.Contracts;
+using Bit.Core.Implementations;
 using Bit.ViewModel.Contracts;
 using Bit.ViewModel.Implementations;
 using System;

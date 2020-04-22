@@ -1,12 +1,13 @@
 ﻿#define Debug
 
-using Bit.ViewModel.Contracts;
+using Bit.Core.Contracts;
+using Bit.Core.Exceptions.Contracts;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 
-namespace Bit.ViewModel
+namespace Bit.Core.Implementations
 {
     public class BitExceptionHandlerBase : IExceptionHandler
     {

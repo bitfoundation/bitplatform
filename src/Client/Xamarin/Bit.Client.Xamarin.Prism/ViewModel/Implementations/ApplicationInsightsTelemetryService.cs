@@ -1,4 +1,5 @@
-﻿using Bit.ViewModel.Contracts;
+﻿using Bit.Core.Contracts;
+using Bit.ViewModel.Contracts;
 using Microsoft.ApplicationInsights;
 using Microsoft.ApplicationInsights.DataContracts;
 using Microsoft.ApplicationInsights.Extensibility;

@@ -1,6 +1,7 @@
 ﻿using Autofac;
 using Autofac.Extensions.DependencyInjection;
-using Bit.Model.Events;
+using Bit.Core.Contracts;
+using Bit.Core.Models.Events;
 using Bit.ViewModel;
 using Bit.ViewModel.Contracts;
 using Bit.ViewModel.Implementations;

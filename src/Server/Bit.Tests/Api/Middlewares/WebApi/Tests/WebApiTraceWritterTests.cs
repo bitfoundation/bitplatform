@@ -1,6 +1,6 @@
 ﻿using Bit.Core.Contracts;
+using Bit.Core.Exceptions;
 using Bit.Core.Models;
-using Bit.Owin.Exceptions;
 using Bit.Test;
 using Bit.Tests.Core.Contracts;
 using FakeItEasy;

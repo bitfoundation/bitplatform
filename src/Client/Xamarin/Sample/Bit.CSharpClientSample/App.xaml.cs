@@ -1,8 +1,10 @@
 ﻿using Autofac;
+using Bit.Core.Contracts;
+using Bit.Core.Implementations;
+using Bit.Core.Models.Events;
 using Bit.CSharpClientSample.Data;
 using Bit.CSharpClientSample.ViewModels;
 using Bit.CSharpClientSample.Views;
-using Bit.Model.Events;
 using Bit.Tests.Model.Dto;
 using Bit.View;
 using Bit.ViewModel.Contracts;

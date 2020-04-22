@@ -1,8 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 
-namespace Bit.ViewModel.Contracts
+namespace Bit.Core.Contracts
 {
     public interface IClientAppProfile
     {

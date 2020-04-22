@@ -2,7 +2,7 @@
 using System;
 using System.Globalization;
 
-namespace Bit.Owin.Implementations
+namespace Bit.Core.Implementations
 {
     public class DefaultRandomStringProvider : IRandomStringProvider
     {

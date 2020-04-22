@@ -1,6 +1,6 @@
 ﻿using Bit.Core.Contracts;
-using Bit.Model;
-using Bit.Model.Events;
+using Bit.Core.Models;
+using Bit.Core.Models.Events;
 using Bit.ViewModel.Contracts;
 using Microsoft.AspNet.SignalR.Client;
 using Prism.Events;

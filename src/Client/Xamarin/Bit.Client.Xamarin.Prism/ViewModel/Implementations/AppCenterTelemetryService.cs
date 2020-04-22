@@ -1,6 +1,6 @@
-﻿using Bit.Owin.Exceptions;
+﻿using Bit.Core.Contracts;
+using Bit.Core.Exceptions;
 using Bit.View;
-using Bit.ViewModel.Contracts;
 using Microsoft.AppCenter;
 using Microsoft.AppCenter.Analytics;
 using Microsoft.AppCenter.Crashes;

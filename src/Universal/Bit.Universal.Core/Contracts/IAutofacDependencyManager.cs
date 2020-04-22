@@ -1,6 +1,6 @@
 ﻿using Autofac;
 
-namespace Bit.Owin.Contracts
+namespace Bit.Core.Contracts
 {
     public interface IAutofacDependencyManager
     {

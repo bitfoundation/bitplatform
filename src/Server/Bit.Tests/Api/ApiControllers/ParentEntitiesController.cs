@@ -5,10 +5,9 @@ using System.Threading.Tasks;
 using System.Web.Http;
 using Bit.OData.ODataControllers;
 using Bit.Data.Contracts;
-using Bit.Owin.Exceptions;
 using Bit.Tests.Model.DomainModels;
 using Bit.Tests.Owin.Metadata;
-using Microsoft.EntityFrameworkCore;
+using Bit.Core.Exceptions;
 
 namespace Bit.Tests.Api.ApiControllers
 {

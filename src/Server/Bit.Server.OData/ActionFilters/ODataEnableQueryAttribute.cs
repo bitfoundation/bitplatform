@@ -1,6 +1,6 @@
-﻿using Bit.Data.Contracts;
+﻿using Bit.Core.Exceptions;
+using Bit.Data.Contracts;
 using Bit.Data.Implementations;
-using Bit.Owin.Exceptions;
 using Microsoft.AspNet.OData;
 using Microsoft.AspNet.OData.Extensions;
 using Microsoft.AspNet.OData.Query;

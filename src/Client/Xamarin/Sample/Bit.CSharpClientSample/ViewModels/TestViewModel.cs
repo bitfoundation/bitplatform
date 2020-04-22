@@ -1,7 +1,7 @@
-﻿using Bit.Model.Events;
-using Bit.Owin.Exceptions;
+﻿using Bit.Core.Contracts;
+using Bit.Core.Exceptions;
+using Bit.Core.Models.Events;
 using Bit.ViewModel;
-using Bit.ViewModel.Contracts;
 using Prism.Events;
 using System;
 using System.Collections.Generic;

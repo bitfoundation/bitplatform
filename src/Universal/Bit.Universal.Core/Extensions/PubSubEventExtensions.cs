@@ -1,4 +1,4 @@
-﻿using Bit.ViewModel;
+﻿using Bit.Core.Implementations;
 using System;
 using System.Threading.Tasks;
 

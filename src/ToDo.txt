@@ -2,6 +2,8 @@ Refactor namespaces
 
 Create Bit.Client.Blazor.Core
 
+Provide delegates
+
 Use universal codes (SecurityService, IODataClientBuilder, RefitBuilder, HttpClientBuilder) in Bit.Server.Test
 
 Use IDependencyManager in cs client codes

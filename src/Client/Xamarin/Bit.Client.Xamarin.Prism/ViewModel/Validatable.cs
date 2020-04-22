@@ -1,4 +1,4 @@
-﻿using Bit.Model;
+﻿using Bit.Core.Models;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;

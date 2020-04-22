@@ -1,7 +1,7 @@
 ﻿using Newtonsoft.Json.Linq;
 using Prism.Events;
 
-namespace Bit.Model.Events
+namespace Bit.Core.Models.Events
 {
     public class MessageReceivedEvent : PubSubEvent<MessageReceivedEvent>
     {

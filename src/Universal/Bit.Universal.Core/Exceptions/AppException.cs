@@ -1,10 +1,9 @@
-﻿using Bit.Core.Contracts;
-using Bit.ViewModel.Contracts;
+﻿using Bit.Core.Exceptions.Contracts;
 using System;
 using System.Collections.Generic;
 using System.Runtime.Serialization;
 
-namespace Bit.Owin.Exceptions
+namespace Bit.Core.Exceptions
 {
     [Serializable]
     public class AppException : ApplicationException, IKnownException, IExceptionData

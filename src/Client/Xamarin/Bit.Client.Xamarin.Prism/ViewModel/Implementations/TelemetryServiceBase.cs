@@ -6,6 +6,7 @@ using System.Globalization;
 using Xamarin.Forms;
 using System.Reflection;
 using System.Linq;
+using Bit.Core.Contracts;
 
 namespace Bit.ViewModel.Implementations
 {

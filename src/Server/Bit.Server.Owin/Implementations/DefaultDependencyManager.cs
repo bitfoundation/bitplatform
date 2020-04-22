@@ -1,4 +1,5 @@
 ﻿using Bit.Core.Contracts;
+using Bit.Core.Implementations;
 
 namespace Bit.Owin.Implementations
 {

@@ -1,7 +1,7 @@
 ﻿using Prism.Mvvm;
 using System.Runtime.CompilerServices;
 
-namespace Bit.Model
+namespace Bit.Core.Models
 {
     public class Bindable : BindableBase
     {

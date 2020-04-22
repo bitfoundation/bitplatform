@@ -2,7 +2,7 @@
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Bit.ViewModel.Contracts
+namespace Bit.Core.Contracts
 {
     public interface IMessageReceiver : IDisposable
     {

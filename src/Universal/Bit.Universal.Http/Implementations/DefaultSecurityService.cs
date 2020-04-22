@@ -1,6 +1,7 @@
 ﻿using Autofac;
 using Bit.Core.Contracts;
-using Bit.Owin.Exceptions;
+using Bit.Core.Exceptions;
+using Bit.Core.Models;
 using Bit.ViewModel.Contracts;
 using IdentityModel.Client;
 using Newtonsoft.Json;

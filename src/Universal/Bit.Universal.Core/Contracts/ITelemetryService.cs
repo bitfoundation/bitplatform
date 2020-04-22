@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace Bit.ViewModel.Contracts
+namespace Bit.Core.Contracts
 {
     public interface ITelemetryService
     {
@@ -10,7 +10,7 @@ namespace Bit.ViewModel.Contracts
         IDictionary<string, string?> PopulateProperties(IDictionary<string, string?>? initialProps);
 
         void TrackEvent(string eventName, IDictionary<string, string?>? properties = null);
-        
+
         void TrackEvent(string eventName, params (string key, string? value)[] properties);
 
         void TrackException(Exception exception, IDictionary<string, string?>? properties = null);

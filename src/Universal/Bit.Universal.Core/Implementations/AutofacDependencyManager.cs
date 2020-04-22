@@ -2,14 +2,13 @@
 using Autofac.Builder;
 using Autofac.Extensions.DependencyInjection;
 using Bit.Core.Contracts;
-using Bit.Owin.Contracts;
 using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Threading.Tasks;
 
-namespace Bit.Owin.Implementations
+namespace Bit.Core.Implementations
 {
     public class AutofacDependencyManager : IDependencyManager, IAutofacDependencyManager, IServiceCollectionAccessor
     {

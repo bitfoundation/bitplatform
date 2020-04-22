@@ -1,7 +1,7 @@
-﻿using Bit.ViewModel.Implementations;
+﻿using Bit.Core.Implementations;
 using System.Collections.Generic;
 
-namespace Bit.ViewModel.Contracts
+namespace Bit.Core.Contracts
 {
     public static class ITelemetryServiceExtensions
     {

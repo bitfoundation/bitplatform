@@ -1,8 +1,9 @@
-﻿using System;
-using System.Runtime.Serialization;
+﻿using Bit.Core.Exceptions.Contracts;
+using System;
 using System.Net;
+using System.Runtime.Serialization;
 
-namespace Bit.Owin.Exceptions
+namespace Bit.Core.Exceptions
 {
     [Serializable]
     public class ResourceNotFoundException : AppException, IHttpStatusCodeAwareException

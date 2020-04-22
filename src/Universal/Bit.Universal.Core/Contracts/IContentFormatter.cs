@@ -7,7 +7,7 @@ namespace Bit.Core.Contracts
     /// </summary>
     public interface IContentFormatter
     {
-        string Serialize<T>([AllowNull]T obj);
+        string Serialize<T>([AllowNull] T obj);
 
         T Deserialize<T>(string objAsStr);
     }

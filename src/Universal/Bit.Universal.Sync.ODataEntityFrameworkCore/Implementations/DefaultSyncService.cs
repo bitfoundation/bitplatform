@@ -1,4 +1,5 @@
 ﻿using Autofac;
+using Bit.Core.Contracts;
 using Bit.Data;
 using Bit.Data.EntityFrameworkCore.Implementations;
 using Bit.Model.Contracts;

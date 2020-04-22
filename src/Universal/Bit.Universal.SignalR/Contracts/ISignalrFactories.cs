@@ -1,4 +1,5 @@
-﻿using Bit.ViewModel.Implementations;
+﻿using Bit.Core.Contracts;
+using Bit.ViewModel.Implementations;
 using Microsoft.AspNet.SignalR.Client;
 using Microsoft.AspNet.SignalR.Client.Http;
 using System.Net.Http;

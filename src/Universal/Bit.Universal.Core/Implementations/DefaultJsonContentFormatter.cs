@@ -79,7 +79,7 @@ namespace Bit.Core.Implementations
             Converters = new List<JsonConverter> { new StringEnumConverter { } }
         };
 
-        public virtual string Serialize<T>([AllowNull]T obj)
+        public virtual string Serialize<T>([AllowNull] T obj)
         {
             JsonSerializerSettings jsonSerializerSettings = SerializeSettings();
 

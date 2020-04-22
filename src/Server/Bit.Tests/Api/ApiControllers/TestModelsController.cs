@@ -1,9 +1,8 @@
 ﻿using Bit.Core.Contracts;
-using Bit.Data.Contracts;
+using Bit.Core.Exceptions;
 using Bit.OData.ActionFilters;
 using Bit.OData.Contracts;
 using Bit.OData.ODataControllers;
-using Bit.Owin.Exceptions;
 using Bit.Tests.Core.Contracts;
 using Bit.Tests.Data.Contracts;
 using Bit.Tests.Model.DomainModels;

@@ -1,8 +1,7 @@
-﻿using Bit.Core.Contracts;
-using System;
+﻿using System;
 using System.Runtime.Serialization;
 
-namespace Bit.Owin.Exceptions
+namespace Bit.Core.Exceptions
 {
     [Serializable]
     public class CrashReportException : AppException

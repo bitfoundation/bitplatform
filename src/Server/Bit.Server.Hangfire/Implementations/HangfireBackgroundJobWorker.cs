@@ -1,6 +1,6 @@
 ﻿using Bit.Core.Contracts;
+using Bit.Core.Exceptions;
 using Bit.Core.Models;
-using Bit.Owin.Exceptions;
 using Bit.Owin.Metadata;
 using Hangfire;
 using Hangfire.Storage;

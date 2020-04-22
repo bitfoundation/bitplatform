@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace Bit.ViewModel.Contracts
+namespace Bit.Core.Exceptions.Contracts
 {
     public interface IExceptionData
     {

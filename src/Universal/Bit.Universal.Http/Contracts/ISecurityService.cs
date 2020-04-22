@@ -1,5 +1,6 @@
 ﻿using Bit.Core.Contracts;
 using Bit.Core.Implementations;
+using Bit.Core.Models;
 using IdentityModel.Client;
 using System;
 using System.Collections.Generic;

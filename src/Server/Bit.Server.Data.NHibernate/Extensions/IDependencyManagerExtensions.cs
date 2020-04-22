@@ -4,7 +4,6 @@ using Bit.Core.Models;
 using Bit.Data.Contracts;
 using Bit.Data.Implementations;
 using Bit.Data.NHibernate.Implementations;
-using Bit.Owin.Contracts;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using NHibernate;

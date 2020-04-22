@@ -1,7 +1,7 @@
-﻿using Bit.ViewModel.Contracts;
+﻿using Bit.Core.Contracts;
 using System;
 
-namespace Bit.ViewModel.Implementations
+namespace Bit.Core.Implementations
 {
     public class DefaultClientAppProfile : IClientAppProfile
     {

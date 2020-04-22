@@ -1,4 +1,4 @@
-﻿namespace Bit.Owin.Exceptions
+﻿namespace Bit.Core.Exceptions
 {
     public class ExceptionMessageKeys
     {

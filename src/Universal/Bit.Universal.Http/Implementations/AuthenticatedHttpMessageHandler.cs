@@ -1,4 +1,4 @@
-﻿using Bit.Model.Events;
+﻿using Bit.Core.Models.Events;
 using Bit.ViewModel.Contracts;
 using Prism.Events;
 using System;

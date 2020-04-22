@@ -1,6 +1,6 @@
 ﻿using Prism.Events;
 
-namespace Bit.Model.Events
+namespace Bit.Core.Models.Events
 {
     public class ConnectivityChangedEvent : PubSubEvent<ConnectivityChangedEvent>
     {

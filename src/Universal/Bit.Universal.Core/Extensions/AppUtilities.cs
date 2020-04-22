@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Bit.Universal.Core.Extensions
+namespace Bit.Core.Extensions
 {
     public enum Workload
     {
