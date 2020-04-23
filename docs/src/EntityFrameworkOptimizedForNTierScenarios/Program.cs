@@ -7,10 +7,12 @@ using Bit.Data.EntityFramework.Implementations;
 using Bit.Model.Contracts;
 using Bit.Owin;
 using Bit.Owin.Implementations;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Owin.Hosting;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
-using Owin;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -19,6 +21,7 @@ using System.Data.SqlClient;
 using System.Linq;
 using System.Net.Http;
 using System.Reflection;
+using System.Threading.Tasks;
 using System.Web.Http;
 
 [assembly: InProcess]
@@ -64,7 +67,7 @@ namespace EntityFrameworkOptimizedForNTierScenarios
         public CustomersDbContextForSharpRepository()
             : base(new SqlConnection("Data Source=.;Initial Catalog=CustomersDb;Integrated Security=True"), contextOwnsConnection: true)
         {
-
+            Configuration.ProxyCreationEnabled = false;
         }
 
         public virtual DbSet<Customer> Customers { get; set; }
@@ -123,9 +126,9 @@ namespace EntityFrameworkOptimizedForNTierScenarios
         public IRepository<Customer> CustomersBitRepository { get; set; }
 
         [Route("customers/get-customers-by-bit-repository")]
-        public List<Customer> GetCustomersByBitRepository()
+        public async Task<List<Customer>> GetCustomersByBitRepository()
         {
-            return CustomersBitRepository.GetAll().ToList();
+            return await CustomersBitRepository.GetAll().ToListAsync();
         }
     }
 
@@ -142,22 +145,23 @@ namespace EntityFrameworkOptimizedForNTierScenarios
 
     public class RepositoriesBenchmarkTest
     {
-        private readonly HttpClient client = new HttpClient();
-        private readonly string baseAddress = "http://localhost:9000/";
+        [Benchmark]
+        public void BitRepository() => Program.WebHost.Services.GetRequiredService<IHttpClientFactory>().CreateClient().GetAsync($"{Program.BaseAddress}api/customers/get-customers-by-bit-repository").GetAwaiter().GetResult().EnsureSuccessStatusCode();
 
         [Benchmark]
-        public void BitRepository() => client.GetAsync($"{baseAddress}/api/customers/get-customers-by-bit-repository").GetAwaiter().GetResult().EnsureSuccessStatusCode();
+        public void SharpRepository() => Program.WebHost.Services.GetRequiredService<IHttpClientFactory>().CreateClient().GetAsync($"{Program.BaseAddress}api/customers/get-customers-by-sharp-repository").GetAwaiter().GetResult().EnsureSuccessStatusCode();
 
         [Benchmark]
-        public void SharpRepository() => client.GetAsync($"{baseAddress}/api/customers/get-customers-by-sharp-repository").GetAwaiter().GetResult().EnsureSuccessStatusCode();
-
-        [Benchmark]
-        public void EmptyList() => client.GetAsync($"{baseAddress}/api/customers/get-customers-empty").GetAwaiter().GetResult().EnsureSuccessStatusCode();
+        public void EmptyList() => Program.WebHost.Services.GetRequiredService<IHttpClientFactory>().CreateClient().GetAsync($"{Program.BaseAddress}api/customers/get-customers-empty").GetAwaiter().GetResult().EnsureSuccessStatusCode();
     }
 
     public class Program
     {
-        public static void Main(string[] args)
+        public static string BaseAddress { get; set; } = "http://localhost:9000/";
+
+        public static IWebHost WebHost { get; set; }
+
+        public static async Task Main(string[] args)
         {
 #if DEBUG
             System.Console.ForegroundColor = System.ConsoleColor.Yellow;
@@ -168,22 +172,38 @@ namespace EntityFrameworkOptimizedForNTierScenarios
             Database.SetInitializer<CustomersDbContextForBitRepository>(null);
             Database.SetInitializer<CustomersDbContextForSharpRepository>(null);
 
-            string baseAddress = "http://localhost:9000/";
+            WebHost = BuildWebHost(args);
 
-            using (WebApp.Start<AppStartup>(baseAddress))
-            {
-                BenchmarkRunner.Run<RepositoriesBenchmarkTest>();
-            }
+            WebHost.Services.GetRequiredService<IHostApplicationLifetime>()
+                .ApplicationStarted.Register(() =>
+                {
+                    BenchmarkRunner.Run<RepositoriesBenchmarkTest>();
+                });
+
+            await WebHost.RunAsync();
         }
+
+        public static IWebHost BuildWebHost(string[] args) =>
+            BitWebHost.CreateDefaultBuilder(args)
+                .UseStartup<AppStartup>()
+                .ConfigureLogging(loggingBuilder => loggingBuilder.ClearProviders())
+                .UseUrls(BaseAddress)
+                .Build();
     }
 
-    public class AppStartup : OwinAppStartup, IAppModule, IAppModulesProvider
+    public class AppStartup : AutofacAspNetCoreAppStartup, IAppModule, IAppModulesProvider
     {
-        public override void Configuration(IAppBuilder owinApp)
+        public AppStartup(IServiceProvider serviceProvider)
+            : base(serviceProvider)
+        {
+
+        }
+
+        public override IServiceProvider ConfigureServices(IServiceCollection services)
         {
             DefaultAppModulesProvider.Current = this;
 
-            base.Configuration(owinApp);
+            return base.ConfigureServices(services);
         }
 
         public IEnumerable<IAppModule> GetAppModules()
@@ -191,7 +211,7 @@ namespace EntityFrameworkOptimizedForNTierScenarios
             yield return this;
         }
 
-        public void ConfigureDependencies(IServiceCollection services, IDependencyManager dependencyManager)
+        public virtual void ConfigureDependencies(IServiceCollection services, IDependencyManager dependencyManager)
         {
             AssemblyContainer.Current.Init();
 
@@ -199,9 +219,9 @@ namespace EntityFrameworkOptimizedForNTierScenarios
 
             dependencyManager.RegisterDefaultLogger(typeof(ConsoleLogStore).GetTypeInfo());
 
-            dependencyManager.RegisterDefaultOwinApp();
+            dependencyManager.RegisterDefaultAspNetCoreApp();
 
-            dependencyManager.RegisterMinimalOwinMiddlewares();
+            dependencyManager.RegisterMinimalAspNetCoreMiddlewares();
 
             dependencyManager.RegisterDefaultWebApiConfiguration();
 
@@ -227,6 +247,8 @@ namespace EntityFrameworkOptimizedForNTierScenarios
             dependencyManager.RegisterGeneric(typeof(SharpRepository.Repository.IRepository<>).GetTypeInfo(), typeof(SharpRepository<>).GetTypeInfo());
 
             #endregion
+
+            services.AddHttpClient();
         }
     }
 }

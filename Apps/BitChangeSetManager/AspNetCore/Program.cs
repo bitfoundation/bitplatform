@@ -1,4 +1,4 @@
-﻿using Bit.OwinCore;
+﻿using Bit.Owin;
 using Microsoft.AspNetCore.Hosting;
 using System.Threading.Tasks;
 

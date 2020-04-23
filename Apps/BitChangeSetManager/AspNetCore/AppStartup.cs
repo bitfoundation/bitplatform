@@ -7,12 +7,11 @@ using Bit.Data.Contracts;
 using Bit.Hangfire.Implementations;
 using Bit.Model.Implementations;
 using Bit.OData.ActionFilters;
-using Bit.OData.Implementations;
+using Bit.OData.Contracts;
+using Bit.Owin;
 using Bit.Owin.Contracts;
 using Bit.Owin.Implementations;
-using Bit.OwinCore;
-using Bit.OwinCore.Contracts;
-using Bit.OwinCore.Middlewares;
+using Bit.Owin.Middlewares;
 using Bit.Signalr.Implementations;
 using BitChangeSetManager.Api.Implementations;
 using BitChangeSetManager.DataAccess;
@@ -27,6 +26,8 @@ using System.Collections.Generic;
 using System.Data.SqlClient;
 using System.IO.Compression;
 using System.Reflection;
+
+[assembly: ODataModule("BitChangeSetManager")]
 
 namespace BitChangeSetManager.Core
 {
@@ -53,7 +54,7 @@ namespace BitChangeSetManager.Core
         public virtual void ConfigureDependencies(IServiceCollection services, IDependencyManager dependencyManager)
         {
             AssemblyContainer.Current.Init();
-            AssemblyContainer.Current.AddAppAssemblies(AssemblyContainer.Current.GetBitChangeSetManagerAssembly());
+            AssemblyContainer.Current.AddAppAssemblies();
 
             dependencyManager.RegisterMinimalDependencies();
 

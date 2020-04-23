@@ -5,7 +5,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Threading;
 
-namespace BitCodeGeneratorTask
+namespace Bit.Tooling.CodeGenerator.Task
 {
     public class BitSourceGenerator : Microsoft.Build.Utilities.Task
     {
@@ -34,7 +34,7 @@ namespace BitCodeGeneratorTask
                     {
                         bitCodeGeneratorImplProcess.StartInfo.UseShellExecute = false;
                         bitCodeGeneratorImplProcess.StartInfo.RedirectStandardOutput = bitCodeGeneratorImplProcess.StartInfo.RedirectStandardError = true;
-                        bitCodeGeneratorImplProcess.StartInfo.FileName = Path.Combine(Path.GetDirectoryName(typeof(BitSourceGenerator).Assembly.Location), "..", @"implementation\BitCodeGeneratorTaskImpl.exe"); // Not supported on Mac/Linux at the moment.
+                        bitCodeGeneratorImplProcess.StartInfo.FileName = Path.Combine(Path.GetDirectoryName(typeof(BitSourceGenerator).Assembly.Location), "..", @"implementation\Bit.Tooling.CodeGenerator.exe"); // Not supported on Mac/Linux at the moment.
                         bitCodeGeneratorImplProcess.StartInfo.Arguments = $"-projectPath \"{ProjectPath}\"";
                         bitCodeGeneratorImplProcess.StartInfo.CreateNoWindow = true;
                         bitCodeGeneratorImplProcess.StartInfo.WorkingDirectory = Path.GetDirectoryName(bitCodeGeneratorImplProcess.StartInfo.FileName);

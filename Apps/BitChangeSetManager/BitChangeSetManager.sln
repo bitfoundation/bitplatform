@@ -8,9 +8,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Bit", "Bit", "{FEC2451A-227
 		BitConfig.json = BitConfig.json
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BitChangeSetManager", "AspNet\BitChangeSetManager.csproj", "{C2319E3E-7670-492B-BA7F-67B095367461}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BitChangeSetManager.Core", "AspNetCore\BitChangeSetManager.Core.csproj", "{CEB01FF4-6C6D-4977-8980-B8C1836711C8}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BitChangeSetManager", "AspNetCore\BitChangeSetManager.csproj", "{CEB01FF4-6C6D-4977-8980-B8C1836711C8}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -18,10 +16,6 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{C2319E3E-7670-492B-BA7F-67B095367461}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{C2319E3E-7670-492B-BA7F-67B095367461}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{C2319E3E-7670-492B-BA7F-67B095367461}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{C2319E3E-7670-492B-BA7F-67B095367461}.Release|Any CPU.Build.0 = Release|Any CPU
 		{CEB01FF4-6C6D-4977-8980-B8C1836711C8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{CEB01FF4-6C6D-4977-8980-B8C1836711C8}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{CEB01FF4-6C6D-4977-8980-B8C1836711C8}.Release|Any CPU.ActiveCfg = Release|Any CPU

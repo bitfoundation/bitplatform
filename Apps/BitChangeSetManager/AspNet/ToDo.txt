@@ -1,8 +1,0 @@
-﻿rad on init
-rad grid detail template
-Parent/Child based routing
-Menu
-Background Job Worker
-Sync
-Bundle scripts
-Web API (Send Email + File Upload)

@@ -2,16 +2,20 @@
 using Bit.Core;
 using Bit.Core.Contracts;
 using Bit.Model.Implementations;
+using Bit.Owin;
 using Bit.Owin.Implementations;
-using Bit.OwinCore;
 using Microsoft.Extensions.DependencyInjection;
 using Swashbuckle.Application;
+using Swashbuckle.Swagger;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Reflection;
+using System.Threading;
+using System.Threading.Tasks;
 using System.Web.Http;
 using System.Web.Http.Description;
 
@@ -61,12 +65,36 @@ namespace WebApiDotNetCoreHost
                     {
                         c.SingleApiVersion("v1", "SwaggerDemoApi");
                         c.ApplyDefaultApiConfig(httpConfiguration);
+                        c.OperationFilter<FileOperationFilter>();
                     }).EnableBitSwaggerUi();
                 });
             });
 
             dependencyManager.RegisterAutoMapper();
             dependencyManager.RegisterMapperConfiguration<DefaultMapperConfiguration>();
+        }
+    }
+
+    public class FileOperationFilter : IOperationFilter // to enable file upload
+    {
+        public void Apply(Operation operation, SchemaRegistry schemaRegistry, ApiDescription apiDescription)
+        {
+            if (operation.operationId.StartsWith("File_" /*See FileController*/, StringComparison.CurrentCultureIgnoreCase))
+            {
+                if (operation.parameters == null)
+                    operation.parameters = new List<Parameter>(1);
+                else
+                    operation.parameters.Clear();
+                operation.parameters.Add(new Parameter
+                {
+                    name = "File",
+                    @in = "formData",
+                    description = "Upload software package",
+                    required = true,
+                    type = "file"
+                });
+                operation.consumes.Add("application/form-data");
+            }
         }
     }
 
@@ -280,6 +308,49 @@ namespace WebApiDotNetCoreHost
             Superheroes.Remove(existingSuperhero);
 
             return Request.CreateResponse(HttpStatusCode.OK);
+        }
+    }
+
+    [RoutePrefix("file-manager" /* There is no /api */)]
+    public class FileController : ApiController
+    {
+        public IPathProvider PathProvider { get; set; }
+
+        [HttpPost, Route("upload-files-to-folder")]
+        public virtual async Task<IHttpActionResult> UploadFilesToFolder(CancellationToken cancellationToken)
+        {
+            if (!Request.Content.IsMimeMultipartContent())
+                throw new HttpResponseException(HttpStatusCode.UnsupportedMediaType);
+
+            string uploadsFolder = PathProvider.MapStaticFilePath("uploads");
+
+            Directory.CreateDirectory(uploadsFolder);
+
+            MultipartFormDataStreamProvider provider = new MultipartFormDataStreamProvider(uploadsFolder); // this stores uploaded files to that folder
+
+            await Request.Content.ReadAsMultipartAsync(provider, cancellationToken);
+
+            return Ok();
+        }
+
+        [HttpPost, Route("upload-file-to-database")]
+        public virtual async Task<IHttpActionResult> UploadFilesToDatabase(CancellationToken cancellationToken)
+        {
+            if (!Request.Content.IsMimeMultipartContent())
+                throw new HttpResponseException(HttpStatusCode.UnsupportedMediaType);
+
+            MultipartMemoryStreamProvider provider = new MultipartMemoryStreamProvider();
+
+            await Request.Content.ReadAsMultipartAsync(provider, cancellationToken);
+
+            foreach (HttpContent file in provider.Contents)
+            {
+                string filename = Path.GetFileName(file.Headers.ContentDisposition.FileName.Trim('\"'));
+
+                byte[] data = await file.ReadAsByteArrayAsync(); // save this array to database by entity framework, dapper etc.
+            }
+
+            return Ok();
         }
     }
 

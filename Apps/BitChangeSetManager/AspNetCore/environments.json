@@ -31,10 +31,6 @@
     ],
     "Configs": [
       {
-        "Key": "StaticFilesRelativePath",
-        "Value": "../AspNet/wwwroot/"
-      },
-      {
         "Key": "IdentityCertificatePassword",
         "Value": "P@ssw0rd"
       },

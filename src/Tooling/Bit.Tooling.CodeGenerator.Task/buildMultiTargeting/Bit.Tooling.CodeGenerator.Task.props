@@ -1,0 +1,3 @@
+﻿<Project>
+  <Import Project="..\build\Bit.Tooling.CodeGenerator.Task.props" />
+</Project>
