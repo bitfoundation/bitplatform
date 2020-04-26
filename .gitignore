@@ -215,11 +215,11 @@ ModelManifest.xml
 *.map
 /src/Tooling/Bit.Tooling.CodeGenerator/Implementations/TypeScriptClientProxyGenerator/Templates/*.cs
 /src/Tooling/Bit.Tooling.CodeGenerator/Implementations/CSharpClientProxyGenerator/Templates/*.cs
-/Apps/BitChangeSetManager/AspNet/wwwroot/BitChangeSetManager.Model.Context.js
-/Apps/BitChangeSetManager/AspNet/wwwroot/BitChangeSetManager.Model.Context.d.ts
-/Apps/BitChangeSetManager/AspNet/wwwroot/bitChangeSetManager.ts
-/Apps/BitChangeSetManager/AspNet/wwwroot/bitChangeSetManager.js
-/Apps/BitChangeSetManager/AspNet/wwwroot/security/bitChangeSetManager-security.js
+/Apps/BitChangeSetManager/AspNetCore/wwwroot/BitChangeSetManager.Model.Context.js
+/Apps/BitChangeSetManager/AspNetCore/wwwroot/BitChangeSetManager.Model.Context.d.ts
+/Apps/BitChangeSetManager/AspNetCore/wwwroot/bitChangeSetManager.ts
+/Apps/BitChangeSetManager/AspNetCore/wwwroot/bitChangeSetManager.js
+/Apps/BitChangeSetManager/AspNetCore/wwwroot/security/bitChangeSetManager-security.js
 /src/Client/TypeScript/Bit.TSClient.Core/Bit.Model.Context.js
 /src/Client/TypeScript/Bit.TSClient.Core/Bit.Model.Context.d.ts
 /src/Client/TypeScript/Bit.TSClient.Core/bit.core.js
