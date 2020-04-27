@@ -1,6 +1,6 @@
 ## Controls Config
 
-In order to use Bit CSharp Client Controls, install "Bit.CSharpClient.Controls" nuget package.
+In order to use Bit CSharp Client Controls, install "Bit.Client.Xamarin.Controls" nuget package.
 
 ## Launching the controls in iOS
 
@@ -39,7 +39,7 @@ protected override void OnCreate(Bundle savedInstanceState)
 You'll also need following LinkerConfig.xml
 
 ```xml
-<assembly fullname="Bit.CSharpClient.Controls">
+<assembly fullname="Bit.Client.Xamarin.Controls">
     <type fullname="*" />
   </assembly>
   <assembly fullname="System.Core">
@@ -64,7 +64,7 @@ You'll also need following LinkerConfig.xml
   </assembly>
 ```
 
-## Launching the controls in Windows(UWP)
+## Launching the controls in Windows(UWP) Min 17763
 
 To launch the controls in UWP, call the BitCSharpClientControls.Init(); method in the OnLaunched overridden method of the App.xaml.cs class.
 

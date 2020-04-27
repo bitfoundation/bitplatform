@@ -1,5 +1,5 @@
 ﻿<linker>
-  <assembly fullname="Bit.CSharpClient.Controls">
+  <assembly fullname="Bit.Client.Xamarin.Controls">
     <type fullname="*" />
   </assembly>
   <assembly fullname="System.Core">
