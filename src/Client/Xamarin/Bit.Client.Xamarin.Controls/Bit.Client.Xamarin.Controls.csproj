@@ -19,7 +19,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\..\Extensions\Bit.System.Diagnostics.CodeAnalysis\Bit.System.Diagnostics.CodeAnalysis.csproj" />
+    <ProjectReference Condition=" '$(TargetFramework)' == 'uap10.0.17763' OR '$(TargetFramework)' == 'netstandard2.0' " Include="..\..\..\Extensions\Bit.System.Diagnostics.CodeAnalysis\Bit.System.Diagnostics.CodeAnalysis.csproj" />
   </ItemGroup>
 
 </Project>
