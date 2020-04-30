@@ -16,6 +16,8 @@ namespace Bit.ViewModel.Implementations
 
         public string RuntimePlatform => OriginalPlatformService.RuntimePlatform;
 
+        public OSAppTheme RequestedTheme => OriginalPlatformService.RequestedTheme;
+
         public void BeginInvokeOnMainThread(Action action)
         {
             if (action == null)
@@ -47,6 +49,11 @@ namespace Bit.ViewModel.Implementations
         public string GetMD5Hash(string input)
         {
             return OriginalPlatformService.GetMD5Hash(input);
+        }
+
+        public Color GetNamedColor(string name)
+        {
+            return OriginalPlatformService.GetNamedColor(name);
         }
 
         public double GetNamedSize(NamedSize size, Type targetElementType, bool useOldSizes)
