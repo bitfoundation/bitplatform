@@ -158,7 +158,6 @@ namespace Bit.Tests.Api.Middlewares.JobScheduler.Tests
 
         [TestMethod]
         [TestCategory("BackgroundJobs"), TestCategory("Logging")]
-        [Ignore]
         public async Task LogExceptionWhenEmailSendFailedAndTryForTheSecondTime()
         {
             IEmailService emailService = A.Fake<IEmailService>();

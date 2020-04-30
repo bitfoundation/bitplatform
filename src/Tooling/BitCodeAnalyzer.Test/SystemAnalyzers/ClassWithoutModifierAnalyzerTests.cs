@@ -52,7 +52,7 @@ namespace Bit.Tooling.CodeAnalyzer.Test.SystemAnalyzers
             await VerifyCSharpDiagnostic(sourceCodeWithClassWithoutModifier, classWithoutModifier);
         }
 
-        [TestMethod]
+        [TestMethod, Ignore]
         [TestCategory("CodeFixProvider")]
         public async Task AddPublicModifierTest()
         {

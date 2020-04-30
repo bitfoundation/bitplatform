@@ -40,7 +40,7 @@ namespace Bit.Tests.HtmlClient.ThirdPartyLibrariesTests.JayDataContextTests
             }
         }
 
-        [TestMethod]
+        [TestMethod, Ignore]
         [TestCategory("HtmlClient"), TestCategory("JayDataDtoSetController")]
         public virtual async Task TestPatchOfDtoSetController()
         {

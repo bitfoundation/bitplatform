@@ -1,10 +1,14 @@
-﻿using Microsoft.CodeAnalysis;
+﻿using Microsoft.Build.Locator;
+using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Diagnostics;
+using Microsoft.CodeAnalysis.MSBuild;
 using Microsoft.CodeAnalysis.Text;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -385,5 +389,27 @@ namespace Bit.Tooling.CodeAnalyzer.Test.Helpers
             return Task.FromResult(solution.GetProject(projectId));
         }
         #endregion
+
+        public async Task<Workspace> GetWorkspace(string basePath, string solutionName)
+        {
+            if (!MSBuildLocator.IsRegistered)
+                MSBuildLocator.RegisterDefaults();
+
+            MSBuildWorkspace workspace = MSBuildWorkspace.Create(new Dictionary<string, string>()
+            {
+                { "TargetFramework", "netcoreapp3.1" }
+            });
+
+            Process.Start(new ProcessStartInfo
+            {
+                FileName = "dotnet",
+                Arguments = "restore",
+                WorkingDirectory = basePath
+            }).WaitForExit();
+
+            await workspace.OpenSolutionAsync(Path.Combine(basePath, solutionName));
+
+            return workspace;
+        }
     }
 }

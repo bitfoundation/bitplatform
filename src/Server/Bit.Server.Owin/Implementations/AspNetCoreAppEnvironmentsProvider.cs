@@ -21,9 +21,9 @@ namespace Bit.Owin.Implementations
 
         }
 
-        public IConfiguration Configuration { get; set; } = default!;
+        public virtual IConfiguration Configuration { get; set; } = default!;
 
-        public IWebHostEnvironment WebHostEnvironment { get; set; } = default!;
+        public virtual IWebHostEnvironment WebHostEnvironment { get; set; } = default!;
 
         private AppEnvironment? _appEnvironment;
 

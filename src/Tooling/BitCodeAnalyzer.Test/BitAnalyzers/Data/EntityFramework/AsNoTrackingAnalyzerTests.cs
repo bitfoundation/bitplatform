@@ -7,6 +7,7 @@ using Microsoft.CodeAnalysis.MSBuild;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -51,17 +52,7 @@ namespace Bit.Tooling.CodeAnalyzer.Test.BitAnalyzers.Data.EntityFramework
 
         public override async Task<Project> CreateProject(string[] sources, string language = LanguageNames.CSharp)
         {
-            if (!MSBuildLocator.IsRegistered)
-                MSBuildLocator.RegisterDefaults();
-
-            MSBuildWorkspace workspace = MSBuildWorkspace.Create(new Dictionary<string, string>()
-            {
-                { "TargetFramework", "netcoreapp3.1" }
-            });
-
-            await workspace.OpenSolutionAsync(Path.Combine(basePath, "EntityFrameworkFullAsNoTrackingCallTests.sln"));
-
-            return workspace.CurrentSolution.Projects.Single();
+            return (await GetWorkspace(basePath, "EntityFrameworkFullAsNoTrackingCallTests.sln")).CurrentSolution.Projects.Single();
         }
 
         protected override DiagnosticAnalyzer GetCSharpDiagnosticAnalyzer()

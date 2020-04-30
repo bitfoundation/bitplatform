@@ -51,17 +51,7 @@ namespace Bit.Tooling.CodeAnalyzer.Test.BitAnalyzers.ViewModel
 
         public override async Task<Project> CreateProject(string[] sources, string language = LanguageNames.CSharp)
         {
-            if (!MSBuildLocator.IsRegistered)
-                MSBuildLocator.RegisterDefaults();
-
-            MSBuildWorkspace workspace = MSBuildWorkspace.Create(new Dictionary<string, string>()
-            {
-                { "TargetFramework", "netstandard2.0" }
-            });
-
-            await workspace.OpenSolutionAsync(Path.Combine(basePath, "BitPrismTestsProj.sln"));
-
-            return workspace.CurrentSolution.Projects.Single();
+            return (await GetWorkspace(basePath, "BitPrismTestsProj.sln")).CurrentSolution.Projects.Single();
         }
 
         protected override DiagnosticAnalyzer GetCSharpDiagnosticAnalyzer()
