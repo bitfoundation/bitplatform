@@ -119,9 +119,9 @@ namespace Bit
 
         protected virtual void RegisterTypes(IDependencyManager dependencyManager, IContainerRegistry containerRegistry, ContainerBuilder containerBuilder, IServiceCollection services)
         {
-            containerRegistry.Register<ILoggerFacade, BitPrismLogger>();
-            containerBuilder.Register(c => Container).SingleInstance().PreserveExistingDefaults();
-            containerBuilder.Register(c => Container.GetContainer()).PreserveExistingDefaults();
+            dependencyManager.Register<ILoggerFacade, BitPrismLogger>();
+            dependencyManager.RegisterUsing(resolver => Container, lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExisting: false);
+            dependencyManager.RegisterUsing(resolver => Container.GetContainer(), lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExisting: false);
             PopupNavigation.SetInstance(new BitPopupNavigation
             {
                 OriginalImplementation = PopupNavigation.Instance
