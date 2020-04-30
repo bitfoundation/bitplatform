@@ -178,7 +178,7 @@ namespace Bit.Data.NHibernate.Implementations
             return Task.FromResult(Session.Query<TEntity>());
         }
 
-        public virtual void LoadCollection<TProperty>(TEntity entity, Expression<Func<TEntity, IEnumerable<TProperty>>> childs)
+        public virtual void LoadCollection<TProperty>(TEntity entity, Expression<Func<TEntity, IEnumerable<TProperty?>>> childs)
             where TProperty : class
         {
             if (entity == null)
@@ -190,7 +190,7 @@ namespace Bit.Data.NHibernate.Implementations
             childs.Compile().Invoke(entity);
         }
 
-        public virtual Task LoadCollectionAsync<TProperty>(TEntity entity, Expression<Func<TEntity, IEnumerable<TProperty>>> childs, CancellationToken cancellationToken)
+        public virtual Task LoadCollectionAsync<TProperty>(TEntity entity, Expression<Func<TEntity, IEnumerable<TProperty?>>> childs, CancellationToken cancellationToken)
             where TProperty : class
         {
             if (entity == null)
@@ -203,7 +203,7 @@ namespace Bit.Data.NHibernate.Implementations
             return Task.CompletedTask;
         }
 
-        public virtual Task LoadReferenceAsync<TProperty>(TEntity entity, Expression<Func<TEntity, TProperty>> member, CancellationToken cancellationToken)
+        public virtual Task LoadReferenceAsync<TProperty>(TEntity entity, Expression<Func<TEntity, TProperty?>> member, CancellationToken cancellationToken)
             where TProperty : class
         {
             if (entity == null)
@@ -216,7 +216,7 @@ namespace Bit.Data.NHibernate.Implementations
             return Task.CompletedTask;
         }
 
-        public virtual void LoadReference<TProperty>(TEntity entity, Expression<Func<TEntity, TProperty>> member)
+        public virtual void LoadReference<TProperty>(TEntity entity, Expression<Func<TEntity, TProperty?>> member)
             where TProperty : class
         {
             if (entity == null)

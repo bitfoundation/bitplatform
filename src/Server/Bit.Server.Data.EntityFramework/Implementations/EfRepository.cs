@@ -308,7 +308,7 @@ namespace Bit.Data.EntityFramework.Implementations
                 return Task.FromResult((IQueryable<TEntity>)Set);
         }
 
-        public virtual async Task LoadCollectionAsync<TProperty>(TEntity entity, Expression<Func<TEntity, IEnumerable<TProperty>>> childs, CancellationToken cancellationToken)
+        public virtual async Task LoadCollectionAsync<TProperty>(TEntity entity, Expression<Func<TEntity, IEnumerable<TProperty?>>> childs, CancellationToken cancellationToken)
             where TProperty : class
         {
             if (entity == null)
@@ -319,11 +319,11 @@ namespace Bit.Data.EntityFramework.Implementations
 
             try
             {
-                Expression<Func<TEntity, ICollection<TProperty>>> convertedChilds = Expression.Lambda<Func<TEntity, ICollection<TProperty>>>(childs.Body, childs.Parameters);
+                Expression<Func<TEntity, ICollection<TProperty?>>> convertedChilds = Expression.Lambda<Func<TEntity, ICollection<TProperty?>>>(childs.Body, childs.Parameters);
 
                 Attach(entity);
 
-                DbCollectionEntry<TEntity, TProperty> collection = DbContext.Entry(entity).Collection(convertedChilds);
+                DbCollectionEntry<TEntity, TProperty?> collection = DbContext.Entry(entity).Collection(convertedChilds);
 
                 if (collection.IsLoaded == false)
                     await collection.LoadAsync(cancellationToken).ConfigureAwait(false);
@@ -335,7 +335,7 @@ namespace Bit.Data.EntityFramework.Implementations
             }
         }
 
-        public virtual void LoadCollection<TProperty>(TEntity entity, Expression<Func<TEntity, IEnumerable<TProperty>>> childs)
+        public virtual void LoadCollection<TProperty>(TEntity entity, Expression<Func<TEntity, IEnumerable<TProperty?>>> childs)
             where TProperty : class
         {
             if (entity == null)
@@ -346,11 +346,11 @@ namespace Bit.Data.EntityFramework.Implementations
 
             try
             {
-                Expression<Func<TEntity, ICollection<TProperty>>> convertedChilds = Expression.Lambda<Func<TEntity, ICollection<TProperty>>>(childs.Body, childs.Parameters);
+                Expression<Func<TEntity, ICollection<TProperty?>>> convertedChilds = Expression.Lambda<Func<TEntity, ICollection<TProperty?>>>(childs.Body, childs.Parameters);
 
                 Attach(entity);
 
-                DbCollectionEntry<TEntity, TProperty> collection = DbContext.Entry(entity).Collection(convertedChilds);
+                DbCollectionEntry<TEntity, TProperty?> collection = DbContext.Entry(entity).Collection(convertedChilds);
 
                 if (collection.IsLoaded == false)
                     collection.Load();
@@ -362,7 +362,7 @@ namespace Bit.Data.EntityFramework.Implementations
             }
         }
 
-        public virtual async Task LoadReferenceAsync<TProperty>(TEntity entity, Expression<Func<TEntity, TProperty>> member, CancellationToken cancellationToken)
+        public virtual async Task LoadReferenceAsync<TProperty>(TEntity entity, Expression<Func<TEntity, TProperty?>> member, CancellationToken cancellationToken)
             where TProperty : class
         {
             if (entity == null)
@@ -375,7 +375,7 @@ namespace Bit.Data.EntityFramework.Implementations
             {
                 Attach(entity);
 
-                DbReferenceEntry<TEntity, TProperty> reference = DbContext.Entry(entity).Reference(member);
+                DbReferenceEntry<TEntity, TProperty?> reference = DbContext.Entry(entity).Reference(member);
 
                 if (reference.IsLoaded == false)
                     await reference.LoadAsync(cancellationToken).ConfigureAwait(false);
@@ -387,7 +387,7 @@ namespace Bit.Data.EntityFramework.Implementations
             }
         }
 
-        public virtual void LoadReference<TProperty>(TEntity entity, Expression<Func<TEntity, TProperty>> member)
+        public virtual void LoadReference<TProperty>(TEntity entity, Expression<Func<TEntity, TProperty?>> member)
             where TProperty : class
         {
             if (entity == null)
@@ -400,7 +400,7 @@ namespace Bit.Data.EntityFramework.Implementations
             {
                 Attach(entity);
 
-                DbReferenceEntry<TEntity, TProperty> reference = DbContext.Entry(entity).Reference(member);
+                DbReferenceEntry<TEntity, TProperty?> reference = DbContext.Entry(entity).Reference(member);
 
                 if (reference.IsLoaded == false)
                     reference.Load();

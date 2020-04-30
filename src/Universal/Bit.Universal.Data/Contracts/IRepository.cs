@@ -36,27 +36,27 @@ namespace Bit.Data.Contracts
         /// <summary>
         /// Loads the collection of <paramref name="childs"/> entities from the database
         /// </summary>
-        void LoadCollection<TProperty>(T item, Expression<Func<T, IEnumerable<TProperty>>> childs)
+        void LoadCollection<TProperty>(T item, Expression<Func<T, IEnumerable<TProperty?>>> childs)
             where TProperty : class;
 
         /// <summary>
         /// Asynchronously loads the collection of <paramref name="childs"/> entities from the database
         /// </summary>
-        Task LoadCollectionAsync<TProperty>(T item, Expression<Func<T, IEnumerable<TProperty>>> childs,
+        Task LoadCollectionAsync<TProperty>(T item, Expression<Func<T, IEnumerable<TProperty?>>> childs,
             CancellationToken cancellationToken)
             where TProperty : class;
 
         /// <summary>
         /// Asynchronously loads the <paramref name="member"/> item from the database
         /// </summary>
-        Task LoadReferenceAsync<TProperty>(T item, Expression<Func<T, TProperty>> member,
+        Task LoadReferenceAsync<TProperty>(T item, Expression<Func<T, TProperty?>> member,
             CancellationToken cancellationToken)
             where TProperty : class;
 
         /// <summary>
         /// Loads the <paramref name="member"/> item from the database
         /// </summary>
-        void LoadReference<TProperty>(T item, Expression<Func<T, TProperty>> member)
+        void LoadReference<TProperty>(T item, Expression<Func<T, TProperty?>> member)
             where TProperty : class;
 
         Task<T?> GetByIdAsync(CancellationToken cancellationToken, params object[] ids);
