@@ -1,7 +1,7 @@
 <Project>
 
   <PropertyGroup>
-    
+
     <!-- Info -->
     <Authors>Bit Foundation</Authors>
     <Company>Bit Foundation</Company>
@@ -9,11 +9,11 @@
     <Title>$(MSBuildProjectName)</Title>
     <Description>$(MSBuildProjectName)</Description>
     <Copyright>Copyright © Bit Foundation 2020</Copyright>
-    
+
     <!-- Repo -->
     <RepositoryUrl>https://github.com/bitfoundation/bitframework</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
-    
+
     <!-- nupkg -->
     <PackageId>$(MSBuildProjectName)</PackageId>
     <PackageTags>Bit</PackageTags>
@@ -26,11 +26,11 @@
     <PackageIconUrl>https://avatars.githubusercontent.com/u/22663390</PackageIconUrl>
     <PackageReleaseNotes>https://github.com/bitfoundation/bitframework/releases/tag/v5.0.0</PackageReleaseNotes>
     <PackageVersion>5.0.0</PackageVersion>
-    
-    <!-- Version -->    
+
+    <!-- Version -->
     <Version>5.0.0</Version>
     <AssemblyVersion>5.0.0</AssemblyVersion>
-    
+
     <!-- Compile -->
     <NeutralLanguage>en</NeutralLanguage>
     <LangVersion>8.0</LangVersion>
@@ -55,7 +55,7 @@
     <AndroidUseIntermediateDesignerFile>False</AndroidUseIntermediateDesignerFile>
     <TargetFrameworkVersion Condition=" '$(TargetFramework)' == 'monoandroid10.0' ">v10.0</TargetFrameworkVersion>
     <TargetFrameworkVersion Condition=" '$(TargetFramework)' == 'monoandroid9.0' ">v9.0</TargetFrameworkVersion>
-    
+
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)'=='Debug'">
@@ -65,7 +65,7 @@
   <ItemGroup>
     <PackageReference Include="SourceLink.Embed.AllSourceFiles" Version="2.8.3" PrivateAssets="all" />
     <PackageReference Include="SourceLink.Copy.PdbFiles" Version="2.8.3" PrivateAssets="All" />
-    <PackageReference Include="Microsoft.CodeAnalysis.FxCopAnalyzers" Version="2.9.8">
+    <PackageReference Include="Microsoft.CodeAnalysis.FxCopAnalyzers" Version="3.0.0">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
