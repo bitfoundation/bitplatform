@@ -16,7 +16,7 @@ namespace Bit.iOS
         private bool _useDefaultConfiguration = false;
 
         /// <summary>
-        /// Configures VersionTracking | RgPluginsPopup | BitCSharpClientControls (DatePicker, Checkbox, RadioButton, Frame)
+        /// Configures VersionTracking | RgPluginsPopup | Bit.Client.Xamarin.Controls (DatePicker, Frame)
         /// </summary>
         protected virtual void UseDefaultConfiguration()
         {

@@ -26,7 +26,7 @@ namespace Bit.UWP
         }
 
         /// <summary>
-        /// Configures VersionTracking | RgPluginsPopup | BitCSharpClientControls (DatePicker, Checkbox, RadioButton, Frame) | Set Min Width and Height
+        /// Configures VersionTracking | RgPluginsPopup | Bit.Client.Xamarin.Controls (DatePicker, Frame) | Set Min Width and Height
         /// </summary>
         protected virtual void UseDefaultConfiguration()
         {
@@ -58,7 +58,7 @@ namespace Bit.UWP
         }
 
         /// <summary>
-        /// BitCSharpClientControls | RgPluginsPopup
+        /// Bit.Client.Xamarin.Controls | Rg.Plugins.Popup
         /// </summary>
         protected virtual Assembly[] GetBitRendererAssemblies()
         {

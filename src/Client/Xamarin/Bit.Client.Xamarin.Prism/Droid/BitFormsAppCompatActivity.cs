@@ -25,7 +25,7 @@ namespace Bit.Android
         private bool _useDefaultConfiguration = false;
 
         /// <summary>
-        /// Configures VersionTracking | RgPluginsPopup | Fast Renderers | Xamarin Essentials' Permissions  | BitCSharpClientControls (DatePicker, Checkbox, RadioButton, Frame)
+        /// Configures VersionTracking | RgPluginsPopup | Fast Renderers | Xamarin Essentials' Permissions  | Bit.Client.Xamarin.Controls (DatePicker, Frame)
         /// </summary>
         protected virtual void UseDefaultConfiguration(Bundle savedInstanceState)
         {

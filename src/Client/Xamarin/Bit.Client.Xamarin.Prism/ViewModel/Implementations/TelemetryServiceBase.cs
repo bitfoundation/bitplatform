@@ -45,10 +45,10 @@ namespace Bit.ViewModel.Implementations
                 initialProps.Add("MessageReceiverWasConnected", MessageReceiver.IsConnected.ToString(CultureInfo.InvariantCulture));
 
             if (!initialProps.ContainsKey("XamarinFormsVersion"))
-                initialProps.Add("XamarinFormsVersion", typeof(Binding).Assembly.GetCustomAttribute<AssemblyFileVersionAttribute>().Version);
+                initialProps.Add("XamarinFormsVersion", typeof(Binding).Assembly.GetCustomAttribute<AssemblyFileVersionAttribute>()!.Version);
 
             if (!initialProps.ContainsKey("BitVersion"))
-                initialProps.Add("BitVersion", typeof(BitCSharpClientControls).Assembly.GetName().Version.ToString());
+                initialProps.Add("BitVersion", typeof(BitCSharpClientControls).Assembly.GetName().Version!.ToString());
 
 #if Android || iOS
             if (!initialProps.ContainsKey("Mono"))
