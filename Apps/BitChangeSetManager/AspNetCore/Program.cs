@@ -2,7 +2,7 @@
 using Microsoft.AspNetCore.Hosting;
 using System.Threading.Tasks;
 
-namespace BitChangeSetManager.Core
+namespace BitChangeSetManager
 {
     public class Program
     {

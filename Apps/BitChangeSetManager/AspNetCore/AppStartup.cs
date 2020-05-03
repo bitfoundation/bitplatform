@@ -29,7 +29,7 @@ using System.Reflection;
 
 [assembly: ODataModule("BitChangeSetManager")]
 
-namespace BitChangeSetManager.Core
+namespace BitChangeSetManager
 {
     public class AppStartup : AutofacAspNetCoreAppStartup, IAppModule, IAppModulesProvider
     {

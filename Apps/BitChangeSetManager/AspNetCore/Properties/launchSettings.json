@@ -1,6 +1,6 @@
 {
   "profiles": {
-    "BitChangeSetManager.Core": {
+    "BitChangeSetManager": {
       "commandName": "Project",
       "launchBrowser": true,
       "environmentVariables": {

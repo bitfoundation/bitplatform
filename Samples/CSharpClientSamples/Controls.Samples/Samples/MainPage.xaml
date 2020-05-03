@@ -10,7 +10,6 @@
         BorderWidth="2"
         CornerRadius="1">
         <StackLayout HorizontalOptions="Center" VerticalOptions="Center">
-            <Button Clicked="RadioButton_Clicked" Text="Radio Button" />
             <Button Clicked="DateTimePicker_Clicked" Text="Date Time Picker" />
         </StackLayout>
     </bit:BitFrame>

@@ -15,10 +15,5 @@ namespace Bit.CSharpClient.Controls.Samples
         {
             await Navigation.PushAsync(new BitDateTimePickerSampleView());
         }
-
-        private async void RadioButton_Clicked(object sender, EventArgs e)
-        {
-            await Navigation.PushAsync(new BitRadioButtonSampleView());
-        }
     }
 }
