@@ -5,7 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace Bit.ViewModel.Implementations
+namespace Bit.Client.Xamarin.Controls.Implementations
 {
     public class BitPopupNavigation : IPopupNavigation
     {

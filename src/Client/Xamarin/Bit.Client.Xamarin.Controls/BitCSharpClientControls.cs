@@ -1,4 +1,6 @@
-﻿using System;
+﻿using Bit.Client.Xamarin.Controls.Implementations;
+using Rg.Plugins.Popup.Services;
+using System;
 using Xamarin.Forms;
 
 #if !UWP
@@ -24,7 +26,7 @@ namespace Bit.View
         /// </summary>
         public static void XamlInit()
         {
-
+            UseBitPopupNavigation();
         }
 
         /// <summary>
@@ -42,6 +44,17 @@ namespace Bit.View
 #elif Android
             Bit.Android.BitFrameRenderer.Init();
 #endif
+        }
+
+        public static void UseBitPopupNavigation()
+        {
+            if (!(PopupNavigation.Instance is BitPopupNavigation))
+            {
+                PopupNavigation.SetInstance(new BitPopupNavigation
+                {
+                    OriginalImplementation = PopupNavigation.Instance
+                });
+            }
         }
     }
 }

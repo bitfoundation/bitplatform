@@ -3,6 +3,7 @@ using Autofac.Extensions.DependencyInjection;
 using Bit.Core.Contracts;
 using Bit.Core.Implementations;
 using Bit.Core.Models.Events;
+using Bit.View;
 using Bit.ViewModel;
 using Bit.ViewModel.Contracts;
 using Bit.ViewModel.Implementations;
@@ -16,7 +17,6 @@ using Prism.Navigation;
 using Prism.Plugin.Popups;
 using Prism.Services;
 using Rg.Plugins.Popup.Contracts;
-using Rg.Plugins.Popup.Services;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -122,10 +122,7 @@ namespace Bit
             dependencyManager.Register<ILoggerFacade, BitPrismLogger>();
             dependencyManager.RegisterUsing(resolver => Container, lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExisting: false);
             dependencyManager.RegisterUsing(resolver => Container.GetContainer(), lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExisting: false);
-            PopupNavigation.SetInstance(new BitPopupNavigation
-            {
-                OriginalImplementation = PopupNavigation.Instance
-            });
+            BitCSharpClientControls.UseBitPopupNavigation();
             containerRegistry.RegisterPopupNavigationService();
         }
     }
