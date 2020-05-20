@@ -73,7 +73,7 @@
     <PackageReference Include="Xamarin.Android.Crashlytics">
       <Version>2.9.4.4</Version>
     </PackageReference>
-    <PackageReference Include="Xamarin.Forms" Version="4.6.0.772" />
+    <PackageReference Include="Xamarin.Forms" Version="4.6.0.800" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="MainActivity.cs" />
