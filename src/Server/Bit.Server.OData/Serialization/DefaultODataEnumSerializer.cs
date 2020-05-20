@@ -10,12 +10,6 @@ namespace Bit.OData.Serialization
 {
     public class DefaultODataEnumSerializer : ODataEnumSerializer
     {
-        protected DefaultODataEnumSerializer() 
-            : base(null)
-        {
-
-        }
-
         public DefaultODataEnumSerializer(ODataSerializerProvider serializerProvider)
             : base(serializerProvider)
         {

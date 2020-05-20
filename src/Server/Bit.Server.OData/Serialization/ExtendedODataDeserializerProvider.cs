@@ -9,11 +9,6 @@ namespace Bit.OData.Serialization
 {
     public class ExtendedODataDeserializerProvider : DefaultODataDeserializerProvider
     {
-        protected ExtendedODataDeserializerProvider()
-            : base(null)
-        {
-        }
-
         public ExtendedODataDeserializerProvider(IServiceProvider rootContainer, DefaultODataActionCreateUpdateParameterDeserializer defaultODataActionCreateUpdateParameterDeserializer)
             : base(rootContainer)
         {

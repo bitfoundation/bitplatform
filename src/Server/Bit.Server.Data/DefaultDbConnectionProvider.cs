@@ -14,7 +14,7 @@ namespace Bit.Data
     public class DefaultDbConnectionProvider<TDbConnection> : IDbConnectionProvider
         where TDbConnection : DbConnection, new()
     {
-        protected ICollection<DbConnectionAndTransactionPair> DbConnectionAndTransactions { get; private set; } = new List<DbConnectionAndTransactionPair>();
+        protected virtual ICollection<DbConnectionAndTransactionPair> DbConnectionAndTransactions { get; private set; } = new List<DbConnectionAndTransactionPair>();
 
         public virtual IScopeStatusManager ScopeStatusManager { get; set; } = default!;
 

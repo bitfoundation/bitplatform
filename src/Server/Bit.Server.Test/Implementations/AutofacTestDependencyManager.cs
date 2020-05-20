@@ -60,9 +60,9 @@ namespace Bit.Test.Implementations
                             }
                         }
 
-                        if (implementationType.GetMethods(BindingFlags.Instance | BindingFlags.Public | BindingFlags.DeclaredOnly).Any(m => !m.IsVirtual))
+                        if (implementationType.GetMethods(BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.DeclaredOnly).Any(m => (m.IsPublic || m.IsFamily /*protected*/) && !m.IsVirtual))
                         {
-                            throw new InvalidOperationException($"{implementationType.FullName} has non virtual public instance members");
+                            throw new InvalidOperationException($"{implementationType.FullName} has non virtual public/protected instance members");
                         }
                     }
 
