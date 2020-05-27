@@ -4,12 +4,12 @@ namespace Bit.Owin.Contracts
 {
     public interface ITimeZoneManager
     {
-        DateTimeOffset MapFromServerToClient(DateTimeOffset date);
+        DateTimeOffset MapFromServerToClient(DateTimeOffset dateTimeOffset);
 
-        DateTimeOffset MapFromClientToServer(DateTimeOffset date);
+        DateTimeOffset MapFromClientToServer(DateTimeOffset dateTimeOffset);
 
-        TimeZoneInfo? GetClientCurrentTimeZone();
+        TimeZoneInfo? GetClientCurrentTimeZone(DateTimeOffset dateTimeOffset);
 
-        TimeZoneInfo? GetClientDesiredTimeZone();
+        TimeZoneInfo? GetClientDesiredTimeZone(DateTimeOffset dateTimeOffset);
     }
 }

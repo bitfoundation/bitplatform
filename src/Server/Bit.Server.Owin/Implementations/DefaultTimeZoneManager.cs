@@ -1,15 +1,12 @@
 ﻿using System;
-using System.Collections.Concurrent;
-using System.Linq;
 using Bit.Core.Contracts;
 using Bit.Owin.Contracts;
-using TimeZoneConverter;
+using NodaTime;
 
 namespace Bit.Owin.Implementations
 {
     public class DefaultTimeZoneManager : ITimeZoneManager
     {
-        private static readonly ConcurrentDictionary<string, TimeZoneInfo> _timeZonesCache = new ConcurrentDictionary<string, TimeZoneInfo>();
         private string? _currentTimeZoneName;
         private string? _desiredTimeZoneName;
 
@@ -30,39 +27,31 @@ namespace Bit.Owin.Implementations
             }
         }
 
-        protected virtual TimeZoneInfo? GetTimeZoneInfoByName(string? timeZoneName)
+        protected virtual TimeZoneInfo? GetTimeZoneInfoByName(string? timeZoneName, DateTimeOffset dateTimeOffset)
         {
             if (timeZoneName == null)
                 return null;
 
-            TimeZoneInfo? timeZoneInfo = null;
+            DateTimeZone? nodaTimeZone = DateTimeZoneProviders.Tzdb.GetZoneOrNull(timeZoneName) ?? DateTimeZoneProviders.Bcl.GetZoneOrNull(timeZoneName);
 
-            if (!_timeZonesCache.ContainsKey(timeZoneName))
+            if (nodaTimeZone != null)
             {
-                timeZoneInfo = TimeZoneInfo.GetSystemTimeZones().ExtendedSingleOrDefault($"Finding {timeZoneName} in {nameof(TimeZoneInfo)}.{nameof(TimeZoneInfo.GetSystemTimeZones)}",
-                    t => t.Id == timeZoneName || t.StandardName == timeZoneName || t.DaylightName == timeZoneName || t.DisplayName == timeZoneName);
+                var nodaOffset = nodaTimeZone.GetUtcOffset(OffsetDateTime.FromDateTimeOffset(dateTimeOffset).ToInstant());
 
-                if (timeZoneInfo == null)
-                    TZConvert.TryGetTimeZoneInfo(timeZoneName, out timeZoneInfo);
-
-                _timeZonesCache.TryAdd(timeZoneName, timeZoneInfo ?? throw new InvalidOperationException($"Time zone {timeZoneName} could not be found"));
-            }
-            else
-            {
-                timeZoneInfo = _timeZonesCache[timeZoneName];
+                return TimeZoneInfo.CreateCustomTimeZone(nodaTimeZone.Id, TimeSpan.FromTicks(nodaOffset.Ticks), timeZoneName, timeZoneName);
             }
 
-            return timeZoneInfo;
+            return null;
         }
 
-        public virtual TimeZoneInfo? GetClientCurrentTimeZone()
+        public virtual TimeZoneInfo? GetClientCurrentTimeZone(DateTimeOffset dateTimeOffset)
         {
-            return GetTimeZoneInfoByName(_currentTimeZoneName);
+            return GetTimeZoneInfoByName(_currentTimeZoneName, dateTimeOffset);
         }
 
-        public virtual TimeZoneInfo? GetClientDesiredTimeZone()
+        public virtual TimeZoneInfo? GetClientDesiredTimeZone(DateTimeOffset dateTimeOffset)
         {
-            return GetTimeZoneInfoByName(_desiredTimeZoneName);
+            return GetTimeZoneInfoByName(_desiredTimeZoneName, dateTimeOffset);
         }
 
         public virtual DateTimeOffset MapFromClientToServer(DateTimeOffset dateTime)
@@ -76,9 +65,9 @@ namespace Bit.Owin.Implementations
             if (_currentTimeZoneName == _desiredTimeZoneName)
                 return dateTime;
 
-            TimeZoneInfo? currentTimeZoneInfo = GetClientCurrentTimeZone()!;
+            TimeZoneInfo? currentTimeZoneInfo = GetClientCurrentTimeZone(dateTime)!;
 
-            TimeZoneInfo? desiredTimeZoneInfo = GetClientDesiredTimeZone()!;
+            TimeZoneInfo? desiredTimeZoneInfo = GetClientDesiredTimeZone(dateTime)!;
 
             if (currentTimeZoneInfo.HasSameRules(desiredTimeZoneInfo))
                 return dateTime;
@@ -99,9 +88,9 @@ namespace Bit.Owin.Implementations
             if (_currentTimeZoneName == _desiredTimeZoneName)
                 return dateTime;
 
-            TimeZoneInfo currentTimeZoneInfo = GetClientCurrentTimeZone()!;
+            TimeZoneInfo currentTimeZoneInfo = GetClientCurrentTimeZone(dateTime)!;
 
-            TimeZoneInfo desiredTimeZoneInfo = GetClientDesiredTimeZone()!;
+            TimeZoneInfo desiredTimeZoneInfo = GetClientDesiredTimeZone(dateTime)!;
 
             if (currentTimeZoneInfo.HasSameRules(desiredTimeZoneInfo))
                 return dateTime;
