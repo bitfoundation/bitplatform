@@ -153,8 +153,8 @@ namespace Bit.Tests.Api.Middlewares.WebApi.Tests
                 {
                     BeforeRequest = message =>
                     {
-                        message.Headers.Add("Desired-Time-Zone", "Iran Standard Time");
-                        message.Headers.Add("Current-Time-Zone", "Afghanistan Standard Time");
+                        message.Headers.Add("Desired-Time-Zone", "Asia/Tehran");
+                        message.Headers.Add("Current-Time-Zone", "Asia/Kabul");
                     }
                 });
 
