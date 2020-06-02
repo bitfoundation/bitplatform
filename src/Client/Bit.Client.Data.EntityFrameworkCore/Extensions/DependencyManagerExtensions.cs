@@ -7,7 +7,7 @@ using System;
 
 namespace Autofac
 {
-    public static class ContainerBuilderExtensions
+    public static class DependencyManagerExtensions
     {
         public static IDependencyManager RegisterDbContext<TDbContext>(this IDependencyManager dependencyManager, Action<DbContextOptionsBuilder>? optionsAction = null)
             where TDbContext : EfCoreDbContextBase

@@ -32,7 +32,7 @@ namespace Bit.Http.Implementations
             if (content == null)
                 throw new ArgumentNullException(nameof(content));
 
-#if NETSTANDARD2_0 || UWP
+#if DotNetStandard2_0 || UWP
             using Stream stream = await content.ReadAsStreamAsync().ConfigureAwait(false);
 #else
             await using Stream stream = await content.ReadAsStreamAsync().ConfigureAwait(false);

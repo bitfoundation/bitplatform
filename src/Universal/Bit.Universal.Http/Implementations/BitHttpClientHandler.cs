@@ -10,6 +10,7 @@ using System.Net.Http;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
+using Xamarin.Essentials.Interfaces;
 
 namespace Bit.Http.Implementations
 {
@@ -84,10 +85,8 @@ namespace Bit.Http.Implementations
             {
                 request.Headers.Add("Client-Type", "Xamarin");
 
-#if XamarinEssentials
-                if (Xamarin.Essentials.DeviceInfo.Idiom != Xamarin.Essentials.DeviceIdiom.Unknown)
-                    request.Headers.Add("Client-Screen-Size", Xamarin.Essentials.DeviceInfo.Idiom == Xamarin.Essentials.DeviceIdiom.Phone ? "MobileAndPhablet" : "DesktopAndTablet");
-#endif
+                if (DeviceInfo.Idiom != Xamarin.Essentials.DeviceIdiom.Unknown)
+                    request.Headers.Add("Client-Screen-Size", DeviceInfo.Idiom == Xamarin.Essentials.DeviceIdiom.Phone ? "MobileAndPhablet" : "DesktopAndTablet");
 
                 request.Headers.Add("Client-Date-Time", DateTimeProvider.GetCurrentUtcDateTime().UtcDateTime.ToString("o", CultureInfo.InvariantCulture));
 
@@ -97,9 +96,7 @@ namespace Bit.Http.Implementations
 
                 request.Headers.Add("Bit-Client-Type", "CS-Client");
 
-#if XamarinEssentials
-                request.Headers.Add("Client-App-Version", Xamarin.Essentials.AppInfo.VersionString);
-#endif
+                request.Headers.Add("Client-App-Version", AppInfo.VersionString);
 
                 request.Headers.Add("Client-Culture", CultureInfo.CurrentUICulture.Name);
 
@@ -113,14 +110,12 @@ namespace Bit.Http.Implementations
                 }
                 catch { }
 
-#if XamarinEssentials
-                request.Headers.Add("Client-Platform", Xamarin.Essentials.DeviceInfo.Platform.ToString());
-#endif
+                request.Headers.Add("Client-Platform", DeviceInfo.Platform.ToString());
 
                 request.Headers.Add("Current-Time-Zone", TimeZoneInfo.Local.Id);
 
-#if XamarinEssentials && !UWP
-                request.Headers.Add("Client-Theme", Xamarin.Essentials.AppInfo.RequestedTheme.ToString());
+#if !UWP
+                request.Headers.Add("Client-Theme", AppInfo.RequestedTheme.ToString());
 #endif
 
                 request.Headers.Add("Client-Debug-Mode", IsInDebugMode().ToString(CultureInfo.InvariantCulture));
@@ -178,5 +173,9 @@ namespace Bit.Http.Implementations
         public virtual IEnumerable<ITelemetryService> TelemetryServices { get; set; } = default!;
 
         public virtual IDateTimeProvider DateTimeProvider { get; set; } = default!;
+
+        public virtual IDeviceInfo DeviceInfo { get; set; } = default!;
+
+        public virtual IAppInfo AppInfo { get; set; } = default!;
     }
 }

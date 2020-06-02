@@ -1,10 +1,15 @@
 ﻿using Bit.Core.Contracts;
+using Bit.Core.Implementations;
 using Bit.ViewModel.Contracts;
 using Microsoft.ApplicationInsights;
 using Microsoft.ApplicationInsights.DataContracts;
 using Microsoft.ApplicationInsights.Extensibility;
+using Prism.Autofac;
+using Prism.Ioc;
 using System;
 using System.Collections.Generic;
+using Xamarin.Essentials.Interfaces;
+using Xamarin.Forms;
 
 namespace Bit.ViewModel.Implementations
 {
@@ -54,8 +59,17 @@ namespace Bit.ViewModel.Implementations
                         InstrumentationKey = _configuration!.InstrumentationKey
                     };
 
+                    IContainerProvider? container = ((PrismApplication)Application.Current).Container;
+
+                    if (container != null)
+                    {
+                        _client.Context.Device.Model = container.Resolve<IDeviceInfo>().Model;
+                    }
 #if XamarinEssentials
-                    _client.Context.Device.Model = Xamarin.Essentials.DeviceInfo.Model;
+                    else
+                    {
+                        _client.Context.Device.Model = Xamarin.Essentials.DeviceInfo.Model;
+                    }
 #endif
                     _client.Context.Device.OperatingSystem = Xamarin.Forms.Device.RuntimePlatform;
                 }

@@ -20,6 +20,7 @@ using Rg.Plugins.Popup.Contracts;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Xamarin.Essentials.Interfaces;
 using Xamarin.Forms;
 using Xamarin.Forms.Xaml;
 
@@ -82,13 +83,11 @@ namespace Bit
 
         protected virtual Task OnInitializedAsync()
         {
-#if XamarinEssentials
-            Xamarin.Essentials.Connectivity.ConnectivityChanged += (sender, e) =>
+            Container.Resolve<IConnectivity>().ConnectivityChanged += (sender, e) =>
             {
                 _eventAggregator.Value.GetEvent<ConnectivityChangedEvent>()
                     .Publish(new ConnectivityChangedEvent { IsConnected = e.NetworkAccess != Xamarin.Essentials.NetworkAccess.None });
             };
-#endif
 
             return Task.CompletedTask;
         }

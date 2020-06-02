@@ -17,6 +17,7 @@ using System.Net.Http;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
+using Xamarin.Essentials.Interfaces;
 
 namespace Bit.Sync.ODataEntityFrameworkCore.Implementations
 {
@@ -27,6 +28,7 @@ namespace Bit.Sync.ODataEntityFrameworkCore.Implementations
         public virtual HttpClient HttpClient { get; set; } = default!;
         public virtual IODataClient ODataClient { get; set; } = default!;
         public virtual IExceptionHandler ExceptionHandler { get; set; } = default!;
+        public virtual IConnectivity Connectivity { get; set; } = default!;
 
 
         private readonly List<DtoSetSyncConfig> _configs = new List<DtoSetSyncConfig> { };
@@ -41,10 +43,8 @@ namespace Bit.Sync.ODataEntityFrameworkCore.Implementations
             if (dtoSetNames == null)
                 throw new ArgumentNullException(nameof(dtoSetNames));
 
-#if XamarinEssentials
-            if (Xamarin.Essentials.Connectivity.NetworkAccess == Xamarin.Essentials.NetworkAccess.None)
+            if (Connectivity.NetworkAccess == Xamarin.Essentials.NetworkAccess.None)
                 return;
-#endif
 
             DtoSetSyncConfig[] toServerDtoSetSyncMaterials = _configs.Where(c => c.ToServerSync == true && c.ToServerSyncFunc() == true && dtoSetNames.Any(n => n == c.DtoSetName)).ToArray();
 
@@ -256,7 +256,7 @@ namespace Bit.Sync.ODataEntityFrameworkCore.Implementations
                 {
                     response.EnsureSuccessStatusCode();
 
-#if UWP || DotNetStandard
+#if UWP || DotNetStandard2_0
                     using (Stream stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false))
 #else
                     await using (Stream stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false))

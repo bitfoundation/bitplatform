@@ -5,7 +5,7 @@ using System.Net.Http;
 
 namespace Autofac
 {
-    public static class ContainerBuilderExtensions
+    public static class DependencyManagerExtensions
     {
         public static IDependencyManager RegisterODataClient(this IDependencyManager dependencyManager, Action<ODataClientSettings>? odataClientSettingsCustomizer = null)
         {

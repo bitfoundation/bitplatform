@@ -1,14 +1,18 @@
 ﻿using Bit.Core.Contracts;
 using Bit.Core.Exceptions;
+using Bit.Core.Implementations;
 using Bit.View;
 using Microsoft.AppCenter;
 using Microsoft.AppCenter.Analytics;
 using Microsoft.AppCenter.Crashes;
+using Prism.Autofac;
+using Prism.Ioc;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Reflection;
+using Xamarin.Essentials.Interfaces;
 using Xamarin.Forms;
 
 namespace Bit.ViewModel.Implementations
@@ -141,14 +145,26 @@ namespace Bit.ViewModel.Implementations
                         {
                             { "CrashReportId", crashReport?.Id },
                             { "HasReceivedMemoryWarningInLastSession", hasReceivedMemoryWarningInLastSession.ToString(CultureInfo.InvariantCulture) },
-#if XamarinEssentials
-                            { "VersionHistory", string.Join(",", Xamarin.Essentials.VersionTracking.VersionHistory.OrderByDescending(vh => vh)) },
-                            { "Version", string.Join(",", Xamarin.Essentials.VersionTracking.CurrentVersion) },
-#endif
                             { "XamarinFormsVersion", typeof(Binding).Assembly.GetCustomAttribute<AssemblyFileVersionAttribute>()!.Version },
                             { "BitVersion", typeof(BitCSharpClientControls).Assembly.GetName().Version!.ToString() },
                             { "CurrentUICulture", CultureInfo.CurrentUICulture.Name }
                         };
+
+                        IContainerProvider? container = ((PrismApplication)Application.Current).Container;
+
+                        if (container != null)
+                        {
+                            IVersionTracking versionTracking = container.Resolve<IVersionTracking>();
+                            items.Add("VersionHistory", string.Join(",", versionTracking.VersionHistory.OrderByDescending(vh => vh)));
+                            items.Add("Version", string.Join(",", versionTracking.CurrentVersion));
+                        }
+#if XamarinEssentials
+                        else
+                        {
+                            items.Add("VersionHistory", string.Join(",", Xamarin.Essentials.VersionTracking.VersionHistory.OrderByDescending(vh => vh)));
+                            items.Add("Version", string.Join(",", Xamarin.Essentials.VersionTracking.CurrentVersion));
+                        }
+#endif
 
                         Crashes.TrackError(exp, items);
                     }

@@ -7,7 +7,6 @@ using System.Reflection;
 using System.Threading.Tasks;
 using Windows.UI.ViewManagement;
 using Windows.UI.Xaml;
-using Xamarin.Essentials;
 using Xamarin.Forms;
 
 namespace Bit.UWP
@@ -30,7 +29,7 @@ namespace Bit.UWP
         /// </summary>
         protected virtual void UseDefaultConfiguration()
         {
-            VersionTracking.Track();
+            Xamarin.Essentials.VersionTracking.Track();
             Rg.Plugins.Popup.Popup.Init();
             BitCSharpClientControls.Init();
             ApplicationView.GetForCurrentView().SetPreferredMinSize(new Windows.Foundation.Size

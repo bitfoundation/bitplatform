@@ -9,7 +9,6 @@ using Bit.ViewModel.Implementations;
 using Prism.Events;
 using System;
 using System.Threading.Tasks;
-using Xamarin.Essentials;
 using Xamarin.Forms;
 using Xamarin.Forms.Platform.Android;
 using Prism.Ioc;
@@ -32,7 +31,7 @@ namespace Bit.Android
             _useDefaultConfiguration = true;
             Rg.Plugins.Popup.Popup.Init(this, savedInstanceState);
             Xamarin.Essentials.Platform.Init(this, savedInstanceState);
-            VersionTracking.Track();
+            Xamarin.Essentials.VersionTracking.Track();
             BitCSharpClientControls.Init();
             SetBitPlatformServices();
         }

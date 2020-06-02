@@ -6,7 +6,7 @@ using System.Net.Http;
 
 namespace Autofac
 {
-    public static class ContainerBuilderExtensions
+    public static class DependencyManagerExtensions
     {
         public static IDependencyManager RegisterSignalr(this IDependencyManager dependencyManager)
         {

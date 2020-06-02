@@ -5,7 +5,6 @@ using Foundation;
 using System;
 using System.Threading.Tasks;
 using UIKit;
-using Xamarin.Essentials;
 using Xamarin.Forms;
 using Xamarin.Forms.Platform.iOS;
 
@@ -21,7 +20,7 @@ namespace Bit.iOS
         protected virtual void UseDefaultConfiguration()
         {
             _useDefaultConfiguration = true;
-            VersionTracking.Track();
+            Xamarin.Essentials.VersionTracking.Track();
             Rg.Plugins.Popup.Popup.Init();
             BitCSharpClientControls.Init();
             SetBitPlatformServices();

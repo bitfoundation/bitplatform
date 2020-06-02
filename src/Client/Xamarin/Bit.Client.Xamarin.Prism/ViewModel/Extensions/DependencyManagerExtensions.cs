@@ -9,19 +9,22 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using Xamarin.Essentials.Interfaces;
 
 namespace Autofac
 {
-    public static class ContainerBuilderExtensions
+    public static class DependencyManagerExtensions
     {
         public static IDependencyManager RegisterRequiredServices(this IDependencyManager dependencyManager)
         {
             if (dependencyManager == null)
                 throw new ArgumentNullException(nameof(dependencyManager));
 
+            dependencyManager.RegisterXamarinEssentialsImplementations();
+
             dependencyManager.Register<IDateTimeProvider, DefaultDateTimeProvider>(lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExisting: false);
 
-            dependencyManager.Register<IContentFormatter, DefaultJsonContentFormatter>(lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExisting: false);
+            dependencyManager.RegisterInstance(DefaultJsonContentFormatter.Current, overwriteExisting: false);
 
             dependencyManager.RegisterUsing(resolver => new INavServiceFactory((prismNavService, popupNav) => DefaultNavService.INavServiceFactory<DefaultNavService>(prismNavService, popupNav)), overwriteExisting: false, lifeCycle: DependencyLifeCycle.Transient);
 
@@ -36,12 +39,15 @@ namespace Autofac
             dependencyManager.GetContainerBuilder().RegisterBuildCallback(container =>
             {
                 IMessageReceiver? messageReceiver = container.ResolveOptional<IMessageReceiver>();
-                if (messageReceiver != null)
+                IConnectivity connectivity = container.Resolve<IConnectivity>();
+                IVersionTracking versionTracking = container.Resolve<IVersionTracking>();
+
+                foreach (TelemetryServiceBase telemetryService in container.Resolve<IEnumerable<ITelemetryService>>().OfType<TelemetryServiceBase>())
                 {
-                    foreach (TelemetryServiceBase telemetryService in container.Resolve<IEnumerable<ITelemetryService>>().OfType<TelemetryServiceBase>())
-                    {
+                    if (messageReceiver != null)
                         telemetryService.MessageReceiver = messageReceiver;
-                    }
+                    telemetryService.Connectivity = connectivity;
+                    telemetryService.VersionTracking = versionTracking;
                 }
             });
 

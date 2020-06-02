@@ -5,7 +5,7 @@ using System;
 
 namespace Autofac
 {
-    public static class ContainerBuilderExtensions
+    public static class DependencyManagerExtensions
     {
         public static IDependencyManager RegisterDefaultSyncService(this IDependencyManager dependencyManager, Action<ISyncService> configureDtoSetSyncConfigs)
         {

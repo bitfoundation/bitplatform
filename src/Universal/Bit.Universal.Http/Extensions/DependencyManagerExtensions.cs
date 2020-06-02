@@ -13,7 +13,7 @@ using System.Threading;
 
 namespace Autofac
 {
-    public static class ContainerBuilderExtensions
+    public static class DependencyManagerExtensions
     {
         public static IDependencyManager RegisterRefitClient(this IDependencyManager dependencyManager)
         {
@@ -96,11 +96,11 @@ namespace Autofac
 
             IServiceCollection services = (IServiceCollection)dependencyManager.GetServiceCollection();
 
-            dependencyManager.RegisterUsing(resolver => resolver.Resolve<IHttpClientFactory>().CreateClient(ContractKeys.DefaultHttpClientName), lifeCycle: DependencyLifeCycle.Transient, overwriteExisting: false);
+            dependencyManager.RegisterUsing(resolver => resolver.Resolve<IHttpClientFactory>().CreateClient(Microsoft.Extensions.Options.Options.DefaultName), lifeCycle: DependencyLifeCycle.Transient, overwriteExisting: false);
 
             dependencyManager.RegisterUsing(resolver => new IPollyHttpResponseMessagePolicyFactory(request => DefaultRestFactories.BuildHttpPollyPolicy(request)), lifeCycle: DependencyLifeCycle.Transient, overwriteExisting: false);
 
-            return services.AddHttpClient(ContractKeys.DefaultHttpClientName)
+            return services.AddHttpClient(Microsoft.Extensions.Options.Options.DefaultName)
                 .ConfigureHttpClient((serviceProvider, httpClient) =>
                 {
                     httpClient.BaseAddress = serviceProvider.GetRequiredService<IClientAppProfile>().HostUri;

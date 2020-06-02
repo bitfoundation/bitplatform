@@ -1,18 +1,20 @@
-﻿using Bit.View;
-using Bit.ViewModel.Contracts;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
-using Xamarin.Forms;
 using System.Reflection;
 using System.Linq;
 using Bit.Core.Contracts;
+using Xamarin.Essentials.Interfaces;
 
-namespace Bit.ViewModel.Implementations
+namespace Bit.Core.Implementations
 {
     public abstract class TelemetryServiceBase : ITelemetryService
     {
-        public virtual IMessageReceiver MessageReceiver { get; set; } = default!;
+        public virtual IMessageReceiver? MessageReceiver { get; set; }
+
+        public virtual IVersionTracking? VersionTracking { get; set; }
+
+        public virtual IConnectivity? Connectivity { get; set; }
 
         public virtual IDictionary<string, string?> PopulateProperties(IDictionary<string, string?>? initialProps)
         {
@@ -24,31 +26,62 @@ namespace Bit.ViewModel.Implementations
             if (!initialProps.ContainsKey("CurrentUICulture"))
                 initialProps.Add("CurrentUICulture", CultureInfo.CurrentUICulture.Name);
 
+            if (VersionTracking != null)
+            {
+                if (!initialProps.ContainsKey("VersionHistory"))
+                    initialProps.Add("VersionHistory", string.Join(",", VersionTracking.VersionHistory.OrderByDescending(vh => vh)));
+
+                if (!initialProps.ContainsKey("Version"))
+                    initialProps.Add("Version", string.Join(",", VersionTracking.CurrentVersion));
+
+                if (!initialProps.ContainsKey("IsFirstLaunchEver"))
+                    initialProps.Add("IsFirstLaunchEver", VersionTracking.IsFirstLaunchEver.ToString(CultureInfo.InvariantCulture));
+
+                if (!initialProps.ContainsKey("IsFirstLaunchForCurrentVersion"))
+                    initialProps.Add("IsFirstLaunchForCurrentVersion", VersionTracking.IsFirstLaunchForCurrentVersion.ToString(CultureInfo.InvariantCulture));
+            }
 #if XamarinEssentials
-            if (!initialProps.ContainsKey("VersionHistory"))
-                initialProps.Add("VersionHistory", string.Join(",", Xamarin.Essentials.VersionTracking.VersionHistory.OrderByDescending(vh => vh)));
+            else
+            {
+                if (!initialProps.ContainsKey("VersionHistory"))
+                    initialProps.Add("VersionHistory", string.Join(",", Xamarin.Essentials.VersionTracking.VersionHistory.OrderByDescending(vh => vh)));
 
-            if (!initialProps.ContainsKey("Version"))
-                initialProps.Add("Version", string.Join(",", Xamarin.Essentials.VersionTracking.CurrentVersion));
+                if (!initialProps.ContainsKey("Version"))
+                    initialProps.Add("Version", string.Join(",", Xamarin.Essentials.VersionTracking.CurrentVersion));
 
-            if (!initialProps.ContainsKey("IsFirstLaunchEver"))
-                initialProps.Add("IsFirstLaunchEver", Xamarin.Essentials.VersionTracking.IsFirstLaunchEver.ToString(CultureInfo.InvariantCulture));
+                if (!initialProps.ContainsKey("IsFirstLaunchEver"))
+                    initialProps.Add("IsFirstLaunchEver", Xamarin.Essentials.VersionTracking.IsFirstLaunchEver.ToString(CultureInfo.InvariantCulture));
 
-            if (!initialProps.ContainsKey("IsFirstLaunchForCurrentVersion"))
-                initialProps.Add("IsFirstLaunchForCurrentVersion", Xamarin.Essentials.VersionTracking.IsFirstLaunchForCurrentVersion.ToString(CultureInfo.InvariantCulture));
+                if (!initialProps.ContainsKey("IsFirstLaunchForCurrentVersion"))
+                    initialProps.Add("IsFirstLaunchForCurrentVersion", Xamarin.Essentials.VersionTracking.IsFirstLaunchForCurrentVersion.ToString(CultureInfo.InvariantCulture));
+            }
+#endif
 
-            if (!initialProps.ContainsKey("NetworkAccess"))
-                initialProps.Add("NetworkAccess", Xamarin.Essentials.Connectivity.NetworkAccess.ToString());
+            if (Connectivity != null)
+            {
+                if (!initialProps.ContainsKey("NetworkAccess"))
+                    initialProps.Add("NetworkAccess", Connectivity.NetworkAccess.ToString());
+            }
+#if XamarinEssentials
+            else
+            {
+                if (!initialProps.ContainsKey("NetworkAccess"))
+                    initialProps.Add("NetworkAccess", Xamarin.Essentials.Connectivity.NetworkAccess.ToString());
+            }
 #endif
 
             if (MessageReceiver != null && !initialProps.ContainsKey("MessageReceiverWasConnected"))
                 initialProps.Add("MessageReceiverWasConnected", MessageReceiver.IsConnected.ToString(CultureInfo.InvariantCulture));
 
             if (!initialProps.ContainsKey("XamarinFormsVersion"))
-                initialProps.Add("XamarinFormsVersion", typeof(Binding).Assembly.GetCustomAttribute<AssemblyFileVersionAttribute>()!.Version);
+            {
+                Type? bindingType = Type.GetType("Xamarin.Forms.Binding, Xamarin.Forms.Core", throwOnError: false);
+                if (bindingType != null)
+                    initialProps.Add("XamarinFormsVersion", bindingType.Assembly.GetCustomAttribute<AssemblyFileVersionAttribute>()!.Version);
+            }
 
             if (!initialProps.ContainsKey("BitVersion"))
-                initialProps.Add("BitVersion", typeof(BitCSharpClientControls).Assembly.GetName().Version!.ToString());
+                initialProps.Add("BitVersion", typeof(TelemetryServiceBase).Assembly.GetName().Version!.ToString());
 
 #if Android || iOS
             if (!initialProps.ContainsKey("Mono"))

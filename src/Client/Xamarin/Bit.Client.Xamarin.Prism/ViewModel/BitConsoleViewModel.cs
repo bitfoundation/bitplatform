@@ -2,6 +2,7 @@
 using System.Threading.Tasks;
 using Rg.Plugins.Popup.Contracts;
 using Bit.Core.Models;
+using Xamarin.Essentials.Interfaces;
 
 namespace Bit.ViewModel
 {
@@ -10,6 +11,8 @@ namespace Bit.ViewModel
         public LocalTelemetryService LocalTelemetryService { get; set; } = default!;
 
         public IPopupNavigation PopupNavigation { get; set; } = default!;
+
+        public IClipboard Clipboard { get; set; }
 
         public BitDelegateCommand<TrackedThing> CopyCommand { get; set; }
 
@@ -23,9 +26,7 @@ namespace Bit.ViewModel
 
         async Task Copy(TrackedThing thing)
         {
-#if XamarinEssentials
-            await Xamarin.Essentials.Clipboard.SetTextAsync(thing.ToString());
-#endif
+            await Clipboard.SetTextAsync(thing.ToString());
         }
 
         async Task Close()

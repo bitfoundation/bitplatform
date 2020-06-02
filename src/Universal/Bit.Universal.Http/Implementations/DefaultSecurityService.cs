@@ -13,6 +13,7 @@ using System.Linq;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
+using Xamarin.Essentials.Interfaces;
 
 namespace Bit.Http.Implementations
 {
@@ -29,6 +30,9 @@ namespace Bit.Http.Implementations
         public virtual IDateTimeProvider DateTimeProvider { get; set; } = default!;
         public virtual IEnumerable<ITelemetryService> TelemetryServices { get; set; } = default!;
         public virtual Lazy<IContainer> ContainerProvider { get; set; } = default!;
+        public virtual IWebAuthenticator WebAuthenticator { get; set; } = default!;
+        public virtual IPreferences Preferences { get; set; } = default!;
+        public virtual ISecureStorage SecureStorage { get; set; } = default!;
 
         public virtual async Task<bool> IsLoggedInAsync(CancellationToken cancellationToken = default)
         {
@@ -100,8 +104,7 @@ namespace Bit.Http.Implementations
 
         public virtual async Task<Token> Login(object? state = null, string? client_id = null, IDictionary<string, string?>? acr_values = null, CancellationToken cancellationToken = default)
         {
-#if XamarinEssentials
-            var authResult = await Xamarin.Essentials.WebAuthenticator.AuthenticateAsync(GetLoginUrl(state, client_id, acr_values), ClientAppProfile.OAuthRedirectUri).ConfigureAwait(false);
+            var authResult = await WebAuthenticator.AuthenticateAsync(GetLoginUrl(state, client_id, acr_values), ClientAppProfile.OAuthRedirectUri).ConfigureAwait(false);
 
             Token token = authResult.Properties;
 
@@ -110,52 +113,41 @@ namespace Bit.Http.Implementations
             await StoreToken(jsonToken, cancellationToken).ConfigureAwait(false);
 
             return token;
-#else
-            throw new NotImplementedException();
-#endif
         }
 
         public virtual async Task<Token?> GetCurrentTokenAsync(CancellationToken cancellationToken = default)
         {
-#if XamarinEssentials
             string? token = null;
 
             if (UseSecureStorage())
-                token = await Xamarin.Essentials.SecureStorage.GetAsync("Token").ConfigureAwait(false);
+                token = await SecureStorage.GetAsync("Token").ConfigureAwait(false);
             else
-                token = Xamarin.Essentials.Preferences.Get("Token", (string?)null);
+                token = Preferences.Get("Token", (string?)null);
 
             if (token == null)
                 return null;
 
             return JsonConvert.DeserializeObject<Dictionary<string, string>>(token);
-#else
-            throw new NotImplementedException();
-#endif
         }
 
         public virtual async Task Logout(object? state = null, string? client_id = null, CancellationToken cancellationToken = default)
         {
-#if XamarinEssentials
             Token? token = await GetCurrentTokenAsync(cancellationToken).ConfigureAwait(false);
 
             if (token != null)
             {
                 if (UseSecureStorage())
-                    Xamarin.Essentials.SecureStorage.Remove("Token");
+                    SecureStorage.Remove("Token");
                 else
-                    Xamarin.Essentials.Preferences.Remove("Token");
+                    Preferences.Remove("Token");
 
                 TelemetryServices.All().SetUserId(null);
 
                 if (!string.IsNullOrEmpty(token.id_token))
                 {
-                    await Xamarin.Essentials.WebAuthenticator.AuthenticateAsync(GetLogoutUrl(token.id_token!, state, client_id), ClientAppProfile.OAuthRedirectUri).ConfigureAwait(false);
+                    await WebAuthenticator.AuthenticateAsync(GetLogoutUrl(token.id_token!, state, client_id), ClientAppProfile.OAuthRedirectUri).ConfigureAwait(false);
                 }
             }
-#else
-            throw new NotImplementedException();
-#endif
         }
 
         public virtual Uri GetLoginUrl(object? state = null, string? client_id = null, IDictionary<string, string?>? acr_values = null)
@@ -187,22 +179,18 @@ namespace Bit.Http.Implementations
             return new Uri(ClientAppProfile.HostUri ?? throw new InvalidOperationException($"{nameof(IClientAppProfile.HostUri)} is null."), relativeUri: relativeUri);
         }
 
-        async Task StoreToken(string jsonToken, CancellationToken cancellationToken)
+        protected virtual async Task StoreToken(string jsonToken, CancellationToken cancellationToken)
         {
-#if XamarinEssentials
             if (UseSecureStorage())
             {
-                await Xamarin.Essentials.SecureStorage.SetAsync("Token", jsonToken).ConfigureAwait(false);
+                await SecureStorage.SetAsync("Token", jsonToken).ConfigureAwait(false);
             }
             else
             {
-                Xamarin.Essentials.Preferences.Set("Token", jsonToken);
+                Preferences.Set("Token", jsonToken);
             }
 
             TelemetryServices.All().SetUserId((await GetBitJwtToken(cancellationToken).ConfigureAwait(false)).UserId);
-#else
-            throw new NotImplementedException();
-#endif
         }
 
         public virtual bool UseSecureStorage()
