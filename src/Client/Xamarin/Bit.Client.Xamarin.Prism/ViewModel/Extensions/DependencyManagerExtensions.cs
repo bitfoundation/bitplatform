@@ -9,6 +9,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using Xamarin.Essentials;
+using Xamarin.Essentials.Implementation;
 using Xamarin.Essentials.Interfaces;
 
 namespace Autofac
@@ -20,7 +22,7 @@ namespace Autofac
             if (dependencyManager == null)
                 throw new ArgumentNullException(nameof(dependencyManager));
 
-            dependencyManager.RegisterXamarinEssentialsImplementations();
+            dependencyManager.RegisterXamarinEssentials();
 
             dependencyManager.Register<IDateTimeProvider, DefaultDateTimeProvider>(lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExisting: false);
 
@@ -29,6 +31,13 @@ namespace Autofac
             dependencyManager.RegisterUsing(resolver => new INavServiceFactory((prismNavService, popupNav) => DefaultNavService.INavServiceFactory<DefaultNavService>(prismNavService, popupNav)), overwriteExisting: false, lifeCycle: DependencyLifeCycle.Transient);
 
             dependencyManager.RegisterInstance<IExceptionHandler>(BitExceptionHandler.Current);
+
+            ((IAutofacDependencyManager)dependencyManager).GetContainerBuidler().RegisterBuildCallback(container =>
+            {
+                if (BitExceptionHandler.Current is BitExceptionHandler exceptionHandler)
+                    exceptionHandler.ServiceProvider = container.Resolve<IServiceProvider>();
+            });
+
             dependencyManager.RegisterInstance<ITelemetryService>(ApplicationInsightsTelemetryService.Current);
             dependencyManager.RegisterInstance<ITelemetryService>(AppCenterTelemetryService.Current);
             dependencyManager.RegisterInstance<ITelemetryService>(FirebaseTelemetryService.Current);
@@ -50,6 +59,24 @@ namespace Autofac
                     telemetryService.VersionTracking = versionTracking;
                 }
             });
+
+            return dependencyManager;
+        }
+
+        public static IDependencyManager RegisterXamarinEssentials(this IDependencyManager dependencyManager)
+        {
+            if (dependencyManager == null)
+                throw new ArgumentNullException(nameof(dependencyManager));
+
+            dependencyManager.Register<IAppInfo, AppInfoImplementation>(lifeCycle: DependencyLifeCycle.PerScopeInstance, overwriteExisting: false);
+            dependencyManager.Register<IClipboard, ClipboardImplementation>(lifeCycle: DependencyLifeCycle.PerScopeInstance, overwriteExisting: false);
+            dependencyManager.Register<IConnectivity, ConnectivityImplementation>(lifeCycle: DependencyLifeCycle.PerScopeInstance, overwriteExisting: false);
+            dependencyManager.Register<IDeviceInfo, DeviceInfoImplementation>(lifeCycle: DependencyLifeCycle.PerScopeInstance, overwriteExisting: false);
+            dependencyManager.Register<IMainThread, MainThreadImplementation>(lifeCycle: DependencyLifeCycle.PerScopeInstance, overwriteExisting: false);
+            dependencyManager.Register<IPreferences, PreferencesImplementation>(lifeCycle: DependencyLifeCycle.PerScopeInstance, overwriteExisting: false);
+            dependencyManager.Register<ISecureStorage, SecureStorageImplementation>(lifeCycle: DependencyLifeCycle.PerScopeInstance, overwriteExisting: false);
+            dependencyManager.Register<IVersionTracking, VersionTrackingImplementation>(lifeCycle: DependencyLifeCycle.PerScopeInstance, overwriteExisting: false);
+            dependencyManager.Register<IWebAuthenticator, WebAuthenticatorImplementation>(lifeCycle: DependencyLifeCycle.PerScopeInstance, overwriteExisting: false);
 
             return dependencyManager;
         }

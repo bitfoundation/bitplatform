@@ -1,7 +1,6 @@
 ﻿using Microsoft.AspNetCore.Components;
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Threading.Tasks;
 using Bit.ViewModel;
 using System.Linq;
@@ -9,20 +8,21 @@ using System.Reflection;
 
 namespace Bit.View
 {
-    public class PageBase<TViewModel> : ComponentBase, INotifyPropertyChanged
-         where TViewModel : ViewModelBase
+    public class PageBase<TViewModel> : ComponentBase
+             where TViewModel : ViewModelBase
     {
         private TViewModel _ViewModel = default!;
 
         [Inject]
-        public TViewModel ViewModel
+        public virtual TViewModel ViewModel
         {
             get => _ViewModel;
             set
             {
                 if (_ViewModel != value)
                 {
-                    _ViewModel.StateHasChanged = null!;
+                    if (_ViewModel != null)
+                        _ViewModel.StateHasChanged = null!;
 
                     if (value != null)
                         value.StateHasChanged = StateHasChanged;
@@ -32,10 +32,10 @@ namespace Bit.View
             }
         }
 
-        public TViewModel VM => ViewModel;
+        public virtual TViewModel VM => ViewModel;
 
         [Parameter(CaptureUnmatchedValues = true)]
-        public Dictionary<string, object> InputAttributes
+        public virtual Dictionary<string, object> InputAttributes
         {
             set
             {
@@ -53,8 +53,6 @@ namespace Bit.View
                 }
             }
         }
-
-        public event PropertyChangedEventHandler PropertyChanged;
 
         protected async override Task OnInitializedAsync()
         {
@@ -112,7 +110,7 @@ namespace Bit.View
             }
         }
 
-        public T Evaluate<T>(Func<T> func)
+        public virtual T Evaluate<T>(Func<T> func)
         {
             try
             {
@@ -125,7 +123,7 @@ namespace Bit.View
             }
         }
 
-        public Func<Task> Invoke(Func<Task> func)
+        public virtual Func<Task> Invoke(Func<Task> func)
         {
             return new Func<Task>(async () =>
             {
@@ -141,7 +139,7 @@ namespace Bit.View
         }
 
 
-        public Action Invoke(Action action)
+        public virtual Action Invoke(Action action)
         {
             return new Action(() =>
             {
@@ -149,6 +147,21 @@ namespace Bit.View
                 {
                     action();
                     StateHasChanged(); // workaround
+                }
+                catch (Exception exp)
+                {
+                    VM.ExceptionHandler.OnExceptionReceived(exp);
+                }
+            });
+        }
+
+        public virtual Func<EventArgs, Task> Invoke(Func<EventArgs, Task> func)
+        {
+            return new Func<EventArgs, Task>(async (e) =>
+            {
+                try
+                {
+                    await func(e);
                 }
                 catch (Exception exp)
                 {

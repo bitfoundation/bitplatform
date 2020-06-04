@@ -36,9 +36,12 @@ namespace Bit.Http.Implementations
 
             HttpResponseMessage response = await base.SendAsync(request, cancellationToken).ConfigureAwait(false);
 
-            if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized && (await _securityService.IsLoggedInAsync(cancellationToken).ConfigureAwait(false)) == false)
+            if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
             {
-                _eventAggregator.GetEvent<TokenExpiredEvent>().Publish(new TokenExpiredEvent { });
+                _eventAggregator.GetEvent<UnauthorizedRequestEvent>().Publish(new UnauthorizedRequestEvent { });
+
+                if ((await _securityService.IsLoggedInAsync(cancellationToken).ConfigureAwait(false)) == false)
+                        _eventAggregator.GetEvent<TokenExpiredEvent>().Publish(new TokenExpiredEvent { });
             }
 
             return response;

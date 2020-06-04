@@ -63,11 +63,15 @@ namespace Bit.Http.Contracts
     {
         Task<bool> IsLoggedInAsync(CancellationToken cancellationToken = default);
 
+        bool IsLoggedIn();
+
         Task<Token> LoginWithCredentials(string userName, string password, string client_id, string client_secret, string[]? scopes = null, IDictionary<string, string?>? acr_values = null, CancellationToken cancellationToken = default);
 
         Task<Token> Login(object? state = null, string? client_id = null, IDictionary<string, string?>? acr_values = null, CancellationToken cancellationToken = default);
 
         Task<Token?> GetCurrentTokenAsync(CancellationToken cancellationToken = default);
+
+        Token? GetCurrentToken();
 
         Task Logout(object? state = null, string? client_id = null, CancellationToken cancellationToken = default);
 
@@ -77,6 +81,8 @@ namespace Bit.Http.Contracts
 
         bool UseSecureStorage();
 
-        Task<BitJwtToken> GetBitJwtToken(CancellationToken cancellationToken);
+        Task<BitJwtToken> GetBitJwtTokenAsync(CancellationToken cancellationToken);
+
+        BitJwtToken GetBitJwtToken();
     }
 }

@@ -15,7 +15,7 @@ namespace Bit.Client.Web.Wasm.Implementation
 
         readonly Dictionary<string, List<string>> versionTrail;
         readonly IPreferences _preferences;
-        private readonly IAppInfo _appInfo;
+        readonly IAppInfo _appInfo;
 
         public WebAssemblyVersionTracking(IPreferences preferences, IAppInfo appInfo)
         {

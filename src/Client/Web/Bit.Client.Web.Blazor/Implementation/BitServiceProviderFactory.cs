@@ -7,7 +7,7 @@ using System;
 
 namespace Bit.Client.Web.Blazor.Implementation
 {
-    public class DefaultServiceProviderFactory : IServiceProviderFactory<ContainerBuilder>
+    public class BitServiceProviderFactory : IServiceProviderFactory<ContainerBuilder>
     {
         private readonly Action<IDependencyManager, IServiceCollection, ContainerBuilder> _configureAction;
         private readonly AutofacServiceProviderFactory _inner;
@@ -15,7 +15,7 @@ namespace Bit.Client.Web.Blazor.Implementation
         private IServiceCollection? _services;
         private IContainer? _container;
 
-        public DefaultServiceProviderFactory(Action<IDependencyManager, IServiceCollection, ContainerBuilder> configureAction)
+        public BitServiceProviderFactory(Action<IDependencyManager, IServiceCollection, ContainerBuilder> configureAction)
         {
             _configureAction = configureAction;
             _inner = new AutofacServiceProviderFactory(containerBuilder =>
@@ -23,8 +23,8 @@ namespace Bit.Client.Web.Blazor.Implementation
                 if (_services == null)
                     throw new InvalidOperationException("services is null");
 
-                if (_container == null)
-                    throw new InvalidOperationException("container is null");
+                if (containerBuilder == null)
+                    throw new InvalidOperationException("containerBuilder is null");
 
                 containerBuilder.Properties["services"] = _services;
 

@@ -66,7 +66,7 @@ namespace Bit.CSharpClientSample
 
             IEventAggregator eventAggregator = Container.Resolve<IEventAggregator>();
 
-            eventAggregator.GetEvent<TokenExpiredEvent>()
+            eventAggregator.GetEvent<UnauthorizedRequestEvent>()
                 .SubscribeAsync(async tokenExpiredEvent => await NavigationService.NavigateAsync("/Nav/Login"), ThreadOption.UIThread);
 
             await base.OnInitializedAsync();

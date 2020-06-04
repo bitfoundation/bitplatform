@@ -161,8 +161,10 @@
 
                             try {
                                 const statusCode: number = arguments[0].data[0].response.statusCode;
-                                if (statusCode == 401 && securityService.isLoggedIn() == false) {
-                                    PubSub.publish("TokenExpiredEvent", {} as Model.Events.TokenExpiredEvent);
+                                if (statusCode == 401) {
+                                    PubSub.publish("UnauthorizedRequestEvent", {} as Model.Events.UnauthorizedRequestEvent);
+                                    if (securityService.isLoggedIn() == false)
+                                        PubSub.publish("TokenExpiredEvent", {} as Model.Events.TokenExpiredEvent);
                                 }
                             } catch (e) {
                                 console.warn(e.message);

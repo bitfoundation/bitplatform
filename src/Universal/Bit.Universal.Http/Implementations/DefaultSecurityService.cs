@@ -19,13 +19,6 @@ namespace Bit.Http.Implementations
 {
     public class DefaultSecurityService : ISecurityService
     {
-        public static ISecurityService Current { get; private set; } = default!;
-
-        public DefaultSecurityService()
-        {
-            Current = this;
-        }
-
         public virtual IClientAppProfile ClientAppProfile { get; set; } = default!;
         public virtual IDateTimeProvider DateTimeProvider { get; set; } = default!;
         public virtual IEnumerable<ITelemetryService> TelemetryServices { get; set; } = default!;
@@ -37,6 +30,16 @@ namespace Bit.Http.Implementations
         public virtual async Task<bool> IsLoggedInAsync(CancellationToken cancellationToken = default)
         {
             Token? token = await GetCurrentTokenAsync(cancellationToken).ConfigureAwait(false);
+
+            if (token == null)
+                return false;
+
+            return (DateTimeProvider.GetCurrentUtcDateTime() - token.login_date) < TimeSpan.FromSeconds(token.expires_in);
+        }
+
+        public virtual bool IsLoggedIn()
+        {
+            Token? token = GetCurrentToken();
 
             if (token == null)
                 return false;
@@ -115,6 +118,21 @@ namespace Bit.Http.Implementations
             return token;
         }
 
+        public virtual Token? GetCurrentToken()
+        {
+            string? token = null;
+
+            if (UseSecureStorage())
+                token = SecureStorage.GetAsync("Token").GetAwaiter().GetResult();
+            else
+                token = Preferences.Get("Token", (string?)null);
+
+            if (token == null)
+                return null;
+
+            return JsonConvert.DeserializeObject<Dictionary<string, string>>(token);
+        }
+
         public virtual async Task<Token?> GetCurrentTokenAsync(CancellationToken cancellationToken = default)
         {
             string? token = null;
@@ -190,7 +208,7 @@ namespace Bit.Http.Implementations
                 Preferences.Set("Token", jsonToken);
             }
 
-            TelemetryServices.All().SetUserId((await GetBitJwtToken(cancellationToken).ConfigureAwait(false)).UserId);
+            TelemetryServices.All().SetUserId((await GetBitJwtTokenAsync(cancellationToken).ConfigureAwait(false)).UserId);
         }
 
         public virtual bool UseSecureStorage()
@@ -198,12 +216,28 @@ namespace Bit.Http.Implementations
             return false;
         }
 
-        public virtual async Task<BitJwtToken> GetBitJwtToken(CancellationToken cancellationToken)
+        public virtual async Task<BitJwtToken> GetBitJwtTokenAsync(CancellationToken cancellationToken)
         {
             if (!await IsLoggedInAsync(cancellationToken).ConfigureAwait(false))
                 throw new InvalidOperationException("User is not logged in.");
 
             Token token = (await GetCurrentTokenAsync(cancellationToken).ConfigureAwait(false))!;
+
+            var handler = new JwtSecurityTokenHandler();
+
+            var jwtToken = (JwtSecurityToken)handler.ReadToken(token.access_token);
+
+            var primary_sid = jwtToken.Claims.First(c => c.Type == "primary_sid").Value;
+
+            return BitJwtToken.FromJson(primary_sid);
+        }
+
+        public virtual BitJwtToken GetBitJwtToken()
+        {
+            if (!IsLoggedIn())
+                throw new InvalidOperationException("User is not logged in.");
+
+            Token token = GetCurrentToken()!;
 
             var handler = new JwtSecurityTokenHandler();
 

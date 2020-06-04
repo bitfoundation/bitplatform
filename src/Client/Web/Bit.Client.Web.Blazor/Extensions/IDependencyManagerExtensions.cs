@@ -1,6 +1,7 @@
 ﻿using Autofac;
 using Bit.Core.Implementations;
 using Bit.ViewModel;
+using Prism.Events;
 using Prism.Ioc;
 using System;
 using System.Collections.Generic;
@@ -16,13 +17,21 @@ namespace Bit.Core.Contracts
             if (dependencyManager == null)
                 throw new ArgumentNullException(nameof(dependencyManager));
 
-            dependencyManager.RegisterXamarinEssentialsImplementations();
+            dependencyManager.RegisterXamarinEssentials();
+
+            dependencyManager.Register<IEventAggregator, EventAggregator>(lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExisting: false);
 
             dependencyManager.Register<IDateTimeProvider, DefaultDateTimeProvider>(lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExisting: false);
 
             dependencyManager.RegisterInstance(DefaultJsonContentFormatter.Current, overwriteExisting: false);
 
             dependencyManager.RegisterInstance<IExceptionHandler>(BitExceptionHandler.Current);
+
+            ((IAutofacDependencyManager)dependencyManager).GetContainerBuidler().RegisterBuildCallback(container =>
+            {
+                if (BitExceptionHandler.Current is BitExceptionHandler exceptionHandler)
+                    exceptionHandler.ServiceProvider = container.Resolve<IServiceProvider>();
+            });
 
             dependencyManager.GetContainerBuilder().RegisterBuildCallback(container =>
             {

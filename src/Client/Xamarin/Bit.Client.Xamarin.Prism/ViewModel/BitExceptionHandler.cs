@@ -2,7 +2,6 @@
 
 using Bit.Core.Contracts;
 using Bit.Core.Implementations;
-using Bit.ViewModel.Contracts;
 using Bit.ViewModel.Implementations;
 using System;
 using System.Collections.Generic;
@@ -11,6 +10,8 @@ namespace Bit.ViewModel
 {
     public class BitExceptionHandler : BitExceptionHandlerBase
     {
+        public virtual IServiceProvider? ServiceProvider { get; set; }
+
         public static new IExceptionHandler Current
         {
             get => BitExceptionHandlerBase.Current ??= new BitExceptionHandler();

@@ -65,7 +65,7 @@ namespace Autofac
 
                     if (await securityService.IsLoggedInAsync().ConfigureAwait(false))
                     {
-                        allTelemetryServices.SetUserId((await securityService.GetBitJwtToken(default).ConfigureAwait(false)).UserId!);
+                        allTelemetryServices.SetUserId((await securityService.GetBitJwtTokenAsync(default).ConfigureAwait(false)).UserId!);
                     }
                     else
                     {
