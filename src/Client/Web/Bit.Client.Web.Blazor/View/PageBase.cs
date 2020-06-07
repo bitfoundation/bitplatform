@@ -22,10 +22,16 @@ namespace Bit.View
                 if (_ViewModel != value)
                 {
                     if (_ViewModel != null)
+                    {
                         _ViewModel.StateHasChanged = null!;
+                        _ViewModel.InvokeAsync = null!;
+                    }
 
                     if (value != null)
-                        value.StateHasChanged = StateHasChanged;
+                    {
+                        value.StateHasChanged = () => InvokeAsync(StateHasChanged);
+                        value.InvokeAsync = InvokeAsync;
+                    }
 
                     _ViewModel = value!;
                 }
@@ -146,7 +152,7 @@ namespace Bit.View
                 try
                 {
                     action();
-                    StateHasChanged(); // workaround
+                    Invoke(StateHasChanged); // workaround
                 }
                 catch (Exception exp)
                 {

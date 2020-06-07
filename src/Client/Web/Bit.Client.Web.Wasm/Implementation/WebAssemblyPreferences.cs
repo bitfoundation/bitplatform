@@ -185,7 +185,7 @@ namespace Bit.Client.Web.Wasm.Implementation
             if (_wasm_js_runtime != null)
                 _wasm_js_runtime.InvokeVoid("localStorage.setItem", key, value);
             else
-                _keyValues.TryAdd(key, value);
+                _keyValues.AddOrUpdate(key, value, (key, oldValue) => value);
         }
 
         public virtual void Set(string key, bool value, string sharedName)

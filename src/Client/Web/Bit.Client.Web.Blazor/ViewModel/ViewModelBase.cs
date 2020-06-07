@@ -9,7 +9,9 @@ namespace Bit.ViewModel
     {
         public IExceptionHandler ExceptionHandler { get; set; } = default!;
 
-        public Action StateHasChanged = default!;
+        public Func<Task> StateHasChanged = default!;
+
+        public Func<Action, Task> InvokeAsync = default!;
 
         public virtual Task OnInitializedAsync()
         {
