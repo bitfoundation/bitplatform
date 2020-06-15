@@ -4,10 +4,13 @@
 
 	<PropertyGroup>
 		<TargetFramework>netstandard2.1</TargetFramework>
+		<PackageVersion>5.3.2</PackageVersion>
+		<Version>5.3.2</Version>
+		<AssemblyVersion>5.3.2</AssemblyVersion>
 	</PropertyGroup>
 
 	<ItemGroup>
-		<PackageReference Include="Microsoft.JSInterop" Version="3.1.4" />
+		<PackageReference Include="Microsoft.JSInterop" Version="3.1.5" />
 	</ItemGroup>
 
 	<ItemGroup>
