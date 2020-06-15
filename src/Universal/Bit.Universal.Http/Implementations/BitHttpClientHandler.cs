@@ -154,7 +154,7 @@ namespace Bit.Http.Implementations
             {
                 if (response != null)
                 {
-                    if (string.IsNullOrEmpty(response.ReasonPhrase) && response.Headers.TryGetValues("Reason-Phrase", out IEnumerable<string> reasonPhrases) && reasonPhrases.Any())
+                    if (response.Headers.TryGetValues("Reason-Phrase", out IEnumerable<string> reasonPhrases) && reasonPhrases.Any())
                     {
                         response.ReasonPhrase = reasonPhrases.Single();
                     }
