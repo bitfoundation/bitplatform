@@ -4,7 +4,40 @@
     xmlns="http://xamarin.com/schemas/2014/forms"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     xmlns:bit="https://bitframework.com"
+    xmlns:view="clr-namespace:Bit.CSharpClientSample.Views"
     NavigationPage.HasNavigationBar="False">
+    <StackLayout>
+        <Entry
+            ReturnCommand="{bit:GoToNextViewCommand Next={x:Reference Password}}"
+            ReturnType="Next"
+            Text="{Binding UserName}" />
+        <Entry x:Name="Password" Text="{Binding Password}" />
+        <Button Command="{Binding LoginUsingCredentialsCommand}" Text="Login using credentials" />
+        <Button Command="{Binding LoginUsingBrowserCommand}" Text="Login using Browser" />
+        <Button Command="{Binding LoginUsingGooglePlusCommand}" Text="Login using Google" />
+        <Button Command="{Binding SkipCommand}" Text="Skip" />
+
+        <Button Text="Multi converter test 1">
+            <Button.IsVisible>
+                <MultiBinding Converter="{view:TestMultiValueConverter1}">
+                    <Binding Path="UserName" />
+                    <Binding Path="Password" />
+                </MultiBinding>
+            </Button.IsVisible>
+        </Button>
+
+        <Button Text="Multi converter test 2">
+            <Button.IsVisible>
+                <MultiBinding Converter="{view:TestMultiValueConverter2}">
+                    <Binding Path="UserName" />
+                    <Binding Path="Password" />
+                </MultiBinding>
+            </Button.IsVisible>
+        </Button>
+
+        <Button x:Name="Test" Text="UI Tests" />
+
+    </StackLayout>
     <VisualStateManager.VisualStateGroups>
         <VisualStateGroupList>
             <VisualStateGroup>
@@ -14,7 +47,7 @@
                     </VisualState.StateTriggers>
                     <VisualState.Setters>
                         <Setter Property="BackgroundColor" Value="LightGreen" />
-                        <Setter Property="BackgroundColor" Value="LightGreen" TargetName="Test" />
+                        <Setter TargetName="Test" Property="BackgroundColor" Value="LightGreen" />
                     </VisualState.Setters>
                 </VisualState>
                 <VisualState x:Name="Landscape">
@@ -23,7 +56,7 @@
                     </VisualState.StateTriggers>
                     <VisualState.Setters>
                         <Setter Property="BackgroundColor" Value="LightBlue" />
-                        <Setter Property="BackgroundColor" Value="LightBlue" TargetName="Test" />
+                        <Setter TargetName="Test" Property="BackgroundColor" Value="LightBlue" />
                     </VisualState.Setters>
                 </VisualState>
                 <VisualState x:Name="MinWindowWidth600">
@@ -31,7 +64,7 @@
                         <AdaptiveTrigger MinWindowWidth="600" />
                     </VisualState.StateTriggers>
                     <VisualState.Setters>
-                        <Setter Property="IsVisible" Value="True" TargetName="Test" />
+                        <Setter TargetName="Test" Property="IsVisible" Value="True" />
                     </VisualState.Setters>
                 </VisualState>
                 <VisualState x:Name="MinWindowWidth1200">
@@ -39,22 +72,10 @@
                         <AdaptiveTrigger MinWindowWidth="1200" />
                     </VisualState.StateTriggers>
                     <VisualState.Setters>
-                        <Setter Property="IsVisible" Value="False" TargetName="Test" />
+                        <Setter TargetName="Test" Property="IsVisible" Value="False" />
                     </VisualState.Setters>
                 </VisualState>
             </VisualStateGroup>
         </VisualStateGroupList>
     </VisualStateManager.VisualStateGroups>
-    
-    <StackLayout>
-        <Entry Text="{Binding UserName}" ReturnType="Next" ReturnCommand="{bit:GoToNextViewCommand Next={x:Reference Password}}" />
-        <Entry x:Name="Password" Text="{Binding Password}" />
-        <Button Command="{Binding LoginUsingCredentialsCommand}" Text="Login using credentials" />
-        <Button Command="{Binding LoginUsingBrowserCommand}" Text="Login using Browser" />
-        <Button Command="{Binding LoginUsingGooglePlusCommand}" Text="Login using Google" />
-        <Button Command="{Binding SkipCommand}" Text="Skip" />
-
-        <Button x:Name="Test" Text="UI Tests" />
-
-    </StackLayout>
 </ContentPage>
