@@ -46,6 +46,11 @@ namespace Bit.ViewModel.Implementations
             return OriginalPlatformService.GetAssemblies();
         }
 
+        public string GetHash(string input)
+        {
+            return OriginalPlatformService.GetHash(input);
+        }
+
         public string GetMD5Hash(string input)
         {
             return OriginalPlatformService.GetMD5Hash(input);
