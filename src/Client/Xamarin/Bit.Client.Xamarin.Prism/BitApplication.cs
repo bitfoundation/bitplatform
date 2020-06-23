@@ -123,6 +123,7 @@ namespace Bit
             dependencyManager.RegisterUsing(resolver => Container.GetContainer(), lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExisting: false);
             BitCSharpClientControls.UseBitPopupNavigation();
             containerRegistry.RegisterPopupNavigationService();
+            //containerRegistry.RegisterPopupDialogService();
         }
     }
 
