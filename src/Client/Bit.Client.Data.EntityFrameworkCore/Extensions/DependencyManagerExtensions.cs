@@ -9,7 +9,7 @@ namespace Autofac
 {
     public static class DependencyManagerExtensions
     {
-        public static IDependencyManager RegisterDbContext<TDbContext>(this IDependencyManager dependencyManager, Action<DbContextOptionsBuilder>? optionsAction = null)
+        public static IDependencyManager RegisterDbContext<TDbContext>(this IDependencyManager dependencyManager, Action<IServiceProvider, DbContextOptionsBuilder>? optionsAction = null)
             where TDbContext : EfCoreDbContextBase
         {
             if (dependencyManager == null)
