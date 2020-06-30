@@ -385,8 +385,8 @@ namespace Bit.Data.EntityFrameworkCore.Implementations
         public virtual IDateTimeProvider DateTimeProvider { get; set; } = default!;
     }
 
-    public class EfCoreRepositoryBase<TEntity> : EfCoreRepositoryBase<EfCoreDbContextBase, TEntity>, IRepository<TEntity>
-        where TEntity : class, IEntity
+    public class EfCoreRepositoryBase<T> : EfCoreRepositoryBase<EfCoreDbContextBase, T>, IRepository<T>
+        where T : class
     {
 
     }
