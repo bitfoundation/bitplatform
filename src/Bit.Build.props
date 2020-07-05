@@ -24,12 +24,12 @@
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageProjectUrl>https://github.com/bitfoundation/bitframework</PackageProjectUrl>
     <PackageIconUrl>https://avatars.githubusercontent.com/u/22663390</PackageIconUrl>
-    <PackageReleaseNotes>https://github.com/bitfoundation/bitframework/releases/tag/v5.4.0</PackageReleaseNotes>
-    <PackageVersion>5.4.0</PackageVersion>
+    <PackageReleaseNotes>https://github.com/bitfoundation/bitframework/releases/tag/v5.5.0</PackageReleaseNotes>
+    <PackageVersion>5.5.0</PackageVersion>
 
     <!-- Version -->
-    <Version>5.4.0</Version>
-    <AssemblyVersion>5.4.0</AssemblyVersion>
+    <Version>5.5.0</Version>
+    <AssemblyVersion>5.5.0</AssemblyVersion>
 
     <!-- Compile -->
     <NeutralLanguage>en</NeutralLanguage>
