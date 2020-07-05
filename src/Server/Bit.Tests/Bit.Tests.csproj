@@ -20,7 +20,7 @@
     <PackageReference Include="MSTest.TestAdapter" Version="2.1.2" />
     <PackageReference Include="MSTest.TestFramework" Version="2.1.2" />
     <PackageReference Include="Refit" Version="5.1.67" />
-    <PackageReference Include="Selenium.WebDriver.ChromeDriver" Version="83.0.4103.3900" />
+    <PackageReference Include="Selenium.WebDriver.ChromeDriver" Version="83.0.4103.3910" />
   </ItemGroup>
 
   <ItemGroup>
