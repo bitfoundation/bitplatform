@@ -356,7 +356,7 @@ How to generate C# / JavaScript / TypeScript clients?
 
 Background Job Worker
 
-Singalr
+SignalR
 
 Identity Server
 
