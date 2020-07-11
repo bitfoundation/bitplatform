@@ -162,7 +162,7 @@ You've also other Register methods like RegisterGeneric, RegisterInstance, Regis
 You can also cast dependency manager to IAutofacDependencyManager, and after that, you can access [ContainerBuilder](http://docs.autofac.org/en/latest/register/registration.html) of autofac.
 
 ```csharp
-ContainerBuilder autofacContainerBuilder = ((IAutofacDependencyManager)dependencyManager).GetContainerBuidler();
+ContainerBuilder autofacContainerBuilder = ((IAutofacDependencyManager)dependencyManager).GetContainerBuilder();
 ```
 
 You also have access to [IServiceCollection](https://docs.microsoft.com/en-us/aspnet/core/fundamentals/dependency-injection) too.
