@@ -15,7 +15,7 @@ Using bit you'll get more benefits from web api. This includes following:
 
 ## Getting started
 
-Run following command after you installed [git for windows](https://git-scm.com/download/win) (You can use any git clinet)
+Run following command after you installed [git for windows](https://git-scm.com/download/win) (You can use any git client)
 ```shell
 git clone https://github.com/bit-foundation/bit-framework.git
 ```
