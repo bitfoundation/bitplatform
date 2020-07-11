@@ -115,7 +115,7 @@ Open 3rd sample. It contains upload methods using Web API attribute routing and 
 
 In 4th project (4WebApiAspNetHost), you'll find a bit web api project hosted on ASP.NET/IIS.
 
-##### Differences between this project and previews projects:
+##### Differences between this project and previous projects:
 
 1- Instead of [Microsoft.Owin.SelfHost] nuget package, we've installed [Microsoft.Owin.Host.SystemWeb]. Using that, you can host bit server side apps on top of ASP.NET/IIS. All codes you've developed are the same (We've copied codes from 2WebApiSwagger project in fact).
 
