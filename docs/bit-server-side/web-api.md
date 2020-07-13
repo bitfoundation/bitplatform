@@ -15,7 +15,7 @@ Using bit you'll get more benefits from web api. This includes following:
 
 ## Getting started
 
-Run following command after you installed [git for windows](https://git-scm.com/download/win) (You can use any git clinet)
+Run following command after you installed [git for windows](https://git-scm.com/download/win) (You can use any git client)
 ```shell
 git clone https://github.com/bit-foundation/bit-framework.git
 ```
@@ -89,7 +89,7 @@ We've used #DefaultPathProvider.Current.GetCurrentAppPath()# instead of #System.
 ```csharp
 c.ApplyDefaultApiConfig(httpConfiguration);
 ```
-As you see in the article, you open swgger ui by opening http://localhost:51609/swagger/ but in bit's sample, you open http://localhost:9000/api/swagger/. You open /swagger under /api. This is a magic of owin/asp.net core's request branching. Calling method "ApplyDefaultApiConfig" describs that magic to swagger. It also performs a bunch of other recommneded swagger configs for you too.
+As you see in the article, you open swagger ui by opening http://localhost:51609/swagger/ but in bit's sample, you open http://localhost:9000/api/swagger/. You open /swagger under /api. This is a magic of owin/asp.net core's request branching. Calling method "ApplyDefaultApiConfig" describs that magic to swagger. It also performs a bunch of other recommneded swagger configs for you too.
 
 EnableBitSwaggerUI provides better UX for Swagger UI. As an example, it simplifies your login experience. It also stores your token, so you don't have to login everytime you open swagger.
 
@@ -115,7 +115,7 @@ Open 3rd sample. It contains upload methods using Web API attribute routing and 
 
 In 4th project (4WebApiAspNetHost), you'll find a bit web api project hosted on ASP.NET/IIS.
 
-##### Differences between this project and previews projects:
+##### Differences between this project and previous projects:
 
 1- Instead of [Microsoft.Owin.SelfHost] nuget package, we've installed [Microsoft.Owin.Host.SystemWeb]. Using that, you can host bit server side apps on top of ASP.NET/IIS. All codes you've developed are the same (We've copied codes from 2WebApiSwagger project in fact).
 
@@ -162,7 +162,7 @@ You've also other Register methods like RegisterGeneric, RegisterInstance, Regis
 You can also cast dependency manager to IAutofacDependencyManager, and after that, you can access [ContainerBuilder](http://docs.autofac.org/en/latest/register/registration.html) of autofac.
 
 ```csharp
-ContainerBuilder autofacContainerBuilder = ((IAutofacDependencyManager)dependencyManager).GetContainerBuidler();
+ContainerBuilder autofacContainerBuilder = ((IAutofacDependencyManager)dependencyManager).GetContainerBuilder();
 ```
 
 You also have access to [IServiceCollection](https://docs.microsoft.com/en-us/aspnet/core/fundamentals/dependency-injection) too.
