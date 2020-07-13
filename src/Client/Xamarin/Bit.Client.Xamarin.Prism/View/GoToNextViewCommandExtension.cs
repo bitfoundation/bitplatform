@@ -17,7 +17,7 @@ namespace Bit.View
 
         public void Execute(object parameter)
         {
-            Next?.Focus();
+            Next.Focus();
         }
 
         public ICommand ProvideValue(IServiceProvider serviceProvider)

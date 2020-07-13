@@ -2,10 +2,12 @@
 using System;
 using System.Globalization;
 using System.Threading.Tasks;
+using System.Windows.Input;
+using Xamarin.Forms.Xaml;
 
 namespace Bit.ViewModel
 {
-    public class BitDelegateCommand : DelegateCommand
+    public class BitDelegateCommand : DelegateCommand, IMarkupExtension<ICommand>
     {
         private readonly Func<Task> _executeMethod = default!;
 
@@ -19,6 +21,16 @@ namespace Bit.ViewModel
             {
                 BitExceptionHandler.Current.OnExceptionReceived(exp);
             }
+        }
+
+        public ICommand ProvideValue(IServiceProvider serviceProvider)
+        {
+            return this;
+        }
+
+        object IMarkupExtension.ProvideValue(IServiceProvider serviceProvider)
+        {
+            return this;
         }
 
         public BitDelegateCommand(Func<Task> executeMethod)
@@ -60,7 +72,7 @@ namespace Bit.ViewModel
         }
     }
 
-    public class BitDelegateCommand<T> : DelegateCommand<T>
+    public class BitDelegateCommand<T> : DelegateCommand<T>, IMarkupExtension<ICommand>
     {
         static BitDelegateCommand()
         {
@@ -153,6 +165,16 @@ namespace Bit.ViewModel
             }
 
             return parameter;
+        }
+
+        public ICommand ProvideValue(IServiceProvider serviceProvider)
+        {
+            return this;
+        }
+
+        object IMarkupExtension.ProvideValue(IServiceProvider serviceProvider)
+        {
+            return this;
         }
     }
 }
