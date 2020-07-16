@@ -14,13 +14,13 @@
     <FrameworkReference Include="Microsoft.AspNetCore.App" />
     <PackageReference Include="Microsoft.ApplicationInsights.AspNetCore" Version="2.14.0" />
     <PackageReference Include="Microsoft.AspNetCore.ResponseCompression" Version="2.2.0" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="3.1.5" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="3.1.5" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="3.1.6" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="3.1.6" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.6.1" />
     <PackageReference Include="MSTest.TestAdapter" Version="2.1.2" />
     <PackageReference Include="MSTest.TestFramework" Version="2.1.2" />
     <PackageReference Include="Refit" Version="5.1.67" />
-    <PackageReference Include="Selenium.WebDriver.ChromeDriver" Version="83.0.4103.3910" />
+    <PackageReference Include="Selenium.WebDriver.ChromeDriver" Version="84.0.4147.3001" />
   </ItemGroup>
 
   <ItemGroup>

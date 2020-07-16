@@ -12,11 +12,11 @@
   <ItemGroup>
     <PackageReference Include="FakeItEasy" Version="6.1.0" />
     <PackageReference Include="Microsoft.AspNet.SignalR.Client" Version="2.4.1" />
-    <PackageReference Include="Microsoft.AspNetCore.TestHost" Version="3.1.5" />
+    <PackageReference Include="Microsoft.AspNetCore.TestHost" Version="3.1.6" />
     <PackageReference Include="Refit" Version="5.1.67" />
     <PackageReference Include="Selenium.Support" Version="3.141.0" />
     <PackageReference Include="Selenium.WebDriver" Version="3.141.0" />
-    <PackageReference Include="Selenium.WebDriver.ChromeDriver" Version="83.0.4103.3910" />
+    <PackageReference Include="Selenium.WebDriver.ChromeDriver" Version="84.0.4147.3001" />
     <PackageReference Include="Simple.OData.V4.Client" Version="5.12.0" />
   </ItemGroup>
 
