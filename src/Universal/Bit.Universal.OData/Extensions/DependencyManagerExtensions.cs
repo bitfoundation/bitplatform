@@ -7,7 +7,7 @@ namespace Autofac
 {
     public static class DependencyManagerExtensions
     {
-        public static IDependencyManager RegisterODataClient(this IDependencyManager dependencyManager, Action<ODataClientSettings>? odataClientSettingsCustomizer = null)
+        public static IDependencyManager RegisterODataClient(this IDependencyManager dependencyManager, Action<IServiceProvider, ODataClientSettings>? odataClientSettingsCustomizer = null)
         {
             if (dependencyManager == null)
                 throw new ArgumentNullException(nameof(dependencyManager));
@@ -24,7 +24,7 @@ namespace Autofac
                     NameMatchResolver = ODataNameMatchResolver.AlpahumericCaseInsensitive
                 };
 
-                odataClientSettingsCustomizer?.Invoke(settings);
+                odataClientSettingsCustomizer?.Invoke(resolver.Resolve<IServiceProvider>(), settings);
 
                 IODataClient odataClient = new ODataClient(settings);
 
