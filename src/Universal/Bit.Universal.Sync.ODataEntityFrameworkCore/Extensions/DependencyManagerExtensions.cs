@@ -9,10 +9,16 @@ namespace Autofac
     {
         public static IDependencyManager RegisterDefaultSyncService(this IDependencyManager dependencyManager, Action<ISyncService> configureDtoSetSyncConfigs)
         {
+            return RegisterSyncService<DefaultSyncService>(dependencyManager, configureDtoSetSyncConfigs);
+        }
+
+        public static IDependencyManager RegisterSyncService<TSyncService>(this IDependencyManager dependencyManager, Action<ISyncService> configureDtoSetSyncConfigs)
+            where TSyncService : class, ISyncService
+        {
             if (dependencyManager == null)
                 throw new ArgumentNullException(nameof(dependencyManager));
 
-            dependencyManager.GetContainerBuilder().RegisterType<DefaultSyncService>().As<ISyncService>()
+            dependencyManager.GetContainerBuilder().RegisterType<TSyncService>().As<ISyncService>()
                 .PropertiesAutowired(PropertyWiringOptions.PreserveSetValues)
                 .OnActivated(config =>
                 {
