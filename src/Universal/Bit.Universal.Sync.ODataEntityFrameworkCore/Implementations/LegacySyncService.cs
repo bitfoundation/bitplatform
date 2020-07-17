@@ -15,14 +15,15 @@ using System.Linq;
 using System.Linq.Dynamic;
 using System.Net.Http;
 using System.Reflection;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Xamarin.Essentials.Interfaces;
+using static Bit.Sync.ODataEntityFrameworkCore.Implementations.DefaultSyncService;
 
 namespace Bit.Sync.ODataEntityFrameworkCore.Implementations
 {
-    public class DefaultSyncService : ISyncService
+    [Obsolete("Use DefaultSyncService")]
+    public class LegacySyncService : ISyncService
     {
         public virtual IContainer Container { get; set; } = default!;
         public virtual IClientAppProfile ClientAppProfile { get; set; } = default!;
@@ -129,8 +130,6 @@ namespace Bit.Sync.ODataEntityFrameworkCore.Implementations
 
                     List<DtoSyncConfigSyncFromInformation> dtoSyncConfigSyncFromInformationList = new List<DtoSyncConfigSyncFromInformation>();
 
-                    int id = 0;
-
                     foreach (DtoSetSyncConfig fromServerSyncConfig in fromServerDtoSetSyncMaterials)
                     {
                         IQueryable<ISyncableDto> offlineSet = fromServerSyncConfig.OfflineDtoSet(offlineContextForSyncFrom);
@@ -147,84 +146,18 @@ namespace Bit.Sync.ODataEntityFrameworkCore.Implementations
 
                         DtoSyncConfigSyncFromInformation dtoSyncConfigSyncFromInformation = new DtoSyncConfigSyncFromInformation
                         {
-                            Id = id++,
                             DtoSetSyncConfig = fromServerSyncConfig,
                             DtoType = offlineSet.ElementType.GetTypeInfo(),
                             HadOfflineDtoBefore = mostRecentOfflineDto != null,
                             MaxVersion = maxVersion
                         };
 
-                        IBoundClient<IDictionary<string, object>> query = (dtoSyncConfigSyncFromInformation.DtoSetSyncConfig.OnlineDtoSetForGet ?? dtoSyncConfigSyncFromInformation.DtoSetSyncConfig.OnlineDtoSet)(ODataClient);
-
-                        if (dtoSyncConfigSyncFromInformation.MaxVersion == 0)
-                            query = query.Where($"{nameof(ISyncableDto.IsArchived)} eq false");
-                        else
-                            query = query.Where($"{nameof(ISyncableDto.Version)} gt {dtoSyncConfigSyncFromInformation.MaxVersion}");
-
-                        string oDataGetAndVersionFilter = await query
-                            .GetCommandTextAsync(cancellationToken)
-                            .ConfigureAwait(false);
-
-                        dtoSyncConfigSyncFromInformation.ODataGetUri = $"{ClientAppProfile.HostUri}{ClientAppProfile.ODataRoute}{oDataGetAndVersionFilter}";
+                        dtoSyncConfigSyncFromInformation.RetriveDataTask = BuildRetriveDataTask(dtoSyncConfigSyncFromInformation, cancellationToken);
 
                         dtoSyncConfigSyncFromInformationList.Add(dtoSyncConfigSyncFromInformation);
                     }
 
-                    StringBuilder batchRequests = new StringBuilder();
-
-                    batchRequests.AppendLine(@"
-{
-    ""requests"": [");
-
-                    foreach (DtoSyncConfigSyncFromInformation? dtoSyncConfigSyncFromInformation in dtoSyncConfigSyncFromInformationList)
-                    {
-                        batchRequests.AppendLine(@$"
-        {{
-            ""id"": ""{dtoSyncConfigSyncFromInformation.Id}"",
-            ""method"": ""GET"",
-            ""url"": ""{dtoSyncConfigSyncFromInformation.ODataGetUri}""
-        }}{(dtoSyncConfigSyncFromInformation != dtoSyncConfigSyncFromInformationList.Last() ? "," : "")}");
-                    }
-
-                    batchRequests.AppendLine(@"
-                  ]
-}");
-
-                    using (HttpResponseMessage batchResponbse = await HttpClient.PostAsync($"{ClientAppProfile.ODataRoute}$batch", new StringContent(batchRequests.ToString(), Encoding.UTF8, "application/json"), cancellationToken).ConfigureAwait(false))
-                    {
-                        batchResponbse.EnsureSuccessStatusCode();
-
-                        if (batchResponbse.Content.Headers.ContentType.MediaType != "application/json")
-                            throw new InvalidOperationException($"{batchResponbse.Content.Headers.ContentType.MediaType} content type is not supported.");
-
-#if UWP || DotNetStandard2_0
-                    using (Stream stream = await batchResponbse.Content.ReadAsStreamAsync().ConfigureAwait(false))
-#else
-                        await using (Stream stream = await batchResponbse.Content.ReadAsStreamAsync().ConfigureAwait(false))
-#endif
-                        {
-                            using (StreamReader reader = new StreamReader(stream))
-                            {
-                                using (JsonReader jsonReader = new JsonTextReader(reader))
-                                {
-                                    JToken jToken = await JToken.LoadAsync(jsonReader, new JsonLoadSettings
-                                    {
-                                        CommentHandling = CommentHandling.Ignore,
-                                        LineInfoHandling = LineInfoHandling.Ignore
-                                    }, cancellationToken).ConfigureAwait(false);
-
-                                    foreach (JToken response in jToken["responses"]!)
-                                    {
-                                        int responseId = response.Value<int>("id");
-
-                                        DtoSyncConfigSyncFromInformation? dtoSyncConfigSyncFromInformation = dtoSyncConfigSyncFromInformationList.ExtendedSingle($"Getting dtoSyncConfigSyncFromInformation with id {responseId}", item => item.Id == responseId);
-
-                                        dtoSyncConfigSyncFromInformation.RecentlyChangedOnlineDtos = ((IEnumerable)response["body"]!["value"]!.ToObject(typeof(List<>).MakeGenericType(dtoSyncConfigSyncFromInformation.DtoType))!).Cast<ISyncableDto>().ToArray();
-                                    }
-                                }
-                            }
-                        }
-                    }
+                    await Task.WhenAll(dtoSyncConfigSyncFromInformationList.Select(r => r.RetriveDataTask)).ConfigureAwait(false);
 
                     foreach (DtoSyncConfigSyncFromInformation dtoSyncConfigSyncFromInformation in dtoSyncConfigSyncFromInformationList.Where(r => r.RecentlyChangedOnlineDtos.Any()))
                     {
@@ -301,24 +234,57 @@ namespace Bit.Sync.ODataEntityFrameworkCore.Implementations
             await ODataClient.GetMetadataAsync(cancellationToken).ConfigureAwait(false);
         }
 
-        public class DtoSyncConfigSyncFromInformation
+        protected virtual async Task BuildRetriveDataTask(DtoSyncConfigSyncFromInformation dtoSyncConfigSyncFromInformation, CancellationToken cancellationToken)
         {
-            public int Id { get; set; }
+            if (dtoSyncConfigSyncFromInformation == null)
+                throw new ArgumentNullException(nameof(dtoSyncConfigSyncFromInformation));
 
-            public bool HadOfflineDtoBefore { get; set; }
+            try
+            {
+                IBoundClient<IDictionary<string, object>> query = (dtoSyncConfigSyncFromInformation.DtoSetSyncConfig.OnlineDtoSetForGet ?? dtoSyncConfigSyncFromInformation.DtoSetSyncConfig.OnlineDtoSet)(ODataClient);
 
-            public DtoSetSyncConfig DtoSetSyncConfig { get; set; } = default!;
+                if (dtoSyncConfigSyncFromInformation.MaxVersion == 0)
+                    query = query.Where($"{nameof(ISyncableDto.IsArchived)} eq false");
+                else
+                    query = query.Where($"{nameof(ISyncableDto.Version)} gt {dtoSyncConfigSyncFromInformation.MaxVersion}");
 
-            public TypeInfo DtoType { get; set; } = default!;
+                string oDataGetAndVersionFilter = await query
+                    .GetCommandTextAsync(cancellationToken)
+                    .ConfigureAwait(false);
 
-            public ISyncableDto[] RecentlyChangedOnlineDtos { get; set; } = default!;
+                string oDataUri = $"{ClientAppProfile.ODataRoute}{oDataGetAndVersionFilter}";
 
-            public long MaxVersion { get; set; }
+                using (HttpResponseMessage response = await HttpClient.GetAsync(oDataUri, HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false))
+                {
+                    response.EnsureSuccessStatusCode();
 
-            public string ODataGetUri { get; set; } = default!;
+#if UWP || DotNetStandard2_0
+                    using (Stream stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false))
+#else
+                    await using (Stream stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false))
+#endif
+                    {
+                        using (StreamReader reader = new StreamReader(stream))
+                        {
+                            using (JsonReader jsonReader = new JsonTextReader(reader))
+                            {
+                                JToken jToken = await JToken.LoadAsync(jsonReader, new JsonLoadSettings
+                                {
+                                    CommentHandling = CommentHandling.Ignore,
+                                    LineInfoHandling = LineInfoHandling.Ignore
+                                }, cancellationToken).ConfigureAwait(false);
 
-            [Obsolete]
-            public Task RetriveDataTask { get; set; } = default!;
+                                dtoSyncConfigSyncFromInformation.RecentlyChangedOnlineDtos = ((IEnumerable)(jToken)["value"]!.ToObject(typeof(List<>).MakeGenericType(dtoSyncConfigSyncFromInformation.DtoType))!).Cast<ISyncableDto>().ToArray();
+                            }
+                        }
+                    }
+                }
+            }
+            catch (Exception exp)
+            {
+                dtoSyncConfigSyncFromInformation.RecentlyChangedOnlineDtos = Array.Empty<ISyncableDto>();
+                ExceptionHandler.OnExceptionReceived(exp);
+            }
         }
 
         public virtual ISyncService AddDtoSetSyncConfig(DtoSetSyncConfig dtoSetSyncConfig)
