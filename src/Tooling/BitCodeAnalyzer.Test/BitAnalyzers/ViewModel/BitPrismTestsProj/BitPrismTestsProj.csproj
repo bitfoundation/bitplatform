@@ -5,9 +5,9 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Bit.Tooling.CodeAnalyzer" Version="5.5.0" />
-    <PackageReference Include="Microsoft.AppCenter.Analytics" Version="3.2.2" />
-    <PackageReference Include="Microsoft.AppCenter.Crashes" Version="3.2.2" />
+    <PackageReference Include="Bit.Tooling.CodeAnalyzer" Version="5.6.0" />
+    <PackageReference Include="Microsoft.AppCenter.Analytics" Version="3.3.0" />
+    <PackageReference Include="Microsoft.AppCenter.Crashes" Version="3.3.0" />
     <PackageReference Include="Prism.Autofac.Forms" Version="7.1.0.431" />
   </ItemGroup>
 
