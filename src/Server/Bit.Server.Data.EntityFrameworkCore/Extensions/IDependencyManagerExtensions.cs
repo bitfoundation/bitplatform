@@ -71,7 +71,22 @@ namespace Bit.Core.Contracts
             dependencyManager.Register<IDataProviderSpecificMethodsProvider, EfCoreDataProviderSpecificMethodsProvider>(lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExisting: false);
             dependencyManager.Register<EfCoreDataProviderSpecificMethodsProvider, EfCoreDataProviderSpecificMethodsProvider>(lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExisting: false);
             dependencyManager.Register<IUnitOfWork, DefaultUnitOfWork>(overwriteExisting: false);
-            dependencyManager.RegisterMapperConfiguration<EntityFrameworkCoreMapperConfiguration>();
+
+            Type? bitUniversalAutoMapperDependencyManagerExtensionsType = Type.GetType("Bit.Core.Contracts.IDependencyManagerExtensions, Bit.Universal.AutoMapper")
+                ?? Type.GetType("Bit.Core.Contracts.IDependencyManagerExtensions, Bit.Universal.AutoMapper.Legacy");
+
+            if (bitUniversalAutoMapperDependencyManagerExtensionsType != null)
+            {
+                Type entityFrameworkMapperConfigurationType =
+                    Type.GetType("Bit.Data.EntityFrameworkCore.Implementations.EntityFrameworkCoreMapperConfiguration, Bit.Universal.AutoMapper") ??
+                    Type.GetType("Bit.Data.EntityFrameworkCore.Implementations.EntityFrameworkCoreMapperConfiguration, Bit.Universal.AutoMapper.Legacy") ??
+                    throw new InvalidOperationException("EntityFrameworkCoreMapperConfiguration type could not be found");
+
+                bitUniversalAutoMapperDependencyManagerExtensionsType
+                    .GetMethod("RegisterMapperConfiguration")!
+                    .MakeGenericMethod(entityFrameworkMapperConfigurationType)
+                    .Invoke(null, new object[] { dependencyManager });
+            }
 
             return dependencyManager;
         }

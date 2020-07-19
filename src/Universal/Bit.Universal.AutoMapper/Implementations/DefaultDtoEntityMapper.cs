@@ -1,12 +1,12 @@
-﻿using System;
+﻿using AutoMapper;
+using AutoMapper.QueryableExtensions;
+using Bit.Model.Contracts;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using AutoMapper;
-using AutoMapper.QueryableExtensions;
-using Bit.Model.Contracts;
 
-namespace Bit.Data
+namespace Bit.Model.Implementations
 {
     public class DefaultDtoEntityMapper<TDto, TEntity> : IDtoEntityMapper<TDto, TEntity>
         where TDto : class, IDto

@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Bit.Model.Implementations;
 using Bit.Model.Contracts;
 using System;
 using System.Collections.Generic;
@@ -9,6 +10,15 @@ namespace Bit.Core.Contracts
 {
     public static class IDependencyManagerExtensions
     {
+        public static IDependencyManager RegisterDtoEntityMapper(this IDependencyManager dependencyManager)
+        {
+            if (dependencyManager == null)
+                throw new ArgumentNullException(nameof(dependencyManager));
+
+            dependencyManager.RegisterGeneric(typeof(IDtoEntityMapper<,>).GetTypeInfo(), typeof(DefaultDtoEntityMapper<,>).GetTypeInfo(), DependencyLifeCycle.PerScopeInstance);
+            return dependencyManager.RegisterAutoMapper();
+        }
+
         public static IDependencyManager RegisterAutoMapper(this IDependencyManager dependencyManager)
         {
             if (dependencyManager == null)

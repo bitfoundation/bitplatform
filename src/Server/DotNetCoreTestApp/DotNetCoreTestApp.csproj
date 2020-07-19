@@ -15,6 +15,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\Universal\Bit.Universal.AutoMapper\Bit.Universal.AutoMapper.csproj" />
     <ProjectReference Include="..\Bit.Server.Data.EntityFrameworkCore\Bit.Server.Data.EntityFrameworkCore.csproj" />
     <ProjectReference Include="..\Bit.Server.IdentityServer\Bit.Server.IdentityServer.csproj" />
     <ProjectReference Include="..\Bit.Server.OData\Bit.Server.OData.csproj" />

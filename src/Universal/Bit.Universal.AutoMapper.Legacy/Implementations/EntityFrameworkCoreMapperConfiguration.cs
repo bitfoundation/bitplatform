@@ -6,7 +6,7 @@ using System.Linq;
 
 namespace Bit.Data.EntityFrameworkCore.Implementations
 {
-    public class EntityFrameworkCoreMapperConfiguration : IMapperConfiguration // move to Bit.Server.Data.EntityFrameworkCore
+    public class EntityFrameworkCoreMapperConfiguration : IMapperConfiguration
     {
         public virtual void Configure(IMapperConfigurationExpression mapperConfigExpression)
         {

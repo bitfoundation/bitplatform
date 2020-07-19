@@ -24,6 +24,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\Universal\Bit.Universal.AutoMapper\Bit.Universal.AutoMapper.csproj" />
     <ProjectReference Include="..\Bit.Server.Test\Bit.Server.Test.csproj" />
   </ItemGroup>
 
