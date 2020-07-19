@@ -157,22 +157,21 @@
 
                         const original$dataPromiseHandlerBaseDefaultErrorCallback = $data["PromiseHandlerBase"]["defaultErrorCallback"];
 
-                        $data["PromiseHandlerBase"]["defaultErrorCallback"] = function overrided$dataPromiseHandlerBaseDefaultErrorCallback() {
+                        $data["PromiseHandlerBase"]["defaultErrorCallback"] = function overrided$dataPromiseHandlerBaseDefaultErrorCallback(exception) {
 
                             try {
-                                const statusCode: number = arguments[0].data[0].response.statusCode;
+                                const statusCode: number = exception?.data?.response?.statusCode;
                                 if (statusCode == 401) {
                                     PubSub.publish("UnauthorizedRequestEvent", {} as Model.Events.UnauthorizedRequestEvent);
                                     if (securityService.isLoggedIn() == false)
                                         PubSub.publish("TokenExpiredEvent", {} as Model.Events.TokenExpiredEvent);
                                 }
                             } catch (e) {
-                                console.warn(e.message);
-
+                                console.error(e);
                             }
-
-                            return original$dataPromiseHandlerBaseDefaultErrorCallback.apply(this, arguments);
-
+                            finally {
+                                return original$dataPromiseHandlerBaseDefaultErrorCallback.apply(this, arguments);
+                            }
                         };
 
                         const originalRead = odatajs.oData.json.jsonHandler.read;
