@@ -99,7 +99,7 @@ namespace Bit.CSharpClientSample
 
             dependencyManager.RegisterDbContext<SampleDbContext>();
 
-            dependencyManager.RegisterDefaultSyncService(syncService =>
+            dependencyManager.RegisterDefaultSyncService((serviceProvider, syncService) =>
             {
                 syncService.AddDtoSetSyncConfig(new DtoSetSyncConfig
                 {
