@@ -114,7 +114,7 @@ namespace Bit.ViewModel
 
                     foreach (KeyValuePair<string, object> prp in parameters)
                     {
-                        if (ShouldLogNavParam(prp.Key))
+                        if (ShouldLogNavParam(prp.Key) && prp.Key != KnownNavigationParameters.CreateTab && !properties.ContainsKey(prp.Key))
                             properties.Add(prp.Key, prp.Value?.ToString() ?? "NULL");
                     }
 
