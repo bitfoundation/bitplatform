@@ -89,7 +89,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Bit.TSClient.AngularJS.Test
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Bit.Tests", "Server\Bit.Tests\Bit.Tests.csproj", "{B3726AD1-2E7B-4B05-8AC2-821E4AEFD5C9}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DotNetCoreTestApp", "Server\DotNetCoreTestApp\DotNetCoreTestApp.csproj", "{76F92C3A-19DB-4B9F-9BE1-A08B79F4B51C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DotNetTestApp", "Server\DotNetTestApp\DotNetTestApp.csproj", "{76F92C3A-19DB-4B9F-9BE1-A08B79F4B51C}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Bit.Server.Test", "Server\Bit.Server.Test\Bit.Server.Test.csproj", "{6753CD60-4EE8-492C-A638-F45F66DFB1EC}"
 EndProject

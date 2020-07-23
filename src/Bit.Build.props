@@ -44,7 +44,7 @@
     <DefineConstants Condition=" '$(TargetFramework)' == 'monoandroid10.0'">$(DefineConstants);Android10</DefineConstants>
     <DefineConstants Condition=" '$(TargetFramework)' == 'monoandroid9.0' ">$(DefineConstants);Android9</DefineConstants>
     <DefineConstants Condition=" '$(TargetFramework)' == 'Xamarin.iOS10' ">$(DefineConstants);iOS</DefineConstants>
-    <DefineConstants Condition=" '$(TargetFramework)' == 'netcoreapp3.1' ">$(DefineConstants);DotNetCore</DefineConstants>
+    <DefineConstants Condition=" '$(TargetFramework)' == 'netcoreapp5.0' ">$(DefineConstants);DotNet</DefineConstants>
     <DefineConstants Condition=" '$(TargetFramework)' == 'uap10.0.17763' ">$(DefineConstants);UWP</DefineConstants>
     <DefineConstants Condition=" '$(TargetFramework)' == 'netstandard2.0' ">$(DefineConstants);DotNetStandard;DotNetStandard2_0</DefineConstants>
     <DefineConstants Condition=" '$(TargetFramework)' == 'netstandard2.1' ">$(DefineConstants);DotNetStandard;DotNetStandard2_1</DefineConstants>

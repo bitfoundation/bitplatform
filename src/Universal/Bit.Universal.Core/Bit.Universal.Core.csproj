@@ -3,14 +3,14 @@
   <Import Project="../../Bit.Build.props" />
 
   <PropertyGroup>
-    <TargetFrameworks>netcoreapp3.1;monoandroid9.0;monoandroid10.0;Xamarin.iOS10;uap10.0.17763;netstandard2.0;netstandard2.1;</TargetFrameworks>
+    <TargetFrameworks>netcoreapp5.0;monoandroid9.0;monoandroid10.0;Xamarin.iOS10;uap10.0.17763;netstandard2.0;netstandard2.1;</TargetFrameworks>
     <RootNamespace>Bit.Core</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="3.1.6" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="5.0.0-preview.7.20364.11" />
     <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
-    <PackageReference Include="System.ComponentModel.Annotations" Version="4.7.0" />
+    <PackageReference Include="System.ComponentModel.Annotations" Version="5.0.0-preview.7.20364.11" />
     <PackageReference Include="Autofac" Version="5.2.0" />
     <PackageReference Include="Autofac.Extensions.DependencyInjection" Version="6.0.0" />
     <PackageReference Include="Xamarin.Essentials.Interfaces" Version="1.5.3.2" />

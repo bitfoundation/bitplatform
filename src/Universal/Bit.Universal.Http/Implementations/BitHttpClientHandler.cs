@@ -83,7 +83,11 @@ namespace Bit.Http.Implementations
 
             if (!request.Headers.Any(h => h.Key == "Client-Type"))
             {
+#if DotNet
+                request.Headers.Add("Client-Type", System.Runtime.InteropServices.RuntimeInformation.ProcessArchitecture == System.Runtime.InteropServices.Architecture.Wasm ? "Wasm" : "Xamarin");
+#else           
                 request.Headers.Add("Client-Type", "Xamarin");
+#endif
 
                 if (DeviceInfo.Idiom != Xamarin.Essentials.DeviceIdiom.Unknown)
                     request.Headers.Add("Client-Screen-Size", DeviceInfo.Idiom == Xamarin.Essentials.DeviceIdiom.Phone ? "MobileAndPhablet" : "DesktopAndTablet");
