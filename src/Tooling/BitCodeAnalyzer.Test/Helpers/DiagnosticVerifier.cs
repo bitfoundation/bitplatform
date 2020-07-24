@@ -397,7 +397,7 @@ namespace Bit.Tooling.CodeAnalyzer.Test.Helpers
 
             MSBuildWorkspace workspace = MSBuildWorkspace.Create(new Dictionary<string, string>()
             {
-                { "TargetFramework", "netcoreapp3.1" }
+                { "TargetFramework", "netcoreapp5.0" }
             });
 
             Process.Start(new ProcessStartInfo

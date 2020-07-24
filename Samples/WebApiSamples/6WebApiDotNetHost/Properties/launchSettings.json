@@ -1,13 +1,13 @@
 {
   "profiles": {
-    "DotNetCoreTestApp": {
+    "WebApiDotNetHost": {
       "commandName": "Project",
       "launchBrowser": true,
-      "launchUrl": "odata/swagger/",
+      "launchUrl": "api/swagger/",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
       },
-      "applicationUrl": "http://localhost:4119/"
+      "applicationUrl": "http://localhost:9006/"
     }
   }
 }

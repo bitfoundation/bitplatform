@@ -1,5 +1,5 @@
 ﻿{
-  "TargetFramework": "netcoreapp3.1",
+  "TargetFramework": "netcoreapp5.0",
   "BitCodeGeneratorConfigs": {
     "BitCodeGeneratorMappings": [
       {

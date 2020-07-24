@@ -4,7 +4,7 @@
     "IsActive": true,
     "DebugMode": true,
     "AppInfo": {
-      "Name": "6WebApiDotNetCoreHost",
+      "Name": "6WebApiDotNetHost",
       "Version": "1"
     }
   }

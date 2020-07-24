@@ -2,7 +2,7 @@
 using Microsoft.AspNetCore.Hosting;
 using System.Threading.Tasks;
 
-namespace WebApiDotNetCoreHost
+namespace WebApiDotNetHost
 {
     public class Program
     {

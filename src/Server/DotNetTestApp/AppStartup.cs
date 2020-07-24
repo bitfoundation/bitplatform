@@ -32,7 +32,7 @@ using System.Web.Http;
 
 [assembly: ODataModule("Test")]
 
-namespace DotNetCoreTestApp
+namespace DotNetTestApp
 {
     public class AppStartup : AutofacAspNetCoreAppStartup, IAppModule, IAppModulesProvider
     {

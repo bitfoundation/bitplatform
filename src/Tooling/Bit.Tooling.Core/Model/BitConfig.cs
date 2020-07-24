@@ -6,7 +6,7 @@ namespace Bit.Tooling.Core.Model
 {
     public class BitConfig
     {
-        public virtual string TargetFramework { get; set; } = "netcoreapp3.1";
+        public virtual string TargetFramework { get; set; } = "netcoreapp5.0";
 
         public virtual BitCodeGeneratorConfig BitCodeGeneratorConfigs { get; set; } = default!;
     }

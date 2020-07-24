@@ -32,7 +32,7 @@ namespace Bit.Owin.Middlewares
             string redirectUriHost = $"{context.Request.Scheme}://{context.Request.Host.Value}{_App.GetHostVirtualPath()}SignIn";
             string redirectUri = $"{_App.GetSsoUrl()}/connect/authorize?scope={string.Join(" ", _App.Security.Scopes)}&client_id={_App.GetSsoDefaultClientId()}&redirect_uri={redirectUriHost}&response_type=id_token token";
 
-            string pathname = _App.GetHostVirtualPath() + (context.Request.Path != null ? context.Request.Path.Value.Substring(1) : string.Empty);
+            string pathname = _App.GetHostVirtualPath() + ((context.Request.Path != null && !string.IsNullOrEmpty(context.Request.Path.Value) && context.Request.Path.Value.Length > 0) ? context.Request.Path.Value.Substring(1) : string.Empty);
 
             string state = $@"{{""pathname"":""{pathname}""}}";
 
