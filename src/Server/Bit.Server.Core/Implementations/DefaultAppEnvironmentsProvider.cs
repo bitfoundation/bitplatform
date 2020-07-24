@@ -71,7 +71,7 @@ namespace Bit.Core.Implementations
             }
             else
             {
-                return (false, $"environment.json could not be found at {path}");
+                return (false, $"environments.json could not be found at {path}");
             }
         }
 
