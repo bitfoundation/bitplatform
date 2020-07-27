@@ -1,4 +1,4 @@
-﻿<Project Sdk="MSBuild.Sdk.Extras/2.0.54">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <Import Project="../../Bit.Build.props" />
 
@@ -10,7 +10,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Bit.Server.Data\Bit.Server.Data.csproj" />
-    <PackageReference Include="NHibernate" Version="5.3.0" />
+    <PackageReference Include="NHibernate" Version="5.3.1" />
   </ItemGroup>
 
 </Project>

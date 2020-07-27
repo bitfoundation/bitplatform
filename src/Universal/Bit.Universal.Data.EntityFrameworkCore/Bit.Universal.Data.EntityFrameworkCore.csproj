@@ -1,4 +1,4 @@
-﻿<Project Sdk="MSBuild.Sdk.Extras/2.0.54">
+﻿<Project Sdk="MSBuild.Sdk.Extras/2.1.2">
 
 	<Import Project="../../Bit.Build.props" />
 
@@ -10,7 +10,7 @@
 
 	<ItemGroup>
 		<PackageReference Condition=" '$(TargetFramework)' == 'uap10.0.17763' OR '$(TargetFramework)' == 'netstandard2.0' " Include="Microsoft.EntityFrameworkCore" Version="3.1.6" />
-		<PackageReference Condition=" '$(TargetFramework)' != 'uap10.0.17763' AND '$(TargetFramework)' != 'netstandard2.0' " Include="Microsoft.EntityFrameworkCore" Version="5.0.0-preview.7.20364.11" />
+		<PackageReference Condition=" '$(TargetFramework)' != 'uap10.0.17763' AND '$(TargetFramework)' != 'netstandard2.0' " Include="Microsoft.EntityFrameworkCore" Version="5.0.0-preview.7.20365.15" />
 		<ProjectReference Include="..\Bit.Universal.Data\Bit.Universal.Data.csproj" />
 	</ItemGroup>
 

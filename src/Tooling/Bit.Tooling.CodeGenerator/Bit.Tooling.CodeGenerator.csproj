@@ -3,27 +3,28 @@
   <Import Project="../../Bit.Build.props" />
 
   <PropertyGroup>
-    <OutputType Condition=" '$(TargetFramework)' == 'net472' ">Exe</OutputType>
-    <TargetFrameworks>net472;netstandard2.0</TargetFrameworks>
+    <OutputType Condition=" '$(TargetFramework)' == 'netcoreapp5.0' ">Exe</OutputType>
+    <TargetFrameworks>netcoreapp5.0;netstandard2.0</TargetFrameworks>
     <DisableMSBuildAssemblyCopyCheck>True</DisableMSBuildAssemblyCopyCheck>
     <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
   </PropertyGroup>
 
   <ItemGroup>
     <Compile Condition=" '$(TargetFramework)' == 'netstandard2.0' " Remove="Program.cs" />
-    <Compile Condition=" '$(TargetFramework)' == 'net472' " Remove="CallContext.cs" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.Build" Condition=" '$(TargetFramework)' == 'net472' " Version="14.3.0" PrivateAssets="All" />
-    <PackageReference Include="Microsoft.CodeAnalysis" Version="3.5.0" />
-    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="3.5.0" />
-    <PackageReference Include="Microsoft.CodeAnalysis.Workspaces.MSBuild" Condition=" '$(TargetFramework)' == 'net472' " Version="3.5.0" />
-    <PackageReference Include="Microsoft.Build.Utilities.Core" Condition=" '$(TargetFramework)' == 'net472' " Version="14.3.0" />
-    <PackageReference Include="Microsoft.Build.Locator" Condition=" '$(TargetFramework)' == 'net472' " Version="1.2.6" />
+    <PackageReference Include="Microsoft.Build" Condition=" '$(TargetFramework)' == 'netcoreapp5.0' " Version="16.6.0" PrivateAssets="All" />
+    <PackageReference Include="Microsoft.CodeAnalysis" Version="3.7.0-4.final" />
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="3.7.0-4.final" />
+    <PackageReference Include="Microsoft.CodeAnalysis.Workspaces.MSBuild" Condition=" '$(TargetFramework)' == 'netcoreapp5.0' " Version="3.7.0-4.final" />
+    <PackageReference Include="Microsoft.Build.Utilities.Core" Condition=" '$(TargetFramework)' == 'netcoreapp5.0' " Version="16.6.0" />
+    <PackageReference Include="Microsoft.Build.Locator" Condition=" '$(TargetFramework)' == 'netcoreapp5.0' " Version="1.2.6" />
     <PackageReference Include="Newtonsoft.Json">
-      <Version>5.0.8</Version>
+      <Version>12.0.3</Version>
     </PackageReference>
+    <PackageReference Include="NuGet.Frameworks" Version="5.7.0-rtm.6702" />
+    <PackageReference Include="NuGet.ProjectModel" Version="5.7.0-rtm.6702" />
     <PackageReference Include="System.CodeDom" Version="5.0.0-preview.7.20364.11" />
   </ItemGroup>
 

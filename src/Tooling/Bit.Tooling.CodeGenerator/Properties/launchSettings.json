@@ -2,7 +2,7 @@
   "profiles": {
     "Bit.Tooling.CodeGenerator": {
       "commandName": "Project",
-      "commandLineArgs": "-projectPath \"C:\\Workspace\\bit-foundation\\bitframework\\src\\Server\\Bit.Tests\\Bit.Tests.csproj\""
+      "commandLineArgs": "-projectPath \"D:\\Workspace\\bitframework\\src\\Server\\Bit.Server.OData\\Bit.Server.OData.csproj\""
     }
   }
 }

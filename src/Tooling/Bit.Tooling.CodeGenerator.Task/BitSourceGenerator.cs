@@ -17,14 +17,6 @@ namespace Bit.Tooling.CodeGenerator.Task
             {
                 LogMessage($"Code generation started for project: {ProjectPath}");
 
-                const string subkey = @"SOFTWARE\Microsoft\NET Framework Setup\NDP\v4\Full\";
-
-                using (RegistryKey ndpKey = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry32).OpenSubKey(subkey))
-                {
-                    if (ndpKey == null || !(ndpKey.GetValue("Release") is int release) || release < 461808)
-                        throw new InvalidOperationException("You've to install .NET 4.7.2+ on your dev machine.");
-                }
-
                 sw = Stopwatch.StartNew();
 
                 using (AutoResetEvent outputWaitHandle = new AutoResetEvent(false))
