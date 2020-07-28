@@ -21,20 +21,6 @@ namespace Bit.Signalr
             if (owinApp == null)
                 throw new ArgumentNullException(nameof(owinApp));
 
-            TypeInfo type = typeof(HubConfiguration).GetTypeInfo().Assembly.GetType("Microsoft.AspNet.SignalR.Infrastructure.MonoUtility")!.GetTypeInfo();
-            FieldInfo isRunningMonoField = type.GetField("_isRunningMono", BindingFlags.NonPublic | BindingFlags.Static)!;
-            if (isRunningMonoField != null)
-            {
-                try
-                {
-                    isRunningMonoField.SetValue(null, new Lazy<bool>(() => true));
-                }
-                catch (FieldAccessException)
-                {
-
-                }
-            }
-
             HubConfiguration signalRConfig = new HubConfiguration
             {
                 EnableDetailedErrors = AppEnvironment.DebugMode == true,
