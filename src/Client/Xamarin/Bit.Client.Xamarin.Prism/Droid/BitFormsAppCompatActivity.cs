@@ -88,10 +88,14 @@ namespace Bit.Android
         {
             try
             {
-                BitApplication.Current.Container.Resolve<IEventAggregator>().GetEvent<LowMemoryEvent>().Publish(new LowMemoryEvent { });
-
                 if (LocalTelemetryService.Current.IsConfigured()) // LocalTelemetryService is not DI friendly.
                     LocalTelemetryService.Current.ClearThings();
+
+                BitApplication.Current.Container?.Resolve<IEventAggregator>().GetEvent<LowMemoryEvent>().Publish(new LowMemoryEvent { });
+            }
+            catch (Exception exp) when (exp is ArgumentNullException && exp.Message == "Value cannot be null.\nParameter name: context")
+            {
+                // Do nothing. Container is not be ready at this time!
             }
             catch (Exception exp)
             {

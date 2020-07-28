@@ -59,19 +59,11 @@ namespace Bit.ViewModel.Implementations
                         InstrumentationKey = _configuration!.InstrumentationKey
                     };
 
-                    IContainerProvider? container = ((PrismApplication)Application.Current).Container;
-
-                    if (container != null)
-                    {
-                        _client.Context.Device.Model = container.Resolve<IDeviceInfo>().Model;
-                    }
 #if XamarinEssentials
-                    else
-                    {
-                        _client.Context.Device.Model = Xamarin.Essentials.DeviceInfo.Model;
-                    }
+                    
+                    _client.Context.Device.Model = Xamarin.Essentials.DeviceInfo.Model;                    
 #endif
-                    _client.Context.Device.OperatingSystem = Xamarin.Forms.Device.RuntimePlatform;
+                    _client.Context.Device.OperatingSystem = Device.RuntimePlatform;
                 }
                 return _client;
             }
