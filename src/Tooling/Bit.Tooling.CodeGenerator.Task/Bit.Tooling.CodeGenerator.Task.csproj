@@ -3,7 +3,7 @@
   <Import Project="../../Bit.Build.props" />
 
   <PropertyGroup>
-    <TargetFramework>net461</TargetFramework>
+    <TargetFramework>net5.0</TargetFramework>
     <IsTool>true</IsTool>
     <PackageTags>$(PackageTags) Code-Generator Source-Generator MsBuild</PackageTags>
     <NoPackageAnalysis>true</NoPackageAnalysis>

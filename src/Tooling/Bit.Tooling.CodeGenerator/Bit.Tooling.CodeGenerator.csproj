@@ -3,15 +3,11 @@
 	<Import Project="../../Bit.Build.props" />
 
 	<PropertyGroup>
-		<OutputType Condition=" '$(TargetFramework)' == 'net5.0' ">Exe</OutputType>
-		<TargetFrameworks>net5.0;netstandard2.0</TargetFrameworks>
+		<OutputType>Exe</OutputType>
+		<TargetFramework>net5.0</TargetFramework>
 		<DisableMSBuildAssemblyCopyCheck>True</DisableMSBuildAssemblyCopyCheck>
 		<GeneratePackageOnBuild>false</GeneratePackageOnBuild>
 	</PropertyGroup>
-
-	<ItemGroup>
-		<Compile Condition=" '$(TargetFramework)' == 'netstandard2.0' " Remove="Program.cs" />
-	</ItemGroup>
 
 	<ItemGroup>
 		<PackageReference Include="Microsoft.CodeAnalysis" Version="3.7.0-4.final" />
@@ -20,13 +16,10 @@
 			<Version>12.0.3</Version>
 		</PackageReference>
 		<PackageReference Include="System.CodeDom" Version="5.0.0-preview.7.20364.11" />
-	</ItemGroup>
-
-	<ItemGroup Condition=" '$(TargetFramework)' == 'net5.0' ">
-		<PackageReference Include="Microsoft.Build"  Version="16.6.0" PrivateAssets="All" />
-		<PackageReference Include="Microsoft.CodeAnalysis.Workspaces.MSBuild"  Version="3.7.0-4.final" />
-		<PackageReference Include="Microsoft.Build.Utilities.Core"  Version="16.6.0" />
-		<PackageReference Include="Microsoft.Build.Locator"  Version="1.2.6" />
+		<PackageReference Include="Microsoft.CodeAnalysis.Workspaces.MSBuild" Version="3.7.0-4.final" />
+		<PackageReference Include="Microsoft.Build" Version="16.6.0" PrivateAssets="All" />
+		<PackageReference Include="Microsoft.Build.Utilities.Core" Version="16.6.0" />
+		<PackageReference Include="Microsoft.Build.Locator" Version="1.2.6" />
 		<PackageReference Include="NuGet.Frameworks" Version="5.7.0-rtm.6702" />
 		<PackageReference Include="NuGet.ProjectModel" Version="5.7.0-rtm.6702" />
 	</ItemGroup>

@@ -5,6 +5,8 @@
 		<AutoGenerateBindingRedirects>True</AutoGenerateBindingRedirects>
 		<IsPackable>false</IsPackable>
 		<Nullable>disable</Nullable>
+		<DisableMSBuildAssemblyCopyCheck>True</DisableMSBuildAssemblyCopyCheck>
+		<GeneratePackageOnBuild>false</GeneratePackageOnBuild>
 	</PropertyGroup>
 
 	<ItemGroup>
@@ -15,6 +17,7 @@
 		<PackageReference Include="MSTest.TestAdapter" Version="2.1.2" />
 		<PackageReference Include="MSTest.TestFramework" Version="2.1.2" />
 		<PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.6.1" />
+		<PackageReference Include="Microsoft.Build" Version="16.6.0" PrivateAssets="All" />
 	</ItemGroup>
 
 	<ItemGroup>
