@@ -5,7 +5,7 @@
     export class BitTestPathProvider extends Bit.Implementations.DefaultPathProvider {
 
         public getProjectsPath(): Array<{ name: string, path: string }> {
-            return [{ name: "Bit", path: "bitframework/src/Client/TypeScript" }];
+            return [{ name: "Bit", path: "src/Client/TypeScript" }];
         }
 
     }

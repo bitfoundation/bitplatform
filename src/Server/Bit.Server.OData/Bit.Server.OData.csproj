@@ -3,7 +3,7 @@
   <Import Project="../../Bit.Build.props" />
 
   <PropertyGroup>
-    <TargetFramework>netcoreapp5.0</TargetFramework>
+    <TargetFramework>net5.0</TargetFramework>
     <PackageTags>$(PackageTags) Web API OData Rest Microsoft AspNet WebApi AspNetWebApi</PackageTags>
     <RootNamespace>Bit.OData</RootNamespace>
   </PropertyGroup>

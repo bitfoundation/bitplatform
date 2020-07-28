@@ -1,91 +1,94 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <Import Project="../../Bit.Build.props" />
+	<Import Project="../../Bit.Build.props" />
 
-  <PropertyGroup>
-    <OutputType Condition=" '$(TargetFramework)' == 'netcoreapp5.0' ">Exe</OutputType>
-    <TargetFrameworks>netcoreapp5.0;netstandard2.0</TargetFrameworks>
-    <DisableMSBuildAssemblyCopyCheck>True</DisableMSBuildAssemblyCopyCheck>
-    <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
-  </PropertyGroup>
+	<PropertyGroup>
+		<OutputType Condition=" '$(TargetFramework)' == 'net5.0' ">Exe</OutputType>
+		<TargetFrameworks>net5.0;netstandard2.0</TargetFrameworks>
+		<DisableMSBuildAssemblyCopyCheck>True</DisableMSBuildAssemblyCopyCheck>
+		<GeneratePackageOnBuild>false</GeneratePackageOnBuild>
+	</PropertyGroup>
 
-  <ItemGroup>
-    <Compile Condition=" '$(TargetFramework)' == 'netstandard2.0' " Remove="Program.cs" />
-  </ItemGroup>
+	<ItemGroup>
+		<Compile Condition=" '$(TargetFramework)' == 'netstandard2.0' " Remove="Program.cs" />
+	</ItemGroup>
 
-  <ItemGroup>
-    <PackageReference Include="Microsoft.Build" Condition=" '$(TargetFramework)' == 'netcoreapp5.0' " Version="16.6.0" PrivateAssets="All" />
-    <PackageReference Include="Microsoft.CodeAnalysis" Version="3.7.0-4.final" />
-    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="3.7.0-4.final" />
-    <PackageReference Include="Microsoft.CodeAnalysis.Workspaces.MSBuild" Condition=" '$(TargetFramework)' == 'netcoreapp5.0' " Version="3.7.0-4.final" />
-    <PackageReference Include="Microsoft.Build.Utilities.Core" Condition=" '$(TargetFramework)' == 'netcoreapp5.0' " Version="16.6.0" />
-    <PackageReference Include="Microsoft.Build.Locator" Condition=" '$(TargetFramework)' == 'netcoreapp5.0' " Version="1.2.6" />
-    <PackageReference Include="Newtonsoft.Json">
-      <Version>12.0.3</Version>
-    </PackageReference>
-    <PackageReference Include="NuGet.Frameworks" Version="5.7.0-rtm.6702" />
-    <PackageReference Include="NuGet.ProjectModel" Version="5.7.0-rtm.6702" />
-    <PackageReference Include="System.CodeDom" Version="5.0.0-preview.7.20364.11" />
-  </ItemGroup>
+	<ItemGroup>
+		<PackageReference Include="Microsoft.CodeAnalysis" Version="3.7.0-4.final" />
+		<PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="3.7.0-4.final" />
+		<PackageReference Include="Newtonsoft.Json">
+			<Version>12.0.3</Version>
+		</PackageReference>
+		<PackageReference Include="System.CodeDom" Version="5.0.0-preview.7.20364.11" />
+	</ItemGroup>
 
-  <ItemGroup>
+	<ItemGroup Condition=" '$(TargetFramework)' == 'net5.0' ">
+		<PackageReference Include="Microsoft.Build"  Version="16.6.0" PrivateAssets="All" />
+		<PackageReference Include="Microsoft.CodeAnalysis.Workspaces.MSBuild"  Version="3.7.0-4.final" />
+		<PackageReference Include="Microsoft.Build.Utilities.Core"  Version="16.6.0" />
+		<PackageReference Include="Microsoft.Build.Locator"  Version="1.2.6" />
+		<PackageReference Include="NuGet.Frameworks" Version="5.7.0-rtm.6702" />
+		<PackageReference Include="NuGet.ProjectModel" Version="5.7.0-rtm.6702" />
+	</ItemGroup>
 
-    <None Update="Implementations\TypeScriptClientProxyGenerator\Templates\JavaScriptDtosGeneratorTemplate.tt">
-      <Generator>TextTemplatingFilePreprocessor</Generator>
-      <LastGenOutput>JavaScriptDtosGeneratorTemplate.cs</LastGenOutput>
-    </None>
-    <Compile Update="Implementations\TypeScriptClientProxyGenerator\Templates\JavaScriptDtosGeneratorTemplate.cs">
-      <DesignTime>True</DesignTime>
-      <AutoGen>True</AutoGen>
-      <DependentUpon>JavaScriptDtosGeneratorTemplate.tt</DependentUpon>
-    </Compile>
+	<ItemGroup>
 
-    <None Update="Implementations\TypeScriptClientProxyGenerator\Templates\JavaScriptContextGeneratorTemplate.tt">
-      <Generator>TextTemplatingFilePreprocessor</Generator>
-      <LastGenOutput>JavaScriptContextGeneratorTemplate.cs</LastGenOutput>
-    </None>
-    <Compile Update="Implementations\TypeScriptClientProxyGenerator\Templates\JavaScriptContextGeneratorTemplate.cs">
-      <DesignTime>True</DesignTime>
-      <AutoGen>True</AutoGen>
-      <DependentUpon>JavaScriptContextGeneratorTemplate.tt</DependentUpon>
-    </Compile>
+		<None Update="Implementations\TypeScriptClientProxyGenerator\Templates\JavaScriptDtosGeneratorTemplate.tt">
+			<Generator>TextTemplatingFilePreprocessor</Generator>
+			<LastGenOutput>JavaScriptDtosGeneratorTemplate.cs</LastGenOutput>
+		</None>
+		<Compile Update="Implementations\TypeScriptClientProxyGenerator\Templates\JavaScriptDtosGeneratorTemplate.cs">
+			<DesignTime>True</DesignTime>
+			<AutoGen>True</AutoGen>
+			<DependentUpon>JavaScriptDtosGeneratorTemplate.tt</DependentUpon>
+		</Compile>
 
-    <None Update="Implementations\TypeScriptClientProxyGenerator\Templates\TypeScriptContextGeneratorTemplate.tt">
-      <Generator>TextTemplatingFilePreprocessor</Generator>
-      <LastGenOutput>TypeScriptContextGeneratorTemplate.cs</LastGenOutput>
-    </None>
-    <Compile Update="Implementations\TypeScriptClientProxyGenerator\Templates\TypeScriptContextGeneratorTemplate.cs">
-      <DesignTime>True</DesignTime>
-      <AutoGen>True</AutoGen>
-      <DependentUpon>TypeScriptContextGeneratorTemplate.tt</DependentUpon>
-    </Compile>
+		<None Update="Implementations\TypeScriptClientProxyGenerator\Templates\JavaScriptContextGeneratorTemplate.tt">
+			<Generator>TextTemplatingFilePreprocessor</Generator>
+			<LastGenOutput>JavaScriptContextGeneratorTemplate.cs</LastGenOutput>
+		</None>
+		<Compile Update="Implementations\TypeScriptClientProxyGenerator\Templates\JavaScriptContextGeneratorTemplate.cs">
+			<DesignTime>True</DesignTime>
+			<AutoGen>True</AutoGen>
+			<DependentUpon>JavaScriptContextGeneratorTemplate.tt</DependentUpon>
+		</Compile>
 
-    <None Update="Implementations\CSharpClientProxyGenerator\Templates\CSharpContextGeneratorTemplate.tt">
-      <Generator>TextTemplatingFilePreprocessor</Generator>
-      <LastGenOutput>CSharpContextGeneratorTemplate.cs</LastGenOutput>
-    </None>
-    <Compile Update="Implementations\CSharpClientProxyGenerator\Templates\CSharpContextGeneratorTemplate.cs">
-      <DesignTime>True</DesignTime>
-      <AutoGen>True</AutoGen>
-      <DependentUpon>CSharpContextGeneratorTemplate.tt</DependentUpon>
-    </Compile>
+		<None Update="Implementations\TypeScriptClientProxyGenerator\Templates\TypeScriptContextGeneratorTemplate.tt">
+			<Generator>TextTemplatingFilePreprocessor</Generator>
+			<LastGenOutput>TypeScriptContextGeneratorTemplate.cs</LastGenOutput>
+		</None>
+		<Compile Update="Implementations\TypeScriptClientProxyGenerator\Templates\TypeScriptContextGeneratorTemplate.cs">
+			<DesignTime>True</DesignTime>
+			<AutoGen>True</AutoGen>
+			<DependentUpon>TypeScriptContextGeneratorTemplate.tt</DependentUpon>
+		</Compile>
 
-    <None Update="Implementations\TypeScriptClientProxyGenerator\Templates\TypeScriptDtosGeneratorTemplate.tt">
-      <Generator>TextTemplatingFilePreprocessor</Generator>
-      <LastGenOutput>TypeScriptDtosGeneratorTemplate.cs</LastGenOutput>
-    </None>
-    <Compile Update="Implementations\TypeScriptClientProxyGenerator\Templates\TypeScriptDtosGeneratorTemplate.cs">
-      <DesignTime>True</DesignTime>
-      <AutoGen>True</AutoGen>
-      <DependentUpon>TypeScriptDtosGeneratorTemplate.tt</DependentUpon>
-    </Compile>
+		<None Update="Implementations\CSharpClientProxyGenerator\Templates\CSharpContextGeneratorTemplate.tt">
+			<Generator>TextTemplatingFilePreprocessor</Generator>
+			<LastGenOutput>CSharpContextGeneratorTemplate.cs</LastGenOutput>
+		</None>
+		<Compile Update="Implementations\CSharpClientProxyGenerator\Templates\CSharpContextGeneratorTemplate.cs">
+			<DesignTime>True</DesignTime>
+			<AutoGen>True</AutoGen>
+			<DependentUpon>CSharpContextGeneratorTemplate.tt</DependentUpon>
+		</Compile>
 
-  </ItemGroup>
+		<None Update="Implementations\TypeScriptClientProxyGenerator\Templates\TypeScriptDtosGeneratorTemplate.tt">
+			<Generator>TextTemplatingFilePreprocessor</Generator>
+			<LastGenOutput>TypeScriptDtosGeneratorTemplate.cs</LastGenOutput>
+		</None>
+		<Compile Update="Implementations\TypeScriptClientProxyGenerator\Templates\TypeScriptDtosGeneratorTemplate.cs">
+			<DesignTime>True</DesignTime>
+			<AutoGen>True</AutoGen>
+			<DependentUpon>TypeScriptDtosGeneratorTemplate.tt</DependentUpon>
+		</Compile>
 
-  <ItemGroup>
-    <Service Include="{508349b6-6b84-4df5-91f0-309beebad82d}" />
-  </ItemGroup>
+	</ItemGroup>
 
-  <Import Project="..\Bit.Tooling.Core\Bit.Tooling.Core.projitems" Label="Shared" />
+	<ItemGroup>
+		<Service Include="{508349b6-6b84-4df5-91f0-309beebad82d}" />
+	</ItemGroup>
+
+	<Import Project="..\Bit.Tooling.Core\Bit.Tooling.Core.projitems" Label="Shared" />
 
 </Project>

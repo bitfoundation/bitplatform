@@ -73,7 +73,8 @@ namespace BitCodeGeneratorTaskImpl
 
             using (MSBuildWorkspace workspace = MSBuildWorkspace.Create(new Dictionary<string, string>
             {
-                { "TargetFramework", bitConfig.TargetFramework }
+                { "TargetFramework", "net5.0" },
+                { "_TargetFrameworkVersionValue", "5.0" }
             }))
             {
                 workspace.SkipUnrecognizedProjects = workspace.LoadMetadataForReferencedProjects = true;
