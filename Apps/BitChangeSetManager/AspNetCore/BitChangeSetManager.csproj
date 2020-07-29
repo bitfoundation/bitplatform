@@ -17,15 +17,15 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Bit.Server.Data.EntityFramework" Version="5.6.0" />
-    <PackageReference Include="Bit.Server.Hangfire" Version="5.6.0" />
-    <PackageReference Include="Bit.Server.IdentityServer" Version="5.6.0" />
-    <PackageReference Include="Bit.Server.OData" Version="5.6.0" />
-    <PackageReference Include="Bit.Server.Owin" Version="5.6.0" />
-    <PackageReference Include="Bit.Server.Signalr" Version="5.6.0" />
-    <PackageReference Include="Bit.Tooling.CodeAnalyzer" Version="5.6.0" />
-    <PackageReference Include="Bit.Tooling.CodeGenerator.Task" Version="5.6.0" />
-    <PackageReference Include="Bit.Universal.AutoMapper" Version="5.6.0" />
+    <PackageReference Include="Bit.Server.Data.EntityFramework" Version="5.7.0" />
+    <PackageReference Include="Bit.Server.Hangfire" Version="5.7.0" />
+    <PackageReference Include="Bit.Server.IdentityServer" Version="5.7.0" />
+    <PackageReference Include="Bit.Server.OData" Version="5.7.0" />
+    <PackageReference Include="Bit.Server.Owin" Version="5.7.0" />
+    <PackageReference Include="Bit.Server.Signalr" Version="5.7.0" />
+    <PackageReference Include="Bit.Tooling.CodeAnalyzer" Version="5.7.0" />
+    <PackageReference Include="Bit.Tooling.CodeGenerator.Task" Version="5.7.0" />
+    <PackageReference Include="Bit.Universal.AutoMapper" Version="5.7.0" />
     <PackageReference Include="Dapper" Version="2.0.35" />
     <PackageReference Include="SourceLink.Copy.PdbFiles" Version="2.8.3" PrivateAssets="All" />
   </ItemGroup>

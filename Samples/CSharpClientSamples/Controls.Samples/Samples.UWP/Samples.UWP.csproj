@@ -146,7 +146,7 @@
     </Page>
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Xamarin.Forms" Version="4.7.0.1142" />
+    <PackageReference Include="Xamarin.Forms" Version="4.7.0.1179" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="Assets\Vazir-Light-FD-WOL.ttf" />
