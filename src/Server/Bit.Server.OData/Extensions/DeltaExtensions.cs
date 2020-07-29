@@ -19,7 +19,8 @@ namespace Microsoft.AspNet.OData
                 .ToList()
                 .ForEach(changedPropName =>
                 {
-                    PropertyInfo prop = typeof(TEntity).GetTypeInfo().GetProperty(changedPropName) ?? throw new InvalidOperationException($"Member {changedPropName} could not be found in {typeof(TEntity).FullName}");
+                    PropertyInfo? prop = typeof(TEntity).GetTypeInfo().GetProperty(changedPropName);
+
                     if (prop == null)
                         return;
                     sourceDto.TryGetPropertyValue(changedPropName, out object obj);
