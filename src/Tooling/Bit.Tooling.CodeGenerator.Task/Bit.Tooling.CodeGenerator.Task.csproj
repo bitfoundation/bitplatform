@@ -15,43 +15,13 @@
 		<Content Include="buildMultiTargeting\*" PackagePath="buildMultiTargeting\" />
 
 		<None Include="$(OutputPath)\..\..\..\..\Bit.Tooling.CodeGenerator\bin\$(Configuration)\net5.0\Bit.Tooling.CodeGenerator.deps.json" Pack="true" PackagePath="implementation" Visible="false" />
-		<None Include="$(OutputPath)\..\..\..\..\Bit.Tooling.CodeGenerator\bin\$(Configuration)\net5.0\Bit.Tooling.CodeGenerator.dll" Pack="true" PackagePath="implementation" Visible="false" />
 		<None Include="$(OutputPath)\..\..\..\..\Bit.Tooling.CodeGenerator\bin\$(Configuration)\net5.0\Bit.Tooling.CodeGenerator.dll.config" Pack="true" PackagePath="implementation" Visible="false" />
 		<None Include="$(OutputPath)\..\..\..\..\Bit.Tooling.CodeGenerator\bin\$(Configuration)\net5.0\Bit.Tooling.CodeGenerator.exe" Pack="true" PackagePath="implementation" Visible="false" />
 		<None Include="$(OutputPath)\..\..\..\..\Bit.Tooling.CodeGenerator\bin\$(Configuration)\net5.0\Bit.Tooling.CodeGenerator.runtimeconfig.dev.json" Pack="true" PackagePath="implementation" Visible="false" />
 		<None Include="$(OutputPath)\..\..\..\..\Bit.Tooling.CodeGenerator\bin\$(Configuration)\net5.0\Bit.Tooling.CodeGenerator.runtimeconfig.json" Pack="true" PackagePath="implementation" Visible="false" />
-		<None Include="$(OutputPath)\..\..\..\..\Bit.Tooling.CodeGenerator\bin\$(Configuration)\net5.0\Humanizer.dll" Pack="true" PackagePath="implementation" Visible="false" />
-		<None Include="$(OutputPath)\..\..\..\..\Bit.Tooling.CodeGenerator\bin\$(Configuration)\net5.0\Microsoft.Bcl.AsyncInterfaces.dll" Pack="true" PackagePath="implementation" Visible="false" />
-		<None Include="$(OutputPath)\..\..\..\..\Bit.Tooling.CodeGenerator\bin\$(Configuration)\net5.0\Microsoft.Build.Framework.dll" Pack="true" PackagePath="implementation" Visible="false" />
-		<None Include="$(OutputPath)\..\..\..\..\Bit.Tooling.CodeGenerator\bin\$(Configuration)\net5.0\Microsoft.Build.Locator.dll" Pack="true" PackagePath="implementation" Visible="false" />
-		<None Include="$(OutputPath)\..\..\..\..\Bit.Tooling.CodeGenerator\bin\$(Configuration)\net5.0\Microsoft.Build.Utilities.Core.dll" Pack="true" PackagePath="implementation" Visible="false" />
-		<None Include="$(OutputPath)\..\..\..\..\Bit.Tooling.CodeGenerator\bin\$(Configuration)\net5.0\Microsoft.CodeAnalysis.CSharp.dll" Pack="true" PackagePath="implementation" Visible="false" />
-		<None Include="$(OutputPath)\..\..\..\..\Bit.Tooling.CodeGenerator\bin\$(Configuration)\net5.0\Microsoft.CodeAnalysis.CSharp.Workspaces.dll" Pack="true" PackagePath="implementation" Visible="false" />
-		<None Include="$(OutputPath)\..\..\..\..\Bit.Tooling.CodeGenerator\bin\$(Configuration)\net5.0\Microsoft.CodeAnalysis.dll" Pack="true" PackagePath="implementation" Visible="false" />
-		<None Include="$(OutputPath)\..\..\..\..\Bit.Tooling.CodeGenerator\bin\$(Configuration)\net5.0\Microsoft.CodeAnalysis.Workspaces.dll" Pack="true" PackagePath="implementation" Visible="false" />
-		<None Include="$(OutputPath)\..\..\..\..\Bit.Tooling.CodeGenerator\bin\$(Configuration)\net5.0\Microsoft.CodeAnalysis.Workspaces.MSBuild.dll" Pack="true" PackagePath="implementation" Visible="false" />
-		<None Include="$(OutputPath)\..\..\..\..\Bit.Tooling.CodeGenerator\bin\$(Configuration)\net5.0\Microsoft.Win32.SystemEvents.dll" Pack="true" PackagePath="implementation" Visible="false" />
-		<None Include="$(OutputPath)\..\..\..\..\Bit.Tooling.CodeGenerator\bin\$(Configuration)\net5.0\Newtonsoft.Json.dll" Pack="true" PackagePath="implementation" Visible="false" />
-		<None Include="$(OutputPath)\..\..\..\..\Bit.Tooling.CodeGenerator\bin\$(Configuration)\net5.0\NuGet.Common.dll" Pack="true" PackagePath="implementation" Visible="false" />
-		<None Include="$(OutputPath)\..\..\..\..\Bit.Tooling.CodeGenerator\bin\$(Configuration)\net5.0\NuGet.Configuration.dll" Pack="true" PackagePath="implementation" Visible="false" />
-		<None Include="$(OutputPath)\..\..\..\..\Bit.Tooling.CodeGenerator\bin\$(Configuration)\net5.0\NuGet.DependencyResolver.Core.dll" Pack="true" PackagePath="implementation" Visible="false" />
-		<None Include="$(OutputPath)\..\..\..\..\Bit.Tooling.CodeGenerator\bin\$(Configuration)\net5.0\NuGet.Frameworks.dll" Pack="true" PackagePath="implementation" Visible="false" />
-		<None Include="$(OutputPath)\..\..\..\..\Bit.Tooling.CodeGenerator\bin\$(Configuration)\net5.0\NuGet.LibraryModel.dll" Pack="true" PackagePath="implementation" Visible="false" />
-		<None Include="$(OutputPath)\..\..\..\..\Bit.Tooling.CodeGenerator\bin\$(Configuration)\net5.0\NuGet.Packaging.dll" Pack="true" PackagePath="implementation" Visible="false" />
-		<None Include="$(OutputPath)\..\..\..\..\Bit.Tooling.CodeGenerator\bin\$(Configuration)\net5.0\NuGet.ProjectModel.dll" Pack="true" PackagePath="implementation" Visible="false" />
-		<None Include="$(OutputPath)\..\..\..\..\Bit.Tooling.CodeGenerator\bin\$(Configuration)\net5.0\NuGet.Protocol.dll" Pack="true" PackagePath="implementation" Visible="false" />
-		<None Include="$(OutputPath)\..\..\..\..\Bit.Tooling.CodeGenerator\bin\$(Configuration)\net5.0\NuGet.Versioning.dll" Pack="true" PackagePath="implementation" Visible="false" />
-		<None Include="$(OutputPath)\..\..\..\..\Bit.Tooling.CodeGenerator\bin\$(Configuration)\net5.0\System.CodeDom.dll" Pack="true" PackagePath="implementation" Visible="false" />
-		<None Include="$(OutputPath)\..\..\..\..\Bit.Tooling.CodeGenerator\bin\$(Configuration)\net5.0\System.Composition.AttributedModel.dll" Pack="true" PackagePath="implementation" Visible="false" />
-		<None Include="$(OutputPath)\..\..\..\..\Bit.Tooling.CodeGenerator\bin\$(Configuration)\net5.0\System.Composition.Convention.dll" Pack="true" PackagePath="implementation" Visible="false" />
-		<None Include="$(OutputPath)\..\..\..\..\Bit.Tooling.CodeGenerator\bin\$(Configuration)\net5.0\System.Composition.Hosting.dll" Pack="true" PackagePath="implementation" Visible="false" />
-		<None Include="$(OutputPath)\..\..\..\..\Bit.Tooling.CodeGenerator\bin\$(Configuration)\net5.0\System.Composition.Runtime.dll" Pack="true" PackagePath="implementation" Visible="false" />
-		<None Include="$(OutputPath)\..\..\..\..\Bit.Tooling.CodeGenerator\bin\$(Configuration)\net5.0\System.Composition.TypedParts.dll" Pack="true" PackagePath="implementation" Visible="false" />
-		<None Include="$(OutputPath)\..\..\..\..\Bit.Tooling.CodeGenerator\bin\$(Configuration)\net5.0\System.Drawing.Common.dll" Pack="true" PackagePath="implementation" Visible="false" />
-		<None Include="$(OutputPath)\..\..\..\..\Bit.Tooling.CodeGenerator\bin\$(Configuration)\net5.0\System.Security.Cryptography.Pkcs.dll" Pack="true" PackagePath="implementation" Visible="false" />
-		<None Include="$(OutputPath)\..\..\..\..\Bit.Tooling.CodeGenerator\bin\$(Configuration)\net5.0\System.Security.Permissions.dll" Pack="true" PackagePath="implementation" Visible="false" />
-		<None Include="$(OutputPath)\..\..\..\..\Bit.Tooling.CodeGenerator\bin\$(Configuration)\net5.0\System.Windows.Extensions.dll" Pack="true" PackagePath="implementation" Visible="false" />
-
+		<None Include="$(OutputPath)\..\..\..\..\Bit.Tooling.CodeGenerator\bin\$(Configuration)\net5.0\*.dll" Pack="true" PackagePath="implementation" Visible="false" />
+		<None Include="$(OutputPath)\..\..\..\..\Bit.Tooling.CodeGenerator\bin\$(Configuration)\net5.0\runtimes\win\lib\netcoreapp3.0\*.dll" Pack="true" PackagePath="implementation\runtimes\win\lib\netcoreapp3.0" Visible="false" />
+		<None Include="$(OutputPath)\..\..\..\..\Bit.Tooling.CodeGenerator\bin\$(Configuration)\net5.0\runtimes\win\lib\netstandard1.3\*.dll" Pack="true" PackagePath="implementation\runtimes\win\lib\netstandard1.3" Visible="false" />
 		<PackageReference Include="Microsoft.Build.Utilities.Core" Version="16.6.0" PrivateAssets="All" />
 
 	</ItemGroup>
