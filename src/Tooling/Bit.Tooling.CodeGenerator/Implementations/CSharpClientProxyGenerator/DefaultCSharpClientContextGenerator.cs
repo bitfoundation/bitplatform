@@ -21,7 +21,8 @@ namespace Bit.Tooling.CodeGenerator.Implementations.CSharpClientProxyGenerator
                 Session = new Dictionary<string, object>
                 {
                     { "Controllers", controllers },
-                    { "Mapping", mapping }
+                    { "Mapping", mapping },
+                    { "BitToolingVersion", typeof(DefaultCSharpClientContextGenerator).Assembly.GetName().Version!.ToString() }
                 }
             };
 

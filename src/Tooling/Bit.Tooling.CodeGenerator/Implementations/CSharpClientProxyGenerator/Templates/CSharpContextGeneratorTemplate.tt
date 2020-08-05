@@ -1,13 +1,14 @@
 ﻿<#@ template language="C#" #>
 <#@ parameter type="System.Collections.Generic.IList<DtoController>" name="Controllers" #>
 <#@ parameter type="Bit.Tooling.Core.Model.BitCodeGeneratorMapping" name="Mapping" #>
+<#@ parameter type="System.String" name="BitToolingVersion" #>
 <#@ import namespace="Bit.Tooling.Core.Model" #>
 <#@ import namespace="Microsoft.CodeAnalysis" #>
 <#@ import namespace="System.Linq" #>
 
 namespace Simple.OData.Client
 {
-	[System.CodeDom.Compiler.GeneratedCode("BitCodeGenerator", "1.0.0.0")]
+	[System.CodeDom.Compiler.GeneratedCode("BitCodeGenerator", "<#= BitToolingVersion #>")]
     public static class <#= Mapping.Route #>ContextExt
     {
 		<# foreach (DtoController controller in Controllers) { #>
