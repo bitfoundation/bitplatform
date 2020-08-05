@@ -32,6 +32,7 @@ namespace Bit.ViewModel
                 try
                 {
                     CancellationTokenSource.Cancel();
+                    CancellationTokenSource.Dispose();
                 }
                 finally // make sure that OnDestroyAsync gets called.
                 {
