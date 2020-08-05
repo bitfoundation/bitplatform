@@ -78,7 +78,7 @@ namespace Bit.ViewModel
         {
             Type type = typeof(T);
 
-            if (!type.IsClass && Nullable.GetUnderlyingType(type) == null)
+            if (type.IsValueType && Nullable.GetUnderlyingType(type) == null)
                 throw new InvalidOperationException($"Type {type.FullName} is not supported for BitDelegateCommand. Use either class or nullable strcut");
         }
 

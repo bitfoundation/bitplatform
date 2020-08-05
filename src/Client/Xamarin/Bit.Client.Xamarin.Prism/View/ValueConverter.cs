@@ -21,10 +21,10 @@ namespace Bit.View
 
         object? IValueConverter.Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
         {
-            if (value is null && !typeof(TSource).IsClass && Nullable.GetUnderlyingType(typeof(TSource)) == null)
+            if (value is null && typeof(TSource).IsValueType && Nullable.GetUnderlyingType(typeof(TSource)) == null)
                 throw new NotSupportedException($"Value of type {typeof(TSource).Name} may not be null");
 
-            if (parameter is null && !typeof(TParameter).IsClass && Nullable.GetUnderlyingType(typeof(TParameter)) == null)
+            if (parameter is null && typeof(TParameter).IsValueType && Nullable.GetUnderlyingType(typeof(TParameter)) == null)
                 throw new NotSupportedException($"Parameter of type {typeof(TParameter).Name} may not be null");
 
             try
@@ -40,10 +40,10 @@ namespace Bit.View
 
         object? IValueConverter.ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
         {
-            if (value is null && !typeof(TTarget).IsClass && Nullable.GetUnderlyingType(typeof(TTarget)) == null)
+            if (value is null && typeof(TTarget).IsValueType && Nullable.GetUnderlyingType(typeof(TTarget)) == null)
                 throw new NotSupportedException($"Value of type {typeof(TTarget).Name} may not be null");
 
-            if (parameter is null && !typeof(TParameter).IsClass && Nullable.GetUnderlyingType(typeof(TParameter)) == null)
+            if (parameter is null && typeof(TParameter).IsValueType && Nullable.GetUnderlyingType(typeof(TParameter)) == null)
                 throw new NotSupportedException($"Parameter of type {typeof(TParameter).Name} may not be null");
 
             try
