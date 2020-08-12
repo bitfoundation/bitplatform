@@ -12,10 +12,16 @@
             ReturnType="Next"
             Text="{Binding UserName}" />
         <Entry x:Name="Password" Text="{Binding Password}" />
-        <Button Command="{Binding LoginUsingCredentialsCommand}" Text="Login using credentials" />
+        <Button
+            Command="{Binding LoginUsingCredentialsCommand}"
+            FontAttributes="None"
+            Text="Login using credentials" />
         <Button Command="{Binding LoginUsingBrowserCommand}" Text="Login using Browser" />
         <Button Command="{Binding LoginUsingGooglePlusCommand}" Text="Login using Google" />
-        <Button Command="{Binding SkipCommand}" Text="Skip" />
+        <Button
+            Command="{Binding SkipCommand}"
+            Style="{StaticResource DangerButton}"
+            Text="Skip" />
 
         <Button Text="Multi converter test 1">
             <Button.IsVisible>
