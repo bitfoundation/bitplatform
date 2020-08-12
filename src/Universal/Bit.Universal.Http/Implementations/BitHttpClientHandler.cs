@@ -118,8 +118,11 @@ namespace Bit.Http.Implementations
 
                 request.Headers.Add("Current-Time-Zone", TimeZoneInfo.Local.Id);
 
-#if !UWP
-                request.Headers.Add("Client-Theme", AppInfo.RequestedTheme.ToString());
+#if Android || iOS || UWP
+                await MainThread.InvokeOnMainThreadAsync(() =>
+                {
+                    request.Headers.Add("Client-Theme", AppInfo.RequestedTheme.ToString());
+                }).ConfigureAwait(false);
 #endif
 
                 request.Headers.Add("Client-Debug-Mode", IsInDebugMode().ToString(CultureInfo.InvariantCulture));
@@ -181,5 +184,7 @@ namespace Bit.Http.Implementations
         public virtual IDeviceInfo DeviceInfo { get; set; } = default!;
 
         public virtual IAppInfo AppInfo { get; set; } = default!;
+
+        public virtual IMainThread MainThread { get; set; } = default!;
     }
 }
