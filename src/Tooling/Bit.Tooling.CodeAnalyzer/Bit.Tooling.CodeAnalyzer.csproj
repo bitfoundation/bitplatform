@@ -18,6 +18,13 @@
     <PackageReference Include="Microsoft.CodeAnalysis.Workspaces.Common" Version="1.2.2" PrivateAssets="All" />
   </ItemGroup>
 
+  <ItemGroup>
+    <PackageReference Update="Microsoft.CodeAnalysis.FxCopAnalyzers" Version="3.3.0">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+  </ItemGroup>
+
   <Import Project="..\Bit.Tooling.Core\Bit.Tooling.Core.projitems" Label="Shared" />
 
 </Project>
