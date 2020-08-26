@@ -55,6 +55,7 @@
 		<AndroidUseIntermediateDesignerFile>False</AndroidUseIntermediateDesignerFile>
 		<TargetFrameworkVersion Condition=" '$(TargetFramework)' == 'monoandroid10.0' ">v10.0</TargetFrameworkVersion>
 		<TargetFrameworkVersion Condition=" '$(TargetFramework)' == 'monoandroid9.0' ">v9.0</TargetFrameworkVersion>
+		<RestoreAdditionalProjectSources>$(RestoreAdditionalProjectSources);https://dotnet.myget.org/F/nuget-build/api/v3/index.json</RestoreAdditionalProjectSources>
 	</PropertyGroup>
 
 	<PropertyGroup Condition="'$(Configuration)'=='Debug'">

@@ -122,6 +122,7 @@ EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
 		Tooling\Bit.Tooling.Core\Bit.Tooling.Core.projitems*{4f71f2a4-01c2-4d5a-941c-57c78d2cc469}*SharedItemsImports = 5
+		Tooling\Bit.Tooling.Core\Bit.Tooling.Core.projitems*{846b3352-f8fc-4b38-acf9-98ae0236f478}*SharedItemsImports = 5
 	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU

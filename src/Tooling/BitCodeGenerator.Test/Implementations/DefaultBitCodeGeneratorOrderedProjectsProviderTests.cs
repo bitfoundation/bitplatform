@@ -22,7 +22,7 @@ namespace Bit.Tooling.CodeGenerator.Test.Implementations
                 List<Project> projects = solution.Projects.ToList();
 
                 IList<Project> orderedProjects = (new DefaultBitCodeGeneratorOrderedProjectsProvider().GetInvolveableProjects(workspace, projects,
-                        new BitCodeGeneratorMapping { SourceProjects = new[] { new Bit.Tooling.Core.Model.ProjectInfo { Name = "Bit.Universal.Model" }, new Bit.Tooling.Core.Model.ProjectInfo { Name = "Bit.Server.OData" } } }));
+                        new BitCodeGeneratorMapping { SourceProjects = new[] { new Core.Model.ProjectInfo { Name = "Bit.Universal.Model" }, new Core.Model.ProjectInfo { Name = "Bit.Server.OData" } } }));
 
                 Assert.AreEqual(2, orderedProjects.Count);
 

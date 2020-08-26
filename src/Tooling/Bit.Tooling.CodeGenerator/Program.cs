@@ -3,15 +3,14 @@ using Bit.Tooling.Core.Model;
 using Bit.Tooling.CodeGenerator.Implementations;
 using Bit.Tooling.CodeGenerator.Implementations.CSharpClientProxyGenerator;
 using Bit.Tooling.CodeGenerator.Implementations.TypeScriptClientProxyGenerator;
-using Microsoft.Build.Construction;
 using Microsoft.Build.Locator;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.MSBuild;
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Collections.Generic;
 
 namespace BitCodeGeneratorTaskImpl
 {
@@ -54,7 +53,7 @@ namespace BitCodeGeneratorTaskImpl
 
             foreach (string solutionPath in SolutionPaths)
             {
-                AllProjectsPaths = AllProjectsPaths.Union(SolutionFile.Parse(solutionPath).ProjectsInOrder.Select(p => Path.GetFullPath(p.AbsolutePath))).ToArray();
+                AllProjectsPaths = AllProjectsPaths.Union(new Bit.Tooling.CodeGenerator.Implementations.SolutionInfo(solutionPath).GetProjects().Select(p => Path.GetFullPath(p.AbsolutePath))).ToArray();
             }
         }
 
@@ -73,8 +72,7 @@ namespace BitCodeGeneratorTaskImpl
 
             using (MSBuildWorkspace workspace = MSBuildWorkspace.Create(new Dictionary<string, string>
             {
-                { "TargetFramework", "net5.0" },
-                { "_TargetFrameworkVersionValue", "5.0" }
+                { "TargetFramework", "net5.0" }
             }))
             {
                 workspace.SkipUnrecognizedProjects = workspace.LoadMetadataForReferencedProjects = true;
