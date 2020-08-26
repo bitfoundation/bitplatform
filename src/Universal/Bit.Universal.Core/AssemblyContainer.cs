@@ -31,9 +31,16 @@ namespace Bit.Core
         /// Adds calling assembly (Assembly you're calling this method in there) as main app's assembly
         /// </summary>
         [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization)]
-        public void Init()
+        public virtual void Init()
         {
-            AppAssemblies = new HashSet<Assembly> { Assembly.GetCallingAssembly() };
+            AppAssemblies = new HashSet<Assembly> 
+            {
+#if !UWP
+                Assembly.GetCallingAssembly()
+#else
+                Assembly.GetEntryAssembly() // UWP .NET Native
+#endif
+            };
         }
 
         /// <summary>
