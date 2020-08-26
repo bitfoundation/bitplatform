@@ -1,24 +1,26 @@
 ﻿{
-  "compileOnSave": true,
-  "compilerOptions": {
-    "allowUnreachableCode": true,
-    "composite": true,
-    "declaration": true,
-    "emitDecoratorMetadata": false,
-    "experimentalDecorators": true,
-    "module": "none",
-    "outFile": "bit.identity.tests.js",
-    "target": "es5",
-    "sourceMap": true,
-    "lib": [ "dom", "es2017" ],
-    "typeRoots": [ "../../Bit.TSClient.Core/node_modules/@types", "../../Bit.TSClient.AngularJS/node_modules/@types", "../../Bit.TSClient.AngularJS.Test/node_modules/@types" ],
-    "charset": "utf8",
-    "inlineSources": true,
-    "removeComments": false,
-    "skipLibCheck": true
-  },
-  "references": [
-    { "path": "../../Bit.TSClient.AngularJS.Test" }
-  ],
-  "exclude": [ "bit.identity.tests.d.ts", "node_modules", "bin", "obj" ]
+    "compileOnSave": true,
+    "compilerOptions": {
+        "allowUnreachableCode": true,
+        "composite": true,
+        "charset": "utf8",
+        "declaration": true,
+        "diagnostics": false,
+        "emitDecoratorMetadata": false,
+        "experimentalDecorators": true,
+        "inlineSources": true,
+        "lib": [ "ESNext", "dom" ],
+        "module": "none",
+        "noEmitOnError": false,
+        "outFile": "bit.identity.tests.js",
+        "removeComments": false,
+        "skipLibCheck": true,
+        "sourceMap": true,
+        "target": "es5",
+        "typeRoots": [ "../../Bit.TSClient.Core/node_modules/@types", "../../Bit.TSClient.AngularJS/node_modules/@types", "../../Bit.TSClient.AngularJS.Test/node_modules/@types" ]
+    },
+    "references": [
+        { "path": "../../Bit.TSClient.AngularJS.Test" }
+    ],
+    "exclude": [ "bit.identity.tests.d.ts", "node_modules", "bin", "obj" ]
 }

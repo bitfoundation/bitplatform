@@ -10,7 +10,7 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.AppCenter.Analytics" Version="3.4.0" />
     <PackageReference Include="Microsoft.AppCenter.Crashes" Version="3.4.0" />
-    <PackageReference Include="Prism.Plugin.Logging.Common" Version="7.2.0.1114" />
+    <PackageReference Include="Prism.Plugin.Logging.Common" Version="7.2.0.1421" />
     <PackageReference Include="Prism.Plugin.Popups" Version="7.2.0.1046" />
     <PackageReference Include="Prism.Forms" Version="7.2.0.1422" />
     <PackageReference Include="Microsoft.ApplicationInsights.WindowsApps" Condition=" '$(TargetFramework)' == 'uap10.0.17763' " Version="1.1.1" />
