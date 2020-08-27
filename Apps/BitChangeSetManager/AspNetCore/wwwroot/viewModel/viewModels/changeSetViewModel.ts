@@ -28,10 +28,11 @@
         public constructor(
             @Inject("$element") public $element: JQuery,
             @Inject("EntityContextProvider") public entityContextProvider: IEntityContextProvider,
-            @Inject("ChangeSetRules") public rules: ChangeSetRules,
+            @Inject("ChangeSetRules") rules: ChangeSetRules,
             @Inject("$mdDialog") public $mdDialog: ng.material.IDialogService,
             @Inject("$translate") public $translate: ng.translate.ITranslateService) {
             super();
+            this.rules = rules;
         }
 
         public changeSetSeveritiesDataSource: kendo.data.DataSource;
