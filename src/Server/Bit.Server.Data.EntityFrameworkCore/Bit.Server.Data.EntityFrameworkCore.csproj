@@ -13,12 +13,5 @@
     <ProjectReference Include="..\Bit.Server.Data\Bit.Server.Data.csproj" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="5.0.0-preview.8.20407.4" />
   </ItemGroup>
-
-  <ItemGroup>
-    <PackageReference Update="Microsoft.CodeAnalysis.FxCopAnalyzers" Version="3.3.0">
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-    </PackageReference>
-  </ItemGroup>
-
+	
 </Project>

@@ -10,7 +10,7 @@
   <ItemGroup>
     <PackageReference Include="NodaTime" Version="3.0.0" />
     <PackageReference Include="Rg.Plugins.Popup" Version="2.0.0.4" />
-    <PackageReference Include="Xamarin.Forms" Version="4.8.0.1269" />
+    <PackageReference Include="Xamarin.Forms" Version="4.8.0.1364" />
   </ItemGroup>
 
   <ItemGroup Condition=" '$(TargetFramework)' == 'uap10.0.17763' ">
@@ -26,13 +26,6 @@
     <Compile Update="Implementations\BitGlobalStyles.xaml.cs">
       <DependentUpon>BitGlobalStyles.xaml</DependentUpon>
     </Compile>
-  </ItemGroup>
-
-  <ItemGroup>
-    <PackageReference Update="Microsoft.CodeAnalysis.FxCopAnalyzers" Version="3.3.0">
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-    </PackageReference>
   </ItemGroup>
 
 </Project>
