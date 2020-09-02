@@ -1,5 +1,6 @@
 ﻿using Prism.Commands;
 using System;
+using System.ComponentModel;
 using System.Globalization;
 using System.Threading.Tasks;
 using System.Windows.Input;
@@ -7,9 +8,11 @@ using Xamarin.Forms.Xaml;
 
 namespace Bit.ViewModel
 {
-    public class BitDelegateCommand : DelegateCommand, IMarkupExtension<ICommand>
+    public class BitDelegateCommand : DelegateCommand, IMarkupExtension<ICommand>, INotifyPropertyChanged
     {
         private readonly Func<Task> _executeMethod = default!;
+
+        public event PropertyChangedEventHandler? PropertyChanged;
 
         public virtual async Task ExecuteAsync()
         {
@@ -72,7 +75,7 @@ namespace Bit.ViewModel
         }
     }
 
-    public class BitDelegateCommand<T> : DelegateCommand<T>, IMarkupExtension<ICommand>
+    public class BitDelegateCommand<T> : DelegateCommand<T>, IMarkupExtension<ICommand>, INotifyPropertyChanged
     {
         static BitDelegateCommand()
         {
@@ -83,6 +86,8 @@ namespace Bit.ViewModel
         }
 
         private readonly Func<T, Task> _executeMethod = default!;
+
+        public event PropertyChangedEventHandler? PropertyChanged;
 
         public virtual async Task ExecuteAsync(T parameter)
         {
