@@ -24,12 +24,12 @@
 		<PackageLicenseExpression>MIT</PackageLicenseExpression>
 		<PackageProjectUrl>https://github.com/bitfoundation/bitframework</PackageProjectUrl>
 		<PackageIconUrl>https://avatars.githubusercontent.com/u/22663390</PackageIconUrl>
-		<PackageReleaseNotes>https://github.com/bitfoundation/bitframework/releases/tag/v5.8.0</PackageReleaseNotes>
-		<PackageVersion>5.8.0</PackageVersion>
+		<PackageReleaseNotes>https://github.com/bitfoundation/bitframework/releases/tag/v5.8.1</PackageReleaseNotes>
+		<PackageVersion>5.8.1</PackageVersion>
 
 		<!-- Version -->
-		<Version>5.8.0</Version>
-		<AssemblyVersion>5.8.0</AssemblyVersion>
+		<Version>5.8.1</Version>
+		<AssemblyVersion>5.8.1</AssemblyVersion>
 
 		<!-- Compile -->
 		<NeutralLanguage>en</NeutralLanguage>
