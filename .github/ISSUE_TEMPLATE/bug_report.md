@@ -17,21 +17,20 @@ A clear and concise description of what you expected to happen.
 If applicable, add screenshots / logs / exception details to help explain your problem.
 
 **Bit Server side products (Bit.OData, Bit.Signalr, etc)**
-- Bit nuget package's version. For example 1.0.6
-- ASP.NET or ASP.NET Core? For example ASP.NET Core 2.1
-- Operating System. For example Windows 10 16299 or Ubuntu 16.04 LTS
-- .NET Core, mono or .Net Framework? For example .NET 4.7.2 or .NET Core 1.1
+- Bit nuget package's version. For example 5.8.0
+- Operating System. For example Windows 10 19041 or Ubuntu 20.04
+- .NET version? For example .NET 5 prev 8
 
-**Bit CSharp client (If applicable)**
-- Bit nuget package's version. For example 1.0.6
-- Which version of Xamarin forms? For example XF 3.0
+**Bit Xamarin client (If applicable)**
+- Bit nuget package's version. For example 5.8.0
+- Which version of Xamarin forms? For example XF 4.8
 - Which Xamarin forms backend? For example Android/iOS/MacOS/UWP , ...
 
-**Bit TypeScript/JavaScript client (If applicable)**
-- Bit npm package's version. For example 1.0.6
-- Mobile, desktop or web app?
-- Which browser? (If applicable) For example Chrome 59
-- Which framework? For example angular 6.0
+**Bit Blazor client (If applicable)**
+- Bit nuget package's version. For example 5.8.0
+- Blazor Server or Blazor Web Assembly or both?
+- Which browser? (If applicable) For example Edge 85
+- Which blazor version? For example blazor 5 prev 8
 
 **Additional context**
 Add any other context about the problem here.

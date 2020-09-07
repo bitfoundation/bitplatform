@@ -1,6 +1,6 @@
 ## Controls Config
 
-In order to use Bit CSharp Client Controls, install "Bit.Client.Xamarin.Controls" nuget package.
+In order to use Bit Xamarin Client Controls, install "Bit.Client.Xamarin.Controls" nuget package.
 
 ## Launching the controls in iOS
 
