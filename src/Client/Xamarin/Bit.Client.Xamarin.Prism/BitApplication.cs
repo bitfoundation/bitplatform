@@ -71,7 +71,7 @@ namespace Bit
                 Container.Resolve<IEnumerable<ITelemetryService>>().All().LogPreviousSessionCrashIfAny();
                 var deviceService = Container.Resolve<IDeviceService>();
                 DependencyDelegates.Current.StartTimer = (interval, callback) => deviceService.StartTimer(interval, () => callback());
-                DependencyDelegates.Current.GetNavigationUriPath = () => Current.NavigationService.CurrentPageNavService.GetNavigationUriPath();
+                DependencyDelegates.Current.GetNavigationUriPath = () => Current?.NavigationService?.CurrentPageNavService?.GetNavigationUriPath() ?? "?";
                 await OnInitializedAsync();
                 await Task.Yield();
             }
