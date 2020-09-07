@@ -8,7 +8,7 @@ Install-Package Bit.Simila
 # What is Simila?
 Are **Color** and **Colour** equal? No!
 
-```csharp
+```c#
 if ("Color" == "Coluor")
    // Always false
 
@@ -18,7 +18,7 @@ if ("The Candy Shop" == "The Kandi Schap")
 
 But they **are Similar** in **Simila**!
 
-```csharp
+```c#
 if (simila.AreSimilar("Color", "Colour"))
    // It's true now!
 
@@ -26,7 +26,7 @@ if (simila.AreSimilar("The Candy Shop", "The Kandi Schap"));
    // It's true now!
 ```
 # How to use
-```csharp
+```c#
 var simila = new Simila();
 
 // Comparing Words
@@ -41,7 +41,7 @@ simila.AreSimilar("Lamborghini is some great car", "Lanborgini is some graet kar
 ### **Treshold**
 You set the sensivity of similarity by setting `Treshold`. If not set, default value is `0.6` which means it considers similar if they are `60%` similar
 
-```csharp
+```c#
 // Are similar if their at least 50% similar.
 var similaEasy = new Simila()
 {
@@ -73,7 +73,7 @@ There are 3 types of similarity resolvers available in Simila:
  You can configure simila to use a specific algorithm. We call them Resolvers.
  
  #### Using Soudex Resolver
- ```csharp
+ ```c#
 var similaSounedx = new Simila()
 {
     Resolver = new SoundexSimilarityResolver()
@@ -81,7 +81,7 @@ var similaSounedx = new Simila()
 ```
 
 #### Using SharedPair Resolver
-```csharp
+```c#
 var similaSharedPair = new Simila()
 {
     Resolver = new SharedPairSimilarityResolver()
@@ -91,7 +91,7 @@ var similaSharedPair = new Simila()
 #### Using Levenshtein Resolver
 Levenshtein is even more configurable. You can set the accepted mistakes both character level and word level.
 In this example we told Simila to consider `color` and `colour` words similar.
-```csharp
+```c#
  var simila = new Simila()
  {
      Resolver = new PhraseSimilarityResolver(
@@ -108,7 +108,7 @@ In this example we told Simila to consider `color` and `colour` words similar.
 Also you can add some **character level accepted mistakes**.
 In this example we told Simila to not only consider `color` and `colour` similar, but also consider `c` and `k` similar too.
 
-```csharp
+```c#
  var simila = new Simila()
  {
      Resolver = new PhraseSimilarityResolver(
