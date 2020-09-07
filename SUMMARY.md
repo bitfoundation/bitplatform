@@ -11,6 +11,7 @@
   * [Controls Config](/docs/bit-csharp-client/getting-started.md)
   * [Date Time Picker](/docs/bit-csharp-client/date-time-picker.md)
   * [Date Time Picker](/docs/bit-csharp-client/frame.md)
+* [Bit.Simila](docs/simila/simila.md)
 * [Good questions](docs/good-questions.md)
 * [Blog](docs/blog/blog.md)
   * [Visual Studio Speedup](docs/blog/visual-studio-speedup.md)
