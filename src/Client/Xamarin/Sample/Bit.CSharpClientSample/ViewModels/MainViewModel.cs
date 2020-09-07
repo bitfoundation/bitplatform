@@ -4,13 +4,13 @@ using Bit.Http.Contracts;
 using Bit.Sync.ODataEntityFrameworkCore.Contracts;
 using Bit.Tests.Model.Dto;
 using Bit.ViewModel;
-using Bit.ViewModel.Contracts;
 using Bit.ViewModel.Implementations;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 using Refit;
 using Simple.OData.Client;
 using System;
+using System.Collections.Generic;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
@@ -37,6 +37,7 @@ namespace Bit.CSharpClientSample.ViewModels
         public BitDelegateCommand SendHttpRequestCommand { get; set; }
         public BitDelegateCommand SendRefitRequestCommand { get; set; }
         public BitDelegateCommand SendODataRequestCommand { get; set; }
+        public BitDelegateCommand SendODataBatchRequestCommand { get; set; }
         public BitDelegateCommand LogoutCommand { get; set; }
         public BitDelegateCommand ShowPopupCommand { get; set; }
         public BitDelegateCommand OpenConsoleCommand { get; set; }
@@ -47,6 +48,7 @@ namespace Bit.CSharpClientSample.ViewModels
             SendHttpRequestCommand = new BitDelegateCommand(SendHttpRequest);
             SendRefitRequestCommand = new BitDelegateCommand(SendRefitRequest);
             SendODataRequestCommand = new BitDelegateCommand(SendODataRequest);
+            SendODataBatchRequestCommand = new BitDelegateCommand(SendODataBatchRequest);
             LogoutCommand = new BitDelegateCommand(Logout);
             ShowPopupCommand = new BitDelegateCommand(ShowPopup);
             OpenConsoleCommand = new BitDelegateCommand(OpenConsole);
@@ -121,6 +123,19 @@ namespace Bit.CSharpClientSample.ViewModels
             var result = await ODataClient.For("ParentEntities").FindEntriesAsync();
             var result2 = await ODataClient.For<TestComplexDto>("TestComplex")
                 .FindEntriesAsync();
+        }
+
+        async Task SendODataBatchRequest()
+        {
+            var batchClient = new ODataBatch(ODataClient);
+
+            IEnumerable<IDictionary<string, object>> result = null;
+            IEnumerable<TestComplexDto> result2 = null;
+
+            batchClient += async (c) => result = await c.For("ParentEntities").FindEntriesAsync();
+            batchClient += async (c) => result2 = await c.For<TestComplexDto>("TestComplex").FindEntriesAsync();
+
+            await batchClient.ExecuteAsync();
         }
 
         async Task Logout()
