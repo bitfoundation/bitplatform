@@ -4,8 +4,8 @@
     "IsActive": true,
     "DebugMode": true,
     "AppInfo": {
-      "Name": "6WebApiDotNetHost",
-      "Version": "1"
+        "Name": "WebApiSample",
+        "Version": "1"
     }
   }
 ]

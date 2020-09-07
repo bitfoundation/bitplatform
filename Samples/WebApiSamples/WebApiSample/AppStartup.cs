@@ -19,7 +19,7 @@ using System.Threading.Tasks;
 using System.Web.Http;
 using System.Web.Http.Description;
 
-namespace WebApiDotNetHost
+namespace WebApiSample
 {
     public class AppStartup : AutofacAspNetCoreAppStartup, IAppModule, IAppModulesProvider
     {
@@ -72,6 +72,8 @@ namespace WebApiDotNetHost
 
             dependencyManager.RegisterAutoMapper();
             dependencyManager.RegisterMapperConfiguration<DefaultMapperConfiguration>();
+
+            dependencyManager.Register<IEmailService, DefaultEmailService>();
         }
     }
 
@@ -95,6 +97,29 @@ namespace WebApiDotNetHost
                 });
                 operation.consumes.Add("application/form-data");
             }
+        }
+    }
+
+    public class ValuesController : ApiController
+    {
+        public IEnumerable<string> Get()
+        {
+            return new string[] { "value1", "value2" };
+        }
+
+        public virtual IEmailService EmailService { get; set; }
+    }
+
+    public interface IEmailService
+    {
+        void SendEmail();
+    }
+
+    public class DefaultEmailService : IEmailService
+    {
+        public virtual void SendEmail()
+        {
+
         }
     }
 
