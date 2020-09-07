@@ -9,7 +9,7 @@ You can use Bit Data Access components, or you can use your own preferred way to
 2- True cancellation token support. There is a CancellationToken in every web api action you develop. If user/operator closes its browser, or if you cancel request at client side programmatically, that cancellation token gets notified. Almost all bit framework's methods accept cancellation token, and they stop their work as cancellation token gets notified.
 
 
-3- Bit Data Access components are optimized for N-Tier app development. To have a better understanding about what does this mean read this [amazing article](https://docs.bit-framework.com/docs/design-backgrounds/optimized-entity-framework-for-n-tier-apps.html).
+3- Bit Data Access components are optimized for N-Tier app development. To have a better understanding about what does this mean read this [amazing article](docs/blog/optimized-entity-framework-for-n-tier-apps.md)
 
 ### Entity Framework
 
@@ -23,7 +23,7 @@ public class Customer : IEntity
 }
 ```
 
-Then develop a DbContext class which inherits from EfDbContextBase. The reason is described [in an article we've previously mentioned](https://docs.bit-framework.com/docs/design-backgrounds/optimized-entity-framework-for-n-tier-apps.html).
+Then develop a DbContext class which inherits from EfDbContextBase. The reason is described [in an article we've previously mentioned](docs/blog/optimized-entity-framework-for-n-tier-apps.md)
 
 ```csharp
 public class MyAppDbContext : EfDbContextBase
@@ -153,17 +153,17 @@ Bit repository has several methods such as GetAll, Add, Remove etc as like as an
 
 LoadCollection - LoadReference - GetCollectionQuery
 
-By reading the article which describes [why bit repository is optimized for N-Tier scenarios](https://docs.bit-framework.com/docs/design-backgrounds/optimized-entity-framework-for-n-tier-apps.html), you'll find out we disable "property based" lazy loading by default which improves your app performance from 3 times to 100 times based on a scenario. But how you can achieve lazy loading in case you need that? Consider following code:
+By reading the article which describes [why bit repository is optimized for N-Tier scenarios](docs/blog/optimized-entity-framework-for-n-tier-apps.md), you'll find out we disable "property based" lazy loading by default which improves your app performance from 3 times to 100 times based on a scenario. But you can perform explicit loading as followings:
 
 ```csharp
-[Route("customers/customer-lazy-sample")]
+[Route("customers/customer-explicit-sample")]
 public virtual async Task CustomerLazySample(CancellationToken cancellationToken)
 {
     Customer customer = await CustomersRepository.GetByIdAsync(1, cancellationToken);
 
     // After some works, now we need customer's orders. So we simply write:
 
-    await CustomersRepository.LoadCollectionAsync(customer, c => c.Orders, cancellationToken); // Uses async-await + cancellation token for lazy loading! And it has no performance penalty (-:
+    await CustomersRepository.LoadCollectionAsync(customer, c => c.Orders, cancellationToken); // Uses async-await + cancellation token for explicit loading! And it has no performance penalty (-:
 
     foreach (Order order in customer.Orders)
     {
@@ -199,4 +199,4 @@ await ProductsRepository.LoadReferenceAsync(product, p => p.Category);
 
 ```
 
-GetCollectionQuery returns IQueryable, for example, IQueryable of orders of that customer.
+ToDo: GetCollectionQuery returns IQueryable, for example, IQueryable of orders of that customer.

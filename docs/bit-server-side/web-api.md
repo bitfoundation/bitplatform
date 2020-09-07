@@ -85,7 +85,7 @@ We've used #DefaultPathProvider.Current.GetCurrentAppPath()# instead of #System.
 ```csharp
 c.ApplyDefaultApiConfig(httpConfiguration);
 ```
-As you see in the article, you open swagger ui by opening http://localhost:51609/swagger/ but in bit's sample, you open http://localhost:9000/api/swagger/. You open /swagger under /api. This is a magic of owin/asp.net core's request branching. Calling method "ApplyDefaultApiConfig" describs that magic to swagger. It also performs a bunch of other recommneded swagger configs for you too.
+As you see in the article, you open swagger ui by opening http://localhost:51609/swagger/ but in bit's sample, you open http://localhost:9006/api/swagger/. You open /swagger under /api. This is a magic of owin/asp.net core's request branching. Calling method "ApplyDefaultApiConfig" describs that magic to swagger. It also performs a bunch of other recommneded swagger configs for you too.
 
 EnableBitSwaggerUI provides better UX for Swagger UI. As an example, it simplifies your login experience. It also stores your token, so you don't have to login everytime you open swagger.
 

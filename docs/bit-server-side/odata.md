@@ -5,11 +5,11 @@ So, what's OData? following text which is copied from http://odata.org describes
 OData (Open Data Protocol) is an ISO/IEC approved, OASIS standard that defines a set of best practices for building and consuming "RESTful APIs". OData helps you "focus on your business logic" while building RESTful APIs.
 OData RESTful APIs are easy to consume. The OData metadata, a machine-readable description of the data model of the APIs, enables the creation of powerful generic client proxies and tools.
 
-Using bit framework, you can build OData services very easily, and we generate C# - TypeScript - JavaScript clients for you automatically. You can use those no matter you're developing xamarin forms, angular js, angular, react js & native etc. We also have out of the box support for Open-API (Swagger). Using [azure auto rest](https://github.com/Azure/autorest) tools, you can generate client side for almost any language you want. You can also send raw http requests to odata services and you can expect raw responses.
+Using bit framework, you can build OData services very easily, and we generate C# proxies for you automatically that you can use in Xamarin Forms & Blazor apps. We also have out of the box support for Open-API (Swagger). Using [azure auto rest](https://github.com/Azure/autorest) tools, you can generate client side for almost any language you want. You can also send raw http requests to odata services and you can expect raw responses.
 
 **An OData controller has full built-in support for paging/filtering/sorting/projection/grouping and aggregation.**
 
-At client side, develop LINQ queries using C#/TypeScript/JavaScript, then we send that query to server side and server returns data based on your query. OData supports batch requests as well which results into better performance.
+At client side, you develop LINQ queries, and then OData sends that query to server side and server returns data based on your query. OData supports batch requests as well which results into better performance & scability.
 
 In bit apps, you develop odata controllers for your DTO (Data transfer objects) classes.
 
@@ -136,7 +136,7 @@ public virtual async Task<IQueryable<CustomerDto>> GetActiveCustomers(Cancellati
 }
 ```
 
-Mapper automatically maps "model/entities" classes to DTO classes. It uses [AutoMapper](http://automapper.org/) by default and the way we use auto mapper will not slow down your app as described [here](https://docs.bit-framework.com/docs/design-backgrounds/why-auto-mapper-has-no-performance-penalty.html).
+Mapper automatically maps "model/entities" classes to DTO classes. It uses [AutoMapper](http://automapper.org/) by default and the way we use auto mapper will not slow down your app as described [here](docs/blog/why-auto-mapper-has-no-performance-penalty.md)
 
 Note that you don't have to use bit repository here. You don't have to use entity framework either. You can use mongo db, simple array etc. We need some customer dto instances only.
 
@@ -352,7 +352,9 @@ dependencyManager.RegisterDtoEntityMapperConfiguration<MyAppDtoEntityMapperConfi
 
 Run the app, you can insert/update/delete/read categories and products using swagger ui. You can invoke OData queries such as $filter there.
 
-How to generate C# / JavaScript / TypeScript clients?
+ToDo:
+
+How to generate C# proxies?
 
 Background Job Worker
 
