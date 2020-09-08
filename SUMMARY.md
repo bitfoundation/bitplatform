@@ -11,6 +11,7 @@
   * [Controls Config](/docs/bit-xamarin-client/getting-started.md)
   * [Date Time Picker](/docs/bit-xamarin-client/date-time-picker.md)
   * [Date Time Picker](/docs/bit-xamarin-client/frame.md)
+  * [Persian docs](/docs/bit-xamarin-client/persian-docs.md)
 * [Bit.Simila](docs/simila/simila.md)
 * [Good questions](docs/good-questions.md)
 * [Blog](docs/blog/blog.md)
