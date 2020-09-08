@@ -23,6 +23,6 @@ There are many ways to contribute
 
 ## Documentation
 
-Read docs on [https://docs.bitframework.tech/](https://docs.bitframework.tech/)
+Read docs on [https://docs.bitfoundation.tech/](https://docs.bitfoundation.tech/)
 
 You can also watch [Announcements](https://github.com/bit-foundation/Announcements/issues) to track important docs/codes changes.

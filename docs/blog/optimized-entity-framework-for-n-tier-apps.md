@@ -39,4 +39,4 @@ Intel Core i7-7700K CPU 4.20GHz (Kaby Lake), 1 CPU, 8 logical and 4 physical cor
  
  _________
 
-Ninja tip: [Here you can learn how to do lazy loading withour slowing down your app + support for async lazy loading!](https://docs.bitframework.tech/docs/bit-server-side/data-access.html#bit-repository-specific-methods)
+Ninja tip: [Here you can learn how to do lazy loading withour slowing down your app + support for async lazy loading!](https://docs.bitfoundation.tech/docs/bit-server-side/data-access.html#bit-repository-specific-methods)
