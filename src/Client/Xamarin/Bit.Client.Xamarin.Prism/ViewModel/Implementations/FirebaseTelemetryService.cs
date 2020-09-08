@@ -1,9 +1,9 @@
 ﻿using Bit.Core.Contracts;
 using Bit.Core.Implementations;
-using Bit.ViewModel.Contracts;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Reflection;
 
 namespace Bit.ViewModel.Implementations
 {
@@ -12,7 +12,10 @@ namespace Bit.ViewModel.Implementations
         private bool _isInited = false;
 
 #if Android
-        private global::Android.Content.Context? _context;
+        private Action<string, global::Android.OS.Bundle> LogEvent;
+        private Action<string?> CrashlyticsSetUserId;
+        private Action<string?> AnalyticsSetUserId;
+
 #endif
 
         private static FirebaseTelemetryService? _current;
@@ -26,9 +29,15 @@ namespace Bit.ViewModel.Implementations
 #if Android
         public virtual void Init(global::Android.Content.Context context)
         {
-            _context = context;
-            Fabric.Fabric.With(_context, new Crashlytics.Crashlytics());
-            Crashlytics.Crashlytics.HandleManagedExceptions();
+            var analyticsType = Assembly.Load("Xamarin.GooglePlayServices.Measurement.Api").GetType("Firebase.Analytics.FirebaseAnalytics");
+            var analyticsInstance = analyticsType.GetMethod("GetInstance").Invoke(null, new object[] { context });
+            AnalyticsSetUserId = (Action<string?>)Delegate.CreateDelegate(typeof(Action<string?>), target: analyticsInstance, method: "SetUserId", ignoreCase: false);
+            LogEvent = (Action<string, global::Android.OS.Bundle>)Delegate.CreateDelegate(typeof(Action<string, global::Android.OS.Bundle>), target: analyticsInstance, method: "LogEvent", ignoreCase: false);
+
+            var crashlyticsType = Assembly.Load("Xamarin.Firebase.Crashlytics").GetType("Firebase.Crashlytics.FirebaseCrashlytics");
+            var crashlyticsInstace = crashlyticsType.GetProperty("Instance").GetValue(null);
+            CrashlyticsSetUserId = (Action<string?>)Delegate.CreateDelegate(typeof(Action<string?>), target: crashlyticsInstace, method: "SetUserId", ignoreCase: false);
+
             _isInited = true;
         }
 #elif iOS
@@ -60,7 +69,7 @@ namespace Bit.ViewModel.Implementations
                     }
                 }
 
-                Firebase.Analytics.FirebaseAnalytics.GetInstance(_context).LogEvent(eventName, bundle);
+                LogEvent(eventName, bundle);
 #endif
 
 #if iOS
@@ -166,7 +175,8 @@ namespace Bit.ViewModel.Implementations
             if (IsConfigured())
             {
 #if Android
-                Crashlytics.Crashlytics.SetUserIdentifier(userId);
+                CrashlyticsSetUserId.Invoke(userId);
+                AnalyticsSetUserId(userId);
 #elif iOS
                 Firebase.Crashlytics.Crashlytics.SharedInstance.SetUserIdentifier(userId);
 #endif

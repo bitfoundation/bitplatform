@@ -22,11 +22,7 @@
       <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
     </EmbeddedResource>
   </ItemGroup>
-
-  <ItemGroup Condition=" '$(TargetFramework)' == 'monoandroid10.0' OR '$(TargetFramework)' == 'monoandroid9.0'">
-    <PackageReference Include="Xamarin.Android.Crashlytics" Version="2.9.4.4" />
-  </ItemGroup>
-
+	
   <ItemGroup Condition=" '$(TargetFramework)' == 'Xamarin.iOS10' ">
     <PackageReference Include="Xamarin.Firebase.iOS.Core" Version="6.6.6" />
     <PackageReference Include="Xamarin.Firebase.iOS.Crashlytics" Version="3.14.0.3" />
