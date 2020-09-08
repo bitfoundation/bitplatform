@@ -80,7 +80,7 @@ namespace Bit.CSharpClientSample
             containerRegistry.RegisterForNav<MainView, MainViewModel>("Main");
             containerRegistry.RegisterForNav<TestView, TestViewModel>("Test");
 
-            const string developerMachineIp = "192.168.0.128";
+            const string developerMachineIp = "192.168.42.219";
 
             containerBuilder.Register<IClientAppProfile>(c => new DefaultClientAppProfile
             {
