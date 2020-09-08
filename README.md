@@ -4,7 +4,7 @@ Bit framework is a full stack framework for [C\#](https://docs.microsoft.com/en-
 
 You can develop any of following app types using Bit:
 
-* Single page app (SPA) & progressive web apps (PWA) using C# & Blazor
+* Single page app (SPA) & progressive web apps (PWA) using C# & [Blazor](https://dotnet.microsoft.com/apps/aspnet/web-apps/blazor)
 * Cloud/Micro service friendly API
 * Desktop Apps using [Xamarin Forms](https://www.xamarin.com/forms)
 * Native mobile apps using [Xamarin Forms](https://www.xamarin.com/forms)

@@ -2,7 +2,7 @@
 
 * [Introduction](README.md)
 * [Getting started](docs/getting-started.md)
-* [Bit server side introduction](/docs/bit-server-side/introduction.md)
+* [Bit server side introduction](/docs/bit-server-side/bit-server-introduction.md)
   * [Web API](/docs/bit-server-side/web-api.md)
   * [Data Access](/docs/bit-server-side/data-access.md)
   * [OData](/docs/bit-server-side/odata.md)
