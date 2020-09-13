@@ -2,7 +2,7 @@
 
 Duo to the announcement of `Microsoft.AspNetCore.OData V7.4`, I decided to prepare an article to demonstrate how to use OData in ASP.NET Core 3.1+ projects with minimal changes in the code, so you can see how much it became easy to use in new versions. This approach is valid for projects that have endpoint routing which is the recommended approach.
 
-First with `dotnet --version` or `dotnet --info` commands or any other methods, we should be sure about installation of dot net core 3.1 sdk. Then we execute the below command:
+First with `dotnet --version` or `dotnet --info` commands or any other methods, we should be sure about installation of dot net core 3.1+ sdk. Then we execute the below command:
 
 ```csharp
 dotnet new webapi -o SampleApi
@@ -69,7 +69,7 @@ public enum Gender
     Man, Woman, Other
 }
 ```
-For returning only woman clients: *(Filtering on Enum)*
+For returning only women customers: *(Filtering on Enum)*
 ```csharp
 ?$filter=Gender eq 'Woman'
 ```
@@ -86,6 +86,6 @@ There are a lot of querying capabilities including Any/All in the filter query p
 
 In addition, if we provide an IQueryable for OData instead of an array or list, the OData will execute the queries of paging, orderby, etc against the database and only the final result will return from the database, therefore it will have a huge effect on application performance.
 
-The security in this method will not be in danger, because if you put a where on the server-side query,  based on app logic, the client only can (OData) query on the limited with where applied data, so it can fetch only accessed data from the database.
+The security in this method will not be in danger, because if you put a where on the server-side query or any kind of row level security, based on app logic, the client only can (OData) query on the limited with where applied data, so it can fetch only accessed data from the database.
 
 All of the above concepts can be applied without any changes in `app routing`, `Swagger`, etc, so you can use your best practices like using `Dto` instead of raw `Entity` along with OData features.
