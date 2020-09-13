@@ -1,4 +1,4 @@
-﻿# Integrate OData in .Net Core 3.1 Project With Just 20 Lines of Codes!
+﻿# Integrate OData in .Net Core 3.1+ Project With Just 20 Lines of Codes!
 
 Duo to the announcement of `Microsoft.AspNetCore.OData V7.4`, I decided to prepare an article to demonstrate how to use OData in ASP.NET Core 3.1+ projects with minimal changes in the code, so you can see how much it became easy to use in new versions. This approach is valid for projects that have endpoint routing which is the recommended approach.
 
