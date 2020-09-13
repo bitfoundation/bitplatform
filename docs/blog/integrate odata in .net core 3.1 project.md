@@ -80,7 +80,7 @@ To ordering woman clients based on their address street number: *(Ordering on ne
 To get customers with Ali in their names:
 ```csharp
 ?$filter=contains(FirstName,'Ali')
-```
+``` 
 To see more querying examples in OData check out [this link](https://www.odata.org/getting-started/basic-tutorial/#queryData). 
 There are a lot of querying capabilities including Any/All in the filter query provided by OData.
 
