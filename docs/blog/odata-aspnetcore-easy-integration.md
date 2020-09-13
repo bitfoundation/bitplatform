@@ -1,6 +1,6 @@
 ﻿# Integrate OData in .Net Core 3.1+ Project With Just 20 Lines of Codes!
 
-Duo to the announcement of `Microsoft.AspNetCore.OData V7.4`, I decided to prepare an article to demonstrate how to use OData in ASP.NET Core 3.1+ projects with minimal changes in the code, so you can see how much it became easy to use in new versions. This approach is valid for projects that have endpoint routing which is the recommended approach.
+Duo to the announcement of `Microsoft.AspNetCore.OData V7.4`, I decided to prepare an article to demonstrate how to use OData in ASP.NET Core 3.1+ projects with minimal changes in the code, so you can see how much it became easy to use in new versions. This approach is valid for projects that have `endpoint routing` which is the recommended approach.
 
 First with `dotnet --version` or `dotnet --info` commands or any other methods, we should be sure about installation of dot net core 3.1+ sdk. Then we execute the below command:
 
@@ -9,7 +9,9 @@ dotnet new webapi -o SampleApi
 ```
 
 In Visual Studio, this command is equivalent to creating a new ASP.NET Core Web API project. This project uses endpoint routing. There are a `WeatherForecast` model and `WeatherForecasetController` with a `Get` action that creates and returns a list of WeatherForecasts. This project doesn't involve any database.
+
 So what should we do to make this project OData enabled?
+
 1- Install these two packages:
 ```markup
 <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="3.1.3" />
@@ -37,7 +39,9 @@ Then modify the `Get` action in `WeatherForecastController` as below:
 [HttpGet, EnableQuery] // new code
 ```
 Run the app and go to this address:
+
 http://localhost:5000/weatherforecast?$orderby=TemperatureC
+
 The `orderby=TempratureC` phrase causes the WeatherForcast result items to be ordered by their temperatures when sending them to the client.
 
 As you can see, we easily added OData to our sample app.
