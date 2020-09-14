@@ -15,6 +15,7 @@
 * [Bit.Simila](docs/simila/simila.md)
 * [Good questions](docs/good-questions.md)
 * [Blog](docs/blog/blog.md)
+  * [Xamarin Forms Images Optimization](docs/blog/images-optimizations-in-xamarinforms.md)
   * [OData & ASP.NET Core easy integration](docs/blog/odata-aspnetcore-easy-integration.md)
   * [Visual Studio Speedup](docs/blog/visual-studio-speedup.md)
   * [Server sent events or Web Sockets?](docs/blog/server-sent-events-or-web-sockets.md)
