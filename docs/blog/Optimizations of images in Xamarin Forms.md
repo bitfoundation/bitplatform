@@ -1,11 +1,13 @@
 ﻿# Optimizations of images in Xamarin Forms
 
 I invite you in advance to read this article even if you use other methods of mobile application development such as Flutter, React native, etc instead of Xamarin Forms; Because the general idea and its important points can be useful for you as well.
+
 When you get your design from a designer and let's say you want to display a glass image on a page of a mobile app, you are given a PNG or SVG file. Although there are generally ways to use the same file directly on your application page, this is not recommended for several reasons:
 1. Different devices have different resolutions, and the mobile (sometimes weak) hardware must scale the image for optimal display, which is a waste of CPU and memory.
 2. Even when the scaling operation is done, when the relevant page (containing the scaled image) is closed and we go to another page, in reopening the relevant page, this costly scaling operation will occur again.
 
 To solve these problems, two steps can be taken:
+
 The first step is to pre-save the SVG or PNG image of that glass in different scales. This has two drawbacks though. The first one is that if this is done manually, the probability of error increases as it needs to save dozens of different images for every source image based on different scales for Android/iOS/Windows. The second drawback is by storing an image multiple times on different scales, the final size of the project will increase.
 
 To automate this manual process, Xamarin Forms, React native, etc. have tools that the [`ResizetizerNT`](https://github.com/Redth/ResizetizerNT) is an example of Xamarin Forms tool that takes an SVG or PNG image from you and saves it in different scales for Android/iOS/Windows, so the chances of making a mistake during scaling will decrease and the scaling job becomes much simpler.
