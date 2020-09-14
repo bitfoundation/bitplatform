@@ -12,7 +12,7 @@ The first step is to pre-save the SVG or PNG image of that glass in different sc
 
 To automate this manual process, Xamarin Forms, React native, etc. have tools that the [`ResizetizerNT`](https://github.com/Redth/ResizetizerNT) is an example of Xamarin Forms tool that takes an SVG or PNG image from you and saves it in different scales for Android/iOS/Windows, so the chances of making a mistake during scaling will decrease and the scaling job becomes much simpler.
 
-To solve the problem of final project output size, a new format has been replaced with `apk` in Android and Google Play Store called `aab` or [`Android App Bundle`](https://developer.android.com/platform/technology/app-bundle), which builds a file based on the resolution of the device that is downloading the app, therefore there will be only photos with appropriate scale for the device; So we can at least not worry about Android devices on the project size issue.
+To solve the problem of final project output size, `apk` has been replaced with a new format in Android and Google Play Store called `aab` or [`Android App Bundle`](https://developer.android.com/platform/technology/app-bundle), which builds a file based on the resolution of the device that is downloading the app, therefore there will be only photos with appropriate scale for the device; So we can at least not worry about Android devices on the project size issue.
 
 Of course, the impact of this scaling operation on performance is so positively high that it is better for various stores that do not support `aab` and only support `apk` to still store the image on different scales.
 
