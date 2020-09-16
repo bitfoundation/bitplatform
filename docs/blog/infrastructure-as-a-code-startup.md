@@ -10,7 +10,7 @@ One of the best tools for `Infra as a code` is a tool called **[Pulumi](https://
 
 **Kubernetes**, for example, has its own methods for maintaining the Infra structure in its configuration files, but Pulumi offers both simplicity and ease in the Cloud, where you typically use your own Cloud Database Services and App Services and Logging Systems which are not Kubernetes subsets. You can control the whole Cloud and Kubernetes at the same time with one tool.
 
-For example, people in the Cloud, use `Database as a service` instead of creating a database in Kubernetes, which means achieving higher quality and reducing costs. Some other examples are requesting DDoS protection service and CDN and Media Services.
+For example, most people in the Cloud, use `Database as a service` instead of creating a database in Kubernetes, which means achieving higher quality and reducing costs. Some other examples are requesting DDoS protection service and CDN and Media Services.
 
 To work with Pulumi, you can get an account from its website, in which case snapshots of Infra changes in the code are stored inside the Pulumi website, or you can keep Snapshots similar to the Snapshots of the Entity Framework inside the source controller, therefore you will not have any dependency on Pulumi servers.
 
