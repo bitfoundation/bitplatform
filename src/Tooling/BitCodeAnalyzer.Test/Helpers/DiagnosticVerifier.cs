@@ -397,8 +397,7 @@ namespace Bit.Tooling.CodeAnalyzer.Test.Helpers
 
             MSBuildWorkspace workspace = MSBuildWorkspace.Create(new Dictionary<string, string>()
             {
-                { "TargetFramework", "net5.0" },
-                { "_TargetFrameworkVersionValue", "5.0" }
+                { "TargetFramework", "net5.0" }
             });
 
             Process.Start(new ProcessStartInfo
