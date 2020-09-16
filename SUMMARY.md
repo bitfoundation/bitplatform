@@ -15,6 +15,7 @@
 * [Bit.Simila](docs/simila/simila.md)
 * [Good questions](docs/good-questions.md)
 * [Blog](docs/blog/blog.md)
+  * [Infrastructure as a Code Solution](docs/blog/infrastructure-as-a-code-solution.md)
   * [Xamarin Forms Images Optimization](docs/blog/images-optimizations-in-xamarinforms.md)
   * [OData & ASP.NET Core easy integration](docs/blog/odata-aspnetcore-easy-integration.md)
   * [Visual Studio Speedup](docs/blog/visual-studio-speedup.md)
