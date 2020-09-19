@@ -7,6 +7,7 @@ namespace Bit.Tooling.Core.Model
     public class BitConfig
     {
         public virtual BitCodeGeneratorConfig BitCodeGeneratorConfigs { get; set; } = default!;
+        public virtual string? TargetFramework { get; set; }
     }
 
     public class BitCodeGeneratorConfig

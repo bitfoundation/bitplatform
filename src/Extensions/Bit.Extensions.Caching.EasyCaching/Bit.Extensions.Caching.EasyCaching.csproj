@@ -5,18 +5,18 @@
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>    
     <PackageTags>$(PackageTags) Hybrid Synchronization LocalCache DistributedCache Caching Cache MemoryCache EasyCaching</PackageTags>    
-    <Version>0.8.11</Version>
-    <AssemblyVersion>0.8.11.0</AssemblyVersion>
-    <PackageVersion>0.8.11</PackageVersion>    
+    <Version>0.9.0</Version>
+    <AssemblyVersion>0.9.0.0</AssemblyVersion>
+    <PackageVersion>0.9.0</PackageVersion>    
     <RepositoryUrl>https://github.com/bitfoundation/bitframework</RepositoryUrl>
     <PackageProjectUrl>https://github.com/bitfoundation/bitframework</PackageProjectUrl>
-    <PackageReleaseNotes>https://github.com/bitfoundation/bitframework/releases/tag/v0.8.11</PackageReleaseNotes>    
+    <PackageReleaseNotes>https://github.com/bitfoundation/bitframework/releases/tag/v0.9.0</PackageReleaseNotes>    
   </PropertyGroup>
   
   <ItemGroup>
-    <PackageReference Include="EasyCaching.HybridCache" Version="0.8.11" />
-    <PackageReference Include="Microsoft.Extensions.Caching.Abstractions" Version="5.0.0-preview.8.20407.11" />
-    <PackageReference Include="Microsoft.Extensions.Options" Version="5.0.0-preview.8.20407.11" />
+    <PackageReference Include="EasyCaching.HybridCache" Version="0.9.0" />
+    <PackageReference Include="Microsoft.Extensions.Caching.Abstractions" Version="5.0.0-rc.1.20451.14" />
+    <PackageReference Include="Microsoft.Extensions.Options" Version="5.0.0-rc.1.20451.14" />
   </ItemGroup>
 
 </Project>

@@ -16,6 +16,8 @@
 * [Good questions](docs/good-questions.md)
 * [Blog](docs/blog/blog.md)
   * [Cloud and On-Premise Log Solution](docs/blog/cloud-and-on-premise-log-solution.md)
+  * [Infrastructure as a Code Solution](docs/blog/infrastructure-as-a-code-solution.md)
+  * [Xamarin Forms Images Optimization](docs/blog/images-optimizations-in-xamarinforms.md)
   * [OData & ASP.NET Core easy integration](docs/blog/odata-aspnetcore-easy-integration.md)
   * [Visual Studio Speedup](docs/blog/visual-studio-speedup.md)
   * [Server sent events or Web Sockets?](docs/blog/server-sent-events-or-web-sockets.md)
