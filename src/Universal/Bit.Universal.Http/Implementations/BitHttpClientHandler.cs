@@ -88,10 +88,6 @@ namespace Bit.Http.Implementations
 #else           
                 request.Headers.Add("Client-Type", "Xamarin");
 #endif
-
-                if (DeviceInfo.Idiom != Xamarin.Essentials.DeviceIdiom.Unknown)
-                    request.Headers.Add("Client-Screen-Size", DeviceInfo.Idiom == Xamarin.Essentials.DeviceIdiom.Phone ? "MobileAndPhablet" : "DesktopAndTablet");
-
                 request.Headers.Add("Client-Date-Time", DateTimeProvider.GetCurrentUtcDateTime().UtcDateTime.ToString("o", CultureInfo.InvariantCulture));
 
                 xCorrelationID = Guid.NewGuid();
@@ -122,6 +118,8 @@ namespace Bit.Http.Implementations
                 await MainThread.InvokeOnMainThreadAsync(() =>
                 {
                     request.Headers.Add("Client-Theme", AppInfo.RequestedTheme.ToString());
+                    if (DeviceInfo.Idiom != Xamarin.Essentials.DeviceIdiom.Unknown)
+                        request.Headers.Add("Client-Screen-Size", DeviceInfo.Idiom == Xamarin.Essentials.DeviceIdiom.Phone ? "MobileAndPhablet" : "DesktopAndTablet");
                 }).ConfigureAwait(false);
 #endif
 
