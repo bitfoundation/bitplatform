@@ -38,7 +38,7 @@ namespace Bit.Http.Implementations
 
             if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
             {
-                _eventAggregator.GetEvent<UnauthorizedRequestEvent>().Publish(new UnauthorizedRequestEvent { });
+                _eventAggregator.GetEvent<UnauthorizedResponseEvent>().Publish(new UnauthorizedResponseEvent { });
 
                 if ((await _securityService.IsLoggedInAsync(cancellationToken).ConfigureAwait(false)) == false)
                         _eventAggregator.GetEvent<TokenExpiredEvent>().Publish(new TokenExpiredEvent { });
