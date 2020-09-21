@@ -19,5 +19,7 @@ namespace Bit.Core.Contracts
         string? LogoutEndpint { get; set; }
 
         string? SignalrEndpint { get; set; }
+
+        string? Environment { get; set; }
     }
 }

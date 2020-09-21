@@ -23,6 +23,9 @@ namespace Bit.Http.Implementations
         HttpClientHandler
 #endif
     {
+
+        public IClientAppProfile ClientAppProfile { get; set; } = default!;
+
 #if Android
         protected override async Task WriteRequestContentToOutput(HttpRequestMessage request, Java.Net.HttpURLConnection httpConnection, CancellationToken cancellationToken)
         {
@@ -42,26 +45,6 @@ namespace Bit.Http.Implementations
                 stream.Seek(0, SeekOrigin.Begin);
         }
 #endif
-
-        public virtual bool IsInDebugMode()
-        {
-            try
-            {
-#if UWP
-                return Assembly.GetEntryAssembly()!.GetCustomAttributes(false).OfType<DebuggableAttribute>().Any(da => da.IsJITTrackingEnabled);
-#else
-                return Debugger.IsAttached;
-#endif
-            }
-            catch
-            {
-#if UWP
-                return Debugger.IsAttached;
-#else
-                return false;
-#endif
-            }
-        }
 
         protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {
@@ -123,7 +106,7 @@ namespace Bit.Http.Implementations
                 }).ConfigureAwait(false);
 #endif
 
-                request.Headers.Add("Client-Debug-Mode", IsInDebugMode().ToString(CultureInfo.InvariantCulture));
+                request.Headers.Add("Client-Debug-Mode", (ClientAppProfile.Environment == "Development").ToString(CultureInfo.InvariantCulture));
             }
             else
             {
