@@ -169,7 +169,7 @@
                                 let original$setValidity = propModelController.$setValidity;
 
                                 propModelController.$setValidity = function $setValidity() {
-                                    propModelController.validityEvaludated = true;
+                                    propModelController.validityEvaluated = true;
                                     return original$setValidity.apply(propModelController, arguments);
                                 };
 
@@ -215,7 +215,7 @@
                                 }
                             }
 
-                            propModelController.validityEvaludated = false;
+                            propModelController.validityEvaluated = false;
 
                             propModelControllers.push(propModelController);
                         }
@@ -274,7 +274,7 @@
                                     this.perDtoFormStorage.prevValidationsRollbackHandlers.push({
                                         memberName: memberName, errorKey: errorKey, handler: () => {
                                             propModelCtrl.$setValidity(errorKey, true);
-                                            propModelCtrl.validityEvaludated = false;
+                                            propModelCtrl.validityEvaluated = false;
                                         }
                                     });
                                 }

@@ -14,7 +14,7 @@ namespace Bit.Core.Implementations
             return _isFailed == false;
         }
 
-        public virtual void MarkAsFailed(string reason)
+        public virtual void MarkAsFailed(string? reason)
         {
             _isFailed = true;
             _failureReason = reason;

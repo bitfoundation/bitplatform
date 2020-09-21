@@ -400,12 +400,12 @@ namespace Bit.Tooling.CodeAnalyzer.Test.Helpers
                 { "TargetFramework", "net5.0" }
             });
 
-            Process.Start(new ProcessStartInfo
+            await Process.Start(new ProcessStartInfo
             {
                 FileName = "dotnet",
                 Arguments = "restore",
                 WorkingDirectory = basePath
-            }).WaitForExit();
+            }).WaitForExitAsync();
 
             await workspace.OpenSolutionAsync(Path.Combine(basePath, solutionName));
 

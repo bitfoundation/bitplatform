@@ -34,7 +34,7 @@ namespace Microsoft.AspNet.OData.Query
             {
                 var expandItems = new List<ExpandedNavigationSelectItem>();
                 GetEntirePath(expandItem, ref expandItems);
-                var expandItemNames = expandItems.SelectMany(i => i.PathToNavigationProperty.Select(i => i.Identifier)).ToArray();
+                var expandItemNames = expandItems.SelectMany(i => i.PathToNavigationProperty.Select(j => j.Identifier)).ToArray();
                 var result = string.Join(".", expandItemNames);
                 finalResult.Add(result);
             }

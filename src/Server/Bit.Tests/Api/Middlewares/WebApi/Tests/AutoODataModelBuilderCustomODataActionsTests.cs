@@ -16,7 +16,7 @@ namespace Bit.Tests.Api.Middlewares.WebApi.Tests
                     2- Single entity: TestModelsController.StringFormattersTests
                     3- Array of entities: TestModelsController.StringFormattersTests
                     4- Array of primitives: TestModelsController.StringFormattersTests
-                    5- IDictionar<string,object> : We're not going to support that for now
+                    5- IDictionary<string,object> : We're not going to support that for now
                     6- Single complex type: We're not going to support that for now
                     7- Array of complex values: We're not going to support that for now.
                     8- No argument: TestModelsController.PushSomethingWithDateTimeOffset

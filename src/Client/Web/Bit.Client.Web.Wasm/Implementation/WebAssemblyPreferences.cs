@@ -74,7 +74,7 @@ namespace Bit.Client.Web.Wasm.Implementation
             return Get(key, defaultValue, sharedName: "Shared");
         }
 
-        public virtual string Get(string key, string defaultValue, string sharedName)
+        public virtual string Get(string key, string? defaultValue, string sharedName)
         {
             string? result = null;
 
@@ -185,7 +185,7 @@ namespace Bit.Client.Web.Wasm.Implementation
             if (_wasm_js_runtime != null)
                 _wasm_js_runtime.InvokeVoid("localStorage.setItem", key, value);
             else
-                _keyValues.AddOrUpdate(key, value, (key, oldValue) => value);
+                _keyValues.AddOrUpdate(key, value, (oldKey, oldValue) => value);
         }
 
         public virtual void Set(string key, bool value, string sharedName)

@@ -220,7 +220,7 @@ namespace Bit.Test.Server
         {
             return RestService.For<TService>(BuildHttpClient(token), new RefitSettings
             {
-                ContentSerializer = new JsonContentSerializer(DefaultJsonContentFormatter.SerializeSettings())
+                ContentSerializer = new NewtonsoftJsonContentSerializer(DefaultJsonContentFormatter.SerializeSettings())
             });
         }
     }

@@ -202,7 +202,7 @@ namespace Bit.Signalr.Implementations
         {
             ShouldBeConnected = false;
             if (_hubConnection != null)
-                await Task.Run(_hubConnection.Stop);
+                await Task.Run(_hubConnection.Stop, cancellationToken);
         }
 
         public void Dispose()

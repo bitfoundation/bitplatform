@@ -53,16 +53,16 @@ namespace Bit.Extensions.Caching.EasyCaching.Implementations.Hybrid
             }
         }
 
-        public async Task RefreshAsync(string key, CancellationToken token = default)
+        public async Task RefreshAsync(string key, CancellationToken cancellationToken = default)
         {
             if (key == null)
                 throw new ArgumentNullException(nameof(key));
 
-            var value = await GetAsync(key).ConfigureAwait(false);
+            var value = await GetAsync(key, cancellationToken).ConfigureAwait(false);
 
             if (value != null && _expirations.TryGetValue(key, out TimeSpan expiration))
             {
-                await SetAsync(key, value, new DistributedCacheEntryOptions { AbsoluteExpirationRelativeToNow = expiration }).ConfigureAwait(false);
+                await SetAsync(key, value, new DistributedCacheEntryOptions { AbsoluteExpirationRelativeToNow = expiration }, cancellationToken).ConfigureAwait(false);
             }
         }
 

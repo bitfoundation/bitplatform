@@ -60,7 +60,7 @@ namespace Bit.View
             }
         }
 
-        protected async override Task OnInitializedAsync()
+        protected override async Task OnInitializedAsync()
         {
             try
             {
@@ -88,7 +88,7 @@ namespace Bit.View
             }
         }
 
-        protected async override Task OnParametersSetAsync()
+        protected override async Task OnParametersSetAsync()
         {
             try
             {
@@ -131,7 +131,7 @@ namespace Bit.View
 
         public virtual Func<Task> Invoke(Func<Task> func)
         {
-            return new Func<Task>(async () =>
+            return async () =>
             {
                 try
                 {
@@ -141,13 +141,13 @@ namespace Bit.View
                 {
                     VM.ExceptionHandler.OnExceptionReceived(exp);
                 }
-            });
+            };
         }
 
 
         public virtual Action Invoke(Action action)
         {
-            return new Action(() =>
+            return () =>
             {
                 try
                 {
@@ -158,12 +158,12 @@ namespace Bit.View
                 {
                     VM.ExceptionHandler.OnExceptionReceived(exp);
                 }
-            });
+            };
         }
 
         public virtual Func<EventArgs, Task> Invoke(Func<EventArgs, Task> func)
         {
-            return new Func<EventArgs, Task>(async (e) =>
+            return async (e) =>
             {
                 try
                 {
@@ -173,7 +173,7 @@ namespace Bit.View
                 {
                     VM.ExceptionHandler.OnExceptionReceived(exp);
                 }
-            });
+            };
         }
     }
 }

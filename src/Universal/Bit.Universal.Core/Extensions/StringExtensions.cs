@@ -14,7 +14,7 @@ namespace System
         }
 
         /// <summary>
-        /// Compares two strins while ignoring case/symbol/case.
+        /// Compares two strings while ignoring case/symbol/case.
         /// </summary>
         public static bool AreEqual(this string? string1, string? string2)
         {

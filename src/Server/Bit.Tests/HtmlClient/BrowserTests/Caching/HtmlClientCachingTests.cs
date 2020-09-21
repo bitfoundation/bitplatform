@@ -16,7 +16,7 @@ namespace Bit.Tests.HtmlClient.BrowserTests.Caching
     {
         [TestMethod]
         [TestCategory("HtmlClient"), TestCategory("Caching")]
-        public virtual async Task ResourceLikeIndexPageWhichInNotCachableMustBeRertivedEverytimeByHtmlClient()
+        public virtual async Task ResourceLikeIndexPageWhichInNotCachableMustBeRetrievedEverytimeByHtmlClient()
         {
             using (BitOwinTestEnvironment testEnvironment = new BitOwinTestEnvironment(new TestEnvironmentArgs { UseRealServer = true }))
             {

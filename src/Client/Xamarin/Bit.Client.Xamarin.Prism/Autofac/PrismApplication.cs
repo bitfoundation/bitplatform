@@ -46,7 +46,7 @@ namespace Prism.Autofac
         protected override void SetDependencyResolver(IContainerProvider containerProvider)
         {
             base.SetDependencyResolver(containerProvider);
-            DependencyResolver.ResolveUsing((Type type, object[] dependencies) =>
+            DependencyResolver.ResolveUsing((type, dependencies) =>
             {
                 var container = containerProvider.GetContainer();
                 var parameters = new List<Parameter>();

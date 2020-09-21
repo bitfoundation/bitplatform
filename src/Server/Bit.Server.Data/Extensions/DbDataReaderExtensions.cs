@@ -21,7 +21,7 @@ namespace System.Data
 
         static async Task FlushSqlResultsToStream(DbDataReader reader, Stream stream, CancellationToken cancellationToken)
         {
-            using (reader)
+            await using (reader)
             {
                 while (await reader.ReadAsync(cancellationToken).ConfigureAwait(false))
                 {

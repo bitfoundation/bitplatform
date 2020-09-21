@@ -7,5 +7,5 @@ namespace Bit.OData.Contracts
     public delegate ODataBatchHandler ODataBatchHandlerHandlerFactory(HttpServer httpServer, string oDataRouteName);
     public delegate IHttpControllerSelector ODataHttpControllerSelectorFactory(HttpConfiguration webApiConfiguration);
     public delegate HttpServer ODataHttpServerFactory(HttpConfiguration webApiConfiguration);
-    // You can customie OData HttpConfiguration (webApiConfiguration) using IWebApiConfigurationCustomizer
+    // You can customize OData HttpConfiguration (webApiConfiguration) using IWebApiConfigurationCustomizer
 }

@@ -8,7 +8,7 @@ namespace Bit.ViewModel
     {
         public virtual IServiceProvider? ServiceProvider { get; set; }
 
-        public static new IExceptionHandler Current
+        public new static IExceptionHandler Current
         {
             get => BitExceptionHandlerBase.Current ??= new BitExceptionHandler();
             set => BitExceptionHandlerBase.Current = value;

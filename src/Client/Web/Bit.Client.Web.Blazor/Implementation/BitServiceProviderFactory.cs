@@ -9,7 +9,6 @@ namespace Bit.Client.Web.Blazor.Implementation
 {
     public class BitServiceProviderFactory : IServiceProviderFactory<ContainerBuilder>
     {
-        private readonly Action<IDependencyManager, IServiceCollection, ContainerBuilder> _configureAction;
         private readonly AutofacServiceProviderFactory _inner;
 
         private IServiceCollection? _services;
@@ -17,7 +16,6 @@ namespace Bit.Client.Web.Blazor.Implementation
 
         public BitServiceProviderFactory(Action<IDependencyManager, IServiceCollection, ContainerBuilder> configureAction)
         {
-            _configureAction = configureAction;
             _inner = new AutofacServiceProviderFactory(containerBuilder =>
             {
                 if (_services == null)
@@ -36,7 +34,7 @@ namespace Bit.Client.Web.Blazor.Implementation
 
                 containerBuilder.Register(c => _container).SingleInstance();
 
-                _configureAction?.Invoke(dependencyManager, _services, containerBuilder);
+                configureAction?.Invoke(dependencyManager, _services, containerBuilder);
             });
         }
 

@@ -168,13 +168,7 @@ namespace Bit.ViewModel.Implementations
 
         public virtual IPopupNavigation PopupNavigation { get; set; } = default!;
 
-        public virtual INavService AppNavService
-        {
-            get
-            {
-                return BitApplication.Current.NavigationService;
-            }
-        }
+        public virtual INavService AppNavService => BitApplication.Current.NavigationService;
 
         public virtual INavService CurrentPageNavService
         {

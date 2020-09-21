@@ -50,7 +50,7 @@ namespace Bit.Tests.Api.Middlewares.WebApi.Tests
 
                             string correlationId = (string)logger.LogData.Single(logData => logData.Key == "X-Correlation-ID").Value;
 
-                            Assert.AreEqual(correlationId.ToString(), message.Headers.Single(h => h.Key == "X-Correlation-ID").Value.Single());
+                            Assert.AreEqual(correlationId, message.Headers.Single(h => h.Key == "X-Correlation-ID").Value.Single());
                         }
                     }
                 });
@@ -104,7 +104,7 @@ namespace Bit.Tests.Api.Middlewares.WebApi.Tests
 
                             string xCorrelationId = (string)logger.LogData.Single(logData => logData.Key == "X-Correlation-ID").Value;
 
-                            Assert.AreEqual(xCorrelationId.ToString(), message.Headers.Single(h => h.Key == "X-Correlation-ID").Value.Single());
+                            Assert.AreEqual(xCorrelationId, message.Headers.Single(h => h.Key == "X-Correlation-ID").Value.Single());
                         }
                     }
                 });
@@ -162,7 +162,7 @@ namespace Bit.Tests.Api.Middlewares.WebApi.Tests
 
                             string xCorrelationId = (string)logger.LogData.Single(logData => logData.Key == "X-Correlation-ID").Value;
 
-                            Assert.AreEqual(xCorrelationId.ToString(), message.Headers.Single(h => h.Key == "X-Correlation-ID").Value.Single());
+                            Assert.AreEqual(xCorrelationId, message.Headers.Single(h => h.Key == "X-Correlation-ID").Value.Single());
                         }
                     }
                 });

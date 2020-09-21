@@ -8,7 +8,7 @@ namespace Bit.Client.Web.Wasm.Implementation
     {
         public bool HasText => false;
 
-        public event EventHandler<EventArgs> ClipboardContentChanged;
+        public event EventHandler<EventArgs> ClipboardContentChanged = default!;
 
         public Task<string> GetTextAsync()
         {

@@ -292,7 +292,7 @@
             return DependencyManager.current;
         }
 
-        private loadInitialFileDependecies(files: Array<IFileDependency>) {
+        private loadInitialFileDependencies(files: Array<IFileDependency>) {
 
             const loadInitialFileDependency = (nextFile: IFileDependency) => {
 
@@ -384,7 +384,7 @@
             const toBeLoadedAtFirstDependencies = this.fileDependencies
                 .filter(fileDependency => fileDependency.loadTime == "Early");
 
-            this.loadInitialFileDependecies(toBeLoadedAtFirstDependencies);
+            this.loadInitialFileDependencies(toBeLoadedAtFirstDependencies);
         }
 
         public resolveFile(fileDependencyName: string): Promise<void> {

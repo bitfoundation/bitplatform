@@ -8,7 +8,7 @@ namespace Bit.Core.Contracts
     public enum LogPolicy
     {
         /// <summary>
-        /// Performs log only when there is an error. For example when a response is not succeded.
+        /// Performs log only when there is an error. For example when a response is not succeed.
         /// </summary>
         InCaseOfScopeFailure,
         /// <summary>

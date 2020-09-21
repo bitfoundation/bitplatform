@@ -64,7 +64,7 @@ namespace Bit.Owin.Implementations
         private void PerformLog(LogEntry logEntry)
         {
             if (DiagnosticContext == null || SerilogLogger == null)
-                throw new InvalidOperationException($"Configure asp.net core & serilog using https://github.com/serilog/serilog-aspnetcore");
+                throw new InvalidOperationException("Configure asp.net core & serilog using https://github.com/serilog/serilog-aspnetcore");
 
             bool isRequestLogEntry = false;
 
@@ -127,7 +127,7 @@ namespace Bit.Owin.Implementations
 
             if (isRequestLogEntry == true)
             {
-                LogData userAgent = logEntry.LogData.FirstOrDefault(ld => ld.Key == nameof(IRequestInformationProvider.UserAgent));
+                LogData? userAgent = logEntry.LogData.FirstOrDefault(ld => ld.Key == nameof(IRequestInformationProvider.UserAgent));
 
                 if (userAgent != null)
                     DiagnosticContext.Set("UserAgent", userAgent.Value);

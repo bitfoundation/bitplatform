@@ -6,7 +6,7 @@ namespace Bit.Tooling.CodeAnalyzer.Test.Helpers
     /// <summary>
     /// Location where the diagnostic appears, as determined by path, line number, and column number.
     /// </summary>
-    public struct DiagnosticResultLocation
+    public readonly struct DiagnosticResultLocation
     {
         public DiagnosticResultLocation(int line, int column)
             : this("Test0.cs", line, column)

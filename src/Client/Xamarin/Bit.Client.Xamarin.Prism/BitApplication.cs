@@ -94,7 +94,7 @@ namespace Bit
 
         public new INavService NavigationService => (PrismNavigationService == null ? null : Container.Resolve<INavServiceFactory>()(PrismNavigationService, Container.Resolve<IPopupNavigation>()))!;
 
-        public static new BitApplication Current => (PrismApplicationBase.Current as BitApplication)!;
+        public new static BitApplication Current => (PrismApplicationBase.Current as BitApplication)!;
 
         public INavigationService PrismNavigationService => base.NavigationService;
 

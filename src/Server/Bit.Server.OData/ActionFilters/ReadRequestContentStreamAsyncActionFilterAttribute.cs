@@ -50,7 +50,7 @@ namespace Bit.OData.ActionFilters
                     actionDescriptor.GetCustomAttributes<UpdateAttribute>().Any() ||
                     actionDescriptor.GetCustomAttributes<PartialUpdateAttribute>().Any()))
                 {
-                    using (Stream responseContent = await actionContext.Request!.Content!.ReadAsStreamAsync().ConfigureAwait(false))
+                    await using (Stream responseContent = await actionContext.Request!.Content!.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false))
                     using (StreamReader requestStreamReader = new StreamReader(responseContent))
                     {
                         using (JsonReader jsonReader = new JsonTextReader(requestStreamReader))

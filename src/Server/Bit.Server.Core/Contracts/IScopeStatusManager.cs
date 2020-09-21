@@ -4,7 +4,7 @@
     {
         bool WasSucceeded();
 
-        void MarkAsFailed(string reason);
+        void MarkAsFailed(string? reason);
 
         void MarkAsSucceeded();
 

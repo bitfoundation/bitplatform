@@ -3,5 +3,5 @@
 namespace Bit.Hangfire.Contracts
 {
     public delegate DashboardOptions DashboardOptionsFactory();
-    // You can customie HangfireOptions using IHangfireOptionsCustomizer
+    // You can customize HangfireOptions using IHangfireOptionsCustomizer
 }

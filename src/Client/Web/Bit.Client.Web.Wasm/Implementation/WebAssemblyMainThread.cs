@@ -14,7 +14,7 @@ namespace Bit.Client.Web.Wasm.Implementation
             action();
         }
 
-        public virtual Task<SynchronizationContext> GetMainThreadSynchronizationContextAsync()
+        public virtual Task<SynchronizationContext?> GetMainThreadSynchronizationContextAsync()
         {
             return Task.FromResult(SynchronizationContext.Current);
         }

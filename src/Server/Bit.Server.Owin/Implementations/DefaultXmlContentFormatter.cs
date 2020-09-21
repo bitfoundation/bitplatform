@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System.Diagnostics.CodeAnalysis;
+using System.IO;
 using System.Xml;
 using System.Xml.Serialization;
 using Bit.Core.Contracts;
@@ -7,7 +8,7 @@ namespace Bit.Owin.Implementations
 {
     public class DefaultXmlContentFormatter : IContentFormatter
     {
-        public virtual string Serialize<T>(T obj)
+        public virtual string Serialize<T>([AllowNull] T obj)
         {
             XmlSerializer xmlSerializer = new XmlSerializer(typeof (T));
             using StringWriter stringWriter = new StringWriter();

@@ -96,7 +96,7 @@ namespace Autofac
         {
             dependencyManager.RegisterHttpMessageHandler<THttpMessageHandler>();
 
-            IServiceCollection services = (IServiceCollection)dependencyManager.GetServiceCollection();
+            IServiceCollection services = dependencyManager.GetServiceCollection();
 
             dependencyManager.RegisterUsing(resolver => resolver.Resolve<IHttpClientFactory>().CreateClient(Microsoft.Extensions.Options.Options.DefaultName), lifeCycle: DependencyLifeCycle.Transient, overwriteExisting: false);
 

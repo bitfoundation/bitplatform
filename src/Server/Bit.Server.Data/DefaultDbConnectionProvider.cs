@@ -20,20 +20,14 @@ namespace Bit.Data
 
         public virtual AppEnvironment AppEnvironment { get; set; } = default!;
 
-        public virtual IsolationLevel IsolationLevel
-        {
-            get
-            {
-                return (IsolationLevel)Enum.Parse(typeof(IsolationLevel), AppEnvironment.GetConfig(AppEnvironment.KeyValues.Data.DbIsolationLevel, AppEnvironment.KeyValues.Data.DbIsolationLevelDefaultValue)!);
-            }
-        }
+        public virtual IsolationLevel IsolationLevel => (IsolationLevel)Enum.Parse(typeof(IsolationLevel), AppEnvironment.GetConfig(AppEnvironment.KeyValues.Data.DbIsolationLevel, AppEnvironment.KeyValues.Data.DbIsolationLevelDefaultValue)!);
 
         public virtual DbTransaction? GetDbTransaction(DbConnection dbConnection)
         {
             if (dbConnection == null)
                 throw new ArgumentNullException(nameof(dbConnection));
 
-            return DbConnectionAndTransactions.ExtendedSingle($"Getting db transaction for db connection", dbAndTran => dbAndTran.Connection == dbConnection).Transaction;
+            return DbConnectionAndTransactions.ExtendedSingle("Getting db transaction for db connection", dbAndTran => dbAndTran.Connection == dbConnection).Transaction;
         }
 
         public virtual DbConnection GetDbConnection(string connectionString, bool rollbackOnScopeStatusFailure)
@@ -70,7 +64,7 @@ namespace Bit.Data
                 try
                 {
                     await newConnection.OpenAsync(cancellationToken).ConfigureAwait(false);
-                    transaction = newConnection.BeginTransaction(IsolationLevel);
+                    transaction = await newConnection.BeginTransactionAsync(IsolationLevel, cancellationToken).ConfigureAwait(false);
                 }
                 catch { }
                 DbConnectionAndTransactions.Add(new DbConnectionAndTransactionPair(connectionString, newConnection, transaction, rollbackOnScopeStatusFailure));

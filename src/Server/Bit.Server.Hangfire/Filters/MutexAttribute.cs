@@ -39,7 +39,7 @@ namespace Bit.Hangfire.Filters
             // We are intercepting transitions to the Processed state, that is performed by
             // a worker just before processing a job. During the state election phase we can
             // change the target state to another one, causing a worker not to process the
-            // backgorund job.
+            // background job.
             if (context.CandidateState.Name != ProcessingState.StateName ||
                 context.BackgroundJob.Job == null)
             {

@@ -11,7 +11,7 @@ module Bit.Directives {
         controllerAs: "errorMessages",
         restrict: "E",
         template: ($element: JQuery, $attrs: ng.IAttributes & { field: string }) => {
-            return `<div multiple ng-messages="${$attrs.field}.$error" ng-if="${$attrs.field}.validityEvaludated && ${$attrs.field}.$invalid" error-messages-transclude></div>`;
+            return `<div multiple ng-messages="${$attrs.field}.$error" ng-if="${$attrs.field}.validityEvaluated && ${$attrs.field}.$invalid" error-messages-transclude></div>`;
         },
         transclude: true
     })

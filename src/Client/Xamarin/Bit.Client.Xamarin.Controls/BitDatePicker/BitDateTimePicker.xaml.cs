@@ -72,22 +72,22 @@ namespace Bit.View.Controls
         [TypeConverter(typeof(StringToCultureInfoConverter))]
         public virtual CultureInfo Culture
         {
-            get { return (CultureInfo)GetValue(CultureProperty); }
-            set { SetValue(CultureProperty, value); }
+            get => (CultureInfo)GetValue(CultureProperty);
+            set => SetValue(CultureProperty, value);
         }
 
         public static BindableProperty CalendarSystemProperty = BindableProperty.Create(nameof(CalendarSystem), typeof(CalendarSystem), typeof(BitDateTimePicker), defaultValue: CalendarSystem.Gregorian, defaultBindingMode: BindingMode.OneWay);
         public virtual CalendarSystem CalendarSystem
         {
-            get { return (CalendarSystem)GetValue(CalendarSystemProperty); }
-            set { SetValue(CalendarSystemProperty, value); }
+            get => (CalendarSystem)GetValue(CalendarSystemProperty);
+            set => SetValue(CalendarSystemProperty, value);
         }
 
         public static readonly BindableProperty FontFamilyProperty = BindableProperty.Create(nameof(FontFamily), typeof(string), typeof(BitDateTimePicker), defaultValue: null, defaultBindingMode: BindingMode.OneWay);
         public virtual string? FontFamily
         {
-            get { return (string?)GetValue(FontFamilyProperty); }
-            set { SetValue(FontFamilyProperty, value); }
+            get => (string?)GetValue(FontFamilyProperty);
+            set => SetValue(FontFamilyProperty, value);
         }
 
         public static BindableProperty SelectedDateTimeProperty = BindableProperty.Create(nameof(SelectedDateTime), typeof(DateTime?), typeof(BitDateTimePicker), defaultValue: null, defaultBindingMode: BindingMode.TwoWay, propertyChanged: (sender, oldValue, newValue) =>
@@ -97,36 +97,36 @@ namespace Bit.View.Controls
         });
         public virtual DateTime? SelectedDateTime
         {
-            get { return (DateTime?)GetValue(SelectedDateTimeProperty); }
-            set { SetValue(SelectedDateTimeProperty, value); }
+            get => (DateTime?)GetValue(SelectedDateTimeProperty);
+            set => SetValue(SelectedDateTimeProperty, value);
         }
 
         public static BindableProperty TodayColorProperty = BindableProperty.Create(nameof(TodayColor), typeof(Color), typeof(BitDateTimePicker), defaultValue: Color.DeepPink, defaultBindingMode: BindingMode.OneWay);
         public virtual Color TodayColor
         {
-            get { return (Color)GetValue(TodayColorProperty); }
-            set { SetValue(TodayColorProperty, value); }
+            get => (Color)GetValue(TodayColorProperty);
+            set => SetValue(TodayColorProperty, value);
         }
 
         public static BindableProperty SelectedColorProperty = BindableProperty.Create(nameof(SelectedColor), typeof(Color), typeof(BitDateTimePicker), defaultValue: Color.DeepPink, defaultBindingMode: BindingMode.OneWay);
         public virtual Color SelectedColor
         {
-            get { return (Color)GetValue(SelectedColorProperty); }
-            set { SetValue(SelectedColorProperty, value); }
+            get => (Color)GetValue(SelectedColorProperty);
+            set => SetValue(SelectedColorProperty, value);
         }
 
         public static readonly BindableProperty DateTimeDisplayFormatProperty = BindableProperty.Create(nameof(DateTimeDisplayFormat), typeof(string), typeof(BitDateTimePicker), defaultValue: null, defaultBindingMode: BindingMode.OneWay);
         public virtual string? DateTimeDisplayFormat
         {
-            get { return (string?)GetValue(DateTimeDisplayFormatProperty); }
-            set { SetValue(DateTimeDisplayFormatProperty, value); }
+            get => (string?)GetValue(DateTimeDisplayFormatProperty);
+            set => SetValue(DateTimeDisplayFormatProperty, value);
         }
 
         public static BindableProperty AutoCloseProperty = BindableProperty.Create(nameof(AutoClose), typeof(bool), typeof(BitDateTimePicker), defaultValue: false, defaultBindingMode: BindingMode.OneWay);
         public virtual bool AutoClose
         {
-            get { return (bool)GetValue(AutoCloseProperty); }
-            set { SetValue(AutoCloseProperty, value); }
+            get => (bool)GetValue(AutoCloseProperty);
+            set => SetValue(AutoCloseProperty, value);
         }
 
         private string? _Text;
@@ -144,8 +144,8 @@ namespace Bit.View.Controls
         public static BindableProperty ShowTimePickerProperty = BindableProperty.Create(nameof(ShowTimePicker), typeof(bool), typeof(BitDateTimePicker), defaultValue: true, defaultBindingMode: BindingMode.OneWay);
         public virtual bool ShowTimePicker
         {
-            get { return (bool)GetValue(ShowTimePickerProperty); }
-            set { SetValue(ShowTimePickerProperty, value); }
+            get => (bool)GetValue(ShowTimePickerProperty);
+            set => SetValue(ShowTimePickerProperty, value);
         }
 
         protected void RaiseDisplayTextChanged()

@@ -65,9 +65,9 @@ namespace Bit.Owin.Implementations
             if (_currentTimeZoneName == _desiredTimeZoneName)
                 return dateTime;
 
-            TimeZoneInfo? currentTimeZoneInfo = GetClientCurrentTimeZone(dateTime)!;
+            TimeZoneInfo currentTimeZoneInfo = GetClientCurrentTimeZone(dateTime)!;
 
-            TimeZoneInfo? desiredTimeZoneInfo = GetClientDesiredTimeZone(dateTime)!;
+            TimeZoneInfo desiredTimeZoneInfo = GetClientDesiredTimeZone(dateTime)!;
 
             if (currentTimeZoneInfo.HasSameRules(desiredTimeZoneInfo))
                 return dateTime;

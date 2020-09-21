@@ -12,7 +12,7 @@ namespace Bit.ViewModel
 
         public IPopupNavigation PopupNavigation { get; set; } = default!;
 
-        public IClipboard Clipboard { get; set; }
+        public IClipboard Clipboard { get; set; } = default!;
 
         public BitDelegateCommand<TrackedThing> CopyCommand { get; set; }
 

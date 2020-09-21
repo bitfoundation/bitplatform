@@ -16,10 +16,10 @@
                         BackgroundColor="Transparent"
                         BindingContext="{TemplateBinding}"
                         BorderColor="Transparent"
-                        BorderRadius="20"
                         BorderWidth="2"
                         Command="{Binding SelectDateCommand}"
                         CommandParameter="{Binding Day}"
+                        CornerRadius="20"
                         FontFamily="{Binding FontFamily}"
                         Text="{Binding Day.LocalDate.Day}"
                         TextColor="DimGray">

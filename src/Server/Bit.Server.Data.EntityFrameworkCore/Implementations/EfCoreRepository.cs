@@ -21,7 +21,7 @@ namespace Bit.Data.EntityFrameworkCore.Implementations
                 .SingleOrDefault();
         }
 
-        public async override Task<TEntity?> GetByIdAsync(CancellationToken cancellationToken, params object[] ids)
+        public override async Task<TEntity?> GetByIdAsync(CancellationToken cancellationToken, params object[] ids)
         {
             if (ids == null)
                 throw new ArgumentNullException(nameof(ids));

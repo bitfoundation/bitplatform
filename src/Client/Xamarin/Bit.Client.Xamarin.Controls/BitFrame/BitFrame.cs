@@ -8,8 +8,8 @@ namespace Bit.View.Controls
 
         public double BorderWidth
         {
-            get { return (double)GetValue(BorderWidthProperty); }
-            set { SetValue(BorderWidthProperty, value); }
+            get => (double)GetValue(BorderWidthProperty);
+            set => SetValue(BorderWidthProperty, value);
         }
     }
 }

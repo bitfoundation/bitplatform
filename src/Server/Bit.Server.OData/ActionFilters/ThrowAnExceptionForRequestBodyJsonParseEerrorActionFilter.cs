@@ -8,7 +8,7 @@ using System.Web.Http.Filters;
 
 namespace Bit.OData.ActionFilters
 {
-    public class ThrowAnExceptionForRequestBodyJsonParseEerrorActionFilter : ActionFilterAttribute, IWebApiConfigurationCustomizer
+    public class ThrowAnExceptionForRequestBodyJsonParseErrorActionFilter : ActionFilterAttribute, IWebApiConfigurationCustomizer
     {
         public void CustomizeWebApiConfiguration(HttpConfiguration webApiConfiguration)
         {

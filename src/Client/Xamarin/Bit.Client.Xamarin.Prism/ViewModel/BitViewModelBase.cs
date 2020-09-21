@@ -107,7 +107,7 @@ namespace Bit.ViewModel
             }
             finally
             {
-                if (parameters.TryGetNavigationMode(out Prism.Navigation.NavigationMode navigationMode) && navigationMode == Prism.Navigation.NavigationMode.New)
+                if (parameters.TryGetNavigationMode(out NavigationMode navigationMode) && navigationMode == NavigationMode.New)
                 {
                     string pageName = GetViewModelName();
 

@@ -64,7 +64,7 @@ namespace Bit.Owin
 
             IOwinContext RegisterOwinContext(IDependencyResolver resolver)
             {
-                HttpContext context = resolver.Resolve<IHttpContextAccessor>().HttpContext;
+                HttpContext? context = resolver.Resolve<IHttpContextAccessor>().HttpContext;
 
                 if (context == null)
                     throw new InvalidOperationException("http context is null");

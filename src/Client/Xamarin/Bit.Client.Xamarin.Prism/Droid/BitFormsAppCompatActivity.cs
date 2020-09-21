@@ -64,7 +64,7 @@ namespace Bit.Android
             }
         }
 
-        public override void OnRequestPermissionsResult(int requestCode, string[] permissions, [GeneratedEnum] Permission[] grantResults)
+        public override void OnRequestPermissionsResult(int requestCode, string[]? permissions, [GeneratedEnum] Permission[]? grantResults)
         {
             if (_useDefaultConfiguration == true)
             {

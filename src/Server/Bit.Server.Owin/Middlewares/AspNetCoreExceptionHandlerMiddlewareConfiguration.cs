@@ -58,7 +58,7 @@ namespace Bit.Owin.Middlewares
                 context.Response.OnStarting(() =>
                 {
                     // See OnSendingHeaders of OwinExceptionHandlerMiddleware for more info.
-                    string reasonPhrase = context.Features.Get<IHttpResponseFeature>().ReasonPhrase;
+                    string? reasonPhrase = context.Features.Get<IHttpResponseFeature>().ReasonPhrase;
 
                     bool responseIsOk = GetResponseStatus(context).responseIsOk;
 
@@ -90,7 +90,7 @@ namespace Bit.Owin.Middlewares
                 if (status.responseStatusCodeIsErrorCodeBecauseOfSomeServerBasedReason ||
                     status.responseStatusCodeIsErrorCodeBecauseOfSomeClientBasedReason)
                 {
-                    string reasonPhrase = context.Features.Get<IHttpResponseFeature>().ReasonPhrase;
+                    string? reasonPhrase = context.Features.Get<IHttpResponseFeature>().ReasonPhrase;
 
                     scopeStatusManager.MarkAsFailed(reasonPhrase);
 

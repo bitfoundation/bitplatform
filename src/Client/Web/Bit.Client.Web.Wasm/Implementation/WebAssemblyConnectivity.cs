@@ -12,6 +12,6 @@ namespace Bit.Client.Web.Wasm.Implementation
 
         public IEnumerable<ConnectionProfile> ConnectionProfiles => Enumerable.Empty<ConnectionProfile>();
 
-        public event EventHandler<ConnectivityChangedEventArgs> ConnectivityChanged;
+        public event EventHandler<ConnectivityChangedEventArgs> ConnectivityChanged = default!;
     }
 }

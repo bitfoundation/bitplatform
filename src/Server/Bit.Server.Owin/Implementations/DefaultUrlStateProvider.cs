@@ -13,7 +13,7 @@ namespace Bit.Owin.Implementations
             if (uri == null)
                 throw new ArgumentNullException(nameof(uri));
 
-            string state = uri.ParseQueryString()["state"];
+            string? state = uri.ParseQueryString()["state"];
 
             if (string.IsNullOrEmpty(state))
                 return new { };

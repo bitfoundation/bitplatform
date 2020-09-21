@@ -15,7 +15,7 @@ namespace Bit.Core.Contracts
             if (dependencyManager == null)
                 throw new ArgumentNullException(nameof(dependencyManager));
 
-            dependencyManager.RegisterGeneric(typeof(IDtoEntityMapper<,>).GetTypeInfo(), typeof(DefaultDtoEntityMapper<,>).GetTypeInfo(), DependencyLifeCycle.PerScopeInstance);
+            dependencyManager.RegisterGeneric(typeof(IDtoEntityMapper<,>).GetTypeInfo(), typeof(DefaultDtoEntityMapper<,>).GetTypeInfo());
             return dependencyManager.RegisterAutoMapper();
         }
 
@@ -35,7 +35,7 @@ namespace Bit.Core.Contracts
                 .Where(t => profileTypeInfo.IsAssignableFrom(t))
                 .ToArray();
 
-            IConfigurationProvider RegisterMapperConfiguration(IDependencyResolver resolver)
+            IConfigurationProvider RegisterMapperConfigurationImpl(IDependencyResolver resolver)
             {
                 IEnumerable<IMapperConfiguration> configs = resolver.Resolve<IEnumerable<IMapperConfiguration>>();
 
@@ -64,7 +64,7 @@ namespace Bit.Core.Contracts
             }
 
             // See https://github.com/AutoMapper/AutoMapper.Extensions.Microsoft.DependencyInjection
-            dependencyManager.RegisterUsing(RegisterMapperConfiguration, lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExisting: false);
+            dependencyManager.RegisterUsing(RegisterMapperConfigurationImpl, lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExisting: false);
             dependencyManager.RegisterUsing(RegisterMapper, lifeCycle: DependencyLifeCycle.PerScopeInstance, overwriteExisting: false);
 
             TypeInfo[] openTypes = new[]

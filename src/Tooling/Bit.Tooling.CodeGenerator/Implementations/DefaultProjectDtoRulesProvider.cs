@@ -23,9 +23,9 @@ namespace Bit.Tooling.CodeGenerator.Implementations
                 if (!doc.SupportsSemanticModel)
                     continue;
 
-                SemanticModel semanticModel = await doc.GetSemanticModelAsync();
+                SemanticModel semanticModel = await doc.GetSemanticModelAsync().ConfigureAwait(false) ?? throw new InvalidOperationException("SemanticModel is null");
 
-                SyntaxNode root = await doc.GetSyntaxRootAsync();
+                SyntaxNode root = await doc.GetSyntaxRootAsync().ConfigureAwait(false) ?? throw new InvalidOperationException("SyntaxRoot is null");
 
                 List<ClassDeclarationSyntax> allDtoRulesClasses = new List<ClassDeclarationSyntax>();
 
@@ -68,7 +68,7 @@ namespace Bit.Tooling.CodeGenerator.Implementations
                         ClassSyntaxTree = dtoRulesClassDec.SyntaxTree
                     };
 
-                    dtoRules.ClassRootNode = (CompilationUnitSyntax)dtoRules.ClassSyntaxTree.GetRoot();
+                    dtoRules.ClassRootNode = (CompilationUnitSyntax)await dtoRules.ClassSyntaxTree.GetRootAsync();
 
                     allDtoRules.Add(dtoRules);
                 }

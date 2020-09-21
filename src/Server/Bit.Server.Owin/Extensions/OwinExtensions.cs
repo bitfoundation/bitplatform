@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Owin.Builder;
 using Microsoft.Owin.BuilderProperties;
 using Owin;
@@ -20,11 +20,11 @@ namespace Microsoft.AspNetCore.Builder
             {
                 AppBuilder owinAppBuilder = new AppBuilder();
 
-                IApplicationLifetime aspNetCoreAppLifetime = (IApplicationLifetime)aspNetCoreApp.ApplicationServices.GetService(typeof(IApplicationLifetime));
+                IHostApplicationLifetime hostApplicationLifetime = (IHostApplicationLifetime)aspNetCoreApp.ApplicationServices.GetService(typeof(IHostApplicationLifetime));
 
                 AppProperties owinAppProps = new AppProperties(owinAppBuilder.Properties)
                 {
-                    OnAppDisposing = aspNetCoreAppLifetime?.ApplicationStopping ?? CancellationToken.None,
+                    OnAppDisposing = hostApplicationLifetime?.ApplicationStopping ?? CancellationToken.None,
                     DefaultApp = aspNetCoreOwinPipeline
                 };
 

@@ -73,7 +73,7 @@ namespace Bit.Tests.Api.ApiControllers
         }
 
         [Function]
-        public virtual TestComplexDto[] GetObjectsWithNullCompexTypes()
+        public virtual TestComplexDto[] GetObjectsWithNullComplexTypes()
         {
             return new[]
             {

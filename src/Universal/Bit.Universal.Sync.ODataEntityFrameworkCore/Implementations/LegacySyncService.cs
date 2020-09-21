@@ -75,7 +75,6 @@ namespace Bit.Sync.ODataEntityFrameworkCore.Implementations
                         IQueryable<ISyncableDto> offlineSet = toServerSyncConfig.OfflineDtoSet(offlineContextForSyncTo);
 
                         ISyncableDto[] recentlyChangedOfflineDtos = (await offlineSet.IgnoreQueryFilters().Where(s => EF.Property<bool>(s, "IsSynced") == false).AsNoTracking().ToArrayAsync(cancellationToken).ConfigureAwait(false))
-                            .Cast<ISyncableDto>()
                             .ToArray();
 
                         if (recentlyChangedOfflineDtos.Any() == false)
@@ -152,12 +151,12 @@ namespace Bit.Sync.ODataEntityFrameworkCore.Implementations
                             MaxVersion = maxVersion
                         };
 
-                        dtoSyncConfigSyncFromInformation.RetriveDataTask = BuildRetriveDataTask(dtoSyncConfigSyncFromInformation, cancellationToken);
+                        dtoSyncConfigSyncFromInformation.RetrieveDataTask = BuildRetrieveDataTask(dtoSyncConfigSyncFromInformation, cancellationToken);
 
                         dtoSyncConfigSyncFromInformationList.Add(dtoSyncConfigSyncFromInformation);
                     }
 
-                    await Task.WhenAll(dtoSyncConfigSyncFromInformationList.Select(r => r.RetriveDataTask)).ConfigureAwait(false);
+                    await Task.WhenAll(dtoSyncConfigSyncFromInformationList.Select(r => r.RetrieveDataTask)).ConfigureAwait(false);
 
                     foreach (DtoSyncConfigSyncFromInformation dtoSyncConfigSyncFromInformation in dtoSyncConfigSyncFromInformationList.Where(r => r.RecentlyChangedOnlineDtos.Any()))
                     {
@@ -226,7 +225,7 @@ namespace Bit.Sync.ODataEntityFrameworkCore.Implementations
         }
 
         /// <summary>
-        /// <see cref="BuildRetriveDataTask"/> is being called in parallel because of Task.WhenAll. That method calls GetCommandTextAsync which retrieves $metadata if it's not retrieved already.
+        /// <see cref="BuildRetrieveDataTask"/> is being called in parallel because of Task.WhenAll. That method calls GetCommandTextAsync which retrieves $metadata if it's not retrieved already.
         /// Due race condition, ODataClient might retrieve $metadata multiple times, but if we get $metadata here (before Task.WhenAll), we can bypass the issue.
         /// </summary>
         private async Task GetMetadataIfNotRetrievedAlready(CancellationToken cancellationToken)
@@ -234,7 +233,7 @@ namespace Bit.Sync.ODataEntityFrameworkCore.Implementations
             await ODataClient.GetMetadataAsync(cancellationToken).ConfigureAwait(false);
         }
 
-        protected virtual async Task BuildRetriveDataTask(DtoSyncConfigSyncFromInformation dtoSyncConfigSyncFromInformation, CancellationToken cancellationToken)
+        protected virtual async Task BuildRetrieveDataTask(DtoSyncConfigSyncFromInformation dtoSyncConfigSyncFromInformation, CancellationToken cancellationToken)
         {
             if (dtoSyncConfigSyncFromInformation == null)
                 throw new ArgumentNullException(nameof(dtoSyncConfigSyncFromInformation));

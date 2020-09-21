@@ -41,9 +41,9 @@ public class IsSyncedClass
 }"
                     ));
 
-                Document isSyncedPropDoc = solution.Projects.Single().GetDocument(isSyncedPropDocId);
+                Document isSyncedPropDoc = solution.Projects.Single().GetDocument(isSyncedPropDocId)!;
                 ClassDeclarationSyntax isSyncedPropClassDec = (await isSyncedPropDoc.GetSyntaxRootAsync()).DescendantNodes().OfType<ClassDeclarationSyntax>().Single();
-                ITypeSymbol isSyncedPropTypeSymbol = (await isSyncedPropDoc.GetSemanticModelAsync()).GetDeclaredSymbol(isSyncedPropClassDec);
+                ITypeSymbol isSyncedPropTypeSymbol = (await isSyncedPropDoc.GetSemanticModelAsync()!).GetDeclaredSymbol(isSyncedPropClassDec);
                 return isSyncedPropTypeSymbol.GetMembers().OfType<IPropertySymbol>().Single();
 
             });

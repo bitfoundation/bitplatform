@@ -23,9 +23,9 @@ namespace Bit.Tooling.CodeGenerator.Implementations
                 if (!doc.SupportsSemanticModel)
                     continue;
 
-                SemanticModel semanticModel = await doc.GetSemanticModelAsync();
+                SemanticModel semanticModel = await doc.GetSemanticModelAsync().ConfigureAwait(false) ?? throw new InvalidOperationException("SemanticModel is null");
 
-                SyntaxNode root = await doc.GetSyntaxRootAsync();
+                SyntaxNode root = await doc.GetSyntaxRootAsync().ConfigureAwait(false) ?? throw new InvalidOperationException("SyntaxRoot is null");
 
                 List<ClassDeclarationSyntax> dtoControllersClassDecs = new List<ClassDeclarationSyntax>();
 
@@ -58,9 +58,9 @@ namespace Bit.Tooling.CodeGenerator.Implementations
                         ModelSymbol = controllerSymbol.BaseType.TypeArguments.ExtendedSingleOrDefault($"Looking for model of ${controllerSymbol.Name}", t => t.IsDto())
                     };
 
-                    if (dtoController.ModelSymbol is ITypeParameterSymbol)
+                    if (dtoController.ModelSymbol is ITypeParameterSymbol symbol)
                     {
-                        dtoController.ModelSymbol = ((ITypeParameterSymbol)dtoController.ModelSymbol).ConstraintTypes.ExtendedSingleOrDefault($"Looking for model on generic model {dtoController.ModelSymbol.Name}", t => t.IsDto());
+                        dtoController.ModelSymbol = symbol.ConstraintTypes.ExtendedSingleOrDefault($"Looking for model on generic model {symbol.Name}", t => t.IsDto());
                     }
 
                     if (dtoController.ModelSymbol == null)

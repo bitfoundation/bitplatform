@@ -49,9 +49,9 @@ namespace Bit.Core.Contracts
                     try
                     {
                         if (Scopes.TryRemove(((SessionImpl)session).SessionId, out IScopeStatusManager? scopeStatusManager) && scopeStatusManager.WasSucceeded())
-                            session.Transaction.Commit();
+                            session.GetCurrentTransaction().Commit();
                         else
-                            session.Transaction.Rollback();
+                            session.GetCurrentTransaction().Rollback();
                     }
                     finally
                     {

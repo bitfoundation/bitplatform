@@ -12,7 +12,7 @@ namespace Microsoft.CodeAnalysis
             if (symbol == null)
                 throw new ArgumentNullException(nameof(symbol));
 
-            string docXml = symbol.GetDocumentationCommentXml();
+            string? docXml = symbol.GetDocumentationCommentXml();
             string? summary = null;
 
             if (!string.IsNullOrEmpty(docXml))

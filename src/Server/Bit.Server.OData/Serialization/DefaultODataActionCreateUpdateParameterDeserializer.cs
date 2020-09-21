@@ -73,7 +73,7 @@ namespace Bit.OData.Serialization
 
                     if (e.ErrorContext.Handled == false)
                     {
-                        readContext.Request.Properties["Request_Body_Json_Parse_Error"] = e.ErrorContext.Error; // This code is being executed in a try/catch which is located in ODataMediaTypeFormatter. That class will return defaul value (null) to actions which results into NRE in most cases.
+                        readContext.Request.Properties["Request_Body_Json_Parse_Error"] = e.ErrorContext.Error; // This code is being executed in a try/catch which is located in ODataMediaTypeFormatter. That class will return default value (null) to actions which results into NRE in most cases.
                     }
                 }
 

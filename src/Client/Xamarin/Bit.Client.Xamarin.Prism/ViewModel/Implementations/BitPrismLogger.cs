@@ -14,7 +14,7 @@ namespace Bit.ViewModel.Implementations
 
         public virtual IExceptionHandler ExceptionHandler { get; set; } = default!;
 
-        public virtual void Log(string message, IDictionary<string, string> properties)
+        public virtual void Log(string message, IDictionary<string, string?> properties)
         {
             TelemetryServices.All().TrackTrace(message, properties);
         }
@@ -51,7 +51,7 @@ namespace Bit.ViewModel.Implementations
             BitExceptionHandler.Current.OnExceptionReceived(ex, properties);
         }
 
-        public virtual void TrackEvent(string name, IDictionary<string, string> properties)
+        public virtual void TrackEvent(string name, IDictionary<string, string?> properties)
         {
             TelemetryServices.All().TrackEvent(name, properties);
         }

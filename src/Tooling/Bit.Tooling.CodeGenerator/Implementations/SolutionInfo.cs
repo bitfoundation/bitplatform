@@ -8,16 +8,16 @@ namespace Bit.Tooling.CodeGenerator.Implementations
     // https://stackoverflow.com/a/26129175/2720104
     public class ProjectInfo
     {
-        public string ParentProjectGuid { get; set; }
-        public string ProjectName { get; set; }
-        public string RelativePath { get; set; }
-        public string AbsolutePath { get; set; }
-        public string ProjectGuid { get; set; }
+        public string? ParentProjectGuid { get; set; }
+        public string? ProjectName { get; set; }
+        public string? RelativePath { get; set; }
+        public string? AbsolutePath { get; set; }
+        public string? ProjectGuid { get; set; }
     }
 
     public class SolutionInfo
     {
-        private readonly List<object> _slnLines; // List of either String (line format is not intresting to us), or SolutionProject.
+        private readonly List<object> _slnLines; // List of either String (line format is not interesting to us), or SolutionProject.
         private string _solutionFileName;
 
         public SolutionInfo(string solutionFileName)
@@ -28,7 +28,7 @@ namespace Bit.Tooling.CodeGenerator.Implementations
             string[] lines = slnTxt.Split('\n');
             Regex projMatcher = new Regex("Project\\(\"(?<ParentProjectGuid>{[A-F0-9-]+})\"\\) = \"(?<ProjectName>.*?)\", \"(?<RelativePath>.*?)\", \"(?<ProjectGuid>{[A-F0-9-]+})");
 
-            Regex.Replace(slnTxt, "^(.*?)[\n\r]*$", new MatchEvaluator(m =>
+            Regex.Replace(slnTxt, "^(.*?)[\n\r]*$", m =>
             {
                 string line = m.Groups[1].Value;
 
@@ -45,21 +45,21 @@ namespace Bit.Tooling.CodeGenerator.Implementations
 
                 _slnLines.Add(s);
                 return "";
-            }),
-                RegexOptions.Multiline
+            },
+            RegexOptions.Multiline
             );
         }
 
         public List<ProjectInfo> GetProjects(bool bGetAlsoFolders = false)
         {
-            var q = _slnLines.Where(x => x is ProjectInfo).Select(i => i as ProjectInfo);
+            var q = _slnLines.OfType<ProjectInfo>();
 
             if (!bGetAlsoFolders)  // Filter away folder names in solution.
                 q = q.Where(x => x.RelativePath != x.ProjectName);
 
             var result = q.ToList();
 
-            foreach (var p in q)
+            foreach (var p in result)
             {
                 p.AbsolutePath = Path.Combine(Path.GetDirectoryName(_solutionFileName), p.RelativePath);
             }
