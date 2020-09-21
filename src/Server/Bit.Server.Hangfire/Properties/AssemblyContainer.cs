@@ -1,5 +1,5 @@
-﻿using System.Reflection;
-using Bit.Hangfire.Implementations;
+﻿using Bit.Hangfire.Implementations;
+using System.Reflection;
 
 namespace Bit.Core
 {

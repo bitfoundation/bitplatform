@@ -1,6 +1,6 @@
-﻿using System.Collections.Generic;
-using Bit.IdentityServer.Contracts;
+﻿using Bit.IdentityServer.Contracts;
 using IdentityServer3.Core.Models;
+using System.Collections.Generic;
 
 namespace Bit.IdentityServer.Implementations
 {

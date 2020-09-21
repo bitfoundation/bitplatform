@@ -33,7 +33,7 @@ namespace Bit.Tests.Api.ApiControllers
         }
 
         [Route("test")]
-        public virtual HttpResponseMessage Test([FromUri]Filter filter)
+        public virtual HttpResponseMessage Test([FromUri] Filter filter)
         {
             return Request.CreateResponse(HttpStatusCode.OK);
         }
@@ -45,7 +45,7 @@ namespace Bit.Tests.Api.ApiControllers
             return customer;
         }
 
-       public virtual IUserInformationProvider UserInformationProvider { get; set; }
+        public virtual IUserInformationProvider UserInformationProvider { get; set; }
 
         [HttpGet]
         [Route("get-custom-data")]

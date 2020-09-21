@@ -1,6 +1,5 @@
 ﻿using Bit.Core.Contracts;
 using Bit.Test;
-using Bit.Test.Implementations;
 using Bit.Test.Server;
 using IdentityModel.Client;
 using Microsoft.VisualStudio.TestTools.UnitTesting;

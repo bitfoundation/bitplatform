@@ -1,5 +1,4 @@
-﻿using Bit.ViewModel.Implementations;
-using System.Linq;
+﻿using System.Linq;
 using System.Reflection;
 using Windows.ApplicationModel.Activation;
 using Windows.UI.Xaml;

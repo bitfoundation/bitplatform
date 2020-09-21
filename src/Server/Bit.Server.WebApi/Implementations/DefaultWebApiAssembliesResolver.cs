@@ -1,8 +1,8 @@
-﻿using System.Collections.Generic;
+﻿using Bit.WebApi.Contracts;
+using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Web.Http.Dispatcher;
-using Bit.WebApi.Contracts;
 
 namespace Bit.WebApi.Implementations
 {

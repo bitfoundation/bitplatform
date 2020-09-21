@@ -1,7 +1,7 @@
-﻿using System;
-using System.Web.Http;
-using Bit.WebApi.ActionFilters;
+﻿using Bit.WebApi.ActionFilters;
 using Bit.WebApi.Contracts;
+using System;
+using System.Web.Http;
 
 namespace Bit.WebApi.Implementations
 {

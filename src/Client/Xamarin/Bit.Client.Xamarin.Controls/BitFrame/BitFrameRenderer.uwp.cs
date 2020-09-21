@@ -30,7 +30,7 @@ namespace Bit.UWP
 
         public static void Init()
         {
-            
+
         }
     }
 }

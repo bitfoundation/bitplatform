@@ -4,7 +4,6 @@ using Bit.Core.Contracts;
 using Prism.Logging;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 
 namespace Bit.ViewModel.Implementations
 {

@@ -1,5 +1,5 @@
-﻿using System;
-using Bit.Owin.Contracts.Metadata;
+﻿using Bit.Owin.Contracts.Metadata;
+using System;
 
 namespace Bit.Owin.Implementations.Metadata
 {

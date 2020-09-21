@@ -1,10 +1,10 @@
-﻿using System;
-using System.Linq;
-using Bit.Core.Contracts;
+﻿using Bit.Core.Contracts;
 using Bit.Owin.Implementations;
 using Bit.Test.Implementations;
 using FakeItEasy;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using System;
+using System.Linq;
 
 namespace Bit.Tests.Api
 {

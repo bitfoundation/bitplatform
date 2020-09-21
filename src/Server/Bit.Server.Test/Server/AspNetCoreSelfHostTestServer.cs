@@ -1,9 +1,9 @@
-﻿using System;
-using System.Net.Http;
-using Bit.Owin;
+﻿using Bit.Owin;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using System;
+using System.Net.Http;
 
 namespace Bit.Test.Server
 {

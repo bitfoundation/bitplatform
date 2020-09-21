@@ -2,7 +2,7 @@
   "profiles": {
     "Bit.Tooling.CodeGenerator": {
       "commandName": "Project",
-      "commandLineArgs": "-projectPath \"..\\..\\..\\..\\..\\..\\src\\Server\\Bit.Server.OData\\Bit.Server.OData.csproj\""
+      "commandLineArgs": "-projectPath \"..\\..\\..\\..\\..\\..\\src\\Server\\Bit.Tests\\Bit.Tests.csproj\""
     },
     "WSL 2": {
       "commandName": "WSL2"

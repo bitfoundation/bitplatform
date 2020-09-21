@@ -1,5 +1,5 @@
-﻿using System.Collections.Generic;
-using Bit.Test;
+﻿using Bit.Test;
+using System.Collections.Generic;
 
 namespace Bit.Tests
 {

@@ -1,6 +1,6 @@
-﻿using System;
+﻿using Microsoft.Owin;
+using System;
 using System.Threading.Tasks;
-using Microsoft.Owin;
 
 namespace Bit.Tests.Api.Middlewares
 {

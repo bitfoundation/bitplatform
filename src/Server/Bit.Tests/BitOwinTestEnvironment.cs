@@ -1,9 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Reflection;
-using Bit.Core;
+﻿using Bit.Core;
 using Bit.Core.Contracts;
 using Bit.Test;
+using System;
+using System.Collections.Generic;
+using System.Reflection;
 
 namespace Bit.Tests
 {

@@ -4,7 +4,7 @@ namespace Bit.View
 {
     public class GoToNextViewCommand : BitDelegateCommand
     {
-        public GoToNextViewCommand() 
+        public GoToNextViewCommand()
             : base(async () => { })
         {
 

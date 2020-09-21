@@ -188,7 +188,7 @@ namespace Bit.Owin.Implementations
             protected WarningException(SerializationInfo serializationInfo, StreamingContext streamingContext)
                 : base(serializationInfo, streamingContext)
             {
-                
+
             }
         }
 

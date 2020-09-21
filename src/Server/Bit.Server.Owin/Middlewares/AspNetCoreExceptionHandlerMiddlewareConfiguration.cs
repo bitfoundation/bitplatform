@@ -1,7 +1,6 @@
 ﻿using Bit.Core.Contracts;
 using Bit.Owin.Contracts;
 using Bit.Owin.Metadata;
-using Bit.Owin.Contracts;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;

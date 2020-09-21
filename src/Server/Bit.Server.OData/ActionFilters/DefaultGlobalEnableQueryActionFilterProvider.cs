@@ -1,8 +1,8 @@
-﻿using System;
-using System.Web.Http;
-using Bit.WebApi.Contracts;
+﻿using Bit.WebApi.Contracts;
 using Microsoft.AspNet.OData.Extensions;
 using Microsoft.AspNet.OData.Query;
+using System;
+using System.Web.Http;
 
 namespace Bit.OData.ActionFilters
 {

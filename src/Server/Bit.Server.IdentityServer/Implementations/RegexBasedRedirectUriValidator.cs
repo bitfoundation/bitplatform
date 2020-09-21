@@ -1,11 +1,11 @@
-﻿using IdentityServer3.Core.Models;
+﻿using Bit.Core.Models;
+using IdentityServer3.Core.Models;
 using IdentityServer3.Core.Services;
 using IdentityServer3.Core.Services.Default;
+using System;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using Bit.Core.Models;
-using System;
 
 namespace Bit.IdentityServer.Implementations
 {

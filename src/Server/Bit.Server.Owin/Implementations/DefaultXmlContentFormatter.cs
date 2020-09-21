@@ -1,8 +1,8 @@
-﻿using System.Diagnostics.CodeAnalysis;
+﻿using Bit.Core.Contracts;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Xml;
 using System.Xml.Serialization;
-using Bit.Core.Contracts;
 
 namespace Bit.Owin.Implementations
 {
@@ -10,7 +10,7 @@ namespace Bit.Owin.Implementations
     {
         public virtual string Serialize<T>([AllowNull] T obj)
         {
-            XmlSerializer xmlSerializer = new XmlSerializer(typeof (T));
+            XmlSerializer xmlSerializer = new XmlSerializer(typeof(T));
             using StringWriter stringWriter = new StringWriter();
             using XmlWriter xmlWriter = XmlWriter.Create(stringWriter);
             xmlSerializer.Serialize(xmlWriter, obj);
@@ -19,7 +19,7 @@ namespace Bit.Owin.Implementations
 
         public virtual T Deserialize<T>(string objAsStr)
         {
-            XmlSerializer xmlSerializer = new XmlSerializer(typeof (T));
+            XmlSerializer xmlSerializer = new XmlSerializer(typeof(T));
             using StringReader stringReader = new StringReader(objAsStr);
             using XmlReader reader = XmlReader.Create(stringReader);
             return (T)xmlSerializer.Deserialize(reader);

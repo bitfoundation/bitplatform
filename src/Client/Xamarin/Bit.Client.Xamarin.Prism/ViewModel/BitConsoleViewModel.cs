@@ -1,7 +1,7 @@
-﻿using Bit.ViewModel.Implementations;
-using System.Threading.Tasks;
+﻿using Bit.Core.Models;
+using Bit.ViewModel.Implementations;
 using Rg.Plugins.Popup.Contracts;
-using Bit.Core.Models;
+using System.Threading.Tasks;
 using Xamarin.Essentials.Interfaces;
 
 namespace Bit.ViewModel

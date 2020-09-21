@@ -1,5 +1,5 @@
-﻿using Bit.OData.ODataControllers;
-using Bit.Model.Contracts;
+﻿using Bit.Model.Contracts;
+using Bit.OData.ODataControllers;
 using System;
 using System.Reflection;
 

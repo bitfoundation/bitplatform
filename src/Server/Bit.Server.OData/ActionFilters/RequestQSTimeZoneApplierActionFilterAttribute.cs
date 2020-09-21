@@ -1,12 +1,12 @@
-﻿using System;
+﻿using Bit.Core.Contracts;
+using Bit.Owin.Contracts;
+using Microsoft.Owin;
+using System;
 using System.Globalization;
 using System.Net.Http;
 using System.Text.RegularExpressions;
 using System.Web.Http.Controllers;
 using System.Web.Http.Filters;
-using Bit.Core.Contracts;
-using Bit.Owin.Contracts;
-using Microsoft.Owin;
 
 namespace Bit.OData.ActionFilters
 {

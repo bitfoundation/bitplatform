@@ -1,7 +1,6 @@
 ﻿using Autofac;
 using Bit.Core.Contracts;
 using Bit.Core.Implementations;
-using Bit.Owin.Implementations;
 using FakeItEasy;
 using System;
 using System.Collections.Concurrent;

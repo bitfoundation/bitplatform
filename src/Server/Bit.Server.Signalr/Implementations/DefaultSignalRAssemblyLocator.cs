@@ -1,7 +1,7 @@
-﻿using System;
+﻿using Microsoft.AspNet.SignalR.Hubs;
+using System;
 using System.Collections.Generic;
 using System.Reflection;
-using Microsoft.AspNet.SignalR.Hubs;
 
 namespace Bit.Signalr.Implementations
 {

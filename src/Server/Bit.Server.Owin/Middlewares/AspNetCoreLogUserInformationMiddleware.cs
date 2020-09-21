@@ -1,5 +1,4 @@
 ﻿using Bit.Core.Contracts;
-using Bit.Owin.Middlewares;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using System;

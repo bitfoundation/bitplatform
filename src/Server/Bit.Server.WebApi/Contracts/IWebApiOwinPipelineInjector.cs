@@ -1,5 +1,5 @@
-﻿using System.Web.Http;
-using Owin;
+﻿using Owin;
+using System.Web.Http;
 
 namespace Bit.WebApi.Contracts
 {

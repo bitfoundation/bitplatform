@@ -1,5 +1,4 @@
-﻿using Bit.Owin.Middlewares;
-using Bit.Owin.Contracts;
+﻿using Bit.Owin.Contracts;
 using Microsoft.AspNetCore.Builder;
 using System;
 

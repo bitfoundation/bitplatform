@@ -1,5 +1,5 @@
-﻿using System.Reflection;
-using Bit.Signalr;
+﻿using Bit.Signalr;
+using System.Reflection;
 
 namespace Bit.Core
 {

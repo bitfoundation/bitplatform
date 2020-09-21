@@ -1,7 +1,7 @@
-﻿using System.Net;
-using IdentityModel.Client;
+﻿using IdentityModel.Client;
 using Microsoft.AspNet.SignalR.Client;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using System.Net;
 using System.Threading.Tasks;
 
 namespace Bit.Tests.Api.Middlewares.SignalR.Tests

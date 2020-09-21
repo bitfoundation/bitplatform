@@ -9,7 +9,6 @@ using Bit.Http.Contracts;
 using Bit.Sync.ODataEntityFrameworkCore.Contracts;
 using Bit.Tests.Model.Dto;
 using Bit.View;
-using Bit.ViewModel.Contracts;
 using Bit.ViewModel.Implementations;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;

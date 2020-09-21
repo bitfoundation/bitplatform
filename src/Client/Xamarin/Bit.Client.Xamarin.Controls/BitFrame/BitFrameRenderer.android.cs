@@ -22,7 +22,7 @@ namespace Bit.Android
 
         public static void Init()
         {
-            
+
         }
 
         protected override void OnElementChanged(ElementChangedEventArgs<Frame> e)

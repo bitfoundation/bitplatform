@@ -1,7 +1,6 @@
 ﻿using Autofac;
 using Autofac.Integration.Owin;
 using Bit.Owin.Contracts;
-using Bit.Owin.Middlewares;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Owin;

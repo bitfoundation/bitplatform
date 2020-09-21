@@ -1,7 +1,7 @@
-﻿using System;
-using System.Diagnostics.CodeAnalysis;
-using Bit.Core.Contracts;
+﻿using Bit.Core.Contracts;
 using Bit.Owin.Middlewares;
+using System;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Microsoft.Owin
 {

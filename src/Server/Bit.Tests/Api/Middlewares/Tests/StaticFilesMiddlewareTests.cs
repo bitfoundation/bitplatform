@@ -1,12 +1,11 @@
-﻿using System;
+﻿using Bit.Core.Contracts;
+using Bit.Test;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+using System;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
-using Bit.Core.Contracts;
-using Bit.Test;
-using Bit.Test.Implementations;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Bit.Tests.Api.Middlewares.Tests
 {

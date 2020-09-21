@@ -1,10 +1,10 @@
-﻿using System;
+﻿using Bit.Data.Contracts;
+using Bit.Data.Implementations;
+using NHibernate.Linq;
+using System;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Bit.Data.Contracts;
-using Bit.Data.Implementations;
-using NHibernate.Linq;
 
 namespace Bit.Data.NHibernate.Implementations
 {

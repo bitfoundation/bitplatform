@@ -1,12 +1,10 @@
-﻿using Bit.Core.Contracts;
-using Bit.Core.Exceptions.Contracts;
+﻿using Bit.Core.Exceptions.Contracts;
 using Hangfire;
 using Hangfire.Common;
 using Hangfire.Logging;
 using Hangfire.States;
 using Hangfire.Storage;
 using System;
-using System.Globalization;
 using System.Linq;
 
 namespace Bit.Hangfire.Implementations

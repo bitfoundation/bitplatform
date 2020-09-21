@@ -1,10 +1,10 @@
-﻿using System.Linq;
-using System.Net.Http;
-using System.Threading.Tasks;
-using Bit.Tests.Model.Dto;
+﻿using Bit.Tests.Model.Dto;
 using Bit.WebApi.Contracts;
 using IdentityModel.Client;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using System.Linq;
+using System.Net.Http;
+using System.Threading.Tasks;
 
 namespace Bit.Tests.Api.Middlewares.WebApi.Tests
 {

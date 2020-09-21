@@ -18,7 +18,7 @@ namespace Prism.Autofac
         /// <summary>
         /// Initializes a new instance of <see cref="PrismApplication" /> using the default constructor
         /// </summary>
-        protected PrismApplication() 
+        protected PrismApplication()
             : base() { }
 
         /// <summary>
@@ -50,9 +50,9 @@ namespace Prism.Autofac
             {
                 var container = containerProvider.GetContainer();
                 var parameters = new List<Parameter>();
-                foreach(var dependency in dependencies)
+                foreach (var dependency in dependencies)
                 {
-                    if(dependency is Android.Content.Context context)
+                    if (dependency is Android.Content.Context context)
                     {
                         parameters.Add(new TypedParameter(typeof(Android.Content.Context), context));
                     }
@@ -68,10 +68,10 @@ namespace Prism.Autofac
         }
 #endif
 
-    /// <summary>
-    /// Creates the <see cref="IAutofacContainerExtension"/>
-    /// </summary>
-    /// <returns></returns>
+        /// <summary>
+        /// Creates the <see cref="IAutofacContainerExtension"/>
+        /// </summary>
+        /// <returns></returns>
         protected override IContainerExtension CreateContainerExtension()
         {
             return new AutofacContainerExtension(new ContainerBuilder());

@@ -1,10 +1,10 @@
-﻿using Microsoft.AspNetCore.Components;
+﻿using Bit.ViewModel;
+using Microsoft.AspNetCore.Components;
 using System;
 using System.Collections.Generic;
-using System.Threading.Tasks;
-using Bit.ViewModel;
 using System.Linq;
 using System.Reflection;
+using System.Threading.Tasks;
 
 namespace Bit.View
 {

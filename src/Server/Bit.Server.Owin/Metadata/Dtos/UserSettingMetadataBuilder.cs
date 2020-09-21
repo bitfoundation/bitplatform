@@ -1,8 +1,8 @@
-﻿using System.Collections.Generic;
-using System.Threading.Tasks;
-using Bit.Model.DomainModels;
+﻿using Bit.Model.DomainModels;
 using Bit.Owin.Contracts.Metadata;
 using Bit.Owin.Implementations.Metadata;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace Bit.Owin.Metadata.Dtos
 {

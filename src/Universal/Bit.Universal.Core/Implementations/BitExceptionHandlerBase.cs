@@ -4,7 +4,6 @@ using Bit.Core.Contracts;
 using Bit.Core.Exceptions.Contracts;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 
 namespace Bit.Core.Implementations

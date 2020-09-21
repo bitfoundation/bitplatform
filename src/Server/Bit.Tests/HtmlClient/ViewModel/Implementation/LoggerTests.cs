@@ -1,6 +1,5 @@
-﻿using System.Linq;
+﻿using Bit.Model.Dtos;
 using Bit.OData.ODataControllers;
-using Bit.Model.Dtos;
 using Bit.Test;
 using Bit.Test.Server;
 using FakeItEasy;
@@ -8,9 +7,10 @@ using IdentityModel.Client;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Remote;
-using System.Threading.Tasks;
-using System.Net.Http;
 using System;
+using System.Linq;
+using System.Net.Http;
+using System.Threading.Tasks;
 
 namespace Bit.Tests.HtmlClient.ViewModel.Implementation
 {

@@ -1,13 +1,13 @@
-﻿using System;
+﻿using Bit.Core.Exceptions;
+using Bit.Data.Contracts;
+using Bit.OData.ODataControllers;
+using Bit.Tests.Model.DomainModels;
+using Bit.Tests.Owin.Metadata;
+using System;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Web.Http;
-using Bit.OData.ODataControllers;
-using Bit.Data.Contracts;
-using Bit.Tests.Model.DomainModels;
-using Bit.Tests.Owin.Metadata;
-using Bit.Core.Exceptions;
 
 namespace Bit.Tests.Api.ApiControllers
 {

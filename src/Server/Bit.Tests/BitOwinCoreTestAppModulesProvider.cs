@@ -16,15 +16,14 @@ using Bit.Tests.Model.Implementations;
 using Bit.Tests.Properties;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.ResponseCompression;
+using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Swashbuckle.Application;
 using System.Collections.Generic;
-using Microsoft.Data.SqlClient;
 using System.IO.Compression;
 using System.Reflection;
 using System.Web.Http;
-using Microsoft.Extensions.Logging;
 
 namespace Bit.Tests
 {

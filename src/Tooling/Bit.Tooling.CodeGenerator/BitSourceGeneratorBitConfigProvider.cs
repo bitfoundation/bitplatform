@@ -1,5 +1,5 @@
-﻿using Bit.Tooling.Core.Model;
-using Bit.Tooling.CodeGenerator.Implementations;
+﻿using Bit.Tooling.CodeGenerator.Implementations;
+using Bit.Tooling.Core.Model;
 using Microsoft.CodeAnalysis;
 using System;
 using System.Linq;

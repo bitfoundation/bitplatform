@@ -1,9 +1,7 @@
-﻿using System.Threading.Tasks;
-using Bit.Tests.Api.ApiControllers;
-using Bit.Tests.Model.DomainModels;
-using IdentityModel.Client;
+﻿using IdentityModel.Client;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Simple.OData.Client;
+using System.Threading.Tasks;
 
 namespace Bit.Tests.Api.Middlewares.SignalR.Tests
 {
@@ -58,7 +56,7 @@ namespace Bit.Tests.Api.Middlewares.SignalR.Tests
                 });
 
                 await odataClientOfUser1.TestModels()
-                    .PushSomeWordToAnotherUsingBackgroundJobWorker(to : "User2", word : "Some word")
+                    .PushSomeWordToAnotherUsingBackgroundJobWorker(to: "User2", word: "Some word")
                     .ExecuteAsync();
 
                 Assert.AreEqual(true, await onMessageReceivedCalled.Task);

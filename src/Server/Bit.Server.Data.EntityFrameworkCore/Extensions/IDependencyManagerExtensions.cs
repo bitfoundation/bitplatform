@@ -2,7 +2,6 @@
 using Bit.Data.EntityFrameworkCore.Implementations;
 using Bit.Data.Implementations;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.Extensions.DependencyInjection;
 using System;

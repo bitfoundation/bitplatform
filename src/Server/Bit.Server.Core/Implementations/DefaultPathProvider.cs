@@ -1,7 +1,7 @@
-﻿using System;
-using System.IO;
-using Bit.Core.Contracts;
+﻿using Bit.Core.Contracts;
 using Bit.Core.Models;
+using System;
+using System.IO;
 
 namespace Bit.Core.Implementations
 {

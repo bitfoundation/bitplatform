@@ -1,6 +1,6 @@
-﻿using System;
+﻿using Bit.WebApi.Contracts;
+using System;
 using System.Web.Http;
-using Bit.WebApi.Contracts;
 
 namespace Bit.WebApi.Implementations
 {

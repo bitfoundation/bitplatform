@@ -1,6 +1,5 @@
 ﻿using Bit.Http.Contracts;
 using Bit.ViewModel;
-using Bit.ViewModel.Contracts;
 using Prism.Services;
 using System.Collections.Generic;
 using System.Threading.Tasks;

@@ -1,13 +1,9 @@
 ﻿using Bit.Tooling.CodeAnalyzer.BitAnalyzers.Data.EntityFramework;
 using Bit.Tooling.CodeAnalyzer.Test.Helpers;
-using Microsoft.Build.Locator;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Diagnostics;
-using Microsoft.CodeAnalysis.MSBuild;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
-using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;

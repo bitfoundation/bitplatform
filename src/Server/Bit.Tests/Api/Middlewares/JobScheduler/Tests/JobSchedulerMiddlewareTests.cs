@@ -1,20 +1,17 @@
-﻿using System.Net;
-using System.Net.Http;
-using System.Threading.Tasks;
-using IdentityModel.Client;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using Bit.Core.Contracts;
+using Bit.Model.Dtos;
+using Bit.OData.ODataControllers;
+using Bit.Test;
 using Bit.Tests.Core.Contracts;
 using FakeItEasy;
-using Bit.Test;
+using IdentityModel.Client;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Simple.OData.Client;
-using Bit.Tests.Api.ApiControllers;
-using Bit.Tests.Model.DomainModels;
 using System;
-using Bit.OData.ODataControllers;
-using Bit.Core.Contracts;
-using Bit.Model.Dtos;
-using Bit.Test.Implementations;
 using System.Linq;
+using System.Net;
+using System.Net.Http;
+using System.Threading.Tasks;
 
 namespace Bit.Tests.Api.Middlewares.JobScheduler.Tests
 {

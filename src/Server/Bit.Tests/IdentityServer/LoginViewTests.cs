@@ -1,6 +1,5 @@
-﻿using System.Linq;
+﻿using Bit.Core.Contracts;
 using Bit.Test;
-using Bit.Test.Implementations;
 using Bit.Test.Server;
 using Bit.Tests.IdentityServer.Implementations;
 using FakeItEasy;
@@ -10,9 +9,9 @@ using OpenQA.Selenium;
 using OpenQA.Selenium.Remote;
 using OpenQA.Selenium.Support.UI;
 using System;
-using System.Threading;
 using System.Collections.Generic;
-using Bit.Core.Contracts;
+using System.Linq;
+using System.Threading;
 
 namespace Bit.Tests.IdentityServer
 {

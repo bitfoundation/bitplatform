@@ -1,10 +1,10 @@
-﻿using System;
+﻿using Bit.Core.Contracts;
+using Bit.Core.Implementations;
+using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
-using Bit.Core.Contracts;
-using Bit.Core.Implementations;
-using Newtonsoft.Json;
 
 namespace Bit.Signalr.Implementations
 {
@@ -17,7 +17,7 @@ namespace Bit.Signalr.Implementations
             throw new InvalidOperationException("This content formatter must be used only for serialization purposes");
         }
 
-        public virtual string Serialize<T>([AllowNull]T obj)
+        public virtual string Serialize<T>([AllowNull] T obj)
         {
             return JsonConvert.SerializeObject(obj, GetSettings());
         }

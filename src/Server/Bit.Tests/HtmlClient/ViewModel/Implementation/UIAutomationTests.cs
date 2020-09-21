@@ -1,7 +1,4 @@
-﻿using System;
-using System.Linq;
-using Bit.Test;
-using Bit.Test.Implementations;
+﻿using Bit.Test;
 using Bit.Test.Server;
 using Bit.Tests.Api.ApiControllers;
 using FakeItEasy;
@@ -9,6 +6,8 @@ using IdentityModel.Client;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Remote;
+using System;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace Bit.Tests.HtmlClient.ViewModel.Implementation

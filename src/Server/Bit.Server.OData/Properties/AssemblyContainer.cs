@@ -1,5 +1,5 @@
-﻿using System.Reflection;
-using Bit.OData;
+﻿using Bit.OData;
+using System.Reflection;
 
 namespace Bit.Core
 {

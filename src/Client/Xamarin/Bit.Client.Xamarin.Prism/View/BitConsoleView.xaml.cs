@@ -4,7 +4,7 @@
     {
         public BitConsoleView()
         {
-             InitializeComponent();
+            InitializeComponent();
         }
     }
 }

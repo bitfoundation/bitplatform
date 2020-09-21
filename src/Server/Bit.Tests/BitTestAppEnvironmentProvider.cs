@@ -1,10 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using Bit.Core.Contracts;
+﻿using Bit.Core.Contracts;
 using Bit.Core.Models;
 using Bit.OData.Contracts;
 using Bit.Test;
 using Bit.Tests.Properties;
+using System;
+using System.Collections.Generic;
 
 [assembly: ODataModule("v1")]
 [assembly: ODataModule("Test")]

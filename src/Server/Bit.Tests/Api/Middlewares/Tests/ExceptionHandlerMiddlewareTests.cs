@@ -1,7 +1,4 @@
-﻿using System;
-using System.Linq;
-using System.Threading.Tasks;
-using Bit.Core.Contracts;
+﻿using Bit.Core.Contracts;
 using Bit.Core.Models;
 using Bit.Test;
 using Bit.Test.Implementations;
@@ -9,6 +6,9 @@ using FakeItEasy;
 using IdentityModel.Client;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Owin;
+using System;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace Bit.Tests.Api.Middlewares.Tests
 {

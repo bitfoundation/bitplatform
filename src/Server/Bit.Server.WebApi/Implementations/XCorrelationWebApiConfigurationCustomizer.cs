@@ -1,11 +1,11 @@
-﻿using System;
+﻿using Bit.Core.Contracts;
+using Bit.WebApi.Contracts;
+using Microsoft.Owin;
+using System;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Web.Http;
-using Bit.Core.Contracts;
-using Bit.WebApi.Contracts;
-using Microsoft.Owin;
 
 namespace Bit.WebApi.Implementations
 {

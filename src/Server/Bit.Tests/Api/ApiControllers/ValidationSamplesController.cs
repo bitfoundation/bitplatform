@@ -1,7 +1,7 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using Bit.OData.ODataControllers;
+﻿using Bit.OData.ODataControllers;
 using Bit.Tests.Model.Dto;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace Bit.Tests.Api.ApiControllers
 {

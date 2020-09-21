@@ -30,7 +30,7 @@ namespace Bit.ViewModel
 
         public virtual void OnParametersSet()
         {
-            
+
         }
     }
 }

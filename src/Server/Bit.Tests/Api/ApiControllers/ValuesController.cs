@@ -7,7 +7,7 @@ namespace Bit.Tests.Api.ApiControllers
     {
         public virtual IEnumerable<string> Get()
         {
-            return new [] { "value1", "value2" };
+            return new[] { "value1", "value2" };
         }
     }
 }

@@ -41,7 +41,7 @@ namespace Bit.Http.Implementations
                 _eventAggregator.GetEvent<UnauthorizedResponseEvent>().Publish(new UnauthorizedResponseEvent { });
 
                 if ((await _securityService.IsLoggedInAsync(cancellationToken).ConfigureAwait(false)) == false)
-                        _eventAggregator.GetEvent<TokenExpiredEvent>().Publish(new TokenExpiredEvent { });
+                    _eventAggregator.GetEvent<TokenExpiredEvent>().Publish(new TokenExpiredEvent { });
             }
 
             return response;

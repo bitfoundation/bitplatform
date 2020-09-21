@@ -1,7 +1,6 @@
 ﻿using Bit.Core.Contracts;
 using Bit.Data.Contracts;
 using Bit.Test;
-using Bit.Test.Implementations;
 using Bit.Tests.Api.ApiControllers;
 using Bit.Tests.Core.Contracts;
 using Bit.Tests.Model.DomainModels;

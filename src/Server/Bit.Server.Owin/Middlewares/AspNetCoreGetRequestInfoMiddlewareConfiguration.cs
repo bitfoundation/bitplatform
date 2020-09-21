@@ -2,10 +2,10 @@
 using Bit.Owin.Contracts;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
-using Owin;
-using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
+using Owin;
 using System;
+using System.Threading.Tasks;
 
 namespace Bit.Owin.Middlewares
 {

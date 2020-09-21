@@ -1,14 +1,14 @@
-﻿using System;
-using System.Linq;
-using System.Reflection;
-using System.Web.Http;
+﻿using Autofac.Integration.WebApi;
+using Bit.Owin.Contracts;
 using Bit.Owin.Middlewares;
-using Autofac.Integration.WebApi;
 using Bit.WebApi;
 using Bit.WebApi.ActionFilters;
 using Bit.WebApi.Contracts;
 using Bit.WebApi.Implementations;
-using Bit.Owin.Contracts;
+using System;
+using System.Linq;
+using System.Reflection;
+using System.Web.Http;
 using System.Web.Http.Controllers;
 
 namespace Bit.Core.Contracts

@@ -1,5 +1,4 @@
-﻿using Bit.Data.Contracts;
-using Microsoft.EntityFrameworkCore.Migrations;
+﻿using Microsoft.EntityFrameworkCore.Migrations;
 using System.Reflection;
 
 namespace Bit.Core

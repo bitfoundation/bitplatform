@@ -3,7 +3,6 @@ using Bit.IdentityServer.Contracts;
 using Bit.IdentityServer.Implementations;
 using Bit.IdentityServer.Implementations.ExternalIdentityProviderConfigurations;
 using Bit.Owin.Implementations;
-using Bit.Owin.Middlewares;
 using IdentityServer3.Core.Services;
 using System;
 

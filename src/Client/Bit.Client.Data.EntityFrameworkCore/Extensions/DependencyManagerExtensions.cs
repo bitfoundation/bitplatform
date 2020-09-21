@@ -1,5 +1,4 @@
 ﻿using Bit.Core.Contracts;
-using Bit.Data;
 using Bit.Data.EntityFrameworkCore.Implementations;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;

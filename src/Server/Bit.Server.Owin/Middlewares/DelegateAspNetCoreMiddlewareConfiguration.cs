@@ -1,6 +1,6 @@
-﻿using System;
-using Bit.Owin.Contracts;
+﻿using Bit.Owin.Contracts;
 using Microsoft.AspNetCore.Builder;
+using System;
 
 namespace Bit.Owin.Middlewares
 {

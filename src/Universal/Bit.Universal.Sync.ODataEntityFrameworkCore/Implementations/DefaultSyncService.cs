@@ -197,7 +197,7 @@ namespace Bit.Sync.ODataEntityFrameworkCore.Implementations
                             throw new InvalidOperationException($"{batchResponbse.Content.Headers.ContentType.MediaType} content type is not supported.");
 
 #if UWP || DotNetStandard2_0
-                    using (Stream stream = await batchResponbse.Content.ReadAsStreamAsync().ConfigureAwait(false))
+                        using (Stream stream = await batchResponbse.Content.ReadAsStreamAsync().ConfigureAwait(false))
 #else
                         await using (Stream stream = await batchResponbse.Content.ReadAsStreamAsync().ConfigureAwait(false))
 #endif

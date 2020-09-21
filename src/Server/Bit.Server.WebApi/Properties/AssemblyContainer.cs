@@ -1,5 +1,5 @@
-﻿using System.Reflection;
-using Bit.WebApi;
+﻿using Bit.WebApi;
+using System.Reflection;
 
 namespace Bit.Core
 {

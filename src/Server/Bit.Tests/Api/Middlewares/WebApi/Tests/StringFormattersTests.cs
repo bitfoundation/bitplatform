@@ -1,6 +1,5 @@
 ﻿using Bit.Core.Contracts;
 using Bit.Test;
-using Bit.Tests.Api.ApiControllers;
 using Bit.Tests.Core.Contracts;
 using Bit.Tests.Model.DomainModels;
 using FakeItEasy;

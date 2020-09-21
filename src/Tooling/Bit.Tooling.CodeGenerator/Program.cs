@@ -1,16 +1,16 @@
-﻿using Bit.Tooling.Core.Contracts;
-using Bit.Tooling.Core.Model;
-using Bit.Tooling.CodeGenerator.Implementations;
+﻿using Bit.Tooling.CodeGenerator.Implementations;
 using Bit.Tooling.CodeGenerator.Implementations.CSharpClientProxyGenerator;
 using Bit.Tooling.CodeGenerator.Implementations.TypeScriptClientProxyGenerator;
+using Bit.Tooling.Core.Contracts;
+using Bit.Tooling.Core.Model;
 using Microsoft.Build.Locator;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.MSBuild;
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using System.Collections.Generic;
 
 namespace BitCodeGeneratorTaskImpl
 {

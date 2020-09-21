@@ -1,5 +1,5 @@
-﻿using System.Reflection;
-using Bit.IdentityServer;
+﻿using Bit.IdentityServer;
+using System.Reflection;
 
 namespace Bit.Core
 {

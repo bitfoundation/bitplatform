@@ -1,10 +1,10 @@
-﻿using System;
-using System.Net;
-using System.Reflection;
-using Bit.Core.Exceptions.Contracts;
+﻿using Bit.Core.Exceptions.Contracts;
 using Bit.Core.Models;
 using Bit.Owin.Contracts;
 using Bit.Owin.Metadata;
+using System;
+using System.Net;
+using System.Reflection;
 
 namespace Bit.Owin.Implementations
 {

@@ -1,5 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 
 namespace Bit.Core.Contracts
 {

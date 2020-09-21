@@ -1,9 +1,8 @@
-﻿using System.Threading.Tasks;
-using Bit.Core.Contracts;
+﻿using Bit.Core.Contracts;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
-using Bit.Owin.Middlewares;
 using System;
+using System.Threading.Tasks;
 
 namespace Bit.Owin.Middlewares
 {

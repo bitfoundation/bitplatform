@@ -1,8 +1,8 @@
-﻿using System;
+﻿using Bit.Core.Contracts;
+using IdentityServer3.Core.Logging;
+using System;
 using System.Globalization;
 using System.Linq;
-using Bit.Core.Contracts;
-using IdentityServer3.Core.Logging;
 
 namespace Bit.IdentityServer.Implementations
 {

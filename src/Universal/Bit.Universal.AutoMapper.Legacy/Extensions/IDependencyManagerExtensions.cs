@@ -1,6 +1,6 @@
 ﻿using AutoMapper;
-using Bit.Model.Implementations;
 using Bit.Model.Contracts;
+using Bit.Model.Implementations;
 using System;
 using System.Collections.Generic;
 using System.Linq;

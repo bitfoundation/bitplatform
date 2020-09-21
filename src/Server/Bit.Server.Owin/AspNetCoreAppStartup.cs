@@ -1,7 +1,7 @@
 ﻿using Bit.Core.Contracts;
 using Bit.Core.Implementations;
-using Bit.Owin.Implementations;
 using Bit.Owin.Contracts;
+using Bit.Owin.Implementations;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;

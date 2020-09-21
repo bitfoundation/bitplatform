@@ -1,5 +1,4 @@
 ﻿using Bit.Core.Contracts;
-using Bit.Test.Implementations;
 using FakeItEasy;
 using IdentityModel.Client;
 using Microsoft.VisualStudio.TestTools.UnitTesting;

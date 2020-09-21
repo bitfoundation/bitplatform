@@ -1,5 +1,4 @@
 ﻿using Bit.Core.Contracts;
-using Bit.WebApi.Implementations;
 using Microsoft.AspNet.OData.Query;
 using Microsoft.Owin;
 using System;

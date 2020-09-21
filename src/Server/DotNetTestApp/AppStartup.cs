@@ -13,7 +13,6 @@ using Bit.OData.ActionFilters;
 using Bit.OData.Contracts;
 using Bit.OData.Implementations;
 using Bit.OData.ODataControllers;
-using Bit.Owin.Implementations;
 using Bit.Owin;
 using Bit.Owin.Implementations;
 using IdentityServer3.Core.Models;

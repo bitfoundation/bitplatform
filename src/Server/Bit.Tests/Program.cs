@@ -1,8 +1,8 @@
 ﻿using Bit.Test;
 using System;
 using System.Diagnostics;
-using static System.Runtime.InteropServices.RuntimeInformation;
 using static System.Runtime.InteropServices.OSPlatform;
+using static System.Runtime.InteropServices.RuntimeInformation;
 
 namespace Bit.Tests
 {

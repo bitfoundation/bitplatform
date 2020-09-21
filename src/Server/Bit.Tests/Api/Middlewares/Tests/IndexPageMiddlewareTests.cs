@@ -1,13 +1,13 @@
-﻿using System.Net;
-using System.Net.Http;
-using System.Threading.Tasks;
-using Bit.Core.Models;
+﻿using Bit.Core.Models;
 using Bit.Test;
 using Bit.Test.Server;
 using IdentityModel.Client;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Remote;
+using System.Net;
+using System.Net.Http;
+using System.Threading.Tasks;
 
 namespace Bit.Tests.Api.Middlewares.Tests
 {

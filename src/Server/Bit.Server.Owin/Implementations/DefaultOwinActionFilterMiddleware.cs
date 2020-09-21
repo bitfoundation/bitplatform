@@ -1,7 +1,7 @@
-﻿using System;
-using System.Threading.Tasks;
-using Bit.Owin.Contracts;
+﻿using Bit.Owin.Contracts;
 using Microsoft.Owin;
+using System;
+using System.Threading.Tasks;
 
 namespace Bit.Owin.Implementations
 {

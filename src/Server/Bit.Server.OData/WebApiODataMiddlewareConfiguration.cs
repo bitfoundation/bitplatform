@@ -1,6 +1,5 @@
 ﻿using Bit.Core.Models;
 using Bit.OData.Contracts;
-using Bit.OData.Implementations;
 using Bit.Owin.Contracts;
 using Bit.WebApi.Contracts;
 using Microsoft.AspNet.OData.Batch;

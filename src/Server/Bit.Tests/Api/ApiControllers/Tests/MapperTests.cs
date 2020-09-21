@@ -1,5 +1,4 @@
-﻿using Bit.Core.Models;
-using Bit.Test;
+﻿using Bit.Test;
 using IdentityModel.Client;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Newtonsoft.Json.Linq;

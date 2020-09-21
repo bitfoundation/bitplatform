@@ -1,9 +1,6 @@
 ﻿using Autofac;
 using Microsoft.Extensions.DependencyInjection;
 using System;
-using System.Linq;
-using System.Reflection;
-using Xamarin.Essentials.Interfaces;
 
 namespace Bit.Core.Contracts
 {

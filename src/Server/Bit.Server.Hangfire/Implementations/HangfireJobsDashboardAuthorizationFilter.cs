@@ -1,9 +1,8 @@
-﻿using System;
-using Bit.Core.Contracts;
+﻿using Bit.Core.Contracts;
 using Hangfire.Annotations;
 using Hangfire.Dashboard;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Owin;
+using System;
 
 namespace Bit.Hangfire.Implementations
 {

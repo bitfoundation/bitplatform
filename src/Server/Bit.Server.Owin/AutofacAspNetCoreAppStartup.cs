@@ -1,7 +1,6 @@
 ﻿using Autofac;
 using Autofac.Extensions.DependencyInjection;
 using Bit.Core.Contracts;
-using Bit.Owin.Contracts;
 using Bit.Owin.Implementations;
 using Microsoft.Extensions.DependencyInjection;
 using System;

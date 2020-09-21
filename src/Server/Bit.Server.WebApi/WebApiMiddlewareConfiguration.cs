@@ -2,7 +2,6 @@
 using Bit.Core.Models;
 using Bit.Owin.Contracts;
 using Bit.WebApi.Contracts;
-using Microsoft.Web.Http.Routing;
 using Owin;
 using System;
 using System.Collections.Generic;

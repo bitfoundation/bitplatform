@@ -1,8 +1,8 @@
-﻿using System.Collections.Generic;
-using System.Threading.Tasks;
-using Bit.Owin.Contracts.Metadata;
+﻿using Bit.Owin.Contracts.Metadata;
 using Bit.Owin.Implementations.Metadata;
 using Bit.Tests.Model.DomainModels;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace Bit.Tests.Owin.Metadata.Model
 {

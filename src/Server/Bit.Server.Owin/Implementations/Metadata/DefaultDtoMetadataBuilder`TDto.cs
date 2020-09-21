@@ -1,10 +1,10 @@
-﻿using System;
-using System.ComponentModel.DataAnnotations;
-using System.Reflection;
-using Bit.Owin.Contracts.Metadata;
-using System.Linq.Expressions;
-using System.Linq;
+﻿using Bit.Owin.Contracts.Metadata;
 using Lambda2Js;
+using System;
+using System.ComponentModel.DataAnnotations;
+using System.Linq;
+using System.Linq.Expressions;
+using System.Reflection;
 
 namespace Bit.Owin.Implementations.Metadata
 {

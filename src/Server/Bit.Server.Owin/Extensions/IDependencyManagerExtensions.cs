@@ -5,17 +5,14 @@ using Bit.Owin.Contracts.Metadata;
 using Bit.Owin.Implementations;
 using Bit.Owin.Implementations.Metadata;
 using Bit.Owin.Middlewares;
-using Owin;
-using System;
-using System.Linq;
-using System.Reflection;
-using Bit.Owin.Contracts;
-using Bit.Owin.Implementations;
-using Bit.Owin.Middlewares;
 using Microsoft.ApplicationInsights.Extensibility;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.Owin.Security.DataProtection;
+using Owin;
+using System;
+using System.Linq;
+using System.Reflection;
 
 namespace Bit.Core.Contracts
 {

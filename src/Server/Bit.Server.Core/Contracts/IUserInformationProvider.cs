@@ -1,6 +1,4 @@
-﻿using Bit.Core.Implementations;
-using Bit.Core.Models;
-using System;
+﻿using Bit.Core.Models;
 using System.Collections.Generic;
 using System.Security.Claims;
 

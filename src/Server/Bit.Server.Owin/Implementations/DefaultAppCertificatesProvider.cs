@@ -1,8 +1,8 @@
-﻿using System;
+﻿using Bit.Core.Contracts;
+using Bit.Core.Models;
+using System;
 using System.IO;
 using System.Security.Cryptography.X509Certificates;
-using Bit.Core.Contracts;
-using Bit.Core.Models;
 
 namespace Bit.Owin.Implementations
 {

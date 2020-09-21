@@ -1,10 +1,7 @@
-﻿using Bit.Data;
-using Bit.Data.EntityFrameworkCore.Implementations;
+﻿using Bit.Data.EntityFrameworkCore.Implementations;
 using Bit.Tests.Model.Dto;
 using Microsoft.EntityFrameworkCore;
-using Prism.AppModel;
 using Prism.Services;
-using System;
 using System.IO;
 using Xamarin.Essentials;
 

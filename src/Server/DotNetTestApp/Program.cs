@@ -1,11 +1,11 @@
 ﻿using Bit.Owin;
 using Bit.Owin.Implementations;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.DependencyInjection;
 using Serilog;
 using Serilog.Formatting.Compact;
 using System;
 using System.Threading.Tasks;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace DotNetTestApp
 {

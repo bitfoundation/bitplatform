@@ -1,7 +1,7 @@
-﻿using System;
+﻿using Bit.WebApi.Contracts;
+using System;
 using System.Collections.Generic;
 using System.Reflection;
-using Bit.WebApi.Contracts;
 
 namespace Bit.WebApi.Implementations
 {

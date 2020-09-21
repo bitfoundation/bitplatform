@@ -1,6 +1,6 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using Bit.Model.Contracts;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
-using Bit.Model.Contracts;
 
 namespace Bit.Tests.Model.Dto
 {

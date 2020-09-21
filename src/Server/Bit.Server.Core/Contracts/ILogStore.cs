@@ -1,5 +1,5 @@
-﻿using System.Threading.Tasks;
-using Bit.Core.Models;
+﻿using Bit.Core.Models;
+using System.Threading.Tasks;
 
 namespace Bit.Core.Contracts
 {

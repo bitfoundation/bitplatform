@@ -1,8 +1,8 @@
-﻿using System;
-using System.Threading.Tasks;
-using Bit.Core.Contracts;
+﻿using Bit.Core.Contracts;
 using Microsoft.AspNet.SignalR;
 using Microsoft.AspNet.SignalR.Infrastructure;
+using System;
+using System.Threading.Tasks;
 
 namespace Bit.Signalr.Implementations
 {

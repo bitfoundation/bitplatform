@@ -1,9 +1,9 @@
-﻿using System;
+﻿using Bit.Core.Contracts;
+using System;
 using System.Collections.Generic;
 using System.Globalization;
-using System.Reflection;
 using System.Linq;
-using Bit.Core.Contracts;
+using System.Reflection;
 using Xamarin.Essentials.Interfaces;
 
 namespace Bit.Core.Implementations

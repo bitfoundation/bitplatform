@@ -33,7 +33,7 @@ namespace Bit.Core
         [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization)]
         public virtual void Init()
         {
-            AppAssemblies = new HashSet<Assembly> 
+            AppAssemblies = new HashSet<Assembly>
             {
 #if !UWP
                 Assembly.GetCallingAssembly()

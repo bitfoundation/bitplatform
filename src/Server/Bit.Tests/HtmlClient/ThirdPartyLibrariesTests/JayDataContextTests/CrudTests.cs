@@ -1,5 +1,4 @@
 ﻿using Bit.Test;
-using Bit.Test.Implementations;
 using Bit.Test.Server;
 using Bit.Tests.Api.ApiControllers;
 using Bit.Tests.Model.DomainModels;

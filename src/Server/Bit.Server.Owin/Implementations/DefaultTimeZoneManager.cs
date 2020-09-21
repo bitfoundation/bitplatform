@@ -1,7 +1,7 @@
-﻿using System;
-using Bit.Core.Contracts;
+﻿using Bit.Core.Contracts;
 using Bit.Owin.Contracts;
 using NodaTime;
+using System;
 
 namespace Bit.Owin.Implementations
 {
