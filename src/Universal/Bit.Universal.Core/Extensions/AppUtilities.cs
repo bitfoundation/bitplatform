@@ -9,7 +9,7 @@ namespace Bit.Core.Extensions
         /// </summary>
         Server,
         /// <summary>
-        /// Android/iOS/Windows/WPF/WindowsForms/Console/Blazor
+        /// Android/iOS/Windows(WPF/WindowsForms/UWP)/Blazor/Unity/
         /// </summary>
         Client
     }
@@ -25,7 +25,11 @@ namespace Bit.Core.Extensions
         {
             get
             {
-                return _workload ?? throw new InvalidOperationException("Bit detects workload in android/iOS/uwp/aspnet/blazor/ but you've to set Workload in wpf, winforms and console apps.");
+#if DotNet
+                if (System.Runtime.InteropServices.RuntimeInformation.ProcessArchitecture == System.Runtime.InteropServices.Architecture.Wasm)
+                    return Workload.Client;
+#endif
+                return _workload ?? throw new InvalidOperationException("Bit detects workload in android/iOS/uwp/blazor-wasm/ but you've to set Workload in other application models.");
             }
             set
             {
