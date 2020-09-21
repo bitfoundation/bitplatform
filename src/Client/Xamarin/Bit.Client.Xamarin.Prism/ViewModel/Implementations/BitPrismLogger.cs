@@ -1,7 +1,6 @@
 ﻿#define Debug
 
 using Bit.Core.Contracts;
-using Bit.ViewModel.Contracts;
 using Prism.Logging;
 using System;
 using System.Collections.Generic;
@@ -11,31 +10,39 @@ namespace Bit.ViewModel.Implementations
 {
     public class BitPrismLogger : ILogger
     {
+        public virtual IEnumerable<ITelemetryService> TelemetryServices { get; set; } = default!;
+
         public virtual IExceptionHandler ExceptionHandler { get; set; } = default!;
 
         public virtual void Log(string message, IDictionary<string, string> properties)
         {
-            if (Debugger.IsAttached)
-            {
-                Debug.WriteLine(message, category: "PrismLog");
-                Console.WriteLine(message);
-            }
+            TelemetryServices.All().TrackTrace(message, properties);
         }
 
         public virtual void Log(string message, Category category, Priority priority)
         {
             if (category == Category.Exception)
             {
-                Report(new Exception(message), new Dictionary<string, string?>
+                try
+                {
+                    throw new Exception(message);
+                }
+                catch (Exception exp)
+                {
+                    Report(exp, new Dictionary<string, string?>
+                    {
+                        { nameof(category), category.ToString() },
+                        { nameof(priority), priority.ToString() }
+                    });
+                }
+            }
+            else
+            {
+                TelemetryServices.All().TrackTrace(message, new Dictionary<string, string?>
                 {
                     { nameof(category), category.ToString() },
                     { nameof(priority), priority.ToString() }
                 });
-            }
-            else if (Debugger.IsAttached)
-            {
-                Debug.WriteLine(message, category: "PrismLog");
-                Console.WriteLine(message);
             }
         }
 
@@ -46,7 +53,7 @@ namespace Bit.ViewModel.Implementations
 
         public virtual void TrackEvent(string name, IDictionary<string, string> properties)
         {
-            
+            TelemetryServices.All().TrackEvent(name, properties);
         }
     }
 }

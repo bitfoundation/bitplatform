@@ -33,18 +33,13 @@ namespace Bit.Core.Implementations
                 }
             }
 
-            if (Debugger.IsAttached)
-            {
-                Console.WriteLine($"DateTime: {DateTime.Now.ToLongTimeString()} Message: {exp}");
-                Debug.WriteLine($"DateTime: {DateTime.Now.ToLongTimeString()} Message: {exp}", category: "ApplicationException");
-            }
-
             CallTelemetryServices(exp, properties);
         }
 
         protected virtual void CallTelemetryServices(Exception exp, IDictionary<string, string?>? properties)
         {
-
+            DebugTelemetryService.Current.TrackException(exp, properties);
+            ConsoleTelemetryService.Current.TrackException(exp, properties);
         }
     }
 }

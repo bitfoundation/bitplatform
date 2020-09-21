@@ -33,6 +33,9 @@ namespace Bit.Core.Contracts
                     exceptionHandler.ServiceProvider = container.Resolve<IServiceProvider>();
             });
 
+            dependencyManager.RegisterInstance<ITelemetryService>(DebugTelemetryService.Current);
+            dependencyManager.RegisterInstance<ITelemetryService>(ConsoleTelemetryService.Current);
+
             dependencyManager.GetContainerBuilder().RegisterBuildCallback(container =>
             {
                 IMessageReceiver? messageReceiver = container.ResolveOptional<IMessageReceiver>();

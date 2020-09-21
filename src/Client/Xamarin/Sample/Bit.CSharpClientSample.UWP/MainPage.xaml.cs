@@ -1,4 +1,5 @@
-﻿using Bit.ViewModel.Implementations;
+﻿using Bit.Core.Implementations;
+using Bit.ViewModel.Implementations;
 using Prism.Ioc;
 
 namespace Bit.CSharpClientSample.UWP
@@ -8,6 +9,13 @@ namespace Bit.CSharpClientSample.UWP
         public MainPage()
         {
             InitializeComponent();
+
+#if DEBUG
+            LocalTelemetryService.Current.Init();
+            DebugTelemetryService.Current.Init();
+#else
+            // ApplicationInsightsTelemetryService.Current.Init("");
+#endif
 
             LoadApplication(new CSharpClientSample.App(new UwpInitializer()));
         }

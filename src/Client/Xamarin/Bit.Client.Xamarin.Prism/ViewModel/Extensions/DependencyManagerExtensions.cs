@@ -41,6 +41,8 @@ namespace Autofac
             dependencyManager.RegisterInstance<ITelemetryService>(ApplicationInsightsTelemetryService.Current);
             dependencyManager.RegisterInstance<ITelemetryService>(AppCenterTelemetryService.Current);
             dependencyManager.RegisterInstance<ITelemetryService>(FirebaseTelemetryService.Current);
+            dependencyManager.RegisterInstance<ITelemetryService>(DebugTelemetryService.Current);
+            dependencyManager.RegisterInstance<ITelemetryService>(ConsoleTelemetryService.Current);
             dependencyManager.RegisterInstance(LocalTelemetryService.Current, servicesType: new[] { typeof(LocalTelemetryService).GetTypeInfo(), typeof(ITelemetryService).GetTypeInfo() });
             IContainerRegistry containerRegistry = dependencyManager.GetContainerRegistry();
             containerRegistry.RegisterForNav<BitConsoleView, BitConsoleViewModel>("BitConsole");

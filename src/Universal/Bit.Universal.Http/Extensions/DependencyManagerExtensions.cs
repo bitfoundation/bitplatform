@@ -2,6 +2,8 @@
 using Bit.Http.Contracts;
 using Bit.Http.Implementations;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Http;
 using Microsoft.IdentityModel.Logging;
 using Prism.Events;
 using Refit;
@@ -100,7 +102,7 @@ namespace Autofac
 
             dependencyManager.RegisterUsing(resolver => new IPollyHttpResponseMessagePolicyFactory(request => DefaultRestFactories.BuildHttpPollyPolicy(request)), lifeCycle: DependencyLifeCycle.Transient, overwriteExisting: false);
 
-            return services.AddHttpClient(Microsoft.Extensions.Options.Options.DefaultName)
+            IHttpClientBuilder builder = services.AddHttpClient(Microsoft.Extensions.Options.Options.DefaultName)
                 .ConfigureHttpClient((serviceProvider, httpClient) =>
                 {
                     httpClient.BaseAddress = serviceProvider.GetRequiredService<IClientAppProfile>().HostUri;
@@ -112,6 +114,10 @@ namespace Autofac
                 })
                 .SetHandlerLifetime(Timeout.InfiniteTimeSpan)
                 .AddPolicyHandler((serviceProvider, request) => serviceProvider.GetRequiredService<IPollyHttpResponseMessagePolicyFactory>()(request));
+
+            services.RemoveAll<IHttpMessageHandlerBuilderFilter>(); // https://stackoverflow.com/a/52970073/2720104
+
+            return builder;
         }
 
         public static void RegisterHttpMessageHandler<THttpMessageHandler>(this IDependencyManager dependencyManager)
