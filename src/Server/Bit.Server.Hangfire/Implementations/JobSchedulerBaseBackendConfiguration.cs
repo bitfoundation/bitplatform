@@ -1,4 +1,5 @@
 ﻿using Bit.Hangfire.Contracts;
+using Bit.Hangfire.Filters;
 using Hangfire;
 using Hangfire.Logging;
 using System.Collections.Generic;

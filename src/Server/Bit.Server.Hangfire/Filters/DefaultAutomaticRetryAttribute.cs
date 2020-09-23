@@ -7,7 +7,7 @@ using Hangfire.Storage;
 using System;
 using System.Linq;
 
-namespace Bit.Hangfire.Implementations
+namespace Bit.Hangfire.Filters
 {
     public sealed class DefaultAutomaticRetryAttribute : JobFilterAttribute, IElectStateFilter, IApplyStateFilter
     {
