@@ -1,6 +1,8 @@
 ﻿using Bit.Core;
 using Bit.Core.Contracts;
 using Bit.Test;
+using IdentityModel.Client;
+using Simple.OData.Client;
 using System;
 using System.Collections.Generic;
 using System.Reflection;
@@ -41,6 +43,24 @@ namespace Bit.Tests
             });
 
             return baseList;
+        }
+
+        public IODataClient BuildBitODataClient(TokenResponse? token = null, ODataClientSettings? odataClientSettings = null)
+        {
+            odataClientSettings = odataClientSettings ?? new ODataClientSettings { };
+
+            odataClientSettings.MetadataDocument = BitMetadata.MetadataString;
+
+            return Server.BuildODataClient(token, odataRouteName: "Bit", odataClientSettings);
+        }
+
+        public IODataClient BuildTestODataClient(TokenResponse? token = null, ODataClientSettings? odataClientSettings = null)
+        {
+            odataClientSettings = odataClientSettings ?? new ODataClientSettings { };
+
+            odataClientSettings.MetadataDocument = TestMetadata.MetadataString;
+
+            return Server.BuildODataClient(token, odataRouteName: "Test", odataClientSettings);
         }
     }
 }

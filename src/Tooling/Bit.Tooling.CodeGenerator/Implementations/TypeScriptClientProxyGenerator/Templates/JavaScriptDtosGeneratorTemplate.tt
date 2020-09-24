@@ -15,11 +15,11 @@
 	<# if(namespaces.Count==1) { #> var  <#}#> <#= string.Join(".", namespaces) #> = <#= string.Join(".", namespaces) #> || {};
 <# } #>
 
-<#= dto.DtoSymbol.ToDisplayString() #> = <#= dto.BaseDtoSymbol != null ? dto.BaseDtoSymbol.GetTypescriptTypeName(useArrayForIEnumerableTypes : true) : "$data.Entity" #>.extend("<#= dto.DtoSymbol.ToDisplayString() #>", {
+<#= dto.DtoSymbol.ToDisplayString() #> = <#= dto.BaseDtoSymbol != null ? dto.BaseDtoSymbol.GetTypescriptTypeName(TypeToEdmTypeCollectionBehavior.UseArray) : "$data.Entity" #>.extend("<#= dto.DtoSymbol.ToDisplayString() #>", {
 	<# foreach (IPropertySymbol prp in dto.Properties)
 	{ #> 
 		<#= prp.Name #>: {
-			"type": "<#= prp.Type.GetEdmTypeName(useArrayForIEnumerableTypes:true) #>" , nullable: <#= prp.Type.IsNullable().ToString().ToLowerInvariant() #>
+			"type": "<#= prp.Type.GetEdmTypeName(TypeToEdmTypeCollectionBehavior.UseArray) #>" , nullable: <#= prp.Type.IsNullable().ToString().ToLowerInvariant() #>
 			<# if (!prp.IsKey() && (prp.Type.IsCollectionType() || prp.Type.IsNullable()))
 								{
 									#>  , defaultValue: <#= prp.Type.GetJavaScriptDefaultValue() #>

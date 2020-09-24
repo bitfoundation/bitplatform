@@ -53,7 +53,7 @@ namespace Bit.Tests.Api.Middlewares.WebApi.Tests
             {
                 TokenResponse token = await testEnvironment.Server.Login("ValidUserName", "ValidPassword", clientId: "TestResOwner");
 
-                IODataClient client = testEnvironment.Server.BuildODataClient(token: token);
+                IODataClient client = testEnvironment.BuildTestODataClient(token: token);
 
                 await client.TestModels()
                     .StringFormattersTests(simpleString: "simpleString",
@@ -117,7 +117,7 @@ namespace Bit.Tests.Api.Middlewares.WebApi.Tests
             {
                 TokenResponse token = await testEnvironment.Server.Login("ValidUserName", "ValidPassword", clientId: "TestResOwner");
 
-                IODataClient client = testEnvironment.Server.BuildODataClient(token: token);
+                IODataClient client = testEnvironment.BuildTestODataClient(token: token);
 
                 IEnumerable<TestModel> testModels = await client.TestModels()
                      .GetSomeTestModelsForTest()

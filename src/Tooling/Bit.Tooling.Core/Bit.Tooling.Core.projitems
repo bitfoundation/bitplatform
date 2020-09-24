@@ -9,8 +9,6 @@
     <Import_RootNamespace>Bit.Tooling.CodeAnalyzer</Import_RootNamespace>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="$(MSBuildThisFileDirectory)Contracts\CSharpClientProxyGenerator\ICSharpClientContextGenerator.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Contracts\CSharpClientProxyGenerator\IDefaultCSharpClientProxyGenerator.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Contracts\IBitCodeGeneratorOrderedProjectsProvider.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Contracts\IBitConfigProvider.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Contracts\IDtoRulesValidator.cs" />
@@ -18,9 +16,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)Contracts\IProjectDtoRulesProvider.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Contracts\IProjectDtosProvider.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Contracts\IProjectEnumTypesProvider.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Contracts\TypeScriptClientProxyGenerator\IDefaultTypeScriptClientProxyGenerator.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Contracts\TypeScriptClientProxyGenerator\ITypeScriptClientContextGenerator.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Contracts\TypeScriptClientProxyGenerator\ITypeScriptClientProxyDtosGenerator.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Extensions\IEnumerableExtensions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Extensions\IPropertySymbolExtensions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Extensions\ISymbolExtensions.cs" />

@@ -27,7 +27,7 @@ namespace Bit.Tests.Api.Middlewares.WebApi.Tests
             {
                 TokenResponse token = await testEnvironment.Server.Login("ValidUserName", "ValidPassword", clientId: "TestResOwner");
 
-                IODataClient client = testEnvironment.Server.BuildODataClient(token: token);
+                IODataClient client = testEnvironment.BuildTestODataClient(token: token);
 
                 TestModel modelBeforeInsert = new TestModel
                 {
@@ -65,7 +65,7 @@ namespace Bit.Tests.Api.Middlewares.WebApi.Tests
             {
                 TokenResponse token = await testEnvironment.Server.Login("ValidUserName", "ValidPassword", clientId: "TestResOwner");
 
-                IODataClient client = testEnvironment.Server.BuildODataClient(token: token);
+                IODataClient client = testEnvironment.BuildTestODataClient(token: token);
 
                 long modelBeforeUpdateId = await client.TestModels()
                     .Top(1)
@@ -108,7 +108,7 @@ namespace Bit.Tests.Api.Middlewares.WebApi.Tests
             {
                 TokenResponse token = await testEnvironment.Server.Login("ValidUserName", "ValidPassword", clientId: "TestResOwner");
 
-                IODataClient client = testEnvironment.Server.BuildODataClient(token: token);
+                IODataClient client = testEnvironment.BuildTestODataClient(token: token);
 
                 long modelIdForDelete = await client.TestModels()
                     .Top(1)
@@ -146,7 +146,7 @@ namespace Bit.Tests.Api.Middlewares.WebApi.Tests
 
                 IRequestValidator requestValidator = A.Fake<IRequestValidator>();
 
-                IODataClient client = testEnvironment.Server.BuildODataClient(token: token, odataClientSettings: new ODataClientSettings
+                IODataClient client = testEnvironment.BuildTestODataClient(token: token, odataClientSettings: new ODataClientSettings
                 {
                     BeforeRequest = message =>
                     {

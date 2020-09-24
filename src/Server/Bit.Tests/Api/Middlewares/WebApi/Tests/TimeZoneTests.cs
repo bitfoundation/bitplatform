@@ -31,7 +31,7 @@ namespace Bit.Tests.Api.Middlewares.WebApi.Tests
             {
                 TokenResponse token = await testEnvironment.Server.Login("ValidUserName", "ValidPassword", clientId: "TestResOwner");
 
-                IODataClient client = testEnvironment.Server.BuildODataClient(token: token);
+                IODataClient client = testEnvironment.BuildTestODataClient(token: token);
 
                 DateTimeOffset date = new DateTimeOffset(2016, 1, 1, 10, 30, 0, TimeSpan.Zero);
 
@@ -81,7 +81,7 @@ namespace Bit.Tests.Api.Middlewares.WebApi.Tests
             {
                 TokenResponse token = await testEnvironment.Server.Login("ValidUserName", "ValidPassword", clientId: "TestResOwner");
 
-                IODataClient client = testEnvironment.Server.BuildODataClient(token: token, odataClientSettings: new ODataClientSettings
+                IODataClient client = testEnvironment.BuildTestODataClient(token: token, odataClientSettings: new ODataClientSettings
                 {
                     BeforeRequest = message =>
                     {
@@ -130,7 +130,7 @@ namespace Bit.Tests.Api.Middlewares.WebApi.Tests
             {
                 TokenResponse token = await testEnvironment.Server.Login("ValidUserName", "ValidPassword", clientId: "TestResOwner");
 
-                IODataClient client = testEnvironment.Server.BuildODataClient(token: token);
+                IODataClient client = testEnvironment.BuildTestODataClient(token: token);
 
                 IEnumerable<TestModel> testModels = await client.TestModels()
                      .Where(tm => tm.DateProperty == new DateTimeOffset(2016, 1, 1, 10, 30, 0, TimeSpan.Zero))
@@ -148,7 +148,7 @@ namespace Bit.Tests.Api.Middlewares.WebApi.Tests
             {
                 TokenResponse token = await testEnvironment.Server.Login("ValidUserName", "ValidPassword", clientId: "TestResOwner");
 
-                IODataClient client = testEnvironment.Server.BuildODataClient(token: token, odataClientSettings: new ODataClientSettings
+                IODataClient client = testEnvironment.BuildTestODataClient(token: token, odataClientSettings: new ODataClientSettings
                 {
                     BeforeRequest = message =>
                     {

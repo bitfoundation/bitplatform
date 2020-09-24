@@ -18,7 +18,7 @@ namespace Bit.Tests.Api.Middlewares.SignalR.Tests
 
                 TokenResponse tokenOfUser2 = await testEnvironment.Server.Login("User2", "ValidPassword", clientId: "TestResOwner");
 
-                IODataClient odataClientOfUser1 = testEnvironment.Server.BuildODataClient(token: tokenOfUser1);
+                IODataClient odataClientOfUser1 = testEnvironment.BuildTestODataClient(token: tokenOfUser1);
 
                 TaskCompletionSource<bool> onMessageReceivedCalled = new TaskCompletionSource<bool>();
 
@@ -46,7 +46,7 @@ namespace Bit.Tests.Api.Middlewares.SignalR.Tests
 
                 TokenResponse tokenOfUser2 = await testEnvironment.Server.Login("User2", "ValidPassword", clientId: "TestResOwner");
 
-                IODataClient odataClientOfUser1 = testEnvironment.Server.BuildODataClient(token: tokenOfUser1);
+                IODataClient odataClientOfUser1 = testEnvironment.BuildTestODataClient(token: tokenOfUser1);
 
                 TaskCompletionSource<bool> onMessageReceivedCalled = new TaskCompletionSource<bool>();
 

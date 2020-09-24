@@ -23,7 +23,7 @@
 								<# } else { #>
 									"namespace": "<#= Mapping.Namespace #>",
 								<# } #>
-								"returnType": <# if(!operation.Method.ReturnType.IsVoid()) { #> "<#= operation.Method.ReturnType.GetEdmTypeName(useArrayForIEnumerableTypes:false) #>" <# } else { #> null <# } #>,
+								"returnType": <# if(!operation.Method.ReturnType.IsVoid()) { #> "<#= operation.Method.ReturnType.GetEdmTypeName(TypeToEdmTypeCollectionBehavior.UseJayDataNonGenericQueryable) #>" <# } else { #> null <# } #>,
 								<# if (operation.Method.ReturnType.IsCollectionType() || operation.Method.ReturnType.IsQueryableType())
 								{
 									#> "elementType": "<#= (operation.Method.ReturnType).GetEdmElementTypeName() #>", 
@@ -33,7 +33,7 @@
 										{ #>
 											{
 												"name": "<#= parameter.Name #>",
-												"type": "<#= parameter.Type.GetEdmTypeName(useArrayForIEnumerableTypes:true) #>",
+												"type": "<#= parameter.Type.GetEdmTypeName(TypeToEdmTypeCollectionBehavior.UseArray) #>",
 												<# if(parameter.Type.IsCollectionType()) { #> "elementType": "<#= (parameter.Type).GetEdmElementTypeName() #>" <# } #>
 											},									
 										<# } #>

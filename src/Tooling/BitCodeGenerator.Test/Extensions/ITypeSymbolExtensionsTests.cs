@@ -291,15 +291,15 @@ public class SamplesController : DtoController<SampleDto>
 
             Dto dto = (await dtosProvider.GetProjectDtos(CreateProjectFromSourceCodes(dtoCode))).Last();
 
-            Assert.AreEqual("Edm.Int32", (dto.Properties.ElementAt(0).Type as INamedTypeSymbol).GetEdmTypeName(useArrayForIEnumerableTypes: true));
-            Assert.AreEqual("Edm.String", (dto.Properties.ElementAt(1).Type as INamedTypeSymbol).GetEdmTypeName(useArrayForIEnumerableTypes: true));
-            Assert.AreEqual("Edm.String", (dto.Properties.ElementAt(2).Type as INamedTypeSymbol).GetEdmTypeName(useArrayForIEnumerableTypes: true));
-            Assert.AreEqual("Edm.Int32", (dto.Properties.ElementAt(3).Type as INamedTypeSymbol).GetEdmTypeName(useArrayForIEnumerableTypes: true));
-            Assert.AreEqual("Array", (dto.Properties.ElementAt(4).Type as INamedTypeSymbol).GetEdmTypeName(useArrayForIEnumerableTypes: true));
-            Assert.AreEqual("Array", (dto.Properties.ElementAt(5).Type as INamedTypeSymbol).GetEdmTypeName(useArrayForIEnumerableTypes: true));
-            Assert.AreEqual("Array", (dto.Properties.ElementAt(6).Type as INamedTypeSymbol).GetEdmTypeName(useArrayForIEnumerableTypes: true));
-            Assert.AreEqual("Array", (dto.Properties.ElementAt(7).Type as INamedTypeSymbol).GetEdmTypeName(useArrayForIEnumerableTypes: true));
-            Assert.AreEqual("Person", (dto.Properties.ElementAt(8).Type as INamedTypeSymbol).GetEdmTypeName(useArrayForIEnumerableTypes: true));
+            Assert.AreEqual("Edm.Int32", (dto.Properties.ElementAt(0).Type as INamedTypeSymbol).GetEdmTypeName(TypeToEdmTypeCollectionBehavior.NA));
+            Assert.AreEqual("Edm.String", (dto.Properties.ElementAt(1).Type as INamedTypeSymbol).GetEdmTypeName(TypeToEdmTypeCollectionBehavior.NA));
+            Assert.AreEqual("Edm.String", (dto.Properties.ElementAt(2).Type as INamedTypeSymbol).GetEdmTypeName(TypeToEdmTypeCollectionBehavior.NA));
+            Assert.AreEqual("Edm.Int32", (dto.Properties.ElementAt(3).Type as INamedTypeSymbol).GetEdmTypeName(TypeToEdmTypeCollectionBehavior.NA));
+            Assert.AreEqual("Array", (dto.Properties.ElementAt(4).Type as INamedTypeSymbol).GetEdmTypeName(TypeToEdmTypeCollectionBehavior.UseArray));
+            Assert.AreEqual("Array", (dto.Properties.ElementAt(5).Type as INamedTypeSymbol).GetEdmTypeName(TypeToEdmTypeCollectionBehavior.UseArray));
+            Assert.AreEqual("Array", (dto.Properties.ElementAt(6).Type as INamedTypeSymbol).GetEdmTypeName(TypeToEdmTypeCollectionBehavior.UseArray));
+            Assert.AreEqual("Array", (dto.Properties.ElementAt(7).Type as INamedTypeSymbol).GetEdmTypeName(TypeToEdmTypeCollectionBehavior.UseArray));
+            Assert.AreEqual("Person", (dto.Properties.ElementAt(8).Type as INamedTypeSymbol).GetEdmTypeName(TypeToEdmTypeCollectionBehavior.NA));
         }
 
         [TestMethod]
@@ -372,14 +372,14 @@ public class SamplesController : DtoController<SampleDto>
 
             Dto dto = (await dtosProvider.GetProjectDtos(CreateProjectFromSourceCodes(dtoCode))).Last();
 
-            Assert.AreEqual("number", (dto.Properties.ElementAt(0).Type as INamedTypeSymbol).GetTypescriptTypeName(useArrayForIEnumerableTypes: true));
-            Assert.AreEqual("string", (dto.Properties.ElementAt(1).Type as INamedTypeSymbol).GetTypescriptTypeName(useArrayForIEnumerableTypes: true));
-            Assert.AreEqual("string", (dto.Properties.ElementAt(2).Type as INamedTypeSymbol).GetTypescriptTypeName(useArrayForIEnumerableTypes: true));
-            Assert.AreEqual("number", (dto.Properties.ElementAt(3).Type as INamedTypeSymbol).GetTypescriptTypeName(useArrayForIEnumerableTypes: true));
-            Assert.AreEqual("Array<number>", (dto.Properties.ElementAt(4).Type as INamedTypeSymbol).GetTypescriptTypeName(useArrayForIEnumerableTypes: true));
-            Assert.AreEqual("Array<number>", (dto.Properties.ElementAt(5).Type as INamedTypeSymbol).GetTypescriptTypeName(useArrayForIEnumerableTypes: true));
-            Assert.AreEqual("Array<number>", (dto.Properties.ElementAt(6).Type as INamedTypeSymbol).GetTypescriptTypeName(useArrayForIEnumerableTypes: true));
-            Assert.AreEqual("Person", (dto.Properties.ElementAt(7).Type as INamedTypeSymbol).GetTypescriptTypeName(useArrayForIEnumerableTypes: true));
+            Assert.AreEqual("number", (dto.Properties.ElementAt(0).Type as INamedTypeSymbol).GetTypescriptTypeName(TypeToEdmTypeCollectionBehavior.NA));
+            Assert.AreEqual("string", (dto.Properties.ElementAt(1).Type as INamedTypeSymbol).GetTypescriptTypeName(TypeToEdmTypeCollectionBehavior.NA));
+            Assert.AreEqual("string", (dto.Properties.ElementAt(2).Type as INamedTypeSymbol).GetTypescriptTypeName(TypeToEdmTypeCollectionBehavior.NA));
+            Assert.AreEqual("number", (dto.Properties.ElementAt(3).Type as INamedTypeSymbol).GetTypescriptTypeName(TypeToEdmTypeCollectionBehavior.NA));
+            Assert.AreEqual("Array<number>", (dto.Properties.ElementAt(4).Type as INamedTypeSymbol).GetTypescriptTypeName(TypeToEdmTypeCollectionBehavior.UseTypeScriptGenericArray));
+            Assert.AreEqual("Array<number>", (dto.Properties.ElementAt(5).Type as INamedTypeSymbol).GetTypescriptTypeName(TypeToEdmTypeCollectionBehavior.UseTypeScriptGenericArray));
+            Assert.AreEqual("Array<number>", (dto.Properties.ElementAt(6).Type as INamedTypeSymbol).GetTypescriptTypeName(TypeToEdmTypeCollectionBehavior.UseTypeScriptGenericArray));
+            Assert.AreEqual("Person", (dto.Properties.ElementAt(7).Type as INamedTypeSymbol).GetTypescriptTypeName(TypeToEdmTypeCollectionBehavior.NA));
         }
 
         [TestMethod]

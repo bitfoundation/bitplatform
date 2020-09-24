@@ -9,8 +9,9 @@
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\CodeSharing\Microsoft.CodeSharing.Common.props" />
   <PropertyGroup />
   <ItemGroup>
-    <Compile Include="Contracts\CSharpClientProxyGenerator\ICSharpClientContextGenerator.cs" />
-    <Compile Include="Contracts\CSharpClientProxyGenerator\IDefaultCSharpClientProxyGenerator.cs" />
+    <None Include="Bit.Tooling.Core.projitems" />
+  </ItemGroup>
+  <ItemGroup>
     <Compile Include="Contracts\IBitCodeGeneratorOrderedProjectsProvider.cs" />
     <Compile Include="Contracts\IBitConfigProvider.cs" />
     <Compile Include="Contracts\IDtoRulesValidator.cs" />
@@ -18,9 +19,6 @@
     <Compile Include="Contracts\IProjectDtoRulesProvider.cs" />
     <Compile Include="Contracts\IProjectDtosProvider.cs" />
     <Compile Include="Contracts\IProjectEnumTypesProvider.cs" />
-    <Compile Include="Contracts\TypeScriptClientProxyGenerator\IDefaultTypeScriptClientProxyGenerator.cs" />
-    <Compile Include="Contracts\TypeScriptClientProxyGenerator\ITypeScriptClientContextGenerator.cs" />
-    <Compile Include="Contracts\TypeScriptClientProxyGenerator\ITypeScriptClientProxyDtosGenerator.cs" />
     <Compile Include="Extensions\IEnumerableExtensions.cs" />
     <Compile Include="Extensions\IPropertySymbolExtensions.cs" />
     <Compile Include="Extensions\ISymbolExtensions.cs" />
@@ -32,9 +30,6 @@
     <Compile Include="Model\DtoRules.cs" />
     <Compile Include="Model\EnumType.cs" />
     <Compile Include="Model\ODataOperation.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Bit.Tooling.Core.projitems" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\CodeSharing\Microsoft.CodeSharing.CSharp.targets" />
 </Project>

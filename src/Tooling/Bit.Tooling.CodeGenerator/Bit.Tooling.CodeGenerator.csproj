@@ -24,10 +24,21 @@
 
 	<ItemGroup>
 
+		<None Update="Implementations\CSharpClientProxyGenerator\Templates\CSharpMetadataGeneratorTemplate.tt">
+		  <Generator>TextTemplatingFilePreprocessor</Generator>
+		  <LastGenOutput>CSharpMetadataGeneratorTemplate.cs</LastGenOutput>
+		</None>
+
 		<None Update="Implementations\TypeScriptClientProxyGenerator\Templates\JavaScriptDtosGeneratorTemplate.tt">
 			<Generator>TextTemplatingFilePreprocessor</Generator>
 			<LastGenOutput>JavaScriptDtosGeneratorTemplate.cs</LastGenOutput>
 		</None>
+
+		<Compile Update="Implementations\CSharpClientProxyGenerator\Templates\CSharpMetadataGeneratorTemplate.cs">
+		  <DesignTime>True</DesignTime>
+		  <AutoGen>True</AutoGen>
+		  <DependentUpon>CSharpMetadataGeneratorTemplate.tt</DependentUpon>
+		</Compile>
 		<Compile Update="Implementations\TypeScriptClientProxyGenerator\Templates\JavaScriptDtosGeneratorTemplate.cs">
 			<DesignTime>True</DesignTime>
 			<AutoGen>True</AutoGen>

@@ -17,8 +17,17 @@ namespace Bit.Tooling.CodeGenerator.Implementations.CSharpClientProxyGenerator
         private readonly IBitConfigProvider _bitConfigProvider;
         private readonly IProjectDtoControllersProvider _dtoControllersProvider;
         private readonly ICSharpClientContextGenerator _contextGenerator;
+        private readonly ICSharpClientMetadataGenerator _metadataGenerator;
+        private readonly IProjectDtosProvider _dtosProvider;
+        private IProjectEnumTypesProvider _enumsProvider;
 
-        public DefaultCSharpClientProxyGenerator(IBitCodeGeneratorOrderedProjectsProvider bitCodeGeneratorOrderedProjectsProvider, IBitConfigProvider bitConfigProvider, IProjectDtoControllersProvider dtoControllersProvider, ICSharpClientContextGenerator contextGenerator)
+        public DefaultCSharpClientProxyGenerator(IBitCodeGeneratorOrderedProjectsProvider bitCodeGeneratorOrderedProjectsProvider,
+            IBitConfigProvider bitConfigProvider,
+            IProjectDtoControllersProvider dtoControllersProvider,
+            ICSharpClientContextGenerator contextGenerator,
+            ICSharpClientMetadataGenerator metadataGenerator,
+            IProjectDtosProvider dtosProvider,
+            IProjectEnumTypesProvider enumsProvider)
         {
             if (bitCodeGeneratorOrderedProjectsProvider == null)
                 throw new ArgumentNullException(nameof(bitCodeGeneratorOrderedProjectsProvider));
@@ -32,10 +41,22 @@ namespace Bit.Tooling.CodeGenerator.Implementations.CSharpClientProxyGenerator
             if (contextGenerator == null)
                 throw new ArgumentNullException(nameof(contextGenerator));
 
+            if (metadataGenerator == null)
+                throw new ArgumentNullException(nameof(metadataGenerator));
+
+            if (dtosProvider == null)
+                throw new ArgumentNullException(nameof(dtosProvider));
+
+            if (enumsProvider == null)
+                throw new ArgumentNullException(nameof(enumsProvider));
+
             _bitCodeGeneratorOrderedProjectsProvider = bitCodeGeneratorOrderedProjectsProvider;
             _bitConfigProvider = bitConfigProvider;
             _dtoControllersProvider = dtoControllersProvider;
             _contextGenerator = contextGenerator;
+            _metadataGenerator = metadataGenerator;
+            _dtosProvider = dtosProvider;
+            _enumsProvider = enumsProvider;
         }
 
         public virtual async Task GenerateCodes(Workspace workspace)
@@ -65,7 +86,23 @@ namespace Bit.Tooling.CodeGenerator.Implementations.CSharpClientProxyGenerator
                     dtoControllers.AddRange(await _dtoControllersProvider.GetProjectDtoControllersWithTheirOperations(p));
                 }
 
+                List<Dto> dtos = new List<Dto>();
+
+                foreach (Project p in involveableProjects)
+                {
+                    dtos.AddRange(await _dtosProvider.GetProjectDtos(p, involveableProjects));
+                }
+
+                List<EnumType> enumTypes = new List<EnumType>();
+
+                foreach (Project p in involveableProjects)
+                {
+                    enumTypes.AddRange(await _enumsProvider.GetProjectEnumTypes(p, involveableProjects));
+                }
+
                 generatedCs.AppendLine(_contextGenerator.GenerateCSharpContext(dtoControllers, proxyGeneratorMapping));
+
+                generatedCs.AppendLine(_metadataGenerator.GenerateMetadata(dtos, enumTypes, dtoControllers, proxyGeneratorMapping));
 
                 WriteFiles(generatedCs.ToString(), generatedContextName, generatedCSContextExtension, destProject);
             }

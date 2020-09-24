@@ -12,11 +12,11 @@
 
 declare module <#= dto.DtoSymbol.ContainingNamespace #> {
 	<#= dto.DtoSymbol.GetDocumentationSummary() #>
-	class <#= dto.DtoSymbol.Name #> extends <#= dto.BaseDtoSymbol != null ? dto.BaseDtoSymbol.GetTypescriptTypeName(useArrayForIEnumerableTypes : true) : "$data.Entity" #> {
+	class <#= dto.DtoSymbol.Name #> extends <#= dto.BaseDtoSymbol != null ? dto.BaseDtoSymbol.GetTypescriptTypeName(TypeToEdmTypeCollectionBehavior.UseArray) : "$data.Entity" #> {
 		<# foreach (IPropertySymbol prp in dto.Properties)
 		{ #>
 		    <#= prp.GetDocumentationSummary() #>
-			<#= prp.Name #> : <#= prp.Type.GetTypescriptTypeName(useArrayForIEnumerableTypes : true) #>;
+			<#= prp.Name #> : <#= prp.Type.GetTypescriptTypeName(TypeToEdmTypeCollectionBehavior.UseArray) #>;
 			static <#= prp.Name #> : any;
 		<# } #>
 	}

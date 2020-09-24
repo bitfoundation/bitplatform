@@ -110,7 +110,7 @@ namespace BitCodeGeneratorTaskImpl
                 await tsGenerator.GenerateCodes(workspace);
 
                 DefaultCSharpClientProxyGenerator csGenerator = new DefaultCSharpClientProxyGenerator(bitCodeGeneratorOrderedProjectsProvider,
-                    bitConfigProvider, controllersProvider, new DefaultCSharpClientContextGenerator());
+                    bitConfigProvider, controllersProvider, new DefaultCSharpClientContextGenerator(), new DefaultCSharpClientMetadataGenerator(), dtosProvider, projectEnumTypesProvider);
 
                 await csGenerator.GenerateCodes(workspace);
             }

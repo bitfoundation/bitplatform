@@ -135,7 +135,7 @@ namespace Bit.Tests.Api.ApiControllers
 
             Assert.AreEqual("TestModel", controllers.Single()
                 .Operations.ElementAt(3)
-                .Parameters.Single().Type.GetEdmTypeName(useArrayForIEnumerableTypes: false));
+                .Parameters.Single().Type.GetEdmTypeName(TypeToEdmTypeCollectionBehavior.NA));
         }
     }
 }

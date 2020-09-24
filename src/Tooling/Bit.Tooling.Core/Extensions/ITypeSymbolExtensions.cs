@@ -5,6 +5,16 @@ using System.Threading.Tasks;
 
 namespace Microsoft.CodeAnalysis
 {
+    public enum TypeToEdmTypeCollectionBehavior
+    {
+        UseJayDataNonGenericQueryable,
+        UseArray,
+        UseODataCollection,
+        UseJayDataGenericQueryable,
+        UseTypeScriptGenericArray,
+        NA, // Doesn't make sense for this method call. Throw an exception if you found out type is collection type
+    }
+
     public static class ITypeSymbolExtensions
     {
         public static ITypeSymbol GetUnderlyingTypeSymbol(this ITypeSymbol type)
@@ -72,8 +82,6 @@ namespace Microsoft.CodeAnalysis
             return type.IsValueType == false || typeName == nameof(Nullable);
         }
 
-        /* useArrayForIEnumerableTypes >> For Dto props & method parameters >> True , for return values of methods >> False */
-
         public static string GetEdmElementTypeName(this ITypeSymbol type)
         {
             if (type == null)
@@ -81,10 +89,10 @@ namespace Microsoft.CodeAnalysis
 
             ITypeSymbol elementType = type.GetElementType();
 
-            return elementType.GetEdmTypeName(useArrayForIEnumerableTypes: true);
+            return elementType.GetEdmTypeName(TypeToEdmTypeCollectionBehavior.NA);
         }
 
-        public static string GetEdmTypeName(this ITypeSymbol type, bool useArrayForIEnumerableTypes)
+        public static string GetEdmTypeName(this ITypeSymbol type, TypeToEdmTypeCollectionBehavior typeToEdmTypeCollectionBehavior)
         {
             if (type == null)
                 throw new ArgumentNullException(nameof(type));
@@ -120,7 +128,24 @@ namespace Microsoft.CodeAnalysis
             else
             {
                 if (type.IsQueryableType() || type.IsCollectionType())
-                    return useArrayForIEnumerableTypes ? "Array" : "$data.Queryable";
+                {
+                    switch (typeToEdmTypeCollectionBehavior)
+                    {
+                        case TypeToEdmTypeCollectionBehavior.UseJayDataNonGenericQueryable:
+                            return "$data.Queryable";
+                        case TypeToEdmTypeCollectionBehavior.UseJayDataGenericQueryable:
+                            return $"$data.Queryable<{type.GetEdmElementTypeName()}>";
+                        case TypeToEdmTypeCollectionBehavior.UseArray:
+                            return "Array";
+                        case TypeToEdmTypeCollectionBehavior.UseTypeScriptGenericArray:
+                            return $"Array<{type.GetEdmElementTypeName()}>";
+                        case TypeToEdmTypeCollectionBehavior.UseODataCollection:
+                            return $"Collection({type.GetEdmElementTypeName()})";
+                        case TypeToEdmTypeCollectionBehavior.NA:
+                            throw new InvalidOperationException();
+                    }
+                }
+
                 return type.ToDisplayString();
             }
         }
@@ -132,10 +157,10 @@ namespace Microsoft.CodeAnalysis
 
             ITypeSymbol elementType = type.GetElementType();
 
-            return elementType.GetTypescriptTypeName(useArrayForIEnumerableTypes: true);
+            return elementType.GetTypescriptTypeName(TypeToEdmTypeCollectionBehavior.UseArray);
         }
 
-        public static string GetTypescriptTypeName(this ITypeSymbol type, bool useArrayForIEnumerableTypes)
+        public static string GetTypescriptTypeName(this ITypeSymbol type, TypeToEdmTypeCollectionBehavior typeToEdmTypeCollectionBehavior)
         {
             if (type == null)
                 throw new ArgumentNullException(nameof(type));
@@ -171,7 +196,24 @@ namespace Microsoft.CodeAnalysis
             else
             {
                 if (type.IsQueryableType() || type.IsCollectionType())
-                    return (useArrayForIEnumerableTypes ? "Array" : "$data.Queryable") + $"<{type.GetTypeScriptElementTypeName()}>";
+                {
+                    switch (typeToEdmTypeCollectionBehavior)
+                    {
+                        case TypeToEdmTypeCollectionBehavior.UseJayDataNonGenericQueryable:
+                            throw new InvalidOperationException();
+                        case TypeToEdmTypeCollectionBehavior.UseJayDataGenericQueryable:
+                            return $"$data.Queryable<{type.GetElementType().GetTypescriptTypeName(TypeToEdmTypeCollectionBehavior.NA)}>";
+                        case TypeToEdmTypeCollectionBehavior.UseArray:
+                            return "Array";
+                        case TypeToEdmTypeCollectionBehavior.UseTypeScriptGenericArray:
+                            return $"Array<{type.GetElementType().GetTypescriptTypeName(TypeToEdmTypeCollectionBehavior.NA)}>";
+                        case TypeToEdmTypeCollectionBehavior.UseODataCollection:
+                            throw new InvalidOperationException();
+                        case TypeToEdmTypeCollectionBehavior.NA:
+                            throw new InvalidOperationException();
+                    }
+                }
+
                 return type.ToDisplayString();
             }
         }
