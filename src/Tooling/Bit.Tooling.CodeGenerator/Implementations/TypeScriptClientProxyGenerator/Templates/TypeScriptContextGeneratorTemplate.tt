@@ -11,7 +11,7 @@
 		<# foreach (ODataOperation operation in controller.Operations)
 		{ #>
 		    <#= operation.Method.GetDocumentationSummary() #>
-		    <#= operation.Method.Name.AsCamelCase() #>(<#= string.Join(",",operation.Parameters.Select(parameter =>  $@"{parameter.Name} : {parameter.Type.GetTypescriptTypeName(TypeToEdmTypeCollectionBehavior.UseArray)}" )) #>): <# if(!operation.Method.ReturnType.IsVoid()) { #> <#= operation.Method.ReturnType.IsCollectionType() ? operation.Method.ReturnType.GetTypescriptTypeName(TypeToEdmTypeCollectionBehavior.UseJayDataGenericQueryable) : "Promise<" + operation.Method.ReturnType.GetTypescriptTypeName(TypeToEdmTypeCollectionBehavior.UseJayDataGenericQueryable) + ">" #> <# } else { #> Promise<void> <# } #>;
+		    <#= operation.Method.Name.AsCamelCase() #>(<#= string.Join(",",operation.Parameters.Select(parameter =>  $@"{parameter.Name} : {parameter.Type.GetTypescriptTypeName(TypeToEdmTypeCollectionBehavior.UseTypeScriptGenericArray)}" )) #>): <# if(!operation.Method.ReturnType.IsVoid()) { #> <#= operation.Method.ReturnType.IsCollectionType() ? operation.Method.ReturnType.GetTypescriptTypeName(TypeToEdmTypeCollectionBehavior.UseJayDataGenericQueryable) : "Promise<" + operation.Method.ReturnType.GetTypescriptTypeName(TypeToEdmTypeCollectionBehavior.UseJayDataGenericQueryable) + ">" #> <# } else { #> Promise<void> <# } #>;
 		<# } #>
 	}
 <#}#>

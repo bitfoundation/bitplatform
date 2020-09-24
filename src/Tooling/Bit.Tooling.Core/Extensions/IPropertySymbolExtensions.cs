@@ -81,7 +81,7 @@ namespace Microsoft.CodeAnalysis
 
         private static bool IsAssociationProperty_Internal(this ITypeSymbol symbol)
         {
-            string typeEdmName = symbol.GetEdmTypeName(TypeToEdmTypeCollectionBehavior.UseArray);
+            string typeEdmName = symbol.GetEdmTypeName(TypeToEdmTypeCollectionBehavior.NA);
             bool typeIsSimpleType = typeEdmName.StartsWith("$data", StringComparison.InvariantCultureIgnoreCase) || typeEdmName.StartsWith("Edm", StringComparison.InvariantCultureIgnoreCase);
             return !typeIsSimpleType && !symbol.IsEnum() && !symbol.IsComplexType();
         }

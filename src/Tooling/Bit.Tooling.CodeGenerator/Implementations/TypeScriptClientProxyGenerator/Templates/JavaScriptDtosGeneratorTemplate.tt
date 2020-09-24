@@ -15,7 +15,7 @@
 	<# if(namespaces.Count==1) { #> var  <#}#> <#= string.Join(".", namespaces) #> = <#= string.Join(".", namespaces) #> || {};
 <# } #>
 
-<#= dto.DtoSymbol.ToDisplayString() #> = <#= dto.BaseDtoSymbol != null ? dto.BaseDtoSymbol.GetTypescriptTypeName(TypeToEdmTypeCollectionBehavior.UseArray) : "$data.Entity" #>.extend("<#= dto.DtoSymbol.ToDisplayString() #>", {
+<#= dto.DtoSymbol.ToDisplayString() #> = <#= dto.BaseDtoSymbol != null ? dto.BaseDtoSymbol.GetTypescriptTypeName(TypeToEdmTypeCollectionBehavior.NA) : "$data.Entity" #>.extend("<#= dto.DtoSymbol.ToDisplayString() #>", {
 	<# foreach (IPropertySymbol prp in dto.Properties)
 	{ #> 
 		<#= prp.Name #>: {

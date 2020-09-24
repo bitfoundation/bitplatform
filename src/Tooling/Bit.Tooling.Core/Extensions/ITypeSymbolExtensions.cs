@@ -157,7 +157,7 @@ namespace Microsoft.CodeAnalysis
 
             ITypeSymbol elementType = type.GetElementType();
 
-            return elementType.GetTypescriptTypeName(TypeToEdmTypeCollectionBehavior.UseArray);
+            return elementType.GetTypescriptTypeName(TypeToEdmTypeCollectionBehavior.UseTypeScriptGenericArray);
         }
 
         public static string GetTypescriptTypeName(this ITypeSymbol type, TypeToEdmTypeCollectionBehavior typeToEdmTypeCollectionBehavior)
