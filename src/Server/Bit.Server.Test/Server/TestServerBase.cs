@@ -1,4 +1,5 @@
 ﻿using Bit.Core.Implementations;
+using Bit.OData.Implementations;
 using Bit.Signalr;
 using Bit.Signalr.Implementations;
 using IdentityModel.Client;
@@ -32,6 +33,9 @@ namespace Bit.Test.Server
             Action<HttpRequestMessage>? originalBeforeRequest = odataClientSettings?.BeforeRequest;
 
             odataClientSettings ??= new ODataClientSettings { };
+
+            odataClientSettings.IncludeAnnotationsInResults = false;
+            odataClientSettings.AdapterFactory = odataClientSettings.AdapterFactory ?? new DefaultODataAdapterFactory();
 
             if (odataClientSettings.BaseUri == default)
                 odataClientSettings.BaseUri = new Uri($"{Uri}odata/{odataRouteName}/");

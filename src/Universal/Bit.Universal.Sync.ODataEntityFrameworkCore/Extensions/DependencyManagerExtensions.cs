@@ -1,6 +1,7 @@
 ﻿using Bit.Core.Contracts;
 using Bit.Sync.ODataEntityFrameworkCore.Contracts;
 using Bit.Sync.ODataEntityFrameworkCore.Implementations;
+using Simple.OData.Client;
 using System;
 
 namespace Autofac
@@ -9,6 +10,18 @@ namespace Autofac
     {
         public static IDependencyManager RegisterDefaultSyncService(this IDependencyManager dependencyManager, Action<IServiceProvider, ISyncService> configureDtoSetSyncConfigs)
         {
+            if (dependencyManager == null)
+                throw new ArgumentNullException(nameof(dependencyManager));
+
+            return RegisterSyncService<DefaultSyncService>(dependencyManager, configureDtoSetSyncConfigs);
+        }
+
+        public static IDependencyManager RegisterLegacySyncService(this IDependencyManager dependencyManager, Action<IServiceProvider, ISyncService> configureDtoSetSyncConfigs)
+        {
+            if (dependencyManager == null)
+                throw new ArgumentNullException(nameof(dependencyManager));
+
+            dependencyManager.Register<IODataAdapterFactory, ODataAdapterFactory>(lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExisting: true);
             return RegisterSyncService<DefaultSyncService>(dependencyManager, configureDtoSetSyncConfigs);
         }
 
