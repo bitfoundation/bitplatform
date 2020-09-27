@@ -57,6 +57,14 @@ namespace Bit.Tooling.CodeGenerator.Implementations.CSharpClientProxyGenerator
                     {
                         var keys = dto.Properties.Where(p => p.IsKey()).ToArray();
 
+                        static bool IsNavProp(ITypeSymbol t)
+                        {
+                            if (t.IsCollectionType() || t.IsQueryableType())
+                                t = t.GetElementType();
+
+                            return t.IsDto();
+                        }
+
                         schema.EntityTypes.Add(new EntityType
                         {
                             Name = dto.DtoSymbol.Name,
@@ -67,13 +75,13 @@ namespace Bit.Tooling.CodeGenerator.Implementations.CSharpClientProxyGenerator
                                     Name = k.Name
                                 }).ToList(),
                             },
-                            Properties = dto.Properties.Where(p => !p.Type.IsComplexType() && !p.Type.IsDto() && !p.Type.IsQueryableType() && !p.Type.IsCollectionType()).Select(p => new Property
+                            Properties = dto.Properties.Where(p => !IsNavProp(p.Type)).Select(p => new Property
                             {
                                 Name = p.Name,
-                                Type = p.Type.GetEdmTypeName(TypeToEdmTypeCollectionBehavior.NA),
+                                Type = p.Type.GetEdmTypeName(TypeToEdmTypeCollectionBehavior.UseODataCollection),
                                 Nullable = p.Type.IsNullable() ? null /*Default is true*/ : "false"
                             }).ToList(),
-                            NavigationProperties = dto.Properties.Where(p => p.Type.IsComplexType() || p.Type.IsDto() || p.Type.IsQueryableType() || p.Type.IsCollectionType()).Select(p => new NavigationProperty
+                            NavigationProperties = dto.Properties.Where(p => IsNavProp(p.Type)).Select(p => new NavigationProperty
                             {
                                 Name = p.Name,
                                 Type = p.Type.GetEdmTypeName(TypeToEdmTypeCollectionBehavior.UseODataCollection)
