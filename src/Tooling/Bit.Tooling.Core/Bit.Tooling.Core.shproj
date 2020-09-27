@@ -14,9 +14,7 @@
   <ItemGroup>
     <Compile Include="Contracts\IBitCodeGeneratorOrderedProjectsProvider.cs" />
     <Compile Include="Contracts\IBitConfigProvider.cs" />
-    <Compile Include="Contracts\IDtoRulesValidator.cs" />
     <Compile Include="Contracts\IProjectDtoControllersProvider.cs" />
-    <Compile Include="Contracts\IProjectDtoRulesProvider.cs" />
     <Compile Include="Contracts\IProjectDtosProvider.cs" />
     <Compile Include="Contracts\IProjectEnumTypesProvider.cs" />
     <Compile Include="Extensions\IEnumerableExtensions.cs" />
@@ -27,7 +25,6 @@
     <Compile Include="Model\BitConfig.cs" />
     <Compile Include="Model\Dto.cs" />
     <Compile Include="Model\DtoController.cs" />
-    <Compile Include="Model\DtoRules.cs" />
     <Compile Include="Model\EnumType.cs" />
     <Compile Include="Model\ODataOperation.cs" />
   </ItemGroup>

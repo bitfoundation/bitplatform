@@ -20,9 +20,26 @@ namespace BitCodeGeneratorTaskImpl
 
         public static async Task Main(string[] args)
         {
-            if (!MSBuildLocator.IsRegistered)
-                MSBuildLocator.RegisterInstance(MSBuildLocator.QueryVisualStudioInstances().OrderByDescending(vs => vs.Version).FirstOrDefault() ?? throw new InvalidOperationException("Visual studio could not be found. Please install visual studio build tools."));
+            Init(args);
 
+            BitSourceGeneratorBitConfigProvider bitConfigProvider = new BitSourceGeneratorBitConfigProvider(_bitConfigFilePath!, BeingCompiledProjectName);
+
+            BitConfig bitConfig = bitConfigProvider.GetConfiguration();
+
+            Version? bitConfigVSVersion = string.IsNullOrEmpty(bitConfig.VisualStudioBuildToolsVersion) ? null : new Version(bitConfig.VisualStudioBuildToolsVersion);
+
+            VisualStudioInstance? selectedVSInstance = MSBuildLocator.QueryVisualStudioInstances().Where(vs => bitConfigVSVersion == null || vs.Version == bitConfigVSVersion).OrderByDescending(vs => vs.Version).FirstOrDefault() ?? throw new InvalidOperationException("Visual studio could not be found. Please install visual studio build tools.");
+
+            if (!MSBuildLocator.IsRegistered)
+                MSBuildLocator.RegisterInstance(selectedVSInstance);
+
+            Console.WriteLine($"{selectedVSInstance.Version} was selected from followings: {string.Join(",", MSBuildLocator.QueryVisualStudioInstances().Select(vs => vs.Version))}");
+
+            await GenerateCodes(bitConfig, bitConfigProvider);
+        }
+
+        static void Init(string[] args)
+        {
             ProjectPath = args.ElementAt(1);
 
             DirectoryInfo projDir = new DirectoryInfo(Path.GetDirectoryName(ProjectPath));
@@ -41,13 +58,6 @@ namespace BitCodeGeneratorTaskImpl
 
             BeingCompiledProjectName = Path.GetFileNameWithoutExtension(ProjectPath);
 
-            InitPropjects();
-
-            await GenerateCodes();
-        }
-
-        static void InitPropjects()
-        {
             if (string.IsNullOrEmpty(_bitConfigFilePath))
                 throw new BitConfigNotFoundException("Could not find bit config");
 
@@ -64,12 +74,8 @@ namespace BitCodeGeneratorTaskImpl
 
         private static string? _bitConfigFilePath;
 
-        static async Task GenerateCodes()
+        static async Task GenerateCodes(BitConfig bitConfig, BitSourceGeneratorBitConfigProvider bitConfigProvider)
         {
-            BitSourceGeneratorBitConfigProvider bitConfigProvider = new BitSourceGeneratorBitConfigProvider(_bitConfigFilePath!, BeingCompiledProjectName);
-
-            BitConfig bitConfig = bitConfigProvider.GetConfiguration();
-
             using (MSBuildWorkspace workspace = MSBuildWorkspace.Create(new Dictionary<string, string>
             {
                 { "TargetFramework", bitConfig.TargetFramework ?? "net5.0" }
@@ -79,22 +85,16 @@ namespace BitCodeGeneratorTaskImpl
 
                 workspace.WorkspaceFailed += MSBuildWorkspace_WorkspaceFailed;
 
-                foreach (BitCodeGeneratorMapping mapping in bitConfigProvider.GetConfiguration().BitCodeGeneratorConfigs.BitCodeGeneratorMappings)
+                foreach (BitCodeGeneratorMapping mapping in bitConfig.BitCodeGeneratorConfigs.BitCodeGeneratorMappings)
                 {
-                    foreach (Bit.Tooling.Core.Model.ProjectInfo proj in mapping.SourceProjects)
+                    foreach (Bit.Tooling.Core.Model.ProjectInfo proj in mapping.SourceProjects.Union(new[] { mapping.DestinationProject }))
                     {
-                        if (workspace.CurrentSolution.Projects.Any(p => proj.IsThisProject(p)))
+                        if (workspace.CurrentSolution.Projects.Any(p => proj == p))
                             continue; /*It's already loaded*/
 
-                        string sourceProjetctPath = proj.Name == BeingCompiledProjectName ? ProjectPath : (AllProjectsPaths ?? throw new InvalidOperationException($"There is no solution project and we're unable to find {proj.Name}")).ExtendedSingle($"Trying to find source project {proj.Name}", projPath => Path.GetFileNameWithoutExtension(projPath) == proj.Name);
+                        string sourceProjetctPath = proj.Name == BeingCompiledProjectName ? ProjectPath : (AllProjectsPaths ?? throw new InvalidOperationException($"There is no solution project and we're unable to find {proj.Name}")).ExtendedSingle($"Trying to find project {proj.Name}", projPath => Path.GetFileNameWithoutExtension(projPath) == proj.Name);
 
                         await workspace.OpenProjectAsync(sourceProjetctPath);
-                    }
-
-                    if (!workspace.CurrentSolution.Projects.Any(p => mapping.DestinationProject.IsThisProject(p)))
-                    {
-                        string DestProjetctPath = mapping.DestinationProject.Name == BeingCompiledProjectName ? ProjectPath : (AllProjectsPaths ?? throw new InvalidOperationException($"There is no solution project and we're unable to find {mapping.DestinationProject.Name}")).ExtendedSingle($"Trying to find destination project {mapping.DestinationProject.Name}", projPath => Path.GetFileNameWithoutExtension(projPath) == mapping.DestinationProject.Name);
-                        await workspace.OpenProjectAsync(DestProjetctPath);
                     }
                 }
 

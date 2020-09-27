@@ -157,7 +157,7 @@ namespace Microsoft.CodeAnalysis
 
             ITypeSymbol elementType = type.GetElementType();
 
-            return elementType.GetTypescriptTypeName(TypeToEdmTypeCollectionBehavior.UseTypeScriptGenericArray);
+            return elementType.GetTypescriptTypeName(TypeToEdmTypeCollectionBehavior.NA);
         }
 
         public static string GetTypescriptTypeName(this ITypeSymbol type, TypeToEdmTypeCollectionBehavior typeToEdmTypeCollectionBehavior)
@@ -204,7 +204,7 @@ namespace Microsoft.CodeAnalysis
                         case TypeToEdmTypeCollectionBehavior.UseJayDataGenericQueryable:
                             return $"$data.Queryable<{type.GetElementType().GetTypescriptTypeName(TypeToEdmTypeCollectionBehavior.NA)}>";
                         case TypeToEdmTypeCollectionBehavior.UseArray:
-                            return "Array";
+                            throw new InvalidOperationException();
                         case TypeToEdmTypeCollectionBehavior.UseTypeScriptGenericArray:
                             return $"Array<{type.GetElementType().GetTypescriptTypeName(TypeToEdmTypeCollectionBehavior.NA)}>";
                         case TypeToEdmTypeCollectionBehavior.UseODataCollection:

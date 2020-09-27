@@ -11,9 +11,7 @@
   <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)Contracts\IBitCodeGeneratorOrderedProjectsProvider.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Contracts\IBitConfigProvider.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Contracts\IDtoRulesValidator.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Contracts\IProjectDtoControllersProvider.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Contracts\IProjectDtoRulesProvider.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Contracts\IProjectDtosProvider.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Contracts\IProjectEnumTypesProvider.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Extensions\IEnumerableExtensions.cs" />
@@ -24,7 +22,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)Model\BitConfig.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Model\Dto.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Model\DtoController.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Model\DtoRules.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Model\EnumType.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Model\ODataOperation.cs" />
   </ItemGroup>

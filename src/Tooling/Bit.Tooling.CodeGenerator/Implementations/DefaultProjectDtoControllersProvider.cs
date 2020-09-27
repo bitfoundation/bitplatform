@@ -75,7 +75,6 @@ namespace Bit.Tooling.CodeGenerator.Implementations
                     {
                         IMethodSymbol methodSymbol = (IMethodSymbol)semanticModel.GetDeclaredSymbol(methodDecSyntax);
 
-
                         if (!methodSymbol.IsOperation(out AttributeData operationAttribute))
                             continue;
 

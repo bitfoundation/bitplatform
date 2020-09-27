@@ -8,6 +8,7 @@ namespace Bit.Tooling.Core.Model
     {
         public virtual BitCodeGeneratorConfig BitCodeGeneratorConfigs { get; set; } = default!;
         public virtual string? TargetFramework { get; set; }
+        public virtual string? VisualStudioBuildToolsVersion { get; set; } // 5.0.100 for example
     }
 
     public class BitCodeGeneratorConfig
@@ -38,18 +39,48 @@ namespace Bit.Tooling.Core.Model
         public virtual string TypingsPath { get; set; } = default!;
 
         public virtual GenerationType GenerationType => string.IsNullOrEmpty(TypingsPath) ? GenerationType.CSharp : GenerationType.TypeScript;
+
+        public override string ToString()
+        {
+            return Route;
+        }
     }
 
     public class ProjectInfo
     {
         public virtual string Name { get; set; } = default!;
 
-        public bool IsThisProject(Project p)
+        public static bool operator ==(ProjectInfo? pi, Project? p)
         {
-            if (p == null)
-                throw new ArgumentNullException(nameof(p));
+            if (p is null && pi is null)
+                return true;
 
-            return p.Name == Name || Path.GetFileNameWithoutExtension(p.FilePath) == Name;
+            if (p is null)
+                return false;
+
+            if (pi is null)
+                return false;
+
+            return p.Name == pi.Name || Path.GetFileNameWithoutExtension(p.FilePath) == pi.Name;
+        }
+
+        public static bool operator !=(ProjectInfo pi, Project p)
+        {
+            if (p is null && pi is null)
+                return false;
+
+            if (p is null)
+                return true;
+
+            if (pi is null)
+                return true;
+
+            return p.Name != pi.Name || Path.GetFileNameWithoutExtension(p.FilePath) != pi.Name;
+        }
+
+        public override string ToString()
+        {
+            return Name;
         }
     }
 
@@ -58,5 +89,10 @@ namespace Bit.Tooling.Core.Model
         public virtual string Namespace { get; set; } = default!;
 
         public virtual string Alias { get; set; } = default!;
+
+        public override string ToString()
+        {
+            return Namespace;
+        }
     }
 }

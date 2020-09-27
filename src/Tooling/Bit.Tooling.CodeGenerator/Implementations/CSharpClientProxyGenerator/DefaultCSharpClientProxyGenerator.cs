@@ -75,7 +75,7 @@ namespace Bit.Tooling.CodeGenerator.Implementations.CSharpClientProxyGenerator
                 string generatedCSContextExtension = ".cs";
 
                 Project destProject = workspace.CurrentSolution.Projects.Where(p => p.Language == LanguageNames.CSharp)
-                    .ExtendedSingle($"Trying to find project with name: {proxyGeneratorMapping.DestinationProject.Name}", p => proxyGeneratorMapping.DestinationProject.IsThisProject(p));
+                    .ExtendedSingle($"Trying to find project with name: {proxyGeneratorMapping.DestinationProject.Name}", p => proxyGeneratorMapping.DestinationProject == p);
 
                 IList<Project> involveableProjects = _bitCodeGeneratorOrderedProjectsProvider.GetInvolveableProjects(workspace, workspace.CurrentSolution.Projects.Where(p => p.Language == LanguageNames.CSharp).ToList(), proxyGeneratorMapping);
 
