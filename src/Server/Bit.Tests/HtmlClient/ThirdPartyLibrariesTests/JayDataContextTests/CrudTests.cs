@@ -234,5 +234,25 @@ namespace Bit.Tests.HtmlClient.ThirdPartyLibrariesTests.JayDataContextTests
                     .MustHaveHappenedOnceExactly();
             }
         }
+
+        [TestMethod]
+        [TestCategory("HtmlClient"), TestCategory("JayDataContextOData")]
+        public virtual async Task TestNestedObjects()
+        {
+            using (BitOwinTestEnvironment testEnvironment = new BitOwinTestEnvironment(new TestEnvironmentArgs { UseRealServer = true }))
+            {
+                TokenResponse token = await testEnvironment.Server.Login("ValidUserName", "ValidPassword", clientId: "TestResOwner");
+
+                using (RemoteWebDriver driver = testEnvironment.Server.BuildWebDriver(new RemoteWebDriverOptions { Token = token }))
+                {
+                    await driver.ExecuteTest("testNested");
+                }
+
+                Assert.AreEqual((await testEnvironment.BuildTestODataClient(token)
+                    .NestedObjects()
+                    .SomeAction(new NestedComplex3 { Obj4 = new NestedComplex4 { Test = NestedEnum.B } }, "Test")
+                    .ExecuteAsScalarAsync<NestedEnum>()), NestedEnum.B);
+            }
+        }
     }
 }

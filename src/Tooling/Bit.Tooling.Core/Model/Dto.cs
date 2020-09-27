@@ -15,6 +15,7 @@ namespace Bit.Tooling.Core.Model
         {
             if (DtoSymbol != null)
                 return DtoSymbol.Name;
+
             return base.ToString();
         }
     }

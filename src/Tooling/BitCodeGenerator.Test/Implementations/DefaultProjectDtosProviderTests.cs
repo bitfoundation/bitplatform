@@ -22,7 +22,7 @@ namespace Bit.Tooling.CodeGenerator.Test.Implementations
 
                 IProjectDtosProvider projectDtosProvider = new DefaultProjectDtosProvider(new DefaultProjectDtoControllersProvider());
 
-                IList<Dto> dtos = (await projectDtosProvider.GetProjectDtos(solution.Projects.Single(p => p.Name == "Bit.Server.OData"))).ToList();
+                IList<Dto> dtos = (await projectDtosProvider.GetProjectDtos(solution.Projects.Single(p => p.Name == "Bit.Server.OData"), allSourceProjects: solution.Projects.Where(p => p.Name == "Bit.Server.OData" || p.Name == "Bit.Universal.Model").ToList())).ToList();
 
                 Assert.IsTrue(dtos.Select(d => d.DtoSymbol.Name).SequenceEqual(new[] { "UserSetting", "JobInfoDto", "ClientLogDto" }));
             }
@@ -39,7 +39,7 @@ namespace Bit.Tooling.CodeGenerator.Test.Implementations
 
                 IList<Dto> dtos = (await projectDtosProvider.GetProjectDtos(solution.Projects.Single(p => p.Name == "Bit.Tests"))).ToList();
 
-                Assert.AreEqual(14, dtos.Count);
+                Assert.AreEqual(19, dtos.Count);
             }
         }
 
@@ -138,7 +138,7 @@ public class TestController : DtoController<TestDto>
         }
 
         [TestMethod]
-        public virtual async Task DefaultDtosProviderShouldReturnComplexTypesOfSourceProjectsOnly()
+        public virtual async Task NestedObjectsTest()
         {
             string sourceProjectCodes = @"
 
@@ -158,6 +158,18 @@ public class TestComplexController : DtoController<TestComplexDto>
     public System.Threading.Tasks.Task<ComplexObj3[]> GetComplexObjects()
     {
         return null;
+    }
+
+    public class SomeActionArgs
+    {
+        public ComplexObj5 Test5 { get; set; }
+        public string Test { get; set; }
+    }
+
+    [ActionAttribute]
+    public void SomeAction(SomeActionArgs args)
+    {
+        
     }
 }
 
@@ -180,6 +192,32 @@ public class ComplexObj
 public class ComplexObj3
 {
     public virtual string Name { get; set; }
+
+    public virtual ComplexObj4 Obj4 { get; set; }
+}
+
+[System.ComponentModel.DataAnnotations.Schema.ComplexType]
+public class ComplexObj4
+{
+    public virtual string Name { get; set; }
+
+    public virtual Test Test { get; set; }
+}
+
+[System.ComponentModel.DataAnnotations.Schema.ComplexType]
+public class ComplexObj5
+{
+    public virtual string Name { get; set; }
+
+    public virtual Test2 Test2 { get; set; }
+}
+
+public enum Test
+{
+}
+
+public enum Test2
+{
 }
 
 ";
@@ -197,6 +235,12 @@ namespace System.ComponentModel.DataAnnotations.Schema
 public class ComplexObj2
 {
     public virtual string Name { get; set; }
+
+    public virtual Test Test { get; set; }
+}
+
+public enum Test3
+{
 }
 
 ";
@@ -205,11 +249,17 @@ public class ComplexObj2
             Project sourceProject = CreateProjectFromSourceCodesWithExistingSolution(otherProject.Solution, sourceProjectCodes);
             sourceProject = sourceProject.AddProjectReference(new ProjectReference(otherProject.Id));
 
-            DefaultProjectDtosProvider projectDtosProvider = new DefaultProjectDtosProvider(new DefaultProjectDtoControllersProvider());
+            DefaultProjectDtoControllersProvider dtoControllersProvider = new DefaultProjectDtoControllersProvider();
+            DefaultProjectDtosProvider projectDtosProvider = new DefaultProjectDtosProvider(dtoControllersProvider);
+            DefaultProjectEnumTypesProvider enumTypesProvider = new DefaultProjectEnumTypesProvider(dtoControllersProvider, projectDtosProvider);
 
             Dto[] dtos = (await projectDtosProvider.GetProjectDtos(sourceProject)).ToArray();
 
-            Assert.IsTrue(dtos.Select(d => d.DtoSymbol.Name).SequenceEqual(new[] { "ComplexObj3", "ComplexObj", "TestComplexDto" }));
+            EnumType[] enums = (await enumTypesProvider.GetProjectEnumTypes(sourceProject)).ToArray();
+
+            Assert.IsTrue(dtos.Select(d => d.DtoSymbol.Name).SequenceEqual(new[] { "ComplexObj5", "ComplexObj4", "ComplexObj3", "ComplexObj2", "ComplexObj", "TestComplexDto" }));
+
+            Assert.IsTrue(enums.Select(d => d.EnumTypeSymbol.Name).SequenceEqual(new[] { "Test2", "Test" }));
         }
 
         [TestMethod]

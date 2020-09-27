@@ -62,75 +62,75 @@ public class IsSyncedClass
             List<DtoController> dtoControllers = (await _projectDtoControllersProvider
                 .GetProjectDtoControllersWithTheirOperations(project)).ToList();
 
-            IList<Dto> dtos = new List<Dto>();
+            List<Dto> dtosAndComplexTypes = new List<Dto>();
 
-            foreach (DtoController dtoController in dtoControllers)
+            foreach (var dtoOrComplexType in dtoControllers.Select(c => c.ModelSymbol).Union(dtoControllers.SelectMany(dtoController => dtoController.Operations.SelectMany(operation => operation.Parameters.Select(p => p.Type).Union(new[] { operation.ReturnType }))))
+                .Select(x => x.GetUnderlyingTypeSymbol())
+                .Select(x => x.IsCollectionType() || x.IsQueryableType() ? x.GetElementType() : x)
+                .Where(t => t.IsComplexType() || t.IsDto()))
             {
-                Dto dto = new Dto
-                {
-                    DtoSymbol = (INamedTypeSymbol)dtoController.ModelSymbol,
-                    Properties = dtoController.ModelSymbol.GetMembers().OfType<IPropertySymbol>().ToList()
-                };
+                FindDtoAndComplexTypes(dtoOrComplexType, ref dtosAndComplexTypes);
+            }
 
-                if (dto.DtoSymbol.Interfaces.Any(i => i.Name == "ISyncableDto") && !dto.Properties.Any(p => p.Name == "IsSynced"))
+            foreach (var dtoOrComplexType in dtosAndComplexTypes)
+            {
+                if (dtoOrComplexType.DtoSymbol.Interfaces.Any(i => i.Name == "ISyncableDto") && !dtoOrComplexType.Properties.Any(p => p.Name == "IsSynced"))
                 {
-                    dto.Properties.Add(await _isSyncedPropertyForISyncableDtos.Value);
+                    dtoOrComplexType.Properties.Add(await _isSyncedPropertyForISyncableDtos.Value);
                 }
-
-                dtos.Add(dto);
             }
 
-            List<Compilation> sourceProjectsCompilations = new List<Compilation>();
-
-            foreach (var p in allSourceProjects)
-            {
-                sourceProjectsCompilations.Add(await p.GetCompilationAsync());
-            }
-
-            dtos.SelectMany(d => d.Properties)
-                .Where(p => p.Type.IsComplexType())
-                .Select(p => p.Type.GetUnderlyingComplexType())
-                .Union(dtoControllers.SelectMany(dtoController => dtoController.Operations.SelectMany(operation => operation.Parameters.Select(p => p.Type).Union(new[] { operation.ReturnType }))).Where(t => t.IsComplexType()).Select(t => t.GetUnderlyingComplexType()))
-                .Where(complexType => sourceProjectsCompilations.Any(c => c.Assembly.TypeNames.Any(tName => tName == complexType.Name)))
-                .Distinct()
-                .ToList()
-                .ForEach(complexType =>
+            dtosAndComplexTypes.ToList()
+                .ForEach(dOrC =>
                 {
-                    dtos.Add(new Dto
+                    if (dOrC.DtoSymbol.BaseType.IsDto())
                     {
-                        DtoSymbol = (INamedTypeSymbol)complexType,
-                        Properties = complexType.GetMembers().OfType<IPropertySymbol>().ToList()
-                    });
-                });
-
-            dtos.ToList()
-                .ForEach(dto =>
-                {
-                    if (dto.DtoSymbol.BaseType.IsDto())
-                    {
-                        dto.BaseDtoSymbol = dto.DtoSymbol.BaseType;
+                        dOrC.BaseDtoSymbol = dOrC.DtoSymbol.BaseType;
                     }
                 });
 
-            List<Dto> orderedDtos = new List<Dto>();
+            List<Dto> orderedFinalResult = new List<Dto>();
 
-            dtos.ToList()
+            dtosAndComplexTypes
+                .ToList()
                 .ForEach(dto =>
                 {
                     int insertIndex = 0;
 
-                    var orderedDtosWithIndex = orderedDtos.Select((d, i) => new { Dto = d, Index = i }).ToList();
+                    var orderedDtosWithIndex = orderedFinalResult.Select((d, i) => new { Dto = d, Index = i }).ToList();
 
                     foreach (var dWithIndex in orderedDtosWithIndex)
                     {
-                        if (dto.BaseDtoSymbol?.Equals(dWithIndex.Dto.DtoSymbol) == true)
+                        if (SymbolEqualityComparer.Default.Equals(dto.BaseDtoSymbol, dWithIndex.Dto.DtoSymbol) == true)
                             insertIndex = dWithIndex.Index + 1;
                     }
 
-                    orderedDtos.Insert(insertIndex, dto);
+                    orderedFinalResult.Insert(insertIndex, dto);
                 });
 
-            return orderedDtos;
+            return orderedFinalResult;
+        }
+
+        void FindDtoAndComplexTypes(ITypeSymbol dtoOrComplexTypeSymbol, ref List<Dto> dtosAndComplexTypes)
+        {
+            if (dtosAndComplexTypes.Any(dOrC => SymbolEqualityComparer.Default.Equals(dOrC.DtoSymbol, dtoOrComplexTypeSymbol)))
+                return;
+
+            Dto dtoOrComplexType = new Dto
+            {
+                DtoSymbol = (INamedTypeSymbol)dtoOrComplexTypeSymbol,
+                Properties = dtoOrComplexTypeSymbol.GetMembers().OfType<IPropertySymbol>().ToList()
+            };
+
+            dtosAndComplexTypes.Add(dtoOrComplexType);
+
+            foreach (var innerDtoOrComplexType in dtoOrComplexType.Properties
+                .Select(p => p.Type.GetUnderlyingTypeSymbol())
+                .Select(t => t.IsCollectionType() || t.IsQueryableType() ? t.GetElementType() : t)
+                .Where(pType => pType.IsComplexType() || pType.IsDto()))
+            {
+                FindDtoAndComplexTypes(innerDtoOrComplexType, ref dtosAndComplexTypes);
+            }
         }
     }
 }

@@ -34,43 +34,37 @@ namespace Bit.Tooling.CodeGenerator.Implementations
             if (allSourceProjects == null)
                 allSourceProjects = new List<Project> { project };
 
-            IList<EnumType> enumTypes = new List<EnumType>();
-
             List<DtoController> dtoControllers = (await _projectDtoControllersProvider
                 .GetProjectDtoControllersWithTheirOperations(project)).ToList();
 
             IList<Dto> dtos = await _dtosProvider.GetProjectDtos(project, allSourceProjects);
 
-            List<Compilation> sourceProjectsCompilations = new List<Compilation> { };
+            HashSet<EnumType> enums = new HashSet<EnumType>();
 
-            foreach (var p in allSourceProjects)
+            foreach (var enumType in dtoControllers.SelectMany(dtoController => dtoController.Operations.SelectMany(operation => operation.Parameters.Select(p => p.Type).Union(new[] { operation.ReturnType })))
+                .Union(dtos.SelectMany(d => d.Properties.Select(p => p.Type)))
+                .Select(x => x.GetUnderlyingTypeSymbol())
+                .Select(x => x.IsCollectionType() || x.IsQueryableType() ? x.GetElementType() : x)
+                .Where(t => t.IsEnum()))
             {
-                sourceProjectsCompilations.Add(await p.GetCompilationAsync());
+                if (enums.Any(e => SymbolEqualityComparer.Default.Equals(e.EnumTypeSymbol, enumType)))
+                    continue;
+
+                enums.Add(new EnumType
+                {
+                    EnumTypeSymbol = enumType,
+                    Members = enumType.GetMembers().OfType<IFieldSymbol>().Select((m, i) => new EnumMember
+                    {
+                        Name = m.Name,
+                        Symbol = m,
+                        Index = i,
+                        Value = Convert.ToInt32(m.ConstantValue, CultureInfo.InvariantCulture)
+                    }).ToList()
+                });
             }
 
-            dtos.SelectMany(d => d.Properties)
-                .Where(p => p.Type.IsEnum())
-                .Select(p => p.Type.GetUnderlyingTypeSymbol())
-                .Union(dtoControllers.SelectMany(dtoController => dtoController.Operations.SelectMany(operation => operation.Parameters.Select(p => p.Type).Union(new[] { operation.ReturnType }))).Where(t => t.IsEnum()).Select(t => t.GetUnderlyingComplexType()))
-                .Where(enumType => sourceProjectsCompilations.Any(c => c.Assembly.TypeNames.Any(tName => tName == enumType.Name)))
-                .Distinct()
-                .ToList()
-                .ForEach(enumType =>
-                {
-                    enumTypes.Add(new EnumType
-                    {
-                        EnumTypeSymbol = enumType,
-                        Members = enumType.GetMembers().OfType<IFieldSymbol>().Select((m, i) => new EnumMember
-                        {
-                            Name = m.Name,
-                            Symbol = m,
-                            Index = i,
-                            Value = Convert.ToInt32(m.ConstantValue, CultureInfo.InvariantCulture)
-                        }).ToList()
-                    });
-                });
-
-            return enumTypes;
+            return enums
+                .ToList();
         }
     }
 }

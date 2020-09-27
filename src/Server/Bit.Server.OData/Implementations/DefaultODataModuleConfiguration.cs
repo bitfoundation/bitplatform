@@ -96,6 +96,49 @@ namespace Bit.OData.Implementations
                     continue;
                 _buildControllerOperations.MakeGenericMethod(controllerWithDto.DtoType).Invoke(this, new object[] { odataModelBuilder, controllerWithDto.Controller });
             }
+
+            void AddAdditionalTypes(TypeInfo type)
+            {
+                foreach (var prop in type.GetProperties(BindingFlags.Instance | BindingFlags.Public))
+                {
+                    TypeInfo propType = prop.PropertyType.GetTypeInfo();
+
+                    if (typeof(Task).GetTypeInfo().IsAssignableFrom(propType))
+                    {
+                        if (propType.IsGenericType)
+                            propType = propType.GetGenericArguments().Single().GetTypeInfo();
+                    }
+
+                    propType = Nullable.GetUnderlyingType(propType)?.GetTypeInfo() ?? propType;
+
+                    if (IsIEnumerable(propType))
+                    {
+                        if (propType.IsGenericType)
+                            propType = propType.GetGenericArguments().Single().GetTypeInfo();
+                        else if (propType.IsArray)
+                            propType = propType.GetElementType()!.GetTypeInfo();
+                    }
+
+                    if (odataModelBuilder.StructuralTypes.Any(st => st.ClrType == propType))
+                        continue;
+
+                    if (DtoMetadataWorkspace.Current.IsDto(propType))
+                        odataModelBuilder.AddEntityType(propType);
+                    else if (DtoMetadataWorkspace.Current.IsComplexType(propType))
+                        odataModelBuilder.AddComplexType(propType);
+                    else
+                        continue;
+
+                    AddAdditionalTypes(propType);
+                }
+            }
+
+            var currentTypes = odataModelBuilder.StructuralTypes.Select(st => st.ClrType.GetTypeInfo()).ToList();
+
+            foreach (var type in currentTypes)
+            {
+                AddAdditionalTypes(type);
+            }
         }
 
         private void BuildDto<TDto>(ODataModelBuilder odataModelBuilder, TypeInfo apiController)
@@ -108,7 +151,7 @@ namespace Bit.OData.Implementations
                 entitySet.EntityType.DerivesFromNothing();
         }
 
-        private bool IsIEnumerable(TypeInfo type)
+        bool IsIEnumerable(TypeInfo type)
         {
             return type != typeof(string).GetTypeInfo() && typeof(IEnumerable).GetTypeInfo().IsAssignableFrom(type);
         }

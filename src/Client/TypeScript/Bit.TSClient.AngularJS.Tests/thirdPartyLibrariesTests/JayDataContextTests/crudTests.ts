@@ -9,6 +9,15 @@
     };
 };
 
+let testNested = async (): Promise<void> => {
+    const contextProvider = Bit.DependencyManager.getCurrent().resolveObject<Bit.Contracts.IEntityContextProvider>("EntityContextProvider");
+    const context = await contextProvider.getContext<TestContext>("Test");
+    const value = await context.nestedObjects.someAction(new Bit.Tests.Api.ApiControllers.NestedComplex3({ Obj4: { Test: Bit.Tests.Api.ApiControllers.NestedEnum.B } }), "Test");
+    if (value != "B") {
+        throw new Error(`${value} is not equal to B`);
+    }
+};
+
 let testGetAllAndFilter = async (): Promise<void> => {
     const contextProvider = Bit.DependencyManager.getCurrent().resolveObject<Bit.Contracts.IEntityContextProvider>("EntityContextProvider");
     const context = await contextProvider.getContext<TestContext>("Test");

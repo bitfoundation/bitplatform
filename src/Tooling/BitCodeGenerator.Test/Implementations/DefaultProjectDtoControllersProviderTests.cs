@@ -37,7 +37,7 @@ namespace Bit.Tooling.CodeGenerator.Test.Implementations
                 IList<DtoController> controllers = await new DefaultProjectDtoControllersProvider()
                     .GetProjectDtoControllersWithTheirOperations(solution.Projects.Single(p => p.Name == "Bit.Tests"));
 
-                Assert.AreEqual(12, controllers.Count);
+                Assert.AreEqual(13, controllers.Count);
             }
         }
 

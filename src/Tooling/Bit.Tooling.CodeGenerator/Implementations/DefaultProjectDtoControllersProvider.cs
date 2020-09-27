@@ -53,7 +53,7 @@ namespace Bit.Tooling.CodeGenerator.Implementations
                     DtoController dtoController = new DtoController
                     {
                         ControllerSymbol = controllerSymbol,
-                        Name = controllerSymbol.Name.Replace("Controller", string.Empty),
+                        Name = controllerSymbol.Name.Replace("Controller", string.Empty, StringComparison.InvariantCultureIgnoreCase),
                         Operations = new List<ODataOperation>(),
                         ModelSymbol = controllerSymbol.BaseType.TypeArguments.ExtendedSingleOrDefault($"Looking for model of ${controllerSymbol.Name}", t => t.IsDto())
                     };
