@@ -3,6 +3,7 @@ using Bit.OData.Implementations;
 using Simple.OData.Client;
 using System;
 using System.Net.Http;
+using System.Net.Http.Headers;
 
 namespace Autofac
 {
@@ -30,6 +31,17 @@ namespace Autofac
                 };
 
                 odataClientSettingsCustomizer?.Invoke(resolver.Resolve<IServiceProvider>(), settings);
+
+#if DotNet
+                Action<HttpRequestMessage>? originalBeforeRequest = settings.BeforeRequest;
+
+                settings.BeforeRequest = req =>
+                {
+                    req.Headers.Accept.Clear();
+                    req.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("multipart/mixed")); // workaround
+                        originalBeforeRequest?.Invoke(req);
+                };
+#endif
 
                 IODataClient odataClient = new ODataClient(settings);
 

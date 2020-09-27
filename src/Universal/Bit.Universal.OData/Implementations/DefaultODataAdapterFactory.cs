@@ -15,7 +15,7 @@ namespace Bit.OData.Implementations
     {
         public override Func<ISession, IODataAdapter> CreateAdapterLoader(string metadataString, ITypeCache typeCache)
         {
-            return (session) => new DefaultODataAdapter(session, new ODataModelAdapter("V4", metadataString));
+            return (session) => new DefaultODataAdapter(session, new ODataModelAdapter(ODataProtocolVersion.V4, metadataString));
         }
     }
 
@@ -70,7 +70,7 @@ namespace Bit.OData.Implementations
         {
             IODataResponseMessageAsync oDataResponseMessage = (IODataResponseMessageAsync)Activator.CreateInstance(_odataResponseMessageType, args: new object[] { responseMessage });
 
-            if (responseMessage.RequestMessage.RequestUri.ToString().Contains("$batch"))
+            if (responseMessage?.RequestMessage?.RequestUri?.ToString()?.Contains("$batch") == true)
             {
                 ODataMessageReaderSettings messageReaderSettings = ToReaderSettings(_session);
                 using ODataMessageReader messageReader = new ODataMessageReader(oDataResponseMessage, messageReaderSettings, _model);
