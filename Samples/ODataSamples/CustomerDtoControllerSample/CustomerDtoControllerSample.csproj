@@ -10,10 +10,10 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Bit.Server.Data.EntityFramework" Version="5.9.3" />
-    <PackageReference Include="Bit.Server.OData" Version="5.9.3" />
-    <PackageReference Include="Bit.Tooling.CodeAnalyzer" Version="5.9.3" />
-    <PackageReference Include="Bit.Universal.AutoMapper" Version="5.9.3" />
+    <PackageReference Include="Bit.Server.Data.EntityFramework" Version="6.0.0" />
+    <PackageReference Include="Bit.Server.OData" Version="6.0.0" />
+    <PackageReference Include="Bit.Tooling.CodeAnalyzer" Version="6.0.0" />
+    <PackageReference Include="Bit.Universal.AutoMapper" Version="6.0.0" />
     <PackageReference Include="SourceLink.Copy.PdbFiles" Version="2.8.3" PrivateAssets="All" />
   </ItemGroup>
 
