@@ -40,15 +40,21 @@ namespace Bit.Tooling.CodeGenerator.Implementations.CSharpClientProxyGenerator
 
                 foreach (var dto in g.OfType<Dto>())
                 {
+                    static bool ShouldGetsIgnored(IPropertySymbol p)
+                    {
+                        return p.GetAttributes().Any(att => att.AttributeClass.Name == "NotMappedAttribute")
+                            || p.IsOverride;
+                    }
+
                     if (dto.DtoSymbol.IsComplexType())
                     {
                         schema.ComplexTypes.Add(new ComplexType
                         {
                             Name = dto.DtoSymbol.Name,
-                            Properties = dto.Properties.Select(p => new Property
+                            Properties = dto.Properties.Where(p => !ShouldGetsIgnored(p)).Select(p => new Property
                             {
                                 Name = p.Name,
-                                Nullable = p.Type.IsNullable() ? null : "false",
+                                Nullable = p.Type.IsNullable() ? "true" : "false",
                                 Type = p.Type.GetEdmTypeName(TypeToEdmTypeCollectionBehavior.UseODataCollection)
                             }).ToList()
                         });
@@ -76,13 +82,13 @@ namespace Bit.Tooling.CodeGenerator.Implementations.CSharpClientProxyGenerator
                                     Name = k.Name
                                 }).ToList(),
                             } : null /* Inheritance: Key is in base type for example */,
-                            Properties = dto.Properties.Where(p => !IsNavProp(p.Type)).Select(p => new Property
+                            Properties = dto.Properties.Where(p => !ShouldGetsIgnored(p) && !IsNavProp(p.Type)).Select(p => new Property
                             {
                                 Name = p.Name,
                                 Type = p.Type.GetEdmTypeName(TypeToEdmTypeCollectionBehavior.UseODataCollection),
-                                Nullable = p.Type.IsNullable() ? null /*Default is true*/ : "false"
+                                Nullable = p.Type.IsNullable() ? "true" : "false"
                             }).ToList(),
-                            NavigationProperties = dto.Properties.Where(p => IsNavProp(p.Type)).Select(p => new NavigationProperty
+                            NavigationProperties = dto.Properties.Where(p => !ShouldGetsIgnored(p) && IsNavProp(p.Type)).Select(p => new NavigationProperty
                             {
                                 Name = p.Name,
                                 Type = p.Type.GetEdmTypeName(TypeToEdmTypeCollectionBehavior.UseODataCollection)
@@ -126,7 +132,7 @@ namespace Bit.Tooling.CodeGenerator.Implementations.CSharpClientProxyGenerator
                     action.Parameters.AddRange(operationWithController.Operation.Parameters.Select(p => new Parameter
                     {
                         Name = p.Name,
-                        Nullable = p.Type.IsNullable() ? null : "false",
+                        Nullable = p.Type.IsNullable() ? "true" : "false",
                         Type = p.Type.GetEdmTypeName(TypeToEdmTypeCollectionBehavior.UseODataCollection)
                     }));
 
@@ -134,7 +140,7 @@ namespace Bit.Tooling.CodeGenerator.Implementations.CSharpClientProxyGenerator
                     {
                         action.ReturnType = new ReturnType
                         {
-                            Nullable = operationWithController.Operation.ReturnType.IsNullable() ? null : "false",
+                            Nullable = operationWithController.Operation.ReturnType.IsNullable() ? "true" : "false",
                             Type = operationWithController.Operation.ReturnType.GetEdmTypeName(TypeToEdmTypeCollectionBehavior.UseODataCollection)
                         };
                     }
@@ -153,13 +159,13 @@ namespace Bit.Tooling.CodeGenerator.Implementations.CSharpClientProxyGenerator
                     function.Parameters.AddRange(operationWithController.Operation.Parameters.Select(p => new Parameter
                     {
                         Name = p.Name,
-                        Nullable = p.Type.IsNullable() ? null : "false",
+                        Nullable = p.Type.IsNullable() ? "true" : "false",
                         Type = p.Type.GetEdmTypeName(TypeToEdmTypeCollectionBehavior.UseODataCollection)
                     }));
 
                     function.ReturnType = new ReturnType
                     {
-                        Nullable = operationWithController.Operation.ReturnType.IsNullable() ? null : "false",
+                        Nullable = operationWithController.Operation.ReturnType.IsNullable() ? "true" : "false",
                         Type = operationWithController.Operation.ReturnType.GetEdmTypeName(TypeToEdmTypeCollectionBehavior.UseODataCollection)
                     };
 

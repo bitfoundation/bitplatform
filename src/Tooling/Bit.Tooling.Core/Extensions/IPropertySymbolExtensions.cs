@@ -86,7 +86,7 @@ namespace Microsoft.CodeAnalysis
             return !typeIsSimpleType && !symbol.IsEnum() && !symbol.IsComplexType();
         }
 
-        public static string GetInversePropertyName(this IPropertySymbol prop)
+        public static string? GetInversePropertyName(this IPropertySymbol prop, string? inversePropDefaultName)
         {
             if (prop == null)
                 throw new ArgumentNullException(nameof(prop));
@@ -106,9 +106,9 @@ namespace Microsoft.CodeAnalysis
                     .OfType<IPropertySymbol>()
                     .Select(p => new { p.Name, p.Type })
                     .Select(p => new { p.Name, Type = p.Type.IsCollectionType() ? p.Type.GetElementType() : p.Type })
-                    .ExtendedSingleOrDefault($"Finding inverse property for {prop.Name} of {thisClass.Name}", p => p.Type == thisClass)?.Name;
+                    .ExtendedSingleOrDefault($"Finding inverse property for {prop.Name} of {thisClass.Name}", p => SymbolEqualityComparer.Default.Equals(p.Type, thisClass))?.Name;
 
-                return otherPropName ?? "$$unbound";
+                return otherPropName ?? inversePropDefaultName;
             }
         }
     }

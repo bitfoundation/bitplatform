@@ -30,7 +30,7 @@
 			<# } #>
 			<# if (prp.IsAssociationProperty())
 			{
-				#> , "inverseProperty": "<#= prp.GetInversePropertyName() #>"
+				#> , "inverseProperty": "<#= prp.GetInversePropertyName("$$unbound") #>"
 			<# } #>
 			<# if (prp.IsKey()) { #>
 			, "key": true
