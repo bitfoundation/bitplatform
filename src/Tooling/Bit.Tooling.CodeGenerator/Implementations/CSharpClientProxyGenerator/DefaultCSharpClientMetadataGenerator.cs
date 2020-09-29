@@ -68,13 +68,14 @@ namespace Bit.Tooling.CodeGenerator.Implementations.CSharpClientProxyGenerator
                         schema.EntityTypes.Add(new EntityType
                         {
                             Name = dto.DtoSymbol.Name,
-                            Key = new Key
+                            BaseType = dto.BaseDtoSymbol?.ToDisplayString(),
+                            Key = keys.Any() ? new Key
                             {
                                 PropertyRefs = keys.Select(k => new PropertyRef
                                 {
                                     Name = k.Name
                                 }).ToList(),
-                            },
+                            } : null /* Inheritance: Key is in base type for example */,
                             Properties = dto.Properties.Where(p => !IsNavProp(p.Type)).Select(p => new Property
                             {
                                 Name = p.Name,

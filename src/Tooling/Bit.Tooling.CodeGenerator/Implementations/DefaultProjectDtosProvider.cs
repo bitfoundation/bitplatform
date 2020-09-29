@@ -67,7 +67,8 @@ public class IsSyncedClass
             foreach (var dtoOrComplexType in dtoControllers.Select(c => c.ModelSymbol).Union(dtoControllers.SelectMany(dtoController => dtoController.Operations.SelectMany(operation => operation.Parameters.Select(p => p.Type).Union(new[] { operation.ReturnType }))))
                 .Select(x => x.GetUnderlyingTypeSymbol())
                 .Select(x => x.IsCollectionType() || x.IsQueryableType() ? x.GetElementType() : x)
-                .Where(t => t.IsComplexType() || t.IsDto()))
+                .Where(t => t.IsComplexType() || t.IsDto())
+                .SelectMany(t => new[] { t }.Union(t.BaseDtoClasses())))
             {
                 FindDtoAndComplexTypes(dtoOrComplexType, ref dtosAndComplexTypes);
             }

@@ -13,7 +13,7 @@ namespace Bit.Tooling.CodeGenerator.Implementations.CSharpClientProxyGenerator.M
         public string Type { get; set; }
 
         [XmlAttribute(AttributeName = "Nullable")]
-        public string Nullable { get; set; }
+        public string? Nullable { get; set; }
     }
 
     [XmlRoot(ElementName = "ComplexType", Namespace = "http://docs.oasis-open.org/odata/ns/edm")]
@@ -40,22 +40,9 @@ namespace Bit.Tooling.CodeGenerator.Implementations.CSharpClientProxyGenerator.M
         public List<PropertyRef> PropertyRefs { get; set; } = new List<PropertyRef> { };
     }
 
-    [XmlRoot(ElementName = "ReferentialConstraint", Namespace = "http://docs.oasis-open.org/odata/ns/edm")]
-    public class ReferentialConstraint
-    {
-        [XmlAttribute(AttributeName = "Property")]
-        public string Property { get; set; }
-
-        [XmlAttribute(AttributeName = "ReferencedProperty")]
-        public string ReferencedProperty { get; set; }
-    }
-
     [XmlRoot(ElementName = "NavigationProperty", Namespace = "http://docs.oasis-open.org/odata/ns/edm")]
     public class NavigationProperty
     {
-        [XmlElement(ElementName = "ReferentialConstraint", Namespace = "http://docs.oasis-open.org/odata/ns/edm")]
-        public ReferentialConstraint ReferentialConstraint { get; set; }
-
         [XmlAttribute(AttributeName = "Name")]
         public string Name { get; set; }
 
@@ -67,7 +54,7 @@ namespace Bit.Tooling.CodeGenerator.Implementations.CSharpClientProxyGenerator.M
     public class EntityType
     {
         [XmlElement(ElementName = "Key", Namespace = "http://docs.oasis-open.org/odata/ns/edm")]
-        public Key Key { get; set; }
+        public Key? Key { get; set; }
 
         [XmlElement(ElementName = "Property", Namespace = "http://docs.oasis-open.org/odata/ns/edm")]
         public List<Property> Properties { get; set; } = new List<Property> { };
@@ -77,6 +64,9 @@ namespace Bit.Tooling.CodeGenerator.Implementations.CSharpClientProxyGenerator.M
 
         [XmlAttribute(AttributeName = "Name")]
         public string Name { get; set; }
+
+        [XmlAttribute(AttributeName = "BaseType")]
+        public string? BaseType { get; set; }
     }
 
     [XmlRoot(ElementName = "Schema", Namespace = "http://docs.oasis-open.org/odata/ns/edm")]
@@ -125,9 +115,6 @@ namespace Bit.Tooling.CodeGenerator.Implementations.CSharpClientProxyGenerator.M
 
         [XmlAttribute(AttributeName = "Name")]
         public string Name { get; set; }
-
-        [XmlAttribute(AttributeName = "IsFlags")]
-        public string IsFlags { get; set; }
     }
 
     [XmlRoot(ElementName = "Parameter", Namespace = "http://docs.oasis-open.org/odata/ns/edm")]
@@ -140,7 +127,7 @@ namespace Bit.Tooling.CodeGenerator.Implementations.CSharpClientProxyGenerator.M
         public string Type { get; set; }
 
         [XmlAttribute(AttributeName = "Nullable")]
-        public string Nullable { get; set; }
+        public string? Nullable { get; set; }
     }
 
     [XmlRoot(ElementName = "Action", Namespace = "http://docs.oasis-open.org/odata/ns/edm")]
@@ -166,7 +153,7 @@ namespace Bit.Tooling.CodeGenerator.Implementations.CSharpClientProxyGenerator.M
         public string Type { get; set; }
 
         [XmlAttribute(AttributeName = "Nullable")]
-        public string Nullable { get; set; }
+        public string? Nullable { get; set; }
     }
 
     [XmlRoot(ElementName = "Function", Namespace = "http://docs.oasis-open.org/odata/ns/edm")]
@@ -190,6 +177,7 @@ namespace Bit.Tooling.CodeGenerator.Implementations.CSharpClientProxyGenerator.M
     {
         [XmlAttribute(AttributeName = "Path")]
         public string Path { get; set; }
+
         [XmlAttribute(AttributeName = "Target")]
         public string Target { get; set; }
     }

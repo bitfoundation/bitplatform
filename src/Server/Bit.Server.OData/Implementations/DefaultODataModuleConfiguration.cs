@@ -131,6 +131,23 @@ namespace Bit.OData.Implementations
 
                     AddAdditionalTypes(propType);
                 }
+
+                var baseType = type.BaseType?.GetTypeInfo();
+
+                if (baseType != null)
+                {
+                    bool isDto = DtoMetadataWorkspace.Current.IsDto(baseType);
+                    bool isComplexType = DtoMetadataWorkspace.Current.IsComplexType(baseType);
+
+                    if (isDto || isComplexType)
+                    {
+                        if (isDto)
+                            odataModelBuilder.AddEntityType(baseType);
+                        else if (isComplexType)
+                            odataModelBuilder.AddComplexType(baseType);
+                        AddAdditionalTypes(baseType);
+                    }
+                }
             }
 
             var currentTypes = odataModelBuilder.StructuralTypes.Select(st => st.ClrType.GetTypeInfo()).ToList();
@@ -147,8 +164,6 @@ namespace Bit.OData.Implementations
             TypeInfo dtoType = typeof(TDto).GetTypeInfo();
             string controllerName = GetControllerName(apiController);
             EntitySetConfiguration<TDto> entitySet = odataModelBuilder.EntitySet<TDto>(controllerName);
-            if (GetBaseType(dtoType) == null)
-                entitySet.EntityType.DerivesFromNothing();
         }
 
         bool IsIEnumerable(TypeInfo type)

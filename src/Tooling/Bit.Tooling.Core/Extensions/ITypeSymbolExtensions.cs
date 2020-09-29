@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 using System.Threading.Tasks;
@@ -319,6 +320,17 @@ namespace Microsoft.CodeAnalysis
             }
 
             return false;
+        }
+
+        public static IEnumerable<ITypeSymbol> BaseDtoClasses(this ITypeSymbol type)
+        {
+            ITypeSymbol? baseType = type.BaseType;
+
+            while (baseType != null && (baseType.IsDto() || baseType.IsComplexType()))
+            {
+                yield return baseType;
+                baseType = baseType.BaseType;
+            }
         }
     }
 }
