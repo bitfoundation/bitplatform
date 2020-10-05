@@ -138,7 +138,6 @@ namespace Bit.CSharpClientSample.Droid
             var notificationBuilder = new NotificationCompat.Builder(this, MainActivity.CHANNEL_ID);
 
             notificationBuilder.SetContentTitle("Bit")
-                        .SetSmallIcon(Resource.Drawable.icon)
                         .SetContentText(messageBody)
                         .SetAutoCancel(true)
                         .SetShowWhen(false)
