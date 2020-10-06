@@ -12,11 +12,7 @@
                 <bit:BitGlobalStyles />
             </ResourceDictionary.MergedDictionaries>
 
-            <OnPlatform x:Key="Persian-Solar-Calendar-FontFamily" x:TypeArguments="x:String">
-                <On Platform="iOS" Value="Vazir FD-WOL" />
-                <On Platform="UWP" Value="Assets/Vazir-Light-FD-WOL.ttf#Vazir FD-WOL" />
-                <On Platform="Android" Value="Vazir-Light-FD-WOL.ttf#Vazir FD-WOL" />
-            </OnPlatform>
+            <x:String x:Key="Persian-Solar-Calendar-FontFamily">Vazir FD-WOL</x:String>
 
         </ResourceDictionary>
 

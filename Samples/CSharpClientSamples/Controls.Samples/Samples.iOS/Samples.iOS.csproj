@@ -99,9 +99,6 @@
   <ItemGroup>
     <Compile Include="Main.cs" />
     <Compile Include="AppDelegate.cs" />
-    <BundleResource Include="..\Samples.UWP\Assets\Vazir-Light-FD-WOL.ttf">
-      <Link>Resources\Vazir-Light-FD-WOL.ttf</Link>
-    </BundleResource>
     <None Include="Entitlements.plist" />
     <None Include="Info.plist" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -166,10 +163,5 @@
       <Project>{66b83b3f-e4d5-4d5b-9288-296c147dce41}</Project>
       <Name>Samples</Name>
     </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
-    <BundleResource Include="..\Samples.UWP\Assets\Vazir-Light-FD-WOL.txt">
-      <Link>Resources\Vazir-Light-FD-WOL.txt</Link>
-    </BundleResource>
   </ItemGroup>
 </Project>

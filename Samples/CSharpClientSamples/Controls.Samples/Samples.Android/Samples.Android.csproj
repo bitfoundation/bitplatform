@@ -70,9 +70,6 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <AndroidAsset Include="..\Samples.UWP\Assets\Vazir-Light-FD-WOL.ttf">
-      <Link>Assets\Vazir-Light-FD-WOL.ttf</Link>
-    </AndroidAsset>
     <None Include="Properties\AndroidManifest.xml" />
   </ItemGroup>
   <ItemGroup>
@@ -94,6 +91,7 @@
     <AndroidResource Include="Resources\mipmap-xxxhdpi\launcher_foreground.png" />
   </ItemGroup>
   <ItemGroup>
+    <Folder Include="Assets\" />
     <Folder Include="Resources\drawable-hdpi\" />
     <Folder Include="Resources\drawable-xhdpi\" />
     <Folder Include="Resources\drawable-xxhdpi\" />
@@ -105,11 +103,6 @@
       <Project>{66b83b3f-e4d5-4d5b-9288-296c147dce41}</Project>
       <Name>Samples</Name>
     </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
-    <AndroidAsset Include="..\Samples.UWP\Assets\Vazir-Light-FD-WOL.txt">
-      <Link>Assets\Vazir-Light-FD-WOL.txt</Link>
-    </AndroidAsset>
   </ItemGroup>
   <ItemGroup>
     <LinkDescription Include="LinkerConfig.xml" />

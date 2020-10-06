@@ -1,26 +1,27 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-    <TargetFramework>netstandard2.0</TargetFramework>
-  </PropertyGroup>
+	<PropertyGroup>
+		<TargetFramework>netstandard2.0</TargetFramework>
+	</PropertyGroup>
 
-  <PropertyGroup Condition="'$(Configuration)'=='Debug'">
-    <DebugType>pdbonly</DebugType>
-    <DebugSymbols>true</DebugSymbols>
-  </PropertyGroup>
+	<PropertyGroup Condition="'$(Configuration)'=='Debug'">
+		<DebugType>pdbonly</DebugType>
+		<DebugSymbols>true</DebugSymbols>
+	</PropertyGroup>
 
-  <ItemGroup>
-    <EmbeddedResource Include="Calendar.png" />
-  </ItemGroup>
+	<ItemGroup>
+		<EmbeddedResource Include="Assets\Vazir-Light-FD-WOL.ttf" />
+		<EmbeddedResource Include="Assets\Calendar.png" />
+	</ItemGroup>
 
-  <ItemGroup>
-    <PackageReference Include="Bit.Client.Xamarin.Controls" Version="6.0.0" />
-    <PackageReference Include="Fody" Version="6.2.6">
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-    </PackageReference>
-    <PackageReference Include="PropertyChanged.Fody" Version="3.2.9" />
-    <PackageReference Include="Xamarin.Forms" Version="4.8.0.1451" />
-  </ItemGroup>
+	<ItemGroup>
+		<PackageReference Include="Bit.Client.Xamarin.Controls" Version="6.1.0" />
+		<PackageReference Include="Fody" Version="6.2.6">
+			<PrivateAssets>all</PrivateAssets>
+			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+		</PackageReference>
+		<PackageReference Include="PropertyChanged.Fody" Version="3.2.9" />
+		<PackageReference Include="Xamarin.Forms" Version="4.8.0.1451" />
+	</ItemGroup>
 
 </Project>
