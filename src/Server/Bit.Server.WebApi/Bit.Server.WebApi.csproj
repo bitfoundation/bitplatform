@@ -14,8 +14,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Autofac.WebApi2" Version="5.0.0" />
-    <PackageReference Include="Autofac.WebApi2.Owin" Version="5.0.0" />
+    <PackageReference Include="Autofac.WebApi2" Version="6.0.0" />
+    <PackageReference Include="Autofac.WebApi2.Owin" Version="6.0.0" />
     <PackageReference Include="Microsoft.AspNet.WebApi.Owin" Version="5.2.7" />
     <PackageReference Include="Microsoft.AspNet.WebApi.Core" Version="5.2.7" />
     <PackageReference Include="Microsoft.AspNet.WebApi.Versioning.ApiExplorer" Version="4.0.0" />

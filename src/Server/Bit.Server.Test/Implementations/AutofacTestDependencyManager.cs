@@ -1,4 +1,5 @@
 ﻿using Autofac;
+using Autofac.Core.Resolving.Pipeline;
 using Bit.Core.Contracts;
 using Bit.Core.Implementations;
 using FakeItEasy;
@@ -10,7 +11,7 @@ using System.Reflection;
 
 namespace Bit.Test.Implementations
 {
-    public class AutofacTestDependencyManager : AutofacDependencyManager
+    public class AutofacTestDependencyManager : AutofacDependencyManager, IResolveMiddleware
     {
 
         public override IDependencyManager Init()
@@ -19,55 +20,55 @@ namespace Bit.Test.Implementations
 
             ContainerBuilder builder = GetContainerBuidler();
 
-            builder.RegisterCallback(x =>
+            builder.ComponentRegistryBuilder.Registered += (sender, args) =>
             {
-                x.Registered += (sender, args) =>
+                TypeInfo implementationType = args.ComponentRegistration.Activator.LimitType.GetTypeInfo();
+
+                if (IsGoingToCreateProxyForImplementationType(implementationType))
                 {
-                    TypeInfo implementationType = args.ComponentRegistration.Activator.LimitType.GetTypeInfo();
+                    ConstructorInfo[] constructors = implementationType.GetConstructors(BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
 
-                    if (IsGoingToCreateProxyForImplementationType(implementationType))
+                    if (constructors.Length == 1)
                     {
-                        ConstructorInfo[] constructors = implementationType.GetConstructors(BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
-
-                        if (constructors.Length == 1)
+                        if (constructors.Single().GetParameters().Any())
                         {
-                            if (constructors.Single().GetParameters().Any())
-                            {
-                                throw new InvalidOperationException($"{implementationType.FullName} has only one constructor which has parameter");
-                            }
+                            throw new InvalidOperationException($"{implementationType.FullName} has only one constructor which has parameter");
                         }
-                        else
+                    }
+                    else
+                    {
+                        if (constructors.All(c => !c.GetParameters().Any()))
                         {
-                            if (constructors.All(c => !c.GetParameters().Any()))
-                            {
-                                throw new InvalidOperationException($"{implementationType.FullName} has more than one constructor, but all without parameter");
-                            }
-
-                            if (constructors.All(c => c.GetParameters().Any()))
-                            {
-                                throw new InvalidOperationException($"{implementationType.FullName} has more than one constructor, but all with parameter");
-                            }
-
-                            if (constructors.GroupBy(c => c.IsPublic).Count() == 1)
-                            {
-                                throw new InvalidOperationException($"{implementationType.FullName} has more than one constructor, all with same visibility level");
-                            }
-
-                            if (constructors.Single(c => !c.IsPublic).GetParameters().Any())
-                            {
-                                throw new InvalidOperationException($"{implementationType.FullName} has more than one constructor, and its non public constructor has parameter");
-                            }
+                            throw new InvalidOperationException($"{implementationType.FullName} has more than one constructor, but all without parameter");
                         }
 
-                        if (implementationType.GetMethods(BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.DeclaredOnly).Any(m => (m.IsPublic || m.IsFamily /*protected*/) && !m.IsVirtual))
+                        if (constructors.All(c => c.GetParameters().Any()))
                         {
-                            throw new InvalidOperationException($"{implementationType.FullName} has non virtual public/protected instance members");
+                            throw new InvalidOperationException($"{implementationType.FullName} has more than one constructor, but all with parameter");
+                        }
+
+                        if (constructors.GroupBy(c => c.IsPublic).Count() == 1)
+                        {
+                            throw new InvalidOperationException($"{implementationType.FullName} has more than one constructor, all with same visibility level");
+                        }
+
+                        if (constructors.Single(c => !c.IsPublic).GetParameters().Any())
+                        {
+                            throw new InvalidOperationException($"{implementationType.FullName} has more than one constructor, and its non public constructor has parameter");
                         }
                     }
 
-                    args.ComponentRegistration.Activating += ComponentRegistration_Activating;
+                    if (implementationType.GetMethods(BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.DeclaredOnly).Any(m => (m.IsPublic || m.IsFamily /*protected*/) && !m.IsVirtual))
+                    {
+                        throw new InvalidOperationException($"{implementationType.FullName} has non virtual public/protected instance members");
+                    }
+                }
+
+                args.ComponentRegistration.PipelineBuilding += (sender, pipeline) =>
+                {
+                    pipeline.Use(this);
                 };
-            });
+            };
 
             return this;
         }
@@ -86,27 +87,30 @@ namespace Bit.Test.Implementations
                 && AutoProxyCreationIgnoreRules.All(rule => rule(implementationType) == false);
         }
 
-        public virtual void ComponentRegistration_Activating(object? sender, Autofac.Core.ActivatingEventArgs<object> e)
-        {
-            if (e == null)
-                throw new ArgumentNullException(nameof(e));
 
-            object instance = e.Instance;
+        public virtual void Execute(ResolveRequestContext context, Action<ResolveRequestContext> next)
+        { 
+            next(context);
 
-            TypeInfo instanceType = instance.GetType().GetTypeInfo();
+            object? instance = context.Instance;
 
-            if (IsGoingToCreateProxyForImplementationType(instanceType))
+            if (instance != null)
             {
-                instance = _createProxyForService.MakeGenericMethod(instanceType).Invoke(this, new[] { instance })!;
-                e.ReplaceInstance(instance);
-            }
+                TypeInfo instanceType = instance.GetType().GetTypeInfo();
 
-            if (Objects is BlockingCollection<object> blockingCollection)
-                blockingCollection.Add(instance);
-            else if (Objects is ICollection<object> collection)
-                collection.Add(instance);
-            else
-                throw new NotSupportedException($"Provide compatible collection type for {nameof(Objects)}");
+                if (IsGoingToCreateProxyForImplementationType(instanceType))
+                {
+                    instance = _createProxyForService.MakeGenericMethod(instanceType).Invoke(this, new[] { instance })!;
+                    context.Instance = instance;
+                }
+
+                if (Objects is BlockingCollection<object> blockingCollection)
+                    blockingCollection.Add(instance);
+                else if (Objects is ICollection<object> collection)
+                    collection.Add(instance);
+                else
+                    throw new NotSupportedException($"Provide compatible collection type for {nameof(Objects)}");
+            }
         }
 
         private readonly MethodInfo _createProxyForService = typeof(AutofacTestDependencyManager).GetTypeInfo().GetMethod(nameof(CreateProxyForService))!;
@@ -130,5 +134,7 @@ namespace Bit.Test.Implementations
         {
             get { return string.Join(Environment.NewLine, Objects.Select(o => o.GetType().FullName).OrderBy(o => o)); }
         }
+
+        public PipelinePhase Phase => PipelinePhase.Activation;
     }
 }
