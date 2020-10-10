@@ -11,47 +11,143 @@ using System.Linq;
 
 namespace Prism.Autofac
 {
+    public class AutofacScopeProvider : IScopedProvider
+    {
+        public AutofacScopeProvider(ILifetimeScope scope)
+        {
+            Scope = scope;
+        }
+
+        public virtual ILifetimeScope Scope { get; private set; }
+        public virtual bool IsAttached { get; set; }
+        public virtual IScopedProvider CurrentScope => this;
+        public virtual IScopedProvider CreateScope() => this;
+
+        public virtual void Dispose()
+        {
+            Scope.Dispose();
+        }
+
+        public virtual object Resolve(Type type) =>
+            Resolve(type, Array.Empty<(Type, object)>());
+
+        public virtual object Resolve(Type type, string name) =>
+            Resolve(type, name, Array.Empty<(Type, object)>());
+
+        public virtual object Resolve(Type type, params (Type Type, object Instance)[] parameters) =>
+            Resolve(type, name: null, parameters);
+
+        public virtual object Resolve(Type type, string name, params (Type Type, object Instance)[] parameters)
+        {
+            try
+            {
+                var autofacParameters = PrepareParameters(Scope, parameters);
+
+                return name != null ? Scope.ResolveNamed(name, type, autofacParameters) : Scope.Resolve(type, autofacParameters);
+            }
+            catch (Exception ex)
+            {
+                throw new ContainerResolutionException(type, name, ex);
+            }
+        }
+
+        internal static List<Parameter> PrepareParameters(ILifetimeScope scope, (Type Type, object Instance)[] parameters)
+        {
+            List<Parameter> result = parameters.Select(p => new TypedParameter(p.Type, p.Instance) { }).Cast<Parameter>().ToList();
+
+            INavigationService prismNavService = result.OfType<TypedParameter>().Select(r => r.Value).OfType<INavigationService>().SingleOrDefault();
+
+            if (prismNavService != null)
+            {
+                INavService navService = BuildNavService(scope, prismNavService);
+
+                // ctor
+                result.Add(new TypedParameter(typeof(INavService), navService));
+
+                // prop
+                result.Add(new NamedPropertyParameter(nameof(INavService.PrismNavigationService), prismNavService));
+                result.Add(new NamedPropertyParameter(nameof(BitViewModelBase.NavigationService), navService));
+            }
+
+            return result;
+        }
+
+        internal static INavService BuildNavService(ILifetimeScope scope, INavigationService prismNavigationService)
+        {
+            return scope!.Resolve<INavServiceFactory>()(prismNavigationService, scope!.Resolve<IPopupNavigation>());
+        }
+    }
+
     public class AutofacContainerExtension : IAutofacContainerExtension
     {
-        public ContainerBuilder Builder { get; }
+        private AutofacScopeProvider _currentScope;
 
-        public IContainer? Instance { get; private set; }
+        public virtual IContainer Instance { get; protected set; }
+
+        public virtual ContainerBuilder Builder { get; set; }
+
+        public AutofacContainerExtension()
+            : this(new ContainerBuilder())
+        {
+        }
 
         public AutofacContainerExtension(ContainerBuilder builder)
         {
-            if (builder == null)
-                throw new ArgumentNullException(nameof(builder));
-
             Builder = builder;
+            string currentContainer = "CurrentContainer";
+            Builder.RegisterInstance(this).Named(currentContainer, typeof(AutofacContainerExtension));
+            Builder.Register(c => c.ResolveNamed<AutofacContainerExtension>(currentContainer)).As(typeof(IContainerExtension));
+            Builder.Register(c => c.ResolveNamed<AutofacContainerExtension>(currentContainer)).As(typeof(IContainerProvider));
+            ExceptionExtensions.RegisterFrameworkExceptionType(typeof(DependencyResolutionException));
         }
 
-        public void FinalizeExtension()
+        public virtual IScopedProvider CurrentScope => _currentScope;
+
+        public virtual void FinalizeExtension()
         {
             if (Instance == null)
                 Instance = Builder.Build();
         }
 
-        public IContainerRegistry RegisterInstance(Type type, object instance, string name)
-        {
-            Builder.RegisterInstance(instance).Named(name, serviceType: type);
-            return this;
-        }
-
-        public IContainerRegistry RegisterInstance(Type type, object instance)
+        public virtual IContainerRegistry RegisterInstance(Type type, object instance)
         {
             Builder.RegisterInstance(instance).As(type);
             return this;
         }
 
-        public IContainerRegistry RegisterSingleton(Type from, Type to, string name)
+        public virtual IContainerRegistry RegisterInstance(Type type, object instance, string name)
         {
-            Builder.RegisterType(to).SingleInstance().Named(name, to);
+            Builder.RegisterInstance(instance).Named(name, type);
             return this;
         }
 
-        public IContainerRegistry RegisterSingleton(Type from, Type to)
+        public virtual IContainerRegistry RegisterSingleton(Type from, Type to)
         {
             Builder.RegisterType(to).As(from).SingleInstance();
+            return this;
+        }
+
+        public virtual IContainerRegistry RegisterSingleton(Type from, Type to, string name)
+        {
+            Builder.RegisterType(to).Named(name, from).SingleInstance();
+            return this;
+        }
+
+        public virtual IContainerRegistry RegisterSingleton(Type type, Func<object> factoryMethod)
+        {
+            Builder.Register(c => factoryMethod()).SingleInstance().As(type);
+            return this;
+        }
+
+        public virtual IContainerRegistry RegisterSingleton(Type type, Func<IContainerProvider, object> factoryMethod)
+        {
+            Builder.Register(c => factoryMethod(c.Resolve<IContainerProvider>())).As(type).SingleInstance();
+            return this;
+        }
+
+        public virtual IContainerRegistry RegisterManySingleton(Type type, params Type[] serviceTypes)
+        {
+            Builder.RegisterType(type).As(serviceTypes).SingleInstance();
             return this;
         }
 
@@ -67,6 +163,65 @@ namespace Prism.Autofac
             return this;
         }
 
+        public IContainerRegistry Register(Type type, Func<object> factoryMethod)
+        {
+            Builder.Register(c => factoryMethod()).As(type);
+            return this;
+        }
+
+        public IContainerRegistry Register(Type type, Func<IContainerProvider, object> factoryMethod)
+        {
+            Builder.Register(c => factoryMethod(c.Resolve<IContainerProvider>())).As(type);
+            return this;
+        }
+
+        public IContainerRegistry RegisterMany(Type type, params Type[] serviceTypes)
+        {
+            Builder.RegisterType(type).As(serviceTypes);
+            return this;
+        }
+
+        public IContainerRegistry RegisterScoped(Type from, Type to)
+        {
+            Builder.RegisterType(to).As(from).InstancePerLifetimeScope();
+            return this;
+        }
+
+        public IContainerRegistry RegisterScoped(Type type, Func<object> factoryMethod)
+        {
+            Builder.Register(c => factoryMethod()).InstancePerLifetimeScope();
+            return this;
+        }
+
+        public IContainerRegistry RegisterScoped(Type type, Func<IContainerProvider, object> factoryMethod)
+        {
+            Builder.Register(c => factoryMethod(c.Resolve<IContainerProvider>())).As(type).InstancePerLifetimeScope();
+            return this;
+        }
+
+        public object Resolve(Type type) =>
+            Resolve(type, Array.Empty<(Type, object)>());
+
+        public object Resolve(Type type, string name) =>
+            Resolve(type, name, Array.Empty<(Type, object)>());
+
+        public object Resolve(Type type, params (Type Type, object Instance)[] parameters) =>
+            Resolve(type, name: null, parameters);
+
+        public object Resolve(Type type, string name, params (Type Type, object Instance)[] parameters)
+        {
+            try
+            {
+                var autofacParameters = AutofacScopeProvider.PrepareParameters(Instance, parameters);
+
+                return name != null ? Instance.ResolveNamed(name, type, autofacParameters) : Instance.Resolve(type, autofacParameters);
+            }
+            catch (Exception ex)
+            {
+                throw new ContainerResolutionException(type, name, ex);
+            }
+        }
+
         public bool IsRegistered(Type type)
         {
             return Instance?.IsRegistered(type) == true; // workaround for prism's rg plugin popup
@@ -74,53 +229,17 @@ namespace Prism.Autofac
 
         public bool IsRegistered(Type type, string name)
         {
-            return Instance!.IsRegisteredWithName(name, type) == true;
+            return Instance.IsRegisteredWithName(name, type);
         }
 
-        public object Resolve(Type type)
+        public virtual IScopedProvider CreateScope() =>
+            CreateScopeInternal();
+
+        protected IScopedProvider CreateScopeInternal()
         {
-            return Instance!.Resolve(type);
-        }
-
-        public object Resolve(Type type, string name)
-        {
-            return Instance!.ResolveNamed(name, type);
-        }
-
-        public object Resolve(Type type, params (Type Type, object Instance)[] parameters)
-        {
-            return Instance!.Resolve(type, PrepareParameters(parameters));
-        }
-
-        List<Parameter> PrepareParameters((Type Type, object Instance)[] parameters)
-        {
-            var result = parameters.Select(p => new TypedParameter(p.Type, p.Instance) { }).Cast<Parameter>().ToList();
-
-            var prismNavService = result.OfType<TypedParameter>().Select(r => r.Value).OfType<INavigationService>().SingleOrDefault();
-
-            if (prismNavService != null)
-            {
-                INavService navService = BuildNavService(prismNavService);
-
-                // ctor
-                result.Add(new TypedParameter(typeof(INavService), navService));
-
-                // prop
-                result.Add(new NamedPropertyParameter(nameof(INavService.PrismNavigationService), prismNavService));
-                result.Add(new NamedPropertyParameter(nameof(BitViewModelBase.NavigationService), navService));
-            }
-
-            return result;
-        }
-
-        public object Resolve(Type type, string name, params (Type Type, object Instance)[] parameters)
-        {
-            return Instance!.ResolveNamed(name, type, PrepareParameters(parameters));
-        }
-
-        public virtual INavService BuildNavService(INavigationService prismNavigationService)
-        {
-            return Instance!.Resolve<INavServiceFactory>()(prismNavigationService, Instance!.Resolve<IPopupNavigation>());
+            var child = Instance.BeginLifetimeScope();
+            _currentScope = new AutofacScopeProvider(child);
+            return _currentScope;
         }
     }
 }

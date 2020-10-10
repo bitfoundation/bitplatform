@@ -8,6 +8,10 @@ using Bit.Tests.Model.Dto;
 using Bit.ViewModel;
 using Bit.ViewModel.Implementations;
 using Microsoft.EntityFrameworkCore;
+using Newtonsoft.Json;
+using Prism.Navigation;
+using Prism.Regions;
+using Prism.Regions.Navigation;
 using Refit;
 using Simple.OData.Client;
 using System;
@@ -251,6 +255,22 @@ namespace Bit.CSharpClientSample.ViewModels
         async Task ShowPopup()
         {
             await NavigationService.NavigateAsync("Test", ("Test", "Test"));
+        }
+
+        public async override Task OnNavigatedToAsync(INavigationParameters parameters)
+        {
+            await base.OnNavigatedToAsync(parameters);
+
+            RegionManager.RequestNavigate("ContentRegion1", "RegionA", ("Parameter1", 1));
+            RegionManager.RequestNavigate("ContentRegion2", "RegionC", ("Parameter1", 1));
+        }
+
+        public async override Task OnDestroyAsync()
+        {
+            RegionManager.Regions.Remove("ContentRegion1");
+            RegionManager.Regions.Remove("ContentRegion2");
+
+            await base.OnDestroyAsync();
         }
     }
 }

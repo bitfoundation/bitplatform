@@ -15,6 +15,8 @@ using Prism.Ioc;
 using Prism.Logging;
 using Prism.Navigation;
 using Prism.Plugin.Popups;
+using Prism.Regions.Adapters;
+using Prism.Regions.Behaviors;
 using Prism.Services;
 using Rg.Plugins.Popup.Contracts;
 using System;
@@ -150,11 +152,34 @@ namespace Bit
 
         protected virtual void RegisterTypes(IDependencyManager dependencyManager, IContainerRegistry containerRegistry, ContainerBuilder containerBuilder, IServiceCollection services)
         {
-            dependencyManager.Register<ILoggerFacade, BitPrismLogger>(overwriteExisting: false);
+            dependencyManager.Register<ILogger, BitPrismLogger>();
             dependencyManager.RegisterUsing(resolver => Container, lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExisting: false);
             dependencyManager.RegisterUsing(resolver => Container.GetContainer(), lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExisting: false);
             BitCSharpClientControls.UseBitPopupNavigation();
             containerRegistry.RegisterPopupNavigationService();
+
+            containerRegistry.RegisterRegionServices();
+
+            // workaround begin
+            containerRegistry.Register<CarouselViewRegionAdapter>();
+            containerRegistry.Register<LayoutViewRegionAdapter>();
+            containerRegistry.Register<ScrollViewRegionAdapter>();
+            containerRegistry.Register<ContentViewRegionAdapter>();
+
+            containerRegistry.Register<DelayedRegionCreationBehavior>();
+            containerRegistry.Register<RegionBehaviorFactory>();
+            containerRegistry.Register<BindRegionContextToVisualElementBehavior>();
+            containerRegistry.Register<RegionActiveAwareBehavior>();
+            containerRegistry.Register<SyncRegionContextWithHostBehavior>();
+            containerRegistry.Register<BindRegionContextToVisualElementBehavior>();
+            containerRegistry.Register<RegionManagerRegistrationBehavior>();
+            containerRegistry.Register<RegionMemberLifetimeBehavior>();
+            containerRegistry.Register<ClearChildViewsRegionBehavior>();
+            containerRegistry.Register<AutoPopulateRegionBehavior>();
+            containerRegistry.Register<DestructibleRegionBehavior>();
+            // workaround end
+
+            //containerRegistry.RegisterPopupDialogService();
         }
     }
 }
