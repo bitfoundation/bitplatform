@@ -11,5 +11,6 @@
             Text="{Binding Text}"
             VerticalOptions="Center" />
         <Button Command="{Binding GoBackCommand}" Text="Go back!" />
+        <Entry />
     </StackLayout>
 </ContentView>

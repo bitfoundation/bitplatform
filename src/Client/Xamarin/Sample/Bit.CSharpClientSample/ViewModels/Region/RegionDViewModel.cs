@@ -14,7 +14,7 @@ namespace Bit.CSharpClientSample.ViewModels
 
         async Task GoBack()
         {
-            RegionManager.Regions["ContentRegion2"].NavigationService.Journal.GoBack();
+            RegionNavigationJornal.GoBack();
         }
 
         public string Text { get; set; } = "D";

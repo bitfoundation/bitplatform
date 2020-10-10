@@ -13,7 +13,7 @@ using System.Threading.Tasks;
 
 namespace Bit.ViewModel
 {
-    public class BitViewModelBase : Bindable, INavigatedAware, IInitializeAsync, INavigationAware, IDestructible, IRegionAware
+    public class BitViewModelBase : Bindable, INavigatedAware, IInitializeAsync, INavigationAware, IDestructible, IRegionAware, IRegionMemberLifetime
     {
         public virtual CancellationTokenSource CancellationTokenSource { get; set; }
 
@@ -156,6 +156,7 @@ namespace Bit.ViewModel
 
         public void OnNavigatedTo(INavigationContext navigationContext)
         {
+            RegionNavigationService = navigationContext.NavigationService;
             OnNavigatedTo(navigationContext.Parameters);
         }
 
@@ -171,8 +172,18 @@ namespace Bit.ViewModel
 
         public virtual INavService NavigationService { get; set; } = default!;
 
-        public IRegionManager RegionManager { get; set; }
+        public virtual IRegionManager RegionManager { get; set; }
+
+        public virtual IRegionNavigationService RegionNavigationService { get; protected set; }
+
+        public virtual IRegionNavigationJournal RegionNavigationJornal => RegionNavigationService.Journal;
+
+        public virtual NavigationContext RegionNavigationContext { get; set; }
 
         public virtual IEnumerable<ITelemetryService> TelemetryServices { get; set; } = default!;
+
+        public bool KeepAlive => KeepAliveInRegion;
+
+        public virtual bool KeepAliveInRegion => false;
     }
 }

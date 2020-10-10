@@ -20,12 +20,17 @@ namespace Bit.CSharpClientSample.ViewModels
 
         async Task GoToBRegion()
         {
-            RegionManager.RequestNavigate("ContentRegion1", "RegionB");
+            await RegionManager.RequestNavigateAsync("ContentRegion1", "RegionB");
         }
 
         public async override Task OnNavigatedToAsync(INavigationParameters parameters)
         {
             await base.OnNavigatedToAsync(parameters);
+        }
+
+        public override Task OnDestroyAsync()
+        {
+            return base.OnDestroyAsync();
         }
     }
 }

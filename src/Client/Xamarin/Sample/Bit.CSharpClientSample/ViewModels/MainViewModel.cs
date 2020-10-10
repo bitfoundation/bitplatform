@@ -156,14 +156,13 @@ namespace Bit.CSharpClientSample.ViewModels
         {
             await base.OnNavigatedToAsync(parameters);
 
-            RegionManager.RequestNavigate("ContentRegion1", "RegionA", ("Parameter1", 1));
-            RegionManager.RequestNavigate("ContentRegion2", "RegionC", ("Parameter1", 1));
+            await RegionManager.RequestNavigateAsync("ContentRegion1", "RegionA", ("Parameter1", 1));
+            await RegionManager.RequestNavigateAsync("ContentRegion2", "RegionC", ("Parameter1", 1));
         }
 
         public async override Task OnDestroyAsync()
         {
-            RegionManager.Regions.Remove("ContentRegion1");
-            RegionManager.Regions.Remove("ContentRegion2");
+            await RegionManager.DestroyRegions("ContentRegion1", "ContentRegion2");
 
             await base.OnDestroyAsync();
         }

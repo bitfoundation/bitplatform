@@ -11,5 +11,6 @@
             Text="{Binding Text}"
             VerticalOptions="Center" />
         <Button Command="{Binding GoToBRegionCommand}" Text="Go to region B" />
+        <Entry />
     </StackLayout>
 </ContentView>
