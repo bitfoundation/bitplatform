@@ -5,6 +5,7 @@ using Bit.ViewModel.Implementations;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
+using Windows.ApplicationModel.Activation;
 using Windows.UI.ViewManagement;
 using Windows.UI.Xaml;
 using Xamarin.Forms;
@@ -24,8 +25,10 @@ namespace Bit.UWP
             BitExceptionHandler.Current.OnExceptionReceived(e.Exception);
         }
 
+        private bool _useDefaultConfiguration;
+
         /// <summary>
-        /// Configures VersionTracking | RgPluginsPopup | Bit.Client.Xamarin.Controls (DatePicker, Frame) | Set Min Width and Height
+        /// Configures Xamarin Essentials | RgPluginsPopup | Bit.Client.Xamarin.Controls (DatePicker, Frame) | Set Min Width and Height
         /// </summary>
         protected virtual void UseDefaultConfiguration()
         {
@@ -38,6 +41,15 @@ namespace Bit.UWP
                 Width = 1
             });
             SetBitPlatformServices();
+            _useDefaultConfiguration = true;
+        }
+
+        protected override void OnLaunched(LaunchActivatedEventArgs args)
+        {
+            base.OnLaunched(args);
+
+            if (_useDefaultConfiguration)
+                Xamarin.Essentials.Platform.OnLaunched(args);
         }
 
         protected virtual async void SetBitPlatformServices()

@@ -35,6 +35,8 @@ namespace Bit.CSharpClientSample.UWP
             }
 
             Window.Current.Activate();
+
+            base.OnLaunched(e);
         }
     }
 }

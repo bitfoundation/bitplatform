@@ -1,5 +1,6 @@
 ﻿#if Android
 
+using Android.Content;
 using Android.Content.PM;
 using Android.OS;
 using Android.Runtime;
@@ -24,7 +25,7 @@ namespace Bit.Android
         private bool _useDefaultConfiguration = false;
 
         /// <summary>
-        /// Configures VersionTracking | RgPluginsPopup | Fast Renderers | Xamarin Essentials' Permissions  | Bit.Client.Xamarin.Controls (DatePicker, Frame)
+        /// Configures Xamarin Essentials | RgPluginsPopup | Fast Renderers | Bit.Client.Xamarin.Controls (DatePicker, Frame)
         /// </summary>
         protected virtual void UseDefaultConfiguration(Bundle savedInstanceState)
         {
@@ -74,13 +75,23 @@ namespace Bit.Android
             base.OnRequestPermissionsResult(requestCode, permissions, grantResults);
         }
 
+        protected override void OnNewIntent(Intent intent)
+        {
+            base.OnNewIntent(intent);
+
+            if (_useDefaultConfiguration)
+            {
+                Xamarin.Essentials.Platform.OnNewIntent(intent);
+            }
+        }
+
         protected override void OnResume()
         {
             base.OnResume();
 
             if (_useDefaultConfiguration)
             {
-                Xamarin.Essentials.Platform.OnResume();
+                Xamarin.Essentials.Platform.OnResume(activity: null);
             }
         }
 

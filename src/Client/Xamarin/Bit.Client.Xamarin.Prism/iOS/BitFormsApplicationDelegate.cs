@@ -15,7 +15,7 @@ namespace Bit.iOS
         private bool _useDefaultConfiguration = false;
 
         /// <summary>
-        /// Configures VersionTracking | RgPluginsPopup | Bit.Client.Xamarin.Controls (DatePicker, Frame)
+        /// Configures Xamarin Essentials | RgPluginsPopup | Bit.Client.Xamarin.Controls (DatePicker, Frame)
         /// </summary>
         protected virtual void UseDefaultConfiguration()
         {
@@ -40,6 +40,14 @@ namespace Bit.iOS
                     break;
                 }
             }
+        }
+
+        public override void PerformActionForShortcutItem(UIApplication application, UIApplicationShortcutItem shortcutItem, UIOperationHandler completionHandler)
+        {
+            base.PerformActionForShortcutItem(application, shortcutItem, completionHandler);
+
+            if (_useDefaultConfiguration)
+                Xamarin.Essentials.Platform.PerformActionForShortcutItem(application, shortcutItem, completionHandler);
         }
 
         public override bool OpenUrl(UIApplication app, NSUrl url, NSDictionary options)
