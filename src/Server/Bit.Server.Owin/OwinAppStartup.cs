@@ -111,9 +111,4 @@ namespace Bit.Owin
             }
         }
     }
-
-    public class BitServiceCollection : List<ServiceDescriptor>, IServiceCollection
-    {
-
-    }
 }
