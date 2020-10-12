@@ -1,4 +1,6 @@
 ﻿using Bit.ViewModel;
+using Prism.Navigation;
+using System;
 using System.Threading.Tasks;
 
 namespace Bit.CSharpClientSample.ViewModels
@@ -22,6 +24,13 @@ namespace Bit.CSharpClientSample.ViewModels
         public override Task OnDestroyAsync()
         {
             return base.OnDestroyAsync();
+        }
+
+        public async override Task OnNavigatedToAsync(INavigationParameters parameters)
+        {
+            Text = $"B - {DateTime.Now.ToLongTimeString()}";
+
+            await base.OnNavigatedToAsync(parameters);
         }
     }
 }

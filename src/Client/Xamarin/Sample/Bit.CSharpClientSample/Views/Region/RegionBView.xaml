@@ -12,5 +12,8 @@
             VerticalOptions="Center" />
         <Button Command="{Binding GoBackCommand}" Text="Go back!" />
         <Entry />
+        <Label Text="Keep alive:" />
+        <!--  B remains alive if KeepAliveInRegion remains to true. It can gets killed by KeepAliveInRegion equal to false  -->
+        <CheckBox IsChecked="{Binding KeepAliveInRegion}" />
     </StackLayout>
 </ContentView>

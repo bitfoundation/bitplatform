@@ -8,6 +8,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -154,9 +155,18 @@ namespace Bit.ViewModel
             return Task.CompletedTask;
         }
 
+        private static readonly FieldInfo internalParameters = typeof(NavigationParameters).GetField("_internalParameters", BindingFlags.NonPublic | BindingFlags.Instance);
+
         public void OnNavigatedTo(INavigationContext navigationContext)
         {
             RegionNavigationService = navigationContext.NavigationService;
+
+            IDictionary<string, object> parameters = (IDictionary<string, object>)internalParameters.GetValue(navigationContext.Parameters);
+            if (parameters.ContainsKey("__NavigationMode"))
+                parameters["__NavigationMode"] = NavigationMode.Back;
+            else
+                parameters.Add("__NavigationMode", NavigationMode.New);
+
             OnNavigatedTo(navigationContext.Parameters);
         }
 
@@ -184,6 +194,6 @@ namespace Bit.ViewModel
 
         public bool KeepAlive => KeepAliveInRegion;
 
-        public virtual bool KeepAliveInRegion => false;
+        public virtual bool KeepAliveInRegion { get; set; } = true;
     }
 }

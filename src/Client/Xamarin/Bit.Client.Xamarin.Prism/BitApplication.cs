@@ -1,5 +1,6 @@
 ﻿using Autofac;
 using Autofac.Extensions.DependencyInjection;
+using Bit.Client.Xamarin.Prism.ViewModel.Implementations;
 using Bit.Core.Contracts;
 using Bit.Core.Implementations;
 using Bit.Core.Models.Events;
@@ -17,10 +18,12 @@ using Prism.Navigation;
 using Prism.Plugin.Popups;
 using Prism.Regions.Adapters;
 using Prism.Regions.Behaviors;
+using Prism.Regions.Navigation;
 using Prism.Services;
 using Rg.Plugins.Popup.Contracts;
 using System;
 using System.Collections.Generic;
+using System.Reflection;
 using System.Threading.Tasks;
 using Xamarin.Essentials.Interfaces;
 using Xamarin.Forms;
@@ -127,6 +130,8 @@ namespace Bit
             containerRegistry.RegisterPopupNavigationService();
 
             containerRegistry.RegisterRegionServices();
+
+            dependencyManager.Register(new[] { typeof(IRegionNavigationContentLoader).GetTypeInfo(), typeof(RegionNavigationContentLoader).GetTypeInfo() }, typeof(AutofacRegionNavigationContentLoader).GetTypeInfo(), lifeCycle: DependencyLifeCycle.SingleInstance);
 
             // workaround begin
             containerRegistry.Register<CarouselViewRegionAdapter>();

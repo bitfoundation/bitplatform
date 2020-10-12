@@ -19,7 +19,7 @@ namespace Bit.CSharpClientSample.ViewModels
 
         async Task GoToDRegion()
         {
-            await RegionManager.RequestNavigateAsync("ContentRegion2", "RegionD");
+            await RegionNavigationJornal.NavigationTarget.RequestNavigateAsync("RegionD");
         }
 
         public async override Task OnNavigatedToAsync(INavigationParameters parameters)

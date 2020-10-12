@@ -1,5 +1,6 @@
 ﻿using Bit.ViewModel;
 using Prism.Navigation;
+using Prism.Regions.Navigation;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -17,6 +18,26 @@ namespace Prism.Regions
             {
                 regionManager.Regions.Remove(regionForCleanup);
             }
+        }
+
+        public static async Task RequestNavigateAsync(this INavigateAsync navigateAsync, string target, params (string, object)[] parameters)
+        {
+            await navigateAsync.RequestNavigateAsync(target, ConvertToINavigationParameters(parameters)).ConfigureAwait(false);
+        }
+
+        public static async Task RequestNavigateAsync(this INavigateAsync navigateAsync, string target, INavigationParameters parameters)
+        {
+            TaskCompletionSource<object?> tsc = new TaskCompletionSource<object?>();
+
+            navigateAsync.RequestNavigate(target, result =>
+            {
+                if (result.Error != null)
+                    tsc.SetException(result.Error);
+                else
+                    tsc.SetResult(null);
+            }, parameters);
+
+            await tsc.Task.ConfigureAwait(false);
         }
 
         public static async Task RequestNavigateAsync(this IRegionManager regionManager, string regionName, string target, params (string, object)[] parameters)
