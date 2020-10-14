@@ -24,12 +24,12 @@
 		<PackageLicenseExpression>MIT</PackageLicenseExpression>
 		<PackageProjectUrl>https://github.com/bitfoundation/bitframework</PackageProjectUrl>
 		<PackageIconUrl>https://avatars.githubusercontent.com/u/22663390</PackageIconUrl>
-		<PackageReleaseNotes>https://github.com/bitfoundation/bitframework/releases/tag/v6.1.0</PackageReleaseNotes>
-		<PackageVersion>6.1.0</PackageVersion>
+		<PackageReleaseNotes>https://github.com/bitfoundation/bitframework/releases/tag/v6.2.0</PackageReleaseNotes>
+		<PackageVersion>6.2.0</PackageVersion>
 
 		<!-- Version -->
-		<Version>6.1.0</Version>
-		<AssemblyVersion>6.1.0</AssemblyVersion>
+		<Version>6.2.0</Version>
+		<AssemblyVersion>6.2.0</AssemblyVersion>
 
 		<!-- Compile -->
 		<NeutralLanguage>en</NeutralLanguage>
