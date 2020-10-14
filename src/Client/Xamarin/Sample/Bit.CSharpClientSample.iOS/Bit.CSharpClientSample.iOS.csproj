@@ -126,13 +126,13 @@
     <Reference Include="Xamarin.iOS" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Xamarin.Forms" Version="4.8.0.1451" />
+    <PackageReference Include="Xamarin.Forms" Version="4.8.0.1534" />
     <PackageReference Include="System.Reflection.Emit" Version="4.3.0" ExcludeAssets="All">
       <IncludeAssets>none</IncludeAssets>
     </PackageReference>
-	<PackageReference Include="Xamarin.Firebase.iOS.Core" Version="6.6.6" />
-	<PackageReference Include="Xamarin.Firebase.iOS.Crashlytics" Version="3.14.0.3" />
-	<PackageReference Include="Xamarin.Firebase.iOS.Analytics" Version="6.4.1" />
+    <PackageReference Include="Xamarin.Firebase.iOS.Core" Version="6.6.6" />
+    <PackageReference Include="Xamarin.Firebase.iOS.Crashlytics" Version="3.14.0.3" />
+    <PackageReference Include="Xamarin.Firebase.iOS.Analytics" Version="6.4.1" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\..\..\Universal\Bit.Universal.Core\Bit.Universal.Core.csproj">

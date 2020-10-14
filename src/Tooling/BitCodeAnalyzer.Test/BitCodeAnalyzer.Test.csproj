@@ -25,8 +25,8 @@
 		<PackageReference Include="MSTest.TestAdapter" Version="2.1.2" />
 		<PackageReference Include="MSTest.TestFramework" Version="2.1.2" />
 		<PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.7.1" />
-		<PackageReference Include="NuGet.Frameworks" Version="5.8.0-preview.3.6823" />
-		<PackageReference Include="NuGet.ProjectModel" Version="5.8.0-preview.3.6823" />
+		<PackageReference Include="NuGet.Frameworks" Version="5.8.0-rc.6860" />
+		<PackageReference Include="NuGet.ProjectModel" Version="5.8.0-rc.6860" />
 	</ItemGroup>
 
 	<ItemGroup>

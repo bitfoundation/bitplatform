@@ -11,7 +11,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\Universal\Bit.Universal.Data.EntityFrameworkCore\Bit.Universal.Data.EntityFrameworkCore.csproj" />
     <ProjectReference Include="..\Bit.Server.Data\Bit.Server.Data.csproj" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="5.0.0-rc.1.20451.13" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="5.0.0-rc.2.20475.6" />
   </ItemGroup>
 	
 </Project>
