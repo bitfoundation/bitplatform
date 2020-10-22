@@ -1,10 +1,10 @@
-﻿# Optimizations of images in Xamarin Forms
+# Xamarin Forms Images Optimization
+
+\# Optimizations of images in Xamarin Forms
 
 I invite you in advance to read this article even if you use other methods of mobile application development such as Flutter, React native, etc instead of Xamarin Forms; Because the general idea and its important points can be useful for you as well.
 
-When you get your design from a designer and let's say you want to display a glass image on a page of a mobile app, you are given a PNG or SVG file. Although there are generally ways to use the same file directly on your application page, this is not recommended for several reasons:
-1. Different devices have different resolutions, and the mobile (sometimes weak) hardware must scale the image for optimal display, which is a waste of CPU and memory.
-2. Even when the scaling operation is done, when the relevant page (containing the scaled image) is closed and we go to another page, in reopening the relevant page, this costly scaling operation will occur again.
+When you get your design from a designer and let's say you want to display a glass image on a page of a mobile app, you are given a PNG or SVG file. Although there are generally ways to use the same file directly on your application page, this is not recommended for several reasons: 1. Different devices have different resolutions, and the mobile \(sometimes weak\) hardware must scale the image for optimal display, which is a waste of CPU and memory. 2. Even when the scaling operation is done, when the relevant page \(containing the scaled image\) is closed and we go to another page, in reopening the relevant page, this costly scaling operation will occur again.
 
 To solve these problems, two steps can be taken:
 
@@ -18,13 +18,13 @@ Of course, the impact of this scaling operation on performance is so positively 
 
 There is a tool called `pngcrunch` in iOS, which optimizes and compresses PNG images and is effective in reducing its file size. To use this tool, in `Xamarin.iOS` inside the `Project Settings`, in the `iOS Build` section, select the `Optimize PNG Images` checkbox and you are good to go.
 
-However, even if the images are stored in different scales, there is a stage where the PNG becomes a displayable bitmap. This is also costly and will be repeated when you close and reopen a page. Also, if you have five items in a ListView that have a picture (in each item), this process is repeated five times.
+However, even if the images are stored in different scales, there is a stage where the PNG becomes a displayable bitmap. This is also costly and will be repeated when you close and reopen a page. Also, if you have five items in a ListView that have a picture \(in each item\), this process is repeated five times.
 
 Android has introduced a tool called `Glide`, which caches the PNG to displayable bitmap conversion step, therefore there will be no problems with opening and closing pages or using a photo in ListView anymore.
 
 In Xamarin Forms using [`GlideX.Forms`](https://github.com/jonathanpeppers/glidex), you can make this optimization very effective in Android and achieve soft scroll in ListView and quick opening of pages. In iOS, the [`Nuke`](https://github.com/kean/Nuke) library does the same job, which you can use it in Xamarin Forms with [this Package](https://github.com/roubachof/Xamarin.Forms.Nuke).
 
-Another advantage of using `GlideX.Forms` and `Nuke` are that if you receive and display photos from the server somewhere in the application (for example, photos of clients in the client's list), these two tools will cache the final image after scaling and converting to Bitmap, for later use. So the next time we require the same image to be displayed, instead of re-scaling and becoming a Bitmap again, only ready-to-display content is displayed to the user from the cache.
+Another advantage of using `GlideX.Forms` and `Nuke` are that if you receive and display photos from the server somewhere in the application \(for example, photos of clients in the client's list\), these two tools will cache the final image after scaling and converting to Bitmap, for later use. So the next time we require the same image to be displayed, instead of re-scaling and becoming a Bitmap again, only ready-to-display content is displayed to the user from the cache.
 
 Finally, with a few simple configuration lines and installing some packages, you can have an optimized SVG or PNG to be displayed in Android/iOS/Windows.
 

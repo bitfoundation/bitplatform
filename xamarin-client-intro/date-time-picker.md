@@ -1,12 +1,12 @@
-# Bit Date Picker
+# Date Time Picker
 
 **BitDateTimePicker** is a fully customizable control that supports any calendar system that [noda time supports](https://nodatime.org/1.3.x/userguide/calendars) and any locale that .NET supports. It supports Android/iOS/UWP.
 
 This calendar is dependent on [RgPluginsPopup](https://github.com/rotorgames/Rg.Plugins.Popup/wiki/Getting-started).
 
-### How to Use BitDateTimePicker in Xaml:
+## How to Use BitDateTimePicker in Xaml:
 
-```xml
+```markup
 <bit:BitDateTimePicker
     Text="Please select a date time" 
     SelectedColor="LightBlue"
@@ -14,10 +14,9 @@ This calendar is dependent on [RgPluginsPopup](https://github.com/rotorgames/Rg.
     TodayColor="Blue" />
 ```
 
-You can also customize **FontFamily**, **DateDisplayFormat**, **CalendarSystem** and **Culture**. For example, to change calendar system and locale to Solar (Persian) you can use following sample:
+You can also customize **FontFamily**, **DateDisplayFormat**, **CalendarSystem** and **Culture**. For example, to change calendar system and locale to Solar \(Persian\) you can use following sample:
 
-```xml
-
+```markup
 xmlns:noda="clr-namespace:NodaTime;assembly=NodaTime"
 
 <bit:BitDateTimePicker
@@ -28,13 +27,13 @@ xmlns:noda="clr-namespace:NodaTime;assembly=NodaTime"
     FlowDirection="RightToLeft" />
 ```
 
-In order to have a DatePicker with (Arabic-Persian) numbers, you can use a font with those numbers such as [Vazir-FD-WOL](https://github.com/rastikerdar/vazir-font/tree/master/dist/Farsi-Digits-Without-Latin) (FD=>Farsi Digits) (WOL=> Without Latin)
+In order to have a DatePicker with \(Arabic-Persian\) numbers, you can use a font with those numbers such as [Vazir-FD-WOL](https://github.com/rastikerdar/vazir-font/tree/master/dist/Farsi-Digits-Without-Latin) \(FD=&gt;Farsi Digits\) \(WOL=&gt; Without Latin\)
 
 There is a **SelectedDate** property which is bindable.
 
 In order to customize picker's button you can have followings:
 
-```xml
+```markup
 <bit:BitDateTimePicker Text="Please Select a date">
     <bit:BitDateTimePicker.ControlTemplate>
         <ControlTemplate>
@@ -58,8 +57,9 @@ In order to customize picker's button you can have followings:
 
 You can also use BitDateTimePickerView without its popup to show it in your own popup or page as followings:
 
-```xml
+```markup
 <bit:BitDateTimeView />
 ```
 
-![Bit date time picker](date-time-picker.jpg)
+![Bit date time picker](../.gitbook/assets/date-time-picker.jpg)
+

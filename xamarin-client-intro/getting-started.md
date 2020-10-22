@@ -1,12 +1,14 @@
+# Controls Config
+
 ## Controls Config
 
 In order to use Bit Xamarin Client Controls, install "Bit.Client.Xamarin.Controls" nuget package.
 
 ## Launching the controls in iOS
 
-To launch the controls in iOS, call the  BitCSharpClientControls.Init(); method in the FinishedLaunching overridden method of the AppDelegate class after the Xamarin.Forms framework has been initialized and before the LoadApplication method is called as shown in the following code sample:
+To launch the controls in iOS, call the BitCSharpClientControls.Init\(\); method in the FinishedLaunching overridden method of the AppDelegate class after the Xamarin.Forms framework has been initialized and before the LoadApplication method is called as shown in the following code sample:
 
-```cs
+```csharp
 public override bool FinishedLaunching(UIApplication app, NSDictionary options) 
 { 
     … 
@@ -21,9 +23,9 @@ public override bool FinishedLaunching(UIApplication app, NSDictionary options)
 
 ## Launching the controls in Android
 
-To launch the controls in Android, call the  BitCSharpClientControls.Init(); method in the OnCreate overridden method of the MainActivity class after the Xamarin.Forms framework has been initialized.
+To launch the controls in Android, call the BitCSharpClientControls.Init\(\); method in the OnCreate overridden method of the MainActivity class after the Xamarin.Forms framework has been initialized.
 
-```cs
+```csharp
 protected override void OnCreate(Bundle savedInstanceState)
 {     
     …
@@ -38,7 +40,7 @@ protected override void OnCreate(Bundle savedInstanceState)
 
 You'll also need following LinkerConfig.xml
 
-```xml
+```markup
 <assembly fullname="Bit.Client.Xamarin.Controls">
     <type fullname="*" />
   </assembly>
@@ -64,11 +66,11 @@ You'll also need following LinkerConfig.xml
   </assembly>
 ```
 
-## Launching the controls in Windows(UWP) Min 17763
+## Launching the controls in Windows\(UWP\) Min 17763
 
-To launch the controls in UWP, call the BitCSharpClientControls.Init(); method in the OnLaunched overridden method of the App.xaml.cs class.
+To launch the controls in UWP, call the BitCSharpClientControls.Init\(\); method in the OnLaunched overridden method of the App.xaml.cs class.
 
-```cs
+```csharp
 protected override void OnLaunched(LaunchActivatedEventArgs e)
 {
     …
@@ -81,16 +83,17 @@ protected override void OnLaunched(LaunchActivatedEventArgs e)
 
 In xaml page add following namepsace to your page:
 
-```xml
+```markup
 xmlns:bit="https://bitframework.com"
 ```
 
-And put following in App.xaml.cs after InitializeComponent();
+And put following in App.xaml.cs after InitializeComponent\(\);
 
-```cs
+```csharp
 BitCSharpClientControls.XamlInit();
 ```
 
-To have better understanding see [samples](/Samples/CSharpClientSamples/Controls.Samples).
+To have better understanding see [samples](https://github.com/bitfoundation/bitframework/tree/1ef0c80c09bf594682a58a171686d19f79b0a2c2/Samples/CSharpClientSamples/Controls.Samples).
 
 Feedbacks/issues/questions are also welcomed in [stackoverflow](http://stackoverflow.com/questions/tagged/bit-framework) or [github](https://github.com/bit-foundation/bit-framework/issues/new?labels=&template=bug_report.md).
+

@@ -1,4 +1,4 @@
-# Bit Web API
+# Web API
 
 Web API is a powerful library to develop rest api in .NET world. If you're not familiar with that, you can [get start here](https://www.asp.net/web-api).
 
@@ -12,8 +12,9 @@ Using bit you'll get more benefits from web api. This includes following:
 
 ## Getting started
 
-Run following command after you installed [git for windows](https://git-scm.com/download/win) (You can use any git client)
-```shell
+Run following command after you installed [git for windows](https://git-scm.com/download/win) \(You can use any git client\)
+
+```text
 git clone https://github.com/bit-foundation/bit-framework.git
 ```
 
@@ -24,7 +25,6 @@ There are several classes there. Program and ValuesController are get copied fro
 For now, let's ignore the third class: "AppStartup".
 
 Press F5, you'll see the result in your default browser. This project starts an asp.net core server which allows you to host bit based apps.
-
 
 What's AppStartup class anyway? It configures your app. You'll understand its parts while you're reading docs, but for now let's focus on following codes only:
 
@@ -48,8 +48,7 @@ Bit is an extensible framework developed based on best practices. We've extensiv
 
 In following samples, you can find out how to customize web api in bit, but feel free to [drops us an issue in github](https://github.com/bit-foundation/bit-framework/issues), ask a question on [stackoverflow.com](http://stackoverflow.com/questions/tagged/bit-framework) or use disqus comments below if you can't find what you want in these samples.
 
-
-### Web API - Swagger (Open-API) configuration sample
+### Web API - Swagger \(Open-API\) configuration sample
 
 Swagger is the World's Most Popular API Tooling. by using this real world sample, you can find out how to customize web api in bit projects.
 
@@ -57,7 +56,7 @@ Read [first part of "Swagger and ASP.NET Web API"](http://wmpratt.com/swagger-an
 
 Differences between our WebApiSample and that article:
 
-1- There is no App_Start folder in bit projects by default. It's not needed.
+1- There is no App\_Start folder in bit projects by default. It's not needed.
 
 2- In following code:
 
@@ -69,39 +68,38 @@ GlobalConfiguration.Configuration
 
 [GlobalConfiguration](https://msdn.microsoft.com/en-us/library/system.web.http.globalconfiguration.aspx) uses traditional ASP.NET pipeline directly and it does not work on ASP.NET Core. We're not using that.
 
-
 3- Instead of adding Swashbuckle package, you've to install Swashbuckle.Core package. Swashbuckle.Core package works with ASP.NET Core.
 
-
 4- In following code:
+
 ```csharp
 c.IncludeXmlComments(string.Format(@"{0}\bin\SwaggerDemoApi.XML",           
                            System.AppDomain.CurrentDomain.BaseDirectory));
 ```
-We've used #DefaultPathProvider.Current.GetCurrentAppPath()# instead of #System.AppDomain.CurrentDomain.BaseDirectory# which works fine on all environments. We also use Path.Combine which works fine on both windows/linux servers instead of string.Format and "\" character usage which works in windows machines only.
 
+We've used \#DefaultPathProvider.Current.GetCurrentAppPath\(\)\# instead of \#System.AppDomain.CurrentDomain.BaseDirectory\# which works fine on all environments. We also use Path.Combine which works fine on both windows/linux servers instead of string.Format and "\" character usage which works in windows machines only.
 
 5- We've following code which has no equivalent in the article codes:
+
 ```csharp
 c.ApplyDefaultApiConfig(httpConfiguration);
 ```
-As you see in the article, you open swagger ui by opening http://localhost:51609/swagger/ but in bit's sample, you open http://localhost:9006/api/swagger/. You open /swagger under /api. This is a magic of owin/asp.net core's request branching. Calling method "ApplyDefaultApiConfig" describs that magic to swagger. It also performs a bunch of other recommneded swagger configs for you too.
+
+As you see in the article, you open swagger ui by opening [http://localhost:51609/swagger/](http://localhost:51609/swagger/) but in bit's sample, you open [http://localhost:9006/api/swagger/](http://localhost:9006/api/swagger/). You open /swagger under /api. This is a magic of owin/asp.net core's request branching. Calling method "ApplyDefaultApiConfig" describs that magic to swagger. It also performs a bunch of other recommneded swagger configs for you too.
 
 EnableBitSwaggerUI provides better UX for Swagger UI. As an example, it simplifies your login experience. It also stores your token, so you don't have to login everytime you open swagger.
 
-Hope you're good to go! (":
+Hope you're good to go! \(":
 
 ### Web API file upload
 
-There is a [question](https://stackoverflow.com/questions/10320232/how-to-accept-a-file-post) on stackoverflow.com about web api file upload.
-The important thing you've to notice is "You don't have to use System.Web.dll classes in bit world!
+There is a [question](https://stackoverflow.com/questions/10320232/how-to-accept-a-file-post) on stackoverflow.com about web api file upload. The important thing you've to notice is "You don't have to use System.Web.dll classes in bit world!
 
-Web API Attribute routing works fine in bit projects, but instead of [Route("api/file-manager/upload")] or [RoutePrefix("api/file-manager")], you've to write [Route("file-manager/upload")] or [RoutePrefix("file-manager)], this means **you should not write /api in your attribute routings**.
+Web API Attribute routing works fine in bit projects, but instead of \[Route\("api/file-manager/upload"\)\] or \[RoutePrefix\("api/file-manager"\)\], you've to write \[Route\("file-manager/upload"\)\] or \[RoutePrefix\("file-manager\)\], this means **you should not write /api in your attribute routings**.
 
-Remember to use async/await and CancellationToken in your Web API codes at it improves your app overall scalability and performance. Using CancellationToken, application stops processing requests when user/operator cancels her request. (By closing the browser/mobile app or clicking on cancel button provided by you).
+Remember to use async/await and CancellationToken in your Web API codes at it improves your app overall scalability and performance. Using CancellationToken, application stops processing requests when user/operator cancels her request. \(By closing the browser/mobile app or clicking on cancel button provided by you\).
 
-Our sample contains upload methods using Web API attribute routing and uses async/await & CancellationToken.
-It also uses file upload in swagger ui.
+Our sample contains upload methods using Web API attribute routing and uses async/await & CancellationToken. It also uses file upload in swagger ui.
 
 ### Web API - Dependency Injection samples:
 
@@ -113,7 +111,7 @@ As you see in that project, there is an IEmailService interface and DefaultEmail
 dependencyManager.Register<IEmailService, DefaultEmailService>();
 ```
 
-It uses [Autofac](https://autofac.org/) by default. Support for other IOC containers is going to be added soon. It also support Microsoft.Extensions.DependencyInjection (IServiceCollection services)
+It uses [Autofac](https://autofac.org/) by default. Support for other IOC containers is going to be added soon. It also support Microsoft.Extensions.DependencyInjection \(IServiceCollection services\)
 
 You can also specify life cycle by calling .Register like following:
 
@@ -152,7 +150,7 @@ It is known that a customer with identical first name and last name would not be
 
 Every **unknown exception** results into following response:
 
-```
+```text
 StatusCode: 500
 ReasonPharse: "UnKnownError"
 Message: "UnKnownError"
@@ -171,15 +169,16 @@ public void ValidateCustomer(Customer customer)
         throw new DomainLogicException("Customer's first name and last name might not be identical"); // Sample rule.
 }
 ```
+
 The response would be:
 
-```
+```text
 StatusCode: 500
 ReasonPharse: "KnownError"
 Message: "Customer's first name and last name might not be identical"
 ```
 
-Bad request exception is as like as DomainLogicException, but it results in a response with (400-BadRequest) status code. The status code of ResourceNotFoundException would be 404
+Bad request exception is as like as DomainLogicException, but it results in a response with \(400-BadRequest\) status code. The status code of ResourceNotFoundException would be 404
 
 Let's take a look at another example:
 
@@ -194,10 +193,9 @@ public async Task UpdateCustomer(int customerId, string newName)
 
 Notes:
 
-1- Every response has a header called X-Correlation-ID (RequestId). When we log exceptions for you, it has a X-Correlation-ID, so you can associate a request/response to logs.
+1- Every response has a header called X-Correlation-ID \(RequestId\). When we log exceptions for you, it has a X-Correlation-ID, so you can associate a request/response to logs.
 
-2- When your app is in debug mode, exceptions details are written into responses.
-So you see exception details, no matter the exception is known or not, but in production, you see "UnKnownException" for unknown exceptions and exception's message for known exceptions.
+2- When your app is in debug mode, exceptions details are written into responses. So you see exception details, no matter the exception is known or not, but in production, you see "UnKnownException" for unknown exceptions and exception's message for known exceptions.
 
 Pro tip: If you prefer to create new "Known" exception types, [take a look at following question in stackoverflow.com](https://stackoverflow.com/a/46202377/2720104)
 
@@ -212,3 +210,4 @@ To add event log stores you can use following code:
 ```csharp
 dependencyManager.RegisterDefaultLogger(typeof(WindowsEventsLogStore).GetTypeInfo(), typeof(DebugLogStore).GetTypeInfo()); // You can add as many as event log stores you want.
 ```
+

@@ -1,4 +1,6 @@
-﻿## **Infrastructure as a Code** Solution
+# Infrastructure as a Code Solution
+
+\#\# **Infrastructure as a Code** Solution
 
 `Infrastructure as code` is the process of defining Infrastructure as a series of files; Instead of managing Infra with interactive tools like Portals.
 
@@ -6,7 +8,7 @@ The advantage of this method is that if we have different stages such as Develop
 
 This method, due to its automation, reduces the possibility of errors and, depending on the implementation method, can be very similar to Migrations in EntityFramework, as migrations are created and applied to the Development database, and only if the tests are passed, the changes can be sent automatically to the QA, etc, and it is not possible to forget anything in between.
 
-One of the best tools for `Infra as a code` is a tool called **[Pulumi](https://www.pulumi.com/)**, which is compatible with Kubernetes, Azure, AWS, and Google Cloud.
+One of the best tools for `Infra as a code` is a tool called [**Pulumi**](https://www.pulumi.com/), which is compatible with Kubernetes, Azure, AWS, and Google Cloud.
 
 **Kubernetes**, for example, has its own methods for maintaining the Infra structure in its configuration files, but Pulumi offers both simplicity and ease in the Cloud, where you typically use your own Cloud Database Services and App Services and Logging Systems which are not Kubernetes subsets. You can control the whole Cloud and Kubernetes at the same time with one tool.
 
@@ -14,8 +16,7 @@ For example, most people in the Cloud, use `Database as a service` instead of cr
 
 To work with Pulumi, you can get an account from its website, in which case snapshots of Infra changes in the code are stored inside the Pulumi website, or you can keep Snapshots similar to the Snapshots of the Entity Framework inside the source controller, therefore you will not have any dependency on Pulumi servers.
 
-After installing Pulumi CLI, you can create a project with one of the programming languages Go, C#, JavaScript or Python and then create your own resources inside it and create Firewall settings and ...
-
+After installing Pulumi CLI, you can create a project with one of the programming languages Go, C\#, JavaScript or Python and then create your own resources inside it and create Firewall settings and ...
 
 Then with the `Pulumi up` command, your changes will be applied to Development or any other stage you have selected. Finally, if Infra needs to be changed, first you change the project file and then go through the other necessary procedures within the team, including Code Review, etc., and then run `Pulumi up` again.
 
@@ -23,7 +24,7 @@ The following is an example code, from the launch of App Service, SQL Server, Bl
 
 The App Service built to run our Backend will have both a Connection String connected to the database and a Connection String related to Blob Storage to store its files in it, and finally, Application Insights will be responsible for Monitoring.
 
-   ```csharp
+```csharp
 var sqlDatabasePassword = pulumiConfig.RequireSecret("sql-server-nikola-dev-password");
 var sqlDatabaseUserId = pulumiConfig.RequireSecret("sql-server-nikola-dev-user-id");
 
@@ -157,6 +158,7 @@ appService.OutboundIpAddresses.Apply(ips =>
 });
 ```
 
-Now assume we start using Redis in the new Sprint. This will change the file above and a Redis will be added to it. The above file is a single source of truth, and by looking at it we can actually understand what the structure of our Infra is (exactly like the model in the Entity Framework Core).
+Now assume we start using Redis in the new Sprint. This will change the file above and a Redis will be added to it. The above file is a single source of truth, and by looking at it we can actually understand what the structure of our Infra is \(exactly like the model in the Entity Framework Core\).
 
-Then, when changes are to be made to QA, the CI/CD routine can automatically first change its own Infra (i.e. QA) to add Redis, then publish the project and execute Database migrations. If the whole process finished successfully, all of these procedures will be applied automatically when publishing to Production without any manual work, which in turn will create a fundamental improvement in the project's DevOps routine.
+Then, when changes are to be made to QA, the CI/CD routine can automatically first change its own Infra \(i.e. QA\) to add Redis, then publish the project and execute Database migrations. If the whole process finished successfully, all of these procedures will be applied automatically when publishing to Production without any manual work, which in turn will create a fundamental improvement in the project's DevOps routine.
+

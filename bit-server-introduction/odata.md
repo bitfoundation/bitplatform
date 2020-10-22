@@ -1,20 +1,18 @@
- # Bit OData
+# OData
 
-So, what's OData? following text which is copied from http://odata.org describes odata well:
+So, what's OData? following text which is copied from [http://odata.org](http://odata.org) describes odata well:
 
-OData (Open Data Protocol) is an ISO/IEC approved, OASIS standard that defines a set of best practices for building and consuming "RESTful APIs". OData helps you "focus on your business logic" while building RESTful APIs.
-OData RESTful APIs are easy to consume. The OData metadata, a machine-readable description of the data model of the APIs, enables the creation of powerful generic client proxies and tools.
+OData \(Open Data Protocol\) is an ISO/IEC approved, OASIS standard that defines a set of best practices for building and consuming "RESTful APIs". OData helps you "focus on your business logic" while building RESTful APIs. OData RESTful APIs are easy to consume. The OData metadata, a machine-readable description of the data model of the APIs, enables the creation of powerful generic client proxies and tools.
 
-Using bit framework, you can build OData services very easily, and we generate C# proxies for you automatically that you can use in Xamarin Forms & Blazor apps. We also have out of the box support for Open-API (Swagger). Using [azure auto rest](https://github.com/Azure/autorest) tools, you can generate client side for almost any language you want. You can also send raw http requests to odata services and you can expect raw responses.
+Using bit framework, you can build OData services very easily, and we generate C\# proxies for you automatically that you can use in Xamarin Forms & Blazor apps. We also have out of the box support for Open-API \(Swagger\). Using [azure auto rest](https://github.com/Azure/autorest) tools, you can generate client side for almost any language you want. You can also send raw http requests to odata services and you can expect raw responses.
 
 **An OData controller has full built-in support for paging/filtering/sorting/projection/grouping and aggregation.**
 
 At client side, you develop LINQ queries, and then OData sends that query to server side and server returns data based on your query. OData supports batch requests as well which results into better performance & scability.
 
-In bit apps, you develop odata controllers for your DTO (Data transfer objects) classes.
+In bit apps, you develop odata controllers for your DTO \(Data transfer objects\) classes.
 
-Instead of sending your "domain models/entities" to client, you send DTO to the client. Your "model/entities" gets complicated over time based on business requirements, and at the client side you need something less complicated and easier to use. DTO (Something similar to ViewModel in MVC) is a common best practice in modern software development world.
-
+Instead of sending your "domain models/entities" to client, you send DTO to the client. Your "model/entities" gets complicated over time based on business requirements, and at the client side you need something less complicated and easier to use. DTO \(Something similar to ViewModel in MVC\) is a common best practice in modern software development world.
 
 **"Model/Entity" - DTO examples:**
 
@@ -99,7 +97,7 @@ To follow best practices, keep these rules in your mind:
 
 To send DTO to client side, you develop DtoController. [Examples can be found here](https://github.com/bit-foundation/bit-framework/tree/master/Samples/ODataExamples/).
 
-### 1- CustomerDtoControllerSample
+## 1- CustomerDtoControllerSample
 
 In Bit-OData, you develop DtoController instead of ApiController. Note that you can continue developing API controllers side by side.
 
@@ -136,16 +134,13 @@ public virtual async Task<IQueryable<CustomerDto>> GetActiveCustomers(Cancellati
 }
 ```
 
-Mapper automatically maps "model/entities" classes to DTO classes. It uses [AutoMapper](http://automapper.org/) by default and the way we use auto mapper will not slow down your app as described [here](docs/blog/why-auto-mapper-has-no-performance-penalty.md)
+Mapper automatically maps "model/entities" classes to DTO classes. It uses [AutoMapper](http://automapper.org/) by default and the way we use auto mapper will not slow down your app as described [here](https://github.com/bitfoundation/bitframework/tree/500c990c241d3860c756b1a01fd380bfc63c6628/docs/bit-server-side/docs/blog/why-auto-mapper-has-no-performance-penalty.md)
 
 Note that you don't have to use bit repository here. You don't have to use entity framework either. You can use mongo db, simple array etc. We need some customer dto instances only.
 
-**[Function] is used to return data**, it has to return data, and it accepts simple type parameters like int, string, enum, etc.
-**[Action] is used to do something**, its return value is optional, and it accepts almost anything.
+**\[Function\] is used to return data**, it has to return data, and it accepts simple type parameters like int, string, enum, etc. **\[Action\] is used to do something**, its return value is optional, and it accepts almost anything.
 
-Run the app and you're good to go. That's a swagger's console you see by default. By opening http://localhost:9000/odata/MyApp/$metadata you see $metadata. $metadata describes your DTO classes, complex types, enums, actions and functions in a standard format. There are tools in several languages to generate client side proxy for you. You can see the list of libraries and tools [here](http://www.odata.org/libraries/).
-Note that you can call OData controllers using jquery ajax, fetch, etc too, as they're REST APIs.
-
+Run the app and you're good to go. That's a swagger's console you see by default. By opening [http://localhost:9000/odata/MyApp/$metadata](http://localhost:9000/odata/MyApp/$metadata) you see $metadata. $metadata describes your DTO classes, complex types, enums, actions and functions in a standard format. There are tools in several languages to generate client side proxy for you. You can see the list of libraries and tools [here](http://www.odata.org/libraries/). Note that you can call OData controllers using jquery ajax, fetch, etc too, as they're REST APIs.
 
 Try GetActiveCustomers, It runs something like this on a database:
 
@@ -153,10 +148,9 @@ Try GetActiveCustomers, It runs something like this on a database:
 select * from Customers inner join Cities on Id = CustomerId where IsActive = 1 /*1 means true for sql server database. It comes from your server side linq query: Where(c => c.IsActive == true))*/
 ```
 
-It accepts several parameters such as $filter, $order by etc. These are standard OData parameters and they work no matter where the data is come from (Bit repository, entity framework's db context, simple array etc).
+It accepts several parameters such as $filter, $order by etc. These are standard OData parameters and they work no matter where the data is come from \(Bit repository, entity framework's db context, simple array etc\).
 
-
-Try     CityId eq 1      for $filter, it returns customers located in City 1 only!
+Try CityId eq 1 for $filter, it returns customers located in City 1 only!
 
 It runs something like this on a database:
 
@@ -164,10 +158,9 @@ It runs something like this on a database:
 select * from Customers inner join Cities on Id = CustomerId where IsActive = 1 and CityId = 1
 ```
 
-As you see, the filter we've developed at server side (c => c.IsActive == true) is **combined** with query we passed from client side (CityId eq 1). Filters are combined with "AND", so there is no security risk at all.
+As you see, the filter we've developed at server side \(c =&gt; c.IsActive == true\) is **combined** with query we passed from client side \(CityId eq 1\). Filters are combined with "AND", so there is no security risk at all.
 
-
-Try     Id,FirstName,LastName    for $select, it returns those properties of customers only!
+Try Id,FirstName,LastName for $select, it returns those properties of customers only!
 
 It runs something like this on a database:
 
@@ -177,8 +170,7 @@ select Id,FirstName,LastName from Customers where IsActive = 1 /*true*/
 
 There is no join between customers and cities as we've not requested CityName property. It's smart!
 
-By default server returns all Dto properties and we've to provide $select if we prefer to retrive less columns.
-But **server won't send associations by default**.
+By default server returns all Dto properties and we've to provide $select if we prefer to retrive less columns. But **server won't send associations by default**.
 
 Imaging that CustomerDto has a list of OrderDto called Orders.
 
@@ -190,10 +182,9 @@ public class CustomerDto: IDto
 }
 ```
 
-If you prefer to load cusotmers by their orders, you've to provide **Orders** to $expand.
-$expand is something similar to Include method of entity framework.
+If you prefer to load cusotmers by their orders, you've to provide **Orders** to $expand. $expand is something similar to Include method of entity framework.
 
-OData supports filtering, ordering, projection, paging etc in a standard way. Almost all UI vendors have support for OData in their rad components such as data grid etc. You can create amazing excel sheets and dashboard using its odata support. In C#/TypeScript/JavaScript you're able to write LINQ queries to consume odata resources. For example:
+OData supports filtering, ordering, projection, paging etc in a standard way. Almost all UI vendors have support for OData in their rad components such as data grid etc. You can create amazing excel sheets and dashboard using its odata support. In C\#/TypeScript/JavaScript you're able to write LINQ queries to consume odata resources. For example:
 
 ```csharp
 context.customers.GetActiveCustomers().Where(c => c.CityId == 1).ToArray(); // C#
@@ -205,7 +196,7 @@ context.customers.getActiveCustomers().filter(c => c.CityId == 1).toArray(); // 
 
 **OData action:**
 
-GetActiveCustomers is an OData function. Let's write an OData action to send an email to a customer by customerId and message. (Imaging every customer has an email in database).
+GetActiveCustomers is an OData function. Let's write an OData action to send an email to a customer by customerId and message. \(Imaging every customer has an email in database\).
 
 ```csharp
 public class SendEmailToCustomerArgs
@@ -222,7 +213,7 @@ public async Task SendEmailToCustomer(SendEmailToCustomerArgs args)
 }
 ```
 
-As you can see this action has no return value (Task is an async equivalent of void). There is a class called SendEmailToCustomerArgs. **Each property of that class describes one of your parameters.** It can have a properties such as public CustomerDto[] customers { get; set; } etc.
+As you can see this action has no return value \(Task is an async equivalent of void\). There is a class called SendEmailToCustomerArgs. **Each property of that class describes one of your parameters.** It can have a properties such as public CustomerDto\[\] customers { get; set; } etc.
 
 To accept a complex type, you've to define your complex type as following:
 
@@ -246,7 +237,7 @@ public class SendEmailToCustomerParams
 }
 ```
 
-Note that action can have no parameter, or parameters with types of dto/complex type/simple type(string,int,...). **But you may not accept your model as a parameter.** For example, you may not accept a list of your customer models in your action. Try using list of customer dto instead.
+Note that action can have no parameter, or parameters with types of dto/complex type/simple type\(string,int,...\). **But you may not accept your model as a parameter.** For example, you may not accept a list of your customer models in your action. Try using list of customer dto instead.
 
 **OData Single result:**
 
@@ -285,7 +276,6 @@ Now you can use $select & $expand.
 Imaging you've CategoryDto & ProductDto classes where one category has many products. You can write followings:
 
 ```csharp
-
 public class CategoryDto : IDto
 {
     public int Id { get; set; }
@@ -306,18 +296,17 @@ public class ProductDto : IDto
     [ForeignKey(nameof(CategoryId))]
     public CategoryDto Category { get; set; }
 }
-
 ```
 
 You provide such a details for following reasons:
 
-1- OData is a query language, for example, you can execute complicated queries such as "categories with 'Test' in their names" ($filter) directly from the client side. You can load customers which are located in the specific city with or without their orders ($exapnd).
+1- OData is a query language, for example, you can execute complicated queries such as "categories with 'Test' in their names" \($filter\) directly from the client side. You can load customers which are located in the specific city with or without their orders \($exapnd\).
 
-2- We offer a local (sqlLite-webSql-indexedDb) database creation from your DTO(s) in C#/JavaScript/TypeScript, so you can use linq queries to work with the offline database as like as your odata server. We also offer a sync service to push/pull changes to/from online server and local database. To create that database, we need those information.
+2- We offer a local \(sqlLite-webSql-indexedDb\) database creation from your DTO\(s\) in C\#/JavaScript/TypeScript, so you can use linq queries to work with the offline database as like as your odata server. We also offer a sync service to push/pull changes to/from online server and local database. To create that database, we need those information.
 
 **DtoSetController:**
 
-DtoSetController needs 3 things: Model-Dto-Repository. It gives you Create-Read-Update-Delete over that repository. It's really simple and extendable. You can write actions/functions there and you can override following Create|Read|Update|Delete methods to customize them.
+DtoSetController needs 3 things: Model-Dto-Repository. It gives you Create-Read-Update-Delete over that repository. It's really simple and extendable. You can write actions/functions there and you can override following Create\|Read\|Update\|Delete methods to customize them.
 
 DtoSetController's sample:
 
@@ -330,12 +319,11 @@ public class CategoriesController : DtoSetController<CategoryDto, Category, int 
 
 **Custom Dto-Model mapping:**
 
-Imaging CategoryDto has a property called HasProduct. It's a calculated property by something like this: category => category.Products.Any()
+Imaging CategoryDto has a property called HasProduct. It's a calculated property by something like this: category =&gt; category.Products.Any\(\)
 
 To handle this, you've to develop custom mapping using AutoMapper facilities. For example:
 
 ```csharp
-
 public class MyAppDtoEntityMapperConfiguration : IDtoEntityMapperConfiguration
 {
     public virtual void Configure(IMapperConfigurationExpression mapperConfigExpression)
@@ -347,14 +335,13 @@ public class MyAppDtoEntityMapperConfiguration : IDtoEntityMapperConfiguration
 
 // AppStartup class
 dependencyManager.RegisterDtoEntityMapperConfiguration<MyAppDtoEntityMapperConfiguration>();
-
 ```
 
 Run the app, you can insert/update/delete/read categories and products using swagger ui. You can invoke OData queries such as $filter there.
 
 ToDo:
 
-How to generate C# proxies?
+How to generate C\# proxies?
 
 Background Job Worker
 
@@ -365,3 +352,4 @@ Identity Server
 Automated Tests
 
 Project creation using bit CLI
+

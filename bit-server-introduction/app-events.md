@@ -1,17 +1,18 @@
-# Summary
-There are situations you want to do something during the life-cycle of a web application.
-For example you want to initialize your cache **when the applicaiton starts**. 
-Or you want to run some code **when the applications finishes**.
+# AppEvents
+
+## Summary
+
+There are situations you want to do something during the life-cycle of a web application. For example you want to initialize your cache **when the applicaiton starts**. Or you want to run some code **when the applications finishes**.
 
 In these situations you can create a class implementing `IAppEvents` interface to describe your logic. Then registering it using `DependencyManager`.
 
-# Example
+## Example
 
-``` c#
+```text
 public class CacheAppEvents : IAppEvents
 {
     // You can inject whatever you want using property injection.
-    
+
     public void OnAppStartup()
     {
         // Initializing your cache.
@@ -26,7 +27,9 @@ public class CacheAppEvents : IAppEvents
 ```
 
 And finally you should register it as one of your dependencies:
-``` c#
+
+```text
 // Put it just besides other dependency registerations in your code.
 dependencyManager.RegisterAppEvents<CacheAppEvents>();
 ```
+

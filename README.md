@@ -1,16 +1,16 @@
-# bit-framework [![MIT Licence](https://badges.frapsoft.com/os/mit/mit.svg?v=103)](https://github.com/bit-foundation/bit-framework/blob/master/LICENSE)
+# Introduction
 
 Bit framework is a full stack framework for [C\#](https://docs.microsoft.com/en-us/dotnet/csharp/csharp) developers. It's a combination of best practices and facilities to implement those best practices. Bit can help you develop high quality apps in less time.
 
 You can develop any of following app types using Bit:
 
-* Single page app (SPA) & progressive web apps (PWA) using C# & [Blazor](https://dotnet.microsoft.com/apps/aspnet/web-apps/blazor)
+* Single page app \(SPA\) & progressive web apps \(PWA\) using C\# & [Blazor](https://dotnet.microsoft.com/apps/aspnet/web-apps/blazor)
 * Cloud/Micro service friendly API
 * Desktop Apps using [Xamarin Forms](https://www.xamarin.com/forms)
 * Native mobile apps using [Xamarin Forms](https://www.xamarin.com/forms)
 * Support for Game development & machine learning is under development
 
-You can develop all these types of apps with **Offline**|**Mobile** first approach. You also have access to RAD components such as Data-Grid, MultiSelect etc.
+You can develop all these types of apps with **Offline**\|**Mobile** first approach. You also have access to RAD components such as Data-Grid, MultiSelect etc.
 
 ## **Contribute**
 
@@ -26,3 +26,4 @@ There are many ways to contribute
 Read docs on [https://docs.bitfoundation.tech/](https://docs.bitfoundation.tech/)
 
 You can also watch [Announcements](https://github.com/bit-foundation/Announcements/issues) to track important docs/codes changes.
+

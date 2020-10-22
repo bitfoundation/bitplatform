@@ -1,7 +1,8 @@
-# Bit Frame
+# Bit frame
 
 **BitFrame** has extended Xamarin Forms Frame and has BorderWidth property!
 
-```xml
+```markup
 <bit:BitFrame BorderWidth="2" />
 ```
+
