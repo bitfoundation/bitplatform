@@ -9,11 +9,11 @@ using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 using Prism.Navigation;
 using Prism.Regions;
-using Prism.Regions.Navigation;
 using Refit;
 using Simple.OData.Client;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
@@ -130,15 +130,52 @@ namespace Bit.CSharpClientSample.ViewModels
 
         async Task SendODataBatchRequest()
         {
-            var batchClient = new ODataBatch(ODataClient);
+            {
+                try
+                {
+                    var batchClient = new ODataBatch(ODataClient);
 
-            IEnumerable<IDictionary<string, object>> result = null;
-            IEnumerable<TestComplexDto> result2 = null;
+                    var childs = await ODataClient.For<ChildEntity>("Childs").FindEntriesAsync();
+                    var child1 = childs.First();
+                    var child2 = childs.Last();
 
-            batchClient += async (c) => result = await c.For("ParentEntities").FindEntriesAsync();
-            batchClient += async (c) => result2 = await c.For<TestComplexDto>("TestComplex").FindEntriesAsync();
+                    child1.Name = "Error";
 
-            await batchClient.ExecuteAsync();
+                    batchClient += c => c.For<ChildEntity>("Childs").Key(child1.Id).Set(child1).UpdateEntryAsync();
+                    batchClient += c => c.For<ChildEntity>("Childs").Key(child2.Id).Set(child2).UpdateEntryAsync();
+
+                    await batchClient.ExecuteAsync();
+                }
+                catch (Exception exp)
+                {
+
+                }
+            }
+
+            {
+                var batchClient = new ODataBatch(ODataClient);
+
+                IEnumerable<IDictionary<string, object>> result = null;
+                IEnumerable<TestComplexDto> result2 = null;
+
+                batchClient += async (c) => result = await c.For("ParentEntities").FindEntriesAsync();
+                batchClient += async (c) => result2 = await c.For<TestComplexDto>("TestComplex").FindEntriesAsync();
+
+                await batchClient.ExecuteAsync();
+            }
+
+            {
+                var batchClient = new ODataBatch(ODataClient);
+
+                var childs = await ODataClient.For<ChildEntity>("Childs").FindEntriesAsync();
+                var child1 = childs.First();
+                var child2 = childs.Last();
+
+                batchClient += c => c.For<ChildEntity>("Childs").Key(child1.Id).Set(child1).UpdateEntryAsync();
+                batchClient += c => c.For<ChildEntity>("Childs").Key(child2.Id).Set(child2).UpdateEntryAsync();
+
+                await batchClient.ExecuteAsync();
+            }
         }
 
         async Task Logout()

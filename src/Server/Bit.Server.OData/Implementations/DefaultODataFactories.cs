@@ -6,7 +6,7 @@ using System;
 using System.Web.Http;
 
 namespace Bit.OData.Implementations
-{
+{ 
     public static class DefaultODataFactories
     {
         public static IDependencyManager RegisterODataFactories(this IDependencyManager dependencyManager)
@@ -14,7 +14,7 @@ namespace Bit.OData.Implementations
             if (dependencyManager == null)
                 throw new ArgumentNullException(nameof(dependencyManager));
 
-            dependencyManager.RegisterUsing(resolver => new ODataBatchHandlerHandlerFactory((httpServer, oDataRouteName) => ODataBatchHandlerHandlerFactory<DefaultODataBatchHandler>(resolver, httpServer, oDataRouteName)), lifeCycle: DependencyLifeCycle.Transient, overwriteExisting: false);
+            dependencyManager.RegisterUsing(resolver => new ODataBatchHandlerHandlerFactory((httpServer, oDataRouteName) => ODataBatchHandlerHandlerFactory<BitODataBatchHandler>(resolver, httpServer, oDataRouteName)), lifeCycle: DependencyLifeCycle.Transient, overwriteExisting: false);
             dependencyManager.RegisterUsing(resolver => new ODataHttpControllerSelectorFactory((webApiConfiguration) => HttpControllerSelectorFactory<DefaultODataHttpControllerSelector>(resolver, webApiConfiguration)), lifeCycle: DependencyLifeCycle.Transient, overwriteExisting: false);
             dependencyManager.RegisterUsing(resolver => new ODataHttpServerFactory((webApiConfiguration) => ODataHttpServerFactory<HttpServer>(resolver, webApiConfiguration)), lifeCycle: DependencyLifeCycle.Transient, overwriteExisting: false);
 
@@ -22,7 +22,7 @@ namespace Bit.OData.Implementations
         }
 
         public static TODataBatchHandler ODataBatchHandlerHandlerFactory<TODataBatchHandler>(IDependencyResolver resolver, HttpServer httpServer, string oDataRouteName)
-            where TODataBatchHandler : DefaultODataBatchHandler
+            where TODataBatchHandler : ODataBatchHandler
         {
             if (resolver == null)
                 throw new ArgumentNullException(nameof(resolver));
