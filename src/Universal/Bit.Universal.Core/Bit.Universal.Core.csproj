@@ -14,7 +14,7 @@
     <PackageReference Include="Autofac" Version="6.0.0" />
     <PackageReference Include="Autofac.Extensions.DependencyInjection" Version="7.0.2" />
     <PackageReference Include="Xamarin.Essentials.Interfaces" Version="1.6.0-pre2" />
-    <PackageReference Include="Prism.Core" Version="8.0.0.1850-pre" />
+    <PackageReference Include="Prism.Core" Version="8.0.0.1909" />
   </ItemGroup>
 
   <ItemGroup>

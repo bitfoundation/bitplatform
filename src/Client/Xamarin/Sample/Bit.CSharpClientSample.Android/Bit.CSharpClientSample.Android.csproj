@@ -82,7 +82,7 @@
     <PackageReference Include="Xamarin.Firebase.Messaging">
       <Version>120.1.7-preview02</Version>
     </PackageReference>
-    <PackageReference Include="Xamarin.Forms" Version="4.8.0.1534" />
+    <PackageReference Include="Xamarin.Forms" Version="4.8.0.1560" />
     <PackageReference Include="Xamarin.Google.Dagger">
       <Version>2.25.2.1</Version>
     </PackageReference>

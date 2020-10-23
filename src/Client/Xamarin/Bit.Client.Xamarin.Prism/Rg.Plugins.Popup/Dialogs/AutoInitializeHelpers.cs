@@ -6,7 +6,7 @@ using Prism.AppModel;
 
 namespace Prism.Services.Dialogs.Popups
 {
-    internal static class AutoInitializeHelpers
+    /*internal static class AutoInitializeHelpers
     {
         public static bool HasKey(this IEnumerable<KeyValuePair<string, object>> parameters, string name, out string key)
         {
@@ -24,5 +24,5 @@ namespace Prism.Services.Dialogs.Popups
 
             return (string.IsNullOrEmpty(attr.Name) ? pi.Name : attr.Name, attr.IsRequired);
         }
-    }
+    }*/
 }

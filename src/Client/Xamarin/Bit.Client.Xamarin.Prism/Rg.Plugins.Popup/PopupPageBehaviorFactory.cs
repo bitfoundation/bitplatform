@@ -6,9 +6,9 @@ using Rg.Plugins.Popup.Pages;
 
 namespace Prism.Plugin.Popups
 {
-#if __IOS__
+#if iOS
     [Foundation.Preserve(AllMembers = true)]
-#elif __ANDROID__
+#elif Android
     [Android.Runtime.Preserve(AllMembers = true)]
 #endif
     public class PopupPageBehaviorFactory : PageBehaviorFactory
