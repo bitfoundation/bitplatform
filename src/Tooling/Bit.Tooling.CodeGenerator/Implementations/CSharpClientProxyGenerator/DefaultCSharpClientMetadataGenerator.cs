@@ -55,7 +55,7 @@ namespace Bit.Tooling.CodeGenerator.Implementations.CSharpClientProxyGenerator
                             {
                                 Name = p.Name,
                                 Nullable = p.Type.IsNullable() ? "true" : "false",
-                                Type = p.Type.GetEdmTypeName(TypeToEdmTypeCollectionBehavior.UseODataCollection)
+                                Type = p.Type.GetEdmTypeName(TypeToEdmTypeCollectionBehavior.UseODataCollection, topLevelNullability: NullableFlowState.None)
                             }).ToList()
                         });
                     }
@@ -74,7 +74,7 @@ namespace Bit.Tooling.CodeGenerator.Implementations.CSharpClientProxyGenerator
                         schema.EntityTypes.Add(new EntityType
                         {
                             Name = dto.DtoSymbol.Name,
-                            BaseType = dto.BaseDtoSymbol?.ToDisplayString(),
+                            BaseType = dto.BaseDtoSymbol?.ToDisplayString(topLevelNullability: NullableFlowState.None),
                             Key = keys.Any() ? new Key
                             {
                                 PropertyRefs = keys.Select(k => new PropertyRef
@@ -85,13 +85,13 @@ namespace Bit.Tooling.CodeGenerator.Implementations.CSharpClientProxyGenerator
                             Properties = dto.Properties.Where(p => !ShouldGetsIgnored(p) && !IsNavProp(p.Type)).Select(p => new Property
                             {
                                 Name = p.Name,
-                                Type = p.Type.GetEdmTypeName(TypeToEdmTypeCollectionBehavior.UseODataCollection),
+                                Type = p.Type.GetEdmTypeName(TypeToEdmTypeCollectionBehavior.UseODataCollection, topLevelNullability: NullableFlowState.None),
                                 Nullable = p.Type.IsNullable() ? "true" : "false"
                             }).ToList(),
                             NavigationProperties = dto.Properties.Where(p => !ShouldGetsIgnored(p) && IsNavProp(p.Type)).Select(p => new NavigationProperty
                             {
                                 Name = p.Name,
-                                Type = p.Type.GetEdmTypeName(TypeToEdmTypeCollectionBehavior.UseODataCollection)
+                                Type = p.Type.GetEdmTypeName(TypeToEdmTypeCollectionBehavior.UseODataCollection, topLevelNullability: NullableFlowState.None)
                             }).ToList()
                         });
                     }
@@ -127,13 +127,13 @@ namespace Bit.Tooling.CodeGenerator.Implementations.CSharpClientProxyGenerator
                         Name = operationWithController.Operation.Method.Name
                     };
 
-                    action.Parameters.Add(new Parameter { Name = "bindingParameter", Type = $"Collection({operationWithController.Controller.ModelSymbol.ToDisplayString()})" });
+                    action.Parameters.Add(new Parameter { Name = "bindingParameter", Type = $"Collection({operationWithController.Controller.ModelSymbol.ToDisplayString(topLevelNullability: NullableFlowState.None)})" });
 
                     action.Parameters.AddRange(operationWithController.Operation.Parameters.Select(p => new Parameter
                     {
                         Name = p.Name,
                         Nullable = p.Type.IsNullable() ? "true" : "false",
-                        Type = p.Type.GetEdmTypeName(TypeToEdmTypeCollectionBehavior.UseODataCollection)
+                        Type = p.Type.GetEdmTypeName(TypeToEdmTypeCollectionBehavior.UseODataCollection, topLevelNullability: NullableFlowState.None)
                     }));
 
                     if (!operationWithController.Operation.ReturnType.IsVoid())
@@ -141,7 +141,7 @@ namespace Bit.Tooling.CodeGenerator.Implementations.CSharpClientProxyGenerator
                         action.ReturnType = new ReturnType
                         {
                             Nullable = operationWithController.Operation.ReturnType.IsNullable() ? "true" : "false",
-                            Type = operationWithController.Operation.ReturnType.GetEdmTypeName(TypeToEdmTypeCollectionBehavior.UseODataCollection)
+                            Type = operationWithController.Operation.ReturnType.GetEdmTypeName(TypeToEdmTypeCollectionBehavior.UseODataCollection, topLevelNullability: NullableFlowState.None)
                         };
                     }
 
@@ -154,19 +154,19 @@ namespace Bit.Tooling.CodeGenerator.Implementations.CSharpClientProxyGenerator
                         Name = operationWithController.Operation.Method.Name
                     };
 
-                    function.Parameters.Add(new Parameter { Name = "bindingParameter", Type = $"Collection({operationWithController.Controller.ModelSymbol.ToDisplayString()})" });
+                    function.Parameters.Add(new Parameter { Name = "bindingParameter", Type = $"Collection({operationWithController.Controller.ModelSymbol.ToDisplayString(topLevelNullability: NullableFlowState.None)})" });
 
                     function.Parameters.AddRange(operationWithController.Operation.Parameters.Select(p => new Parameter
                     {
                         Name = p.Name,
                         Nullable = p.Type.IsNullable() ? "true" : "false",
-                        Type = p.Type.GetEdmTypeName(TypeToEdmTypeCollectionBehavior.UseODataCollection)
+                        Type = p.Type.GetEdmTypeName(TypeToEdmTypeCollectionBehavior.UseODataCollection, topLevelNullability: NullableFlowState.None)
                     }));
 
                     function.ReturnType = new ReturnType
                     {
                         Nullable = operationWithController.Operation.ReturnType.IsNullable() ? "true" : "false",
-                        Type = operationWithController.Operation.ReturnType.GetEdmTypeName(TypeToEdmTypeCollectionBehavior.UseODataCollection)
+                        Type = operationWithController.Operation.ReturnType.GetEdmTypeName(TypeToEdmTypeCollectionBehavior.UseODataCollection, topLevelNullability: NullableFlowState.None)
                     };
 
                     defaultSchema.Functions.Add(function);
@@ -178,7 +178,7 @@ namespace Bit.Tooling.CodeGenerator.Implementations.CSharpClientProxyGenerator
                 Name = $"{mapping.Route}Context",
                 EntitySets = controllers.Select(c => new EntitySet
                 {
-                    EntityType = c.ModelSymbol.ToDisplayString(),
+                    EntityType = c.ModelSymbol.ToDisplayString(topLevelNullability: NullableFlowState.None),
                     Name = c.Name
                 }).ToList()
             };

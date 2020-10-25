@@ -93,7 +93,7 @@ namespace Microsoft.CodeAnalysis
             return elementType.GetEdmTypeName(TypeToEdmTypeCollectionBehavior.NA);
         }
 
-        public static string GetEdmTypeName(this ITypeSymbol type, TypeToEdmTypeCollectionBehavior typeToEdmTypeCollectionBehavior)
+        public static string GetEdmTypeName(this ITypeSymbol type, TypeToEdmTypeCollectionBehavior typeToEdmTypeCollectionBehavior, NullableFlowState? topLevelNullability = null)
         {
             if (type == null)
                 throw new ArgumentNullException(nameof(type));
@@ -147,7 +147,7 @@ namespace Microsoft.CodeAnalysis
                     }
                 }
 
-                return type.ToDisplayString();
+                return topLevelNullability != null ? type.ToDisplayString(topLevelNullability.Value) : type.ToDisplayString();
             }
         }
 
