@@ -1,5 +1,7 @@
 ﻿using Bit.OData.ODataControllers;
+using Microsoft.AspNet.OData.Extensions;
 using Microsoft.AspNet.OData.Query;
+using Microsoft.OData.UriParser;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -77,11 +79,16 @@ namespace Bit.OData.Implementations
             if (!controllerContext.ControllerDescriptor.ControllerType.GetTypeInfo().IsDtoController())
                 return _webApiControllerActionSelector.SelectAction(controllerContext);
 
+            if (!controllerContext.ControllerDescriptor.Properties.ContainsKey("CachedActionsList"))
+                GetActionMapping(controllerContext.ControllerDescriptor);
+
             List<ReflectedHttpActionDescriptor> allActions = (List<ReflectedHttpActionDescriptor>)controllerContext.ControllerDescriptor.Properties["CachedActionsList"];
 
+            HttpRequestMessageProperties props = controllerContext.Request.ODataProperties();
             IDictionary<string, object> routeData = ((HttpRouteData)controllerContext.RouteData).Values;
             routeData.TryGetValue("action", out object? actionNameObj);
-            string? actionName = Convert.ToString(actionNameObj, CultureInfo.InvariantCulture);
+
+            string? actionName = props.Path.Segments.OfType<OperationSegment>().SelectMany(o => o.Operations).FirstOrDefault()?.Name ?? (actionNameObj == null ? controllerContext.Request.Method.Method : Convert.ToString(actionNameObj, CultureInfo.InvariantCulture));
 
             HttpActionDescriptor? resultAction = null;
 

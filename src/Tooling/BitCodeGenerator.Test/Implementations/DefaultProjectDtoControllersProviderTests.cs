@@ -23,7 +23,7 @@ namespace Bit.Tooling.CodeGenerator.Test.Implementations
                     .GetProjectDtoControllersWithTheirOperations(solution.Projects.Single(p => p.Name == "Bit.Server.OData"));
 
                 Assert.IsTrue(
-                    controllers.Select(c => c.Name).SequenceEqual(new[] { "ClientsLogs", "JobsInfo", "UsersSettings" }));
+                    controllers.Select(c => c.Name).SequenceEqual(new[] { "ClientsLogs", "JobsInfo", "Ref", "UsersSettings" }));
             }
         }
 
@@ -37,7 +37,7 @@ namespace Bit.Tooling.CodeGenerator.Test.Implementations
                 IList<DtoController> controllers = await new DefaultProjectDtoControllersProvider()
                     .GetProjectDtoControllersWithTheirOperations(solution.Projects.Single(p => p.Name == "Bit.Tests"));
 
-                Assert.AreEqual(13, controllers.Count);
+                Assert.AreEqual(14, controllers.Count);
             }
         }
 

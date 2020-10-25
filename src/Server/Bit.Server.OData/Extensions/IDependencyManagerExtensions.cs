@@ -27,6 +27,7 @@ namespace Bit.Core.Contracts
             dependencyManager.RegisterWebApiConfigurationCustomizer<GlobalDefaultRequestQSStringCorrectorsApplierActionFilterProvider>();
             dependencyManager.RegisterWebApiConfigurationCustomizer<GlobalDefaultRequestQSTimeZoneApplierActionFilterProvider>();
             dependencyManager.RegisterWebApiConfigurationCustomizer<GlobalODataNullReturnValueActionFilterProvider>();
+            dependencyManager.RegisterWebApiConfigurationCustomizer<SetODataSwaggerActionSelector>();
             dependencyManager.RegisterWebApiConfigurationCustomizer<DefaultGlobalEnableQueryActionFilterProvider>();
             dependencyManager.RegisterWebApiConfigurationCustomizer<GlobalDefaultLogOperationInfoActionFilterProvider<ODataLogOperationInfoFilterAttribute>>();
             dependencyManager.RegisterWebApiConfigurationCustomizer<ThrowAnExceptionForRequestBodyJsonParseErrorActionFilter>();

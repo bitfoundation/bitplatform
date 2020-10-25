@@ -31,6 +31,17 @@ namespace Bit.OData.Implementations
         }
     }
 
+    public class SetODataSwaggerActionSelector : IWebApiConfigurationCustomizer
+    {
+        public void CustomizeWebApiConfiguration(HttpConfiguration webApiConfiguration)
+        {
+            if (webApiConfiguration == null)
+                throw new ArgumentNullException(nameof(webApiConfiguration));
+
+            webApiConfiguration.Properties["SwaggerActionSelector"] = new DefaultWebApiODataControllerActionSelector();
+        }
+    }
+
     public class GlobalODataNullReturnValueActionFilterProvider : IWebApiConfigurationCustomizer
     {
         public virtual void CustomizeWebApiConfiguration(HttpConfiguration webApiConfiguration)

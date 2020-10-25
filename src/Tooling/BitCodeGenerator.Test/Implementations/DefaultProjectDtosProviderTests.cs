@@ -24,7 +24,7 @@ namespace Bit.Tooling.CodeGenerator.Test.Implementations
 
                 IList<Dto> dtos = (await projectDtosProvider.GetProjectDtos(solution.Projects.Single(p => p.Name == "Bit.Server.OData"), allSourceProjects: solution.Projects.Where(p => p.Name == "Bit.Server.OData" || p.Name == "Bit.Universal.Model").ToList())).ToList();
 
-                Assert.IsTrue(dtos.Select(d => d.DtoSymbol.Name).SequenceEqual(new[] { "UserSetting", "JobInfoDto", "ClientLogDto" }));
+                Assert.IsTrue(dtos.Select(d => d.DtoSymbol.Name).SequenceEqual(new[] { "UserSetting", "RefDto", "JobInfoDto", "ClientLogDto" }));
             }
         }
 
