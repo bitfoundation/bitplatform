@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -102,10 +103,16 @@ namespace Microsoft.CodeAnalysis
 
             string typeName = type.Name;
 
+            // Edm.Binary
+
             if (typeName == nameof(String))
                 return "Edm.String";
             else if (typeName == nameof(DateTimeOffset))
                 return "Edm.DateTimeOffset";
+            else if (typeName == nameof(DateTime))
+                return "Edm.Date";
+            else if (typeName == nameof(Stream))
+                return "Edm.Stream";
             else if (typeName == nameof(Boolean))
                 return "Edm.Boolean";
             if (typeName == nameof(Int16))
@@ -124,6 +131,8 @@ namespace Microsoft.CodeAnalysis
                 return "Edm.Byte";
             if (typeName == nameof(Double))
                 return "Edm.Double";
+            if (typeName == nameof(TimeSpan))
+                return "Edm.Duration";
             if (typeName == "Dictionary")
                 return "$data.Object";
             else
