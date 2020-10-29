@@ -4,6 +4,7 @@ using Simple.OData.Client.V4.Adapter;
 using System;
 using System.Linq;
 using System.Net.Http;
+using System.Reflection;
 using System.Threading.Tasks;
 
 namespace Bit.OData.Implementations
@@ -34,16 +35,27 @@ namespace Bit.OData.Implementations
 
     public class DefaultResponseReader : ResponseReader
     {
-        public DefaultResponseReader(ISession session, IEdmModel model) 
+        public DefaultResponseReader(ISession session, IEdmModel model)
             : base(session, model)
         {
         }
+
+        private readonly FieldInfo _reasonPhraseField = typeof(WebRequestException).GetField("_reasonPhrase", BindingFlags.NonPublic | BindingFlags.Instance);
 
         public async override Task<ODataResponse> GetResponseAsync(HttpResponseMessage responseMessage)
         {
             var result = await base.GetResponseAsync(responseMessage);
 
             var exp = result.Batch?.Select(b => b.Exception).FirstOrDefault();
+
+            if (exp is WebRequestException webExp)
+            {
+                var reasonPhrase = result.Batch?.SelectMany(r => r.Headers).Where(h => h.Key == "Reason-Phrase").FirstOrDefault();
+                if (reasonPhrase != null)
+                {
+                    _reasonPhraseField.SetValue(webExp, reasonPhrase.Value.Value);
+                }
+            }
 
             if (exp != null)
                 throw exp;
