@@ -3,6 +3,7 @@ using Bit.Core.Implementations;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
 using System.Reflection;
 
 namespace Bit.ViewModel.Implementations
@@ -40,6 +41,8 @@ namespace Bit.ViewModel.Implementations
 #if Android
         public virtual void Init(global::Android.Content.Context context)
         {
+            Assembly.Load("Xamarin.Firebase.Common").GetType("Firebase.FirebaseApp").GetMethods().ExtendedSingle("Finding InitializeApp method", m => m.Name == "InitializeApp" && m.GetParameters().Count() == 1).Invoke(null, new object[] { context });
+
             var analyticsType = Assembly.Load("Xamarin.GooglePlayServices.Measurement.Api").GetType("Firebase.Analytics.FirebaseAnalytics");
             var analyticsInstance = analyticsType.GetMethod("GetInstance").Invoke(null, new object[] { context });
             AnalyticsSetUserId = (AnalyticsSetUserIdDelegate)Delegate.CreateDelegate(typeof(AnalyticsSetUserIdDelegate), target: analyticsInstance, method: "SetUserId", ignoreCase: false);
