@@ -23,6 +23,7 @@ using Prism.Services;
 using Rg.Plugins.Popup.Contracts;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 using Xamarin.Essentials.Interfaces;
@@ -73,11 +74,40 @@ namespace Bit
         {
             try
             {
-                Container.Resolve<IEnumerable<ITelemetryService>>().All().LogPreviousSessionCrashIfAny();
-                var deviceService = Container.Resolve<IDeviceService>();
+                IEnumerable<ITelemetryService> allTelemetryServices = Container.Resolve<IEnumerable<ITelemetryService>>();
+                ISecurityServiceBase securityService = Container.Resolve<ISecurityServiceBase>();
+                IMessageReceiver? messageReceiver = Container.Resolve<ILifetimeScope>().ResolveOptional<IMessageReceiver>();
+                IConnectivity connectivity = Container.Resolve<IConnectivity>();
+                IVersionTracking versionTracking = Container.Resolve<IVersionTracking>();
+                IDeviceService deviceService = Container.Resolve<IDeviceService>();
+
+                bool isLoggedIn = await securityService.IsLoggedInAsync().ConfigureAwait(false);
+                string? userId = !isLoggedIn ? null : await securityService.GetUserIdAsync(default).ConfigureAwait(false);
+
+                foreach (TelemetryServiceBase telemetryService in Container.Resolve<IEnumerable<ITelemetryService>>().OfType<TelemetryServiceBase>())
+                {
+                    telemetryService.LogPreviousSessionCrashIfAny();
+
+                    if (isLoggedIn)
+                        telemetryService.SetUserId(userId);
+                    else
+                        telemetryService.SetUserId(null);
+
+                    if (messageReceiver != null)
+                        telemetryService.MessageReceiver = messageReceiver;
+
+                    telemetryService.Connectivity = connectivity;
+                    telemetryService.VersionTracking = versionTracking;
+                }
+
+                if (BitExceptionHandler.Current is BitExceptionHandler exceptionHandler)
+                    exceptionHandler.ServiceProvider = Container.Resolve<IServiceProvider>();
+
                 DependencyDelegates.Current.StartTimer = (interval, callback) => deviceService.StartTimer(interval, () => callback());
                 DependencyDelegates.Current.GetNavigationUriPath = () => Current?.NavigationService?.CurrentPageNavService?.GetNavigationUriPath() ?? "?";
+
                 await OnInitializedAsync();
+
                 await Task.Yield();
             }
             catch (Exception exp)

@@ -105,7 +105,8 @@ namespace Prism.Autofac
 
         public virtual void FinalizeExtension()
         {
-            Instance = Builder.Build();
+            if (Instance == null)
+                Instance = Builder.Build();
         }
 
         public virtual IContainerRegistry RegisterInstance(Type type, object instance)

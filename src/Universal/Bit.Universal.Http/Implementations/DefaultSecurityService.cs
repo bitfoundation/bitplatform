@@ -247,5 +247,10 @@ namespace Bit.Http.Implementations
 
             return BitJwtToken.FromJson(primary_sid);
         }
+
+        public async Task<string?> GetUserIdAsync(CancellationToken cancellationToken)
+        {
+            return (await GetBitJwtTokenAsync(cancellationToken).ConfigureAwait(false))?.UserId;
+        }
     }
 }

@@ -1,4 +1,5 @@
-﻿using Bit.Core.Implementations;
+﻿using Bit.Core.Contracts;
+using Bit.Core.Implementations;
 using Bit.Core.Models;
 using IdentityModel.Client;
 using System;
@@ -59,12 +60,8 @@ namespace Bit.Http.Contracts
         public DateTimeOffset? login_date { get; set; }
     }
 
-    public interface ISecurityService
+    public interface ISecurityService : ISecurityServiceBase
     {
-        Task<bool> IsLoggedInAsync(CancellationToken cancellationToken = default);
-
-        bool IsLoggedIn();
-
         Task<Token> LoginWithCredentials(string userName, string password, string client_id, string client_secret, string[]? scopes = null, IDictionary<string, string?>? acr_values = null, CancellationToken cancellationToken = default);
 
         Task<Token> Login(object? state = null, string? client_id = null, IDictionary<string, string?>? acr_values = null, CancellationToken cancellationToken = default);
@@ -72,14 +69,6 @@ namespace Bit.Http.Contracts
         Task<Token?> GetCurrentTokenAsync(CancellationToken cancellationToken = default);
 
         Token? GetCurrentToken();
-
-        Task Logout(object? state = null, string? client_id = null, CancellationToken cancellationToken = default);
-
-        Uri GetLoginUrl(object? state = null, string? client_id = null, IDictionary<string, string?>? acr_values = null);
-
-        Uri GetLogoutUrl(string id_token, object? state = null, string? client_id = null);
-
-        bool UseSecureStorage();
 
         Task<BitJwtToken> GetBitJwtTokenAsync(CancellationToken cancellationToken);
 

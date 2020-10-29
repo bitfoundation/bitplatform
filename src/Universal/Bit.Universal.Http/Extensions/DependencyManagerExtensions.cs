@@ -8,9 +8,8 @@ using Microsoft.IdentityModel.Logging;
 using Prism.Events;
 using Refit;
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Net.Http;
+using System.Reflection;
 using System.Threading;
 
 namespace Autofac
@@ -56,29 +55,7 @@ namespace Autofac
             if (dependencyManager == null)
                 throw new ArgumentNullException(nameof(dependencyManager));
 
-            dependencyManager.Register<ISecurityService, TSecurityService>(lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExisting: false);
-
-            dependencyManager.GetContainerBuilder().RegisterBuildCallback(async scope =>
-            {
-                try
-                {
-                    ISecurityService securityService = scope.Resolve<ISecurityService>();
-                    ITelemetryService allTelemetryServices = scope.Resolve<IEnumerable<ITelemetryService>>().All();
-
-                    if (await securityService.IsLoggedInAsync().ConfigureAwait(false))
-                    {
-                        allTelemetryServices.SetUserId((await securityService.GetBitJwtTokenAsync(default).ConfigureAwait(false)).UserId!);
-                    }
-                    else
-                    {
-                        allTelemetryServices.SetUserId(null);
-                    }
-                }
-                catch (Exception exp)
-                {
-                    scope.Resolve<IExceptionHandler>().OnExceptionReceived(exp);
-                }
-            });
+            dependencyManager.Register(servicesType: new[] { typeof(ISecurityServiceBase).GetTypeInfo(), typeof(ISecurityService).GetTypeInfo() }, implementationType: typeof(TSecurityService).GetTypeInfo(), lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExisting: false);
 
             return dependencyManager;
         }

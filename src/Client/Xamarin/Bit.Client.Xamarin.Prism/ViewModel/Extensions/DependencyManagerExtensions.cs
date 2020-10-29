@@ -31,12 +31,6 @@ namespace Autofac
 
             dependencyManager.RegisterInstance<IExceptionHandler>(BitExceptionHandler.Current);
 
-            ((IAutofacDependencyManager)dependencyManager).GetContainerBuidler().RegisterBuildCallback(container =>
-            {
-                if (BitExceptionHandler.Current is BitExceptionHandler exceptionHandler)
-                    exceptionHandler.ServiceProvider = container.Resolve<IServiceProvider>();
-            });
-
             dependencyManager.RegisterInstance<ITelemetryService>(ApplicationInsightsTelemetryService.Current);
             dependencyManager.RegisterInstance<ITelemetryService>(AppCenterTelemetryService.Current);
             dependencyManager.RegisterInstance<ITelemetryService>(FirebaseTelemetryService.Current);
@@ -45,21 +39,6 @@ namespace Autofac
             dependencyManager.RegisterInstance(LocalTelemetryService.Current, servicesType: new[] { typeof(LocalTelemetryService).GetTypeInfo(), typeof(ITelemetryService).GetTypeInfo() });
             IContainerRegistry containerRegistry = dependencyManager.GetContainerRegistry();
             containerRegistry.RegisterForNav<BitConsoleView, BitConsoleViewModel>("BitConsole");
-
-            dependencyManager.GetContainerBuilder().RegisterBuildCallback(container =>
-            {
-                IMessageReceiver? messageReceiver = container.ResolveOptional<IMessageReceiver>();
-                IConnectivity connectivity = container.Resolve<IConnectivity>();
-                IVersionTracking versionTracking = container.Resolve<IVersionTracking>();
-
-                foreach (TelemetryServiceBase telemetryService in container.Resolve<IEnumerable<ITelemetryService>>().OfType<TelemetryServiceBase>())
-                {
-                    if (messageReceiver != null)
-                        telemetryService.MessageReceiver = messageReceiver;
-                    telemetryService.Connectivity = connectivity;
-                    telemetryService.VersionTracking = versionTracking;
-                }
-            });
 
             return dependencyManager;
         }
