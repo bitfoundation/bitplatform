@@ -18,6 +18,33 @@ namespace Bit.ViewModel.Implementations
             TelemetryServices.All().TrackTrace(message, properties);
         }
 
+        public virtual void Log(string message, Category category, Priority priority)
+        {
+            if (category == Category.Exception)
+            {
+                try
+                {
+                    throw new Exception(message);
+                }
+                catch (Exception exp)
+                {
+                    Report(exp, new Dictionary<string, string?>
+                    {
+                        { nameof(category), category.ToString() },
+                        { nameof(priority), priority.ToString() }
+                    });
+                }
+            }
+            else
+            {
+                TelemetryServices.All().TrackTrace(message, new Dictionary<string, string?>
+                {
+                    { nameof(category), category.ToString() },
+                    { nameof(priority), priority.ToString() }
+                });
+            }
+        }
+
         public virtual void Report(Exception ex, IDictionary<string, string?>? properties)
         {
             BitExceptionHandler.Current.OnExceptionReceived(ex, properties);

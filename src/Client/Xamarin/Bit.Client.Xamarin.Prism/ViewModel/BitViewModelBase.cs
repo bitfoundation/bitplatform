@@ -2,19 +2,16 @@
 using Bit.Core.Models;
 using Bit.ViewModel.Contracts;
 using Prism.Navigation;
-using Prism.Regions;
-using Prism.Regions.Navigation;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
-using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 
 namespace Bit.ViewModel
 {
-    public class BitViewModelBase : Bindable, INavigatedAware, IInitializeAsync, INavigationAware, IDestructible, IRegionAware, IRegionMemberLifetime
+    public class BitViewModelBase : Bindable, INavigatedAware, IInitializeAsync, INavigationAware, IDestructible
     {
         public virtual CancellationTokenSource CancellationTokenSource { get; set; }
 
@@ -155,45 +152,8 @@ namespace Bit.ViewModel
             return Task.CompletedTask;
         }
 
-        private static readonly FieldInfo internalParameters = typeof(NavigationParameters).GetField("_internalParameters", BindingFlags.NonPublic | BindingFlags.Instance);
-
-        public void OnNavigatedTo(INavigationContext navigationContext)
-        {
-            RegionNavigationService = navigationContext.NavigationService;
-
-            IDictionary<string, object> parameters = (IDictionary<string, object>)internalParameters.GetValue(navigationContext.Parameters);
-            if (parameters.ContainsKey("__NavigationMode"))
-                parameters["__NavigationMode"] = NavigationMode.Back;
-            else
-                parameters.Add("__NavigationMode", NavigationMode.New);
-
-            OnNavigatedTo(navigationContext.Parameters);
-        }
-
-        public virtual bool IsNavigationTarget(INavigationContext navigationContext)
-        {
-            return true;
-        }
-
-        public void OnNavigatedFrom(INavigationContext navigationContext)
-        {
-            OnNavigatedFrom(navigationContext.Parameters);
-        }
-
         public virtual INavService NavigationService { get; set; } = default!;
 
-        public virtual IRegionManager RegionManager { get; set; }
-
-        public virtual IRegionNavigationService RegionNavigationService { get; protected set; }
-
-        public virtual IRegionNavigationJournal RegionNavigationJornal => RegionNavigationService.Journal;
-
-        public virtual NavigationContext RegionNavigationContext { get; set; }
-
         public virtual IEnumerable<ITelemetryService> TelemetryServices { get; set; } = default!;
-
-        public bool KeepAlive => KeepAliveInRegion;
-
-        public virtual bool KeepAliveInRegion { get; set; } = true;
     }
 }
