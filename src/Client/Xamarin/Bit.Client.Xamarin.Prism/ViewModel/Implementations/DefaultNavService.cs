@@ -76,6 +76,7 @@ namespace Bit.ViewModel.Implementations
                 // Note that ../.. is not working in popup pages at the moment.
 
                 await AppNavService.GoBackAsync(parameters);
+                return;
             }
 
             if (!navigationResult.Success)
