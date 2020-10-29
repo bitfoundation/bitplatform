@@ -78,6 +78,7 @@ namespace Bit.CSharpClientSample
             containerRegistry.RegisterForNav<LoginView, LoginViewModel>("Login");
             containerRegistry.RegisterForNav<MainView, MainViewModel>("Main");
             containerRegistry.RegisterForNav<TestView, TestViewModel>("Test");
+            containerRegistry.RegisterForNav<SampleView, SampleViewModel>("Sample");
 
             containerRegistry.RegisterForRegionNav<RegionAView, RegionAViewModel>("RegionA");
             containerRegistry.RegisterForRegionNav<RegionBView, RegionBViewModel>("RegionB");

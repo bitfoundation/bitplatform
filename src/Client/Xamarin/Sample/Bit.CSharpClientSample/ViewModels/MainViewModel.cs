@@ -44,6 +44,7 @@ namespace Bit.CSharpClientSample.ViewModels
         public BitDelegateCommand LogoutCommand { get; set; }
         public BitDelegateCommand ShowPopupCommand { get; set; }
         public BitDelegateCommand OpenConsoleCommand { get; set; }
+        public BitDelegateCommand GoToSampleCommand { get; set; }
 
         public MainViewModel()
         {
@@ -55,11 +56,17 @@ namespace Bit.CSharpClientSample.ViewModels
             LogoutCommand = new BitDelegateCommand(Logout);
             ShowPopupCommand = new BitDelegateCommand(ShowPopup);
             OpenConsoleCommand = new BitDelegateCommand(OpenConsole);
+            GoToSampleCommand = new BitDelegateCommand(GoToSample);
         }
 
         async Task OpenConsole()
         {
             await LocalTelemetryService.OpenConsole();
+        }
+
+        async Task GoToSample()
+        {
+            await NavigationService.NavigateAsync("Sample");
         }
 
         async Task Sync()
