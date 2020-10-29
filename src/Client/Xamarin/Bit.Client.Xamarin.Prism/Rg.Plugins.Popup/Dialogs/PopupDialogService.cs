@@ -1,13 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
-using System.Linq;
-using System.Reflection;
-using Prism.AppModel;
 using Prism.Common;
 using Prism.Ioc;
 using Prism.Mvvm;
-using Prism.Plugin.Popups;
 using Prism.Plugin.Popups.Dialogs;
 using Prism.Plugin.Popups.Dialogs.Xaml;
 using Prism.Services.Dialogs.Xaml;
@@ -165,11 +160,6 @@ namespace Prism.Services.Dialogs.Popups
 
             dialog.OnDialogOpened(parameters);
 
-            /*if (dialog is IAbracadabra)
-            {
-                Abracadabra(dialog, parameters);
-            }*/
-
             return dialog;
         }
 
@@ -300,26 +290,5 @@ namespace Prism.Services.Dialogs.Popups
             public Exception Exception { get; set; }
             public IDialogParameters Parameters { get; set; }
         }
-
-        /*private static void Abracadabra(object page, IEnumerable<KeyValuePair<string, object>> parameters)
-        {
-            var props = page.GetType()
-                            .GetProperties(BindingFlags.Instance | BindingFlags.Public)
-                            .Where(x => x.CanWrite);
-
-            foreach (var prop in props)
-            {
-                (var name, var isRequired) = prop.GetAutoInitializeProperty();
-
-                if (!parameters.HasKey(name, out var key))
-                {
-                    if (isRequired)
-                        throw new ArgumentNullException(name);
-                    continue;
-                }
-
-                prop.SetValue(page, parameters.GetValue(key, prop.PropertyType));
-            }
-        }*/
     }
 }
