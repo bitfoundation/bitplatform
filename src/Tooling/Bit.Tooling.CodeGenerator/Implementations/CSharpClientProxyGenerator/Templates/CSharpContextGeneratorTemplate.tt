@@ -8,6 +8,14 @@
 
 namespace Simple.OData.Client
 {
+
+<# foreach (DtoController controller in Controllers) { #>
+	<# if (controller.ModelSymbol.ContainingNamespace.Name == "Auto")
+	{ #>
+namespace Auto { public class <#= controller.ModelSymbol.Name #> : Bit.Model.Contracts.IDto { public System.Guid Id { get; set; } } }
+	<# } #>
+<# } #>
+
 	[System.CodeDom.Compiler.GeneratedCode("BitCodeGenerator", "<#= BitToolingVersion #>")]
     public static class <#= Mapping.Route #>ContextExt
     {

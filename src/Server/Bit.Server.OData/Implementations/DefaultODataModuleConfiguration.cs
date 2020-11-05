@@ -1,4 +1,5 @@
-﻿using Bit.Model.Implementations;
+﻿using Bit.Model.Contracts;
+using Bit.Model.Implementations;
 using Bit.OData.Contracts;
 using Bit.OData.ODataControllers;
 using Microsoft.AspNet.OData.Builder;
@@ -8,6 +9,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Reflection.Emit;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Web.Http;
@@ -22,17 +24,7 @@ namespace System.Reflection
             if (controllerType == null)
                 throw new ArgumentNullException(nameof(controllerType));
 
-            TypeInfo? baseGenericType = (controllerType.BaseType?.GetTypeInfo()?.IsGenericType == true ? controllerType.BaseType?.GetTypeInfo()?.GetGenericTypeDefinition() : null)?.GetTypeInfo();
-
-            while (baseGenericType != null)
-            {
-                if (typeof(DtoController<>).GetTypeInfo().IsAssignableFrom(baseGenericType))
-                    return true;
-
-                baseGenericType = (baseGenericType.BaseType?.GetTypeInfo()?.IsGenericType == true ? baseGenericType.BaseType?.GetTypeInfo()?.GetGenericTypeDefinition() : null)?.GetTypeInfo();
-            }
-
-            return false;
+            return typeof(DtoController).GetTypeInfo().IsAssignableFrom(controllerType) && !controllerType.IsAbstract && !controllerType.IsGenericType;
         }
     }
 }
@@ -79,10 +71,9 @@ namespace Bit.OData.Implementations
                 .Where(c => c.BaseType != null)
                 .Select(c => new
                 {
-                    DtoType = DtoMetadataWorkspace.Current.GetFinalDtoType(c.BaseType!.GetGenericArguments().ExtendedSingle($"Finding dto in {c.Name}", t => DtoMetadataWorkspace.Current.IsDto(t.GetTypeInfo())).GetTypeInfo())!,
+                    DtoType = DtoMetadataWorkspace.Current.GetFinalDtoType(c.BaseType!.GetGenericArguments().ExtendedSingleOrDefault($"Finding dto in {c.Name}", t => DtoMetadataWorkspace.Current.IsDto(t.GetTypeInfo()))?.GetTypeInfo() ?? BuildAutoDo(c))!,
                     Controller = c
                 })
-                .Where(c => c.DtoType != null)
                 .ToList();
 
             foreach (var controllerWithDto in controllersWithDto)
@@ -156,6 +147,53 @@ namespace Bit.OData.Implementations
             {
                 AddAdditionalTypes(type);
             }
+        }
+
+        TypeInfo? BuildAutoDo(TypeInfo controller)
+        {
+            string className = $"Auto{controller.Name.Replace("Controller", string.Empty)}Dto";
+
+            AssemblyName asemblyName = new AssemblyName($"{className}_{Guid.NewGuid().ToString("N")}_Assembly");
+            AssemblyBuilder assemblyBuilder = AssemblyBuilder.DefineDynamicAssembly(asemblyName, AssemblyBuilderAccess.Run);
+            ModuleBuilder moduleBuilder = assemblyBuilder.DefineDynamicModule("MainModule");
+            TypeBuilder typeBuilder = moduleBuilder.DefineType($"Auto.{className}", TypeAttributes.Public | TypeAttributes.Class | TypeAttributes.AutoClass | TypeAttributes.AnsiClass | TypeAttributes.BeforeFieldInit | TypeAttributes.AutoLayout, null);
+
+            typeBuilder.AddInterfaceImplementation(typeof(IDto));
+
+            typeBuilder.DefineDefaultConstructor(MethodAttributes.Public | MethodAttributes.SpecialName | MethodAttributes.RTSpecialName);
+
+            FieldBuilder fieldBuilder = typeBuilder.DefineField("_" + "Id", typeof(Guid), FieldAttributes.Private);
+            PropertyBuilder propertyBuilder = typeBuilder.DefineProperty("Id", PropertyAttributes.HasDefault, typeof(Guid), null);
+            MethodBuilder getPropMthdBldr = typeBuilder.DefineMethod("get_" + "Id", MethodAttributes.Public | MethodAttributes.SpecialName | MethodAttributes.HideBySig, typeof(Guid), Type.EmptyTypes);
+            ILGenerator getIl = getPropMthdBldr.GetILGenerator();
+
+            getIl.Emit(OpCodes.Ldarg_0);
+            getIl.Emit(OpCodes.Ldfld, fieldBuilder);
+            getIl.Emit(OpCodes.Ret);
+
+            MethodBuilder setPropMthdBldr = typeBuilder.DefineMethod("set_" + "Id",
+                  MethodAttributes.Public |
+                  MethodAttributes.SpecialName |
+                  MethodAttributes.HideBySig,
+                  null, new[] { typeof(Guid) });
+
+            ILGenerator setIl = setPropMthdBldr.GetILGenerator();
+            Label modifyProperty = setIl.DefineLabel();
+            Label exitSet = setIl.DefineLabel();
+
+            setIl.MarkLabel(modifyProperty);
+            setIl.Emit(OpCodes.Ldarg_0);
+            setIl.Emit(OpCodes.Ldarg_1);
+            setIl.Emit(OpCodes.Stfld, fieldBuilder);
+
+            setIl.Emit(OpCodes.Nop);
+            setIl.MarkLabel(exitSet);
+            setIl.Emit(OpCodes.Ret);
+
+            propertyBuilder.SetGetMethod(getPropMthdBldr);
+            propertyBuilder.SetSetMethod(setPropMthdBldr);
+
+            return typeBuilder.CreateTypeInfo();
         }
 
         private void BuildDto<TDto>(ODataModelBuilder odataModelBuilder, TypeInfo apiController)

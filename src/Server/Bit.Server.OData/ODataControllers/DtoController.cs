@@ -110,7 +110,12 @@ namespace Bit.OData.ODataControllers
         public Collection<HttpMethod> HttpMethods => SupportedMethods;
     }
 
-    public class DtoController<TDto> : ODataController
+    public abstract class DtoController : ODataController
+    {
+
+    }
+
+    public class DtoController<TDto> : DtoController
         where TDto : class
     {
         protected virtual ODataQueryOptions<TDto> GetODataQueryOptions()

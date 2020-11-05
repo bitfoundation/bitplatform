@@ -95,3 +95,10 @@ let testIEEE754Compatibility = async (): Promise<void> => {
         throw new Error("IEEE754Compatibility problem");
     }
 };
+
+let simpleDtoControllerTest = async (): Promise<void> => {
+    const contextProvider = Bit.DependencyManager.getCurrent().resolveObject<Bit.Contracts.IEntityContextProvider>("EntityContextProvider");
+    const context = await contextProvider.getContext<TestContext>("Test");
+    if (await context.simple.sum(1, 2) != 3)
+        throw new Error("Simple Dto controller problem");
+}

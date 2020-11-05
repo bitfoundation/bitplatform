@@ -2,6 +2,7 @@
 using Bit.Tooling.Core.Model;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Microsoft.CodeAnalysis.Text;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -55,7 +56,7 @@ namespace Bit.Tooling.CodeGenerator.Implementations
                         ControllerSymbol = controllerSymbol,
                         Name = controllerSymbol.Name.Replace("Controller", string.Empty, StringComparison.InvariantCultureIgnoreCase),
                         Operations = new List<ODataOperation>(),
-                        ModelSymbol = controllerSymbol.BaseType.TypeArguments.ExtendedSingleOrDefault($"Looking for model of ${controllerSymbol.Name}", t => t.IsDto())
+                        ModelSymbol = controllerSymbol.BaseType.TypeArguments.ExtendedSingleOrDefault($"Looking for model of ${controllerSymbol.Name}", t => t.IsDto()) ?? await BuildAutoDto(controllerSymbol)
                     };
 
                     if (dtoController.ModelSymbol is ITypeParameterSymbol symbol)
@@ -63,13 +64,10 @@ namespace Bit.Tooling.CodeGenerator.Implementations
                         dtoController.ModelSymbol = symbol.ConstraintTypes.ExtendedSingleOrDefault($"Looking for model on generic model {symbol.Name}", t => t.IsDto());
                     }
 
-                    if (dtoController.ModelSymbol == null)
+                    if (dtoController.ControllerSymbol.IsGenericType || dtoController.ControllerSymbol.IsAbstract)
                         continue;
 
                     dtoControllers.Add(dtoController);
-
-                    if (dtoController.ControllerSymbol.IsGenericType)
-                        continue;
 
                     foreach (MethodDeclarationSyntax methodDecSyntax in dtoControllerClassDec.DescendantNodes().OfType<MethodDeclarationSyntax>())
                     {
@@ -134,6 +132,38 @@ namespace Bit.Tooling.CodeGenerator.Implementations
             }
 
             return dtoControllers;
+        }
+
+        async Task<ITypeSymbol> BuildAutoDto(INamedTypeSymbol controllerSymbol)
+        {
+            string className = $"Auto{controllerSymbol.Name.Replace("Controller", string.Empty)}Dto";
+
+            ProjectId projectId = ProjectId.CreateNewId(debugName: $"{className}Project");
+            DocumentId classSrc = DocumentId.CreateNewId(projectId, debugName: $"{className}.cs");
+
+            Solution solution = new AdhocWorkspace()
+                .CurrentSolution
+                .AddProject(projectId, $"{className}Project", $"{className}_{Guid.NewGuid().ToString("N")}_Assembly", LanguageNames.CSharp)
+                .AddMetadataReference(projectId, MetadataReference.CreateFromFile(typeof(bool).Assembly.Location))
+                .AddDocument(classSrc, $"{className}.cs", SourceText.From($@"
+namespace Bit.Model.Contracts
+{{
+    public interface IDto {{ }}
+}}
+
+namespace Auto
+{{
+    public class {className} : Bit.Model.Contracts.IDto
+    {{
+        public Guid Id {{ get; set; }}
+    }}
+}}"
+                ));
+
+            Document classDoc = solution.Projects.Single().GetDocument(classSrc)!;
+            ClassDeclarationSyntax classClassDec = (await classDoc.GetSyntaxRootAsync()).DescendantNodes().OfType<ClassDeclarationSyntax>().Single();
+            ITypeSymbol classTypeSymbol = (ITypeSymbol)(await classDoc.GetSemanticModelAsync()!).GetDeclaredSymbol(classClassDec);
+            return classTypeSymbol;
         }
     }
 }

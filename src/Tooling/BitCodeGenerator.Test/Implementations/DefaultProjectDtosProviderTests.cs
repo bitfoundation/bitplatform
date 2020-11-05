@@ -39,7 +39,7 @@ namespace Bit.Tooling.CodeGenerator.Test.Implementations
 
                 IList<Dto> dtos = (await projectDtosProvider.GetProjectDtos(solution.Projects.Single(p => p.Name == "Bit.Tests"))).ToList();
 
-                Assert.AreEqual(19, dtos.Count);
+                Assert.AreEqual(20, dtos.Count);
             }
         }
 
