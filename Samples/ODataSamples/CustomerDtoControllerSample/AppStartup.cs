@@ -221,6 +221,15 @@ namespace CustomerDtoControllerSample
         }
     }
 
+    public class MathController : DtoController
+    {
+        [Function]
+        public int Sum(int n1, int n2)
+        {
+            return n1 + n2;
+        }
+    }
+
     public class CustomersController : DtoController<CustomerDto>
     {
         public virtual IRepository<Customer> CustomersRepository { get; set; }

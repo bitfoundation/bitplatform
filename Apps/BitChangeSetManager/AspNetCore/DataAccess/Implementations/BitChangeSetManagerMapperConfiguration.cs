@@ -13,11 +13,15 @@ namespace BitChangeSetManager.DataAccess.Implementations
             int customersCount = 0;
 
             mapperConfigExpression.CreateMap<ChangeSet, ChangeSetDto>()
-                .ForMember(changeSetMember => changeSetMember.IsDeliveredToAll, config => config.MapFrom(changeSet => changeSet.Deliveries.Count() == customersCount))
-                .ReverseMap();
+                .ForMember(d => d.IsDeliveredToAll, config => config.MapFrom(e => e.Deliveries.Count() == customersCount))
+                .ReverseMap()
+                .ForPath(e => e.City.Name, opt => opt.Ignore())
+                .ForPath(e => e.Province.Name, opt => opt.Ignore())
+                .ForPath(e => e.DeliveryRequirement.Title, opt => opt.Ignore())
+                .ForPath(e => e.Severity.Title, opt => opt.Ignore());
 
             mapperConfigExpression.CreateMap<Province, ProvinceDto>()
-                .ForMember(province => province.CitiesCount, config => config.MapFrom(province => province.Cities.LongCount()))
+                .ForMember(d => d.CitiesCount, config => config.MapFrom(e => e.Cities.LongCount()))
                 .ReverseMap();
 
             mapperConfigExpression.CreateMap<ChangeSetDeliveryRequirement, ChangeSetDeliveryRequirementDto>()
@@ -39,7 +43,8 @@ namespace BitChangeSetManager.DataAccess.Implementations
                 .ReverseMap();
 
             mapperConfigExpression.CreateMap<Delivery, DeliveryDto>()
-                .ReverseMap();
+                .ReverseMap()
+                .ForPath(e => e.ChangeSet.Title, opt => opt.Ignore());
 
             mapperConfigExpression.CreateMap<User, UserDto>()
                 .ReverseMap();
