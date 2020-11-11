@@ -13,7 +13,7 @@
 		<PackageReference Include="Prism.Plugin.Logging.Common" Version="7.2.0.1421" />
 		<PackageReference Include="Prism.Forms" Version="7.2.0.1422" />
 		<PackageReference Include="Microsoft.ApplicationInsights.WindowsApps" Condition=" '$(TargetFramework)' == 'uap10.0.17763' " Version="1.1.1" />
-		<PackageReference Include="Microsoft.ApplicationInsights" Condition=" '$(TargetFramework)' != 'uap10.0.17763' " Version="2.15.0" />
+		<PackageReference Include="Microsoft.ApplicationInsights" Condition=" '$(TargetFramework)' != 'uap10.0.17763' " Version="2.16.0" />
 		<PackageReference Include="Prism.Plugin.Popups" Version="7.2.0.1046" />
 		<PackageReference Include="Xamarin.Forms" Version="4.8.0.1560" />
 		<ProjectReference Include="..\..\..\Universal\Bit.Universal.Core\Bit.Universal.Core.csproj" />
