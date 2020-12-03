@@ -20,7 +20,7 @@ public class Customer : IEntity
 }
 ```
 
-Then develop a DbContext class which inherits from EfDbContextBase. The reason is described [in an article we've previously mentioned](docs/blog/optimized-entity-framework-for-n-tier-apps.md)
+Then develop a DbContext class which inherits from EfDbContextBase. The reason is described [in an article we've previously mentioned](/docs/blog/optimized-entity-framework-for-n-tier-apps.md)
 
 ```csharp
 public class MyAppDbContext : EfDbContextBase
@@ -149,7 +149,7 @@ Bit repository has several methods such as GetAll, Add, Remove etc as like as an
 
 LoadCollection - LoadReference - GetCollectionQuery
 
-By reading the article which describes [why bit repository is optimized for N-Tier scenarios](docs/blog/optimized-entity-framework-for-n-tier-apps.md), you'll find out we disable "property based" lazy loading by default which improves your app performance from 3 times to 100 times based on a scenario. But you can perform explicit loading as followings:
+By reading the article which describes [why bit repository is optimized for N-Tier scenarios](/docs/blog/optimized-entity-framework-for-n-tier-apps.md), you'll find out we disable "property based" lazy loading by default which improves your app performance from 3 times to 100 times based on a scenario. But you can perform explicit loading as followings:
 
 ```csharp
 [Route("customers/customer-explicit-sample")]
