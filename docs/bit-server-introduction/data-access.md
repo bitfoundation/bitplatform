@@ -6,7 +6,7 @@ You can use Bit Data Access components, or you can use your own preferred way to
 
 2- True cancellation token support. There is a CancellationToken in every web api action you develop. If user/operator closes its browser, or if you cancel request at client side programmatically, that cancellation token gets notified. Almost all bit framework's methods accept cancellation token, and they stop their work as cancellation token gets notified.
 
-3- Bit Data Access components are optimized for N-Tier app development. To have a better understanding about what does this mean read this [amazing article](docs/blog/optimized-entity-framework-for-n-tier-apps.md)
+3- Bit Data Access components are optimized for N-Tier app development. To have a better understanding about what does this mean read this [amazing article](/docs/blog/optimized-entity-framework-for-n-tier-apps.md)
 
 ## Entity Framework
 
