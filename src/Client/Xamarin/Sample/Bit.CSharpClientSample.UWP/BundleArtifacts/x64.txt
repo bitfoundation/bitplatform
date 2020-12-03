@@ -1,1 +1,0 @@
-MainPackage=D:\bit-foundation\bit-framework\src\CSharpClient\Sample\Bit.CSharpClientSample.UWP\bin\x64\Release\Bit.CSharpClientSample.UWP_1.0.1.0_x64.appx

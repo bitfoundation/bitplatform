@@ -17,7 +17,7 @@ You can develop all these types of apps with **Offline**\|**Mobile** first appro
 There are many ways to contribute
 
 * Code review
-* [Submit bugs](https://github.com/bit-foundation/bit-framework/issues/new?template=bug_report.md)
+* [Submit bugs](https://github.com/bitfoundation/bitframework/issues/new?template=bug_report.md)
 * Engage with other developers on [stackoverflow](http://stackoverflow.com/questions/tagged/bit-framework)
 * Chat with us on gitter [![Join the chat at https://gitter.im/bit-framework/](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/bit-framework?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
@@ -25,5 +25,5 @@ There are many ways to contribute
 
 Read docs on [https://docs.bitfoundation.tech/](https://docs.bitfoundation.tech/)
 
-You can also watch [Announcements](https://github.com/bit-foundation/Announcements/issues) to track important docs/codes changes.
+You can also watch [Announcements](https://github.com/bitfoundation/Announcements/issues) to track important docs/codes changes.
 

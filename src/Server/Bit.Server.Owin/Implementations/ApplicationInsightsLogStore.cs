@@ -221,7 +221,7 @@ namespace Bit.Owin.Implementations
 
         public virtual IContentFormatter ContentFormatter { get; set; } = default!;
 
-        public TelemetryClient TelemetryClient { get; set; } = default!;
+        public virtual TelemetryClient TelemetryClient { get; set; } = default!;
 
         public virtual void SaveLog(LogEntry logEntry)
         {

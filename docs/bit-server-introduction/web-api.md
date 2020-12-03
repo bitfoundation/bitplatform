@@ -15,7 +15,7 @@ Using bit you'll get more benefits from web api. This includes following:
 Run following command after you installed [git for windows](https://git-scm.com/download/win) \(You can use any git client\)
 
 ```text
-git clone https://github.com/bit-foundation/bit-framework.git
+git clone https://github.com/bitfoundation/bitframework.git
 ```
 
 Then open Samples/WebApiSamples/WebApiSamples.sln and go to the WebApiSample project.
@@ -46,7 +46,7 @@ That code configures web api into your app using the default configuration. Defa
 
 Bit is an extensible framework developed based on best practices. We've extensively used dependency injection in our code base and you can customize default behaviors and conventions based on your requirements.
 
-In following samples, you can find out how to customize web api in bit, but feel free to [drops us an issue in github](https://github.com/bit-foundation/bit-framework/issues), ask a question on [stackoverflow.com](http://stackoverflow.com/questions/tagged/bit-framework) or use disqus comments below if you can't find what you want in these samples.
+In following samples, you can find out how to customize web api in bit, but feel free to [drops us an issue in github](https://github.com/bitfoundation/bitframework/issues), ask a question on [stackoverflow.com](http://stackoverflow.com/questions/tagged/bit-framework) or use disqus comments below if you can't find what you want in these samples.
 
 ### Web API - Swagger \(Open-API\) configuration sample
 
@@ -125,7 +125,7 @@ You've also other Register methods like RegisterGeneric, RegisterInstance, Regis
 
 You also have access to autofac's containerBuilder and services and your ConfigureDependencies method.
 
-If you've got a complex scenario, simply drops us an [issue on github](https://github.com/bit-foundation/bit-framework/issues) or ask a question on [stackoverflow](https://stackoverflow.com/questions/tagged/bit-framework).
+If you've got a complex scenario, simply drops us an [issue on github](https://github.com/bitfoundation/bitframework/issues) or ask a question on [stackoverflow](https://stackoverflow.com/questions/tagged/bit-framework).
 
 ### Exception handling:
 

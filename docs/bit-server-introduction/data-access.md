@@ -6,11 +6,11 @@ You can use Bit Data Access components, or you can use your own preferred way to
 
 2- True cancellation token support. There is a CancellationToken in every web api action you develop. If user/operator closes its browser, or if you cancel request at client side programmatically, that cancellation token gets notified. Almost all bit framework's methods accept cancellation token, and they stop their work as cancellation token gets notified.
 
-3- Bit Data Access components are optimized for N-Tier app development. To have a better understanding about what does this mean read this [amazing article](https://github.com/bitfoundation/bitframework/tree/500c990c241d3860c756b1a01fd380bfc63c6628/docs/bit-server-side/docs/blog/optimized-entity-framework-for-n-tier-apps.md)
+3- Bit Data Access components are optimized for N-Tier app development. To have a better understanding about what does this mean read this [amazing article](docs/blog/optimized-entity-framework-for-n-tier-apps.md)
 
 ## Entity Framework
 
-Getting started: \(Sample can be found [here](https://github.com/bit-foundation/bit-framework/tree/master/Samples/DataAccessSamples/)\)
+Getting started: \(Sample can be found [here](https://github.com/bitfoundation/bitframework/tree/master/Samples/DataAccessSamples/)\)
 
 At first, you've to develop your entities. Use IEntity interface to mark your classes as entity. It's just a marker and has no member to implement.
 
@@ -20,7 +20,7 @@ public class Customer : IEntity
 }
 ```
 
-Then develop a DbContext class which inherits from EfDbContextBase. The reason is described [in an article we've previously mentioned](https://github.com/bitfoundation/bitframework/tree/500c990c241d3860c756b1a01fd380bfc63c6628/docs/bit-server-side/docs/blog/optimized-entity-framework-for-n-tier-apps.md)
+Then develop a DbContext class which inherits from EfDbContextBase. The reason is described [in an article we've previously mentioned](docs/blog/optimized-entity-framework-for-n-tier-apps.md)
 
 ```csharp
 public class MyAppDbContext : EfDbContextBase
@@ -141,7 +141,7 @@ public MyAppDbContext(IAppEnvironmentProvider appEnvironmentProvider, IDbContext
 }
 ```
 
-If you've got a complex scenario, simply drops us an [issue on github](https://github.com/bit-foundation/bit-framework/issues) or ask a question on [stackoverflow](https://stackoverflow.com/questions/tagged/bit-framework).
+If you've got a complex scenario, simply drops us an [issue on github](https://github.com/bitfoundation/bitframework/issues) or ask a question on [stackoverflow](https://stackoverflow.com/questions/tagged/bit-framework).
 
 ## Bit repository specific methods
 
@@ -149,7 +149,7 @@ Bit repository has several methods such as GetAll, Add, Remove etc as like as an
 
 LoadCollection - LoadReference - GetCollectionQuery
 
-By reading the article which describes [why bit repository is optimized for N-Tier scenarios](https://github.com/bitfoundation/bitframework/tree/500c990c241d3860c756b1a01fd380bfc63c6628/docs/bit-server-side/docs/blog/optimized-entity-framework-for-n-tier-apps.md), you'll find out we disable "property based" lazy loading by default which improves your app performance from 3 times to 100 times based on a scenario. But you can perform explicit loading as followings:
+By reading the article which describes [why bit repository is optimized for N-Tier scenarios](docs/blog/optimized-entity-framework-for-n-tier-apps.md), you'll find out we disable "property based" lazy loading by default which improves your app performance from 3 times to 100 times based on a scenario. But you can perform explicit loading as followings:
 
 ```csharp
 [Route("customers/customer-explicit-sample")]

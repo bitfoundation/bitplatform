@@ -95,7 +95,7 @@ To follow best practices, keep these rules in your mind:
 
 3- Develop a DTO for every Task you've. For example, if you want to show customers names and their orders count, create a DTO for this task. And when you want to create a Customer registration form which accepts customer data, develop a new DTO for that task.
 
-To send DTO to client side, you develop DtoController. [Examples can be found here](https://github.com/bit-foundation/bit-framework/tree/master/Samples/ODataExamples/).
+To send DTO to client side, you develop DtoController. [Examples can be found here](https://github.com/bitfoundation/bitframework/tree/master/Samples/ODataSamples/).
 
 ## 1- CustomerDtoControllerSample
 
@@ -134,7 +134,7 @@ public virtual async Task<IQueryable<CustomerDto>> GetActiveCustomers(Cancellati
 }
 ```
 
-Mapper automatically maps "model/entities" classes to DTO classes. It uses [AutoMapper](http://automapper.org/) by default and the way we use auto mapper will not slow down your app as described [here](https://github.com/bitfoundation/bitframework/tree/500c990c241d3860c756b1a01fd380bfc63c6628/docs/bit-server-side/docs/blog/why-auto-mapper-has-no-performance-penalty.md)
+Mapper automatically maps "model/entities" classes to DTO classes. It uses [AutoMapper](http://automapper.org/) by default and the way we use auto mapper will not slow down your app as described [here](docs/blog/why-auto-mapper-has-no-performance-penalty.md)
 
 Note that you don't have to use bit repository here. You don't have to use entity framework either. You can use mongo db, simple array etc. We need some customer dto instances only.
 
