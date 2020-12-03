@@ -134,7 +134,7 @@ public virtual async Task<IQueryable<CustomerDto>> GetActiveCustomers(Cancellati
 }
 ```
 
-Mapper automatically maps "model/entities" classes to DTO classes. It uses [AutoMapper](http://automapper.org/) by default and the way we use auto mapper will not slow down your app as described [here](https://github.com/bitfoundation/bitframework/tree/476837905056167f39025af0a4f40c4a98654801/docs/blog/why-auto-mapper-has-no-performance-penalty.md)
+Mapper automatically maps "model/entities" classes to DTO classes. It uses [AutoMapper](http://automapper.org/) by default and the way we use auto mapper will not slow down your app as described [here](/docs/blog/why-auto-mapper-has-no-performance-penalty.md)
 
 Note that you don't have to use bit repository here. You don't have to use entity framework either. You can use mongo db, simple array etc. We need some customer dto instances only.
 

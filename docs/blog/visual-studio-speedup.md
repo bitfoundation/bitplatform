@@ -69,11 +69,11 @@ Windows Indexing Service pull disk I/O to 100% when you build project or install
 
 Open Control Panel and go to Indexing Options.
 
-![](../.gitbook/assets/Control-panel%20%281%29.png)
+![](../.gitbook/assets/Control-panel.png)
 
 Click the ‘Modify’ button
 
-![](../.gitbook/assets/indexing-option%20%281%29.png)
+![](../.gitbook/assets/Indexing-Option.png)
 
 in the ‘Indexed Locations’ window, navigate to the folder you want to exclude from search. Uncheck the location and click ‘Ok’.
 
@@ -129,7 +129,7 @@ Tools -&gt; Options -&gt; IntelliTrace
 
 Disable Browser link
 
-![](../.gitbook/assets/browser-link.png)
+![](../.gitbook/assets/browser-link%20%281%29.png)
 
 [Refrence](http://medium.com/burak-tasci/tweaking-the-environment-to-speed-up-visual-studio-79cd1920fed9)
 
