@@ -12,7 +12,7 @@ In bit framework, we disable entity framework features by default. Features like
 
 We've developed roslyn analyzers to inform you when you're doing something wrong while you're working with db context too. See below:
 
-![](/gitbook/assets/EntityFrameworkAsNoTrackingRoslynAnalyzer.PNG)
+![](https://github.com/bitfoundation/bitframework/tree/ef006dd0b00205401184cd94fbf69d94123e7500/docs/.gitbook/assets/EntityFrameworkAsNoTrackingRoslynAnalyzer.PNG)
 
 [You can see what we've done to entity framework's configuration here](https://github.com/bitfoundation/bitframework/blob/master/src/Server/Bit.Server.Data.EntityFramework/Implementations/EfDbContextBase.cs#L70-L76)
 
