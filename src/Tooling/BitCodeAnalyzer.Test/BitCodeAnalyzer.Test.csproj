@@ -19,12 +19,12 @@
 	<ItemGroup>
 		<PackageReference Include="EntityFramework" Version="6.4.4" />
 		<PackageReference Include="Microsoft.Build.Locator" Version="1.2.6" />
-		<PackageReference Include="Microsoft.CodeAnalysis" Version="3.7.0" />
-		<PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="3.7.0" />
-		<PackageReference Include="Microsoft.CodeAnalysis.Workspaces.MSBuild" Version="3.7.0" />
+		<PackageReference Include="Microsoft.CodeAnalysis" Version="3.8.0" />
+		<PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="3.8.0" />
+		<PackageReference Include="Microsoft.CodeAnalysis.Workspaces.MSBuild" Version="3.8.0" />
 		<PackageReference Include="MSTest.TestAdapter" Version="2.1.2" />
 		<PackageReference Include="MSTest.TestFramework" Version="2.1.2" />
-		<PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.8.0" />
+		<PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.8.3" />
 		<PackageReference Include="NuGet.Frameworks" Version="5.8.0" />
 		<PackageReference Include="NuGet.ProjectModel" Version="5.8.0" />
 	</ItemGroup>
