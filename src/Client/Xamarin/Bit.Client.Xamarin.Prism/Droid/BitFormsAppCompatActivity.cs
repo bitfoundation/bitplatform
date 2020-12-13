@@ -30,7 +30,7 @@ namespace Bit.Android
         protected virtual void UseDefaultConfiguration(Bundle savedInstanceState)
         {
             _useDefaultConfiguration = true;
-            Rg.Plugins.Popup.Popup.Init(this, savedInstanceState);
+            Rg.Plugins.Popup.Popup.Init(this);
             Xamarin.Essentials.Platform.Init(this, savedInstanceState);
             Xamarin.Essentials.VersionTracking.Track();
             BitCSharpClientControls.Init();
