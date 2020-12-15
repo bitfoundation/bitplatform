@@ -1,4 +1,5 @@
 ﻿using Bit.Core.Contracts;
+using Bit.Owin.Implementations;
 using Hangfire.Logging;
 using System;
 
@@ -6,8 +7,6 @@ namespace Bit.Hangfire.Implementations
 {
     public class HangfireBackgroundJobWorkerLogProvider : ILog, ILogProvider
     {
-        public virtual IDependencyManager DependencyManager { get; set; } = default!;
-
         public virtual ILog GetLogger(string name)
         {
             return this;
@@ -21,7 +20,7 @@ namespace Bit.Hangfire.Implementations
 
                 if ((exception != null || !string.IsNullOrEmpty(message)) && (logLevel != LogLevel.Debug && logLevel != LogLevel.Trace && logLevel != LogLevel.Info))
                 {
-                    using (IDependencyResolver childResolver = DependencyManager.CreateChildDependencyResolver())
+                    using (IDependencyResolver childResolver = DefaultDependencyManager.Current.CreateChildDependencyResolver())
                     {
                         ILogger logger = childResolver.Resolve<ILogger>();
                         if (exception != null)
