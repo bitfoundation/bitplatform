@@ -56,6 +56,11 @@ namespace Bit.Model.Implementations
 
         public virtual PropertyInfo[] GetKeyColums(TypeInfo typeInfo)
         {
+            bool IsKeyByConvention(PropertyInfo prop)
+            {
+                return string.Compare(prop.Name, "Id", StringComparison.OrdinalIgnoreCase) == 0 || string.Compare(prop.Name, (typeInfo.Name + "Id"), StringComparison.OrdinalIgnoreCase) == 0;
+            }
+
             if (typeInfo == null)
                 throw new ArgumentNullException(nameof(typeInfo));
 
@@ -68,7 +73,7 @@ namespace Bit.Model.Implementations
             if (keys.Any())
                 return keys;
             else
-                return props.Where(p => p.Name == "Id" || p.Name == $"{typeInfo.Name}Id").ToArray();
+                return props.Where(IsKeyByConvention).ToArray();
         }
 
         public virtual object[] GetKeys(IDto dto)
