@@ -3,9 +3,9 @@
     <TargetFramework>net5.0</TargetFramework>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="Bit.Server.Data.EntityFrameworkCore" Version="6.7.2" />
-    <PackageReference Include="Bit.Server.WebApi" Version="6.7.2" />
-    <PackageReference Include="Bit.Tooling.CodeAnalyzer" Version="6.7.2" />
+    <PackageReference Include="Bit.Server.Data.EntityFrameworkCore" Version="6.7.3" />
+    <PackageReference Include="Bit.Server.WebApi" Version="6.7.3" />
+    <PackageReference Include="Bit.Tooling.CodeAnalyzer" Version="6.7.3" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="5.0.1" />
   </ItemGroup>
   <ItemGroup>
