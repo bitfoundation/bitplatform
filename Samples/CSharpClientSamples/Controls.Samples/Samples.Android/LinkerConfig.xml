@@ -1,7 +1,4 @@
 ﻿<linker>
-  <assembly fullname="Bit.Client.Xamarin.Controls">
-    <type fullname="*" />
-  </assembly>
   <assembly fullname="System.Core">
     <type fullname="*" />
   </assembly>

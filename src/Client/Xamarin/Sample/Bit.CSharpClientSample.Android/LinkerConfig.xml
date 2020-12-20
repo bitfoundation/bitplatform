@@ -74,13 +74,12 @@
 		<type fullname="System.Linq.Expressions.Expression`1"></type>
 		<type fullname="System.Linq.Queryable"></type>
 	</assembly>
-
+	
 	<!-- EntityFrameworkCore -->
 
-	<!--<assembly fullname="Microsoft.EntityFrameworkCore">
+	<assembly fullname="Microsoft.EntityFrameworkCore">
 		<type fullname="*" />
-	</assembly>-->
-	<!-- use linkskip Microsoft.EntityFrameworkCore -->
+	</assembly>
 
 	<assembly fullname="Microsoft.EntityFrameworkCore.Relational">
 		<type fullname="*" />
@@ -121,11 +120,59 @@
 	<assembly fullname="Microsoft.AspNet.SignalR.Client">
 		<type fullname="*" />
 	</assembly>
-
+	
 	<!-- Sync -->
 
 	<assembly fullname="System.Linq.Dynamic">
 		<type fullname="*" />
+	</assembly>
+	
+	<!-- Application Insights -->
+
+	<assembly fullname="Microsoft.ApplicationInsights">
+		<type fullname="*" />
+	</assembly>
+	
+	<!-- Firebase -->
+
+	<assembly fullname="Xamarin.Firebase.Crashlytics">
+		<type fullname="*" />
+	</assembly>
+
+	<assembly fullname="Xamarin.Firebase.Analytics">
+		<type fullname="*" />
+	</assembly>
+
+	<assembly fullname="Xamarin.Firebase.Messaging">
+		<type fullname="*" />
+	</assembly>
+
+	<assembly fullname="Xamarin.Firebase.Iid">
+		<type fullname="*" />
+	</assembly>
+
+	<assembly fullname="Xamarin.Firebase.Common">
+		<type fullname="*" />
+	</assembly>
+
+	<assembly fullname="Plugin.LocalNotification">
+		<type fullname="*" />
+	</assembly>
+
+	<assembly fullname="Xamarin.GooglePlayServices.Measurement.Api">
+		<type fullname="Firebase.Analytics.FirebaseAnalytics" />
+	</assembly>
+
+	<assembly fullname="Xamarin.GooglePlayServices.Measurement">
+		<type fullname="*" />
+	</assembly>
+
+	<assembly fullname="Xamarin.AndroidX.AppCompat">
+		<type fullname="AndroidX.AppCompat.Widget.FitWindowsLinearLayout" />
+	</assembly>
+
+	<assembly fullname="Xamarin.AndroidX.Core">
+		<type fullname="AndroidX.Core.App.CoreComponentFactory" />
 	</assembly>
 
 </linker>
