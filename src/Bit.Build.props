@@ -25,11 +25,11 @@
 		<PackageProjectUrl>https://github.com/bitfoundation/bitframework</PackageProjectUrl>
 		<PackageIconUrl>https://avatars.githubusercontent.com/u/22663390</PackageIconUrl>
 		<PackageReleaseNotes>https://github.com/bitfoundation/bitframework/releases/tag/v6.3.0</PackageReleaseNotes>
-		<PackageVersion>6.7.1</PackageVersion>
+		<PackageVersion>6.7.2</PackageVersion>
 
 		<!-- Version -->
-		<Version>6.7.1</Version>
-		<AssemblyVersion>6.7.1</AssemblyVersion>
+		<Version>6.7.2</Version>
+		<AssemblyVersion>6.7.2</AssemblyVersion>
 
 		<!-- Compile -->
 		<NeutralLanguage>en</NeutralLanguage>
