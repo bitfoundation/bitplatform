@@ -43,7 +43,7 @@ namespace Bit.CSharpClientSample
         {
             InitializeComponent();
 
-            if (Device.RuntimePlatform != Device.UWP)
+            if (Device.RuntimePlatform != Device.UWP && DeviceInfo.DeviceType == DeviceType.Physical)
             {
                 Accelerometer.Start(SensorSpeed.UI);
                 Accelerometer.ShakeDetected += async delegate

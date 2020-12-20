@@ -1,0 +1,167 @@
+﻿<linker>
+
+	<!-- Bit Core -->
+
+	<assembly fullname="Bit.Universal.Model">
+		<type fullname="*" />c
+	</assembly>
+	<assembly fullname="Bit.Universal.Core">
+		<type fullname="*" />
+	</assembly>
+
+	<!-- Bit.Client.Xamarin.Prism -->
+
+	<assembly fullname="Prism.Forms">
+		<type fullname="*" />
+	</assembly>
+	<assembly fullname="Prism">
+		<type fullname="*" />
+	</assembly>
+	<assembly fullname="Prism.Plugin.Popups">
+		<type fullname="*" />
+	</assembly>
+	<assembly fullname="Autofac">
+		<type fullname="*" />
+	</assembly>
+	<assembly fullname="Autofac.Extensions.DependencyInjection">
+		<type fullname="*" />
+	</assembly>
+	<assembly fullname="Microsoft.Extensions.DependencyInjection.Abstractions">
+		<type fullname="*" />
+	</assembly>
+	<assembly fullname="Microsoft.Extensions.DependencyInjection">
+		<type fullname="*" />
+	</assembly>
+	<assembly fullname="Bit.Client.Xamarin.Prism">
+		<type fullname="*" />
+	</assembly>
+
+	<!-- Bit.Universal.OData -->
+
+	<assembly fullname="Bit.Universal.OData">
+		<type fullname="*" />
+	</assembly>
+	<assembly fullname="Simple.OData.Client.V4.Adapter">
+		<type fullname="*" />
+	</assembly>
+
+	<!-- Bit.Universal.Http -->
+
+	<assembly fullname="Bit.Universal.Http">
+		<type fullname="*" />
+	</assembly>
+
+	<assembly fullname="System.IdentityModel.Tokens.Jwt">
+		<type fullname="*" />
+	</assembly>
+
+	<!-- Bit.Client.Xamarin.Controls -->
+
+	<assembly fullname="Rg.Plugins.Popup">
+		<type fullname="*" />
+	</assembly>
+	<assembly fullname="Bit.Client.Xamarin.Controls">
+		<type fullname="*" />
+	</assembly>
+
+	<!-- App -->
+
+	<assembly fullname="Bit.CSharpClientSample">
+		<type fullname="*" />
+	</assembly>
+	<assembly fullname="Bit.CSharpClientSample.iOS">
+		<type fullname="*" />
+	</assembly>
+
+	<!-- Other -->
+
+	<assembly fullname="System.ComponentModel.Composition">
+		<type fullname="*" />
+	</assembly>
+
+	<assembly fullname="mscorlib">
+		<type fullname="System.String">
+			<method name="Compare"></method>
+			<method name="CompareTo"></method>
+			<method name="ToUpper"></method>
+			<method name="ToLower"></method>
+		</type>
+		<type fullname="System.Math">
+			<method name="Abs"></method>
+			<method name="Max"></method>
+			<method name="Min"></method>
+			<method name="Round"></method>
+		</type>
+		<type fullname="System.DateTime">
+			<method name="AddYears"></method>
+			<method name="AddMonths"></method>
+			<method name="AddDays"></method>
+			<method name="AddHours"></method>
+			<method name="AddMinutes"></method>
+			<method name="AddSeconds"></method>
+		</type>
+	</assembly>
+	<assembly fullname="System.Core">
+		<type fullname="System.Linq.Expressions.Expression`1"></type>
+		<type fullname="System.Linq.Queryable"></type>
+	</assembly>
+
+	<!-- Entity Framework Core & Sync -->
+
+	<assembly fullname="Bit.Universal.Data">
+		<type fullname="*" />
+	</assembly>
+
+	<assembly fullname="Bit.Universal.Data.EntityFrameworkCore">
+		<type fullname="*" />
+	</assembly>
+
+	<assembly fullname="Bit.Client.Data.EntityFrameworkCore">
+		<type fullname="*" />
+	</assembly>
+
+	<assembly fullname="Bit.Universal.Sync.ODataEntityFrameworkCore">
+		<type fullname="*" />
+	</assembly>
+
+	<!--<assembly fullname="Microsoft.EntityFrameworkCore">
+		<type fullname="*" />
+	</assembly>--> <!-- use linkskip Microsoft.EntityFrameworkCore -->
+
+	<assembly fullname="Microsoft.EntityFrameworkCore.Relational">
+		<type fullname="*" />
+	</assembly>
+
+	<assembly fullname="Microsoft.EntityFrameworkCore.Sqlite">
+		<type fullname="*" />
+	</assembly>
+
+	<!-- Microsoft Extensions => For both Bit.Universal.Http and Bit.Client.Data.EntityFrameworkCore -->
+
+	<assembly fullname="Microsoft.Extensions.Http">
+		<type fullname="*" />
+	</assembly>
+
+	<assembly fullname="Microsoft.Extensions.Logging">
+		<type fullname="*" />
+	</assembly>
+
+	<assembly fullname="Microsoft.Extensions.Logging.Debug">
+		<type fullname="*" />
+	</assembly>
+
+	<assembly fullname="Microsoft.Extensions.Options">
+		<type fullname="*" />
+	</assembly>
+
+	<!-- Signalr -->
+
+	<assembly fullname="Bit.Universal.SignalR">
+		<type fullname="*" />
+	</assembly>
+
+	<assembly fullname="Microsoft.AspNet.SignalR.Client">
+		<type fullname="*" />
+	</assembly>
+
+</linker>

@@ -14,7 +14,7 @@
     <NuGetPackageImportStamp>
     </NuGetPackageImportStamp>
     <Nullable>disable</Nullable>
-    <ProvisioningType>automatic</ProvisioningType>
+    <ProvisioningType>manual</ProvisioningType>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|iPhoneSimulator' ">
     <DebugSymbols>true</DebugSymbols>
@@ -28,14 +28,13 @@
     <MtouchArch>x86_64</MtouchArch>
     <MtouchLink>None</MtouchLink>
     <MtouchDebug>true</MtouchDebug>
-    <MtouchExtraArgs>--time --time --dsym=false -v -v -v -v</MtouchExtraArgs>
-    <DeviceSpecificBuild>true</DeviceSpecificBuild>
-    <MtouchFastDev>true</MtouchFastDev>
+    <MtouchExtraArgs>--linkskip Microsoft.EntityFrameworkCore</MtouchExtraArgs>
+    <DeviceSpecificBuild>false</DeviceSpecificBuild>
+    <MtouchFastDev>false</MtouchFastDev>
     <CodesignEntitlements>
     </CodesignEntitlements>
     <CodesignKey>iPhone Developer</CodesignKey>
-    <CodesignProvision>
-    </CodesignProvision>
+    <CodesignProvision>VS: WildCard Development</CodesignProvision>
     <MtouchEnableSGenConc>true</MtouchEnableSGenConc>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|iPhoneSimulator' ">
@@ -64,15 +63,16 @@
     </CodesignEntitlements>
     <MtouchLink>None</MtouchLink>
     <MtouchNoSymbolStrip>false</MtouchNoSymbolStrip>
-    <MtouchFastDev>true</MtouchFastDev>
-    <DeviceSpecificBuild>true</DeviceSpecificBuild>
-    <MtouchExtraArgs>--time --time --dsym=false -v -v -v -v</MtouchExtraArgs>
+    <MtouchFastDev>false</MtouchFastDev>
+    <DeviceSpecificBuild>false</DeviceSpecificBuild>
+    <MtouchExtraArgs>--linkskip Microsoft.EntityFrameworkCore</MtouchExtraArgs>
     <MtouchEnableSGenConc>true</MtouchEnableSGenConc>
     <CodesignProvision>VS: WildCard Development</CodesignProvision>
     <IOSDebugOverWiFi>true</IOSDebugOverWiFi>
     <CodesignExtraArgs />
     <CodesignResourceRules />
-    <MtouchInterpreter>-all</MtouchInterpreter>
+    <MtouchInterpreter>
+    </MtouchInterpreter>
     <MtouchProfiling>true</MtouchProfiling>
     <CodesignKey>iPhone Developer</CodesignKey>
   </PropertyGroup>
@@ -130,9 +130,6 @@
     <PackageReference Include="System.Reflection.Emit" Version="4.3.0" ExcludeAssets="All">
       <IncludeAssets>none</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="Xamarin.Firebase.iOS.Core" Version="6.10.4" />
-    <PackageReference Include="Xamarin.Firebase.iOS.Crashlytics" Version="4.6.2" />
-    <PackageReference Include="Xamarin.Firebase.iOS.Analytics" Version="6.9.0" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\..\..\Universal\Bit.Universal.Core\Bit.Universal.Core.csproj">
@@ -183,6 +180,9 @@
       <Project>{7acbbfff-cd89-4598-8512-2740a9fb0bfa}</Project>
       <Name>Bit.CSharpClientSample</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <LinkDescription Include="LinkerConfig.xml" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\iOS\Xamarin.iOS.CSharp.targets" />
 </Project>
