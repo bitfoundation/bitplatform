@@ -1,10 +1,7 @@
 ﻿using System.Reflection;
 
-#if Android || iOS
 [assembly: Bit.Client.Xamarin.Preserve]
-#endif
 
-#if Android || iOS
 namespace Bit.Client.Xamarin
 {
     public sealed class PreserveAttribute : System.Attribute
@@ -14,7 +11,6 @@ namespace Bit.Client.Xamarin
     }
 
 }
-#endif
 
 namespace Bit.Core
 {

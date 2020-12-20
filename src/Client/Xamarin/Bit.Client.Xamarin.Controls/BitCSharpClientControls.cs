@@ -8,9 +8,7 @@ using Xamarin.Forms;
 [assembly: XmlnsDefinition("https://bitframework.com", "Bit.View.Controls", AssemblyName = "Bit.Client.Xamarin.Controls")]
 #endif
 
-#if Android || iOS
 [assembly: Xamarin.Forms.Internals.Preserve]
-#endif
 
 namespace Bit.View
 {

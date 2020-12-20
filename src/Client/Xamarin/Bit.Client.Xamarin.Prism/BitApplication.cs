@@ -32,9 +32,7 @@ using Xamarin.Forms.Xaml;
 [assembly: XmlnsDefinition("https://bitframework.com", "Bit.View", AssemblyName = "Bit.Client.Xamarin.Prism")]
 #endif
 
-#if Android || iOS
 [assembly: Xamarin.Forms.Internals.Preserve]
-#endif
 
 namespace Bit
 {
