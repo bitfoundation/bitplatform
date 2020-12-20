@@ -1,5 +1,6 @@
 ﻿using System.Reflection;
 
+#if Android || iOS
 [assembly: Bit.Client.Xamarin.Preserve]
 
 namespace Bit.Client.Xamarin
@@ -11,6 +12,7 @@ namespace Bit.Client.Xamarin
     }
 
 }
+#endif
 
 namespace Bit.Core
 {
