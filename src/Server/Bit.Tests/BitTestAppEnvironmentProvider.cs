@@ -81,6 +81,7 @@ namespace Bit.Tests
                     {
                         new EnvironmentConfig { Key = AppEnvironment.KeyValues.IndexPagePath, Value = @"./src/Server/Bit.Tests/indexPage.html" },
                         new EnvironmentConfig { Key = AppEnvironment.KeyValues.IdentityServerCertificatePath, Value = @"../../../IdentityServerCertificate.pfx" },
+                        new EnvironmentConfig { Key = AppEnvironment.KeyValues.IdentityClientPublicKey, Value = @"<RSAKeyValue><Modulus>zVSujd5+1QfiptiJFFmm+HShZjvN77ww0z5KDrW9UiHf6RogExtEO4uFkQAuA+QBtH0G5dwnChTwRWmxcq4F/4VLhc/jXX+JmOkAe3YPS7fR95aT054GS8ceYgoV4+LjqU8135hitEQSO+/ltYh/sj47GrkhbAcaeT5Vwp/vWHhKuHIYa0RrLfOeMBHLRNAM9ynNgPlAnkTG4JCGA7V8ajqyHZvmA7V5Nl8ke3qb6/81/pcpsk4W+lw5p2SrFgirhbOwX+XFUyDsLis0kloPKa3PDq9K8MC2vo5kioXcFjNZ9y9oJb+gqrNPZRo93CP4QLAIvEgpUZ2u1zs4f/twLQ==</Modulus><Exponent>AQAB</Exponent></RSAKeyValue>" },
                         new EnvironmentConfig { Key = AppEnvironment.KeyValues.StaticFilesRelativePath, Value = @"../../../../../../" },
                         new EnvironmentConfig { Key = "TestDbConnectionString", Value = string.Format(Settings.Default.TestDbConnectionString, Guid.NewGuid())  },
                         new EnvironmentConfig { Key = AppEnvironment.KeyValues.IdentityCertificatePassword , Value = "P@ssw0rd" },

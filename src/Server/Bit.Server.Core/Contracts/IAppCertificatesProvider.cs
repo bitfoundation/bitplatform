@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 
 namespace Bit.Core.Contracts
@@ -11,6 +12,8 @@ namespace Bit.Core.Contracts
         /// <summary>
         /// Provides certificate which signs JWT tokens.
         /// </summary>
-        X509Certificate2 GetSingleSignOnCertificate();
+        X509Certificate2 GetSingleSignOnServerCertificate();
+
+        RSA GetSingleSignOnClientRsaKey();
     }
 }

@@ -89,7 +89,7 @@ namespace Bit.IdentityServer
                 IdentityServerOptions identityServerOptions = new IdentityServerOptions
                 {
                     SiteName = identityServerSiteName,
-                    SigningCertificate = AppCertificatesProvider.GetSingleSignOnCertificate(),
+                    SigningCertificate = AppCertificatesProvider.GetSingleSignOnServerCertificate(),
                     Factory = factory,
                     RequireSsl = requireSslConfigValue,
                     EnableWelcomePage = AppEnvironment.DebugMode == true,

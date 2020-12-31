@@ -23,6 +23,7 @@ namespace Bit.Core.Models
 
             public static readonly string IdentityServerCertificatePath = nameof(IdentityServerCertificatePath);
             public static readonly string IdentityServerCertificatePathDefaultValue = "IdentityServerCertificate.pfx";
+            public static readonly string IdentityClientPublicKey = nameof(IdentityClientPublicKey);
 
             public static readonly string RequireSsl = nameof(RequireSsl);
             public static readonly bool RequireSslDefaultValue = false;
