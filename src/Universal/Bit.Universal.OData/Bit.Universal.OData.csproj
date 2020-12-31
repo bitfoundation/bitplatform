@@ -9,7 +9,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Simple.OData.V4.Client" Version="5.15.0" />
+    <PackageReference Include="Simple.OData.V4.Client" Version="5.17.0" />
     <PackageReference Include="Microsoft.OData.Core" Version="7.8.1" />
   </ItemGroup>
 
