@@ -51,6 +51,8 @@ namespace Bit.Owin.Implementations
             TryReadConfig<string>(Configuration, AppEnvironment.KeyValues.IndexPagePath);
             TryReadConfig<string>(Configuration, AppEnvironment.KeyValues.StaticFilesRelativePath);
             TryReadConfig<string>(Configuration, AppEnvironment.KeyValues.IdentityCertificatePassword);
+            TryReadConfig<string>(Configuration, AppEnvironment.KeyValues.IdentityServerCertificatePath);
+            TryReadConfig<string>(Configuration, AppEnvironment.KeyValues.IdentityClientPublicKey);
             TryReadConfig<bool>(Configuration, AppEnvironment.KeyValues.RequireSsl);
             TryReadConfig<long>(Configuration, AppEnvironment.KeyValues.EventLogId);
 
@@ -93,6 +95,7 @@ namespace Bit.Owin.Implementations
                 TryReadConfig<string>(hangfire, AppEnvironment.KeyValues.Hangfire.JobSchedulerDbConnectionString);
             }
 
+            TryReadConnectionString(AppEnvironment.KeyValues.Signalr.SignalRAzureServiceBusConnectionString);
             TryReadConnectionString(AppEnvironment.KeyValues.Signalr.SignalRSqlServerConnectionString);
             TryReadConnectionString(AppEnvironment.KeyValues.Hangfire.JobSchedulerDbConnectionString);
             TryReadConnectionString(AppEnvironment.KeyValues.Data.LogDbConnectionstring);
