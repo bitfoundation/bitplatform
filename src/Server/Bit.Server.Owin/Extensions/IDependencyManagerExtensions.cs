@@ -8,6 +8,7 @@ using Bit.Owin.Middlewares;
 using Microsoft.ApplicationInsights.Extensibility;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http.Features;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Owin.Security.DataProtection;
 using Owin;
 using System;
@@ -56,10 +57,17 @@ namespace Bit.Core.Contracts
             return dependencyManager;
         }
 
+        /// <summary>
+        /// Use app.UseRouting and app.UseCors before this and app.UseEndpoints after this.
+        /// </summary>
         public static IDependencyManager RegisterAspNetCoreSingleSignOnClient(this IDependencyManager dependencyManager)
         {
             if (dependencyManager == null)
                 throw new ArgumentNullException(nameof(dependencyManager));
+
+            IServiceCollection services = dependencyManager.GetServiceCollection();
+
+            services.AddAuthorization();
 
             dependencyManager.RegisterAspNetCoreMiddleware<AspNetCoreReadAuthTokenFromCookieMiddlewareConfiguration>();
             dependencyManager.RegisterAspNetCoreMiddleware<AspNetCoreSingleSignOnClientMiddlewareConfiguration>();
