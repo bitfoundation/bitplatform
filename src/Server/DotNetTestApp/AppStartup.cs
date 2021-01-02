@@ -17,6 +17,8 @@ using Bit.Owin;
 using Bit.Owin.Implementations;
 using IdentityServer3.Core.Models;
 using Microsoft.AspNet.OData.Builder;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Serilog;
@@ -24,6 +26,7 @@ using Swashbuckle.Application;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Linq;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
@@ -72,7 +75,12 @@ namespace DotNetTestApp
                 aspNetCoreApp.UseSerilogRequestLogging();
             });
 
+            dependencyManager.RegisterAspNetCoreMiddlewareUsing(aspNetCoreApp => aspNetCoreApp.UseRouting());
+
             dependencyManager.RegisterAspNetCoreSingleSignOnClient();
+
+            services.AddControllers();
+            dependencyManager.RegisterAspNetCoreMiddlewareUsing(aspNetCoreApp => aspNetCoreApp.UseEndpoints(endpoints => endpoints.MapControllers()));
 
             dependencyManager.Register<IODataModelBuilderProvider, AppODataModelBuilderProvider>(lifeCycle: DependencyLifeCycle.SingleInstance);
 
@@ -293,6 +301,40 @@ namespace DotNetTestApp
         public SingleResult<MainDto> GetInstance()
         {
             return SingleResult(new MainDto { });
+        }
+    }
+
+    public class WeatherForecast
+    {
+        public DateTime Date { get; set; }
+
+        public int TemperatureC { get; set; }
+
+        public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
+
+        public string Summary { get; set; }
+    }
+
+    [ApiController]
+    [Microsoft.AspNetCore.Mvc.Route("[controller]")]
+    public class WeatherForecastController : ControllerBase
+    {
+        private static readonly string[] Summaries = new[]
+        {
+            "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
+        };
+
+        [Microsoft.AspNetCore.Mvc.HttpGet, Microsoft.AspNetCore.Authorization.Authorize]
+        public IEnumerable<WeatherForecast> Get()
+        {
+            var rng = new Random();
+            return Enumerable.Range(1, 5).Select(index => new WeatherForecast
+            {
+                Date = DateTime.Now.AddDays(index),
+                TemperatureC = rng.Next(-20, 55),
+                Summary = Summaries[rng.Next(Summaries.Length)]
+            })
+            .ToArray();
         }
     }
 }
