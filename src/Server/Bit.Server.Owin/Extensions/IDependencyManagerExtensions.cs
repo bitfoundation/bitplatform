@@ -6,6 +6,7 @@ using Bit.Owin.Implementations;
 using Bit.Owin.Implementations.Metadata;
 using Bit.Owin.Middlewares;
 using Microsoft.ApplicationInsights.Extensibility;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.Extensions.DependencyInjection;
@@ -67,6 +68,7 @@ namespace Bit.Core.Contracts
 
             IServiceCollection services = dependencyManager.GetServiceCollection();
 
+            services.AddAuthentication("Bit").AddScheme<AuthenticationSchemeOptions, BitAuthenticationHandler>("Bit", _ => { });
             services.AddAuthorization();
 
             dependencyManager.RegisterAspNetCoreMiddleware<AspNetCoreReadAuthTokenFromCookieMiddlewareConfiguration>();
