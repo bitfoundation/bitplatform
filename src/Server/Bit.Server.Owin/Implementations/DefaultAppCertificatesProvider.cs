@@ -2,6 +2,7 @@
 using Bit.Core.Models;
 using System;
 using System.IO;
+using System.Linq;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 
@@ -32,6 +33,11 @@ namespace Bit.Owin.Implementations
                 {
                     _certificate = new X509Certificate2(pfxRaw, password, X509KeyStorageFlags.UserKeySet);
                 }
+
+                using X509Chain chain = new X509Chain();
+                bool isValid = chain.Build(_certificate);
+                if (!isValid && chain.ChainStatus.Any(s => s.Status == X509ChainStatusFlags.NotTimeValid))
+                    throw new InvalidOperationException($"A required certificate is not within its validity period when verifying against the current system clock or the timestamp in the signed file.");
             }
 
             return _certificate;
