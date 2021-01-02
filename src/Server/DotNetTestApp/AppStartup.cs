@@ -21,6 +21,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.OpenApi.Models;
 using Serilog;
 using Swashbuckle.Application;
 using System;
@@ -72,7 +73,14 @@ namespace DotNetTestApp
 
             dependencyManager.RegisterAspNetCoreMiddlewareUsing(aspNetCoreApp =>
             {
+                aspNetCoreApp.UseSwagger();
+                aspNetCoreApp.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "DotNetTestApp v1"));
                 aspNetCoreApp.UseSerilogRequestLogging();
+            });
+
+            services.AddSwaggerGen(c =>
+            {
+                c.SwaggerDoc("v1", new OpenApiInfo { Title = "DotNetTestApp", Version = "v1" });
             });
 
             dependencyManager.RegisterAspNetCoreMiddlewareUsing(aspNetCoreApp => aspNetCoreApp.UseRouting());
