@@ -22,4 +22,5 @@
   * [Visual Studio Speedup](docs/blog/visual-studio-speedup.md)
   * [Server sent events or Web Sockets?](docs/blog/server-sent-events-or-web-sockets.md)
   * [Optimized entity framework for N-Tier applications](docs/blog/optimized-entity-framework-for-n-tier-apps.md)
+  * [Blazor Best Practice with BlazorDualMode](docs/blog/blazor-best-practice-with-BlazorDualMode.md)
 
