@@ -68,7 +68,7 @@ namespace Bit.Core.Contracts
 
             IServiceCollection services = dependencyManager.GetServiceCollection();
 
-            services.AddAuthentication("Bit").AddScheme<AuthenticationSchemeOptions, BitAuthenticationHandler>("Bit", _ => { });
+            services.AddAuthentication("JWT").AddScheme<AuthenticationSchemeOptions, BitAuthenticationHandler>("JWT", _ => { });
             services.AddAuthorization();
 
             dependencyManager.RegisterAspNetCoreMiddleware<AspNetCoreReadAuthTokenFromCookieMiddlewareConfiguration>();

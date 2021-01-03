@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authentication;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using System;
 using System.Text.Encodings.Web;
 using System.Threading.Tasks;
 
@@ -15,10 +16,7 @@ namespace Bit.Owin.Implementations
 
         protected override async Task<AuthenticateResult> HandleAuthenticateAsync()
         {
-            if (Request.HttpContext.User?.Identity?.IsAuthenticated == true)
-                return AuthenticateResult.Success(new AuthenticationTicket(Request.HttpContext.User, "JWT"));
-
-            return AuthenticateResult.Fail("Authentication failed");
+            throw new NotImplementedException();
         }
     }
 }
