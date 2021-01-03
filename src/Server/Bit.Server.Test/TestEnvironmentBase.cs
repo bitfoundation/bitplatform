@@ -150,6 +150,7 @@ namespace Bit.Test
                 implementationType => GetBaseTypes(implementationType).Any(t => t.Name == "Profile"), /*AutoMapper*/
                 implementationType => GetBaseTypes(implementationType).Any(t => t.Name == "ODataEdmTypeSerializer"),
                 implementationType => GetBaseTypes(implementationType).Any(t => t.Name == "DefaultODataDeserializerProvider"),
+                implementationType => GetBaseTypes(implementationType).Any(t => t.Name.Contains("AuthenticationHandler", StringComparison.InvariantCulture)),
                 implementationType => implementationType == typeof(AspNetCoreAppEnvironmentsProvider).GetTypeInfo(),
                 implementationType => implementationType.IsArray
             };

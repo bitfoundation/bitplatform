@@ -70,25 +70,31 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Xamarin.Azure.NotificationHubs.Android">
-      <Version>1.1.3</Version>
+    <PackageReference Include="Plugin.LocalNotification">
+      <Version>5.2.0</Version>
     </PackageReference>
     <PackageReference Include="Xamarin.Firebase.Analytics">
-      <Version>117.5.0</Version>
+      <Version>117.4.1</Version>
     </PackageReference>
     <PackageReference Include="Xamarin.Firebase.Crashlytics">
-      <Version>117.2.1</Version>
+      <Version>117.0.0</Version>
     </PackageReference>
     <PackageReference Include="Xamarin.Firebase.Messaging">
-      <Version>120.2.4</Version>
+      <Version>120.1.7</Version>
     </PackageReference>
-    <PackageReference Include="Xamarin.Forms" Version="4.8.0.1687" />
     <PackageReference Include="Xamarin.Google.Dagger">
-      <Version>2.27.0</Version>
+      <Version>2.25.2.1</Version>
     </PackageReference>
     <PackageReference Include="Xamarin.GooglePlayServices.Base">
-      <Version>117.4.0</Version>
+      <Version>117.2.1</Version>
     </PackageReference>
+    <PackageReference Include="Bit.System.Diagnostics.CodeAnalysis">
+      <Version>1.0.0</Version>
+    </PackageReference>
+    <PackageReference Include="Xamarin.Build.Download">
+      <Version>0.10.0</Version>
+    </PackageReference>
+    <PackageReference Include="Xamarin.Forms" Version="4.8.0.1821" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="MainActivity.cs" />
@@ -100,6 +106,7 @@
   </ItemGroup>
   <ItemGroup>
     <GoogleServicesJson Include="google-services.json" />
+    <ProguardConfiguration Include="proguard_xamarin.cfg" />
     <None Include="Properties\AndroidManifest.xml">
       <SubType>Designer</SubType>
     </None>
@@ -167,6 +174,12 @@
       <Project>{7acbbfff-cd89-4598-8512-2740a9fb0bfa}</Project>
       <Name>Bit.CSharpClientSample</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <LinkDescription Include="LinkerConfig.xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <AndroidEnvironment Include="environment.txt" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\Android\Xamarin.Android.CSharp.targets" />
   <ProjectExtensions>

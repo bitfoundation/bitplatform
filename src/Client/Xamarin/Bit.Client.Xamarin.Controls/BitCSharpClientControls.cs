@@ -8,6 +8,8 @@ using Xamarin.Forms;
 [assembly: XmlnsDefinition("https://bitframework.com", "Bit.View.Controls", AssemblyName = "Bit.Client.Xamarin.Controls")]
 #endif
 
+[assembly: Xamarin.Forms.Internals.Preserve]
+
 namespace Bit.View
 {
     [AttributeUsage(AttributeTargets.Class, AllowMultiple = false)]

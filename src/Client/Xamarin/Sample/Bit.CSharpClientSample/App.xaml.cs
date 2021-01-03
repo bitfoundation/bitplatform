@@ -22,6 +22,7 @@ using Xamarin.Forms;
 using Xamarin.Forms.Xaml;
 
 [assembly: XamlCompilation(XamlCompilationOptions.Compile)]
+[assembly: Xamarin.Forms.Internals.Preserve]
 
 namespace Bit.CSharpClientSample
 {
@@ -43,7 +44,7 @@ namespace Bit.CSharpClientSample
         {
             InitializeComponent();
 
-            if (Device.RuntimePlatform != Device.UWP)
+            if (Device.RuntimePlatform != Device.UWP && DeviceInfo.DeviceType == DeviceType.Physical)
             {
                 Accelerometer.Start(SensorSpeed.UI);
                 Accelerometer.ShakeDetected += async delegate

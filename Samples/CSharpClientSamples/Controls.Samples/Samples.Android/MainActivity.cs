@@ -5,6 +5,8 @@ using Bit.View;
 using Xamarin.Forms;
 using Xamarin.Forms.Platform.Android;
 
+[assembly: Xamarin.Forms.Internals.Preserve]
+
 namespace Bit.CSharpClient.Controls.Samples.Droid
 {
     [Activity(Label = "Bit.CSharpClient.Controls.Samples", Icon = "@mipmap/icon", Theme = "@style/MainTheme", MainLauncher = true, ConfigurationChanges = ConfigChanges.ScreenSize | ConfigChanges.Orientation)]
@@ -19,7 +21,7 @@ namespace Bit.CSharpClient.Controls.Samples.Droid
             BitCSharpClientControls.Init();
             Forms.Init(this, savedInstanceState);
 
-            Rg.Plugins.Popup.Popup.Init(this, savedInstanceState);
+            Rg.Plugins.Popup.Popup.Init(this);
 
             LoadApplication(new App());
         }

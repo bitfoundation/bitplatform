@@ -41,9 +41,6 @@ protected override void OnCreate(Bundle savedInstanceState)
 You'll also need following LinkerConfig.xml
 
 ```markup
-<assembly fullname="Bit.Client.Xamarin.Controls">
-    <type fullname="*" />
-  </assembly>
   <assembly fullname="System.Core">
     <type fullname="*" />
   </assembly>

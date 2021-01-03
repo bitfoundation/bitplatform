@@ -1,9 +1,11 @@
 ﻿using Bit.Core.Contracts;
 using Bit.Core.Models;
 using Bit.Owin.Contracts;
+using Microsoft.IdentityModel.Tokens;
 using Microsoft.Owin.Security.Jwt;
 using Owin;
 using System;
+using System.Security.Cryptography;
 
 namespace Bit.Owin.Middlewares
 {
@@ -25,12 +27,22 @@ namespace Bit.Owin.Middlewares
         {
             string issuerName = AppEnvironment.GetSsoIssuerName();
 
+            RsaSecurityKey issuerSigningKey = new RsaSecurityKey(AppCertificatesProvider.GetSingleSignOnClientRsaKey());
+
             JwtBearerAuthenticationOptions jwtBearerAuthenticationOptions = new JwtBearerAuthenticationOptions
             {
                 AllowedAudiences = new[] { $"{issuerName}/resources" },
-                IssuerSecurityKeyProviders = new[]
+                TokenValidationParameters = new TokenValidationParameters
                 {
-                    new X509CertificateSecurityKeyProvider(issuerName, AppCertificatesProvider.GetSingleSignOnCertificate())
+                    ValidateIssuerSigningKey = true,
+                    ValidateTokenReplay = true,
+                    ValidateLifetime = true,
+                    ValidateActor = true,
+                    ValidateAudience = true,
+                    ValidateIssuer = true,
+                    ValidIssuer = issuerName,
+                    ValidAudience = $"{issuerName}/resources",
+                    IssuerSigningKey = issuerSigningKey
                 }
             };
 

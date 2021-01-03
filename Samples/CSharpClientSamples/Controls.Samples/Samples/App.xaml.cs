@@ -4,6 +4,7 @@ using Xamarin.Forms.Xaml;
 
 [assembly: XamlCompilation(XamlCompilationOptions.Compile)]
 [assembly: ExportFont("Vazir-Light-FD-WOL.ttf", Alias = "Vazir FD-WOL")]
+[assembly: Xamarin.Forms.Internals.Preserve]
 
 namespace Bit.CSharpClient.Controls.Samples
 {

@@ -14,6 +14,8 @@ namespace Bit.Owin.Middlewares
                 throw new ArgumentNullException(nameof(aspNetCoreApp));
 
             aspNetCoreApp.UseOwinApp(UseJwtBearerAuthentication);
+
+            aspNetCoreApp.UseAuthorization();
         }
     }
 }

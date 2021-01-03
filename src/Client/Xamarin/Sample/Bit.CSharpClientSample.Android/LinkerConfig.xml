@@ -1,0 +1,178 @@
+﻿<linker>
+
+	<!-- Prism -->
+
+	<assembly fullname="Prism.Forms">
+		<type fullname="*" />
+	</assembly>
+	<assembly fullname="Prism">
+		<type fullname="*" />
+	</assembly>
+	<assembly fullname="Prism.Plugin.Popups">
+		<type fullname="*" />
+	</assembly>
+	<assembly fullname="Autofac">
+		<type fullname="*" />
+	</assembly>
+	<assembly fullname="Autofac.Extensions.DependencyInjection">
+		<type fullname="*" />
+	</assembly>
+	<assembly fullname="Microsoft.Extensions.DependencyInjection.Abstractions">
+		<type fullname="*" />
+	</assembly>
+	<assembly fullname="Microsoft.Extensions.DependencyInjection">
+		<type fullname="*" />
+	</assembly>
+
+	<!-- OData -->
+
+	<assembly fullname="Simple.OData.Client.V4.Adapter">
+		<type fullname="*" />
+	</assembly>
+
+	<!-- Http -->
+
+	<assembly fullname="System.IdentityModel.Tokens.Jwt">
+		<type fullname="*" />
+	</assembly>
+
+	<!-- Bit.Client.Xamarin.Controls -->
+
+	<assembly fullname="Rg.Plugins.Popup">
+		<type fullname="*" />
+	</assembly>
+
+	<!-- Other -->
+
+	<assembly fullname="System.ComponentModel.Composition">
+		<type fullname="*" />
+	</assembly>
+
+	<assembly fullname="mscorlib">
+		<type fullname="System.String">
+			<method name="Compare"></method>
+			<method name="CompareTo"></method>
+			<method name="ToUpper"></method>
+			<method name="ToLower"></method>
+		</type>
+		<type fullname="System.Math">
+			<method name="Abs"></method>
+			<method name="Max"></method>
+			<method name="Min"></method>
+			<method name="Round"></method>
+		</type>
+		<type fullname="System.DateTime">
+			<method name="AddYears"></method>
+			<method name="AddMonths"></method>
+			<method name="AddDays"></method>
+			<method name="AddHours"></method>
+			<method name="AddMinutes"></method>
+			<method name="AddSeconds"></method>
+		</type>
+	</assembly>
+	<assembly fullname="System.Core">
+		<type fullname="System.Linq.Expressions.Expression`1"></type>
+		<type fullname="System.Linq.Queryable"></type>
+	</assembly>
+	
+	<!-- EntityFrameworkCore -->
+
+	<assembly fullname="Microsoft.EntityFrameworkCore">
+		<type fullname="*" />
+	</assembly>
+
+	<assembly fullname="Microsoft.EntityFrameworkCore.Relational">
+		<type fullname="*" />
+	</assembly>
+
+	<assembly fullname="Microsoft.Data.Sqlite">
+		<type fullname="*" />
+	</assembly>
+
+	<assembly fullname="Microsoft.EntityFrameworkCore.Sqlite">
+		<type fullname="*" />
+	</assembly>
+
+	<assembly fullname="Microsoft.Extensions.Caching.Memory">
+		<type fullname="*" />
+	</assembly>
+
+	<!-- Microsoft Extensions => For both Http/OData and EntityFrameworkCore -->
+
+	<assembly fullname="Microsoft.Extensions.Http">
+		<type fullname="*" />
+	</assembly>
+
+	<assembly fullname="Microsoft.Extensions.Logging">
+		<type fullname="*" />
+	</assembly>
+
+	<assembly fullname="Microsoft.Extensions.Logging.Debug">
+		<type fullname="*" />
+	</assembly>
+
+	<assembly fullname="Microsoft.Extensions.Options">
+		<type fullname="*" />
+	</assembly>
+
+	<!-- Signalr -->
+
+	<assembly fullname="Microsoft.AspNet.SignalR.Client">
+		<type fullname="*" />
+	</assembly>
+	
+	<!-- Sync -->
+
+	<assembly fullname="System.Linq.Dynamic">
+		<type fullname="*" />
+	</assembly>
+	
+	<!-- Application Insights -->
+
+	<assembly fullname="Microsoft.ApplicationInsights">
+		<type fullname="*" />
+	</assembly>
+	
+	<!-- Firebase -->
+
+	<assembly fullname="Xamarin.Firebase.Crashlytics">
+		<type fullname="*" />
+	</assembly>
+
+	<assembly fullname="Xamarin.Firebase.Analytics">
+		<type fullname="*" />
+	</assembly>
+
+	<assembly fullname="Xamarin.Firebase.Messaging">
+		<type fullname="*" />
+	</assembly>
+
+	<assembly fullname="Xamarin.Firebase.Iid">
+		<type fullname="*" />
+	</assembly>
+
+	<assembly fullname="Xamarin.Firebase.Common">
+		<type fullname="*" />
+	</assembly>
+
+	<assembly fullname="Plugin.LocalNotification">
+		<type fullname="*" />
+	</assembly>
+
+	<assembly fullname="Xamarin.GooglePlayServices.Measurement.Api">
+		<type fullname="Firebase.Analytics.FirebaseAnalytics" />
+	</assembly>
+
+	<assembly fullname="Xamarin.GooglePlayServices.Measurement">
+		<type fullname="*" />
+	</assembly>
+
+	<assembly fullname="Xamarin.AndroidX.AppCompat">
+		<type fullname="AndroidX.AppCompat.Widget.FitWindowsLinearLayout" />
+	</assembly>
+
+	<assembly fullname="Xamarin.AndroidX.Core">
+		<type fullname="AndroidX.Core.App.CoreComponentFactory" />
+	</assembly>
+
+</linker>

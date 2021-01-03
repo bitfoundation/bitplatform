@@ -32,6 +32,8 @@ using Xamarin.Forms.Xaml;
 [assembly: XmlnsDefinition("https://bitframework.com", "Bit.View", AssemblyName = "Bit.Client.Xamarin.Prism")]
 #endif
 
+[assembly: Xamarin.Forms.Internals.Preserve]
+
 namespace Bit
 {
     public abstract class BitApplication : PrismApplication
