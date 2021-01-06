@@ -7,9 +7,7 @@ using Bit.ViewModel.Implementations;
 using Firebase.Messaging;
 using Plugin.LocalNotification;
 using System.Linq;
-using Xamarin.Essentials;
 using Xamarin.Forms;
-using static Android.Provider.Settings;
 
 [assembly: Xamarin.Forms.Internals.Preserve]
 
@@ -22,9 +20,6 @@ namespace Bit.CSharpClientSample.Droid
         {
             LocalTelemetryService.Current.Init();
             FirebaseTelemetryService.Current.Init(this);
-
-            TabLayoutResource = Resource.Layout.Tabbar;
-            ToolbarResource = Resource.Layout.Toolbar;
 
             SQLitePCL.Batteries.Init();
 

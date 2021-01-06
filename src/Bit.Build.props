@@ -40,21 +40,19 @@
 		<DocumentationFile>bin\$(Configuration)\$(TargetFramework)\$(AssemblyName).xml</DocumentationFile>
 		<EmbedAllSources>True</EmbedAllSources>
 		<DebugType>portable</DebugType>
-		<DefineConstants Condition=" '$(TargetFramework)' == 'monoandroid10.0' OR '$(TargetFramework)' == 'monoandroid9.0' ">$(DefineConstants);Android</DefineConstants>
+		<DefineConstants Condition=" '$(TargetFramework)' == 'monoandroid10.0' ">$(DefineConstants);Android</DefineConstants>
 		<DefineConstants Condition=" '$(TargetFramework)' == 'monoandroid10.0'">$(DefineConstants);Android10</DefineConstants>
-		<DefineConstants Condition=" '$(TargetFramework)' == 'monoandroid9.0' ">$(DefineConstants);Android9</DefineConstants>
 		<DefineConstants Condition=" '$(TargetFramework)' == 'Xamarin.iOS10' ">$(DefineConstants);iOS</DefineConstants>
 		<DefineConstants Condition=" '$(TargetFramework)' == 'net5.0' ">$(DefineConstants);DotNet</DefineConstants>
 		<DefineConstants Condition=" '$(TargetFramework)' == 'uap10.0.17763' ">$(DefineConstants);UWP</DefineConstants>
 		<DefineConstants Condition=" '$(TargetFramework)' == 'netstandard2.0' ">$(DefineConstants);DotNetStandard;DotNetStandard2_0</DefineConstants>
 		<DefineConstants Condition=" '$(TargetFramework)' == 'netstandard2.1' ">$(DefineConstants);DotNetStandard;DotNetStandard2_1</DefineConstants>
-		<DefineConstants Condition=" '$(TargetFramework)' == 'monoandroid10.0' OR '$(TargetFramework)' == 'monoandroid9.0' OR '$(TargetFramework)' == 'Xamarin.iOS10' OR '$(TargetFramework)' == 'uap10.0.17763' ">$(DefineConstants);XamarinEssentials</DefineConstants>
+		<DefineConstants Condition=" '$(TargetFramework)' == 'monoandroid10.0' OR '$(TargetFramework)' == 'Xamarin.iOS10' OR '$(TargetFramework)' == 'uap10.0.17763' ">$(DefineConstants);XamarinEssentials</DefineConstants>
 		<GenerateLibraryLayout Condition=" '$(TargetFramework)' == 'uap10.0.17763' ">true</GenerateLibraryLayout>
 		<DesignTimeBuild>True</DesignTimeBuild>
 		<AndroidResgenFile>False</AndroidResgenFile>
 		<AndroidUseIntermediateDesignerFile>False</AndroidUseIntermediateDesignerFile>
 		<TargetFrameworkVersion Condition=" '$(TargetFramework)' == 'monoandroid10.0' ">v10.0</TargetFrameworkVersion>
-		<TargetFrameworkVersion Condition=" '$(TargetFramework)' == 'monoandroid9.0' ">v9.0</TargetFrameworkVersion>
 		<RestoreAdditionalProjectSources>$(RestoreAdditionalProjectSources);https://dotnet.myget.org/F/nuget-build/api/v3/index.json</RestoreAdditionalProjectSources>
 
 		<AnalysisLevel>latest</AnalysisLevel>
@@ -78,7 +76,7 @@
 		<PackageReference Include="MSBuild.Sdk.Extras" Version="3.0.22" PrivateAssets="All" />
 	</ItemGroup>
 
-	<ItemGroup Condition=" '$(TargetFramework)' == 'monoandroid10.0' OR '$(TargetFramework)' == 'monoandroid9.0'">
+	<ItemGroup Condition=" '$(TargetFramework)' == 'monoandroid10.0'">
 		<Reference Include="System.ComponentModel.DataAnnotations" />
 		<Reference Include="System.Data" />
 	</ItemGroup>
