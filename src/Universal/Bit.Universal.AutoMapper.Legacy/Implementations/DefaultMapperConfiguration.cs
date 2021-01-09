@@ -7,8 +7,6 @@ namespace Bit.Model.Implementations
 {
     public class DefaultMapperConfiguration : IMapperConfiguration
     {
-        public virtual IDependencyManager DependencyManager { get; set; } = default!;
-
         public virtual void Configure(IMapperConfigurationExpression mapperConfigExpression)
         {
             if (mapperConfigExpression == null)

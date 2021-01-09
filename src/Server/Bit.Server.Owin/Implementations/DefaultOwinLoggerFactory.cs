@@ -7,8 +7,6 @@ namespace Bit.Owin.Implementations
 {
     public class DefaultOwinLoggerFactory : ILoggerFactory, Microsoft.Owin.Logging.ILogger
     {
-        public virtual IDependencyManager DependencyManager { get; set; } = default!;
-
         public Microsoft.Owin.Logging.ILogger Create(string name)
         {
             return this;
@@ -20,30 +18,18 @@ namespace Bit.Owin.Implementations
             {
                 if (formatter != null)
                 {
-                    IDependencyResolver? scope = null;
-
-                    try
+                    using (IDependencyResolver scope = DefaultDependencyManager.Current.CreateChildDependencyResolver())
                     {
-                        scope = DependencyManager.CreateChildDependencyResolver();
-                    }
-                    catch (ObjectDisposedException)
-                    { }
+                        Core.Contracts.ILogger logger = scope.Resolve<Core.Contracts.ILogger>();
 
-                    if (scope != null)
-                    {
-                        using (scope)
-                        {
-                            Core.Contracts.ILogger logger = scope.Resolve<Core.Contracts.ILogger>();
+                        string message = formatter(state, exception);
 
-                            string message = formatter(state, exception);
-
-                            if (exception != null)
-                                logger.LogException(exception, message);
-                            else if (eventType == TraceEventType.Warning)
-                                logger.LogWarning(message);
-                            else
-                                logger.LogFatal(message);
-                        }
+                        if (exception != null)
+                            logger.LogException(exception, message);
+                        else if (eventType == TraceEventType.Warning)
+                            logger.LogWarning(message);
+                        else
+                            logger.LogFatal(message);
                     }
                 }
 

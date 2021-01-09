@@ -3,6 +3,7 @@ using Bit.Core.Models;
 using Bit.IdentityServer.Contracts;
 using Bit.IdentityServer.Implementations;
 using Bit.Owin.Contracts;
+using Bit.Owin.Implementations;
 using IdentityServer3.Core.Configuration;
 using IdentityServer3.Core.Logging;
 using IdentityServer3.Core.Services;
@@ -19,7 +20,6 @@ namespace Bit.IdentityServer
     {
         public virtual AppEnvironment AppEnvironment { get; set; } = default!;
         public virtual IAppCertificatesProvider AppCertificatesProvider { get; set; } = default!;
-        public virtual IDependencyManager DependencyManager { get; set; } = default!;
         public virtual IScopesProvider ScopesProvider { get; set; } = default!;
         public virtual IRedirectUriValidator RedirectUriValidator { get; set; } = default!;
         public virtual IEnumerable<IExternalIdentityProviderConfiguration> ExternalIdentityProviderConfigurations { get; set; } = default!;
@@ -32,10 +32,10 @@ namespace Bit.IdentityServer
 
             owinApp.Map("/core", coreApp =>
             {
-                LogProvider.SetCurrentLogProvider(DependencyManager.Resolve<ILogProvider>());
+                LogProvider.SetCurrentLogProvider(DefaultDependencyManager.Current.Resolve<ILogProvider>());
 
                 IdentityServerServiceFactory factory = new IdentityServerServiceFactory()
-                    .UseInMemoryClients(DependencyManager.Resolve<IOAuthClientsProvider>().GetClients().ToArray())
+                    .UseInMemoryClients(DefaultDependencyManager.Current.Resolve<IOAuthClientsProvider>().GetClients().ToArray())
                     .UseInMemoryScopes(ScopesProvider.GetScopes());
 
                 IUserService ResolveUserService(IdentityServer3.Core.Services.IDependencyResolver resolver)

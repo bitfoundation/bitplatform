@@ -15,7 +15,7 @@ namespace Bit.Tests
             using (BitOwinTestEnvironment testEnvironment = new BitOwinTestEnvironment(new TestEnvironmentArgs
             {
                 UseRealServer = true,
-                UseProxyBasedDependencyManager = false,
+                UseTestDependencyManager = false,
                 FullUri = "http://*:80"
             }))
             {

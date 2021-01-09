@@ -114,7 +114,7 @@ namespace Bit.Core.Contracts
             if (dependencyManager == null)
                 throw new ArgumentNullException(nameof(dependencyManager));
 
-            dependencyManager.RegisterUsing((resolver) => dependencyManager.CreateChildDependencyResolver(onConfigure).Resolve<IOwinMiddlewareConfiguration>("WebApi"), lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExisting: false);
+            dependencyManager.RegisterUsing((resolver) => ((IDependencyManager)resolver).CreateChildDependencyResolver(onConfigure).Resolve<IOwinMiddlewareConfiguration>("WebApi"), lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExisting: false);
 
             return dependencyManager;
         }

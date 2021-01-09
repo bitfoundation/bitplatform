@@ -31,7 +31,7 @@ namespace Bit.Test
 
         public IAppEnvironmentsProvider? CustomAppEnvironmentsProvider { get; set; } = null;
 
-        public bool UseProxyBasedDependencyManager { get; set; } = true;
+        public bool UseTestDependencyManager { get; set; } = true;
 
         public int? Port { get; set; } = null;
     }
@@ -110,12 +110,16 @@ namespace Bit.Test
 
             string uri = args.FullUri ?? new Uri($"{(args.UseHttps ? "https" : "http")}://{args.HostName}:{args.Port}/").ToString();
 
-            if (args.UseProxyBasedDependencyManager == true)
+            if (args.UseTestDependencyManager == true)
             {
                 DefaultDependencyManager.Current = new AutofacTestDependencyManager();
 
                 TestDependencyManager.CurrentTestDependencyManager.AutoProxyCreationIgnoreRules.AddRange(GetAutoProxyCreationIgnoreRules());
                 TestDependencyManager.CurrentTestDependencyManager.AutoProxyCreationIncludeRules.AddRange(GetAutoProxyCreationIncludeRules());
+            }
+            else
+            {
+                DefaultDependencyManager.Current = new AutofacDependencyManager();
             }
 
             DefaultAppModulesProvider.Current = GetAppModulesProvider(args);
@@ -145,6 +149,7 @@ namespace Bit.Test
         {
             return new List<Func<TypeInfo, bool>>
             {
+                implementationType => typeof(IServiceProvider).IsAssignableFrom(implementationType),
                 implementationType => GetBaseTypes(implementationType).Any(t => t.Name == "DbContext"),
                 implementationType => GetBaseTypes(implementationType).Any(t => t.Name == "Hub"),
                 implementationType => GetBaseTypes(implementationType).Any(t => t.Name == "Profile"), /*AutoMapper*/

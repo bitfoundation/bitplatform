@@ -72,7 +72,10 @@ namespace Bit.Owin
                 DefaultDependencyManager.Current.BuildContainer();
             }
 
-            owinApp.SetLoggerFactory(DefaultDependencyManager.Current.Resolve<ILoggerFactory>());
+            if (DefaultDependencyManager.Current.IsRegistered<ILoggerFactory>())
+            {
+                owinApp.SetLoggerFactory(DefaultDependencyManager.Current.Resolve<ILoggerFactory>());
+            }
 
             if (DefaultDependencyManager.Current.IsRegistered<IDataProtectionProvider>())
             {

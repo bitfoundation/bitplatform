@@ -99,7 +99,7 @@ namespace OpenQA.Selenium
                     await Task.Delay(250);
                     triesCount++;
                 }
-            } while (triesCount < 10);
+            } while (triesCount < 20);
 
             throw new InvalidOperationException();
         }

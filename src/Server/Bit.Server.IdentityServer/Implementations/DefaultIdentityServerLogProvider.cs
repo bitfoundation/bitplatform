@@ -1,4 +1,5 @@
 ﻿using Bit.Core.Contracts;
+using Bit.Owin.Implementations;
 using IdentityServer3.Core.Logging;
 using System;
 using System.Globalization;
@@ -8,66 +9,41 @@ namespace Bit.IdentityServer.Implementations
 {
     public class DefaultIdentityServerLogProvider : ILogProvider, IDisposable
     {
-        public virtual IDependencyManager DependencyManager
+        static bool IdentityServerLog(LogLevel logLevel, Func<string>? messageFunc, Exception? exception = null, params object[] formatParameters)
         {
-            set
+            if (logLevel == LogLevel.Error || logLevel == LogLevel.Fatal || logLevel == LogLevel.Warn || exception != null)
             {
-                IDependencyManager dependencyManager = value;
-
-                if (dependencyManager == null)
-                    throw new ArgumentNullException(nameof(dependencyManager));
-
-                bool IdentityServerLog(LogLevel logLevel, Func<string>? messageFunc, Exception? exception = null, params object[] formatParameters)
+                if (messageFunc != null)
                 {
-                    if (logLevel == LogLevel.Error || logLevel == LogLevel.Fatal || logLevel == LogLevel.Warn || exception != null)
+                    using (IDependencyResolver scope = DefaultDependencyManager.Current.CreateChildDependencyResolver())
                     {
-                        if (messageFunc != null)
+                        ILogger logger = scope.Resolve<ILogger>();
+
+                        string message = messageFunc();
+
+                        try
                         {
-                            IDependencyResolver? scope = null;
-
-                            try
-                            {
-                                scope = dependencyManager.CreateChildDependencyResolver();
-                            }
-                            catch (ObjectDisposedException)
-                            { }
-
-                            if (scope != null)
-                            {
-                                using (scope)
-                                {
-                                    ILogger logger = scope.Resolve<ILogger>();
-
-                                    string message = messageFunc();
-
-                                    try
-                                    {
-                                        if (formatParameters.Any())
-                                            message = string.Format(CultureInfo.InvariantCulture, message, formatParameters);
-                                    }
-                                    catch (FormatException) { }
-
-                                    if (exception != null)
-                                        logger.LogException(exception, message);
-                                    else if (logLevel == LogLevel.Warn)
-                                        logger.LogWarning(message);
-                                    else
-                                        logger.LogFatal(message);
-                                }
-                            }
+                            if (formatParameters.Any())
+                                message = string.Format(CultureInfo.InvariantCulture, message, formatParameters);
                         }
+                        catch (FormatException) { }
 
-                        return true;
+                        if (exception != null)
+                            logger.LogException(exception, message);
+                        else if (logLevel == LogLevel.Warn)
+                            logger.LogWarning(message);
+                        else
+                            logger.LogFatal(message);
                     }
-
-                    return false;
                 }
 
-                _logger = IdentityServerLog;
+                return true;
             }
+
+            return false;
         }
 
-        private Logger _logger = default!;
+        private readonly Logger _logger = IdentityServerLog;
 
         public virtual Logger GetLogger(string name)
         {

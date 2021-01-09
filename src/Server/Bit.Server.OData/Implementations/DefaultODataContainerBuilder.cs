@@ -1,5 +1,6 @@
 ﻿using Bit.Core.Contracts;
 using Bit.OData.Serialization;
+using Bit.Owin.Implementations;
 using Microsoft.AspNet.OData;
 using Microsoft.AspNet.OData.Formatter.Deserialization;
 using Microsoft.AspNet.OData.Formatter.Serialization;
@@ -19,13 +20,11 @@ namespace Bit.OData.Implementations
         private readonly DefaultContainerBuilder _defaultContainerBuilder = new DefaultContainerBuilder();
         private IDependencyResolver? _childDependencyResolver;
 
-        public virtual IDependencyManager DependencyManager { get; set; } = default!;
-
         public virtual IServiceProvider BuildContainer()
         {
             AddDefaultServices();
 
-            _childDependencyResolver = DependencyManager.CreateChildDependencyResolver(childDependencyManager =>
+            _childDependencyResolver = DefaultDependencyManager.Current.CreateChildDependencyResolver(childDependencyManager =>
             {
                 IServiceCollection services = (IServiceCollection)(typeof(DefaultContainerBuilder).GetTypeInfo().GetField(nameof(services), BindingFlags.NonPublic | BindingFlags.Instance)?.GetValue(_defaultContainerBuilder) ?? throw new InvalidOperationException($"{nameof(services)} field could not be found in {typeof(DefaultContainerBuilder).FullName}"));
 

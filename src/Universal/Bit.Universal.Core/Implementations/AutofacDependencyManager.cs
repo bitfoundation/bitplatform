@@ -23,14 +23,12 @@ namespace Bit.Core.Implementations
             return this;
         }
 
-        public void UseContainerBuilder(ContainerBuilder builder)
+        public virtual void UseContainerBuilder(ContainerBuilder builder)
         {
             if (_containerBuilder != null)
                 throw new InvalidOperationException("Container builder has been set already");
+
             _containerBuilder = builder ?? throw new ArgumentNullException(nameof(builder));
-            _containerBuilder.Register((context, parameter) => (IDependencyManager)this /*Remark: We may not use "this" object, and we should use context, but we ignore the rule due being single instance*/).SingleInstance().PreserveExistingDefaults();
-            _containerBuilder.Register((context, parameter) => (IServiceProvider)this).SingleInstance().PreserveExistingDefaults();
-            _containerBuilder.Register((context, parameter) => (IAutofacDependencyManager)this).SingleInstance().PreserveExistingDefaults();
         }
 
         private IDependencyManager SetContainer(ILifetimeScope container)
@@ -59,7 +57,7 @@ namespace Bit.Core.Implementations
             return _container != null;
         }
 
-        public void UseContainer(ILifetimeScope lifetimeScope)
+        public virtual void UseContainer(ILifetimeScope lifetimeScope)
         {
             SetContainer(lifetimeScope);
         }
@@ -219,12 +217,12 @@ namespace Bit.Core.Implementations
         /// <summary>
         /// Register an unparameterized generic type, e.g. IRepository&lt;&gt;. Concrete types will be made as they are requested, e.g. with IRepository&lt;Customer&gt;
         /// </summary>
-        public IDependencyManager RegisterGeneric(TypeInfo serviceType, TypeInfo implementationType, DependencyLifeCycle lifeCycle = DependencyLifeCycle.PerScopeInstance)
+        public virtual IDependencyManager RegisterGeneric(TypeInfo serviceType, TypeInfo implementationType, DependencyLifeCycle lifeCycle = DependencyLifeCycle.PerScopeInstance)
         {
             return RegisterGeneric(new[] { serviceType }, implementationType, lifeCycle);
         }
 
-        public IDependencyManager RegisterGeneric(TypeInfo[] servicesType, TypeInfo implementationType, DependencyLifeCycle lifeCycle = DependencyLifeCycle.PerScopeInstance)
+        public virtual IDependencyManager RegisterGeneric(TypeInfo[] servicesType, TypeInfo implementationType, DependencyLifeCycle lifeCycle = DependencyLifeCycle.PerScopeInstance)
         {
             IRegistrationBuilder<object, ReflectionActivatorData, DynamicRegistrationStyle> registration = GetContainerBuidler().RegisterGeneric(implementationType)
                 .PropertiesAutowired(wiringFlags: PropertyWiringOptions.PreserveSetValues)
@@ -368,7 +366,7 @@ namespace Bit.Core.Implementations
             GC.SuppressFinalize(this);
         }
 
-        public async ValueTask DisposeAsync()
+        public virtual async ValueTask DisposeAsync()
         {
             if (_container != null)
                 await _container.DisposeAsync();

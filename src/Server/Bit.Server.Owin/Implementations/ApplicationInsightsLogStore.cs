@@ -32,8 +32,6 @@ namespace Bit.Owin.Implementations
 
         public virtual AppEnvironment AppEnvironment { get; set; } = default!;
 
-        public virtual IDependencyManager DependencyManager { get; set; } = default!;
-
         public virtual void Initialize(ITelemetry telemetry)
         {
             if (telemetry == null)
@@ -74,7 +72,7 @@ namespace Bit.Owin.Implementations
                 }
                 else // in ok responses, we've no LogKeyValues because ApplicationInsightsLogStore won't gets called.
                 {
-                    using IDependencyResolver childResolver = DependencyManager.CreateChildDependencyResolver(); // HttpContextAccessor.HttpContext.RequestServices is null because scope is gets disposed at this time.
+                    using IDependencyResolver childResolver = DefaultDependencyManager.Current.CreateChildDependencyResolver(); // HttpContextAccessor.HttpContext.RequestServices is null because scope is gets disposed at this time.
 
                     IRequestInformationProvider requestInformationProvider = childResolver.Resolve<IRequestInformationProvider>();
                     IUserInformationProvider userInformationProvider = childResolver.Resolve<IUserInformationProvider>();
