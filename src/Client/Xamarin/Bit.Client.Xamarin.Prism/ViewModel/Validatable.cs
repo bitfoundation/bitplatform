@@ -58,13 +58,20 @@ namespace Bit.ViewModel
         }
     }
 
+    public class CustomValidationRule<T> : ValidationRuleBase<T>
+    {
+        public bool IsValidValue { get; set; }
+
+        public Func<T, bool>? IsValidPredicate { get; set; }
+
+        public override bool IsValid(T value)
+        {
+            return IsValidPredicate?.Invoke(value) == true || IsValidValue;
+        }
+    }
+
     public class RequiredValidationRule<T> : ValidationRuleBase<T>
     {
-        public RequiredValidationRule(string validationMessage)
-        {
-            ValidationMessage = validationMessage;
-        }
-
         public override bool IsValid(T value)
         {
             if (value == null)
@@ -77,17 +84,13 @@ namespace Bit.ViewModel
         }
     }
 
+    public class RequiredValidationRule : RequiredValidationRule<string>
+    {
+
+    }
+
     public class RegexValidationRule : ValidationRuleBase<string>
     {
-        public RegexValidationRule(string validationMessage, string pattern)
-        {
-            if (string.IsNullOrEmpty(pattern))
-                throw new ArgumentException(nameof(pattern));
-
-            ValidationMessage = validationMessage;
-            Pattern = pattern;
-        }
-
         public string Pattern { get; set; }
 
         public override bool IsValid(string value)
