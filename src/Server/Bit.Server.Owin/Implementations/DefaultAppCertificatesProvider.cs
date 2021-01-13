@@ -14,7 +14,6 @@ namespace Bit.Owin.Implementations
         public virtual IPathProvider PathProvider { get; set; } = default!;
 
         private X509Certificate2? _certificate;
-        private RSA? _rsa;
 
         public virtual X509Certificate2 GetSingleSignOnServerCertificate()
         {
@@ -45,27 +44,23 @@ namespace Bit.Owin.Implementations
 
         public virtual RSA? GetSingleSignOnClientRsaKey()
         {
-            if (_rsa == null)
+            if (AppEnvironment.TryGetConfig(AppEnvironment.KeyValues.IdentityClientPublicKey, out string publicKey))
             {
-                if (AppEnvironment.TryGetConfig(AppEnvironment.KeyValues.IdentityClientPublicKey, out string publicKey))
-                {
-                    _rsa = RSA.Create();
+                RSA? rsa = RSA.Create();
 
-                    _rsa.FromXmlString(publicKey);
-                }
-                else
-                {
-                    _rsa = GetSingleSignOnServerCertificate().GetRSAPublicKey();
-                }
+                rsa.FromXmlString(publicKey);
+
+                return rsa;
             }
-
-            return _rsa;
+            else
+            {
+                return GetSingleSignOnServerCertificate().GetRSAPublicKey();
+            }
         }
 
         public virtual void Dispose()
         {
             _certificate?.Dispose();
-            _rsa?.Dispose();
             GC.SuppressFinalize(this);
         }
     }
