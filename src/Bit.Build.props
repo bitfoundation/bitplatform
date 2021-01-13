@@ -25,11 +25,11 @@
 		<PackageProjectUrl>https://github.com/bitfoundation/bitframework</PackageProjectUrl>
 		<PackageIconUrl>https://avatars.githubusercontent.com/u/22663390</PackageIconUrl>
 		<PackageReleaseNotes>https://github.com/bitfoundation/bitframework/releases/tag/v6.3.0</PackageReleaseNotes>
-		<PackageVersion>6.8.5</PackageVersion>
+		<PackageVersion>6.8.6</PackageVersion>
 
 		<!-- Version -->
-		<Version>6.8.5</Version>
-		<AssemblyVersion>6.8.5</AssemblyVersion>
+		<Version>6.8.6</Version>
+		<AssemblyVersion>6.8.6</AssemblyVersion>
 
 		<!-- Compile -->
 		<NeutralLanguage>en</NeutralLanguage>
@@ -73,7 +73,7 @@
 			<PrivateAssets>all</PrivateAssets>
 			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 		</PackageReference>
-		<PackageReference Include="MSBuild.Sdk.Extras" Version="3.0.22" PrivateAssets="All" />
+		<PackageReference Include="MSBuild.Sdk.Extras" Version="3.0.23" PrivateAssets="All" />
 	</ItemGroup>
 
 	<ItemGroup Condition=" '$(TargetFramework)' == 'monoandroid10.0'">
