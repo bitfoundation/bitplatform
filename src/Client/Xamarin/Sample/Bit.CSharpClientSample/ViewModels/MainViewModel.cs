@@ -13,6 +13,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
+using System.Net.Http.Json;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -115,6 +118,34 @@ namespace Bit.CSharpClientSample.ViewModels
                 ODataResponse<TestCustomerDto[]> odataResponse = JsonConvert.DeserializeObject<ODataResponse<TestCustomerDto[]>>(responseAsString);
 
                 foreach (TestCustomerDto customer in odataResponse.Value)
+                {
+
+                }
+            }
+
+            using (HttpResponseMessage response = await HttpClient.GetAsync("odata/v1/TestCustomers?$count=true"))
+            {
+                foreach (TestCustomerDto customer in (await response.Content.ReadFromJsonAsync<ODataResponse<TestCustomerDto[]>>(new JsonSerializerOptions
+                {
+                    Converters =
+                    {
+                        new JsonStringEnumConverter{ }
+                    }
+                })).Value)
+                {
+
+                }
+            }
+
+            using (HttpResponseMessage response = await HttpClient.GetAsync("odata/v1/TestCustomers?$count=true"))
+            {
+                foreach (TestCustomerDto customer in (await (await response.Content.ReadFromJsonAsync<JsonElement>()).GetProperty("value").ToObjectAsync<TestCustomerDto[]>(new JsonSerializerOptions
+                {
+                    Converters =
+                    {
+                        new JsonStringEnumConverter{ }
+                    }
+                })))
                 {
 
                 }
