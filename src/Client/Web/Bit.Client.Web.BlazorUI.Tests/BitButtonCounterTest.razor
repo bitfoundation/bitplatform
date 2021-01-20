@@ -1,0 +1,13 @@
+﻿<BitButton OnClick="IncrementCount" IsEnabled="BitButtonIsEnabled" Text="Test"></BitButton>
+
+@code {
+    [Parameter]
+    public bool BitButtonIsEnabled { get; set; }
+
+    public int CurrentCount { get; set; }
+
+    public void IncrementCount(MouseEventArgs e)
+    {
+        CurrentCount++;
+    }
+}

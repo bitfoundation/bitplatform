@@ -1,0 +1,21 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+
+	<PropertyGroup>
+		<TargetFramework>net5.0</TargetFramework>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<Content Condition=" '$(BlazorMode)' == 'Client' " Include="..\Web\Pages\_Host.cshtml" Link="Pages\_Host.cshtml" />
+		<PackageReference Condition=" '$(BlazorMode)' == 'Client' " Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="5.0.1" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\Web\Bit.Client.Web.BlazorUIPlayground.Web.csproj" Condition=" '$(BlazorMode)' == 'Client' " />
+		<ProjectReference Include="..\Shared\Bit.Client.Web.BlazorUIPlayground.Shared.csproj" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <Watch Include="..\Web\**\*.razor;..\Web\**\*.scss;..\Web\**\*.cs;..\Web\**\*.cshtml" />
+	</ItemGroup>
+
+</Project>

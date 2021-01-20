@@ -1,0 +1,41 @@
+﻿@page "/"
+
+@namespace Bit.Client.Web.BlazorUIPlayground.Web.Pages
+
+@using Bit.Client.Web.BlazorUIPlayground.Web
+@using Bit.Client.Web.BlazorUIPlayground.Shared;
+
+@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+
+@{
+    Layout = null;
+}
+
+@*Unlike most client side blazor projects, we use cshtml instead of html. This allows us to provide PreRendering(SSR) to our client blazor projects + asp-append-version*@
+@*Note that this file is being used for both client/server modes of blazor.*@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Blazor UI Playground</title>
+    <base href="~/" />
+    <link href="Bit.Client.Web.BlazorUIPlayground.Web.styles.css" rel="stylesheet" asp-append-version="true" />
+</head>
+<body>
+
+    <app>
+        <component type="typeof(App)" render-mode="@(BlazorDualModeDetector.Current.IsRunningClientSideBlazor() ? RenderMode.Static : RenderMode.ServerPrerendered)" />
+    </app>
+
+    @if (BlazorDualModeDetector.Current.IsRunningServerSideBlazor())
+    {
+        <script src="_framework/blazor.server.js" asp-append-version="true"></script>
+    }
+    @if (BlazorDualModeDetector.Current.IsRunningClientSideBlazor())
+    {
+        <script src="_framework/blazor.webassembly.js" asp-append-version="true"></script>
+    }
+</body>
+</html>
