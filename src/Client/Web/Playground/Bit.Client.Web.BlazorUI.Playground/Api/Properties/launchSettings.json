@@ -1,6 +1,6 @@
 {
     "profiles": {
-        "Bit.Client.Web.BlazorUIPlayground.Api": {
+        "Bit.Client.Web.BlazorUI.Playground.Api": {
             "commandName": "Project",
             "launchBrowser": true,
             "inspectUri": "{wsProtocol}://{url.hostname}:{url.port}/_framework/debug/ws-proxy?browser={browserInspectUri}",
@@ -9,7 +9,7 @@
             },
             "applicationUrl": "https://localhost:5001;http://localhost:5000"
         },
-        "Bit.Client.Web.BlazorUIPlayground-Watch": {
+        "Bit.Client.Web.BlazorUI.Playground-Watch": {
             "executablePath": "dotnet.exe",
             "workingDirectory": "$(ProjectDir)",
             "commandLineArgs": "watch run",

@@ -126,11 +126,11 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Playground", "Playground", 
 		Client\Web\Playground\README.md = Client\Web\Playground\README.md
 	EndProjectSection
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Bit.Client.Web.BlazorUIPlayground.Api", "Client\Web\Playground\Bit.Client.Web.BlazorUIPlayground\Api\Bit.Client.Web.BlazorUIPlayground.Api.csproj", "{37563036-94C7-449B-BF26-DACB031230C1}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Bit.Client.Web.BlazorUI.Playground.Api", "Client\Web\Playground\Bit.Client.Web.BlazorUI.Playground\Api\Bit.Client.Web.BlazorUI.Playground.Api.csproj", "{37563036-94C7-449B-BF26-DACB031230C1}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Bit.Client.Web.BlazorUIPlayground.Shared", "Client\Web\Playground\Bit.Client.Web.BlazorUIPlayground\Shared\Bit.Client.Web.BlazorUIPlayground.Shared.csproj", "{DCD6EAC1-2F25-47AA-A787-979055401BBA}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Bit.Client.Web.BlazorUI.Playground.Shared", "Client\Web\Playground\Bit.Client.Web.BlazorUI.Playground\Shared\Bit.Client.Web.BlazorUI.Playground.Shared.csproj", "{DCD6EAC1-2F25-47AA-A787-979055401BBA}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Bit.Client.Web.BlazorUIPlayground.Web", "Client\Web\Playground\Bit.Client.Web.BlazorUIPlayground\Web\Bit.Client.Web.BlazorUIPlayground.Web.csproj", "{0DEBFE06-16DD-4DE3-AFA5-2FE254F63BFC}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Bit.Client.Web.BlazorUI.Playground.Web", "Client\Web\Playground\Bit.Client.Web.BlazorUI.Playground\Web\Bit.Client.Web.BlazorUI.Playground.Web.csproj", "{0DEBFE06-16DD-4DE3-AFA5-2FE254F63BFC}"
 EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution

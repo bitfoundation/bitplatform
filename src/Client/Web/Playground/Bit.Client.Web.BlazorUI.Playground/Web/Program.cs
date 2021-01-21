@@ -9,7 +9,7 @@ using Microsoft.Extensions.Hosting;
 #endif
 using System.Threading.Tasks;
 
-namespace Bit.Client.Web.BlazorUIPlayground.Web
+namespace Bit.Client.Web.BlazorUI.Playground.Web
 {
     public class Program
     {

@@ -1,56 +1,57 @@
-#if BlazorServer
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.Hosting;
-using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.Extensions.Configuration;
-#endif
-using Microsoft.Extensions.DependencyInjection;
-using System.IO.Compression;
-using System.Linq;
-using System.Net.Http;
-using System;
+using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.ResponseCompression;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Net.Http.Headers;
+using System;
+using System.IO.Compression;
+using System.Net.Http;
 
-namespace Bit.Client.Web.BlazorUIPlayground.Web
+namespace Bit.Client.Web.BlazorUI.Playground.Api
 {
     public class Startup
     {
         public void ConfigureServices(IServiceCollection services)
         {
-#if BlazorServer
-            services.AddHttpClient("ApiHttpClient", (serviceProvider, httpClient) =>
+            services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
+#if BlazorClient
+            services.AddScoped(c =>
             {
-                httpClient.BaseAddress = new Uri(serviceProvider.GetRequiredService<IConfiguration>()["ApiServerAddress"]);
+                // this is for pre rendering of blazor client/wasm
+                // Using this registration + registrations provided in Program.cs/Startup.cs of Bit.Client.Web.BlazorUI.Playground.Web project,
+                // you can inject HttpClient and call Bit.Client.Web.BlazorUI.Playground.Api api controllers in blazor pages.
+                // for other usages of http client, for example calling 3rd party apis, please use services.AddHttpClient("NamedHttpClient"), then inject IHttpClientFactory and use its CreateClient("NamedHttpClient") method.
+                return new HttpClient { BaseAddress = new Uri(c.GetRequiredService<NavigationManager>().BaseUri) };
             });
-            services.AddTransient(c => c.GetRequiredService<IHttpClientFactory>().CreateClient("ApiHttpClient"));
             services.AddRazorPages();
-            services.AddServerSideBlazor();
+#endif
+            services.AddMvcCore();
             services.AddResponseCompression(opts =>
             {
-                opts.MimeTypes = ResponseCompressionDefaults.MimeTypes.Concat(new[] { "application/octet-stream" });
                 opts.Providers.Add<BrotliCompressionProvider>();
                 opts.Providers.Add<GzipCompressionProvider>();
             })
                 .Configure<BrotliCompressionProviderOptions>(opt => opt.Level = CompressionLevel.Fastest)
                 .Configure<GzipCompressionProviderOptions>(opt => opt.Level = CompressionLevel.Fastest);
-#endif
         }
 
-#if BlazorServer
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
-            }
-            else
-            {
-                app.UseExceptionHandler("/Error");
+#if BlazorClient && DEBUG
+                app.UseWebAssemblyDebugging();
+#endif
             }
 
-            app.UseHttpsRedirection();
+#if BlazorClient
+            app.UseBlazorFrameworkFiles();
+#endif
+
             app.UseResponseCompression();
             app.UseStaticFiles(new StaticFileOptions
             {
@@ -68,10 +69,11 @@ namespace Bit.Client.Web.BlazorUIPlayground.Web
 
             app.UseEndpoints(endpoints =>
             {
-                endpoints.MapBlazorHub();
+                endpoints.MapDefaultControllerRoute();
+#if BlazorClient
                 endpoints.MapFallbackToPage("/_Host");
+#endif
             });
         }
-#endif
     }
 }

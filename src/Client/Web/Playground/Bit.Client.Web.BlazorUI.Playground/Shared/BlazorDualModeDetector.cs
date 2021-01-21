@@ -1,4 +1,4 @@
-﻿namespace Bit.Client.Web.BlazorUIPlayground.Shared
+﻿namespace Bit.Client.Web.BlazorUI.Playground.Shared
 {
     public class BlazorDualModeDetector
     {

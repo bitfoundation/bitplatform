@@ -10,8 +10,8 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<ProjectReference Include="..\Web\Bit.Client.Web.BlazorUIPlayground.Web.csproj" Condition=" '$(BlazorMode)' == 'Client' " />
-		<ProjectReference Include="..\Shared\Bit.Client.Web.BlazorUIPlayground.Shared.csproj" />
+		<ProjectReference Include="..\Web\Bit.Client.Web.BlazorUI.Playground.Web.csproj" Condition=" '$(BlazorMode)' == 'Client' " />
+		<ProjectReference Include="..\Shared\Bit.Client.Web.BlazorUI.Playground.Shared.csproj" />
 	</ItemGroup>
 
 	<ItemGroup>

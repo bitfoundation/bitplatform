@@ -2,7 +2,7 @@
 using Microsoft.Extensions.Hosting;
 using System.Threading.Tasks;
 
-namespace Bit.Client.Web.BlazorUIPlayground.Api
+namespace Bit.Client.Web.BlazorUI.Playground.Api
 {
     public class Program
     {
