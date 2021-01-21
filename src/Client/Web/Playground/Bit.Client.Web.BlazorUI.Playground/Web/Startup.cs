@@ -4,14 +4,14 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
+using Microsoft.AspNetCore.Http;
+using Microsoft.Net.Http.Headers;
 #endif
 using Microsoft.Extensions.DependencyInjection;
 using System.IO.Compression;
 using System.Linq;
 using System.Net.Http;
 using System;
-using Microsoft.AspNetCore.Http;
-using Microsoft.Net.Http.Headers;
 
 namespace Bit.Client.Web.BlazorUI.Playground.Web
 {
@@ -52,17 +52,7 @@ namespace Bit.Client.Web.BlazorUI.Playground.Web
 
             app.UseHttpsRedirection();
             app.UseResponseCompression();
-            app.UseStaticFiles(new StaticFileOptions
-            {
-                OnPrepareResponse = ctx =>
-                {
-                    ctx.Context.Response.GetTypedHeaders().CacheControl = new CacheControlHeaderValue()
-                    {
-                        MaxAge = TimeSpan.FromDays(365),
-                        Public = true
-                    };
-                }
-            });
+            app.UseStaticFiles();
 
             app.UseRouting();
 
