@@ -1,0 +1,35 @@
+﻿@import "_colors.fluent.scss";
+
+.bit-button {
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    border-radius: 2px;
+    padding: 6px 20px;
+    font-size: 14px;
+    font-weight: 600;
+    line-height: 20px;
+    color: $White;
+    background: $Primary;
+    cursor: pointer;
+
+    &:hover {
+        background-color: $DarkAlt;
+    }
+
+    &:active {
+        background-color: $Dark;
+    }
+
+    &:active:focus {
+        background-color: $Primary;
+    }
+}
+
+.disabled {
+    background: $Grey20;
+    color: $Grey90;
+    cursor: default;
+    pointer-events: none;
+}
