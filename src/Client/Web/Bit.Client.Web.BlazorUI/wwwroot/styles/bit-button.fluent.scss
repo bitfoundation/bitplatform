@@ -1,15 +1,15 @@
-﻿@import "_colors.fluent.scss";
+﻿@import "_colors.fluent.scss", "_functions.scss";
 
 .bit-button {
     display: inline-flex;
     justify-content: center;
     align-items: center;
     text-align: center;
-    border-radius: 2px;
-    padding: 6px 20px;
+    border-radius: rem(2px);
+    padding: rem(6px) rem(20px);
     font-size: 14px;
     font-weight: 600;
-    line-height: 20px;
+    line-height: rem(20px);
     color: $White;
     background: $Primary;
     cursor: pointer;
