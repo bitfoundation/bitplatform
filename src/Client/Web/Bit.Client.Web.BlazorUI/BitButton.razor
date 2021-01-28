@@ -1,3 +1,7 @@
 ﻿@inherits BitComponentBase
 
-<button @ref="Button" class="bit-button @(VisualClass) @(EnabledClass)" @onclick="HandleOnClick">@Text</button>
+<button class="bit-button @(VisualClass) @(EnabledClass)"
+        disabled="@(IsEnabled is false)"
+        @onclick="HandleOnClick">
+    @Text
+</button>
