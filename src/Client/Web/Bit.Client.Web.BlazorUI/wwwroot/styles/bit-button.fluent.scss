@@ -1,7 +1,7 @@
 ﻿@import "_colors.fluent.scss", "_functions.scss";
 
 .bit-button {
-    font-family: BitButtonFont;
+    font-family: FluentFont;
     display: inline-flex;
     justify-content: center;
     align-items: center;
@@ -28,7 +28,7 @@
     }
 }
 
-.disabled {
+.bit-button.disabled {
     background: $Grey20;
     color: $Grey90;
     cursor: default;
