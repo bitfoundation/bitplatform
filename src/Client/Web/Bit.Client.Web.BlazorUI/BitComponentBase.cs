@@ -1,35 +1,38 @@
-﻿using Microsoft.AspNetCore.Components;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
+using Microsoft.AspNetCore.Components;
 
 namespace Bit.Client.Web.BlazorUI
 {
     public class BitComponentBase : ComponentBase
     {
-        [CascadingParameter]
-        public Theme Theme { get; set; }
+        [CascadingParameter] public Theme Theme { get; set; }
+        [CascadingParameter] public Visual Visual { get; set; }
 
-        [CascadingParameter]
-        public Visual Visual { get; set; }
 
-        public string VisualClass => Visual == Visual.Cupertino ? "cupertino" : Visual == Visual.Material ? "material" : "fluent";
+        [Parameter] public bool IsEnabled { get; set; } = true;
+
 
         public string EnabledClass => IsEnabled ? "enabled" : "disabled";
+        public string VisualClass => Visual == Visual.Cupertino ? "cupertino" : Visual == Visual.Material ? "material" : "fluent";
 
-        [Parameter]
-        public bool IsEnabled { get; set; } = true;
 
         public override Task SetParametersAsync(ParameterView parameters)
         {
             foreach (ParameterValue parameter in parameters)
             {
-                if (parameter.Name is nameof(IsEnabled))
-                    IsEnabled = (bool)parameter.Value;
-                else if (parameter.Name is nameof(Visual))
-                    Visual = (Visual)parameter.Value;
-                else if (parameter.Name is nameof(Theme))
-                    Theme = (Theme)parameter.Value;
+                switch (parameter.Name)
+                {
+                    case nameof(IsEnabled):
+                        IsEnabled = (bool)parameter.Value;
+                        break;
+                    case nameof(Visual):
+                        Visual = (Visual)parameter.Value;
+                        break;
+                    case nameof(Theme):
+                        Theme = (Theme)parameter.Value;
+                        break;
+                }
             }
-
             return base.SetParametersAsync(ParameterView.Empty);
         }
     }
