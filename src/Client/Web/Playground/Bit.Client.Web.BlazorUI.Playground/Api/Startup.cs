@@ -43,7 +43,7 @@ namespace Bit.Client.Web.BlazorUI.Playground.Api
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
-#if BlazorClient && DEBUG
+#if BlazorClient
                 app.UseWebAssemblyDebugging();
 #endif
             }

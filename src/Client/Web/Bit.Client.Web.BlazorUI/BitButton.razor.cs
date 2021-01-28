@@ -6,6 +6,8 @@ namespace Bit.Client.Web.BlazorUI
 {
     public partial class BitButton
     {
+        public ElementReference Button { get; set; }
+
         [Parameter]
         public EventCallback<MouseEventArgs> OnClick { get; set; }
 

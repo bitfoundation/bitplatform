@@ -1,6 +1,6 @@
-﻿@import "_colors.fluent.scss", "_functions.scss";
+﻿@import "_colors.fluent.scss", "../_functions.scss";
 
-.bit-button {
+.bit-button.fluent {
     font-family: FluentFont;
     display: inline-flex;
     justify-content: center;
@@ -28,7 +28,7 @@
     }
 }
 
-.bit-button.disabled {
+.bit-button.fluent.disabled {
     background: $Grey20;
     color: $Grey90;
     cursor: default;
