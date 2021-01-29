@@ -2,7 +2,7 @@
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 
-namespace Bit.Client.Web.BlazorUI
+namespace Bit.Client.Web.BlazorUI.Components
 {
     public partial class BitButton
     {
