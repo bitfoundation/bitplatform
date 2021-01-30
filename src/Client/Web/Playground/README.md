@@ -31,7 +31,7 @@ In shared project, you can also detect code is running in blazor server or clien
 
 ```cs
 
-if (Bit.Client.Web.BlazorUI.PlaygroundDetector.IsRunningServerSideBlazor())
+if (Bit.Client.Web.BlazorUI.Playground.Shared.BlazorModeDetector.Current.IsServer())
 {
 }
 
