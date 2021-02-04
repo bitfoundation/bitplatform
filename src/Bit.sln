@@ -119,7 +119,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Bit.Universal.AutoMapper.Le
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Bit.Universal.AutoMapper", "Universal\Bit.Universal.AutoMapper\Bit.Universal.AutoMapper.csproj", "{46ECC6B2-E351-49CB-9094-B9F81E65D62B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Bit.Client.Web.BlazorUI", "Client\Web\Bit.Client.Web.BlazorUI\Bit.Client.Web.BlazorUI.csproj", "{1DEF8AD9-9FA7-4FB7-9161-639C82FA0732}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Bit.Client.Web.BlazorUI", "Client\Web\Bit.Client.Web.BlazorUI\Bit.Client.Web.BlazorUI.csproj", "{1DEF8AD9-9FA7-4FB7-9161-639C82FA0732}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Playground", "Playground", "{23426B1A-CC46-4D11-B233-208A57B2BCA2}"
 	ProjectSection(SolutionItems) = preProject
@@ -131,6 +131,8 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Bit.Client.Web.BlazorUI.Playground.Shared", "Client\Web\Playground\Bit.Client.Web.BlazorUI.Playground\Shared\Bit.Client.Web.BlazorUI.Playground.Shared.csproj", "{DCD6EAC1-2F25-47AA-A787-979055401BBA}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Bit.Client.Web.BlazorUI.Playground.Web", "Client\Web\Playground\Bit.Client.Web.BlazorUI.Playground\Web\Bit.Client.Web.BlazorUI.Playground.Web.csproj", "{0DEBFE06-16DD-4DE3-AFA5-2FE254F63BFC}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Bit.Client.Web.BlazorUI.Tests", "Client\Web\Bit.Client.Web.BlazorUI.Tests\Bit.Client.Web.BlazorUI.Tests.csproj", "{736284BD-D30A-4EC8-BE21-0BC5C952CB4D}"
 EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
@@ -1119,6 +1121,26 @@ Global
 		{0DEBFE06-16DD-4DE3-AFA5-2FE254F63BFC}.Release|x64.Build.0 = Release|Any CPU
 		{0DEBFE06-16DD-4DE3-AFA5-2FE254F63BFC}.Release|x86.ActiveCfg = Release|Any CPU
 		{0DEBFE06-16DD-4DE3-AFA5-2FE254F63BFC}.Release|x86.Build.0 = Release|Any CPU
+		{736284BD-D30A-4EC8-BE21-0BC5C952CB4D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{736284BD-D30A-4EC8-BE21-0BC5C952CB4D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{736284BD-D30A-4EC8-BE21-0BC5C952CB4D}.Debug|iPhone.ActiveCfg = Debug|Any CPU
+		{736284BD-D30A-4EC8-BE21-0BC5C952CB4D}.Debug|iPhone.Build.0 = Debug|Any CPU
+		{736284BD-D30A-4EC8-BE21-0BC5C952CB4D}.Debug|iPhoneSimulator.ActiveCfg = Debug|Any CPU
+		{736284BD-D30A-4EC8-BE21-0BC5C952CB4D}.Debug|iPhoneSimulator.Build.0 = Debug|Any CPU
+		{736284BD-D30A-4EC8-BE21-0BC5C952CB4D}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{736284BD-D30A-4EC8-BE21-0BC5C952CB4D}.Debug|x64.Build.0 = Debug|Any CPU
+		{736284BD-D30A-4EC8-BE21-0BC5C952CB4D}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{736284BD-D30A-4EC8-BE21-0BC5C952CB4D}.Debug|x86.Build.0 = Debug|Any CPU
+		{736284BD-D30A-4EC8-BE21-0BC5C952CB4D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{736284BD-D30A-4EC8-BE21-0BC5C952CB4D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{736284BD-D30A-4EC8-BE21-0BC5C952CB4D}.Release|iPhone.ActiveCfg = Release|Any CPU
+		{736284BD-D30A-4EC8-BE21-0BC5C952CB4D}.Release|iPhone.Build.0 = Release|Any CPU
+		{736284BD-D30A-4EC8-BE21-0BC5C952CB4D}.Release|iPhoneSimulator.ActiveCfg = Release|Any CPU
+		{736284BD-D30A-4EC8-BE21-0BC5C952CB4D}.Release|iPhoneSimulator.Build.0 = Release|Any CPU
+		{736284BD-D30A-4EC8-BE21-0BC5C952CB4D}.Release|x64.ActiveCfg = Release|Any CPU
+		{736284BD-D30A-4EC8-BE21-0BC5C952CB4D}.Release|x64.Build.0 = Release|Any CPU
+		{736284BD-D30A-4EC8-BE21-0BC5C952CB4D}.Release|x86.ActiveCfg = Release|Any CPU
+		{736284BD-D30A-4EC8-BE21-0BC5C952CB4D}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -1179,6 +1201,7 @@ Global
 		{37563036-94C7-449B-BF26-DACB031230C1} = {23426B1A-CC46-4D11-B233-208A57B2BCA2}
 		{DCD6EAC1-2F25-47AA-A787-979055401BBA} = {23426B1A-CC46-4D11-B233-208A57B2BCA2}
 		{0DEBFE06-16DD-4DE3-AFA5-2FE254F63BFC} = {23426B1A-CC46-4D11-B233-208A57B2BCA2}
+		{736284BD-D30A-4EC8-BE21-0BC5C952CB4D} = {D241E16D-FC40-46BB-8B85-41E367DA135E}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {DA107107-478F-477A-872B-787CEA7DD9B8}
