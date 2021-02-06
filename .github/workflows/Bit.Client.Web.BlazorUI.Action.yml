@@ -1,0 +1,68 @@
+name: .NET
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  check:
+    name: Check changed files
+    outputs:
+      run_job: ${{ steps.check_files.outputs.run_job }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 2
+
+      - name: check files
+        id: check_files
+        run: |
+          echo "=============== list changed files ==============="
+          git diff --name-only HEAD^ HEAD
+          
+          echo "========== check paths of changed files =========="
+          git diff --name-only HEAD^ HEAD > files.txt
+          finaloutput='false'
+          while IFS= read -r file
+          do
+            echo $file
+            if [[ $file == "src/Client/Web/"* ]]; then
+              finaloutput='true'
+              echo "Found a file in target folder"
+              break
+            fi
+          done < files.txt
+          if [[ $finaloutput == 'true' ]]; then 
+            echo "Build and Test will be triggered"
+            echo "::set-output name=run_job::true"
+          else
+            echo "Build and Test will not be triggered"
+            echo "::set-output name=run_job::false"
+          fi
+
+  build:
+    name: Test successful build and Run Tests
+    needs: check
+    if: needs.check.outputs.run_job == 'true'
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: 5.0.x
+    - name: Restore dependencies
+    #I handled execution with "find | grep | xarg", to allow later bulk operations, with reducing the regex limits
+      run: |
+       find src/Client/Web/ -name "*BlazorUI.csproj" -type f | grep -v 'Tests.csproj' | xargs -n 1 dotnet restore
+    - name: Build
+      run: |
+       find src/Client/Web/ -name "*BlazorUI.csproj" -type f | grep -v 'Tests.csproj' | xargs -n 1 dotnet build --no-restore
+    - name: Test
+      run: |
+       find src/Client/Web/ -name "*BlazorUI.Tests.csproj" -type f | grep 'Tests.csproj' | xargs -n 1 dotnet test --no-build --verbosity normal
