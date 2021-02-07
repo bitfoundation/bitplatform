@@ -6,3 +6,4 @@
 
 3- [Add custom exception types](https://stackoverflow.com/questions/46202292/add-exception-type-to-bit-framework-known-exceptions)
 
+4- [How to create PFX file to use in Bit.IdentityServer](https://stackoverflow.com/questions/55378382/how-to-create-pfx-file-to-use-in-bit-identityserver)
