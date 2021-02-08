@@ -11,9 +11,9 @@ namespace Bit.Client.Web.BlazorUI.Components
     {
         [Parameter] public string Text { get; set; }
         [Parameter] public bool IsRequired { get; set; }
-        [Parameter] public string componentRef { get; set; }
+        [Parameter] public string For { get; set; }
 
-        public string RequiredClass => IsRequired ? "required" : "";
+        public string RequiredClass => IsRequired ? "required" : string.Empty;
 
         public override Task SetParametersAsync(ParameterView parameters)
         {
@@ -27,8 +27,8 @@ namespace Bit.Client.Web.BlazorUI.Components
                     case nameof(IsRequired):
                         IsRequired = (bool)parameter.Value;
                         break;
-                    case nameof(componentRef):
-                        componentRef = (string)parameter.Value;
+                    case nameof(For):
+                        For = (string)parameter.Value;
                         break;
                 }
             }
