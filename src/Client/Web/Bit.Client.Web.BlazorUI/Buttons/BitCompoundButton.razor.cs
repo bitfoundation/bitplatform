@@ -1,13 +1,16 @@
 ﻿using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 
-namespace Bit.Client.Web.BlazorUI
+namespace Bit.Client.Web.BlazorUI.Buttons
 {
-    public partial class BitButton
+    public partial class BitCompoundButton
     {
-        public ElementReference Button { get; set; }
-
+        public ElementReference CompoundButton { get; set; }
         [Parameter]
         public EventCallback<MouseEventArgs> OnClick { get; set; }
 
@@ -20,6 +23,9 @@ namespace Bit.Client.Web.BlazorUI
         [Parameter]
         public string Text { get; set; }
 
+        [Parameter]
+        public string SecondaryText { get; set; }
+
         public override Task SetParametersAsync(ParameterView parameters)
         {
             foreach (ParameterValue parameter in parameters)
@@ -28,6 +34,8 @@ namespace Bit.Client.Web.BlazorUI
                     OnClick = (EventCallback<MouseEventArgs>)parameter.Value;
                 else if (parameter.Name is nameof(Text))
                     Text = (string)parameter.Value;
+                else if (parameter.Name is nameof(SecondaryText))
+                    SecondaryText = (string)parameter.Value;
             }
 
             return base.SetParametersAsync(parameters);

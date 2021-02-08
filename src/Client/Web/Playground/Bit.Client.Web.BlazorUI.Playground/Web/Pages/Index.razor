@@ -2,8 +2,29 @@
 
 <h1>Buttons</h1>
 
+<h3>BitButton</h3>
 <BitButton IsEnabled="true" Text="Enabled"></BitButton>
 
 <BitButton IsEnabled="false" Text="Disabled"></BitButton>
 
 <hr />
+
+<h3>BitCompoundButton</h3>
+<BitCompoundButton OnClick="AddCounter" IsEnabled="true" Text="Enabled" SecondaryText="This Button is compound button"></BitCompoundButton>
+
+<BitCompoundButton OnClick="AddCounter" IsEnabled="false" Text="Disabled" SecondaryText="This Button is compound button"></BitCompoundButton>
+
+<hr />
+
+@counter
+
+@code{
+    int counter = 1;
+
+    void AddCounter()
+    {
+        counter++;
+        StateHasChanged();
+    }
+
+}

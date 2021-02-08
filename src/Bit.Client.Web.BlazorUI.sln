@@ -26,7 +26,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Bit.Client.Web.BlazorUI.Pla
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Bit.Client.Web.BlazorUI.Playground.Web", "Client\Web\Playground\Bit.Client.Web.BlazorUI.Playground\Web\Bit.Client.Web.BlazorUI.Playground.Web.csproj", "{0DEBFE06-16DD-4DE3-AFA5-2FE254F63BFC}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Bit.Client.Web.BlazorUI.Tests", "Client\Web\Bit.Client.Web.BlazorUI.Tests\Bit.Client.Web.BlazorUI.Tests.csproj", "{32793226-C45A-4E30-A077-394FC3C58E3E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Bit.Client.Web.BlazorUI.Tests", "Client\Web\Bit.Client.Web.BlazorUI.Tests\Bit.Client.Web.BlazorUI.Tests.csproj", "{32793226-C45A-4E30-A077-394FC3C58E3E}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

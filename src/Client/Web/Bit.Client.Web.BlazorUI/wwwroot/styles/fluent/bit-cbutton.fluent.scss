@@ -1,0 +1,73 @@
+﻿@import "_colors.fluent.scss", "../_functions.scss";
+
+.bit-compoundbutton.fluent {
+    font-family: FluentFont;
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    text-align: left;
+    border-radius: em(2px);
+    padding: em(16px) em(12px);
+    font-size: rem(14px);
+    font-weight: 600;
+    line-height: em(20px);
+    color: $White;
+    background: $Primary;
+    cursor: pointer;
+    box-sizing: border-box;
+    border: 1px solid $Primary;
+    max-width: 280px;
+    min-height: 72px;
+
+    &:hover {
+        background-color: $DarkAlt;
+    }
+
+    &:active {
+        background-color: $Dark;
+    }
+
+    &:active:focus {
+        background-color: $Primary;
+    }
+}
+
+.bit-compoundbutton.fluent.disabled {
+    background: $Grey20;
+    color: $Grey90;
+    cursor: default;
+    pointer-events: none;
+    border: 1px solid $Grey20;
+}
+
+.bit-compoundbutton.fluent .primary-text {
+    margin: 0px 0px 5px;
+    display: block;
+    line-height: 100%;
+}
+
+.bit-compoundbutton.fluent .secondary-text {
+    font-size: rem(12px);
+    font-weight: 400;
+    display: block;
+    line-height: 100%;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    vertical-align: baseline;
+}
+
+.bit-compoundbutton.fluent .textContainer {
+    flex-grow: 1;
+    display: block;
+    text-align: left;
+}
+
+.bit-compoundbutton.fluent .flexContainer {
+    display: flex;
+    height: 100%;
+    flex-flow: row nowrap;
+    justify-content: center;
+    align-items: flex-start;
+    min-width: 100%;
+}
