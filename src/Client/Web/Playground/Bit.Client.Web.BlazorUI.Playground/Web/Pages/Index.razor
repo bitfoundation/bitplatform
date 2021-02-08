@@ -1,4 +1,16 @@
 ﻿@page "/"
+<style>
+    /* Temp Styles */
+    .links-container {
+        font-family: FluentFont;
+    }
+
+     .links-container p {
+        width: 95%;
+        margin: auto;
+     }
+</style>
+
 <h1>Bit Components</h1>
 <hr />
 
@@ -16,5 +28,21 @@
     <BitLabel Text="I'm a disabled Label" IsEnabled="false"></BitLabel>
     <BitLabel Text="I'm a required Label" IsRequired="true"></BitLabel>
     <BitLabel Text="A Label for An Input" For="labels-container__input"></BitLabel>
-    <input type="text" name="labels-container__input" id="labels-container__input"/>
+    <input type="text" name="labels-container__input" id="labels-container__input" />
+</div>
+
+<hr />
+
+<div class="links-container">
+    <h2>links</h2>
+    <p>
+        When a link has an href, <BitLink Href="https://github.com/bitfoundation/bitframework" Text="it renders as an anchor tag" Target="_blank"></BitLink>.
+        Without an href, <BitLink Text="the link is rendered as a button"></BitLink>.
+        You can also use the disabled attribute
+        to create a <BitLink Text="disabled link" IsEnabled="false"></BitLink>.It's not recommended to use Links with imgs because
+        Links are meant to render textual inline content. Buttons are inline-block or
+        in the case of imgs, block. However, it is possible to create a linked image
+        button by making a button with an unstyled variant and adding the img content
+        and href source to that.
+    </p>
 </div>
