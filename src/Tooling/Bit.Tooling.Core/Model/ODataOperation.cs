@@ -1,6 +1,8 @@
 ﻿using Microsoft.CodeAnalysis;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Linq;
 
 namespace Bit.Tooling.Core.Model
 {
@@ -25,5 +27,24 @@ namespace Bit.Tooling.Core.Model
         public virtual ITypeSymbol ReturnType { get; set; } = default!;
 
         public virtual ICollection<ODataOperationParameter> Parameters { get; set; } = new Collection<ODataOperationParameter>();
+
+        public virtual string ParametersUri
+        {
+            get
+            {
+                if (Kind == ODataOperationKind.Action)
+                    return string.Empty;
+                return string.Join(",", Parameters.Select(p => $"{p.Name}={{({p.Name} == null ? \"null\" : $\"{GetParameterValue(p)}\")}}"));
+            }
+        }
+
+        string GetParameterValue(ODataOperationParameter parameter)
+        {
+            if (parameter.Type.IsEnum())
+                return $"{parameter.Type.GetCSharpTypeName()}'{{{parameter.Name}}}'";
+            if (parameter.Type.Name == nameof(String))
+                return $"'{{{parameter.Name}}}'";
+            return $"{{{parameter.Name}}}";
+        }
     }
 }

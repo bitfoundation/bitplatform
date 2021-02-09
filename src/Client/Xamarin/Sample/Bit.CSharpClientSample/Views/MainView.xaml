@@ -15,6 +15,7 @@
     </NavigationPage.TitleView>
     <StackLayout>
         <Button Command="{Binding SyncCommand}" Text="Sync" />
+        <Button Command="{Binding SendHttpRequestUsingGeneratedCodeCommand}" Text="Send Http request using generated code" />
         <Button Command="{Binding SendHttpRequestCommand}" Text="Send Http request" />
         <Button Command="{Binding SendRefitRequestCommand}" Text="Send Refit request" />
         <Button Command="{Binding SendODataRequestCommand}" Text="Send OData request" />

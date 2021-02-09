@@ -5,6 +5,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Remote;
 using Simple.OData.Client;
+using System.Net.Http;
 using System.Threading.Tasks;
 
 namespace Bit.Tests.Api.ApiControllers.Tests
@@ -23,6 +24,15 @@ namespace Bit.Tests.Api.ApiControllers.Tests
                 IODataClient client = testEnvironment.BuildTestODataClient(token: token);
 
                 Assert.AreEqual(3, await client.Simple().Sum(1, 2).ExecuteAsScalarAsync<int>());
+            }
+
+            using (BitOwinTestEnvironment testEnvironment = new BitOwinTestEnvironment())
+            {
+                TokenResponse token = await testEnvironment.Server.Login("ValidUserName", "ValidPassword", clientId: "TestResOwner");
+
+                HttpClient client = testEnvironment.Server.BuildHttpClient(token: token);
+
+                Assert.AreEqual(3, await client.Simple().Sum(1, 2));
             }
         }
 

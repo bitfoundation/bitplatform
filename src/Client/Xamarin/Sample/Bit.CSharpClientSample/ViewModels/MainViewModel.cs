@@ -1,6 +1,7 @@
 ﻿using Bit.CSharpClientSample.Data;
 using Bit.CSharpClientSample.Dto;
 using Bit.Http.Contracts;
+using Bit.Http.Implementations;
 using Bit.Sync.ODataEntityFrameworkCore.Contracts;
 using Bit.Tests.Model.Dto;
 using Bit.ViewModel;
@@ -39,6 +40,7 @@ namespace Bit.CSharpClientSample.ViewModels
 
         public BitDelegateCommand SyncCommand { get; set; }
         public BitDelegateCommand SendHttpRequestCommand { get; set; }
+        public BitDelegateCommand SendHttpRequestUsingGeneratedCodeCommand { get; set; }
         public BitDelegateCommand SendRefitRequestCommand { get; set; }
         public BitDelegateCommand SendODataRequestCommand { get; set; }
         public BitDelegateCommand SendODataBatchRequestCommand { get; set; }
@@ -51,6 +53,7 @@ namespace Bit.CSharpClientSample.ViewModels
         {
             SyncCommand = new BitDelegateCommand(Sync);
             SendHttpRequestCommand = new BitDelegateCommand(SendHttpRequest);
+            SendHttpRequestUsingGeneratedCodeCommand = new BitDelegateCommand(SendHttpRequestUsingGeneratedCode);
             SendRefitRequestCommand = new BitDelegateCommand(SendRefitRequest);
             SendODataRequestCommand = new BitDelegateCommand(SendODataRequest);
             SendODataBatchRequestCommand = new BitDelegateCommand(SendODataBatchRequest);
@@ -107,6 +110,31 @@ namespace Bit.CSharpClientSample.ViewModels
             await DbContext.SaveChangesAsync();
 
             await SyncService.SyncContext();
+        }
+
+        async Task SendHttpRequestUsingGeneratedCode()
+        {
+            DtoHttpClient<ChildEntity> childEntitiesController = new DtoHttpClient<ChildEntity>(HttpClient, "ChildEntities", "Test");
+
+            ODataContext context = new ODataContext { Query = $"$expand={nameof(ChildEntity.ParentEntity)}&$count=true" };
+
+            var children = await childEntitiesController.Get(oDataContext: context);
+
+            var totalCount = context.TotalCount;
+
+            context = new ODataContext { Query = $"$expand={nameof(ChildEntity.ParentEntity)}" };
+
+            children = await childEntitiesController.Get(oDataContext: context);
+
+            var child1 = await childEntitiesController.Create(new ChildEntity { Name = "Child1", ParentEntityId = children.First().ParentEntityId });
+
+            child1 = await childEntitiesController.Update(child1);
+
+            child1 = await childEntitiesController.PartialUpdate(child1);
+
+            child1 = await childEntitiesController.Get(new object[] { child1.Id });
+
+            await childEntitiesController.Delete(new object[] { child1.Id });
         }
 
         async Task SendHttpRequest()

@@ -18,7 +18,9 @@ namespace Bit.Tooling.Core.Model
 
     public enum GenerationType
     {
-        CSharp, TypeScript
+        CSharpSimpleODataClient, 
+        CSharpHttpClient,
+        TypeScriptJayDataClient
     }
 
     public class BitCodeGeneratorMapping
@@ -38,7 +40,13 @@ namespace Bit.Tooling.Core.Model
 
         public virtual string TypingsPath { get; set; } = default!;
 
-        public virtual GenerationType GenerationType => string.IsNullOrEmpty(TypingsPath) ? GenerationType.CSharp : GenerationType.TypeScript;
+        private GenerationType? _GenerationType;
+
+        public virtual GenerationType GenerationType
+        {
+            get => _GenerationType is not null ? _GenerationType.Value : (string.IsNullOrEmpty(TypingsPath) ? GenerationType.CSharpSimpleODataClient : GenerationType.TypeScriptJayDataClient);
+            set => _GenerationType = value;
+        }
 
         public override string ToString()
         {

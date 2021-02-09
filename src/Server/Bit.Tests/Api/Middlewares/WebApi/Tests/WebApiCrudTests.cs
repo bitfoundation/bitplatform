@@ -1,4 +1,5 @@
 ﻿using Bit.Data.Contracts;
+using Bit.Http.Contracts;
 using Bit.Tests.Api.ApiControllers;
 using Bit.Tests.Core.Contracts;
 using Bit.Tests.Model.DomainModels;
@@ -38,6 +39,38 @@ namespace Bit.Tests.Api.Middlewares.WebApi.Tests
                 TestModel modelAfterInsert = await client.TestModels()
                     .Set(modelBeforeInsert)
                     .CreateEntryAsync();
+
+                Assert.AreNotEqual(0, modelAfterInsert.Id);
+
+                TestModelsController testModelsController = testEnvironment.GetObjects<TestModelsController>()
+                    .Last();
+
+                A.CallTo(() => testModelsController.Create(A<TestModel>.That.Matches(testModel => testModel.StringProperty == "Test"),
+                            A<CancellationToken>.Ignored))
+                    .MustHaveHappenedOnceExactly();
+
+                IRepository<TestModel> testModelsRepository =
+                    testEnvironment.GetObjects<IRepository<TestModel>>()
+                        .Single();
+
+                A.CallTo(() => testModelsRepository.AddAsync(A<TestModel>.That.Matches(testModel => testModel.StringProperty == "Test"), A<CancellationToken>.Ignored))
+                    .MustHaveHappenedOnceExactly();
+            }
+
+            using (BitOwinTestEnvironment testEnvironment = new BitOwinTestEnvironment())
+            {
+                TokenResponse token = await testEnvironment.Server.Login("ValidUserName", "ValidPassword", clientId: "TestResOwner");
+
+                HttpClient client = testEnvironment.Server.BuildHttpClient(token: token);
+
+                TestModel modelBeforeInsert = new TestModel
+                {
+                    StringProperty = "Test",
+                    Version = 1
+                };
+
+                TestModel modelAfterInsert = await client.TestModels()
+                    .Create(modelBeforeInsert);
 
                 Assert.AreNotEqual(0, modelAfterInsert.Id);
 
@@ -98,6 +131,41 @@ namespace Bit.Tests.Api.Middlewares.WebApi.Tests
                             A<CancellationToken>.Ignored))
                     .MustHaveHappenedOnceExactly();
             }
+
+            using (BitOwinTestEnvironment testEnvironment = new BitOwinTestEnvironment())
+            {
+                TokenResponse token = await testEnvironment.Server.Login("ValidUserName", "ValidPassword", clientId: "TestResOwner");
+
+                HttpClient client = testEnvironment.Server.BuildHttpClient(token: token);
+
+                long modelBeforeUpdateId = (await client.TestModels()
+                    .Get(oDataContext: new ODataContext { Query = "$top=1&$select=Id" }))
+                    .First().Id;
+
+                TestModel modelAfterUpdate = await client.TestModels()
+                    .PartialUpdate(new object[] { modelBeforeUpdateId }, new { StringProperty = "Test2" });
+
+                Assert.AreEqual("Test2", modelAfterUpdate.StringProperty);
+
+                TestModelsController testModelsController = testEnvironment.GetObjects<TestModelsController>()
+                    .Last();
+
+                A.CallTo(() => testModelsController.PartialUpdate(modelBeforeUpdateId,
+                    A<Delta<TestModel>>.That.Matches(
+                        testModelDelta =>
+                            testModelDelta.GetChangedPropertyNames().Single() == nameof(TestModel.StringProperty)),
+                    A<CancellationToken>.Ignored))
+                    .MustHaveHappenedOnceExactly();
+
+                IRepository<TestModel> testModelsRepository =
+                    testEnvironment.GetObjects<IRepository<TestModel>>()
+                        .Last();
+
+                A.CallTo(() => testModelsRepository.UpdateAsync(
+                            A<TestModel>.That.Matches(testModel => testModel.StringProperty == "Test2"),
+                            A<CancellationToken>.Ignored))
+                    .MustHaveHappenedOnceExactly();
+            }
         }
 
         [TestMethod]
@@ -118,6 +186,35 @@ namespace Bit.Tests.Api.Middlewares.WebApi.Tests
                 await client.TestModels()
                     .Key(modelIdForDelete)
                     .DeleteEntryAsync();
+
+                TestModelsController testModelsController = testEnvironment.GetObjects<TestModelsController>()
+                    .Last();
+
+                A.CallTo(() => testModelsController.Delete(modelIdForDelete, A<CancellationToken>.Ignored))
+                    .MustHaveHappenedOnceExactly();
+
+                IRepository<TestModel> testModelsRepository =
+                    testEnvironment.GetObjects<IRepository<TestModel>>()
+                        .Last();
+
+                A.CallTo(() => testModelsRepository.DeleteAsync(
+                            A<TestModel>.That.Matches(testModel => testModel.Id == modelIdForDelete),
+                            A<CancellationToken>.Ignored))
+                    .MustHaveHappenedOnceExactly();
+            }
+
+            using (BitOwinTestEnvironment testEnvironment = new BitOwinTestEnvironment())
+            {
+                TokenResponse token = await testEnvironment.Server.Login("ValidUserName", "ValidPassword", clientId: "TestResOwner");
+
+                HttpClient client = testEnvironment.Server.BuildHttpClient(token: token);
+
+                long modelIdForDelete = (await client.TestModels()
+                    .Get(oDataContext: new ODataContext { Query = "$top=1&$select=Id" }))
+                    .First().Id;
+
+                await client.TestModels()
+                    .Delete(new object[] { modelIdForDelete });
 
                 TestModelsController testModelsController = testEnvironment.GetObjects<TestModelsController>()
                     .Last();

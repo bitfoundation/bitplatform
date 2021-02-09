@@ -1,12 +1,16 @@
 ﻿using Bit.Core.Contracts;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
+using Newtonsoft.Json.Linq;
 using Newtonsoft.Json.Serialization;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Diagnostics.CodeAnalysis;
+using System.IO;
 using System.Reflection;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace Bit.Core.Implementations
 {
@@ -87,5 +91,16 @@ namespace Bit.Core.Implementations
 
             return JsonConvert.SerializeObject(obj, jsonSerializerSettings);
         }
+
+        public virtual async Task<T> DeserializeAsync<T>(Stream input, CancellationToken cancellationToken)
+        {
+            JsonSerializer serializer = JsonSerializer.CreateDefault(SerializeSettings());
+            using StreamReader streamReader = new StreamReader(input);
+            using JsonTextReader jsonReader = new JsonTextReader(streamReader);
+            JToken json = await JToken.LoadAsync(jsonReader, cancellationToken);
+            return json.ToObject<T>(serializer);
+        }
+
+        public virtual string ContentType => "application/json";
     }
 }
