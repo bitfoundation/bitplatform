@@ -1,9 +1,20 @@
 ﻿@page "/"
+<h1>Bit Components</h1>
+<hr />
 
-<h1>Buttons</h1>
-
-<BitButton IsEnabled="true" Text="Enabled"></BitButton>
-
-<BitButton IsEnabled="false" Text="Disabled"></BitButton>
+<div class="buttons-container">
+    <h2>Buttons</h2>
+    <BitButton IsEnabled="true" Text="Enabled"></BitButton>
+    <BitButton IsEnabled="false" Text="Disabled"></BitButton>
+</div>
 
 <hr />
+
+<div class="labels-container">
+    <h2>Labels</h2>
+    <BitLabel Text="I'm a Label"></BitLabel>
+    <BitLabel Text="I'm a disabled Label" IsEnabled="false"></BitLabel>
+    <BitLabel Text="I'm a required Label" IsRequired="true"></BitLabel>
+    <BitLabel Text="A Label for An Input" For="labels-container__input"></BitLabel>
+    <input type="text" name="labels-container__input" id="labels-container__input"/>
+</div>
