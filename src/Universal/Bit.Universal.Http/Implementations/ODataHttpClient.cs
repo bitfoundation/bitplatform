@@ -12,14 +12,14 @@ using System.Threading.Tasks;
 
 namespace Bit.Http.Implementations
 {
-    public class DtoHttpClient<TDto>
+    public class ODataHttpClient<TDto>
         where TDto : IDto
     {
         public virtual string ODataRoute { get; }
         public virtual string ControllerName { get; }
         public virtual HttpClient HttpClient { get; }
 
-        public DtoHttpClient(HttpClient httpClient, string controllerName, string odataRoute)
+        public ODataHttpClient(HttpClient httpClient, string controllerName, string odataRoute)
         {
             ODataRoute = odataRoute;
             ControllerName = controllerName;
