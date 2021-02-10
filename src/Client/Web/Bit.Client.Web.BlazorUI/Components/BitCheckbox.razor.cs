@@ -15,6 +15,8 @@ namespace Bit.Client.Web.BlazorUI.Components
         [Parameter] public bool IsChecked { get; set; }
         [Parameter] public bool IsIndeterminate { get; set; }
         [Parameter] public EventCallback<MouseEventArgs> OnCheckboxClick { get; set; }
+        [Parameter] public Action<bool> OnCheckboxChange { get; set; }
+
 
         public string CheckedClass => IsChecked ? "checked" : string.Empty;
         public string IndeterminateClass => IsIndeterminate ? "indeterminate" : string.Empty;
@@ -32,10 +34,9 @@ namespace Bit.Client.Web.BlazorUI.Components
                 else {
                     IsChecked = true;
                 }
-                StateHasChanged();
+                OnCheckboxChange?.Invoke(IsChecked);
             }
         }
-
         public override Task SetParametersAsync(ParameterView parameters)
         {
             foreach (ParameterValue parameter in parameters)
@@ -50,6 +51,9 @@ namespace Bit.Client.Web.BlazorUI.Components
                         break;
                     case nameof(IsIndeterminate):
                         IsIndeterminate = (bool)parameter.Value;
+                        break;
+                    case nameof(OnCheckboxChange):
+                        OnCheckboxChange = (Action<bool>)parameter.Value;
                         break;
                 }
             }
