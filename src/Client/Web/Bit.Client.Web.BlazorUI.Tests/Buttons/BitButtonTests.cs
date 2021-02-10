@@ -1,6 +1,7 @@
 ﻿using Bunit;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Threading.Tasks;
+using Bit.Client.Web.BlazorUI.Tests.Buttons;
 
 namespace Bit.Client.Web.BlazorUI.Tests
 {

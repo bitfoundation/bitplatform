@@ -1,21 +1,15 @@
 ﻿using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
-using Microsoft.AspNetCore.Components.Web;
 
-namespace Bit.Client.Web.BlazorUI.Components
+namespace Bit.Client.Web.BlazorUI.Labels
 {
-    public partial class BitButton
+    public partial class BitLabel
     {
         [Parameter] public string Text { get; set; }
-        [Parameter] public EventCallback<MouseEventArgs> OnClick { get; set; }
+        [Parameter] public bool IsRequired { get; set; }
+        [Parameter] public string For { get; set; }
 
-        protected virtual async Task HandleOnClick(MouseEventArgs e)
-        {
-            if (IsEnabled)
-            {
-                await OnClick.InvokeAsync(e);
-            }
-        }
+        public string RequiredClass => IsRequired ? "required" : string.Empty;
 
         public override Task SetParametersAsync(ParameterView parameters)
         {
@@ -23,16 +17,20 @@ namespace Bit.Client.Web.BlazorUI.Components
             {
                 switch (parameter.Name)
                 {
-                    case nameof(OnClick):
-                        OnClick = (EventCallback<MouseEventArgs>)parameter.Value;
-                        break;
                     case nameof(Text):
                         Text = (string)parameter.Value;
+                        break;
+                    case nameof(IsRequired):
+                        IsRequired = (bool)parameter.Value;
+                        break;
+                    case nameof(For):
+                        For = (string)parameter.Value;
                         break;
                 }
             }
 
             return base.SetParametersAsync(parameters);
         }
+
     }
 }

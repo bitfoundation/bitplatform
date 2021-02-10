@@ -10,7 +10,6 @@ namespace Bit.Client.Web.BlazorUI.Buttons
 {
     public partial class BitCompoundButton
     {
-        public ElementReference CompoundButton { get; set; }
         [Parameter]
         public EventCallback<MouseEventArgs> OnClick { get; set; }
 
