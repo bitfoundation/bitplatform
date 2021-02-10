@@ -1,10 +1,14 @@
 ﻿using Bit.Core.Contracts;
 using Bit.Core.Implementations;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.IO;
 using System.Reflection;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace Bit.Signalr.Implementations
 {
@@ -64,5 +68,16 @@ namespace Bit.Signalr.Implementations
                 throw new NotImplementedException();
             }
         }
+
+        public virtual async Task<T> DeserializeAsync<T>(Stream input, CancellationToken cancellationToken)
+        {
+            JsonSerializer serializer = JsonSerializer.CreateDefault(GetSettings());
+            using StreamReader streamReader = new StreamReader(input);
+            using JsonTextReader jsonReader = new JsonTextReader(streamReader);
+            JToken json = await JToken.LoadAsync(jsonReader, cancellationToken);
+            return json.ToObject<T>(serializer);
+        }
+
+        public virtual string ContentType => "application/json";
     }
 }

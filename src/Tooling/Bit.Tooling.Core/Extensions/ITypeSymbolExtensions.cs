@@ -61,7 +61,7 @@ namespace Microsoft.CodeAnalysis
 
             type = type.GetUnderlyingTypeSymbol();
 
-            return type.Name != nameof(String) && type.Name != "Dictionary" && ((type is IArrayTypeSymbol) || type.Name == "IEnumerable" || type.AllInterfaces.Any(i => i.Name == "IEnumerable") || type.Name == "SingleResult");
+            return type.Name != nameof(String) && type.Name != "Dictionary" && ((type is IArrayTypeSymbol) || type.Name == "IEnumerable" || type.AllInterfaces.Any(i => i.Name == "IEnumerable") || type.IsSingleResultType());
         }
 
         public static bool IsQueryableType(this ITypeSymbol type)
@@ -71,7 +71,17 @@ namespace Microsoft.CodeAnalysis
 
             type = type.GetUnderlyingTypeSymbol();
 
-            return type.AllInterfaces.Any(i => i.Name == "IQueryable") || type.Name == "SingleResult";
+            return type.AllInterfaces.Any(i => i.Name == "IQueryable") || type.IsSingleResultType();
+        }
+
+        public static bool IsSingleResultType(this ITypeSymbol type)
+        {
+            if (type == null)
+                throw new ArgumentNullException(nameof(type));
+
+            type = type.GetUnderlyingTypeSymbol();
+
+            return type.Name == "SingleResult";
         }
 
         public static bool IsNullable(this ITypeSymbol type)
@@ -226,6 +236,23 @@ namespace Microsoft.CodeAnalysis
 
                 return type.ToDisplayString();
             }
+        }
+
+        public static string GetCSharpTypeName(this ITypeSymbol type)
+        {
+            if (type == null)
+                throw new ArgumentNullException(nameof(type));
+
+            type = type.GetUnderlyingTypeSymbol();
+
+            if (type.IsQueryableType() || type.IsCollectionType())
+            {
+                if (type.IsSingleResultType())
+                    return type.GetElementType().GetCSharpTypeName();
+                return $"List<{type.GetElementType().GetCSharpTypeName()}>";
+            }
+
+            return type.ToDisplayString();
         }
 
         public static string GetJavaScriptDefaultValue(this ITypeSymbol type)

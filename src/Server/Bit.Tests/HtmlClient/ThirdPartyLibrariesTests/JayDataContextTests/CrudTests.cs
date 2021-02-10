@@ -12,6 +12,7 @@ using OpenQA.Selenium.Remote;
 using Simple.OData.Client;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -153,6 +154,43 @@ namespace Bit.Tests.HtmlClient.ThirdPartyLibrariesTests.JayDataContextTests
                     .ExecuteAsEnumerableAsync();
 
                 await batchClient.ExecuteAsync();
+
+                /*Assert.AreEqual(true, await client.DtoWithEnum()
+                    .TestEnumsArray(new[] { TestGender2.Man, TestGender2.Woman })
+                    .ExecuteAsScalarAsync<bool>());*/
+
+                DtoWithEnumController firstCallController = testEnvironment.GetObjects<DtoWithEnumController>()
+                    .First();
+
+                DtoWithEnumController secondCallController = testEnvironment.GetObjects<DtoWithEnumController>()
+                    .ElementAt(2);
+
+                A.CallTo(() => firstCallController.GetDtoWithEnumsByGender(TestGender.Man))
+                    .MustHaveHappenedOnceExactly();
+
+                A.CallTo(() => secondCallController.GetDtoWithEnumsByGender2(TestGender2.Man))
+                    .MustHaveHappenedOnceExactly();
+            }
+
+            using (BitOwinTestEnvironment testEnvironment = new BitOwinTestEnvironment(new TestEnvironmentArgs { }))
+            {
+                TokenResponse token = await testEnvironment.Server.Login("ValidUserName", "ValidPassword", clientId: "TestResOwner");
+
+                HttpClient client = testEnvironment.Server.BuildHttpClient(token: token);
+
+                DtoWithEnum dtoWithEnum = (await client.DtoWithEnum()
+                    .GetDtoWithEnumsByGender(TestGender.Man)).Single();
+
+                Assert.AreEqual(TestGender.Man, dtoWithEnum.Gender);
+
+                Assert.AreEqual(true, await client.DtoWithEnum()
+                    .PostDtoWithEnum(dtoWithEnum));
+
+                await client.DtoWithEnum()
+                    .GetDtoWithEnumsByGender2(TestGender2.Man);
+
+                await client.DtoWithEnum()
+                    .GetDtoWithEnumsByGender(TestGender.Man);
 
                 /*Assert.AreEqual(true, await client.DtoWithEnum()
                     .TestEnumsArray(new[] { TestGender2.Man, TestGender2.Woman })

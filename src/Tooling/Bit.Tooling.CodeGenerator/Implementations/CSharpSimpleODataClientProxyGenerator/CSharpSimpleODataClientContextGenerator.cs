@@ -1,12 +1,12 @@
-﻿using Bit.Tooling.CodeGenerator.Implementations.CSharpClientProxyGenerator.Templates;
+﻿using Bit.Tooling.CodeGenerator.Implementations.CSharpSimpleODataClientProxyGenerator.Templates;
 using Bit.Tooling.Core.Contracts.CSharpClientProxyGenerator;
 using Bit.Tooling.Core.Model;
 using System;
 using System.Collections.Generic;
 
-namespace Bit.Tooling.CodeGenerator.Implementations.CSharpClientProxyGenerator
+namespace Bit.Tooling.CodeGenerator.Implementations.CSharpSimpleODataClientProxyGenerator
 {
-    public class DefaultCSharpClientContextGenerator : ICSharpClientContextGenerator
+    public class CSharpSimpleODataClientContextGenerator : ICSharpClientContextGenerator
     {
         public virtual string GenerateCSharpContext(IList<DtoController> controllers, BitCodeGeneratorMapping mapping)
         {
@@ -16,13 +16,13 @@ namespace Bit.Tooling.CodeGenerator.Implementations.CSharpClientProxyGenerator
             if (mapping == null)
                 throw new ArgumentNullException(nameof(mapping));
 
-            CSharpContextGeneratorTemplate template = new CSharpContextGeneratorTemplate
+            CSharpSimpleODataClientContextGeneratorTemplate template = new CSharpSimpleODataClientContextGeneratorTemplate
             {
                 Session = new Dictionary<string, object>
                 {
                     { "Controllers", controllers },
                     { "Mapping", mapping },
-                    { "BitToolingVersion", typeof(DefaultCSharpClientContextGenerator).Assembly.GetName().Version!.ToString() }
+                    { "BitToolingVersion", typeof(CSharpSimpleODataClientContextGenerator).Assembly.GetName().Version!.ToString() }
                 }
             };
 

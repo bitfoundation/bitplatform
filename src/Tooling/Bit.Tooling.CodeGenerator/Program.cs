@@ -1,5 +1,7 @@
 ﻿using Bit.Tooling.CodeGenerator.Implementations;
-using Bit.Tooling.CodeGenerator.Implementations.CSharpClientProxyGenerator;
+using Bit.Tooling.CodeGenerator.Implementations.CSharpHttpClientProxyGenerator;
+using Bit.Tooling.CodeGenerator.Implementations.CSharpODataMetadataGenerator;
+using Bit.Tooling.CodeGenerator.Implementations.CSharpSimpleODataClientProxyGenerator;
 using Bit.Tooling.CodeGenerator.Implementations.TypeScriptClientProxyGenerator;
 using Bit.Tooling.Core.Contracts;
 using Bit.Tooling.Core.Model;
@@ -103,16 +105,21 @@ namespace BitCodeGeneratorTaskImpl
                 IBitCodeGeneratorOrderedProjectsProvider bitCodeGeneratorOrderedProjectsProvider = new DefaultBitCodeGeneratorOrderedProjectsProvider();
                 IProjectEnumTypesProvider projectEnumTypesProvider = new DefaultProjectEnumTypesProvider(controllersProvider, dtosProvider);
 
-                DefaultTypeScriptClientProxyGenerator tsGenerator = new DefaultTypeScriptClientProxyGenerator(bitCodeGeneratorOrderedProjectsProvider,
+                TypeScriptJayDataClientProxyGenerator typeScriptJayDataGeneratedCode = new TypeScriptJayDataClientProxyGenerator(bitCodeGeneratorOrderedProjectsProvider,
                     bitConfigProvider, dtosProvider
-                    , new DefaultTypeScriptClientProxyDtoGenerator(), new DefaultTypeScriptClientContextGenerator(), controllersProvider, projectEnumTypesProvider);
+                    , new TypeScriptJayDataClientProxyDtoGenerator(), new TypeScriptJayDataClientContextGenerator(), controllersProvider, projectEnumTypesProvider);
 
-                await tsGenerator.GenerateCodes(workspace);
+                await typeScriptJayDataGeneratedCode.GenerateCodes(workspace);
 
-                DefaultCSharpClientProxyGenerator csGenerator = new DefaultCSharpClientProxyGenerator(bitCodeGeneratorOrderedProjectsProvider,
-                    bitConfigProvider, controllersProvider, new DefaultCSharpClientContextGenerator(), new DefaultCSharpClientMetadataGenerator(), dtosProvider, projectEnumTypesProvider);
+                CSharpSimpleODataClientProxyGenerator csharpSimpleODataClientGeneratedCode = new CSharpSimpleODataClientProxyGenerator(bitCodeGeneratorOrderedProjectsProvider,
+                    bitConfigProvider, controllersProvider, new CSharpSimpleODataClientContextGenerator(), new CSharpSimpleODataClientMetadataGenerator(), dtosProvider, projectEnumTypesProvider);
 
-                await csGenerator.GenerateCodes(workspace);
+                await csharpSimpleODataClientGeneratedCode.GenerateCodes(workspace);
+
+                CSharpHttpClientProxyGenerator csharpHttpClientProxyGenerator = new CSharpHttpClientProxyGenerator(bitCodeGeneratorOrderedProjectsProvider,
+                    bitConfigProvider, controllersProvider, new CSharpHttpClientContextGenerator(), dtosProvider, projectEnumTypesProvider);
+
+                await csharpHttpClientProxyGenerator.GenerateCodes(workspace);
             }
         }
 

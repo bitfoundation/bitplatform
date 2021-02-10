@@ -3,6 +3,13 @@ using System.Text.Json.Serialization;
 
 namespace Bit.Http.Contracts
 {
+    public class ODataContext
+    {
+        public string? Query { get; set; }
+
+        public long? TotalCount { get; set; }
+    }
+
     public class ODataResponse<T>
     {
         [JsonProperty("value")]

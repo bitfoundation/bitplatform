@@ -1,6 +1,8 @@
 ﻿using Bit.Core.Contracts;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
+using System.Threading;
+using System.Threading.Tasks;
 using System.Xml;
 using System.Xml.Serialization;
 
@@ -24,5 +26,15 @@ namespace Bit.Owin.Implementations
             using XmlReader reader = XmlReader.Create(stringReader);
             return (T)xmlSerializer.Deserialize(reader);
         }
+
+        public virtual async Task<T> DeserializeAsync<T>(Stream input, CancellationToken cancellationToken)
+        {
+            XmlSerializer xmlSerializer = new XmlSerializer(typeof(T));
+            using StreamReader streamReader = new StreamReader(input);
+            using XmlReader reader = XmlReader.Create(streamReader);
+            return (T)xmlSerializer.Deserialize(reader);
+        }
+
+        public virtual string ContentType => "application/xml";
     }
 }

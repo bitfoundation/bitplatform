@@ -9,9 +9,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Bit.Tooling.CodeGenerator.Implementations.CSharpClientProxyGenerator
+namespace Bit.Tooling.CodeGenerator.Implementations.CSharpSimpleODataClientProxyGenerator
 {
-    public class DefaultCSharpClientProxyGenerator : IDefaultCSharpClientProxyGenerator
+    public class CSharpSimpleODataClientProxyGenerator : IDefaultCSharpClientProxyGenerator
     {
         private readonly IBitCodeGeneratorOrderedProjectsProvider _bitCodeGeneratorOrderedProjectsProvider;
         private readonly IBitConfigProvider _bitConfigProvider;
@@ -21,7 +21,7 @@ namespace Bit.Tooling.CodeGenerator.Implementations.CSharpClientProxyGenerator
         private readonly IProjectDtosProvider _dtosProvider;
         private IProjectEnumTypesProvider _enumsProvider;
 
-        public DefaultCSharpClientProxyGenerator(IBitCodeGeneratorOrderedProjectsProvider bitCodeGeneratorOrderedProjectsProvider,
+        public CSharpSimpleODataClientProxyGenerator(IBitCodeGeneratorOrderedProjectsProvider bitCodeGeneratorOrderedProjectsProvider,
             IBitConfigProvider bitConfigProvider,
             IProjectDtoControllersProvider dtoControllersProvider,
             ICSharpClientContextGenerator contextGenerator,
@@ -66,7 +66,7 @@ namespace Bit.Tooling.CodeGenerator.Implementations.CSharpClientProxyGenerator
 
             BitConfig bitConfig = _bitConfigProvider.GetConfiguration();
 
-            foreach (BitCodeGeneratorMapping proxyGeneratorMapping in bitConfig.BitCodeGeneratorConfigs.BitCodeGeneratorMappings.Where(m => m.GenerationType == GenerationType.CSharp))
+            foreach (BitCodeGeneratorMapping proxyGeneratorMapping in bitConfig.BitCodeGeneratorConfigs.BitCodeGeneratorMappings.Where(m => m.GenerationType == GenerationType.CSharpSimpleODataClient))
             {
                 string generatedContextName = proxyGeneratorMapping.DestinationFileName;
 

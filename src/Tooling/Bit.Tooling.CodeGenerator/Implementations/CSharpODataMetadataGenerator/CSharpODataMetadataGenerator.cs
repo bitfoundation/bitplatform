@@ -1,5 +1,6 @@
-﻿using Bit.Tooling.CodeGenerator.Implementations.CSharpClientProxyGenerator.Metadata;
-using Bit.Tooling.CodeGenerator.Implementations.CSharpClientProxyGenerator.Templates;
+﻿using Bit.Tooling.CodeGenerator.Implementations.CSharpODataMetadataGenerator.Metadata;
+using Bit.Tooling.CodeGenerator.Implementations.CSharpODataMetadataGenerator.Templates;
+using Bit.Tooling.CodeGenerator.Implementations.CSharpSimpleODataClientProxyGenerator;
 using Bit.Tooling.Core.Contracts.CSharpClientProxyGenerator;
 using Bit.Tooling.Core.Model;
 using Microsoft.CodeAnalysis;
@@ -11,14 +12,14 @@ using System.Linq;
 using System.Text;
 using System.Xml.Serialization;
 
-namespace Bit.Tooling.CodeGenerator.Implementations.CSharpClientProxyGenerator
+namespace Bit.Tooling.CodeGenerator.Implementations.CSharpODataMetadataGenerator
 {
     public class MetadataWriter : StringWriter
     {
         public override Encoding Encoding => Encoding.UTF8;
     }
 
-    public class DefaultCSharpClientMetadataGenerator : ICSharpClientMetadataGenerator
+    public class CSharpSimpleODataClientMetadataGenerator : ICSharpClientMetadataGenerator
     {
         readonly string escapeStr = new string(new[] { '\\', '"' });
 
@@ -215,12 +216,12 @@ namespace Bit.Tooling.CodeGenerator.Implementations.CSharpClientProxyGenerator
             if (enumTypes == null)
                 throw new ArgumentNullException(nameof(enumTypes));
 
-            CSharpMetadataGeneratorTemplate template = new CSharpMetadataGeneratorTemplate
+            CSharpODataMetadataGeneratorTemplate template = new CSharpODataMetadataGeneratorTemplate
             {
                 Session = new Dictionary<string, object>
                 {
                     { "Mapping", mapping },
-                    { "BitToolingVersion", typeof(DefaultCSharpClientContextGenerator).Assembly.GetName().Version!.ToString() },
+                    { "BitToolingVersion", typeof(CSharpSimpleODataClientContextGenerator).Assembly.GetName().Version!.ToString() },
                     { "MetadataString", GetMetadata(dtos, enumTypes, controllers, mapping) }
                 }
             };
