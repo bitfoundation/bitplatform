@@ -29,14 +29,14 @@ namespace System.Net.Http
     {
 		<# foreach (DtoController controller in Controllers) { #>
 
-			public static DtoHttpClient<<#= controller.ModelSymbol.ToDisplayString() #>> <#= controller.Name #>(this HttpClient httpClient)
+			public static ODataHttpClient<<#= controller.ModelSymbol.ToDisplayString() #>> <#= controller.Name #>(this HttpClient httpClient)
 			{
-				return new DtoHttpClient<<#= controller.ModelSymbol.ToDisplayString() #>>(httpClient, "<#= controller.Name #>" , "<#= Mapping.Route #>" );
+				return new ODataHttpClient<<#= controller.ModelSymbol.ToDisplayString() #>>(httpClient, "<#= controller.Name #>" , "<#= Mapping.Route #>" );
 			}
 
 			<# foreach (ODataOperation operation in controller.Operations) { #>
 
-				public static async Task<#= operation.Method.ReturnType.IsVoid() ? string.Empty : $"<{operation.Method.ReturnType.GetCSharpTypeName()}>" #> <#= operation.Method.Name #>(this <#= string.Join(",", new string[]{ $@"DtoHttpClient<{controller.ModelSymbol.ToDisplayString()}> {controller.Name.AsCamelCase()}Controller" }.Union(operation.Parameters.Select(parameter =>  $@"{parameter.Type.ToDisplayString()} {parameter.Name}" )).Union(new []{"ODataContext? oDataContext = default" , "CancellationToken cancellationToken = default"})) #>)
+				public static async Task<#= operation.Method.ReturnType.IsVoid() ? string.Empty : $"<{operation.Method.ReturnType.GetCSharpTypeName()}>" #> <#= operation.Method.Name #>(this <#= string.Join(",", new string[]{ $@"ODataHttpClient<{controller.ModelSymbol.ToDisplayString()}> {controller.Name.AsCamelCase()}Controller" }.Union(operation.Parameters.Select(parameter =>  $@"{parameter.Type.ToDisplayString()} {parameter.Name}" )).Union(new []{"ODataContext? oDataContext = default" , "CancellationToken cancellationToken = default"})) #>)
 				{
 					string qs = oDataContext?.Query is not null ? $"?{oDataContext.Query}" : string.Empty;
 					string requestUri = $"odata/<#= Mapping.Route #>/<#= controller.Name #>/<#= operation.Method.Name #>(<#= operation.ParametersUri #>){qs}";

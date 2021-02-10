@@ -94,7 +94,7 @@ namespace Bit.OData.Implementations
 
             if (string.Equals(actionName, HttpMethod.Get.Method, StringComparison.InvariantCultureIgnoreCase) && controllerContext.Request.Method == HttpMethod.Get)
             {
-                if (routeData.ContainsKey("key")) // get by key
+                if (props.Path.Segments.OfType<KeySegment>().Any()) // get by key
                     resultAction = allActions.ExtendedSingleOrDefault($"Finding Get by key action in {controllerContext.ControllerDescriptor.ControllerName} controller", action => action.MethodInfo.GetCustomAttribute<GetAttribute>() != null && action.MethodInfo.GetParameters().Any(p => p.Name == "key"));
                 else // get all
                     resultAction = allActions.ExtendedSingleOrDefault($"Finding Get all action in {controllerContext.ControllerDescriptor.ControllerName} controller", action => action.MethodInfo.GetCustomAttribute<GetAttribute>() != null && action.MethodInfo.GetParameters().All(p => typeof(CancellationToken).IsAssignableFrom(p.ParameterType) || typeof(ODataQueryOptions).IsAssignableFrom(p.ParameterType)));
