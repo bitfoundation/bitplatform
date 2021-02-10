@@ -1,12 +1,15 @@
 ﻿@page "/"
+<h1>Bit Components</h1>
+<hr />
 
 <h1>Buttons</h1>
 
 <h3>BitButton</h3>
+<div class="buttons-container">
 <BitButton IsEnabled="true" Text="Enabled"></BitButton>
 
 <BitButton IsEnabled="false" Text="Disabled"></BitButton>
-
+</div>
 <hr />
 
 <h3>BitCompoundButton</h3>
@@ -16,15 +19,11 @@
 
 <hr />
 
-@counter
-
-@code{
-    int counter = 1;
-
-    void AddCounter()
-    {
-        counter++;
-        StateHasChanged();
-    }
-
-}
+<div class="labels-container">
+    <h2>Labels</h2>
+    <BitLabel Text="I'm a Label"></BitLabel>
+    <BitLabel Text="I'm a disabled Label" IsEnabled="false"></BitLabel>
+    <BitLabel Text="I'm a required Label" IsRequired="true"></BitLabel>
+    <BitLabel Text="A Label for An Input" For="labels-container__input"></BitLabel>
+    <input type="text" name="labels-container__input" id="labels-container__input"/>
+</div>

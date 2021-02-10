@@ -1,4 +1,5 @@
 ﻿using Bit.Core.Implementations;
+using Bit.Http.Implementations;
 using Bit.OData.Implementations;
 using Bit.Signalr;
 using Bit.Signalr.Implementations;
@@ -224,7 +225,7 @@ namespace Bit.Test.Server
         {
             return RestService.For<TService>(BuildHttpClient(token), new RefitSettings
             {
-                ContentSerializer = new NewtonsoftJsonContentSerializer(DefaultJsonContentFormatter.SerializeSettings())
+                ContentSerializer = new BitRefitJsonContentSerializer()
             });
         }
     }

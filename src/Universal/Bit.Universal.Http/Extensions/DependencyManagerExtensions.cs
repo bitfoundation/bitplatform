@@ -21,11 +21,11 @@ namespace Autofac
             if (dependencyManager == null)
                 throw new ArgumentNullException(nameof(dependencyManager));
 
-            dependencyManager.Register<IContentSerializer, BitRefitJsonContentSerializer>(lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExisting: false); // This needs to be registered once, but using current approach it will be registered multiple times, but this is fine!
+            dependencyManager.Register<IHttpContentSerializer, BitRefitJsonContentSerializer>(lifeCycle: DependencyLifeCycle.SingleInstance, overwriteExisting: false); // This needs to be registered once, but using current approach it will be registered multiple times, but this is fine!
 
             dependencyManager.RegisterUsing(resolver => new RefitSettings
             {
-                ContentSerializer = resolver.Resolve<IContentSerializer>()
+                ContentSerializer = resolver.Resolve<IHttpContentSerializer>()
             }, overwriteExisting: false, lifeCycle: DependencyLifeCycle.Transient);
 
             return dependencyManager;

@@ -80,6 +80,25 @@
             "Alias": "BitTestsModel"
           }
         ]
+      },
+      {
+        "Route": "Test",
+        "GenerationType": "CSharpHttpClient",
+        "DestinationFileName": "Test.Model.HttpContext",
+        "SourceProjects": [
+          {
+            "Name": "Bit.Tests"
+          }
+        ],
+        "DestinationProject": {
+          "Name": "Bit.Tests"
+        },
+        "NamespaceAliases": [
+          {
+            "Namespace": "Bit.Tests.Model.Dto",
+            "Alias": "BitTestsModel"
+          }
+        ]
       }
     ]
   }

@@ -1,4 +1,7 @@
 ﻿using System.Diagnostics.CodeAnalysis;
+using System.IO;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace Bit.Core.Contracts
 {
@@ -10,5 +13,9 @@ namespace Bit.Core.Contracts
         string Serialize<T>([AllowNull] T obj);
 
         T Deserialize<T>(string objAsStr);
+
+        Task<T> DeserializeAsync<T>(Stream input, CancellationToken cancellationToken);
+
+        string ContentType { get; }
     }
 }

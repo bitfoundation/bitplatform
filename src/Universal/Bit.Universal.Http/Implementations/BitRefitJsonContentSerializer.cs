@@ -5,12 +5,14 @@ using Refit;
 using System;
 using System.IO;
 using System.Net.Http;
+using System.Reflection;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Bit.Http.Implementations
 {
-    public class BitRefitJsonContentSerializer : IContentSerializer
+    public class BitRefitJsonContentSerializer : IHttpContentSerializer
     {
         private readonly JsonSerializerSettings _jsonSerializeSettings;
         private readonly JsonSerializerSettings _jsonDeserializeSettings;
@@ -27,7 +29,7 @@ namespace Bit.Http.Implementations
             _jsonDeserializeSettings = jsonDeserializeSettings;
         }
 
-        public virtual async Task<T> DeserializeAsync<T>(HttpContent content)
+        public async Task<T?> FromHttpContentAsync<T>(HttpContent content, CancellationToken cancellationToken = default)
         {
             if (content == null)
                 throw new ArgumentNullException(nameof(content));
@@ -39,13 +41,17 @@ namespace Bit.Http.Implementations
 #endif
             using StreamReader reader = new StreamReader(stream);
             using JsonTextReader jsonTextReader = new JsonTextReader(reader);
-            return (await JToken.LoadAsync(jsonTextReader).ConfigureAwait(false)).ToObject<T>(JsonSerializer.Create(_jsonDeserializeSettings))!;
+            return (await JToken.LoadAsync(jsonTextReader, cancellationToken).ConfigureAwait(false)).ToObject<T>(JsonSerializer.Create(_jsonDeserializeSettings))!;
         }
 
-        public virtual Task<HttpContent> SerializeAsync<T>(T item)
+        public string? GetFieldNameForProperty(PropertyInfo propertyInfo)
         {
-            StringContent content = new StringContent(JsonConvert.SerializeObject(item, _jsonSerializeSettings), Encoding.UTF8, "application/json");
-            return Task.FromResult<HttpContent>(content);
+            return propertyInfo.GetCustomAttribute<JsonPropertyAttribute>()?.PropertyName ?? propertyInfo.Name;
+        }
+
+        public HttpContent ToHttpContent<T>(T item)
+        {
+            return new StringContent(DefaultJsonContentFormatter.Current.Serialize(item), Encoding.UTF8, DefaultJsonContentFormatter.Current.ContentType);
         }
     }
 }

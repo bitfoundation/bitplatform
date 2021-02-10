@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Xml.Serialization;
 
-namespace Bit.Tooling.CodeGenerator.Implementations.CSharpClientProxyGenerator.Metadata
+namespace Bit.Tooling.CodeGenerator.Implementations.CSharpODataMetadataGenerator.Metadata
 {
     [XmlRoot(ElementName = "Property", Namespace = "http://docs.oasis-open.org/odata/ns/edm")]
     public class Property

@@ -1,4 +1,4 @@
-﻿using Bit.Tooling.CodeGenerator.Implementations.TypeScriptClientProxyGenerator.Templates;
+﻿using Bit.Tooling.CodeGenerator.Implementations.TypeScriptJayDataClientProxyGenerator.Templates;
 using Bit.Tooling.Core.Contracts.TypeScriptClientProxyGenerator;
 using Bit.Tooling.Core.Model;
 using System;
@@ -6,7 +6,7 @@ using System.Collections.Generic;
 
 namespace Bit.Tooling.CodeGenerator.Implementations.TypeScriptClientProxyGenerator
 {
-    public class DefaultTypeScriptClientContextGenerator : ITypeScriptClientContextGenerator
+    public class TypeScriptJayDataClientContextGenerator : ITypeScriptClientContextGenerator
     {
         public virtual string GenerateTypeScriptContext(IList<DtoController> controllers, BitCodeGeneratorMapping mapping)
         {
@@ -16,7 +16,7 @@ namespace Bit.Tooling.CodeGenerator.Implementations.TypeScriptClientProxyGenerat
             if (mapping == null)
                 throw new ArgumentNullException(nameof(mapping));
 
-            TypeScriptContextGeneratorTemplate template = new TypeScriptContextGeneratorTemplate
+            TypeScriptJayDataContextGeneratorTemplate template = new TypeScriptJayDataContextGeneratorTemplate
             {
                 Session = new Dictionary<string, object>
                 {
@@ -38,7 +38,7 @@ namespace Bit.Tooling.CodeGenerator.Implementations.TypeScriptClientProxyGenerat
             if (mapping == null)
                 throw new ArgumentNullException(nameof(mapping));
 
-            JavaScriptContextGeneratorTemplate template = new JavaScriptContextGeneratorTemplate
+            JavaScriptJayDataContextGeneratorTemplate template = new JavaScriptJayDataContextGeneratorTemplate
             {
                 Session = new Dictionary<string, object>
                 {

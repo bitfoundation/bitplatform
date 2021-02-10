@@ -1,4 +1,4 @@
-using Bit.Tooling.CodeGenerator.Implementations.TypeScriptClientProxyGenerator.Templates;
+using Bit.Tooling.CodeGenerator.Implementations.TypeScriptJayDataClientProxyGenerator.Templates;
 using Bit.Tooling.Core.Contracts.TypeScriptClientProxyGenerator;
 using Bit.Tooling.Core.Model;
 using System;
@@ -6,7 +6,7 @@ using System.Collections.Generic;
 
 namespace Bit.Tooling.CodeGenerator.Implementations.TypeScriptClientProxyGenerator
 {
-    public class DefaultTypeScriptClientProxyDtoGenerator : ITypeScriptClientProxyDtosGenerator
+    public class TypeScriptJayDataClientProxyDtoGenerator : ITypeScriptClientProxyDtosGenerator
     {
         public virtual string GenerateTypeScriptDtos(IList<Dto> dtos, IList<EnumType> enumTypes, string typingsPath)
         {
@@ -16,7 +16,7 @@ namespace Bit.Tooling.CodeGenerator.Implementations.TypeScriptClientProxyGenerat
             if (typingsPath == null)
                 throw new ArgumentNullException(nameof(typingsPath));
 
-            TypeScriptDtosGeneratorTemplate template = new TypeScriptDtosGeneratorTemplate
+            TypeScriptJayDataDtosGeneratorTemplate template = new TypeScriptJayDataDtosGeneratorTemplate
             {
                 Session = new Dictionary<string, object>
                 {
@@ -36,7 +36,7 @@ namespace Bit.Tooling.CodeGenerator.Implementations.TypeScriptClientProxyGenerat
             if (dtos == null)
                 throw new ArgumentNullException(nameof(dtos));
 
-            JavaScriptDtosGeneratorTemplate template = new JavaScriptDtosGeneratorTemplate
+            JavaScriptJayDataDtosGeneratorTemplate template = new JavaScriptJayDataDtosGeneratorTemplate
             {
                 Session = new Dictionary<string, object>
                 {

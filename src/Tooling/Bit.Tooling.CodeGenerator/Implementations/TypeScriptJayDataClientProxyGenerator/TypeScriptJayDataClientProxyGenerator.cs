@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 
 namespace Bit.Tooling.CodeGenerator.Implementations.TypeScriptClientProxyGenerator
 {
-    public class DefaultTypeScriptClientProxyGenerator : IDefaultTypeScriptClientProxyGenerator
+    public class TypeScriptJayDataClientProxyGenerator : IDefaultTypeScriptClientProxyGenerator
     {
         private readonly IBitCodeGeneratorOrderedProjectsProvider _bitCodeGeneratorOrderedProjectsProvider;
         private readonly IBitConfigProvider _bitConfigProvider;
@@ -21,7 +21,7 @@ namespace Bit.Tooling.CodeGenerator.Implementations.TypeScriptClientProxyGenerat
         private readonly ITypeScriptClientProxyDtosGenerator _dtoGenerator;
         private readonly ITypeScriptClientContextGenerator _contextGenerator;
 
-        public DefaultTypeScriptClientProxyGenerator(IBitCodeGeneratorOrderedProjectsProvider bitCodeGeneratorOrderedProjectsProvider, IBitConfigProvider bitConfigProvider, IProjectDtosProvider dtosProvider, ITypeScriptClientProxyDtosGenerator dtoGenerator, ITypeScriptClientContextGenerator contextGenerator, IProjectDtoControllersProvider dtoControllersProvider, IProjectEnumTypesProvider projectEnumTypesProvider)
+        public TypeScriptJayDataClientProxyGenerator(IBitCodeGeneratorOrderedProjectsProvider bitCodeGeneratorOrderedProjectsProvider, IBitConfigProvider bitConfigProvider, IProjectDtosProvider dtosProvider, ITypeScriptClientProxyDtosGenerator dtoGenerator, ITypeScriptClientContextGenerator contextGenerator, IProjectDtoControllersProvider dtoControllersProvider, IProjectEnumTypesProvider projectEnumTypesProvider)
         {
             if (bitCodeGeneratorOrderedProjectsProvider == null)
                 throw new ArgumentNullException(nameof(bitCodeGeneratorOrderedProjectsProvider));
@@ -60,7 +60,7 @@ namespace Bit.Tooling.CodeGenerator.Implementations.TypeScriptClientProxyGenerat
 
             BitConfig bitConfig = _bitConfigProvider.GetConfiguration();
 
-            foreach (BitCodeGeneratorMapping proxyGeneratorMapping in bitConfig.BitCodeGeneratorConfigs.BitCodeGeneratorMappings.Where(m => m.GenerationType == GenerationType.TypeScript))
+            foreach (BitCodeGeneratorMapping proxyGeneratorMapping in bitConfig.BitCodeGeneratorConfigs.BitCodeGeneratorMappings.Where(m => m.GenerationType == GenerationType.TypeScriptJayDataClient))
             {
                 string generatedContextName = proxyGeneratorMapping.DestinationFileName;
 
