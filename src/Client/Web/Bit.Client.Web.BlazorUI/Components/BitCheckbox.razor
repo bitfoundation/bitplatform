@@ -1,9 +1,9 @@
 ﻿@inherits BitComponentBase
 
 
-<div class="bit-checkbox-container @VisualClass @EnabledClass @CheckedClass" >
+<div class="bit-checkbox-container @VisualClass @EnabledClass @CheckedClass @BoxSide" >
     <input type="checkbox" id="bit-checkbox__input-@InputUniqueIdentifier" 
-           class="bit-checkbox__input--hidden" checked=@IsChecked disabled="@(IsEnabled is false)">
+           class="bit-checkbox__input--hidden" checked=@IsChecked disabled="@(IsEnabled is false)" hidden>
 
     <div class="bit-checkbox-item bit-checkbox-item__checkbox" @onclick="@HandleCheckboxClick" >
         <i class="bit-checkbox-item__checkmark"></i>

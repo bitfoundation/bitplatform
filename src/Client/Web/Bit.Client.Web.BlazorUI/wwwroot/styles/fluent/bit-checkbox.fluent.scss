@@ -14,6 +14,15 @@
     }
 }
 
+.bit-checkbox-container.end {
+    flex-direction: row-reverse;
+    justify-content: flex-end;
+
+    & .bit-checkbox-item__checkbox {
+        margin-left: 8px;
+    }
+}
+
 .bit-checkbox-container.disabled {
     pointer-events:none;
     cursor:default;
