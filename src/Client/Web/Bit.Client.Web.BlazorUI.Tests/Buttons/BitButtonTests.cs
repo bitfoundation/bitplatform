@@ -1,7 +1,7 @@
-﻿using Bunit;
+﻿using Bit.Client.Web.BlazorUI.Tests.Buttons;
+using Bunit;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Threading.Tasks;
-using Bit.Client.Web.BlazorUI.Tests.Buttons;
 
 namespace Bit.Client.Web.BlazorUI.Tests
 {
@@ -31,7 +31,7 @@ namespace Bit.Client.Web.BlazorUI.Tests
         {
             var com = RenderComponent<BitCompoundButtonCounterTest>(parameters => parameters.Add(p => p.BitCompoundButtonIsEnabled, isEnabled));
 
-            var bitButton = com.Find(".bit-compoundbutton");
+            var bitButton = com.Find(".bit-compound-button");
 
             bitButton.Click();
 

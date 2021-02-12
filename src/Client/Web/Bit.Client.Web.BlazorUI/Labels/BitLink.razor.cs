@@ -1,6 +1,6 @@
-﻿using System.Threading.Tasks;
-using Microsoft.AspNetCore.Components;
+﻿using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
+using System.Threading.Tasks;
 
 namespace Bit.Client.Web.BlazorUI.Labels
 {
@@ -18,6 +18,7 @@ namespace Bit.Client.Web.BlazorUI.Labels
                 await OnClick.InvokeAsync(e);
             }
         }
+
         public override Task SetParametersAsync(ParameterView parameters)
         {
             foreach (ParameterValue parameter in parameters)

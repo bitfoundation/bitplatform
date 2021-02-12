@@ -1,5 +1,5 @@
-﻿using System.Threading.Tasks;
-using Microsoft.AspNetCore.Components;
+﻿using Microsoft.AspNetCore.Components;
+using System.Threading.Tasks;
 
 namespace Bit.Client.Web.BlazorUI
 {
@@ -8,13 +8,10 @@ namespace Bit.Client.Web.BlazorUI
         [CascadingParameter] public Theme Theme { get; set; }
         [CascadingParameter] public Visual Visual { get; set; }
 
-
         [Parameter] public bool IsEnabled { get; set; } = true;
-
 
         public string EnabledClass => IsEnabled ? "enabled" : "disabled";
         public string VisualClass => Visual == Visual.Cupertino ? "cupertino" : Visual == Visual.Material ? "material" : "fluent";
-
 
         public override Task SetParametersAsync(ParameterView parameters)
         {
@@ -33,6 +30,7 @@ namespace Bit.Client.Web.BlazorUI
                         break;
                 }
             }
+
             return base.SetParametersAsync(ParameterView.Empty);
         }
     }

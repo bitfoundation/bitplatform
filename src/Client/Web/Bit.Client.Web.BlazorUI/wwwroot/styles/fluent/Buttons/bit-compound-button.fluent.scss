@@ -1,6 +1,6 @@
 ﻿@import "../_colors.fluent.scss", "../../_functions.scss";
 
-.bit-compoundbutton.fluent {
+.bit-compound-button.fluent {
     font-family: FluentFont;
     display: inline-flex;
     justify-content: center;
@@ -32,7 +32,7 @@
     }
 }
 
-.bit-compoundbutton.fluent.disabled {
+.bit-compound-button.fluent.disabled {
     background: $Grey20;
     color: $Grey90;
     cursor: default;
@@ -40,13 +40,13 @@
     border: 1px solid $Grey20;
 }
 
-.bit-compoundbutton.fluent .primary-text {
+.bit-compound-button.fluent .primary-text {
     margin: 0px 0px 5px;
     display: block;
     line-height: 100%;
 }
 
-.bit-compoundbutton.fluent .secondary-text {
+.bit-compound-button.fluent .secondary-text {
     font-size: rem(12px);
     font-weight: 400;
     display: block;
@@ -57,13 +57,13 @@
     vertical-align: baseline;
 }
 
-.bit-compoundbutton.fluent .textContainer {
+.bit-compound-button.fluent .textContainer {
     flex-grow: 1;
     display: block;
     text-align: left;
 }
 
-.bit-compoundbutton.fluent .flexContainer {
+.bit-compound-button.fluent .flexContainer {
     display: flex;
     height: 100%;
     flex-flow: row nowrap;

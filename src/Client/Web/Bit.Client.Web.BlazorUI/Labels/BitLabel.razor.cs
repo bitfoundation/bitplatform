@@ -1,5 +1,5 @@
-﻿using System.Threading.Tasks;
-using Microsoft.AspNetCore.Components;
+﻿using Microsoft.AspNetCore.Components;
+using System.Threading.Tasks;
 
 namespace Bit.Client.Web.BlazorUI.Labels
 {
@@ -31,6 +31,5 @@ namespace Bit.Client.Web.BlazorUI.Labels
 
             return base.SetParametersAsync(parameters);
         }
-
     }
 }
