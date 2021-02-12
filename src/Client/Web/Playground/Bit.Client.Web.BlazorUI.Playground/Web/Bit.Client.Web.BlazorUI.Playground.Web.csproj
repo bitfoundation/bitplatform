@@ -6,6 +6,13 @@
 		<BlazorWebAssemblyPreserveCollationData>false</BlazorWebAssemblyPreserveCollationData>
 		<InvariantGlobalization>true</InvariantGlobalization>
 	</PropertyGroup>
+	
+	<ItemGroup>
+	  <Compile Remove="wwwroot\**" />
+	  <Content Remove="wwwroot\**" />
+	  <EmbeddedResource Remove="wwwroot\**" />
+	  <None Remove="wwwroot\**" />
+	</ItemGroup>
 
 	<ItemGroup>
 		<Content Condition=" '$(BlazorMode)' == 'Client' " Remove="appsettings.json" />
@@ -21,10 +28,6 @@
 	<ItemGroup>
 		<ProjectReference Include="..\..\..\Bit.Client.Web.BlazorUI\Bit.Client.Web.BlazorUI.csproj" />
 		<ProjectReference Include="..\Shared\Bit.Client.Web.BlazorUI.Playground.Shared.csproj" />
-	</ItemGroup>
-
-	<ItemGroup>
-	  <Folder Include="wwwroot\styles\" />
 	</ItemGroup>
 
 </Project>
