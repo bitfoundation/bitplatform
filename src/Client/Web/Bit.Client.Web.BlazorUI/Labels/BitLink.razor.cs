@@ -1,9 +1,8 @@
 ﻿using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 using System.Threading.Tasks;
- 
 
-namespace Bit.Client.Web.BlazorUI.Components
+namespace Bit.Client.Web.BlazorUI.Labels
 {
     public partial class BitLink
     {
@@ -19,6 +18,7 @@ namespace Bit.Client.Web.BlazorUI.Components
                 await OnClick.InvokeAsync(e);
             }
         }
+
         public override Task SetParametersAsync(ParameterView parameters)
         {
             foreach (ParameterValue parameter in parameters)

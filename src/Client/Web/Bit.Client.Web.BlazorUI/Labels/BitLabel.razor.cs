@@ -1,11 +1,7 @@
 ﻿using Microsoft.AspNetCore.Components;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
-namespace Bit.Client.Web.BlazorUI.Components
+namespace Bit.Client.Web.BlazorUI.Labels
 {
     public partial class BitLabel
     {
@@ -35,6 +31,5 @@ namespace Bit.Client.Web.BlazorUI.Components
 
             return base.SetParametersAsync(parameters);
         }
-
     }
 }
