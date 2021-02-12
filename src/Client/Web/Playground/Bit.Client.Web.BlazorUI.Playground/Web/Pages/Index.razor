@@ -57,14 +57,20 @@
     <BitCheckbox Label="Disable Checked Checkbox" IsEnabled="false" IsChecked="true" OnCheckboxChange="@(e => ConsoleLogOnChange(e))"></BitCheckbox>
     <br />
 
-    <BitCheckbox  BoxSide="end" Label="Reversed -- Basic Checkbox" OnCheckboxChange="@(e => ConsoleLogOnChange(e))"></BitCheckbox>
-    <BitCheckbox  BoxSide="end" Label="Reversed -- Checked Checkbox" IsChecked="true" OnCheckboxChange="@(e => ConsoleLogOnChange(e))"></BitCheckbox>
-    <BitCheckbox  BoxSide="end" Label="Reversed -- Disable Checkbox" IsEnabled="false" OnCheckboxChange="@(e => ConsoleLogOnChange(e))"></BitCheckbox>
-    <BitCheckbox  BoxSide="end" Label="Reversed -- Disable Checked Checkbox" IsEnabled="false" IsChecked="true" OnCheckboxChange="@(e => ConsoleLogOnChange(e))"></BitCheckbox>
+    <BitCheckbox BoxSide="end" Label="Reversed -- Basic Checkbox" OnCheckboxChange="@(e => ConsoleLogOnChange(e))"></BitCheckbox>
+    <BitCheckbox BoxSide="end" Label="Reversed -- Checked Checkbox" IsChecked="true" OnCheckboxChange="@(e => ConsoleLogOnChange(e))"></BitCheckbox>
+    <BitCheckbox BoxSide="end" Label="Reversed -- Disable Checkbox" IsEnabled="false" OnCheckboxChange="@(e => ConsoleLogOnChange(e))"></BitCheckbox>
+    <BitCheckbox BoxSide="end" Label="Reversed -- Disable Checked Checkbox" IsEnabled="false" IsChecked="true" OnCheckboxChange="@(e => ConsoleLogOnChange(e))"></BitCheckbox>
+    <br />
+
+    <BitCheckbox CustomLabel="<b>Custom-rendered label</b> with a link go to <a href='https://github.com/bitfoundation/bitframework'>bit foundation repository page.</a>"
+                 OnCheckboxChange="@(e => ConsoleLogOnChange(e))"></BitCheckbox>
 </div>
+
 
 @code {
     public void ConsoleLogOnChange(bool e) {
         Console.WriteLine($"CheckBox Changed! -- {e}");
     }
 }
+

@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Components;
+﻿using Bit.Client.Web.BlazorUI.Extensions;
+using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 using System;
 using System.Collections.Generic;
@@ -11,6 +12,7 @@ namespace Bit.Client.Web.BlazorUI.Components
     public partial class BitCheckbox
     {
         [Parameter] public string Label { get; set; }
+        [Parameter] public string CustomLabel { get; set; }
         [Parameter] public bool IsChecked { get; set; }
         [Parameter] public bool IsIndeterminate { get; set; }
         [Parameter] public string BoxSide { get; set; }
@@ -20,6 +22,7 @@ namespace Bit.Client.Web.BlazorUI.Components
 
         public string CheckedClass => IsChecked ? "checked" : string.Empty;
         public string IndeterminateClass => IsIndeterminate ? "indeterminate" : string.Empty;
+        public bool HasCustomLabel => CustomLabel.HasValue() ? true : false;
 
         public string InputUniqueIdentifier = Guid.NewGuid().ToString("n");
 
@@ -45,6 +48,9 @@ namespace Bit.Client.Web.BlazorUI.Components
                 {
                     case nameof(Label):
                         Label = (string)parameter.Value;
+                        break;
+                    case nameof(CustomLabel):
+                        CustomLabel = (string)parameter.Value;
                         break;
                     case nameof(IsChecked):
                         IsChecked = (bool)parameter.Value;

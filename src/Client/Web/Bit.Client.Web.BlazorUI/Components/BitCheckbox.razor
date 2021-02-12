@@ -11,7 +11,16 @@
 
     <div class="bit-checkbox-item bit-checkbox-item__label-container" @onclick="@HandleCheckboxClick">
         <label class="bit-checkbox-item__label no-text-select">
-            <span class="bit-checkbox-item__label-text">@Label</span>
+            <span class="bit-checkbox-item__label-text">
+                @if (HasCustomLabel)
+                {
+                    @((MarkupString)CustomLabel);
+                }
+                else { 
+                    @Label
+                }
+            </span>
+            
         </label>
     </div>
 </div>
