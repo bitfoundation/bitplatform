@@ -1,0 +1,14 @@
+﻿<BitCompoundButton OnClick="IncrementCount" IsEnabled="BitCompoundButtonIsEnabled" Text="Test" SecondaryText="Second Text"></BitCompoundButton>
+
+
+@code {
+    [Parameter] public bool BitCompoundButtonIsEnabled { get; set; }
+
+    public int CurrentCount { get; set; }
+
+    public void IncrementCount(MouseEventArgs e)
+    {
+        CurrentCount++;
+    }
+
+}

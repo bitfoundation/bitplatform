@@ -6,17 +6,17 @@ using System.Threading.Tasks;
 namespace Bit.Client.Web.BlazorUI.Tests.Link
 {
     [TestClass]
-    public class BitLinkTests: BunitTestContext
+    public class BitLinkTests : BunitTestContext
     {
-        [DataTestMethod, DataRow("fakelink.com", "a"),DataRow("","button")]
+        [DataTestMethod, DataRow("fakelink.com", "a"), DataRow("", "button")]
         public async Task BitLinkShouldRenderExpectedElementBaseOnHref(string href, string expectedElement)
         {
             var component = RenderComponent<BitLinkTest>(parameters => parameters.Add(p => p.Href, href));
 
             var bitLink = component.Find(".bit-link");
-            var tagName = bitLink.TagName.ToLowerInvariant();
+            var tagName = bitLink.TagName;
 
-            Assert.AreEqual(expectedElement, tagName);
+            Assert.AreEqual(expectedElement, tagName, ignoreCase: true);
         }
 
         [TestMethod]

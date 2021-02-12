@@ -1,0 +1,13 @@
+﻿@inherits BitComponentBase
+<button class="bit-compound-button @(VisualClass) @(EnabledClass)" @onclick="HandleOnClick">
+    <span class="flexContainer">
+        <span class="textContainer">
+            <span class="primary-text">
+                @Text
+            </span>
+            <span class="secondary-text">
+                @SecondaryText
+            </span>
+        </span>
+    </span>
+</button>
