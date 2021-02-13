@@ -1,5 +1,9 @@
 ﻿@import "styles.fluent.scss";
 
+html,body {
+    font-family: FluentFont;
+}
+
 button {
     border: none;
     outline: none;
