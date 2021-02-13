@@ -15,7 +15,6 @@ namespace Bit.Client.Web.BlazorUI.Checkboxes
         [Parameter] public bool IsIndeterminate { get; set; }
         [Parameter] public bool IsChecked { get; set; } = false;
         [Parameter] public string BoxSide { get; set; }
-        [Parameter] public EventCallback<MouseEventArgs> OnCheckboxClick { get; set; }
         [Parameter] public Action<bool> OnCheckboxChange { get; set; }
 
 
