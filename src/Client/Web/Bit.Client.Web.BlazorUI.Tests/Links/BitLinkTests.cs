@@ -3,7 +3,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 using System.Threading.Tasks;
 
-namespace Bit.Client.Web.BlazorUI.Tests.Link
+namespace Bit.Client.Web.BlazorUI.Tests.Links
 {
     [TestClass]
     public class BitLinkTests : BunitTestContext
