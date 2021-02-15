@@ -8,6 +8,7 @@ namespace Bit.Client.Web.BlazorUI.Buttons
     {
         [Parameter] public string Text { get; set; }
         [Parameter] public EventCallback<MouseEventArgs> OnClick { get; set; }
+        [Parameter] public RenderFragment ChildContent { get; set; }
 
         protected virtual async Task HandleOnClick(MouseEventArgs e)
         {
@@ -28,6 +29,9 @@ namespace Bit.Client.Web.BlazorUI.Buttons
                         break;
                     case nameof(Text):
                         Text = (string)parameter.Value;
+                        break;
+                    case nameof(ChildContent):
+                        ChildContent = (RenderFragment)parameter.Value;
                         break;
                 }
             }
