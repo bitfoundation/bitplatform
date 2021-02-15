@@ -16,7 +16,7 @@
 <div class="links-container">
     <h2>SearchBox</h2>
     <h2>Default SearchBox</h2>
-    <BitSearchBox Placeholder="Search"></BitSearchBox>
+    <BitSearchBox Placeholder="Search" OnSearch="HandledSearch" OnClear="HandleClear"></BitSearchBox>
     <br />
     <BitSearchBox Placeholder="Search with no animation" DisableAnimation=true></BitSearchBox>
     <br />
@@ -29,7 +29,15 @@
     <BitSearchBox Placeholder="Search" IsEnabled=false></BitSearchBox>
     <br />
     <BitSearchBox Placeholder="Search" IsEnabled=false IsUndelined=true></BitSearchBox>
+    @code{
+        void HandledSearch(string value){
+            Console.WriteLine("get data searched called --> " + value);
+        }
 
+        void HandleClear() {
+            Console.WriteLine("on text cleared !");
+        }
+    }
     <br />
 </div>
 <hr />

@@ -8,14 +8,15 @@
     </div>
     <input type="text" @ref="InputRef" class="bit-searchbox-item bit-searchbox-item__input" 
            placeholder="@Placeholder"
-           @bind-value="@Value"
+           @bind-value="Value"
            @bind-value:event="oninput"
+           @onkeydown="@((k) => HandleOnSearch($"{Value}{k.Key}"))"
            @onfocusin="HandleInputFocusIn"
            @onfocusout="HandleInputFocusOut" 
            disabled="@(IsEnabled is false)"
            />
     <div class="bit-searchbox-item bit-searchbox-item__clear-button-container">
-        <button type="button" class="bit-searchbox-item__clear-button" @onclick="ClearInput">
+        <button type="button" class="bit-searchbox-item__clear-button" @onclick="HandleOnClear">
             <i class="bit-icon bit-icon--Clear"></i>
         </button>
     </div>

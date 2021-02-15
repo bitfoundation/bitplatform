@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Web;
 using System;
 using System.Threading.Tasks;
 
@@ -11,20 +12,33 @@ namespace Bit.Client.Web.BlazorUI.SearchBoxes
         [Parameter] public bool DisableAnimation { get; set; }
         [Parameter] public bool IsUndelined { get; set; }
         [Parameter] public string IconName { get; set; } = "Search";
+        [Parameter] public EventCallback<string> OnSearch { get; set; }
+        [Parameter] public EventCallback<MouseEventArgs> OnClear{ get; set; }
 
         public ElementReference InputRef { get; set; }
 
-        
         public string InputValueClass => Value.HasValue() ? "has-value" : string.Empty;
         public string AnimationClass => DisableAnimation ? "no-animation" : string.Empty;
         public string UndelinedClass => IsUndelined ? "underlined" : string.Empty;
 
         public string InputFocusClass = string.Empty;
 
-        public void ClearInput() {
-            Console.WriteLine("clear clicked");
-            Value = string.Empty;
-            InputRef.FocusAsync();
+        protected virtual async Task HandleOnClear(MouseEventArgs e) {
+            if (IsEnabled)
+            {
+                Console.WriteLine("clear clicked");
+                Value = string.Empty;
+                _ = InputRef.FocusAsync();
+                await OnClear.InvokeAsync(e);
+            }
+        }
+
+        protected virtual async Task HandleOnSearch(string value)
+        {
+            if (IsEnabled)
+            {
+                await OnSearch.InvokeAsync(value);
+            }
         }
 
         public void HandleInputFocusIn() => InputFocusClass = "focused";
@@ -50,6 +64,12 @@ namespace Bit.Client.Web.BlazorUI.SearchBoxes
                         break;
                     case nameof(IconName):
                         IconName = (string)parameter.Value;
+                        break;
+                    case nameof(OnSearch):
+                        OnSearch = (EventCallback<string>)parameter.Value;
+                        break;
+                    case nameof(OnClear):
+                        OnClear = (EventCallback<MouseEventArgs>)parameter.Value;
                         break;
                 }
             }
