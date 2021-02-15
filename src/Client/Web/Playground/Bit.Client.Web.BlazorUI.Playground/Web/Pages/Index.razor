@@ -5,13 +5,28 @@
         font-family: FluentFont;
     }
 
-     .links-container p {
-        width: 95%;
-        margin: auto;
-     }
+        .links-container p {
+            width: 95%;
+            margin: auto;
+        }
 </style>
 
 <h1>Bit Components</h1>
+<hr />
+<div class="links-container">
+    <h2>SearchBox</h2>
+    <h2>Default SearchBox</h2>
+    <BitSearchBox Placeholder="Search"></BitSearchBox>
+    <br />
+    <BitSearchBox Placeholder="Search with no animation" DisableAnimation=true></BitSearchBox>
+    <br />
+    <h2>Underlined SearchBox</h2>
+    <BitSearchBox Placeholder="Search" IsUndelined=true></BitSearchBox>
+    <br />
+    <h2>SearchBox with custom icon</h2>
+    <BitSearchBox Placeholder="Filter" IconName="Filter"></BitSearchBox>
+
+</div>
 <hr />
 
 <div class="buttons-container">
@@ -51,3 +66,5 @@
         and href source to that.
     </p>
 </div>
+
+
