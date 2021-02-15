@@ -10,12 +10,12 @@
                     @SecondaryText
                 </span>
             </span>
+            @if (ChildContent is not null)
+            {
+                <span class="bit-child">
+                    @ChildContent
+                </span>
+            }
         </span>
-        @if (ChildContent is not null)
-        {
-            <span class="bit-child">
-                @ChildContent
-            </span>
-        }
     </span>
 </button>
