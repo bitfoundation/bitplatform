@@ -12,6 +12,7 @@
            @bind-value:event="oninput"
            @onfocusin="HandleInputFocusIn"
            @onfocusout="HandleInputFocusOut" 
+           disabled="@(IsEnabled is false)"
            />
     <div class="bit-searchbox-item bit-searchbox-item__clear-button-container">
         <button type="button" class="bit-searchbox-item__clear-button" @onclick="ClearInput">

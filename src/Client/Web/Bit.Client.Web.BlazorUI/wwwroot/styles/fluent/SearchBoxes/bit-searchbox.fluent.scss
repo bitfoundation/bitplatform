@@ -77,6 +77,23 @@
             border-bottom: 2px solid $Primary;
         }
     }
+
+    &.disabled {
+        color: #323130;
+        background-color: #f3f2f1;
+        align-items: stretch;
+        border-color: #f3f2f1;
+        pointer-events: none;
+        cursor: default;
+
+        &.underlined {
+            background-color: transparent;
+        }
+
+        & .bit-searchbox-item__search-icon-container {
+            color: #a19f9d;
+        }
+    }
 }
 
     .bit-searchbox-item__input {
