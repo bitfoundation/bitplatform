@@ -1,6 +1,10 @@
 ﻿@inherits BitComponentBase
 
 <button class="bit-button @(VisualClass) @(EnabledClass)" @onclick="HandleOnClick">
-    @Text
-    @ChildContent
+    <span class="bit-main">
+        @Text
+    </span>
+    <span class="bit-child">
+        @ChildContent
+    </span>
 </button>
