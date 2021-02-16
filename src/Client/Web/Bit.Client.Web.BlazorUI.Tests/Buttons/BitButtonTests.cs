@@ -1,9 +1,8 @@
-﻿using Bit.Client.Web.BlazorUI.Tests.Buttons;
-using Bunit;
+﻿using Bunit;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Threading.Tasks;
 
-namespace Bit.Client.Web.BlazorUI.Tests
+namespace Bit.Client.Web.BlazorUI.Tests.Buttons
 {
     [TestClass]
     public class BitButtonTests : BunitTestContext
