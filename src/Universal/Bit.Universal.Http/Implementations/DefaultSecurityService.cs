@@ -1,16 +1,18 @@
 ﻿using Autofac;
 using Bit.Core.Contracts;
 using Bit.Core.Exceptions;
+using Bit.Core.Implementations;
 using Bit.Core.Models;
 using Bit.Http.Contracts;
-using IdentityModel.Client;
 using Newtonsoft.Json;
 using Prism.Ioc;
 using System;
 using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
+using System.IO;
 using System.Linq;
 using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Threading;
 using System.Threading.Tasks;
 using Xamarin.Essentials.Interfaces;
@@ -34,7 +36,7 @@ namespace Bit.Http.Implementations
             if (token == null)
                 return false;
 
-            return (DateTimeProvider.GetCurrentUtcDateTime() - token.login_date) < TimeSpan.FromSeconds(token.expires_in);
+            return (DateTimeProvider.GetCurrentUtcDateTime() - token.LoginDate) < TimeSpan.FromSeconds(token.ExpiresIn.Value);
         }
 
         public virtual bool IsLoggedIn()
@@ -44,59 +46,66 @@ namespace Bit.Http.Implementations
             if (token == null)
                 return false;
 
-            return (DateTimeProvider.GetCurrentUtcDateTime() - token.login_date) < TimeSpan.FromSeconds(token.expires_in);
+            return (DateTimeProvider.GetCurrentUtcDateTime() - token.LoginDate) < TimeSpan.FromSeconds(token.ExpiresIn.Value);
         }
 
         public virtual async Task<Token> LoginWithCredentials(string userName, string password, string client_id, string client_secret, string[]? scopes = null, IDictionary<string, string?>? acr_values = null, CancellationToken cancellationToken = default)
         {
             if (userName == null)
+            {
                 throw new ArgumentNullException(nameof(userName));
-
+            }
             if (password == null)
+            {
                 throw new ArgumentNullException(nameof(password));
-
+            }
             if (client_id == null)
+            {
                 throw new ArgumentNullException(nameof(client_id));
-
+            }
             if (client_secret == null)
+            {
                 throw new ArgumentNullException(nameof(client_secret));
-
-            if (scopes == null)
-                scopes = "openid profile user_info".Split(' ');
+            }
 
             HttpClient httpClient = ContainerProvider.Value.Resolve<HttpClient>();
 
-            var parameters = new Dictionary<string, string> { };
+            scopes = scopes ?? new[] { "openid", "profile", "user_info" };
+
+            string loginData = $"scope={string.Join("+", scopes)}&grant_type=password&username={userName}&password={password}&client_id={client_id}&client_secret={client_secret}";
 
             if (acr_values != null)
             {
-                parameters.Add("acr_values", string.Join(" ", acr_values.Select(p => $"{p.Key}:{p.Value}")));
+                loginData += $"&acr_values={string.Join(" ", acr_values.Select(p => $"{p.Key}:{p.Value}"))}";
             }
 
-            TokenResponse tokenResponse = await httpClient.RequestPasswordTokenAsync(new PasswordTokenRequest
-            {
-                Address = ClientAppProfile.TokenEndpoint,
-                ClientSecret = client_secret,
-                ClientId = client_id,
-                Scope = string.Join(" ", scopes),
-                UserName = userName,
-                Password = password,
-                Parameters = parameters
-            }, cancellationToken).ConfigureAwait(false);
+            loginData = Uri.EscapeUriString(loginData);
 
-            if (tokenResponse.IsError)
+            using HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Post, "core/connect/token");
+
+            request.Content = new StringContent(loginData);
+            request.Content.Headers.ContentType = new MediaTypeHeaderValue("application/x-www-form-urlencoded");
+            request.Content.Headers.ContentLength = loginData.Length;
+
+            using HttpResponseMessage response = await httpClient.SendAsync(request, cancellationToken);
+
+            using Stream responseContent = await response.EnsureSuccessStatusCode().Content.ReadAsStreamAsync();
+
+            Token token = await DefaultJsonContentFormatter.Current.DeserializeAsync<Token>(responseContent, cancellationToken);
+
+            if (token.IsError)
             {
-                if (tokenResponse.Error == "invalid_grant" && !string.IsNullOrEmpty(tokenResponse.ErrorDescription))
+                if (token.Error == "invalid_grant" && !string.IsNullOrEmpty(token.ErrorDescription))
                 {
-                    throw new LoginFailureException(tokenResponse.ErrorDescription, (tokenResponse.Exception ?? new Exception($"{tokenResponse.Error} {tokenResponse.Raw}")));
+                    throw new LoginFailureException(token.ErrorDescription, new Exception(token.Error));
                 }
                 else
                 {
-                    throw tokenResponse.Exception ?? new Exception($"{tokenResponse.Error} {tokenResponse.Raw}");
+                    throw new Exception(token.Error);
                 }
             }
 
-            Token token = tokenResponse;
+            token.LoginDate = DateTimeOffset.UtcNow;
 
             string jsonToken = JsonConvert.SerializeObject(token);
 
@@ -161,9 +170,9 @@ namespace Bit.Http.Implementations
 
                 TelemetryServices.All().SetUserId(null);
 
-                if (!string.IsNullOrEmpty(token.id_token))
+                if (!string.IsNullOrEmpty(token.IdToken))
                 {
-                    await WebAuthenticator.AuthenticateAsync(GetLogoutUrl(token.id_token!, state, client_id), ClientAppProfile.OAuthRedirectUri).ConfigureAwait(false);
+                    await WebAuthenticator.AuthenticateAsync(GetLogoutUrl(token.IdToken!, state, client_id), ClientAppProfile.OAuthRedirectUri).ConfigureAwait(false);
                 }
             }
         }
@@ -225,7 +234,7 @@ namespace Bit.Http.Implementations
 
             var handler = new JwtSecurityTokenHandler();
 
-            var jwtToken = (JwtSecurityToken)handler.ReadToken(token.access_token);
+            var jwtToken = (JwtSecurityToken)handler.ReadToken(token.AccessToken);
 
             var primary_sid = jwtToken.Claims.First(c => c.Type == "primary_sid").Value;
 
@@ -241,7 +250,7 @@ namespace Bit.Http.Implementations
 
             var handler = new JwtSecurityTokenHandler();
 
-            var jwtToken = (JwtSecurityToken)handler.ReadToken(token.access_token);
+            var jwtToken = (JwtSecurityToken)handler.ReadToken(token.AccessToken);
 
             var primary_sid = jwtToken.Claims.First(c => c.Type == "primary_sid").Value;
 

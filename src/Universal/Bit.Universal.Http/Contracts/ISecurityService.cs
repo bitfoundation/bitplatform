@@ -1,10 +1,11 @@
 ﻿using Bit.Core.Contracts;
 using Bit.Core.Implementations;
 using Bit.Core.Models;
-using IdentityModel.Client;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -19,45 +20,51 @@ namespace Bit.Http.Contracts
 
             Token token = new Token
             {
-                access_token = props[nameof(access_token)],
-                expires_in = Convert.ToInt64(props[nameof(expires_in)], CultureInfo.InvariantCulture),
-                token_type = props[nameof(token_type)]
+                AccessToken = props["access_token"],
+                ExpiresIn = Convert.ToInt64(props["expires_in"], CultureInfo.InvariantCulture),
+                TokenType = props["token_type"]
             };
 
-            if (props.ContainsKey(nameof(token.id_token)))
-                token.id_token = props[nameof(token.id_token)];
+            if (props.ContainsKey("id_token"))
+                token.IdToken = props["id_token"];
 
-            if (!props.ContainsKey(nameof(token.login_date)))
-                token.login_date = DefaultDateTimeProvider.Current.GetCurrentUtcDateTime();
+            if (!props.ContainsKey("login_date"))
+                token.LoginDate = DefaultDateTimeProvider.Current.GetCurrentUtcDateTime();
             else
-                token.login_date = Convert.ToDateTime(props[nameof(login_date)], CultureInfo.InvariantCulture);
+                token.LoginDate = Convert.ToDateTime(props["login_date"], CultureInfo.InvariantCulture);
 
             return token;
         }
 
-        public static implicit operator Token(TokenResponse tokenResponse)
-        {
-            if (tokenResponse == null)
-                throw new ArgumentNullException(nameof(tokenResponse));
+        [JsonProperty("access_token")]
+        [JsonPropertyName("access_token")]
+        public string AccessToken { get; set; } = default!;
 
-            return new Token
-            {
-                access_token = tokenResponse.AccessToken,
-                expires_in = tokenResponse.ExpiresIn,
-                login_date = DefaultDateTimeProvider.Current.GetCurrentUtcDateTime(),
-                token_type = tokenResponse.TokenType
-            };
-        }
+        [JsonProperty("id_token")]
+        [JsonPropertyName("id_token")]
+        public string? IdToken { get; set; }
 
-        public string access_token { get; set; } = default!;
+        [JsonProperty("token_type")]
+        [JsonPropertyName("token_type")]
+        public string TokenType { get; set; } = default!;
 
-        public string? id_token { get; set; }
+        [JsonProperty("expires_in")]
+        [JsonPropertyName("expires_in")]
+        public long? ExpiresIn { get; set; }
 
-        public string token_type { get; set; } = default!;
+        [JsonProperty("login_date")]
+        [JsonPropertyName("login_date")]
+        public DateTimeOffset? LoginDate { get; set; }
 
-        public long expires_in { get; set; }
+        [JsonProperty("error")]
+        [JsonPropertyName("error")]
+        public string Error { get; set; }
 
-        public DateTimeOffset? login_date { get; set; }
+        [JsonProperty("error_description")]
+        [JsonPropertyName("error_description")]
+        public string ErrorDescription { get; set; }
+
+        public bool IsError => !string.IsNullOrEmpty(Error) || !string.IsNullOrEmpty(ErrorDescription);
     }
 
     public interface ISecurityService : ISecurityServiceBase
