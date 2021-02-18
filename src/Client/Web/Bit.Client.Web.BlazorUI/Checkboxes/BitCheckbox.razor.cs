@@ -22,7 +22,7 @@ namespace Bit.Client.Web.BlazorUI.Checkboxes
         public ElementReference TargetCheckbox { get; set; }
         public string IndeterminateClass => IsIndeterminate ? "indeterminate" : string.Empty;
         public string CheckedClass => IsChecked ? "checked" : string.Empty;
-        public string BoxSideClass => BoxSide == BoxSide.End ? "boxside-end" : "boxside-start";
+        public string BoxSideClass => BoxSide == BoxSide.End ? "box-side-end" : "box-side-start";
         public bool HasCustomLabel => CustomLabel is not null ? true : false;
 
         protected void HandleIndeterminate() {
