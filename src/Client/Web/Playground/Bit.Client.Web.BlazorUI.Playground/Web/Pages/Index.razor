@@ -1,7 +1,7 @@
 ﻿@page "/"
 <style>
     /* Temp Styles */
-    .links-container, .checkboxes-container, .labels-container {
+    .links-container, .checkboxes-container, .labels-container, .search-box-container {
         font-family: FluentFont;
     }
 
@@ -13,43 +13,48 @@
 
 <h1>Bit Components</h1>
 <hr />
-<div class="links-container">
-    <h2>SearchBox</h2>
-    <h2>Default SearchBox</h2>
+<div class="search-box-container">
+    <h3>SearchBox</h3>
+    <h5>Default SearchBox</h5>
     <BitSearchBox Placeholder="Search" OnSearch="HandledSearch" OnClear="HandleClear"></BitSearchBox>
     <br />
     <BitSearchBox Placeholder="Search with no animation" DisableAnimation=true></BitSearchBox>
     <br />
-    <h2>Underlined SearchBox</h2>
+    <h5>Underlined SearchBox</h5>
     <BitSearchBox Placeholder="Search" IsUndelined=true></BitSearchBox>
     <br />
-    <h2>SearchBox with custom icon</h2>
+    <h5>SearchBox with custom icon</h5>
     <BitSearchBox Placeholder="Filter" IconName="Filter"></BitSearchBox>
-    <h2>Disabled SearchBox</h2>
+    <h5>Disabled SearchBox</h5>
     <BitSearchBox Placeholder="Search" IsEnabled=false></BitSearchBox>
     <br />
     <BitSearchBox Placeholder="Search" IsEnabled=false IsUndelined=true></BitSearchBox>
+    <h5>SearchBox with fixed width</h5>
+    <BitSearchBox Placeholder="Search" OnSearch="HandledSearch" OnClear="HandleClear" Width="250px"></BitSearchBox>
     @code{
-        void HandledSearch(string value){
-            Console.WriteLine("get data searched called --> " + value);
+        void HandledSearch(string value)
+        {
+            Console.WriteLine("On Search ... --> " + value);
         }
 
-        void HandleClear() {
-            Console.WriteLine("on text cleared !");
+        void HandleClear()
+        {
+            Console.WriteLine("Clear Button Clicked !");
         }
+
     }
     <br />
 </div>
 <hr />
 
 <div class="buttons-container">
-    <h3>BitButton</h3>
+    <h5>BitButton</h5>
     <BitButton IsEnabled="true" Text="Enabled"></BitButton>
 
     <BitButton IsEnabled="false" Text="Disabled"></BitButton>
     <hr />
 
-    <h3>BitCompoundButton</h3>
+    <h5>BitCompoundButton</h5>
     <BitCompoundButton IsEnabled="true" Text="Enabled" SecondaryText="This Button is compound button"></BitCompoundButton>
 
     <BitCompoundButton IsEnabled="false" Text="Disabled" SecondaryText="This Button is compound button"></BitCompoundButton>
@@ -58,7 +63,7 @@
 </div>
 
 <div class="labels-container">
-    <h2>Labels</h2>
+    <h3>Labels</h3>
     <BitLabel Text="I'm a Label"></BitLabel>
     <BitLabel Text="I'm a disabled Label" IsEnabled="false"></BitLabel>
     <BitLabel Text="I'm a required Label" IsRequired="true"></BitLabel>
@@ -67,7 +72,7 @@
     <hr />
 </div>
 <div class="links-container">
-    <h2>Links</h2>
+    <h3>Links</h3>
     <p>
         When a link has an href, <BitLink Href="https://github.com/bitfoundation/bitframework" Text="it renders as an anchor tag" Target="_blank"></BitLink>.
         Without an href, <BitLink Text="the link is rendered as a button"></BitLink>.
@@ -84,19 +89,19 @@
 <hr />
 
 <div class="checkboxes-container">
-    <h2>Checkboxes</h2>
-    <h3>Basics</h3>
+    <h3>Checkboxes</h3>
+    <h5>Basics</h5>
     <BitCheckbox Label="Basic Checkbox"></BitCheckbox>
     <BitCheckbox Label="Checked Checkbox" IsChecked="true"></BitCheckbox>
     <BitCheckbox Label="Disable Checkbox" IsEnabled="false"></BitCheckbox>
     <BitCheckbox Label="Disable Checked Checkbox" IsEnabled="false" IsChecked="true"></BitCheckbox>
     <br />
-    <h3>Indeterminate</h3>
+    <h5>Indeterminate</h5>
     <BitCheckbox Label="Indeterminated checkbox" IsIndeterminate="true"></BitCheckbox>
     <BitCheckbox Label="Indeterminate checkbox which defaults to true when clicked" IsIndeterminate="true" IsChecked="true"></BitCheckbox>
     <BitCheckbox Label="Disabled indeterminated checkbox" IsIndeterminate="true" IsEnabled="false"></BitCheckbox>
     <br />
-    <h3>Custom Label</h3>
+    <h5>Custom Label</h5>
     <BitCheckbox>
         <CustomLabel>
             Custom-rendered label with a link go to 
@@ -105,7 +110,7 @@
             </a>
         </CustomLabel>
     </BitCheckbox>
-    <h3>Reversed</h3>
+    <h5>Reversed</h5>
     <BitCheckbox BoxSide="@BoxSide.End" Label="Reversed -- Basic Checkbox"></BitCheckbox>
     <BitCheckbox BoxSide="@BoxSide.End" Label="Reversed -- Checked Checkbox" IsChecked="true"></BitCheckbox>
     <BitCheckbox BoxSide="@BoxSide.End" Label="Reversed -- Disable Checkbox" IsEnabled="false"></BitCheckbox>

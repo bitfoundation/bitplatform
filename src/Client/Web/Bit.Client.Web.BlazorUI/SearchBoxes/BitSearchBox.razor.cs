@@ -7,11 +7,14 @@ namespace Bit.Client.Web.BlazorUI.SearchBoxes
 {
     public partial class BitSearchBox
     {
+        public string InputFocusClass = string.Empty;
+
         [Parameter] public string Value { get; set; }
         [Parameter] public string Placeholder { get; set; }
         [Parameter] public bool DisableAnimation { get; set; }
         [Parameter] public bool IsUndelined { get; set; }
         [Parameter] public string IconName { get; set; } = "Search";
+        [Parameter] public string Width { get; set; }
         [Parameter] public EventCallback<string> OnSearch { get; set; }
         [Parameter] public EventCallback<MouseEventArgs> OnClear{ get; set; }
 
@@ -20,13 +23,11 @@ namespace Bit.Client.Web.BlazorUI.SearchBoxes
         public string InputValueClass => Value.HasValue() ? "has-value" : string.Empty;
         public string AnimationClass => DisableAnimation ? "no-animation" : string.Empty;
         public string UndelinedClass => IsUndelined ? "underlined" : string.Empty;
-
-        public string InputFocusClass = string.Empty;
+        public string WidthStyle => $"width: {Width}";
 
         protected virtual async Task HandleOnClear(MouseEventArgs e) {
             if (IsEnabled)
             {
-                Console.WriteLine("clear clicked");
                 Value = string.Empty;
                 _ = InputRef.FocusAsync();
                 await OnClear.InvokeAsync(e);
@@ -64,6 +65,9 @@ namespace Bit.Client.Web.BlazorUI.SearchBoxes
                         break;
                     case nameof(IconName):
                         IconName = (string)parameter.Value;
+                        break;    
+                    case nameof(Width):
+                        Width = (string)parameter.Value;
                         break;
                     case nameof(OnSearch):
                         OnSearch = (EventCallback<string>)parameter.Value;
