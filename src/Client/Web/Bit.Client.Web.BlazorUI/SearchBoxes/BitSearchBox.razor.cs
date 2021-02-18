@@ -16,7 +16,7 @@ namespace Bit.Client.Web.BlazorUI.SearchBoxes
         [Parameter] public string IconName { get; set; } = "Search";
         [Parameter] public string Width { get; set; }
         [Parameter] public EventCallback<string> OnSearch { get; set; }
-        [Parameter] public EventCallback<MouseEventArgs> OnClear{ get; set; }
+        [Parameter] public EventCallback OnClear{ get; set; }
 
         public ElementReference InputRef { get; set; }
 
@@ -25,20 +25,28 @@ namespace Bit.Client.Web.BlazorUI.SearchBoxes
         public string UndelinedClass => IsUndelined ? "underlined" : string.Empty;
         public string WidthStyle => $"width: {Width}";
 
-        protected virtual async Task HandleOnClear(MouseEventArgs e) {
+        protected virtual async Task HandleOnClear() {
             if (IsEnabled)
             {
                 Value = string.Empty;
                 _ = InputRef.FocusAsync();
-                await OnClear.InvokeAsync(e);
+                await OnClear.InvokeAsync();
             }
         }
 
-        protected virtual async Task HandleOnSearch(string value)
+        protected virtual async Task HandleOnKeyDown(string value, string keyCode)
         {
             if (IsEnabled)
             {
-                await OnSearch.InvokeAsync(value);
+                if (keyCode == "Escape")
+                {
+                    Value = string.Empty;
+                    _ = InputRef.FocusAsync();
+                    await OnClear.InvokeAsync();
+                }
+                else {
+                    await OnSearch.InvokeAsync(value);
+                }
             }
         }
 
@@ -73,7 +81,7 @@ namespace Bit.Client.Web.BlazorUI.SearchBoxes
                         OnSearch = (EventCallback<string>)parameter.Value;
                         break;
                     case nameof(OnClear):
-                        OnClear = (EventCallback<MouseEventArgs>)parameter.Value;
+                        OnClear = (EventCallback)parameter.Value;
                         break;
                 }
             }
