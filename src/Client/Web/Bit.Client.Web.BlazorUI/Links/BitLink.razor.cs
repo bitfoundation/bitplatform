@@ -2,7 +2,7 @@
 using Microsoft.AspNetCore.Components.Web;
 using System.Threading.Tasks;
 
-namespace Bit.Client.Web.BlazorUI.Labels
+namespace Bit.Client.Web.BlazorUI.Links
 {
     public partial class BitLink
     {

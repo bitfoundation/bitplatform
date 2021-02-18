@@ -1,0 +1,8 @@
+﻿<BitCheckbox IsEnabled="@IsEnabled" IsChecked="@IsChecked" IsIndeterminate="@IsIndeterminate" ></BitCheckbox>
+
+@code {
+
+    [Parameter] public bool IsEnabled { get; set; }
+    [Parameter] public bool IsChecked { get; set; }
+    [Parameter] public bool IsIndeterminate { get; set; }
+}
