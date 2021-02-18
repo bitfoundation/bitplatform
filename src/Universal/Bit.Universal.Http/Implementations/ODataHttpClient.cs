@@ -2,6 +2,8 @@
 using Bit.Http.Contracts;
 using Bit.Model.Contracts;
 using Bit.Model.Implementations;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -44,7 +46,7 @@ namespace Bit.Http.Implementations
                 .Content
                 .ReadAsStreamAsync().ConfigureAwait(false);
 
-            return await DefaultJsonContentFormatter.Current.DeserializeAsync<TDto>(responseStream, cancellationToken).ConfigureAwait(false);
+            return await DeserializeAsync<TDto>(responseStream, null, cancellationToken).ConfigureAwait(false);
         }
 
         public virtual async Task<TDto> Create(TDto dto, ODataContext? oDataContext = default, CancellationToken cancellationToken = default)
@@ -90,7 +92,7 @@ namespace Bit.Http.Implementations
                 .Content
                 .ReadAsStreamAsync().ConfigureAwait(false);
 
-            return await DefaultJsonContentFormatter.Current.DeserializeAsync<TDto>(responseStream, cancellationToken).ConfigureAwait(false);
+            return await DeserializeAsync<TDto>(responseStream, null, cancellationToken).ConfigureAwait(false);
         }
 
         public virtual async Task<List<TDto>> Get(ODataContext? oDataContext = default, CancellationToken cancellationToken = default)
@@ -102,12 +104,27 @@ namespace Bit.Http.Implementations
                 .Content
                 .ReadAsStreamAsync().ConfigureAwait(false);
 
-            ODataResponse<List<TDto>> odataResponse = await DefaultJsonContentFormatter.Current.DeserializeAsync<ODataResponse<List<TDto>>>(responseStream, cancellationToken).ConfigureAwait(false);
+            List<TDto> odataResponse = await DeserializeAsync<List<TDto>>(responseStream, oDataContext, cancellationToken).ConfigureAwait(false);
 
-            if (oDataContext is not null)
-                oDataContext.TotalCount = odataResponse.TotalCount;
+            return odataResponse;
+        }
 
-            return odataResponse.Value;
+        public virtual async Task<T> DeserializeAsync<T>(Stream responseStream, ODataContext? context, CancellationToken cancellationToken)
+        {
+            JsonSerializer serializer = JsonSerializer.CreateDefault(DefaultJsonContentFormatter.DeserializeSettings());
+            using StreamReader streamReader = new StreamReader(responseStream);
+            using JsonTextReader jsonReader = new JsonTextReader(streamReader);
+            JToken json = await JToken.LoadAsync(jsonReader, cancellationToken);
+
+            if (json["value"] == null)
+                return json.ToObject<T>(serializer);
+
+            ODataResponse<T> oDataResponse = json.ToObject<ODataResponse<T>>(serializer);
+
+            if (context != null)
+                context.TotalCount = oDataResponse.TotalCount;
+
+            return oDataResponse.Value;
         }
     }
 }
