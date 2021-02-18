@@ -68,12 +68,18 @@
     <BitCheckbox Label="Disabled indeterminated checkbox" IsIndeterminate="true" IsEnabled="false"></BitCheckbox>
     <br />
     <h3>Custom Label</h3>
-    <BitCheckbox CustomLabel="Custom-rendered label with a link go to <a href='https://github.com/bitfoundation/bitframework'>bit foundation repository page.</a>"></BitCheckbox>
+    <BitCheckbox>
+        <CustomLabel>
+            Custom-rendered label with a link go to 
+            <a href='https://github.com/bitfoundation/bitframework'>
+                bit foundation repository page.
+            </a>
+        </CustomLabel>
+    </BitCheckbox>
     <h3>Reversed</h3>
-    <BitCheckbox BoxSide="end" Label="Reversed -- Basic Checkbox"></BitCheckbox>
-    <BitCheckbox BoxSide="end" Label="Reversed -- Checked Checkbox" IsChecked="true"></BitCheckbox>
-    <BitCheckbox BoxSide="end" Label="Reversed -- Disable Checkbox" IsEnabled="false"></BitCheckbox>
-    <BitCheckbox BoxSide="end" Label="Reversed -- Disable Checked Checkbox" IsEnabled="false" IsChecked="true"></BitCheckbox>
+    <BitCheckbox BoxSide="@BoxSide.End" Label="Reversed -- Basic Checkbox"></BitCheckbox>
+    <BitCheckbox BoxSide="@BoxSide.End" Label="Reversed -- Checked Checkbox" IsChecked="true"></BitCheckbox>
+    <BitCheckbox BoxSide="@BoxSide.End" Label="Reversed -- Disable Checkbox" IsEnabled="false"></BitCheckbox>
+    <BitCheckbox BoxSide="@BoxSide.End" Label="Reversed -- Disable Checked Checkbox" IsEnabled="false" IsChecked="true"></BitCheckbox>
     <br />
 </div>
-

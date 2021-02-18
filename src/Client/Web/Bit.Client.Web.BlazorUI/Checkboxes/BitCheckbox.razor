@@ -1,13 +1,11 @@
 ﻿@inherits BitComponentBase
 
-<div class="bit-checkbox-container @VisualClass @EnabledClass @CheckedClass @IndeterminateClass @BoxSide">
+<div class="bit-checkbox-container @VisualClass @EnabledClass @CheckedClass @IndeterminateClass @BoxSideClass">
     <input type="checkbox" 
            @ref="TargetCheckbox"
-           id="bit-checkbox__input-@InputUniqueIdentifier"
            class="bit-checkbox__input--hidden" 
            checked=@IsChecked 
            disabled="@(IsEnabled is false)"
-           indeterminate="@(IsIndeterminate is false)"
            hidden>
 
     <div class="bit-checkbox-item bit-checkbox-item__checkbox" @onclick="@HandleCheckboxClick">
@@ -19,7 +17,7 @@
             <span class="bit-checkbox-item__label-text">
                 @if (HasCustomLabel)
                 {
-                    @((MarkupString)CustomLabel);
+                    @(CustomLabel);
                 } else {
                     @Label
                 }
