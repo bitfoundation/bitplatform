@@ -29,13 +29,13 @@ namespace Bit.Owin.Middlewares
 
                     IClientProfileModelProvider clientProfileModelProvider = dependencyResolver.Resolve<IClientProfileModelProvider>();
 
-                    ClientProfileModel clientProfileModel = await clientProfileModelProvider.GetClientProfileModelAsync(context.Request.CallCancelled);
+                    ClientProfileModel clientProfileModel = await clientProfileModelProvider.GetClientProfileModelAsync(context.Request.CallCancelled).ConfigureAwait(false);
 
                     string clientAppProfileJson = clientProfileModel.ToJavaScriptObject();
 
                     context.Response.ContentType = "text/javascript; charset=utf-8";
 
-                    await context.Response.WriteAsync(clientAppProfileJson, context.Request.CallCancelled);
+                    await context.Response.WriteAsync(clientAppProfileJson, context.Request.CallCancelled).ConfigureAwait(false);
                 });
             });
         }

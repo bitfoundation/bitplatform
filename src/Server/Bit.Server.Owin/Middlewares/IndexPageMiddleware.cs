@@ -23,13 +23,13 @@ namespace Bit.Owin.Middlewares
 
             IDependencyResolver dependencyResolver = context.GetDependencyResolver();
 
-            string htmlPage = await File.ReadAllTextAsync(dependencyResolver.Resolve<IPathProvider>().MapStaticFilePath(dependencyResolver.Resolve<AppEnvironment>().GetConfig(AppEnvironment.KeyValues.IndexPagePath, AppEnvironment.KeyValues.IndexPagePathDefaultValue)!));
+            string htmlPage = await File.ReadAllTextAsync(dependencyResolver.Resolve<IPathProvider>().MapStaticFilePath(dependencyResolver.Resolve<AppEnvironment>().GetConfig(AppEnvironment.KeyValues.IndexPagePath, AppEnvironment.KeyValues.IndexPagePathDefaultValue)!)).ConfigureAwait(false);
 
-            string indexPageContents = await dependencyResolver.Resolve<IHtmlPageProvider>().GetHtmlPageAsync(htmlPage, context.Request.CallCancelled);
+            string indexPageContents = await dependencyResolver.Resolve<IHtmlPageProvider>().GetHtmlPageAsync(htmlPage, context.Request.CallCancelled).ConfigureAwait(false);
 
             context.Response.ContentType = "text/html; charset=utf-8";
 
-            await context.Response.WriteAsync(indexPageContents, context.Request.CallCancelled);
+            await context.Response.WriteAsync(indexPageContents, context.Request.CallCancelled).ConfigureAwait(false);
         }
     }
 }

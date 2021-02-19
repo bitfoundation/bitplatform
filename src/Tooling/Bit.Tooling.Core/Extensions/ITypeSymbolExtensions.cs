@@ -360,6 +360,9 @@ namespace Microsoft.CodeAnalysis
 
         public static IEnumerable<ITypeSymbol> BaseDtoClasses(this ITypeSymbol type)
         {
+            if (type == null)
+                throw new ArgumentNullException(nameof(type));
+
             ITypeSymbol? baseType = type.BaseType;
 
             while (baseType != null && (baseType.IsDto() || baseType.IsComplexType()))

@@ -111,7 +111,7 @@ namespace Bit.Core.Contracts
                         }
                     }
 
-                    await next.Invoke();
+                    await next.Invoke().ConfigureAwait(false);
                 });
             });
 

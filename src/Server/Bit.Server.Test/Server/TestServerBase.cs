@@ -84,7 +84,7 @@ namespace Bit.Test.Server
                 });
             }
 
-            await hubConnection.Start(new ServerSentEventsTransport(new SignalRHttpClient(GetHttpMessageHandler())));
+            await hubConnection.Start(new ServerSentEventsTransport(new SignalRHttpClient(GetHttpMessageHandler()))).ConfigureAwait(false);
 
             return hubProxy;
         }
@@ -192,11 +192,11 @@ namespace Bit.Test.Server
             request.Content.Headers.ContentType = new MediaTypeHeaderValue("application/x-www-form-urlencoded");
             request.Content.Headers.ContentLength = loginData.Length;
 
-            using HttpResponseMessage response = await client.SendAsync(request);
+            using HttpResponseMessage response = await client.SendAsync(request).ConfigureAwait(false);
 
-            using Stream responseContent = await response.Content.ReadAsStreamAsync();
+            using Stream responseContent = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
 
-            Token token = await DefaultJsonContentFormatter.Current.DeserializeAsync<Token>(responseContent, default);
+            Token token = await DefaultJsonContentFormatter.Current.DeserializeAsync<Token>(responseContent, default).ConfigureAwait(false);
 
             if (token.IsError)
             {

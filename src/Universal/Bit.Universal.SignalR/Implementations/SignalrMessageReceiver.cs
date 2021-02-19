@@ -86,7 +86,7 @@ namespace Bit.Signalr.Implementations
 
             EnsureReNewTransport();
 
-            await _hubConnection.Start(_serverSentEventsTransport);
+            await _hubConnection.Start(_serverSentEventsTransport).ConfigureAwait(false);
         }
 
         void EnsureReNewTransport()
@@ -137,7 +137,7 @@ namespace Bit.Signalr.Implementations
                 {
                     try
                     {
-                        await Stop(CancellationToken.None);
+                        await Stop(CancellationToken.None).ConfigureAwait(false);
                     }
                     catch (Exception exp)
                     {
@@ -146,7 +146,7 @@ namespace Bit.Signalr.Implementations
 
                     try
                     {
-                        await Start(CancellationToken.None);
+                        await Start(CancellationToken.None).ConfigureAwait(false);
                     }
                     catch (Exception exp)
                     {
@@ -202,7 +202,7 @@ namespace Bit.Signalr.Implementations
         {
             ShouldBeConnected = false;
             if (_hubConnection != null)
-                await Task.Run(_hubConnection.Stop, cancellationToken);
+                await Task.Run(_hubConnection.Stop, cancellationToken).ConfigureAwait(false);
         }
 
         public void Dispose()

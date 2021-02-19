@@ -196,10 +196,12 @@ namespace Bit.Sync.ODataEntityFrameworkCore.Implementations
                         if (batchResponbse.Content.Headers.ContentType.MediaType != "application/json")
                             throw new InvalidOperationException($"{batchResponbse.Content.Headers.ContentType.MediaType} content type is not supported.");
 
-#if UWP || DotNetStandard2_0
-                        using (Stream stream = await batchResponbse.Content.ReadAsStreamAsync().ConfigureAwait(false))
+#if DotNetStandard2_0 || UWP
+            using Stream stream = await batchResponbse.Content.ReadAsStreamAsync().ConfigureAwait(false);
+#elif Android || iOS || DotNetStandard2_1
+            await using Stream stream = await batchResponbse.Content.ReadAsStreamAsync().ConfigureAwait(false);
 #else
-                        await using (Stream stream = await batchResponbse.Content.ReadAsStreamAsync().ConfigureAwait(false))
+                        await using Stream stream = await batchResponbse.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
 #endif
                         {
                             using (StreamReader reader = new StreamReader(stream))

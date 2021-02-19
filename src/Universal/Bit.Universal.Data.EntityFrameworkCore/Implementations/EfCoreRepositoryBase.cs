@@ -139,23 +139,23 @@ namespace Bit.Data.EntityFrameworkCore.Implementations
             }
         }
 
-        public virtual void Detach(T item)
+        public virtual void Detach(T entity)
         {
-            if (item == null)
-                throw new ArgumentNullException(nameof(item));
+            if (entity == null)
+                throw new ArgumentNullException(nameof(entity));
 
-            Attach(item);
+            Attach(entity);
 
-            DbContext.Entry(item).State = EntityState.Detached;
+            DbContext.Entry(entity).State = EntityState.Detached;
         }
 
-        public virtual void Attach(T item)
+        public virtual void Attach(T entity)
         {
-            if (item == null)
-                throw new ArgumentNullException(nameof(item));
+            if (entity == null)
+                throw new ArgumentNullException(nameof(entity));
 
-            if (DbContext.Entry(item).State == EntityState.Detached)
-                Set.Attach(item);
+            if (DbContext.Entry(entity).State == EntityState.Detached)
+                Set.Attach(entity);
         }
 
         public virtual T Add(T itemToAdd)
@@ -258,69 +258,69 @@ namespace Bit.Data.EntityFrameworkCore.Implementations
             return Task.FromResult((IQueryable<T>)Set);
         }
 
-        public virtual async Task LoadCollectionAsync<TProperty>(T item, Expression<Func<T, IEnumerable<TProperty?>>> childs, CancellationToken cancellationToken)
+        public virtual async Task LoadCollectionAsync<TProperty>(T entity, Expression<Func<T, IEnumerable<TProperty?>>> childs, CancellationToken cancellationToken)
             where TProperty : class
         {
-            if (item == null)
-                throw new ArgumentNullException(nameof(item));
+            if (entity == null)
+                throw new ArgumentNullException(nameof(entity));
 
             if (childs == null)
                 throw new ArgumentNullException(nameof(childs));
 
-            Attach(item);
+            Attach(entity);
 
-            CollectionEntry<T, TProperty?> collection = DbContext.Entry(item).Collection(childs);
+            CollectionEntry<T, TProperty?> collection = DbContext.Entry(entity).Collection(childs);
 
             if (collection.IsLoaded == false)
                 await collection.LoadAsync(cancellationToken).ConfigureAwait(false);
         }
 
-        public virtual void LoadCollection<TProperty>(T item, Expression<Func<T, IEnumerable<TProperty?>>> childs)
+        public virtual void LoadCollection<TProperty>(T entity, Expression<Func<T, IEnumerable<TProperty?>>> childs)
             where TProperty : class
         {
-            if (item == null)
-                throw new ArgumentNullException(nameof(item));
+            if (entity == null)
+                throw new ArgumentNullException(nameof(entity));
 
             if (childs == null)
                 throw new ArgumentNullException(nameof(childs));
 
-            Attach(item);
+            Attach(entity);
 
-            CollectionEntry<T, TProperty?> collection = DbContext.Entry(item).Collection(childs);
+            CollectionEntry<T, TProperty?> collection = DbContext.Entry(entity).Collection(childs);
 
             if (collection.IsLoaded == false)
                 collection.Load();
         }
 
-        public virtual async Task LoadReferenceAsync<TProperty>(T item, Expression<Func<T, TProperty?>> member, CancellationToken cancellationToken)
+        public virtual async Task LoadReferenceAsync<TProperty>(T entity, Expression<Func<T, TProperty?>> member, CancellationToken cancellationToken)
             where TProperty : class
         {
-            if (item == null)
-                throw new ArgumentNullException(nameof(item));
+            if (entity == null)
+                throw new ArgumentNullException(nameof(entity));
 
             if (member == null)
                 throw new ArgumentNullException(nameof(member));
 
-            Attach(item);
+            Attach(entity);
 
-            ReferenceEntry<T, TProperty?> reference = DbContext.Entry(item).Reference(member);
+            ReferenceEntry<T, TProperty?> reference = DbContext.Entry(entity).Reference(member);
 
             if (reference.IsLoaded == false)
                 await reference.LoadAsync(cancellationToken).ConfigureAwait(false);
         }
 
-        public virtual void LoadReference<TProperty>(T item, Expression<Func<T, TProperty?>> member)
+        public virtual void LoadReference<TProperty>(T entity, Expression<Func<T, TProperty?>> member)
             where TProperty : class
         {
-            if (item == null)
-                throw new ArgumentNullException(nameof(item));
+            if (entity == null)
+                throw new ArgumentNullException(nameof(entity));
 
             if (member == null)
                 throw new ArgumentNullException(nameof(member));
 
-            Attach(item);
+            Attach(entity);
 
-            ReferenceEntry<T, TProperty?> reference = DbContext.Entry(item).Reference(member);
+            ReferenceEntry<T, TProperty?> reference = DbContext.Entry(entity).Reference(member);
 
             if (reference.IsLoaded == false)
                 reference.Load();
@@ -341,7 +341,7 @@ namespace Bit.Data.EntityFrameworkCore.Implementations
 
         public virtual async Task<T?> GetByIdAsync(CancellationToken cancellationToken, params object[] ids)
         {
-            return await Set.FindAsync(ids, cancellationToken);
+            return await Set.FindAsync(ids, cancellationToken).ConfigureAwait(false);
         }
 
         public virtual T? GetById(params object[] ids)
@@ -349,37 +349,37 @@ namespace Bit.Data.EntityFrameworkCore.Implementations
             return Set.Find(ids);
         }
 
-        public virtual async Task ReloadAsync(T item, CancellationToken cancellationToken)
+        public virtual async Task ReloadAsync(T entity, CancellationToken cancellationToken)
         {
-            if (item == null)
-                throw new ArgumentNullException(nameof(item));
+            if (entity == null)
+                throw new ArgumentNullException(nameof(entity));
 
-            Attach(item);
+            Attach(entity);
 
-            await DbContext.Entry(item).ReloadAsync(cancellationToken).ConfigureAwait(false);
+            await DbContext.Entry(entity).ReloadAsync(cancellationToken).ConfigureAwait(false);
         }
 
-        public virtual void Reload(T item)
+        public virtual void Reload(T entity)
         {
-            if (item == null)
-                throw new ArgumentNullException(nameof(item));
+            if (entity == null)
+                throw new ArgumentNullException(nameof(entity));
 
-            Attach(item);
+            Attach(entity);
 
-            DbContext.Entry(item).Reload();
+            DbContext.Entry(entity).Reload();
         }
 
-        public virtual IQueryable<TChild> GetCollectionQuery<TChild>(T item, Expression<Func<T, IEnumerable<TChild>>> childs) where TChild : class
+        public virtual IQueryable<TChild> GetCollectionQuery<TChild>(T entity, Expression<Func<T, IEnumerable<TChild>>> childs) where TChild : class
         {
-            if (item == null)
-                throw new ArgumentNullException(nameof(item));
+            if (entity == null)
+                throw new ArgumentNullException(nameof(entity));
 
             if (childs == null)
                 throw new ArgumentNullException(nameof(childs));
 
-            Attach(item);
+            Attach(entity);
 
-            return DbContext.Entry(item).Collection(childs).Query();
+            return DbContext.Entry(entity).Collection(childs).Query();
         }
 
         public virtual IDateTimeProvider DateTimeProvider { get; set; } = default!;

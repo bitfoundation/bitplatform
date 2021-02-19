@@ -97,7 +97,7 @@ namespace Bit.Core.Implementations
             JsonSerializer serializer = JsonSerializer.CreateDefault(SerializeSettings());
             using StreamReader streamReader = new StreamReader(input);
             using JsonTextReader jsonReader = new JsonTextReader(streamReader);
-            JToken json = await JToken.LoadAsync(jsonReader, cancellationToken);
+            JToken json = await JToken.LoadAsync(jsonReader, cancellationToken).ConfigureAwait(false);
             return json.ToObject<T>(serializer);
         }
 

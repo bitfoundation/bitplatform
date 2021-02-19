@@ -20,8 +20,8 @@ namespace Bit.OData.Contents
 
                 await using (stream)
                 {
-                    await onStreamAvailable(stream);
-                    await stream.FlushAsync(cancellationToken);
+                    await onStreamAvailable(stream).ConfigureAwait(false);
+                    await stream.FlushAsync(cancellationToken).ConfigureAwait(false);
                 }
 
             }, "application/json")

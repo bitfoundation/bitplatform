@@ -30,7 +30,7 @@ namespace Microsoft.AspNet.OData.Query
             var finalResult = new List<string> { };
 
             foreach (ExpandedNavigationSelectItem expandItem in oDataQueryOptions.SelectExpand?.SelectExpandClause
-                ?.SelectedItems?.OfType<ExpandedNavigationSelectItem>() ?? new ExpandedNavigationSelectItem[] { })
+                ?.SelectedItems?.OfType<ExpandedNavigationSelectItem>() ?? Array.Empty<ExpandedNavigationSelectItem>())
             {
                 var expandItems = new List<ExpandedNavigationSelectItem>();
                 GetEntirePath(expandItem, ref expandItems);

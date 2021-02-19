@@ -43,8 +43,13 @@ namespace Bit.Http.Implementations
 
             using Stream responseStream = await (await HttpClient.SendAsync(request, cancellationToken).ConfigureAwait(false))
                 .EnsureSuccessStatusCode()
-                .Content
-                .ReadAsStreamAsync().ConfigureAwait(false);
+                .Content.
+#if DotNetStandard2_0 || UWP || Android || iOS  || DotNetStandard2_1
+            ReadAsStreamAsync()
+#else
+            ReadAsStreamAsync(cancellationToken)
+#endif
+                .ConfigureAwait(false);
 
             return await DeserializeAsync<TDto>(responseStream, null, cancellationToken).ConfigureAwait(false);
         }
@@ -89,8 +94,13 @@ namespace Bit.Http.Implementations
 
             using Stream responseStream = await (await HttpClient.GetAsync($"odata/{ODataRoute}/{ControllerName}({string.Join(",", keys)}){qs}", cancellationToken).ConfigureAwait(false))
                 .EnsureSuccessStatusCode()
-                .Content
-                .ReadAsStreamAsync().ConfigureAwait(false);
+                .Content.
+#if DotNetStandard2_0 || UWP || Android || iOS || DotNetStandard2_1
+            ReadAsStreamAsync()
+#else
+            ReadAsStreamAsync(cancellationToken)
+#endif
+                .ConfigureAwait(false);
 
             return await DeserializeAsync<TDto>(responseStream, null, cancellationToken).ConfigureAwait(false);
         }
@@ -114,7 +124,7 @@ namespace Bit.Http.Implementations
             JsonSerializer serializer = JsonSerializer.CreateDefault(DefaultJsonContentFormatter.DeserializeSettings());
             using StreamReader streamReader = new StreamReader(responseStream);
             using JsonTextReader jsonReader = new JsonTextReader(streamReader);
-            JToken json = await JToken.LoadAsync(jsonReader, cancellationToken);
+            JToken json = await JToken.LoadAsync(jsonReader, cancellationToken).ConfigureAwait(false);
 
             if (json["value"] == null)
                 return json.ToObject<T>(serializer);

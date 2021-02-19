@@ -87,11 +87,17 @@ namespace Bit.Http.Implementations
             request.Content.Headers.ContentType = new MediaTypeHeaderValue("application/x-www-form-urlencoded");
             request.Content.Headers.ContentLength = loginData.Length;
 
-            using HttpResponseMessage response = await httpClient.SendAsync(request, cancellationToken);
+            using HttpResponseMessage response = await httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
 
-            using Stream responseContent = await response.EnsureSuccessStatusCode().Content.ReadAsStreamAsync();
+#if DotNetStandard2_0 || UWP
+            using Stream responseContent = await response.EnsureSuccessStatusCode().Content.ReadAsStreamAsync().ConfigureAwait(false);
+#elif Android || iOS || DotNetStandard2_1
+            await using Stream responseContent = await response.EnsureSuccessStatusCode().Content.ReadAsStreamAsync().ConfigureAwait(false);
+#else
+            await using Stream responseContent = await response.EnsureSuccessStatusCode().Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
+#endif
 
-            Token token = await DefaultJsonContentFormatter.Current.DeserializeAsync<Token>(responseContent, cancellationToken);
+            Token token = await DefaultJsonContentFormatter.Current.DeserializeAsync<Token>(responseContent, cancellationToken).ConfigureAwait(false);
 
             if (token.IsError)
             {

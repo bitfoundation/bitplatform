@@ -21,7 +21,7 @@ namespace Bit.OData.ODataControllers
             if (BackgroundJobWorker == null)
                 throw new InvalidOperationException("No background job worker is configured");
 
-            JobInfo jobInfo = await BackgroundJobWorker.GetJobInfoAsync(key, cancellationToken);
+            JobInfo jobInfo = await BackgroundJobWorker.GetJobInfoAsync(key, cancellationToken).ConfigureAwait(false);
 
             return SingleResult(new JobInfoDto
             {

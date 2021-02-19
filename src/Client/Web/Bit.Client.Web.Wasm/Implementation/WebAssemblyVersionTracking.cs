@@ -113,7 +113,7 @@ namespace Bit.Client.Web.Wasm.Implementation
         }
 
         string[] ReadHistory(string key)
-            => _preferences.Get(key, null, sharedName)?.Split(new[] { '|' }, StringSplitOptions.RemoveEmptyEntries) ?? new string[0];
+            => _preferences.Get(key, null, sharedName)?.Split(new[] { '|' }, StringSplitOptions.RemoveEmptyEntries) ?? Array.Empty<string>();
 
         void WriteHistory(string key, IEnumerable<string> history)
             => _preferences.Set(key, string.Join("|", history), sharedName);
