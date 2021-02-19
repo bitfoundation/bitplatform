@@ -10,7 +10,7 @@ namespace Bit.ViewModel
 {
     public class BitExceptionHandler : BitExceptionHandlerBase
     {
-        public virtual IServiceProvider? ServiceProvider { get; set; }
+        public IServiceProvider? ServiceProvider { get; set; }
 
         public new static IExceptionHandler Current
         {

@@ -21,13 +21,13 @@ namespace Bit.Http.Implementations
 {
     public class DefaultSecurityService : ISecurityService
     {
-        public virtual IClientAppProfile ClientAppProfile { get; set; } = default!;
-        public virtual IDateTimeProvider DateTimeProvider { get; set; } = default!;
-        public virtual IEnumerable<ITelemetryService> TelemetryServices { get; set; } = default!;
-        public virtual Lazy<IContainer> ContainerProvider { get; set; } = default!;
-        public virtual IWebAuthenticator WebAuthenticator { get; set; } = default!;
-        public virtual IPreferences Preferences { get; set; } = default!;
-        public virtual ISecureStorage SecureStorage { get; set; } = default!;
+        public IClientAppProfile ClientAppProfile { get; set; } = default!;
+        public IDateTimeProvider DateTimeProvider { get; set; } = default!;
+        public IEnumerable<ITelemetryService> TelemetryServices { get; set; } = default!;
+        public Lazy<IContainer> ContainerProvider { get; set; } = default!;
+        public IWebAuthenticator WebAuthenticator { get; set; } = default!;
+        public IPreferences Preferences { get; set; } = default!;
+        public ISecureStorage SecureStorage { get; set; } = default!;
 
         public virtual async Task<bool> IsLoggedInAsync(CancellationToken cancellationToken = default)
         {

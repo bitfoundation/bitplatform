@@ -24,12 +24,12 @@ namespace Bit.Sync.ODataEntityFrameworkCore.Implementations
 {
     public class DefaultSyncService : ISyncService
     {
-        public virtual IContainer Container { get; set; } = default!;
-        public virtual IClientAppProfile ClientAppProfile { get; set; } = default!;
-        public virtual HttpClient HttpClient { get; set; } = default!;
-        public virtual IODataClient ODataClient { get; set; } = default!;
-        public virtual IExceptionHandler ExceptionHandler { get; set; } = default!;
-        public virtual IConnectivity Connectivity { get; set; } = default!;
+        public IContainer Container { get; set; } = default!;
+        public IClientAppProfile ClientAppProfile { get; set; } = default!;
+        public HttpClient HttpClient { get; set; } = default!;
+        public IODataClient ODataClient { get; set; } = default!;
+        public IExceptionHandler ExceptionHandler { get; set; } = default!;
+        public IConnectivity Connectivity { get; set; } = default!;
 
 
         private readonly List<DtoSetSyncConfig> _configs = new List<DtoSetSyncConfig> { };

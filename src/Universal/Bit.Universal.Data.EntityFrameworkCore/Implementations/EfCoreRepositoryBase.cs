@@ -382,7 +382,7 @@ namespace Bit.Data.EntityFrameworkCore.Implementations
             return DbContext.Entry(entity).Collection(childs).Query();
         }
 
-        public virtual IDateTimeProvider DateTimeProvider { get; set; } = default!;
+        public IDateTimeProvider DateTimeProvider { get; set; } = default!;
     }
 
     public class EfCoreRepositoryBase<T> : EfCoreRepositoryBase<EfCoreDbContextBase, T>, IRepository<T>

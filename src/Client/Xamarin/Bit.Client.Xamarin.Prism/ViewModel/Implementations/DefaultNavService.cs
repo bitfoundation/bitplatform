@@ -165,9 +165,9 @@ namespace Bit.ViewModel.Implementations
                 .Repeat("../", timesToGoBack));
         }
 
-        public virtual INavigationService PrismNavigationService { get; set; } = default!;
+        public INavigationService PrismNavigationService { get; set; } = default!;
 
-        public virtual IPopupNavigation PopupNavigation { get; set; } = default!;
+        public IPopupNavigation PopupNavigation { get; set; } = default!;
 
         public virtual INavService AppNavService => BitApplication.Current.NavigationService;
 

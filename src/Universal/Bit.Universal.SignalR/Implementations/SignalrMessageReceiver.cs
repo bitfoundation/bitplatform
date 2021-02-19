@@ -15,11 +15,11 @@ namespace Bit.Signalr.Implementations
     {
         public IExceptionHandler ExceptionHandler { get; set; } = default!;
 
-        public virtual SignalRHttpClient SignalRHttpClient { get; set; } = default!;
+        public SignalRHttpClient SignalRHttpClient { get; set; } = default!;
 
-        public virtual IEventAggregator EventAggregator { get; set; } = default!;
+        public IEventAggregator EventAggregator { get; set; } = default!;
 
-        public virtual IClientAppProfile ClientAppProfile { get; set; } = default!;
+        public IClientAppProfile ClientAppProfile { get; set; } = default!;
 
         public IHubConnectionFactory HubConnectionFactory { get; set; } = default!;
 
