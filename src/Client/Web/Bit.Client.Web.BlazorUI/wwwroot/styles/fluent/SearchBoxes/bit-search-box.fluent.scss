@@ -14,7 +14,7 @@
     flex-flow: row nowrap;
     align-items: stretch;
     border-radius: 2px;
-    border: 1px solid #605e5c;
+    border: 1px solid $Grey130;
     height: 32px;
 
     &.has-value {
@@ -71,7 +71,7 @@
     &.underlined {
         border: none;
         border-radius: 0;
-        border-bottom: 1px solid #605e5c;
+        border-bottom: 1px solid $Grey130;
 
         &.focused {
             border-bottom: 2px solid $Primary;
@@ -79,10 +79,10 @@
     }
 
     &.disabled {
-        color: #323130;
-        background-color: #f3f2f1;
+        color: $Grey160;
+        background-color: $Grey20;
         align-items: stretch;
-        border-color: #f3f2f1;
+        border-color: $Grey20;
         pointer-events: none;
         cursor: default;
 
@@ -91,7 +91,7 @@
         }
 
         & .bit-search-box-item__search-icon-container {
-            color: #a19f9d;
+            color: $Grey90;
         }
     }
 }
@@ -104,35 +104,35 @@
         background-color: transparent;
         border: none;
         outline: none;
-        color: rgb(50, 49, 48);
+        color: $Grey160;
         flex: 1 1 0px;
         min-width: 0px;
         overflow: hidden;
         text-overflow: ellipsis;
     }
 
-    .bit-search-box-item__search-icon-container {
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        flex-shrink: 0;
-        font-size: 16px;
-        width: 32px;
-        text-align: center;
-        color: rgb(0, 120, 212);
-        cursor: text;
-        transition: width 0.167s ease 0s;
+.bit-search-box-item__search-icon-container {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    flex-shrink: 0;
+    font-size: 16px;
+    width: 32px;
+    text-align: center;
+    color: $CyanBlue10;
+    cursor: text;
+    transition: width 0.167s ease 0s;
 
-        & i.bit-icon {
-            display: inline-block;
-            -webkit-font-smoothing: antialiased;
-            font-style: normal;
-            font-weight: normal;
-            speak: none;
-            opacity: 1;
-            transition: opacity 0.167s ease 0s;
-        }
+    & i.bit-icon {
+        display: inline-block;
+        -webkit-font-smoothing: antialiased;
+        font-style: normal;
+        font-weight: normal;
+        speak: none;
+        opacity: 1;
+        transition: opacity 0.167s ease 0s;
     }
+}
 
     .bit-search-box-item__clear-button-container {
         display: flex;
@@ -174,6 +174,6 @@
         }
 
         &:hover {
-            background-color: #f3f2f1;
+            background-color: $Grey20;
         }
     }

@@ -26,7 +26,7 @@ namespace Bit.Client.Web.BlazorUI.SearchBoxes
         public string InputValueClass => Value.HasValue() ? "has-value" : string.Empty;
         public string AnimationClass => DisableAnimation ? "no-animation" : string.Empty;
         public string UnderlinedClass => IsUnderlined ? "underlined" : string.Empty;
-        public string WidthStyle => $"width: {Width}";
+        public string WidthStyle => Width.HasValue() ? $"width: {Width}" : string.Empty;
 
         protected virtual async Task HandleOnClear()
         {
