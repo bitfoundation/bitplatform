@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
+using Microsoft.JSInterop;
 using System;
 using System.Threading.Tasks;
 
@@ -7,6 +8,8 @@ namespace Bit.Client.Web.BlazorUI.SearchBoxes
 {
     public partial class BitSearchBox
     {
+        [Inject] public IJSRuntime JSRuntime { get; set; }
+
         public string InputFocusClass = string.Empty;
 
         [Parameter] public string Value { get; set; }
@@ -34,18 +37,19 @@ namespace Bit.Client.Web.BlazorUI.SearchBoxes
             }
         }
 
-        protected virtual async Task HandleOnKeyDown(string value, string keyCode)
+        protected virtual async Task HandleOnKeyDown(KeyboardEventArgs k)
         {
             if (IsEnabled)
             {
-                if (keyCode == "Escape")
+                if (k.Code == "Escape")
                 {
                     Value = string.Empty;
                     _ = InputRef.FocusAsync();
                     await OnClear.InvokeAsync();
                 }
                 else {
-                    await OnSearch.InvokeAsync(value);
+                    Value = await JSRuntime.GetElementProperty(InputRef, "value");
+                    await OnSearch.InvokeAsync(Value);
                 }
             }
         }

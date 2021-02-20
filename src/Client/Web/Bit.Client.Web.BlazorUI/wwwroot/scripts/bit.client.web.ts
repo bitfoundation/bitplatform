@@ -5,5 +5,6 @@ function setElementProperty(element: HTMLElement, property: string, value: objec
 }
 
 function getElementProperty(element: HTMLElement, property: string): string | null {
-    return element.getAttribute(property);
+    const _element: { [key: string]: string | any } = element;
+    return _element[property];
 }

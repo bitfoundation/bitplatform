@@ -10,7 +10,7 @@
            placeholder="@Placeholder"
            @bind-value="Value"
            @bind-value:event="oninput"
-           @onkeydown="@((k) => HandleOnKeyDown($"{Value}{k.Key}",k.Code))"
+           @onkeydown="@((k) => HandleOnKeyDown(k))"
            @onfocusin="HandleInputFocusIn"
            @onfocusout="HandleInputFocusOut" 
            disabled="@(IsEnabled is false)"
