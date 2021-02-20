@@ -51,59 +51,5 @@ namespace Bit.Client.Web.BlazorUI.Tests.SearchBoxes
 
             Assert.AreEqual(isUnderlined, searchBox.ClassList.Contains("underlined"));
         }
-
-        //[DataTestMethod,DataRow("a"),DataRow("G"),DataRow(".")]
-        //public void SearchBox_onTypeInSearchInput_MeetEnteredValue(string key) 
-        //{  
-        //    var component = RenderComponent<BitSearchBoxTest>();
-        //    var input = component.Find("input.bit-searchbox-item__input");
-        //    _context.JSInterop.Setup<string>("getElementProperty",input,"vale").SetResult(key);
-        //    input.KeyDown(key);
-
-
-        //    Assert.AreEqual(key, component.Instance.SearchBoxValue);
-        //}
-
-        //[TestMethod]
-        //public void SearchBox_onTypeAlexInSearchInput_True()
-        //{
-        //    var component = RenderComponent<BitSearchBoxTest>();
-
-        //    var input = component.Find("input.bit-searchbox-item__input");
-        //    input.KeyDown("A");
-        //    input.KeyDown("l");
-        //    input.KeyDown("e");
-        //    input.KeyDown("x");
-
-        //    Assert.AreEqual("Alex", component.Instance.SearchBoxValue);
-        //}
-
-
-        //[TestMethod]
-        //public void SearchBox_OnEscape_ClearInput() 
-        //{
-        //    var component = RenderComponent<BitSearchBoxTest>();
-        //    var input = component.Find("input.bit-searchbox-item__input");
-
-        //    input.KeyDown("A");
-        //    Assert.AreEqual("A", component.Instance.SearchBoxValue);
-
-        //    input.KeyDown(Key.Escape);
-        //    Assert.AreEqual(string.Empty, component.Instance.SearchBoxValue);
-        //}
-
-        //[TestMethod]
-        //public void SearchBox_OnClickClearButton_ClearInput()
-        //{
-        //    var component = RenderComponent<BitSearchBoxTest>();
-        //    var input = component.Find("input.bit-searchbox-item__input");
-        //    var clearButton = component.Find("button.bit-searchbox-item__clear-button");
-
-        //    input.KeyDown("A");
-        //    Assert.AreEqual("A", component.Instance.SearchBoxValue);
-
-        //    clearButton.Click();
-        //    Assert.AreEqual(string.Empty, component.Instance.SearchBoxValue);
-        //}
     }
 }
