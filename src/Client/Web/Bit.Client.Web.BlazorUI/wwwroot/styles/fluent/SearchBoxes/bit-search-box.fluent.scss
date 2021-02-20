@@ -19,7 +19,7 @@
 
     &.has-value {
         .bit-search-box-item__clear-button-container {
-            width: 32px;
+            opacity:1;
             flex-basis: 0px;
 
             & i.bit-icon--Clear {
@@ -143,8 +143,9 @@
         flex-shrink: 0;
         padding: 0px;
         margin: -1px 0px;
-        width: 0px;
-        transition: width 0.167s ease 0s;
+        width: 32px;
+        opacity:0;
+        transition: opacity 0.167s ease 0s;
 
         & i.bit-icon--Clear {
             opacity: 0;
