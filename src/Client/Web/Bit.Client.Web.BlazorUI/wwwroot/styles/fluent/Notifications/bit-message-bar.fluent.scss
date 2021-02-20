@@ -1,0 +1,18 @@
+﻿@import "../_colors.fluent.scss", "../../_functions.scss";
+$MessagebarDefault: #f3f2f1 ;
+$MessagebarError: #fde7e9;
+$MessagebarSuccess: #dff6dd;
+.bit-message-bar.fluent {
+    font-family: FluentFont;
+    font-size: rem(14px);
+    font-weight: 400;
+    line-height: inherit;
+    color: $Grey160;
+    align-items: center;
+    text-align: left;
+    background-color: $MessagebarDefault;
+    width: 100%;
+    display: flex;
+    word-break: break-word;
+    flex-direction: column;
+}
