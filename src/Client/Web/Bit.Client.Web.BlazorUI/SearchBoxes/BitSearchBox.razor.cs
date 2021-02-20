@@ -19,7 +19,7 @@ namespace Bit.Client.Web.BlazorUI.SearchBoxes
         [Parameter] public string IconName { get; set; } = "Search";
         [Parameter] public string Width { get; set; }
         [Parameter] public EventCallback<string> OnSearch { get; set; }
-        [Parameter] public EventCallback OnClear{ get; set; }
+        [Parameter] public EventCallback OnClear { get; set; }
 
         public ElementReference InputRef { get; set; }
 
@@ -28,7 +28,8 @@ namespace Bit.Client.Web.BlazorUI.SearchBoxes
         public string UnderlinedClass => IsUnderlined ? "underlined" : string.Empty;
         public string WidthStyle => $"width: {Width}";
 
-        protected virtual async Task HandleOnClear() {
+        protected virtual async Task HandleOnClear()
+        {
             if (IsEnabled)
             {
                 Value = string.Empty;
@@ -47,7 +48,8 @@ namespace Bit.Client.Web.BlazorUI.SearchBoxes
                     _ = InputRef.FocusAsync();
                     await OnClear.InvokeAsync();
                 }
-                else {
+                else
+                {
                     Value = await JSRuntime.GetElementProperty(InputRef, "value");
                     await OnSearch.InvokeAsync(Value);
                 }
@@ -77,7 +79,7 @@ namespace Bit.Client.Web.BlazorUI.SearchBoxes
                         break;
                     case nameof(IconName):
                         IconName = (string)parameter.Value;
-                        break;    
+                        break;
                     case nameof(Width):
                         Width = (string)parameter.Value;
                         break;

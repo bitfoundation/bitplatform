@@ -13,7 +13,7 @@ namespace System
 
         public static async Task<string> GetElementProperty(this IJSRuntime jsRuntime, ElementReference element, string property)
         {
-             return await jsRuntime.InvokeAsync<string>("getElementProperty", element, property);
+            return await jsRuntime.InvokeAsync<string>("getElementProperty", element, property);
         }
     }
 }
