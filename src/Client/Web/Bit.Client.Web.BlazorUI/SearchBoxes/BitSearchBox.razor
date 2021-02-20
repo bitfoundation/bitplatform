@@ -1,12 +1,12 @@
 ﻿@inherits BitComponentBase
 
-<div class="bit-searchbox bit-searchbox-container @(VisualClass) @(EnabledClass) @(InputValueClass) @InputFocusClass 
+<div class="bit-search-box bit-search-box-container @(VisualClass) @(EnabledClass) @(InputValueClass) @InputFocusClass 
      @AnimationClass
      @UndelinedClass" style="@WidthStyle">
-    <div class="bit-searchbox-item bit-searchbox-item__search-icon-container">
+    <div class="bit-search-box-item bit-search-box-item__search-icon-container">
         <i class="bit-icon bit-icon--@IconName"></i>
     </div>
-    <input type="text" @ref="InputRef" class="bit-searchbox-item bit-searchbox-item__input" 
+    <input type="text" @ref="InputRef" class="bit-search-box-item bit-search-box-item__input" 
            placeholder="@Placeholder"
            @bind-value="Value"
            @bind-value:event="oninput"
@@ -15,8 +15,8 @@
            @onfocusout="HandleInputFocusOut" 
            disabled="@(IsEnabled is false)"
            />
-    <div class="bit-searchbox-item bit-searchbox-item__clear-button-container">
-        <button type="button" class="bit-searchbox-item__clear-button" @onclick="HandleOnClear">
+    <div class="bit-search-box-item bit-search-box-item__clear-button-container">
+        <button type="button" class="bit-search-box-item__clear-button" @onclick="HandleOnClear">
             <i class="bit-icon bit-icon--Clear"></i>
         </button>
     </div>

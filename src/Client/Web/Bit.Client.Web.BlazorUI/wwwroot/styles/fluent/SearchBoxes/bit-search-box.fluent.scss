@@ -1,6 +1,6 @@
 ﻿@import "../_colors.fluent.scss", "../../_functions.scss";
 
-.bit-searchbox-container {
+.bit-search-box-container {
     -webkit-font-smoothing: antialiased;
     font-size: 14px;
     font-weight: 400;
@@ -18,7 +18,7 @@
     height: 32px;
 
     &.has-value {
-        .bit-searchbox-item__clear-button-container {
+        .bit-search-box-item__clear-button-container {
             width: 32px;
             flex-basis: 0px;
 
@@ -29,7 +29,7 @@
     }
 
     &.has-value:hover {
-        .bit-searchbox-item__search-icon-container {
+        .bit-search-box-item__search-icon-container {
             width: 0px;
 
             & i.bit-icon {
@@ -41,7 +41,7 @@
     &.focused {
         border: 2px solid $Primary;
 
-        .bit-searchbox-item__search-icon-container {
+        .bit-search-box-item__search-icon-container {
             width: 0px;
 
             & i.bit-icon {
@@ -51,7 +51,7 @@
     }
 
     &.no-animation {
-        .bit-searchbox-item__search-icon-container {
+        .bit-search-box-item__search-icon-container {
             transition: none;
 
             & i.bit-icon {
@@ -59,7 +59,7 @@
             }
         }
 
-        .bit-searchbox-item__clear-button-container {
+        .bit-search-box-item__clear-button-container {
             transition: none;
 
             & i.bit-icon--Clear {
@@ -90,13 +90,13 @@
             background-color: transparent;
         }
 
-        & .bit-searchbox-item__search-icon-container {
+        & .bit-search-box-item__search-icon-container {
             color: #a19f9d;
         }
     }
 }
 
-    .bit-searchbox-item__input {
+    .bit-search-box-item__input {
         box-shadow: none;
         margin: 0px;
         padding: 0px 0px 0.5px;
@@ -111,7 +111,7 @@
         text-overflow: ellipsis;
     }
 
-    .bit-searchbox-item__search-icon-container {
+    .bit-search-box-item__search-icon-container {
         display: flex;
         flex-direction: column;
         justify-content: center;
@@ -134,7 +134,7 @@
         }
     }
 
-    .bit-searchbox-item__clear-button-container {
+    .bit-search-box-item__clear-button-container {
         display: flex;
         flex-direction: row;
         align-items: stretch;

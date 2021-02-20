@@ -13,7 +13,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.SearchBoxes
         {
             var component = RenderComponent<BitSearchBoxTest>(parameter =>
             parameter.Add(p => p.Placeholder, componentPlaceholder));
-            var input = component.Find("input.bit-searchbox-item__input");
+            var input = component.Find("input.bit-search-box-item__input");
 
             var inputPlaceholder = input.GetAttribute("placeholder");
 
@@ -25,7 +25,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.SearchBoxes
         {
             var component = RenderComponent<BitSearchBoxTest>(parameter =>
             parameter.Add(p => p.Value, value));
-            var input = component.Find("input.bit-searchbox-item__input");
+            var input = component.Find("input.bit-search-box-item__input");
 
             var inputValue = input.GetAttribute("value");
 
@@ -37,7 +37,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.SearchBoxes
         {
             var component = RenderComponent<BitSearchBoxTest>(parameter =>
             parameter.Add(p => p.DisableAnimation, disableAnimation));
-            var searchBox = component.Find(".bit-searchbox");
+            var searchBox = component.Find(".bit-search-box");
 
             Assert.AreEqual(disableAnimation, searchBox.ClassList.Contains("no-animation"));
         }
@@ -47,7 +47,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.SearchBoxes
         {
             var component = RenderComponent<BitSearchBoxTest>(parameter =>
             parameter.Add(p => p.IsUnderlined, isUnderlined));
-            var searchBox = component.Find(".bit-searchbox");
+            var searchBox = component.Find(".bit-search-box");
 
             Assert.AreEqual(isUnderlined, searchBox.ClassList.Contains("underlined"));
         }
