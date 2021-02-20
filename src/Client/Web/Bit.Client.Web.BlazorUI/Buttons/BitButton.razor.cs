@@ -6,7 +6,6 @@ namespace Bit.Client.Web.BlazorUI.Buttons
 {
     public partial class BitButton
     {
-        [Parameter] public string Text { get; set; }
         [Parameter] public EventCallback<MouseEventArgs> OnClick { get; set; }
         [Parameter] public RenderFragment ChildContent { get; set; }
 
@@ -26,9 +25,6 @@ namespace Bit.Client.Web.BlazorUI.Buttons
                 {
                     case nameof(OnClick):
                         OnClick = (EventCallback<MouseEventArgs>)parameter.Value;
-                        break;
-                    case nameof(Text):
-                        Text = (string)parameter.Value;
                         break;
                     case nameof(ChildContent):
                         ChildContent = (RenderFragment)parameter.Value;
