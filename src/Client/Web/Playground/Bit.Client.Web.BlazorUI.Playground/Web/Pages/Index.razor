@@ -12,39 +12,7 @@
 </style>
 
 <h1>Bit Components</h1>
-<hr />
-<div class="search-box-container">
-    <h3>SearchBox</h3>
-    <h5>Default SearchBox</h5>
-    <BitSearchBox Placeholder="Search" OnSearch="HandledSearch" OnClear="HandleClear"></BitSearchBox>
-    <br />
-    <BitSearchBox Placeholder="Search with no animation" DisableAnimation=true></BitSearchBox>
-    <br />
-    <h5>Underlined SearchBox</h5>
-    <BitSearchBox Placeholder="Search" IsUndelined=true></BitSearchBox>
-    <br />
-    <h5>SearchBox with custom icon</h5>
-    <BitSearchBox Placeholder="Filter" IconName="Filter"></BitSearchBox>
-    <h5>Disabled SearchBox</h5>
-    <BitSearchBox Placeholder="Search" IsEnabled=false></BitSearchBox>
-    <br />
-    <BitSearchBox Placeholder="Search" IsEnabled=false IsUndelined=true></BitSearchBox>
-    <h5>SearchBox with fixed width</h5>
-    <BitSearchBox Placeholder="Search" OnSearch="HandledSearch" OnClear="HandleClear" Width="250px"></BitSearchBox>
-    @code{
-        void HandledSearch(string value)
-        {
-            Console.WriteLine("On Search ... --> " + value);
-        }
 
-        void HandleClear()
-        {
-            Console.WriteLine("Clear Button Clicked !");
-        }
-
-    }
-    <br />
-</div>
 <hr />
 
 <div class="buttons-container">
@@ -104,7 +72,7 @@
     <h5>Custom Label</h5>
     <BitCheckbox>
         <CustomLabel>
-            Custom-rendered label with a link go to 
+            Custom-rendered label with a link go to
             <a href='https://github.com/bitfoundation/bitframework'>
                 bit foundation repository page.
             </a>
@@ -115,5 +83,39 @@
     <BitCheckbox BoxSide="@BoxSide.End" Label="Reversed -- Checked Checkbox" IsChecked="true"></BitCheckbox>
     <BitCheckbox BoxSide="@BoxSide.End" Label="Reversed -- Disable Checkbox" IsEnabled="false"></BitCheckbox>
     <BitCheckbox BoxSide="@BoxSide.End" Label="Reversed -- Disable Checked Checkbox" IsEnabled="false" IsChecked="true"></BitCheckbox>
+    <br />
+</div>
+
+<hr />
+<div class="search-box-container">
+    <h3>SearchBox</h3>
+    <h5>Default SearchBox</h5>
+    <BitSearchBox Placeholder="Search" OnSearch="HandledSearch" OnClear="HandleClear"></BitSearchBox>
+    <br />
+    <BitSearchBox Placeholder="Search with no animation" DisableAnimation=true></BitSearchBox>
+    <br />
+    <h5>Underlined SearchBox</h5>
+    <BitSearchBox Placeholder="Search" IsUndelined=true></BitSearchBox>
+    <br />
+    <h5>SearchBox with custom icon</h5>
+    <BitSearchBox Placeholder="Filter" IconName="Filter"></BitSearchBox>
+    <h5>Disabled SearchBox</h5>
+    <BitSearchBox Placeholder="Search" IsEnabled=false></BitSearchBox>
+    <br />
+    <BitSearchBox Placeholder="Search" IsEnabled=false IsUnderlined=true></BitSearchBox>
+    <h5>SearchBox with fixed width</h5>
+    <BitSearchBox Placeholder="Search" OnSearch="HandledSearch" OnClear="HandleClear" Width="250px"></BitSearchBox>
+    @code{
+        void HandledSearch(string value)
+        {
+            Console.WriteLine("On Search ... --> " + value);
+        }
+
+        void HandleClear()
+        {
+            Console.WriteLine("Clear Button Clicked !");
+        }
+
+    }
     <br />
 </div>

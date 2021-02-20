@@ -15,7 +15,7 @@ namespace Bit.Client.Web.BlazorUI.SearchBoxes
         [Parameter] public string Value { get; set; }
         [Parameter] public string Placeholder { get; set; }
         [Parameter] public bool DisableAnimation { get; set; }
-        [Parameter] public bool IsUndelined { get; set; }
+        [Parameter] public bool IsUnderlined { get; set; }
         [Parameter] public string IconName { get; set; } = "Search";
         [Parameter] public string Width { get; set; }
         [Parameter] public EventCallback<string> OnSearch { get; set; }
@@ -25,7 +25,7 @@ namespace Bit.Client.Web.BlazorUI.SearchBoxes
 
         public string InputValueClass => Value.HasValue() ? "has-value" : string.Empty;
         public string AnimationClass => DisableAnimation ? "no-animation" : string.Empty;
-        public string UndelinedClass => IsUndelined ? "underlined" : string.Empty;
+        public string UnderlinedClass => IsUnderlined ? "underlined" : string.Empty;
         public string WidthStyle => $"width: {Width}";
 
         protected virtual async Task HandleOnClear() {
@@ -72,8 +72,8 @@ namespace Bit.Client.Web.BlazorUI.SearchBoxes
                     case nameof(DisableAnimation):
                         DisableAnimation = (bool)parameter.Value;
                         break;
-                    case nameof(IsUndelined):
-                        IsUndelined = (bool)parameter.Value;
+                    case nameof(IsUnderlined):
+                        IsUnderlined = (bool)parameter.Value;
                         break;
                     case nameof(IconName):
                         IconName = (string)parameter.Value;
