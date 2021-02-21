@@ -4,15 +4,27 @@ $MessagebarError: #fde7e9;
 $MessagebarSuccess: #dff6dd;
 .bit-message-bar.fluent {
     font-family: FluentFont;
-    font-size: rem(14px);
+    font-size: rem(12px);
     font-weight: 400;
     line-height: inherit;
     color: $Grey160;
     align-items: center;
     text-align: left;
-    background-color: $MessagebarDefault;
     width: 100%;
     display: flex;
     word-break: break-word;
     flex-direction: column;
+}
+.bit-message-bar.fluent.style-default {
+    background-color: $MessagebarDefault;
+}
+.bit-message-bar.fluent.style-error {
+    background-color: $MessagebarError;
+}
+.bit-message-bar.fluent.style-success {
+    background-color: $MessagebarSuccess;
+}
+.bit-message-bar.fluent .flexContainer {
+    display:flex;
+    margin: 8px 12px 8px 8px;
 }

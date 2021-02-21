@@ -10,13 +10,17 @@ namespace Bit.Client.Web.BlazorUI.Notifications
     public partial class BitMessageBar
     {
         [Parameter] public RenderFragment ChildContent { get; set; }
-
+        [Parameter] public MessageBarStyle Style { get; set; } = MessageBarStyle.Default;
+        public string StyleClass => Style == MessageBarStyle.Error ? "style-error" : Style == MessageBarStyle.Success ? "style-success" : "style-default";
         public override Task SetParametersAsync(ParameterView parameters)
         {
             foreach (ParameterValue parameter in parameters)
             {
                 switch (parameter.Name)
                 {
+                    case nameof(Style):
+                        Style = (MessageBarStyle)parameter.Value;
+                        break;
                     case nameof(ChildContent):
                         ChildContent = (RenderFragment)parameter.Value;
                         break;
@@ -25,4 +29,12 @@ namespace Bit.Client.Web.BlazorUI.Notifications
             return base.SetParametersAsync(parameters);
         }
     }
+
+    public enum MessageBarStyle
+    {
+        Default,
+        Error,
+        Success
+    }
+
 }
