@@ -1,9 +1,10 @@
-﻿<BitCompoundButton OnClick="IncrementCount" IsEnabled="BitCompoundButtonIsEnabled" Text="Test" SecondaryText="Second Text">
+﻿<BitCompoundButton OnClick="IncrementCount" IsEnabled="BitCompoundButtonIsEnabled" Text="Test" SecondaryText="Second Text" Style="@BitCompoundButtonStyle">
 </BitCompoundButton>
 
 
 @code {
     [Parameter] public bool BitCompoundButtonIsEnabled { get; set; }
+    [Parameter] public ButtonStyle BitCompoundButtonStyle { get; set; }
 
     public int CurrentCount { get; set; }
 

@@ -1,9 +1,10 @@
-﻿<BitButton OnClick="IncrementCount" IsEnabled="BitButtonIsEnabled">
+﻿<BitButton OnClick="IncrementCount" IsEnabled="BitButtonIsEnabled" Style="@BitButtonStyle">
     <label>Other test label</label>
 </BitButton>
 
 @code {
     [Parameter] public bool BitButtonIsEnabled { get; set; }
+    [Parameter] public ButtonStyle BitButtonStyle { get; set; }
 
     public int CurrentCount { get; set; }
 
