@@ -9,11 +9,9 @@ $MessagebarSuccess: #dff6dd;
     line-height: inherit;
     color: $Grey160;
     align-items: center;
-    text-align: left;
     width: 100%;
     display: flex;
     word-break: break-word;
-    flex-direction: column;
 }
 .bit-message-bar.fluent.style-default {
     background-color: $MessagebarDefault;
@@ -25,6 +23,7 @@ $MessagebarSuccess: #dff6dd;
     background-color: $MessagebarSuccess;
 }
 .bit-message-bar.fluent .flexContainer {
-    display:flex;
-    margin: 8px 12px 8px 8px;
+    margin: 8px 0px 8px 12px; 
+    padding: 0;
+    text-align: left;
 }

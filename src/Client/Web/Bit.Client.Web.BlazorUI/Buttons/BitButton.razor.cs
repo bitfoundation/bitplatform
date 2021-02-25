@@ -6,6 +6,8 @@ namespace Bit.Client.Web.BlazorUI.Buttons
 {
     public partial class BitButton
     {
+        [Parameter] public ButtonStyle Style { get; set; } = ButtonStyle.Primary;
+        public string StyleClass => !IsEnabled?"": Style == ButtonStyle.Primary ? "style-primary" : "style-standard";
         [Parameter] public EventCallback<MouseEventArgs> OnClick { get; set; }
         [Parameter] public RenderFragment ChildContent { get; set; }
 
@@ -23,6 +25,9 @@ namespace Bit.Client.Web.BlazorUI.Buttons
             {
                 switch (parameter.Name)
                 {
+                    case nameof(Style):
+                        Style = (ButtonStyle)parameter.Value;
+                        break;
                     case nameof(OnClick):
                         OnClick = (EventCallback<MouseEventArgs>)parameter.Value;
                         break;
@@ -34,5 +39,11 @@ namespace Bit.Client.Web.BlazorUI.Buttons
 
             return base.SetParametersAsync(parameters);
         }
+    }
+
+    public enum ButtonStyle
+    {
+        Primary,
+        Standard
     }
 }
