@@ -1,4 +1,11 @@
-﻿@page "/"
+﻿@code {
+    private bool _isMessageBarHidden = false;
+    private void MessageBarButton(MouseEventArgs args)
+    {
+        _isMessageBarHidden = true;
+    }
+}
+@page "/"
 <style>
     /* Temp Styles */
     .links-container {
@@ -62,7 +69,26 @@
 </div>
 <div class="message-bar-container">
     <h2>BitMessageBar</h2>
-    <BitMessageBar Style="@MessageBarStyle.Success">
-        Salam haji
+    @if (!_isMessageBarHidden)
+    {
+        <BitMessageBar Style="@MessageBarStyle.Success">
+            Action completed! <BitButton OnClick="MessageBarButton" Style="@ButtonStyle.Standard">OK</BitButton>
+        </BitMessageBar>
+        <br />
+    }
+    <BitMessageBar Style="@MessageBarStyle.Error">
+        Error! Cannot complete action
+    </BitMessageBar>
+    <br />
+    <BitMessageBar Style="@MessageBarStyle.Warning">
+        Caution! Action may takes long time
+    </BitMessageBar>
+    <br />
+    <BitMessageBar Style="@MessageBarStyle.Severe">
+        Cannot connect to server
+    </BitMessageBar>
+    <br />
+    <BitMessageBar Style="@MessageBarStyle.Default">
+       Visit repository <BitLink Text="here" Href="https://github.com/bitfoundation/bitframework"></BitLink>
     </BitMessageBar>
 </div>

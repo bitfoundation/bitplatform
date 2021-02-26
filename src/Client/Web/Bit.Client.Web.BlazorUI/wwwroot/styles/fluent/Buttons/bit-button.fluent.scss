@@ -1,5 +1,4 @@
 ﻿@import "../_colors.fluent.scss", "../../_functions.scss";
-
 .bit-button.fluent {
     font-family: FluentFont;
     display: inline-flex;
@@ -13,7 +12,6 @@
     line-height: em(20px);
     cursor: pointer;
 }
-
 .bit-button.fluent.disabled {
     background: $Grey20;
     color: $Grey90;
@@ -21,20 +19,16 @@
     cursor: default;
     pointer-events: none;
 }
-
 .bit-button.fluent.style-primary {
     color: $White;
     background: $Primary;
     border: 1px solid $Primary;
-
     &:hover {
         background-color: $DarkAlt;
     }
-
     &:active {
         background-color: $Dark !important;
     }
-
     &:active:focus {
         background-color: $Primary;
     }
@@ -43,16 +37,13 @@
     color: $Grey160;
     background: $White;
     border: 1px solid $GreyInputBorder;
-
     &:hover {
         background-color: $Grey20;
         border-color: $Grey160;
     }
-
     &:active {
         background-color: $Grey30 !important;
     }
-
     &:active:focus {
         background-color: $White;
         border-color: $GreyInputBorder;

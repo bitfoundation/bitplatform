@@ -1,7 +1,4 @@
 ﻿@import "../_colors.fluent.scss", "../../_functions.scss";
-$MessagebarDefault: #f3f2f1 ;
-$MessagebarError: #fde7e9;
-$MessagebarSuccess: #dff6dd;
 .bit-message-bar.fluent {
     font-family: FluentFont;
     font-size: rem(12px);
@@ -14,16 +11,26 @@ $MessagebarSuccess: #dff6dd;
     word-break: break-word;
 }
 .bit-message-bar.fluent.style-default {
-    background-color: $MessagebarDefault;
+    background-color: $Grey20;
 }
 .bit-message-bar.fluent.style-error {
-    background-color: $MessagebarError;
+    background-color: $Error;
 }
 .bit-message-bar.fluent.style-success {
-    background-color: $MessagebarSuccess;
+    background-color: $Success;
 }
+.bit-message-bar.fluent.style-warning {
+    background-color: $Warning;
+}
+.bit-message-bar.fluent.style-severe {
+    background-color: $Severe;
+} 
 .bit-message-bar.fluent .flexContainer {
     margin: 8px 0px 8px 12px; 
     padding: 0;
     text-align: left;
+}
+.bit-message-bar.fluent .bit-button.fluent{
+    padding: em(2) em(18) !important;
+    min-width: em(80);
 }

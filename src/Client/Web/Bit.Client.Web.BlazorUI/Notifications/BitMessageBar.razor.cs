@@ -1,9 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using Microsoft.AspNetCore.Components;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Components;
 
 namespace Bit.Client.Web.BlazorUI.Notifications
 {
@@ -11,7 +7,7 @@ namespace Bit.Client.Web.BlazorUI.Notifications
     {
         [Parameter] public RenderFragment ChildContent { get; set; }
         [Parameter] public MessageBarStyle Style { get; set; } = MessageBarStyle.Default;
-        public string StyleClass => Style == MessageBarStyle.Error ? "style-error" : Style == MessageBarStyle.Success ? "style-success" : "style-default";
+        public string StyleClass => Style == MessageBarStyle.Warning ? "style-warning" : Style == MessageBarStyle.Severe ? "style-severe" : Style == MessageBarStyle.Error ? "style-error" : Style == MessageBarStyle.Success ? "style-success" : "style-default";
         public override Task SetParametersAsync(ParameterView parameters)
         {
             foreach (ParameterValue parameter in parameters)
@@ -34,7 +30,9 @@ namespace Bit.Client.Web.BlazorUI.Notifications
     {
         Default,
         Error,
-        Success
+        Success,
+        Warning,
+        Severe
     }
 
 }

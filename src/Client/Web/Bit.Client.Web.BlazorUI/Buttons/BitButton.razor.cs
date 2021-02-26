@@ -7,7 +7,7 @@ namespace Bit.Client.Web.BlazorUI.Buttons
     public partial class BitButton
     {
         [Parameter] public ButtonStyle Style { get; set; } = ButtonStyle.Primary;
-        public string StyleClass => !IsEnabled?"": Style == ButtonStyle.Primary ? "style-primary" : "style-standard";
+        public string StyleClass => !IsEnabled ? "" : Style == ButtonStyle.Primary ? "style-primary" : "style-standard";
         [Parameter] public EventCallback<MouseEventArgs> OnClick { get; set; }
         [Parameter] public RenderFragment ChildContent { get; set; }
 
