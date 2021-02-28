@@ -58,7 +58,7 @@
     <MtouchLink>None</MtouchLink>
     <MtouchInterpreter>
     </MtouchInterpreter>
-    <MtouchProfiling>true</MtouchProfiling>
+    <MtouchProfiling>false</MtouchProfiling>
     <DeviceSpecificBuild>false</DeviceSpecificBuild>
     <MtouchFastDev>false</MtouchFastDev>
   </PropertyGroup>

@@ -192,10 +192,10 @@ namespace Bit.Core.Implementations
             return Register(new[] { typeof(TService).GetTypeInfo() }, typeof(TImplementation).GetTypeInfo(), name, lifeCycle, overwriteExisting);
         }
 
-        public virtual IDependencyManager RegisterInstance<TService>(TService obj, bool overwriteExisting = true, string? name = null)
+        public virtual IDependencyManager RegisterInstance<TService>(TService implementationInstance, bool overwriteExisting = true, string? name = null)
             where TService : class
         {
-            return RegisterInstance(obj, new[] { typeof(TService).GetTypeInfo() }, overwriteExisting, name);
+            return RegisterInstance(implementationInstance, new[] { typeof(TService).GetTypeInfo() }, overwriteExisting, name);
         }
 
         public virtual IDependencyManager RegisterAssemblyTypes(Assembly[] assemblies, Predicate<TypeInfo>? predicate = null, DependencyLifeCycle lifeCycle = DependencyLifeCycle.PerScopeInstance)
@@ -369,7 +369,7 @@ namespace Bit.Core.Implementations
         public virtual async ValueTask DisposeAsync()
         {
             if (_container != null)
-                await _container.DisposeAsync();
+                await _container.DisposeAsync().ConfigureAwait(false);
         }
 
         public virtual IDependencyManager Populate(IServiceCollection services)

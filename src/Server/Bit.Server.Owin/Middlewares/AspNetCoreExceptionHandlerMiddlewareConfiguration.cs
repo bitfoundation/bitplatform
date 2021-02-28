@@ -83,7 +83,7 @@ namespace Bit.Owin.Middlewares
                     return Task.CompletedTask;
                 });
 
-                await _next.Invoke(context);
+                await _next.Invoke(context).ConfigureAwait(false);
 
                 var status = GetResponseStatus(context);
                 if (status.responseStatusCodeIsErrorCodeBecauseOfSomeServerBasedReason ||
@@ -98,30 +98,30 @@ namespace Bit.Owin.Middlewares
 
                     if (status.responseStatusCodeIsErrorCodeBecauseOfSomeClientBasedReason || reasonPhrase == BitMetadataBuilder.KnownError)
                     {
-                        await logger.LogWarningAsync("Response has failed status code because of some client side reason");
+                        await logger.LogWarningAsync("Response has failed status code because of some client side reason").ConfigureAwait(false);
                     }
                     else if (status.responseStatusCodeIsErrorCodeBecauseOfSomeServerBasedReason)
                     {
-                        await logger.LogFatalAsync("Response has failed status code because of some server side reason");
+                        await logger.LogFatalAsync("Response has failed status code because of some server side reason").ConfigureAwait(false);
                     }
                 }
                 else if (!scopeStatusManager.WasSucceeded())
                 {
-                    await logger.LogFatalAsync($"Scope was failed: {scopeStatusManager.FailureReason}");
+                    await logger.LogFatalAsync($"Scope was failed: {scopeStatusManager.FailureReason}").ConfigureAwait(false);
                 }
                 else
                 {
                     scopeStatusManager.MarkAsSucceeded();
 
                     if (logger.Policy == LogPolicy.Always)
-                        await logger.LogInformationAsync("Response succeded.");
+                        await logger.LogInformationAsync("Response succeded.").ConfigureAwait(false);
                 }
             }
             catch (Exception exp)
             {
                 if (scopeStatusManager.WasSucceeded())
                     scopeStatusManager.MarkAsFailed(exp.Message);
-                await logger.LogExceptionAsync(exp, "Request-Execution-Exception");
+                await logger.LogExceptionAsync(exp, "Request-Execution-Exception").ConfigureAwait(false);
                 string statusCode = context.Response.StatusCode.ToString(CultureInfo.InvariantCulture);
                 bool responseStatusCodeIsErrorCodeBecauseOfSomeServerBasedReason = statusCode.StartsWith("5", StringComparison.InvariantCultureIgnoreCase);
                 bool responseStatusCodeIsErrorCodeBecauseOfSomeClientBasedReason = statusCode.StartsWith("4", StringComparison.InvariantCultureIgnoreCase);
@@ -130,7 +130,7 @@ namespace Bit.Owin.Middlewares
                     IExceptionToHttpErrorMapper exceptionToHttpErrorMapper = context.RequestServices.GetRequiredService<IExceptionToHttpErrorMapper>();
                     context.Response.StatusCode = Convert.ToInt32(exceptionToHttpErrorMapper.GetStatusCode(exp), CultureInfo.InvariantCulture);
                     context.Features.Get<IHttpResponseFeature>().ReasonPhrase = exceptionToHttpErrorMapper.GetReasonPhrase(exp);
-                    await context.Response.WriteAsync(exceptionToHttpErrorMapper.GetMessage(exp), context.RequestAborted);
+                    await context.Response.WriteAsync(exceptionToHttpErrorMapper.GetMessage(exp), context.RequestAborted).ConfigureAwait(false);
                 }
                 throw;
             }

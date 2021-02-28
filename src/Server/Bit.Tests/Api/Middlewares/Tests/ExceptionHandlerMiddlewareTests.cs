@@ -3,7 +3,7 @@ using Bit.Core.Models;
 using Bit.Test;
 using Bit.Test.Implementations;
 using FakeItEasy;
-using IdentityModel.Client;
+using Bit.Http.Contracts;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Owin;
 using System;
@@ -21,7 +21,7 @@ namespace Bit.Tests.Api.Middlewares.Tests
         {
             using (BitOwinTestEnvironment testEnvironment = new BitOwinTestEnvironment())
             {
-                await testEnvironment.Server.Login("ValidUserName", "ValidPassword", clientId: "TestResOwner");
+                await testEnvironment.Server.LoginWithCredentials("ValidUserName", "ValidPassword", clientId: "TestResOwner");
 
                 IScopeStatusManager scopeStatusManager = testEnvironment.GetObjects<IScopeStatusManager>()
                     .Single();
@@ -51,7 +51,7 @@ namespace Bit.Tests.Api.Middlewares.Tests
             {
                 try
                 {
-                    TokenResponse token = await testEnvironment.Server.Login("ValidUserName", "ValidPassword", clientId: "TestResOwner");
+                    Token token = await testEnvironment.Server.LoginWithCredentials("ValidUserName", "ValidPassword", clientId: "TestResOwner");
 
                     await testEnvironment.Server.BuildHttpClient(token)
                         .GetAsync("/Exception");
@@ -99,7 +99,7 @@ namespace Bit.Tests.Api.Middlewares.Tests
                 }
             }))
             {
-                TokenResponse token = await testEnvironment.Server.Login("ValidUserName", "ValidPassword", clientId: "TestResOwner");
+                Token token = await testEnvironment.Server.LoginWithCredentials("ValidUserName", "ValidPassword", clientId: "TestResOwner");
 
                 await testEnvironment.Server.BuildHttpClient(token)
                             .GetAsync("/InternalServerError");
@@ -130,7 +130,7 @@ namespace Bit.Tests.Api.Middlewares.Tests
         {
             using (BitOwinTestEnvironment testEnvironment = new BitOwinTestEnvironment())
             {
-                TokenResponse token = await testEnvironment.Server.Login("ValidUserName", "ValidPassword", clientId: "TestResOwner");
+                Token token = await testEnvironment.Server.LoginWithCredentials("ValidUserName", "ValidPassword", clientId: "TestResOwner");
 
                 await testEnvironment.Server.BuildHttpClient(token)
                     .GetAsync("/odata/Test/XYZ");

@@ -24,7 +24,7 @@ namespace Bit.OData.ODataControllers
         {
             Logger.AddLogData("ClientLogs", clientLog);
 
-            await Logger.LogWarningAsync("Client-Log");
+            await Logger.LogWarningAsync("Client-Log").ConfigureAwait(false);
 
             return SingleResult(clientLog);
         }

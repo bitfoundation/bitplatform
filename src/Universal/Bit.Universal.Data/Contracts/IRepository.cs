@@ -36,36 +36,36 @@ namespace Bit.Data.Contracts
         /// <summary>
         /// Loads the collection of <paramref name="childs"/> entities from the database
         /// </summary>
-        void LoadCollection<TProperty>(T item, Expression<Func<T, IEnumerable<TProperty?>>> childs)
+        void LoadCollection<TProperty>(T entity, Expression<Func<T, IEnumerable<TProperty?>>> childs)
             where TProperty : class;
 
         /// <summary>
         /// Asynchronously loads the collection of <paramref name="childs"/> entities from the database
         /// </summary>
-        Task LoadCollectionAsync<TProperty>(T item, Expression<Func<T, IEnumerable<TProperty?>>> childs,
+        Task LoadCollectionAsync<TProperty>(T entity, Expression<Func<T, IEnumerable<TProperty?>>> childs,
             CancellationToken cancellationToken)
             where TProperty : class;
 
         /// <summary>
-        /// Asynchronously loads the <paramref name="member"/> item from the database
+        /// Asynchronously loads the <paramref name="member"/> entity from the database
         /// </summary>
-        Task LoadReferenceAsync<TProperty>(T item, Expression<Func<T, TProperty?>> member,
+        Task LoadReferenceAsync<TProperty>(T entity, Expression<Func<T, TProperty?>> member,
             CancellationToken cancellationToken)
             where TProperty : class;
 
         /// <summary>
-        /// Loads the <paramref name="member"/> item from the database
+        /// Loads the <paramref name="member"/> entity from the database
         /// </summary>
-        void LoadReference<TProperty>(T item, Expression<Func<T, TProperty?>> member)
+        void LoadReference<TProperty>(T entity, Expression<Func<T, TProperty?>> member)
             where TProperty : class;
 
         Task<T?> GetByIdAsync(CancellationToken cancellationToken, params object[] ids);
 
         T? GetById(params object[] ids);
 
-        Task ReloadAsync(T item, CancellationToken cancellationToken);
+        Task ReloadAsync(T entity, CancellationToken cancellationToken);
 
-        void Reload(T item);
+        void Reload(T entity);
 
         /// <summary>
         /// Returns the query that would be used to load <paramref name="childs"/> collection from the database.
@@ -74,7 +74,7 @@ namespace Bit.Data.Contracts
         /// the database without actually loading them
         /// </summary>
         /// <returns>A query for the <paramref name="childs"/> collection</returns>
-        IQueryable<TChild> GetCollectionQuery<TChild>(T item, Expression<Func<T, IEnumerable<TChild>>> childs)
+        IQueryable<TChild> GetCollectionQuery<TChild>(T entity, Expression<Func<T, IEnumerable<TChild>>> childs)
             where TChild : class;
     }
 }

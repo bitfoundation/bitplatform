@@ -3,7 +3,7 @@ using Bit.Test;
 using Bit.Tests.Core.Contracts;
 using Bit.Tests.Model.DomainModels;
 using FakeItEasy;
-using IdentityModel.Client;
+using Bit.Http.Contracts;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Simple.OData.Client;
 using System.Collections.Generic;
@@ -51,7 +51,7 @@ namespace Bit.Tests.Api.Middlewares.WebApi.Tests
                 }
             }))
             {
-                TokenResponse token = await testEnvironment.Server.Login("ValidUserName", "ValidPassword", clientId: "TestResOwner");
+                Token token = await testEnvironment.Server.LoginWithCredentials("ValidUserName", "ValidPassword", clientId: "TestResOwner");
 
                 IODataClient client = testEnvironment.BuildTestODataClient(token: token);
 
@@ -115,7 +115,7 @@ namespace Bit.Tests.Api.Middlewares.WebApi.Tests
                 }
             }))
             {
-                TokenResponse token = await testEnvironment.Server.Login("ValidUserName", "ValidPassword", clientId: "TestResOwner");
+                Token token = await testEnvironment.Server.LoginWithCredentials("ValidUserName", "ValidPassword", clientId: "TestResOwner");
 
                 IODataClient client = testEnvironment.BuildTestODataClient(token: token);
 

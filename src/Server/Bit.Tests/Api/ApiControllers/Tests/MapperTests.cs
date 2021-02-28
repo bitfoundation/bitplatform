@@ -1,5 +1,5 @@
 ﻿using Bit.Test;
-using IdentityModel.Client;
+using Bit.Http.Contracts;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Newtonsoft.Json.Linq;
 using System.Net.Http;
@@ -18,7 +18,7 @@ namespace Bit.Tests.Api.ApiControllers.Tests
                 ActiveAppEnvironmentCustomizer = env => env.AddOrReplace("UseAutoMapperProfile", true)
             }))
             {
-                TokenResponse token = await testEnvironment.Server.Login("ValidUserName", "ValidPassword", clientId: "TestResOwner");
+                Token token = await testEnvironment.Server.LoginWithCredentials("ValidUserName", "ValidPassword", clientId: "TestResOwner");
 
                 HttpResponseMessage response = await testEnvironment.Server.BuildHttpClient(token)
                     .GetAsync("api/mapper/some-api");
@@ -34,7 +34,7 @@ namespace Bit.Tests.Api.ApiControllers.Tests
                 ActiveAppEnvironmentCustomizer = env => env.AddOrReplace("UseAutoMapperProfile", true)
             }))
             {
-                TokenResponse token = await testEnvironment.Server.Login("ValidUserName", "ValidPassword", clientId: "TestResOwner");
+                Token token = await testEnvironment.Server.LoginWithCredentials("ValidUserName", "ValidPassword", clientId: "TestResOwner");
 
                 HttpResponseMessage response = await testEnvironment.Server.BuildHttpClient(token)
                     .GetAsync("api/mapper/some-api");

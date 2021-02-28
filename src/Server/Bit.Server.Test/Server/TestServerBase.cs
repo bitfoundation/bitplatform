@@ -1,9 +1,11 @@
-﻿using Bit.Core.Implementations;
+﻿using Bit.Core.Exceptions;
+using Bit.Core.Implementations;
+using Bit.Http.Contracts;
 using Bit.Http.Implementations;
 using Bit.OData.Implementations;
+using Bit.Owin.Metadata;
 using Bit.Signalr;
 using Bit.Signalr.Implementations;
-using IdentityModel.Client;
 using Microsoft.AspNet.SignalR.Client;
 using Microsoft.AspNet.SignalR.Client.Transports;
 using Newtonsoft.Json;
@@ -14,9 +16,12 @@ using Refit;
 using Simple.OData.Client;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Threading.Tasks;
+using System.Web.Http;
 
 namespace Bit.Test.Server
 {
@@ -24,12 +29,12 @@ namespace Bit.Test.Server
     {
         public virtual string Uri { get; protected set; } = default!;
 
-        public virtual ODataBatch BuildODataBatchClient(TokenResponse? token = null, string odataRouteName = "Test", ODataClientSettings? odataClientSettings = null)
+        public virtual ODataBatch BuildODataBatchClient(Token? token = null, string odataRouteName = "Test", ODataClientSettings? odataClientSettings = null)
         {
             return new ODataBatch(BuildODataClient(token, odataRouteName, odataClientSettings));
         }
 
-        public virtual IODataClient BuildODataClient(TokenResponse? token = null, string odataRouteName = "Test", ODataClientSettings? odataClientSettings = null)
+        public virtual IODataClient BuildODataClient(Token? token = null, string odataRouteName = "Test", ODataClientSettings? odataClientSettings = null)
         {
             Action<HttpRequestMessage>? originalBeforeRequest = odataClientSettings?.BeforeRequest;
 
@@ -62,7 +67,7 @@ namespace Bit.Test.Server
 
         protected abstract HttpMessageHandler GetHttpMessageHandler();
 
-        public virtual async Task<IHubProxy> BuildSignalRClient(TokenResponse? token = null, Action<string, dynamic>? onMessageReceived = null)
+        public virtual async Task<IHubProxy> BuildSignalRClient(Token? token = null, Action<string, dynamic>? onMessageReceived = null)
         {
             HubConnection hubConnection = new HubConnection(Uri);
 
@@ -79,7 +84,7 @@ namespace Bit.Test.Server
                 });
             }
 
-            await hubConnection.Start(new ServerSentEventsTransport(new SignalRHttpClient(GetHttpMessageHandler())));
+            await hubConnection.Start(new ServerSentEventsTransport(new SignalRHttpClient(GetHttpMessageHandler()))).ConfigureAwait(false);
 
             return hubProxy;
         }
@@ -149,53 +154,72 @@ namespace Bit.Test.Server
             Uri = uri;
         }
 
-        public virtual async Task<TokenResponse> Login(string userName, string password, string clientId, string secret = "secret", IDictionary<string, string?>? acr_values = null)
+        public virtual async Task<Token> LoginWithCredentials(string userName, string password, string client_id, string client_secret = "secret", string[]? scopes = null, IDictionary<string, string?>? acr_values = null)
         {
             if (userName == null)
+            {
                 throw new ArgumentNullException(nameof(userName));
-
+            }
             if (password == null)
+            {
                 throw new ArgumentNullException(nameof(password));
-
-            if (clientId == null)
-                throw new ArgumentNullException(nameof(clientId));
-
-            if (secret == null)
-                throw new ArgumentNullException(nameof(secret));
+            }
+            if (client_id == null)
+            {
+                throw new ArgumentNullException(nameof(client_id));
+            }
+            if (client_secret == null)
+            {
+                throw new ArgumentNullException(nameof(client_secret));
+            }
 
             HttpClient client = BuildHttpClient();
 
-            var parameters = new Dictionary<string, string> { };
+            scopes = scopes ?? new[] { "openid", "profile", "user_info" };
+
+            string loginData = $"scope={string.Join("+", scopes)}&grant_type=password&username={userName}&password={password}&client_id={client_id}&client_secret={client_secret}";
 
             if (acr_values != null)
             {
-                parameters.Add("acr_values", string.Join(" ", acr_values.Select(p => $"{p.Key}:{p.Value}")));
+                loginData += $"&acr_values={string.Join(" ", acr_values.Select(p => $"{p.Key}:{p.Value}"))}";
             }
 
-            TokenResponse tokenResponse = await client.RequestPasswordTokenAsync(new PasswordTokenRequest
-            {
-                Address = "core/connect/token",
-                ClientSecret = secret,
-                ClientId = clientId,
-                Scope = "openid profile user_info",
-                UserName = userName,
-                Password = password,
-                Parameters = parameters
-            });
+            loginData = System.Uri.EscapeUriString(loginData);
 
-            if (tokenResponse.IsError)
+            using HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Post, "core/connect/token");
+
+            request.Content = new StringContent(loginData);
+            request.Content.Headers.ContentType = new MediaTypeHeaderValue("application/x-www-form-urlencoded");
+            request.Content.Headers.ContentLength = loginData.Length;
+
+            using HttpResponseMessage response = await client.SendAsync(request).ConfigureAwait(false);
+
+            using Stream responseContent = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
+
+            Token token = await DefaultJsonContentFormatter.Current.DeserializeAsync<Token>(responseContent, default).ConfigureAwait(false);
+
+            if (token.IsError)
             {
-                throw tokenResponse.Exception ?? new Exception($"{tokenResponse.Error} {tokenResponse.Raw}");
+                if (token.Error == "invalid_grant" && !string.IsNullOrEmpty(token.ErrorDescription))
+                {
+                    throw new LoginFailureException(token.ErrorDescription, new Exception(token.Error));
+                }
+                else
+                {
+                    throw new Exception(token.Error);
+                }
             }
 
-            return tokenResponse;
+            token.LoginDate = DateTimeOffset.UtcNow;
+
+            return token;
         }
 
         public virtual string GetLoginUrl(string? client_id = null, Uri? redirect_uri = null, object? state = null, IDictionary<string, string?>? acr_values = null)
         {
             state ??= new { };
 
-            string relativeUri = $"InvokeLogin?state={JsonConvert.SerializeObject(state)}";
+            string relativeUri = $"InvokeLogin?state={DefaultJsonContentFormatter.Current.Serialize(state)}";
 
             if (redirect_uri != null)
                 relativeUri += $"&redirect_uri={redirect_uri}";
@@ -207,7 +231,7 @@ namespace Bit.Test.Server
             return relativeUri;
         }
 
-        public virtual HttpClient BuildHttpClient(TokenResponse? token = null)
+        public virtual HttpClient BuildHttpClient(Token? token = null)
         {
             HttpClient client = HttpClientFactory.Create(GetHttpMessageHandler());
 
@@ -221,7 +245,7 @@ namespace Bit.Test.Server
             return client;
         }
 
-        public virtual TService BuildRefitClient<TService>(TokenResponse? token = null)
+        public virtual TService BuildRefitClient<TService>(Token? token = null)
         {
             return RestService.For<TService>(BuildHttpClient(token), new RefitSettings
             {

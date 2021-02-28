@@ -79,21 +79,21 @@ namespace Bit.Tooling.CodeGenerator.Implementations.TypeScriptClientProxyGenerat
 
                 foreach (Project p in involveableProjects)
                 {
-                    dtos.AddRange(await _dtosProvider.GetProjectDtos(p, involveableProjects));
+                    dtos.AddRange(await _dtosProvider.GetProjectDtos(p, involveableProjects).ConfigureAwait(false));
                 }
 
                 List<EnumType> enumTypes = new List<EnumType>();
 
                 foreach (Project p in involveableProjects)
                 {
-                    enumTypes.AddRange(await _projectEnumTypesProvider.GetProjectEnumTypes(p, involveableProjects));
+                    enumTypes.AddRange(await _projectEnumTypesProvider.GetProjectEnumTypes(p, involveableProjects).ConfigureAwait(false));
                 }
 
                 List<DtoController> dtoControllers = new List<DtoController>();
 
                 foreach (Project p in involveableProjects)
                 {
-                    dtoControllers.AddRange(await _dtoControllersProvider.GetProjectDtoControllersWithTheirOperations(p));
+                    dtoControllers.AddRange(await _dtoControllersProvider.GetProjectDtoControllersWithTheirOperations(p).ConfigureAwait(false));
                 }
 
                 generatedJs.AppendLine(_dtoGenerator.GenerateJavaScriptDtos(dtos, enumTypes));

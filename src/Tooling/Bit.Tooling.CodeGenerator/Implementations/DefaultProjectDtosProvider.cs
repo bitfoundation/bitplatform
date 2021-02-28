@@ -42,8 +42,8 @@ public class IsSyncedClass
                     ));
 
                 Document isSyncedPropDoc = solution.Projects.Single().GetDocument(isSyncedPropDocId)!;
-                ClassDeclarationSyntax isSyncedPropClassDec = (await isSyncedPropDoc.GetSyntaxRootAsync()).DescendantNodes().OfType<ClassDeclarationSyntax>().Single();
-                ITypeSymbol isSyncedPropTypeSymbol = (await isSyncedPropDoc.GetSemanticModelAsync()!).GetDeclaredSymbol(isSyncedPropClassDec);
+                ClassDeclarationSyntax isSyncedPropClassDec = (await isSyncedPropDoc.GetSyntaxRootAsync().ConfigureAwait(false)).DescendantNodes().OfType<ClassDeclarationSyntax>().Single();
+                ITypeSymbol isSyncedPropTypeSymbol = (await isSyncedPropDoc.GetSemanticModelAsync()!.ConfigureAwait(false)).GetDeclaredSymbol(isSyncedPropClassDec);
                 return isSyncedPropTypeSymbol.GetMembers().OfType<IPropertySymbol>().Single();
 
             });
@@ -60,7 +60,7 @@ public class IsSyncedClass
                 allSourceProjects = new List<Project> { project };
 
             List<DtoController> dtoControllers = (await _projectDtoControllersProvider
-                .GetProjectDtoControllersWithTheirOperations(project)).ToList();
+                .GetProjectDtoControllersWithTheirOperations(project).ConfigureAwait(false)).ToList();
 
             List<Dto> dtosAndComplexTypes = new List<Dto>();
 
@@ -77,7 +77,7 @@ public class IsSyncedClass
             {
                 if (dtoOrComplexType.DtoSymbol.Interfaces.Any(i => i.Name == "ISyncableDto") && !dtoOrComplexType.Properties.Any(p => p.Name == "IsSynced"))
                 {
-                    dtoOrComplexType.Properties.Add(await _isSyncedPropertyForISyncableDtos.Value);
+                    dtoOrComplexType.Properties.Add(await _isSyncedPropertyForISyncableDtos.Value.ConfigureAwait(false));
                 }
             }
 

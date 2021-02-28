@@ -1,4 +1,4 @@
-﻿using IdentityModel.Client;
+﻿using Bit.Http.Contracts;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Simple.OData.Client;
 using System.Threading.Tasks;
@@ -14,9 +14,9 @@ namespace Bit.Tests.Api.Middlewares.SignalR.Tests
         {
             using (BitOwinTestEnvironment testEnvironment = new BitOwinTestEnvironment())
             {
-                TokenResponse tokenOfUser1 = await testEnvironment.Server.Login("ValidUserName", "ValidPassword", clientId: "TestResOwner");
+                Token tokenOfUser1 = await testEnvironment.Server.LoginWithCredentials("ValidUserName", "ValidPassword", clientId: "TestResOwner");
 
-                TokenResponse tokenOfUser2 = await testEnvironment.Server.Login("User2", "ValidPassword", clientId: "TestResOwner");
+                Token tokenOfUser2 = await testEnvironment.Server.LoginWithCredentials("User2", "ValidPassword", clientId: "TestResOwner");
 
                 IODataClient odataClientOfUser1 = testEnvironment.BuildTestODataClient(token: tokenOfUser1);
 
@@ -42,9 +42,9 @@ namespace Bit.Tests.Api.Middlewares.SignalR.Tests
         {
             using (BitOwinTestEnvironment testEnvironment = new BitOwinTestEnvironment())
             {
-                TokenResponse tokenOfUser1 = await testEnvironment.Server.Login("ValidUserName", "ValidPassword", clientId: "TestResOwner");
+                Token tokenOfUser1 = await testEnvironment.Server.LoginWithCredentials("ValidUserName", "ValidPassword", clientId: "TestResOwner");
 
-                TokenResponse tokenOfUser2 = await testEnvironment.Server.Login("User2", "ValidPassword", clientId: "TestResOwner");
+                Token tokenOfUser2 = await testEnvironment.Server.LoginWithCredentials("User2", "ValidPassword", clientId: "TestResOwner");
 
                 IODataClient odataClientOfUser1 = testEnvironment.BuildTestODataClient(token: tokenOfUser1);
 

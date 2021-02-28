@@ -9,9 +9,9 @@ namespace Bit.ViewModel.Implementations
 {
     public class BitPrismLogger : ILogger
     {
-        public virtual IEnumerable<ITelemetryService> TelemetryServices { get; set; } = default!;
+        public IEnumerable<ITelemetryService> TelemetryServices { get; set; } = default!;
 
-        public virtual IExceptionHandler ExceptionHandler { get; set; } = default!;
+        public IExceptionHandler ExceptionHandler { get; set; } = default!;
 
         public virtual void Log(string message, IDictionary<string, string?> properties)
         {

@@ -40,7 +40,7 @@ namespace Bit.Tooling.CodeAnalyzer.SystemCodeFixes
 
         private async Task<Document> ReplaceDateTimeWithDateTimeOffsetAsync(Document document, SyntaxNode node, CancellationToken cancellationToken)
         {
-            SyntaxNode root = await document.GetSyntaxRootAsync(cancellationToken);
+            SyntaxNode root = await document.GetSyntaxRootAsync(cancellationToken).ConfigureAwait(false);
 
             IdentifierNameSyntax convertedNode = (IdentifierNameSyntax)node;
 

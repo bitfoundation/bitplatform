@@ -14,7 +14,7 @@ namespace Bit.Model.Implementations
     {
         private static readonly bool _entityTypeAndDtoTypeAreEqual = typeof(TEntity).GetTypeInfo() == typeof(TDto).GetTypeInfo();
 
-        public virtual IMapper Mapper { get; set; } = default!;
+        public IMapper Mapper { get; set; } = default!;
 
         public virtual TEntity FromDtoToEntity(TDto dto, TEntity? existingEntity)
         {

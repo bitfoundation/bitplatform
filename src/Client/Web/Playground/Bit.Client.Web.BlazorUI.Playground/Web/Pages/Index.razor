@@ -8,14 +8,14 @@
 @page "/"
 <style>
     /* Temp Styles */
-    .links-container {
+    .links-container, .checkboxes-container, .labels-container {
         font-family: FluentFont;
     }
 
-     .links-container p {
-        width: 95%;
-        margin: auto;
-     }
+        .links-container p {
+            width: 95%;
+            margin: auto;
+        }
 </style>
 
 <h1>Bit Components</h1>
@@ -45,7 +45,7 @@
 </div>
 
 <div class="labels-container">
-    <h2>BitLabel</h2>
+    <h2>Labels</h2>
     <BitLabel Text="I'm a Label"></BitLabel>
     <BitLabel Text="I'm a disabled Label" IsEnabled="false"></BitLabel>
     <BitLabel Text="I'm a required Label" IsRequired="true"></BitLabel>
@@ -54,7 +54,7 @@
     <hr />
 </div>
 <div class="links-container">
-    <h2>links</h2>
+    <h2>Links</h2>
     <p>
         When a link has an href, <BitLink Href="https://github.com/bitfoundation/bitframework" Text="it renders as an anchor tag" Target="_blank"></BitLink>.
         Without an href, <BitLink Text="the link is rendered as a button"></BitLink>.
@@ -91,4 +91,37 @@
     <BitMessageBar Style="@MessageBarStyle.Default">
        Visit repository <BitLink Text="here" Href="https://github.com/bitfoundation/bitframework"></BitLink>
     </BitMessageBar>
+</div>
+</div>
+
+<hr />
+
+<div class="checkboxes-container">
+    <h2>Checkboxes</h2>
+    <h3>Basics</h3>
+    <BitCheckbox Label="Basic Checkbox"></BitCheckbox>
+    <BitCheckbox Label="Checked Checkbox" IsChecked="true"></BitCheckbox>
+    <BitCheckbox Label="Disable Checkbox" IsEnabled="false"></BitCheckbox>
+    <BitCheckbox Label="Disable Checked Checkbox" IsEnabled="false" IsChecked="true"></BitCheckbox>
+    <br />
+    <h3>Indeterminate</h3>
+    <BitCheckbox Label="Indeterminated checkbox" IsIndeterminate="true"></BitCheckbox>
+    <BitCheckbox Label="Indeterminate checkbox which defaults to true when clicked" IsIndeterminate="true" IsChecked="true"></BitCheckbox>
+    <BitCheckbox Label="Disabled indeterminated checkbox" IsIndeterminate="true" IsEnabled="false"></BitCheckbox>
+    <br />
+    <h3>Custom Label</h3>
+    <BitCheckbox>
+        <CustomLabel>
+            Custom-rendered label with a link go to 
+            <a href='https://github.com/bitfoundation/bitframework'>
+                bit foundation repository page.
+            </a>
+        </CustomLabel>
+    </BitCheckbox>
+    <h3>Reversed</h3>
+    <BitCheckbox BoxSide="@BoxSide.End" Label="Reversed -- Basic Checkbox"></BitCheckbox>
+    <BitCheckbox BoxSide="@BoxSide.End" Label="Reversed -- Checked Checkbox" IsChecked="true"></BitCheckbox>
+    <BitCheckbox BoxSide="@BoxSide.End" Label="Reversed -- Disable Checkbox" IsEnabled="false"></BitCheckbox>
+    <BitCheckbox BoxSide="@BoxSide.End" Label="Reversed -- Disable Checked Checkbox" IsEnabled="false" IsChecked="true"></BitCheckbox>
+    <br />
 </div>

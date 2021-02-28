@@ -10,11 +10,11 @@ namespace Bit.Core.Implementations
 {
     public abstract class TelemetryServiceBase : ITelemetryService
     {
-        public virtual IMessageReceiver? MessageReceiver { get; set; }
+        public IMessageReceiver? MessageReceiver { get; set; }
 
-        public virtual IVersionTracking? VersionTracking { get; set; }
+        public IVersionTracking? VersionTracking { get; set; }
 
-        public virtual IConnectivity? Connectivity { get; set; }
+        public IConnectivity? Connectivity { get; set; }
 
         public virtual IDictionary<string, string?> PopulateProperties(IDictionary<string, string?>? initialProps)
         {

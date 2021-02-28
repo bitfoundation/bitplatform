@@ -18,7 +18,7 @@ namespace Bit.OData.ODataControllers
             string userId = UserInformationProvider.GetCurrentUserId()!;
 
             return (await UsersSettingsRepository
-                .GetAllAsync(cancellationToken))
+                .GetAllAsync(cancellationToken).ConfigureAwait(false))
                 .Where(userSetting => userSetting.UserId == userId);
         }
     }
