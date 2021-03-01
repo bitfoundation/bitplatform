@@ -5,6 +5,34 @@
 	</PropertyGroup>
 
 	<ItemGroup>
+	  <None Include="wwwroot\assets\fluent\fonts\segoeui.ttf" />
+	  <None Include="wwwroot\assets\fluent\fonts\segoeuib.ttf" />
+	  <None Include="wwwroot\assets\fluent\fonts\segoeuil.ttf" />
+	  <None Include="wwwroot\assets\fluent\fonts\segoeuisl.ttf" />
+	  <None Include="wwwroot\assets\fluent\fonts\seguisb.ttf" />
+	  <None Include="wwwroot\scripts\bit.client.web.js" />
+	  <None Include="wwwroot\styles\fluent\Buttons\bit-button.fluent.css" />
+	  <None Include="wwwroot\styles\fluent\Buttons\bit-button.fluent.scss" />
+	  <None Include="wwwroot\styles\fluent\Buttons\bit-compound-button.fluent.css" />
+	  <None Include="wwwroot\styles\fluent\Buttons\bit-compound-button.fluent.scss" />
+	  <None Include="wwwroot\styles\fluent\Checkboxes\bit-checkbox.fluent.css" />
+	  <None Include="wwwroot\styles\fluent\Checkboxes\bit-checkbox.fluent.scss" />
+	  <None Include="wwwroot\styles\fluent\Labels\bit-label.fluent.css" />
+	  <None Include="wwwroot\styles\fluent\Labels\bit-label.fluent.scss" />
+	  <None Include="wwwroot\styles\fluent\Links\bit-link.fluent.css" />
+	  <None Include="wwwroot\styles\fluent\Links\bit-link.fluent.scss" />
+	  <None Include="wwwroot\styles\fluent\Notifications\bit-message-bar.fluent.css" />
+	  <None Include="wwwroot\styles\fluent\Notifications\bit-message-bar.fluent.scss" />
+	  <None Include="wwwroot\styles\fluent\_colors.fluent.scss" />
+	  <None Include="wwwroot\styles\fluent\_fonts.fluent.scss" />
+	  <None Include="wwwroot\styles\styles.css" />
+	  <None Include="wwwroot\styles\styles.fluent.css" />
+	  <None Include="wwwroot\styles\styles.fluent.scss" />
+	  <None Include="wwwroot\styles\styles.scss" />
+	  <None Include="wwwroot\styles\_functions.scss" />
+	</ItemGroup>
+
+	<ItemGroup>
 		<SupportedPlatform Include="browser" />
 	</ItemGroup>
 

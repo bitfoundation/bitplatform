@@ -1,0 +1,31 @@
+﻿@import "../_colors.fluent.scss", "../../_functions.scss";
+.bit-text-field.fluent {
+    font-family: FluentFont;
+    font-size: rem(14px);
+    font-weight: 400;
+    color: $Grey160;
+    background: $White;
+    border-radius: em(2px);
+    border: em(1px) solid $Grey130;
+    width: 100%;
+    cursor: text;
+    height: 32px;
+    display: flex;
+    flex-direction: row;
+    align-items: stretch;
+    position: relative;
+
+    &:focus {
+        border-width: em(3px);
+        border-color: $Primary;
+    }
+}
+.bit-text-field.fluent .bit-text-field-input {
+    background: none transparent;
+    border: none;
+    width: 100%;
+    height: 100%;
+    font-size: rem(14px);
+    font-weight: 400;
+    padding: em(0px) em(8px);
+}
