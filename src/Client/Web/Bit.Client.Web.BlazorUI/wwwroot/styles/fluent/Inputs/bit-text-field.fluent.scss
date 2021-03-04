@@ -41,9 +41,19 @@
     min-width: 0px;
     text-overflow: ellipsis;
 }
-.bit-text-field.fluent.x {
+.bit-text-field.fluent.Focused {
     border: em(3px) solid $Primary;
 }
-.bit-text-field.fluent .bit-text-field-input.x {
+.bit-text-field.fluent .bit-text-field-input.Focused {
     padding: 0px 6.3px;
+}
+.bit-text-field.fluent.disabled {
+    border: 1px solid $Grey20 !important;
+    background:$White;
+}
+.bit-text-field.fluent.disabled .bit-text-field-input.disabled {
+    color: $Grey90;
+    cursor: default;
+    border: none $Grey20;
+    background: none $Grey20;
 }

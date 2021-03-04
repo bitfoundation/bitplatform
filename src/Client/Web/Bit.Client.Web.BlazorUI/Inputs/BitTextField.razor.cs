@@ -13,8 +13,8 @@ namespace Bit.Client.Web.BlazorUI.Inputs
         [Parameter] public string Value { get; set; }
         [Parameter] public string Placeholder { get; set; }
         [Parameter] public bool IsReadonly { get; set; } = false;
-        public string ReadonlyClass => IsReadonly ? "no-text-select" : "";
-        public string BorderClass { get; set; } = "";
+        public string ReadonlyClass => IsReadonly ? "Readonly" : "";
+        public string FocusClass { get; set; } = "";
         public override Task SetParametersAsync(ParameterView parameters)
         {
             foreach (ParameterValue parameter in parameters)
@@ -27,17 +27,20 @@ namespace Bit.Client.Web.BlazorUI.Inputs
                     case nameof(Placeholder):
                         Placeholder = (string)parameter.Value;
                         break;
+                    case nameof(IsReadonly):
+                        IsReadonly = (bool)parameter.Value;
+                        break;
                 }
             }
             return base.SetParametersAsync(parameters);
         }
        private async Task OnFocusIn(FocusEventArgs e)
        {
-           BorderClass = "x";
+           FocusClass = "Focused";
        }
        private async Task OnFocusOut(FocusEventArgs e)
        {
-           BorderClass = "";
+           FocusClass = "";
        }
 
     }
