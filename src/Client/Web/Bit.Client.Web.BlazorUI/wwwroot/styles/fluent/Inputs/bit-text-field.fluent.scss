@@ -14,10 +14,13 @@
     flex-direction: row;
     align-items: stretch;
     position: relative;
+    box-shadow: none;
+    margin: 0px;
+    padding: 0px;
+    box-sizing: border-box;
 
-    &:focus {
-        border-width: em(3px);
-        border-color: $Primary;
+    &:hover {
+        border-color: $Grey160;
     }
 }
 .bit-text-field.fluent .bit-text-field-input {
@@ -28,4 +31,19 @@
     font-size: rem(14px);
     font-weight: 400;
     padding: em(0px) em(8px);
+    outline:none;
+        -webkit-font-smoothing: antialiased;
+    box-shadow: none;
+    padding: 0px 8px;
+    box-sizing: border-box;
+    border-radius: 0px;
+    width: 100%;
+    min-width: 0px;
+    text-overflow: ellipsis;
+}
+.bit-text-field.fluent.x {
+    border: em(3px) solid $Primary;
+}
+.bit-text-field.fluent .bit-text-field-input.x {
+    padding: 0px 6.3px;
 }
