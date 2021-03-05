@@ -17,10 +17,4 @@
 		</PackageReference>
 	</ItemGroup>
 
-	<ItemGroup>
-	  <Content Update="Buttons\BitButton.razor">
-	    <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
-	  </Content>
-	</ItemGroup>
-
 </Project>
