@@ -6,6 +6,7 @@
     }
 }
 @page "/"
+@using InputType = Bit.Client.Web.BlazorUI.Inputs.TextFieldType
 <style>
     /* Temp Styles */
     .links-container, .checkboxes-container, .labels-container {
@@ -132,4 +133,6 @@
     <BitTextField IsEnabled="false" Value="Disabled"></BitTextField>
     <br />
     <BitTextField Placeholder="Placeholder"></BitTextField>
+    <br />
+    <BitTextField Type="@InputType.Password" Placeholder="Password input"></BitTextField>
 </div>

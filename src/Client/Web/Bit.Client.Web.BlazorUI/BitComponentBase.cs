@@ -13,6 +13,7 @@ namespace Bit.Client.Web.BlazorUI
         public string EnabledClass => IsEnabled ? "enabled" : "disabled";
         public string VisualClass => Visual == Visual.Cupertino ? "cupertino" : Visual == Visual.Material ? "material" : "fluent";
 
+        //public async  Task BaseEventHandler(EventArgs)
         public override Task SetParametersAsync(ParameterView parameters)
         {
             foreach (ParameterValue parameter in parameters)

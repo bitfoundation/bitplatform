@@ -1,6 +1,7 @@
 ﻿@inherits BitComponentBase
 <div class="bit-text-field @(VisualClass) @(EnabledClass) @(FocusClass)">
-    <input disabled=@(!IsEnabled) readonly=@IsReadonly class="bit-text-field-input @(EnabledClass) @(ReadonlyClass) @(FocusClass)" type="text" value="@Value" placeholder="@Placeholder" @onfocusin="@OnFocusIn" @onfocusout="@OnFocusOut"/>
+    <input disabled=@(!IsEnabled) readonly=@IsReadonly class="bit-text-field-input @(EnabledClass) @(ReadonlyClass) @(FocusClass)" type="@Type.ToString()" value="@Value" placeholder="@Placeholder" @onfocusin="@HandleFocusIn" @onfocusout="@HandleFocusOut" @onfocus="@HandleFocus" @onchange="@HandleChange" @onkeydown="@HandleKeyDown" @onkeyup="@HandleKeyUp" />
+    @ChildContent
 </div>
 
 
