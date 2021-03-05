@@ -177,24 +177,28 @@ namespace Bit.Test.Server
 
             scopes = scopes ?? new[] { "openid", "profile", "user_info" };
 
-            string loginData = $"scope={string.Join("+", scopes)}&grant_type=password&username={userName}&password={password}&client_id={client_id}&client_secret={client_secret}";
+            Dictionary<string, string> loginData = new Dictionary<string, string>
+            {
+                { "scope", string.Join(" ", scopes) },
+                { "grant_type", "password" },
+                { "username", userName },
+                { "password", password },
+                { "client_id", client_id },
+                { "client_secret", client_secret }
+            };
 
             if (acr_values != null)
             {
-                loginData += $"&acr_values={string.Join(" ", acr_values.Select(p => $"{p.Key}:{p.Value}"))}";
+                loginData.Add("acr_values", string.Join(" ", acr_values.Select(p => $"{p.Key}:{p.Value}")));
             }
-
-            loginData = System.Uri.EscapeUriString(loginData);
 
             using HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Post, "core/connect/token");
 
-            request.Content = new StringContent(loginData);
-            request.Content.Headers.ContentType = new MediaTypeHeaderValue("application/x-www-form-urlencoded");
-            request.Content.Headers.ContentLength = loginData.Length;
+            request.Content = new FormUrlEncodedContent(loginData);
 
             using HttpResponseMessage response = await client.SendAsync(request).ConfigureAwait(false);
 
-            using Stream responseContent = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
+            await using Stream responseContent = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
 
             Token token = await DefaultJsonContentFormatter.Current.DeserializeAsync<Token>(responseContent, default).ConfigureAwait(false);
 

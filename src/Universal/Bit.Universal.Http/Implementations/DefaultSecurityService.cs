@@ -72,29 +72,33 @@ namespace Bit.Http.Implementations
 
             scopes = scopes ?? new[] { "openid", "profile", "user_info" };
 
-            string loginData = $"scope={string.Join("+", scopes)}&grant_type=password&username={userName}&password={password}&client_id={client_id}&client_secret={client_secret}";
+            Dictionary<string, string> loginData = new Dictionary<string, string>
+            {
+                { "scope", string.Join(" ", scopes) },
+                { "grant_type", "password" },
+                { "username", userName },
+                { "password", password },
+                { "client_id", client_id },
+                { "client_secret", client_secret }
+            };
 
             if (acr_values != null)
             {
-                loginData += $"&acr_values={string.Join(" ", acr_values.Select(p => $"{p.Key}:{p.Value}"))}";
+                loginData.Add("acr_values", string.Join(" ", acr_values.Select(p => $"{p.Key}:{p.Value}")));
             }
-
-            loginData = Uri.EscapeUriString(loginData);
 
             using HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Post, "core/connect/token");
 
-            request.Content = new StringContent(loginData);
-            request.Content.Headers.ContentType = new MediaTypeHeaderValue("application/x-www-form-urlencoded");
-            request.Content.Headers.ContentLength = loginData.Length;
+            request.Content = new FormUrlEncodedContent(loginData);
 
             using HttpResponseMessage response = await httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
 
 #if DotNetStandard2_0 || UWP
-            using Stream responseContent = await response.EnsureSuccessStatusCode().Content.ReadAsStreamAsync().ConfigureAwait(false);
+            using Stream responseContent = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
 #elif Android || iOS || DotNetStandard2_1
-            await using Stream responseContent = await response.EnsureSuccessStatusCode().Content.ReadAsStreamAsync().ConfigureAwait(false);
+            await using Stream responseContent = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
 #else
-            await using Stream responseContent = await response.EnsureSuccessStatusCode().Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
+            await using Stream responseContent = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
 #endif
 
             Token token = await DefaultJsonContentFormatter.Current.DeserializeAsync<Token>(responseContent, cancellationToken).ConfigureAwait(false);
