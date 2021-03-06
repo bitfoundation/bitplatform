@@ -6,7 +6,7 @@ namespace Bit.Client.Web.BlazorUI.Links
 {
     public partial class BitLink
     {
-        [Parameter] public string Text { get; set; }
+        [Parameter] public RenderFragment ChildContent { get; set; }
         [Parameter] public string Href { get; set; } = string.Empty;
         [Parameter] public string Target { get; set; }
         [Parameter] public EventCallback<MouseEventArgs> OnClick { get; set; }
@@ -25,8 +25,8 @@ namespace Bit.Client.Web.BlazorUI.Links
             {
                 switch (parameter.Name)
                 {
-                    case nameof(Text):
-                        Text = (string)parameter.Value;
+                    case nameof(ChildContent):
+                        ChildContent = (RenderFragment)parameter.Value;
                         break;
                     case nameof(Href):
                         Href = (string)parameter.Value;

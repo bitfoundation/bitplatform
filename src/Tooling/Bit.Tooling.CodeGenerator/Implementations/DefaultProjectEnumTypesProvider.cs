@@ -35,9 +35,9 @@ namespace Bit.Tooling.CodeGenerator.Implementations
                 allSourceProjects = new List<Project> { project };
 
             List<DtoController> dtoControllers = (await _projectDtoControllersProvider
-                .GetProjectDtoControllersWithTheirOperations(project)).ToList();
+                .GetProjectDtoControllersWithTheirOperations(project).ConfigureAwait(false)).ToList();
 
-            IList<Dto> dtos = await _dtosProvider.GetProjectDtos(project, allSourceProjects);
+            IList<Dto> dtos = await _dtosProvider.GetProjectDtos(project, allSourceProjects).ConfigureAwait(false);
 
             HashSet<EnumType> enums = new HashSet<EnumType>();
 

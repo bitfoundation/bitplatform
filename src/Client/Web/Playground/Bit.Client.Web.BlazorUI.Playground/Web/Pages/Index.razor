@@ -1,4 +1,11 @@
-﻿@page "/"
+﻿@code {
+    private bool _isMessageBarHidden = false;
+    private void MessageBarButton(MouseEventArgs args)
+    {
+        _isMessageBarHidden = true;
+    }
+}
+@page "/"
 <style>
     /* Temp Styles */
     .links-container, .checkboxes-container, .labels-container, .search-box-container {
@@ -16,73 +23,110 @@
 <hr />
 
 <div class="buttons-container">
-    <h5>BitButton</h5>
-    <BitButton IsEnabled="true" Text="Enabled"></BitButton>
-
-    <BitButton IsEnabled="false" Text="Disabled"></BitButton>
+    <h3>BitButton</h3>
+    <BitButton IsEnabled="true">
+        Primary
+    </BitButton>
+    <BitButton Style="@ButtonStyle.Standard" IsEnabled="true">
+        Standard
+    </BitButton>
+    <BitButton IsEnabled="false">
+        Disabled
+    </BitButton>
+    <BitButton IsEnabled="false">
+        <label>This text is from a label element</label>
+    </BitButton>
     <hr />
 
-    <h5>BitCompoundButton</h5>
-    <BitCompoundButton IsEnabled="true" Text="Enabled" SecondaryText="This Button is compound button"></BitCompoundButton>
-
-    <BitCompoundButton IsEnabled="false" Text="Disabled" SecondaryText="This Button is compound button"></BitCompoundButton>
-
+    <h3>BitCompoundButton</h3>
+    <BitCompoundButton IsEnabled="true" Text="Primary" SecondaryText="This Button is compound button"></BitCompoundButton>
+    <BitCompoundButton IsEnabled="true" Text="Standard" SecondaryText="This Button is compound button" Style="@ButtonStyle.Standard"></BitCompoundButton>
+    <BitCompoundButton IsEnabled="false" Text="Disabled" SecondaryText="This Button is a disabled compound button"></BitCompoundButton>
     <hr />
 </div>
 
 <div class="labels-container">
-    <h3>Labels</h3>
-    <BitLabel Text="I'm a Label"></BitLabel>
-    <BitLabel Text="I'm a disabled Label" IsEnabled="false"></BitLabel>
-    <BitLabel Text="I'm a required Label" IsRequired="true"></BitLabel>
-    <BitLabel Text="A Label for An Input" For="labels-container__input"></BitLabel>
+
+    <h2>Labels</h2>
+    <BitLabel>I'm a Label</BitLabel>
+    <BitLabel IsEnabled="false">I'm a disabled Label</BitLabel>
+    <BitLabel IsRequired="true">I'm a required Label</BitLabel>
+    <BitLabel For="labels-container__input">A Label for An Input</BitLabel>
+  
     <input type="text" name="labels-container__input" id="labels-container__input" />
     <hr />
 </div>
 <div class="links-container">
     <h3>Links</h3>
     <p>
-        When a link has an href, <BitLink Href="https://github.com/bitfoundation/bitframework" Text="it renders as an anchor tag" Target="_blank"></BitLink>.
-        Without an href, <BitLink Text="the link is rendered as a button"></BitLink>.
+        When a link has an href, <BitLink Href="https://github.com/bitfoundation/bitframework" Target="_blank">it renders as an anchor tag</BitLink>.
+        Without an href, <BitLink>the link is rendered as a button</BitLink>.
         You can also use the disabled attribute
-        to create a <BitLink Text="disabled link" IsEnabled="false"></BitLink>.It's not recommended to use Links with imgs because
+        to create a <BitLink IsEnabled="false">disabled link</BitLink>.It's not recommended to use Links with imgs because
         Links are meant to render textual inline content. Buttons are inline-block or
         in the case of imgs, block. However, it is possible to create a linked image
         button by making a button with an unstyled variant and adding the img content
         and href source to that.
     </p>
+    <hr />
+</div>
+<div class="message-bar-container">
+    <h2>BitMessageBar</h2>
+    @if (!_isMessageBarHidden)
+    {
+        <BitMessageBar Style="@MessageBarStyle.Success">
+            Action completed! <BitButton OnClick="MessageBarButton" Style="@ButtonStyle.Standard">OK</BitButton>
+        </BitMessageBar>
+        <br />
+    }
+    <BitMessageBar Style="@MessageBarStyle.Error">
+        Error! Cannot complete action
+    </BitMessageBar>
+    <br />
+    <BitMessageBar Style="@MessageBarStyle.Warning">
+        Caution! Action may takes long time
+    </BitMessageBar>
+    <br />
+    <BitMessageBar Style="@MessageBarStyle.Severe">
+        Cannot connect to server
+    </BitMessageBar>
+    <br />
+    <BitMessageBar Style="@MessageBarStyle.Default">
+        Visit repository <BitLink Href="https://github.com/bitfoundation/bitframework">here</BitLink>
+    </BitMessageBar>
 </div>
 
 
 <hr />
 
 <div class="checkboxes-container">
-    <h3>Checkboxes</h3>
-    <h5>Basics</h5>
-    <BitCheckbox Label="Basic Checkbox"></BitCheckbox>
-    <BitCheckbox Label="Checked Checkbox" IsChecked="true"></BitCheckbox>
-    <BitCheckbox Label="Disable Checkbox" IsEnabled="false"></BitCheckbox>
-    <BitCheckbox Label="Disable Checked Checkbox" IsEnabled="false" IsChecked="true"></BitCheckbox>
+
+    <h2>Checkboxes</h2>
+    <h3>Basics</h3>
+    <BitCheckbox>Basic Checkbox</BitCheckbox>
+    <BitCheckbox IsChecked="true">Checked Checkbox</BitCheckbox>
+    <BitCheckbox IsEnabled="false">Disable Checkbox</BitCheckbox>
+    <BitCheckbox IsEnabled="false" IsChecked="true">Disable Checked Checkbox</BitCheckbox>
     <br />
-    <h5>Indeterminate</h5>
-    <BitCheckbox Label="Indeterminated checkbox" IsIndeterminate="true"></BitCheckbox>
-    <BitCheckbox Label="Indeterminate checkbox which defaults to true when clicked" IsIndeterminate="true" IsChecked="true"></BitCheckbox>
-    <BitCheckbox Label="Disabled indeterminated checkbox" IsIndeterminate="true" IsEnabled="false"></BitCheckbox>
+    <h3>Indeterminate</h3>
+    <BitCheckbox IsIndeterminate="true">Indeterminated checkbox</BitCheckbox>
+    <BitCheckbox IsIndeterminate="true" IsChecked="true">Indeterminate checkbox which defaults to true when clicked</BitCheckbox>
+    <BitCheckbox IsIndeterminate="true" IsEnabled="false">Disabled indeterminated checkbox</BitCheckbox>
     <br />
     <h5>Custom Label</h5>
     <BitCheckbox>
-        <CustomLabel>
-            Custom-rendered label with a link go to
-            <a href='https://github.com/bitfoundation/bitframework'>
-                bit foundation repository page.
-            </a>
-        </CustomLabel>
+
+        Custom-rendered label with a link go to
+        <a href='https://github.com/bitfoundation/bitframework'>
+            bit foundation repository page.
+        </a>
     </BitCheckbox>
-    <h5>Reversed</h5>
-    <BitCheckbox BoxSide="@BoxSide.End" Label="Reversed -- Basic Checkbox"></BitCheckbox>
-    <BitCheckbox BoxSide="@BoxSide.End" Label="Reversed -- Checked Checkbox" IsChecked="true"></BitCheckbox>
-    <BitCheckbox BoxSide="@BoxSide.End" Label="Reversed -- Disable Checkbox" IsEnabled="false"></BitCheckbox>
-    <BitCheckbox BoxSide="@BoxSide.End" Label="Reversed -- Disable Checked Checkbox" IsEnabled="false" IsChecked="true"></BitCheckbox>
+    <h3>Reversed</h3>
+    <BitCheckbox BoxSide="@BoxSide.End">Reversed -- Basic Checkbox</BitCheckbox>
+    <BitCheckbox BoxSide="@BoxSide.End" IsChecked="true">Reversed -- Checked Checkbox</BitCheckbox>
+    <BitCheckbox BoxSide="@BoxSide.End" IsEnabled="false">Reversed -- Disable Checkbox</BitCheckbox>
+    <BitCheckbox BoxSide="@BoxSide.End" IsEnabled="false" IsChecked="true">Reversed -- Disable Checked Checkbox</BitCheckbox>
+
     <br />
 </div>
 

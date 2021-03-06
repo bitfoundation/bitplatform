@@ -61,7 +61,7 @@ namespace OpenQA.Selenium
             driver.ExecuteScript(finalTestScript);
 
             string value = consoleValue;
-            await driver.WaitForCondition(d => testsConsole.GetAttribute("value") != value);
+            await driver.WaitForCondition(d => testsConsole.GetAttribute("value") != value).ConfigureAwait(false);
 
             consoleValue = testsConsole.GetAttribute("value");
 
@@ -96,7 +96,7 @@ namespace OpenQA.Selenium
                 catch { }
                 finally
                 {
-                    await Task.Delay(250);
+                    await Task.Delay(250).ConfigureAwait(false);
                     triesCount++;
                 }
             } while (triesCount < 20);

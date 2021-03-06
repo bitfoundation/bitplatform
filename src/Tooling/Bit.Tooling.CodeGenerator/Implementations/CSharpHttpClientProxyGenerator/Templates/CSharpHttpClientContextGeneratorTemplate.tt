@@ -52,10 +52,8 @@ namespace System.Net.Http
 					<# if (!operation.Method.ReturnType.IsVoid())
 					{ #>
 						using Stream responseStream = await response.Content.ReadAsStreamAsync(cancellationToken);
-						var oDataResponse = await DefaultJsonContentFormatter.Current.DeserializeAsync<ODataResponse<<#= operation.Method.ReturnType.GetCSharpTypeName() #>>>(responseStream, cancellationToken);
-						if (oDataContext is not null)
-							oDataContext.TotalCount = oDataResponse.TotalCount;
-						return oDataResponse.Value;
+						var oDataResponse = await <#= $"{controller.Name.AsCamelCase()}Controller" #>.DeserializeAsync<<#= operation.Method.ReturnType.GetCSharpTypeName() #>>(responseStream, oDataContext, cancellationToken);
+						return oDataResponse;
 					<# } #>
 				}
 

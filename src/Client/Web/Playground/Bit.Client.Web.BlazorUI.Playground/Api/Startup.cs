@@ -1,5 +1,4 @@
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.ResponseCompression;
@@ -8,7 +7,10 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Net.Http.Headers;
 using System;
 using System.IO.Compression;
+#if BlazorClient
 using System.Net.Http;
+using Microsoft.AspNetCore.Components;
+#endif
 
 namespace Bit.Client.Web.BlazorUI.Playground.Api
 {

@@ -54,49 +54,49 @@ namespace Bit.Owin.Implementations
             return GetTimeZoneInfoByName(_desiredTimeZoneName, dateTimeOffset);
         }
 
-        public virtual DateTimeOffset MapFromClientToServer(DateTimeOffset dateTime)
+        public virtual DateTimeOffset MapFromClientToServer(DateTimeOffset dateTimeOffset)
         {
             if (_currentTimeZoneName == null || _desiredTimeZoneName == null)
-                return dateTime;
+                return dateTimeOffset;
 
-            if (dateTime == DateTimeOffset.MinValue)
-                return dateTime;
+            if (dateTimeOffset == DateTimeOffset.MinValue)
+                return dateTimeOffset;
 
             if (_currentTimeZoneName == _desiredTimeZoneName)
-                return dateTime;
+                return dateTimeOffset;
 
-            TimeZoneInfo currentTimeZoneInfo = GetClientCurrentTimeZone(dateTime)!;
+            TimeZoneInfo currentTimeZoneInfo = GetClientCurrentTimeZone(dateTimeOffset)!;
 
-            TimeZoneInfo desiredTimeZoneInfo = GetClientDesiredTimeZone(dateTime)!;
+            TimeZoneInfo desiredTimeZoneInfo = GetClientDesiredTimeZone(dateTimeOffset)!;
 
             if (currentTimeZoneInfo.HasSameRules(desiredTimeZoneInfo))
-                return dateTime;
+                return dateTimeOffset;
             else
             {
-                return dateTime + (currentTimeZoneInfo.BaseUtcOffset - desiredTimeZoneInfo.BaseUtcOffset);
+                return dateTimeOffset + (currentTimeZoneInfo.BaseUtcOffset - desiredTimeZoneInfo.BaseUtcOffset);
             }
         }
 
-        public virtual DateTimeOffset MapFromServerToClient(DateTimeOffset dateTime)
+        public virtual DateTimeOffset MapFromServerToClient(DateTimeOffset dateTimeOffset)
         {
             if (_currentTimeZoneName == null || _desiredTimeZoneName == null)
-                return dateTime;
+                return dateTimeOffset;
 
-            if (dateTime == DateTimeOffset.MinValue)
-                return dateTime;
+            if (dateTimeOffset == DateTimeOffset.MinValue)
+                return dateTimeOffset;
 
             if (_currentTimeZoneName == _desiredTimeZoneName)
-                return dateTime;
+                return dateTimeOffset;
 
-            TimeZoneInfo currentTimeZoneInfo = GetClientCurrentTimeZone(dateTime)!;
+            TimeZoneInfo currentTimeZoneInfo = GetClientCurrentTimeZone(dateTimeOffset)!;
 
-            TimeZoneInfo desiredTimeZoneInfo = GetClientDesiredTimeZone(dateTime)!;
+            TimeZoneInfo desiredTimeZoneInfo = GetClientDesiredTimeZone(dateTimeOffset)!;
 
             if (currentTimeZoneInfo.HasSameRules(desiredTimeZoneInfo))
-                return dateTime;
+                return dateTimeOffset;
             else
             {
-                return dateTime - (currentTimeZoneInfo.BaseUtcOffset - desiredTimeZoneInfo.BaseUtcOffset);
+                return dateTimeOffset - (currentTimeZoneInfo.BaseUtcOffset - desiredTimeZoneInfo.BaseUtcOffset);
             }
         }
     }

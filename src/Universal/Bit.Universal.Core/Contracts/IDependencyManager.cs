@@ -94,7 +94,7 @@ namespace Bit.Core.Contracts
 
         IDependencyManager RegisterUsing(Func<IDependencyResolver, object> factory, TypeInfo serviceType, string? name = null, DependencyLifeCycle lifeCycle = DependencyLifeCycle.PerScopeInstance, bool overwriteExisting = true);
 
-        IDependencyResolver CreateChildDependencyResolver(Action<IDependencyManager>? childDependencyManager = null);
+        IDependencyResolver CreateChildDependencyResolver(Action<IDependencyManager>? childDependencyManagerCustomizer = null);
 
         IDependencyManager Populate(IServiceCollection services);
     }

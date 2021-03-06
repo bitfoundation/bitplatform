@@ -25,12 +25,12 @@ namespace Bit.Sync.ODataEntityFrameworkCore.Implementations
     [Obsolete("Use DefaultSyncService")]
     public class LegacySyncService : ISyncService
     {
-        public virtual IContainer Container { get; set; } = default!;
-        public virtual IClientAppProfile ClientAppProfile { get; set; } = default!;
-        public virtual HttpClient HttpClient { get; set; } = default!;
-        public virtual IODataClient ODataClient { get; set; } = default!;
-        public virtual IExceptionHandler ExceptionHandler { get; set; } = default!;
-        public virtual IConnectivity Connectivity { get; set; } = default!;
+        public IContainer Container { get; set; } = default!;
+        public IClientAppProfile ClientAppProfile { get; set; } = default!;
+        public HttpClient HttpClient { get; set; } = default!;
+        public IODataClient ODataClient { get; set; } = default!;
+        public IExceptionHandler ExceptionHandler { get; set; } = default!;
+        public IConnectivity Connectivity { get; set; } = default!;
 
 
         private readonly List<DtoSetSyncConfig> _configs = new List<DtoSetSyncConfig> { };
@@ -257,10 +257,12 @@ namespace Bit.Sync.ODataEntityFrameworkCore.Implementations
                 {
                     response.EnsureSuccessStatusCode();
 
-#if UWP || DotNetStandard2_0
-                    using (Stream stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false))
+#if DotNetStandard2_0 || UWP
+                    using Stream stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
+#elif Android || iOS || DotNetStandard2_1
+                    await using Stream stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
 #else
-                    await using (Stream stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false))
+                    await using Stream stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
 #endif
                     {
                         using (StreamReader reader = new StreamReader(stream))

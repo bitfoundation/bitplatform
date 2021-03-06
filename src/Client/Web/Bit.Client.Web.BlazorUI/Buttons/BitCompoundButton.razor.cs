@@ -6,11 +6,12 @@ namespace Bit.Client.Web.BlazorUI.Buttons
 {
     public partial class BitCompoundButton
     {
+        [Parameter] public string Text { get; set; }
+        [Parameter] public string SecondaryText { get; set; }
+        [Parameter] public ButtonStyle Style { get; set; } = ButtonStyle.Primary;
         [Parameter] public EventCallback<MouseEventArgs> OnClick { get; set; }
 
-        [Parameter] public string Text { get; set; }
-
-        [Parameter] public string SecondaryText { get; set; }
+        public string StyleClass => !IsEnabled ? "" : Style == ButtonStyle.Primary ? "primary" : "standard";
 
         protected virtual async Task HandleOnClick(MouseEventArgs e)
         {
@@ -24,12 +25,21 @@ namespace Bit.Client.Web.BlazorUI.Buttons
         {
             foreach (ParameterValue parameter in parameters)
             {
-                if (parameter.Name is nameof(OnClick))
-                    OnClick = (EventCallback<MouseEventArgs>)parameter.Value;
-                else if (parameter.Name is nameof(Text))
-                    Text = (string)parameter.Value;
-                else if (parameter.Name is nameof(SecondaryText))
-                    SecondaryText = (string)parameter.Value;
+                switch (parameter.Name)
+                {
+                    case nameof(OnClick):
+                        OnClick = (EventCallback<MouseEventArgs>)parameter.Value;
+                        break;
+                    case nameof(Text):
+                        Text = (string)parameter.Value;
+                        break;
+                    case nameof(SecondaryText):
+                        SecondaryText = (string)parameter.Value;
+                        break;
+                    case nameof(Style):
+                        Style = (ButtonStyle)parameter.Value;
+                        break;
+                }
             }
 
             return base.SetParametersAsync(parameters);

@@ -1,4 +1,5 @@
-﻿using Bit.CSharpClientSample.Data;
+﻿using Bit.Core.Implementations;
+using Bit.CSharpClientSample.Data;
 using Bit.CSharpClientSample.Dto;
 using Bit.Http.Contracts;
 using Bit.Http.Implementations;
@@ -7,7 +8,6 @@ using Bit.Tests.Model.Dto;
 using Bit.ViewModel;
 using Bit.ViewModel.Implementations;
 using Microsoft.EntityFrameworkCore;
-using Newtonsoft.Json;
 using Refit;
 using Simple.OData.Client;
 using System;
@@ -114,7 +114,7 @@ namespace Bit.CSharpClientSample.ViewModels
 
         async Task SendHttpRequestUsingGeneratedCode()
         {
-            DtoHttpClient<ChildEntity> childEntitiesController = new DtoHttpClient<ChildEntity>(HttpClient, "ChildEntities", "Test");
+            ODataHttpClient<ChildEntity> childEntitiesController = new ODataHttpClient<ChildEntity>(HttpClient, "ChildEntities", "Test");
 
             ODataContext context = new ODataContext { Query = $"$expand={nameof(ChildEntity.ParentEntity)}&$count=true" };
 
@@ -143,7 +143,7 @@ namespace Bit.CSharpClientSample.ViewModels
             {
                 string responseAsString = await response.Content.ReadAsStringAsync();
 
-                ODataResponse<TestCustomerDto[]> odataResponse = JsonConvert.DeserializeObject<ODataResponse<TestCustomerDto[]>>(responseAsString);
+                ODataResponse<TestCustomerDto[]> odataResponse = DefaultJsonContentFormatter.Current.Deserialize<ODataResponse<TestCustomerDto[]>>(responseAsString);
 
                 foreach (TestCustomerDto customer in odataResponse.Value)
                 {

@@ -1,12 +1,11 @@
 ﻿using Microsoft.AspNetCore.Components;
-using Microsoft.JSInterop;
 using System.Threading.Tasks;
 
-namespace System
+namespace Microsoft.JSInterop
 {
-    internal static class JsRuntimeExtension
+    public static class JsRuntimeExtension
     {
-        internal static async Task SetElementProperty(this IJSRuntime jsRuntime, ElementReference element, string property, object value)
+        public static async Task SetElementProperty(this IJSRuntime jsRuntime, ElementReference element, string property, object value)
         {
             await jsRuntime.InvokeVoidAsync("setElementProperty", element, property, value);
         }

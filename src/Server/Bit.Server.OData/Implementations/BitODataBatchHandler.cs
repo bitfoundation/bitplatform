@@ -30,7 +30,7 @@ namespace Bit.OData.Implementations
                 }
             }
 
-            var result = await base.ExecuteRequestMessagesAsync(requests, cancellationToken);
+            var result = await base.ExecuteRequestMessagesAsync(requests, cancellationToken).ConfigureAwait(false);
 
             return result;
         }

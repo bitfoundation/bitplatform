@@ -15,11 +15,11 @@ namespace Bit.Signalr.Implementations
     {
         public IExceptionHandler ExceptionHandler { get; set; } = default!;
 
-        public virtual SignalRHttpClient SignalRHttpClient { get; set; } = default!;
+        public SignalRHttpClient SignalRHttpClient { get; set; } = default!;
 
-        public virtual IEventAggregator EventAggregator { get; set; } = default!;
+        public IEventAggregator EventAggregator { get; set; } = default!;
 
-        public virtual IClientAppProfile ClientAppProfile { get; set; } = default!;
+        public IClientAppProfile ClientAppProfile { get; set; } = default!;
 
         public IHubConnectionFactory HubConnectionFactory { get; set; } = default!;
 
@@ -86,7 +86,7 @@ namespace Bit.Signalr.Implementations
 
             EnsureReNewTransport();
 
-            await _hubConnection.Start(_serverSentEventsTransport);
+            await _hubConnection.Start(_serverSentEventsTransport).ConfigureAwait(false);
         }
 
         void EnsureReNewTransport()
@@ -137,7 +137,7 @@ namespace Bit.Signalr.Implementations
                 {
                     try
                     {
-                        await Stop(CancellationToken.None);
+                        await Stop(CancellationToken.None).ConfigureAwait(false);
                     }
                     catch (Exception exp)
                     {
@@ -146,7 +146,7 @@ namespace Bit.Signalr.Implementations
 
                     try
                     {
-                        await Start(CancellationToken.None);
+                        await Start(CancellationToken.None).ConfigureAwait(false);
                     }
                     catch (Exception exp)
                     {
@@ -202,7 +202,7 @@ namespace Bit.Signalr.Implementations
         {
             ShouldBeConnected = false;
             if (_hubConnection != null)
-                await Task.Run(_hubConnection.Stop, cancellationToken);
+                await Task.Run(_hubConnection.Stop, cancellationToken).ConfigureAwait(false);
         }
 
         public void Dispose()

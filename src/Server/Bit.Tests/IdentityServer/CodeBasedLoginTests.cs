@@ -1,7 +1,7 @@
 ﻿using Bit.Core.Contracts;
 using Bit.Test;
 using Bit.Test.Server;
-using IdentityModel.Client;
+using Bit.Http.Contracts;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Remote;
@@ -10,6 +10,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
+using Bit.Core.Exceptions;
 
 namespace Bit.Tests.IdentityServer
 {
@@ -22,11 +23,9 @@ namespace Bit.Tests.IdentityServer
         {
             using (BitOwinTestEnvironment testEnvironment = new BitOwinTestEnvironment(new TestEnvironmentArgs { UseRealServer = false }))
             {
-                TokenResponse token = await testEnvironment.Server.Login("ValidUserName", "ValidPassword", "TestResOwner");
+                Token token = await testEnvironment.Server.LoginWithCredentials("ValidUserName", "ValidPassword", "TestResOwner");
 
                 Assert.AreEqual("test", await (await testEnvironment.Server.BuildHttpClient(token).GetAsync("api/customers/get-custom-data?api-version=1.0")).Content.ReadAsAsync<string>()); // see TestUserService
-
-                Assert.IsFalse(token.IsError);
             }
         }
 
@@ -38,10 +37,10 @@ namespace Bit.Tests.IdentityServer
             {
                 try
                 {
-                    await testEnvironment.Server.Login("InValidUser", "InvalidPassword", "TestResOwner");
+                    await testEnvironment.Server.LoginWithCredentials("InValidUser", "InvalidPassword", "TestResOwner");
                     Assert.Fail();
                 }
-                catch (Exception exp) when (exp.Message == "invalid_grant {\"error\":\"invalid_grant\",\"error_description\":\"LoginFailed\"}") { }
+                catch (LoginFailureException exp) when (exp.Message == "LoginFailed") { }
             }
         }
 
@@ -53,7 +52,7 @@ namespace Bit.Tests.IdentityServer
             {
                 try
                 {
-                    await testEnvironment.Server.Login("InValidUser", "InvalidPassword", "TestResOwner", acr_values: new Dictionary<string, string>
+                    await testEnvironment.Server.LoginWithCredentials("InValidUser", "InvalidPassword", "TestResOwner", acr_values: new Dictionary<string, string>
                     {
                         { "x",  "1" },
                         { "y",  "2" }
@@ -61,7 +60,7 @@ namespace Bit.Tests.IdentityServer
 
                     Assert.Fail();
                 }
-                catch (Exception exp) when (exp.Message == "invalid_grant {\"error\":\"invalid_grant\",\"error_description\":\"LoginFailed\"}") { }
+                catch (LoginFailureException exp) when (exp.Message == "LoginFailed") { }
 
                 bool acr_values_are_logged = testEnvironment.GetObjects<ILogger>()
                      .Any(l => l.LogData.Any(ld => ld.Key == "AcrValues" && ((List<string>)ld.Value).SequenceEqual(new[] { "x:1", "y:2" })));
@@ -78,7 +77,7 @@ namespace Bit.Tests.IdentityServer
             {
                 try
                 {
-                    TokenResponse token = await testEnvironment.Server.Login("ValidUserName", "ValidPassword", clientId: "TestResOwner");
+                    Token token = await testEnvironment.Server.LoginWithCredentials("ValidUserName", "ValidPassword", clientId: "TestResOwner");
 
                     using (RemoteWebDriver driver = testEnvironment.Server.BuildWebDriver(new RemoteWebDriverOptions { Token = token }))
                     {

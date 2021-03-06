@@ -77,21 +77,21 @@ namespace Bit.Tooling.CodeGenerator.Implementations.CSharpHttpClientProxyGenerat
 
                 foreach (Project p in involveableProjects)
                 {
-                    dtoControllers.AddRange(await _dtoControllersProvider.GetProjectDtoControllersWithTheirOperations(p));
+                    dtoControllers.AddRange(await _dtoControllersProvider.GetProjectDtoControllersWithTheirOperations(p).ConfigureAwait(false));
                 }
 
                 List<Dto> dtos = new List<Dto>();
 
                 foreach (Project p in involveableProjects)
                 {
-                    dtos.AddRange(await _dtosProvider.GetProjectDtos(p, involveableProjects));
+                    dtos.AddRange(await _dtosProvider.GetProjectDtos(p, involveableProjects).ConfigureAwait(false));
                 }
 
                 List<EnumType> enumTypes = new List<EnumType>();
 
                 foreach (Project p in involveableProjects)
                 {
-                    enumTypes.AddRange(await _enumsProvider.GetProjectEnumTypes(p, involveableProjects));
+                    enumTypes.AddRange(await _enumsProvider.GetProjectEnumTypes(p, involveableProjects).ConfigureAwait(false));
                 }
 
                 generatedCs.AppendLine(_contextGenerator.GenerateCSharpContext(dtoControllers, proxyGeneratorMapping));

@@ -1,6 +1,6 @@
 ﻿using Bit.Tests.Model.Dto;
 using Bit.WebApi.Contracts;
-using IdentityModel.Client;
+using Bit.Http.Contracts;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Linq;
 using System.Net.Http;
@@ -17,7 +17,7 @@ namespace Bit.Tests.Api.Middlewares.WebApi.Tests
         {
             using (BitOwinTestEnvironment testEnvironment = new BitOwinTestEnvironment())
             {
-                TokenResponse token = await testEnvironment.Server.Login("ValidUserName", "ValidPassword", clientId: "TestResOwner");
+                Token token = await testEnvironment.Server.LoginWithCredentials("ValidUserName", "ValidPassword", clientId: "TestResOwner");
 
                 HttpResponseMessage getTestModelsResponse = await testEnvironment.Server.BuildHttpClient(token)
                     .GetAsync("/odata/Test/TestModels");
@@ -32,7 +32,7 @@ namespace Bit.Tests.Api.Middlewares.WebApi.Tests
         {
             using (BitOwinTestEnvironment testEnvironment = new BitOwinTestEnvironment())
             {
-                TokenResponse token = await testEnvironment.Server.Login("ValidUserName", "ValidPassword", clientId: "TestResOwner");
+                Token token = await testEnvironment.Server.LoginWithCredentials("ValidUserName", "ValidPassword", clientId: "TestResOwner");
 
                 HttpResponseMessage getTestModelsResponse = await testEnvironment.Server.BuildHttpClient(token)
                     .AddHeader("Accept", "application/json, text/javascript, */*; q=0.01")
@@ -48,7 +48,7 @@ namespace Bit.Tests.Api.Middlewares.WebApi.Tests
         {
             using (BitOwinTestEnvironment testEnvironment = new BitOwinTestEnvironment())
             {
-                TokenResponse token = await testEnvironment.Server.Login("ValidUserName", "ValidPassword", clientId: "TestResOwner");
+                Token token = await testEnvironment.Server.LoginWithCredentials("ValidUserName", "ValidPassword", clientId: "TestResOwner");
 
                 HttpResponseMessage getTestModelsResponse = await testEnvironment.Server.BuildHttpClient(token)
                     .AddHeader("Accept", "*/*; q=0.01")
@@ -64,7 +64,7 @@ namespace Bit.Tests.Api.Middlewares.WebApi.Tests
         {
             using (BitOwinTestEnvironment testEnvironment = new BitOwinTestEnvironment())
             {
-                TokenResponse token = await testEnvironment.Server.Login("ValidUserName", "ValidPassword", clientId: "TestResOwner");
+                Token token = await testEnvironment.Server.LoginWithCredentials("ValidUserName", "ValidPassword", clientId: "TestResOwner");
 
                 HttpResponseMessage getTestModelsResponse = await testEnvironment.Server.BuildHttpClient(token)
                     .AddHeader("Accept", "text/html; q=0.01")
@@ -80,7 +80,7 @@ namespace Bit.Tests.Api.Middlewares.WebApi.Tests
         {
             using (BitOwinTestEnvironment testEnvironment = new BitOwinTestEnvironment())
             {
-                TokenResponse token = await testEnvironment.Server.Login("ValidUserName", "ValidPassword", clientId: "TestResOwner");
+                Token token = await testEnvironment.Server.LoginWithCredentials("ValidUserName", "ValidPassword", clientId: "TestResOwner");
 
                 {
                     HttpResponseMessage getCustomersResponse = await testEnvironment.Server.BuildHttpClient(token)

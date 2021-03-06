@@ -1,6 +1,6 @@
 ﻿
-function setElementProperty(element: HTMLElement, property: string, value: object) {
-    const _element: { [key: string]: string | any } = element;
+function setElementProperty(element: HTMLElement, property: string, value: any): void {
+    const _element: { [key: string]: any } = element;
     _element[property] = value;
 }
 
