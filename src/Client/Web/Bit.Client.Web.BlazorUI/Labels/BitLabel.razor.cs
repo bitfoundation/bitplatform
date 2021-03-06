@@ -5,7 +5,7 @@ namespace Bit.Client.Web.BlazorUI.Labels
 {
     public partial class BitLabel
     {
-        [Parameter] public string Text { get; set; }
+        [Parameter] public RenderFragment ChildContent { get; set; }
         [Parameter] public bool IsRequired { get; set; }
         [Parameter] public string For { get; set; }
 
@@ -17,8 +17,8 @@ namespace Bit.Client.Web.BlazorUI.Labels
             {
                 switch (parameter.Name)
                 {
-                    case nameof(Text):
-                        Text = (string)parameter.Value;
+                    case nameof(ChildContent):
+                        ChildContent = (RenderFragment)parameter.Value;
                         break;
                     case nameof(IsRequired):
                         IsRequired = (bool)parameter.Value;

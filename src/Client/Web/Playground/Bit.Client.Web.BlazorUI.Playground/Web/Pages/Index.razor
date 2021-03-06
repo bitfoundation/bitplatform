@@ -46,20 +46,20 @@
 
 <div class="labels-container">
     <h2>Labels</h2>
-    <BitLabel Text="I'm a Label"></BitLabel>
-    <BitLabel Text="I'm a disabled Label" IsEnabled="false"></BitLabel>
-    <BitLabel Text="I'm a required Label" IsRequired="true"></BitLabel>
-    <BitLabel Text="A Label for An Input" For="labels-container__input"></BitLabel>
+    <BitLabel>I'm a Label</BitLabel>
+    <BitLabel IsEnabled="false">I'm a disabled Label</BitLabel>
+    <BitLabel IsRequired="true">I'm a required Label</BitLabel>
+    <BitLabel For="labels-container__input">A Label for An Input</BitLabel>
     <input type="text" name="labels-container__input" id="labels-container__input" />
     <hr />
 </div>
 <div class="links-container">
     <h2>Links</h2>
     <p>
-        When a link has an href, <BitLink Href="https://github.com/bitfoundation/bitframework" Text="it renders as an anchor tag" Target="_blank"></BitLink>.
-        Without an href, <BitLink Text="the link is rendered as a button"></BitLink>.
+        When a link has an href, <BitLink Href="https://github.com/bitfoundation/bitframework" Target="_blank">it renders as an anchor tag</BitLink>.
+        Without an href, <BitLink>the link is rendered as a button</BitLink>.
         You can also use the disabled attribute
-        to create a <BitLink Text="disabled link" IsEnabled="false"></BitLink>.It's not recommended to use Links with imgs because
+        to create a <BitLink IsEnabled="false">disabled link</BitLink>.It's not recommended to use Links with imgs because
         Links are meant to render textual inline content. Buttons are inline-block or
         in the case of imgs, block. However, it is possible to create a linked image
         button by making a button with an unstyled variant and adding the img content
@@ -89,9 +89,8 @@
     </BitMessageBar>
     <br />
     <BitMessageBar Style="@MessageBarStyle.Default">
-       Visit repository <BitLink Text="here" Href="https://github.com/bitfoundation/bitframework"></BitLink>
+        Visit repository <BitLink Href="https://github.com/bitfoundation/bitframework">here</BitLink>
     </BitMessageBar>
-</div>
 </div>
 
 <hr />
@@ -99,29 +98,27 @@
 <div class="checkboxes-container">
     <h2>Checkboxes</h2>
     <h3>Basics</h3>
-    <BitCheckbox Label="Basic Checkbox"></BitCheckbox>
-    <BitCheckbox Label="Checked Checkbox" IsChecked="true"></BitCheckbox>
-    <BitCheckbox Label="Disable Checkbox" IsEnabled="false"></BitCheckbox>
-    <BitCheckbox Label="Disable Checked Checkbox" IsEnabled="false" IsChecked="true"></BitCheckbox>
+    <BitCheckbox>Basic Checkbox</BitCheckbox>
+    <BitCheckbox IsChecked="true">Checked Checkbox</BitCheckbox>
+    <BitCheckbox IsEnabled="false">Disable Checkbox</BitCheckbox>
+    <BitCheckbox IsEnabled="false" IsChecked="true">Disable Checked Checkbox</BitCheckbox>
     <br />
     <h3>Indeterminate</h3>
-    <BitCheckbox Label="Indeterminated checkbox" IsIndeterminate="true"></BitCheckbox>
-    <BitCheckbox Label="Indeterminate checkbox which defaults to true when clicked" IsIndeterminate="true" IsChecked="true"></BitCheckbox>
-    <BitCheckbox Label="Disabled indeterminated checkbox" IsIndeterminate="true" IsEnabled="false"></BitCheckbox>
+    <BitCheckbox IsIndeterminate="true">Indeterminated checkbox</BitCheckbox>
+    <BitCheckbox IsIndeterminate="true" IsChecked="true">Indeterminate checkbox which defaults to true when clicked</BitCheckbox>
+    <BitCheckbox IsIndeterminate="true" IsEnabled="false">Disabled indeterminated checkbox</BitCheckbox>
     <br />
     <h3>Custom Label</h3>
     <BitCheckbox>
-        <CustomLabel>
-            Custom-rendered label with a link go to 
-            <a href='https://github.com/bitfoundation/bitframework'>
-                bit foundation repository page.
-            </a>
-        </CustomLabel>
+        Custom-rendered label with a link go to
+        <a href='https://github.com/bitfoundation/bitframework'>
+            bit foundation repository page.
+        </a>
     </BitCheckbox>
     <h3>Reversed</h3>
-    <BitCheckbox BoxSide="@BoxSide.End" Label="Reversed -- Basic Checkbox"></BitCheckbox>
-    <BitCheckbox BoxSide="@BoxSide.End" Label="Reversed -- Checked Checkbox" IsChecked="true"></BitCheckbox>
-    <BitCheckbox BoxSide="@BoxSide.End" Label="Reversed -- Disable Checkbox" IsEnabled="false"></BitCheckbox>
-    <BitCheckbox BoxSide="@BoxSide.End" Label="Reversed -- Disable Checked Checkbox" IsEnabled="false" IsChecked="true"></BitCheckbox>
+    <BitCheckbox BoxSide="@BoxSide.End">Reversed -- Basic Checkbox</BitCheckbox>
+    <BitCheckbox BoxSide="@BoxSide.End" IsChecked="true">Reversed -- Checked Checkbox</BitCheckbox>
+    <BitCheckbox BoxSide="@BoxSide.End" IsEnabled="false">Reversed -- Disable Checkbox</BitCheckbox>
+    <BitCheckbox BoxSide="@BoxSide.End" IsEnabled="false" IsChecked="true">Reversed -- Disable Checked Checkbox</BitCheckbox>
     <br />
 </div>

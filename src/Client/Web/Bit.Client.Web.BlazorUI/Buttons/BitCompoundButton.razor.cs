@@ -9,8 +9,9 @@ namespace Bit.Client.Web.BlazorUI.Buttons
         [Parameter] public string Text { get; set; }
         [Parameter] public string SecondaryText { get; set; }
         [Parameter] public ButtonStyle Style { get; set; } = ButtonStyle.Primary;
-        public string StyleClass => !IsEnabled ? "" : Style == ButtonStyle.Primary ? "style-primary" : "style-standard";
         [Parameter] public EventCallback<MouseEventArgs> OnClick { get; set; }
+
+        public string StyleClass => !IsEnabled ? "" : Style == ButtonStyle.Primary ? "primary" : "standard";
 
         protected virtual async Task HandleOnClick(MouseEventArgs e)
         {

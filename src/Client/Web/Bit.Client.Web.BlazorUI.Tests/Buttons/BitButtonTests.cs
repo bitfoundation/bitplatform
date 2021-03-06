@@ -1,15 +1,15 @@
-﻿using Bunit;
+﻿using Bit.Client.Web.BlazorUI.Buttons;
+using Bunit;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Threading.Tasks;
-using Bit.Client.Web.BlazorUI.Buttons;
 
 namespace Bit.Client.Web.BlazorUI.Tests.Buttons
 {
     [TestClass]
     public class BitButtonTests : BunitTestContext
     {
-        [DataTestMethod, DataRow(true, 1, "enabled",ButtonStyle.Standard), DataRow(false, 0, "disabled", ButtonStyle.Primary)]
-        public async Task BitButtonShouldRespectIsEnabled(bool isEnabled, int count, string className,ButtonStyle style)
+        [DataTestMethod, DataRow(true, 1, "enabled", ButtonStyle.Standard), DataRow(false, 0, "disabled", ButtonStyle.Primary)]
+        public async Task BitButtonShouldRespectIsEnabled(bool isEnabled, int count, string className, ButtonStyle style)
         {
             var com = RenderComponent<BitButtonCounterTest>(
                 parameters =>
@@ -31,7 +31,7 @@ namespace Bit.Client.Web.BlazorUI.Tests.Buttons
     [TestClass]
     public class BitCompoundButtonTests : BunitTestContext
     {
-        [DataTestMethod, DataRow(true, 1, "enabled",ButtonStyle.Primary), DataRow(false, 0, "disabled", ButtonStyle.Standard)]
+        [DataTestMethod, DataRow(true, 1, "enabled", ButtonStyle.Primary), DataRow(false, 0, "disabled", ButtonStyle.Standard)]
         public async Task BitCompoundButtonShouldRespectIsEnabled(bool isEnabled, int count, string className, ButtonStyle style)
         {
             var com = RenderComponent<BitCompoundButtonCounterTest>(

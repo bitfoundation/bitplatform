@@ -19,7 +19,7 @@
     cursor: default;
     pointer-events: none;
 }
-.bit-button.fluent.style-primary {
+.bit-button.fluent.primary {
     color: $White;
     background: $Primary;
     border: 1px solid $Primary;
@@ -33,7 +33,7 @@
         background-color: $Primary;
     }
 }
-.bit-button.fluent.style-standard {
+.bit-button.fluent.standard {
     color: $Grey160;
     background: $White;
     border: 1px solid $GreyInputBorder;
