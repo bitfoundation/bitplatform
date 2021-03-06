@@ -1,4 +1,11 @@
-﻿@page "/"
+﻿@code {
+    private bool _isMessageBarHidden = false;
+    private void MessageBarButton(MouseEventArgs args)
+    {
+        _isMessageBarHidden = true;
+    }
+}
+@page "/"
 <style>
     /* Temp Styles */
     .links-container, .checkboxes-container, .labels-container {
@@ -16,11 +23,14 @@
 
 <div class="buttons-container">
     <h3>BitButton</h3>
-    <BitButton IsEnabled="true" Text="Enabled"></BitButton>
     <BitButton IsEnabled="true">
-        <label>This text is from a label element</label>
+        Primary
     </BitButton>
-    <BitButton IsEnabled="false" Text="Disabled">
+    <BitButton Style="@ButtonStyle.Standard" IsEnabled="true">
+        Standard
+    </BitButton>
+    <BitButton IsEnabled="false">
+        Disabled
     </BitButton>
     <BitButton IsEnabled="false">
         <label>This text is from a label element</label>
@@ -28,14 +38,9 @@
     <hr />
 
     <h3>BitCompoundButton</h3>
-    <BitCompoundButton IsEnabled="true" Text="Enabled" SecondaryText="This Button is compound button"></BitCompoundButton>
-    <BitCompoundButton IsEnabled="true" SecondaryText="This Button is compound button">
-        <label>This text is from a label element</label>
-    </BitCompoundButton>
-    <BitCompoundButton IsEnabled="false" SecondaryText="This Button is compound button"></BitCompoundButton>
-    <BitCompoundButton IsEnabled="false" SecondaryText="This Button is compound button">
-        <label>This text is from a label element</label>
-    </BitCompoundButton>
+    <BitCompoundButton IsEnabled="true" Text="Primary" SecondaryText="This Button is compound button"></BitCompoundButton>
+    <BitCompoundButton IsEnabled="true" Text="Standard" SecondaryText="This Button is compound button" Style="@ButtonStyle.Standard"></BitCompoundButton>
+    <BitCompoundButton IsEnabled="false" Text="Disabled" SecondaryText="This Button is a disabled compound button"></BitCompoundButton>
     <hr />
 </div>
 
@@ -60,6 +65,33 @@
         button by making a button with an unstyled variant and adding the img content
         and href source to that.
     </p>
+    <hr />
+</div>
+<div class="message-bar-container">
+    <h2>BitMessageBar</h2>
+    @if (!_isMessageBarHidden)
+    {
+        <BitMessageBar Style="@MessageBarStyle.Success">
+            Action completed! <BitButton OnClick="MessageBarButton" Style="@ButtonStyle.Standard">OK</BitButton>
+        </BitMessageBar>
+        <br />
+    }
+    <BitMessageBar Style="@MessageBarStyle.Error">
+        Error! Cannot complete action
+    </BitMessageBar>
+    <br />
+    <BitMessageBar Style="@MessageBarStyle.Warning">
+        Caution! Action may takes long time
+    </BitMessageBar>
+    <br />
+    <BitMessageBar Style="@MessageBarStyle.Severe">
+        Cannot connect to server
+    </BitMessageBar>
+    <br />
+    <BitMessageBar Style="@MessageBarStyle.Default">
+       Visit repository <BitLink Text="here" Href="https://github.com/bitfoundation/bitframework"></BitLink>
+    </BitMessageBar>
+</div>
 </div>
 
 <hr />

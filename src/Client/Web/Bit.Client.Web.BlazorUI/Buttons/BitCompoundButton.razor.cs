@@ -8,8 +8,9 @@ namespace Bit.Client.Web.BlazorUI.Buttons
     {
         [Parameter] public string Text { get; set; }
         [Parameter] public string SecondaryText { get; set; }
+        [Parameter] public ButtonStyle Style { get; set; } = ButtonStyle.Primary;
+        public string StyleClass => !IsEnabled ? "" : Style == ButtonStyle.Primary ? "style-primary" : "style-standard";
         [Parameter] public EventCallback<MouseEventArgs> OnClick { get; set; }
-        [Parameter] public RenderFragment ChildContent { get; set; }
 
         protected virtual async Task HandleOnClick(MouseEventArgs e)
         {
@@ -34,8 +35,8 @@ namespace Bit.Client.Web.BlazorUI.Buttons
                     case nameof(SecondaryText):
                         SecondaryText = (string)parameter.Value;
                         break;
-                    case nameof(ChildContent):
-                        ChildContent = (RenderFragment)parameter.Value;
+                    case nameof(Style):
+                        Style = (ButtonStyle)parameter.Value;
                         break;
                 }
             }
